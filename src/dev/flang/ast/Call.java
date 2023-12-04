@@ -145,6 +145,16 @@ public class Call extends AbstractCall
 
 
   /**
+   * Since _target will be replaced during phases RESOLVING_DECLARATIONS or
+   * RESOLVING_TYPES we keep a copy of the original.  We will need the original
+   * later to check if there is an ambiguity between the found called feature
+   * and the partial application of another feature,
+   * see @partiallyApplicableAlternative).
+   */
+  private Expr _originalTarget = _target;
+
+
+  /**
    * The feature that is called by this call, resolved when
    * loadCalledFeature() is called.
    */
@@ -983,10 +993,15 @@ public class Call extends AbstractCall
     if (_name != null)  // NYI: CLEANUP: _name is null for call to anonymous inner feature. Should better be the name of the called feature
       {
         var n = expectedType.arity() + (_wasImplicitImmediateCall ? _originalArgCount : _actuals.size());
-        var targetFeature = targetFeature(res, outer);
         var newName = newNameForPartial(expectedType);
         var name = newName != null ? newName : _name;
-        var fos = res._module.lookup(targetFeature, name, this, _target == null, false);
+
+        // if loadCalledFeatureUnlessTargetVoid has found a suitable called
+        // feature in an outer feature, it will have replaced a null _target, so
+        // we check _originalTarget here to not check all outer features:
+        var traverseOuter = _originalTarget == null;
+        var targetFeature = traverseOuter ? outer : targetFeature(res, outer);
+        var fos = res._module.lookup(targetFeature, name, this, traverseOuter, false);
         var calledName = FeatureName.get(name, n);
         result = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> ff.typeArguments().isEmpty() && ff.valueArguments().size() == n);
       }
