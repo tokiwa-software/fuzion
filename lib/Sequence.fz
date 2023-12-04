@@ -421,23 +421,6 @@ public Sequence(public T type) ref is
 
 
 
-  # group the elements of this sequence by a key of type K
-  #
-  # f determines the key of an element
-  #
-  public group_by(K type : property.hashable, f T -> K) container.Map K (list T) is
-    # NYI It should be possible to choose the map implementation that is used.
-    res := (container.ctrie K (list T)).type.empty
-    for_each (x ->
-      key := f x
-      match res[key]
-        nil => res.add key [x].as_list
-        s list T => res.add key (s ++ [x].as_list)
-      )
-    res
-
-
-
   # chop this Sequence into chunks of `chunk_size`.
   # the last chunk may be smaller than `chunk_size`.
   #

@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature ctrie
+#  Source code of Fuzion standard library feature lock_free.map
 #
 #  Author: Michael Lill (michael.lill@tokiwa.software)
 #
@@ -132,8 +132,8 @@ private prev_node(CTK type : property.hashable, CTV type) : choice (failed_node 
 
   redef as_string =>
     match prev_node.this
-      f container.failed_node => f.as_string
-      m container.Main_Node => m.as_string
+      f lock_free.failed_node => f.as_string
+      m lock_free.Main_Node => m.as_string
       nil => nil.as_string
 
   is_nil =>
@@ -147,7 +147,7 @@ private prev_node(CTK type : property.hashable, CTV type) : choice (failed_node 
 #
 private Main_Node(CTK type : property.hashable, CTV type, data choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV), p prev_node CTK CTV) ref : property.equatable is
 
-  id := fuzion.sys.misc.unique_id
+  id := unique_id
 
   fixed type.equality(a, b Main_Node.this) bool is
     a.id = b.id
@@ -192,7 +192,7 @@ private indirection_node(CTK type : property.hashable, CTV type, data Main_Node 
 # an indirection node
 private Indirection_Node(CTK type : property.hashable, CTV type, data concur.atomic (Main_Node CTK CTV), gen u64) ref : property.equatable is
 
-  id := fuzion.sys.misc.unique_id
+  id := unique_id
 
   fixed type.equality(a, b Indirection_Node.this) bool is
     a.id = b.id
@@ -262,16 +262,16 @@ private root_node(CTK type : property.hashable, CTV type) : choice (Indirection_
 
   redef as_string =>
     s := match root_node.this
-      i container.Indirection_Node => i.as_string
-      r container.Rdcss_Descriptor => r.as_string
+      i lock_free.Indirection_Node => i.as_string
+      r lock_free.Rdcss_Descriptor => r.as_string
     "root_node($s)"
 
 
 # the ctrie
-private:public ctrie(public CTK type : property.hashable,
+private:public map(public CTK type : property.hashable,
                      public CTV type,
                      private root concur.atomic (root_node CTK CTV),
-                     private read_only bool) : Map CTK CTV
+                     private read_only bool) : container.Map CTK CTV
 is
 
   # the data structure as human readable string
@@ -528,7 +528,7 @@ is
     res := lookup r k 0 nil r.gen
     match res
       r restart =>
-        ctrie.this[k]
+        map.this[k]
       not_found =>
         nil
       v CTV =>
@@ -661,14 +661,14 @@ is
 
 
   # take a snapshot of the ctrie
-  public snapshot(read_only bool) ctrie CTK CTV is
+  public snapshot(read_only bool) map CTK CTV is
     root := read_root
     expmain := gcas_read root
-    new_gen := fuzion.sys.misc.unique_id
+    new_gen := unique_id
     descriptor := Rdcss_Descriptor root expmain (copy_to_gen root new_gen)
     if rdcss_root descriptor
       # new ctrie by changing generation of root
-      ctrie CTK CTV (concur.atomic (root_node CTK CTV) (copy_to_gen root new_gen)) read_only
+      map CTK CTV (concur.atomic (root_node CTK CTV) (copy_to_gen root new_gen)) read_only
     else
       snapshot read_only
 
@@ -683,25 +683,84 @@ is
   # initialize a new ctrie
   public type.empty =>
 
-    initial_gen := fuzion.sys.misc.unique_id
+    initial_gen := unique_id
 
-    initial_root_node container.root_node CTK CTV :=
-      container.indirection_node (container.Main_Node (container.container_node CTK CTV 0 [] initial_gen) nil) initial_gen
+    initial_root_node lock_free.root_node CTK CTV :=
+      lock_free.indirection_node (lock_free.Main_Node (lock_free.container_node CTK CTV 0 [] initial_gen) nil) initial_gen
 
-    container.ctrie CTK CTV (concur.atomic initial_root_node) false
+    lock_free.map CTK CTV (concur.atomic initial_root_node) false
 
 
-  # ctrie.type.from_entries -- routine to initialize a ctrie from a sequence of key value tuples
+  # lock_free.map.type.from_entries -- routine to initialize a ctrie from a sequence of key value tuples
   #
   # This feature creates an instance of a ctrie.
   #
-  # example: ctrie.type.from_entries [(key1, value1), (key2, value2)]
+  # example: lock_free.map.type.from_entries [(key1, value1), (key2, value2)]
   #
-  public type.from_entries(kvs Sequence (tuple CTK CTV)) container.ctrie CTK CTV is
+  public type.from_entries(kvs Sequence (tuple CTK CTV)) lock_free.map CTK CTV is
 
-    m := (container.ctrie CTK CTV).type.empty
+    m := (lock_free.map CTK CTV).type.empty
     kvs.for_each (kv ->
       (k,v) := kv
       m.add k v)
 
     m
+
+
+# set_of_hashable -- routine to initialize a set from a Sequence of hashable elements
+#
+# This feature creates an instance of a Set.
+#
+public container.set_of_hashable(K type : property.hashable, vs (lock_free.map K unit) | (Sequence K)) Set K is
+
+  private map lock_free.map K unit :=
+    match vs
+      vss (Sequence K) => (lock_free.map K unit).type.from_entries (vss.map_sequence (k -> tuple k unit))
+      vsc (lock_free.map K unit) => vsc
+
+  ref : Set K
+
+    # does this set contain the given value?
+    #
+    public contains (k K) bool is
+      map[k].exists
+
+
+    # list representation of values in this set
+    #
+    public redef as_list list K is
+      map.keys.as_list
+
+
+    # add new element k to this set.
+    #
+    public add (k K) Set K is
+      ss := map.snapshot false
+      ss.add k unit
+      set_of_hashable ss
+
+
+    # remove an element k from the set if it exists.
+    # return the same set if it does not exist.
+    #
+    public remove (k K) Set K is
+      ss := map.snapshot false
+      ss.remove k
+      set_of_hashable ss
+
+
+
+# group the elements of this sequence by a key of type K
+#
+# f determines the key of an element
+#
+public Sequence.group_by(K type : property.hashable, f T -> K) lock_free.map K (list T) is
+  # NYI It should be possible to choose the map implementation that is used.
+  res := (lock_free.map K (list T)).type.empty
+  for_each (x ->
+    key := f x
+    match res[key]
+      nil => res.add key [x].as_list
+      s list T => res.add key (s ++ [x].as_list)
+    )
+  res

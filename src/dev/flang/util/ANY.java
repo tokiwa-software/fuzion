@@ -220,6 +220,40 @@ public class ANY
   }
 
 
+  /**
+   * require is a static method for pre-conditions as in Eiffel
+   *
+   * @param cond1 the condition that must hold
+   *
+   * @param cond2 the condition that must hold
+   *
+   * @param cond3 the condition that must hold
+   *
+   * @param cond4 the condition that must hold
+   *
+   * @param cond5 the condition that must hold
+   *
+   * @param cond6 the condition that must hold
+   *
+   * @param cond7 the condition that must hold
+   *
+   * @param cond8 the condition that must hold
+   *
+   * @throws Error in case any argument is false
+   */
+  public static void require(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5, boolean cond6, boolean cond7, boolean cond8)
+  {
+    if (!cond1) throw new Error("require-condition1 failed: " + origin());
+    if (!cond2) throw new Error("require-condition2 failed: " + origin());
+    if (!cond3) throw new Error("require-condition3 failed: " + origin());
+    if (!cond4) throw new Error("require-condition4 failed: " + origin());
+    if (!cond5) throw new Error("require-condition5 failed: " + origin());
+    if (!cond6) throw new Error("require-condition6 failed: " + origin());
+    if (!cond7) throw new Error("require-condition7 failed: " + origin());
+    if (!cond8) throw new Error("require-condition8 failed: " + origin());
+  }
+
+
   /* ----------------------------------------------------------------------------- */
 
 
