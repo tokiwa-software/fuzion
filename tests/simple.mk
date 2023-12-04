@@ -53,6 +53,9 @@ c:
 	$(ENV) ../check_simple_example_c.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
 record:
+	$(ENV) ../record_simple_example.sh "$(FUZION_RUN)" $(FILE)
+
+record_int:
 	$(ENV) ../record_simple_example_int.sh "$(FUZION_RUN)" $(FILE)
 
 record_jvm:

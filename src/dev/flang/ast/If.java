@@ -218,8 +218,6 @@ public class If extends ExprWithPos
   /**
    * check the types in this if, in particular, check that the condition is of
    * type bool.
-   *
-   * @param outer the root feature that contains this expression.
    */
   public void checkTypes()
   {

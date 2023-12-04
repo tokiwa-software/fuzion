@@ -29,7 +29,8 @@
 #
 public option(public T type)
   : choice T nil,
-    monad T (option T)
+    monad T (option T),
+    Sequence T
 is
 
   # Does this option contain a value of type T?
@@ -115,6 +116,15 @@ is
   =>
     option.this ? v T => v
                 | nil => default
+
+
+  # converts option into a list of either a single element in case
+  # option.this.exists or `nil`otherwise
+  #
+  public redef as_list list T
+  =>
+    option.this ? v T => v : nil
+                | nil => nil
 
 
   # return function

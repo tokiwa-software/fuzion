@@ -938,11 +938,21 @@ public class C extends ANY
             ol.add(CStmnt.decl(tt0, tvar, tvalue));
             tvalue = tvar;
           }
+
+        // see: #1835 why we need this. Without this the calls result
+        // is correctly detected to escape, heap cloned but then dereferenced
+        // and put onto the stack which defeats the purpose of the heap clone.
+        var callsResultEscapes = isCall
+          && _fuir.hasData(rt)
+          && ccs.length > 2
+          && _fuir.doesResultEscape(cl, c, i)
+          && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc0));
+
         if (isCall && _fuir.hasData(rt) && ccs.length > 2)
           {
             var resvar = _names.newTemp();
             res = resvar;
-            ol.add(CStmnt.decl(_types.clazzField(cc0), resvar));
+            ol.add(CStmnt.decl(_types.clazzField(cc0) + (callsResultEscapes ? "*" : ""), resvar));
           }
         var cazes = new List<CStmnt>();
         CStmnt acc = CStmnt.EMPTY;
@@ -974,7 +984,7 @@ public class C extends ANY
                       }
                     acc = CStmnt.seq(CStmnt.lineComment("Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":"),
                                      acc,
-                                     assign(res, rv, rt));
+                                     assign(res, callsResultEscapes ? rv.adrOf() : rv, rt));
                   }
               }
             else
@@ -994,11 +1004,11 @@ public class C extends ANY
                                                   CExpr.string(_fuir.clazzAsString(cl ))));
           }
         ol.add(acc);
-        res = isCall ?
-          (_fuir.clazzIsVoidType(rt) ? null :
-           _fuir.hasData(rt) && _fuir.clazzFieldIsAdrOfValue(cc0) ? res.deref() // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
-                                                                   : res)
-           :  res;
+        res = _fuir.clazzIsVoidType(rt)
+          ? null
+          : callsResultEscapes || isCall && _fuir.hasData(rt) && _fuir.clazzFieldIsAdrOfValue(cc0)  // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
+            ? res.deref()
+            : res;
       }
 
     return new Pair<>(res, CStmnt.seq(ol));
@@ -1024,7 +1034,7 @@ public class C extends ANY
   /**
    * produce CExpr for given special clazz sc and byte buffer bbLE.
    *
-   * @param sc the spezial clazz we we are generating the CExpr for.
+   * @param sc the special clazz we we are generating the CExpr for.
    *
    * @param bbLE byte buffer (little endian)
    *
@@ -1171,7 +1181,7 @@ public class C extends ANY
    * @param onHeap should the string be allocated on the heap?
    *
    * Example code:
-   * `(fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__rray_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}`
+   * `(fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__array_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}`
    */
   CExpr constString(byte[] bytes, boolean onHeap)
   {
@@ -1189,7 +1199,7 @@ public class C extends ANY
    * @param onHeap should the string be allocated on the heap?
    *
    * Example code:
-   * `(fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__rray_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}`
+   * `(fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__array_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}`
    */
   CExpr constString(CExpr str, CExpr len, boolean onHeap)
   {

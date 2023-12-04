@@ -104,12 +104,12 @@ test_equals_types is
 
   # define a color choice type:
   #
-  public color : choice of red, blue.
+  color : choice of red, blue.
 
   # Has_color provides an equality relation for instances that provide
   # a 'col' feature
   #
-  public Has_color ref : property.equatable is
+  Has_color ref : property.equatable is
 
     # the color of this instance
     #
@@ -117,7 +117,7 @@ test_equals_types is
 
     # equality relation comparing the value produced by 'col'
     #
-    public fixed type.equality(a, b test_equals_types.Has_color) =>
+    fixed type.equality(a, b test_equals_types.Has_color) =>
 
       # NYI: There is currently no easy way to compare choice types, so we do exhaustive
       # matches:
@@ -136,7 +136,7 @@ test_equals_types is
 
   # a colored_text is a string with an associated color:
   #
-  public colored_text(
+  colored_text(
 
     # the color
     col color,
@@ -148,6 +148,6 @@ test_equals_types is
 
     # equality relation comparing color and strings
     #
-    public fixed type.equality(a, b test_equals_types.colored_text) =>
+    fixed type.equality(a, b test_equals_types.colored_text) =>
       (test_equals_types.eq_color a b &&
        String.type.equality       a b   )

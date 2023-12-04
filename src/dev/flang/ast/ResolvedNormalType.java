@@ -282,6 +282,9 @@ public class ResolvedNormalType extends ResolvedType
     this._unresolvedGenerics = original._unresolvedGenerics;
     this._outer             = original._outer;
     this._feature           = original._feature;
+
+    if (POSTCONDITIONS) ensure
+      (featureOfType().generics().sizeMatches(generics()));
   }
 
   /**

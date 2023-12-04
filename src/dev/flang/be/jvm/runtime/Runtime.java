@@ -26,8 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm.runtime;
 
-import dev.flang.be.interpreter.OpenResources; // NYI: remove dependency!
-
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 
@@ -739,8 +737,6 @@ public class Runtime extends ANY
       {
         var t = new FuzionThread(r, code);
         result = _startedThreads_.add(t);
-        // result = t.getId();
-        // result = t.threadId(); // NYI: use for Java >=19
       }
     return result;
   }

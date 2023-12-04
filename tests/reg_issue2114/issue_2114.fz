@@ -1,0 +1,2 @@
+a => type_of [a.this]
+_ := a
