@@ -114,6 +114,15 @@ public class Feature extends AbstractFeature
 
 
   /**
+   * Is visiblity explicitly specified in source code (or already set)?
+   */
+  public boolean isVisibilitySpecified()
+  {
+    return _visibility != Visi.UNSPECIFIED;
+  }
+
+
+  /**
    * This is used for feature defined using `choice of`
    * to set same visibility for choice elements as for choice in Parser.
    *
@@ -122,7 +131,7 @@ public class Feature extends AbstractFeature
   public void setVisbility(Visi v)
   {
     if (PRECONDITIONS) require
-      (state() == State.LOADING);
+      (_visibility == Visi.UNSPECIFIED);
 
     _visibility = v;
   }
@@ -751,7 +760,8 @@ public class Feature extends AbstractFeature
   public AbstractFeature outer()
   {
     if (PRECONDITIONS) require
-      (Errors.any() || isUniverse() || state().atLeast(State.FINDING_DECLARATIONS));
+      (Errors.any() || isUniverse() || state().atLeast(State.FINDING_DECLARATIONS),
+      !isFreeType() || _outer.arguments().contains(this));
 
     return _outer;
   }
@@ -1717,7 +1727,7 @@ public class Feature extends AbstractFeature
             // phase
             public boolean visitActualsLate() { return true; }
             public void  action(AbstractAssign a, AbstractFeature outer) { a.wrapValueInLazy  (res, outer); }
-            public Call  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, outer); return c; }
+            public Expr  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, outer); return c; }
           });
 
         if (isConstructor())
@@ -1799,11 +1809,16 @@ public class Feature extends AbstractFeature
         (_state == State.CHECKING_TYPES2)    )
       {
         visit(new FeatureVisitor() {
+
+            /* if an error is reported in a call it might no longer make sense to check the actuals: */
+            public boolean visitActualsLate() { return true; }
+
             public void         action(AbstractAssign a, AbstractFeature outer) { a.checkTypes(res);             }
             public Call         action(Call           c, AbstractFeature outer) { c.checkTypes(outer); return c; }
             public void         action(If             i, AbstractFeature outer) { i.checkTypes();                }
             public Expr         action(InlineArray    i, AbstractFeature outer) { i.checkTypes();      return i; }
             public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints();   }
+            public void         action(Cond           c, AbstractFeature outer) { c.checkTypes();                }
           });
         checkTypes(res);
 
@@ -2504,7 +2519,7 @@ public class Feature extends AbstractFeature
   public void addOuterRef(Resolution res)
   {
     if (PRECONDITIONS) require
-      (_state == State.FINDING_DECLARATIONS);
+      (_state.atLeast(State.FINDING_DECLARATIONS));
 
     if (hasOuterRef())
       {
@@ -2516,6 +2531,8 @@ public class Feature extends AbstractFeature
                                 outerRefType,
                                 outerRefName(),
                                 this);
+
+        whenResolvedTypes(()->_outerRef.scheduleForResolution(res));
       }
   }
 
@@ -2541,6 +2558,16 @@ public class Feature extends AbstractFeature
 
 
   /**
+   * Check if this is an outer ref field.
+   */
+  public boolean isOuterRef()
+  {
+    var o = outer();
+    return o != null && (o instanceof Feature of ? of._outerRef : o.outerRef()) == this;
+  }
+
+
+  /**
    * Compare this to other for sorting Feature
    */
   public int compareTo(AbstractFeature other)
@@ -2548,6 +2575,15 @@ public class Feature extends AbstractFeature
     return (other instanceof Feature of)
       ? _id - of._id
       : +1;
+  }
+
+
+  /**
+   * Is this the `call` implementation of a lambda?
+   */
+  public boolean isLambdaCall()
+  {
+    return false;
   }
 
 

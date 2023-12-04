@@ -98,7 +98,7 @@ public f64(public val f64) : float is
 
 
   # is the sign bit set?
-  module is_sign_bit_set bool is
+  public is_sign_bit_set bool is
     cast_to_u64 >= 1P63
 
 

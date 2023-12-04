@@ -767,6 +767,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   private List<AbstractCall> typeFeatureInherits(Resolution res)
   {
+    if (PRECONDITIONS) require
+      (state().atLeast(State.RESOLVED_INHERITANCE));
+
     var inh = new List<AbstractCall>();
     for (var pc: inherits())
       {
@@ -927,7 +930,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       (result != null,
        Errors.any() || result.isRef() == isThisRef(),
        // does not hold if feature is declared repeatedly
-       Errors.any() || result.featureOfType() == this);
+       Errors.any() || result.featureOfType() == this,
+       result.featureOfType().generics().sizeMatches(result.generics()));
 
     return result;
   }
@@ -1205,33 +1209,51 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
         if (inh != null)
           {
-            for (AbstractCall c : heir.findInheritanceChain(outer()))
+            a = AbstractFeature.handDownInheritance(res, inh, a, heir);
+          }
+      }
+    return a;
+  }
+
+
+  /**
+   * Helper for handDown() to hand down an array of types along a given inheritance chain.
+   *
+   * @param res the resolution instance
+   *
+   * @param inh the inheritance chain from the parent down to the child
+   *
+   * @param a the original array of types that is to be handed down
+   *
+   * @param heir the feature that inherits the types
+   *
+   * @return a new array of types as they are visible in heir. The length might
+   * be different due to open type parameters being replaced by a list of types.
+   */
+  static AbstractType[] handDownInheritance(Resolution res, List<AbstractCall> inh, AbstractType[] a, AbstractFeature heir)
+  {
+    for (AbstractCall c : inh)
+      {
+        for (int i = 0; i < a.length; i++)
+          {
+            var ti = a[i];
+            if (ti.isOpenGeneric())
               {
-                for (int i = 0; i < a.length; i++)
+                var frmlTs = ti.genericArgument().replaceOpen(c.actualTypeParameters());
+                a = Arrays.copyOf(a, a.length - 1 + frmlTs.size());
+                for (var tg : frmlTs)
                   {
-                    var ti = a[i];
-                    if (ti.isOpenGeneric())
-                      {
-                        var frmlTs = ti.genericArgument().replaceOpen(c.actualTypeParameters());
-                        a = Arrays.copyOf(a, a.length - 1 + frmlTs.size());
-                        for (var tg : frmlTs)
-                          {
-                            a[i] = tg;
-                            i++;
-                          }
-                        i = i - 1;
-                      }
-                    else
-                      {
-                        var actualTypes = c.actualTypeParameters();
-                        if (res != null)
-                          {
-                            actualTypes = FormalGenerics.resolve(res, actualTypes, heir);
-                          }
-                        ti = ti.applyTypePars(c.calledFeature(), actualTypes);
-                        a[i] = ti;
-                      }
+                    a[i] = tg;
+                    i++;
                   }
+                i = i - 1;
+              }
+            else
+              {
+                var actualTypes = c.actualTypeParameters();
+                actualTypes = FormalGenerics.resolve(res, actualTypes, heir);
+                ti = ti.applyTypePars(c.calledFeature(), actualTypes);
+                a[i] = ti;
               }
           }
       }
@@ -1256,7 +1278,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (!t.isOpenGeneric(),
        heir != null,
-       res.state(heir).atLeast(State.CHECKING_TYPES1));
+       res == null || res.state(heir).atLeast(State.CHECKING_TYPES1));
 
     var a = handDown(res, new AbstractType[] { t }, heir);
 
@@ -1268,7 +1290,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Find the chain of inheritance calls from this to its parent f.
+   * Find the chain of inheritance calls from this to its parent ancestor.
    *
    * NYI: Repeated inheritance handling is still missing, there might be several
    * different inheritance chains, need to check if they lead to the same result

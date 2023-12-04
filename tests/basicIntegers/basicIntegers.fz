@@ -77,9 +77,7 @@ basicIntegers =>
     i4 i8 := -1
     i5 i8 := -127
     i6 i8 := -128
-    i8a i8 := - -1
-    i8b i8 := - - 1
-    say "$i1 $i2 $i4 $i5 $i6 $i8a $i8b"
+    say "$i1 $i2 $i4 $i5 $i6"
 
     i9a i8 := 0.123E3
     i9b i8 := 0.120E2
@@ -100,9 +98,7 @@ basicIntegers =>
     u3 u8 := 128
     u4 u8 := 255
     u6 u8 := -0
-    u8a u8 := - -1
-    u8b u8 := - - 1
-    say "$u1 $u2 $u3 $u4 $u6 $u8a $u8b"
+    say "$u1 $u2 $u3 $u4 $u6"
 
     s1 i16 := 0
     s2 i16 := 127
@@ -111,17 +107,14 @@ basicIntegers =>
     s6 i16 := 0b111111111111111
     s8 i16 := -0
     s9 i16 := -32768
-    s9a i16 := -(32768)
-    s9c i16 := -(-(-32768))
-    say "$s1 $s2 $s3 $s4 $s6 $s8 $s9 $s9a $s9c"
+    say "$s1 $s2 $s3 $s4 $s6 $s8 $s9"
 
     c1 u16 := 0
     c2 u16 := 65535
     c4 u16 := 0xffff
     c6 u16 := 0b1111111111111111
     c8 u16 := -0
-    c10 u16 := - - 1
-    say "$c1 $c2 $c4 $c6 $c8 $c10"
+    say "$c1 $c2 $c4 $c6 $c8"
 
     l1 i64 := 9223372036854775807
     l2 i64 :=  9.22E18
@@ -131,10 +124,8 @@ basicIntegers =>
     ul1 u64 := 9223372036854775807
     ul2 u64 := 9223372036854775808
     ul3 u64 := 18446744073709551615
-    ul5 u64 := - 0
-    ul7 u64 := - -1
     ul8 u64 := 1.844E19
-    say "$ul1 $ul2 $ul3 $ul5 $ul7 $ul8"
+    say "$ul1 $ul2 $ul3 $ul8"
 
   assignConstants
 
@@ -144,9 +135,7 @@ basicIntegers =>
     i4 := i8 -1
     i5 := i8 -127
     i6 := i8 -128
-    i8a := i8 (- -1)
-    i8b := i8 (- - 1)
-    say "$i1 $i2 $i4 $i5 $i6 $i8a $i8b"
+    say "$i1 $i2 $i4 $i5 $i6"
 
     i9a := i8 0.123E3
     i9b := i8 0.120E2
@@ -167,9 +156,7 @@ basicIntegers =>
     u3 := u8 128
     u4 := u8 255
     u6 := u8 -0
-    u8a := u8 (- -1)
-    u8b := u8 (- - 1)
-    say "$u1 $u2 $u3 $u4 $u6 $u8a $u8b"
+    say "$u1 $u2 $u3 $u4 $u6"
 
     s1 := i16 0
     s2 := i16 127
@@ -178,17 +165,14 @@ basicIntegers =>
     s6 := i16 0b111111111111111
     s8 := i16 -0
     s9 := i16 -32768
-    s9a := i16 -(32768)
-    s9c := i16 -(-(-32768))
-    say "$s1 $s2 $s3 $s4 $s6 $s8 $s9 $s9a $s9c"
+    say "$s1 $s2 $s3 $s4 $s6 $s8 $s9"
 
     c1 := u16 0
     c2 := u16 65535
     c4 := u16 0xffff
     c6 := u16 0b1111111111111111
     c8 := u16 -0
-    c10 := u16 (- - 1)
-    say "$c1 $c2 $c4 $c6 $c8 $c10"
+    say "$c1 $c2 $c4 $c6 $c8"
 
     l1 := i64 9223372036854775807
     l2 := i64 9.22E18
@@ -198,9 +182,7 @@ basicIntegers =>
     ul1 := u64 9223372036854775807
     ul2 := u64 9223372036854775808
     ul3 := u64 18446744073709551615
-    ul5 := u64 (- 0)
-    ul7 := u64 (- -1)
     ul8 := u64 1.844E19
-    say "$ul1 $ul2 $ul3 $ul5 $ul7 $ul8"
+    say "$ul1 $ul2 $ul3 $ul8"
 
   assignConstantsToConstructor

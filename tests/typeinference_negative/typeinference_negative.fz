@@ -156,7 +156,7 @@ typeinference_negative is
     z => x
 
   result3 is
-    x => z; y => x;  z => y; // 36. r3.z should flag an error, cyclic result type inference
+    x => {z}; y => {x}; z => {y} // 36. r3.z should flag an error, cyclic result type inference
 
   result4 is
     x => x // this is fine, inferring result type from itself results in result type being void!
@@ -204,7 +204,7 @@ typeinference_negative is
     z := h
 
   mix8 is
-    x := h; f => x; g => f; h => y; y := g // 45. m8.y should flag an error, cyclic type inference between field and feature result type
+    x := h; f => {x}; g => {f}; h => {y}; y := g // 45. m8.y should flag an error, cyclic type inference between field and feature result type
     z := h
 
   typeInferencingFromIf1(b bool) =>

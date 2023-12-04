@@ -1,0 +1,112 @@
+
+--CURDIR--/partial_application_negative.fz:49:20: error 1: Could not find called feature
+  x4 := data.map 3.prefix*    // 4. should flag an error, do not change named prefix call to infix call
+-------------------^^^^^^^
+Feature not found: 'prefix *' (no arguments)
+Target feature: 'i32'
+In call: '3.prefix*'
+
+
+--CURDIR--/partial_application_negative.fz:50:20: error 2: Could not find called feature
+  x5 := data.map 3.postfix*   // 5. should flag an error, do not change named postfix call to infix call
+-------------------^^^^^^^^
+Feature not found: 'postfix *' (no arguments)
+Target feature: 'i32'
+In call: '3.postfix*'
+
+
+--CURDIR--/partial_application_negative.fz:42:47: error 3: Could not find called feature
+  test "data.map 3.prefix*   " (data.map    3.prefix*) "[3,6,9,12,15,18,21,24,27,30]"    // 1. should flag an error, do not change named prefix call to infix call
+----------------------------------------------^^^^^^^
+Feature not found: 'prefix *' (one argument)
+Target feature: 'i32'
+In call: '3.prefix*'
+
+
+--CURDIR--/partial_application_negative.fz:43:38: error 4: Failed to infer actual type parameters
+  test "data.map 3.prefix-   " (data.map    3.prefix-) "[3,6,9,12,15,18,21,24,27,30]"    // 2. should flag an error, do not change named prefix call to infix call
+-------------------------------------^^^
+In call to 'has_interval.infix ...map', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'B'
+Type inference failed for one type parameter 'B'
+
+
+--CURDIR--/partial_application_negative.fz:44:47: error 5: Could not find called feature
+  test "data.map 3.postfix*  " (data.map    3.postfix*) "[3,6,9,12,15,18,21,24,27,30]"  // 3. should flag an error, do not change named prefix call to infix call
+----------------------------------------------^^^^^^^^
+Feature not found: 'postfix *' (one argument)
+Target feature: 'i32'
+In call: '3.postfix*'
+
+
+--CURDIR--/partial_application_negative.fz:77:38: error 6: Could not find called feature
+  test "data.map  .as_string " (data.map  .as_string ) "[1,2,3,4,5,6,7,8,9,10]"  // 11. should flag an error: dot-call partials require parentheses
+-------------------------------------^^^
+Feature not found: 'map' (no arguments)
+Target feature: 'has_interval.infix ..'
+In call: 'map'
+To solve this, you might change the actual number of arguments to match the feature 'map' (2 arguments) at $FUZION/lib/has_interval.fz:122:12:
+    public map(B type, f Unary B has_interval.this)  => map_sequence f
+-----------^
+
+
+--CURDIR--/partial_application_negative.fz:60:8: error 7: Ambiguity between direct and partially applied call target
+  test ambig             // 6. should flag an error: Ambiguous call to `ambig (0 arguments)` or `ambig (1 arguments)`
+-------^^^^^
+This call can be resolved in two ways, either as a direct call to 'partial_application_negative.ambig' declared at --CURDIR--/partial_application_negative.fz:53:3:
+  ambig        Unary String i32 => x->"#$x#"
+--^^^^^
+or by partially applying arguments to a call to 'partial_application_negative.ambig' declared at --CURDIR--/partial_application_negative.fz:54:3:
+  ambig(x i32) Unary String i32 => say "V1"; y->"#$y x:$x#"
+--^^^^^.
+To solve this, rename one of the ambiguous features.
+
+
+--CURDIR--/partial_application_negative.fz:61:9: error 8: Ambiguity between direct and partially applied call target
+  test (ambig 42   )     // 7. should flag an error: Ambiguous call to `ambig (1 arguments)` or `ambig (2 arguments)`
+--------^^^^^
+This call can be resolved in two ways, either as a direct call to 'partial_application_negative.ambig' declared at --CURDIR--/partial_application_negative.fz:54:3:
+  ambig(x i32) Unary String i32 => say "V1"; y->"#$y x:$x#"
+--^^^^^
+or by partially applying arguments to a call to 'partial_application_negative.ambig' declared at --CURDIR--/partial_application_negative.fz:55:3:
+  ambig(x,y i32)     String     => "$x $y"
+--^^^^^.
+To solve this, rename one of the ambiguous features.
+
+
+--CURDIR--/partial_application_negative.fz:62:9: error 9: Ambiguity between direct and partially applied call target
+  test (ambig 47 11)     // 8. should flag an error: Ambiguous call to `ambig (2 arguments)` or `ambig (3 arguments)`
+--------^^^^^
+This call can be resolved in two ways, either as a direct call to 'partial_application_negative.ambig' declared at --CURDIR--/partial_application_negative.fz:55:3:
+  ambig(x,y i32)     String     => "$x $y"
+--^^^^^
+or by partially applying arguments to a call to 'partial_application_negative.ambig' declared at --CURDIR--/partial_application_negative.fz:56:3:
+  ambig(x,y,z i32)   String     => "$x $y $z"
+--^^^^^.
+To solve this, rename one of the ambiguous features.
+
+
+--CURDIR--/partial_application_negative.fz:72:21: error 10: Ambiguity between direct and partially applied call target
+  a2 i32->String := ambig2 4711     // 9. should flag an error: ambiguous call to implicit ambig2.call (1 argument) or partially applied ambig2 (2 arguments)
+--------------------^^^^^^
+This call can be resolved in two ways, either as a direct call to 'partial_application_negative.ambig2' declared at --CURDIR--/partial_application_negative.fz:66:3:
+  ambig2 Unary String i32 => x->"#$x#"
+--^^^^^^
+or by partially applying arguments to a call to 'partial_application_negative.ambig2' declared at --CURDIR--/partial_application_negative.fz:67:3:
+  ambig2(x, y i32) String => "$x $y"
+--^^^^^^.
+To solve this, rename one of the ambiguous features.
+
+
+--CURDIR--/partial_application_negative.fz:74:21: error 11: Ambiguity between direct and partially applied call target
+  test2            (ambig2 4711)    // 10. should flag an error: ambiguous call to implicit `ambig2.call (1 argument)` or partially applied `ambig2 (2 arguments)`
+--------------------^^^^^^
+This call can be resolved in two ways, either as a direct call to 'partial_application_negative.ambig2' declared at --CURDIR--/partial_application_negative.fz:66:3:
+  ambig2 Unary String i32 => x->"#$x#"
+--^^^^^^
+or by partially applying arguments to a call to 'partial_application_negative.ambig2' declared at --CURDIR--/partial_application_negative.fz:67:3:
+  ambig2(x, y i32) String => "$x $y"
+--^^^^^^.
+To solve this, rename one of the ambiguous features.
+
+11 errors.

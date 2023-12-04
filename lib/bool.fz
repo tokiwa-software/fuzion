@@ -97,6 +97,30 @@ public bool : choice FALSE TRUE, property.equatable is
   public redef as_string => if bool.this "true" else "false"
 
 
+  # monoid of bool with infix & operation.  Will be true iff all elements are
+  # true.
+  #
+  type.all : Monoid bool is
+    public redef infix ∙ (a, b bool) => a & b
+    public redef e => true
+
+
+  # monoid of bool with infix | operation.  Will be false iff all elements are
+  # false.
+  #
+  type.any : Monoid bool is
+    public redef infix ∙ (a, b bool) => a | b
+    public redef e => false
+
+
+  # monoid of bool with infix ^ operation.  Will be true iff an odd number of
+  # elements is true. This gives the even parity.
+  #
+  type.parity : Monoid bool is
+    public redef infix ∙ (a, b bool) => a ^ b
+    public redef e => false
+
+
 # boolean value "false"
 #
 # Note that this value is of unit type >>FALSE<<, not of type >>bool<<, i.e.,

@@ -1,0 +1,102 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test issue_2214
+#
+# -----------------------------------------------------------------------
+
+# the example from issue #2214 and variants
+#
+# The problem in all these examples is that a feature (a.m, map_broken)
+#
+
+
+
+# the original code from issue #2214, only added is some output and a `call` to
+# avoid missing implementation error:
+#
+scenario1 =>
+
+  u : Unary unit i32 is
+    call(i i32) =>
+  _ := (a i32).m u
+
+  a(T type) is
+    m(B type, f T->B) : a B is
+      say "T is $T"
+      say "B is $B"
+
+scenario1
+
+# This is the original Stream.map implementation that as used in the primes example.
+#
+scenario2 =>
+
+  stream.issue_2214_stream_map_broken(B type, f T -> B) : stream B is
+    has_next => stream.this.has_next
+    next B is f stream.this.next
+
+  primes is
+
+    primes6(n u64) =>   # pure sieve using persistent bitset
+      sieve (i u64, a bitset) String is
+        s  := if (a.has i) "" else "$i ";
+        ap := if (a.has i) a  else a ∪ (((i..n):i)
+                                          .as_stream
+                                          .issue_2214_stream_map_broken (x -> e bitset := nil; e.put x)
+                                          .fold bitset.type.union)
+        s + (if (i < n) sieve i+1 ap else "")
+      sieve 2 nil
+
+    say "Primes using bitset"; say "{primes6 100}"  # NYI: only 100 since this is currently very inefficent
+
+  _ := primes
+
+scenario2
+
+/*
+# NYI: A variant of screnario2 using Sequence.
+#
+#
+scenario3 =>
+
+  Sequence.issue_2214_seq_map_broken(B type, f T -> B) : Sequence B is
+    redef as_list list B =>
+      r list B := match Sequence.this.as_list
+        _ nil => panic "nil" # nil #res list B := nil; res
+        c Cons => panic "cons" # (f c.head) : (c.tail.issue_2214_seq_map_broken B x->(f.call x))
+      r
+
+  primes is
+
+    primes6(n u64) =>   # pure sieve using persistent bitset
+      sieve (i u64, a bitset) String is
+        s  := if (a.has i) "" else "$i ";
+        ap := if (a.has i) a  else a ∪ (((i..n):i)
+                                          .issue_2214_seq_map_broken (x -> e bitset := nil; e.put x)
+                                          .fold bitset.type.union)
+        s + (if (i < n) sieve i+1 ap else "")
+      sieve 2 nil
+
+    say "Primes using bitset"; say "{primes6 100}"  # NYI: only 100 since this is currently very inefficent
+
+  _ := primes
+
+scenario3
+*/

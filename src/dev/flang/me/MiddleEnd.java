@@ -141,7 +141,7 @@ public class MiddleEnd extends ANY
     var m = Clazz._module;
     markUsed(Types.resolved.f_fuzion_java_object                  , SourcePosition.builtIn);
     markUsed(Types.resolved.f_fuzion_java_object_ref              , SourcePosition.builtIn);
-    markUsed(universe.get(m, "Const_String")                      , SourcePosition.builtIn); // NYI this should be unecessary?
+    markUsed(universe.get(m, "Const_String")                      , SourcePosition.builtIn); // NYI this should be unnecessary?
     markUsed(universe.get(m, FuzionConstants.UNIT_NAME)           , SourcePosition.builtIn);
     markUsed(universe.get(m, "void")                              , SourcePosition.builtIn);
   }

@@ -301,6 +301,8 @@ public class Block extends AbstractBlock
   Expr box(AbstractType frmlT)
   {
     var r = removeResultExpression();
+    if (CHECKS) check
+      (r != null || Types.resolved.t_unit.compareTo(frmlT) == 0);
     if (r != null)
       {
         _expressions.add(r.box(frmlT));
@@ -381,6 +383,10 @@ public class Block extends AbstractBlock
     if (resExpr != null)
       {
         _expressions.add(resExpr.propagateExpectedType(res, outer, type));
+      }
+    else if (Types.resolved.t_unit.compareTo(type) != 0)
+      {
+        _expressions.add(new Call(pos(), "unit").resolveTypes(res, outer));
       }
     return this;
   }

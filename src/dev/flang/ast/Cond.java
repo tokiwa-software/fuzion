@@ -92,6 +92,18 @@ public class Cond
 
 
   /**
+   * check the type of the expression of this condition.
+   */
+  public void checkTypes()
+  {
+    if (Types.resolved.t_bool.compareTo(cond.type()) != 0)
+      {
+        AstErrors.contractExpressionMustResultInBool(cond);
+      }
+  }
+
+
+  /**
    * During type inference: Inform the condition that it is used in an
    * environment that expects a bool type.
    *
@@ -115,6 +127,7 @@ public class Cond
   {
     return cond.toString();
   }
+
 
 }
 

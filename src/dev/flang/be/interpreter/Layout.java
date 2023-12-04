@@ -33,6 +33,7 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Types;
 
 import dev.flang.air.Clazz;
+import dev.flang.air.Clazzes;
 
 import dev.flang.util.ANY;
 
@@ -147,7 +148,7 @@ class Layout extends ANY
             var ff = f.feature();
             // NYI: Ugly special handling, clean up:
             var fc =
-              ff.isOuterRef() && ff.outer().isOuterRefAdrOfValue()  ? f.actualClazz(Types.t_ADDRESS)
+              ff.isOuterRef() && ff.outer().isOuterRefAdrOfValue()  ? Clazzes.clazz(Types.t_ADDRESS)
                                                                     : f.resultClazz();
             int fsz;
             if        (fc.isRef()) { fsz = 1;

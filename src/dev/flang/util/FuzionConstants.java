@@ -123,6 +123,22 @@ public class FuzionConstants extends ANY
 
 
   /**
+   * Operator prefixes used in feature names for prefix/infix/postfix operators:
+   */
+  public static final String PREFIX_OPERATOR_PREFIX = "prefix ";
+  public static final String INFIX_OPERATOR_PREFIX = "infix ";
+  public static final String POSTFIX_OPERATOR_PREFIX = "postfix ";
+
+
+  /**
+   * An operator that should match both, prefix and postfix operators. This is
+   * used for partial application where `-` applied used as a unary function may
+   * result in `prefix -` or `postfix -`.
+   */
+  public static final String UNARY_OPERATOR_PREFIX = "unary ";
+
+
+  /**
    * Artificial name of implicitly declared result field in case the assignment
    * to result is implicitly from the last expression's value.
    */
@@ -220,6 +236,18 @@ public class FuzionConstants extends ANY
    *   (a,b) = f c
    */
   public static final String DESTRUCTURE_PREFIX = INTERNAL_NAME_PREFIX + "destructure";
+
+
+  /**
+   * Argument field in a partial function such as
+   *
+   *   m := s.map (f 42)
+   *
+   * that will be converted into
+   *
+   *   m := s.map (#partialFunctionArg123 -> f 42 #partialFunctionArg123)
+   */
+  public static final String PARTIAL_FUNCTION_ARGUMENT_PREFIX = INTERNAL_NAME_PREFIX + "partialFunctionArg";
 
 
   /**
