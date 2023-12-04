@@ -29,6 +29,7 @@ package dev.flang.ast;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -986,16 +987,117 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * isFunType checks if this is a function type, e.g., "fun (int x,y) String".
+   * Check if this is a choice and exactly one variant of the choice matches the
+   * given predicate. If so, return that variant.
    *
-   * @return true iff this is a fun type
+   * @param p a predicate over AbstracType
+   *
+   * @return the single choice type for which p holds, this if this is not a
+   * choice or the number of matches is not 1.
    */
-  public boolean isFunType()
+  AbstractType findInChoice(Predicate<AbstractType> p)
+  {
+    return choices()
+      .filter(p)
+      .collect(Collectors.reducing((a, b) -> null))  // get single element or null if multiple
+      .orElse(this);
+  }
+
+
+  /**
+   * isFunType checks if this is a function type used for lambda expressions,
+   * e.g., "(i32, i32) -> String".
+   *
+   * @return true iff this is a function type based on `Function` or `Unary`.
+   */
+  public boolean isFunctionType()
+  {
+    return
+      this != Types.t_ERROR &&
+      !isGenericArgument() &&
+      (featureOfType() == Types.resolved.f_function ||
+       featureOfType() == Types.resolved.f_Unary);
+  }
+
+
+  /**
+   * Check if this any function type, i.e., inherits directly or indirectly from
+   * `Function`.
+   *
+   * @return true if this is a type based on a feature that is or inherits from `Function`.
+   */
+  public boolean isAnyFunctionType()
   {
     return
       !isGenericArgument() &&
       (featureOfType() == Types.resolved.f_function ||
-       featureOfType() == Types.resolved.f_Unary);
+       featureOfType().inherits().stream().anyMatch(c -> c.calledFeature().selfType().isAnyFunctionType()));
+  }
+
+
+  /**
+   * If this is a choice type, extract function type that might be one of the
+   * choices.
+   *
+   * @return if this is a choice and there is exactly one choice for which
+   * isFuncitonType() holds, return that type, otherwise return this.
+   */
+  AbstractType functionTypeFromChoice()
+  {
+    return findInChoice(cg -> cg.isFunctionType());
+  }
+
+
+  /**
+   * For a function type (see isAnyFunctionType()), return the arity of the
+   * funcion.
+   *
+   * @return the number of arguments to be passed to this function type.
+   */
+  int arity()
+  {
+    if (PRECONDITIONS) require
+      (isAnyFunctionType());
+
+    var f = featureOfType();
+    if (f == Types.resolved.f_function)
+      {
+        return generics().size() - 1;
+      }
+    else
+      {
+        var result = arityFromParents(f);
+        if (result >= 0)
+          {
+            return result;
+          }
+        throw new Error("AbstractType.arity failed to find arity of " + this);
+      }
+  }
+
+
+  /**
+   * Recursive helper for `arity` to determine the arity by inspecting the
+   * parents of `f`.
+   *
+   * @param f a feature
+   *
+   * @return the arity in case f inherits from `Function`, -1 otherwise.
+   */
+  private int arityFromParents(AbstractFeature f)
+  {
+    for (var p : f.inherits())
+      {
+        var pf = p.calledFeature();
+        var result = pf.equals(Types.resolved.f_function)
+          ? p.actualTypeParameters().size() - 1
+          : arityFromParents(pf);
+        if (result >= 0)
+          {
+            return result;
+          }
+      }
+    return -1;
   }
 
 
@@ -1007,6 +1109,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public boolean isLazyType()
   {
     return
+      this != Types.t_ERROR &&
       !isGenericArgument() &&
       featureOfType() == Types.resolved.f_Lazy;
   }

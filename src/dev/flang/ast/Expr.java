@@ -302,6 +302,71 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
+   * Check that this Expr does not contain any inner declarations of
+   * features. Produce an error otherwise.
+   *
+   * An expression used as a lazy value or a partially applied call must not
+   * contain any innter declarations.  There is is no fundamental problem, it
+   * just requires that the front end would not add the feature declarations
+   * found in this expression to the outer feature eagerly, but onyl after
+   * processing of lazy values and partial application was done.
+   *
+   * @param what the reason why we are checking this, "a lazy value" or "a
+   * partially applied function call".
+   *
+   * @param outer the outer feature, currently unused.
+   *
+   * @return true iff no declarations were found and, consequently, no error was
+   * produced.
+   */
+  boolean mustNotContainDeclarations(String what, AbstractFeature outer)
+  {
+    var result = true;
+    var declarations = new List<Feature>();
+    visit(new FeatureVisitor()
+      {
+        public Expr action (Feature f, AbstractFeature outer)
+        {
+          declarations.add(f);
+          return f;
+        }
+      },
+      outer);
+
+    if (!declarations.isEmpty())
+      {
+        /*
+         * NYI: Instead of producing an error here, we could instead remove what
+         * was done during SourceModule.findDeclarations() performed in this
+         * expression, or, alternatively, create a new parse tree for this
+         * expression and use that instead.
+         *
+         * Examples that cause this problem are
+         *
+         *     l(t Lazy i32) is
+         *     _ := l ({
+         *               x is
+         *               y => 4711
+         *               c := 0815
+         *               c+y
+         *             })
+         *
+         * or using implicit declarations created for a loop:
+         *
+         *     l(t Lazy l) is
+         *       n => t
+         *
+         *     f l is l (do)
+         *     _ := f.n
+         */
+        AstErrors.declarationsInLazy(what, this, declarations);
+        result = false;
+      }
+    return result;
+  }
+
+
+  /**
    * After propagateExpectedType: if type inference up until now has figured
    * out that a Lazy feature is expected, but the current expression is not
    * a Lazy feature, then wrap this expression in a Lazy feature.
@@ -321,64 +386,19 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
     if (t.isLazyType() && !result.type().isLazyType())
       {
-        var declarationsInLazy = new List<Feature>();
-        visit(new FeatureVisitor()
-          {
-            public Expr action (Feature f, AbstractFeature outer)
-            {
-              declarationsInLazy.add(f);
-              return f;
-            }
-          },
-          outer);
-
-        if (!declarationsInLazy.isEmpty())
-          {
-            /*
-             * NYI: Instead of producing an error here, we could instead remove what
-             * was done during SourceModule.findDeclarations() performed in this
-             * expression, or, alternatively, create a new parse tree for this
-             * expression and use that instead.
-             *
-             * Examples that cause this problem are
-             *
-             *     l(t Lazy i32) is
-             *     _ := l ({
-             *               x is
-             *               y => 4711
-             *               c := 0815
-             *               c+y
-             *             })
-             *
-             * or using implicit declarations created for a loop:
-             *
-             *     l(t Lazy l) is
-             *       n => t
-             *
-             *     f l is l (do)
-             *     _ := f.n
-             */
-            AstErrors.declarationsInLazy(this, declarationsInLazy);
-            result = ERROR_VALUE;
-          }
-        else
+        if (mustNotContainDeclarations("a lazy value", outer))
           {
             var fn = new Function(pos(),
                                   new List<>(),
-                                  new List<>(),
-                                  Contract.EMPTY_CONTRACT,
                                   result);
 
             result = fn.propagateExpectedType(res, outer, t);
             fn.resolveTypes(res, outer);
-            visit(new FeatureVisitor()
-              {
-                public Expr action(Call c, AbstractFeature outer)
-                {
-                  return c.updateTarget(res, outer);
-                }
-              },
-              fn._feature);
+            fn.updateTarget(res);
+          }
+        else
+          {
+            result = ERROR_VALUE;
           }
       }
     return result;
@@ -403,6 +423,35 @@ public abstract class Expr extends ANY implements HasSourcePosition
    * will be replaced by the expression that reads the field.
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
+  {
+    return this;
+  }
+
+
+  /**
+   * Try to perform partial application such that this expression matches
+   * `expectedType`.  Note that this may happen twice:
+   *
+   * 1. during RESLVING_DECLARATIONS phase of outer when resolving arguments to
+   *    a call such as `l.map +1`. In this case, expectedType may be a function
+   *    type `Function R A` with generic arguments not yet replaced by actual
+   *    arguments, in particular the result type `R` is unknown since it is the
+   *    result type of this expression.
+   *
+   * 2. during TYPES_INFERENCING phase when the target variable's type is fully
+   *    resolved and this gets propagated to this expression.
+   *
+   * Note that this does not perform resolveTypes on the results since that
+   * would be too early during 1. but it is required in 2.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param outer the feature that contains this expression
+   *
+   * @param t the expected type.
+   */
+  Expr propagateExpectedTypeForPartial(Resolution res, AbstractFeature outer, AbstractType expectedType)
   {
     return this;
   }
