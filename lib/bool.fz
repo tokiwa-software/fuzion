@@ -96,9 +96,9 @@ public bool : choice FALSE TRUE, property.equatable is
 
   # create an option from a lazily evaluated value depending on this bool
   #
-  as_option(# value that will be evaluated and wrapped in an option
-            # iff bool.this holds.
-            v Lazy T) option T
+  public as_option(# value that will be evaluated and wrapped in an option
+                   # iff bool.this holds.
+                   v Lazy T) option T
   =>
     if bool.this then v else nil
 
@@ -110,7 +110,7 @@ public bool : choice FALSE TRUE, property.equatable is
   # monoid of bool with infix & operation.  Will be true iff all elements are
   # true.
   #
-  type.all : Monoid bool is
+  public type.all : Monoid bool is
     public redef infix ∙ (a, b bool) => a & b
     public redef e => true
 
@@ -118,7 +118,7 @@ public bool : choice FALSE TRUE, property.equatable is
   # monoid of bool with infix | operation.  Will be false iff all elements are
   # false.
   #
-  type.any : Monoid bool is
+  public type.any : Monoid bool is
     public redef infix ∙ (a, b bool) => a | b
     public redef e => false
 
@@ -126,7 +126,7 @@ public bool : choice FALSE TRUE, property.equatable is
   # monoid of bool with infix ^ operation.  Will be true iff an odd number of
   # elements is true. This gives the even parity.
   #
-  type.parity : Monoid bool is
+  public type.parity : Monoid bool is
     public redef infix ∙ (a, b bool) => a ^ b
     public redef e => false
 
