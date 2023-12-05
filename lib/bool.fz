@@ -93,6 +93,16 @@ public bool : choice FALSE TRUE, property.equatable is
   # ternary ? : -- NYI: This will be replaced by a more powerful match syntax
   public ternary ? : (T type, a, b T) => if bool.this a else b
 
+
+  # create an option from a lazily evaluated value depending on this bool
+  #
+  as_option(# value that will be evaluated and wrapped in an option
+            # iff bool.this holds.
+            v Lazy T) option T
+  =>
+    if bool.this then v else nil
+
+
   # human readable string
   public redef as_string => if bool.this "true" else "false"
 
