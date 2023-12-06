@@ -1412,7 +1412,7 @@ public class C extends ANY
         if (_fuir.hasData(at))
           {
             l.add(assign(CIdent.arg(ai), a.get(aii), at));
-                          aii = aii + 1;
+            aii = aii + 1;
           }
       }
     l.add(CStmnt.gowto("start"));

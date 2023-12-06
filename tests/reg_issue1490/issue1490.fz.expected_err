@@ -1,0 +1,10 @@
+
+--CURDIR--/issue1490.fz:24:13: error 1: Wrong number of type parameters
+a (T type : numeric T) is
+------------^^^^^^^
+Wrong number of actual type parameters in type:
+Type: numeric T
+expected no generic arguments
+found 1: 'a.T'.
+
+one error.
