@@ -271,7 +271,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # representations of its contents, separated by 'sep'.
   #
   public redef as_string (sep String) =>
-    "{(map String x->x.as_string).fold (String.type.concat sep)}"
+    String.type.join (map String x->x.as_string) sep
 
 
   # add an element sep in front of every element of this list.
