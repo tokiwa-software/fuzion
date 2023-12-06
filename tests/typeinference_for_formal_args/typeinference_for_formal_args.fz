@@ -1,0 +1,140 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test partial_application
+#
+# -----------------------------------------------------------------------
+
+# this test checks different scenarios for type inference for formal
+# arguments
+#
+typeinference_for_formal_args is
+
+  test(msg String, got Any, exp String) =>
+    if $got = exp
+      say "PASSED: $msg: got '$got'"
+    else
+      say "FAILED: $msg: got '$got' expected '$exp'"
+#      _ := set_exit_code 1
+
+
+  # hide the calls deep inside a lambda such that
+  # these will usually be resolved later:
+  #
+  scenario1 =>
+    p is
+      in_p => test "called p.in_p" "" ""; true
+    q is
+      in_q => test "called q.in_q" "" ""; true
+    r is
+      in_r => test "called r.in_r" "" ""; true
+
+    called_with_p(a) => a.in_p
+    called_with_q(a) => a.in_q
+    called_with_r(a) => a.in_r
+
+    _ := [1].filter x->(called_with_p p)
+    _ := [1].filter x->(called_with_q q)
+    _ := [1].filter x->(called_with_r r)
+
+  scenario1
+
+
+  # do a recursive ping/pong before providing the actual type
+  #
+  scenario2 =>
+
+    ping(x) =>
+      if (x > 0) pong x
+      true
+    pong(y) => ping y-1; false
+
+    test "ping poing" ([1,2,3].filter x->(ping 3)) "[1,2,3]"
+
+  scenario2
+
+
+  # access the type before a call is made:
+  #
+  scenario3 =>
+
+    f(fa option m2) =>
+      a := [1,2,3].map x->(m1 $x)
+      q => fa.get.y
+      t(p Sequence T) => test "scenario3: type of m2.y is " $T "Type of 'String'"
+      t ((1..0).map_sequence x->q)
+
+    m1(x) is
+      _ := inner
+      inner => m2 x
+
+    m2(y) is
+
+    f nil
+
+  scenario3
+
+
+  # access the type before a call is made:
+  #
+  # NYI: #2308. This currently results in 'm2.y' being type 'void', which is not correct.
+  # Maybe type inference for formal argument types should be forbidden in constructors.
+  #
+  scenario4 =>
+
+    f(fa option m2) =>
+      a := [1,2,3].map x->(m1 $x)
+      q => fa.get.y
+      t(p Sequence T) => test "scenario4: type of m2.y is " $T "Type of 'void'"
+      t ((1..0).map_sequence x->q)
+
+    m1(x) is
+      #  _ := inner     # -- this is commented out, so there is no call to `m2` at all...
+      inner => m2 x
+
+    m2(y) is
+
+    f nil
+
+  scenario4
+
+
+  # access the type before a call is made:
+  #
+  # NYI: #2308. This currently results in 'm2.y' being type 'void', which is not correct.
+  # Maybe type inference for formal argument types should be forbidden in constructors.
+  #
+  scenario5 =>
+
+    f(fa option m2) =>
+      q => fa.get.y
+      t(p Sequence T) =>
+        test "scenario4: type of m2.y is " $T "Type of 'void'"
+        a := [1,2,3].map x->(m1 $x)
+      t ((1..0).map_sequence x->q)
+
+    m1(x) is
+      _ := inner
+      inner => m2 x
+
+    m2(y) is
+
+    f nil
+
+  scenario5

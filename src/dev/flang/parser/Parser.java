@@ -975,7 +975,7 @@ argType     : type
                                     for (var s : n)
                                       {
                                         result.add(new Feature(s._pos, v, m, t, s._name, c,
-                                                               i == null ? new Impl(Impl.Kind.FieldActual)
+                                                               i == null ? new Impl(s._pos, null, Impl.Kind.FieldActual)
                                                                          : i));
                                       }
                                   }
