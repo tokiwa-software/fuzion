@@ -295,9 +295,6 @@ public class Resolution extends ANY
    */
   boolean requiresCall(Feature f)
   {
-    if (PRECONDITIONS) require
-      (f.state().atLeast(State.RESOLVED_INHERITANCE));
-
     return
       f.valueArguments().stream()
         .anyMatch(a -> a instanceof Feature af &&

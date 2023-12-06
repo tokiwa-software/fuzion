@@ -160,7 +160,6 @@ public class Impl extends ANY
    */
   public Impl(SourcePosition pos, Expr e, Kind kind)
   {
-    check (kind != Kind.FieldActual || pos != null);
     this._code = switch (kind)
       {
       case Routine, RoutineDef, Of -> e;
