@@ -438,7 +438,6 @@ public class Impl extends ANY
   }
 
 
-
   /**
    * Visitor used by typeFromInitialValues for Kind.FieldActual to detect that
    * an initial value has a circular dependency on the formal argument we are

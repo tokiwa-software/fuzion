@@ -31,7 +31,7 @@ typeinference_for_formal_args is
       say "PASSED: $msg: got '$got'"
     else
       say "FAILED: $msg: got '$got' expected '$exp'"
-#      _ := set_exit_code 1
+      _ := set_exit_code 1
 
 
   # hide the calls deep inside a lambda such that
