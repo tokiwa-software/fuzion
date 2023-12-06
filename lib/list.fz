@@ -457,6 +457,25 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
               | nil    => nil
 
 
+  # create a new list from the result of applying 'f' to the
+  # elements all combinations of elements of this list and
+  # all elements of 'b' iterating of 'b' repeatedly as follows
+  #
+  #   list.this[0]  , b[0]
+  #   list.this[0]  , b[1]
+  #   list.this[0]  , b[2]
+  #   list.this[0]  , ...
+  #   list.this[0]  , b.last
+  #   list.this[1]  , b[0]
+  #   list.this[1]  , b[1]
+  #   list.this[1]  , ...
+  #   ...           , ...
+  #   list.this.last, b.last
+  #
+  public combine_list(U, V type, b Sequence U, f (A,U)->V) =>
+    flat_map V x->(b.map_sequence y->(f x y))
+
+
   # create an empty list
   #
   public type.empty list A is

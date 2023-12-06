@@ -354,6 +354,44 @@ public Sequence(public T type) ref is
   public zip(U,V type, b Sequence U, f (T,U)->V) => as_list.zip0 b.as_list f
 
 
+  # create a new Sequence from the result of applying 'f' to the
+  # elements all combinations of elements of this Sequence and
+  # all elements of 'b' iterating of 'b' repeatedly as follows
+  #
+  #   Sequence.this[0]  , b[0]
+  #   Sequence.this[0]  , b[1]
+  #   Sequence.this[0]  , b[2]
+  #   Sequence.this[0]  , ...
+  #   Sequence.this[0]  , b.last
+  #   Sequence.this[1]  , b[0]
+  #   Sequence.this[1]  , b[1]
+  #   Sequence.this[1]  , ...
+  #   ...               , ...
+  #   Sequence.this.last, b.last
+  #
+  public combine(U, V type, b Sequence U, f (T,U)->V) Sequence V =>
+    flat_map_sequence V x->(b.map_sequence y->(f x y))
+
+
+  # create a new Sequence from tuples of all combinations of elements
+  # of this Sequence and all elements of 'b' iterating of 'b' repeatedly
+  # as follows
+  #
+  #   (Sequence.this[0]  , b[0]  )
+  #   (Sequence.this[0]  , b[1]  )
+  #   (Sequence.this[0]  , b[2]  )
+  #   (Sequence.this[0]  , ...   )
+  #   (Sequence.this[0]  , b.last)
+  #   (Sequence.this[1]  , b[0]  )
+  #   (Sequence.this[1]  , b[1]  )
+  #   (Sequence.this[1]  , ...   )
+  #   (...               , ...   )
+  #   (Sequence.this.last, b.last)
+  #
+  public pairs(U type, b Sequence U) Sequence ((T, U)) =>
+    combine b x,y->(x,y)
+
+
   # takes a transducer xf, a reducer f and an initial value
   # returns the result of applying the reducer xf f to the Sequence
   public transduce(TA,U type, xf transducer TA U T, rf (TA,U) -> TA, init TA) TA is
