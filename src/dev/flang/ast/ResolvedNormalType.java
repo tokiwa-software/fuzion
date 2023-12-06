@@ -30,7 +30,6 @@ import java.util.Set;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
-import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -214,7 +213,10 @@ public class ResolvedNormalType extends ResolvedType
   {
     if (PRECONDITIONS) require
       (true // disabled for now since generics may be empty when resolving a type in a match case, actual generics will be inferred later.
-       || Errors.any() || f == null || f.generics().sizeMatches(g == null ? UnresolvedType.NONE : g));
+       || Errors.any() || f == null || f.generics().sizeMatches(g == null ? UnresolvedType.NONE : g),
+       Types.resolved == null
+         || f.compareTo(Types.resolved.f_void) != 0
+         || refOrVal == RefOrVal.LikeUnderlyingFeature);
 
     this._generics = ((g == null) || g.isEmpty()) ? UnresolvedType.NONE : g;
     this._generics.freeze();
@@ -275,7 +277,11 @@ public class ResolvedNormalType extends ResolvedType
   private ResolvedNormalType(ResolvedNormalType original, RefOrVal refOrVal)
   {
     if (PRECONDITIONS) require
-      (refOrVal != original._refOrVal);
+      (refOrVal != original._refOrVal,
+       Types.resolved == null
+         || original.compareTo(Types.resolved.t_void) != 0
+         || refOrVal == RefOrVal.LikeUnderlyingFeature
+      );
 
     this._refOrVal          = refOrVal;
     this._generics          = original._generics;
@@ -414,7 +420,8 @@ public class ResolvedNormalType extends ResolvedType
   public AbstractType asRef()
   {
     if (PRECONDITIONS) require
-      (this == Types.intern(this));
+      (this == Types.intern(this),
+       compareTo(Types.resolved.t_void) != 0);
 
     AbstractType result = this;
     if (!isRef() && this != Types.t_ERROR)

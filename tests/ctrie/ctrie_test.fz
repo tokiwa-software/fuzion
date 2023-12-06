@@ -24,7 +24,7 @@
 # -----------------------------------------------------------------------
 
 ctrie_test is
-  ctrie := (container.ctrie i32 String).type.empty
+  ctrie := (lock_free.map i32 String).type.empty
 
   set_from(s Sequence i32) =>
     (container.ps_set i32).type.from_sequence s

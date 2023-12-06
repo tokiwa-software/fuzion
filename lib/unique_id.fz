@@ -17,14 +17,42 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature set_of
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion standard library feature unique_id
 #
 # -----------------------------------------------------------------------
 
-# set_of_ordered -- routine to initialize a set from a Sequence of ordered elements
+# unique_id -- effect that generates a unique id
 #
-# This feature creates an instance of a Set.
+public unique_id (p Unique_Id_Handler) : simple_effect
+is
+
+  public get => replace; p.get
+
+  type.install_default =>
+    (unique_id default_handler).default
+
+  # default handler using
+  # fuzion.sys.misc.unique_id to get unique id
+  #
+  type.default_handler : Unique_Id_Handler is
+    get => fuzion.sys.misc.unique_id
+
+
+public Unique_Id_Handler ref is
+  get u64 is abstract
+
+
+# get a unique id > 0
 #
-public set_of_ordered(K type : property.orderable, vs Sequence K) container.Set K is (container.ps_set K).type.from_sequence vs
+# this can be used to add a unique identifier to compare instances.
+#
+# sine there are 2^64-1 possible values, you can safely assume that these are
+# in fact unique.  Assuming one unique id is consumed every nanosecond, it
+# would take more than 500 years before we run out of values
+# (2^64/10^9/3600/24/365.25).
+#
+public unique_id =>
+  unique_id.type.install_default
+  unique_id.env.get
+
+

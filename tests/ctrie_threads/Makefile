@@ -24,4 +24,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = ctrie_threads
+FUZION_OPTIONS = -modules=lock_free
 include ../positive.mk
