@@ -2692,7 +2692,11 @@ public class Call extends AbstractCall
         // NYI: Need to check why this is needed, it does not make sense to
         // propagate the target's type to target. But if removed,
         // tests/reg_issue16_chainedBool/ fails with C backend:
-        _target = _target.propagateExpectedType(res, outer, _target.typeForInferencing());
+        var t = _target.typeForInferencing();
+        if (t != null)
+          {
+            _target = _target.propagateExpectedType(res, outer, _target.typeForInferencing());
+          }
       }
   }
 
