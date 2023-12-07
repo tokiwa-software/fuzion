@@ -172,6 +172,12 @@ public class Resolution extends ANY
   final LinkedList<Feature> forDeclarations = new LinkedList<>();
 
   /**
+   * List of features waiting for calls since argument types are inferred from
+   * actual arguments. These will need to be resolved for declarations next.
+   */
+  final LinkedList<Feature> _waitingForCalls = new LinkedList<>();
+
+  /**
    * List of features scheduled for type resolution
    */
   final LinkedList<Feature> forType = new LinkedList<>();
@@ -246,7 +252,55 @@ public class Resolution extends ANY
     if (PRECONDITIONS) require
       (f.state() == State.RESOLVED_INHERITANCE);
 
-    forDeclarations.add(f);
+    if (requiresCall(f))
+      {
+        _waitingForCalls.add(f);
+      }
+    else
+      {
+        forDeclarations.add(f);
+      }
+  }
+
+
+  /**
+   * If there are features in waitingForCalls that still require calls for type
+   * resolution, then try to find those that meanwhile have found a call.  Only
+   * if none were found, start resolving those without calls (i.e., argument
+   * types will end up being void).
+   *
+   * @param waitingForCalls a list of features that await any calls to be found
+   * before they coudl be resolved.
+   */
+  Feature resolveDelayed()
+  {
+    var f = _waitingForCalls.removeFirst();
+    var first = f;
+    var cycling = false;
+    while (requiresCall(f) && !cycling)
+      {
+        _waitingForCalls.add(f);
+        f = _waitingForCalls.removeFirst();
+        cycling = f == first;
+      }
+    return f;
+  }
+
+
+  /**
+   * Does given feature have value arguments whose type is inferred from a call.
+   * If so, we delay type resolution for f until when such a call is found.
+   *
+   * @param f a feature that was resolved for declarations.
+   */
+  boolean requiresCall(Feature f)
+  {
+    return
+      f.valueArguments().stream()
+        .anyMatch(a -> a instanceof Feature af &&
+                  af.impl()._kind == Impl.Kind.FieldActual &&
+                  af.impl()._initialValues.isEmpty()           ) ||
+      f.outer() instanceof Feature of && !of.isUniverse() && requiresCall(of);
   }
 
 
@@ -408,6 +462,13 @@ public class Resolution extends ANY
       {
         Feature f = forBoxing.removeFirst();
         f.box(this);
+      }
+    else if (!_waitingForCalls.isEmpty())
+      {
+        // there are some features that still require calls for type resolution,
+        // so try to find those fot which we have found a call meanwhile.  Only if none
+        // was found, start resolving declarations anyways.
+        resolveDelayed().resolveDeclarations(this);
       }
     else if (!forCheckTypes1.isEmpty())
       {

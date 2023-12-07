@@ -96,6 +96,7 @@ public class Impl extends ANY
    */
   final List<Expr> _initialValues;
 
+
   /**
    * For FieldActual: The outer features for all the actual values that were
    * found for this argument field.
@@ -437,6 +438,81 @@ public class Impl extends ANY
 
 
   /**
+   * Visitor used by typeFromInitialValues for Kind.FieldActual to detect that
+   * an initial value has a circular dependency on the formal argument we are
+   * trying to resolve. In case of such a circular dependency, ignore that
+   * initial value.
+   */
+  class FindCircularDependency extends FeatureVisitor
+  {
+
+    /**
+     * The circular dependencies we found, might be useful for nicer error
+     * output.
+     */
+    final List<Call> _circularDependencies = new List<>();
+
+    /**
+     * Flag that is set once we found a circular dependency.
+     */
+    boolean _foundCircle = false;
+
+    /**
+     * The formal argument we are trying to obtain the type for.
+     */
+    final AbstractFeature _formalArg;
+
+    /**
+     * Constructor that will immediately run the analysis.
+     *
+     * @param formalArg the formal argument we are trying to check for circular
+     * dependencies.q
+     *
+     * @param iv the initial value found for formalArg that we are trying to
+     * check for circular dependencies.
+     *
+     * @param outer the outer feature iv was found in.
+     */
+    FindCircularDependency(AbstractFeature formalArg, Expr iv, AbstractFeature outer)
+    {
+      _formalArg = formalArg;
+      iv.visit(this, outer);
+    }
+
+
+    /**
+     * A circular dependency happens through a call, so we check calls:
+     */
+    @Override
+    public Expr action(Call c, AbstractFeature outer)
+    {
+      if (c.calledFeatureKnown())
+        {
+          var cf = c.calledFeature();
+          if (cf instanceof Feature cff && cff.impl()._kind == Kind.FieldActual)
+            {
+              var ivs = cff.impl()._initialValues;
+              if (ivs.isEmpty() || cf == _formalArg || cf.outer() == _formalArg.outer())
+                {
+                  _circularDependencies.add(c);
+                  _foundCircle = true;
+                }
+              else
+                {
+                  for (var iv : ivs)
+                    {
+                      iv.visit(this, outer);
+                    }
+                }
+            }
+        }
+      return c;
+    }
+
+  }
+
+
+  /**
    * Determine the type of a FieldActual by forming the union of the types of
    * all actual values added by addInitialValue.
    *
@@ -459,7 +535,11 @@ public class Impl extends ANY
         var io = _outerOfInitialValues.get(i);
         if (res != null)
           {
-            iv.visit(new Feature.ResolveTypes(res),io);
+            var cd = new FindCircularDependency(formalArg, iv, io);
+            if (!cd._foundCircle)
+              { // type resolution would result in an error in case there is a circle.
+                iv.visit(new Feature.ResolveTypes(res),io);
+              }
           }
         var t = iv.typeForInferencing();
         if (t != null)
