@@ -410,7 +410,13 @@ should be avoided as much as possible.
   }
 
 
-  static Path PATH_FOR_CLASSES = Path.of("fuzion_generated_clazzes");
+  /**
+   * For backend `-classes`, this give the name of the directory to create for
+   * the class files.
+   *
+   * NYI: Should should better be the name of the main feature or similar.
+   */
+  static Path PATH_FOR_CLASSES = Path.of("fuzion_generated_classes");
 
 
   /**
