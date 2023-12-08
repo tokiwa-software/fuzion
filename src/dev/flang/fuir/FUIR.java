@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir;
 
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 import java.util.BitSet;
@@ -37,6 +38,7 @@ import dev.flang.air.Clazzes;
 import dev.flang.air.FeatureAndActuals;
 
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency
+import dev.flang.ast.AbstractBlock; // NYI: remove dependency
 import dev.flang.ast.AbstractCall; // NYI: remove dependency
 import dev.flang.ast.AbstractConstant; // NYI: remove dependency
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency
@@ -118,18 +120,9 @@ public class FUIR extends IR
     c_TRUE        { Clazz getIfCreated() { return Clazzes.c_TRUE     .getIfCreated(); } },
     c_FALSE       { Clazz getIfCreated() { return Clazzes.c_FALSE    .getIfCreated(); } },
     c_Const_String{ Clazz getIfCreated() { return Clazzes.Const_String.getIfCreated(); } },
+    c_String      { Clazz getIfCreated() { return Clazzes.String     .getIfCreated(); } },
     c_sys_ptr     { Clazz getIfCreated() { return Clazzes.fuzionSysPtr;               } },
     c_unit        { Clazz getIfCreated() { return Clazzes.c_unit     .getIfCreated(); } },
-    c_array_i8    { Clazz getIfCreated() { return Clazzes.array_i8   .getIfCreated(); } },
-    c_array_i16   { Clazz getIfCreated() { return Clazzes.array_i16  .getIfCreated(); } },
-    c_array_i32   { Clazz getIfCreated() { return Clazzes.array_i32  .getIfCreated(); } },
-    c_array_i64   { Clazz getIfCreated() { return Clazzes.array_i64  .getIfCreated(); } },
-    c_array_u8    { Clazz getIfCreated() { return Clazzes.array_u8   .getIfCreated(); } },
-    c_array_u16   { Clazz getIfCreated() { return Clazzes.array_u16  .getIfCreated(); } },
-    c_array_u32   { Clazz getIfCreated() { return Clazzes.array_u32  .getIfCreated(); } },
-    c_array_u64   { Clazz getIfCreated() { return Clazzes.array_u64  .getIfCreated(); } },
-    c_array_f32   { Clazz getIfCreated() { return Clazzes.array_f32  .getIfCreated(); } },
-    c_array_f64   { Clazz getIfCreated() { return Clazzes.array_f64  .getIfCreated(); } },
 
     // dummy entry to report failure of getSpecialId()
     c_NOT_FOUND   { Clazz getIfCreated() { return null;                               } };
@@ -669,24 +662,6 @@ public class FUIR extends IR
     var cc = clazz(cl);
     var a = cc.argumentFields()[arg];
     return a == null ? -1 : id(a);
-  }
-
-
-  /**
-   * @param cl clazz id
-   *
-   * @param arg argument number 0, 1, .. clazzArgCount(cl)-1
-   *
-   * @return how many bytes are used when serializing this arg?
-   *         example: if the args type is `(tuple u8 u16)` result is 1+2=3
-   */
-  public int clazzArgFieldBytes(int cl, int arg)
-  {
-    return clazz(cl)
-      .argumentFields()[arg]
-      .resultClazz()
-      ._type
-      .serializedSize();
   }
 
 
@@ -1802,7 +1777,7 @@ hw25 is
 
     var ic = _codeIds.get(c).get(ix);
     if      (ic instanceof AbstractConstant co) { return co.data(); }
-    else if (ic instanceof AbstractCall ac && ac.isCompileTimeConst())
+    else if (ic instanceof AbstractCall ac)
       {
         return ac.asCompileTimeConstant().data();
       }
@@ -2453,6 +2428,46 @@ hw25 is
   }
 
 
+  /**
+   * Is this a compile-time constant?
+   *
+   * @param o an Object from the IR-Stack.
+   *
+   * @return true iff `o` is an Expr and can be turned into a compile-time constant.
+   */
+  private boolean isConst(Object o)
+  {
+    if (PRECONDITIONS) require
+      (o instanceof Expr || o instanceof ExprKind);
+
+    return o instanceof InlineArray iai && isConst(iai)
+        || o instanceof AbstractConstant
+        || o instanceof AbstractCall ac && isConst(ac)
+        || o instanceof AbstractBlock ab && ab._expressions.size() == 1 && isConst(ab.resultExpression());
+  }
+
+
+  /**
+   * Can this array be turned into a compile-time constant?
+   */
+  private boolean isConst(InlineArray ia)
+  {
+    return
+      !ia.type().dependsOnGenerics() &&
+      !ia.type().containsThisType() &&
+      // some backends have special handling for array void.
+      ia.elementType().compareTo(Types.resolved.t_void) != 0 &&
+      ia._elements
+        .stream()
+        .allMatch(el -> {
+          var s = new List<>();
+          super.toStack(s, el);
+          return s
+            .stream()
+            .allMatch(x -> isConst(x));
+        });
+  }
+
 
   /**
    * Can this call be turned into a constant?
@@ -2464,18 +2479,26 @@ hw25 is
    */
   private boolean isConst(AbstractCall ac)
   {
-    var result = false;
-    if (ac.isCompileTimeConst())
+    var result =
+      !ac.isInheritanceCall() &&
+      ac.calledFeature().isConstructor() &&
+      // contains no fields
+      ac.calledFeature().code().containsOnlyDeclarations() &&
+      // we are calling a value type feature
+      !ac.calledFeature().selfType().isRef() &&
+      // only features without args and no fields may be inherited
+      ac.calledFeature().inherits().stream().allMatch(c -> c.calledFeature().arguments().isEmpty() && c.calledFeature().code().containsOnlyDeclarations()) &&
+      // no unit   // NYI we could allow units that does not contain declarations
+      ac.actuals().size() > 0 &&
+      ac.actuals().stream().allMatch(x -> isConst(x));
+
+    if (result)
       {
         var s = new List<>();
         super.toStack(s, ac, false);
         result = s
           .stream()
-          .allMatch(x -> {
-            // NYI string constants
-            return x instanceof AbstractConstant c && c.isCompileTimeConst()
-              || x instanceof AbstractCall ac0 && ac0.isCompileTimeConst();
-          });
+          .allMatch(x -> x == ac || isConst(x));
       }
     return result;
   }
@@ -2512,38 +2535,91 @@ hw25 is
 
 
   /**
-   * How many bytes are used when serializing this clazz?
+   * Extract bytes from `bb` that should be used when deserializing for `cl`.
+   *
+   * @param cl the constants clazz
+   *
+   * @param bb the bytes to be used when deserializing this constant.
+   *           May be more than necessary for variable length constants
+   *           like strings, arrays, etc.
    */
-  public int clazzBytes(int cl)
+  private ByteBuffer deserializeClazz(int cl, ByteBuffer bb)
   {
-    return clazz(cl)._type.serializedSize();
+    return switch (getSpecialId(cl))
+      {
+      case c_Const_String, c_String :
+        var len = bb.duplicate().getInt();
+        yield bb.slice(bb.position(), 4+len);
+      case c_bool :
+        yield bb.slice(bb.position(), 1);
+      case c_i8, c_i16, c_i32, c_i64, c_u8, c_u16, c_u32, c_u64, c_f32, c_f64 :
+        var bytes = bb.duplicate().getInt();
+        yield bb.slice(bb.position(), 4+bytes);
+      default:
+        yield this.clazzIsArray(cl)
+          ? deserializeArray(this.inlineArrayElementClazz(cl), bb)
+          : deserializeValueConst(cl, bb);
+      };
   }
 
 
   /**
-   * Can this array be turned into a compile-time constant?
+   * bytes used when serializing call that results in this type.
    */
-  private boolean isConst(InlineArray ia)
+  private ByteBuffer deserializeValueConst(int cl, ByteBuffer bb)
   {
-    return
-      !ia.type().dependsOnGenerics() &&
-      !ia.type().containsThisType() &&
-      // NYI nested arrays
-      ia.elementType().featureOfType().compareTo(Types.resolved.f_array) != 0 &&
-      // some backends have special handling for array void.
-      ia.elementType().compareTo(Types.resolved.t_void) != 0 &&
-      ia._elements
-        .stream()
-        .allMatch(el -> {
-          var s = new List<>();
-          super.toStack(s, el);
-          return s
-            .stream()
-            .allMatch(x -> {
-              // NYI string constants
-              return x instanceof AbstractConstant c && c.isCompileTimeConst() || x instanceof AbstractCall ac && isConst(ac);
-            });
-        });
+    var args = clazzArgCount(cl);
+    var bbb = bb.duplicate();
+    var argBytes = 0;
+    for (int i = 0; i < args; i++)
+      {
+        var rt = clazzArgClazz(cl, i);
+        argBytes += deseralizeConst(rt, bbb).length;
+      }
+    return bb.slice(bb.position(), argBytes);
+  }
+
+
+  /**
+   * Extract bytes from `bb` that should be used when deserializing for `cl`.
+   *
+   * @param cl the constants clazz
+   *
+   * @param bb the bytes to be used when deserializing this constant.
+   *           May be more than necessary for variable length constants
+   *           like strings, arrays, etc.
+   */
+  public byte[] deseralizeConst(int cl, ByteBuffer bb)
+  {
+    var elBytes = deserializeClazz(cl, bb.duplicate());
+    bb.position(bb.position()+elBytes.remaining());
+    var b = new byte[elBytes.remaining()];
+    elBytes.get(b);
+    return b;
+  }
+
+
+  /**
+   * Extract bytes from `bb` that should be used when deserializing this inline array.
+   *
+   * @param elementClazz the elements clazz
+   *
+   * @elementCount the count of elements in this array.
+   *
+   * @param bb the bytes to be used when deserializing this constant.
+   *           May be more than necessary for variable length constants
+   *           like strings, arrays, etc.
+   */
+  private ByteBuffer deserializeArray(int elementClazz, ByteBuffer bb)
+  {
+    var bbb = bb.duplicate();
+    var elCount = bbb.getInt();
+    var elBytes = 0;
+    for (int i = 0; i < elCount; i++)
+      {
+        elBytes += deseralizeConst(elementClazz, bbb).length;
+      }
+    return bb.slice(bb.position(), 4+elBytes);
   }
 
 }

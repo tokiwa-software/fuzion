@@ -838,16 +838,17 @@ public class NumLiteral extends Constant
   public byte[] data()
   {
     var ct = findConstantType(_type);
+    byte[] result;
     if (ct._isFloat)
       {
-        return floatBits();
+        result = floatBits();
       }
     else
       {
         var i = intValue(ct);
         var b = i.toByteArray();
         var bytes = ct._bytes;
-        var result = new byte[bytes];
+        result = new byte[bytes];
         for (var ix = 0; ix < bytes; ix++)
           {
             if (ix >= b.length)
@@ -859,8 +860,11 @@ public class NumLiteral extends Constant
                 result[ix] = b[b.length - 1 - ix];
               }
           }
-        return result;
       }
+    var bb = ByteBuffer.wrap(new byte[4+result.length]);
+    bb.putInt(ct._bytes);
+    bb.put(result);
+    return bb.array();
   }
 
 

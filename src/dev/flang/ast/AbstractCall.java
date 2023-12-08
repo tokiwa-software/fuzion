@@ -138,9 +138,6 @@ public abstract class AbstractCall extends Expr
    */
   public AbstractConstant asCompileTimeConstant()
   {
-    if (PRECONDITIONS) require
-      (isCompileTimeConst());
-
     var result = new AbstractConstant() {
 
       @Override
@@ -189,24 +186,6 @@ public abstract class AbstractCall extends Expr
     return result;
   }
 
-
-  @Override
-  public boolean isCompileTimeConst()
-  {
-    var result =
-      !isInheritanceCall() &&
-      calledFeature().isConstructor() &&
-      // contains no fields
-      calledFeature().code().containsOnlyDeclarations() &&
-      // we are calling a value type feature
-      !calledFeature().selfType().isRef() &&
-      // only features without args and no fields may be inherited
-      calledFeature().inherits().stream().allMatch(c -> c.calledFeature().arguments().isEmpty() && c.calledFeature().code().containsOnlyDeclarations()) &&
-      // no unit
-      this.actuals().size() > 0 &&
-      this.actuals().stream().allMatch(x -> x.isCompileTimeConst());
-    return result;
-  }
 
 }
 

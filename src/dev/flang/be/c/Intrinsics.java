@@ -92,8 +92,11 @@ public class Intrinsics extends ANY
   {
     put("Type.name"            , (c,cl,outer,in) ->
         {
-          return c
-            .constString( c._fuir.clazzTypeName(c._fuir.clazzOuterClazz(cl)), true)
+          var rc = c._fuir.clazzResultClazz(cl);
+          return c.heapClone(
+              c.constString( c._fuir.clazzTypeName(c._fuir.clazzOuterClazz(cl))),
+              rc
+            )
             .ret();
         });
 
@@ -310,9 +313,10 @@ public class Intrinsics extends ANY
         {
           var str = CNames.GLOBAL_ARGV.index(A0);
           var rc = c._fuir.clazzResultClazz(cl);
-          return c
-            .constString(str, CExpr.call("strlen",new List<>(str)), true)
-            .castTo(c._types.clazz(rc)).ret();
+          return c.heapClone(
+            c.constString(str, CExpr.call("strlen",new List<>(str))),
+            rc
+          ).ret();
         });
     put("fuzion.std.exit"      , (c,cl,outer,in) -> CExpr.call("exit", new List<>(A0)));
     put("fuzion.sys.fileio.read"         , (c,cl,outer,in) ->
@@ -773,9 +777,8 @@ public class Intrinsics extends ANY
           var instname = "instance[" + clname + "]";
           var instchars = instname.getBytes(StandardCharsets.UTF_8);
           var rc = c._fuir.clazzResultClazz(cl);
-          return c
-            .constString(instchars, true)
-            .castTo(c._types.clazz(rc)).ret();
+          return c.heapClone(c.constString(instchars), rc)
+            .ret();
         });
 
     put("fuzion.sys.internal_array_init.alloc", (c,cl,outer,in) ->
@@ -818,8 +821,7 @@ public class Intrinsics extends ANY
           var rc = c._fuir.clazzResultClazz(cl);
           return CStmnt.seq(CStmnt.decl("char *", str),
                             str.assign(CExpr.call("getenv",new List<>(A0.castTo("char*")))),
-                            c.constString(str, CExpr.call("strlen",new List<>(str)), true)
-                             .castTo(c._types.clazz(rc)).ret());
+                            c.heapClone(c.constString(str, CExpr.call("strlen",new List<>(str))), rc).ret());
         });
     put("fuzion.sys.env_vars.set0", (c,cl,outer,in) ->
         {

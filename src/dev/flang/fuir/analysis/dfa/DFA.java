@@ -28,7 +28,7 @@ package dev.flang.fuir.analysis.dfa;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-
+import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -487,18 +487,8 @@ public class DFA extends ANY
              c_u32  ,
              c_u64  ,
              c_f32  ,
-             c_f64  -> new NumericValue(DFA.this, constCl, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN));
-        case c_array_i8   ,
-             c_array_i16  ,
-             c_array_i32  ,
-             c_array_i64  ,
-             c_array_u8   ,
-             c_array_u16  ,
-             c_array_u32  ,
-             c_array_u64  ,
-             c_array_f32  ,
-             c_array_f64  -> newArrayConst(constCl, _call, ByteBuffer.wrap(d));
-        case c_Const_String -> newConstString(d, _call);
+             c_f64  -> new NumericValue(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN));
+        case c_Const_String, c_String -> newConstString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).getInt()+4), _call);
         default ->
           {
             if (!_fuir.clazzIsChoice(constCl))
@@ -535,17 +525,12 @@ public class DFA extends ANY
     {
       var result = newInstance(constCl, context);
       var args = new List<Val>();
-      var offset = 0;
       for (int index = 0; index < _fuir.clazzArgCount(constCl); index++)
         {
           var f = _fuir.clazzArg(constCl, index);
           var fr = _fuir.clazzArgClazz(constCl, index);
-          var n = _fuir.clazzArgFieldBytes(constCl, index);
-          var bytes = b.slice(offset, n);
-          offset += n;
-          byte[] bb = new byte[bytes.remaining()];
-          b.get(bb);
-          var arg = constData(fr, bb)._v0.value();
+          var bytes = _fuir.deseralizeConst(fr, b);
+          var arg = constData(fr, bytes)._v0.value();
           args.add(arg);
           result.setField(DFA.this, f, arg);
         }
@@ -584,21 +569,19 @@ public class DFA extends ANY
       var data = _fuir.clazzField(_fuir.clazzResultClazz(sa), 0);
       var lengthField = _fuir.clazzField(_fuir.clazzResultClazz(sa), 1);
 
-      var elementBytes = _fuir.clazzBytes(elementClazz);
-      var elCount = d.remaining() / elementBytes;
+      var elCount = d.getInt();
 
-      byte[] bb = new byte[d.remaining()];
-      d.get(bb);
-      var sysArray = elCount == 0
-        ? new SysArray(DFA.this, new byte[0], elementClazz)
-        : new SysArray(DFA.this, constData(elementClazz, bb)._v0.value());
-      for (int i = 0; i < d.remaining(); i=i+elementBytes)
+      // joining elements before instantiating sysarray
+      // because setEl always triggers a DFA changed.
+      Value elements = null;
+      for (int idx = 0; idx < elCount; idx++)
         {
-          var idx = new NumericValue(DFA.this, _fuir.clazz(SpecialClazzes.c_i32), i/elementBytes);
-          bb = new byte[elementBytes];
-          d.slice(i, elementBytes).get(bb);
-          sysArray.setel(idx, constData(elementClazz, bb)._v0.value());
+          var b = _fuir.deseralizeConst(elementClazz, d);
+          elements = elements == null
+            ? constData(elementClazz, b)._v0.value()
+            : elements.join(constData(elementClazz, b)._v0.value());
         }
+      SysArray sysArray = elCount == 0 ? new SysArray(DFA.this, new byte[0], elementClazz) :  new SysArray(DFA.this, elements);
 
       sa0.setField(DFA.this, data, sysArray);
       sa0.setField(DFA.this, lengthField, new NumericValue(DFA.this, _fuir.clazzResultClazz(lengthField), elCount));
