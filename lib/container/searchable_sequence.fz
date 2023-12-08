@@ -124,6 +124,40 @@ is
                   else                   (searchable_sequence c1.tail       ).count_matches l)
 
 
+  # split sequence at s, if there is no limit, otherwise if limit is an integer n,
+  # for at most n occurrences of s
+  #
+  # if split_after is true, all but the last element of the resulting list include
+  # the separator
+  #
+  # helper feature which unifies the code of the different split features in one
+  #
+  module split0(s Sequence A, limit option u32, split_after bool) list (Sequence A)
+    pre
+      !s.is_empty,
+      match limit
+        nil => true
+        n u32 => n > (u32 0)
+    is
+      match (find s)
+        nil     => from : nil
+        idx i32 =>
+          ref : Cons (Sequence A) (list (Sequence A))
+            head Sequence A := from.take (if split_after then idx + s.count else idx)
+            tail =>
+              rest := from.drop (idx + s.count)
+              srest := searchable_sequence rest
+
+              match limit
+                nil => srest.split0 s nil split_after
+                n u32 =>
+                  if n > u32 1
+                    srest.split0 s (n - 1) split_after
+                  else
+                    res Sequence A := rest;
+                    res : nil
+
+
   # equality check implementation for inherited property.equatable
   #
   public fixed type.equality(a, b container.searchable_sequence A) bool is
