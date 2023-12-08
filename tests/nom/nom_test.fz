@@ -55,13 +55,12 @@ nom_test =>
     # example: `#9F3A10` => hex_color
     parser_hex_color_seq_codepoints := parser_hex_tuple.map hex_color (t -> (r,g,b) := t; hex_color r g b)
     # convert parser to take string not codepoints as input
-    # NYI: using this crashes in c backend currently
     parser_hex_color := sp.to_string_input parser_hex_color_seq_codepoints
 
-    say (parser_hex_color_seq_codepoints.parse "#9F3A10".as_codepoints)
-    say (parser_hex_color_seq_codepoints.parse "#9F3A1G".as_codepoints)
-    say (parser_hex_color_seq_codepoints.parse "Hello".as_codepoints)
-    say (parser_hex_color_seq_codepoints.parse "".as_codepoints)
+    say (parser_hex_color.parse "#9F3A10")
+    say (parser_hex_color.parse "#9F3A1G")
+    say (parser_hex_color.parse "Hello")
+    say (parser_hex_color.parse "")
 
 
   json_parser_test is
