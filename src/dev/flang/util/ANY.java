@@ -743,7 +743,7 @@ public class ANY
 
 
   /* uncomment to get allocation statistics *
-  static HashMap<Class, Integer> _counts_ = new HashMap<>();
+  static java.util.HashMap<Class, Integer> _counts_ = new java.util.HashMap<>();
 
   public ANY()
   {
