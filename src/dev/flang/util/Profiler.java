@@ -182,10 +182,10 @@ public class Profiler extends ANY
                       }
                   }
               }
-            else
+            else if (st.length > 0)
               {
                 StringBuilder sb = new StringBuilder();
-                for (var i = st.length-1; i>0; i--)
+                for (var i = st.length-1; i>=0; i--)
                   {
                     var s = st[i];
                     if (sb.length() > 0)
