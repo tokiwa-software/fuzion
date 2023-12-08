@@ -678,6 +678,11 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           var constCl = _fuir.constClazz(c, i);
           var d = _fuir.constData(c, i);
           var r = _processor.constData(constCl, d);
+
+          if (CHECKS) check
+            // check that constant creation has no side effects.
+            (r._v1 == _processor.nop());
+
           push(stack, constCl, r._v0);
           return r._v1;
         }

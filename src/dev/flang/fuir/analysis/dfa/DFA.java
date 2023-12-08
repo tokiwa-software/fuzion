@@ -34,6 +34,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
 import dev.flang.util.ANY;
@@ -496,13 +497,15 @@ public class DFA extends ANY
              c_array_u32  ,
              c_array_u64  ,
              c_array_f32  ,
-             c_array_f64  -> newConstArray(constCl, d, _call);
+             c_array_f64  -> newArrayConst(constCl, _call, ByteBuffer.wrap(d));
         case c_Const_String -> newConstString(d, _call);
         default ->
           {
             if (!_fuir.clazzIsChoice(constCl))
               {
-                yield newValueConst(constCl, _call, ByteBuffer.wrap(d));
+                yield _fuir.clazzIsArray(constCl)
+                  ? newArrayConst(constCl, _call, ByteBuffer.wrap(d))
+                  : newValueConst(constCl, _call, ByteBuffer.wrap(d));
               }
             else
               {
@@ -513,6 +516,94 @@ public class DFA extends ANY
           }
         };
       return new Pair<>(r, o);
+    }
+
+
+    /**
+     * deserialize value constant of type `constCl` from `b`
+     *
+     * @param constCl the constants clazz, e.g. `(tuple u32 codepoint)`
+     *
+     * @param context for debugging: Reason that causes this const string to be
+     * part of the analysis.
+     *
+     * @param b the serialized data to be used when creating this constant
+     *
+     * @return an instance of `constCl` with fields initialized using the data from `b`.
+     */
+    private Value newValueConst(int constCl, Context context, ByteBuffer b)
+    {
+      var result = newInstance(constCl, context);
+      var args = new List<Val>();
+      var offset = 0;
+      for (int index = 0; index < _fuir.clazzArgCount(constCl); index++)
+        {
+          var f = _fuir.clazzArg(constCl, index);
+          var fr = _fuir.clazzArgClazz(constCl, index);
+          var n = _fuir.clazzArgFieldBytes(constCl, index);
+          var bytes = b.slice(offset, n);
+          offset += n;
+          byte[] bb = new byte[bytes.remaining()];
+          b.get(bb);
+          var arg = constData(fr, bb)._v0.value();
+          args.add(arg);
+          result.setField(DFA.this, f, arg);
+        }
+
+      // register calls for constant creation even though
+      // not every backend actually performs these calls.
+      if (_fuir.hasPrecondition(constCl))
+        {
+          newCall(constCl, true, _universe, args, null /* new environment */, context);
+        }
+      newCall(constCl, false, _universe, args, null /* new environment */, context);
+
+      return result;
+    }
+
+
+    /**
+     * deserialize array constant of type `constCl` from `d`
+     *
+     * @param constCl the constants clazz, e.g. `array (tuple i32 codepoint)`
+     *
+     * @param context for debugging: Reason that causes this const string to be
+     * part of the analysis.
+     *
+     * @param b the serialized data to be used when creating this constant
+     *
+     * @return an instance of `constCl` with fields initialized using the data from `d`.
+     */
+    private Value newArrayConst(int constCl, Call context, ByteBuffer d)
+    {
+      var result = newInstance(constCl, context);
+      var sa = _fuir.clazzField(constCl, 0);
+      var sa0 = newInstance(_fuir.clazzResultClazz(sa), context);
+
+      var elementClazz = _fuir.inlineArrayElementClazz(constCl);
+      var data = _fuir.clazzField(_fuir.clazzResultClazz(sa), 0);
+      var lengthField = _fuir.clazzField(_fuir.clazzResultClazz(sa), 1);
+
+      var elementBytes = _fuir.clazzBytes(elementClazz);
+      var elCount = d.remaining() / elementBytes;
+
+      byte[] bb = new byte[d.remaining()];
+      d.get(bb);
+      var sysArray = elCount == 0
+        ? new SysArray(DFA.this, new byte[0], elementClazz)
+        : new SysArray(DFA.this, constData(elementClazz, bb)._v0.value());
+      for (int i = 0; i < d.remaining(); i=i+elementBytes)
+        {
+          var idx = new NumericValue(DFA.this, _fuir.clazz(SpecialClazzes.c_i32), i/elementBytes);
+          bb = new byte[elementBytes];
+          d.slice(i, elementBytes).get(bb);
+          sysArray.setel(idx, constData(elementClazz, bb)._v0.value());
+        }
+
+      sa0.setField(DFA.this, data, sysArray);
+      sa0.setField(DFA.this, lengthField, new NumericValue(DFA.this, _fuir.clazzResultClazz(lengthField), elCount));
+      result.setField(DFA.this, sa, sa0);
+      return result;
     }
 
 
@@ -1883,85 +1974,6 @@ public class DFA extends ANY
                 utf8Bytes != null ? new NumericValue(this, _fuir.clazzResultClazz(length), utf8Bytes.length)
                                   : new NumericValue(this, _fuir.clazzResultClazz(length)));
     a.setField(this, data  , adata);
-    r.setField(this, internalArray, a);
-    return r;
-  }
-
-
-  /**
-   * deserialize value constant of type `constCl` from `b`
-   *
-   * @param constCl the constants clazz, e.g. `(tuple u32 codepoint)`
-   *
-   * @param context for debugging: Reason that causes this const string to be
-   * part of the analysis.
-   *
-   * @param b the serialized data to be used when creating this constant
-   *
-   * @return an instance of `constCl` with fields initialized using the data from `b`.
-   */
-  private Value newValueConst(int constCl, Context context, ByteBuffer b)
-  {
-    return switch (_fuir.getSpecialId(constCl))
-      {
-        // we reached the "bottom" of this value const
-      case c_i8, c_i16, c_i32, c_i64, c_u8, c_u16, c_u32, c_u64, c_f32, c_f64 -> new NumericValue(DFA.this, constCl,
-        b.order(ByteOrder.LITTLE_ENDIAN));
-        // complex instance
-      default ->
-        {
-          var result = newInstance(constCl, context);
-          var args = new List<Val>();
-          var offset = 0;
-          for (int index = 0; index < _fuir.clazzArgCount(constCl); index++)
-            {
-              var f = _fuir.clazzArg(constCl, index);
-              var fr = _fuir.clazzArgClazz(constCl, index);
-              var n = _fuir.clazzArgFieldBytes(constCl, index);
-              var bytes = b.slice(offset, n);
-              offset += n;
-              var arg = newValueConst(fr, context, bytes);
-              args.add(arg);
-              result.setField(this, f, arg);
-            }
-
-          // register calls for constant creation even though
-          // not every backend actually performs these calls.
-          if (_fuir.hasPrecondition(constCl))
-            {
-              newCall(constCl, true, _universe, args, null /* new environment */, context);
-            }
-          newCall(constCl, false, _universe, args, null /* new environment */, context);
-
-          yield result;
-        }
-      };
-  }
-
-
-  /**
-   * Create constant array with given bytes.
-   *
-   * @param arrayCl, e.g. array f32, array u8, etc.
-   *
-   * @param bytes the array contents or null if contents unknown
-   *
-   * @param context for debugging: Reason that causes this array to be
-   * part of the analysis.
-   */
-  Value newConstArray(int arrayCl, byte[] bytes, Context context)
-  {
-    var elementType   = _fuir.clazzActualGeneric(arrayCl, 0);
-    var internalArray = _fuir.lookup_array_internal_array(arrayCl);
-    var sysArray      = _fuir.clazzResultClazz(internalArray);
-    var data          = _fuir.lookup_fuzion_sys_internal_array_data  (sysArray);
-    var length        = _fuir.lookup_fuzion_sys_internal_array_length(sysArray);
-    var r = newInstance(arrayCl, context);
-    var a = newInstance(sysArray, context);
-    var dataArg = new SysArray(this, bytes, elementType);
-    var lengthArg = new NumericValue(this, _fuir.clazzResultClazz(length)); // NYI: set actual length to bytes.length / sizeof(elementType)
-    a.setField(this, data, dataArg);
-    a.setField(this, length, lengthArg);
     r.setField(this, internalArray, a);
     return r;
   }

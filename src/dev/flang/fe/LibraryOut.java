@@ -914,9 +914,36 @@ class LibraryOut extends ANY
         //
         // write(IR.ExprKind.Universe.ordinal());
       }
-    else if (e instanceof InlineArray)
+    else if (e instanceof InlineArray ia)
       {
-        throw new Error("Cannot write Library code for "+e.getClass());
+        lastPos = exprKindAndPos(IR.ExprKind.InlineArray, lastPos, e.pos());
+  /*
+   *   +---------------------------------------------------------------------------------+
+   *   | InlineArray                                                                     |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | size in fum                                   |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | Code          | Code                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | element count                                 |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | n      | Code          | element                                       |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
+        var szPos = _data.offset();
+        _data.writeInt(0);
+        var codePos = _data.offset();
+
+        // the code
+        code(ia.code());
+        // element count
+        _data.writeInt(ia._elements.size());
+        // each elements code
+        ia._elements.forEach(x -> code(x));
+
+        _data.writeIntAt(szPos, _data.offset() - codePos);
       }
     else if (e instanceof Check c)
       {

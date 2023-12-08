@@ -38,7 +38,9 @@ import dev.flang.ast.AbstractCall; // NYI: remove dependency!
 import dev.flang.ast.AbstractConstant; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
+import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureVisitor; // NYI: remove dependency!
+import dev.flang.ast.InlineArray;
 import dev.flang.ast.SrcModule; // NYI: remove dependency!
 import dev.flang.ast.State; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
@@ -271,6 +273,13 @@ public class MiddleEnd extends ANY
         public void action(AbstractConstant c           ) { findUsedFeatures(c); }
         //        public Expr action(Feature f, AbstractFeature outer) { markUsed(res, pos);      return f; } // NYI: this seems wrong ("f." missing) or unnecessary
         public void action(Tag     t, AbstractFeature outer) { findUsedFeatures(t._taggedType, t); }
+        @Override
+        public Expr action(InlineArray i, AbstractFeature outer)
+        {
+          // mark assigned sys-array-field as used
+          i.code().visit(this, outer);
+          return i;
+        }
       };
     Stream
       .concat(f.contract().req.stream(), f.contract().ens.stream())

@@ -107,7 +107,9 @@ public class IR extends ANY
     Tag,
     Env,
     Pop,
-    Unit;
+    Unit,
+    // this is eliminated in FUIR
+    InlineArray;
 
     /**
      * get the Kind that corresponds to the given ordinal number.
@@ -225,6 +227,15 @@ public class IR extends ANY
           {
             l.add(e);
           }
+      }
+    else if (e instanceof InlineArray ia)
+      {
+        // in FUIR this inline array might be added
+        //  to stack as a compile time constant.
+        if (!dumpResult)
+        {
+          toStack(l, ia.code(), dumpResult);
+        }
       }
     else if (e instanceof AbstractCurrent)
       {

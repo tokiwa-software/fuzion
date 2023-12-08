@@ -978,7 +978,38 @@ class CodeGen
       case c_array_f64    -> _jvm.constArrayF64(constCl, d);
       default             ->
         {
-          if (!_fuir.clazzIsChoice(constCl))
+          if (_fuir.clazzIsArray(constCl))
+            {
+              var elementType = this._fuir.inlineArrayElementClazz(constCl);
+              var bytesPerField = _fuir.clazzBytes(elementType);
+              if (CHECKS) check
+                (d.length % bytesPerField == 0);
+
+              var jt = this._types.resultType(elementType);
+              var aLen = Expr
+                .iconst(d.length / bytesPerField);
+
+              var result =  aLen
+                .andThen(jt.newArray());
+
+              var b = ByteBuffer.wrap(d);
+              for (int i = 0; i < d.length; i=i+bytesPerField)
+                {
+                  var bytes = b.slice(i, bytesPerField);
+                  byte[] bb = new byte[bytes.remaining()];
+                  bytes.get(bb);
+                  var c = createConstant(elementType, bb);
+                  result = result
+                    .andThen(Expr.DUP)                             // T[], T[]
+                    .andThen(Expr.checkcast(jt.array()))
+                    .andThen(Expr.iconst(i / bytesPerField))       // T[], T[], idx
+                    .andThen(c._v1)                                // T[], T[], idx, const-data-code
+                    .andThen(c._v0)                                // T[], T[], idx, const-data-code
+                    .andThen(jt.xastore());                        // T[]
+                }
+              yield _jvm.const_array(constCl, result);
+            }
+          else if (!_fuir.clazzIsChoice(constCl))
             {
               var b = ByteBuffer.wrap(d);
               var result = Expr.UNIT;

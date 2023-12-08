@@ -556,20 +556,8 @@ public class Interpreter extends ANY
 
     else if (e instanceof InlineArray i)
       {
-        Clazz ac  = staticClazz.getRuntimeClazz(i._arrayClazzId + 0);
-        Clazz sac = staticClazz.getRuntimeClazz(i._arrayClazzId + 1);
-        var sa = new Instance(sac);
-        int l = i._elements.size();
-        var arrayData = Intrinsics.fuzionSysArrayAlloc(l, sac);
-        setField(Types.resolved.f_fuzion_sys_array_data  , -1, sac, sa, arrayData);
-        setField(Types.resolved.f_fuzion_sys_array_length, -1, sac, sa, new i32Value(l));
-        for (int x = 0; x < l; x++)
-          {
-            var v = execute(i._elements.get(x), staticClazz, cur);
-            arrayData.set(x, v, Intrinsics.elementType(sac));
-          }
-        result = new Instance(ac);
-        setField(Types.resolved.f_array_internal_array, -1, ac, result, sa);
+        // interpreter just uses i.code()
+        result = execute(i.code(), staticClazz, cur);
       }
 
     else if (e instanceof Env v)
