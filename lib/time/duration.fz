@@ -79,7 +79,7 @@ is
   # and at most 4 decimal digits followed by a time unit string.
   #
   public redef as_string String is
-    (f,u) := for
+    (f,u,_) := for
       x := units.unit_names.first, n
       n in units.unit_names.drop 1
       nf := n.values.0
@@ -94,7 +94,8 @@ is
       x
     else
       x
-    "{nanos / f}$u"
+    n := $(nanos / f)
+    " "*(max 0 4-n.byte_length) + n + u
 
 # time.durations -- unit type defining features related to duration but not requiring
 # an instance
@@ -298,13 +299,13 @@ public units is
   # entry is an ((u64 0), "--end marker--").
   #
   unit_names =>
-    [ (nanos_per_nano   , "ns"),
-      (nanos_per_micro  , "µs"),
-      (nanos_per_milli  , "ms"),
-      (nanos_per_second , "s"),
-      (nanos_per_minute , "min"),
-      (nanos_per_hour   , "h"),
-      (nanos_per_day    , "days"),
-      (nanos_per_year   , "a"),
-      ((u64 0          ), "--end marker--"),
+    [ (nanos_per_nano   , "ns", "ns"),
+      (nanos_per_micro  , "µs", "µs"),
+      (nanos_per_milli  , "ms", "ms"),
+      (nanos_per_second , "s ", "sec"),
+      (nanos_per_minute , "m ", "min"),
+      (nanos_per_hour   , "h ", "hours"),
+      (nanos_per_day    , "d ", "days"),
+      (nanos_per_year   , "a ", "years"),
+      ((u64 0          ), "--end marker--", "--end marker--"),
       ]
