@@ -113,7 +113,7 @@ reader =>
 # read n bytes using the currently installed byte reader effect
 # if the returned sequence is or count is less than n, end of file has been reached.
 #
-read_bytes(n i32) Sequence u8 ! reader is
+public read_bytes(n i32) Sequence u8 ! reader is
 
   mi : mutate is
 
