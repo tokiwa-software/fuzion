@@ -832,14 +832,6 @@ public class Call extends AbstractCall
             AstErrors.cannotCallChoice(pos(), fos.get(0)._feature);
             setToErrorState();
           }
-        else
-          {
-            int i = 0;
-            for (var nn : fos)
-              {
-                i++;
-              }
-          }
 
         if (_calledFeature == null &&                 // nothing found, so flag error
             (Types.resolved == null ||                // may happen when building bad base.fum
@@ -1931,7 +1923,12 @@ public class Call extends AbstractCall
     else if (_calledFeature == Types.resolved.f_Types_get)
       {
         t = _generics.get(0);
-        if (!t.isGenericArgument())
+        // we are using `.this.type` inside a type feature, see #2295
+        if (t.isThisTypeInTypeFeature())
+          {
+            t = t.genericArgument().feature().thisType();
+          }
+        else if (!t.isGenericArgument())
           {
             t = t.typeType(res);
           }
