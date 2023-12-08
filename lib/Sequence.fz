@@ -67,6 +67,12 @@ public Sequence(public T type) ref is
   public finite => false
 
 
+  # is this Sequence known to be array backed? If so, this means that operations
+  # like index[] are fast.
+  #
+  public is_array_backed => false
+
+
   # is this Sequence empty?
   #
   public is_empty => as_list.is_empty
@@ -120,9 +126,24 @@ public Sequence(public T type) ref is
 
   # collect the contents of this Sequence into an array
   #
-  public as_array array T is
-    s := as_stream
-    array T count i->s.next
+  public as_array array T =>
+    as_list.as_array
+
+
+  # create an array backed version of this sequence in case this is not array
+  # backed.  This will ensure that operations like index[] or drop perform
+  # in constant time.
+  #
+  # returns Sequence.this if is_array_backed.
+  #
+  public as_array_backed Sequence T
+  post
+    result.is_array_backed
+  =>
+    if is_array_backed
+      Sequence.this
+    else
+      as_array
 
 
   # create a list and call 'for_each f' on it

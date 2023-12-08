@@ -161,6 +161,18 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
                | c Cons => force_tail.last
 
 
+  # collect the contents of this list into an array
+  #
+  public redef as_array array A =>
+    lm : mutate.
+    lm.go ()->
+      e := mut list.this
+      array A count _->
+        res := e.get.first
+        e <- e.get.force_tail
+        res
+
+
   # map the list to a new list applying function f to all elements
   #
   # This performs a lazy mapping, f is called only when the elements

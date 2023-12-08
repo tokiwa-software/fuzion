@@ -55,6 +55,12 @@ module:public array(
   public redef finite => true
 
 
+  # is this Sequence known to be array backed? If so, this means that operations
+  # like index[] are fast.
+  #
+  public redef is_array_backed => true
+
+
   # a sequence of all valid indices to access this array. Useful e.g., for
   # `for`-loops:
   #
@@ -154,6 +160,13 @@ module:public array(
       #
       public redef finite => true
 
+
+      # is this Sequence known to be array backed? If so, this means that operations
+      # like index[] are fast.
+      #
+      public redef is_array_backed => true
+
+
       # redefines Sequence.count for array.slice,
       # reducing complexity from O(n) to O(1).
       #
@@ -237,8 +250,8 @@ module:public array(
 
   # collect the contents of this Sequence into an array
   #
-  public redef as_array array T is
-    array T internal_array unit unit unit
+  public redef fixed as_array array T is
+    array.this
 
 
   # array -- create initialized one-dimensional immutable array
