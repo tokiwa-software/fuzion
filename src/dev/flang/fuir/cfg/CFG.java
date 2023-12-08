@@ -35,6 +35,7 @@ import dev.flang.fuir.FUIR;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.Graph;
+import dev.flang.util.List;
 
 
 /**
@@ -105,6 +106,12 @@ public class CFG extends ANY
   TreeSet<Integer> _calledClazzes = new TreeSet<>();
 
 
+  /**
+   * Newly found classes for which createCallGraph still must be called.
+   */
+  List<Integer> _newCalledClazzesToBeProcessed = new List<>();
+
+
   /*---------------------------  constructors  ---------------------------*/
 
 
@@ -129,7 +136,12 @@ public class CFG extends ANY
   public void createCallGraph()
   {
     var cl = _fuir.mainClazzId();
-    createCallGraph(cl);
+    _newCalledClazzesToBeProcessed.add(cl);
+    while (_newCalledClazzesToBeProcessed.size() > 0)
+      {
+        var ncl = _newCalledClazzesToBeProcessed.removeLast();
+        createCallGraph(ncl);
+      }
     Errors.showAndExit();
   }
 
@@ -667,7 +679,7 @@ public class CFG extends ANY
             if (!_calledClazzes.contains(cc))
               {
                 _calledClazzes.add(cc);
-                createCallGraph(cc);
+                _newCalledClazzesToBeProcessed.add(cc);
               }
           }
       }
