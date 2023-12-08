@@ -360,7 +360,7 @@ public class Function extends AbstractLambda
         // immediate function call, which is never the case in an inherits
         // clause.
         if (CHECKS) check
-          (_inheritsCall == inheritsCall2);
+          (Errors.any() || _inheritsCall == inheritsCall2);
         _type = _call.type();
       }
   }
