@@ -221,7 +221,12 @@ module:public array(
 
   # reverse the order of the elements in this array
   #
-  public reverse array T is
+  public redef reverse Sequence T => reverse_array
+
+
+  # reverse the order of the elements in this array
+  #
+  public reverse_array array T is
     array T array.this.length (i -> array.this[array.this.length-1-i])
 
 
