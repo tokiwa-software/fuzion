@@ -49,24 +49,31 @@ public reader(private rp Read_Provider, buf_size i32, buffer array u8 | io.end_o
   # in case the buffer is empty it fills the buffer
   # before returning it.
   #
-  public read array u8 | io.end_of_file is
+  public read => read buf_size
+
+
+  # read returns the current buffer or end of file.
+  # in case the buffer is empty it fills the buffer
+  # with up to max_n bytes before returning it.
+  #
+  public read(max_n i32) array u8 | io.end_of_file is
     match buffer
       b array =>
         if b.is_empty
-          fill_buffer
+          fill_buffer max_n
         buffer
       io.end_of_file => io.end_of_file
 
 
 
-  # fill the currently empty buffer
+  # fill the currently empty buffer with up to max_n bytes
   #
-  private fill_buffer
+  private fill_buffer(max_n i32)
   pre match buffer
         a array => a.is_empty
         io.end_of_file => false
   is
-    match rp.read buf_size
+    match rp.read max_n
       a array =>
         set buffer := a
         replace
@@ -84,7 +91,7 @@ public reader(private rp Read_Provider, buf_size i32, buffer array u8 | io.end_o
   is
     match buffer
       b array =>
-        set buffer := (b.drop n).as_array
+        set buffer := (b.slice n b.length).as_array
         replace
       io.end_of_file =>
 
@@ -111,7 +118,7 @@ reader =>
 
 
 # read n bytes using the currently installed byte reader effect
-# if the returned sequence is or count is less than n, end of file has been reached.
+# if the returned sequence is empty or count is less than n, end of file has been reached.
 #
 public read_bytes(n i32) Sequence u8 ! reader is
 
@@ -119,21 +126,19 @@ public read_bytes(n i32) Sequence u8 ! reader is
 
   mi.go ()->
 
-    res := (mutate.array (array u8)).type.new mi
+    res := (mutate.array u8).type.new mi
 
-    while ((res.flat_map_sequence u8 x->x).count < n &&
-      match reader.read
-        io.end_of_file => false
-        a (array u8) =>
-          reader.discard a.count
-          res.add a
-          true
-      )
-
-    res
-      .flat_map_sequence u8 x->x
-      .as_array
-
+    for n_read := 0, n_read + r
+    while n_read < n
+      r := match reader.read   # NYI: we should limit the number of byted read by reader.read, we can exceed n!
+          io.end_of_file => -1
+          a (array u8) =>
+            reader.discard a.length
+            for b in a do
+              res.add b
+            a.length
+    until r < 0
+    res.as_array
 
 
 # read string, up to n codepoints or until end of file
@@ -202,7 +207,7 @@ public read_line String ! reader is
   mi : mutate is
 
   mi.go String ()->
-    res := (mutate.array (array u8)).type.new mi
+    res := (mutate.array u8).type.new mi
 
     while
       match reader.read
@@ -211,16 +216,18 @@ public read_line String ! reader is
         a array =>
 
           # trailing carriage returns are dropped
-          add_to_res(a array u8) is
+          add_to_res(a Sequence u8) is
             if !a.is_empty
-              res.add (if a.last = character_encodings.ascii.cr
-                        (a.slice 0 a.count-1).as_array
+              a1 := if a.last = character_encodings.ascii.cr
+                        (a.slice 0 a.count-1)
                       else
-                        a)
+                        a
+              for b in a1 do
+                res.add b
 
           match (container.searchable_sequence a).index_of character_encodings.ascii.lf
             idx i32 =>
-              add_to_res (a.slice 0 idx).as_array
+              add_to_res (a.slice 0 idx)
               reader.discard idx+1
               false
             nil =>
@@ -228,11 +235,26 @@ public read_line String ! reader is
               reader.discard_all
               true
 
-    bytes :=
-      res
-        .flat_map_sequence u8 x->x
-        .as_array
-
     ref : String
-      utf8 Sequence u8 is
-        bytes
+      utf8 Sequence u8 := res.as_array
+
+
+# Read input fully into an array of bytes until end_of_file is reached
+#
+public read_fully array u8 ! reader =>
+  for
+    r Sequence u8 := [], r++n
+    n := (io.buffered.read_bytes 8192)
+  while n.count > 0 else
+    r.as_array
+
+
+# Read input fully and split it at linefeed (ASCII 10) characters. Delete
+# any trailing carriage returns (ASCII 13) from the resulting strings.
+#
+public read_lines array String ! reader =>
+  (String.type.from_bytes read_fully).split "\n"
+                                     .map s->
+                                       s.ends_with "\r" ? TRUE  => s.substring 0 s.byte_length-1
+                                                        | FALSE => s
+                                     .as_array
