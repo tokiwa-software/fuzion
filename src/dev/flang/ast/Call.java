@@ -100,7 +100,7 @@ public class Call extends AbstractCall
    * For a call a.b.4 with a select clause ".4" to pick a variant from a field
    * of an open generic type, this is the chosen variant.
    */
-  final int _select;
+  private int _select;
   public int select() { return _select; }
 
 
@@ -1504,6 +1504,87 @@ public class Call extends AbstractCall
 
 
   /**
+   * Create a new call and push the current call to the target of that call.
+   * This is used for implicit calls to Function and Lazy values where `f()` is
+   * converted to `f.call()`, and for implicits fields in a select call such as,
+   * e.g., a tuple access `t.3` that is converted to `t.values.3`.
+   *
+   * The actual arguments and _select of this call are moved over to the new
+   * call, this calls arguments are replaced by NO_PARENTHESES/NO_EXPRS and this
+   * calls _select is set to -1.
+   *
+   * @param res Resolution instance
+   *
+   * @param outer the feature surrounding this call
+   *
+   * @param name the name of the feature to be called.
+   *
+   * @return the newly created call
+   */
+  Call pushCall(Resolution res, AbstractFeature outer, String name)
+  {
+    var wasLazy = _type != null && _type.isLazyType();
+    var result = new Call(pos(),
+                      this /* this becomes target of "call" */,
+                      name,
+                      _select,
+                      _actualsNew,
+                      NO_GENERICS,
+                      _actuals,
+                      null,
+                      null)
+      {
+        @Override
+        Expr originalLazyValue()
+        {
+          return wasLazy ? Call.this : super.originalLazyValue();
+        }
+        @Override
+        public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType expectedType)
+        {
+          if (expectedType.isFunctionType())
+            { // produce an error if the original call is ambiguous with partial application
+              Call.this.checkPartialAmbiguity(res, outer, expectedType);
+            }
+          return super.propagateExpectedType(res, outer, expectedType);
+        }
+      };
+    _movedTo = result;
+    _wasImplicitImmediateCall = true;
+    _originalArgCount = _actuals.size();
+    _actualsNew = NO_PARENTHESES;
+    _actuals = Expr.NO_EXPRS;
+    _select = -1;
+    return result;
+  }
+
+
+  /**
+   * Helper function called during resolveTypes to implicitly call a feature
+   * with an open type parameter result in case _select >= 0 and t is not a type
+   * parameter.
+   *
+   * This converts, e.g., `t.3` for a tuple `t` to `t.values.3`.
+   */
+  Call resolveImplicitSelect(Resolution res, AbstractFeature outer, AbstractType t)
+  {
+    var result = this;
+    if (_select >= 0 && !t.isGenericArgument())
+      {
+        var f = res._module.lookupOpenTypeParameterResult(t.featureOfType(), this);
+        if (f != null)
+          {
+            // replace Function call `c.123` by `c.f.123`:
+            result = pushCall(res, outer, f.featureName().baseName());
+            setActualResultType(res, t); // setActualResultType will be done again by resolveTypes, but we need it now.
+            result = result.resolveTypes(res, outer);
+          }
+      }
+    return result;
+  }
+
+
+  /**
    * Helper function called during resolveTypes to resolve syntactic sugar that
    * allows directly calling a function returned by a call.
    *
@@ -1530,38 +1611,7 @@ public class Call extends AbstractCall
     // replace Function or Lazy value `l` by `l.call`:
     if (isImmediateFunctionCall())
       {
-        var wasLazy = _type.isLazyType();
-        result = new Call(pos(),
-                          this /* this becomes target of "call" */,
-                          "call",
-                          -1,
-                          _actualsNew,
-                          NO_GENERICS,
-                          _actuals,
-                          null,
-                          null)
-          {
-            @Override
-            Expr originalLazyValue()
-            {
-              return wasLazy ? Call.this : super.originalLazyValue();
-            }
-            @Override
-            public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType expectedType)
-            {
-              if (expectedType.isFunctionType())
-                { // produce an error if the original call is ambiguous with partial application
-                  Call.this.checkPartialAmbiguity(res, outer, expectedType);
-                }
-              return super.propagateExpectedType(res, outer, expectedType);
-            }
-          }
-          .resolveTypes(res, outer);
-        _movedTo = result;
-        _wasImplicitImmediateCall = true;
-        _originalArgCount = _actuals.size();
-        _actualsNew = NO_PARENTHESES;
-        _actuals = Expr.NO_EXPRS;
+        result = pushCall(res, outer, "call").resolveTypes(res, outer);
       }
     return result;
   }
@@ -2610,10 +2660,11 @@ public class Call extends AbstractCall
               }
             else if (t != null)
               {
+                result = resolveImplicitSelect(res, outer, t);
                 setActualResultType(res, t);
                 // Convert a call "f.g a b" into "f.g.call a b" in case f.g takes no
                 // arguments and returns a Function or Routine
-                result = resolveImmediateFunctionCall(res, outer); // NYI: Separate pass? This currently does not work if type was inferred
+                result = result.resolveImmediateFunctionCall(res, outer); // NYI: Separate pass? This currently does not work if type was inferred
               }
             if (t == null || isTailRecursive(outer))
               {

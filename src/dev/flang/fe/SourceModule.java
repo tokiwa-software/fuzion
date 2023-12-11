@@ -1016,6 +1016,42 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
+   * Check if outer defines or inherits exactly one feature with no arguments
+   * and an open type parameter as its result type. If such a feature exists and
+   * is visible by `use`, it will be returned.
+   *
+   * @param outer the declaring or inheriting feature
+   *
+   * @param use the expression that uses the feature, so it must be visible to
+   * this.
+   *
+   * @return the unique feature that was found, null if none or several were
+   * found.
+   */
+  public AbstractFeature lookupOpenTypeParameterResult(AbstractFeature outer, Expr use)
+  {
+    if (!outer.state().atLeast(State.RESOLVING_DECLARATIONS))
+      {
+        _res.resolveDeclarations(outer);
+      }
+    var count = 0;
+    AbstractFeature found = null;
+    for (var f : declaredOrInheritedFeatures(outer).values())
+      {
+        if (featureVisible(use.pos()._sourceFile, f) &&
+            f instanceof LibraryFeature lf &&
+            lf.resultType().isOpenGeneric() &&
+            f.arguments().isEmpty())
+          {
+            found = f;
+            count++;
+          }
+      }
+    return count == 1 ? found : null;
+  }
+
+
+  /**
    * Find set of candidate features in an unqualified access (call or
    * assignment).  If several features match the name but have different
    * argument counts, return all of them.
