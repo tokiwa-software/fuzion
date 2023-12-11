@@ -145,8 +145,8 @@ is
   public fixed infix +  (other uint) uint is
     (b1, b2) := equalize other
     (d, _, _) := ([u32 0] ++ b1)
-      .reverse
-      .reduce (((list u32).type.empty), ([u32 0] ++ b2).reverse, u64 0) (r, t ->
+      .reverse_list
+      .reduce (((list u32).type.empty), ([u32 0] ++ b2).reverse_list, u64 0) (r, t ->
 
         (bits, rest, carry_over) := r
 
@@ -166,7 +166,7 @@ is
     (b1, b2) := equalize other
     (r, _) := b1
       .zip b2 (x, y -> (x,y))
-      .reverse
+      .reverse_list
       .reduce ((list u32).type.empty, u64 0) (r,t ->
         (minuend, subtrahend) := t
         (res, carry_over) := r
@@ -188,7 +188,7 @@ is
   # multiply these unsigned ints
   public fixed infix *  (other uint) uint is
     data
-      .reverse
+      .reverse_list
       .indexed
       .map_sequence ((x) ->
         (i, v) := x

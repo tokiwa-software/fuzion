@@ -211,6 +211,11 @@ public Sequence(public T type) ref is
   public take (n i32) => as_list.take n
 
 
+  # reverse the order of the elements in this Sequence
+  #
+  public reverse Sequence T => as_list.reverse_list
+
+
   # create a list that consists of the elements of this Sequence except the first
   # n elements
   #
@@ -308,11 +313,50 @@ public Sequence(public T type) ref is
     as_list.flat_map f
 
 
+  # Map this Sequence to f applied to neighboring pairs of values
+  # in this Sequence.
+  #
+  # In case this Sequence has less than two elements, the result will
+  # be the empty list.
+  #
+  # ex. to obtain a list of differences you, you may use `map_pairs (-)`:
+  #
+  #   [2,3,5,7,11,13,17,19,23,29].map_pairs a,b->b-a)
+  #
+  # results in `[1,2,2,4,2,4,2,4,6]`
+  #
+  public map_pairs(B type, f (T,T)->B) list B =>
+    zip (drop 1) f
+
+
   # fold the elements of this Sequence using the given monoid.
   #
   # e.g., to sum the elements of a Sequence of i32, use s.fold i32.sum
   #
   public fold (m Monoid T) => as_list.fold m.e m
+
+
+  # fold the elements of this non-empty Sequence using the given function
+  #
+  # e.g., to find the minimum of a Sequence of i32, use `s.fold1 (<=)`
+  #
+  public fold1 (f (T,T)->T) T
+  pre
+    debug: !is_empty
+  =>
+    as_list.fold1 f
+
+
+  # fold the elements of this Sequence using the given function and initial
+  # value.
+  #
+  # In case this Sequence is empty, the result is `e`.
+  #
+  # e.g., to find the product of a Sequence of i32, use `s.foldf (*) 1`
+  #
+  public foldf (B type, f (B,T)->B, e B) B
+  =>
+    as_list.foldf_list f e
 
 
   # map this Sequence to a list that contains the result of folding

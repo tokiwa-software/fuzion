@@ -222,6 +222,30 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
                                                 | c Cons => c.tail.fold (m.op s c.head) m)
 
 
+  # fold the elements of this non-empty list using the given function
+  #
+  # e.g., to find the minimum of a list of i32, use `l.fold1 (<=)`
+  #
+  public redef fold1 (f (A,A)->A) A
+  pre
+    debug: !is_empty
+  => (list.this ? nil    => panic "list.fold1 called on empty list"
+                | c Cons => c.tail.foldf f c.head)
+
+
+  # fold the elements of this list using the given function
+  #
+  # e.g., to find the product of a list of i32, use `s.foldf (*) 1`
+  #
+  # NYI: #2319: rename as `foldf` as soon as redefinition of feature with
+  # type parameters works
+  #
+  public foldf_list (B type, f (B,A)->B, e B) B
+  =>  (list.this ? nil    => e
+                 | c Cons => c.tail.foldf f (f e c.head))
+
+
+
   # map this Sequence to a list that contains the result of folding
   # all prefixes using the given monoid.
   #
@@ -259,7 +283,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
   # reverse the order of the elements in this list
   #
-  public reverse list A is
+  public reverse_list list A is
     reverse nil
 
 
