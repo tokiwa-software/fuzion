@@ -43,107 +43,107 @@
 # logic puzzles including an amazing adventure in combinatory logic. Oxford
 # University Press, USA.
 #
-composition is
+public composition is
 
   # I
   # identity
   # Bird: ?
   # BQN: ⊣⊢
   # Haskell id
-  id(T type) T -> T is x->x
+  public id(T type) T -> T is x->x
 
   # K
   # Elementary Cancellator
   # Bird: Kestrel
   # BQN: ⊣
   # Haskell ?
-  left(T, U type) (T,U) -> T is (x,y) -> x
+  public left(T, U type) (T,U) -> T is (x,y) -> x
 
   # S
   # hook, monadic after
   # Bird: Starling
   # BQN: ⟜
   # Haskell: <*>
-  after1(f (T, U) -> V, g T -> U) T -> V is x -> f x (g x)
+  public after1(f (T, U) -> V, g T -> U) T -> V is x -> f x (g x)
 
   # B
   # Elementare Compositor
   # Bird: Bluebird
   # BQN: ∘
   # Haskell: .
-  compose( f U -> V, g T -> U) T -> V => f ∘ g
+  public compose( f U -> V, g T -> U) T -> V => f ∘ g
 
   # B1
   # Elementare Compositor
   # Bird: Blackbird
   # BQN: ∘
   # Haskell: .: or ...
-  atop(f V -> W, g (T,U) -> V) (T,U) -> W is (x,y) -> f (g x y)
+  public atop(f V -> W, g (T,U) -> V) (T,U) -> W is (x,y) -> f (g x y)
 
   # C
   # Elementary Permutator
   # Bird: Cardinal
   # BQN: ˜
   # Haskell: flip
-  flip(f (T,U) -> V) (U,T) -> V is (x,y) -> f y x
+  public flip(f (T,U) -> V) (U,T) -> V is (x,y) -> f y x
 
   # W
   # Elementary Duplicator
   # Bird: Warbler
   # BQN: ~
   # Haskell: join
-  join(f (T,T) -> U) T->U is x -> f x x
+  public join(f (T,T) -> U) T->U is x -> f x x
 
   # Ψ - psi
   # composition of binary and unary function
   # Bird: ?
   # BQN: ○
   # Haskell: on
-  over(f (U,U) -> V, g T -> U) (T,T) -> V is (x,y) -> f (g x) (g y)
+  public over(f (U,U) -> V, g T -> U) (T,T) -> V is (x,y) -> f (g x) (g y)
 
   # Φ (S′)
   # composition of two unary functions and one binary function
   # Bird: ?
   # BQN: 3-train?
   # Haskell: liftA2
-  fork(f (U1,U2) -> V, g T1 -> U1, h T2 -> U2) (T1,T2) -> V is (x,y) -> f (g x) (h y)
+  public fork(f (U1,U2) -> V, g T1 -> U1, h T2 -> U2) (T1,T2) -> V is (x,y) -> f (g x) (h y)
 
   # Φ1
   # composition of two unary functions and one binary function
   # Bird: Pheasant (Hoekstra)
   # BQN: 3-train?
   # Haskell: ?
-  fork2(f (U1,U2) -> V, g (T1,T2) -> U1, h (T1,T2) -> U2) (T1,T2) -> V is (x,y) -> f (g x y) (h x y)
+  public fork2(f (U1,U2) -> V, g (T1,T2) -> U1, h (T1,T2) -> U2) (T1,T2) -> V is (x,y) -> f (g x y) (h x y)
 
   # D
   # composition of one binary function f and one unary function g...
   # Bird: Dove
   # BQN: ⟜
   # Haskell:
-  after2(f (V, U) -> W, g T -> U) (V,T) -> W is (x,y) -> f x (g y)
+  public after2(f (V, U) -> W, g T -> U) (V,T) -> W is (x,y) -> f x (g y)
 
   # D2
   # composition of one binary function g and tow unary functions f, h
   # Bird: Dovekie
   # BQN: a⊸b⟜c
   # Haskell:
-  d2(f T -> V, g (V,W) -> X, h U -> W) (T,U) -> X is (x,y) -> g (f x) (h y)
+  public d2(f T -> V, g (V,W) -> X, h U -> W) (T,U) -> X is (x,y) -> g (f x) (h y)
 
   # left ∘ flip
   # Bird: ?
   # BQN: ⊢
-  right(T, U type) (T,U) -> U is (x,y) -> y
+  public right(T, U type) (T,U) -> U is (x,y) -> y
 
   # ?
   # composition of one unary function f and one binary function g...
   # Bird: ?
   # BQN: ⊸
-  before1(f V -> U, g (U, V) -> W) V     -> W is x     -> g (f x) x
-  before2(f T -> U, g (U, V) -> W) (T,V) -> W is (x,y) -> g (f x) y
+  public before1(f V -> U, g (U, V) -> W) V     -> W is x     -> g (f x) x
+  public before2(f T -> U, g (U, V) -> W) (T,V) -> W is (x,y) -> g (f x) y
 
   # ?
   # Constant cancellator?
   # Bird: ?
   # BQN: ˙
-  const1(T, U    type, v T) U     -> T is x     -> v
-  const2(T, U, V type, v T) (U,V) -> T is (x,y) -> v
+  public const1(T, U    type, v T) U     -> T is x     -> v
+  public const2(T, U, V type, v T) (U,V) -> T is (x,y) -> v
