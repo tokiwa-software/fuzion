@@ -38,14 +38,16 @@ public stdin io.buffered.reader is
 
   read_provider : io.Read_Provider is
     read(count i32) choice (array u8) io.end_of_file error is
-      arr := fuzion.sys.internal_array_init u8 1
-      v := fuzion.sys.fileio.read fuzion.sys.stdin.stdin0 arr.data 1
+      arr := fuzion.sys.internal_array_init u8 count
+      v := fuzion.sys.fileio.read fuzion.sys.stdin.stdin0 arr.data count
       if v < -1
         error "an error occurred while reading stdin"
       else if v <= 0
         io.end_of_file
+      else if v < count
+        array u8 v i->arr[i]
       else
         arr.as_array
 
 
-  io.buffered.reader read_provider 1 []
+  io.buffered.reader read_provider 1024 []
