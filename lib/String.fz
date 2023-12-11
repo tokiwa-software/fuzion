@@ -39,6 +39,9 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # returns true if string is empty or contains whitespace only
   public is_blank => utf8 ∀ u -> u.is_ascii_white_space
 
+  # returns true if string contains whitespace
+  public contains_whitespace => utf8 ∃ u -> u.is_ascii_white_space
+
   # length of this string in bytes
   public byte_length => utf8.count
 
