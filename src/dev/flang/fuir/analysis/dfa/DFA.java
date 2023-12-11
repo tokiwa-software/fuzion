@@ -767,7 +767,7 @@ public class DFA extends ANY
    * Maximum recursive analysis of newly created Calls, see `analyzeNewCall` for
    * details.
    */
-  private static int MAX_NEW_CALL_RECURSION = 20;
+  private static int MAX_NEW_CALL_RECURSION = 10;
 
 
   /*-------------------------  static methods  --------------------------*/

@@ -325,6 +325,15 @@ public class List<T>
 
 
   /**
+   * Remove the last element of the list.
+   */
+  public T removeLast()
+  {
+    return remove(size()-1);
+  }
+
+
+  /**
    * A collector for this List to be used in Stream.collect(...)
    * @param <U>
    * @return
