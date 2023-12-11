@@ -1811,7 +1811,7 @@ public class DFA extends ANY
           // NYI: result must be null if result of ncl is null (ncl does not return) and effect.abort is not called
           return Value.UNIT;
         });
-    put("effect.abort"                   , cl ->
+    put("effect.abort0"                   , cl ->
         {
           var ecl = cl._dfa._fuir.effectType(cl._cc);
           var new_e = cl._target;

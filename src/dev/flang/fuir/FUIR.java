@@ -2371,7 +2371,7 @@ hw25 is
       case "effect.replace",
            "effect.default",
            "effect.abortable",
-           "effect.abort" -> true;
+           "effect.abort0" -> true;
       default -> false;
       };
   }

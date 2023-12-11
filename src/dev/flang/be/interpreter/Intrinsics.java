@@ -1282,7 +1282,7 @@ public class Intrinsics extends ANY
     put("effect.replace"  ,
         "effect.default"  ,
         "effect.abortable",
-        "effect.abort"    , (interpreter, innerClazz) -> effect(interpreter, innerClazz));
+        "effect.abort0"    , (interpreter, innerClazz) -> effect(interpreter, innerClazz));
     put("effect.type.is_installed", (interpreter, innerClazz) -> args ->
         {
           var cl = innerClazz.actualGenerics()[0];
@@ -1345,7 +1345,7 @@ public class Intrinsics extends ANY
                 FuzionThread.current()._effects.put(cl, prev);
               }
             }
-          case "effect.abort": throw new Abort(cl);
+          case "effect.abort0": throw new Abort(cl);
           default: throw new Error("unexpected effect intrinsic '"+innerClazz+"'");
           }
         return Value.EMPTY_VALUE;

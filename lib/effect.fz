@@ -62,7 +62,7 @@ is
   private abortable(T type : Function unit, f T) unit is intrinsic
 
   # replace effect in the current context by this and abort current execution
-  public abort void is intrinsic
+  private abort0 void is intrinsic
 
   # set default effect in the current context to this if none is installed
   module default unit is intrinsic
@@ -169,3 +169,60 @@ is
     match r
       nil => panic "*** unexpected abort in {simple_effect.this.type}"
       v T => v
+
+
+open_resources: effect effect_mode.default is
+
+  resources(id u64, s container.Stack ()->unit) is
+
+  s := container.stack mutate resources
+
+  add(destructor ()->unit) unit is
+    match s.peek
+      r resources => r.s.push destructor
+      nil =>
+
+  register_new_abortable_effect(id u64) is
+    s.push (resources id (container.stack mutate ()->unit))
+
+
+  abort(id u64) is
+    while
+      match s.pop
+        r resources =>
+          while
+            match r.s.pop
+              f ()->unit => f.call; true
+              nil => false
+          r.id != id
+        nil => panic "must not happen"
+
+
+  success(id u64) is
+    while
+      match s.pop
+        r resources => r.id != id
+        nil => panic "must not happen"
+
+
+get_open_resources =>
+  if !effect.type.is_installed open_resources
+    open_resources
+  open_resources.env
+
+
+public add_destructor(d ()->unit) =>
+  if effect.type.is_installed open_resources
+    open_resources.env.add d
+
+
+public abortable_effect : simple_effect is
+
+  id := fuzion.sys.misc.unique_id
+  _ := get_open_resources.register_new_abortable_effect id
+
+  public abort =>
+    get_open_resources.abort id
+    abort0
+
+  # NYI should cleanup on successful run without abort

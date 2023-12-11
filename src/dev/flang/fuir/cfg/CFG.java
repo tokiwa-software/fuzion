@@ -495,7 +495,7 @@ public class CFG extends ANY
               cfg.addToCallGraph(cl, call, false);
             }
         });
-    put("effect.abort"                      , (cfg, cl) -> { } );
+    put("effect.abort0"                      , (cfg, cl) -> { } );
     put("effect.type.is_installed"          , (cfg, cl) -> { } );
     put("fuzion.java.Java_Object.is_null"   , (cfg, cl) -> { } );
     put("fuzion.java.array_get"             , (cfg, cl) -> { } );
