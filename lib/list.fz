@@ -178,14 +178,14 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # This performs a lazy mapping, f is called only when the elements
   # are taken from the list.
   #
-  public map(B type, f A -> B) list B is
+  public map_to_list(B type, f A -> B) list B is
     match list.this
       _ nil  => nil
       c Cons =>
         ref : Cons B (list B)
         // Cons B (list B) with    # NYI: better syntax for anonymous feature
           head => f c.head
-          tail => c.tail.map f
+          tail => c.tail.map_to_list f
 
 
   # map the list to a new list applying function f to all elements
@@ -194,17 +194,17 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # This performs a lazy mapping, f is called only when the elements
   # are taken from the list.
   #
-  public flat_map(B type, f A -> Sequence B) list B is
+  public flat_map_to_list(B type, f A -> Sequence B) list B is
     match list.this
       _ nil  => nil
       c Cons =>
         match (f c.head).as_list
-          _ nil => c.tail.flat_map B f
+          _ nil => c.tail.flat_map_to_list B f
           c2 Cons =>
             ref : Cons B (list B)
             // Cons B (list B) with    # NYI: better syntax for anonymous feature
               head => c2.head
-              tail => c2.tail ++ c.tail.flat_map B f
+              tail => c2.tail ++ c.tail.flat_map_to_list B f
 
 
   # fold the elements of this list using the given monoid.
@@ -509,7 +509,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #   list.this.last, b.last
   #
   public combine_list(U, V type, b Sequence U, f (A,U)->V) =>
-    flat_map V x->(b.map_sequence y->(f x y))
+    flat_map V x->(b.map y->(f x y))
 
 
   # create an empty list

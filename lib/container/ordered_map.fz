@@ -60,7 +60,7 @@ is
 
   # a sorted array of entries of this map
   #
-  public sorted_entries := sorted_array_of (ks.indices.map_sequence (i -> entry i)).as_array
+  public sorted_entries := sorted_array_of (ks.indices.map (i -> entry i)).as_array
 
 
   # number of entries in this map
@@ -73,8 +73,9 @@ is
   # performance is O(log size).
   #
   public index [] (k OK) option V is
-    sorted_entries.find (e -> ks[e.i] ⋄ k)
-                 .map (i -> sorted_entries[i].val)
+    sorted_entries
+      .find (e -> ks[e.i] ⋄ k)
+      .map_to_option i->sorted_entries[i].val
 
 
   # get an array of all key/value pairs in this map

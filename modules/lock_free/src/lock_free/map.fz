@@ -117,7 +117,7 @@ is
   redef as_string => "container_node[gen=$gen]({array.as_string ", "})"
 
   as_list(f Indirection_Node CTK CTV -> Main_Node CTK CTV) =>
-    array.flat_map_sequence (tuple CTK CTV) (b -> b.as_list f)
+    array.flat_map (tuple CTK CTV) (b -> b.as_list f)
          .as_list
 
 
@@ -215,7 +215,7 @@ pre from ∀ (sn -> (from.filter (snn -> (hash sn.k) = (hash snn.k))).count = 1)
 is
   redef as_list => from
     .as_list
-    .map_sequence sn->(sn.k, sn.v)
+    .map sn->(sn.k, sn.v)
 
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
@@ -434,7 +434,7 @@ is
 
   # compress a container node
   private compress(cn container_node CTK CTV, lev u32, g u64) =>
-    narr := cn.array.map (branch CTK CTV) n->
+    narr := cn.array.map_to_array (branch CTK CTV) n->
       match n
         i Indirection_Node =>
           match (gcas_read i).data
@@ -715,7 +715,7 @@ public container.set_of_hashable(K type : property.hashable, vs (lock_free.map K
 
   private map lock_free.map K unit :=
     match vs
-      vss (Sequence K) => (lock_free.map K unit).type.from_entries (vss.map_sequence (k -> tuple k unit))
+      vss (Sequence K) => (lock_free.map K unit).type.from_entries (vss.map (k -> tuple k unit))
       vsc (lock_free.map K unit) => vsc
 
   ref : Set K

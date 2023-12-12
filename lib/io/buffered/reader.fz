@@ -164,7 +164,7 @@ is
       .count
 
   codepoints(str_arr Mutable_Array String) =>
-    (str_arr.map_sequence (str -> valid_codepoints str)).fold i32.type.sum
+    (str_arr.map (str -> valid_codepoints str)).fold i32.type.sum
 
 
   mi : mutate is

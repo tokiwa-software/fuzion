@@ -103,11 +103,6 @@ public has_interval : integer is
       public contains (e has_interval.this) => (lower ≤ e ≤ upper) && ((e - lower) %% step)
 
 
-      # use map implementation from Sequence:
-      #
-      public map(B type, f Unary B has_interval.this)  => infix : .this.map_sequence f
-
-
     # create a list from this interval
     #
     public redef as_list list has_interval.this is
@@ -115,11 +110,6 @@ public has_interval : integer is
         tail list has_interval.this is
           if (head ≥ upper) nil else cons head+has_interval.this.type.one // NYI should be '+ one', but does not work yet since outer.outer.outer.clazz is has_interval i32, it should be i32.
       if (lower > upper) nil else cons lower
-
-
-    # use map implementation from Sequence:
-    #
-    public map(B type, f Unary B has_interval.this)  => map_sequence f
 
 
     # string representation of this interval, e.g., "1..10"

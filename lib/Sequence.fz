@@ -84,7 +84,7 @@ public Sequence(public T type) ref is
   public count
   pre
     analysis: finite  # in practice, we do not always have this information
-  => (map_sequence i32 (_ -> 1)).fold i32.type.sum
+  => (map i32 (_ -> 1)).fold i32.type.sum
 
 
   # get the first element of this Sequence
@@ -290,7 +290,7 @@ public Sequence(public T type) ref is
 
   # call 'as_string' on the elements
   #
-  public as_strings => map_sequence c->c.as_string
+  public as_strings => map c->c.as_string
 
 
   # map the Sequence to a new list applying function f to all elements
@@ -298,19 +298,15 @@ public Sequence(public T type) ref is
   # This performs a lazy mapping, f is called only when the elements
   # in the resulting list are accessed.
   #
-  # NYI: As long as covariance for result type is not permitted we cannot
-  # call this 'map' since this would clash with, e.g., 'array.map'
-  #
-  public map_sequence(B type, f T -> B) => as_list.map f
+  public map(B type, f Unary B T) => as_list.map_to_list f
 
 
-  # NYI "error 1: Cannot redefine feature with generic arguments
-  #      To solve this, ask the Fuzion team to remove this restriction :-)"
+  # map each element of this Sequence to Sequence
+  # Then flatten the result by one level,
+  # essentially combining all the sequences.
   #
-  # flat_map(B type, f T -> Sequence B) =>
-  #   as_list.flat_map f
-  public flat_map_sequence(B type, f T -> Sequence B) =>
-    as_list.flat_map f
+  public flat_map(B type, f T -> Sequence B) =>
+    as_list.flat_map_to_list f
 
 
   # Map this Sequence to f applied to neighboring pairs of values
@@ -435,7 +431,7 @@ public Sequence(public T type) ref is
   #   Sequence.this.last, b.last
   #
   public combine(U, V type, b Sequence U, f (T,U)->V) Sequence V =>
-    flat_map_sequence V x->(b.map_sequence y->(f x y))
+    flat_map V x->(b.map y->(f x y))
 
 
   # create a new Sequence from tuples of all combinations of elements

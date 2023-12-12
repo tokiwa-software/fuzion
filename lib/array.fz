@@ -187,7 +187,7 @@ module:public array(
 
   # map the array to a new array applying function f to all elements
   #
-  public map(B type, f T -> B) array B is
+  public map_to_array(B type, f T -> B) array B is
     array B array.this.length (i -> f array.this[i])
 
 

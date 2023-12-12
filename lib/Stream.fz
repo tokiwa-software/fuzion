@@ -183,7 +183,7 @@ public stream(public T type) ref : Sequence T is
   # create a string from the elements of this stream
   #
   redef as_string String is
-    map String (x -> x.as_string)
+    map_to_stream String (x -> x.as_string)
       .fold (String.type.concat ", ")
 
 
@@ -198,15 +198,15 @@ public stream(public T type) ref : Sequence T is
   # This performs a lazy mapping, f is called only when the elements
   # are taken from the stream.
   #
-  public map(B type, f T -> B) stream B is
+  public map_to_stream(B type, f T -> B) stream B is
     ref : stream B
       has_next => stream.this.has_next
       next B is f stream.this.next
 
 
-  # NYI: This currently does not work with the C backend since generics resolution
-  # for stream.this.next confuses the type from the outer feature (T) with the type
-  # from the inherited feature (B).
+  # NYI this was broken but is meanwhile fixed.
+  # Should be removed eventually.
+  #
   public map_broken(B type, f T -> B) : stream B is
     has_next => stream.this.has_next
     next B is f stream.this.next
