@@ -1,0 +1,146 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library infix pipe features
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+
+# infix |> -- pipe with one argument
+#
+# This allows changing the order of function application: instead of
+#
+#   l := sum ([1,2,3,4].map **2)
+#
+# you can write
+#
+#   l := [1,2,3].map **2 |> sum
+#
+# which often correponds more naturally to the data flow through the code.
+#
+public infix |> (A, R type, a A, f A->R) =>
+  f a
+
+
+# infix ||> -- pipe with a two-tuple argument, destructuring the tuple into arguments
+#
+# This allows changing the order of function application: instead of
+#
+#   f(a,b i32) => a+b
+#   l1 := [1,2,3,4]
+#   l2 := [4,3,2,1}
+#   l := l1.pairs l2
+#          .map p->{(p1,p2) := p; f p1 p2}
+#
+# you can write
+#
+#   l1 := [1,2,3,4]
+#   l2 := [4,3,2,1}
+#   l := l1.pairs l2
+#          .map (p -> p ||> f)
+#
+# which often correponds more naturally to the data flow through the code.
+#
+public infix ||> (A, B, R type, a (A,B), f (A,B)->R) =>
+  f a.values.0 a.values.1
+
+
+# infix |||> -- pipe with a three-tuple argument, destructuring the tuple into arguments
+#
+# This allows changing the order of function application: instead of
+#
+#   f(a,b,c i32) => a+b+c
+#   t := (1,2,3)
+#   r := f t.values.0 t.values.1 t.values.2
+#
+# you can write
+#
+#   f(a,b,c i32) => a+b+c
+#   t := (1,2,3)
+#   r := t |||> f
+#
+# which often correponds more naturally to the data flow through the code.
+#
+public infix |||> (A, B, C, R type, a (A,B,C), f (A,B,C)->R) =>
+  f a.values.0 a.values.1 a.values.2
+
+
+# infix ||||> -- pipe with a four-tuple argument, destructuring the tuple into arguments
+#
+# This allows changing the order of function application: instead of
+#
+#   f(a,b,c,d i32) => a+b+c+d
+#   t := (1,2,3,4)
+#   r := f t.values.0 t.values.1 t.values.2 t.values.3
+#
+# you can write
+#
+#   f(a,b,c,d i32) => a+b+c+d
+#   t := (1,2,3,4)
+#   r := t ||||> f
+#
+# which often correponds more naturally to the data flow through the code.
+#
+public infix ||||> (A, B, C, D, R type, a (A,B,C,D), f (A,B,C,D)->R) =>
+  f a.values.0 a.values.1 a.values.2 a.values.3
+
+
+# infix |||||> -- pipe with a five-tuple argument, destructuring the tuple into arguments
+#
+# This allows changing the order of function application: instead of
+#
+#   f(a,b,c,d,e i32) => a+b+c+d+e
+#   t := (1,2,3,4,5)
+#   r := f t.values.0 t.values.1 t.values.2 t.values.3 t.values.4
+#
+# you can write
+#
+#   f(a,b,c,d,e i32) => a+b+c+d+e
+#   t := (1,2,3,4,5)
+#   r := t |||||> f
+#
+# which often correponds more naturally to the data flow through the code.
+#
+public infix |||||> (A, B, C, D, E, R type, a (A,B,C,D,E), f (A,B,C,D,E)->R) =>
+  f a.values.0 a.values.1 a.values.2 a.values.3 a.values.4
+
+
+# infix ||||||> -- pipe with a six-tuple argument, destructuring the tuple into arguments
+#
+# This allows changing the order of function application: instead of
+#
+#   f(a,b,c,d,e,f i32) => a+b+c+d+e+f
+#   t := (1,2,3,4,5,6)
+#   r := f t.values.0 t.values.1 t.values.2 t.values.3 t.values.4 t.values.5
+#
+# you can write
+#
+#   f(a,b,c,d,e,f i32) => a+b+c+d+e+f
+#   t := (1,2,3,4,5,6)
+#   r := t ||||||> f
+#
+# which often correponds more naturally to the data flow through the code.
+#
+public infix ||||||> (A, B, C, D, E, F, R type, a (A,B,C,D,E,F), f (A,B,C,D,E,F)->R) =>
+  f a.values.0 a.values.1 a.values.2 a.values.3 a.values.4 a.values.5
+
+
+# a six-tuple is large enough for two 3-D coordinates, so let's stop here for now....
