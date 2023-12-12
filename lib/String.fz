@@ -545,7 +545,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
         n u32 => n > (u32 0)
     is
       (container.searchable_sequence utf8).split0 s.utf8 limit split_after
-          .map x->(String.type.from_bytes x)
+          .map_to_list x->(String.type.from_bytes x)
 
 
   # remove leading and trailing white space from this string
