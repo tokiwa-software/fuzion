@@ -54,9 +54,9 @@ ctrie_threads is
 
     if ((envir.args.nth 1).get "")="-debug"
       say "==="
-      say (ctrie.items.map_sequence x->"{x.values.0} was inserted by thread {x.values.1}")
+      say (ctrie.items.map x->"{x.values.0} was inserted by thread {x.values.1}")
       say "==="
-      say ((ctrie.items.map_sequence x->x.values.1).group_by x->x)
+      say ((ctrie.items.map x->x.values.1).group_by x->x)
 
 
   test2(take_snapshots bool) is

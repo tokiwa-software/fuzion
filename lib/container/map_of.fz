@@ -38,4 +38,4 @@ public map_of(K type : property.orderable, V type, ks array K, vs array V) Map K
 # example: map_of [(key1, value1), (key2, value2)]
 #
 public map_of(K type : property.orderable, V type, kvs array (tuple K V)) Map K V is
-  ordered_map (kvs.map (kv -> kv.values.0)) (kvs.map (kv -> kv.values.1))
+  ordered_map (kvs.map_to_array (kv -> kv.values.0)) (kvs.map_to_array (kv -> kv.values.1))

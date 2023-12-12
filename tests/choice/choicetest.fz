@@ -96,6 +96,6 @@ choicetest is
   a.for_each (c -> set sum := sum + c.value_in_cents)
   say sum
 
-  say "summing array using monoid: {a.map_sequence c->c.value_in_cents
+  say "summing array using monoid: {a.map c->c.value_in_cents
                                      .fold i32.type.sum
                                    }"

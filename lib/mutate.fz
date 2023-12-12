@@ -254,12 +254,6 @@ public mutate : simple_effect is
       as_array.as_list
 
 
-    # map the array to a new array applying function f to all elements
-    #
-    public map(B type, f T -> B) =>
-      map_sequence B f
-
-
     # initialize one-dimensional mutable array
     #
     public type.new
