@@ -789,11 +789,25 @@ int fzE_pipe_close(int64_t desc){
 #endif
 }
 
+
+void fzE_print_last_error()
+{
+  char buf[1024];
+  strcpy(buf, strerror(errno));
+  printf("%d --> %s\n", errno, buf);
+}
+
+
 // open_results[0] the filedescriptor, unchanged on error
 // open_results[1] the error number
 void fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
 {
   // NYI use lock to make fopen and fcntl _atomic_.
+  //"In  multithreaded programs, using fcntl() F_SETFD to set the close-on-exec flag
+  // at the same time as another thread performs a fork(2) plus execve(2) is vulnerable
+  // to a race condition that may unintentionally leak the file descriptor to the
+  // program executed in the child process.  See the discussion of the O_CLOEXEC flag in open(2)
+  // for details and a remedy to the problem."
   FILE * fp;
   errno = 0;
   switch (mode)
@@ -832,7 +846,10 @@ void fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
     }
   }
 #ifndef _WIN32
-  fcntl(open_results[0], F_SETFD, FD_CLOEXEC);
+  if ((FILE *)open_results[0] != NULL)
+    {
+      fcntl(fileno((FILE *)open_results[0]), F_SETFD, FD_CLOEXEC);
+    }
 #endif
   open_results[1] = (int64_t)errno;
 }
