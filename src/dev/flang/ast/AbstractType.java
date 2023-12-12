@@ -671,6 +671,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         actualGenerics.freeze();
         _appliedTypePars2Cache = result;
       }
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+
     return result;
   }
 
