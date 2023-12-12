@@ -942,7 +942,21 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             AstErrors.refToChoice(pos);
           }
+        checkChoiceDisjoint(pos);
+      }
+  }
 
+
+  /**
+   * Check that all choice generics are disjoint.
+   *
+   * @param pos for error messages.
+   */
+  public void checkChoiceDisjoint(SourcePosition pos)
+  {
+    var g = choiceGenerics();
+    if (g != null)
+      {
         int i1 = 0;
         for (var t1 : g)
           {

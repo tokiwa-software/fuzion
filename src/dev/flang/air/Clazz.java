@@ -1743,7 +1743,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         if (g._type.isDirectlyAssignableFrom(staticTypeOfValue))
           {
             if (CHECKS) check
-              (result < 0);
+              (Errors.any() || result < 0);
             result = index;
           }
         index++;
@@ -1995,6 +1995,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (isInstantiated() && _abstractCalled != null)
       {
         AirErrors.abstractFeatureNotImplemented(feature(), _abstractCalled, _instantiationPos);
+      }
+    if (isInstantiated() && isChoice())
+      {
+        this._type.checkChoiceDisjoint(_instantiationPos.pos());
       }
   }
 
