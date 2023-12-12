@@ -4,9 +4,9 @@
 ----^
 Actual type for argument #1 'minime' does not match expected type.
 In call to          : 'outer.f'
-expected formal type: 'outer.this.type'
-actual type found   : 'outer.this.type.b'
-assignable to       : 'outer.this.type.b'
+expected formal type: 'outer.this'
+actual type found   : 'outer.this.b'
+assignable to       : 'outer.this.b'
 for value assigned  : 'b'
 To solve this, you could change the type of 'minime' to a 'ref' type like 'ref outer'.
 

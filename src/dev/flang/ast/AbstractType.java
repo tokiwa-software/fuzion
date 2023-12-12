@@ -1726,7 +1726,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               + fname;
         if (isThisType())
           {
-            result = result + ".this.type";
+            result = result + ".this";
           }
         for (var g : generics())
           {
