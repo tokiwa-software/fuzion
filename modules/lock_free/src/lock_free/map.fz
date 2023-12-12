@@ -214,8 +214,8 @@ private list_node(CTK type : property.hashable, CTV type, from Sequence (singlet
 pre from ∀ (sn -> (from.filter (snn -> (hash sn.k) = (hash snn.k))).count = 1)
 is
   redef as_list => from
-    .as_list
     .map sn->(sn.k, sn.v)
+    .as_list
 
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
