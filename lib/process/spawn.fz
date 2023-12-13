@@ -252,7 +252,7 @@ is
 
   env_var_strings := env_vars
     .items
-    .map_sequence (x ->
+    .map (x ->
       (k, v) := x
       "$k=$v")
     .as_array
