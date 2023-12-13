@@ -442,9 +442,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
      * ex is
      *   say (u64 4, u8 1)
      */
+    _asValue        = determineAsValue();
     _resultClazz    = /* isBoxed() ? null : */ determineResultClazz();
     _outerRef       = isBoxed() ? null : determineOuterRef();
-    _asValue        = determineAsValue();
   }
 
 
