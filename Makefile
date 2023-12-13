@@ -354,8 +354,8 @@ FUZION_FILES = \
 			 $(BUILD_DIR)/README.md \
 			 $(BUILD_DIR)/release_notes.md
 
-# files required for fz command with interpreter backend
-FZ_INT = \
+# files required for fz command with jvm backend
+FZ_JVM = \
 			 $(BUILD_DIR)/bin/fz \
 			 $(MOD_BASE)
 
@@ -363,6 +363,11 @@ FZ_INT = \
 FZ_C = \
 			 $(BUILD_DIR)/bin/fz \
 			 $(BUILD_DIR)/include \
+			 $(MOD_BASE)
+
+# files required for fz command with interpreter backend
+FZ_INT = \
+			 $(BUILD_DIR)/bin/fz \
 			 $(MOD_BASE)
 
 DOCUMENTATION = \
