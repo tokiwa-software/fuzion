@@ -550,7 +550,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # remove leading and trailing white space from this string
   #
-  trim String is
+  public trim String is
     s0 := utf8
 
     s1 := (s0.drop_while c->c.is_ascii_white_space).reverse
