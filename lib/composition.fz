@@ -52,6 +52,15 @@ public composition is
   # Haskell id
   public id(T type) T -> T is x->x
 
+  # ?
+  # reverse apply
+  # Bird: thrush
+  # BQN: ?
+  # Haskell: $
+  #
+  # this is already defined in univers:
+  # public infix |>(T, U type, x T, f T->U) U => f x
+
   # K
   # Elementary Cancellator
   # Bird: Kestrel
