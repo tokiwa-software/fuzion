@@ -45,7 +45,7 @@ public has_interval : integer is
   #   a <  b: the interval from a to b, both inclusive
   #   a == b: the interval containing only one element, a
   #   a >  b: an empty interval
-  public infix .. (upper has_interval.this) : container.Set has_interval.this is
+  public infix .. (public upper has_interval.this) : container.Set has_interval.this is
 
     public lower has_interval.this is has_interval.this
     # lower => has_interval.this  # NYI: This does not work yet since the result type when doing clazz layout is has_interval and not the actual clazz (i32, etc)
