@@ -58,7 +58,7 @@ public composition is
   # BQN: ?
   # Haskell: $
   #
-  # this is already defined in univers:
+  # this is already defined in universe:
   # public infix |>(T, U type, x T, f T->U) U => f x
 
   # K
