@@ -165,23 +165,17 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * For a resolved type, check if it is a choice type and if so, return the
-   * list of choices. Otherwise, return null.
+   * list of choices.
    */
   public List<AbstractType> choiceGenerics()
   {
     if (PRECONDITIONS) require
-      (!(this instanceof UnresolvedType tt));
+      (!(this instanceof UnresolvedType tt),
+       isChoice());
 
-    if (!isGenericArgument())
-      {
-        var g = featureOfType().choiceGenerics();
-        if (g != null)
-          {
-            return replaceGenerics(g)
-              .map(t -> t.replace_this_type_by_actual_outer(this));
-          }
-      }
-    return null;
+    var g = featureOfType().choiceGenerics();
+    return replaceGenerics(g)
+      .map(t -> t.replace_this_type_by_actual_outer(this));
   }
 
 
@@ -935,9 +929,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   void checkChoice(SourcePosition pos)
   {
-    var g = choiceGenerics();
-    if (g != null)
+    if (isChoice())
       {
+        var g = choiceGenerics();
         if (isRef())
           {
             AstErrors.refToChoice(pos);
