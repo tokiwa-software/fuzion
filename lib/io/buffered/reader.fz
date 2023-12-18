@@ -56,7 +56,9 @@ public reader(private rp Read_Provider, buf_size i32, buffer array u8 | io.end_o
   # in case the buffer is empty it fills the buffer
   # with up to max_n bytes before returning it.
   #
-  public read(max_n i32) array u8 | io.end_of_file is
+  public read(max_n i32) array u8 | io.end_of_file
+  post result ? io.end_of_file => true | a array => !a.is_empty
+  is
     match buffer
       b array =>
         if b.is_empty
@@ -148,95 +150,84 @@ public read_string(n i32) String ! reader
 pre n >= 0
 is
 
-
-  as_string(x array u8 | io.end_of_file) =>
-    match x
-      io.end_of_file => ""
-      a array => String.type.from_bytes a
-
-  valid_codepoints(str String) =>
-    str
+  take_valid_codepoints(a Sequence u8, max i32) =>
+    v := String.type.from_bytes a
       .codepoints_and_errors
-      .filter x->
+      .take_while x->
         match x
           codepoint => true
           error => false
-      .count
+      .take max
+      .map String x->
+        match x
+          c codepoint => c
+          error => exit 1
+      .as_array
 
-  codepoints(str_arr Mutable_Array String) =>
-    (str_arr.map (str -> valid_codepoints str)).fold i32.type.sum
+    bytes_used := (v.map c->c.as_string.byte_length).fold i32.type.sum
+    reader.discard bytes_used
+    v
 
-
-  mi : mutate is
-  mi.go ()->
-
-    str_arr := (mutate.array String).type.new mi 1 (as_string reader.read)
-    str := String.type.join str_arr
-    res := str.substring_codepoint 0 (min n str.codepoint_length)
-
-    while (codepoints str_arr < n &&
-      match reader.read
-        io.end_of_file =>
-          # if we have not discarded/read anything yet, raise end of file error
-          if str_arr.count = 1
-            reader.raise (error "-- end of file --")
-          false
-        a array =>
-          reader.discard_all
-          true)
-    do
-      str_arr.add (as_string reader.read)
+  for
+    is_eof                 := reader.read ? io.end_of_file => true | a array => false
+    next_bytes Sequence u8 := (reader.read ? io.end_of_file => []   | a array => a), rest ++ (reader.read ? io.end_of_file => [] | a array => a)
+    next_codepoints        := take_valid_codepoints next_bytes n, take_valid_codepoints next_bytes n-codepoint_count
+    # if we did not use any bytes and `next_bytes` contains not enough bytes for a codepoint potentially,
+    # we trigger a `discard_all` and remember what we read so far via `rest`.
+    # this is necesarry e.g. for stdin where we read one byte at a time.
+    rest Sequence u8       := if n>0 && next_codepoints.is_empty && next_bytes.count < 4 then reader.discard_all; next_bytes else []
+    codepoint_count        := next_codepoints.count, codepoint_count+next_codepoints.count
+    res Sequence String    := next_codepoints, res ++ next_codepoints
+  while !is_eof && codepoint_count < n
+  else
+    if is_eof && res.is_empty
+      reader.raise (error "-- end of file --"); ""
     else
-
-      str := String.type.join str_arr
-      res := str.substring_codepoint 0 n
-
-      # discard only the bytes we are using in result
-      reader.discard (str_arr.last.byte_length - (str.byte_length - res.byte_length))
-
-      res
-
+      String.type.join res
 
 
 # use the currently installed byte reader effect
 # to read until a line feed occurs.
 # returns the line
 #
-public read_line String ! reader is
+public read_line String|io.end_of_file ! reader is
 
-  mi : mutate is
+  if reader.read ? io.end_of_file => true | * => false
+    io.end_of_file
+  else
+    mi : mutate is
 
-  mi.go String ()->
-    res := (mutate.array u8).type.new mi
+    mi.go String ()->
+      res := (mutate.array u8).type.new mi
 
-    while
-      match reader.read
-        io.end_of_file =>
-          false
-        a array =>
+      while
+        match reader.read
+          io.end_of_file =>
+            false
+          a array =>
 
-          # trailing carriage returns are dropped
-          add_to_res(a Sequence u8) is
-            if !a.is_empty
-              a1 := if a.last = character_encodings.ascii.cr
-                        (a.slice 0 a.count-1)
-                      else
-                        a
-              for b in a1 do
-                res.add b
+            # trailing carriage returns are dropped
+            add_to_res(a Sequence u8) is
+              if !a.is_empty
+                a1 := if a.last = character_encodings.ascii.cr
+                          (a.slice 0 a.count-1)
+                        else
+                          a
+                for b in a1 do
+                  res.add b
 
-          match (container.searchable_sequence a).index_of character_encodings.ascii.lf
-            idx i32 =>
-              add_to_res (a.slice 0 idx)
-              reader.discard idx+1
-              false
-            nil =>
-              add_to_res a
-              reader.discard_all
-              true
+            match (container.searchable_sequence a).index_of character_encodings.ascii.lf
+              idx i32 =>
+                add_to_res (a.slice 0 idx)
+                reader.discard idx+1
+                false
+              nil =>
+                add_to_res a
+                reader.discard_all
+                true
 
-    ref : String
-      utf8 Sequence u8 := res.as_array
+      ref : String
+        utf8 Sequence u8 := res.as_array
 
 
 # Read input fully into an array of bytes until end_of_file is reached

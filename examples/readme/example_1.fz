@@ -2,9 +2,10 @@ hello_world is
   # read someone's name from standard input
   #
   get_name String is
-    (io.stdin.with ()->
-      io.buffered.read_line) ? name String => name
-                             | e error => panic "Could not get your name!"
+    match (io.stdin.with ()->
+             io.buffered.read_line ? str String => str | io.end_of_file => "")
+      name String => name
+      e error => panic "Could not get your name!"
 
   # greet someone with the name given
   #
