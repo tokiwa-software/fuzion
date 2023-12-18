@@ -335,6 +335,6 @@ public Mutable_Array(public T type) ref : Sequence T is
   # count the number of elements in this Sequence.
   #
   # Since we know the exact length, this is redefined to achive O(1) performance instead
-  # of O(n) for couting the elements.
+  # of O(n) for counting the elements.
   #
   public redef count => length
