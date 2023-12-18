@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.jvm;
 
 import dev.flang.fuir.FUIR;
-
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
 import dev.flang.be.jvm.classfile.Expr;
@@ -39,6 +38,7 @@ import dev.flang.util.Pair;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 
 
@@ -955,54 +955,41 @@ class CodeGen
     return switch (_fuir.getSpecialId(constCl))
       {
       case c_bool         -> new Pair<>(Expr.iconst(d[0]                                                                 ), Expr.UNIT);
-      case c_i8           -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get     ()         ), Expr.UNIT);
-      case c_i16          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getShort()         ), Expr.UNIT);
-      case c_i32          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ()         ), Expr.UNIT);
-      case c_i64          -> new Pair<>(Expr.lconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ()         ), Expr.UNIT);
-      case c_u8           -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get     () &   0xff), Expr.UNIT);
-      case c_u16          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getShort() & 0xffff), Expr.UNIT);
-      case c_u32          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ()         ), Expr.UNIT);
-      case c_u64          -> new Pair<>(Expr.lconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ()         ), Expr.UNIT);
-      case c_f32          -> new Pair<>(Expr.fconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ()         ), Expr.UNIT);
-      case c_f64          -> new Pair<>(Expr.dconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ()         ), Expr.UNIT);
-      case c_Const_String -> _jvm.constString(d);
-      case c_array_i8     -> _jvm.constArray8  (constCl, d);
-      case c_array_i16    -> _jvm.constArrayI16(constCl, d);
-      case c_array_i32    -> _jvm.constArray32 (constCl, d);
-      case c_array_i64    -> _jvm.constArray64 (constCl, d);
-      case c_array_u8     -> _jvm.constArray8  (constCl, d);
-      case c_array_u16    -> _jvm.constArrayU16(constCl, d);
-      case c_array_u32    -> _jvm.constArray32 (constCl, d);
-      case c_array_u64    -> _jvm.constArray64 (constCl, d);
-      case c_array_f32    -> _jvm.constArrayF32(constCl, d);
-      case c_array_f64    -> _jvm.constArrayF64(constCl, d);
+      case c_i8           -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).get     ()         ), Expr.UNIT);
+      case c_i16          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getShort()         ), Expr.UNIT);
+      case c_i32          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getInt  ()         ), Expr.UNIT);
+      case c_i64          -> new Pair<>(Expr.lconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getLong ()         ), Expr.UNIT);
+      case c_u8           -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).get     () &   0xff), Expr.UNIT);
+      case c_u16          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getShort() & 0xffff), Expr.UNIT);
+      case c_u32          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getInt  ()         ), Expr.UNIT);
+      case c_u64          -> new Pair<>(Expr.lconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getLong ()         ), Expr.UNIT);
+      case c_f32          -> new Pair<>(Expr.fconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getInt  ()         ), Expr.UNIT);
+      case c_f64          -> new Pair<>(Expr.dconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getLong ()         ), Expr.UNIT);
+      case c_Const_String, c_String
+                          -> _jvm.constString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).getInt()+4));
       default             ->
         {
           if (_fuir.clazzIsArray(constCl))
             {
               var elementType = this._fuir.inlineArrayElementClazz(constCl);
-              var bytesPerField = _fuir.clazzBytes(elementType);
-              if (CHECKS) check
-                (d.length % bytesPerField == 0);
 
+              var bb = ByteBuffer.wrap(d);
+              var elCount = bb.getInt();
               var jt = this._types.resultType(elementType);
               var aLen = Expr
-                .iconst(d.length / bytesPerField);
+                .iconst(elCount);
 
               var result =  aLen
                 .andThen(jt.newArray());
 
-              var b = ByteBuffer.wrap(d);
-              for (int i = 0; i < d.length; i=i+bytesPerField)
+              for (int idx = 0; idx < elCount; idx++)
                 {
-                  var bytes = b.slice(i, bytesPerField);
-                  byte[] bb = new byte[bytes.remaining()];
-                  bytes.get(bb);
-                  var c = createConstant(elementType, bb);
+                  var b = _fuir.deseralizeConst(elementType, bb);
+                  var c = createConstant(elementType, b);
                   result = result
                     .andThen(Expr.DUP)                             // T[], T[]
                     .andThen(Expr.checkcast(jt.array()))
-                    .andThen(Expr.iconst(i / bytesPerField))       // T[], T[], idx
+                    .andThen(Expr.iconst(idx))                     // T[], T[], idx
                     .andThen(c._v1)                                // T[], T[], idx, const-data-code
                     .andThen(c._v0)                                // T[], T[], idx, const-data-code
                     .andThen(jt.xastore());                        // T[]
@@ -1013,16 +1000,11 @@ class CodeGen
             {
               var b = ByteBuffer.wrap(d);
               var result = Expr.UNIT;
-              var offset = 0;
               for (int index = 0; index < _fuir.clazzArgCount(constCl); index++)
                 {
                   var fr = _fuir.clazzArgClazz(constCl, index);
-                  var n = _fuir.clazzArgFieldBytes(constCl, index);
-                  var bytes = b.slice(offset, n);
-                  byte[] bb = new byte[bytes.remaining()];
-                  bytes.get(bb);
-                  offset += n;
-                  var c = createConstant(fr, bb);
+                  var bytes = _fuir.deseralizeConst(fr, b);
+                  var c = createConstant(fr, bytes);
                   result = result
                     .andThen(c._v1)
                     .andThen(c._v0);

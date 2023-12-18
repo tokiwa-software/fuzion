@@ -2913,8 +2913,8 @@ public class Call extends AbstractCall
   private Expr newIf(Expr cc, Expr block, Expr elseBlock)
   {
     return
-      !cc.isCompileTimeConst()     ? new If(pos(), cc, block, elseBlock) :
-      cc.getCompileTimeConstBool() ? block : elseBlock;
+      !(cc instanceof BoolConst bc)   ? new If(pos(), cc, block, elseBlock) :
+      bc.getCompileTimeConstBool() ? block : elseBlock;
   }
 
 

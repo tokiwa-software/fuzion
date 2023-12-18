@@ -263,28 +263,34 @@ public class C extends ANY
       return switch (_fuir.getSpecialId(constCl))
         {
           case c_bool -> new Pair<>(primitiveExpression(SpecialClazzes.c_bool, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
-          case c_i8   -> new Pair<>(primitiveExpression(SpecialClazzes.c_i8,   ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
-          case c_i16  -> new Pair<>(primitiveExpression(SpecialClazzes.c_i16,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
-          case c_i32  -> new Pair<>(primitiveExpression(SpecialClazzes.c_i32,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
-          case c_i64  -> new Pair<>(primitiveExpression(SpecialClazzes.c_i64,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
-          case c_u8   -> new Pair<>(primitiveExpression(SpecialClazzes.c_u8,   ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
-          case c_u16  -> new Pair<>(primitiveExpression(SpecialClazzes.c_u16,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
-          case c_u32  -> new Pair<>(primitiveExpression(SpecialClazzes.c_u32,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
-          case c_u64  -> new Pair<>(primitiveExpression(SpecialClazzes.c_u64,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
-          case c_f32  -> new Pair<>(primitiveExpression(SpecialClazzes.c_f32,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
-          case c_f64  -> new Pair<>(primitiveExpression(SpecialClazzes.c_f64,  ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
-          case c_Const_String ->
-          {
-            yield new Pair<>(constString(d, onHeap), CStmnt.EMPTY);
-          }
-          default ->
-          {
-            var c = _fuir.clazzIsArray(constCl)
+          case c_i8   -> new Pair<>(primitiveExpression(SpecialClazzes.c_i8,   ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_i16  -> new Pair<>(primitiveExpression(SpecialClazzes.c_i16,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_i32  -> new Pair<>(primitiveExpression(SpecialClazzes.c_i32,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_i64  -> new Pair<>(primitiveExpression(SpecialClazzes.c_i64,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_u8   -> new Pair<>(primitiveExpression(SpecialClazzes.c_u8,   ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_u16  -> new Pair<>(primitiveExpression(SpecialClazzes.c_u16,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_u32  -> new Pair<>(primitiveExpression(SpecialClazzes.c_u32,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_u64  -> new Pair<>(primitiveExpression(SpecialClazzes.c_u64,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_f32  -> new Pair<>(primitiveExpression(SpecialClazzes.c_f32,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_f64  -> new Pair<>(primitiveExpression(SpecialClazzes.c_f64,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
+          case c_String, c_Const_String
+                      -> new Pair<>(heapClone(constString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).getInt() + 4)), constCl)               ,CStmnt.EMPTY);
+          default     -> {
+            if (CHECKS)
+              check(!_fuir.clazzIsRef(constCl)); // NYI currently no refs
+
+            var result = _fuir.clazzIsArray(constCl)
               ? constArray(constCl, d)
               : constValue(constCl, d);
+
+            // NYI without this heap clone tests ternary and unary are failing.
             yield onHeap
-              ? new Pair<>(CExpr.call(CNames.HEAP_CLONE._name, new List<>(c.adrOf(), c.sizeOfExpr())).castTo(_types.clazz(constCl) + "*").deref(), CStmnt.EMPTY)
-              : new Pair<>(c, CStmnt.EMPTY);
+              ? new Pair<>(CExpr
+                              .call(CNames.HEAP_CLONE._name, new List<>(result.adrOf(), result.sizeOfExpr()))
+                              .castTo(_types.clazz(constCl) + " *")
+                              .deref(),
+                             CStmnt.EMPTY)
+              : new Pair<>(result, CStmnt.EMPTY);
           }
         };
     }
@@ -300,24 +306,24 @@ public class C extends ANY
     private CExpr constValue(int constCl, byte[] d)
     {
       var sb = new StringBuilder();
-      var offset = 0;
       var argCount = _fuir.clazzArgCount(constCl);
       var l = new List<CStmnt>();
 
+      var bb = ByteBuffer.wrap(d);
       for (int i = 0; i < argCount; i++)
         {
           var arg = _fuir.clazzArg(constCl, i);
-          int bytes = _fuir.clazzArgFieldBytes(constCl, i);
+          var fr = _fuir.clazzArgClazz(constCl, i);
+          var bytes = _fuir.deseralizeConst(fr, bb);
           sb.append("." + _names.fieldName(arg).code());
           sb.append(" = ");
-          var cd = constData(_fuir.clazzResultClazz(arg), Arrays.copyOfRange(d, offset, offset + bytes), false);
+          var cd = constData(_fuir.clazzResultClazz(arg), bytes, false);
           l.add(cd._v1);
           sb.append(cd._v0.code());
           if (i + 1 != argCount)
             {
               sb.append(",");
             }
-          offset += bytes;
         }
 
       return CExpr.compoundLiteral(_types.clazz(constCl), sb.toString());
@@ -334,7 +340,6 @@ public class C extends ANY
     private CExpr constArray(int constCl, byte[] d)
     {
       var elementType      = _fuir.inlineArrayElementClazz(constCl);
-      var bytesPerField    = _fuir.clazzBytes(elementType);
       var c_internal_array = _fuir.lookup_array_internal_array(constCl);
       var c_sys_array      = _fuir.clazzResultClazz(c_internal_array);
       var c_data           = _fuir.lookup_fuzion_sys_internal_array_data(c_sys_array);
@@ -343,13 +348,16 @@ public class C extends ANY
       var data             = _names.fieldName(c_data);
       var length           = _names.fieldName(c_length);
 
+      var bb = ByteBuffer.wrap(d);
+      var elCount = bb.getInt();
+
       var sb = new StringBuilder();
       sb.append("." + data.code());
       sb.append(" = ");
       sb.append(arrayInit(d, elementType).code() + ",");
       sb.append("." + length.code());
       sb.append(" = ");
-      sb.append(CExpr.int32const(d.length / bytesPerField).code());
+      sb.append(CExpr.int32const(elCount).code());
       var ia = CExpr.compoundLiteral(_types.clazz(c_sys_array), sb.toString());
 
       sb = new StringBuilder();
@@ -370,7 +378,6 @@ public class C extends ANY
      */
     public CExpr arrayInit(byte[] d, int elementType)
     {
-      var bytesPerField = _fuir.clazzBytes(elementType);
       var result = new CExpr() {
         int precedence()
         {
@@ -379,16 +386,20 @@ public class C extends ANY
 
         void code(CString sb)
         {
-          sb.append("(" + _names.struct(elementType) + "[]){");
-          for (int i = 0; i < d.length; i = i + bytesPerField)
+          sb.append("(" + _types.clazz(elementType) + "[]){");
+
+          var bb = ByteBuffer.wrap(d);
+          var elCount = bb.getInt();
+
+          for (int idx = 0; idx < elCount; idx++)
             {
-              var b = ByteBuffer.wrap(d, i, bytesPerField);
-              byte[] bb = new byte[b.remaining()];
-              b.get(bb);
-              var cd = constData(elementType, bb, false);
-              cd._v0
-                .code(sb.append("\n"));
-              if (i + bytesPerField != d.length)
+              var b = _fuir.deseralizeConst(elementType, bb);
+
+              constData(elementType, b, false)
+                ._v0
+                .code(sb);
+
+              if (idx+1 < elCount)
                 {
                   sb.append(",");
                 }
@@ -396,14 +407,8 @@ public class C extends ANY
           sb.append("}");
         }
       };
-      return switch (_fuir.getSpecialId(elementType))
-        {
-          // NYI why do we have to use heap alloc here?
-        case c_i8, c_i16, c_i32, c_i64, c_u8, c_u16, c_u32, c_u64, c_f32, c_f64 :
-          yield CExpr.call(CNames.HEAP_CLONE._name, new List<>(result, CExpr.int32const(d.length)));
-        default:
-          yield result.castTo("void *");
-        };
+      // since in C, an array is a pointer we have to heap clone this array.
+      return CExpr.call(CNames.HEAP_CLONE._name, new List<>(result, result.sizeOfExpr()));
     }
 
 
@@ -1232,9 +1237,9 @@ public class C extends ANY
    * Example code:
    * `(fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__array_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}`
    */
-  CExpr constString(byte[] bytes, boolean onHeap)
+  CExpr constString(byte[] bytes)
   {
-    return constString(CExpr.string(bytes), CExpr.int32const(bytes.length), onHeap);
+    return constString(CExpr.string(bytes), CExpr.int32const(bytes.length));
   }
 
 
@@ -1250,7 +1255,7 @@ public class C extends ANY
    * Example code:
    * `(fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__array_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}`
    */
-  CExpr constString(CExpr str, CExpr len, boolean onHeap)
+  CExpr constString(CExpr str, CExpr len)
   {
     var data          = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_data());
     var length        = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_length());
@@ -1267,15 +1272,11 @@ public class C extends ANY
         _types.clazz(_fuir.clazzAsValue(_fuir.clazz_Const_String())),
         "." + internal_array.code() + " = " + sysArray.code());
 
-    var result = CExpr
+    return CExpr
       .compoundLiteral(
         _names.struct(_fuir.clazz_Const_String()),
         "." + CNames.CLAZZ_ID.code() + " = " + _names.clazzId(_fuir.clazz_Const_String()).code() + ", " +
           "." + CNames.FIELDS_IN_REF_CLAZZ.code() + " = " + constStr.code());
-
-    return onHeap
-      ? CExpr.call(CNames.HEAP_CLONE._name, new List<>(result.adrOf(), result.sizeOfExpr()))
-      : result.adrOf();
   }
 
 
@@ -1681,16 +1682,27 @@ public class C extends ANY
     var rc = _fuir.clazzResultClazz(cl);
     return switch (_fuir.getSpecialId(rc))
       {
-        case c_Const_String -> {
+        case c_Const_String, c_String ->
+        {
           var str = new CIdent("str");
           yield CStmnt.seq(
             CExpr.decl("char*", str, CExpr.call(_fuir.clazzBaseName(cl), args)),
-            constString(str, CExpr.call("strlen", new List<>(str)), true)
-              .castTo(_types.clazz(rc))
+            heapClone(constString(str, CExpr.call("strlen", new List<>(str))), _fuir.clazz_Const_String())
               .ret());
         }
         default -> CStmnt.seq(CExpr.call(_fuir.clazzBaseName(cl), args).ret());
       };
+  }
+
+
+  CExpr heapClone(CExpr expr, int rc)
+  {
+    if (PRECONDITIONS) require
+      (_fuir.clazzIsRef(rc));
+
+    return CExpr
+      .call(CNames.HEAP_CLONE._name, new List<>(expr.adrOf(), expr.sizeOfExpr()))
+      .castTo(_types.clazz(rc));
   }
 
 

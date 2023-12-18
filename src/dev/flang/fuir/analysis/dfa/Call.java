@@ -214,7 +214,6 @@ public class Call extends ANY implements Comparable<Call>, Context
               {
                 var rc = _dfa._fuir.clazzResultClazz(_cc);
                 var t = _dfa.newInstance(rc, this);
-                var tname = _dfa.newConstString(_dfa._fuir.clazzAsStringNew(at).getBytes(StandardCharsets.UTF_8), this);
                 // NYI: DFA missing support for Type instance, need to set field t.name to tname.
                 result = t;
               }
@@ -230,15 +229,10 @@ public class Call extends ANY implements Comparable<Call>, Context
                        c_f32, c_f64              -> new NumericValue(_dfa, rc);
                   case c_bool                    -> _dfa._bool;
                   case c_TRUE, c_FALSE           -> Value.UNIT;
-                  case c_Const_String            -> _dfa.newConstString(null, this);
+                  case c_Const_String, c_String  -> _dfa.newConstString(null, this);
                   case c_unit                    -> Value.UNIT;
                   case c_sys_ptr                 -> new Value(_cc); // NYI: we might add a specific value for system pointers
                   case c_NOT_FOUND               -> null;
-                  case c_array_i8 , c_array_i16,
-                       c_array_i32, c_array_i64,
-                       c_array_u8 , c_array_u16,
-                       c_array_u32, c_array_u64,
-                       c_array_f32, c_array_f64 -> throw new Error("intrinsics do not return const arrays.");
                   };
               }
           }
@@ -251,7 +245,7 @@ public class Call extends ANY implements Comparable<Call>, Context
             case c_i8, c_i16, c_i32, c_i64,
                  c_u8, c_u16, c_u32, c_u64,
                  c_f32, c_f64              -> new NumericValue(_dfa, rc);
-            case c_Const_String            -> _dfa.newConstString(null, this);
+            case c_Const_String, c_String  -> _dfa.newConstString(null, this);
             default                        -> { Errors.warning("DFA: cannot handle native feature " + _dfa._fuir.clazzIntrinsicName(_cc));
                                                 yield null; }
           };
