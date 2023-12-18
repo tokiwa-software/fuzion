@@ -109,7 +109,6 @@ is
       effect_mode.plain   => false  # must be used as oneway_monad only
       effect_mode.default => false
       effect_mode.new     => false
-      effect_mode.abort   => false
       effect_mode.inst, effect_mode.repl => true
   =>
     h.put w
@@ -131,7 +130,6 @@ is
       effect_mode.plain   => false  # must be used as oneway_monad only
       effect_mode.default => false
       effect_mode.new     => false
-      effect_mode.abort   => false
       effect_mode.inst, effect_mode.repl => true
   =>
     h.put (f h.get)

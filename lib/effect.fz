@@ -40,14 +40,13 @@ is
     _ effect_mode.plain   =>
     i effect_mode.inst    => run i.f (_)->unit
     _ effect_mode.repl    => replace
-    _ effect_mode.abort   => fuzion.std.panic "abort"
     _ effect_mode.default => default
     _ effect_mode.new     =>
 
   public mode effect_mode.val is
     match r
       effect_mode.plain => effect_mode.plain
-      effect_mode.inst, effect_mode.repl, effect_mode.abort, effect_mode.default, effect_mode.new => effect_mode.repl
+      effect_mode.inst, effect_mode.repl, effect_mode.default, effect_mode.new => effect_mode.repl
 
   # replace effect in the current context by this
   module replace unit is intrinsic
@@ -77,31 +76,6 @@ is
       x R => x
 
 
-  # abort the current execution and return from the surrounding call to
-  # abortable with result == false.
-  #
-  public return void is abort
-
-
-  # install this effect and run code.
-  #
-  # NYI: Currently, there is no direct way to return a result value
-  # from the code.
-  #
-  private use0(
-      # the code to be executed within this effect.  This is typically
-      # redefined as an argument field of a sub-feature of effect.
-      code ()->unit
-     )
-    pre
-      match r
-        effect_mode.new => true
-        * => false
-  is
-    abortable (Effect_Call code)
-
-
-
   # has an effect of the given type been installed?
   public type.is_installed(E type) bool is intrinsic_constructor
 
@@ -121,12 +95,11 @@ public effect_mode is
 
   public plain is             # a plain effect, not installed as 'env'
   public repl is              # effect instance replaces previous one in 'env'
-  public abort is             # effect instance aborts, jump back to where 'env' was installed
   public default is           # install as default. NYI: remove and use 'new' instead, see io.stdin.fz
   public new is               # a new effect to be installed
   public inst(f ()->unit) is  # install and run 'f'. NYI: remove and use 'new' instead, see io.stdin.fz
 
-  public val : choice plain repl effect_mode.abort default new inst of
+  public val : choice plain repl default new inst of
 
 
 public code_effect : effect (effect_mode.inst code)
