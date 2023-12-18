@@ -728,6 +728,11 @@ public class C extends ANY
     // source: https://gcc.gnu.org/onlinedocs/cpp/Initial-processing.html
     command.add("-fno-trigraphs");
 
+    // add frame pointers
+    // https://fedoraproject.org/wiki/Changes/fno-omit-frame-pointer
+    // https://lobste.rs/s/avrfxz/ubuntu_24_04_lts_will_enable_frame
+    command.addAll("-fno-omit-frame-pointer", "-mno-omit-leaf-frame-pointer");
+
     // NYI link libmath, libpthread only when needed
     command.addAll("-lm", "-lpthread", "-std=c11", "-o", name, cname);
 
