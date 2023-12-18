@@ -302,6 +302,9 @@ public mut(T type, v T) => mut.new T v
 
 # an interface defining a mutable array
 #
+# NYI: Remove Sequence parent. Since Sequence is supposed to be immutable,
+# we should maybe not pretend to be a Sequence.
+#
 public Mutable_Array(public T type) ref : Sequence T is
 
   # add an element at the end of the sequence
@@ -315,3 +318,17 @@ public Mutable_Array(public T type) ref : Sequence T is
 
   # the length of the array
   public length i32 is abstract
+
+
+  # is this Sequence known to be array backed? If so, this means that operations
+  # like index[] are fast.
+  #
+  public redef is_array_backed => true
+
+
+  # count the number of elements in this Sequence.
+  #
+  # Since we know the exact length, this is redefined to achive O(1) performance instead
+  # of O(n) for counting the elements.
+  #
+  public redef count => length

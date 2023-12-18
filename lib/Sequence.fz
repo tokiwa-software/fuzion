@@ -81,6 +81,8 @@ public Sequence(public T type) ref is
   # count the number of elements in this Sequence.  Note that this typically
   # runs forever if executed on an endless list
   #
+  # For lists that are not array backed, this might require time in O(count).
+  #
   public count
   pre
     analysis: finite  # in practice, we do not always have this information
@@ -218,6 +220,9 @@ public Sequence(public T type) ref is
 
   # create a list that consists of the elements of this Sequence except the first
   # n elements
+  #
+  # NOTE: this may have performance in O(n) unless it is backed by an immutable array.
+  #
   #
   public drop (n i32) => as_list.drop n
 
