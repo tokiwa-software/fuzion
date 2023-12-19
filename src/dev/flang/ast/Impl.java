@@ -91,17 +91,17 @@ public class Impl extends ANY
 
 
   /**
-   * For FieldActual: All the actual values that were found for this argument
-   * field.
+   * For FieldActual: All the actual calls that were found for the outer feature
+   * of this argument field.
    */
-  final List<Expr> _initialValues;
+  final List<Call> _initialCalls;
 
 
   /**
-   * For FieldActual: The outer features for all the actual values that were
+   * For FieldActual: The outer features for all the actual calls that were
    * found for this argument field.
    */
-  final List<AbstractFeature> _outerOfInitialValues;
+  final List<AbstractFeature> _outerOfInitialCalls;
 
 
   public enum Kind
@@ -146,6 +146,13 @@ public class Impl extends ANY
   public final Kind _kind;
 
 
+  /**
+   * Flag to detect infinite recursion when resolving types of initial
+   * values. Used by @see initialValueFromCall.
+   */
+  boolean _infiniteRecursionInResolveTypes = false;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -173,8 +180,8 @@ public class Impl extends ANY
 
     this.pos = pos;
     this._kind = kind;
-    this._initialValues        = kind == Kind.FieldActual ? new List<>() : null;
-    this._outerOfInitialValues = kind == Kind.FieldActual ? new List<>() : null;
+    this._initialCalls         = kind == Kind.FieldActual ? new List<>() : null;
+    this._outerOfInitialCalls  = kind == Kind.FieldActual ? new List<>() : null;
   }
 
 
@@ -407,108 +414,57 @@ public class Impl extends ANY
    *
    * @param outer the feature containing the actl expression
    */
-  void addInitialValue(Expr actl, AbstractFeature outer)
+  void addInitialCall(Call call, AbstractFeature outer)
   {
     if (_kind == Impl.Kind.FieldActual)
       {
-        _initialValues.add(actl);
-        _outerOfInitialValues.add(outer);
+        _initialCalls.add(call);
+        _outerOfInitialCalls.add(outer);
       }
   }
 
 
   /**
-   * visit all the initial values recorded for an FieldActual using
-   * addInitialValue.
+   * Get the initial value from actual argument in a call.
    *
-   * This is used to resolve types of the actual arguments when they are needed
-   * for type inference.
+   * @param i the index in _initialCalls
    *
-   * @param v the visitor to use
+   * @param res the resolution. If not null, the actuals' types will be
+   * resolved.
+   *
+   * @return the Expr that is assigned to this in call #i.
    */
-  void visitInitialValues(FeatureVisitor v)
+  private Expr initialValueFromCall(int i, Resolution res)
   {
-    for (var i = 0; i < _initialValues.size(); i++)
+    Expr result = null;
+    var ic = _initialCalls       .get(i);
+    var io = _outerOfInitialCalls.get(i);
+    var aargs = ic._actuals.listIterator();
+    for (var frml : ic.calledFeature().valueArguments())
       {
-        var iv = _initialValues.get(i);
-        var io = _outerOfInitialValues.get(i);
-        iv.visit(v, io);
+        if (aargs.hasNext())
+          {
+            var actl = aargs.next();
+            if (frml instanceof Feature f && f.impl() == this)
+              {
+                if (res != null && !_infiniteRecursionInResolveTypes)
+                  {
+                    _infiniteRecursionInResolveTypes = true;
+                    actl = actl.visit(res.resolveTypesFully, io);
+                    aargs.set(actl);
+                    _infiniteRecursionInResolveTypes = false;
+                  }
+                if (CHECKS) check
+                  (result == null);
+                result = actl;
+              }
+          }
       }
-  }
 
+    if (POSTCONDITIONS) ensure
+      (result != null);
 
-  /**
-   * Visitor used by typeFromInitialValues for Kind.FieldActual to detect that
-   * an initial value has a circular dependency on the formal argument we are
-   * trying to resolve. In case of such a circular dependency, ignore that
-   * initial value.
-   */
-  class FindCircularDependency extends FeatureVisitor
-  {
-
-    /**
-     * The circular dependencies we found, might be useful for nicer error
-     * output.
-     */
-    final List<Call> _circularDependencies = new List<>();
-
-    /**
-     * Flag that is set once we found a circular dependency.
-     */
-    boolean _foundCircle = false;
-
-    /**
-     * The formal argument we are trying to obtain the type for.
-     */
-    final AbstractFeature _formalArg;
-
-    /**
-     * Constructor that will immediately run the analysis.
-     *
-     * @param formalArg the formal argument we are trying to check for circular
-     * dependencies.q
-     *
-     * @param iv the initial value found for formalArg that we are trying to
-     * check for circular dependencies.
-     *
-     * @param outer the outer feature iv was found in.
-     */
-    FindCircularDependency(AbstractFeature formalArg, Expr iv, AbstractFeature outer)
-    {
-      _formalArg = formalArg;
-      iv.visit(this, outer);
-    }
-
-
-    /**
-     * A circular dependency happens through a call, so we check calls:
-     */
-    @Override
-    public Expr action(Call c, AbstractFeature outer)
-    {
-      if (c.calledFeatureKnown())
-        {
-          var cf = c.calledFeature();
-          if (cf instanceof Feature cff && cff.impl()._kind == Kind.FieldActual)
-            {
-              var ivs = cff.impl()._initialValues;
-              if (ivs.isEmpty() || cf == _formalArg || cf.outer() == _formalArg.outer())
-                {
-                  _circularDependencies.add(c);
-                  _foundCircle = true;
-                }
-              else
-                {
-                  for (var iv : ivs)
-                    {
-                      iv.visit(this, outer);
-                    }
-                }
-            }
-        }
-      return c;
-    }
-
+    return result;
   }
 
 
@@ -529,19 +485,12 @@ public class Impl extends ANY
   AbstractType typeFromInitialValues(Resolution res, AbstractFeature formalArg, boolean reportError)
   {
     AbstractType result = Types.resolved.t_void;
-    for (var i = 0; i < _initialValues.size(); i++)
+    for (var i = 0; i < _initialCalls.size(); i++)
       {
-        var iv = _initialValues.get(i);
-        var io = _outerOfInitialValues.get(i);
-        if (res != null)
-          {
-            var cd = new FindCircularDependency(formalArg, iv, io);
-            if (!cd._foundCircle)
-              { // type resolution would result in an error in case there is a circle.
-                iv.visit(new Feature.ResolveTypes(res),io);
-              }
-          }
-        var t = iv.typeForInferencing();
+        _initialCalls.get(i).loadCalledFeature(res, _outerOfInitialCalls.get(i));
+        var io = _outerOfInitialCalls.get(i);
+        var iv = initialValueFromCall(i, res);
+        AbstractType t = iv.typeForInferencing();
         if (t != null)
           {
             result = result.union(t);
@@ -549,7 +498,7 @@ public class Impl extends ANY
       }
     if (reportError)
       {
-        if (_initialValues.size() == 0)
+        if (_initialCalls.size() == 0)
           {
             AstErrors.noActualCallFound(formalArg);
           }
@@ -557,10 +506,10 @@ public class Impl extends ANY
           {
             var types = new List<AbstractType>();
             var positions = new TreeMap<AbstractType, List<SourcePosition>>();
-            for (var i = 0; i < _initialValues.size(); i++)
+            for (var i = 0; i < _initialCalls.size(); i++)
               {
-                var iv = _initialValues.get(i);
-                var io = _outerOfInitialValues.get(i);
+                var iv = initialValueFromCall(i, null);
+                var io = _outerOfInitialCalls.get(i);
                 var t = iv.typeForInferencing();
                 if (t != null)
                   {
