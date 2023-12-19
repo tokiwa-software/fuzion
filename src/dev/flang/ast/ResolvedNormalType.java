@@ -533,7 +533,7 @@ public class ResolvedNormalType extends ResolvedType
       }
     if (isThisType())
       {
-        result = result + ".this.type";
+        result = result + ".this";
       }
     if (_generics != UnresolvedType.NONE)
       {

@@ -8,7 +8,7 @@ test =>
     i.compare_and_set c c+n
 
   (1..4)
-    .map_sequence (_)->
+    .map (_)->
       concur.thread.spawn ()->
         for i in 1..100 do
           s.push i

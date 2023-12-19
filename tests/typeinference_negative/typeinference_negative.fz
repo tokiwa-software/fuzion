@@ -138,7 +138,7 @@ typeinference_negative is
      a := 3
      b := 5
      c := a > b
-     //  d := c ? a : b -- NYI: ? : not working yet
+     d := c ? a : b
 
   result1 is
     x => 3

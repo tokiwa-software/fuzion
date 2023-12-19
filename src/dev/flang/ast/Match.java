@@ -160,11 +160,9 @@ public class Match extends AbstractMatch
             AstErrors.matchSubjectMustBeChoice(_subject.pos(), st);
           }
       }
-    var cgs = st.choiceGenerics();
-    if (CHECKS) check
-      (cgs != null || Errors.any());
-    if (cgs != null)
+    if (st.isChoice())
       {
+        var cgs = st.choiceGenerics();
         for (var i = 0; i < cgs.size(); i++)
           {
             var n = cgs.get(i);

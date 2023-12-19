@@ -675,14 +675,6 @@ public abstract class Expr extends ANY implements HasSourcePosition
       }
   }
 
-  /**
-   * Is this a compile-time constant?
-   */
-  public boolean isCompileTimeConst()
-  {
-    return false;
-  }
-
 
   /**
    * This expression as a compile time constant.
@@ -690,18 +682,6 @@ public abstract class Expr extends ANY implements HasSourcePosition
   public AbstractConstant asCompileTimeConstant()
   {
     throw new Error("This expr is not a compile time constant: " + this.getClass());
-  }
-
-
-  /**
-   * Get value of bool compile time constant.
-   */
-  boolean getCompileTimeConstBool()
-  {
-    if (PRECONDITIONS) require
-      (isCompileTimeConst() && type().compareTo(Types.resolved.t_bool) == 0);
-
-    throw new Error();
   }
 
 

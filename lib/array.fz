@@ -61,6 +61,15 @@ module:public array(
   public redef is_array_backed => true
 
 
+  # create a list that consists of the elements of this Sequence except the first
+  # n elements
+  #
+  # For arrays, this has perfornace in O(1).
+  #
+  public redef drop (n i32) =>
+    as_list (max 0 n)
+
+
   # a sequence of all valid indices to access this array. Useful e.g., for
   # `for`-loops:
   #
@@ -173,6 +182,15 @@ module:public array(
       public redef count => to-from
 
 
+      # create a list that consists of the elements of this Sequence except the first
+      # n elements
+      #
+      # For arrays, this has perfornace in O(1).
+      #
+      public redef drop (n i32) =>
+        array.this.slice from+(max 0 n) to
+                  .as_list
+
 
   # create a cons cell for a list of this array starting at the given
   # index `i` and up to `to`
@@ -187,7 +205,7 @@ module:public array(
 
   # map the array to a new array applying function f to all elements
   #
-  public map(B type, f T -> B) array B is
+  public map_to_array(B type, f T -> B) array B is
     array B array.this.length (i -> f array.this[i])
 
 

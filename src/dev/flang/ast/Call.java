@@ -945,19 +945,33 @@ public class Call extends AbstractCall
     if (PRECONDITIONS) require
       (expectedType.isFunctionType());
 
+    // NYI: CLEANUP: The logic in this method seems overly complex, there might be potential to simplify!
     Expr l = this;
-    if (_calledFeature != null &&
-        partiallyApplicableAlternative(res, outer, expectedType) != null)
+    if (partiallyApplicableAlternative(res, outer, expectedType) != null)
       {
-        res.resolveTypes(_calledFeature);
-        var rt = _calledFeature.resultTypeIfPresent(res);
-        if (rt != null && (!rt.isAnyFunctionType() || rt.arity() != expectedType.arity()))
+        if (_calledFeature != null)
           {
-            l = applyPartially(res, outer, expectedType);
+            res.resolveTypes(_calledFeature);
+            var rt = _calledFeature.resultTypeIfPresent(res);
+            if (rt != null && (!rt.isAnyFunctionType() || rt.arity() != expectedType.arity()))
+              {
+                l = applyPartially(res, outer, expectedType);
+              }
+          }
+        else
+          {
+            if (_pendingError == null)
+              {
+                l = resolveTypes(res, outer);  // this enssures _calledFeature is set such that possible ambiguity is reported
+              }
+            if (l == this)
+              {
+                l = applyPartially(res, outer, expectedType);
+              }
           }
       }
     else if (_pendingError != null                   || /* nothing found */
-             newNameForPartial(expectedType) != null    /* must search for a different name */)
+             newNameForPartial(expectedType) != null    /* search for a different name */)
       {
         l = applyPartially(res, outer, expectedType);
       }
@@ -995,7 +1009,7 @@ public class Call extends AbstractCall
         var targetFeature = traverseOuter ? outer : targetFeature(res, outer);
         var fos = res._module.lookup(targetFeature, name, this, traverseOuter, false);
         var calledName = FeatureName.get(name, n);
-        result = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> ff.typeArguments().isEmpty() && ff.valueArguments().size() == n);
+        result = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> ff.valueArguments().size() == n);
       }
     return result;
   }
@@ -1086,6 +1100,7 @@ public class Call extends AbstractCall
    */
   public Expr applyPartially(Resolution res, AbstractFeature outer, AbstractType t)
   {
+    checkPartialAmbiguity(res, outer, t);
     Expr result;
     var n = t.arity();
     if (mustNotContainDeclarations("a partially applied function call", outer))
@@ -2769,16 +2784,15 @@ public class Call extends AbstractCall
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
     Expr r = this;
-    if (t.isFunctionType() && !_wasImplicitImmediateCall)
+    if (t.isFunctionType()         &&
+        !_wasImplicitImmediateCall &&
+        _type != Types.t_ERROR     &&
+        (_type == null || !_type.isAnyFunctionType()))
       {
-        checkPartialAmbiguity(res, outer, t);
-        if (_type != Types.t_ERROR && (_type == null || !_type.isAnyFunctionType()))
+        r = propagateExpectedTypeForPartial(res, outer, t);
+        if (r != this)
           {
-            r = propagateExpectedTypeForPartial(res, outer, t);
-            if (r != this)
-              {
-                r.propagateExpectedType(res, outer, t);
-              }
+            r.propagateExpectedType(res, outer, t);
           }
       }
     return r;
@@ -2950,8 +2964,8 @@ public class Call extends AbstractCall
   private Expr newIf(Expr cc, Expr block, Expr elseBlock)
   {
     return
-      !cc.isCompileTimeConst()     ? new If(pos(), cc, block, elseBlock) :
-      cc.getCompileTimeConstBool() ? block : elseBlock;
+      !(cc instanceof BoolConst bc)   ? new If(pos(), cc, block, elseBlock) :
+      bc.getCompileTimeConstBool() ? block : elseBlock;
   }
 
 

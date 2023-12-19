@@ -82,7 +82,7 @@ is
 
   # map this option using f, i.e., map nil to nil and any value v to f v
   #
-  public map(B type, f T -> B) option B is
+  public map_to_option(B type, f T -> B) option B is
     option.this ? v T => f v
                 | nil => nil
 

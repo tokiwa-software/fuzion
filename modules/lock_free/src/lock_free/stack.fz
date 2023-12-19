@@ -52,4 +52,4 @@ public stack(T type) is
         n := next o
     while !o.is_nil && !top.compare_and_set o n
     else
-      o.map node->node.data
+      o.map_to_option node->node.data

@@ -165,23 +165,17 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * For a resolved type, check if it is a choice type and if so, return the
-   * list of choices. Otherwise, return null.
+   * list of choices.
    */
   public List<AbstractType> choiceGenerics()
   {
     if (PRECONDITIONS) require
-      (!(this instanceof UnresolvedType tt));
+      (!(this instanceof UnresolvedType tt),
+       isChoice());
 
-    if (!isGenericArgument())
-      {
-        var g = featureOfType().choiceGenerics();
-        if (g != null)
-          {
-            return replaceGenerics(g)
-              .map(t -> t.replace_this_type_by_actual_outer(this));
-          }
-      }
-    return null;
+    var g = featureOfType().choiceGenerics();
+    return replaceGenerics(g)
+      .map(t -> t.replace_this_type_by_actual_outer(this));
   }
 
 
@@ -671,6 +665,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         actualGenerics.freeze();
         _appliedTypePars2Cache = result;
       }
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+
     return result;
   }
 
@@ -935,9 +933,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   void checkChoice(SourcePosition pos)
   {
-    var g = choiceGenerics();
-    if (g != null)
+    if (isChoice())
       {
+        var g = choiceGenerics();
         if (isRef())
           {
             AstErrors.refToChoice(pos);
@@ -1726,7 +1724,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               + fname;
         if (isThisType())
           {
-            result = result + ".this.type";
+            result = result + ".this";
           }
         for (var g : generics())
           {
@@ -1912,25 +1910,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         .stream()
         .flatMap(cg -> cg.choices())
       : Stream.of(this);
-  }
-
-
-  /**
-   * bytes used when serializing call that results in this type.
-   */
-  public int serializedSize()
-  {
-    var ct = NumLiteral.findConstantType(this);
-    return ct == null
-      ? this.generics().stream().mapToInt(a -> a.serializedSize()).sum()
-        + this
-            .featureOfType()
-            .valueArguments()
-            .stream()
-            .filter(x -> !x.resultType().dependsOnGenerics())
-            .mapToInt(a -> a.resultType().serializedSize())
-            .sum()
-      : ct.bytes();
   }
 
 

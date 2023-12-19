@@ -36,7 +36,7 @@ is
     if is_empty
       nil
     else
-      cnt := (map_sequence N (_ -> N.one)).fold N.sum
+      cnt := (map N (_ -> N.one)).fold N.sum
       sum := fold N.sum
       sum / cnt
 
@@ -47,8 +47,8 @@ is
     match average
       nil => nil
       avg N =>
-        cnt := (map_sequence N (_ -> N.one           )).fold N.sum
-        sum := (map_sequence N (x -> (x - avg)**N.two)).fold N.sum
+        cnt := (map N (_ -> N.one           )).fold N.sum
+        sum := (map N (x -> (x - avg)**N.two)).fold N.sum
         sum / cnt
 
 

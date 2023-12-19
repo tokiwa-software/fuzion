@@ -61,7 +61,7 @@ module Entry(module key KEY, module val VAL) ref is
     head := (key, val)
 
     tail Lazy (list (tuple KEY VAL)) := ()->
-      (left.get.map x->x.items).get (list (tuple KEY VAL)).type.empty ++
-        (right.get.map x->x.items).get (list (tuple KEY VAL)).type.empty
+      (left.get.map_to_option x->x.items).get (list (tuple KEY VAL)).type.empty ++
+        (right.get.map_to_option x->x.items).get (list (tuple KEY VAL)).type.empty
 
     list head tail

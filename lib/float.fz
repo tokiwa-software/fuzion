@@ -241,7 +241,7 @@ public float : numeric is
   public type.log (base, val float.this) float.this
   pre base > zero
   is
-    (log val) / (log base)
+    (float.this.type.log val) / (float.this.type.log base)
 
 
   # trigonometric
@@ -266,13 +266,13 @@ public float : numeric is
 
   public type.asinh(val float.this) float.this is
     # ln(x+sqrt(x^2+1))
-    log (val + sqrt (val ** two + one))
+    float.this.type.log (val + sqrt (val ** two + one))
   public type.acosh(val float.this) float.this is
     # ln(x+sqrt(x^2-1))
-    log (val + sqrt (val ** two - one))
+    float.this.type.log (val + sqrt (val ** two - one))
   public type.atanh(val float.this) float.this is
     # 1/2*ln((1+x)/(1-x))
-    log ((one + val)/(one - val)) / two
+    float.this.type.log ((one + val)/(one - val)) / two
 
 
   # equality

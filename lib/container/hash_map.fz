@@ -116,7 +116,7 @@ is
   public items Sequence (tuple HK V) is
     contents
       .filter      (o -> o??)
-      .map_sequence (o -> match o
+      .map (o -> match o
                             nil     => panic "filter failed"
                             t tuple => t)
 
@@ -126,7 +126,7 @@ is
   #
   public redef as_string =>
     items
-      .map_sequence (t -> "({t.values.0},{t.values.1})")
+      .map (t -> "({t.values.0},{t.values.1})")
       .as_string
 
 

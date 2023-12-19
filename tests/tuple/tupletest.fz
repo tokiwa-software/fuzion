@@ -40,20 +40,20 @@ tupletest is
   g1(A type, a A) is
   g1 "Hello" // should infer String
   g1 123 // should infer i32
-# chck g1("Hello").a.length=5, "g1 A infer A==string"   // NYI: string.length
+  chck g1("Hello").a.codepoint_length=5 "g1 A infer A==string"
   chck g1(123).a=123 "g1 A infer A==i32"
 
   g1a(A type, a A) A is a
   itaa := g1a "String"  // should infer String
   itab := g1a 123  // should infer i32
-# chck itaa.length=6, "g1a A infer A==string"   // NYI: string.length
+  chck itaa.codepoint_length=6 "g1a A infer A==string"
   chck itab=123 "g1a A infer A==i32"
 
   g1b(AAAA type, a,b,c AAAA) is
   g1bv1 := g1b true true false  // should infer bool
   g1bv2 := g1b "String" "A" "test"  // should infer String
   chck (g1bv1.a && g1bv1.b && !g1bv1.c) "g1b AAAA infer AAAA==bool"
-# chck (g1bv2.a.length + g1bv2.b.length + g1bv2.c.length)=11) "g1b AAAA infer AAAA==string"   // NYI: string.length
+  chck (g1bv2.a.codepoint_length + g1bv2.b.codepoint_length + g1bv2.c.codepoint_length)=11 "g1b AAAA infer AAAA==string"
 
   nothing1 tuple := tuple  ; p "nothing1 is $nothing1" // empty tuple using explicit types
   nothing2 tuple := tuple  ; p "nothing2 is $nothing2" // empty tuple using explicit type and inferring generic
@@ -160,11 +160,11 @@ tupletest is
   t10aa => (42, "the answer")
   p "tuple t10aa is {t10aa.values.0}, {t10aa.values.1}"
   chck t10aa.values.0=42        "t10aa.values.0"
-# chck t10aa.values.1.length=10 "t10aa.values.1"   // NYI: string.length
+  chck t10aa.values.1.codepoint_length=10 "t10aa.values.1"
 
   t10aaa => ("devil's number", 666)
   p "tuple t10aaa is {t10aaa.values.0}, {t10aaa.values.1}"
-# chck t10aaa.values.0.length=14 "t10aaa.values.0"   // NYI: string.length
+  chck t10aaa.values.0.codepoint_length=14 "t10aaa.values.0"
   chck t10aaa.values.1=666       "t10aaa.values.1"
 
   (t10a1, t10a2) := t10

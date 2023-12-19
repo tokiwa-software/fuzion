@@ -256,7 +256,7 @@ visibility is
           chck (c.this.x = "Inner Inner!") "c.this.x"
     a.b.c
     unit
-// NYI:   visi5
+  visi5
 
   visi6 is
     x := 2;        chck $x="2"                                    "x := 2"

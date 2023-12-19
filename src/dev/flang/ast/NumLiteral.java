@@ -830,6 +830,29 @@ public class NumLiteral extends Constant
 
 
   /**
+   * After propagateExpectedType: if type inference up until now has figured
+   * out that a Lazy feature is expected, but the current expression is not
+   * a Lazy feature, then wrap this expression in a Lazy feature.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param  outer the feature that contains this expression
+   *
+   * @param t the type this expression is assigned to.
+   */
+  @Override
+  public Expr wrapInLazy(Resolution res, AbstractFeature outer, AbstractType t)
+  {
+    if (t.isLazyType())
+      {
+        propagateExpectedType(res, outer, t.generics().get(0));
+      }
+    return super.wrapInLazy(res, outer, t);
+  }
+
+
+  /**
    * Get the little-endian representation of this constant.
    *
    * @return an array with length findConstantType(type_)._bytes containing the
@@ -838,16 +861,17 @@ public class NumLiteral extends Constant
   public byte[] data()
   {
     var ct = findConstantType(_type);
+    byte[] result;
     if (ct._isFloat)
       {
-        return floatBits();
+        result = floatBits();
       }
     else
       {
         var i = intValue(ct);
         var b = i.toByteArray();
         var bytes = ct._bytes;
-        var result = new byte[bytes];
+        result = new byte[bytes];
         for (var ix = 0; ix < bytes; ix++)
           {
             if (ix >= b.length)
@@ -859,8 +883,11 @@ public class NumLiteral extends Constant
                 result[ix] = b[b.length - 1 - ix];
               }
           }
-        return result;
       }
+    var bb = ByteBuffer.wrap(new byte[4+result.length]);
+    bb.putInt(ct._bytes);
+    bb.put(result);
+    return bb.array();
   }
 
 
