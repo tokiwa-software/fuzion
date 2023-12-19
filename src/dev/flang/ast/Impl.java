@@ -487,7 +487,6 @@ public class Impl extends ANY
     AbstractType result = Types.resolved.t_void;
     for (var i = 0; i < _initialCalls.size(); i++)
       {
-        _initialCalls.get(i).loadCalledFeature(res, _outerOfInitialCalls.get(i));
         var io = _outerOfInitialCalls.get(i);
         var iv = initialValueFromCall(i, res);
         AbstractType t = iv.typeForInferencing();
