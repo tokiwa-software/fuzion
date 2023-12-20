@@ -136,7 +136,7 @@ is
      (a.second, b.second),
      (a.nano_second, b.nano_second)]
       .reduce true (r, t)->
-        if t.values.0 > t.values.1
+        if t.0 > t.1
           abort false
         else
           r

@@ -126,7 +126,7 @@ is
   #
   public redef as_string =>
     items
-      .map (t -> "({t.values.0},{t.values.1})")
+      .map (t -> "({t.0},{t.1})")
       .as_string
 
 

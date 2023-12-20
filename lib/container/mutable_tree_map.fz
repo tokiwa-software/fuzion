@@ -360,7 +360,7 @@ is
   public type.from_array(kvs array (tuple KEY VAL), freeze bool) container.mutable_tree_map LM KEY VAL is
     new_map := empty
     kvs.for_each (x ->
-      new_map.put x.values.0 x.values.1
+      new_map.put x.0 x.1
       unit)
 
     if freeze

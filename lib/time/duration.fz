@@ -82,7 +82,7 @@ is
     (f,u,_) := for
       x := units.unit_names.first, n
       n in units.unit_names.drop 1
-      nf := n.values.0
+      nf := n.0
   /* NYI this does not work yet, see #228:
    *
     while (!(nf = 0 || nanos / nf < 10)) else

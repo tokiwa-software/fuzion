@@ -96,7 +96,7 @@ is
   # return two sequences of equal length
   # by prepending zero(s) to the shorter sequence
   private equalize(other uint)
-  post result.values.0.count = result.values.1.count
+  post result.0.count = result.1.count
   =>
     if other.data.count < data.count
       (data.as_list, zeros data.count-other.data.count ++ other.data)

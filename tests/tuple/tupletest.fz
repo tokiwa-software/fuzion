@@ -80,15 +80,15 @@ tupletest is
 #
 # NYI: Eventually remove the commented out tests
 #
-# one1 tuple i32 := tuple i32 (42); p "one1 is {one1.values.0}" // one-tuple using explicit types
-  one2 tuple i32 := tuple(     42); p "one2 is {one2.values.0}" // one-tuple using explicit type and inferring generic
-# one3 tuple i32 :=           (42); p "one3 is {one3.values.0}" // one-tuple using explicit type and tuple syntax sugar
-# one4 tuple     := tuple i32 (42); p "one4 is {one4.values.0}" // one-tuple inferring generics and explicit type
-# one5 tuple     := tuple(     42); p "one5 is {one5.values.0}" // one-tuple inferring generics and inferring generic
-# one6 tuple     :=           (42); p "one6 is {one6.values.0}" // one-tuple inferring generics and tuple syntax sugar
-# one7           := tuple i32 (42); p "one7 is {one7.values.0}" // one-tuple inferring type and explicit type
-# one8           := tuple i32 (42); p "one8 is {one8.values.0}" // one-tuple inferring type and inferring generic
-# one9           :=           (42); p "one9 is {one9.values.0}" // one-tuple inferring type and tuple syntax sugar
+# one1 tuple i32 := tuple i32 (42); p "one1 is {one1.0}" // one-tuple using explicit types
+  one2 tuple i32 := tuple(     42); p "one2 is {one2.0}" // one-tuple using explicit type and inferring generic
+# one3 tuple i32 :=           (42); p "one3 is {one3.0}" // one-tuple using explicit type and tuple syntax sugar
+# one4 tuple     := tuple i32 (42); p "one4 is {one4.0}" // one-tuple inferring generics and explicit type
+# one5 tuple     := tuple(     42); p "one5 is {one5.0}" // one-tuple inferring generics and inferring generic
+# one6 tuple     :=           (42); p "one6 is {one6.0}" // one-tuple inferring generics and tuple syntax sugar
+# one7           := tuple i32 (42); p "one7 is {one7.0}" // one-tuple inferring type and explicit type
+# one8           := tuple i32 (42); p "one8 is {one8.0}" // one-tuple inferring type and inferring generic
+# one9           :=           (42); p "one9 is {one9.0}" // one-tuple inferring type and tuple syntax sugar
   (one10)        := tuple     (42); p "one10 is $one10" // one-tuple using destructure and explicit type
 # (one11)        := tuple i32 (42); p "one11 is $one11" // one-tuple using destructure and inferring generic
   (one12)        :=           (42); p "one12 is $one12" // special case: Destructure i32, which works!
@@ -100,10 +100,10 @@ tupletest is
 # set (one16)    := tuple i32 (42); p "one16 is $one16" // one-tuple using destructure and explicit type
 # set (one17)    := tuple i32 (42); p "one17 is $one17" // one-tuple using destructure and inferring generic
 # set (one18)    :=           (42); p "one18 is $one18" // one-tuple using destructure and tuple syntax sugar
-# chck one1.values.0=42 "one1"
-  chck one2.values.0=42 "one2"
-# chck one7.values.0=42 "one7"
-# chck one8.values.0=42 "one8"
+# chck one1.0=42 "one1"
+  chck one2.0=42 "one2"
+# chck one7.0=42 "one7"
+# chck one8.0=42 "one8"
   chck one10=42 "one10"
 # chck one11=42 "one11"
 # chck one13=42 "one13"
@@ -111,15 +111,15 @@ tupletest is
 # chck one16=42 "one10"
 # chck one17=42 "one10"
 
-#  two1 tuple i32 i32   := tuple i32 i32  4 2 ; p "two1 is {two1.values.0}, {two1.values.1}" // one-tuple using explicit types
-  two2 tuple i32 i32   := tuple          4 2 ; p "two2 is {two2.values.0}, {two2.values.1}" // one-tuple using explicit type and inferring generic
-  two3 tuple i32 i32   :=               (4,2); p "two3 is {two3.values.0}, {two3.values.1}" // one-tuple using explicit type and tuple syntax sugar
-# two4 tuple           := tuple i32 i32  4 2 ; p "two4 is {two4.values.0}, {two4.values.1}" // one-tuple inferring generics and explicit type
-# two5 tuple           := tuple(         4 2 ; p "two5 is {two5.values.0}, {two5.values.1}" // one-tuple inferring generics and inferring generic
-# two6 tuple           :=               (4,2); p "two6 is {two6.values.0}, {two6.values.1}" // one-tuple inferring generics and tuple syntax sugar
-# two7                 := tuple i32 i32  4 2 ; p "two7 is {two7.values.0}, {two7.values.1}" // one-tuple inferring type and explicit type
-# two8                 := tuple i32 i32  4 2 ; p "two8 is {two8.values.0}, {two8.values.1}" // one-tuple inferring type and inferring generic
-  two9                 :=               (4,2); p "two9 is {two9.values.0}, {two9.values.1}" // one-tuple inferring type and tuple syntax sugar
+#  two1 tuple i32 i32   := tuple i32 i32  4 2 ; p "two1 is {two1.0}, {two1.1}" // one-tuple using explicit types
+  two2 tuple i32 i32   := tuple          4 2 ; p "two2 is {two2.0}, {two2.1}" // one-tuple using explicit type and inferring generic
+  two3 tuple i32 i32   :=               (4,2); p "two3 is {two3.0}, {two3.1}" // one-tuple using explicit type and tuple syntax sugar
+# two4 tuple           := tuple i32 i32  4 2 ; p "two4 is {two4.0}, {two4.1}" // one-tuple inferring generics and explicit type
+# two5 tuple           := tuple(         4 2 ; p "two5 is {two5.0}, {two5.1}" // one-tuple inferring generics and inferring generic
+# two6 tuple           :=               (4,2); p "two6 is {two6.0}, {two6.1}" // one-tuple inferring generics and tuple syntax sugar
+# two7                 := tuple i32 i32  4 2 ; p "two7 is {two7.0}, {two7.1}" // one-tuple inferring type and explicit type
+# two8                 := tuple i32 i32  4 2 ; p "two8 is {two8.0}, {two8.1}" // one-tuple inferring type and inferring generic
+  two9                 :=               (4,2); p "two9 is {two9.0}, {two9.1}" // one-tuple inferring type and tuple syntax sugar
 # (two10a, two10b)     := tuple i32 i32  4 2 ; p "two10 is $two10a, $two10b" // two-tuple using destructure and explicit types
   (two11a, two11b)     := tuple          4 2 ; p "two11 is $two11a, $two11b" // two-tuple using destructure and inferring generic
   (two12a, two12b)     :=               (4,2); p "two12 is $two12a, $two12b" // two-tuple using destructure and tuple syntax sugar
@@ -130,12 +130,12 @@ tupletest is
 #  set (two16a, two16b) := tuple i32 i32  4 2 ; p "two16 is $two16a, $two16b" // two-tuple using destructure and explicit types
   set (two17a, two17b) := tuple          4 2 ; p "two17 is $two17a, $two17b" // two-tuple using destructure and inferring generic
   set (two18a, two18b) :=               (4,2); p "two18 is $two18a, $two18b" // two-tuple using destructure and tuple syntax sugar
-# chck (two1.values.0=4 && two1.values.1=2) "two1"
-  chck (two2.values.0=4 && two2.values.1=2) "two2"
-  chck (two3.values.0=4 && two3.values.1=2) "two3"
-# chck (two7.values.0=4 && two7.values.1=2) "two7"
-# chck (two8.values.0=4 && two8.values.1=2) "two8"
-  chck (two9.values.0=4 && two9.values.1=2) "two9"
+# chck (two1.0=4 && two1.1=2) "two1"
+  chck (two2.0=4 && two2.1=2) "two2"
+  chck (two3.0=4 && two3.1=2) "two3"
+# chck (two7.0=4 && two7.1=2) "two7"
+# chck (two8.0=4 && two8.1=2) "two8"
+  chck (two9.0=4 && two9.1=2) "two9"
 # chck (two10a=4 && two10b=2) "two10"
   chck (two11a=4 && two11b=2) "two11"
   chck (two12a=4 && two12b=2) "two12"
@@ -148,24 +148,24 @@ tupletest is
 
 # t10 (i32, bool) { (3, false) }
   t10 tuple i32 bool is (3, false)
-  p "tuple t10 is {t10.values.0}, {t10.values.1}"
-  chck t10.values.0=3       "t10.values.0"
-  chck t10.values.1<=>false "t10.values.1"
+  p "tuple t10 is {t10.0}, {t10.1}"
+  chck t10.0=3       "t10.0"
+  chck t10.1<=>false "t10.1"
 
   t10a := t10
-  p "tuple t10a is {t10a.values.0}, {t10a.values.1}"
-  chck t10a.values.0=3       "t10a.values.0"
-  chck t10a.values.1<=>false "t10a.values.1"
+  p "tuple t10a is {t10a.0}, {t10a.1}"
+  chck t10a.0=3       "t10a.0"
+  chck t10a.1<=>false "t10a.1"
 
   t10aa => (42, "the answer")
-  p "tuple t10aa is {t10aa.values.0}, {t10aa.values.1}"
-  chck t10aa.values.0=42        "t10aa.values.0"
-  chck t10aa.values.1.codepoint_length=10 "t10aa.values.1"
+  p "tuple t10aa is {t10aa.0}, {t10aa.1}"
+  chck t10aa.0=42        "t10aa.0"
+  chck t10aa.1.codepoint_length=10 "t10aa.1"
 
   t10aaa => ("devil's number", 666)
-  p "tuple t10aaa is {t10aaa.values.0}, {t10aaa.values.1}"
-  chck t10aaa.values.0.codepoint_length=14 "t10aaa.values.0"
-  chck t10aaa.values.1=666       "t10aaa.values.1"
+  p "tuple t10aaa is {t10aaa.0}, {t10aaa.1}"
+  chck t10aaa.0.codepoint_length=14 "t10aaa.0"
+  chck t10aaa.1=666       "t10aaa.1"
 
   (t10a1, t10a2) := t10
   p "tuple t10a1/2 is {t10a1}, {t10a2}"
@@ -195,10 +195,10 @@ tupletest is
 
   t11 (a i32) => (a, a*a, a*a*a)
   t11a := t11 5
-  p "tuple t11a is {t11a.values.0}, {t11a.values.1}, {t11a.values.2}"
-  chck t11a.values.0=5   "first must be 5"
-  chck t11a.values.1=25  "second must be 25"
-  chck t11a.values.2=125 "third must be 125"
+  p "tuple t11a is {t11a.0}, {t11a.1}, {t11a.2}"
+  chck t11a.0=5   "first must be 5"
+  chck t11a.1=25  "second must be 25"
+  chck t11a.2=125 "third must be 125"
 
   t12a1,t12a2,t12a3 i32 := 42
   set (t12a1,t12a2,t12a3) := t11 4

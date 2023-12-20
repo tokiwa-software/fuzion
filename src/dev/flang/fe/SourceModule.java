@@ -1039,8 +1039,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
     for (var f : declaredOrInheritedFeatures(outer).values())
       {
         if (featureVisible(use.pos()._sourceFile, f) &&
-            f instanceof LibraryFeature lf &&
-            lf.resultType().isOpenGeneric() &&
+            f.state().atLeast(State.RESOLVED_TYPES) &&
+            f.resultType().isOpenGeneric() &&
             f.arguments().isEmpty())
           {
             found = f;

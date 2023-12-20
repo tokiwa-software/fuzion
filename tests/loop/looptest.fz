@@ -248,8 +248,8 @@ looptest is
       j := 100, i*i
     until i ≥ 100
       (i, j)
-  chck (testWriteToDeclaredVar.values.0 = 100  ) "testWriteToDeclaredVar returns (100, 10000)"
-  chck (testWriteToDeclaredVar.values.1 = 10000) "testWriteToDeclaredVar returns (100, 10000)"
+  chck (testWriteToDeclaredVar.0 = 100  ) "testWriteToDeclaredVar returns (100, 10000)"
+  chck (testWriteToDeclaredVar.1 = 10000) "testWriteToDeclaredVar returns (100, 10000)"
 
   testWriteToDeclaredVar2 =>
     for
@@ -257,7 +257,7 @@ looptest is
       j := 100, i*i
     until i ≥ 100
       (i, j)
-  chck (testWriteToDeclaredVar2.values.0 = 100  ) "testWriteToDeclaredVar returns (100, 10000)"
-  chck (testWriteToDeclaredVar2.values.1 = 10000) "testWriteToDeclaredVar returns (100, 10000)"
+  chck (testWriteToDeclaredVar2.0 = 100  ) "testWriteToDeclaredVar returns (100, 10000)"
+  chck (testWriteToDeclaredVar2.1 = 10000) "testWriteToDeclaredVar returns (100, 10000)"
 
   exit exit_code.get

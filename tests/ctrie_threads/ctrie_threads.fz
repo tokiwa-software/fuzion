@@ -50,13 +50,13 @@ ctrie_threads is
     say "ctrie size: {ctrie.size}" # the number of the beast = 666
 
     # all keys which are multiples of 3 should have been removed
-    say "all keys multiple of three removed: {(ctrie.items ∀ (x -> x.values.0 % 3 != 0))}"
+    say "all keys multiple of three removed: {(ctrie.items ∀ (x -> x.0 % 3 != 0))}"
 
     if ((envir.args.nth 1).get "")="-debug"
       say "==="
-      say (ctrie.items.map x->"{x.values.0} was inserted by thread {x.values.1}")
+      say (ctrie.items.map x->"{x.0} was inserted by thread {x.1}")
       say "==="
-      say ((ctrie.items.map x->x.values.1).group_by x->x)
+      say ((ctrie.items.map x->x.1).group_by x->x)
 
 
   test2(take_snapshots bool) is
