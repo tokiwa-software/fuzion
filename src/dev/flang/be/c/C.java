@@ -422,7 +422,7 @@ public class C extends ANY
       var hasTag    = !_fuir.clazzIsChoiceOfOnlyRefs(subjClazz);
       var refEntry  = uniyon.field(CNames.CHOICE_REF_ENTRY_NAME);
       var ref       = hasTag ? refEntry                   : _names.newTemp();
-      var getRef    = hasTag ? CStmnt.EMPTY               : CStmnt.decl(_types.clazz(_fuir.clazzObject()), (CIdent) ref, refEntry);
+      var getRef    = hasTag ? CStmnt.EMPTY               : CStmnt.decl(_types.clazz(_fuir.clazzAny()), (CIdent) ref, refEntry);
       var tag       = hasTag ? sub.field(CNames.TAG_NAME) : ref.castTo("int64_t");
       var tcases    = new List<CStmnt>(); // cases depending on tag value or ref cast to int64
       var rcases    = new List<CStmnt>(); // cases depending on clazzId of ref type
@@ -502,11 +502,11 @@ public class C extends ANY
                            "Found in choice type '" + _fuir.clazzAsString(newcl)+ "'\n");
             }
           value = CExpr.int32const(tagNum);
-          valuecl = _fuir.clazzObject();
+          valuecl = _fuir.clazzAny();
         }
       if (_fuir.clazzIsRef(valuecl))
         {
-          value = value.castTo(_types.clazz(_fuir.clazzObject()));
+          value = value.castTo(_types.clazz(_fuir.clazzAny()));
         }
       var o = CStmnt.seq(CStmnt.lineComment("Tag a value to be of choice type " + _fuir.clazzAsString(newcl) +
                                             " static value type " + _fuir.clazzAsString(valuecl)),

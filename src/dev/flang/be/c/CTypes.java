@@ -244,7 +244,7 @@ public class CTypes extends ANY
             for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
               {
                 var cc = _fuir.clazzChoice(cl, i);
-                findDeclarationOrder(_fuir.clazzIsRef(cc) ? _fuir.clazzObject() : cc, result, visited);
+                findDeclarationOrder(_fuir.clazzIsRef(cc) ? _fuir.clazzAny() : cc, result, visited);
               }
             if (_fuir.clazzIsRef(cl))
               {
@@ -292,7 +292,7 @@ public class CTypes extends ANY
               }
             if (_fuir.clazzIsChoiceWithRefs(cl))
               {
-                uls.add(CStmnt.decl(clazz(_fuir.clazzObject()), _names.CHOICE_REF_ENTRY_NAME));
+                uls.add(CStmnt.decl(clazz(_fuir.clazzAny()), _names.CHOICE_REF_ENTRY_NAME));
               }
             els.add(CStmnt.unyon(uls, _names.CHOICE_UNION_NAME));
           }

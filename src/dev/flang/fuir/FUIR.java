@@ -753,11 +753,11 @@ public class FUIR extends IR
 
 
   /**
-   * Get the id of clazz Object.
+   * Get the id of clazz Any.
    *
-   * @return clazz id of clazz Object
+   * @return clazz id of clazz Any
    */
-  public int clazzObject()
+  public int clazzAny()
   {
     return id(Clazzes.any.get());
   }
