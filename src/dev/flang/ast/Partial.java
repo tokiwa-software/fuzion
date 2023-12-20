@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -34,7 +33,7 @@ import dev.flang.util.SourcePosition;
 
 /**
  * Partial represents partially applied operators and related syntax sugar and
- * provides methods for handling of partial evalution.
+ * provides methods for handling of partial evaluation.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -76,7 +75,7 @@ public class Partial extends AbstractLambda
 
 
   /**
-   * Constructor for a partially applied operator expresion like `+` or
+   * Constructor for a partially applied operator expression like `+` or
    * `**`. This can expand to a lambda of the form `x -> +x`, `x -> x+`, or `x,y
    * -> x+y`.
    *

@@ -306,9 +306,9 @@ public abstract class Expr extends ANY implements HasSourcePosition
    * features. Produce an error otherwise.
    *
    * An expression used as a lazy value or a partially applied call must not
-   * contain any innter declarations.  There is is no fundamental problem, it
+   * contain any inner declarations.  There is is no fundamental problem, it
    * just requires that the front end would not add the feature declarations
-   * found in this expression to the outer feature eagerly, but onyl after
+   * found in this expression to the outer feature eagerly, but only after
    * processing of lazy values and partial application was done.
    *
    * @param what the reason why we are checking this, "a lazy value" or "a
@@ -432,7 +432,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
    * Try to perform partial application such that this expression matches
    * `expectedType`.  Note that this may happen twice:
    *
-   * 1. during RESLVING_DECLARATIONS phase of outer when resolving arguments to
+   * 1. during RESOLVING_DECLARATIONS phase of outer when resolving arguments to
    *    a call such as `l.map +1`. In this case, expectedType may be a function
    *    type `Function R A` with generic arguments not yet replaced by actual
    *    arguments, in particular the result type `R` is unknown since it is the

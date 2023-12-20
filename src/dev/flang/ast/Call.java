@@ -883,7 +883,7 @@ public class Call extends AbstractCall
 
 
   /**
-   * Check if there is a pending error from an unsseccessful attempt to find the
+   * Check if there is a pending error from an unsuccessful attempt to find the
    * called feature.  If so, report the corresponding error and set this call
    * into an error state (with _calledFeature, _target, _actuals and _type set
    * to suitable error values).
@@ -900,8 +900,8 @@ public class Call extends AbstractCall
 
 
   /**
-   * After an error occured for this call, set the called feature, target and
-   * type all to correspdonding error values to avoid further error
+   * After an error occurred for this call, set the called feature, target and
+   * type all to corresponding error values to avoid further error
    * reporting. Also erase all actual arguments.
    */
   void setToErrorState()
@@ -962,7 +962,7 @@ public class Call extends AbstractCall
           {
             if (_pendingError == null)
               {
-                l = resolveTypes(res, outer);  // this enssures _calledFeature is set such that possible ambiguity is reported
+                l = resolveTypes(res, outer);  // this ensures _calledFeature is set such that possible ambiguity is reported
               }
             if (l == this)
               {

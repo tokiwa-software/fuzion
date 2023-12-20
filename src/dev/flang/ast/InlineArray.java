@@ -441,7 +441,7 @@ public class InlineArray extends ExprWithPos
     var arrayCall       = new Call(SourcePosition.builtIn, null, "array"     , sysArrArgs).resolveTypes(res, outer);
     exprs.add(arrayCall);
 
-    // we do not "replace" this inline array by instantation code
+    // we do not "replace" this inline array by instantiation code
     // instead we save away the code and decide in fuir
     // if we have to use it or can turn this array into a
     // compile-time constant.

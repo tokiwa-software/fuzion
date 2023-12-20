@@ -112,7 +112,7 @@ public reader(private rp Read_Provider, buf_size i32, buffer array u8 | io.end_o
 
 
 
-# short hand for getting the currently installed `buffer.reader u8`
+# short hand for getting the currently installed `buffered.reader`
 #
 reader =>
   io.buffered.reader.env

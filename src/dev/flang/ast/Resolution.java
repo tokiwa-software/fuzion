@@ -270,7 +270,7 @@ public class Resolution extends ANY
    * types will end up being void).
    *
    * @param waitingForCalls a list of features that await any calls to be found
-   * before they coudl be resolved.
+   * before they could be resolved.
    */
   Feature resolveDelayed()
   {
