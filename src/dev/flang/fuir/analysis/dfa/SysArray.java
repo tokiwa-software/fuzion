@@ -79,7 +79,7 @@ public class SysArray extends Value implements Comparable<SysArray>
    */
   public SysArray(DFA dfa, byte[] data, int elementClazz)
   {
-    super(dfa._fuir.clazzObject());
+    super(dfa._fuir.clazzAny());
 
     if (PRECONDITIONS) require
       (data != null);
@@ -125,7 +125,7 @@ public class SysArray extends Value implements Comparable<SysArray>
    */
   public SysArray(DFA dfa, Value el)
   {
-    super(dfa._fuir.clazzObject());
+    super(dfa._fuir.clazzAny());
 
     _dfa = dfa;
     _data = new byte[0];
