@@ -28,7 +28,6 @@ package dev.flang.parser;
 
 import java.util.ArrayList;
 
-import dev.flang.ast.Actual;
 import dev.flang.ast.Call;
 import dev.flang.ast.Expr;
 import dev.flang.ast.NumLiteral;
@@ -37,7 +36,6 @@ import dev.flang.ast.ParsedName;
 
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
-import dev.flang.util.List;
 
 /**
  * OpExpr <description>

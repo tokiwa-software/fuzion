@@ -30,7 +30,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * AbstractLambdais the super class of lambda expressions and patrially applicated functions.q
+ * AbstractLambda is the super class of lambda expressions and partially applied functions.q
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -78,7 +78,7 @@ public abstract class AbstractLambda extends ExprWithPos
 
   /**
    * Special version of propagateExpectedType(res, outer, t) that tries to infer
-   * the result type of a lambda or partially applied functin.
+   * the result type of a lambda or partially applied function.
    *
    * @param res this is called during type inference, res gives the resolution
    * instance.

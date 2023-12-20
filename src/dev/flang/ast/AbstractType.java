@@ -988,7 +988,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * Check if this is a choice and exactly one variant of the choice matches the
    * given predicate. If so, return that variant.
    *
-   * @param p a predicate over AbstracType
+   * @param p a predicate over AbstractType
    *
    * @return the single choice type for which p holds, this if this is not a
    * choice or the number of matches is not 1.
@@ -1038,7 +1038,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * choices.
    *
    * @return if this is a choice and there is exactly one choice for which
-   * isFuncitonType() holds, return that type, otherwise return this.
+   * isFunctionType() holds, return that type, otherwise return this.
    */
   AbstractType functionTypeFromChoice()
   {
@@ -1048,7 +1048,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * For a function type (see isAnyFunctionType()), return the arity of the
-   * funcion.
+   * function.
    *
    * @return the number of arguments to be passed to this function type.
    */

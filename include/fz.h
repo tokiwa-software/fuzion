@@ -128,7 +128,7 @@ int fzE_set_blocking(int sockfd, int blocking)
 }
 
 // helper function to retrieve
-// the last error that occured.
+// the last error that occurred.
 int fzE_net_error()
 {
 #ifdef _WIN32
