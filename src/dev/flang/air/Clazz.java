@@ -1833,6 +1833,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
               {
                 cg.instantiated(at);
               }
+            // e.g. `java.call_c0` may return `outcome x`
+            rc.instantiated(at);
           }
       }
     else if (!rc.isRef() || feature().isIntrinsicConstructor())
