@@ -198,12 +198,12 @@ public fuzion.java is
   # convert a Sequence to a Java Array object
   #
   public array_to_java_object(T type, a Sequence T) Array T is
-    array_to_java_object0 T a.as_array.internal_array.data
+    array_to_java_object0 T a.as_array.internal_array
 
 
   # intrinsic to convert an array to a Java Array object
   #
-  private array_to_java_object0(T type, a fuzion.sys.Pointer) Array T is intrinsic_constructor
+  private array_to_java_object0(T type, a fuzion.sys.internal_array T) Array T is intrinsic_constructor
 
 
   # convert a string to a Java String object
