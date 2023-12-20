@@ -17,45 +17,55 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature stack
+#  Source code of Fuzion standard library feature Stack
 #
 # -----------------------------------------------------------------------
 
-# lock-free stack using compare_and_set
-# invented by R. Kent Treiber
+
+# interface definition for stacks
 #
-public stack(T type) : container.Stack T is
+public Stack(T type) ref is
+  public push(e T) unit is abstract
+  public pop option T is abstract
+  public peek option T is abstract
 
-  Node(data T, next option Node) ref is
 
-  top := concur.atomic (option Node) nil
+
+# A stack implementation using local mutation
+#
+public stack(LM type : mutate, T type) : Stack T is
+
+  Element(data T, next option Element) ref is
+
+
+  top := LM.env.new (option Element) nil
 
 
   # push an element to the stack
   #
   public push (e T) unit is
-    for o := top.read
-        n := Node e o
-    while !top.compare_and_set o n
+    match top.get
+      n Element =>
+        top <- (Element e n)
+      nil =>
+        top <- (Element e nil)
 
 
   # pop an element from the stack
   #
   public pop option T is
-
-    next (x option Node) =>
-      match x
-        n Node => n.next
-        nil => nil
-
-    for o := top.read
-        n := next o
-    while !o.is_nil && !top.compare_and_set o n
-    else
-      o.map_to_option node->node.data
+    match top.get
+      n Element =>
+        top <- n.next
+        n.data
+      nil => nil
 
 
   # peek at the top element from the stack
   #
   public peek option T is
-    top.read.map_to_option node->node.data
+    match top.get
+      n Element => n.data
+      nil => nil
+
+
