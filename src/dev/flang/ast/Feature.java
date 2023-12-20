@@ -1342,11 +1342,6 @@ public class Feature extends AbstractFeature
             _selfType = tt.resolve(res, this);
           }
 
-        if (_impl._kind == Impl.Kind.FieldActual)
-          {
-            _impl.visitInitialValues(res.resolveTypesFully);
-          }
-
         _state = State.RESOLVED_TYPES;
         while (!whenResolvedTypes.isEmpty())
           {

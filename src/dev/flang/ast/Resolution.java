@@ -299,7 +299,7 @@ public class Resolution extends ANY
       f.valueArguments().stream()
         .anyMatch(a -> a instanceof Feature af &&
                   af.impl()._kind == Impl.Kind.FieldActual &&
-                  af.impl()._initialValues.isEmpty()           ) ||
+                  af.impl()._initialCalls.isEmpty()           ) ||
       f.outer() instanceof Feature of && !of.isUniverse() && requiresCall(of);
   }
 
