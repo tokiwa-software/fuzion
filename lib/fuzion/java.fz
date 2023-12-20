@@ -72,14 +72,14 @@ public fuzion.java is
   public Array(public T type,
                private redef Java_Ref Any) ref : Sequence T, Java_Object Java_Ref
   is
-    length                  => array_length T Array.this
-    redef finite            => true
-    redef index [ ] (i i32) => array_get    T Array.this i
-    redef as_list => as_list 0
+    public length                  => array_length T Array.this
+    public redef finite            => true
+    public redef index [ ] (i i32) => array_get    T Array.this i
+    public redef as_list => as_list 0
 
     # create list starting at index from
     #
-    as_list (from i32) list T is
+    public as_list (from i32) list T is
       if length ≤ from
         nil
       else
@@ -106,7 +106,7 @@ public fuzion.java is
 
   # Java's 'void' type (which is used in Java like Fuzion's 'unit' type').
   #
-  public java_void(forbidden_to_call_directly void) : Java_Object(Any)
+  public java_void(forbidden_to_call_directly void) : Java_Object Any
   is
 
 
