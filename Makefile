@@ -357,6 +357,7 @@ FUZION_FILES = \
 # files required for fz command with jvm backend
 FZ_JVM = \
 			 $(BUILD_DIR)/bin/fz \
+			 $(CLASS_FILES_BE_JVM_RUNTIME) \
 			 $(MOD_BASE)
 
 # files required for fz command with C backend
