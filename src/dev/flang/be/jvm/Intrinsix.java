@@ -461,7 +461,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(val, code);
         });
 
-    put("effect.abort",
+    put("effect.abort0",
         (jvm, cl, pre, cc, tvalue, args) ->
         {
           var ecl = jvm._fuir.effectType(cc);
