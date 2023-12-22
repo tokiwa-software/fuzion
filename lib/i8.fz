@@ -47,10 +47,10 @@ public i8(public val i8) : num.wrap_around, has_interval is
   public fixed underflow_on_mul(other i8) => as_i32 *° other.as_i32 < i8.type.min.as_i32
 
   # neg, add, sub, mul with wrap-around semantics
-  public fixed prefix -° i8 is intrinsic
-  public fixed infix +° (other i8) i8 is intrinsic
-  public fixed infix -° (other i8) i8 is intrinsic
-  public fixed infix *° (other i8) i8 is intrinsic
+  public fixed prefix -° i8 => intrinsic
+  public fixed infix +° (other i8) i8 => intrinsic
+  public fixed infix -° (other i8) i8 => intrinsic
+  public fixed infix *° (other i8) i8 => intrinsic
 
   # division and remainder with check for div-by-zero
   public fixed infix / (other i8)
@@ -63,86 +63,86 @@ public i8(public val i8) : num.wrap_around, has_interval is
   => mod(other)
 
   # private division and remainder with crash in case of div-by-zero
-  private div (other i8) i8 is intrinsic
-  private mod (other i8) i8 is intrinsic
+  private div (other i8) i8 => intrinsic
+  private mod (other i8) i8 => intrinsic
 
   # bitwise and, or and xor operations
-  public fixed infix &  (other i8) i8 is intrinsic
-  public fixed infix |  (other i8) i8 is intrinsic
-  public fixed infix ^  (other i8) i8 is intrinsic
+  public fixed infix &  (other i8) i8 => intrinsic
+  public fixed infix |  (other i8) i8 => intrinsic
+  public fixed infix ^  (other i8) i8 => intrinsic
 
   # shift operations (signed)
-  public fixed infix >> (other i8) i8 is intrinsic
-  public fixed infix << (other i8) i8 is intrinsic
+  public fixed infix >> (other i8) i8 => intrinsic
+  public fixed infix << (other i8) i8 => intrinsic
 
   # conversion to u32, i64 and u64, with range check
   public as_i16  => as_i32.as_i16
-  public as_i32 i32 is intrinsic
+  public as_i32 i32 => intrinsic
   public as_i64  => as_i32.as_i64
 # as_i128 => as_i32.as_i128
 
   public as_u8 u8
     pre
       debug: thiz ≥ 0
-    is
+    =>
       cast_to_u8
   public as_u16 u16
     pre
       debug: thiz ≥ 0
-    is
+    =>
       cast_to_u16
   public as_u32 u32
     pre
       debug: thiz ≥ 0
-    is
+    =>
       cast_to_u32
   public as_u64 u64
     pre
       debug: thiz ≥ 0
-    is
+    =>
       cast_to_u64
   public as_u128 u128
     pre
       debug: thiz ≥ 0
-    is
+    =>
       cast_to_u128
-  public as_int int is
+  public as_int int =>
     int as_i64
 
   # casting to unsigned, adding 1<<8 if negative
-  public cast_to_u8   u8   is intrinsic            # 3 -> 3, -3 -> 0xfd
-  public cast_to_u16  u16  is cast_to_u8.as_u16    # 3 -> 3, -3 -> 0x00fd
-  public cast_to_u32  u32  is cast_to_u8.as_u32    # 3 -> 3, -3 -> 0x0000_00fd
-  public cast_to_u64  u64  is cast_to_u8.as_u64    # 3 -> 3, -3 -> 0x0000_0000_0000_00fd
-  public cast_to_u128 u128 is cast_to_u8.as_u128   # 3 -> 3, -3 -> 0x0000_0000_0000_0000_0000_0000_0000_00fd
+  public cast_to_u8   u8   => intrinsic            # 3 -> 3, -3 -> 0xfd
+  public cast_to_u16  u16  => cast_to_u8.as_u16    # 3 -> 3, -3 -> 0x00fd
+  public cast_to_u32  u32  => cast_to_u8.as_u32    # 3 -> 3, -3 -> 0x0000_00fd
+  public cast_to_u64  u64  => cast_to_u8.as_u64    # 3 -> 3, -3 -> 0x0000_0000_0000_00fd
+  public cast_to_u128 u128 => cast_to_u8.as_u128   # 3 -> 3, -3 -> 0x0000_0000_0000_0000_0000_0000_0000_00fd
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
-  # from has_interval i8 is abstract, fz should not complain about this conflict.
+  # from has_interval i8 => abstract, fz should not complain about this conflict.
   fixed redef max => i8 0x7f
 
 
   # create hash code from this number
-  public type.hash_code(a i8.this) u64 is
+  public type.hash_code(a i8.this) u64 =>
     hash a.cast_to_u64
 
 
   # find the highest 1 bit in this integer and return integer with
   # this single bit set or 0 if this is zero.
   #
-  public highest_one_bit i8 is
+  public highest_one_bit i8 =>
     val.cast_to_u8.highest_one_bit.cast_to_i8
 
 
   # count the number of trailing zeros in this integer.
   #
-  public trailing_zeros i32 is
+  public trailing_zeros i32 =>
     val.cast_to_u8.trailing_zeros
 
 
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  public ones_count i32 is
+  public ones_count i32 =>
     val.cast_to_u8.ones_count
 
 
@@ -153,22 +153,22 @@ public i8(public val i8) : num.wrap_around, has_interval is
 
   # identity element for 'infix +'
   #
-  fixed type.zero i8  is 0
+  fixed type.zero i8  => 0
 
 
   # identity element for 'infix *'
   #
-  fixed type.one  i8  is 1
+  fixed type.one  i8  => 1
 
 
   # equality
   #
-  fixed type.equality(a, b i8) bool is intrinsic_constructor
+  fixed type.equality(a, b i8) bool => intrinsic_constructor
 
 
   # total order
   #
-  fixed type.lteq(a, b i8) bool is intrinsic_constructor
+  fixed type.lteq(a, b i8) bool => intrinsic_constructor
 
 
   # returns the number in whose bit representation all bits are ones

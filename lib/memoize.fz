@@ -52,7 +52,7 @@
 #
 # NYI constraint for T should be property.orderable, has_hashcode, or has_ordinal
 #
-public memoize(LM type : mutate, T type : property.orderable, R type, f T->R) T->R is
+public memoize(LM type : mutate, T type : property.orderable, R type, f T->R) T->R =>
   ref : Unary R T
 
     # the memory
@@ -60,7 +60,7 @@ public memoize(LM type : mutate, T type : property.orderable, R type, f T->R) T-
 
     # implementation of abstract feature Unary.call
     #
-    call(a T) R is
+    call(a T) R =>
       # compute if not yet computed
       if store.get[a].is_nil
         store.put (store.get.add a (f a))

@@ -90,7 +90,7 @@ is
         0 ≤ code ≤ 127
       post
         code != 0 : !exit_code.open
-      is
+      =>
         if exit_code.open
           exit_code <- code
 
@@ -141,12 +141,12 @@ public Exit_Handler ref is
 
   # exit with the given code
   #
-  exit(code i32) void is abstract
+  exit(code i32) void => abstract
 
 
   # exit with the stored code
   #
-  exit void is abstract
+  exit void => abstract
 
 
   # set the stored exit code, which, by default, is zero
@@ -154,4 +154,4 @@ public Exit_Handler ref is
   set_exit_code(code i32) outcome unit
     pre
       0 ≤ code ≤ 127
-    is abstract
+    => abstract

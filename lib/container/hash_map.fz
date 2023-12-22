@@ -70,7 +70,7 @@ is
       store (at k)
 
       # store k,v for index at,
-      store (at i32) unit is
+      store (at i32) unit =>
 
         match mcontents[at]
           nil     =>     # slot is free, so use it:
@@ -96,9 +96,9 @@ is
 
   # get the value k is mapped to
   #
-  public index [] (k HK) option V is
+  public index [] (k HK) option V =>
 
-    retrieve (at i32) option V is
+    retrieve (at i32) option V =>
       match contents[at]
         nil     => nil
         t tuple =>
@@ -113,7 +113,7 @@ is
 
   # get a list of all key/value pairs in this map
   #
-  public items Sequence (tuple HK V) is
+  public items Sequence (tuple HK V) =>
     contents
       .filter      (o -> o??)
       .map (o -> match o

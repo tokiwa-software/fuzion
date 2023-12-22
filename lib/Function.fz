@@ -32,7 +32,7 @@ public Function(public R type,
 
   # call this function on given arguments A...
   #
-  public call(a A) R is abstract
+  public call(a A) R => abstract
 
 
 # NYI: would be nice to have schönfinkeling defined here, could work like this:

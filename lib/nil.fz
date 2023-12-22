@@ -34,4 +34,4 @@ public nil is
 
   # convert this to a string.
   #
-  public redef as_string String is "--nil--"
+  public redef as_string String => "--nil--"

@@ -64,7 +64,7 @@ is
   #      results in `Set`). Maybe `Set.add` should result in `Set.this.type`,
   #      so we do not need `add0`?
   #
-  fixed add0 (k K) ps_set K is
+  fixed add0 (k K) ps_set K =>
     if has k
       ps_set.this
     else
@@ -73,7 +73,7 @@ is
 
   # add new element k to this set.
   #
-  public add (k K) Set K is
+  public add (k K) Set K =>
     add0 k
 
 
@@ -110,19 +110,19 @@ is
 
   # add all elements of the given Sequence to this set
   #
-  public fixed add_all (s Sequence K) ps_set K is
+  public fixed add_all (s Sequence K) ps_set K =>
     s.reduce (ps_set K) ps_set.this ((r,k) -> r.add0 k)
 
 
   # number of entries in this set.  May be undefined, i.e., a range of
   # floating point numbers or an infinite set.
   #
-  public redef size_option option i32 is size
+  public redef size_option option i32 => size
 
 
   # does this set contain the given value?
   #
-  public contains (e K) bool is has e
+  public contains (e K) bool => has e
 
 /*
 has     -- NYI: 'has' keyword not supported yet, so the following require an instance to be called on
@@ -130,7 +130,7 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
 
   # an empty ps_set
   #
-  public fixed type.empty container.ps_set K is
+  public fixed type.empty container.ps_set K =>
     container.ps_set K (container.ps_map K unit).type.empty unit
 
 
@@ -143,7 +143,7 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
 
   # equality
   #
-  public fixed type.equality(a, b container.ps_set K) bool is
+  public fixed type.equality(a, b container.ps_set K) bool =>
     # NYI: a bit expensive
     (a ∪ b).size = a.size
 

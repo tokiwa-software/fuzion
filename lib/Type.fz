@@ -36,7 +36,7 @@ public Type ref is
 
   # name of this type, including type parameters, e.g. 'option (list i32)'.
   #
-  public name String is intrinsic
+  public name String => intrinsic
 
 
   # string representation of this type to be used for debugging.

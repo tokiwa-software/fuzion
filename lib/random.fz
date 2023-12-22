@@ -134,7 +134,7 @@ private:public Random_Handler ref is
   # function of the original Random_Handler or it might use an external source
   # of entropy to create a new instance.
   #
-  next Random_Handler is abstract
+  next Random_Handler => abstract
 
   # Return the random number stored in this instance of Random_Handler, in the
   # range 0..u64.max
@@ -142,7 +142,7 @@ private:public Random_Handler ref is
   # NOTE: this feature is pure, i.e., repeated calls on the same target result
   # in equal results.  Use 'next' to get different results.
   #
-  get u64 is abstract
+  get u64 => abstract
 
 
 
@@ -154,7 +154,7 @@ simple_random_handler(seed1 u64, seed2 u64) : Random_Handler is
 
   # get next instance by shuffling bits in seeds around
   #
-  next Random_Handler is
+  next Random_Handler =>
     # NYI: This does not meet any requirements on a decent random number generator
     s1 := (seed1 *° 1717171717 +° 13113131313) ^ seed2
     s2 := (seed2 *° 9191919191 +° 37637373737) ^ seed1
@@ -165,7 +165,7 @@ simple_random_handler(seed1 u64, seed2 u64) : Random_Handler is
 
   # get current random number
   #
-  get u64 is seed1
+  get u64 => seed1
 
 
   # name of env var to provide default random seed.
@@ -193,7 +193,7 @@ simple_random_handler(seed1 u64, seed2 u64) : Random_Handler is
   # for security and that do not meet typical requirements for a good
   # random number generator.
   #
-  type.time_seeded Random_Handler is
+  type.time_seeded Random_Handler =>
     # initialize with large numbers XORed with nano time
     #
     simple_random_handler (u64 77777777777777 ^ time.nano.read) 98765432109876543

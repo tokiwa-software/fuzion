@@ -56,7 +56,7 @@ is
     ) handles2 T X
   post
     result.has_last
-  is
+  =>
     handles2 T X v (handle2_0 w) mode
 
 
@@ -138,7 +138,7 @@ is
 
   public infix >>= (f X -> handles2 T X) => bind X f
 
-  public bind(B type, f X -> handles2 T B) handles2 T B is
+  public bind(B type, f X -> handles2 T B) handles2 T B =>
     handles2 T B (f v).v last_opt effect_mode.plain
 
   public return(B type, w B) => handles2 T B w last_opt effect_mode.plain
@@ -191,7 +191,7 @@ handles2_type(T type) is
 
   # install default instance of handles2
   #
-  install_default unit is
+  install_default unit =>
     handles2 T unit unit nil effect_mode.default
     unit
 

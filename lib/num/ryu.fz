@@ -61,12 +61,12 @@ public ryū(public T type : float) is
   # or greater than 9_999_999
   # scientific notation will be used.
   #
-  public as_string(val T) String is
+  public as_string(val T) String =>
     as_string val val.use_scientific_notation rounding_conservative
 
 
   # convert float to string
-  public as_string(val T, scientific_notation bool, rounding_mode rounding_mode) String is
+  public as_string(val T, scientific_notation bool, rounding_mode rounding_mode) String =>
     # trivial cases first
     if (T.is_NaN val) then "NaN"
     else if (val = T.positive_infinity) then "Infinity"
@@ -79,7 +79,7 @@ public ryū(public T type : float) is
 
 
   # convert float to string for nontrivial case
-  private as_string_nontrivial(val T, scientific_notation bool, rounding_mode rounding_mode) String is
+  private as_string_nontrivial(val T, scientific_notation bool, rounding_mode rounding_mode) String =>
 
     (smaller_halfway_point, mv, larger_halfway_point, mm_shift, is_even) := step_2 val
 
@@ -92,7 +92,7 @@ public ryū(public T type : float) is
 
 
   # step 2: get the interval of legal decimal representations
-  private step_2(val T) tuple i64 i64 i64 bool bool is
+  private step_2(val T) tuple i64 i64 i64 bool bool =>
     m := val.mantissa.as_i64
     mv := m << 2
     mm_shift := m != (i64 1 << T.mantissa_bits.as_i64) || val.exponent_biased <= 1
@@ -101,7 +101,7 @@ public ryū(public T type : float) is
 
 
   # step 3: convert to decimal power base
-  private step_3(exponent, smaller_halfway_point, mv, larger_halfway_point i64, mm_shift bool, is_even bool, rounding_mode rounding_mode) tuple i64 i64 i64 bool bool i64 is
+  private step_3(exponent, smaller_halfway_point, mv, larger_halfway_point i64, mm_shift bool, is_even bool, rounding_mode rounding_mode) tuple i64 i64 i64 bool bool i64 =>
 
     # calculates: ⌈log₂ 5ᵉ⌉
     private pow5bits(e i64)
@@ -810,7 +810,7 @@ public ryū(public T type : float) is
     private mul_pow5_inv_div_pow2(m, i, j i64) i64
     pre (actual_shift j) >= 0,
         exponent >= 0
-    is
+    =>
       mul_pow5_div_pow2 m i j pow5_inv_split
 
 
@@ -830,7 +830,7 @@ public ryū(public T type : float) is
           e <= 1650
       post
         floor_log₁₀_pow_2.this.result = (T.log T.ten (T.two ** T.from_i64 e)).floor.as_i64
-      is
+      =>
         exponent*78913 >> 18
 
 
@@ -863,7 +863,7 @@ public ryū(public T type : float) is
       post
         ( T.log T.ten (five ** T.from_i64 e) = T.infinity
           || floor_log₁₀_pow_5.this.result = (T.log T.ten (five ** T.from_i64 e)).floor.as_i64)
-      is
+      =>
         e*732923 >> 20
 
 
@@ -890,11 +890,11 @@ public ryū(public T type : float) is
 
 
   # step 4: shortest decimal representation
-  private step_4(dv, dp, dm i64, dm_is_trailing_zeros, dv_is_trailing_zeros bool, e10 i64, even, scientific_notation bool, rounding_mode rounding_mode) tuple i64 i64 i64 is
+  private step_4(dv, dp, dm i64, dm_is_trailing_zeros, dv_is_trailing_zeros bool, e10 i64, even, scientific_notation bool, rounding_mode rounding_mode) tuple i64 i64 i64 =>
 
 
     # get the decimal length of this i64
-    private decimal_length(v i64) i64 is
+    private decimal_length(v i64) i64 =>
       if      v >= 1000000000000000000 then 19
       else if v >= 100000000000000000  then 18
       else if v >= 10000000000000000   then 17
@@ -970,11 +970,11 @@ public ryū(public T type : float) is
 
 
   # step 5: construct the string
-  private step_5(output, output_length, exponent i64, is_negative, scientific_notation bool) String is
+  private step_5(output, output_length, exponent i64, is_negative, scientific_notation bool) String =>
 
 
     # convert output to string
-    output_as_string(output i64, output_length i64) String is
+    output_as_string(output i64, output_length i64) String =>
       for _ in (i64 1)..(output_length)
           o := output, o / 10
           s := "{o % 10}", "{o % 10}$s"

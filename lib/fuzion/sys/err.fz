@@ -36,7 +36,7 @@ module err: character_encodings is
   module println =>
     write [ascii.lf]
 
-  private stderr i64 is intrinsic
+  private stderr i64 => intrinsic
 
   private write(arr array u8) =>
     _ := fuzion.sys.fileio.write stderr arr

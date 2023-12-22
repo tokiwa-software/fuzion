@@ -48,13 +48,13 @@ public stream(public T type) ref : Sequence T is
 
   # create a list from this stream
   #
-  public redef as_list list T is
+  public redef as_list list T =>
     if !as_list0.exists
       set as_list0 := from_stream
     as_list0.get
 
   # this must not be called more than once!
-  private from_stream list T is
+  private from_stream list T =>
     if has_next
       h := next
       ref : Cons T (list T)
@@ -87,41 +87,41 @@ public stream(public T type) ref : Sequence T is
   # This is a helper function that needs to be defined because stream is an heir
   # of Sequence.
   #
-  public redef as_stream stream T is stream.this
+  public redef as_stream stream T => stream.this
 
 
   # apply f to all elements in this stream
   #
-  public redef for_each(f T -> unit) unit is while has_next do f(next)
+  public redef for_each(f T -> unit) unit => while has_next do f(next)
 
 
   # apply f to all elements in this stream, infix operator synonym of for_each.
   #
-  public redef infix | (f T -> unit) unit is while has_next do f(next)
+  public redef infix | (f T -> unit) unit => while has_next do f(next)
 
 
   # apply 'f' to each element 'e' as long as 'f e'
   #
-  public redef for_while(f T -> bool) unit is while has_next && f(next)
+  public redef for_while(f T -> bool) unit => while has_next && f(next)
 
 
   # check if predicate f holds for all elements produced by this stream
   #
-  public redef infix ∀ (f T -> bool) bool is
+  public redef infix ∀ (f T -> bool) bool =>
     while has_next: f next   # has_next implies f next
     until !has_next
 
 
   # check if predicate f holds for at least one element produced by this stream
   #
-  public redef infix ∃ (f T -> bool) bool is
+  public redef infix ∃ (f T -> bool) bool =>
     while has_next
     until f next
 
 
   # does this stream have one more element?
   #
-  public has_next bool is abstract
+  public has_next bool => abstract
 
 
   # the next element in this stream
@@ -131,12 +131,12 @@ public stream(public T type) ref : Sequence T is
     pre
       has_next
    */
-  is abstract
+  => abstract
 
 
   # get the next element or nil if !has_next
   #
-  next_if_exists option T is
+  next_if_exists option T =>
     if has_next
       next
     else
@@ -145,7 +145,7 @@ public stream(public T type) ref : Sequence T is
 
   # print the elements of this stream
   #
-  print unit is
+  print unit =>
     for_each (x ->
       yak x
       if has_next then yak ", ")
@@ -153,7 +153,7 @@ public stream(public T type) ref : Sequence T is
 
   # count the elements of this stream
   #
-  public redef count i32 is
+  public redef count i32 =>
     # NYI: check if this works: (map i32 x->1).fold i32.sum
     as_list.map i32 x->1
           .fold i32.type.sum
@@ -161,7 +161,7 @@ public stream(public T type) ref : Sequence T is
 
   # collect all items from this stream into an array
   #
-  public redef as_array array T is
+  public redef as_array array T =>
     m : mutate is
     m.go ()->
       for
@@ -182,7 +182,7 @@ public stream(public T type) ref : Sequence T is
 
   # create a string from the elements of this stream
   #
-  redef as_string String is
+  redef as_string String =>
     map_to_stream String (x -> x.as_string)
       .fold (String.type.concat ", ")
 
@@ -198,10 +198,10 @@ public stream(public T type) ref : Sequence T is
   # This performs a lazy mapping, f is called only when the elements
   # are taken from the stream.
   #
-  public map_to_stream(B type, f T -> B) stream B is
+  public map_to_stream(B type, f T -> B) stream B =>
     ref : stream B
       has_next => stream.this.has_next
-      next B is f stream.this.next
+      next B => f stream.this.next
 
 
   # NYI this was broken but is meanwhile fixed.
@@ -209,7 +209,7 @@ public stream(public T type) ref : Sequence T is
   #
   public map_broken(B type, f T -> B) : stream B is
     has_next => stream.this.has_next
-    next B is f stream.this.next
+    next B => f stream.this.next
 
 
   # fold the elements of this stream using the given monoid.
@@ -240,7 +240,7 @@ public streams is
   # end of stream is reached once supplier returns nil
   # note that the supplier is called only once for each has_next/next cycle
   #
-  public generate(T type, supplier () -> option T) stream T is
+  public generate(T type, supplier () -> option T) stream T =>
 
     not_initialized is
     depleted is
@@ -259,11 +259,11 @@ public streams is
       val <- not_initialized
 
     ref: stream T
-      redef has_next bool is
+      redef has_next bool =>
         match read
           v T => true
           * => false
-      redef next T is
+      redef next T =>
         match read
           v T => reset; v
           * => fuzion.std.panic "there is no next value available"

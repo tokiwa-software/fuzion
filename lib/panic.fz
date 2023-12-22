@@ -80,7 +80,7 @@ public Panic_Handler ref is
   # cast it to the correct type in `use` (see
   # https://flang.dev/design/type_casts_ref)
   #
-  do_panic(msg String) unit is abstract
+  do_panic(msg String) unit => abstract
 
   # Install this panic handler using a new instance of panic and run
   # `code` on it. In case of an abort, return `def()` (NYI: def should be

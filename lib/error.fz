@@ -43,5 +43,5 @@ is
   #
   # returns "error: $msg"
   #
-  public redef as_string String is
+  public redef as_string String =>
     "error: $msg"

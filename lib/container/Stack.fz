@@ -25,9 +25,9 @@
 # interface definition for stacks
 #
 public Stack(T type) ref is
-  public push(e T) unit is abstract
-  public pop option T is abstract
-  public peek option T is abstract
+  public push(e T) unit => abstract
+  public pop option T => abstract
+  public peek option T => abstract
 
 
 
@@ -43,7 +43,7 @@ public stack(LM type : mutate, T type) : Stack T is
 
   # push an element to the stack
   #
-  public push (e T) unit is
+  public push (e T) unit =>
     match top.get
       n Element =>
         top <- (Element e n)
@@ -53,7 +53,7 @@ public stack(LM type : mutate, T type) : Stack T is
 
   # pop an element from the stack
   #
-  public pop option T is
+  public pop option T =>
     match top.get
       n Element =>
         top <- n.next
@@ -63,7 +63,7 @@ public stack(LM type : mutate, T type) : Stack T is
 
   # peek at the top element from the stack
   #
-  public peek option T is
+  public peek option T =>
     match top.get
       n Element => n.data
       nil => nil

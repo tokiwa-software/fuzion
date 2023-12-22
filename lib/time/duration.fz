@@ -78,7 +78,7 @@ is
   # representation is not accurate, it consists of at least two
   # and at most 4 decimal digits followed by a time unit string.
   #
-  public redef as_string String is
+  public redef as_string String =>
     (f,u,_) := for
       x := units.unit_names.first, n
       n in units.unit_names.drop 1

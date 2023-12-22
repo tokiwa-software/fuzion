@@ -32,7 +32,7 @@ is
 
   # the arithmetic mean of the sequence
   # https://en.wikipedia.org/wiki/Arithmetic_mean
-  public average option N is
+  public average option N =>
     if is_empty
       nil
     else
@@ -43,7 +43,7 @@ is
 
   # the variance of the sequence
   # https://en.wikipedia.org/wiki/Variance
-  public variance option N is
+  public variance option N =>
     match average
       nil => nil
       avg N =>
@@ -53,7 +53,7 @@ is
 
 
   # minimum value in the sequence
-  public min option N is
+  public min option N =>
     if is_empty
       nil
     else
@@ -61,7 +61,7 @@ is
 
 
   # maximum value in the sequence
-  public max option N is
+  public max option N =>
     if is_empty
       nil
     else
@@ -70,7 +70,7 @@ is
 
   # the median of the sequence
   # https://en.wikipedia.org/wiki/Median
-  public median option N is
+  public median option N =>
     if is_empty
       nil
     else
@@ -83,7 +83,7 @@ is
 
   # equality check implementation for inherited property.equatable
   #
-  public fixed type.equality(a, b container.numeric_sequence N) bool is
+  public fixed type.equality(a, b container.numeric_sequence N) bool =>
     aa := a.as_array
     ba := b.as_array
     aa.count = ba.count

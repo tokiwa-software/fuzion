@@ -47,10 +47,10 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
   public fixed underflow_on_mul(other u128) => false
 
   # neg, add, sub, mul with wrap-around semantics
-  public fixed prefix -°             u128 is carry u64 := { if (lo > u64 0         ) 1 else 0 }; u128 (u64 0 -° hi -° carry) (u64 0 -° lo)
-  public fixed infix +° (other u128) u128 is carry u64 := { if (lo +° other.lo < lo) 1 else 0 }; u128 (hi +° other.hi +° carry) (lo +° other.lo)
-  public fixed infix -° (other u128) u128 is carry u64 := { if (lo < other.lo      ) 1 else 0 }; u128 (hi -° other.hi -° carry) (lo -° other.lo)
-  public fixed infix *° (other u128) u128 is
+  public fixed prefix -°             u128 => carry u64 := { if (lo > u64 0         ) 1 else 0 }; u128 (u64 0 -° hi -° carry) (u64 0 -° lo)
+  public fixed infix +° (other u128) u128 => carry u64 := { if (lo +° other.lo < lo) 1 else 0 }; u128 (hi +° other.hi +° carry) (lo +° other.lo)
+  public fixed infix -° (other u128) u128 => carry u64 := { if (lo < other.lo      ) 1 else 0 }; u128 (hi -° other.hi -° carry) (lo -° other.lo)
+  public fixed infix *° (other u128) u128 =>
     a0 := lo & 0x_ffff_ffff
     a1 := lo >> 32
     a2 := hi & 0x_ffff_ffff
@@ -91,7 +91,7 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
   => mod other
 
   # private division and remainder with crash in case of div-by-zero
-  private div (other u128) u128 is
+  private div (other u128) u128 =>
     if thiz < other
       u128.type.zero
     else
@@ -108,16 +108,16 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
           debug: res *° other + rem = thiz
         res
 
-  private mod (other u128) u128 is
+  private mod (other u128) u128 =>
     thiz - div(other) *° other
 
   # bitwise and, or and xor operations
-  public fixed infix &  (other u128) u128 is u128 (hi & other.hi) (lo & other.lo)
-  public fixed infix |  (other u128) u128 is u128 (hi | other.hi) (lo | other.lo)
-  public fixed infix ^  (other u128) u128 is u128 (hi ^ other.hi) (lo ^ other.lo)
+  public fixed infix &  (other u128) u128 => u128 (hi & other.hi) (lo & other.lo)
+  public fixed infix |  (other u128) u128 => u128 (hi | other.hi) (lo | other.lo)
+  public fixed infix ^  (other u128) u128 => u128 (hi ^ other.hi) (lo ^ other.lo)
 
   # shift operations (unsigned)
-  public fixed infix >> (other u128) u128 is
+  public fixed infix >> (other u128) u128 =>
     n := other.as_u64  # NYI: other should be of type u32
     if n ≥ u64 128
       u128 0 0
@@ -128,7 +128,7 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
     else
       thiz
 
-  public fixed infix << (other u128) u128 is
+  public fixed infix << (other u128) u128 =>
     n := other.as_u64  # NYI: other should be of type u32
     if n ≥ u64 128
       u128 0 0
@@ -152,58 +152,58 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
   public as_i8 i8
     pre
       thiz ≤ i8.type.max.as_u128
-    is
+    =>
       lo.as_i8
   public as_i16 i16
     pre
       thiz ≤ i16.type.max.as_u128
-    is
+    =>
       lo.as_i16
   public as_i32 i32
     pre
       thiz ≤ i32.type.max.as_u128
-    is
+    =>
       lo.as_i32
   public as_i64 i64
     pre
       thiz ≤ i64.type.max.as_u128
     post
       analysis: result.as_u128 = thiz
-    is
+    =>
       lo.as_i64
   public as_u8 u8
     pre
       thiz ≤ u8.type.max.as_u128
     post
       analysis: result.as_u128 = thiz
-    is
+    =>
       lo.as_u8
   public as_u16 u16
     pre
       thiz ≤ u16.type.max.as_u128
     post
       analysis: result.as_u128 = thiz
-    is
+    =>
       lo.as_u16
   public as_u32 u32
     pre
       thiz ≤ u32.type.max.as_u128
     post
       analysis: result.as_u128 = thiz
-    is
+    =>
       lo.as_u32
   public as_u64 u64
     pre
       thiz ≤ u64.type.max.as_u128
     post
       analysis: result.as_u128 = thiz
-    is
+    =>
       lo
 
-  public low8bits  u8  is lo.low8bits
-  public low16bits u16 is lo.low16bits
-  public low32bits u32 is lo.low32bits
-  public low64bits u64 is lo
+  public low8bits  u8  => lo.low8bits
+  public low16bits u16 => lo.low16bits
+  public low32bits u32 => lo.low32bits
+  public low64bits u64 => lo
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
   # from has_interval is abstract, fz should not complain about this conflict.
@@ -211,14 +211,14 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
 
 
   # create hash code from this number
-  public type.hash_code(a u128.this) u64 is
+  public type.hash_code(a u128.this) u64 =>
     a.hi ^ a.lo
 
 
   # find the highest 1 bit in this integer and return integer with
   # this single bit set or 0 if this is 0.
   #
-  public highest_one_bit u128 is
+  public highest_one_bit u128 =>
     if hi = u64 0
       u128 0 lo.highest_one_bit
     else
@@ -227,7 +227,7 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
 
   # count the number of trailing zeros in this integer.
   #
-  public trailing_zeros i32 is
+  public trailing_zeros i32 =>
     if lo = u64 0
       64 + hi.trailing_zeros
     else
@@ -237,7 +237,7 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  public ones_count i32 is
+  public ones_count i32 =>
     hi.ones_count + lo.ones_count
 
 

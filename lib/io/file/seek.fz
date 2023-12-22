@@ -63,7 +63,7 @@ public seek(ps Seek_Handler) : simple_effect is
 
 
   # install default effect io.file.seek
-  type.install_default unit is
+  type.install_default unit =>
     (io.file.seek default_seek_handler).default
 
 
@@ -92,5 +92,5 @@ seek =>
 # reference to the seek operations that could be provided
 #
 private:public Seek_Handler ref is
-  seek(fd i64, offset i64) outcome i64 is abstract
-  file_position(fd i64) outcome i64 is abstract
+  seek(fd i64, offset i64) outcome i64 => abstract
+  file_position(fd i64) outcome i64 => abstract

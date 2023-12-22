@@ -68,7 +68,7 @@ is
   # does nothing for UDP etc.
   # blocks until connection is established
   # NYI we may want to close server on certain errors?
-  public accept outcome unit is
+  public accept outcome unit =>
     match state
       d i64 =>
         match p
@@ -106,7 +106,7 @@ is
 # open new server bound to the any address listening on port
 # closes currently installed server
 # NYI blocking / none blocking
-public server(f family.val, p protocol.val, port u16) outcome unit is
+public server(f family.val, p protocol.val, port u16) outcome unit =>
 
   any_addr := (
     match f
@@ -120,7 +120,7 @@ public server(f family.val, p protocol.val, port u16) outcome unit is
 # open new server bound to addr listening on port
 # closes currently installed server
 # NYI blocking / none blocking
-public server(f family.val, p protocol.val, addr String, port u16) outcome unit is
+public server(f family.val, p protocol.val, addr String, port u16) outcome unit =>
   server.close
 
   match init_ip_server f p addr port
@@ -139,11 +139,11 @@ public server =>
 
 
 Server_Handler ref is
-  initialize outcome i64 is abstract
+  initialize outcome i64 => abstract
 
 
 # opens sockets, binds to port and sets socket to listening
-private init_ip_server(f family.val, p protocol.val, addr String, port u16) outcome i64 is
+private init_ip_server(f family.val, p protocol.val, addr String, port u16) outcome i64 =>
   backlog := 10
   s := socket_type.by_protocol p
 

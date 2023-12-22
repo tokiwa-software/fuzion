@@ -35,40 +35,40 @@ module:public integer : numeric is
   public redef infix % (other integer.this) integer.this
     pre
       safety: other != integer.this.type.zero
-  is abstract
+  => abstract
 
   # test divisibility by other
   public infix %% (other integer.this) bool
     pre
       safety: other != integer.this.type.zero
-  is
+  =>
     integer.this % other = integer.this.type.zero
 
   # bitwise operations
-  public infix &  (other integer.this) integer.this is abstract
-  public infix |  (other integer.this) integer.this is abstract
-  public infix ^  (other integer.this) integer.this is abstract
+  public infix &  (other integer.this) integer.this => abstract
+  public infix |  (other integer.this) integer.this => abstract
+  public infix ^  (other integer.this) integer.this => abstract
 
   # bitwise NOT
   public prefix ~ integer.this
     pre
       is_bounded
-  is abstract
+  => abstract
 
   # bitwise NOT (Unicode alias)
-  public prefix ¬ integer.this is
+  public prefix ¬ integer.this =>
     ~integer.this
 
   # shift operations
   public infix >> (other integer.this) integer.this
     pre
       safety: other.sign ≥ 0
-  is abstract
+  => abstract
 
   public infix << (other integer.this) integer.this
     pre
       safety: other.sign ≥ 0
-  is abstract
+  => abstract
 
   # check if this type of integer is bounded
   #
@@ -82,7 +82,7 @@ module:public integer : numeric is
     pre
       safety: sign ≥ 0,
       safety: b.sign ≥ 0
-  is
+  =>
     if b = integer.this.type.zero
       integer.this
     else
@@ -99,7 +99,7 @@ module:public integer : numeric is
   # convert this to a decimal number in a string.  If negative, add "-" as
   # the first character.
   #
-  public redef as_string String is integer.this.as_string 10
+  public redef as_string String => integer.this.as_string 10
 
 
   # convert this to a number using the given base.  If negative, add "-" as
@@ -108,7 +108,7 @@ module:public integer : numeric is
   public as_string(base u32) String : character_encodings
     pre
       debug: 1 < base ≤ 36
-  is
+  =>
     b := integer.this.type.from_u32 base
 
     if integer.this.sign < 0
@@ -120,7 +120,7 @@ module:public integer : numeric is
       # this digit as an UTF-8 byte
       digit_as_utf8_byte(d u8) u8
       pre d ≤ 35 # 35 would be a Z
-      is
+      =>
         if d < 10 then String.type.zero_char + d else String.type.a_char + d - 10
 
       as_list0 (power integer.this) =>
@@ -142,7 +142,7 @@ module:public integer : numeric is
       debug: 1 < base ≤ 36
     post
       debug: result.byte_length ≥ len
-  is
+  =>
     # create number
     n := integer.this.as_string base
 
@@ -197,4 +197,4 @@ module:public integer : numeric is
 
 
   # the least significant byte of this integer
-  module low8bits u8 is abstract
+  module low8bits u8 => abstract

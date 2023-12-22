@@ -68,7 +68,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # count the elements of this list starting at n.
   # carries n around to make this tail-recursive
   #
-  private count (n i32) i32 is
+  private count (n i32) i32 =>
     list.this ? nil    => n
               | c Cons => c.tail.count n+1
 
@@ -77,7 +77,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # not exist
   #
   public head option A
-  is
+  =>
     list.this ? nil    => nil
               | c Cons => c.head
 
@@ -86,14 +86,14 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # not exist or it is the empty list
   #
   public tail list A
-  is
+  =>
     list.this ? nil    => nil
               | c Cons => c.tail
 
 
   # call f in order on all elements of this list
   #
-  public redef for_each (f A -> unit) unit is
+  public redef for_each (f A -> unit) unit =>
     list.this ? nil    =>
               | c Cons => f c.head; c.tail.for_each f
 
@@ -126,7 +126,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   public init list A
     pre
       debug: !is_empty
-  is
+  =>
     init nil
 
 
@@ -139,7 +139,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   private init(res list A) list A
     pre
       debug: !is_empty
-  is
+  =>
     list.this ? nil => fuzion.std.panic "list.init called on empty list"
               | c Cons =>
                 c.tail ? nil => res
@@ -156,7 +156,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   public redef last A
     pre
       debug: !is_empty
-  is
+  =>
     force_tail ? nil    => first
                | c Cons => force_tail.last
 
@@ -178,7 +178,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # This performs a lazy mapping, f is called only when the elements
   # are taken from the list.
   #
-  public map_to_list(B type, f A -> B) list B is
+  public map_to_list(B type, f A -> B) list B =>
     match list.this
       _ nil  => nil
       c Cons =>
@@ -194,7 +194,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # This performs a lazy mapping, f is called only when the elements
   # are taken from the list.
   #
-  public flat_map_to_list(B type, f A -> Sequence B) list B is
+  public flat_map_to_list(B type, f A -> Sequence B) list B =>
     match list.this
       _ nil  => nil
       c Cons =>
@@ -218,7 +218,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   # Used to fold a list tail-recursively
   #
-  public fold (s A, m Monoid A) A is (list.this ? nil    => s
+  public fold (s A, m Monoid A) A => (list.this ? nil    => s
                                                 | c Cons => c.tail.fold (m.op s c.head) m)
 
 
@@ -260,7 +260,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   # Used to scan a list tail-recursively
   #
-  public scan (s A, m Monoid A) list A is (list.this ? nil    => nil
+  public scan (s A, m Monoid A) list A => (list.this ? nil    => nil
                                                      | c Cons => acc := m.op s c.head
                                                                  list acc (c.tail.scan acc m))
 
@@ -269,7 +269,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # is shorter than n, or the empty list if n <= 0
   #
   public redef take (n i32) list A
-  is
+  =>
     if n ≤ 0
       nil
     else
@@ -283,14 +283,14 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
   # reverse the order of the elements in this list
   #
-  public reverse_list list A is
+  public reverse_list list A =>
     reverse nil
 
 
   # recursively reverse the order of the elements in this list
   # and append the already reversed reversed_head
   #
-  reverse (reversed_head list A) list A is
+  reverse (reversed_head list A) list A =>
     list.this ? nil    => reversed_head
               | c Cons => c.tail.reverse (cons c.head reversed_head)
 
@@ -312,7 +312,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
   # add an element sep in front of every element of this list.
   #
-  public prepend_to_all(sep A) list A is
+  public prepend_to_all(sep A) list A =>
     prepend_to_all sep nil
 
 
@@ -323,7 +323,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # call this feature on the tail of this list otherwise, feeding it with the
   # same separator sep but appending sep and the current element to res.
   #
-  private prepend_to_all(sep A, res list A) list A is
+  private prepend_to_all(sep A, res list A) list A =>
     match head
       nil => res
       x A => tail.prepend_to_all sep (res ++ [sep, x])
@@ -331,7 +331,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
   # add an element sep between every element of this list.
   #
-  public intersperse(sep A) list A is
+  public intersperse(sep A) list A =>
     match head
       nil => nil
       x A => [x] ++ tail.prepend_to_all sep
@@ -339,7 +339,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
   # List concatenation, O(count)
   #
-  public concat_eagerly (t list A) list A is
+  public concat_eagerly (t list A) list A =>
     list.this ? nil    => t
               | c Cons => cons A (list A) c.head (c.tail.concat_eagerly t)
 
@@ -351,7 +351,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # source and the next buffer chunk, the tail should only
   # be created when actually necessary.
   #
-  public concat (t Lazy (list A)) list A is
+  public concat (t Lazy (list A)) list A =>
     match list.this
       _ nil => t()
       c Cons =>
@@ -369,7 +369,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
   # check if predicate f holds for all elements
   #
-  public redef infix ∀ (f A -> bool) bool is
+  public redef infix ∀ (f A -> bool) bool =>
     match list.this
       c Cons => f c.head && (c.tail ∀ f)
       nil    => true
@@ -378,7 +378,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
   # check if predicate f holds for at least one element
   #
-  public redef infix ∃ (f A -> bool) bool is
+  public redef infix ∃ (f A -> bool) bool =>
     match list.this
       c Cons => f c.head || (c.tail ∃ f)
       nil    => false
@@ -388,7 +388,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # create a list from the tail of list.this dropping n elements (or fewer
   # if the list is shorter than n).
   #
-  public redef drop (n i32) list A is
+  public redef drop (n i32) list A =>
     if n ≤ 0
       list.this
     else
@@ -399,7 +399,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # Lazily take the first elements of a list for which predicate 'p' holds.
   #
   public redef take_while (p A -> bool) list A
-  is
+  =>
     match list.this
       _ nil  => nil
       c Cons =>
@@ -414,7 +414,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # Lazily drop the first elements of a list for which predicate 'p' holds.
   #
   public redef drop_while (p A -> bool) list A
-  is
+  =>
     match list.this
       _ nil  => nil
       c Cons =>
@@ -429,11 +429,11 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # The result contains exactly those elements for which p
   # is true.
   #
-  public redef filter (p A -> bool) list A is
+  public redef filter (p A -> bool) list A =>
     filter0 p
 
 
-  private filter0 (p A -> bool) list A is
+  private filter0 (p A -> bool) list A =>
     match drop_while (a -> !(p a))
       _ nil  => nil
       c Cons => ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
@@ -444,13 +444,13 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # create a list that repeats the current list indefinitely.  In case 'list.this'
   # is 'nil', returns 'nil'
   #
-  public redef cycle list A is
+  public redef cycle list A =>
     match list.this
       nil    => nil
       c Cons =>
         cycle_cons (h Cons A (list A)) : Cons A (list A) is
           head => h.head
-          tail list A is
+          tail list A =>
             cycle_cons (h.tail ? nil    => c
                                | d Cons => d)
         cycle_cons c
@@ -459,7 +459,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # create a lazy list of all the tails of this list, including the complete list
   # 'list.this' and the empty list 'nil'.
   #
-  public redef tails list (list A) is
+  public redef tails list (list A) =>
     ref : Cons (list A) (list (list A))
       head => list.this
       tail => (list.this ? nil    => nil
@@ -483,7 +483,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # create a new list from the result of applying 'f' to the
   # elements of this list and 'b' in order.
   #
-  public zip0(U, V type, b list U, f (A,U)->V) list V is
+  public zip0(U, V type, b list U, f (A,U)->V) list V =>
     list.this ? c1 Cons => (b ? c2 Cons =>
                                   zip_cons : Cons V (list V) is
                                     head => f c1.head c2.head
@@ -514,13 +514,13 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
   # create an empty list
   #
-  public type.empty list A is
+  public type.empty list A =>
     nil
 
 
   # fmap lifts a function from A to B to a function from list A to list B
   #
-  public type.fmap(B type, f A -> B) list A -> list B is
+  public type.fmap(B type, f A -> B) list A -> list B =>
     l -> l.map_to_list B f
 
 
@@ -534,17 +534,17 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
     # associative operation
     #
-    infix ∙ (a, b list A) list A is a.concat b
+    infix ∙ (a, b list A) list A => a.concat b
 
     # identity element
     #
-    e list A is
+    e list A =>
       nil
 
 
 # convenience routine to create a list from head h and lazy tail t.
 #
-public list(T type, h T, t Lazy (list T)) list T is
+public list(T type, h T, t Lazy (list T)) list T =>
   ref : Cons T (list T)
     head => h
     tail => t

@@ -48,13 +48,13 @@ is
 
   # shorthand to replace the effect installed in env
   # and return a
-  replace(X type, a X) X is
+  replace(X type, a X) X =>
     replace
     a
 
 
   # read bytes from channel
-  public read(max_bytes i32) outcome (array u8) is
+  public read(max_bytes i32) outcome (array u8) =>
     # close channel on certain read errors?
     replace (match desc
       d i64 => fuzion.sys.net.read d max_bytes
@@ -62,7 +62,7 @@ is
 
 
   # NYI when to stop reading?
-  public read outcome String is
+  public read outcome String =>
     # read buffer in bytes
     buffer_size i32 := 10
 
@@ -79,7 +79,7 @@ is
 
 
   # write data to channel
-  public write(data Sequence u8) outcome unit is
+  public write(data Sequence u8) outcome unit =>
     # close channel on certain write errors?
     match desc
       d i64 => replace (fuzion.sys.net.write d data.as_array)
@@ -102,14 +102,14 @@ is
 
 
   # get the peer's ip address (tcp)
-  public get_peer_address outcome (list u8) is
+  public get_peer_address outcome (list u8) =>
     match desc
       sockfd i64 => fuzion.sys.net.get_peer_address sockfd
       e error => e
 
 
   # get the peer's port (tcp)
-  public get_peer_port outcome u16 is
+  public get_peer_port outcome u16 =>
     match desc
       sockfd i64 => fuzion.sys.net.get_peer_port sockfd
       e error => e

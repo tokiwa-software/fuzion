@@ -53,7 +53,7 @@ is
   #
   # Same as non-generic >>=, but also maps to a different type B.
   #
-  public bind (B type, f T -> state B S) state B S is
+  public bind (B type, f T -> state B S) state B S =>
     f val
 
 
@@ -64,7 +64,7 @@ is
 
   # map this using f
   #
-  public map (B type, f T -> B) state B S is
+  public map (B type, f T -> B) state B S =>
     state (f val) get mode
 
 
@@ -83,7 +83,7 @@ is
   # returns the result of $T for an option containing an instance
   # of T, alternatively returns $nil for an option that is nil.
   #
-  public redef as_string String is
+  public redef as_string String =>
     "$val ($get)"
 
 

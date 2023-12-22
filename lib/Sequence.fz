@@ -47,7 +47,7 @@ public Sequence(public T type) ref is
   # Default implementation uses as_stream. Heirs must redefine at least
   # one of as_list or as_stream.
   #
-  public as_list list T is as_stream.as_list
+  public as_list list T => as_stream.as_list
 
 
   # create a stream of T.
@@ -58,7 +58,7 @@ public Sequence(public T type) ref is
   # Default implementation uses as_list.  Heirs must redefine at least
   # one of as_list or as_stream.
   #
-  public as_stream stream T is as_list.as_stream
+  public as_stream stream T => as_list.as_stream
 
 
   # is this sequence known to be finite?  For infinite sequences, features like
@@ -150,7 +150,7 @@ public Sequence(public T type) ref is
 
   # create a list and call 'for_each f' on it
   #
-  public for_each(f T -> unit) unit is as_list.for_each f
+  public for_each(f T -> unit) unit => as_list.for_each f
 
 
   # create a list and have it consumed by f, infix operator synonym of for_each.
@@ -165,7 +165,7 @@ public Sequence(public T type) ref is
 
   # apply 'f' to each element 'e' as long as 'f e'
   #
-  public for_while(f T -> bool) unit is
+  public for_while(f T -> bool) unit =>
     take_while f
       .for_each _->unit
 
@@ -173,14 +173,14 @@ public Sequence(public T type) ref is
   # create a new list that contains the first elements of
   # this Sequence for which 'f e' is false
   #
-  public before(f T -> bool) list T is
+  public before(f T -> bool) list T =>
     take_while (x -> !(f x))
 
 
   # filter elements using predicate f
   # values for which f is false are dropped
   #
-  public filter   (f T -> bool) list T is as_list.filter f
+  public filter   (f T -> bool) list T => as_list.filter f
 
 
   # filter elements using predicate f, infix operator
@@ -199,12 +199,12 @@ public Sequence(public T type) ref is
 
   # check if predicate f holds for all elements
   #
-  public infix ∀ (f T -> bool) bool is as_list ∀ f
+  public infix ∀ (f T -> bool) bool => as_list ∀ f
 
 
   # check if predicate f holds for at least one element
   #
-  public infix ∃ (f T -> bool) bool is as_list ∃ f
+  public infix ∃ (f T -> bool) bool => as_list ∃ f
 
 
   # create a list that consists only of the first n elements of this
@@ -229,13 +229,13 @@ public Sequence(public T type) ref is
 
   # get a function that, given an index, returns the element at that index
   #
-  public index [] () i32 -> T is n -> Sequence.this[n]
+  public index [] () i32 -> T => n -> Sequence.this[n]
 
 
   # create a slice from this Sequence that consists of the elements starting at index
   # from (including) up to index to (excluding).
   #
-  public slice(from, to i32) Sequence T is
+  public slice(from, to i32) Sequence T =>
     drop(from).take to-from
 
 
@@ -260,7 +260,7 @@ public Sequence(public T type) ref is
   # create a Sequence that consists of all the elements of this Sequence followed
   # by all the elements of s
   #
-  public concat_sequences (s Sequence T) list T is as_list.concat s.as_list
+  public concat_sequences (s Sequence T) list T => as_list.concat s.as_list
 
 
   # infix operand synonym for concat_sequences
@@ -271,13 +271,13 @@ public Sequence(public T type) ref is
   # create a list that repeats the current Sequence indefinitely.  In case 'Sequence.this'
   # is empty, returns 'nil'
   #
-  public cycle list T is as_list.cycle
+  public cycle list T => as_list.cycle
 
 
   # create a lazy list of all the tails of this Sequence, including the complete Sequence
   # as a list and the empty list 'nil'.
   #
-  public tails list (list T) is as_list.tails
+  public tails list (list T) => as_list.tails
 
 
   # create a string representation of this Sequence including all the string
@@ -303,7 +303,7 @@ public Sequence(public T type) ref is
   # This performs a lazy mapping, f is called only when the elements
   # in the resulting list are accessed.
   #
-  public map(B type, f Unary B T) Sequence B is
+  public map(B type, f Unary B T) Sequence B =>
     as_list.map_to_list f
 
 
@@ -311,7 +311,7 @@ public Sequence(public T type) ref is
   # Then flatten the result by one level,
   # essentially combining all the sequences.
   #
-  public flat_map(B type, f T -> Sequence B) Sequence B is
+  public flat_map(B type, f T -> Sequence B) Sequence B =>
     as_list.flat_map_to_list f
 
 
@@ -323,7 +323,7 @@ public Sequence(public T type) ref is
   #
   # ex. to obtain a list of differences you, you may use `map_pairs (-)`:
   #
-  #   [2,3,5,7,11,13,17,19,23,29].map_pairs a,b->b-a)
+  #   [2,3,5,7,11,13,17,19,23,29].map_pairs a,b->b-a
   #
   # results in `[1,2,2,4,2,4,2,4,6]`
   #
@@ -375,7 +375,7 @@ public Sequence(public T type) ref is
   # the reduction is finished once f yields abort or
   # if the end of the sequence is reached.
   #
-  public reduce(R type, init R, f (R,T) -> R | abort R) R is
+  public reduce(R type, init R, f (R,T) -> R | abort R) R =>
     match as_list
       nil => init
       c Cons =>
@@ -389,7 +389,7 @@ public Sequence(public T type) ref is
   # the reduction is finished once `f` yields `abort` or
   # if the end of the sequence is reached.
   #
-  public reduce_or_error(R type, init R, f (R,T) -> R | abort (outcome R)) outcome R is
+  public reduce_or_error(R type, init R, f (R,T) -> R | abort (outcome R)) outcome R =>
     match as_list
       nil => init
       c Cons =>
@@ -461,7 +461,7 @@ public Sequence(public T type) ref is
 
   # takes a transducer xf, a reducer f and an initial value
   # returns the result of applying the reducer xf f to the Sequence
-  public transduce(TA,U type, xf transducer TA U T, rf (TA,U) -> TA, init TA) TA is
+  public transduce(TA,U type, xf transducer TA U T, rf (TA,U) -> TA, init TA) TA =>
     red := xf.call rf
     for
       res := init, red.call res el
@@ -478,7 +478,7 @@ public Sequence(public T type) ref is
   # gt_ten := filter (Sequence i32) i32 (x -> x > 10)
   # xf := ages ∘ gt_ten
   # say ([human(4), human(12), human(30)].into xf) # [12,30]
-  public into(TA type, xf transducer (Sequence TA) TA T) list TA is
+  public into(TA type, xf transducer (Sequence TA) TA T) list TA =>
     red := xf.call ((res,val) -> res ++ [val])
     for
       res (list TA) := (list TA).type.empty , (red.call res el).as_list
@@ -493,7 +493,7 @@ public Sequence(public T type) ref is
   public nth(n i32) option T
     pre
       debug: n ≥ 0
-  is
+  =>
     match drop n
       nil => nil
       c Cons => c.head
@@ -506,21 +506,21 @@ public Sequence(public T type) ref is
       debug: 0 ≤ i,
       debug: finite: i < count,
       debug: !finite: !(drop i-1).is_empty
-  is
+  =>
     (nth i).get
 
 
   # adds the corresponding index to
   # every element in the sequence
   #
-  public indexed list (tuple i32 T) is
+  public indexed list (tuple i32 T) =>
     indexed 0
 
 
   # adds an index to every element
   # in the sequence starting at start_idx
   #
-  public indexed(I type : has_interval, start_idx I) list (tuple I T) is
+  public indexed(I type : has_interval, start_idx I) list (tuple I T) =>
     # NYI: This should work without the type hints again.
     zip I (tuple I T) (start_idx..) (a,b -> (b, a))
 
@@ -531,7 +531,7 @@ public Sequence(public T type) ref is
   #
   public chunk(chunk_size i32) list (list T)
   pre chunk_size > 0
-  is
+  =>
     if is_empty
       nil
     else
@@ -545,9 +545,9 @@ public Sequence(public T type) ref is
 
     # associative operation
     #
-    infix ∙ (a, b Sequence T) Sequence T is a.concat_sequences b
+    infix ∙ (a, b Sequence T) Sequence T => a.concat_sequences b
 
     # identity element
     #
-    e Sequence T is
+    e Sequence T =>
       (list T).type.empty
