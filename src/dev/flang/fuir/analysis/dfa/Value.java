@@ -142,6 +142,18 @@ public class Value extends Val
     };
 
 
+  /**
+   * undefined value, used for not initialized fields.
+   */
+  static Value UNKNOWN_JAVA_REF = new Value(-1)
+    {
+      public String toString()
+      {
+        return "UNKNOWN_JAVA_REF";
+      }
+    };
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
