@@ -104,12 +104,6 @@ public fuzion.java is
     public utf8 => (java_string_to_string Java_String.this).utf8
 
 
-  # Java's 'void' type (which is used in Java like Fuzion's 'unit' type').
-  #
-  public java_void(forbidden_to_call_directly void) : Java_Object Any
-  is
-
-
   # Call a virtual Java method class_name.name with given signature signature
   # on instance thiz with given arguments
   #
