@@ -36,7 +36,7 @@ public reader(private rp Read_Provider, buf_size i32, buffer array u8 | io.end_o
   # resulting 'outcome'.
   #
   public with(R type, f ()->R) outcome R is
-    try reader R ()->(run f (_ -> exit 1))
+    try reader R (() -> run f (() -> exit 1))
 
 
   # terminate immediately with the given error wrapped in 'option'.

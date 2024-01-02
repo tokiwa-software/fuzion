@@ -164,12 +164,10 @@ public stream(public T type) ref : Sequence T is
   public redef as_array array T is
     m : mutate is
     m.go ()->
-      for
-        a := (mutate.array T).type.new m, {a.add x ; a}
+      a := (m.array T).type.new m
       while has_next
-        x := next
-      else
-        a.as_array
+        a.add next
+      a.as_array
 
 
   # create a stream that consists of all be the elements if this stream followed

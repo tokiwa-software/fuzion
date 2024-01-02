@@ -244,7 +244,7 @@ class Fuzion extends Tool
       }
       void process(FuzionOptions options, FUIR fuir)
       {
-        new Effects(fuir).find();
+        new Effects(options, fuir).find();
       }
     },
 
@@ -440,7 +440,7 @@ class Fuzion extends Tool
       var mir = fe.createMIR();                                                       f.timer("createMIR");
       var air = new MiddleEnd(fe._options, mir, fe.module() /* NYI: remove */).air(); f.timer("me");
       var fuir = new Optimizer(fe._options, air).fuir();                              f.timer("ir");
-      new Effects(fuir).check();                                                      f.timer("effectsCheck");
+      new Effects(fe._options, fuir).check();                                         f.timer("effectsCheck");
       process(fe._options, fuir);
     }
 

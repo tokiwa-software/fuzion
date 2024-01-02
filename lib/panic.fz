@@ -88,4 +88,4 @@ public Panic_Handler ref is
   #
   public use(R type, code, def ()->R) =>
     p := panic Panic_Handler.this unit
-    p.run code unit->def()
+    p.run code def

@@ -28,9 +28,11 @@ package dev.flang.be.effects;
 
 import dev.flang.fuir.FUIR;
 
+import dev.flang.fuir.analysis.dfa.DFA;
 import dev.flang.fuir.cfg.CFG;
 
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionOptions;
 import dev.flang.util.Graph;
 
 
@@ -40,7 +42,7 @@ import dev.flang.util.Graph;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Effects extends CFG
+public class Effects extends CFG  // NYI: remove CFG, still used by Effects.check()
 {
 
 
@@ -59,6 +61,12 @@ public class Effects extends CFG
   Graph<Integer> _effects = new Graph<>();
 
 
+  /**
+   * The options provided to the fz comment.
+   */
+  final FuzionOptions _options;
+
+
   /*---------------------------  constructors  ---------------------------*/
 
 
@@ -67,9 +75,10 @@ public class Effects extends CFG
    *
    * @param fuir the intermediate code.
    */
-  public Effects(FUIR fuir)
+  public Effects(FuzionOptions options, FUIR fuir)
   {
     super(fuir);
+    this._options = options;
     createCallGraph();
   }
 
@@ -82,10 +91,23 @@ public class Effects extends CFG
    */
   public void find()
   {
-    var cl = _fuir.mainClazzId();
-    _effects.successors(cl)
+    var dfa = new DFA(_options, _fuir);
+    dfa.dfa();
+    dfa._defaultEffects
+      .keySet()
       .stream()
-      .forEach(x -> System.out.println(_fuir.clazzAsString(x)));
+      .forEach(t ->
+               {
+                 if (_options.verbose(1))
+                   {
+                     System.out.println("EFFECT type "+_fuir.clazzAsString(t)+" default used is "+dfa._defaultEffects.get(t));
+                     System.out.println(dfa._defaultEffectContexts.get(t).showWhy());
+                   }
+                 else
+                   {
+                     System.out.println(_fuir.clazzAsString(t));
+                   }
+               });
   }
 
 
@@ -94,6 +116,7 @@ public class Effects extends CFG
    */
   public void check()
   {
+    // NYI: should use DFA and not CFG here
     var cl = _fuir.mainClazzId();
     _effects.successors(cl)
       .stream()
