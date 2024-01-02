@@ -72,6 +72,13 @@ public mutate : simple_effect is
   id := fuzion.sys.misc.unique_id
 
 
+  # panic operation to be used in case of a severe problem.  This is redefined within the
+  # base lib to make sure fundamental uses of local mutability do not cause dependency
+  # on the panic effect.
+  #
+  mpanic(msg String) => panic msg
+
+
   # common type for mutable data
   #
   private:public mutable_element is
@@ -90,9 +97,9 @@ public mutate : simple_effect is
     # check that this effect is installed and replace it.
     #
     private check_and_replace
-    pre
-      safety: is_currently_installed
     is
+      if !is_currently_installed
+        mpanic "*** invalid mutate for {mutate.this.type}"
       mutate.this.env.replace
 
 

@@ -164,7 +164,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # collect the contents of this list into an array
   #
   public redef as_array array A =>
-    lm : mutate.
+    lm : mutate is
+      redef mpanic(msg String) => fuzion.std.panic msg
     lm.go ()->
       e := lm.env.new list.this
       array A count _->

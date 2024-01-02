@@ -65,6 +65,14 @@ is
   public abort void
   pre
     safety: abortable
+  =>
+    abort0
+
+  # Intrinsic version of abort.
+  #
+  # NYI: precondition does not seem to work for an intrinsic yet, causes test failure e.g., in tests/local_mutate
+  # so we use cannot make `abort` intrinsic.
+  private abort0 void
   is
     intrinsic
 
