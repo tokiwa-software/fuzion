@@ -1261,6 +1261,18 @@ hw25 is
 
 
   /**
+   * On `cl` lookup field `Java_Ref`
+   *
+   * @param cl Java_Object or inheriting from Java_Object
+   *
+   */
+  public int lookupJavaRef(int cl)
+  {
+    return lookup(cl, Types.resolved.f_fuzion_java_object_ref);
+  }
+
+
+  /**
    * Get the id of the given special clazz.
    *
    * @param the id of clazz c or -1 if that clazz was not created.
