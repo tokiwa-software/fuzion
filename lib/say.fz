@@ -29,8 +29,3 @@
 # an object followed by a line break.
 #
 public say(s Any) => io.out.println s
-
-
-# A handy shortcut for stdout.println, output a line break.
-#
-public say => io.out.println
