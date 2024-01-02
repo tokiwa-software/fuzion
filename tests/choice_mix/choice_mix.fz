@@ -289,11 +289,11 @@ choice_mix is
         x i32 => yak x
         b bool => { if b { yak  "true" } else { yak "false" } }
         s String => yak s
-      say
+      say ""
 
     // check that pipe also works as operator:
     (1..10) | i -> yak i
-    say
+    say ""
   alternatives1
 
   alternatives2 unit is // use pipe for choice argument type
