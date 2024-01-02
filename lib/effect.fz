@@ -155,11 +155,15 @@ is
   # type T. panic in case abort is called.
   #
   public go(T type, f ()->T) T is
-    if abortable
-      cf := Effect_Call ()->f()
-      abortable cf
-      match cf.res
-        nil => panic "*** unexpected abort in {simple_effect.this.type}"
-        x T => x
-    else
-      f()
+    cf := Effect_Call ()->f()
+    abortable cf
+    match cf.res
+      nil => msg := "*** unexpected abort in {simple_effect.this.type}"
+             if abortable
+               panic msg
+             else
+               # the user should not be able to produce this state: since the effect is
+               # not abortable cf can only return with a result. So we do a low-level
+               # panic that does not show up as a used effect:
+               fuzion.std.panic msg
+      x T => x

@@ -166,7 +166,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   public redef as_array array A =>
     lm : mutate.
     lm.go ()->
-      e := lm.new list.this
+      e := lm.env.new list.this
       array A count _->
         res := e.get.first
         e <- e.get.force_tail
