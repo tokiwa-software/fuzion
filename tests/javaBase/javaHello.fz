@@ -65,3 +65,10 @@ javaHello : Java is
       say "string has {bytes.count} bytes: $bytes"
       javaString2 := java.lang.__jString.new bytes 6 bytes.count-6                # create Java string from bytes subset,
       say "Hello "+javaString2                                                 # append Java string to Fuzion string and print it
+
+  # convert fuzion arrays to java arrays
+  #
+  say (fuzion.java.array_to_java_object [1,2,3])
+  say (fuzion.java.array_to_java_object [java.lang.System.out])
+  # NYI does not work yet: error 1: Used abstract feature 'String.utf8' is not implemented by 'String'
+  # say (fuzion.java.array_to_java_object ["1","2","3"])

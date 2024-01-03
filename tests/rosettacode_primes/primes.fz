@@ -40,7 +40,7 @@ primes is
           while j ≤ n
             a[j] := true
       unit # NYI: the loop returns the last value of index variable 'i'. Loops should not force such an automatic result upon us.
-    say "Primes using loop:"; primes 1000; say
+    say "Primes using loop:"; primes 1000; say ""
 
     primes2(n i32) is   // sieve using streams
       a := (mutate.array bool).type.new mi n+1 false
@@ -52,7 +52,7 @@ primes is
                 (i*j+i) ≤ n
               )
         )
-    say "Primes using streams:"; primes2 1000; say
+    say "Primes using streams:"; primes2 1000; say ""
 
     primes3(n i32) is   // sieve using streams and filters
       a := (mutate.array bool).type.new mi n+1 false
@@ -62,7 +62,7 @@ primes is
             yak "$i "
             (1..n/i).for_each (j -> a[i*j] := true)
           )
-    say "Primes using streams and filters:"; primes3 1000; say
+    say "Primes using streams and filters:"; primes3 1000; say ""
 
     primes4(n i32) is  // sieve using pipes
       a := (mutate.array bool).type.new mi n+1 false
@@ -71,5 +71,5 @@ primes is
         yak "$i "
         (1..n/i) | j -> a[i*j] := true
 
-    say "Primes using pipes:"; primes4 1000; say
+    say "Primes using pipes:"; primes4 1000; say ""
   )

@@ -44,18 +44,18 @@ simple_test_for_this_type_ref =>
   r : q is
     redef print => yak "r"
 
-# say; yak "q.x.b1.print: (expecting qq) "; q.x.b1.print   -- not allowed, result type q.this.type of b1 is ambiguous
-# say; yak "q.x.b2.print: (expecting qq) "; q.x.b2.print   -- not allowed, result type q.this.type of b1 is ambiguous
-  say; yak "q.x.b3.print: (expecting qq) "; q.x.b3.print
-  say; yak "q.x.b4.print: (expecting qq) "; q.x.b4.print
-  say; yak "q.x.b5.print: (expecting qq) "; q.x.b5.print
+# say ""; yak "q.x.b1.print: (expecting qq) "; q.x.b1.print   -- not allowed, result type q.this.type of b1 is ambiguous
+# say ""; yak "q.x.b2.print: (expecting qq) "; q.x.b2.print   -- not allowed, result type q.this.type of b1 is ambiguous
+  say ""; yak "q.x.b3.print: (expecting qq) "; q.x.b3.print
+  say ""; yak "q.x.b4.print: (expecting qq) "; q.x.b4.print
+  say ""; yak "q.x.b5.print: (expecting qq) "; q.x.b5.print
 
-  say; yak "r.x.b1.print: (expecting rr) "; r.x.b1.print
-  say; yak "r.x.b2.print: (expecting rr) "; r.x.b2.print
-  say; yak "r.x.b3.print: (expecting rr) "; r.x.b3.print
-  say; yak "r.x.b4.print: (expecting rr) "; r.x.b4.print
-  say; yak "r.x.b5.print: (expecting rr) "; r.x.b5.print
-  say
+  say ""; yak "r.x.b1.print: (expecting rr) "; r.x.b1.print
+  say ""; yak "r.x.b2.print: (expecting rr) "; r.x.b2.print
+  say ""; yak "r.x.b3.print: (expecting rr) "; r.x.b3.print
+  say ""; yak "r.x.b4.print: (expecting rr) "; r.x.b4.print
+  say ""; yak "r.x.b5.print: (expecting rr) "; r.x.b5.print
+  say ""
 
 simple_test_for_this_type_ref
 
@@ -82,18 +82,18 @@ simple_test_for_this_type_value =>
   r : q is
     redef print => yak "r"
 
-  say; yak "q.x.b1.print: (expecting qq) "; q.x.b1.print
-  say; yak "q.x.b2.print: (expecting qq) "; q.x.b2.print
-  say; yak "q.x.b3.print: (expecting qq) "; q.x.b3.print
-  say; yak "q.x.b4.print: (expecting qq) "; q.x.b4.print
-  say; yak "q.x.b5.print: (expecting qq) "; q.x.b5.print
+  say ""; yak "q.x.b1.print: (expecting qq) "; q.x.b1.print
+  say ""; yak "q.x.b2.print: (expecting qq) "; q.x.b2.print
+  say ""; yak "q.x.b3.print: (expecting qq) "; q.x.b3.print
+  say ""; yak "q.x.b4.print: (expecting qq) "; q.x.b4.print
+  say ""; yak "q.x.b5.print: (expecting qq) "; q.x.b5.print
 
-  # say; yak "r.x.b1.print: (expecting rr) "; r.x.b1.print   // NYI: test fails
-  # say; yak "r.x.b2.print: (expecting rr) "; r.x.b2.print   // NYI: test fails
-  say; yak "r.x.b3.print: (expecting rr) "; r.x.b3.print
-  # say; yak "r.x.b4.print: (expecting rr) "; r.x.b4.print   // NYI: test fails
-  # say; yak "r.x.b5.print: (expecting rr) "; r.x.b5.print   // NYI: test fails
-  say
+  # say ""; yak "r.x.b1.print: (expecting rr) "; r.x.b1.print   // NYI: test fails
+  # say ""; yak "r.x.b2.print: (expecting rr) "; r.x.b2.print   // NYI: test fails
+  say ""; yak "r.x.b3.print: (expecting rr) "; r.x.b3.print
+  # say ""; yak "r.x.b4.print: (expecting rr) "; r.x.b4.print   // NYI: test fails
+  # say ""; yak "r.x.b5.print: (expecting rr) "; r.x.b5.print   // NYI: test fails
+  say ""
 
 simple_test_for_this_type_value
 

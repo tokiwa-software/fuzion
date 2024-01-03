@@ -214,7 +214,7 @@ O(n log n).
         sep := "", " "
     do
       yak (sep + e)
-    say
+    say ""
 
 
   # create sorted array of all keys in this map

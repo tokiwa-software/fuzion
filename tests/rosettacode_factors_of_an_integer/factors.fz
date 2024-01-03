@@ -36,27 +36,27 @@ factors is
   do
     if n %% x
       print x
-  say
+  say ""
 
   yak "factors iterating over an interval:"
   (1..n).for_each (x -> if (n %% x) print x)
-  say
+  say ""
 
   yak "factors consuming a Sequence:"
   (1..n).for_each (x -> if (n %% x) print x)
-  say
+  say ""
 
   yak "factors filtering and consuming a Sequence:"
   (1..n).filter (x -> n %% x)
         .for_each (x -> print x)
-  say
+  say ""
 
   yak "factors filtering and printing a Sequence: "
   say ((1..n).filter (x -> n %% x))
 
   yak "factors using pipes to filter and print a Sequence: "
   (1..n) & (x -> n %% x) | (x -> print x)
-  say
+  say ""
 
   say "factors embedded in String: {(1..n) &  (x -> n %% x)}"
 
