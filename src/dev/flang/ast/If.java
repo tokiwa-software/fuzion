@@ -67,14 +67,6 @@ public class If extends ExprWithPos
   public AbstractType _type;
 
 
-  /**
-   * Id to store the if condition's clazz in the static outer clazz at runtime.
-   * The clazz could be bool or ref bool.
-   */
-  public int _runtimeClazzId = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
-
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 

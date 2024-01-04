@@ -47,7 +47,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class AbstractCase extends ANY implements HasSourcePosition
+public abstract class AbstractCase extends HasGlobalIndex implements HasSourcePosition
 {
 
 
@@ -58,13 +58,6 @@ public abstract class AbstractCase extends ANY implements HasSourcePosition
    * The sourcecode position of this case, used for error messages.
    */
   protected final SourcePosition _pos;
-
-
-  /**
-   * Counter for a unique id for this case expression. This is used to store data
-   * in the runtime clazz for this case.
-   */
-  public int _runtimeClazzId = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
 
 
   /*--------------------------  constructors  ---------------------------*/

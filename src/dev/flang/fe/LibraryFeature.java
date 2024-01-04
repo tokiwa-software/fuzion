@@ -188,7 +188,7 @@ public class LibraryFeature extends AbstractFeature
   /**
    * Unique global index of this feature.
    */
-  int globalIndex()
+  public int globalIndex()
   {
     return _libModule.globalIndex(_index);
   }

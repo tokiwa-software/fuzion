@@ -45,6 +45,7 @@ import dev.flang.ast.Box; // NYI: remove dependency!
 import dev.flang.ast.Env; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
 import dev.flang.ast.ExpressionVisitor; // NYI: remove dependency!
+import dev.flang.ast.HasGlobalIndex; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.State; // NYI: remove dependency!
@@ -599,78 +600,9 @@ public class Clazzes extends ANY
 
 
   /**
-   * # if ids created by getRuntimeClazzId[s].
-   *
-   * NYI! This is static to create unique ids. It is sufficient to have unique ids for sets of clazzes used by the same expression.
-   */
-  private static int _runtimeClazzIdCount = 0;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
-
-
-  /**
-   * Obtain new unique ids for runtime clazz data stored in
-   * Clazz.setRuntimeClazz/getRuntimeClazz.
-   *
-   * @param count the number of ids to reserve
-   *
-   * @return the first of the ids result..result+count-1 ids reserved.
-   */
-  static int getRuntimeClazzIds(int count)
-  {
-    if (PRECONDITIONS) require
-      (runtimeClazzIdCount() <= Integer.MAX_VALUE - count,
-       count >= 0);
-
-    int result = _runtimeClazzIdCount;
-    _runtimeClazzIdCount = result + count;
-
-    if (POSTCONDITIONS) ensure
-      (result >= 0,
-       result + count <= runtimeClazzIdCount());
-
-    return result;
-  }
-
-
-  /**
-   * Obtain a new unique id for runtime clazz data stored in
-   * Clazz.setRuntimeClazz/getRuntimeClazz.
-   *
-   * @return the id that was reserved.
-   */
-  private static int getRuntimeClazzId()
-  {
-    if (PRECONDITIONS) require
-      (runtimeClazzIdCount() < Integer.MAX_VALUE);
-
-    int result = getRuntimeClazzIds(1);
-
-    if (POSTCONDITIONS) ensure
-      (result >= 0,
-       result < runtimeClazzIdCount());
-
-    return result;
-  }
-
-  /**
-   * Total number of ids crated by getRuntimeClazzId[s].
-   *
-   * @return the id count.
-   */
-  static int runtimeClazzIdCount()
-  {
-    int result = _runtimeClazzIdCount;
-
-    if (POSTCONDITIONS) ensure
-      (result >= 0);
-
-    return result;
-  }
-
-
-  /**
    * Find all static clazzes for this case and store them in outerClazz.
    */
-  public static void findClazzes(AbstractAssign a, Clazz outerClazz, List<AbstractCall> inh)
+  public static void findClazzes(AbstractAssign a, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (a != null, outerClazz != null);
@@ -680,21 +612,18 @@ public class Clazzes extends ANY
 
     if (a._target != null)
       {
-        if (a._tid < 0)
-          {
-            a._tid = getRuntimeClazzIds(3);
-          }
-
         Clazz sClazz = clazz(a._target, outerClazz, inh);
-        outerClazz.setRuntimeClazz(a._tid, sClazz);
         var vc = sClazz.asValue();
         var fc = vc.lookup(a._assignedField, a);
-        propagateExpectedClazz(a._value, fc.resultClazz(), outerClazz, inh);
-        if (isUsed(a._assignedField))
+        propagateExpectedClazz(a._value, fc.resultClazz(), outer, outerClazz, inh);
+        if (!outerClazz.hasActualClazzes(a, outer))
           {
-            outerClazz.setRuntimeClazz(a._tid + 1, fc);
+            outerClazz.saveActualClazzes(a, outer,
+                                         new Clazz[] { sClazz,
+                                                       isUsed(a._assignedField) ? fc : null,
+                                                       fc.resultClazz()
+                                         });
           }
-        outerClazz.setRuntimeClazz(a._tid + 2, fc.resultClazz());
       }
   }
 
@@ -714,34 +643,32 @@ public class Clazzes extends ANY
    * @param inh the inheritance chain that brought the code here (in case it is
    * an inlined inherits call).
    */
-  static void propagateExpectedClazz(Expr e, Clazz ec, Clazz outerClazz, List<AbstractCall> inh)
+  static void propagateExpectedClazz(Expr e, Clazz ec, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
   {
     if (e instanceof Box b)
       {
-        Clazz vc = clazz(b._value, outerClazz, inh);
-        Clazz rc = vc;
-        if (ec.isRef() ||
-            (ec._type.isChoice() &&
-             !ec._type.isAssignableFrom(vc._type) &&
-             ec._type.isAssignableFrom(vc._type.asRef())))
+        if (!outerClazz.hasActualClazzes(b, outer))
           {
-            rc = vc.asRef();
-            if (CHECKS) check
-              (Errors.any() || ec._type.isAssignableFrom(rc._type));
-          }
-        if (b._valAndRefClazzId < 0)
-          {
-            b._valAndRefClazzId = getRuntimeClazzIds(2);
-          }
-        outerClazz.setRuntimeClazz(b._valAndRefClazzId    , vc);
-        outerClazz.setRuntimeClazz(b._valAndRefClazzId + 1, rc);
-        if (vc != rc)
-          {
-            rc.instantiated(b);
-          }
-        else
-          {
-            propagateExpectedClazz(b._value, ec, outerClazz, inh);
+            Clazz vc = clazz(b._value, outerClazz, inh);
+            Clazz rc = vc;
+            if (ec.isRef() ||
+                (ec._type.isChoice() &&
+                 !ec._type.isAssignableFrom(vc._type) &&
+                 ec._type.isAssignableFrom(vc._type.asRef())))
+              {
+                rc = vc.asRef();
+                if (CHECKS) check
+                  (Errors.any() || ec._type.isAssignableFrom(rc._type));
+              }
+            outerClazz.saveActualClazzes(b, outer, new Clazz[] {vc, rc});
+            if (vc != rc)
+              {
+                rc.instantiated(b);
+              }
+            else
+              {
+                propagateExpectedClazz(b._value, ec, outer, outerClazz, inh);
+              }
           }
       }
     else if (e instanceof AbstractBlock b)
@@ -749,12 +676,12 @@ public class Clazzes extends ANY
         var s = b._expressions;
         if (!s.isEmpty())
           {
-            propagateExpectedClazz(s.getLast(), ec, outerClazz, inh);
+            propagateExpectedClazz(s.getLast(), ec, outer, outerClazz, inh);
           }
       }
     else if (e instanceof Tag t)
       {
-        propagateExpectedClazz(t._value, ec, outerClazz, inh);
+        propagateExpectedClazz(t._value, ec, outer, outerClazz, inh);
       }
   }
 
@@ -779,7 +706,7 @@ public class Clazzes extends ANY
    * and will be used both as frame clazz for d<i32,p> and as the context for
    * call to e<z>.
    */
-  public static void findClazzes(AbstractCall c, Clazz outerClazz, List<AbstractCall> inh)
+  public static void findClazzes(AbstractCall c, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (Errors.any() || c.calledFeature() != null && c.target() != null);
@@ -807,16 +734,20 @@ public class Clazzes extends ANY
 
         var innerClazz        = tclazz.lookup(new FeatureAndActuals(cf, typePars, false), c.select(), c, c.isInheritanceCall());
         var preconditionClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars, true ), c.select(), c, c.isInheritanceCall());
-        if (c._sid < 0)
-          {
-            c._sid = getRuntimeClazzIds(3);
-          }
         // A bit hacky..., this is used for calls that
         // are turned into constants in FUIR.
-        c.innerClazz = innerClazz;
-        outerClazz.setRuntimeData(c._sid + 0, innerClazz       );
-        outerClazz.setRuntimeData(c._sid + 1, tclazz           );
-        outerClazz.setRuntimeData(c._sid + 2, preconditionClazz);
+        c.innerClazz = innerClazz; // NYI: REMOVE! uses outerClazz.actualClazzes()[0] instead!
+
+        if (outerClazz.hasActualClazzes(c, outer))
+          {
+            // NYI: #2412: Check why this is done repeatedly and avoid redundant work!
+            //  System.out.println("REDUNDANT save for "+innerClazz+" to "+outerClazz+" at "+c.pos().show());
+          }
+        else
+          {
+            outerClazz.saveActualClazzes(c, outer, new Clazz[] {innerClazz, tclazz, preconditionClazz});
+          }
+
         var afs = innerClazz.argumentFields();
         var i = 0;
         for (var a : c.actuals())
@@ -826,7 +757,7 @@ public class Clazzes extends ANY
             if (i < afs.length) // actuals and formals may mismatch due to previous errors,
                                 // see tests/typeinference_for_formal_args_negative
               {
-                propagateExpectedClazz(a, afs[i].resultClazz(), outerClazz, inh);
+                propagateExpectedClazz(a, afs[i].resultClazz(), outer, outerClazz, inh);
               }
             i++;
           }
@@ -861,7 +792,7 @@ public class Clazzes extends ANY
 
     var p = c.pos();
     var const_clazz = clazz(c, outerClazz, inh);
-    c.runtimeClazz = const_clazz;
+    c.runtimeClazz = const_clazz; // NYI: hack! use saveActualClazzes().
     const_clazz.instantiated(p);
     if (const_clazz.feature() == Types.resolved.f_array)
       { // add clazzes touched by constant creation:
@@ -885,47 +816,45 @@ public class Clazzes extends ANY
   /**
    * Find all static clazzes for this case and store them in outerClazz.
    */
-  public static void findClazzes(If i, Clazz outerClazz, List<AbstractCall> inh)
+  public static void findClazzes(If i, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
   {
-    if (i._runtimeClazzId < 0)
+    if (!outerClazz.hasActualClazzes(i, outer))
       {
-        i._runtimeClazzId = getRuntimeClazzIds(1);
+        outerClazz.saveActualClazzes(i, outer, new Clazz[] { clazz(i.cond, outerClazz, inh) });
       }
-    outerClazz.setRuntimeClazz(i._runtimeClazzId, clazz(i.cond, outerClazz, inh));
   }
 
 
   /**
    * Find all static clazzes for this case and store them in outerClazz.
    */
-  public static void findClazzes(AbstractCase c, Clazz outerClazz, List<AbstractCall> inh)
+  public static void findClazzes(AbstractCase c, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
   {
     // NYI: Check if this works for a case that is part of an inherits clause, do
     // we need to store in outerClazz.outer?
     var f = c.field();
     var t = c.types();
-    if (c._runtimeClazzId < 0)
+    if ((f != null || t != null) &&  !outerClazz.hasActualClazzes(c, outer))
       {
-        c._runtimeClazzId = getRuntimeClazzIds(f != null ? 1 :
-                                               t != null ? t.size()
-                                                         : 0);
-      }
-    int i = c._runtimeClazzId;
-    if (f != null)
-      {
-        var fOrFc = isUsed(f)
-          ? outerClazz.lookup(f)
-          : Clazzes.clazz(outerClazz._type.actualType(f.resultType())); // NYI: better Clazzes.c_void.get(), does not work in interpreter backend yet...
-        outerClazz.setRuntimeClazz(i, fOrFc);
-      }
-    else if (t != null)
-      {
-        for (var caseType : t)
+        Clazz[] acl;
+        if (f != null)
           {
-            var ct = outerClazz.handDown(caseType, inh, c);
-            outerClazz.setRuntimeClazz(i, ct);
-            i++;
+            var fOrFc = isUsed(f)
+              ? outerClazz.lookup(f)
+              : Clazzes.clazz(outerClazz._type.actualType(f.resultType())); // NYI: better Clazzes.c_void.get(), does not work in interpreter backend yet...
+            acl = new Clazz[] {fOrFc};
           }
+        else
+          {
+            acl = new Clazz[t.size()];
+            int i = 0;
+            for (var caseType : t)
+              {
+                acl[i] = outerClazz.handDown(caseType, inh, c);
+                i++;
+              }
+          }
+        outerClazz.saveActualClazzes(c, outer, acl);
       }
   }
 
@@ -933,33 +862,28 @@ public class Clazzes extends ANY
   /**
    * Find all static clazzes for this case and store them in outerClazz.
    */
-  public static void findClazzes(AbstractMatch m, Clazz outerClazz, List<AbstractCall> inh)
+  public static void findClazzes(AbstractMatch m, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
   {
-    if (m._runtimeClazzId < 0)
+    if (!outerClazz.hasActualClazzes(m, outer))
       {
-        // NYI: Check if this works for a match that is part of a inherits clause, do
-        // we need to store in outerClazz.outer?
-        m._runtimeClazzId = getRuntimeClazzIds(1);
+        var subjClazz = clazz(m.subject(), outerClazz, inh);
+        outerClazz.saveActualClazzes(m, outer, new Clazz[] {subjClazz});
       }
-    var subjClazz = clazz(m.subject(), outerClazz, inh);
-    outerClazz.setRuntimeClazz(m._runtimeClazzId, subjClazz);
   }
 
 
   /**
    * Find all static clazzes for this Tag and store them in outerClazz.
    */
-  public static void findClazzes(Tag t, Clazz outerClazz, List<AbstractCall> inh)
+  public static void findClazzes(Tag t, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
   {
-    Clazz vc = clazz(t._value, outerClazz, inh);
-    var tc = outerClazz.handDown(t._taggedType, inh, t);
-    if (t._valAndTaggedClazzId < 0)
+    if (!outerClazz.hasActualClazzes(t, outer))
       {
-        t._valAndTaggedClazzId = getRuntimeClazzIds(2);
+        Clazz vc = clazz(t._value, outerClazz, inh);
+        var tc = outerClazz.handDown(t._taggedType, inh, t);
+        outerClazz.saveActualClazzes(t, outer, new Clazz[] { vc, tc });
+        tc.instantiated(t);
       }
-    outerClazz.setRuntimeClazz(t._valAndTaggedClazzId    , vc);
-    outerClazz.setRuntimeClazz(t._valAndTaggedClazzId + 1, tc);
-    tc.instantiated(t);
   }
 
 
@@ -984,14 +908,13 @@ public class Clazzes extends ANY
   /**
    * Find all static clazzes for this Env and store them in outerClazz.
    */
-  public static void findClazzes(Env v, Clazz outerClazz, List<AbstractCall> inh)
+  public static void findClazzes(Env v, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
   {
-    Clazz ac = clazz(v, outerClazz, inh);
-    if (v._clazzId < 0)
+    if (!outerClazz.hasActualClazzes(v, outer))
       {
-        v._clazzId = getRuntimeClazzId();
+        Clazz ac = clazz(v, outerClazz, inh);
+        outerClazz.saveActualClazzes(v, outer, new Clazz[] {ac});
       }
-    outerClazz.setRuntimeClazz(v._clazzId, ac);
   }
 
 

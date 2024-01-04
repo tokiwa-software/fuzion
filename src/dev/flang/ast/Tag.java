@@ -57,14 +57,6 @@ public class Tag extends Expr
   public AbstractType _taggedType;
 
 
-  /**
-   * Clazz index for value clazz that is being boxed and, at
-   * _valAndRefClazzId+1, reference clazz that is the result clazz of the
-   * boxing.
-   */
-  public int _valAndTaggedClazzId = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 

@@ -43,7 +43,7 @@ import dev.flang.util.StringHelpers;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class Expr extends ANY implements HasSourcePosition
+public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
 {
 
   /*----------------------------  constants  ----------------------------*/

@@ -48,12 +48,6 @@ public class Env extends ExprWithPos
   AbstractType _type;
 
 
-  // id of the clazz of the monad as stored in outer clazz.
-  //
-  // NYI: remove, used in interpreter.
-  public int _clazzId = -1;
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 

@@ -70,12 +70,6 @@ public class InlineArray extends ExprWithPos
 
 
   /**
-   * Clazz index for array clazz
-   */
-  public int _arrayClazzId = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
-
-
-  /**
    * The code for initializing this array.
    */
   private Expr _code;

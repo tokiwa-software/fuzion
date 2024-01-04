@@ -45,6 +45,7 @@ import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Consts; // NYI: remove dependency!
 import dev.flang.ast.Env; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
+import dev.flang.ast.HasGlobalIndex; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.ResolvedNormalType; // NYI: remove dependency!
@@ -85,6 +86,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   static final Clazz[] NO_CLAZZES = new Clazz[0];
 
 
+  // NYI: CLEANUP #2411 remove this dependency, clazzes should be build from module files only
   public static SrcModule _module;
 
 
@@ -109,6 +111,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   class EV implements ExpressionVisitor
   {
     List<AbstractCall> _inh;
+    AbstractFeature _originalFeature;
 
     /**
      * Constructor to visit expressions in the current clazz that were inherited
@@ -118,26 +121,27 @@ public class Clazz extends ANY implements Comparable<Clazz>
      * gives the chain of inherits calls that brought the code here, from the
      * parent down to the child feature.
      */
-    EV(List<AbstractCall> inh)
+    EV(List<AbstractCall> inh, AbstractFeature f)
       {
         _inh = inh;
+        _originalFeature = f;
       }
 
     public void action (Expr e)
     {
-      if      (e instanceof AbstractAssign   a) { Clazzes.findClazzes(a, Clazz.this, _inh); }
-      else if (e instanceof AbstractCall     c) { Clazzes.findClazzes(c, Clazz.this, _inh); }
+      if      (e instanceof AbstractAssign   a) { Clazzes.findClazzes(a, _originalFeature, Clazz.this, _inh); }
+      else if (e instanceof AbstractCall     c) { Clazzes.findClazzes(c, _originalFeature, Clazz.this, _inh); }
       else if (e instanceof AbstractConstant c) { Clazzes.findClazzes(c, Clazz.this, _inh); }
-      else if (e instanceof If               i) { Clazzes.findClazzes(i, Clazz.this, _inh); }
+      else if (e instanceof If               i) { Clazzes.findClazzes(i, _originalFeature, Clazz.this, _inh); }
       else if (e instanceof InlineArray      i) { Clazzes.findClazzes(this, i, Clazz.this, _inh); }
-      else if (e instanceof Env              b) { Clazzes.findClazzes(b, Clazz.this, _inh); }
-      else if (e instanceof AbstractMatch    m) { Clazzes.findClazzes(m, Clazz.this, _inh); }
-      else if (e instanceof Tag              t) { Clazzes.findClazzes(t, Clazz.this, _inh); }
+      else if (e instanceof Env              b) { Clazzes.findClazzes(b, _originalFeature, Clazz.this, _inh); }
+      else if (e instanceof AbstractMatch    m) { Clazzes.findClazzes(m, _originalFeature, Clazz.this, _inh); }
+      else if (e instanceof Tag              t) { Clazzes.findClazzes(t, _originalFeature, Clazz.this, _inh); }
     }
 
     public void action(AbstractCase c)
     {
-      Clazzes.findClazzes(c, Clazz.this, _inh);
+      Clazzes.findClazzes(c, _originalFeature, Clazz.this, _inh);
     }
 
   }
@@ -167,15 +171,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   public final Map<AbstractFeature, Clazz> _clazzForField = new TreeMap<>();
-
-
-  /**
-   * Clazzes required during runtime. These are indexed by
-   * Clazzes.getRuntimeClazzId and used to quickly find the actual class
-   * depending on the actual generic parameters given in this class or its super
-   * classes.
-   */
-  ArrayList<Object> _runtimeClazzes = new ArrayList<>();
 
 
   /**
@@ -336,6 +331,22 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * Cached result of parents(), null before first call to parents().
    */
   private Set<Clazz> _parents = null;
+
+
+  /**
+   * Data stored locally for this clazz by saveActualClazzes().
+   */
+  private TreeMap<Integer, Clazz[]> _actualClazzData = new TreeMap<Integer, Clazz[]>();
+
+
+  /**
+   * Actual argument fields for inherits calls in this clazz' code.
+   *
+   * NYI: CLEANUP: This is used in FUIR.addCode only.  We might remove this and
+   * look up these clazzes in FUIR.addCode instead.
+   */
+  public TreeMap<Integer, Clazz[]> _parentCallArgFields = new TreeMap<Integer, Clazz[]>();
+
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -1476,11 +1487,20 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * visit all the code in f, including inherited features, by fc.
+   * call Clazzes.findClazzes for all the expressions in f, including all the
+   * expressions of the parents of f.
+   *
+   * @param inh an empty list when inspecting code of `f` for `f`, a list of
+   * inheritance calls when inspecting `f1` that inherits from `f`. The head of
+   * this list is the inheritance call from `f1` to `f`, the tail is the
+   * inheritance calls in case we are inspecting `f2` which inherits from `f1`,
+   * etc.
+   *
+   * @þaram f the feature whose code should be inspected to find clazzes
    */
   private void inspectCode(List<AbstractCall> inh, AbstractFeature f)
   {
-    var fc = new EV(inh);
+    var fc = new EV(inh, f);
     f.visitExpressions(fc);
     Stream
       .concat(f.contract().req.stream(), f.contract().ens.stream())
@@ -1490,6 +1510,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         AbstractFeature cf = c.calledFeature();
         var n = c.actuals().size();
+        var argFields = new Clazz[n];
         for (var i = 0; i < n; i++)
           {
             if (i >= cf.valueArguments().size())
@@ -1500,14 +1521,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
             else
               {
                 var cfa = cf.valueArguments().get(i);
-                var ccc = lookup(cfa, Clazzes.isUsedAt(f));
-                if (c._parentCallArgFieldIds < 0)
-                  {
-                    c._parentCallArgFieldIds = Clazzes.getRuntimeClazzIds(n);
-                  }
-                Clazz.this.setRuntimeData(c._parentCallArgFieldIds+i, ccc);
+                argFields[i] = lookup(cfa, Clazzes.isUsedAt(f));
               }
           }
+        _parentCallArgFields.put(c.globalIndex(), argFields);
 
         if (CHECKS) check
           (Errors.any() || cf != null);
@@ -1542,83 +1559,77 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * During findClazzes, store data for a given id.
+   * For the given element e that is defined in feature outer, store the given
+   * actual clazz data in this clazz.  This basically implements a map from
+   * clazz x feature x element to clazz[].
    *
-   * @param id the id obtained via AbstractFeature.getRuntimeClazzId()
+   * @param e an Expression or case element
    *
-   * @param data the data to be stored for this id.
+   * @param outer the outer feature e is used in.
+   *
+   * @param data the actual clazz data to be stored for this clazz
    */
-  public void setRuntimeData(int id, Object data)
+  void saveActualClazzes(HasGlobalIndex e, AbstractFeature outer, Clazz[] data)
   {
     if (PRECONDITIONS) require
-      (id >= 0,
-       id < Clazzes.runtimeClazzIdCount());
+      (feature().inheritsFrom(outer));
 
-    int cnt = Clazzes.runtimeClazzIdCount();
-    this._runtimeClazzes.ensureCapacity(cnt);
-    while (this._runtimeClazzes.size() < cnt)
-      {
-        this._runtimeClazzes.add(null);
-      }
-    this._runtimeClazzes.set(id, data);
-
-    if (POSTCONDITIONS) ensure
-      (getRuntimeData(id) == data);
+    // Since there is only one outer feature for each e, we currently ignore
+    // outer and just implement a map clazz x e.globalIndex -> clazz[].
+    //
+    // It might be more efficient to number each element within its outer
+    // feature (e.number 0,1,2,..) and to color features such that features with
+    // common heirs have different colors (f.color 0,1,2,..), then we could have
+    // an array of arrays and use this.actualClazzes[outer.color][e.number] to
+    // store data.
+    var idx = e.globalIndex();
+    if (CHECKS)
+      check
+        (!_actualClazzData.containsKey(idx));
+    _actualClazzData.put(idx, data);
   }
 
 
   /**
-   * During execution, retrieve the data stored for given id.
+   * For the given element e that is defined in feature outer, check if actual clazz data has already been stored
    *
-   * @param id the id used in setRuntimeData
+   * @param e an Expression or case element
    *
-   * @return the data stored for this id.
+   * @param outer the outer feature e is used in.
+   *
+   * @return true if clazz data exists for e/outer
    */
-  public Object getRuntimeData(int id)
+  public boolean hasActualClazzes(HasGlobalIndex e, AbstractFeature outer)
   {
     if (PRECONDITIONS) require
-      (id < Clazzes.runtimeClazzIdCount(),
-       id >= 0);
+      (outer == null || feature().inheritsFrom(outer));
 
-    var rtc = this._runtimeClazzes;
-    return id >= rtc.size() ? null
-                            : rtc.get(id);
+    var idx = e.globalIndex();
+    return _actualClazzData.containsKey(idx);
   }
 
 
   /**
-   * During findClazzes, store a clazz for a given id.
+   * For the given element e that is defined in feature outer, retrieve the
+   * stored actual clazz data from this clazz.  This basically implements a map
+   * from clazz x feature x element to clazz[].
    *
-   * @param id the id obtained via Clazzes.getRuntimeClazzId()
+   * @param e an Expression or case element
    *
-   * @param cl the clazz to be stored for this id.
+   * @param outer the outer feature e is used in.  NYI: outer may currently be
+   * null and is ignored in this case. @see saveActualClazzes for how outer
+   * might be used.
+   *
+   * @return the actual clazz data that was stored for e/outer.
    */
-  public void setRuntimeClazz(int id, Clazz cl)
+  public Clazz[] actualClazzes(HasGlobalIndex e, AbstractFeature outer)
   {
     if (PRECONDITIONS) require
-      (id >= 0,
-       id < Clazzes.runtimeClazzIdCount());
+      (outer == null || feature().inheritsFrom(outer),
+       hasActualClazzes(e, outer));
 
-    setRuntimeData(id, cl);
-
-    if (POSTCONDITIONS) ensure
-      (getRuntimeClazz(id) == cl);
-  }
-
-
-  /**
-   * During execution, retrieve the clazz stored for given id.
-   *
-   * @param id the id used in setRuntimeClazz
-   *
-   * @return the clazz stored for this id.
-   */
-  public Clazz getRuntimeClazz(int id)
-  {
-    if (PRECONDITIONS) require
-      (id < Clazzes.runtimeClazzIdCount());
-
-    return (Clazz) getRuntimeData(id);
+    var idx = e.globalIndex();
+    return _actualClazzData.get(idx);
   }
 
 
@@ -2098,7 +2109,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         var call = inh.get(0);
         if (CHECKS) check
           (call.calledFeature() == f.outer());
-        o = (Clazz) _outer.getRuntimeData(call._sid + 0);
+        o = _outer.actualClazzes(call, null)[0];
       }
     var ix = f.typeParameterIndex();
     var oag = o.actualGenerics();

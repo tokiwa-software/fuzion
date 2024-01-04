@@ -65,9 +65,6 @@ public abstract class AbstractAssign extends Expr
   boolean _indexVarAllowed = false;
 
 
-  public int _tid = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 

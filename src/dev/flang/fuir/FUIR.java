@@ -933,6 +933,7 @@ hw25 is
           }
         if (CHECKS) check
           (p.actuals().size() == p.calledFeature().valueArguments().size());
+        var argFields = cc._parentCallArgFields.get(p.globalIndex());
         for (var i = 0; i < p.actuals().size(); i++)
           {
             var a = p.actuals().get(i);
@@ -940,7 +941,7 @@ hw25 is
             toStack(code, a);
             code.add(ExprKind.Current);
             // Field clazz means assign value to that field
-            code.add((Clazz) cc.getRuntimeData(p._parentCallArgFieldIds + i));
+            code.add(argFields[i]);
           }
         addCode(cc, code, p.calledFeature());
       }
@@ -1345,7 +1346,7 @@ hw25 is
 
     var outerClazz = clazz(cl);
     var t = (Tag) _codeIds.get(c).get(ix);
-    var vcl = (Clazz) outerClazz.getRuntimeData(t._valAndTaggedClazzId + 0);
+    var vcl = outerClazz.actualClazzes(t, null)[0];
     return vcl == null ? -1 : id(vcl);
   }
 
@@ -1358,7 +1359,7 @@ hw25 is
 
     var outerClazz = clazz(cl);
     var t = (Tag) _codeIds.get(c).get(ix);
-    var ncl = (Clazz) outerClazz.getRuntimeData(t._valAndTaggedClazzId + 1);
+    var ncl = outerClazz.actualClazzes(t, null)[1];
     return ncl == null ? -1 : id(ncl);
   }
 
@@ -1375,7 +1376,7 @@ hw25 is
 
     var outerClazz = clazz(cl);
     var v = (Env) _codeIds.get(c).get(ix);
-    var vcl = (Clazz) outerClazz.getRuntimeData(v._clazzId);
+    var vcl = outerClazz.actualClazzes(v, null)[0];
     return vcl == null ? -1 : id(vcl);
   }
 
@@ -1388,7 +1389,7 @@ hw25 is
 
     var outerClazz = clazz(cl);
     var b = (Box) _codeIds.get(c).get(ix);
-    Clazz vc = (Clazz) outerClazz.getRuntimeData(b._valAndRefClazzId);
+    Clazz vc = outerClazz.actualClazzes(b, null)[0];
     return id(vc);
   }
 
@@ -1401,7 +1402,7 @@ hw25 is
 
     var outerClazz = clazz(cl);
     var b = (Box) _codeIds.get(c).get(ix);
-    Clazz rc = (Clazz) outerClazz.getRuntimeData(b._valAndRefClazzId+1);
+    Clazz rc = outerClazz.actualClazzes(b, null)[1];
     return id(rc);
   }
 
@@ -1462,7 +1463,7 @@ hw25 is
     var outerClazz = clazz(cl);
     var s = _codeIds.get(c).get(ix);
     Clazz innerClazz =
-      (s instanceof AbstractCall   call) ? (Clazz) outerClazz.getRuntimeData(call._sid + 2) :
+      (s instanceof AbstractCall   call) ? outerClazz.actualClazzes(call, null)[2] :
       (Clazz) (Object) new Object() { { if (true) throw new Error("accessedClazz found unexpected Expr."); } } /* Java is ugly... */;
 
     var res = innerClazz == null ? -1 : id(innerClazz);
@@ -1494,8 +1495,8 @@ hw25 is
     var outerClazz = clazz(cl);
     var s = _codeIds.get(c).get(ix);
     Clazz innerClazz =
-      (s instanceof AbstractCall   call) ? (Clazz) outerClazz.getRuntimeData(call._sid + 0) :
-      (s instanceof AbstractAssign a   ) ? (Clazz) outerClazz.getRuntimeData(a   ._tid + 1) :
+      (s instanceof AbstractCall   call) ? outerClazz.actualClazzes(call, null)[0] :
+      (s instanceof AbstractAssign a   ) ? outerClazz.actualClazzes(a   , null)[1] :
       (s instanceof Clazz          fld ) ? fld :
       (Clazz) (Object) new Object() { { if (true) throw new Error("accessedClazz found unexpected Expr."); } } /* Java is ugly... */;
 
@@ -1525,7 +1526,7 @@ hw25 is
     var outerClazz = clazz(cl);
     var s = _codeIds.get(c).get(ix);
     var t =
-      (s instanceof AbstractAssign a   ) ? (Clazz) outerClazz.getRuntimeData(a   ._tid + 2) :
+      (s instanceof AbstractAssign a   ) ? outerClazz.actualClazzes(a, null)[2] :
       (s instanceof Clazz          fld ) ? fld.resultClazz() :
       (Clazz) (Object) new Object() { { if (true) throw new Error("assignedType found unexpected Expr."); } } /* Java is ugly... */;
 
@@ -1564,13 +1565,14 @@ hw25 is
     if (s instanceof AbstractCall call)
       {
         f = call.calledFeature();
-        tclazz     = (Clazz) outerClazz.getRuntimeData(call._sid + 1);
+        tclazz   = outerClazz.actualClazzes(call, null)[1];
         typePars = outerClazz.actualGenerics(call.actualTypeParameters());
       }
     else if (s instanceof AbstractAssign ass)
       {
-        var assignedField = (Clazz) outerClazz.getRuntimeData(ass._tid+ 1);
-        tclazz = (Clazz) outerClazz.getRuntimeData(ass._tid);  // NYI: This should be the same as assignedField._outer
+        var acl = outerClazz.actualClazzes(ass, null);
+        var assignedField = acl[1];
+        tclazz = acl[0];  // NYI: This should be the same as assignedField._outer
         f = assignedField.feature();
       }
     else if (s instanceof Clazz fld)
@@ -1670,10 +1672,10 @@ hw25 is
     var outerClazz = clazz(cl);
     var s = _codeIds.get(c).get(ix);
     var res =
-      (s instanceof AbstractAssign ass ) ? ((Clazz) outerClazz.getRuntimeData(ass._tid)).isRef() : // NYI: This should be the same as assignedField._outer
+      (s instanceof AbstractAssign ass ) ? outerClazz.actualClazzes(ass, null)[0].isRef() : // NYI: This should be the same as assignedField._outer
       (s instanceof Clazz          arg ) ? outerClazz.isRef() && !arg.feature().isOuterRef() : // assignment to arg field in inherits call (dynamic if outerClazz is ref)
                                                                                        // or to outer ref field (not dynamic)
-      (s instanceof AbstractCall   call) ? ((Clazz) outerClazz.getRuntimeData(call._sid + 1)).isRef()  :
+      (s instanceof AbstractCall   call) ? outerClazz.actualClazzes(call,null)[1].isRef()  :
       new Object() { { if (true) throw new Error("accessIsDynamic found unexpected Expr."); } } == null /* Java is ugly... */;
 
     return res;
@@ -1732,9 +1734,9 @@ hw25 is
     var outerClazz = clazz(cl);
     var s = _codeIds.get(c).get(ix);
     var tclazz =
-      (s instanceof AbstractAssign ass ) ? (Clazz) outerClazz.getRuntimeData(ass._tid) : // NYI: This should be the same as assignedField._outer
+      (s instanceof AbstractAssign ass ) ? outerClazz.actualClazzes(ass, null)[0] : // NYI: This should be the same as assignedField._outer
       (s instanceof Clazz          arg ) ? outerClazz : // assignment to arg field in inherits call, so outer clazz is current instance
-      (s instanceof AbstractCall   call) ? (Clazz) outerClazz.getRuntimeData(call._sid + 1) :
+      (s instanceof AbstractCall   call) ? outerClazz.actualClazzes(call, null)[1] :
       (Clazz) (Object) new Object() { { if (true) throw new Error("accessTargetClazz found unexpected Expr."); } } /* Java is ugly... */;
 
     return id(tclazz);
@@ -1764,7 +1766,7 @@ hw25 is
     var ic = _codeIds.get(c).get(ix);
     if (ic instanceof AbstractConstant ac)
       {
-        clazz = (Clazz)ac.runtimeClazz;
+        clazz = (Clazz)ac.runtimeClazz; // NYI: wrong!
       }
     else if (ic instanceof InlineArray)
       {
@@ -1821,9 +1823,7 @@ hw25 is
 
     var cc = clazz(cl);
     var s = _codeIds.get(c).get(ix);
-    Clazz ss = s instanceof If
-      ? cc.getRuntimeClazz(((If)            s)._runtimeClazzId)
-      : cc.getRuntimeClazz(((AbstractMatch) s)._runtimeClazzId);
+    Clazz ss = cc.actualClazzes((Expr) s, null)[0];
     return id(ss);
   }
 
@@ -1857,7 +1857,7 @@ hw25 is
       {
         var mc = m.cases().get(cix);
         var f = mc.field();
-        var fc = f != null && Clazzes.isUsed(f) ? cc.getRuntimeClazz(mc._runtimeClazzId) : null;
+        var fc = f != null && Clazzes.isUsed(f) ? cc.actualClazzes(mc, null)[0] : null;
         result = fc != null ? id(fc) : -1;
       }
     return result;
