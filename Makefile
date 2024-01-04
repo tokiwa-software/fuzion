@@ -1117,8 +1117,8 @@ run_tests_jvm_parallel: $(FZ_JVM) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(BUILD_DIR)/
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) jvm
 
 .PHONY .SILENT: run_tests_jar
-run_tests_jar: $(FZ_JVM)
-	$(BUILD_DIR)/bin/fz -jar tests/hello/HelloWorld.fz
+run_tests_jar: $(FZ_JVM) $(BUILD_DIR)/tests
+	$(BUILD_DIR)/bin/fz -jar $(BUILD_DIR)/tests/hello/HelloWorld.fz
 	java -jar HelloWorld.jar > /dev/null
 
 .PHONY: clean
