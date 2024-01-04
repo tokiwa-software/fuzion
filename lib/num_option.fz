@@ -63,7 +63,7 @@ is
   public val T
     pre
       safety: num_option.this??
-  is
+  =>
     num_option.this ? v T => v
                     | nil => fuzion.std.panic "num_option.val called on nil"
 
@@ -76,7 +76,7 @@ is
   #
   # Same as non-generic >>=, but also maps to a different type B.
   #
-  public bind(B type : numeric, f T -> num_option B) num_option B is
+  public bind(B type : numeric, f T -> num_option B) num_option B =>
     num_option.this ? v T => f v
                     | nil => nil
 
@@ -88,44 +88,44 @@ is
 
 
   # basic prefix operations
-  public prefix +? num_option T is num_option.this >>= v -> +v
-  public prefix -? num_option T is num_option.this >>= v -> -?v
+  public prefix +? num_option T => num_option.this >>= v -> +v
+  public prefix -? num_option T => num_option.this >>= v -> -?v
 
   # basic infix operations
-  public infix +? (other num_option T) num_option T is num_option.this >>= v -> other >>= w -> v +? w
-  public infix -? (other num_option T) num_option T is num_option.this >>= v -> other >>= w -> v -? w
-  public infix *? (other num_option T) num_option T is num_option.this >>= v -> other >>= w -> v *? w
-  public infix **?(other num_option T) num_option T is num_option.this >>= v -> other >>= w -> v **? w
+  public infix +? (other num_option T) num_option T => num_option.this >>= v -> other >>= w -> v +? w
+  public infix -? (other num_option T) num_option T => num_option.this >>= v -> other >>= w -> v -? w
+  public infix *? (other num_option T) num_option T => num_option.this >>= v -> other >>= w -> v *? w
+  public infix **?(other num_option T) num_option T => num_option.this >>= v -> other >>= w -> v **? w
   public infix /? (other num_option T) num_option T
     pre
       safety: !other.is_zero
-  is
+  =>
     num_option.this >>= v -> other >>= w -> v / w
 
   public infix %? (other num_option T) num_option T
     pre
       safety: !other.is_zero
-  is
+  =>
     num_option.this >>= v -> other >>= w -> v % w
 
   # comparison
-  public infix ==? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v = w
-  public infix !=? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v != w
-  public infix <?  (other num_option T) bool is num_option.this >>? v -> other >>? w -> v <  w
-  public infix <=? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v ≤ w
-  public infix >?  (other num_option T) bool is num_option.this >>? v -> other >>? w -> v >  w
-  public infix >=? (other num_option T) bool is num_option.this >>? v -> other >>? w -> v ≥ w
+  public infix ==? (other num_option T) bool => num_option.this >>? v -> other >>? w -> v = w
+  public infix !=? (other num_option T) bool => num_option.this >>? v -> other >>? w -> v != w
+  public infix <?  (other num_option T) bool => num_option.this >>? v -> other >>? w -> v <  w
+  public infix <=? (other num_option T) bool => num_option.this >>? v -> other >>? w -> v ≤ w
+  public infix >?  (other num_option T) bool => num_option.this >>? v -> other >>? w -> v >  w
+  public infix >=? (other num_option T) bool => num_option.this >>? v -> other >>? w -> v ≥ w
 
   public is_zero => sign ==? 0
 
-  public sign num_option i32 is
+  public sign num_option i32 =>
     num_option.this ? v T => v.sign
                     | nil => nil
 
-  public abs num_option T is
+  public abs num_option T =>
     num_option.this >>= v -> if v.sign ≥ 0 v else -?v
 
-  public redef as_string String is
+  public redef as_string String =>
     num_option.this ? v T => v.as_string
                     | nil => "--no value--"
 

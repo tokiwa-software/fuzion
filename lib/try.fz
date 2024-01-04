@@ -40,7 +40,7 @@ is
   # via a call to 'raise' wrap the 'error' passed to 'raise' into the
   # resulting 'outcome'.
   #
-  public on(R type, f ()->R) outcome R is
+  public on(R type, f ()->R) outcome R =>
     run (outcome R) (()->outcome f()) ()->err.get
 
   # terminate immediately with the given error wrapped in 'option'.
@@ -61,7 +61,7 @@ public try(T, R type, f ()->R) =>
 # it. Return the result of 'f' directly or panic in case 'f' calls
 # 'try.env.raise'.
 #
-public try_or_panic(T, R type, f ()->R) outcome R is
+public try_or_panic(T, R type, f ()->R) outcome R =>
   match (try T).on f
     e error => panic $e
     r R => r

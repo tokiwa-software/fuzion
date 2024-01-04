@@ -88,17 +88,17 @@ private:public Vars_Handler ref is
 
   # If set, get the environment variable corresponding to v
   #
-  get(v String) option String is abstract
+  get(v String) option String => abstract
 
   # Set the environment variable corresponding to n to have the
   # value v.
   #
   # This will overwrite the value of the environment variable, if
   # it is set already.
-  set1(n String, v String) outcome unit is abstract
+  set1(n String, v String) outcome unit => abstract
 
   # Unset the environment variable corresponding to n.
   #
   # This will also return success (unit) if the variable was not
   # set anyway.
-  unset(n String) outcome unit is abstract
+  unset(n String) outcome unit => abstract

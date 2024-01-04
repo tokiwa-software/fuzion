@@ -32,7 +32,7 @@ module env_vars is
   #
   # NOTE: parameter s must be 0-terminated char *
   #
-  private has0(s fuzion.sys.Pointer) bool is intrinsic_constructor
+  private has0(s fuzion.sys.Pointer) bool => intrinsic_constructor
 
 
   # intrinsic to get env var with given name
@@ -40,24 +40,24 @@ module env_vars is
   # NOTE: parameter s must be 0-terminated char *
   #
   private get0(s fuzion.sys.Pointer) String
-  is intrinsic
+  => intrinsic
 
   # intrinsic to set env var
-  private set0(s fuzion.sys.Pointer, t fuzion.sys.Pointer) bool is intrinsic_constructor
+  private set0(s fuzion.sys.Pointer, t fuzion.sys.Pointer) bool => intrinsic_constructor
 
   # intrinsic to unset env var
-  private unset0(s fuzion.sys.Pointer) bool is intrinsic_constructor
+  private unset0(s fuzion.sys.Pointer) bool => intrinsic_constructor
 
 
   # check if env var with given name exists
   #
-  module has(s String) bool is
+  module has(s String) bool =>
     has0 (c_string s)
 
 
   # intrinsic to get env var with given name
   #
-  module get(s String) option String is
+  module get(s String) option String =>
     a := c_string s
     if has0 a then
       get0 a
@@ -67,7 +67,7 @@ module env_vars is
   # set the value of the env var with given name to the given new value
   # will overwrite the current value, if it is set
   # NYI: #627: rename to set once set keyword is removed
-  module set1(name String, val String) outcome unit is
+  module set1(name String, val String) outcome unit =>
     k := c_string name
     v := c_string val
 
@@ -78,7 +78,7 @@ module env_vars is
 
   # unset the env var with the given name
   # note this returns success (unit) if the given env var did not exist
-  module unset(name String) outcome unit is
+  module unset(name String) outcome unit =>
     k := c_string name
 
     if unset0 k

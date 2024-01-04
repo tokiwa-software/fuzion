@@ -34,7 +34,7 @@ is
   # the utf8 encoded bytes for the string representation
   # of this codepoint
   #
-  public redef utf8 Sequence u8 is
+  public redef utf8 Sequence u8 =>
     if      codepoint.type.utf8_encoded_in_one_byte   .contains val then [ val.low8bits ]
     else if codepoint.type.utf8_encoded_in_two_bytes  .contains val then [ (u32 0xc0 | (val >>  6) & 0x1f).low8bits,
                                                                            (u32 0x80 |  val        & 0x3f).low8bits ]
@@ -110,7 +110,7 @@ is
   # by examining the first byte
   #
   # NYI: implement num_utf8_bytes(first_byte u8) => (~first_byte).leading_zeroes+1.
-  module type.num_utf8_bytes (first_byte u8) outcome i32 is
+  module type.num_utf8_bytes (first_byte u8) outcome i32 =>
     if ((u8 0)..0x7F).contains first_byte
       1
     else if ((u8 0xC2)..0xDF).contains first_byte

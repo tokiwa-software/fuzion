@@ -45,7 +45,7 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
 
   # short-hand features to get the mutable references from `n`
   #
-  public next option (Linked_List T) is
+  public next option (Linked_List T) =>
     match n.get
       ll Mutable_Linked_List => ll
       nil => nil
@@ -87,7 +87,7 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
   public type.from_sequence(from Sequence T) container.Mutable_Linked_List LM T
     pre
       !from.is_empty
-  is
+  =>
     from_sequence from true
 
 
@@ -100,7 +100,7 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
   public type.from_sequence(from Sequence T, freeze bool) container.Mutable_Linked_List LM T
     pre
       !from.is_empty
-  is
+  =>
     from_list := from.as_list
     c := container.Mutable_Linked_List LM T from_list.head.get
     from_list.tail.for_each (x -> c.append x)

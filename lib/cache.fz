@@ -35,7 +35,7 @@
 #       # ^------- a feature declaring a type which we use as a cache key
 #       #            wrapping the actual data we want to cache
 #       cache_kex(val i32) is
-#       # similarly, here, i32 is the actual type we want to cache and cache_kex
+#       # similarly, here, i32 => the actual type we want to cache and cache_kex
 #       # is the wrapping cache key
 #
 #       # suppose now, that we have two functions fn and fm, which take no arguments but
@@ -65,7 +65,7 @@
 #
 # The cache implemented works on a global level.
 #
-public cache(T type, f () -> T) T is
+public cache(T type, f () -> T) T =>
 
   # use wrapper type because we do not want to prevent
   # the use of `state` for type T

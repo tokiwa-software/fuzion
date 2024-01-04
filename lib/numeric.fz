@@ -34,52 +34,52 @@ module:public numeric : property.hashable, property.orderable is
   public prefix + numeric.this
     pre
       safety: +!numeric.this
-  is numeric.this
+  => numeric.this
 
   # basic operations: 'prefix -' (negation)
   public prefix - numeric.this
     pre
       safety: -!numeric.this
-  is numeric.this.type.zero - numeric.this
+  => numeric.this.type.zero - numeric.this
 
   # basic operations: 'infix +' (addition)
   public infix +  (other numeric.this) numeric.this
     pre
       safety: numeric.this +! other
-  is abstract
+  => abstract
 
   # basic operations: 'infix -' (subtraction)
   public infix -  (other numeric.this) numeric.this
     pre
       safety: numeric.this -! other
-  is abstract
+  => abstract
 
   # basic operations: 'infix *' (multiplication)
   public infix *  (other numeric.this) numeric.this
     pre
       safety: numeric.this *! other
-  is abstract
+  => abstract
 
   # basic operations: 'infix /' (division)
   public infix /  (other numeric.this) numeric.this
     pre
       safety: numeric.this /! other,
       safety: other != numeric.this.type.zero
-  is abstract
+  => abstract
 
   # basic operations: 'infix %' (division remainder)
   public infix %  (other numeric.this) numeric.this
     pre
       safety: numeric.this %! other,
       safety: other != numeric.this.type.zero
-  is abstract
+  => abstract
 
   # basic operations: 'infix **' (exponentiation)
   public infix ** (other numeric.this) numeric.this
     pre
       safety: numeric.this **! other,
       safety: other ≥ numeric.this.type.zero
-  is abstract
+  => abstract
 
 
   # preconditions for basic operations: true if the operation's result is
@@ -88,29 +88,29 @@ module:public numeric : property.hashable, property.orderable is
   # This does not check if the operation is defined (i.e, it
   # returns true for '3/!0' or '0**!0'.
   #
-  public prefix +! bool is true
-  public prefix -! bool is abstract
-  public infix +! (other numeric.this) bool is abstract
-  public infix -! (other numeric.this) bool is abstract
-  public infix *! (other numeric.this) bool is abstract
-  public infix /! (other numeric.this) bool is abstract
-  public infix %! (other numeric.this) bool is abstract
-  public infix **!(other numeric.this) bool is abstract
+  public prefix +! bool => true
+  public prefix -! bool => abstract
+  public infix +! (other numeric.this) bool => abstract
+  public infix -! (other numeric.this) bool => abstract
+  public infix *! (other numeric.this) bool => abstract
+  public infix /! (other numeric.this) bool => abstract
+  public infix %! (other numeric.this) bool => abstract
+  public infix **!(other numeric.this) bool => abstract
 
 
   # overflow checking operations
-  public prefix -? num_option numeric.this is - numeric.this
-  public infix +? (other numeric.this) num_option numeric.this is numeric.this + other
-  public infix -? (other numeric.this) num_option numeric.this is numeric.this - other
-  public infix *? (other numeric.this) num_option numeric.this is numeric.this * other
-  public infix **?(other numeric.this) num_option numeric.this is abstract
+  public prefix -? num_option numeric.this => - numeric.this
+  public infix +? (other numeric.this) num_option numeric.this => numeric.this + other
+  public infix -? (other numeric.this) num_option numeric.this => numeric.this - other
+  public infix *? (other numeric.this) num_option numeric.this => numeric.this * other
+  public infix **?(other numeric.this) num_option numeric.this => abstract
 
   # saturating  operations
-  public prefix -^  numeric.this is - numeric.this
-  public infix +^ (other numeric.this) numeric.this is numeric.this + other
-  public infix -^ (other numeric.this) numeric.this is numeric.this - other
-  public infix *^ (other numeric.this) numeric.this is numeric.this * other
-  public infix **^(other numeric.this) numeric.this is abstract
+  public prefix -^  numeric.this => - numeric.this
+  public infix +^ (other numeric.this) numeric.this => numeric.this + other
+  public infix -^ (other numeric.this) numeric.this => numeric.this - other
+  public infix *^ (other numeric.this) numeric.this => numeric.this * other
+  public infix **^(other numeric.this) numeric.this => abstract
 
 
   public sign => if numeric.this = numeric.this.type.zero then 0 else if numeric.this > numeric.this.type.zero then 1 else -1
@@ -124,7 +124,7 @@ module:public numeric : property.hashable, property.orderable is
   to_u32 u32
     pre
       debug: numeric.this ≥ numeric.this.type.zero
-  is
+  =>
     if (numeric.this ≥ numeric.this.type.one) ((numeric.this - numeric.this.type.one).to_u32 + 1)
     else 0
 
@@ -133,7 +133,7 @@ module:public numeric : property.hashable, property.orderable is
   public as_u8 u8
     pre
       debug: numeric.this ≥ numeric.this.type.zero
-  is abstract
+  => abstract
 
 
   # find the highest power of b that is less or equal than numeric.this.
@@ -145,11 +145,11 @@ module:public numeric : property.hashable, property.orderable is
       debug: (numeric.this = numeric.this.type.zero: result = numeric.this.type.one),
       debug: (numeric.this != numeric.this.type.zero: numeric.this / b < result ≤ numeric.this)
   # NYI: original postcondition code should cause a compiler error since
-  # result.infix <= expects an argument of type T while integer.this is
+  # result.infix <= expects an argument of type T while integer.this =>
   # not of type T.
   #
   #     integer.this != zero: integer.this / b < result <= integer.this
-  is
+  =>
     for
       bs := numeric.this.type.one, bs * b
     while numeric.this / b ≥ bs
@@ -178,18 +178,18 @@ module:public numeric : property.hashable, property.orderable is
 
   # identity element for 'infix +'
   #
-  public type.zero numeric.this is abstract
+  public type.zero numeric.this => abstract
 
 
   # identity element for 'infix *'
   #
-  public type.one  numeric.this is abstract
+  public type.one  numeric.this => abstract
 
 
   # the value corresponding to v in whatever integer implementation we have,
   # maximum in case of overflow
   #
-  public type.from_u32(v u32) numeric.this is
+  public type.from_u32(v u32) numeric.this =>
     if v = 0 zero else (from_u32 v-1) +^ one
 
 
@@ -205,12 +205,12 @@ module:public numeric : property.hashable, property.orderable is
 
   # equality
   #
-  public type.equality(a, b numeric.this) bool is abstract
+  public type.equality(a, b numeric.this) bool => abstract
 
 
   # total order
   #
-  public type.lteq(a, b numeric.this) bool is abstract
+  public type.lteq(a, b numeric.this) bool => abstract
 
 
   # monoid of numeric with infix + operation.  Will create sum of all elements it

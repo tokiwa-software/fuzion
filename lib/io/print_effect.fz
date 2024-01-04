@@ -57,4 +57,4 @@ public Print_Handler ref is
   println =>
     print (codepoint 10)
 
-  public print(s Any) unit is abstract
+  public print(s Any) unit => abstract

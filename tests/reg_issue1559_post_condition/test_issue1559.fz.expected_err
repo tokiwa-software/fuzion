@@ -7,7 +7,7 @@ result type is       : 'list u8'
 result type should be: 'Sequence u8'
 
 Original feature declared at $FUZION/lib/String.fz:34:10:
-  public utf8 Sequence u8 is abstract
+  public utf8 Sequence u8 => abstract
 ---------^
 To solve this, change type of result to 'Sequence u8'
 

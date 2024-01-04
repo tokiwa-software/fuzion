@@ -48,5 +48,5 @@ public float_sequence(public F type : float,
   # the euclidean norm of this sequence
   # i.e. the square of the sum of squares of this sequence
   #
-  public euclidean_norm F is
+  public euclidean_norm F =>
     F.sqrt ((map (x)->x**F.two).fold F.sum)

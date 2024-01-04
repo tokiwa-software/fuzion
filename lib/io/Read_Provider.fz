@@ -28,5 +28,5 @@ public Read_Provider ref is
   #        a array => !a.is_empty
   #        io.end_of_file => true
   #        error => true
-  is abstract
+  => abstract
 

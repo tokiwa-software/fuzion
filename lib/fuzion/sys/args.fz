@@ -28,13 +28,13 @@
 module args =>
 
   # intrinsic to get argument count
-  count i32 is intrinsic
+  count i32 => intrinsic
 
   # intrinsic to get i-th argument as a string
   get(i i32) String
     pre
       i < count
-    is intrinsic
+    => intrinsic
 
   # return the arguments in an array
   array String count (i -> get i)

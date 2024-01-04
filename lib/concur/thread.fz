@@ -80,4 +80,4 @@ private:public Thread_Handler ref is
 
   # spawn a new thread using given code
   #
-  spawn(code ()->unit) concur.thread.spawned is abstract
+  spawn(code ()->unit) concur.thread.spawned => abstract

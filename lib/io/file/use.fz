@@ -46,7 +46,7 @@ public mode is
 #     e error => e
 #     a array => String.type.from_bytes a
 # ```
-public use(T, R type, file_name String, m mode.val, code ()-> outcome R) outcome R is
+public use(T, R type, file_name String, m mode.val, code ()-> outcome R) outcome R =>
 
   mode_num := match m
                 mode.read => i8 0
@@ -77,5 +77,5 @@ public use(T, R type, file_name String, m mode.val, code ()-> outcome R) outcome
 #     e error => e
 #     a array => String.type.from_bytes a
 # ```
-public use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R is
+public use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R =>
   use open_unique_type R file_name m code

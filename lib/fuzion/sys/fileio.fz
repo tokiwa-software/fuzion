@@ -33,7 +33,7 @@ module fileio is
   # in case the outcome is an array, it may be shorter than n. this means the end of file
   # has been reached.
   #
-  module read(fd i64, n u64) outcome (array u8) is
+  module read(fd i64, n u64) outcome (array u8) =>
     len := n.as_i32
     arr := fuzion.sys.internal_array_init u8 len
     res := read fd arr.data len
@@ -60,14 +60,14 @@ module fileio is
                # the internal array data representing the container for the bytes to be read from the file
                file_array fuzion.sys.Pointer,
                # the length of the array that represents the file bytes
-               file_array_length i32) i32 is intrinsic
+               file_array_length i32) i32 => intrinsic
 
 
   # retrieves the file size in bytes and returns an outcome of error in case of an error
   #
   private get_file_size(
                         # the (relative or absolute) file name, using platform specific path separators
-                        path String) outcome i64 is
+                        path String) outcome i64 =>
     md := fuzion.sys.internal_array_init i64 4
     match stats (fuzion.sys.c_string path) md.data
       TRUE  => md.as_array[0]
@@ -78,7 +78,7 @@ module fileio is
   #
   # this might overwrite parts or all of an existing file.
   #
-  module write(fd i64, content array u8) outcome unit is
+  module write(fd i64, content array u8) outcome unit =>
     res := write fd content.internal_array.data content.length
 
     if res = 0
@@ -95,7 +95,7 @@ module fileio is
                 # the internal array data representing the content bytes to insert in file
                 content fuzion.sys.Pointer,
                 # the length of the internal array representing the content
-                content_length i32) i32 is intrinsic
+                content_length i32) i32 => intrinsic
 
 
   # deletes the file/dir found in the path
@@ -104,7 +104,7 @@ module fileio is
   #
   module delete(
                 # the (relative or absolute) file name, using platform specific path separators
-                path String) outcome unit is
+                path String) outcome unit =>
     arr := fuzion.sys.c_string path
     if delete arr unit
       unit
@@ -118,7 +118,7 @@ module fileio is
                  # the internal array data representing the file/dir path in bytes
                  path fuzion.sys.Pointer,
                  # dummy parameter to avoid duplicate feature name
-                 _ unit) bool is intrinsic_constructor
+                 _ unit) bool => intrinsic_constructor
 
 
   #  moves file/dir from an old path to a the new path
@@ -129,7 +129,7 @@ module fileio is
               # the old (relative or absolute) file name, using platform specific path separators
               old_path String,
               # the new (relative or absolute) file name, using platform specific path separators
-              new_path String) outcome unit is
+              new_path String) outcome unit =>
     arr0 := fuzion.sys.c_string old_path
     arr1 := fuzion.sys.c_string new_path
     if move arr0 arr1 unit
@@ -145,7 +145,7 @@ module fileio is
                # the internal array data representing the new file/dir path in bytes
                new_path fuzion.sys.Pointer,
                # dummy parameter for overloading
-               _ unit) bool is intrinsic_constructor
+               _ unit) bool => intrinsic_constructor
 
 
   # creates a directory using the specified path
@@ -153,7 +153,7 @@ module fileio is
   #
   module create_dir(
                     # the (relative or absolute) dir name, using platform specific path separators
-                    path String) outcome unit is
+                    path String) outcome unit =>
     arr := fuzion.sys.c_string path
     if create_dir arr unit
       unit
@@ -166,7 +166,7 @@ module fileio is
                      # the internal array data representing the dir path in bytes
                      path fuzion.sys.Pointer,
                      # dummy parameter to enable overloading
-                     _ unit) bool is intrinsic_constructor
+                     _ unit) bool => intrinsic_constructor
 
 
   # intrinsic that fills an array with some metadata of the file/dir provided by the path
@@ -180,7 +180,7 @@ module fileio is
         # the internal array data representing the file/dir path in bytes
         path fuzion.sys.Pointer,
         # the internal array data representing the metadata fields [size in bytes, creation_time in seconds, regular file? 1 : 0, dir? 1 : 0]
-        meta_data fuzion.sys.Pointer) bool is intrinsic_constructor
+        meta_data fuzion.sys.Pointer) bool => intrinsic_constructor
 
   # intrinsic that fills an array with some metadata of the file/dir provided by the path
   # returns TRUE in case the operation was successful and FALSE in case of failure
@@ -189,7 +189,7 @@ module fileio is
   # in case an error is returned (the result of this feature is false), then the size field of
   # the meta_data array will contain the errno for the lstat call.
   #
-  module lstats(path fuzion.sys.Pointer, meta_data fuzion.sys.Pointer) bool is intrinsic # NYI behaves the same as stats in the interpreter
+  module lstats(path fuzion.sys.Pointer, meta_data fuzion.sys.Pointer) bool => intrinsic # NYI behaves the same as stats in the interpreter
 
 
   # Opens an IO source using a Fuzion Pointer as path and an i8 flag to represent the opening method (Read: 0, Write: 1, Append: 2)
@@ -200,7 +200,7 @@ module fileio is
               # a Fuzion Object represention the path for the source to be opened
               path String,
               # a flag to speicify the open method (Read: 0, Write: 1, Append: 2)
-              flag i8) outcome i64 is
+              flag i8) outcome i64 =>
     or := fuzion.sys.internal_array_init i64 2  # [file descriptor, error number]
     open (fuzion.sys.c_string path) or.data flag
     open_results := or.as_array
@@ -218,7 +218,7 @@ module fileio is
                # open_results[file descriptor, error number] as a Fuzion Pointer
                open_results fuzion.sys.Pointer,
                # opening flag (Read: 0, Write: 1, Append: 2)
-               flag i8) unit is intrinsic
+               flag i8) unit => intrinsic
 
 
   # Closes an IO source using an i64 representing the source handler (file descriptor)
@@ -226,7 +226,7 @@ module fileio is
   #
   module close(
                # file descriptor
-               fd i64) outcome unit is
+               fd i64) outcome unit =>
     closing_result := close fd unit
     if closing_result = i8 0
       unit
@@ -241,7 +241,7 @@ module fileio is
                 # file descriptor
                 fd i64,
                 # dummy variable to enable overload
-                _ unit) i8 is intrinsic
+                _ unit) i8 => intrinsic
 
 
   # seek offset in the stream represented by fd
@@ -252,7 +252,7 @@ module fileio is
               # file descriptor
               fd i64,
               # the offset to seek from the beginning of this file
-              offset i64) outcome i64 is
+              offset i64) outcome i64 =>
     iarr := fuzion.sys.internal_array_init i64 2
     seek fd offset iarr.data
     arr := iarr.as_array
@@ -272,7 +272,7 @@ module fileio is
                # the offset to seek from the beginning of this file
                offset i64,
                # Array data [new file position, error number]
-               seek_results fuzion.sys.Pointer) unit is intrinsic
+               seek_results fuzion.sys.Pointer) unit => intrinsic
 
 
   # returns the current file-pointer offset as an outcome i64,
@@ -281,7 +281,7 @@ module fileio is
   #
   module file_position(
                        # file descriptor
-                       fd i64) outcome i64 is
+                       fd i64) outcome i64 =>
     iarr := fuzion.sys.internal_array_init i64 2
     file_position fd iarr.data
     arr := iarr.as_array
@@ -297,7 +297,7 @@ module fileio is
                         # file descriptor
                         fd i64,
                         # Array data [new file position, error number]
-                        position_results fuzion.sys.Pointer) unit is intrinsic
+                        position_results fuzion.sys.Pointer) unit => intrinsic
 
 
   # memory map a file
@@ -309,14 +309,14 @@ module fileio is
   # note: offset+size must not exceed file size.
   # note: returning allocated memory - instead of error code - simplifies handling in DFA.
   #
-  module mmap(fd i64, offset, size i64, res fuzion.sys.Pointer) Pointer is intrinsic_constructor
+  module mmap(fd i64, offset, size i64, res fuzion.sys.Pointer) Pointer => intrinsic_constructor
 
 
   # close a memory mapped file
   #
   # return: 0 on success, -1 on error
   #
-  module munmap(address fuzion.sys.Pointer, size i64) i32 is intrinsic
+  module munmap(address fuzion.sys.Pointer, size i64) i32 => intrinsic
 
 
   # get a byte from a given mapped buffer
@@ -327,7 +327,7 @@ module fileio is
 
      # index of the byte
      i i64
-    ) u8 is intrinsic_constructor
+    ) u8 => intrinsic_constructor
 
 
   # set a byte of a given mapped buffer to a new value
@@ -341,11 +341,11 @@ module fileio is
 
      # new value to be written at m[i]
      o u8
-    ) unit is intrinsic
+    ) unit => intrinsic
 
 
   # flush user-space buffers of file descriptor
   #
   # return: 0 on success everything else is an error
   #
-  module flush(fd i64) i32 is intrinsic
+  module flush(fd i64) i32 => intrinsic

@@ -35,7 +35,7 @@ public protocol is
     public redef as_string => "UDP"
 
   public val : choice tcp udp nil is
-    module as_num i32 is
+    module as_num i32 =>
       match val.this
         tcp  => 6
         udp  => 17

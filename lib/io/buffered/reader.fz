@@ -35,7 +35,7 @@ public reader(private rp Read_Provider, buf_size i32, buffer array u8 | io.end_o
   # via a call to 'raise' wrap the 'error' passed to 'raise' into the
   # resulting 'outcome'.
   #
-  public with(R type, f ()->R) outcome R is
+  public with(R type, f ()->R) outcome R =>
     try reader R (() -> run f (() -> exit 1))
 
 
@@ -58,7 +58,7 @@ public reader(private rp Read_Provider, buf_size i32, buffer array u8 | io.end_o
   #
   public read(max_n i32) array u8 | io.end_of_file
   post result ? io.end_of_file => true | a array => !a.is_empty
-  is
+  =>
     match buffer
       b array =>
         if b.is_empty
@@ -122,7 +122,7 @@ reader =>
 # read n bytes using the currently installed byte reader effect
 # if the returned sequence is empty or count is less than n, end of file has been reached.
 #
-public read_bytes(n i32) Sequence u8 ! reader is
+public read_bytes(n i32) Sequence u8 ! reader =>
 
   mi : mutate is
 
@@ -148,7 +148,7 @@ public read_bytes(n i32) Sequence u8 ! reader is
 #
 public read_string(n i32) String ! reader
 pre n >= 0
-is
+=>
 
   take_valid_codepoints(a Sequence u8, max i32) =>
     v := String.type.from_bytes a
@@ -190,7 +190,7 @@ is
 # to read until a line feed occurs.
 # returns the line
 #
-public read_line String|io.end_of_file ! reader is
+public read_line String|io.end_of_file ! reader =>
 
   if reader.read ? io.end_of_file => true | * => false
     io.end_of_file

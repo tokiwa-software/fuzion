@@ -179,7 +179,7 @@ public mutate : simple_effect is
 
     # creates a copy of the mutable field
     #
-    public copy new T is
+    public copy new T =>
       new T get
 
 
@@ -227,7 +227,7 @@ public mutate : simple_effect is
     public redef index [ ] (i i32) T
       pre
         safety: 0 ≤ i < length
-    is
+    =>
       data[i]
 
 
@@ -236,7 +236,7 @@ public mutate : simple_effect is
     public set [ ] (i i32, o T) unit
       pre
         safety: 0 ≤ i < length
-    is
+    =>
       check_and_replace
       data[i] := o
 
@@ -244,7 +244,7 @@ public mutate : simple_effect is
     # add an element at the end of this array
     #
     public add (o T) unit
-    is
+    =>
       check_and_replace
       d := if (data.length > length) data
         else
@@ -284,7 +284,7 @@ public mutate : simple_effect is
       init T
 
      ) Mutable_Array T
-    is
+    =>
       data := fuzion.sys.internal_array_init T length
 
       for x in data.indices do
@@ -295,7 +295,7 @@ public mutate : simple_effect is
 
     # initialize an empty mutable array of type T
     #
-    public type.new (LM type : mutate) Mutable_Array T is
+    public type.new (LM type : mutate) Mutable_Array T =>
       LM.env.array T 0 (fuzion.sys.internal_array_init T 0) unit
 
 
@@ -326,16 +326,16 @@ public mut(T type, v T) => mut.new T v
 public Mutable_Array(public T type) ref : Sequence T is
 
   # add an element at the end of the sequence
-  public add(t T) unit is abstract
+  public add(t T) unit => abstract
 
   # set element at index i to o
-  public set [ ] (i i32, o T) unit is abstract
+  public set [ ] (i i32, o T) unit => abstract
 
   # the indices of the array
-  public indices i32.infix .. is abstract
+  public indices i32.infix .. => abstract
 
   # the length of the array
-  public length i32 is abstract
+  public length i32 => abstract
 
 
   # is this Sequence known to be array backed? If so, this means that operations

@@ -28,7 +28,7 @@ module mappings is
 
   # cached map of:
   # codepoint value => lower case codepoint
-  module lower_case container.Map u32 codepoint is
+  module lower_case container.Map u32 codepoint =>
     # cache key
     lower_case(val container.Map u32 codepoint) is
 
@@ -37,7 +37,7 @@ module mappings is
 
   # cached map of:
   # codepoint value => upper case codepoint
-  module upper_case container.Map u32 codepoint is
+  module upper_case container.Map u32 codepoint =>
     # cache key
     upper_case(val container.Map u32 codepoint) is
 
@@ -46,7 +46,7 @@ module mappings is
 
   # cached map of:
   # codepoint value => title case codepoint
-  module title_case container.Map u32 codepoint is
+  module title_case container.Map u32 codepoint =>
     # cache key
     title_case(val container.Map u32 codepoint) is
 

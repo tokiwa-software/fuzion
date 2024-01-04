@@ -83,7 +83,7 @@ is
   public val T
     pre
       safety: outcome.this??
-  is
+  =>
     outcome.this ? v T   => v
                  | error => panic "outcome.val called on error"
 
@@ -91,7 +91,7 @@ is
   # value of an outcome or default if outcome contains err
   #
   public val(default T) T
-  is
+  =>
     outcome.this ? v T   => v
                  | error => default
 
@@ -104,14 +104,14 @@ is
   public err error
     pre
       safety: outcome.this!!
-  is
+  =>
     outcome.this ? T       => panic "outcome.err called on successful outcome"
                  | e error => e
 
 
   # convert this outcome to an option
   # if the outcome is an error, the option is empty
-  public as_option option T is
+  public as_option option T =>
     match outcome.this
       t T => t
       error => nil
@@ -128,12 +128,12 @@ is
 
   # returns o if outcome is ok, otherwise return the outcome's own
   # error.
-  public and (O type, o outcome O) outcome O is
+  public and (O type, o outcome O) outcome O =>
     outcome.this ? _ T     => o
                  | e error => e
 
   # returns o if outcome is not ok, otherwise return this outcome's value.
-  public or (o outcome T) outcome T is
+  public or (o outcome T) outcome T =>
     if !ok
       o
     else
@@ -170,7 +170,7 @@ is
   #
   #     (open "example.txt").bind (array u8) (fd->read fd 42)
   #
-  public bind(B type, f T -> outcome B) outcome B is
+  public bind(B type, f T -> outcome B) outcome B =>
     outcome.this ? v T => f v
                  | e error => e
 

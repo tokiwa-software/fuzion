@@ -43,13 +43,13 @@ is
     _ effect_mode.default => default
     _ effect_mode.new     =>
 
-  public mode effect_mode.val is
+  public mode effect_mode.val =>
     match r
       effect_mode.plain => effect_mode.plain
       effect_mode.inst, effect_mode.repl, effect_mode.default, effect_mode.new => effect_mode.repl
 
   # replace effect in the current context by this
-  module replace unit is intrinsic
+  module replace unit => intrinsic
 
 
   # execute code provided in f.call while this effect is installed
@@ -58,7 +58,7 @@ is
   #
   # NYI: uses type parameter T only to simplify C backend
   #
-  private abortable(T type : Function unit, f T) unit is intrinsic
+  private abortable(T type : Function unit, f T) unit => intrinsic
 
 
   # replace effect in the current context by this and abort current execution
@@ -73,7 +73,7 @@ is
   # NYI: precondition does not seem to work for an intrinsic yet, causes test failure e.g., in tests/local_mutate
   # so we use cannot make `abort` intrinsic.
   private abort0 void
-  is
+  =>
     intrinsic
 
 
@@ -89,11 +89,11 @@ is
 
 
   # set default effect in the current context to this if none is installed
-  module default unit is intrinsic
+  module default unit => intrinsic
 
   # execute the code of 'f' in the context of this effect
   #
-  module run(R type, f () -> R, def ()->R) R is
+  module run(R type, f () -> R, def ()->R) R =>
     cf := Effect_Call f
     abortable cf
     match cf.res
@@ -102,7 +102,7 @@ is
 
 
   # has an effect of the given type been installed?
-  public type.is_installed(E type) bool is intrinsic_constructor
+  public type.is_installed(E type) bool => intrinsic_constructor
 
 
 
@@ -136,7 +136,7 @@ is
   # NYI: Currently, there is no direct way to return a result value
   # from the code.
   #
-  public code ()->unit is abstract
+  public code ()->unit => abstract
 
 
 # simple_effect provides a simple means to define and use an effect
@@ -155,14 +155,14 @@ is
   # In case of an `abort`, `use` returns silently (NYI: maybe this should better
   # return an oucome with the abort wrapped in an error?).
   #
-  public use(code ()->unit) unit is
+  public use(code ()->unit) unit =>
     go code
 
 
   # install this effect and run code that produces a result of
   # type T. panic in case abort is called.
   #
-  public go(T type, f ()->T) T is
+  public go(T type, f ()->T) T =>
     cf := Effect_Call ()->f()
     abortable cf
     match cf.res

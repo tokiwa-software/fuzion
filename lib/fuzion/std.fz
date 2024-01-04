@@ -29,17 +29,17 @@ module fuzion.std is
 
   # exit -- exit immediately with the given return code
   #
-  module exit(code i32) void is intrinsic
+  module exit(code i32) void => intrinsic
 
 
   # panic -- display a panic message and exit immediately with error code 1
   #
-  module panic(msg String) void is
+  module panic(msg String) void =>
     fuzion.sys.err.println "*** panic: $msg"
     std.this.exit 1
 
   # no guarantee can be given for precision nor resolution
-  module nano_time u64 is intrinsic
+  module nano_time u64 => intrinsic
 
   # no guarantee can be given for precision nor resolution
   module nano_sleep(n u64) is intrinsic

@@ -39,4 +39,4 @@ public equatable is
   # result is true iff 'a' is considered to represent the same abstract value
   # as 'b'.
   #
-  public type.equality(a, b equatable.this) bool is abstract
+  public type.equality(a, b equatable.this) bool => abstract

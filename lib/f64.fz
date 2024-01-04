@@ -35,22 +35,22 @@ public f64(public val f64) : float is
 
 
   # basic operations: 'prefix -' (negation)
-  public fixed redef prefix - f64 is intrinsic
-  public fixed infix + (other f64) f64 is intrinsic
-  public fixed infix - (other f64) f64 is intrinsic
-  public fixed infix * (other f64) f64 is intrinsic
-  public fixed infix / (other f64) f64 is intrinsic
-  public fixed infix % (other f64) f64 is intrinsic
-  public fixed infix ** (other f64) f64 is intrinsic
+  public fixed redef prefix - f64 => intrinsic
+  public fixed infix + (other f64) f64 => intrinsic
+  public fixed infix - (other f64) f64 => intrinsic
+  public fixed infix * (other f64) f64 => intrinsic
+  public fixed infix / (other f64) f64 => intrinsic
+  public fixed infix % (other f64) f64 => intrinsic
+  public fixed infix ** (other f64) f64 => intrinsic
 
 
   # comparision
   #
-  fixed infix = (other f64) bool is intrinsic_constructor
-  fixed infix <= (other f64) bool is intrinsic_constructor
-  fixed infix >= (other f64) bool is intrinsic_constructor
-  fixed infix < (other f64) bool is intrinsic_constructor
-  fixed infix > (other f64) bool is intrinsic_constructor
+  fixed infix = (other f64) bool => intrinsic_constructor
+  fixed infix <= (other f64) bool => intrinsic_constructor
+  fixed infix >= (other f64) bool => intrinsic_constructor
+  fixed infix < (other f64) bool => intrinsic_constructor
+  fixed infix > (other f64) bool => intrinsic_constructor
 
 
   # conversion
@@ -58,7 +58,7 @@ public f64(public val f64) : float is
   # NaN is converted to 0
   # anything greater than i64.max as well as  ∞ is i64.max
   # anything lower   than i64.min as well as -∞ is i64.min
-  public as_i64_lax i64 is intrinsic
+  public as_i64_lax i64 => intrinsic
 
 
   public fits_in_i64 =>
@@ -71,11 +71,11 @@ public f64(public val f64) : float is
   => as_i64_lax
 
 
-  public as_f32 f32 is intrinsic
+  public as_f32 f32 => intrinsic
 
 
   # casting bit representation to u64
-  public cast_to_u64 u64 is intrinsic
+  public cast_to_u64 u64 => intrinsic
 
 
   # create hash code from this number
@@ -88,7 +88,7 @@ public f64(public val f64) : float is
   # the IEEE standard), so the hash of any NaN is the hash of
   # the "canonical" NaN.
   #
-  public type.hash_code(a f64.this) u64 is
+  public type.hash_code(a f64.this) u64 =>
     if is_NaN a.val
       hash NaN.cast_to_u64
     else if a = zero
@@ -98,7 +98,7 @@ public f64(public val f64) : float is
 
 
   # is the sign bit set?
-  public is_sign_bit_set bool is
+  public is_sign_bit_set bool =>
     cast_to_u64 >= 1P63
 
 
@@ -147,7 +147,7 @@ public f64(public val f64) : float is
 
 
   # the fraction of this floating point number
-  public fixed redef fract f64 is
+  public fixed redef fract f64 =>
     if f64.type.is_NaN val
       f64.type.NaN
     else if val < (f64 0)
@@ -167,7 +167,7 @@ public f64(public val f64) : float is
   # is smaller than 0.001
   # or greater than 9_999_999
   #
-  public use_scientific_notation bool is
+  public use_scientific_notation bool =>
     abs<1E-3 || abs>=1E7
 
 
@@ -184,12 +184,12 @@ public f64(public val f64) : float is
 
   # identity element for 'infix +'
   #
-  public fixed type.zero f64 is 0
+  public fixed type.zero f64 => 0
 
 
   # identity element for 'infix *'
   #
-  public fixed type.one  f64 is 1
+  public fixed type.one  f64 => 1
 
 
   public fixed type.bytes => 8
@@ -201,37 +201,37 @@ public f64(public val f64) : float is
   public fixed type.π => 3.14159265358979323846
 
 
-  public fixed type.from_i64(val i64) f64 is
+  public fixed type.from_i64(val i64) f64 =>
     val.as_f64
 
 
-  public fixed type.is_NaN(val f64) bool is intrinsic_constructor
+  public fixed type.is_NaN(val f64) bool => intrinsic_constructor
 
 
-  public fixed type.min_exp i32 is intrinsic
-  public fixed type.max_exp i32 is intrinsic
-  public fixed type.min_positive f64 is intrinsic
-  public fixed type.max f64 is intrinsic
-  public fixed type.epsilon f64 is intrinsic
+  public fixed type.min_exp i32 => intrinsic
+  public fixed type.max_exp i32 => intrinsic
+  public fixed type.min_positive f64 => intrinsic
+  public fixed type.max f64 => intrinsic
+  public fixed type.epsilon f64 => intrinsic
 
 
-  public fixed type.square_root(val f64) f64 is intrinsic
+  public fixed type.square_root(val f64) f64 => intrinsic
 
-  public fixed type.exp(val f64) f64 is intrinsic
-  public fixed type.log(val f64) f64 is intrinsic
+  public fixed type.exp(val f64) f64 => intrinsic
+  public fixed type.log(val f64) f64 => intrinsic
 
 
-  public fixed type.sin(val f64) f64 is intrinsic
-  public fixed type.cos(val f64) f64 is intrinsic
-  public fixed type.tan(val f64) f64 is intrinsic
-  public fixed type.asin(val f64) f64 is intrinsic
-  public fixed type.acos(val f64) f64 is intrinsic
-  public fixed type.atan(val f64) f64 is intrinsic
+  public fixed type.sin(val f64) f64 => intrinsic
+  public fixed type.cos(val f64) f64 => intrinsic
+  public fixed type.tan(val f64) f64 => intrinsic
+  public fixed type.asin(val f64) f64 => intrinsic
+  public fixed type.acos(val f64) f64 => intrinsic
+  public fixed type.atan(val f64) f64 => intrinsic
 
   # atan(y/x) with a few special cases
   # see also: https://go.dev/src/math/atan2.go
   #
-  public fixed type.atan2(y, x f64) f64 is
+  public fixed type.atan2(y, x f64) f64 =>
     if is_NaN y || is_NaN x
       NaN
     if y = 0
@@ -269,6 +269,6 @@ public f64(public val f64) : float is
         q
 
 
-  public fixed type.sinh(val f64) f64 is intrinsic
-  public fixed type.cosh(val f64) f64 is intrinsic
-  public fixed type.tanh(val f64) f64 is intrinsic
+  public fixed type.sinh(val f64) f64 => intrinsic
+  public fixed type.cosh(val f64) f64 => intrinsic
+  public fixed type.tanh(val f64) f64 => intrinsic

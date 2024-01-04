@@ -41,7 +41,7 @@ module:public open(public T type,
   # returns outcome array u8, a byte array representing the content of the file if the operation was successful
   # returns an error in case the operation fails
   #
-  public read outcome (array u8) ! io.file.read is
+  public read outcome (array u8) ! io.file.read =>
     io.file.read.read_file fd
 
 
@@ -57,7 +57,7 @@ module:public open(public T type,
   #
   public mmap(R type, offset i64, size i64, code mapped_buffer->R) outcome R
   pre offset % 4096 = 0 # NYI get real page size instead of 4096.
-  is
+  =>
 
     arr := fuzion.sys.internal_array_init i32 1
     mapped_memory := fuzion.sys.fileio.mmap fd offset size arr.data
@@ -114,7 +114,7 @@ module:public open(public T type,
     public set [ ] (i i64, o u8) unit ! io.file.open T
       pre
         safety: i64 0 ≤ i < length
-    is
+    =>
       mapped_buffer_set memory i o
 
 

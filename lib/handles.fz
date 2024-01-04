@@ -36,16 +36,16 @@
 #
 #     ex_handles is
 #       hdl := handle 42
-#     
+#
 #       say hdl.get
-#     
-#       x(h handle0 i32) unit is
+#
+#       x(h handle0 i32) unit =>
 #         b := hdl.put 17
 #         say b
 #         say hdl.get
-#     
+#
 #       x hdl
-#     
+#
 #       say hdl.get
 #
 # the example also shows the difference between handles and the mutate effect:
@@ -86,7 +86,7 @@ is
     ) handles T X
   post
     result.has_last
-  is
+  =>
     na := array T count+1 (i -> if (i < count) ar[i] else w)
     handles T X v na mode
 
@@ -169,7 +169,7 @@ is
 
   public infix >>= (f X -> handles T X) => bind X f
 
-  public bind(B type, f X -> handles T B) handles T B is
+  public bind(B type, f X -> handles T B) handles T B =>
     handles T B (f v).v ar effect_mode.plain
 
   public return( B type, w B) => handles T B w ar effect_mode.plain
@@ -225,7 +225,7 @@ handles_type(T type) is
 
   # install default instance of handles
   #
-  install_default unit is
+  install_default unit =>
     handles T unit unit (array T 0 x->do) effect_mode.default
     unit
 

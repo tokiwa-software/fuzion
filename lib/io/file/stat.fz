@@ -46,7 +46,7 @@ public stat(ps Stat_Handler) : simple_effect is
   #
   public stats(
         # the (relative or absolute) file name, using platform specific path separators
-        path String) outcome meta_data is
+        path String) outcome meta_data =>
     arr := fuzion.sys.internal_array_init i64 4  # will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     res := ps.stats (fuzion.sys.c_string path) arr.data
     data := arr.as_array
@@ -64,7 +64,7 @@ public stat(ps Stat_Handler) : simple_effect is
   #
   public lstats(
          # the (relative or absolute) file name, using platform specific path separators
-         path String) outcome meta_data is # NYI : not sure whether to use meta_data or introduce a new feature for lstats metadata
+         path String) outcome meta_data => # NYI : not sure whether to use meta_data or introduce a new feature for lstats metadata
     arr := fuzion.sys.internal_array_init i64 4  # will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     res := ps.stats (fuzion.sys.c_string path) arr.data
     data := arr.as_array
@@ -119,5 +119,5 @@ public stat(
 # reference to the stats that could be provided
 #
 private:public Stat_Handler ref is
-  stats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) bool is abstract
-  lstats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) bool is abstract
+  stats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) bool => abstract
+  lstats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) bool => abstract

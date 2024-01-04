@@ -75,7 +75,7 @@ public nano =>
 private:public Nano_Time_Handler ref is
 
   # no guarantee can be given for precision nor resolution
-  read u64 is abstract
+  read u64 => abstract
 
   # no guarantee can be given for precision nor resolution
-  sleep(d time.duration) unit is abstract
+  sleep(d time.duration) unit => abstract

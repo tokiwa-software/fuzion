@@ -30,7 +30,7 @@
 #
 # this is true if and only if the debug level is greater than zero.
 #
-public debug bool is intrinsic  # 0 < debug_level   , intrinsic only to allow compiler to kick out debug code earlier
+public debug bool => intrinsic  # 0 < debug_level   , intrinsic only to allow compiler to kick out debug code earlier
 
 
 # debug(i32) is a condition qualifier that enables conditions if debugging is
@@ -49,4 +49,4 @@ public debug(n i32) => n ≤ debug_level
 # Whatever option was set at compile time will be used when running a
 # compile program.
 #
-public debug_level i32 is intrinsic
+public debug_level i32 => intrinsic

@@ -29,9 +29,9 @@
 #
 public Cons(public A, B type) ref is
 
-  public head A is abstract
+  public head A => abstract
 
-  public tail B is abstract
+  public tail B => abstract
 
 
 # cons -- feature used to define simple, non-lazy Cons cells

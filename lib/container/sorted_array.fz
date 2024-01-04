@@ -77,7 +77,7 @@ is
       debug: heap_size ≥ 0,
       debug: (heap_size & (heap_size-1)) = 0
       # NYI: analysis: for all i=0..a.length/heap_size: a[heap_size*i .. heap_size*(i+1)-1] is sorted
-  is
+  =>
     # check if the array is fully sorted
     if heap_size ≥ a.length
       a
@@ -136,8 +136,8 @@ is
                  #
                  less_or_equal sorted_array.this[i] key && less_or_equal key sorted_array.this[i]
         nil   => true # NYI: analyis: for all i=a.indices, sorted_array.this[i] != key
-  is
-    binary_search(l, r i32) option i32 is
+  =>
+    binary_search(l, r i32) option i32 =>
       m := (l + r) / 2
       if l > r                                     then nil
       else if !less_or_equal key sorted_array.this[m] then binary_search m+1 r
@@ -170,8 +170,8 @@ is
       match result
         i i32 => (cmp sorted_array.this[i]) = 0
         nil   => true # NYI: analyis: for all i=a.indices, sorted_array.this[i] /= key
-  is
-    binary_search(l, r i32) option i32 is
+  =>
+    binary_search(l, r i32) option i32 =>
       m := (l + r) / 2
       if l > r
         nil
@@ -198,5 +198,5 @@ public sorted_array_of
   from Sequence T
   ) sorted_array T
 
-is
+=>
   sorted_array T from (a,b -> a ≤ b)

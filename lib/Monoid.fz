@@ -50,11 +50,11 @@ is
 
   # associative operation
   #
-  public infix ∙ (a, b T) T is abstract
+  public infix ∙ (a, b T) T => abstract
 
   # identity element
   #
-  public e T is abstract
+  public e T => abstract
 
   # alternative names for infix operators
   public op(a, b T) => infix ∙  a b

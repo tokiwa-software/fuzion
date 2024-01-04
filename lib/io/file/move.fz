@@ -71,4 +71,4 @@ public move(
 # reference to the move operations that could take place
 #
 private:public Move_Handler ref is
-    move(old_path String, new_path String) outcome unit is abstract
+    move(old_path String, new_path String) outcome unit => abstract

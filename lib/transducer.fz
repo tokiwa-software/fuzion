@@ -62,12 +62,12 @@ public transducer(public TA, B, C type,
 
 
   # a transducer filtering values based on evaluation of predicate
-  public type.filter(predicate B -> bool) transducer TA B B is
+  public type.filter(predicate B -> bool) transducer TA B B =>
     transducer TA B B (red -> (res, val) -> if predicate val then red.call res val else res)
 
 
   # a transducer mapping values from C to B
-  public type.map(mapper C -> B) transducer TA B C is
+  public type.map(mapper C -> B) transducer TA B C =>
     transducer TA B C (red -> (res, val) -> red.call res (mapper val))
 
 

@@ -31,10 +31,10 @@ util is
   # Ensure that load or store operation performed before this fence will not be
   # re-ordered with load operations after this fence
   #
-  loadFence unit is intrinsic
+  loadFence unit => intrinsic
 
 
   # Ensure that load or store operation performed before this fence will not be
   # re-ordered with store operations after this fence
   #
-  storeFence unit is intrinsic
+  storeFence unit => intrinsic

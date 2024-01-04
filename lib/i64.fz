@@ -47,10 +47,10 @@ public i64(public val i64) : num.wrap_around, has_interval is
   public fixed underflow_on_mul(other i64) => if sign *° other.sign ≥ 0 false else (thiz *° other / other) != thiz
 
   # neg, add, sub, mul with wrap-around semantics
-  public fixed prefix -° i64 is intrinsic
-  public fixed infix +° (other i64) i64 is intrinsic
-  public fixed infix -° (other i64) i64 is intrinsic
-  public fixed infix *° (other i64) i64 is intrinsic
+  public fixed prefix -° i64 => intrinsic
+  public fixed infix +° (other i64) i64 => intrinsic
+  public fixed infix -° (other i64) i64 => intrinsic
+  public fixed infix *° (other i64) i64 => intrinsic
 
   # division and remainder with check for div-by-zero
   public fixed infix / (other i64)
@@ -63,24 +63,24 @@ public i64(public val i64) : num.wrap_around, has_interval is
   => mod other
 
   # private division and remainder with crash in case of div-by-zero
-  private div (other i64) i64 is intrinsic
-  private mod (other i64) i64 is intrinsic
+  private div (other i64) i64 => intrinsic
+  private mod (other i64) i64 => intrinsic
 
   # bitwise and, or and xor operations
-  public fixed infix &  (other i64) i64 is intrinsic
-  public fixed infix |  (other i64) i64 is intrinsic
-  public fixed infix ^  (other i64) i64 is intrinsic
+  public fixed infix &  (other i64) i64 => intrinsic
+  public fixed infix |  (other i64) i64 => intrinsic
+  public fixed infix ^  (other i64) i64 => intrinsic
 
   # shift operations (signed)
-  public fixed infix >> (other i64) i64 is intrinsic
-  public fixed infix << (other i64) i64 is intrinsic
+  public fixed infix >> (other i64) i64 => intrinsic
+  public fixed infix << (other i64) i64 => intrinsic
 
   # this i64 as an i8
   public as_i8 i8
     pre
       thiz ≥ i8.type.min.as_i64,
       thiz ≤ i8.type.max.as_i64
-    is
+    =>
       low8bits.as_i8
 
 
@@ -89,7 +89,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
     pre
       thiz ≥ i16.type.min.as_i64,
       thiz ≤ i16.type.max.as_i64
-    is
+    =>
       low16bits.as_i16
 
 
@@ -98,7 +98,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
     pre
       thiz ≥ i32.type.min.as_i64,
       thiz ≤ i32.type.max.as_i64
-    is
+    =>
       low32bits.cast_to_i32
 
 
@@ -109,7 +109,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
 #      thiz ≤ u8.type.max.as_i64
 #    post
 #      analysis: result.as_u64 = thiz
-    is
+    =>
       low8bits
 
 
@@ -120,7 +120,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
 #      thiz ≤ u16.type.max.as_i64
 #    post
 #      analysis: result.as_u64 = thiz
-    is
+    =>
       low16bits
 
 
@@ -131,7 +131,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
 #      thiz ≤ u32.type.max.as_i64
 #    post
 #      analysis:  result.as_i64 = thiz
-    is
+    =>
       low32bits
 
 
@@ -141,7 +141,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
       thiz ≥ (i64 0)
 #    post
 #      analysis:  result.as_i64 = thiz
-    is
+    =>
       cast_to_u64
 
 
@@ -151,30 +151,30 @@ public i64(public val i64) : num.wrap_around, has_interval is
       thiz ≥ (i64 0)
     post
       analysis:  result.as_i64 = thiz
-    is
+    =>
       u128 0 cast_to_u64
 
 
   # this i64 as an int
-  public as_int int is
+  public as_int int =>
     int val
 
 
   # this i64 as an uint
   public as_uint uint
   pre thiz ≥ 0
-  is
+  =>
     uint val.as_u64
 
 
   # casting bit representation to unsigned
-  public low8bits   u8  is cast_to_u64.low8bits
-  public low16bits  u16 is cast_to_u64.low16bits
-  public low32bits  u32 is cast_to_u64.low32bits
-  public cast_to_u64 u64 is intrinsic
+  public low8bits   u8  => cast_to_u64.low8bits
+  public low16bits  u16 => cast_to_u64.low16bits
+  public low32bits  u32 => cast_to_u64.low32bits
+  public cast_to_u64 u64 => intrinsic
 
   # conversion to float
-  public as_f64 f64 is intrinsic
+  public as_f64 f64 => intrinsic
   public as_f32 => as_f64.as_f32
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
@@ -183,27 +183,27 @@ public i64(public val i64) : num.wrap_around, has_interval is
 
 
   # create hash code from this number
-  public type.hash_code(a i64.this) u64 is
+  public type.hash_code(a i64.this) u64 =>
     hash a.cast_to_u64
 
 
   # find the highest 1 bit in this integer and return integer with
   # this single bit set or 0 if this is 0.
   #
-  public highest_one_bit i64 is
+  public highest_one_bit i64 =>
     val.cast_to_u64.highest_one_bit.cast_to_i64
 
 
   # count the number of trailing zeros in this integer.
   #
-  public trailing_zeros i32 is
+  public trailing_zeros i32 =>
     val.cast_to_u64.trailing_zeros
 
 
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  public ones_count i32 is
+  public ones_count i32 =>
     val.cast_to_u64.ones_count
 
 
@@ -214,22 +214,22 @@ public i64(public val i64) : num.wrap_around, has_interval is
 
   # identity element for 'infix +'
   #
-  fixed type.zero i64 is 0
+  fixed type.zero i64 => 0
 
 
   # identity element for 'infix *'
   #
-  fixed type.one  i64 is 1
+  fixed type.one  i64 => 1
 
 
   # equality
   #
-  fixed type.equality(a, b i64) bool is intrinsic_constructor
+  fixed type.equality(a, b i64) bool => intrinsic_constructor
 
 
   # total order
   #
-  fixed type.lteq(a, b i64) bool is intrinsic_constructor
+  fixed type.lteq(a, b i64) bool => intrinsic_constructor
 
 
   # returns the number in whose bit representation all bits are ones

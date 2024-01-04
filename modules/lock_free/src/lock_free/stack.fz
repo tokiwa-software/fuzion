@@ -33,7 +33,7 @@ public stack(T type) : container.Stack T is
 
   # push an element to the stack
   #
-  public push (e T) unit is
+  public push (e T) unit =>
     for o := top.read
         n := Node e o
     while !top.compare_and_set o n
@@ -41,7 +41,7 @@ public stack(T type) : container.Stack T is
 
   # pop an element from the stack
   #
-  public pop option T is
+  public pop option T =>
 
     next (x option Node) =>
       match x
@@ -57,5 +57,5 @@ public stack(T type) : container.Stack T is
 
   # peek at the top element from the stack
   #
-  public peek option T is
+  public peek option T =>
     top.read.map_to_option node->node.data

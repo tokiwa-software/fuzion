@@ -37,28 +37,28 @@ public Set(public E type : property.equatable) ref : Sequence E is
   # number of entries in this set.  May be undefined, i.e., a range of
   # floating point numbers or an infinite set.
   #
-  public size_option option i32 is nil
+  public size_option option i32 => nil
 
 
   # does this set contain the given value?
   #
-  public contains (e E) bool is abstract
+  public contains (e E) bool => abstract
 
 
   # list representation of values in this set
   #
-  public redef as_list list E is abstract
+  public redef as_list list E => abstract
 
 
   # add new element k to this set.
   #
-  public add (k E) Set E is abstract
+  public add (k E) Set E => abstract
 
 
   # remove an element k from the set if it exists.
   # return the same set if it does not exist.
   #
-  public remove (k E) Set E is abstract
+  public remove (k E) Set E => abstract
 
 
   public redef as_string =>

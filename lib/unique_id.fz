@@ -39,7 +39,7 @@ is
 
 
 public Unique_Id_Handler ref is
-  get u64 is abstract
+  get u64 => abstract
 
 
 # get a unique id > 0
