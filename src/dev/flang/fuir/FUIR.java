@@ -1754,25 +1754,26 @@ hw25 is
    * Currently, the clazz is one of bool, i8, i16, i32, i64, u8, u16, u32, u64,
    * f32, f64, or Const_String. This will be extended by value instances without
    * refs, choice instances with tag, arrays, etc.
+   *
+   * @param cl index of clazz containing the constant
+   *
+   * @param c code block containing the constant
+   *
+   * @param ix index of the constant
    */
-  public int constClazz(int c, int ix)
+  public int constClazz(int cl, int c, int ix)
   {
     if (PRECONDITIONS) require
       (ix >= 0,
        withinCode(c, ix),
        codeAt(c, ix) == ExprKind.Const);
 
-    Clazz clazz;
-    var ic = _codeIds.get(c).get(ix);
-    if (ic instanceof AbstractConstant ac)
-      {
-        clazz = (Clazz)ac.runtimeClazz; // NYI: wrong!
-      }
-    else if (ic instanceof InlineArray)
-      {
-        throw new Error("NYI: FUIR support for InlineArray still missing");
-      }
-    else { throw new Error("Unexpected type for ExprKind.Const, expr: " + ic); }
+    var cc = clazz(cl);
+    var ac = (AbstractConstant) _codeIds.get(c).get(ix);
+    var acl = cc.actualClazzes(ac.origin(), null);
+    // origin might be AbstractConstant, AbstractCall or InlineArray.  In all
+    // cases, the clazz of the result is the first actual clazz:
+    var clazz = acl[0];
     return id(clazz);
   }
 
@@ -1786,20 +1787,10 @@ hw25 is
     if (PRECONDITIONS) require
       (ix >= 0,
        withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Const || codeAt(c, ix) == ExprKind.Call
-       );
+       codeAt(c, ix) == ExprKind.Const);
 
     var ic = _codeIds.get(c).get(ix);
-    if      (ic instanceof AbstractConstant co) { return co.data(); }
-    else if (ic instanceof AbstractCall ac)
-      {
-        return ac.asCompileTimeConstant().data();
-      }
-    else if (ic instanceof InlineArray ia)
-      {
-        return ia.asCompileTimeConstant().data();
-      }
-    throw new Error("Unexpected constant type " + ((Expr) ic).type() + ", expected bool, i32, u32, i64, u64, or string");
+    return ((AbstractConstant) ic).data();
   }
 
 
@@ -2055,7 +2046,7 @@ hw25 is
       case Call    -> "Call to "   + clazzAsString(accessedClazz     (cl, c, ix));
       case Current -> "Current";
       case Comment -> "Comment: " + comment(c, ix);
-      case Const   -> "Const of type " + clazzAsString(constClazz(c, ix));
+      case Const   -> "Const of type " + clazzAsString(constClazz(cl, c, ix));
       case Match   -> {
                         var sb = new StringBuilder("Match");
                         for (var cix = 0; cix < matchCaseCount(c, ix); cix++)
@@ -2422,16 +2413,13 @@ hw25 is
   @Override
   protected void toStack(List<Object> l, Expr e, boolean dumpResult)
   {
-    if (e instanceof AbstractCall ac && isConst(ac))
+    if ((e instanceof AbstractCall ||
+         e instanceof InlineArray    ) && isConst(e))
       {
         if (!dumpResult)
           {
-            l.add(ac.asCompileTimeConstant());
+            l.add(e.asCompileTimeConstant());
           }
-      }
-    else if (e instanceof InlineArray ia && isConst(ia))
-      {
-        l.add(ia.asCompileTimeConstant());
       }
     else
       {

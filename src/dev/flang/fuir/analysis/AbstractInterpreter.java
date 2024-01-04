@@ -675,7 +675,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
         }
       case Const:
         {
-          var constCl = _fuir.constClazz(c, i);
+          var constCl = _fuir.constClazz(cl, c, i);
           var d = _fuir.constData(c, i);
           var r = _processor.constData(constCl, d);
 

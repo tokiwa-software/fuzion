@@ -53,13 +53,6 @@ public abstract class AbstractCall extends Expr
   public static final List<AbstractType> NO_GENERICS = new List<>();
 
 
-  /*----------------------------  variables  ----------------------------*/
-
-
-  // used if this call is turned into a compile time constant in FUIR.
-  public Object innerClazz;
-
-
   /*-------------------------- constructors ---------------------------*/
 
 
@@ -170,8 +163,11 @@ public abstract class AbstractCall extends Expr
       {
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
       }
+
+      @Override
+      public Expr origin() { return AbstractCall.this; }
+
     };
-    result.runtimeClazz = innerClazz;
     return result;
   }
 

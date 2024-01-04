@@ -734,10 +734,6 @@ public class Clazzes extends ANY
 
         var innerClazz        = tclazz.lookup(new FeatureAndActuals(cf, typePars, false), c.select(), c, c.isInheritanceCall());
         var preconditionClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars, true ), c.select(), c, c.isInheritanceCall());
-        // A bit hacky..., this is used for calls that
-        // are turned into constants in FUIR.
-        c.innerClazz = innerClazz; // NYI: REMOVE! uses outerClazz.actualClazzes()[0] instead!
-
         if (outerClazz.hasActualClazzes(c, outer))
           {
             // NYI: #2412: Check why this is done repeatedly and avoid redundant work!
@@ -785,30 +781,33 @@ public class Clazzes extends ANY
    *
    * @param outerClazz the surrounding clazz
    */
-  public static void findClazzes(AbstractConstant c, Clazz outerClazz, List<AbstractCall> inh)
+  public static void findClazzes(AbstractConstant c, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (c != null, outerClazz != null);
 
-    var p = c.pos();
-    var const_clazz = clazz(c, outerClazz, inh);
-    c.runtimeClazz = const_clazz; // NYI: hack! use saveActualClazzes().
-    const_clazz.instantiated(p);
-    if (const_clazz.feature() == Types.resolved.f_array)
-      { // add clazzes touched by constant creation:
-        //
-        //   array.internal_array
-        //   fuzion.sys.internal_array
-        //   fuzion.sys.internal_array.data
-        //   fuzion.sys.Pointer
-        //
-        var array          = const_clazz;
-        var internal_array = array.lookup(Types.resolved.f_array_internal_array);
-        var sys_array      = internal_array.resultClazz();
-        var data           = sys_array.lookup(Types.resolved.f_fuzion_sys_array_data);
-        array.instantiated(p);
-        sys_array.instantiated(p);
-        data.resultClazz().instantiated(p);
+    if (!outerClazz.hasActualClazzes(c, outer))
+      {
+        var p = c.pos();
+        var const_clazz = clazz(c, outerClazz, inh);
+        outerClazz.saveActualClazzes(c, outer, new Clazz[] {const_clazz});
+        const_clazz.instantiated(p);
+        if (const_clazz.feature() == Types.resolved.f_array)
+          { // add clazzes touched by constant creation:
+            //
+            //   array.internal_array
+            //   fuzion.sys.internal_array
+            //   fuzion.sys.internal_array.data
+            //   fuzion.sys.Pointer
+            //
+            var array          = const_clazz;
+            var internal_array = array.lookup(Types.resolved.f_array_internal_array);
+            var sys_array      = internal_array.resultClazz();
+            var data           = sys_array.lookup(Types.resolved.f_fuzion_sys_array_data);
+            array.instantiated(p);
+            sys_array.instantiated(p);
+            data.resultClazz().instantiated(p);
+          }
       }
   }
 
@@ -889,19 +888,14 @@ public class Clazzes extends ANY
 
   /**
    * Find all static clazzes for this array and store them in outerClazz.
-   *
-   * @param v
    */
-  public static void findClazzes(ExpressionVisitor v, InlineArray i, Clazz outerClazz, List<AbstractCall> inh)
+  public static void findClazzes(InlineArray i, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
   {
-    // we can not yet decide if array is const
-    // so we need to visit the code
-    i.code().visitExpressions(v);
-
-    Clazz ac = clazz(i, outerClazz, inh);
-    // memorize the runtime type to be used when turning
-    // this inline array into a compile-time constant.
-    i.clazz = ac;
+    if (!outerClazz.hasActualClazzes(i, outer))
+      {
+        Clazz ac = clazz(i, outerClazz, inh);
+        outerClazz.saveActualClazzes(i, outer, new Clazz[] {ac});
+      }
   }
 
 
