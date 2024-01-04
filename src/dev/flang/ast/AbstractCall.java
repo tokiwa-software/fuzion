@@ -56,17 +56,6 @@ public abstract class AbstractCall extends Expr
   /*----------------------------  variables  ----------------------------*/
 
 
-  // NYI: Move _sid to target?
-  public int _sid = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
-
-
-  // For a call to parent in an inherits clause, these are the ids of the
-  // argument fields for the parent feature.
-  //
-  // NYI: remove, used in FUIR.  This should be replaced by explicit assignments to fields
-  public int _parentCallArgFieldIds = -1;
-
-
   // used if this call is turned into a compile time constant in FUIR.
   public Object innerClazz;
 

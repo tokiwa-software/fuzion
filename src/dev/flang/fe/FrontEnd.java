@@ -43,6 +43,7 @@ import dev.flang.mir.MIR;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
 import dev.flang.ast.Expr;
+import dev.flang.ast.HasGlobalIndex;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureAndOuter;
 import dev.flang.ast.FeatureName;
@@ -75,6 +76,13 @@ public class FrontEnd extends ANY
    * Offset added to global indices to detect false usage of these early on.
    */
   static int GLOBAL_INDEX_OFFSET = 0x40000000;
+  static
+  {
+    // NYI: CLEANUP: #2411: Temporary solution to give global indices to the AST
+    // parts created by parser
+    HasGlobalIndex.FIRST_GLOBAL_INDEX = 0x10000000;
+    HasGlobalIndex.LAST_GLOBAL_INDEX = GLOBAL_INDEX_OFFSET-1;
+  }
 
 
   /*-----------------------------  classes  -----------------------------*/
@@ -152,6 +160,7 @@ public class FrontEnd extends ANY
     FeatureName.reset();
     Expr.reset();
     Call.reset();
+    HasGlobalIndex.reset();
     var universe = new Universe();
     _universe = universe;
 

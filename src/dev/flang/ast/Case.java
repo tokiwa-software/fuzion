@@ -78,13 +78,6 @@ public class Case extends AbstractCase
   public Block code() { return _code; }
 
 
-  /**
-   * Counter for a unique id for this case expression. This is used to store data
-   * in the runtime clazz for this case.
-   */
-  public int _runtimeClazzId = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 

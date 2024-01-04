@@ -290,37 +290,41 @@ public class Interpreter extends ANY
     if (e instanceof AbstractCall c)
       {
         if (PRECONDITIONS) require
-          (!c.isInheritanceCall(),  // inheritance calls are handled in Feature.callOnInstance
-           c._sid >= 0);
+          (!c.isInheritanceCall()  // inheritance calls are handled in Feature.callOnInstance
+          );
 
         ArrayList<Value> args = executeArgs(c, staticClazz, cur);
         FuzionThread.current()._callStack.push(c);
 
-        var d = staticClazz.getRuntimeData(c._sid + 0);
+        var acs = staticClazz.actualClazzes(c, null);
+        /* old code for caching of callable no longer works:
+
+        var d = acs[0];
         if (d instanceof Clazz)  // Clazz means we have not created a Callable yet
           {
             synchronized (staticClazz)  // this might be done in parallel, so synchronize and check again
               {
-                d = staticClazz.getRuntimeData(c._sid + 0);
+                d = acs[0];
                 if (d instanceof Clazz innerClazz)
                   {
-                    var tclazz = (Clazz) staticClazz.getRuntimeData(c._sid + 1);
+                    var tclazz = acs[1];
                     var dyn = (tclazz.isRef() || c.target().isCallToOuterRef() && tclazz.isUsedAsDynamicOuterRef()) && c.isDynamic();
                     d = callable(dyn, innerClazz, tclazz);
                     if (d == null)
                       {
                         d = "dyn"; // anything else, null would also do, but could be confused with 'not initialized'
                       }
-                    staticClazz.setRuntimeData(c._sid + 0, d);  // cache callable
+                    acs[0] = d;
                   }
               }
           }
-        Callable ca;
-        if (d instanceof Callable dca)
-          {
-            ca = dca;
-          }
-        else // if (d == "dyn")
+        */
+
+        var innerClazz = acs[0];
+        var tclazz     = acs[1];
+        var dyn = (tclazz.isRef() || c.target().isCallToOuterRef() && tclazz.isUsedAsDynamicOuterRef()) && c.isDynamic();
+        var ca = callable(dyn, innerClazz, tclazz);
+        if (ca == null)
           {
             var v = (ValueWithClazz) args.get(0);
             Clazz cl = v.clazz();
@@ -341,8 +345,9 @@ public class Interpreter extends ANY
       {
         Value v    = execute(a._value , staticClazz, cur);
         Value thiz = execute(a._target, staticClazz, cur);
-        Clazz sClazz = staticClazz.getRuntimeClazz(a._tid + 0);
-        Clazz fClazz = staticClazz.getRuntimeClazz(a._tid + 1);
+        var acl = staticClazz.actualClazzes(a, null);
+        Clazz sClazz = acl[0];
+        Clazz fClazz = acl[1];
         if (fClazz != null && !fClazz.resultClazz().isRef() && v instanceof Boxed b)
           {
             v = b._contents;
@@ -412,9 +417,9 @@ public class Interpreter extends ANY
     else if (e instanceof AbstractMatch m)
       {
         result = null;
-        Clazz staticSubjectClazz = staticClazz.getRuntimeClazz(m._runtimeClazzId);
+        Clazz staticSubjectClazz = staticClazz.actualClazzes(m, null)[0];
         staticSubjectClazz = staticSubjectClazz.asValue(); /* asValue since subject in , e.g., 'match (bool.this)' may be 'ref bool'
-                                                            * NYI: might be better to store asValue directly at getRuntimeClazz(m.runtimeClazzId_)
+                                                            * NYI: might be better to store asValue directly at staticClazz.actualClazzes(m)
                                                             */
         Value sub = execute(m.subject(), staticClazz, cur);
         var sf = staticSubjectClazz.feature();
@@ -447,7 +452,7 @@ public class Interpreter extends ANY
 
             if (c.field() != null && Clazzes.isUsed(c.field()))
               {
-                Clazz fieldClazz = staticClazz.getRuntimeClazz(c._runtimeClazzId).resultClazz();
+                Clazz fieldClazz = staticClazz.actualClazzes(c, null)[0].resultClazz();
                 if (fieldClazz.isDirectlyAssignableFrom(subjectClazz))
                   {
                     Value v = tag < 0 ? refVal
@@ -461,7 +466,7 @@ public class Interpreter extends ANY
                 var nt = c.field() != null ? 1 : c.types().size();
                 for (int i = 0; !matches && i < nt; i++)
                   {
-                    Clazz caseClazz = staticClazz.getRuntimeClazz(c._runtimeClazzId + i);
+                    Clazz caseClazz = staticClazz.actualClazzes(c, null)[i];
                     matches = caseClazz.isDirectlyAssignableFrom(subjectClazz);
                   }
               }
@@ -479,13 +484,13 @@ public class Interpreter extends ANY
               {
                 if (c.field() != null)
                   {
-                    permitted.add(staticClazz.getRuntimeClazz(c._runtimeClazzId).resultClazz());
+                    permitted.add(staticClazz.actualClazzes(c, null)[0].resultClazz());
                   }
                 else
                   {
                     for (int i = 0; i < c.types().size(); i++)
                       {
-                        permitted.add(staticClazz.getRuntimeClazz(c._runtimeClazzId + i));
+                        permitted.add(staticClazz.actualClazzes(c, null)[i]);
                       }
                   }
               }
@@ -507,10 +512,10 @@ public class Interpreter extends ANY
     else if (e instanceof Box b)
       {
         Value val = execute(b._value, staticClazz, cur);
-        var id = b._valAndRefClazzId;
-        Clazz vc = id < 0 ? null : (Clazz) staticClazz.getRuntimeData(id);
-        Clazz rc = id < 0 ? null : (Clazz) staticClazz.getRuntimeData(id + 1);
-        if (id < 0 || vc.isRef() || !rc.isRef())
+        var acl = staticClazz.actualClazzes(b, null);
+        Clazz vc = acl[0];
+        Clazz rc = acl[1];
+        if (vc.isRef() || !rc.isRef())
           { // vc's type is a generic argument or outer type whose actual type
             // does not need boxing
             if (CHECKS) check
@@ -527,8 +532,9 @@ public class Interpreter extends ANY
     else if (e instanceof Tag t)
       {
         Value v      = execute(t._value, staticClazz, cur);
-        Clazz vClazz = staticClazz.getRuntimeClazz(t._valAndTaggedClazzId + 0);
-        Clazz tClazz = staticClazz.getRuntimeClazz(t._valAndTaggedClazzId + 1);
+        var acl = staticClazz.actualClazzes(t, null);
+        Clazz vClazz = acl[0];
+        Clazz tClazz = acl[1];
         result = tag(tClazz, vClazz, v);
       }
 
@@ -553,7 +559,7 @@ public class Interpreter extends ANY
 
     else if (e instanceof Env v)
       {
-        Clazz vClazz = staticClazz.getRuntimeClazz(v._clazzId);
+        Clazz vClazz = staticClazz.actualClazzes(v, null)[0];
         result = FuzionThread.current()._effects.get(vClazz);
         if (result == null)
           {
