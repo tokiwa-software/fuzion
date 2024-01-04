@@ -38,7 +38,7 @@ is
 
   match r
     _ effect_mode.plain   =>
-    i effect_mode.inst    => run i.f (_)->unit
+    i effect_mode.inst    => run i.f ()->unit
     _ effect_mode.repl    => replace
     _ effect_mode.default => default
     _ effect_mode.new     =>
@@ -60,19 +60,44 @@ is
   #
   private abortable(T type : Function unit, f T) unit is intrinsic
 
+
   # replace effect in the current context by this and abort current execution
-  public abort void is intrinsic
+  public abort void
+  pre
+    safety: abortable
+  =>
+    abort0
+
+  # Intrinsic version of abort.
+  #
+  # NYI: precondition does not seem to work for an intrinsic yet, causes test failure e.g., in tests/local_mutate
+  # so we use cannot make `abort` intrinsic.
+  private abort0 void
+  is
+    intrinsic
+
+
+  # does this effect support abort?
+  #
+  # Redefining this to return `false` helps to detect unexptected calls to
+  # `abort` at runtime and ensure that the static analysis finds that there
+  # code executed with this effect will always return normally and produce
+  # a result. This is used, e.g, in `mutate` to avoid static analysis
+  # reporting `panic` as an effect of the use of a local mutate instance.
+  #
+  public abortable => true
+
 
   # set default effect in the current context to this if none is installed
   module default unit is intrinsic
 
   # execute the code of 'f' in the context of this effect
   #
-  module run(R type, f () -> R, def (unit /* NYI: unit type only to distingish 'f' and 'def' in static analysis, remove once 'fz -effects' uses DFA */)->R) R is
+  module run(R type, f () -> R, def ()->R) R is
     cf := Effect_Call f
     abortable cf
     match cf.res
-      nil => def unit
+      nil => def()
       x R => x
 
 
@@ -131,14 +156,22 @@ is
   # return an oucome with the abort wrapped in an error?).
   #
   public use(code ()->unit) unit is
-    abortable (Effect_Call code)
+    go code
+
 
   # install this effect and run code that produces a result of
   # type T. panic in case abort is called.
   #
   public go(T type, f ()->T) T is
-    fo () -> option T is ()->f()
-    r := run fo _->nil
-    match r
-      nil => panic "*** unexpected abort in {simple_effect.this.type}"
-      v T => v
+    cf := Effect_Call ()->f()
+    abortable cf
+    match cf.res
+      nil => msg := "*** unexpected abort in {simple_effect.this.type}"
+             if abortable
+               panic msg
+             else
+               # the user should not be able to produce this state: since the effect is
+               # not abortable cf can only return with a result. So we do a low-level
+               # panic that does not show up as a used effect:
+               fuzion.std.panic msg
+      x T => x

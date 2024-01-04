@@ -998,7 +998,7 @@ public class Intrinsics extends ANY
     put("effect.replace"       ,
         "effect.default"       ,
         "effect.abortable"     ,
-        "effect.abort"         , (c,cl,outer,in) ->
+        "effect.abort0"        , (c,cl,outer,in) ->
         {
           var ecl = c._fuir.effectType(cl);
           var ev  = CNames.fzThreadEffectsEnvironment.deref().field(c._names.env(ecl));
@@ -1050,7 +1050,7 @@ public class Intrinsics extends ANY
                                        CExpr.call("exit", new List<>(CExpr.int32const(1))));
                     }
                 }
-              case "effect.abort"   ->
+              case "effect.abort0"  ->
                 CStmnt.seq(CStmnt.iff(evi, CExpr.call("longjmp",new List<>(evj.deref(), CExpr.int32const(1)))),
                            CExpr.fprintfstderr("*** C backend support for %s missing\n",
                                                CExpr.string(c._fuir.clazzIntrinsicName(cl))),

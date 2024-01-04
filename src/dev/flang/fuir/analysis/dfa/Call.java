@@ -116,6 +116,15 @@ public class Call extends ANY implements Comparable<Call>, Context
   boolean _escapes = false;
 
 
+  /**
+   * If available, _codeblockId and _codeBlockIndex give an example call that
+   * resulted in creation of this Call.  This can be used to show the reason why
+   * a given call is present in showWhy().  Both are -1 if no call site is known.
+   */
+  int _codeblockId = -1;
+  int _codeblockIndex = -1;
+
+
   /*---------------------------  constructors  ---------------------------*/
 
 
@@ -317,7 +326,22 @@ public class Call extends ANY implements Comparable<Call>, Context
     var indent = _context.showWhy();
     System.out.println(indent + "  |");
     System.out.println(indent + "  +- performs call " + this);
+    if (_codeblockId != -1 && _codeblockIndex != -1)
+      {
+        System.out.println(_dfa._fuir.codeAtAsPos(_codeblockId,_codeblockIndex).show());
+      }
     return indent + "  ";
+  }
+
+
+  /**
+   * record code block id c and code block index i as a sample call site that
+   * lead to the creation of this Call. Used by showWhy().
+   */
+  void addCallSiteLocation(int c, int i)
+  {
+    _codeblockId = c;
+    _codeblockIndex = i;
   }
 
 

@@ -68,7 +68,7 @@ is
 
     # mutable value of the current exit code set
     #
-    exit_code := mut 0
+    exit_code := 0
 
 
     # exit with the given code
@@ -80,7 +80,7 @@ is
     # exit with the stored code
     #
     exit =>
-      fuzion.std.exit exit_code.get
+      fuzion.std.exit exit_code
 
 
     # set the stored exit code
@@ -89,17 +89,13 @@ is
       pre
         0 ≤ code ≤ 127
       post
-        code != 0 : !exit_code.open
+        exit_code = code
       is
-        if exit_code.open
-          exit_code <- code
-
-          if code != 0
-            exit_code.close
-            unit
+        if exit_code = 0
+          set exit_code := code
+          unit
         else
           error "exit code is already set"
-
 
 
 # exit with no argument returns exit.env, the currently installed

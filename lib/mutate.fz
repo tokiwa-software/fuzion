@@ -55,6 +55,11 @@
 #
 public mutate : simple_effect is
 
+
+  # does this effect support abort?
+  public redef abortable => false
+
+
   # short-hand to access effect type
   #
   # NYI: This does not work yet
@@ -66,29 +71,42 @@ public mutate : simple_effect is
   #
   id := fuzion.sys.misc.unique_id
 
-  # 0 is used to indicate this is closed
+
+  # panic operation to be used in case of a severe problem.  This is redefined within the
+  # base lib to make sure fundamental uses of local mutability do not cause dependency
+  # on the panic effect.
   #
-  # NYI: remove this check as soon as id is set by an intrinsic guaranteed not to be 0.
-  #
-  if id = u64 0
-    panic "*** mutate.id should never be 0"
+  mpanic(msg String) => panic msg
+
 
   # common type for mutable data
+  #
   private:public mutable_element is
+
     # id used to verify that mutation made with the same effect
     # the mutable value was created with
     my_id := id
 
+
+    # check that this effect is the same as the currently installed effect of type
+    # `mutate.this`
+    #
+    private is_currently_installed =>  my_id = mutate.this.env.id
+
+
     # check that this effect is installed and replace it.
     #
-    private check_and_replace is
-      if my_id != mutate.this.env.id
-        panic "*** invalid mutate for {mutate.this.type}"
+    private check_and_replace
+    is
+      if !is_currently_installed
+        mpanic "*** invalid mutate for {mutate.this.type}"
       mutate.this.env.replace
+
 
     # is this element open, i.e., can it be mutated?
     #
     public open => id != u64 0
+
 
     # stop any further mutations of this element
     #

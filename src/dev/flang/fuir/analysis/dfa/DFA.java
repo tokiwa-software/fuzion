@@ -389,6 +389,7 @@ public class DFA extends ANY
             if (_fuir.clazzNeedsCode(cc))
               {
                 var ca = newCall(cc, pre, tvalue.value(), args, _call._env, _call);
+                ca.addCallSiteLocation(c,i);
                 res = ca.result();
                 if (res != null && res != Value.UNIT && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)))
                   {
@@ -866,7 +867,15 @@ public class DFA extends ANY
    *
    * NYI: this might need to be thread-local and not global!
    */
-  TreeMap<Integer, Value> _defaultEffects = new TreeMap<>();
+  public final TreeMap<Integer, Value> _defaultEffects = new TreeMap<>();
+
+
+  /**
+   * Map from effect-type to corresponding call that uses this effect.
+   *
+   * NYI: this might need to be thread-local and not global!
+   */
+  public final TreeMap<Integer, Call> _defaultEffectContexts = new TreeMap<>();
 
 
   /**
@@ -1081,21 +1090,25 @@ public class DFA extends ANY
     do
       {
         cnt++;
-        _options.verbosePrintln("DFA iteration #"+cnt+": --------------------------------------------------" +
-                                (!_options.verbose(2) ? "" : _calls.size()+","+_instances.size()+"; "+_changedSetBy));
+        if (_options.verbose(2))
+          {
+            _options.verbosePrintln(2,
+                                    "DFA iteration #"+cnt+": --------------------------------------------------" +
+                                    (!_options.verbose(3) ? "" : _calls.size()+","+_instances.size()+"; "+_changedSetBy));
+          }
         _changed = false;
         _changedSetBy = "*** change not set ***";
         iteration();
       }
     while (_changed && (true || cnt < 100) || false && (cnt < 50));
-    if (_options.verbose(3))
+    if (_options.verbose(4))
       {
-        _options.verbosePrintln(3, "DFA done:");
-        _options.verbosePrintln(3, "Instances: " + _instances.values());
-        _options.verbosePrintln(3, "Calls: ");
+        _options.verbosePrintln(4, "DFA done:");
+        _options.verbosePrintln(4, "Instances: " + _instances.values());
+        _options.verbosePrintln(4, "Calls: ");
         for (var c : _calls.values())
           {
-            _options.verbosePrintln(3, "  call: " + c);
+            _options.verbosePrintln(4, "  call: " + c);
           }
       }
     _reportResults = true;
@@ -1770,6 +1783,7 @@ public class DFA extends ANY
           if (old_e == null || Value.compare(old_e, new_e) != 0)
             {
               cl._dfa._defaultEffects.put(ecl, new_e);
+              cl._dfa._defaultEffectContexts.put(ecl, cl);
               if (!cl._dfa._changed)
                 {
                   cl._dfa._changedSetBy = "effect.default called: "+cl._dfa._fuir.clazzAsString(cl._cc);
@@ -1793,7 +1807,7 @@ public class DFA extends ANY
           // NYI: result must be null if result of ncl is null (ncl does not return) and effect.abort is not called
           return Value.UNIT;
         });
-    put("effect.abort"                   , cl ->
+    put("effect.abort0"                  , cl ->
         {
           var ecl = cl._dfa._fuir.effectType(cl._cc);
           var new_e = cl._target;
