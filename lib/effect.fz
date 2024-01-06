@@ -101,6 +101,16 @@ is
       x R => x
 
 
+  # abort the current execution and return from the surrounding call to
+  # abortable with result == false.
+  #
+  public return void
+  pre
+    safety: abortable
+  =>
+    abort
+
+
   # has an effect of the given type been installed?
   public type.is_installed(E type) bool => intrinsic_constructor
 
@@ -156,14 +166,16 @@ is
   # return an oucome with the abort wrapped in an error?).
   #
   public use(code ()->unit) unit =>
-    go code
+    cf := Effect_Call code
+    abortable cf
+    # ignore cf.res
 
 
   # install this effect and run code that produces a result of
   # type T. panic in case abort is called.
   #
   public go(T type, f ()->T) T =>
-    cf := Effect_Call ()->f()
+    cf := Effect_Call f
     abortable cf
     match cf.res
       nil => msg := "*** unexpected abort in {simple_effect.this.type}"
