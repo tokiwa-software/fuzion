@@ -26,11 +26,15 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm.runtime;
 
+import dev.flang.be.interpreter.JavaInterface;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 
 import java.io.StringWriter;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -708,6 +712,280 @@ public class Runtime extends ANY
   public static byte[] fuzion_sys_env_vars_get0(Object d)
   {
     return stringToUtf8ByteArray(System.getenv(utf8ByteArrayDataToString((byte[]) d)));
+  }
+
+
+  /**
+   * Helper method called by the fuzion.java.string_to_java_object0 intrinsic.
+   *
+   * Creates a new instance of String from the byte array passed as argument,
+   * assuming the byte array contains an UTF-8 encoded string.
+   *
+   * @param b byte array consisting of a string encoded as UTF-8 bytes
+   *
+   * @return the string from the array, as an instance of Java's String
+   */
+  public static String fuzion_java_string_to_java_object0(byte[] b)
+  {
+    return new String(b, StandardCharsets.UTF_8);
+  }
+
+
+  /**
+   * Helper method called by the fuzion.java.get_static_field0 intrinsic.
+   *
+   * Retrieves the content of a given static field.
+   *
+   * @param clazz name of the class of the field
+   *
+   * @param field name of the field
+   *
+   * @return whatever is stored in the specified static field
+   */
+  public static Object fuzion_java_get_static_field0(String clazz, String field)
+  {
+    Object result;
+
+    try
+      {
+        Class cl = Class.forName(clazz);
+        Field f = cl.getDeclaredField(field);
+        result = f.get(null);
+      }
+    catch (IllegalAccessException | ClassNotFoundException | NoSuchFieldException e)
+      {
+        Errors.fatal(e.toString()+" when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        result = null;
+      }
+
+    return result;
+  }
+
+
+  /**
+   * Helper method called by the fuzion.java.get_field0 intrinsic.
+   *
+   * Given some instance of a Java class, retrieves the content of a given field in
+   * this instance.
+   *
+   * @param thiz the Java instance
+   *
+   * @param field name of the field
+   *
+   * @return whatever is stored in the specified field of the instance
+   */
+  public static Object fuzion_java_get_field0(Object thiz, String field)
+  {
+    Object result;
+    String clazz = null;
+
+    try
+      {
+        Class cl = thiz.getClass();
+        Field f = cl.getDeclaredField(field);
+        result = f.get(thiz);
+      }
+    catch (IllegalAccessException | NoSuchFieldException e)
+      {
+        Errors.fatal(e.toString()+" when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        result = null;
+      }
+
+    return result;
+  }
+
+
+  /**
+   * Helper method called by the fuzion.java.call_v0 intrinsic.
+   *
+   * Calls a Java method on a specified instance.
+   *
+   * @param clName name of the class of the method to be called
+   *
+   * @param name name of the method to be called
+   *
+   * @param sig signature of the method to be called
+   *
+   * @param thiz instance of the class on which the method should be called
+   *
+   * @param args the arguments with which the method should be called
+   *
+   * @return whatever the method returns given the arguments
+   */
+  public static Object fuzion_java_call_v0(String clName, String name, String sig, Object thiz, Object[] args)
+  {
+    if (PRECONDITIONS) require
+      (clName != null);
+
+    Object res = null;
+    Throwable err = null;
+    Method m = null;
+    var p = JavaInterface.getPars(sig);
+    if (p == null)
+      {
+        Errors.fatal("could not parse signature >>"+sig+"<<");
+      }
+    Class cl;
+    try
+      {
+        cl = Class.forName(clName);
+      }
+    catch (ClassNotFoundException e)
+      {
+        Errors.fatal("ClassNotFoundException when calling fuzion.java.call_virtual for class " +
+                           clName + " calling " + name + sig);
+        cl = Object.class; // not reached.
+      }
+    try
+      {
+        m = cl.getMethod(name, p);
+      }
+    catch (NoSuchMethodException e)
+      {
+        Errors.fatal("NoSuchMethodException when calling fuzion.java.call_virtual calling " +
+                           (cl.getName() + "." + name) + sig);
+      }
+    try
+      {
+        res = m.invoke(thiz, args);
+      }
+    catch (InvocationTargetException e)
+      {
+        err = e.getCause();
+      }
+    catch (IllegalAccessException e)
+      {
+        err = e;
+      }
+    return res;
+  }
+
+
+  /**
+   * Helper method called by the fuzion.java.call_s0 intrinsic.
+   *
+   * Calls a static Java method of a specified class.
+   *
+   * @param clName name of the class of the method to be called
+   *
+   * @param name name of the method to be called
+   *
+   * @param sig signature of the method to be called
+   *
+   * @param args the arguments with which the method should be called
+   *
+   * @return whatever the method returns given the arguments
+   */
+  public static Object fuzion_java_call_s0(String clName, String name, String sig, Object[] args)
+  {
+    if (PRECONDITIONS) require
+      (clName != null);
+
+    Object res = null;
+    Throwable err = null;
+    Method m = null;
+    Constructor co = null;
+    var  p = JavaInterface.getPars(sig);
+    if (p == null)
+      {
+        Errors.fatal("could not parse signature >>"+sig+"<<");
+      }
+    Class cl;
+    try
+      {
+        cl = Class.forName(clName);
+      }
+    catch (ClassNotFoundException e)
+      {
+        Errors.fatal("ClassNotFoundException when calling fuzion.java.call_static for class " +
+                           clName + " calling " + name + sig);
+        cl = Object.class; // not reached.
+      }
+    try
+      {
+        m = cl.getMethod(name,p);
+      }
+    catch (NoSuchMethodException e)
+      {
+        Errors.fatal("NoSuchMethodException when calling fuzion.java.call_static calling " +
+                           (cl.getName() + "." + name) + sig);
+      }
+    try
+      {
+        res = m.invoke(null, args);
+      }
+    catch (InvocationTargetException e)
+      {
+        err = e.getCause();
+      }
+    catch (IllegalAccessException e)
+      {
+        err = e;
+      }
+    return res;
+  }
+
+
+  /**
+   * Helper method called by the fuzion.java.call_c0 intrinsic.
+   *
+   * Calls a Java constructor of a specified class.
+   *
+   * @param clName name of the class whose constructor should be called
+   *
+   * @param sig signature of the constructor to be called
+   *
+   * @param args the arguments with which the constructor should be called
+   *
+   * @return the instance of the class returned by the constructor
+   */
+  public static Object fuzion_java_call_c0(String clName, String sig, Object[] args)
+  {
+    if (PRECONDITIONS) require
+      (clName != null);
+
+    Object res = null;
+    Throwable err = null;
+    Method m = null;
+    Constructor co = null;
+    var p = JavaInterface.getPars(sig);
+    if (p == null)
+      {
+        Errors.fatal("could not parse signature >>"+sig+"<<");
+      }
+    Class cl;
+    try
+      {
+        cl = Class.forName(clName);
+      }
+    catch (ClassNotFoundException e)
+      {
+        Errors.fatal("ClassNotFoundException when calling fuzion.java.call_constructor for class " +
+                           clName + " calling " + ("new " + clName) + sig);
+        cl = Object.class; // not reached.
+      }
+    try
+      {
+        co = cl.getConstructor(p);
+      }
+    catch (NoSuchMethodException e)
+      {
+        Errors.fatal("NoSuchMethodException when calling fuzion.java.call_constructor calling " +
+                           ("new " + clName) + sig);
+      }
+    try
+      {
+        res = co.newInstance(args);
+      }
+    catch (InvocationTargetException e)
+      {
+        err = e.getCause();
+      }
+    catch (InstantiationException | IllegalAccessException e)
+      {
+        err = e;
+      }
+    return res;
   }
 
 

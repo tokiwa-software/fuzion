@@ -160,7 +160,7 @@ public class JavaInterface extends ANY
    *
    * @return a new parameter type array.
    */
-  static Class[] getPars(String d)
+  public static Class[] getPars(String d)
   {
     Class[] result;
 
@@ -449,22 +449,9 @@ public class JavaInterface extends ANY
         Errors.fatal("NoSuchMethodException when calling fuzion.java.call_static/call_virtual/call_constructor calling " +
                            (name == null ? "new " + clName : (cl.getName() + "." + name)) + sig);
       }
-    Object[] argz = instanceToJavaObjects(args);
     try
       {
-        for (var i = 0; i < argz.length; i++)
-          {
-            var pi = p[i];
-            var ai = argz[i];
-            // in case parameter type is some array and argument is empty array,
-            // the type of the argument derived form the elements will be
-            // Object[], so we create a more specific array:
-            if (pi.isArray() && ai != null && Array.getLength(ai) == 0 && pi != ai.getClass())
-              {
-                argz[i] = Array.newInstance(pi.componentType(), 0);
-              }
-          }
-        res = (name == null) ? co.newInstance(argz) : m.invoke(thiz, argz);
+        res = (name == null) ? co.newInstance(args) : m.invoke(thiz, args);
       }
     catch (InvocationTargetException e)
       {
