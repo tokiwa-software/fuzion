@@ -26,11 +26,15 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm.runtime;
 
+import dev.flang.be.interpreter.JavaInterface;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 
 import java.io.StringWriter;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -708,6 +712,217 @@ public class Runtime extends ANY
   public static byte[] fuzion_sys_env_vars_get0(Object d)
   {
     return stringToUtf8ByteArray(System.getenv(utf8ByteArrayDataToString((byte[]) d)));
+  }
+
+
+  public static String fuzion_java_string_to_java_object0(byte[] b)
+  {
+    return new String(b, StandardCharsets.UTF_8);
+  }
+
+
+  public static Object fuzion_java_get_static_field0(String clazz, String field)
+  {
+    Object result;
+
+    try
+      {
+        Class cl = Class.forName(clazz);
+        Field f = cl.getDeclaredField(field);
+        result = f.get(null);
+      }
+    catch (IllegalAccessException e)
+      {
+        Errors.fatal("IllegalAccessException when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        result = null;
+      }
+    catch (ClassNotFoundException e)
+      {
+        Errors.fatal("ClassNotFoundException when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        result = null;
+      }
+    catch (NoSuchFieldException e)
+      {
+        Errors.fatal("NoSuchFieldException when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        result = null;
+      }
+
+    return result;
+  }
+
+
+  public static Object fuzion_java_get_field0(Object thiz, String field)
+  {
+    Object result;
+    String clazz = null;
+
+    try
+      {
+        Class cl = thiz.getClass();
+        Field f = cl.getDeclaredField(field);
+        result = f.get(thiz);
+      }
+    catch (IllegalAccessException e)
+      {
+        Errors.fatal("IllegalAccessException when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        result = null;
+      }
+    catch (NoSuchFieldException e)
+      {
+        Errors.fatal("NoSuchFieldException when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        result = null;
+      }
+
+    return result;
+  }
+
+
+  public static Object fuzion_java_call_v0(String clName, String name, String sig, Object thiz, Object[] args)
+  {
+    if (PRECONDITIONS) require
+      (clName != null);
+
+    Object res = null;
+    Throwable err = null;
+    Method m = null;
+    var p = JavaInterface.getPars(sig);
+    if (p == null)
+      {
+        Errors.fatal("could not parse signature >>"+sig+"<<");
+      }
+    Class cl;
+    try
+      {
+        cl = Class.forName(clName);
+      }
+    catch (ClassNotFoundException e)
+      {
+        Errors.fatal("ClassNotFoundException when calling fuzion.java.call_virtual for class " +
+                           clName + " calling " + name + sig);
+        cl = Object.class; // not reached.
+      }
+    try
+      {
+        m = cl.getMethod(name, p);
+      }
+    catch (NoSuchMethodException e)
+      {
+        Errors.fatal("NoSuchMethodException when calling fuzion.java.call_virtual calling " +
+                           (cl.getName() + "." + name) + sig);
+      }
+    try
+      {
+        res = m.invoke(thiz, args);
+      }
+    catch (InvocationTargetException e)
+      {
+        err = e.getCause();
+      }
+    catch (IllegalAccessException e)
+      {
+        err = e;
+      }
+    return res;
+  }
+
+
+  public static Object fuzion_java_call_s0(String clName, String name, String sig, Object[] args)
+  {
+    if (PRECONDITIONS) require
+      (clName != null);
+
+    Object res = null;
+    Throwable err = null;
+    Method m = null;
+    Constructor co = null;
+    var  p = JavaInterface.getPars(sig);
+    if (p == null)
+      {
+        Errors.fatal("could not parse signature >>"+sig+"<<");
+      }
+    Class cl;
+    try
+      {
+        cl = Class.forName(clName);
+      }
+    catch (ClassNotFoundException e)
+      {
+        Errors.fatal("ClassNotFoundException when calling fuzion.java.call_static for class " +
+                           clName + " calling " + name + sig);
+        cl = Object.class; // not reached.
+      }
+    try
+      {
+        m = cl.getMethod(name,p);
+      }
+    catch (NoSuchMethodException e)
+      {
+        Errors.fatal("NoSuchMethodException when calling fuzion.java.call_static calling " +
+                           (cl.getName() + "." + name) + sig);
+      }
+    try
+      {
+        res = m.invoke(null, args);
+      }
+    catch (InvocationTargetException e)
+      {
+        err = e.getCause();
+      }
+    catch (IllegalAccessException e)
+      {
+        err = e;
+      }
+    return res;
+  }
+
+
+  public static Object fuzion_java_call_c0(String clName, String sig, Object[] args)
+  {
+    if (PRECONDITIONS) require
+      (clName != null);
+
+    Object res = null;
+    Throwable err = null;
+    Method m = null;
+    Constructor co = null;
+    var p = JavaInterface.getPars(sig);
+    if (p == null)
+      {
+        Errors.fatal("could not parse signature >>"+sig+"<<");
+      }
+    Class cl;
+    try
+      {
+        cl = Class.forName(clName);
+      }
+    catch (ClassNotFoundException e)
+      {
+        Errors.fatal("ClassNotFoundException when calling fuzion.java.call_constructor for class " +
+                           clName + " calling " + ("new " + clName) + sig);
+        cl = Object.class; // not reached.
+      }
+    try
+      {
+        co = cl.getConstructor(p);
+      }
+    catch (NoSuchMethodException e)
+      {
+        Errors.fatal("NoSuchMethodException when calling fuzion.java.call_constructor calling " +
+                           ("new " + clName) + sig);
+      }
+    try
+      {
+        res = co.newInstance(args);
+      }
+    catch (InvocationTargetException e)
+      {
+        err = e.getCause();
+      }
+    catch (InstantiationException | IllegalAccessException e)
+      {
+        err = e;
+      }
+    return res;
   }
 
 

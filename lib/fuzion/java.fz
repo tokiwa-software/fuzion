@@ -57,9 +57,12 @@ public fuzion.java is
 
   # A Java reference
   #
-  public Java_Object(private Java_Ref Any) ref
+  public Java_Object(private Java_Ref fuzion.sys.Pointer) ref
   is
-    public is_null bool => intrinsic_constructor
+    public is_null bool =>
+      is_null0 Java_Ref
+
+    private is_null0(jr fuzion.sys.Pointer) bool => intrinsic_constructor
 
     # dummy feature to make sure Java_Object.type exists. This is required since
     # Java-related intrinsics may return an array of Java_Object and require Java_Object.type.
@@ -70,7 +73,7 @@ public fuzion.java is
   # A Java array
   #
   public Array(public T type,
-               private redef Java_Ref Any) ref : Sequence T, Java_Object Java_Ref
+               private redef Java_Ref fuzion.sys.Pointer) ref : Sequence T, Java_Object Java_Ref
   is
     public length                  => array_length T Array.this
     public redef finite            => true
@@ -99,7 +102,7 @@ public fuzion.java is
 
   # Java's 'java.lang.String' type
   #
-  public Java_String(private redef Java_Ref Any) ref : String, Java_Object Java_Ref
+  public Java_String(private redef Java_Ref fuzion.sys.Pointer) ref : String, Java_Object Java_Ref
   is
     public utf8 => (java_string_to_string Java_String.this).utf8
 
@@ -119,8 +122,9 @@ public fuzion.java is
     c := string_to_java_object class_name
     n := string_to_java_object name
     s := string_to_java_object signature
-    a := args.internal_array
-    call_v0 T c n s thiz a
+    t := thiz.Java_Ref
+    a := (args.map (x -> x.Java_Ref)).internal_array
+    call_v0 T c n s t a
 
 
   # Call a static Java method with given name and signature with given
@@ -159,8 +163,8 @@ public fuzion.java is
                  class_name Java_Object,
                  name Java_Object,
                  signature Java_Object,
-                 thiz Java_Object,
-                 args fuzion.sys.internal_array Java_Object) T => intrinsic_constructor
+                 thiz fuzion.sys.Pointer,
+                 args fuzion.sys.internal_array fuzion.sys.Pointer) T => intrinsic_constructor
 
   # intrinsic to call given Java static method
   #

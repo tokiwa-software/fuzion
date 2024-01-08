@@ -1068,7 +1068,7 @@ public class Intrinsics extends ANY
     IntrinsicCode noJava = (c,cl,outer,in) ->
       CStmnt.seq(CExpr.fprintfstderr("*** C backend support does not support Java interface (yet).\n"),
                  CExpr.exit(1));
-    put("fuzion.java.Java_Object.is_null"   , noJava);
+    put("fuzion.java.Java_Object.is_null0"  , noJava);
     put("fuzion.java.array_get"             , noJava);
     put("fuzion.java.array_length"          , noJava);
     put("fuzion.java.array_to_java_object0" , noJava);

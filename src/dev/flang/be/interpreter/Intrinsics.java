@@ -635,11 +635,9 @@ public class Intrinsics extends ANY
           System.exit(rc);
           return Value.EMPTY_VALUE;
         });
-    put("fuzion.java.Java_Object.is_null", (interpreter, innerClazz) -> args ->
+    put("fuzion.java.Java_Object.is_null0", (interpreter, innerClazz) -> args ->
         {
-          Instance thizI = (Instance) args.get(0);
-          Object thiz  =  JavaInterface.instanceToJavaObject(thizI);
-          return new boolValue(thiz == null);
+          return new boolValue(args.get(1) == null);
         });
     putUnsafe("fuzion.java.get_static_field0",
         "fuzion.java.get_field0"      , (interpreter, innerClazz) ->
@@ -671,7 +669,8 @@ public class Intrinsics extends ANY
               var clNameI =                      (Instance) args.get(a++);
               var nameI   = constructor ? null : (Instance) args.get(a++);
               var sigI    =                      (Instance) args.get(a++);
-              var thizI   = !virtual    ? null : (Instance) args.get(a++);
+              // var thizI   = !virtual    ? null : (Instance) args.get(a++);
+              var thizI   = !virtual    ? null :            args.get(a++);
 
               var argz = args.get(a); // of type fuzion.sys.internal_array<JavaObject>, we need to get field argz.data
               var argfields = innerClazz.argumentFields();
@@ -682,8 +681,8 @@ public class Intrinsics extends ANY
               String clName =                          (String) JavaInterface.instanceToJavaObject(clNameI);
               String name   = nameI   == null ? null : (String) JavaInterface.instanceToJavaObject(nameI  );
               String sig    =                          (String) JavaInterface.instanceToJavaObject(sigI   );
-              Object thiz   = thizI   == null ? null :          JavaInterface.instanceToJavaObject(thizI  );
-              return JavaInterface.call(clName, name, sig, thiz, argzData, resultClazz);
+              // Object thiz   = thizI   == null ? null :          JavaInterface.instanceToJavaObject(thizI  );
+              return JavaInterface.call(clName, name, sig, thizI, argzData, resultClazz);
             };
         });
     putUnsafe("fuzion.java.array_length",  (interpreter, innerClazz) -> args ->
