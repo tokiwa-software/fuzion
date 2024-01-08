@@ -279,7 +279,7 @@ public class ResolvedNormalType extends ResolvedType
     if (PRECONDITIONS) require
       (refOrVal != original._refOrVal,
        Types.resolved == null
-         || original.compareTo(Types.resolved.t_void) != 0
+         || !original.isVoid()
          || refOrVal == RefOrVal.LikeUnderlyingFeature
       );
 
@@ -421,7 +421,7 @@ public class ResolvedNormalType extends ResolvedType
   {
     if (PRECONDITIONS) require
       (this == Types.intern(this),
-       compareTo(Types.resolved.t_void) != 0);
+       !isVoid());
 
     AbstractType result = this;
     if (!isRef() && this != Types.t_ERROR)

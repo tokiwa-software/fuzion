@@ -484,7 +484,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   protected Expr addFieldForResult(Resolution res, AbstractFeature outer, AbstractType t)
   {
     var result = this;
-    if (t.compareTo(Types.resolved.t_void) != 0)
+    if (!t.isVoid())
       {
         var pos = pos();
         Feature r = new Feature(res,
@@ -537,7 +537,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
     var result = this;
     var t = type();
 
-    if (t.compareTo(Types.resolved.t_void) != 0)
+    if (!t.isVoid())
       {
         if (needsBoxing(frmlT))
           {
@@ -554,7 +554,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
 
     if (POSTCONDITIONS) ensure
       (Errors.count() > 0
-        || t.compareTo(Types.resolved.t_void) == 0
+        || t.isVoid()
         || frmlT.isGenericArgument()
         || frmlT.isThisType()
         || !result.needsBoxing(frmlT));

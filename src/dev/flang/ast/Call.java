@@ -1856,7 +1856,7 @@ public class Call extends AbstractCall
     // fields during recursion.  We use only the non-recursive (i.e., non-void)
     // ones:
     if (_type == null ||
-        t5.compareTo(Types.resolved.t_void) != 0 ||
+        !t5.isVoid() ||
         !(_calledFeature instanceof Feature cf) ||
         cf.impl()._kind != Impl.Kind.FieldActual)
       {
