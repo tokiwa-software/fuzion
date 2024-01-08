@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = inheritGenericOuter
+override NAME = inheritGenericOuter
 include ../simple.mk
