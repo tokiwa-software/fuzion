@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = issue_2237
+override NAME = issue_2237
 FUZION = ../../bin/fz $(FUZION_OPTIONS)
 
 all: jvm c int
