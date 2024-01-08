@@ -75,10 +75,6 @@ public class InlineArray extends ExprWithPos
   private Expr _code;
 
 
-  // used if this array is turned into a compile time constant in FUIR.
-  public Object clazz;
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -267,6 +263,10 @@ public class InlineArray extends ExprWithPos
       {
         e.visitExpressions(v);
       }
+    if (_code != null)
+      {
+        _code.visitExpressions(v);
+      }
   }
 
 
@@ -376,9 +376,10 @@ public class InlineArray extends ExprWithPos
         return r;
       }
 
-    };
+      @Override
+      public Expr origin() { return InlineArray.this; }
 
-    result.runtimeClazz = clazz;
+    };
 
     return result;
   }

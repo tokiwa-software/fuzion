@@ -131,9 +131,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
     {
       if      (e instanceof AbstractAssign   a) { Clazzes.findClazzes(a, _originalFeature, Clazz.this, _inh); }
       else if (e instanceof AbstractCall     c) { Clazzes.findClazzes(c, _originalFeature, Clazz.this, _inh); }
-      else if (e instanceof AbstractConstant c) { Clazzes.findClazzes(c, Clazz.this, _inh); }
+      else if (e instanceof AbstractConstant c) { Clazzes.findClazzes(c, _originalFeature, Clazz.this, _inh); }
       else if (e instanceof If               i) { Clazzes.findClazzes(i, _originalFeature, Clazz.this, _inh); }
-      else if (e instanceof InlineArray      i) { Clazzes.findClazzes(this, i, Clazz.this, _inh); }
+      else if (e instanceof InlineArray      i) { Clazzes.findClazzes(i, _originalFeature, Clazz.this, _inh); }
       else if (e instanceof Env              b) { Clazzes.findClazzes(b, _originalFeature, Clazz.this, _inh); }
       else if (e instanceof AbstractMatch    m) { Clazzes.findClazzes(m, _originalFeature, Clazz.this, _inh); }
       else if (e instanceof Tag              t) { Clazzes.findClazzes(t, _originalFeature, Clazz.this, _inh); }
