@@ -1493,7 +1493,7 @@ public class AstErrors extends ANY
           "The parents of feature "+s(heir)+" include "+s(parent)+", which is not a constructor but a "+
           "'" + parent.kind() + "'.\n"+
           "Parent declared at " + parent.pos().show() +
-          "To solve this, you might remove the inheritance cal to " + s(parent) + " or you could change " + s(parent) +
+          "To solve this, you might remove the inheritance call to " + s(parent) + " or you could change " + s(parent) +
           " into a constructor, i.e., a feature without explicit result type declared using "+code("is")+".");
   }
 
