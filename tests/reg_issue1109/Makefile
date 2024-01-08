@@ -1,5 +1,6 @@
 FUZION_OPTIONS ?=
 FUZION = ../../bin/fz $(FUZION_OPTIONS)
+FUZION_HOME = $(dir $(FUZION))..
 
 all: jvm c int
 
@@ -12,7 +13,7 @@ c: mod_c
 int: mod_int
 	echo "m is _ := a" | $(FUZION) -interpreter -sourceDirs=src -
 
-a.fum:
+a.fum: $(FUZION_HOME)/modules/base.fum
 	$(FUZION) -saveLib=a.fum -sourceDirs=src
 
 mod_jvm: a.fum
