@@ -129,4 +129,19 @@ public class Util
         || af.visibility() == Visi.PUB;
   }
 
+
+  static enum Kind {
+    Constructor,
+    Type,
+    Other;
+
+    static Kind classify(AbstractFeature af) {
+      return af.definesType()
+          ? !af.isChoice() && af.visibility().featureVisibility() == Visi.PUB
+              ? Kind.Constructor
+              : Kind.Type
+          : Kind.Other;
+    }
+  }
+
 }
