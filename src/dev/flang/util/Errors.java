@@ -173,7 +173,7 @@ public class Errors extends ANY
   /**
    * Total number of errors encountered so far
    */
-  public static int count()
+  public static synchronized int count()
   {
     return _errors_.size();
   }
@@ -182,7 +182,7 @@ public class Errors extends ANY
   /**
    * Where any errors encountered so far?
    */
-  public static boolean any()
+  public static synchronized boolean any()
   {
     return !_errors_.isEmpty();
   }
@@ -191,7 +191,7 @@ public class Errors extends ANY
   /**
    * Total number of warnings encountered so far
    */
-  public static int warningCount()
+  public static synchronized int warningCount()
   {
     return _warnings_.size();
   }
@@ -273,7 +273,7 @@ public class Errors extends ANY
    *
    * @param detail details for this error, may contain LFs and case specific details, may be null
    */
-  public static void error(SourcePosition pos, String msg, String detail)
+  public static synchronized void error(SourcePosition pos, String msg, String detail)
   {
     if (PRECONDITIONS) require
       (msg != null);
@@ -375,7 +375,7 @@ public class Errors extends ANY
    *
    * @param detail details for this error, may contain LFs and case specific details, may be null
    */
-  public static void fatal(String s, String detail)
+  public static synchronized void fatal(String s, String detail)
   {
     error(s, detail);
     System.err.println("*** fatal errors encountered, stopping.");
@@ -422,7 +422,7 @@ public class Errors extends ANY
    *
    * @param detail details for this error, may contain LFs and case specific details, may be null
    */
-  public static void fatal(SourcePosition pos, String s, String detail)
+  public static synchronized void fatal(SourcePosition pos, String s, String detail)
   {
     error(pos, s, detail);
     System.err.println("*** fatal errors encountered, stopping.");
@@ -463,7 +463,7 @@ public class Errors extends ANY
    *
    * @param detail details for this error, may contain LFs and case specific details, may be null
    */
-  public static void runTime(SourcePosition pos, String s, String detail)
+  public static synchronized void runTime(SourcePosition pos, String s, String detail)
   {
     error(pos, s, detail);
     System.err.println("*** fatal errors encountered, stopping.");
@@ -480,7 +480,7 @@ public class Errors extends ANY
    *
    * @param warningStatistics true iff warning count should be printed.
    */
-  public static void showAndExit(boolean warningStatistics)
+  public static synchronized void showAndExit(boolean warningStatistics)
   {
     if (any())
       {
@@ -565,7 +565,7 @@ public class Errors extends ANY
    *
    * @param detail details for this warning, may contain LFs and case specific details, may be null
    */
-  public static void warning(SourcePosition pos, String msg, String detail)
+  public static synchronized void warning(SourcePosition pos, String msg, String detail)
   {
     if (PRECONDITIONS) require
       (msg != null);
@@ -756,7 +756,7 @@ public class Errors extends ANY
   /*
    * get copy of current errors
    */
-  public static TreeSet<Error> errors()
+  public static synchronized TreeSet<Error> errors()
   {
     return new TreeSet<>(_errors_);
   }
@@ -765,7 +765,7 @@ public class Errors extends ANY
   /*
    * get copy of current warnings
    */
-  public static TreeSet<Error> warnings()
+  public static synchronized TreeSet<Error> warnings()
   {
     return new TreeSet<>(_warnings_);
   }
@@ -774,7 +774,7 @@ public class Errors extends ANY
   /**
    * Reset static fields
    */
-  public static void reset()
+  public static synchronized void reset()
   {
     _errors_.clear();
     _warnings_.clear();
