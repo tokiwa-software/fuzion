@@ -47,8 +47,6 @@ iftest_negative is
 
   testIfBoolean1 { if false  { } else if false  { } }; testIfBoolean1 // ok
   testIfBoolean2 { if true   { } else if true   { } }; testIfBoolean2 // ok
-  testIfBoolean3 { if FALSE  { } else if FALSE  { } }; testIfBoolean3 // ok
-  testIfBoolean4 { if TRUE   { } else if TRUE   { } }; testIfBoolean4 // ok
   testIfBoolean5 { if !false { } else if !false { } }; testIfBoolean5 // ok
   testIfBoolean6 { if !true  { } else if !true  { } }; testIfBoolean6 // ok
 
