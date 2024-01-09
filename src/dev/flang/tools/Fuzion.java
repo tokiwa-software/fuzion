@@ -75,7 +75,7 @@ class Fuzion extends Tool
 
 
   static String  _binaryName_ = null;
-  static boolean _useBoehmGC_ = false;
+  static boolean _useBoehmGC_ = true;
   static boolean _xdfa_ = true;
   static String _cCompiler_ = null;
   static String _cFlags_ = null;
@@ -102,7 +102,7 @@ class Fuzion extends Tool
     {
       String usage()
       {
-        return "[-o=<file>] [-useGC] [-Xdfa=(on|off)] [-CC=<c compiler>] [-CFlags=\"list of c compiler flags\"] ";
+        return "[-o=<file>] [-Xgc=(on|off)] [-Xdfa=(on|off)] [-CC=<c compiler>] [-CFlags=\"list of c compiler flags\"] ";
       }
       boolean handleOption(Fuzion f, String o)
       {
@@ -112,9 +112,9 @@ class Fuzion extends Tool
             _binaryName_ = o.substring(3);
             result = true;
           }
-        else if (o.equals("-useGC"))
+        else if (o.startsWith("-Xgc="))
           {
-            _useBoehmGC_ = true;
+            _useBoehmGC_ = parseOnOffArg(o);
             result = true;
           }
         else if (o.startsWith("-Xdfa="))
