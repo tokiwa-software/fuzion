@@ -264,11 +264,21 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    * To enable debugging, use fz with
    *
    *   FUZION_JAVA_OPTIONS=-Ddev.flang.fuir.analysis.AbstractInterpreter.DEBUG=true
+   *
+   * or
+   *
+   *   FUZION_JAVA_OPTIONS=-Ddev.flang.fuir.analysis.AbstractInterpreter.DEBUG=".*install_default"
+   *
    */
-  static final boolean DEBUG =
-    System.getProperty("dev.flang.fuir.analysis.AbstractInterpreter.DEBUG",
-                       "false").equals("true");
-
+  static final String DEBUG;
+  static {
+    var debug = System.getProperty("dev.flang.fuir.analysis.AbstractInterpreter.DEBUG");
+    DEBUG =
+      debug == null ||
+      debug.equals("false") ? null :
+      debug.equals("true" ) ? ".*"
+                            : debug;
+  }
 
   /*-------------------------  static methods  --------------------------*/
 
@@ -596,7 +606,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    */
   public RESULT process(int cl, boolean pre, Stack<VALUE> stack, int c, int i)
   {
-    if (DEBUG)
+    if (DEBUG != null && _fuir.clazzAsString(cl).matches(DEBUG))
       {
         System.out.println("process "+_fuir.clazzAsString(cl)+"."+c+"."+i+":\t"+_fuir.codeAtAsString(cl, c, i)+" stack is "+stack);
       }
