@@ -432,7 +432,7 @@ public class Interpreter extends ANY
             refVal = getChoiceRefVal(sf, staticSubjectClazz, sub);
             tag = ChoiceIdAsRef.get(staticSubjectClazz, refVal);
           }
-        else if (staticSubjectClazz == Clazzes.bool.get())
+        else if (staticSubjectClazz == Clazzes.bool.getIfCreated())
           {
             tag = sub.boolValue() ? 1 : 0;
           }
