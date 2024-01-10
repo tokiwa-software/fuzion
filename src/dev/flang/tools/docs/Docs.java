@@ -37,8 +37,8 @@ import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -50,6 +50,7 @@ import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.mir.MIR;
 import dev.flang.tools.FuzionHome;
+import dev.flang.tools.docs.Util.Kind;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
@@ -62,7 +63,7 @@ public class Docs
   private static final Comparator<? super AbstractFeature> byFeatureName = Comparator.comparing(
     af -> af.featureName().toString(),
     (name1, name2) -> {
-      var caseInsensitive = name1.compareToIgnoreCase(name2);
+      var caseInsensitive = name1.compareTo(name2);
       if (caseInsensitive != 0)
         {
           return caseInsensitive;
@@ -272,7 +273,7 @@ public class Docs
   private void run(DocsOptions config)
   {
     // declared features are sorted by feature name
-    var mapOfDeclaredFeatures = new HashMap<AbstractFeature, SortedSet<AbstractFeature>>();
+    var mapOfDeclaredFeatures = new HashMap<AbstractFeature, Map<Kind, TreeSet<AbstractFeature>>>();
 
     breadthFirstTraverse(feature -> {
       if (ignoreFeature(feature, config.ignoreVisibility()))
@@ -281,8 +282,7 @@ public class Docs
         }
       var s = declaredFeatures(feature)
         .filter(af -> !ignoreFeature(af, config.ignoreVisibility()))
-        .collect(Collectors.toCollection(
-          () -> new TreeSet<>(byFeatureName)));
+        .collect(Collectors.groupingBy(x -> Kind.classify(x), Collectors.toCollection(() -> new TreeSet<>(byFeatureName))));
       mapOfDeclaredFeatures.put(feature, s);
     }, universe);
 
