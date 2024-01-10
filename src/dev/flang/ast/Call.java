@@ -1521,7 +1521,7 @@ public class Call extends AbstractCall
   /**
    * Create a new call and push the current call to the target of that call.
    * This is used for implicit calls to Function and Lazy values where `f()` is
-   * converted to `f.call()`, and for implicits fields in a select call such as,
+   * converted to `f.call()`, and for implicit fields in a select call such as,
    * e.g., a tuple access `t.3` that is converted to `t.values.3`.
    *
    * The actual arguments and _select of this call are moved over to the new

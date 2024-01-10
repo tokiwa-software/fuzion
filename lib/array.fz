@@ -26,7 +26,7 @@
 # array -- one-dimensional immutable array
 #
 # This is the result type of array(type, i32, i32 -> T) which creates an
-# initalized immutable array
+# initialized immutable array
 #
 # Note: This uses dummy unit-type args to avoid
 # name clash with routine array(T,length,init).

@@ -31,7 +31,7 @@ import dev.flang.util.Errors;
 
 
 /**
- * HasGlobalIndex is parent of Fuzion AST elements that can map to a uniq global
+ * HasGlobalIndex is parent of Fuzion AST elements that can map to a unique global
  * index.  This index is used during the middle end to replace types by actual
  * clazzes.
  *
@@ -49,7 +49,7 @@ public abstract class HasGlobalIndex extends ANY
 
   /*
    * Range of global indices that can be used for AST elements created by the
-   * parser.  These are initalized by dev.flang.fe.FrontEnd.
+   * parser.  These are initialized by dev.flang.fe.FrontEnd.
    */
   public static int FIRST_GLOBAL_INDEX = -1;
   public static int LAST_GLOBAL_INDEX = -1;
