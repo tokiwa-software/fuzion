@@ -116,8 +116,6 @@ looptest_negative is
 
   testBooleanWhile3 { while false  { } }; testBooleanWhile3  // ok
   testBooleanWhile4 { while true   { } }; testBooleanWhile4  // ok
-  testBooleanWhile5 { while FALSE  { } }; testBooleanWhile5  // ok
-  testBooleanWhile6 { while TRUE   { } }; testBooleanWhile6  // ok
   testBooleanWhile7 { while !false { } }; testBooleanWhile7  // ok
   testBooleanWhile8 { while !true  { } }; testBooleanWhile8  // ok
 
@@ -133,8 +131,6 @@ looptest_negative is
 
   testBooleanUntil3 { do { } until false  }; testBooleanUntil3  // ok
   testBooleanUntil4 { do { } until true   }; testBooleanUntil4  // ok
-  testBooleanUntil5 { do { } until FALSE  }; testBooleanUntil5  // ok
-  testBooleanUntil6 { do { } until TRUE   }; testBooleanUntil6  // ok
   testBooleanUntil7 { do { } until !false }; testBooleanUntil7  // ok
   testBooleanUntil8 { do { } until !true  }; testBooleanUntil8  // ok
 
