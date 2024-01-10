@@ -638,8 +638,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
                   jvm.new0(rc)
                   .andThen(Expr.DUP)
                   .andThen(exec)
-                  // .andThen(jvm.putfield(jref2))
-                  .andThen(Expr.ACONST_NULL)
+                  .andThen(jvm.putfield(jref2))
+                  // .andThen(Expr.ACONST_NULL)
                   .andThen(Expr.checkcast(rt))
                   .is(rt);
               }

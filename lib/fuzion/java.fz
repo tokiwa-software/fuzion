@@ -123,7 +123,7 @@ public fuzion.java is
     n := string_to_java_object name
     s := string_to_java_object signature
     t := thiz.Java_Ref
-    a := (args.map (x -> x.Java_Ref)).internal_array
+    a := (args.map_to_array (x -> x.Java_Ref)).internal_array
     call_v0 T c n s t a
 
 

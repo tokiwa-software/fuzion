@@ -1824,18 +1824,18 @@ public class DFA extends ANY
                           */
         );
 
-    put("fuzion.java.Java_Object.is_null"   , cl -> cl._dfa._bool );
+    put("fuzion.java.Java_Object.is_null0"  , cl -> cl._dfa._bool );
     put("fuzion.java.array_get"             , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context) );
     put("fuzion.java.array_length"          , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.java.array_to_java_object0" , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context) );
     put("fuzion.java.bool_to_java_object"   , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context) );
-    put("fuzion.java.call_c0"               , cl -> cl._dfa.newInstanceOrOutcome(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context));
-    put("fuzion.java.call_s0"               , cl -> cl._dfa.newInstanceOrOutcome(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context));
-    put("fuzion.java.call_v0"               , cl -> cl._dfa.newInstanceOrOutcome(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context));
+    // put("fuzion.java.call_c0"               , cl -> cl._dfa.newInstanceOrOutcome(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context));
+    // put("fuzion.java.call_s0"               , cl -> cl._dfa.newInstanceOrOutcome(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context));
+    // put("fuzion.java.call_v0"               , cl -> cl._dfa.newInstanceOrOutcome(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context));
     put("fuzion.java.f32_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context) );
     put("fuzion.java.f64_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context) );
     put("fuzion.java.get_field0"            , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context) );
-    put("fuzion.java.get_static_field0"     , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context) );
+    // put("fuzion.java.get_static_field0"     , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context) );
     put("fuzion.java.i16_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context) );
     put("fuzion.java.i32_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context) );
     put("fuzion.java.i64_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context) );
@@ -1849,7 +1849,6 @@ public class DFA extends ANY
         jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
         return jobj;
       });
-    /*
     put("fuzion.java.call_c0"               , cl ->
       {
         var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
@@ -1928,7 +1927,6 @@ public class DFA extends ANY
         jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
         return jobj;
       });
-    */
     put("fuzion.java.u16_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), null) );
   }
 
