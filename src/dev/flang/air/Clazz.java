@@ -354,7 +354,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Constructor
    *
-   * @param actualType the actual type this clazz is build on. The actual type
+   * @param actualType the actual type this clazz is built on. The actual type
    * must not be a generic argument.
    *
    * @param select in case actualType refers to a field whose result type is an
