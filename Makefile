@@ -371,8 +371,18 @@ FZ_INT = \
 			 $(BUILD_DIR)/bin/fz \
 			 $(MOD_BASE)
 
+DOC_FILES_FUMFILE = $(BUILD_DIR)/doc/files/fumfile.html     # fum file format documentation created with asciidoc
+DOC_DESIGN_JVM    = $(BUILD_DIR)/doc/design/jvm.html
+
+REF_MANUAL_SOURCE = $(FZ_SRC)/doc/ref_manual/fuzion_reference_manual.adoc
+REF_MANUAL_PDF    = $(BUILD_DIR)/doc/refeference_manual/fuzion_reference_manual.pdf
+REF_MANUAL_HTML   = $(BUILD_DIR)/doc/refeference_manual/html/index.html
+
 DOCUMENTATION = \
-	$(BUILD_DIR)/doc/fumfile.html     # fum file format documentation created with asciidoc
+	$(DOC_FILES_FUMFILE) \
+	$(DOC_DESIGN_JVM)    \
+        $(REF_MANUAL_PDF)    \
+        $(REF_MANUAL_HTML)
 
 SHELL_SCRIPTS = \
 	bin/fz \
@@ -1033,13 +1043,26 @@ $(BUILD_DIR)/UnicodeData.java: $(BUILD_DIR)/UnicodeData.java.generated $(SRC)/de
 .phony: doc
 doc: $(DOCUMENTATION) $(BUILD_DIR)/doc/jvm.html
 
-$(BUILD_DIR)/doc/fumfile.html: $(SRC)/dev/flang/fe/LibraryModule.java
+$(BUILD_DIR)/generated/doc/fum_file.adoc: $(SRC)/dev/flang/fe/LibraryModule.java
+	mkdir -p $(@D)
+	sed -n '/--asciidoc--/,/--asciidoc--/p' $^ | grep -v "\--asciidoc--" >$@
+
+$(DOC_FILES_FUMFILE): $(BUILD_DIR)/generated/doc/fum_file.adoc
+	mkdir -p $(@D)
+	asciidoc - <$^ >$@
+
+$(DOC_DESIGN_JVM): $(SRC)/dev/flang/be/jvm/JVM.java
 	mkdir -p $(@D)
 	sed -n '/--asciidoc--/,/--asciidoc--/p' $^ | grep -v "\--asciidoc--" | asciidoc - >$@
 
-$(BUILD_DIR)/doc/jvm.html: $(SRC)/dev/flang/be/jvm/JVM.java
+$(REF_MANUAL_PDF): $(REF_MANUAL_SOURCE) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
 	mkdir -p $(@D)
-	sed -n '/--asciidoc--/,/--asciidoc--/p' $^ | grep -v "\--asciidoc--" | asciidoc - >$@
+	asciidoctor-pdf --attribute GENERATED=$(realpath $(BUILD_DIR)/generated) --attribute FUZION_EBNF=$(realpath $(FUZION_EBNF)) --doctype book --out-file $@ $(REF_MANUAL_SOURCE)
+
+$(REF_MANUAL_HTML): $(REF_MANUAL_SOURCE) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
+	mkdir -p $(@D)
+	asciidoc --attribute GENERATED=$(realpath $(BUILD_DIR)/generated) --attribute FUZION_EBNF=$(realpath $(FUZION_EBNF)) --doctype book --out-file=$@ $(REF_MANUAL_SOURCE)
+
 
 # NYI integrate into fz: fz -docs
 $(BUILD_DIR)/apidocs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(FUZION_FILES)
@@ -1162,4 +1185,3 @@ syntaxcheck: min-java
 .PHONY: add_simple_test
 add_simple_test: no-java
 	$(BUILD_DIR)/bin/fz bin/add_simple_test.fz
-
