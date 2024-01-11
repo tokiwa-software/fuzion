@@ -1,4 +1,173 @@
-## 2023-**-**: V0.086
+## 2024-01-11: V0.086
+
+- Fuzion language
+
+  - When redefining an inherited feature, it is now enforced that the visibility
+    is not restricted ([#2233](https://github.com/tokiwa-software/fuzion/pull/2233)).
+
+  - Syntax sugar for access to tuple elements now permits using
+    `t.0/t.1/...` instead of `t.values.0/t.values.1/...:` One can now use
+
+            t := (3,4)
+            say (t.0 + t.1)
+
+    instead of
+
+            t := (3,4)
+            say (t.values.0 + t.values.1)
+
+    ([#2392](https://github.com/tokiwa-software/fuzion/pull/2392)).
+
+  - Added support for partial application ([#2265](https://github.com/tokiwa-software/fuzion/pull/2265)). In particular, the following
+    partial calls are supported now:
+
+    | partial expression | expands to                    | explanation |
+    | ------------------ | ----------                    | ----------- |
+    | f x y              | a,b,c -> f x y a b c          | partial call turned into a lambda |
+    | f x y              | () -> f x y                   | a call may be turned into a nullary function |
+    | ++ x               | a -> a ++ x                   | A prefix or postfix operator may be turned into an infix operator |
+    | x ++               | a -> x ++ a                   | dto. |
+    | -                  | a -> -a<br>—or—<br>a,b -> a-b | A single operator may become a prefix, postfix, or infix operator in a lambda |
+    | .as_string         | a -> a.as_string              | A dot followed by a call is a call in a lambda that receives its target as an argument |
+    | -1                 | a -> a - 1                    | a numeric literal with a sign may become an infix operator |
+
+    Note that a single operator given as an argument to a call will be parsed as a postfix or infix operator, so it usually will have to be enclosed in parentheses as in
+
+            (-)
+
+    The same holds for partial application of the target of a call using `.` as in
+
+            (.as_string)
+
+  - When redefining an inherited feature, it is now enforced that the visibility is not restricted ([#2233](https://github.com/tokiwa-software/fuzion/pull/2233)).
+
+
+- base library
+
+  - `io.buffered.read_string` now may return `io.end_of_file` ([#2227](https://github.com/tokiwa-software/fuzion/pull/2227)).
+
+  - `ctrie` has been moved to the `lock_free` module ([#2238](https://github.com/tokiwa-software/fuzion/pull/2238)).
+
+  - The monoids `all`, `any`, and `parity` have been added to `bool.type` ([#2287](https://github.com/tokiwa-software/fuzion/pull/2287)).
+
+  - Many useful features have been made public:
+
+    - ranges like `codepoint.ascii` [#2289](https://github.com/tokiwa-software/fuzion/pull/2289),
+    - `bool.as_option` [#2309](https://github.com/tokiwa-software/fuzion/pull/2309),
+    - `io.buffered.read_bytes` [#2332](https://github.com/tokiwa-software/fuzion/pull/2332),
+    - function composition features like `atop`, `flip`, etc. defined in `composition` [#2342](https://github.com/tokiwa-software/fuzion/pull/2342),
+    - `(has_interval.infix` ..).upper [#2384](https://github.com/tokiwa-software/fuzion/pull/2384),
+    - `String.trim` [#2374](https://github.com/tokiwa-software/fuzion/pull/2374),
+    - `length` and others in `java.Array` [#2395](https://github.com/tokiwa-software/fuzion/pull/2395).
+
+  - `option` now inherits from `Sequence` ([#2291](https://github.com/tokiwa-software/fuzion/pull/2291)).
+
+  - `time.durations.as_string` has a fixed width now such that nice looking timing tables are easier to create ([#2330](https://github.com/tokiwa-software/fuzion/pull/2330)).
+
+  - A `stack` data type using local mutation is available now ([#2351](https://github.com/tokiwa-software/fuzion/pull/2351)).
+
+  - `map` and `flat_map` are now features of Sequence that produce a new
+    Sequence. Specific variants for array or list that produce an array or a
+    list have been renamed as map_to_array and map_to_list, etc., resp. ([#2317](https://github.com/tokiwa-software/fuzion/pull/2317)).
+
+  - `count` and `drop` were redefined for array backed sequences to achieve O(1) performance ([#2337](https://github.com/tokiwa-software/fuzion/pull/2337)).
+
+  - `reverse`, `map_pairs`, `fold1`, and `foldf` were added to `Sequence` ([#2341](https://github.com/tokiwa-software/fuzion/pull/2341)).
+
+  - Unused features were removed from `effects.fz` ([#2352](https://github.com/tokiwa-software/fuzion/pull/2352)).
+
+  - For debugging of functions, a feature `log` was added which is like `say`, but instead of returning unit, it returns its argument ([#2297](https://github.com/tokiwa-software/fuzion/pull/2297)).
+
+  - Output of `list.as_string` has been improved for empty entries ([#2314](https://github.com/tokiwa-software/fuzion/pull/2314)).
+
+  - Performance improvements for `io.stdin` and `io.buffered.reader` ([#2343](https://github.com/tokiwa-software/fuzion/pull/2343)).
+
+  - Pipe operators `|>`, `||>`, `|||>`, etc. have been added ([#2355](https://github.com/tokiwa-software/fuzion/pull/2355)), so you can now do things like
+
+            (3,4) ||> (+) |> say
+
+    which will first destructure the tuple into `3` and `4`, then apply `infix +` to add these and pass the result as an argument to `say`.
+
+  - `memoize` is now public ([#2248](https://github.com/tokiwa-software/fuzion/pull/2248)).
+
+  - New feature `Sequence.scan` to create lists of results of folding all prefixes of a `list` ([#2197](https://github.com/tokiwa-software/fuzion/pull/2197)). e.g.,
+
+            [1,2,3,4,5].scan i32.type.sum
+
+    results in
+
+            [1,3,6,10,15]
+
+  - `marray` has been replaced by `mutate.array` ([#1930](https://github.com/tokiwa-software/fuzion/pull/1930)).
+
+  - A new module `lock_free.fum` was added with a lock-free `stack` implementation as a first entry ([#1917](https://github.com/tokiwa-software/fuzion/pull/1917)).
+
+
+- Front end
+
+  - `this.type` can now be used inside of the corresponding type feature ([#2296](https://github.com/tokiwa-software/fuzion/pull/2296)).
+
+  - Support for partial application with type parameters has been implemented
+    ([#2355](https://github.com/tokiwa-software/fuzion/pull/2355)). This was required, e.g., for the pipe operator to work with partial
+    application as in
+
+            "Hello> |> say.
+
+  - Error output for this-types now uses `xyz.this` instead of `xyz.this.type` to match the current syntax ([#2356](https://github.com/tokiwa-software/fuzion/pull/2356)).
+
+  - Fixed type inference for numeric literals wrapped in a `lazy` value ([#2363](https://github.com/tokiwa-software/fuzion/pull/2363)).
+
+  - Fixed false detection of ambiguous code due to partial applications ([#2298](https://github.com/tokiwa-software/fuzion/pull/2298)).
+
+  - Improved type inference for function argument types ([#2316](https://github.com/tokiwa-software/fuzion/pull/2316)).
+
+  -  Mark result clazz of intrinsic constructor as instantiated, this paves part of the way for `fzjava` integration with the JVM backend ([#2394](https://github.com/tokiwa-software/fuzion/pull/2394)).
+
+  - A contract whose result type is not bool now results in an error ([#2268](https://github.com/tokiwa-software/fuzion/pull/2268)).
+
+  - Type inference from anonymous feature now results in the base type if that is a ref type, which is typically the desired type ([#2254](https://github.com/tokiwa-software/fuzion/pull/2254)).
+
+  - Added concept of effective visibility which is the combination of the outer
+    feature's visibility and its own visibility.  Visibility checks now use
+    effective visibility when verifying argument and result type
+    visibility. ([#2246](https://github.com/tokiwa-software/fuzion/pull/2246)).
+
+  - Fixed feature lookup for features added in modules ([#2245](https://github.com/tokiwa-software/fuzion/pull/2245)).
+
+
+- Middle end
+
+  - Reduce recursion depth of `CFG` and `DFA` to improve performance and avoid stack overflows ([#2338](https://github.com/tokiwa-software/fuzion/pull/2338)).
+
+  - Fixed null-pointer exceptions and check-condition failures ([#2357](https://github.com/tokiwa-software/fuzion/pull/2357)).
+
+  - Fixed crashes when empty block is used to return a unit type result that is a tagged element in a choice ([#2267](https://github.com/tokiwa-software/fuzion/pull/2267)).
+
+  - Fixed inheritance of types for the case of a type parameter that is replaced
+    by an actual type twice: via the inheritance change and in an outer feature
+    ([#2243](https://github.com/tokiwa-software/fuzion/pull/2243)).
+
+  - Support for calls as compile-time constants ([#2067](https://github.com/tokiwa-software/fuzion/pull/2067)).
+
+
+- JVM back end
+
+  - JVM backend runtime now has its own version of `OpenResource.java` for resource handling ([#2256](https://github.com/tokiwa-software/fuzion/pull/2256)).
+
+  - Reduced code size by joining precondition and routine body into one Java method ([#2196](https://github.com/tokiwa-software/fuzion/pull/2196)).
+
+  - Internal improvements: Added null type ([#2089](https://github.com/tokiwa-software/fuzion/pull/2089)).
+
+  - Code is no longer run in the main thread, but all code is run in an instance of `FuzionThread` ([#2177](https://github.com/tokiwa-software/fuzion/pull/2177)).
+
+
+- C back end
+
+  - Enable `-fno-omit-frame-pointer` by default to enhance debugging ([#2373](https://github.com/tokiwa-software/fuzion/pull/2373)).
+
+  - Fixed an old and tough bug where a value result from a dynamically bound call could result in a dangling reference on the C stack ([#2260](https://github.com/tokiwa-software/fuzion/pull/2260)).
+
+  - Now uses C's compound literals to create Fuzion's String constants ([#2225](https://github.com/tokiwa-software/fuzion/pull/2225)).
 
 
 ## 2023-10-31: V0.085
@@ -58,7 +227,7 @@
 - C back end
 
   - Improved support for `concur.atomic` to support compare-and-swap for choice
-    and value types and avoid accessing unitialized memory
+    and value types and avoid accessing uninitialized memory
     [#2123](https://github.com/tokiwa-software/fuzion/pull/2123).
 
 - base library
