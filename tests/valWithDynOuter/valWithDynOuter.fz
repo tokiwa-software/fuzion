@@ -81,10 +81,10 @@ valWithDynOuter is
     chck str expected
 
   ref_v (f String) ref is
-    x String is abstract
+    x String => abstract
     e is
       y => ".$x."
-      mut unit is
+      mut unit =>
         set f := f+f
     g => e
 
@@ -130,22 +130,22 @@ valWithDynOuter is
   #
   # inner feature e extends outer feature's lifespan
   #
-  q1 v.e is (v "v1").e
+  q1 v.e => (v "v1").e
   test q1 ".v1-v:v.x."
-  q2 w.e is w.g
+  q2 w.e => w.g
   testw q2 ".w-w:w.x."
-  q3 ref_v.e is
+  q3 ref_v.e =>
     rv ref_v := v "v2"
     rv.e
 #    rv.g
   testrv q3 ".v2-v:v.x."
-  q4 ref_v.e is
+  q4 ref_v.e =>
     rw ref_v := w
     rw.e
 #    rw.g
   testrv q4 ".w-w:w.x."
 #  q5 s.e is s.g
-  q5 s.e is s.e
+  q5 s.e => s.e
   tests q5 ".s-s:s.x."
 
   # mutating test

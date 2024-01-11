@@ -25,7 +25,7 @@ ex_nested_options is
 
   exit_code := mut 0
 
-  chk(exp, act String) unit is
+  chk(exp, act String) unit =>
     if exp = act
       say "PASSED: $exp = $act"
     else

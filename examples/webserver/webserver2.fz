@@ -55,7 +55,7 @@ webserver is
     else
       say s
 
-    send200(data String) outcome unit is
+    send200(data String) outcome unit =>
       (net.channel net.server)
         .write """
           HTTP/1.1 200 OK

@@ -36,7 +36,7 @@ fileiotests =>
   writer := f.write
   reader := f.read
 
-  exists(path String) bool is
+  exists(path String) bool =>
     match f.stat path true
       io.file.meta_data => true
       error => false

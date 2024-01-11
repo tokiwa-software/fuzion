@@ -27,7 +27,7 @@ looptest_negative is
 
   exit_code := mut 0
 
-  chck (msg String, b bool) unit is
+  chck (msg String, b bool) unit =>
     if b
       say "PASSED: $msg"
     else

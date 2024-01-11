@@ -29,7 +29,7 @@ listFoldTest is
 
   exit_code := mut 0
 
-  chck (b bool, msg String) unit is
+  chck (b bool, msg String) unit =>
     if b
       say "PASSED: $msg"
     else

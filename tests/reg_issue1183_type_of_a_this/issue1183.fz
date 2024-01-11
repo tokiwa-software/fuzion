@@ -54,7 +54,7 @@ issue1183 is
   a1 is
 
     # using explicit result type
-    l1 list a1.this is [a1.this].as_list
+    l1 list a1.this => [a1.this].as_list
 
     # using inferred result type
     l2 => [a1.this].as_list

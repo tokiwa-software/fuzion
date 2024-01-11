@@ -38,7 +38,7 @@ To solve this, remove the type visibility: 'public'.
 
 
 --CURDIR--/main.fz:36:10: error 6: Result type or any of its generics have more restrictive visibility than feature.
-  module mod priv is  // should flag an error result type visibility more restrictive than a
+  module mod priv =>  // should flag an error result type visibility more restrictive than a
 ---------^^^
 To solve this, increase the visibility of 'priv' (no arguments) or specify a different return type.
 
@@ -86,13 +86,13 @@ To solve this, increase the visibility of 'm.my_false' or do not use this featur
 
 
 --CURDIR--/main.fz:80:18: error 14: Redefinition must not have more restrictive visibility.
-    module redef b unit is // should flag an error Redefinition must not have more restrictive visibility.
+    module redef b unit => // should flag an error Redefinition must not have more restrictive visibility.
 -----------------^
 To solve this, increase the visibility of 'm.redef_test_0.b' to at least 'public'
 
 
 --CURDIR--/main.fz:82:12: error 15: Redefinition must not have more restrictive visibility.
-    module e unit is // should flag an error Redefinition must not have more restrictive visibility.
+    module e unit => // should flag an error Redefinition must not have more restrictive visibility.
 -----------^
 To solve this, increase the visibility of 'm.redef_test_0.e' to at least 'public'
 

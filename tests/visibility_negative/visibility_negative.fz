@@ -27,14 +27,14 @@ visibility_negative is
 
   exit_code := mut 0
 
-  chck (b bool, msg String) unit is
+  chck (b bool, msg String) unit =>
     if b
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
       exit_code <- 1
 
-  chck (a,b i32, msg String) unit is
+  chck (a,b i32, msg String) unit =>
     if a == b
       say "PASSED: $msg"
     else

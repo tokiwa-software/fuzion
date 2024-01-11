@@ -44,10 +44,10 @@ ambiguous_declaration is
   say c.call
 
   # function declarations
-  i ()->i32 is ()->4715
-  j () -> i32 is () -> 4716
+  i ()->i32 => ()->4715
+  j () -> i32 => () -> 4716
   k () (() ->         # we (currently) need explicit arg list `()` to help parser
-        i32  ) is () -> 4717
+        i32  ) => () -> 4717
   l () ->
     i32 is () -> 4718   # illegal, no LF allowed after -> in function result
 

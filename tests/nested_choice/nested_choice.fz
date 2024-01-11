@@ -38,7 +38,7 @@ nested_choice =>
             t the_choice => $t
             s String => s
 
-      map (n i32) map_res is
+      map (n i32) map_res =>
         n
 
       say (map 2)

@@ -27,7 +27,7 @@ tupletest is
 
   exit_code := mut 0
 
-  chck (b bool, msg String) unit is
+  chck (b bool, msg String) unit =>
     if b
       say "PASSED: $msg"
     else
@@ -43,7 +43,7 @@ tupletest is
   chck g1("Hello").a.codepoint_length=5 "g1 A infer A==string"
   chck g1(123).a=123 "g1 A infer A==i32"
 
-  g1a(A type, a A) A is a
+  g1a(A type, a A) A => a
   itaa := g1a "String"  // should infer String
   itab := g1a 123  // should infer i32
   chck itaa.codepoint_length=6 "g1a A infer A==string"
@@ -147,7 +147,7 @@ tupletest is
   chck (two18a=4 && two18b=2) "two18"
 
 # t10 (i32, bool) { (3, false) }
-  t10 tuple i32 bool is (3, false)
+  t10 tuple i32 bool => (3, false)
   p "tuple t10 is {t10.values.0}, {t10.values.1}"
   chck t10.values.0=3       "t10.values.0"
   chck t10.values.1<=>false "t10.values.1"

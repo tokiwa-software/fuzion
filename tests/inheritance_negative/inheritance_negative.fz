@@ -32,7 +32,7 @@ inheritance_negative is
 
     u : strm2 is // 1. should flag an error, inheritance of outer feature not permitted for value type
 
-    print unit is
+    print unit =>
       say "strm2.print"
 
   // this should not work since it uses value types
@@ -42,7 +42,7 @@ inheritance_negative is
 
     u : strm3 is // 2. should flag an error, inheritance of outer feature not permitted for value type
 
-    print unit is
+    print unit =>
       say "strm3.print"
 
   // this should not work since it uses value types
@@ -52,7 +52,7 @@ inheritance_negative is
 
     u : strm4Z is // 3. should flag an error, inheritance of outer feature not permitted for value type
 
-    print unit is
+    print unit =>
       say "strm4.print"
 
   strm4X ref : strm4  is

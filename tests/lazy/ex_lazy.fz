@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 ex_lazy is
-  and(a bool, b Lazy bool) bool is
+  and(a bool, b Lazy bool) bool =>
     if a
       b
     else
@@ -41,7 +41,7 @@ ex_lazy is
 
   mtrue => say "eval mtrue!"; true
 
-  lst(T type, h T, t Lazy (list T)) list T is
+  lst(T type, h T, t Lazy (list T)) list T =>
     ref : Cons T (list T)
       head => h
       tail => t
@@ -52,7 +52,7 @@ ex_lazy is
   say (ones.take 10)
   say "y"
 
-  type_of2(W type, x Lazy W) Type is W
+  type_of2(W type, x Lazy W) Type => W
   # NYI: should work but currently does not:
   # say (type_of2 42)
   say (type_of2 ()->42)

@@ -30,7 +30,7 @@ test_issue1604 is
     small(x u8).
 
 
-    fill(a,b,c,d,e,f u64, n i32) unit is
+    fill(a,b,c,d,e,f u64, n i32) unit =>
       if n > 0
         fill ~a ~b ~c ~d ~e ~f n-1
 
@@ -38,7 +38,7 @@ test_issue1604 is
     l := large 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC
     a := concur.atomic c s
 
-    test(n i32) unit is
+    test(n i32) unit =>
       if n > 0
         s1 := small 0x11
         l1 := large 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC

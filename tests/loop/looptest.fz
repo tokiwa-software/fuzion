@@ -173,7 +173,7 @@ looptest is
   yak "searching first larger 100000: "; yak (testLoop6 a (i -> i > 100000)); say ""
 
   say "testLoop7: loop return 3333 on success and 4444 in else branch"
-  testLoop7(data array i32, isWhatWeWant (i32) -> bool) i32 is
+  testLoop7(data array i32, isWhatWeWant (i32) -> bool) i32 =>
     for ix := 0, ix + 1
     while ix < data.length
       element := data[ix]
@@ -185,7 +185,7 @@ looptest is
   chck (testLoop7(a, (i -> i >  10000)) = 4444) "testLoop7 returns 4444 in else branch"
 
   say "testLoop8: loop return success index as default and 4444 in else branch"
-  testLoop8(data array i32, isWhatWeWant (i32) -> bool) i32 is
+  testLoop8(data array i32, isWhatWeWant (i32) -> bool) i32 =>
     for ix := 0, ix + 1
     while ix < data.length
       element := data[ix]
@@ -197,7 +197,7 @@ looptest is
   chck (testLoop8(a, (i -> i >  10000)) = 4444) "testLoop8 returns 4444 in else branch"
 
   say "testLoop9: loop return 3333 on success, index as default"
-  testLoop9(data array i32, isWhatWeWant (i32) -> bool) i32 is
+  testLoop9(data array i32, isWhatWeWant (i32) -> bool) i32 =>
     for ix := 0, ix + 1
     while ix < data.length
       element := data[ix]
@@ -209,7 +209,7 @@ looptest is
   chck (testLoop9(a, (i -> i >  10000)) =  100) "testLoop9 returns  100 in index branch"
 
   say "testLoop10: loop return 4444 on else branch, no success possible"
-  testLoop10(data array i32, isWhatWeWant (i32) -> bool) i32 is
+  testLoop10(data array i32, isWhatWeWant (i32) -> bool) i32 =>
     for ix := 0, ix + 1
     while ix < data.length
       element := data[ix]
@@ -219,14 +219,14 @@ looptest is
   chck (testLoop10(a, (i -> i >  10000)) = 4444) "testLoop10 returns 4444 in else branch"
 
   say "testLoop11: loop returns last index"
-  testLoop11(data array i32, isWhatWeWant (i32) -> bool) i32 is
+  testLoop11(data array i32, isWhatWeWant (i32) -> bool) i32 =>
     for ix := 0, ix + 1
     while ix < data.length
   chck (testLoop11(a, (i -> i >    100)) =  100) "testLoop11 returns 100 in index branch"
   chck (testLoop11(a, (i -> i >  10000)) =  100) "testLoop11 returns 100 in index branch"
 
   say "testLoop12: loop returns found or not"
-  testLoop12(data array i32, isWhatWeWant (i32) -> bool) bool is
+  testLoop12(data array i32, isWhatWeWant (i32) -> bool) bool =>
     for
       ix := 0, ix + 1
       found := false, found || isWhatWeWant data[ix-1]
@@ -235,7 +235,7 @@ looptest is
   chck (testLoop12(a, (i -> i >  10000)) <=> false) "testLoop12 returns false in index branch"
 
   say "testLoop13: sum up the elements"
-  testLoop13(data array i32) i32 is
+  testLoop13(data array i32) i32 =>
     for
       ix  := 0, ix + 1
       sum := 0, sum + data[ix - 1]
