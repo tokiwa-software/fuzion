@@ -113,7 +113,7 @@
     ([#2355](https://github.com/tokiwa-software/fuzion/pull/2355)). This was required, e.g., for the pipe operator to work with partial
     application as in
 
-            "Hello> |> say.
+            "Hello" |> say.
 
   - Error output for this-types now uses `xyz.this` instead of `xyz.this.type` to match the current syntax ([#2356](https://github.com/tokiwa-software/fuzion/pull/2356)).
 
