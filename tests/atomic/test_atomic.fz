@@ -67,25 +67,24 @@ test_atomic is
   test (p 1 1) (p 2 2) (p 3 3) (p 4 4)
 
   # test unit-like choice
-  unit_like : choice unit is
+  unit_like : choice TRUE is
     ord => match unit_like.this
-      unit => 0
+      TRUE => 0
     redef as_string => match unit_like.this
-      unit => "unit"
-  test0 unit_like unit unit unit unit ((a,b)-> a.ord=b.ord)
+      TRUE => "TRUE"
+  test0 unit_like TRUE TRUE TRUE TRUE ((a,b)-> a.ord=b.ord)
 
-/* NYI: commented out due to #2434
+/* NYI: commented out due to #2104
 
   # test unit-like choice
-  unit_like2 : choice unit void is
+  unit_like2 : choice TRUE void is
     ord => match unit_like2.this
-      unit => 0
+      TRUE => 0
       void => 1   # cannot happen!
     redef as_string => match unit_like2.this
-      unit => "unit"
+      TRUE => "TRUE"
       void => "*** cannot happen ***"
-  test0 unit_like2 unit unit unit unit ((a,b)-> a.ord=b.ord)
-
+  test0 unit_like2 TRUE TRUE TRUE TRUE ((a,b)-> a.ord=b.ord)
 */
 
   # test bool-like choice
