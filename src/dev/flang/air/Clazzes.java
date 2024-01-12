@@ -270,7 +270,7 @@ public class Clazzes extends ANY
    * @param select in case actualType is a field with open generic result, this
    * chooses the actual field from outer's actual generics. -1 otherwise.
    *
-   * @param clazz the runtime clazz of the outer feature of
+   * @param outer the runtime clazz of the outer feature of
    * actualType.featureOfType.
    *
    * @return the existing or newly created Clazz that represents actualType
@@ -291,6 +291,8 @@ public class Clazzes extends ANY
             outer = o;  // short-circuit outer relation if suitable outer was found
           }
 
+        // NYI this should be, but tests/unary fails currently:
+        // o._type.compareTo(actualType) == 0 && ...
         if (o._type == actualType && actualType != Types.t_ERROR &&
             // a recursive outer-relation
 
@@ -313,7 +315,7 @@ public class Clazzes extends ANY
             chain.append("1: "+actualType+" at "+actualType.declarationPos().show()+"\n");
             int i = 2;
             Clazz c = outer;
-            while (c._type != actualType)
+            while (c._type.compareTo(actualType) != 0)
               {
                 chain.append(""+i+": "+c._type+" at "+c._type.declarationPos().show()+"\n");
                 c = c._outer;

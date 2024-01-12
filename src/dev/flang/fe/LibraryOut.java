@@ -547,7 +547,7 @@ class LibraryOut extends ANY
       {
         _data.writeInt(-4);
       }
-    else if (t == Types.resolved.universe.selfType())
+    else if (!t.isGenericArgument() && t.featureOfType().isUniverse())
       {
         _data.writeInt(-3);
       }
