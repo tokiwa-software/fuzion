@@ -249,6 +249,11 @@ public class SourceFile extends ANY
    */
   private int decodeCodePointAndSize(int pos)
   {
+    /*
+    // tag::fuzion_rule_SRCF_UTF8[]
+Fuzion input uses UTF8 encoding vesion {UNICODE_VERSION} from {UNICODE_SOURCE}[].  Improperly encoded input will be treated as an error.
+    // end::fuzion_rule_SRCF_UTF8[]
+    */
     int result;
     int sz;
     int b1 = _bytes[pos] & 0xff;
@@ -262,9 +267,9 @@ public class SourceFile extends ANY
       {
         if (pos + 2 > _bytes.length)
           {
-            Errors.error(sourcePos(pos),
-                         "Bad UTF8 encoding found at end-of-file: "+hex(b1),
-                         "Expected one continuation byte, but reached end of file.");
+            Errors.SRCF.UTF8.report(sourcePos(pos),
+                                    ": found end-of-file while decoding " + hex(b1),
+                                    "Expected one continuation byte, but reached end of file.");
             result = BAD_CODEPOINT;
             sz = 1;
           }
@@ -273,9 +278,9 @@ public class SourceFile extends ANY
             int b2 = _bytes[pos + 1] & 0xff;
             if ((b2 & 0xc0) != 0x80)
               {
-                Errors.error(sourcePos(pos),
-                             "Bad UTF8 encoding found: " + hex(b1) + " " + hex(b2),
-                             "Expected one continuation byte in the range 0x80..0xbf.");
+                Errors.SRCF.UTF8.report(sourcePos(pos),
+                                        ": while decoding " + hex(b1) + " " + hex(b2),
+                                        "Expected one continuation byte in the range 0x80..0xbf.");
                 result = BAD_CODEPOINT;
                 sz = 1;
               }
@@ -285,16 +290,16 @@ public class SourceFile extends ANY
                 sz = 2;
                 if (result == 0x00)
                   {
-                    Errors.error(sourcePos(pos),
-                                 "Bad UTF8 encoding found: " + hex(b1) + " " + hex(b2),
-                                 "Two-byte NUL-character encoding is allowed in modified UTF-8 only, not in standard UTF-8 encoding.");
+                    Errors.SRCF.UTF8.report(sourcePos(pos),
+                                            ": while decoding " + hex(b1) + " " + hex(b2),
+                                            "Two-byte NUL-character encoding is allowed in modified UTF-8 only, not in standard UTF-8 encoding.");
                     result = BAD_CODEPOINT;
                   }
                 else if (result < 0x80)
                   {
-                    Errors.error(sourcePos(pos),
-                                 "Bad UTF8 encoding found: " + hex(b1) + " " + hex(b2),
-                                 "Code point "+Integer.toHexString(result)+" uses overlong 2-byte encoding.");
+                    Errors.SRCF.UTF8.report(sourcePos(pos),
+                                            ": while decoding " + hex(b1) + " " + hex(b2),
+                                            "Code point "+Integer.toHexString(result)+" uses overlong 2-byte encoding.");
                     result = BAD_CODEPOINT;
                   }
               }
@@ -304,9 +309,9 @@ public class SourceFile extends ANY
       {
         if (pos + 3 > _bytes.length)
           {
-            Errors.error(sourcePos(pos),
-                         "Bad UTF8 encoding found at end-of-file: "+hex(b1),
-                         "Expected two continuation bytes, but reached end of file.");
+            Errors.SRCF.UTF8.report(sourcePos(pos),
+                                    ": found end-of-file while decoding " + hex(b1),
+                                    "Expected two continuation bytes, but reached end of file.");
             result = BAD_CODEPOINT;
             sz = _bytes.length - pos;;
           }
@@ -317,9 +322,9 @@ public class SourceFile extends ANY
             if ((b2 & 0xc0) != 0x80 ||
                 (b3 & 0xc0) != 0x80)
               {
-                Errors.error(sourcePos(pos),
-                             "Bad UTF8 encoding found: " + hex(b1) + " " + hex(b2) + " " + hex(b3),
-                             "Expected two continuation bytes in the range 0x80..0xbf.");
+                Errors.SRCF.UTF8.report(sourcePos(pos),
+                                        ": while decoding " + hex(b1) + " " + hex(b2) + " " + hex(b3),
+                                        "Expected two continuation bytes in the range 0x80..0xbf.");
                 result = BAD_CODEPOINT;
                 sz = ((b2 & 0xc0) != 0x80) ? 1 : 2;
               }
@@ -330,17 +335,17 @@ public class SourceFile extends ANY
                           ((b3 & 0x3f)      )   );
                 if (result < 0x800)
                   {
-                    Errors.error(sourcePos(pos),
-                                 "Bad UTF8 encoding found: " + hex(b1) + " " + hex(b2) + " " + hex(b3),
-                                 "Code point "+Integer.toHexString(result)+" uses overlong 3-byte encoding.");
+                    Errors.SRCF.UTF8.report(sourcePos(pos),
+                                            ": while decoding " + hex(b1) + " " + hex(b2) + " " + hex(b3),
+                                            "Code point "+Integer.toHexString(result)+" uses overlong 3-byte encoding.");
                     result = BAD_CODEPOINT;
                   }
                 else if (result >= 0xd800 && result <= 0xdfff)
                   {
-                    Errors.error(sourcePos(pos),
-                                 "Bad UTF8 encoding found: " + hex(b1) + " " + hex(b2) + " " + hex(b3),
-                                 "Code point "+Integer.toHexString(result)+" is invalid, values in the " +
-                                 "range 0xd800..0xdfff are reserved for UTF-16 surrogate halves.");
+                    Errors.SRCF.UTF8.report(sourcePos(pos),
+                                            ": while decoding " + hex(b1) + " " + hex(b2) + " " + hex(b3),
+                                            "Code point "+Integer.toHexString(result)+" is invalid, values in the " +
+                                            "range 0xd800..0xdfff are reserved for UTF-16 surrogate halves.");
                     result = BAD_CODEPOINT;
                   }
                 sz = 3;
@@ -351,9 +356,9 @@ public class SourceFile extends ANY
       {
         if (pos + 4 > _bytes.length)
           {
-            Errors.error(sourcePos(pos),
-                         "Bad UTF8 encoding found at end-of-file: "+hex(b1),
-                         "Expected three continuation bytes, but reached end of file.");
+            Errors.SRCF.UTF8.report(sourcePos(pos),
+                                    ": found end-of-file while decoding " + hex(b1),
+                                    "Expected three continuation bytes, but reached end of file.");
             result = BAD_CODEPOINT;
             sz = _bytes.length - pos;
           }
@@ -366,9 +371,9 @@ public class SourceFile extends ANY
                 (b3 & 0xc0) != 0x80 ||
                 (b4 & 0xc0) != 0x80)
               {
-                Errors.error(sourcePos(pos),
-                             "Bad UTF8 encoding found: " + hex(b1) + " " + hex(b2) + " " + hex(b3) + " " + hex(b4),
-                             "Expected three continuation bytes in the range 0x80..0xbf.");
+                Errors.SRCF.UTF8.report(sourcePos(pos),
+                                        ": while decoding " + hex(b1) + " " + hex(b2) + " " + hex(b3) + " " + hex(b4),
+                                        "Expected three continuation bytes in the range 0x80..0xbf.");
                 result = BAD_CODEPOINT;
                 sz = (((b2 & 0xc0) != 0x80) ? 1 :
                       ((b3 & 0xc0) != 0x80) ? 2 : 3);
@@ -381,17 +386,17 @@ public class SourceFile extends ANY
                           ((b4 & 0x3f)      )   );
                 if (result < 0x10000)
                   {
-                    Errors.error(sourcePos(pos),
-                                 "Bad UTF8 encoding found: " + hex(b1) + " " + hex(b2) + " " + hex(b3) + " " + hex(b4),
-                                 "Code point "+Integer.toHexString(result)+" uses overlong 4-byte encoding.");
+                    Errors.SRCF.UTF8.report(sourcePos(pos),
+                                            ": while decoding " + hex(b1) + " " + hex(b2) + " " + hex(b3) + " " + hex(b4),
+                                            "Code point "+Integer.toHexString(result)+" uses overlong 4-byte encoding.");
                     result = BAD_CODEPOINT;
                   }
                 else if (result > 0x10ffff)
                   {
-                    Errors.error(sourcePos(pos),
-                                 "Bad UTF8 encoding found: " + hex(b1) + " " + hex(b2) + " " + hex(b3) + " " + hex(b4),
-                                 "Code point "+Integer.toHexString(result)+" is outside of the allowed range for " +
-                                 "codepoints 0x000000..0x10ffff.");
+                    Errors.SRCF.UTF8.report(sourcePos(pos),
+                                            ": while decoding " + hex(b1) + " " + hex(b2) + " " + hex(b3) + " " + hex(b4),
+                                            "Code point "+Integer.toHexString(result)+" is outside of the allowed range for " +
+                                            "codepoints 0x000000..0x10ffff.");
                     result = BAD_CODEPOINT;
                   }
                 sz = 4;
@@ -400,31 +405,31 @@ public class SourceFile extends ANY
       }
     else if (0x80 <= b1 && b1 <= 0xbf)
       {
-        Errors.error(sourcePos(pos),
-                     "Bad UTF8 encoding found: "+hex(b1),
-                     "Stray continuation byte without preceding leading byte.");
+        Errors.SRCF.UTF8.report(sourcePos(pos),
+                                ": while decoding " + hex(b1),
+                                "Stray continuation byte without preceding leading byte.");
         result = BAD_CODEPOINT;
         sz = 1;
       }
     else if (0xf5 <= b1 && b1 <= 0xfd)
       {
-        Errors.error(sourcePos(pos),
-                     "Bad UTF8 encoding found:: "+hex(b1),
-                     "Code 0xf8..0xff are undefined.");
+        Errors.SRCF.UTF8.report(sourcePos(pos),
+                                ": while decoding " + hex(b1),
+                                "Code 0xf8..0xff are undefined.");
         result = BAD_CODEPOINT;
         sz = 1;
       }
     else if (0xfe <= b1 && b1 <= 0xff)
       {
-        Errors.error(sourcePos(pos),
-                     "Bad UTF8 encoding found:: "+hex(b1),
+        Errors.SRCF.UTF8.report(sourcePos(pos),
+                     "while decoding : " + hex(b1),
                      "Code 0xfe and 0xff are undefined.");
         result = BAD_CODEPOINT;
         sz = 1;
       }
     else
       {
-        throw new Error("Missing case: "+hex(b1));
+        throw new Error("Missing case: " + hex(b1));
       }
     return makeCodePointWithSize(result, sz);
   }

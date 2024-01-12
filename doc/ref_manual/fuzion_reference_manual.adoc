@@ -18,11 +18,13 @@
 //
 //  Tokiwa Software GmbH, Germany
 //
-//  ASCIIdoc source of Fuzion Langauge Reference Manual
+//  ASCIIdoc source of the Fuzion Langauge Reference Manual
 //
 // -----------------------------------------------------------------------
 
-
+// This is the main asciidoc input file that defines the overall structure of the
+// reference manual.
+//
 = Fuzion Reference Manual [DRAFT]
 The Fuzion Team <info@tokiwa.software>
 include::../../version.txt[]
@@ -32,6 +34,7 @@ include::../../version.txt[]
 :sectanchors:
 :url-repo: https://github.com/tokiwa-software/fuzion/
 :sectnums:
+:icons: font
 :toc: macro
 
 toc::[]
@@ -40,11 +43,67 @@ toc::[]
 
 === Audience
 
-TBW
+CAUTION: *NYI*: Audience spec missing!
 
 === Conventions
 
-TBW
+This is work in progress. Areas where information is known to be preliminary,
+missing or wrong might be marked as follows:
+
+CAUTION: *NYI*: This spec is work in progress!
+
+Generally, *NYI* is used in this document, as well as through any other files
+related to the Fuzion project, to mark sections that need further work or future
+enhancements.  This is often equivalent to comments starting *TODO* or similar
+used in other projects.
+
+The specification contains a number of rules that must be implemented by the
+language implementations. These rules are identified by identifiers such as
+*DOMAIN_DETAIL*. Rules are shown as follows:
+
+:RULE_SRC: doc/ref_manual/demo_rule.txt
+:RULE_ID: DOMAIN_DETAIL
+include::rule.adoc[]
+
+
+== Input
+
+=== Input Sources
+
+Fuzion source code input may come from different sources including source code
+files, streams such as the standard input stream of a Unix shell command,
+interactive input in an interactive Read-Eval-Print-Loop (indexterm2:[REPL]), command line arguments, etc.
+
+For source code files, the following rule applies:
+
+:RULE_SRC: src/dev/flang/fe/SourceModule.java
+:RULE_ID: SRCF_DOTFZ
+include::rule.adoc[]
+
+=== Directories
+
+Source files may be organized in a hierarchy of directories.  Source files in
+sub-directories are automatically considered as input only if corresponding
+outer features exist:
+
+:RULE_SRC: src/dev/flang/fe/SourceModule.java
+:RULE_ID: SRCF_DIR
+include::rule.adoc[]
+
+
+=== Input encoding
+
+Fuzion input sources use UTF8 encoding.
+
+include::{GENERATED}/doc/unicode_version.adoc[]
+
+CAUTION: NYI: Actual Unicode version has not been fixed yet!
+
+:RULE_SRC: src/dev/flang/util/SourceFile.java
+:RULE_ID: SRCF_UTF8
+include::rule.adoc[]
+
+
 
 == Syntax
 
@@ -52,51 +111,54 @@ TBW
 
 ==== White Space
 
-TBW
+CAUTION: *NYI*: Text Missing
 
 ==== Keywords
 
-TBW: `this` `env` `check` `else` `if` `then` `is` `abstract` `intrinsic` `intrinsic_constructor` `native` `for` `in` `do` `fixed` `loop` `while` `until` `variant` `pre` `post` `inv` `var` `match` `value` `ref` `synchronized` `redef` `const` `leaf` `infix` `prefix` `postfix` `ternary` `index` `set` `private` `module` `public` `of` `type` `univers`
+CAUTION: *NYI*: Text Missing
+
+`this` `env` `check` `else` `if` `then` `is` `abstract` `intrinsic` `intrinsic_constructor` `native` `for` `in` `do` `fixed` `loop` `while` `until` `variant` `pre` `post` `inv` `var` `match` `value` `ref` `synchronized` `redef` `const` `leaf` `infix` `prefix` `postfix` `ternary` `index` `set` `private` `module` `public` `of` `type` `univers`
 
 ==== Identifiers
 
-TBW
+CAUTION: *NYI*: Text Missing
 
 ==== Literals
 
-TBW
+CAUTION: *NYI*: Text Missing
 
 ===== Numeric Literals
 
-TBW
+CAUTION: *NYI*: Text Missing
 
 ===== String Literals
 
-TBW
+CAUTION: *NYI*: Text Missing
 
 ==== Comments
 
-TBW
+CAUTION: *NYI*: Text Missing
 
 === Grammar
 
-TBW
+CAUTION: *NYI*: Text Missing
 
 == Semantics
 
-TBW
+CAUTION: *NYI*: Text Missing
 
 [appendix]
 == Definitions
 
-((Argument)):: TBW
-((Constructor)):: TBW
-((Feature)):: TBW
-((Field)):: TBW
-((Function)):: TBW
-((Routine)):: TBW
-((Type)):: TBW
-((Type Parameter)):: TBW
+((Argument)):: CAUTION: *NYI*: Text Missing
+((Constructor)):: CAUTION: *NYI*: Text Missing
+((Clazz)):: CAUTION: *NYI*: Text Missing
+((Feature)):: CAUTION: *NYI*: Text Missing
+((Field)):: CAUTION: *NYI*: Text Missing
+((Function)):: CAUTION: *NYI*: Text Missing
+((Routine)):: CAUTION: *NYI*: Text Missing
+((Type)):: CAUTION: *NYI*: Text Missing
+((Type Parameter)):: CAUTION: *NYI*: Text Missing
 
 [appendix]
 == File Formats
