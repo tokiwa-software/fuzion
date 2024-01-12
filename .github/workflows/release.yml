@@ -21,7 +21,11 @@ jobs:
         java-version: 17
         distribution: 'adopt'
 
-  # NYI ebnf is not generated because of missing antlr/pcregrep
+    - name: install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install ruby-asciidoctor-pdf antlr4 pcregrep asciidoc-base
+
     - name: build release
       run: make release
 
