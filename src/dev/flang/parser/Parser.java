@@ -3605,6 +3605,12 @@ implRout    : block
   {
     SourcePosition pos = tokenSourcePos();
     Impl result;
+
+    if (hasType && currentAtMinIndent() == Token.t_is)
+      {
+        AstErrors.constructorWithReturnType(pos);
+      }
+
     var routine =
       currentAtMinIndent() == Token.t_lbrace ||
       skip(true, Token.t_is)                 ||
