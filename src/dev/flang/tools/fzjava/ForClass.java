@@ -783,7 +783,7 @@ class ForClass extends ANY
   /**
    * Get the Java signature string for a given type
    *
-   * @param t the tye
+   * @param t the type
    *
    * @return the signature, e.g., "V"
    */
