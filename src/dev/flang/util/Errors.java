@@ -163,6 +163,43 @@ public class Errors extends ANY
     }
   }
 
+  /*-----------------------------  enumss  ------------------------------*/
+
+
+  /**
+   * Abstract Error Identifier.
+   *
+   * This will be implemented by all error identifier enums.
+   */
+  public static interface Id
+  {
+    default void report(SourcePosition pos, String msg, String detail)
+    {
+      error(Id.this, pos, msg, detail);
+    }
+    String msgText();
+  }
+
+
+  /**
+   * Error related to source file rules block SRCF_*.
+   */
+  public enum SRCF implements Id
+  {
+    UTF8
+    {
+      public String msgText()
+      {
+        return "Bad UTF8 encoding found";
+      }
+      public void report(SourcePosition pos, String append_to_msg, String detail)
+      {
+        error(UTF8, pos, msgText() + append_to_msg, detail);
+      }
+    }
+  }
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -261,6 +298,24 @@ public class Errors extends ANY
   public static void error(String s)
   {
     error(s, null);
+  }
+
+
+  /**
+   * Record the given error found during compilation.
+   *
+   * @param id rule identifier for this error
+   *
+   * @param pos source code position where this error occurred, may be null
+   *
+   * @param msg the error message, should not contain any LF or any case specific details
+   *
+   * @param detail details for this error, may contain LFs and case specific details, may be null
+   */
+  public static void error(Id id, SourcePosition pos, String msg, String detail)
+  {
+    // NYI: id is currently ignored
+    error(pos, msg, detail);
   }
 
 

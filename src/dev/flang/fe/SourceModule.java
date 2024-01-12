@@ -354,6 +354,11 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   boolean isValidSourceFile(Path p)
   {
+    /*
+    // tag::fuzion_rule_SRCF_DOTFZ[]
+Fuzion source files may have an arbitrary file name ending with the file name extension `.fz`.
+    // end::fuzion_rule_SRCF_DOTFZ[]
+    */
     try
       {
         return p.getFileName().toString().endsWith(".fz") &&
@@ -385,6 +390,16 @@ public class SourceModule extends Module implements SrcModule, MirModule
                 var d = dirExists(root, f);
                 if (d != null)
                   {
+                    /*
+                    // tag::fuzion_rule_SRCF_DIR[]
+Files in a sub-directories within a directory are considered as input only if
+the directory name equals the (((base name))) of a (((constructor))).  Then, the
+files matching rule xref:SRCF_DOTFZ[SRCF_DOTFZ] within that diretory are parsed as if they were
+part of the (((inner features))) declarations of the correpsonding
+((construtor)).
+                    // end::fuzion_rule_SRCF_DIR[]
+                    */
+
                     Files.list(d._dir)
                       .filter(p -> isValidSourceFile(p))
                       .sorted()

@@ -35,6 +35,8 @@ ifeq ($(FUZION_DEBUG_SYMBOLS),true)
 	JAVAC += -g
 endif
 
+UNICODE_SOURCE = https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt
+
 JAVA_FILE_TOOLS_VERSION_IN =  $(SRC)/dev/flang/tools/Version.java.in
 JAVA_FILE_TOOLS_VERSION    =  $(BUILD_DIR)/generated/src/dev/flang/tools/Version.java
 
@@ -374,9 +376,14 @@ FZ_INT = \
 DOC_FILES_FUMFILE = $(BUILD_DIR)/doc/files/fumfile.html     # fum file format documentation created with asciidoc
 DOC_DESIGN_JVM    = $(BUILD_DIR)/doc/design/jvm.html
 
-REF_MANUAL_SOURCE = $(FZ_SRC)/doc/ref_manual/fuzion_reference_manual.adoc
-REF_MANUAL_PDF    = $(BUILD_DIR)/doc/refeference_manual/fuzion_reference_manual.pdf
-REF_MANUAL_HTML   = $(BUILD_DIR)/doc/refeference_manual/html/index.html
+REF_MANUAL_SOURCE  = $(FZ_SRC)/doc/ref_manual/fuzion_reference_manual.adoc
+REF_MANUAL_SOURCES = $(wildcard $(FZ_SRC)/doc/ref_manual/*.adoc) \
+                     $(wildcard $(FZ_SRC)/doc/ref_manual/*.txt) \
+                     $(BUILD_DIR)/generated/doc/unicode_version.adoc \
+                     $(JAVA_FILES_UTIL) \
+                     $(JAVA_FILES_FE)
+REF_MANUAL_PDF     = $(BUILD_DIR)/doc/refeference_manual/fuzion_reference_manual.pdf
+REF_MANUAL_HTML    = $(BUILD_DIR)/doc/refeference_manual/html/index.html
 
 DOCUMENTATION = \
 	$(DOC_FILES_FUMFILE) \
@@ -1032,7 +1039,7 @@ $(BUILD_DIR)/examples: $(FZ_SRC)/examples
 	cp -rf $^ $@
 
 $(BUILD_DIR)/UnicodeData.txt:
-	cd $(BUILD_DIR) && wget https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt
+	cd $(BUILD_DIR) && wget $(UNICODE_SOURCE)
 
 $(BUILD_DIR)/UnicodeData.java.generated: $(CLASS_FILES_UTIL_UNICODE) $(BUILD_DIR)/UnicodeData.txt
 	$(JAVA) -cp $(CLASSES_DIR) dev.flang.util.unicode.ParseUnicodeData $(BUILD_DIR)/UnicodeData.txt >$@
@@ -1055,13 +1062,23 @@ $(DOC_DESIGN_JVM): $(SRC)/dev/flang/be/jvm/JVM.java
 	mkdir -p $(@D)
 	sed -n '/--asciidoc--/,/--asciidoc--/p' $^ | grep -v "\--asciidoc--" | asciidoc - >$@
 
-$(REF_MANUAL_PDF): $(REF_MANUAL_SOURCE) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
-	mkdir -p $(@D)
-	asciidoctor-pdf --attribute GENERATED=$(realpath $(BUILD_DIR)/generated) --attribute FUZION_EBNF=$(realpath $(FUZION_EBNF)) --doctype book --out-file $@ $(REF_MANUAL_SOURCE)
+REF_MANUAL_ATTRIBUTES = \
+  --attribute FZ_SRC=$(realpath $(FZ_SRC)) \
+  --attribute GENERATED=$(realpath $(BUILD_DIR)/generated) \
+  --attribute FUZION_EBNF=$(realpath $(FUZION_EBNF)) \
+  --attribute UNICODE_SOURCE=$(UNICODE_SOURCE)
 
-$(REF_MANUAL_HTML): $(REF_MANUAL_SOURCE) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
+$(BUILD_DIR)/generated/doc/unicode_version.adoc:
 	mkdir -p $(@D)
-	asciidoc --attribute GENERATED=$(realpath $(BUILD_DIR)/generated) --attribute FUZION_EBNF=$(realpath $(FUZION_EBNF)) --doctype book --out-file=$@ $(REF_MANUAL_SOURCE)
+	cd $(FZ_SRC) && git log lib/character_encodings/unicode/data.fz  | grep -E "^Date:" | head | sed "s-Date:   -:UNICODE_VERSION: -g" | head -n1 > $(realpath $(@D))/unicode_version.adoc
+
+$(REF_MANUAL_PDF): $(REF_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
+	mkdir -p $(@D)
+	asciidoctor-pdf $(REF_MANUAL_ATTRIBUTES) --out-file $@ $(REF_MANUAL_SOURCE)
+
+$(REF_MANUAL_HTML): $(REF_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
+	mkdir -p $(@D)
+	asciidoctor $(REF_MANUAL_ATTRIBUTES) --out-file=$@ $(REF_MANUAL_SOURCE)
 
 
 # NYI integrate into fz: fz -docs
