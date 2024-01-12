@@ -1638,7 +1638,7 @@ public class Feature extends AbstractFeature
     for (AbstractFeature p : res._module.declaredOrInheritedFeatures(this).values())
       {
         // primitives must not have any fields
-        if (p.isField() && !p.isOuterRef() && !(p.featureName().baseName().equals("val") && p.resultType().equals(selfType())) )
+        if (p.isField() && !p.isOuterRef() && !(p.featureName().baseName().equals("val") && p.resultType().compareTo(selfType())==0) )
           {
             AstErrors.mustNotContainFields(_pos, p, this.featureName().baseName());
           }

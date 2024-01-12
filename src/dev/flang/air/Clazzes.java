@@ -571,7 +571,7 @@ public class Clazzes extends ANY
                   }
               }
           }
-        System.out.println("Found "+Types.num()+" types and "+Clazzes.num()+" clazzes (" +
+        System.out.println("Found "+Clazzes.num()+" clazzes (" +
                            clazzesForFields + " for " + fields+ " fields, " +
                            (clazzes.size()-clazzesForFields) + " for " + routines + " routines).");
       }

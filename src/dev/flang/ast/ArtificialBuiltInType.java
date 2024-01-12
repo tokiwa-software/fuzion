@@ -69,11 +69,6 @@ public class ArtificialBuiltInType extends ResolvedNormalType
        Types.INTERNAL_NAMES.contains(_name));
 
     _feature = feat;
-
-    var interned = Types.intern(this);
-
-    if (CHECKS) check
-      (interned == this);
   }
 
 
