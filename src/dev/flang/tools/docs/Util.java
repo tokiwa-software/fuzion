@@ -111,8 +111,7 @@ public class Util
       }
     catch (IOException e)
       {
-        System.err.println("Fatal error getting line for: " + pos);
-        System.exit(1);
+        // NYI commment lines from modules
         return "";
       }
   }

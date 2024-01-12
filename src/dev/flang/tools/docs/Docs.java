@@ -77,7 +77,7 @@ public class Docs
     /* fuzionHome              */ new FuzionHome()._fuzionHome,
     /* loadBaseLib             */ true,
     /* eraseInternalNamesInLib */ false,
-    /* modules                 */ new List<>(),
+    /* modules                 */ new List<>("terminal", "lock_free"),
     /* moduleDirs              */ new List<>(),
     /* dumpModules             */ new List<>(),
     /* fuzionDebugLevel        */ 0,
