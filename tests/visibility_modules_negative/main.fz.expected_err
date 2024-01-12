@@ -96,4 +96,10 @@ To solve this, increase the visibility of 'm.redef_test_0.b' to at least 'public
 -----------^
 To solve this, increase the visibility of 'm.redef_test_0.e' to at least 'public'
 
-15 errors.
+
+--CURDIR--/main.fz:89:5: error 16: Abstract features visibility must not be more restrictive than outer features visibility.
+    inner_abstract i32 => abstract // should flag an error Abstract features visibility must not be more restrictive than outer features visibility.
+----^^^^^^^^^^^^^^
+To solve this, increase the visibility of 'm.outer.inner_abstract' to at least 'public'
+
+16 errors.

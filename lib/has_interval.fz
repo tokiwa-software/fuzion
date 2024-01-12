@@ -26,7 +26,7 @@
 # has_interval -- feature for integers that can define an interval
 #
 public has_interval : integer is
-  module max  has_interval.this => abstract
+  public max  has_interval.this => abstract
 /*
   zero T is abstract
   one  T is abstract

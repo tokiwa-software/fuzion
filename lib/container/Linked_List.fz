@@ -29,12 +29,12 @@ public Linked_List(public T type) ref : Sequence T is
   # next is the following element of the linked list, or nil if there are
   # no more elements in the list after this element.
   #
-  next option (Linked_List T) => abstract
+  public next option (Linked_List T) => abstract
 
 
   # the data stored in this element of the list.
   #
-  data T => abstract
+  public data T => abstract
 
 
   # helper feature for tail-recursive implementation of as_string.

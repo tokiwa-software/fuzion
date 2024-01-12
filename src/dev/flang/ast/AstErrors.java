@@ -2081,6 +2081,12 @@ public class AstErrors extends ANY
         " or remove the return type if you want to define a constructor.");
   }
 
+  public static void abstractFeaturesVisibilityMoreRestrictiveThanOuter(Feature f)
+  {
+    error(f.pos(), "Abstract features visibility must not be more restrictive than outer features visibility.",
+      "To solve this, increase the visibility of " + s(f) + " to at least " + s(f.outer().visibility().featureVisibility()));
+  }
+
 }
 
 /* end of file */

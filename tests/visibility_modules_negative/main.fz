@@ -83,5 +83,9 @@ public m =>
       unit
 
 
+  # checkAbstractVisibility
+
+  public outer is
+    inner_abstract i32 => abstract // should flag an error Abstract features visibility must not be more restrictive than outer features visibility.
 
   unit

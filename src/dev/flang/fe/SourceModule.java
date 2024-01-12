@@ -1469,9 +1469,26 @@ part of the (((inner features))) declarations of the correpsonding
     checkResultTypeVisibility(f);
     checkArgTypesVisibility(f);
     checkPreconditionVisibility(f);
+    checkAbstractVisibility(f);
   }
 
 
+  /**
+   * Check that an abstract feature is at least as visible as the outer feature.
+   */
+  private void checkAbstractVisibility(Feature f) {
+    if(f.isAbstract() &&
+       f.visibility().featureVisibility().ordinal() < f.outer().visibility().featureVisibility().ordinal())
+      {
+        AstErrors.abstractFeaturesVisibilityMoreRestrictiveThanOuter(f);
+      }
+  }
+
+
+  /**
+   * Check that `f` does not have more restrictive
+   * visibility than every feature it redefines.
+   */
   private void checkRedefVisibility(Feature f)
   {
     if (!f.isTypeFeaturesThisType()
