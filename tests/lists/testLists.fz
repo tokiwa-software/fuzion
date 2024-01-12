@@ -47,7 +47,7 @@ testLists is
               set i := n.n
           Nil =>
 
-    size i32 is
+    size i32 =>
       set result := 0;
       // for   -- NYI: must update i in the loop prolog
       i := h;

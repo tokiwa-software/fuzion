@@ -50,12 +50,12 @@ scenario2 =>
 
   stream.issue_2214_stream_map_broken(B type, f T -> B) : stream B is
     has_next => stream.this.has_next
-    next B is f stream.this.next
+    next B => f stream.this.next
 
   primes is
 
     primes6(n u64) =>   # pure sieve using persistent bitset
-      sieve (i u64, a bitset) String is
+      sieve (i u64, a bitset) String =>
         s  := if (a.has i) "" else "$i ";
         ap := if (a.has i) a  else a ∪ (((i..n):i)
                                           .as_stream

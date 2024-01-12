@@ -33,7 +33,7 @@ public m =>
   # checkResultTypeVisibility
 
   private priv is
-  module mod priv is  // should flag an error result type visibility more restrictive than a
+  module mod priv =>  // should flag an error result type visibility more restrictive than a
     priv
   module mod8 := priv_ce  // should flag an error priv_ce visibility more restrictive than mod8
 
@@ -72,14 +72,14 @@ public m =>
 
   # Redefinition must not have more restrictive visibility.
   redef_test is
-    public b unit is
+    public b unit =>
       unit
-    public e unit is abstract
+    public e unit => abstract
 
   redef_test_0 : redef_test is
-    module redef b unit is // should flag an error Redefinition must not have more restrictive visibility.
+    module redef b unit => // should flag an error Redefinition must not have more restrictive visibility.
       unit
-    module e unit is // should flag an error Redefinition must not have more restrictive visibility.
+    module e unit => // should flag an error Redefinition must not have more restrictive visibility.
       unit
 
 

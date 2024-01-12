@@ -29,7 +29,7 @@ test_option_void is
 
   # another stream like nile, but of type `option nil`
   #
-  rhein(T type) option T is nil
+  rhein(T type) option T => nil
 
   # match on a type parametric option
   f(T type, x option T) =>

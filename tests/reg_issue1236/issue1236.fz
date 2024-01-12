@@ -28,7 +28,7 @@
 test1 is
   H ref is
   hello : H is
-  h H is hello
+  h H => hello
   ex =>
     x H := h;
     xt := x.dynamic_type
@@ -127,7 +127,7 @@ test6 is
 # adding our own version of Any.dynamic_type and calling it on "hello"
 #
 test7 is
-  Any.dynamic_type2 Type is Any.this.type
+  Any.dynamic_type2 Type => Any.this.type
   ex =>
     "hello".dynamic_type2
 
@@ -137,7 +137,7 @@ test7 is
 #
 test8 is
 
-  Any.dynamic_type1 Type is Any.this.type
+  Any.dynamic_type1 Type => Any.this.type
 
   ex =>
     "hello".dynamic_type1
@@ -158,7 +158,7 @@ test9 is
 # using Any.dynamic_type on a list of i32
 #
 test10 is
-  h Any is
+  h Any =>
     42 : nil
   x := h.dynamic_type
   say x

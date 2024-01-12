@@ -41,7 +41,7 @@ test_type_of is
 
   # type_of using explicit result type
   #
-  type_of1(T type, _ T) Type is T
+  type_of1(T type, _ T) Type => T
 
 
   # type_of using inferred result type

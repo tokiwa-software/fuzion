@@ -105,7 +105,7 @@ is
 
     rotate (d i32) => G2D g tx ty rot+d
 
-    threeTimes(d (G2D, Java.java.awt.Color) -> unit) unit is
+    threeTimes(d (G2D, Java.java.awt.Color) -> unit) unit =>
       d  G2D.this              C1
       d (G2D.this.rotate -120) C2
       d (G2D.this.rotate -240) C3
@@ -113,7 +113,7 @@ is
     # Draw a filled arc of color c, center at (x,y), radius r, starting at angle
     # start and extending of len degrees.
     #
-    arc(c Java.java.awt.Color, x, y, r, start, len i32) unit is
+    arc(c Java.java.awt.Color, x, y, r, start, len i32) unit =>
       g.setColor c
       # NYI: rotation hard coded for 0°/120°/240°
       (rx, ry) := if      rot % 360 = 0   then (x, y)
@@ -129,7 +129,7 @@ is
 
     # Draw a filled circle of color c, center at (x,y), radius r
     #
-    cir(c Java.java.awt.Color, x, y, r i32) unit is
+    cir(c Java.java.awt.Color, x, y, r i32) unit =>
       arc c x y r 0 360
 
     # Draw the Fuzion logo

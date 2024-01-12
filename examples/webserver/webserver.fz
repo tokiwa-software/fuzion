@@ -89,7 +89,7 @@ webserver is
        unit
 */
 
-         accept outcome unit is
+         accept outcome unit =>
            # accept and handle connection
            match ss.accept
              e error => e

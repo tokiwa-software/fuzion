@@ -70,13 +70,13 @@ functions is
 
     say "here 1c---------------"
     x (ref : Function i32 Any i32 {
-        redef call(o Any, i i32) i32 is
+        redef call(o Any, i i32) i32 =>
           say "in anonymous function: $o"
           o.hash_code + i
        })
 
     F ref : Function i32 Any i32 is
-        redef call(o Any, i i32) i32 is
+        redef call(o Any, i i32) i32 =>
           say "here F.call---------------"
           set result := o.hash_code + i
           say "here F.call done---------------"
@@ -92,7 +92,7 @@ functions is
     say "here x(F)---------------"
     x F
 
-    f1(o Any, i i32) i32 is
+    f1(o Any, i i32) i32 =>
         say "here f1 o i !!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
         o.hash_code + i
     say "here x0 (fun f1)---------------"

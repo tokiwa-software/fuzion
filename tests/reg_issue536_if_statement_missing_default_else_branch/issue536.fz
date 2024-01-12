@@ -29,7 +29,7 @@ issue536 is
 
   # missing else branch, indirect assignment
   # of unit to choice `outcome unit`
-  log_indirect(a bool) outcome unit is
+  log_indirect(a bool) outcome unit =>
     if !a
         error "a is false"
 
@@ -39,7 +39,7 @@ issue536 is
 
   # missing else branch, direct assignment
   # of unit to result of log_direct
-  log_direct(a bool) unit is
+  log_direct(a bool) unit =>
     if !a
         unit
 

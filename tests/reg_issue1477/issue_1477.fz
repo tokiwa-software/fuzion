@@ -23,9 +23,9 @@
 
 n is
 
-  type.z n.this is abstract
+  type.z n.this => abstract
 
-  u unit is
+  u unit =>
     y := n.this.type
     q := y.z
 

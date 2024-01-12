@@ -1,13 +1,13 @@
 
 --CURDIR--/testRedefine.fz:43:5: error 1: Wrong result type in redefined feature
-    get i32 is 42
+    get i32 => 42
 ----^^^
 In 'testRedefine.bad1.get' that redefines 'testRedefine.getter.get'
 result type is       : 'i32'
 result type should be: 'choice String i32 nil' (from 'testRedefine.getter.A')
 
 Original feature declared at --CURDIR--/testRedefine.fz:37:5:
-    get A is abstract
+    get A => abstract
 ----^^^
 To solve this, change type of result to 'choice String i32 nil'
 
@@ -20,7 +20,7 @@ result type is       : 'i32'
 result type should be: 'choice String i32 nil' (from 'testRedefine.getter.A')
 
 Original feature declared at --CURDIR--/testRedefine.fz:37:5:
-    get A is abstract
+    get A => abstract
 ----^^^
 To solve this, change type of result to 'choice String i32 nil'
 

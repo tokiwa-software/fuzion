@@ -36,7 +36,7 @@ redef_args is
     say (s + msg)
 
   RComplex(RT type) ref is
-    real, imag RT is abstract
+    real, imag RT => abstract
 
   Complex(T type, real, imag T) : RComplex T is
   Complex1(real, imag i32) is

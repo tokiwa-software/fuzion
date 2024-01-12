@@ -29,10 +29,10 @@
 #
 checkGenericConstraint is
   m32 is
-    h i32 is 3
+    h i32 => 3
 
   H is
-    h i32 is abstract
+    h i32 => abstract
 
   hm (T type : H, x T) is
     x.h

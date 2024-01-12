@@ -194,7 +194,7 @@ test_atomic is
     # alternative avoiding loops/tail recursion
     end := time.nano.read + (time.durations.ms 100).nanos
     concur.thread.spawn (()->
-      rec(d i32) (i32, i32) is
+      rec(d i32) (i32, i32) =>
         if time.nano.read < end
           if d > 0
             (succ0,count0) := (rec d-1)
@@ -215,7 +215,7 @@ test_atomic is
       s1.write s.as_i64
       )
     concur.thread.spawn (()->
-      rec(d i32) (i32, i32) is
+      rec(d i32) (i32, i32) =>
         if time.nano.read < end
           if d > 0
             (succ0,count0) := (rec d-1)

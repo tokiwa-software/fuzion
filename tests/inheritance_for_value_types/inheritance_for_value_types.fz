@@ -36,7 +36,7 @@ inheritance_for_value_types is
 
   exit_code := mut 0
 
-  chck (msg String, b0 bool) unit is
+  chck (msg String, b0 bool) unit =>
     if b0
       say "PASSED: $msg"
     else
@@ -44,32 +44,32 @@ inheritance_for_value_types is
       exit_code <- 1
 
   ra ref is
-    x, y, z (msg String, expected i32) unit is abstract
+    x, y, z (msg String, expected i32) unit => abstract
 
   a : ra is
-    x (msg String, expected i32) unit is chck msg expected=1
-    y (msg String, expected i32) unit is x msg expected
+    x (msg String, expected i32) unit => chck msg expected=1
+    y (msg String, expected i32) unit => x msg expected
     z (msg String, expected i32) =>      x msg expected
     q (msg String, expected i32) is
       xx is z msg expected
 
   b : a is
-    redef x (msg String, expected i32) unit is chck msg expected=2
+    redef x (msg String, expected i32) unit => chck msg expected=2
 
   c : a is
-    redef x (msg String, expected i32) unit is chck msg expected=3
+    redef x (msg String, expected i32) unit => chck msg expected=3
 
   v (v a.q) is
     v.xx
     unit
 
-  rx (rv ra, msg String, expected i32) unit is
+  rx (rv ra, msg String, expected i32) unit =>
     rv.x msg expected
 
-  ry (rv ra, msg String, expected i32) unit is
+  ry (rv ra, msg String, expected i32) unit =>
     rv.y msg expected
 
-  rz (rv ra, msg String, expected i32) unit is
+  rz (rv ra, msg String, expected i32) unit =>
     rv.z msg expected
 
   a.y "a.y" 1

@@ -72,7 +72,7 @@ sockets_test_server =>
   # a number for protocol p to be used for
   # choosing a unique port for every protocol/family
   #
-  protocol_num(p net.protocol.val) u16 is
+  protocol_num(p net.protocol.val) u16 =>
     match p
       net.protocol.tcp => 0
       net.protocol.udp => 1
@@ -81,7 +81,7 @@ sockets_test_server =>
   # a number for family f to be used for
   # choosing a unique port for every protocol/family
   #
-  family_num(f net.family.val) u16 is
+  family_num(f net.family.val) u16 =>
     match f
       net.family.ipv4 => 0
       net.family.ipv6 => 3

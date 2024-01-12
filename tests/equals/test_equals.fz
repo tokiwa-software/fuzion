@@ -113,7 +113,7 @@ test_equals_types is
 
     # the color of this instance
     #
-    col color is abstract
+    col color => abstract
 
     # equality relation comparing the value produced by 'col'
     #

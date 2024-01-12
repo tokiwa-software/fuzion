@@ -121,7 +121,7 @@ test_local_mutate is
   #
   test_quicksort =>
 
-    quicksort(T type: property.orderable, data Sequence T) array T is
+    quicksort(T type: property.orderable, data Sequence T) array T =>
       c := data.count
       if c = 0
         []
@@ -149,7 +149,7 @@ test_local_mutate is
               swap b r
               b
 
-          qs(l, r i32) unit is # =>  does not work
+          qs(l, r i32) unit => # =>  does not work
             if l < r
               pi := partition l r (l + r)/2
               qs l pi-1
@@ -191,7 +191,7 @@ test_local_mutate is
     =>
       m : mutate is
 
-      ring2(from list T) Cell T m is   # NYI '=>' causes error cyclic type inference
+      ring2(from list T) Cell T m =>   # NYI '=>' causes error cyclic type inference
         c := Cell T m from.head.get
         match from.tail
           nil    => c
@@ -202,7 +202,7 @@ test_local_mutate is
                     l.link c l.p.get
         c
 
-      ring3(from list T) Cell T m is
+      ring3(from list T) Cell T m =>
         r := ring2 from
 
         for
@@ -239,8 +239,8 @@ test_local_mutate is
     # abstract type for 'ring'
     #
     Ring(T type) ref is
-      next, prev Ring T is abstract
-      data T is abstract
+      next, prev Ring T => abstract
+      data T => abstract
 
       redef as_string =>
         for
@@ -348,7 +348,7 @@ test_local_mutate is
 
       # create ring, called with the env set to an instance of `m`.
       #
-      create_ring2(from list T) Ring T is
+      create_ring2(from list T) Ring T =>
         c := Mut_Ring m T from.head.get
         from.as_list.tail.for_each (x->c.merge (Mut_Ring m T x))
         c.freeze
