@@ -1,0 +1,8 @@
+
+--CURDIR--/constructor_with_return_type.fz:25:17: error 1: Combination of 'is' and return type is not allowed.
+  some_feat i32 is
+----------------^
+Keyword 'is' denotes a contructor which must not have a return type.
+To solve this, either replace 'is' by '=>' or remove the return type if you want to define a constructor.
+
+one error.
