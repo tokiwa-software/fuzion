@@ -1,0 +1,125 @@
+// This file is part of the Fuzion language implementation.
+//
+// The Fuzion language implementation is free software: you can redistribute it
+// and/or modify it under the terms of the GNU General Public License as published
+// by the Free Software Foundation, version 3 of the License.
+//
+// The Fuzion language implementation is distributed in the hope that it will be
+// useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+// License for more details.
+//
+// You should have received a copy of the GNU General Public License along with The
+// Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+//
+//
+//
+// -----------------------------------------------------------------------
+//
+//  Tokiwa Software GmbH, Germany
+//
+//  ASCIIdoc source of Fuzion Langauge Reference Manual
+//
+// -----------------------------------------------------------------------
+
+
+= Fuzion Reference Manual [DRAFT]
+The Fuzion Team <info@tokiwa.software>
+include::../../version.txt[]
+:title-logo-image: image:../../assets/logo.png[top=5%,align=center,pdfwidth=1.5cm]
+:doctype: book
+:description: Fuzion Language Reference Manual
+:sectanchors:
+:url-repo: https://github.com/tokiwa-software/fuzion/
+:sectnums:
+:toc: macro
+
+toc::[]
+
+== About this Document
+
+=== Audience
+
+TBW
+
+=== Conventions
+
+TBW
+
+== Syntax
+
+=== Lexical Symbols
+
+==== White Space
+
+TBW
+
+==== Keywords
+
+TBW: `this` `env` `check` `else` `if` `then` `is` `abstract` `intrinsic` `intrinsic_constructor` `native` `for` `in` `do` `fixed` `loop` `while` `until` `variant` `pre` `post` `inv` `var` `match` `value` `ref` `synchronized` `redef` `const` `leaf` `infix` `prefix` `postfix` `ternary` `index` `set` `private` `module` `public` `of` `type` `univers`
+
+==== Identifiers
+
+TBW
+
+==== Literals
+
+TBW
+
+===== Numeric Literals
+
+TBW
+
+===== String Literals
+
+TBW
+
+==== Comments
+
+TBW
+
+=== Grammar
+
+TBW
+
+== Semantics
+
+TBW
+
+[appendix]
+== Definitions
+
+((Argument)):: TBW
+((Constructor)):: TBW
+((Feature)):: TBW
+((Field)):: TBW
+((Function)):: TBW
+((Routine)):: TBW
+((Type)):: TBW
+((Type Parameter)):: TBW
+
+[appendix]
+== File Formats
+
+=== FUM -- Fuzion Module File
+
+include::{GENERATED}/doc/fum_file.adoc[leveloffset=+0,lines=8..-1]
+
+
+[appendix]
+== BNF Grammer
+The following shows the Grammar using a notation similar to Backus–Naur form <<bnf>>.
+----
+include::{FUZION_EBNF}[]
+----
+
+[bibliography]
+== Bibliography
+
+* [[[bnf]]] Backus, J. W. (1959). "The syntax and semantics of the proposed
+  international algebraic language of the Zurich ACM-GAMM
+  Conference". Proceedings of the International Conference on Information
+  Processing. UNESCO. pp. 125–132. https://www.softwarepreservation.org/projects/ALGOL/paper/Backus-Syntax_and_Semantics_of_Proposed_IAL.pdf[]
+
+[index]
+== Index
