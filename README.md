@@ -32,7 +32,7 @@ Scorecard](https://api.securityscorecards.dev/projects/github.com/tokiwa-softwar
 hello_world is
   # read someone's name from standard input
   #
-  get_name String is
+  get_name String =>
     match (io.stdin.with ()->
              io.buffered.read_line ? str String => str | io.end_of_file => "")
       name String => name
@@ -63,10 +63,10 @@ outside.
 
 ```
 ex_gcd is
-  max(a, b i32) i32 is
+  max(a, b i32) i32 =>
     if a > b then a else b
 
-  common_divisors_of(a, b i32) list i32 is
+  common_divisors_of(a, b i32) list i32 =>
     x := max a.abs b.abs
     y := 1..x
     y.flat_map i32 (i->
@@ -83,7 +83,7 @@ ex_gcd is
       safety: a % result = 0,
       safety: b % result = 0,
       pedantic: (common_divisors_of a b).reduce bool true (tmp,cur->tmp && (gcd.this.result % cur = 0))
-  is
+  =>
     if b = 0
       a
     else
@@ -110,7 +110,7 @@ generator_effect is
 
   # traverse a list and yield the elements
   #
-  list.traverse unit is
+  list.traverse unit =>
     match list.this
       c Cons => (generator_effect.gen A).env.yield c.head; c.tail.traverse
       nil =>

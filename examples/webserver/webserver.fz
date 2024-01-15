@@ -114,7 +114,7 @@ webserver is
 
                        # helper to read request
                        #
-                       read String is
+                       read String =>
                          for
                            r := "", "$r$s\n"
                            s := input.readLine
