@@ -1,7 +1,7 @@
 hello_world is
   # read someone's name from standard input
   #
-  get_name String is
+  get_name String =>
     match (io.stdin.with ()->
              io.buffered.read_line ? str String => str | io.end_of_file => "")
       name String => name
