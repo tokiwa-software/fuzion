@@ -27,8 +27,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.parser;
 
 import java.math.BigInteger;
+
 import java.nio.file.Path;
+
 import java.util.Optional;
+import java.util.TreeSet;
+
 import java.util.stream.Stream;
 
 import dev.flang.util.Callable;
@@ -416,6 +420,79 @@ public class Lexer extends SourceFile
     // 7…
     null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "DEL"
   };
+
+
+  /**
+   * Convert a code point into a human readable string to be used in the Fuzion reference manual.
+   *
+   * For non-ASCII, this currently only prints the unicode value as 0xNNNN.
+   *
+   * @param cp a codepoint
+   *
+   * @return a human-readable String describing cp.
+   */
+  static String codePointAsString(int cp)
+  {
+    var n = _asciiControlName[cp];
+    return String.format("* 0x%04x %s", cp,
+                         n != null ? n :
+                         cp == ' ' ? "SPACE" :
+                         cp < 0x7f ? "'" + (char) cp + "'"
+                                   : "");
+  }
+
+
+
+  /**
+   * main method used to create asciidoc text to be used in the Fuzion reference
+   * manual.
+   *
+   * @param args command line arguments. If an argument is
+   *
+   *   "-whiteSpace", then output list of white space code points
+   *
+   *   "-illegal", then output list of illegal code points and categories.
+   */
+  public static void main(String[] args)
+  {
+    Stream.of(args).forEach
+      (x ->
+       {
+         if (x.equals("-whiteSpace"))
+           {
+             for (var cp = 0; cp < _asciiKind.length; cp++)
+               {
+                 if (kind(cp) == K_WS)
+                   {
+                     System.out.println(codePointAsString(cp));
+                   }
+               }
+           }
+         else if (x.equals("-illegal"))
+           {
+             var got = new TreeSet<String>();
+             for (int cp = 0; cp < 0xffff; cp++)
+               {
+                 if (kind(cp) == K_UNKNOWN)
+                   {
+                     if (cp < 0x7f)
+                       {
+                         System.out.println(codePointAsString(cp));
+                       }
+                     else
+                       {
+                         var cat = UnicodeData.category(cp);
+                         if (!got.contains(cat))
+                           {
+                             got.add(cat);
+                             System.out.println(String.format("* Unicode category %s", cat));
+                           }
+                       }
+                   }
+               }
+           }
+       });
+  }
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -1016,6 +1093,18 @@ public class Lexer extends SourceFile
           case K_BACKSL  :    // '\\'
           case K_SQUOTE  :    // '''
             {
+    /*
+    // tag::fuzion_rule_LEXR_LEGALCP[]
+Fuzion source code may not contain and
+xref:unsupported_code_points[unsupported code points].
+    // end::fuzion_rule_LEXR_LEGALCP[]
+    */
+    /*
+    // tag::fuzion_rule_LEXR_UNUSEDCP[]
+Unless part of another token, Fuzion source code may not contain unsupported code points backtick `\``, backslash `\\`
+or single quote `'`.  Thise might, however, be used in the future.
+    // end::fuzion_rule_LEXR_UNUSEDCP[]
+    */
               Errors.error(sourcePos(),
                            "Unknown code point in source file",
                            "Unknown code point " + Integer.toHexString(p) + " is not permitted by Fuzion's grammar.");
@@ -1065,6 +1154,11 @@ LF          : ( '\r'? '\n'
           */
           case K_WS      :   // spaces, tabs, lf, cr, ...
             {
+    /*
+    // tag::fuzion_rule_LEXR_WHITESPACE[]
+xref:whitespace_code_points[White space] separates tokens but does not appear as a token itself.
+    // end::fuzion_rule_LEXR_WHITESPACE[]
+    */
               int last = p;
               p = curCodePoint();
               token = checkWhiteSpace(last, p);
@@ -1324,7 +1418,7 @@ IDENT     : ( 'a'..'z'
   /**
    * Determine the kind (K_*) for a given codepoint.
    */
-  private int kind(int p)
+  private static int kind(int p)
   {
     int kind;
     if (p <= 0x7f)

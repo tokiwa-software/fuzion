@@ -30,5 +30,5 @@
 //
 
 [#{RULE_ID}]
-IMPORTANT: *{RULE_ID}*:
+IMPORTANT: *{RULE_ID}*((({RULE_ID}))):
 include::{FZ_SRC}/{RULE_SRC}[tag=fuzion_rule_{RULE_ID}]

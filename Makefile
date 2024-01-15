@@ -380,6 +380,8 @@ REF_MANUAL_SOURCE  = $(FZ_SRC)/doc/ref_manual/fuzion_reference_manual.adoc
 REF_MANUAL_SOURCES = $(wildcard $(FZ_SRC)/doc/ref_manual/*.adoc) \
                      $(wildcard $(FZ_SRC)/doc/ref_manual/*.txt) \
                      $(BUILD_DIR)/generated/doc/unicode_version.adoc \
+                     $(BUILD_DIR)/generated/doc/codepoints_white_space.adoc \
+                     $(BUILD_DIR)/generated/doc/codepoints_illegal.adoc \
                      $(JAVA_FILES_UTIL) \
                      $(JAVA_FILES_FE)
 REF_MANUAL_PDF     = $(BUILD_DIR)/doc/refeference_manual/fuzion_reference_manual.pdf
@@ -1071,6 +1073,14 @@ REF_MANUAL_ATTRIBUTES = \
 $(BUILD_DIR)/generated/doc/unicode_version.adoc:
 	mkdir -p $(@D)
 	cd $(FZ_SRC) && git log lib/character_encodings/unicode/data.fz  | grep -E "^Date:" | head | sed "s-Date:   -:UNICODE_VERSION: -g" | head -n1 > $(realpath $(@D))/unicode_version.adoc
+
+$(BUILD_DIR)/generated/doc/codepoints_white_space.adoc: $(CLASS_FILES_PARSER)
+	mkdir -p $(@D)
+	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -whiteSpace >$@
+
+$(BUILD_DIR)/generated/doc/codepoints_illegal.adoc: $(CLASS_FILES_PARSER)
+	mkdir -p $(@D)
+	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -illegal >$@
 
 $(REF_MANUAL_PDF): $(REF_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
 	mkdir -p $(@D)
