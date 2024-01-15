@@ -596,11 +596,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("fuzion.java.call_c0",
         (jvm, cl, pre, cc, tvalue, args) ->
         {
-          System.out.println(jvm._fuir.clazzBaseName(jvm._fuir.clazzArgClazz(cc, 0)));
-          System.out.println(jvm._fuir.clazzBaseName(jvm._fuir.clazzArgClazz(cc, 1)));
-          System.out.println(jvm._fuir.clazzBaseName(jvm._fuir.clazzArgClazz(cc, 2)));
-          System.out.println(jvm._fuir.clazzBaseName(jvm._fuir.clazzArg(jvm._fuir.clazzArgClazz(cc, 2), 0)));
           var data = jvm._fuir.clazzArg(jvm._fuir.clazzArgClazz(cc, 2), 0);
+          var data2 = jvm._fuir.lookup_fuzion_sys_internal_array_data(jvm._fuir.clazzArgClazz(cc, 2));
           var jt = jvm._types.javaType(jvm._fuir.clazz_fuzionJavaObject());
           var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
           var exec =
@@ -613,13 +610,13 @@ public class Intrinsix extends ANY implements ClassFileConstants
             .andThen(jvm.getfield(jref)) // signature
             .andThen(Expr.checkcast(JAVA_LANG_STRING))
             .andThen(args.get(2))
-            .andThen(jvm.getfield(data)) // args
+            .andThen(jvm.getfield(data2)) // args
             .andThen(Expr.checkcast(JAVA_LANG_OBJECT.array()))
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "fuzion_java_call_c0",
                                        "(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;",
                                        Names.JAVA_LANG_OBJECT))
-            /* .andThen(Expr.checkcast(JAVA_LANG_OBJECT)) */;
+            .andThen(Expr.checkcast(JAVA_LANG_OBJECT));
           var rc = jvm._fuir.clazzResultClazz(cc);
           if (jvm._fuir.clazzBaseName(rc).equals("outcome"))
             {
@@ -630,18 +627,17 @@ public class Intrinsix extends ANY implements ClassFileConstants
               case c_i8, c_u16, c_i16, c_i32, c_i64,
                 c_f32, c_f64, c_bool, c_unit -> exec;
               default -> {
-                var rcv = jvm._fuir.clazzAsValue(rc);
                 var rt = jvm._types.javaType(rc);
-                var jref2 = jvm._fuir.clazzField(rcv, 0);
+                var jref2 = jvm._fuir.lookupJavaRef(rc);
 
                 yield
                   jvm.new0(rc)
-                  .andThen(Expr.DUP)
-                  .andThen(exec)
-                  .andThen(jvm.putfield(jref2))
-                  // .andThen(Expr.ACONST_NULL)
-                  .andThen(Expr.checkcast(rt))
-                  .is(rt);
+                  // .andThen(Expr.DUP)
+                  // .andThen(exec)
+                  // .andThen(jvm.putfield(jref2))
+                  // .andThen(Expr.checkcast(rt))
+                  // .is(rt);
+                  ;
               }
             };
           return new Pair<>(Expr.UNIT, res);
