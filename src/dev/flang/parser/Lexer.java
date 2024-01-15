@@ -2442,7 +2442,7 @@ PIPE        : "|"
 
 
     /**
-     * If this is changed, https://flang.dev/tutorial/string_constants
+     * If this is changed, https://fuzion-lang.dev/tutorial/string_constants
      * must be changed as well.
      */
     int[][] escapeChars = new int[][] {

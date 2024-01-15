@@ -131,11 +131,11 @@ with a `yield` operation. In some other languages, this requires a keyword
 without language support.
 
 If you want to play around with Fuzion, try the
-[interactive tutorial](https://flang.dev/tutorial/index).
+[interactive tutorial](https://fuzion-lang.dev/tutorial/index).
 
 ## Documentation
 
-Check [flang.dev](https://flang.dev) for language and implementation design.
+Check [fuzion-lang.dev](https://fuzion-lang.dev) for language and implementation design.
 
 
 ## Clone
