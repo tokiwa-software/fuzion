@@ -129,23 +129,9 @@ class FeatureWriter extends ANY
           {
             s = "_k_" + s;
           }
-        else if (s.equals(FuzionConstants.ANY_NAME))
-          {
-            // NYI: Due to #40, we cannot declare an inner feature with name 'Object',
-            // so we replace it by '_jObject'.
-            s = "_j" + FuzionConstants.ANY_NAME;
-          }
-        else if (s.equals("List"))
-          {
-            // NYI: Due to #40, we cannot declare an inner feature with name 'List',
-            // so we replace it by '_jList'.
-            s = "_jList";
-          }
         else if (s.equals("Sequence") ||
-                 s.equals("hashCode") ||
                  s.equals(FuzionConstants.STRING_NAME) ||
                  s.equals("array"   ) ||
-                 s.equals("isBlank" ) ||
                  s.equals("split"   )    )
           {
             // NYI: this is just a precaution to avoid confusion with Fuzion
