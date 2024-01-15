@@ -132,7 +132,7 @@ public durations : units is
 
   # create duration of n ns
   #
-  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public ns (n u64)
   pre
@@ -142,7 +142,7 @@ public durations : units is
 
   # create duration of n µs
   #
-  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public µs (n u64)
   pre
@@ -152,7 +152,7 @@ public durations : units is
 
   # create duration of n ms
   #
-  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public ms (n u64)
   pre
@@ -162,7 +162,7 @@ public durations : units is
 
   # create duration of n seconds
   #
-  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public s (n u64)
   pre
@@ -172,7 +172,7 @@ public durations : units is
 
   # create duration of n seconds
   #
-  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public seconds (n u64)
   pre
@@ -182,7 +182,7 @@ public durations : units is
 
   # create duration of n min
   #
-  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public min (n u64)
   pre
@@ -192,7 +192,7 @@ public durations : units is
 
   # create duration of n min
   #
-  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public minutes (n u64)
   pre
@@ -202,7 +202,7 @@ public durations : units is
 
   # create duration of n hours
   #
-  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public h (n u64)
   pre
@@ -212,7 +212,7 @@ public durations : units is
 
   # create duration of n hours
   #
-  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public hours (n u64)
   pre
@@ -222,7 +222,7 @@ public durations : units is
 
   # create duration of n days
   #
-  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public days  (n u64)
   pre
@@ -232,7 +232,7 @@ public durations : units is
 
   # create duration of n weeks
   #
-  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public weeks (n u64)
   pre
@@ -242,7 +242,7 @@ public durations : units is
 
   # create duration of n years
   #
-  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public a (n u64)
   pre
@@ -252,7 +252,7 @@ public durations : units is
 
   # create duration of n years
   #
-  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public years (n u64)
   pre

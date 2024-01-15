@@ -319,7 +319,7 @@ public class Html
           {
             if (!codeLines.isEmpty())
               {
-                /* dump codeLines into a flang.dev runcode box */
+                /* dump codeLines into a fuzion-lang.dev runcode box */
                 var id = "fzdocs." + name + codeNo.size();
                 var code = codeLines
                   .stream()

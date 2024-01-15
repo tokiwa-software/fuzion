@@ -845,7 +845,7 @@ part of the (((inner features))) declarations of the correpsonding
       }
     else if (f instanceof Feature ff && (ff._modifiers & Consts.MODIFIER_REDEFINE) == 0 && !existing.isAbstract())
       { /* previous duplicate feature declaration could result in this error for
-         * type features, so suppress them in this case. See flang.dev's
+         * type features, so suppress them in this case. See fuzion-lang.dev's
          * design/examples/typ_const2.fz as an example.
          */
         if ((!Errors.any() || !f.isTypeFeature()) && visibleFor(existing, f))
