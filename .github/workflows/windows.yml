@@ -51,8 +51,6 @@ jobs:
             git
             mingw-w64-ucrt-x86_64-clang
             diffutils
-            libgc
-            libgc-devel
 
       - name: install choco packages
         shell: powershell
@@ -61,7 +59,18 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v2.6.0
 
       - name: echo versions
-        run: export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH" && clang --version && javac --version
+        run: |
+          export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH"
+          clang --version
+          javac --version
+
+      - name: build libgc
+        run: |
+          export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH"
+          ./bin/windows_install_boehm_gc.sh
 
       - name: run tests
-        run: export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH" && make run_tests
+        run: |
+          export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH"
+          export FUZION_CLANG_INSTALLED_DIR="D:/a/_temp/msys64/ucrt64/bin"
+          make run_tests

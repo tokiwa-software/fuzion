@@ -18,7 +18,7 @@ jobs:
         with:
           update: true
           path-type: minimal
-          msystem: CLANG64
+          msystem: UCRT64
 # git is used in Makefile: JAVA_FILE_TOOLS_VERSION
           install: >-
             make
@@ -32,14 +32,26 @@ jobs:
 
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v2.6.0
 
-      - name: set PATH
-        run: echo "/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH" >> $GITHUB_PATH
+      # NYI this does not work :-( but why?
+      # - name: set PATH
+      #   run: echo "/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH" >> $GITHUB_PATH
 
       - name: echo PATH
         run: echo "$PATH"
 
       - name: echo versions
-        run: clang --version && javac --version
+        run: |
+          export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH"
+          clang --version
+          javac --version
+
+      - name: build libgc
+        run: |
+          export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH"
+          ./bin/windows_install_boehm_gc.sh
 
       - name: run tests
-        run: make run_tests_c
+        run:  |
+          export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH"
+          export FUZION_CLANG_INSTALLED_DIR="D:/a/_temp/msys64/ucrt64/bin"
+          make run_tests_c
