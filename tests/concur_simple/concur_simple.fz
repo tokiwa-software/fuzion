@@ -54,4 +54,4 @@ concur_simple =>
   thread_2.join
   thread_3.join
 
-  say
+  say ""
