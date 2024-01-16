@@ -74,18 +74,15 @@ test_atomic is
       TRUE => "TRUE"
   test0 unit_like TRUE TRUE TRUE TRUE ((a,b)-> a.ord=b.ord)
 
-/* NYI: commented out due to #2104
-
   # test unit-like choice
-  unit_like2 : choice TRUE void is
+  unit_like2 : choice unit void is
     ord => match unit_like2.this
-      TRUE => 0
+      unit => 0
       void => 1   # cannot happen!
     redef as_string => match unit_like2.this
-      TRUE => "TRUE"
+      unit => "unit"
       void => "*** cannot happen ***"
-  test0 unit_like2 TRUE TRUE TRUE TRUE ((a,b)-> a.ord=b.ord)
-*/
+  test0 unit_like2 unit unit unit unit ((a,b)-> a.ord=b.ord)
 
   # test bool-like choice
   on, off.
