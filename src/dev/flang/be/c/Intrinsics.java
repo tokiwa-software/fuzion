@@ -1276,7 +1276,7 @@ public class Intrinsics extends ANY
 
     CStmnt result;
 
-    if (c._fuir.clazzIsUnitType(rt))
+    if (c._fuir.clazzIsUnitType(rt) || c._fuir.clazzIsVoidType(rt))
       { // unit-type values are always equal:
         result = tmp.assign(new CIdent("true"));
       }
