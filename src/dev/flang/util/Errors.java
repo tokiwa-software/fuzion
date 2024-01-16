@@ -845,6 +845,9 @@ public class Errors extends ANY
             r.run();
             Errors.showAndExit(true);
           }
+        catch (QuietThreadTermination e)
+          {
+          }
         catch (Throwable e)
           {
             Errors.fatal(e);
