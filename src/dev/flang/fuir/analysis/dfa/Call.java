@@ -258,7 +258,7 @@ public class Call extends ANY implements Comparable<Call>, Context
                                                 yield null; }
           };
       }
-    else if (_returns)
+    else if (_returns || !_dfa._fuir.clazzIsVoidType(_dfa._fuir.clazzResultClazz(_cc)))
       {
         var rf = _dfa._fuir.clazzResultField(_cc);
         if (_pre)
@@ -273,7 +273,7 @@ public class Call extends ANY implements Comparable<Call>, Context
           {
             result = Value.UNIT;
           }
-        else
+        else if(_returns)
           {
             // should not be possible to return void (_result should be null):
             if (CHECKS) check
