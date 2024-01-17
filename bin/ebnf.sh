@@ -49,9 +49,32 @@ NEW_LINE=$'\n'
 SCRIPTPATH="$(dirname "$(readlink -f "$0")")"
 cd "$SCRIPTPATH"/..
 
+# first, strip out asciidoc code that is enclosed as blocks of the form
+#
+#   // tag::bla_bla
+#   ...
+#   // end::bla_bla
+#
+ASCIIDOC_MATCHER="// tag::(\n|.)*?// end::"
+LEXER_WITHOUT_ASCIIDOC=$(pcregrep -v -M "$ASCIIDOC_MATCHER" ./src/dev/flang/parser/Lexer.java)
+PARSER_WITHOUT_ASCIIDOC=$(pcregrep -v -M "$ASCIIDOC_MATCHER" ./src/dev/flang/parser/Parser.java)
+
+# then, extract EBNF rules of the form
+#
+# bla_bla : rhs
+#         | rhs
+#         ;
+#
+# or
+#
+# fragment
+# bla_bla : rhs
+#         | rhs
+#         ;
+#
 RULE_MATCHER="^(fragment\n)*[a-zA-Z0-9_]+[ ]*:(\n|.)*?( ;)"
-EBNF_LEXER=$(pcregrep -M "$RULE_MATCHER" ./src/dev/flang/parser/Lexer.java)
-EBNF_PARSER=$(pcregrep -M "$RULE_MATCHER" ./src/dev/flang/parser/Parser.java)
+EBNF_LEXER=$(echo "$LEXER_WITHOUT_ASCIIDOC" | pcregrep -M "$RULE_MATCHER")
+EBNF_PARSER=$(echo "$PARSER_WITHOUT_ASCIIDOC" | pcregrep -M "$RULE_MATCHER")
 
 # header
 EBNF_HEADER="grammar Fuzion;${NEW_LINE}${NEW_LINE}"
