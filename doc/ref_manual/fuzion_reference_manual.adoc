@@ -109,7 +109,7 @@ include::rule.adoc[]
 
 === Lexical Tokens
 
-The Unicoe code points of the input data are grouped into lexical tokens.  The
+The Unicode code points of the input data are grouped into lexical tokens.  The
 main groups of tokens are white space, reserved keywords, identifiers, literals
 and comments.  The following sub-sections describe these in detail.
 
