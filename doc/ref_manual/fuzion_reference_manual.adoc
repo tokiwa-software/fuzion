@@ -18,7 +18,7 @@
 //
 //  Tokiwa Software GmbH, Germany
 //
-//  ASCIIdoc source of the Fuzion Langauge Reference Manual
+//  ASCIIdoc source of the Fuzion Language Reference Manual
 //
 // -----------------------------------------------------------------------
 
@@ -120,7 +120,8 @@ Certain code points are not supported and will not be converted into tokens by
 the lexer but instead result in an error when processing input data containing
 these code points. The following code points are ((unsupported code points)).
 
-[none]  // [none] means no bullet points
+// [none] means no bullet points
+[none]
 include::{GENERATED}/doc/codepoints_illegal.adoc[]
 
 :RULE_SRC: src/dev/flang/parser/Lexer.java
@@ -135,11 +136,12 @@ include::rule.adoc[]
 
 [#whitespace_code_points]
 White space are code points that are ignored when creating tokens. Nevertheless,
-white space often plays an important role in speratating tokens such as a
+white space often plays an important role in separating tokens such as a
 keyword from an identifier as in `if&nbsp;condition`.
 
 The following code points in the input are considered ((white space)).
 
+// [none] means no bullet points
 [none]
 include::{GENERATED}/doc/codepoints_white_space.adoc[]
 
@@ -151,15 +153,140 @@ Even though white space does directly create tokens, the Fuzion language parser
 is affected by the presence of white space, e.g., to group blocks of code by a
 common level of indentation or to separate actual arguments provided to a call.
 
+==== Code point categories
+
+[#fuzion_letter]
+The following code points are considered Fuzion letters:
+
+// [none] means no bullet points
+[none]
+include::{GENERATED}/doc/codepoints_letter.adoc[]
+
+[#fuzion_digit]
+The following code points are considered Fuzion digits:
+
+// [none] means no bullet points
+[none]
+include::{GENERATED}/doc/codepoints_digit.adoc[]
+
+[#fuzion_numeric]
+The following code points are considered Fuzion numerics:
+
+// [none] means no bullet points
+[none]
+include::{GENERATED}/doc/codepoints_numeric.adoc[]
+
+[#fuzion_op]
+The following code points are considered Fuzion operator code points:
+
+// [none] means no bullet points
+[none]
+include::{GENERATED}/doc/codepoints_op.adoc[]
+
+==== Lines and Columns
+
+Each code point in an xref:input_source[Input sources] has an associated line
+and column. The first code point is in line `1` column `1`. Each code point that
+is not following a end of line marker is part of the same line as the previous
+code point and the line of the previous code point incremented by `1`.
+
+A code point that follows an end of line marker gets its line number increased
+by `1` and its column reset to `1`.
+
+:RULE_SRC: src/dev/flang/util/SourceFile.java
+:RULE_ID: LEXR_NEWLINE
+include::rule.adoc[]
+
+NOTE: In Fuzion, the lines and columns are not only relevant when referring to code
+location, e.g., when reporting error in the source code, but also have an effect
+on how code is parsed: In certain contexts such as in a one-line comment or at a
+given indentation level, the position of code affects the way the code is
+parsed.
+
 ==== Keywords
 
-CAUTION: *NYI*: Text Missing
+[#fuzion_keyword]
+The Fuzion grammar knows the following reserved keyword:
 
-`this` `env` `check` `else` `if` `then` `is` `abstract` `intrinsic` `intrinsic_constructor` `native` `for` `in` `do` `fixed` `loop` `while` `until` `variant` `pre` `post` `inv` `var` `match` `value` `ref` `synchronized` `redef` `const` `leaf` `infix` `prefix` `postfix` `ternary` `index` `set` `private` `module` `public` `of` `type` `univers`
+====
+include::{GENERATED}/doc/keywords.adoc[]
+====
 
 ==== Identifiers
 
-CAUTION: *NYI*: Text Missing
+[#fuzion_identifier]
+Identifiers in Fuzion are used to attach names to xref:fuzion_feature[Fuzion
+features].  Identifiers may contain a large variety of letters, digits and
+numeric symbols, they must start with a letter.
+
+:RULE_SRC: src/dev/flang/parser/Lexer.java
+:RULE_ID: LEXR_IDENT1
+include::rule.adoc[]
+
+:RULE_SRC: src/dev/flang/parser/Lexer.java
+:RULE_ID: LEXR_IDENT2
+include::rule.adoc[]
+
+==== Operators
+
+[#fuzion_operator]
+Similar to an xref:fuzion_identifier[identifier], a Fuzion operator may be part of
+a name of a xref:fuzion_feature[Fuzion features].  Such features permit a call syntax
+that uses infix, prefix or postfix notation.
+
+:RULE_SRC: src/dev/flang/parser/Lexer.java
+:RULE_ID: LEXR_OPER1
+include::rule.adoc[]
+
+:RULE_SRC: src/dev/flang/parser/Lexer.java
+:RULE_ID: LEXR_OPER2
+include::rule.adoc[]
+
+:RULE_SRC: src/dev/flang/parser/Lexer.java
+:RULE_ID: LEXR_OPER3
+include::rule.adoc[]
+
+:RULE_SRC: src/dev/flang/parser/Lexer.java
+:RULE_ID: LEXR_OPER4
+include::rule.adoc[]
+
+Examples for legal operators are `+`, `%%%`, `??`, `∀`, `∙`, `---` `>`, `/-/`, `*//`, `*#`.
+
+Examples for non-operators are `?`, `//`, `#*`.
+
+==== Comments
+
+Fuzion offers three kinds of comments: single line comments that start with
+either `#` or `//` and that extend to the end of the source code line, and
+nestable comments using `/\*` and `\*/` that may extends over several lines of
+code.
+
+:RULE_SRC: src/dev/flang/parser/Lexer.java
+:RULE_ID: LEXR_COMMENT1
+include::rule.adoc[]
+
+:RULE_SRC: src/dev/flang/parser/Lexer.java
+:RULE_ID: LEXR_COMMENT2
+include::rule.adoc[]
+
+:RULE_SRC: src/dev/flang/parser/Lexer.java
+:RULE_ID: LEXR_COMMENT3
+include::rule.adoc[]
+
+Examples of valid comments areas
+
+    i := 42     # this is a comment
+    this is not a comment
+    j := 32168  // this is also a comment
+    k := /* this is a comment */ 23
+    /* this /* comment /* is */ nested */ */
+    l := "not a comment, but a string literal"
+    /* this
+    /* comment
+    /* extends */
+       over several
+    */ lines */
+    m := l
 
 ==== Literals
 
@@ -173,11 +300,11 @@ CAUTION: *NYI*: Text Missing
 
 CAUTION: *NYI*: Text Missing
 
-==== Comments
-
-CAUTION: *NYI*: Text Missing
-
 === Grammar
+
+:RULE_SRC: src/dev/flang/parser/Lexer.java
+:RULE_ID: PARS_SYNTAX
+include::rule.adoc[]
 
 CAUTION: *NYI*: Text Missing
 
@@ -186,16 +313,29 @@ CAUTION: *NYI*: Text Missing
 CAUTION: *NYI*: Text Missing
 
 [appendix]
-== Definitions
+== Glossary
 
 ((Argument)):: CAUTION: *NYI*: Text Missing
+
 ((Constructor)):: CAUTION: *NYI*: Text Missing
+
 ((Clazz)):: CAUTION: *NYI*: Text Missing
+
+[#fuzion_feature]
 ((Feature)):: CAUTION: *NYI*: Text Missing
+
 ((Field)):: CAUTION: *NYI*: Text Missing
+
 ((Function)):: CAUTION: *NYI*: Text Missing
+
+[#input_source]
+((Input Source)):: An input source is a stream of bytes that contains Fuzion
+code that is used as an input for tools like Fuzion compilers.
+
 ((Routine)):: CAUTION: *NYI*: Text Missing
+
 ((Type)):: CAUTION: *NYI*: Text Missing
+
 ((Type Parameter)):: CAUTION: *NYI*: Text Missing
 
 [appendix]
@@ -207,7 +347,7 @@ include::{GENERATED}/doc/fum_file.adoc[leveloffset=+0,lines=8..-1]
 
 
 [appendix]
-== BNF Grammer
+== BNF Grammar
 The following shows the Grammar using a notation similar to Backus–Naur form <<bnf>>.
 ----
 include::{FUZION_EBNF}[]
@@ -223,3 +363,6 @@ include::{FUZION_EBNF}[]
 
 [index]
 == Index
+
+LocalWords:  Fuzion MERCHANTABILITY ASCIIdoc SRCF DOTFZ UTF LEXR LEGALCP fuzion
+LocalWords:  UNUSEDCP whitespace IDENT OPER

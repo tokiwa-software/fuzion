@@ -569,9 +569,41 @@ public class Errors extends ANY
   public static String singularOrPlural(int count, String what)
   {
     return
-      count == 0 ? "no " + what + "s" :
+      count == 0 ? "no " + plural(what) :
       count == 1 ? "one " + what
-                 : "" + count + " " + what + "s";
+                 : "" + count + " " + plural(what);
+  }
+
+
+  /**
+   * Build plural of a noun iff count is not 1.
+   *
+   * @param count a counter
+   *
+   * @param what a noun like "car", "baby", etc.
+   *
+   * @return what iff count==1, otherwise the plural form "cars", "babies", etc.
+   */
+  public static String plural(int count, String what)
+  {
+    if (PRECONDITIONS) require
+      (count >= 0);
+
+    return count == 1 ? what : plural(what);
+  }
+
+
+  /**
+   * Build plural of a noun
+   *
+   * @param what a noun like "car", "baby", etc.
+   *
+   * @return the plural form "cars", "babies", etc.
+   */
+  public static String plural(String what)
+  {
+    return what.endsWith("y") ? what.substring(0, what.length()-1) + "ies"
+                              : what + "s";
   }
 
 

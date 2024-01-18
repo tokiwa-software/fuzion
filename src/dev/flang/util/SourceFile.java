@@ -560,6 +560,12 @@ Fuzion input uses UTF8 encoding vesion {UNICODE_VERSION} from {UNICODE_SOURCE}[]
    */
   public boolean isNewLine(int codePoint)
   {
+    /*
+    // tag::fuzion_rule_LEXR_NEWLINE[]
+The end of a source code line is marked by one of the code points LF 0x000a, VT 0x000b, FF 0x000c, NEL 0x0085, LS 0x2028 or PF 0x2029.
+    // end::fuzion_rule_LEXR_NEWLINE[]
+    */
+
     // line break, taken from https://en.wikipedia.org/wiki/Newline#Unicode
     return switch (codePoint)
       {

@@ -33,6 +33,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.TreeSet;
 
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.util.Callable;
@@ -330,7 +331,7 @@ public class Lexer extends SourceFile
   private static final byte K_OP      =  1;  // '+'|'-'|'*'|'%'|'|'|'~'|'#'|'!'|'$'|'&'|'@'|':'|'<'|'>'|'='|'^'|'.')+;
   private static final byte K_WS      =  2;  // spaces, tabs, lf, cr, ...
   private static final byte K_SLASH   =  3;  // '/', introducing a comment or an operator.
-  private static final byte K_SHARP   =  4;  // '/', introducing a comment or an operator.
+  private static final byte K_SHARP   =  4;  // '#', introducing a comment or an operator.
   private static final byte K_COMMA   =  5;  // ','
   private static final byte K_LPAREN  =  6;  // '('  round brackets or parentheses
   private static final byte K_RPAREN  =  7;  // ')'
@@ -434,13 +435,58 @@ public class Lexer extends SourceFile
   static String codePointAsString(int cp)
   {
     var n = _asciiControlName[cp];
-    return String.format("* 0x%04x %s", cp,
-                         n != null ? n :
+    return String.format("0x%04x %s", cp,
+                         n != null ? "`" + n + "`":
                          cp == ' ' ? "SPACE" :
-                         cp < 0x7f ? "'" + (char) cp + "'"
+                         cp < 0x7f ? "`'" + (char) cp + "'`"
                                    : "");
   }
 
+
+
+  /**
+   * Helper for main() to create asciidoc source for a codepoint ranges that
+   * correspond to given kind (K_*).  Result is printed to System.out.
+   *
+   * @param kind one of the kinds defined as constants K_LETTER, K_DIGIT, etc.
+   */
+  static void showChars(byte kind)
+  {
+    var got = new TreeSet<String>();
+    for (int cp = 0; cp < 0xffff; cp++)
+      {
+        var k = kind(cp);
+        if (k == kind)
+          {
+            if (cp <= 0x7f)
+              {
+                var cp2 = cp;
+                while (cp2 < 0x7f && kind(cp2+1) == k)
+                  {
+                    cp2++;
+                  }
+                if (cp2 > cp+1)
+                  {
+                    System.out.println("* " + codePointAsString(cp) + " .. " + codePointAsString(cp2));
+                    cp = cp2;
+                  }
+                else
+                  {
+                    System.out.println("* " + codePointAsString(cp));
+                  }
+              }
+            else
+              {
+                got.add(UnicodeData.category(cp));
+              }
+          }
+      }
+    if (!got.isEmpty())
+      {
+        System.out.println("* Unicode " + Errors.plural(got.size(), "category") + " " +
+                           got.stream().map(x -> "`" + x + "`").collect(Collectors.joining (", ")));
+      }
+  }
 
 
   /**
@@ -452,6 +498,8 @@ public class Lexer extends SourceFile
    *   "-whiteSpace", then output list of white space code points
    *
    *   "-illegal", then output list of illegal code points and categories.
+   *
+   *   "-keywords", then output list of keywords.
    */
   public static void main(String[] args)
   {
@@ -468,28 +516,18 @@ public class Lexer extends SourceFile
                    }
                }
            }
-         else if (x.equals("-illegal"))
+         else if (x.equals("-illegal" )) { showChars(K_UNKNOWN); }
+         else if (x.equals("-letter"  )) { showChars(K_LETTER ); }
+         else if (x.equals("-digit"   )) { showChars(K_DIGIT  ); }
+         else if (x.equals("-numeric" )) { showChars(K_NUMERIC); }
+         else if (x.equals("-op"      )) { showChars(K_OP     ); }
+         else if (x.equals("-keywords"))
            {
-             var got = new TreeSet<String>();
-             for (int cp = 0; cp < 0xffff; cp++)
+             for (var k : Token._keywords)
                {
-                 if (kind(cp) == K_UNKNOWN)
-                   {
-                     if (cp < 0x7f)
-                       {
-                         System.out.println(codePointAsString(cp));
-                       }
-                     else
-                       {
-                         var cat = UnicodeData.category(cp);
-                         if (!got.contains(cat))
-                           {
-                             got.add(cat);
-                             System.out.println(String.format("* Unicode category %s", cat));
-                           }
-                       }
-                   }
+                 System.out.print("`"+k+"` ");
                }
+             System.out.println();
            }
        });
   }
@@ -1113,6 +1151,11 @@ or single quote `'`.  Thise might, however, be used in the future.
             }
           case K_SHARP   :   // '#'
             {
+              /*
+    // tag::fuzion_rule_LEXR_COMMENT3[]
+A code point sharp 0x023 `#` that is not part of an operator starts a comment that extends until the end of the current line.
+    // end::fuzion_rule_LEXR_COMMENT3[]
+              */
               boolean SHARP_COMMENT_ONLY_IF_IN_COL_1 = false;
               token =
                 !SHARP_COMMENT_ONLY_IF_IN_COL_1 ||
@@ -1142,6 +1185,14 @@ OPERATOR  : ( '!'
           */
           case K_OP      :   // '+'|'-'|'*'|'%'|'|'|'~'|'!'|'$'|'&'|'@'|':'|'<'|'>'|'='|'^'|'.')+;
             {
+    /*
+    // tag::fuzion_rule_LEXR_OPER1[]
+A Fuzion operator code point starts with a xref:fuzion_op[Fuzion operator code point].
+    // end::fuzion_rule_LEXR_OPER1[]
+    // tag::fuzion_rule_LEXR_OPER2[]
+A single code point 0x003F '?' is not an operator.
+    // end::fuzion_rule_LEXR_OPER2[]
+    */
               token = skipOp(p == '?' ? Token.t_question : Token.t_op);
               break;
             }
@@ -1176,8 +1227,23 @@ xref:whitespace_code_points[White space] separates tokens but does not appear as
             }
           case K_SLASH   :   // '/', introducing a comment or an operator.
             {
+              /*
+    // tag::fuzion_rule_LEXR_OPER4[]
+A Fuzion operator may start with a single slash 0x002F '/'.
+    // end::fuzion_rule_LEXR_OPER4[]
+              */
               p = curCodePoint();
+              /*
+    // tag::fuzion_rule_LEXR_COMMENT1[]
+A sequence of two slash 0x002F '/' code points that are not part of an operator starts a comment that extends until the end of the current line.
+    // end::fuzion_rule_LEXR_COMMENT1[]
+              */
               token = kind(p) == K_SLASH ? skipUntilEOL() : // comment until end of line
+              /*
+    // tag::fuzion_rule_LEXR_COMMENT2[]
+A sequence of code points slash 0x02f `/` followed by asterisk 0x002a `\*` starts a comment that extends until a correspoding sequence of `*` `/` is encountered.  These comments may be nested and each opening `/` `\*` must be matched by a correspoding `\*` `/`.
+    // end::fuzion_rule_LEXR_COMMENT2[]
+              */
                       p == '*'           ? skipComment()
                                          : skipOp(Token.t_op);
               break;
@@ -1277,6 +1343,11 @@ IDENT     : ( 'a'..'z'
           */
           case K_LETTER  :    // 'A'..'Z', 'a'..'z'
             {
+    /*
+    // tag::fuzion_rule_LEXR_IDENT1[]
+A Fuzion identifier starts with a codepoint that is a xref:fuzion_letter[Fuzion letter] followed by one or several codepoints of type xref:fuzion_letter[Fuzion letter], xref:fuzion_digit[Fuzion digit] or xref:fuzion_numeric[Fuzion numeric].
+    // end::fuzion_rule_LEXR_IDENT1[]
+    */
               while (partOfIdentifier(curCodePoint()))
                 {
                   nextCodePoint();
@@ -1357,6 +1428,12 @@ IDENT     : ( 'a'..'z'
    */
   private Token findKeyword()
   {
+    /*
+    // tag::fuzion_rule_LEXR_IDENT2[]
+A xref:fuzion_keyword[Fuzion keyword] cannot be used as a Fuzion identifier.
+    // end::fuzion_rule_LEXR_IDENT2[]
+    */
+
     Token result = Token.t_ident;
     // perform binary search in Token.keywords array:
     int l = 0;
@@ -2059,6 +2136,11 @@ HEX_TAIL    : "." HEX_DIGITS
    */
   private Token skipOp(Token res)
   {
+    /*
+    // tag::fuzion_rule_LEXR_OPER3[]
+A Fuzion operator may contain one or several codepoints that are xref:fuzion_op[Fuzion operator code points], sharp 0x0023 '#' or slash 0x002F '/'.
+    // end::fuzion_rule_LEXR_OPER3[]
+    */
     int p = curCodePoint();
     while (kind(p) == K_OP || kind(p) == K_SHARP || kind(p) == K_SLASH)
       {
@@ -2081,6 +2163,12 @@ HEX_TAIL    : "." HEX_DIGITS
    */
   void syntaxError(int pos, String expected, String currentRule)
   {
+    /*
+    // tag::fuzion_rule_PARS_SYNTAX[]
+Fuzion xref:input_source[input sources] must match the Fuzion grammar defined in <<_bnf_grammar>>.
+    // end::fuzion_rule_PARS_SYNTAX[]
+    */
+
     String detail = Parser.parserDetail(currentRule);
     switch (current())
       {
