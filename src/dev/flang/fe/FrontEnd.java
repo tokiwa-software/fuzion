@@ -154,7 +154,7 @@ public class FrontEnd extends ANY
   public FrontEnd(FrontEndOptions options)
   {
     _options = options;
-    Types.reset();
+    Types.reset(options);
     FeatureAndOuter.reset();
     Errors.reset();
     FeatureName.reset();

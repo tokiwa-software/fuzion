@@ -909,15 +909,18 @@ public class Call extends AbstractCall
     if (PRECONDITIONS) require
       (Errors.any());
 
-    _calledFeature = Types.f_ERROR;
-    _target = Expr.ERROR_VALUE;
-    _actuals = new List<>();
-    _actualsNew = new List<>();
-    _generics = new List<>();
-    _type = Types.t_ERROR;
-    if (_movedTo != null)
+    if (!Types._options.isLanguageServer())
       {
-        _movedTo.setToErrorState();
+        _calledFeature = Types.f_ERROR;
+        _target = Expr.ERROR_VALUE;
+        _actuals = new List<>();
+        _actualsNew = new List<>();
+        _generics = new List<>();
+        _type = Types.t_ERROR;
+        if (_movedTo != null)
+          {
+            _movedTo.setToErrorState();
+          }
       }
   }
 
@@ -2626,7 +2629,7 @@ public class Call extends AbstractCall
       }
 
     if (CHECKS) check
-      (_calledFeature != null || _pendingError != null);
+      (res._options.isLanguageServer() || _calledFeature != null || _pendingError != null);
 
     if (_calledFeature == Types.f_ERROR)
       {
@@ -2882,14 +2885,18 @@ public class Call extends AbstractCall
    * perform static type checking, i.e., make sure that in all assignments from
    * actual to formal arguments, the types match.
    *
+   * @param res the resolution instance.
+   *
    * @param outer the root feature that contains this expression.
    */
-  public void checkTypes(AbstractFeature outer)
+  public void checkTypes(Resolution res, AbstractFeature outer)
   {
     reportPendingError();
-    check
-      (_type != null);
-    if (_type != Types.t_ERROR)
+
+    if (CHECKS) check
+      (res._options.isLanguageServer() || _type != null);
+
+    if (_type != null && _type != Types.t_ERROR)
       {
         var o = _type;
         while (o != null && !o.isGenericArgument())
