@@ -739,6 +739,15 @@ public class C extends ANY
     if (isWindows())
       {
         command.addAll("-lMswsock", "-lAdvApi32", "-lWs2_32");
+
+        if(_options._useBoehmGC)
+          {
+            command.addAll(
+              System.getenv("FUZION_CLANG_INSTALLED_DIR") == null
+                ? "C:\\tools\\msys64\\ucrt64\\bin\\libgc-1.dll"
+                : System.getenv("FUZION_CLANG_INSTALLED_DIR") + "\\libgc-1.dll"
+            );
+          }
       }
 
     _options.verbosePrintln(" * " + command.toString("", " ", ""));
@@ -797,6 +806,8 @@ public class C extends ANY
   {
     cf.print(
        "#define _POSIX_C_SOURCE 200809L\n" +
+       // we need to include winsock2.h before windows.h
+       (_options._useBoehmGC ? "#define GC_DONT_INCLUDE_WINDOWS_H\n"   : "")+
        (_options._useBoehmGC ? "#define GC_THREADS\n#include <gc.h>\n" : "")+
        "#include <stdlib.h>\n"+
        "#include <stdio.h>\n"+

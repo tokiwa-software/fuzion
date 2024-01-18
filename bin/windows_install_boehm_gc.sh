@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # This file is part of the Fuzion language implementation.
 #
 # The Fuzion language implementation is free software: you can redistribute it
@@ -17,41 +19,18 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test concur_simple
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of windows_install_boehm_gc.sh bash script
 #
 # -----------------------------------------------------------------------
 
-# test for basic threads
-#
-# A simple test for concur.thread.spawn
-#
-# NOTE: This test is brittle on a loaded system, it depends on timing and on no
-# threads being delayed for more then a few ms during test run.  Disable this
-# test on systems with unstable performance!
-#
-concur_simple =>
+set -euo pipefail
 
-  d := time.durations
-
-  N := 5
-  t1 := d.ms 60
-  t2 := d.ms 120
-  t3 := d.ms 180
-
-  count(s String, t0, t time.duration) =>
-    time.nano.sleep t0
-    for i in 0..N do
-      time.nano.sleep t
-      yak s
-
-  thread_1 := concur.thread.spawn (()->count "/"  (d.ms 20) t1)
-  thread_2 := concur.thread.spawn (()->count "\\" (d.ms 40) t2)
-  thread_3 := concur.thread.spawn (()->count "."  (d.ms 60) t3)
-
-  thread_1.join
-  thread_2.join
-  thread_3.join
-
-  say ""
+mkdir -p build
+cd build
+wget https://www.hboehm.info/gc/gc_source/gc-8.2.4.tar.gz
+echo "3d0d3cdbe077403d3106bb40f0cbb563413d6efdbb2a7e1cd6886595dec48fc2 gc-8.2.4.tar.gz" | sha256sum --check --status
+tar xf gc-8.2.4.tar.gz
+cd gc-8.2.4
+./configure --prefix=/ucrt64/
+make
+make install

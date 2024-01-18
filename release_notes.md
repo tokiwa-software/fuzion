@@ -993,7 +993,7 @@
   - renamed several features from 'camelCase' to 'snake_case' or
     'Capitalized_snake_case' for 'ref' types.
 
-  - abstract equality (see https://flang.dev/design/equality") as explained by
+  - abstract equality (see https://fuzion-lang.dev/design/equality") as explained by
     Noble et al in The Left Hand of Equals
     (http://web.cecs.pdx.edu/~black/publications/egal.pdf) is now supported:
 
@@ -1481,7 +1481,7 @@
 
   - support for f32 and f64
 
-- flang.dev
+- fuzion-lang.dev
 
 - tests
 
@@ -1495,10 +1495,10 @@
 
 ## 2022-02-25: V0.069
 
-- flang.dev
+- fuzion-lang.dev
   - design
     - added example for [Automatic Monadic
-      Lifting](https://flang.dev/design/monadic_lifting) using Knuth's
+      Lifting](https://fuzion-lang.dev/design/monadic_lifting) using Knuth's
       man-or-boy example and a new feature _handles_ that provides a state monad
       similar to Haskell's _IORef_.
 
@@ -1542,7 +1542,7 @@
 
 - stdlib
 
-  - lib: Minor improvements used in tutoral at flang.dev:
+  - lib: Minor improvements used in tutoral at fuzion-lang.dev:
 
     - added 'list head tail' as a counterpart to Haskell's 'head : tail' for
       list creation.
@@ -1597,11 +1597,11 @@
 
 ## 2022-01-21: V0.065
 
-- flang.dev
+- fuzion-lang.dev
 
-    - added .fum file documentation to https://flang.dev/design/fum_file
+    - added .fum file documentation to https://fuzion-lang.dev/design/fum_file
 
-    - added browsable fuzion API documentation to https://flang.dev/docs/index
+    - added browsable fuzion API documentation to https://fuzion-lang.dev/docs/index
 
 - parser
 
@@ -1699,7 +1699,7 @@
 
 ## 2021-10-29: V0.062
 
-- flang.dev website
+- fuzion-lang.dev website
 
   - added more idioms, e.g. #182 (quine), 242..258, etc.
 
@@ -1716,7 +1716,7 @@
 
 ## 2021-10-15: V0.061
 
-- flang.dev website
+- fuzion-lang.dev website
 
   - added many idioms, updated syntax of existing idioms
 
@@ -1737,7 +1737,7 @@
 
 ## 2021-09-30: V0.060
 
-- flang.dev website
+- fuzion-lang.dev website
 
   - new design for code input / execution output text areas
 
@@ -1798,7 +1798,7 @@
 
   - support for types i8, i16, u8, u16, f32, f64.
 
-- flang.dev website
+- fuzion-lang.dev website
 
   - added sections on integer and float constants to tutorial.
 
@@ -1818,7 +1818,7 @@
 
 - FrontEnd
 
-  - fix running examples such as tutorial/overflow* on flang.dev (see git commit
+  - fix running examples such as tutorial/overflow* on fuzion-lang.dev (see git commit
     for details).
 
 ## 2021-08-20: V0.057
@@ -1854,7 +1854,7 @@
 
   - string.utf8 now returns an List<u8>.
 
-- flang.dev website
+- fuzion-lang.dev website
 
   - now supportes ACE editor for source code
 
@@ -1907,11 +1907,11 @@
 
 ## 2021-07-08: V0.054
 
-- flang.dev
+- fuzion-lang.dev
 
   - changed path to load 'main.js' to be absolute '/main.js'.  Before, main.js
     could not be loaded if the first page access was in a sub directory such as
-    'flang.dev/tutorial/index' and anything requiring java script, like
+    'fuzion-lang.dev/tutorial/index' and anything requiring java script, like
     executing examples, did not work.
 
 - Front End
@@ -1985,9 +1985,9 @@
 
 ## 2021-06-29: V0.051
 
-- flang.dev
+- fuzion-lang.dev
 
-  - design: added flang.dev/design/calls.html for thoughts on Fuzion's call
+  - design: added fuzion-lang.dev/design/calls.html for thoughts on Fuzion's call
     syntax.
 
   - added idioms 134, 135, 136
@@ -2037,7 +2037,7 @@
 
   - new option -XjavaProf (for profiling fz's own Java code) and -X/--xhelp).
 
-- flang.dev
+- fuzion-lang.dev
 
   - added idiom 76
 
@@ -2057,7 +2057,7 @@
     'true'.  Reduces binary size when using C backend on HelloWorld with
     '-debug=0 -safety=off' by 3.5%.
 
-- flang.dev
+- fuzion-lang.dev
 
   - added idioms 39, 40, 49, 68, 76, 82, 116
 
@@ -2074,7 +2074,7 @@
 
   - added u128 for unsigned 128-bit integers
 
-- flang.dev
+- fuzion-lang.dev
 
   - added idioms 62, 63
 
@@ -2101,7 +2101,7 @@
   - string: added startsWith, endsWith
 
 
-- flang.dev
+- fuzion-lang.dev
 
   - added idioms 84, 85, 86, 87, 88, 89, 90, 93, 96, 97, 100, 108, 110, 112,
     113, 114, 117, 118, 119, 122, 124, 127, 227, 231
@@ -2127,7 +2127,7 @@
     possible values of typ 'option<some<nil>>' are 'nil' and 'some nil'
 
 
-- flang.dev
+- fuzion-lang.dev
 
   - added idioms # 38, 44, 46, 47, 48, 53, 54, 55, 57
 
@@ -2149,7 +2149,7 @@
     'infix ∈', so we can write '2 ∈ [1,2,3]' or '7 ∉ 10..300' (both result in
     bool value true).
 
-- flang.dev
+- fuzion-lang.dev
 
   - added idioms # 51, 52
 
@@ -2168,7 +2168,7 @@
     Support for grouping of digits using '_' as in 'ichiOku := 1_0000_0000',
     groups must be equal in size and at least two digits long.
 
-- flang.dev
+- fuzion-lang.dev
 
   - added idioms # 32, 41
 
@@ -2187,13 +2187,13 @@
   - added outcome.fz similar to Rust's result: a choice between a value and an
     error.
 
-- flang.dev
+- fuzion-lang.dev
 
   - added idioms # 18, 22, 26, 27, 34, 42
 
 ## 2021-05-19: V0.041
 
-- flang.dev
+- fuzion-lang.dev
 
   - added idioms # 8, 9, 13, 16, 19
 
@@ -2237,7 +2237,7 @@
 
   - now works with array initialization using '[a, b, c]'.
 
-- flang.dev
+- fuzion-lang.dev
 
   - updated examples to use array initialization instead of InitArray.fz
 
@@ -2622,7 +2622,7 @@ Benchmarks:
   - extracted dynamic binding related code from Clazz.java to
     DynamicBinging.java.
 
-- flang.dev
+- fuzion-lang.dev
 
   - Removed access restrictions, made website and tutorial accessible without
     login.
@@ -3221,4 +3221,4 @@ Benchmarks:
 
 ## 2020-09-29: V0.001
 
-- First version to be presented to very few selected users via the flang.dev website.
+- First version to be presented to very few selected users via the fuzion-lang.dev website.

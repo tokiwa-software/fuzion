@@ -129,7 +129,8 @@ class FeatureWriter extends ANY
           {
             s = "_k_" + s;
           }
-        else if (s.equals("Sequence") ||
+        else if (s.equals(FuzionConstants.ANY_NAME) ||
+                 s.equals("Sequence") ||
                  s.equals(FuzionConstants.STRING_NAME) ||
                  s.equals("array"   ) ||
                  s.equals("split"   )    )

@@ -42,6 +42,7 @@ import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
+import dev.flang.util.QuietThreadTermination;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -500,9 +501,18 @@ should be avoided as much as possible.
       }
       void finish(JVM jvm)
       {
+        // In case we encountered any errors, report them and stop here. In case
+        // of warnings, report them here.
+        Errors.showAndExit(true);
+
         var applicationArgs = new ArrayList<>(jvm._options._applicationArgs);
         applicationArgs.add(0, jvm._fuir.clazzAsString(jvm._fuir.mainClazzId()));
         jvm._runner.runMain(applicationArgs);
+
+        // We are done, the code is running in new threads and we silently
+        // terminate without reporting any warning or error statistics that
+        // might have been created by the running code meanwhile:
+        throw new QuietThreadTermination();
       }
     },
     SAVE_CLASSES {

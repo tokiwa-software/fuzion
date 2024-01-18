@@ -131,11 +131,11 @@ with a `yield` operation. In some other languages, this requires a keyword
 without language support.
 
 If you want to play around with Fuzion, try the
-[interactive tutorial](https://flang.dev/tutorial/index).
+[interactive tutorial](https://fuzion-lang.dev/tutorial/index).
 
 ## Documentation
 
-Check [flang.dev](https://flang.dev) for language and implementation design.
+Check [fuzion-lang.dev](https://fuzion-lang.dev) for language and implementation design.
 
 
 ## Clone
@@ -164,11 +164,12 @@ Check [flang.dev](https://flang.dev) for language and implementation design.
 1) Install chocolatey: [chocolatey.org](https://chocolatey.org/install)
 2) In Powershell:
     1) choco install git openjdk make msys2 diffutils
-    2) [Environment]::SetEnvironmentVariable("Path","c:\tools\msys64\mingw64\bin;" + $env:Path , "User")
+    2) [Environment]::SetEnvironmentVariable("Path","c:\tools\msys64\ucrt64\bin;" + $env:Path , "User")
 3) In file C:\tools\msys64\msys2_shell.cmd change line: 'rem set MSYS2_PATH_TYPE=inherit' to 'set MSYS2_PATH_TYPE=inherit'
 4) In msys2 shell (execute C:\tools\msys64\msys2_shell.cmd):
     1) pacman -S mingw-w64-x86_64-clang
     2) make
+5) execute ./bin/windows_install_boehm_gc.sh
 
 ## Build
 
