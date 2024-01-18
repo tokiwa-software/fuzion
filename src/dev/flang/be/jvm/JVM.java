@@ -792,14 +792,11 @@ should be avoided as much as possible.
    */
   public void compile()
   {
-    var cl = _fuir.mainClazzId();
-    var name = _fuir.clazzBaseName(cl);
-
     var ucl = _names.javaClass(_fuir.clazzUniverse());
     _types.UNIVERSE_TYPE = new ClassType(ucl);
     LOAD_UNIVERSE = Expr.getstatic
       (ucl,
-       _names.UNIVERSE_FIELD,
+       Names.UNIVERSE_FIELD,
        _types.UNIVERSE_TYPE);
 
     createCode();
@@ -908,7 +905,7 @@ should be avoided as much as possible.
         result = result.andThen(new0(cl))
           .andThen(cl == _fuir.clazzUniverse()
                    ? Expr.DUP.andThen(Expr.putstatic(_names.javaClass(cl),
-                                                     _names.UNIVERSE_FIELD,
+                                                     Names.UNIVERSE_FIELD,
                                                      _types.UNIVERSE_TYPE))
                    : Expr.UNIT)
           .andThen(Expr.astore(current_index(cl)));
@@ -1155,7 +1152,7 @@ should be avoided as much as possible.
                                        bc_cl,
                                        new List<>(), new List<>());
 
-        cf.method(cf.ACC_STATIC | cf.ACC_PUBLIC, name, _types.descriptor(cl, pre), new List<>(code_cl));
+        cf.method(ClassFileConstants.ACC_STATIC | ClassFileConstants.ACC_PUBLIC, name, _types.descriptor(cl, pre), new List<>(code_cl));
 
         // If both precondition and routine exists, create a helper that calls both combined
         if (!pre && _fuir.hasPrecondition(cl))
@@ -1193,7 +1190,7 @@ should be avoided as much as possible.
                                              numLocals(cl, pre) /* NYI, num locals! */,
                                              bc_combined,
                                              new List<>(), new List<>());
-            cf.method(cf.ACC_STATIC | cf.ACC_PUBLIC, Names.COMBINED_NAME, _types.descriptor(cl, false), new List<>(code_comb));
+            cf.method(ClassFileConstants.ACC_STATIC | ClassFileConstants.ACC_PUBLIC, Names.COMBINED_NAME, _types.descriptor(cl, false), new List<>(code_comb));
           }
       }
   }
@@ -1616,7 +1613,6 @@ should be avoided as much as possible.
       (tvalue != null || !_fuir.hasData(rt) || _fuir.clazzOuterClazz(f) == _fuir.clazzUniverse());
 
     var occ   = _fuir.clazzOuterClazz(f);
-    var vocc  = _fuir.clazzAsValue(occ);
     Expr res;
     if (_fuir.clazzIsVoidType(rt))
       {
@@ -1694,7 +1690,6 @@ should be avoided as much as possible.
         var jt = _types.javaType(rt);
         if (_fuir.clazzIsChoice(rt))
           {
-            var cf = _types.classFile(rt);
             var cc = _names.javaClass(rt);
             e = e
               .andThen(Expr.aload(nl, jt))

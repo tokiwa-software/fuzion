@@ -38,7 +38,7 @@ import java.util.stream.Stream;
  + Please refer to the Java Virtual Machine Specification for details,
  * latest version as time of writing available here
  *
- *   https://docs.oracle.com/javase/specs/jvms/se20/jvms20.pdf
+ *   https://docs.oracle.com/javase/specs/jvms/se21/jvms21.pdf
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -580,7 +580,7 @@ public interface ClassFileConstants
       return Expr.POP;
     }
 
-    public JavaType array()
+    public AType array()
     {
       return new ArrayType(this);
     }
