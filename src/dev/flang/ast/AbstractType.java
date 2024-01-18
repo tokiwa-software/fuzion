@@ -1003,7 +1003,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * isFunType checks if this is a function type used for lambda expressions,
+   * isFunctionType checks if this is a function type used for lambda expressions,
    * e.g., "(i32, i32) -> String".
    *
    * @return true iff this is a function type based on `Function` or `Unary`.
