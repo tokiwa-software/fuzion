@@ -504,7 +504,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                     "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;",
                                     Names.JAVA_LANG_OBJECT));
           var rc = jvm._fuir.clazzResultClazz(cc);
-          if (jvm._fuir.clazzBaseName(rc).startsWith("outcome"))
+          if (false) if (jvm._fuir.clazzBaseName(rc).startsWith("outcome"))
             {
               var oc = jvm._fuir.clazzChoice(rc, 0);
               var ec = jvm._fuir.clazzChoice(rc, 1);
@@ -514,15 +514,20 @@ public class Intrinsix extends ANY implements ClassFileConstants
                 jvm.new0(ec)
                 .andThen(Expr.checkcast(rte))
                 .is(rte);
-              return new Pair<>(Expr.UNIT, x);
+              return new Pair<>(x, Expr.UNIT);
             }
-          var res = switch (jvm._fuir.getSpecialId(rc))
+          var rc0 = rc;
+          if (jvm._fuir.clazzBaseName(rc).startsWith("outcome")) // NYI: proper check!
+            {
+              rc0 = jvm._fuir.clazzChoice(rc, 0);
+            }
+          var res = switch (jvm._fuir.getSpecialId(rc0))
             {
               case c_i8, c_u16, c_i16, c_i32, c_i64,
                 c_f32, c_f64, c_bool, c_unit -> exec;
               default -> {
-                var rcv = jvm._fuir.clazzAsValue(rc);
-                var rt = jvm._types.javaType(rc);
+                var rcv = jvm._fuir.clazzAsValue(rc0);
+                var rt = jvm._types.javaType(rc0);
                 var jref2 = jvm._fuir.clazzField(rcv, 0);
 
                 yield
@@ -534,7 +539,12 @@ public class Intrinsix extends ANY implements ClassFileConstants
                   .is(rt);
               }
             };
-          return new Pair<>(Expr.UNIT, res);
+          if (rc != rc0)
+            {
+              res = jvm._types._choices.tag(jvm, rc0, res, rc, 0);
+            }
+          return jvm._types.javaType(rc) == PrimitiveType.type_void ? new Pair<>(Expr.UNIT, res)
+                                                                    : new Pair<>(res, Expr.UNIT);
         });
 
     put("fuzion.java.call_s0",
@@ -586,7 +596,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                   .is(rt);
               }
             };
-          return new Pair<>(Expr.UNIT, res);
+          return new Pair<>(res, Expr.UNIT);
         });
 
     put("fuzion.java.call_c0",
@@ -635,7 +645,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                   ;
               }
             };
-          return new Pair<>(Expr.UNIT, res);
+          return new Pair<>(res, Expr.UNIT);
         });
 
     put("fuzion.sys.args.count",
