@@ -153,6 +153,24 @@ public Sequence(public T type) ref is
   public for_each(f T -> unit) unit => as_list.for_each f
 
 
+  # calls `f` for element in the Sequence.
+  #
+  # Unlike `for_each` this returns itself
+  # allowing easier composition with
+  # other Sequence features.
+  #
+  # example:
+  # [1,2,3,4,5]
+  #   .filter is_prime
+  #   .peek say
+  #   .drop_while <10
+  #
+  public peek (f T -> unit) =>
+    as_list ? nil    =>
+            | c Cons => f c.head; c.tail.peek f
+    as_list
+
+
   # create a list and have it consumed by f, infix operator synonym of for_each.
   #
   public infix | (f T -> unit) => for_each f
