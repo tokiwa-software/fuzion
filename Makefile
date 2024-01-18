@@ -382,7 +382,13 @@ REF_MANUAL_SOURCES = $(wildcard $(FZ_SRC)/doc/ref_manual/*.adoc) \
                      $(BUILD_DIR)/generated/doc/unicode_version.adoc \
                      $(BUILD_DIR)/generated/doc/codepoints_white_space.adoc \
                      $(BUILD_DIR)/generated/doc/codepoints_illegal.adoc \
+                     $(BUILD_DIR)/generated/doc/codepoints_letter.adoc \
+                     $(BUILD_DIR)/generated/doc/codepoints_digit.adoc \
+                     $(BUILD_DIR)/generated/doc/codepoints_numeric.adoc \
+                     $(BUILD_DIR)/generated/doc/codepoints_op.adoc \
+                     $(BUILD_DIR)/generated/doc/keywords.adoc \
                      $(JAVA_FILES_UTIL) \
+                     $(JAVA_FILES_PARSER) \
                      $(JAVA_FILES_FE)
 REF_MANUAL_PDF     = $(BUILD_DIR)/doc/refeference_manual/fuzion_reference_manual.pdf
 REF_MANUAL_HTML    = $(BUILD_DIR)/doc/refeference_manual/html/index.html
@@ -1081,6 +1087,26 @@ $(BUILD_DIR)/generated/doc/codepoints_white_space.adoc: $(CLASS_FILES_PARSER)
 $(BUILD_DIR)/generated/doc/codepoints_illegal.adoc: $(CLASS_FILES_PARSER)
 	mkdir -p $(@D)
 	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -illegal >$@
+
+$(BUILD_DIR)/generated/doc/codepoints_letter.adoc: $(CLASS_FILES_PARSER)
+	mkdir -p $(@D)
+	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -letter >$@
+
+$(BUILD_DIR)/generated/doc/codepoints_digit.adoc: $(CLASS_FILES_PARSER)
+	mkdir -p $(@D)
+	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -digit >$@
+
+$(BUILD_DIR)/generated/doc/codepoints_numeric.adoc: $(CLASS_FILES_PARSER)
+	mkdir -p $(@D)
+	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -numeric >$@
+
+$(BUILD_DIR)/generated/doc/codepoints_op.adoc: $(CLASS_FILES_PARSER)
+	mkdir -p $(@D)
+	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -op >$@
+
+$(BUILD_DIR)/generated/doc/keywords.adoc: $(CLASS_FILES_PARSER)
+	mkdir -p $(@D)
+	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -keywords >$@
 
 $(REF_MANUAL_PDF): $(REF_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
 	mkdir -p $(@D)
