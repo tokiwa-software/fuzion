@@ -59,14 +59,6 @@ public has_interval : integer is
       while x ≤ upper
         f x
 
-    # create a stream of all the elements of this interval, in order.
-    public redef as_stream =>
-      ref : stream has_interval.this
-        x := num_option lower
-        public redef has_next bool => x.exists && (x.val ≤ upper)
-        public redef next has_interval.this => res := x.val; set x := x +? has_interval.this.type.one; res
-
-
     # does this range contain the given value?
     #
     public contains (e has_interval.this) => lower ≤ e ≤ upper
