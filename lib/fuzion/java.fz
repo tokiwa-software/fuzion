@@ -217,7 +217,13 @@ public fuzion.java is
 
   # convert a Java String to a string
   #
-  private java_string_to_string(js Java_String) String => intrinsic
+  private java_string_to_string(# T is the actual String type, i.e., Java.java.lang._jString:
+                                #
+                                T type : Java_String,
+
+                                # the java String wrapped in Java.java.lang._jString
+                                js T
+                                ) String => intrinsic
 
 
   # intrinsic to convert an i8 to a Java Byte object
