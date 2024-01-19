@@ -386,21 +386,24 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("fuzion.java.java_string_to_string",
         (jvm, cl, pre, cc, tvalue, args) ->
         {
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref(); // NYI: use jvm._fuir.lookupJavaRef
+          var jref = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc, 0));
           return jvm.constString(args.get(0)
-                                .andThen(jvm.getfield(jref))
-                                .andThen(Expr.invokeInterface("java/lang/String", "getBytes", "()[B", ClassFileConstants.PrimitiveType.type_byte.array())));
+                                 .andThen(jvm.getfield(jref))
+                                 .andThen(Expr.checkcast(JAVA_LANG_STRING))
+                                 .andThen(Expr.invokeVirtual("java/lang/String", "getBytes", "()[B", ClassFileConstants.PrimitiveType.type_byte.array())));
         });
 
     put("fuzion.java.array_to_java_object0",
         (jvm, cl, pre, cc, tvalue, args) ->
         {
-          var rc = jvm._fuir.clazz_fuzionJavaObject();
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref(); // NYI: use jvm._fuir.lookupJavaRef
+          var rc = jvm._fuir.clazzResultClazz(cc);
+          var jref = jvm._fuir.lookupJavaRef(rc);
           var et = jvm._types.javaType(jvm._fuir.clazzActualGeneric(cc, 0)); // possibly resultType
+          var data = jvm._fuir.lookup_fuzion_sys_internal_array_data(jvm._fuir.clazzArgClazz(cc,0));
           var res = jvm.new0(rc)
             .andThen(Expr.DUP)
             .andThen(args.get(0))
+            .andThen(jvm.getfield(data))
             .andThen(Expr.checkcast(et.array()))
             .andThen(jvm.putfield(jref))
             .is(jvm._types.javaType(rc));
@@ -608,15 +611,16 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var data = jvm._fuir.clazzArg(jvm._fuir.clazzArgClazz(cc, 2), 0);
           var data2 = jvm._fuir.lookup_fuzion_sys_internal_array_data(jvm._fuir.clazzArgClazz(cc, 2));
           var jt = jvm._types.javaType(jvm._fuir.clazz_fuzionJavaObject());
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref(); // NYI: use jvm._fuir.lookupJavaRef
+          var sref0 = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc, 0));
+          var sref1 = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc, 1));
           var exec =
             args.get(0)
             .andThen(Expr.checkcast(jt))
-            .andThen(jvm.getfield(jref)) // class_name
+            .andThen(jvm.getfield(sref0)) // class_name
             .andThen(Expr.checkcast(JAVA_LANG_STRING))
             .andThen(args.get(1))
             .andThen(Expr.checkcast(jt))
-            .andThen(jvm.getfield(jref)) // signature
+            .andThen(jvm.getfield(sref1)) // signature
             .andThen(Expr.checkcast(JAVA_LANG_STRING))
             .andThen(args.get(2))
             .andThen(jvm.getfield(data2)) // args

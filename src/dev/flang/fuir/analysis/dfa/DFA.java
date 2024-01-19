@@ -1836,7 +1836,12 @@ public class DFA extends ANY
     put("fuzion.java.i32_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context) );
     put("fuzion.java.i64_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context) );
     put("fuzion.java.i8_to_java_object"     , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context) );
-    put("fuzion.java.java_string_to_string" , cl -> cl._dfa.newConstString(null, cl) );
+    put("fuzion.java.java_string_to_string" , cl ->
+        {
+          var jref = cl._dfa._fuir.lookupJavaRef(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+          cl._dfa._readFields.add(jref);
+          return cl._dfa.newConstString(null, cl);
+        });
     put("fuzion.java.string_to_java_object0", cl ->
       {
         var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
@@ -1847,6 +1852,15 @@ public class DFA extends ANY
       });
     put("fuzion.java.call_c0"               , cl ->
       {
+        var cc = cl._cc;
+        var fuir = cl._dfa._fuir;
+        var jref0  = fuir.clazz_fuzionJavaObject_Ref(); // NYI: use jvm._fuir.lookupJavaRef
+        var sref0 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 0));
+        var sref1 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 1));
+        var data2 = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 2));
+        cl._dfa._readFields.add(sref0);
+        cl._dfa._readFields.add(sref1);
+        cl._dfa._readFields.add(data2);
         var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
         if (cl._dfa._fuir.clazzBaseName(rc).startsWith("outcome"))
           {
@@ -1868,6 +1882,16 @@ public class DFA extends ANY
       });
     put("fuzion.java.call_s0"               , cl ->
       {
+        var cc = cl._cc;
+        var fuir = cl._dfa._fuir;
+        var sref0 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 0));
+        var sref1 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 1));
+        var sref2 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 2));
+        var data3 = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 3));
+        cl._dfa._readFields.add(sref0);
+        cl._dfa._readFields.add(sref1);
+        cl._dfa._readFields.add(sref2);
+        cl._dfa._readFields.add(data3);
         var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
         if (cl._dfa._fuir.clazzBaseName(rc).startsWith("outcome"))
           {
@@ -1889,6 +1913,17 @@ public class DFA extends ANY
       });
     put("fuzion.java.call_v0"               , cl ->
       {
+        var cc = cl._cc;
+        var fuir = cl._dfa._fuir;
+        var sref0 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 0));
+        var sref1 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 1));
+        var sref2 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 2));
+        var data4 = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 4));
+        cl._dfa._readFields.add(sref0);
+        cl._dfa._readFields.add(sref1);
+        cl._dfa._readFields.add(sref2);
+        // NYI: add third argument to readFields
+        cl._dfa._readFields.add(data4);
         var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
         if (cl._dfa._fuir.clazzBaseName(rc).startsWith("outcome"))
           {
