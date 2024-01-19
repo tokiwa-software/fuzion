@@ -260,7 +260,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, cl, pre, cc, tvalue, args) ->
         {
           var rc = jvm._fuir.clazz_fuzionJavaObject();
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref(); // NYI: use jvm._fuir.lookupJavaRef
           var res = jvm.new0(rc)
             .andThen(Expr.DUP)
             .andThen(args.get(0))
@@ -274,7 +274,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, cl, pre, cc, tvalue, args) ->
         {
           var rc = jvm._fuir.clazz_fuzionJavaObject();
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref(); // NYI: use jvm._fuir.lookupJavaRef
           var res = jvm.new0(rc)
             .andThen(Expr.DUP)
             .andThen(args.get(0))
@@ -288,7 +288,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, cl, pre, cc, tvalue, args) ->
         {
           var rc = jvm._fuir.clazz_fuzionJavaObject();
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref(); // NYI: use jvm._fuir.lookupJavaRef
           var res = jvm.new0(rc)
             .andThen(Expr.DUP)
             .andThen(args.get(0))
@@ -302,7 +302,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, cl, pre, cc, tvalue, args) ->
         {
           var rc = jvm._fuir.clazz_fuzionJavaObject();
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref(); // NYI: use jvm._fuir.lookupJavaRef
           var res = jvm.new0(rc)
             .andThen(Expr.DUP)
             .andThen(args.get(0))
@@ -316,7 +316,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, cl, pre, cc, tvalue, args) ->
         {
           var rc = jvm._fuir.clazz_fuzionJavaObject();
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref(); // NYI: use jvm._fuir.lookupJavaRef
           var res = jvm.new0(rc)
             .andThen(Expr.DUP)
             .andThen(args.get(0))
@@ -330,7 +330,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, cl, pre, cc, tvalue, args) ->
         {
           var rc = jvm._fuir.clazz_fuzionJavaObject();
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref(); // NYI: use jvm._fuir.lookupJavaRef
           var res = jvm.new0(rc)
             .andThen(Expr.DUP)
             .andThen(args.get(0))
@@ -344,7 +344,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, cl, pre, cc, tvalue, args) ->
         {
           var rc = jvm._fuir.clazz_fuzionJavaObject();
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref(); // NYI: use jvm._fuir.lookupJavaRef
           var res = jvm.new0(rc)
             .andThen(Expr.DUP)
             .andThen(args.get(0))
@@ -358,7 +358,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, cl, pre, cc, tvalue, args) ->
         {
           var rc = jvm._fuir.clazz_fuzionJavaObject();
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref(); // NYI: use jvm._fuir.lookupJavaRef
           var res = jvm.new0(rc)
             .andThen(Expr.DUP)
             .andThen(args.get(0))
@@ -372,7 +372,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, cl, pre, cc, tvalue, args) ->
         {
           var rc = jvm._fuir.clazz_fuzionJavaObject();
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref(); // NYI: use jvm._fuir.lookupJavaRef
           var res = jvm.new0(rc)
             .andThen(Expr.DUP)
             .andThen(args.get(0))
@@ -386,7 +386,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("fuzion.java.java_string_to_string",
         (jvm, cl, pre, cc, tvalue, args) ->
         {
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref(); // NYI: use jvm._fuir.lookupJavaRef
           return jvm.constString(args.get(0)
                                 .andThen(jvm.getfield(jref))
                                 .andThen(Expr.invokeInterface("java/lang/String", "getBytes", "()[B", ClassFileConstants.PrimitiveType.type_byte.array())));
@@ -396,7 +396,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, cl, pre, cc, tvalue, args) ->
         {
           var rc = jvm._fuir.clazz_fuzionJavaObject();
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref(); // NYI: use jvm._fuir.lookupJavaRef
           var et = jvm._types.javaType(jvm._fuir.clazzActualGeneric(cc, 0)); // possibly resultType
           var res = jvm.new0(rc)
             .andThen(Expr.DUP)
@@ -410,9 +410,11 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("fuzion.java.array_length",
         (jvm, cl, pre, cc, tvalue, args) ->
         {
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var jref = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc,0));
+          var et = jvm._types.javaType(jvm._fuir.clazzActualGeneric(cc, 0)); // possibly resultType
           var res = args.get(0)
             .andThen(jvm.getfield(jref))
+            .andThen(Expr.checkcast(et.array()))
             .andThen(Expr.ARRAYLENGTH);
           return new Pair<>(res, Expr.UNIT);
         });
@@ -420,12 +422,14 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("fuzion.java.array_get",
         (jvm, cl, pre, cc, tvalue, args) ->
         {
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var jref = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc,0));
+          var et = jvm._types.javaType(jvm._fuir.clazzActualGeneric(cc, 0)); // possibly resultType
           var rt = jvm._types.resultType(cc);
           var res = args.get(0)
             .andThen(jvm.getfield(jref))
+            .andThen(Expr.checkcast(et.array()))
             .andThen(args.get(1))
-            .andThen(rt.xaload());
+            .andThen(et.xaload());
           return new Pair<>(res, Expr.UNIT);
         });
 
@@ -435,7 +439,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var rc = jvm._fuir.clazzResultClazz(cc);
           var rt = jvm._types.javaType(rc);
           var jt = jvm._types.javaType(jvm._fuir.clazz_fuzionJavaObject());
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref(); // NYI: use jvm._fuir.lookupJavaRef
           var jref2 = jvm._fuir.lookupJavaRef(rc);
           var res =
             jvm.new0(rc)
@@ -452,7 +456,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                        "fuzion_java_get_static_field0",
                                        "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;",
                                        Names.JAVA_LANG_OBJECT))
-            .andThen(Expr.checkcast(JAVA_LANG_OBJECT))
+            //.andThen(Expr.checkcast(JAVA_LANG_OBJECT))
             .andThen(jvm.putfield(jref2))
             .andThen(Expr.checkcast(rt))
             .is(rt);
@@ -462,7 +466,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("fuzion.java.get_field0",
         (jvm, cl, pre, cc, tvalue, args) ->
         {
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref(); // NYI: use jvm._fuir.lookupJavaRef
           var res =
             args.get(0)
             .andThen(jvm.getfield(jref)) // instance as Object
@@ -480,7 +484,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         {
           var data = jvm._fuir.clazzArg(jvm._fuir.clazzArgClazz(cc, 4), 0);
           var jt = jvm._types.javaType(jvm._fuir.clazz_fuzionJavaObject());
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref(); // NYI: use jvm._fuir.lookupJavaRef
           var exec =
             args.get(0)
             .andThen(Expr.checkcast(jt))
@@ -503,7 +507,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                     "fuzion_java_call_v0",
                                     "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;",
                                     Names.JAVA_LANG_OBJECT))
-            .andThen(Expr.checkcast(JAVA_LANG_OBJECT))
+            .andThen(Expr.checkcast(JAVA_LANG_OBJECT));
             ;
           var rc = jvm._fuir.clazzResultClazz(cc);
           if (false) if (jvm._fuir.clazzBaseName(rc).startsWith("outcome"))
@@ -530,19 +534,19 @@ public class Intrinsix extends ANY implements ClassFileConstants
               default -> {
                 var rcv = jvm._fuir.clazzAsValue(rc0);
                 var rt = jvm._types.javaType(rc0);
-                var jref2 = jvm._fuir.clazzField(rcv, 0);
+                var jref2 = jvm._fuir.lookupJavaRef(rc0);
 
                 yield
-                  jvm.new0(rc)
+                  jvm.new0(rc0)
                   .andThen(Expr.DUP)
                   .andThen(exec)
                   .andThen(jvm.putfield(jref2))
-                  .andThen(Expr.checkcast(rt))
                   .is(rt);
               }
             };
           if (rc != rc0)
             {
+              // NYI: check res instanceof JavaError and tag the exception from ((FuzionThrad)Thread.currentThread())._thrownException in this case!
               res = jvm._types._choices.tag(jvm, rc0, res, rc, 0);
             }
           return jvm._types.javaType(rc) == PrimitiveType.type_void ? new Pair<>(Expr.UNIT, res)
@@ -554,7 +558,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         {
           var data = jvm._fuir.clazzArg(jvm._fuir.clazzArgClazz(cc, 4), 0);
           var jt = jvm._types.javaType(jvm._fuir.clazz_fuzionJavaObject());
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref(); // NYI: use jvm._fuir.lookupJavaRef
           var exec =
             args.get(0)
             .andThen(Expr.checkcast(jt))
@@ -596,7 +600,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
                   .andThen(Expr.DUP)
                   .andThen(exec)
                   .andThen(jvm.putfield(jref2))
-                  .andThen(Expr.checkcast(rt))
                   .is(rt);
               }
             };
@@ -609,7 +612,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var data = jvm._fuir.clazzArg(jvm._fuir.clazzArgClazz(cc, 2), 0);
           var data2 = jvm._fuir.lookup_fuzion_sys_internal_array_data(jvm._fuir.clazzArgClazz(cc, 2));
           var jt = jvm._types.javaType(jvm._fuir.clazz_fuzionJavaObject());
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref(); // NYI: use jvm._fuir.lookupJavaRef
           var exec =
             args.get(0)
             .andThen(Expr.checkcast(jt))
@@ -642,12 +645,10 @@ public class Intrinsix extends ANY implements ClassFileConstants
 
                 yield
                   jvm.new0(rc)
-                  // .andThen(Expr.DUP)
-                  // .andThen(exec)
-                  // .andThen(jvm.putfield(jref2))
-                  // .andThen(Expr.checkcast(rt))
-                  // .is(rt);
-                  ;
+                    .andThen(Expr.DUP)
+                    .andThen(exec)
+                    .andThen(jvm.putfield(jref2))
+                    .is(rt);
               }
             };
           return new Pair<>(res, Expr.UNIT);

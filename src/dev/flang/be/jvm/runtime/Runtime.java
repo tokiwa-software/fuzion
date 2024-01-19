@@ -38,6 +38,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import java.util.function.Supplier;
+
 import java.nio.charset.StandardCharsets;
 
 import java.util.Collections;
@@ -103,6 +105,13 @@ public class Runtime extends ANY
   public static final String PRECONDITION_NAME = "fzPrecondition";
   public static final String ROUTINE_NAME      = "fzRoutine";
   public static final String CLASS_PREFIX      = "fzC_";
+
+
+  /**
+   * Result value used when returning from a call into Java code in case an
+   * exception was thrown by that code.
+   */
+  public static final JavaError _JAVA_ERROR_ = new JavaError();;
 
 
   /*--------------------------  static fields  --------------------------*/
@@ -782,8 +791,6 @@ public class Runtime extends ANY
     if (PRECONDITIONS) require
       (clName != null);
 
-    Object res = null;
-    Throwable err = null;
     Method m = null;
     var p = JavaInterface.getPars(sig);
     if (p == null)
@@ -810,19 +817,38 @@ public class Runtime extends ANY
         Errors.fatal("NoSuchMethodException when calling fuzion.java.call_virtual calling " +
                            (cl.getName() + "." + name) + sig);
       }
+    return invoke(m, thiz, args);
+  }
+
+  static interface ReflectionInvoker
+  {
+    Object invoke() throws InvocationTargetException, IllegalAccessException, InstantiationException;
+  }
+
+
+  private static Object invokeAndWrapException(ReflectionInvoker invoke)
+  {
+    Object res;
     try
       {
-        res = m.invoke(thiz, args);
+        res = invoke.invoke();
       }
     catch (InvocationTargetException e)
       {
-        err = e.getCause();
+        ((FuzionThread)Thread.currentThread())._thrownException = e.getCause();
+        res = _JAVA_ERROR_;
       }
-    catch (IllegalAccessException e)
+    catch (IllegalAccessException | InstantiationException e)
       {
-        err = e;
+        ((FuzionThread)Thread.currentThread())._thrownException = e;
+        res = _JAVA_ERROR_;
       }
     return res;
+  }
+
+  private static Object invoke(Method m, Object thiz, Object[] args)
+  {
+    return invokeAndWrapException(()->m.invoke(thiz, args));
   }
 
 
@@ -831,8 +857,6 @@ public class Runtime extends ANY
     if (PRECONDITIONS) require
       (clName != null);
 
-    Object res = null;
-    Throwable err = null;
     Method m = null;
     Constructor co = null;
     var  p = JavaInterface.getPars(sig);
@@ -860,19 +884,7 @@ public class Runtime extends ANY
         Errors.fatal("NoSuchMethodException when calling fuzion.java.call_static calling " +
                            (cl.getName() + "." + name) + sig);
       }
-    try
-      {
-        res = m.invoke(null, args);
-      }
-    catch (InvocationTargetException e)
-      {
-        err = e.getCause();
-      }
-    catch (IllegalAccessException e)
-      {
-        err = e;
-      }
-    return res;
+    return invoke(m, null, args);
   }
 
 
@@ -881,10 +893,6 @@ public class Runtime extends ANY
     if (PRECONDITIONS) require
       (clName != null);
 
-    Object res = null;
-    Throwable err = null;
-    Method m = null;
-    Constructor co = null;
     var p = JavaInterface.getPars(sig);
     if (p == null)
       {
@@ -903,26 +911,15 @@ public class Runtime extends ANY
       }
     try
       {
-        co = cl.getConstructor(p);
+        var co = cl.getConstructor(p);
+        return invokeAndWrapException(()->co.newInstance(args));
       }
     catch (NoSuchMethodException e)
       {
         Errors.fatal("NoSuchMethodException when calling fuzion.java.call_constructor calling " +
                            ("new " + clName) + sig);
+        return null; // not reached
       }
-    try
-      {
-        res = co.newInstance(args);
-      }
-    catch (InvocationTargetException e)
-      {
-        err = e.getCause();
-      }
-    catch (InstantiationException | IllegalAccessException e)
-      {
-        err = e;
-      }
-    return res;
   }
 
 

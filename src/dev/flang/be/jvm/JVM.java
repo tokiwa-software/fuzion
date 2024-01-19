@@ -583,6 +583,7 @@ should be avoided as much as possible.
               "dev/flang/be/jvm/runtime/AnyI.class",
               "dev/flang/be/jvm/runtime/FuzionThread.class",
               "dev/flang/be/jvm/runtime/Intrinsics.class",
+              "dev/flang/be/jvm/runtime/JavaError.class",
               "dev/flang/be/jvm/runtime/Main.class",
               "dev/flang/be/jvm/runtime/OpenResources.class",
               "dev/flang/be/jvm/runtime/Runtime.class",
@@ -1503,7 +1504,11 @@ should be avoided as much as possible.
    */
   Expr getfield(int field)
   {
-    if (PRECONDITIONS) require
+    if (!((fieldExists(field) || _types.resultType(_fuir.clazzResultClazz(field)) == PrimitiveType.type_void)))
+      {
+        System.err.println("******** FIELD DOES NOT EXIST: "+_fuir.clazzAsString(field));
+      }
+    if (false) if (PRECONDITIONS) require
       (fieldExists(field) || _types.resultType(_fuir.clazzResultClazz(field)) == PrimitiveType.type_void);
 
     var cl = _fuir.clazzOuterClazz(field);
