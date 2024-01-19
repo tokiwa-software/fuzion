@@ -593,6 +593,7 @@ should be avoided as much as possible.
               "dev/flang/be/jvm/runtime/AnyI.class",
               "dev/flang/be/jvm/runtime/FuzionThread.class",
               "dev/flang/be/jvm/runtime/Intrinsics.class",
+              "dev/flang/be/jvm/runtime/JavaError.class",
               "dev/flang/be/jvm/runtime/Main.class",
               "dev/flang/be/jvm/runtime/OpenResources.class",
               "dev/flang/be/jvm/runtime/Runtime.class",
