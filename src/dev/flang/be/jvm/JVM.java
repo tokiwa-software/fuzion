@@ -605,6 +605,7 @@ should be avoided as much as possible.
               "dev/flang/util/FatalError.class",
               "dev/flang/util/HasSourcePosition.class",
               "dev/flang/util/List.class",
+              "dev/flang/util/QuietThreadTermination.class",
               "dev/flang/util/SourcePosition.class",
               "dev/flang/util/SourceRange.class",
             };
