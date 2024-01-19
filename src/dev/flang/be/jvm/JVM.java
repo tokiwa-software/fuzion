@@ -1504,11 +1504,7 @@ should be avoided as much as possible.
    */
   Expr getfield(int field)
   {
-    if (!((fieldExists(field) || _types.resultType(_fuir.clazzResultClazz(field)) == PrimitiveType.type_void)))
-      {
-        System.err.println("******** FIELD DOES NOT EXIST: "+_fuir.clazzAsString(field));
-      }
-    if (false) if (PRECONDITIONS) require
+    if (PRECONDITIONS) require
       (fieldExists(field) || _types.resultType(_fuir.clazzResultClazz(field)) == PrimitiveType.type_void);
 
     var cl = _fuir.clazzOuterClazz(field);
