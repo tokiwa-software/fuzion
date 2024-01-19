@@ -530,7 +530,7 @@ public class ClassFile extends ANY implements ClassFileConstants
 
     /**
      * Compare two entries with the same tag. This is used by compareTo after it
-     * was ensured that the tags of this and other are equa.
+     * was ensured that the tags of this and other are equal.
      */
     abstract int compareTo2(CPEntry other);
 

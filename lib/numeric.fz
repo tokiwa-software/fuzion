@@ -86,7 +86,7 @@ module:public numeric : property.hashable, property.orderable is
   # representable for the given values
   #
   # This does not check if the operation is defined (i.e, it
-  # returns true for '3/!0' or '0**!0'.
+  # returns true for '3/!0' or '0**!0'.)
   #
   public prefix +! bool => true
   public prefix -! bool => abstract

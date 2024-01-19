@@ -700,7 +700,7 @@ public abstract class Expr extends ByteCode
 
 
   /**
-   * Load int local variable from slot at given index.
+   * Load long local variable from slot at given index.
    */
   public static Expr lload(int index)
   {
