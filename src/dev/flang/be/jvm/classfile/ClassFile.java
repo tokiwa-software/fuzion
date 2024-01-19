@@ -1143,55 +1143,11 @@ public class ClassFile extends ANY implements ClassFileConstants
       o.writeU2(_code.max_stack());
       o.writeU2(true /* NYI, remove */ ? _num_locals :_code.max_locals());
       o.writeU4(_size);
-      if (_size == 198) System.out.println("FOR "+_where+" size is "+_size);
       var o2 = new Kaku();
       var ba2 = new ByteCodeWrite(_where, o2);
       _code.code(ba2, ClassFile.this);
-      if (_size == 198) System.out.println("FOR "+_where+" size is "+_size+" "+o2._b.toByteArray().length);
-      if (!true)
-        {
-          var b = o2._b.toByteArray();
-          if (_size == 198)
-            {
-              if (true)
-                {
-                  if (false) {
-                  b[189] = O_nop;
-                  b[190] = O_nop;
-                  b[191] = O_nop;
-                  b[192] = O_nop;
-                  }
-                  b[193] = O_nop;
-                  b[194] = O_nop;
-                  b[195] = O_nop;
-                  b[196] = O_nop;
-                }
-              else
-                {
-              // int s = 103; -- ok
-              // int s = 133; -- ok
-              // int s = 164; -- ok
-              // int s = 189; -- ok
-              // int s = 190; -- ok
-              int s = 190;
-              // int s = 193; -- VerifyError
-              // int s = 194; -- VerifyError
-              System.out.println("PATCHING from "+s+" "+_where);
-              for(int i=s; i < b.length; i++)
-                {
-                  b[i] = O_nop;
-                }
-              b[196] = O_aconst_null;
-              b[197] = O_areturn;
-                }
-            }
-          o.write(b);
-        }
-      else
-        {
-          var ba = new ByteCodeWrite(_where, o);
-          _code.code(ba, ClassFile.this);
-        }
+      var ba = new ByteCodeWrite(_where, o);
+      _code.code(ba, ClassFile.this);
       o.writeU2(_exception_table.size());
       for (var e : _exception_table)
         {
