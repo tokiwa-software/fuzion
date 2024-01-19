@@ -1143,9 +1143,6 @@ public class ClassFile extends ANY implements ClassFileConstants
       o.writeU2(_code.max_stack());
       o.writeU2(true /* NYI, remove */ ? _num_locals :_code.max_locals());
       o.writeU4(_size);
-      var o2 = new Kaku();
-      var ba2 = new ByteCodeWrite(_where, o2);
-      _code.code(ba2, ClassFile.this);
       var ba = new ByteCodeWrite(_where, o);
       _code.code(ba, ClassFile.this);
       o.writeU2(_exception_table.size());
