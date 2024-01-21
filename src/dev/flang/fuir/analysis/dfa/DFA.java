@@ -1825,9 +1825,23 @@ public class DFA extends ANY
         );
 
     put("fuzion.java.Java_Object.is_null0"  , cl -> cl._dfa._bool );
-    put("fuzion.java.array_get"             , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context) );
+    put("fuzion.java.array_get"             , cl ->
+        {
+          var jref = cl._dfa._fuir.lookupJavaRef(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+          cl._dfa._readFields.add(jref);
+          return cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context);
+        });
     put("fuzion.java.array_length"          , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.java.array_to_java_object0" , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context) );
+    put("fuzion.java.array_to_java_object0" , cl ->
+        {
+          var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
+          var jref = cl._dfa._fuir.lookupJavaRef(rc);
+          var data = cl._dfa._fuir.lookup_fuzion_sys_internal_array_data(cl._dfa._fuir.clazzArgClazz(cl._cc,0));
+          cl._dfa._readFields.add(data);
+          var result = cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context);
+          result.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF); // NYI: record putfield of result.jref := args.get(0).data
+          return result;
+        });
     put("fuzion.java.bool_to_java_object"   , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context) );
     // put("fuzion.java.call_c0"               , cl -> cl._dfa.newInstanceOrOutcome(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context));
     // put("fuzion.java.call_s0"               , cl -> cl._dfa.newInstanceOrOutcome(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context));
@@ -1858,7 +1872,6 @@ public class DFA extends ANY
       {
         var cc = cl._cc;
         var fuir = cl._dfa._fuir;
-        var jref0  = fuir.clazz_fuzionJavaObject_Ref(); // NYI: use jvm._fuir.lookupJavaRef
         var sref0 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 0));
         var sref1 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 1));
         var data2 = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 2));
