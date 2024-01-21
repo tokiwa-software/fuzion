@@ -1193,7 +1193,7 @@ run_tests_c_parallel: $(FZ_C) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(BUILD_DIR)/test
 
 # phony target to run Fuzion tests using jvm backend and report number of failures
 .PHONY .SILENT: run_tests_jvm_parallel
-run_tests_jvm_parallel: $(FZ_JVM) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(BUILD_DIR)/tests
+run_tests_jvm_parallel: $(FZ_JVM) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
 	echo -n "testing JVM backend: "; \
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) jvm
 
