@@ -833,7 +833,6 @@ public class Intrinsics extends ANY
 
   public static boolean fuzion_sys_env_vars_has0(Object s)
   {
-    Runtime.unsafeIntrinsic();
     return System.getenv(Runtime.utf8ByteArrayDataToString((byte[]) s)) != null;
   }
 
