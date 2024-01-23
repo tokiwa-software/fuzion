@@ -387,6 +387,7 @@ REF_MANUAL_SOURCES = $(wildcard $(FZ_SRC)/doc/ref_manual/*.adoc) \
                      $(BUILD_DIR)/generated/doc/codepoints_numeric.adoc \
                      $(BUILD_DIR)/generated/doc/codepoints_op.adoc \
                      $(BUILD_DIR)/generated/doc/keywords.adoc \
+                     $(BUILD_DIR)/generated/doc/stringEscapes.adoc \
                      $(JAVA_FILES_UTIL) \
                      $(JAVA_FILES_PARSER) \
                      $(JAVA_FILES_FE)
@@ -1107,6 +1108,10 @@ $(BUILD_DIR)/generated/doc/codepoints_op.adoc: $(CLASS_FILES_PARSER)
 $(BUILD_DIR)/generated/doc/keywords.adoc: $(CLASS_FILES_PARSER)
 	mkdir -p $(@D)
 	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -keywords >$@
+
+$(BUILD_DIR)/generated/doc/stringEscapes.adoc: $(CLASS_FILES_PARSER)
+	mkdir -p $(@D)
+	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -stringLiteralEscapes >$@
 
 $(REF_MANUAL_PDF): $(REF_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
 	mkdir -p $(@D)

@@ -436,7 +436,7 @@ public class Lexer extends SourceFile
   {
     var n = _asciiControlName[cp];
     return String.format("0x%04x %s", cp,
-                         n != null ? "`" + n + "`":
+                         n != null ? "`" + n.strip() + "`":
                          cp == ' ' ? "SPACE" :
                          cp < 0x7f ? "`'" + (char) cp + "'`"
                                    : "");
@@ -529,6 +529,27 @@ public class Lexer extends SourceFile
                }
              System.out.println();
            }
+         else if (x.equals("-stringLiteralEscapes"))
+           {
+             System.out.println("""
+[options=\"header\",cols=\"1,1\"]
+|====
+   | escape sequence | resulting code point
+                                """);
+             for (int i = 0; i < StringLexer.escapeChars.length; i++)
+               {
+                 var c      = StringLexer.escapeChars[i][0];
+                 var result = StringLexer.escapeChars[i][1];
+                 if (c != '\n'  && c != '\r')
+                   {
+                     System.out.println("  | `\\" + (char) c + "` | " + codePointAsString(result));
+                   }
+               }
+             System.out.println("  | `\\` + " + codePointAsString('\n') + " | _nothing_");
+             System.out.println("  | `\\` + " + codePointAsString('\r') + " + " + codePointAsString('\n') + " | _nothing_");
+             System.out.println("|====");
+           }
+
        });
   }
 
@@ -1133,7 +1154,7 @@ public class Lexer extends SourceFile
             {
     /*
     // tag::fuzion_rule_LEXR_LEGALCP[]
-Fuzion source code may not contain and
+Fuzion source code may not contain any
 xref:unsupported_code_points[unsupported code points].
     // end::fuzion_rule_LEXR_LEGALCP[]
     */
@@ -2627,7 +2648,7 @@ PIPE        : "|"
      * If this is changed, https://fuzion-lang.dev/tutorial/string_constants
      * must be changed as well.
      */
-    int[][] escapeChars = new int[][] {
+    static int[][] escapeChars = new int[][] {
         { 'b', '\b'  },  // BS 0x08
         { 't', '\t'  },  // HT 0x09
         { 'n', '\n'  },  // LF 0x0a

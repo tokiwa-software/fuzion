@@ -298,7 +298,16 @@ CAUTION: *NYI*: Text Missing
 
 ===== String Literals
 
+[#string_literal]
 CAUTION: *NYI*: Text Missing
+
+String literals support the following escape sequence to include special characters:
+
+====
+include::{GENERATED}/doc/stringEscapes.adoc[]
+====
+
+
 
 === Grammar
 
@@ -315,18 +324,40 @@ CAUTION: *NYI*: Text Missing
 [appendix]
 == Glossary
 
+[#fuzion_abstract]
+((Abstract Feature)):: CAUTION: *NYI*: Text Missing
+
 ((Argument)):: CAUTION: *NYI*: Text Missing
 
+[#fuzion_choice]
+((Choice)):: CAUTION: *NYI*: Text Missing
+
+[#fuzion_constructor]
 ((Constructor)):: CAUTION: *NYI*: Text Missing
 
 ((Clazz)):: CAUTION: *NYI*: Text Missing
 
 [#fuzion_feature]
-((Feature)):: CAUTION: *NYI*: Text Missing
+((Feature)):: A feature is the most fundamental entity of Fuzion.  A feature can
+be declared and can be called.  Features generalize fairly different concepts
+found in other programming languages such as functions, methods, constructors,
+classes, structs, records, packages, interfaces, fields, and local variables.
+A Fuzion feature may be one of the following variants: a xref:fuzion_constructor[constructor],
+a xref:fuzion_function[function], a xref:fuzion_field[field], a xref:fuzion_choice[choice],
+a xref:fuzion_typeparameter[type parameter], an xref:fuzion_abstract[abstract feature],
+an xref:fuzion_intrinsic[intrinsic], a xref:fuzion_native[native feature].
 
+[#fuzion_field]
 ((Field)):: CAUTION: *NYI*: Text Missing
 
+[#fuzion_function]
 ((Function)):: CAUTION: *NYI*: Text Missing
+
+[#fuzion_intrinsic]
+((Intrinsic Feature)):: CAUTION: *NYI*: Text Missing
+
+[#fuzion_native]
+((Native Feature)):: CAUTION: *NYI*: Text Missing
 
 [#input_source]
 ((Input Source)):: An input source is a stream of bytes that contains Fuzion
@@ -336,6 +367,7 @@ code that is used as an input for tools like Fuzion compilers.
 
 ((Type)):: CAUTION: *NYI*: Text Missing
 
+[#fuzion_typeparameter]
 ((Type Parameter)):: CAUTION: *NYI*: Text Missing
 
 [appendix]
