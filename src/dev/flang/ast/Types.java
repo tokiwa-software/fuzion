@@ -36,6 +36,7 @@ import java.util.TreeSet;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.FuzionOptions;
 
 /*---------------------------------------------------------------------*/
 
@@ -269,6 +270,14 @@ public class Types extends ANY
     }
   }
 
+
+  /**
+   * The current options as a static field.
+   */
+  // NYI remove this when we have a better way of accessing current Resolution.
+  static FuzionOptions _options;
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -278,7 +287,7 @@ public class Types extends ANY
   /**
    * Reset static fields such as the intern()ed types.
    */
-  public static void reset()
+  public static void reset(FuzionOptions options)
   {
     types = new TreeMap<>();
     resolved = null;
@@ -286,6 +295,7 @@ public class Types extends ANY
     t_UNDEFINED = new ArtificialBuiltInType(UNDEFINED_NAME);
     t_ERROR     = new ArtificialBuiltInType(ERROR_NAME    );
     f_ERROR     = new Feature(true);
+    _options    = options;
   }
 
 

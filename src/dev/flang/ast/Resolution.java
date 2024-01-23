@@ -478,7 +478,10 @@ public class Resolution extends ANY
     else if (!forSyntacticSugar2.isEmpty())
       {
         Feature f = forSyntacticSugar2.removeFirst();
-        f.resolveSyntacticSugar2(this);
+        if (!_options.isLanguageServer())
+          {
+            f.resolveSyntacticSugar2(this);
+          }
       }
     else if (!forCheckTypes2.isEmpty())
       {
