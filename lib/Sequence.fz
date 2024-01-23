@@ -176,11 +176,6 @@ public Sequence(public T type) ref is
   public infix | (f T -> unit) => for_each f
 
 
-  # create a stream, postfix operator synonym for as_stream
-  #
-  public postfix | => as_stream
-
-
   # apply 'f' to each element 'e' as long as 'f e'
   #
   public for_while(f T -> bool) unit =>

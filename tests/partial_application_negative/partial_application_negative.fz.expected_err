@@ -81,7 +81,7 @@ In call: '3.postfix*'
 Feature not found: 'map' (no arguments)
 Target feature: 'has_interval.infix ..'
 In call: 'map'
-To solve this, you might change the actual number of arguments to match the feature 'map' (2 arguments) at $FUZION/lib/Sequence.fz:324:10:
+To solve this, you might change the actual number of arguments to match the feature 'map' (2 arguments) at $FUZION/lib/Sequence.fz:319:10:
   public map(B type, f Unary B T) Sequence B =>
 ---------^
 
