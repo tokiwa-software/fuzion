@@ -1002,7 +1002,30 @@ should be avoided as much as possible.
         return
           traceReturn(cl, pre)
           .andThen(getf)
-          .andThen(ft.return0());
+          .andThen(
+            fieldExists(r)
+              ? ft.return0()
+              /**
+               * Example where fieldExists is false but we still need a return:
+               *
+               * unit_like : choice unit is
+               * test0(T type, a T) =>
+               *   concur
+               *     .atomic a
+               *     .read
+               * _ := test0 unit_like unit
+               */
+              : _fuir.clazzIsChoice(t)
+              ? Expr.RETURN
+              /*
+               * For special cases like:
+               *
+               * a Any => do
+               * _ := a
+               *
+               */
+              : reportErrorInCode("Can not return result field that does not exist: " + _fuir.clazzAsStringNew(cl))
+            );
       }
   }
 
@@ -1528,7 +1551,7 @@ should be avoided as much as possible.
       {
         return
           Expr.comment("Eliminated getfield since field does not exist: `" + _fuir.clazzAsString(field) + "` in `" + _fuir.clazzAsString(cl) + "`")
-          .andThen(Expr.POP);
+          .andThen(Expr.POP); // objectref
       }
   }
 
