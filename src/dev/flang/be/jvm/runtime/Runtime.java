@@ -242,7 +242,7 @@ public class Runtime extends ANY
       }
     else
       {
-        Errors.fatal("Fuzion Runtime used from detached thread " + ct);
+        Errors.fatal("Fuzion Runtime used from detached thread " + ct, stackTrace());
       }
     return result;
   }
@@ -257,7 +257,7 @@ public class Runtime extends ANY
    */
   public static void fatal(String msg)
   {
-    Errors.fatal(msg);
+    Errors.fatal(msg, stackTrace());
   }
 
 
