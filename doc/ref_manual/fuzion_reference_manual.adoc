@@ -325,17 +325,48 @@ CAUTION: *NYI*: Text Missing
 == Glossary
 
 [#fuzion_abstract]
-((Abstract Feature)):: CAUTION: *NYI*: Text Missing
+((Abstract Feature)):: An abstract feature is a xref:fuzion_feature[feature] declared using `=> abstract`.
 
-((Argument)):: CAUTION: *NYI*: Text Missing
+[#fuzion_actual]
+((Actual)):: An actual argument is an expression that is parsed as an `actual` as part of a
+xref:feature_call[call] or the right hand side of an infix operator call.
+
+[#fuzion_argument]
+((Argument)):: An argument is a xref:fuzion_field[field] that is declared in the `formArgs` section of a
+xref:fuzion_routine[routine].
 
 [#fuzion_choice]
-((Choice)):: CAUTION: *NYI*: Text Missing
+((Choice)):: A choice is either the xref:fuzion_feature[feature] `choice` defined in the Fuzion base library or
+any feature declared using `is` that directly inherits from the base library feature `choice`. A choice's arguments
+must all be xref:fuzion_typeparameter[type parameters] and a choice may not contain code.
 
 [#fuzion_constructor]
-((Constructor)):: CAUTION: *NYI*: Text Missing
+((Constructor)):: A Constructor is a xref:fuzion_routine[routine] declared using `is`.  A
+constructor has exceutable code and defines a xref:fuzion_type[type].  On a call to a constructor,
+an instance of this type is created and this instance is implicitly returned as a result after
+execution of the constructor's code.
 
-((Clazz)):: CAUTION: *NYI*: Text Missing
+// ((Clazz)):: CAUTION: *NYI*: Text Missing  -- maybe not needed in the ref manual, this is an IR / backend concept --
+
+[#call_destination]
+((Call Destination)):: The destination of a call `t.f a b` is the feature `f'` that was selected at runtime
+by xref:dynamic_dispatch[dynamic dispatch] depending on the call target `t` and the xref:feature_name[feature name]
+given in the call.
+
+[#dynamic_type]
+((Dynamic Type)):: CAUTION: *NYI*: Text Missing
+
+[#dynamic_dispatch]
+((Dynamic Dispatch)):: Dynamic dispatch is the algorithm that is applied at runtime to determine the
+xref:call_desitionation[destination] of a xref:fuzion_call[call] depending on the
+xref:dynamic_type[dynanmic type] of the xref:fuzion_target[target] and and xref:feature_name[name] of the
+called feature.
+
+[#fuzion_call]
+((Feature Call)):: A feature call is an expression in Fuzion code that calls a
+xref:call_destination[destination] xref:fuzion_feature[feature] on a given xref:fuzion_target[target] giving zero
+or more xref:fuzion_actual[actual arguments].  An example is `t.f a b` that calls
+a feature with xref:feature_name[name] `f,2` on target `t` giving two xref:fuzion_actual[actual arguments] `a` and `b`.
 
 [#fuzion_feature]
 ((Feature)):: A feature is the most fundamental entity of Fuzion.  A feature can
@@ -345,30 +376,77 @@ classes, structs, records, packages, interfaces, fields, and local variables.
 A Fuzion feature may be one of the following variants: a xref:fuzion_constructor[constructor],
 a xref:fuzion_function[function], a xref:fuzion_field[field], a xref:fuzion_choice[choice],
 a xref:fuzion_typeparameter[type parameter], an xref:fuzion_abstract[abstract feature],
-an xref:fuzion_intrinsic[intrinsic], a xref:fuzion_native[native feature].
+an xref:fuzion_intrinsic[intrinsic], a xref:fuzion_native[native feature],
+or the xref:universe[universe].  Every feature except the xref:universe[universe] is declared within
+an xref:outer_feature[outer feature].
+
+[#fuzion_instance]
+((Instance)):: An instance is a value of a given xref:runtime_type[runtime type]. Instances exist only at runtime.
+
+[#feature_name]
+((Feature Name)):: A feature name is the combination of an identifier and an integer xref:fuzion_argument[argument] count.
 
 [#fuzion_field]
-((Field)):: CAUTION: *NYI*: Text Missing
+((Field)):: A field is a xref:fuzion_feature[feature] that is either declared using `:=` or an xref:fuzion_argument[argument].  A
+field can hold an xref:fuzion_instance[instance] that is assigned to it at runtime when executing its declaration as an expression (for fields declared using `:=`) or when an
+xref:fuzion_actual[actual argument] is passed to a call. A field can be the xref:call_destination[destination] of a xref:feature_call[call], execution
+of that call at runtime results inn the xref:fuzion_instance[instance] that was assigned to that field.
 
 [#fuzion_function]
-((Function)):: CAUTION: *NYI*: Text Missing
+((Function)):: A Function is a xref:fuzion_routine[routine] declared using `=>`. A
+function has exceutable code that produces a result value `result` and an explicit or inferred result type `rt`.
+
+[#function_type]
+((Function Type)):: A function type is any type derived from the Fuzion base
+library feature `Function` by giving actual arguments or a type that is derived
+from a Fuzion feature that inherits from a function type.
 
 [#fuzion_intrinsic]
-((Intrinsic Feature)):: CAUTION: *NYI*: Text Missing
+((Intrinsic Feature)):: An intrinsic feature is a xref:fuzion_feature[feature] declared using `=> intrinsic` or `=> intrinsic_constructor`.
 
 [#fuzion_native]
-((Native Feature)):: CAUTION: *NYI*: Text Missing
+((Native Feature)):: A native feature is a xref:fuzion_feature[feature] declared using `=> native`.
 
 [#input_source]
 ((Input Source)):: An input source is a stream of bytes that contains Fuzion
 code that is used as an input for tools like Fuzion compilers.
 
-((Routine)):: CAUTION: *NYI*: Text Missing
+[#outer_feature]
+((Outer Feature)):: The outer feature `o` of a feature `f` is the xref:fuzion_feature[feature] that contains the
+declaration of `f`.  If `f` is not declared inside any other feature, `f`'s outer feature is the
+xref:universe[universe], which itself does not have an outer feature.
 
+[#fuzion_routine]
+((Routine)):: A routine is a xref:fuzion_feature[Feature] declared using `is` or `=>` that is neither
+an xref:fuzion_abstract[abstract feature], a xref:fuzion_choice[choice], an xref:fuzion_intrinsic[intrinsic feature] nor a
+xref:fuzion_native[native feature].
+
+[#runtime_type]
+((Runtime Type)):: A runtime type is a xref:fuzion_type[type] that does not contain any xref:fuzion_typeparameter[type parameters].
+
+[#static_type]
+((Static Type)):: CAUTION: *NYI*: Text Missing
+
+[#fuzion_target]
+((Target)):: The target is part of a xref:fuzion_call[feature
+call]. The xref:dynamic_type[dynamic type] of the target together with the xref:feature_name[feature name] of the call
+determines the xref:call_destination[destination] of the call.
+
+[#fuzion_type]
 ((Type)):: CAUTION: *NYI*: Text Missing
 
 [#fuzion_typeparameter]
-((Type Parameter)):: CAUTION: *NYI*: Text Missing
+((Type Parameter)):: A type parameter is an xref:fuzion_argument[argument] that can hold a xref:runtime_type[runtime type value].
+
+[#unit_type]
+((Unit type)):: A unit type is a type that contains no direct xref:fuzion_field[inner fields] defined by a xref:fuzion_constructor[constructor]
+whose xref:outer_feature[outer features] is either the xref:universe[universe]  or itself a xref:fuzion_constructor[constructor]
+defining a unit type.
+
+[#universe]
+((Universe)):: The universe is an implicitly declared feature that
+is the outer feature of features that are not declared within another feature.
+
 
 [appendix]
 == File Formats
