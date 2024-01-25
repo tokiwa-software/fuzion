@@ -1086,10 +1086,7 @@ hw25 is
             (cc.isInstantiated() || cc.feature().isOuterRef() || cc.feature().isTypeFeature())
             && cc != Clazzes.Const_String.getIfCreated()
             && !cc.isAbsurd()
-            && !cc.isBoxed()
-            // NYI: this should not depend on string comparison!
-            && !(cc.feature().qualifiedName().equals("void.absurd"))
-            ;
+            && !cc.isBoxed();
           };
         (result ? _needsCode : _doesNotNeedCode).set(cl - CLAZZ_BASE);
         return result;
@@ -2456,7 +2453,7 @@ hw25 is
       !ia.type().dependsOnGenerics() &&
       !ia.type().containsThisType() &&
       // some backends have special handling for array void.
-      ia.elementType().compareTo(Types.resolved.t_void) != 0 &&
+      !ia.elementType().isVoid() &&
       ia._elements
         .stream()
         .allMatch(el -> {

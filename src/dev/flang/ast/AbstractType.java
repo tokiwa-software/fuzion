@@ -305,7 +305,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var actual_type = actual.remove_type_parameter_used_for_this_type_in_type_feature();
     var result =
       target_type.compareTo(actual_type          ) == 0 ||
-      actual_type.compareTo(Types.resolved.t_void) == 0 ||
+      actual_type.isVoid() ||
       target_type == Types.t_ERROR                      ||
       actual_type == Types.t_ERROR;
     if (!result && !target_type.isGenericArgument() && isRef() && actual_type.isRef())
@@ -385,7 +385,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var result = containsError()                   ||
       actual.containsError()                       ||
       this  .compareTo(actual               ) == 0 ||
-      actual.compareTo(Types.resolved.t_void) == 0;
+      actual.isVoid();
     if (!result && !isGenericArgument())
       {
         if (actual.isGenericArgument())
@@ -971,8 +971,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   private boolean disjoint(AbstractType other)
   {
-    return this.compareTo(Types.resolved.t_void) == 0
-        || other.compareTo(Types.resolved.t_void) == 0
+    return this.isVoid()
+        || other.isVoid()
         || !this.isDirectlyAssignableFrom(other)
         && !other.isDirectlyAssignableFrom(this);
   }
@@ -1128,8 +1128,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       this == Types.t_ERROR                      ? Types.t_ERROR     :
       that == Types.t_ERROR                      ? Types.t_ERROR     :
       that == null                               ? Types.t_ERROR     :
-      this.compareTo(Types.resolved.t_void) == 0 ? that              :
-      that.compareTo(Types.resolved.t_void) == 0 ? this              :
+      this.isVoid()                              ? that              :
+      that.isVoid()                              ? this              :
       this.isAssignableFrom(that)                ? this :
       that.isAssignableFrom(this)                ? that :
       this.isAssignableFrom(that.asRef())        ? this :
@@ -1137,12 +1137,21 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
     if (POSTCONDITIONS) ensure
       (result == Types.t_ERROR     ||
-       this.compareTo(Types.resolved.t_void) == 0 && result == that ||
-       that.compareTo(Types.resolved.t_void) == 0 && result == this ||
+       this.isVoid() && result == that ||
+       that.isVoid() && result == this ||
        (result.isAssignableFrom(this) || result.isAssignableFrom(this.asRef()) &&
         result.isAssignableFrom(that) || result.isAssignableFrom(that.asRef())    ));
 
     return result;
+  }
+
+
+  /**
+   * Is this the type denoting `void`?
+   */
+  public boolean isVoid()
+  {
+    return compareTo(Types.resolved.t_void) == 0;
   }
 
 

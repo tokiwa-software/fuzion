@@ -1440,7 +1440,7 @@ part of the (((inner features))) declarations of the correpsonding
             AstErrors.cannotRedefineChoice(f, o);
           }
         else if (!t1.isDirectlyAssignableFrom(t2) &&  // we (currently) do not tag the result in a redefined feature, see testRedefine
-                 t2.compareTo(Types.resolved.t_void) != 0 &&
+                 !t2.isVoid() &&
                  !isLegalCovariantThisType(o, f, t1, t2, fixed))
           {
             AstErrors.resultTypeMismatchInRedefinition(o, t1, f, isLegalCovariantThisType(o, f, t1, t2, true));
