@@ -97,7 +97,6 @@ public class Runner extends ClassLoader
     return result;
   }
 
-
   /**
    * Run the fuzion code in the generated classes.
    *
@@ -126,6 +125,10 @@ public class Runner extends ClassLoader
     catch (InvocationTargetException e)
       {
         Runtime.handleInvocationTargetException(e);
+      }
+    catch (VerifyError e)
+      {
+        Errors.fatal("Error while verifying JVM compiled code: " + e);
       }
   }
 

@@ -26,7 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm.classfile;
 
-
+import java.util.Stack;
 
 /**
  * Label is a symbolic label in byte code. A Label is an Expr that produces
@@ -100,11 +100,16 @@ public class Label extends Expr
     return ClassFileConstants.PrimitiveType.type_void;
   }
 
-
   /**
    * String representation of this label:
    */
   public String toString() { return "label:"; }
+
+
+  @Override
+  protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+  {
+  }
 
 
 }

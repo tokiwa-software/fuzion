@@ -276,6 +276,10 @@ MOD_JDK_ZIPFS_FZ_FILES = $(MOD_JDK_ZIPFS_DIR)/__marker_for_make__
 
 VERSION = $(shell cat $(FZ_SRC)/version.txt)
 
+FUZION_BASE0 = \
+			$(BUILD_DIR)/bin/fz \
+			$(MOD_BASE) \
+
 FUZION_BASE = \
 			$(BUILD_DIR)/bin/fz \
 			$(BUILD_DIR)/bin/fzjava \
@@ -413,6 +417,10 @@ min-java: $(FUZION_BASE) $(MOD_JAVA_BASE) $(MOD_JAVA_XML) $(MOD_JAVA_DATATRANSFE
 # everything but the java modules
 .PHONY: no-java
 no-java: $(FUZION_BASE) $(FUZION_FILES)
+
+# only up to base module
+.PHONY: base-only
+base-only: $(FUZION_BASE0) $(FUZION_FILES)
 
 # phony target to compile all java sources
 .PHONY: javac

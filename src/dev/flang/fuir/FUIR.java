@@ -2622,6 +2622,15 @@ hw25 is
     return bb.slice(bb.position(), 4+elBytes);
   }
 
+
+  public int clazzOuterRefResultClazz(int cl)
+  {
+    var or = clazzOuterRef(cl);
+    return or == -1
+      ? -1
+      : clazzResultClazz(or);
+  }
+
 }
 
 /* end of file */

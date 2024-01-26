@@ -26,7 +26,16 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm.classfile;
 
+import java.util.EmptyStackException;
+import java.util.Optional;
+import java.util.Stack;
+import java.util.TreeSet;
+import java.util.function.Consumer;
+
+import dev.flang.be.jvm.classfile.ClassFile.ByteCodeWriter;
+import dev.flang.be.jvm.classfile.ClassFile.Kaku;
 import dev.flang.util.Errors;
+import dev.flang.util.List;
 import dev.flang.util.Pair;
 
 
@@ -47,6 +56,163 @@ public abstract class Expr extends ByteCode
   /*-----------------------------  classes  -----------------------------*/
 
 
+  static class GoTo extends Expr
+  {
+    private final Label to;
+    private final Label from;
+
+    private GoTo(Label to, Label from)
+    {
+      this.to = to;
+      this.from = from;
+    }
+
+    public String toString()
+    {
+      return "goto " + to;
+    }
+
+    public JavaType type()
+    {
+      return ClassFileConstants.PrimitiveType.type_void;
+    }
+
+    public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
+    {
+      if (CHECKS) check
+        (isInfiniteLoop() || from._posFinal == -1 || to._posFinal == -1 || from._posFinal != to._posFinal);
+      code(ba, O_goto, from, to);
+    }
+
+    @Override
+    public void addToStackMapFrames(ClassFile cf, TreeSet<StackMapFrame> smfs, Stack<VerificationTypeInfo> s,
+      List<VerificationTypeInfo> loc)
+    {
+      var stack = (Stack<VerificationTypeInfo>) s.clone();
+      var locals = loc.clone();
+
+      var gtSmf =
+        new StackMapFrame(ClassFileConstants.STACK_MAP_FRAME_FULL_FRAME) {
+          // u2 offset_delta;
+          // u2 number_of_locals;
+          // verification_type_info locals[number_of_locals];
+          // u2 number_of_stack_items;
+          // verification_type_info stack[number_of_stack_items];
+          @Override
+          byte[] data()
+          {
+            var o = new Kaku();
+            var offset = byteCodePos() - previousStackMapFrame(smfs).byteCodePos() - 1;
+            o.writeU2(offset);
+            o.writeU2(locals.size());
+            for (var l : locals)
+              {
+                l.write(o);
+              }
+            o.writeU2(stack.size());
+            for (var s : stack)
+              {
+                s.write(o);
+              }
+            return o._b.toByteArray();
+          }
+
+          @Override
+          Optional<List<VerificationTypeInfo>> localsFor(StackMapFrame smf)
+          {
+            // special case: this goto is being jumped to from another goto.
+            // in this case we work our way up to the initial goto.
+            return smf.byteCodePos() == to._posFinal
+                                                     ? Optional.of(smfs
+                                                       .stream()
+                                                       .filter(x -> x != this && x.localsFor(this).isPresent())
+                                                       .map(x -> x.localsFor(this).get())
+                                                       .findAny()
+                                                       .orElse(locals))
+                                                     : Optional.empty();
+          }
+
+          @Override
+          int byteCodePos()
+          {
+            return from._posFinal;
+          }
+        };
+
+      if (smfs.contains(gtSmf))
+        {
+          smfs.remove(gtSmf);
+        }
+      smfs.add(gtSmf);
+
+      if (!isInfiniteLoop())
+        {
+          smfs.add(
+            new StackMapFrame(ClassFileConstants.STACK_MAP_FRAME_FULL_FRAME) {
+              // u2 offset_delta;
+              // u2 number_of_locals;
+              // verification_type_info locals[number_of_locals];
+              // u2 number_of_stack_items;
+              // verification_type_info stack[number_of_stack_items];
+              @Override
+              byte[] data()
+              {
+                var o = new Kaku();
+                var offset = byteCodePos() - previousStackMapFrame(smfs).byteCodePos() - 1;
+                o.writeU2(offset);
+                var lat = localsAtTarget();
+                o.writeU2(lat.size());
+                for (var l : lat)
+                  {
+                    l.write(o);
+                  }
+                o.writeU2(stack.size());
+                for (var s : stack)
+                  {
+                    s.write(o);
+                  }
+                return o._b.toByteArray();
+              }
+
+              private List<VerificationTypeInfo> localsAtTarget()
+              {
+                var result = smfs
+                  .stream()
+                  .filter(x -> x.localsFor(this).isPresent())
+                  .map(x -> x.localsFor(this).get())
+                  .reduce(previousStackMapFrame(smfs).localsAtEnd(), (a, b) -> {
+                    if (a == null)
+                      {
+                        return b;
+                      }
+                    else
+                      {
+                        return VerificationTypeInfo.union(a,b);
+                      }
+                  });
+                return from._posFinal == to._posFinal
+                                                      ? locals
+                                                      : result;
+              }
+
+              @Override
+              int byteCodePos()
+              {
+                return to._posFinal;
+              }
+            });
+        }
+    }
+
+    @Override
+    protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+    {
+      if (PRECONDITIONS)
+        require(false);
+    }
+  }
+
+
   /**
    * Expression for the unit value.
    */
@@ -55,6 +221,10 @@ public abstract class Expr extends ByteCode
     public String toString() { return "UNIT"; }
     public JavaType type() { return PrimitiveType.type_void; }
     public void code(ClassFile.ByteCodeWriter ba, ClassFile cf) { ba.write(BC_EMPTY); }
+    @Override
+    protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+    {
+    }
   }
 
 
@@ -92,6 +262,203 @@ public abstract class Expr extends ByteCode
     {
       ba.write(_bc);
     }
+    @Override
+    public int bytes()
+    {
+      return 1;
+    }
+
+    @Override
+    protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+    {
+      if (_bc == BC_RETURN ||
+        _bc == BC_IRETURN ||
+        _bc == BC_LRETURN ||
+        _bc == BC_FRETURN ||
+        _bc == BC_DRETURN ||
+        _bc == BC_ARETURN ||
+        _bc == BC_ATHROW)
+        {
+          stack.clear();
+        }
+      else if (_bc == BC_NOP)
+        {
+
+        }
+      else if (_bc == BC_POP)
+        {
+          stack.pop();
+        }
+      else if (_bc == BC_POP2)
+        {
+          stack.pop();
+          stack.pop();
+        }
+      else if (_bc == BC_DUP)
+        {
+          stack.push(stack.peek());
+        }
+      else if (_bc == BC_DUP_X1)
+        {
+          // value2, value1 → value1, value2, value1
+          var val1 = stack.pop();
+          var val2 = stack.pop();
+          stack.push(val1);
+          stack.push(val2);
+          stack.push(val1);
+        }
+      else if (_bc == BC_DUP_X2)
+        {
+          // value3, value2, value1 → value1, value3, value2, value1
+          var val1 = stack.pop();
+          var val2 = stack.pop();
+          var val3 = stack.pop();
+          stack.push(val1);
+          stack.push(val3);
+          stack.push(val2);
+          stack.push(val1);
+        }
+      else if (_bc == BC_SWAP)
+        {
+          // value2, value1 → value1, value2
+          var val1 = stack.pop();
+          var val2 = stack.pop();
+          stack.push(val1);
+          stack.push(val2);
+        }
+      else if (_bc == BC_IADD ||
+        _bc == BC_LADD ||
+        _bc == BC_FADD ||
+        _bc == BC_DADD ||
+        _bc == BC_ISUB ||
+        _bc == BC_LSUB ||
+        _bc == BC_FSUB ||
+        _bc == BC_DSUB ||
+        _bc == BC_IMUL ||
+        _bc == BC_LMUL ||
+        _bc == BC_FMUL ||
+        _bc == BC_DMUL ||
+        _bc == BC_IDIV ||
+        _bc == BC_LDIV ||
+        _bc == BC_FDIV ||
+        _bc == BC_DDIV ||
+        _bc == BC_IREM ||
+        _bc == BC_LREM ||
+        _bc == BC_FREM ||
+        _bc == BC_DREM ||
+        _bc == BC_ISHL ||
+        _bc == BC_LSHL ||
+        _bc == BC_ISHR ||
+        _bc == BC_LSHR ||
+        _bc == BC_IUSHR ||
+        _bc == BC_LUSHR ||
+        _bc == BC_IAND ||
+        _bc == BC_LAND ||
+        _bc == BC_IOR ||
+        _bc == BC_LOR ||
+        _bc == BC_IXOR ||
+        _bc == BC_LXOR)
+        {
+          stack.pop();
+        }
+      else if (_bc == BC_INEG ||
+        _bc == BC_LNEG ||
+        _bc == BC_FNEG ||
+        _bc == BC_DNEG)
+        {
+
+        }
+      else if (_bc == BC_BALOAD)
+        {
+          stack.pop();
+          stack.pop();
+          stack.push(PrimitiveType.type_boolean.vti(cf));
+        }
+      else if (_bc == BC_CALOAD)
+        {
+          stack.pop();
+          stack.pop();
+          stack.push(PrimitiveType.type_char.vti(cf));
+        }
+      else if (_bc == BC_SALOAD)
+        {
+          stack.pop();
+          stack.pop();
+          stack.push(PrimitiveType.type_short.vti(cf));
+        }
+      else if (_bc == BC_IALOAD)
+        {
+          stack.pop();
+          stack.pop();
+          stack.push(PrimitiveType.type_int.vti(cf));
+        }
+      else if (_bc == BC_LALOAD)
+        {
+          stack.pop();
+          stack.pop();
+          stack.push(PrimitiveType.type_long.vti(cf));
+        }
+      else if (_bc == BC_FALOAD)
+        {
+          stack.pop();
+          stack.pop();
+          stack.push(PrimitiveType.type_float.vti(cf));
+        }
+      else if (_bc == BC_DALOAD)
+        {
+          stack.pop();
+          stack.pop();
+          stack.push(PrimitiveType.type_double.vti(cf));
+        }
+      else if (_bc == BC_ARRAYLENGTH)
+        {
+          stack.pop();
+          stack.push(PrimitiveType.type_int.vti(cf));
+        }
+      else if (_bc == BC_BASTORE ||
+        _bc == BC_CASTORE ||
+        _bc == BC_SASTORE ||
+        _bc == BC_IASTORE ||
+        _bc == BC_LASTORE ||
+        _bc == BC_FASTORE ||
+        _bc == BC_DASTORE ||
+        _bc == BC_AASTORE)
+        {
+          stack.pop();
+          stack.pop();
+          stack.pop();
+        }
+      else if (_bc == BC_ZNEWARRAY ||
+        _bc == BC_BNEWARRAY ||
+        _bc == BC_CNEWARRAY ||
+        _bc == BC_SNEWARRAY ||
+        _bc == BC_INEWARRAY ||
+        _bc == BC_LNEWARRAY ||
+        _bc == BC_FNEWARRAY ||
+        _bc == BC_DNEWARRAY)
+        {
+          stack.pop();
+          stack.push(type().vti(cf));
+        }
+      else if (_bc == BC_ACONST_NULL)
+        {
+          stack.push(VerificationTypeInfo.Null);
+        }
+      else if (_bc == BC_LCMP)
+        {
+          // value1, value2 → result
+          stack.pop();
+        }
+      else if (_bc == BC_MONITORENTER ||
+        _bc == BC_MONITOREXIT)
+        {
+          stack.pop();
+        }
+      else
+        {
+          throw new UnsupportedOperationException("Unimplemented method 'execute'");
+        }
+    }
   }
 
 
@@ -111,9 +478,41 @@ public abstract class Expr extends ByteCode
    */
   static abstract class Store extends Expr
   {
+
+    public Store() {
+      super();
+    }
+
     public JavaType type()
     {
       return PrimitiveType.type_void;
+    }
+
+    public abstract Pair<Integer, VerificationTypeInfo> local();
+
+    public void addToStackMapFrames(ClassFile cf, TreeSet<StackMapFrame> smfs, Stack<VerificationTypeInfo> stack, List<VerificationTypeInfo> locals)
+    {
+      super.addToStackMapFrames(cf, smfs, stack, locals);
+
+      while (locals.size() <= index(locals, local()._v0))
+        {
+          locals.add(VerificationTypeInfo.Top);
+        }
+
+      if (locals.get(index(locals, local()._v0)) == VerificationTypeInfo.Top)
+        {
+          locals.set(index(locals, local()._v0), local()._v1);
+        }
+    }
+
+    private int index(List<VerificationTypeInfo> locals, Integer idx)
+    {
+      return idx -
+        locals
+          .stream()
+          .limit(idx)
+          .mapToInt(x -> x ==  VerificationTypeInfo.Double || x ==  VerificationTypeInfo.Long ? 1 : 0)
+          .sum();
     }
   }
 
@@ -144,8 +543,11 @@ public abstract class Expr extends ByteCode
   public static final Expr DUP_X1      = new Simple("DUP_X1" , PrimitiveType.type_void, BC_DUP_X1 );
   public static final Expr DUP_X2      = new Simple("DUP_x2" , PrimitiveType.type_void, BC_DUP_X2 );
   public static final Expr SWAP        = new Simple("SWAP"   , PrimitiveType.type_void, BC_SWAP   );
-  public static final Expr DUP2_X1     = new Simple("DUP2_x1", PrimitiveType.type_void, BC_DUP2_X1);
-  public static final Expr DUP2_X2     = new Simple("DUP2_x2", PrimitiveType.type_void, BC_DUP2_X2);
+
+  // Commented, these are actually not so simple, since the change to stack
+  // depends on the type of what is dupped.
+  // public static final Expr DUP2_X1     = new Simple("DUP2_x1", PrimitiveType.type_void, BC_DUP2_X1);
+  // public static final Expr DUP2_X2     = new Simple("DUP2_x2", PrimitiveType.type_void, BC_DUP2_X2);
 
   public static final Expr IADD        = new Simple("BC_IADD" , PrimitiveType.type_int   , BC_IADD    );
   public static final Expr LADD        = new Simple("BC_LADD" , PrimitiveType.type_long  , BC_LADD    );
@@ -285,7 +687,7 @@ public abstract class Expr extends ByteCode
    * create invokestatic bytecode to call given class, name and descr producing
    * given result type on the stack.
    */
-  public static Expr invokeStatic(String cls, String name, String descr, JavaType rt)
+  public static Expr invokeStatic(String cls, String name, String descr, JavaType rt, int argCount)
   {
     return new Expr()
       {
@@ -301,6 +703,15 @@ public abstract class Expr extends ByteCode
           var m   = cf.cpMethod(cl, nat);
           code(ba, O_invokestatic, m);
         }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          for (int index = 0; index < argCount; index++)
+            {
+              stack.pop();
+            }
+          stack.push(rt.vti(cf));
+        }
     };
   }
 
@@ -309,8 +720,11 @@ public abstract class Expr extends ByteCode
    * create invokespecial bytecode to call given class, name and descr producing
    * void result type.
    */
-  public static Expr invokeSpecial(String cls, String name, String descr)
+  public static Expr invokeSpecial(String cls, String name, String descr, int argCount)
   {
+    if (PRECONDITIONS) require
+      (descr.endsWith(")V"));
+
     return new Expr()
       {
         public String toString() { return "invokeSpecial " + cls + "." + name; }
@@ -325,6 +739,15 @@ public abstract class Expr extends ByteCode
           var m   = cf.cpMethod(cl, nat);
           code(ba, O_invokespecial, m);
         }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          stack.pop();
+          for (int index = 0; index < argCount; index++)
+            {
+              stack.pop();
+            }
+        }
     };
   }
 
@@ -335,6 +758,9 @@ public abstract class Expr extends ByteCode
    */
   public static Expr invokeSpecial(ClassFile.CPClass cl, String name, String descr)
   {
+    if (PRECONDITIONS) require
+      (descr.equals("()V"));
+
     return new Expr()
       {
         public String toString() { return "invokeSpecial " + cl + "." + name; }
@@ -346,6 +772,11 @@ public abstract class Expr extends ByteCode
           var nat = cf.cpNameAndType(n, d);
           var m   = cf.cpMethod(cl, nat);
           code(ba, O_invokespecial, m);
+        }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          stack.pop();
         }
     };
   }
@@ -371,6 +802,11 @@ public abstract class Expr extends ByteCode
           var m   = cf.cpMethod(cl, nat);
           code(ba, O_invokevirtual, m);
         }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          throw new UnsupportedOperationException("Unimplemented method 'execute'");
+        }
     };
   }
 
@@ -388,7 +824,7 @@ public abstract class Expr extends ByteCode
    *
    * @return Code to produce bytecode for the interface call.
    */
-  public static Expr invokeInterface(String cls, String name, String descr, JavaType rt)
+  public static Expr invokeInterface(String cls, String name, String descr, JavaType rt, int argCount)
   {
     return new Expr()
       {
@@ -409,6 +845,16 @@ public abstract class Expr extends ByteCode
                            ", maximum allowed is " + ClassFileConstants.MAX_INVOKE_INTERFACE_SLOTS);
             }
           code(ba, O_invokeinterface, m, (byte) count, (byte) 0);
+        }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          stack.pop();
+          for (int index = 0; index < argCount; index++)
+            {
+              stack.pop();
+            }
+          stack.push(rt.vti(cf));
         }
     };
   }
@@ -433,6 +879,14 @@ public abstract class Expr extends ByteCode
         {
           code(ba, O_getfield, cf.cpField(cf.cpClass(cls), cf.cpNameAndType(name, type.descriptor())));
         }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          // objectref
+          stack.pop();
+          // value
+          stack.push(type.vti(cf));
+        }
     };
   }
 
@@ -455,6 +909,14 @@ public abstract class Expr extends ByteCode
         public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
           code(ba, O_putfield, cf.cpField(cf.cpClass(cls), cf.cpNameAndType(name, type.descriptor())));
+        }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          // objectref
+          stack.pop();
+          // value
+          stack.pop();
         }
     };
   }
@@ -482,6 +944,11 @@ public abstract class Expr extends ByteCode
         {
           code(ba, O_getstatic, cf.cpField(cf.cpClass(cls), cf.cpNameAndType(name, type.descriptor())));
         }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          stack.push(type.vti(cf));
+        }
     };
   }
 
@@ -504,6 +971,12 @@ public abstract class Expr extends ByteCode
         public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
           code(ba, O_putstatic, cf.cpField(cf.cpClass(cls), cf.cpNameAndType(name, type.descriptor())));
+        }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          // value
+          stack.pop();
         }
     };
   }
@@ -536,6 +1009,11 @@ public abstract class Expr extends ByteCode
             default -> super.code(ba, cf);
             };
         }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          stack.push(VerificationTypeInfo.Integer);
+        }
     };
   }
 
@@ -558,6 +1036,11 @@ public abstract class Expr extends ByteCode
           if      (c == 0L) { ba.write(BC_LCONST_0); }
           else if (c == 1L) { ba.write(BC_LCONST_1); }
           else              { super.code(ba, cf);    }
+        }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          stack.push(VerificationTypeInfo.Long);
         }
     };
   }
@@ -583,6 +1066,11 @@ public abstract class Expr extends ByteCode
           else if (Float.intBitsToFloat(c) == 2F) { ba.write(BC_FCONST_2); }
           else                                    { super.code(ba, cf);    }
         }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          stack.push(VerificationTypeInfo.Float);
+        }
     };
   }
 
@@ -606,6 +1094,11 @@ public abstract class Expr extends ByteCode
           else if (Double.longBitsToDouble(c) == 1F) { ba.write(BC_DCONST_1); }
           else                                       { super.code(ba, cf);    }
         }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          stack.push(VerificationTypeInfo.Double);
+        }
     };
   }
 
@@ -620,7 +1113,12 @@ public abstract class Expr extends ByteCode
         public String toString() { return "String constant '" + s + "'"; }
         public JavaType type()   { return JAVA_LANG_STRING;              }
         ClassFile.CPEntry cpEntry(ClassFile cf) { return cf.cpString(s); }
-    };
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          stack.push(new VerificationTypeInfo(VerificationTypeInfo.type.Object, cpEntry(cf).index()));
+        }
+      };
   }
 
   /**
@@ -633,7 +1131,12 @@ public abstract class Expr extends ByteCode
         public String toString() { return "String constant";             }
         public JavaType type()   { return JAVA_LANG_STRING;              }
         ClassFile.CPEntry cpEntry(ClassFile cf) { return cf.cpString(s); }
-    };
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          stack.push(new VerificationTypeInfo(VerificationTypeInfo.type.Object, cpEntry(cf).index()));
+        }
+      };
   }
 
 
@@ -647,7 +1150,12 @@ public abstract class Expr extends ByteCode
         public String toString() { return "class " + t;                 }
         public JavaType type()   { return JAVA_LANG_CLASS;              }
         ClassFile.CPEntry cpEntry(ClassFile cf) { return cf.cpClass(t); }
-    };
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          stack.push(new VerificationTypeInfo(VerificationTypeInfo.type.Object, cpEntry(cf).index()));
+        }
+      };
   }
 
   /**
@@ -673,6 +1181,11 @@ public abstract class Expr extends ByteCode
             default -> code(ba, O_iload, index);
             };
         }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          stack.push(VerificationTypeInfo.Integer);
+        }
     };
   }
 
@@ -694,6 +1207,16 @@ public abstract class Expr extends ByteCode
             case 3 -> ba.write(BC_ISTORE_3);
             default -> code(ba, O_istore, index);
             };
+        }
+        @Override
+        public Pair<Integer, VerificationTypeInfo> local()
+        {
+          return new Pair<>(index, VerificationTypeInfo.Integer);
+        }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          stack.pop();
         }
     };
   }
@@ -722,6 +1245,11 @@ public abstract class Expr extends ByteCode
             default -> code(ba, O_lload, index);
             };
         }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          stack.push(VerificationTypeInfo.Long);
+        }
     };
   }
 
@@ -744,6 +1272,16 @@ public abstract class Expr extends ByteCode
             case 3 -> ba.write(BC_LSTORE_3);
             default -> code(ba, O_lstore, index);
             };
+        }
+        @Override
+        public Pair<Integer, VerificationTypeInfo> local()
+        {
+          return new Pair<>(index, VerificationTypeInfo.Long);
+        }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          stack.pop();
         }
     };
   }
@@ -772,6 +1310,11 @@ public abstract class Expr extends ByteCode
             default -> code(ba, O_fload, index);
             };
         }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          stack.push(VerificationTypeInfo.Float);
+        }
     };
   }
 
@@ -794,6 +1337,16 @@ public abstract class Expr extends ByteCode
             case 3 -> ba.write(BC_FSTORE_3);
             default -> code(ba, O_fstore, index);
             };
+        }
+        @Override
+        public Pair<Integer, VerificationTypeInfo> local()
+        {
+          return new Pair<>(index, VerificationTypeInfo.Float);
+        }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          stack.pop();
         }
     };
   }
@@ -822,6 +1375,11 @@ public abstract class Expr extends ByteCode
             default -> code(ba, O_dload, index);
             };
         }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          stack.push(VerificationTypeInfo.Double);
+        }
     };
   }
 
@@ -845,6 +1403,16 @@ public abstract class Expr extends ByteCode
             default -> code(ba, O_dstore, index);
             };
         }
+        @Override
+        public Pair<Integer, VerificationTypeInfo> local()
+        {
+          return new Pair<>(index, VerificationTypeInfo.Double);
+        }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          stack.pop();
+        }
     };
   }
 
@@ -852,11 +1420,22 @@ public abstract class Expr extends ByteCode
   /**
    * Load ref local variable from slot at given index.
    */
-  public static Expr aload(int n, JavaType type)
+  public static Expr aload(int n, JavaType type, ClassFile cf)
+  {
+    if (PRECONDITIONS) require
+      (type instanceof AType || type.className().equals("void"));
+
+    return aload(n, type, type.vti(cf));
+  }
+
+  /**
+   * Load ref local variable from slot at given index.
+   */
+  public static Expr aload(int n, JavaType type, VerificationTypeInfo vti)
   {
     return new Load()
       {
-        public String toString() { return "aload"; }
+        public String toString() { return "aload " + n; }
         public JavaType type()
         {
           return type;
@@ -872,6 +1451,11 @@ public abstract class Expr extends ByteCode
             default -> code(ba, O_aload, n);
             };
         }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          stack.push(vti);
+        }
     };
   }
 
@@ -879,11 +1463,11 @@ public abstract class Expr extends ByteCode
   /**
    * Store ref local variable into slot at given index.
    */
-  public static Expr astore(int n)
+  public static Expr astore(int n, VerificationTypeInfo vti)
   {
     return new Store()
       {
-        public String toString() { return "astore"; }
+        public String toString() { return "astore " + n; }
         public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
           switch (n)
@@ -894,6 +1478,16 @@ public abstract class Expr extends ByteCode
             case 3 -> ba.write(BC_ASTORE_3);
             default -> code(ba, O_astore, n);
             };
+        }
+        @Override
+        public Pair<Integer, VerificationTypeInfo> local()
+        {
+          return new Pair<Integer,VerificationTypeInfo>(n, vti);
+        }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          stack.pop();
         }
     };
   }
@@ -915,6 +1509,14 @@ public abstract class Expr extends ByteCode
         {
           ba.write(BC_AALOAD);
         }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          // arrayref, index → value
+          stack.pop();
+          stack.pop();
+          stack.push(type.vti(cf));
+        }
     };
   }
 
@@ -926,6 +1528,7 @@ public abstract class Expr extends ByteCode
   {
     if (PRECONDITIONS) require
       (className != null);
+
     return new Expr()
       {
         public String toString() { return "new0"; }
@@ -936,6 +1539,11 @@ public abstract class Expr extends ByteCode
         public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
           code(ba, O_new, cf.cpClass(className));
+        }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          stack.push(new VerificationTypeInfo(VerificationTypeInfo.type.Object, cf.cpClass(className).index()));
         }
     };
   }
@@ -960,6 +1568,13 @@ public abstract class Expr extends ByteCode
         public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
         {
           code(ba, O_anewarray, cf.cpClass(type.refDescriptor()));
+        }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          // count → arrayref
+          stack.pop();
+          stack.push(type.vti(cf));
         }
       };
   }
@@ -1009,13 +1624,19 @@ public abstract class Expr extends ByteCode
     var fpos = pos;
     var fneg = neg;
 
-    return lStart.andThen
+    var result = lStart.andThen
       (new Expr()
         {
           public String toString() { return "branch"; }
           public JavaType type()
           {
             return PrimitiveType.type_void;
+          }
+          @Override
+          public void visit(Consumer<Expr> fn)
+          {
+            fneg.visit(fn);
+            fpos.visit(fn);
           }
           public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
           {
@@ -1056,9 +1677,154 @@ public abstract class Expr extends ByteCode
                 fpos.code(ba, cf);
               }
           }
+          @Override
+          protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+          {
+            if (PRECONDITIONS) require
+              (false);
+          }
         })
       .andThen(lEnd);
+
+    return new Expr() {
+
+      @Override
+      public JavaType type()
+      {
+        return result.type();
+      }
+
+      @Override
+      public void code(ByteCodeWriter bw, ClassFile cf)
+      {
+        result.code(bw, cf);
+      }
+
+      @Override
+      public void visit(Consumer<Expr> fn)
+      {
+        fn.accept(this);
+        result.visit(fn);
+      }
+
+      @Override
+      public void addToStackMapFrames(ClassFile cf, TreeSet<StackMapFrame> smfs, Stack<VerificationTypeInfo> s, List<VerificationTypeInfo> locals)
+      {
+        var stackAtStart = (Stack<VerificationTypeInfo>)s.clone();
+        var localsAtStart = locals.clone();
+        localsAtStart.freeze();
+        smfs.add(
+          new StackMapFrame(ClassFileConstants.STACK_MAP_FRAME_FULL_FRAME) {
+            // u2 offset_delta;
+            // u2 number_of_locals;
+            // verification_type_info locals[number_of_locals];
+            // u2 number_of_stack_items;
+            // verification_type_info stack[number_of_stack_items];
+            @Override
+            byte[] data()
+            {
+              var o = new Kaku();
+              var offset = lStart._posFinal - previousStackMapFrame(smfs).byteCodePos() - 1;
+              o.writeU2(offset);
+              o.writeU2(localsAtStart.size());
+              for (var l : localsAtStart)
+                {
+                  l.write(o);
+                }
+              o.writeU2(stackAtStart.size());
+              for (int i = 0; i < stackAtStart.size(); i++)
+                {
+                  stackAtStart.get(i).write(o);
+                }
+              return o._b.toByteArray();
+            }
+
+            @Override
+            int byteCodePos()
+            {
+              return lStart._posFinal;
+            }
+          });
+
+        // pop the subject of the comparison
+        // NYI add check that we are popping what we expect.
+        s.pop();
+        if (bc == O_if_icmpeq ||
+           bc == O_if_icmpne ||
+           bc == O_if_icmplt ||
+           bc == O_if_icmpge ||
+           bc == O_if_icmpgt ||
+           bc == O_if_icmple ||
+           bc == O_if_acmpeq ||
+           bc == O_if_acmpne)
+          {
+            s.pop();
+          }
+
+        var stackAtEnd = (Stack<VerificationTypeInfo>)s.clone();
+
+        // assumption here is that fneg and fpos
+        // affect the stack in the same way.
+        var fnegLocals = locals.clone();
+        var fposLocals = locals.clone();
+        fneg.addToStackMapFrames(cf, smfs, (Stack<VerificationTypeInfo>)s.clone(), fnegLocals);
+        fpos.addToStackMapFrames(cf, smfs, (Stack<VerificationTypeInfo>)s.clone(), fposLocals);
+
+        smfs.add(
+          new StackMapFrame(ClassFileConstants.STACK_MAP_FRAME_FULL_FRAME) {
+            // u2 offset_delta;
+            // u2 number_of_locals;
+            // verification_type_info locals[number_of_locals];
+            // u2 number_of_stack_items;
+            // verification_type_info stack[number_of_stack_items];
+            @Override
+            byte[] data()
+            {
+              var o = new Kaku();
+              var offset = (fpos == UNIT || fneg == UNIT ? lEnd._posFinal : lPos._posFinal) - previousStackMapFrame(smfs).byteCodePos() - 1;
+              o.writeU2(offset);
+              o.writeU2(localsAtStart.size());
+              for (var l : localsAtStart)
+                {
+                  l.write(o);
+                }
+              o.writeU2(stackAtEnd.size());
+              for (var s : stackAtEnd)
+                {
+                  s.write(o);
+                }
+              return o._b.toByteArray();
+            }
+
+            @Override
+            List<VerificationTypeInfo> localsAtEnd()
+              {
+                return VerificationTypeInfo.union(fnegLocals, fposLocals);
+              }
+
+            @Override
+            int byteCodePos()
+            {
+              // Case 1: there is ONLY fpos OR fneg, jump is to lEnd
+              // Case 2: we have fpos AND fneg, jump is to positive branch lPos
+              return fpos == UNIT || fneg == UNIT ? lEnd._posFinal : lPos._posFinal;
+            }
+          });
+
+      }
+
+      @Override
+      protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+      {
+        if (PRECONDITIONS) require
+          (false);
+      }
+    };
   }
+
+  // https://en.wikipedia.org/wiki/List_of_Java_bytecode_instructions
+  protected abstract void execute(Stack<VerificationTypeInfo> stack, ClassFile cf);
+
 
   /**
    * Create conditional branch with one Expr executed if the condition
@@ -1105,6 +1871,10 @@ public abstract class Expr extends ByteCode
         {
           code(ba, O_checkcast, cf.cpClass(type.refDescriptor()));
         }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+        }
     };
   }
 
@@ -1117,7 +1887,14 @@ public abstract class Expr extends ByteCode
   public static Expr endless_loop()
   {
     Label l = new Label();
-    return l.andThen(gotoLabel(l));
+    return new GoTo(l, l)
+      {
+        @Override
+        protected boolean isInfiniteLoop()
+        {
+          return true;
+        }
+      };
   }
 
 
@@ -1127,18 +1904,7 @@ public abstract class Expr extends ByteCode
   {
     Label from = new Label();
     return from.andThen
-      (new Expr()
-        {
-          public String toString() { return "goto " + to; }
-          public JavaType type()
-          {
-            return ClassFileConstants.PrimitiveType.type_void;
-          }
-          public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
-          {
-            code(ba, O_goto, from, to);
-          }
-        });
+      (new GoTo(to, from));
   }
 
 
@@ -1149,6 +1915,23 @@ public abstract class Expr extends ByteCode
    * The type of the top value on the stack after the bytecodes were executed.
    */
   public abstract JavaType type();
+
+
+  /**
+   * Visit all Expr in the order they
+   * will appear in the bytecode.
+   *
+   * @param fn
+   */
+  public void visit(Consumer<Expr> fn)
+  {
+    fn.accept(this);
+  }
+
+  public int bytes()
+  {
+    return 0;
+  }
 
 
   /**
@@ -1173,15 +1956,53 @@ public abstract class Expr extends ByteCode
       {
         return new Expr()
           {
-            public String toString() { return "...andThen" + s; }
-            public JavaType type() { return s.type();  }
+            public String toString() { return Expr.this + "->" + s; }
+            public JavaType type() { return s.type(); }
             public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
             {
               Expr.this.code(ba, cf);
-              s.code(ba, cf);
+              if (!Expr.this.isInfiniteLoop())
+                {
+                  s.code(ba, cf);
+                }
+            }
+            @Override
+            public void visit(Consumer<Expr> fn)
+            {
+              Expr.this.visit(fn);
+              if (!Expr.this.isInfiniteLoop())
+                {
+                  s.visit(fn);
+                }
+            }
+            @Override
+            protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+            {
+              if (PRECONDITIONS) require(false);
+            }
+            @Override
+            public void addToStackMapFrames(ClassFile cf, TreeSet<StackMapFrame> smfs,
+              Stack<VerificationTypeInfo> stack, List<VerificationTypeInfo> locals)
+            {
+              Expr.this.addToStackMapFrames(cf, smfs, stack, locals);
+              if (!Expr.this.isInfiniteLoop())
+                {
+                  s.addToStackMapFrames(cf, smfs, stack, locals);
+                }
+            }
+            @Override
+            protected boolean isInfiniteLoop()
+            {
+              return s.isInfiniteLoop();
             }
           };
       }
+  }
+
+
+  protected boolean isInfiniteLoop()
+  {
+    return false;
   }
 
 
@@ -1227,6 +2048,22 @@ public abstract class Expr extends ByteCode
         {
           Expr.this.code(ba, cf);
         }
+        @Override
+        public void visit(Consumer<Expr> fn)
+        {
+          Expr.this.visit(fn);
+        }
+        @Override
+        protected void execute(Stack<VerificationTypeInfo> stack, ClassFile cf)
+        {
+          Expr.this.execute(stack, cf);
+        }
+        @Override
+        public void addToStackMapFrames(ClassFile cf, TreeSet<StackMapFrame> smfs, Stack<VerificationTypeInfo> stack,
+          List<VerificationTypeInfo> locals)
+        {
+          Expr.this.addToStackMapFrames(cf, smfs, stack, locals);
+        }
       };
   }
 
@@ -1261,6 +2098,19 @@ public abstract class Expr extends ByteCode
     return type == ClassFileConstants.PrimitiveType.type_void
       ? drop()
       : this.andThen(getfield(cls, name, type));
+  }
+
+  /**
+   * An expression
+   *
+   * @param code the complete code we are analyzing, NYI should we just pass locals?
+   * @param cf the classfile we are compiling
+   * @param smfs the current set of StackMapFrames, only branches and goto add stackmapframes
+   * @param stack the stack at this expresssion.
+   */
+  public void addToStackMapFrames(ClassFile cf, TreeSet<StackMapFrame> smfs, Stack<VerificationTypeInfo> stack, List<VerificationTypeInfo> locals)
+  {
+    execute(stack, cf);
   }
 
 

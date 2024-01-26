@@ -544,7 +544,6 @@ public class Names extends ANY implements ClassFileConstants
    */
   String javaInterface(int cl)
   {
-    if (_interfaceNames.get(cl).equals("fzI_num_optionᐨwᐨi32")) Thread.dumpStack();
     return _interfaceNames.get(cl);
   }
 

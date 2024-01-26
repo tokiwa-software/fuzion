@@ -31,12 +31,14 @@ import dev.flang.fuir.FUIR;
 import dev.flang.be.jvm.classfile.ClassFile;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 import dev.flang.be.jvm.classfile.Expr;
-
+import dev.flang.be.jvm.classfile.VerificationTypeInfo;
+import dev.flang.be.jvm.classfile.ClassFile.Attribute;
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 
 import java.util.TreeMap;
+import java.util.function.Supplier;
 
 
 /**
@@ -147,26 +149,26 @@ public class Types extends ANY implements ClassFileConstants
                          vt.descriptor(),
                          new List<>());
                 sig = "(" + vt.argDescriptor() + ")V";
-                cod = rt.load(0)
-                  .andThen(vt.load(1))
+                cod = rt.load(0, cf)
+                  .andThen(vt.load(1, cf))
                   .andThen(Expr.putfield(cn, Names.BOXED_VALUE_FIELD_NAME, vt));
               }
             var bc_box = Expr.new0(cn, rt)
               .andThen(Expr.DUP)
-              .andThen(vt.load(0))
-              .andThen(Expr.invokeSpecial(cn, "<init>", sig))
+              .andThen(vt.load(0, cf))
+              .andThen(Expr.invokeSpecial(cn, "<init>", sig, vt != PrimitiveType.type_void ? 1 : 0))
               .andThen(rt.return0());
-            var code_box = cf.codeAttribute(Names.BOX_METHOD_NAME + " in " + _fuir.clazzAsString(cl), bc_box, new List<>(), new List<>());
+            var code_box = cf.codeAttribute(Names.BOX_METHOD_NAME + " in " + _fuir.clazzAsString(cl), bc_box, new List<>(), new List<Attribute>(ClassFile.StackMapTable.empty(cf)));
             cf.method(ACC_PUBLIC | ACC_STATIC,
                       Names.BOX_METHOD_NAME,
                       boxSignature(cl),
                       new List<>(code_box));
           }
-        var bc_init = Expr.aload(0, javaType(cl))
+        var bc_init = Expr.aload(0, resultType(cl), VerificationTypeInfo.UninitializedThis)
           .andThen(Expr.invokeSpecial(cf._super,"<init>","()V"))
           .andThen(cod)
           .andThen(Expr.RETURN);
-        var code_init = cf.codeAttribute("<init> in " + _fuir.clazzAsString(cl), bc_init, new List<>(), new List<>());
+        var code_init = cf.codeAttribute("<init> in " + _fuir.clazzAsString(cl), bc_init, new List<>(), new List<Attribute>(ClassFile.StackMapTable.empty(cf)));
 
         cf.method(ACC_PUBLIC, "<init>", sig, new List<>(code_init));
 
@@ -179,18 +181,18 @@ public class Types extends ANY implements ClassFileConstants
               .andThen(_fuir.hasPrecondition(maincl) ? invokeStatic(maincl, true) : Expr.UNIT)
               .andThen(invokeStatic(maincl, false)).drop()
               .andThen(Expr.RETURN);
-            var code_run = cf.codeAttribute(Names.MAIN_RUN + " in " + _fuir.clazzAsString(cl), bc_run, new List<>(), new List<>());
+            var code_run = cf.codeAttribute(Names.MAIN_RUN + " in " + _fuir.clazzAsString(cl), bc_run, new List<>(), new List<Attribute>(ClassFile.StackMapTable.empty(cf)));
             cf.method(ACC_PUBLIC, Names.MAIN_RUN, "()V", new List<>(code_run));
 
             var bc_main =
-              Expr.aload(0, JAVA_LANG_STRING.array())
+              Expr.aload(0, JAVA_LANG_STRING.array(), cf)
               .andThen(Expr.putstatic(Names.RUNTIME_CLASS, Names.RUNTIME_ARGS, JAVA_LANG_STRING.array()))
               .andThen(Expr.new0(cn, javaType(cl)))
               .andThen(Expr.DUP)
-              .andThen(Expr.invokeSpecial(cn, "<init>", "()V"))
-              .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS, Names.RUNTIME_RUN, "(" + new ClassType(Names.MAIN_INTERFACE).argDescriptor() + ")V", PrimitiveType.type_void))
+              .andThen(Expr.invokeSpecial(cn, "<init>", "()V", 0))
+              .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS, Names.RUNTIME_RUN, "(" + new ClassType(Names.MAIN_INTERFACE).argDescriptor() + ")V", PrimitiveType.type_void, 0))
               .andThen(Expr.RETURN);
-            var code_main = cf.codeAttribute("main in " + _fuir.clazzAsString(cl), bc_main, new List<>(), new List<>());
+            var code_main = cf.codeAttribute("main in " + _fuir.clazzAsString(cl), bc_main, new List<>(), new List<Attribute>(ClassFile.StackMapTable.empty(cf)));
             cf.method(ACC_STATIC | ACC_PUBLIC, "main", "([Ljava/lang/String;)V", new List<>(code_main));
           }
       }
@@ -227,7 +229,8 @@ public class Types extends ANY implements ClassFileConstants
     return Expr.invokeStatic(cls,
                              fname,
                              descriptor(cc, preCalled),
-                             resultType(cc, preCalled));
+                             resultType(cc, preCalled),
+                             argCount(true, cc));
   }
   Expr invokeStaticCombindedPreAndCall(int cc)
   {
@@ -237,7 +240,8 @@ public class Types extends ANY implements ClassFileConstants
     return Expr.invokeStatic(cls,
                              fname,
                              descriptor(cc, false),
-                             resultType(cc, false));
+                             resultType(cc, false),
+                             argCount(true, cc));
   }
 
 
@@ -574,6 +578,31 @@ public class Types extends ANY implements ClassFileConstants
         res += ft.stackSlots();
       }
     return res;
+  }
+
+
+  public int argCount(boolean explicitOuter, int cl)
+  {
+    var result = 0;
+    if (explicitOuter && hasOuterRef(cl))
+      {
+        var ot = _fuir.clazzOuterRefResultClazz(cl);
+        var at = resultType(ot);
+        if (at != PrimitiveType.type_void)
+          {
+            result++;
+          }
+      }
+    for (var ai = 0; ai < _fuir.clazzArgCount(cl); ai++)
+      {
+        var at = _fuir.clazzArgClazz(cl, ai);
+        var ft = resultType(at);
+        if (ft != PrimitiveType.type_void)
+          {
+            result++;
+          }
+      }
+    return result;
   }
 
 

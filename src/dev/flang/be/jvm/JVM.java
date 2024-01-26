@@ -31,11 +31,11 @@ import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.dfa.DFA;
 import dev.flang.fuir.analysis.TailCall;
-
+import dev.flang.be.jvm.classfile.ClassFile;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 import dev.flang.be.jvm.classfile.Expr;
 import dev.flang.be.jvm.classfile.Label;
-
+import dev.flang.be.jvm.classfile.VerificationTypeInfo;
 import dev.flang.be.jvm.runtime.Runtime;
 
 import dev.flang.util.ANY;
@@ -882,7 +882,7 @@ should be avoided as much as possible.
     var n = _names.javaClass(cl);
     return Expr.new0(n, _types.javaType(cl))
       .andThen(Expr.DUP)
-      .andThen(Expr.invokeSpecial(n,"<init>","()V"));
+      .andThen(Expr.invokeSpecial(n,"<init>","()V", 0));
   }
 
 
@@ -903,13 +903,15 @@ should be avoided as much as possible.
     var result = Expr.UNIT;
     if (!_types.isScalar(cl))  // not calls like `u8 0x20` or `f32 3.14`.
       {
+        var cf = _types.classFile(cl);
+        var vti = _types.resultType(cl).vti(cf);
         result = result.andThen(new0(cl))
           .andThen(cl == _fuir.clazzUniverse()
                    ? Expr.DUP.andThen(Expr.putstatic(_names.javaClass(cl),
                                                      Names.UNIVERSE_FIELD,
                                                      _types.UNIVERSE_TYPE))
                    : Expr.UNIT)
-          .andThen(Expr.astore(current_index(cl)));
+          .andThen(Expr.astore(current_index(cl), vti));
       }
     return result;
   }
@@ -923,7 +925,7 @@ should be avoided as much as possible.
   private Expr callRuntimeTrace(String msg)
   {
     return Expr.stringconst(msg)
-      .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS, "trace", "(Ljava/lang/String;)V", PrimitiveType.type_void));
+      .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS, "trace", "(Ljava/lang/String;)V", PrimitiveType.type_void, 1));
   }
 
 
@@ -968,6 +970,7 @@ should be avoided as much as possible.
 
   Expr epilog(int cl, boolean pre)
   {
+    var cf = _types.classFile(cl);
     var r = _fuir.clazzResultField(cl);
     var t = _fuir.clazzResultClazz(cl);
     if (pre || !_fuir.clazzIsRef(t) /* NYI: needed? */ && _fuir.clazzIsUnitType(t))
@@ -980,7 +983,7 @@ should be avoided as much as possible.
         var jt = _types.javaType(t);
         return
           traceReturn(cl, pre)
-          .andThen(jt.load(current_index(cl)))
+          .andThen(jt.load(current_index(cl), cf))
           .andThen(jt.return0());
       }
     else
@@ -993,10 +996,9 @@ should be avoided as much as possible.
 
         */
 
-        var jt = _types.javaType(t);
         var ft = _types.resultType(t);
         var getf =
-          fieldExists(r) ? (Expr.aload(current_index(cl), jt)
+          fieldExists(r) ? (Expr.aload(current_index(cl), ft, new VerificationTypeInfo(VerificationTypeInfo.type.Object, 2 /* NYI magic constant... */) )
                             .andThen(getfield(r)))
                          : Expr.UNIT;
         return
@@ -1020,7 +1022,7 @@ should be avoided as much as possible.
   Expr reportErrorInCode(String msg)
   {
     return Expr.stringconst(msg)
-      .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,"fatal","(Ljava/lang/String;)V", PrimitiveType.type_void))
+      .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,"fatal","(Ljava/lang/String;)V", PrimitiveType.type_void, 1))
       .andThen(Expr.endless_loop());
   }
 
@@ -1148,10 +1150,13 @@ should be avoided as much as possible.
           .andThen(sl != null ? sl : Expr.UNIT)
           .andThen(code)
           .andThen(epilog);
+
+        var locals = localsVTI(cl);
+
         var code_cl = cf.codeAttribute((pre ? "precondition of " : "") + _fuir.clazzAsString(cl),
                                        numLocals(cl, pre),
                                        bc_cl,
-                                       new List<>(), new List<>());
+                                       new List<>(), new List<>(cf.stackMapTable(bc_cl, locals)));
 
         cf.method(ClassFileConstants.ACC_STATIC | ClassFileConstants.ACC_PUBLIC, name, _types.descriptor(cl, pre), new List<>(code_cl));
 
@@ -1167,19 +1172,20 @@ should be avoided as much as possible.
             do
               {
                 bc_combined = bc_combined
-                  .andThen(javaTypeOfTarget(cl).load(0));
+                  .andThen(javaTypeOfTarget(cl).load(0, cf));
                 for(var i = 0; i<_fuir.clazzArgCount(cl); i++)
                   {
                     var at = _fuir.clazzArgClazz(cl, i);
                     var jti = _types.resultType(at);
                     bc_combined = bc_combined
-                      .andThen(jti.load(argSlot(cl, i)));
+                      .andThen(jti.load(argSlot(cl, i), cf));
                   }
                 bc_combined = bc_combined
                   .andThen(Expr.invokeStatic(_names.javaClass(cl),
                                              _names.function(cl, preCond),
                                              _types.descriptor(cl, preCond),
-                                             preCond ? PrimitiveType.type_void : jt));
+                                             preCond ? PrimitiveType.type_void : jt,
+                                             _types.argCount(true, cl)));
                 preCond = !preCond;
               }
             while (!preCond);
@@ -1190,10 +1196,37 @@ should be avoided as much as possible.
             var code_comb = cf.codeAttribute("combined precondition and code of " + _fuir.clazzAsString(cl),
                                              numLocals(cl, pre) /* NYI, num locals! */,
                                              bc_combined,
-                                             new List<>(), new List<>());
+                                             new List<>(), new List<>(cf.stackMapTable(bc_combined, locals)));
             cf.method(ClassFileConstants.ACC_STATIC | ClassFileConstants.ACC_PUBLIC, Names.COMBINED_NAME, _types.descriptor(cl, false), new List<>(code_comb));
           }
       }
+  }
+
+
+  private List<VerificationTypeInfo> localsVTI(int cl)
+  {
+    var cf = _types.classFile(cl);
+    var result = new List<VerificationTypeInfo>();
+    if (_types.hasOuterRef(cl))
+      {
+        var ot = _fuir.clazzOuterRefResultClazz(cl);
+        var at = _types.resultType(ot);
+        if (at != PrimitiveType.type_void)
+          {
+            result.add(_types.resultType(_fuir.clazzResultClazz(_fuir.clazzOuterRef(cl))).vti(cf));
+          }
+      }
+    for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
+      {
+        var at = _fuir.clazzArgClazz(cl, i);
+        var ft = _types.resultType(at);
+        if (ft != PrimitiveType.type_void)
+          {
+            result.add(_types.resultType(_fuir.clazzArgClazz(cl, i)).vti(cf));
+          }
+      }
+    result.freeze();
+    return result;
   }
 
 
@@ -1254,7 +1287,8 @@ should be avoided as much as possible.
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_CONST_STRING,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_CONST_STRING_SIG,
-                                                  PrimitiveType.type_byte.array())));
+                                                  PrimitiveType.type_byte.array(),
+                                                  1)));
 
   }
 
@@ -1336,7 +1370,8 @@ should be avoided as much as possible.
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_8,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_8_SIG,
-                                                  PrimitiveType.type_byte.array())));
+                                                  PrimitiveType.type_byte.array(),
+                                                  2)));
   }
 
 
@@ -1353,7 +1388,8 @@ should be avoided as much as possible.
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_I16,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_I16_SIG,
-                                                  PrimitiveType.type_byte.array())));
+                                                  PrimitiveType.type_byte.array(),
+                                                  1)));
   }
 
 
@@ -1370,7 +1406,8 @@ should be avoided as much as possible.
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_U16,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_U16_SIG,
-                                                  PrimitiveType.type_byte.array())));
+                                                  PrimitiveType.type_byte.array(),
+                                                  1)));
   }
 
 
@@ -1387,7 +1424,8 @@ should be avoided as much as possible.
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_32,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_32_SIG,
-                                                  PrimitiveType.type_byte.array())));
+                                                  PrimitiveType.type_byte.array(),
+                                                  1)));
   }
 
 
@@ -1404,7 +1442,8 @@ should be avoided as much as possible.
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_64,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_64_SIG,
-                                                  PrimitiveType.type_byte.array())));
+                                                  PrimitiveType.type_byte.array(),
+                                                  1)));
   }
 
 
@@ -1421,7 +1460,8 @@ should be avoided as much as possible.
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_F32,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_F32_SIG,
-                                                  PrimitiveType.type_byte.array())));
+                                                  PrimitiveType.type_byte.array(),
+                                                  1)));
   }
 
 
@@ -1438,7 +1478,8 @@ should be avoided as much as possible.
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_F64,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_F64_SIG,
-                                                  PrimitiveType.type_byte.array())));
+                                                  PrimitiveType.type_byte.array(),
+                                                  1)));
   }
 
 
@@ -1677,24 +1718,26 @@ should be avoided as much as possible.
    */
   Expr cloneValue(int cl, boolean pre, Expr value, int rt, int f)
   {
+    var cf = _types.classFile(cl);
     if (!_fuir.clazzIsRef(rt) &&
         (f == -1 || !_fuir.clazzFieldIsAdrOfValue(f)) && // an outer ref field must not be cloned
         !_types.isScalar(rt) &&
         (!_fuir.clazzIsChoice(rt) || _types._choices.kind(rt) == Choices.ImplKind.general))
       {
+        var vti = _types.resultType(rt).vti(cf);
         var vl = allocLocal(cl, pre, 1);
         var nl = allocLocal(cl, pre, 1);
         var e = value
-          .andThen(Expr.astore(vl))
+          .andThen(Expr.astore(vl, vti))
           .andThen(new0(rt))
-          .andThen(Expr.astore(nl));
-        var jt = _types.javaType(rt);
+          .andThen(Expr.astore(nl, vti));
+        var jt = _types.resultType(rt);
         if (_fuir.clazzIsChoice(rt))
           {
             var cc = _names.javaClass(rt);
             e = e
-              .andThen(Expr.aload(nl, jt))
-              .andThen(Expr.aload(vl, jt))
+              .andThen(Expr.aload(nl, jt, cf))
+              .andThen(Expr.aload(vl, jt, cf))
               .andThen(Expr.getfield(cc, Names.TAG_NAME, PrimitiveType.type_int))
               .andThen(Expr.putfield(cc, Names.TAG_NAME, PrimitiveType.type_int));
             var hasref = false;
@@ -1711,11 +1754,11 @@ should be avoided as much as possible.
                     if (ft != PrimitiveType.type_void)
                       {
                         var fn = _types._choices.generalValueFieldName(rt, i);
-                        var v = Expr.aload(vl, jt)
+                        var v = Expr.aload(vl, jt, cf)
                           .andThen(Expr.getfield(cc, fn, ft));
                         var cv = cloneValueOrNull(cl, pre, v, tc, -1);
                         e = e
-                          .andThen(Expr.aload(nl, jt))
+                          .andThen(Expr.aload(nl, jt, cf))
                           .andThen(cv)
                           .andThen(Expr.putfield(cc, fn, ft));
                       }
@@ -1724,8 +1767,8 @@ should be avoided as much as possible.
             if (hasref)
               {
                 e = e
-                  .andThen(Expr.aload(nl, jt))
-                  .andThen(Expr.aload(vl, jt))
+                  .andThen(Expr.aload(nl, jt, cf))
+                  .andThen(Expr.aload(vl, jt, cf))
                   .andThen(Expr.getfield(cc, Names.CHOICE_REF_ENTRY_NAME, Names.ANYI_TYPE))
                   .andThen(Expr.putfield(cc, Names.CHOICE_REF_ENTRY_NAME, Names.ANYI_TYPE));
               }
@@ -1738,20 +1781,20 @@ should be avoided as much as possible.
                 if (fieldExists(fi))
                   {
                     var rti = _fuir.clazzResultClazz(fi);
-                    var v = readField(Expr.aload(vl, jt),
+                    var v = readField(Expr.aload(vl, jt, cf),
                                          rt,
                                          fi,
                                          rti);
                     var cv = cloneValueOrNull(cl, pre, v, rti, fi);
                     e = e
-                      .andThen(Expr.aload(nl,jt))
+                      .andThen(Expr.aload(nl,jt, cf))
                       .andThen(cv)
                       .andThen(putfield(fi));
                   }
               }
           }
         value = e
-          .andThen(Expr.aload(nl, jt));
+          .andThen(Expr.aload(nl, jt, cf));
       }
     return value;
   }
@@ -1825,8 +1868,9 @@ should be avoided as much as possible.
     byte ifcc = 0;
     Expr cast = Expr.UNIT;
     Expr cmp  = Expr.UNIT;
-    var jt = _types.javaType(rt);
+    var jt = _types.resultType(rt);
     var jt2 = jt;
+    var cf = _types.classFile(cl);
 
     if (jt == ClassFileConstants.PrimitiveType.type_void)
       { // unit-type values are always equal:
@@ -1845,7 +1889,7 @@ should be avoided as much as possible.
           }
         else if (jt == ClassFileConstants.PrimitiveType.type_float)
           {
-            cast = Expr.invokeStatic("java/lang/Float", "floatToIntBits", "(F)I", ClassFileConstants.PrimitiveType.type_int);
+            cast = Expr.invokeStatic("java/lang/Float", "floatToIntBits", "(F)I", ClassFileConstants.PrimitiveType.type_int, 1);
             ifcc = O_if_icmpeq;
             jt2 = ClassFileConstants.PrimitiveType.type_int;
           }
@@ -1856,7 +1900,7 @@ should be avoided as much as possible.
           }
         else if (jt == ClassFileConstants.PrimitiveType.type_double)
           {
-            cast = Expr.invokeStatic("java/lang/Double", "doubleToLongBits", "(D)J", ClassFileConstants.PrimitiveType.type_long);
+            cast = Expr.invokeStatic("java/lang/Double", "doubleToLongBits", "(D)J", ClassFileConstants.PrimitiveType.type_long, 1);
             cmp = Expr.LCMP;
             ifcc = O_ifeq;
             jt2 = ClassFileConstants.PrimitiveType.type_long;
@@ -1891,20 +1935,19 @@ should be avoided as much as possible.
             var v1 = allocLocal(cl, pre, 1);
             var v2 = allocLocal(cl, pre, 1);
             result = value1
-              .andThen(Expr.astore(v1))
+              .andThen(Expr.astore(v1, jt.vti(_types.classFile(cl))))
               .andThen(value2)
-              .andThen(Expr.astore(v2));
+              .andThen(Expr.astore(v2, jt.vti(_types.classFile(cl))));
 
             if (_fuir.clazzIsChoice(rt))
               {
                 if (CHECKS) check
                   (_types._choices.kind(rt) == Choices.ImplKind.general);
 
-                var cf = _types.classFile(rt);
                 var cc = _names.javaClass(rt);
                 result = result
-                  .andThen(Expr.aload(v1, jt).andThen(Expr.getfield(cc, Names.TAG_NAME, PrimitiveType.type_int)))
-                  .andThen(Expr.aload(v2, jt).andThen(Expr.getfield(cc, Names.TAG_NAME, PrimitiveType.type_int)))
+                  .andThen(Expr.aload(v1, jt, cf).andThen(Expr.getfield(cc, Names.TAG_NAME, PrimitiveType.type_int)))
+                  .andThen(Expr.aload(v2, jt, cf).andThen(Expr.getfield(cc, Names.TAG_NAME, PrimitiveType.type_int)))
                   .andThen(Expr.branch(O_if_icmpeq,
                                        Expr.iconst(1),
                                        Expr.iconst(0)));
@@ -1922,16 +1965,16 @@ should be avoided as much as possible.
                         if (ft != PrimitiveType.type_void)
                           {
                             var fn = _types._choices.generalValueFieldName(rt, i);
-                            var vi1 = Expr.aload(v1, jt).andThen(Expr.getfield(cc, fn, ft));
-                            var vi2 = Expr.aload(v2, jt).andThen(Expr.getfield(cc, fn, ft));
+                            var vi1 = Expr.aload(v1, jt, cf).andThen(Expr.getfield(cc, fn, ft));
+                            var vi2 = Expr.aload(v2, jt, cf).andThen(Expr.getfield(cc, fn, ft));
                             var cmpi = compareValues(cl, pre, vi1, vi2, _fuir.clazzChoice(rt, i))
                               .andThen(Expr.IAND);
                             if ( !_fuir.clazzIsRef(tc) && ft instanceof AType)
                               { // the value type may be a null reference if it is unused.
-                                cmpi = Expr.aload(v1, jt).andThen(Expr.getfield(cc, fn, ft))
+                                cmpi = Expr.aload(v1, jt, cf).andThen(Expr.getfield(cc, fn, ft))
                                   .andThen(Expr.branch
                                            (O_ifnonnull,
-                                            Expr.aload(v2, jt).andThen(Expr.getfield(cc, fn, ft))
+                                            Expr.aload(v2, jt, cf).andThen(Expr.getfield(cc, fn, ft))
                                             .andThen(Expr.branch
                                                      (O_ifnonnull,
                                                       cmpi))));
@@ -1944,8 +1987,8 @@ should be avoided as much as possible.
                 if (hasref)
                   {
                     result = result
-                      .andThen(Expr.aload(v1, jt)).andThen(Expr.getfield(cc, Names.CHOICE_REF_ENTRY_NAME, Names.ANYI_TYPE))
-                      .andThen(Expr.aload(v2, jt)).andThen(Expr.getfield(cc, Names.CHOICE_REF_ENTRY_NAME, Names.ANYI_TYPE))
+                      .andThen(Expr.aload(v1, jt, cf)).andThen(Expr.getfield(cc, Names.CHOICE_REF_ENTRY_NAME, Names.ANYI_TYPE))
+                      .andThen(Expr.aload(v2, jt, cf)).andThen(Expr.getfield(cc, Names.CHOICE_REF_ENTRY_NAME, Names.ANYI_TYPE))
                       .andThen(Expr.branch(O_if_acmpeq,
                                            Expr.iconst(1),
                                            Expr.iconst(0)))
@@ -1964,8 +2007,8 @@ should be avoided as much as possible.
                     if (fieldExists(fi))
                       {
                         var rti = _fuir.clazzResultClazz(fi);
-                        var f1 = readField(Expr.aload(v1, jt), rt, fi, rti);
-                        var f2 = readField(Expr.aload(v2, jt), rt, fi, rti);
+                        var f1 = readField(Expr.aload(v1, jt, cf), rt, fi, rti);
+                        var f2 = readField(Expr.aload(v2, jt, cf), rt, fi, rti);
                         result = result
                           .andThen(compareValues(cl, pre, f1, f2, rti))
                           .andThen(count > 0 ? Expr.IAND  // if several field, use AND to cumulate result

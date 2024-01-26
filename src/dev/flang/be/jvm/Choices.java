@@ -26,14 +26,14 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm;
 
-import dev.flang.fuir.FUIR;
-
+import dev.flang.be.jvm.classfile.ClassFile.Attribute;
+import dev.flang.be.jvm.classfile.ClassFile;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 import dev.flang.be.jvm.classfile.Expr;
 import dev.flang.be.jvm.classfile.Label;
 
+import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
-
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
@@ -287,7 +287,7 @@ public class Choices extends ANY implements ClassFileConstants
                           var bc_tag = Expr.iconst(tagNum)
                             .andThen(Expr.IRETURN);
                           var code_tag = hcf.codeAttribute(gtn + "in interface for "+_fuir.clazzAsString(cl),
-                                                           bc_tag, new List<>(), new List<>());
+                                                           bc_tag, new List<>(), new List<Attribute>(ClassFile.StackMapTable.empty(cf)));
                           hcf.method(ACC_PUBLIC, gtn, "()I", new List<>(code_tag));
                         }
                     }
@@ -312,32 +312,33 @@ public class Choices extends ANY implements ClassFileConstants
                         .andThen(Expr.iconst(i))
                         .andThen(Expr.invokeSpecial(cf._name,
                                                     "<init>",
-                                                    "(I)V"))
+                                                    "(I)V",
+                                                    1))
                         .andThen(Expr.putstatic(cf._name,
                                                 u,
                                                 uti));
                     }
                 }
 
-              var bc_init = Expr.aload(0, ut)
+              var bc_init = Expr.aload(0, ut, cf)
                 .andThen(Expr.invokeSpecial(cf._super,"<init>","()V"))
-                .andThen(Expr.aload(0, ut))
+                .andThen(Expr.aload(0, ut, cf))
                 .andThen(Expr.iload(1))
                 .andThen(Expr.putfield(cf._name,
                                        Names.TAG_NAME,
                                        PrimitiveType.type_int))
                 .andThen(Expr.RETURN);
               var code_init = cf.codeAttribute("<init> in class for " + _fuir.clazzAsString(cl),
-                                               bc_init, new List<>(), new List<>());
+                                               bc_init, new List<>(), new List<Attribute>(ClassFile.StackMapTable.empty(cf)));
               cf.method(ACC_PUBLIC, "<init>", "(I)V", new List<>(code_init));
 
-              var bc_tag = Expr.aload(0, ut)
+              var bc_tag = Expr.aload(0, ut, cf)
                 .andThen(Expr.getfield(cf._name,
                                        Names.TAG_NAME,
                                        PrimitiveType.type_int))
                 .andThen(Expr.IRETURN);
               var code_tag = cf.codeAttribute(gtn + "in class for " + _fuir.clazzAsString(cl),
-                                              bc_tag, new List<>(), new List<>());
+                                              bc_tag, new List<>(), new List<Attribute>(ClassFile.StackMapTable.empty(cf)));
               cf.method(ACC_PUBLIC, gtn, "()I", new List<>(code_tag));
 
               cf.addToClInit(bc_clinit);
@@ -440,6 +441,7 @@ public class Choices extends ANY implements ClassFileConstants
    */
   public Expr match(JVM jvm, AbstractInterpreter<Expr, Expr> ai, int cl, boolean pre, int c, int i, Expr sub)
   {
+    var cf = _types.classFile(cl);
     var subjClazz = _fuir.matchStaticSubject(cl, c, i);
     Expr code;
 
@@ -542,7 +544,7 @@ public class Choices extends ANY implements ClassFileConstants
                     {
                       if (field != -1 && jvm.fieldExists(field))
                         {                                                       //          sub
-                          pos = Expr.aload(jvm.current_index(cl), _types.javaType(cl)) //  sub, cur
+                          pos = Expr.aload(jvm.current_index(cl), _types.resultType(cl), cf) //  sub, cur
                             .andThen(Expr.SWAP)                                 //          cur, sub
                             .andThen(jvm.putfield(field));                      //          -
                         }
@@ -574,7 +576,8 @@ public class Choices extends ANY implements ClassFileConstants
             .andThen(Expr.invokeInterface(_types.interfaceFile(subjClazz)._name,
                                           _names.getTag(subjClazz),
                                           "()I",
-                                          PrimitiveType.type_int));
+                                          PrimitiveType.type_int,
+                                          0));
 
           var lEnd = new Label();
           for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
@@ -594,7 +597,7 @@ public class Choices extends ANY implements ClassFileConstants
                           pos =                                                 // stack is sub, tag
                             Expr.POP                                            //          sub
                             .andThen(Expr.aload(jvm.current_index(cl),          //          sub, cur
-                                                _types.javaType(cl)))
+                                                _types.resultType(cl), cf))
                             .andThen(Expr.SWAP)                                 //          cur, sub
                             .andThen(Expr.checkcast(rt))                        //          cur, val
                             .andThen(jvm.putfield(field));                      //          -
@@ -646,7 +649,7 @@ public class Choices extends ANY implements ClassFileConstants
                           pos =                                                     // stack is sub, tag
                             Expr.POP                                                //          sub
                             .andThen(Expr.aload(jvm.current_index(cl),              //          sub, cur
-                                                _types.javaType(cl)))
+                                                _types.resultType(cl), cf))
                             .andThen(Expr.SWAP)                                     //          cur, sub
                             .andThen(Expr.getfield(_names.javaClass(subjClazz),     //          cur, val
                                                    generalValueFieldName(subjClazz, tagNum),
