@@ -1057,7 +1057,7 @@ $(BUILD_DIR)/UnicodeData.java: $(BUILD_DIR)/UnicodeData.java.generated $(SRC)/de
 	sed -e '/@@@ generated code start @@@/r build/UnicodeData.java.generated' $(SRC)/dev/flang/util/UnicodeData.java.in >$@
 
 .phony: doc
-doc: $(DOCUMENTATION) $(BUILD_DIR)/doc/jvm.html
+doc: $(DOCUMENTATION)
 
 $(BUILD_DIR)/generated/doc/fum_file.adoc: $(SRC)/dev/flang/fe/LibraryModule.java
 	mkdir -p $(@D)
