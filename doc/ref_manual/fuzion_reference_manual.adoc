@@ -357,9 +357,9 @@ given in the call.
 ((Dynamic Type)):: CAUTION: *NYI*: Text Missing
 
 [#dynamic_dispatch]
-((Dynamic Dispatch)):: Dynamic dispatch is the algorithm that is applied at runtime to determine the
+((Dynamic Dispatch)):: Dynamic dispatch is a mechanism that is used at runtime to determine the
 xref:call_desitionation[destination] of a xref:fuzion_call[call] depending on the
-xref:dynamic_type[dynanmic type] of the xref:fuzion_target[target] and and xref:feature_name[name] of the
+xref:dynamic_type[dynanmic type] of the xref:fuzion_target[target] and xref:feature_name[name] of the
 called feature.
 
 [#fuzion_call]
@@ -390,7 +390,7 @@ an xref:outer_feature[outer feature].
 ((Field)):: A field is a xref:fuzion_feature[feature] that is either declared using `:=` or an xref:fuzion_argument[argument].  A
 field can hold an xref:fuzion_instance[instance] that is assigned to it at runtime when executing its declaration as an expression (for fields declared using `:=`) or when an
 xref:fuzion_actual[actual argument] is passed to a call. A field can be the xref:call_destination[destination] of a xref:feature_call[call], execution
-of that call at runtime results inn the xref:fuzion_instance[instance] that was assigned to that field.
+of that call at runtime results in the xref:fuzion_instance[instance] that was assigned to that field.
 
 [#fuzion_function]
 ((Function)):: A Function is a xref:fuzion_routine[routine] declared using `=>`. A
@@ -406,6 +406,7 @@ from a Fuzion feature that inherits from a function type.
 
 [#fuzion_native]
 ((Native Feature)):: A native feature is a xref:fuzion_feature[feature] declared using `=> native`.
+CAUTION: *NYI*: Need more detail on native feature
 
 [#input_source]
 ((Input Source)):: An input source is a stream of bytes that contains Fuzion
