@@ -1003,8 +1003,7 @@ should be avoided as much as possible.
           traceReturn(cl, pre)
           .andThen(getf)
           .andThen(
-            fieldExists(r)
-              ? ft.return0()
+            fieldExists(r) ||
               /**
                * Example where fieldExists is false but we still need a return:
                *
@@ -1015,8 +1014,8 @@ should be avoided as much as possible.
                *     .read
                * _ := test0 unit_like unit
                */
-              : _fuir.clazzIsChoice(t)
-              ? Expr.RETURN
+            ft == PrimitiveType.type_void
+              ? ft.return0()
               /*
                * For special cases like:
                *
