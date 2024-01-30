@@ -381,7 +381,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                        "fuzion_java_get_static_field0",
                                        "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;",
                                        Names.JAVA_LANG_OBJECT))
-            //.andThen(Expr.checkcast(JAVA_LANG_OBJECT))
             .andThen(jvm.putfield(jref))
             .andThen(Expr.checkcast(rt))
             .is(rt);
@@ -429,6 +428,37 @@ public class Intrinsix extends ANY implements ClassFileConstants
       .andThen(jvm.getfield(sref)) // class_name
       .andThen(Expr.checkcast(JAVA_LANG_STRING));
   }
+  static Pair<Expr, Expr> newFuzionJavaCall(JVM jvm, int rc, Expr exec)
+  {
+    var rc0 = rc;
+    if (jvm._fuir.clazzBaseName(rc).startsWith("outcome")) // NYI: proper check!
+      {
+        rc0 = jvm._fuir.clazzChoice(rc, 0);
+      }
+    var res = switch (jvm._fuir.getSpecialId(rc0))
+      {
+        case c_i8, c_u16, c_i16, c_i32, c_i64,
+          c_f32, c_f64, c_bool, c_unit -> exec;
+        default -> {
+          var rt = jvm._types.javaType(rc0);
+          var jref = jvm._fuir.lookupJavaRef(rc0);
+
+          yield
+            jvm.new0(rc0)
+            .andThen(Expr.DUP)
+            .andThen(exec)
+            .andThen(jvm.putfield(jref))
+            .is(rt);
+        }
+      };
+    if (rc != rc0)
+      {
+        // NYI: check res instanceof JavaError and tag the exception from ((FuzionThrad)Thread.currentThread())._thrownException in this case!
+        res = jvm._types._choices.tag(jvm, rc0, res, rc, 0);
+      }
+    return jvm._types.javaType(rc) == PrimitiveType.type_void ? new Pair<>(Expr.UNIT, res)
+                                                              : new Pair<>(res, Expr.UNIT);
+  }
   static
   {
     put("fuzion.java.call_v0",
@@ -447,41 +477,14 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                     "fuzion_java_call_v0",
                                     "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;",
                                     Names.JAVA_LANG_OBJECT));
-          var rc0 = rc;
-          if (jvm._fuir.clazzBaseName(rc).startsWith("outcome")) // NYI: proper check!
-            {
-              rc0 = jvm._fuir.clazzChoice(rc, 0);
-            }
-          var res = switch (jvm._fuir.getSpecialId(rc0))
-            {
-              case c_i8, c_u16, c_i16, c_i32, c_i64,
-                c_f32, c_f64, c_bool, c_unit -> exec;
-              default -> {
-                var rcv = jvm._fuir.clazzAsValue(rc0);
-                var rt = jvm._types.javaType(rc0);
-                var jref2 = jvm._fuir.lookupJavaRef(rc0);
-
-                yield
-                  jvm.new0(rc0)
-                  .andThen(Expr.DUP)
-                  .andThen(exec)
-                  .andThen(jvm.putfield(jref2))
-                  .is(rt);
-              }
-            };
-          if (rc != rc0)
-            {
-              // NYI: check res instanceof JavaError and tag the exception from ((FuzionThrad)Thread.currentThread())._thrownException in this case!
-              res = jvm._types._choices.tag(jvm, rc0, res, rc, 0);
-            }
-          return jvm._types.javaType(rc) == PrimitiveType.type_void ? new Pair<>(Expr.UNIT, res)
-                                                                    : new Pair<>(res, Expr.UNIT);
+            return newFuzionJavaCall(jvm, rc, exec);
         });
 
     put("fuzion.java.call_s0",
         (jvm, cl, pre, cc, tvalue, args) ->
         {
-          var data = jvm._fuir.clazzArg(jvm._fuir.clazzArgClazz(cc, 4), 0);
+          var rc = jvm._fuir.clazzResultClazz(cc);
+          var data = jvm._fuir.clazzArg(jvm._fuir.clazzArgClazz(cc, 3), 0);
           var exec = call_jlStringArg(jvm, cc, args, 0)
             .andThen(call_jlStringArg(jvm, cc, args, 1))
             .andThen(call_jlStringArg(jvm, cc, args, 2))
@@ -492,66 +495,24 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                        "fuzion_java_call_s0",
                                        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;",
                                        Names.JAVA_LANG_OBJECT));
-          var rc = jvm._fuir.clazzResultClazz(cc);
-          if (jvm._fuir.clazzBaseName(rc).equals("outcome"))
-            {
-              throw new Error("NYI");
-            }
-          var res = switch (jvm._fuir.getSpecialId(rc))
-            {
-              case c_i8, c_u16, c_i16, c_i32, c_i64,
-                c_f32, c_f64, c_bool, c_unit -> exec;
-              default -> {
-                var rcv = jvm._fuir.clazzAsValue(rc);
-                var rt = jvm._types.javaType(rc);
-                var jref2 = jvm._fuir.clazzField(rcv, 0);
-
-                yield
-                  jvm.new0(rc)
-                  .andThen(Expr.DUP)
-                  .andThen(exec)
-                  .andThen(jvm.putfield(jref2))
-                  .is(rt);
-              }
-            };
-          return new Pair<>(res, Expr.UNIT);
+          return newFuzionJavaCall(jvm, rc, exec);
         });
 
     put("fuzion.java.call_c0",
         (jvm, cl, pre, cc, tvalue, args) ->
         {
-          var data2 = jvm._fuir.lookup_fuzion_sys_internal_array_data(jvm._fuir.clazzArgClazz(cc, 2));
+          var rc = jvm._fuir.clazzResultClazz(cc);
+          var data = jvm._fuir.lookup_fuzion_sys_internal_array_data(jvm._fuir.clazzArgClazz(cc, 2));
           var exec = call_jlStringArg(jvm, cc, args, 0)
             .andThen(call_jlStringArg(jvm, cc, args, 1))
             .andThen(args.get(2))
-            .andThen(jvm.getfield(data2)) // args
+            .andThen(jvm.getfield(data)) // args
             .andThen(Expr.checkcast(JAVA_LANG_OBJECT.array()))
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "fuzion_java_call_c0",
                                        "(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;",
                                        Names.JAVA_LANG_OBJECT));
-          var rc = jvm._fuir.clazzResultClazz(cc);
-          if (jvm._fuir.clazzBaseName(rc).equals("outcome"))
-            {
-              throw new Error("NYI");
-            }
-          var res = switch (jvm._fuir.getSpecialId(rc))
-            {
-              case c_i8, c_u16, c_i16, c_i32, c_i64,
-                c_f32, c_f64, c_bool, c_unit -> exec;
-              default -> {
-                var rt = jvm._types.javaType(rc);
-                var jref2 = jvm._fuir.lookupJavaRef(rc);
-
-                yield
-                  jvm.new0(rc)
-                    .andThen(Expr.DUP)
-                    .andThen(exec)
-                    .andThen(jvm.putfield(jref2))
-                    .is(rt);
-              }
-            };
-          return new Pair<>(res, Expr.UNIT);
+          return newFuzionJavaCall(jvm, rc, exec);
         });
 
     put("fuzion.sys.args.count",
