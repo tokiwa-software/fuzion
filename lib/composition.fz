@@ -214,8 +214,21 @@ public composition is
 
   # The Y fixed-point combinator
   # \f.(\x.f(xx))(\x.f(xx))
+  # NYI: possible?
 
   # The Z fixed-point combinator
   # \f.(\x.f(\v.xxv))(\x.f(\v.xxv))
   # \f.M(\x.f(\v.Mxv))
-  public Z(f T->U) => (x->f (v->x x v)) (x->f (v->x x v))
+  # NYI: possible?
+
+  # fixed-point combinatur using Lazy:
+  #
+  # this can be used as follows:
+  #
+  #   f (Lazy i32)->i32 := x->3
+  #   say (fix i32 f)
+  #
+  #   g (Lazy (list i32))->list i32 := x->3:x
+  #   say ((fix (list i32) g).take 10)
+  #
+  fix(A type, f Lazy ((Lazy A)->A)) => f.call (fix A f)
