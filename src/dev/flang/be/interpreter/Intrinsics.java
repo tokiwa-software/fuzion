@@ -637,7 +637,9 @@ public class Intrinsics extends ANY
         });
     put("fuzion.java.Java_Object.is_null0", (interpreter, innerClazz) -> args ->
         {
-          return new boolValue(args.get(1) == null);
+          Instance thizI = (Instance) args.get(0);
+          Object thiz = JavaInterface.instanceToJavaObject(thizI);
+          return new boolValue(thiz == null);
         });
     putUnsafe("fuzion.java.get_static_field0",
         "fuzion.java.get_field0"      , (interpreter, innerClazz) ->
@@ -669,7 +671,7 @@ public class Intrinsics extends ANY
               var clNameI =                      (Instance) args.get(a++);
               var nameI   = constructor ? null : (Instance) args.get(a++);
               var sigI    =                      (Instance) args.get(a++);
-              var thizI   = !virtual    ? null :            args.get(a++);
+              var thizR   = !virtual    ? null :  (JavaRef) args.get(a++);
 
               var argz = args.get(a); // of type fuzion.sys.internal_array<JavaObject>, we need to get field argz.data
               var argfields = innerClazz.argumentFields();
@@ -680,7 +682,8 @@ public class Intrinsics extends ANY
               String clName =                          (String) JavaInterface.instanceToJavaObject(clNameI);
               String name   = nameI   == null ? null : (String) JavaInterface.instanceToJavaObject(nameI  );
               String sig    =                          (String) JavaInterface.instanceToJavaObject(sigI   );
-              return JavaInterface.call(clName, name, sig, thizI, argzData, resultClazz);
+              Object thiz   = thizR   == null ? null :          JavaInterface.javaRefToJavaObject (thizR  );
+              return JavaInterface.call(clName, name, sig, thiz, argzData, resultClazz);
             };
         });
     putUnsafe("fuzion.java.array_length",  (interpreter, innerClazz) -> args ->
