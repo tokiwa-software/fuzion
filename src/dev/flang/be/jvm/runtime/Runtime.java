@@ -30,6 +30,7 @@ import dev.flang.be.interpreter.JavaInterface;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.Pair;
 
 import java.io.StringWriter;
 
@@ -805,6 +806,51 @@ public class Runtime extends ANY
 
 
   /**
+   * Helper method for fuzion_java_call_v0, fuzion_java_call_s0, and fuzion_java_call_c0.
+   *
+   * Given the name of a class, the name of a method and the signature of the method or
+   * (if no method is given), the classes' constructors' signature, parses the signature
+   * that is given in string form into an array of instances of {@link java.lang.Class},
+   * and parses the name of the class given as a string into an instance of
+   * {@link java.lang.Class}.
+   *
+   * @param what what is calling this helper (used in the error message), should be one of
+   * virtual, static, or constructor
+   *
+   * @param clName name of the class
+   *
+   * @param name name of the method
+   *
+   * @param sig signature of the method (or if method not given, the constructor)
+   *
+   * @return a {@link dev.flang.util.Pair} of the array of {@link java.lang.Class} instances
+   * representing the given signature, and an instance of {@link java.lang.Class} representing
+   * the given class.
+   */
+  private static Pair<Class[], Class> getParsAndClass(String what, String clName, String name, String sig)
+  {
+    var p = JavaInterface.getPars(sig);
+    if (p == null)
+      {
+        Errors.fatal("could not parse signature >>"+sig+"<<");
+      }
+    Class cl;
+    try
+      {
+        cl = Class.forName(clName);
+      }
+    catch (ClassNotFoundException e)
+      {
+        Errors.fatal("ClassNotFoundException when calling fuzion.java.call_"+what+" for class" +
+                           clName + " calling " + ((name != null) ? name : ("new " + clName)) + sig);
+        cl = Object.class; // not reached.
+      }
+
+    return new Pair<>(p, cl);
+  }
+
+
+  /**
    * Helper method called by the fuzion.java.call_v0 intrinsic.
    *
    * Calls a Java method on a specified instance.
@@ -827,22 +873,9 @@ public class Runtime extends ANY
       (clName != null);
 
     Method m = null;
-    var p = JavaInterface.getPars(sig);
-    if (p == null)
-      {
-        Errors.fatal("could not parse signature >>"+sig+"<<");
-      }
-    Class cl;
-    try
-      {
-        cl = Class.forName(clName);
-      }
-    catch (ClassNotFoundException e)
-      {
-        Errors.fatal("ClassNotFoundException when calling fuzion.java.call_virtual for class " +
-                           clName + " calling " + name + sig);
-        cl = Object.class; // not reached.
-      }
+    var pcl = getParsAndClass("virtual", clName, name, sig);
+    var p = pcl._v0;
+    var cl = pcl._v1;
     try
       {
         m = cl.getMethod(name, p);
@@ -927,23 +960,9 @@ public class Runtime extends ANY
       (clName != null);
 
     Method m = null;
-    Constructor co = null;
-    var  p = JavaInterface.getPars(sig);
-    if (p == null)
-      {
-        Errors.fatal("could not parse signature >>"+sig+"<<");
-      }
-    Class cl;
-    try
-      {
-        cl = Class.forName(clName);
-      }
-    catch (ClassNotFoundException e)
-      {
-        Errors.fatal("ClassNotFoundException when calling fuzion.java.call_static for class " +
-                           clName + " calling " + name + sig);
-        cl = Object.class; // not reached.
-      }
+    var pcl = getParsAndClass("static", clName, name, sig);
+    var p = pcl._v0;
+    var cl = pcl._v1;
     try
       {
         m = cl.getMethod(name,p);
@@ -975,22 +994,9 @@ public class Runtime extends ANY
     if (PRECONDITIONS) require
       (clName != null);
 
-    var p = JavaInterface.getPars(sig);
-    if (p == null)
-      {
-        Errors.fatal("could not parse signature >>"+sig+"<<");
-      }
-    Class cl;
-    try
-      {
-        cl = Class.forName(clName);
-      }
-    catch (ClassNotFoundException e)
-      {
-        Errors.fatal("ClassNotFoundException when calling fuzion.java.call_constructor for class " +
-                           clName + " calling " + ("new " + clName) + sig);
-        cl = Object.class; // not reached.
-      }
+    var pcl = getParsAndClass("constructor", clName, null, sig);
+    var p = pcl._v0;
+    var cl = pcl._v1;
     try
       {
         var co = cl.getConstructor(p);
