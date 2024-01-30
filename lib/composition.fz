@@ -221,7 +221,7 @@ public composition is
   # \f.M(\x.f(\v.Mxv))
   # NYI: possible?
 
-  # fixed-point combinatur using Lazy:
+  # fixed-point combinator using Lazy:
   #
   # this can be used as follows:
   #
