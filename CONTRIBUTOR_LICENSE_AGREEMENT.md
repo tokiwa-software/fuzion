@@ -73,3 +73,10 @@ This agreement sets out the entire agreement between you and us for your contrib
 If any provision of this agreement is found void and unenforceable, such provision will be replaced to the extent possible with a provision that comes closest to the meaning of the original provision and that is enforceable. The terms and conditions set forth in this agreement shall apply notwithstanding any failure of essential purpose of this agreement or any limited remedy to the maximum extent possible under law.
 
 You agree to notify us of any facts or circumstances of which you become aware that would make this agreement inaccurate in any respect.
+
+## Version
+License Version 1.0, 2024-02-01.
+
+## Attribution
+
+This License Document is based on Contributor License Agreement Chooser, modified by Tokiwa Software GmbH, Karlsruhe, Germany, and licensed under a Creative Commons Attribution-Share Alike 3.0 Unparted License.
