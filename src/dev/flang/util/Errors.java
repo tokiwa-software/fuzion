@@ -163,8 +163,6 @@ public class Errors extends ANY
     }
   }
 
-  /*-----------------------------  enumss  ------------------------------*/
-
 
   /**
    * Abstract Error Identifier.
@@ -179,6 +177,9 @@ public class Errors extends ANY
     }
     String msgText();
   }
+
+
+  /*-----------------------------  enums  ------------------------------*/
 
 
   /**

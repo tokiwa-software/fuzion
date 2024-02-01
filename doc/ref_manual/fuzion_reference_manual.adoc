@@ -358,7 +358,7 @@ given in the call.
 
 [#dynamic_dispatch]
 ((Dynamic Dispatch)):: Dynamic dispatch is a mechanism that is used at runtime to determine the
-xref:call_desitionation[destination] of a xref:fuzion_call[call] depending on the
+xref:call_destination[destination] of a xref:fuzion_call[call] depending on the
 xref:dynamic_type[dynanmic type] of the xref:fuzion_target[target] and xref:feature_name[name] of the
 called feature.
 

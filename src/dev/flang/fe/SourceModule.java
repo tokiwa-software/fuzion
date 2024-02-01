@@ -394,9 +394,9 @@ Fuzion source files may have an arbitrary file name ending with the file name ex
                     // tag::fuzion_rule_SRCF_DIR[]
 Files in a sub-directories within a directory are considered as input only if
 the directory name equals the (((base name))) of a (((constructor))).  Then, the
-files matching rule xref:SRCF_DOTFZ[SRCF_DOTFZ] within that diretory are parsed as if they were
-part of the (((inner features))) declarations of the correpsonding
-((construtor)).
+files matching rule xref:SRCF_DOTFZ[SRCF_DOTFZ] within that directory are parsed as if they were
+part of the (((inner features))) declarations of the corresponding
+((constructor)).
                     // end::fuzion_rule_SRCF_DIR[]
                     */
 

@@ -111,7 +111,7 @@ public class Util
       }
     catch (IOException e)
       {
-        // NYI commment lines from modules
+        // NYI comment lines from modules
         return "";
       }
   }

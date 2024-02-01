@@ -1262,7 +1262,7 @@ A sequence of two slash 0x002F '/' code points that are not part of an operator 
               token = kind(p) == K_SLASH ? skipUntilEOL() : // comment until end of line
               /*
     // tag::fuzion_rule_LEXR_COMMENT2[]
-A sequence of code points slash 0x02f `/` followed by asterisk 0x002a `\*` starts a comment that extends until a correspoding sequence of `*` `/` is encountered.  These comments may be nested and each opening `/` `\*` must be matched by a correspoding `\*` `/`.
+A sequence of code points slash 0x02f `/` followed by asterisk 0x002a `\*` starts a comment that extends until a corresponding sequence of `*` `/` is encountered.  These comments may be nested and each opening `/` `\*` must be matched by a corresponding `\*` `/`.
     // end::fuzion_rule_LEXR_COMMENT2[]
               */
                       p == '*'           ? skipComment()

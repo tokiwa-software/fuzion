@@ -701,7 +701,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
   /**
    * Check if given intrinsic cc is implemented as inline code.  Create inline
    * code if that is the case or code to produce an error if that is not the
-   * case and there is no implementation in runtime.Instrinsics either.
+   * case and there is no implementation in runtime.Intrinsics either.
    *
    * @param jvm the backend
    *
@@ -740,7 +740,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
 
 
   /**
-   * Check if given intrinsic cc has an implementation in runtime.Instrinsics.
+   * Check if given intrinsic cc has an implementation in runtime.Intrinsics.
    *
    * @param jvm the backend
    *
