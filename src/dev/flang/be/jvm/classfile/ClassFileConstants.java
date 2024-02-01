@@ -75,8 +75,7 @@ public interface ClassFileConstants
   public static byte[] VERSION_JDK_21  = new byte[] { 0, 0, 0, 65 };   // LTS
 
 
-  public static byte[] DEFAULT_VERSION = VERSION_JDK_5;  // NYI: should be LTS version 17, using 5 only to avoid need for stack frame info entries
-  // public static byte[] DEFAULT_VERSION = VERSION_JDK_17;
+  public static byte[] DEFAULT_VERSION = VERSION_JDK_17;
 
   public enum CPoolTag
   {
@@ -116,8 +115,8 @@ public interface ClassFileConstants
    */
   public static interface JavaType
   {
-    Expr load(int index);
-    Expr store(int index);
+    Expr load(int index, ClassFile cf);
+    Expr store(int index, ClassFile cf);
     Expr return0();
     Expr newArray();
     Expr xaload();
@@ -143,6 +142,9 @@ public interface ClassFileConstants
     default String argDescriptor() { return descriptor(); }
 
     String className();
+
+    // null for type void
+    VerificationType vti(ClassFile cf);
   }
 
 
@@ -150,11 +152,11 @@ public interface ClassFileConstants
   {
     type_void    ("V", "V", 0)
     {
-      public Expr load(int index)
+      public Expr load(int index, ClassFile cf)
       {
         return Expr.UNIT;
       }
-      public Expr store(int index)
+      public Expr store(int index, ClassFile cf)
       {
         return Expr.UNIT;
       }
@@ -190,14 +192,18 @@ public interface ClassFileConstants
       { // void[] type is java.lang.Object
         return JAVA_LANG_OBJECT;
       }
+      public VerificationType vti(ClassFile cf)
+      {
+        return null;
+      }
     },
     type_int     ("I", "I", 1)
     {
-      public Expr load(int index)
+      public Expr load(int index, ClassFile cf)
       {
         return Expr.iload(index);
       }
-      public Expr store(int index)
+      public Expr store(int index, ClassFile cf)
       {
         return Expr.istore(index);
       }
@@ -222,14 +228,18 @@ public interface ClassFileConstants
         return Expr.POP;
       }
       public String className() { return "int"; }
+      public VerificationType vti(ClassFile cf)
+      {
+        return VerificationType.Integer;
+      }
     },
     type_byte    ("B", "I", 1)
     {
-      public Expr load(int index)
+      public Expr load(int index, ClassFile cf)
       {
         return Expr.iload(index);
       }
-      public Expr store(int index)
+      public Expr store(int index, ClassFile cf)
       {
         return Expr.istore(index);
       }
@@ -254,14 +264,18 @@ public interface ClassFileConstants
         return Expr.POP;
       }
       public String className() { return "byte"; }
+      public VerificationType vti(ClassFile cf)
+      {
+        return VerificationType.Integer;
+      }
     },
     type_short   ("S", "I", 1)
     {
-      public Expr load(int index)
+      public Expr load(int index, ClassFile cf)
       {
         return Expr.iload(index);
       }
-      public Expr store(int index)
+      public Expr store(int index, ClassFile cf)
       {
         return Expr.istore(index);
       }
@@ -286,14 +300,18 @@ public interface ClassFileConstants
         return Expr.POP;
       }
       public String className() { return "short"; }
+      public VerificationType vti(ClassFile cf)
+      {
+        return VerificationType.Integer;
+      }
     },
     type_char    ("C", "I", 1)
     {
-      public Expr load(int index)
+      public Expr load(int index, ClassFile cf)
       {
         return Expr.iload(index);
       }
-      public Expr store(int index)
+      public Expr store(int index, ClassFile cf)
       {
         return Expr.istore(index);
       }
@@ -318,14 +336,18 @@ public interface ClassFileConstants
         return Expr.POP;
       }
       public String className() { return "char"; }
+      public VerificationType vti(ClassFile cf)
+      {
+        return VerificationType.Integer;
+      }
     },
     type_long    ("J", "J", 2)
     {
-      public Expr load(int index)
+      public Expr load(int index, ClassFile cf)
       {
         return Expr.lload(index);
       }
-      public Expr store(int index)
+      public Expr store(int index, ClassFile cf)
       {
         return Expr.lstore(index);
       }
@@ -350,14 +372,18 @@ public interface ClassFileConstants
         return Expr.POP2;
       }
       public String className() { return "long"; }
+      public VerificationType vti(ClassFile cf)
+      {
+        return VerificationType.Long;
+      }
     },
     type_float   ("F", "F", 1)
     {
-      public Expr load(int index)
+      public Expr load(int index, ClassFile cf)
       {
         return Expr.fload(index);
       }
-      public Expr store(int index)
+      public Expr store(int index, ClassFile cf)
       {
         return Expr.fstore(index);
       }
@@ -382,14 +408,18 @@ public interface ClassFileConstants
         return Expr.POP;
       }
       public String className() { return "float"; }
+      public VerificationType vti(ClassFile cf)
+      {
+        return VerificationType.Float;
+      }
     },
     type_double  ("D", "D", 2)
     {
-      public Expr load(int index)
+      public Expr load(int index, ClassFile cf)
       {
         return Expr.dload(index);
       }
-      public Expr store(int index)
+      public Expr store(int index, ClassFile cf)
       {
         return Expr.dstore(index);
       }
@@ -414,14 +444,18 @@ public interface ClassFileConstants
         return Expr.POP2;
       }
       public String className() { return "double"; }
+      public VerificationType vti(ClassFile cf)
+      {
+        return VerificationType.Double;
+      }
     },
     type_boolean ("Z", "I", 1)
     {
-      public Expr load(int index)
+      public Expr load(int index, ClassFile cf)
       {
         return Expr.iload(index);
       }
-      public Expr store(int index)
+      public Expr store(int index, ClassFile cf)
       {
         return Expr.istore(index);
       }
@@ -446,6 +480,10 @@ public interface ClassFileConstants
         return Expr.POP;
       }
       public String className() { return "boolean"; }
+      public VerificationType vti(ClassFile cf)
+      {
+        return VerificationType.Integer;
+      }
     };
 
 
@@ -475,7 +513,7 @@ public interface ClassFileConstants
       throw new Error("JavaType.refDescriptor only defined for ref type, not for " + this);
     }
 
-    public Expr load(int index)
+    public Expr load(int index, ClassFile cf)
     {
       throw new Error("NYI: load for type " + this);
     }
@@ -545,14 +583,14 @@ public interface ClassFileConstants
       return descriptor();
     }
 
-    public Expr load(int index)
+    public Expr load(int index, ClassFile cf)
     {
-      return Expr.aload(index, this);
+      return Expr.aload(index, this, vti(cf));
     }
 
-    public Expr store(int index)
+    public Expr store(int index, ClassFile cf)
     {
-      return Expr.astore(index);
+      return Expr.astore(index, vti(cf));
     }
 
     public Expr return0()
@@ -589,6 +627,15 @@ public interface ClassFileConstants
     {
       return "ClassType('" + _descriptor + "')";
     }
+    public int cpIndex(ClassFile cf)
+    {
+      return cf.cpClass(this).index();
+    }
+    public VerificationType vti(ClassFile cf)
+    {
+      return new VerificationType(VerificationType.type.Object, cpIndex(cf));
+    }
+
   }
 
   public static class ClassType extends AType
@@ -1038,6 +1085,12 @@ public interface ClassFileConstants
    * a byte:
    */
   public static final int MAX_INVOKE_INTERFACE_SLOTS = 0xff;
+
+
+  /**
+   * The tag encoding a full frame in a stack map.
+   */
+  public static final int STACK_MAP_FRAME_FULL_FRAME = 255;
 
 
 }

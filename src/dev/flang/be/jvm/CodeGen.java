@@ -30,6 +30,8 @@ import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
 import dev.flang.be.jvm.classfile.Expr;
+import dev.flang.be.jvm.classfile.ClassFile;
+import dev.flang.be.jvm.classfile.ClassFile.Attribute;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 
 import dev.flang.util.Errors;
@@ -292,10 +294,11 @@ class CodeGen
       }
     else
       {
+        var cf = _types.classFile(cl);
         var t = e.type();
         var l = _jvm.allocLocal(cl, pre, t.stackSlots());
-        return new Pair<>(t.load(l),
-                          e.andThen(t.store(l)));
+        return new Pair<>(t.load(l, cf),
+                          e.andThen(t.store(l, cf)));
       }
   }
 
@@ -433,7 +436,7 @@ class CodeGen
   Pair<Expr, Expr> makePair(Expr value, int rt)
   {
     var code = Expr.UNIT;
-    if (_types.javaType(rt) == PrimitiveType.type_void)
+    if (_types.resultType(rt) == PrimitiveType.type_void)
       { // there is no Java value, so treat as code:
         code = value;
         value = _fuir.clazzIsVoidType(rt) ? null : Expr.UNIT;
@@ -544,7 +547,7 @@ class CodeGen
     var rc = _fuir.clazzResultClazz(cc0);
     var dn = _names.dynamicFunction(cc0);
     var ds = isCall ? _types.dynDescriptor(cc0, false)          : "(" + _types.javaType(rc).argDescriptor() + ")V";
-    var dr = isCall ? _types.javaType(rc)                       : PrimitiveType.type_void;
+    var dr = isCall ? _types.resultType(rc)                       : PrimitiveType.type_void;
     if (!intfc.hasMethod(dn))
       {
         intfc.method(ACC_PUBLIC | ACC_ABSTRACT, dn, ds, new List<>());
@@ -557,7 +560,7 @@ class CodeGen
         _types.classFile(tt).addImplements(intfc._name);
         addStub(tt, cc, dn, ds, isCall);
       }
-    return Expr.invokeInterface(intfc._name, dn, ds, dr);
+    return Expr.invokeInterface(intfc._name, dn, ds, dr, isCall ? _types.javaArgCount(false, cc0) : 1 /* NYI is this always one? or can this be zero? */);
   }
 
 
@@ -584,7 +587,8 @@ class CodeGen
     var cf = _types.classFile(tt);
     if (!cf.hasMethod(dn))
       {
-        var tv = _types.javaType(tt).load(0);
+        var jtt = _types.javaType(tt);
+        var tv = jtt.load(0, cf);
         var na = new List<Expr>();
         int slot = 1;
         Expr retoern = Expr.RETURN;
@@ -594,22 +598,22 @@ class CodeGen
               {
                 var at = _fuir.clazzArgClazz(cc, ai);
                 var t = _types.resultType(at);
-                na.add(t.load(slot));
+                na.add(t.load(slot, cf));
                 slot = slot + t.stackSlots();
               }
-            retoern = _types.javaType(_fuir.clazzResultClazz(cc)).return0();
+            retoern = _types.resultType(_fuir.clazzResultClazz(cc)).return0();
           }
         else
           {
             var t = _types.javaType(_fuir.clazzResultClazz(cc));
-            na.add(t.load(1));
+            na.add(t.load(1, cf));
           }
         var p = staticAccess(-1, false, tt, cc, tv, na, isCall, -1, -1);
         var code = p._v1
           .andThen(p._v0 == null ? Expr.UNIT : p._v0)
           .andThen(retoern);
         var ca = cf.codeAttribute(dn + "in class for " + _fuir.clazzAsString(tt),
-                                  code, new List<>(), new List<>());
+                                  code, new List<>(), new List<Attribute>(ClassFile.StackMapTable.empty(cf)));
         cf.method(ACC_PUBLIC, dn, ds, new List<>(ca));
       }
   }
@@ -683,6 +687,7 @@ class CodeGen
     Pair<Expr, Expr> res;
     var oc = _fuir.clazzOuterClazz(cc);
     var rt = preCalled ? _fuir.clazz(FUIR.SpecialClazzes.c_unit) : _fuir.clazzResultClazz(cc);
+    var cf = _types.classFile(cl);
     switch (preCalled ? FUIR.FeatureKind.Routine : _fuir.clazzKind(cc))
       {
       case Abstract :
@@ -719,7 +724,7 @@ class CodeGen
                   // if present, store target to local #0
                   var ot = _jvm.javaTypeOfTarget(cl);
                   var code = ot == PrimitiveType.type_void ? tvalue.drop()
-                                                           : tvalue.andThen(ot.store(0));
+                                                           : tvalue.andThen(ot.store(0, cf));
 
                   // store arguments to local vars
                   for (int ai = 0; ai < _fuir.clazzArgCount(cl); ai++)
@@ -728,7 +733,7 @@ class CodeGen
                     }
 
                   // perform tail call by goto startLabel
-                  code = code.andThen(Expr.gotoLabel(_jvm.startLabel(cl)));
+                  code = code.andThen(Expr.goBacktoLabel(_jvm.startLabel(cl)));
 
                   res = new Pair(null,  // result is void, we do not return from this path.
                                  code);
@@ -803,7 +808,9 @@ class CodeGen
           .andThen(val)
           .andThen(Expr.invokeStatic(n, Names.BOX_METHOD_NAME,
                                      _types.boxSignature(rc),
-                                     _types.javaType(rc))
+                                     _types.javaType(rc),
+                                     _types.javaType(_fuir.clazzAsValue(rc)) == PrimitiveType.type_void
+                                      ? 0 : 1)
                    );
       }
     return new Pair<>(res, Expr.UNIT);
@@ -815,13 +822,14 @@ class CodeGen
    */
   public Pair<Expr, Expr> current(int cl, boolean pre)
   {
+    var cf = _types.classFile(cl);
     if (_types.isScalar(cl))
       {
-        return new Pair<>(_types.javaType(cl).load(0), Expr.UNIT);
+        return new Pair<>(_types.javaType(cl).load(0, cf), Expr.UNIT);
       }
     else
       {
-        return new Pair<>(Expr.aload(_jvm.current_index(cl), _types.javaType(cl)), Expr.UNIT);
+        return new Pair<>(Expr.aload(_jvm.current_index(cl), _types.resultType(cl), _types.classFile(cl)), Expr.UNIT);
       }
   }
 
@@ -834,7 +842,9 @@ class CodeGen
     if (PRECONDITIONS) require
       (_fuir.clazzResultClazz(_fuir.clazzOuterRef(cl)) == _fuir.clazzOuterClazz(cl));
 
-    return new Pair<>(_types.javaType(_fuir.clazzOuterClazz(cl)).load(0),
+    var cf = _types.classFile(cl);
+
+    return new Pair<>(_types.javaType(_fuir.clazzOuterClazz(cl)).load(0, cf),
                       Expr.UNIT);
   }
 
@@ -855,10 +865,11 @@ class CodeGen
       (0 <= i,
        i < _fuir.clazzArgCount(cl));
 
+    var cf = _types.classFile(cl);
     var l = _jvm.argSlot(cl, i);
     var t = _fuir.clazzArgClazz(cl, i);
-    var jt = _types.javaType(t);
-    return jt.load(l);
+    var jt = _types.resultType(t);
+    return jt.load(l, cf);
   }
 
 
@@ -884,8 +895,9 @@ class CodeGen
 
     var l = _jvm.argSlot(cl, i);
     var t = _fuir.clazzArgClazz(cl, i);
-    var jt = _types.javaType(t);
-    return val.andThen(jt.store(l));
+    var jt = _types.resultType(t);
+    var cf = _types.classFile(cl);
+    return val.andThen(jt.store(l, cf));
   }
 
 
@@ -1082,7 +1094,8 @@ class CodeGen
       .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                  Names.RUNTIME_EFFECT_GET,
                                  Names.RUNTIME_EFFECT_GET_SIG,
-                                 Names.ANY_TYPE))
+                                 Names.ANY_TYPE,
+                                 1))
       .andThen(Expr.checkcast(_types.javaType(ecl)));
     return new Pair<>(res, Expr.UNIT);
   }
@@ -1099,7 +1112,8 @@ class CodeGen
                                   .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                              Names.RUNTIME_CONTRACT_FAIL,
                                                              Names.RUNTIME_CONTRACT_FAIL_SIG,
-                                                             ClassFileConstants.PrimitiveType.type_void))));
+                                                             ClassFileConstants.PrimitiveType.type_void,
+                                                             1))));
   }
 
 

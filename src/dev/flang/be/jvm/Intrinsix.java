@@ -183,11 +183,12 @@ public class Intrinsix extends ANY implements ClassFileConstants
         "concur.atomic.compare_and_swap0",
         (jvm, cl, pre, cc, tvalue, args) ->
         {
+          var cf = jvm._types.classFile(cl);
           var ac = jvm._fuir.clazzOuterClazz(cc);
           var v = jvm._fuir.lookupAtomicValue(ac);
           var rc  = jvm._fuir.clazzResultClazz(v);
           var tt = tvalue.type();
-          var jt = jvm._types.javaType(rc);
+          var jt = jvm._types.resultType(rc);
           int tslot  = jvm.allocLocal(cl, pre, 1);                  // local var slot for target
           int nvslot = jvm.allocLocal(cl, pre, jt.stackSlots());    // local var slot for arg(1), new value, not casted
           int vslot  = jvm.allocLocal(cl, pre, jt.stackSlots());    // local var slot for old value, not casted.
@@ -203,33 +204,33 @@ public class Intrinsix extends ANY implements ClassFileConstants
             { // compare_and_swap: return old value
               pos = Expr.UNIT;
               neg = Expr.UNIT;
-              oldv = jt.load(vslot);
+              oldv = jt.load(vslot, cf);
             }
 
           Expr val =
             locked(
                    // preparation: store target in tslot, arg1 in nvslot and value field in vslot
                    tvalue                                       // target       -> tslot
-                   .andThen(Expr.astore(tslot))                 //
+                   .andThen(Expr.astore(tslot, tt.vti(cf)))     //
                    .andThen(args.get(1))                        // new value    -> nslot
-                   .andThen(jt.store(nvslot))                   //
-                   .andThen(tt.load(tslot))                     // target.value -> vslot
+                   .andThen(jt.store(nvslot, cf))               //
+                   .andThen(tt.load(tslot, cf))                 // target.value -> vslot
                    .andThen(jvm.getfield(v))                    //
-                   .andThen(jt.store(vslot))                    //
+                   .andThen(jt.store(vslot, cf))                //
                    // actual comparison:
                    .andThen(jvm.compareValues(cl,
                                               pre,
                                               args.get(0),
-                                              jt.load(vslot),
+                                              jt.load(vslot, cf),
                                               rc))              // cmp_result
                    // conditional assignment code and result
-                   .andThen(Expr.branch(O_ifne,                     // -
-                                        tt.load(tslot)              // tv
-                                        .andThen(jt.load(nvslot))   // tv nv
-                                        .andThen(jvm.putfield(v))   // -
-                                        .andThen(pos),              // - --or-- 1
-                                        neg))                       // - --or-- 0
-                   .andThen(oldv));                                 // v --or-- 0/1
+                   .andThen(Expr.branch(O_ifne,                         // -
+                                        tt.load(tslot, cf)              // tv
+                                        .andThen(jt.load(nvslot, cf))   // tv nv
+                                        .andThen(jvm.putfield(v))       // -
+                                        .andThen(pos),                  // - --or-- 1
+                                        neg))                           // - --or-- 0
+                   .andThen(oldv));                                     // v --or-- 0/1
           return new Pair<>(val, Expr.UNIT);
         });
 
@@ -282,7 +283,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
               var res = jvm.new0(rc)
                 .andThen(Expr.DUP)
                 .andThen(args.get(0))
-                .andThen(Expr.invokeStatic("java/lang/" + java_Type, "valueOf", "(" + java_type + ")Ljava/lang/" + java_Type + ";", Names.JAVA_LANG_OBJECT))
+                .andThen(Expr.invokeStatic("java/lang/" + java_Type, "valueOf", "(" + java_type + ")Ljava/lang/" + java_Type + ";", Names.JAVA_LANG_OBJECT, 1))
                 .andThen(jvm.putfield(jref))
                 .is(jvm._types.javaType(rc));
               return new Pair<>(res, Expr.UNIT);
@@ -298,7 +299,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
             .andThen(Expr.DUP)
             .andThen(args.get(0))
             .andThen(Expr.checkcast(PrimitiveType.type_byte.array()))
-            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS, "fuzion_java_string_to_java_object0", "([B)Ljava/lang/String;", Names.JAVA_LANG_OBJECT))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS, "fuzion_java_string_to_java_object0", "([B)Ljava/lang/String;", Names.JAVA_LANG_OBJECT, 1))
             .andThen(jvm.putfield(jref))
             .is(jvm._types.javaType(rc));
           return new Pair<>(res, Expr.UNIT);
@@ -380,7 +381,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "fuzion_java_get_static_field0",
                                        "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;",
-                                       Names.JAVA_LANG_OBJECT))
+                                       Names.JAVA_LANG_OBJECT, 2))
             .andThen(jvm.putfield(jref))
             .andThen(Expr.checkcast(rt))
             .is(rt);
@@ -401,7 +402,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "fuzion_java_get_field0",
                                        "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;",
-                                       Names.JAVA_LANG_OBJECT));
+                                       Names.JAVA_LANG_OBJECT, 2));
           return new Pair<>(res, Expr.UNIT);
         });
   }
@@ -523,7 +524,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                     "fuzion_java_call_v0",
                                     "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;",
-                                    Names.JAVA_LANG_OBJECT));
+                                    Names.JAVA_LANG_OBJECT, 5));
           return newFuzionJavaCall(jvm, rc, exec);
         });
 
@@ -541,7 +542,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "fuzion_java_call_s0",
                                        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;",
-                                       Names.JAVA_LANG_OBJECT));
+                                       Names.JAVA_LANG_OBJECT, 4));
           return newFuzionJavaCall(jvm, rc, exec);
         });
 
@@ -558,7 +559,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "fuzion_java_call_c0",
                                        "(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;",
-                                       Names.JAVA_LANG_OBJECT));
+                                       Names.JAVA_LANG_OBJECT, 3));
           return newFuzionJavaCall(jvm, rc, exec);
         });
 
@@ -579,7 +580,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                  .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                             Names.RUNTIME_ARGS_GET,
                                                             Names.RUNTIME_ARGS_GET_SIG,
-                                                            PrimitiveType.type_byte.array())));
+                                                            PrimitiveType.type_byte.array(),
+                                                            1)));
         });
 
     put("fuzion.sys.internal_array.get",
@@ -617,7 +619,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
                         .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                    "ensure_not_frozen",
                                                    "(" + (JAVA_LANG_OBJECT.descriptor()) + ")V",
-                                                   ClassFileConstants.PrimitiveType.type_void));
+                                                   ClassFileConstants.PrimitiveType.type_void,
+                                                   1));
                     }
                   code = args.get(0)
                     .andThen(Expr.checkcast(jt.array()))
@@ -648,7 +651,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
                 .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                            in.replace("fuzion.sys.internal_array.",""),
                                            "(" + (JAVA_LANG_OBJECT.descriptor()) + ")V",
-                                           ClassFileConstants.PrimitiveType.type_void));
+                                           ClassFileConstants.PrimitiveType.type_void,
+                                           1));
             }
           return new Pair<>(val, code);
         });
@@ -661,7 +665,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "effect_abort",
                                        "(I)V",
-                                       ClassFileConstants.PrimitiveType.type_void));
+                                       ClassFileConstants.PrimitiveType.type_void,
+                                       1));
           return new Pair<>(Expr.UNIT, code);
         });
 
@@ -685,7 +690,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                                   Names.ANY_DESCR +
                                                   JAVA_LANG_CLASS.descriptor()) +
                                            ")V",
-                                           ClassFileConstants.PrimitiveType.type_void));
+                                           ClassFileConstants.PrimitiveType.type_void,
+                                           4));
               return new Pair<>(Expr.UNIT, result);
             }
           else
@@ -705,7 +711,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                        "(" + ("I" +
                                               Names.ANY_DESCR) +
                                        ")V",
-                                       ClassFileConstants.PrimitiveType.type_void));
+                                       ClassFileConstants.PrimitiveType.type_void,
+                                       2));
           return new Pair<>(Expr.UNIT, result);
         });
     put("effect.replace",
@@ -719,7 +726,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                        "(" + ("I" +
                                               Names.ANY_DESCR) +
                                        ")V",
-                                       ClassFileConstants.PrimitiveType.type_void));
+                                       ClassFileConstants.PrimitiveType.type_void,
+                                       2));
           return new Pair<>(Expr.UNIT, result);
         });
     put("effect.type.is_installed",
@@ -730,7 +738,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "effect_is_installed",
                                        "(I)Z",
-                                       ClassFileConstants.PrimitiveType.type_boolean));
+                                       ClassFileConstants.PrimitiveType.type_boolean,
+                                       1));
           return new Pair<>(val, Expr.UNIT);
         });
 
@@ -746,7 +755,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
           .andThen(Expr.invokeStatic(System.class.getName().replace(".", "/"),
             "nanoTime",
             methodDescriptor(System.class, "nanoTime"),
-            PrimitiveType.type_long));
+            PrimitiveType.type_long,
+            0));
       return new Pair<>(res, Expr.UNIT);
     });
     put("fuzion.sys.env_vars.get0", (jvm, cl, pre, cc, tvalue, args) -> {
@@ -756,7 +766,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
           .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
             "fuzion_sys_env_vars_get0",
             methodDescriptor(Runtime.class, "fuzion_sys_env_vars_get0"),
-            PrimitiveType.type_byte.array())));
+            PrimitiveType.type_byte.array(),
+            1)));
     });
     put("fuzion.sys.env_vars.set0", (jvm, cl, pre, cc, tvalue, args) -> {
       var res =
@@ -789,7 +800,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                                   Names.ANY_DESCR +
                                                   JAVA_LANG_CLASS.descriptor()) +
                                            ")J",
-                                           ClassFileConstants.PrimitiveType.type_long));
+                                           ClassFileConstants.PrimitiveType.type_long,
+                                           2));
               return new Pair<>(result, Expr.UNIT);
             }
           else
