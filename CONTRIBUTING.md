@@ -29,7 +29,7 @@ All types of contributions are encouraged and valued. See the [Table of Contents
 ## Code of Conduct
 
 This project and everyone participating in it is governed by the
-[Fuzion Code of Conduct](https://github.com/tokiwa-software/fuzionblob/master/CODE_OF_CONDUCT.md).
+[Fuzion Code of Conduct](https://github.com/tokiwa-software/fuzion/blob/master/CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code. Please report unacceptable behavior
 to <info@tokiwa.software>.
 
@@ -67,6 +67,8 @@ Depending on how large the project is, you may want to outsource the questioning
 
 > ### Legal Notice <!-- omit in toc -->
 > When contributing to this project, you must agree that you have authored 100% of the content, that you have the necessary rights to the content and that the content you contribute may be provided under the project license.
+> A checkbox to agree to the [Tokiwa Software Fuzion Contributor Agreement](https://(https://github.com/tokiwa-software/fuzion/blob/master/CONTRIBUTOR_LICENSE_AGREEMENT.md) will automatically be added to the text describing your pull request. You will have to accept this agreement.
+> Please make sure that your identity is known to the the Fuzion team.  In case you prefer to use an anonymous account for your contribution, make sure your identity is known to the Fuzion team by sending an email to <info@tokiwa.software>.
 
 ### Reporting Bugs
 
@@ -133,26 +135,27 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/tokiwa
 
 <!-- You might want to create an issue template for enhancement suggestions that can be used as a guide and that defines the structure of the information to be included. If you do so, reference it here in the description. -->
 
-### Your First Code Contribution
 <!-- TODO
+### Your First Code Contribution
 include Setup of env, IDE and typical getting started instructions?
 
 -->
 
-### Improving The Documentation
 <!-- TODO
+### Improving The Documentation
 Updating, improving and correcting the documentation
 
 -->
 
+<!-- TODO
 ## Styleguides
 ### Commit Messages
-<!-- TODO
 
 -->
 
+<!-- TODO
 ## Join The Project Team
-<!-- TODO -->
+-->
 
 <!-- omit in toc -->
 ## Attribution
