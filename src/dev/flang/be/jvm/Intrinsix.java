@@ -437,8 +437,55 @@ public class Intrinsix extends ANY implements ClassFileConstants
       }
     var res = switch (jvm._fuir.getSpecialId(rc0))
       {
-        case c_i8, c_u16, c_i16, c_i32, c_i64,
-          c_f32, c_f64, c_bool, c_unit -> exec;
+        case c_unit -> exec;
+        case c_i8 -> {
+          yield
+            exec
+            .andThen(Expr.checkcast(new ClassType("java/lang/Byte")))
+            .andThen(Expr.invokeVirtual("java/lang/Byte", "byteValue", "()B", PrimitiveType.type_byte));
+        }
+        case c_u16 -> {
+          yield
+            exec
+            .andThen(Expr.checkcast(new ClassType("java/lang/Character")))
+            .andThen(Expr.invokeVirtual("java/lang/Character", "charValue", "()C", PrimitiveType.type_char));
+        }
+        case c_i16 -> {
+          yield
+            exec
+            .andThen(Expr.checkcast(new ClassType("java/lang/Short")))
+            .andThen(Expr.invokeVirtual("java/lang/Short", "shortValue", "()S", PrimitiveType.type_short));
+        }
+        case c_i32 -> {
+          yield
+            exec
+            .andThen(Expr.checkcast(new ClassType("java/lang/Integer")))
+            .andThen(Expr.invokeVirtual("java/lang/Integer", "intValue", "()I", PrimitiveType.type_int));
+        }
+        case c_i64 -> {
+          yield
+            exec
+            .andThen(Expr.checkcast(new ClassType("java/lang/Long")))
+            .andThen(Expr.invokeVirtual("java/lang/Long", "longValue", "()L", PrimitiveType.type_long));
+        }
+        case c_f32 -> {
+          yield
+            exec
+            .andThen(Expr.checkcast(new ClassType("java/lang/Float")))
+            .andThen(Expr.invokeVirtual("java/lang/Float", "floatValue", "()F", PrimitiveType.type_float));
+        }
+        case c_f64 -> {
+          yield
+            exec
+            .andThen(Expr.checkcast(new ClassType("java/lang/Double")))
+            .andThen(Expr.invokeVirtual("java/lang/Double", "doubleValue", "()D", PrimitiveType.type_double));
+        }
+        case c_bool -> {
+          yield
+            exec
+            .andThen(Expr.checkcast(new ClassType("java/lang/Boolean")))
+            .andThen(Expr.invokeVirtual("java/lang/Boolean", "booleanValue", "()Z", PrimitiveType.type_boolean));
+        }
         default -> {
           var rt = jvm._types.javaType(rc0);
           var jref = jvm._fuir.lookupJavaRef(rc0);
