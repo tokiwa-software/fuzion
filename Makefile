@@ -415,6 +415,10 @@ min-java: $(FUZION_BASE) $(MOD_JAVA_BASE) $(MOD_JAVA_XML) $(MOD_JAVA_DATATRANSFE
 .PHONY: no-java
 no-java: $(FUZION_BASE) $(FUZION_FILES)
 
+# only up to base module
+.PHONY: base-only
+base-only: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(FUZION_FILES)
+
 # phony target to compile all java sources
 .PHONY: javac
 javac: $(CLASS_FILES_TOOLS) $(CLASS_FILES_TOOLS_FZJAVA) $(CLASS_FILES_TOOLS_DOCS)
