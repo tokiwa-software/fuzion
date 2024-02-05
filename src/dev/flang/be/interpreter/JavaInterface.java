@@ -160,7 +160,7 @@ public class JavaInterface extends ANY
    *
    * @return a new parameter type array.
    */
-  static Class[] getPars(String d)
+  public static Class[] getPars(String d)
   {
     Class[] result;
 
@@ -224,6 +224,58 @@ public class JavaInterface extends ANY
                     if (ec == null || nc.isAssignableFrom(ec))
                       {
                         ec = nc;
+                      }
+                  }
+              }
+
+            if (ec != null && ec != Object.class)
+              {
+                res = Array.newInstance(ec , va.length);
+                System.arraycopy(oa, 0, res, 0, oa.length);
+              }
+            else
+              {
+                res = oa;
+              }
+          }
+      }
+    return res;
+  }
+
+
+  /**
+   * Extract Java object from a fuzion.sys.Pointer stored by a JavaRef
+   *
+   * @param r a JavaRef, must be a fuzion.sys.Pointer
+   */
+  static Object javaRefToJavaObject(JavaRef r)
+  {
+    var res = r._javaRef;
+    if (res != null)
+      {
+        // convert Value[] containing Java instances into corresponding Java array
+        if (res instanceof Value[] va)
+          {
+            var oa = new Object[va.length];
+            for (var ix = 0; ix < va.length; ix++)
+              {
+                oa[ix] = instanceToJavaObject((Instance) va[ix]);
+              }
+
+            // find most general array element clazz ec
+            Class ec = null;
+            for (var ix = 0; ix < va.length; ix++)
+              {
+                if (oa[ix] != null)
+                  {
+                    var nc = oa[ix].getClass();
+                    if (ec == null || nc.isAssignableFrom(ec))
+                      {
+                        ec = nc;
+                      }
+                    else if (!ec.isAssignableFrom(nc))
+                      {
+                        ec = Object.class;
                       }
                   }
               }
@@ -392,6 +444,27 @@ public class JavaInterface extends ANY
 
 
   /**
+   * Convert an instance of 'fuzion.sys.array<fuzion.sys.Pointer>' to a
+   * Java Object[] with the corresponding Java values.
+   *
+   * @param v a value of type ArrayData as it is stored in 'fuzion.sys.array.data'.
+   *
+   * @return corresponding Java array.
+   */
+  static Object[] javaRefToJavaObjects(Value v)
+  {
+    var a = v.arrayData();
+    var sz = a.length();
+    var result = new Object[sz];
+    for (var ix = 0; ix < sz; ix++)
+      {
+        result[ix] = javaRefToJavaObject((JavaRef)(((Object[])a._array)[ix]));
+      }
+    return result;
+  }
+
+
+  /**
    * Call virtual or static Java method or constructor
    *
    * @param clName name of the class that declares the method or constructor.
@@ -449,7 +522,7 @@ public class JavaInterface extends ANY
         Errors.fatal("NoSuchMethodException when calling fuzion.java.call_static/call_virtual/call_constructor calling " +
                            (name == null ? "new " + clName : (cl.getName() + "." + name)) + sig);
       }
-    Object[] argz = instanceToJavaObjects(args);
+    Object[] argz = javaRefToJavaObjects(args);
     try
       {
         for (var i = 0; i < argz.length; i++)

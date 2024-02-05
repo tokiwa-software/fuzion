@@ -1015,6 +1015,7 @@ public class Interpreter extends ANY
   {
     return
       v instanceof Instance                                            /* a normal ref type     */ ||
+      v instanceof JavaRef                                             /* Java_Ref fzjava type  */ ||
       v instanceof Boxed                                               /* a boxed value type    */ ||
       v instanceof ArrayData                                           /* fuzion.sys.array.data */ ||
       v instanceof LValue                                              /* ref type as LValue    */ ||

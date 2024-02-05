@@ -26,13 +26,20 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm.runtime;
 
+import dev.flang.be.interpreter.JavaInterface;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.Pair;
 
 import java.io.StringWriter;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
+import java.util.function.Supplier;
 
 import java.nio.charset.StandardCharsets;
 
@@ -99,6 +106,13 @@ public class Runtime extends ANY
   public static final String PRECONDITION_NAME = "fzPrecondition";
   public static final String ROUTINE_NAME      = "fzRoutine";
   public static final String CLASS_PREFIX      = "fzC_";
+
+
+  /**
+   * Result value used when returning from a call into Java code in case an
+   * exception was thrown by that code.
+   */
+  public static final JavaError _JAVA_ERROR_ = new JavaError();
 
 
   /*--------------------------  static fields  --------------------------*/
@@ -708,6 +722,292 @@ public class Runtime extends ANY
   public static byte[] fuzion_sys_env_vars_get0(Object d)
   {
     return stringToUtf8ByteArray(System.getenv(utf8ByteArrayDataToString((byte[]) d)));
+  }
+
+
+  /**
+   * Helper method called by the fuzion.java.string_to_java_object0 intrinsic.
+   *
+   * Creates a new instance of String from the byte array passed as argument,
+   * assuming the byte array contains an UTF-8 encoded string.
+   *
+   * @param b byte array consisting of a string encoded as UTF-8 bytes
+   *
+   * @return the string from the array, as an instance of Java's String
+   */
+  public static String fuzion_java_string_to_java_object0(byte[] b)
+  {
+    return new String(b, StandardCharsets.UTF_8);
+  }
+
+
+  /**
+   * Helper method called by the fuzion.java.get_static_field0 intrinsic.
+   *
+   * Retrieves the content of a given static field.
+   *
+   * @param clazz name of the class of the field
+   *
+   * @param field name of the field
+   *
+   * @return whatever is stored in the specified static field
+   */
+  public static Object fuzion_java_get_static_field0(String clazz, String field)
+  {
+    Object result;
+
+    try
+      {
+        Class cl = Class.forName(clazz);
+        Field f = cl.getDeclaredField(field);
+        result = f.get(null);
+      }
+    catch (IllegalAccessException | ClassNotFoundException | NoSuchFieldException e)
+      {
+        Errors.fatal(e.toString()+" when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        result = null;
+      }
+
+    return result;
+  }
+
+
+  /**
+   * Helper method called by the fuzion.java.get_field0 intrinsic.
+   *
+   * Given some instance of a Java class, retrieves the content of a given field in
+   * this instance.
+   *
+   * @param thiz the Java instance
+   *
+   * @param field name of the field
+   *
+   * @return whatever is stored in the specified field of the instance
+   */
+  public static Object fuzion_java_get_field0(Object thiz, String field)
+  {
+    Object result;
+    String clazz = null;
+
+    try
+      {
+        Class cl = thiz.getClass();
+        Field f = cl.getDeclaredField(field);
+        result = f.get(thiz);
+      }
+    catch (IllegalAccessException | NoSuchFieldException e)
+      {
+        Errors.fatal(e.toString()+" when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        result = null;
+      }
+
+    return result;
+  }
+
+
+  /**
+   * Helper method for fuzion_java_call_v0, fuzion_java_call_s0, and fuzion_java_call_c0.
+   *
+   * Given the name of a class, the name of a method and the signature of the method or
+   * (if no method is given), the classes' constructors' signature, parses the signature
+   * that is given in string form into an array of instances of {@link java.lang.Class},
+   * and parses the name of the class given as a string into an instance of
+   * {@link java.lang.Class}.
+   *
+   * @param what what is calling this helper (used in the error message), should be one of
+   * virtual, static, or constructor
+   *
+   * @param clName name of the class
+   *
+   * @param name name of the method
+   *
+   * @param sig signature of the method (or if method not given, the constructor)
+   *
+   * @return a {@link dev.flang.util.Pair} of the array of {@link java.lang.Class} instances
+   * representing the given signature, and an instance of {@link java.lang.Class} representing
+   * the given class.
+   */
+  private static Pair<Class[], Class> getParsAndClass(String what, String clName, String name, String sig)
+  {
+    var p = JavaInterface.getPars(sig);
+    if (p == null)
+      {
+        Errors.fatal("could not parse signature >>"+sig+"<<");
+      }
+    Class cl;
+    try
+      {
+        cl = Class.forName(clName);
+      }
+    catch (ClassNotFoundException e)
+      {
+        Errors.fatal("ClassNotFoundException when calling fuzion.java.call_"+what+" for class" +
+                           clName + " calling " + ((name != null) ? name : ("new " + clName)) + sig);
+        cl = Object.class; // not reached.
+      }
+
+    return new Pair<>(p, cl);
+  }
+
+
+  /**
+   * Helper method called by the fuzion.java.call_v0 intrinsic.
+   *
+   * Calls a Java method on a specified instance.
+   *
+   * @param clName name of the class of the method to be called
+   *
+   * @param name name of the method to be called
+   *
+   * @param sig signature of the method to be called
+   *
+   * @param thiz instance of the class on which the method should be called
+   *
+   * @param args the arguments with which the method should be called
+   *
+   * @return whatever the method returns given the arguments
+   */
+  public static Object fuzion_java_call_v0(String clName, String name, String sig, Object thiz, Object[] args)
+  {
+    if (PRECONDITIONS) require
+      (clName != null);
+
+    Method m = null;
+    var pcl = getParsAndClass("virtual", clName, name, sig);
+    var p = pcl._v0;
+    var cl = pcl._v1;
+    try
+      {
+        m = cl.getMethod(name, p);
+      }
+    catch (NoSuchMethodException e)
+      {
+        Errors.fatal("NoSuchMethodException when calling fuzion.java.call_virtual calling " +
+                           (cl.getName() + "." + name) + sig);
+      }
+    return invoke(m, thiz, args);
+  }
+
+
+  static interface ReflectionInvoker
+  {
+    Object invoke() throws InvocationTargetException, IllegalAccessException, InstantiationException;
+  }
+
+
+  /**
+   * Helper to catch a possible {@link Exception} thrown by an invocation.
+   *
+   * @return the result of the invocation, or, if an error occured, the global
+   * instance of {@link JavaError}.
+   */
+  private static Object invokeAndWrapException(ReflectionInvoker invoke)
+  {
+    Object res;
+    try
+      {
+        res = invoke.invoke();
+      }
+    catch (InvocationTargetException e)
+      {
+        ((FuzionThread)Thread.currentThread())._thrownException = e.getCause();
+        res = _JAVA_ERROR_;
+      }
+    catch (IllegalAccessException | InstantiationException e)
+      {
+        ((FuzionThread)Thread.currentThread())._thrownException = e;
+        res = _JAVA_ERROR_;
+      }
+    return res;
+  }
+
+
+  /**
+   * Invoke a method using {@link #invokeAndWrapException(ReflectionInvoker)}.
+   *
+   * @param the {@link Method} to be invoked
+   *
+   * @param the {@link Object instance} on which the {@link Method} shall be invoked
+   *
+   * @param the arguments to invoke this {@link Method} with
+   *
+   * @return the result of the invocation
+   */
+  private static Object invoke(Method m, Object thiz, Object[] args)
+  {
+    return invokeAndWrapException(()->m.invoke(thiz, args));
+  }
+
+
+  /**
+   * Helper method called by the fuzion.java.call_s0 intrinsic.
+   *
+   * Calls a static Java method of a specified class.
+   *
+   * @param clName name of the class of the method to be called
+   *
+   * @param name name of the method to be called
+   *
+   * @param sig signature of the method to be called
+   *
+   * @param args the arguments with which the method should be called
+   *
+   * @return whatever the method returns given the arguments
+   */
+  public static Object fuzion_java_call_s0(String clName, String name, String sig, Object[] args)
+  {
+    if (PRECONDITIONS) require
+      (clName != null);
+
+    Method m = null;
+    var pcl = getParsAndClass("static", clName, name, sig);
+    var p = pcl._v0;
+    var cl = pcl._v1;
+    try
+      {
+        m = cl.getMethod(name,p);
+      }
+    catch (NoSuchMethodException e)
+      {
+        Errors.fatal("NoSuchMethodException when calling fuzion.java.call_static calling " +
+                           (cl.getName() + "." + name) + sig);
+      }
+    return invoke(m, null, args);
+  }
+
+
+  /**
+   * Helper method called by the fuzion.java.call_c0 intrinsic.
+   *
+   * Calls a Java constructor of a specified class.
+   *
+   * @param clName name of the class whose constructor should be called
+   *
+   * @param sig signature of the constructor to be called
+   *
+   * @param args the arguments with which the constructor should be called
+   *
+   * @return the instance of the class returned by the constructor
+   */
+  public static Object fuzion_java_call_c0(String clName, String sig, Object[] args)
+  {
+    if (PRECONDITIONS) require
+      (clName != null);
+
+    var pcl = getParsAndClass("constructor", clName, null, sig);
+    var p = pcl._v0;
+    var cl = pcl._v1;
+    try
+      {
+        var co = cl.getConstructor(p);
+        return invokeAndWrapException(()->co.newInstance(args));
+      }
+    catch (NoSuchMethodException e)
+      {
+        Errors.fatal("NoSuchMethodException when calling fuzion.java.call_constructor calling " +
+                           ("new " + clName) + sig);
+        return null; // not reached
+      }
   }
 
 

@@ -51,6 +51,13 @@ public class FuzionThread extends Thread
   List<Any> _installedEffects = new List<>();
 
 
+  /**
+   * Field to store the exception in case a call into Java code resulted in
+   * throwing an exception.
+   */
+  public Throwable _thrownException = null;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
