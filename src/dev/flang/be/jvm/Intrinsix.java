@@ -477,7 +477,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                     "fuzion_java_call_v0",
                                     "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;",
                                     Names.JAVA_LANG_OBJECT));
-            return newFuzionJavaCall(jvm, rc, exec);
+          return newFuzionJavaCall(jvm, rc, exec);
         });
 
     put("fuzion.java.call_s0",
