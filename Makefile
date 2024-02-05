@@ -415,6 +415,10 @@ min-java: $(FUZION_BASE) $(MOD_JAVA_BASE) $(MOD_JAVA_XML) $(MOD_JAVA_DATATRANSFE
 .PHONY: no-java
 no-java: $(FUZION_BASE) $(FUZION_FILES)
 
+# only up to base module
+.PHONY: base-only
+base-only: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(FUZION_FILES)
+
 # phony target to compile all java sources
 .PHONY: javac
 javac: $(CLASS_FILES_TOOLS) $(CLASS_FILES_TOOLS_FZJAVA) $(CLASS_FILES_TOOLS_DOCS)
@@ -532,7 +536,7 @@ $(CLASS_FILES_BE_JVM_CLASSFILE): $(JAVA_FILES_BE_JVM_CLASSFILE) $(CLASS_FILES_UT
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_JVM_CLASSFILE)
 	touch $@
 
-$(CLASS_FILES_BE_JVM_RUNTIME): $(JAVA_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_UTIL)
+$(CLASS_FILES_BE_JVM_RUNTIME): $(JAVA_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_UTIL) $(CLASS_FILES_BE_INTERPRETER)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_JVM_RUNTIME)
 	touch $@
@@ -1193,7 +1197,7 @@ run_tests_c_parallel: $(FZ_C) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(BUILD_DIR)/test
 
 # phony target to run Fuzion tests using jvm backend and report number of failures
 .PHONY .SILENT: run_tests_jvm_parallel
-run_tests_jvm_parallel: $(FZ_JVM) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(BUILD_DIR)/tests
+run_tests_jvm_parallel: $(FZ_JVM) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
 	echo -n "testing JVM backend: "; \
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) jvm
 

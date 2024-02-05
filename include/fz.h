@@ -181,7 +181,6 @@ int fzE_close(int sockfd)
 {
 #ifdef _WIN32
   closesocket(sockfd);
-  WSACleanup();
   return fzE_net_error();
 #else
   return ( close(sockfd) == - 1 )

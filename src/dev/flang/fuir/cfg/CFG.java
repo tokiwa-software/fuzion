@@ -509,7 +509,7 @@ public class CFG extends ANY
         });
     put("effect.abort0"                     , (cfg, cl) -> { } );
     put("effect.type.is_installed"          , (cfg, cl) -> { } );
-    put("fuzion.java.Java_Object.is_null"   , (cfg, cl) -> { } );
+    put("fuzion.java.Java_Object.is_null0"  , (cfg, cl) -> { } );
     put("fuzion.java.array_get"             , (cfg, cl) -> { } );
     put("fuzion.java.array_length"          , (cfg, cl) -> { } );
     put("fuzion.java.array_to_java_object0" , (cfg, cl) -> { } );

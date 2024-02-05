@@ -29,7 +29,7 @@ All types of contributions are encouraged and valued. See the [Table of Contents
 ## Code of Conduct
 
 This project and everyone participating in it is governed by the
-[Fuzion Code of Conduct](https://github.com/tokiwa-software/fuzion/blob/master/CODE_OF_CONDUCT.md).
+[Fuzion Code of Conduct](https://github.com/tokiwa-software/fuzion/blob/main/CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code. Please report unacceptable behavior
 to <info@tokiwa.software>.
 
@@ -67,7 +67,7 @@ Depending on how large the project is, you may want to outsource the questioning
 
 > ### Legal Notice <!-- omit in toc -->
 > When contributing to this project, you must agree that you have authored 100% of the content, that you have the necessary rights to the content and that the content you contribute may be provided under the project license.
-> A checkbox to agree to the [Tokiwa Software Fuzion Contributor Agreement](https://(https://github.com/tokiwa-software/fuzion/blob/master/CONTRIBUTOR_LICENSE_AGREEMENT.md) will automatically be added to the text describing your pull request. You will have to accept this agreement.
+> A checkbox to agree to the [Tokiwa Software Fuzion Contributor Agreement](https://github.com/tokiwa-software/fuzion/blob/main/CONTRIBUTOR_LICENSE_AGREEMENT.md) will automatically be added to the text describing your pull request. You will have to accept this agreement.
 > Please make sure that your identity is known to the the Fuzion team.  In case you prefer to use an anonymous account for your contribution, make sure your identity is known to the Fuzion team by sending an email to <info@tokiwa.software>.
 
 ### Reporting Bugs
@@ -104,8 +104,8 @@ We use GitHub issues to track bugs and errors. If you run into an issue with the
 Once it's filed:
 
 - The project team will label the issue accordingly.
-- A team member will try to reproduce the issue with your provided steps. If there are no reproduction steps or no obvious way to reproduce the issue, the team will ask you for those steps and mark the issue as `needs-repro`. Bugs with the `needs-repro` tag will not be addressed until they are reproduced.
-- If the team is able to reproduce the issue, it will be marked `needs-fix`, as well as possibly other tags (such as `critical`), and the issue will be left to be [implemented by someone](#your-first-code-contribution).
+- A team member will try to reproduce the issue with your provided steps. If there are no reproduction steps or no obvious way to reproduce the issue, the team will ask you for those steps and mark the issue as `need info`. Bugs with the `need info` tag will not be addressed until they are reproduced.
+- If the team is able to reproduce the issue, it will be marked `bug`, as well as possibly other tags (such as `base library`), and the issue will be left to be [implemented by someone](#your-first-code-contribution).
 
 <!-- You might want to create an issue template for bugs and errors that can be used as a guide and that defines the structure of the information to be included. If you do so, reference it here in the description. -->
 

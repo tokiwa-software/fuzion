@@ -1671,7 +1671,6 @@ iload
 INEWARRAY
 InlineIntrinsics
 installedEffects
-Instrinsics
 InterfaceMethod
 internalArrayForConstString
 intlike

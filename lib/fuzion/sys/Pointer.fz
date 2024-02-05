@@ -30,6 +30,6 @@
 # calls on this value are permitted, not even `p.as_string`, this will lead to
 # undefined behaviour.
 #
-private:module Pointer ref is
+private:public Pointer ref is
 
   # this must not contain any declarations.

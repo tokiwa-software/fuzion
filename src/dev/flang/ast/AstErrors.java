@@ -2076,7 +2076,7 @@ public class AstErrors extends ANY
   public static void constructorWithReturnType(SourcePosition pos)
   {
     error(pos, "Combination of " + skw("is") + " and return type is not allowed.",
-        "Keyword " + skw("is") + " denotes a contructor which must not have a return type.\n" +
+        "Keyword " + skw("is") + " denotes a constructor which must not have a return type.\n" +
         "To solve this, either replace " + skw("is") + " by " + skw("=>") +
         " or remove the return type if you want to define a constructor.");
   }

@@ -251,7 +251,7 @@ public class SourceFile extends ANY
   {
     /*
     // tag::fuzion_rule_SRCF_UTF8[]
-Fuzion input uses UTF8 encoding vesion {UNICODE_VERSION} from {UNICODE_SOURCE}[].  Improperly encoded input will be treated as an error.
+Fuzion input uses UTF8 encoding version {UNICODE_VERSION} from {UNICODE_SOURCE}[].  Improperly encoded input will be treated as an error.
     // end::fuzion_rule_SRCF_UTF8[]
     */
     int result;
