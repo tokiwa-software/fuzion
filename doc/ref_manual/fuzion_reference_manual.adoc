@@ -341,7 +341,7 @@ that is declared in the `formArgs` section of a xref:fuzion_routine[routine].
 
 [#child_feature]
 ((Child)):: A _child_ of a xref:fuzion_feature[feature] `f` is any feature `g` that xref:inheritance[inherits] from `f`.
-A _child_ is hence used synonymous to a _heir_.
+A _child_ is hence used synonymously to an _heir_.
 
 [#fuzion_choice]
 ((Choice)):: A _choice_ is either the xref:fuzion_feature[feature] `choice` defined in the Fuzion base library or
@@ -366,7 +366,7 @@ by xref:dynamic_dispatch[dynamic dispatch] depending on the call target `t` and 
 given in the call.
 
 [#direct_child]
-((Direct Child)):: A _direct child_ of a xref:fuzion_feature[feature] `p` is any feature `c` that xref:direct_inheritance[inherits directly] from `P`.
+((Direct Child)):: A _direct child_ of a xref:fuzion_feature[feature] `p` is any feature `c` that xref:direct_inheritance[inherits directly] from `p`.
 
 [#direct_inheritance]
 ((Direct Inheritance)):: A xref:fuzion_feature[feature] `f` _inherits directly_ from another xref:fuzion_feature[feature] `g` if `f` lists
@@ -382,7 +382,7 @@ xref:fuzion_instance[instance] produced as the result of that expression.
 [#dynamic_dispatch]
 ((Dynamic Dispatch)):: _Dynamic dispatch_ is a mechanism that is used at runtime to determine the
 xref:call_desitionation[destination] of a xref:fuzion_call[call] depending on the
-xref:dynamic_type[dynanmic type] of the xref:fuzion_target[target] and xref:feature_name[name] of the
+xref:dynamic_type[dynamic type] of the xref:fuzion_target[target] and xref:feature_name[name] of the
 called feature.
 
 [#fuzion_feature]
@@ -451,12 +451,12 @@ declaration of `f`.  If `f` is not declared inside any other feature, `f`'s oute
 xref:universe[universe], which itself does not have an outer feature.
 
 [#fuzion_outer_type]
-((Outer Type)):: For any xref:fuzion_type[type] that is based on a feature whose outer feature exists and is not the xref:universe[universe],
-there is a corresponding _outer type_ based on a xref:child_feature[child] of the that outer feature.
+((Outer Type)):: For any xref:fuzion_type[type] that is based on a feature whose outer feature `o` exists and is not the xref:universe[universe],
+there is a corresponding _outer type_ based on a xref:child_feature[child] of `o`.
 
 [#parent_feature]
-((Parent)):: A _parent_ of a xref:fuzion_feature[feature] `f` is any feature `g` sucht that `f` xref:inheritance[inherits] from `g`.
-A _parent_ is hence used synonymous to an _ancestor_.
+((Parent)):: A _parent_ of a xref:fuzion_feature[feature] `f` is any feature `g` such that `f` xref:inheritance[inherits] from `g`.
+A _parent_ is hence used synonymously to an _ancestor_.
 
 [#fuzion_routine]
 ((Routine)):: A _routine_ is a xref:fuzion_feature[Feature] declared using `is` or `=>` that is neither
@@ -480,8 +480,8 @@ xref:fuzion_native[native feature].
 ((Runtime Type)):: A _runtime type_ is a xref:fuzion_type[type] that does not contain any xref:fuzion_typeparameter[type parameters].
 
 [#static_type]
-((Static Type)):: The _static type_ is the xref:fuzion_type[type] of an expression or  the xref:result_type[result type] of a routine or a
-field determined statically by tools like a Fuzion conmpiler.
+((Static Type)):: The _static type_ is the xref:fuzion_type[type] of an expression or the xref:result_type[result type] of a routine or a
+field determined statically by tools like a Fuzion compiler.
 
 [#fuzion_tagging]
 ((Tagging)):: _Tagging_ is the creation of an xref:fuzion_instance[instance] of a xref:choice_type[choice type] during an assignment
