@@ -1984,41 +1984,6 @@ public class DFA extends ANY
 
 
   /**
-   * Create new instance or new outcome for `cl`.
-   */
-  private Value newInstanceOrOutcome(int cl, Context _context)
-  {
-    if (PRECONDITIONS) require
-      (!_fuir.clazzIsChoice(cl) || _fuir.clazzAsStringNew(cl).startsWith("outcome"));
-
-    return _fuir.clazzIsChoice(cl)
-      ? newOutcome(cl, _context)
-      : newInstance(cl, _context);
-  }
-
-
-  /**
-   * Creates a valueset of new instances of the choices elements.
-   */
-  private Value newOutcome(int cl, Context _context)
-  {
-    if (PRECONDITIONS) require
-      (_fuir.clazzIsChoice(cl),
-       _fuir.clazzAsStringNew(cl).startsWith("outcome"));
-
-    var result = newInstance(_fuir.clazzChoice(cl, 0), _context).tag(this, cl, 0);
-    for (int i = 1; i < _fuir.clazzNumChoices(cl); i++)
-      {
-        if (CHECKS) check
-          (!_fuir.clazzIsChoice(_fuir.clazzChoice(cl, i)));
-
-        result = result.join(newInstance(_fuir.clazzChoice(cl, i), _context).tag(this, cl, i));
-      }
-    return result;
-  }
-
-
-  /**
    * Check if given clazz is a built-in numeric clazz: i8..i64, u8..u64, f32 or f64.
    *
    * @param cl the clazz
