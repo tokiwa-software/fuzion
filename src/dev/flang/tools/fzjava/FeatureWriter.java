@@ -130,12 +130,23 @@ class FeatureWriter extends ANY
             s = "_k_" + s;
           }
         else if (s.equals(FuzionConstants.RESULT_NAME) ||
+                 // Any is implicitly inherited
+                 // by every feature
+                 // leading to ambiguity since Java
+                 // also has an Any class.
                  s.equals(FuzionConstants.ANY_NAME) ||
+                 // args use this type: e.g. `arg0 Sequence (i32)`
                  s.equals("Sequence") ||
                  s.equals(FuzionConstants.STRING_NAME) ||
-                 s.equals("array"   ) ||
-                 s.equals("split"   ) ||
-                 s.equals("container"))
+                 /*
+                  * ```
+                  * __jString.fz: error: Redefinition must be declared using modifier 'redef'
+                  * public split(arg0 String) ... =>
+                  * ```
+                  * could be removed if we instead added a `redef` modifier for split
+                  */
+                 s.equals("split"   )
+                )
           {
             // NYI: this is just a precaution to avoid confusion with Fuzion
             // types.  Need to find a way to avoid this, e.g., by using
