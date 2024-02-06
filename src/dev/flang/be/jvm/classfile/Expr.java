@@ -685,7 +685,7 @@ public abstract class Expr extends ByteCode
    * create invokevirtual bytecode to call given class, name and descr producing
    * given result type on the stack.
    */
-  public static Expr invokeVirtual(String cls, String name, String descr, JavaType rt)
+  public static Expr invokeVirtual(String cls, String name, String descr, JavaType rt, int argCount)
   {
     return new Expr()
       {
@@ -704,7 +704,12 @@ public abstract class Expr extends ByteCode
         @Override
         public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
         {
-          throw new UnsupportedOperationException("Unimplemented method");
+          stack.pop();
+          for (int index = 0; index < argCount; index++)
+            {
+              stack.pop();
+            }
+          stack.push(rt.vti(smt.classFile()));
         }
     };
   }

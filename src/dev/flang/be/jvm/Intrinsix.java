@@ -312,7 +312,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return jvm.constString(args.get(0)
                                  .andThen(jvm.getfield(jref))
                                  .andThen(Expr.checkcast(JAVA_LANG_STRING))
-                                 .andThen(Expr.invokeVirtual("java/lang/String", "getBytes", "()[B", ClassFileConstants.PrimitiveType.type_byte.array())));
+                                 .andThen(Expr.invokeVirtual("java/lang/String", "getBytes", "()[B", ClassFileConstants.PrimitiveType.type_byte.array(), 0)));
         });
 
     put("fuzion.java.array_to_java_object0",
@@ -443,49 +443,49 @@ public class Intrinsix extends ANY implements ClassFileConstants
           yield
             exec
             .andThen(Expr.checkcast(new ClassType("java/lang/Byte")))
-            .andThen(Expr.invokeVirtual("java/lang/Byte", "byteValue", "()B", PrimitiveType.type_byte));
+            .andThen(Expr.invokeVirtual("java/lang/Byte", "byteValue", "()B", PrimitiveType.type_byte, 0));
         }
         case c_u16 -> {
           yield
             exec
             .andThen(Expr.checkcast(new ClassType("java/lang/Character")))
-            .andThen(Expr.invokeVirtual("java/lang/Character", "charValue", "()C", PrimitiveType.type_char));
+            .andThen(Expr.invokeVirtual("java/lang/Character", "charValue", "()C", PrimitiveType.type_char, 0));
         }
         case c_i16 -> {
           yield
             exec
             .andThen(Expr.checkcast(new ClassType("java/lang/Short")))
-            .andThen(Expr.invokeVirtual("java/lang/Short", "shortValue", "()S", PrimitiveType.type_short));
+            .andThen(Expr.invokeVirtual("java/lang/Short", "shortValue", "()S", PrimitiveType.type_short, 0));
         }
         case c_i32 -> {
           yield
             exec
             .andThen(Expr.checkcast(new ClassType("java/lang/Integer")))
-            .andThen(Expr.invokeVirtual("java/lang/Integer", "intValue", "()I", PrimitiveType.type_int));
+            .andThen(Expr.invokeVirtual("java/lang/Integer", "intValue", "()I", PrimitiveType.type_int, 0));
         }
         case c_i64 -> {
           yield
             exec
             .andThen(Expr.checkcast(new ClassType("java/lang/Long")))
-            .andThen(Expr.invokeVirtual("java/lang/Long", "longValue", "()L", PrimitiveType.type_long));
+            .andThen(Expr.invokeVirtual("java/lang/Long", "longValue", "()L", PrimitiveType.type_long, 0));
         }
         case c_f32 -> {
           yield
             exec
             .andThen(Expr.checkcast(new ClassType("java/lang/Float")))
-            .andThen(Expr.invokeVirtual("java/lang/Float", "floatValue", "()F", PrimitiveType.type_float));
+            .andThen(Expr.invokeVirtual("java/lang/Float", "floatValue", "()F", PrimitiveType.type_float, 0));
         }
         case c_f64 -> {
           yield
             exec
             .andThen(Expr.checkcast(new ClassType("java/lang/Double")))
-            .andThen(Expr.invokeVirtual("java/lang/Double", "doubleValue", "()D", PrimitiveType.type_double));
+            .andThen(Expr.invokeVirtual("java/lang/Double", "doubleValue", "()D", PrimitiveType.type_double, 0));
         }
         case c_bool -> {
           yield
             exec
             .andThen(Expr.checkcast(new ClassType("java/lang/Boolean")))
-            .andThen(Expr.invokeVirtual("java/lang/Boolean", "booleanValue", "()Z", PrimitiveType.type_boolean));
+            .andThen(Expr.invokeVirtual("java/lang/Boolean", "booleanValue", "()Z", PrimitiveType.type_boolean, 0));
         }
         default -> {
           var rt = jvm._types.javaType(rc0);
