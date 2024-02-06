@@ -109,7 +109,7 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
         res
 
   private mod (other u128) u128 =>
-    thiz - div(other) *° other
+    thiz - (div other) *° other
 
   # bitwise and, or and xor operations
   public fixed infix &  (other u128) u128 => u128 (hi & other.hi) (lo & other.lo)

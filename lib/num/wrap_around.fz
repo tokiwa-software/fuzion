@@ -86,22 +86,22 @@ module:public wrap_around : integer is
   # addition, with check for overflow
   public redef infix +  (other wrap_around.this) wrap_around.this
     pre
-      debug: !overflow_on_add(other),
-      debug: !underflow_on_add(other)
+      debug: !(overflow_on_add other),
+      debug: !(underflow_on_add other)
   => wrap_around.this +° other
 
   # subtraction, with check for overflow
   public redef infix -  (other wrap_around.this) wrap_around.this
     pre
-      debug: !overflow_on_sub(other),
-      debug: !underflow_on_sub(other)
+      debug: !(overflow_on_sub other),
+      debug: !(underflow_on_sub other)
   => wrap_around.this -° other
 
   # multiplication, with check for overflow
   public redef infix *  (other wrap_around.this) wrap_around.this
     pre
-      debug: !overflow_on_mul(other),
-      debug: !underflow_on_mul(other)
+      debug: !(overflow_on_mul other),
+      debug: !(underflow_on_mul other)
   => wrap_around.this *° other
 
   # overflow checking operations
