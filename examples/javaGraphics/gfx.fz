@@ -180,11 +180,11 @@ is
 
           # NYI: cannot redefine Frame.paint, so instead we use a hack: wait for 200ms
           # for the Frame to perform its paint(), and then just draw over it:
-          java.lang.Thread.sleep 200
+          java.lang.Thread.sleep_J 200
           (G2D f.getGraphics 400 400 0).drawLogo
 
         timeout := ((envir.args.nth 1).get "50000").parse_i64.val 0
-        java.lang.Thread.sleep timeout
+        java.lang.Thread.sleep_J timeout
         f.setVisible false
 
   gfx.this.gfx
