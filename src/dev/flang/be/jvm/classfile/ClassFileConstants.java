@@ -813,6 +813,21 @@ public interface ClassFileConstants
   }
 
 
+  /**
+   * This counts the number of slots for a call with the given descriptor.  This
+   * is the sum of the slot count of all arguments in the descriptor, not
+   * including the target value.
+   *
+   * @param a call descriptor, e.g., "(JDZLjava/lang/Object;II)F"
+   *
+   * @return the argument count, e.g., 6 for "(JDZLjava/lang/Object;II)F"
+   */
+  static int argCount(String descriptor)
+  {
+    return (int)argTypesFromDescriptor(descriptor).count();
+  }
+
+
   public static int ACC_PUBLIC        = 0x0001;  // class,         field, method
   public static int ACC_PRIVATE       = 0x0002;  //                field, method
   public static int ACC_PROTECTED     = 0x0004;  //                field, method

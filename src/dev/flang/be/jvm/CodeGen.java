@@ -560,7 +560,7 @@ class CodeGen
         _types.classFile(tt).addImplements(intfc._name);
         addStub(tt, cc, dn, ds, isCall);
       }
-    return Expr.invokeInterface(intfc._name, dn, ds, dr, isCall ? _types.javaArgCount(false, cc0) : 1 /* NYI is this always one? or can this be zero? */);
+    return Expr.invokeInterface(intfc._name, dn, ds, dr);
   }
 
 
@@ -808,9 +808,7 @@ class CodeGen
           .andThen(val)
           .andThen(Expr.invokeStatic(n, Names.BOX_METHOD_NAME,
                                      _types.boxSignature(rc),
-                                     _types.javaType(rc),
-                                     _types.javaType(_fuir.clazzAsValue(rc)) == PrimitiveType.type_void
-                                      ? 0 : 1)
+                                     _types.javaType(rc))
                    );
       }
     return new Pair<>(res, Expr.UNIT);
@@ -1094,8 +1092,7 @@ class CodeGen
       .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                  Names.RUNTIME_EFFECT_GET,
                                  Names.RUNTIME_EFFECT_GET_SIG,
-                                 Names.ANY_TYPE,
-                                 1))
+                                 Names.ANY_TYPE))
       .andThen(Expr.checkcast(_types.javaType(ecl)));
     return new Pair<>(res, Expr.UNIT);
   }
@@ -1112,8 +1109,7 @@ class CodeGen
                                   .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                              Names.RUNTIME_CONTRACT_FAIL,
                                                              Names.RUNTIME_CONTRACT_FAIL_SIG,
-                                                             ClassFileConstants.PrimitiveType.type_void,
-                                                             1))));
+                                                             ClassFileConstants.PrimitiveType.type_void))));
   }
 
 

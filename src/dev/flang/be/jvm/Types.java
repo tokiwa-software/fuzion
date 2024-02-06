@@ -156,7 +156,7 @@ public class Types extends ANY implements ClassFileConstants
             var bc_box = Expr.new0(cn, rt)
               .andThen(Expr.DUP)
               .andThen(vt.load(0, cf))
-              .andThen(Expr.invokeSpecial(cn, "<init>", sig, vt != PrimitiveType.type_void ? 1 : 0))
+              .andThen(Expr.invokeSpecial(cn, "<init>", sig))
               .andThen(rt.return0());
             var code_box = cf.codeAttribute(Names.BOX_METHOD_NAME + " in " + _fuir.clazzAsString(cl), bc_box, new List<>(), new List<Attribute>(ClassFile.StackMapTable.empty(cf)));
             cf.method(ACC_PUBLIC | ACC_STATIC,
@@ -189,8 +189,8 @@ public class Types extends ANY implements ClassFileConstants
               .andThen(Expr.putstatic(Names.RUNTIME_CLASS, Names.RUNTIME_ARGS, JAVA_LANG_STRING.array()))
               .andThen(Expr.new0(cn, javaType(cl)))
               .andThen(Expr.DUP)
-              .andThen(Expr.invokeSpecial(cn, "<init>", "()V", 0))
-              .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS, Names.RUNTIME_RUN, "(" + new ClassType(Names.MAIN_INTERFACE).argDescriptor() + ")V", PrimitiveType.type_void, 0))
+              .andThen(Expr.invokeSpecial(cn, "<init>", "()V"))
+              .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS, Names.RUNTIME_RUN, "(" + new ClassType(Names.MAIN_INTERFACE).argDescriptor() + ")V", PrimitiveType.type_void))
               .andThen(Expr.RETURN);
             var code_main = cf.codeAttribute("main in " + _fuir.clazzAsString(cl), bc_main, new List<>(), new List<Attribute>(ClassFile.StackMapTable.empty(cf)));
             cf.method(ACC_STATIC | ACC_PUBLIC, "main", "([Ljava/lang/String;)V", new List<>(code_main));
@@ -229,8 +229,7 @@ public class Types extends ANY implements ClassFileConstants
     return Expr.invokeStatic(cls,
                              fname,
                              descriptor(cc, preCalled),
-                             resultType(cc, preCalled),
-                             javaArgCount(true, cc));
+                             resultType(cc, preCalled));
   }
   Expr invokeStaticCombindedPreAndCall(int cc)
   {
@@ -240,8 +239,7 @@ public class Types extends ANY implements ClassFileConstants
     return Expr.invokeStatic(cls,
                              fname,
                              descriptor(cc, false),
-                             resultType(cc, false),
-                             javaArgCount(true, cc));
+                             resultType(cc, false));
   }
 
 
@@ -579,36 +577,6 @@ public class Types extends ANY implements ClassFileConstants
       }
     return res;
   }
-
-
-  /**
-   * The count of arguments this `cl` has in the java byte code.
-   */
-  public int javaArgCount(boolean explicitOuter, int cl)
-  {
-    var result = 0;
-    if (explicitOuter && hasOuterRef(cl))
-      {
-        var or = _fuir.clazzOuterRef(cl);
-        var ot = _fuir.clazzResultClazz(or);
-        var at = resultType(ot);
-        if (at != PrimitiveType.type_void)
-          {
-            result++;
-          }
-      }
-    for (var ai = 0; ai < _fuir.clazzArgCount(cl); ai++)
-      {
-        var at = _fuir.clazzArgClazz(cl, ai);
-        var ft = resultType(at);
-        if (ft != PrimitiveType.type_void)
-          {
-            result++;
-          }
-      }
-    return result;
-  }
-
 
 }
 

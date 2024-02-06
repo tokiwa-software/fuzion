@@ -883,7 +883,7 @@ should be avoided as much as possible.
     var n = _names.javaClass(cl);
     return Expr.new0(n, _types.javaType(cl))
       .andThen(Expr.DUP)
-      .andThen(Expr.invokeSpecial(n,"<init>","()V", 0));
+      .andThen(Expr.invokeSpecial(n,"<init>","()V"));
   }
 
 
@@ -926,7 +926,7 @@ should be avoided as much as possible.
   private Expr callRuntimeTrace(String msg)
   {
     return Expr.stringconst(msg)
-      .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS, "trace", "(Ljava/lang/String;)V", PrimitiveType.type_void, 1));
+      .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS, "trace", "(Ljava/lang/String;)V", PrimitiveType.type_void));
   }
 
 
@@ -999,7 +999,7 @@ should be avoided as much as possible.
 
         var ft = _types.resultType(t);
         var getf =
-          fieldExists(r) ? (Expr.aload(current_index(cl), ft, new VerificationType(VerificationType.type.Object, 2 /* NYI magic constant... */) )
+          fieldExists(r) ? (Expr.aload(current_index(cl), ft, _types.javaType(cl).vti(cf) )
                             .andThen(getfield(r)))
                          : Expr.UNIT;
         return
@@ -1045,7 +1045,7 @@ should be avoided as much as possible.
   Expr reportErrorInCode(String msg)
   {
     return Expr.stringconst(msg)
-      .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,"fatal","(Ljava/lang/String;)V", PrimitiveType.type_void, 1))
+      .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,"fatal","(Ljava/lang/String;)V", PrimitiveType.type_void))
       .andThen(Expr.endless_loop());
   }
 
@@ -1207,8 +1207,7 @@ should be avoided as much as possible.
                   .andThen(Expr.invokeStatic(_names.javaClass(cl),
                                              _names.function(cl, preCond),
                                              _types.descriptor(cl, preCond),
-                                             preCond ? PrimitiveType.type_void : jt,
-                                             _types.javaArgCount(true, cl)));
+                                             preCond ? PrimitiveType.type_void : jt));
                 preCond = !preCond;
               }
             while (!preCond);
@@ -1329,8 +1328,7 @@ should be avoided as much as possible.
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_CONST_STRING,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_CONST_STRING_SIG,
-                                                  PrimitiveType.type_byte.array(),
-                                                  1)));
+                                                  PrimitiveType.type_byte.array())));
 
   }
 
@@ -1412,8 +1410,7 @@ should be avoided as much as possible.
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_8,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_8_SIG,
-                                                  PrimitiveType.type_byte.array(),
-                                                  2)));
+                                                  PrimitiveType.type_byte.array())));
   }
 
 
@@ -1430,8 +1427,7 @@ should be avoided as much as possible.
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_I16,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_I16_SIG,
-                                                  PrimitiveType.type_byte.array(),
-                                                  1)));
+                                                  PrimitiveType.type_byte.array())));
   }
 
 
@@ -1448,8 +1444,7 @@ should be avoided as much as possible.
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_U16,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_U16_SIG,
-                                                  PrimitiveType.type_byte.array(),
-                                                  1)));
+                                                  PrimitiveType.type_byte.array())));
   }
 
 
@@ -1466,8 +1461,7 @@ should be avoided as much as possible.
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_32,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_32_SIG,
-                                                  PrimitiveType.type_byte.array(),
-                                                  1)));
+                                                  PrimitiveType.type_byte.array())));
   }
 
 
@@ -1484,8 +1478,7 @@ should be avoided as much as possible.
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_64,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_64_SIG,
-                                                  PrimitiveType.type_byte.array(),
-                                                  1)));
+                                                  PrimitiveType.type_byte.array())));
   }
 
 
@@ -1502,8 +1495,7 @@ should be avoided as much as possible.
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_F32,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_F32_SIG,
-                                                  PrimitiveType.type_byte.array(),
-                                                  1)));
+                                                  PrimitiveType.type_byte.array())));
   }
 
 
@@ -1520,8 +1512,7 @@ should be avoided as much as possible.
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_F64,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_F64_SIG,
-                                                  PrimitiveType.type_byte.array(),
-                                                  1)));
+                                                  PrimitiveType.type_byte.array())));
   }
 
 
@@ -1960,7 +1951,7 @@ should be avoided as much as possible.
           }
         else if (jt == ClassFileConstants.PrimitiveType.type_float)
           {
-            cast = Expr.invokeStatic("java/lang/Float", "floatToIntBits", "(F)I", ClassFileConstants.PrimitiveType.type_int, 1);
+            cast = Expr.invokeStatic("java/lang/Float", "floatToIntBits", "(F)I", ClassFileConstants.PrimitiveType.type_int);
             ifcc = O_if_icmpeq;
             jt2 = ClassFileConstants.PrimitiveType.type_int;
           }
@@ -1971,7 +1962,7 @@ should be avoided as much as possible.
           }
         else if (jt == ClassFileConstants.PrimitiveType.type_double)
           {
-            cast = Expr.invokeStatic("java/lang/Double", "doubleToLongBits", "(D)J", ClassFileConstants.PrimitiveType.type_long, 1);
+            cast = Expr.invokeStatic("java/lang/Double", "doubleToLongBits", "(D)J", ClassFileConstants.PrimitiveType.type_long);
             cmp = Expr.LCMP;
             ifcc = O_ifeq;
             jt2 = ClassFileConstants.PrimitiveType.type_long;

@@ -586,7 +586,7 @@ public abstract class Expr extends ByteCode
    * create invokestatic bytecode to call given class, name and descr producing
    * given result type on the stack.
    */
-  public static Expr invokeStatic(String cls, String name, String descr, JavaType rt, int argCount)
+  public static Expr invokeStatic(String cls, String name, String descr, JavaType rt)
   {
     return new Expr()
       {
@@ -605,6 +605,7 @@ public abstract class Expr extends ByteCode
         @Override
         public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
         {
+          var argCount = ClassFileConstants.argCount(descr);
           for (int index = 0; index < argCount; index++)
             {
               stack.pop();
@@ -619,7 +620,7 @@ public abstract class Expr extends ByteCode
    * create invokespecial bytecode to call given class, name and descr producing
    * void result type.
    */
-  public static Expr invokeSpecial(String cls, String name, String descr, int argCount)
+  public static Expr invokeSpecial(String cls, String name, String descr)
   {
     if (PRECONDITIONS) require
       (descr.endsWith(")V"));
@@ -641,6 +642,7 @@ public abstract class Expr extends ByteCode
         @Override
         public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
         {
+          var argCount = ClassFileConstants.argCount(descr);
           stack.pop();
           for (int index = 0; index < argCount; index++)
             {
@@ -685,7 +687,7 @@ public abstract class Expr extends ByteCode
    * create invokevirtual bytecode to call given class, name and descr producing
    * given result type on the stack.
    */
-  public static Expr invokeVirtual(String cls, String name, String descr, JavaType rt, int argCount)
+  public static Expr invokeVirtual(String cls, String name, String descr, JavaType rt)
   {
     return new Expr()
       {
@@ -704,6 +706,7 @@ public abstract class Expr extends ByteCode
         @Override
         public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
         {
+          var argCount = ClassFileConstants.argCount(descr);
           stack.pop();
           for (int index = 0; index < argCount; index++)
             {
@@ -728,7 +731,7 @@ public abstract class Expr extends ByteCode
    *
    * @return Code to produce bytecode for the interface call.
    */
-  public static Expr invokeInterface(String cls, String name, String descr, JavaType rt, int argCount)
+  public static Expr invokeInterface(String cls, String name, String descr, JavaType rt)
   {
     return new Expr()
       {
@@ -753,6 +756,7 @@ public abstract class Expr extends ByteCode
         @Override
         public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
         {
+          var argCount = ClassFileConstants.argCount(descr);
           stack.pop();
           for (int index = 0; index < argCount; index++)
             {
