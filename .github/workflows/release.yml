@@ -15,10 +15,10 @@ jobs:
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v2.6.0
 
-    - name: Setup jdk-17
+    - name: Setup jdk
       uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93 # main
       with:
-        java-version: 17
+        java-version: 21
         distribution: 'adopt'
 
     - name: install dependencies

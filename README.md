@@ -150,9 +150,9 @@ Check [fuzion-lang.dev](https://fuzion-lang.dev) for language and implementation
 
 > For Debian based systems this command should install all requirements:
 >
->     sudo apt-get install make clang libgc1 libgc-dev openjdk-17-jdk
+>     sudo apt-get install make clang libgc1 libgc-dev openjdk-21-jdk
 
-- OpenJDK 17, e.g. [Adoptium](https://github.com/adoptium/temurin17-binaries/releases/)
+- OpenJDK 21, e.g. [Adoptium](https://github.com/adoptium/temurin21-binaries/releases/)
 - clang LLVM C compiler
 - GNU make
 - libgc

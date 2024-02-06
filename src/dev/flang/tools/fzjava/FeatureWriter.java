@@ -129,11 +129,13 @@ class FeatureWriter extends ANY
           {
             s = "_k_" + s;
           }
-        else if (s.equals(FuzionConstants.ANY_NAME) ||
+        else if (s.equals(FuzionConstants.RESULT_NAME) ||
+                 s.equals(FuzionConstants.ANY_NAME) ||
                  s.equals("Sequence") ||
                  s.equals(FuzionConstants.STRING_NAME) ||
                  s.equals("array"   ) ||
-                 s.equals("split"   )    )
+                 s.equals("split"   ) ||
+                 s.equals("container"))
           {
             // NYI: this is just a precaution to avoid confusion with Fuzion
             // types.  Need to find a way to avoid this, e.g., by using

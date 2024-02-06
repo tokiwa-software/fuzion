@@ -341,7 +341,7 @@ class ForClass extends ANY
         var fn = fuzionName(jn, jp);
         if (!inheritsMethod(fn))
           {
-            processMethod(me, fcn, data_dynamic, data_static);
+            processMethod(me, fcn, data_dynamic, data_static, jtn);
           }
       }
     for (var me : _generateSM.values())
@@ -352,21 +352,21 @@ class ForClass extends ANY
         var fn = fuzionName(jn, jp);
         if (!inheritsStaticMethod(fn))
           {
-            processMethod(me, fcn, data_dynamic, data_static);
+            processMethod(me, fcn, data_dynamic, data_static, jtn);
           }
       }
     for (var me : _overloadedM.values())
       {
         if (!inheritsShortHand(me.getName(), me.getParameterTypes().length))
           {
-            shortHand(me, data_dynamic);
+            shortHand(me, data_dynamic, jtn);
           }
       }
     for (var me : _overloadedSM.values())
       {
         if (!inheritsShortHandStatic(me.getName(), me.getParameterTypes().length))
           {
-            shortHand(me, data_static);
+            shortHand(me, data_static, jtn + STATIC_SUFFIX);
           }
       }
     for (var fi : _generateF.entrySet())
@@ -379,11 +379,11 @@ class ForClass extends ANY
       }
     for (var co : _generateC)
       {
-        processConstructor(co, data_static);
+        processConstructor(co, data_static, jtn + STATIC_SUFFIX);
       }
     for (var co : _overloadedC.values())
       {
-        shortHand(co, data_static);
+        shortHand(co, data_static, jtn + STATIC_SUFFIX);
       }
 
     fzj.createOuter(jfn);
@@ -458,7 +458,8 @@ class ForClass extends ANY
   void processMethod(Method me,
                      String fcn,
                      StringBuilder data_dynamic,
-                     StringBuilder data_static)
+                     StringBuilder data_static,
+                     String outer)
   {
     var pa = me.getParameters();
     var rt = me.getReturnType();
@@ -479,7 +480,7 @@ class ForClass extends ANY
                                       fuzionString(jn) + " " +
                                       fuzionString(js) + " " +
                                       fcn + ".this "+
-                                  parametersArray(pa) + "\n")
+                                  parametersArray(outer + "." + fn, pa) + "\n")
                             );
       }
     else
@@ -492,7 +493,7 @@ class ForClass extends ANY
                                       fuzionString(me.getDeclaringClass().getName()) + " " +
                                       fuzionString(jn) + " " +
                                       fuzionString(js) + " " +
-                                  parametersArray(pa) + "\n")
+                                  parametersArray(outer + STATIC_SUFFIX + "." + fn, pa) + "\n")
                             );
       }
   }
@@ -507,7 +508,7 @@ class ForClass extends ANY
    * the class
    */
   void processConstructor(Constructor co,
-                          StringBuilder data_static)
+                          StringBuilder data_static, String outer)
   {
     var pa = co.getParameters();
     var js = signature(pa, Void.TYPE);        // Java signature
@@ -522,7 +523,7 @@ class ForClass extends ANY
                        "    " + ("fuzion.java.call_constructor (" + fr + ") " +
                                  fuzionString(co.getDeclaringClass().getName()) + " " +
                                  fuzionString(js) + " " +
-                                 parametersArray(pa) + "\n")
+                                 parametersArray(outer + "." + fn, pa) + "\n")
                        );
   }
 
@@ -538,7 +539,7 @@ class ForClass extends ANY
    * the class
    */
   void shortHand(Method me,
-                 StringBuilder data)
+                 StringBuilder data, String outer)
   {
     var pa = me.getParameters();
     var fp = formalParameters(pa);
@@ -551,7 +552,7 @@ class ForClass extends ANY
                 "  # short-hand to call Java method '" + me + "':\n" +
                 "  #\n" +
                 "  public " + fn0 + fp + " (" + fr + ") =>\n" +
-                "    " + fn + parametersList(pa) + "\n");
+                "    " + fn + parametersList(outer + "." + fn0, pa) + "\n");
   }
 
 
@@ -566,7 +567,7 @@ class ForClass extends ANY
    * the class
    */
   void shortHand(Constructor co,
-                 StringBuilder data_static)
+                 StringBuilder data_static, String outer)
   {
     var pa = co.getParameters();
     var fp = formalParameters(pa);
@@ -578,7 +579,7 @@ class ForClass extends ANY
                        "  # short-hand to call Java constructor '" + co + "':\n" +
                        "  #\n" +
                        "  public " + fn0 + fp + " (" + fr + ") =>\n" +
-                       "    " + fn + parametersList(pa) + "\n");
+                       "    " + fn + parametersList(outer + "." + fn0, pa) + "\n");
   }
 
 
@@ -812,12 +813,14 @@ class ForClass extends ANY
    * Get a string containing code to create a Fuzion array constraining Java
    * objects corresponding to all the parameters.
    *
+   * @param outer
+   *
    * @param pa array of parameters
    *
    * @return a string declaring such an array, e.g.,
    * "[fuzion.java.string_to_java_object arg0]".
    */
-  String parametersArray(Parameter[] pa)
+  String parametersArray(String outer, Parameter[] pa)
   {
     StringBuilder res = new StringBuilder("[");
     for (var p : pa)
@@ -836,7 +839,7 @@ class ForClass extends ANY
         else if (t == Double   .TYPE) { res.append("fuzion.java.f64_to_java_object "   ); }
         else if (t == Boolean  .TYPE) { res.append("fuzion.java.bool_to_java_object "  ); }
         else if (t == String.class  ) { res.append("fuzion.java.string_to_java_object "); }
-        res.append(mp);
+        res.append( outer + ".this." + mp );
         res.append(")");
       }
     res.append("]");
@@ -849,18 +852,20 @@ class ForClass extends ANY
    * This is used to pass parameters from short-hand features to those with
    * fully mangled signature in their name.
    *
+   * @param outer
+   *
    * @param pa array of parameters
    *
    * @return a string with space-separated parameter names, e.g., "arg0 arg1"
    */
-  String parametersList(Parameter[] pa)
+  String parametersList(String outer, Parameter[] pa)
   {
     StringBuilder res = new StringBuilder("");
     for (var p : pa)
       {
         res.append(" ");
         var mp = FeatureWriter.mangledCleanName(p.getName());
-        res.append(mp);
+        res.append(outer + ".this." + mp);
       }
     return res.toString();
   }

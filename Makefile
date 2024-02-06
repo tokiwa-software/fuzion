@@ -24,7 +24,7 @@
 # -----------------------------------------------------------------------
 
 JAVA = java
-JAVAC = javac -encoding UTF8 -source 17
+JAVAC = javac -encoding UTF8 -source 21
 FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SRC = $(FZ_SRC)/src
 BUILD_DIR = ./build

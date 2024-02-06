@@ -54,23 +54,23 @@ jobs:
 
       - name: install choco packages
         shell: powershell
-        run: choco install openjdk --version 17.0.0
+        run: choco install openjdk --version 21.0.0
 
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v2.6.0
 
       - name: echo versions
         run: |
-          export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH"
+          export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-21/bin:$PATH"
           clang --version
           javac --version
 
       - name: build libgc
         run: |
-          export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH"
+          export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-21/bin:$PATH"
           ./bin/windows_install_boehm_gc.sh
 
       - name: run tests
         run: |
-          export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-17/bin:$PATH"
+          export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-21/bin:$PATH"
           export FUZION_CLANG_INSTALLED_DIR="D:/a/_temp/msys64/ucrt64/bin"
           make run_tests
