@@ -322,7 +322,6 @@ public class If extends ExprWithPos
    *
    * @param outer the feature that contains this expression
    *
-   * @param t the expected type.
    */
   public void propagateExpectedType(Resolution res, AbstractFeature outer)
   {

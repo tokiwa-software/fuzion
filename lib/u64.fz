@@ -56,11 +56,11 @@ public u64(public val u64) : num.wrap_around, has_interval is
   public fixed infix / (other u64)
   pre
     safety: other != u64 0
-  => div(other)
+  => div other
   public fixed infix %  (other u64)
   pre
     safety: other != u64 0
-  => mod(other)
+  => mod other
 
   # private division and remainder with crash in case of div-by-zero
   private div (other u64) u64 => intrinsic

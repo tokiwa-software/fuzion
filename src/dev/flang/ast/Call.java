@@ -2761,7 +2761,7 @@ public class Call extends AbstractCall
         var t = _target.typeForInferencing();
         if (t != null)
           {
-            _target = _target.propagateExpectedType(res, outer, _target.typeForInferencing());
+            _target = _target.propagateExpectedType(res, outer, t);
           }
       }
   }
@@ -2995,10 +2995,10 @@ public class Call extends AbstractCall
     if (_pendingError == null && !Errors.any() && !isInheritanceCall())
       {
         // convert
-        //   a && b into if a b     else false
-        //   a || b into if a true  else b
-        //   a: b   into if a b     else true
-        //   !a     into if a false else true
+        //   a && b into if a then b     else false
+        //   a || b into if a then true  else b
+        //   a: b   into if a then b     else true
+        //   !a     into if a then false else true
         var cf = _calledFeature;
         if      (cf == Types.resolved.f_bool_AND    ) { result = newIf(_target, _actuals.get(0), BoolConst.FALSE); }
         else if (cf == Types.resolved.f_bool_OR     ) { result = newIf(_target, BoolConst.TRUE , _actuals.get(0)); }
