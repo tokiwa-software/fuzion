@@ -171,9 +171,14 @@ public Sequence(public T type) ref is
     as_list
 
 
-  # create a list and have it consumed by f, infix operator synonym of for_each.
+  # consume all elements of this Sequence by f. This is an infix operator alias
+  # for for_each.
   #
-  public infix | (f T -> unit) => for_each f
+  # Ex.: To print all the elements of a list, you can use
+  #
+  #  1..10 ! say
+  #
+  public infix ! (f T -> unit) => for_each f
 
 
   # apply 'f' to each element 'e' as long as 'f e'
@@ -311,13 +316,34 @@ public Sequence(public T type) ref is
   public as_strings => map c->c.as_string
 
 
-  # map the Sequence to a new list applying function f to all elements
+  # map the Sequence to a new Sequence applying function f to all elements
   #
   # This performs a lazy mapping, f is called only when the elements
   # in the resulting list are accessed.
   #
   public map(B type, f Unary B T) Sequence B =>
     as_list.map_to_list f
+
+
+  # map the Sequence to a new Sequence applying function f to all elements
+  #
+  # This is an infix operator alias of map enabling piping code like
+  #
+  #   l := 1..10 | *10 | 300-
+  #
+  # to obtain 290,280,270,...200
+  #
+  # Note that map and therefore also this operator is lazy, so
+  #
+  #   _ := (1..10 | say)
+  #
+  # will not print anything while
+  #
+  #   (1..10 | say).for_each _->unit
+  #
+  # will print the elements since `for_each` is not lazy.
+  #
+  public infix | (B type, f Unary B T) Sequence B => map f
 
 
   # map each element of this Sequence to Sequence
