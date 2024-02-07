@@ -207,7 +207,7 @@ public fuzion.java is
   # convert a string to a Java String object
   #
   public string_to_java_object(s String) Java_Object =>
-    string_to_java_object0 s.utf8.as_array.internal_array.data
+    string_to_java_object0 (sys.c_string s)
 
 
   # intrinsic to convert a string to a Java String object

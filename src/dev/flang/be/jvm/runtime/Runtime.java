@@ -34,12 +34,9 @@ import dev.flang.util.Pair;
 
 import java.io.StringWriter;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
-import java.util.function.Supplier;
 
 import java.nio.charset.StandardCharsets;
 
@@ -731,13 +728,13 @@ public class Runtime extends ANY
    * Creates a new instance of String from the byte array passed as argument,
    * assuming the byte array contains an UTF-8 encoded string.
    *
-   * @param b byte array consisting of a string encoded as UTF-8 bytes
+   * @param b byte array consisting of a string encoded as UTF-8 bytes (0-terminated)
    *
    * @return the string from the array, as an instance of Java's String
    */
   public static String fuzion_java_string_to_java_object0(byte[] b)
   {
-    return new String(b, StandardCharsets.UTF_8);
+    return new String(b, 0, b.length -1, StandardCharsets.UTF_8);
   }
 
 
