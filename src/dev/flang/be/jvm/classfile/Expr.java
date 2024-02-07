@@ -178,193 +178,153 @@ public abstract class Expr extends ByteCode
     @Override
     public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
     {
-      if (_bc == BC_RETURN ||
-        _bc == BC_IRETURN ||
-        _bc == BC_LRETURN ||
-        _bc == BC_FRETURN ||
-        _bc == BC_DRETURN ||
-        _bc == BC_ARETURN ||
-        _bc == BC_ATHROW)
+      switch (_bc[0])
         {
+        case O_return, O_ireturn, O_lreturn, O_freturn, O_dreturn, O_areturn, O_athrow :
           stack.clear();
-        }
-      else if (_bc == BC_NOP)
-        {
-
-        }
-      else if (_bc == BC_POP)
-        {
+          break;
+        case O_nop :
+          break;
+        case O_pop :
           stack.pop();
-        }
-      else if (_bc == BC_POP2)
-        {
-          // this is used only by long and double, hence need to pop stack only once.
+          break;
+        case O_pop2 :
+          // this is used only by long and double,
+          // hence need to pop stack only once.
           stack.pop();
-        }
-      else if (_bc == BC_DUP)
-        {
+          break;
+        case O_dup :
           stack.push(stack.peek());
-        }
-      else if (_bc == BC_DUP_X1)
-        {
-          // value2, value1 → value1, value2, value1
-          var val1 = stack.pop();
-          var val2 = stack.pop();
-          stack.push(val1);
-          stack.push(val2);
-          stack.push(val1);
-        }
-      else if (_bc == BC_DUP_X2)
-        {
-          // value3, value2, value1 → value1, value3, value2, value1
-          var val1 = stack.pop();
-          var val2 = stack.pop();
-          var val3 = stack.pop();
-          stack.push(val1);
-          stack.push(val3);
-          stack.push(val2);
-          stack.push(val1);
-        }
-      else if (_bc == BC_SWAP)
-        {
-          // value2, value1 → value1, value2
-          var val1 = stack.pop();
-          var val2 = stack.pop();
-          stack.push(val1);
-          stack.push(val2);
-        }
-      else if (_bc == BC_IADD ||
-        _bc == BC_LADD ||
-        _bc == BC_FADD ||
-        _bc == BC_DADD ||
-        _bc == BC_ISUB ||
-        _bc == BC_LSUB ||
-        _bc == BC_FSUB ||
-        _bc == BC_DSUB ||
-        _bc == BC_IMUL ||
-        _bc == BC_LMUL ||
-        _bc == BC_FMUL ||
-        _bc == BC_DMUL ||
-        _bc == BC_IDIV ||
-        _bc == BC_LDIV ||
-        _bc == BC_FDIV ||
-        _bc == BC_DDIV ||
-        _bc == BC_IREM ||
-        _bc == BC_LREM ||
-        _bc == BC_FREM ||
-        _bc == BC_DREM ||
-        _bc == BC_ISHL ||
-        _bc == BC_LSHL ||
-        _bc == BC_ISHR ||
-        _bc == BC_LSHR ||
-        _bc == BC_IUSHR ||
-        _bc == BC_LUSHR ||
-        _bc == BC_IAND ||
-        _bc == BC_LAND ||
-        _bc == BC_IOR ||
-        _bc == BC_LOR ||
-        _bc == BC_IXOR ||
-        _bc == BC_LXOR)
-        {
-          stack.pop();
-        }
-      else if (_bc == BC_INEG ||
-        _bc == BC_LNEG ||
-        _bc == BC_FNEG ||
-        _bc == BC_DNEG)
-        {
-
-        }
-      else if (_bc == BC_BALOAD)
-        {
-          stack.pop();
-          stack.pop();
-          stack.push(PrimitiveType.type_boolean.vti(smt.classFile()));
-        }
-      else if (_bc == BC_CALOAD)
-        {
-          stack.pop();
-          stack.pop();
-          stack.push(PrimitiveType.type_char.vti(smt.classFile()));
-        }
-      else if (_bc == BC_SALOAD)
-        {
-          stack.pop();
-          stack.pop();
-          stack.push(PrimitiveType.type_short.vti(smt.classFile()));
-        }
-      else if (_bc == BC_IALOAD)
-        {
-          stack.pop();
-          stack.pop();
-          stack.push(PrimitiveType.type_int.vti(smt.classFile()));
-        }
-      else if (_bc == BC_LALOAD)
-        {
-          stack.pop();
-          stack.pop();
-          stack.push(PrimitiveType.type_long.vti(smt.classFile()));
-        }
-      else if (_bc == BC_FALOAD)
-        {
-          stack.pop();
-          stack.pop();
-          stack.push(PrimitiveType.type_float.vti(smt.classFile()));
-        }
-      else if (_bc == BC_DALOAD)
-        {
-          stack.pop();
-          stack.pop();
-          stack.push(PrimitiveType.type_double.vti(smt.classFile()));
-        }
-      else if (_bc == BC_ARRAYLENGTH)
-        {
-          stack.pop();
-          stack.push(PrimitiveType.type_int.vti(smt.classFile()));
-        }
-      else if (_bc == BC_BASTORE ||
-        _bc == BC_CASTORE ||
-        _bc == BC_SASTORE ||
-        _bc == BC_IASTORE ||
-        _bc == BC_LASTORE ||
-        _bc == BC_FASTORE ||
-        _bc == BC_DASTORE ||
-        _bc == BC_AASTORE)
-        {
-          stack.pop();
-          stack.pop();
-          stack.pop();
-        }
-      else if (_bc == BC_ZNEWARRAY ||
-        _bc == BC_BNEWARRAY ||
-        _bc == BC_CNEWARRAY ||
-        _bc == BC_SNEWARRAY ||
-        _bc == BC_INEWARRAY ||
-        _bc == BC_LNEWARRAY ||
-        _bc == BC_FNEWARRAY ||
-        _bc == BC_DNEWARRAY)
-        {
-          stack.pop();
-          stack.push(type().vti(smt.classFile()));
-        }
-      else if (_bc == BC_ACONST_NULL)
-        {
-          stack.push(VerificationType.Null);
-        }
-      else if (_bc == BC_LCMP)
-        {
-          // value1, value2 → result
-          stack.pop();
-          stack.pop();
-          stack.push(VerificationType.Integer);
-        }
-      else if (_bc == BC_MONITORENTER ||
-        _bc == BC_MONITOREXIT)
-        {
-          stack.pop();
-        }
-      else
-        {
+          break;
+        case O_dup_x1 :
+          {
+            // value2, value1 → value1, value2, value1
+            var val1 = stack.pop();
+            var val2 = stack.pop();
+            stack.push(val1);
+            stack.push(val2);
+            stack.push(val1);
+            break;
+          }
+        case O_dup_x2 :
+          {
+            // value3, value2, value1 → value1, value3, value2, value1
+            var val1 = stack.pop();
+            var val2 = stack.pop();
+            var val3 = stack.pop();
+            stack.push(val1);
+            stack.push(val3);
+            stack.push(val2);
+            stack.push(val1);
+            break;
+          }
+        case O_swap :
+          {
+            // value2, value1 → value1, value2
+            var val1 = stack.pop();
+            var val2 = stack.pop();
+            stack.push(val1);
+            stack.push(val2);
+            break;
+          }
+        case O_iadd, O_ladd, O_fadd, O_dadd, O_isub, O_lsub, O_fsub, O_dsub,
+             O_imul, O_lmul, O_fmul, O_dmul, O_idiv, O_ldiv, O_fdiv, O_ddiv,
+             O_irem, O_lrem, O_frem, O_drem,
+             O_ishl, O_lshl, O_ishr, O_lshr, O_iushr, O_lushr,
+             O_iand, O_land, O_ior, O_lor, O_ixor, O_lxor :
+          {
+            stack.pop();
+            break;
+          }
+        case O_ineg, O_lneg, O_fneg, O_dneg :
+          break;
+        case O_baload :
+          {
+            stack.pop();
+            stack.pop();
+            stack.push(PrimitiveType.type_boolean.vti(smt.classFile()));
+            break;
+          }
+        case O_caload :
+          {
+            stack.pop();
+            stack.pop();
+            stack.push(PrimitiveType.type_char.vti(smt.classFile()));
+            break;
+          }
+        case O_saload :
+          {
+            stack.pop();
+            stack.pop();
+            stack.push(PrimitiveType.type_short.vti(smt.classFile()));
+            break;
+          }
+        case O_iaload :
+          {
+            stack.pop();
+            stack.pop();
+            stack.push(PrimitiveType.type_int.vti(smt.classFile()));
+            break;
+          }
+        case O_laload :
+          {
+            stack.pop();
+            stack.pop();
+            stack.push(PrimitiveType.type_long.vti(smt.classFile()));
+            break;
+          }
+        case O_faload :
+          {
+            stack.pop();
+            stack.pop();
+            stack.push(PrimitiveType.type_float.vti(smt.classFile()));
+            break;
+          }
+        case O_daload :
+          {
+            stack.pop();
+            stack.pop();
+            stack.push(PrimitiveType.type_double.vti(smt.classFile()));
+            break;
+          }
+        case O_arraylength :
+          {
+            stack.pop();
+            stack.push(PrimitiveType.type_int.vti(smt.classFile()));
+            break;
+          }
+        case O_bastore, O_castore, O_sastore, O_iastore, O_lastore, O_fastore, O_dastore, O_aastore :
+          {
+            stack.pop();
+            stack.pop();
+            stack.pop();
+            break;
+          }
+        case O_newarray :
+          {
+            stack.pop();
+            stack.push(type().vti(smt.classFile()));
+            break;
+          }
+        case O_aconst_null :
+          {
+            stack.push(VerificationType.Null);
+            break;
+          }
+        case O_lcmp :
+          {
+            // value1, value2 → result
+            stack.pop();
+            stack.pop();
+            stack.push(VerificationType.Integer);
+            break;
+          }
+        case O_monitorenter, O_monitorexit :
+          {
+            stack.pop();
+            break;
+          }
+        default:
           throw new UnsupportedOperationException("Unimplemented method");
         }
     }
