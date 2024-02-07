@@ -633,7 +633,7 @@ public interface ClassFileConstants
     }
     public VerificationType vti(ClassFile cf)
     {
-      return new VerificationType(VerificationType.type.Object, cpIndex(cf));
+      return new VerificationType(className(), ()->cpIndex(cf));
     }
 
   }

@@ -27,6 +27,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm.classfile;
 
+import java.util.function.Supplier;
+
 import dev.flang.util.ANY;
 import dev.flang.util.List;
 
@@ -57,7 +59,12 @@ public class VerificationType extends ANY implements Comparable<VerificationType
    * if _t == Uninitialized then offset,
    * if _t == Object        then cpool_index;
    */
-  private int _s = -1;
+  private Supplier<Integer> _s = null;
+
+  // used for comparing VerificationTypes
+  // even before we add an entry to the
+  // constant pool
+  private String className = null;
 
 
   public enum type
@@ -100,16 +107,18 @@ public class VerificationType extends ANY implements Comparable<VerificationType
 
 
   /**
-   * @param t
-   * @param s if t == Uninitialized then offset,
-   *          if t == Object        then cpool_index;
+   * Constructor for verification type object.
+   *
+   * @param className the className, used for comparing and unioning verification types.
+   * @param s () => cpool_index;
    */
-  public VerificationType(type t, int s)
+  public VerificationType(String className, Supplier<Integer> s)
   {
-    if (PRECONDITIONS)
-      require(t == type.Object || t == type.Uninitialized,
-              s >= 0);
-    this._type = t;
+    if (PRECONDITIONS) require
+     (className != null,
+      s != null);
+    this._type = VerificationType.type.Object;
+    this.className = className;
     this._s = s;
   }
 
@@ -124,10 +133,8 @@ public class VerificationType extends ANY implements Comparable<VerificationType
     switch (_type)
       {
       case Object :
-        o.writeU2(_s);
-        break;
       case Uninitialized :
-        o.writeU2(_s);
+        o.writeU2(_s.get());
         break;
       default:
         break;
@@ -138,18 +145,24 @@ public class VerificationType extends ANY implements Comparable<VerificationType
   @Override
   public String toString()
   {
-    return _type.label + " at " + _s;
+    return _type.label + (className != null ? "(" + className + ")" : ")");
   }
 
 
   @Override
   public int compareTo(VerificationType other)
   {
+    if (PRECONDITIONS) require
+      (_s == null // does not have constant pool index
+      || className != null);
+
     return this._type.ordinal() < other._type.ordinal()
       ? -1
       : this._type.ordinal() > other._type.ordinal()
       ? 1
-      : this._s - other._s;
+      : _type != type.Object
+      ? 0
+      : className.compareTo(other.className);
   }
 
 

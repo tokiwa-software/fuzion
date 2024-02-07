@@ -984,7 +984,7 @@ public abstract class Expr extends ByteCode
         @Override
         public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
         {
-          stack.push(new VerificationType(VerificationType.type.Object, cpEntry(smt.classFile()).index()));
+          stack.push(new VerificationType(type().className(), ()->cpEntry(smt.classFile()).index()));
         }
       };
   }
@@ -1002,7 +1002,7 @@ public abstract class Expr extends ByteCode
         @Override
         public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
         {
-          stack.push(new VerificationType(VerificationType.type.Object, cpEntry(smt.classFile()).index()));
+          stack.push(new VerificationType(type().className(), ()->cpEntry(smt.classFile()).index()));
         }
       };
   }
@@ -1021,7 +1021,7 @@ public abstract class Expr extends ByteCode
         @Override
         public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
         {
-          stack.push(new VerificationType(VerificationType.type.Object, cpEntry(smt.classFile()).index()));
+          stack.push(new VerificationType(t.className(), ()->cpEntry(smt.classFile()).index()));
         }
       };
   }
@@ -1386,7 +1386,7 @@ public abstract class Expr extends ByteCode
         @Override
         public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
         {
-          stack.push(new VerificationType(VerificationType.type.Object, smt.classFile().cpClass(className).index()));
+          stack.push(new VerificationType(className, ()->smt.classFile().cpClass(className).index()));
         }
     };
   }
@@ -1636,6 +1636,9 @@ public abstract class Expr extends ByteCode
         public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack,
           List<VerificationType> locals)
         {
+          // NYI: cleanup remove once the
+          // backend does not generate redundant
+          // checkcasts anymore.
           isRedundant = type().vti(smt.classFile()).compareTo(stack.peek()) == 0;
         }
     };
