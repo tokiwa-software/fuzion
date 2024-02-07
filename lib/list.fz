@@ -564,3 +564,30 @@ public list(T type, h T, t Lazy (list T)) list T =>
 #
 public infix : (A type, h A, t Lazy (list A)) =>
   list h t
+
+
+# infix operator to create a list from head h and a production
+# function f
+#
+# This can be used, e.g., as follows:
+#
+# Ex1: the identity can be used to repeat the same element
+#
+#   1 :: x->x
+#
+# will create 1,1,1,1,...
+#
+# Ex2: To create a list of all integers, use
+#
+#   0 :: +1
+#
+# which will produce 0,1,2,3,4,5,...
+#
+# Ex3: The call
+#
+#   1 :: p->p+p
+#
+# will produce al powers of two: 1,2,4,8,16,32,...
+#
+public infix :: (A type, h A, f A->A) =>
+  h : (f h :: f)
