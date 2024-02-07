@@ -79,4 +79,4 @@ License Version 1.0, 2024-02-01.
 
 ## Attribution
 
-This License Document is based on Contributor License Agreement Chooser, modified by Tokiwa Software GmbH, Karlsruhe, Germany, and licensed under a Creative Commons Attribution-Share Alike 3.0 Unparted License.
+This License Document is based on [Contributor License Agreement Chooser](https://contributoragreements.org/ca-cla-chooser/), modified by Tokiwa Software GmbH, Karlsruhe, Germany, and licensed under a [Creative Commons Attribution-Share Alike 3.0 Unported License](https://creativecommons.org/licenses/by-sa/3.0/legalcode.en).
