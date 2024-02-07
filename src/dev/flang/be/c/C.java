@@ -1985,8 +1985,8 @@ public class C extends ANY
   {
     var constString = constString(CExpr.call("fzE_java_string_to_utf8_bytes", new List<>(field)), CExpr.call("strlen", new List<>(CExpr.call("fzE_java_string_to_utf8_bytes", new List<>(field)))));
     return CExpr.compoundLiteral(
-      "fzT_1error",
-      ".fzF_0_msg = " +
+      _names.struct(_fuir.clazz_error()),
+      "." + _names.fieldName(_fuir.clazzArg(_fuir.clazz_error(), 0)).code() + " = " +
         CExpr
           .call(CNames.HEAP_CLONE._name, new List<>(constString.adrOf(), constString.sizeOfExpr()))
           .code()

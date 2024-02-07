@@ -1259,6 +1259,18 @@ hw25 is
 
 
   /**
+   * Get the id of clazz error
+   *
+   * @return the id of error or -1 if that clazz was not created.
+   */
+  public int clazz_error()
+  {
+    var cc = Clazzes.c_error;
+    return cc == null ? -1 : id(cc);
+  }
+
+
+  /**
    * On `cl` lookup field `Java_Ref`
    *
    * @param cl Java_Object or inheriting from Java_Object

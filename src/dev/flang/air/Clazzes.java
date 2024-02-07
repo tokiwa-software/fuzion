@@ -172,6 +172,7 @@ public class Clazzes extends ANY
   public static Clazz fuzionSysArray_u8;         // result clazz of Const_String.internal_array
   public static Clazz fuzionSysArray_u8_data;    // field fuzion.sys.array<u8>.data
   public static Clazz fuzionSysArray_u8_length;  // field fuzion.sys.array<u8>.length
+  public static Clazz c_error;                   // clazz representing error-feature
 
 
   /**
@@ -403,6 +404,7 @@ public class Clazzes extends ANY
     var fuzionJava = fuzion.lookup(Types.resolved.f_fuzion_java, SourcePosition.builtIn);
     fuzionJavaObject = fuzionJava.lookup(Types.resolved.f_fuzion_java_object, SourcePosition.builtIn);
     fuzionJavaObject_Ref = fuzionJavaObject.lookup(Types.resolved.f_fuzion_java_object_ref, SourcePosition.builtIn);
+    c_error = universe.get().lookup(Types.resolved.f_error, SourcePosition.builtIn);
 
     while (!clazzesToBeVisited.isEmpty())
       {
@@ -1216,6 +1218,7 @@ public class Clazzes extends ANY
     fuzionSysArray_u8_length = null;
     fuzionJavaObject = null;
     fuzionJavaObject_Ref = null;
+    c_error = null;
     closed = false;
     _whenCalledDynamically_.clear();
     _whenCalled_.clear();
