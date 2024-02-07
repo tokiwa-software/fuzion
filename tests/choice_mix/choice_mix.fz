@@ -292,7 +292,7 @@ choice_mix is
       say ""
 
     // check that pipe also works as operator:
-    (1..10) | i -> yak i
+    (1..10) ! yak
     say ""
   alternatives1
 
