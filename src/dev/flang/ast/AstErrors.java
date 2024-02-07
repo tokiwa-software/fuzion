@@ -1791,11 +1791,15 @@ public class AstErrors extends ANY
 
   static void incompatibleResultsOnBranches(SourcePosition pos, String msg, List<AbstractType> types, Map<AbstractType, List<SourcePosition>> positions)
   {
-    error(pos,
-          msg,
-          "Incompatible result types in different branches:\n" +
-          typesMsg("block returns", "blocks return", types, positions));
+    if (!any() || types.stream().noneMatch(t -> t == Types.t_ERROR))
+      {
+        error(pos,
+              msg,
+              "Incompatible result types in different branches:\n" +
+              typesMsg("block returns", "blocks return", types, positions));
+      }
   }
+
 
   static void incompatibleTypesOfActualArguments(AbstractFeature formalArg,
                                                  List<AbstractType> types,
