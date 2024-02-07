@@ -587,7 +587,7 @@ public infix : (A type, h A, t Lazy (list A)) =>
 #
 #   1 :: p->p+p
 #
-# will produce al powers of two: 1,2,4,8,16,32,...
+# will produce the powers of two: 1,2,4,8,16,32,...
 #
 public infix :: (A type, h A, f A->A) =>
   h : (f h :: f)
