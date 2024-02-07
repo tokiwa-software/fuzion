@@ -1832,7 +1832,7 @@ public class C extends ANY
   public CStmnt returnJavaObject(int cl, CExpr expr, boolean complexResult)
   {
     if (PRECONDITIONS) require
-      (!_fuir.clazzIsChoice(cl) || complexResult);
+      (!_fuir.clazzIsChoice(cl) || complexResult || _fuir.clazzIs(cl, SpecialClazzes.c_bool));
 
     var jv = complexResult
                            ? expr

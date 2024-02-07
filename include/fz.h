@@ -475,12 +475,12 @@ jvalue fzE_array_to_java_object0(jsize length, jvalue *args, char * element_clas
   if (strcmp(element_class_name, "bool") == 0 )
   {
     jarray result = (*fzE_jni_env)->NewBooleanArray(fzE_jni_env, length);
-    // NYI does not work like this:
-    // java bool `unsigned char` is 8-bit
-    // our bool is 32-bit int32_t fzTag;
-    printf("NYI");
-    exit(EXIT_FAILURE);
-    (*fzE_jni_env)->SetBooleanArrayRegion(fzE_jni_env, result, 0, length, (jboolean *) args);
+    const jboolean f[] = {JNI_FALSE};
+    const jboolean t[] = {JNI_TRUE};
+    for (int i = 0; i < length; i++)
+      {
+        (*fzE_jni_env)->SetBooleanArrayRegion(fzE_jni_env, result, i, 1, ((int32_t *)args)[i] ? t : f);
+      }
     return (jvalue) result;
   }
   if (strcmp(element_class_name, "i8") == 0 )
