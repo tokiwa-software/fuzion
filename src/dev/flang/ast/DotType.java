@@ -110,7 +110,11 @@ public class DotType extends Expr
    */
   AbstractType typeForInferencing()
   {
-    return _lhs;
+    // could be _lhs.typeType(); but
+    // we can't be sure if feature of type
+    // is already resolved, which would lead
+    // to precondition failures.
+    return null;
   }
 
 
