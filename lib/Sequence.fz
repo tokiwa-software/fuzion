@@ -312,12 +312,12 @@ public Sequence(public T type) ref is
   # if finite), you may use `as_string_all`.
   #
   public redef as_string =>
-    max := (Sequence T).type.AS_STRING_NON_FINITE_MAX_ELEMENTS;
     if finite
       as_string_all
     else
-      indexed.map (t -> if t.values.0 < 10 then $t.values.1 else "…")
-             .take 11
+      max := (Sequence T).type.AS_STRING_NON_FINITE_MAX_ELEMENTS
+      indexed.map (t -> if t.values.0 < max then $t.values.1 else "…")
+             .take max+1
              .as_string_all
 
 
