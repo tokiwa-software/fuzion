@@ -2049,37 +2049,25 @@ public class C extends ANY
   {
     var data = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_data());
     var length = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_length());
+    var loopVar = _names.newTemp();
+
+    // e.g.: fzM_3[i] = (jvalue)(jobject) ((fzT__L5001fuzion__ja___u_Object**)arg4.fzF_0_data)[i]->fields.fzF_0_Java_u_Ref;
+    var body = l.index(loopVar)
+     .assign(
+       args.field(data)
+           .castTo(_types.clazz(_fuir.clazz_fuzionJavaObject())+"*")
+           .index(loopVar)
+           .deref().field(CNames.FIELDS_IN_REF_CLAZZ)
+           .field(_names.fieldName(_fuir.clazz_fuzionJavaObject_Ref()))
+              .castTo("jobject")
+              .castTo("jvalue"));
+
     return CStmnt.seq(
       CStmnt.decl("jvalue *", l),
       l.assign(
         CExpr.call(malloc(), new List<>(args.field(length).mul(CExpr.sizeOfType("jvalue*"))))),
-      new CStmnt() {
-        @Override
-        void code(CString sb)
-        {
-          /*
-            * example code:
-            *
-            * for (int i = 0; i < arg4.fzF_1_length; i++)
-            * {
-            *   fzM_3[i] = (jvalue)(jobject) ((fzT__L5001fuzion__ja___u_Object**)arg4.fzF_0_data)[i]->fields.fzF_0_Java_u_Ref;
-            * };
-            */
-          sb.append(String.format(
-            """
-              for (int i = 0; i < %s; i++)
-                {
-                  %s[i] = (jvalue)(jobject) ((%s*)%s.%s)[i]->%s.%s;
-                }""",
-            args.code() + "." + length.code(),
-            l.code(),
-            _types.clazz(_fuir.clazz_fuzionJavaObject()),
-            args.code(),
-            data.code(),
-            CNames.FIELDS_IN_REF_CLAZZ.code(),
-            _names.fieldName(_fuir.clazz_fuzionJavaObject_Ref()).code()));
-        }
-      });
+        CStmnt.forLoop(loopVar, args.field(length), body)
+    );
   }
 
 
