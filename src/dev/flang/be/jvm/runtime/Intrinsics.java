@@ -271,7 +271,6 @@ public class Intrinsics extends ANY
 
   public static void fuzion_std_exit (int code)
   {
-    Runtime.unsafeIntrinsic();
     System.exit(code);
   }
 
