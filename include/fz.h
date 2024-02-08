@@ -81,8 +81,13 @@ static inline void *fzE_malloc_safe(size_t size) {
 
 #include <jni.h>
 
+// global instance of the jvm
 JavaVM *fzE_jvm              = NULL;
+// global instance of the jvm environment
+// NYI thread-safety
 JNIEnv *fzE_jni_env          = NULL;
+
+// cached jclasses and jmethods which are frequently used
 
 jclass fzE_class_float         = NULL;
 jclass fzE_class_double        = NULL;
@@ -111,6 +116,9 @@ jmethodID fzE_integer_value     = NULL;
 jmethodID fzE_long_value        = NULL;
 jmethodID fzE_boolean_value     = NULL;
 
+// definition of a struct for a jvm result
+// in case of success v0 is used
+// in case of exception v1 is used
 typedef struct fzE_jvm_result fzE_jvm_result;
 struct fzE_jvm_result
 {
@@ -122,6 +130,9 @@ struct fzE_jvm_result
   }fzChoice;
 };
 
+
+// convert 0-terminated utf-8 to modified utf-8 as
+// used by the JVM.
 void utf8_to_mod_utf8(const char *utf8, char *mod_utf8) {
 
   uint8_t *ch = (uint8_t *)utf8;
@@ -166,6 +177,8 @@ void utf8_to_mod_utf8(const char *utf8, char *mod_utf8) {
   *mod_utf8 = '\0';
 }
 
+// initialize the JVM
+// executed once at the start of the application
 void fzE_init_jvm() {
   JavaVMInitArgs vm_args;
 
@@ -203,6 +216,14 @@ void fzE_init_jvm() {
   fzE_boolean_value   = (*fzE_jni_env)->GetMethodID(fzE_jni_env, fzE_class_boolean, "booleanValue", "()Z");
 }
 
+// close the JVM.
+void fzE_destroy_jvm()
+{
+  (*fzE_jvm)->DestroyJavaVM(fzE_jvm);
+}
+
+// helper function to replace char `find`
+// by `replace` in string `str`.
 char* fzE_replace_char(const char* str, char find, char replace){
     char * result = fzE_malloc_safe(strlen(str));
     strcpy(result, str);
@@ -214,6 +235,7 @@ char* fzE_replace_char(const char* str, char find, char replace){
     return result;
 }
 
+// convert a jstring to a utf-8 byte array
 // NYI OPTIMIZATION do conversion in C not via the JVM.
 const char * fzE_java_string_to_utf8_bytes(jstring jstr)
 {
@@ -235,6 +257,7 @@ const char * fzE_java_string_to_utf8_bytes(jstring jstr)
 }
 
 
+// convert a jstring to modified utf-8 bytes
 const char * fzE_java_string_to_modified_utf8(jstring jstr)
 {
   const char * str = (*fzE_jni_env)->GetStringUTFChars(fzE_jni_env, jstr, JNI_FALSE);
@@ -280,6 +303,7 @@ jvalue fzE_bool_to_java_object(bool arg)
 }
 
 
+// convert args that map to java primitives
 jvalue *fzE_convert_args(const char *sig, jvalue *args) {
   int idx = 0;
   sig++;
@@ -341,20 +365,30 @@ jvalue *fzE_convert_args(const char *sig, jvalue *args) {
 }
 
 
-fzE_jvm_result fzE_get_exception()
+// return result, check for exception
+// return exception if there is any
+fzE_jvm_result fzE_return_result(jvalue jv)
 {
-  jthrowable exc =  (*fzE_jni_env)->ExceptionOccurred(fzE_jni_env);
-  assert (exc != NULL);
-  jclass cl  = (*fzE_jni_env)->FindClass(fzE_jni_env, "java/lang/Throwable");
-  assert( cl != NULL );
-  jmethodID mid = (*fzE_jni_env)->GetMethodID(fzE_jni_env, cl, "getMessage", "()Ljava/lang/String;");
-  assert( mid != NULL );
-  jstring exc_message = (jstring) (*fzE_jni_env)->CallObjectMethod(fzE_jni_env, exc, mid);
-  (*fzE_jni_env)->ExceptionClear(fzE_jni_env);
-  return (fzE_jvm_result){ .fzTag = 1, .fzChoice = { .v1 = exc_message } };
+  if ( (*fzE_jni_env)->ExceptionCheck(fzE_jni_env) == JNI_FALSE )
+  {
+    return (fzE_jvm_result){ .fzTag = 0, .fzChoice = { .v0 = jv } };
+  }
+  else
+  {
+    jthrowable exc =  (*fzE_jni_env)->ExceptionOccurred(fzE_jni_env);
+    assert (exc != NULL);
+    jclass cl  = (*fzE_jni_env)->FindClass(fzE_jni_env, "java/lang/Throwable");
+    assert( cl != NULL );
+    jmethodID mid = (*fzE_jni_env)->GetMethodID(fzE_jni_env, cl, "getMessage", "()Ljava/lang/String;");
+    assert( mid != NULL );
+    jstring exc_message = (jstring) (*fzE_jni_env)->CallObjectMethod(fzE_jni_env, exc, mid);
+    (*fzE_jni_env)->ExceptionClear(fzE_jni_env);
+    return (fzE_jvm_result){ .fzTag = 1, .fzChoice = { .v1 = exc_message } };
+  }
 }
 
 
+// call a java constructor
 fzE_jvm_result fzE_call_c0(jstring class_name, jstring signature, jvalue *args)
 {
   const char * sig = fzE_java_string_to_modified_utf8(signature);
@@ -364,12 +398,11 @@ fzE_jvm_result fzE_call_c0(jstring class_name, jstring signature, jvalue *args)
   assert( mid != NULL );
   jvalue result = (jvalue) (*fzE_jni_env)->NewObjectA(fzE_jni_env, cl, mid, fzE_convert_args(sig, args));
 
-  return ( (*fzE_jni_env)->ExceptionCheck(fzE_jni_env) == JNI_FALSE )
-    ? (fzE_jvm_result){ .fzTag = 0, .fzChoice = { .v0 = result } }
-    : fzE_get_exception();
+  return fzE_return_result(result);
 }
 
 
+// call a java static method
 fzE_jvm_result fzE_call_s0(jstring class_name, jstring name, jstring signature, jvalue *args)
 {
   const char * sig = fzE_java_string_to_modified_utf8(signature);
@@ -399,12 +432,12 @@ fzE_jvm_result fzE_call_s0(jstring class_name, jstring name, jstring signature, 
       default:
         result = (jvalue) (*fzE_jni_env)->CallStaticObjectMethodA(fzE_jni_env, cl, mid, fzE_convert_args(sig, args));
     }
-  return ( (*fzE_jni_env)->ExceptionCheck(fzE_jni_env) == JNI_FALSE )
-    ? (fzE_jvm_result){ .fzTag = 0, .fzChoice = { .v0 = result } }
-    : fzE_get_exception();
+
+  return fzE_return_result(result);
 }
 
 
+// call a java virtual method
 fzE_jvm_result fzE_call_v0(jstring class_name, jstring name, jstring signature, jobject thiz, jvalue *args)
 {
   const char * sig = fzE_java_string_to_modified_utf8(signature);
@@ -438,12 +471,12 @@ fzE_jvm_result fzE_call_v0(jstring class_name, jstring name, jstring signature, 
       default:
         result = (jvalue) (*fzE_jni_env)->CallObjectMethodA(fzE_jni_env, thiz, mid, fzE_convert_args(sig, args));
     }
-  return ( (*fzE_jni_env)->ExceptionCheck(fzE_jni_env) == JNI_FALSE )
-    ? (fzE_jvm_result){ .fzTag = 0, .fzChoice = { .v0 = result } }
-    : fzE_get_exception();
+
+  return fzE_return_result(result);
 }
 
 
+// convert a 0-terminated utf8-bytes array to a jstring.
 jvalue fzE_string_to_java_object(const char * utf8_bytes)
 {
   int byte_length = strlen(utf8_bytes);
@@ -457,12 +490,14 @@ jvalue fzE_string_to_java_object(const char * utf8_bytes)
 }
 
 
+// test if jobj is null
 bool fzE_java_object_is_null(jobject jobj)
 {
   return (*fzE_jni_env)->IsSameObject(fzE_jni_env, jobj, NULL);
 }
 
 
+// get length of the jarray
 int32_t fzE_array_length(jarray array)
 {
   assert (array != NULL);
@@ -539,6 +574,7 @@ jvalue fzE_array_to_java_object0(jsize length, jvalue *args, char * element_clas
 }
 
 
+// get element in array at index
 jvalue fzE_array_get(jarray array, jsize index, const char *sig)
 {
   switch (sig[0])
@@ -565,6 +601,7 @@ jvalue fzE_array_get(jarray array, jsize index, const char *sig)
 }
 
 
+// get a non-static field on obj.
 jvalue fzE_get_field0(jobject obj, jstring name, const char *sig)
 {
   jclass cl = (*fzE_jni_env)->GetObjectClass(fzE_jni_env, obj);
@@ -595,6 +632,7 @@ jvalue fzE_get_field0(jobject obj, jstring name, const char *sig)
 }
 
 
+// get a static field in class.
 jvalue fzE_get_static_field0(jstring class_name, jstring name, const char *sig)
 {
   jclass cl  = (*fzE_jni_env)->FindClass(fzE_jni_env, fzE_replace_char(fzE_java_string_to_modified_utf8(class_name), '.', '/'));

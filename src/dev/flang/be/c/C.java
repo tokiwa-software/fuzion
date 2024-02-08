@@ -965,6 +965,12 @@ public class C extends ANY
                         _fuir.hasPrecondition(cl) ? CExpr.call(_names.function(cl, true), new List<>()) : CStmnt.EMPTY,
                         CExpr.call(_names.function(cl, false), new List<>())
                         ));
+
+    if (FUZION_JVM_PATH != null)
+      {
+        cf.println("fzE_destroy_jvm();");
+      }
+
     cf.println("}");
   }
 
