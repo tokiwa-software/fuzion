@@ -4,16 +4,16 @@ should not eval mtrue
 should eval mtrue
 eval mtrue!
 x
-eval ones!
-eval ones!
-eval ones!
-eval ones!
-eval ones!
-eval ones!
-eval ones!
-eval ones!
-eval ones!
-eval ones!
+eval once!
+eval once!
+eval once!
+eval once!
+eval once!
+eval once!
+eval once!
+eval once!
+eval once!
+eval once!
 [1,1,1,1,1,1,1,1,1,1]
 y
 Type of 'i32'
