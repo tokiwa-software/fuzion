@@ -302,11 +302,38 @@ public Sequence(public T type) ref is
   # representations of its contents, separated by ',' and enclosed in '['
   # and ']'.
   #
-  public redef as_string => as_list.as_string
+  # In case this Sequence is known to be `finite` or has at most (Sequence T).type
+  # .AS_STRING_NON_FINITE_MAX_ELEMENTS elements, all elements will be shown in the
+  # resulting string. Otherwise, only the first elements will be shown followed by
+  # ",…" as in "[1,2,3,4,5,6,7,8,9,10,…]".
+  #
+  # To force printing of all elements of a finite `Sequence` for which `finite` is
+  # false (which may be the case since a Sequence in general might not know that it
+  # if finite), you may use `as_string_all`.
+  #
+  public redef as_string =>
+    max := (Sequence T).type.AS_STRING_NON_FINITE_MAX_ELEMENTS;
+    if finite || ((map _->unit).drop max).is_empty
+      as_string_all
+    else
+      ((map (.as_string)).take max ++ ["…"]).as_string_all
+
+
+  # create a string representation of this Sequence including all the string
+  # representations of its contents, separated by ',' and enclosed in '['
+  # and ']'.
+  #
+  # NOTE: In case this Sequence is not finite, this will attempt to create an
+  # infinitely long string resulting in failure due to resource exchaustion.
+  #
+  public as_string_all => "[{as_string ","}]"
 
 
   # create a string representation of this Sequence including all the string
   # representations of its contents, separated by 'sep'.
+  #
+  # NOTE: In case this Sequence is not finite, this will attempt to create an
+  # infinitely long string resulting in failure due to resource exchaustion.
   #
   public as_string (sep String) => as_list.as_string sep
 
@@ -577,7 +604,6 @@ public Sequence(public T type) ref is
       (take chunk_size).as_list : ((drop chunk_size).chunk chunk_size)
 
 
-
   # monoid of Sequences with infix concatentation operation.
   #
   public type.concat_monoid : Monoid (Sequence T) is
@@ -590,3 +616,9 @@ public Sequence(public T type) ref is
     #
     e Sequence T =>
       (list T).type.empty
+
+
+  # Maximum number of elements shown for on a call to `as_string` for a non-finite
+  # Sequence.
+  #
+  public type.AS_STRING_NON_FINITE_MAX_ELEMENTS => 10
