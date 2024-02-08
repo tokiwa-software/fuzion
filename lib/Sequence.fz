@@ -313,10 +313,12 @@ public Sequence(public T type) ref is
   #
   public redef as_string =>
     max := (Sequence T).type.AS_STRING_NON_FINITE_MAX_ELEMENTS;
-    if finite || ((map _->unit).drop max).is_empty
+    if finite
       as_string_all
     else
-      ((map (.as_string)).take max ++ ["…"]).as_string_all
+      indexed.map (t -> if t.values.0 < 10 then $t.values.1 else "…")
+             .take 11
+             .as_string_all
 
 
   # create a string representation of this Sequence including all the string
