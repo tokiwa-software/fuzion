@@ -297,6 +297,14 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
 
   # create a string representation of this list including all the string
+  # representations of its contents, separated by ',' and enclosed in '['
+  # and ']'.
+  #
+  public redef as_string =>
+    "[{as_string ","}]"
+
+
+  # create a string representation of this list including all the string
   # representations of its contents, separated by 'sep'.
   #
   public redef as_string (sep String) =>
