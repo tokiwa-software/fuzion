@@ -2755,13 +2755,13 @@ public class Call extends AbstractCall
 
     if (_target != null)
       {
-        // This informs target they it is used which may
+        // This informs target that it is used which may
         // - e.g. for if- and match-expressions -
         // lead to these expressions adding a result field via
         // `addFieldForResult`.
         // This result field is then the target of the call.
         //
-        // NYI there should be another mechanism, for
+        // NYI: CLEANUP: there should be another mechanism, for
         // adding missing result fields instead of misusing
         // `propagateExpectedType`.
         //
