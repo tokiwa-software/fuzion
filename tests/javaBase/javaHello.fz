@@ -72,3 +72,22 @@ javaHello : Java is
   say (fuzion.java.array_to_java_object [java.lang.System.out])
   # NYI does not work yet: error 1: Used abstract feature 'String.utf8' is not implemented by 'String'
   # say (fuzion.java.array_to_java_object ["1","2","3"])
+
+  # array with primitives
+  arr_bool := fuzion.java.array_to_java_object [false, true, false, true]
+  arr_i8 := fuzion.java.array_to_java_object [i8.type.zero, i8.type.one, i8.type.min, i8.type.max]
+  arr_i16 := fuzion.java.array_to_java_object [i16.type.zero, i16.type.one, i16.type.min, i16.type.max]
+  arr_u16 := fuzion.java.array_to_java_object [u16.type.zero, u16.type.one, u16.type.min, u16.type.max]
+  arr_i32 := fuzion.java.array_to_java_object [i32.type.zero, i32.type.one, i32.type.min, i32.type.max]
+  arr_i64 := fuzion.java.array_to_java_object [i64.type.zero, i64.type.one, i64.type.min, i64.type.max]
+  arr_f32 := fuzion.java.array_to_java_object [f32.type.zero, f32.type.one, f32.type.π, f32.type.max]
+  arr_f64 := fuzion.java.array_to_java_object [f64.type.zero, f64.type.one, f64.type.π, f64.type.max]
+
+  say arr_bool
+  say arr_i8
+  say arr_i16
+  say arr_u16
+  say arr_i32
+  say arr_i64
+  say arr_f32
+  say arr_f64
