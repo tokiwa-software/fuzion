@@ -157,7 +157,7 @@ public class CTypes extends ANY
    */
   String scalar(int cl)
   {
-    return scalar(_fuir.getSpecialId(cl));
+    return scalar(_fuir.getSpecialClazz(cl));
   }
 
 

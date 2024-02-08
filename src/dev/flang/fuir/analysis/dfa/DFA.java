@@ -475,7 +475,7 @@ public class DFA extends ANY
     public Pair<Val, Unit> constData(int constCl, byte[] d)
     {
       var o = _unit_;
-      var r = switch (_fuir.getSpecialId(constCl))
+      var r = switch (_fuir.getSpecialClazz(constCl))
         {
         case c_bool -> d[0] == 1 ? _true : _false;
         case c_i8   ,
@@ -1871,11 +1871,11 @@ public class DFA extends ANY
     // NYI: HACK: should properly check if rc is an outcome
       {
         var oc = cl._dfa._fuir.clazzChoice(rc, 0);
-        var res = switch (cl._dfa._fuir.getSpecialId(oc))
+        var res = switch (cl._dfa._fuir.getSpecialClazz(oc))
           {
             case c_i8, c_u16, c_i16, c_i32, c_i64,
               c_f32, c_f64, c_bool, c_unit -> {
-              var v = switch (cl._dfa._fuir.getSpecialId(oc))
+              var v = switch (cl._dfa._fuir.getSpecialClazz(oc))
                 {
                   case c_i8, c_u16, c_i16, c_i32, c_i64,
                     c_f32, c_f64 -> new NumericValue(cl._dfa, oc);
@@ -1896,7 +1896,7 @@ public class DFA extends ANY
         var err = new TaggedValue(cl._dfa, rc, cl._dfa.newInstance(cl._dfa._fuir.clazzChoice(rc, 1), null), 1);
         return okay.join(err);
       }
-    return switch (cl._dfa._fuir.getSpecialId(rc))
+    return switch (cl._dfa._fuir.getSpecialClazz(rc))
       {
         case c_i8, c_u16, c_i16, c_i32, c_i64,
           c_f32, c_f64 -> new NumericValue(cl._dfa, rc);
@@ -1992,7 +1992,7 @@ public class DFA extends ANY
    */
   boolean isBuiltInNumeric(int cl)
   {
-    return switch (_fuir.getSpecialId(cl))
+    return switch (_fuir.getSpecialClazz(cl))
       {
       case
         c_i8   ,

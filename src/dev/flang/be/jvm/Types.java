@@ -401,7 +401,7 @@ public class Types extends ANY implements ClassFileConstants
    */
   boolean isScalar(int cl)
   {
-    var id = _fuir.getSpecialId(cl);
+    var id = _fuir.getSpecialClazz(cl);
     return switch (id)
       {
       case
@@ -422,7 +422,7 @@ public class Types extends ANY implements ClassFileConstants
    */
   JavaType javaType(int cl)
   {
-    var id = _fuir.getSpecialId(cl);
+    var id = _fuir.getSpecialClazz(cl);
     return switch (id)
       {
       case c_bool    -> PrimitiveType.type_boolean;

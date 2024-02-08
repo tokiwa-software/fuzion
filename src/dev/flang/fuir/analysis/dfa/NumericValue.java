@@ -77,7 +77,7 @@ public class NumericValue extends Value implements Comparable<NumericValue>
 
     _dfa = dfa;
 
-    _value = switch (_dfa._fuir.getSpecialId(_clazz))
+    _value = switch (_dfa._fuir.getSpecialClazz(_clazz))
       {
       case c_i8   -> (long) data.get      ();
       case c_i16  -> (long) data.getShort ();
@@ -189,7 +189,7 @@ public class NumericValue extends Value implements Comparable<NumericValue>
 
         var r =
           _value == null || nv._value == null ? true :
-          switch (_dfa._fuir.getSpecialId(_clazz))
+          switch (_dfa._fuir.getSpecialClazz(_clazz))
           {
           case c_i8   -> i8 () == nv.i8 ();
           case c_i16  -> i16() == nv.i16();
@@ -251,7 +251,7 @@ public class NumericValue extends Value implements Comparable<NumericValue>
     return _dfa._fuir.clazzAsString(_clazz) + ":" +
       (_value == null
        ? "--any value--"
-       : switch (_dfa._fuir.getSpecialId(_clazz))
+       : switch (_dfa._fuir.getSpecialClazz(_clazz))
           {
           case c_i8   -> "" + i8 ();
           case c_i16  -> "" + i16();

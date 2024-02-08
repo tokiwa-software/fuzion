@@ -776,14 +776,14 @@ public class FUIR extends IR
 
 
   /**
-   * Obtain SpecialClazzes id from a given clazz.
+   * Obtain SpecialClazz from a given clazz.
    *
    * @param cl a clazz id
    *
-   * @return the corresponding SpecialClazzes id or c_NOT_FOUND if cl is not a
+   * @return the corresponding SpecialClazz or c_NOT_FOUND if cl is not a
    * special clazz.
    */
-  public SpecialClazzes getSpecialId(int cl)
+  public SpecialClazzes getSpecialClazz(int cl)
   {
     var cc = clazz(cl);
     var result = SPECIAL_ID.get(cc);
@@ -1284,17 +1284,6 @@ hw25 is
         add(cc);
       }
     return cc == null ? -1 : id(cc);
-  }
-
-
-  /**
-   * Get the id of clazz u8
-   *
-   * @param the id of u8 or -1 if that clazz was not created.
-   */
-  public int clazz_u8()
-  {
-    return clazz(SpecialClazzes.c_u8);
   }
 
 
@@ -2542,7 +2531,7 @@ hw25 is
    */
   private ByteBuffer deserializeClazz(int cl, ByteBuffer bb)
   {
-    return switch (getSpecialId(cl))
+    return switch (getSpecialClazz(cl))
       {
       case c_Const_String, c_String :
         var len = bb.duplicate().getInt();

@@ -435,7 +435,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
       {
         rc0 = jvm._fuir.clazzChoice(rc, 0);
       }
-    var res = switch (jvm._fuir.getSpecialId(rc0))
+    var res = switch (jvm._fuir.getSpecialClazz(rc0))
       {
         case c_unit -> exec;
         case c_i8 -> {

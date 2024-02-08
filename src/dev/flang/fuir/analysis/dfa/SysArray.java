@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
+import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.util.Errors;
 
 
@@ -90,7 +91,7 @@ public class SysArray extends Value implements Comparable<SysArray>
       {
         if (data.length > 0)
           {
-            _elements = switch (dfa._fuir.getSpecialId(elementClazz))
+            _elements = switch (dfa._fuir.getSpecialClazz(elementClazz))
               {
               case
                 c_i8   , c_i16  ,
@@ -111,7 +112,7 @@ public class SysArray extends Value implements Comparable<SysArray>
         // for u8 and probably does not work:
         for (var i = 0; i < data.length; i++)
           {
-            setel(null, new NumericValue(dfa, dfa._fuir.clazz_u8(), data[i] & 0xff));
+            setel(null, new NumericValue(dfa, dfa._fuir.clazz(SpecialClazzes.c_u8), data[i] & 0xff));
           }
       }
   }
