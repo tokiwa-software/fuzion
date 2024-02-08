@@ -930,7 +930,7 @@ class CodeGen
    */
   JVMOptions.ConstantCreation constantCreationStrategy(int constCl)
   {
-    return switch (_fuir.getSpecialId(constCl))
+    return switch (_fuir.getSpecialClazz(constCl))
       {
       case c_bool, c_i8 , c_i16, c_i32,
            c_i64 , c_u8 , c_u16, c_u32,
@@ -952,7 +952,7 @@ class CodeGen
    */
   Pair<Expr, Expr> createConstant(int constCl, byte[] d)
   {
-    return switch (_fuir.getSpecialId(constCl))
+    return switch (_fuir.getSpecialClazz(constCl))
       {
       case c_bool         -> new Pair<>(Expr.iconst(d[0]                                                                 ), Expr.UNIT);
       case c_i8           -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).get     ()         ), Expr.UNIT);

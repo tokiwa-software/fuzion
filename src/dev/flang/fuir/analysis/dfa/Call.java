@@ -230,7 +230,7 @@ public class Call extends ANY implements Comparable<Call>, Context
                 var msg = "DFA: code to handle intrinsic '" + name + "' is missing";
                 Errors.warning(msg);
                 var rc = _dfa._fuir.clazzResultClazz(_cc);
-                result = switch (_dfa._fuir.getSpecialId(rc))
+                result = switch (_dfa._fuir.getSpecialClazz(rc))
                   {
                   case c_i8, c_i16, c_i32, c_i64,
                        c_u8, c_u16, c_u32, c_u64,
@@ -248,7 +248,7 @@ public class Call extends ANY implements Comparable<Call>, Context
     else if (_dfa._fuir.clazzKind(_cc) == IR.FeatureKind.Native)
       {
         var rc = _dfa._fuir.clazzResultClazz(_cc);
-        result = switch (_dfa._fuir.getSpecialId(rc))
+        result = switch (_dfa._fuir.getSpecialClazz(rc))
           {
             case c_i8, c_i16, c_i32, c_i64,
                  c_u8, c_u16, c_u32, c_u64,
@@ -269,7 +269,7 @@ public class Call extends ANY implements Comparable<Call>, Context
           {
             result = _instance;
           }
-        else if (FUIR.SpecialClazzes.c_unit == _dfa._fuir.getSpecialId(_dfa._fuir.clazzResultClazz(rf)))
+        else if (FUIR.SpecialClazzes.c_unit == _dfa._fuir.getSpecialClazz(_dfa._fuir.clazzResultClazz(rf)))
           {
             result = Value.UNIT;
           }

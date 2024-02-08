@@ -260,7 +260,7 @@ public class C extends ANY
      */
     private Pair<CExpr, CStmnt> constData(int constCl, byte[] d, boolean onHeap /* NYI init "(larger)" constants only once, globally. */)
     {
-      return switch (_fuir.getSpecialId(constCl))
+      return switch (_fuir.getSpecialClazz(constCl))
         {
           case c_bool -> new Pair<>(primitiveExpression(SpecialClazzes.c_bool, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_i8   -> new Pair<>(primitiveExpression(SpecialClazzes.c_i8,   ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
@@ -1685,7 +1685,7 @@ public class C extends ANY
         var ai = new CIdent("arg" + i);
         var ac = _fuir.clazzArgClazz(cl, i);
 
-        switch (_fuir.getSpecialId(ac))
+        switch (_fuir.getSpecialClazz(ac))
           {
             case c_u8, c_u16, c_u32, c_u64,
                  c_i8, c_i16, c_i32, c_i64,
@@ -1696,7 +1696,7 @@ public class C extends ANY
       }
 
     var rc = _fuir.clazzResultClazz(cl);
-    return switch (_fuir.getSpecialId(rc))
+    return switch (_fuir.getSpecialClazz(rc))
       {
         case c_Const_String, c_String ->
         {
