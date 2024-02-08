@@ -55,14 +55,14 @@ factors is
   say ((1..n).filter (x -> n %% x))
 
   yak "factors using pipes to filter and print a Sequence: "
-  (1..n) & (x -> n %% x) | (x -> print x)
+  (1..n & x -> n %% x) ! print
   say ""
 
   say "factors embedded in String: {(1..n) &  (x -> n %% x)}"
 
-  (1..n) | m ->
+  (1..n) ! m ->
     say("factors of $m: " +
-        ((1..m) & (x -> m %% x)))
+        (1..m & x -> m %% x))
 
   // NYI: better syntax
   //

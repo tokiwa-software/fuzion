@@ -95,11 +95,6 @@ public stream(public T type) ref : Sequence T is
   public redef for_each(f T -> unit) unit => while has_next do f(next)
 
 
-  # apply f to all elements in this stream, infix operator synonym of for_each.
-  #
-  public redef infix | (f T -> unit) unit => while has_next do f(next)
-
-
   # apply 'f' to each element 'e' as long as 'f e'
   #
   public redef for_while(f T -> bool) unit => while has_next && f(next)
