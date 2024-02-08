@@ -1067,8 +1067,8 @@ public class Intrinsics extends ANY
         });
 
     var noJava = CStmnt.seq(
-                 CExpr.fprintfstderr("*** Use option -jvmPath=<path to jvm> when compiling to be able to use intrinsics fuzion.java.*.\n"),
-                 CExpr.fprintfstderr("*** Example: fz -c -jvmPath=/usr/lib/jvm/java-17-openjdk-amd64 file.fz\n"),
+                 CExpr.fprintfstderr("*** Set environment variable FUZION_JVM_PATH when compiling to be able to use intrinsics fuzion.java.*.\n"),
+                 CExpr.fprintfstderr("*** Example: FUZION_JVM_PATH=/usr/lib/jvm/java-17-openjdk-amd64 fz -c file.fz\n"),
                  CExpr.exit(1));
     put("fuzion.java.Java_Object.is_null0", (c, cl, outer, in) -> C.FUZION_JVM_PATH == null
                                                                                        ? noJava
