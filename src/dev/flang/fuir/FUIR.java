@@ -2628,6 +2628,9 @@ hw25 is
    *
    * @param cl
    */
+  // NYI: cleanup remove this HACK once
+  // fuzion.java.array_get, fuzion.java.get_field0 and get_static_field0
+  // pass down signature.
   public String javaClassName(int cl)
   {
     if (PRECONDITIONS)
@@ -2666,6 +2669,9 @@ hw25 is
    *
    * @return the signature, e.g., "V"
    */
+  // NYI: cleanup remove this HACK once
+  // fuzion.java.array_get, fuzion.java.get_field0 and get_static_field0
+  // pass down signature.
   public String javaSignature(int cl)
   {
     switch (getSpecialId(cl))
