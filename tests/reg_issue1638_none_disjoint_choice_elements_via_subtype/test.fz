@@ -1,0 +1,11 @@
+test is
+  a : choice (Sequence u8) String is
+  b : String, array u8 (fuzion.sys.internal_array_init u8 -1) unit unit unit is
+    redef utf8 Sequence u8 is (Sequence u8).type.empty
+    redef as_string String is
+      "b"
+    redef is_empty bool is
+      false
+
+  c a := b
+  d a := "hallo"

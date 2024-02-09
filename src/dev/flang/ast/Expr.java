@@ -600,11 +600,16 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
     // Case 2.2: no nested tagging necessary:
     // there is a choice generic in this choice
     // that this value is "directly" assignable to
-    else if (frmlT
-              .choiceGenerics()
-              .stream()
-              .anyMatch(cg -> cg.isDirectlyAssignableFrom(value.type())))
+    else if (!frmlT.directlyAssignableChoiceGenerics(value.type()).isEmpty())
       {
+        // See test reg_issue1638 for why we can not treat string
+        // constants as Strings when assigning to choice.
+        AbstractType t = (value instanceof StrConst) ? Types.resolved.t_Const_String : value.type();
+        if (frmlT.directlyAssignableChoiceGenerics(t).size() > 1)
+          {
+            AstErrors.ambiguousAssignmentToChoice(value.pos(), frmlT, t);
+          }
+
         return new Tag(value, frmlT);
       }
     // Case 3: nested tagging necessary
@@ -622,7 +627,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
 
         if (cgs.size() > 1)
           {
-            AstErrors.ambiguousAssignmentToChoice(frmlT, value);
+            AstErrors.ambiguousAssignmentToChoice(value.pos(), frmlT, value.type());
           }
 
         if (CHECKS) check
