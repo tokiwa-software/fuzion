@@ -49,13 +49,13 @@ public class CTypes extends ANY
   /*
    * type of clazzId field in ref instances
    */
-  private static final String typeClazzID = scalar(SpecialClazzes.c_u32);
+  private static final String typeClazzID = "uint32_t";
 
 
   /*
    * type of the tag field in choices
    */
-  private static final String typeTagName = scalar(SpecialClazzes.c_i32);
+  private static final String typeTagName = "int32_t";
 
 
   /*----------------------------  variables  ----------------------------*/
