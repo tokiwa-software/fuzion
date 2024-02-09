@@ -29,7 +29,7 @@ package dev.flang.be.c;
 import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
-
+import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.util.ANY;
 import dev.flang.util.List;
 
@@ -41,6 +41,21 @@ import dev.flang.util.List;
  */
 public class CTypes extends ANY
 {
+
+
+  /*----------------------------  constants  ----------------------------*/
+
+
+  /*
+   * type of clazzId field in ref instances
+   */
+  private static final String typeClazzID = "uint32_t";
+
+
+  /*
+   * type of the tag field in choices
+   */
+  private static final String typeTagName = "int32_t";
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -272,14 +287,14 @@ public class CTypes extends ANY
         if (_fuir.clazzIsRef(cl))
           {
             var vcl = _fuir.clazzAsValue(cl);
-            els.add(CStmnt.decl("uint32_t", _names.CLAZZ_ID));
+            els.add(CStmnt.decl(typeClazzID, _names.CLAZZ_ID));
             els.add(CStmnt.decl(clazz(vcl), _names.FIELDS_IN_REF_CLAZZ));
           }
         else if (_fuir.clazzIsChoice(cl))
           {
             if (!_fuir.clazzIsChoiceOfOnlyRefs(cl))
               {
-                els.add(CStmnt.decl("int32_t", _names.TAG_NAME));
+                els.add(CStmnt.decl(typeTagName, _names.TAG_NAME));
               }
             var uls = new List<CStmnt>();
             for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
