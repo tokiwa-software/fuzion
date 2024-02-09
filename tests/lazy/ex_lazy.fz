@@ -46,10 +46,10 @@ ex_lazy is
       head => h
       tail => t
 
-  ones => say "eval ones!"; lst 1 ones
+  stars => say "eval stars!"; lst "*" stars
 
   say "x"
-  say (ones.take 10)
+  say (stars.take 10)
   say "y"
 
   type_of2(W type, x Lazy W) Type => W
