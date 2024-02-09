@@ -34,6 +34,7 @@ import java.lang.reflect.Method;
 
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
+import dev.flang.ast.Types;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -206,12 +207,59 @@ public class JavaInterface extends ANY
     if (res != null)
       {
         // convert Value[] containing Java instances into corresponding Java array
-        if (res instanceof Value[] va)
+        if (res instanceof ValueWithClazz[] va)
           {
             var oa = new Object[va.length];
             for (var ix = 0; ix < va.length; ix++)
               {
-                oa[ix] = instanceToJavaObject((Instance) va[ix]);
+                if (va[ix].clazz()._type == Types.resolved.t_i8)
+                  {
+                    oa[ix] = va[ix].i8Value();
+                  }
+                else if (va[ix].clazz()._type == Types.resolved.t_i16)
+                  {
+                    oa[ix] = va[ix].i16Value();
+                  }
+                else if (va[ix].clazz()._type == Types.resolved.t_i32)
+                  {
+                    oa[ix] = va[ix].i32Value();
+                  }
+                else if (va[ix].clazz()._type == Types.resolved.t_i64)
+                  {
+                    oa[ix] = va[ix].i64Value();
+                  }
+                else if (va[ix].clazz()._type == Types.resolved.t_u8)
+                  {
+                    oa[ix] = va[ix].u8Value();
+                  }
+                else if (va[ix].clazz()._type == Types.resolved.t_u8)
+                  {
+                    oa[ix] = va[ix].u16Value();
+                  }
+                else if (va[ix].clazz()._type == Types.resolved.t_u16)
+                  {
+                    oa[ix] = va[ix].u32Value();
+                  }
+                else if (va[ix].clazz()._type == Types.resolved.t_u32)
+                  {
+                    oa[ix] = va[ix].u64Value();
+                  }
+                else if (va[ix].clazz()._type == Types.resolved.t_u64)
+                  {
+                    oa[ix] = va[ix].f32Value();
+                  }
+                else if (va[ix].clazz()._type == Types.resolved.t_f32)
+                  {
+                    oa[ix] = va[ix].f64Value();
+                  }
+                else if (va[ix].clazz()._type == Types.resolved.t_f64)
+                  {
+                    oa[ix] = va[ix].boolValue();
+                  }
+                else
+                  {
+                    oa[ix] = instanceToJavaObject(va[ix].instance());
+                  }
               }
 
             // find most general array element clazz ec
@@ -369,14 +417,38 @@ public class JavaInterface extends ANY
     if (PRECONDITIONS) require
       (resultClazz != null);
 
-    if      (resultClazz == Clazzes.i8 .getIfCreated() && o instanceof Byte      b) { return new i8Value(b); }
-    else if (resultClazz == Clazzes.u16.getIfCreated() && o instanceof Character c) { return new u16Value(c); }
-    else if (resultClazz == Clazzes.i16.getIfCreated() && o instanceof Short     s) { return new i16Value(s); }
-    else if (resultClazz == Clazzes.i32.getIfCreated() && o instanceof Integer   i) { return new i32Value(i); }
-    else if (resultClazz == Clazzes.i64.getIfCreated() && o instanceof Long      j) { return new i64Value(j); }
-    else if (resultClazz == Clazzes.f32.getIfCreated() && o instanceof Float     f) { return new f32Value(f.floatValue()); }
-    else if (resultClazz == Clazzes.f64.getIfCreated() && o instanceof Double    d) { return new f64Value(d.doubleValue()); }
-    else if (resultClazz == Clazzes.bool  .getIfCreated() && o instanceof Boolean z) { return new boolValue(z); }
+    if (resultClazz == Clazzes.i8.getIfCreated())
+      {
+        return o instanceof Byte b ? new i8Value(b): new i8Value(((Value) o).i8Value());
+      }
+    else if (resultClazz == Clazzes.u16.getIfCreated())
+      {
+        return o instanceof Character c ? new u16Value(c): new u16Value(((Value) o).u16Value());
+      }
+    else if (resultClazz == Clazzes.i16.getIfCreated())
+      {
+        return o instanceof Short s ? new i16Value(s): new i16Value(((Value) o).i16Value());
+      }
+    else if (resultClazz == Clazzes.i32.getIfCreated())
+      {
+        return o instanceof Integer i ? new i32Value(i): new i32Value(((Value) o).i32Value());
+      }
+    else if (resultClazz == Clazzes.i64.getIfCreated())
+      {
+        return o instanceof Long j ? new i64Value(j): new i64Value(((Value) o).i64Value());
+      }
+    else if (resultClazz == Clazzes.f32.getIfCreated())
+      {
+        return o instanceof Float f ? new f32Value(f.floatValue()): new f32Value(((Value) o).f32Value());
+      }
+    else if (resultClazz == Clazzes.f64.getIfCreated())
+      {
+        return o instanceof Double d ? new f64Value(d.doubleValue()): new f64Value(((Value) o).f64Value());
+      }
+    else if (resultClazz == Clazzes.bool.getIfCreated())
+      {
+        return o instanceof Boolean z ? new boolValue(z): new boolValue(((Value) o).boolValue());
+      }
     else if (resultClazz == Clazzes.c_unit.getIfCreated() && o == null             ) { return new Instance(resultClazz); }
     else
       {

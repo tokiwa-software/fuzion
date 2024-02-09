@@ -34,6 +34,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
 import dev.flang.util.ANY;
@@ -2021,12 +2022,16 @@ public class DFA extends ANY
   Value newInstance(int cl, Context context)
   {
     if (PRECONDITIONS) require
-      (!_fuir.clazzIsChoice(cl));
+      (!_fuir.clazzIsChoice(cl) || _fuir.clazzIs(cl, SpecialClazzes.c_bool));
 
     Value r;
     if (isBuiltInNumeric(cl))
       {
         r = new NumericValue(DFA.this, cl);
+      }
+    else if(_fuir.clazzIs(cl, SpecialClazzes.c_bool))
+      {
+        r = _bool;
       }
     else
       {
