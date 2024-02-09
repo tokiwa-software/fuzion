@@ -1861,7 +1861,7 @@ public class C extends ANY
       *
       */
 
-    switch (_fuir.getSpecialId(cl))
+    switch (_fuir.getSpecialClazz(cl))
       {
       case c_i8 :
         return jv.field(new CIdent("b")).castTo(_types.scalar(cl)).ret();
@@ -1948,7 +1948,7 @@ public class C extends ANY
 
     val = CExpr.call(CNames.HEAP_CLONE._name, new List<>(val.adrOf(), val.sizeOfExpr()));
 
-    switch (_fuir.getSpecialId(cl))
+    switch (_fuir.getSpecialClazz(cl))
       {
       case c_i8 :
         return successResult.field(new CIdent("b")).castTo(_types.scalar(cl));

@@ -2674,7 +2674,7 @@ hw25 is
   // pass down signature.
   public String javaSignature(int cl)
   {
-    switch (getSpecialId(cl))
+    switch (getSpecialClazz(cl))
       {
       case c_bool :
         return "Z";
@@ -2696,7 +2696,7 @@ hw25 is
         // NYI what about arrays?
         return "L" + javaClassName(cl) + ";";
       default:
-        throw new UnsupportedOperationException("Unexpected case: " + getSpecialId(cl));
+        throw new UnsupportedOperationException("Unexpected case: " + getSpecialClazz(cl));
       }
   }
 

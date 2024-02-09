@@ -1110,14 +1110,14 @@ public class Intrinsics extends ANY
           var elements = c._names.newTemp();
           return CStmnt
             .seq(
-              c._fuir.getSpecialId(elementType) == SpecialClazzes.c_NOT_FOUND
+              c._fuir.getSpecialClazz(elementType) == SpecialClazzes.c_NOT_FOUND
                                                                               ? c.extractJValues(elements, A0)
                                                                               : CStmnt.EMPTY,
               c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
                 .call("fzE_array_to_java_object0",
                   new List<CExpr>(
                     A0.field(c._names.fieldName(c._fuir.clazz_fuzionSysArray_u8_length())),
-                    c._fuir.getSpecialId(
+                    c._fuir.getSpecialClazz(
                       elementType) == SpecialClazzes.c_NOT_FOUND
                                                                  ? elements
                                                                  : A0.field(c._names
