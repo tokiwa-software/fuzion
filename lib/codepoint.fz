@@ -51,7 +51,7 @@ is
 
   # is this an ASCII code encoded in one byte
   #
-  public is_ascii => codepoint.type.ascii.contains val
+  public redef is_ascii => codepoint.type.ascii.contains val
 
 
   # range of permitted value for a codepoint
