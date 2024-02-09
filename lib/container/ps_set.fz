@@ -73,7 +73,9 @@ is
 
   # add new element k to this set.
   #
-  public add (k K) Set K =>
+  # NYI: this should be intergrated in the mutate effect!
+  #
+  public redef add (k K) Set K =>
     add0 k
 
 
