@@ -713,12 +713,7 @@ class CodeGen
               if (!preCalled                                                             // not calling pre-condition
                   && cc == cl                                                            // calling myself
                   && c != -1 && i != -1 && _jvm._tailCall.callIsTailCall(cl, c, i)       // as a tail call
-
-                  // NYI: UNDER DEVELOPMENT: ignore life time for now. This needs to be revisited when code that is generated
-                  // for tests/calls_on_ref_and_val_target and outerNormalization is fixed.
-                  //
-                  // _fuir.lifeTime(cl, pre).ordinal() <= FUIR.LifeTime.Call.ordinal()
-                  )
+                  && _fuir.lifeTime(cl, pre).ordinal() <= FUIR.LifeTime.Call.ordinal())
                 { // then we can do tail recursion optimization!
 
                   // if present, store target to local #0
