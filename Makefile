@@ -60,7 +60,7 @@ JAVA_FILES_BE_EFFECTS        = $(wildcard $(SRC)/dev/flang/be/effects/*.java    
 JAVA_FILES_BE_JVM            = $(wildcard $(SRC)/dev/flang/be/jvm/*.java        )
 JAVA_FILES_BE_JVM_CLASSFILE  = $(wildcard $(SRC)/dev/flang/be/jvm/classfile/*.java)
 JAVA_FILES_BE_JVM_RUNTIME    = $(wildcard $(SRC)/dev/flang/be/jvm/runtime/*.java)
-JAVA_FILES_TOOLS             = $(wildcard $(SRC)/dev/flang/tools/*.java         ) $(JAVA_FILE_TOOLS_VERSION)
+JAVA_FILES_TOOLS             = $(wildcard $(SRC)/dev/flang/tools/*.java         ) $(JAVA_FILE_TOOLS_VERSION) $(SRC)/module-info.java
 JAVA_FILES_TOOLS_FZJAVA      = $(wildcard $(SRC)/dev/flang/tools/fzjava/*.java  )
 JAVA_FILES_TOOLS_DOCS        = $(wildcard $(SRC)/dev/flang/tools/docs/*.java    )
 JAVA_FILES_MISC_LOGO         = $(wildcard $(SRC)/dev/flang/misc/logo/*.java     )
@@ -274,6 +274,10 @@ MOD_JDK_SECURITY_JGSS_FZ_FILES = $(MOD_JDK_SECURITY_JGSS_DIR)/__marker_for_make_
 MOD_JDK_XML_DOM_FZ_FILES = $(MOD_JDK_XML_DOM_DIR)/__marker_for_make__
 MOD_JDK_ZIPFS_FZ_FILES = $(MOD_JDK_ZIPFS_DIR)/__marker_for_make__
 
+MOD_FLANG_DIR = $(BUILD_DIR)/modules/flang
+MOD_FLANG_FZ_FILES = $(MOD_FLANG_DIR)/__marker_for_make__
+MOD_FLANG = $(MOD_FLANG_DIR).fum
+
 VERSION = $(shell cat $(FZ_SRC)/version.txt)
 
 FUZION_BASE = \
@@ -409,7 +413,7 @@ all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES)
 
 # everything but rarely used java modules
 .PHONY: min-java
-min-java: $(FUZION_BASE) $(MOD_JAVA_BASE) $(MOD_JAVA_XML) $(MOD_JAVA_DATATRANSFER) $(MOD_JAVA_DESKTOP) $(FUZION_FILES)
+min-java: $(FUZION_BASE) $(MOD_JAVA_BASE) $(MOD_JAVA_XML) $(MOD_JAVA_DATATRANSFER) $(MOD_JAVA_DESKTOP) $(MOD_FLANG) $(FUZION_FILES)
 
 # everything but the java modules
 .PHONY: no-java
@@ -1247,3 +1251,13 @@ syntaxcheck: min-java
 .PHONY: add_simple_test
 add_simple_test: no-java
 	$(BUILD_DIR)/bin/fz bin/add_simple_test.fz
+
+$(MOD_FLANG_FZ_FILES): $(MOD_JAVA_BASE) $(MOD_JAVA_MANAGEMENT)
+	rm -f $(MOD_FLANG_DIR).jmod
+	rm -Rf $(MOD_FLANG_DIR)
+	jmod create --class-path $(CLASSES_DIR) $(MOD_FLANG_DIR).jmod
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava -to=$(MOD_FLANG_DIR) -modules=java.base,java.management -verbose=0 $(MOD_FLANG_DIR)"
+	touch $@
+
+$(MOD_FLANG): $(MOD_FLANG_FZ_FILES)
+	$(BUILD_DIR)/bin/fz -sourceDirs=$(MOD_FLANG_DIR) -modules=java.base,java.management -saveLib=$@
