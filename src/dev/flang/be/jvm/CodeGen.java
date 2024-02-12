@@ -648,7 +648,7 @@ class CodeGen
   {
     var cco = _fuir.clazzOuterClazz(cc);   // actual outer clazz of called clazz, more specific than tt
     if (_fuir.clazzIsBoxed(tt) &&
-        !_fuir.clazzIsRef(cco)  // NYI: would be better if the AbstractInterpreter would
+        !_fuir.clazzIsRef(cco)  // NYI: CLEANUP: would be better if the AbstractInterpreter would
                                 // not confront us with boxed references here, such that
                                 // this special handling could be removed.
         )
@@ -695,7 +695,7 @@ class CodeGen
                      "Found call to  " + _fuir.clazzAsString(cc));
       case Intrinsic:
         {
-          if (_fuir.clazzTypeParameterActualType(cc) != -1)  /* type parameter is also of Kind Intrinsic, NYI: should better have its own kind?  */
+          if (_fuir.clazzTypeParameterActualType(cc) != -1)  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
             {
               return new Pair<>(Expr.UNIT, tvalue.drop());
             }
@@ -714,7 +714,7 @@ class CodeGen
                   && cc == cl                                                            // calling myself
                   && c != -1 && i != -1 && _jvm._tailCall.callIsTailCall(cl, c, i)       // as a tail call
 
-                  // NYI: ignore life time for now. This needs to be revisited when code that is generated
+                  // NYI: UNDER DEVELOPMENT: ignore life time for now. This needs to be revisited when code that is generated
                   // for tests/calls_on_ref_and_val_target and outerNormalization is fixed.
                   //
                   // _fuir.lifeTime(cl, pre).ordinal() <= FUIR.LifeTime.Call.ordinal()
@@ -801,7 +801,7 @@ class CodeGen
   public Pair<Expr, Expr> box(Expr val, int vc, int rc)
   {
     var res = val;
-    if (!_fuir.clazzIsRef(vc) && _fuir.clazzIsRef(rc))  // NYI: would be good if the AbstractInterpreter would not call box() in this case
+    if (!_fuir.clazzIsRef(vc) && _fuir.clazzIsRef(rc))  // NYI: CLEANUP: would be good if the AbstractInterpreter would not call box() in this case
       {
         var n = _names.javaClass(rc);
         res = Expr.comment("box from "+_fuir.clazzAsString(vc)+" to "+_fuir.clazzAsString(rc))
@@ -1063,7 +1063,7 @@ class CodeGen
    *
    * @param cl the clazz we are compiling
    *
-   * @param valuecl the original clazz of the value that is to be tagged. NYI: remove?
+   * @param valuecl the original clazz of the value that is to be tagged. NYI: CLEANUP: remove?
    *
    * @param value code to produce the value we are tagging
    *

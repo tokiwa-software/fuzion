@@ -241,8 +241,8 @@ public class Choices extends ANY implements ClassFileConstants
       case boollike           -> PrimitiveType.type_boolean;
       case intlike            -> PrimitiveType.type_int;
       case nullable           -> singleRefTypeInNullable(cl);
-      case refsAndUnits       -> new ClassType(_names.javaInterface(cl)); // NYI: caching!
-      case general            -> new ClassType(_names.javaClass(cl)); // NYI: caching!
+      case refsAndUnits       -> new ClassType(_names.javaInterface(cl)); // NYI: OPTIMIZATION: caching!
+      case general            -> new ClassType(_names.javaClass(cl)); // NYI: OPTIMIZATION: caching!
       };
   }
 
@@ -505,7 +505,7 @@ public class Choices extends ANY implements ClassFileConstants
           var lEnd = new Label();
           for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
             {
-              // NYI: This currently uses a cascade of if..else if.., should better uses tableswitch.
+              // NYI: OPTIMIZATION: This currently uses a cascade of if..else if.., should better uses tableswitch.
               var field = _fuir.matchCaseField(cl, c, i, mc);
               var tags = _fuir.matchCaseTags(cl, c, i, mc);
               for (var tagNum : tags)
@@ -582,7 +582,7 @@ public class Choices extends ANY implements ClassFileConstants
           var lEnd = new Label();
           for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
             {
-              // NYI: This currently uses a cascade of if..else if.., should better uses tableswitch.
+              // NYI: OPTIMIZATION: This currently uses a cascade of if..else if.., should better uses tableswitch.
               var field = _fuir.matchCaseField(cl, c, i, mc);
               var tags = _fuir.matchCaseTags(cl, c, i, mc);
               for (var tagNum : tags)
@@ -633,7 +633,7 @@ public class Choices extends ANY implements ClassFileConstants
           var lEnd = new Label();
           for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
             {
-              // NYI: This currently uses a cascade of if..else if.., should better uses tableswitch.
+              // NYI: OPTIMIZATION: This currently uses a cascade of if..else if.., should better uses tableswitch.
               var field = _fuir.matchCaseField(cl, c, i, mc);
               var tags = _fuir.matchCaseTags(cl, c, i, mc);
               for (var tagNum : tags)

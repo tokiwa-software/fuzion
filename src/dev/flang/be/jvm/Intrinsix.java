@@ -432,7 +432,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
   static Pair<Expr, Expr> newFuzionJavaCall(JVM jvm, int rc, Expr exec)
   {
     var rc0 = rc;
-    if (jvm._fuir.clazzBaseName(rc).startsWith("outcome")) // NYI: proper check!
+    if (jvm._fuir.clazzBaseName(rc).startsWith("outcome")) // NYI: HACK: proper check!
       {
         rc0 = jvm._fuir.clazzChoice(rc, 0);
       }
@@ -501,7 +501,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
       };
     if (rc != rc0)
       {
-        // NYI: check res instanceof JavaError and tag the exception from ((FuzionThrad)Thread.currentThread())._thrownException in this case!
+        // NYI: UNDER DEVELOPMENT: check res instanceof JavaError and tag the exception from ((FuzionThrad)Thread.currentThread())._thrownException in this case!
         res = jvm._types._choices.tag(jvm, rc0, res, rc, 0);
       }
     return jvm._types.javaType(rc) == PrimitiveType.type_void ? new Pair<>(Expr.UNIT, res)
@@ -807,7 +807,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         {
           var name = jvm._names.function(cc, false);
           var in = jvm._fuir.clazzIntrinsicName(cc);
-          var msg = "NYI: missing implementation of JVM backend intrinsic '" +
+          var msg = "missing implementation of JVM backend intrinsic '" +
             in + "', need '" + Intrinsics.class.getName() + "." + name + "' or inline code in " +
             Intrinsix.class.getName() + ".";
           return new Pair<>(null,

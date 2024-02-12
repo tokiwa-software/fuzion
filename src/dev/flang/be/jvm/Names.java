@@ -387,7 +387,7 @@ public class Names extends ANY implements ClassFileConstants
       var p = _prefix;
       var sb = new StringBuilder(p);
       clazzMangledName(cl, sb);
-      // NYI: there might be name conflicts due to different generic instances, so
+      // NYI: UNDER DEVELOPMENT: there might be name conflicts due to different generic instances, so
       // we need to add the clazz id or the actual generics if this is the case:
       //
       //   sb.append("_").append(clazzId2num(cl)).append("_");
@@ -614,7 +614,7 @@ public class Names extends ANY implements ClassFileConstants
   String choiceEntryName(int cc, int tagNum)
   {
     if (PRECONDITIONS) check
-      (// NYI: _types not available here:  _types.choiceKind(cc) == Types.ChoiceImplementations.general,
+      (// NYI: CLEANUP: _types not available here:  _types.choiceKind(cc) == Types.ChoiceImplementations.general,
        tagNum >= 0,
        tagNum < _fuir.clazzNumChoices(cc));
 

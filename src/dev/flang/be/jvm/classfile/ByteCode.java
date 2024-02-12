@@ -398,7 +398,7 @@ abstract class ByteCode extends ANY implements ClassFileConstants
          default           -> false;
          });
 
-    // NYI: Support for goto_w
+    // NYI: UNDER_DEVELOPMENT: Support for goto_w
     int offset = bw.offset(from, to);
     bw.write(bc);
     bw.write((byte) (offset >> 8));
@@ -468,7 +468,7 @@ abstract class ByteCode extends ANY implements ClassFileConstants
 
 
   /**
-   * NYI: determine the max stack use of the bytecodes.
+   * NYI: HACK: determine the max stack use of the bytecodes.
    */
   public int max_stack()
   {
@@ -477,7 +477,7 @@ abstract class ByteCode extends ANY implements ClassFileConstants
   }
 
   /**
-   * NYI: determine the max local index used by the bytecodes.
+   * NYI: HACK: determine the max local index used by the bytecodes.
    */
   public int max_locals()
   {
