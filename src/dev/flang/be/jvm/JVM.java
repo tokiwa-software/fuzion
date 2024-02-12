@@ -44,8 +44,10 @@ import dev.flang.util.List;
 import dev.flang.util.Pair;
 import dev.flang.util.QuietThreadTermination;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -412,15 +414,6 @@ should be avoided as much as possible.
 
 
   /**
-   * For backend `-classes`, this give the name of the directory to create for
-   * the class files.
-   *
-   * NYI: IMPROVEMENT: Should better be the name of the main feature or similar.
-   */
-  static Path PATH_FOR_CLASSES = Path.of("fuzion_generated_classes");
-
-
-  /**
    * JVM code generation phases
    */
   private enum CompilePhase
@@ -522,47 +515,48 @@ should be avoided as much as possible.
       }
       void prepare(JVM jvm)
       {
-        if (!Files.exists(PATH_FOR_CLASSES))
+        var dir = jvm.classesDir();
+        if (!Files.exists(dir))
           {
             try
               {
-                Files.createDirectory(PATH_FOR_CLASSES);
+                Files.createDirectory(dir);
               }
             catch (IOException io)
               {
                 Errors.error("JVM backend I/O error",
-                             "While creating directory '" + PATH_FOR_CLASSES + "', received I/O error '" + io + "'");
+                             "While creating directory '" + dir + "', received I/O error '" + io + "'");
               }
           }
       }
       void compile(JVM jvm, int cl)
       {
+        var dir = jvm.classesDir();
         var cf = jvm._types.classFile(cl);
-        if (cf != null)
+        try
           {
-            try
+            if (cf != null)
               {
-                cf.write(PATH_FOR_CLASSES);
+                cf.write(dir);
               }
-            catch (IOException io)
+            if (jvm._types.hasInterfaceFile(cl))
               {
-                Errors.error("JVM backend I/O error",
-                             "While creating class '" + cf.classFile() + "' in '" + PATH_FOR_CLASSES + "', received I/O error '" + io + "'");
+                cf = jvm._types.interfaceFile(cl);
+                cf.write(dir);
               }
           }
-        if (jvm._types.hasInterfaceFile(cl))
+        catch (IOException io)
           {
-            var ci = jvm._types.interfaceFile(cl);
-            try
-              {
-                ci.write(PATH_FOR_CLASSES);
-              }
-            catch (IOException io)
-              {
-                Errors.error("JVM backend I/O error",
-                             "While creating class '" + ci.classFile() + "' in '" + PATH_FOR_CLASSES + "', received I/O error '" + io + "'");
-              }
+            Errors.error("JVM backend I/O error",
+                         "While creating class '" + cf.classFile() + "' in '" + dir + "', received I/O error '" + io + "'");
           }
+      }
+      void finish(JVM jvm)
+      {
+        jvm.createJavaExecutable(String.format("-cp \"%s\" %s",
+                                               jvm.classesDir().toString() + File.pathSeparator +
+                                               jvm._options.fuzionHome().resolve("classes").normalize(),
+                                               "fzC_universe"));
       }
     },
     SAVE_JAR {
@@ -578,7 +572,7 @@ should be avoided as much as possible.
             m.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
             m.getMainAttributes().put(Attributes.Name.MAIN_CLASS, "fzC_universe");
 
-            jvm._jos = new JarOutputStream(new FileOutputStream(jvm._fuir.clazzBaseName(jvm._fuir.mainClazzId()) + ".jar"), m);
+            jvm._jos = new JarOutputStream(new FileOutputStream(jvm.jarPath().toFile()), m);
           }
         catch (IOException io)
           {
@@ -661,13 +655,14 @@ should be avoided as much as possible.
         try
           {
             jvm._jos.close();
-            jvm._options.verbosePrintln(" + " + jvm._fuir.clazzBaseName(jvm._fuir.mainClazzId()) + ".jar");
+            jvm._options.verbosePrintln(" + " + jvm.jarPath());
           }
         catch (IOException io)
           {
             Errors.error("JVM backend I/O error",
-                         "While writing JAR file, received I/O error '" + io + "'");
+                         "While writing JAR file '" + jvm.jarPath() + "', received I/O error '" + io + "'");
           }
+        jvm.createJavaExecutable("-jar \"" + jvm.jarPath().normalize() + "\"");
       }
     };
 
@@ -787,6 +782,84 @@ should be avoided as much as possible.
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Name of the main feature that is to be used as the name of created code
+   * (jar file, classes dir, etc.).
+   *
+   * @return main feature's base name
+   */
+  String mainName()
+  {
+    return _fuir.clazzBaseName(_fuir.mainClazzId());
+  }
+
+
+  /**
+   * For `-jar` backend: Name of the JAR file to be created.
+   *
+   * @return jar file path created from main feature's base name
+   */
+  Path jarPath()
+  {
+    return Path.of(mainName() + ".jar");
+  }
+
+
+  /**
+   * For `-classes` backend: Name of the classes directory to be created.
+   *
+   * @return classes directory name created from main feature's base name
+   */
+  Path classesDir()
+  {
+    return Path.of(mainName() + ".classes");
+  }
+
+
+  /**
+   * For `-jar` and `-classes` backend: Path of the executable script to run the
+   * application.
+   *
+   * @return executable script path created from main feature's base name
+   */
+  Path executablePath()
+  {
+    return Path.of(mainName());
+  }
+
+
+  /**
+   * Create shell script to execute `java` with given arguments.  This is used
+   * by -jar and -classes backends to create an executable file.
+   *
+   * @param args the space-separated arguments for `java`.
+   */
+  void createJavaExecutable(String args)
+  {
+    var executableName = executablePath();
+    try
+      {
+        _options.verbosePrintln(" + " + executableName);
+        var f = executableName.toFile();
+        var out = new PrintWriter(new FileOutputStream(f));
+        out.println(String.format(// NYI: UNDER DEVELOPMENT: This probably needs to be changed for Windows:
+                                  """
+                                  #!/bin/sh
+
+                                  java %s
+                                  """,
+                                  args));
+        out.close();
+        f.setExecutable(true);
+      }
+    catch (IOException io)
+      {
+        Errors.error("JVM backend I/O error",
+                     "While writing executable file '" + executableName + "', received I/O error '" + io + "'");
+      }
+  }
 
 
   /**
