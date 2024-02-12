@@ -274,9 +274,9 @@ MOD_JDK_SECURITY_JGSS_FZ_FILES = $(MOD_JDK_SECURITY_JGSS_DIR)/__marker_for_make_
 MOD_JDK_XML_DOM_FZ_FILES = $(MOD_JDK_XML_DOM_DIR)/__marker_for_make__
 MOD_JDK_ZIPFS_FZ_FILES = $(MOD_JDK_ZIPFS_DIR)/__marker_for_make__
 
-MOD_FLANG_DIR = $(BUILD_DIR)/modules/flang
-MOD_FLANG_FZ_FILES = $(MOD_FLANG_DIR)/__marker_for_make__
-MOD_FLANG = $(MOD_FLANG_DIR).fum
+MOD_FZ_CMD_DIR = $(BUILD_DIR)/modules/fz_cmd
+MOD_FZ_CMD_FZ_FILES = $(MOD_FZ_CMD_DIR)/__marker_for_make__
+MOD_FZ_CMD = $(MOD_FZ_CMD_DIR).fum
 
 VERSION = $(shell cat $(FZ_SRC)/version.txt)
 
@@ -413,7 +413,7 @@ all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES)
 
 # everything but rarely used java modules
 .PHONY: min-java
-min-java: $(FUZION_BASE) $(MOD_JAVA_BASE) $(MOD_JAVA_XML) $(MOD_JAVA_DATATRANSFER) $(MOD_JAVA_DESKTOP) $(MOD_FLANG) $(FUZION_FILES)
+min-java: $(FUZION_BASE) $(MOD_JAVA_BASE) $(MOD_JAVA_XML) $(MOD_JAVA_DATATRANSFER) $(MOD_JAVA_DESKTOP) $(MOD_FZ_CMD) $(FUZION_FILES)
 
 # everything but the java modules
 .PHONY: no-java
@@ -1167,19 +1167,19 @@ run_tests: run_tests_jvm run_tests_c run_tests_int run_tests_jar
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int
-run_tests_int: $(FZ_INT) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(MOD_JAVA_BASE) $(MOD_FLANG) $(BUILD_DIR)/tests
+run_tests_int: $(FZ_INT) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
 	echo -n "testing interpreter: "
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) int
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c
-run_tests_c: $(FZ_C) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(MOD_FLANG) $(BUILD_DIR)/tests
+run_tests_c: $(FZ_C) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
 	echo -n "testing C backend: "; \
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) c
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_jvm
-run_tests_jvm: $(FZ_JVM) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(MOD_JAVA_BASE) $(MOD_FLANG) $(BUILD_DIR)/tests
+run_tests_jvm: $(FZ_JVM) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
 	echo -n "testing JVM backend: "; \
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) jvm
 
@@ -1189,19 +1189,19 @@ run_tests_parallel: run_tests_jvm_parallel run_tests_c_parallel run_tests_int_pa
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int_parallel
-run_tests_int_parallel: $(FZ_INT) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(MOD_JAVA_BASE) $(MOD_FLANG) $(BUILD_DIR)/tests
+run_tests_int_parallel: $(FZ_INT) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
 	echo -n "testing interpreter: "
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) int
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c_parallel
-run_tests_c_parallel: $(FZ_C) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(MOD_FLANG) $(BUILD_DIR)/tests
+run_tests_c_parallel: $(FZ_C) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
 	echo -n "testing C backend: "; \
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) c
 
 # phony target to run Fuzion tests using jvm backend and report number of failures
 .PHONY .SILENT: run_tests_jvm_parallel
-run_tests_jvm_parallel: $(FZ_JVM) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(MOD_JAVA_BASE) $(MOD_FLANG) $(BUILD_DIR)/tests
+run_tests_jvm_parallel: $(FZ_JVM) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
 	echo -n "testing JVM backend: "; \
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) jvm
 
@@ -1252,12 +1252,15 @@ syntaxcheck: min-java
 add_simple_test: no-java
 	$(BUILD_DIR)/bin/fz bin/add_simple_test.fz
 
-$(MOD_FLANG_FZ_FILES): $(MOD_JAVA_BASE) $(MOD_JAVA_MANAGEMENT)
-	rm -f $(MOD_FLANG_DIR).jmod
-	rm -Rf $(MOD_FLANG_DIR)
-	jmod create --class-path $(CLASSES_DIR) $(MOD_FLANG_DIR).jmod
-	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava -to=$(MOD_FLANG_DIR) -modules=java.base,java.management -verbose=0 $(MOD_FLANG_DIR)"
+$(MOD_FZ_CMD_DIR).jmod: $(FUZION_BASE)
+	rm -f $(MOD_FZ_CMD_DIR).jmod
+	jmod create --class-path $(CLASSES_DIR) $(MOD_FZ_CMD_DIR).jmod
+	echo " + build/modules/fz_cmd.jmod"
+
+$(MOD_FZ_CMD_FZ_FILES): $(MOD_FZ_CMD_DIR).jmod $(MOD_JAVA_BASE) $(MOD_JAVA_MANAGEMENT)
+	rm -Rf $(MOD_FZ_CMD_DIR)
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava -to=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management -verbose=0 $(MOD_FZ_CMD_DIR)"
 	touch $@
 
-$(MOD_FLANG): $(MOD_FLANG_FZ_FILES)
-	$(BUILD_DIR)/bin/fz -sourceDirs=$(MOD_FLANG_DIR) -modules=java.base,java.management -saveLib=$@
+$(MOD_FZ_CMD): $(MOD_FZ_CMD_FZ_FILES)
+	$(BUILD_DIR)/bin/fz -sourceDirs=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management -saveLib=$@

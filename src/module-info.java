@@ -20,11 +20,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of module flang
+ * Source of module fz_cmd
  *
  *---------------------------------------------------------------------*/
 
-module flang {
+module fz_cmd {
   // NYI remove this dependency?
   // currently used in Fuzion.java:
   // long _timer = java.lang.management.ManagementFactory.getRuntimeMXBean().getStartTime();

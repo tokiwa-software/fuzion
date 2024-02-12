@@ -21,6 +21,6 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = flang
-FUZION_OPTIONS = -unsafeIntrinsics=on -modules=java.base,flang
+override NAME = fz_cmd
+FUZION_OPTIONS = -unsafeIntrinsics=on -modules=java.base,fz_cmd
 include ../simple.mk
