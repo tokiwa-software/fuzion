@@ -253,8 +253,8 @@ public class Types extends ANY implements ClassFileConstants
             case voidlike, unitlike, boollike, intlike, nullable -> false;
             case refsAndUnits, general                           -> true;
             };
-      case Routine   -> true; // NYI clazzNeedsCode(cl);
-      case Intrinsic -> true; // NYI || _fuir.hasPrecondition(cl);
+      case Routine   -> true; // NYI: UNDER DEVELOPMENT: clazzNeedsCode(cl);
+      case Intrinsic -> true; // NYI: UNDER DEVELOPMENT: _fuir.hasPrecondition(cl);
       default        -> false;
       };
   }
@@ -447,9 +447,9 @@ public class Types extends ANY implements ClassFileConstants
             {
               yield PrimitiveType.type_void;
             }
-          else if (_fuir.clazzIsBoxed(cl))  // NYI: for a boxed choice, _fuir.clazzIsChoice(cl) is true, but should better be false
+          else if (_fuir.clazzIsBoxed(cl))  // NYI: CLEANUP: for a boxed choice, _fuir.clazzIsChoice(cl) is true, but should better be false
             {
-              yield new ClassType(_names.javaClass(cl)); // NYI: caching!
+              yield new ClassType(_names.javaClass(cl)); // NYI: OPTIMIZATION: caching!
             }
           else if (_fuir.clazzIsChoice(cl))
             {
@@ -457,7 +457,7 @@ public class Types extends ANY implements ClassFileConstants
             }
           else
             {
-              yield new ClassType(_names.javaClass(cl)); // NYI: caching!
+              yield new ClassType(_names.javaClass(cl)); // NYI: OPTIMIZATION: caching!
             }
         }
       };
@@ -556,12 +556,12 @@ public class Types extends ANY implements ClassFileConstants
    */
   String descriptor(int cl, boolean pre)
   {
-    return descriptor(true /* NYI: this seems the wrong way around */, cl, pre);
+    return descriptor(true /* NYI: CLEANUP: this seems the wrong way around */, cl, pre);
   }
 
   String dynDescriptor(int cl, boolean pre)
   {
-    return descriptor(false /* NYI: this seems the wrong way around */, cl, pre);
+    return descriptor(false /* NYI: CLEANUP: this seems the wrong way around */, cl, pre);
   }
 
   int dynDescriptorArgsCount(int cl, boolean pre)

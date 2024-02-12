@@ -115,7 +115,7 @@ public class ClassFile extends ANY implements ClassFileConstants
     abstract void write(byte[] v);
 
 
-    void writeUTF(String s) // NYI: better use toUTF at the caller and cache the result there
+    void writeUTF(String s) // NYI: OPTIMIZATION: better use toUTF at the caller and cache the result there
     {
       write(toUTF(s));
     }
@@ -563,7 +563,7 @@ public class ClassFile extends ANY implements ClassFileConstants
   /**
    * Utf8-String cpool entry
    *
-   * NYI: These are modified utf8 strings and not standard utf8 strings. We need
+   * NYI: UNDER DEVELOPMENT: These are modified utf8 strings and not standard utf8 strings. We need
    * to check the corner cases (0 bytes) where these to differ!
    */
   class CPUtf8 extends CPEntry
@@ -1141,7 +1141,7 @@ public class ClassFile extends ANY implements ClassFileConstants
     {
       var o = new Kaku();
       o.writeU2(_code.max_stack());
-      o.writeU2(true /* NYI, remove */ ? _num_locals :_code.max_locals());
+      o.writeU2(true /* NYI: CLEANUP: remove */ ? _num_locals :_code.max_locals());
       o.writeU4(_size);
       var ba = new ByteCodeWrite(_where, o);
       _code.code(ba, ClassFile.this);
@@ -1260,7 +1260,7 @@ public class ClassFile extends ANY implements ClassFileConstants
    */
   public Path classFile()
   {
-    // NYI: no support for packages yet!
+    // NYI: UNDER DEVELOPMENT: no support for packages yet!
     return Path.of(_name + ".class");
   }
 

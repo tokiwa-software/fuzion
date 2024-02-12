@@ -415,7 +415,7 @@ should be avoided as much as possible.
    * For backend `-classes`, this give the name of the directory to create for
    * the class files.
    *
-   * NYI: Should should better be the name of the main feature or similar.
+   * NYI: IMPROVEMENT: Should better be the name of the main feature or similar.
    */
   static Path PATH_FOR_CLASSES = Path.of("fuzion_generated_classes");
 
@@ -971,7 +971,7 @@ should be avoided as much as possible.
   {
     var r = _fuir.clazzResultField(cl);
     var t = _fuir.clazzResultClazz(cl);
-    if (pre || !_fuir.clazzIsRef(t) /* NYI: needed? */ && _fuir.clazzIsUnitType(t))
+    if (pre || !_fuir.clazzIsRef(t) /* NYI: UNDER DEVELOPMENT: needed? */ && _fuir.clazzIsUnitType(t))
       {
         return traceReturn(cl, pre)
           .andThen(Expr.RETURN);
@@ -986,7 +986,7 @@ should be avoided as much as possible.
       }
     else
       {
-        /* NYI the following simple examples creates an reference to an undefined result field:
+        /* NYI: UNDER DEVELOPMENT: the following simple examples creates an reference to an undefined result field:
 
              a =>
                b (c i32) is
@@ -1211,7 +1211,7 @@ should be avoided as much as possible.
               .andThen(jt.return0());
 
             var code_comb = cf.codeAttribute("combined precondition and code of " + _fuir.clazzAsString(cl),
-                                             numLocals(cl, pre) /* NYI, num locals! */,
+                                             numLocals(cl, pre) /* NYI: UNDER DEVELOPMENT: num locals! */,
                                              bc_combined,
                                              new List<>(), new List<>());
             cf.method(ClassFileConstants.ACC_STATIC | ClassFileConstants.ACC_PUBLIC, Names.COMBINED_NAME, _types.descriptor(cl, false), new List<>(code_comb));
@@ -1637,7 +1637,7 @@ should be avoided as much as possible.
       }
     return
       _types.isScalar(occ)      ? tvalue :   // reading, e.g., `val` field from `i32` is identity operation
-      _fuir.clazzIsVoidType(rt) ? null       // NYI: this should not be possible, a field of type void is guaranteed to be uninitialized!
+      _fuir.clazzIsVoidType(rt) ? null       // NYI: UNDER DEVELOPMENT: this should not be possible, a field of type void is guaranteed to be uninitialized!
                                 : tvalue.getFieldOrUnit(_names.javaClass(occ),
                                                         _names.field(f),
                                                         _types.resultType(rt));
@@ -1669,7 +1669,7 @@ should be avoided as much as possible.
     Expr res;
     if (_fuir.clazzIsVoidType(rt))
       {
-        // NYI: this should IMHO not happen, where does value come from?
+        // NYI: UNDER DEVELOPMENT: this should IMHO not happen, where does value come from?
         //
         //   throw new Error("assignField called for void type");
         res = null;
@@ -1835,7 +1835,7 @@ should be avoided as much as possible.
     Expr result;
     if (_types.javaType(rt) instanceof AType)
       { // the value type may be a null reference if it is unused.
-        // NYI: The null-check should be removed when reading fields that are known to be initialized.
+        // NYI: UNDER DEVELOPMENT: The null-check should be removed when reading fields that are known to be initialized.
         result = value
           .andThen(Expr.DUP)
           .andThen(Expr.branch(O_ifnonnull,

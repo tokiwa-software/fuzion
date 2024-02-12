@@ -75,7 +75,7 @@ public interface ClassFileConstants
   public static byte[] VERSION_JDK_21  = new byte[] { 0, 0, 0, 65 };   // LTS
 
 
-  public static byte[] DEFAULT_VERSION = VERSION_JDK_5;  // NYI: should be LTS version 17, using 5 only to avoid need for stack frame info entries
+  public static byte[] DEFAULT_VERSION = VERSION_JDK_5;  // NYI: UNDER DEVELOPMENT: should be LTS version 17, using 5 only to avoid need for stack frame info entries
   // public static byte[] DEFAULT_VERSION = VERSION_JDK_17;
 
   public enum CPoolTag
@@ -477,42 +477,42 @@ public interface ClassFileConstants
 
     public Expr load(int index)
     {
-      throw new Error("NYI: load for type " + this);
+      throw new Error("load for type " + this);
     }
 
     public Expr store(int index)
     {
-      throw new Error("NYI: store for type " + this);
+      throw new Error("store for type " + this);
     }
 
     public Expr return0()
     {
-      throw new Error("NYI: return for type " + this);
+      throw new Error("return for type " + this);
     }
 
     public Expr newArray()
     {
-      throw new Error("NYI: newArray for type " + this);
+      throw new Error("newArray for type " + this);
     }
 
     public Expr xaload()
     {
-      throw new Error("NYI: array load for type " + this);
+      throw new Error("array load for type " + this);
     }
 
     public Expr xastore()
     {
-      throw new Error("NYI: array load for type " + this);
+      throw new Error("array load for type " + this);
     }
 
     public Expr pop()
     {
-      throw new Error("NYI: pop for type " + this);
+      throw new Error("pop for type " + this);
     }
 
     public String className()
     {
-      throw new Error("NYI: className for type " + this);
+      throw new Error("className for type " + this);
     }
 
     public JavaType array()

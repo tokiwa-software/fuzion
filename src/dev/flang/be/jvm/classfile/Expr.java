@@ -1209,10 +1209,10 @@ public abstract class Expr extends ByteCode
    * the sequence allocates a new instance and then initializes it but leaves on
    * ref to the instance on the stack.
    *
-   * NYI: Instead of setting the type explicitly, Expr could instead provide a
-   * way to describe its effect on the stack (e.g., putfield removes 2 top
-   * entries) such that type() could use this information to walk back in a
-   * sequence to find the type of the top of the stack.
+   * NYI: IMPROVEMENT: Instead of setting the type explicitly, Expr could
+   * instead provide a way to describe its effect on the stack (e.g., putfield
+   * removes 2 top entries) such that type() could use this information to walk
+   * back in a sequence to find the type of the top of the stack.
    *
    * @param t the type of the value that remains on top of the stack after
    * executing this.
