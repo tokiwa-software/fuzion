@@ -300,7 +300,7 @@ public class Intrinsics extends ANY
 
     if (family != 2 && family != 10)
       {
-        throw new RuntimeException("NYI: UNDER DEVELOPMENT: bind for family="+family);
+        throw new RuntimeException("NYI: UNDER DEVELOPMENT: bind for family=" + family);
       }
     try
       {
@@ -320,7 +320,7 @@ public class Intrinsics extends ANY
                 result[0] = Runtime._openStreams_.add(ss);
                 yield 0;
               }
-            default -> throw new RuntimeException("NYI: UNDER DEVELOPMENT: bind for protocol="+protocol");
+            default -> throw new RuntimeException("NYI: UNDER DEVELOPMENT: bind for protocol=" + protocol);
           };
       }
     catch(BindException e)
@@ -362,7 +362,7 @@ public class Intrinsics extends ANY
             result[0] = sockfd;
             return true;
           }
-        throw new RuntimeException("NYI: UNDER DEVELOPMENT: accept for asc instanceof "+asc.getClass());
+        throw new RuntimeException("NYI: UNDER DEVELOPMENT: accept for asc instanceof " + asc.getClass());
       }
     catch(IOException e)
       {
@@ -381,7 +381,7 @@ public class Intrinsics extends ANY
     var port = Runtime.utf8ByteArrayDataToString((byte[]) port0);
     if (family != 2 && family != 10)
       {
-        throw new RuntimeException("NYI: UNDER DEVELOPMENT: bind for family="+family);
+        throw new RuntimeException("NYI: UNDER DEVELOPMENT: bind for family=" + family);
       }
     try
       {
@@ -401,7 +401,7 @@ public class Intrinsics extends ANY
                 result[0] = Runtime._openStreams_.add(ss);
                 yield 0;
               }
-            default -> throw new RuntimeException("NYI: UNDER DEVELOPMENT: bind for protocol="+protocol");
+            default -> throw new RuntimeException("NYI: UNDER DEVELOPMENT: bind for protocol=" + protocol);
           };
       }
     catch(IOException e)
@@ -481,7 +481,7 @@ public class Intrinsics extends ANY
           }
         else
           {
-            throw new RuntimeException("NYI: UNDER DEVELOPMENT: read for desc instanceof "+desc.getClass());
+            throw new RuntimeException("NYI: UNDER DEVELOPMENT: read for desc instanceof " + desc.getClass());
           }
         result[0] = bytesRead;
         return bytesRead != -1;
