@@ -183,11 +183,12 @@ public class Intrinsix extends ANY implements ClassFileConstants
         "concur.atomic.compare_and_swap0",
         (jvm, cl, pre, cc, tvalue, args) ->
         {
+          var cf = jvm._types.classFile(cl);
           var ac = jvm._fuir.clazzOuterClazz(cc);
           var v = jvm._fuir.lookupAtomicValue(ac);
           var rc  = jvm._fuir.clazzResultClazz(v);
           var tt = tvalue.type();
-          var jt = jvm._types.javaType(rc);
+          var jt = jvm._types.resultType(rc);
           int tslot  = jvm.allocLocal(cl, pre, 1);                  // local var slot for target
           int nvslot = jvm.allocLocal(cl, pre, jt.stackSlots());    // local var slot for arg(1), new value, not casted
           int vslot  = jvm.allocLocal(cl, pre, jt.stackSlots());    // local var slot for old value, not casted.
@@ -209,13 +210,13 @@ public class Intrinsix extends ANY implements ClassFileConstants
           Expr val =
             locked(
                    // preparation: store target in tslot, arg1 in nvslot and value field in vslot
-                   tvalue                                       // target       -> tslot
-                   .andThen(Expr.astore(tslot))                 //
-                   .andThen(args.get(1))                        // new value    -> nslot
-                   .andThen(jt.store(nvslot))                   //
-                   .andThen(tt.load(tslot))                     // target.value -> vslot
-                   .andThen(jvm.getfield(v))                    //
-                   .andThen(jt.store(vslot))                    //
+                   tvalue                                   // target       -> tslot
+                   .andThen(Expr.astore(tslot, tt.vti()))   //
+                   .andThen(args.get(1))                    // new value    -> nslot
+                   .andThen(jt.store(nvslot))               //
+                   .andThen(tt.load(tslot))                 // target.value -> vslot
+                   .andThen(jvm.getfield(v))                //
+                   .andThen(jt.store(vslot))                //
                    // actual comparison:
                    .andThen(jvm.compareValues(cl,
                                               pre,
@@ -223,13 +224,13 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                               jt.load(vslot),
                                               rc))              // cmp_result
                    // conditional assignment code and result
-                   .andThen(Expr.branch(O_ifne,                     // -
-                                        tt.load(tslot)              // tv
-                                        .andThen(jt.load(nvslot))   // tv nv
-                                        .andThen(jvm.putfield(v))   // -
-                                        .andThen(pos),              // - --or-- 1
-                                        neg))                       // - --or-- 0
-                   .andThen(oldv));                                 // v --or-- 0/1
+                   .andThen(Expr.branch(O_ifne,                         // -
+                                        tt.load(tslot)                  // tv
+                                        .andThen(jt.load(nvslot))       // tv nv
+                                        .andThen(jvm.putfield(v))       // -
+                                        .andThen(pos),                  // - --or-- 1
+                                        neg))                           // - --or-- 0
+                   .andThen(oldv));                                     // v --or-- 0/1
           return new Pair<>(val, Expr.UNIT);
         });
 
