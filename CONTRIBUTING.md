@@ -19,9 +19,8 @@ All types of contributions are encouraged and valued. See the [Table of Contents
 - [I Want To Contribute](#i-want-to-contribute)
   - [Reporting Bugs](#reporting-bugs)
   - [Suggesting Enhancements](#suggesting-enhancements)
-  - [Your First Code Contribution](#your-first-code-contribution)
-  - [Improving The Documentation](#improving-the-documentation)
 - [Styleguides](#styleguides)
+  - [Source Code](#source-code)
   - [Commit Messages](#commit-messages)
 - [Join The Project Team](#join-the-project-team)
 
@@ -147,11 +146,54 @@ Updating, improving and correcting the documentation
 
 -->
 
-<!-- TODO
 ## Styleguides
+
+### Source Code
+
+C and Java source code should roughly follow the [GNU Coding
+Standards](https://www.gnu.org/prep/standards/standards.html) with the exception
+that optional braces `{`/`}` in statements should never be omitted.
+
+#### Work-in-Progress code markers
+
+Code that requires additional work or that may profit from a future enhancements
+should be marked with a comment starting `NYI:` followed by a category, if
+applicable an issue id, and an explanation on what should or could be done to
+imporve the code.
+
+The available categories are
+
+- _HACK_ -- the code is incorrect but was made to work in common cases
+- _BUG_ -- the code is incorrect and needs to be fixed
+- _IMPROVEMENT_ -- the code can be improved (preferable use _OPTIMIZATION_ or _CLEANUP_ if applicable)
+- _OPTIMIZATION_ -- code code could be made more efficient
+- _CLEANUP_ -- code codes maintainability could be improved
+- _FUTURE PROBLEM_ -- the code works but might need to be changed in the future, e.g., to support an expected change in the OS, CPU architecture, external libraries, etc.
+- _UNDER DEVELOPMENT_ -- the code is being worked on
+- _COMMENT_ -- the code needs better documentation
+
+Here is an example for a work-in-progress marker:
+
+    if (!f.typeParameter().isTypeFeaturesThisType())  // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
+
 ### Commit Messages
 
--->
+The first line of a commit message should describe the part of Fuzion that is
+affected by the change, followed by a short description of what is changed and,
+if applicable, an issue number this commit is related to.
+
+Here is an example
+
+    lib: fix O(n³) performance of String.split follwed by Sequence.filter, fix #2323
+
+Module identifiers to be used include
+
+- _lib_ the Fuzion base library
+- _fe_ the Fuzion front end
+- _parser_ the Fuzion parser, lexer, etc.
+- _be/c_, _be/jvm_, _be/interpreter_ the Fuzion C, JVM or interpreter backends
+- _me_ the Fuzion middle end
+
 
 <!-- TODO
 ## Join The Project Team
