@@ -159,7 +159,8 @@ that optional braces `{`/`}` in statements should never be omitted.
 Code that requires additional work or that may profit from a future enhancements
 should be marked with a comment starting `NYI:` followed by a category, if
 applicable an issue id, and an explanation on what should or could be done to
-imporve the code.
+improve the code.  For bugs, hacks or otherwise important required work in code
+sections that are otherwise stable, an issue should be created in github.
 
 The available categories are
 
