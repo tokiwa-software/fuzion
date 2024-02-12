@@ -137,6 +137,7 @@ class FeatureWriter extends ANY
                  s.equals(FuzionConstants.ANY_NAME) ||
                  // args use this type: e.g. `arg0 Sequence (i32)`
                  s.equals("Sequence") ||
+                 s.equals("unit") || // clashes with Parser.java/unit()
                  s.equals(FuzionConstants.STRING_NAME) ||
                  /*
                   * ```

@@ -68,7 +68,7 @@ import dev.flang.util.FuzionOptions;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-class Fuzion extends Tool
+public class Fuzion extends Tool
 {
 
   /*----------------------------  constants  ----------------------------*/
