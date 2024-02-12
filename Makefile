@@ -1247,3 +1247,8 @@ syntaxcheck: min-java
 .PHONY: add_simple_test
 add_simple_test: no-java
 	$(BUILD_DIR)/bin/fz bin/add_simple_test.fz
+
+.PHONY: rerecord_simple_tests
+rerecord_simple_tests:
+	echo "ATTENTION: This rerecording is naive. You will have to manually revert any inappropriate changes after recording session."
+	for file in tests/*/ ; do if [ "$$(find "$$file" -maxdepth 1 -type f -name "*.expected_out" -print -quit)" ]; then make record -C build/"$$file"/ && cp build/"$$file"/*.expected_* "$$file"; fi done
