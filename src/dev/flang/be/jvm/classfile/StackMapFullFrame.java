@@ -69,13 +69,13 @@ public class StackMapFullFrame extends ANY implements Comparable<StackMapFullFra
     o.writeU2(locals0.size());
     for (var l : locals0)
       {
-        l.write(o);
+        l.write(o, stackMapTable.classFile());
       }
     var stack = stackMapTable.stacks.get(byteCodePos);
     o.writeU2(stack.size());
     for (var s : stack)
       {
-        s.write(o);
+        s.write(o, stackMapTable.classFile());
       }
   }
 

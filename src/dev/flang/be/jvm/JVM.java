@@ -905,7 +905,7 @@ should be avoided as much as possible.
     if (!_types.isScalar(cl))  // not calls like `u8 0x20` or `f32 3.14`.
       {
         var cf = _types.classFile(cl);
-        var vti = _types.resultType(cl).vti(cf);
+        var vti = _types.resultType(cl).vti();
         result = result.andThen(new0(cl))
           .andThen(cl == _fuir.clazzUniverse()
                    ? Expr.DUP.andThen(Expr.putstatic(_names.javaClass(cl),
@@ -984,7 +984,7 @@ should be avoided as much as possible.
         var jt = _types.javaType(t);
         return
           traceReturn(cl, pre)
-          .andThen(jt.load(current_index(cl), cf))
+          .andThen(jt.load(current_index(cl)))
           .andThen(jt.return0());
       }
     else
@@ -999,7 +999,7 @@ should be avoided as much as possible.
 
         var ft = _types.resultType(t);
         var getf =
-          fieldExists(r) ? (Expr.aload(current_index(cl), ft, _types.javaType(cl).vti(cf) )
+          fieldExists(r) ? (Expr.aload(current_index(cl), ft, _types.javaType(cl).vti())
                             .andThen(getfield(r)))
                          : Expr.UNIT;
         return
@@ -1195,13 +1195,13 @@ should be avoided as much as possible.
             do
               {
                 bc_combined = bc_combined
-                  .andThen(javaTypeOfTarget(cl).load(0, cf));
+                  .andThen(javaTypeOfTarget(cl).load(0));
                 for(var i = 0; i<_fuir.clazzArgCount(cl); i++)
                   {
                     var at = _fuir.clazzArgClazz(cl, i);
                     var jti = _types.resultType(at);
                     bc_combined = bc_combined
-                      .andThen(jti.load(argSlot(cl, i), cf));
+                      .andThen(jti.load(argSlot(cl, i)));
                   }
                 bc_combined = bc_combined
                   .andThen(Expr.invokeStatic(_names.javaClass(cl),
@@ -1239,7 +1239,7 @@ should be avoided as much as possible.
         var at = _types.resultType(ot);
         if (at != PrimitiveType.type_void)
           {
-            var vti = _types.resultType(_fuir.clazzResultClazz(_fuir.clazzOuterRef(cl))).vti(cf);
+            var vti = _types.resultType(_fuir.clazzResultClazz(_fuir.clazzOuterRef(cl))).vti();
             if (vti.needsTwoSlots())
               {
                 result.addAll(vti, vti);
@@ -1256,7 +1256,7 @@ should be avoided as much as possible.
         var ft = _types.resultType(at);
         if (ft != PrimitiveType.type_void)
           {
-            var vti = _types.resultType(_fuir.clazzArgClazz(cl, i)).vti(cf);
+            var vti = _types.resultType(_fuir.clazzArgClazz(cl, i)).vti();
             if (vti.needsTwoSlots())
               {
                 result.addAll(vti, vti);
@@ -1786,7 +1786,7 @@ should be avoided as much as possible.
         !_types.isScalar(rt) &&
         (!_fuir.clazzIsChoice(rt) || _types._choices.kind(rt) == Choices.ImplKind.general))
       {
-        var vti = _types.resultType(rt).vti(cf);
+        var vti = _types.resultType(rt).vti();
         var vl = allocLocal(cl, pre, 1);
         var nl = allocLocal(cl, pre, 1);
         var e = value
@@ -1798,8 +1798,8 @@ should be avoided as much as possible.
           {
             var cc = _names.javaClass(rt);
             e = e
-              .andThen(Expr.aload(nl, jt, cf))
-              .andThen(Expr.aload(vl, jt, cf))
+              .andThen(Expr.aload(nl, jt))
+              .andThen(Expr.aload(vl, jt))
               .andThen(Expr.getfield(cc, Names.TAG_NAME, PrimitiveType.type_int))
               .andThen(Expr.putfield(cc, Names.TAG_NAME, PrimitiveType.type_int));
             var hasref = false;
@@ -1816,11 +1816,11 @@ should be avoided as much as possible.
                     if (ft != PrimitiveType.type_void)
                       {
                         var fn = _types._choices.generalValueFieldName(rt, i);
-                        var v = Expr.aload(vl, jt, cf)
+                        var v = Expr.aload(vl, jt)
                           .andThen(Expr.getfield(cc, fn, ft));
                         var cv = cloneValueOrNull(cl, pre, v, tc, -1);
                         e = e
-                          .andThen(Expr.aload(nl, jt, cf))
+                          .andThen(Expr.aload(nl, jt))
                           .andThen(cv)
                           .andThen(Expr.putfield(cc, fn, ft));
                       }
@@ -1829,8 +1829,8 @@ should be avoided as much as possible.
             if (hasref)
               {
                 e = e
-                  .andThen(Expr.aload(nl, jt, cf))
-                  .andThen(Expr.aload(vl, jt, cf))
+                  .andThen(Expr.aload(nl, jt))
+                  .andThen(Expr.aload(vl, jt))
                   .andThen(Expr.getfield(cc, Names.CHOICE_REF_ENTRY_NAME, Names.ANYI_TYPE))
                   .andThen(Expr.putfield(cc, Names.CHOICE_REF_ENTRY_NAME, Names.ANYI_TYPE));
               }
@@ -1843,20 +1843,20 @@ should be avoided as much as possible.
                 if (fieldExists(fi))
                   {
                     var rti = _fuir.clazzResultClazz(fi);
-                    var v = readField(Expr.aload(vl, jt, cf),
+                    var v = readField(Expr.aload(vl, jt),
                                          rt,
                                          fi,
                                          rti);
                     var cv = cloneValueOrNull(cl, pre, v, rti, fi);
                     e = e
-                      .andThen(Expr.aload(nl,jt, cf))
+                      .andThen(Expr.aload(nl,jt))
                       .andThen(cv)
                       .andThen(putfield(fi));
                   }
               }
           }
         value = e
-          .andThen(Expr.aload(nl, jt, cf));
+          .andThen(Expr.aload(nl, jt));
       }
     return value;
   }
@@ -1997,9 +1997,9 @@ should be avoided as much as possible.
             var v1 = allocLocal(cl, pre, 1);
             var v2 = allocLocal(cl, pre, 1);
             result = value1
-              .andThen(Expr.astore(v1, jt.vti(_types.classFile(cl))))
+              .andThen(Expr.astore(v1, jt.vti()))
               .andThen(value2)
-              .andThen(Expr.astore(v2, jt.vti(_types.classFile(cl))));
+              .andThen(Expr.astore(v2, jt.vti()));
 
             if (_fuir.clazzIsChoice(rt))
               {
@@ -2008,8 +2008,8 @@ should be avoided as much as possible.
 
                 var cc = _names.javaClass(rt);
                 result = result
-                  .andThen(Expr.aload(v1, jt, cf).andThen(Expr.getfield(cc, Names.TAG_NAME, PrimitiveType.type_int)))
-                  .andThen(Expr.aload(v2, jt, cf).andThen(Expr.getfield(cc, Names.TAG_NAME, PrimitiveType.type_int)))
+                  .andThen(Expr.aload(v1, jt).andThen(Expr.getfield(cc, Names.TAG_NAME, PrimitiveType.type_int)))
+                  .andThen(Expr.aload(v2, jt).andThen(Expr.getfield(cc, Names.TAG_NAME, PrimitiveType.type_int)))
                   .andThen(Expr.branch(O_if_icmpeq,
                                        Expr.iconst(1),
                                        Expr.iconst(0)));
@@ -2027,16 +2027,16 @@ should be avoided as much as possible.
                         if (ft != PrimitiveType.type_void)
                           {
                             var fn = _types._choices.generalValueFieldName(rt, i);
-                            var vi1 = Expr.aload(v1, jt, cf).andThen(Expr.getfield(cc, fn, ft));
-                            var vi2 = Expr.aload(v2, jt, cf).andThen(Expr.getfield(cc, fn, ft));
+                            var vi1 = Expr.aload(v1, jt).andThen(Expr.getfield(cc, fn, ft));
+                            var vi2 = Expr.aload(v2, jt).andThen(Expr.getfield(cc, fn, ft));
                             var cmpi = compareValues(cl, pre, vi1, vi2, _fuir.clazzChoice(rt, i))
                               .andThen(Expr.IAND);
                             if ( !_fuir.clazzIsRef(tc) && ft instanceof AType)
                               { // the value type may be a null reference if it is unused.
-                                cmpi = Expr.aload(v1, jt, cf).andThen(Expr.getfield(cc, fn, ft))
+                                cmpi = Expr.aload(v1, jt).andThen(Expr.getfield(cc, fn, ft))
                                   .andThen(Expr.branch
                                            (O_ifnonnull,
-                                            Expr.aload(v2, jt, cf).andThen(Expr.getfield(cc, fn, ft))
+                                            Expr.aload(v2, jt).andThen(Expr.getfield(cc, fn, ft))
                                             .andThen(Expr.branch
                                                      (O_ifnonnull,
                                                       cmpi))));
@@ -2049,8 +2049,8 @@ should be avoided as much as possible.
                 if (hasref)
                   {
                     result = result
-                      .andThen(Expr.aload(v1, jt, cf)).andThen(Expr.getfield(cc, Names.CHOICE_REF_ENTRY_NAME, Names.ANYI_TYPE))
-                      .andThen(Expr.aload(v2, jt, cf)).andThen(Expr.getfield(cc, Names.CHOICE_REF_ENTRY_NAME, Names.ANYI_TYPE))
+                      .andThen(Expr.aload(v1, jt)).andThen(Expr.getfield(cc, Names.CHOICE_REF_ENTRY_NAME, Names.ANYI_TYPE))
+                      .andThen(Expr.aload(v2, jt)).andThen(Expr.getfield(cc, Names.CHOICE_REF_ENTRY_NAME, Names.ANYI_TYPE))
                       .andThen(Expr.branch(O_if_acmpeq,
                                            Expr.iconst(1),
                                            Expr.iconst(0)))
@@ -2069,8 +2069,8 @@ should be avoided as much as possible.
                     if (fieldExists(fi))
                       {
                         var rti = _fuir.clazzResultClazz(fi);
-                        var f1 = readField(Expr.aload(v1, jt, cf), rt, fi, rti);
-                        var f2 = readField(Expr.aload(v2, jt, cf), rt, fi, rti);
+                        var f1 = readField(Expr.aload(v1, jt), rt, fi, rti);
+                        var f2 = readField(Expr.aload(v2, jt), rt, fi, rti);
                         result = result
                           .andThen(compareValues(cl, pre, f1, f2, rti))
                           .andThen(count > 0 ? Expr.IAND  // if several field, use AND to cumulate result

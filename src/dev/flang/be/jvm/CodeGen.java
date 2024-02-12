@@ -297,8 +297,8 @@ class CodeGen
         var cf = _types.classFile(cl);
         var t = e.type();
         var l = _jvm.allocLocal(cl, pre, t.stackSlots());
-        return new Pair<>(t.load(l, cf),
-                          e.andThen(t.store(l, cf)));
+        return new Pair<>(t.load(l),
+                          e.andThen(t.store(l)));
       }
   }
 
@@ -588,7 +588,7 @@ class CodeGen
     if (!cf.hasMethod(dn))
       {
         var jtt = _types.javaType(tt);
-        var tv = jtt.load(0, cf);
+        var tv = jtt.load(0);
         var na = new List<Expr>();
         int slot = 1;
         Expr retoern = Expr.RETURN;
@@ -598,7 +598,7 @@ class CodeGen
               {
                 var at = _fuir.clazzArgClazz(cc, ai);
                 var t = _types.resultType(at);
-                na.add(t.load(slot, cf));
+                na.add(t.load(slot));
                 slot = slot + t.stackSlots();
               }
             retoern = _types.resultType(_fuir.clazzResultClazz(cc)).return0();
@@ -606,7 +606,7 @@ class CodeGen
         else
           {
             var t = _types.javaType(_fuir.clazzResultClazz(cc));
-            na.add(t.load(1, cf));
+            na.add(t.load(1));
           }
         var p = staticAccess(-1, false, tt, cc, tv, na, isCall, -1, -1);
         var code = p._v1
@@ -724,7 +724,7 @@ class CodeGen
                   // if present, store target to local #0
                   var ot = _jvm.javaTypeOfTarget(cl);
                   var code = ot == PrimitiveType.type_void ? tvalue.drop()
-                                                           : tvalue.andThen(ot.store(0, cf));
+                                                           : tvalue.andThen(ot.store(0));
 
                   // store arguments to local vars
                   for (int ai = 0; ai < _fuir.clazzArgCount(cl); ai++)
@@ -820,14 +820,13 @@ class CodeGen
    */
   public Pair<Expr, Expr> current(int cl, boolean pre)
   {
-    var cf = _types.classFile(cl);
     if (_types.isScalar(cl))
       {
-        return new Pair<>(_types.javaType(cl).load(0, cf), Expr.UNIT);
+        return new Pair<>(_types.javaType(cl).load(0), Expr.UNIT);
       }
     else
       {
-        return new Pair<>(Expr.aload(_jvm.current_index(cl), _types.resultType(cl), _types.classFile(cl)), Expr.UNIT);
+        return new Pair<>(Expr.aload(_jvm.current_index(cl), _types.resultType(cl)), Expr.UNIT);
       }
   }
 
@@ -842,7 +841,7 @@ class CodeGen
 
     var cf = _types.classFile(cl);
 
-    return new Pair<>(_types.javaType(_fuir.clazzOuterClazz(cl)).load(0, cf),
+    return new Pair<>(_types.javaType(_fuir.clazzOuterClazz(cl)).load(0),
                       Expr.UNIT);
   }
 
@@ -867,7 +866,7 @@ class CodeGen
     var l = _jvm.argSlot(cl, i);
     var t = _fuir.clazzArgClazz(cl, i);
     var jt = _types.resultType(t);
-    return jt.load(l, cf);
+    return jt.load(l);
   }
 
 
@@ -895,7 +894,7 @@ class CodeGen
     var t = _fuir.clazzArgClazz(cl, i);
     var jt = _types.resultType(t);
     var cf = _types.classFile(cl);
-    return val.andThen(jt.store(l, cf));
+    return val.andThen(jt.store(l));
   }
 
 

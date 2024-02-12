@@ -115,8 +115,8 @@ public interface ClassFileConstants
    */
   public static interface JavaType
   {
-    Expr load(int index, ClassFile cf);
-    Expr store(int index, ClassFile cf);
+    Expr load(int index);
+    Expr store(int index);
     Expr return0();
     Expr newArray();
     Expr xaload();
@@ -144,7 +144,7 @@ public interface ClassFileConstants
     String className();
 
     // null for type void
-    VerificationType vti(ClassFile cf);
+    VerificationType vti();
   }
 
 
@@ -152,11 +152,11 @@ public interface ClassFileConstants
   {
     type_void    ("V", "V", 0)
     {
-      public Expr load(int index, ClassFile cf)
+      public Expr load(int index)
       {
         return Expr.UNIT;
       }
-      public Expr store(int index, ClassFile cf)
+      public Expr store(int index)
       {
         return Expr.UNIT;
       }
@@ -192,18 +192,18 @@ public interface ClassFileConstants
       { // void[] type is java.lang.Object
         return JAVA_LANG_OBJECT;
       }
-      public VerificationType vti(ClassFile cf)
+      public VerificationType vti()
       {
         return null;
       }
     },
     type_int     ("I", "I", 1)
     {
-      public Expr load(int index, ClassFile cf)
+      public Expr load(int index)
       {
         return Expr.iload(index);
       }
-      public Expr store(int index, ClassFile cf)
+      public Expr store(int index)
       {
         return Expr.istore(index);
       }
@@ -228,18 +228,18 @@ public interface ClassFileConstants
         return Expr.POP;
       }
       public String className() { return "int"; }
-      public VerificationType vti(ClassFile cf)
+      public VerificationType vti()
       {
         return VerificationType.Integer;
       }
     },
     type_byte    ("B", "I", 1)
     {
-      public Expr load(int index, ClassFile cf)
+      public Expr load(int index)
       {
         return Expr.iload(index);
       }
-      public Expr store(int index, ClassFile cf)
+      public Expr store(int index)
       {
         return Expr.istore(index);
       }
@@ -264,18 +264,18 @@ public interface ClassFileConstants
         return Expr.POP;
       }
       public String className() { return "byte"; }
-      public VerificationType vti(ClassFile cf)
+      public VerificationType vti()
       {
         return VerificationType.Integer;
       }
     },
     type_short   ("S", "I", 1)
     {
-      public Expr load(int index, ClassFile cf)
+      public Expr load(int index)
       {
         return Expr.iload(index);
       }
-      public Expr store(int index, ClassFile cf)
+      public Expr store(int index)
       {
         return Expr.istore(index);
       }
@@ -300,18 +300,18 @@ public interface ClassFileConstants
         return Expr.POP;
       }
       public String className() { return "short"; }
-      public VerificationType vti(ClassFile cf)
+      public VerificationType vti()
       {
         return VerificationType.Integer;
       }
     },
     type_char    ("C", "I", 1)
     {
-      public Expr load(int index, ClassFile cf)
+      public Expr load(int index)
       {
         return Expr.iload(index);
       }
-      public Expr store(int index, ClassFile cf)
+      public Expr store(int index)
       {
         return Expr.istore(index);
       }
@@ -336,18 +336,18 @@ public interface ClassFileConstants
         return Expr.POP;
       }
       public String className() { return "char"; }
-      public VerificationType vti(ClassFile cf)
+      public VerificationType vti()
       {
         return VerificationType.Integer;
       }
     },
     type_long    ("J", "J", 2)
     {
-      public Expr load(int index, ClassFile cf)
+      public Expr load(int index)
       {
         return Expr.lload(index);
       }
-      public Expr store(int index, ClassFile cf)
+      public Expr store(int index)
       {
         return Expr.lstore(index);
       }
@@ -372,18 +372,18 @@ public interface ClassFileConstants
         return Expr.POP2;
       }
       public String className() { return "long"; }
-      public VerificationType vti(ClassFile cf)
+      public VerificationType vti()
       {
         return VerificationType.Long;
       }
     },
     type_float   ("F", "F", 1)
     {
-      public Expr load(int index, ClassFile cf)
+      public Expr load(int index)
       {
         return Expr.fload(index);
       }
-      public Expr store(int index, ClassFile cf)
+      public Expr store(int index)
       {
         return Expr.fstore(index);
       }
@@ -408,18 +408,18 @@ public interface ClassFileConstants
         return Expr.POP;
       }
       public String className() { return "float"; }
-      public VerificationType vti(ClassFile cf)
+      public VerificationType vti()
       {
         return VerificationType.Float;
       }
     },
     type_double  ("D", "D", 2)
     {
-      public Expr load(int index, ClassFile cf)
+      public Expr load(int index)
       {
         return Expr.dload(index);
       }
-      public Expr store(int index, ClassFile cf)
+      public Expr store(int index)
       {
         return Expr.dstore(index);
       }
@@ -444,18 +444,18 @@ public interface ClassFileConstants
         return Expr.POP2;
       }
       public String className() { return "double"; }
-      public VerificationType vti(ClassFile cf)
+      public VerificationType vti()
       {
         return VerificationType.Double;
       }
     },
     type_boolean ("Z", "I", 1)
     {
-      public Expr load(int index, ClassFile cf)
+      public Expr load(int index)
       {
         return Expr.iload(index);
       }
-      public Expr store(int index, ClassFile cf)
+      public Expr store(int index)
       {
         return Expr.istore(index);
       }
@@ -480,7 +480,7 @@ public interface ClassFileConstants
         return Expr.POP;
       }
       public String className() { return "boolean"; }
-      public VerificationType vti(ClassFile cf)
+      public VerificationType vti()
       {
         return VerificationType.Integer;
       }
@@ -513,7 +513,7 @@ public interface ClassFileConstants
       throw new Error("JavaType.refDescriptor only defined for ref type, not for " + this);
     }
 
-    public Expr load(int index, ClassFile cf)
+    public Expr load(int index)
     {
       throw new Error("NYI: load for type " + this);
     }
@@ -583,14 +583,14 @@ public interface ClassFileConstants
       return descriptor();
     }
 
-    public Expr load(int index, ClassFile cf)
+    public Expr load(int index)
     {
-      return Expr.aload(index, this, vti(cf));
+      return Expr.aload(index, this, vti());
     }
 
-    public Expr store(int index, ClassFile cf)
+    public Expr store(int index)
     {
-      return Expr.astore(index, vti(cf));
+      return Expr.astore(index, vti());
     }
 
     public Expr return0()
@@ -631,9 +631,9 @@ public interface ClassFileConstants
     {
       return cf.cpClass(this).index();
     }
-    public VerificationType vti(ClassFile cf)
+    public VerificationType vti()
     {
-      return new VerificationType(className(), ()->cpIndex(cf));
+      return new VerificationType(className(), (cf)->cpIndex(cf));
     }
 
   }

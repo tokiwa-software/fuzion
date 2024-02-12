@@ -242,55 +242,55 @@ public abstract class Expr extends ByteCode
           {
             stack.pop();
             stack.pop();
-            stack.push(PrimitiveType.type_boolean.vti(smt.classFile()));
+            stack.push(PrimitiveType.type_boolean.vti());
             break;
           }
         case O_caload :
           {
             stack.pop();
             stack.pop();
-            stack.push(PrimitiveType.type_char.vti(smt.classFile()));
+            stack.push(PrimitiveType.type_char.vti());
             break;
           }
         case O_saload :
           {
             stack.pop();
             stack.pop();
-            stack.push(PrimitiveType.type_short.vti(smt.classFile()));
+            stack.push(PrimitiveType.type_short.vti());
             break;
           }
         case O_iaload :
           {
             stack.pop();
             stack.pop();
-            stack.push(PrimitiveType.type_int.vti(smt.classFile()));
+            stack.push(PrimitiveType.type_int.vti());
             break;
           }
         case O_laload :
           {
             stack.pop();
             stack.pop();
-            stack.push(PrimitiveType.type_long.vti(smt.classFile()));
+            stack.push(PrimitiveType.type_long.vti());
             break;
           }
         case O_faload :
           {
             stack.pop();
             stack.pop();
-            stack.push(PrimitiveType.type_float.vti(smt.classFile()));
+            stack.push(PrimitiveType.type_float.vti());
             break;
           }
         case O_daload :
           {
             stack.pop();
             stack.pop();
-            stack.push(PrimitiveType.type_double.vti(smt.classFile()));
+            stack.push(PrimitiveType.type_double.vti());
             break;
           }
         case O_arraylength :
           {
             stack.pop();
-            stack.push(PrimitiveType.type_int.vti(smt.classFile()));
+            stack.push(PrimitiveType.type_int.vti());
             break;
           }
         case O_bastore, O_castore, O_sastore, O_iastore, O_lastore, O_fastore, O_dastore, O_aastore :
@@ -303,7 +303,7 @@ public abstract class Expr extends ByteCode
         case O_newarray :
           {
             stack.pop();
-            stack.push(type().vti(smt.classFile()));
+            stack.push(type().vti());
             break;
           }
         case O_aconst_null :
@@ -570,7 +570,7 @@ public abstract class Expr extends ByteCode
             {
               stack.pop();
             }
-          stack.push(rt.vti(smt.classFile()));
+          stack.push(rt.vti());
         }
     };
   }
@@ -672,7 +672,7 @@ public abstract class Expr extends ByteCode
             {
               stack.pop();
             }
-          stack.push(rt.vti(smt.classFile()));
+          stack.push(rt.vti());
         }
     };
   }
@@ -722,7 +722,7 @@ public abstract class Expr extends ByteCode
             {
               stack.pop();
             }
-          stack.push(rt.vti(smt.classFile()));
+          stack.push(rt.vti());
         }
     };
   }
@@ -753,7 +753,7 @@ public abstract class Expr extends ByteCode
           // objectref
           stack.pop();
           // value
-          stack.push(type.vti(smt.classFile()));
+          stack.push(type.vti());
         }
     };
   }
@@ -815,7 +815,7 @@ public abstract class Expr extends ByteCode
         @Override
         public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
         {
-          stack.push(type.vti(smt.classFile()));
+          stack.push(type.vti());
         }
     };
   }
@@ -984,7 +984,7 @@ public abstract class Expr extends ByteCode
         @Override
         public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
         {
-          stack.push(new VerificationType(type().className(), ()->cpEntry(smt.classFile()).index()));
+          stack.push(new VerificationType(type().className(), (cf)->cpEntry(cf).index()));
         }
       };
   }
@@ -1002,7 +1002,7 @@ public abstract class Expr extends ByteCode
         @Override
         public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
         {
-          stack.push(new VerificationType(type().className(), ()->cpEntry(smt.classFile()).index()));
+          stack.push(new VerificationType(type().className(), (cf)->cpEntry(cf).index()));
         }
       };
   }
@@ -1021,7 +1021,7 @@ public abstract class Expr extends ByteCode
         @Override
         public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
         {
-          stack.push(new VerificationType(t.className(), ()->cpEntry(smt.classFile()).index()));
+          stack.push(new VerificationType(t.className(), (cf)->cpEntry(cf).index()));
         }
       };
   }
@@ -1268,12 +1268,12 @@ public abstract class Expr extends ByteCode
   /**
    * Load ref local variable from slot at given index.
    */
-  public static Expr aload(int n, JavaType type, ClassFile cf)
+  public static Expr aload(int n, JavaType type)
   {
     if (PRECONDITIONS) require
       (type instanceof AType || type.className().equals("void"));
 
-    return aload(n, type, type.vti(cf));
+    return aload(n, type, type.vti());
   }
 
   /**
@@ -1359,7 +1359,7 @@ public abstract class Expr extends ByteCode
           // arrayref, index → value
           stack.pop();
           stack.pop();
-          stack.push(type.vti(smt.classFile()));
+          stack.push(type.vti());
         }
     };
   }
@@ -1386,7 +1386,7 @@ public abstract class Expr extends ByteCode
         @Override
         public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
         {
-          stack.push(new VerificationType(className, ()->smt.classFile().cpClass(className).index()));
+          stack.push(new VerificationType(className, (cf)->cf.cpClass(className).index()));
         }
     };
   }
@@ -1417,7 +1417,7 @@ public abstract class Expr extends ByteCode
         {
           // count → arrayref
           stack.pop();
-          stack.push(type.vti(smt.classFile()));
+          stack.push(type.vti());
         }
       };
   }
@@ -1639,7 +1639,7 @@ public abstract class Expr extends ByteCode
           // NYI: cleanup remove once the
           // backend does not generate redundant
           // checkcasts anymore.
-          isRedundant = type().vti(smt.classFile()).compareTo(stack.peek()) == 0;
+          isRedundant = type().vti().compareTo(stack.peek()) == 0;
         }
     };
   }

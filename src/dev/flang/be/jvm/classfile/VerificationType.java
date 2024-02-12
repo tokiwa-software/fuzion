@@ -27,6 +27,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm.classfile;
 
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import dev.flang.util.ANY;
@@ -59,7 +61,7 @@ public class VerificationType extends ANY implements Comparable<VerificationType
    * if _t == Uninitialized then offset,
    * if _t == Object        then cpool_index;
    */
-  private Supplier<Integer> _s = null;
+  private Function<ClassFile, Integer> _s = null;
 
   // used for comparing VerificationTypes
   // even before we add an entry to the
@@ -112,7 +114,7 @@ public class VerificationType extends ANY implements Comparable<VerificationType
    * @param className the className, used for comparing and unioning verification types.
    * @param s () => cpool_index;
    */
-  public VerificationType(String className, Supplier<Integer> s)
+  public VerificationType(String className, Function<ClassFile, Integer> s)
   {
     if (PRECONDITIONS) require
      (className != null,
@@ -127,14 +129,14 @@ public class VerificationType extends ANY implements Comparable<VerificationType
    * The verification_type_info structure consists of a one-byte tag followed
    * by zero or more bytes, giving more information about the tag.
    */
-  public void write(ClassFile.Kaku o)
+  public void write(ClassFile.Kaku o, ClassFile cf)
   {
     o.writeU1(_type.num);
     switch (_type)
       {
       case Object :
       case Uninitialized :
-        o.writeU2(_s.get());
+        o.writeU2(_s.apply(cf));
         break;
       default:
         break;

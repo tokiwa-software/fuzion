@@ -149,13 +149,13 @@ public class Types extends ANY implements ClassFileConstants
                          vt.descriptor(),
                          new List<>());
                 sig = "(" + vt.argDescriptor() + ")V";
-                cod = rt.load(0, cf)
-                  .andThen(vt.load(1, cf))
+                cod = rt.load(0)
+                  .andThen(vt.load(1))
                   .andThen(Expr.putfield(cn, Names.BOXED_VALUE_FIELD_NAME, vt));
               }
             var bc_box = Expr.new0(cn, rt)
               .andThen(Expr.DUP)
-              .andThen(vt.load(0, cf))
+              .andThen(vt.load(0))
               .andThen(Expr.invokeSpecial(cn, "<init>", sig))
               .andThen(rt.return0());
             var code_box = cf.codeAttribute(Names.BOX_METHOD_NAME + " in " + _fuir.clazzAsString(cl), bc_box, new List<>(), new List<Attribute>(ClassFile.StackMapTable.empty(cf)));
@@ -185,7 +185,7 @@ public class Types extends ANY implements ClassFileConstants
             cf.method(ACC_PUBLIC, Names.MAIN_RUN, "()V", new List<>(code_run));
 
             var bc_main =
-              Expr.aload(0, JAVA_LANG_STRING.array(), cf)
+              Expr.aload(0, JAVA_LANG_STRING.array())
               .andThen(Expr.putstatic(Names.RUNTIME_CLASS, Names.RUNTIME_ARGS, JAVA_LANG_STRING.array()))
               .andThen(Expr.new0(cn, javaType(cl)))
               .andThen(Expr.DUP)

@@ -204,29 +204,29 @@ public class Intrinsix extends ANY implements ClassFileConstants
             { // compare_and_swap: return old value
               pos = Expr.UNIT;
               neg = Expr.UNIT;
-              oldv = jt.load(vslot, cf);
+              oldv = jt.load(vslot);
             }
 
           Expr val =
             locked(
                    // preparation: store target in tslot, arg1 in nvslot and value field in vslot
-                   tvalue                                       // target       -> tslot
-                   .andThen(Expr.astore(tslot, tt.vti(cf)))     //
-                   .andThen(args.get(1))                        // new value    -> nslot
-                   .andThen(jt.store(nvslot, cf))               //
-                   .andThen(tt.load(tslot, cf))                 // target.value -> vslot
-                   .andThen(jvm.getfield(v))                    //
-                   .andThen(jt.store(vslot, cf))                //
+                   tvalue                                   // target       -> tslot
+                   .andThen(Expr.astore(tslot, tt.vti()))   //
+                   .andThen(args.get(1))                    // new value    -> nslot
+                   .andThen(jt.store(nvslot))               //
+                   .andThen(tt.load(tslot))                 // target.value -> vslot
+                   .andThen(jvm.getfield(v))                //
+                   .andThen(jt.store(vslot))                //
                    // actual comparison:
                    .andThen(jvm.compareValues(cl,
                                               pre,
                                               args.get(0),
-                                              jt.load(vslot, cf),
+                                              jt.load(vslot),
                                               rc))              // cmp_result
                    // conditional assignment code and result
                    .andThen(Expr.branch(O_ifne,                         // -
-                                        tt.load(tslot, cf)              // tv
-                                        .andThen(jt.load(nvslot, cf))   // tv nv
+                                        tt.load(tslot)                  // tv
+                                        .andThen(jt.load(nvslot))       // tv nv
                                         .andThen(jvm.putfield(v))       // -
                                         .andThen(pos),                  // - --or-- 1
                                         neg))                           // - --or-- 0

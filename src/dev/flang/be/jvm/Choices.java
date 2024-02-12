@@ -321,9 +321,9 @@ public class Choices extends ANY implements ClassFileConstants
                     }
                 }
 
-              var bc_init = Expr.aload(0, ut, cf)
+              var bc_init = Expr.aload(0, ut)
                 .andThen(Expr.invokeSpecial(cf._super,"<init>","()V"))
-                .andThen(Expr.aload(0, ut, cf))
+                .andThen(Expr.aload(0, ut))
                 .andThen(Expr.iload(1))
                 .andThen(Expr.putfield(cf._name,
                                        Names.TAG_NAME,
@@ -333,7 +333,7 @@ public class Choices extends ANY implements ClassFileConstants
                                                bc_init, new List<>(), new List<Attribute>(ClassFile.StackMapTable.empty(cf)));
               cf.method(ACC_PUBLIC, "<init>", "(I)V", new List<>(code_init));
 
-              var bc_tag = Expr.aload(0, ut, cf)
+              var bc_tag = Expr.aload(0, ut)
                 .andThen(Expr.getfield(cf._name,
                                        Names.TAG_NAME,
                                        PrimitiveType.type_int))
@@ -545,7 +545,7 @@ public class Choices extends ANY implements ClassFileConstants
                     {
                       if (field != -1 && jvm.fieldExists(field))
                         {                                                       //          sub
-                          pos = Expr.aload(jvm.current_index(cl), _types.resultType(cl), cf) //  sub, cur
+                          pos = Expr.aload(jvm.current_index(cl), _types.resultType(cl)) //  sub, cur
                             .andThen(Expr.SWAP)                                 //          cur, sub
                             .andThen(jvm.putfield(field));                      //          -
                         }
@@ -597,7 +597,7 @@ public class Choices extends ANY implements ClassFileConstants
                           pos =                                                 // stack is sub, tag
                             Expr.POP                                            //          sub
                             .andThen(Expr.aload(jvm.current_index(cl),          //          sub, cur
-                                                _types.resultType(cl), cf))
+                                                _types.resultType(cl)))
                             .andThen(Expr.SWAP)                                 //          cur, sub
                             .andThen(Expr.checkcast(rt))                        //          cur, val
                             .andThen(jvm.putfield(field));                      //          -
@@ -649,7 +649,7 @@ public class Choices extends ANY implements ClassFileConstants
                           pos =                                                     // stack is sub, tag
                             Expr.POP                                                //          sub
                             .andThen(Expr.aload(jvm.current_index(cl),              //          sub, cur
-                                                _types.resultType(cl), cf))
+                                                _types.resultType(cl)))
                             .andThen(Expr.SWAP)                                     //          cur, sub
                             .andThen(Expr.getfield(_names.javaClass(subjClazz),     //          cur, val
                                                    generalValueFieldName(subjClazz, tagNum),
