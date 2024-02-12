@@ -30,6 +30,8 @@ import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
 import dev.flang.be.jvm.classfile.Expr;
+import dev.flang.be.jvm.classfile.ClassFile;
+import dev.flang.be.jvm.classfile.ClassFile.Attribute;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 
 import dev.flang.util.Errors;
@@ -292,6 +294,7 @@ class CodeGen
       }
     else
       {
+        var cf = _types.classFile(cl);
         var t = e.type();
         var l = _jvm.allocLocal(cl, pre, t.stackSlots());
         return new Pair<>(t.load(l),
@@ -433,7 +436,7 @@ class CodeGen
   Pair<Expr, Expr> makePair(Expr value, int rt)
   {
     var code = Expr.UNIT;
-    if (_types.javaType(rt) == PrimitiveType.type_void)
+    if (_types.resultType(rt) == PrimitiveType.type_void)
       { // there is no Java value, so treat as code:
         code = value;
         value = _fuir.clazzIsVoidType(rt) ? null : Expr.UNIT;
@@ -544,7 +547,7 @@ class CodeGen
     var rc = _fuir.clazzResultClazz(cc0);
     var dn = _names.dynamicFunction(cc0);
     var ds = isCall ? _types.dynDescriptor(cc0, false)          : "(" + _types.javaType(rc).argDescriptor() + ")V";
-    var dr = isCall ? _types.javaType(rc)                       : PrimitiveType.type_void;
+    var dr = isCall ? _types.resultType(rc)                       : PrimitiveType.type_void;
     if (!intfc.hasMethod(dn))
       {
         intfc.method(ACC_PUBLIC | ACC_ABSTRACT, dn, ds, new List<>());
@@ -584,7 +587,8 @@ class CodeGen
     var cf = _types.classFile(tt);
     if (!cf.hasMethod(dn))
       {
-        var tv = _types.javaType(tt).load(0);
+        var jtt = _types.javaType(tt);
+        var tv = jtt.load(0);
         var na = new List<Expr>();
         int slot = 1;
         Expr retoern = Expr.RETURN;
@@ -597,7 +601,7 @@ class CodeGen
                 na.add(t.load(slot));
                 slot = slot + t.stackSlots();
               }
-            retoern = _types.javaType(_fuir.clazzResultClazz(cc)).return0();
+            retoern = _types.resultType(_fuir.clazzResultClazz(cc)).return0();
           }
         else
           {
@@ -609,7 +613,7 @@ class CodeGen
           .andThen(p._v0 == null ? Expr.UNIT : p._v0)
           .andThen(retoern);
         var ca = cf.codeAttribute(dn + "in class for " + _fuir.clazzAsString(tt),
-                                  code, new List<>(), new List<>());
+                                  code, new List<>(), new List<Attribute>(ClassFile.StackMapTable.empty(cf)));
         cf.method(ACC_PUBLIC, dn, ds, new List<>(ca));
       }
   }
@@ -644,7 +648,7 @@ class CodeGen
   {
     var cco = _fuir.clazzOuterClazz(cc);   // actual outer clazz of called clazz, more specific than tt
     if (_fuir.clazzIsBoxed(tt) &&
-        !_fuir.clazzIsRef(cco)  // NYI: would be better if the AbstractInterpreter would
+        !_fuir.clazzIsRef(cco)  // NYI: CLEANUP: would be better if the AbstractInterpreter would
                                 // not confront us with boxed references here, such that
                                 // this special handling could be removed.
         )
@@ -683,6 +687,7 @@ class CodeGen
     Pair<Expr, Expr> res;
     var oc = _fuir.clazzOuterClazz(cc);
     var rt = preCalled ? _fuir.clazz(FUIR.SpecialClazzes.c_unit) : _fuir.clazzResultClazz(cc);
+    var cf = _types.classFile(cl);
     switch (preCalled ? FUIR.FeatureKind.Routine : _fuir.clazzKind(cc))
       {
       case Abstract :
@@ -690,7 +695,7 @@ class CodeGen
                      "Found call to  " + _fuir.clazzAsString(cc));
       case Intrinsic:
         {
-          if (_fuir.clazzTypeParameterActualType(cc) != -1)  /* type parameter is also of Kind Intrinsic, NYI: should better have its own kind?  */
+          if (_fuir.clazzTypeParameterActualType(cc) != -1)  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
             {
               return new Pair<>(Expr.UNIT, tvalue.drop());
             }
@@ -708,12 +713,7 @@ class CodeGen
               if (!preCalled                                                             // not calling pre-condition
                   && cc == cl                                                            // calling myself
                   && c != -1 && i != -1 && _jvm._tailCall.callIsTailCall(cl, c, i)       // as a tail call
-
-                  // NYI: ignore life time for now. This needs to be revisited when code that is generated
-                  // for tests/calls_on_ref_and_val_target and outerNormalization is fixed.
-                  //
-                  // _fuir.lifeTime(cl, pre).ordinal() <= FUIR.LifeTime.Call.ordinal()
-                  )
+                  && _fuir.lifeTime(cl, pre).ordinal() <= FUIR.LifeTime.Call.ordinal())
                 { // then we can do tail recursion optimization!
 
                   // if present, store target to local #0
@@ -728,7 +728,7 @@ class CodeGen
                     }
 
                   // perform tail call by goto startLabel
-                  code = code.andThen(Expr.gotoLabel(_jvm.startLabel(cl)));
+                  code = code.andThen(Expr.goBacktoLabel(_jvm.startLabel(cl)));
 
                   res = new Pair(null,  // result is void, we do not return from this path.
                                  code);
@@ -796,7 +796,7 @@ class CodeGen
   public Pair<Expr, Expr> box(Expr val, int vc, int rc)
   {
     var res = val;
-    if (!_fuir.clazzIsRef(vc) && _fuir.clazzIsRef(rc))  // NYI: would be good if the AbstractInterpreter would not call box() in this case
+    if (!_fuir.clazzIsRef(vc) && _fuir.clazzIsRef(rc))  // NYI: CLEANUP: would be good if the AbstractInterpreter would not call box() in this case
       {
         var n = _names.javaClass(rc);
         res = Expr.comment("box from "+_fuir.clazzAsString(vc)+" to "+_fuir.clazzAsString(rc))
@@ -821,7 +821,7 @@ class CodeGen
       }
     else
       {
-        return new Pair<>(Expr.aload(_jvm.current_index(cl), _types.javaType(cl)), Expr.UNIT);
+        return new Pair<>(Expr.aload(_jvm.current_index(cl), _types.resultType(cl)), Expr.UNIT);
       }
   }
 
@@ -833,6 +833,8 @@ class CodeGen
   {
     if (PRECONDITIONS) require
       (_fuir.clazzResultClazz(_fuir.clazzOuterRef(cl)) == _fuir.clazzOuterClazz(cl));
+
+    var cf = _types.classFile(cl);
 
     return new Pair<>(_types.javaType(_fuir.clazzOuterClazz(cl)).load(0),
                       Expr.UNIT);
@@ -855,9 +857,10 @@ class CodeGen
       (0 <= i,
        i < _fuir.clazzArgCount(cl));
 
+    var cf = _types.classFile(cl);
     var l = _jvm.argSlot(cl, i);
     var t = _fuir.clazzArgClazz(cl, i);
-    var jt = _types.javaType(t);
+    var jt = _types.resultType(t);
     return jt.load(l);
   }
 
@@ -884,7 +887,8 @@ class CodeGen
 
     var l = _jvm.argSlot(cl, i);
     var t = _fuir.clazzArgClazz(cl, i);
-    var jt = _types.javaType(t);
+    var jt = _types.resultType(t);
+    var cf = _types.classFile(cl);
     return val.andThen(jt.store(l));
   }
 
@@ -1054,7 +1058,7 @@ class CodeGen
    *
    * @param cl the clazz we are compiling
    *
-   * @param valuecl the original clazz of the value that is to be tagged. NYI: remove?
+   * @param valuecl the original clazz of the value that is to be tagged. NYI: CLEANUP: remove?
    *
    * @param value code to produce the value we are tagging
    *

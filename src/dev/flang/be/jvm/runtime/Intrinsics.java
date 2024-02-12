@@ -300,7 +300,7 @@ public class Intrinsics extends ANY
 
     if (family != 2 && family != 10)
       {
-        throw new RuntimeException("NYI");
+        throw new RuntimeException("NYI: UNDER DEVELOPMENT: bind for family=" + family);
       }
     try
       {
@@ -320,7 +320,7 @@ public class Intrinsics extends ANY
                 result[0] = Runtime._openStreams_.add(ss);
                 yield 0;
               }
-            default -> throw new RuntimeException("NYI");
+            default -> throw new RuntimeException("NYI: UNDER DEVELOPMENT: bind for protocol=" + protocol);
           };
       }
     catch(BindException e)
@@ -362,7 +362,7 @@ public class Intrinsics extends ANY
             result[0] = sockfd;
             return true;
           }
-        throw new RuntimeException("NYI");
+        throw new RuntimeException("NYI: UNDER DEVELOPMENT: accept for asc instanceof " + asc.getClass());
       }
     catch(IOException e)
       {
@@ -381,7 +381,7 @@ public class Intrinsics extends ANY
     var port = Runtime.utf8ByteArrayDataToString((byte[]) port0);
     if (family != 2 && family != 10)
       {
-        throw new RuntimeException("NYI");
+        throw new RuntimeException("NYI: UNDER DEVELOPMENT: bind for family=" + family);
       }
     try
       {
@@ -401,7 +401,7 @@ public class Intrinsics extends ANY
                 result[0] = Runtime._openStreams_.add(ss);
                 yield 0;
               }
-            default -> throw new RuntimeException("NYI");
+            default -> throw new RuntimeException("NYI: UNDER DEVELOPMENT: bind for protocol=" + protocol);
           };
       }
     catch(IOException e)
@@ -466,13 +466,13 @@ public class Intrinsics extends ANY
     try
       {
         var desc = Runtime._openStreams_.get(sockfd);
-        // NYI blocking / none blocking read
+        // NYI: UNDER DEVELOPMENT: blocking / none blocking read
         long bytesRead;
         if (desc instanceof DatagramChannel dc)
           {
             bytesRead = dc.receive(ByteBuffer.wrap(buff)) == null
               ? 0
-              // NYI how to determine datagram length?
+              // NYI: UNDER DEVELOPMENT: how to determine datagram length?
               : buff.length;
           }
         else if (desc instanceof ByteChannel sc)
@@ -481,7 +481,7 @@ public class Intrinsics extends ANY
           }
         else
           {
-            throw new RuntimeException("NYI");
+            throw new RuntimeException("NYI: UNDER DEVELOPMENT: read for desc instanceof " + desc.getClass());
           }
         result[0] = bytesRead;
         return bytesRead != -1;
@@ -685,7 +685,7 @@ public class Intrinsics extends ANY
                                     : -1);
   }
 
-  public static boolean fuzion_sys_fileio_lstats(Object s, Object stats) // NYI : should be altered in the future to not resolve symbolic links
+  public static boolean fuzion_sys_fileio_lstats(Object s, Object stats) // NYI: UNDER DEVELOPMENT: should be altered in the future to not resolve symbolic links
   {
     Runtime.unsafeIntrinsic();
     return fuzion_sys_fileio_stats(s, stats);
@@ -853,11 +853,10 @@ public class Intrinsics extends ANY
       }
     while (!result);
 
-    // NYI: comment, fridi:
-    // Furthermore, remove should probably not be called by join, but either by
-    // the Thread itself or by some cleanup mechanism that removes terminated
-    // threads, either when new threads are started or by a system thread that
-    // joins and removes threads that are about to terminate.
+    // NYI: UNDER DEVELOPMENT: remove should probably not be called by join, but
+    // either by the Thread itself or by some cleanup mechanism that removes
+    // terminated threads, either when new threads are started or by a system
+    // thread that joins and removes threads that are about to terminate.
     Runtime._startedThreads_.remove(threadId);
   }
 
