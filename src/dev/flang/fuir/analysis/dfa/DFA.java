@@ -646,9 +646,9 @@ public class DFA extends ANY
 
 
     /**
-     * Create a tagged value of type newcl from an untagged value for type valuecl.
+     * Create a tagged value of type newcl from an untagged value.
      */
-    public Pair<Val, Unit> tag(int cl, int valuecl, Val value, int newcl, int tagNum)
+    public Pair<Val, Unit> tag(int cl, Val value, int newcl, int tagNum)
     {
       Val res = value.value().tag(_call._dfa, newcl, tagNum);
       return new Pair<>(res, _unit_);
