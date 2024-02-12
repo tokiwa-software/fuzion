@@ -75,8 +75,7 @@ public interface ClassFileConstants
   public static byte[] VERSION_JDK_21  = new byte[] { 0, 0, 0, 65 };   // LTS
 
 
-  public static byte[] DEFAULT_VERSION = VERSION_JDK_5;  // NYI: UNDER DEVELOPMENT: should be LTS version 17, using 5 only to avoid need for stack frame info entries
-  // public static byte[] DEFAULT_VERSION = VERSION_JDK_17;
+  public static byte[] DEFAULT_VERSION = VERSION_JDK_21;
 
   public enum CPoolTag
   {
@@ -143,6 +142,9 @@ public interface ClassFileConstants
     default String argDescriptor() { return descriptor(); }
 
     String className();
+
+    // null for type void
+    VerificationType vti();
   }
 
 
@@ -190,6 +192,10 @@ public interface ClassFileConstants
       { // void[] type is java.lang.Object
         return JAVA_LANG_OBJECT;
       }
+      public VerificationType vti()
+      {
+        return null;
+      }
     },
     type_int     ("I", "I", 1)
     {
@@ -222,6 +228,10 @@ public interface ClassFileConstants
         return Expr.POP;
       }
       public String className() { return "int"; }
+      public VerificationType vti()
+      {
+        return VerificationType.Integer;
+      }
     },
     type_byte    ("B", "I", 1)
     {
@@ -254,6 +264,10 @@ public interface ClassFileConstants
         return Expr.POP;
       }
       public String className() { return "byte"; }
+      public VerificationType vti()
+      {
+        return VerificationType.Integer;
+      }
     },
     type_short   ("S", "I", 1)
     {
@@ -286,6 +300,10 @@ public interface ClassFileConstants
         return Expr.POP;
       }
       public String className() { return "short"; }
+      public VerificationType vti()
+      {
+        return VerificationType.Integer;
+      }
     },
     type_char    ("C", "I", 1)
     {
@@ -318,6 +336,10 @@ public interface ClassFileConstants
         return Expr.POP;
       }
       public String className() { return "char"; }
+      public VerificationType vti()
+      {
+        return VerificationType.Integer;
+      }
     },
     type_long    ("J", "J", 2)
     {
@@ -350,6 +372,10 @@ public interface ClassFileConstants
         return Expr.POP2;
       }
       public String className() { return "long"; }
+      public VerificationType vti()
+      {
+        return VerificationType.Long;
+      }
     },
     type_float   ("F", "F", 1)
     {
@@ -382,6 +408,10 @@ public interface ClassFileConstants
         return Expr.POP;
       }
       public String className() { return "float"; }
+      public VerificationType vti()
+      {
+        return VerificationType.Float;
+      }
     },
     type_double  ("D", "D", 2)
     {
@@ -414,6 +444,10 @@ public interface ClassFileConstants
         return Expr.POP2;
       }
       public String className() { return "double"; }
+      public VerificationType vti()
+      {
+        return VerificationType.Double;
+      }
     },
     type_boolean ("Z", "I", 1)
     {
@@ -446,6 +480,10 @@ public interface ClassFileConstants
         return Expr.POP;
       }
       public String className() { return "boolean"; }
+      public VerificationType vti()
+      {
+        return VerificationType.Integer;
+      }
     };
 
 
@@ -547,12 +585,12 @@ public interface ClassFileConstants
 
     public Expr load(int index)
     {
-      return Expr.aload(index, this);
+      return Expr.aload(index, this, vti());
     }
 
     public Expr store(int index)
     {
-      return Expr.astore(index);
+      return Expr.astore(index, vti());
     }
 
     public Expr return0()
@@ -589,6 +627,15 @@ public interface ClassFileConstants
     {
       return "ClassType('" + _descriptor + "')";
     }
+    public int cpIndex(ClassFile cf)
+    {
+      return cf.cpClass(this).index();
+    }
+    public VerificationType vti()
+    {
+      return new VerificationType(className(), (cf)->cpIndex(cf));
+    }
+
   }
 
   public static class ClassType extends AType
@@ -763,6 +810,21 @@ public interface ClassFileConstants
   static int slotCountForArgs(String descriptor)
   {
     return argTypesFromDescriptor(descriptor).mapToInt(x -> x.stackSlots()).sum();
+  }
+
+
+  /**
+   * This counts the number of slots for a call with the given descriptor.  This
+   * is the sum of the slot count of all arguments in the descriptor, not
+   * including the target value.
+   *
+   * @param a call descriptor, e.g., "(JDZLjava/lang/Object;II)F"
+   *
+   * @return the argument count, e.g., 6 for "(JDZLjava/lang/Object;II)F"
+   */
+  static int argCount(String descriptor)
+  {
+    return (int)argTypesFromDescriptor(descriptor).count();
   }
 
 
@@ -1038,6 +1100,12 @@ public interface ClassFileConstants
    * a byte:
    */
   public static final int MAX_INVOKE_INTERFACE_SLOTS = 0xff;
+
+
+  /**
+   * The tag encoding a full frame in a stack map.
+   */
+  public static final int STACK_MAP_FRAME_FULL_FRAME = 255;
 
 
 }

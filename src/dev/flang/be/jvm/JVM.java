@@ -31,11 +31,11 @@ import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.dfa.DFA;
 import dev.flang.fuir.analysis.TailCall;
-
+import dev.flang.be.jvm.classfile.ClassFile;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 import dev.flang.be.jvm.classfile.Expr;
 import dev.flang.be.jvm.classfile.Label;
-
+import dev.flang.be.jvm.classfile.VerificationType;
 import dev.flang.be.jvm.runtime.Runtime;
 
 import dev.flang.util.ANY;
@@ -872,7 +872,7 @@ should be avoided as much as possible.
     for (var j = 0; j < _fuir.clazzArgCount(cl); j++)
       {
         var t = _fuir.clazzArgClazz(cl, j);
-        var jt = _types.javaType(t);
+        var jt = _types.resultType(t);
         l = l + jt.stackSlots();
       }
     return l;
@@ -904,13 +904,15 @@ should be avoided as much as possible.
     var result = Expr.UNIT;
     if (!_types.isScalar(cl))  // not calls like `u8 0x20` or `f32 3.14`.
       {
+        var cf = _types.classFile(cl);
+        var vti = _types.resultType(cl).vti();
         result = result.andThen(new0(cl))
           .andThen(cl == _fuir.clazzUniverse()
                    ? Expr.DUP.andThen(Expr.putstatic(_names.javaClass(cl),
                                                      Names.UNIVERSE_FIELD,
                                                      _types.UNIVERSE_TYPE))
                    : Expr.UNIT)
-          .andThen(Expr.astore(current_index(cl)));
+          .andThen(Expr.astore(current_index(cl), vti));
       }
     return result;
   }
@@ -969,6 +971,7 @@ should be avoided as much as possible.
 
   Expr epilog(int cl, boolean pre)
   {
+    var cf = _types.classFile(cl);
     var r = _fuir.clazzResultField(cl);
     var t = _fuir.clazzResultClazz(cl);
     if (pre || !_fuir.clazzIsRef(t) /* NYI: UNDER DEVELOPMENT: needed? */ && _fuir.clazzIsUnitType(t))
@@ -994,10 +997,9 @@ should be avoided as much as possible.
 
         */
 
-        var jt = _types.javaType(t);
         var ft = _types.resultType(t);
         var getf =
-          fieldExists(r) ? (Expr.aload(current_index(cl), jt)
+          fieldExists(r) ? (Expr.aload(current_index(cl), ft, _types.javaType(cl).vti())
                             .andThen(getfield(r)))
                          : Expr.UNIT;
         return
@@ -1171,10 +1173,13 @@ should be avoided as much as possible.
           .andThen(sl != null ? sl : Expr.UNIT)
           .andThen(code)
           .andThen(epilog);
+
+        var locals = initialLocals(cl);
+
         var code_cl = cf.codeAttribute((pre ? "precondition of " : "") + _fuir.clazzAsString(cl),
                                        numLocals(cl, pre),
                                        bc_cl,
-                                       new List<>(), new List<>());
+                                       new List<>(), new List<>(ClassFile.StackMapTable.fromCode(cf, locals, bc_cl)));
 
         cf.method(ClassFileConstants.ACC_STATIC | ClassFileConstants.ACC_PUBLIC, name, _types.descriptor(cl, pre), new List<>(code_cl));
 
@@ -1182,7 +1187,7 @@ should be avoided as much as possible.
         if (!pre && _fuir.hasPrecondition(cl))
           {
             var bc_combined = Expr.UNIT;
-            var jt = _types.javaType(_fuir.clazzResultClazz(cl));
+            var jt = _types.resultType(_fuir.clazzResultClazz(cl));
 
             // In a loop, generate two calls, one for the precondition (preCond
             // == true), then for the actual routine (preCond == false):
@@ -1213,12 +1218,58 @@ should be avoided as much as possible.
             var code_comb = cf.codeAttribute("combined precondition and code of " + _fuir.clazzAsString(cl),
                                              numLocals(cl, pre) /* NYI: UNDER DEVELOPMENT: num locals! */,
                                              bc_combined,
-                                             new List<>(), new List<>());
+                                             new List<>(), new List<>(ClassFile.StackMapTable.fromCode(cf, locals, bc_combined)));
             cf.method(ClassFileConstants.ACC_STATIC | ClassFileConstants.ACC_PUBLIC, Names.COMBINED_NAME, _types.descriptor(cl, false), new List<>(code_comb));
           }
       }
   }
 
+
+  /**
+   * Get the state of the locals at the start of execution of cl.
+   */
+  private List<VerificationType> initialLocals(int cl)
+  {
+    var cf = _types.classFile(cl);
+    var result = new List<VerificationType>();
+    if (_types.hasOuterRef(cl))
+      {
+        var or = _fuir.clazzOuterRef(cl);
+        var ot = _fuir.clazzResultClazz(or);
+        var at = _types.resultType(ot);
+        if (at != PrimitiveType.type_void)
+          {
+            var vti = _types.resultType(_fuir.clazzResultClazz(_fuir.clazzOuterRef(cl))).vti();
+            if (vti.needsTwoSlots())
+              {
+                result.addAll(vti, vti);
+              }
+            else
+              {
+                result.add(vti);
+              }
+          }
+      }
+    for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
+      {
+        var at = _fuir.clazzArgClazz(cl, i);
+        var ft = _types.resultType(at);
+        if (ft != PrimitiveType.type_void)
+          {
+            var vti = _types.resultType(_fuir.clazzArgClazz(cl, i)).vti();
+            if (vti.needsTwoSlots())
+              {
+                result.addAll(vti, vti);
+              }
+            else
+              {
+                result.add(vti);
+              }
+          }
+      }
+    result.freeze();
+    return result;
+  }
 
 
   /**
@@ -1244,7 +1295,7 @@ should be avoided as much as possible.
     for (var j = 0; j < i; j++)
       {
         var t = _fuir.clazzArgClazz(cl, j);
-        l = l + _types.javaType(t).stackSlots();
+        l = l + _types.resultType(t).stackSlots();
       }
     return l;
   }
@@ -1729,18 +1780,20 @@ should be avoided as much as possible.
    */
   Expr cloneValue(int cl, boolean pre, Expr value, int rt, int f)
   {
+    var cf = _types.classFile(cl);
     if (!_fuir.clazzIsRef(rt) &&
         (f == -1 || !_fuir.clazzFieldIsAdrOfValue(f)) && // an outer ref field must not be cloned
         !_types.isScalar(rt) &&
         (!_fuir.clazzIsChoice(rt) || _types._choices.kind(rt) == Choices.ImplKind.general))
       {
+        var vti = _types.resultType(rt).vti();
         var vl = allocLocal(cl, pre, 1);
         var nl = allocLocal(cl, pre, 1);
         var e = value
-          .andThen(Expr.astore(vl))
+          .andThen(Expr.astore(vl, vti))
           .andThen(new0(rt))
-          .andThen(Expr.astore(nl));
-        var jt = _types.javaType(rt);
+          .andThen(Expr.astore(nl, vti));
+        var jt = _types.resultType(rt);
         if (_fuir.clazzIsChoice(rt))
           {
             var cc = _names.javaClass(rt);
@@ -1833,7 +1886,7 @@ should be avoided as much as possible.
   private Expr cloneValueOrNull(int cl, boolean pre, Expr value, int rt, int f)
   {
     Expr result;
-    if (_types.javaType(rt) instanceof AType)
+    if (_types.resultType(rt) instanceof AType)
       { // the value type may be a null reference if it is unused.
         // NYI: UNDER DEVELOPMENT: The null-check should be removed when reading fields that are known to be initialized.
         result = value
@@ -1877,8 +1930,9 @@ should be avoided as much as possible.
     byte ifcc = 0;
     Expr cast = Expr.UNIT;
     Expr cmp  = Expr.UNIT;
-    var jt = _types.javaType(rt);
+    var jt = _types.resultType(rt);
     var jt2 = jt;
+    var cf = _types.classFile(cl);
 
     if (jt == ClassFileConstants.PrimitiveType.type_void)
       { // unit-type values are always equal:
@@ -1943,16 +1997,15 @@ should be avoided as much as possible.
             var v1 = allocLocal(cl, pre, 1);
             var v2 = allocLocal(cl, pre, 1);
             result = value1
-              .andThen(Expr.astore(v1))
+              .andThen(Expr.astore(v1, jt.vti()))
               .andThen(value2)
-              .andThen(Expr.astore(v2));
+              .andThen(Expr.astore(v2, jt.vti()));
 
             if (_fuir.clazzIsChoice(rt))
               {
                 if (CHECKS) check
                   (_types._choices.kind(rt) == Choices.ImplKind.general);
 
-                var cf = _types.classFile(rt);
                 var cc = _names.javaClass(rt);
                 result = result
                   .andThen(Expr.aload(v1, jt).andThen(Expr.getfield(cc, Names.TAG_NAME, PrimitiveType.type_int)))
