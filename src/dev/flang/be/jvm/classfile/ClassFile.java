@@ -1440,7 +1440,7 @@ public class ClassFile extends ANY implements ClassFileConstants
   public void write(Path dir) throws IOException
   {
     var fp = dir.resolve(classFile());
-    _opt.verbosePrintln(" + " + fp);
+    _opt.verbosePrintln(2, " + " + fp);
     Files.write(fp, bytes());
   }
 
