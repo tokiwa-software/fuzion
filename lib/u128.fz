@@ -35,7 +35,7 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
   redef wrapped_on_neg => !is_zero
 
   # would addition thiz + other cause an overflow or underflow?
-  public fixed overflow_on_add (other u128) => max -° thiz < other
+  public fixed overflow_on_add (other u128) => u128.type.max -° thiz < other
   public fixed underflow_on_add(other u128) => false
 
   # would subtraction thiz - other cause an overflow or underflow?
@@ -204,10 +204,6 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
   public low16bits u16 => lo.low16bits
   public low32bits u32 => lo.low32bits
   public low64bits u64 => lo
-
-  # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
-  # from has_interval is abstract, fz should not complain about this conflict.
-  fixed redef max => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
 
 
   # create hash code from this number

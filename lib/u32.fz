@@ -154,10 +154,6 @@ public u32(public val u32) : num.wrap_around, has_interval is
   public as_f64 f64 => intrinsic
   public as_f32 => as_f64.as_f32
 
-  # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
-  # from has_interval is abstract, fz should not complain about this conflict.
-  public fixed redef max => u32 0x_ffff_ffff
-
 
   # create hash code from this number
   public type.hash_code(a u32.this) u64 =>
