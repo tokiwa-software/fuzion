@@ -65,7 +65,7 @@ typeinference_for_formal_args is
       true
     pong(y) => ping y-1; false
 
-    test "ping poing" ([1,2,3].filter x->(ping 3)) "[1,2,3]"
+    test "ping poing" ([1,2,3].filter x->(ping 3)) "[1, 2, 3]"
 
   scenario2
 
