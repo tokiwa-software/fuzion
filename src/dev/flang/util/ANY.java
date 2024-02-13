@@ -50,6 +50,12 @@ public class ANY
     System.getenv().getOrDefault("CHECKS", "false").equals("true");
 
 
+  /**
+   * Property to set the command name, i.e. the result of `envir.args[0]`.
+   */
+  public static final String FUZION_COMMAND_PROPERTY = "fuzion.command";
+
+
   /*-----------------------------  methods  -----------------------------*/
 
 

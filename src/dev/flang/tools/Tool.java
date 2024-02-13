@@ -31,11 +31,6 @@ import java.nio.file.Path;
 import java.util.TreeSet;
 import java.util.Set;
 
-
-
-
-
-
 import dev.flang.parser.Parser;
 
 import dev.flang.util.ANY;
@@ -109,7 +104,7 @@ public abstract class Tool extends ANY
   protected Tool(String name, String[] args)
   {
     _rawCmd = name;
-    _cmd = System.getProperty("fuzion.command", name);
+    _cmd = System.getProperty(FUZION_COMMAND_PROPERTY, name);
     _args = args;
   }
 

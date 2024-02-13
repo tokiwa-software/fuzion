@@ -193,7 +193,21 @@ public class Runtime extends ANY
   public static final Object LOCK_FOR_ATOMIC = new Object();
 
 
-  public static String[] args = new String[] { "argument list not initialized", "this may indicate a severe bug" };
+  /**
+   * The result of `envir.args[0]`
+   */
+  public static String _cmd_ =
+    System.getProperties().computeIfAbsent(FUZION_COMMAND_PROPERTY,
+                                           k -> ProcessHandle.current()
+                                                             .info()
+                                                             .command()
+                                                             .orElse("")) instanceof String str ? str : "";
+
+
+  /**
+   * The results of `envir.args[1..n]`
+   */
+  public static String[] _args_ = new String[] { "argument list not initialized", "this may indicate a severe bug" };
 
 
   /*-------------------------  static methods  --------------------------*/
@@ -1056,7 +1070,8 @@ public class Runtime extends ANY
 
   public static byte[] args_get(int i)
   {
-    return stringToUtf8ByteArray(args[i]);
+    return stringToUtf8ByteArray(i == 0 ? _cmd_
+                                        : _args_[i-1]);
   }
 
 

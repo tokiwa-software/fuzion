@@ -498,9 +498,7 @@ should be avoided as much as possible.
         // of warnings, report them here.
         Errors.showAndExit(true);
 
-        var applicationArgs = new ArrayList<>(jvm._options._applicationArgs);
-        applicationArgs.add(0, jvm._fuir.clazzAsString(jvm._fuir.mainClazzId()));
-        jvm._runner.runMain(applicationArgs);
+        jvm._runner.runMain(jvm._options._applicationArgs);
 
         // We are done, the code is running in new threads and we silently
         // terminate without reporting any warning or error statistics that
@@ -848,8 +846,9 @@ should be avoided as much as possible.
                                   """
                                   #!/bin/sh
 
-                                  java %s
+                                  java -D%s="$0" %s "$@"
                                   """,
+                                  FUZION_COMMAND_PROPERTY,
                                   args));
         out.close();
         f.setExecutable(true);

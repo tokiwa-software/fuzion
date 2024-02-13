@@ -95,9 +95,9 @@ public class Names extends ANY implements ClassFileConstants
 
 
   /**
-   * Name and signature of Runtime.args field / Runtime.args_get method
+   * Name and signature of Runtime._args_ field and Runtime.args_get method
    */
-  static final String RUNTIME_ARGS = "args";
+  static final String RUNTIME_ARGS = "_args_";
   static final String RUNTIME_ARGS_GET = "args_get";
   static final String RUNTIME_ARGS_GET_SIG = "(I)[B";
 

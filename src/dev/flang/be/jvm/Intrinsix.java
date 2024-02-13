@@ -569,7 +569,9 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var val = Expr.getstatic(Names.RUNTIME_CLASS,
                                    Names.RUNTIME_ARGS,
                                    JAVA_LANG_STRING.array())
-            .andThen(Expr.ARRAYLENGTH);
+            .andThen(Expr.ARRAYLENGTH)
+            .andThen(Expr.iconst(1))
+            .andThen(Expr.IADD);
           return new Pair<>(val, Expr.UNIT);
         });
 
