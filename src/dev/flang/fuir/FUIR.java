@@ -2700,6 +2700,16 @@ hw25 is
       }
   }
 
+
+  /**
+   * Return if the intrinsic is know to be used?
+   * default: true
+   */
+  public boolean isIntrinsicUsed(String name)
+  {
+    return true;
+  }
+
 }
 
 /* end of file */

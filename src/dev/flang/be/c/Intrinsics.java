@@ -1067,10 +1067,10 @@ public class Intrinsics extends ANY
         });
 
     var noJava = CStmnt.seq(
-                 CExpr.fprintfstderr("*** Set environment variable FUZION_JVM_PATH when compiling to be able to use intrinsics fuzion.java.*.\n"),
-                 CExpr.fprintfstderr("*** Example: FUZION_JVM_PATH=/usr/lib/jvm/java-17-openjdk-amd64 fz -c file.fz\n"),
+                 CExpr.fprintfstderr("*** Set environment variable JAVA_HOME when compiling to be able to use intrinsics fuzion.java.*.\n"),
+                 CExpr.fprintfstderr("*** Example: JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 fz -c file.fz\n"),
                  CExpr.exit(1));
-    put("fuzion.java.Java_Object.is_null0", (c, cl, outer, in) -> C.FUZION_JVM_PATH == null
+    put("fuzion.java.Java_Object.is_null0", (c, cl, outer, in) -> C.JAVA_HOME == null
                                                                                        ? noJava
                                                                                        : CExpr.call(
                                                                                          "fzE_java_object_is_null",
@@ -1082,7 +1082,7 @@ public class Intrinsics extends ANY
                                                                                            c._names.FZ_FALSE)
                                                                                          .ret());
     put("fuzion.java.array_get"             , (c, cl, outer, in) -> {
-      if (C.FUZION_JVM_PATH == null)
+      if (C.JAVA_HOME == null)
         {
           return noJava;
         }
@@ -1098,9 +1098,9 @@ public class Intrinsics extends ANY
                     c._fuir.javaSignature(c._fuir.clazzResultClazz(cl))))), false);
         }
     });
-    put("fuzion.java.array_length"          , (c,cl,outer,in) -> C.FUZION_JVM_PATH == null ? noJava : CExpr.call("fzE_array_length", new List<>(c.javaRefField(A0).castTo("jarray"))).ret());
+    put("fuzion.java.array_length"          , (c,cl,outer,in) -> C.JAVA_HOME == null ? noJava : CExpr.call("fzE_array_length", new List<>(c.javaRefField(A0).castTo("jarray"))).ret());
     put("fuzion.java.array_to_java_object0", (c, cl, outer, in) -> {
-      if (C.FUZION_JVM_PATH == null)
+      if (C.JAVA_HOME == null)
         {
           return noJava;
         }
@@ -1127,7 +1127,7 @@ public class Intrinsics extends ANY
         }
     });
     put("fuzion.java.get_field0",
-      (c, cl, outer, in) -> C.FUZION_JVM_PATH == null
+      (c, cl, outer, in) -> C.JAVA_HOME == null
                                                   ? noJava
                                                   : c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
                                                     .call("fzE_get_field0",
@@ -1137,7 +1137,7 @@ public class Intrinsics extends ANY
                                                           .string(
                                                             c._fuir.javaSignature(c._fuir.clazzResultClazz(cl))))), false));
     put("fuzion.java.get_static_field0",
-      (c, cl, outer, in) -> C.FUZION_JVM_PATH == null
+      (c, cl, outer, in) -> C.JAVA_HOME == null
                                                   ? noJava
                                                   : c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
                                                     .call("fzE_get_static_field0",
@@ -1147,7 +1147,7 @@ public class Intrinsics extends ANY
                                                           .string(
                                                             c._fuir.javaSignature(c._fuir.clazzResultClazz(cl))))), false));
     put("fuzion.java.call_c0", (c, cl, outer, in) -> {
-      if (C.FUZION_JVM_PATH == null)
+      if (C.JAVA_HOME == null)
         {
           return noJava;
         }
@@ -1164,7 +1164,7 @@ public class Intrinsics extends ANY
         }
     });
     put("fuzion.java.call_s0", (c, cl, outer, in) -> {
-      if (C.FUZION_JVM_PATH == null)
+      if (C.JAVA_HOME == null)
         {
           return noJava;
         }
@@ -1184,7 +1184,7 @@ public class Intrinsics extends ANY
         }
     });
     put("fuzion.java.call_v0", (c, cl, outer, in) -> {
-      if (C.FUZION_JVM_PATH == null)
+      if (C.JAVA_HOME == null)
         {
           return noJava;
         }
@@ -1203,56 +1203,56 @@ public class Intrinsics extends ANY
         }
     });
     put("fuzion.java.bool_to_java_object",
-      (c, cl, outer, in) -> C.FUZION_JVM_PATH == null
+      (c, cl, outer, in) -> C.JAVA_HOME == null
                                                   ? noJava
                                                   : c
                                                     .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
                                                       CExpr.call("fzE_bool_to_java_object", new List<CExpr>(A0.field(CNames.TAG_NAME))), false));
     put("fuzion.java.f32_to_java_object",
-      (c, cl, outer, in) -> C.FUZION_JVM_PATH == null
+      (c, cl, outer, in) -> C.JAVA_HOME == null
                                                   ? noJava
                                                   : c
                                                     .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
                                                       CExpr.call("fzE_f32_to_java_object", new List<CExpr>(A0)), false));
     put("fuzion.java.f64_to_java_object",
-      (c, cl, outer, in) -> C.FUZION_JVM_PATH == null
+      (c, cl, outer, in) -> C.JAVA_HOME == null
                                                   ? noJava
                                                   : c
                                                     .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
                                                       CExpr.call("fzE_f64_to_java_object", new List<CExpr>(A0)), false));
     put("fuzion.java.i8_to_java_object",
-      (c, cl, outer, in) -> C.FUZION_JVM_PATH == null
+      (c, cl, outer, in) -> C.JAVA_HOME == null
                                                   ? noJava
                                                   : c
                                                     .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
                                                       CExpr.call("fzE_i8_to_java_object", new List<CExpr>(A0)), false));
     put("fuzion.java.i16_to_java_object",
-      (c, cl, outer, in) -> C.FUZION_JVM_PATH == null
+      (c, cl, outer, in) -> C.JAVA_HOME == null
                                                   ? noJava
                                                   : c
                                                     .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
                                                       CExpr.call("fzE_i16_to_java_object", new List<CExpr>(A0)), false));
     put("fuzion.java.i32_to_java_object",
-      (c, cl, outer, in) -> C.FUZION_JVM_PATH == null
+      (c, cl, outer, in) -> C.JAVA_HOME == null
                                                   ? noJava
                                                   : c
                                                     .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
                                                       CExpr.call("fzE_i32_to_java_object", new List<CExpr>(A0)), false));
     put("fuzion.java.i64_to_java_object",
-      (c, cl, outer, in) -> C.FUZION_JVM_PATH == null
+      (c, cl, outer, in) -> C.JAVA_HOME == null
                                                   ? noJava
                                                   : c
                                                     .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
                                                       CExpr.call("fzE_i64_to_java_object", new List<CExpr>(A0)), false));
     put("fuzion.java.u16_to_java_object",
-      (c, cl, outer, in) -> C.FUZION_JVM_PATH == null
+      (c, cl, outer, in) -> C.JAVA_HOME == null
                                                   ? noJava
                                                   : c
                                                     .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
                                                       CExpr.call("fzE_u16_to_java_object", new List<CExpr>(A0)), false));
     put("fuzion.java.java_string_to_string" , (c,cl,outer,in) ->
         {
-          if (C.FUZION_JVM_PATH == null)
+          if (C.JAVA_HOME == null)
             {
               return noJava;
             }
@@ -1267,7 +1267,7 @@ public class Intrinsics extends ANY
                           .ret());
             }
         });
-    put("fuzion.java.string_to_java_object0", (c,cl,outer,in) -> C.FUZION_JVM_PATH == null
+    put("fuzion.java.string_to_java_object0", (c,cl,outer,in) -> C.JAVA_HOME == null
       ? noJava
       : c.returnJavaObject(c._fuir.clazz_fuzionJavaObject(), CExpr
           .call("fzE_string_to_java_object", new List<CExpr>(A0.castTo("const char *"))), false)

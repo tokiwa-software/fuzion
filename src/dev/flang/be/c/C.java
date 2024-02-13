@@ -558,9 +558,9 @@ public class C extends ANY
   /*
    * If you want the c-backend to link the JVM,
    * set this environment variable to e.g.:
-   * FUZION_JVM_PATH=/usr/lib/jvm/java-21-openjdk-amd64
+   * JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
    */
-  static final String FUZION_JVM_PATH = System.getenv("FUZION_JVM_PATH");
+  static final String JAVA_HOME = System.getenv("JAVA_HOME");
 
 
   private static final int expectedClangVersion = 11;
@@ -744,14 +744,14 @@ public class C extends ANY
     // NYI link libmath, libpthread only when needed
     command.addAll("-lm", "-lpthread", "-std=c11", "-o", name, cname);
 
-    if (FUZION_JVM_PATH != null)
+    if (linkJVM())
       {
         command.addAll(
-          "-I" + FUZION_JVM_PATH + "/include",
-          "-I" + FUZION_JVM_PATH + "/include/linux",
-          "-I" + FUZION_JVM_PATH + "/include/win32",
-          "-I" + FUZION_JVM_PATH + "/include/darwin",
-          "-L" + FUZION_JVM_PATH + "/lib/server",
+          "-I" + JAVA_HOME + "/include",
+          "-I" + JAVA_HOME + "/include/linux",
+          "-I" + JAVA_HOME + "/include/win32",
+          "-I" + JAVA_HOME + "/include/darwin",
+          "-L" + JAVA_HOME + "/lib/server",
           "-ljvm");
       }
 
@@ -786,6 +786,32 @@ public class C extends ANY
                      "C compiler call '" + command.toString("", " ", "") + "'  received '" + io + "'");
       }
     Errors.showAndExit();
+  }
+
+
+  private boolean linkJVM()
+  {
+    return JAVA_HOME != null
+      && (
+        _fuir.isIntrinsicUsed("fuzion.java.Java_Object.is_null0") ||
+        _fuir.isIntrinsicUsed("fuzion.java.array_get") ||
+        _fuir.isIntrinsicUsed("fuzion.java.array_length") ||
+        _fuir.isIntrinsicUsed("fuzion.java.array_to_java_object0") ||
+        _fuir.isIntrinsicUsed("fuzion.java.get_field0") ||
+        _fuir.isIntrinsicUsed("fuzion.java.get_static_field0") ||
+        _fuir.isIntrinsicUsed("fuzion.java.call_c0") ||
+        _fuir.isIntrinsicUsed("fuzion.java.call_s0") ||
+        _fuir.isIntrinsicUsed("fuzion.java.call_v0") ||
+        _fuir.isIntrinsicUsed("fuzion.java.bool_to_java_object") ||
+        _fuir.isIntrinsicUsed("fuzion.java.f32_to_java_object") ||
+        _fuir.isIntrinsicUsed("fuzion.java.f64_to_java_object") ||
+        _fuir.isIntrinsicUsed("fuzion.java.i8_to_java_object") ||
+        _fuir.isIntrinsicUsed("fuzion.java.i16_to_java_object") ||
+        _fuir.isIntrinsicUsed("fuzion.java.i32_to_java_object") ||
+        _fuir.isIntrinsicUsed("fuzion.java.i64_to_java_object") ||
+        _fuir.isIntrinsicUsed("fuzion.java.u16_to_java_object") ||
+        _fuir.isIntrinsicUsed("fuzion.java.java_string_to_string") ||
+        _fuir.isIntrinsicUsed("fuzion.java.string_to_java_object0"));
   }
 
 
@@ -845,7 +871,7 @@ public class C extends ANY
        // defines _O_BINARY
        "#include <fcntl.h>\n");
 
-    if (FUZION_JVM_PATH != null)
+    if (linkJVM())
       {
         cf.println("#define FUZION_LINK_JVM");
       }
@@ -951,7 +977,7 @@ public class C extends ANY
         cf.println("GC_INIT(); /* Optional on Linux/X86 */");
       }
 
-    if (FUZION_JVM_PATH != null)
+    if (linkJVM())
       {
         cf.println("fzE_init_jvm();");
       }
@@ -966,7 +992,7 @@ public class C extends ANY
                         CExpr.call(_names.function(cl, false), new List<>())
                         ));
 
-    if (FUZION_JVM_PATH != null)
+    if (linkJVM())
       {
         cf.println("fzE_destroy_jvm();");
       }

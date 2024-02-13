@@ -24,7 +24,6 @@
 # -----------------------------------------------------------------------
 
 override NAME = javaHello
-export FUZION_JVM_PATH ?= $(JAVA_HOME)
 export LD_LIBRARY_PATH ?= $(JAVA_HOME)/lib/server
 FUZION_OPTIONS = -unsafeIntrinsics=on -modules=java.base
 include ../simple.mk
