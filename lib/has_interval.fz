@@ -55,10 +55,11 @@ public has_interval : integer is
     # non-negative step parameter, the stream will return lower, lower+step,
     # lower+2*step, etc. as long as these values are <= upper.
     #
-    # For a negative step parameter, the stream will return upper, upper+step,
-    # upper+2*step, etc. as long as these values are >= lower.  Note that this means
-    # that a negative step will produce a non-empty stream for an empty interval with
-    # lower > upper!
+    # For a negative step parameter, the stream will return lower, lower+step,
+    # lower+2*step, etc. as long as these values are >= upper.
+    #
+    # For a zero step parameter, this will create a Sequence that repeats lower
+    # infinitely.
     #
     public infix : (step has_interval.this) : container.Set has_interval.this is
 
@@ -75,7 +76,7 @@ public has_interval : integer is
           lower : tail
 
 
-      # does this range contain the given value?
+      # does this interval contain the given value?
       #
       public contains (e has_interval.this) =>
         if      step.sign = 0 then lower = e
@@ -98,7 +99,7 @@ public has_interval : integer is
     public redef as_string => "$lower..$upper"
 
 
-  # an infinite integer sequence starting from this
+  # an infinite integer Sequence starting from this
   #
   public postfix .. : Sequence has_interval.this is
 
@@ -110,14 +111,12 @@ public has_interval : integer is
     public contains (e has_interval.this) => lower ≤ e
 
 
-    # Create a Sequence that is stepping through this interval skipping values. For a
-    # non-negative step parameter, the stream will return lower, lower+step,
-    # lower+2*step, etc. as long as these values are <= upper.
+    # Create a Sequence that is stepping through this Sequence skipping values. For a
+    # non-negative step parameter, the Sequence will return lower, lower+step,
+    # lower+2*step, etc.
     #
-    # For a negative step parameter, the stream will return upper, upper+step,
-    # upper+2*step, etc. as long as these values are >= lower.  Note that this means
-    # that a negative step will produce a non-empty stream for an empty interval with
-    # lower > upper!
+    # For a negative step parameter, the Sequence will return lower, lower+step,
+    # lower+2*step, etc.
     #
     public infix : (step has_interval.this) : container.Set has_interval.this is
 
@@ -130,7 +129,7 @@ public has_interval : integer is
         lower : tail
 
 
-      # does this range contain the given value?
+      # does this Sequence contain the given value?
       #
       public contains (e has_interval.this) =>
         if      step.sign = 0 then lower = e
