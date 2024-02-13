@@ -34,7 +34,7 @@
 #   fz -c webserver2.fz
 #   ./webserver
 #
-webserver is
+webserver2 is
   port u16 := 8080
   server := net.server net.family.ipv6 net.protocol.tcp port
 

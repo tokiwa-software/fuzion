@@ -57,7 +57,7 @@ public fuzion.java is
 
   # A Java reference
   #
-  public Java_Object(public Java_Ref fuzion.sys.Pointer) ref
+  public Java_Object(private Java_Ref fuzion.sys.Pointer) ref
   is
     public is_null bool =>
       is_null0 Java_Ref
@@ -73,7 +73,7 @@ public fuzion.java is
   # A Java array
   #
   public Array(public T type,
-               public redef Java_Ref fuzion.sys.Pointer) ref : Sequence T, Java_Object Java_Ref
+               private redef Java_Ref fuzion.sys.Pointer) ref : Sequence T, Java_Object Java_Ref
   is
     public length                  => array_length T Array.this
     public redef finite            => true
@@ -102,7 +102,7 @@ public fuzion.java is
 
   # Java's 'java.lang.String' type
   #
-  public Java_String(public redef Java_Ref fuzion.sys.Pointer) ref : String, Java_Object Java_Ref
+  public Java_String(private redef Java_Ref fuzion.sys.Pointer) ref : String, Java_Object Java_Ref
   is
     public utf8 => (java_string_to_string Java_String.this).utf8
 
