@@ -236,7 +236,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     /**
      * Create a tagged value of type newcl from an untagged value for type valuecl.
      */
-    public abstract Pair<VALUE, RESULT> tag(int cl, int valuecl, VALUE value, int newcl, int tagNum);
+    public abstract Pair<VALUE, RESULT> tag(int cl, VALUE value, int newcl, int tagNum);
 
     /**
      * Access the effect of type ecl that is installed in the environment.
@@ -719,7 +719,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           if (CHECKS) check
             (!_fuir.clazzIsVoidType(valuecl));
           int tagNum  = _fuir.clazzChoiceTag(newcl, valuecl);
-          var r = _processor.tag(cl, valuecl, value, newcl, tagNum);
+          var r = _processor.tag(cl, value, newcl, tagNum);
           push(stack, newcl, r._v0);
           return r._v1;
         }

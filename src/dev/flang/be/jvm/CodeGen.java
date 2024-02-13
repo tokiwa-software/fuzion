@@ -1058,8 +1058,6 @@ class CodeGen
    *
    * @param cl the clazz we are compiling
    *
-   * @param valuecl the original clazz of the value that is to be tagged. NYI: CLEANUP: remove?
-   *
    * @param value code to produce the value we are tagging
    *
    * @param newcl the choice type after tagging
@@ -1069,7 +1067,7 @@ class CodeGen
    *
    * @return code to produce the tagged value as a result.
    */
-  public Pair<Expr, Expr> tag(int cl, int valuecl, Expr value, int newcl, int tagNum)
+  public Pair<Expr, Expr> tag(int cl, Expr value, int newcl, int tagNum)
   {
     var res = _choices.tag(_jvm, cl, value, newcl, tagNum);
     return new Pair<>(res, Expr.UNIT);

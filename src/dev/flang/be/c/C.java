@@ -483,8 +483,9 @@ public class C extends ANY
     /**
      * Create a tagged value of type newcl from an untagged value for type valuecl.
      */
-    public Pair<CExpr, CStmnt> tag(int cl, int valuecl, CExpr value, int newcl, int tagNum)
+    public Pair<CExpr, CStmnt> tag(int cl, CExpr value, int newcl, int tagNum)
     {
+      var valuecl = _fuir.clazzChoice(newcl, tagNum);
       var res     = _names.newTemp();
       var tag     = res.field(CNames.TAG_NAME);
       var uniyon  = res.field(CNames.CHOICE_UNION_NAME);
