@@ -84,6 +84,11 @@ public has_interval : integer is
         else                       lower >= e >= upper && (lower - e) %% -step
 
 
+      # string representation of this interval, e.g., "1..10:2"
+      #
+      public redef as_string => "$lower..$upper:$step"
+
+
     # create a list from this interval
     #
     public redef as_list list has_interval.this =>
@@ -137,9 +142,9 @@ public has_interval : integer is
         else                       lower >= e && (lower - e) %% -step
 
 
-      # string representation of this interval, e.g., "1..10"
+      # string representation of this interval, e.g., "(1..):2"
       #
-      public redef as_string => "$lower.. :$step"
+      public redef as_string => "($lower..):$step"
 
 
     # create a list from this interval
@@ -150,6 +155,6 @@ public has_interval : integer is
       lower : tail
 
 
-    # string representation of this interval, e.g., "1..10"
+    # string representation of this interval, e.g., "1.."
     #
     public redef as_string => "$lower.."
