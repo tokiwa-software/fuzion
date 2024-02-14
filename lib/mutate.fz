@@ -332,7 +332,7 @@ public Mutable_Array(public T type) ref : Sequence T is
   public set [ ] (i i32, o T) unit => abstract
 
   # the indices of the array
-  public indices i32.infix .. => abstract
+  public indices interval i32 => abstract
 
   # the length of the array
   public length i32 => abstract

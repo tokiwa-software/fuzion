@@ -1,0 +1,136 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature interval
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+
+# An interval `from..through` that includes `from`, `from+step`, `from+step+step`,
+# etc. up to and including `through`.
+#
+# In case step is positive (negative), the first value larger (smaller) than
+# through will not be included.
+#
+# In case `step.sign = (from ⋄ through).sign`, this `Set` is empty, e.g.,
+# `interval 1 2 -1` and `interval 2 1 1` are both empty.
+#
+public interval(T type : integer,
+
+                # the first element of this Set when used as a Sequence
+                public from T,
+
+                # upper/lower bound for elements in this Set
+                #
+                # in case this is nil, there is no bound except for the
+                # range of legal values for T.
+                public through option T,
+
+                # the distance between to elements
+                public step T)
+
+  : container.Set T
+
+pre
+  step.sign != 0
+is
+
+
+  # Create an new interval with `step` multiplied by `step_factor`.
+  #
+  # This is typically applied to an interval with implicit `step` of one,
+  # e.g., in `2..10:2` will create "{2,4,6,8,10}".
+  #
+  public infix : (step_factor T)
+  /* NYI: BUG: #2561 this syntax does not work yet:
+  pre
+    debug: step_factor.sign != 0
+    safety: (step *? step_factor).exists
+  */
+  pre
+    ((debug: step_factor.sign != 0) &&
+     (safety: (step *? step_factor).exists))
+  =>
+    interval from through step*step_factor
+
+
+  # list representation of values in this interval
+  #
+  redef as_list list T =>
+    if (through ? nil => false
+                | thru T => step.sign = (from ⋄ thru).sign) then
+      nil
+    else
+      tail => (from+?step ? next T => (interval next through step).as_list
+                          | nil    => nil)
+      from : tail
+
+
+  # get the number of elements in this interval
+  #
+  # Performance O(1) in case  through.exists, otherwise O(result)
+  #
+  public size T
+  =>
+    match through
+      thru T =>
+        if step.sign = (from ⋄ thru).sign then
+          T.zero
+        else
+          (thru - from) / step + T.one
+      nil =>
+        T.from_u32 as_list.count.as_u32
+
+
+  # does this interval contain the given value?
+  #
+  public contains(e T) =>
+    if   step.sign > 0 then from <= e <= through.or_else e && (e %  step = from %  step)
+    else                    from >= e >= through.or_else e && (e % -step = from % -step)
+
+
+  # string representation of this interval, e.g., "1..10:2"
+  #
+  public redef as_string =>
+    "$from..$through{if step = T.one then "" else ":$step"}"
+
+
+# has_interval -- feature for integers that can define an interval
+#
+public has_interval : integer is
+
+
+  # defining an integer interval from this to other, both inclusive
+  #
+  # special cases of interval a..b:
+  #
+  #   a <  b: the interval from a to b, both inclusive
+  #   a == b: the interval containing only one element, a
+  #   a >  b: an empty interval
+  public infix .. (public through has_interval.this) =>
+    interval has_interval.this through has_interval.this.type.one
+
+
+  # an infinite integer Sequence starting from this up to the maximum value
+  # has_interval.this.type.max
+  #
+  public postfix .. =>
+    interval has_interval.this has_interval.this nil has_interval.this.type.one
