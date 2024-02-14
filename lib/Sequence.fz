@@ -321,13 +321,13 @@ public Sequence(public T type) ref is
 
 
   # create a string representation of this Sequence including all the string
-  # representations of its contents, separated by ',' and enclosed in '['
+  # representations of its contents, separated by ", " and enclosed in '['
   # and ']'.
   #
   # NOTE: In case this Sequence is not finite, this will attempt to create an
   # infinitely long string resulting in failure due to resource exchaustion.
   #
-  public as_string_all => "[{as_string ","}]"
+  public as_string_all => "[{as_string ", "}]"
 
 
   # create a string representation of this Sequence including all the string
