@@ -805,14 +805,19 @@ public class C extends ANY
    */
   private void createCode(CFile cf, COptions _options) throws IOException
   {
+    cf.print("#define _POSIX_C_SOURCE 200809L\n");
+
+    if (_options._useBoehmGC)
+      {
+                 // we need to include winsock2.h before windows.h
+        cf.print("#define GC_DONT_INCLUDE_WINDOWS_H\n" +
+                 "#define GC_THREADS\n#include <gc.h>\n");
+      }
+
+    // --- C-11 ---
     cf.print(
-       "#define _POSIX_C_SOURCE 200809L\n" +
-       // we need to include winsock2.h before windows.h
-       (_options._useBoehmGC ? "#define GC_DONT_INCLUDE_WINDOWS_H\n"   : "")+
-       (_options._useBoehmGC ? "#define GC_THREADS\n#include <gc.h>\n" : "")+
        "#include <stdlib.h>\n"+
        "#include <stdio.h>\n"+
-       "#include <unistd.h>\n"+
        "#include <stdbool.h>\n"+
        "#include <stdint.h>\n"+
        "#include <string.h>\n"+
@@ -821,11 +826,15 @@ public class C extends ANY
        "#include <assert.h>\n"+
        "#include <time.h>\n"+
        "#include <setjmp.h>\n"+
-       "#include <pthread.h>\n"+
        "#include <errno.h>\n"+
-       "#include <sys/stat.h>\n"+
        // defines _O_BINARY
        "#include <fcntl.h>\n");
+
+    // --- POSIX ---
+    cf.print(
+       "#include <unistd.h>\n"+
+       "#include <sys/stat.h>\n" +
+       "#include <pthread.h>\n");
 
     var fzH = _options.fuzionHome().resolve("include/fz.h").normalize().toAbsolutePath();
     cf.println("#include \"" + fzH.toString() + "\"\n");
