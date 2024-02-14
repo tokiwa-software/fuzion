@@ -73,18 +73,14 @@ public class Intrinsics extends ANY
   static CIdent errno = new CIdent("errno");
 
   /**
-   * Wrap code into a pthread_mutex_lock/unlock using CNames.GLOBAL_LOCK.  This
+   * Wrap code into a mutex_lock/unlock.  This
    * ensured atomicity with respect to any other code that is locked.
    */
-  static CStmnt locked(CExpr lock,
-                       CStmnt code)
+  static CStmnt locked(CStmnt code)
   {
-    var res = new CIdent("res");
-    // pthread is POSIX only
-    return CStmnt.seq(CExpr.decl("int", res, CExpr.call("pthread_mutex_lock", new List<CExpr>(CNames.GLOBAL_LOCK.adrOf()))),
-                      CExpr.call("assert", new List<>(CExpr.eq(res, new CIdent("0")))),
+    return CStmnt.seq(CExpr.call("fzE_lock", new List<>()),
                       code,
-                      CExpr.call("pthread_mutex_unlock", new List<CExpr>(CNames.GLOBAL_LOCK.adrOf())));
+                      CExpr.call("fzE_unlock", new List<>()));
   }
 
 
@@ -131,8 +127,7 @@ public class Intrinsics extends ANY
               else
                 {
                   var res = c._names.newTemp();
-                  code = CStmnt.seq(locked(CNames.GLOBAL_LOCK,
-                                           CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
+                  code = CStmnt.seq(locked(CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
                                                       CStmnt.seq(res.decl("bool", res),
                                                                  compareValues(c, tmp, expected, rc, res),
                                                                  CStmnt.iff(res,
@@ -192,8 +187,7 @@ public class Intrinsics extends ANY
                     }
 
                   code = CStmnt.seq(CStmnt.decl("bool", res),
-                                    locked(CNames.GLOBAL_LOCK,
-                                           CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
+                                    locked(CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
                                                       compareValues(c, tmp, expected, rc, res),
                                                       CStmnt.iff(res,
                                                                  f.assign(new_value)
@@ -257,7 +251,7 @@ public class Intrinsics extends ANY
             {
               var f = c.accessField(outer, ac, v);
               code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp),
-                                locked(CNames.GLOBAL_LOCK, tmp.assign(f)),
+                                locked(tmp.assign(f)),
                                 tmp.ret());
             }
           return code;
@@ -291,7 +285,7 @@ public class Intrinsics extends ANY
           else
             {
               var f = c.accessField(outer, ac, v);
-              code = locked(CNames.GLOBAL_LOCK, f.assign(new_value));
+              code = locked(f.assign(new_value));
             }
           return code;
         });
@@ -803,30 +797,16 @@ public class Intrinsics extends ANY
           var call = c._fuir.lookupCall(oc);
           if (c._fuir.clazzNeedsCode(call))
             {
-              var pt = new CIdent("pt");
-              var res = new CIdent("res");
               var arg = new CIdent("arg");
-              return CStmnt.seq(CExpr.decl("pthread_t *", pt),
-                                CExpr.decl("int", res),
+              return CStmnt.seq(
                                 CExpr.decl("struct " + CNames.fzThreadStartRoutineArg.code() + "*", arg),
-
-                                pt.assign(CExpr.call(c.malloc(), new List<>(CExpr.sizeOfType("pthread_t")))),
 
                                 arg.assign(CExpr.call(c.malloc(), new List<>(CExpr.sizeOfType("struct " + CNames.fzThreadStartRoutineArg.code())))),
 
                                 arg.deref().field(CNames.fzThreadStartRoutineArgFun).assign(CExpr.ident(c._names.function(call, false)).adrOf().castTo("void *")),
                                 arg.deref().field(CNames.fzThreadStartRoutineArgArg).assign(A0.castTo("void *")),
 
-                                // NYI pthread is POSIX only
-                                res.assign(CExpr.call("pthread_create", new List<>(pt,
-                                                                                   CNames.NULL,
-                                                                                   CNames.fzThreadStartRoutine.adrOf(),
-                                                                                   arg))),
-                                CExpr.iff(res.ne(CExpr.int32const(0)),
-                                          CStmnt.seq(CExpr.fprintfstderr("*** pthread_create failed with return code %d\n",res),
-                                                     CExpr.call("exit", new List<>(CExpr.int32const(1))))),
-                                pt.castTo("int64_t").ret());
-              // NYI: free(pt)!
+                                CExpr.call("fzE_thread_create", new List<>(CNames.fzThreadStartRoutine.adrOf(), arg)).ret());
             }
           else
             {
@@ -835,10 +815,7 @@ public class Intrinsics extends ANY
         });
     put("fuzion.sys.thread.join0", (c,cl,outer,in) ->
     {
-      return CStmnt.seq(
-        // NYI pthread is POSIX only
-        CExpr.call("pthread_join", new List<>(A0.castTo("pthread_t *").deref(), CNames.NULL /* NYI handle return value */))
-      );
+      return CExpr.call("fzE_thread_join", new List<>(A0));
     });
     put("fuzion.std.nano_time", (c,cl,outer,in) ->
         {

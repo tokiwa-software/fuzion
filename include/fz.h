@@ -185,4 +185,26 @@ int fzE_stat(const char *pathname, int64_t * metadata);
  */
 int fzE_lstat(const char *pathname, int64_t * metadata);
 
+/**
+ * Run plattform specific initialisation code
+ */
+void fzE_init();
+
+/**
+ * Start a new thread, returns a pointer to the thread.
+ */
+int64_t fzE_thread_create(void* code, void* args);
+
+/**
+ * Join with a running thread.
+ */
+// NYI add return value
+void fzE_thread_join(int64_t thrd);
+
+/**
+ * Global lock
+ */
+void fzE_lock();
+void fzE_unlock();
+
 #endif /* fz.h  */

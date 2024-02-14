@@ -30,22 +30,40 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 // https://stackoverflow.com/questions/11040133/what-does-defining-win32-lean-and-mean-exclude-exactly#comment108482188_11040230
 #define WIN32_LEAN_AND_MEAN
 
+#ifdef GC_THREADS
+#define GC_DONT_INCLUDE_WINDOWS_H
+#include <gc.h>
+#endif
 
-#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>     // setenv, unsetenv
-#include <string.h>
+#include <errno.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
+#include <assert.h>
 
 // NYI remove POSIX imports
+#include <fcntl.h>      // fcntl
 #include <sys/stat.h>   // mkdir
 #include <sys/types.h>  // mkdir
+#include <sys/socket.h> // socket, bind, listen, accept, connect
+#include <sys/ioctl.h>  // ioctl, FIONREAD
+#include <netinet/in.h> // AF_INET
+#include <poll.h>       // poll
+#include <sys/mman.h>   // mmap
+#include <time.h>
+#include <unistd.h>     // close
+#include <netdb.h>      // getaddrinfo
 
 #include <winsock2.h>
 #include <windows.h>
 #include <ws2tcpip.h>
 #include <winbase.h>
+
+#ifdef FUZION_ENABLE_THREADS
+#include <pthread.h>
+#endif
 
 
 // make directory, return zero on success
@@ -452,3 +470,100 @@ int fzE_lstat(const char *pathname, int64_t * metadata)
   metadata[3] = 0LL;
   return -1;
 }
+
+#ifdef FUZION_ENABLE_THREADS
+pthread_mutex_t fzE_global_mutex;
+#endif
+
+/**
+ * Run plattform specific initialisation code
+ */
+void fzE_init()
+{
+  _setmode( _fileno( stdout ), _O_BINARY ); // reopen stdout in binary mode
+  _setmode( _fileno( stderr ), _O_BINARY ); // reopen stderr in binary mode
+
+#ifdef FUZION_ENABLE_THREADS
+  pthread_mutexattr_t attr;
+  memset(&fzE_global_mutex, 0, sizeof(fzE_global_mutex));
+  bool res = pthread_mutexattr_init(&attr) == 0 &&
+            // NYI #1646 setprotocol returns EINVAL on windows.
+            // pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT) == 0 &&
+            pthread_mutex_init(&fzE_global_mutex, &attr) == 0;
+  assert(res);
+#endif
+
+#ifdef GC_THREADS
+  GC_INIT();
+#endif
+}
+
+
+/**
+ * Start a new thread, returns a pointer to the thread.
+ */
+int64_t fzE_thread_create(void* code, void* args)
+{
+#ifdef FUZION_ENABLE_THREADS
+  // NYI use fzE_malloc_safe
+  pthread_t * pt = malloc(sizeof(pthread_t));;
+#ifdef GC_THREADS
+  int res = GC_pthread_create(pt,NULL,code,args);
+#else
+  int res = pthread_create(pt,NULL,code,args);
+#endif
+  if (res!=0)
+  {
+    fprintf(stderr,"*** pthread_create failed with return code %d\012",res);
+    exit(EXIT_FAILURE);
+  }
+  // NYI free pt
+  return (int64_t)pt;
+#else
+  printf("You discovered a severe bug. (fzE_thread_join)");
+  exit(EXIT_FAILURE);
+  return -1;
+#endif
+}
+
+
+/**
+ * Join with a running thread.
+ */
+void fzE_thread_join(int64_t thrd)
+{
+#ifdef FUZION_ENABLE_THREADS
+#ifdef GC_THREADS
+  GC_pthread_join(*(pthread_t *)thrd, NULL);
+#else
+  pthread_join(*(pthread_t *)thrd, NULL);
+#endif
+#endif
+}
+
+
+/**
+ * Global lock
+ */
+void fzE_lock()
+{
+#ifdef FUZION_ENABLE_THREADS
+  assert(pthread_mutex_lock(&fzE_global_mutex)==0);
+#else
+  printf("You discovered a severe bug. (fzE_lock)");
+#endif
+}
+
+
+/**
+ * Global lock
+ */
+void fzE_unlock()
+{
+#ifdef FUZION_ENABLE_THREADS
+  pthread_mutex_unlock(&fzE_global_mutex);
+#else
+  printf("You discovered a severe bug. (fzE_unlock)");
+#endif
+}
+
