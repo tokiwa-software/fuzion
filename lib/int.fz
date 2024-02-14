@@ -31,10 +31,6 @@ is
   # normalize the sign => no minus zero
   ns := if n = uint.type.zero then num.plus else s
 
-  fixed max int =>
-    panic "invalid, there is no max int."
-
-
   public thiz => int ns n
 
   name String =>

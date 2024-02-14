@@ -116,10 +116,6 @@ public i8(public val i8) : num.wrap_around, has_interval is
   public cast_to_u64  u64  => cast_to_u8.as_u64    # 3 -> 3, -3 -> 0x0000_0000_0000_00fd
   public cast_to_u128 u128 => cast_to_u8.as_u128   # 3 -> 3, -3 -> 0x0000_0000_0000_0000_0000_0000_0000_00fd
 
-  # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
-  # from has_interval i8 => abstract, fz should not complain about this conflict.
-  fixed redef max => i8 0x7f
-
 
   # create hash code from this number
   public type.hash_code(a i8.this) u64 =>
