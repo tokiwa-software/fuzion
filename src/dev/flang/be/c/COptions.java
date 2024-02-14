@@ -92,6 +92,16 @@ public class COptions extends FuzionOptions
 
   /*-----------------------------  methods  -----------------------------*/
 
+
+  /*
+   * Get the absolute path of `p` as a String.
+   * `p` is relative to fuzionHome.
+   */
+  public String pathOf(String p)
+  {
+    return fuzionHome().resolve(p).normalize().toAbsolutePath().toString();
+  }
+
 }
 
 /* end of file */

@@ -735,7 +735,19 @@ public class C extends ANY
     command.addAll("-fno-omit-frame-pointer", "-mno-omit-leaf-frame-pointer");
 
     // NYI link libmath, libpthread only when needed
-    command.addAll("-lm", "-lpthread", "-std=c11", "-o", name, cname);
+    command.addAll("-lm", "-lpthread", "-std=c11", "-o", name);
+
+    // add the c-files
+    command.addAll(_options.pathOf("include/shared.c"));
+    if (isWindows())
+      {
+        command.addAll(_options.pathOf("include/win.c"));
+      }
+    else
+      {
+        command.addAll(_options.pathOf("include/posix.c"));
+      }
+    command.addAll(cname);
 
     if (isWindows())
       {
@@ -805,8 +817,6 @@ public class C extends ANY
    */
   private void createCode(CFile cf, COptions _options) throws IOException
   {
-    cf.print("#define _POSIX_C_SOURCE 200809L\n");
-
     if (_options._useBoehmGC)
       {
                  // we need to include winsock2.h before windows.h
@@ -831,13 +841,14 @@ public class C extends ANY
        "#include <fcntl.h>\n");
 
     // --- POSIX ---
+    // NYI remove POSIX only code.
     cf.print(
        "#include <unistd.h>\n"+
        "#include <sys/stat.h>\n" +
        "#include <pthread.h>\n");
 
-    var fzH = _options.fuzionHome().resolve("include/fz.h").normalize().toAbsolutePath();
-    cf.println("#include \"" + fzH.toString() + "\"\n");
+    var fzH = _options.pathOf("include/fz.h");
+    cf.println("#include \"" + fzH + "\"\n");
 
     cf.print
       (CStmnt.decl("int", CNames.GLOBAL_ARGC));
