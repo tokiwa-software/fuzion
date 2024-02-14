@@ -2343,7 +2343,7 @@ hw25 is
 
 
   /**
-   * For an intrinstic in effect that changes the effect in the
+   * For an intrinsic in effect that changes the effect in the
    * current environment, return the type of the environment.  This type is used
    * to distinguish different environments.
    *

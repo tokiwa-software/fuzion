@@ -912,7 +912,7 @@ public class Runtime extends ANY
   /**
    * Helper to catch a possible {@link Exception} thrown by an invocation.
    *
-   * @return the result of the invocation, or, if an error occured, the global
+   * @return the result of the invocation, or, if an error occurred, the global
    * instance of {@link JavaError}.
    */
   private static Object invokeAndWrapException(ReflectionInvoker invoke)

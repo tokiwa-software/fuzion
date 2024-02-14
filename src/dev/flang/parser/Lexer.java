@@ -1161,7 +1161,7 @@ xref:unsupported_code_points[unsupported code points].
     /*
     // tag::fuzion_rule_LEXR_UNUSEDCP[]
 Unless part of another token, Fuzion source code may not contain unsupported code points backtick `\``, backslash `\\`
-or single quote `'`.  Thise might, however, be used in the future.
+or single quote `'`.  This might, however, be used in the future.
     // end::fuzion_rule_LEXR_UNUSEDCP[]
     */
               Errors.error(sourcePos(),
