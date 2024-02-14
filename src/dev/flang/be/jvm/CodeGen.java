@@ -613,7 +613,7 @@ class CodeGen
           .andThen(p._v0 == null ? Expr.UNIT : p._v0)
           .andThen(retoern);
         var ca = cf.codeAttribute(dn + "in class for " + _fuir.clazzAsString(tt),
-                                  code, new List<>(), new List<Attribute>(ClassFile.StackMapTable.empty(cf)));
+                                  code, new List<>(), new List<>(), ClassFile.StackMapTable.empty(cf));
         cf.method(ACC_PUBLIC, dn, ds, new List<>(ca));
       }
   }

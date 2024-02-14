@@ -1134,6 +1134,10 @@ public class ClassFile extends ANY implements ClassFileConstants
      */
     private Expr _code;
 
+    private int _max_stack = 0;
+
+    private int _max_locals = 0;
+
 
     /**
      * @param initialLocals the initial state of the locals when
@@ -1150,9 +1154,12 @@ public class ClassFile extends ANY implements ClassFileConstants
         @Override
         public VerificationType push(VerificationType item)
         {
-          return item == null ? null: super.push(item);
+          var result = item == null ? null: super.push(item);
+          _max_stack = Math.max(_max_stack, this.stream().mapToInt(vti -> vti.needsTwoSlots() ? 2 : 1).sum());
+          return result;
         }
       });
+      _max_locals = initialLocals.size();
       locals.add(new Pair<>(0, initialLocals));
     }
 
@@ -1164,7 +1171,6 @@ public class ClassFile extends ANY implements ClassFileConstants
     @Override
     byte[] data()
     {
-      build();
       var o = new Kaku();
       o.writeU2(stackMapFrames.size());
       // NYI optimization potential
@@ -1260,6 +1266,22 @@ public class ClassFile extends ANY implements ClassFileConstants
             o.writeU2(0);
             return o._b.toByteArray();
           }
+
+          /**
+           * NYI: HACK: determine the max stack use of the bytecodes.
+           */
+          public int max_stack()
+          {
+            return 20;
+          }
+
+          /**
+           * NYI: HACK: determine the max local index used by the bytecodes.
+           */
+          public int max_locals()
+          {
+            return 10;
+          }
         };
     }
 
@@ -1275,6 +1297,21 @@ public class ClassFile extends ANY implements ClassFileConstants
       return cf.new StackMapTable(argsLocals, code);
     }
 
+    public void updateMaxLocal(int n)
+    {
+      _max_locals = Math.max(_max_locals, n);
+    }
+
+    public int max_stack()
+    {
+      return _max_stack;
+    }
+
+    public int max_locals()
+    {
+      return _max_locals;
+    }
+
   }
 
 
@@ -1284,23 +1321,23 @@ public class ClassFile extends ANY implements ClassFileConstants
   class CodeAttribute extends Attribute
   {
     final String _where;
-    final int _num_locals;
     final ByteCode _code;
     final List<ExceptionTableEntry> _exception_table;
     final List<Attribute> _attributes;
     int _size;
+    private StackMapTable _smt;
     CodeAttribute(String where,
-                  int num_locals,
                   ByteCode code,
                   List<ExceptionTableEntry> exception_table,
-                  List<Attribute> attributes)
+                  List<Attribute> attributes,
+                  StackMapTable smt)
     {
       super("Code");
       this._where = where;
-      this._num_locals = num_locals;
       this._code = code;
       this._exception_table = exception_table;
       this._attributes = attributes;
+      this._smt = smt;
       var be = new ByteCodeSizeEstimate(_where   ); _code.code(be, ClassFile.this);
       var bf = new ByteCodeFixLabels   (_where   ); _code.code(bf, ClassFile.this);
       _size = bf.size();
@@ -1308,9 +1345,10 @@ public class ClassFile extends ANY implements ClassFileConstants
 
     byte[] data()
     {
+      _smt.build();
       var o = new Kaku();
-      o.writeU2(_code.max_stack());
-      o.writeU2(true /* NYI: CLEANUP: remove */ ? _num_locals :_code.max_locals());
+      o.writeU2(_smt.max_stack());
+      o.writeU2(_smt.max_locals());
       o.writeU4(_size);
       var ba = new ByteCodeWrite(_where, o);
       _code.code(ba, ClassFile.this);
@@ -1322,7 +1360,8 @@ public class ClassFile extends ANY implements ClassFileConstants
           o.writeU2(e._handler_pc);
           o.writeU2(e._catch_pc);
         }
-      o.writeU2(_attributes.size());
+      o.writeU2(_attributes.size()+1);
+      _smt.write(o);
       for (var a : _attributes)
         {
           a.write(o);
@@ -1554,36 +1593,14 @@ public class ClassFile extends ANY implements ClassFileConstants
   public CodeAttribute codeAttribute(String where,
                                      Expr code,
                                      List<ExceptionTableEntry> exception_table,
-                                     List<Attribute> attributes)
+                                     List<Attribute> attributes,
+                                     StackMapTable smt)
   {
-    if (PRECONDITIONS) require
-      (!attributes.isEmpty() /* at least stackmaptable */);
-
     return new CodeAttribute(where,
-                             code.max_locals(),
                              code,
                              exception_table,
-                             attributes);
-  }
-
-
-  /**
-   * create a code attribute to be used in this class file.
-   */
-  public CodeAttribute codeAttribute(String where,
-                                     int num_locals,
-                                     Expr code,
-                                     List<ExceptionTableEntry> exception_table,
-                                     List<Attribute> attributes)
-  {
-    if (PRECONDITIONS) require
-      (!attributes.isEmpty() /* at least stackmaptable */);
-
-    return new CodeAttribute(where,
-                             num_locals,
-                             code,
-                             exception_table,
-                             attributes);
+                             attributes,
+                             smt);
   }
 
 
@@ -1641,7 +1658,7 @@ public class ClassFile extends ANY implements ClassFileConstants
         bc_clinit = bc_clinit
           .andThen(Expr.RETURN);
         var code_clinit = codeAttribute("<clinit> in class for " + _name,
-                                        bc_clinit, new List<>(), new List<>(StackMapTable.empty(this)));
+                                        bc_clinit, new List<>(), new List<>(), StackMapTable.empty(this));
         method(ACC_PUBLIC | ACC_STATIC, "<clinit>", "()V", new List<>(code_clinit));
       }
 

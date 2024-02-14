@@ -158,7 +158,7 @@ public class Types extends ANY implements ClassFileConstants
               .andThen(vt.load(0))
               .andThen(Expr.invokeSpecial(cn, "<init>", sig))
               .andThen(rt.return0());
-            var code_box = cf.codeAttribute(Names.BOX_METHOD_NAME + " in " + _fuir.clazzAsString(cl), bc_box, new List<>(), new List<Attribute>(ClassFile.StackMapTable.empty(cf)));
+            var code_box = cf.codeAttribute(Names.BOX_METHOD_NAME + " in " + _fuir.clazzAsString(cl), bc_box, new List<>(), new List<>(), ClassFile.StackMapTable.empty(cf));
             cf.method(ACC_PUBLIC | ACC_STATIC,
                       Names.BOX_METHOD_NAME,
                       boxSignature(cl),
@@ -168,7 +168,7 @@ public class Types extends ANY implements ClassFileConstants
           .andThen(Expr.invokeSpecial(cf._super,"<init>","()V"))
           .andThen(cod)
           .andThen(Expr.RETURN);
-        var code_init = cf.codeAttribute("<init> in " + _fuir.clazzAsString(cl), bc_init, new List<>(), new List<Attribute>(ClassFile.StackMapTable.empty(cf)));
+        var code_init = cf.codeAttribute("<init> in " + _fuir.clazzAsString(cl), bc_init, new List<>(), new List<>(), ClassFile.StackMapTable.empty(cf));
 
         cf.method(ACC_PUBLIC, "<init>", sig, new List<>(code_init));
 
@@ -181,7 +181,7 @@ public class Types extends ANY implements ClassFileConstants
               .andThen(_fuir.hasPrecondition(maincl) ? invokeStatic(maincl, true) : Expr.UNIT)
               .andThen(invokeStatic(maincl, false)).drop()
               .andThen(Expr.RETURN);
-            var code_run = cf.codeAttribute(Names.MAIN_RUN + " in " + _fuir.clazzAsString(cl), bc_run, new List<>(), new List<Attribute>(ClassFile.StackMapTable.empty(cf)));
+            var code_run = cf.codeAttribute(Names.MAIN_RUN + " in " + _fuir.clazzAsString(cl), bc_run, new List<>(), new List<>(), ClassFile.StackMapTable.empty(cf));
             cf.method(ACC_PUBLIC, Names.MAIN_RUN, "()V", new List<>(code_run));
 
             var bc_main =
@@ -192,7 +192,7 @@ public class Types extends ANY implements ClassFileConstants
               .andThen(Expr.invokeSpecial(cn, "<init>", "()V"))
               .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS, Names.RUNTIME_RUN, "(" + new ClassType(Names.MAIN_INTERFACE).argDescriptor() + ")V", PrimitiveType.type_void))
               .andThen(Expr.RETURN);
-            var code_main = cf.codeAttribute("main in " + _fuir.clazzAsString(cl), bc_main, new List<>(), new List<Attribute>(ClassFile.StackMapTable.empty(cf)));
+            var code_main = cf.codeAttribute("main in " + _fuir.clazzAsString(cl), bc_main, new List<>(), new List<>(), ClassFile.StackMapTable.empty(cf));
             cf.method(ACC_STATIC | ACC_PUBLIC, "main", "([Ljava/lang/String;)V", new List<>(code_main));
           }
       }

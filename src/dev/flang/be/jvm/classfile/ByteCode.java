@@ -467,24 +467,6 @@ abstract class ByteCode extends ANY implements ClassFileConstants
   public abstract void code(ClassFile.ByteCodeWriter bw, ClassFile cf);
 
 
-  /**
-   * NYI: HACK: determine the max stack use of the bytecodes.
-   */
-  public int max_stack()
-  {
-    // NYI: ByteCode.max_stack/max_locals not implemented yet, just using 10
-    return 20;
-  }
-
-  /**
-   * NYI: HACK: determine the max local index used by the bytecodes.
-   */
-  public int max_locals()
-  {
-    // NYI: ByteCode.max_stack/max_locals not implemented yet, just using 10
-    return 10;
-  }
-
 }
 
 /* end of file */
