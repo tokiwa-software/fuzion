@@ -729,7 +729,7 @@ public class Intrinsics extends ANY
     return false;
   }
 
-  public static void fuzion_sys_fileio_seek(long fd, short s, Object res)
+  public static void fuzion_sys_fileio_seek(long fd, long s, Object res)
   {
     Runtime.unsafeIntrinsic();
     if (CHECKS)

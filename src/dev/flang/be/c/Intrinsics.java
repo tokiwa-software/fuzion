@@ -80,6 +80,7 @@ public class Intrinsics extends ANY
                        CStmnt code)
   {
     var res = new CIdent("res");
+    // pthread is POSIX only
     return CStmnt.seq(CExpr.decl("int", res, CExpr.call("pthread_mutex_lock", new List<CExpr>(CNames.GLOBAL_LOCK.adrOf()))),
                       CExpr.call("assert", new List<>(CExpr.eq(res, new CIdent("0")))),
                       code,
@@ -348,19 +349,11 @@ public class Intrinsics extends ANY
           );
         });
     put("fuzion.sys.fileio.delete"       ,  (c,cl,outer,in) ->
-        {
-          var resultIdent = new CIdent("result");
-          return CStmnt.seq(
-            // try delete as a file first
-            CExpr.decl("int", resultIdent, CExpr.call("unlink", new List<>(A0.castTo("char *")))),
-            CExpr.iff(resultIdent.eq(new CIdent("0")), c._names.FZ_TRUE.ret()),
-            // then try delete as a directory
-            resultIdent.assign(CExpr.call("rmdir", new List<>(A0.castTo("char *")))),
-            CExpr.iff(resultIdent.eq(new CIdent("0")), c._names.FZ_TRUE.ret()),
-            c._names.FZ_FALSE.ret()
-            );
-        }
-        );
+      CExpr.iff(
+        CExpr.call("fzE_rm", new List<>(A0.castTo("char *")))
+          .eq(new CIdent("0")),
+            c._names.FZ_TRUE.ret(),
+            c._names.FZ_FALSE.ret()));
     put("fuzion.sys.fileio.move"         , (c,cl,outer,in) ->
         {
           var resultIdent = new CIdent("result");
@@ -382,61 +375,17 @@ public class Intrinsics extends ANY
         }
         );
     put("fuzion.sys.fileio.stats"   , (c,cl,outer,in) ->
-        {
-          var statIdent = new CIdent("statbuf");
-          var metadata = new CIdent("metadata");
-          return CStmnt.seq(
-            CExpr.decl("struct stat", statIdent),
-            CExpr.decl("fzT_1i64 *", metadata),
-            metadata.assign(A1.castTo("fzT_1i64 *")),
-            // write stats in metadata if stat was successful and return true
-            CExpr.iff(
-              CExpr.call("stat", new List<>(A0.castTo("char *"), statIdent.adrOf())).eq(CExpr.int8const(0)),
-              CStmnt.seq(
-                metadata.index(0).assign(statIdent.field(new CIdent("st_size"))),
-                metadata.index(1).assign(statIdent.field(new CIdent("st_mtime"))),
-                metadata.index(2).assign(CExpr.call("S_ISREG", new List<>(statIdent.field(new CIdent("st_mode"))))),
-                metadata.index(3).assign(CExpr.call("S_ISDIR", new List<>(statIdent.field(new CIdent("st_mode"))))),
-                c._names.FZ_TRUE.ret()
-                )
-              ),
-            // return false if stat failed
-            metadata.index(0).assign(errno),
-            metadata.index(1).assign(CExpr.int64const(0)),
-            metadata.index(2).assign(CExpr.int64const(0)),
-            metadata.index(3).assign(CExpr.int64const(0)),
-            c._names.FZ_FALSE.ret()
-            );
-        }
-        );
-    put("fuzion.sys.fileio.lstats"   , (c,cl,outer,in) -> // NYI : maybe will be merged with fileio.stats under the same intrinsic
-        {
-          var statIdent = new CIdent("statbuf");
-          var metadata = new CIdent("metadata");
-          return CStmnt.seq(
-            CExpr.decl("struct stat", statIdent),
-            CExpr.decl("fzT_1i64 *", metadata),
-            metadata.assign(A1.castTo("fzT_1i64 *")),
-            // write stats in metadata if lstat was successful and return true
-            CExpr.iff(
-              CExpr.call("lstat", new List<>(A0.castTo("char *"), statIdent.adrOf())).eq(CExpr.int8const(0)),
-              CStmnt.seq(
-                metadata.index(0).assign(statIdent.field(new CIdent("st_size"))),
-                metadata.index(1).assign(statIdent.field(new CIdent("st_mtime"))),
-                metadata.index(2).assign(CExpr.call("S_ISREG", new List<>(statIdent.field(new CIdent("st_mode"))))),
-                metadata.index(3).assign(CExpr.call("S_ISDIR", new List<>(statIdent.field(new CIdent("st_mode"))))),
-                c._names.FZ_TRUE.ret()
-                )
-              ),
-            // return false if lstat failed
-            metadata.index(0).assign(errno),
-            metadata.index(1).assign(CExpr.int64const(0)),
-            metadata.index(2).assign(CExpr.int64const(0)),
-            metadata.index(3).assign(CExpr.int64const(0)),
-            c._names.FZ_FALSE.ret()
-            );
-        }
-        );
+      CExpr.iff(
+        CExpr.call("fzE_stat", new List<>(A0.castTo("const char *"), A1.castTo("int64_t *")))
+          .eq(CExpr.int8const(0)),
+            c._names.FZ_TRUE.ret(),
+            c._names.FZ_FALSE.ret()));
+    put("fuzion.sys.fileio.lstats"   , (c,cl,outer,in) ->
+      CExpr.iff(
+        CExpr.call("fzE_lstat", new List<>(A0.castTo("const char *"), A1.castTo("int64_t *")))
+          .eq(CExpr.int8const(0)),
+            c._names.FZ_TRUE.ret(),
+            c._names.FZ_FALSE.ret()));
     put("fuzion.sys.fileio.open"   , (c,cl,outer,in) ->
         {
           var filePointer = new CIdent("fp");
@@ -507,8 +456,8 @@ public class Intrinsics extends ANY
           return CStmnt.seq(
             errno.assign(new CIdent("0")),
             CExpr.decl("fzT_1i64 *", seekResults, A2.castTo("fzT_1i64 *")),
-            CStmnt.iff(CExpr.call("fseeko", new List<>(A0.castTo("FILE *"), A1.castTo("off_t"), new CIdent("SEEK_SET"))).eq(CExpr.int8const(0)),
-            seekResults.index(0).assign(CExpr.call("ftello", new List<>(A0.castTo("FILE *"))).castTo("fzT_1i64"))),
+            CStmnt.iff(CExpr.call("fseek", new List<>(A0.castTo("FILE *"), A1.castTo("long"), new CIdent("SEEK_SET"))).eq(CExpr.int8const(0)),
+            seekResults.index(0).assign(CExpr.call("ftell", new List<>(A0.castTo("FILE *"))).castTo("fzT_1i64"))),
             seekResults.index(1).assign(errno.castTo("fzT_1i64"))
             );
         }
@@ -519,7 +468,7 @@ public class Intrinsics extends ANY
           return CStmnt.seq(
             errno.assign(new CIdent("0")),
             CExpr.decl("fzT_1i64 *", positionResults, A1.castTo("fzT_1i64 *")),
-            positionResults.index(0).assign(CExpr.call("ftello", new List<>(A0.castTo("FILE *"))).castTo("fzT_1i64")),
+            positionResults.index(0).assign(CExpr.call("ftell", new List<>(A0.castTo("FILE *"))).castTo("fzT_1i64")),
             positionResults.index(1).assign(errno.castTo("fzT_1i64"))
             );
         }
@@ -868,6 +817,7 @@ public class Intrinsics extends ANY
                                 arg.deref().field(CNames.fzThreadStartRoutineArgFun).assign(CExpr.ident(c._names.function(call, false)).adrOf().castTo("void *")),
                                 arg.deref().field(CNames.fzThreadStartRoutineArgArg).assign(A0.castTo("void *")),
 
+                                // NYI pthread is POSIX only
                                 res.assign(CExpr.call("pthread_create", new List<>(pt,
                                                                                    CNames.NULL,
                                                                                    CNames.fzThreadStartRoutine.adrOf(),
@@ -886,6 +836,7 @@ public class Intrinsics extends ANY
     put("fuzion.sys.thread.join0", (c,cl,outer,in) ->
     {
       return CStmnt.seq(
+        // NYI pthread is POSIX only
         CExpr.call("pthread_join", new List<>(A0.castTo("pthread_t *").deref(), CNames.NULL /* NYI handle return value */))
       );
     });
@@ -906,16 +857,7 @@ public class Intrinsics extends ANY
                             .ret()
                             );
         });
-    put("fuzion.std.nano_sleep", (c,cl,outer,in) ->
-        {
-          var req = new CIdent("req");
-          var sec = A0.div(CExpr.int64const(1_000_000_000));
-          var nsec = A0.sub(sec.mul(CExpr.int64const(1_000_000_000)));
-          return CStmnt.seq(CStmnt.decl("struct timespec",req,CExpr.compoundLiteral("struct timespec",
-                                                                                    sec.code() + "," +
-                                                                                    nsec.code())),
-                            /* NYI: while: */ CExpr.call("nanosleep",new List<>(req.adrOf(),req.adrOf())));
-        });
+    put("fuzion.std.nano_sleep", (c,cl,outer,in) -> CExpr.call("fzE_nanosleep", new List<>(A0)));
 
 
     put("fuzion.std.date_time", (c,cl,outer,in) ->

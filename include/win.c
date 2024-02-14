@@ -381,3 +381,74 @@ int fzE_munmap(void * mapped_address, const int file_size){
     : -1;
 }
 
+
+/**
+ * Sleep for `n` nano seconds.
+ */
+void fzE_nanosleep(uint64_t n)
+{
+  // NYI replace with native windows
+  struct timespec req = (struct timespec){n/1000000000LL,n-n/1000000000LL*1000000000LL};
+  // NYI while{}
+  nanosleep(&req,&req);
+}
+
+
+/**
+ * remove a file or path
+ */
+int fzE_rm(char * path)
+{
+  // NYI replace with native windows
+  return unlink(path) == 0
+    ? 0
+    : rmdir(path) == 0
+    ? 0
+    : -1;
+}
+
+
+/**
+ * Get file status (resolves symbolic links)
+ */
+int fzE_stat(const char *pathname, int64_t * metadata)
+{
+  struct stat statbuf;
+  // NYI replace with native windows
+  if (stat(pathname,&statbuf)==((int8_t) 0))
+  {
+    metadata[0] = statbuf.st_size;
+    metadata[1] = statbuf.st_mtime;
+    metadata[2] = S_ISREG(statbuf.st_mode);
+    metadata[3] = S_ISDIR(statbuf.st_mode);
+    return 0;
+  }
+  metadata[0] = errno;
+  metadata[1] = 0LL;
+  metadata[2] = 0LL;
+  metadata[3] = 0LL;
+  return -1;
+}
+
+
+/**
+ * Get file status (does not resolve symbolic links)
+ */
+int fzE_lstat(const char *pathname, int64_t * metadata)
+{
+  struct stat statbuf;
+  // NYI replace with native windows
+  if (lstat(pathname,&statbuf)==((int8_t) 0))
+  {
+    metadata[0] = statbuf.st_size;
+    metadata[1] = statbuf.st_mtime;
+    metadata[2] = S_ISREG(statbuf.st_mode);
+    metadata[3] = S_ISDIR(statbuf.st_mode);
+    return 0;
+  }
+  metadata[0] = errno;
+  metadata[1] = 0LL;
+  metadata[2] = 0LL;
+  metadata[3] = 0LL;
+  return -1;
+}

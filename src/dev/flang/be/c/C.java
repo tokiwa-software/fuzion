@@ -928,10 +928,7 @@ public class C extends ANY
 
     // --- POSIX ---
     // NYI remove POSIX only code.
-    cf.print(
-       "#include <unistd.h>\n"+
-       "#include <sys/stat.h>\n" +
-       "#include <pthread.h>\n");
+    cf.print("#include <pthread.h>\n");
 
     var fzH = _options.pathOf("include/fz.h");
     cf.println("#include \"" + fzH + "\"\n");

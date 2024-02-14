@@ -42,7 +42,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <fcntl.h>      // fcntl
 #include <unistd.h>     // close
 #include <netdb.h>      // getaddrinfo
-
+#include <time.h>
 
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname){
@@ -343,3 +343,72 @@ void * fzE_mmap(FILE * file, off_t offset, size_t size, int * result) {
 int fzE_munmap(void * mapped_address, const int file_size){
   return munmap(mapped_address, file_size);
 }
+
+
+/**
+ * Sleep for `n` nano seconds.
+ */
+void fzE_nanosleep(uint64_t n)
+{
+  struct timespec req = (struct timespec){n/1000000000LL,n-n/1000000000LL*1000000000LL};
+  // NYI while{}
+  nanosleep(&req,&req);
+}
+
+
+/**
+ * remove a file or path
+ */
+int fzE_rm(char * path)
+{
+  return unlink(path) == 0
+    ? 0
+    : rmdir(path) == 0
+    ? 0
+    : -1;
+}
+
+
+/**
+ * Get file status (resolves symbolic links)
+ */
+int fzE_stat(const char *pathname, int64_t * metadata)
+{
+  struct stat statbuf;
+  if (stat(pathname,&statbuf)==((int8_t) 0))
+  {
+    metadata[0] = statbuf.st_size;
+    metadata[1] = statbuf.st_mtime;
+    metadata[2] = S_ISREG(statbuf.st_mode);
+    metadata[3] = S_ISDIR(statbuf.st_mode);
+    return 0;
+  }
+  metadata[0] = errno;
+  metadata[1] = 0LL;
+  metadata[2] = 0LL;
+  metadata[3] = 0LL;
+  return -1;
+}
+
+
+/**
+ * Get file status (does not resolve symbolic links)
+ */
+int fzE_lstat(const char *pathname, int64_t * metadata)
+{
+  struct stat statbuf;
+  if (lstat(pathname,&statbuf)==((int8_t) 0))
+  {
+    metadata[0] = statbuf.st_size;
+    metadata[1] = statbuf.st_mtime;
+    metadata[2] = S_ISREG(statbuf.st_mode);
+    metadata[3] = S_ISDIR(statbuf.st_mode);
+    return 0;
+  }
+  metadata[0] = errno;
+  metadata[1] = 0LL;
+  metadata[2] = 0LL;
+  metadata[3] = 0LL;
+  return -1;
+}
+

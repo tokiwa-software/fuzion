@@ -37,7 +37,7 @@ public read(ro Read_Handler) : simple_effect is
   # returns outcome array u8, a byte array representing the content of the file if the operation was successful
   # returns an error in case the operation fails
   #
-  public read_file(fd i64) outcome (array u8) =>
+  module read_file(fd i64) outcome (array u8) =>
     empty array u8 := []
     content := read_file fd empty
 

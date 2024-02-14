@@ -45,6 +45,20 @@ module:public open(public T type,
     io.file.read.read_file fd
 
 
+  # seek in file
+  #
+  public seek(
+       # the offset to seek from the beginning of the stream pointer
+       offset i64) =>
+    io.file.seek.seek fd offset
+
+
+  # get the current byte position in the file
+  #
+  public file_position =>
+    io.file.seek.file_position fd
+
+
   # install mmap effect an run code
   #
   # note: the offset must be a multiple of the pagesize which usually is 4096, windows 65536?

@@ -55,7 +55,15 @@ fileiotests =>
     error =>
   say "$file exists: {exists file}"
 
-  say "$file size is {(f.stat file true).val.size}"
+  say "stat resolve=true : $file size is {(f.stat file true).val.size}"
+  say "stat resolve=false: $file size is {(f.stat file false).val.size}"
+
+  f.use unit file io.file.mode.read ()->
+    say io.file.open.file_position
+    say (io.file.open.seek 1)
+    say io.file.open.file_position
+    say (io.file.open.seek 0)
+
 
   match f.use (array u8) file io.file.mode.read ()->io.file.open.read
     bytes array u8 =>
