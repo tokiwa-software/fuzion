@@ -2608,6 +2608,17 @@ hw25 is
     return bb.slice(bb.position(), 4+elBytes);
   }
 
+
+
+  /**
+   * Return if the intrinsic is know to be used?
+   * default: true
+   */
+  public boolean isIntrinsicUsed(String name)
+  {
+    return true;
+  }
+
 }
 
 /* end of file */

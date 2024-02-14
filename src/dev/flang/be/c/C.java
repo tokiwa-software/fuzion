@@ -734,8 +734,17 @@ public class C extends ANY
     // https://lobste.rs/s/avrfxz/ubuntu_24_04_lts_will_enable_frame
     command.addAll("-fno-omit-frame-pointer", "-mno-omit-leaf-frame-pointer");
 
-    // NYI link libmath, libpthread only when needed
-    command.addAll("-lm", "-lpthread", "-std=c11", "-o", name);
+    if (linkLibMath())
+      {
+        command.add("-lm");
+      }
+
+    if (linkPThread())
+      {
+        command.add("-lpthread");
+      }
+
+    command.addAll("-std=c11", "-o", name);
 
     // add the c-files
     command.addAll(_options.pathOf("include/shared.c"));
@@ -780,6 +789,83 @@ public class C extends ANY
                      "C compiler call '" + command.toString("", " ", "") + "'  received '" + io + "'");
       }
     Errors.showAndExit();
+  }
+
+
+  /*
+   * Should POSIX threads be linked?
+   */
+  private boolean linkPThread()
+  {
+    return
+      _fuir.isIntrinsicUsed("fuzion.sys.thread.spawn0") ||
+      _fuir.isIntrinsicUsed("fuzion.sys.thread.join0") ||
+      _fuir.isIntrinsicUsed("concur.atomic.compare_and_swap0") ||
+      _fuir.isIntrinsicUsed("concur.atomic.compare_and_set0") ||
+      _fuir.isIntrinsicUsed("concur.atomic.racy_accesses_supported") ||
+      _fuir.isIntrinsicUsed("concur.atomic.read0") ||
+      _fuir.isIntrinsicUsed("concur.atomic.write0");
+  }
+
+
+  /*
+   * Do we have to link libmath?
+   */
+  private boolean linkLibMath()
+  {
+    return
+      _fuir.isIntrinsicUsed("f32.prefix -") ||
+      _fuir.isIntrinsicUsed("f32.infix +") ||
+      _fuir.isIntrinsicUsed("f32.infix -") ||
+      _fuir.isIntrinsicUsed("f32.infix *") ||
+      _fuir.isIntrinsicUsed("f32.infix /") ||
+      _fuir.isIntrinsicUsed("f32.infix %") ||
+      _fuir.isIntrinsicUsed("f32.infix **") ||
+      _fuir.isIntrinsicUsed("f32.infix =") ||
+      _fuir.isIntrinsicUsed("f32.infix <=") ||
+      _fuir.isIntrinsicUsed("f32.infix >=") ||
+      _fuir.isIntrinsicUsed("f32.infix <") ||
+      _fuir.isIntrinsicUsed("f32.infix >") ||
+      _fuir.isIntrinsicUsed("f32.as_f64") ||
+      _fuir.isIntrinsicUsed("f64.as_f32") ||
+      _fuir.isIntrinsicUsed("f64.as_i64_lax") ||
+      _fuir.isIntrinsicUsed("f32.cast_to_u32") ||
+      _fuir.isIntrinsicUsed("f64.cast_to_u64") ||
+      _fuir.isIntrinsicUsed("f32.type.min_exp") ||
+      _fuir.isIntrinsicUsed("f32.type.max_exp") ||
+      _fuir.isIntrinsicUsed("f32.type.min_positive") ||
+      _fuir.isIntrinsicUsed("f32.type.max") ||
+      _fuir.isIntrinsicUsed("f32.type.epsilon") ||
+      _fuir.isIntrinsicUsed("f64.type.min_exp") ||
+      _fuir.isIntrinsicUsed("f64.type.max_exp") ||
+      _fuir.isIntrinsicUsed("f64.type.min_positive") ||
+      _fuir.isIntrinsicUsed("f64.type.max") ||
+      _fuir.isIntrinsicUsed("f64.type.epsilon") ||
+      _fuir.isIntrinsicUsed("f32.type.is_NaN") ||
+      _fuir.isIntrinsicUsed("f32.type.square_root") ||
+      _fuir.isIntrinsicUsed("f64.type.square_root") ||
+      _fuir.isIntrinsicUsed("f32.type.exp") ||
+      _fuir.isIntrinsicUsed("f64.type.exp") ||
+      _fuir.isIntrinsicUsed("f32.type.log") ||
+      _fuir.isIntrinsicUsed("f64.type.log") ||
+      _fuir.isIntrinsicUsed("f32.type.sin") ||
+      _fuir.isIntrinsicUsed("f64.type.sin") ||
+      _fuir.isIntrinsicUsed("f32.type.cos") ||
+      _fuir.isIntrinsicUsed("f64.type.cos") ||
+      _fuir.isIntrinsicUsed("f32.type.tan") ||
+      _fuir.isIntrinsicUsed("f64.type.tan") ||
+      _fuir.isIntrinsicUsed("f32.type.asin") ||
+      _fuir.isIntrinsicUsed("f64.type.asin") ||
+      _fuir.isIntrinsicUsed("f32.type.acos") ||
+      _fuir.isIntrinsicUsed("f64.type.acos") ||
+      _fuir.isIntrinsicUsed("f32.type.atan") ||
+      _fuir.isIntrinsicUsed("f64.type.atan") ||
+      _fuir.isIntrinsicUsed("f32.type.sinh") ||
+      _fuir.isIntrinsicUsed("f64.type.sinh") ||
+      _fuir.isIntrinsicUsed("f32.type.cosh") ||
+      _fuir.isIntrinsicUsed("f64.type.cosh") ||
+      _fuir.isIntrinsicUsed("f32.type.tanh") ||
+      _fuir.isIntrinsicUsed("f64.type.tanh");
   }
 
 
@@ -854,8 +940,12 @@ public class C extends ANY
       (CStmnt.decl("int", CNames.GLOBAL_ARGC));
     cf.print
       (CStmnt.decl("char **", CNames.GLOBAL_ARGV));
-    cf.print
-      (CStmnt.decl("pthread_mutex_t", CNames.GLOBAL_LOCK));
+
+    if (linkPThread())
+      {
+        cf.print
+          (CStmnt.decl("pthread_mutex_t", CNames.GLOBAL_LOCK));
+      }
 
     var o = new CIdent("of");
     var s = new CIdent("sz");
@@ -930,18 +1020,22 @@ public class C extends ANY
     cf.println(" _setmode( _fileno( stderr ), _O_BINARY ); // reopen stderr in binary mode");
     cf.println("#endif");
 
-    cf.println(" {\n" +
-               "  pthread_mutexattr_t attr;\n" +
-               "  memset(&" + CNames.GLOBAL_LOCK.code() + ", 0, sizeof(" + CNames.GLOBAL_LOCK.code() + "));\n" +
-               "  bool res = pthread_mutexattr_init(&attr) == 0 &&\n" +
-               "  #if _WIN32\n" +
-               "  // NYI #1646 setprotocol returns EINVAL on windows. \n" +
-               "  #else\n" +
-               "             pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT) == 0 &&\n" +
-               "  #endif\n" +
-               "             pthread_mutex_init(&" + CNames.GLOBAL_LOCK.code() + ", &attr) == 0;\n" +
-               "  assert(res);\n" +
-               " }\n");
+    if (linkPThread())
+      {
+        cf.println(" {\n" +
+                   "  pthread_mutexattr_t attr;\n" +
+                   "  memset(&" + CNames.GLOBAL_LOCK.code() + ", 0, sizeof(" + CNames.GLOBAL_LOCK.code() + "));\n" +
+                   "  bool res = pthread_mutexattr_init(&attr) == 0 &&\n" +
+                   "  #if _WIN32\n" +
+                   "  // NYI #1646 setprotocol returns EINVAL on windows. \n" +
+                   "  #else\n" +
+                   "             pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT) == 0 &&\n" +
+                   "  #endif\n" +
+                   "             pthread_mutex_init(&" + CNames.GLOBAL_LOCK.code() + ", &attr) == 0;\n" +
+                   "  assert(res);\n" +
+                   " }\n");
+      }
+
 
     if (_options._useBoehmGC)
       {
