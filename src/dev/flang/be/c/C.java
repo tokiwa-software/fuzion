@@ -1558,7 +1558,8 @@ public class C extends ANY
                   System.out.println("Escapes, no tail call opt possible: " + _fuir.clazzAsStringNew(cl) + ", lifetime: " + _fuir.lifeTime(cl, pre).name());
                 }
 
-              if (!preCalled                                             &&  // not calling pre-condition
+              if (!pre                                                   &&  // not within precondition
+                  !preCalled                                             &&  // not calling pre-condition
                   cc == cl                                               &&  // calling myself
                   _tailCall.callIsTailCall(cl, c, i)                     &&  // as a tail call
                   _fuir.lifeTime(cl, pre).ordinal() <=
