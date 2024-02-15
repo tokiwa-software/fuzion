@@ -1551,8 +1551,7 @@ public class C extends ANY
                   !preCalled                                             &&  // not calling pre-condition
                   cc == cl                                               &&  // calling myself
                   _tailCall.callIsTailCall(cl, c, i)                     &&  // as a tail call
-                  _fuir.lifeTime(cl, pre).ordinal() >
-                  FUIR.LifeTime.Call.ordinal()                               // and current instance did not escape
+                  !_fuir.lifeTime(cl, pre).maySurviveCall()                  // and current instance did not escape
                 )
                 {
                   System.out.println("Escapes, no tail call opt possible: " + _fuir.clazzAsStringNew(cl) + ", lifetime: " + _fuir.lifeTime(cl, pre).name());
@@ -1561,8 +1560,7 @@ public class C extends ANY
               if (!preCalled                                             &&  // not calling pre-condition
                   cc == cl                                               &&  // calling myself
                   _tailCall.callIsTailCall(cl, c, i)                     &&  // as a tail call
-                  _fuir.lifeTime(cl, pre).ordinal() <=
-                  FUIR.LifeTime.Call.ordinal()                               // and current instance did not escape
+                  !_fuir.lifeTime(cl, pre).maySurviveCall()                  // and current instance did not escape
                 )
                 { // then we can do tail recursion optimization!
                   result = tailRecursion(cl, c, i, tc, a);
@@ -1899,7 +1897,7 @@ public class C extends ANY
   {
     var res1 = CNames.CURRENT;
     var res2 = _fuir.clazzIsRef(cl) ? res1 : res1.deref();
-    var res3 =  _fuir.lifeTime(cl, pre).ordinal() <= FUIR.LifeTime.Call.ordinal() ? res2.adrOf() : res2;
+    var res3 =  _fuir.lifeTime(cl, pre).maySurviveCall() ? res : res2.adrOf();
     return !_fuir.hasData(cl) ? CExpr.UNIT : res3;
   }
 
