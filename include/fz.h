@@ -166,6 +166,11 @@ bool fzE_bitwise_compare_float(float f1, float f2);
 bool fzE_bitwise_compare_double(double d1, double d2);
 
 /**
+ * returns a monotonically increasing timestamp.
+ */
+uint64_t fzE_nanotime();
+
+/**
  * Sleep for `n` nano seconds.
  */
 void fzE_nanosleep(uint64_t n);

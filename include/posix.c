@@ -354,6 +354,21 @@ int fzE_munmap(void * mapped_address, const int file_size){
 
 
 /**
+ * returns a monotonically increasing timestamp.
+ */
+uint64_t fzE_nanotime()
+{
+  struct timespec result;
+  if (clock_gettime(CLOCK_MONOTONIC,&result)!=0)
+  {
+    fprintf(stderr,"*** clock_gettime failed\012");
+    exit(EXIT_FAILURE);
+  }
+  return result.tv_sec*1000000000ULL+result.tv_nsec;
+}
+
+
+/**
  * Sleep for `n` nano seconds.
  */
 void fzE_nanosleep(uint64_t n)

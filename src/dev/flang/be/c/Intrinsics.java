@@ -817,23 +817,7 @@ public class Intrinsics extends ANY
     {
       return CExpr.call("fzE_thread_join", new List<>(A0));
     });
-    put("fuzion.std.nano_time", (c,cl,outer,in) ->
-        {
-          var result = new CIdent("result");
-          var onFailure = CStmnt.seq(CExpr.fprintfstderr("*** clock_gettime failed\n"),
-                                     CExpr.call("exit", new List<>(new CIdent("1")){}));
-          return CStmnt.seq(CStmnt.decl("struct timespec", result),
-                            CExpr.iff(CExpr.call("clock_gettime",
-                                                 new List<>(new CIdent("CLOCK_MONOTONIC"), result.adrOf()){}
-                                                 ).ne(new CIdent("0")),
-                                      onFailure
-                                      ),
-                            result.field(new CIdent("tv_sec"))
-                            .mul(CExpr.uint64const(1_000_000_000))
-                            .add(result.field(new CIdent("tv_nsec")))
-                            .ret()
-                            );
-        });
+    put("fuzion.std.nano_time", (c,cl,outer,in) -> CExpr.call("fzE_nanotime", new List<>()).ret());
     put("fuzion.std.nano_sleep", (c,cl,outer,in) -> CExpr.call("fzE_nanosleep", new List<>(A0)));
 
 
