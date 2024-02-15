@@ -1153,12 +1153,12 @@ hw25 is
     var result =
       pre ? (switch (clazzKind(cl))
                {
-               case Abstract  -> LifeTime.Unknown;
+               case Abstract  -> LifeTime.Call;
                case Choice    -> LifeTime.Undefined;
-               case Intrinsic -> LifeTime.Unknown;
-               case Field     -> LifeTime.Unknown;
-               case Routine   -> LifeTime.Unknown;
-               case Native    -> LifeTime.Unknown;
+               case Intrinsic -> LifeTime.Call;
+               case Field     -> LifeTime.Call;
+               case Routine   -> LifeTime.Call;
+               case Native    -> LifeTime.Call;
                })
           : (switch (clazzKind(cl))
                {
