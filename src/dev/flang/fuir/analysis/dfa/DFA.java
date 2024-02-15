@@ -37,6 +37,8 @@ import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
+import dev.flang.fuir.analysis.TailCall;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
@@ -396,7 +398,17 @@ public class DFA extends ANY
                   {
                     res = new EmbeddedValue(cl, c, i, res.value());
                   }
-                if (tvalue == _call._instance || original_tvalue instanceof EmbeddedValue ev && ev._instance == _call._instance)
+                // check if target value of new call ca causes current _call's instance to escape.
+                var or = _fuir.clazzOuterRef(cc);
+                if (or != -1                         &&     // outer ref present since no outer ref implies no target value is passed to ca
+                    _fuir.clazzFieldIsAdrOfValue(or) &&     // outer ref is adr, otherwise target is passed by value (primitive type like u32)
+                    (tvalue == _call._instance              // target is current instance, so it may escape
+                     ||
+                     original_tvalue instanceof EmbeddedValue ev &&
+                     ev._instance == _call._instance        // target is embedded in current instance, so it is kept alive by a reference (at least in the C backend)
+                     ) &&
+                    !_tailCall.callIsTailCall(cl,c,i)       // a tail call does not cause the target to escape
+                    )
                   {
                     _call.escapes();
                   }
@@ -895,6 +907,13 @@ public class DFA extends ANY
   boolean _reportResults = false;
 
 
+  /**
+   * TailCall analysis provides a method to find tail calls, but does not check
+   * if the current instance escapes such that it cannot be replaced by a goto.
+   */
+  public final TailCall _tailCall;
+
+
   /*---------------------------  constructors  ---------------------------*/
 
 
@@ -910,6 +929,7 @@ public class DFA extends ANY
   {
     _options = options;
     _fuir = fuir;
+    _tailCall = new TailCall(fuir);
     var bool = fuir.clazz(FUIR.SpecialClazzes.c_bool);
     _true  = new TaggedValue(this, bool, Value.UNIT, 1);
     _false = new TaggedValue(this, bool, Value.UNIT, 0);
