@@ -710,7 +710,7 @@ class CodeGen
         {
           if (_types.clazzNeedsCode(cc))
             {
-              if (!preCalled                                                             // not calling pre-condition
+              if (!pre && !preCalled                                                     // not calling pre-condition
                   && cc == cl                                                            // calling myself
                   && c != -1 && i != -1 && _jvm._tailCall.callIsTailCall(cl, c, i)       // as a tail call
                   && _fuir.lifeTime(cl, pre).ordinal() <= FUIR.LifeTime.Call.ordinal())
