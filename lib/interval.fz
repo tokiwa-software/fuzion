@@ -60,14 +60,9 @@ is
   # e.g., in `2..10:2` will create "{2,4,6,8,10}".
   #
   public infix : (step_factor T)
-  /* NYI: BUG: #2561 this syntax does not work yet:
   pre
-    debug: step_factor.sign != 0
+    debug: step_factor.sign != 0,
     safety: (step *? step_factor).exists
-  */
-  pre
-    ((debug: step_factor.sign != 0) &&
-     (safety: (step *? step_factor).exists))
   =>
     interval from through step*step_factor
 
@@ -103,8 +98,8 @@ is
   # does this interval contain the given value?
   #
   public contains(e T) =>
-    if   step.sign > 0 then from <= e <= through.or_else e && (e %  step = from %  step)
-    else                    from >= e >= through.or_else e && (e % -step = from % -step)
+    if   step.sign > 0 then from <= e <= through.get e && (e %  step = from %  step)
+    else                    from >= e >= through.get e && (e % -step = from % -step)
 
 
   # string representation of this interval, e.g., "1..10:2"

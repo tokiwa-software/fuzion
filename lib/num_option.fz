@@ -70,9 +70,9 @@ is
 
   # unwrap value or get default
   #
-  public or_else (defawlt Lazy T) =>
+  public get (default Lazy T) =>
     num_option.this ? v T => v
-                    | nil => defawlt
+                    | nil => default
 
 
   # monadic operator

@@ -93,13 +93,6 @@ is
   public and_then (f T -> option T) => option.this >>= f
 
 
-  # unwrap value or get default
-  #
-  public or_else (defawlt Lazy T) =>
-    option.this ? v T => v
-                | nil => defawlt
-
-
   # map this option using f, i.e., map nil to nil and any value v to f v
   #
   public map_to_option(B type, f T -> B) option B =>
