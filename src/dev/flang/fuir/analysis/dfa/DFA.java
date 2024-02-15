@@ -411,6 +411,8 @@ public class DFA extends ANY
                      original_tvalue instanceof EmbeddedValue ev &&
                      ev._instance == _call._instance        // target is embedded in current instance, so it is kept alive by a reference (at least in the C backend)
                      ) &&
+                    _fuir.clazzKind(cl) == FUIR.FeatureKind.Routine &&  // NYI: CLEANUP: Better check that we are not analysing cl's precondition,
+                                                                        // but we currently do not have this information here.
                     !_tailCall.callIsTailCall(cl,c,i)       // a tail call does not cause the target to escape
                     )
                   {
