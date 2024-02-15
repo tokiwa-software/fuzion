@@ -371,16 +371,16 @@ public class DFA extends ANY
      *
      * @param cc clazz that is called
      *
-     * @param pre true to call the precondition of cl instead of cl.
+     * @param preCalled true to call the precondition of cl instead of cl.
      *
      * @return result values of the call
      */
-    Val call0(int cl, Val tvalue, List<Val> args, int c, int i, int cc, boolean pre, Val original_tvalue)
+    Val call0(int cl, Val tvalue, List<Val> args, int c, int i, int cc, boolean preCalled, Val original_tvalue)
     {
       // in case we access the value in a boxed target, unbox it first:
       tvalue = unboxTarget(tvalue, _fuir.accessTargetClazz(cl, c, i), cc);
       Val res = null;
-      switch (pre ? FUIR.FeatureKind.Routine : _fuir.clazzKind(cc))
+      switch (preCalled ? FUIR.FeatureKind.Routine : _fuir.clazzKind(cc))
         {
         case Abstract :
           Errors.error("Call to abstract feature encountered.",
@@ -391,7 +391,7 @@ public class DFA extends ANY
           {
             if (_fuir.clazzNeedsCode(cc))
               {
-                var ca = newCall(cc, pre, tvalue.value(), args, _call._env, _call);
+                var ca = newCall(cc, preCalled, tvalue.value(), args, _call._env, _call);
                 ca.addCallSiteLocation(c,i);
                 res = ca.result();
                 if (res != null && res != Value.UNIT && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)))
@@ -407,6 +407,8 @@ public class DFA extends ANY
                      original_tvalue instanceof EmbeddedValue ev &&
                      ev._instance == _call._instance        // target is embedded in current instance, so it is kept alive by a reference (at least in the C backend)
                      ) &&
+                    _fuir.clazzKind(cl) == FUIR.FeatureKind.Routine &&  // NYI: CLEANUP: Better check that we are not analysing cl's precondition,
+                                                                        // but we currently do not have this information here.
                     !_tailCall.callIsTailCall(cl,c,i)       // a tail call does not cause the target to escape
                                                             // NYI: CLEANUP: It should be sufficient to check that tvalue
                                                             // is not an outer ref embedded in call._instance.
