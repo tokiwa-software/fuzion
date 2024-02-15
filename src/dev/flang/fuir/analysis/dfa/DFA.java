@@ -414,6 +414,8 @@ public class DFA extends ANY
                     _fuir.clazzKind(cl) == FUIR.FeatureKind.Routine &&  // NYI: CLEANUP: Better check that we are not analysing cl's precondition,
                                                                         // but we currently do not have this information here.
                     !_tailCall.callIsTailCall(cl,c,i)       // a tail call does not cause the target to escape
+                                                            // NYI: CLEANUP: It should be sufficient to check that tvalue
+                                                            // is not an outer ref embedded in call._instance.
                     )
                   {
                     _call.escapes();
