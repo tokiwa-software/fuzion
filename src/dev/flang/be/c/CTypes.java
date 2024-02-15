@@ -334,6 +334,38 @@ public class CTypes extends ANY
     return result;
   }
 
+
+  /**
+   * Get the matching atomic type for `rc`.
+   *
+   * For references this is: atomic_uintptr_t
+   * For scalars this is: e.g. atomic_uint_least32_t
+   * For bools (since tag is 32-bit): atomic_int_least32_t
+   */
+  public String atomicType(int rc)
+  {
+    var res = "atomic type not found for: " + _fuir.clazzAsStringNew(rc);
+    if (_fuir.clazzIsRef(rc))
+      {
+        res = "atomic_uintptr_t";
+      }
+    res = switch (_fuir.getSpecialClazz(rc))
+      {
+      case c_i8 -> "atomic_int_least8_t";
+      case c_i16 -> "atomic_int_least16_t";
+      case c_i32 -> "atomic_int_least32_t";
+      case c_i64 -> "atomic_int_least64_t";
+      case c_u8 -> "atomic_uint_least8_t";
+      case c_u16 -> "atomic_uint_least16_t";
+      case c_u32 -> "atomic_uint_least32_t";
+      case c_u64 -> "atomic_uint_least64_t";
+      case c_bool -> "atomic_int_least32_t";
+      default -> res;
+      };
+
+    return res;
+  }
+
 }
 
 /* end of file */

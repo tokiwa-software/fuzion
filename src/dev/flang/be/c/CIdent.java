@@ -102,6 +102,22 @@ class CIdent extends CExpr
    */
   int precedence() { return 0; }
 
+
+  /**
+   * Return an incr-expression for this CIdent.
+   *
+   * e.g. ++my_ident;
+   */
+  public CExpr incr()
+  {
+    CExpr ident = this;
+    return new CExpr()
+    {
+      int precedence() { return ident.precedence(); }
+      void code(CString sb) { sb.append("++");ident.code(sb); }
+    };
+  }
+
 }
 
 /* end of file */
