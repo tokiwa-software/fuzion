@@ -408,6 +408,8 @@ public class DFA extends ANY
                      ev._instance == _call._instance        // target is embedded in current instance, so it is kept alive by a reference (at least in the C backend)
                      ) &&
                     !_tailCall.callIsTailCall(cl,c,i)       // a tail call does not cause the target to escape
+                                                            // NYI: CLEANUP: It should be sufficient to check that tvalue
+                                                            // is not an outer ref embedded in call._instance.
                     )
                   {
                     _call.escapes();
@@ -989,7 +991,7 @@ public class DFA extends ANY
         public LifeTime lifeTime(int cl, boolean pre)
         {
           return
-            pre || (clazzKind != FeatureKind.Routine)
+            pre || (clazzKind(cl) != FeatureKind.Routine)
                 ? super.lifeTime(cl, pre)
                 : currentEscapes(cl, pre) ? LifeTime.Unknown :
                                             LifeTime.Call;
