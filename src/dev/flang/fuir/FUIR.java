@@ -1115,7 +1115,19 @@ hw25 is
     /* The called clazz does not have an instance value, so there is no lifetime
      * associated to it
      */
-    Undefined
+    Undefined;
+
+    /**
+     * May an instance with this LifeTime be accessible after the call to its
+     * routine?
+     */
+    public boolean maySurviveCall()
+    {
+      require
+        (this != Undefined);
+
+      return this.ordinal() > Call.ordinal();
+    }
   }
 
   static
