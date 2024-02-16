@@ -34,6 +34,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.TreeMap;
 
 import dev.flang.be.c.C;
@@ -79,6 +80,7 @@ public class Fuzion extends Tool
   static boolean _xdfa_ = true;
   static String _cCompiler_ = null;
   static String _cFlags_ = null;
+  static String  _jvmOutName_ = null;
 
 
   /**
@@ -160,7 +162,7 @@ public class Fuzion extends Tool
       }
       void process(FuzionOptions options, FUIR fuir)
       {
-        new JVM(new JVMOptions(options, _xdfa_, /* run */ true, /* save classes */ false, /* save JAR */ false), fuir).compile();
+        new JVM(new JVMOptions(options, _xdfa_, /* run */ true, /* save classes */ false, /* save JAR */ false, Optional.empty()), fuir).compile();
       }
       boolean takesApplicationArgs()
       {
@@ -172,7 +174,7 @@ public class Fuzion extends Tool
     {
       String usage()
       {
-        return "[-Xdfa=(on|off)] ";
+        return "[-o=<outputName>] [-Xdfa=(on|off)] ";
       }
       boolean handleOption(Fuzion f, String o)
       {
@@ -182,11 +184,16 @@ public class Fuzion extends Tool
             _xdfa_ = parseOnOffArg(o);
             result = true;
           }
+        if (o.startsWith("-o="))
+          {
+            _jvmOutName_ = o.substring(3);
+            result = true;
+          }
         return result;
       }
       void process(FuzionOptions options, FUIR fuir)
       {
-        new JVM(new JVMOptions(options, _xdfa_, /* run */ false, /* save classes */ true, /* save JAR */ false), fuir).compile();
+        new JVM(new JVMOptions(options, _xdfa_, /* run */ false, /* save classes */ true, /* save JAR */ false, Optional.ofNullable(_jvmOutName_)), fuir).compile();
       }
     },
 
@@ -194,7 +201,7 @@ public class Fuzion extends Tool
     {
       String usage()
       {
-        return "[-Xdfa=(on|off)] ";
+        return "[-o=<outputName>] [-Xdfa=(on|off)] ";
       }
       boolean handleOption(Fuzion f, String o)
       {
@@ -204,11 +211,16 @@ public class Fuzion extends Tool
             _xdfa_ = parseOnOffArg(o);
             result = true;
           }
+        if (o.startsWith("-o="))
+          {
+            _jvmOutName_ = o.substring(3);
+            result = true;
+          }
         return result;
       }
       void process(FuzionOptions options, FUIR fuir)
       {
-        new JVM(new JVMOptions(options, _xdfa_, /* run */ false, /* save classes */ false, /* save JAR */ true), fuir).compile();
+        new JVM(new JVMOptions(options, _xdfa_, /* run */ false, /* save classes */ false, /* save JAR */ true, Optional.ofNullable(_jvmOutName_)), fuir).compile();
       }
     },
 
