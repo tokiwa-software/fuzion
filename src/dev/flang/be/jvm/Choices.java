@@ -28,11 +28,11 @@ package dev.flang.be.jvm;
 
 import dev.flang.fuir.FUIR;
 
-import dev.flang.be.jvm.classfile.ClassFile.Attribute;
 import dev.flang.be.jvm.classfile.ClassFile;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 import dev.flang.be.jvm.classfile.Expr;
 import dev.flang.be.jvm.classfile.Label;
+import dev.flang.be.jvm.classfile.VerificationType;
 
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
@@ -289,7 +289,7 @@ public class Choices extends ANY implements ClassFileConstants
                           var bc_tag = Expr.iconst(tagNum)
                             .andThen(Expr.IRETURN);
                           var code_tag = hcf.codeAttribute(gtn + "in interface for "+_fuir.clazzAsString(cl),
-                                                           bc_tag, new List<>(), new List<>(), ClassFile.StackMapTable.empty(hcf));
+                                                           bc_tag, new List<>(), new List<>(), ClassFile.StackMapTable.empty(hcf, new List<>(VerificationType.UninitializedThis), bc_tag));
                           hcf.method(ACC_PUBLIC, gtn, "()I", new List<>(code_tag));
                         }
                     }
@@ -329,8 +329,10 @@ public class Choices extends ANY implements ClassFileConstants
                                        Names.TAG_NAME,
                                        PrimitiveType.type_int))
                 .andThen(Expr.RETURN);
+              var initLocals = Types.addToLocals(new List<>(), ut);
+              initLocals.add(VerificationType.Integer);
               var code_init = cf.codeAttribute("<init> in class for " + _fuir.clazzAsString(cl),
-                                               bc_init, new List<>(), new List<>(), ClassFile.StackMapTable.empty(cf));
+                                               bc_init, new List<>(), new List<>(), ClassFile.StackMapTable.empty(cf, initLocals, bc_init));
               cf.method(ACC_PUBLIC, "<init>", "(I)V", new List<>(code_init));
 
               var bc_tag = Expr.aload(0, ut)
@@ -339,7 +341,7 @@ public class Choices extends ANY implements ClassFileConstants
                                        PrimitiveType.type_int))
                 .andThen(Expr.IRETURN);
               var code_tag = cf.codeAttribute(gtn + "in class for " + _fuir.clazzAsString(cl),
-                                              bc_tag, new List<>(), new List<>(), ClassFile.StackMapTable.empty(cf));
+                                              bc_tag, new List<>(), new List<>(), ClassFile.StackMapTable.empty(cf, Types.addToLocals(new List<>(), ut), bc_tag));
               cf.method(ACC_PUBLIC, gtn, "()I", new List<>(code_tag));
 
               cf.addToClInit(bc_clinit);

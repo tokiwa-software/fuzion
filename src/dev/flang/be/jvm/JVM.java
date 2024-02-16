@@ -1300,42 +1300,19 @@ should be avoided as much as possible.
    */
   public List<VerificationType> initialLocals(int cl)
   {
-    var cf = _types.classFile(cl);
     var result = new List<VerificationType>();
     if (_types.hasOuterRef(cl))
       {
         var or = _fuir.clazzOuterRef(cl);
         var ot = _fuir.clazzResultClazz(or);
         var at = _types.resultType(ot);
-        if (at != PrimitiveType.type_void)
-          {
-            var vti = _types.resultType(_fuir.clazzResultClazz(_fuir.clazzOuterRef(cl))).vti();
-            if (vti.needsTwoSlots())
-              {
-                result.addAll(vti, vti);
-              }
-            else
-              {
-                result.add(vti);
-              }
-          }
+        result = Types.addToLocals(result, at);
       }
     for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
       {
         var at = _fuir.clazzArgClazz(cl, i);
         var ft = _types.resultType(at);
-        if (ft != PrimitiveType.type_void)
-          {
-            var vti = _types.resultType(_fuir.clazzArgClazz(cl, i)).vti();
-            if (vti.needsTwoSlots())
-              {
-                result.addAll(vti, vti);
-              }
-            else
-              {
-                result.add(vti);
-              }
-          }
+        result = Types.addToLocals(result, ft);
       }
     result.freeze();
     return result;

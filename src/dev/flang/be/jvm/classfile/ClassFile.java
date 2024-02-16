@@ -1119,12 +1119,14 @@ public class ClassFile extends ANY implements ClassFileConstants
 
     /**
      * The state of the stack at bytecode position. Saved during buildStackMapTable.
+     * Note: long and double occupy only one stack slot.
      */
     final Map<Integer, Stack<VerificationType>> stacks = new TreeMap<>();
 
 
     /**
      * The state of locals at bytecode positions that are found during buildStackMapTable.
+     * Note: long and double always occupy two list entries.
      */
     final List<Pair<Integer, List<VerificationType>>> locals = new List<>();
 
@@ -1255,9 +1257,9 @@ public class ClassFile extends ANY implements ClassFileConstants
     /**
      * static initializer for an empty table.
      */
-    public static StackMapTable empty(ClassFile cf)
+    public static StackMapTable empty(ClassFile cf, List<VerificationType> argsLocals, Expr code)
     {
-      return cf.new StackMapTable(new List<>(), Expr.UNIT)
+      return cf.new StackMapTable(argsLocals, code)
         {
           @Override
           byte[] data()
@@ -1265,22 +1267,6 @@ public class ClassFile extends ANY implements ClassFileConstants
             var o = new Kaku();
             o.writeU2(0);
             return o._b.toByteArray();
-          }
-
-          /**
-           * NYI: HACK: determine the max stack use of the bytecodes.
-           */
-          public int max_stack()
-          {
-            return 20;
-          }
-
-          /**
-           * NYI: HACK: determine the max local index used by the bytecodes.
-           */
-          public int max_locals()
-          {
-            return 10;
           }
         };
     }
@@ -1658,7 +1644,7 @@ public class ClassFile extends ANY implements ClassFileConstants
         bc_clinit = bc_clinit
           .andThen(Expr.RETURN);
         var code_clinit = codeAttribute("<clinit> in class for " + _name,
-                                        bc_clinit, new List<>(), new List<>(), StackMapTable.empty(this));
+                                        bc_clinit, new List<>(), new List<>(), StackMapTable.empty(this, new List<>(), bc_clinit));
         method(ACC_PUBLIC | ACC_STATIC, "<clinit>", "()V", new List<>(code_clinit));
       }
 

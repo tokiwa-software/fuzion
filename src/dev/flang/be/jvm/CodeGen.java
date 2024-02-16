@@ -30,8 +30,8 @@ import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
 import dev.flang.be.jvm.classfile.Expr;
+import dev.flang.be.jvm.classfile.VerificationType;
 import dev.flang.be.jvm.classfile.ClassFile;
-import dev.flang.be.jvm.classfile.ClassFile.Attribute;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 
 import dev.flang.util.Errors;
@@ -558,7 +558,16 @@ class CodeGen
         var tt = ccs[cci  ];    // target clazz we match against
         var cc = ccs[cci+1];    // called clazz
         _types.classFile(tt).addImplements(intfc._name);
-        addStub(tt, cc, dn, ds, isCall);
+        var initLocals = new List<>(VerificationType.UninitializedThis);
+        if (isCall)
+          {
+            initLocals.addAll(_jvm.initialLocals(cc0));
+          }
+        else
+          {
+            initLocals = Types.addToLocals(initLocals,  _types.javaType(rc));
+          }
+        addStub(tt, cc, dn, ds, isCall, initLocals);
       }
     return Expr.invokeInterface(intfc._name, dn, ds, dr);
   }
@@ -582,7 +591,7 @@ class CodeGen
    * @param isCall true if the access is a call, false if it is an assignment to
    * a field.
    */
-  private void addStub(int tt, int cc, String dn, String ds, boolean isCall)
+  private void addStub(int tt, int cc, String dn, String ds, boolean isCall, List<VerificationType> initLocals)
   {
     var cf = _types.classFile(tt);
     if (!cf.hasMethod(dn))
@@ -613,7 +622,7 @@ class CodeGen
           .andThen(p._v0 == null ? Expr.UNIT : p._v0)
           .andThen(retoern);
         var ca = cf.codeAttribute(dn + "in class for " + _fuir.clazzAsString(tt),
-                                  code, new List<>(), new List<>(), ClassFile.StackMapTable.empty(cf));
+                                  code, new List<>(), new List<>(), ClassFile.StackMapTable.empty(cf, initLocals, code));
         cf.method(ACC_PUBLIC, dn, ds, new List<>(ca));
       }
   }
