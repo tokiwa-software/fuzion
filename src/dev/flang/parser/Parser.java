@@ -2626,7 +2626,7 @@ brblock     : BRACEL exprs BRACER
   /**
    * Parse exprs
    *
-exprs       : operatorExpr semiOrFlatLF exprs (semiOrFlatLF | )
+exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
             |
             ;
    */
