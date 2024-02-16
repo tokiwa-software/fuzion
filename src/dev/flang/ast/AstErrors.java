@@ -1805,11 +1805,14 @@ public class AstErrors extends ANY
                                                  List<AbstractType> types,
                                                  Map<AbstractType, List<SourcePosition>> positions)
   {
-    error(formalArg.pos(),
-          "Type inference from actual arguments failed due to incompatible types of actual arguments",
-          "For the formal argument " + s(formalArg) + " " +
-          "the following incompatible actual arguments where found for type inference:\n" +
-          typesMsg("actual is", "actuals are", types, positions));
+    if (!any() || types.stream().noneMatch(t -> t == Types.t_ERROR))
+      {
+        error(formalArg.pos(),
+              "Type inference from actual arguments failed due to incompatible types of actual arguments",
+              "For the formal argument " + s(formalArg) + " " +
+              "the following incompatible actual arguments where found for type inference:\n" +
+              typesMsg("actual is", "actuals are", types, positions));
+      }
   }
 
   static void noActualCallFound(AbstractFeature formalArg)
@@ -1851,12 +1854,15 @@ public class AstErrors extends ANY
 
   public static void ambiguousAssignmentToChoice(AbstractType frmlT, Expr value)
   {
-    error(value.pos(),
-      "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceGenerics().stream()
-          .filter(cg -> cg.isAssignableFrom(value.type()))
-          .map(cg -> s(cg))
-          .collect(Collectors.joining(", "))
-      );
+    if (!any() || frmlT != Types.t_ERROR && value.type() != Types.t_ERROR)
+      {
+        error(value.pos(),
+              "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceGenerics().stream()
+              .filter(cg -> cg.isAssignableFrom(value.type()))
+              .map(cg -> s(cg))
+              .collect(Collectors.joining(", "))
+              );
+      }
   }
 
   public static void actualTypeParameterUsedAsExpression(Actual a, Call usedIn)
