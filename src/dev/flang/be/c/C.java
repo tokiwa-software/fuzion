@@ -721,7 +721,7 @@ public class C extends ANY
       }
     if(_options._useBoehmGC)
       {
-        command.addAll("-lgc", "-DGC_THREADS");
+        command.addAll("-lgc", "-DGC_THREADS", "-DGC_PTHREADS", "-DPTW32_STATIC_LIB", "-DGC_WIN32_PTHREADS");
       }
     if (usesThreads())
       {
