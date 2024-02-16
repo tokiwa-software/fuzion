@@ -795,13 +795,25 @@ should be avoided as much as possible.
 
 
   /**
+   * Used as the name of created code
+   * (jar file, classes dir, etc.).
+   *
+   * @return the outputs name
+   */
+  String outputName()
+  {
+    return _options._outputName.orElse(mainName());
+  }
+
+
+  /**
    * For `-jar` backend: Name of the JAR file to be created.
    *
    * @return jar file path created from main feature's base name
    */
   Path jarPath()
   {
-    return Path.of(mainName() + ".jar");
+    return Path.of(outputName() + ".jar");
   }
 
 
@@ -812,7 +824,7 @@ should be avoided as much as possible.
    */
   Path classesDir()
   {
-    return Path.of(mainName() + ".classes");
+    return Path.of(outputName() + ".classes");
   }
 
 
@@ -824,7 +836,7 @@ should be avoided as much as possible.
    */
   Path executablePath()
   {
-    return Path.of(mainName());
+    return Path.of(outputName());
   }
 
 
