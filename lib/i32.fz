@@ -78,13 +78,13 @@ public i32(public val i32) : num.wrap_around, has_interval is
   # conversion to u32, i64 and u64, with range check
   public as_i8 i8
     pre
-      thiz ≥ i8.type.min.as_i32,
+      thiz ≥ i8.type.min.as_i32
       thiz ≤ i8.type.max.as_i32
     =>
       low8bits.cast_to_i8
   public as_i16 i16
     pre
-      thiz ≥ i16.type.min.as_i32,
+      thiz ≥ i16.type.min.as_i32
       thiz ≤ i16.type.max.as_i32
     =>
       low16bits.cast_to_i16
@@ -92,13 +92,13 @@ public i32(public val i32) : num.wrap_around, has_interval is
 # as_i128 NYI
   public as_u8 u8
     pre
-      thiz ≥ u8.type.min.as_i32,
+      thiz ≥ u8.type.min.as_i32
       thiz ≤ u8.type.max.as_i32
     =>
       low8bits
   public as_u16 u16
     pre
-      thiz ≥ u16.type.min.as_i32,
+      thiz ≥ u16.type.min.as_i32
       thiz ≤ u16.type.max.as_i32
     =>
       low16bits

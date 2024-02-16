@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.List;
+
 
 /**
  * Cond <description>
@@ -58,6 +60,22 @@ public class Cond
   public Cond(Expr c)
   {
     this.cond = c;
+  }
+
+
+  /*-------------------------  static methods  --------------------------*/
+
+
+  /**
+   * Wrap Expr instances from given list into new `Cond` instances
+   *
+   * @param l a list of `Expr` to be used as conditions
+   *
+   * @return a new list with each `Expr` form `l` wrapped into a `Cond`.
+   */
+  public static List<Cond> from(List<Expr> l)
+  {
+    return l.map2(e->new Cond(e));
   }
 
 

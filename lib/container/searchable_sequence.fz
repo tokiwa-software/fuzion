@@ -134,10 +134,10 @@ is
   #
   module split0(s Sequence A, limit option u32, split_after bool) list (Sequence A)
     pre
-      !s.is_empty,
-      match limit
-        nil => true
-        n u32 => n > (u32 0)
+      debug: !s.is_empty
+      debug: match limit
+              nil => true
+              n u32 => n > (u32 0)
     =>
       match (find s)
         nil     => from : nil

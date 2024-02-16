@@ -105,8 +105,8 @@ public ryū(public T type : float) is
 
     # calculates: ⌈log₂ 5ᵉ⌉
     private pow5bits(e i64)
-    pre e >= 0,
-        e <= 3528
+    pre debug: (e >= 0)
+        debug: (e <= 3528)
     post
       pow5bits.this.result = (T.log T.two (five ** T.from_i64 e)).as_i64
     =>
@@ -801,15 +801,15 @@ public ryū(public T type : float) is
 
 
     private mul_pow5_div_pow2(m, i, j i64)
-    pre (actual_shift j) >= 0,
-        exponent < 0
+    pre debug: (actual_shift j >= 0)
+        debug: (exponent < 0)
     =>
       mul_pow5_div_pow2 m i j pow5_split
 
 
     private mul_pow5_inv_div_pow2(m, i, j i64) i64
-    pre (actual_shift j) >= 0,
-        exponent >= 0
+    pre debug: (actual_shift j >= 0)
+        debug: (exponent >= 0)
     =>
       mul_pow5_div_pow2 m i j pow5_inv_split
 
@@ -826,8 +826,8 @@ public ryū(public T type : float) is
 
       # computes ⌊log₁₀ 2ᵉ⌋
       floor_log₁₀_pow_2(e i64) i64
-      pre e >= 0,
-          e <= 1650
+      pre debug: (e >= 0)
+          debug: (e <= 1650)
       post
         floor_log₁₀_pow_2.this.result = (T.log T.ten (T.two ** T.from_i64 e)).floor.as_i64
       =>
@@ -858,8 +858,8 @@ public ryū(public T type : float) is
 
       # computes ⌊log₁₀ 5ᵉ⌋
       floor_log₁₀_pow_5 (e i64) i64
-      pre e >= 0,
-          e <= 2620
+      pre debug: (e >= 0)
+          debug: (e <= 2620)
       post
         ( T.log T.ten (five ** T.from_i64 e) = T.infinity
           || floor_log₁₀_pow_5.this.result = (T.log T.ten (five ** T.from_i64 e)).floor.as_i64)

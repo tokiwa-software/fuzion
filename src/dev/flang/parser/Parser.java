@@ -2943,19 +2943,6 @@ nextValue   : COMMA exprInLine
 
 
   /**
-   * Parse cond
-   *
-cond        : exprInLine
-            ;
-   */
-  Cond cond()
-  {
-    Expr e = exprInLine();
-    return new Cond(e);
-  }
-
-
-  /**
    * Parse ifexpr
    *
 ifexpr      : "if" exprInLine thenPart elseBlock
@@ -3031,13 +3018,13 @@ elseBlock   : "else" block
   /**
    * Parse checkexpr
    *
-checkexpr   : "check" cond
+checkexpr   : "check" expr
             ;
    */
   Expr checkexpr()
   {
     match(Token.t_check, "checkexpr");
-    return new Check(tokenSourcePos(), cond());
+    return new Check(tokenSourcePos(), new Cond(expr()));
   }
 
 
@@ -3515,7 +3502,7 @@ contract    : require
   /**
    * Parse require
    *
-require     : "pre" condList
+require     : "pre" exprs
             |
             ;
    */
@@ -3524,7 +3511,7 @@ require     : "pre" condList
     List<Cond> result = null;
     if (skip(atMinIndent, Token.t_pre))
       {
-        result = condList();
+        result = Cond.from(exprs());
       }
     return result;
   }
@@ -3533,7 +3520,7 @@ require     : "pre" condList
   /**
    * Parse ensure
    *
-ensure      : "post" condList
+ensure      : "post" exprs
             |
             ;
    */
@@ -3542,7 +3529,7 @@ ensure      : "post" condList
     List<Cond> result = null;
     if (skip(atMinIndent, Token.t_post))
       {
-        result = condList();
+        result = Cond.from(exprs());
       }
     return result;
   }
@@ -3551,7 +3538,7 @@ ensure      : "post" condList
   /**
    * Parse invariant
    *
-invariant   : "inv" condList
+invariant   : "inv" exprs
             |
             ;
    */
@@ -3560,29 +3547,8 @@ invariant   : "inv" condList
     List<Cond> result = null;
     if (skip(atMinIndent, Token.t_inv))
       {
-        result = condList();
+        result = Cond.from(exprs());
       }
-    return result;
-  }
-
-
-  /**
-   * Parse condList
-   *
-condList    : cond ( COMMA condList
-                   |
-                   )
-              semi
-            ;
-   */
-  List<Cond> condList()
-  {
-    List<Cond> result = new List<>(cond());
-    while (skipComma())
-      {
-        result.add(cond());
-      }
-    semi();
     return result;
   }
 

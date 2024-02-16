@@ -80,7 +80,7 @@ module:public integer : numeric is
   # note that this assumes zero to be divisible by any positive integer.
   public gcd(b integer.this) integer.this
     pre
-      safety: sign ≥ 0,
+      safety: sign ≥ 0
       safety: b.sign ≥ 0
   =>
     if b = integer.this.type.zero

@@ -78,7 +78,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
   # this i64 as an i8
   public as_i8 i8
     pre
-      thiz ≥ i8.type.min.as_i64,
+      thiz ≥ i8.type.min.as_i64
       thiz ≤ i8.type.max.as_i64
     =>
       low8bits.as_i8
@@ -87,7 +87,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
   # this i64 as an i16
   public as_i16 i16
     pre
-      thiz ≥ i16.type.min.as_i64,
+      thiz ≥ i16.type.min.as_i64
       thiz ≤ i16.type.max.as_i64
     =>
       low16bits.as_i16
@@ -96,7 +96,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
   # this i64 as an i32
   public as_i32 i32
     pre
-      thiz ≥ i32.type.min.as_i64,
+      thiz ≥ i32.type.min.as_i64
       thiz ≤ i32.type.max.as_i64
     =>
       low32bits.cast_to_i32

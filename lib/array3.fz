@@ -33,9 +33,9 @@ public array3(T type,
        length0, length1, length2 i32,
        init3 (i32, i32, i32) -> T)
   pre
-    safety: length0 ≥ 0,
-    safety: length1 ≥ 0,
-    safety: length2 ≥ 0,
+    safety: length0 ≥ 0
+    safety: length1 ≥ 0
+    safety: length2 ≥ 0
     safety: length0 *? length1 *? length2 >=? 0
 =>
 
@@ -64,9 +64,9 @@ private:public array3(
        _ unit)
  : array T internal_array unit unit unit
   pre
-    safety: length0 ≥ 0,
-    safety: length1 ≥ 0,
-    safety: length2 ≥ 0,
+    safety: length0 ≥ 0
+    safety: length1 ≥ 0
+    safety: length2 ≥ 0
     safety: length0 *? length1 *? length2 >=? 0
 is
 
@@ -88,8 +88,8 @@ is
 
   public index [ ] (i0, i1, i2 i32) T
     pre
-      safety: 0 ≤ i0 < length0,
-      safety: 0 ≤ i1 < length1,
+      safety: 0 ≤ i0 < length0
+      safety: 0 ≤ i1 < length1
       safety: 0 ≤ i2 < length2
   =>
     array3.this[(i0 * length1 + i1) * length2 + i2]
@@ -133,8 +133,8 @@ is
   #
   enumerate_cons (i, j, k i32) : Cons (tuple i32 i32 i32 T) (list (tuple i32 i32 i32 T))
     pre
-      debug: 0 ≤ i < length0,
-      debug: 0 ≤ j < length1,
+      debug: 0 ≤ i < length0
+      debug: 0 ≤ j < length1
       debug: 0 ≤ k < length2
   is
     head => (i, j, k, index[] i j k)
