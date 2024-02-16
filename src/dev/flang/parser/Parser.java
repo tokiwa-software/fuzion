@@ -2561,12 +2561,13 @@ block       : exprs
         var l = exprs();
         var pos2 = l.size() > 0 ? l.getLast().pos() : pos1;
         if (pos1 == pos2 && current() == Token.t_indentationLimit)
-          { /* we have a non-indented new line, e.g., the empty block after `x i32 is` in
+          { /* we have a non-indented new line, e.g., the empty block after `x i32 =>` in
              *
-             *   x i32 is
-             *   y u8 is
+             *   x i32 =>
+             *   y u8 =>
              *
-             * so we set start and end pos to the position after `x i32 is`.
+             * unless the result type of `x` is `unit`, we will get an error, but this error should not be
+             * reported at `y`, but at the end of `x i32 =>`, so we set start and end pos to the end of that line
              */
             pos1 = sourcePos(lineEndPos(lineNum(p1)-1));
             pos2 = pos1;
