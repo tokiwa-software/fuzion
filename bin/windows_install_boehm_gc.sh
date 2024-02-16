@@ -31,6 +31,6 @@ wget https://www.hboehm.info/gc/gc_source/gc-8.2.4.tar.gz
 echo "3d0d3cdbe077403d3106bb40f0cbb563413d6efdbb2a7e1cd6886595dec48fc2 gc-8.2.4.tar.gz" | sha256sum --check --status
 tar xf gc-8.2.4.tar.gz
 cd gc-8.2.4
-./configure --prefix=/ucrt64/
+./configure --prefix=/ucrt64/ --enable-threads=pthreads
 make
 make install
