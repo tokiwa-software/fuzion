@@ -30,6 +30,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 
 // NYI move to shared
 static inline void *fzE_malloc_safe(size_t size) {
@@ -163,5 +164,52 @@ bool fzE_bitwise_compare_float(float f1, float f2);
  * @return true iff d1 and d2 are represented in memory by the same bit patterns.
  */
 bool fzE_bitwise_compare_double(double d1, double d2);
+
+/**
+ * returns a monotonically increasing timestamp.
+ */
+uint64_t fzE_nanotime();
+
+/**
+ * Sleep for `n` nano seconds.
+ */
+void fzE_nanosleep(uint64_t n);
+
+/**
+ * remove a file or path
+ */
+int fzE_rm(char * path);
+
+/**
+ * Get file status (resolves symbolic links)
+ */
+int fzE_stat(const char *pathname, int64_t * metadata);
+
+/**
+ * Get file status (does not resolve symbolic links)
+ */
+int fzE_lstat(const char *pathname, int64_t * metadata);
+
+/**
+ * Run plattform specific initialisation code
+ */
+void fzE_init();
+
+/**
+ * Start a new thread, returns a pointer to the thread.
+ */
+int64_t fzE_thread_create(void* code, void* args);
+
+/**
+ * Join with a running thread.
+ */
+// NYI add return value
+void fzE_thread_join(int64_t thrd);
+
+/**
+ * Global lock
+ */
+void fzE_lock();
+void fzE_unlock();
 
 #endif /* fz.h  */

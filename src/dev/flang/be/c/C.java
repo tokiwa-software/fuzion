@@ -721,7 +721,11 @@ public class C extends ANY
       }
     if(_options._useBoehmGC)
       {
-        command.addAll("-lgc");
+        command.addAll("-lgc", "-DGC_THREADS");
+      }
+    if (usesThreads())
+      {
+        command.addAll("-DFUZION_ENABLE_THREADS");
       }
 
     // disable trigraphs:
@@ -739,7 +743,8 @@ public class C extends ANY
         command.add("-lm");
       }
 
-    if (linkPThread())
+      // NYI on windows link nothing
+    if (usesThreads())
       {
         command.add("-lpthread");
       }
@@ -793,9 +798,9 @@ public class C extends ANY
 
 
   /*
-   * Should POSIX threads be linked?
+   * Are threads used?
    */
-  private boolean linkPThread()
+  private boolean usesThreads()
   {
     return
       _fuir.isIntrinsicUsed("fuzion.sys.thread.spawn0") ||
@@ -907,7 +912,7 @@ public class C extends ANY
       {
                  // we need to include winsock2.h before windows.h
         cf.print("#define GC_DONT_INCLUDE_WINDOWS_H\n" +
-                 "#define GC_THREADS\n#include <gc.h>\n");
+                 "#include <gc.h>\n");
       }
 
     // --- C-11 ---
@@ -926,13 +931,6 @@ public class C extends ANY
        // defines _O_BINARY
        "#include <fcntl.h>\n");
 
-    // --- POSIX ---
-    // NYI remove POSIX only code.
-    cf.print(
-       "#include <unistd.h>\n"+
-       "#include <sys/stat.h>\n" +
-       "#include <pthread.h>\n");
-
     var fzH = _options.pathOf("include/fz.h");
     cf.println("#include \"" + fzH + "\"\n");
 
@@ -940,12 +938,6 @@ public class C extends ANY
       (CStmnt.decl("int", CNames.GLOBAL_ARGC));
     cf.print
       (CStmnt.decl("char **", CNames.GLOBAL_ARGV));
-
-    if (linkPThread())
-      {
-        cf.print
-          (CStmnt.decl("pthread_mutex_t", CNames.GLOBAL_LOCK));
-      }
 
     var o = new CIdent("of");
     var s = new CIdent("sz");
@@ -1013,34 +1005,7 @@ public class C extends ANY
 
     cf.println("int main(int argc, char **argv) { ");
 
-    // If we don't do the following stdout/err might be opened in text mode on windows.
-    // This would lead to automatic insertions of carriage returns.
-    cf.println("#if _WIN32");
-    cf.println(" _setmode( _fileno( stdout ), _O_BINARY ); // reopen stdout in binary mode");
-    cf.println(" _setmode( _fileno( stderr ), _O_BINARY ); // reopen stderr in binary mode");
-    cf.println("#endif");
-
-    if (linkPThread())
-      {
-        cf.println(" {\n" +
-                   "  pthread_mutexattr_t attr;\n" +
-                   "  memset(&" + CNames.GLOBAL_LOCK.code() + ", 0, sizeof(" + CNames.GLOBAL_LOCK.code() + "));\n" +
-                   "  bool res = pthread_mutexattr_init(&attr) == 0 &&\n" +
-                   "  #if _WIN32\n" +
-                   "  // NYI #1646 setprotocol returns EINVAL on windows. \n" +
-                   "  #else\n" +
-                   "             pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT) == 0 &&\n" +
-                   "  #endif\n" +
-                   "             pthread_mutex_init(&" + CNames.GLOBAL_LOCK.code() + ", &attr) == 0;\n" +
-                   "  assert(res);\n" +
-                   " }\n");
-      }
-
-
-    if (_options._useBoehmGC)
-      {
-        cf.println("GC_INIT(); /* Optional on Linux/X86 */");
-      }
+    cf.println("fzE_init();");
 
     cf.print(initializeEffectsEnvironment());
 
