@@ -30,7 +30,10 @@ import java.io.IOException;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.fuir.FUIR;
@@ -684,6 +687,55 @@ public class C extends ANY
       }
     Errors.showAndExit();
 
+    var command = buildCompileCommand(name, cname);
+
+    _options.verbosePrintln(" * " + command.toString("", " ", ""));
+
+    var sname = name + "_compile.sh";
+    try
+      {
+        var script = Path.of(sname);
+        var sb = new StringBuilder("#!/bin/sh\n\n");
+        sb.append(command.stream().collect(Collectors.joining(" ")) + "\n");
+        Files.writeString(script, sb.toString());
+        script.toFile().setExecutable(true);
+      }
+    catch (IOException io)
+      {
+        Errors.error("C backend I/O error",
+          "Could not write to file: " + sname);
+      }
+
+    try
+      {
+        var p = new ProcessBuilder().inheritIO().command(command).start();
+        p.waitFor();
+        if (p.exitValue() != 0)
+          {
+            Errors.error("C backend: C compiler failed",
+                         "C compiler call '" + command.toString("", " ", "") + "' failed with exit code '" + p.exitValue() + "'");
+          }
+      }
+    catch (IOException | InterruptedException io)
+      {
+        Errors.error("C backend I/O error when running C Compiler",
+                     "C compiler call '" + command.toString("", " ", "") + "'  received '" + io + "'");
+      }
+    Errors.showAndExit();
+  }
+
+
+
+  /**
+   * build the command to be executed to compile the
+   * generated *.c-file
+   *
+   * @param name the name of the executable to output
+   * @param cname the name of source file
+   * @return list of command+args
+   */
+  private List<String> buildCompileCommand(String name, String cname)
+  {
     var clangVersion = getClangVersion();
     // NYI should be clangVersion == expectedClangVersion but workflows etc. must be updated first
     if (_options._cCompiler == null && clangVersion < expectedClangVersion)
@@ -776,24 +828,7 @@ public class C extends ANY
             );
           }
       }
-
-    _options.verbosePrintln(" * " + command.toString("", " ", ""));
-    try
-      {
-        var p = new ProcessBuilder().inheritIO().command(command).start();
-        p.waitFor();
-        if (p.exitValue() != 0)
-          {
-            Errors.error("C backend: C compiler failed",
-                         "C compiler call '" + command.toString("", " ", "") + "' failed with exit code '" + p.exitValue() + "'");
-          }
-      }
-    catch (IOException | InterruptedException io)
-      {
-        Errors.error("C backend I/O error when running C Compiler",
-                     "C compiler call '" + command.toString("", " ", "") + "'  received '" + io + "'");
-      }
-    Errors.showAndExit();
+    return command;
   }
 
 
