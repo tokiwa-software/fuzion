@@ -312,7 +312,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return jvm.constString(args.get(0)
                                  .andThen(jvm.getfield(jref))
                                  .andThen(Expr.checkcast(JAVA_LANG_STRING))
-                                 .andThen(Expr.invokeVirtual("java/lang/String", "getBytes", "()[B", ClassFileConstants.PrimitiveType.type_byte.array())));
+                                 .andThen(Expr.getstatic("java/nio/charset/StandardCharsets", "UTF_8", new ClassType("java/nio/charset/Charset")))
+                                 .andThen(Expr.invokeVirtual("java/lang/String", "getBytes", "(Ljava/nio/charset/Charset;)[B", ClassFileConstants.PrimitiveType.type_byte.array())));
         });
 
     put("fuzion.java.array_to_java_object0",
