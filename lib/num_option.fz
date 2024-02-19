@@ -62,7 +62,7 @@ is
   #
   public val T
     pre
-      safety: num_option.this??
+      safety: (num_option.this??)
   =>
     num_option.this ? v T => v
                     | nil => fuzion.std.panic "num_option.val called on nil"

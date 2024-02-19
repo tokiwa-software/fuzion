@@ -570,8 +570,8 @@ public Sequence(public T type) ref is
   #
   public index [] (i i32) T
     pre
-      debug: 0 ≤ i,
-      debug: finite: i < count,
+      debug: 0 ≤ i
+      debug: finite: i < count
       debug: !finite: !(drop i-1).is_empty
   =>
     (nth i).get

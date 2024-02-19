@@ -86,21 +86,21 @@ module:public wrap_around : integer is
   # addition, with check for overflow
   public redef infix +  (other wrap_around.this) wrap_around.this
     pre
-      debug: !(overflow_on_add other),
+      debug: !(overflow_on_add other)
       debug: !(underflow_on_add other)
   => wrap_around.this +° other
 
   # subtraction, with check for overflow
   public redef infix -  (other wrap_around.this) wrap_around.this
     pre
-      debug: !(overflow_on_sub other),
+      debug: !(overflow_on_sub other)
       debug: !(underflow_on_sub other)
   => wrap_around.this -° other
 
   # multiplication, with check for overflow
   public redef infix *  (other wrap_around.this) wrap_around.this
     pre
-      debug: !(overflow_on_mul other),
+      debug: !(overflow_on_mul other)
       debug: !(underflow_on_mul other)
   => wrap_around.this *° other
 
@@ -124,8 +124,8 @@ module:public wrap_around : integer is
   #
   public infix ** (other wrap_around.this) wrap_around.this
     pre
-      safety: other ≥ wrap_around.this.type.zero,
-      debug: !overflow_on_exp other
+      safety: (other ≥ wrap_around.this.type.zero)
+      debug: (!overflow_on_exp other)
   =>
     wrap_around.this **° other
 
@@ -136,7 +136,7 @@ module:public wrap_around : integer is
   #
   public infix **° (other wrap_around.this) wrap_around.this
     pre
-      safety: other ≥ wrap_around.this.type.zero
+      safety: (other ≥ wrap_around.this.type.zero)
   =>
     if      (other = wrap_around.this.type.zero) wrap_around.this.type.one
     else if (other = wrap_around.this.type.one ) wrap_around.this
@@ -154,7 +154,7 @@ module:public wrap_around : integer is
   #
   public infix **? (other wrap_around.this) num_option wrap_around.this
     pre
-      safety: other ≥ wrap_around.this.type.zero
+      safety: (other ≥ wrap_around.this.type.zero)
   =>
     if      (other = wrap_around.this.type.zero) wrap_around.this.type.one
     else if (other = wrap_around.this.type.one ) wrap_around.this
@@ -177,7 +177,7 @@ module:public wrap_around : integer is
   #
   public infix **^ (other wrap_around.this) wrap_around.this
     pre
-      safety: other ≥ wrap_around.this.type.zero
+      safety: (other ≥ wrap_around.this.type.zero)
   =>
     if overflow_on_exp other
       if (wrap_around.this ≥ wrap_around.this.type.zero) || (other %% wrap_around.this.type.two)

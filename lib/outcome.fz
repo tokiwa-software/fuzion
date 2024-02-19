@@ -82,7 +82,7 @@ is
   #
   public val T
     pre
-      safety: outcome.this??
+      safety: (outcome.this??)
   =>
     outcome.this ? v T   => v
                  | error => panic "outcome.val called on error"
@@ -103,7 +103,7 @@ is
   #
   public err error
     pre
-      safety: outcome.this!!
+      safety: (outcome.this!!)
   =>
     outcome.this ? T       => panic "outcome.err called on successful outcome"
                  | e error => e

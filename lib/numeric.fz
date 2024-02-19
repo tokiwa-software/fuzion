@@ -45,40 +45,40 @@ module:public numeric : property.hashable, property.orderable is
   # basic operations: 'infix +' (addition)
   public infix +  (other numeric.this) numeric.this
     pre
-      safety: numeric.this +! other
+      safety: (numeric.this +! other)
   => abstract
 
   # basic operations: 'infix -' (subtraction)
   public infix -  (other numeric.this) numeric.this
     pre
-      safety: numeric.this -! other
+      safety: (numeric.this -! other)
   => abstract
 
   # basic operations: 'infix *' (multiplication)
   public infix *  (other numeric.this) numeric.this
     pre
-      safety: numeric.this *! other
+      safety: (numeric.this *! other)
   => abstract
 
   # basic operations: 'infix /' (division)
   public infix /  (other numeric.this) numeric.this
     pre
-      safety: numeric.this /! other,
-      safety: other != numeric.this.type.zero
+      safety: (numeric.this /! other)
+      safety: (other != numeric.this.type.zero)
   => abstract
 
   # basic operations: 'infix %' (division remainder)
   public infix %  (other numeric.this) numeric.this
     pre
-      safety: numeric.this %! other,
-      safety: other != numeric.this.type.zero
+      safety: (numeric.this %! other)
+      safety: (other != numeric.this.type.zero)
   => abstract
 
   # basic operations: 'infix **' (exponentiation)
   public infix ** (other numeric.this) numeric.this
     pre
-      safety: numeric.this **! other,
-      safety: other ≥ numeric.this.type.zero
+      safety: (numeric.this **! other)
+      safety: (other ≥ numeric.this.type.zero)
   => abstract
 
 
@@ -123,7 +123,7 @@ module:public numeric : property.hashable, property.orderable is
   # NYI replace this by as_u32?
   to_u32 u32
     pre
-      debug: numeric.this ≥ numeric.this.type.zero
+      debug: (numeric.this ≥ numeric.this.type.zero)
   =>
     if (numeric.this ≥ numeric.this.type.one) ((numeric.this - numeric.this.type.one).to_u32 + 1)
     else 0
@@ -132,7 +132,7 @@ module:public numeric : property.hashable, property.orderable is
   # this numeric value as an u8
   public as_u8 u8
     pre
-      debug: numeric.this ≥ numeric.this.type.zero
+      debug: (numeric.this ≥ numeric.this.type.zero)
   => abstract
 
 
@@ -140,9 +140,9 @@ module:public numeric : property.hashable, property.orderable is
   #
   module highest(b numeric.this) numeric.this
     pre
-      debug: numeric.this.sign ≥ 0
+      debug: (numeric.this.sign ≥ 0)
     post
-      debug: (numeric.this = numeric.this.type.zero: result = numeric.this.type.one),
+      debug: (numeric.this = numeric.this.type.zero: result = numeric.this.type.one)
       debug: (numeric.this != numeric.this.type.zero: numeric.this / b < result ≤ numeric.this)
   # NYI: original postcondition code should cause a compiler error since
   # result.infix <= expects an argument of type T while integer.this =>

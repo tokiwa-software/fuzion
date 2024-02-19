@@ -83,7 +83,7 @@ module:public array(
   #
   public redef index [ ] (i i32) T
     pre
-      safety: 0 ≤ i,
+      safety: 0 ≤ i
       safety: i < length
   =>
     internal_array[i]
@@ -262,7 +262,7 @@ module:public array(
   #
   enumerate_cons (i i32) : Cons (i32, T) (list (tuple i32 T))
     pre
-      debug: 0 ≤ i,
+      debug: 0 ≤ i
       debug: i < length
   is
     head => (i, index[] i)

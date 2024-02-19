@@ -179,7 +179,7 @@ choice_mix is
     black   : color is redef rgb => u32 0
     white   : color is redef rgb => red.rgb + blue.rgb + green.rgb
     transparent (alpha u32) : color
-      pre alpha ≥ u32 0, alpha ≤ u32 255
+      pre alpha ≥ u32 0; alpha ≤ u32 255
     is
       redef rgb => alpha * 256*256*256
 
@@ -233,7 +233,7 @@ choice_mix is
     black   : color is redef rgb => u32 0
     white   : color is redef rgb => red.rgb + blue.rgb + green.rgb
     transparent (alpha u32) : color
-      pre alpha ≥ u32 0, alpha ≤ u32 255
+      pre alpha ≥ u32 0; alpha ≤ u32 255
     is
       redef rgb => alpha * 256*256*256
 

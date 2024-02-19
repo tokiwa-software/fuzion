@@ -78,7 +78,7 @@ public i16(public val i16) : num.wrap_around, has_interval is
   # conversion to u32, i64 and u64, with range check
   public as_i8 i8
     pre
-      thiz ≥ i8.type.min.as_i16,
+      thiz ≥ i8.type.min.as_i16
       thiz ≤ i8.type.max.as_i16
     =>
       low8bits.cast_to_i8
