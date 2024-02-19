@@ -47,14 +47,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <fcntl.h>      // fcntl
 #include <sys/stat.h>   // mkdir
 #include <sys/types.h>  // mkdir
-#include <sys/socket.h> // socket, bind, listen, accept, connect
-#include <sys/ioctl.h>  // ioctl, FIONREAD
-#include <netinet/in.h> // AF_INET
-#include <poll.h>       // poll
-#include <sys/mman.h>   // mmap
 #include <time.h>
 #include <unistd.h>     // close
-#include <netdb.h>      // getaddrinfo
 
 #include <winsock2.h>
 #include <windows.h>
@@ -471,7 +465,7 @@ int fzE_lstat(const char *pathname, int64_t * metadata)
 {
   struct stat statbuf;
   // NYI replace with native windows
-  if (lstat(pathname,&statbuf)==((int8_t) 0))
+  if (stat(pathname,&statbuf)==((int8_t) 0))
   {
     metadata[0] = statbuf.st_size;
     metadata[1] = statbuf.st_mtime;
