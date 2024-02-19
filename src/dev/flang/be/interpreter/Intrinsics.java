@@ -55,6 +55,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -63,6 +64,7 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 
 /**
@@ -134,6 +136,20 @@ public class Intrinsics extends ANY
   private static Value _stdin  = new i64Value(_openStreams_.add(System.in ));
   private static Value _stdout = new i64Value(_openStreams_.add(System.out));
   private static Value _stderr = new i64Value(_openStreams_.add(System.err));
+
+
+  /**
+   * This contains all open processes.
+   */
+  private static OpenResources<Process> _openProcesses_ = new OpenResources<Process>()
+  {
+    @Override
+    protected boolean close(Process p) {
+      if(PRECONDITIONS) require
+        (p != null);
+      return true;
+    }
+  };
 
   /**
    * This contains all started threads.
@@ -1293,6 +1309,102 @@ public class Intrinsics extends ANY
           var cl = innerClazz.actualGenerics()[0];
           return new boolValue(FuzionThread.current()._effects.get(cl) != null /* NOTE not containsKey since cl may map to null! */ );
         });
+
+    putUnsafe("fuzion.sys.process.create"  , (interpreter, innerClazz) -> args -> {
+      var process_and_args = Arrays
+        .stream(((Value[])args.get(1).arrayData()._array))
+        .limit(args.get(2).i32Value()-1)
+        .map(x -> utf8ByteArrayDataToString(x))
+        .collect(Collectors.toList());
+
+      var env_vars = Arrays
+        .stream(((Value[])args.get(3).arrayData()._array))
+        .limit(args.get(4).i32Value()-1)
+        .map(x -> utf8ByteArrayDataToString(x))
+        .collect(Collectors.toMap((x -> x.split("=")[0]), (x -> x.split("=")[1])));
+
+      var result = (long[])args.get(5).arrayData()._array;
+      try
+        {
+          var pb = new ProcessBuilder()
+                              .command(process_and_args);
+
+          pb.environment().putAll(env_vars);
+
+          var process = pb.start();
+
+          result[0] = _openProcesses_.add(process);
+          result[1] = _openStreams_.add(process.getOutputStream());
+          result[2] = _openStreams_.add(process.getInputStream());
+          result[3] = _openStreams_.add(process.getErrorStream());
+          return new i32Value(0);
+        }
+      catch (IOException e)
+        {
+          return new i32Value(-1);
+        }
+    });
+
+    put("fuzion.sys.process.wait"    , (interpreter, innerClazz) -> args -> {
+      var desc = args.get(1).i64Value();
+      var p = _openProcesses_.get(desc);
+      try
+        {
+          var result = p.waitFor();
+          _openProcesses_.remove(desc);
+          return new i32Value(result);
+        }
+      catch(InterruptedException e)
+        {
+          return new i32Value(-1);
+        }
+    });
+
+    put("fuzion.sys.pipe.read"       , (interpreter, innerClazz) -> args -> {
+      var desc = args.get(1).i64Value();
+      var buff = (byte[])args.get(2).arrayData()._array;
+      if (_openStreams_.get(desc) instanceof InputStream is)
+        {
+          try
+            {
+              var readBytes = is.read(buff);
+
+              return readBytes == -1
+               ? new i32Value(0)
+               : new i32Value(readBytes);
+            }
+          catch (IOException e)
+            {
+              return new i32Value(-1);
+            }
+        }
+      throw new RuntimeException("illegal");
+    });
+
+    put("fuzion.sys.pipe.write"      , (interpreter, innerClazz) -> args -> {
+      var desc = args.get(1).i64Value();
+      var buff = (byte[])args.get(2).arrayData()._array;
+      if (_openStreams_.get(desc) instanceof OutputStream os)
+        {
+          try
+            {
+              os.write(buff);
+              return new i32Value(buff.length);
+            }
+          catch (IOException e)
+            {
+              return new i32Value(-1);
+            }
+        }
+      throw new RuntimeException("illegal");
+    });
+
+    put("fuzion.sys.pipe.close"      , (interpreter, innerClazz) -> args -> {
+      var desc = args.get(1).i64Value();
+      return _openStreams_.remove(desc)
+        ? new i32Value(0)
+        : new i32Value(-1);
+    });
   }
 
 

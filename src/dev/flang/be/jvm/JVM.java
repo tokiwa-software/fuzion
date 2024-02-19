@@ -592,6 +592,7 @@ should be avoided as much as possible.
               "dev/flang/be/jvm/runtime/Runtime$1.class",
               "dev/flang/be/jvm/runtime/Runtime$2.class",
               "dev/flang/be/jvm/runtime/Runtime$3.class",
+              "dev/flang/be/jvm/runtime/Runtime$4.class",
               "dev/flang/be/jvm/runtime/Runtime$Abort.class",
               "dev/flang/util/ANY.class",
               "dev/flang/util/Errors.class",

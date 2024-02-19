@@ -43,11 +43,13 @@ import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import dev.flang.be.jvm.runtime.Runtime.SystemErrNo;
 import dev.flang.util.ANY;
@@ -828,7 +830,7 @@ public class Intrinsics extends ANY
       {
         throw new Error("unexpected interrupt", ie);
       }
-  };
+  }
 
   public static boolean fuzion_sys_env_vars_has0(Object s)
   {
@@ -860,6 +862,97 @@ public class Intrinsics extends ANY
     Runtime._startedThreads_.remove(threadId);
   }
 
+
+  public static int fuzion_sys_process_create(Object args, int arg_len, Object env_vars, int env_vars_len, Object res, Object args_str, Object env_str)
+  {
+    var process_and_args = Arrays
+      .stream((Object[]) args)
+      .limit(arg_len - 1)
+      .map(x -> Runtime.utf8ByteArrayDataToString((byte[]) x))
+      .collect(Collectors.toList());
+
+    var env_var_map = Arrays
+      .stream((Object[]) env_vars)
+      .limit(env_vars_len - 1)
+      .map(x -> Runtime.utf8ByteArrayDataToString((byte[]) x))
+      .collect(Collectors.toMap((x -> x.split("=")[0]), (x -> x.split("=")[1])));
+
+    var result = (long[]) res;
+
+    try
+      {
+        var pb = new ProcessBuilder()
+          .command(process_and_args);
+
+        pb.environment().putAll(env_var_map);
+
+        var process = pb.start();
+
+        result[0] = Runtime._openProcesses_.add(process);
+        result[1] = Runtime._openStreams_.add(process.getOutputStream());
+        result[2] = Runtime._openStreams_.add(process.getInputStream());
+        result[3] = Runtime._openStreams_.add(process.getErrorStream());
+        return 0;
+      }
+    catch (IOException e)
+      {
+        return -1;
+      }
+  }
+
+  public static int fuzion_sys_process_wait(long desc)
+  {
+    var p = Runtime._openProcesses_.get(desc);
+    try
+      {
+        var result = p.waitFor();
+        Runtime._openProcesses_.remove(desc);
+        return result;
+      }
+    catch(InterruptedException e)
+      {
+        return -1;
+      }
+  }
+
+  public static int fuzion_sys_pipe_read(long desc, Object buffer, int len)
+  {
+    var is = (InputStream) Runtime._openStreams_.get(desc);
+    try
+      {
+        var readBytes = is.read((byte[])buffer);
+
+        return readBytes == -1
+                                ? 0
+                                : readBytes;
+      }
+    catch (IOException e)
+      {
+        return -1;
+      }
+  }
+
+  public static int fuzion_sys_pipe_write(long desc, Object buffer, int len)
+  {
+    var os = (OutputStream)Runtime._openStreams_.get(desc);
+    try
+      {
+        var buff = (byte[]) buffer;
+        os.write(buff);
+        return buff.length;
+      }
+    catch (IOException e)
+      {
+        return -1;
+      }
+  }
+
+  public static int fuzion_sys_pipe_close(long desc)
+  {
+    return Runtime._openStreams_.remove(desc)
+                                              ? 0
+                                              : -1;
+  }
 
 }
 

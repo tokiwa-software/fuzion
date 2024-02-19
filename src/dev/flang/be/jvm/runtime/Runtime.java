@@ -171,6 +171,21 @@ public class Runtime extends ANY
 
 
   /**
+   * This contains all open processes.
+   */
+  public static OpenResources<Process> _openProcesses_ = new OpenResources<Process>()
+  {
+    @Override
+    protected boolean close(Process p) {
+      if(PRECONDITIONS) require
+        (p != null);
+
+      return true;
+    }
+  };
+
+
+  /**
    * This contains all started threads.
    */
   static OpenResources<Thread> _startedThreads_ = new OpenResources<Thread>() {
