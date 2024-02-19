@@ -31,7 +31,7 @@
 # All type features inherit directly (Any.type) or indirectly (all
 # others type features) from this feature.
 #
-public Type ref is
+module:public Type ref is
 
 
   # name of this type, including type parameters, e.g. 'option (list i32)'.
