@@ -128,12 +128,7 @@ public abstract class AbstractMatch extends Expr
    */
   private AbstractType typeFromCases()
   {
-    AbstractType result = Types.resolved.t_void;
-    for (var c: cases())
-      {
-        var t = c.code().typeForInferencing();
-        result = result == null || t == null ? null : result.union(t);
-      }
+    var result = Expr.union(cases().map2(x -> x.code()), false);
     if (result == Types.t_ERROR)
       {
         new IncompatibleResultsOnBranches(pos(),

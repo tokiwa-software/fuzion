@@ -35,6 +35,8 @@ import java.math.BigInteger;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 /**
  * NumLiteral <description>
@@ -405,6 +407,7 @@ public class NumLiteral extends Constant
     return _originalString.startsWith("-");
   }
 
+
   /**
    * typeForInferencing returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
@@ -420,6 +423,63 @@ public class NumLiteral extends Constant
         checkRange();
       }
     return _type;
+  }
+
+
+  /**
+   * typeForUnion returns the type of this expression or null if the type is
+   * still unknown, i.e., before or during type resolution.  This is redefined
+   * by sub-classes of Expr to provide type information.
+   *
+   * @return this Expr's type or null if not known.
+   */
+  @Override
+  AbstractType typeForUnion()
+  {
+    return _type;
+  }
+
+
+  /**
+   * During type inference: Inform this expression that it is
+   * expected to result in the given type.
+   *
+   * @param t the expected type.
+   */
+  @Override
+  protected void propagateExpectedType(AbstractType t)
+  {
+    if (PRECONDITIONS) require
+      (_type == null || extractNumericType(t) == null || _type.compareTo(extractNumericType(t)) == 0);
+
+    _type = extractNumericType(t);
+  }
+
+
+  private AbstractType extractNumericType(AbstractType t)
+  {
+    var numericTypes = new TreeSet<AbstractType>(
+      new List<>(
+        Types.resolved.t_i8,
+        Types.resolved.t_i16,
+        Types.resolved.t_i32,
+        Types.resolved.t_i64,
+        Types.resolved.t_u8,
+        Types.resolved.t_u16,
+        Types.resolved.t_u32,
+        Types.resolved.t_u64,
+        Types.resolved.t_f32,
+        Types.resolved.t_f64)
+    );
+
+    var result = t
+      .choices()
+      .filter(x -> numericTypes.contains(x))
+      .collect(Collectors.toList());
+
+    return result.size() == 1
+      ? result.get(0)
+      : null;
   }
 
 
@@ -732,13 +792,13 @@ public class NumLiteral extends Constant
 
   /**
    * Check if type t is one of the known integer types i8, i16, i32, i64, u8,
-   * u16, u32, u64 and return the corresponding ConstantType constant.
+   * u16, u32, u64, f32, f64 and return the corresponding ConstantType constant.
    *
    * @param t an interned type
    *
    * @return the corresponding ConstantType or null if none.
    */
-  public static ConstantType findConstantType(AbstractType t)
+  private static ConstantType findConstantType(AbstractType t)
   {
     if      (t.compareTo(Types.resolved.t_i8 ) == 0) { return ConstantType.ct_i8 ; }
     else if (t.compareTo(Types.resolved.t_i16) == 0) { return ConstantType.ct_i16; }

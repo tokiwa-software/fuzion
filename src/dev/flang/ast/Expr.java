@@ -203,6 +203,80 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
 
 
   /**
+   * typeForUnion returns the type of this expression or null if the type is
+   * still unknown, i.e., before or during type resolution.  This is redefined
+   * by sub-classes of Expr to provide type information.
+   *
+   * @return this Expr's type or null if not known.
+   */
+  AbstractType typeForUnion()
+  {
+    return typeForInferencing();
+  }
+
+
+  /**
+   * Get the result type of a union of all results of exprs.
+   *
+   * @param exprs the expression to unionize
+   *
+   * @param ignoreUnknow ignore any expressions whose type is not yet known.
+   *
+   * @return the union of exprs result type or null if not yet known.
+   */
+  public static AbstractType union(List<Expr> exprs, boolean ignoreUnknow)
+  {
+    AbstractType t = Types.resolved.t_void;
+
+    // First pass:
+    // Union of the types of the expressions
+    // that are sure about their types.
+    for (var e : exprs)
+      {
+        var et = e.typeForUnion();
+        if (et != null)
+          {
+            t = t.union(et);
+          }
+      }
+
+    // Propagate the found type to all expression
+    for (var e : exprs)
+      {
+        e.propagateExpectedType(t);
+      }
+
+    // Second pass:
+    // Union of the types of the expressions
+    AbstractType result = Types.resolved.t_void;
+    for (var e : exprs)
+      {
+        var et = e.typeForInferencing();
+        if (et == null && ignoreUnknow)
+          {
+            continue;
+          }
+        result = result == null || et == null
+          ? null : result.union(et);
+      }
+
+    return result;
+  }
+
+
+  /**
+   * During type inference: Inform this expression that it is
+   * expected to result in the given type.
+   *
+   * @param t the expected type.
+   */
+  protected void propagateExpectedType(AbstractType t)
+  {
+
+  }
+
+
+  /**
    * The source code position of this expression that produces the result value
    * of this Expression. This is usually equal to this Expression's position,
    * unless we have a block of the form
