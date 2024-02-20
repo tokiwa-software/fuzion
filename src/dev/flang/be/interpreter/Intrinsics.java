@@ -1363,40 +1363,34 @@ public class Intrinsics extends ANY
     put("fuzion.sys.pipe.read"       , (interpreter, innerClazz) -> args -> {
       var desc = args.get(1).i64Value();
       var buff = (byte[])args.get(2).arrayData()._array;
-      if (_openStreams_.get(desc) instanceof InputStream is)
+      var is = (InputStream) _openStreams_.get(desc);
+      try
         {
-          try
-            {
-              var readBytes = is.read(buff);
+          var readBytes = is.read(buff);
 
-              return readBytes == -1
-               ? new i32Value(0)
-               : new i32Value(readBytes);
-            }
-          catch (IOException e)
-            {
-              return new i32Value(-1);
-            }
+          return readBytes == -1
+            ? new i32Value(0)
+            : new i32Value(readBytes);
         }
-      throw new RuntimeException("illegal");
+      catch (IOException e)
+        {
+          return new i32Value(-1);
+        }
     });
 
     put("fuzion.sys.pipe.write"      , (interpreter, innerClazz) -> args -> {
       var desc = args.get(1).i64Value();
       var buff = (byte[])args.get(2).arrayData()._array;
-      if (_openStreams_.get(desc) instanceof OutputStream os)
+      var os = (OutputStream) _openStreams_.get(desc);
+      try
         {
-          try
-            {
-              os.write(buff);
-              return new i32Value(buff.length);
-            }
-          catch (IOException e)
-            {
-              return new i32Value(-1);
-            }
+          os.write(buff);
+          return new i32Value(buff.length);
         }
-      throw new RuntimeException("illegal");
+      catch (IOException e)
+        {
+          return new i32Value(-1);
+        }
     });
 
     put("fuzion.sys.pipe.close"      , (interpreter, innerClazz) -> args -> {

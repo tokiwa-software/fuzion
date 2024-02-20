@@ -105,6 +105,7 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
   # wait for process to finish
   #
   public wait outcome u32 =>
+    # NYI make sure std_in can not be used anymore
     if std_in!! || fuzion.sys.pipe.close std_in.get = 0
       r := fuzion.sys.process.wait id
       if r<0
@@ -121,6 +122,7 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
   # dispose process, cleanup
   #
   module dispose outcome unit =>
+    # NYI make sure std_out, std_err can not be used anymore
     if fuzion.sys.pipe.close std_out = -1
       error "standard out could not be closed successfully."
     else if (fuzion.sys.pipe.close std_err = -1)
