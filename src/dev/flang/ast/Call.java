@@ -2441,6 +2441,7 @@ public class Call extends AbstractCall
                 if (pt != Types.t_ERROR)
                   {
                     var apt = pt.applyTypePars(actualType);
+                    apt = apt.replace_this_type_by_actual_outer(actualType);
                     inferGeneric(res, outer, formalType, apt, pos, conflict, foundAt);
                   }
               }
