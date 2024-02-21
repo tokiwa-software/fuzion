@@ -43,7 +43,7 @@ public abstract class AbstractAssign extends Expr
 
 
   /**
-   *
+   * The value that will be assigned to the field.
    */
   public Expr _value;
 
@@ -55,6 +55,10 @@ public abstract class AbstractAssign extends Expr
   public AbstractFeature _assignedField;
 
 
+
+  /**
+   * The target containing the field of the assignment.
+   */
   public Expr _target;
 
 
@@ -288,6 +292,7 @@ public abstract class AbstractAssign extends Expr
   {
     return false;
   }
+
 
   /**
    * toString
