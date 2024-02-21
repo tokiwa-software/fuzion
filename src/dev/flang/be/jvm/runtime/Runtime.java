@@ -751,6 +751,8 @@ public class Runtime extends ANY
    */
   public static String fuzion_java_string_to_java_object0(byte[] b)
   {
+    unsafeIntrinsic();
+
     return new String(b, StandardCharsets.UTF_8);
   }
 
@@ -768,6 +770,8 @@ public class Runtime extends ANY
    */
   public static Object fuzion_java_get_static_field0(String clazz, String field)
   {
+    unsafeIntrinsic();
+
     Object result;
 
     try
@@ -800,6 +804,8 @@ public class Runtime extends ANY
    */
   public static Object fuzion_java_get_field0(Object thiz, String field)
   {
+    unsafeIntrinsic();
+
     Object result;
     String clazz = null;
 
@@ -885,6 +891,8 @@ public class Runtime extends ANY
   {
     if (PRECONDITIONS) require
       (clName != null);
+
+    unsafeIntrinsic();
 
     Method m = null;
     var pcl = getParsAndClass("virtual", clName, name, sig);
@@ -973,6 +981,8 @@ public class Runtime extends ANY
     if (PRECONDITIONS) require
       (clName != null);
 
+    unsafeIntrinsic();
+
     Method m = null;
     var pcl = getParsAndClass("static", clName, name, sig);
     var p = pcl._v0;
@@ -1007,6 +1017,8 @@ public class Runtime extends ANY
   {
     if (PRECONDITIONS) require
       (clName != null);
+
+    unsafeIntrinsic();
 
     var pcl = getParsAndClass("constructor", clName, null, sig);
     var p = pcl._v0;
