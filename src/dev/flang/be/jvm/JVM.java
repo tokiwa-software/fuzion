@@ -1469,7 +1469,7 @@ should be avoided as much as possible.
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_8,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_8_SIG,
-                                                  PrimitiveType.type_byte.array())));
+                                                  PrimitiveType.type_byte.array())), bytes.length);
   }
 
 
@@ -1486,7 +1486,7 @@ should be avoided as much as possible.
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_I16,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_I16_SIG,
-                                                  PrimitiveType.type_byte.array())));
+                                                  PrimitiveType.type_byte.array())), bytes.length / 2);
   }
 
 
@@ -1503,7 +1503,7 @@ should be avoided as much as possible.
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_U16,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_U16_SIG,
-                                                  PrimitiveType.type_byte.array())));
+                                                  PrimitiveType.type_byte.array())), bytes.length / 2);
   }
 
 
@@ -1520,7 +1520,7 @@ should be avoided as much as possible.
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_32,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_32_SIG,
-                                                  PrimitiveType.type_byte.array())));
+                                                  PrimitiveType.type_byte.array())), bytes.length / 4);
   }
 
 
@@ -1537,7 +1537,7 @@ should be avoided as much as possible.
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_64,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_64_SIG,
-                                                  PrimitiveType.type_byte.array())));
+                                                  PrimitiveType.type_byte.array())), bytes.length / 8);
   }
 
 
@@ -1554,7 +1554,7 @@ should be avoided as much as possible.
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_F32,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_F32_SIG,
-                                                  PrimitiveType.type_byte.array())));
+                                                  PrimitiveType.type_byte.array())), bytes.length / 4);
   }
 
 
@@ -1571,7 +1571,7 @@ should be avoided as much as possible.
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_F64,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_F64_SIG,
-                                                  PrimitiveType.type_byte.array())));
+                                                  PrimitiveType.type_byte.array())), bytes.length / 8);
   }
 
 
@@ -1582,7 +1582,7 @@ should be avoided as much as possible.
    *
    * @param arr expr producing the java array, e.g. double[].
    */
-  Pair<Expr, Expr> const_array(int arrayCl, Expr arr)
+  Pair<Expr, Expr> const_array(int arrayCl, Expr arr, int len)
   {
     var internalArray  = _fuir.lookup_array_internal_array(arrayCl);
     var fuzionSysArray = _fuir.clazzResultClazz(internalArray);
@@ -1593,11 +1593,9 @@ should be avoided as much as possible.
       .andThen(new0(fuzionSysArray))                  //        cs, cs, fsa
       .andThen(Expr.DUP)                              //        cs, cs, fsa, fsa
       .andThen(arr)                                   //        cs, cs, fsa, fsa, arr
-      .andThen(Expr.DUP_X2)                           //        cs, cs, arr, fsa, fsa, arr
-      .andThen(putfield(data))                        //        cs, cs, arr, fsa
-      .andThen(Expr.DUP_X1)                           //        cs, cs, fsa, arr, fsa
-      .andThen(Expr.SWAP)                             //        cs, cs, fsa, fsa, arr
-      .andThen(Expr.ARRAYLENGTH)                      //        cs, cs, fsa, fsa, len
+      .andThen(putfield(data))                        //        cs, cs, fsa
+      .andThen(Expr.DUP)                              //        cs, cs, fsa, fsa
+      .andThen(Expr.iconst(len))                      //        cs, cs, fsa, fsa, len
       .andThen(putfield(length))                      //        cs, cs, fsa
       .andThen(putfield(internalArray))               //        cs
       .is(_types.javaType(arrayCl));                  //        -

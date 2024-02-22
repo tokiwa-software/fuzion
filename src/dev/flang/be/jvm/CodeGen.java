@@ -1007,7 +1007,7 @@ class CodeGen
                     .andThen(c._v0)                                // T[], T[], idx, const-data-code
                     .andThen(jt.xastore());                        // T[]
                 }
-              yield _jvm.const_array(constCl, result);
+              yield _jvm.const_array(constCl, result, elCount);
             }
           else if (!_fuir.clazzIsChoice(constCl))
             {
