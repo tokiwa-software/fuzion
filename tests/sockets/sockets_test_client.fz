@@ -42,14 +42,14 @@ sockets_test_client is
               # read less than available bytes
               .read 12
               .or(error "error")
-              .bind String (d -> String.type.from_bytes  d)
+              .bind (d -> String.type.from_bytes  d)
             say ("$protocol/$family-client {sockets_test_client.client.this.num}, read  12 bytes from  $host:$port: >{rr}<")
 
             rr := (net.channel sockets_test_client)
               # read more than available bytes
               .read 100
               .or(error "error")
-              .bind String (d -> String.type.from_bytes  d)
+              .bind (d -> String.type.from_bytes  d)
             say ("$protocol/$family-client {sockets_test_client.client.this.num}, read 100 bytes from  $host:$port: >{rr}<")
           net.protocol.udp =>
             # rest of udp datagram was discarded

@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import java.util.Arrays;
 import java.util.ListIterator;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -2476,23 +2477,37 @@ public class Call extends AbstractCall
                                            List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
     var result = false;
-    if ((formalType.isFunctionType() || formalType.isLazyType()) &&
-        formalType.generics().get(0).isGenericArgument()
-        )
+    if (formalType.isFunctionType() || formalType.isLazyType())
       {
-        var rg = formalType.generics().get(0).genericArgument();
-        var ri = rg.index();
-        if (rg.feature() == _calledFeature && foundAt.get(ri) == null)
+        var at = actualArgType(res, formalType);
+        var frmLmdRt = formalType.generics().get(0);
+        if (frmLmdRt.isGenericArgument())
           {
-            var at = actualArgType(res, formalType);
-            if (!at.containsUndefined(true))
+            var rg = frmLmdRt.genericArgument();
+            var ri = rg.index();
+            if (rg.feature() == _calledFeature && foundAt.get(ri) == null)
               {
-                var rt = al.inferLambdaResultType(res, outer, at);
-                if (rt != null)
+                if (!at.containsUndefined(true))
                   {
-                    _generics = _generics.setOrClone(ri, rt);
+                    var rt = al.inferLambdaResultType(res, outer, at);
+                    if (rt != null)
+                      {
+                        _generics = _generics.setOrClone(ri, rt);
+                      }
+                    addPair(foundAt, ri, pos, rt);
+                    result = true;
                   }
-                addPair(foundAt, ri, pos, rt);
+              }
+          }
+        else if (at.containsUndefined(false))
+          {
+            var rt = al.propagateTypeAndInferResult(res, outer, at, false);
+            // NYI What if there is more than one type parameter to infer?
+            var et = rt.extractType(frmLmdRt);
+            if (et != null)
+              {
+                _generics = _generics.setOrClone(frmLmdRt.indexOfGenericArgument(), et);
+                addPair(foundAt, 0, pos, rt);
                 result = true;
               }
           }

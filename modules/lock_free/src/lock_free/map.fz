@@ -458,13 +458,12 @@ is
   # clean an indirection node:
   # compress contained container node
   private clean(nd option (Indirection_Node CTK CTV), lev u32) =>
-    nd.bind unit (i ->
+    nd.bind i->
       m := gcas_read i
       match m.data
         c container_node => gcas i m (compress c lev i.gen)
         * =>
       unit
-    )
     restart
 
 

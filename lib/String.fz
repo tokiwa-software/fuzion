@@ -223,7 +223,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
       else if (String.type.cap_a_char ≤ c ≤ String.type.cap_z_char) c - String.type.cap_a_char + 10
       else parse_error "non-digit found"
 
-    d.bind T b->
+    d.bind T b-> /* NYI can not drop arg T because if else returns error and T which only later will become outcome T */
       t := parse_integer.this.T.from_u32 b.as_u32  # i converted to T
       if t ≥ base
         parse_error "invalid integer digit for base $base"
@@ -714,7 +714,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public type.from_mutable_array(a Mutable_Array Any) ref : String is  // NYI: Remove?
 
     redef utf8 Sequence u8 =>
-      a.flat_map u8 ai->ai.as_string.utf8
+      a.flat_map ai->ai.as_string.utf8
 
 
     redef infix + (other Any) String =>
@@ -736,7 +736,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
     ref : String
       utf8 Sequence u8 =>
         codepoints
-          .flat_map u8 x->x.utf8
+          .flat_map x->x.utf8
           .as_array_backed
 
 

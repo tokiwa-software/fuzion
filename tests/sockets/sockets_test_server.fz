@@ -39,7 +39,7 @@ sockets_test_server =>
         # read less than available bytes
         .read 11
         .or(error "error")
-        .bind String (d -> String.type.from_bytes  d)
+        .bind (d -> String.type.from_bytes d)
 
       say "$protocol/$family-server, read  11 bytes: >{rr1}<"
 
@@ -49,7 +49,7 @@ sockets_test_server =>
             # read more than available bytes
             .read 100
             .or (error "error")
-            .bind String (d -> String.type.from_bytes  d)
+            .bind (d -> String.type.from_bytes d)
 
           say "$protocol/$family-server, read 100 bytes: >{rr2}<"
 

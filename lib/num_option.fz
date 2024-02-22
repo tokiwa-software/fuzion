@@ -76,7 +76,7 @@ is
 
 
   # monadic operator
-  public redef infix >>= (f T -> num_option T) => num_option.this.bind T f
+  public redef infix >>= (f T -> num_option T) => num_option.this.bind f
 
 
   # monadic operator

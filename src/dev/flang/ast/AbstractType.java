@@ -1922,6 +1922,52 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
+  /**
+   * Get the index of the first found generic argument
+   * e.g. `Sequence Sequence.flat_map.B` returns 0
+   */
+  public Integer indexOfGenericArgument()
+  {
+    return isGenericArgument()
+    ? genericArgument().index()
+    : generics().stream()
+      .filter(x -> x.indexOfGenericArgument() != null)
+      .map(x -> x.indexOfGenericArgument())
+      .findFirst()
+      .orElse(null);
+  }
+
+
+  /**
+   * this the type in which to find the replacement for tp     e.g: Sequence (array i32)
+   * @param frmlT the formal type containing a tp               e.g: Sequence Sequence.flat_map.B
+   * @return the extracted type                                 e.g: array i32
+   */
+  public AbstractType extractType(AbstractType frmlT)
+  {
+    if (frmlT.isGenericArgument())
+      {
+        return this;
+      }
+    else
+      {
+        for (int i = 0; i < frmlT.generics().size(); i++)
+          {
+            if (generics().size() <= i)
+              {
+                return null;
+              }
+            var et = generics().get(i).extractType(frmlT.generics().get(i));
+            if (et != null)
+              {
+                return et;
+              }
+          }
+        return null;
+      }
+  }
+
+
 }
 
 /* end of file */

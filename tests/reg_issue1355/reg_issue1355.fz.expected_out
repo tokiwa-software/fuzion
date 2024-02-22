@@ -1,0 +1,9 @@
+Type of 'Sequence i32'
+[1, 2, 3]
+Type of 'Sequence (array i32)'
+[[1], [2], [3]]
+Type of 'Sequence codepoint'
+[A, A, A]
+Type of 'Sequence (option unit)'
+[--nil--, --nil--, --nil--]
+--nil--

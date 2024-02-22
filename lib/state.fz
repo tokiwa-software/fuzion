@@ -46,7 +46,7 @@ is
 
   # monadic operator
   #
-  public redef infix >>= (f T -> state T S) => state.this.bind T f
+  public redef infix >>= (f T -> state T S) => state.this.bind f
 
 
   # monadic operator

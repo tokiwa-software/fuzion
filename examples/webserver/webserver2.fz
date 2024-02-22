@@ -49,7 +49,7 @@ webserver2 is
       read := (net.channel net.server)
         .read 1
         .or (error "read error")
-        .bind String (d -> String.type.from_bytes d)
+        .bind (d -> String.type.from_bytes d)
       s := read.val, s + read.val
     while read.ok && read.val != "\n"
     else

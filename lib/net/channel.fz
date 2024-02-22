@@ -39,7 +39,7 @@ module:public channel(T type, desc outcome i64, auto_close bool, m effect_mode.v
 is
 
   # get the last error that occurred
-  last_error => desc.bind unit (_ -> unit)
+  last_error => desc.bind _->unit
 
 
   # is this channel still active?

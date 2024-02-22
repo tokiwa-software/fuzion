@@ -168,7 +168,7 @@ is
   #
   # The monadic operator turns this into:
   #
-  #     (open "example.txt").bind (array u8) (fd->read fd 42)
+  #     (open "example.txt").bind (fd->read fd 42)
   #
   public bind(B type, f T -> outcome B) outcome B =>
     outcome.this ? v T => f v

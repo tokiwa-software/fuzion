@@ -17,42 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test mmap_test
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-
-mmap_test is
-
-  testfile := "testfile"
-
-  f =>
-    io.file.open
-
-  # NYI get actual page size
-  page_size := 65536
-
-  say (io.file.use unit testfile io.file.mode.append ()->
-
-    f.write (array u8 page_size i->0)
-    f.write "hello!".utf8
-
-    offset := page_size.as_i64
-
-    # map 6 bytes of file starting from the end of the '+'s.
-    say (f.mmap offset (i64 6) buf->
-          # change the 'e' in hello to an 'a'.
-          buf[1] := buf[1] - 4)
-
-    # mmap should fail, since offset+size exceeds file size.
-    say (f.mmap offset (i64 7) _->)
-  )
-
-
-  say (io.file.use String testfile io.file.mode.read ()->
-    f
-      .read
-      .bind (x -> String.type.from_bytes (x.drop page_size))
-  )
-
-  _ := io.file.delete testfile
+override NAME = reg_issue1355
+include ../simple.mk

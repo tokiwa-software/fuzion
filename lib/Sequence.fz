@@ -504,7 +504,7 @@ public Sequence(public T type) ref is
   #   Sequence.this.last, b.last
   #
   public combine(U, V type, b Sequence U, f (T,U)->V) Sequence V =>
-    flat_map V x->(b.map y->(f x y))
+    flat_map x->(b.map y->(f x y))
 
 
   # create a new Sequence from tuples of all combinations of elements
