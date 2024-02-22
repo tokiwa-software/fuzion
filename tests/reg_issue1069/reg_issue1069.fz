@@ -34,3 +34,5 @@ reg_issue1069 is
 
   say (f true)
   say (f false)
+  say (type_of (f true))
+  say (type_of (f false))

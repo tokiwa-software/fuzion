@@ -124,7 +124,7 @@ public class InlineArray extends ExprWithPos
   {
     if (_type == null && !_elements.isEmpty())
       {
-        var t = Expr.union(_elements, false);
+        var t = Expr.union(_elements, true);
         if (t == Types.t_ERROR)
           {
             new IncompatibleResultsOnBranches(pos(),

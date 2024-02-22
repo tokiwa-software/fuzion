@@ -252,12 +252,11 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
     for (var e : exprs)
       {
         var et = e.typeForInferencing();
-        if (et == null && ignoreUnknow)
+        if (et != null || !ignoreUnknow)
           {
-            continue;
+            result = result == null || et == null
+              ? null : result.union(et);
           }
-        result = result == null || et == null
-          ? null : result.union(et);
       }
 
     return result;

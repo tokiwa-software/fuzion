@@ -458,23 +458,9 @@ public class NumLiteral extends Constant
 
   private AbstractType extractNumericType(AbstractType t)
   {
-    var numericTypes = new TreeSet<AbstractType>(
-      new List<>(
-        Types.resolved.t_i8,
-        Types.resolved.t_i16,
-        Types.resolved.t_i32,
-        Types.resolved.t_i64,
-        Types.resolved.t_u8,
-        Types.resolved.t_u16,
-        Types.resolved.t_u32,
-        Types.resolved.t_u64,
-        Types.resolved.t_f32,
-        Types.resolved.t_f64)
-    );
-
     var result = t
       .choices()
-      .filter(x -> numericTypes.contains(x))
+      .filter(x -> Types.resolved.numericTypes.contains(x))
       .collect(Collectors.toList());
 
     return result.size() == 1
@@ -791,7 +777,7 @@ public class NumLiteral extends Constant
 
 
   /**
-   * Check if type t is one of the known integer types i8, i16, i32, i64, u8,
+   * Check if type t is one of the known numeric types i8, i16, i32, i64, u8,
    * u16, u32, u64, f32, f64 and return the corresponding ConstantType constant.
    *
    * @param t an interned type
