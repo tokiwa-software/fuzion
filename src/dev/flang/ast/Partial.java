@@ -259,7 +259,7 @@ public class Partial extends AbstractLambda
     // unlike type(), we do not produce an error but just return null here since
     // everything might eventually turn out fine in this case.
     return _function == null ? null
-                             : _function.type();
+                             : _function.typeForInferencing();
   }
 
 
