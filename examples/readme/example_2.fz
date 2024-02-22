@@ -16,8 +16,8 @@ ex_gcd is
     pre
       safety: (a != 0 || b != 0)
     post
-      safety: a % result = 0,
-      safety: b % result = 0,
+      safety: a % result = 0
+      safety: b % result = 0
       pedantic: (common_divisors_of a b).reduce bool true (tmp,cur->tmp && (gcd.this.result % cur = 0))
   =>
     if b = 0

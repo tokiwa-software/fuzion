@@ -40,6 +40,10 @@ ENV = \
   $(if $(FUZION_JAVA_STACK_SIZE), FUZION_JAVA_STACK_SIZE=$(FUZION_JAVA_STACK_SIZE),) \
   $(if $(FUZION_JAVA_OPTIONS)   , FUZION_JAVA_OPTIONS=$(FUZION_JAVA_OPTIONS)      ,) \
 
+
+all: jvm c int
+
+
 compile_server_c:
 	rm -f server
 	$(FUZION_RUN) -c -o=server sockets_test_server.fz
