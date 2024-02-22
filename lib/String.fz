@@ -266,10 +266,10 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # string.
   to_valid_utf8(replacement String) String =>
     codepoints_and_errors
-      .reduce "" ((r, x) ->
+      .reduce "" r,x->
         match x
           c codepoint => r + c
-          e error => r + replacement)
+          e error => r + replacement
 
 
   # convert this string into a list of codepoint and errors for encoding problems
