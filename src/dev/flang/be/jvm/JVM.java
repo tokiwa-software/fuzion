@@ -1261,9 +1261,8 @@ should be avoided as much as possible.
         var locals = initialLocals(cl);
 
         var code_cl = cf.codeAttribute((pre ? "precondition of " : "") + _fuir.clazzAsString(cl),
-                                       numLocals(cl, pre),
                                        bc_cl,
-                                       new List<>(), new List<>(ClassFile.StackMapTable.fromCode(cf, locals, bc_cl)));
+                                       new List<>(), new List<>(), ClassFile.StackMapTable.fromCode(cf, locals, bc_cl));
 
         cf.method(ClassFileConstants.ACC_STATIC | ClassFileConstants.ACC_PUBLIC, name, _types.descriptor(cl, pre), new List<>(code_cl));
 
@@ -1300,9 +1299,8 @@ should be avoided as much as possible.
               .andThen(jt.return0());
 
             var code_comb = cf.codeAttribute("combined precondition and code of " + _fuir.clazzAsString(cl),
-                                             numLocals(cl, pre) /* NYI: UNDER DEVELOPMENT: num locals! */,
                                              bc_combined,
-                                             new List<>(), new List<>(ClassFile.StackMapTable.fromCode(cf, locals, bc_combined)));
+                                             new List<>(), new List<>(), ClassFile.StackMapTable.fromCode(cf, locals, bc_combined));
             cf.method(ClassFileConstants.ACC_STATIC | ClassFileConstants.ACC_PUBLIC, Names.COMBINED_NAME, _types.descriptor(cl, false), new List<>(code_comb));
           }
       }
@@ -1312,44 +1310,21 @@ should be avoided as much as possible.
   /**
    * Get the state of the locals at the start of execution of cl.
    */
-  private List<VerificationType> initialLocals(int cl)
+  public List<VerificationType> initialLocals(int cl)
   {
-    var cf = _types.classFile(cl);
     var result = new List<VerificationType>();
     if (_types.hasOuterRef(cl))
       {
         var or = _fuir.clazzOuterRef(cl);
         var ot = _fuir.clazzResultClazz(or);
         var at = _types.resultType(ot);
-        if (at != PrimitiveType.type_void)
-          {
-            var vti = _types.resultType(_fuir.clazzResultClazz(_fuir.clazzOuterRef(cl))).vti();
-            if (vti.needsTwoSlots())
-              {
-                result.addAll(vti, vti);
-              }
-            else
-              {
-                result.add(vti);
-              }
-          }
+        result = Types.addToLocals(result, at);
       }
     for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
       {
         var at = _fuir.clazzArgClazz(cl, i);
         var ft = _types.resultType(at);
-        if (ft != PrimitiveType.type_void)
-          {
-            var vti = _types.resultType(_fuir.clazzArgClazz(cl, i)).vti();
-            if (vti.needsTwoSlots())
-              {
-                result.addAll(vti, vti);
-              }
-            else
-              {
-                result.add(vti);
-              }
-          }
+        result = Types.addToLocals(result, ft);
       }
     result.freeze();
     return result;

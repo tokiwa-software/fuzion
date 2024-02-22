@@ -374,6 +374,8 @@ public abstract class Expr extends ByteCode
         {
           locals.set(local()._v0+1, local()._v1);
         }
+
+      smt.updateMaxLocal(local()._v0 + (local()._v1.needsTwoSlots() ? 2 : 1));
     }
 
   }
