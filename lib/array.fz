@@ -64,7 +64,7 @@ module:public array(
   # create a list that consists of the elements of this Sequence except the first
   # n elements
   #
-  # For arrays, this has perfornace in O(1).
+  # For arrays, this has performance in O(1).
   #
   public redef drop (n i32) =>
     as_list (max 0 n)
@@ -185,7 +185,7 @@ module:public array(
       # create a list that consists of the elements of this Sequence except the first
       # n elements
       #
-      # For arrays, this has perfornace in O(1).
+      # For arrays, this has performance in O(1).
       #
       public redef drop (n i32) =>
         array.this.slice from+(max 0 n) to
