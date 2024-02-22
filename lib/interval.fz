@@ -61,7 +61,7 @@ is
   #
   public infix : (step_factor T)
   pre
-    debug: step_factor.sign != 0,
+    debug: step_factor.sign != 0
     safety: (step *? step_factor).exists
   =>
     interval from through step*step_factor

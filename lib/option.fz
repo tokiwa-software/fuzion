@@ -61,7 +61,7 @@ is
   #
   public val T
     pre
-      safety: option.this??
+      safety: (option.this??) # NYI: REGRESSION: parantheses currently necessary, due to PR #2572
   =>
     option.this ? v T => v
                 | nil => fuzion.std.panic "option.val called on nil"
