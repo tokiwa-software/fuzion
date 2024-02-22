@@ -2499,7 +2499,7 @@ public class Call extends AbstractCall
                   }
               }
           }
-        else if (at.containsUndefined(false))
+        else if (at.containsUndefined(false) && frmLmdRt.dependsOnGenerics())
           {
             var rt = al.propagateTypeAndInferResult(res, outer, at, false);
             // NYI What if there is more than one type parameter to infer?
