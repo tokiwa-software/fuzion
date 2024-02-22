@@ -54,6 +54,19 @@ is
   public postfix !! => is_nil
 
 
+  # value of an option that is known to contain a value
+  #
+  # this can only be called in cases where it is known for sure that this option
+  # is not nil.  A runtime error will be created otherwise.
+  #
+  public val T
+    pre
+      safety: option.this??
+  =>
+    option.this ? v T => v
+                | nil => fuzion.std.panic "option.val called on nil"
+
+
   # monadic operator
   #
   # This is handy to implement functions on optional values. As an example,
