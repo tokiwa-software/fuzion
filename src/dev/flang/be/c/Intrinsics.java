@@ -121,7 +121,12 @@ public class Intrinsics extends ANY
                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ))
                 {
                   code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
-                                    CExpr.call("__atomic_compare_exchange", new List<>(f.adrOf(), tmp.adrOf(), new_value.adrOf(), new CIdent("false"), new CIdent("__ATOMIC_SEQ_CST"), new CIdent("__ATOMIC_SEQ_CST"))),
+                                    CExpr.call("atomic_compare_exchange_strong_explicit", new List<>(
+                                      f.adrOf().castTo(c._types.atomicType(rc)+"*"),
+                                      tmp.adrOf().castTo("void *" /* the underlying type e.g. `uintptr_t *`, `uint_least64_t` */),
+                                      new_value.adrOf().castTo(c._types.atomicType(rc)+"*").deref(),
+                                      new CIdent("memory_order_seq_cst"),
+                                      new CIdent("memory_order_seq_cst"))),
                                     tmp.ret());
                 }
               else
@@ -163,14 +168,13 @@ public class Intrinsics extends ANY
                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ))
                 {
                   code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
-                                    CStmnt.iff(CExpr.call("__atomic_compare_exchange",
+                                    CStmnt.iff(CExpr.call("atomic_compare_exchange_strong_explicit",
                                                           new List<>(
-                                                            f.adrOf(),
-                                                            tmp.adrOf(),
-                                                            new_value.adrOf(),
-                                                            new CIdent("false"),
-                                                            new CIdent("__ATOMIC_SEQ_CST"),
-                                                            new CIdent("__ATOMIC_SEQ_CST"))),
+                                                            f.adrOf().castTo(c._types.atomicType(rc)+"*"),
+                                                            tmp.adrOf().castTo("void *" /* the underlying type e.g. `uintptr_t *`, `uint_least64_t` */),
+                                                            new_value.adrOf().castTo(c._types.atomicType(rc)+"*").deref(),
+                                                            new CIdent("memory_order_seq_cst"),
+                                                            new CIdent("memory_order_seq_cst"))),
                                       c._names.FZ_TRUE.ret()),
                                     c._names.FZ_FALSE.ret());
                 }
@@ -228,7 +232,7 @@ public class Intrinsics extends ANY
           CStmnt code;
           if (c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit))
             {
-              code = CExpr.call("__atomic_thread_fence", new List<>(new CIdent("__ATOMIC_SEQ_CST")));
+              code = CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
             }
           else if (c._fuir.clazzIsRef(rc) ||
                    c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
@@ -243,9 +247,13 @@ public class Intrinsics extends ANY
             {
               var f = c.accessField(outer, ac, v);
               code = CStmnt.seq(
-                CExpr.decl(c._types.clazz(rc), tmp),
-                CExpr.call("__atomic_load", new List<>(f.adrOf(), tmp.adrOf(), new CIdent("__ATOMIC_SEQ_CST"))),
-                tmp.ret());
+                CExpr.decl(c._types.atomicType(rc), tmp),
+                tmp.assign(CExpr.call("atomic_load_explicit", new List<>(f.adrOf().castTo(c._types.atomicType(rc)+"*"), new CIdent("memory_order_seq_cst")))),
+                tmp.adrOf()
+                  .castTo(c._types.clazz(rc) + "*")
+                  .deref()
+                  .ret()
+              );
             }
           else
             {
@@ -266,7 +274,7 @@ public class Intrinsics extends ANY
           var code = CStmnt.EMPTY;
           if (c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit))
             {
-              code = CExpr.call("__atomic_thread_fence", new List<>(new CIdent("__ATOMIC_SEQ_CST")));
+              code = CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
             }
           else if (c._fuir.clazzIsRef(rc) ||
                    c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
@@ -280,7 +288,7 @@ public class Intrinsics extends ANY
                    c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_bool))
             {
               var f = c.accessField(outer, ac, v);
-              code = CExpr.call("__atomic_store", new List<>(f.adrOf(), new_value.adrOf(), new CIdent("__ATOMIC_SEQ_CST")));
+              code = CExpr.call("atomic_store_explicit", new List<>(f.adrOf().castTo(c._types.atomicType(rc)+"*"), new_value.adrOf().castTo(c._types.atomicType(rc)+"*").deref(), new CIdent("memory_order_seq_cst")));
             }
           else
             {
@@ -292,12 +300,12 @@ public class Intrinsics extends ANY
 
     put("concur.util.loadFence", (c,cl,outer,in) ->
         {
-          return CExpr.call("__atomic_thread_fence", new List<>(new CIdent("__ATOMIC_SEQ_CST")));
+          return CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
         });
 
     put("concur.util.storeFence", (c,cl,outer,in) ->
         {
-          return CExpr.call("__atomic_thread_fence", new List<>(new CIdent("__ATOMIC_SEQ_CST")));
+          return CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
         });
 
     put("safety"               , (c,cl,outer,in) -> (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
@@ -786,10 +794,10 @@ public class Intrinsics extends ANY
         {
           var last_id = new CIdent("last_id");
           return CStmnt.seq(CStmnt.decl("static",
-                                        CTypes.scalar(FUIR.SpecialClazzes.c_u64),
+                                        "atomic_uint_least64_t",
                                         last_id,
                                         CExpr.uint64const(0)),
-                            CExpr.call("__atomic_add_fetch", new List<>(last_id.adrOf(), CExpr.uint64const(1), new CIdent("__ATOMIC_SEQ_CST"))).ret());
+                            last_id.incr().ret());
         });
      put("fuzion.sys.thread.spawn0", (c,cl,outer,in) ->
         {

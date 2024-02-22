@@ -929,7 +929,8 @@ public class C extends ANY
        "#include <setjmp.h>\n"+
        "#include <errno.h>\n"+
        // defines _O_BINARY
-       "#include <fcntl.h>\n");
+       "#include <fcntl.h>\n"+
+       "#include <stdatomic.h>\n");
 
     var fzH = _options.pathOf("include/fz.h");
     cf.println("#include \"" + fzH + "\"\n");
