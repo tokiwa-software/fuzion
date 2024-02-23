@@ -207,12 +207,12 @@ public fuzion.java is
   # convert a string to a Java String object
   #
   public string_to_java_object(s String) Java_Object =>
-    string_to_java_object0 (sys.c_string s)
+    string_to_java_object0 s.utf8.as_array.internal_array
 
 
   # intrinsic to convert a string to a Java String object
   #
-  private string_to_java_object0(s fuzion.sys.Pointer) Java_Object => intrinsic_constructor
+  private string_to_java_object0(s fuzion.sys.internal_array u8) Java_Object => intrinsic_constructor
 
 
   # convert a Java String to a string

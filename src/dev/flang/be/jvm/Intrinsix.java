@@ -295,9 +295,11 @@ public class Intrinsix extends ANY implements ClassFileConstants
         {
           var rc = jvm._fuir.clazz_fuzionJavaObject();
           var jref = jvm._fuir.lookupJavaRef(rc);
+          var data = jvm._fuir.lookup_fuzion_sys_internal_array_data(jvm._fuir.clazzArgClazz(cc,0));
           var res = jvm.new0(rc)
             .andThen(Expr.DUP)
             .andThen(args.get(0))
+            .andThen(jvm.getfield(data))
             .andThen(Expr.checkcast(PrimitiveType.type_byte.array()))
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS, "fuzion_java_string_to_java_object0", "([B)Ljava/lang/String;", Names.JAVA_LANG_OBJECT))
             .andThen(jvm.putfield(jref))

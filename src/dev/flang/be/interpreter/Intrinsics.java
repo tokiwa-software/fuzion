@@ -713,7 +713,12 @@ public class Intrinsics extends ANY
         });
     putUnsafe("fuzion.java.string_to_java_object0", (interpreter, innerClazz) -> args ->
         {
-          var str = utf8ByteArrayDataToString(args.get(1));
+          var argz = args.get(1);
+          var argfields = innerClazz.argumentFields();
+          var argsArray = argfields[argfields.length - 1];
+          var sac = argsArray.resultClazz();
+          var argzData = Interpreter.getField(Types.resolved.f_fuzion_sys_array_data, sac, argz, false);
+          var str = utf8ByteArrayDataToString(argzData);
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(str, resultClazz);
         });
