@@ -32,19 +32,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <stdint.h>
 
-// NYI move to shared
-static inline void * fzE_malloc_safe(size_t size) {
-#ifdef GC_H
-  void *p = GC_MALLOC(size);
-#else
-  void *p = malloc(size);
-#endif
-  if (p == NULL) {
-    fprintf(stderr, "*** malloc(%zu) failed ***\n", size);
-    exit(1);
-  }
-  return p;
-}
+void * fzE_malloc_safe(size_t size);
 
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname);
