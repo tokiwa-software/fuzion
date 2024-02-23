@@ -495,15 +495,13 @@ fzE_jvm_result fzE_call_v0(jstring class_name, jstring name, jstring signature, 
 
 
 // convert a 0-terminated utf8-bytes array to a jstring.
-jvalue fzE_string_to_java_object(const char * utf8_bytes)
+jvalue fzE_string_to_java_object(const void * utf8_bytes, int byte_length)
 {
-  int byte_length = strlen(utf8_bytes);
   // NYI we don't really need 4*byte_length, see modifiedUtf8LengthOfUtf8:
   // https://github.com/openjdk/jdk/blob/eb9e754b3a439cc3ce36c2c9393bc8b250343844/src/java.instrument/share/native/libinstrument/EncodingSupport.c#L98
-  char * outstr = fzE_malloc_safe(4*byte_length);
+  char outstr[4*byte_length];
   utf8_to_mod_utf8(utf8_bytes, outstr);
   jvalue result = (jvalue) (*fzE_jni_env)->NewStringUTF(fzE_jni_env, outstr);
-  free((void *) outstr);
   return result;
 }
 

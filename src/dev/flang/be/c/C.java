@@ -984,6 +984,10 @@ public class C extends ANY
        // defines _O_BINARY
        "#include <fcntl.h>\n"+
        "#include <stdatomic.h>\n");
+    if (linkJVM())
+      {
+        cf.println("#include <jni.h>");
+      }
 
     var fzH = _options.pathOf("include/fz.h");
     cf.println("#include \"" + fzH + "\"\n");

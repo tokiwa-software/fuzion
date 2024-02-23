@@ -1181,7 +1181,10 @@ public class Intrinsics extends ANY
     put("fuzion.java.string_to_java_object0", (c,cl,outer,in) -> C.JAVA_HOME == null
       ? noJava
       : c.returnJavaObject(c._fuir.clazz_fuzionJavaObject(), CExpr
-          .call("fzE_string_to_java_object", new List<CExpr>(A0.castTo("const char *"))), false)
+          .call("fzE_string_to_java_object", new List<CExpr>(
+            A0.field(c._names.fieldName(c._fuir.clazz_fuzionSysArray_u8_data())),
+            A0.field(c._names.fieldName(c._fuir.clazz_fuzionSysArray_u8_length()))
+          )), false)
        );
 
   }
