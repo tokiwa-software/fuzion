@@ -78,12 +78,14 @@ public class CFile extends ANY
 
   /**
    * constructor to instantiate a CFile
+   *
+   * @param name the name of the binary
    */
-  public CFile()
+  public CFile(String name)
   {
     try
       {
-        tempFile = File.createTempFile("fuzion-", ".c");
+        tempFile = File.createTempFile("fuzion_"+ name + "_", ".c");
         _cout = new PrintWriter(Files.newBufferedWriter(tempFile.toPath(), StandardCharsets.UTF_8));
       }
     catch (IOException io)

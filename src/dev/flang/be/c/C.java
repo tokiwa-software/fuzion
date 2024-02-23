@@ -663,7 +663,7 @@ public class C extends ANY
   {
     var cl = _fuir.mainClazzId();
     var name = _options._binaryName != null ? _options._binaryName : _fuir.clazzBaseName(cl);
-    var cf = new CFile();
+    var cf = new CFile(name);
     _options.verbosePrintln(" + " + cf.fileName());
     try
       {
