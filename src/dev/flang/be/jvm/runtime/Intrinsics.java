@@ -865,6 +865,8 @@ public class Intrinsics extends ANY
 
   public static int fuzion_sys_process_create(Object args, int arg_len, Object env_vars, int env_vars_len, Object res, Object args_str, Object env_str)
   {
+    Runtime.unsafeIntrinsic();
+
     var process_and_args = Arrays
       .stream((Object[]) args)
       .limit(arg_len - 1)
