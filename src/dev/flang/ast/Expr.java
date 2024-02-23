@@ -220,11 +220,10 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    *
    * @param exprs the expression to unionize
    *
-   * @param ignoreUnknow ignore any expressions whose type is not yet known.
-   *
-   * @return the union of exprs result type or null if not yet known.
+   * @return the union of exprs result type, defaulting to Types.resolved.t_void if
+   * no expression can be inferred yet.
    */
-  public static AbstractType union(List<Expr> exprs, boolean ignoreUnknow)
+  public static AbstractType union(List<Expr> exprs)
   {
     AbstractType t = Types.resolved.t_void;
 
@@ -252,10 +251,9 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
     for (var e : exprs)
       {
         var et = e.typeForInferencing();
-        if (et != null || !ignoreUnknow)
+        if (et != null)
           {
-            result = result == null || et == null
-              ? null : result.union(et);
+            result = result.union(et);
           }
       }
 

@@ -166,7 +166,7 @@ public class If extends ExprWithPos
    */
   private AbstractType typeFromIfOrElse()
   {
-    var result = Expr.union(new List<>(branches()), true);
+    var result = Expr.union(new List<>(branches()));
     if (result==Types.t_ERROR)
       {
         new IncompatibleResultsOnBranches(pos(),

@@ -490,7 +490,7 @@ public class Impl extends ANY
         var iv = initialValueFromCall(i, res);
         exprs.add(iv);
       }
-    var result = Expr.union(exprs, true);
+    var result = Expr.union(exprs);
     if (reportError)
       {
         if (_initialCalls.size() == 0)
