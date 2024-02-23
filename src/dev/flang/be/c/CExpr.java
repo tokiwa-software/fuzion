@@ -749,7 +749,7 @@ abstract class CExpr extends CStmnt
       {
         int precedence() { return 3; }
         void code(CString sb) { sb.append("(").append(type).append(")"); inner.code(sb, precedence()); }
-        CExpr castTo(String t) { return t.equals(type) ? this : CExpr.this.castTo(t); }
+        CExpr castTo(String t) { return t.equals(type) ? this : super.castTo(t); }
       };
   }
 

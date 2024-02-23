@@ -1347,8 +1347,6 @@ public class C extends ANY
    *
    * @param len CExpr that returns the size_t of the string
    *
-   * @param onHeap should the string be allocated on the heap?
-   *
    * Example code:
    * `(fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__array_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}`
    */

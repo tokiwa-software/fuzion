@@ -2609,7 +2609,6 @@ hw25 is
   }
 
 
-
   /**
    * Return if the intrinsic is know to be used?
    * default: true
