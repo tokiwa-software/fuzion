@@ -663,24 +663,20 @@ public class C extends ANY
   {
     var cl = _fuir.mainClazzId();
     var name = _options._binaryName != null ? _options._binaryName : _fuir.clazzBaseName(cl);
-    var cname = name + ".c";
-    _options.verbosePrintln(" + " + cname);
+    var cf = new CFile();
+    _options.verbosePrintln(" + " + cf.fileName());
     try
       {
-        var cf = new CFile(cname);
-        try
-          {
-            createCode(cf, _options);
-          }
-        finally
-          {
-            cf.close();
-          }
+        createCode(cf, _options);
       }
     catch (IOException io)
       {
         Errors.error("C backend I/O error",
-                     "While creating code to '" + cname + "', received I/O error '" + io + "'");
+                     "While writing code to '" + cf.fileName() + "', received I/O error '" + io + "'");
+      }
+    finally
+      {
+        cf.close();
       }
     Errors.showAndExit();
 
@@ -761,7 +757,7 @@ public class C extends ANY
       {
         command.addAll(_options.pathOf("include/posix.c"));
       }
-    command.addAll(cname);
+    command.addAll(cf.fileName());
 
     if (isWindows())
       {

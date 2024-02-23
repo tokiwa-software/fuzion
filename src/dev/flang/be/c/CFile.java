@@ -26,13 +26,14 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.c;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
 
 
 /**
@@ -66,19 +67,30 @@ public class CFile extends ANY
   private int _c_col = 0;
 
 
+  /**
+   * The temporary file to write the generated C-code to.
+   */
+  private File tempFile;
+
+
   /*---------------------------  constructors  ---------------------------*/
 
 
   /**
-   * Create C code backend for given intermediate code.
-   *
-   * @param fuir the intermediate code.
-   *
-   * @param opt options to control compilation.
+   * constructor to instantiate a CFile
    */
-  public CFile(String cname) throws IOException
+  public CFile()
   {
-    _cout = new PrintWriter(Files.newBufferedWriter(Path.of(cname), StandardCharsets.UTF_8));
+    try
+      {
+        tempFile = File.createTempFile("fuzion-", ".c");
+        _cout = new PrintWriter(Files.newBufferedWriter(tempFile.toPath(), StandardCharsets.UTF_8));
+      }
+    catch (IOException io)
+      {
+        Errors.fatal("C backend I/O error",
+                     "While creating temporary file, received I/O error '" + io + "'");
+      }
   }
 
 
@@ -204,6 +216,16 @@ public class CFile extends ANY
       (_c_indentation > 0);
 
     _c_indentation --;
+  }
+
+
+  /**
+   * @return the absolute path of the file
+   * the c-code is written to.
+   */
+  public String fileName()
+  {
+    return tempFile.getAbsolutePath();
   }
 
 }

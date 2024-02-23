@@ -45,6 +45,6 @@ if [ -f "$2".skip ]; then
 else
     ( (FUZION_DISABLE_ANSI_ESCAPES=true $1 -c "$2" -o=testbin && ./testbin) 2>"$2".expected_err_c | head -n 100) >"$2".expected_out_c || true # tail my result in 141
     sed -i "s|${CURDIR//\\//}/|--CURDIR--/|g" "$2".expected_err_c
-    rm -rf testbin testbin.c
+    rm -rf testbin
     echo "RECORDED $2"
 fi
