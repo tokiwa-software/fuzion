@@ -33,7 +33,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdint.h>
 
 // NYI move to shared
-static inline void *fzE_malloc_safe(size_t size) {
+static inline void * fzE_malloc_safe(size_t size) {
 #ifdef GC_H
   void *p = GC_MALLOC(size);
 #else
@@ -78,9 +78,6 @@ int fzE_close(int sockfd);
 // initialize a new socket for given
 // family, socket_type, protocol
 int fzE_socket(int family, int type, int protocol);
-
-// get addrinfo structure used for binding/connection of a socket.
-int fzE_getaddrinfo(int family, int socktype, int protocol, int flags, char * host, char * port, void ** result /* struct addrinfo ** result */);
 
 // create a new socket and bind to given host:port
 // result[0] contains either an errorcode or a socket descriptor
