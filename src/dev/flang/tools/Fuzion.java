@@ -28,6 +28,8 @@ package dev.flang.tools;
 
 import java.io.IOException;
 
+import java.nio.charset.StandardCharsets;
+
 import java.nio.channels.Channels;
 
 import java.nio.file.Files;
@@ -62,6 +64,7 @@ import dev.flang.util.List;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.FuzionOptions;
+import dev.flang.util.SourceFile;
 
 
 /**
@@ -357,7 +360,15 @@ public class Fuzion extends Tool
       }
     },
 
-    undefined;
+    undefined
+    {
+      // unless another backend will be set, undefined will be replaced by jvm
+      // backend, which takes application args:
+      boolean takesApplicationArgs()
+      {
+        return true;
+      }
+    };
 
     /**
      * the command line argument corresponding to this backend
@@ -551,6 +562,12 @@ public class Fuzion extends Tool
 
 
   /**
+   * Code provided via comment line argument `-e` or `-exec`, null if none.
+   */
+  byte[] _executeCode = null;
+
+
+  /**
    * name of main features .
    */
   String  _main = null;
@@ -634,7 +651,7 @@ public class Fuzion extends Tool
         return
           "Usage: " + _cmd + " [-h|--help|-version]  --or--\n" +
           "       " + _cmd + " [" + aba + "] [-h|--help|-version] [<backend specific options>]  --or--\n" +
-          "       " + _cmd + " -pretty " + std + " ({<file>} | -)  --or--\n" +
+          "       " + _cmd + " -pretty " + std + " ({<file>} | - | -e <code> | -execute <code>  --or--\n" +
           "       " + _cmd + " -latex " + std + "  --or--\n" +
           "       " + _cmd + " -acemode " + std + "  --or--\n";
       }
@@ -647,7 +664,7 @@ public class Fuzion extends Tool
                            (b.runsCode() ? stdRun : "") +
                            stdBe + std +
                            (b.takesApplicationArgs() ? "[--] " : "") +
-                           "(<main> | <srcfile>.fz | -) " +
+                           "(<main> | <srcfile>.fz | - | (-e|-execute) <code>) " +
                            (b.takesApplicationArgs() ? "[<list of arbitrary arguments for envir.args effect>] " : "");
       }
   }
@@ -683,6 +700,80 @@ public class Fuzion extends Tool
 
 
   /**
+   * Check that there is exactly one of these three input source set:
+   * _readStdin, _executeCode != null or commandLineSomethings.
+   *
+   * @param commandLineSomthings true iff input source is given via command line
+   * argument or arguments
+   *
+   * @param nameOfSomething How to call the command line sources in an error
+   * message, differs for the Pretty printer tool that may take several source files.
+   *
+   */
+  private void checkExactlyOneInputSource(boolean commandLineSomethings, String nameOfSomething)
+  {
+    var sources = new List<String>();
+    if (_readStdin            ) { sources.add("stdin input '-'"                             ); }
+    if (_executeCode != null  ) { sources.add("option '-e/-execute <code>'"                 ); }
+    if (commandLineSomethings ) { sources.add(nameOfSomething + " given on the command line"); }
+    if (sources.size() == 0)
+      {
+        fatal("no " + nameOfSomething + ", no '-' to read stdin, nor '-e/-execute <code>' argument given");
+      }
+    else if (sources.size() > 1)
+      {
+        fatal(sources.toString("cannot process multiple input sources: "," and ","."));
+      }
+  }
+
+
+  /**
+   * Check if `a` is `-e` or `-execute`.
+   *
+   * Cause an error in case of repreted `-e` or `-execute` arguments.
+   *
+   * @return true if that is that case and the next argument gives the code.
+   */
+  private boolean parseExecute(String a)
+  {
+    var result = a.equals("-e") || a.equals("-execute");
+    if (result && _executeCode != null)
+      {
+        fatal("repeated argument '-e' or '-execute'");
+      }
+    return result;
+  }
+
+
+  /**
+   * Must be called with the argument following an argument for which
+   * parseExecute returned true.  Will store the code in _executeCode.
+   *
+   * @param a the code argument.
+   */
+  private void executeCode(String a)
+  {
+    _executeCode = (a + "\n").getBytes(StandardCharsets.UTF_8);
+  }
+
+
+  /**
+   * This must be called after a argument parsing loop that contains
+   * parseExecute() to check that code was actually given following `-e` or
+   * `-execute`.
+   *
+   * @param noextIsCode did the call to `parseExecute` return true for the last
+   * argument?
+   */
+  private void checkMissingCode(boolean nextIsCode)
+  {
+    if (nextIsCode)
+      {
+        fatal("missing code following argument '-e' or '-execute'");
+      }
+  }
+
+  /**
    * Parse the given command line args for the pretty printer and create a
    * runnable that executes it.  System.exit() in case of error or -help.
    *
@@ -692,16 +783,26 @@ public class Fuzion extends Tool
    */
   private Runnable parseArgsPretty(String[] args)
   {
+    boolean nextIsCode = false;
     var sourceFiles = new List<String>();
     for (var a : args)
       {
-        if (!parseGenericArg(a) &&
-            !a.equals("-pretty")  // ignore, we know this already
-            )
+        if (nextIsCode)
+          {
+            executeCode(a);
+            nextIsCode = false;
+          }
+        else if (!parseGenericArg(a) &&
+                 !a.equals("-pretty")  // ignore, we know this already
+                 )
           {
             if (a.equals("-"))
               {
                 _readStdin = true;
+              }
+            else if (parseExecute(a))
+              {
+                nextIsCode = true;
               }
             else if (a.startsWith("-"))
               {
@@ -713,25 +814,23 @@ public class Fuzion extends Tool
               }
           }
       }
-    if (sourceFiles.isEmpty() && !_readStdin)
-      {
-        fatal("no source files given");
-      }
-    else if (!sourceFiles.isEmpty() && _readStdin)
-      {
-        fatal("cannot process both, stdin input '-' and a list of source files");
-      }
+    checkMissingCode(nextIsCode);
+    checkExactlyOneInputSource(!sourceFiles.isEmpty(), "source file(s)");
     return () ->
       {
         if (_readStdin)
           {
-            new Pretty();
+            new Pretty(SourceFile.STDIN);
+          }
+        else if (_executeCode != null)
+          {
+            new Pretty(SourceFile.COMMAND_LINE_DUMMY, _executeCode);
           }
         else
           {
             for (var s : sourceFiles)
               {
-                new Pretty(s);
+                new Pretty(Path.of(s));
               }
           }
       };
@@ -804,14 +903,20 @@ public class Fuzion extends Tool
    */
   private Runnable parseArgsForBackend(String[] args)
   {
+    boolean nextIsCode = false;
     ArrayList<String> applicationArgs = new ArrayList<>();
     boolean getApplicationArgs = false;
 
     for (var a : args)
       {
-        if (getApplicationArgs)
+        if (getApplicationArgs || _backend.takesApplicationArgs() && (_readStdin || _main != null || _executeCode != null))
           {
             applicationArgs.add(a);
+          }
+        else if (nextIsCode)
+          {
+            executeCode(a);
+            nextIsCode = false;
           }
         else if (!parseGenericArg(a))
           {
@@ -823,9 +928,12 @@ public class Fuzion extends Tool
             if (a.equals("-"))
               {
                 _readStdin = true;
-                getApplicationArgs = _backend.takesApplicationArgs() || _backend == Backend.undefined;
               }
-            else if ((_backend.takesApplicationArgs() || _backend == Backend.undefined) && a.equals("--"))
+            else if (parseExecute(a))
+              {
+                nextIsCode = true;
+              }
+            else if (_backend.takesApplicationArgs() && a.equals("--"))
               {
                 /* stop argument parsing */
                 getApplicationArgs = true;
@@ -862,15 +970,15 @@ public class Fuzion extends Tool
             else
               {
                 _main = a;
-                getApplicationArgs = _backend.takesApplicationArgs() || _backend == Backend.undefined;
               }
           }
       }
+    checkMissingCode(nextIsCode);
     if (_backend == Backend.undefined)
       {
         _backend = Backend.jvm;
       }
-    if (_backend.needsMain() && _main == null && !_readStdin)
+    if (_backend.needsMain() && _main == null && !_readStdin && _executeCode == null)
       {
         if (applicationArgs.size() >= 1)
           {
@@ -883,17 +991,24 @@ public class Fuzion extends Tool
             fatal("missing main feature name in command line args");
           }
       }
-    if (!_backend.needsMain() && _main != null)
+    if (_backend.needsMain())
       {
-        fatal("no main feature '" + _main + "' may be given for backend '" + _backend + "'");
+        checkExactlyOneInputSource(_main != null, "main feature name or source file");
       }
-    if (!_backend.needsMain() && _readStdin)
+    else
       {
-        fatal("no '-' to read from stdin may be given for backend '" + _backend + "'");
-      }
-    if (_main != null && _readStdin)
-      {
-        fatal("cannot process main feature name together with stdin input");
+        if (_main != null)
+          {
+            fatal("no main feature '" + _main + "' may be given for backend '" + _backend + "'");
+          }
+        if (_readStdin)
+          {
+            fatal("no '-' to read from stdin may be given for backend '" + _backend + "'");
+          }
+        if (_executeCode != null)
+          {
+            fatal("no '-e/-execute <code>' argument may be given for backend '" + _backend + "'");
+          }
       }
     if (_fuzionHome == null)
       {
@@ -913,6 +1028,7 @@ public class Fuzion extends Tool
                                           _enableUnsafeIntrinsics,
                                           _sourceDirs,
                                           _readStdin,
+                                          _executeCode,
                                           _main,
                                           _backend.needsSources());
         if (_backend == Backend.c)

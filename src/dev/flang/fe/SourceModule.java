@@ -96,24 +96,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
-   * If input comes from a specific file, this give the file.  May be
-   * SourceFile.STDIN.
-   */
-  private final Path _inputFile;
-
-
-  /**
    * The universe is the implicit root of all features that
    * themselves do not have their own root.
    */
   final Feature _universe;
-
-
-  /**
-   * If a main feature is defined for this module, this gives its name. Should
-   * be null if a specific _inputFile defines the main feature.
-   */
-  private String _defaultMain;
 
 
   /**
@@ -142,14 +128,12 @@ public class SourceModule extends Module implements SrcModule, MirModule
   /**
    * Create SourceModule for given options and sourceDirs.
    */
-  SourceModule(FrontEndOptions options, SourceDir[] sourceDirs, Path inputFile, String defaultMain, LibraryModule[] dependsOn, Feature universe)
+  SourceModule(FrontEndOptions options, SourceDir[] sourceDirs, LibraryModule[] dependsOn, Feature universe)
   {
     super(dependsOn);
 
     _options = options;
     _sourceDirs = sourceDirs;
-    _inputFile = inputFile;
-    _defaultMain = defaultMain;
     _universe = universe;
   }
 
@@ -168,6 +152,19 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
+   * Get the path of main input file (when compiling from stdin or just one
+   * single source file).
+   */
+  private Path inputFile()
+  {
+    return
+      _options._readStdin           ? SourceFile.STDIN              :
+      _options._inputFile != null   ? _options._inputFile           :
+      _options._executeCode != null ? SourceFile.COMMAND_LINE_DUMMY : null;
+  }
+
+
+  /**
    * If source comes from stdin or an explicit input file, parse this and
    * extract the main feature.  Otherwise, return the default main.
    *
@@ -175,11 +172,12 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   String parseMain()
   {
-    var res = _defaultMain;
-    var p = _inputFile;
-    if (p != null)
+    var res = _options._main;
+    var p = inputFile();
+    var ec = _options._executeCode;
+    if (p != null || ec != null)
       {
-        var expr = parseFile(p);
+        var expr = parseFile(p, ec);
         ((AbstractBlock) _universe.code())._expressions.addAll(expr);
         for (var s : expr)
           {
@@ -204,10 +202,13 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @return the features found in source file p, may be empty, never null.
    */
-  List<Expr> parseFile(Path p)
+  List<Expr> parseFile(Path p, byte[] ec)
   {
-    _options.verbosePrintln(2, " - " + p);
-    return new Parser(p).unit();
+    if (ec != null)
+      {
+        _options.verbosePrintln(2, " - " + p);
+      }
+    return new Parser(p, ec).unit();
   }
 
 
@@ -220,7 +221,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   List<Feature> parseAndGetFeatures(Path p)
   {
-    var exprs = parseFile(p);
+    var exprs = parseFile(p, null);
     var result = new List<Feature>();
     for (var s : exprs)
       {
@@ -350,7 +351,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   /**
    * Check if p denotes a file that should be read implicitly as source code,
    * i.e., its name ends with ".fz", it is a readable file and it is not the
-   * same as _inputFile (which will be read explicitly).
+   * same as inputFile() (which will be read explicitly).
    */
   boolean isValidSourceFile(Path p)
   {
@@ -361,10 +362,11 @@ Fuzion source files may have an arbitrary file name ending with the file name ex
     */
     try
       {
+        var inputFile = inputFile();
         return p.getFileName().toString().endsWith(".fz") &&
           !Files.isDirectory(p) &&
           Files.isReadable(p) &&
-          (_inputFile == null || _inputFile == SourceFile.STDIN || !Files.isSameFile(_inputFile, p));
+          (inputFile == null || inputFile == SourceFile.STDIN || !Files.isSameFile(inputFile, p));
       }
     catch (IOException e)
       {

@@ -113,6 +113,14 @@ public class SourceFile extends ANY
   public static Path STDIN = Path.of("-");
 
 
+  /**
+   * Dummy value for fileName argument for data from command line. Unlike STDIN,
+   * no data can be read from this, it must not be passed to the constructor of
+   * SourceFile without providing a `byte[]` or file data!
+   */
+  public static Path COMMAND_LINE_DUMMY = Path.of("command line");
+
+
   /*-----------------------------  statics  -----------------------------*/
 
 
@@ -165,8 +173,11 @@ public class SourceFile extends ANY
 
 
   /**
-   * Load UTF-8 encoded source code from given file and reset the position to
-   * the beginning of this file.
+   * If sf is null, Load UTF-8 encoded source code from given file. Otherwise,
+   * load UTF-8 encoded source code sf as if it came from a file with the given
+   * Path.
+   *
+   * Reset the position to the beginning of this file.
    */
   public SourceFile(Path fileName, byte[] sf)
   {
@@ -174,6 +185,21 @@ public class SourceFile extends ANY
       (fileName != null);
 
     _fileName = fileName;
+    if (sf == null)
+      {
+        try
+          {
+            sf = fileName == STDIN ? System.in.readAllBytes()
+                                   : Files    .readAllBytes(fileName);
+          }
+        catch (IOException e)
+          {
+            Errors.error(new SourcePosition(this, 0),
+                         "I/O Error: " + e.getMessage(),
+                         "");
+            sf = new byte[0];
+          }
+      }
     _bytes = sf;
     _pos = 0;
     _cur = BAD_CODEPOINT;
@@ -187,28 +213,7 @@ public class SourceFile extends ANY
    */
   public SourceFile(Path fileName)
   {
-    if (PRECONDITIONS) require
-      (fileName != null);
-
-    _fileName = fileName;
-    byte[] sf;
-    try
-      {
-        sf = fileName == STDIN ? System.in.readAllBytes()
-                               : Files    .readAllBytes(fileName);
-      }
-    catch (IOException e)
-      {
-        Errors.error(new SourcePosition(this, 0),
-                     "I/O Error: " + e.getMessage(),
-                     "");
-        sf = new byte[0];
-      }
-
-    _bytes = sf;
-    _pos = 0;
-    _cur = BAD_CODEPOINT;
-    _size = 0;
+    this(fileName, null);
   }
 
 
