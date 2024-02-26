@@ -40,9 +40,8 @@ compile_time_constants =>
   say a
   a := [(1, "hello")][0].values.1
   say a
-  # NYI currently yields: java.lang.VerifyError: (class: fzC_universe, method: <clinit> signature: ()V) Stack size too large
-  # a := [[("hello", "world")]]
-  # say a
+  a := [[("hello", "world")]]
+  say a
   a := [(1, "world")][0].values.1
   say a
 
