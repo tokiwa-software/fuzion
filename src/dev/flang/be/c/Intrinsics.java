@@ -488,7 +488,16 @@ public class Intrinsics extends ANY
     )).ret());
     put("fuzion.sys.fileio.mapped_buffer_get", (c,cl,outer,in) -> A0.castTo("int8_t*").index(A1).ret());
     put("fuzion.sys.fileio.mapped_buffer_set", (c,cl,outer,in) -> A0.castTo("int8_t*").index(A1).assign(A2.castTo("int8_t")));
-    put("fuzion.sys.fileio.open_dir", (c,cl,outer,in) -> CExpr.call("opendir", new List<>(A0.castTo("char *"))).castTo("uintptr_t").ret());
+    put("fuzion.sys.fileio.open_dir", (c,cl,outer,in) ->
+      {
+        var filePointer = new CIdent("fp");
+        var openResults = new CIdent("open_results");
+        return CStmnt.seq(
+          errno.assign(new CIdent("0")),
+          CExpr.decl("fzT_1i64 *", openResults, A1.castTo("fzT_1i64 *")),
+          openResults.index(0).assign(CExpr.call("opendir", new List<>(A0.castTo("char *"))).castTo("uintptr_t")),
+          openResults.index(1).assign(errno.castTo("fzT_1i64")));
+      });
     put("fuzion.sys.fileio.read_dir", (c,cl,outer,in) ->
       {
         var dir = new CIdent("dir");
@@ -514,7 +523,6 @@ public class Intrinsics extends ANY
         );
       });
     put("fuzion.sys.fileio.close_dir", (c,cl,outer,in) -> CExpr.call("closedir", new List<>(A0.castTo("DIR *"))).ret());
-    put("fuzion.sys.is_null_pointer", (c,cl,outer,in) -> CExpr.eq(A0.castTo("void *"), new CIdent("NULL")).ret());
 
     put("fuzion.sys.fileio.flush"      , (c,cl,outer,in) ->
       CExpr.call("fflush", new List<>(A0.castTo("FILE *"))).ret());

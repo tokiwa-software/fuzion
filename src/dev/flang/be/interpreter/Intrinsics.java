@@ -621,11 +621,12 @@ public class Intrinsics extends ANY
         });
     putUnsafe("fuzion.sys.fileio.open_dir", (interpreter, innerClazz) -> args ->
         {
+          var open_results = (long[])args.get(2).arrayData()._array;
           try
             {
               var i = Files.walk(Paths.get(utf8ByteArrayDataToString(args.get(1))), 1).iterator();
               interface CloseableIterator<T> extends Iterator<T>, AutoCloseable {};
-              return new i64Value(_openStreams_.add(new CloseableIterator<Path>() {
+              open_results[0] = _openStreams_.add(new CloseableIterator<Path>() {
                 public void close() throws IOException
                 {
                   // do nothing :)
@@ -642,12 +643,14 @@ public class Intrinsics extends ANY
                 public void remove() {
                   i.remove();
                 }
-              }));
+              });
             }
           catch (IOException e)
             {
-              return new i64Value(-1);
+              open_results[1] = -1;
             }
+
+          return Value.EMPTY_VALUE;
         });
     putUnsafe("fuzion.sys.fileio.read_dir", (interpreter, innerClazz) -> args ->
         {
@@ -669,10 +672,6 @@ public class Intrinsics extends ANY
         {
           _openStreams_.remove(args.get(1).i64Value());
           return new i64Value(0);
-        });
-    put("fuzion.sys.is_null_pointer", (interpreter, innerClazz) -> args ->
-        {
-          return new i64Value(args.get(1).i64Value() == -1 ? 1 : 0);
         });
     put("fuzion.sys.fileio.mapped_buffer_get", (interpreter, innerClazz) -> args ->
         {

@@ -353,10 +353,29 @@ module fileio is
 
   # open the directory given by path
   #
-  # returns an integer that is intended to be used as an opaque reference
-  # to the opened directory.
+  # accepts as arguments a path (processed by fuzion.sys.c_string) and a pointer to
+  # an array of two i64.
   #
-  module open_dir(path fuzion.sys.Pointer) i64 => intrinsic
+  # after calling, the array will contain an integer that is intended to be used as an
+  # opaque reference to the opened directory in its first field, and an integer that is
+  # not 0 in case of an error in its second field.
+  #
+  module open_dir(path fuzion.sys.Pointer, open_results fuzion.sys.Pointer) unit => intrinsic
+
+
+  # open the directory given by path
+  #
+  # returns an integer that is intended to be used as an opaque reference
+  # to the opened directory, or an error if one was encountered.
+  #
+  module open_dir(path String) outcome i64 =>
+    or := fuzion.sys.internal_array_init i64 2  # [file descriptor, error number]
+    open_dir (fuzion.sys.c_string path) or.data
+    open_results := or.as_array
+    if open_results[1] = i64 0
+      open_results[0]
+    else
+      error "error number: {open_results[1]}"
 
 
   # reads the next entry of the directory given by opaque integer reference

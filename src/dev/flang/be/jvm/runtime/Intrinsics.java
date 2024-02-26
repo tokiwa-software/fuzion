@@ -820,15 +820,18 @@ public class Intrinsics extends ANY
     ((ByteBuffer)buf).put((int) i, b);
   }
 
-  public static long fuzion_sys_fileio_open_dir(Object s)
+  public static void fuzion_sys_fileio_open_dir(Object s, Object res)
   {
     Runtime.unsafeIntrinsic();
+    if (CHECKS)
+      Runtime.ensure_not_frozen(res);
 
+    long[] open_results = (long[]) res;
     try
       {
         var i = Files.walk(Paths.get(Runtime.utf8ByteArrayDataToString((byte[]) s)), 1).iterator();
         interface CloseableIterator<T> extends Iterator<T>, AutoCloseable {};
-        return Runtime._openStreams_.add(new CloseableIterator<Path>() {
+        open_results[0] = Runtime._openStreams_.add(new CloseableIterator<Path>() {
           public void close() throws IOException
           {
             // do nothing :)
@@ -850,7 +853,7 @@ public class Intrinsics extends ANY
       }
     catch (IOException e)
       {
-        return -1;
+        open_results[1] = -1;
       }
   }
 
@@ -867,10 +870,6 @@ public class Intrinsics extends ANY
 
     Runtime._openStreams_.remove(fd);
     return 0;
-  }
-
-  public static long fuzion_sys_is_null_pointer(long fd) {
-    return (fd == -1) ? 1 : 0;
   }
 
   public static void fuzion_std_nano_sleep(long d)

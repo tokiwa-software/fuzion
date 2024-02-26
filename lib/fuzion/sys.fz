@@ -35,9 +35,3 @@ module sys is
   #
   module c_string (s String) =>
     (s + codepoint 0).utf8.as_array.internal_array.data
-
-
-  # Check if a given integer would be cast to the NULL pointer
-  # in the C backend, or if it is -1 in the Java backend.
-  #
-  module is_null_pointer (ptr i64) i64 => intrinsic
