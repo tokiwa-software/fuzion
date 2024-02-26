@@ -34,17 +34,17 @@ import dev.flang.util.Pair;
 
 import java.io.StringWriter;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import java.util.function.Supplier;
-
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.WeakHashMap;
 
 
@@ -732,6 +732,18 @@ public class Runtime extends ANY
     return stacktrace.toString();
   }
 
+  public static byte[] fuzion_sys_fileio_read_dir(long fd)
+  {
+    var i = (Iterator<Path>)_openStreams_.get(fd);
+    try
+      {
+        return stringToUtf8ByteArray(i.next().getFileName().toString());
+      }
+    catch (NoSuchElementException e)
+      {
+        return stringToUtf8ByteArray("NoSuchElementException encountered!");
+      }
+  }
 
   public static byte[] fuzion_sys_env_vars_get0(Object d)
   {

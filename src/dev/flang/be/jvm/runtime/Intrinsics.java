@@ -42,10 +42,12 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
@@ -816,6 +818,59 @@ public class Intrinsics extends ANY
   {
     Runtime.unsafeIntrinsic();
     ((ByteBuffer)buf).put((int) i, b);
+  }
+
+  public static long fuzion_sys_fileio_open_dir(Object s)
+  {
+    Runtime.unsafeIntrinsic();
+
+    try
+      {
+        var i = Files.walk(Paths.get(Runtime.utf8ByteArrayDataToString((byte[]) s)), 1).iterator();
+        interface CloseableIterator<T> extends Iterator<T>, AutoCloseable {};
+        return Runtime._openStreams_.add(new CloseableIterator<Path>() {
+          public void close() throws IOException
+          {
+            // do nothing :)
+          }
+
+          public boolean hasNext() {
+            return i.hasNext();
+          }
+
+          public Path next() {
+            return i.next();
+          }
+
+          public void remove()
+          {
+            i.remove();
+          }
+        });
+      }
+    catch (IOException e)
+      {
+        return -1;
+      }
+  }
+
+  public static boolean fuzion_sys_fileio_read_dir_has_next(long fd)
+  {
+    Runtime.unsafeIntrinsic();
+
+    return ((Iterator<Path>)Runtime._openStreams_.get(fd)).hasNext();
+  }
+
+  public static long fuzion_sys_fileio_close_dir(long fd)
+  {
+    Runtime.unsafeIntrinsic();
+
+    Runtime._openStreams_.remove(fd);
+    return 0;
+  }
+
+  public static long fuzion_sys_is_null_pointer(long fd) {
+    return (fd == -1) ? 1 : 0;
   }
 
   public static void fuzion_std_nano_sleep(long d)
