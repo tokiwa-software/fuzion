@@ -105,7 +105,7 @@ public class Fuzion extends Tool
     {
       String usage()
       {
-        return "[-o=<file>] [-Xgc=(on|off)] [-Xdfa=(on|off)] [-CC=<c compiler>] [-CFlags=\"list of c compiler flags\"] [-XkeepGeneratedCode]";
+        return "[-o=<file>] [-Xgc=(on|off)] [-Xdfa=(on|off)] [-XkeepGeneratedCode=(on|off)] [-CC=<c compiler>] [-CFlags=\"list of c compiler flags\"]";
       }
       boolean handleOption(Fuzion f, String o)
       {
@@ -135,9 +135,9 @@ public class Fuzion extends Tool
             _cFlags_ = o.substring(8);
             result = true;
           }
-        else if (o.equals("-XkeepGeneratedCode"))
+        else if (o.startsWith("-XkeepGeneratedCode="))
           {
-            _keepGeneratedCode_ = true;
+            _keepGeneratedCode_ = parseOnOffArg(o);
             result = true;
           }
         return result;
