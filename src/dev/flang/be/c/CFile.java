@@ -86,6 +86,7 @@ public class CFile extends ANY
     try
       {
         tempFile = File.createTempFile("fuzion_"+ name + "_", ".c");
+        tempFile.deleteOnExit();
         _cout = new PrintWriter(Files.newBufferedWriter(tempFile.toPath(), StandardCharsets.UTF_8));
       }
     catch (IOException io)

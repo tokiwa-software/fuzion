@@ -30,6 +30,9 @@ import java.io.IOException;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
@@ -782,6 +785,10 @@ public class C extends ANY
           {
             Errors.error("C backend: C compiler failed",
                          "C compiler call '" + command.toString("", " ", "") + "' failed with exit code '" + p.exitValue() + "'");
+          }
+        else if (_options._keepGeneratedCode)
+          {
+            Files.copy(Path.of(cf.fileName()), Path.of(System.getProperty("user.dir"), name + ".c"), StandardCopyOption.REPLACE_EXISTING);
           }
       }
     catch (IOException | InterruptedException io)
