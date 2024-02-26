@@ -29,9 +29,6 @@ package dev.flang.be.interpreter;
 import java.util.Map;
 import java.util.TreeMap;
 
-// NYI: remove dependency!
-// NYI: remove dependency!
-
 import dev.flang.air.Clazz;
 import dev.flang.air.FeatureAndActuals;
 

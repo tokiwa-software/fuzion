@@ -89,12 +89,9 @@ sockets_test_server =>
   # For now use a different port for every test.
   port := u16 40000 + (protocol_num p) + (family_num f)
 
-  # NYI c tests fail
-  # no_out : io.Print_Handler is
-  #   print(s Any) => unit
 
-  # io.out no_out ()->
-  #   start_server f p port
-  #   unit
+  no_out : io.Print_Handler is
+    print(s Any) => unit
 
-  start_server f p port
+  (io.out no_out).go ()->
+    start_server f p port

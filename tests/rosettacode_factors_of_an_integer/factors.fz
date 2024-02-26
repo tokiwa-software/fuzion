@@ -64,12 +64,9 @@ factors is
     say("factors of $m: " +
         (1..m & x -> m %% x))
 
-  // NYI: better syntax
-  //
-  // factors(n i32) => (1..n).filter((x) => x %% 0)
-  // say factors(42)
+  factors(n i32) => (1..n).filter x->n%%x
+  say factors(42)
 
-  // NYI: also cool would be adding features to stdlib's i32
-  //
-  // i32 { factors => (1..outer).filter((x) => x %% 0) }
-  // say 42.factors
+  # add factors to stdlib's i32
+  i32.factors => (1..i32.this.val).filter x->i32.this.val%%x
+  say 42.factors
