@@ -1,0 +1,78 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test test_interval.fz
+#
+# -----------------------------------------------------------------------
+
+# This is a simple test that creates different intervals with from and
+# through being -3, 0, +3 or ∞ and steps +/-1/2/3 or 0.
+#
+test_interval is
+
+  test(x interval i32) =>
+    say "$x{" "*(10 - ($x).codepoint_length)}{
+        for
+          s := "", s+" "+(if x.contains i then "$i" else " "*($i).byte_length)
+          i in -4.. +4
+        else
+          s
+      } contained in size {
+        if x.through.exists then
+          $(x.size)
+        else
+          "∞"
+      } IN {
+        for
+          s := "", s+" "+i;
+          i in x;
+          limit in 0..9  # make sure we do not run forever in case of open interval
+        else
+          s
+      }"
+
+  test -3..3
+  test -3..(-3)
+  test 0..0
+  test 3..3
+  test -3..3:1
+  test 3..(-3):(-1)
+  test -3..3:2
+  test 3..(-3):(-2)
+  test -3..3:3
+  test 3..(-3):(-3)
+  test (3..3:0)
+  test (0..0:0)
+  test -3..(-3):0
+  test -3..
+  test 0..
+  test 3..
+  test (3..):(-1)
+  test (-3..):2
+  test (3..):(-2)
+  test (-3..):3
+  test (3..):(-3)
+  test -3..∞
+  test 0..∞
+  test 3..∞
+  test (3..∞):(-1)
+  test (-3..∞):2
+  test (3..∞):(-2)
+  test (-3..∞):3
+  test (3..∞):(-3)
