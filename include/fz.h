@@ -142,8 +142,6 @@ int fzE_munmap(void * mapped_address, const int file_size);
  * results is unequality of +0 and -0 and equality of NaN unless undefined bits
  * differ, etc.
  *
- * NYI: CLEANUP #2122: Move impleementation to fz.c / fzlib.o or similar!
- *
  * @param f1, f2 two float values
  *
  * @return true iff f1 and f2 are represented in memory by the same bit patternsx.
