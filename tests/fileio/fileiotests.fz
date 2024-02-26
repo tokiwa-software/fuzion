@@ -33,8 +33,8 @@ fileiotests =>
 
   f := io.file
 
-  writer := f.write
-  reader := f.read
+  writer => f.write
+  reader => f.read
 
   exists(path String) bool =>
     match f.stat path true

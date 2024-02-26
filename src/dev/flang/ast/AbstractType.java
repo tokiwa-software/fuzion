@@ -1922,6 +1922,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
+  public boolean isEffect()
+  {
+    return isGenericArgument()
+      ? genericArgument().constraint().featureOfType().inheritsFrom(Types.resolved.f_effect)
+      : featureOfType().inheritsFrom(Types.resolved.f_effect);
+  }
+
+
 }
 
 /* end of file */

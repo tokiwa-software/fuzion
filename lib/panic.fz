@@ -87,5 +87,5 @@ public Panic_Handler ref is
   # removed and the result of do_panic should be returned instead).
   #
   public use(R type, code, def ()->R) =>
-    p := panic Panic_Handler.this unit
-    p.run code def
+    panic Panic_Handler.this unit
+      .run code def

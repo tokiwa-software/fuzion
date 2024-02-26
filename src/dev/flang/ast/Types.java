@@ -177,6 +177,7 @@ public class Types extends ANY
     public final AbstractFeature f_Types_get;
     public final AbstractFeature f_Lazy;
     public final AbstractFeature f_Unary;
+    public final AbstractFeature f_effect;
     public static interface CreateType
     {
       AbstractType type(String name);
@@ -234,6 +235,7 @@ public class Types extends ANY
       f_Types_get                  = f_Types.get(mod, "get");
       f_Lazy                       = universe.get(mod, LAZY_NAME);
       f_Unary                      = universe.get(mod, UNARY_NAME);
+      f_effect                     = universe.get(mod, "effect", 1);
       resolved = this;
       ((ArtificialBuiltInType) t_ADDRESS  ).resolveArtificialType(universe.get(mod, FuzionConstants.ANY_NAME));
       ((ArtificialBuiltInType) t_UNDEFINED).resolveArtificialType(universe);

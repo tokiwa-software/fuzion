@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 
 
 /**
@@ -270,6 +271,10 @@ public abstract class AbstractAssign extends Expr
 
         if (CHECKS) check
           (res._module.lookupFeature(this._target.type().featureOfType(), f.featureName(), f) == f || Errors.any());
+      }
+    if (_value.type().isEffect() && !f.featureName().isInternal() && !(f.outer().hasResultField() && f.outer().resultField().equals(f)))
+      {
+        AstErrors.mustNotStoreEffectInField(pos(), f, _value);
       }
   }
 

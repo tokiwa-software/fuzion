@@ -2097,6 +2097,12 @@ public class AstErrors extends ANY
       "To solve this, increase the visibility of " + s(f) + " to at least " + s(f.outer().visibility().featureVisibility()));
   }
 
+  public static void mustNotStoreEffectInField(SourcePosition pos, AbstractFeature f, Expr _value)
+  {
+    error(pos, "Effect must not be stored in a field.",
+      "To solve this, install the effect once then call <effect>." + skw("env") + " whereever you want to use the effect.");
+  }
+
 }
 
 /* end of file */
