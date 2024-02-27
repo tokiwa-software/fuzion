@@ -731,7 +731,14 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                                       selfType(),
                                       FuzionConstants.TYPE_FEATURE_THIS_TYPE,
                                       Contract.EMPTY_CONTRACT,
-                                      Impl.TYPE_PARAMETER);
+                                      Impl.TYPE_PARAMETER)
+              {
+                @Override
+                public boolean isTypeFeaturesThisType()
+                {
+                  return true;
+                }
+              };
             var typeArgs = new List<AbstractFeature>(typeArg);
             for (var t : typeArguments())
               {
