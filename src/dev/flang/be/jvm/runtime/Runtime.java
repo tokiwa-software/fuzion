@@ -734,6 +734,8 @@ public class Runtime extends ANY
 
   public static byte[] fuzion_sys_fileio_read_dir(long fd)
   {
+    unsafeIntrinsic();
+
     var i = (Iterator<Path>)_openStreams_.get(fd);
     try
       {
