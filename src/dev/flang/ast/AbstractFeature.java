@@ -278,11 +278,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public String qualifiedName()
   {
-    var n = featureName().baseName();
     var tfo = state().atLeast(State.FINDING_DECLARATIONS) && outer() != null && outer().isTypeFeature() ? outer().typeFeatureOrigin() : null;
     return
       /* special type parameter used for this.type in type features */
-      n == FuzionConstants.TYPE_FEATURE_THIS_TYPE ? (tfo != null ? tfo.qualifiedName() : "null") + ".this.type" :
+      isTypeFeaturesThisType() ? (tfo != null ? tfo.qualifiedName() : "null") + ".this.type" :
 
       /* type feature: use original name and add ".type": */
       isTypeFeature()             &&
@@ -588,11 +587,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public boolean isTypeFeaturesThisType()
   {
-    // NYI: CLEANUP: #706: Replace string operation by a flag marking this features as a 'THIS_TYPE' type parameter
-    return
-      isTypeParameter() &&
-      outer().isTypeFeature() &&
-      featureName().baseName().equals(FuzionConstants.TYPE_FEATURE_THIS_TYPE);
+    return outer() != null
+      && outer().isTypeFeature()
+      && outer().typeArguments().get(0) == this;
   }
 
 
@@ -730,7 +727,14 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                                       selfType(),
                                       FuzionConstants.TYPE_FEATURE_THIS_TYPE,
                                       Contract.EMPTY_CONTRACT,
-                                      Impl.TYPE_PARAMETER);
+                                      Impl.TYPE_PARAMETER)
+              {
+                @Override
+                public boolean isTypeFeaturesThisType()
+                {
+                  return true;
+                }
+              };
             var typeArgs = new List<AbstractFeature>(typeArg);
             for (var t : typeArguments())
               {
