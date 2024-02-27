@@ -286,10 +286,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
       /* type feature: use original name and add ".type": */
       isTypeFeature()             &&
-      typeFeatureOrigin() != null                 ? typeFeatureOrigin().qualifiedName() + ".type" :
-
-      /* NYI: remove when possible: typeFeatureOrigin() is currently null when loaded from library, so we treat these manually: */
-      isTypeFeature()                             ? qualifiedName0().replaceAll("." + FuzionConstants.TYPE_NAME, "") + ".type"
+      typeFeatureOrigin() != null                 ? typeFeatureOrigin().qualifiedName() + ".type"
 
       /* a normal feature name */
                                                   : qualifiedName0();
@@ -582,8 +579,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public boolean isTypeFeature()
   {
-    // NYI: CLEANUP: Replace string operation by a flag marking this features as a type feature
-    return featureName().baseName().endsWith(FuzionConstants.TYPE_NAME) && !isOuterRef();
+    return _typeFeatureOrigin != null;
   }
 
 
