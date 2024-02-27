@@ -80,6 +80,31 @@ int fzE_unsetenv(const char *name){
 }
 
 
+// NYI
+void fzE_opendir(const char *pathname, int64_t * result) {
+  result[0] = 0;
+  result[1] = -1;
+}
+
+
+// NYI
+char * fzE_readdir(intptr_t * dir) {
+  return NULL;
+}
+
+
+// NYI
+int fzE_read_dir_has_next(intptr_t * dir) {
+  return 1;
+}
+
+
+// NYI
+int fzE_closedir(intptr_t * dir) {
+  return -1;
+}
+
+
 // 0 = blocking
 // 1 = none_blocking
 int fzE_set_blocking(int sockfd, int blocking)

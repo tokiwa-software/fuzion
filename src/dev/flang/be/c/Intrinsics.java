@@ -488,41 +488,26 @@ public class Intrinsics extends ANY
     )).ret());
     put("fuzion.sys.fileio.mapped_buffer_get", (c,cl,outer,in) -> A0.castTo("int8_t*").index(A1).ret());
     put("fuzion.sys.fileio.mapped_buffer_set", (c,cl,outer,in) -> A0.castTo("int8_t*").index(A1).assign(A2.castTo("int8_t")));
-    put("fuzion.sys.fileio.open_dir", (c,cl,outer,in) ->
-      {
-        var filePointer = new CIdent("fp");
-        var openResults = new CIdent("open_results");
-        return CStmnt.seq(
-          errno.assign(new CIdent("0")),
-          CExpr.decl("fzT_1i64 *", openResults, A1.castTo("fzT_1i64 *")),
-          openResults.index(0).assign(CExpr.call("opendir", new List<>(A0.castTo("char *"))).castTo("uintptr_t")),
-          openResults.index(1).assign(errno.castTo("fzT_1i64")));
-      });
+    put("fuzion.sys.fileio.open_dir", (c,cl,outer,in) -> CExpr.call("fzE_opendir", new List<CExpr>(
+      A0.castTo("char *"),
+      A1.castTo("int64_t *")
+    )).ret());
     put("fuzion.sys.fileio.read_dir", (c,cl,outer,in) ->
       {
-        var dir = new CIdent("dir");
         var d_name = new CIdent("d_name");
         var rc = c._fuir.clazzResultClazz(cl);
         return CStmnt.seq(
-          CStmnt.decl("struct dirent *", dir, CExpr.call("readdir", new List<>(A0.castTo("DIR *")))),
-          CStmnt.iff(dir.eq(new CIdent("NULL")), CStmnt.seq(
+          CStmnt.decl("char *", d_name, CExpr.call("fzE_readdir", new List<>(A0.castTo("intptr_t *")))),
+          CStmnt.iff(d_name.eq(new CIdent("NULL")), CStmnt.seq(
             c.heapClone(c.constString("error in read_dir encountered NULL pointer".getBytes(StandardCharsets.UTF_8)), rc).ret())),
-          c.heapClone(c.constString(dir.deref().field(d_name), CExpr.call("strlen", new List<>(dir.deref().field(d_name))).castTo("int")), rc).ret()
+          c.heapClone(c.constString(d_name, CExpr.call("strlen", new List<>(d_name)).castTo("int")), rc).ret()
         );
       });
-    put("fuzion.sys.fileio.read_dir_has_next", (c,cl,outer,in) ->
-      {
-        var dir = new CIdent("dir");
-        var pos = new CIdent("pos");
-        return CStmnt.seq(
-          CExpr.decl("long", pos, CExpr.call("telldir", new List<>(A0.castTo("DIR *")))),
-          CExpr.decl("struct dirent *", dir, CExpr.call("readdir", new List<>(A0.castTo("DIR *")))),
-          CExpr.call("seekdir", new List<>(A0.castTo("DIR *"), pos)),
-          CStmnt.iff(dir.eq(new CIdent("NULL")), c._names.FZ_FALSE.ret()),
-          c._names.FZ_TRUE.ret()
-        );
-      });
-    put("fuzion.sys.fileio.close_dir", (c,cl,outer,in) -> CExpr.call("closedir", new List<>(A0.castTo("DIR *"))).ret());
+    put("fuzion.sys.fileio.read_dir_has_next", (c,cl,outer,in) -> {
+      return CStmnt.iff(CExpr.call("fzE_read_dir_has_next", new List<>(A0.castTo("intptr_t *"))), c._names.FZ_FALSE.ret(),
+        c._names.FZ_TRUE.ret());
+    });
+    put("fuzion.sys.fileio.close_dir", (c,cl,outer,in) -> CExpr.call("fzE_closedir", new List<>(A0.castTo("intptr_t *"))).ret());
 
     put("fuzion.sys.fileio.flush"      , (c,cl,outer,in) ->
       CExpr.call("fflush", new List<>(A0.castTo("FILE *"))).ret());
