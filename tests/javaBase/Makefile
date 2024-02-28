@@ -24,5 +24,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = javaHello
-FUZION_OPTIONS = -unsafeIntrinsics=on -modules=java.base
+FUZION_OPTIONS = -modules=java.base
 include ../simple.mk
