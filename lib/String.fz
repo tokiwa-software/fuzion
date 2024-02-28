@@ -610,6 +610,15 @@ public String ref : property.equatable, property.hashable, property.orderable is
     pad_center " " n
 
 
+  # Helper for pad, pad_left and pad_right to determine minimum number of copies
+  # of `p` needed to pad String.this to length >= n.
+  #
+  private pad_count(p String, n i32) =>
+    pl := p.codepoint_length
+    add_cps := max 0 n-codepoint_length
+    (add_cps + pl - 1) / pl
+
+
   # pad this string at the end with `p` such that its `codepoint_length` is at least `n`.
   #
   public pad(p String, n i32)
@@ -620,8 +629,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
     debug: result.codepoint_length >= n
     debug: ((result.codepoint_length >= n+p.codepoint_length): result = String.this)
   =>
-    pl := p.codepoint_length
-    String.this + p*(max 0 (n-codepoint_length+pl-1)/pl)
+    String.this + p * (pad_count p n)
 
 
   # pad this string at the beginning with `p` such that its `codepoint_length` is at least `n`.
@@ -634,8 +642,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
     debug: result.codepoint_length >= n
     debug: ((result.codepoint_length >= n+p.codepoint_length): result = String.this)
   =>
-    pl := p.codepoint_length
-    p*(max 0 (n-codepoint_length+pl-1)/pl) + String.this
+    p * (pad_count p n) + String.this
 
 
   # pad this string at the beginning and at the end with `p` such that its `codepoint_length` is at least `n`.
@@ -648,8 +655,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
     debug: result.codepoint_length >= n
     debug: ((result.codepoint_length >= n+p.codepoint_length): result = String.this)
   =>
-    pl := p.codepoint_length
-    pn := max 0 (n-codepoint_length+pl-1)/pl
+    pn := pad_count p n
     l := pn/2
     r := pn-l
     p*l + String.this + p*r
