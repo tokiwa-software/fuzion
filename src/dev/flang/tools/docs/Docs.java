@@ -85,6 +85,7 @@ public class Docs
     /* enableUnsafeIntrinsics  */ false,
     /* sourceDirs              */ null,
     /* readStdin               */ true,
+    /* executeCode             */ null,
     /* main                    */ null,
     /* loadSources             */ true);
 
