@@ -24,4 +24,4 @@
 a option String =>
   mutate.go ()->
     ref : String
-      utf8 => (list u8).type.empty
+      utf8 => (list u8).empty

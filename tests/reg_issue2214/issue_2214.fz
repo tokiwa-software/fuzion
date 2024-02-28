@@ -60,7 +60,7 @@ scenario2 =>
         ap := if (a.has i) a  else a ∪ (((i..n):i)
                                           .as_stream
                                           .issue_2214_stream_map_broken (x -> e bitset := nil; e.put x)
-                                          .fold bitset.type.union)
+                                          .fold bitset.union)
         s + (if (i < n) sieve i+1 ap else "")
       sieve 2 nil
 
@@ -90,7 +90,7 @@ scenario3 =>
         s  := if (a.has i) "" else "$i ";
         ap := if (a.has i) a  else a ∪ (((i..n):i)
                                           .issue_2214_seq_map_broken (x -> e bitset := nil; e.put x)
-                                          .fold bitset.type.union)
+                                          .fold bitset.union)
         s + (if (i < n) sieve i+1 ap else "")
       sieve 2 nil
 

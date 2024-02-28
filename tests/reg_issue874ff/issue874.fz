@@ -77,9 +77,9 @@ test_this3 is
 
     to_u32_loop =>
       for
-        x := num0.this, x.minus num0.this.type.one
+        x := num0.this, x.minus num0.this.one
         u := u32 0, u+1
-      while num0.this.type.zero.lessThan x
+      while num0.this.zero.lessThan x
 
     redef as_string => "num0.this {to_u32_loop} 'as_string'"
 
@@ -106,9 +106,9 @@ test_this4 is
 
     to_u32_loop =>
       for
-        x := num0.this, x.minus num0.this.type.one
+        x := num0.this, x.minus num0.this.one
         u := u32 0, u+1
-      while num0.this.type.zero.lessThan x
+      while num0.this.zero.lessThan x
       else
         u
 

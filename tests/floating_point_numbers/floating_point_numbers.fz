@@ -165,60 +165,60 @@ floating_point_numbers is
 
 
   # cast_to_f32, 0, -∞, ∞
-  chck ((u32 0x_8000_0000).cast_to_f32 = (-f32.type.zero))             "cast_to_f32 works, bit representation for 0 is correct"
-  chck ((u32 0x_FF80_0000).cast_to_f32 = (f32.type.negative_infinity)) "cast_to_f32 works, bit representation for -∞ is correct"
-  chck ((u32 0x_7F80_0000).cast_to_f32 = (f32.type.positive_infinity)) "cast_to_f32 works, bit representation for ∞ is correct"
+  chck ((u32 0x_8000_0000).cast_to_f32 = (-f32.zero))             "cast_to_f32 works, bit representation for 0 is correct"
+  chck ((u32 0x_FF80_0000).cast_to_f32 = (f32.negative_infinity)) "cast_to_f32 works, bit representation for -∞ is correct"
+  chck ((u32 0x_7F80_0000).cast_to_f32 = (f32.positive_infinity)) "cast_to_f32 works, bit representation for ∞ is correct"
 
   # cast_to_u32
-  chck ((-f32.type.zero).cast_to_u32 = u32 0x_8000_0000)                       "cast_to_u32 works for -0"
-  chck ((f32.type.negative_infinity).cast_to_u32 = u32 0x_FF80_0000)       "cast_to_u32 works for -∞"
-  chck ((f32.type.positive_infinity).cast_to_u32 = u32 0x_7F80_0000)       "cast_to_u32 works for ∞"
+  chck ((-f32.zero).cast_to_u32 = u32 0x_8000_0000)                       "cast_to_u32 works for -0"
+  chck ((f32.negative_infinity).cast_to_u32 = u32 0x_FF80_0000)       "cast_to_u32 works for -∞"
+  chck ((f32.positive_infinity).cast_to_u32 = u32 0x_7F80_0000)       "cast_to_u32 works for ∞"
 
   # cast_to_f64, 0, -∞, ∞
-  chck ((u64 0x_8000_0000_0000_0000).cast_to_f64 = (-f64.type.zero))             "cast_to_f64 works, bit representation for 0 is correct"
-  chck ((u64 0x_FFF0_0000_0000_0000).cast_to_f64 = (f64.type.negative_infinity)) "cast_to_f64 works, bit representation for -∞ is correct"
-  chck ((u64 0x_7FF0_0000_0000_0000).cast_to_f64 = (f64.type.positive_infinity)) "cast_to_f64 works, bit representation for ∞ is correct"
+  chck ((u64 0x_8000_0000_0000_0000).cast_to_f64 = (-f64.zero))             "cast_to_f64 works, bit representation for 0 is correct"
+  chck ((u64 0x_FFF0_0000_0000_0000).cast_to_f64 = (f64.negative_infinity)) "cast_to_f64 works, bit representation for -∞ is correct"
+  chck ((u64 0x_7FF0_0000_0000_0000).cast_to_f64 = (f64.positive_infinity)) "cast_to_f64 works, bit representation for ∞ is correct"
 
   # cast_to_u64
-  chck ((-f64.type.zero).cast_to_u64 = u64 0x_8000_0000_0000_0000)                   "cast_to_u64 works for -0"
-  chck ((f64.type.negative_infinity).cast_to_u64 = u64 0x_FFF0_0000_0000_0000)       "cast_to_u64 works for -∞"
-  chck ((f64.type.positive_infinity).cast_to_u64 = u64 0x_7FF0_0000_0000_0000)       "cast_to_u64 works for ∞"
+  chck ((-f64.zero).cast_to_u64 = u64 0x_8000_0000_0000_0000)                   "cast_to_u64 works for -0"
+  chck ((f64.negative_infinity).cast_to_u64 = u64 0x_FFF0_0000_0000_0000)       "cast_to_u64 works for -∞"
+  chck ((f64.positive_infinity).cast_to_u64 = u64 0x_7FF0_0000_0000_0000)       "cast_to_u64 works for ∞"
 
   # min_exp, max_exp
-  chck (f32.type.min_exp = -126)                                         "f32: min_exp is correct"
-  chck (f32.type.max_exp = 127)                                          "f32: max_exp is correct"
-  chck (f64.type.min_exp = -1022)                                        "f64: min_exp is correct"
-  chck (f64.type.max_exp = 1023)                                         "f64: max_exp is correct"
+  chck (f32.min_exp = -126)                                         "f32: min_exp is correct"
+  chck (f32.max_exp = 127)                                          "f32: max_exp is correct"
+  chck (f64.min_exp = -1022)                                        "f64: min_exp is correct"
+  chck (f64.max_exp = 1023)                                         "f64: max_exp is correct"
 
   # min_positive, max
-  chck (f32.type.min_positive = f32 0x1P-126)                                "f32: min_positive is correct"
-  chck (f32.type.max = (f32 0x1P127 * (f32 2.0 - f32 0x1P-23)))              "f32: max is correct"
-  chck (f64.type.min_positive = f64 0x1P-1022)                               "f64: min_positive is correct"
-  chck (f64.type.max = (f64 0x1P1023 * (f64 2.0 - f64 0x1P-52)))             "f64: max is correct"
+  chck (f32.min_positive = f32 0x1P-126)                                "f32: min_positive is correct"
+  chck (f32.max = (f32 0x1P127 * (f32 2.0 - f32 0x1P-23)))              "f32: max is correct"
+  chck (f64.min_positive = f64 0x1P-1022)                               "f64: min_positive is correct"
+  chck (f64.max = (f64 0x1P1023 * (f64 2.0 - f64 0x1P-52)))             "f64: max is correct"
 
 
   # fits_in_i64
-  chck !f64.type.positive_infinity.fits_in_i64                                 "f64: ∞    not representable by i64"
-  chck !f64.type.negative_infinity.fits_in_i64                                 "f64: -∞   not representable by i64"
-  chck !f64.type.NaN.fits_in_i64                                               "f64: NaN  not representable by i64"
-  chck f64.type.zero.fits_in_i64                                               "f64: 0    is  representable by i64"
+  chck !f64.positive_infinity.fits_in_i64                                 "f64: ∞    not representable by i64"
+  chck !f64.negative_infinity.fits_in_i64                                 "f64: -∞   not representable by i64"
+  chck !f64.NaN.fits_in_i64                                               "f64: NaN  not representable by i64"
+  chck f64.zero.fits_in_i64                                               "f64: 0    is  representable by i64"
 
   # as_i64
-  chck (f64.type.π.as_i64 = i64 3)                                            "f64:  π  as_i64        =  3"
-  chck ((-f64.type.π).as_i64 = i64 -3)                                        "f64: -π  as_i64        = -3"
-  chck (f64.type.positive_infinity.as_i64_lax = i64.type.max)                 "f64:  ∞  as_i64_lax    = i64.type.max"
-  chck (f64.type.negative_infinity.as_i64_lax = i64.type.min)                 "f64: -∞  as_i64_lax    = i64.type.min"
-  chck (f64.type.NaN.as_i64_lax = i64 0)                                      "f64: NaN as_i64_lax    = 0"
+  chck (f64.π.as_i64 = i64 3)                                            "f64:  π  as_i64        =  3"
+  chck ((-f64.π).as_i64 = i64 -3)                                        "f64: -π  as_i64        = -3"
+  chck (f64.positive_infinity.as_i64_lax = i64.max)                 "f64:  ∞  as_i64_lax    = i64.max"
+  chck (f64.negative_infinity.as_i64_lax = i64.min)                 "f64: -∞  as_i64_lax    = i64.min"
+  chck (f64.NaN.as_i64_lax = i64 0)                                      "f64: NaN as_i64_lax    = 0"
 
   # as_f64
-  chck ((f32.type.π.as_f64.as_f32 = f32.type.π))                              "f32:  π  as_f64.as_f32 = f32.type.π"
-  chck (f32.type.positive_infinity.as_f64 = f64.type.positive_infinity)       "f32:  ∞  as_f64        = f64s.∞ "
-  chck (f64.type.is_NaN f32.type.NaN.as_f64)                                  "f32: NaN as_f64 is_NaN "
+  chck ((f32.π.as_f64.as_f32 = f32.π))                              "f32:  π  as_f64.as_f32 = f32.π"
+  chck (f32.positive_infinity.as_f64 = f64.positive_infinity)       "f32:  ∞  as_f64        = f64s.∞ "
+  chck (f64.is_NaN f32.NaN.as_f64)                                  "f32: NaN as_f64 is_NaN "
 
   # as_f32
-  chck (f64.type.π.as_f32 = f32.type.π)                                       "f64:  π  as_f32        = f32.type.π "
-  chck (f64.type.positive_infinity.as_f32 = f32.type.positive_infinity)       "f64:  ∞  as_f32        = f32s.∞ "
-  chck (f32.type.is_NaN f64.type.NaN.as_f32)                                  "f64: NaN as_f32 is_NaN "
+  chck (f64.π.as_f32 = f32.π)                                       "f64:  π  as_f32        = f32.π "
+  chck (f64.positive_infinity.as_f32 = f32.positive_infinity)       "f64:  ∞  as_f32        = f32s.∞ "
+  chck (f32.is_NaN f64.NaN.as_f32)                                  "f64: NaN as_f32 is_NaN "
 
 
   # f32.fract

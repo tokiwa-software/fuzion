@@ -26,4 +26,4 @@ a (T type : numeric T) is
     T.one
 
 ex2 is
-  say (a uint).type.one
+  say (a uint).one

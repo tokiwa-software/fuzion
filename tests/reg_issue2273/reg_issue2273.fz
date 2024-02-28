@@ -30,7 +30,7 @@ door : choice open closed is
     open   => "open"
     closed => "closed"
 
-d := (mutate.array door).type.new mutate 100 closed
+d := (mutate.array door).new mutate 100 closed
 for i in 0..99 do
   for j in i..99 do
     d[j] := d[j].toggle

@@ -49,7 +49,7 @@ public m =>
   module mod3 : choice priv_ce unit is // should flag an error priv_ce visibility more restrictive than mod3
   module mod4(T type : priv_ce) is // should flag an error priv_ce visibility more restrictive than mod4
   module mod5(arg array priv_ce) is // should flag an error priv_ce visibility more restrictive than mod5
-  module mod9 := (list priv_ce).type.empty // should flag an error priv_ce visibility more restrictive than mod9
+  module mod9 := (list priv_ce).empty // should flag an error priv_ce visibility more restrictive than mod9
 
   priv3 : Sequence a.mod is // should flag an error a.mod is not visible in this file
 

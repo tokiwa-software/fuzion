@@ -67,7 +67,7 @@ fileiotests =>
 
   match f.use (array u8) file io.file.mode.read ()->io.file.open.read
     bytes array u8 =>
-      filecontent := String.type.from_bytes bytes
+      filecontent := String.from_bytes bytes
       say "file content bytes: $bytes"
       say "file content is $filecontent"
     error =>

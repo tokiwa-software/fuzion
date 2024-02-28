@@ -28,9 +28,9 @@
 #
 test_equals =>
 
-  # compare two strings using string.type.equality directly
+  # compare two strings using string.equality directly
   #
-  eq1(a, b String) => String.type.equality a b
+  eq1(a, b String) => String.equality a b
 
   # compare two strings using equals without type inference for the type
   # parameter
@@ -150,4 +150,4 @@ test_equals_types is
     #
     fixed type.equality(a, b test_equals_types.colored_text) =>
       (test_equals_types.eq_color a b &&
-       String.type.equality       a b   )
+       String.equality       a b   )

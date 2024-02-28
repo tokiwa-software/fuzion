@@ -123,7 +123,7 @@ ex202 is
 
   # using map and fold
   sum := a.map x->x*x
-          .fold i32.type.sum
+          .fold i32.sum
   say "sum is $sum"
 
   # using a loop
@@ -154,13 +154,13 @@ ex204 is
     # bits is f in the following representation
     # seeeeeeeeeeeffffffffffffffffffffffffffffffffffffffffffffffffffff
     # where s = sign, e = exponent, f = fraction
-    fract_bits := f64.type.significand_bits.as_u64 - 1
+    fract_bits := f64.significand_bits.as_u64 - 1
     # fract_bits is
     # 0000000000000000000000000000000000000000000000000000000000110100
-    bias := (u64 2 ** (f64.type.exponent_bits.as_u64 - 1) - 1)
+    bias := (u64 2 ** (f64.exponent_bits.as_u64 - 1) - 1)
     # bias is
     # 0000000000000000000000000000000000000000000000000000001111111111
-    mask := u64 2 ** f64.type.exponent_bits.as_u64 - 1
+    mask := u64 2 ** f64.exponent_bits.as_u64 - 1
     # mask is
     # 0000000000000000000000000000000000000000000000000000011111111111
     # bits >> fract_bits will give us
@@ -287,9 +287,9 @@ scenario8 is
 
     to_u32_loop =>
       for
-        x := num0.this, x.minus num0.this.type.one
+        x := num0.this, x.minus num0.this.one
         u := u32 0, u+1
-      while num0.this.type.zero.lessThan x
+      while num0.this.zero.lessThan x
       else
         u
 
