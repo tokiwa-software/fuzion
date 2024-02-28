@@ -759,8 +759,6 @@ public class Call extends AbstractCall
    */
   private boolean loadCalledFeatureUnlessTargetVoid(Resolution res, AbstractFeature thiz)
   {
-    var targetVoid = false;
-
     if (PRECONDITIONS) require
       (thiz.isTypeParameter()   // NYI: type parameters apparently inherit ANY and are not resolved yet. Type parameters should not inherit anything and this special handling should go.
        ||
@@ -768,18 +766,8 @@ public class Call extends AbstractCall
        ? res.state(thiz.outer()).atLeast(State.RESOLVING_DECLARATIONS)
        : res.state(thiz)        .atLeast(State.RESOLVING_DECLARATIONS)));
 
+    var targetVoid = false;
     var actualsResolved = true;
-    if (_calledFeature == null)
-      {
-        if (CHECKS) check
-          (Errors.any() || _name != Errors.ERROR_STRING);
-
-        if (_name == Errors.ERROR_STRING)    // If call parsing failed, don't even try
-          {
-            setToErrorState();
-          }
-      }
-
     AbstractFeature targetFeature = null;
     if (_calledFeature == null)
       {
@@ -3020,7 +3008,10 @@ public class Call extends AbstractCall
   {
     ERROR = new Call(SourcePosition.builtIn, Errors.ERROR_STRING)
     {
-      { _type = Types.t_ERROR; }
+      {
+        _type = Types.t_ERROR;
+        _calledFeature = Types.f_ERROR;
+      }
       @Override
       Expr box(AbstractType frmlT)
       {
