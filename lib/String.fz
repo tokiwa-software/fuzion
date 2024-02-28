@@ -600,6 +600,8 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # pad this string at the beginning and at the end with spaces such that its `codepoint_length` is at least `n`.
   #
+  # In case the required number of codepoints to add is odd, the padding at the end will be longer.
+  #
   public pad_center(n i32)
   pre
     debug: n >= 0
@@ -646,6 +648,8 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
 
   # pad this string at the beginning and at the end with `p` such that its `codepoint_length` is at least `n`.
+  #
+  # In case the required number of copies of `p` is odd, the padding at the end will be longer.
   #
   public pad_center(p String, n i32)
   pre
