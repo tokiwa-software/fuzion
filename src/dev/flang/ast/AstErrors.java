@@ -1170,13 +1170,17 @@ public class AstErrors extends ANY
   {
     if (!any() || !errorInOuterFeatures(targetFeature))
       {
+        var msg = !candidatesHidden.isEmpty()
+          ? plural(candidatesHidden.size(), "Feature") + " not visible at call site"
+          : !candidatesArgCountMismatch.isEmpty()
+          ? "Different count of arguments needed when calling feature"
+          : "Could not find called feature";
         var solution1 = solutionDeclareReturnTypeIfResult(calledName.baseName(),
                                                           calledName.argCount());
         var solution2 = solutionWrongArgumentNumber(candidatesArgCountMismatch);
         var solution3 = solutionAccidentalFreeType(target);
         var solution4 = solutionHidden(candidatesHidden);
-        error(call.pos(),
-              "Could not find called feature",
+        error(call.pos(), msg,
               "Feature not found: " + sbn(calledName) + "\n" +
               "Target feature: " + s(targetFeature) + "\n" +
               "In call: " + s(call) + "\n" +

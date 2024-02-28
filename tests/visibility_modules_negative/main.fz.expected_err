@@ -8,7 +8,7 @@ in feature: 'a'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/main.fz:67:5: error 2: Could not find called feature
+--CURDIR--/main.fz:67:5: error 2: Feature not visible at call site
   b.mod_pub // should flag an error should not be callable
 ----^^^^^^^
 Feature not found: 'mod_pub' (no arguments)
