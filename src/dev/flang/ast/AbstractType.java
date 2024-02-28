@@ -81,17 +81,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * setOuter
-   *
-   * @param t
-   */
-  void setOuter(UnresolvedType t)
-  {
-    throw new Error("AbstractType.setOuter() should only be called on dev.flang.ast.Type");
-  }
-
-
-  /**
    * resolve this type. This is only needed for ast.Type, for fe.LibraryType
    * this is a NOP.
    *

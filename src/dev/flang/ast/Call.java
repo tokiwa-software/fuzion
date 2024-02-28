@@ -1321,37 +1321,6 @@ public class Call extends AbstractCall
 
 
   /**
-   * Check if this expression can also be parsed as a type and return that type. Otherwise,
-   * report an error (AstErrors.expectedActualTypeInCall).
-   *
-   * @param outer the outer feature containing this expression
-   *
-   * @param tp the type parameter this expression is assigned to
-   *
-   * @return the Type corresponding to this, Type.t_ERROR in case of an error.
-   */
-  AbstractType asType(Resolution res, AbstractFeature outer, AbstractFeature tp)
-  {
-    var g = _generics;
-    if (!_actuals.isEmpty())
-      {
-        g = new List<AbstractType>();
-        g.addAll(_generics);
-        for (var a : _actuals)
-          {
-            g.add(a.asType(res, outer, tp));
-          }
-      }
-    AbstractType result = new ParsedType(pos(), _name, g,
-                                         _target == null             ||
-                                         _target instanceof Universe ||
-                                         _target instanceof Current     ? null
-                                                                        : _target.asType(res, outer, tp));
-    return result.resolve(res, outer);
-  }
-
-
-  /**
    * Check if this call would need special handling of the argument count
    * in case the _calledFeature would be ff. This is the case for open generics,
    * "fun a.b.f" calls and implicit calls using f() for f returning Function value.

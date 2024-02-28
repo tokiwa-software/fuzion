@@ -1187,26 +1187,6 @@ public class AstErrors extends ANY
       }
   }
 
-  static void expectedActualTypeInCall(SourcePosition pos,
-                                       AbstractFeature typeParameter)
-  {
-    var calledFeature = typeParameter.outer();
-    error(pos,
-          "Expected actual type parameter in call",
-          "Call to " + s(calledFeature) + " expects type parameter " + s(typeParameter) + " at this position.\n" +
-          "To solve this, provide a type such as " + type("i32") + " or " + type(FuzionConstants.ANY_NAME) + " as an argument to this call.\n");
-  }
-
-  static void expectedTypeExpression(SourcePosition pos, Expr e)
-  {
-    error(pos,
-          "Expected type in 'xyz.type' expression",
-          "Expression of the form 'xyz.type' must use a type for 'xyz'\n" +
-          "Expression found: " + s(e) + "\n"+
-          "To solve this, provide a type such as " + type("i32") + " or " + type(FuzionConstants.ANY_NAME) + " instead of " + s(e) + ".\n");
-  }
-
-
   public static void ambiguousType(SourcePosition pos,
                                    String t,
                                    List<AbstractFeature> possibilities)
