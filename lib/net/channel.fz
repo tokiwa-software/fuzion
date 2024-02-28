@@ -69,11 +69,11 @@ is
     match desc
       d i64 =>
         l := (1..)
-          .reduce((list u8), (list u8).type.empty, ((r,_) ->
+          .reduce((list u8), (list u8).empty, ((r,_) ->
             match read buffer_size
               e error => abort r
               a array u8 => r ++ a))
-        String.type.from_bytes l
+        String.from_bytes l
       e error =>
         e
 
@@ -125,6 +125,6 @@ module channel(T type, desc outcome i64, auto_close bool) =>
 
 # short hand to get the currently installed channel of type T
 public channel(T type) =>
-  if !effect.type.is_installed (channel T)
+  if !effect.is_installed (channel T)
     channel T (error "not initialized") false effect_mode.default
   (channel T).env

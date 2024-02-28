@@ -66,8 +66,8 @@ module:public wrap_around : integer is
   public infix -° (other wrap_around.this) wrap_around.this => abstract
   public infix *° (other wrap_around.this) wrap_around.this => abstract
 
-  public is_min => wrap_around.this = wrap_around.this.type.min
-  public is_max => wrap_around.this = wrap_around.this.type.max
+  public is_min => wrap_around.this = wrap_around.this.min
+  public is_max => wrap_around.this = wrap_around.this.max
 
   # check if this type of wrap_around is bounded
   #
@@ -112,10 +112,10 @@ module:public wrap_around : integer is
 
 
   # saturating  operations
-  public redef prefix -^ => if wrapped_on_neg if wrap_around.this > wrap_around.this.type.zero then wrap_around.this.type.min else wrap_around.this.type.max else - wrap_around.this
-  public redef infix +^ (other wrap_around.this) => if overflow_on_add other then wrap_around.this.type.max else if underflow_on_add other then wrap_around.this.type.min else wrap_around.this + other
-  public redef infix -^ (other wrap_around.this) => if overflow_on_sub other then wrap_around.this.type.max else if underflow_on_sub other then wrap_around.this.type.min else wrap_around.this - other
-  public redef infix *^ (other wrap_around.this) => if overflow_on_mul other then wrap_around.this.type.max else if underflow_on_mul other then wrap_around.this.type.min else wrap_around.this * other
+  public redef prefix -^ => if wrapped_on_neg if wrap_around.this > wrap_around.this.zero then wrap_around.this.min else wrap_around.this.max else - wrap_around.this
+  public redef infix +^ (other wrap_around.this) => if overflow_on_add other then wrap_around.this.max else if underflow_on_add other then wrap_around.this.min else wrap_around.this + other
+  public redef infix -^ (other wrap_around.this) => if overflow_on_sub other then wrap_around.this.max else if underflow_on_sub other then wrap_around.this.min else wrap_around.this - other
+  public redef infix *^ (other wrap_around.this) => if overflow_on_mul other then wrap_around.this.max else if underflow_on_mul other then wrap_around.this.min else wrap_around.this * other
 
 
   # exponentiation for positive exponent
@@ -124,7 +124,7 @@ module:public wrap_around : integer is
   #
   public infix ** (other wrap_around.this) wrap_around.this
     pre
-      safety: (other ≥ wrap_around.this.type.zero)
+      safety: (other ≥ wrap_around.this.zero)
       debug: (!overflow_on_exp other)
   =>
     wrap_around.this **° other
@@ -136,13 +136,13 @@ module:public wrap_around : integer is
   #
   public infix **° (other wrap_around.this) wrap_around.this
     pre
-      safety: (other ≥ wrap_around.this.type.zero)
+      safety: (other ≥ wrap_around.this.zero)
   =>
-    if      (other = wrap_around.this.type.zero) wrap_around.this.type.one
-    else if (other = wrap_around.this.type.one ) wrap_around.this
+    if      (other = wrap_around.this.zero) wrap_around.this.one
+    else if (other = wrap_around.this.one ) wrap_around.this
     else
-      tmp := (wrap_around.this *° wrap_around.this) **° (other / wrap_around.this.type.two)
-      if other %% wrap_around.this.type.two
+      tmp := (wrap_around.this *° wrap_around.this) **° (other / wrap_around.this.two)
+      if other %% wrap_around.this.two
         tmp
       else
         tmp *° wrap_around.this
@@ -154,13 +154,13 @@ module:public wrap_around : integer is
   #
   public infix **? (other wrap_around.this) num_option wrap_around.this
     pre
-      safety: (other ≥ wrap_around.this.type.zero)
+      safety: (other ≥ wrap_around.this.zero)
   =>
-    if      (other = wrap_around.this.type.zero) wrap_around.this.type.one
-    else if (other = wrap_around.this.type.one ) wrap_around.this
+    if      (other = wrap_around.this.zero) wrap_around.this.one
+    else if (other = wrap_around.this.one ) wrap_around.this
     else
-      tmp := (wrap_around.this *? wrap_around.this) **? (other / wrap_around.this.type.two)
-      if other %% wrap_around.this.type.two
+      tmp := (wrap_around.this *? wrap_around.this) **? (other / wrap_around.this.two)
+      if other %% wrap_around.this.two
         tmp
       else
         tmp *? wrap_around.this
@@ -177,13 +177,13 @@ module:public wrap_around : integer is
   #
   public infix **^ (other wrap_around.this) wrap_around.this
     pre
-      safety: (other ≥ wrap_around.this.type.zero)
+      safety: (other ≥ wrap_around.this.zero)
   =>
     if overflow_on_exp other
-      if (wrap_around.this ≥ wrap_around.this.type.zero) || (other %% wrap_around.this.type.two)
-        wrap_around.this.type.max
+      if (wrap_around.this ≥ wrap_around.this.zero) || (other %% wrap_around.this.two)
+        wrap_around.this.max
       else
-        wrap_around.this.type.min
+        wrap_around.this.min
     else
       wrap_around.this ** other
 
@@ -192,7 +192,7 @@ module:public wrap_around : integer is
     pre
       is_bounded
   =>
-    wrap_around.this ^ wrap_around.this.type.all_bits_set
+    wrap_around.this ^ wrap_around.this.all_bits_set
 
 
   # count the number of 1 bits in the binary representation of this
@@ -203,9 +203,9 @@ module:public wrap_around : integer is
 
   # this integer as an array of bytes (little endian)
   public as_bytes array u8 =>
-    bs := wrap_around.this.type.byte_size
+    bs := wrap_around.this.byte_size
     array u8 bs (idx ->
-      shift wrap_around.this := wrap_around.this.type.from_u32 (bs.as_u32-idx.as_u32-1)*8
+      shift wrap_around.this := wrap_around.this.from_u32 (bs.as_u32-idx.as_u32-1)*8
       (wrap_around.this>>shift).low8bits)
 
 

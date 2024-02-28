@@ -190,6 +190,16 @@ public abstract class AbstractBlock extends Expr
   }
 
 
+  @Override
+  public AbstractType asUnresolvedType()
+  {
+    Expr resExpr = resultExpression();
+    return resExpr == null || _expressions.size() != 1
+      ? Types.resolved.t_unit
+      : resExpr.asUnresolvedType();
+  }
+
+
   /**
    * toString
    *

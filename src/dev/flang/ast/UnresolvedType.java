@@ -638,6 +638,105 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   /**
+   * resolve this type, i.e., find or create the corresponding instance of
+   * ResolvedType of this and all outer types and type arguments this depends on.
+   *
+   * @param res this is called during type resolution, res gives the resolution
+   * instance.
+   *
+   * @param feat the outer feature this type is declared in. Lookup of
+   * unqualified types will happen in this feature.
+   */
+  AbstractType tryResolve(Resolution res, AbstractFeature outerfeat)
+  {
+    if (PRECONDITIONS) require
+      (res != null,
+       outerfeat != null);
+
+    res.resolveDeclarations(outerfeat);
+
+    if (_resolved == null)
+      {
+        var of = outerfeat;
+        var o = _outer;
+        var inTypeFeature = false;
+        if (o instanceof UnresolvedType ut)
+          {
+            o = ut.tryResolve(res, of);
+            if (o == null || o == Types.t_ERROR)
+              {
+                return null;
+              }
+            var ot2 = o.isGenericArgument() ? o.genericArgument().constraint(res) // see tests/reg_issue1943 for examples
+                                            : o;
+            of = ot2.featureOfType();
+          }
+        else
+          {
+            inTypeFeature = of != originalOuterFeature(of);
+          }
+
+        var ot = outer();
+        if (ot != null && ot.isGenericArgument())
+          {
+            return null;
+          }
+
+
+        if (_resolved == null)
+          {
+            var traverseOuter = ot == null && _name != FuzionConstants.TYPE_FEATURE_THIS_TYPE;
+            var fo = res._module.lookupType(pos(), of, _name, traverseOuter, true);
+            if (_resolved == null && (fo == null || !fo._feature.isTypeParameter() && inTypeFeature))
+              { // if we are in a type feature, type lookup happens in the
+                // original feature, except for type parameters that we just
+                // checked in the type feature (of).
+                of = originalOuterFeature(of);
+                fo = res._module.lookupType(pos(), of, _name, traverseOuter, true);
+              }
+            if (_resolved == null)
+              {
+                if (fo == FeatureAndOuter.ERROR)
+                  {
+                    _resolved = Types.t_ERROR;
+                  }
+                else if(fo != null)
+                  {
+                    var f = fo._feature;
+                    var generics = generics();
+                    if (o == null && f.isTypeParameter())
+                      {
+                        if (!generics.isEmpty())
+                          {
+                            return null;
+                          }
+                        var gt = f.genericType();
+                        if (gt.isOpenGeneric() && !(outerfeat instanceof Feature off && off.isLastArgType(this)))
+                          {
+                            return null;
+                          }
+                        else
+                          {
+                            _resolved = gt;
+                          }
+                      }
+                    else
+                      {
+                        if (o == null && !fo._outer.isUniverse())
+                          {
+                            o = fo._outer.thisType(fo.isNextInnerFixed());
+                          }
+                        _resolved = finishTryResolve(res, outerfeat, this, this, f, generics, o, _refOrVal, _ignoreActualTypePars);
+                      }
+                  }
+              }
+          }
+      }
+    return _resolved;
+  }
+
+
+  /**
    * Perform the last steps of resolve() for a normal type (not a type
    * parameter).
    *
@@ -709,6 +808,80 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       f == Types.f_ERROR ? Types.t_ERROR
                          : ResolvedNormalType.create(generics,
                                                      unresolvedGenerics,
+                                                     o,
+                                                     f,
+                                                     refOrVal,
+                                                     false);
+  }
+
+
+  /**
+   * Perform the last steps of resolve() for a normal type (not a type
+   * parameter).
+   *
+   *  - if refOrVal is ThisType, set generics to the formal generics used as
+   *    actuals.
+   *
+   *  - otherwise, resolve the formal generics and check that their number
+   *    matches what is required
+   *
+   * Finally, create instance of ResolvedNormalType
+   *
+   * @param res The resolution instance
+   *
+   * @param outerfeat the feature that contains this type
+   *
+   * @param thiz the original, unresolved type. Used for error reporting.
+   *
+   * @param pos the position of this type, used for error reporting.
+   *
+   * @param f the features this type is built from
+   *
+   * @param generics the actual type parameters
+   *
+   * @param o the resolved outer type
+   *
+   * @param refOrVal Select the type variant: value, boxed, thisType
+   *
+   * @param ignoreActualTypePars if true no errors will be reported in case the
+   * number of actual type parameters does not match the formal type parameters.
+   *
+   * @return an instance of ResolvedNormalType representing the given type.
+   */
+  static ResolvedType finishTryResolve(Resolution res,
+                                    AbstractFeature outerfeat,
+                                    AbstractType thiz,
+                                    HasSourcePosition pos,
+                                    AbstractFeature f,
+                                    List<AbstractType> generics,
+                                    AbstractType o,
+                                    RefOrVal refOrVal,
+                                    boolean ignoreActualTypePars)
+  {
+    if (!ignoreActualTypePars)
+      {
+        if (refOrVal == RefOrVal.ThisType && generics.isEmpty())
+          {
+            generics = f.generics().asActuals();
+          }
+        else
+          {
+            if (!(generics instanceof FormalGenerics.AsActuals))
+            {
+              generics = generics.map(t -> t instanceof UnresolvedType ut ? ut.tryResolve(res, outerfeat) : t);
+            }
+            if (!f.generics().sizeMatches(generics) || generics.contains(null))
+              {
+                f = Types.f_ERROR;
+              }
+          }
+        generics.freeze();
+      }
+
+    return
+      f == Types.f_ERROR ? Types.t_ERROR
+                         : ResolvedNormalType.create(generics,
+                                                     new List<>(),
                                                      o,
                                                      f,
                                                      refOrVal,

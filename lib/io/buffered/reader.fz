@@ -128,7 +128,7 @@ public read_bytes(n i32) Sequence u8 ! reader =>
 
   mi.go ()->
 
-    res := (mutate.array u8).type.new mi
+    res := (mutate.array u8).new mi
 
     for n_read := 0, n_read + r
     while n_read < n
@@ -151,7 +151,7 @@ pre n >= 0
 =>
 
   take_valid_codepoints(a Sequence u8, max i32) =>
-    v := String.type.from_bytes a
+    v := String.from_bytes a
       .codepoints_and_errors
       .take_while x->
         match x
@@ -164,7 +164,7 @@ pre n >= 0
           error => exit 1
       .as_array
 
-    bytes_used := (v.map c->c.as_string.byte_length).fold i32.type.sum
+    bytes_used := (v.map c->c.as_string.byte_length).fold i32.sum
     reader.discard bytes_used
     v
 
@@ -183,7 +183,7 @@ pre n >= 0
     if is_eof && res.is_empty
       reader.raise (error "-- end of file --"); ""
     else
-      String.type.join res
+      String.join res
 
 
 # use the currently installed byte reader effect
@@ -198,7 +198,7 @@ public read_line String|io.end_of_file ! reader =>
     mi : mutate is
 
     mi.go String ()->
-      res := (mutate.array u8).type.new mi
+      res := (mutate.array u8).new mi
 
       while
         match reader.read
@@ -244,7 +244,7 @@ public read_fully array u8 ! reader =>
 # any trailing carriage returns (ASCII 13) from the resulting strings.
 #
 public read_lines array String ! reader =>
-  (String.type.from_bytes read_fully).split "\n"
+  (String.from_bytes read_fully).split "\n"
                                      .map s->
                                        s.ends_with "\r" ? TRUE  => s.substring 0 s.byte_length-1
                                                         | FALSE => s

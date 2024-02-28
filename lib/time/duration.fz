@@ -103,31 +103,31 @@ is
 public durations : units is
 
   # max value for a duration given in nanos
-  public max_duration_nanos   => u64.type.max
+  public max_duration_nanos   => u64.max
 
   # max value for a duration given in micros
-  public max_duration_micros  => u64.type.max / nanos_per_micro
+  public max_duration_micros  => u64.max / nanos_per_micro
 
   # max value for a duration given in millis
-  public max_duration_millis  => u64.type.max / nanos_per_milli
+  public max_duration_millis  => u64.max / nanos_per_milli
 
   # max value for a duration given in seconds
-  public max_duration_seconds => u64.type.max / nanos_per_second
+  public max_duration_seconds => u64.max / nanos_per_second
 
   # max value for a duration given in minutes
-  public max_duration_minutes => u64.type.max / nanos_per_minute
+  public max_duration_minutes => u64.max / nanos_per_minute
 
   # max value for a duration given in hours
-  public max_duration_hours   => u64.type.max / nanos_per_hour
+  public max_duration_hours   => u64.max / nanos_per_hour
 
   # max value for a duration given in days
-  public max_duration_days    => u64.type.max / nanos_per_day
+  public max_duration_days    => u64.max / nanos_per_day
 
   # max value for a duration given in weeks
-  public max_duration_weeks   => u64.type.max / nanos_per_week
+  public max_duration_weeks   => u64.max / nanos_per_week
 
   # max value for a duration given in years
-  public max_duration_years   => u64.type.max / nanos_per_year
+  public max_duration_years   => u64.max / nanos_per_year
 
 
   # create duration of n ns

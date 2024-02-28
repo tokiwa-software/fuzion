@@ -377,7 +377,7 @@ O(n log n).
       vs Sequence V)
   =>
     for
-      r := (container.ps_map PK V).type.empty, r.add k v
+      r := (container.ps_map PK V).empty, r.add k v
       k in ks
       v in vs
     else

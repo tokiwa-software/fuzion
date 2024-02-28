@@ -110,4 +110,4 @@ is
   #
   public type.union : Monoid bitset is
     redef infix ∙ (a, b bitset) => a ∪ b
-    redef e bitset => bitset.type.empty
+    redef e bitset => bitset.empty

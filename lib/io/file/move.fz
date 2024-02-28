@@ -65,7 +65,7 @@ public move(
      old_path String,
      # the new (relative or absolute) file name, using platform specific path separators
      new_path String) =>
-  move.type.install_default
+  move.install_default
   move.env.move old_path new_path
 
 # reference to the move operations that could take place

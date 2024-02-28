@@ -83,7 +83,7 @@ public read(ro Read_Handler) : simple_effect is
 # short-hand for accessing read effect in current environment
 #
 public read =>
-  read.type.install_default
+  read.install_default
   read.env
 
 

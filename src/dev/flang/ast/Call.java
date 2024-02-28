@@ -780,6 +780,23 @@ public class Call extends AbstractCall
           }
       }
 
+    if (_calledFeature == null && _target != null && thiz.state().atLeast(State.RESOLVED_INHERITANCE))
+      {
+        var tt = _target.asUnresolvedType();
+        if (tt != null && tt instanceof UnresolvedType ut)
+          {
+            tt = ut.tryResolve(res, thiz);
+          }
+        if (tt != null && tt != Types.t_ERROR && !tt.isGenericArgument())
+          {
+            findTypeFeature(res, tt, thiz);
+          }
+        if (_calledFeature != null)
+          {
+            actualsResolved = false;
+          }
+      }
+
     AbstractFeature targetFeature = null;
     if (_calledFeature == null)
       {
@@ -827,11 +844,6 @@ public class Call extends AbstractCall
                 _targetFrom = fo;
               }
           }
-        else if (!fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
-          { // give a more specific error when trying to call a choice feature
-            AstErrors.cannotCallChoice(pos(), fos.get(0)._feature);
-            setToErrorState();
-          }
 
         if (_calledFeature == null &&                 // nothing found, so flag error
             (Types.resolved == null ||                // may happen when building bad base.fum
@@ -840,14 +852,21 @@ public class Call extends AbstractCall
             var tf = targetFeature;
             _pendingError = ()->
               {
-                AstErrors.calledFeatureNotFound(this,
-                                                calledName,
-                                                tf,
-                                                _target,
-                                                FeatureAndOuter.findExactOrCandidate(fos,
-                                                                                     (FeatureName fn) -> false,
-                                                                                     (AbstractFeature f) -> f.featureName().equalsBaseName(calledName)),
-                                                hiddenCandidates(res, thiz, tf, calledName));
+                if (!fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
+                  { // give a more specific error when trying to call a choice feature
+                    AstErrors.cannotCallChoice(pos(), fos.get(0)._feature);
+                  }
+                else
+                  {
+                    AstErrors.calledFeatureNotFound(this,
+                                                    calledName,
+                                                    tf,
+                                                    _target,
+                                                    FeatureAndOuter.findExactOrCandidate(fos,
+                                                                                        (FeatureName fn) -> false,
+                                                                                        (AbstractFeature f) -> f.featureName().equalsBaseName(calledName)),
+                                                    hiddenCandidates(res, thiz, tf, calledName));
+                  }
               };
           }
 
@@ -879,6 +898,27 @@ public class Call extends AbstractCall
        Errors.any() || _target        != null || _pendingError != null);
 
     return !targetVoid;
+  }
+
+
+  protected void findTypeFeature(Resolution res, AbstractType tt, AbstractFeature thiz)
+  {
+    var ttf = tt.featureOfType().typeFeature(res);
+    var fos = res._module.lookup(ttf, _name, this, false, false);
+    var fo = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, FeatureName.get(_name, _actuals.size()), ff -> mayMatchArgList(ff, false));
+    var f = fo == null ? null : fo._feature;
+    if (f != null && f.outer() != null && f.outer().isTypeFeature())
+      {
+        _calledFeature = f;
+        _target = new DotType(_pos, tt).resolveTypes(res, thiz);
+      }
+    if (_calledFeature != null &&
+        _generics.isEmpty() &&
+        _actuals.size() != f.valueArguments().size() &&
+        !f.hasOpenGenericsArgList(res))
+      {
+        splitOffTypeArgs(res, f, thiz);
+      }
   }
 
 

@@ -27,21 +27,21 @@
 #
 public codepoint(public val u32) : String
   pre
-    debug: (codepoint.type.range.contains val)
-    debug: !codepoint.type.utf16_surrogate.contains val
+    debug: (codepoint.range.contains val)
+    debug: !codepoint.utf16_surrogate.contains val
 is
 
   # the utf8 encoded bytes for the string representation
   # of this codepoint
   #
   public redef utf8 Sequence u8 =>
-    if      codepoint.type.utf8_encoded_in_one_byte   .contains val then [ val.low8bits ]
-    else if codepoint.type.utf8_encoded_in_two_bytes  .contains val then [ (u32 0xc0 | (val >>  6) & 0x1f).low8bits,
+    if      codepoint.utf8_encoded_in_one_byte   .contains val then [ val.low8bits ]
+    else if codepoint.utf8_encoded_in_two_bytes  .contains val then [ (u32 0xc0 | (val >>  6) & 0x1f).low8bits,
                                                                            (u32 0x80 |  val        & 0x3f).low8bits ]
-    else if codepoint.type.utf8_encoded_in_three_bytes.contains val then [ (u32 0xe0 | (val >> 12) & 0x1f).low8bits,
+    else if codepoint.utf8_encoded_in_three_bytes.contains val then [ (u32 0xe0 | (val >> 12) & 0x1f).low8bits,
                                                                            (u32 0x80 | (val >>  6) & 0x3f).low8bits,
                                                                            (u32 0x80 |  val        & 0x3f).low8bits ]
-    else if codepoint.type.utf8_encoded_in_four_bytes .contains val then [ (u32 0xf0 | (val >> 18) & 0x07).low8bits,
+    else if codepoint.utf8_encoded_in_four_bytes .contains val then [ (u32 0xf0 | (val >> 18) & 0x07).low8bits,
                                                                            (u32 0x80 | (val >> 12) & 0x3f).low8bits,
                                                                            (u32 0x80 | (val >>  6) & 0x3f).low8bits,
                                                                            (u32 0x80 |  val        & 0x3f).low8bits ]
@@ -51,7 +51,7 @@ is
 
   # is this an ASCII code encoded in one byte
   #
-  public redef is_ascii => codepoint.type.ascii.contains val
+  public redef is_ascii => codepoint.ascii.contains val
 
 
   # range of permitted value for a codepoint
@@ -74,7 +74,7 @@ is
 
   # a-z and A-Z
   # https://en.wikipedia.org/wiki/ISO_basic_Latin_alphabet
-  public type.latin_alphabet => codepoint.type.A_to_Z.concat_sequences a_to_z # NYI It would be better to use union of those two sets
+  public type.latin_alphabet => codepoint.A_to_Z.concat_sequences a_to_z # NYI It would be better to use union of those two sets
 
   # range of values encoded in one byte
   #

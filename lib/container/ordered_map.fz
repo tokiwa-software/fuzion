@@ -111,5 +111,5 @@ is
   # create an empty instance of ordered_map
   #
   public type.empty => (container.ordered_map
-                        (list OK).type.empty.as_array
-                        (list V).type.empty.as_array)
+                        (list OK).empty.as_array
+                        (list V).empty.as_array)

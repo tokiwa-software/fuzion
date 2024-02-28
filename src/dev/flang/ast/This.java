@@ -31,6 +31,7 @@ import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -243,6 +244,12 @@ public class This extends ExprWithPos
                     {
                       return isAdr ? t : _type;
                     }
+                    @Override
+                    public AbstractType asUnresolvedType()
+                    {
+                      // NYI this is technically correct only for the outermost call
+                      return This.this.asUnresolvedType();
+                    }
                   }.resolveTypes(res, outer);
 
                 getOuter = c;
@@ -315,7 +322,7 @@ public class This extends ExprWithPos
         var q = p - qual.size() + 1;              // q           is 2, the index of 'c' in outer
         if (q >= 0)
           {
-            // we found qual at positions p..q in outer, no check that all these
+            // we found qual at positions p..q in outer, now check that all these
             // positions contain the correct name:
             var o2 = outer;
             var d2 = 0;

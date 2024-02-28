@@ -94,7 +94,7 @@ public stat(ps Stat_Handler) : simple_effect is
 # short-hand for accessing the stat effect in current environment
 #
 public stat =>
-  stat.type.install_default
+  stat.install_default
   stat.env
 
 
@@ -109,7 +109,7 @@ public stat(
      path String,
      # a boolean resolve flag to resolve symbolic links or not
      resolve bool) =>
-  stat.type.install_default
+  stat.install_default
   if resolve
     stat.env.stats path
   else

@@ -48,7 +48,7 @@ is
 
   # calculate the index of k within contents array in case of no conflict
   #
-  at (k HK) => ((hash k).low32bits.cast_to_i32 & i32.type.max) % allocated_size
+  at (k HK) => ((hash k).low32bits.cast_to_i32 & i32.max) % allocated_size
 
 
   # in case of a collision at given position,
@@ -63,7 +63,7 @@ is
   #
   contents := mi.go ()->
     for
-      mcontents := (mutate.array (option (tuple HK V))).type.new mi allocated_size nil, mcontents
+      mcontents := (mutate.array (option (tuple HK V))).new mi allocated_size nil, mcontents
       k in ks
       v in vs
     do

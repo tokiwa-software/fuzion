@@ -86,7 +86,7 @@ public Sequence(public T type) ref is
   public count
   pre
     analysis: finite  # in practice, we do not always have this information
-  => (map i32 (_ -> 1)).fold i32.type.sum
+  => (map i32 (_ -> 1)).fold i32.sum
 
 
   # get the first element of this Sequence
@@ -315,7 +315,7 @@ public Sequence(public T type) ref is
     if finite
       as_string_all
     else
-      max := (Sequence T).type.AS_STRING_NON_FINITE_MAX_ELEMENTS
+      max := (Sequence T).AS_STRING_NON_FINITE_MAX_ELEMENTS
       (zip i32 String /* NYI: BUG #2527: type inference not powerful enough to infer `i32` here */
            0..max (v,n -> if n < max then $v else "…")).as_string_all
 
@@ -548,7 +548,7 @@ public Sequence(public T type) ref is
   public into(TA type, xf transducer (Sequence TA) TA T) list TA =>
     red := xf.call ((res,val) -> res ++ [val])
     for
-      res (list TA) := (list TA).type.empty , (red.call res el).as_list
+      res (list TA) := (list TA).empty , (red.call res el).as_list
       el in Sequence.this do
     else
       res
@@ -616,7 +616,7 @@ public Sequence(public T type) ref is
     # identity element
     #
     e Sequence T =>
-      (list T).type.empty
+      (list T).empty
 
 
   # Maximum number of elements shown for on a call to `as_string` for a non-finite

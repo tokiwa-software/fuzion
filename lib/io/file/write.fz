@@ -71,7 +71,7 @@ public write(fwh Write_Handler) : simple_effect is
 # short-hand for accessing write effect in current environment
 #
 public write =>
-  write.type.install_default
+  write.install_default
   write.env
 
 

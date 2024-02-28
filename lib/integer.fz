@@ -34,15 +34,15 @@ module:public integer : numeric is
   # division remainder
   public redef infix % (other integer.this) integer.this
     pre
-      safety: other != integer.this.type.zero
+      safety: other != integer.this.zero
   => abstract
 
   # test divisibility by other
   public infix %% (other integer.this) bool
     pre
-      safety: other != integer.this.type.zero
+      safety: other != integer.this.zero
   =>
-    integer.this % other = integer.this.type.zero
+    integer.this % other = integer.this.zero
 
   # bitwise operations
   public infix &  (other integer.this) integer.this => abstract
@@ -83,7 +83,7 @@ module:public integer : numeric is
       safety: sign ≥ 0
       safety: b.sign ≥ 0
   =>
-    if b = integer.this.type.zero
+    if b = integer.this.zero
       integer.this
     else
       b.gcd(integer.this % b)  # tail recursion
@@ -109,7 +109,7 @@ module:public integer : numeric is
     pre
       debug: 1 < base ≤ 36
   =>
-    b := integer.this.type.from_u32 base
+    b := integer.this.from_u32 base
 
     if integer.this.sign < 0
       # there could be an overflow on negation
@@ -121,7 +121,7 @@ module:public integer : numeric is
       digit_as_utf8_byte(d u8) u8
       pre d ≤ 35 # 35 would be a Z
       =>
-        if d < 10 then String.type.zero_char + d else String.type.a_char + d - 10
+        if d < 10 then String.zero_char + d else String.a_char + d - 10
 
       as_list0 (power integer.this) =>
         if power.sign <= 0
@@ -130,7 +130,7 @@ module:public integer : numeric is
           digit := (integer.this / power % b).as_u8
           list (digit_as_utf8_byte digit) (()-> as_list0 power/b)
 
-      String.type.from_bytes (as_list0 (integer.this.highest b))
+      String.from_bytes (as_list0 (integer.this.highest b))
 
 
   # convert this to a number using the given base.  If negative, add "-" as
@@ -147,7 +147,7 @@ module:public integer : numeric is
     n := integer.this.as_string base
 
     # split n into sign and digits
-    (sgn, digits) := if (integer.this.sign < 0) ("-", String.type.from_bytes (n.utf8.drop 1)) else ("", n)
+    (sgn, digits) := if (integer.this.sign < 0) ("-", String.from_bytes (n.utf8.drop 1)) else ("", n)
 
     # create required additional zeros
     zeros := "0" * (max 0 (len - n.byte_length))

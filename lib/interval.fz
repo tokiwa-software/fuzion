@@ -126,18 +126,18 @@ public has_interval : integer is
   #   a == b: the interval containing only one element, a
   #   a >  b: an empty interval
   public infix .. (public through has_interval.this) =>
-    interval has_interval.this through has_interval.this.type.one
+    interval has_interval.this through has_interval.this.one
 
 
   # an infinite integer Sequence starting from this up to the maximum value
-  # has_interval.this.type.max
+  # has_interval.this.max
   #
   public postfix .. =>
-    interval has_interval.this has_interval.this nil has_interval.this.type.one
+    interval has_interval.this has_interval.this nil has_interval.this.one
 
 
   # an infinite integer Sequence starting from this up to the maximum value
-  # has_interval.this.type.max
+  # has_interval.this.max
   #
   # NYI: CLEANUP: Eventually remove `postfix ..` or `postfix ..∞` in favor of the
   # other one, for now this is here to show that `∞` is a legal symbol in an operator.

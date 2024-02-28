@@ -456,6 +456,11 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   }
 
 
+  public AbstractType asUnresolvedType(){
+    return null;
+  }
+
+
   protected Expr addFieldForResult(Resolution res, AbstractFeature outer, AbstractType t)
   {
     var result = this;

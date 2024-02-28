@@ -133,7 +133,7 @@ public server(f family.val, p protocol.val, addr String, port u16) outcome unit 
 
 # get currently installed server from env
 public server =>
-  if !effect.type.is_installed server
+  if !effect.is_installed server
     server (error "not initialized") nil effect_mode.default unit unit
   server.env
 

@@ -35,12 +35,12 @@ public i64(public val i64) : num.wrap_around, has_interval is
   redef wrapped_on_neg => is_min
 
   # would addition thiz + other cause an overflow or underflow?
-  public fixed overflow_on_add (other i64) => thiz > i64 0 && i64.type.max -° thiz < other
-  public fixed underflow_on_add(other i64) => thiz < i64 0 && i64.type.min -° thiz > other
+  public fixed overflow_on_add (other i64) => thiz > i64 0 && i64.max -° thiz < other
+  public fixed underflow_on_add(other i64) => thiz < i64 0 && i64.min -° thiz > other
 
   # would subtraction thiz - other cause an overflow or underflow?
-  public fixed overflow_on_sub (other i64) => thiz > i64 0 && thiz -° i64.type.max > other
-  public fixed underflow_on_sub(other i64) => thiz < i64 0 && thiz -° i64.type.min < other
+  public fixed overflow_on_sub (other i64) => thiz > i64 0 && thiz -° i64.max > other
+  public fixed underflow_on_sub(other i64) => thiz < i64 0 && thiz -° i64.min < other
 
   # would multiplication thiz * other cause an overflow or underflow?
   public fixed overflow_on_mul (other i64) => if sign *° other.sign ≤ 0 false else (thiz *° other / other) != thiz
@@ -78,8 +78,8 @@ public i64(public val i64) : num.wrap_around, has_interval is
   # this i64 as an i8
   public as_i8 i8
     pre
-      thiz ≥ i8.type.min.as_i64
-      thiz ≤ i8.type.max.as_i64
+      thiz ≥ i8.min.as_i64
+      thiz ≤ i8.max.as_i64
     =>
       low8bits.as_i8
 
@@ -87,8 +87,8 @@ public i64(public val i64) : num.wrap_around, has_interval is
   # this i64 as an i16
   public as_i16 i16
     pre
-      thiz ≥ i16.type.min.as_i64
-      thiz ≤ i16.type.max.as_i64
+      thiz ≥ i16.min.as_i64
+      thiz ≤ i16.max.as_i64
     =>
       low16bits.as_i16
 
@@ -96,8 +96,8 @@ public i64(public val i64) : num.wrap_around, has_interval is
   # this i64 as an i32
   public as_i32 i32
     pre
-      thiz ≥ i32.type.min.as_i64
-      thiz ≤ i32.type.max.as_i64
+      thiz ≥ i32.min.as_i64
+      thiz ≤ i32.max.as_i64
     =>
       low32bits.cast_to_i32
 
@@ -106,7 +106,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
   public as_u8 u8
     pre
       thiz ≥ (i64 0)
-#      thiz ≤ u8.type.max.as_i64
+#      thiz ≤ u8.max.as_i64
 #    post
 #      analysis: result.as_u64 = thiz
     =>
@@ -117,7 +117,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
   public as_u16 u16
      pre
       thiz ≥ (i64 0)
-#      thiz ≤ u16.type.max.as_i64
+#      thiz ≤ u16.max.as_i64
 #    post
 #      analysis: result.as_u64 = thiz
     =>
@@ -128,7 +128,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
   public as_u32 u32
     pre
       thiz ≥ (i64 0)
-#      thiz ≤ u32.type.max.as_i64
+#      thiz ≤ u32.max.as_i64
 #    post
 #      analysis:  result.as_i64 = thiz
     =>

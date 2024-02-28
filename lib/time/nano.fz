@@ -66,8 +66,8 @@ public nano (p Nano_Time_Handler) : simple_effect is
 # short-hand for accessing time.nano effect in current environment
 #
 public nano =>
-  if !effect.type.is_installed nano
-    nano.type.install_default
+  if !effect.is_installed nano
+    nano.install_default
   nano.env
 
 

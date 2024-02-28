@@ -70,7 +70,7 @@ is
 # source of thread concurrency.
 #
 public thread =>
-  thread.type.install_default
+  thread.install_default
   thread.env
 
 

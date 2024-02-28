@@ -57,7 +57,7 @@ is
   # install default instance of exit
   #
   type.install_default is
-    if !effect.type.is_installed exit
+    if !effect.is_installed exit
       _ := exit default_exit_handler effect_mode.default unit
 
 
@@ -102,7 +102,7 @@ is
 # exit handler.
 #
 exit0 =>
-  exit.type.install_default
+  exit.install_default
   exit.env
 
 

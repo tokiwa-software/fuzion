@@ -1221,6 +1221,8 @@ part of the (((inner features))) declarations of the corresponding
    * outer's outer (i.e., use is unqualified), false to search in outer only
    * (i.e., use is qualified with outer).
    *
+   * @param ignoreNotFound If true, no errors are produced but null might be returned
+   *
    * @return FeatureAndOuter tuple of the found type's declaring feature,
    * FeatureAndOuter.ERROR in case of an error, null in case no type was found
    * and ignoreNotFound is true.
@@ -1259,7 +1261,14 @@ part of the (((inner features))) declarations of the corresponding
           }
         if (type_fs.size() > 1)
           {
-            AstErrors.ambiguousType(pos, name, type_fs);
+            if (ignoreNotFound)
+              {
+                result = null;
+              }
+            else
+              {
+                AstErrors.ambiguousType(pos, name, type_fs);
+              }
           }
         else if (type_fs.size() < 1)
           {

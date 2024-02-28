@@ -57,14 +57,14 @@ is
   public items Sequence (tuple KEY VAL) =>
     match root.get
       e Entry => e.items
-      nil => (list (tuple KEY VAL)).type.empty
+      nil => (list (tuple KEY VAL)).empty
 
 
   # returns a string representation of the map
   #
   public redef as_string String =>
     "\{" +
-      (String.type.join (fold (list String).type.empty ((i, x) -> list "{x.key}={x.val}" i)) ", ") +
+      (String.join (fold (list String).empty ((i, x) -> list "{x.key}={x.val}" i)) ", ") +
      "}"
 
 
