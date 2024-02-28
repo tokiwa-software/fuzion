@@ -145,7 +145,7 @@ calls is
       cnt := mut 0
       f String =>
         cnt <- cnt.get + 1
-        "f#$cnt in $where type {on.this.type.name}"
+        "f#$cnt in $where type {(Types.get on.this).name}"
       where => "on"
 
     oa : on is
@@ -177,7 +177,7 @@ calls is
       cnt := mut 0
       f String =>
         cnt <- cnt.get + 1
-        "f#$cnt in $where type {on.this.type.name}"
+        "f#$cnt in $where type {(Types.get on.this).name}"
       where => "on"
 
     oa ref : on is
@@ -216,7 +216,7 @@ calls is
       cnt := mut 0
       f String =>
         cnt <- cnt.get + 1
-        "f#$cnt in $where type {on.this.type.name}"
+        "f#$cnt in $where type {(Types.get on.this).name}"
       where => "on"
 
     roa ref : on is
@@ -259,7 +259,7 @@ calls is
       cnt := mut 0
       f String =>
         cnt <- cnt.get + 1
-        "f#$cnt in $where type {on.this.type.name}"
+        "f#$cnt in $where type {(Types.get on.this).name}"
       where => "on"
 
     oa : on is
@@ -293,7 +293,7 @@ calls is
       cnt := mut 0
       f String =>
         cnt <- cnt.get + 1
-        "f#$cnt in $where type {on.this.type.name}"
+        "f#$cnt in $where type {(Types.get on.this).name}"
       where => "on"
 
     oa ref : on is
@@ -327,7 +327,7 @@ calls is
       cnt := mut 0
       f String =>
         cnt <- cnt.get + 1
-        "f#$cnt in $where type {on.this.type.name}"
+        "f#$cnt in $where type {(Types.get on.this).name}"
       where => "on"
 
     oa : on is
@@ -363,7 +363,7 @@ calls is
       cnt := mut 0
       f is
         cnt <- cnt.get + 1
-        s := "f#$cnt in $where type {on.this.type.name}"
+        s := "f#$cnt in $where type {(Types.get on.this).name}"
       where => "on"
 
     oa : on is
@@ -393,7 +393,7 @@ calls is
       cnt := mut 0
       f is
         cnt <- cnt.get + 1
-        s := "f#$cnt in $where type {on.this.type.name}"
+        s := "f#$cnt in $where type {(Types.get on.this).name}"
       where => "on"
 
     oa ref : on is
@@ -429,7 +429,7 @@ calls is
       cnt := mut 0
       f is
         cnt <- cnt.get + 1
-        s := "f#$cnt in $where type {on.this.type.name}"
+        s := "f#$cnt in $where type {(Types.get on.this).name}"
       where => "on"
 
     roa ref : on is
@@ -472,7 +472,7 @@ calls is
       cnt := mut 0
       f is
         cnt <- cnt.get + 1
-        s := "f#$cnt in $where type {on.this.type.name}"
+        s := "f#$cnt in $where type {(Types.get on.this).name}"
       where => "on"
 
     oa : on is
@@ -497,7 +497,7 @@ calls is
       cnt := mut 0
       f is
         cnt <- cnt.get + 1
-        s := "f#$cnt in $where type {on.this.type.name}"
+        s := "f#$cnt in $where type {(Types.get on.this).name}"
       where => "on"
 
     oa ref : on is
@@ -530,7 +530,7 @@ calls is
       cnt := mut 0
       f is
         cnt <- cnt.get + 1
-        s := "f#$cnt in $where type {on.this.type.name}"
+        s := "f#$cnt in $where type {(Types.get on.this).name}"
       where => "on"
 
     oa : on is

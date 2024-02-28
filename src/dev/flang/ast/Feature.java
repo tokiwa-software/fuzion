@@ -1284,6 +1284,7 @@ public class Feature extends AbstractFeature
         res = r;
       }
     public void         action      (AbstractAssign a, AbstractFeature outer) {        a.resolveTypes   (res,   outer); }
+    public void         actionBefore(Call           c, AbstractFeature outer) {        c.resolveTypeCall(res,   outer); }
     public Call         action      (Call           c, AbstractFeature outer) { return c.resolveTypes   (res,   outer); }
     public Expr         action      (DotType        d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
     public Expr         action      (Destructure    d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }

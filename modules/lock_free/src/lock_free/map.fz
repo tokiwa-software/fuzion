@@ -691,15 +691,15 @@ is
     lock_free.map CTK CTV (concur.atomic initial_root_node) false
 
 
-  # lock_free.map.type.from_entries -- routine to initialize a ctrie from a sequence of key value tuples
+  # lock_free.map.from_entries -- routine to initialize a ctrie from a sequence of key value tuples
   #
   # This feature creates an instance of a ctrie.
   #
-  # example: lock_free.map.type.from_entries [(key1, value1), (key2, value2)]
+  # example: lock_free.map.from_entries [(key1, value1), (key2, value2)]
   #
   public type.from_entries(kvs Sequence (tuple CTK CTV)) lock_free.map CTK CTV =>
 
-    m := (lock_free.map CTK CTV).type.empty
+    m := (lock_free.map CTK CTV).empty
     kvs.for_each (kv ->
       (k,v) := kv
       m.add k v)
@@ -715,7 +715,7 @@ public container.set_of_hashable(K type : property.hashable, vs (lock_free.map K
 
   private map lock_free.map K unit :=
     match vs
-      vss (Sequence K) => (lock_free.map K unit).type.from_entries (vss.map (k -> tuple k unit))
+      vss (Sequence K) => (lock_free.map K unit).from_entries (vss.map (k -> tuple k unit))
       vsc (lock_free.map K unit) => vsc
 
   ref : Set K
@@ -758,7 +758,7 @@ public container.set_of_hashable(K type : property.hashable, vs (lock_free.map K
 #
 public Sequence.group_by(K type : property.hashable, f T -> K) lock_free.map K (list T) =>
   # NYI It should be possible to choose the map implementation that is used.
-  res := (lock_free.map K (list T)).type.empty
+  res := (lock_free.map K (list T)).empty
   for_each (x ->
     key := f x
     match res[key]

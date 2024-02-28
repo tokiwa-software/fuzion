@@ -31,7 +31,6 @@ import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -243,12 +242,6 @@ public class This extends ExprWithPos
                     AbstractType typeForInferencing()
                     {
                       return isAdr ? t : _type;
-                    }
-                    @Override
-                    public AbstractType asUnresolvedType()
-                    {
-                      // NYI this is technically correct only for the outermost call
-                      return This.this.asUnresolvedType();
                     }
                   }.resolveTypes(res, outer);
 

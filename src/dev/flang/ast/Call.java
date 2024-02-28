@@ -780,23 +780,6 @@ public class Call extends AbstractCall
           }
       }
 
-    if (_calledFeature == null && _target != null && thiz.state().atLeast(State.RESOLVED_INHERITANCE))
-      {
-        var tt = _target.asUnresolvedType();
-        if (tt != null && tt instanceof UnresolvedType ut)
-          {
-            tt = ut.tryResolve(res, thiz);
-          }
-        if (tt != null && tt != Types.t_ERROR && !tt.isGenericArgument())
-          {
-            findTypeFeature(res, tt, thiz);
-          }
-        if (_calledFeature != null)
-          {
-            actualsResolved = false;
-          }
-      }
-
     AbstractFeature targetFeature = null;
     if (_calledFeature == null)
       {
@@ -1494,6 +1477,7 @@ public class Call extends AbstractCall
       {
         visitActuals(v, outer);
       }
+    v.actionBefore(this, outer);
     if (_target != null)
       {
         _target = _target.visit(v, outer);
@@ -2607,6 +2591,26 @@ public class Call extends AbstractCall
   private AbstractFeature _resolvedFor;
 
 
+  public void resolveTypeCall(Resolution res, AbstractFeature thiz)
+  {
+    if (_calledFeature == null && _target != null && thiz.state().atLeast(State.RESOLVED_INHERITANCE))
+    {
+      var tt = _target.asUnresolvedType();
+      if (tt != null && tt instanceof UnresolvedType ut && !thiz.isTypeFeature() /* NYI: see float.fz for examples */)
+        {
+          tt = ut.tryResolve(res, thiz);
+        }
+      if (tt != null && tt != Types.t_ERROR && !tt.isGenericArgument())
+        {
+          findTypeFeature(res, tt, thiz);
+        }
+      if (_calledFeature != null)
+        {
+          resolveTypesOfActuals(res,thiz);
+        }
+    }
+  }
+
   /**
    * determine the static type of all expressions and declared features in this feature
    *
@@ -2622,7 +2626,7 @@ public class Call extends AbstractCall
         return this;
       }
     _resolvedFor = outer;
-    if (!loadCalledFeatureUnlessTargetVoid(res, outer))
+    if (_calledFeature == null && !loadCalledFeatureUnlessTargetVoid(res, outer))
       { // target of this call results in `void`, so we replace this call by the
         // target. However, we have to return a `Call` and `_target` is
         // `Expr`. Solution: we wrap `_target` into a call `universe.id void
