@@ -147,7 +147,7 @@ public class FrontEndOptions extends FuzionOptions
 
        // at most one of _readStdin, main != null or executeCode != null may be true.
        !readStdin          || main == null && executeCode == null,
-       executeCode != null || main == null && !readStdin,
+       executeCode == null || main == null && !readStdin,
        main != null        || !readStdin   && executeCode == null,
 
        modules != null,
