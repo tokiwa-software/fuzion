@@ -1967,6 +1967,7 @@ public class AstErrors extends ANY
   }
 
 
+  // NYI: UNDER DEVELOPMENT see #2559
   public static void declarationsInLazy(String what, Expr lazy, List<Feature> declarations)
   {
     if (!any())
