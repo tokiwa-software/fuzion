@@ -189,7 +189,7 @@ public class FrontEnd extends ANY
     var dependsOn = lms.toArray(LibraryModule[]::new);
     if (options._loadSources)
       {
-        _module = new SourceModule(options, sourceDirs, inputFile(options), options._main, dependsOn, universe);
+        _module = new SourceModule(options, sourceDirs, dependsOn, universe);
         _module.createASTandResolve();
       }
     else
@@ -287,19 +287,6 @@ public class FrontEnd extends ANY
           }
       }
     return result;
-  }
-
-
-  /**
-   * Get the path of one additional main input file (like compiling from stdin
-   * or just one single source file).
-   */
-  private Path inputFile(FrontEndOptions options)
-  {
-    return
-      options._readStdin         ? SourceFile.STDIN   :
-      options._inputFile != null ? options._inputFile
-                                 : null;
   }
 
 

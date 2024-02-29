@@ -98,11 +98,20 @@ public class Parser extends Lexer
 
 
   /**
+   * Create a parser for the given file or byte array
+   */
+  public Parser(Path fname, byte[] sf)
+  {
+    super(fname, sf);
+  }
+
+
+  /**
    * Create a parser for the given file
    */
   public Parser(Path fname)
   {
-    super(fname);
+    this(fname, null);
   }
 
 

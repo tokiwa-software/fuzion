@@ -1,5 +1,5 @@
 
 error 1: missing main feature name in command line args
-Usage: ../../bin/fz -jvm [-Xdfa=(on|off)] [-debug[=<n>]] [-safety=(on|off)] [-unsafeIntrinsics=(on|off)] [-modules={<m>,..}] [-moduleDirs={<path>,..}] [-sourceDirs={<path>,..}] [-noANSI] [-verbose[=<n>]] [--] (<main> | <srcfile>.fz | -) [<list of arbitrary arguments for envir.args effect>] 
+Usage: ../../bin/fz -jvm [-Xdfa=(on|off)] [-debug[=<n>]] [-safety=(on|off)] [-unsafeIntrinsics=(on|off)] [-modules={<m>,..}] [-moduleDirs={<path>,..}] [-sourceDirs={<path>,..}] [-noANSI] [-verbose[=<n>]] [--] (<main> | <srcfile>.fz | - | (-e|-execute) <code>) [<list of arbitrary arguments for envir.args effect>] 
 
 *** fatal errors encountered, stopping.
