@@ -2196,12 +2196,7 @@ simpleterm  : bracketTerm
                 if (result == null)
                   {
                     syntaxError(p1, "term (lbrace, lparen, lcrochet, fun, string, integer, old, match, or name)", "term");
-                    var p = tokenSourcePos();
-                    result = new Expr() {
-                      public SourcePosition pos() { return p; }
-                      public Expr visit(FeatureVisitor v, AbstractFeature outer){ return this; }
-                      public AbstractType type() { return Types.t_ERROR; }
-                    };
+                    result = Expr.ERROR_VALUE;
                   }
               }
             break;
