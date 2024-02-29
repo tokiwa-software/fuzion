@@ -167,7 +167,7 @@ choice_negative is
             | FALSE => false
 
 
-  ambigous_assignment_to_choice_via_subtype is
+  ambiguous_assignment_to_choice_via_subtype is
     A ref is
     B ref is
     C ref : B, A is
