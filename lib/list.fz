@@ -200,12 +200,12 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
       _ nil  => nil
       c Cons =>
         match (f c.head).as_list
-          _ nil => c.tail.flat_map_to_list B f
+          _ nil => c.tail.flat_map_to_list f
           c2 Cons =>
             ref : Cons B (list B)
             // Cons B (list B) with    # NYI: better syntax for anonymous feature
               head => c2.head
-              tail => c2.tail ++ c.tail.flat_map_to_list B f
+              tail => c2.tail ++ c.tail.flat_map_to_list f
 
 
   # fold the elements of this list using the given monoid.
@@ -502,7 +502,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #   list.this.last, b.last
   #
   public combine_list(U, V type, b Sequence U, f (A,U)->V) =>
-    flat_map V x->(b.map y->(f x y))
+    flat_map x->(b.map y->(f x y))
 
 
   # create an empty list

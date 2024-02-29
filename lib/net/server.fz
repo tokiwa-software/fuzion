@@ -43,7 +43,7 @@ module:public server(
 is
 
   # get the last error that occurred
-  public last_error => state.bind unit (_ -> unit)
+  public last_error => state.bind _->unit
 
   # is the server running?
   public is_active =>
@@ -75,7 +75,7 @@ is
           protocol.tcp =>
             ar := fuzion.sys.net.accept d
             channel server ar true
-            ar.bind unit d->unit
+            ar.bind d->unit
           * =>
             channel server state false
             unit

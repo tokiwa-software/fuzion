@@ -344,7 +344,8 @@ public class Impl extends ANY
     return
       (this._code != null) &&
       outer.hasResultField() &&
-      outer instanceof Feature fouter && !fouter.hasAssignmentsToResult();
+      outer instanceof Feature fouter && !fouter.hasAssignmentsToResult()
+      && outer.resultType() != Types.t_ERROR;
   }
 
 

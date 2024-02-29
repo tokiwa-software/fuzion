@@ -70,7 +70,7 @@ public class Function extends AbstractLambda
   /**
    * The implementation of `Function.call` that contains the code of this lambda.
    */
-  AbstractFeature _feature;
+  Feature _feature;
 
 
   AbstractType _type;
@@ -202,6 +202,7 @@ public class Function extends AbstractLambda
   public AbstractType propagateTypeAndInferResult(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)
   {
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
+    var needsPartialInference = t.generics().get(0).containsUndefined(false);
     if (_call == null)
       {
         if (!t.isFunctionType() && !t.isLazyType())
@@ -249,9 +250,10 @@ public class Function extends AbstractLambda
           }
         if (t != Types.t_ERROR)
           {
-            var rt = inferResultType ? NoType.INSTANCE      : new FunctionReturnType(gs.get(0));
-            var im = inferResultType ? Impl.Kind.RoutineDef : Impl.Kind.Routine;
-            _feature = new Feature(pos(), rt, new List<String>("call"), a, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
+            var rt  = gs.get(0);
+            var frt = inferResultType || needsPartialInference ? NoType.INSTANCE      : new FunctionReturnType(rt);
+            var im  = inferResultType || needsPartialInference ? Impl.Kind.RoutineDef : Impl.Kind.Routine;
+            _feature = new Feature(pos(), frt, new List<String>("call"), a, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
               {
                 @Override
                 public boolean isLambdaCall()
@@ -285,6 +287,22 @@ public class Function extends AbstractLambda
                 res.resolveDeclarations(_wrapper);
                 res.resolveTypes(_feature);
                 result = _feature.resultType();
+                _inheritsCall._generics = gs.setOrClone(0, result);
+              }
+            else if (needsPartialInference)
+              {
+                res.resolveDeclarations(_wrapper);
+                res.resolveTypes(_feature);
+                result = _feature.resultTypeIfPresent(res);
+                /* NYI: CLEANUP: We have null and Types.t_UNDEFINED to denote an unkown type. Can we get rid of null? */
+                result = result == null ? Types.t_UNDEFINED : result;
+                result = rt.isChoice() == result.isChoice()
+                  ? ResolvedNormalType.create(result.generics(), rt.unresolvedGenerics(), rt.outer(), rt.featureOfType())
+                  : ResolvedNormalType.create(new List<>(result), rt.unresolvedGenerics(), rt.outer(), rt.featureOfType());
+                // update found return type
+                _feature._returnType = new FunctionReturnType(result);
+                // update implementation kind
+                _feature.setImpl(new Impl(_feature.impl().pos, _feature.impl()._code, Impl.Kind.Routine));
                 _inheritsCall._generics = gs.setOrClone(0, result);
               }
 

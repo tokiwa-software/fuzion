@@ -69,7 +69,7 @@ ex_gcd is
   common_divisors_of(a, b i32) list i32 =>
     x := max a.abs b.abs
     y := 1..x
-    y.flat_map i32 (i->
+    y.flat_map (i->
       if (a % i = 0) && (b % i = 0)
         [-i, i]
       else

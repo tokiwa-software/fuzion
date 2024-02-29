@@ -202,7 +202,7 @@ is
             uint ([(tmp>>32).low32bits , tmp.low32bits] ++ zeros i+oi) unit
           )
         )
-      .flat_map uint (x -> x)
+      .flat_map x->x
       .fold uint.type.sum
 
 

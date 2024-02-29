@@ -61,11 +61,11 @@ public read(ro Read_Handler) : simple_effect is
   private read_file(fd i64, tmp array u8) outcome (array u8) =>
     t := read_proxy fd bufsize
 
-    t.bind (array u8) (a->
+    t.bind a->
       if a.length > 0
         read_file fd (tmp ++ a).as_array
       else
-        tmp)
+        tmp
 
 
   # the default file reading operation reading bytes from files via fuzion.sys.fileio.read
