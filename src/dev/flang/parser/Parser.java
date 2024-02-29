@@ -2205,7 +2205,7 @@ simpleterm  : bracketTerm
                 if (result == null)
                   {
                     syntaxError(p1, "term (lbrace, lparen, lcrochet, fun, string, integer, old, match, or name)", "term");
-                    result = new Call(tokenSourcePos(), null, Errors.ERROR_STRING);
+                    result = Expr.ERROR_VALUE;
                   }
               }
             break;
