@@ -43,11 +43,11 @@ import dev.flang.util.SourcePosition;
  * In general, this is
 
   for
-    x1 := init1, next1;
-    x2 in set2;
-    x3 := init3, next3;
-    x4 in set4;
-    x5 := init5, next5;
+    x1 := init1, next1
+    x2 in set2
+    x3 := init3, next3
+    x4 in set4
+    x5 := init5, next5
   while <whileCond>
     <body>
   until <untilCond>
@@ -60,47 +60,41 @@ import dev.flang.util.SourcePosition;
  * index variables
 
   // loop prolog
-  x1 := init1;
-  stream2 := set2.asStream;
+  x1 := init1
+  list2 := set2.as_list
   ### loopElse will be put here ###
-  if (stream2.hasNext)
-    {
-      x2 := stream2.next;
-      x3 := init3;
-      stream4 := set4.asStream;
-      if (stream4.hasNext)
-        {
-          x4 := stream4.next;
-          x5 := init5;
+  match list2
+    c2 Cons =>
+      x2 := c2.head
+      x2t := c2.tail
+      x3 := init3
+      list4 := set4.as_list
+      match list4
+        c4 Cons =>
+          x4 := c4.head
+          x4t := c4.tail
+          x5 := init5
 
           ### loop will be put here ###
 
-        }
-      else
-        {
-           loopElse
-        }
-    }
-  else
-    {
-      loopElse
-    }
+        _ nil => loopElse
+    _ nil => loopElse
 
  * The loop will be implemented using a tail recursive feature as follows
 
-  loop(x1, x2, x3, x4, x5, ... inferred-type) =>
+  loop(x1, x2, x2a, x3, x4, x4a, x5, ... inferred-type) =>
      if whileCond
        <body>
        if untilCond
          <success>
          ### OPTIONAL TRUE ###
        else ### nextIteration will be put here ###
-         loop(x1,x2,x3,x4,x5,...)   // tail recursion
+         loop(x1,x2,x2t,x3,x4,x4t,x5,...)   // tail recursion
        else
          <failure>
      else
        <failure>
-  loop(x1,x2,x3,x4,x5,...)
+  loop(x1,x2,x2t,x3,x4,x4t,x5,...)
 
  * The part marked
  *
@@ -110,29 +104,23 @@ import dev.flang.util.SourcePosition;
  * to the prolog
 
   // nextIteration:
-  x1 := next1;
+  x1 := next1
   ### loopElse will be put here ###
-  if (stream2.hasNext)
-    {
-      x2 := stream2.next;
-      x3 := next3;
-      if (stream4.hasNext)
-        {
-          x4 := stream4.next;
-          x5 := next5;
+  match x2a
+    c2 Cons =>
+      x2 := c2.head
+      x2t := c2.tail
+      x3 := next3
+      match x4a
+        c4 Cons =>
+          x4 := c4.head
+          x4t := c4.tail
+          x5 := next5
 
           ### loop tail recursive call will be put here ###
 
-        }
-      else
-        {
-          loopElse
-        }
-    }
-  else
-    {
-      loopElse
-    }
+        _ nil => loopElse
+    _ nil => loopElse
 
  * If needed, the code for the <failure> case will be put into a loopElse
  * feature that can be called at different locations:
