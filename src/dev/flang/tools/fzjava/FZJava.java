@@ -230,6 +230,7 @@ public class FZJava extends Tool
                                             /* enableUnsafeIntrinsics */ true,
                                             /* sourceDirs */ emptyList,
                                             /* readStdin */ false,
+                                            /* executeCode */ null,
                                             /* main */ null,
                                             /* loadSources */ true);
         _fe = new FrontEnd(feOptions);

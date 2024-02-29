@@ -26,7 +26,7 @@
 #
 # To start this webserver in the interpreter, use:
 #
-#   fz -unsafeIntrinsics=on webserver2.fz
+#   fz webserver2.fz
 #
 # Alternatively, compile it using the C backend and run the resulting
 # executable:

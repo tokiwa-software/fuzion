@@ -258,7 +258,7 @@ public class This extends ExprWithPos
   /**
    * Check if this is an implicit access to the universe, i.e., for a feature
    * call f.g.h where f is found in the universe, this call will be converted to
-   * "universe.this.f.g.h", this returns true for "universe.this".
+   * "universe.f.g.h", this returns true for "universe".
    *
    * NYI: CLEANUP: This is used only in Feature.isChoice, which should be
    * improved not to need this.

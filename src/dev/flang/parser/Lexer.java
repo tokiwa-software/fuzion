@@ -651,11 +651,11 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Create a lexer for the given file
+   * Create a lexer for the given file or byte array data.
    */
-  public Lexer(Path fileName)
+  public Lexer(Path fileName, byte[] sf)
   {
-    super(fileName);
+    super(fileName, sf);
 
     if (PRECONDITIONS) require
       (fileName != null);

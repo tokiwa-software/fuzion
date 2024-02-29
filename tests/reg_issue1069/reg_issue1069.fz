@@ -17,12 +17,22 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test Makefile
-#
-#  Author: Wael Youssfi (wael.youssfi@tokiwa.software)
+#  Source code of Fuzion test
 #
 # -----------------------------------------------------------------------
 
-override NAME = fileiotests
-FUZION_JAVA_STACK_SIZE = 10m
-include ../simple.mk
+reg_issue1069 is
+
+  a := [0.3, option 3.142, nil, 42]
+  for v in a do say "$v {type_of v}"
+
+  f(b bool) =>
+    if b
+      42
+    else
+      option 3.14
+
+  say (f true)
+  say (f false)
+  say (type_of (f true))
+  say (type_of (f false))

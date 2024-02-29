@@ -1245,8 +1245,8 @@ spellcheck:
 # currently only examples/ are checked.
 .PHONY: syntaxcheck
 syntaxcheck: min-java
-	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(BUILD_DIR)/bin/fz -unsafeIntrinsics=on -modules=java.base,java.datatransfer,java.xml,java.desktop -no-backend
-	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(BUILD_DIR)/bin/fz -unsafeIntrinsics=on -modules=java.base,java.datatransfer,java.xml,java.desktop -no-backend
+	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(BUILD_DIR)/bin/fz -modules=java.base,java.datatransfer,java.xml,java.desktop -no-backend
+	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(BUILD_DIR)/bin/fz -modules=java.base,java.datatransfer,java.xml,java.desktop -no-backend
 
 .PHONY: add_simple_test
 add_simple_test: no-java

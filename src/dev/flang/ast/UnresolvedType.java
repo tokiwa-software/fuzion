@@ -535,16 +535,6 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
     res.resolveDeclarations(outerfeat);
 
-    if (CHECKS) check
-      (outerfeat.state().atLeast(State.RESOLVING_DECLARATIONS));
-
-    if (_resolved == null)
-      {
-        if (!outerfeat.state().atLeast(State.RESOLVING_DECLARATIONS))
-          {
-            res.resolveDeclarations(outerfeat);
-          }
-      }
     if (_resolved == null)
       {
         _resolved = resolveThisType(res, outerfeat);

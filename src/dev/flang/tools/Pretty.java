@@ -52,20 +52,20 @@ public class Pretty extends ANY
 
 
   /**
-   * Constructor for the pretty printer to read from stdin.
+   * Constructor for the pretty printer to read from given path or byte array.
    */
-  Pretty()
+  Pretty(Path p, byte[] sf)
   {
-    run(SourceFile.STDIN);
+    run(p, sf);
   }
 
 
   /**
-   * Constructor for the pretty printer to read from given file
+   * Constructor for the pretty printer to read from given file.
    */
-  Pretty(String file)
+  Pretty(Path file)
   {
-    run(Path.of(file));
+    this(file, null);
   }
 
 
@@ -73,11 +73,11 @@ public class Pretty extends ANY
 
 
   /**
-   * Run the pretty printer on the given file.
+   * Run the pretty printer on the given file or byte array.
    */
-  private void run(Path in)
+  private void run(Path in, byte[] sf)
   {
-    var l = new Lexer(in)
+    var l = new Lexer(in, sf)
       {
         public boolean ignore(Lexer.Token t) { return false; }
       };

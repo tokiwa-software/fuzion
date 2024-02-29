@@ -98,11 +98,20 @@ public class Parser extends Lexer
 
 
   /**
+   * Create a parser for the given file or byte array
+   */
+  public Parser(Path fname, byte[] sf)
+  {
+    super(fname, sf);
+  }
+
+
+  /**
    * Create a parser for the given file
    */
   public Parser(Path fname)
   {
-    super(fname);
+    this(fname, null);
   }
 
 
@@ -2210,7 +2219,7 @@ simpleterm  : bracketTerm
                 if (result == null)
                   {
                     syntaxError(p1, "term (lbrace, lparen, lcrochet, fun, string, integer, old, match, or name)", "term");
-                    result = new Call(tokenSourcePos(), null, Errors.ERROR_STRING);
+                    result = Expr.ERROR_VALUE;
                   }
               }
             break;
@@ -3251,15 +3260,13 @@ qualThisType: qualThis
    * Note that we do not allow `universe` which is not followed by `.`, i.e., it
    * is not possible to get the value of the `universe`.
    *
-universeCall      : "universe" dot "this" dot call
+universeCall      : "universe" dot call
                   ;
    */
   Expr universeCall()
   {
     var pos = tokenSourcePos();
     match(Token.t_universe, "universeCall");
-    matchOperator(".",      "universeCall");
-    match(Token.t_this,     "universeCall");
     matchOperator(".",      "universeCall");
     return call(new Universe(pos));
   }

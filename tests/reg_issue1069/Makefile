@@ -19,10 +19,7 @@
 #
 #  Source code of Fuzion test Makefile
 #
-#  Author: Wael Youssfi (wael.youssfi@tokiwa.software)
-#
 # -----------------------------------------------------------------------
 
-override NAME = fileiotests
-FUZION_JAVA_STACK_SIZE = 10m
+override NAME = reg_issue1069
 include ../simple.mk

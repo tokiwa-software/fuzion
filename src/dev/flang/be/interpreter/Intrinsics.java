@@ -53,16 +53,21 @@ import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 
 /**
@@ -134,6 +139,20 @@ public class Intrinsics extends ANY
   private static Value _stdin  = new i64Value(_openStreams_.add(System.in ));
   private static Value _stdout = new i64Value(_openStreams_.add(System.out));
   private static Value _stderr = new i64Value(_openStreams_.add(System.err));
+
+
+  /**
+   * This contains all open processes.
+   */
+  private static OpenResources<Process> _openProcesses_ = new OpenResources<Process>()
+  {
+    @Override
+    protected boolean close(Process p) {
+      if(PRECONDITIONS) require
+        (p != null);
+      return true;
+    }
+  };
 
   /**
    * This contains all started threads.
@@ -616,6 +635,60 @@ public class Intrinsics extends ANY
         {
           return new i32Value(0);
         });
+    putUnsafe("fuzion.sys.fileio.open_dir", (interpreter, innerClazz) -> args ->
+        {
+          var open_results = (long[])args.get(2).arrayData()._array;
+          try
+            {
+              var i = Files.walk(Paths.get(utf8ByteArrayDataToString(args.get(1))), 1).iterator();
+              interface CloseableIterator<T> extends Iterator<T>, AutoCloseable {};
+              open_results[0] = _openStreams_.add(new CloseableIterator<Path>() {
+                public void close() throws IOException
+                {
+                  // do nothing :)
+                }
+
+                public boolean hasNext() {
+                  return i.hasNext();
+                }
+
+                public Path next() {
+                  return i.next();
+                }
+
+                public void remove() {
+                  i.remove();
+                }
+              });
+            }
+          catch (IOException e)
+            {
+              open_results[1] = -1;
+            }
+
+          return Value.EMPTY_VALUE;
+        });
+    putUnsafe("fuzion.sys.fileio.read_dir", (interpreter, innerClazz) -> args ->
+        {
+          var i = (Iterator<Path>)_openStreams_.get(args.get(1).i64Value());
+          try
+            {
+              return Interpreter.value(i.next().getFileName().toString());
+            }
+          catch (NoSuchElementException e)
+            {
+              return Interpreter.value("NoSuchElementException encountered!");
+            }
+        });
+    putUnsafe("fuzion.sys.fileio.read_dir_has_next", (interpreter, innerClazz) -> args ->
+        {
+          return new boolValue(((Iterator<Path>)_openStreams_.get(args.get(1).i64Value())).hasNext());
+        });
+    putUnsafe("fuzion.sys.fileio.close_dir", (interpreter, innerClazz) -> args ->
+        {
+          _openStreams_.remove(args.get(1).i64Value());
+          return new i64Value(0);
+        });
     put("fuzion.sys.fileio.mapped_buffer_get", (interpreter, innerClazz) -> args ->
         {
           return ((ArrayData)args.get(1)).get(/* index */ (int) args.get(2).i64Value(),
@@ -713,7 +786,12 @@ public class Intrinsics extends ANY
         });
     putUnsafe("fuzion.java.string_to_java_object0", (interpreter, innerClazz) -> args ->
         {
-          var str = utf8ByteArrayDataToString(args.get(1));
+          var argz = args.get(1);
+          var argfields = innerClazz.argumentFields();
+          var argsArray = argfields[argfields.length - 1];
+          var sac = argsArray.resultClazz();
+          var argzData = Interpreter.getField(Types.resolved.f_fuzion_sys_array_data, sac, argz, false);
+          var str = utf8ByteArrayDataToString(argzData);
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(str, resultClazz);
         });
@@ -1293,6 +1371,96 @@ public class Intrinsics extends ANY
           var cl = innerClazz.actualGenerics()[0];
           return new boolValue(FuzionThread.current()._effects.get(cl) != null /* NOTE not containsKey since cl may map to null! */ );
         });
+
+    putUnsafe("fuzion.sys.process.create"  , (interpreter, innerClazz) -> args -> {
+      var process_and_args = Arrays
+        .stream(((Value[])args.get(1).arrayData()._array))
+        .limit(args.get(2).i32Value()-1)
+        .map(x -> utf8ByteArrayDataToString(x))
+        .collect(Collectors.toList());
+
+      var env_vars = Arrays
+        .stream(((Value[])args.get(3).arrayData()._array))
+        .limit(args.get(4).i32Value()-1)
+        .map(x -> utf8ByteArrayDataToString(x))
+        .collect(Collectors.toMap((x -> x.split("=")[0]), (x -> x.split("=")[1])));
+
+      var result = (long[])args.get(5).arrayData()._array;
+      try
+        {
+          var pb = new ProcessBuilder()
+                              .command(process_and_args);
+
+          pb.environment().putAll(env_vars);
+
+          var process = pb.start();
+
+          result[0] = _openProcesses_.add(process);
+          result[1] = _openStreams_.add(process.getOutputStream());
+          result[2] = _openStreams_.add(process.getInputStream());
+          result[3] = _openStreams_.add(process.getErrorStream());
+          return new i32Value(0);
+        }
+      catch (IOException e)
+        {
+          return new i32Value(-1);
+        }
+    });
+
+    put("fuzion.sys.process.wait"    , (interpreter, innerClazz) -> args -> {
+      var desc = args.get(1).i64Value();
+      var p = _openProcesses_.get(desc);
+      try
+        {
+          var result = p.waitFor();
+          _openProcesses_.remove(desc);
+          return new i32Value(result);
+        }
+      catch(InterruptedException e)
+        {
+          return new i32Value(-1);
+        }
+    });
+
+    put("fuzion.sys.pipe.read"       , (interpreter, innerClazz) -> args -> {
+      var desc = args.get(1).i64Value();
+      var buff = (byte[])args.get(2).arrayData()._array;
+      var is = (InputStream) _openStreams_.get(desc);
+      try
+        {
+          var readBytes = is.read(buff);
+
+          return readBytes == -1
+            ? new i32Value(0)
+            : new i32Value(readBytes);
+        }
+      catch (IOException e)
+        {
+          return new i32Value(-1);
+        }
+    });
+
+    put("fuzion.sys.pipe.write"      , (interpreter, innerClazz) -> args -> {
+      var desc = args.get(1).i64Value();
+      var buff = (byte[])args.get(2).arrayData()._array;
+      var os = (OutputStream) _openStreams_.get(desc);
+      try
+        {
+          os.write(buff);
+          return new i32Value(buff.length);
+        }
+      catch (IOException e)
+        {
+          return new i32Value(-1);
+        }
+    });
+
+    put("fuzion.sys.pipe.close"      , (interpreter, innerClazz) -> args -> {
+      var desc = args.get(1).i64Value();
+      return _openStreams_.remove(desc)
+        ? new i32Value(0)
+        : new i32Value(-1);
+    });
   }
 
 

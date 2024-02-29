@@ -166,17 +166,7 @@ public class If extends ExprWithPos
    */
   private AbstractType typeFromIfOrElse()
   {
-    AbstractType result = Types.resolved.t_void;
-
-    Iterator<Expr> it = branches();
-    while (it.hasNext())
-      {
-        var t = it.next().typeForInferencing();
-        t = t == null
-          ? Types.resolved.t_void
-          : t;
-        result = result.union(t);
-      }
+    var result = Expr.union(new List<>(branches()));
     if (result==Types.t_ERROR)
       {
         new IncompatibleResultsOnBranches(pos(),

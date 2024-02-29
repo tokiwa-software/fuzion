@@ -1061,7 +1061,7 @@ public class AstErrors extends ANY
         outerLevels.add(o);
         qualifiedCalls
           .append(qualifiedCalls.length() > 0 ? " or " : "")
-          .append(code(o.qualifiedName() + ".this." + fn.baseName()));
+          .append(code(o.qualifiedName() + (o.isUniverse() ? "." : ".this.") + fn.baseName()));
       }
     error(pos,
           "Ambiguous targets found for " + operation + " to " + sbn(fn.baseName()),
@@ -1967,25 +1967,29 @@ public class AstErrors extends ANY
   }
 
 
+  // NYI: UNDER DEVELOPMENT see #2559
   public static void declarationsInLazy(String what, Expr lazy, List<Feature> declarations)
   {
-    StringBuilder declarationsMsg = new StringBuilder();
-    for (var f : declarations)
+    if (!any())
       {
-        declarationsMsg.append("declared " + s(f) + " at " + f.pos().show() + "\n");
-      }
+        StringBuilder declarationsMsg = new StringBuilder();
+        for (var f : declarations)
+          {
+            declarationsMsg.append("declared " + s(f) + " at " + f.pos().show() + "\n");
+          }
 
-    error(lazy.pos(),
-          "IMPLEMENTATION RESTRICTION: An expression used as " + what + " cannot contain feature declarations",
-          "Declared features:\n" +
-          declarationsMsg +
-          "This is an implementation restriction that should be removed in a future version of Fuzion.\n" +
-          "\n"+
-          "To solve this, create a helper feature " + sqn("lazy_value") + " that calculates the value as follows:\n" +
-          "\n" +
-          "  lazy_value => " + lazy + "\n" +
-          "\n" +
-          "and then use " + expr("lazy_value") + " as instead of the original expression.\n");
+        error(lazy.pos(),
+              "IMPLEMENTATION RESTRICTION: An expression used as " + what + " cannot contain feature declarations",
+              "Declared features:\n" +
+              declarationsMsg +
+              "This is an implementation restriction that should be removed in a future version of Fuzion.\n" +
+              "\n"+
+              "To solve this, create a helper feature " + sqn("lazy_value") + " that calculates the value as follows:\n" +
+              "\n" +
+              "  lazy_value => " + lazy + "\n" +
+              "\n" +
+              "and then use " + expr("lazy_value") + " as instead of the original expression.\n");
+      }
   }
 
 
