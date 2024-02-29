@@ -484,17 +484,13 @@ public class Impl extends ANY
    */
   AbstractType typeFromInitialValues(Resolution res, AbstractFeature formalArg, boolean reportError)
   {
-    AbstractType result = Types.resolved.t_void;
+    var exprs = new List<Expr>();
     for (var i = 0; i < _initialCalls.size(); i++)
       {
-        var io = _outerOfInitialCalls.get(i);
         var iv = initialValueFromCall(i, res);
-        AbstractType t = iv.typeForInferencing();
-        if (t != null)
-          {
-            result = result.union(t);
-          }
+        exprs.add(iv);
       }
+    var result = Expr.union(exprs);
     if (reportError)
       {
         if (_initialCalls.size() == 0)
