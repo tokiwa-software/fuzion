@@ -28,7 +28,6 @@ package dev.flang.util;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -74,17 +73,11 @@ public class ANY
       {
         return "Unknown origin.";
       }
-    try (Stream<String> lines = Files.lines(Path.of(System.getProperty(FuzionConstants.FUZION_HOME_PROPERTY) + "/../src/" + st[2].getClassName().replaceAll("\\.", "/") + ".java")))
+    try (Stream<String> lines = Files.lines(Path.of(Version.REPO_PATH).resolve("src").resolve(st[2].getClassName().replaceAll("\\.", "/") + ".java")))
       {
-        var previous = new AtomicReference<>("");
+        var l = lines.skip(st[2].getLineNumber()-1).map(str -> str.trim()).collect(Collectors.toList());
         return st[2].getFileName() + ":" + st[2].getLineNumber() + Terminal.BLUE + " \""
-          + lines.skip(st[2].getLineNumber()-1).map(str -> str.trim())
-            .takeWhile(str -> {
-              var result = !previous.get().endsWith(");");
-              previous.set(str);
-              return result;
-            })
-            .limit(7)
+          + l.stream().limit(Math.min(l.stream().takeWhile(s->!s.endsWith(");")).count()+1,7))
             .collect(Collectors.joining(" ")) + "\""
           + Terminal.REGULAR_COLOR;
       }

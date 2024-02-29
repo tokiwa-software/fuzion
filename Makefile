@@ -37,10 +37,10 @@ endif
 
 UNICODE_SOURCE = https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt
 
-JAVA_FILE_TOOLS_VERSION_IN =  $(SRC)/dev/flang/tools/Version.java.in
-JAVA_FILE_TOOLS_VERSION    =  $(BUILD_DIR)/generated/src/dev/flang/tools/Version.java
+JAVA_FILE_UTIL_VERSION_IN =  $(SRC)/dev/flang/util/Version.java.in
+JAVA_FILE_UTIL_VERSION    =  $(BUILD_DIR)/generated/src/dev/flang/util/Version.java
 
-JAVA_FILES_UTIL              = $(wildcard $(SRC)/dev/flang/util/*.java          )
+JAVA_FILES_UTIL              = $(wildcard $(SRC)/dev/flang/util/*.java          ) $(JAVA_FILE_UTIL_VERSION)
 JAVA_FILES_UTIL_UNICODE      = $(wildcard $(SRC)/dev/flang/util/unicode/*.java  )
 JAVA_FILES_AST               = $(wildcard $(SRC)/dev/flang/ast/*.java           )
 JAVA_FILES_PARSER            = $(wildcard $(SRC)/dev/flang/parser/*.java        )
@@ -60,7 +60,7 @@ JAVA_FILES_BE_EFFECTS        = $(wildcard $(SRC)/dev/flang/be/effects/*.java    
 JAVA_FILES_BE_JVM            = $(wildcard $(SRC)/dev/flang/be/jvm/*.java        )
 JAVA_FILES_BE_JVM_CLASSFILE  = $(wildcard $(SRC)/dev/flang/be/jvm/classfile/*.java)
 JAVA_FILES_BE_JVM_RUNTIME    = $(wildcard $(SRC)/dev/flang/be/jvm/runtime/*.java)
-JAVA_FILES_TOOLS             = $(wildcard $(SRC)/dev/flang/tools/*.java         ) $(JAVA_FILE_TOOLS_VERSION) $(SRC)/module-info.java
+JAVA_FILES_TOOLS             = $(wildcard $(SRC)/dev/flang/tools/*.java         ) $(SRC)/module-info.java
 JAVA_FILES_TOOLS_FZJAVA      = $(wildcard $(SRC)/dev/flang/tools/fzjava/*.java  )
 JAVA_FILES_TOOLS_DOCS        = $(wildcard $(SRC)/dev/flang/tools/docs/*.java    )
 JAVA_FILES_MISC_LOGO         = $(wildcard $(SRC)/dev/flang/misc/logo/*.java     )
@@ -434,10 +434,11 @@ $(FUZION_EBNF): $(SRC)/dev/flang/parser/Parser.java
 	mkdir -p $(@D)
 	$(FZ_SRC)/bin/ebnf.sh > $@
 
-$(JAVA_FILE_TOOLS_VERSION): $(FZ_SRC)/version.txt $(JAVA_FILE_TOOLS_VERSION_IN)
+$(JAVA_FILE_UTIL_VERSION): $(FZ_SRC)/version.txt $(JAVA_FILE_UTIL_VERSION_IN)
 	mkdir -p $(@D)
-	cat $(JAVA_FILE_TOOLS_VERSION_IN) \
+	cat $(JAVA_FILE_UTIL_VERSION_IN) \
           | sed "s^@@VERSION@@^$(VERSION)^g" \
+          | sed "s^@@REPO_PATH@@^$(dir $(abspath $(lastword $(MAKEFILE_LIST))))^g" \
           | sed "s^@@GIT_HASH@@^`cd $(FZ_SRC); echo -n \`git rev-parse HEAD\` \`git diff-index --quiet HEAD -- || echo with local changes\``^g" >$@
 ifeq ($(FUZION_REPRODUCIBLE_BUILD),true)
 	sed -i "s^@@DATE@@^^g;s^@@BUILTBY@@^^g" $@
