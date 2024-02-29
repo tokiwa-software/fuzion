@@ -215,4 +215,64 @@ void fzE_thread_join(int64_t thrd);
 void fzE_lock();
 void fzE_unlock();
 
+/**
+ * @param args array of process + arguments
+ *
+ * @param argsLen the length of args
+ *
+ * @param env array of environment variables to pass to the process, e.g. ["PATH=/usr/bin", "VAR1=some_value"]
+ *
+ * @param envLen the length of env
+ *
+ * @param result array to be filled with descriptors [process_id, std_in, std_out, std_err]
+ *
+ * @param args_str the process+arguments as a string
+ *
+ * @param env_str the environment variables, 0-terminated string of 0-terminated strings, e.g.: "PATH=/usr/bin\0VAR1=some_value\0\0"
+ *
+ * @return -1 error, 0 success
+ */
+int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLen, int64_t * result, char * args_str, char * env_str);
+
+/**
+ * wait for process `p` to exit
+ *
+ * @return -1 error, >=0 exit code
+ */
+int32_t fzE_process_wait(int64_t p);
+
+/**
+ * read nbytes bytes into `buf` from pipe `desc`.
+ *
+ * @return -1 error, bytes read on success
+ */
+int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes);
+
+/**
+ * write nbytes bytes from `buf` to pipe `desc`.
+ *
+ * @return -1 error, bytes written on success
+ */
+int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes);
+
+/**
+ * close a pipe.
+ *
+ * @return -1 error, 0 success
+ */
+int fzE_pipe_close(int64_t desc);
+
+/**
+ * open a file
+ *
+ * @param file_name the files name
+ *
+ * @param open_results [file descriptor, error number]
+ *
+ * @param mode 0 read, 1 write, 2 append
+ *
+ */
+void fzE_file_open(char * file_name, int64_t * open_results, int8_t mode);
+
+
 #endif /* fz.h  */

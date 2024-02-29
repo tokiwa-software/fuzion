@@ -1,0 +1,15 @@
+===  Test: write to stdin of process  ===
+0
+Hello from the other side.
+===  Test: read stdout of process  ===
+eecchhoo
+
+===  Test: pass environment variable  ===
+content
+
+===  Test: feed output of process 1 to process 2  ===
+'feed me to cat'
+
+===  Test: 1kb argument, piped to another process  ===
+1000
+0

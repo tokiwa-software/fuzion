@@ -54,6 +54,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <windows.h>
 #include <ws2tcpip.h>
 #include <winbase.h>
+#include <synchapi.h> // WaitForSingleObject
+#include <namedpipeapi.h>
 
 #ifdef FUZION_ENABLE_THREADS
 #include <pthread.h>
@@ -601,3 +603,210 @@ void fzE_unlock()
 #endif
 }
 
+
+// NYI make this thread safe
+// NYI option to pass stdin,stdout,stderr
+// zero on success, -1 error
+int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLen, int64_t * result, char * args_str, char * env_str) {
+
+  // create stdIn, stdOut, stdErr pipes
+  HANDLE stdIn[2];
+  HANDLE stdOut[2];
+  HANDLE stdErr[2];
+
+  SECURITY_ATTRIBUTES secAttr = { sizeof(SECURITY_ATTRIBUTES) , NULL, TRUE };
+
+  // NYI cleanup on error
+  if ( !CreatePipe(&stdIn[0], &stdIn[1], &secAttr, 0)
+    || !CreatePipe(&stdOut[0], &stdOut[1],&secAttr, 0)
+    || !CreatePipe(&stdErr[0], &stdErr[1], &secAttr, 0))
+  {
+    return -1;
+  }
+
+  // prepare create process args
+  PROCESS_INFORMATION processInfo;
+  ZeroMemory( &processInfo, sizeof(PROCESS_INFORMATION) );
+  STARTUPINFO startupInfo;
+  ZeroMemory( &startupInfo, sizeof(STARTUPINFO) );
+  startupInfo.hStdInput = stdIn[0];
+  startupInfo.hStdOutput = stdOut[1];
+  startupInfo.hStdError = stdErr[1];
+  startupInfo.dwFlags |= STARTF_USESTDHANDLES;
+
+  // Programmatically controlling which handles are inherited by new processes in Win32
+  // https://devblogs.microsoft.com/oldnewthing/20111216-00/?p=8873
+
+  SIZE_T size = 0;
+  LPPROC_THREAD_ATTRIBUTE_LIST lpAttributeList = NULL;
+  if(! (InitializeProcThreadAttributeList(NULL, 1, 0, &size) ||
+             GetLastError() == ERROR_INSUFFICIENT_BUFFER)){
+    return -1;
+  }
+  lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST) HeapAlloc(GetProcessHeap(), 0, size);
+  if(lpAttributeList == NULL){
+    return -1;
+  }
+  if(!InitializeProcThreadAttributeList(lpAttributeList,
+                      1, 0, &size)){
+    HeapFree(GetProcessHeap(), 0, lpAttributeList);
+    return -1;
+  }
+  HANDLE handlesToInherit[] =  { stdIn[0], stdOut[1], stdErr[1] };
+  if(!UpdateProcThreadAttribute(lpAttributeList,
+                      0, PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+                      handlesToInherit,
+                      3 * sizeof(HANDLE), NULL, NULL)){
+    DeleteProcThreadAttributeList(lpAttributeList);
+    HeapFree(GetProcessHeap(), 0, lpAttributeList);
+    return -1;
+  }
+
+  STARTUPINFOEX startupInfoEx;
+  ZeroMemory( &startupInfoEx, sizeof(startupInfoEx) );
+  startupInfoEx.StartupInfo = startupInfo;
+  startupInfoEx.StartupInfo.cb = sizeof(startupInfoEx);
+  startupInfoEx.lpAttributeList = lpAttributeList;
+
+  // NYI use unicode?
+  // int wchars_num = MultiByteToWideChar(CP_UTF8, 0, &str, -1, NULL, 0);
+  // wchar_t* wstr = new wchar_t[wchars_num];
+  // MultiByteToWideChar(CP_UTF8, 0, &str, -1, wstr, wchars_num);
+  // Note that an ANSI environment block is terminated by two zero bytes: one for the last string, one more to terminate the block.
+  // A Unicode environment block is terminated by four zero bytes: two for the last string, two more to terminate the block.
+
+
+  if( !CreateProcess(NULL,
+      TEXT(args_str),                // command line
+      NULL,                          // process security attributes
+      NULL,                          // primary thread security attributes
+      TRUE,                          // inherit handles listed in startupInfo
+      EXTENDED_STARTUPINFO_PRESENT,  // creation flags
+      env_str,                       // environment
+      NULL,                          // use parent's current directory
+      &startupInfoEx.StartupInfo,    // STARTUPINFOEX pointer
+      &processInfo))                 // receives PROCESS_INFORMATION
+  {
+    // cleanup all pipes
+    CloseHandle(stdIn[0]);
+    CloseHandle(stdIn[1]);
+    CloseHandle(stdOut[0]);
+    CloseHandle(stdOut[1]);
+    CloseHandle(stdErr[0]);
+    CloseHandle(stdErr[1]);
+    return -1;
+  }
+
+   DeleteProcThreadAttributeList(lpAttributeList);
+   HeapFree(GetProcessHeap(), 0, lpAttributeList);
+
+  // no need for this handle, closing
+  CloseHandle(processInfo.hThread);
+
+  // close the handles given to child process.
+  CloseHandle(stdIn[0]);
+  CloseHandle(stdOut[1]);
+  CloseHandle(stdErr[1]);
+
+  result[0] = (int64_t) processInfo.hProcess;
+  result[1] = (int64_t) stdIn[1];
+  result[2] = (int64_t) stdOut[0];
+  result[3] = (int64_t) stdErr[0];
+  return 0;
+}
+
+
+// wait for process to finish
+// returns exit code or -1 on wait-failure.
+int32_t fzE_process_wait(int64_t p){
+  DWORD status = 0;
+  WaitForSingleObject((HANDLE)p, INFINITE);
+  if (!GetExitCodeProcess((HANDLE)p, &status)){
+    return -1;
+  }
+  CloseHandle((HANDLE)p);
+  return (int32_t)status;
+}
+
+
+// returns -1 on error, 0 on pipe exhausted/closed
+// otherwise the number of bytes read
+int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
+  DWORD bytesRead;
+  if (!ReadFile((HANDLE)desc, buf, nbytes, &bytesRead, NULL)){
+    return GetLastError() == ERROR_BROKEN_PIPE
+      ? 0
+      : -1;
+  }
+  return bytesRead;
+}
+
+
+// return -1 on error, the number of written bytes otherwise
+int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
+  DWORD bytesWritten;
+  if (!WriteFile((HANDLE)desc, buf, nbytes, &bytesWritten, NULL)){
+    return -1;
+  }
+  return bytesWritten;
+}
+
+
+// return -1 on error, 0 on success
+int fzE_pipe_close(int64_t desc){
+// NYI do we need to flush?
+  return CloseHandle((HANDLE)desc)
+    ? 0
+    : -1;
+}
+
+
+// open_results[0] the filedescriptor, unchanged on error
+// open_results[1] the error number
+void fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
+{
+  // NYI use lock to make fopen and fcntl _atomic_.
+  //"In  multithreaded programs, using fcntl() F_SETFD to set the close-on-exec flag
+  // at the same time as another thread performs a fork(2) plus execve(2) is vulnerable
+  // to a race condition that may unintentionally leak the file descriptor to the
+  // program executed in the child process.  See the discussion of the O_CLOEXEC flag in open(2)
+  // for details and a remedy to the problem."
+  FILE * fp;
+  errno = 0;
+  switch (mode)
+  {
+    case 0:
+    {
+      fp = fopen(file_name,"rb");
+      if (fp!=NULL)
+      {
+        open_results[0] = (int64_t)fp;
+      }
+      break;
+    }
+    case 1:
+    {
+      fp = fopen(file_name,"a+b");
+      if (fp!=NULL)
+      {
+        open_results[0] = (int64_t)fp;
+      }
+      break;
+    }
+    case 2:
+    {
+      fp = fopen(file_name,"a+b");
+      if (fp!=NULL)
+      {
+        open_results[0] = (int64_t)fp;
+      }
+      break;
+    }
+    default:
+    {
+      fprintf(stderr,"*** Unsupported open flag. Please use: 0 for READ, 1 for WRITE, 2 for APPEND. ***\012");
+      exit(1);
+    }
+  }
+  open_results[1] = (int64_t)errno;
+}

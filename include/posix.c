@@ -36,17 +36,20 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <fcntl.h>      // fcntl
 #include <string.h>
-#include <sys/stat.h>   // mkdir
-#include <sys/types.h>  // mkdir
-#include <sys/socket.h> // socket, bind, listen, accept, connect
-#include <sys/ioctl.h>  // ioctl, FIONREAD
+
+#include <netdb.h>      // getaddrinfo
 #include <netinet/in.h> // AF_INET
 #include <poll.h>       // poll
+#include <spawn.h>
+#include <sys/ioctl.h>  // ioctl, FIONREAD
 #include <sys/mman.h>   // mmap
-#include <fcntl.h>      // fcntl
+#include <sys/socket.h> // socket, bind, listen, accept, connect
+#include <sys/stat.h>   // mkdir
+#include <sys/types.h>  // mkdir
+#include <sys/wait.h>
 #include <unistd.h>     // close
-#include <netdb.h>      // getaddrinfo
 #include <time.h>
 #include <assert.h>
 #include <dirent.h>
@@ -174,9 +177,11 @@ int fzE_close(int sockfd)
 // initialize a new socket for given
 // family, socket_type, protocol
 int fzE_socket(int family, int type, int protocol){
-  return socket(get_family(family), get_socket_type(type), get_protocol(protocol));
+  // NYI use lock to make this _atomic_.
+  int sockfd = socket(get_family(family), get_socket_type(type), get_protocol(protocol));
+  fcntl(sockfd, F_SETFD, FD_CLOEXEC);
+  return sockfd;
 }
-
 
 // get addrinfo structure used for binding/connection of a socket.
 int fzE_getaddrinfo(int family, int socktype, int protocol, int flags, char * host, char * port, struct addrinfo ** result){
@@ -558,3 +563,183 @@ void fzE_unlock()
 #endif
 }
 
+
+// NYI make this thread safe
+// NYI option to pass stdin,stdout,stderr
+// zero on success, -1 error
+int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLen, int64_t * result, char * args_str, char * env_str) {
+
+  // Describes the how and why
+  // of making file descriptors, handlers, sockets
+  // none inheritable (CLOEXEC, HANDLE_FLAG_INHERIT):
+  // https://peps.python.org/pep-0446/
+
+  // Some problems with fork, exec:
+  // https://www.microsoft.com/en-us/research/publication/a-fork-in-the-road/
+
+  // how it is done in jdk:
+  // https://github.com/openjdk/jdk/blob/c2d9fa26ce903be7c86a47db5ff289cdb9de3a62/src/java.base/unix/native/libjava/ProcessImpl_md.c#L53
+
+  int stdIn[2];
+  int stdOut[2];
+  int stdErr[2];
+  if (pipe(stdIn ) == -1)
+  {
+    return -1;
+  }
+  if (pipe(stdOut) == -1)
+  {
+    close(stdIn[0]);
+    close(stdIn[1]);
+    return -1;
+  }
+  if (pipe(stdErr) == -1)
+  {
+    close(stdIn[0]);
+    close(stdIn[1]);
+    close(stdOut[0]);
+    close(stdOut[1]);
+    return -1;
+  }
+
+  fcntl(stdIn[1], F_SETFD, FD_CLOEXEC);
+  fcntl(stdOut[0], F_SETFD, FD_CLOEXEC);
+  fcntl(stdErr[0], F_SETFD, FD_CLOEXEC);
+
+  pid_t processId;
+
+  posix_spawn_file_actions_t file_actions;
+
+  if (posix_spawn_file_actions_init(&file_actions) != 0)
+    exit(1);
+
+  posix_spawn_file_actions_adddup2(&file_actions, stdIn[0], 0);
+  posix_spawn_file_actions_adddup2(&file_actions, stdOut[1], 1);
+  posix_spawn_file_actions_adddup2(&file_actions, stdErr[1], 2);
+  posix_spawn_file_actions_addclose(&file_actions, stdIn[0]);
+  posix_spawn_file_actions_addclose(&file_actions, stdOut[1]);
+  posix_spawn_file_actions_addclose(&file_actions, stdErr[1]);
+
+  args[argsLen -1] = NULL;
+  env[envLen -1] = NULL;
+
+  int s = posix_spawnp(
+        &processId,
+        args[0],
+        &file_actions,
+        NULL,
+        args, // args
+        env  // environment
+        );
+
+  close(stdIn[0]);
+  close(stdOut[1]);
+  close(stdErr[1]);
+
+  posix_spawn_file_actions_destroy(&file_actions);
+
+  if(s != 0)
+    {
+      close(stdIn[0]);
+      close(stdIn[1]);
+      close(stdOut[0]);
+      close(stdOut[1]);
+      close(stdErr[0]);
+      close(stdErr[1]);
+      return -1;
+    }
+
+  result[0] = processId;
+  result[1] = (int64_t) stdIn[1];
+  result[2] = (int64_t) stdOut[0];
+  result[3] = (int64_t) stdErr[0];
+  return 0;
+}
+
+
+// wait for process to finish
+// returns exit code or -1 on wait-failure.
+int32_t fzE_process_wait(int64_t p){
+  int status;
+  return waitpid(p, &status, WUNTRACED | WCONTINUED) == -1
+    ? -1
+    : WIFEXITED(status)
+    // man waitpid: "This macro should be employed only if WIFEXITED returned true."
+    ? WEXITSTATUS(status)
+    : 1;
+}
+
+
+// returns -1 on error, 0 on pipe exhausted/closed
+// otherwise the number of bytes read
+int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
+  return read((int) desc, buf, nbytes);
+}
+
+
+// return -1 on error, the number of written bytes otherwise
+int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
+  return write((int) desc, buf, nbytes);
+}
+
+
+// return -1 on error, 0 on success
+int fzE_pipe_close(int64_t desc){
+// NYI do we need to flush?
+  return close((int) desc);
+}
+
+
+// open_results[0] the filedescriptor, unchanged on error
+// open_results[1] the error number
+void fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
+{
+  // NYI use lock to make fopen and fcntl and process spawning _atomic_.
+  //"In  multithreaded programs, using fcntl() F_SETFD to set the close-on-exec flag
+  // at the same time as another thread performs a fork(2) plus execve(2) is vulnerable
+  // to a race condition that may unintentionally leak the file descriptor to the
+  // program executed in the child process.  See the discussion of the O_CLOEXEC flag in open(2)
+  // for details and a remedy to the problem."
+  FILE * fp;
+  errno = 0;
+  switch (mode)
+  {
+    case 0:
+    {
+      fp = fopen(file_name,"rb");
+      if (fp!=NULL)
+      {
+        open_results[0] = (int64_t)fp;
+      }
+      break;
+    }
+    case 1:
+    {
+      fp = fopen(file_name,"a+b");
+      if (fp!=NULL)
+      {
+        open_results[0] = (int64_t)fp;
+      }
+      break;
+    }
+    case 2:
+    {
+      fp = fopen(file_name,"a+b");
+      if (fp!=NULL)
+      {
+        open_results[0] = (int64_t)fp;
+      }
+      break;
+    }
+    default:
+    {
+      fprintf(stderr,"*** Unsupported open flag. Please use: 0 for READ, 1 for WRITE, 2 for APPEND. ***\012");
+      exit(1);
+    }
+  }
+  if ((FILE *)open_results[0] != NULL)
+    {
+      fcntl(fileno((FILE *)open_results[0]), F_SETFD, FD_CLOEXEC);
+    }
+  open_results[1] = (int64_t)errno;
+}
