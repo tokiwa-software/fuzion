@@ -17,14 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-dot_type_call_ambiguity is
-
-  a => 3
-
-  type.a => 4
-
-  say dot_type_call_ambiguity.a
+override NAME = dot_type_call_on_type_parameter
+include ../simple.mk

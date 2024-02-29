@@ -796,25 +796,15 @@ public class Call extends AbstractCall
     if (_calledFeature == null)
       {
         res.resolveDeclarations(targetFeature);
-        var fos = res._module.lookup(targetFeature, _name, this, _target == null, false);
-        for (var fo : fos)
-          {
-            if (fo._feature instanceof Feature ff && ff.state().atLeast(State.RESOLVED_DECLARATIONS))
-              {
-                ff.resolveArgumentTypes(res);
-              }
-          }
-        var calledName = FeatureName.get(_name, _actuals.size());
-        var fo = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res));
-        if (fo == null)
-          { // handle implicit calls `f()` that expand to `f.call()`:
-            fo = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> isSpecialWrtArgs(ff));
-          }
-        else if (// fo != null &&
-                 fo._feature != Types.f_ERROR &&
-                 _generics.isEmpty() &&
-                 _actuals.size() != fo._feature.valueArguments().size() &&
-                 !fo._feature.hasOpenGenericsArgList(res))
+        var found = findOnTarget(res, targetFeature);
+        var fos = found._v0;
+        var fo  = found._v1;
+        if (fo != null &&
+            !isSpecialWrtArgs(fo._feature) &&
+            fo._feature != Types.f_ERROR &&
+            _generics.isEmpty() &&
+            _actuals.size() != fo._feature.valueArguments().size() &&
+            !fo._feature.hasOpenGenericsArgList(res))
           {
             splitOffTypeArgs(res, fo._feature, thiz);
           }
@@ -841,6 +831,7 @@ public class Call extends AbstractCall
                   }
                 else
                   {
+                    var calledName = FeatureName.get(_name, _actuals.size());
                     AstErrors.calledFeatureNotFound(this,
                                                     calledName,
                                                     tf,
@@ -881,6 +872,39 @@ public class Call extends AbstractCall
        Errors.any() || _target        != null || _pendingError != null);
 
     return !targetVoid;
+  }
+
+
+  /**
+   * Find the feature that may be called on the given target
+   *
+   * @param res the resolution instance
+   *
+   * @param target the - assumed - target of the call
+   *
+   * @return a pair of
+   *          1) all found features matching the name
+   *          2) the matching feature or null if none was found
+   */
+  private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(Resolution res, AbstractFeature target)
+  {
+    var calledName = FeatureName.get(_name, _actuals.size());
+    var fos = res._module.lookup(target, _name, this, _target == null, false);
+    for (var fo : fos)
+      {
+        if (fo._feature instanceof Feature ff && ff.state().atLeast(State.RESOLVED_DECLARATIONS))
+          {
+            ff.resolveArgumentTypes(res);
+          }
+      }
+    var fo = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName,
+      ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res));
+    if (fo == null)
+      { // handle implicit calls `f()` that expand to `f.call()`:
+        fo =
+          FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> isSpecialWrtArgs(ff));
+      }
+    return new Pair<>(fos, fo);
   }
 
 
@@ -1451,12 +1475,12 @@ public class Call extends AbstractCall
    */
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
+    v.actionBefore(this, outer);
     _generics = _generics.map(g -> g.visit(v, outer));
     if (v.doVisitActuals())
       {
         visitActuals(v, outer);
       }
-    v.actionBefore(this, outer);
     if (_target != null)
       {
         _target = _target.visit(v, outer);
@@ -2592,17 +2616,26 @@ public class Call extends AbstractCall
           // left hand side of dot-type-call
           tt = ut.tryResolve(res, thiz);
         }
-      if (tt != null && tt != Types.t_ERROR && !tt.isGenericArgument())
+      if (tt != null && tt != Types.t_ERROR)
         {
-          var ttf = tt.featureOfType().typeFeature(res);
-          var fos = res._module.lookup(ttf, _name, this, false, false);
-          var fo = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, FeatureName.get(_name, _actuals.size()), ff -> mayMatchArgList(ff, false));
-          var f = fo == null ? null : fo._feature;
+          var tf = (tt.isGenericArgument() ? tt.genericArgument().constraint(res) : tt).featureOfType();
+          var ttf = tf.typeFeature(res);
+          var fo = findOnTarget(res, tf)._v1;
+          var tfo = findOnTarget(res, ttf)._v1;
+          var f = tfo == null ? null : tfo._feature;
           if (f != null && f.outer() != null && f.outer().isTypeFeature())
             {
-              // we found a feature that fits a dot-type-call.
-              _calledFeature = f;
-              _target = new DotType(_pos, _target.asUnresolvedType()).resolveTypes(res, thiz);
+              if (fo != null)
+                {
+                  AstErrors.ambiguousCall(this, fo._feature, tfo._feature);
+                  setToErrorState();
+                }
+              else
+                {
+                  // we found a feature that fits a dot-type-call.
+                  _calledFeature = f;
+                  _target = new DotType(_pos, _target.asUnresolvedType()).resolveTypes(res, thiz);
+                }
             }
           if (_calledFeature != null &&
               _generics.isEmpty() &&

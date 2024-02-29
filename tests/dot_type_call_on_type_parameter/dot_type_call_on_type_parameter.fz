@@ -21,10 +21,15 @@
 #
 # -----------------------------------------------------------------------
 
-dot_type_call_ambiguity is
+dot_type_call_on_type_parameter is
 
-  a => 3
+  A ref is
+    type.abstr i32 => abstract
 
-  type.a => 4
+  B : A is
+    type.abstr i32 => 7
 
-  say dot_type_call_ambiguity.a
+  a(T type: A) =>
+    say T.abstr
+
+  a B

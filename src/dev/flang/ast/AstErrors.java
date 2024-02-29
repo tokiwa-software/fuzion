@@ -2081,6 +2081,14 @@ public class AstErrors extends ANY
       "To solve this, increase the visibility of " + s(f) + " to at least " + s(f.outer().visibility().featureVisibility()));
   }
 
+  public static void ambiguousCall(Call c, AbstractFeature f, AbstractFeature tf)
+  {
+    error(c.pos(), "This call is ambiguous.",
+      "Called feature could be: " + s(f)  + "\n" +
+      "or                     : " + s(tf) + "\n" +
+      "To solve this, rename one of the called features.");
+  }
+
 }
 
 /* end of file */
