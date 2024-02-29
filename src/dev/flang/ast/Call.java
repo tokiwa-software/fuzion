@@ -2615,10 +2615,11 @@ public class Call extends AbstractCall
           // check if this might be a
           // left hand side of dot-type-call
           tt = ut.tryResolve(res, thiz);
+          tt = tt != null && tt != Types.t_ERROR && tt.isGenericArgument() ? tt.genericArgument().constraint(res) : tt;
         }
       if (tt != null && tt != Types.t_ERROR)
         {
-          var tf = (tt.isGenericArgument() ? tt.genericArgument().constraint(res) : tt).featureOfType();
+          var tf = tt.featureOfType();
           var ttf = tf.typeFeature(res);
           var fo = findOnTarget(res, tf)._v1;
           var tfo = findOnTarget(res, ttf)._v1;
