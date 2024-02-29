@@ -2624,7 +2624,12 @@ public class Call extends AbstractCall
           var fo = findOnTarget(res, tf)._v1;
           var tfo = findOnTarget(res, ttf)._v1;
           var f = tfo == null ? null : tfo._feature;
-          if (f != null && f.outer() != null && f.outer().isTypeFeature())
+          if (f != null
+              && f.outer() != null
+              /* omitting dot-type does not work when calling
+               the inherited methods of `Type`. Otherwise we
+               would always have an ambiguity when calling `as_string` */
+              && f.outer().isTypeFeature())
             {
               if (fo != null)
                 {

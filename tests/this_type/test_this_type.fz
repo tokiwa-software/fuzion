@@ -127,7 +127,7 @@ test_redef_using_fixed =>
 
   b(val String) : a is
 
-    redef as_string => "instance of {(Types.get b).as_string} with $val"
+    redef as_string => "instance of {b.type.as_string} with $val"
 
     redef me2 b.this => b.this
 
@@ -147,7 +147,7 @@ test_redef_using_fixed =>
 
   c : b "from c" is
 
-    redef as_string => "instance of {(Types.get c).as_string}"
+    redef as_string => "instance of {c.type.as_string}"
 
     # redefine abstract feature with co-variant argument and result
     #
