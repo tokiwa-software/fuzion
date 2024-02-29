@@ -1,0 +1,63 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature io.dir.open
+#
+# -----------------------------------------------------------------------
+
+
+# effect for manipulating open directories
+# T is used to distinguish several open directories
+#
+module:public open(public T type,
+                   private fd i64,
+                   public path String) : simple_effect is
+
+  # reads the next entry of this directory
+  #
+  # returns the name of the next entry, or an error if the operation fails
+  # for some reason (including that there are no more entries).
+  #
+  public read outcome String ! io.dir.read =>
+    io.dir.read.read fd
+
+
+# short hand to get the currently
+# installed open effect
+# for type T from the environment.
+# see `use` on how to use this.
+#
+public open(T type) =>
+  (open T).env
+
+
+# unit type used internally by open- and use-
+# short hands which can be used when one does not need
+# to distinguish between several open directories.
+#
+private:public open_unique_type is
+
+
+# short hand to get the currently
+# installed open effect
+# from the environment.
+# see `use` on how to use this.
+#
+public open =>
+  (open open_unique_type).env

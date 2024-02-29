@@ -1,0 +1,65 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature io.dir.read
+#
+# -----------------------------------------------------------------------
+
+# read -- effect providing reading operations in directories
+#
+public read(ro Read_Handler) : simple_effect is
+
+
+  # reads the next entry of this directory
+  #
+  # returns the name of the next entry, or an error if the operation fails
+  # for some reason (including that there are no more entries).
+  #
+  module read(fd i64) outcome String =>
+    r := ro.read fd
+    replace
+    r
+
+
+  # the default directory reading operation reading the next entry via fuzion.sys.fileio.read_dir
+  #
+  type.default_read_handler : io.dir.Read_Handler is
+    read(fd i64) outcome String =>
+      if fuzion.sys.fileio.read_dir_has_next fd
+        fuzion.sys.fileio.read_dir fd
+      else
+        error "no more directory entries"
+
+
+  # install default effect io.dir.read
+  type.install_default =>
+    (io.dir.read default_read_handler).default
+
+
+# short-hand for accessing read effect in current environment
+#
+public read =>
+  read.type.install_default
+  read.env
+
+
+# reference to the reading operations that could take place
+#
+private:public Read_Handler ref is
+  read(fd i64) outcome String => abstract
