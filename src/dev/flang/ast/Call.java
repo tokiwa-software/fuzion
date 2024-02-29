@@ -884,27 +884,6 @@ public class Call extends AbstractCall
   }
 
 
-  protected void findTypeFeature(Resolution res, AbstractType tt, AbstractFeature thiz)
-  {
-    var ttf = tt.featureOfType().typeFeature(res);
-    var fos = res._module.lookup(ttf, _name, this, false, false);
-    var fo = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, FeatureName.get(_name, _actuals.size()), ff -> mayMatchArgList(ff, false));
-    var f = fo == null ? null : fo._feature;
-    if (f != null && f.outer() != null && f.outer().isTypeFeature())
-      {
-        _calledFeature = f;
-        _target = new DotType(_pos, tt).resolveTypes(res, thiz);
-      }
-    if (_calledFeature != null &&
-        _generics.isEmpty() &&
-        _actuals.size() != f.valueArguments().size() &&
-        !f.hasOpenGenericsArgList(res))
-      {
-        splitOffTypeArgs(res, f, thiz);
-      }
-  }
-
-
   /**
    * Check if there is a pending error from an unsuccessful attempt to find the
    * called feature.  If so, report the corresponding error and set this call
@@ -2591,25 +2570,55 @@ public class Call extends AbstractCall
   private AbstractFeature _resolvedFor;
 
 
-  public void resolveTypeCall(Resolution res, AbstractFeature thiz)
+  /**
+   * try resolving this call as dot-type-call
+   *
+   * On success _calledFeature and _target will be set.
+   * No errors are raised if this is not successful
+   * since then we are probably dealing with a normal call.
+   *
+   * @param res the resolution instance.
+   *
+   * @param thiz the context in which to resolve.
+   */
+  public void tryResolveTypeCall(Resolution res, AbstractFeature thiz)
   {
     if (_calledFeature == null && _target != null && thiz.state().atLeast(State.RESOLVED_INHERITANCE))
     {
       var tt = _target.asUnresolvedType();
-      if (tt != null && tt instanceof UnresolvedType ut && !thiz.isTypeFeature() /* NYI: see float.fz for examples */)
+      if (tt != null && tt instanceof UnresolvedType ut)
         {
+          // check if this might be a
+          // left hand side of dot-type-call
           tt = ut.tryResolve(res, thiz);
         }
       if (tt != null && tt != Types.t_ERROR && !tt.isGenericArgument())
         {
-          findTypeFeature(res, tt, thiz);
-        }
-      if (_calledFeature != null)
-        {
-          resolveTypesOfActuals(res,thiz);
+          var ttf = tt.featureOfType().typeFeature(res);
+          var fos = res._module.lookup(ttf, _name, this, false, false);
+          var fo = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, FeatureName.get(_name, _actuals.size()), ff -> mayMatchArgList(ff, false));
+          var f = fo == null ? null : fo._feature;
+          if (f != null && f.outer() != null && f.outer().isTypeFeature())
+            {
+              // we found a feature that fits a dot-type-call.
+              _calledFeature = f;
+              _target = new DotType(_pos, _target.asUnresolvedType()).resolveTypes(res, thiz);
+            }
+          if (_calledFeature != null &&
+              _generics.isEmpty() &&
+              _actuals.size() != f.valueArguments().size() &&
+              !f.hasOpenGenericsArgList(res))
+            {
+              splitOffTypeArgs(res, f, thiz);
+            }
+          if (_calledFeature != null)
+            {
+              resolveTypesOfActuals(res,thiz);
+            }
         }
     }
   }
+
 
   /**
    * determine the static type of all expressions and declared features in this feature
