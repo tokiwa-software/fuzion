@@ -53,11 +53,14 @@ import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
@@ -615,6 +618,60 @@ public class Intrinsics extends ANY
     putUnsafe("fuzion.sys.fileio.munmap", (interpreter, innerClazz) -> args ->
         {
           return new i32Value(0);
+        });
+    putUnsafe("fuzion.sys.fileio.open_dir", (interpreter, innerClazz) -> args ->
+        {
+          var open_results = (long[])args.get(2).arrayData()._array;
+          try
+            {
+              var i = Files.walk(Paths.get(utf8ByteArrayDataToString(args.get(1))), 1).iterator();
+              interface CloseableIterator<T> extends Iterator<T>, AutoCloseable {};
+              open_results[0] = _openStreams_.add(new CloseableIterator<Path>() {
+                public void close() throws IOException
+                {
+                  // do nothing :)
+                }
+
+                public boolean hasNext() {
+                  return i.hasNext();
+                }
+
+                public Path next() {
+                  return i.next();
+                }
+
+                public void remove() {
+                  i.remove();
+                }
+              });
+            }
+          catch (IOException e)
+            {
+              open_results[1] = -1;
+            }
+
+          return Value.EMPTY_VALUE;
+        });
+    putUnsafe("fuzion.sys.fileio.read_dir", (interpreter, innerClazz) -> args ->
+        {
+          var i = (Iterator<Path>)_openStreams_.get(args.get(1).i64Value());
+          try
+            {
+              return Interpreter.value(i.next().getFileName().toString());
+            }
+          catch (NoSuchElementException e)
+            {
+              return Interpreter.value("NoSuchElementException encountered!");
+            }
+        });
+    putUnsafe("fuzion.sys.fileio.read_dir_has_next", (interpreter, innerClazz) -> args ->
+        {
+          return new boolValue(((Iterator<Path>)_openStreams_.get(args.get(1).i64Value())).hasNext());
+        });
+    putUnsafe("fuzion.sys.fileio.close_dir", (interpreter, innerClazz) -> args ->
+        {
+          _openStreams_.remove(args.get(1).i64Value());
+          return new i64Value(0);
         });
     put("fuzion.sys.fileio.mapped_buffer_get", (interpreter, innerClazz) -> args ->
         {

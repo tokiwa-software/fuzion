@@ -55,6 +55,14 @@ int fzE_setenv(const char *name, const char *value, int overwrite);
 // unset environment variable, return zero on success
 int fzE_unsetenv(const char *name);
 
+void fzE_opendir(const char *pathname, int64_t * result);
+
+char * fzE_readdir(intptr_t * dir);
+
+int fzE_read_dir_has_next(intptr_t * dir);
+
+int fzE_closedir(intptr_t * dir);
+
 // 0 = blocking
 // 1 = none_blocking
 int fzE_set_blocking(int sockfd, int blocking);

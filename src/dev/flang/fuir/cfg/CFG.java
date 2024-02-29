@@ -262,6 +262,10 @@ public class CFG extends ANY
     put("fuzion.sys.stdin.stdin0"        , (cfg, cl) -> { } );
     put("fuzion.sys.out.stdout"          , (cfg, cl) -> { } );
     put("fuzion.sys.err.stderr"          , (cfg, cl) -> { } );
+    put("fuzion.sys.fileio.open_dir"     , (cfg, cl) -> { } );
+    put("fuzion.sys.fileio.read_dir"     , (cfg, cl) -> { } );
+    put("fuzion.sys.fileio.read_dir_has_next", (cfg, cl) -> { } );
+    put("fuzion.sys.fileio.close_dir"    , (cfg, cl) -> { } );
 
     put("i8.prefix -°"                   , (cfg, cl) -> { } );
     put("i16.prefix -°"                  , (cfg, cl) -> { } );

@@ -488,6 +488,26 @@ public class Intrinsics extends ANY
     )).ret());
     put("fuzion.sys.fileio.mapped_buffer_get", (c,cl,outer,in) -> A0.castTo("int8_t*").index(A1).ret());
     put("fuzion.sys.fileio.mapped_buffer_set", (c,cl,outer,in) -> A0.castTo("int8_t*").index(A1).assign(A2.castTo("int8_t")));
+    put("fuzion.sys.fileio.open_dir", (c,cl,outer,in) -> CExpr.call("fzE_opendir", new List<CExpr>(
+      A0.castTo("char *"),
+      A1.castTo("int64_t *")
+    )).ret());
+    put("fuzion.sys.fileio.read_dir", (c,cl,outer,in) ->
+      {
+        var d_name = new CIdent("d_name");
+        var rc = c._fuir.clazzResultClazz(cl);
+        return CStmnt.seq(
+          CStmnt.decl("char *", d_name, CExpr.call("fzE_readdir", new List<>(A0.castTo("intptr_t *")))),
+          CStmnt.iff(d_name.eq(new CIdent("NULL")), CStmnt.seq(
+            c.heapClone(c.constString("error in read_dir encountered NULL pointer".getBytes(StandardCharsets.UTF_8)), rc).ret())),
+          c.heapClone(c.constString(d_name, CExpr.call("strlen", new List<>(d_name)).castTo("int")), rc).ret()
+        );
+      });
+    put("fuzion.sys.fileio.read_dir_has_next", (c,cl,outer,in) -> {
+      return CStmnt.iff(CExpr.call("fzE_read_dir_has_next", new List<>(A0.castTo("intptr_t *"))), c._names.FZ_FALSE.ret(),
+        c._names.FZ_TRUE.ret());
+    });
+    put("fuzion.sys.fileio.close_dir", (c,cl,outer,in) -> CExpr.call("fzE_closedir", new List<>(A0.castTo("intptr_t *"))).ret());
 
     put("fuzion.sys.fileio.flush"      , (c,cl,outer,in) ->
       CExpr.call("fflush", new List<>(A0.castTo("FILE *"))).ret());

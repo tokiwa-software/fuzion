@@ -25,6 +25,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *---------------------------------------------------------------------*/
 
 #define _POSIX_C_SOURCE 200809L
+#define _GNU_SOURCE
 
 #ifdef GC_THREADS
 #include <gc.h>
@@ -48,6 +49,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <netdb.h>      // getaddrinfo
 #include <time.h>
 #include <assert.h>
+#include <dirent.h>
 #ifdef FUZION_ENABLE_THREADS
 #include <pthread.h>
 #endif
@@ -67,6 +69,35 @@ int fzE_setenv(const char *name, const char *value, int overwrite){
 // unset environment variable, return zero on success
 int fzE_unsetenv(const char *name){
   return unsetenv(name);
+}
+
+
+void fzE_opendir(const char *pathname, int64_t * result) {
+  errno = 0;
+
+  result[0] = (uintptr_t) opendir(pathname);
+  result[1] = errno;
+}
+
+char * fzE_readdir(intptr_t * dir) {
+  struct dirent * d = readdir((DIR *)dir);
+
+  return (d == NULL) ? NULL : &(*d->d_name);
+}
+
+
+int fzE_read_dir_has_next(intptr_t * dir) {
+  DIR * dir1 = (DIR *)dir;
+  long pos = telldir(dir1);
+  struct dirent * dir2 = readdir(dir1);
+  seekdir(dir1, pos);
+
+  return dir2 == NULL ? 1 : 0;
+}
+
+
+int fzE_closedir(intptr_t * dir) {
+  return closedir((DIR *)dir);
 }
 
 
