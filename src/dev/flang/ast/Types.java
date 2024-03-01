@@ -178,6 +178,7 @@ public class Types extends ANY
     public final AbstractFeature f_Types_get;
     public final AbstractFeature f_Lazy;
     public final AbstractFeature f_Unary;
+    public final AbstractFeature f_unwrap;
     public final Set<AbstractType> numericTypes;
     public static interface CreateType
     {
@@ -236,6 +237,7 @@ public class Types extends ANY
       f_Types_get                  = f_Types.get(mod, "get");
       f_Lazy                       = universe.get(mod, LAZY_NAME);
       f_Unary                      = universe.get(mod, UNARY_NAME);
+      f_unwrap                     = universe.get(mod, "unwrap");
       numericTypes = new TreeSet<AbstractType>(new List<>(
         t_i8,
         t_i16,

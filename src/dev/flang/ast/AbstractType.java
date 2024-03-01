@@ -1183,6 +1183,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
     int result = 0;
 
+    // NYI: BUG: unresolved types are sometimes interned.
+    if (other instanceof UnresolvedType)
+      {
+        return -1;
+      }
+
     if (this != other)
       {
         result =

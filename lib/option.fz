@@ -30,7 +30,8 @@
 public option(public T type)
   : choice T nil,
     monad T (option T),
-    Sequence T
+    Sequence T,
+    unwrap T (try option.this)
 is
 
   # Does this option contain a value of type T?
@@ -143,6 +144,14 @@ is
   # return function
   #
   public fixed type.return (a T) => option a
+
+
+  # unwrap this option
+  #
+  public unwrap ! try option.this =>
+    option.this ? v T => v
+                | nil => (try option.this).env.raise (error "error unwrapping option: {option.this}")
+
 
 
 # option with 1 argument provides an short-hand to wrap a value into an option

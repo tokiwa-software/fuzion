@@ -737,6 +737,35 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
 
 
   /**
+   * Do automatic unwrapping of features inheriting `unwrap`
+   * if the expected type fits the unwrapped type.
+   *
+   * @param res the resolution instance
+   *
+   * @param outer the context where the unwrapping may take place
+   *
+   * @param expectedType the expected type
+   *
+   * @return the unwrapped expression
+   */
+  public Expr unwrap(Resolution res, AbstractFeature outer, AbstractType expectedType)
+  {
+    var t = type();
+    return  !expectedType.isAssignableFrom(t)
+      && !t.isGenericArgument()
+      && t.featureOfType()
+          .inherits()
+          .stream()
+          .anyMatch(c ->
+            c.calledFeature().equals(Types.resolved.f_unwrap)
+            && !c.actualTypeParameters().isEmpty()
+            && expectedType.isAssignableFrom(c.actualTypeParameters().get(0).applyTypePars(t)))
+      ? new ParsedCall(this, new ParsedName(pos(), "unwrap")).resolveTypes(res, outer)
+      : this;
+  }
+
+
+  /**
    * This expression as a compile time constant.
    */
   public AbstractConstant asCompileTimeConstant()

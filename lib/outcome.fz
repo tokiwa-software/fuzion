@@ -51,7 +51,8 @@
 #
 public outcome(public T type) :
   choice T error, /* ...  NYI: this should be open generic! */
-  monad T (outcome T)
+  monad T (outcome T),
+  unwrap T (try outcome.this)
 is
 
   # Does this outcome contain a value of type T?
@@ -173,6 +174,13 @@ is
   public bind(B type, f T -> outcome B) outcome B =>
     outcome.this ? v T => f v
                  | e error => e
+
+
+  # unwrap this outcome
+  #
+  unwrap ! (try outcome.this) =>
+    outcome.this ? v T     => v
+                 | e error => (try outcome.this).env.raise e
 
 
   # return function

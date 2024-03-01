@@ -1716,14 +1716,17 @@ public class Feature extends AbstractFeature
             public void  action(If             i, AbstractFeature outer) { i.propagateExpectedType(res, outer); }
           });
 
-        /* extra pass to automatically wrap values into 'Lazy' */
+        /*
+         * extra pass to automatically wrap values into 'Lazy'
+         * or unwrap values inherting `unwrap`
+         */
         visit(new FeatureVisitor() {
             // we must do this from the outside of calls towards the inside to
             // get the corrected nesting of Lazy features created during this
             // phase
             public boolean visitActualsLate() { return true; }
-            public void  action(AbstractAssign a, AbstractFeature outer) { a.wrapValueInLazy  (res, outer); }
-            public Expr  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, outer); return c; }
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.wrapValueInLazy  (res, outer); a.unwrapValue(res, outer); }
+            public Expr  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, outer); c.unwrapActuals(res, outer); return c; }
           });
 
         if (isConstructor())

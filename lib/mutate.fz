@@ -122,7 +122,8 @@ public mutate : simple_effect is
 
     # initial value, will be updated by 'put' or 'infix <-'.
     private mutable_value T
-    ) : mutable_element
+    ) : mutable_element,
+        unwrap T mutate
   is
 
 
@@ -181,6 +182,11 @@ public mutate : simple_effect is
     #
     public copy new T =>
       new T get
+
+
+    # unwrap this mutable value
+    #
+    public unwrap ! mutate => get
 
 
     # returns `as_string` of the current value
@@ -350,3 +356,6 @@ public Mutable_Array(public T type) ref : Sequence T is
   # of O(n) for counting the elements.
   #
   public redef count => length
+
+
+

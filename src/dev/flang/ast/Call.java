@@ -2874,6 +2874,20 @@ public class Call extends AbstractCall
 
 
   /**
+   * During type inference: automatically unwrap actuals.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param outer the feature that contains this expression
+   */
+  public void unwrapActuals(Resolution res, AbstractFeature outer)
+  {
+    applyToActualsAndFormalTypes((actual, formalType) -> actual.unwrap(res, outer, formalType));
+  }
+
+
+  /**
    * Helper for propagateExpectedType and wrapActualsInLazy to apply `f` to all
    * actual value arguments and their formal types.
    *
