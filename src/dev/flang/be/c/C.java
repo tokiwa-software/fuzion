@@ -779,16 +779,16 @@ public class C extends ANY
     _options.verbosePrintln(" * " + command.toString("", " ", ""));
     try
       {
+        if (_options._keepGeneratedCode)
+          {
+            Files.copy(Path.of(cf.fileName()), Path.of(System.getProperty("user.dir"), name + ".c"), StandardCopyOption.REPLACE_EXISTING);
+          }
         var p = new ProcessBuilder().inheritIO().command(command).start();
         p.waitFor();
         if (p.exitValue() != 0)
           {
             Errors.error("C backend: C compiler failed",
                          "C compiler call '" + command.toString("", " ", "") + "' failed with exit code '" + p.exitValue() + "'");
-          }
-        else if (_options._keepGeneratedCode)
-          {
-            Files.copy(Path.of(cf.fileName()), Path.of(System.getProperty("user.dir"), name + ".c"), StandardCopyOption.REPLACE_EXISTING);
           }
       }
     catch (IOException | InterruptedException io)
