@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue2492.fz:24:7: error 1: Failed to infer type of expression.
+_ := (x->3).call
+------^^^^
+Expression with unknown type: 'x->3'
+
+one error.
