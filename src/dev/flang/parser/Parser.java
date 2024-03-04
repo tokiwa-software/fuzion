@@ -3588,8 +3588,7 @@ invariant   : "inv" exprs
   /**
    * Parse implRout
    *
-implRout    : block
-            | "is" "abstract"
+implRout    : "is" "abstract"
             | "is" "intrinsic"
             | "is" "intrinsic_constructor"
             | "is" "native"
@@ -3603,24 +3602,21 @@ implRout    : block
   {
     SourcePosition pos = tokenSourcePos();
     Impl result;
-
-    if (hasType && currentAtMinIndent() == Token.t_is)
+    var has_is    = skip(true, Token.t_is);
+    if (hasType && has_is)
       {
         AstErrors.constructorWithReturnType(pos);
       }
-
-    var routine =
-      currentAtMinIndent() == Token.t_lbrace ||
-      skip(true, Token.t_is)                 ||
-      hasType && skip(true, "=>");
-    if      (routine               ) { result = skip(Token.t_abstract             ) ? Impl.ABSTRACT              :
+    if      (has_is ||
+             skip(true, "=>")      ) { result = skip(Token.t_abstract             ) ? Impl.ABSTRACT              :
                                                 skip(Token.t_intrinsic            ) ? Impl.INTRINSIC             :
                                                 skip(Token.t_intrinsic_constructor) ? Impl.INTRINSIC_CONSTRUCTOR :
                                                 skip(Token.t_native               ) ? Impl.NATIVE                :
-                                                new Impl(pos, block()       , Impl.Kind.Routine   ); }
-    else if (skip(true, "=>"      )) { result = new Impl(pos, block()       , Impl.Kind.RoutineDef); }
-    else if (skip(true, Token.t_of)) { result = new Impl(pos, block()       , Impl.Kind.Of        ); }
-    else if (skipFullStop()        ) { result = new Impl(pos, new Block()   , Impl.Kind.Routine   ); }
+                                                new Impl(pos, block()    , has_is  ? Impl.Kind.Routine :
+                                                                           hasType ? Impl.Kind.Routine
+                                                                                   : Impl.Kind.RoutineDef); }
+    else if (skip(true, Token.t_of)) { result = new Impl(pos, block()    , Impl.Kind.Of        ); }
+    else if (skipFullStop()        ) { result = new Impl(pos, new Block(), Impl.Kind.Routine   ); }
     else
       {
         syntaxError(tokenPos(), "'is', '{' or '=>' in routine declaration", "implRout");
