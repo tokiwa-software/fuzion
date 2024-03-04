@@ -25,7 +25,7 @@
 
 # codepoint -- represents a unicode codepoint
 #
-public codepoint(public val u32) : String
+public codepoint(public redef val u32) : String
   pre
     debug: (codepoint.type.range.contains val)
     debug: !codepoint.type.utf16_surrogate.contains val

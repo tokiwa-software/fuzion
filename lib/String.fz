@@ -751,6 +751,13 @@ public String ref : property.equatable, property.hashable, property.orderable is
     as_codepoints ∀ cp -> cp.is_ascii
 
 
+  public val u32
+  pre
+    codepoint_length = 1
+  =>
+    as_codepoints.first.val
+
+
   # monoid of strings with infix + operation.
   #
   public type.concat : Monoid String is
