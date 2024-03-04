@@ -26,6 +26,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.util;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
  * ANY implements static methods for pre- and post-conditions as in Eiffel.
  *
@@ -68,7 +73,18 @@ public class ANY
       {
         return "Unknown origin.";
       }
-    return st[2].getClassName() + ":" + st[2].getMethodName() + ":" + st[2].getLineNumber();
+    try (Stream<String> lines = Files.lines(Path.of(Version.REPO_PATH).resolve("src").resolve(st[2].getClassName().replaceAll("\\.", "/") + ".java")))
+      {
+        var l = lines.skip(st[2].getLineNumber()-1).map(str -> str.trim()).collect(Collectors.toList());
+        return st[2].getFileName() + ":" + st[2].getLineNumber() + Terminal.BLUE + " \""
+          + l.stream().limit(Math.min(l.stream().takeWhile(s->!s.endsWith(");")).count()+1,7))
+            .collect(Collectors.joining(" ")) + "\""
+          + Terminal.REGULAR_COLOR;
+      }
+    catch (Exception e)
+      {
+        return st[2].getFileName() + ":" + st[2].getLineNumber();
+      }
   }
 
 

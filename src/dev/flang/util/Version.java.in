@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.tools;
+package dev.flang.util;
 
 import dev.flang.util.ANY;
 
@@ -35,7 +35,7 @@ import dev.flang.util.ANY;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-class Version extends ANY
+public class Version extends ANY
 {
 
 
@@ -65,6 +65,12 @@ class Version extends ANY
    * The user and machine of the build
    */
   public static final String BUILTBY = "@@BUILTBY@@";
+
+
+  /**
+   * The repositories path
+   */
+  public static final String REPO_PATH = "@@REPO_PATH@@";
 
 }
 
