@@ -282,9 +282,23 @@ public class Docs
           return;
         }
       var s = declaredFeatures(feature)
-        .filter(af -> !ignoreFeature(af, config.ignoreVisibility()))
-        .collect(Collectors.groupingBy(x -> Kind.classify(x), Collectors.toCollection(() -> new TreeSet<>(byFeatureName))));
-      mapOfDeclaredFeatures.put(feature, s);
+        .filter(af -> !ignoreFeature(af, config.ignoreVisibility()));
+
+      Stream<AbstractFeature> st = Stream.empty();
+      if (feature.hasTypeFeature())
+        {
+          var tf = feature.typeFeature();
+          st = declaredFeatures(tf)
+            .filter(af -> !ignoreFeature(af, config.ignoreVisibility()));
+        }
+
+      mapOfDeclaredFeatures.put(
+        feature,
+        Stream
+          .concat(s, st)
+          .collect(Collectors.groupingBy(x -> Kind.classify(x), Collectors.toCollection(() -> new TreeSet<>(byFeatureName))))
+      );
+
     }, universe);
 
     var htmlTool = new Html(config, mapOfDeclaredFeatures, universe);

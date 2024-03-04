@@ -41,8 +41,10 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Visi;
 import dev.flang.tools.docs.Util.Kind;
+import dev.flang.util.ANY;
 
-public class Html
+
+public class Html extends ANY
 {
   final DocsOptions config;
   private final Map<AbstractFeature, Map<Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures;
@@ -219,7 +221,8 @@ public class Html
   {
     return (map.get(Kind.Constructor) == null ? "" :  "<h4>Constructors</h4>" + mainSection0(map.get(Kind.Constructor)))
     + (map.get(Kind.Other) == null ? "" : "<h4>Functions</h4>" + mainSection0(map.get(Kind.Other)))
-    + (map.get(Kind.Type) == null ? "" : "<h4>Types</h4>" + mainSection0(map.get(Kind.Type)));
+    + (map.get(Kind.Type) == null ? "" : "<h4>Types</h4>" + mainSection0(map.get(Kind.Type)))
+    + (map.get(Kind.TypeFeature) == null ? "" : "<h4>Type Features</h4>" + mainSection0(map.get(Kind.TypeFeature)));
   }
 
 
@@ -271,7 +274,9 @@ public class Html
    */
   private String htmlEncodedBasename(AbstractFeature af)
   {
-    return htmlEncodeNbsp(af.featureName().baseName());
+    var n = (af.outer() != null && af.outer().isTypeFeature() ? "type." : "") + af.featureName().baseName();
+
+    return htmlEncodeNbsp(n);
   }
 
 
@@ -514,7 +519,7 @@ public class Html
 
 
   /**
-   * render the the navigation at the left side
+   * render the navigation at the left side
    */
   private String navigation(AbstractFeature start, int depth)
   {
