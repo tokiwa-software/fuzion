@@ -2049,9 +2049,12 @@ lambda      : "->" block
    */
   Expr lambda(List<ParsedName> n)
   {
-    SourcePosition pos = tokenSourcePos();
+    var pos = tokenPos();
     matchOperator("->", "lambda");
-    return new Function(pos, n, block());
+    var startPos = n.isEmpty() ? pos : n.getFirst().pos().bytePos();
+    var b = block();
+    var endPos = startPos < b.pos().byteEndPos() ? b.pos().byteEndPos() : tokenPos();
+    return new Function(sourceRange(startPos, endPos), n, b);
   }
 
 
