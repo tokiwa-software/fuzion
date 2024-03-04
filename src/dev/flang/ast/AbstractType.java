@@ -1152,7 +1152,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (PRECONDITIONS) require
       (checkedForGeneric(),
        other != null,
-       other.checkedForGeneric());
+       other.checkedForGeneric(),
+       !(this instanceof UnresolvedType),
+       !(other instanceof UnresolvedType));
 
     int result = compareToIgnoreOuter(other);
     if (result == 0 && !isGenericArgument())
@@ -1214,8 +1216,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
         if (result == 0)
           {
-            // for artificial built in types
-            result = name().compareTo(other.name());
+            result = artificialBuiltInID() - other.artificialBuiltInID();
           }
         if (result == 0 && isRef() ^ other.isRef())
           {
@@ -1234,9 +1235,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
-  public String name()
+  /**
+   * Id to differentiate artificial types.
+   */
+  public int artificialBuiltInID()
   {
-    return isGenericArgument() ? genericArgument().name() : featureOfType().featureName().baseName();
+    return 0;
   }
 
 
@@ -1705,7 +1709,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (isGenericArgument())
       {
         var ga = genericArgument();
-        result = ga.feature().qualifiedName() + "." + ga.name() + (this.isRef() ? " (boxed)" : "");
+        result = ga.toLongString() + (this.isRef() ? " (boxed)" : "");
       }
     else
       {

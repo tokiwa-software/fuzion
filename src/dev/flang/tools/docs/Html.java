@@ -115,7 +115,7 @@ public class Html extends ANY
   {
     if (at.isGenericArgument())
       {
-        return htmlEncodeNbsp(at.name());
+        return htmlEncodeNbsp(at.toString());
       }
     return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.asString()))
       .replace("$2", featureAbsoluteURL(at.featureOfType()));

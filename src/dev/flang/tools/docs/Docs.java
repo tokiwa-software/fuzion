@@ -61,15 +61,7 @@ public class Docs
    * Compare Features by basename + args
    */
   private static final Comparator<? super AbstractFeature> byFeatureName = Comparator.comparing(
-    af -> af.featureName().toString(),
-    (name1, name2) -> {
-      var caseInsensitive = name1.compareTo(name2);
-      if (caseInsensitive != 0)
-        {
-          return caseInsensitive;
-        }
-      return name1.compareTo(name2);
-    });
+    af -> af.featureName(), (name1, name2) -> name1.compareTo(name2));
 
 
   private final FrontEndOptions frontEndOptions = new FrontEndOptions(
