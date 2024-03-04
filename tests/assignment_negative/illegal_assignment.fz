@@ -26,11 +26,11 @@
 illegal_assignment is
 
   Q ref is
-    A ref { x { say "*** should never be here ***" } }
-    B ref { x { say "*** should never be here ***" } }
-    C ref { x { say "*** should never be here ***" }; xc {} }
-    D ref { x { say "*** should never be here ***" }; xb {}; xc {} }
-    E ref { x { say "*** should never be here ***" }; xb {}; xc {} }
+    A ref is { x is { say "*** should never be here ***" } }
+    B ref is { x is { say "*** should never be here ***" } }
+    C ref is { x is { say "*** should never be here ***" }; xc {} }
+    D ref is { x is { say "*** should never be here ***" }; xb {}; xc {} }
+    E ref is { x is { say "*** should never be here ***" }; xb {}; xc {} }
 
   curid i32 := 0
   id i32 is
