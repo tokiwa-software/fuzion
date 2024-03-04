@@ -878,7 +878,17 @@ public class Lexer extends SourceFile
 
 
   /**
-   * short-hand for bracketTermWithNLs with atMinIndent==false and c==def.
+   * short-hand for bracketTermWithNLs with c==def.
+   */
+  <V> V optionalBrackets(Parens brackets, String rule, Callable<V> c)
+  {
+    return currentMatches(true, brackets._left)
+      ? bracketTermWithNLs(brackets, rule, c, c)
+      : c.call();
+  }
+
+  /**
+   * short-hand for bracketTermWithNLs with c==def.
    */
   <V> V bracketTermWithNLs(Parens brackets, String rule, Callable<V> c)
   {

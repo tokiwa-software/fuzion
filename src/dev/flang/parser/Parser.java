@@ -1727,7 +1727,7 @@ bracketTerm : brblock
     var c = current();
     switch (c)
       {
-      case t_lbrace  : return brblock();
+      case t_lbrace  : return block();
       case t_lparen  : return klammer();
       case t_lcrochet: return inlineArray();
       default: throw new Error("Unexpected case: "+c);
@@ -2353,7 +2353,8 @@ op          : OPERATOR
   /**
    * Parse match
    *
-match       : "match" exprInLine BRACEL cases BRACER
+match       : "match" exprInLine        cases
+            | "match" exprInLine BRACEL cases BRACER
             ;
    */
   Expr match()
@@ -2362,12 +2363,7 @@ match       : "match" exprInLine BRACEL cases BRACER
         SourcePosition pos = tokenSourcePos();
         match(Token.t_match, "match");
         Expr e = exprInLine();
-        boolean gotLBrace = skip(true, Token.t_lbrace);
-        var c = cases();
-        if (gotLBrace)
-          {
-            match(true, Token.t_rbrace, "match");
-          }
+        var c = optionalBrackets(BRACES, "cases",() -> cases());
         // missing match cases are checked for when resolving types
         return new Match(pos, e, c);
       });
@@ -2562,6 +2558,9 @@ caseBlock   : ARROW          // if followed by '|'
    *
 block       : exprs
             | brblock
+            | SEMI
+            ;
+brblock     : BRACEL exprs BRACER
             ;
    */
   Block block()
@@ -2582,46 +2581,10 @@ block       : exprs
         //
         return new Block(pos1, new List<>());
       }
-    else if (currentAtMinIndent() != Token.t_lbrace)
-      {
-        var l = exprs();
-        var pos2 = l.size() > 0 ? l.getLast().pos() : pos1;
-        if (pos1 == pos2 && current() == Token.t_indentationLimit)
-          { /* we have a non-indented new line, e.g., the empty block after `x i32 =>` in
-             *
-             *   x i32 =>
-             *   y u8 =>
-             *
-             * unless the result type of `x` is `unit`, we will get an error, but this error should not be
-             * reported at `y`, but at the end of `x i32 =>`, so we set start and end pos to the end of that line
-             */
-            pos1 = sourcePos(lineEndPos(lineNum(p1)-1));
-            pos2 = pos1;
-          }
-        return new Block(pos2, l);
-      }
     else
       {
-        return brblock();
+        return optionalBrackets(BRACES, "block", () -> new Block(pos1, exprs()));
       }
-  }
-
-
-  /**
-   * Parse block
-   *
-brblock     : BRACEL exprs BRACER
-            ;
-   */
-  Block brblock()
-  {
-    SourcePosition pos1 = tokenSourcePos();
-    return bracketTermWithNLs(BRACES, "block",
-                              () -> {
-                                var l = exprs();
-                                var pos2 = tokenSourcePos();
-                                return new Block(l);
-                              });
   }
 
 
@@ -3670,7 +3633,7 @@ implFldInit : ":=" exprInLine
         syntaxError(tokenPos(), "':='", "implFldInit");
       }
     return new Impl(pos,
-                    exprInLine(),
+                    exprInLine(), // block()?
                     hasType ? Impl.Kind.FieldInit
                             : Impl.Kind.FieldDef);
   }
