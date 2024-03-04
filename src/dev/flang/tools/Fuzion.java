@@ -974,7 +974,7 @@ public class Fuzion extends Tool
           }
       }
     checkMissingCode(nextIsCode);
-    if (_backend == Backend.undefined)
+    if (_backend == Backend.undefined && args.length > 0)
       {
         _backend = Backend.jvm;
       }
