@@ -364,7 +364,7 @@ field       : returnType
             var c = (Call) inh.getLast();
             var ng = new List<AbstractType>();
             ng.addAll(c.actualTypeParameters());
-            addFeaturesFromBlock(first, l, p._code, ng, p, v);
+            addFeaturesFromBlock(first, l, p.expr(), ng, p, v);
             c._generics = ng;
           }
         p = new Impl(p.pos, new Block(new List<>()), Impl.Kind.Routine);

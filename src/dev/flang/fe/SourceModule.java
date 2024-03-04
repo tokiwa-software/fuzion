@@ -631,7 +631,7 @@ part of the (((inner features))) declarations of the corresponding
         public Feature   action(Feature   f, AbstractFeature outer) { findDeclarations(f, outer); return f; }
       });
 
-    if (inner.impl().initialValue() != null &&
+    if (inner.impl().hasInitialValue() &&
         !outer.pos()._sourceFile.sameAs(inner.pos()._sourceFile) &&
         (!outer.isUniverse() || !inner.isLegalPartOfUniverse()) &&
         (outer.isUniverse() || !outer.pos().isBuiltIn()) && // some generated features in loops do not have source position

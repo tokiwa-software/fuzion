@@ -841,7 +841,7 @@ public class Feature extends AbstractFeature
     if (PRECONDITIONS) require
       (isRoutine());
 
-    return _impl._code;
+    return _impl.expr();
   }
 
 
@@ -1728,7 +1728,7 @@ public class Feature extends AbstractFeature
 
         if (isConstructor())
           {
-            _impl._code = _impl._code.propagateExpectedType(res, this, Types.resolved.t_unit);
+            _impl.propagateExpectedType(res, this, Types.resolved.t_unit);
           }
 
         _state = State.TYPES_INFERENCED;
@@ -1926,12 +1926,12 @@ public class Feature extends AbstractFeature
     // here, while impl.code is visited when impl.visit is called with this as
     // outer argument.
     //
-    if (_impl._initialValue != null &&
+    if (_impl.hasInitialValue() &&
         /* initial value has been replaced by explicit assignment during
          * RESOLVING_TYPES phase: */
         !outer.state().atLeast(State.RESOLVING_SUGAR1))
       {
-        _impl._initialValue = _impl._initialValue.visit(v, outer);
+        _impl.visitExpr(v, outer);
       }
     return v.action(this, outer);
   }
@@ -1956,13 +1956,13 @@ public class Feature extends AbstractFeature
          _impl._kind != Impl.Kind.FieldActual)
         || _returnType == NoType.INSTANCE);
 
-    if (_impl._initialValue != null)
+    if (_impl.hasInitialValue())
       {
         /* add assignment of initial value: */
         result = new Block
           (new List<>
            (this,
-            new Assign(res, _pos, this, _impl._initialValue, outer)
+            new Assign(res, _pos, this, _impl.expr(), outer)
             {
               public AbstractAssign visit(FeatureVisitor v, AbstractFeature outer)
               {
@@ -2109,11 +2109,10 @@ public class Feature extends AbstractFeature
             }
           else
             {
-              var iv = f._impl._initialValue;
-              if (iv != null &&
+              if (f._impl.hasInitialValue() &&
                   outer.state().atLeast(State.RESOLVING_SUGAR1) /* iv otherwise already visited by Feature.visit(fv,outer) */)
                 {
-                  iv.visit(this, f);
+                  f._impl.visitExpr(this, f);
                 }
             }
           if (f.isField() && f.featureName().baseName().equals(name))
@@ -2149,10 +2148,7 @@ public class Feature extends AbstractFeature
 
     // then iterate the expressions making fields visible as they are declared
     // and checking which one is visible when we reach call:
-    if (_impl._code != null)
-      {
-        _impl._code.visit(fv, this);
-      }
+    _impl.visit(fv, this);
 
     return curres[1];
   }
@@ -2281,23 +2277,11 @@ public class Feature extends AbstractFeature
       {
         result = outer().resultTypeIfPresent(res);
       }
-    else if (_impl._kind == Impl.Kind.FieldDef    ||
-             _impl._kind == Impl.Kind.FieldActual ||
-             _impl._kind == Impl.Kind.RoutineDef)
+    else if (_impl.typeInferable())
       {
         if (CHECKS) check
           (!state().atLeast(State.TYPES_INFERENCED));
         result = _impl.inferredType(res, this);
-
-        var from = _impl._kind == Impl.Kind.RoutineDef ? _impl._code
-                                                       : _impl._initialValue;
-        if (result != null &&
-            !result.isGenericArgument() &&
-            result.featureOfType().isTypeFeature() &&
-            !(from instanceof Call c && c.calledFeature() == Types.resolved.f_Types_get))
-          {
-            result = Types.resolved.f_Type.selfType();
-          }
       }
     else if (_returnType.isConstructorType())
       {
