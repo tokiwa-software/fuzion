@@ -151,10 +151,15 @@ public class Util
   static enum Kind {
     Constructor,
     Type,
+    TypeFeature,
     Other;
 
     static Kind classify(AbstractFeature af) {
-      return af.definesType()
+      return
+        af.outer() != null &&
+        af.outer().isTypeFeature()
+        ? Kind.TypeFeature
+        : af.definesType()
           ? !af.isChoice() && af.visibility().featureVisibility() == Visi.PUB
               ? Kind.Constructor
               : Kind.Type
