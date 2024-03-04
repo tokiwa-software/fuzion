@@ -30,6 +30,9 @@ import java.io.IOException;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
@@ -669,27 +672,58 @@ public class C extends ANY
   {
     var cl = _fuir.mainClazzId();
     var name = _options._binaryName != null ? _options._binaryName : _fuir.clazzBaseName(cl);
-    var cname = name + ".c";
-    _options.verbosePrintln(" + " + cname);
+    var cf = new CFile(name);
+    _options.verbosePrintln(" + " + cf.fileName());
     try
       {
-        var cf = new CFile(cname);
-        try
-          {
-            createCode(cf, _options);
-          }
-        finally
-          {
-            cf.close();
-          }
+        createCode(cf, _options);
       }
     catch (IOException io)
       {
         Errors.error("C backend I/O error",
-                     "While creating code to '" + cname + "', received I/O error '" + io + "'");
+                     "While writing code to '" + cf.fileName() + "', received I/O error '" + io + "'");
+      }
+    finally
+      {
+        cf.close();
       }
     Errors.showAndExit();
 
+    var command = buildCommand(name, cf);
+
+    _options.verbosePrintln(" * " + command.toString("", " ", ""));
+    try
+      {
+        if (_options._keepGeneratedCode)
+          {
+            Files.copy(Path.of(cf.fileName()), Path.of(System.getProperty("user.dir"), name + ".c"), StandardCopyOption.REPLACE_EXISTING);
+          }
+        var p = new ProcessBuilder().inheritIO().command(command).start();
+        p.waitFor();
+        if (p.exitValue() != 0)
+          {
+            Errors.error("C backend: C compiler failed",
+                         "C compiler call '" + command.toString("", " ", "") + "' failed with exit code '" + p.exitValue() + "'");
+          }
+      }
+    catch (IOException | InterruptedException io)
+      {
+        Errors.error("C backend I/O error when running C Compiler",
+                     "C compiler call '" + command.toString("", " ", "") + "'  received '" + io + "'");
+      }
+    Errors.showAndExit();
+  }
+
+
+  /**
+   * @param name the name of the produced binary
+   *
+   * @param cf the generated code
+   *
+   * @return list of cmd and args to build the c code.
+   */
+  private List<String> buildCommand(String name, CFile cf)
+  {
     var clangVersion = getClangVersion();
     // NYI should be clangVersion == expectedClangVersion but workflows etc. must be updated first
     if (_options._cCompiler == null && clangVersion < expectedClangVersion)
@@ -773,7 +807,7 @@ public class C extends ANY
       {
         command.addAll(_options.pathOf("include/posix.c"));
       }
-    command.addAll(cname);
+    command.addAll(cf.fileName());
 
     if (linkJVM())
       {
@@ -799,24 +833,7 @@ public class C extends ANY
             );
           }
       }
-
-    _options.verbosePrintln(" * " + command.toString("", " ", ""));
-    try
-      {
-        var p = new ProcessBuilder().inheritIO().command(command).start();
-        p.waitFor();
-        if (p.exitValue() != 0)
-          {
-            Errors.error("C backend: C compiler failed",
-                         "C compiler call '" + command.toString("", " ", "") + "' failed with exit code '" + p.exitValue() + "'");
-          }
-      }
-    catch (IOException | InterruptedException io)
-      {
-        Errors.error("C backend I/O error when running C Compiler",
-                     "C compiler call '" + command.toString("", " ", "") + "'  received '" + io + "'");
-      }
-    Errors.showAndExit();
+    return command;
   }
 
 

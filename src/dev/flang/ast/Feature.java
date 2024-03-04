@@ -2582,6 +2582,20 @@ public class Feature extends AbstractFeature
   }
 
 
+  /**
+   * Is this the 'THIS_TYPE' type parameter in a type feature?
+   *
+   * Overriding since AbstractFeature.isTypeFeaturesThisType needs outer to be
+   * in state of at least FINDING_DECLARATIONS which is not always the case
+   * when isTypeFeaturesThisType is called.
+   */
+  @Override
+  public boolean isTypeFeaturesThisType()
+  {
+    return false;
+  }
+
+
 }
 
 /* end of file */

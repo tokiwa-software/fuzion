@@ -16,7 +16,7 @@ jobs:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v2.6.0
 
     - name: Setup jdk
-      uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93 # main
+      uses: actions/setup-java@9704b39bf258b59bc04b50fa2dd55e9ed76b47a8 # main
       with:
         java-version: 21
         distribution: 'adopt'
@@ -33,7 +33,7 @@ jobs:
       id: getversion
       run: echo "::set-output name=version::$(cat version.txt)"
 
-    - uses: ncipollo/release-action@6c75be85e571768fa31b40abf38de58ba0397db5 # v1.13.0
+    - uses: ncipollo/release-action@2c591bcc8ecdcd2db72b97d6147f871fcd833ba5 # v1.14.0
       with:
         artifacts: "fuzion_${{ steps.getversion.outputs.version }}.tar.gz"
         tag: "v${{ steps.getversion.outputs.version }}"

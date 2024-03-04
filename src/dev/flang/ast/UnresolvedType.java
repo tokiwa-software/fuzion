@@ -448,24 +448,6 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   /**
-   * setOuter
-   *
-   * @param t
-   */
-  void setOuter(UnresolvedType t)
-  {
-    if (this._outer == null)
-      {
-        this._outer = t;
-      }
-    else
-      {
-        this._outer.setOuter(t);
-      }
-  }
-
-
-  /**
    * Get a String representation of this UnresolvedType.
    *
    * Note that this does not work for instances of UnresolvedType before they were
@@ -553,16 +535,6 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
     res.resolveDeclarations(outerfeat);
 
-    if (CHECKS) check
-      (outerfeat.state().atLeast(State.RESOLVING_DECLARATIONS));
-
-    if (_resolved == null)
-      {
-        if (!outerfeat.state().atLeast(State.RESOLVING_DECLARATIONS))
-          {
-            res.resolveDeclarations(outerfeat);
-          }
-      }
     if (_resolved == null)
       {
         _resolved = resolveThisType(res, outerfeat);

@@ -124,14 +124,7 @@ public class InlineArray extends ExprWithPos
   {
     if (_type == null && !_elements.isEmpty())
       {
-        AbstractType t = Types.resolved.t_void;
-        for (var e : _elements)
-          {
-            var et = e.typeForInferencing();
-            t =
-              t  == null ? null :
-              et == null ? null : t.union(et);
-          }
+        var t = Expr.union(_elements);
         if (t == Types.t_ERROR)
           {
             new IncompatibleResultsOnBranches(pos(),

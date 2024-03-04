@@ -746,6 +746,15 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(Expr.UNIT, Expr.iconst(jvm._options.fuzionSafety() ? 1 : 0));
         });
 
+    put("fuzion.sys.fileio.read_dir", (jvm, cl, pre, cc, tvalue, args) -> {
+      return jvm.constString(
+        args.get(0)
+          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                     "fuzion_sys_fileio_read_dir",
+                                     methodDescriptor(Runtime.class, "fuzion_sys_fileio_read_dir"),
+                                     PrimitiveType.type_byte.array())));
+    });
+
     put("fuzion.std.nano_time", (jvm, cl, pre, cc, tvalue, args) -> {
       var res =
         tvalue.drop()

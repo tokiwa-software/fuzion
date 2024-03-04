@@ -759,8 +759,6 @@ public class Call extends AbstractCall
    */
   private boolean loadCalledFeatureUnlessTargetVoid(Resolution res, AbstractFeature thiz)
   {
-    var targetVoid = false;
-
     if (PRECONDITIONS) require
       (thiz.isTypeParameter()   // NYI: type parameters apparently inherit ANY and are not resolved yet. Type parameters should not inherit anything and this special handling should go.
        ||
@@ -768,18 +766,8 @@ public class Call extends AbstractCall
        ? res.state(thiz.outer()).atLeast(State.RESOLVING_DECLARATIONS)
        : res.state(thiz)        .atLeast(State.RESOLVING_DECLARATIONS)));
 
+    var targetVoid = false;
     var actualsResolved = true;
-    if (_calledFeature == null)
-      {
-        if (CHECKS) check
-          (Errors.any() || _name != Errors.ERROR_STRING);
-
-        if (_name == Errors.ERROR_STRING)    // If call parsing failed, don't even try
-          {
-            setToErrorState();
-          }
-      }
-
     AbstractFeature targetFeature = null;
     if (_calledFeature == null)
       {
@@ -1317,37 +1305,6 @@ public class Call extends AbstractCall
       }
     _generics = g;
     _actuals = a;
-  }
-
-
-  /**
-   * Check if this expression can also be parsed as a type and return that type. Otherwise,
-   * report an error (AstErrors.expectedActualTypeInCall).
-   *
-   * @param outer the outer feature containing this expression
-   *
-   * @param tp the type parameter this expression is assigned to
-   *
-   * @return the Type corresponding to this, Type.t_ERROR in case of an error.
-   */
-  AbstractType asType(Resolution res, AbstractFeature outer, AbstractFeature tp)
-  {
-    var g = _generics;
-    if (!_actuals.isEmpty())
-      {
-        g = new List<AbstractType>();
-        g.addAll(_generics);
-        for (var a : _actuals)
-          {
-            g.add(a.asType(res, outer, tp));
-          }
-      }
-    AbstractType result = new ParsedType(pos(), _name, g,
-                                         _target == null             ||
-                                         _target instanceof Universe ||
-                                         _target instanceof Current     ? null
-                                                                        : _target.asType(res, outer, tp));
-    return result.resolve(res, outer);
   }
 
 
@@ -3051,7 +3008,10 @@ public class Call extends AbstractCall
   {
     ERROR = new Call(SourcePosition.builtIn, Errors.ERROR_STRING)
     {
-      { _type = Types.t_ERROR; }
+      {
+        _type = Types.t_ERROR;
+        _calledFeature = Types.f_ERROR;
+      }
       @Override
       Expr box(AbstractType frmlT)
       {

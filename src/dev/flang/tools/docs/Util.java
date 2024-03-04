@@ -70,7 +70,7 @@ public class Util
   {
     if (af.isUniverse())
       {
-        return "";
+        return Html.processComment("universe", universeComment());
       }
     var line = af.pos().line() - 1;
     var commentLines = new ArrayList<String>();
@@ -95,6 +95,25 @@ public class Util
         .replaceAll("^ ", ""))
       .collect(Collectors.joining(System.lineSeparator())));
     return result;
+  }
+
+
+  private static String universeComment()
+  {
+    var uri = (new FuzionHome())._fuzionHome.normalize().toAbsolutePath().resolve("lib").resolve("universe.fz").toUri();
+    try
+      {
+        return Files.readAllLines(Path.of(uri), StandardCharsets.UTF_8)
+          .stream()
+          .dropWhile(l -> !l.startsWith("# universe is the mother"))
+          .map(l -> l.replaceAll("^#", "").trim())
+          .collect(Collectors.joining(System.lineSeparator()))
+          .trim();
+      }
+    catch (IOException e)
+      {
+        return "";
+      }
   }
 
 

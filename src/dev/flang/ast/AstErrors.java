@@ -1061,7 +1061,7 @@ public class AstErrors extends ANY
         outerLevels.add(o);
         qualifiedCalls
           .append(qualifiedCalls.length() > 0 ? " or " : "")
-          .append(code(o.qualifiedName() + ".this." + fn.baseName()));
+          .append(code(o.qualifiedName() + (o.isUniverse() ? "." : ".this.") + fn.baseName()));
       }
     error(pos,
           "Ambiguous targets found for " + operation + " to " + sbn(fn.baseName()),
@@ -1170,13 +1170,17 @@ public class AstErrors extends ANY
   {
     if (!any() || !errorInOuterFeatures(targetFeature))
       {
+        var msg = !candidatesHidden.isEmpty()
+          ? plural(candidatesHidden.size(), "Feature") + " not visible at call site"
+          : !candidatesArgCountMismatch.isEmpty()
+          ? "Different count of arguments needed when calling feature"
+          : "Could not find called feature";
         var solution1 = solutionDeclareReturnTypeIfResult(calledName.baseName(),
                                                           calledName.argCount());
         var solution2 = solutionWrongArgumentNumber(candidatesArgCountMismatch);
         var solution3 = solutionAccidentalFreeType(target);
         var solution4 = solutionHidden(candidatesHidden);
-        error(call.pos(),
-              "Could not find called feature",
+        error(call.pos(), msg,
               "Feature not found: " + sbn(calledName) + "\n" +
               "Target feature: " + s(targetFeature) + "\n" +
               "In call: " + s(call) + "\n" +
@@ -1186,26 +1190,6 @@ public class AstErrors extends ANY
                solution4 != "" ? solution4 : ""));
       }
   }
-
-  static void expectedActualTypeInCall(SourcePosition pos,
-                                       AbstractFeature typeParameter)
-  {
-    var calledFeature = typeParameter.outer();
-    error(pos,
-          "Expected actual type parameter in call",
-          "Call to " + s(calledFeature) + " expects type parameter " + s(typeParameter) + " at this position.\n" +
-          "To solve this, provide a type such as " + type("i32") + " or " + type(FuzionConstants.ANY_NAME) + " as an argument to this call.\n");
-  }
-
-  static void expectedTypeExpression(SourcePosition pos, Expr e)
-  {
-    error(pos,
-          "Expected type in 'xyz.type' expression",
-          "Expression of the form 'xyz.type' must use a type for 'xyz'\n" +
-          "Expression found: " + s(e) + "\n"+
-          "To solve this, provide a type such as " + type("i32") + " or " + type(FuzionConstants.ANY_NAME) + " instead of " + s(e) + ".\n");
-  }
-
 
   public static void ambiguousType(SourcePosition pos,
                                    String t,
@@ -1983,25 +1967,29 @@ public class AstErrors extends ANY
   }
 
 
+  // NYI: UNDER DEVELOPMENT see #2559
   public static void declarationsInLazy(String what, Expr lazy, List<Feature> declarations)
   {
-    StringBuilder declarationsMsg = new StringBuilder();
-    for (var f : declarations)
+    if (!any())
       {
-        declarationsMsg.append("declared " + s(f) + " at " + f.pos().show() + "\n");
-      }
+        StringBuilder declarationsMsg = new StringBuilder();
+        for (var f : declarations)
+          {
+            declarationsMsg.append("declared " + s(f) + " at " + f.pos().show() + "\n");
+          }
 
-    error(lazy.pos(),
-          "IMPLEMENTATION RESTRICTION: An expression used as " + what + " cannot contain feature declarations",
-          "Declared features:\n" +
-          declarationsMsg +
-          "This is an implementation restriction that should be removed in a future version of Fuzion.\n" +
-          "\n"+
-          "To solve this, create a helper feature " + sqn("lazy_value") + " that calculates the value as follows:\n" +
-          "\n" +
-          "  lazy_value => " + lazy + "\n" +
-          "\n" +
-          "and then use " + expr("lazy_value") + " as instead of the original expression.\n");
+        error(lazy.pos(),
+              "IMPLEMENTATION RESTRICTION: An expression used as " + what + " cannot contain feature declarations",
+              "Declared features:\n" +
+              declarationsMsg +
+              "This is an implementation restriction that should be removed in a future version of Fuzion.\n" +
+              "\n"+
+              "To solve this, create a helper feature " + sqn("lazy_value") + " that calculates the value as follows:\n" +
+              "\n" +
+              "  lazy_value => " + lazy + "\n" +
+              "\n" +
+              "and then use " + expr("lazy_value") + " as instead of the original expression.\n");
+      }
   }
 
 

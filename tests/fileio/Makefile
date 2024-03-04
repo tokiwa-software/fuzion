@@ -24,6 +24,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = fileiotests
-FUZION_OPTIONS = -unsafeIntrinsics=on
 FUZION_JAVA_STACK_SIZE = 10m
 include ../simple.mk

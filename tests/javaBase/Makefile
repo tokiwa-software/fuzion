@@ -25,5 +25,5 @@
 
 override NAME = javaHello
 export LD_LIBRARY_PATH ?= $(JAVA_HOME)/lib/server
-FUZION_OPTIONS = -unsafeIntrinsics=on -modules=java.base
+FUZION_OPTIONS = -modules=java.base
 include ../simple.mk

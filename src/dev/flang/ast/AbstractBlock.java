@@ -191,6 +191,40 @@ public abstract class AbstractBlock extends Expr
 
 
   /**
+   * During type inference: Inform this expression that it is
+   * expected to result in the given type.
+   *
+   * @param t the expected type.
+   */
+  @Override
+  protected void propagateExpectedType(AbstractType t)
+  {
+    var resExpr = resultExpression();
+    if (resExpr != null)
+      {
+        resExpr.propagateExpectedType(t);
+      }
+  }
+
+
+  /**
+   * typeForUnion returns the type of this expression or null if the type is
+   * still unknown, i.e., before or during type resolution.  This is redefined
+   * by sub-classes of Expr to provide type information.
+   *
+   * @return this Expr's type or null if not known.
+   */
+  @Override
+  AbstractType typeForUnion()
+  {
+    Expr resExpr = resultExpression();
+    return resExpr == null
+      ? Types.resolved.t_unit
+      : resExpr.typeForUnion();
+  }
+
+
+  /**
    * toString
    *
    * @return

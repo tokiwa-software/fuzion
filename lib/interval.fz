@@ -50,7 +50,7 @@ public interval(T type : integer,
   : container.Set T
 
 pre
-  step.sign != 0
+  debug: ((step.sign = 0): (through.map =from).first false)  # step cannot be zero unless from=through
 is
 
 
@@ -61,7 +61,7 @@ is
   #
   public infix : (step_factor T)
   pre
-    debug: step_factor.sign != 0
+    debug: ((step_factor.sign = 0): (through.map =from).first false)  # step cannot be zero unless from=through
     safety: (step *? step_factor).exists
   =>
     interval from through step*step_factor
@@ -87,7 +87,9 @@ is
   =>
     match through
       thru T =>
-        if step.sign = (from ⋄ thru).sign then
+        if from = thru then
+          T.one
+        else if step.sign = (from ⋄ thru).sign then
           T.zero
         else
           (thru - from) / step + T.one
@@ -98,14 +100,17 @@ is
   # does this interval contain the given value?
   #
   public contains(e T) =>
-    if   step.sign > 0 then from <= e <= through.get e && (e %  step = from %  step)
-    else                    from >= e >= through.get e && (e % -step = from % -step)
+    if      step.sign > 0 then from <= e <= through.get e && (e %  step = from %  step)
+    else if step.sign < 0 then from >= e >= through.get e && (e % -step = from % -step)
+    else                       from =  e
 
 
   # string representation of this interval, e.g., "1..10:2"
   #
   public redef as_string =>
-    "$from..$through{if step = T.one then "" else ":$step"}"
+    thru := through.map_to_option ($)
+                   .get ()->if step.sign < 0 then "-∞" else "∞"
+    "$from..$thru{if step = T.one then "" else ":$step"}"
 
 
 # has_interval -- feature for integers that can define an interval
@@ -129,3 +134,13 @@ public has_interval : integer is
   #
   public postfix .. =>
     interval has_interval.this has_interval.this nil has_interval.this.type.one
+
+
+  # an infinite integer Sequence starting from this up to the maximum value
+  # has_interval.this.type.max
+  #
+  # NYI: CLEANUP: Eventually remove `postfix ..` or `postfix ..∞` in favor of the
+  # other one, for now this is here to show that `∞` is a legal symbol in an operator.
+  #
+  public postfix ..∞ =>
+    postfix ..

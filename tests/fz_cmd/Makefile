@@ -22,5 +22,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = fz_cmd
-FUZION_OPTIONS = -unsafeIntrinsics=on -modules=java.base,fz_cmd
+FUZION_OPTIONS = -modules=java.base,fz_cmd
 include ../simple.mk

@@ -37,6 +37,7 @@ import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.FuzionOptions;
+import dev.flang.util.List;
 
 /*---------------------------------------------------------------------*/
 
@@ -178,6 +179,7 @@ public class Types extends ANY
     public final AbstractFeature f_Types_get;
     public final AbstractFeature f_Lazy;
     public final AbstractFeature f_Unary;
+    public final Set<AbstractType> numericTypes;
     public static interface CreateType
     {
       AbstractType type(String name);
@@ -236,6 +238,17 @@ public class Types extends ANY
       f_Types_get                  = f_Types.get(mod, "get");
       f_Lazy                       = universe.get(mod, LAZY_NAME);
       f_Unary                      = universe.get(mod, UNARY_NAME);
+      numericTypes = new TreeSet<AbstractType>(new List<>(
+        t_i8,
+        t_i16,
+        t_i32,
+        t_i64,
+        t_u8,
+        t_u16,
+        t_u32,
+        t_u64,
+        t_f32,
+        t_f64));
       resolved = this;
       ((ArtificialBuiltInType) t_ADDRESS  ).resolveArtificialType(universe.get(mod, FuzionConstants.ANY_NAME));
       ((ArtificialBuiltInType) t_UNDEFINED).resolveArtificialType(universe);

@@ -574,6 +574,97 @@ public String ref : property.equatable, property.hashable, property.orderable is
     String.type.from_bytes (utf8.as_list.reverse.drop_while c->c.is_ascii_white_space).reverse
 
 
+  # pad this string at the end with spaces such that its `codepoint_length` is at least `n`.
+  #
+  public pad(n i32)
+  pre
+    debug: n >= 0
+  post
+    debug: result.codepoint_length >= n
+    debug: ((result.codepoint_length != n): result = String.this)
+  =>
+    pad " " n
+
+
+  # pad this string at the beginning with spaces such that its `codepoint_length` is at least `n`.
+  #
+  public pad_left(n i32)
+  pre
+    debug: n >= 0
+  post
+    debug: result.codepoint_length >= n
+    debug: ((result.codepoint_length != n): result = String.this)
+  =>
+    pad_left " " n
+
+
+  # pad this string at the beginning and at the end with spaces such that its `codepoint_length` is at least `n`.
+  #
+  # In case the required number of codepoints to add is odd, the padding at the end will be longer.
+  #
+  public pad_center(n i32)
+  pre
+    debug: n >= 0
+  post
+    debug: result.codepoint_length >= n
+    debug: ((result.codepoint_length != n): result = String.this)
+  =>
+    pad_center " " n
+
+
+  # Helper for pad, pad_left and pad_right to determine minimum number of copies
+  # of `p` needed to pad String.this to length >= n.
+  #
+  private pad_count(p String, n i32) =>
+    pl := p.codepoint_length
+    add_cps := max 0 n-codepoint_length
+    (add_cps + pl - 1) / pl
+
+
+  # pad this string at the end with `p` such that its `codepoint_length` is at least `n`.
+  #
+  public pad(p String, n i32)
+  pre
+    safety: p.codepoint_length > 0
+    debug: n >= 0
+  post
+    debug: result.codepoint_length >= n
+    debug: ((result.codepoint_length >= n+p.codepoint_length): result = String.this)
+  =>
+    String.this + p * (pad_count p n)
+
+
+  # pad this string at the beginning with `p` such that its `codepoint_length` is at least `n`.
+  #
+  public pad_left(p String, n i32)
+  pre
+    safety: p.codepoint_length > 0
+    debug: n >= 0
+  post
+    debug: result.codepoint_length >= n
+    debug: ((result.codepoint_length >= n+p.codepoint_length): result = String.this)
+  =>
+    p * (pad_count p n) + String.this
+
+
+  # pad this string at the beginning and at the end with `p` such that its `codepoint_length` is at least `n`.
+  #
+  # In case the required number of copies of `p` is odd, the padding at the end will be longer.
+  #
+  public pad_center(p String, n i32)
+  pre
+    safety: p.codepoint_length > 0
+    debug: n >= 0
+  post
+    debug: result.codepoint_length >= n
+    debug: ((result.codepoint_length >= n+p.codepoint_length): result = String.this)
+  =>
+    pn := pad_count p n
+    l := pn/2
+    r := pn-l
+    p*l + String.this + p*r
+
+
   # is this part of given set
   #
   element_of(s container.Set String) => s.contains String.this
@@ -720,7 +811,6 @@ public String ref : property.equatable, property.hashable, property.orderable is
     redef infix + (other Any) String =>
       a.add other
       from_mutable_array a
-
 
 
   # create string from the given utf8 bytes

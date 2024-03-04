@@ -26,4 +26,4 @@ mod_int: a.fum
 	echo "m is _ := a" | $(FUZION) -interpreter -modules=a -moduleDirs=. -
 
 clean:
-	rm a.fum m m.c *~ */*~
+	rm a.fum m *~ */*~

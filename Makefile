@@ -1245,8 +1245,8 @@ spellcheck:
 # currently only examples/ are checked.
 .PHONY: syntaxcheck
 syntaxcheck: min-java
-	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(BUILD_DIR)/bin/fz -unsafeIntrinsics=on -modules=java.base,java.datatransfer,java.xml,java.desktop -no-backend
-	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(BUILD_DIR)/bin/fz -unsafeIntrinsics=on -modules=java.base,java.datatransfer,java.xml,java.desktop -no-backend
+	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(BUILD_DIR)/bin/fz -modules=java.base,java.datatransfer,java.xml,java.desktop -no-backend
+	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(BUILD_DIR)/bin/fz -modules=java.base,java.datatransfer,java.xml,java.desktop -no-backend
 
 .PHONY: add_simple_test
 add_simple_test: no-java
@@ -1262,10 +1262,10 @@ $(MOD_FZ_CMD_DIR).jmod: $(FUZION_BASE)
 	jmod create --class-path $(CLASSES_DIR) $(MOD_FZ_CMD_DIR).jmod
 	echo " + build/modules/fz_cmd.jmod"
 
-$(MOD_FZ_CMD_FZ_FILES): $(MOD_FZ_CMD_DIR).jmod $(MOD_JAVA_BASE) $(MOD_JAVA_MANAGEMENT)
+$(MOD_FZ_CMD_FZ_FILES): $(MOD_FZ_CMD_DIR).jmod $(MOD_JAVA_BASE) $(MOD_JAVA_MANAGEMENT) $(MOD_JAVA_DESKTOP)
 	rm -Rf $(MOD_FZ_CMD_DIR)
-	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava -to=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management -verbose=0 $(MOD_FZ_CMD_DIR)"
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava -to=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop -verbose=0 $(MOD_FZ_CMD_DIR)"
 	touch $@
 
 $(MOD_FZ_CMD): $(MOD_FZ_CMD_FZ_FILES)
-	$(BUILD_DIR)/bin/fz -sourceDirs=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management -saveLib=$@
+	$(BUILD_DIR)/bin/fz -sourceDirs=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop -saveLib=$@

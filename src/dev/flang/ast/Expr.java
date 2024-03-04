@@ -203,6 +203,77 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
 
 
   /**
+   * typeForUnion returns the type of this expression or null if the type is
+   * still unknown, i.e., before or during type resolution.  This is redefined
+   * by sub-classes of Expr to provide type information.
+   *
+   * @return this Expr's type or null if not known.
+   */
+  AbstractType typeForUnion()
+  {
+    return typeForInferencing();
+  }
+
+
+  /**
+   * Get the result type of a union of all results of exprs.
+   *
+   * @param exprs the expression to unionize
+   *
+   * @return the union of exprs result type, defaulting to Types.resolved.t_void if
+   * no expression can be inferred yet.
+   */
+  public static AbstractType union(List<Expr> exprs)
+  {
+    AbstractType t = Types.resolved.t_void;
+
+    // First pass:
+    // Union of the types of the expressions
+    // that are sure about their types.
+    for (var e : exprs)
+      {
+        var et = e.typeForUnion();
+        if (et != null)
+          {
+            t = t.union(et);
+          }
+      }
+
+    // Propagate the found type to all expression
+    for (var e : exprs)
+      {
+        e.propagateExpectedType(t);
+      }
+
+    // Second pass:
+    // Union of the types of the expressions
+    AbstractType result = Types.resolved.t_void;
+    for (var e : exprs)
+      {
+        var et = e.typeForInferencing();
+        if (et != null)
+          {
+            result = result.union(et);
+          }
+      }
+
+    return result;
+  }
+
+
+  /**
+   * During type inference: Inform this expression that it is
+   * expected to result in the given type.
+   *
+   * @param t the expected type.
+   */
+  protected void propagateExpectedType(AbstractType t)
+  {
+
+  }
+
+
+  /**
    * The source code position of this expression that produces the result value
    * of this Expression. This is usually equal to this Expression's position,
    * unless we have a block of the form
@@ -453,31 +524,6 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   Expr propagateExpectedTypeForPartial(Resolution res, AbstractFeature outer, AbstractType expectedType)
   {
     return this;
-  }
-
-
-  /**
-   * Check if this expression can also be parsed as a type and return that type. Otherwise,
-   * report an error (AstErrors.expectedActualTypeInCall).
-   *
-   * @param outer the outer feature containing this expression
-   *
-   * @param tp the type parameter this expression is assigned to, null if used
-   * in 'xyz.type' expression.
-   *
-   * @return the Type corresponding to this, Type.t_ERROR in case of an error.
-   */
-  AbstractType asType(Resolution res, AbstractFeature outer, AbstractFeature tp)
-  {
-    if (tp == null)
-      {
-        AstErrors.expectedTypeExpression(pos(), this);
-      }
-    else
-      {
-        AstErrors.expectedActualTypeInCall(pos(), tp);
-      }
-    return Types.t_ERROR;
   }
 
 

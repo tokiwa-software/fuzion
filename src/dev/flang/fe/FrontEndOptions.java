@@ -59,6 +59,13 @@ public class FrontEndOptions extends FuzionOptions
 
 
   /**
+   * Read code from command line '-e/-execute <code>', or null if option not
+   * given.
+   */
+  final byte[] _executeCode;
+
+
+  /**
    * Read code from file?
    */
   final Path _inputFile;
@@ -83,7 +90,7 @@ public class FrontEndOptions extends FuzionOptions
 
 
   /**
-   * main feature name, null iff _readStdin
+   * main feature name, null iff _readStdin || _executeCode != null
    */
   final String _main;
 
@@ -125,6 +132,7 @@ public class FrontEndOptions extends FuzionOptions
                          boolean enableUnsafeIntrinsics,
                          List<String> sourceDirs,
                          boolean readStdin,
+                         byte[] executeCode,
                          String main,
                          boolean loadSources)
   {
@@ -136,13 +144,19 @@ public class FrontEndOptions extends FuzionOptions
 
     if (PRECONDITIONS) require
       (verbose >= 0,
-       !readStdin || main == null,
+
+       // at most one of _readStdin, main != null or executeCode != null may be true.
+       !readStdin          || main == null && executeCode == null,
+       executeCode == null || main == null && !readStdin,
+       main == null        || !readStdin   && executeCode == null,
+
        modules != null,
        moduleDirs != null);
 
     _loadBaseLib = loadBaseLib;
     _eraseInternalNamesInLib = eraseInternalNamesInLib;
     _readStdin = readStdin;
+    _executeCode = executeCode;
     Path inputFile = null;
     if (main != null)
       {
@@ -177,7 +191,7 @@ public class FrontEndOptions extends FuzionOptions
     _loadSources = loadSources;
     if (sourceDirs == null)
       {
-        sourceDirs = inputFile != null || readStdin ? new List<>() : new List<>(".");
+        sourceDirs = inputFile != null || readStdin  || executeCode != null ? new List<>() : new List<>(".");
       }
     _sourceDirs = sourceDirs;
   }
