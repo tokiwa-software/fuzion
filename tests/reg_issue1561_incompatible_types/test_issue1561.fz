@@ -27,5 +27,5 @@ ex =>
     (try unit String ()->
       ref : String
         utf8 Sequence u8 =>
-          (list u8).type.empty
+          (list u8).empty
     ).as_option

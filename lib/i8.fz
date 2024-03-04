@@ -35,16 +35,16 @@ public i8(public val i8) : num.wrap_around, has_interval is
   redef wrapped_on_neg => is_min
 
   # would addition thiz + other cause an overflow or underflow?
-  public fixed overflow_on_add (other i8) => thiz > 0 && i8.type.max -° thiz < other
-  public fixed underflow_on_add(other i8) => thiz < 0 && i8.type.min -° thiz > other
+  public fixed overflow_on_add (other i8) => thiz > 0 && i8.max -° thiz < other
+  public fixed underflow_on_add(other i8) => thiz < 0 && i8.min -° thiz > other
 
   # would subtraction thiz - other cause an overflow or underflow?
-  public fixed overflow_on_sub (other i8) => thiz > 0 && thiz -° i8.type.max > other
-  public fixed underflow_on_sub(other i8) => thiz < 0 && thiz -° i8.type.min < other
+  public fixed overflow_on_sub (other i8) => thiz > 0 && thiz -° i8.max > other
+  public fixed underflow_on_sub(other i8) => thiz < 0 && thiz -° i8.min < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  public fixed overflow_on_mul (other i8) => as_i32 *° other.as_i32 > i8.type.max.as_i32
-  public fixed underflow_on_mul(other i8) => as_i32 *° other.as_i32 < i8.type.min.as_i32
+  public fixed overflow_on_mul (other i8) => as_i32 *° other.as_i32 > i8.max.as_i32
+  public fixed underflow_on_mul(other i8) => as_i32 *° other.as_i32 < i8.min.as_i32
 
   # neg, add, sub, mul with wrap-around semantics
   public fixed prefix -° i8 => intrinsic

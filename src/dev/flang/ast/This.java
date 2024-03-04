@@ -315,7 +315,7 @@ public class This extends ExprWithPos
         var q = p - qual.size() + 1;              // q           is 2, the index of 'c' in outer
         if (q >= 0)
           {
-            // we found qual at positions p..q in outer, no check that all these
+            // we found qual at positions p..q in outer, now check that all these
             // positions contain the correct name:
             var o2 = outer;
             var d2 = 0;

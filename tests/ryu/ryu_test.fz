@@ -35,13 +35,13 @@ ryu_test =>
 
     numbers := [ zero,
                 -zero,
-                f64.type.positive_infinity,
-                f64.type.negative_infinity,
-                f64.type.quiet_NaN,
+                f64.positive_infinity,
+                f64.negative_infinity,
+                f64.quiet_NaN,
                 0.3,
                 1.0,
                 1.5,
-                f64.type.π,
+                f64.π,
                 min_subnormal,
                 max_subnormal,
                 min_positive,
@@ -79,15 +79,15 @@ ryu_test =>
 
     say "ryū test f32"
 
-    numbers array f32 := [ f32.type.zero,
-                -f32.type.zero,
-                f32.type.positive_infinity,
-                f32.type.negative_infinity,
-                f32.type.quiet_NaN,
+    numbers array f32 := [ f32.zero,
+                -f32.zero,
+                f32.positive_infinity,
+                f32.negative_infinity,
+                f32.quiet_NaN,
                 0.3,
                 1.0,
                 1.5,
-                f32.type.π,
+                f32.π,
 
                 # these numbers are taken from test cases in
                 # https://github.com/ulfjack/ryu

@@ -52,7 +52,7 @@ public Unique_Id_Handler ref is
 # (2^64/10^9/3600/24/365.25).
 #
 public unique_id =>
-  unique_id.type.install_default
+  unique_id.install_default
   unique_id.env.get
 
 

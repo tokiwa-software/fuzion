@@ -52,7 +52,7 @@ mmap_test is
   say (io.file.use String testfile io.file.mode.read ()->
     f
       .read
-      .bind String (x -> String.type.from_bytes (x.drop page_size))
+      .bind String (x -> String.from_bytes (x.drop page_size))
   )
 
   _ := io.file.delete testfile

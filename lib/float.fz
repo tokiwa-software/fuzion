@@ -82,28 +82,28 @@ public float : numeric is
   # NYI this could be made faster, see here:
   # https://cs.opensource.google/go/go/+/refs/tags/go1.18.1:src/math/floor.go;l=79
   public round float.this =>
-    if float.this < float.this.type.zero
+    if float.this < float.this.zero
       -(-float.this).round
-    else if fract = float.this.type.zero
+    else if fract = float.this.zero
       float.this
     else
-      (float.this + float.this.type.one/float.this.type.two).floor
+      (float.this + float.this.one/float.this.two).floor
 
 
   # floor: the greatest integer lower or equal to this
   public floor float.this =>
-    if fract < float.this.type.zero
-      float.this - fract - float.this.type.one
+    if fract < float.this.zero
+      float.this - fract - float.this.one
     else
       float.this - fract
 
 
   # ceiling: the smallest integer greater or equal to this
   public ceil float.this =>
-    if fract ≤ float.this.type.zero
+    if fract ≤ float.this.zero
       float.this - fract
     else
-      float.this - fract + float.this.type.one
+      float.this - fract + float.this.one
 
 
   # number of bits used for mantissa,
@@ -241,7 +241,7 @@ public float : numeric is
   public type.log (base, val float.this) float.this
   pre base > zero
   =>
-    (float.this.type.log val) / (float.this.type.log base)
+    (float.this.log val) / (float.this.log base)
 
 
   # trigonometric
@@ -266,13 +266,13 @@ public float : numeric is
 
   public type.asinh(val float.this) float.this =>
     # ln(x+sqrt(x^2+1))
-    float.this.type.log (val + sqrt (val ** two + one))
+    float.this.log (val + sqrt (val ** two + one))
   public type.acosh(val float.this) float.this =>
     # ln(x+sqrt(x^2-1))
-    float.this.type.log (val + sqrt (val ** two - one))
+    float.this.log (val + sqrt (val ** two - one))
   public type.atanh(val float.this) float.this =>
     # 1/2*ln((1+x)/(1-x))
-    float.this.type.log ((one + val)/(one - val)) / two
+    float.this.log ((one + val)/(one - val)) / two
 
 
   # equality

@@ -1,6 +1,6 @@
 
 --CURDIR--/test_issue1559.fz:27:7: error 1: Wrong result type in redefined feature
-      utf8 => (list u8).type.empty
+      utf8 => (list u8).empty
 ------^^^^
 In 'a.#fun0.call.#anonymous0.utf8' that redefines 'String.utf8'
 result type is       : 'list u8'

@@ -64,7 +64,7 @@ ex_unary is
     b ? TRUE => ["T", "r", "u", "e"].as_list
       | FALSE => ["F", "a", "l", "s", "e" ].as_list)
 
-  join_list list String -> String := l -> String.type.join(l, "")
+  join_list list String -> String := l -> String.join(l, "")
 
   bool_to_string := join_list ∘ bool_to_letters
 

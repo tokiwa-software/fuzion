@@ -54,5 +54,5 @@ public now (p () -> time.date_time) : simple_effect is
 # or installs the default_now handler
 #
 public now =>
-  now.type.install_default
+  now.install_default
   now.env

@@ -60,7 +60,7 @@ partial_application is
   test "data.map 4.infix*  " (data.map    4.infix*  ) "[4, 8, 12, 16, 20, 24, 28, 32, 36, 40]"
 
   i32.prefix      !! => if val <= 1 then 1 else val * !!(val-1)
-  integer.postfix !  => if integer.this <= integer.this.type.one then integer.this.type.one else integer.this * (integer.this-integer.this.type.one)!
+  integer.postfix !  => if integer.this <= integer.this.one then integer.this.one else integer.this * (integer.this-integer.this.one)!
   i32.postfix !  => if val <= 1 then 1 else val * (val-1)!
   u64.postfix     !!  => if val <= u64 1 then u64 1 else val * (val-1)!!
   u64.prefix      !!  => if val <= u64 1 then u64 1 else val * !!(val-1)

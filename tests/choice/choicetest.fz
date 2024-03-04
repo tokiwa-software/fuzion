@@ -64,7 +64,7 @@ choicetest is
   say "creating array:"
   mi : mutate is
   a := mi.go (()->
-    a := (mutate.array Coin).type.new mi 10 Penny
+    a := (mutate.array Coin).new mi 10 Penny
     a[0] := Penny
     a[1] := Penny
     a[2] := Penny
@@ -97,5 +97,5 @@ choicetest is
   say sum
 
   say "summing array using monoid: {a.map c->c.value_in_cents
-                                     .fold i32.type.sum
+                                     .fold i32.sum
                                    }"

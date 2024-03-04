@@ -74,7 +74,7 @@ public stream(public T type) ref : Sequence T is
     m : mutate is
     m.go ()->
       for
-        a := (mutate.array T).type.new m, {a.add x ; a}
+        a := (mutate.array T).new m, {a.add x ; a}
         i in (1..n)
       while has_next
         x := next
@@ -151,7 +151,7 @@ public stream(public T type) ref : Sequence T is
   public redef count i32 =>
     # NYI: check if this works: (map i32 x->1).fold i32.sum
     as_list.map i32 x->1
-          .fold i32.type.sum
+          .fold i32.sum
 
 
   # collect all items from this stream into an array
@@ -159,7 +159,7 @@ public stream(public T type) ref : Sequence T is
   public redef as_array array T =>
     m : mutate is
     m.go ()->
-      a := (m.array T).type.new m
+      a := (m.array T).new m
       while has_next
         a.add next
       a.as_array
@@ -177,7 +177,7 @@ public stream(public T type) ref : Sequence T is
   #
   redef as_string String =>
     map_to_stream String (x -> x.as_string)
-      .fold (String.type.concat ", ")
+      .fold (String.concat ", ")
 
 
   # create a string representation of this stream including all the string

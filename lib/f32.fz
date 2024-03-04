@@ -112,39 +112,39 @@ public f32(public val f32) : float is
 
 
   # the biased exponent
-  public exponent_biased => ((cast_to_u32 >> f32.type.mantissa_bits.as_u32) & f32.type.exponent_mask).as_i32
+  public exponent_biased => ((cast_to_u32 >> f32.mantissa_bits.as_u32) & f32.exponent_mask).as_i32
 
 
   # the normalized exponent
   public exponent =>
     if exponent_biased = 0
-      1 - f32.type.exponent_bias
+      1 - f32.exponent_bias
     else
-      exponent_biased - f32.type.exponent_bias
+      exponent_biased - f32.exponent_bias
 
 
   # the normalized mantissa
   public mantissa =>
-    m := cast_to_u32 & f32.type.mantissa_mask
+    m := cast_to_u32 & f32.mantissa_mask
     if exponent_biased = 0
       m.as_u64
     else
-      ((u32 1 << f32.type.mantissa_bits.as_u32) | m).as_u64
+      ((u32 1 << f32.mantissa_bits.as_u32) | m).as_u64
 
 
 
   # the fraction of the floating point number
   public fixed redef fract f32 =>
-    if f32.type.is_NaN val
-      f32.type.NaN
+    if f32.is_NaN val
+      f32.NaN
     else if val < (f32 0)
       -(-val).fract
     else if val < (f32 1)
       val
     else
-      shift := (f32.type.mantissa_bits - exponent)
+      shift := (f32.mantissa_bits - exponent)
       if (shift > 0)
-        whole := cast_to_u32 & (u32.type.max << shift.as_u32)
+        whole := cast_to_u32 & (u32.max << shift.as_u32)
         val - whole.cast_to_f32
       else
         0.0
@@ -228,25 +228,25 @@ public f32(public val f32) : float is
         if y.is_sign_bit_set then -π else π
     else if x = 0
       if y > 0 then π/2 else -π/2
-    else if x = f32.type.positive_infinity
-      if y = f32.type.positive_infinity
+    else if x = f32.positive_infinity
+      if y = f32.positive_infinity
         π/4
-      else if y = f32.type.negative_infinity
+      else if y = f32.negative_infinity
         -π/4
       else
         0
-    else if x = f32.type.negative_infinity
-      if y = f32.type.positive_infinity
+    else if x = f32.negative_infinity
+      if y = f32.positive_infinity
         (f32 3.0)*π/4
-      else if y = f32.type.negative_infinity
+      else if y = f32.negative_infinity
         -(f32 3.0)*π/4
       else if y > 0
         π
       else // y < 0
         -π
-    else if y = f32.type.positive_infinity
+    else if y = f32.positive_infinity
       π/2
-    else if y = f32.type.negative_infinity
+    else if y = f32.negative_infinity
       -π/2
     else
       q := atan y/x

@@ -527,6 +527,21 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   }
 
 
+  /**
+   * Return this expression as an (unresolved) type.
+   * This is null by default except for calls/this-expressions
+   * that can be used as the left hand side in a dot-type-call.
+   *
+   * The type is returned as produced by the parser and needs
+   * to be resolved with the context it is used in to be of
+   * any use.
+   */
+  public AbstractType asUnresolvedType()
+  {
+    return null;
+  }
+
+
   protected Expr addFieldForResult(Resolution res, AbstractFeature outer, AbstractType t)
   {
     var result = this;

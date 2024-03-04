@@ -784,25 +784,15 @@ public class Call extends AbstractCall
     if (_calledFeature == null)
       {
         res.resolveDeclarations(targetFeature);
-        var fos = res._module.lookup(targetFeature, _name, this, _target == null, false);
-        for (var fo : fos)
-          {
-            if (fo._feature instanceof Feature ff && ff.state().atLeast(State.RESOLVED_DECLARATIONS))
-              {
-                ff.resolveArgumentTypes(res);
-              }
-          }
-        var calledName = FeatureName.get(_name, _actuals.size());
-        var fo = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res));
-        if (fo == null)
-          { // handle implicit calls `f()` that expand to `f.call()`:
-            fo = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> isSpecialWrtArgs(ff));
-          }
-        else if (// fo != null &&
-                 fo._feature != Types.f_ERROR &&
-                 _generics.isEmpty() &&
-                 _actuals.size() != fo._feature.valueArguments().size() &&
-                 !fo._feature.hasOpenGenericsArgList(res))
+        var found = findOnTarget(res, targetFeature);
+        var fos = found._v0;
+        var fo  = found._v1;
+        if (fo != null &&
+            !isSpecialWrtArgs(fo._feature) &&
+            fo._feature != Types.f_ERROR &&
+            _generics.isEmpty() &&
+            _actuals.size() != fo._feature.valueArguments().size() &&
+            !fo._feature.hasOpenGenericsArgList(res))
           {
             splitOffTypeArgs(res, fo._feature, thiz);
           }
@@ -815,11 +805,6 @@ public class Call extends AbstractCall
                 _targetFrom = fo;
               }
           }
-        else if (!fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
-          { // give a more specific error when trying to call a choice feature
-            AstErrors.cannotCallChoice(pos(), fos.get(0)._feature);
-            setToErrorState();
-          }
 
         if (_calledFeature == null &&                 // nothing found, so flag error
             (Types.resolved == null ||                // may happen when building bad base.fum
@@ -828,14 +813,22 @@ public class Call extends AbstractCall
             var tf = targetFeature;
             _pendingError = ()->
               {
-                AstErrors.calledFeatureNotFound(this,
-                                                calledName,
-                                                tf,
-                                                _target,
-                                                FeatureAndOuter.findExactOrCandidate(fos,
-                                                                                     (FeatureName fn) -> false,
-                                                                                     (AbstractFeature f) -> f.featureName().equalsBaseName(calledName)),
-                                                hiddenCandidates(res, thiz, tf, calledName));
+                if (!fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
+                  { // give a more specific error when trying to call a choice feature
+                    AstErrors.cannotCallChoice(pos(), fos.get(0)._feature);
+                  }
+                else
+                  {
+                    var calledName = FeatureName.get(_name, _actuals.size());
+                    AstErrors.calledFeatureNotFound(this,
+                                                    calledName,
+                                                    tf,
+                                                    _target,
+                                                    FeatureAndOuter.findExactOrCandidate(fos,
+                                                                                        (FeatureName fn) -> false,
+                                                                                        (AbstractFeature f) -> f.featureName().equalsBaseName(calledName)),
+                                                    hiddenCandidates(res, thiz, tf, calledName));
+                  }
               };
           }
 
@@ -867,6 +860,39 @@ public class Call extends AbstractCall
        Errors.any() || _target        != null || _pendingError != null);
 
     return !targetVoid;
+  }
+
+
+  /**
+   * Find the feature that may be called on the given target
+   *
+   * @param res the resolution instance
+   *
+   * @param target the - assumed - target of the call
+   *
+   * @return a pair of
+   *          1) all found features matching the name
+   *          2) the matching feature or null if none was found
+   */
+  private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(Resolution res, AbstractFeature target)
+  {
+    var calledName = FeatureName.get(_name, _actuals.size());
+    var fos = res._module.lookup(target, _name, this, _target == null, false);
+    for (var fo : fos)
+      {
+        if (fo._feature instanceof Feature ff && ff.state().atLeast(State.RESOLVED_DECLARATIONS))
+          {
+            ff.resolveArgumentTypes(res);
+          }
+      }
+    var fo = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName,
+      ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res));
+    if (fo == null)
+      { // handle implicit calls `f()` that expand to `f.call()`:
+        fo =
+          FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> isSpecialWrtArgs(ff));
+      }
+    return new Pair<>(fos, fo);
   }
 
 
@@ -1437,6 +1463,7 @@ public class Call extends AbstractCall
    */
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
+    v.actionBefore(this, outer);
     _generics = _generics.map(g -> g.visit(v, outer));
     if (v.doVisitActuals())
       {
@@ -2556,6 +2583,71 @@ public class Call extends AbstractCall
 
 
   /**
+   * try resolving this call as dot-type-call
+   *
+   * On success _calledFeature and _target will be set.
+   * No errors are raised if this is not successful
+   * since then we are probably dealing with a normal call.
+   *
+   * @param res the resolution instance.
+   *
+   * @param thiz the context in which to resolve.
+   */
+  public void tryResolveTypeCall(Resolution res, AbstractFeature thiz)
+  {
+    if (_calledFeature == null && _target != null && thiz.state().atLeast(State.RESOLVED_INHERITANCE))
+    {
+      var tt = _target.asUnresolvedType();
+      if (tt != null && tt instanceof UnresolvedType ut)
+        {
+          // check if this might be a
+          // left hand side of dot-type-call
+          tt = ut.tryResolve(res, thiz);
+          tt = tt != null && tt != Types.t_ERROR && tt.isGenericArgument() ? tt.genericArgument().constraint(res) : tt;
+        }
+      if (tt != null && tt != Types.t_ERROR)
+        {
+          var tf = tt.featureOfType();
+          var ttf = tf.typeFeature(res);
+          var fo = findOnTarget(res, tf)._v1;
+          var tfo = findOnTarget(res, ttf)._v1;
+          var f = tfo == null ? null : tfo._feature;
+          if (f != null
+              && f.outer() != null
+              /* omitting dot-type does not work when calling
+               the inherited methods of `Type`. Otherwise we
+               would always have an ambiguity when calling `as_string` */
+              && f.outer().isTypeFeature())
+            {
+              if (fo != null)
+                {
+                  AstErrors.ambiguousCall(this, fo._feature, tfo._feature);
+                  setToErrorState();
+                }
+              else
+                {
+                  // we found a feature that fits a dot-type-call.
+                  _calledFeature = f;
+                  _target = new DotType(_pos, _target.asUnresolvedType()).resolveTypes(res, thiz);
+                }
+            }
+          if (_calledFeature != null &&
+              _generics.isEmpty() &&
+              _actuals.size() != f.valueArguments().size() &&
+              !f.hasOpenGenericsArgList(res))
+            {
+              splitOffTypeArgs(res, f, thiz);
+            }
+          if (_calledFeature != null)
+            {
+              resolveTypesOfActuals(res,thiz);
+            }
+        }
+    }
+  }
+
+
+  /**
    * determine the static type of all expressions and declared features in this feature
    *
    * @param res the resolution instance.
@@ -2570,7 +2662,7 @@ public class Call extends AbstractCall
         return this;
       }
     _resolvedFor = outer;
-    if (!loadCalledFeatureUnlessTargetVoid(res, outer))
+    if (_calledFeature == null && !loadCalledFeatureUnlessTargetVoid(res, outer))
       { // target of this call results in `void`, so we replace this call by the
         // target. However, we have to return a `Call` and `_target` is
         // `Expr`. Solution: we wrap `_target` into a call `universe.id void

@@ -35,7 +35,7 @@ public u32(public val u32) : num.wrap_around, has_interval is
   redef wrapped_on_neg => !is_zero
 
   # would addition thiz + other cause an overflow or underflow?
-  public fixed overflow_on_add (other u32) => u32.type.max -° thiz < other
+  public fixed overflow_on_add (other u32) => u32.max -° thiz < other
   public fixed underflow_on_add(other u32) => false
 
   # would subtraction thiz - other cause an overflow or underflow?
@@ -43,7 +43,7 @@ public u32(public val u32) : num.wrap_around, has_interval is
   public fixed underflow_on_sub(other u32) => thiz < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  public fixed overflow_on_mul (other u32) => as_i64 *° other.as_i64 > u32.type.max.as_i64
+  public fixed overflow_on_mul (other u32) => as_i64 *° other.as_i64 > u32.max.as_i64
   public fixed underflow_on_mul(other u32) => false
 
   # neg, add, sub, mul with wrap-around semantics
@@ -78,7 +78,7 @@ public u32(public val u32) : num.wrap_around, has_interval is
   # this u32 as an i8
   public as_i8 i8
     pre
-      debug: thiz ≤ i8.type.max.as_u32
+      debug: thiz ≤ i8.max.as_u32
     =>
       cast_to_i32.as_i8
 
@@ -86,7 +86,7 @@ public u32(public val u32) : num.wrap_around, has_interval is
   # this u32 as an i16
   public as_i16 i16
     pre
-      debug: thiz ≤ i16.type.max.as_u32
+      debug: thiz ≤ i16.max.as_u32
     =>
       cast_to_i32.as_i16
 
@@ -94,7 +94,7 @@ public u32(public val u32) : num.wrap_around, has_interval is
   # this u32 as an i32
   public as_i32 i32
     pre
-      debug: thiz ≤ i32.type.max.as_u32
+      debug: thiz ≤ i32.max.as_u32
     =>
       cast_to_i32
 
@@ -112,7 +112,7 @@ public u32(public val u32) : num.wrap_around, has_interval is
   # this u32 as an u8
   public as_u8 u8
     pre
-      debug: thiz ≤ u8.type.max.as_u32
+      debug: thiz ≤ u8.max.as_u32
     =>
       cast_to_i32.as_u8
 
@@ -120,7 +120,7 @@ public u32(public val u32) : num.wrap_around, has_interval is
   # this u32 as an u16
   public as_u16 u16
     pre
-      debug: thiz ≤ u16.type.max.as_u32
+      debug: thiz ≤ u16.max.as_u32
     =>
       cast_to_i32.as_u16
 
@@ -177,7 +177,7 @@ public u32(public val u32) : num.wrap_around, has_interval is
   # the highest 1 bit in this integer
   #
   public highest_bit u32 =>
-    if val = u32.type.zero
+    if val = u32.zero
       0
     else
       // NYI: should be possible to reuse v, s names

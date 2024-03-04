@@ -78,14 +78,14 @@ seek(
      fd i64,
      # the offset to seek from the beginning of the stream pointer
      offset i64) =>
-  seek.type.install_default
+  seek.install_default
   seek.env.seek fd offset
 
 
 # short-hand for accessing seek effect in current environment
 #
 module seek =>
-  seek.type.install_default
+  seek.install_default
   seek.env
 
 

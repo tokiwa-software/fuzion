@@ -35,16 +35,16 @@ public i16(public val i16) : num.wrap_around, has_interval is
   redef wrapped_on_neg => is_min
 
   # would addition thiz + other cause an overflow or underflow?
-  public fixed overflow_on_add (other i16) => thiz > 0 && i16.type.max -° thiz < other
-  public fixed underflow_on_add(other i16) => thiz < 0 && i16.type.min -° thiz > other
+  public fixed overflow_on_add (other i16) => thiz > 0 && i16.max -° thiz < other
+  public fixed underflow_on_add(other i16) => thiz < 0 && i16.min -° thiz > other
 
   # would subtraction thiz - other cause an overflow or underflow?
-  public fixed overflow_on_sub (other i16) => thiz > 0 && thiz -° i16.type.max > other
-  public fixed underflow_on_sub(other i16) => thiz < 0 && thiz -° i16.type.min < other
+  public fixed overflow_on_sub (other i16) => thiz > 0 && thiz -° i16.max > other
+  public fixed underflow_on_sub(other i16) => thiz < 0 && thiz -° i16.min < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  public fixed overflow_on_mul (other i16) => as_i32 *° other.as_i32 > i16.type.max.as_i32
-  public fixed underflow_on_mul(other i16) => as_i32 *° other.as_i32 < i16.type.min.as_i32
+  public fixed overflow_on_mul (other i16) => as_i32 *° other.as_i32 > i16.max.as_i32
+  public fixed underflow_on_mul(other i16) => as_i32 *° other.as_i32 < i16.min.as_i32
 
   # neg, add, sub, mul with wrap-around semantics
   public fixed prefix -° i16 => intrinsic
@@ -78,8 +78,8 @@ public i16(public val i16) : num.wrap_around, has_interval is
   # conversion to u32, i64 and u64, with range check
   public as_i8 i8
     pre
-      thiz ≥ i8.type.min.as_i16
-      thiz ≤ i8.type.max.as_i16
+      thiz ≥ i8.min.as_i16
+      thiz ≤ i8.max.as_i16
     =>
       low8bits.cast_to_i8
   public as_i32 i32 => intrinsic
@@ -88,7 +88,7 @@ public i16(public val i16) : num.wrap_around, has_interval is
 
   public as_u8 u8
     pre
-      debug: (thiz ≥ 0) && (thiz ≤ u8.type.max.as_i16)
+      debug: (thiz ≥ 0) && (thiz ≤ u8.max.as_i16)
     =>
       low8bits
   public as_u16 u16

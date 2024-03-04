@@ -50,7 +50,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # concatenate string with string representation of another object
   public infix + (other Any) String =>
-    String.type.concat String.this other.as_string
+    String.concat String.this other.as_string
 
 
 
@@ -187,8 +187,8 @@ public String ref : property.equatable, property.hashable, property.orderable is
     match utf8.as_list
       nil => parse_error "empty string"
       c Cons =>
-        negate := c.head = String.type.minus_char
-        d := if (negate || c.head = String.type.plus_char) String.type.zero_char else c.head
+        negate := c.head = String.minus_char
+        d := if (negate || c.head = String.plus_char) String.zero_char else c.head
         parse_integer T base negate T.zero d c.tail
 
 
@@ -218,9 +218,9 @@ public String ref : property.equatable, property.hashable, property.orderable is
   =>
 
     d outcome u8 :=
-      if      (String.type.zero_char  ≤ c ≤ String.type.nine_char ) c - String.type.zero_char
-      else if (String.type.a_char     ≤ c ≤ String.type.z_char    ) c - String.type.a_char    + 10
-      else if (String.type.cap_a_char ≤ c ≤ String.type.cap_z_char) c - String.type.cap_a_char + 10
+      if      (String.zero_char  ≤ c ≤ String.nine_char ) c - String.zero_char
+      else if (String.a_char     ≤ c ≤ String.z_char    ) c - String.a_char    + 10
+      else if (String.cap_a_char ≤ c ≤ String.cap_z_char) c - String.cap_a_char + 10
       else parse_error "non-digit found"
 
     d.bind T b->
@@ -367,7 +367,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
       debug: 0 ≤ from ≤ to ≤ String.this.byte_length
     # NYI check if from/to are valid start/end bytes?
   =>
-    String.type.from_bytes (String.this.utf8.slice from to)
+    String.from_bytes (String.this.utf8.slice from to)
 
 
   # create substring of this string consisting of bytes from (inclusive) .. byte_length (exclusive).
@@ -388,7 +388,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
     codepoint_array
       .slice from to
       .map String c->c  # NYI: this should maybe not be needed since codepoint is a string
-      .fold String.type.concat
+      .fold String.concat
 
 
   # create substring of this string consisting of codepoints from (inclusive) .. codepoint_length (exclusive).
@@ -443,18 +443,18 @@ public String ref : property.equatable, property.hashable, property.orderable is
       nil => found >>= (pos -> pos - substring.byte_length)
       idx i32 =>
         skip := idx + substring.byte_length
-        s := String.type.from_bytes (utf8.drop skip)
+        s := String.from_bytes (utf8.drop skip)
 
         s.find_last substring (skip + (found.get 0))
 
 
   # replace all occurrences of old by new
   #
-  public replace (old, new String) => String.type.from_bytes ((container.searchable_sequence utf8).replace old.utf8 new.utf8)
+  public replace (old, new String) => String.from_bytes ((container.searchable_sequence utf8).replace old.utf8 new.utf8)
 
 
   # replace the first n occurrences of old by new
-  public replace(old, new String, n u64) => String.type.from_bytes ((container.searchable_sequence utf8).replace old.utf8 new.utf8 n)
+  public replace(old, new String, n u64) => String.from_bytes ((container.searchable_sequence utf8).replace old.utf8 new.utf8 n)
 
 
   # does this string contain the given 'substring'
@@ -480,8 +480,8 @@ public String ref : property.equatable, property.hashable, property.orderable is
     if l.is_empty
       nil
     else
-      h :=  String.type.from_bytes (l.take_while (c -> !c.is_ascii_white_space)).as_array
-      t := (String.type.from_bytes (l.drop_while (c -> !c.is_ascii_white_space))).split
+      h :=  String.from_bytes (l.take_while (c -> !c.is_ascii_white_space)).as_array
+      t := (String.from_bytes (l.drop_while (c -> !c.is_ascii_white_space))).split
       ref : Cons String (list String)
         head => h
         tail => t
@@ -548,7 +548,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
                n u32 => n > (u32 0)
     =>
       (container.searchable_sequence utf8).split0 s.utf8 limit split_after
-          .map_to_list x->(String.type.from_bytes x)
+          .map_to_list x->(String.from_bytes x)
 
 
   # remove leading and trailing white space from this string
@@ -559,19 +559,19 @@ public String ref : property.equatable, property.hashable, property.orderable is
     s1 := (s0.drop_while c->c.is_ascii_white_space).reverse
     s2 := (s1.drop_while c->c.is_ascii_white_space).reverse
 
-    String.type.from_bytes s2
+    String.from_bytes s2
 
 
   # remove leading white space from this string
   #
   trim_start =>
-    String.type.from_bytes (utf8.drop_while c->c.is_ascii_white_space)
+    String.from_bytes (utf8.drop_while c->c.is_ascii_white_space)
 
 
   # remove trailing white space from this string
   #
   trim_end =>
-    String.type.from_bytes (utf8.as_list.reverse.drop_while c->c.is_ascii_white_space).reverse
+    String.from_bytes (utf8.as_list.reverse.drop_while c->c.is_ascii_white_space).reverse
 
 
   # pad this string at the end with spaces such that its `codepoint_length` is at least `n`.
@@ -698,7 +698,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public fields_func(p codepoint -> bool) list String =>
     state_wrapper(l list String, in_run bool, start_pos, current_pos i32) is
 
-    i := state_wrapper (list String).type.empty false 0 0
+    i := state_wrapper (list String).empty false 0 0
     last_state := as_codepoints.reduce state_wrapper i ((r, c) ->
       match p c
         TRUE =>
@@ -730,19 +730,19 @@ public String ref : property.equatable, property.hashable, property.orderable is
         l := byte_length
         sepl := sep.byte_length
 
-        before := String.type.from_bytes (utf8.slice 0 i)
-        after := String.type.from_bytes (utf8.slice (i + sepl) l)
+        before := String.from_bytes (utf8.slice 0 i)
+        after := String.from_bytes (utf8.slice (i + sepl) l)
         (before, after, true)
 
 
   # convert this string to upper case
   public upper_case String =>
-    String.type.from_codepoints (as_codepoints.map (c -> character_encodings.unicode.mappings.upper_case[c.val].get c))
+    String.from_codepoints (as_codepoints.map (c -> character_encodings.unicode.mappings.upper_case[c.val].get c))
 
 
   # convert this string to lower case
   public lower_case String =>
-    String.type.from_codepoints (as_codepoints.map (c -> character_encodings.unicode.mappings.lower_case[c.val].get c))
+    String.from_codepoints (as_codepoints.map (c -> character_encodings.unicode.mappings.lower_case[c.val].get c))
 
 
   # Does this String consist of nothing but ascii codepoints?

@@ -23,4 +23,4 @@
 
 reg_issue2486 is
   a := mut u32 1
-  a <- a + u32.type.one
+  a <- a + u32.one

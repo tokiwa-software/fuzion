@@ -58,7 +58,7 @@ is
 # panic handler.
 #
 public panic =>
-  panic.type.install_default
+  panic.install_default
   panic.env
 
 

@@ -210,7 +210,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
   # fold the elements of this list using the given monoid.
   #
-  # e.g., to sum the elements of a list of i32, use l.fold i32.type.sum
+  # e.g., to sum the elements of a list of i32, use l.fold i32.sum
   #
   public redef fold (m Monoid A) => fold m.e m
 
@@ -250,8 +250,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # map this Sequence to a list that contains the result of folding
   # all prefixes using the given monoid.
   #
-  # e.g., for a Sequence of i32 s, s.scan i32.type.sum creates a list of
-  # partial sums (0..).map x->(s.take x).fold i32.type.sum
+  # e.g., for a Sequence of i32 s, s.scan i32.sum creates a list of
+  # partial sums (0..).map x->(s.take x).fold i32.sum
   #
   public redef scan (m Monoid A) => scan m.e m
 
@@ -300,7 +300,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # representations of its contents, separated by 'sep'.
   #
   public redef as_string (sep String) =>
-    String.type.join (map String x->x.as_string) sep
+    String.join (map String x->x.as_string) sep
 
 
   # add an element sep in front of every element of this list.
@@ -520,7 +520,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # monoid of lists with infix concatentation operation.
   #
   # NYI: Name should be `concat_monoid`, we use `list_concat_monoid`
-  # to avoid clash with inherited `Sequence.type.concat_monoid`. Maybe
+  # to avoid clash with inherited `Sequence.concat_monoid`. Maybe
   # the inherited one should be renamed once renmaing is supported.
   #
   public type.list_concat_monoid : Monoid (list A) is

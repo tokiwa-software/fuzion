@@ -62,7 +62,7 @@ public f64(public val f64) : float is
 
 
   public fits_in_i64 =>
-    (thiz ≥ i64.type.min.as_f64) && (thiz ≤ i64.type.max.as_f64)
+    (thiz ≥ i64.min.as_f64) && (thiz ≤ i64.max.as_f64)
 
 
   public redef as_i64
@@ -126,38 +126,38 @@ public f64(public val f64) : float is
 
 
   # the biased exponent
-  public exponent_biased => ((cast_to_u64 >> f64.type.mantissa_bits.as_u64) & f64.type.exponent_mask).as_i32
+  public exponent_biased => ((cast_to_u64 >> f64.mantissa_bits.as_u64) & f64.exponent_mask).as_i32
 
 
   # the normalized exponent
   public exponent =>
     if exponent_biased = 0
-      1 - f64.type.exponent_bias
+      1 - f64.exponent_bias
     else
-      exponent_biased - f64.type.exponent_bias
+      exponent_biased - f64.exponent_bias
 
 
   # the normalized mantissa
   public mantissa =>
-    m := cast_to_u64 & f64.type.mantissa_mask
+    m := cast_to_u64 & f64.mantissa_mask
     if exponent_biased = 0
       m
     else
-      (u64 1 << f64.type.mantissa_bits.as_u64) | m
+      (u64 1 << f64.mantissa_bits.as_u64) | m
 
 
   # the fraction of this floating point number
   public fixed redef fract f64 =>
-    if f64.type.is_NaN val
-      f64.type.NaN
+    if f64.is_NaN val
+      f64.NaN
     else if val < (f64 0)
       -(-val).fract
     else if val < (f64 1)
       val
     else
-      shift := (f64.type.mantissa_bits - exponent)
+      shift := (f64.mantissa_bits - exponent)
       if (shift > 0)
-        whole := cast_to_u64 & (u64.type.max << shift.as_u64)
+        whole := cast_to_u64 & (u64.max << shift.as_u64)
         val - whole.cast_to_f64
       else
         0.0
@@ -241,25 +241,25 @@ public f64(public val f64) : float is
         if y.is_sign_bit_set then -π else π
     else if x = 0
       if y > 0 then π/2 else -π/2
-    else if x = f64.type.positive_infinity
-      if y = f64.type.positive_infinity
+    else if x = f64.positive_infinity
+      if y = f64.positive_infinity
         π/4
-      else if y = f64.type.negative_infinity
+      else if y = f64.negative_infinity
         -π/4
       else
         0
-    else if x = f64.type.negative_infinity
-      if y = f64.type.positive_infinity
+    else if x = f64.negative_infinity
+      if y = f64.positive_infinity
         3.0*π/4
-      else if y = f64.type.negative_infinity
+      else if y = f64.negative_infinity
         -3.0*π/4
       else if y > 0
         π
       else // y < 0
         -π
-    else if y = f64.type.positive_infinity
+    else if y = f64.positive_infinity
       π/2
-    else if y = f64.type.negative_infinity
+    else if y = f64.negative_infinity
       -π/2
     else
       q := atan y/x

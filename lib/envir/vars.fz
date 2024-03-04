@@ -75,7 +75,7 @@ public vars (p Vars_Handler) : simple_effect is
 # short-hand for accessing envir.args effect in current environment
 #
 public vars =>
-  vars.type.install_default
+  vars.install_default
   envir.vars.env
 
 

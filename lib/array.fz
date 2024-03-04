@@ -297,4 +297,4 @@ module:public array(
 # array -- create initialized one-dimensional immutable array
 #
 public array(T type, length i32, init i32 -> T) array T =>
-  (array T).type.new length init
+  (array T).new length init

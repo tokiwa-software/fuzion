@@ -155,7 +155,7 @@ test_local_mutate is
               qs l pi-1
               qs pi+1 r
 
-          arr := (mutate.array T).type.new m c data[0]
+          arr := (mutate.array T).new m c data[0]
           for i in arr.indices do
             arr[i] := data[i]
 

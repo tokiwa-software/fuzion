@@ -309,7 +309,7 @@ public mutate : simple_effect is
 # short-hand for accessing mut effect in current environment
 #
 public mut =>
-  mutate.type.install_default
+  mutate.install_default
   mutate.env
 
 
