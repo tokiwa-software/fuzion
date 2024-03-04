@@ -310,16 +310,10 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Fuzion home directory as used in module files instead of absolute or
-   * relative path of build directory.
+   * Fuzion module directory as used in module files instead of absolute or
+   * relative path of module directory.
    */
-  public static final Path SYMBOLIC_FUZION_HOME = Path.of("$FUZION");
-
-
-  /**
-   * Directory to be used for sources in module files
-   */
-  public static final Path SYMBOLIC_FUZION_HOME_LIB_SOURCE = SYMBOLIC_FUZION_HOME.resolve("lib");
+  public static final Path SYMBOLIC_FUZION_MODULE = Path.of("$MODULE");
 
 
   /*-----------------  special values used in AIR file  -----------------*/
