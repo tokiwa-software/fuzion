@@ -1,7 +1,10 @@
 
---CURDIR--/reg_issue2492.fz:24:7: error 1: Failed to infer type of expression.
+--CURDIR--/reg_issue2492.fz:24:7: error 1: No type information can be inferred from a lambda expression
 _ := (x->3).call
 ------^^^^
-Expression with unknown type: 'x->3'
+A lambda expression can only be used if assigned to a field or argument of type 'Function'
+with argument count of the lambda expression equal to the number of type parameters of the type.  The type of the
+assigned field must be given explicitly.
+To solve this, declare an explicit type for the target field, e.g., 'f (i32, i32) -> bool := x, y -> x > y'.
 
 one error.
