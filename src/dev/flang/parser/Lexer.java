@@ -1152,24 +1152,24 @@ public class Lexer extends SourceFile
    *
    * The non-empty case
    *
-   *    x is block
-   *        ^^    ^
-   *        ||    +------ lastPos
+   *    x is something
+   *        ^^        ^
+   *        ||        +-- endPos
    *        |+----------- pos
    *        |
    *        +------------ prevPos
    *    y is block
    *
-   * results in pos..lastPos:
+   * results in pos..endPos:
    *
-   *    x is block
-   *    -----^^^^^
+   *    x is something
+   *    -----^^^^^^^^^
    *
-   * while empty case
+   * while the empty case
    *
    *    x is
    *        ^
-   *        +------------ lastPos
+   *        +------------ endPos
    *        +------------ prevPos
    *    y is block
    *    ^
