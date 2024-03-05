@@ -73,9 +73,9 @@ public class Cond
    *
    * @return a new list with each `Expr` form `l` wrapped into a `Cond`.
    */
-  public static List<Cond> from(List<Expr> l)
+  public static List<Cond> from(Block b)
   {
-    return l.map2(e->new Cond(e));
+    return b._expressions.map2(e->new Cond(e));
   }
 
 

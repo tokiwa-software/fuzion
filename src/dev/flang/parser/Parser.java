@@ -201,17 +201,17 @@ public class Parser extends Lexer
   /**
    * Parse a unit, i.e., exprs followed by Token.t_eof.
    *
-unit        : exprs EOF
+unit        : block EOF
             ;
    */
   public List<Expr> unit()
   {
-    var result = exprs();
+    var result = block();
     if (!Errors.any())
       {
         match(Token.t_eof, "Unit");
       }
-    return result;
+    return result._expressions;
   }
 
 
@@ -2557,9 +2557,14 @@ brblock     : BRACEL exprs BRACER
    */
   Block block()
   {
-    var start = lastTokenEndPos();
+    var s0 = lastTokenEndPos();
+    var s = tokenPos();
     var b = optionalBrackets(BRACES, "block", () -> new Block(exprs()));
-    b.setSourceRange(sourceRange(start, Math.max(start+1,lastTokenEndPos())));
+    var e = lastTokenEndPos();
+    var r = s0 == e
+      ? sourceRange(s0-1, s0)
+      : sourceRange(s, e);
+    b.setSourceRange(r);
     return b;
   }
 
@@ -3481,7 +3486,7 @@ contract    : require
   /**
    * Parse require
    *
-require     : "pre" exprs
+require     : "pre" block
             |
             ;
    */
@@ -3490,7 +3495,7 @@ require     : "pre" exprs
     List<Cond> result = null;
     if (skip(atMinIndent, Token.t_pre))
       {
-        result = Cond.from(exprs());
+        result = Cond.from(block());
       }
     return result;
   }
@@ -3499,7 +3504,7 @@ require     : "pre" exprs
   /**
    * Parse ensure
    *
-ensure      : "post" exprs
+ensure      : "post" block
             |
             ;
    */
@@ -3508,7 +3513,7 @@ ensure      : "post" exprs
     List<Cond> result = null;
     if (skip(atMinIndent, Token.t_post))
       {
-        result = Cond.from(exprs());
+        result = Cond.from(block());
       }
     return result;
   }
@@ -3517,7 +3522,7 @@ ensure      : "post" exprs
   /**
    * Parse invariant
    *
-invariant   : "inv" exprs
+invariant   : "inv" block
             |
             ;
    */
@@ -3526,7 +3531,7 @@ invariant   : "inv" exprs
     List<Cond> result = null;
     if (skip(atMinIndent, Token.t_inv))
       {
-        result = Cond.from(exprs());
+        result = Cond.from(block());
       }
     return result;
   }

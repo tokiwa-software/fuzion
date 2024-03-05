@@ -266,13 +266,9 @@ public class Block extends AbstractBlock
    */
   SourcePosition posOfLast()
   {
-    SourcePosition result = _closingBracePos;
     Expr resExpr = resultExpression();
-    if (resExpr != null)
-      {
-        result = resExpr.pos();
-      }
-    return result;
+    return resExpr != null ? resExpr.pos()
+                           : pos();
   }
 
 
@@ -351,7 +347,7 @@ public class Block extends AbstractBlock
       }
     else if (r.resultType().compareTo(Types.resolved.t_unit) != 0)
       {
-        AstErrors.blockMustEndWithExpression(_closingBracePos, r.resultType());
+        AstErrors.blockMustEndWithExpression(pos(), r.resultType());
       }
     return this;
   }
