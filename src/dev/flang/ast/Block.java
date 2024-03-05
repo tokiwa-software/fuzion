@@ -71,7 +71,7 @@ public class Block extends AbstractBlock
    * in this block should remain visible after the block (which is usually the
    * case for artificially generated blocks)
    */
-  public Block(boolean newScope,
+  private Block(boolean newScope,
                List<Expr> s)
   {
     super(s);
