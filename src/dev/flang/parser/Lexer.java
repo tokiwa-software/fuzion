@@ -1127,6 +1127,81 @@ public class Lexer extends SourceFile
 
 
   /**
+   * Obtain the given range pos..lastTokenEndPos() as a SourceRange object.
+   *
+   * @param pos a byte position within this file, must be smaller than
+   * lastTokenEndPos().
+   */
+  public SourceRange sourceRange(int pos)
+  {
+    if (PRECONDITIONS) require
+      (0 <= pos,
+       pos < lastTokenEndPos());
+
+    return sourceRange(pos, lastTokenEndPos());
+  }
+
+
+  /**
+   * Obtain the given range pos..endPos as a SourceRange object.  In case this
+   * range is empty, get the range prevPos..prevPos+1
+   *
+   * This is useful in case the range could be empty as for a code block as
+   * follows:
+   *
+   * The non-empty case
+   *
+   *    x is block
+   *        ^^    ^
+   *        ||    +------ lastPos
+   *        |+----------- pos
+   *        |
+   *        +------------ prevPos
+   *    y is block
+   *
+   * results in pos..lastPos:
+   *
+   *    x is block
+   *    -----^^^^^
+   *
+   * while empty case
+   *
+   *    x is
+   *        ^
+   *        +------------ lastPos
+   *        +------------ prevPos
+   *    y is block
+   *    ^
+   *    |
+   *    +---------------- pos
+   *
+   * results in
+   *
+   *    x is
+   *    ----^
+   *    y is block
+   *
+   * @param prevPos the last position of the previous token
+   *
+   * @param pos a byte position within this file.
+   *
+   * @param endPos a byte position, usually after pos within this file.
+   */
+  public SourceRange sourceRange(int prevPos, int pos, int endPos)
+  {
+    if (PRECONDITIONS) require
+      (0 <= prevPos,
+       0 <= pos,
+       prevPos <= byteLength(),
+       pos     <= byteLength(),
+       endPos  <= byteLength());
+
+    return pos < endPos ? sourceRange(pos, endPos)
+                        : sourceRange(prevPos, prevPos+1);
+  }
+
+
+  /**
    * The line number of the current token.
    */
   int line()

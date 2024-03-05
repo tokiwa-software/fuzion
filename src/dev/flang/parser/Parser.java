@@ -677,10 +677,9 @@ name        : IDENT                            // all parts of name must be in s
               next();
               if (skip(Token.t_question))
                 {
-                  var end = tokenEndPos();
                   if (skipColon())
                     {
-                      result = new ParsedName(sourceRange(pos, end), "ternary ? :");
+                      result = new ParsedName(sourceRange(pos), "ternary ? :");
                     }
                   else if (!ignoreError)
                     {
@@ -702,9 +701,8 @@ name        : IDENT                            // all parts of name must be in s
                   var dotdot = skip("..");
                   if (!ignoreError || current() == Token.t_rcrochet)
                     {
-                      var end = tokenEndPos();
                       match(Token.t_rcrochet, "name: index");
-                      result = new ParsedName(sourceRange(pos, end),
+                      result = new ParsedName(sourceRange(pos),
                                               dotdot ? FuzionConstants.FEATURE_NAME_INDEX_DOTDOT
                                                      : FuzionConstants.FEATURE_NAME_INDEX);
                     }
@@ -719,16 +717,15 @@ name        : IDENT                            // all parts of name must be in s
                   match(Token.t_lcrochet, "name: set");
                   if (!ignoreError || current() == Token.t_rcrochet)
                     {
-                      var end = tokenEndPos();
                       match(Token.t_rcrochet, "name: set");
-                      result = new ParsedName(sourceRange(pos, end), FuzionConstants.FEATURE_NAME_INDEX_ASSIGN);
+                      result = new ParsedName(sourceRange(pos), FuzionConstants.FEATURE_NAME_INDEX_ASSIGN);
                     }
                 }
               else if (current() == Token.t_ident)
                 {
-                  var end = tokenEndPos();
-                  result = new ParsedName(sourceRange(pos, end), identifier() + " =");
+                  var id = identifier();
                   match(Token.t_ident, "name: set");
+                  result = new ParsedName(sourceRange(pos), id + " =");
                 }
               else if (!ignoreError)
                 {
@@ -809,14 +806,13 @@ opName      : "infix"   op
     int pos = tokenPos();
     String inPrePost = current(mayBeAtMinIndent).keyword();
     next();
-    var end = tokenEndPos();
     String res = operatorOrError();
     if (!ignoreError || res != Errors.ERROR_STRING)
       {
         match(Token.t_op, "infix/prefix/postfix name");
         res = inPrePost + " " + res;
       }
-    return new ParsedName(sourceRange(pos, end), res);
+    return new ParsedName(sourceRange(pos), res);
   }
 
 
@@ -2067,8 +2063,7 @@ lambda      : "->" block
     matchOperator("->", "lambda");
     var startPos = n.isEmpty() ? pos : n.getFirst().pos().bytePos();
     var b = block();
-    var endPos = startPos < b.pos().byteEndPos() ? b.pos().byteEndPos() : tokenPos();
-    return new Function(sourceRange(startPos, endPos), n, b);
+    return new Function(sourceRange(startPos), n, b);
   }
 
 
@@ -2185,7 +2180,7 @@ simpleterm  : bracketTerm
   Expr term()
   {
     Expr result;
-    int p1 = tokenPos();
+    int pos = tokenPos();
     switch (isDotEnvOrTypePrefix())    // starts with name or '('
       {
       case env : result = dotEnv(); break;
@@ -2196,15 +2191,14 @@ simpleterm  : bracketTerm
           case t_lbrace    :
           case t_lparen    :
           case t_lcrochet  :         result = bracketTerm();                            break;
-          case t_numliteral: var endPos = tokenEndPos();
-                             var l = skipNumLiteral();
+          case t_numliteral: var l = skipNumLiteral();
                              var m = l.mantissaValue();
                              var b = l.mantissaBase();
                              var d = l.mantissaDotAt();
                              var e = l.exponent();
                              var eb = l.exponentBase();
                              var o = l._originalString;
-                             result = new NumLiteral(sourceRange(p1, endPos), o, b, m, d, e, eb); break;
+                             result = new NumLiteral(sourceRange(pos), o, b, m, d, e, eb); break;
           case t_match     :         result = match();                                  break;
           case t_for       :
           case t_variant   :
@@ -2221,7 +2215,7 @@ simpleterm  : bracketTerm
                 result = callOrFeatOrThis();
                 if (result == null)
                   {
-                    syntaxError(p1, "term (lbrace, lparen, lcrochet, fun, string, integer, old, match, or name)", "term");
+                    syntaxError(pos, "term (lbrace, lparen, lcrochet, fun, string, integer, old, match, or name)", "term");
                     result = Expr.ERROR_VALUE;
                   }
               }
@@ -2238,11 +2232,7 @@ simpleterm  : bracketTerm
       {
         result = call(result);
       }
-    var p2 = lastTokenEndPos();
-    if (p1 < p2) // in case or a parsing error, we might not have made any progress
-      {
-        result.setSourceRange(sourceRange(p1, p2));
-      }
+    result.setSourceRange(sourceRange(pos));
     return result;
   }
 
@@ -2557,14 +2547,11 @@ brblock     : BRACEL exprs BRACER
    */
   Block block()
   {
-    var s0 = lastTokenEndPos();
-    var s = tokenPos();
+    var p0 = lastTokenEndPos();
+    var p1 = tokenPos();
     var b = optionalBrackets(BRACES, "block", () -> new Block(exprs()));
-    var e = lastTokenEndPos();
-    var r = s0 == e
-      ? sourceRange(s0-1, s0)
-      : sourceRange(s, e);
-    b.setSourceRange(r);
+    var p2 = lastTokenEndPos();
+    b.setSourceRange(sourceRange(p0, p1, p2));
     return b;
   }
 
