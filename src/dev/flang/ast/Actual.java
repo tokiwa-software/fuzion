@@ -34,17 +34,11 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Actual extends Expr
+public class Actual extends ExprWithPos
 {
 
 
   /*----------------------------  variables  ----------------------------*/
-
-
-  /**
-   * The sourcecode position of this expression, used for error messages.
-   */
-  private final SourcePosition _pos;
 
 
   /**
@@ -69,11 +63,12 @@ public class Actual extends Expr
    */
   public Actual(SourcePosition pos, AbstractType t, Expr e)
   {
+    super(pos);
+
     if (PRECONDITIONS) require
       (t != null || e != Expr.NO_VALUE,
        e != null);
 
-    _pos = pos;
     _type = t;
     _expr = e;
   }
@@ -112,15 +107,6 @@ public class Actual extends Expr
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * The sourcecode position of this expression, used for error messages.
-   */
-  public SourcePosition pos()
-  {
-    return _pos;
-  }
 
 
   /**
