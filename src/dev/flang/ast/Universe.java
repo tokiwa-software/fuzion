@@ -35,17 +35,11 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Universe extends Expr
+public class Universe extends ExprWithPos
 {
 
 
   /*----------------------------  variables  ----------------------------*/
-
-
-  /**
-   * The sourcecode position of this expression, used for error messages.
-   */
-  private final SourcePosition _pos;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -65,20 +59,11 @@ public class Universe extends Expr
    */
   public Universe(SourcePosition pos)
   {
-    this._pos = pos;
+    super(pos);
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * The sourcecode position of this expression, used for error messages.
-   */
-  public SourcePosition pos()
-  {
-    return _pos;
-  }
 
 
   /**
