@@ -757,7 +757,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
           .inherits()
           .stream()
           .anyMatch(c ->
-            c.calledFeature().equals(Types.resolved.f_unwrap)
+            c.calledFeature().equals(Types.resolved.f_auto_unwrap)
             && !c.actualTypeParameters().isEmpty()
             && expectedType.isAssignableFrom(c.actualTypeParameters().get(0).applyTypePars(t)))
       ? new ParsedCall(this, new ParsedName(pos(), "unwrap")).resolveTypes(res, outer)

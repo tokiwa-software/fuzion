@@ -123,7 +123,7 @@ public mutate : simple_effect is
     # initial value, will be updated by 'put' or 'infix <-'.
     private mutable_value T
     ) : mutable_element,
-        unwrap T mutate
+        auto_unwrap T mutate
   is
 
 

@@ -31,7 +31,7 @@
 public atomic (
   T type,
   v T
-  ) : unwrap T atomic_access
+  ) : auto_unwrap T atomic_access
 is
 
   # Does the current system permit racy accesses to the value of type T
