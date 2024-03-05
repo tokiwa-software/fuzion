@@ -3004,7 +3004,7 @@ thenPart    : "then" block
   Block thenPart(boolean emptyBlockIfNoBlockPresent)
   {
     var p = tokenPos();
-    skip(Token.t_then);
+    skip(true, Token.t_then);
     var result = block();
     return emptyBlockIfNoBlockPresent && p == tokenPos() ? null : result;
   }
