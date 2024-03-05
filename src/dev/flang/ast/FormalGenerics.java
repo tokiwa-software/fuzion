@@ -156,35 +156,6 @@ public class FormalGenerics extends ANY
 
 
   /**
-   * Find formal generic argument with given name.
-   *
-   * @param name the name of a formal generic argument.
-   *
-   * @return null if name is not the name of a formal generic argument
-   * in this.  Otherwise, a reference to the formal generic argument.
-   */
-  public Generic get(String name)
-  {
-    Generic result = null;
-    Iterator it = list.iterator();
-    while ((result == null) && it.hasNext())
-      {
-        Generic g = (Generic) it.next();
-        if (g.name().equals(name))
-          {
-            result = g;
-          }
-      }
-
-    if (POSTCONDITIONS) ensure
-      ((result == null) || (result.name().equals(name)));
-    // result == null ==> for all g in generics: !g.name.equals(name)
-
-    return result;
-  }
-
-
-  /**
    * Convenience function to resolve all types in a list of actual generic
    * arguments of a call or a type.
    *

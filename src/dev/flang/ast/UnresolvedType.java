@@ -101,8 +101,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * the base name 'entry'. For a type parameter 'A', this is 'A'. For an
    * artificial type, this is one of Types.INTERNAL_NAMES (e.g., '--ADDRESS--).
    */
-  public String _name;
-  public String name()
+  protected String _name;
+  protected String name()
   {
     return _name;
   }

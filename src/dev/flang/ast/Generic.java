@@ -46,7 +46,7 @@ public class Generic extends ANY implements Comparable<Generic>
   /**
    * The type parameter this generic corresponds to
    */
-  private AbstractFeature _typeParameter;
+  private final AbstractFeature _typeParameter;
 
 
   /**
@@ -68,6 +68,9 @@ public class Generic extends ANY implements Comparable<Generic>
    */
   public Generic(AbstractFeature typeParameter)
   {
+    if (PRECONDITIONS) require
+      (typeParameter.isTypeParameter());
+
     _typeParameter = typeParameter;
   }
 
@@ -142,15 +145,6 @@ public class Generic extends ANY implements Comparable<Generic>
 
     res.resolveTypes(_typeParameter);
     return constraint();
-  }
-
-
-  /**
-   * Return the name of this formal generic.
-   */
-  public String name()
-  {
-    return typeParameter().featureName().baseName();
   }
 
 
@@ -272,13 +266,24 @@ public class Generic extends ANY implements Comparable<Generic>
 
 
   /**
-   * toString
+   * short string of this Generic, e.g. `T`
    *
    * @return
    */
   public String toString()
   {
-    return name();
+    return _typeParameter.featureName().baseName();
+  }
+
+
+  /**
+   * long string of this Generic, e.g. `Sequence.map.B`
+   *
+   * @return
+   */
+  public String toLongString()
+  {
+    return _typeParameter.qualifiedName();
   }
 
 
