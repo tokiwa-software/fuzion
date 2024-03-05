@@ -1136,9 +1136,10 @@ public class Lexer extends SourceFile
   {
     if (PRECONDITIONS) require
       (0 <= pos,
-       pos < lastTokenEndPos());
+       Errors.any() || pos < lastTokenEndPos());
 
-    return sourceRange(pos, lastTokenEndPos());
+    var endPos = Math.max(pos+1, lastTokenEndPos());
+    return sourceRange(pos, endPos);
   }
 
 
