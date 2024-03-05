@@ -705,7 +705,8 @@ public class Call extends AbstractCall
         targetFeature(res, thiz) == Types.resolved.f_bool &&
         isInfixOperator() &&
         _target instanceof Call tc &&
-        tc.isInfixOperator())
+        tc.isInfixOperator() &&
+        tc.isOperatorCall())
       {
         result = (tc._actuals.get(0) instanceof Call acc && acc.isChainedBoolRHS())
           ? acc

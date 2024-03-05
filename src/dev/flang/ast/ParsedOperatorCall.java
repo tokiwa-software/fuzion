@@ -49,6 +49,19 @@ import dev.flang.util.List;
 public class ParsedOperatorCall extends ParsedCall
 {
 
+  /*-----------------------------  fields  ------------------------------*/
+
+
+  /**
+   * Is this really an operator call? This in invalidated if placed inside
+   * parentheses `(-a)` or `(a+b)`.
+   */
+  private boolean _isOperatorCall = true;
+
+
+  /*--------------------------  constructors  ---------------------------*/
+
+
   /**
    * Constructor for a prefix or postfix operator on target.
    *
@@ -88,7 +101,18 @@ public class ParsedOperatorCall extends ParsedCall
    */
   boolean isOperatorCall()
   {
-    return true;
+    return _isOperatorCall;
+  }
+
+
+  /**
+   * Is this Expr put into parentheses `(`/`)`. If so, we no longer want to do
+   * certain transformations like chained booleans `a < b < c` to `a < b && b <
+   * c`.
+   */
+  public void putInParentheses()
+  {
+    _isOperatorCall = false;
   }
 
 }

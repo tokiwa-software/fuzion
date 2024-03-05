@@ -1995,26 +1995,20 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
                        () -> Void.TYPE);
 
 
-    // a lambda expression
-    if (isLambdaPrefix())
+    if (isLambdaPrefix())                  // a lambda expression
       {
         return lambda(f.bracketTermWithNLs(PARENS, "argNamesOpt", () -> f.argNamesOpt()));
       }
-    // an expr wrapped in parentheses, not a tuple
-    else if (tupleElements.size() == 1)
+    else if (tupleElements.size() == 1)    // an expr wrapped in parentheses, not a tuple
       {
-        var actual = tupleElements.get(0).expr(null);
-
-        // special handling for cases like:
-        // s9a i16 := -(32768)
-        // s9c i16 := -(-(-32768))
-        // s9a := i16 -(32768)
-        return (actual instanceof NumLiteral)
-          ? actual
-          : new Block(true, new List<>(actual));  // NYI: why?
+        var e = tupleElements.get(0).expr(null);
+        if (e instanceof ParsedOperatorCall oc)
+          { // disable chained boolean optimization or partial application:
+            oc.putInParentheses();
+          }
+        return e;
       }
-    // a tuple
-    else
+    else                                   // a tuple
       {
         return new Call(pos, null, "tuple", tupleElements);
       }
