@@ -2464,7 +2464,6 @@ caseBlock   : ARROW          // if followed by '|'
    */
   Block caseBlock()
   {
-    Block result;
     matchOperator("=>", "caseBlock");
     var oldLine = sameLine(-1);
     var bar = current() == Token.t_barLimit;
