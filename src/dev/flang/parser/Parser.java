@@ -367,7 +367,7 @@ field       : returnType
             addFeaturesFromBlock(first, l, p.expr(), ng, p, v);
             c._generics = ng;
           }
-        p = new Impl(p.pos, new Block(new List<>()), Impl.Kind.Routine);
+        p = new Impl(p.pos, emptyBlock(), Impl.Kind.Routine);
       }
     return p;
   }
@@ -2015,7 +2015,7 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
         // s9a := i16 -(32768)
         return (actual instanceof NumLiteral)
           ? actual
-          : new Block(tokenSourcePos(), new List<>(actual));
+          : new Block(tokenSourcePos(), new List<>(actual));  // NYI: why?
       }
     // a tuple
     else
@@ -2485,15 +2485,8 @@ caseBlock   : ARROW          // if followed by '|'
     var oldLine = sameLine(-1);
     var bar = current() == Token.t_barLimit;
     sameLine(oldLine);
-    if (bar)
-      {
-        result = new Block(tokenSourcePos(), new List<>());
-      }
-    else
-      {
-        result = block();
-      }
-    return result;
+    return bar ? emptyBlock()
+               : block();
   }
 
 
@@ -2558,35 +2551,26 @@ caseBlock   : ARROW          // if followed by '|'
    *
 block       : exprs
             | brblock
-            | SEMI
             ;
 brblock     : BRACEL exprs BRACER
             ;
    */
   Block block()
   {
-    var p1 = tokenPos();
-    var pos1 = tokenSourcePos();
-    if (current() == Token.t_semicolon)
-      { // we have code like
-        //
-        //   if cond;
-        //
-        // or
-        //
-        //   for x in set
-        //   while cond(x);
-        //
-        // so there is an empty block.
-        //
-        return new Block(pos1, new List<>());
-      }
-    else
-      {
-        return optionalBrackets(BRACES, "block", () -> new Block(pos1, exprs()));
-      }
+    var start = lastTokenEndPos();
+    var b = optionalBrackets(BRACES, "block", () -> new Block(exprs()));
+    b.setSourceRange(sourceRange(start, Math.max(start+1,lastTokenEndPos())));
+    return b;
   }
 
+
+  Block emptyBlock()
+  {
+    if (PRECONDITIONS) require
+      (lastTokenEndPos() >= 0);
+
+    return new Block(sourcePos(lastTokenEndPos()), new List<>());
+  }
 
   /**
    * As long as this is false and we make progress, we try to parse more
@@ -3579,7 +3563,7 @@ implRout    : "is" "abstract"
                                                                            hasType ? Impl.Kind.Routine
                                                                                    : Impl.Kind.RoutineDef); }
     else if (skip(true, Token.t_of)) { result = new Impl(pos, block()    , Impl.Kind.Of        ); }
-    else if (skipFullStop()        ) { result = new Impl(pos, new Block(), Impl.Kind.Routine   ); }
+    else if (skipFullStop()        ) { result = new Impl(pos, emptyBlock(),Impl.Kind.Routine   ); }
     else
       {
         syntaxError(tokenPos(), "'is', '{' or '=>' in routine declaration", "implRout");

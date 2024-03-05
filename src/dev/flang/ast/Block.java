@@ -194,7 +194,9 @@ public class Block extends AbstractBlock
    */
   public SourcePosition pos()
   {
-    return _expressions.isEmpty()
+    return _range != null
+      ? _range
+      : _expressions.isEmpty()
       || _expressions.getFirst().pos().isBuiltIn()
       || _expressions.getLast().pos().isBuiltIn()
       ? SourcePosition.notAvailable

@@ -103,7 +103,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   /**
    * Source code position range of this Expression. null if not known.
    */
-  private SourceRange _range;
+  protected SourceRange _range;
 
   /*--------------------------  constructors  ---------------------------*/
 
