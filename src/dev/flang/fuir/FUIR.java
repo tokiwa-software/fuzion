@@ -47,7 +47,6 @@ import dev.flang.ast.BoolConst; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
 import dev.flang.ast.Env; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
-import dev.flang.ast.If; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
 import dev.flang.ast.Tag; // NYI: remove dependency
@@ -1862,41 +1861,35 @@ hw25 is
        codeAt(c, ix) == ExprKind.Match,
        0 <= cix && cix <= matchCaseCount(c, ix));
 
-    var cc = clazz(cl);
     var s = _codeIds.get(c).get(ix);
     int[] result;
-    if (s instanceof If)
+
+    var match = (AbstractMatch) s;
+    var mc = match.cases().get(cix);
+    var ts = mc.types();
+    var f = mc.field();
+    int nt = f != null ? 1 : ts.size();
+    var resultL = new List<Integer>();
+    int tag = 0;
+    for (var cg : match.subject().type().choiceGenerics())
       {
-        result = new int[] { cix == 0 ? 1 : 0 };
-      }
-    else
-      {
-        var match = (AbstractMatch) s;
-        var mc = match.cases().get(cix);
-        var ts = mc.types();
-        var f = mc.field();
-        int nt = f != null ? 1 : ts.size();
-        var resultL = new List<Integer>();
-        int tag = 0;
-        for (var cg : match.subject().type().choiceGenerics())
+        for (int tix = 0; tix < nt; tix++)
           {
-            for (int tix = 0; tix < nt; tix++)
+            var t = f != null ? f.resultType() : ts.get(tix);
+            if (t.isDirectlyAssignableFrom(cg))
               {
-                var t = f != null ? f.resultType() : ts.get(tix);
-                if (t.isDirectlyAssignableFrom(cg))
-                  {
-                    resultL.add(tag);
-                  }
+                resultL.add(tag);
               }
-            tag++;
           }
-        result = new int[resultL.size()];
-        for (int i = 0; i < result.length; i++)
-          {
-            result[i] = resultL.get(i);
-          }
+        tag++;
       }
-    if(POSTCONDITIONS) ensure
+    result = new int[resultL.size()];
+    for (int i = 0; i < result.length; i++)
+      {
+        result[i] = resultL.get(i);
+      }
+
+    if (POSTCONDITIONS) ensure
       (result.length > 0);
     return result;
   }

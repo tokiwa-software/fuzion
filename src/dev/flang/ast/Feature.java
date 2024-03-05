@@ -1713,7 +1713,7 @@ public class Feature extends AbstractFeature
             public Call  action(Call           c, AbstractFeature outer) { c.propagateExpectedType(res, outer); return c; }
             public void  action(Cond           c, AbstractFeature outer) { c.propagateExpectedType(res, outer); }
             public void  action(Impl           i, AbstractFeature outer) { i.propagateExpectedType(res, outer); }
-            public void  action(If             i, AbstractFeature outer) { i.propagateExpectedType(res, outer); }
+            public Expr  action(If             i, AbstractFeature outer) { i.propagateExpectedType(res, outer); return i; }
           });
 
         /* extra pass to automatically wrap values into 'Lazy' */
@@ -1811,7 +1811,7 @@ public class Feature extends AbstractFeature
 
             public void         action(AbstractAssign a, AbstractFeature outer) { a.checkTypes(res);             }
             public Call         action(Call           c, AbstractFeature outer) { c.checkTypes(res, outer); return c; }
-            public void         action(If             i, AbstractFeature outer) { i.checkTypes();                }
+            public Expr         action(If             i, AbstractFeature outer) { i.checkTypes();      return i; }
             public Expr         action(InlineArray    i, AbstractFeature outer) { i.checkTypes();      return i; }
             public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints();   }
             public void         action(Cond           c, AbstractFeature outer) { c.checkTypes();                }
@@ -1899,6 +1899,7 @@ public class Feature extends AbstractFeature
             public Expr  action(Function    f, AbstractFeature outer) { return f.resolveSyntacticSugar2(res, outer); }
             public Expr  action(InlineArray i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, outer); }
             public void  action(Impl        i, AbstractFeature outer) {        i.resolveSyntacticSugar2(res, outer); }
+            public Expr  action(If          i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, outer); }
           });
 
         _state = State.RESOLVED_SUGAR2;

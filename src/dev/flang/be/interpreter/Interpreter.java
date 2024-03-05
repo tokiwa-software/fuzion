@@ -60,7 +60,6 @@ import dev.flang.ast.Box; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Check; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Env; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Expr; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.If; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.InlineArray; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Nop; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Tag; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -390,27 +389,6 @@ public class Interpreter extends ANY
         for (Expr expr : b._expressions)
           {
             result = execute(expr, staticClazz, cur);
-          }
-      }
-
-    else if (e instanceof If i)
-      {
-        Value c = execute(i.cond, staticClazz, cur);
-        if (c.boolValue())
-          {
-            result = execute(i.block, staticClazz,cur);
-          }
-        else if (i.elseBlock != null)
-          {
-            result = execute(i.elseBlock, staticClazz,cur);
-          }
-        else if (i.elseIf != null)
-          {
-            result = execute(i.elseIf, staticClazz,cur);
-          }
-        else
-          {
-            result = Value.NO_VALUE;
           }
       }
 

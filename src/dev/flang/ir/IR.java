@@ -36,7 +36,6 @@ import dev.flang.ast.Box; // NYI: remove dependency
 import dev.flang.ast.Check; // NYI: remove dependency
 import dev.flang.ast.Env; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
-import dev.flang.ast.If; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
 import dev.flang.ast.Nop; // NYI: remove dependency
@@ -244,14 +243,6 @@ public class IR extends ANY
             l.add(ExprKind.Current);
           }
       }
-    else if (e instanceof If i)
-      {
-        // if is converted to If, blockId, elseBlockId
-        toStack(l, i.cond);
-        l.add(i);
-        l.add(new NumLiteral(_codeIds.add(toStack(i.block      ))));
-        l.add(new NumLiteral(_codeIds.add(toStack(i.elseBlock()))));
-      }
     else if (e instanceof AbstractCall c)
       {
         toStack(l, c.target());
@@ -379,8 +370,7 @@ public class IR extends ANY
       {
         result = ExprKind.Call;
       }
-    else if (e instanceof If            ||
-             e instanceof AbstractMatch    )
+    else if (e instanceof AbstractMatch)
       {
         result = ExprKind.Match;
       }
