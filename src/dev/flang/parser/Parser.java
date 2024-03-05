@@ -2011,7 +2011,7 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
         // s9a := i16 -(32768)
         return (actual instanceof NumLiteral)
           ? actual
-          : new Block(tokenSourcePos(), new List<>(actual));  // NYI: why?
+          : new Block(true, new List<>(actual));  // NYI: why?
       }
     // a tuple
     else
@@ -2561,7 +2561,10 @@ brblock     : BRACEL exprs BRACER
     if (PRECONDITIONS) require
       (lastTokenEndPos() >= 0);
 
-    return new Block(sourcePos(lastTokenEndPos()), new List<>());
+    var b = new Block();
+    var p0 = lastTokenEndPos();
+    b.setSourceRange(sourceRange(p0, p0+1));
+    return b;
   }
 
   /**
