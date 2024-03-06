@@ -1890,44 +1890,55 @@ operatorExpr  : opExpr
   /**
    * Parse opExpr
    *
-opExpr      : dotCall
-            | ( op
-              )*
-              opTail
+opExpr      :     opTail
+            | ops opTail
             | op
+            | dotCall
             ;
    */
   Expr opExpr()
   {
-     if (skipDot())
-      {
-        return Partial.dotCall(tokenSourcePos(), a->call(a));
-      }
-     else
+     if (!skipDot())
        {
          var oe = new OpExpr();
-         Operator singleOperator = null;
-         if (current() == Token.t_op)
+         skipOps(oe);
+         if (oe.size() != 1 || isTermPrefix())
            {
-             singleOperator = op();
-             oe.add(singleOperator);
-             while (current() == Token.t_op)
-               {
-                 singleOperator = null;
-                 oe.add(op());
-               }
-           }
-         if (singleOperator == null || isTermPrefix())
-           {
-             oe.add(opTail());
+             opTail(oe);
              return oe.toExpr();
            }
          else
            {
-             return new Partial(singleOperator._pos,
-                                singleOperator._text);
+             return new Partial(oe.op(0)._pos,
+                                oe.op(0)._text);
            }
        }
+     else
+       {
+         return Partial.dotCall(tokenSourcePos(), a->call(a));
+       }
+  }
+
+
+  /**
+   * Parse ops
+   *
+   * @param oe OpExpr instance the op()s should be added to
+   *
+   * @return true iff ops was parsed and op()s were added to oe
+   *
+ops         : op ops
+            | op
+            ;
+   */
+  boolean skipOps(OpExpr oe)
+  {
+    var oldcount = oe.size();
+    while (current() == Token.t_op)
+      {
+        oe.add(op());
+      }
+    return oldcount < oe.size();
   }
 
 
@@ -1935,31 +1946,17 @@ opExpr      : dotCall
    * Parse opTail
    *
 opTail      : term
-              ( ( op )+
-                ( opTail
-                |
-                )
-              |
-              )
+            | term ops
+            | term ops opTail
             ;
    */
-  OpExpr opTail()
+  void opTail(OpExpr oe)
   {
-    OpExpr oe = new OpExpr();
     oe.add(term());
-    if (current() == Token.t_op)
+    if (skipOps(oe) && isTermPrefix())
       {
-        do
-          {
-            oe.add(op());
-          }
-        while (current() == Token.t_op);
-        if (isTermPrefix())
-          {
-            oe.add(opTail());
-          }
+        opTail(oe);
       }
-    return oe;
   }
 
 
