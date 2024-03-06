@@ -25,6 +25,7 @@ ex_a2 =>
   x := array2 10 10 i,j->i*10+j
   say x
   say x.transpose
+  # NYI: #2662: remove explicit types once type inference works
   y1 Sequence i32 := [1,2,3].as_list
   y2 Sequence i32 := [4,5,6].as_list
   y3 Sequence i32 := [7,8,9].as_list
