@@ -49,6 +49,20 @@ import dev.flang.util.List;
 public class ParsedOperatorCall extends ParsedCall
 {
 
+  /*-----------------------------  fields  ------------------------------*/
+
+
+  /**
+   * Has this been put into parentheses? If so, it may no longer be used as
+   * chained boolean `(a < b) < c`, but it may still used as partial call `l.map
+   * (+x)`.
+   */
+  private boolean _inParentheses = false;
+
+
+  /*--------------------------  constructors  ---------------------------*/
+
+
   /**
    * Constructor for a prefix or postfix operator on target.
    *
@@ -85,10 +99,24 @@ public class ParsedOperatorCall extends ParsedCall
   /**
    * Is this an operator call like `a+b` or `-x` in contrast to a named call `f`
    * or `t.g`?
+   *
+   * @param parenthesesAllowed true if an operator call in parentheses is still
+   * ok.  (+x)`.
    */
-  boolean isOperatorCall()
+  boolean isOperatorCall(boolean parenthesesAllowed)
   {
-    return true;
+    return parenthesesAllowed || !_inParentheses;
+  }
+
+
+  /**
+   * Is this Expr put into parentheses `(`/`)`. If so, we no longer want to do
+   * certain transformations like chained booleans `a < b < c` to `a < b && b <
+   * c`.
+   */
+  public void putInParentheses()
+  {
+    _inParentheses = true;
   }
 
 }

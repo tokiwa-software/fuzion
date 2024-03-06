@@ -201,17 +201,17 @@ public class Parser extends Lexer
   /**
    * Parse a unit, i.e., exprs followed by Token.t_eof.
    *
-unit        : exprs EOF
+unit        : block EOF
             ;
    */
   public List<Expr> unit()
   {
-    var result = exprs();
+    var result = block();
     if (!Errors.any())
       {
         match(Token.t_eof, "Unit");
       }
-    return result;
+    return result._expressions;
   }
 
 
@@ -367,7 +367,7 @@ field       : returnType
             addFeaturesFromBlock(first, l, p.expr(), ng, p, v);
             c._generics = ng;
           }
-        p = new Impl(p.pos, new Block(new List<>()), Impl.Kind.Routine);
+        p = new Impl(p.pos, emptyBlock(), Impl.Kind.Routine);
       }
     return p;
   }
@@ -677,10 +677,9 @@ name        : IDENT                            // all parts of name must be in s
               next();
               if (skip(Token.t_question))
                 {
-                  var end = tokenEndPos();
                   if (skipColon())
                     {
-                      result = new ParsedName(sourceRange(pos, end), "ternary ? :");
+                      result = new ParsedName(sourceRange(pos), "ternary ? :");
                     }
                   else if (!ignoreError)
                     {
@@ -702,9 +701,8 @@ name        : IDENT                            // all parts of name must be in s
                   var dotdot = skip("..");
                   if (!ignoreError || current() == Token.t_rcrochet)
                     {
-                      var end = tokenEndPos();
                       match(Token.t_rcrochet, "name: index");
-                      result = new ParsedName(sourceRange(pos, end),
+                      result = new ParsedName(sourceRange(pos),
                                               dotdot ? FuzionConstants.FEATURE_NAME_INDEX_DOTDOT
                                                      : FuzionConstants.FEATURE_NAME_INDEX);
                     }
@@ -719,16 +717,15 @@ name        : IDENT                            // all parts of name must be in s
                   match(Token.t_lcrochet, "name: set");
                   if (!ignoreError || current() == Token.t_rcrochet)
                     {
-                      var end = tokenEndPos();
                       match(Token.t_rcrochet, "name: set");
-                      result = new ParsedName(sourceRange(pos, end), FuzionConstants.FEATURE_NAME_INDEX_ASSIGN);
+                      result = new ParsedName(sourceRange(pos), FuzionConstants.FEATURE_NAME_INDEX_ASSIGN);
                     }
                 }
               else if (current() == Token.t_ident)
                 {
-                  var end = tokenEndPos();
-                  result = new ParsedName(sourceRange(pos, end), identifier() + " =");
+                  var id = identifier();
                   match(Token.t_ident, "name: set");
+                  result = new ParsedName(sourceRange(pos), id + " =");
                 }
               else if (!ignoreError)
                 {
@@ -809,14 +806,13 @@ opName      : "infix"   op
     int pos = tokenPos();
     String inPrePost = current(mayBeAtMinIndent).keyword();
     next();
-    var end = tokenEndPos();
     String res = operatorOrError();
     if (!ignoreError || res != Errors.ERROR_STRING)
       {
         match(Token.t_op, "infix/prefix/postfix name");
         res = inPrePost + " " + res;
       }
-    return new ParsedName(sourceRange(pos, end), res);
+    return new ParsedName(sourceRange(pos), res);
   }
 
 
@@ -1727,7 +1723,7 @@ bracketTerm : brblock
     var c = current();
     switch (c)
       {
-      case t_lbrace  : return brblock();
+      case t_lbrace  : return block();
       case t_lparen  : return klammer();
       case t_lcrochet: return inlineArray();
       default: throw new Error("Unexpected case: "+c);
@@ -1999,26 +1995,20 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
                        () -> Void.TYPE);
 
 
-    // a lambda expression
-    if (isLambdaPrefix())
+    if (isLambdaPrefix())                  // a lambda expression
       {
         return lambda(f.bracketTermWithNLs(PARENS, "argNamesOpt", () -> f.argNamesOpt()));
       }
-    // an expr wrapped in parentheses, not a tuple
-    else if (tupleElements.size() == 1)
+    else if (tupleElements.size() == 1)    // an expr wrapped in parentheses, not a tuple
       {
-        var actual = tupleElements.get(0).expr(null);
-
-        // special handling for cases like:
-        // s9a i16 := -(32768)
-        // s9c i16 := -(-(-32768))
-        // s9a := i16 -(32768)
-        return (actual instanceof NumLiteral)
-          ? actual
-          : new Block(tokenSourcePos(), new List<>(actual));
+        var e = tupleElements.get(0).expr(null);
+        if (e instanceof ParsedOperatorCall oc)
+          { // disable chained boolean optimization or partial application:
+            oc.putInParentheses();
+          }
+        return e;
       }
-    // a tuple
-    else
+    else                                   // a tuple
       {
         return new Call(pos, null, "tuple", tupleElements);
       }
@@ -2067,8 +2057,7 @@ lambda      : "->" block
     matchOperator("->", "lambda");
     var startPos = n.isEmpty() ? pos : n.getFirst().pos().bytePos();
     var b = block();
-    var endPos = startPos < b.pos().byteEndPos() ? b.pos().byteEndPos() : tokenPos();
-    return new Function(sourceRange(startPos, endPos), n, b);
+    return new Function(sourceRange(startPos), n, b);
   }
 
 
@@ -2185,7 +2174,7 @@ simpleterm  : bracketTerm
   Expr term()
   {
     Expr result;
-    int p1 = tokenPos();
+    int pos = tokenPos();
     switch (isDotEnvOrTypePrefix())    // starts with name or '('
       {
       case env : result = dotEnv(); break;
@@ -2196,15 +2185,14 @@ simpleterm  : bracketTerm
           case t_lbrace    :
           case t_lparen    :
           case t_lcrochet  :         result = bracketTerm();                            break;
-          case t_numliteral: var endPos = tokenEndPos();
-                             var l = skipNumLiteral();
+          case t_numliteral: var l = skipNumLiteral();
                              var m = l.mantissaValue();
                              var b = l.mantissaBase();
                              var d = l.mantissaDotAt();
                              var e = l.exponent();
                              var eb = l.exponentBase();
                              var o = l._originalString;
-                             result = new NumLiteral(sourceRange(p1, endPos), o, b, m, d, e, eb); break;
+                             result = new NumLiteral(sourceRange(pos), o, b, m, d, e, eb); break;
           case t_match     :         result = match();                                  break;
           case t_for       :
           case t_variant   :
@@ -2221,7 +2209,7 @@ simpleterm  : bracketTerm
                 result = callOrFeatOrThis();
                 if (result == null)
                   {
-                    syntaxError(p1, "term (lbrace, lparen, lcrochet, fun, string, integer, old, match, or name)", "term");
+                    syntaxError(pos, "term (lbrace, lparen, lcrochet, fun, string, integer, old, match, or name)", "term");
                     result = Expr.ERROR_VALUE;
                   }
               }
@@ -2238,11 +2226,7 @@ simpleterm  : bracketTerm
       {
         result = call(result);
       }
-    var p2 = lastTokenEndPos();
-    if (p1 < p2) // in case or a parsing error, we might not have made any progress
-      {
-        result.setSourceRange(sourceRange(p1, p2));
-      }
+    result.setSourceRange(sourceRange(pos));
     return result;
   }
 
@@ -2353,7 +2337,8 @@ op          : OPERATOR
   /**
    * Parse match
    *
-match       : "match" exprInLine BRACEL cases BRACER
+match       : "match" exprInLine        cases
+            | "match" exprInLine BRACEL cases BRACER
             ;
    */
   Expr match()
@@ -2362,12 +2347,7 @@ match       : "match" exprInLine BRACEL cases BRACER
         SourcePosition pos = tokenSourcePos();
         match(Token.t_match, "match");
         Expr e = exprInLine();
-        boolean gotLBrace = skip(true, Token.t_lbrace);
-        var c = cases();
-        if (gotLBrace)
-          {
-            match(true, Token.t_rbrace, "match");
-          }
+        var c = optionalBrackets(BRACES, "cases",() -> cases());
         // missing match cases are checked for when resolving types
         return new Match(pos, e, c);
       });
@@ -2484,20 +2464,12 @@ caseBlock   : ARROW          // if followed by '|'
    */
   Block caseBlock()
   {
-    Block result;
     matchOperator("=>", "caseBlock");
     var oldLine = sameLine(-1);
     var bar = current() == Token.t_barLimit;
     sameLine(oldLine);
-    if (bar)
-      {
-        result = new Block(tokenSourcePos(), new List<>());
-      }
-    else
-      {
-        result = block();
-      }
-    return result;
+    return bar ? emptyBlock()
+               : block();
   }
 
 
@@ -2563,67 +2535,30 @@ caseBlock   : ARROW          // if followed by '|'
 block       : exprs
             | brblock
             ;
-   */
-  Block block()
-  {
-    var p1 = tokenPos();
-    var pos1 = tokenSourcePos();
-    if (current() == Token.t_semicolon)
-      { // we have code like
-        //
-        //   if cond;
-        //
-        // or
-        //
-        //   for x in set
-        //   while cond(x);
-        //
-        // so there is an empty block.
-        //
-        return new Block(pos1, new List<>());
-      }
-    else if (currentAtMinIndent() != Token.t_lbrace)
-      {
-        var l = exprs();
-        var pos2 = l.size() > 0 ? l.getLast().pos() : pos1;
-        if (pos1 == pos2 && current() == Token.t_indentationLimit)
-          { /* we have a non-indented new line, e.g., the empty block after `x i32 =>` in
-             *
-             *   x i32 =>
-             *   y u8 =>
-             *
-             * unless the result type of `x` is `unit`, we will get an error, but this error should not be
-             * reported at `y`, but at the end of `x i32 =>`, so we set start and end pos to the end of that line
-             */
-            pos1 = sourcePos(lineEndPos(lineNum(p1)-1));
-            pos2 = pos1;
-          }
-        return new Block(pos2, l);
-      }
-    else
-      {
-        return brblock();
-      }
-  }
-
-
-  /**
-   * Parse block
-   *
 brblock     : BRACEL exprs BRACER
             ;
    */
-  Block brblock()
+  Block block()
   {
-    SourcePosition pos1 = tokenSourcePos();
-    return bracketTermWithNLs(BRACES, "block",
-                              () -> {
-                                var l = exprs();
-                                var pos2 = tokenSourcePos();
-                                return new Block(l);
-                              });
+    var p0 = lastTokenEndPos();
+    var p1 = tokenPos();
+    var b = optionalBrackets(BRACES, "block", () -> new Block(exprs()));
+    var p2 = lastTokenEndPos();
+    b.setSourceRange(sourceRange(p0, p1, p2));
+    return b;
   }
 
+
+  Block emptyBlock()
+  {
+    if (PRECONDITIONS) require
+      (lastTokenEndPos() >= 0);
+
+    var b = new Block();
+    var p0 = lastTokenEndPos();
+    b.setSourceRange(sourceRange(p0, p0+1));
+    return b;
+  }
 
   /**
    * As long as this is false and we make progress, we try to parse more
@@ -3534,7 +3469,7 @@ contract    : require
   /**
    * Parse require
    *
-require     : "pre" exprs
+require     : "pre" block
             |
             ;
    */
@@ -3543,7 +3478,7 @@ require     : "pre" exprs
     List<Cond> result = null;
     if (skip(atMinIndent, Token.t_pre))
       {
-        result = Cond.from(exprs());
+        result = Cond.from(block());
       }
     return result;
   }
@@ -3552,7 +3487,7 @@ require     : "pre" exprs
   /**
    * Parse ensure
    *
-ensure      : "post" exprs
+ensure      : "post" block
             |
             ;
    */
@@ -3561,7 +3496,7 @@ ensure      : "post" exprs
     List<Cond> result = null;
     if (skip(atMinIndent, Token.t_post))
       {
-        result = Cond.from(exprs());
+        result = Cond.from(block());
       }
     return result;
   }
@@ -3570,7 +3505,7 @@ ensure      : "post" exprs
   /**
    * Parse invariant
    *
-invariant   : "inv" exprs
+invariant   : "inv" block
             |
             ;
    */
@@ -3579,7 +3514,7 @@ invariant   : "inv" exprs
     List<Cond> result = null;
     if (skip(atMinIndent, Token.t_inv))
       {
-        result = Cond.from(exprs());
+        result = Cond.from(block());
       }
     return result;
   }
@@ -3616,7 +3551,7 @@ implRout    : "is" "abstract"
                                                                            hasType ? Impl.Kind.Routine
                                                                                    : Impl.Kind.RoutineDef); }
     else if (skip(true, Token.t_of)) { result = new Impl(pos, block()    , Impl.Kind.Of        ); }
-    else if (skipFullStop()        ) { result = new Impl(pos, new Block(), Impl.Kind.Routine   ); }
+    else if (skipFullStop()        ) { result = new Impl(pos, emptyBlock(),Impl.Kind.Routine   ); }
     else
       {
         syntaxError(tokenPos(), "'is', '{' or '=>' in routine declaration", "implRout");
@@ -3670,7 +3605,7 @@ implFldInit : ":=" exprInLine
         syntaxError(tokenPos(), "':='", "implFldInit");
       }
     return new Impl(pos,
-                    exprInLine(),
+                    exprInLine(), // block()?
                     hasType ? Impl.Kind.FieldInit
                             : Impl.Kind.FieldDef);
   }

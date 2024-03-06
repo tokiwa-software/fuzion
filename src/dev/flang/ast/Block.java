@@ -45,8 +45,6 @@ public class Block extends AbstractBlock
   /*----------------------------  variables  ----------------------------*/
 
 
-  SourcePosition _closingBracePos;
-
   boolean _newScope;
 
 
@@ -73,30 +71,11 @@ public class Block extends AbstractBlock
    * in this block should remain visible after the block (which is usually the
    * case for artificially generated blocks)
    */
-  private Block(SourcePosition closingBracePos,
-                List<Expr> s,
-                boolean newScope)
-  {
-    super(s);
-    this._closingBracePos = closingBracePos;
-    this._newScope = newScope;
-  }
-
-
-  /**
-   * Generate a block of expressions that define a new scope. This is generally
-   * called from the Parser when the source contains a block.
-   *
-   * @param closingBracePos the sourcecode position of this block's closing
-   * brace. In case this block does not originate in source code, but was added
-   * by AST manipulations, this might as well be equal to pos.
-   *
-   * @param s the list of expressions
-   */
-  public Block(SourcePosition closingBracePos,
+  private Block(boolean newScope,
                List<Expr> s)
   {
-    this(closingBracePos, s, true);
+    super(s);
+    this._newScope = newScope;
   }
 
 
@@ -106,7 +85,7 @@ public class Block extends AbstractBlock
    */
   public Block()
   {
-    this(SourcePosition.notAvailable, new List<>());
+    this(true, new List<>());
   }
 
 
@@ -118,7 +97,7 @@ public class Block extends AbstractBlock
    */
   public Block(List<Expr> s)
   {
-    this(SourcePosition.notAvailable, s, false);
+    this(false, s);
   }
 
 
@@ -194,7 +173,9 @@ public class Block extends AbstractBlock
    */
   public SourcePosition pos()
   {
-    return _expressions.isEmpty()
+    return _range != null
+      ? _range
+      : _expressions.isEmpty()
       || _expressions.getFirst().pos().isBuiltIn()
       || _expressions.getLast().pos().isBuiltIn()
       ? SourcePosition.notAvailable
@@ -264,13 +245,9 @@ public class Block extends AbstractBlock
    */
   SourcePosition posOfLast()
   {
-    SourcePosition result = _closingBracePos;
     Expr resExpr = resultExpression();
-    if (resExpr != null)
-      {
-        result = resExpr.pos();
-      }
-    return result;
+    return resExpr != null ? resExpr.pos()
+                           : pos();
   }
 
 
@@ -349,7 +326,7 @@ public class Block extends AbstractBlock
       }
     else if (r.resultType().compareTo(Types.resolved.t_unit) != 0)
       {
-        AstErrors.blockMustEndWithExpression(_closingBracePos, r.resultType());
+        AstErrors.blockMustEndWithExpression(pos(), r.resultType());
       }
     return this;
   }

@@ -103,7 +103,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   /**
    * Source code position range of this Expression. null if not known.
    */
-  private SourceRange _range;
+  protected SourceRange _range;
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -556,8 +556,8 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
                                 outer);
         r.scheduleForResolution(res);
         res.resolveTypes();
-        result = new Block(pos, new List<>(assignToField(res, outer, r),
-                                                    new Call(pos, new Current(pos, outer), r).resolveTypes(res, outer)));
+        result = new Block(new List<>(assignToField(res, outer, r),
+                                      new Call(pos, new Current(pos, outer), r).resolveTypes(res, outer)));
       }
     return result;
   }

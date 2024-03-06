@@ -705,7 +705,8 @@ public class Call extends AbstractCall
         targetFeature(res, thiz) == Types.resolved.f_bool &&
         isInfixOperator() &&
         _target instanceof Call tc &&
-        tc.isInfixOperator())
+        tc.isInfixOperator() &&
+        tc.isOperatorCall(false))
       {
         result = (tc._actuals.get(0) instanceof Call acc && acc.isChainedBoolRHS())
           ? acc
@@ -1069,8 +1070,11 @@ public class Call extends AbstractCall
   /**
    * Is this an operator call like `a+b` or `-x` in contrast to a named call `f`
    * or `t.g`?
+   *
+   * @param parenthesesAllowed true if an operator call in parentheses is still
+   * ok.  (+x)`.
    */
-  boolean isOperatorCall()
+  boolean isOperatorCall(boolean parenthesesAllowed)
   {
     return false;
   }
@@ -1087,7 +1091,7 @@ public class Call extends AbstractCall
   String newNameForPartial(AbstractType expectedType)
   {
     String result = null;
-    if (expectedType.arity() == 1 && isOperatorCall())
+    if (expectedType.arity() == 1 && isOperatorCall(true))
       {
         var name = _name;
         if (name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX))
