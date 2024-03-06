@@ -1801,45 +1801,12 @@ actual   : operatorExpr | type
    * ( ).
    *
 exprInLine  : operatorExpr   // within one line
-            | bracketTerm      // stretching over one or several lines
             ;
    */
   Expr exprInLine()
   {
-    Expr result;
-    int line = line();
-    int oldLine = sameLine(-1);
-    switch (current())
-      {
-      case t_lbrace:
-      case t_lparen:
-      case t_lcrochet:
-        { // allow
-          //
-          //   { a; b } + c
-          //
-          //   { a; b
-          //   }
-          //   .f
-          //
-          // but not
-          //
-          //   { a; b
-          //   }
-          //   + c
-          var f = fork();
-          f.bracketTerm();
-          if (f.line() != line && f.isOperator('.'))
-            {
-              line = -1;
-            }
-          break;
-        }
-      default:
-        break;
-      }
-    sameLine(line);
-    result = operatorExpr();
+    var oldLine = sameLine(line());
+    var result = operatorExpr();
     sameLine(oldLine);
     return result;
   }
