@@ -8,6 +8,8 @@
 
 - Documentation
 
+  - API documentation</a> is now grouped by feature types ([#2431](https://github.com/tokiwa-software/fuzion/pull/2431)).
+
   - Work on a Fuzion reference manual as started ([#2490](https://github.com/tokiwa-software/fuzion/pull/2490)).
 
   - Documentation for the `universe` feature was added ([#2625](https://github.com/tokiwa-software/fuzion/pull/2625)).
@@ -20,9 +22,27 @@
 
 - Fuzion language
 
-  - The `.type.` can now be omitted in calls to type features ([#2631](https://github.com/tokiwa-software/fuzion/pull/2631)).
+  - A function feature can no longer be declared using `f rt is ...` it must be `f rt =&gt; ...`, declarations using `is` are used only for constructors ([#2401](https://github.com/tokiwa-software/fuzion/pull/2401), [#2443](https://github.com/tokiwa-software/fuzion/pull/2443), [#2444](https://github.com/tokiwa-software/fuzion/pull/2444)).
+
+- The `.type.` can now be omitted in calls to type features ([#2631](https://github.com/tokiwa-software/fuzion/pull/2631)).
 
 - base library
+
+  - Minor additions to `composition.fz` adding links and more birds, but still work in progress [#2491](https://github.com/tokiwa-software/fuzion/pull/2491).
+
+  - Removed `as_stream` as a step towards removing streams altogether ([#2476](https://github.com/tokiwa-software/fuzion/pull/2476)).
+
+  - Added `Sequence.peek` ([#2475](https://github.com/tokiwa-software/fuzion/pull/2475)).
+
+  - Features `TRUE` and `FALSE` are no longer public, but the corresponding types are ([#2468](https://github.com/tokiwa-software/fuzion/pull/2468)).
+
+  - Added pipe features `&lt;|`, `&lt;||`, etc. to establish symmetry with `|&gt;`, `||&gt;`, etc. ([#2462](https://github.com/tokiwa-software/fuzion/pull/2462)).
+
+  - The `unit.type.monoid` is now `public` ([#2418](https://github.com/tokiwa-software/fuzion/pull/2418)).
+
+  - Removed `say` without arguments to print a new line to enable the use of `say` with one argument in partial applications like `l.for_each say` ([#2406](https://github.com/tokiwa-software/fuzion/pull/2406)).
+
+  - Replaced `is` by `=&gt;` in function features ([#2401](https://github.com/tokiwa-software/fuzion/pull/2401)).
 
   - Intrinsics and effects that allow directory listing have been implemented ([#1688](https://github.com/tokiwa-software/fuzion/pull/1688), [#2635](https://github.com/tokiwa-software/fuzion/pull/2635)).
 
@@ -67,6 +87,8 @@
 
 - Front End
 
+  - Added visibility checks for `abstract` features ([#2453](https://github.com/tokiwa-software/fuzion/pull/2453)).
+
   - Improve type inference for tagged union types ([#2582](https://github.com/tokiwa-software/fuzion/pull/2582)).
 
         # infers that all the numbers to be of type option f64
@@ -88,7 +110,19 @@
 
   - Fix source range of parsed lambdas ([#2646](https://github.com/tokiwa-software/fuzion/pull/2646)).
 
+- Middle End
+
+  - Significant performance improvement and cleanup in the handling of run-time types (clazzes), ([#2416](https://github.com/tokiwa-software/fuzion/pull/2416), [#2413](https://github.com/tokiwa-software/fuzion/pull/2413)).
+
+- Analyzers
+
+  - `fz -effects` now uses the data-flow analysis (DFA) infrastructure instead of the less accurate control flow graph (CFG) ([#2407](https://github.com/tokiwa-software/fuzion/pull/2407)).
+
 - JVM back end
+
+  - Fixed `VerifyError` for features resulting in void ([#2477](https://github.com/tokiwa-software/fuzion/issues/2477), [#2485](https://github.com/tokiwa-software/fuzion/pull/2485)).
+
+  - Fixed race conditions between warnings printed by JVM back end and errors by running code that resulted in flaky test runs ([#2426](https://github.com/tokiwa-software/fuzion/pull/2426), [#2469](https://github.com/tokiwa-software/fuzion/pull/2469)).
 
   - The fzjava interface known from the interpreter that allows calling into Java code is now supported by the JVM backend as well ( [#2487](https://github.com/tokiwa-software/fuzion/pull/2487)).
 
@@ -103,6 +137,10 @@
   - The `-jar` and `-classes` backends now support an optional argument `-o=&lt;outputName&gt;` to specify the name of the generated output ( [#2567](https://github.com/tokiwa-software/fuzion/pull/2567)).
 
 - C back end
+
+  - Fixed internal handling of `void` types ([#2466](https://github.com/tokiwa-software/fuzion/pull/2466)).
+
+  - The Boehm Garbage Collector is now enabled by default fixing a giant memory leak ([#2428](https://github.com/tokiwa-software/fuzion/pull/2428)).
 
   - Separated `include/fz.h` into platform-specific files, refactored ([#2553](https://github.com/tokiwa-software/fuzion/pull/2553), [#2573](https://github.com/tokiwa-software/fuzion/pull/2573), [#2601](https://github.com/tokiwa-software/fuzion/pull/2601)).
 
@@ -3349,3 +3387,10 @@ Benchmarks:
 ## 2020-09-29: V0.001
 
 - First version to be presented to very few selected users via the fuzion-lang.dev website.
+
+<!--  LocalWords:  Fuzion JDK Makefile fz lt ints ascii nano DFA CFG JVM fzjava
+ -->
+<!--  LocalWords:  VerifyError backend stackmap backends envir args Boehm
+ -->
+<!--  LocalWords:  atomics XkeepGeneratedCode
+ -->
