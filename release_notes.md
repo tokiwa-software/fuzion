@@ -24,7 +24,7 @@
 
   - A function feature can no longer be declared using `f rt is ...` it must be `f rt =&gt; ...`, declarations using `is` are used only for constructors ([#2401](https://github.com/tokiwa-software/fuzion/pull/2401), [#2443](https://github.com/tokiwa-software/fuzion/pull/2443), [#2444](https://github.com/tokiwa-software/fuzion/pull/2444)).
 
-- The `.type.` can now be omitted in calls to type features ([#2631](https://github.com/tokiwa-software/fuzion/pull/2631)).
+  - The `.type.` can now be omitted in calls to type features ([#2631](https://github.com/tokiwa-software/fuzion/pull/2631)).
 
 - base library
 
