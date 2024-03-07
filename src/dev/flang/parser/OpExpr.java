@@ -51,7 +51,7 @@ public class OpExpr extends ANY
   /**
    *
    */
-  ArrayList<Object> els = new ArrayList<>();
+  final private ArrayList<Object> _els = new ArrayList<>();
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -75,7 +75,7 @@ public class OpExpr extends ANY
    */
   void add(Operator o)
   {
-    els.add(o);
+    _els.add(o);
   }
 
 
@@ -86,21 +86,7 @@ public class OpExpr extends ANY
    */
   void add(Expr e)
   {
-    els.add(e);
-  }
-
-
-  /**
-   * add
-   *
-   * @param o
-   */
-  void add(OpExpr o)
-  {
-    for(int i=0; i<o.els.size(); i++)
-      {
-        els.add(o.els.get(i));
-      }
+    _els.add(e);
   }
 
 
@@ -127,12 +113,12 @@ public class OpExpr extends ANY
    */
   Expr toExprUsePrecedence()
   {
-    while (els.size() > 1)
+    while (_els.size() > 1)
       {
         // show();
         int max = -1;
         int pmax = -1;
-        for(int i=0; i<els.size(); i++)
+        for(int i=0; i<_els.size(); i++)
           {
             if (isOp(i))                           // i is an operator
               {
@@ -197,9 +183,9 @@ public class OpExpr extends ANY
             Expr e1 = expr(max-1);
             Expr e2 = expr(max+1);
             Expr e = new ParsedOperatorCall(e1, new ParsedName(op._pos, FuzionConstants.INFIX_OPERATOR_PREFIX + op._text), e2);
-            els.remove(max+1);
-            els.remove(max);
-            els.set(max-1, e);
+            _els.remove(max+1);
+            _els.remove(max);
+            _els.set(max-1, e);
           }
         else if (isExpr(max+1))
           { // prefix op:
@@ -208,19 +194,30 @@ public class OpExpr extends ANY
               (op._text.equals("+") && (e2 instanceof NumLiteral i2) && op._pos.byteEndPos() == i2.pos().bytePos()) ? i2.addSign("+", op._pos) :
               (op._text.equals("-") && (e2 instanceof NumLiteral i2) && op._pos.byteEndPos() == i2.pos().bytePos()) ? i2.addSign("-", op._pos) :
               new ParsedOperatorCall(e2, new ParsedName(op._pos, FuzionConstants.PREFIX_OPERATOR_PREFIX + op._text));
-            els.remove(max+1);
-            els.set(max, e);
+            _els.remove(max+1);
+            _els.set(max, e);
           }
         else
           { // postfix op:
             Expr e1 = expr(max-1);
             Expr e = new ParsedOperatorCall( e1, new ParsedName(op._pos, FuzionConstants.POSTFIX_OPERATOR_PREFIX + op._text));
-            els.remove(max);
-            els.set(max-1, e);
+            _els.remove(max);
+            _els.set(max-1, e);
           }
       }
     //    show();
     return expr(0);
+  }
+
+
+  /**
+   * Get the number of operators and expressions
+   *
+   * @return The size, never negative
+   */
+  int size()
+  {
+    return _els.size();
   }
 
 
@@ -234,7 +231,7 @@ public class OpExpr extends ANY
    */
   boolean isExpr(int i)
   {
-    return (i>=0) && (i<els.size()) && (els.get(i) instanceof Expr e);
+    return (i>=0) && (i<_els.size()) && (_els.get(i) instanceof Expr e);
   }
 
 
@@ -249,7 +246,7 @@ public class OpExpr extends ANY
   {
     if (PRECONDITIONS) require
                          (isExpr(i));
-    return (Expr) els.get(i);
+    return (Expr) _els.get(i);
   }
 
 
@@ -263,7 +260,7 @@ public class OpExpr extends ANY
    */
   boolean isOp(int i)
   {
-    return (i>=0) && (i<els.size()) && (els.get(i) instanceof Operator);
+    return (i>=0) && (i<_els.size()) && (_els.get(i) instanceof Operator);
   }
 
 
@@ -277,8 +274,8 @@ public class OpExpr extends ANY
   Operator op(int i)
   {
     if (PRECONDITIONS) require
-                         (isOp(i));
-    return (Operator) els.get(i);
+      (isOp(i));
+    return (Operator) _els.get(i);
   }
 
 
@@ -329,10 +326,10 @@ public class OpExpr extends ANY
    */
   private void show()
   {
-    System.out.print(""+els.size()+": ");
-    for(int i=0; i<els.size(); i++)
+    System.out.print(""+_els.size()+": ");
+    for(int i=0; i<_els.size(); i++)
       {
-        Object o = els.get(i);
+        Object o = _els.get(i);
         if (o instanceof String) System.out.print(o);
         else if (o instanceof Call c) System.out.print(c.name());
         else System.out.print("E");
