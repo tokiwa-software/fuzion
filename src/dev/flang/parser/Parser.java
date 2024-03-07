@@ -561,30 +561,11 @@ visiFlag    : "private" colon "module"
    */
   boolean isNonEmptyVisibilityPrefix()
   {
-    switch (current())
+    return switch (current())
       {
-      case t_private     :
-      case t_module      :
-      case t_public      : return true;
-      default         : return false;
-      }
-  }
-
-
-  /**
-   * Parse visi
-   *
-visi        : COLON qual
-            | qual
-            ;
-   */
-  List<ParsedName> visi()
-  {
-    if (skipColon())
-      {
-        // NYI: record ':', i.e., export to all heirs
-      }
-    return qual(false);
+      case t_private, t_module, t_public -> true;
+      default                            ->  false;
+      };
   }
 
 
@@ -757,17 +738,18 @@ name        : IDENT                            // all parts of name must be in s
   }
   boolean isNamePrefix(boolean mayBeAtMinIndent)
   {
-    switch (current(mayBeAtMinIndent))
+    return switch (current(mayBeAtMinIndent))
       {
-      case t_ident  :
-      case t_infix  :
-      case t_prefix :
-      case t_postfix:
-      case t_ternary:
-      case t_index  :
-      case t_set    : return true;
-      default       : return false;
-      }
+      case
+        t_ident  ,
+        t_infix  ,
+        t_prefix ,
+        t_postfix,
+        t_ternary,
+        t_index  ,
+        t_set    ->  true;
+      default    ->  false;
+      };
   }
 
 
@@ -834,14 +816,13 @@ modifier    : "redef"
     int pos = tokenPos();
     while (isModifiersPrefix())
       {
-        int m;
         int p2 = tokenPos();
-        switch (current())
+        var m = switch (current())
           {
-          case t_redef       : m = Consts.MODIFIER_REDEFINE    ; break;
-          case t_fixed       : m = Consts.MODIFIER_FIXED       ; break;
-          default            : throw new Error();
-          }
+          case t_redef       -> Consts.MODIFIER_REDEFINE;
+          case t_fixed       -> Consts.MODIFIER_FIXED;
+          default            -> throw new Error();
+          };
         if ((ms & m) != 0)
           {
             Errors.error(sourcePos(pos),
@@ -865,12 +846,11 @@ modifier    : "redef"
    */
   boolean isModifiersPrefix()
   {
-    switch (current())
+    return switch (current())
       {
-      case t_redef       :
-      case t_fixed       : return true;
-      default            : return false;
-      }
+      case t_redef, t_fixed -> true;
+      default               -> false;
+      };
   }
 
 
@@ -932,9 +912,10 @@ formArgs    : LPAREN argLst RPAREN
 argLst      : argList
             |
             ;
-argList     : argument ( COMMA argList
-                       |
-                       )
+argList     : argument argListTail
+            ;
+argListTail : COMMA argList
+            |
             ;
 argument    : visibility
               modifiers
@@ -1129,9 +1110,10 @@ typeType    : "type"
   /**
    * Parse argNames
    *
-argNames    : name ( COMMA argNames
-                   |
-                   )
+argNames    : name argNamesTail
+            ;
+argNamesTail: COMMA argNames
+            |
             ;
    */
   List<ParsedName> argNames()
@@ -1208,10 +1190,8 @@ returnType  : boundType
   /**
    * Parse effects
    *
-effects     : EXCLAMATION typeList
+effects     : "!" typeList
             |
-            ;
-EXCLAMATION : "!"
             ;
    */
   List<AbstractType> effects()
@@ -1246,12 +1226,11 @@ EXCLAMATION : "!"
    */
   boolean isNonFuncReturnTypePrefix()
   {
-    switch (current())
+    return switch (current())
       {
-      case t_value :
-      case t_ref   : return true;
-      default      : return false;
-      }
+      case t_value, t_ref -> true;
+      default             -> false;
+      };
   }
 
 
@@ -1337,9 +1316,10 @@ inherit     : COLON callList
   /**
    * Parse callList
    *
-callList    : call ( COMMA callList
-                   |
-                   )
+callList    : call callListTail
+            ;
+callListTail: COMMA callList
+            |
             ;
    */
   List<AbstractCall> callList()
@@ -1510,9 +1490,10 @@ dotCall     : dot call
   /**
    * Parse typeList
    *
-typeList    : type ( COMMA typeList
-                   |
-                   )
+typeList    : type typeListTail
+            ;
+typeListTail: COMMA typeList
+            |
             ;
    */
   List<AbstractType> typeList()
@@ -1658,9 +1639,9 @@ actualArgs  : actualsList
 actualList  : actualSome
             |
             ;
-actualSome  : actual actualMore
+actualSome  : actual actualTail
             ;
-actualMore  : COMMA actualSome
+actualTail  : COMMA actualSome
             |
             ;
    */
@@ -1721,13 +1702,13 @@ bracketTerm : brblock
        current() == Token.t_lcrochet   );
 
     var c = current();
-    switch (c)
+    return switch (c)
       {
-      case t_lbrace  : return block();
-      case t_lparen  : return klammer();
-      case t_lcrochet: return inlineArray();
-      default: throw new Error("Unexpected case: "+c);
-      }
+      case t_lbrace   -> block();
+      case t_lparen   -> klammer();
+      case t_lcrochet -> inlineArray();
+      default         -> throw new Error("Unexpected case: "+c);
+      };
   }
 
 
@@ -2264,20 +2245,19 @@ stringTermB : '}any chars&quot;'
    */
   boolean isTermPrefix()
   {
-    switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
+    return switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
       {
-      case t_lparen    :
-      case t_lcrochet  :
-      case t_lbrace    :
-      case t_numliteral:
-      case t_match     : return true;
-      default          :
-        return
-          isStartedString(current())
-          || isNamePrefix()    // Matches call, qualThis and env
-          || isAnonymousPrefix() // matches anonymous inner feature declaration
-          ;
-      }
+      case
+        t_lparen    ,
+        t_lcrochet  ,
+        t_lbrace    ,
+        t_numliteral,
+        t_match     -> true;
+      default       -> isStartedString(current())
+                       || isNamePrefix()    // Matches call, qualThis and env
+                       || isAnonymousPrefix() // matches anonymous inner feature declaration
+        ;
+      };
   }
 
 
@@ -3420,13 +3400,13 @@ contract    : require
    */
   boolean isContractPrefix()
   {
-    switch (currentAtMinIndent())
+    return switch (currentAtMinIndent())
       {
-      case t_pre      :
-      case t_post     :
-      case t_inv      : return true;
-      default         : return false;
-      }
+      case
+        t_pre,
+        t_post -> true;
+      default  -> false;
+      };
   }
 
 
