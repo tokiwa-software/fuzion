@@ -2,64 +2,41 @@
 
 - General
 
-  - The Fuzion GitHub repository is open for external contributors, we added a
-    Contributor License Agreement and documentation for new contributors
-    ([#2500](https://github.com/tokiwa-software/fuzion/pull/2500),
-    [#2502](https://github.com/tokiwa-software/fuzion/pull/2502),
-    [#2505](https://github.com/tokiwa-software/fuzion/pull/2505),
-    [#2514](https://github.com/tokiwa-software/fuzion/pull/2514),
-    [#2538](https://github.com/tokiwa-software/fuzion/pull/2538),
-    [#2545](https://github.com/tokiwa-software/fuzion/pull/2545)).
+  - The Fuzion GitHub repository is open for external contributors, we added a Contributor License Agreement and documentation for new contributors ([#2500](https://github.com/tokiwa-software/fuzion/pull/2500), [#2502](https://github.com/tokiwa-software/fuzion/pull/2502), [#2505](https://github.com/tokiwa-software/fuzion/pull/2505), [#2514](https://github.com/tokiwa-software/fuzion/pull/2514), [#2538](https://github.com/tokiwa-software/fuzion/pull/2538), [#2545](https://github.com/tokiwa-software/fuzion/pull/2545)).
 
-  - We have switched to using JDK 21 (
-          [#2504](https://github.com/tokiwa-software/fuzion/pull/2504)).
+  - We have switched to using JDK 21 ([#2504](https://github.com/tokiwa-software/fuzion/pull/2504)).
 
 - Documentation
 
-  - Work on a Fuzion reference manual as started
-    ([#2490](https://github.com/tokiwa-software/fuzion/pull/2490)).
+  - Work on a Fuzion reference manual as started ([#2490](https://github.com/tokiwa-software/fuzion/pull/2490)).
 
-  - Documentation for the `universe` feature was added
-    ([#2625](https://github.com/tokiwa-software/fuzion/pull/2625)).
+  - Documentation for the `universe` feature was added ([#2625](https://github.com/tokiwa-software/fuzion/pull/2625)).
 
-  - Type features are now included in the generated API documentation
-    ([#2649](https://github.com/tokiwa-software/fuzion/pull/2649)).
+  - Type features are now included in the generated API documentation ([#2649](https://github.com/tokiwa-software/fuzion/pull/2649)).
 
 - Build infrastructure
 
-  - Added a `base-only` target to the `Makefile` for
-    faster build-test cycles
-    ([#2501](https://github.com/tokiwa-software/fuzion/pull/2501)).
+  - Added a `base-only` target to the `Makefile` for faster build-test cycles ([#2501](https://github.com/tokiwa-software/fuzion/pull/2501)).
 
 - Fuzion language
 
-  - The `.type.` can now be omitted in calls to type features
-    ([#2631](https://github.com/tokiwa-software/fuzion/pull/2631)).
+  - The `.type.` can now be omitted in calls to type features ([#2631](https://github.com/tokiwa-software/fuzion/pull/2631)).
 
 - base library
 
-  - Intrinsics and effects that allow directory listing have been implemented
-    ([#1688](https://github.com/tokiwa-software/fuzion/pull/1688),
-    [#2635](https://github.com/tokiwa-software/fuzion/pull/2635)).
+  - Intrinsics and effects that allow directory listing have been implemented ([#1688](https://github.com/tokiwa-software/fuzion/pull/1688), [#2635](https://github.com/tokiwa-software/fuzion/pull/2635)).
 
-  - Add `infix ::` to `list`, which allows creating a list from a given starting
-    element and a partial function that gets applied on each iteration
-    ([#2516](https://github.com/tokiwa-software/fuzion/pull/2516)).
+  - Add `infix ::` to `list`, which allows creating a list from a given starting element and a partial function that gets applied on each iteration ([#2516](https://github.com/tokiwa-software/fuzion/pull/2516)).
 
     This permits code like
 
         ints := 0 :: +1
 
-    to create a list of all integers starting at `0` and calculating
-    the next element by adding one using the partial function `+1`.
+    to create a list of all integers starting at `0` and calculating the next element by adding one using the partial function `+1`.
 
-  - Change `Sequence.infix |` to be an alias for `map`, the new alias for
-    `for_each` is `Sequence.infix !` now
-    ([#2517](https://github.com/tokiwa-software/fuzion/pull/2517)).
+  - Change `Sequence.infix |` to be an alias for `map`, the new alias for `for_each` is `Sequence.infix !` now ([#2517](https://github.com/tokiwa-software/fuzion/pull/2517)).
 
-  - Handling of infinite sequences has been made more convenient since the
-    number of entries shown by `as_string` is limited for non-finite sequences
-    ([#2528](https://github.com/tokiwa-software/fuzion/pull/2528)).
+  - Handling of infinite sequences has been made more convenient since the number of entries shown by `as_string` is limited for non-finite sequences ([#2528](https://github.com/tokiwa-software/fuzion/pull/2528)).
 
     You can now safely do things like
 
@@ -69,44 +46,28 @@
 
         [1, 4, 9, 16, 25, 36, 49, 64, 81, 100, …]
 
-  - Add feature `String.is_ascii`
-    ([#2531](https://github.com/tokiwa-software/fuzion/pull/2531)).
+  - Add feature `String.is_ascii` ([#2531](https://github.com/tokiwa-software/fuzion/pull/2531)).
 
-  - `Set.add` was implemented due to errors with the abstract version
-    ([#2533](https://github.com/tokiwa-software/fuzion/pull/2533)).
+  - `Set.add` was implemented due to errors with the abstract version ([#2533](https://github.com/tokiwa-software/fuzion/pull/2533)).
 
+  - When producing a string from a sequence, separate the elements with `, ` instead of just a `,` ([#2548](https://github.com/tokiwa-software/fuzion/pull/2548)).
 
-  - When producing a string from a sequence, separate the elements with `, `
-    instead of just a `,`
-    ([#2548](https://github.com/tokiwa-software/fuzion/pull/2548)).
+  - Facilities to launch processes have been added ([#2575](https://github.com/tokiwa-software/fuzion/pull/2575)).
 
-  - Facilities to launch processes have been added
-    ([#2575](https://github.com/tokiwa-software/fuzion/pull/2575)).
+  - Visibility of `Type` is now `module:public`, because nothing should inherit from or call `Type` ([#2581](https://github.com/tokiwa-software/fuzion/pull/2581)).
 
-  - Visibility of `Type` is now `module:public`, because nothing should inherit
-    from or call `Type`
-    ([#2581](https://github.com/tokiwa-software/fuzion/pull/2581)).
+  - `bench` now uses the `time.nano` effect ([#2606](https://github.com/tokiwa-software/fuzion/pull/2606)).
 
-  - `bench` now uses the `time.nano` effect
-    ([#2606](https://github.com/tokiwa-software/fuzion/pull/2606)).
+  - `String`: add features for center, left, and right padding of strings ([#2609](https://github.com/tokiwa-software/fuzion/pull/2609)).
 
-  - `String`: add features for center, left, and right padding of strings
-    ([#2609](https://github.com/tokiwa-software/fuzion/pull/2609)).
-
-  - Some fixes for unsafe intrinsics
-    ([#2521](https://github.com/tokiwa-software/fuzion/pull/2521),
-    [#2594](https://github.com/tokiwa-software/fuzion/pull/2594),
+  - Some fixes for unsafe intrinsics ([#2521](https://github.com/tokiwa-software/fuzion/pull/2521), [#2594](https://github.com/tokiwa-software/fuzion/pull/2594),
     [#2627](https://github.com/tokiwa-software/fuzion/pull/2627)).
 
-  - Refactoring of `interval`
-    ([#2551](https://github.com/tokiwa-software/fuzion/pull/2551),
-    [#2560](https://github.com/tokiwa-software/fuzion/pull/2560),
-    [#2608](https://github.com/tokiwa-software/fuzion/pull/2608)).
+  - Refactoring of `interval` ([#2551](https://github.com/tokiwa-software/fuzion/pull/2551), [#2560](https://github.com/tokiwa-software/fuzion/pull/2560), [#2608](https://github.com/tokiwa-software/fuzion/pull/2608)).
 
 - Front End
 
-  - Improve type inference for tagged union types
-    ([#2582](https://github.com/tokiwa-software/fuzion/pull/2582)).
+  - Improve type inference for tagged union types ([#2582](https://github.com/tokiwa-software/fuzion/pull/2582)).
 
         # infers that all the numbers to be of type option f64
         a := [0.3, option 3.142, nil, 42]
@@ -114,91 +75,56 @@
         # infers that all the numbers to be of type option f64
         if b then 42  else option 3.14
 
-  - Improve type inference type parameters
-    ([#2585](https://github.com/tokiwa-software/fuzion/pull/2585)).
+  - Improve type inference type parameters ([#2585](https://github.com/tokiwa-software/fuzion/pull/2585)).
 
         # type parameters for `zip` can now be inferred in this case:
         prods :=  ([1,2,3].zip 0.. a,b->a*b)
 
-  - Remove string comparisons in the code
-    ([#2616](https://github.com/tokiwa-software/fuzion/pull/2616),
-    [#2617](https://github.com/tokiwa-software/fuzion/pull/2617)).
+  - Remove string comparisons in the code ([#2616](https://github.com/tokiwa-software/fuzion/pull/2616), [#2617](https://github.com/tokiwa-software/fuzion/pull/2617)).
 
-  - Replace `Could not find called feature` messages by more specific errors in
-    case the feature could be found but is invisible or the argument count does
-    not match ([#2622](https://github.com/tokiwa-software/fuzion/pull/2622)).
+  - Replace `Could not find called feature` messages by more specific errors in case the feature could be found but is invisible or the argument count does not match ([#2622](https://github.com/tokiwa-software/fuzion/pull/2622)).
 
-  - Suppress `declarationsInLazy` error if it is a subsequent error, due to
-    frequent false-positives
-    ([#2628](https://github.com/tokiwa-software/fuzion/pull/2628)).
+  - Suppress `declarationsInLazy` error if it is a subsequent error, due to frequent false-positives ([#2628](https://github.com/tokiwa-software/fuzion/pull/2628)).
 
-  - Fix source range of parsed lambdas
-    ([#2646](https://github.com/tokiwa-software/fuzion/pull/2646)).
+  - Fix source range of parsed lambdas ([#2646](https://github.com/tokiwa-software/fuzion/pull/2646)).
 
 - JVM back end
 
-  - The fzjava interface known from the interpreter that allows calling into
-    Java code is now supported by the JVM backend as well (
-    [#2487](https://github.com/tokiwa-software/fuzion/pull/2487)).
+  - The fzjava interface known from the interpreter that allows calling into Java code is now supported by the JVM backend as well ( [#2487](https://github.com/tokiwa-software/fuzion/pull/2487)).
 
-  - Support for the stackmap table attribute was added
-    ([#2499](https://github.com/tokiwa-software/fuzion/pull/2499),
-    [#2556](https://github.com/tokiwa-software/fuzion/pull/2556)).  This allowed
-    switching to class files for JDK version 21.
+  - Support for the stackmap table attribute was added ([#2499](https://github.com/tokiwa-software/fuzion/pull/2499), [#2556](https://github.com/tokiwa-software/fuzion/pull/2556)).  This allowed switching to class files for JDK version 21.
 
-  - Improvements to tail recursive call optimization (however, this does still
-    not work in many cases)
-    ([#2543](https://github.com/tokiwa-software/fuzion/pull/2543)).
+  - Improvements to tail recursive call optimization (however, this does still not work in many cases) ([#2543](https://github.com/tokiwa-software/fuzion/pull/2543)).
 
-  - The `-jar` and `-classes` backends now create a run script that allows one
-    to easily run the jar file or the classes
-    ([#2547](https://github.com/tokiwa-software/fuzion/pull/2547)).
+  - The `-jar` and `-classes` backends now create a run script that allows one to easily run the jar file or the classes ([#2547](https://github.com/tokiwa-software/fuzion/pull/2547)).
 
-  - For the `-jar` and `-classes` backends, fix the result of `envir.args`
-    ([#2549](https://github.com/tokiwa-software/fuzion/pull/2549)).
+  - For the `-jar` and `-classes` backends, fix the result of `envir.args` ([#2549](https://github.com/tokiwa-software/fuzion/pull/2549)).
 
-  - The `-jar` and `-classes` backends now support an optional argument
-    `-o=&lt;outputName&gt;` to specify the name of the generated output (
-    [#2567](https://github.com/tokiwa-software/fuzion/pull/2567)).
+  - The `-jar` and `-classes` backends now support an optional argument `-o=&lt;outputName&gt;` to specify the name of the generated output ( [#2567](https://github.com/tokiwa-software/fuzion/pull/2567)).
 
 - C back end
 
-  - Separated `include/fz.h` into platform-specific files, refactored
-    ([#2553](https://github.com/tokiwa-software/fuzion/pull/2553),
-    [#2573](https://github.com/tokiwa-software/fuzion/pull/2573),
-    [#2601](https://github.com/tokiwa-software/fuzion/pull/2601)).
+  - Separated `include/fz.h` into platform-specific files, refactored ([#2553](https://github.com/tokiwa-software/fuzion/pull/2553), [#2573](https://github.com/tokiwa-software/fuzion/pull/2573), [#2601](https://github.com/tokiwa-software/fuzion/pull/2601)).
 
-  - Replace `__atomic` compiler-specific built-ins by C11 standard atomics
-    ([#2563](https://github.com/tokiwa-software/fuzion/pull/2563)).
+  - Replace `__atomic` compiler-specific built-ins by C11 standard atomics ([#2563](https://github.com/tokiwa-software/fuzion/pull/2563)).
 
-  - Not longer emits duplicate casts in generated code
-    ([#2592](https://github.com/tokiwa-software/fuzion/pull/2592)).
+  - Not longer emits duplicate casts in generated code ([#2592](https://github.com/tokiwa-software/fuzion/pull/2592)).
 
-  - The generated C source files are not deleted unless `-XkeepGeneratedCode` is
-    set ([#2605](https://github.com/tokiwa-software/fuzion/pull/2605)).
+  - The generated C source files are not deleted unless `-XkeepGeneratedCode` is set ([#2605](https://github.com/tokiwa-software/fuzion/pull/2605)).
 
 - `fz` tool
 
-  - Run simple examples given on the command line using the `-e &lt;code&gt;` or
-    `-execute &lt;code&gt;` argument
-    ([#2618](https://github.com/tokiwa-software/fuzion/pull/2618)). So it is now
-    possible to do
+  - Run simple examples given on the command line using the `-e &lt;code&gt;` or `-execute &lt;code&gt;` argument ([#2618](https://github.com/tokiwa-software/fuzion/pull/2618)). So it is now possible to do
 
         fz -e 'say "Hello, world!"'
 
     to run a one-liner.
 
-  - In the case of a contract failure (pre/post-condition or check) due to a bug
-    in the fz tool, the failed expression will now be shown
-    ([#2619](https://github.com/tokiwa-software/fuzion/pull/2619)).
+  - In the case of a contract failure (pre/post-condition or check) due to a bug in the fz tool, the failed expression will now be shown ([#2619](https://github.com/tokiwa-software/fuzion/pull/2619)).
 
-  - Running `fz` without any arguments now shows the general help instead of the
-    default backend help
-    ([#2648](https://github.com/tokiwa-software/fuzion/pull/2648)).
+  - Running `fz` without any arguments now shows the general help instead of the default backend help ([#2648](https://github.com/tokiwa-software/fuzion/pull/2648)).
 
-  - Experimentation with calling the Fuzion compiler via fzjava from the JVM
-    backend have started
-    ([#2536](https://github.com/tokiwa-software/fuzion/pull/2536)).
+  - Experimentation with calling the Fuzion compiler via fzjava from the JVM backend have started ([#2536](https://github.com/tokiwa-software/fuzion/pull/2536)).
 
 
 ## 2024-01-11: V0.086
