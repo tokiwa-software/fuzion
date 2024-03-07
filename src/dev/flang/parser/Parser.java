@@ -2706,10 +2706,10 @@ exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
   /**
    * Parse expr
    *
-expr        : feature
+expr        : checkexpr
             | assign
             | destructure
-            | checkexpr
+            | feature
             | operatorExpr
             ;
    */
