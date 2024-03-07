@@ -145,6 +145,7 @@ public class Types extends ANY
      * since the union of void  with any other type is the other type.
      */
     public final AbstractType t_void;
+    public final AbstractType t_codepoint;
     public final AbstractFeature f_id;
     public final AbstractFeature f_void;
     public final AbstractFeature f_choice;
@@ -204,6 +205,7 @@ public class Types extends ANY
       t_any           = ct.type(FuzionConstants.ANY_NAME);
       t_unit          = ct.type(FuzionConstants.UNIT_NAME);
       t_void          = ct.type("void");
+      t_codepoint     = ct.type("codepoint");
       f_id            = universe.get(mod, "id", 2);
       f_void          = universe.get(mod, "void");
       f_choice        = universe.get(mod, "choice");
@@ -275,7 +277,8 @@ public class Types extends ANY
         t_Const_String,
         t_any        ,
         t_unit       ,
-        t_void
+        t_void       ,
+        t_codepoint
       };
 
       for (var t : internalTypes)

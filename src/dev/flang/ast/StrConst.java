@@ -76,7 +76,9 @@ public class StrConst extends Constant
   @Override
   AbstractType typeForInferencing()
   {
-    return Types.resolved.t_string;
+    return isCodepointLiteral()
+      ? Types.resolved.t_codepoint
+      : Types.resolved.t_string;
   }
 
 
@@ -89,7 +91,9 @@ public class StrConst extends Constant
   @Override
   public AbstractType type()
   {
-    return Types.resolved.t_string;
+    return isCodepointLiteral()
+      ? Types.resolved.t_codepoint
+      : Types.resolved.t_string;
   }
 
 
@@ -102,7 +106,9 @@ public class StrConst extends Constant
   @Override
   public AbstractType typeOfConstant()
   {
-    return Types.resolved.t_Const_String;
+    return isCodepointLiteral()
+      ? Types.resolved.t_codepoint
+      : Types.resolved.t_Const_String;
   }
 
 
@@ -111,11 +117,33 @@ public class StrConst extends Constant
    */
   public byte[] data()
   {
-    var b = _str.getBytes(StandardCharsets.UTF_8);
-    var r = ByteBuffer.allocate(4+b.length);
-    r.putInt(b.length);
-    r.put(b);
-    return r.array();
+    byte[] result;
+
+    if (isCodepointLiteral())
+      {
+        var nl = new NumLiteral(_str.codePointAt(0));
+        nl.propagateExpectedType(Types.resolved.t_u32);
+        result = nl.data();
+      }
+    else
+      {
+        var b = _str.getBytes(StandardCharsets.UTF_8);
+        var r = ByteBuffer.allocate(4 + b.length);
+        r.putInt(b.length);
+        r.put(b);
+        result = r.array();
+      }
+
+    return result;
+  }
+
+
+  /**
+   * Is this StrConst denoting a codepoint?
+   */
+  private boolean isCodepointLiteral()
+  {
+    return _str.codePoints().count() == 1;
   }
 
 
