@@ -651,7 +651,7 @@ public class Fuzion extends Tool
         return
           "Usage: " + _cmd + " [-h|--help|-version]  --or--\n" +
           "       " + _cmd + " [" + aba + "] [-h|--help|-version] [<backend specific options>]  --or--\n" +
-          "       " + _cmd + " -pretty " + std + " ({<file>} | - | -e <code> | -execute <code>  --or--\n" +
+          "       " + _cmd + " -pretty " + std + " ({<file>} | - | -e <code> | -execute <code>)  --or--\n" +
           "       " + _cmd + " -latex " + std + "  --or--\n" +
           "       " + _cmd + " -acemode " + std + "  --or--\n";
       }
