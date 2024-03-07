@@ -543,7 +543,7 @@ void fzE_init()
 int64_t fzE_thread_create(void* code, void* args)
 {
 #ifdef FUZION_ENABLE_THREADS
-  pthread_t * pt = fzE_malloc_safe(sizeof(pthread_t));;
+  pthread_t * pt = fzE_malloc_safe(sizeof(pthread_t));
 #ifdef GC_THREADS
   int res = GC_pthread_create(pt,NULL,code,args);
 #else

@@ -1198,7 +1198,7 @@ public class Lexer extends SourceFile
        endPos  <= byteLength());
 
     return pos < endPos ? sourceRange(pos, endPos)
-                        : sourceRange(prevPos, prevPos+1);
+                        : sourceRange(prevPos, Math.min(byteLength(), prevPos+1));
   }
 
 

@@ -318,7 +318,7 @@ Fuzion input uses UTF8 encoding version {UNICODE_VERSION} from {UNICODE_SOURCE}[
                                     ": found end-of-file while decoding " + hex(b1),
                                     "Expected two continuation bytes, but reached end of file.");
             result = BAD_CODEPOINT;
-            sz = _bytes.length - pos;;
+            sz = _bytes.length - pos;
           }
         else
           {
@@ -893,7 +893,6 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
   {
     if (PRECONDITIONS) require
       (0 <= pos,
-       pos < endPos,
        endPos <= byteLength());
 
     return new SourceRange(this, pos, endPos);

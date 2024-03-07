@@ -2976,7 +2976,7 @@ assign      : "set" name ":=" exprInLine
   {
     if (!ENABLE_SET_KEYWORD)
       {
-        AstErrors.illegalUseOfSetKeyword(tokenSourcePos());;
+        AstErrors.illegalUseOfSetKeyword(tokenSourcePos());
       }
     match(Token.t_set, "assign");
     var n = name();
@@ -3038,7 +3038,7 @@ destructrSet: "set" "(" argNames ")" ":=" exprInLine
         var hasSet = skip(Token.t_set);
         if (hasSet && !ENABLE_SET_KEYWORD)
           {
-            AstErrors.illegalUseOfSetKeyword(tokenSourcePos());;
+            AstErrors.illegalUseOfSetKeyword(tokenSourcePos());
           }
         match(Token.t_lparen, "destructure");
         var names = argNames();
