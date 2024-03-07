@@ -248,9 +248,6 @@ public class Generic extends ANY implements Comparable<Generic>
    */
   public AbstractFeature typeParameter()
   {
-    // NYI: if (PRECONDITIONS) require
-    //   (_typeParameter.state().atLeast(State.RESOLVED_TYPES));
-
     return _typeParameter;
   }
 

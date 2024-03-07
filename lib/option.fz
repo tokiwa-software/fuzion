@@ -141,16 +141,16 @@ is
                 | nil => nil
 
 
-  # return function
-  #
-  public fixed type.return (a T) => option a
-
-
   # unwrap this option
   #
   public unwrap ! try (option T) =>
     option.this ? v T => v
                 | nil => (try (option T)).env.raise (error "error unwrapping option: {option.this}")
+
+
+  # return function
+  #
+  public fixed type.return (a T) => option a
 
 
 

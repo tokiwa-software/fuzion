@@ -237,7 +237,7 @@ public class Types extends ANY
       f_Types_get                  = f_Types.get(mod, "get");
       f_Lazy                       = universe.get(mod, LAZY_NAME);
       f_Unary                      = universe.get(mod, UNARY_NAME);
-      f_auto_unwrap                     = universe.get(mod, "auto_unwrap");
+      f_auto_unwrap                = universe.get(mod, "auto_unwrap");
       numericTypes = new TreeSet<AbstractType>(new List<>(
         t_i8,
         t_i16,
