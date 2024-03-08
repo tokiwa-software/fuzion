@@ -978,7 +978,7 @@ public class DFA extends ANY
         public LifeTime lifeTime(int cl, boolean pre)
         {
           return
-            pre || (clazzKind != FeatureKind.Routine)
+            pre || (clazzKind(cl) != FeatureKind.Routine)
                 ? super.lifeTime(cl, pre)
                 : currentEscapes(cl, pre) ? LifeTime.Unknown :
                                             LifeTime.Call;
