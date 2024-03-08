@@ -1205,6 +1205,25 @@ public class Feature extends AbstractFeature
   }
 
 
+  /**
+   * For every feature 'f', this produces the corresponding type feature
+   * 'f.type'.  This feature inherits from the abstract type features of all
+   * direct ancestors of this, and, if there are no direct ancestors (for
+   * Object), this inherits from 'Type'.
+   *
+   * @param res Resolution instance used to resolve this for types.
+   *
+   * @return The feature that should be the direct ancestor of this feature's
+   * type feature.
+   */
+  @Override
+  public AbstractFeature typeFeature(Resolution res)
+  {
+    resolveInheritance(res);
+    return super.typeFeature(res);
+  }
+
+
   /*
    * Declaration resolution for a feature f: For all declarations of features in
    * f (formal arguments, local features, implicit result field), add these
