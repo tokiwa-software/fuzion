@@ -1548,6 +1548,7 @@ public class C extends ANY
             {
 
               if (FUZION_DEBUG_TAIL_CALL                                 &&
+                  !pre                                                   &&  // not within precondition
                   !preCalled                                             &&  // not calling pre-condition
                   cc == cl                                               &&  // calling myself
                   _tailCall.callIsTailCall(cl, c, i)                     &&  // as a tail call
