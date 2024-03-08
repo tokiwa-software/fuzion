@@ -807,7 +807,12 @@ public class FUIR extends IR
   }
 
 
-  // String representation of clazz, for debugging only
+  /**
+   * String representation of clazz, for debugging only since String might be
+   * ambiguous.
+   *
+   * @param cl a clazz id.
+   */
   public String clazzAsString(int cl)
   {
     return cl == -1
@@ -816,15 +821,51 @@ public class FUIR extends IR
   }
 
 
-  // String representation of clazz, for debugging and type names
-  //
-  // NYI: This should eventually replace clazzAsString.
+  /**
+   * String representation of clazz, for debugging and creation of unique type names
+   *
+   * NYI: This should eventually replace clazzAsString.
+   *
+   * @param cl a clazz id.
+   */
   public String clazzAsStringNew(int cl)
   {
     return cl == -1
       ? "-- no clazz --"
       : clazz(cl)._type.asString();
   }
+
+
+  /**
+   * Get a String representation of a given clazz including a list of arguments
+   * and the result type. For debugging only, names might be ambiguous.
+   *
+   * @param cl a clazz id.
+   */
+  public String clazzAsStringWithArgsAndResult(int cl)
+  {
+    var sb = new StringBuilder();
+    sb.append(clazzAsString(cl))
+      .append("(");
+    var o = clazzOuterClazz(cl);
+    if (o != -1)
+      {
+        sb.append("outer ")
+          .append(clazzAsString(o));
+      }
+    for (var i = 0; i < clazzArgCount(cl); i++)
+      {
+        var ai = clazzArg(cl,i);
+        sb.append(o != -1 || i > 0 ? ", " : "")
+          .append(clazzBaseName(ai))
+          .append(" ")
+          .append(clazzAsString(clazzResultClazz(ai)));
+      }
+    sb.append(") ")
+      .append(clazzAsString(clazzResultClazz(cl)));
+    return sb.toString();
+  }
+
 
 
   /**
@@ -2025,6 +2066,19 @@ hw25 is
 
 
   /**
+   * Helper for dumpCode and codeAtAsPos to create a label for given code block.
+   *
+   * @param c a code block;
+   *
+   * @return a String that can be used as a unique label for code block `c`.
+   */
+  private String label(int c)
+  {
+    return "l" + (c-CODE_BASE);
+  }
+
+
+  /**
    * Get a string representation of the expr at the given index in given code
    * block.  Useful for debugging.
    *
@@ -2041,16 +2095,30 @@ hw25 is
       case AdrOf   -> "AdrOf";
       case Assign  -> "Assign to " + clazzAsString(accessedClazz     (cl, c, ix));
       case Box     -> "Box "       + clazzAsString(boxValueClazz     (cl, c, ix)) + " => " + clazzAsString(boxResultClazz  (cl, c, ix));
-      case Call    -> "Call to "   + clazzAsString(accessedClazz     (cl, c, ix));
+      case Call    -> {
+                        var sb = new StringBuilder("Call ");
+                        var cc = accessedClazz(cl, c, ix);
+                        sb.append(clazzAsStringWithArgsAndResult(cc));
+                        yield sb.toString();
+                       }
       case Current -> "Current";
       case Comment -> "Comment: " + comment(c, ix);
-      case Const   -> "Const of type " + clazzAsString(constClazz(cl, c, ix));
+      case Const   -> {
+                        var data = constData(c, ix);
+                        var sb = new StringBuilder("Const of type ");
+                        sb.append(clazzAsString(constClazz(cl, c, ix)));
+                        for (var i = 0; i < Math.min(8, data.length); i++)
+                          {
+                            sb.append(String.format(" %02x", data[i] & 0xff));
+                          }
+                        yield sb.toString();
+                      }
       case Match   -> {
                         var sb = new StringBuilder("Match");
                         for (var cix = 0; cix < matchCaseCount(c, ix); cix++)
                           {
                             var f = matchCaseField(cl, c, ix, cix);
-                            sb.append(" " + cix + (f == -1 ? "" : "("+clazzAsString(clazzResultClazz(f))+")") + "=>" + matchCaseCode(c, ix, cix));
+                            sb.append(" " + cix + (f == -1 ? "" : "("+clazzAsString(clazzResultClazz(f))+")") + "=>" + label(matchCaseCode(c, ix, cix)));
                           }
                         yield sb.toString();
                       }
@@ -2094,48 +2162,27 @@ hw25 is
    */
   public void dumpCode(int cl, int c)
   {
-    dumpCode(cl, c, null);
-  }
-
-
-  /**
-   * Print the contents of the given code block to System.out, for debugging.
-   *
-   * In case printed != null, recursively print all successor code blocks for
-   * Match expressions and add their ids to printed, unless they has been added
-   * already.
-   *
-   * @param cl index of the clazz containing the code block.
-   *
-   * @param c the code block
-   *
-   * @param printed set of code blocks that had already been printed.
-   */
-  private void dumpCode(int cl, int c, TreeSet<Integer> printed)
-  {
-    if (printed != null)
-      {
-        printed.add(c);
-      }
     for (var ix = 0; withinCode(c, ix); ix = ix + codeSizeAt(c, ix))
       {
-        System.out.printf("%d.%4d: %s\n", c, ix, codeAtAsString(cl, c, ix));
-        if (printed != null)
+        if (ix == 0)
           {
-            switch (codeAt(c,ix))
+            System.out.printf("%s:", label(c));
+          }
+        System.out.printf("\t%d: %s\n", ix, codeAtAsString(cl, c, ix));
+        switch (codeAt(c,ix))
+          {
+          case Match:
+            var l = label(c) + "_" + ix;
+            for (var cix = 0; cix < matchCaseCount(c, ix); cix++)
               {
-              case Match:
-                for (var cix = 0; cix < matchCaseCount(c, ix); cix++)
-                  {
-                    var mc = matchCaseCode(c, ix, cix);
-                    if (!printed.contains(mc))
-                      {
-                        dumpCode(cl, mc, printed);
-                      }
-                  }
-                break;
-              default: break;
+                var mc = matchCaseCode(c, ix, cix);
+
+                dumpCode(cl, mc);
+                System.out.println("\tgoto " +l);
               }
+            System.out.println(l + ":");
+            break;
+          default: break;
           }
       }
   }
@@ -2151,8 +2198,8 @@ hw25 is
     if (PRECONDITIONS) require
       (clazzKind(cl) == FeatureKind.Routine);
 
-    System.out.println("Code for " + clazzAsString(cl) + (cl == mainClazzId() ? " *** main *** " : ""));
-    dumpCode(cl, clazzCode(cl), new TreeSet<>());
+    System.out.println("Code for " + clazzAsStringWithArgsAndResult(cl) + (cl == mainClazzId() ? " *** main *** " : ""));
+    dumpCode(cl, clazzCode(cl));
   }
 
 
@@ -2166,7 +2213,7 @@ hw25 is
       {
         switch (clazzKind(cl))
           {
-          case Routine: dumpCode(cl); break;
+          case Routine: if (clazzNeedsCode(cl)) { dumpCode(cl); } break;
           default: break;
           }
       });
