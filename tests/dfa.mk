@@ -17,12 +17,27 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test Makefile
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test Makefile to be included for dfa tests
+#  This is used e.g. for tests that result in infinite recursion
+#  but we still want to test DFA.
 #
 # -----------------------------------------------------------------------
 
-override NAME = ctrie_threads
-FUZION_OPTIONS = -modules=lock_free
-include ../dfa.mk  # NYI: BUG: snapshots do not work yet
+# expected variables
+#
+#  NAME -- the name of the main feature to be tested
+#  FUZION -- the fz command
+
+FUZION_OPTIONS ?=
+FUZION = ../../bin/fz $(FUZION_OPTIONS)
+
+all: jvm c int
+
+int:
+	$(FUZION) -no-backend $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
+
+jvm:
+	$(FUZION) -no-backend $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
+
+c:
+	$(FUZION) -no-backend $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
