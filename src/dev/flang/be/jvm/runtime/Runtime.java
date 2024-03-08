@@ -26,10 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm.runtime;
 
-import dev.flang.be.interpreter.JavaInterface;
-
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.JavaInterface;
 import dev.flang.util.Pair;
 
 import java.io.StringWriter;
