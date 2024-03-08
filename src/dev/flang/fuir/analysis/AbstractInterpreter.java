@@ -164,7 +164,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      * arguments.  The type of tvalue might be dynamic (a reference). See
      * FUIR.access*().
      *
-     * Result._v0 may be null to indicate that code generation should stop here
+     * Result.v0() may be null to indicate that code generation should stop here
      * (due to an error or tail recursion optimization).
      *
      * @param cl id of clazz we are interpreting
@@ -445,23 +445,23 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
       {
         var rt = _fuir.clazzResultClazz(or);
         var cur = _processor.current(cl, pre);
-        l.add(cur._v1);
+        l.add(cur.v1());
         var out = _processor.outer(cl);
-        l.add(out._v1);
-        l.add(_processor.assignStatic(cl, pre, cl, or, rt, cur._v0, out._v0));
+        l.add(out.v1());
+        l.add(_processor.assignStatic(cl, pre, cl, or, rt, cur.v0(), out.v0()));
       }
 
     var ac = _fuir.clazzArgCount(cl);
     for (int i = 0; i < ac; i++)
       {
         var cur = _processor.current(cl, pre);
-        l.add(cur._v1);
+        l.add(cur.v1());
         var af = _fuir.clazzArg(cl, i);
         var at = _fuir.clazzArgClazz(cl, i);
         var ai = _processor.arg(cl, i);
         if (ai != null)
           {
-            l.add(_processor.assignStatic(cl, pre, cl, af, at, cur._v0, ai));
+            l.add(_processor.assignStatic(cl, pre, cl, af, at, cur.v0(), ai));
           }
       }
   }
@@ -486,13 +486,13 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     var p = pre
       ? processContract(cl, FUIR.ContractKind.Pre)
       : process(cl, pre, _fuir.clazzCode(cl));
-    l.add(p._v1);
-    var res = p._v0;
+    l.add(p.v1());
+    var res = p.v0();
     if (!pre)
       {
         var post = processContract(cl, FUIR.ContractKind.Post);
-        l.add(post._v1);
-        if (post._v0 == null) // post condition results in void, so we do not return:
+        l.add(post.v1());
+        if (post.v0() == null) // post condition results in void, so we do not return:
           {
             res = null;
           }
@@ -617,8 +617,8 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
         {
           var v = stack.pop();
           var r = _processor.adrOf(v);
-          stack.push(r._v0);
-          return r._v1;
+          stack.push(r.v0());
+          return r.v1();
         }
       case Assign:
         {
@@ -651,8 +651,8 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
             {
               var val = pop(stack, vc);
               var r = _processor.box(val, vc, rc);
-              push(stack, rc, r._v0);
-              return r._v1;
+              push(stack, rc, r.v0());
+              return r.v1();
             }
         }
       case Call:
@@ -662,16 +662,16 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           var tc = _fuir.accessTargetClazz(cl, c, i);
           var tvalue = pop(stack, tc);
           var r = _processor.call(cl, pre, c, i, tvalue, args);
-          if (r._v0 == null)  // this may happen even if rt is not void (e.g., in case of tail recursion or error)
+          if (r.v0() == null)  // this may happen even if rt is not void (e.g., in case of tail recursion or error)
             {
               stack.push(null);
             }
           else
             {
               var rt = _fuir.clazzResultClazz(cc0);
-              push(stack, rt, r._v0);
+              push(stack, rt, r.v0());
             }
-          return r._v1;
+          return r.v1();
         }
       case Comment:
         {
@@ -680,8 +680,8 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
       case Current:
         {
           var r = _processor.current(cl, pre);
-          push(stack, cl, r._v0);
-          return r._v1;
+          push(stack, cl, r.v0());
+          return r.v1();
         }
       case Const:
         {
@@ -691,10 +691,10 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
           if (CHECKS) check
             // check that constant creation has no side effects.
-            (r._v1 == _processor.nop());
+            (r.v1() == _processor.nop());
 
-          push(stack, constCl, r._v0);
-          return r._v1;
+          push(stack, constCl, r.v0());
+          return r.v1();
         }
       case Match:
         {
@@ -703,13 +703,13 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           RESULT code = _processor.nop();
 
           var r = _processor.match(this, cl, pre, c, i, subv);
-          if (r._v0 == null)
+          if (r.v0() == null)
             {
               stack.push(null);
             }
           if (CHECKS) check
-            (r._v0 == null || r._v0 == _processor.unitValue());
-          return _processor.sequence(new List<>(code, r._v1));
+            (r.v0() == null || r.v0() == _processor.unitValue());
+          return _processor.sequence(new List<>(code, r.v1()));
         }
       case Tag:
         {
@@ -720,15 +720,15 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
             (!_fuir.clazzIsVoidType(valuecl));
           int tagNum  = _fuir.clazzChoiceTag(newcl, valuecl);
           var r = _processor.tag(cl, value, newcl, tagNum);
-          push(stack, newcl, r._v0);
-          return r._v1;
+          push(stack, newcl, r.v0());
+          return r.v1();
         }
       case Env:
         {
           var ecl = _fuir.envClazz(cl, c, i);
           var r = _processor.env(ecl);
-          push(stack, ecl, r._v0);
-          return r._v1;
+          push(stack, ecl, r.v0());
+          return r.v1();
         }
       case Pop:
         {

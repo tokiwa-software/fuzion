@@ -240,7 +240,7 @@ public class DFA extends ANY
      * arguments.  The type of tvalue might be dynamic (a reference). See
      * FUIR.access*().
      *
-     * Result._v0 may be null to indicate that code generation should stop here
+     * Result.v0() may be null to indicate that code generation should stop here
      * (due to an error or tail recursion optimization).
      */
     public Pair<Val, Unit> call(int cl, boolean pre, int c, int i, Val tvalue, List<Val> args)
@@ -531,7 +531,7 @@ public class DFA extends ANY
           var f = _fuir.clazzArg(constCl, index);
           var fr = _fuir.clazzArgClazz(constCl, index);
           var bytes = _fuir.deseralizeConst(fr, b);
-          var arg = constData(fr, bytes)._v0.value();
+          var arg = constData(fr, bytes).v0().value();
           args.add(arg);
           result.setField(DFA.this, f, arg);
         }
@@ -579,8 +579,8 @@ public class DFA extends ANY
         {
           var b = _fuir.deseralizeConst(elementClazz, d);
           elements = elements == null
-            ? constData(elementClazz, b)._v0.value()
-            : elements.join(constData(elementClazz, b)._v0.value());
+            ? constData(elementClazz, b).v0().value()
+            : elements.join(constData(elementClazz, b).v0().value());
         }
       SysArray sysArray = elCount == 0 ? new SysArray(DFA.this, new byte[0], elementClazz) :  new SysArray(DFA.this, elements);
 
@@ -635,7 +635,7 @@ public class DFA extends ANY
           if (taken)
             {
               var resv = ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc));
-              if (resv._v0 != null)
+              if (resv.v0() != null)
                 { // if at least one case returns (i.e., result is not null), this match returns.
                   r = Value.UNIT;
                 }
@@ -1188,7 +1188,7 @@ public class DFA extends ANY
 
         var ai = new AbstractInterpreter<Val,Unit>(_fuir, new Analyze(c));
         var r = ai.process(c._cc, c._pre);
-        if (r._v0 != null)
+        if (r.v0() != null)
           {
             c.returns();
           }
