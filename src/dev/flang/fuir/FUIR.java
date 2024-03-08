@@ -1208,7 +1208,7 @@ hw25 is
                case Intrinsic -> LifeTime.Undefined;
                case Field     -> LifeTime.Call;
                case Routine   -> LifeTime.Unknown;
-               case Native    -> LifeTime.Unknown;
+               case Native    -> LifeTime.Undefined;
                });
 
       return result;

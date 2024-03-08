@@ -977,29 +977,11 @@ public class DFA extends ANY
          */
         public LifeTime lifeTime(int cl, boolean pre)
         {
-          var result =
-            pre ? (switch (clazzKind(cl))
-                     {
-                     case Choice    -> LifeTime.Undefined;
-                     case Abstract  ,
-                          Intrinsic ,
-                          Field     ,
-                          Routine   ,
-                          Native    -> currentEscapes(cl, pre) ? LifeTime.Unknown :
-                                                                 LifeTime.Call;
-                     })
-                : (switch (clazzKind(cl))
-                     {
-                     case Abstract  -> LifeTime.Undefined;
-                     case Choice    -> LifeTime.Undefined;
-                     case Intrinsic -> LifeTime.Undefined;
-                     case Field     -> LifeTime.Call;
-                     case Routine   -> currentEscapes(cl, pre) ? LifeTime.Unknown :
-                                                                 LifeTime.Call;
-                     case Native    -> LifeTime.Undefined;
-                     });
-
-          return result;
+          return
+            pre || (clazzKind(cl) != FeatureKind.Routine)
+                ? super.lifeTime(cl, pre)
+                : currentEscapes(cl, pre) ? LifeTime.Unknown :
+                                            LifeTime.Call;
         }
 
 
