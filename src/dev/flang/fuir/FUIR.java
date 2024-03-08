@@ -2720,6 +2720,15 @@ hw25 is
 
 
   /**
+   * @return If the expression has only been found to result in void.
+   */
+  public boolean alwaysResultsInVoid(int cl, int c, int i)
+  {
+    return false;
+  }
+
+
+  /**
    * Get the Java signature string for a given type
    *
    * @param cl the type

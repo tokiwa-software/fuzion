@@ -256,6 +256,7 @@ public class DFA extends ANY
         {
           res = access(cl, c, i, tvalue, args);
         }
+      site(cl, c, i).recordResult(res == null);
       return new Pair<>(res, _unit_);
     }
 
@@ -641,6 +642,7 @@ public class DFA extends ANY
                 }
             }
         }
+      site(cl, c, i).recordResult(r == null);
       return new Pair<>(r, _unit_);
     }
 
@@ -1065,6 +1067,14 @@ public class DFA extends ANY
         {
           return super.isIntrinsicUsed(name) && _usedIntrinsics_.contains(name);
         }
+
+
+        @Override
+        public boolean alwaysResultsInVoid(int cl, int c, int i)
+        {
+          return site(cl, c, i).alwaysResultsInVoid() || super.alwaysResultsInVoid(cl, c, i);
+        }
+
     };
   }
 

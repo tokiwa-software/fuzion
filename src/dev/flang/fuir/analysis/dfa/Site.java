@@ -29,6 +29,7 @@ package dev.flang.fuir.analysis.dfa;
 import java.util.TreeSet;
 
 import dev.flang.util.ANY;
+import dev.flang.util.List;
 
 
 /**
@@ -69,6 +70,12 @@ public class Site extends ANY implements Comparable<Site>
   TreeSet<Integer> _accesses = new TreeSet<>();
 
 
+  /**
+   * Results of analyzing this Site
+   */
+  private List<Boolean> results = new List<Boolean>();
+
+
   /*---------------------------  constructors  ---------------------------*/
 
 
@@ -82,6 +89,23 @@ public class Site extends ANY implements Comparable<Site>
     _i = i;
   }
 
+
+  /**
+   * This site is found to always only result in void.
+   */
+  public boolean alwaysResultsInVoid()
+  {
+    return !results.isEmpty() && results.stream().allMatch(x -> x);
+  }
+
+
+  /**
+   * Record result of an analyzis of this site.
+   */
+  public void recordResult(boolean isVoid)
+  {
+    results.add(isVoid);
+  }
 
 
   /**

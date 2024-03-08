@@ -519,7 +519,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     var stack = new Stack<VALUE>();
     var l = new List<RESULT>();
     int last_i = -1;
-    for (int i = 0; !containsVoid(stack) && _fuir.withinCode(c, i); i = i + _fuir.codeSizeAt(c, i))
+    for (int i = 0; !containsVoid(stack) && _fuir.withinCode(c, i) && !_fuir.alwaysResultsInVoid(cl, c, last_i); i = i + _fuir.codeSizeAt(c, i))
       {
         l.add(_processor.statementHeader(cl, c, i));
         l.add(process(cl, pre, stack, c, i));
