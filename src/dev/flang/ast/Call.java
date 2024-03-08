@@ -2613,6 +2613,7 @@ public class Call extends AbstractCall
         {
           var tf = tt.featureOfType();
           var ttf = tf.typeFeature(res);
+          res.resolveDeclarations(tf);
           var fo = findOnTarget(res, tf)._v1;
           var tfo = findOnTarget(res, ttf)._v1;
           var f = tfo == null ? null : tfo._feature;
