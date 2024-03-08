@@ -1897,7 +1897,7 @@ public class C extends ANY
   {
     var res1 = CNames.CURRENT;
     var res2 = _fuir.clazzIsRef(cl) ? res1 : res1.deref();
-    var res3 =  _fuir.lifeTime(cl, pre).maySurviveCall() ? res : res2.adrOf();
+    var res3 =  _fuir.lifeTime(cl, pre).maySurviveCall() ? res2 : res2.adrOf();
     return !_fuir.hasData(cl) ? CExpr.UNIT : res3;
   }
 
