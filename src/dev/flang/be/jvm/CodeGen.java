@@ -723,7 +723,8 @@ class CodeGen
                   && !preCalled                                                          // not calling pre-condition
                   && cc == cl                                                            // calling myself
                   && c != -1 && i != -1 && _jvm._tailCall.callIsTailCall(cl, c, i)       // as a tail call
-                  && _fuir.lifeTime(cl, pre).ordinal() <= FUIR.LifeTime.Call.ordinal())
+                  && !_fuir.lifeTime(cl, pre).maySurviveCall()
+                  )
                 { // then we can do tail recursion optimization!
 
                   // if present, store target to local #0
