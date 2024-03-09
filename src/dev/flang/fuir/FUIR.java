@@ -2174,19 +2174,15 @@ hw25 is
    */
   public void dumpCode(int cl, int c)
   {
-    String label = label(c);
+    String label = label(c) +  ":";
     for (var ix = 0; withinCode(c, ix); ix = ix + codeSizeAt(c, ix))
       {
-        if (label != null)
-          {
-            System.out.printf("%s:", label);
-            label = null;
-          }
-        System.out.printf("\t%d: %s\n", ix, codeAtAsString(cl, c, ix));
+        System.out.printf("%s\t%d: %s\n", label, ix, codeAtAsString(cl, c, ix));
+        label = "";
         switch (codeAt(c,ix))
           {
           case Match:
-            label = label(c) + "_" + ix;
+            var l = label(c) + "_" + ix;
             for (var cix = 0; cix < matchCaseCount(c, ix); cix++)
               {
                 var mc = matchCaseCode(c, ix, cix);
@@ -2194,13 +2190,14 @@ hw25 is
                 dumpCode(cl, mc);
                 System.out.println("\tgoto " + label);
               }
+            label = l + ":";
             break;
           default: break;
           }
       }
-    if (label != null)
+    if (label != "")
       {
-        System.out.printf("%s:\n", label);
+        System.out.println(label);
       }
   }
 
