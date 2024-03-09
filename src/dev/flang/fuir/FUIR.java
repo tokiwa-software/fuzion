@@ -2188,7 +2188,7 @@ hw25 is
                 var mc = matchCaseCode(c, ix, cix);
 
                 dumpCode(cl, mc);
-                System.out.println("\tgoto " + label);
+                System.out.println("\tgoto " + l);
               }
             label = l + ":";
             break;
