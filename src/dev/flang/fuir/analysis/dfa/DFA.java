@@ -209,7 +209,7 @@ public class DFA extends ANY
      */
     public Unit assign(int cl, boolean pre, int c, int i, Val tvalue, Val avalue)
     {
-      var res = access(cl, c, i, tvalue, new List<>(avalue));
+      var res = access(cl, pre, c, i, tvalue, new List<>(avalue));
       return _unit_;
     }
 
@@ -250,11 +250,11 @@ public class DFA extends ANY
       Val res = Value.UNIT;
       if (ccP != -1)
         {
-          res = call0(cl, tvalue, args, c, i, ccP, true, tvalue);
+          res = call0(cl, pre, tvalue, args, c, i, ccP, true, tvalue);
         }
       if (res != null && !_fuir.callPreconditionOnly(cl, c, i))
         {
-          res = access(cl, c, i, tvalue, args);
+          res = access(cl, pre, c, i, tvalue, args);
         }
       return new Pair<>(res, _unit_);
     }
@@ -264,6 +264,8 @@ public class DFA extends ANY
      * Analyze an access (call or write) of a feature.
      *
      * @param cl clazz id
+     *
+     * @param pre true iff interpreting cl's precondition, false for cl itself.
      *
      * @param c the code block to compile
      *
@@ -276,7 +278,7 @@ public class DFA extends ANY
      *
      * @return result value of the access
      */
-    Val access(int cl, int c, int i, Val tvalue, List<Val> args)
+    Val access(int cl, boolean pre, int c, int i, Val tvalue, List<Val> args)
     {
       var tc = _fuir.accessTargetClazz(cl, c, i);
       var cc0 = _fuir.accessedClazz  (cl, c, i);
@@ -296,7 +298,7 @@ public class DFA extends ANY
                   t != Value.UNDEFINED && _fuir.clazzAsValue(t._clazz) == tt)
                 {
                   found[0] = true;
-                  var r = access0(cl, c, i, t, args, cc, tvalue);
+                  var r = access0(cl, pre, c, i, t, args, cc, tvalue);
                   if (r != null)
                     {
                       resf[0] = resf[0] == null ? r : resf[0].joinVal(DFA.this, r);
@@ -327,7 +329,7 @@ public class DFA extends ANY
     /**
      * Helper routine for access (above) to perform a static access (cal or write).
      */
-    Val access0(int cl, int c, int i, Val tvalue, List<Val> args, int cc, Val original_tvalue /* NYI: ugly */)
+    Val access0(int cl, boolean pre, int c, int i, Val tvalue, List<Val> args, int cc, Val original_tvalue /* NYI: ugly */)
     {
       var cs = site(cl, c, i);
       cs._accesses.add(cc);
@@ -335,7 +337,7 @@ public class DFA extends ANY
       Val r;
       if (isCall)
         {
-          r = call0(cl, tvalue, args, c, i, cc, false, original_tvalue);
+          r = call0(cl, pre, tvalue, args, c, i, cc, false, original_tvalue);
         }
       else
         {
@@ -361,6 +363,8 @@ public class DFA extends ANY
      *
      * @param cl clazz id of clazz containing the call
      *
+     * @param pre true iff interpreting cl's precondition, false for cl itself.
+     *
      * @param stack the stack containing the current arguments waiting to be used
      *
      * @param c the code block to compile
@@ -369,16 +373,16 @@ public class DFA extends ANY
      *
      * @param cc clazz that is called
      *
-     * @param pre true to call the precondition of cl instead of cl.
+     * @param preCalled true to call the precondition of cl instead of cl.
      *
      * @return result values of the call
      */
-    Val call0(int cl, Val tvalue, List<Val> args, int c, int i, int cc, boolean pre, Val original_tvalue)
+    Val call0(int cl, boolean pre, Val tvalue, List<Val> args, int c, int i, int cc, boolean preCalled, Val original_tvalue)
     {
       // in case we access the value in a boxed target, unbox it first:
       tvalue = unboxTarget(tvalue, _fuir.accessTargetClazz(cl, c, i), cc);
       Val res = null;
-      switch (pre ? FUIR.FeatureKind.Routine : _fuir.clazzKind(cc))
+      switch (preCalled ? FUIR.FeatureKind.Routine : _fuir.clazzKind(cc))
         {
         case Abstract :
           Errors.error("Call to abstract feature encountered.",
@@ -389,7 +393,7 @@ public class DFA extends ANY
           {
             if (_fuir.clazzNeedsCode(cc))
               {
-                var ca = newCall(cc, pre, tvalue.value(), args, _call._env, _call);
+                var ca = newCall(cc, preCalled, tvalue.value(), args, _call._env, _call);
                 ca.addCallSiteLocation(c,i);
                 res = ca.result();
                 if (res != null && res != Value.UNIT && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)))
