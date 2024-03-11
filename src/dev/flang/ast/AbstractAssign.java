@@ -217,6 +217,26 @@ public abstract class AbstractAssign extends Expr
 
 
   /**
+   * During type inference: automatically unwrap values.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param outer the feature that contains this expression
+   */
+  public void unwrapValue(Resolution res, AbstractFeature outer)
+  {
+    if (CHECKS) check
+      (_assignedField != Types.f_ERROR || Errors.any());
+
+    if (resultTypeKnown(res))
+      {
+        _value = _value.unwrap(res, outer, _assignedField.resultType());
+      }
+  }
+
+
+  /**
    * @return Is the result type of this field already known?
    */
   private boolean resultTypeKnown(Resolution res)
