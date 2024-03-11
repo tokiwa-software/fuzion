@@ -407,7 +407,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    *
    * @param cc clazz that is called
    *
-   * @param stack the stack containing the C code of the args.
+   * @param stack the stack containing the code of the args.
    *
    * @param argCount the number of arguments.
    *
