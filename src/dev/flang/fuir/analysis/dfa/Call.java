@@ -205,11 +205,7 @@ public class Call extends ANY implements Comparable<Call>, Context
     if (!_returns)
       {
         _returns = true;
-        if (!_dfa._changed)
-          {
-            _dfa._changedSetBy = "Call.returns for " + this;
-          }
-        _dfa._changed = true;
+        _dfa.wasChanged(() -> "Call.returns for " + this);
       }
   }
 

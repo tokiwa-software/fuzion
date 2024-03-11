@@ -241,11 +241,7 @@ public class Env extends ANY implements Comparable<Env>
         if (Value.compare(oe, ne) != 0)
           {
             _effectValue = ne;
-            if (!_dfa._changed)
-              {
-                _dfa._changedSetBy = "effect.replace called: "+_dfa._fuir.clazzAsString(ecl);
-              }
-            _dfa._changed = true;
+            _dfa.wasChanged(() -> "effect.replace called: "+_dfa._fuir.clazzAsString(ecl));
           }
       }
     else if (_outer != null)

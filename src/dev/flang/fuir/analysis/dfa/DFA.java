@@ -940,8 +940,13 @@ public class DFA extends ANY
    * Flag to detect changes during current iteration of the fix-point algorithm.
    * If this remains false during one iteration we have reached a fix-point.
    */
-  boolean _changed = false;
-  String _changedSetBy;
+  private boolean _changed = false;
+
+
+  /**
+   * For debugging: lazy creation of a message why _changed was set to true.
+   */
+  private Supplier<String> _changedSetBy;
 
 
   /**
@@ -1149,10 +1154,11 @@ public class DFA extends ANY
           {
             _options.verbosePrintln(2,
                                     "DFA iteration #"+cnt+": --------------------------------------------------" +
-                                    (!_options.verbose(3) ? "" : _calls.size()+","+_instances.size()+"; "+_changedSetBy));
+                                    (_options.verbose(3) ? _calls.size() + "," + _instances.size() + "; " + _changedSetBy.get()
+                                                         : ""                                                                  ));
           }
         _changed = false;
-        _changedSetBy = "*** change not set ***";
+        _changedSetBy = () -> "*** change not set ***";
         iteration();
       }
     while (_changed && (true || cnt < 100) || false && (cnt < 50));
@@ -1168,6 +1174,29 @@ public class DFA extends ANY
       }
     _reportResults = true;
     iteration();
+  }
+
+
+  /**
+   * Set flag _changed to record the fact that the current iteration has not
+   * reached a fix point yet.
+   *
+   * @param by in case _changed was not set yet, by is used to procude a message
+   * why we have not reached a fix point yet.
+   */
+  void wasChanged(Supplier<String> by)
+  {
+    if (!_changed)
+      {
+        if (SHOW_STACK_ON_CHANGE)
+          {
+            var msg = by.get();
+            System.out.println(msg);
+            Thread.dumpStack();
+          }
+        _changedSetBy = by;
+        _changed = true;
+      }
   }
 
 
