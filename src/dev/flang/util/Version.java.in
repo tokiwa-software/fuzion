@@ -50,6 +50,12 @@ public class Version extends ANY
 
 
   /**
+   * The required JDK version, e.g., "21".
+   */
+  public static final String JAVA_VERSION = "@@JAVA_VERSION@@";
+
+
+  /**
    * The git hash code of the sources.
    */
   public static final String GIT_HASH = "@@GIT_HASH@@";

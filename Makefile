@@ -24,7 +24,8 @@
 # -----------------------------------------------------------------------
 
 JAVA = java
-JAVAC = javac -encoding UTF8 -source 21
+JAVA_VERSION = 21
+JAVAC = javac -encoding UTF8 -source $(JAVA_VERSION)
 FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SRC = $(FZ_SRC)/src
 BUILD_DIR = ./build
@@ -438,6 +439,7 @@ $(JAVA_FILE_UTIL_VERSION): $(FZ_SRC)/version.txt $(JAVA_FILE_UTIL_VERSION_IN)
 	mkdir -p $(@D)
 	cat $(JAVA_FILE_UTIL_VERSION_IN) \
           | sed "s^@@VERSION@@^$(VERSION)^g" \
+          | sed "s^@@JAVA_VERSION@@^$(JAVA_VERSION)^g" \
           | sed "s^@@REPO_PATH@@^$(dir $(abspath $(lastword $(MAKEFILE_LIST))))^g" \
           | sed "s^@@GIT_HASH@@^`cd $(FZ_SRC); echo -n \`git rev-parse HEAD\` \`git diff-index --quiet HEAD -- || echo with local changes\``^g" >$@
 ifeq ($(FUZION_REPRODUCIBLE_BUILD),true)
