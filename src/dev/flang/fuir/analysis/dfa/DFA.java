@@ -28,10 +28,13 @@ package dev.flang.fuir.analysis.dfa;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+
+import java.util.function.Supplier;
 
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.SpecialClazzes;
@@ -404,23 +407,48 @@ public class DFA extends ANY
                   }
                 // check if target value of new call ca causes current _call's instance to escape.
                 var or = _fuir.clazzOuterRef(cc);
-                if (or != -1                         &&     // outer ref present since no outer ref implies no target value is passed to ca
-                    _fuir.clazzFieldIsAdrOfValue(or) &&     // outer ref is adr, otherwise target is passed by value (primitive type like u32)
-                    (tvalue == _call._instance              // target is current instance, so it may escape
-                     ||
-                     original_tvalue instanceof EmbeddedValue ev &&
-                     ev._instance == _call._instance        // target is embedded in current instance, so it is kept alive by a reference (at least in the C backend)
-                     ) &&
-                    _fuir.clazzKind(cl) == FUIR.FeatureKind.Routine &&  // NYI: CLEANUP: Better check that we are not analysing cl's precondition,
-                                                                        // but we currently do not have this information here.
-                    !_tailCall.callIsTailCall(cl,c,i)       // a tail call does not cause the target to escape
-                                                            // NYI: CLEANUP: It should be sufficient to check that tvalue
-                                                            // is not an outer ref embedded in call._instance.
+                if (original_tvalue instanceof EmbeddedValue ev && ev._instance == _call._instance && // escapes(_call._cc,_call._pre))
+                    (ca._pre ? _escapesPre : _escapes).contains(ca._cc) &&
+                    (or != -1) &&
+                    _fuir.clazzFieldIsAdrOfValue(or)      // outer ref is adr, otherwise target is passed by value (primitive type like u32)
                     )
                   {
                     _call.escapes();
                   }
+                /*
+                else if (or != -1                         &&     // outer ref present since no outer ref implies no target value is passed to ca
+                    _fuir.clazzFieldIsAdrOfValue(or) &&     // outer ref is adr, otherwise target is passed by value (primitive type like u32)
+                    (tvalue == _call._instance       &&     // target is current instance, so it may escape
+                     ca.outerEscapes()
+                     ||
+                     original_tvalue instanceof EmbeddedValue ev &&
+                     ev._instance == _call._instance        // target is embedded in current instance, so it is kept alive by a reference (at least in the C backend)
+                     )
+                    &&
+                    (pre || !_tailCall.callIsTailCall(cl,c,i))       // a tail call does not cause the target to escape
+                                                            // NYI: CLEANUP: It should be sufficient to check that tvalue
+                                                            // is not an outer ref embedded in call._instance.
+                    )
+                  {
+                    if (pre)
+                      {
+                        if (false)
+                        throw new Error("NYI: BUG #2695: instance must not escape precondition, need proper error handling: " +
+                                        _fuir.codeAtAsPos(c,i).show());
+                      }
+                    else
+                      {
+                        _call.escapes();
+                      }
+                      } */
                 tempEscapes(cl, c, i, original_tvalue, _fuir.clazzOuterRef(cc));
+                if (or != -1                            &&     // outer ref present since no outer ref implies no target value is passed to ca
+                    _fuir.clazzFieldIsAdrOfValue(or)    &&     // outer ref is adr, otherwise target is passed by value (primitive type like u32)
+                    ca.outerRefValuesContain(tvalue)       // target is current instance, so it may escape
+                    )
+                  {
+                    _call.outerDoesEscape();
+                  }
                 if (_reportResults && _options.verbose(9))
                   {
                     System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " + ca);
@@ -1027,7 +1055,7 @@ public class DFA extends ANY
         private boolean currentEscapes(int cl, boolean pre)
         {
           return (pre ? _escapesPre : _escapes).contains(cl) ||
-            !pre && _fuir.clazzResultField(cl)==-1 /* <==> _fuir.isConstructor(cl) */;
+            !pre && _fuir.clazzResultField(cl)==-1 /* <==> _fuir.isConstructor(cl), constructor call return current as result, so it always escapes */;
         }
 
 
@@ -1267,13 +1295,10 @@ public class DFA extends ANY
    */
   void escapes(int cc, boolean pre)
   {
-    if (pre)
+    var escapeSet = pre ? _escapesPre : _escapes;
+    if (escapeSet.add(cc))
       {
-        _escapesPre.add(cc);
-      }
-    else
-      {
-        _escapes.add(cc);
+        wasChanged(() -> "Esacpes: " + (pre ? "precondition of " : "") + _fuir.clazzAsString(cc));
       }
   }
 
@@ -1303,7 +1328,11 @@ public class DFA extends ANY
         )
       {
         var cp = new CodePos(ev._cl, ev._code, ev._index);
-        _escapesCode.add(cp);
+        if (!_escapesCode.contains(cp))
+          {
+            _escapesCode.add(cp);
+            wasChanged(() -> "code escapes: "+_fuir.codeAtAsString(cl,c,i));
+          }
       }
   }
 
@@ -1821,11 +1850,7 @@ public class DFA extends ANY
             {
               cl._dfa._defaultEffects.put(ecl, new_e);
               cl._dfa._defaultEffectContexts.put(ecl, cl);
-              if (!cl._dfa._changed)
-                {
-                  cl._dfa._changedSetBy = "effect.default called: "+cl._dfa._fuir.clazzAsString(cl._cc);
-                }
-              cl._dfa._changed = true;
+              cl._dfa.wasChanged(()->"effect.default called: "+cl._dfa._fuir.clazzAsString(cl._cc));
             }
           return Value.UNIT;
         });
@@ -2011,11 +2036,7 @@ public class DFA extends ANY
     if (old_e == null || Value.compare(old_e, new_e) != 0)
       {
         _defaultEffects.put(ecl, new_e);
-        if (!_changed)
-          {
-            _changedSetBy = "effect.replace called: " + _fuir.clazzAsString(ecl);
-          }
-        _changed = true;
+        wasChanged(()->"effect.replace called: " + _fuir.clazzAsString(ecl));
       }
   }
 
@@ -2097,12 +2118,7 @@ public class DFA extends ANY
       {
         _instances.put(r, r);
         e = r;
-        if (SHOW_STACK_ON_CHANGE && !_changed) Thread.dumpStack();
-        if (!_changed)
-          {
-            _changedSetBy = "DFA.newInstance for "+_fuir.clazzAsString(r._clazz);
-          }
-        _changed = true;
+        wasChanged(()->"DFA.newInstance for "+_fuir.clazzAsString(r._clazz));
       }
     return e;
   }
@@ -2165,12 +2181,7 @@ public class DFA extends ANY
         _newCalls.add(r);
         _calls.put(r,r);
         e = r;
-        if (SHOW_STACK_ON_CHANGE && !_changed) { System.out.println("new call: "+r); Thread.dumpStack();}
-        if (!_changed)
-          {
-            _changedSetBy = "DFA.newCall to "+e;
-          }
-        _changed = true;
+        wasChanged(()->"DFA.newCall to "+r);
         analyzeNewCall(r);
       }
     return e;
@@ -2253,14 +2264,24 @@ public class DFA extends ANY
       {
         _envs.put(newEnv, newEnv);
         e = newEnv;
-        if (SHOW_STACK_ON_CHANGE && !_changed) { System.out.println("new env: " + e); Thread.dumpStack();}
-        if (!_changed)
-          {
-            _changedSetBy = "DFA.newEnv for " + e;
-          }
-        _changed = true;
+        wasChanged(() -> "DFA.newEnv for " + newEnv);
       }
     return e;
+  }
+
+
+  void wasChanged(Supplier<String> by)
+  {
+    if (!_changed)
+      {
+        var msg = by.get();
+        if (SHOW_STACK_ON_CHANGE)
+          {
+            System.out.println(msg); Thread.dumpStack();
+          }
+        _changedSetBy = msg;
+        _changed = true;
+      }
   }
 
 }

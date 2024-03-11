@@ -154,6 +154,20 @@ public class Call extends ANY implements Comparable<Call>, Context
     _env = env;
     _context = context;
     _instance = dfa.newInstance(cc, this);
+
+    if (!pre && dfa._fuir.clazzResultField(cc)==-1) /* <==> _fuir.isConstructor(cl) */
+      {
+        /* a constructor call returns current as result, so it always escapes together with all outer references! */
+        dfa.escapes(cc, pre);
+        var or = dfa._fuir.clazzOuterRef(cc);
+        while (or != -1)
+          {
+            var orr = dfa._fuir.clazzResultClazz(or);
+            dfa.escapes(orr,false);
+            or = dfa._fuir.clazzOuterRef(orr);
+          }
+      }
+
   }
 
 
@@ -390,11 +404,49 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   void escapes()
   {
+    if (PRECONDITIONS) require
+      (_dfa._fuir.clazzKind(_cc) == FUIR.FeatureKind.Routine);
+
     if (!_escapes)
       {
         _escapes = true;
+        // we currently store for _cc/_pre, so we accumulate different call
+        // contexts to the same clazz. We might make this more detailed and
+        // record this local to the call or use part of the call's context like
+        // the target value to be more accurate.
         _dfa.escapes(_cc, _pre);
       }
+  }
+
+  boolean _outerEscapes = false;
+
+
+  void outerDoesEscape()
+  {
+    if (!_outerEscapes)
+      {
+        _outerEscapes = true;
+        _dfa.wasChanged(() -> "outerDoesEscape for " + this);
+      }
+  }
+
+  boolean outerEscapes()
+  {
+    return _outerEscapes;
+  }
+
+
+
+  boolean outerRefValuesContain(Val v)
+  {
+    var or = _dfa._fuir.clazzOuterRef(_cc);
+    if (or != -1 &&
+        _dfa._fuir.clazzFieldIsAdrOfValue(or) &&     // outer ref is adr, otherwise target is passed by value (primitive type like u32)
+        v.value()._clazz == _dfa._fuir.clazzResultClazz(or))
+      {
+        return true;
+      }
+    return false;
   }
 
 
