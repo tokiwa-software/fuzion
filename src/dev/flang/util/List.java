@@ -121,8 +121,6 @@ public class List<T>
    * @param o
    *
    * @param l
-   *
-   * @param o3
    */
   public List(T o, List<T> l)
   {
@@ -150,7 +148,7 @@ public class List<T>
   /**
    * Constructor that adds elements of given List.
    *
-   * @param i
+   * @param l
    */
   public List(List<T> l)
   {

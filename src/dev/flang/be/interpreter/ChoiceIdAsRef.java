@@ -123,7 +123,7 @@ public class ChoiceIdAsRef extends Value
   /**
    * get returns the id corresponding to a result of get(clazz,int).
    *
-   * @param id the id stored in the returned value
+   * @param idAsRef the id stored in the returned value
    *
    * @return the id stored in idAsRef, -1 if this is not an id but a normal ref.
    */

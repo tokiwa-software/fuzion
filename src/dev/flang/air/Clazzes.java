@@ -250,7 +250,7 @@ public class Clazzes extends ANY
    *
    * @param actualType the type of the clazz, must be free from generics
    *
-   * @param clazz the runtime clazz of the outer feature of
+   * @param outer the runtime clazz of the outer feature of
    * actualType.featureOfType.
    *
    * @return the existing or newly created Clazz that represents actualType

@@ -209,7 +209,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @param o
    *
-   * @param ref true iff this type should be a ref type, otherwise it will be a
+   * @param refOrVal true iff this type should be a ref type, otherwise it will be a
    * value type.
    */
   public UnresolvedType(HasSourcePosition pos, String n, List<AbstractType> g, AbstractType o, RefOrVal refOrVal)
@@ -227,7 +227,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @param o
    *
-   * @param ref true iff this type should be a ref type, otherwise it will be a
+   * @param refOrVal true iff this type should be a ref type, otherwise it will be a
    * value type.
    */
   public UnresolvedType(HasSourcePosition pos, String n, List<AbstractType> g, AbstractType o, RefOrVal refOrVal, boolean fixOuterThisType)
@@ -524,7 +524,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
-   * @param feat the outer feature this type is declared in. Lookup of
+   * @param outerfeat the outer feature this type is declared in. Lookup of
    * unqualified types will happen in this feature.
    */
   AbstractType resolve(Resolution res, AbstractFeature outerfeat)
@@ -634,7 +634,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
-   * @param feat the outer feature this type is declared in. Lookup of
+   * @param outerfeat the outer feature this type is declared in. Lookup of
    * unqualified types will happen in this feature.
    */
   AbstractType tryResolve(Resolution res, AbstractFeature outerfeat)

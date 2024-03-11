@@ -89,7 +89,7 @@ public class Label extends Expr
    *
    * For a Label, this will set this label.
    *
-   * @param bw the writer to write the bytecode to.
+   * @param ba the writer to write the bytecode to.
    *
    * @param cf the class file we are generating, used for cpool indices.
    */

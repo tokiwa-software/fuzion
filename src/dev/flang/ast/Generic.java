@@ -63,8 +63,6 @@ public class Generic extends ANY implements Comparable<Generic>
    * parameter feature.
    *
    * @param typeParameter the type parameter this is made from
-   *
-   * @param index the index in the formal generics declaration, starting at 0
    */
   public Generic(AbstractFeature typeParameter)
   {

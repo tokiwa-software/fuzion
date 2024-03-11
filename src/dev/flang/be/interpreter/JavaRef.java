@@ -49,10 +49,6 @@ public class JavaRef extends Value
 
   /**
    * Constructor
-   *
-   * @param clazz
-   *
-   * @param outer
    */
   public JavaRef(Object javaRef)
   {

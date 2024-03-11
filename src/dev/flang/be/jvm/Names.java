@@ -294,8 +294,6 @@ public class Names extends ANY implements ClassFileConstants
      *
      * Ex. Feature "i32.prefix -"  will result in  "i32__prefix_wm"
      *
-     * @param f a feature id
-     *
      * @param sb a StringBuilder
      */
     private void clazzMangledName(int cl, StringBuilder sb)

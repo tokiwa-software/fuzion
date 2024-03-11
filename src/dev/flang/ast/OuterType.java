@@ -61,7 +61,7 @@ public class OuterType extends UnresolvedType
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
-   * @param feat the outer feature this type is declared in, used
+   * @param outerfeat the outer feature this type is declared in, used
    * for resolution of generic parameters etc.
    */
   AbstractType resolve(Resolution res, AbstractFeature outerfeat)

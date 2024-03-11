@@ -54,8 +54,6 @@ public class u32Value extends Value
 
   /**
    * Constructor
-   *
-   * @param i
    */
   public u32Value(int val)
   {

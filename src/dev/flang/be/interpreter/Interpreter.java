@@ -196,7 +196,7 @@ public class Interpreter extends ANY
   /**
    * Run the application with the given args
    *
-   * @param args -- NYI: command line args not supported yet
+   *  param args -- NYI: command line args not supported yet
    */
   public void run()
   {
@@ -582,7 +582,7 @@ public class Interpreter extends ANY
    *
    * @param staticClazz the static clazz of the current object of the call
    *
-   * @param target_cur the current object to evaluate the target of the call.
+   * @param cur the current object to evaluate the target of the call.
    *
    * @return the evaluated arguments
    */

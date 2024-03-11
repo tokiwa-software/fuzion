@@ -1007,7 +1007,7 @@ class LibraryOut extends ANY
   /**
    * Write source code position
    *
-   * @param post the position
+   * @param pos the position
    */
   void pos(SourcePosition pos)
   {

@@ -58,8 +58,6 @@ public abstract class AbstractCall extends Expr
 
   /**
    * Constructor
-   *
-   * @param pos the sourcecode position, used for error messages.
    */
   public AbstractCall()
   {

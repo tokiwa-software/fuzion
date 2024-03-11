@@ -66,8 +66,6 @@ public class BoolConst extends Constant
 
   /**
    * Constructor
-   *
-   * @param s
    */
   private BoolConst(boolean value)
   {

@@ -537,7 +537,7 @@ class CodeGen
    * interface with a dynamic function and add implementations to each actual
    * target.
    *
-   * @param cc a feature whose outer feature is a ref that has several actual instances.
+   * @param cc0 a feature whose outer feature is a ref that has several actual instances.
    *
    * @return the invokeinterface expression that performs the call
    */

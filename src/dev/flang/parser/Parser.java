@@ -1578,7 +1578,7 @@ actualArgs  : actualsList
    * Does the current symbol end a list of space separated actual arguments to a
    * call.
    *
-   * @param in the indentation used for the actuals, null if none.
+   * @param atMinIndent the indentation used for the actuals, null if none.
    *
    * @return true if the next symbol ends actual arguments or in!=null and the
    * next symbol is not properly indented.
@@ -3220,8 +3220,6 @@ anonymous   : "ref"
 
   /**
    * Parse qualThis
-   *
-   * @param asType select to parse this as a list of names or as a Type.
    *
    * @return non-empty list of names in the qualifier, excluding "this".
    *

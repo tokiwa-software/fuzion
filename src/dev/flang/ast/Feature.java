@@ -456,10 +456,6 @@ public class Feature extends AbstractFeature
    * @param t the result type, null in case it is inferred from initialValue
    *
    * @param qname the name of this feature
-   *
-   * @param initialValue the initial value used for type inference in case t == null
-   *
-   * @param outerOfInitialValue the feature that contains the expression initialValue
    */
   Feature(SourcePosition pos,
           Visi v,
@@ -594,7 +590,7 @@ public class Feature extends AbstractFeature
    *
    * @param r the result type
    *
-   * @param qname the name of this feature
+   * @param qpname the name of this feature
    *
    * @param a the arguments
    *

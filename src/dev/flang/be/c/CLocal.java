@@ -41,8 +41,6 @@ class CLocal extends CIdent
 
   /**
    * Create a C expression from a plain identifier
-   *
-   * @return the resulting expression
    */
   CLocal(String name)
   {

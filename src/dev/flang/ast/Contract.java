@@ -71,12 +71,6 @@ public class Contract
 
   /**
    * Constructor
-   *
-   * @param r
-   *
-   * @param e
-   *
-   * @param i
    */
   public Contract(List<Cond> r,
                   List<Cond> e)

@@ -91,7 +91,7 @@ public class Pretty extends ANY
    *
    * @param l a lexer
    *
-   * @param a mapping from byte indices in l to tokens.
+   * @return a mapping from byte indices in l to tokens.
    */
   private Intervals<Lexer.Token> intervals(Lexer l)
   {

@@ -51,8 +51,6 @@ public class QualThisType extends UnresolvedType
   /**
    * Create the type corresponding to "<qual>.this".
    *
-   * @param pos the source position
-   *
    * @param qual the qualifier
    */
   public QualThisType(List<ParsedName> qual)

@@ -83,7 +83,7 @@ public class COptions extends FuzionOptions
 
   /**
    * Constructor initializing fields as given.
-   * @param _keepGeneratedCode_
+   * @param keepGeneratedCode
    */
   public COptions(FuzionOptions fo, String binaryName, boolean useBoehmGC, boolean Xdfa, String cCompiler, String cFlags, boolean keepGeneratedCode)
   {

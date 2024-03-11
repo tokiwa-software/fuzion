@@ -251,9 +251,9 @@ public class Loop extends ANY
    *
    * @param untilCond condition to exit loop successfully, null for false.
    *
-   * @param successBlock block to execute on successful loop exit, null for none.
+   * @param sb block to execute on successful loop exit, null for none.
    *
-   * @param elseBlock block to execute on unsuccessful loop exit, null for none.
+   * @param eb0 block to execute on unsuccessful loop exit, null for none.
    */
   public Loop(SourcePosition pos,
               List<Feature> iv,
