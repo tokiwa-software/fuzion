@@ -541,7 +541,7 @@ public class Interpreter extends ANY
     else if (e instanceof Check c)
       {
         // NYI: check not supported yet
-        // System.err.println("NYI: "+c);
+        // say_err("NYI: "+c);
 
         result = Value.NO_VALUE;
       }

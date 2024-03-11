@@ -332,7 +332,7 @@ public class Fuzion extends Tool
             var data = fe.module().data(n);
             if (data != null)
               {
-                System.out.println(" + " + p);
+                say(" + " + p);
                 try (var os = Files.newOutputStream(p))
                   {
                     Channels.newChannel(os).write(data);

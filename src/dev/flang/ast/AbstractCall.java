@@ -77,7 +77,7 @@ public abstract class AbstractCall extends Expr
   public abstract boolean isInheritanceCall();
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
-    System.err.println("Called "+this.getClass()+".visit");
+    say_err("Called "+this.getClass()+".visit");
     return this;
   }
 

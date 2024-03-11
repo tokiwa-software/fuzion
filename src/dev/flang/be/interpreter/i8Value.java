@@ -63,8 +63,8 @@ public class i8Value extends Value
       (-0x8000 <= val && val <= 0x7fff);
 
     _val = val;
-    if (val == 210)  { System.err.println("val is "+val); Thread.dumpStack(); }
-    if (val == -6) { System.err.println("val is "+val); Thread.dumpStack(); }
+    if (val == 210)  { say_err("val is "+val); Thread.dumpStack(); }
+    if (val == -6) { say_err("val is "+val); Thread.dumpStack(); }
   }
 
 
@@ -108,7 +108,7 @@ public class i8Value extends Value
     slot.container.nonrefs[slot.offset] = _val;
     if (slot.container.nonrefs[slot.offset] == 210)
       {
-        System.err.println("stored i8 "+this+" in "+slot.container+" at "+slot.offset+" result is "+slot.container.nonrefs[slot.offset]);
+        say_err("stored i8 "+this+" in "+slot.container+" at "+slot.offset+" result is "+slot.container.nonrefs[slot.offset]);
       }
   }
 

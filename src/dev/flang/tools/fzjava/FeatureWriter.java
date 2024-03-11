@@ -86,7 +86,7 @@ class FeatureWriter extends ANY
           {
             if (fzj._verbose > 0)
               {
-                System.out.println(" + " + fzp);
+                say(" + " + fzp);
               }
             Files.write(fzp, data.getBytes(StandardCharsets.UTF_8));
           }

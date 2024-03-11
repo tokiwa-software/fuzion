@@ -747,6 +747,39 @@ public class ANY
   }
 
 
+  /**
+   * Utility feature say to print str to stdout
+   */
+  public static void say(String str)
+  {
+    System.out.println(str);
+  }
+
+  /**
+   * Utility feature say to print new line to stdout
+   */
+  public static void say()
+  {
+    say(System.lineSeparator());
+  }
+
+  /**
+   * Utility feature say_err to print str to stderr
+   */
+  public static void say_err(String str)
+  {
+    System.err.println(str);
+  }
+
+  /**
+   * Utility feature say_err to print new line to stderr
+   */
+  public static void say_err()
+  {
+    say_err(System.lineSeparator());
+  }
+
+
   /* ----------------------------------------------------------------------------- */
 
 
@@ -781,7 +814,7 @@ public class ANY
        {
          for (var e : _counts_.entrySet())
            {
-             System.out.println("ALLOCS: "+e.getValue()+"\t: "+e.getKey());
+             say("ALLOCS: "+e.getValue()+"\t: "+e.getKey());
            }
        }
                   ));

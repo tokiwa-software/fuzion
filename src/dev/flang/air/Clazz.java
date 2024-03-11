@@ -76,7 +76,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /*-----------------------------  statics  -----------------------------*/
 
 
-  //  static int counter;  {counter++; if ((counter&(counter-1))==0) System.out.println("######################"+counter+" "+this.getClass()); }
+  //  static int counter;  {counter++; if ((counter&(counter-1))==0) say("######################"+counter+" "+this.getClass()); }
   // { if ((counter&(counter-1))==0) Thread.dumpStack(); }
 
 

@@ -467,12 +467,12 @@ public class Lexer extends SourceFile
                   }
                 if (cp2 > cp+1)
                   {
-                    System.out.println("* " + codePointAsString(cp) + " .. " + codePointAsString(cp2));
+                    say("* " + codePointAsString(cp) + " .. " + codePointAsString(cp2));
                     cp = cp2;
                   }
                 else
                   {
-                    System.out.println("* " + codePointAsString(cp));
+                    say("* " + codePointAsString(cp));
                   }
               }
             else
@@ -483,7 +483,7 @@ public class Lexer extends SourceFile
       }
     if (!got.isEmpty())
       {
-        System.out.println("* Unicode " + Errors.plural(got.size(), "category") + " " +
+        say("* Unicode " + Errors.plural(got.size(), "category") + " " +
                            got.stream().map(x -> "`" + x + "`").collect(Collectors.joining (", ")));
       }
   }
@@ -512,7 +512,7 @@ public class Lexer extends SourceFile
                {
                  if (kind(cp) == K_WS)
                    {
-                     System.out.println(codePointAsString(cp));
+                     say(codePointAsString(cp));
                    }
                }
            }
@@ -527,11 +527,11 @@ public class Lexer extends SourceFile
                {
                  System.out.print("`"+k+"` ");
                }
-             System.out.println();
+             say();
            }
          else if (x.equals("-stringLiteralEscapes"))
            {
-             System.out.println("""
+             say("""
 [options=\"header\",cols=\"1,1\"]
 |====
    | escape sequence | resulting code point
@@ -542,12 +542,12 @@ public class Lexer extends SourceFile
                  var result = StringLexer.escapeChars[i][1];
                  if (c != '\n'  && c != '\r')
                    {
-                     System.out.println("  | `\\" + (char) c + "` | " + codePointAsString(result));
+                     say("  | `\\" + (char) c + "` | " + codePointAsString(result));
                    }
                }
-             System.out.println("  | `\\` + " + codePointAsString('\n') + " | _nothing_");
-             System.out.println("  | `\\` + " + codePointAsString('\r') + " + " + codePointAsString('\n') + " | _nothing_");
-             System.out.println("|====");
+             say("  | `\\` + " + codePointAsString('\n') + " | _nothing_");
+             say("  | `\\` + " + codePointAsString('\r') + " + " + codePointAsString('\n') + " | _nothing_");
+             say("|====");
            }
 
        });

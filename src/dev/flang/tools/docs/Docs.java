@@ -145,7 +145,7 @@ public class Docs
   {
     if (args.length < 1)
       {
-        System.err.println(usage());
+        say_err(usage());
         System.exit(1);
       }
 
@@ -187,7 +187,7 @@ public class Docs
         String line;
         while ((line = br.readLine()) != null)
           {
-            System.out.println(line);
+            say(line);
           }
       }
   }

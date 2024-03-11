@@ -324,11 +324,11 @@ public class Call extends ANY implements Comparable<Call>, Context
   public String showWhy()
   {
     var indent = _context.showWhy();
-    System.out.println(indent + "  |");
-    System.out.println(indent + "  +- performs call " + this);
+    say(indent + "  |");
+    say(indent + "  +- performs call " + this);
     if (_codeblockId != -1 && _codeblockIndex != -1)
       {
-        System.out.println(_dfa._fuir.codeAtAsPos(_codeblockId,_codeblockIndex).show());
+        say(_dfa._fuir.codeAtAsPos(_codeblockId,_codeblockIndex).show());
       }
     return indent + "  ";
   }
