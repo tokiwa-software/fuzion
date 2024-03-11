@@ -414,37 +414,6 @@ public class Call extends ANY implements Comparable<Call>, Context
       }
   }
 
-  boolean _outerEscapes = false;
-
-
-  void outerDoesEscape()
-  {
-    if (!_outerEscapes)
-      {
-        _outerEscapes = true;
-        _dfa.wasChanged(() -> "outerDoesEscape for " + this);
-      }
-  }
-
-  boolean outerEscapes()
-  {
-    return _outerEscapes;
-  }
-
-
-
-  boolean outerRefValuesContain(Val v)
-  {
-    var or = _dfa._fuir.clazzOuterRef(_cc);
-    if (or != -1 &&
-        _dfa._fuir.clazzFieldIsAdrOfValue(or) &&     // outer ref is adr, otherwise target is passed by value (primitive type like u32)
-        v.value()._clazz == _dfa._fuir.clazzResultClazz(or))
-      {
-        return true;
-      }
-    return false;
-  }
-
 
 }
 
