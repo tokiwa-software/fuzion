@@ -30,6 +30,16 @@ test_tailrecursion =>
 
   # a tailrecursion that cannot be optimized
   #
+  # we check that the instance of `f` is not reused if it is made accessible
+  # from outside via an inner instance.
+  #
+  # Note that we could try to force a stack overflow here by setting the termination
+  # condition `a < 200` to something like `a < 10000000`. This works for the JVM backend,
+  # but the C backend currently allocates instances of `f` on the heap such that the C
+  # compiler can still optimize tail recursion and we do not get a stack overflow. Also,
+  # would be a little weird to have a test that _on success_ would result in a stack
+  # overflow...
+  #
   case_tailrec_negative =>
 
     m := mut (option Trick nil)
@@ -47,14 +57,15 @@ test_tailrecursion =>
         trick : Trick is
           get_a => a
 
-      if a % 11 = 3 then hehe
-      if a < 20     then f a+1
+      if a %  11 = 3 then hehe
+      if a < 200     then f a+1
 
     f 3
     say "tailrec1"
     r := m.get.get.get_a
-    say (if r=14 then "PASS: $r"
-                 else "FAIL: $r != 14")
+    exp := 190
+    say (if r=exp then "PASS: $r"
+                  else "FAIL: $r != exp")
 
   case_tailrec_negative
 
@@ -80,7 +91,7 @@ test_tailrecursion =>
         m <- trick a
 
       if a %  1000000 = 3 then hehe
-      if a < 10000000    then f a+1
+      if a < 10000000     then f a+1
 
     f 3
     say "tailrec_positive"
