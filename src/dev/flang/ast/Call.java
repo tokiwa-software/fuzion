@@ -786,8 +786,8 @@ public class Call extends AbstractCall
       {
         res.resolveDeclarations(targetFeature);
         var found = findOnTarget(res, targetFeature);
-        var fos = found._v0;
-        var fo  = found._v1;
+        var fos = found.v0();
+        var fo  = found.v1();
         if (fo != null &&
             !isSpecialWrtArgs(fo._feature) &&
             fo._feature != Types.f_ERROR &&
@@ -2614,8 +2614,8 @@ public class Call extends AbstractCall
           var tf = tt.featureOfType();
           var ttf = tf.typeFeature(res);
           res.resolveDeclarations(tf);
-          var fo = findOnTarget(res, tf)._v1;
-          var tfo = findOnTarget(res, ttf)._v1;
+          var fo = findOnTarget(res, tf).v1();
+          var tfo = findOnTarget(res, ttf).v1();
           var f = tfo == null ? null : tfo._feature;
           if (f != null
               && f.outer() != null
