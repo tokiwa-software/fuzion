@@ -408,7 +408,8 @@ public class DFA extends ANY
                 if (original_tvalue instanceof EmbeddedValue ev && ev._instance == _call._instance &&
                     (ca._pre ? _escapesPre : _escapes).contains(ca._cc) &&
                     (or != -1) &&
-                    _fuir.clazzFieldIsAdrOfValue(or)      // outer ref is adr, otherwise target is passed by value (primitive type like u32)
+                    _fuir.clazzFieldIsAdrOfValue(or) &&   // outer ref is adr, otherwise target is passed by value (primitive type like u32)
+                    !pre                                  // NYI: BUG: #2695: precondition instance should never escape
                     )
                   {
                     _call.escapes();
