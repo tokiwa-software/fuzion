@@ -48,25 +48,25 @@ public class Site extends ANY implements Comparable<Site>
   /**
    * The site's clazz' id.
    */
-  int _cl;
+  final int _cl;
 
 
   /**
    * The site's code block.
    */
-  int _c;
+  final int _c;
 
 
   /**
    * The index in _c.
    */
-  int _i;
+  final int _i;
 
 
   /**
    * set of features accessed at this site.
    */
-  TreeSet<Integer> _accesses = new TreeSet<>();
+  final TreeSet<Integer> _accesses = new TreeSet<>();
 
 
   /*---------------------------  constructors  ---------------------------*/
