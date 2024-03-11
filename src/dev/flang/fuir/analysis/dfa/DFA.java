@@ -40,8 +40,6 @@ import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
-import dev.flang.fuir.analysis.TailCall;
-
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
@@ -407,7 +405,7 @@ public class DFA extends ANY
                   }
                 // check if target value of new call ca causes current _call's instance to escape.
                 var or = _fuir.clazzOuterRef(cc);
-                if (original_tvalue instanceof EmbeddedValue ev && ev._instance == _call._instance && // escapes(_call._cc,_call._pre))
+                if (original_tvalue instanceof EmbeddedValue ev && ev._instance == _call._instance &&
                     (ca._pre ? _escapesPre : _escapes).contains(ca._cc) &&
                     (or != -1) &&
                     _fuir.clazzFieldIsAdrOfValue(or)      // outer ref is adr, otherwise target is passed by value (primitive type like u32)
@@ -415,40 +413,7 @@ public class DFA extends ANY
                   {
                     _call.escapes();
                   }
-                /*
-                else if (or != -1                         &&     // outer ref present since no outer ref implies no target value is passed to ca
-                    _fuir.clazzFieldIsAdrOfValue(or) &&     // outer ref is adr, otherwise target is passed by value (primitive type like u32)
-                    (tvalue == _call._instance       &&     // target is current instance, so it may escape
-                     ca.outerEscapes()
-                     ||
-                     original_tvalue instanceof EmbeddedValue ev &&
-                     ev._instance == _call._instance        // target is embedded in current instance, so it is kept alive by a reference (at least in the C backend)
-                     )
-                    &&
-                    (pre || !_tailCall.callIsTailCall(cl,c,i))       // a tail call does not cause the target to escape
-                                                            // NYI: CLEANUP: It should be sufficient to check that tvalue
-                                                            // is not an outer ref embedded in call._instance.
-                    )
-                  {
-                    if (pre)
-                      {
-                        if (false)
-                        throw new Error("NYI: BUG #2695: instance must not escape precondition, need proper error handling: " +
-                                        _fuir.codeAtAsPos(c,i).show());
-                      }
-                    else
-                      {
-                        _call.escapes();
-                      }
-                      } */
                 tempEscapes(cl, c, i, original_tvalue, _fuir.clazzOuterRef(cc));
-                if (or != -1                            &&     // outer ref present since no outer ref implies no target value is passed to ca
-                    _fuir.clazzFieldIsAdrOfValue(or)    &&     // outer ref is adr, otherwise target is passed by value (primitive type like u32)
-                    ca.outerRefValuesContain(tvalue)       // target is current instance, so it may escape
-                    )
-                  {
-                    _call.outerDoesEscape();
-                  }
                 if (_reportResults && _options.verbose(9))
                   {
                     System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " + ca);
@@ -957,13 +922,6 @@ public class DFA extends ANY
   boolean _reportResults = false;
 
 
-  /**
-   * TailCall analysis provides a method to find tail calls, but does not check
-   * if the current instance escapes such that it cannot be replaced by a goto.
-   */
-  public final TailCall _tailCall;
-
-
   /*---------------------------  constructors  ---------------------------*/
 
 
@@ -979,7 +937,6 @@ public class DFA extends ANY
   {
     _options = options;
     _fuir = fuir;
-    _tailCall = new TailCall(fuir);
     var bool = fuir.clazz(FUIR.SpecialClazzes.c_bool);
     _true  = new TaggedValue(this, bool, Value.UNIT, 1);
     _false = new TaggedValue(this, bool, Value.UNIT, 0);
@@ -2296,21 +2253,6 @@ public class DFA extends ANY
         wasChanged(() -> "DFA.newEnv for " + newEnv);
       }
     return e;
-  }
-
-
-  void wasChanged(Supplier<String> by)
-  {
-    if (!_changed)
-      {
-        var msg = by.get();
-        if (SHOW_STACK_ON_CHANGE)
-          {
-            System.out.println(msg); Thread.dumpStack();
-          }
-        _changedSetBy = msg;
-        _changed = true;
-      }
   }
 
 }
