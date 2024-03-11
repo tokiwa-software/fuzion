@@ -1016,8 +1016,7 @@ public class DFA extends ANY
          */
         private boolean currentEscapes(int cl, boolean pre)
         {
-          return (pre ? _escapesPre : _escapes).contains(cl) ||
-            !pre && _fuir.clazzResultField(cl)==-1 /* <==> _fuir.isConstructor(cl), constructor call return current as result, so it always escapes */;
+          return (pre ? _escapesPre : _escapes).contains(cl);
         }
 
 
