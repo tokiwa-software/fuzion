@@ -1,0 +1,92 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion example test_issue1610.fz
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# test_tailrecursion tests tail recursion optimization to properly handle
+# escaping outer instances
+#
+test_tailrecursion =>
+
+  # a tailrecursion that cannot be optimized
+  #
+  case_tailrec_negative =>
+
+    m := mut (option Trick nil)
+
+    Trick ref is
+      get_a i32 => abstract
+
+    f(a i32) =>
+
+      # hehe will set m to an instance of Trick that accesses `f.this.a`,
+      # so it will keep `f` reachable:
+      #
+      fixed hehe =>
+        m <- trick
+        trick : Trick is
+          get_a => a
+
+      if a % 11 = 3 then hehe
+      if a < 20     then f a+1
+
+    f 3
+    say "tailrec1"
+    r := m.get.get.get_a
+    say (if r=14 then "PASS: $r"
+                 else "FAIL: $r != 14")
+
+  case_tailrec_negative
+
+
+  # a tailrecursion that can be optimized
+  #
+  case_tailrec_positive =>
+
+    m := mut (option Trick nil)
+
+    Trick ref is
+      get_a i32 => abstract
+
+    trick(a) : Trick is
+      get_a => a
+
+    f(a i32) =>
+
+      # hehe will set m to an instance of Trick that accesses `f.this.a`,
+      # so it will keep `f` reachable:
+      #
+      fixed hehe =>
+        m <- trick a
+
+      if a %  1000000 = 3 then hehe
+      if a < 10000000    then f a+1
+
+    f 3
+    say "tailrec_positive"
+    r := m.get.get.get_a
+    exp := 9000003
+    say (if r=exp then "PASS: $r"
+                  else "FAIL: $r != exp")
+
+  case_tailrec_positive
