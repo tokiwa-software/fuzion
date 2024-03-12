@@ -84,8 +84,8 @@ test_tailrecursion =>
 
     f(a i32) =>
 
-      # hehe will set m to an instance of Trick that accesses `f.this.a`,
-      # so it will keep `f` reachable:
+      # hehe will set m to an instance of Trick that accesses
+      # a copy of `f.this.a`, so it will not keep `f` reachable:
       #
       fixed hehe =>
         m <- trick a
