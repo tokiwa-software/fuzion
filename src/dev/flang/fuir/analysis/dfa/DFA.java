@@ -403,7 +403,14 @@ public class DFA extends ANY
                   {
                     res = new EmbeddedValue(cl, c, i, res.value());
                   }
-                if (tvalue == _call._instance || original_tvalue instanceof EmbeddedValue ev && ev._instance == _call._instance)
+                // check if target value of new call ca causes current _call's instance to escape.
+                var or = _fuir.clazzOuterRef(cc);
+                if (original_tvalue instanceof EmbeddedValue ev && ev._instance == _call._instance &&
+                    (ca._pre ? _escapesPre : _escapes).contains(ca._cc) &&
+                    (or != -1) &&
+                    _fuir.clazzFieldIsAdrOfValue(or) &&   // outer ref is adr, otherwise target is passed by value (primitive type like u32)
+                    !pre                                  // NYI: BUG: #2695: precondition instance should never escape
+                    )
                   {
                     _call.escapes();
                   }
@@ -1010,8 +1017,7 @@ public class DFA extends ANY
          */
         private boolean currentEscapes(int cl, boolean pre)
         {
-          return (pre ? _escapesPre : _escapes).contains(cl) ||
-            !pre && _fuir.clazzResultField(cl)==-1 /* <==> _fuir.isConstructor(cl) */;
+          return (pre ? _escapesPre : _escapes).contains(cl);
         }
 
 
