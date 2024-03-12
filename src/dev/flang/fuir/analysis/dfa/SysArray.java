@@ -153,11 +153,7 @@ public class SysArray extends Value implements Comparable<SysArray>
       }
     if (_elements == null || Value.compare(_elements, ne) != 0)
       {
-        if (!_dfa._changed)
-          {
-            _dfa._changedSetBy = "elements of SysArray changed: " + _elements + " =>" + ne;
-          }
-        _dfa._changed = true;
+        _dfa.wasChanged(() -> "elements of SysArray changed: " + _elements + " =>" + ne);
         _elements = ne;
       }
   }
