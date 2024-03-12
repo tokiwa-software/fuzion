@@ -100,6 +100,9 @@ public class Fuzion extends Tool
       }
       void process(FuzionOptions options, FUIR fuir)
       {
+        // run DFA, currently only done to find missing effects, see tests/reg_issue2273
+        var new_fuir = _xdfa_ ? new DFA(options, fuir).new_fuir() : fuir;
+
         new Interpreter(options, fuir).run();
       }
     },
@@ -469,7 +472,6 @@ public class Fuzion extends Tool
       var mir = fe.createMIR();                                                       f.timer("createMIR");
       var air = new MiddleEnd(fe._options, mir, fe.module() /* NYI: remove */).air(); f.timer("me");
       var fuir = new Optimizer(fe._options, air).fuir();                              f.timer("ir");
-      new Effects(fe._options, fuir).check();                                         f.timer("effectsCheck");
       process(fe._options, fuir);
     }
 

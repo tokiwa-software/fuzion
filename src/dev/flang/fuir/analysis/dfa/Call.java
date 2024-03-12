@@ -351,9 +351,15 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   Value getEffect(int ecl)
   {
-    return
+    var result =
       _env != null ? _env.getEffect(ecl)
                    : _dfa._defaultEffects.get(ecl);
+    if (result == null && _dfa._reportResults)
+      {
+        Errors.usedEffectNeverInstantiated(_dfa._fuir.clazzAsString(ecl));
+        _dfa._missingEffects.add(ecl);
+      }
+    return result;
   }
 
 

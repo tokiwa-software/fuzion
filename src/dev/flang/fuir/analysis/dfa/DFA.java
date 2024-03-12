@@ -909,6 +909,12 @@ public class DFA extends ANY
 
 
   /**
+   * Set of effects that are missing, excluding default effects.
+   */
+  TreeSet<Integer> _missingEffects = new TreeSet<>();
+
+
+  /**
    * Flag to control output of errors.  This is set to true after a fix point
    * has been reached to report errors that should disappear when fix point is
    * reached (like vars are initialized).
