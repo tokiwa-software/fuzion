@@ -1836,7 +1836,7 @@ public class DFA extends ANY
             {
               cl._dfa._defaultEffects.put(ecl, new_e);
               cl._dfa._defaultEffectContexts.put(ecl, cl);
-              cl._dfa.wasChanged(()->"effect.default called: "+cl._dfa._fuir.clazzAsString(cl._cc));
+              cl._dfa.wasChanged(() -> "effect.default called: " + cl._dfa._fuir.clazzAsString(cl._cc));
             }
           return Value.UNIT;
         });
@@ -2022,7 +2022,7 @@ public class DFA extends ANY
     if (old_e == null || Value.compare(old_e, new_e) != 0)
       {
         _defaultEffects.put(ecl, new_e);
-        wasChanged(()->"effect.replace called: " + _fuir.clazzAsString(ecl));
+        wasChanged(() -> "effect.replace called: " + _fuir.clazzAsString(ecl));
       }
   }
 
@@ -2104,7 +2104,7 @@ public class DFA extends ANY
       {
         _instances.put(r, r);
         e = r;
-        wasChanged(()->"DFA.newInstance for "+_fuir.clazzAsString(r._clazz));
+        wasChanged(() -> "DFA.newInstance for " + _fuir.clazzAsString(r._clazz));
       }
     return e;
   }
@@ -2167,7 +2167,7 @@ public class DFA extends ANY
         _newCalls.add(r);
         _calls.put(r,r);
         e = r;
-        wasChanged(()->"DFA.newCall to "+r);
+        wasChanged(() -> "DFA.newCall to " + r);
         analyzeNewCall(r);
       }
     return e;
