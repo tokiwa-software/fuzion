@@ -2219,7 +2219,7 @@ stringTermB : '}any chars&quot;'
         if (isString(t))
           {
             var ps = string(multiLineIndentation);
-            var str = new StrConst(tokenSourcePos().rangeTo(tokenEndPos()), ps._v0);
+            var str = new StrConst(tokenSourcePos().rangeTo(tokenEndPos()), ps.v0());
             result = concatString(tokenSourcePos(), leftString, str);
             next();
             if (isPartialString(t))
@@ -2227,7 +2227,7 @@ stringTermB : '}any chars&quot;'
                 var old = setMinIndent(-1);
                 var b = block();
                 setMinIndent(old);
-                result = stringTerm(concatString(tokenSourcePos(), result, b), ps._v1);
+                result = stringTerm(concatString(tokenSourcePos(), result, b), ps.v1());
               }
           }
         else

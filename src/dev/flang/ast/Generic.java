@@ -82,7 +82,7 @@ public class Generic extends ANY implements Comparable<Generic>
    */
   public boolean isOpen()
   {
-    return typeParameter().isOpenTypeParameter();
+    return _typeParameter.isOpenTypeParameter();
   }
 
 

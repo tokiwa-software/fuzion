@@ -26,10 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm.runtime;
 
-import dev.flang.be.interpreter.JavaInterface;
-
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.JavaInterface;
 import dev.flang.util.Pair;
 
 import java.io.StringWriter;
@@ -919,8 +918,8 @@ public class Runtime extends ANY
 
     Method m = null;
     var pcl = getParsAndClass("virtual", clName, name, sig);
-    var p = pcl._v0;
-    var cl = pcl._v1;
+    var p = pcl.v0();
+    var cl = pcl.v1();
     try
       {
         m = cl.getMethod(name, p);
@@ -1008,8 +1007,8 @@ public class Runtime extends ANY
 
     Method m = null;
     var pcl = getParsAndClass("static", clName, name, sig);
-    var p = pcl._v0;
-    var cl = pcl._v1;
+    var p = pcl.v0();
+    var cl = pcl.v1();
     try
       {
         m = cl.getMethod(name,p);
@@ -1044,8 +1043,8 @@ public class Runtime extends ANY
     unsafeIntrinsic();
 
     var pcl = getParsAndClass("constructor", clName, null, sig);
-    var p = pcl._v0;
-    var cl = pcl._v1;
+    var p = pcl.v0();
+    var cl = pcl.v1();
     try
       {
         var co = cl.getConstructor(p);

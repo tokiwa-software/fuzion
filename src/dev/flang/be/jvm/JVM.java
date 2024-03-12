@@ -1230,7 +1230,7 @@ should be avoided as much as possible.
           {
             setNumLocals(cl, pre, current_index(cl) + Math.max(1, _types.javaType(cl).stackSlots()));
             prolog = prolog(cl, pre);
-            code = _ai.process(cl, pre)._v1;
+            code = _ai.process(cl, pre).v1();
             epilog = epilog(cl, pre);
           }
         else // intrinsic is a type parameter, type instances are unit types, so nothing to be done:

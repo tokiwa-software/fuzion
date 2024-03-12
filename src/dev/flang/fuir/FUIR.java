@@ -1156,7 +1156,19 @@ hw25 is
     /* The called clazz does not have an instance value, so there is no lifetime
      * associated to it
      */
-    Undefined
+    Undefined;
+
+    /**
+     * May an instance with this LifeTime be accessible after the call to its
+     * routine?
+     */
+    public boolean maySurviveCall()
+    {
+      require
+        (this != Undefined);
+
+      return this.ordinal() > Call.ordinal();
+    }
   }
 
   static
@@ -1196,7 +1208,7 @@ hw25 is
                case Intrinsic -> LifeTime.Undefined;
                case Field     -> LifeTime.Call;
                case Routine   -> LifeTime.Unknown;
-               case Native    -> LifeTime.Unknown;
+               case Native    -> LifeTime.Undefined;
                });
 
       return result;
@@ -2162,13 +2174,11 @@ hw25 is
    */
   public void dumpCode(int cl, int c)
   {
+    String label = label(c) +  ":";
     for (var ix = 0; withinCode(c, ix); ix = ix + codeSizeAt(c, ix))
       {
-        if (ix == 0)
-          {
-            System.out.printf("%s:", label(c));
-          }
-        System.out.printf("\t%d: %s\n", ix, codeAtAsString(cl, c, ix));
+        System.out.printf("%s\t%d: %s\n", label, ix, codeAtAsString(cl, c, ix));
+        label = "";
         switch (codeAt(c,ix))
           {
           case Match:
@@ -2178,12 +2188,16 @@ hw25 is
                 var mc = matchCaseCode(c, ix, cix);
 
                 dumpCode(cl, mc);
-                System.out.println("\tgoto " +l);
+                System.out.println("\tgoto " + l);
               }
-            System.out.println(l + ":");
+            label = l + ":";
             break;
           default: break;
           }
+      }
+    if (label != "")
+      {
+        System.out.println(label);
       }
   }
 
