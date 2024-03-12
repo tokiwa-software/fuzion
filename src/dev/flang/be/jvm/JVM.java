@@ -596,12 +596,20 @@ should be avoided as much as possible.
               "dev/flang/be/jvm/runtime/Runtime$Abort.class",
               "dev/flang/util/ANY.class",
               "dev/flang/util/Errors.class",
+              "dev/flang/util/Errors$Error.class",
+              "dev/flang/util/Errors$Id.class",
+              "dev/flang/util/Errors$SRCF.class",
+              "dev/flang/util/Errors$SRCF$1.class",
               "dev/flang/util/FatalError.class",
               "dev/flang/util/HasSourcePosition.class",
               "dev/flang/util/List.class",
               "dev/flang/util/QuietThreadTermination.class",
+              "dev/flang/util/SourceFile.class",
               "dev/flang/util/SourcePosition.class",
+              "dev/flang/util/SourcePosition$1.class",
+              "dev/flang/util/SourcePosition$2.class",
               "dev/flang/util/SourceRange.class",
+              "dev/flang/util/Terminal.class",
             };
 
             for (var d : dependencies)
