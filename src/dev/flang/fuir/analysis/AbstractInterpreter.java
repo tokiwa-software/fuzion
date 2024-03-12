@@ -351,7 +351,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    *
    * @param cl the clazz of val, may be -1
    *
-   * @param the value to push
+   * @param val the value to push
    */
   void push(Stack<VALUE> stack, int cl, VALUE val)
   {
@@ -559,7 +559,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    *
    * @param cl clazz id
    *
-   * @param c the code block to interpret
+   * @param ck the contracts kind
    *
    * @return the result of the abstract interpretation, e.g., the generated
    * code.

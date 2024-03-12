@@ -948,7 +948,7 @@ public class Call extends AbstractCall
    *   ++ x       ==>  a -> a ++ x
    *   x ++       ==>  a -> x ++ a
    *
-   * @see Expr.propagateExpectedTypeForPartial for details.
+   * @see Expr#propagateExpectedTypeForPartial for details.
    *
    * @param res this is called during type inference, res gives the resolution
    * instance.
@@ -1049,7 +1049,7 @@ public class Call extends AbstractCall
    *
    * @param outer the feature that contains this expression
    *
-   * @param t the expected type.
+   * @param expectedType the expected type.
    */
   void checkPartialAmbiguity(Resolution res, AbstractFeature outer, AbstractType expectedType)
   {
@@ -1607,7 +1607,7 @@ public class Call extends AbstractCall
    *
    * @param outer the root feature that contains this expression.
    *
-   * @param result this in case this was not an immediate call, otherwise the
+   * @return result this in case this was not an immediate call, otherwise the
    * resulting call to Function/Routine.call.
    */
   private Call resolveImmediateFunctionCall(Resolution res, AbstractFeature outer)

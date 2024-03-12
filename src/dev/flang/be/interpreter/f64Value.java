@@ -54,8 +54,6 @@ public class f64Value extends Value
 
   /**
    * Constructor
-   *
-   * @param i
    */
   public f64Value(double val)
   {

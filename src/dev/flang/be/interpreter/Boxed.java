@@ -58,10 +58,6 @@ public class Boxed extends ValueWithClazz
 
   /**
    * Constructor
-   *
-   * @param clazz
-   *
-   * @param outer
    */
   public Boxed(Clazz clazz, Clazz valueClazz, Value contents)
   {

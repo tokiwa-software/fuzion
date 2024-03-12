@@ -76,8 +76,6 @@ public class Instance extends ValueWithClazz
    * Constructor
    *
    * @param clazz
-   *
-   * @param outer
    */
   public Instance(Clazz clazz)
   {

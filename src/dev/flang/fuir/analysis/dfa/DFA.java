@@ -368,8 +368,6 @@ public class DFA extends ANY
      *
      * @param pre true iff interpreting cl's precondition, false for cl itself.
      *
-     * @param stack the stack containing the current arguments waiting to be used
-     *
      * @param c the code block to compile
      *
      * @param i the index of the call within c
@@ -570,7 +568,7 @@ public class DFA extends ANY
      * @param context for debugging: Reason that causes this const string to be
      * part of the analysis.
      *
-     * @param b the serialized data to be used when creating this constant
+     * @param d the serialized data to be used when creating this constant
      *
      * @return an instance of `constCl` with fields initialized using the data from `d`.
      */

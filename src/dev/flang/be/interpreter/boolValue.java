@@ -54,8 +54,6 @@ public class boolValue extends Value
 
   /**
    * Constructor
-   *
-   * @param i
    */
   public boolValue(boolean b)
   {

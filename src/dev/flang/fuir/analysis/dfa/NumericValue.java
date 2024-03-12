@@ -118,8 +118,6 @@ public class NumericValue extends Value implements Comparable<NumericValue>
    * @param dfa the DFA analysis
    *
    * @param clazz the clazz this is an instance of.
-   *
-   * @param v the value, cast to long.
    */
   public NumericValue(DFA dfa, int clazz)
   {

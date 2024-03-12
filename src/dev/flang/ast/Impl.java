@@ -446,7 +446,7 @@ public class Impl extends ANY
    * For an actual value passed to an argument field with this Impl, record the
    * actual and its outer feature for type inference
    *
-   * @param actl an actual argument expression
+   * @param call an actual argument expression
    *
    * @param outer the feature containing the actl expression
    */

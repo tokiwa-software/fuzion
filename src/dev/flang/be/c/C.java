@@ -1414,8 +1414,6 @@ public class C extends ANY
    *
    * @param bytes the serialized bytes of the UTF-8 string.
    *
-   * @param onHeap should the string be allocated on the heap?
-   *
    * Example code:
    * `(fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__array_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}`
    */
@@ -1462,8 +1460,6 @@ public class C extends ANY
 
   /**
    * Create code to assign value to a field
-   *
-   * @param stack the stack containing the value and the target instance
    *
    * @param tc the static target clazz
    *
@@ -1515,8 +1511,6 @@ public class C extends ANY
    * Create C code for a statically bound call.
    *
    * @param cl clazz id of clazz containing the call
-   *
-   * @param stack the stack containing the current arguments waiting to be used
    *
    * @param c the code block to compile
    *
@@ -1655,8 +1649,6 @@ public class C extends ANY
    * argument from the stack to a called feature.
    *
    * @param cc clazz that is called
-   *
-   * @param stack the stack containing the C code of the args.
    *
    * @param argCount the number of arguments.
    *
@@ -1925,7 +1917,7 @@ public class C extends ANY
   /**
    * For an instance value refOrVal get the struct that contains its fields.
    *
-   * @param refOrValue C expression to access an instance
+   * @param refOrVal C expression to access an instance
    *
    * @param type the type of the instance, may be a ref or value type
    *

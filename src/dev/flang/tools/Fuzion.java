@@ -703,7 +703,7 @@ public class Fuzion extends Tool
    * Check that there is exactly one of these three input source set:
    * _readStdin, _executeCode != null or commandLineSomethings.
    *
-   * @param commandLineSomthings true iff input source is given via command line
+   * @param commandLineSomethings true iff input source is given via command line
    * argument or arguments
    *
    * @param nameOfSomething How to call the command line sources in an error
@@ -762,7 +762,7 @@ public class Fuzion extends Tool
    * parseExecute() to check that code was actually given following `-e` or
    * `-execute`.
    *
-   * @param noextIsCode did the call to `parseExecute` return true for the last
+   * @param nextIsCode did the call to `parseExecute` return true for the last
    * argument?
    */
   private void checkMissingCode(boolean nextIsCode)

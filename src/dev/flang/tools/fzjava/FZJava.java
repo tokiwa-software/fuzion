@@ -430,10 +430,7 @@ public class FZJava extends Tool
   /**
    * Create Fuzion features to interface Java code for class with given name.
    *
-   * @param cl ClassLoader to load class from
-   *
    * @param cn the class name, e.g., "java.lang.Object".
-   *
    */
   boolean matchesClassPattern(String cn)
   {

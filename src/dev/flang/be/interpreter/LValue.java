@@ -60,10 +60,6 @@ public class LValue extends ValueWithClazz
 
   /**
    * Constructor
-   *
-   * @param clazz
-   *
-   * @param outer
    */
   public LValue(Clazz c, Instance cont, int off)
   {

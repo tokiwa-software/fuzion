@@ -54,8 +54,6 @@ public class u8Value extends Value
 
   /**
    * Constructor
-   *
-   * @param i
    */
   public u8Value(int val)
   {

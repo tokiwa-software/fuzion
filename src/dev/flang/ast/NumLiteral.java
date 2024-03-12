@@ -803,7 +803,7 @@ public class NumLiteral extends Constant
    * Perform partial application for a NumLiteral. In particular, this converts
    * a literal with a sign such as `-2` into a lambda of the form `x -> x - 2`.
    *
-   * @see Expr.propagateExpectedTypeForPartial for details.
+   * @see Expr#propagateExpectedTypeForPartial for details.
    *
    * @param res this is called during type inference, res gives the resolution
    * instance.

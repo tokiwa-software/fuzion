@@ -54,8 +54,6 @@ public class i16Value extends Value
 
   /**
    * Constructor
-   *
-   * @param i
    */
   public i16Value(int val)
   {
