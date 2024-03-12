@@ -75,11 +75,6 @@ public class Site extends ANY implements Comparable<Site>
    */
   private boolean _mayReturn = false;
 
-  /**
-   * Did we at least once record a result for this Site?
-   */
-  private boolean _recordedResult = false;
-
 
   /*---------------------------  constructors  ---------------------------*/
 
@@ -100,7 +95,7 @@ public class Site extends ANY implements Comparable<Site>
    */
   public boolean alwaysResultsInVoid()
   {
-    return _recordedResult && !_mayReturn;
+    return !_mayReturn;
   }
 
 
@@ -109,7 +104,6 @@ public class Site extends ANY implements Comparable<Site>
    */
   public void recordResult(boolean isVoid)
   {
-    _recordedResult = true;
     if (!isVoid)
       {
         _mayReturn = true;

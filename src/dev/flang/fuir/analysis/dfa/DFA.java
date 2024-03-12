@@ -1072,7 +1072,15 @@ public class DFA extends ANY
         @Override
         public boolean alwaysResultsInVoid(int cl, int c, int i)
         {
-          return site(cl, c, i).alwaysResultsInVoid() || super.alwaysResultsInVoid(cl, c, i);
+          if (i<0)
+            {
+              return false;
+            }
+          else
+            {
+              var code = _fuir.codeAt(c, i);
+              return (code == ExprKind.Call || code == ExprKind.Match) && site(cl, c, i).alwaysResultsInVoid() || super.alwaysResultsInVoid(cl, c, i);
+            }
         }
 
     };
