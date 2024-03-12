@@ -1080,7 +1080,7 @@ public class DFA extends ANY
                 () -> { System.out.println("program entry point"); return "  "; });
       }
 
-    newCall(_fuir.mainClazzId(),
+    newCall(cl,
             false,
             Value.UNIT,
             new List<>(),
