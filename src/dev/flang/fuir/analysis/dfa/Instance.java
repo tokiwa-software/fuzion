@@ -131,10 +131,10 @@ public class Instance extends Value implements Comparable<Instance>
       {
         v = oldv.join(v);
       }
-    if (!_dfa._changed && (oldv == null || Value.COMPARATOR.compare(oldv, v) != 0))
+    if (oldv == null || Value.COMPARATOR.compare(oldv, v) != 0)
       {
-        _dfa._changedSetBy = "setField: new values "+v+" (was "+oldv+") for " + this;
-        _dfa._changed = true;
+        var fv = v;
+        _dfa.wasChanged(() -> "setField: new values " + fv + " (was " + oldv + ") for " + this);
       }
     dfa._writtenFields.add(field);
     _fields.put(field, v);

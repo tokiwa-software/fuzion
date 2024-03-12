@@ -28,10 +28,13 @@ package dev.flang.fuir.analysis.dfa;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+
+import java.util.function.Supplier;
 
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.SpecialClazzes;
@@ -896,8 +899,13 @@ public class DFA extends ANY
    * Flag to detect changes during current iteration of the fix-point algorithm.
    * If this remains false during one iteration we have reached a fix-point.
    */
-  boolean _changed = false;
-  String _changedSetBy;
+  private boolean _changed = false;
+
+
+  /**
+   * For debugging: lazy creation of a message why _changed was set to true.
+   */
+  private Supplier<String> _changedSetBy;
 
 
   /**
@@ -1097,10 +1105,11 @@ public class DFA extends ANY
           {
             _options.verbosePrintln(2,
                                     "DFA iteration #"+cnt+": --------------------------------------------------" +
-                                    (!_options.verbose(3) ? "" : _calls.size()+","+_instances.size()+"; "+_changedSetBy));
+                                    (_options.verbose(3) ? _calls.size() + "," + _instances.size() + "; " + _changedSetBy.get()
+                                                         : ""                                                                  ));
           }
         _changed = false;
-        _changedSetBy = "*** change not set ***";
+        _changedSetBy = () -> "*** change not set ***";
         iteration();
       }
     while (_changed && (true || cnt < 100) || false && (cnt < 50));
@@ -1116,6 +1125,29 @@ public class DFA extends ANY
       }
     _reportResults = true;
     iteration();
+  }
+
+
+  /**
+   * Set flag _changed to record the fact that the current iteration has not
+   * reached a fix point yet.
+   *
+   * @param by in case _changed was not set yet, by is used to procude a message
+   * why we have not reached a fix point yet.
+   */
+  void wasChanged(Supplier<String> by)
+  {
+    if (!_changed)
+      {
+        if (SHOW_STACK_ON_CHANGE)
+          {
+            var msg = by.get();
+            System.out.println(msg);
+            Thread.dumpStack();
+          }
+        _changedSetBy = by;
+        _changed = true;
+      }
   }
 
 
@@ -1243,13 +1275,10 @@ public class DFA extends ANY
    */
   void escapes(int cc, boolean pre)
   {
-    if (pre)
+    var escapeSet = pre ? _escapesPre : _escapes;
+    if (escapeSet.add(cc))
       {
-        _escapesPre.add(cc);
-      }
-    else
-      {
-        _escapes.add(cc);
+        wasChanged(() -> "Esacpes: " + (pre ? "precondition of " : "") + _fuir.clazzAsString(cc));
       }
   }
 
@@ -1279,7 +1308,11 @@ public class DFA extends ANY
         )
       {
         var cp = new CodePos(ev._cl, ev._code, ev._index);
-        _escapesCode.add(cp);
+        if (!_escapesCode.contains(cp))
+          {
+            _escapesCode.add(cp);
+            wasChanged(() -> "code escapes: "+_fuir.codeAtAsString(cl,c,i));
+          }
       }
   }
 
@@ -1797,11 +1830,7 @@ public class DFA extends ANY
             {
               cl._dfa._defaultEffects.put(ecl, new_e);
               cl._dfa._defaultEffectContexts.put(ecl, cl);
-              if (!cl._dfa._changed)
-                {
-                  cl._dfa._changedSetBy = "effect.default called: "+cl._dfa._fuir.clazzAsString(cl._cc);
-                }
-              cl._dfa._changed = true;
+              cl._dfa.wasChanged(() -> "effect.default called: " + cl._dfa._fuir.clazzAsString(cl._cc));
             }
           return Value.UNIT;
         });
@@ -1987,11 +2016,7 @@ public class DFA extends ANY
     if (old_e == null || Value.compare(old_e, new_e) != 0)
       {
         _defaultEffects.put(ecl, new_e);
-        if (!_changed)
-          {
-            _changedSetBy = "effect.replace called: " + _fuir.clazzAsString(ecl);
-          }
-        _changed = true;
+        wasChanged(() -> "effect.replace called: " + _fuir.clazzAsString(ecl));
       }
   }
 
@@ -2073,12 +2098,7 @@ public class DFA extends ANY
       {
         _instances.put(r, r);
         e = r;
-        if (SHOW_STACK_ON_CHANGE && !_changed) Thread.dumpStack();
-        if (!_changed)
-          {
-            _changedSetBy = "DFA.newInstance for "+_fuir.clazzAsString(r._clazz);
-          }
-        _changed = true;
+        wasChanged(() -> "DFA.newInstance for " + _fuir.clazzAsString(r._clazz));
       }
     return e;
   }
@@ -2141,12 +2161,7 @@ public class DFA extends ANY
         _newCalls.add(r);
         _calls.put(r,r);
         e = r;
-        if (SHOW_STACK_ON_CHANGE && !_changed) { say("new call: "+r); Thread.dumpStack();}
-        if (!_changed)
-          {
-            _changedSetBy = "DFA.newCall to "+e;
-          }
-        _changed = true;
+        wasChanged(() -> "DFA.newCall to " + r);
         analyzeNewCall(r);
       }
     return e;
@@ -2229,12 +2244,7 @@ public class DFA extends ANY
       {
         _envs.put(newEnv, newEnv);
         e = newEnv;
-        if (SHOW_STACK_ON_CHANGE && !_changed) { say("new env: " + e); Thread.dumpStack();}
-        if (!_changed)
-          {
-            _changedSetBy = "DFA.newEnv for " + e;
-          }
-        _changed = true;
+        wasChanged(() -> "DFA.newEnv for " + newEnv);
       }
     return e;
   }
