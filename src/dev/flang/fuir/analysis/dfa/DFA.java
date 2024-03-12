@@ -134,7 +134,7 @@ public class DFA extends ANY
     {
       if (_reportResults && _options.verbose(9))
         {
-          System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i));
+          say("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i));
         }
       return _unit_;
     }
@@ -348,7 +348,7 @@ public class DFA extends ANY
             {
               if (_reportResults && _options.verbose(9))
                 {
-                  System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " +
+                  say("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " +
                                      tvalue + ".set("+_fuir.clazzAsString(cc)+") := " + args.get(0));
                 }
               var v = args.get(0);
@@ -415,7 +415,7 @@ public class DFA extends ANY
                 tempEscapes(cl, c, i, original_tvalue, _fuir.clazzOuterRef(cc));
                 if (_reportResults && _options.verbose(9))
                   {
-                    System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " + ca);
+                    say("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " + ca);
                   }
               }
             break;
@@ -425,7 +425,7 @@ public class DFA extends ANY
             res = tvalue.value().callField(DFA.this, cc);
             if (_reportResults && _options.verbose(9))
               {
-                System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " +
+                say("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " +
                                    tvalue + ".get(" + _fuir.clazzAsString(cc) + ") => " + res);
               }
             break;
@@ -640,7 +640,7 @@ public class DFA extends ANY
           var taken = takenA[0];
           if (_reportResults && _options.verbose(9))
             {
-              System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": "+subv+" case "+mc+": "+
+              say("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": "+subv+" case "+mc+": "+
                                  (taken ? "taken" : "not taken"));
             }
 
@@ -1081,7 +1081,7 @@ public class DFA extends ANY
                 Value.UNIT,
                 new List<>(),
                 null /* env */,
-                () -> { System.out.println("program entry point"); return "  "; });
+                () -> { say("program entry point"); return "  "; });
       }
 
     newCall(_fuir.mainClazzId(),
@@ -1089,7 +1089,7 @@ public class DFA extends ANY
             Value.UNIT,
             new List<>(),
             null /* env */,
-            () -> { System.out.println("program entry point"); return "  "; });
+            () -> { say("program entry point"); return "  "; });
 
     findFixPoint();
     Errors.showAndExit();
@@ -1169,7 +1169,7 @@ public class DFA extends ANY
           {
             if (_reportResults && _options.verbose(4))
               {
-                System.out.println(("----------------"+c+
+                say(("----------------"+c+
                                     "----------------------------------------------------------------------------------------------------")
                                    .substring(0,100));
                 c.showWhy();

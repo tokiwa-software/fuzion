@@ -359,7 +359,7 @@ public class Loop extends ANY
   {
     if (FUZION_DEBUG_LOOPS)
       {
-        System.out.println(_prolog);
+        say(_prolog.toString());
       }
     return _prolog;
   }

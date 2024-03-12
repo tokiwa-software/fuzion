@@ -276,7 +276,7 @@ public class Errors extends ANY
       }
     else
       {
-        System.err.println(s);
+        say_err(s);
       }
   }
 
@@ -389,11 +389,11 @@ public class Errors extends ANY
   {
     if (true)  // true: a blank line before errors, false: separation line between errors
       {
-        System.err.println();
+        say_err();
       }
     else
       {
-        System.err.println("------------");
+        say_err("------------");
       }
     if (pos == null)
       {
@@ -434,7 +434,7 @@ public class Errors extends ANY
   public static synchronized void fatal(String s, String detail)
   {
     error(s, detail);
-    System.err.println("*** fatal errors encountered, stopping.");
+    say_err("*** fatal errors encountered, stopping.");
     exit(1);
   }
 
@@ -481,7 +481,7 @@ public class Errors extends ANY
   public static synchronized void fatal(SourcePosition pos, String s, String detail)
   {
     error(pos, s, detail);
-    System.err.println("*** fatal errors encountered, stopping.");
+    say_err("*** fatal errors encountered, stopping.");
     exit(1);
   }
 
@@ -522,7 +522,7 @@ public class Errors extends ANY
   public static synchronized void runTime(SourcePosition pos, String s, String detail)
   {
     error(pos, s, detail);
-    System.err.println("*** fatal errors encountered, stopping.");
+    say_err("*** fatal errors encountered, stopping.");
     exit(1);
   }
 

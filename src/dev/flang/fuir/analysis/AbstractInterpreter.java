@@ -608,7 +608,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
   {
     if (DEBUG != null && _fuir.clazzAsString(cl).matches(DEBUG))
       {
-        System.out.println("process "+_fuir.clazzAsString(cl)+"."+c+"."+i+":\t"+_fuir.codeAtAsString(cl, c, i)+" stack is "+stack);
+        say("process "+_fuir.clazzAsString(cl)+"."+c+"."+i+":\t"+_fuir.codeAtAsString(cl, c, i)+" stack is "+stack);
       }
     var s = _fuir.codeAt(c, i);
     switch (s)

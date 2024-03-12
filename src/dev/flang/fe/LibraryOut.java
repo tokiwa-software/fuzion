@@ -953,7 +953,7 @@ class LibraryOut extends ANY
       }
     else
       {
-        System.err.println("Missing handling of "+e.getClass()+" in LibraryOut.expressions");
+        say_err("Missing handling of "+e.getClass()+" in LibraryOut.expressions");
       }
     return lastPos;
   }

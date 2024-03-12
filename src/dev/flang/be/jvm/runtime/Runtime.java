@@ -486,7 +486,7 @@ public class Runtime extends ANY
    */
   public static void trace(String msg)
   {
-    System.out.println(msg);
+    say(msg);
   }
 
 

@@ -1549,7 +1549,7 @@ public class C extends ANY
                   !_fuir.lifeTime(cl, pre).maySurviveCall()                  // and current instance did not escape
                 )
                 {
-                  System.out.println("Escapes, no tail call opt possible: " + _fuir.clazzAsStringNew(cl) + ", lifetime: " + _fuir.lifeTime(cl, pre).name());
+                  say("Escapes, no tail call opt possible: " + _fuir.clazzAsStringNew(cl) + ", lifetime: " + _fuir.lifeTime(cl, pre).name());
                 }
 
               if (!pre                                                   &&  // not within precondition

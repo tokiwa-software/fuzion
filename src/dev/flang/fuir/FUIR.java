@@ -2188,7 +2188,7 @@ hw25 is
                 var mc = matchCaseCode(c, ix, cix);
 
                 dumpCode(cl, mc);
-                System.out.println("\tgoto " + l);
+                say("\tgoto " + l);
               }
             label = l + ":";
             break;
@@ -2197,7 +2197,7 @@ hw25 is
       }
     if (label != "")
       {
-        System.out.println(label);
+        say(label);
       }
   }
 
@@ -2212,7 +2212,7 @@ hw25 is
     if (PRECONDITIONS) require
       (clazzKind(cl) == FeatureKind.Routine);
 
-    System.out.println("Code for " + clazzAsStringWithArgsAndResult(cl) + (cl == mainClazzId() ? " *** main *** " : ""));
+    say("Code for " + clazzAsStringWithArgsAndResult(cl) + (cl == mainClazzId() ? " *** main *** " : ""));
     dumpCode(cl, clazzCode(cl));
   }
 
