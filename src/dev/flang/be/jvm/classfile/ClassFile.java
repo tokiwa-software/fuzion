@@ -1204,7 +1204,7 @@ public class ClassFile extends ANY implements ClassFileConstants
           _code.buildStackMapTable(
             this,
             (Stack)stacks.get(0).clone(),
-            locals.get(0)._v1.clone()
+            locals.get(0).v1().clone()
           );
         }
     }
@@ -1217,8 +1217,8 @@ public class ClassFile extends ANY implements ClassFileConstants
     {
       var result = locals
         .stream()
-        .filter(x -> x._v0 == byteCodePos)
-        .map(x -> x._v1)
+        .filter(x -> x.v0() == byteCodePos)
+        .map(x -> x.v1())
         .reduce(null, (a, b) -> a == null ? b : VerificationType.union(a, b));
 
       if (POSTCONDITIONS) ensure

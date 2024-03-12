@@ -37,6 +37,7 @@ import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
+import dev.flang.util.Version;
 
 
 /**
@@ -990,7 +991,7 @@ public class Intrinsics extends ANY
 
     var noJava = CStmnt.seq(
                  CExpr.fprintfstderr("*** Set environment variable JAVA_HOME when compiling to be able to use intrinsics fuzion.java.*.\n"),
-                 CExpr.fprintfstderr("*** Example: JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 fz -c file.fz\n"),
+                 CExpr.fprintfstderr("*** Example: JAVA_HOME=/usr/lib/jvm/java-" + Version.JAVA_VERSION + "-openjdk-amd64 fz -c file.fz\n"),
                  CExpr.exit(1));
     put("fuzion.java.Java_Object.is_null0", (c, cl, outer, in) -> C.JAVA_HOME == null
                                                                                        ? noJava
