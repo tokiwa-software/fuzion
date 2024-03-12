@@ -73,7 +73,12 @@ public class Site extends ANY implements Comparable<Site>
   /**
    * Results of analyzing this Site
    */
-  private List<Boolean> results = new List<Boolean>();
+  private boolean _mayReturn = false;
+
+  /**
+   * Did we at least once record a result for this Site?
+   */
+  private boolean _recordedResult = false;
 
 
   /*---------------------------  constructors  ---------------------------*/
@@ -95,7 +100,7 @@ public class Site extends ANY implements Comparable<Site>
    */
   public boolean alwaysResultsInVoid()
   {
-    return !results.isEmpty() && results.stream().allMatch(x -> x);
+    return _recordedResult && !_mayReturn;
   }
 
 
@@ -104,7 +109,11 @@ public class Site extends ANY implements Comparable<Site>
    */
   public void recordResult(boolean isVoid)
   {
-    results.add(isVoid);
+    _recordedResult = true;
+    if (!isVoid)
+      {
+        _mayReturn = true;
+      }
   }
 
 
