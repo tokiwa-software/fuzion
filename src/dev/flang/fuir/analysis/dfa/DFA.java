@@ -1084,7 +1084,7 @@ public class DFA extends ANY
                 () -> { say("program entry point"); return "  "; });
       }
 
-    newCall(_fuir.mainClazzId(),
+    newCall(cl,
             false,
             Value.UNIT,
             new List<>(),
