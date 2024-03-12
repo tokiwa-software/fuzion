@@ -760,7 +760,7 @@ public class ANY
    */
   public static void say()
   {
-    say(System.lineSeparator());
+    say("");
   }
 
   /**
@@ -776,7 +776,7 @@ public class ANY
    */
   public static void say_err()
   {
-    say_err(System.lineSeparator());
+    say_err("");
   }
 
 
