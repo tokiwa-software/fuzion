@@ -519,7 +519,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    *
    * @param outer the feature that contains this expression
    *
-   * @param t the expected type.
+   * @param expectedType the expected type.
    */
   Expr propagateExpectedTypeForPartial(Resolution res, AbstractFeature outer, AbstractType expectedType)
   {

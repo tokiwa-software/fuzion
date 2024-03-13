@@ -463,8 +463,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * NYI: Since there is a 1-to-1 correspondent between type parameter features
    * and Generic we could remove Generic completely.
    *
-   * @param name the name of a formal generic argument.
-   *
    * @return null if name is not the name of a formal generic argument
    * of this. Otherwise, a reference to the formal generic argument.
    */

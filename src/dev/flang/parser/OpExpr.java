@@ -334,7 +334,7 @@ public class OpExpr extends ANY
         else if (o instanceof Call c) System.out.print(c.name());
         else System.out.print("E");
       }
-    System.out.println();
+    say();
   }
 
 

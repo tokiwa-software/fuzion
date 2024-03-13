@@ -82,10 +82,6 @@ public class DynamicBinding extends ANY
 
   /**
    * Constructor
-   *
-   * @param type
-   *
-   * @param outer
    */
   public DynamicBinding(Clazz cl)
   {
@@ -105,8 +101,6 @@ public class DynamicBinding extends ANY
    *
    * @param f a feature inherited or defined in _clazz.
    *
-   * @param callable backend data needed to perform a call to the actual
-   * implementation of f in _clazz.
    */
   public void add(Interpreter be, FeatureAndActuals f, Clazz inner, Clazz outer)
   {

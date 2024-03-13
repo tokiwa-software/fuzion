@@ -55,10 +55,6 @@ public class Env extends ExprWithPos
    * Constructor
    *
    * @param pos the sourcecode position, used for error messages.
-   *
-   * @param qual
-   *
-   * @param a
    */
   public Env(SourcePosition pos, AbstractType t)
   {

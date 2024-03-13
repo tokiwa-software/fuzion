@@ -198,7 +198,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * Check if this or any of its generic arguments is Types.t_UNDEFINED.
    *
-   * @param exceptFirstGenericArg if true, the first generic argument may be
+   * @param exceptFirst if true, the first generic argument may be
    * Types.t_UNDEFINED.  This is used in a lambda 'x -> f x' of type
    * 'Function<R,X>' when 'R' is unknown and to be inferred.
    */
@@ -1381,8 +1381,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * For a given type t, get the type of t's type feature. E.g., for t==string,
    * this will return the type of string.type.
    *
-   * @param t the type whose type's type we want to get
-   *
    * @return the type of t's type.
    */
   public AbstractType typeType()
@@ -1401,8 +1399,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param res Resolution instance used to resolve the type feature that might
    * need to be created.
-   *
-   * @param t the type whose type's type we want to get
    *
    * @return the type of t's type.
    */
@@ -1789,10 +1785,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * Check that given actuals match formal type parameter constraints of given
    * feature.
    *
-   * @param pos position where to report an error in case actuals do not match
-   * f's type parameter's constraints.
-   *
-   * @param f the feature that has formal type parameters
+   * @param called the feature that has formal type parameters
    *
    * @param actuals the actual type parameters
    *

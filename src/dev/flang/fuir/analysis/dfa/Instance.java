@@ -175,7 +175,7 @@ public class Instance extends Value implements Comparable<Instance>
               {
                 if (dfa._fuir.clazzAsString(f).equals(dfa._fuir.clazzAsString(field).replace("ref ","")))
                   {
-                    System.out.println("NYI: HACK: Using value version instead: "+v);
+                    say("NYI: HACK: Using value version instead: "+v);
                   }
               }
           }

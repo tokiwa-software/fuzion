@@ -792,7 +792,7 @@ public class FUIR extends IR
    *
    * @param cl a clazz id
    *
-   * @param One of the constants SpecialClazzes.c_i8,...
+   * @param c one of the constants SpecialClazzes.c_i8,...
    *
    * @return true iff cl is the specified special clazz c
    */
@@ -1334,7 +1334,7 @@ hw25 is
   /**
    * Get the id of the given special clazz.
    *
-   * @param the id of clazz c or -1 if that clazz was not created.
+   * @param c the id of clazz c or -1 if that clazz was not created.
    */
   public int clazz(SpecialClazzes c)
   {
@@ -2184,7 +2184,7 @@ hw25 is
                 var mc = matchCaseCode(c, ix, cix);
 
                 dumpCode(cl, mc);
-                System.out.println("\tgoto " + l);
+                say("\tgoto " + l);
               }
             label = l + ":";
             break;
@@ -2193,7 +2193,7 @@ hw25 is
       }
     if (label != "")
       {
-        System.out.println(label);
+        say(label);
       }
   }
 
@@ -2208,7 +2208,7 @@ hw25 is
     if (PRECONDITIONS) require
       (clazzKind(cl) == FeatureKind.Routine);
 
-    System.out.println("Code for " + clazzAsStringWithArgsAndResult(cl) + (cl == mainClazzId() ? " *** main *** " : ""));
+    say("Code for " + clazzAsStringWithArgsAndResult(cl) + (cl == mainClazzId() ? " *** main *** " : ""));
     dumpCode(cl, clazzCode(cl));
   }
 

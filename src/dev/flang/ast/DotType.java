@@ -56,7 +56,7 @@ public class DotType extends ExprWithPos
    *
    * @param pos the sourcecode position, used for error messages.
    *
-   * @param n
+   * @param lhs the left hand side of the dot-type.
    */
   public DotType(SourcePosition pos, AbstractType lhs)
   {

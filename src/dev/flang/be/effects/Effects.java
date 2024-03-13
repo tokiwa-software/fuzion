@@ -99,12 +99,12 @@ public class Effects extends ANY
                {
                  if (_options.verbose(1))
                    {
-                     System.out.println("EFFECT type "+_fuir.clazzAsString(t)+" default used is "+dfa._defaultEffects.get(t));
-                     System.out.println(dfa._defaultEffectContexts.get(t).showWhy());
+                     say("EFFECT type "+_fuir.clazzAsString(t)+" default used is "+dfa._defaultEffects.get(t));
+                     say(dfa._defaultEffectContexts.get(t).showWhy());
                    }
                  else
                    {
-                     System.out.println(_fuir.clazzAsString(t));
+                     say(_fuir.clazzAsString(t));
                    }
                });
   }

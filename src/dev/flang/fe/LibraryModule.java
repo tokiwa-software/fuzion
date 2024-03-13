@@ -208,7 +208,7 @@ public class LibraryModule extends Module
     if (DUMP ||
         dm != null && dm.contains(name()))
       {
-        System.out.println(dump());
+        say(dump());
       }
   }
 

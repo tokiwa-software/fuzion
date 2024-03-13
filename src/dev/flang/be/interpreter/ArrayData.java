@@ -57,10 +57,6 @@ public class ArrayData extends Value
 
   /**
    * Constructor
-   *
-   * @param clazz
-   *
-   * @param outer
    */
   public ArrayData(Object array)
   {

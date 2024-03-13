@@ -59,10 +59,6 @@ public abstract class ValueWithClazz extends Value
 
   /**
    * Constructor for a value with the given clazz.
-   *
-   * @param clazz
-   *
-   * @param outer
    */
   ValueWithClazz(Clazz clazz)
   {

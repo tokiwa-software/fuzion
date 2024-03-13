@@ -54,8 +54,6 @@ public class f32Value extends Value
 
   /**
    * Constructor
-   *
-   * @param i
    */
   public f32Value(float val)
   {

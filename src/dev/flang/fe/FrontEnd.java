@@ -212,7 +212,7 @@ public class FrontEnd extends ANY
    * Determine the path to load module 'name' from.  E.g., for module 'base',
    * this returns the path '<fuzionHome>/modules/base.fum'.
    *
-   * @param a module name, without path or suffix
+   * @param name module name, without path or suffix
    *
    * @return the path to the module, null if not found.
    */

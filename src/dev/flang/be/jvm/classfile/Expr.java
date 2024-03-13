@@ -1773,8 +1773,6 @@ public abstract class Expr extends ByteCode
    *
    * @param p a pair of value and statement, both encoded as expr. value may be
    * null to indicate the statements do not return.
-   *
-   * @param this connected with p.v1() and, if non-null, with p.v0().
    */
   public Expr andThen(Pair<Expr,Expr> p)
   {

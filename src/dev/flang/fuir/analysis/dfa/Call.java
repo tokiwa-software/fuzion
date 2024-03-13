@@ -154,6 +154,20 @@ public class Call extends ANY implements Comparable<Call>, Context
     _env = env;
     _context = context;
     _instance = dfa.newInstance(cc, this);
+
+    if (!pre && dfa._fuir.clazzResultField(cc)==-1) /* <==> _fuir.isConstructor(cl) */
+      {
+        /* a constructor call returns current as result, so it always escapes together with all outer references! */
+        dfa.escapes(cc, pre);
+        var or = dfa._fuir.clazzOuterRef(cc);
+        while (or != -1)
+          {
+            var orr = dfa._fuir.clazzResultClazz(or);
+            dfa.escapes(orr,false);
+            or = dfa._fuir.clazzOuterRef(orr);
+          }
+      }
+
   }
 
 
@@ -320,11 +334,11 @@ public class Call extends ANY implements Comparable<Call>, Context
   public String showWhy()
   {
     var indent = _context.showWhy();
-    System.out.println(indent + "  |");
-    System.out.println(indent + "  +- performs call " + this);
+    say(indent + "  |");
+    say(indent + "  +- performs call " + this);
     if (_codeblockId != -1 && _codeblockIndex != -1)
       {
-        System.out.println(_dfa._fuir.codeAtAsPos(_codeblockId,_codeblockIndex).show());
+        say(_dfa._fuir.codeAtAsPos(_codeblockId,_codeblockIndex).show());
       }
     return indent + "  ";
   }
@@ -413,9 +427,16 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   void escapes()
   {
+    if (PRECONDITIONS) require
+      (_dfa._fuir.clazzKind(_cc) == FUIR.FeatureKind.Routine);
+
     if (!_escapes)
       {
         _escapes = true;
+        // we currently store for _cc/_pre, so we accumulate different call
+        // contexts to the same clazz. We might make this more detailed and
+        // record this local to the call or use part of the call's context like
+        // the target value to be more accurate.
         _dfa.escapes(_cc, _pre);
       }
   }

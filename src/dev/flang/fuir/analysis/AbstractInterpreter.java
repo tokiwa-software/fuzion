@@ -350,7 +350,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    *
    * @param cl the clazz of val, may be -1
    *
-   * @param the value to push
+   * @param val the value to push
    */
   void push(Stack<VALUE> stack, int cl, VALUE val)
   {
@@ -558,7 +558,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    *
    * @param cl clazz id
    *
-   * @param c the code block to interpret
+   * @param ck the contracts kind
    *
    * @return the result of the abstract interpretation, e.g., the generated
    * code.
@@ -607,7 +607,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
   {
     if (DEBUG != null && _fuir.clazzAsString(cl).matches(DEBUG))
       {
-        System.out.println("process "+_fuir.clazzAsString(cl)+"."+c+"."+i+":\t"+_fuir.codeAtAsString(cl, c, i)+" stack is "+stack);
+        say("process "+_fuir.clazzAsString(cl)+"."+c+"."+i+":\t"+_fuir.codeAtAsString(cl, c, i)+" stack is "+stack);
       }
     var s = _fuir.codeAt(c, i);
     switch (s)

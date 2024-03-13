@@ -267,7 +267,7 @@ abstract class CStmnt extends ANY
    *
    * @param argTypes the argument types
    *
-   * @param argsIds the argument identifiers
+   * @param argIds the argument identifiers
    *
    * @param body the body of the function or null for forward declaration.
    *

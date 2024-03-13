@@ -76,8 +76,6 @@ public class Instance extends ValueWithClazz
    * Constructor
    *
    * @param clazz
-   *
-   * @param outer
    */
   public Instance(Clazz clazz)
   {
@@ -491,10 +489,10 @@ public class Instance extends ValueWithClazz
    */
   public void dump()
   {
-    System.out.println(toString());
+    say(toString());
     for (int i=0; i<nonrefs.length; i++)
       {
-        System.out.println(" field["+i+"] ==\t int:"+nonrefs[i]+"\tref: "+refs[i]);
+        say(" field["+i+"] ==\t int:"+nonrefs[i]+"\tref: "+refs[i]);
       }
   }
 

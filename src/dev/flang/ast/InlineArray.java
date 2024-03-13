@@ -190,7 +190,7 @@ public class InlineArray extends ExprWithPos
    *
    * @param t any type
    *
-   * @param if t is Array<T>; the element type T. Types.t_ERROR otherwise.
+   * @return if t is Array<T>; the element type T. Types.t_ERROR otherwise.
    */
   private AbstractType elementType(AbstractType t)
   {
@@ -213,7 +213,7 @@ public class InlineArray extends ExprWithPos
   /**
    * For this array's type(), return the element type
    *
-   * @param if type() is Array<T>; the element type T. Types.t_ERROR otherwise.
+   * @return if type() is Array<T>; the element type T. Types.t_ERROR otherwise.
    */
   public AbstractType elementType()
   {

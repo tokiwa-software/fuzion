@@ -76,7 +76,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /*-----------------------------  statics  -----------------------------*/
 
 
-  //  static int counter;  {counter++; if ((counter&(counter-1))==0) System.out.println("######################"+counter+" "+this.getClass()); }
+  //  static int counter;  {counter++; if ((counter&(counter-1))==0) say("######################"+counter+" "+this.getClass()); }
   // { if ((counter&(counter-1))==0) Thread.dumpStack(); }
 
 
@@ -1089,20 +1089,17 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * This is not intended for use at runtime, but during analysis of static
    * types or to fill the virtual call table.
    *
-   * @param f the feature that is called
+   * @param fa the feature and actual generics that is called
    *
    * @param select in case f is a field of open generic type, this selects the
    * actual field.  -1 otherwise.
-   *
-   * @param actualGenerics the actual generics provided in the call,
-   * AbstractCall.NO_GENERICS if none.
    *
    * @param p if this lookup would result in the returned feature to be called,
    * p gives the position in the source code that causes this call.  p must be
    * null if the lookup does not cause a call, but it just done to determine
    * the type.
    *
-   * @param isInstantiated true iff this is a call in an inheritance clause.  In
+   * @param isInheritanceCall true iff this is a call in an inheritance clause.  In
    * this case, the result clazz will not be marked as instantiated since the
    * call will work on the instance of the inheriting clazz.
    *

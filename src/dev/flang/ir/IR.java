@@ -305,7 +305,7 @@ public class IR extends ANY
       }
     else
       {
-        System.err.println("Missing handling of "+e.getClass()+" in IR.toStack");
+        say_err("Missing handling of "+e.getClass()+" in IR.toStack");
       }
   }
 

@@ -596,12 +596,20 @@ should be avoided as much as possible.
               "dev/flang/be/jvm/runtime/Runtime$Abort.class",
               "dev/flang/util/ANY.class",
               "dev/flang/util/Errors.class",
+              "dev/flang/util/Errors$Error.class",
+              "dev/flang/util/Errors$Id.class",
+              "dev/flang/util/Errors$SRCF.class",
+              "dev/flang/util/Errors$SRCF$1.class",
               "dev/flang/util/FatalError.class",
               "dev/flang/util/HasSourcePosition.class",
               "dev/flang/util/List.class",
               "dev/flang/util/QuietThreadTermination.class",
+              "dev/flang/util/SourceFile.class",
               "dev/flang/util/SourcePosition.class",
+              "dev/flang/util/SourcePosition$1.class",
+              "dev/flang/util/SourcePosition$2.class",
               "dev/flang/util/SourceRange.class",
+              "dev/flang/util/Terminal.class",
             };
 
             for (var d : dependencies)
@@ -893,8 +901,6 @@ should be avoided as much as possible.
 
   /**
    * create byte code
-   *
-   * @throws IOException
    */
   private void createCode()
   {
@@ -921,8 +927,6 @@ should be avoided as much as possible.
    * Create code for given clazz cl.
    *
    * @param cl id of clazz to compile
-   *
-   * @return C statements with the forward declarations required for cl.
    */
   public void code(int cl)
   {
@@ -1121,11 +1125,9 @@ should be avoided as much as possible.
    * In case of an unexpected situation such as code that should be unreachable,
    * this should be used to print a corresponding error and exit(1).
    *
-   * @param msg the message to be shown, may include %-escapes for additional args
+   * @param msg the message to be shown
    *
-   * @param args the additional args to be fprintf-ed into msg.
-   *
-   * @return the C statement to report the error and exit(1).
+   * @return an Expr to report the error and exit(1).
    */
   Expr reportErrorInCode(String msg)
   {
@@ -1172,12 +1174,7 @@ should be avoided as much as possible.
   /**
    * Set the number of local var slots for the given routine or precondition.
    *
-   * @param cl id of clazz to generate code for
-   *
-   * @param pre true to create code for cl's precondition, false to create code
-   * for cl itself.
-   *
-   * @param n the number of slots needed for local vars
+   * @param cl id of clazz
    */
   Label startLabel(int cl)
   {
