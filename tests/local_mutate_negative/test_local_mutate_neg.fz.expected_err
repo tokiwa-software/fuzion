@@ -1,0 +1,4 @@
+
+error 1: Used effect `test_local_mutate_neg.test_sum.sum.m` never instantiated.
+
+one error.
