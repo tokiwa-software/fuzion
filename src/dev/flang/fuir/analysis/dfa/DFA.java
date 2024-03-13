@@ -1233,7 +1233,7 @@ public class DFA extends ANY
   {
     if (true || cl._dfa._reportResults)
       {
-        var name = cl._dfa._fuir.clazzIntrinsicName(cl._cc);
+        var name = cl._dfa._fuir.clazzOriginalName(cl._cc);
 
         // NYI: Proper error handling.
         Errors.error("NYI: Support for intrinsic '" + name + "' missing");

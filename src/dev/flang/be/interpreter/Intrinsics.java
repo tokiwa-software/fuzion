@@ -232,7 +232,7 @@ public class Intrinsics extends ANY
 
     Callable result;
     var f = innerClazz.feature();
-    String in = f.qualifiedName();   // == _fuir.clazzIntrinsicName(cl);
+    String in = f.qualifiedName();   // == _fuir.clazzOriginalName(cl);
     // NYI: We must check the argument count in addition to the name!
     var ca = _intrinsics_.get(in);
     if (ca != null)
@@ -717,7 +717,7 @@ public class Intrinsics extends ANY
     putUnsafe("fuzion.java.get_static_field0",
         "fuzion.java.get_field0"      , (interpreter, innerClazz) ->
         {
-          String in = innerClazz.feature().qualifiedName();   // == _fuir.clazzIntrinsicName(cl);
+          String in = innerClazz.feature().qualifiedName();   // == _fuir.clazzOriginalName(cl);
           var statique = in.equals("fuzion.java.get_static_field0");
           Clazz resultClazz = innerClazz.actualGenerics()[0];
           return args ->
@@ -734,7 +734,7 @@ public class Intrinsics extends ANY
         "fuzion.java.call_s0",
         "fuzion.java.call_c0", (interpreter, innerClazz) ->
         {
-          String in = innerClazz.feature().qualifiedName();   // == _fuir.clazzIntrinsicName(cl);
+          String in = innerClazz.feature().qualifiedName();   // == _fuir.clazzOriginalName(cl);
           var virtual     = in.equals("fuzion.java.call_v0");
           var constructor = in.equals("fuzion.java.call_c0");
           Clazz resultClazz = innerClazz.actualGenerics()[0];
@@ -1488,7 +1488,7 @@ public class Intrinsics extends ANY
       {
         var m = args.get(0);
         var cl = innerClazz._outer;
-        String in = innerClazz.feature().qualifiedName();   // == _fuir.clazzIntrinsicName(cl);
+        String in = innerClazz.feature().qualifiedName();   // == _fuir.clazzOriginalName(cl);
         switch (in)
           {
           case "effect.replace": check(FuzionThread.current()._effects.get(cl) != null); FuzionThread.current()._effects.put(cl, m   );   break;

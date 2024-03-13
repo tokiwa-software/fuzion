@@ -205,7 +205,7 @@ public class Call extends ANY implements Comparable<Call>, Context
     Val result = null;
     if (_dfa._fuir.clazzKind(_cc) == IR.FeatureKind.Intrinsic)
       {
-        var name = _dfa._fuir.clazzIntrinsicName(_cc);
+        var name = _dfa._fuir.clazzOriginalName(_cc);
         var idfa = DFA._intrinsics_.get(name);
         if (idfa != null)
           {
@@ -250,7 +250,7 @@ public class Call extends ANY implements Comparable<Call>, Context
                  c_u8, c_u16, c_u32, c_u64,
                  c_f32, c_f64              -> new NumericValue(_dfa, rc);
             case c_Const_String, c_String  -> _dfa.newConstString(null, this);
-            default                        -> { Errors.warning("DFA: cannot handle native feature " + _dfa._fuir.clazzIntrinsicName(_cc));
+            default                        -> { Errors.warning("DFA: cannot handle native feature " + _dfa._fuir.clazzOriginalName(_cc));
                                                 yield null; }
           };
       }

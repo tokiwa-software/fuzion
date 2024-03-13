@@ -550,20 +550,16 @@ public class FUIR extends IR
 
 
   /**
-   * The intrinsic names is the original qualified name of the intrinsic feature
-   * ignoring any inheritance into new clazzes.
+   * The original qualified name of the feature this clazz was
+   * created from, ignoring any inheritance into new clazzes.
    *
-   * @param cl an intrinsic
+   * @param cl a clazz
    *
-   * @return its intrinsic name, e.g. 'Array.getel' instead of
+   * @return its original name, e.g. 'Array.getel' instead of
    * 'Const_String.getel'
    */
-  public String clazzIntrinsicName(int cl)
+  public String clazzOriginalName(int cl)
   {
-    if (PRECONDITIONS) require
-      (clazzKind(cl) == FeatureKind.Intrinsic ||
-       clazzKind(cl) == FeatureKind.Native);
-
     var cc = clazz(cl);
     return cc.feature().qualifiedName();
   }
@@ -2403,7 +2399,7 @@ hw25 is
     if (PRECONDITIONS) require
       (clazzKind(cl) == FeatureKind.Intrinsic);
 
-    return switch(clazzIntrinsicName(cl))
+    return switch(clazzOriginalName(cl))
       {
       case "effect.replace",
            "effect.default",

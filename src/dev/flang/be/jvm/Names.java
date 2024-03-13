@@ -560,7 +560,7 @@ public class Names extends ANY implements ClassFileConstants
   {
     return pre                                               ? PRECONDITION_NAME :
            _fuir.clazzKind(cl) != FUIR.FeatureKind.Intrinsic ? ROUTINE_NAME
-                                                             : mangle(_fuir.clazzIntrinsicName(cl));
+                                                             : mangle(_fuir.clazzOriginalName(cl));
   }
 
 
