@@ -319,6 +319,10 @@ jvalue fzE_bool_to_java_object(bool arg)
 {
   return (jvalue) (*fzE_jni_env)->CallStaticObjectMethod(fzE_jni_env, fzE_class_boolean, fzE_boolean_valueof, arg);
 }
+jvalue fzE_null_to_java_object()
+{
+  return (jvalue) (jobject) NULL;
+}
 
 
 // convert args that map to java primitives

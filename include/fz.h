@@ -299,6 +299,7 @@ jvalue fzE_u16_to_java_object(uint16_t arg);
 jvalue fzE_i32_to_java_object(int32_t arg);
 jvalue fzE_i64_to_java_object(int64_t arg);
 jvalue fzE_bool_to_java_object(bool arg);
+jvalue fzE_null_to_java_object();
 
 // call a java constructor
 fzE_jvm_result fzE_call_c0(jstring class_name, jstring signature, jvalue *args);
