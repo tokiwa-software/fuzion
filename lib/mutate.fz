@@ -91,7 +91,10 @@ public mutate : simple_effect is
     # check that this effect is the same as the currently installed effect of type
     # `mutate.this`
     #
-    private is_currently_installed =>  my_id = mutate.this.env.id
+    private is_currently_installed =>
+      match mutate.this.type.get_if_installed
+        x mutate.this => my_id = x.id
+        nil           => false
 
 
     # check that this effect is installed and replace it.
