@@ -114,6 +114,19 @@ is
   # has an effect of the given type been installed?
   public type.is_installed(E type) bool => intrinsic_constructor
 
+  # has an effect of the given type been installed?
+  public type.get_if_installed option effect.this =>
+    if is_installed effect.this
+      unsafe_get effect.this
+    else
+      nil
+
+  # internal helper to perform `E.env` without producing an error
+  # in case static analysis fails to verify that effect `E` is
+  # actually installed.
+  #
+  private type.unsafe_get(E type) =>
+    E.env
 
 
 # helper instance for effect.abortable to wrap call to f() into a ()->unit

@@ -343,19 +343,40 @@ public class Call extends ANY implements Comparable<Call>, Context
 
   /**
    * Get effect of given type in this call's environment or the default if none
-   * found.
+   * found or null if no effect in environment and also no default available.
    *
    * @param ecl clazz defining the effect type.
    *
    * @return null in case no effect of type ecl was found
    */
-  Value getEffect(int ecl)
+  Value getEffectCheck(int ecl)
   {
-    var result =
+    return
       _env != null ? _env.getEffect(ecl)
                    : _dfa._defaultEffects.get(ecl);
-    if (result == null && _dfa._reportResults)
+  }
+
+
+  /**
+   * Get effect of given type in this call's environment or the default if none
+   * found or null if no effect in environment and also no default available.
+   *
+   * Report an error if no effect found during last pass (i.e.,
+   * _dfa._reportResults is set).
+   *
+   * @param ecl clazz defining the effect type.
+   *
+   * @return null in case no effect of type ecl was found
+   */
+  Value getEffectForce(int ecl)
+  {
+    var result = getEffectCheck(ecl);
+    if (result == null && _dfa._reportResults && !_dfa._fuir.clazzOriginalName(_cc).equals("effect.type.unsafe_get"))
       {
+        if (false)
+          {
+            showWhy(); // NYI: IMPROVEMENT: Include the source code position and the showWhy-output in the error produced here:
+          }
         Errors.usedEffectNeverInstantiated(_dfa._fuir.clazzAsString(ecl));
         _dfa._missingEffects.add(ecl);
       }

@@ -667,7 +667,7 @@ public class DFA extends ANY
      */
     public Pair<Val, Unit> env(int ecl)
     {
-      return new Pair<>(_call.getEffect(ecl), _unit_);
+      return new Pair<>(_call.getEffectForce(ecl), _unit_);
     }
 
 
@@ -1865,7 +1865,7 @@ public class DFA extends ANY
           // used to create the value produced by the effect.
           return null;
         });
-    put("effect.type.is_installed"       , cl -> cl.getEffect(cl._dfa._fuir.clazzActualGeneric(cl._cc, 0)) != null
+    put("effect.type.is_installed"       , cl -> cl.getEffectCheck(cl._dfa._fuir.clazzActualGeneric(cl._cc, 0)) != null
         ? cl._dfa._true
         : cl._dfa._bool  /* NYI: currently, this is never FALSE since a default effect might get installed turning this into TRUE
                           * should reconsider if handling of default effects changes
