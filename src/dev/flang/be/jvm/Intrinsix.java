@@ -326,6 +326,21 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(res, Expr.UNIT);
         });
 
+    put("fuzion.java.null_to_java_object",
+        (jvm, si, cc, tvalue, args) ->
+        {
+          var rc = jvm._fuir.clazzResultClazz(cc);
+          var jref = jvm._fuir.lookupJavaRef(rc);
+          var rt = jvm._types.javaType(rc);
+          var res = jvm.new0(rc)
+            .andThen(Expr.DUP)
+            .andThen(Expr.ACONST_NULL)
+            .andThen(Expr.checkcast(JAVA_LANG_OBJECT))
+            .andThen(jvm.putfield(jref))
+            .is(rt);
+          return new Pair<>(res, Expr.UNIT);
+        });
+
     put("fuzion.java.array_length",
         (jvm, si, cc, tvalue, args) ->
         {

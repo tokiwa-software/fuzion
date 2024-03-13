@@ -39,6 +39,10 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # returns true if string is empty or contains whitespace only
   public is_blank => utf8 ∀ u -> u.is_ascii_white_space
 
+  # true if this string represents an object String that is null
+  # when passed on to the Java interface
+  module is_java_null_string => false
+
   # returns true if string contains whitespace
   public contains_whitespace => utf8 ∃ u -> u.is_ascii_white_space
 
@@ -840,3 +844,11 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public type.z_char      => "z".utf8.first
   public type.cap_a_char  => "A".utf8.first
   public type.cap_z_char  => "Z".utf8.first
+
+
+  # create a string that represents a String object in Java that is null
+  #
+  public type.java_null_string String =>
+    ref : String
+      utf8 Sequence u8 => "JAVA_NULL".utf8
+      redef is_java_null_string => true

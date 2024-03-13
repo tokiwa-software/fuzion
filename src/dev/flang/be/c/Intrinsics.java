@@ -1162,6 +1162,12 @@ public class Intrinsics extends ANY
                                                   : c
                                                     .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
                                                       CExpr.call("fzE_u16_to_java_object", new List<CExpr>(A0)), false));
+    put("fuzion.java.null_to_java_object",
+      (c, cl, outer, in) -> C.JAVA_HOME == null
+                                                  ? noJava
+                                                  : c
+                                                    .returnJavaObject(c._fuir.clazzResultClazz(cl),
+                                                      CExpr.call("fzE_null_to_java_object", new List<CExpr>()), false));
     put("fuzion.java.java_string_to_string" , (c,cl,outer,in) ->
         {
           if (C.JAVA_HOME == null)

@@ -243,7 +243,10 @@ public fuzion.java is
   # convert a string to a Java String object
   #
   public string_to_java_object(s String) Java_Object =>
-    string_to_java_object0 s.utf8.as_array.internal_array
+    if s.is_java_null_string
+      null_to_java_object Java_Object
+    else
+      string_to_java_object0 s.utf8.as_array.internal_array
 
 
   # intrinsic to convert a string to a Java String object
@@ -318,3 +321,8 @@ public fuzion.java is
   # NYI: BUG:Feature declared using modifier 'redef' does not redefine another feature
   # public redef Const_String.as_java_object => fuzion.java.array_to_java_object Const_String.this
 
+
+  # intrinsic to get an instance of a Java object of type T that is
+  # a reference to null.
+  #
+  public null_to_java_object(T type) T => intrinsic_constructor
