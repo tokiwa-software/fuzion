@@ -1139,11 +1139,11 @@ public class Interpreter extends ANY
                                                    : curValue;
         clazz = ((ValueWithClazz) curValue).clazz();
       }
-      if (staticClazz.isBoxed())
-        {
-          clazz = ((Boxed)curValue)._valueClazz;
-          curValue = ((Boxed)curValue)._contents;
-        }
+    if (staticClazz.isBoxed())
+      {
+        clazz = ((Boxed)curValue)._valueClazz;
+        curValue = ((Boxed)curValue)._contents;
+      }
       off = Layout.get(clazz).offset0(thiz, select);
 
     // NYI: check if this is a can be enabled or removed:
