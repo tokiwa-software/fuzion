@@ -3302,10 +3302,12 @@ dotEnv      : typeInParens dot "env"
    */
   Env dotEnv()
   {
+    var p0 = tokenPos();
     var t = typeInParens();
     skipDot();
+    var pos = sourceRange(p0, tokenEndPos());
     match(Token.t_env, "env");
-    return new Env(tokenSourcePos(), t);
+    return new Env(pos, t);
   }
 
 
