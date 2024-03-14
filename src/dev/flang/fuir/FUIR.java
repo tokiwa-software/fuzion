@@ -56,6 +56,7 @@ import dev.flang.ast.Types; // NYI: remove dependency
 import dev.flang.ir.IR;
 
 import dev.flang.util.Errors;
+import dev.flang.util.IntTriplet;
 import dev.flang.util.List;
 import dev.flang.util.Map2Int;
 import dev.flang.util.MapComparable2Int;
@@ -181,6 +182,12 @@ public class FUIR extends IR
    * Cached 'false' results of 'clazzNeedsCode'
    */
   BitSet _doesNotNeedCode = new BitSet();
+
+
+  /**
+   * Cached results of accessedClazzesDynamic.
+   */
+  TreeMap<IntTriplet,int[]> _accessedClazzesDynamicCache = new TreeMap<>(IntTriplet._comparator_);
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -1607,59 +1614,71 @@ hw25 is
        codeAt(c, ix) == ExprKind.Assign    ,
        accessIsDynamic(cl, c, ix));
 
-    var outerClazz = clazz(cl);
-    var s =  _codeIds.get(c).get(ix);
-    Clazz tclazz;
-    AbstractFeature f;
-    var typePars = AbstractCall.NO_GENERICS;
+    var key = new IntTriplet(cl, c, ix);
+    var res = _accessedClazzesDynamicCache.get(key);
+    if (res == null)
+      {
+        var outerClazz = clazz(cl);
+        var s = _codeIds.get(c).get(ix);
+        Clazz tclazz;
+        AbstractFeature f;
+        var typePars = AbstractCall.NO_GENERICS;
 
-    if (s instanceof AbstractCall call)
-      {
-        f = call.calledFeature();
-        tclazz   = outerClazz.actualClazzes(call, null)[1];
-        typePars = outerClazz.actualGenerics(call.actualTypeParameters());
-      }
-    else if (s instanceof AbstractAssign ass)
-      {
-        var acl = outerClazz.actualClazzes(ass, null);
-        var assignedField = acl[1];
-        tclazz = acl[0];  // NYI: This should be the same as assignedField._outer
-        f = assignedField.feature();
-      }
-    else if (s instanceof Clazz fld)
-      {
-        tclazz = (Clazz) fld._outer;
-        f = fld.feature();
-      }
-    else
-      {
-        throw new Error();
-      }
-    var innerClazzes1 = new List<Clazz>();
-    var innerClazzes2 = new List<Clazz>();
-    for (var clz : tclazz.heirs())
-      {
-        if (CHECKS) check
-          (clz.isRef() == tclazz.isRef());
-
-        var in = (Clazz) clz._inner.get(new FeatureAndActuals(f, typePars, false));
-        if (in != null && clazzNeedsCode(id(in)) && !innerClazzes1.contains(clz))
+        if (s instanceof AbstractCall call)
           {
-            innerClazzes1.add(clz);
-            innerClazzes2.add(in);
+            f = call.calledFeature();
+            tclazz   = outerClazz.actualClazzes(call, null)[1];
+            typePars = outerClazz.actualGenerics(call.actualTypeParameters());
           }
-      }
+        else if (s instanceof AbstractAssign ass)
+          {
+            var acl = outerClazz.actualClazzes(ass, null);
+            var assignedField = acl[1];
+            tclazz = acl[0];  // NYI: This should be the same as assignedField._outer
+            f = assignedField.feature();
+          }
+        else if (s instanceof Clazz fld)
+          {
+            tclazz = (Clazz) fld._outer;
+            f = fld.feature();
+          }
+        else
+          {
+            throw new Error("Unexpected expression in accessedClazzesDynamic, must be ExprKind.Call or ExprKind.Assign, is " +
+                            codeAt(c, ix) + " " + s.getClass() + " at " + codeAtAsPos(c,ix).show());
+          }
+        var found = new TreeSet<Integer>();
+        var result = new List<Integer>();
+        var fa = new FeatureAndActuals(f, typePars, false);
+        for (var clz : tclazz.heirs())
+          {
+            if (CHECKS) check
+              (clz.isRef() == tclazz.isRef());
 
-    var innerClazzIds = new int[2*innerClazzes1.size()];
-    for (var i = 0; i < innerClazzes1.size(); i++)
-      {
-        innerClazzIds[2*i  ] = id(innerClazzes1.get(i));
-        innerClazzIds[2*i+1] = id(innerClazzes2.get(i));
-        if (CHECKS) check
-          (innerClazzIds[2*i  ] != -1,
-           innerClazzIds[2*i+1] != -1);
+            var in = (Clazz) clz._inner.get(fa);
+            if (in != null && clazzNeedsCode(id(in)))
+              {
+                var in_id  = id(in);
+                var clz_id = id(clz);
+                if (CHECKS) check
+                  (in_id  != -1 &&
+                   clz_id != -1    );
+                if (found.add(clz_id))
+                  {
+                    result.add(clz_id);
+                    result.add(in_id);
+                  }
+              }
+          }
+
+        res = new int[result.size()];
+        for (int i = 0; i < res.length; i++)
+          {
+            res[i] = result.get(i);
+          }
+        _accessedClazzesDynamicCache.put(key,res);
       }
-    return innerClazzIds;
+    return res;
   }
 
 
