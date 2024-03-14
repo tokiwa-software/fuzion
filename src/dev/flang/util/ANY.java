@@ -750,7 +750,7 @@ public class ANY
   /**
    * Utility feature say to print str to stdout
    */
-  public static void say(String str)
+  public static void say(Object str)
   {
     System.out.println(str);
   }
@@ -766,7 +766,7 @@ public class ANY
   /**
    * Utility feature say_err to print str to stderr
    */
-  public static void say_err(String str)
+  public static void say_err(Object str)
   {
     System.err.println(str);
   }
