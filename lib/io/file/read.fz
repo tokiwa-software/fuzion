@@ -30,7 +30,7 @@ public read(ro Read_Handler) : simple_effect is
 
   # how much of a file do we read at a time, in bytes
   #
-  private bufsize u64 => 512
+  private bufsize u64 => 4096
 
 
   # reads all bytes from the file in the path
