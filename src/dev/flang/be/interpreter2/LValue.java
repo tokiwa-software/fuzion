@@ -20,46 +20,39 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Value
+ * Source of class LValue
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.be.interpreter;
+package dev.flang.be.interpreter2;
 
-import dev.flang.air.Clazz; // NYI: remove this dependency
-
-import dev.flang.util.ANY;
+import dev.flang.air.Clazz;
+import dev.flang.air.Clazzes;
 
 
 /**
- * Value <description>
+ * LValue represents an address of a modifyable value type, which is the result
+ * of reading a value field.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class Value extends ANY
+public class LValue extends ValueWithClazz
 {
 
 
-  /*----------------------------  constants  ----------------------------*/
+  /*----------------------------  variables  ----------------------------*/
 
 
   /**
-   * Dummy value to be returned by Expr.execute for the case that the
-   * expression does not produce a value
+   * The instance (stack of heap) containing this LValue
    */
-  public static Value NO_VALUE = new Value() { };
+  public final Instance container;
 
 
   /**
-   * Dummy value to be returned by intrinsic features that return an empty self.
+   * The offset of this Value within container
    */
-  public static Value EMPTY_VALUE = new Value()
-    {
-      void storeNonRef(LValue slot, int size)
-      {
-        // treat as NOP.
-      }
-    };
+  public int offset;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -67,9 +60,23 @@ public abstract class Value extends ANY
 
   /**
    * Constructor
+   *
+   * @param clazz
+   *
+   * @param outer
    */
-  public Value()
+  public LValue(Clazz c, Instance cont, int off)
   {
+    super(c);
+
+    if (PRECONDITIONS) require
+      (cont != null,
+       off >= 0 || c.isUnitType(),
+       c.isUnitType() || off < Layout.get(cont._clazz).size(),
+       c.isUnitType() || off < cont.refs.length);
+
+    this.container = cont;
+    this.offset = off;
   }
 
 
@@ -80,53 +87,46 @@ public abstract class Value extends ANY
    * Create a copy (clone) of this value.  Used for boxing values into
    * ref-types.
    */
-  Value cloneValue(Clazz cl)
+  Instance cloneValue(Clazz cl)
   {
-    return this;
-  }
+    if (PRECONDITIONS) require
+      (_clazz == cl,
+       !cl.isRef());
 
-
-  /**
-   * toString
-   *
-   * @return
-   */
-  public String toString()
-  {
-    return "UNKNOWN VALUE";
+    return new Instance(cl, container, offset);
   }
 
 
   /**
    * For a value of type i8, return the value.
    *
-   * @return the i8 value
+   * @return the integer value
    */
   public int i8Value()
   {
-    throw new Error("this is not of type i8Value, but " + getClass());
+    return container.nonrefs[offset];
   }
 
 
   /**
    * For a value of type i16, return the value.
    *
-   * @return the i16 value
+   * @return the integer value
    */
   public int i16Value()
   {
-    throw new Error("this is not of type i16Value, but " + getClass());
+    return container.nonrefs[offset];
   }
 
 
   /**
    * For a value of type i32, return the value.
    *
-   * @return the i32 value
+   * @return the integer value
    */
   public int i32Value()
   {
-    throw new Error("this is not of type i32Value, but " + getClass());
+    return container.nonrefs[offset];
   }
 
 
@@ -137,40 +137,42 @@ public abstract class Value extends ANY
    */
   public long i64Value()
   {
-    throw new Error("this is not of type i64Value, but " + getClass());
+    return
+        container.nonrefs[offset    ] & 0xFFFFffffL |
+      ((container.nonrefs[offset + 1] & 0xFFFFffffL) << 32);
   }
 
 
   /**
    * For a value of type u8, return the value.
    *
-   * @return the u8 value
+   * @return the integer value
    */
   public int u8Value()
   {
-    throw new Error("this is not of type u8Value, but " + getClass());
+    return container.nonrefs[offset];
   }
 
 
   /**
    * For a value of type u16, return the value.
    *
-   * @return the u16 value
+   * @return the integer value
    */
   public int u16Value()
   {
-    throw new Error("this is not of type u16Value, but " + getClass());
+    return container.nonrefs[offset];
   }
 
 
   /**
    * For a value of type u32, return the value.
    *
-   * @return the u32 value
+   * @return the integer value
    */
   public int u32Value()
   {
-    throw new Error("this is not of type u32Value, but " + getClass());
+    return container.nonrefs[offset];
   }
 
 
@@ -181,7 +183,9 @@ public abstract class Value extends ANY
    */
   public long u64Value()
   {
-    throw new Error("this is not of type u64Value, but " + getClass());
+    return
+        container.nonrefs[offset    ] & 0xFFFFffffL |
+      ((container.nonrefs[offset + 1] & 0xFFFFffffL) << 32);
   }
 
 
@@ -192,7 +196,7 @@ public abstract class Value extends ANY
    */
   public float f32Value()
   {
-    throw new Error("this is not of type f32Value, but " + getClass());
+    return Float.intBitsToFloat(container.nonrefs[offset]);
   }
 
 
@@ -203,7 +207,8 @@ public abstract class Value extends ANY
    */
   public double f64Value()
   {
-    throw new Error("this is not of type f64Value, but " + getClass());
+    return Double.longBitsToDouble(  container.nonrefs[offset    ] & 0xFFFFffffL |
+                                   ((container.nonrefs[offset + 1] & 0xFFFFffffL) << 32));
   }
 
 
@@ -214,7 +219,7 @@ public abstract class Value extends ANY
    */
   public boolean boolValue()
   {
-    throw new Error("this is not of type boolValue, but " + getClass());
+    return container.nonrefs[offset] != 0;
   }
 
 
@@ -229,7 +234,9 @@ public abstract class Value extends ANY
    */
   public LValue at(Clazz c, int off)
   {
-    throw new Error("Cannot create LValue from " + getClass());
+    return new LValue(c,
+                      container,
+                      offset + off);
   }
 
 
@@ -242,7 +249,10 @@ public abstract class Value extends ANY
    */
   void storeNonRef(LValue slot, int size)
   {
-    throw new Error("Cannot store " + getClass() + " as non-ref");
+    if (PRECONDITIONS) require
+      (size == Layout.get(_clazz).size());
+
+    container.storeNonRef(slot, size, offset);
   }
 
 
@@ -257,7 +267,7 @@ public abstract class Value extends ANY
    */
   boolean equalsBitWise(LValue slot, int size)
   {
-    throw new Error("value "+ this + " not allowed for equalsBitWise");
+    return container.equalsBitWise(slot, size, offset);
   }
 
 
@@ -271,7 +281,14 @@ public abstract class Value extends ANY
    */
   void checkStaticClazz(Clazz expected)
   {
-    throw new Error("value " + this + " not allowed for clazz "+ expected);
+    if (expected.isRef())
+      {
+        throw new Error("LValue (" + _clazz + " not allowed for dynamic clazz " + expected);
+      }
+    if (expected != _clazz)
+      {
+        throw new Error("Runtime clazz "+_clazz+" does not equal static "+expected);
+      }
   }
 
 
@@ -281,7 +298,10 @@ public abstract class Value extends ANY
    */
   Instance instance()
   {
-    throw new Error("value "+ this + " of class " + getClass() + " is not an instance");
+    if (PRECONDITIONS) require
+      (_clazz.isRef());
+
+    return (Instance) container.refs[offset];
   }
 
 
@@ -291,7 +311,7 @@ public abstract class Value extends ANY
    */
   ArrayData arrayData()
   {
-    throw new Error("value "+ this + " of class " + getClass() + " is not an ArrayData");
+    return (ArrayData) container.refs[offset];
   }
 
 
@@ -300,9 +320,32 @@ public abstract class Value extends ANY
    */
   public int tag()
   {
-    throw new Error("value "+ this + " of class " + getClass() + " is not a tag");
+    if (PRECONDITIONS) require
+      (_clazz.isChoice() & !_clazz.isChoiceOfOnlyRefs());
+
+    var tag = container.nonrefs[offset];
+    if (POSTCONDITIONS) ensure
+      (tag >= 0);
+
+    return tag;
   }
 
+
+  /**
+   * toString
+   *
+   * @return
+   */
+  public String toString()
+  {
+    return "lvalue[" + container + "@" + offset + "(" + _clazz + ")]" +
+      (_clazz == Clazzes.i32.getIfCreated() ? " (" + i32Value() + ")" :
+       _clazz == Clazzes.u32.getIfCreated() ? " (" + u32Value() + ")" :
+       _clazz == Clazzes.u8.getIfCreated() ? " (" + u8Value() + ")" :
+       _clazz == Clazzes.i64.getIfCreated() ? " (" + i64Value() + ")" :
+       _clazz == Clazzes.u64.getIfCreated() ? " (" + u64Value() + ")" :
+       _clazz == Clazzes.bool.getIfCreated() ? " (" + boolValue() + ")" : "");
+  }
 
 }
 
