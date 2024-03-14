@@ -54,7 +54,7 @@ public class Effects extends ANY
 
 
   /**
-   * The options provided to the fz comment.
+   * The options provided to the fz command.
    */
   final FuzionOptions _options;
 
