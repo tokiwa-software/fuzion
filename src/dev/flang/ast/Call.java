@@ -2265,16 +2265,11 @@ public class Call extends AbstractCall
    */
   private void inferFormalArgTypesFromActualArgs(AbstractFeature outer)
   {
-    var aargs = _actuals.iterator();
     for (var frml : _calledFeature.valueArguments())
       {
-        if (aargs.hasNext())
+        if (frml instanceof Feature f)
           {
-            var actl = aargs.next();
-            if (frml instanceof Feature f)
-              {
-                f.impl().addInitialCall(this, outer);
-              }
+            f.impl().addInitialCall(this, outer);
           }
       }
   }
