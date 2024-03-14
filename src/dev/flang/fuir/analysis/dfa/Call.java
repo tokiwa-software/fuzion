@@ -219,7 +219,7 @@ public class Call extends ANY implements Comparable<Call>, Context
     Val result = null;
     if (_dfa._fuir.clazzKind(_cc) == IR.FeatureKind.Intrinsic)
       {
-        var name = _dfa._fuir.clazzIntrinsicName(_cc);
+        var name = _dfa._fuir.clazzOriginalName(_cc);
         var idfa = DFA._intrinsics_.get(name);
         if (idfa != null)
           {
@@ -264,7 +264,7 @@ public class Call extends ANY implements Comparable<Call>, Context
                  c_u8, c_u16, c_u32, c_u64,
                  c_f32, c_f64              -> new NumericValue(_dfa, rc);
             case c_Const_String, c_String  -> _dfa.newConstString(null, this);
-            default                        -> { Errors.warning("DFA: cannot handle native feature " + _dfa._fuir.clazzIntrinsicName(_cc));
+            default                        -> { Errors.warning("DFA: cannot handle native feature " + _dfa._fuir.clazzOriginalName(_cc));
                                                 yield null; }
           };
       }
@@ -357,17 +357,44 @@ public class Call extends ANY implements Comparable<Call>, Context
 
   /**
    * Get effect of given type in this call's environment or the default if none
-   * found.
+   * found or null if no effect in environment and also no default available.
    *
    * @param ecl clazz defining the effect type.
    *
    * @return null in case no effect of type ecl was found
    */
-  Value getEffect(int ecl)
+  Value getEffectCheck(int ecl)
   {
     return
       _env != null ? _env.getEffect(ecl)
                    : _dfa._defaultEffects.get(ecl);
+  }
+
+
+  /**
+   * Get effect of given type in this call's environment or the default if none
+   * found or null if no effect in environment and also no default available.
+   *
+   * Report an error if no effect found during last pass (i.e.,
+   * _dfa._reportResults is set).
+   *
+   * @param ecl clazz defining the effect type.
+   *
+   * @return null in case no effect of type ecl was found
+   */
+  Value getEffectForce(int ecl)
+  {
+    var result = getEffectCheck(ecl);
+    if (result == null && _dfa._reportResults && !_dfa._fuir.clazzOriginalName(_cc).equals("effect.type.unsafe_get"))
+      {
+        if (false)
+          {
+            showWhy(); // NYI: IMPROVEMENT: Include the source code position and the showWhy-output in the error produced here:
+          }
+        Errors.usedEffectNeverInstantiated(_dfa._fuir.clazzAsString(ecl));
+        _dfa._missingEffects.add(ecl);
+      }
+    return result;
   }
 
 

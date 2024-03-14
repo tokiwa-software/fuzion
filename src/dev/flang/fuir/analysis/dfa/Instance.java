@@ -112,9 +112,19 @@ public class Instance extends Value implements Comparable<Instance>
    */
   public int compareTo(Instance other)
   {
+    var i1 = this;
+    var i2 = other;
+    var c1 = i1._clazz;
+    var c2 = i2._clazz;
+    var e1 = i1._context instanceof Call ca1 ? ca1._env : null;
+    var e2 = i2._context instanceof Call ca2 ? ca2._env : null;
     return
-      _clazz < other._clazz ? -1 :
-      _clazz > other._clazz ? +1 : 0;
+      c1 < c2    ? -1 :
+      c1 > c2    ? +1 :
+      e1 == e2   ?  0 :
+      e1 == null ? -1 :
+      e2 == null ? +1
+                 : e1.compareTo(e2);
   }
 
 

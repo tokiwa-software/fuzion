@@ -977,7 +977,7 @@ public class Intrinsics extends ANY
               case "effect.abort0"  ->
                 CStmnt.seq(CStmnt.iff(evi, CExpr.call("longjmp",new List<>(evj.deref(), CExpr.int32const(1)))),
                            CExpr.fprintfstderr("*** C backend support for %s missing\n",
-                                               CExpr.string(c._fuir.clazzIntrinsicName(cl))),
+                                               CExpr.string(c._fuir.clazzOriginalName(cl))),
                            CExpr.exit(1));
               default -> throw new Error("unexpected intrinsic '" + in + "'.");
               };
@@ -1253,7 +1253,7 @@ public class Intrinsics extends ANY
       c._fuir.clazzIsRef(c._fuir.clazzResultClazz(or)) ? CNames.OUTER.deref().field(CNames.FIELDS_IN_REF_CLAZZ)
                                                        : CNames.OUTER;
 
-    var in = c._fuir.clazzIntrinsicName(cl);
+    var in = c._fuir.clazzOriginalName(cl);
     var cg = _intrinsics_.get(in);
     var result = CStmnt.EMPTY;
     if (cg != null)
@@ -1270,7 +1270,7 @@ public class Intrinsics extends ANY
           }
         else
           {
-            var msg = "code for intrinsic " + c._fuir.clazzIntrinsicName(cl) + " is missing";
+            var msg = "code for intrinsic " + c._fuir.clazzOriginalName(cl) + " is missing";
             Errors.warning(msg);
             result = CStmnt.seq(CExpr.call("fprintf",
                                            new List<>(new CIdent("stderr"),

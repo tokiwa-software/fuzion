@@ -77,20 +77,22 @@ test_local_mutate is
           s.update a->a+e
         option s
 
-      # NYI: move this into negative test
-      if envir.args.count = 2
-        say count    # *** will cause an error, requires m to be installed
-
-      # NYI: move this into negative test
-      if envir.args.count = 3
-        s := m.go ()->count2
-        say s        # *** will cause an error, requires m to be installed
+      # This was moved to test_local_mutate_neg
+      #
+      # say count    # *** will cause compile-time an error, requires m to be installed
 
       # handler for negative tests that cause panic:
       #
       my_panic : Panic_Handler is
         do_panic(msg String) =>
           say "*** got '$msg' ***"
+
+      neg_test3 =>
+        s := m.go ()->count2
+        say s             # *** will cause an error, requires m to be installed
+        "** failed, did not panic **"
+
+      # say (my_panic.use ()->neg_test3 ()->"ok")   -- NYI: UNDER DEVELOPMENT: this currently fails for the C backend, need to check why
 
       say (my_panic.use ()->neg_test4 ()->"ok")
 

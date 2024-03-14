@@ -314,7 +314,6 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
     _fuir = fuir;
     _processor = processor;
-    Errors.showAndExit();
   }
 
 

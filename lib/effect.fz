@@ -80,7 +80,7 @@ is
   # does this effect support abort?
   #
   # Redefining this to return `false` helps to detect unexptected calls to
-  # `abort` at runtime and ensure that the static analysis finds that there
+  # `abort` at runtime and ensure that the static analysis finds that the
   # code executed with this effect will always return normally and produce
   # a result. This is used, e.g, in `mutate` to avoid static analysis
   # reporting `panic` as an effect of the use of a local mutate instance.
@@ -114,14 +114,43 @@ is
   # has an effect of the given type been installed?
   public type.is_installed(E type) bool => intrinsic_constructor
 
+  # has an effect of the given type been installed?
+  public type.get_if_installed option effect.this =>
+    if is_installed effect.this
+      unsafe_get effect.this
+    else
+      nil
+
+  # internal helper to perform `E.env` without producing an error
+  # in case static analysis fails to verify that effect `E` is
+  # actually installed.
+  #
+  private type.unsafe_get(E type) =>
+    E.env
 
 
-# helper instance for effect.abortable to wrap call to f() into a ()->unit
-#
-private Effect_Call(R type, f () -> R) ref : Function unit is
-  res option R := nil
-  call =>
-    set res := f()
+  # helper instance for effect.abortable to wrap call to f() into a ()->unit
+  #
+  # NOTE: Since all control flow to enter an environment goes through this it is
+  # essential that static analysis works well.  `Effect_Call` must be an inner
+  # feature of `effect` since otherwise instances will not be separated well and
+  # values for `f` for different effects will be mixed up resulting in errors
+  # during static analysis for effects.
+  #
+  # NYI: CLEANUP: #2728 Needed since abortable supports only unit result
+  #
+  private Effect_Call(
+    # result type of the call
+    R type,
+
+    # the function to be called
+    f () -> R
+    )
+    ref : Function unit
+  is
+    res option R := nil
+    call =>
+      set res := f()
 
 
 # effect mode is an enum that determines how an instance of effect is used
