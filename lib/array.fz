@@ -146,6 +146,7 @@ module:public array(
   public redef slice(from, to i32) Sequence T
     pre
       debug: from ≥ 0
+      debug: to <= length
   =>
 
     ref : Sequence T

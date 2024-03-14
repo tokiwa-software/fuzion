@@ -1170,7 +1170,7 @@ public class DFA extends ANY
         if (SHOW_STACK_ON_CHANGE)
           {
             var msg = by.get();
-            System.out.println(msg);
+            say(msg);
             Thread.dumpStack();
           }
         _changedSetBy = by;

@@ -1341,7 +1341,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (CHECKS) check
       (Errors.any() || field.isField(),
-       Errors.any() || feature().inheritsFrom(field.outer()));
+       Errors.any() || feature().inheritsFrom(field.outer()),
+       field.isOpenGenericField() == (select != -1));
 
     var result = _clazzForField.get(field);
     if (result == null)

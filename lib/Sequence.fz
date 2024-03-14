@@ -283,7 +283,7 @@ public Sequence(public T type) ref is
 
   # infix operand synonym for concat_sequences
   #
-  public infix ++ (s Sequence T) => as_list ++ s.as_list
+  public infix ++ (s Sequence T) => concat_sequences s.as_list
 
 
   # create a list that repeats the current Sequence indefinitely.  In case 'Sequence.this'
