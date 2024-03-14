@@ -689,7 +689,8 @@ public class LibraryFeature extends AbstractFeature
           case Env:
             {
               var envType = _libModule.envType(iat);
-              x = new Env(LibraryModule.DUMMY_POS, envType);
+              x = new Env(LibraryModule.DUMMY_POS, envType)
+                { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
               break;
             }
           case Unit:
