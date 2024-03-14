@@ -34,7 +34,9 @@ import dev.flang.ir.IR;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
+import dev.flang.util.Terminal;
 
 
 /**
@@ -322,9 +324,33 @@ public class Call extends ANY implements Comparable<Call>, Context
       .append(r == null ? "*** VOID ***" : r);
     if (_env != null)
       {
-        sb.append(_env.toString());
+        sb.append(" ENV: ");
+        sb.append(dev.flang.util.Terminal.INTENSE_PURPLE + _env.toString() + dev.flang.util.Terminal.RESET);
+      }
+    else
+      {
+        sb.append(" ENV: ");
+        sb.append(dev.flang.util.Terminal.INTENSE_PURPLE + "NO ENV" + dev.flang.util.Terminal.RESET);
       }
     return sb.toString();
+  }
+
+
+  /**
+   * Create human-readable string from this call with effect environment information
+   */
+  public String toStringForEnv()
+  {
+    var on = _dfa._fuir.clazzOriginalName(_cc);
+    return
+      (on.equals(DFA._effect_abortable_name_)
+       ? "install effect " + Errors.effe(_dfa._fuir.clazzAsString(_dfa._fuir.effectType(_cc))) + ", old envionment was "
+       : "effect environment ") +
+      Errors.effe(Env.envAsString(_env)) +
+      " for call to " + (_pre ? "precondition of " : "") +_dfa._fuir.clazzAsString(_cc)+
+        (_codeblockId != -1 && _codeblockIndex != -1
+         ? " at " + _dfa._fuir.codeAtAsPos(_codeblockId,_codeblockIndex).show()
+         : "");
   }
 
 
@@ -378,20 +404,27 @@ public class Call extends ANY implements Comparable<Call>, Context
    * Report an error if no effect found during last pass (i.e.,
    * _dfa._reportResults is set).
    *
+   * @param pos a source for a position to be used in error produced
+   *
    * @param ecl clazz defining the effect type.
    *
    * @return null in case no effect of type ecl was found
    */
-  Value getEffectForce(int ecl)
+  Value getEffectForce(HasSourcePosition pos, int ecl)
   {
     var result = getEffectCheck(ecl);
     if (result == null && _dfa._reportResults && !_dfa._fuir.clazzOriginalName(_cc).equals("effect.type.unsafe_get"))
       {
-        if (false)
+        var why = new StringBuilder("Callchain that lead to this point:\n\n");
+        Context co = this;
+        while (co != null)
           {
-            showWhy(); // NYI: IMPROVEMENT: Include the source code position and the showWhy-output in the error produced here:
+            why.append(co.toStringForEnv() + "\n");
+            co = co instanceof Call cc ? cc._context : null;
           }
-        Errors.usedEffectNeverInstantiated(_dfa._fuir.clazzAsString(ecl));
+        DfaErrors.usedEffectNeverInstantiated(pos,
+                                              _dfa._fuir.clazzAsString(ecl),
+                                              why.toString());
         _dfa._missingEffects.add(ecl);
       }
     return result;

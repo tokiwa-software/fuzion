@@ -26,6 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
+import dev.flang.util.ANY;
+import dev.flang.util.Errors;
+
 
 /**
  * Context to show why something is found to be used.
@@ -39,7 +42,30 @@ public interface Context
   /*-----------------------------  classes  -----------------------------*/
 
 
+  /**
+   * The main application entry point as a Context.
+   */
+  static class MainEntryPoint extends ANY implements Context
+  {
+    public String showWhy()
+    {
+      say("program entry point");
+      return "  ";
+    }
+    public String toStringForEnv()
+    {
+      return "effect environment " + Errors.effe(Env.envAsString(null)) + " at program entry";
+    }
+  };
+
+
   /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * Singleton instnace of MainEntryPoint.
+   */
+  static final Context _MAIN_ENTRY_POINT_ = new MainEntryPoint();
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -62,6 +88,13 @@ public interface Context
    * nested contexts.  "  " is to be added to the result on each recursive call.
    */
   String showWhy();
+
+
+  /**
+   * Show the context that caused the inclusion of this instance into the
+   * analysis in a way that is useful for error related to effects.
+   */
+  String toStringForEnv();
 
 }
 

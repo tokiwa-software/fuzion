@@ -674,7 +674,7 @@ public class DFA extends ANY
      */
     public Pair<Val, Unit> env(int ecl)
     {
-      return new Pair<>(_call.getEffectForce(ecl), _unit_);
+      return new Pair<>(_call.getEffectForce(Analyze.this, ecl), _unit_);
     }
 
 
@@ -1105,7 +1105,7 @@ public class DFA extends ANY
                 Value.UNIT,
                 new List<>(),
                 null /* env */,
-                () -> { say("program entry point"); return "  "; });
+                Context._MAIN_ENTRY_POINT_);
       }
 
     newCall(cl,
@@ -1113,7 +1113,7 @@ public class DFA extends ANY
             Value.UNIT,
             new List<>(),
             null /* env */,
-            () -> { say("program entry point"); return "  "; });
+            Context._MAIN_ENTRY_POINT_);
 
     findFixPoint();
     Errors.showAndExit();
@@ -1383,6 +1383,12 @@ public class DFA extends ANY
   static void setArrayU8ElementsToAnything (Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, FUIR.SpecialClazzes.c_u8 ); }
   static void setArrayI32ElementsToAnything(Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, FUIR.SpecialClazzes.c_i32); }
   static void setArrayI64ElementsToAnything(Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, FUIR.SpecialClazzes.c_i64); }
+
+
+  /**
+   * Name of intrinsic `effect.abortable`.
+   */
+  static final String _effect_abortable_name_ = "effect.abortable";
 
 
   static
@@ -1862,7 +1868,7 @@ public class DFA extends ANY
             }
           return Value.UNIT;
         });
-    put("effect.abortable"               , cl ->
+    put(_effect_abortable_name_          , cl ->
         {
           var ecl = cl._dfa._fuir.effectType(cl._cc);
           var oc = cl._dfa._fuir.clazzActualGeneric(cl._cc, 0);
