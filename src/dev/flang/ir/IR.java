@@ -79,6 +79,13 @@ public class IR extends ANY
    */
   protected static final int FEATURE_BASE = 0x50000000;
 
+  /**
+   * For sites represented by integers, this gives the base added to the
+   * integers to detect wrong values quickly.
+   */
+  protected static final int SITE_BASE = 0x70000000;
+
+  public static final int NO_SITE = SITE_BASE-1;
 
   /**
    * The basic types of features in Fuzion:
@@ -125,7 +132,10 @@ public class IR extends ANY
   }
 
 
-  protected final Map2Int<List<Object>> _codeIds;
+  final Map2Int<List<Object>> _codeIds;
+
+  final List<Integer> _exprStart = new List<>();
+  int _totalExprs = 0;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -146,6 +156,86 @@ public class IR extends ANY
   protected IR(IR original)
   {
     _codeIds = original._codeIds;
+  }
+
+  /*-----------------------  code block handling  -----------------------*/
+
+
+  protected int addCode(List<Object> b)
+  {
+    b.freeze();
+    var res = _codeIds.add(b);
+    var index = res - CODE_BASE;
+    if (index >= _exprStart.size())
+      {
+        _exprStart.add(_totalExprs);
+        _totalExprs += b.size();
+      }
+    return res;
+  }
+
+  protected List<Object> getCode(int c)
+  {
+    return _codeIds.get(c);
+  }
+
+  protected Object getExpr(int c, int i)
+  {
+    return getCode(c).get(i);
+  }
+
+
+  public int siteFromCI(int c, int i)
+  {
+    if (PRECONDITIONS) require
+      (0 < i && i < getCode(c).size());
+
+    var index = c - CODE_BASE;
+    var result = _exprStart.get(index).intValue() + i + SITE_BASE;
+
+    if (POSTCONDITIONS) ensure
+      (c == codeIndexFromSite(result),
+       i == exprIndexFromSite(result));
+
+    return result;
+  }
+
+
+  public int codeIndexFromSite(int site)
+  {
+    var rawSite = site - SITE_BASE;
+    // perform binary search in _exprStart
+    int l = 0;
+    int r = _exprStart.size()-1;
+    int result = -1;
+    int cmp = 0;
+    while (l <= r)
+      {
+        int m = (l + r) / 2;
+        var s = _exprStart.get(m).intValue();
+        cmp = Integer.compare(rawSite, s);
+        if (cmp <= 0)
+          {
+            r = m - 1;
+          }
+        if (cmp >= 0)
+          {
+            l = m + 1;
+          }
+
+      }
+    int result_raw_c = (cmp <= 0) ? l : l-1;
+    int result_c = result_raw_c + CODE_BASE;
+    if (POSTCONDITIONS) ensure
+      (site >= result_raw_c,
+       result_raw_c == _exprStart.size()-1 || _exprStart.get(result_raw_c+1) > site);
+    return result_c;
+  }
+
+  public int exprIndexFromSite(int site)
+  {
+    var index = codeIndexFromSite(site) - CODE_BASE;
+    return site - index;
   }
 
 
@@ -249,8 +339,8 @@ public class IR extends ANY
         // if is converted to If, blockId, elseBlockId
         toStack(l, i.cond);
         l.add(i);
-        l.add(new NumLiteral(_codeIds.add(toStack(i.block      ))));
-        l.add(new NumLiteral(_codeIds.add(toStack(i.elseBlock()))));
+        l.add(new NumLiteral(addCode(toStack(i.block      ))));
+        l.add(new NumLiteral(addCode(toStack(i.elseBlock()))));
       }
     else if (e instanceof AbstractCall c)
       {
@@ -272,7 +362,7 @@ public class IR extends ANY
         for (var c : m.cases())
           {
             var caseCode = toStack(c.code());
-            l.add(new NumLiteral(_codeIds.add(caseCode)));
+            l.add(new NumLiteral(addCode(caseCode)));
           }
       }
     else if (e instanceof Tag t)

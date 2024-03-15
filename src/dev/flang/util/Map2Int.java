@@ -35,7 +35,8 @@ import java.util.stream.IntStream;
 
 
 /**
- * Map2Int gives an efficient mapping from a comparable instance to int
+ * Map2Int gives an efficient mapping from an (possibly comparable) instance to
+ * int.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

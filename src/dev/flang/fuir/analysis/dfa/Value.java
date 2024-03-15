@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
+import static dev.flang.ir.IR.NO_SITE;
+
 import java.util.Comparator;
 
 import java.util.function.Consumer;
@@ -314,7 +316,7 @@ public class Value extends Val
     Value result;
     if (this == UNIT)
       {
-        result = dfa.newInstance(rc, context);
+        result = dfa.newInstance(rc, context, NO_SITE);
       }
     else
       {

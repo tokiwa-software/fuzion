@@ -113,6 +113,8 @@ public class Call extends ANY implements Comparable<Call>, Context
   Context _context;
 
 
+  int _site;
+
   /**
    * True if this instance escapes this call.
    */
@@ -147,7 +149,7 @@ public class Call extends ANY implements Comparable<Call>, Context
    * @param context for debugging: Reason that causes this call to be part of
    * the analysis.
    */
-  public Call(DFA dfa, int cc, boolean pre, Value target, List<Val> args, Env env, Context context)
+  public Call(DFA dfa, int cc, boolean pre, Value target, List<Val> args, Env env, Context context, int site)
   {
     _dfa = dfa;
     _cc = cc;
@@ -156,7 +158,8 @@ public class Call extends ANY implements Comparable<Call>, Context
     _args = args;
     _env = env;
     _context = context;
-    _instance = dfa.newInstance(cc, this);
+    _instance = dfa.newInstance(cc, this, site);
+    _site = site;
 
     if (!pre && dfa._fuir.clazzResultField(cc)==-1) /* <==> _fuir.isConstructor(cl) */
       {
@@ -185,6 +188,8 @@ public class Call extends ANY implements Comparable<Call>, Context
     var r =
       _cc   <   other._cc  ? -1 :
       _cc   >   other._cc  ? +1 :
+      _site <   other._site? -1 :
+      _site >   other._site? +1 :
       _pre  && !other._pre ? -1 :
       !_pre &&  other._pre ? +1 : Value.compare(_target, other._target);
     for (var i = 0; r == 0 && i < _args.size(); i++)
@@ -234,7 +239,7 @@ public class Call extends ANY implements Comparable<Call>, Context
             if (at >= 0)
               {
                 var rc = _dfa._fuir.clazzResultClazz(_cc);
-                var t = _dfa.newInstance(rc, this);
+                var t = _dfa.newInstance(rc, this, _site);
                 // NYI: DFA missing support for Type instance, need to set field t.name to tname.
                 result = t;
               }
