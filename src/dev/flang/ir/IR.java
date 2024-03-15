@@ -169,7 +169,7 @@ public class IR extends ANY
     if (index >= _exprStart.size())
       {
         _exprStart.add(_totalExprs);
-        _totalExprs += b.size();
+        _totalExprs += b.size() + 1; // b.size() might be 0 so we add 1 to have disjoint site indices
       }
     return res;
   }
@@ -188,7 +188,7 @@ public class IR extends ANY
   public int siteFromCI(int c, int i)
   {
     if (PRECONDITIONS) require
-      (0 < i && i < getCode(c).size());
+      (0 <= i && i < getCode(c).size());
 
     var index = c - CODE_BASE;
     var result = _exprStart.get(index).intValue() + i + SITE_BASE;
@@ -207,13 +207,13 @@ public class IR extends ANY
     // perform binary search in _exprStart
     int l = 0;
     int r = _exprStart.size()-1;
-    int result = -1;
-    int cmp = 0;
-    while (l <= r)
+    int result_raw_c;
+    do
       {
         int m = (l + r) / 2;
         var s = _exprStart.get(m).intValue();
-        cmp = Integer.compare(rawSite, s);
+        int cmp = Integer.compare(rawSite, s);
+        result_raw_c = cmp < 0 ? m-1 : m;
         if (cmp <= 0)
           {
             r = m - 1;
@@ -222,20 +222,21 @@ public class IR extends ANY
           {
             l = m + 1;
           }
-
       }
-    int result_raw_c = (cmp <= 0) ? l : l-1;
+    while (l <= r);
     int result_c = result_raw_c + CODE_BASE;
     if (POSTCONDITIONS) ensure
       (site >= result_raw_c,
-       result_raw_c == _exprStart.size()-1 || _exprStart.get(result_raw_c+1) > site);
+       _exprStart.get(result_raw_c) <= rawSite,
+       result_raw_c == _exprStart.size()-1 || _exprStart.get(result_raw_c+1) > rawSite);
     return result_c;
   }
 
   public int exprIndexFromSite(int site)
   {
+    var rawSite = site - SITE_BASE;
     var index = codeIndexFromSite(site) - CODE_BASE;
-    return site - index;
+    return rawSite - _exprStart.get(index).intValue();
   }
 
 
