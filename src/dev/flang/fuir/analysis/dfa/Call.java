@@ -61,19 +61,30 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * The DFA instance we are working with.
    */
-  DFA _dfa;
+  final DFA _dfa;
 
 
   /**
    * The clazz this is calling.
    */
-  int _cc;
+  final int _cc;
 
 
   /**
    * Is this a call to _cc's precondition?
    */
-  boolean _pre;
+  final boolean _pre;
+
+
+  /**
+   * If available, _site gives the call site of this Call (see IR.siteFromCI and
+   * FUIR.siteAsPos).  Calls with different call sites are analysed separately,
+   * even if the context and environment of the call is the same.
+   *
+   * IR.NO_SITE if the call site is not known, i.e., the call is coming from
+   * intrinsic call or the main entry point.
+   */
+  final int _site;
 
 
   /**
@@ -119,15 +130,6 @@ public class Call extends ANY implements Comparable<Call>, Context
   boolean _escapes = false;
 
 
-  /**
-   * If available, _codeblockId and _codeBlockIndex give an example call that
-   * resulted in creation of this Call.  This can be used to show the reason why
-   * a given call is present in showWhy().  Both are -1 if no call site is known.
-   */
-  int _codeblockId = -1;
-  int _codeblockIndex = -1;
-
-
   /*---------------------------  constructors  ---------------------------*/
 
 
@@ -140,6 +142,9 @@ public class Call extends ANY implements Comparable<Call>, Context
    *
    * @param pre true if calling precondition
    *
+   * @param site the call site, -1 if unknown (from intrinsic or program entry
+   * point)
+   *
    * @param target is the target value of the call
    *
    * @param args are the actual arguments passed to the call
@@ -147,16 +152,17 @@ public class Call extends ANY implements Comparable<Call>, Context
    * @param context for debugging: Reason that causes this call to be part of
    * the analysis.
    */
-  public Call(DFA dfa, int cc, boolean pre, Value target, List<Val> args, Env env, Context context)
+  public Call(DFA dfa, int cc, boolean pre, int site, Value target, List<Val> args, Env env, Context context)
   {
     _dfa = dfa;
     _cc = cc;
     _pre = pre;
+    _site = site;
     _target = target;
     _args = args;
     _env = env;
     _context = context;
-    _instance = dfa.newInstance(cc, this);
+    _instance = dfa.newInstance(cc, site, this);
 
     if (!pre && dfa._fuir.clazzResultField(cc)==-1) /* <==> _fuir.isConstructor(cl) */
       {
@@ -234,7 +240,7 @@ public class Call extends ANY implements Comparable<Call>, Context
             if (at >= 0)
               {
                 var rc = _dfa._fuir.clazzResultClazz(_cc);
-                var t = _dfa.newInstance(rc, this);
+                var t = _dfa.newInstance(rc, _site, this);
                 // NYI: DFA missing support for Type instance, need to set field t.name to tname.
                 result = t;
               }
@@ -292,7 +298,7 @@ public class Call extends ANY implements Comparable<Call>, Context
             if (CHECKS) check
               (!_dfa._fuir.clazzIsVoidType(_dfa._fuir.clazzResultClazz(_cc)));
 
-            result = _instance.readField(_dfa, rf);
+            result = _instance.readField(_dfa, rf, -1, this);
           }
       }
     return result;
@@ -335,15 +341,14 @@ public class Call extends ANY implements Comparable<Call>, Context
   public String toStringForEnv()
   {
     var on = _dfa._fuir.clazzOriginalName(_cc);
+    var pos = callSitePos();
     return
       (on.equals(EFFECT_ABORTABLE_NAME)
        ? "install effect " + Errors.effe(_dfa._fuir.clazzAsString(_dfa._fuir.effectType(_cc))) + ", old envionment was "
        : "effect environment ") +
       Errors.effe(Env.envAsString(_env)) +
       " for call to " + (_pre ? "precondition of " : "") +_dfa._fuir.clazzAsString(_cc)+
-        (_codeblockId != -1 && _codeblockIndex != -1
-         ? " at " + _dfa._fuir.codeAtAsPos(_codeblockId,_codeblockIndex).show()
-         : "");
+      (pos != null ? " at " + pos.pos().show() : "");
   }
 
 
@@ -355,22 +360,32 @@ public class Call extends ANY implements Comparable<Call>, Context
     var indent = _context.showWhy();
     say(indent + "  |");
     say(indent + "  +- performs call " + this);
-    if (_codeblockId != -1 && _codeblockIndex != -1)
+    var pos = callSitePos();
+    if (pos != null)
       {
-        say(_dfa._fuir.codeAtAsPos(_codeblockId,_codeblockIndex).show());
+        say(pos.pos().show());
       }
     return indent + "  ";
   }
 
 
   /**
-   * record code block id c and code block index i as a sample call site that
-   * lead to the creation of this Call. Used by showWhy().
+   * return the call site index, -1 if unknown.
    */
-  void addCallSiteLocation(int c, int i)
+  int site()
   {
-    _codeblockId = c;
-    _codeblockIndex = i;
+    return _site;
+  }
+
+
+  /**
+   * If available, get a source code position of a call site that results in this call.
+   *
+   * @return The SourcePosition or null if not available
+   */
+  HasSourcePosition callSitePos()
+  {
+    return _dfa._fuir.siteAsPos(site());
   }
 
 
