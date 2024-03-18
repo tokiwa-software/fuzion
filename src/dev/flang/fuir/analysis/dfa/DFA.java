@@ -42,6 +42,7 @@ import dev.flang.fuir.analysis.AbstractInterpreter;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import static dev.flang.util.FuzionConstants.EFFECT_ABORTABLE_NAME;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
@@ -674,7 +675,7 @@ public class DFA extends ANY
      */
     public Pair<Val, Unit> env(int ecl)
     {
-      return new Pair<>(_call.getEffectForce(ecl), _unit_);
+      return new Pair<>(_call.getEffectForce(Analyze.this, ecl), _unit_);
     }
 
 
@@ -1105,7 +1106,7 @@ public class DFA extends ANY
                 Value.UNIT,
                 new List<>(),
                 null /* env */,
-                () -> { say("program entry point"); return "  "; });
+                Context._MAIN_ENTRY_POINT_);
       }
 
     newCall(cl,
@@ -1113,7 +1114,7 @@ public class DFA extends ANY
             Value.UNIT,
             new List<>(),
             null /* env */,
-            () -> { say("program entry point"); return "  "; });
+            Context._MAIN_ENTRY_POINT_);
 
     findFixPoint();
     Errors.showAndExit();
@@ -1862,7 +1863,7 @@ public class DFA extends ANY
             }
           return Value.UNIT;
         });
-    put("effect.abortable"               , cl ->
+    put(EFFECT_ABORTABLE_NAME            , cl ->
         {
           var ecl = cl._dfa._fuir.effectType(cl._cc);
           var oc = cl._dfa._fuir.clazzActualGeneric(cl._cc, 0);

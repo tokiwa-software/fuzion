@@ -34,6 +34,8 @@ import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
+import dev.flang.util.HasSourcePosition;
+import dev.flang.util.SourcePosition;
 
 
 /**
@@ -63,8 +65,51 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    * Interface that defines the operations of the actual interpreter
    * that processes this code.
    */
-  public static abstract class ProcessStatement<VALUE, RESULT> extends ANY
+  public static abstract class ProcessStatement<VALUE, RESULT> extends ANY implements HasSourcePosition
   {
+
+    /**
+     * FUIR we are currently interpreting
+     */
+    FUIR _fuir;
+
+
+    /**
+     * id of clazz we are interpreting, will be set by AbstractInterpreter before
+     * performing an Expression.
+     */
+    int _cl = -1;
+
+
+    /**
+     * true iff interpreting _cl's precondition, false for _cl itself, will be
+     * set by AbstractInterpreter before performing an Expression.
+     */
+    boolean _pre = false;
+
+
+    /**
+     * current code block, will be set by AbstractInterpreter before performing
+     * an Expression.
+     */
+    int _c;
+
+
+    /**
+     * index of match in current code block, will be set by AbstractInterpreter
+     * before performing an Expression.
+     */
+    int _i;
+
+
+    /**
+     * Create and return the actual source code position held by this instance.
+     */
+    public SourcePosition pos()
+    {
+      return _fuir.codeAtAsPos(_c, _i);
+    }
+
     /**
      * Join a List of RESULT from subsequent statements into a compound
      * statement.  For a code generator, this could, e.g., join statements "a :=
@@ -610,6 +655,12 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
         say("process "+_fuir.clazzAsString(cl)+"."+c+"."+i+":\t"+_fuir.codeAtAsString(cl, c, i)+" stack is "+stack);
       }
     var s = _fuir.codeAt(c, i);
+
+    _processor._fuir = _fuir;
+    _processor._cl = cl;
+    _processor._pre = pre;
+    _processor._c = c;
+    _processor._i = i;
     switch (s)
       {
       case AdrOf:
