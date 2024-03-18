@@ -321,17 +321,9 @@ public class Call extends ANY implements Comparable<Call>, Context
       }
     var r = result();
     sb.append(" => ")
-      .append(r == null ? "*** VOID ***" : r);
-    if (_env != null)
-      {
-        sb.append(" ENV: ");
-        sb.append(dev.flang.util.Terminal.INTENSE_PURPLE + _env.toString() + dev.flang.util.Terminal.RESET);
-      }
-    else
-      {
-        sb.append(" ENV: ");
-        sb.append(dev.flang.util.Terminal.INTENSE_PURPLE + "NO ENV" + dev.flang.util.Terminal.RESET);
-      }
+      .append(r == null ? "*** VOID ***" : r)
+      .append(" ENV: ")
+      .append(Errors.effe(_env != null ? _env.toString() : "NO ENV"));
     return sb.toString();
   }
 
