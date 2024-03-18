@@ -1964,7 +1964,11 @@ public class DFA extends ANY
             }
           };
         var okay = new TaggedValue(cl._dfa, rc, res, 0);
-        var err = new TaggedValue(cl._dfa, rc, cl._dfa.newInstance(cl._dfa._fuir.clazzChoice(rc, 1), null), 1);
+        var error_cl = cl._dfa._fuir.clazzChoice(rc, 1);
+        var error = cl._dfa.newInstance(error_cl, null);
+        var msg = cl._dfa._fuir.lookup_error_msg(error_cl);
+        error.setField(cl._dfa, msg, cl._dfa.newConstString(null, cl));
+        var err = new TaggedValue(cl._dfa, rc, error, 1);
         return okay.join(err);
       }
     return switch (cl._dfa._fuir.getSpecialClazz(rc))
