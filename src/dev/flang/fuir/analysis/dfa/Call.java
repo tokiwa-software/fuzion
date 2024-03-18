@@ -163,7 +163,7 @@ public class Call extends ANY implements Comparable<Call>, Context
     _args = args;
     _env = env;
     _context = context;
-    _instance = dfa.newInstance(cc, this, site);
+    _instance = dfa.newInstance(cc, site, this);
 
     if (!pre && dfa._fuir.clazzResultField(cc)==-1) /* <==> _fuir.isConstructor(cl) */
       {
@@ -243,7 +243,7 @@ public class Call extends ANY implements Comparable<Call>, Context
             if (at >= 0)
               {
                 var rc = _dfa._fuir.clazzResultClazz(_cc);
-                var t = _dfa.newInstance(rc, this, _site);
+                var t = _dfa.newInstance(rc, _site, this);
                 // NYI: DFA missing support for Type instance, need to set field t.name to tname.
                 result = t;
               }

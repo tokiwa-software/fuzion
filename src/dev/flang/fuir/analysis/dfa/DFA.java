@@ -539,7 +539,7 @@ public class DFA extends ANY
      */
     private Value newValueConst(int constCl, Context context, ByteBuffer b)
     {
-      var result = newInstance(constCl, context, NO_SITE);
+      var result = newInstance(constCl, NO_SITE, context);
       var args = new List<Val>();
       for (int index = 0; index < _fuir.clazzArgCount(constCl); index++)
         {
@@ -577,9 +577,9 @@ public class DFA extends ANY
      */
     private Value newArrayConst(int constCl, Call context, ByteBuffer d)
     {
-      var result = newInstance(constCl, context, NO_SITE);
+      var result = newInstance(constCl, NO_SITE, context);
       var sa = _fuir.clazzField(constCl, 0);
-      var sa0 = newInstance(_fuir.clazzResultClazz(sa), context, NO_SITE);
+      var sa0 = newInstance(_fuir.clazzResultClazz(sa), NO_SITE, context);
 
       var elementClazz = _fuir.inlineArrayElementClazz(constCl);
       var data = _fuir.clazzField(_fuir.clazzResultClazz(sa), 0);
@@ -950,7 +950,7 @@ public class DFA extends ANY
     _true  = new TaggedValue(this, bool, Value.UNIT, 1);
     _false = new TaggedValue(this, bool, Value.UNIT, 0);
     _bool  = _true.join(_false);
-    _universe = newInstance(_fuir.clazzUniverse(), null, NO_SITE);
+    _universe = newInstance(_fuir.clazzUniverse(), NO_SITE, null);
     Errors.showAndExit();
   }
 
@@ -1903,7 +1903,7 @@ public class DFA extends ANY
         {
           var jref = cl._dfa._fuir.lookupJavaRef(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
           cl._dfa._readFields.add(jref);
-          return cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context, NO_SITE);
+          return cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context);
         });
     put("fuzion.java.array_length"          , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.java.array_to_java_object0" , cl ->
@@ -1912,18 +1912,18 @@ public class DFA extends ANY
           var jref = cl._dfa._fuir.lookupJavaRef(rc);
           var data = cl._dfa._fuir.lookup_fuzion_sys_internal_array_data(cl._dfa._fuir.clazzArgClazz(cl._cc,0));
           cl._dfa._readFields.add(data);
-          var result = cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context, NO_SITE);
+          var result = cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context);
           result.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF); // NYI: record putfield of result.jref := args.get(0).data
           return result;
         });
-    put("fuzion.java.bool_to_java_object"   , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context, NO_SITE) );
-    put("fuzion.java.f32_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context, NO_SITE) );
-    put("fuzion.java.f64_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context, NO_SITE) );
-    put("fuzion.java.get_field0"            , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context, NO_SITE) );
-    put("fuzion.java.i16_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context, NO_SITE) );
-    put("fuzion.java.i32_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context, NO_SITE) );
-    put("fuzion.java.i64_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context, NO_SITE) );
-    put("fuzion.java.i8_to_java_object"     , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), cl._context, NO_SITE) );
+    put("fuzion.java.bool_to_java_object"   , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
+    put("fuzion.java.f32_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
+    put("fuzion.java.f64_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
+    put("fuzion.java.get_field0"            , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
+    put("fuzion.java.i16_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
+    put("fuzion.java.i32_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
+    put("fuzion.java.i64_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
+    put("fuzion.java.i8_to_java_object"     , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
     put("fuzion.java.java_string_to_string" , cl ->
         {
           var jref = cl._dfa._fuir.lookupJavaRef(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
@@ -1934,7 +1934,7 @@ public class DFA extends ANY
       {
         var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
         var jref = cl._dfa._fuir.lookupJavaRef(rc);
-        var jobj = cl._dfa.newInstance(rc, null, NO_SITE);
+        var jobj = cl._dfa.newInstance(rc, NO_SITE, null);
         jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
         return jobj;
       });
@@ -1961,14 +1961,14 @@ public class DFA extends ANY
             }
             default -> {
               var jref = cl._dfa._fuir.lookupJavaRef(oc);
-              var jobj = cl._dfa.newInstance(oc, null, NO_SITE);
+              var jobj = cl._dfa.newInstance(oc, NO_SITE, null);
               jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
               yield jobj;
             }
           };
         var okay = new TaggedValue(cl._dfa, rc, res, 0);
         var error_cl = cl._dfa._fuir.clazzChoice(rc, 1);
-        var error = cl._dfa.newInstance(error_cl, null, NO_SITE);
+        var error = cl._dfa.newInstance(error_cl, NO_SITE, null);
         var msg = cl._dfa._fuir.lookup_error_msg(error_cl);
         error.setField(cl._dfa, msg, cl._dfa.newConstString(null, cl));
         var err = new TaggedValue(cl._dfa, rc, error, 1);
@@ -1982,7 +1982,7 @@ public class DFA extends ANY
         case c_unit -> Value.UNIT;
         default -> {
           var jref = cl._dfa._fuir.lookupJavaRef(rc);
-          var jobj = cl._dfa.newInstance(rc, null, NO_SITE);
+          var jobj = cl._dfa.newInstance(rc, NO_SITE, null);
           jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
           yield jobj;
         }
@@ -2034,11 +2034,11 @@ public class DFA extends ANY
       {
         var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
         var jref = cl._dfa._fuir.lookupJavaRef(rc);
-        var jobj = cl._dfa.newInstance(rc, null, NO_SITE);
+        var jobj = cl._dfa.newInstance(rc, NO_SITE, null);
         jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
         return jobj;
       });
-    put("fuzion.java.u16_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), null, NO_SITE) );
+    put("fuzion.java.u16_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, null) );
   }
 
 
@@ -2089,10 +2089,13 @@ public class DFA extends ANY
    *
    * @param cl the clazz
    *
+   * @param site the site index where the new instances is creates, NO_SITE
+   * if not within code (instrinsics etc.)
+   *
    * @param context for debugging: Reason that causes this instance to be part
    * of the analysis.
    */
-  Value newInstance(int cl, Context context, int site)
+  Value newInstance(int cl, int site, Context context)
   {
     if (PRECONDITIONS) require
       (!_fuir.clazzIsChoice(cl) || _fuir.clazzIs(cl, SpecialClazzes.c_bool));
@@ -2111,7 +2114,7 @@ public class DFA extends ANY
         if (_fuir.clazzIsRef(cl))
           {
             var vc = _fuir.clazzAsValue(cl);
-            r = newInstance(vc, context, site).box(this, vc, cl, context);
+            r = newInstance(vc, site, context).box(this, vc, cl, context);
           }
         else
           {
@@ -2157,8 +2160,8 @@ public class DFA extends ANY
     var sysArray      = _fuir.clazzResultClazz(internalArray);
     var adata = utf8Bytes != null ? new SysArray(this, utf8Bytes, _fuir.clazz(FUIR.SpecialClazzes.c_u8))
                                   : new SysArray(this, new NumericValue(this, _fuir.clazz(FUIR.SpecialClazzes.c_u8)));
-    var r = newInstance(cs, context, NO_SITE);
-    var a = newInstance(sysArray, context, NO_SITE);
+    var r = newInstance(cs, NO_SITE, context);
+    var a = newInstance(sysArray, NO_SITE, context);
     a.setField(this,
                length,
                 utf8Bytes != null ? new NumericValue(this, _fuir.clazzResultClazz(length), utf8Bytes.length)
