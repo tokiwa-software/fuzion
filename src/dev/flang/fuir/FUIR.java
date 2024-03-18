@@ -2076,6 +2076,19 @@ hw25 is
 
 
   /**
+   * For a clazz of error, lookup the inner clazz of the msg field.
+   *
+   * @param cl index of a clazz `error`
+   *
+   * @return the index of the requested `error.msg` field's clazz.
+   */
+  public int lookup_error_msg(int cl)
+  {
+    return lookup(cl, Types.resolved.f_error_msg);
+  }
+
+
+  /**
    * Internal helper for lookup_* methods.
    *
    * @param cl index of the outer clazz for the lookup
