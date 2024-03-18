@@ -1078,24 +1078,47 @@ should be avoided as much as possible.
       }
     else
       {
-        /* NYI: UNDER DEVELOPMENT: the following simple examples creates an reference to an undefined result field:
-
-             a =>
-               b (c i32) is
-               b 0
-
-        */
-
         var ft = _types.resultType(t);
-        var getf =
-          fieldExists(r) ? (Expr.aload(current_index(cl), ft, _types.javaType(cl).vti())
-                            .andThen(getfield(r)))
-                         : Expr.UNIT;
-        return
-          traceReturn(cl, pre)
-          .andThen(getf)
-          .andThen(
-            fieldExists(r) ||
+        var tr =  traceReturn(cl, pre);
+
+        return fieldExists(r)
+          ? tr
+             .andThen(Expr.aload(current_index(cl), ft, _types.javaType(cl).vti()))
+             .andThen(getfield(r))
+             .andThen(ft.return0())
+          : ft != PrimitiveType.type_void
+          // field does not exist but signature is not void
+          ?
+              /*
+               * For special cases like:
+               *
+               * a Any => do
+               * _ := a
+               *
+               */
+            tr
+             .andThen(reportErrorInCode("Can not return result field that does not exist: " + _fuir.clazzAsStringNew(cl)))
+          // field does not exist and signature is void and real type is also fuzions void
+          : _fuir.clazzIsVoidType(t)
+          ?
+            /* Example:
+
+              count(a,b,n i32) =>
+                yak n
+                if a < b then
+                  yak " "
+                  count a+1 b n+1
+                else
+                  say ""
+                  count 1 b+1 n+1
+
+              count 1 1 1
+
+              */
+            tr
+              .andThen(reportErrorInCode("Can not return result field that does not exist: " + _fuir.clazzAsStringNew(cl)))
+          // field does not exist and signature is void and real type is not fuzions void
+          :
               /**
                * Example where fieldExists is false but we still need a return:
                *
@@ -1106,17 +1129,8 @@ should be avoided as much as possible.
                *     .read
                * _ := test0 unit_like unit
                */
-            ft == PrimitiveType.type_void
-              ? ft.return0()
-              /*
-               * For special cases like:
-               *
-               * a Any => do
-               * _ := a
-               *
-               */
-              : reportErrorInCode("Can not return result field that does not exist: " + _fuir.clazzAsStringNew(cl))
-            );
+            tr
+              .andThen(Expr.RETURN);
       }
   }
 
