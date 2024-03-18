@@ -63,7 +63,7 @@ public interface Context
 
 
   /**
-   * Singleton instnace of MainEntryPoint.
+   * Singleton instance of MainEntryPoint.
    */
   static final Context _MAIN_ENTRY_POINT_ = new MainEntryPoint();
 
