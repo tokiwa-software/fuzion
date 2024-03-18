@@ -231,4 +231,4 @@ public composition is
   #   g (Lazy (list i32))->list i32 := x->3:x
   #   say ((fix (list i32) g).take 10)
   #
-  fix(A type, f Lazy ((Lazy A)->A)) => f.call (fix A f)
+  public fix(A type, f Lazy ((Lazy A)->A)) => f.call (fix A f)
