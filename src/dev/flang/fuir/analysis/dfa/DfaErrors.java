@@ -52,6 +52,13 @@ public class DfaErrors extends ANY
   }
 
 
+  public static void readingUninitializedField(HasSourcePosition pos, String field, String clazz, String why)
+  {
+    Errors.error(pos.pos(),
+                 "reading uninitialized field " + sqn(field) + " from instance of " + code(clazz),
+                 why);
+  }
+
 }
 
 /* end of file */

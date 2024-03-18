@@ -297,7 +297,7 @@ public class Call extends ANY implements Comparable<Call>, Context
             if (CHECKS) check
               (!_dfa._fuir.clazzIsVoidType(_dfa._fuir.clazzResultClazz(_cc)));
 
-            result = _instance.readField(_dfa, rf);
+            result = _instance.readField(_dfa, rf, -1, this);
           }
       }
     return result;
@@ -337,18 +337,20 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * Create human-readable string from this call with effect environment information
    */
-  public String toStringForEnv()
+  public String toString(boolean forEnv)
   {
     var on = _dfa._fuir.clazzOriginalName(_cc);
+    var pos = callSitePos();
     return
-      (on.equals(EFFECT_ABORTABLE_NAME)
-       ? "install effect " + Errors.effe(_dfa._fuir.clazzAsString(_dfa._fuir.effectType(_cc))) + ", old envionment was "
-       : "effect environment ") +
-      Errors.effe(Env.envAsString(_env)) +
-      " for call to " + (_pre ? "precondition of " : "") +_dfa._fuir.clazzAsString(_cc)+
-        (_codeblockId != -1 && _codeblockIndex != -1
-         ? " at " + _dfa._fuir.codeAtAsPos(_codeblockId,_codeblockIndex).show()
-         : "");
+      (forEnv
+       ? (on.equals(EFFECT_ABORTABLE_NAME)
+          ? "install effect " + Errors.effe(_dfa._fuir.clazzAsString(_dfa._fuir.effectType(_cc))) + ", old envionment was "
+          : "effect environment ") +
+         Errors.effe(Env.envAsString(_env)) +
+         " for call to "
+       : "call ")+
+      Errors.sqn((_pre ? "precondition of " : "") + _dfa._fuir.clazzAsString(_cc)) +
+      (pos != null ? " at " + pos.pos().show() : "");
   }
 
 
@@ -360,9 +362,10 @@ public class Call extends ANY implements Comparable<Call>, Context
     var indent = _context.showWhy();
     say(indent + "  |");
     say(indent + "  +- performs call " + this);
-    if (_codeblockId != -1 && _codeblockIndex != -1)
+    var pos = callSitePos();
+    if (pos != null)
       {
-        say(_dfa._fuir.codeAtAsPos(_codeblockId,_codeblockIndex).show());
+        say(pos.pos().show());
       }
     return indent + "  ";
   }
@@ -376,6 +379,28 @@ public class Call extends ANY implements Comparable<Call>, Context
   {
     _codeblockId = c;
     _codeblockIndex = i;
+  }
+
+
+  /**
+   * return the call site index, -1 if unknown.
+   */
+  int site()
+  {
+    return _codeblockId != -1 && _codeblockIndex != -1
+      ? _dfa._fuir.siteFromCI(_codeblockId, _codeblockIndex)
+      : -1;
+  }
+
+
+  /**
+   * If available, get a source code position of a call site that results in this call.
+   *
+   * @return The SourcePosition or null if not available
+   */
+  HasSourcePosition callSitePos()
+  {
+    return _dfa._fuir.siteAsPos(site());
   }
 
 
@@ -414,12 +439,7 @@ public class Call extends ANY implements Comparable<Call>, Context
     if (result == null && _dfa._reportResults && !_dfa._fuir.clazzOriginalName(_cc).equals("effect.type.unsafe_get"))
       {
         var why = new StringBuilder("Callchain that lead to this point:\n\n");
-        Context co = this;
-        while (co != null)
-          {
-            why.append(co.toStringForEnv() + "\n");
-            co = co instanceof Call cc ? cc._context : null;
-          }
+        why.append(this.contextString());
         DfaErrors.usedEffectNeverInstantiated(pos,
                                               _dfa._fuir.clazzAsString(ecl),
                                               why.toString());

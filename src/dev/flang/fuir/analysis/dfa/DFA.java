@@ -426,7 +426,7 @@ public class DFA extends ANY
           }
         case Field:
           {
-            res = tvalue.value().callField(DFA.this, cc);
+            res = tvalue.value().callField(DFA.this, cc, _fuir.siteFromCI(c,i), _call);
             if (_reportResults && _options.verbose(9))
               {
                 say("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " +
@@ -1404,7 +1404,7 @@ public class DFA extends ANY
           var atomic    = cl._target;
           var expected  = cl._args.get(0);
           var new_value = cl._args.get(1).value();
-          var res = atomic.callField(cl._dfa, v);
+          var res = atomic.callField(cl._dfa, v, cl.site(), cl);
 
           // NYI: we could make compare_and_swap more accurate and call setField only if res contains expected, need bit-wise comparison
           atomic.setField(cl._dfa, v, new_value);
@@ -1421,7 +1421,7 @@ public class DFA extends ANY
           var atomic    = cl._target;
           var expected  = cl._args.get(0);
           var new_value = cl._args.get(1).value();
-          var res = atomic.callField(cl._dfa, v);
+          var res = atomic.callField(cl._dfa, v, cl.site(), cl);
 
           // NYI: we could make compare_and_set more accurate and call setField only if res contains expected, need bit-wise comparison
           atomic.setField(cl._dfa, v, new_value);
@@ -1442,7 +1442,7 @@ public class DFA extends ANY
             (cl._dfa._fuir.clazzNeedsCode(v));
 
           var atomic = cl._target;
-          return atomic.callField(cl._dfa, v);
+          return atomic.callField(cl._dfa, v, cl.site(), cl);
         });
 
     put("concur.atomic.write0", cl ->
@@ -1968,7 +1968,11 @@ public class DFA extends ANY
             }
           };
         var okay = new TaggedValue(cl._dfa, rc, res, 0);
-        var err = new TaggedValue(cl._dfa, rc, cl._dfa.newInstance(cl._dfa._fuir.clazzChoice(rc, 1), null, NO_SITE), 1);
+        var error_cl = cl._dfa._fuir.clazzChoice(rc, 1);
+        var error = cl._dfa.newInstance(error_cl, null, NO_SITE);
+        var msg = cl._dfa._fuir.lookup_error_msg(error_cl);
+        error.setField(cl._dfa, msg, cl._dfa.newConstString(null, cl));
+        var err = new TaggedValue(cl._dfa, rc, error, 1);
         return okay.join(err);
       }
     return switch (cl._dfa._fuir.getSpecialClazz(rc))

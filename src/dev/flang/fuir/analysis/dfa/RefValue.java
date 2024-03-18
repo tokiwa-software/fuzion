@@ -111,9 +111,9 @@ public class RefValue extends Value
   /**
    * Get set of values of given field within this instance.
    */
-  Val readFieldFromInstance(DFA dfa, int field)
+  Val readFieldFromInstance(DFA dfa, int field, int site, Context why)
   {
-    return _original.readFieldFromInstance(dfa, field);
+    return _original.readFieldFromInstance(dfa, field, site, why);
   }
 
 

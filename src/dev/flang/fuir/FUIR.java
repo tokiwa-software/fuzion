@@ -2076,6 +2076,19 @@ hw25 is
 
 
   /**
+   * For a clazz of error, lookup the inner clazz of the msg field.
+   *
+   * @param cl index of a clazz `error`
+   *
+   * @return the index of the requested `error.msg` field's clazz.
+   */
+  public int lookup_error_msg(int cl)
+  {
+    return lookup(cl, Types.resolved.f_error_msg);
+  }
+
+
+  /**
    * Internal helper for lookup_* methods.
    *
    * @param cl index of the outer clazz for the lookup
@@ -2177,6 +2190,21 @@ hw25 is
     return (e instanceof Expr expr) ? expr.pos() :
            (e instanceof Clazz z) ? z._type.declarationPos()  /* implicit assignment to argument field */
                                   : null;
+  }
+
+
+
+  /**
+   * Get the source code position of an expr at the given site if it is available.
+   *
+   * @param site the code position
+   *
+   * @return the source code position or null if not available.
+   */
+  public SourcePosition siteAsPos(int site)
+  {
+    return site != -1 ? codeAtAsPos(codeIndexFromSite(site), exprIndexFromSite(site))
+                      : null;
   }
 
 

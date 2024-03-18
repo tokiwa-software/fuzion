@@ -112,15 +112,15 @@ public class Value extends Val
        * Get set of values of given field within this value.  This works for unit
        * type results even if this is not an instance (but a unit type itself).
        */
-      public Val readField(DFA dfa, int field)
+      public Val readField(DFA dfa, int field, int site, Context why)
       {
         if (dfa._fuir.clazzUniverse() == dfa._fuir.clazzOuterClazz(field))
           {
-            return dfa._universe.readField(dfa, field);
+            return dfa._universe.readField(dfa, field, site, why);
           }
         else
           {
-            return super.readField(dfa, field);
+            return super.readField(dfa, field, site, why);
           }
       }
 
@@ -231,11 +231,11 @@ public class Value extends Val
    * Get set of values of given field within this value.  This works for unit
    * type results even if this is not an instance (but a unit type itself).
    */
-  public Val readField(DFA dfa, int field)
+  public Val readField(DFA dfa, int field, int site, Context why)
   {
     var rt = dfa._fuir.clazzResultClazz(field);
     var res = dfa._fuir.clazzIsUnitType(rt) ? Value.UNIT
-                                         : readFieldFromInstance(dfa, field);
+                                            : readFieldFromInstance(dfa, field, site, why);
     return res;
   }
 
@@ -245,12 +245,12 @@ public class Value extends Val
    *
    * @param cc the inner value of the field that is called.
    */
-  Val callField(DFA dfa, int cc)
+  Val callField(DFA dfa, int cc, int site, Context why)
   {
     var resa = new Val[] { null };
     forAll(t ->
            {
-             var r = t.readField(dfa, cc);
+             var r = t.readField(dfa, cc, site, why);
              if (resa[0] == null)
                {
                  resa[0] = r;
@@ -267,7 +267,7 @@ public class Value extends Val
   /**
    * Get set of values of given field within this instance.
    */
-  Val readFieldFromInstance(DFA dfa, int field)
+  Val readFieldFromInstance(DFA dfa, int field, int site, Context why)
   {
     throw new Error("Value.readField '"+dfa._fuir.clazzAsString(field)+"' called on class " + this + " (" + getClass() + "), expected " + Instance.class);
   }
