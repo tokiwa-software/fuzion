@@ -176,7 +176,7 @@ public class Instance extends Value implements Comparable<Instance>
             DfaErrors.readingUninitializedField(dfa._fuir.siteAsPos(site),
                                                 dfa._fuir.clazzAsString(field),
                                                 dfa._fuir.clazzAsString(_clazz) + (_isBoxed ? " Boxed!" : ""),
-                                                why.contextString());
+                                                why);
           }
       }
     else if (!dfa._fuir.clazzIsRef(dfa._fuir.clazzResultClazz(field)))

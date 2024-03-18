@@ -438,11 +438,9 @@ public class Call extends ANY implements Comparable<Call>, Context
     var result = getEffectCheck(ecl);
     if (result == null && _dfa._reportResults && !_dfa._fuir.clazzOriginalName(_cc).equals("effect.type.unsafe_get"))
       {
-        var why = new StringBuilder("Callchain that lead to this point:\n\n");
-        why.append(this.contextString());
         DfaErrors.usedEffectNeverInstantiated(pos,
                                               _dfa._fuir.clazzAsString(ecl),
-                                              why.toString());
+                                              this);
         _dfa._missingEffects.add(ecl);
       }
     return result;
