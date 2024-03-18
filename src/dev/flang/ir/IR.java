@@ -132,10 +132,17 @@ public class IR extends ANY
   }
 
 
-  final Map2Int<List<Object>> _codeIds;
+  /**
+   * All the code blocks in this IR. They are added via `addCode`.
+   */
+  private final Map2Int<List<Object>> _codeIds;
 
-  final List<Integer> _exprStart = new List<>();
-  int _totalExprs = 0;
+
+  /**
+   * For every raw code block index in _codeIds, this gives the index of the
+   * first site for the corresponding code block.
+   */
+  private final List<Integer> _siteStart = new List<>(0);
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -161,37 +168,67 @@ public class IR extends ANY
   /*-----------------------  code block handling  -----------------------*/
 
 
+  /**
+   * Add given code block and abtain a unique id for it.
+   *
+   * This also sets _siteStart in case `b` was not already added.
+   *
+   * NYI: UNDER DEVELOPMENT: The returned index should be replaced by a site
+   * index, i.e., siteFromCI(result, 0).
+   *
+   * @param b a list of Expr statements to be added.
+   *
+   * @return the index of b
+   */
   protected int addCode(List<Object> b)
   {
     b.freeze();
     var res = _codeIds.add(b);
     var index = res - CODE_BASE;
-    if (index >= _exprStart.size())
+    if (index >= _siteStart.size()-1)
       {
-        _exprStart.add(_totalExprs);
-        _totalExprs += b.size() + 1; // b.size() might be 0 so we add 1 to have disjoint site indices
+        var nextSiteStart = _siteStart.getLast() + b.size() + 1; // b.size() might be 0 so we add 1 to have disjoint site indices
+        _siteStart.add(nextSiteStart);
       }
     return res;
   }
 
-  protected List<Object> getCode(int c)
-  {
-    return _codeIds.get(c);
-  }
 
+  /**
+   * Get the Expr #i in code block c
+   *
+   * NYI: UNDER DEVELOPMENT: This should be replaced by `getExpr(int site)`.
+   *
+   * @param c the code block index returned by `addCode`
+   *
+   * @param i an index in c
+   */
   protected Object getExpr(int c, int i)
   {
-    return getCode(c).get(i);
+    return _codeIds.get(c).get(i);
   }
 
 
+
+  /**
+   * Convert a code block index c and an Expr index in that code block to a site
+   * index.
+   *
+   * NYI: UNDER DEVELOPMENT: This should be removed once `site` is used throughout.
+   *
+   * @param c the code block index returned by `addCode`
+   *
+   * @param i an index in c
+   *
+   * @return a site index corresponding to `c`/`i`.
+   */
   public int siteFromCI(int c, int i)
   {
     if (PRECONDITIONS) require
-      (0 <= i && i < getCode(c).size());
+      (0 <= i && i < _codeIds.get(c).size());
 
     var index = c - CODE_BASE;
-    var result = _exprStart.get(index).intValue() + i + SITE_BASE;
+    var result = _siteStart.get(index).intValue() + i + SITE_BASE;
 
     if (POSTCONDITIONS) ensure
       (c == codeIndexFromSite(result),
@@ -201,42 +238,57 @@ public class IR extends ANY
   }
 
 
-  public int codeIndexFromSite(int site)
+  /**
+   * Extract code block index from a site.
+   *
+   * NYI: UNDER DEVELOPMENT: This should be removed once `site` is used throughout.
+   *
+   * @param site a code site
+   *
+   * @return the index of the code block containing the given site.
+   */
+  protected int codeIndexFromSite(int site)
   {
     var rawSite = site - SITE_BASE;
-    // perform binary search in _exprStart
+    // perform binary search in _siteStart
     int l = 0;
-    int r = _exprStart.size()-1;
+    int r = _siteStart.size()-1;
     int result_raw_c;
     do
       {
         int m = (l + r) / 2;
-        var s = _exprStart.get(m).intValue();
+        var s = _siteStart.get(m).intValue();
         int cmp = Integer.compare(rawSite, s);
         result_raw_c = cmp < 0 ? m-1 : m;
-        if (cmp <= 0)
-          {
-            r = m - 1;
-          }
-        if (cmp >= 0)
-          {
-            l = m + 1;
-          }
+        if (cmp <= 0) { r = m - 1; }
+        if (cmp >= 0) { l = m + 1; }
       }
     while (l <= r);
     int result_c = result_raw_c + CODE_BASE;
+
     if (POSTCONDITIONS) ensure
       (site >= result_raw_c,
-       _exprStart.get(result_raw_c) <= rawSite,
-       result_raw_c == _exprStart.size()-1 || _exprStart.get(result_raw_c+1) > rawSite);
+       _siteStart.get(result_raw_c) <= rawSite,
+       result_raw_c == _siteStart.size()-1 || _siteStart.get(result_raw_c+1) > rawSite);
+
     return result_c;
   }
 
-  public int exprIndexFromSite(int site)
+
+  /**
+   * Extract expr index from a site.
+   *
+   * NYI: UNDER DEVELOPMENT: This should be removed once `site` is used throughout.
+   *
+   * @param site a code site
+   *
+   * @return the index of the Expr withing the code block containing the given site.
+   */
+  protected int exprIndexFromSite(int site)
   {
     var rawSite = site - SITE_BASE;
     var index = codeIndexFromSite(site) - CODE_BASE;
-    return rawSite - _exprStart.get(index).intValue();
+    return rawSite - _siteStart.get(index).intValue();
   }
 
 

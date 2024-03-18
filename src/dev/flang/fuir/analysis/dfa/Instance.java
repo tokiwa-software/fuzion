@@ -77,7 +77,16 @@ public class Instance extends Value implements Comparable<Instance>
   final boolean _isBoxed;
 
 
+  /**
+   * Site of the call that created this instance, -1 if the call site is not
+   * known, i.e., the call is coming from intrinsic call or the main entry
+   * point.
+   *
+   * Instances created at different sites will be considered as different
+   * instances.
+   */
   final int _site;
+
 
   /*---------------------------  constructors  ---------------------------*/
 
@@ -92,7 +101,7 @@ public class Instance extends Value implements Comparable<Instance>
    * @param context for debugging: Reason that causes this instance to be part
    * of the analysis.
    */
-  public Instance(DFA dfa, int clazz, Context context, int site)
+  public Instance(DFA dfa, int clazz, int site, Context context)
   {
     super(clazz);
 
@@ -100,10 +109,10 @@ public class Instance extends Value implements Comparable<Instance>
       (!dfa._fuir.clazzIsRef(clazz));
 
     _dfa = dfa;
+    _site = site;
     _context = context;
     _fields = new TreeMap<>();
     _isBoxed = false;
-    _site = site;
   }
 
 

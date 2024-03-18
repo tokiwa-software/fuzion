@@ -398,8 +398,7 @@ public class DFA extends ANY
           {
             if (_fuir.clazzNeedsCode(cc))
               {
-                var ca = newCall(cc, preCalled, tvalue.value(), args, _call._env, _call, _fuir.siteFromCI(c,i));
-                ca.addCallSiteLocation(c,i);
+                var ca = newCall(cc, preCalled, _fuir.siteFromCI(c,i), tvalue.value(), args, _call._env, _call);
                 res = ca.result();
                 if (res != null && res != Value.UNIT && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)))
                   {
@@ -556,9 +555,9 @@ public class DFA extends ANY
       // not every backend actually performs these calls.
       if (_fuir.hasPrecondition(constCl))
         {
-          newCall(constCl, true, _universe, args, null /* new environment */, context, NO_SITE);
+          newCall(constCl, true, NO_SITE, _universe, args, null /* new environment */, context);
         }
-      newCall(constCl, false, _universe, args, null /* new environment */, context, NO_SITE);
+      newCall(constCl, false, NO_SITE, _universe, args, null /* new environment */, context);
 
       return result;
     }
@@ -1105,20 +1104,20 @@ public class DFA extends ANY
       {
         newCall(cl,
                 true,
+                NO_SITE,
                 Value.UNIT,
                 new List<>(),
                 null /* env */,
-                Context._MAIN_ENTRY_POINT_,
-                NO_SITE);
+                Context._MAIN_ENTRY_POINT_);
       }
 
     newCall(cl,
             false,
+            NO_SITE,
             Value.UNIT,
             new List<>(),
             null /* env */,
-            Context._MAIN_ENTRY_POINT_,
-            NO_SITE);
+            Context._MAIN_ENTRY_POINT_);
 
     findFixPoint();
     Errors.showAndExit();
@@ -1789,7 +1788,7 @@ public class DFA extends ANY
 
           // NYI: spawn0 needs to set up an environment representing the new
           // thread and perform thread-related checks (race-detection. etc.)!
-          var ncl = cl._dfa.newCall(call, false, cl._args.get(0).value(), new List<>(), null /* new environment */, cl, NO_SITE);
+          var ncl = cl._dfa.newCall(call, false, NO_SITE, cl._args.get(0).value(), new List<>(), null /* new environment */, cl);
           return new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc));
         });
     put("fuzion.sys.thread.join0"        , cl -> Value.UNIT);
@@ -1878,7 +1877,7 @@ public class DFA extends ANY
 
           var env = cl._env;
           var newEnv = cl._dfa.newEnv(cl, env, ecl, cl._target);
-          var ncl = cl._dfa.newCall(call, false, cl._args.get(0).value(), new List<>(), newEnv, cl, NO_SITE);
+          var ncl = cl._dfa.newCall(call, false, NO_SITE, cl._args.get(0).value(), new List<>(), newEnv, cl);
           // NYI: result must be null if result of ncl is null (ncl does not return) and effect.abort is not called
           return Value.UNIT;
         });
@@ -2116,7 +2115,7 @@ public class DFA extends ANY
           }
         else
           {
-            r = new Instance(this, cl, context, site);
+            r = new Instance(this, cl, site, context);
           }
       }
     return cache(r);
@@ -2177,6 +2176,9 @@ public class DFA extends ANY
    *
    * @param pre true iff precondition is called
    *
+   * @param site the call site, -1 if unknown (from intrinsic or program entry
+   * point)
+   *
    * @param tvalue the target value on which cl is called
    *
    * @param args the arguments passed to the call
@@ -2189,9 +2191,9 @@ public class DFA extends ANY
    * @return cl a new or existing call to cl (or its precondition) with the
    * given target, args and environment.
    */
-  Call newCall(int cl, boolean pre, Value tvalue, List<Val> args, Env env, Context context, int site)
+  Call newCall(int cl, boolean pre, int site, Value tvalue, List<Val> args, Env env, Context context)
   {
-    var r = new Call(this, cl, pre, tvalue, args, env, context, site);
+    var r = new Call(this, cl, pre, site, tvalue, args, env, context);
     var e = _calls.get(r);
     if (e == null)
       {

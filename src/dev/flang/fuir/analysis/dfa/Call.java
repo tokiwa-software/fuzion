@@ -61,19 +61,30 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * The DFA instance we are working with.
    */
-  DFA _dfa;
+  final DFA _dfa;
 
 
   /**
    * The clazz this is calling.
    */
-  int _cc;
+  final int _cc;
 
 
   /**
    * Is this a call to _cc's precondition?
    */
-  boolean _pre;
+  final boolean _pre;
+
+
+  /**
+   * If available, _site gives the call site of this Call (see IR.siteFromCI and
+   * FUIR.siteAsPos).  Calls with different call sites are analysed separately,
+   * even if the context and environment of the call is the same.
+   *
+   * IR.NO_SITE if the call site is not known, i.e., the call is coming from
+   * intrinsic call or the main entry point.
+   */
+  final int _site;
 
 
   /**
@@ -113,21 +124,10 @@ public class Call extends ANY implements Comparable<Call>, Context
   Context _context;
 
 
-  int _site;
-
   /**
    * True if this instance escapes this call.
    */
   boolean _escapes = false;
-
-
-  /**
-   * If available, _codeblockId and _codeBlockIndex give an example call that
-   * resulted in creation of this Call.  This can be used to show the reason why
-   * a given call is present in showWhy().  Both are -1 if no call site is known.
-   */
-  int _codeblockId = -1;
-  int _codeblockIndex = -1;
 
 
   /*---------------------------  constructors  ---------------------------*/
@@ -142,6 +142,9 @@ public class Call extends ANY implements Comparable<Call>, Context
    *
    * @param pre true if calling precondition
    *
+   * @param site the call site, -1 if unknown (from intrinsic or program entry
+   * point)
+   *
    * @param target is the target value of the call
    *
    * @param args are the actual arguments passed to the call
@@ -149,17 +152,18 @@ public class Call extends ANY implements Comparable<Call>, Context
    * @param context for debugging: Reason that causes this call to be part of
    * the analysis.
    */
-  public Call(DFA dfa, int cc, boolean pre, Value target, List<Val> args, Env env, Context context, int site)
+  public Call(DFA dfa, int cc, boolean pre, int site, Value target, List<Val> args, Env env, Context context)
   {
     _dfa = dfa;
     _cc = cc;
     _pre = pre;
+    _site = site;
+    var p = dfa._fuir.siteAsPos(site); // NYI! REMOVE!
     _target = target;
     _args = args;
     _env = env;
     _context = context;
     _instance = dfa.newInstance(cc, this, site);
-    _site = site;
 
     if (!pre && dfa._fuir.clazzResultField(cc)==-1) /* <==> _fuir.isConstructor(cl) */
       {
@@ -372,24 +376,11 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
-   * record code block id c and code block index i as a sample call site that
-   * lead to the creation of this Call. Used by showWhy().
-   */
-  void addCallSiteLocation(int c, int i)
-  {
-    _codeblockId = c;
-    _codeblockIndex = i;
-  }
-
-
-  /**
    * return the call site index, -1 if unknown.
    */
   int site()
   {
-    return _codeblockId != -1 && _codeblockIndex != -1
-      ? _dfa._fuir.siteFromCI(_codeblockId, _codeblockIndex)
-      : -1;
+    return _site;
   }
 
 

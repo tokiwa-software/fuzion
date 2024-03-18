@@ -2197,14 +2197,14 @@ hw25 is
   /**
    * Get the source code position of an expr at the given site if it is available.
    *
-   * @param site the code position
+   * @param site the code position, IR.NO_SITE if unkown.
    *
    * @return the source code position or null if not available.
    */
   public SourcePosition siteAsPos(int site)
   {
-    return site != -1 ? codeAtAsPos(codeIndexFromSite(site), exprIndexFromSite(site))
-                      : null;
+    return site != NO_SITE ? codeAtAsPos(codeIndexFromSite(site), exprIndexFromSite(site))
+                           : null;
   }
 
 

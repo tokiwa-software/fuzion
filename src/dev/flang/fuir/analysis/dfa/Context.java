@@ -98,6 +98,17 @@ public interface Context
   String toString(boolean forEnv);
 
 
+  /**
+   * Create a multi-line String describing this context to be used in error
+   * messages.
+   *
+   * @param forEnv true if effect environments should be included in the
+   * resulting string.
+   *
+   * @return A LF-terminated String of the call context starting with the
+   * innermost context going towards older and older contexts until we reach the
+   * program entry point.
+   */
   default String contextString(boolean forEnv)
   {
     var result = new StringBuilder();
@@ -111,7 +122,15 @@ public interface Context
   }
 
 
+  /**
+   * Convenience function for `conextString(true)`
+   */
   default String contextStringForEnv() { return contextString(true); }
+
+
+  /**
+   * Convenience function for `conextString(false)`
+   */
   default String contextString()       { return contextString(false); }
 
 
