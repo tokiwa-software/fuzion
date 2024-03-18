@@ -178,18 +178,10 @@ public class Instance extends Value implements Comparable<Instance>
       {
         if (dfa._reportResults)
           {
-            Errors.error("reading uninitialized field " + dfa._fuir.clazzAsString(field) + " from instance of " + dfa._fuir.clazzAsString(_clazz) +
-                         (_isBoxed ? " Boxed!" : "") +
-                         "\n" +
-                         "fields available:\n  " + _fields.keySet().stream().map(x -> ""+x+":"+dfa._fuir.clazzAsString(x)).collect(Collectors.joining(",\n  ")));
-
-            for (var f : _fields.keySet())
-              {
-                if (dfa._fuir.clazzAsString(f).equals(dfa._fuir.clazzAsString(field).replace("ref ","")))
-                  {
-                    say("NYI: HACK: Using value version instead: "+v);
-                  }
-              }
+            DfaErrors.readingUninitializedField(dfa._fuir.siteAsPos(site),
+                                                dfa._fuir.clazzAsString(field),
+                                                dfa._fuir.clazzAsString(_clazz) + (_isBoxed ? " Boxed!" : ""),
+                                                why);
           }
       }
     else if (!dfa._fuir.clazzIsRef(dfa._fuir.clazzResultClazz(field)))
