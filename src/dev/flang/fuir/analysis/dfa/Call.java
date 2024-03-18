@@ -34,6 +34,7 @@ import dev.flang.ir.IR;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import static dev.flang.util.FuzionConstants.EFFECT_ABORTABLE_NAME;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.Terminal;
@@ -335,7 +336,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   {
     var on = _dfa._fuir.clazzOriginalName(_cc);
     return
-      (on.equals(DFA._effect_abortable_name_)
+      (on.equals(EFFECT_ABORTABLE_NAME)
        ? "install effect " + Errors.effe(_dfa._fuir.clazzAsString(_dfa._fuir.effectType(_cc))) + ", old envionment was "
        : "effect environment ") +
       Errors.effe(Env.envAsString(_env)) +

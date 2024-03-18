@@ -42,6 +42,7 @@ import dev.flang.fuir.analysis.AbstractInterpreter;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import static dev.flang.util.FuzionConstants.EFFECT_ABORTABLE_NAME;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
@@ -1385,12 +1386,6 @@ public class DFA extends ANY
   static void setArrayI64ElementsToAnything(Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, FUIR.SpecialClazzes.c_i64); }
 
 
-  /**
-   * Name of intrinsic `effect.abortable`.
-   */
-  static final String _effect_abortable_name_ = "effect.abortable";
-
-
   static
   {
     put("Type.name"                      , cl -> cl._dfa.newConstString(cl._dfa._fuir.clazzTypeName(cl._dfa._fuir.clazzOuterClazz(cl._cc)), cl) );
@@ -1868,7 +1863,7 @@ public class DFA extends ANY
             }
           return Value.UNIT;
         });
-    put(_effect_abortable_name_          , cl ->
+    put(EFFECT_ABORTABLE_NAME            , cl ->
         {
           var ecl = cl._dfa._fuir.effectType(cl._cc);
           var oc = cl._dfa._fuir.clazzActualGeneric(cl._cc, 0);
