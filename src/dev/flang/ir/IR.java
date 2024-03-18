@@ -85,7 +85,13 @@ public class IR extends ANY
    */
   protected static final int SITE_BASE = 0x70000000;
 
+
+  /**
+   * Special site index value for unknown site location (i.e, a site coming from
+   * an intrinsic or the program entry point).
+   */
   public static final int NO_SITE = SITE_BASE-1;
+
 
   /**
    * The basic types of features in Fuzion:
