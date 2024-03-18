@@ -69,7 +69,7 @@ rm -rf "$BUILD_DIR"/run_tests.failures
 # print collected results up until interruption
 trap "echo """"; cat ""$BUILD_DIR""/run_tests.results ""$BUILD_DIR""/run_tests.failures; exit 130;" INT
 
-N=$(($(nproc --all || echo 1)>6 ? 6 : $(nproc --all || echo 1)))
+N=$(($(nproc --all || echo 1)>2 ? 2 : $(nproc --all || echo 1)))
 
 echo "$(echo "$TESTS" | wc -l) tests, running $N tests in parallel."
 
