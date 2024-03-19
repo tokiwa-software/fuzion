@@ -278,8 +278,10 @@ public class Feature extends AbstractFeature
 
   /**
    * Is this a loop's variable that is being iterated over using the `in` keyword?
+   * If so, also store the internal list name.
    */
   boolean _isLoopIterator = false;
+  String _loopIteratorListName;
 
 
   /**

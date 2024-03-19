@@ -536,10 +536,10 @@ public class Loop extends ANY
             var argList = new Feature(p,
                                       Visi.PUB,
                                       null,
-                                      f.featureName().baseName() + "list",
+                                      f._loopIteratorListName + "arg",
                                       new Impl(Impl.Kind.FieldActual));
-            var ial = new Call(p, "#loop_" + f.featureName().baseName() + "_tail");
-            var nal = new Call(p, "#loop_" + f.featureName().baseName() + "_tail");
+            var ial = new Call(p, f._loopIteratorListName + "tail");
+            var nal = new Call(p, f._loopIteratorListName + "tail");
             formalArguments.add(argList);
             initialActuals.add(new Actual(ial));
             nextActuals.add(new Actual(nal));
@@ -600,7 +600,7 @@ public class Loop extends ANY
             Match match1 = new Match(p, new Call(p, listName), new List<AbstractCase>(match1c, match1n));
             Case match2c = new Case(p, consType, listName + "cons", new Block(nextIt2));
             Case match2n = new Case(p, nilType, listName + "nil", (_loopElse != null) ? Block.fromExpr(callLoopElse(false)) : Block.newIfNull(null));
-            Match match2 = new Match(p, new Call(p, f.featureName().baseName() + "list"), new List<AbstractCase>(match2c, match2n));
+            Match match2 = new Match(p, new Call(p, listName + "arg"), new List<AbstractCase>(match2c, match2n));
             _prologSuccessBlock.add(match1);
             _nextItSuccessBlock.add(match2);
             _prologSuccessBlock = prolog2;
@@ -608,16 +608,18 @@ public class Loop extends ANY
             f.setImpl(new Impl(f.impl().pos, next1, Impl.Kind.FieldDef));
             n.setImpl(new Impl(n.impl().pos, next2, Impl.Kind.FieldDef));
             f._isLoopIterator = true;
+            f._loopIteratorListName = listName;
             n._isLoopIterator = true;
+            n._loopIteratorListName = listName;
             g = new Feature(f.pos(),
                             Visi.PRIV,
                             null,
-                            "#loop_" + f.featureName().baseName() + "_tail",
+                            listName + "tail",
                             new Impl(f.impl().pos, nextTail1, Impl.Kind.FieldDef));
             m = new Feature(n.pos(),
                             Visi.PRIV,
                             null,
-                            "#loop_" + f.featureName().baseName() + "_tail",
+                            listName + "tail",
                             new Impl(n.impl().pos, nextTail2, Impl.Kind.FieldDef));
           }
         _prologSuccessBlock.add(f);
