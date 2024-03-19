@@ -191,6 +191,8 @@ public class Call extends ANY implements Comparable<Call>, Context
     var r =
       _cc   <   other._cc  ? -1 :
       _cc   >   other._cc  ? +1 :
+      _site <   other._site? -1 :
+      _site >   other._site? +1 :
       _pre  && !other._pre ? -1 :
       !_pre &&  other._pre ? +1 : Value.compare(_target, other._target);
     for (var i = 0; r == 0 && i < _args.size(); i++)
