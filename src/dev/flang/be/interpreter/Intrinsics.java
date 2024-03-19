@@ -1042,35 +1042,37 @@ public class Intrinsics extends ANY
     });
 
     putUnsafe("fuzion.sys.net.get_peer_address", (interpreter, innerClazz) -> args -> {
+      var result = new i32Value(-1);
       try
         {
-          if (_openStreams_.get(args.get(1).i64Value()) instanceof SocketChannel sockfd)
+          var ra = getRemoteAddress(_openStreams_.get(args.get(1).i64Value()));
+          if (ra != null)
             {
-              byte[] address = ((InetSocketAddress)sockfd.getRemoteAddress()).getAddress().getAddress();
+              byte[] address = ra.getAddress().getAddress();
               System.arraycopy(address, 0, args.get(2).arrayData()._array, 0, address.length);
-              return new i32Value(address.length);
+              result = new i32Value(address.length);
             }
-          return new i32Value(-1);
         }
       catch (IOException e)
         {
-          return new i32Value(-1);
         }
+      return result;
     });
 
     putUnsafe("fuzion.sys.net.get_peer_port", (interpreter, innerClazz) -> args -> {
+      var result = new u16Value(0);
       try
         {
-          if (_openStreams_.get(args.get(1).i64Value()) instanceof SocketChannel sockfd)
+          var ra = getRemoteAddress(_openStreams_.get(args.get(1).i64Value()));
+          if (ra != null)
             {
-              return new u16Value(((InetSocketAddress)sockfd.getRemoteAddress()).getPort());
+              result = new u16Value(ra.getPort());
             }
-          return new u16Value(0);
         }
       catch (IOException e)
         {
-          return new u16Value(0);
         }
+      return result;
     });
 
     putUnsafe("fuzion.sys.net.read" , (interpreter, innerClazz) -> args -> {
@@ -1531,6 +1533,14 @@ public class Intrinsics extends ANY
       };
   }
 
+  static InetSocketAddress getRemoteAddress(AutoCloseable asc) throws IOException
+  {
+    if (asc instanceof DatagramChannel dc)
+      {
+        return (InetSocketAddress) dc.getRemoteAddress();
+      }
+    return (InetSocketAddress)((SocketChannel)asc).getRemoteAddress();
+  }
 
   static AbstractType elementType(Clazz arrayClazz)
   {

@@ -1,3 +1,7 @@
+opened TCP/IPv4-server on port 40000: unit
+opened UDP/IPv4-server on port 40001: unit
+opened TCP/IPv6-server on port 40003: unit
+opened UDP/IPv6-server on port 40004: unit
 ### TCP/IPv4-Tests ###
 TCP/IPv4-client 1, write to 127.0.0.1:40000: unit
 TCP/IPv4-client 1, read  12 bytes from  127.0.0.1:40000: >received: GE<
@@ -11,6 +15,9 @@ TCP/IPv4-client 2, read 100 bytes from  127.0.0.1:40000: >T / HTTP
 Host: 127.0.0.1
 Client: 2
 <
+### UDP/IPv4-Tests ###
+UDP/IPv4-client 1, write to 127.0.0.1:40001: unit
+UDP/IPv4-client 2, write to 127.0.0.1:40001: unit
 ### TCP/IPv6-Tests ###
 TCP/IPv6-client 1, write to ::1:40003: unit
 TCP/IPv6-client 1, read  12 bytes from  ::1:40003: >received: GE<
@@ -24,9 +31,6 @@ TCP/IPv6-client 2, read 100 bytes from  ::1:40003: >T / HTTP
 Host: ::1
 Client: 2
 <
-### UDP/IPv4-Tests ###
-UDP/IPv4-client 1, write to 127.0.0.1:40001: unit
-UDP/IPv4-client 2, write to 127.0.0.1:40001: unit
 ### UDP/IPv6-Tests ###
 UDP/IPv6-client 1, write to ::1:40004: unit
 UDP/IPv6-client 2, write to ::1:40004: unit
