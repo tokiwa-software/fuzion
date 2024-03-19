@@ -1631,7 +1631,7 @@ public class Call extends AbstractCall
   {
     return
       _type.isFunctionType() &&
-      _calledFeature != Types.resolved.f_function && // exclude inherits call in function type
+      _calledFeature != Types.resolved.f_Function && // exclude inherits call in function type
       _calledFeature.arguments().size() == 0      &&
       hasParentheses()
     ||

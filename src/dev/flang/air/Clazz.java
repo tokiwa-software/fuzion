@@ -1854,10 +1854,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
     switch (feature().qualifiedName())
       {
       case "effect.abortable":
-        argumentFields()[0].resultClazz().lookup(Types.resolved.f_function_call, at);
+        argumentFields()[0].resultClazz().lookup(Types.resolved.f_Function_call, at);
         break;
       case "fuzion.sys.thread.spawn0":
-        argumentFields()[0].resultClazz().lookup(Types.resolved.f_function_call, at);
+        argumentFields()[0].resultClazz().lookup(Types.resolved.f_Function_call, at);
         break;
       default: break;
       }
@@ -1929,7 +1929,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       // NYI: Once Clazz.normalize() is implemented better, a clazz C has
       // to be considered instantiated if there is any clazz D that
       // normalize() would replace by C if it occurs as an outer clazz.
-      _outer == Clazzes.any.getIfCreated()    ||
+      _outer == Clazzes.Any.getIfCreated()    ||
 
       _outer._isNormalized ||
 

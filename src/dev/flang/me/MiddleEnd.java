@@ -139,8 +139,8 @@ public class MiddleEnd extends ANY
   void markInternallyUsed() {
     var universe = _mir.universe();
     var m = Clazz._module;
-    markUsed(Types.resolved.f_fuzion_java_object                  , SourcePosition.builtIn);
-    markUsed(Types.resolved.f_fuzion_java_object_ref              , SourcePosition.builtIn);
+    markUsed(Types.resolved.f_fuzion_Java_Object                  , SourcePosition.builtIn);
+    markUsed(Types.resolved.f_fuzion_Java_Object_Ref              , SourcePosition.builtIn);
     markUsed(universe.get(m, "Const_String")                      , SourcePosition.builtIn); // NYI this should be unnecessary?
     markUsed(universe.get(m, FuzionConstants.UNIT_NAME)           , SourcePosition.builtIn);
     markUsed(universe.get(m, "void")                              , SourcePosition.builtIn);

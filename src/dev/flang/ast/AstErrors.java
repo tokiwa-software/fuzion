@@ -1096,7 +1096,7 @@ public class AstErrors extends ANY
         cf.resultType().isGenericArgument()                                     &&
         cf.resultType().genericArgument().typeParameter() instanceof Feature tp &&
         tp.isFreeType()                                                         &&
-        tp.resultType().compareTo(Types.resolved.t_any) == 0)
+        tp.resultType().compareTo(Types.resolved.t_Any) == 0)
       {
         solution = "To solve this, you might replace the free type " + s(tp) + " by a different type.  " +
                    "Is the type name spelled correctly?  The free type is declared at " + tp.pos().show();
@@ -1389,8 +1389,8 @@ public class AstErrors extends ANY
     if (t != Types.t_ERROR)
       {
         error(pos,
-              "Target type of a lambda expression must be " + s(Types.resolved.f_function) + ".",
-              "A lambda expression can only be used if assigned to a field or argument of type "+ s(Types.resolved.f_function) + "\n" +
+              "Target type of a lambda expression must be " + s(Types.resolved.f_Function) + ".",
+              "A lambda expression can only be used if assigned to a field or argument of type "+ s(Types.resolved.f_Function) + "\n" +
               "with argument count of the lambda expression equal to the number of type parameters of the type.\n" +
               "Target type: " + s(t) + "\n" +
               "To solve this, assign the lambda expression to a field of function type, e.g., " + ss("f (i32, i32) -> bool := x, y -> x > y") + ".");
@@ -1401,7 +1401,7 @@ public class AstErrors extends ANY
   {
     error(pos,
           "No type information can be inferred from a lambda expression",
-          "A lambda expression can only be used if assigned to a field or argument of type "+ s(Types.resolved.f_function) + "\n" +
+          "A lambda expression can only be used if assigned to a field or argument of type "+ s(Types.resolved.f_Function) + "\n" +
           "with argument count of the lambda expression equal to the number of type parameters of the type.  The type of the\n" +
           "assigned field must be given explicitly.\n" +
           "To solve this, declare an explicit type for the target field, e.g., " + ss("f (i32, i32) -> bool := x, y -> x > y") + ".");
