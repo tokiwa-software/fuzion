@@ -276,7 +276,10 @@ public class Feature extends AbstractFeature
   public boolean isIndexVarUpdatedByLoop() { return _isIndexVarUpdatedByLoop; }
 
 
-  boolean _newValueWhatever = false;
+  /**
+   * Is this a loop's variable that is being iterated over using the `in` keyword?
+   */
+  boolean _isLoopIterator = false;
 
 
   /**

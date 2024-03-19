@@ -531,7 +531,7 @@ public class Loop extends ANY
         formalArguments.add(arg);
         initialActuals .add(new Actual(ia));
         nextActuals    .add(new Actual(na));
-        if (f._newValueWhatever)
+        if (f._isLoopIterator)
           {
             var argList = new Feature(p,
                                       Visi.PUB,
@@ -607,8 +607,8 @@ public class Loop extends ANY
             _nextItSuccessBlock = nextIt2;
             f.setImpl(new Impl(f.impl().pos, next1, Impl.Kind.FieldDef));
             n.setImpl(new Impl(n.impl().pos, next2, Impl.Kind.FieldDef));
-            f._newValueWhatever = true;
-            n._newValueWhatever = true;
+            f._isLoopIterator = true;
+            n._isLoopIterator = true;
             g = new Feature(f.pos(),
                             Visi.PRIV,
                             null,
