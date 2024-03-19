@@ -1002,7 +1002,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     return
       this != Types.t_ERROR &&
       !isGenericArgument() &&
-      (featureOfType() == Types.resolved.f_function ||
+      (featureOfType() == Types.resolved.f_Function ||
        featureOfType() == Types.resolved.f_Unary);
   }
 
@@ -1017,7 +1017,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     return
       !isGenericArgument() &&
-      (featureOfType() == Types.resolved.f_function ||
+      (featureOfType() == Types.resolved.f_Function ||
        featureOfType().inherits().stream().anyMatch(c -> c.calledFeature().selfType().isAnyFunctionType()));
   }
 
@@ -1047,7 +1047,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (isAnyFunctionType());
 
     var f = featureOfType();
-    if (f == Types.resolved.f_function)
+    if (f == Types.resolved.f_Function)
       {
         return generics().size() - 1;
       }
@@ -1076,7 +1076,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     for (var p : f.inherits())
       {
         var pf = p.calledFeature();
-        var result = pf.equals(Types.resolved.f_function)
+        var result = pf.equals(Types.resolved.f_Function)
           ? p.actualTypeParameters().size() - 1
           : arityFromParents(pf);
         if (result >= 0)

@@ -1631,7 +1631,7 @@ public class Call extends AbstractCall
   {
     return
       _type.isFunctionType() &&
-      _calledFeature != Types.resolved.f_function && // exclude inherits call in function type
+      _calledFeature != Types.resolved.f_Function && // exclude inherits call in function type
       _calledFeature.arguments().size() == 0      &&
       hasParentheses()
     ||
@@ -2265,16 +2265,11 @@ public class Call extends AbstractCall
    */
   private void inferFormalArgTypesFromActualArgs(AbstractFeature outer)
   {
-    var aargs = _actuals.iterator();
     for (var frml : _calledFeature.valueArguments())
       {
-        if (aargs.hasNext())
+        if (frml instanceof Feature f)
           {
-            var actl = aargs.next();
-            if (frml instanceof Feature f)
-              {
-                f.impl().addInitialCall(this, outer);
-              }
+            f.impl().addInitialCall(this, outer);
           }
       }
   }

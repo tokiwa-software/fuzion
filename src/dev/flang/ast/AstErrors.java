@@ -49,7 +49,8 @@ import dev.flang.util.Terminal;
 public class AstErrors extends ANY
 {
 
-  /*-----------------------------  methods  -----------------------------*/
+
+  /*-------------------------  static methods  --------------------------*/
 
 
   /**
@@ -61,16 +62,12 @@ public class AstErrors extends ANY
     return f == Types.f_ERROR ? err()
                               : sqn(f.qualifiedName());
   }
-  static String skw(String s) // keyword
-  {
-    return code(s);
-  }
-  static String sbn(AbstractFeature f) // feature base name
+  static String sbnf(AbstractFeature f) // feature base name
   {
     return f == Types.f_ERROR ? err()
                               : sbn(f.featureName().baseName());
   }
-  static String sbn(FeatureName fn) // feature base name plus arg count and id string
+  static String sbnf(FeatureName fn) // feature base name plus arg count and id string
   {
     return sbn(fn.baseName()) + fn.argCountAndIdString();
   }
@@ -79,17 +76,9 @@ public class AstErrors extends ANY
     var sl = new List<String>();
     for (var fn : l)
       {
-        sl.add(sbn(fn));
+        sl.add(sbnf(fn));
       }
     return sl.toString();
-  }
-  static String sbn(String s) // feature base name
-  {
-    return code(s);
-  }
-  public static String sqn(String s) // feature qualified name
-  {
-    return code(s);
   }
   static String s(AbstractType t)
   {
@@ -99,10 +88,6 @@ public class AstErrors extends ANY
   {
     return st(rt instanceof RefType ? "ref" // since RefType is the default, toString() is ""
                                     : rt.toString());
-  }
-  static String st(String t)
-  {
-    return type(t);
   }
   static String s(Generic g)
   {
@@ -136,10 +121,6 @@ public class AstErrors extends ANY
 
     return code(v.toString());
   }
-  static String ss(String s)
-  {
-    return expr(s);
-  }
   public static String sfn(List<AbstractFeature> fs)
   {
     int c = 0;
@@ -158,21 +139,9 @@ public class AstErrors extends ANY
   {
     return type(l.toString());
   }
-  static String sn(List<String> names) // names as list "a, b, c"
-  {
-    return ss(names.toString());
-  }
-  static String sn2(List<String> names) // names as list "`a`, `b`, `c`"
-  {
-    return names.map(s -> ss(s)).toString();
-  }
   static String spn(List<ParsedName> names) // names as list "`a`, `b`, `c`"
   {
     return sn2((names.map2(n->n._name)));
-  }
-  static String sqn(List<String> names) // names as qualified name "a.b.c"
-  {
-    return ss(names.toString("", ".", ""));
   }
   static String sv(AbstractFeature f)
   {
@@ -186,30 +155,13 @@ public class AstErrors extends ANY
    */
   static String sc(List<FeatureAndOuter> candidates)
   {
-    return candidates.stream().map(c -> sbn(c._feature.featureName()) + " at " + c._feature.pos().show() + "\n")
+    return candidates.stream().map(c -> sbnf(c._feature.featureName()) + " at " + c._feature.pos().show() + "\n")
       .collect(List.collector())
       .toString(candidates.size() > 1 ? "one of the features " : "the feature ", ", or\n", "");
   }
 
 
-  static String code(String s) { return ticksOrNewLine(Terminal.PURPLE + s + Terminal.REGULAR_COLOR); }
-  static String type(String s) { return ticksOrNewLine(Terminal.YELLOW + s + Terminal.REGULAR_COLOR); }
-  static String expr(String s) { return ticksOrNewLine(Terminal.CYAN   + s + Terminal.REGULAR_COLOR); }
-  static String err()          { return Terminal.RED + ERROR_STRING + Terminal.REGULAR_COLOR; }
-
-  /**
-   * Enclose s in "'" unless s contains a new line. If s contains a new line,
-   * add new lines at the starts or the ends with not present already.
-   */
-  static String ticksOrNewLine(String s)
-  {
-    return
-      s.indexOf("\n") < 0                    ? "'"  + s + "'"  :
-      s.startsWith("\n") && s.endsWith("\n") ?        s        :
-      s.startsWith("\n")                     ?        s + "\n" :
-                            s.endsWith("\n") ? "\n" + s
-                                             : "\n" + s + "\n";
-  }
+  /*-----------------------------  methods  -----------------------------*/
 
 
   /**
@@ -502,7 +454,7 @@ public class AstErrors extends ANY
     var f = ((c == count+1) && (frml != null)) ? frml : null;
     incompatibleType(pos,
                      "when passing argument in a call",
-                     "Actual type for argument #" + (count+1) + (f == null ? "" : " " + sbn(f)) + " does not match expected type.\n" +
+                     "Actual type for argument #" + (count+1) + (f == null ? "" : " " + sbnf(f)) + " does not match expected type.\n" +
                      "In call to          : " + s(calledFeature) + "\n",
                      (f == null ? "argument #" + (count+1) : f.featureName().baseName()),
                      frmlT,
@@ -539,7 +491,7 @@ public class AstErrors extends ANY
     var f = ((c == count+1) && (frml != null)) ? frml : null;
     incompatibleType(value.pos(),
                      "when passing argument in a call",
-                     "Actual type for argument #" + (count+1) + (f == null ? "" : " " + sbn(f)) + " does not match expected type.\n" +
+                     "Actual type for argument #" + (count+1) + (f == null ? "" : " " + sbnf(f)) + " does not match expected type.\n" +
                      "In call to          : " + s(calledFeature) + "\n",
                      (f == null ? "argument #" + (count+1) : f.featureName().baseName()),
                      frmlT,
@@ -627,7 +579,7 @@ public class AstErrors extends ANY
         fstr.append(fstr.length
                     () > 0 ? ", " : "");
         farg = fargs.hasNext() ? fargs.next() : farg;
-        fstr.append(farg != null ? sbn(farg) + " " : "");
+        fstr.append(farg != null ? sbnf(farg) + " " : "");
         fstr.append(s(t));
       }
     if (!ferror) // if something went wrong earlier, report no error here
@@ -958,10 +910,10 @@ public class AstErrors extends ANY
   {
     error(pos,
           "Repeated inheritance of conflicting features",
-          "Feature " + s(heir) + " inherits feature " + sbn(fn) + " repeatedly: " +
+          "Feature " + s(heir) + " inherits feature " + sbnf(fn) + " repeatedly: " +
           "" + s(f1) + " defined at " + f1.pos().show() + "\n" + "and " +
           "" + s(f2) + " defined at " + f2.pos().show() + "\n" +
-          "To solve this, you could add a redefinition of " + sbn(f1) + " to " + s(heir) + ".");
+          "To solve this, you could add a redefinition of " + sbnf(f1) + " to " + s(heir) + ".");
   }
 
   public static void duplicateFeatureDeclaration(SourcePosition pos, AbstractFeature f, AbstractFeature existing)
@@ -1031,7 +983,7 @@ public class AstErrors extends ANY
   {
     cannotRedefine(pos, f, existing, "Redefinition must be declared using modifier " + skw("redef") + "",
                    "To solve this, if you did not intend to redefine an inherited feature, " +
-                   "choose a different name for " + sbn(f) + ".  Otherwise, if you do " +
+                   "choose a different name for " + sbnf(f) + ".  Otherwise, if you do " +
                    "want to redefine an inherited feature, add a " + skw("redef") + " modifier before the " +
                    "declaration of " + s(f) + ".");
   }
@@ -1144,7 +1096,7 @@ public class AstErrors extends ANY
         cf.resultType().isGenericArgument()                                     &&
         cf.resultType().genericArgument().typeParameter() instanceof Feature tp &&
         tp.isFreeType()                                                         &&
-        tp.resultType().compareTo(Types.resolved.t_any) == 0)
+        tp.resultType().compareTo(Types.resolved.t_Any) == 0)
       {
         solution = "To solve this, you might replace the free type " + s(tp) + " by a different type.  " +
                    "Is the type name spelled correctly?  The free type is declared at " + tp.pos().show();
@@ -1181,7 +1133,7 @@ public class AstErrors extends ANY
         var solution3 = solutionAccidentalFreeType(target);
         var solution4 = solutionHidden(candidatesHidden);
         error(call.pos(), msg,
-              "Feature not found: " + sbn(calledName) + "\n" +
+              "Feature not found: " + sbnf(calledName) + "\n" +
               "Target feature: " + s(targetFeature) + "\n" +
               "In call: " + s(call) + "\n" +
               (solution1 != "" ? solution1 :
@@ -1437,8 +1389,8 @@ public class AstErrors extends ANY
     if (t != Types.t_ERROR)
       {
         error(pos,
-              "Target type of a lambda expression must be " + s(Types.resolved.f_function) + ".",
-              "A lambda expression can only be used if assigned to a field or argument of type "+ s(Types.resolved.f_function) + "\n" +
+              "Target type of a lambda expression must be " + s(Types.resolved.f_Function) + ".",
+              "A lambda expression can only be used if assigned to a field or argument of type "+ s(Types.resolved.f_Function) + "\n" +
               "with argument count of the lambda expression equal to the number of type parameters of the type.\n" +
               "Target type: " + s(t) + "\n" +
               "To solve this, assign the lambda expression to a field of function type, e.g., " + ss("f (i32, i32) -> bool := x, y -> x > y") + ".");
@@ -1449,7 +1401,7 @@ public class AstErrors extends ANY
   {
     error(pos,
           "No type information can be inferred from a lambda expression",
-          "A lambda expression can only be used if assigned to a field or argument of type "+ s(Types.resolved.f_function) + "\n" +
+          "A lambda expression can only be used if assigned to a field or argument of type "+ s(Types.resolved.f_Function) + "\n" +
           "with argument count of the lambda expression equal to the number of type parameters of the type.  The type of the\n" +
           "assigned field must be given explicitly.\n" +
           "To solve this, declare an explicit type for the target field, e.g., " + ss("f (i32, i32) -> bool := x, y -> x > y") + ".");
@@ -1828,7 +1780,7 @@ public class AstErrors extends ANY
           + "Feature with equally named arguments: "+ s(f) + "\n"
           + f.arguments()
             .stream()
-            .map(a -> "Argument #" + (cnt[0]++) + ": " + sbn(a) +
+            .map(a -> "Argument #" + (cnt[0]++) + ": " + sbnf(a) +
                  (duplicateNames.contains(a.featureName().baseName()) ? " is duplicate "
                                                                       : " is ok"        ) + "\n")
             .collect(Collectors.joining(""))
@@ -2032,7 +1984,7 @@ public class AstErrors extends ANY
   {
     error(f.pos(), "Argument types or any of its generics have more restrictive visibility than feature.",
       "To solve this, increase the visibility of " + slbn(s.stream().map(x -> x.featureName()).collect(List.collector())) +
-      " or specify a different type for the argument " + sbn(arg) + "."
+      " or specify a different type for the argument " + sbnf(arg) + "."
     );
   }
 

@@ -204,6 +204,68 @@ public class Errors extends ANY
   /*--------------------------  constructors  ---------------------------*/
 
 
+  /*-------------------------  static methods  --------------------------*/
+
+
+  /**
+   * Handy functions to convert common types to strings in error messages. Will
+   * set a color and enclose the string in single quotes.
+   */
+  public static String skw(String s) // keyword
+  {
+    return code(s);
+  }
+  public static String sbn(String s) // feature base name
+  {
+    return code(s);
+  }
+  public static String sqn(String s) // feature qualified name
+  {
+    return code(s);
+  }
+  public static String st(String t) // type
+  {
+    return type(t);
+  }
+  public static String ss(String s) // expression
+  {
+    return expr(s);
+  }
+  public static String sn(List<String> names) // names as list "a, b, c"
+  {
+    return ss(names.toString());
+  }
+  public static String sn2(List<String> names) // names as list "`a`, `b`, `c`"
+  {
+    return names.map(s -> ss(s)).toString();
+  }
+  public static String sqn(List<String> names) // names as qualified name "a.b.c"
+  {
+    return ss(names.toString("", ".", ""));
+  }
+
+
+  public static String code(String s) { return ticksOrNewLine(Terminal.PURPLE         + s + Terminal.REGULAR_COLOR); }
+  public static String type(String s) { return ticksOrNewLine(Terminal.YELLOW         + s + Terminal.REGULAR_COLOR); }
+  public static String expr(String s) { return ticksOrNewLine(Terminal.CYAN           + s + Terminal.REGULAR_COLOR); }
+  public static String effe(String s) { return ticksOrNewLine(Terminal.INTENSE_PURPLE + s + dev.flang.util.Terminal.RESET); }
+  public static String err()          { return Terminal.RED + ERROR_STRING + Terminal.REGULAR_COLOR; }
+
+
+  /**
+   * Enclose s in "'" unless s contains a new line. If s contains a new line,
+   * add new lines at the starts or the ends with not present already.
+   */
+  public static String ticksOrNewLine(String s)
+  {
+    return
+      s.indexOf("\n") < 0                    ? "'"  + s + "'"  :
+      s.startsWith("\n") && s.endsWith("\n") ?        s        :
+      s.startsWith("\n")                     ?        s + "\n" :
+                            s.endsWith("\n") ? "\n" + s
+                                             : "\n" + s + "\n";
+  }
+
 
   /*-----------------------------  methods  -----------------------------*/
 
@@ -833,11 +895,6 @@ public class Errors extends ANY
     syntaxError(sourcePos,
                 "Illegal trailing whitespace in multiline string.",
                 "To solve this, remove this whitespace or replace it by escape codes.");
-  }
-
-  public static void usedEffectNeverInstantiated(String e)
-  {
-    error(null, "Used effect `"  + e + "` never instantiated.", "");
   }
 
 

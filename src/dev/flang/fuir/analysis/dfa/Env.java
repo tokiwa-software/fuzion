@@ -44,6 +44,12 @@ public class Env extends ANY implements Comparable<Env>
   /*----------------------------  constants  ----------------------------*/
 
 
+  /**
+   * String used in human readable output for an empty environment.
+   */
+  static final String EMPTY_ENV = "--empty--";
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -134,6 +140,23 @@ public class Env extends ANY implements Comparable<Env>
   }
 
 
+  /*-------------------------  static methods  --------------------------*/
+
+
+  /**
+   * Create a String for user output of the given environment
+   *
+   + @param env an environment or null.
+   *
+   * @return String for output in error messages etc.
+   */
+  public static String envAsString(Env env)
+  {
+    return env != null ? env.toStringShort()
+                       : EMPTY_ENV;
+  }
+
+
   /*-----------------------------  methods  -----------------------------*/
 
 
@@ -189,6 +212,23 @@ public class Env extends ANY implements Comparable<Env>
           .append(_dfa._fuir.clazzAsString(et))
           .append("->")
           .append(getEffect(et));
+        sep = ", ";
+      }
+    return sb.toString();
+  }
+
+
+  /**
+   * Create human-readable string from this Env.
+   */
+  public String toStringShort()
+  {
+    var sb = new StringBuilder();
+    var sep = "";
+    for (var et : _types)
+      {
+        sb.append(sep)
+          .append(_dfa._fuir.clazzAsString(et));
         sep = ", ";
       }
     return sb.toString();

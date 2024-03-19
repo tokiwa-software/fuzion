@@ -48,10 +48,10 @@ compile_server_c:
 	$(FUZION_RUN) -c -o=server sockets_test_server.fz
 
 
-int: IPv4_TCP_PID = $(shell $(FUZION_RUN) sockets_test_server.fz ipv4 tcp > /dev/null & echo $$!)
-int: IPv4_UDP_PID = $(shell $(FUZION_RUN) sockets_test_server.fz ipv4 udp > /dev/null & echo $$!)
-int: IPv6_TCP_PID = $(shell $(FUZION_RUN) sockets_test_server.fz ipv6 tcp > /dev/null & echo $$!)
-int: IPv6_UDP_PID = $(shell $(FUZION_RUN) sockets_test_server.fz ipv6 udp > /dev/null & echo $$!)
+int: IPv4_TCP_PID = $(shell $(FUZION_RUN) -interpreter sockets_test_server.fz ipv4 tcp > /dev/null & echo $$!)
+int: IPv4_UDP_PID = $(shell $(FUZION_RUN) -interpreter sockets_test_server.fz ipv4 udp > /dev/null & echo $$!)
+int: IPv6_TCP_PID = $(shell $(FUZION_RUN) -interpreter sockets_test_server.fz ipv6 tcp > /dev/null & echo $$!)
+int: IPv6_UDP_PID = $(shell $(FUZION_RUN) -interpreter sockets_test_server.fz ipv6 udp > /dev/null & echo $$!)
 int:
 	sleep 10
 	$(ENV) ../check_simple_example_int.sh "$(FUZION_RUN)" $(FILE) || exit 1
