@@ -77,6 +77,17 @@ public class Instance extends Value implements Comparable<Instance>
   final boolean _isBoxed;
 
 
+  /**
+   * Site of the call that created this instance, -1 if the call site is not
+   * known, i.e., the call is coming from intrinsic call or the main entry
+   * point.
+   *
+   * Instances created at different sites will be considered as different
+   * instances.
+   */
+  final int _site;
+
+
   /*---------------------------  constructors  ---------------------------*/
 
 
@@ -90,7 +101,7 @@ public class Instance extends Value implements Comparable<Instance>
    * @param context for debugging: Reason that causes this instance to be part
    * of the analysis.
    */
-  public Instance(DFA dfa, int clazz, Context context)
+  public Instance(DFA dfa, int clazz, int site, Context context)
   {
     super(clazz);
 
@@ -98,6 +109,7 @@ public class Instance extends Value implements Comparable<Instance>
       (!dfa._fuir.clazzIsRef(clazz));
 
     _dfa = dfa;
+    _site = site;
     _context = context;
     _fields = new TreeMap<>();
     _isBoxed = false;
@@ -154,7 +166,7 @@ public class Instance extends Value implements Comparable<Instance>
   /**
    * Get set of values of given field within this instance.
    */
-  Val readFieldFromInstance(DFA dfa, int field)
+  Val readFieldFromInstance(DFA dfa, int field, int site, Context why)
   {
     if (PRECONDITIONS) require
       (_clazz == dfa._fuir.clazzAsValue(dfa._fuir.clazzOuterClazz(field)));
