@@ -677,6 +677,15 @@ public class Runtime extends ANY
 
 
   /**
+   * Get the message of last exception thrown in the current thread.
+   */
+  public static String getException()
+  {
+    return ((FuzionThread)Thread.currentThread())._thrownException.getMessage();
+  }
+
+
+  /**
    * Get the current stack trace of Fuzion routines for printing error messages.
    *
    * @return the stack trace as a multi-line String.
@@ -964,7 +973,7 @@ public class Runtime extends ANY
         ((FuzionThread)Thread.currentThread())._thrownException = e.getCause();
         res = _JAVA_ERROR_;
       }
-    catch (IllegalAccessException | InstantiationException e)
+    catch (Throwable e)
       {
         ((FuzionThread)Thread.currentThread())._thrownException = e;
         res = _JAVA_ERROR_;

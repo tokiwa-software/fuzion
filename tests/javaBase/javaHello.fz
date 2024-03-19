@@ -91,3 +91,21 @@ javaHello : Java is
   say arr_i64
   say arr_f32
   say arr_f64
+
+  # checked exception: IOException
+  match java.io.FileReader.new "not_a_valid_file"
+    Java.java.io.FileReader => say "success opening file reader"
+    e error => say e
+
+  # NYI replace with code below
+  say (Java.java.util.ArrayList.new_I -7)
+
+  /*  NYI: BUG: does not work yet
+  # unchecked exception: IllegalArgumentException
+  p : Panic_Handler is
+    public do_panic(msg String) unit =>
+      say "A panic was trigger with msg: $msg"
+
+  _ := (panic p unit).go ()->
+    Java.java.util.ArrayList.new_I -7
+  */
