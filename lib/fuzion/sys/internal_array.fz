@@ -73,3 +73,19 @@ module internal_array(T type, module data fuzion.sys.Pointer, module length i32)
     #array.this[i] == o
   =>
     setel T data i o
+
+
+
+# effect containing a preallocated internal_array for usage
+# with intrinsics.
+#
+heap(T type, a fuzion.sys.internal_array T) : simple_effect is
+
+
+# returns a preallocated internal_array of - currently - length 16 for usage
+# with intrinsics. The internal_array may contain random data.
+#
+module heap(T type) =>
+  if !(effect.type.is_installed (fuzion.sys.heap T))
+    (heap T (fuzion.sys.internal_array_init T 16)).default
+  (heap T).env.a

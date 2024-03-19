@@ -68,10 +68,11 @@ module fileio is
   private get_file_size(
                         # the (relative or absolute) file name, using platform specific path separators
                         path String) outcome i64 =>
-    md := fuzion.sys.internal_array_init i64 4
-    match stats (fuzion.sys.c_string path) md.data
-      TRUE  => md.as_array[0]
-      FALSE => error "error getting file size"
+    res := fuzion.sys.heap i64
+    if stats (fuzion.sys.c_string path) res.data
+      res[0]
+    else
+      error "error getting file size"
 
 
   # writes the content of an array of bytes to a file opened as fd
@@ -201,13 +202,13 @@ module fileio is
               path String,
               # a flag to speicify the open method (Read: 0, Write: 1, Append: 2)
               flag i8) outcome i64 =>
-    or := fuzion.sys.internal_array_init i64 2  # [file descriptor, error number]
-    open (fuzion.sys.c_string path) or.data flag
-    open_results := or.as_array
-    if open_results[1] = i64 0
-      open_results[0]
+    # [file descriptor, error number]
+    res := fuzion.sys.heap i64
+    open (fuzion.sys.c_string path) res.data flag
+    if res[1] = 0
+      res[0]
     else
-      error "error number: {open_results[1]}"
+      error "error number: {res[1]}"
 
   # intrinsic that fills a Fuzion object with the file descriptor and the error number from C back-end/ -1 in the interpreter
   # after opening the source represented by the path parameter
@@ -253,13 +254,12 @@ module fileio is
               fd i64,
               # the offset to seek from the beginning of this file
               offset i64) outcome i64 =>
-    iarr := fuzion.sys.internal_array_init i64 2
-    seek fd offset iarr.data
-    arr := iarr.as_array
-    if arr[1] = i64 0
-      arr[0]
+    res := fuzion.sys.heap i64
+    seek fd offset res.data
+    if res[1] = 0
+      res[0]
     else
-      error "error number: {arr[1]}"
+      error "error number: {res[1]}"
 
   # intrinsic to set the file-pointer offset at which the next read or write occurs
   # the offset is measured from the beginning of the file indicated by the file descriptor
@@ -282,13 +282,12 @@ module fileio is
   module file_position(
                        # file descriptor
                        fd i64) outcome i64 =>
-    iarr := fuzion.sys.internal_array_init i64 2
-    file_position fd iarr.data
-    arr := iarr.as_array
-    if arr[1] = i64 0
-      arr[0]
+    res := fuzion.sys.heap i64
+    file_position fd res.data
+    if res[1] = 0
+      res[0]
     else
-      error "error number: {arr[1]}"
+      error "error number: {res[1]}"
 
   # intrinsic that fills a Fuzion object with the current file stream position
   # and the error number from C back-end/ -1 in the interpreter
@@ -369,13 +368,13 @@ module fileio is
   # to the opened directory, or an error if one was encountered.
   #
   module open_dir(path String) outcome i64 =>
-    or := fuzion.sys.internal_array_init i64 2  # [file descriptor, error number]
-    open_dir (fuzion.sys.c_string path) or.data
-    open_results := or.as_array
-    if open_results[1] = i64 0
-      open_results[0]
+    # [file descriptor, error number]
+    res := fuzion.sys.heap i64
+    open_dir (fuzion.sys.c_string path) res.data
+    if res[1] = 0
+      res[0]
     else
-      error "error number: {open_results[1]}"
+      error "error number: {res[1]}"
 
 
   # reads the next entry of the directory given by opaque integer reference
