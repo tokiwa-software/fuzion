@@ -762,7 +762,7 @@ public class FUIR extends IR
    */
   public int clazzAny()
   {
-    return id(Clazzes.any.get());
+    return id(Clazzes.Any.get());
   }
 
 
@@ -1334,7 +1334,7 @@ hw25 is
    */
   public int lookupJavaRef(int cl)
   {
-    return lookup(cl, Types.resolved.f_fuzion_java_object_ref);
+    return lookup(cl, Types.resolved.f_fuzion_Java_Object_Ref);
   }
 
 
@@ -2017,7 +2017,7 @@ hw25 is
    */
   public int lookupCall(int cl)
   {
-    return lookup(cl, Types.resolved.f_function_call);
+    return lookup(cl, Types.resolved.f_Function_call);
   }
 
 

@@ -76,7 +76,7 @@ public class StrConst extends Constant
   @Override
   AbstractType typeForInferencing()
   {
-    return Types.resolved.t_string;
+    return Types.resolved.t_String;
   }
 
 
@@ -89,7 +89,7 @@ public class StrConst extends Constant
   @Override
   public AbstractType type()
   {
-    return Types.resolved.t_string;
+    return Types.resolved.t_String;
   }
 
 

@@ -892,7 +892,7 @@ public class Intrinsics extends ANY
     put("fuzion.sys.misc.unique_id",(interpreter, innerClazz) -> args -> new u64Value(_last_unique_id_.incrementAndGet()));
     put("fuzion.sys.thread.spawn0", (interpreter, innerClazz) -> args ->
         {
-          var call = Types.resolved.f_function_call;
+          var call = Types.resolved.f_Function_call;
           var oc = innerClazz.argumentFields()[0].resultClazz();
           var ic = oc.lookup(call);
           var al = new ArrayList<Value>();
@@ -1497,7 +1497,7 @@ public class Intrinsics extends ANY
             {
               var prev = FuzionThread.current()._effects.get(cl);
               FuzionThread.current()._effects.put(cl, m);
-              var call = Types.resolved.f_function_call;
+              var call = Types.resolved.f_Function_call;
               var oc = innerClazz.actualGenerics()[0]; //innerClazz.argumentFields()[0].resultClazz();
               var ic = oc.lookup(call);
               var al = new ArrayList<Value>();
