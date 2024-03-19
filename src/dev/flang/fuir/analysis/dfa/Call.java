@@ -338,16 +338,19 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * Create human-readable string from this call with effect environment information
    */
-  public String toStringForEnv()
+  public String toString(boolean forEnv)
   {
     var on = _dfa._fuir.clazzOriginalName(_cc);
     var pos = callSitePos();
     return
-      (on.equals(EFFECT_ABORTABLE_NAME)
-       ? "install effect " + Errors.effe(_dfa._fuir.clazzAsString(_dfa._fuir.effectType(_cc))) + ", old envionment was "
-       : "effect environment ") +
-      Errors.effe(Env.envAsString(_env)) +
-      " for call to " + (_pre ? "precondition of " : "") +_dfa._fuir.clazzAsString(_cc)+
+      (forEnv
+       ? (on.equals(EFFECT_ABORTABLE_NAME)
+          ? "install effect " + Errors.effe(_dfa._fuir.clazzAsString(_dfa._fuir.effectType(_cc))) + ", old envionment was "
+          : "effect environment ") +
+         Errors.effe(Env.envAsString(_env)) +
+         " for call to "
+       : "call ")+
+      Errors.sqn((_pre ? "precondition of " : "") + _dfa._fuir.clazzAsString(_cc)) +
       (pos != null ? " at " + pos.pos().show() : "");
   }
 
@@ -423,16 +426,9 @@ public class Call extends ANY implements Comparable<Call>, Context
     var result = getEffectCheck(ecl);
     if (result == null && _dfa._reportResults && !_dfa._fuir.clazzOriginalName(_cc).equals("effect.type.unsafe_get"))
       {
-        var why = new StringBuilder("Callchain that lead to this point:\n\n");
-        Context co = this;
-        while (co != null)
-          {
-            why.append(co.toStringForEnv() + "\n");
-            co = co instanceof Call cc ? cc._context : null;
-          }
         DfaErrors.usedEffectNeverInstantiated(pos,
                                               _dfa._fuir.clazzAsString(ecl),
-                                              why.toString());
+                                              this);
         _dfa._missingEffects.add(ecl);
       }
     return result;

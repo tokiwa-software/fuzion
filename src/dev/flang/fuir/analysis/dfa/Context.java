@@ -52,9 +52,10 @@ public interface Context
       say("program entry point");
       return "  ";
     }
-    public String toStringForEnv()
+    public String toString(boolean forEnv)
     {
-      return "effect environment " + Errors.effe(Env.envAsString(null)) + " at program entry";
+      return forEnv ? "effect environment " + Errors.effe(Env.envAsString(null)) + " at program entry"
+                    : "program entry point";
     }
   };
 
@@ -94,7 +95,44 @@ public interface Context
    * Show the context that caused the inclusion of this instance into the
    * analysis in a way that is useful for error related to effects.
    */
-  String toStringForEnv();
+  String toString(boolean forEnv);
+
+
+  /**
+   * Create a multi-line String describing this context to be used in error
+   * messages.
+   *
+   * @param forEnv true if effect environments should be included in the
+   * resulting string.
+   *
+   * @return A LF-terminated String of the call context starting with the
+   * innermost context going towards older and older contexts until we reach the
+   * program entry point.
+   */
+  default String contextString(boolean forEnv)
+  {
+    var result = new StringBuilder();
+    Context co = this;
+    while (co != null)
+      {
+        result.append(co.toString(forEnv) + "\n");
+        co = co instanceof Call cc ? cc._context : null;
+      }
+    return result.toString();
+  }
+
+
+  /**
+   * Convenience function for `conextString(true)`
+   */
+  default String contextStringForEnv() { return contextString(true); }
+
+
+  /**
+   * Convenience function for `conextString(false)`
+   */
+  default String contextString()       { return contextString(false); }
+
 
 }
 
