@@ -1021,7 +1021,7 @@ hw25 is
           {
             addCode(cc, code, ff);
           }
-        res = _codeIds.add(code);
+        res = addCode(code);
         _clazzCode.put(cl, res);
       }
     return res;
@@ -1092,7 +1092,7 @@ hw25 is
           {
             var code = new List<Object>();
             toStack(code, cond.get(i).cond);
-            resBoxed = _codeIds.add(code);
+            resBoxed = addCode(code);
             _clazzContract.put(key, resBoxed);
           }
         res = resBoxed;
@@ -1372,7 +1372,7 @@ hw25 is
       (ix >= 0, withinCode(c, ix));
 
     ExprKind result;
-    var e = _codeIds.get(c).get(ix);
+    var e = getExpr(c , ix);
     if (e instanceof Clazz    )  /* Clazz represents the field we assign a value to */
       {
         result = ExprKind.Assign;
@@ -1399,7 +1399,7 @@ hw25 is
        codeAt(c, ix) == ExprKind.Tag);
 
     var outerClazz = clazz(cl);
-    var t = (Tag) _codeIds.get(c).get(ix);
+    var t = (Tag) getExpr(c , ix);
     var vcl = outerClazz.actualClazzes(t, null)[0];
     return vcl == null ? -1 : id(vcl);
   }
@@ -1412,7 +1412,7 @@ hw25 is
        codeAt(c, ix) == ExprKind.Tag);
 
     var outerClazz = clazz(cl);
-    var t = (Tag) _codeIds.get(c).get(ix);
+    var t = (Tag) getExpr(c , ix);
     var ncl = outerClazz.actualClazzes(t, null)[1];
     return ncl == null ? -1 : id(ncl);
   }
@@ -1429,7 +1429,7 @@ hw25 is
        codeAt(c, ix) == ExprKind.Env);
 
     var outerClazz = clazz(cl);
-    var v = (Env) _codeIds.get(c).get(ix);
+    var v = (Env) getExpr(c , ix);
     var vcl = outerClazz.actualClazzes(v, null)[0];
     return vcl == null ? -1 : id(vcl);
   }
@@ -1442,7 +1442,7 @@ hw25 is
        codeAt(c, ix) == ExprKind.Box);
 
     var outerClazz = clazz(cl);
-    var b = (Box) _codeIds.get(c).get(ix);
+    var b = (Box) getExpr(c , ix);
     Clazz vc = outerClazz.actualClazzes(b, null)[0];
     return id(vc);
   }
@@ -1455,7 +1455,7 @@ hw25 is
        codeAt(c, ix) == ExprKind.Box);
 
     var outerClazz = clazz(cl);
-    var b = (Box) _codeIds.get(c).get(ix);
+    var b = (Box) getExpr(c , ix);
     Clazz rc = outerClazz.actualClazzes(b, null)[1];
     return id(rc);
   }
@@ -1515,7 +1515,7 @@ hw25 is
        codeAt(c, ix) == ExprKind.Assign    );
 
     var outerClazz = clazz(cl);
-    var s = _codeIds.get(c).get(ix);
+    var s = getExpr(c , ix);
     Clazz innerClazz =
       (s instanceof AbstractCall   call) ? outerClazz.actualClazzes(call, null)[2] :
       (Clazz) (Object) new Object() { { if (true) throw new Error("accessedClazz found unexpected Expr."); } } /* Java is ugly... */;
@@ -1547,7 +1547,7 @@ hw25 is
        codeAt(c, ix) == ExprKind.Assign    );
 
     var outerClazz = clazz(cl);
-    var s = _codeIds.get(c).get(ix);
+    var s = getExpr(c , ix);
     Clazz innerClazz =
       (s instanceof AbstractCall   call) ? outerClazz.actualClazzes(call, null)[0] :
       (s instanceof AbstractAssign a   ) ? outerClazz.actualClazzes(a   , null)[1] :
@@ -1578,7 +1578,7 @@ hw25 is
        codeAt(c, ix) == ExprKind.Assign    );
 
     var outerClazz = clazz(cl);
-    var s = _codeIds.get(c).get(ix);
+    var s = getExpr(c , ix);
     var t =
       (s instanceof AbstractAssign a   ) ? outerClazz.actualClazzes(a, null)[2] :
       (s instanceof Clazz          fld ) ? fld.resultClazz() :
@@ -1615,7 +1615,7 @@ hw25 is
     if (res == null)
       {
         var outerClazz = clazz(cl);
-        var s = _codeIds.get(c).get(ix);
+        var s = getExpr(c , ix);
         Clazz tclazz;
         AbstractFeature f;
         var typePars = AbstractCall.NO_GENERICS;
@@ -1736,7 +1736,7 @@ hw25 is
        codeAt(c, ix) == ExprKind.Call  );
 
     var outerClazz = clazz(cl);
-    var s = _codeIds.get(c).get(ix);
+    var s = getExpr(c , ix);
     var res =
       (s instanceof AbstractAssign ass ) ? outerClazz.actualClazzes(ass, null)[0].isRef() : // NYI: This should be the same as assignedField._outer
       (s instanceof Clazz          arg ) ? outerClazz.isRef() && !arg.feature().isOuterRef() : // assignment to arg field in inherits call (dynamic if outerClazz is ref)
@@ -1773,7 +1773,7 @@ hw25 is
        withinCode(c, ix),
        codeAt(c, ix) == ExprKind.Call);
 
-    var call = (AbstractCall) _codeIds.get(c).get(ix);
+    var call = (AbstractCall) getExpr(c , ix);
     return call.isInheritanceCall();
   }
 
@@ -1798,7 +1798,7 @@ hw25 is
        codeAt(c, ix) == ExprKind.Call  );
 
     var outerClazz = clazz(cl);
-    var s = _codeIds.get(c).get(ix);
+    var s = getExpr(c , ix);
     var tclazz =
       (s instanceof AbstractAssign ass ) ? outerClazz.actualClazzes(ass, null)[0] : // NYI: This should be the same as assignedField._outer
       (s instanceof Clazz          arg ) ? outerClazz : // assignment to arg field in inherits call, so outer clazz is current instance
@@ -1835,7 +1835,7 @@ hw25 is
        codeAt(c, ix) == ExprKind.Const);
 
     var cc = clazz(cl);
-    var ac = (AbstractConstant) _codeIds.get(c).get(ix);
+    var ac = (AbstractConstant) getExpr(c , ix);
     var acl = cc.actualClazzes(ac.origin(), null);
     // origin might be AbstractConstant, AbstractCall or InlineArray.  In all
     // cases, the clazz of the result is the first actual clazz:
@@ -1855,7 +1855,7 @@ hw25 is
        withinCode(c, ix),
        codeAt(c, ix) == ExprKind.Const);
 
-    var ic = _codeIds.get(c).get(ix);
+    var ic = getExpr(c , ix);
     return ((AbstractConstant) ic).data();
   }
 
@@ -1879,7 +1879,7 @@ hw25 is
        codeAt(c, ix) == ExprKind.Match);
 
     var cc = clazz(cl);
-    var s = _codeIds.get(c).get(ix);
+    var s = getExpr(c , ix);
     Clazz ss = cc.actualClazzes((Expr) s, null)[0];
     return id(ss);
   }
@@ -1908,7 +1908,7 @@ hw25 is
        0 <= cix && cix <= matchCaseCount(c, ix));
 
     var cc = clazz(cl);
-    var s = _codeIds.get(c).get(ix);
+    var s = getExpr(c , ix);
     int result = -1; // no field for If
     if (s instanceof AbstractMatch m)
       {
@@ -1943,7 +1943,7 @@ hw25 is
        0 <= cix && cix <= matchCaseCount(c, ix));
 
     var cc = clazz(cl);
-    var s = _codeIds.get(c).get(ix);
+    var s = getExpr(c , ix);
     int[] result;
     if (s instanceof If)
       {
@@ -2001,7 +2001,7 @@ hw25 is
        codeAt(c, ix) == ExprKind.Match,
        0 <= cix && cix <= matchCaseCount(c, ix));
 
-    var s = _codeIds.get(c).get(ix+1+cix);
+    var s = getExpr(c, ix + 1 + cix);
     return ((NumLiteral)s).intValue().intValueExact();
   }
 
@@ -2186,10 +2186,25 @@ hw25 is
     if (PRECONDITIONS) require
       (ix >= 0, withinCode(c, ix));
 
-    var e = _codeIds.get(c).get(ix);
+    var e = getExpr(c , ix);
     return (e instanceof Expr expr) ? expr.pos() :
            (e instanceof Clazz z) ? z._type.declarationPos()  /* implicit assignment to argument field */
                                   : null;
+  }
+
+
+
+  /**
+   * Get the source code position of an expr at the given site if it is available.
+   *
+   * @param site the code position, IR.NO_SITE if unkown.
+   *
+   * @return the source code position or null if not available.
+   */
+  public SourcePosition siteAsPos(int site)
+  {
+    return site != NO_SITE ? codeAtAsPos(codeIndexFromSite(site), exprIndexFromSite(site))
+                           : null;
   }
 
 
