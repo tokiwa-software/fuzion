@@ -276,6 +276,9 @@ public class Feature extends AbstractFeature
   public boolean isIndexVarUpdatedByLoop() { return _isIndexVarUpdatedByLoop; }
 
 
+  boolean _newValueWhatever = false;
+
+
   /**
    * All features that have been found to be directly redefined by this feature.
    * This does not include redefinitions of redefinitions.  Four Features loaded

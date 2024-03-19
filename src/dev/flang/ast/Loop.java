@@ -531,6 +531,19 @@ public class Loop extends ANY
         formalArguments.add(arg);
         initialActuals .add(new Actual(ia));
         nextActuals    .add(new Actual(na));
+        if (f._newValueWhatever)
+          {
+            var argList = new Feature(p,
+                                      Visi.PUB,
+                                      null,
+                                      f.featureName().baseName() + "list",
+                                      new Impl(Impl.Kind.FieldActual));
+            var ial = new Call(p, "#loop_" + f.featureName().baseName() + "_tail");
+            var nal = new Call(p, "#loop_" + f.featureName().baseName() + "_tail");
+            formalArguments.add(argList);
+            initialActuals.add(new Actual(ial));
+            nextActuals.add(new Actual(nal));
+          }
       }
   }
 
@@ -549,6 +562,8 @@ public class Loop extends ANY
       {
         Feature f = ivi.next();
         Feature n = nvi.next();
+        Feature g = null;
+        Feature m = null;
         if (f.impl()._kind == Impl.Kind.FieldIter)
           {
             if (mustDeclareLoopElse)
@@ -558,44 +573,67 @@ public class Loop extends ANY
                 _nextItSuccessBlock.add(_loopElse[1]);
                 mustDeclareLoopElse = false;
               }
-            var streamName = _rawLoopName + "stream" + (iteratorCount++);
+            var listName = _rawLoopName + "list" + (iteratorCount++);
             var p = SourcePosition.notAvailable;
-            Call asStream = new Call(p, f.impl().expr(), "as_stream");
-            Feature stream = new Feature(p,
+            Call asList = new Call(p, f.impl().expr(), "as_list");
+            Feature list = new Feature(p,
                                          Visi.PRIV,
                                          /* modifiers */   0,
                                          /* return type */ NoType.INSTANCE,
-                                         /* name */        new List<>(streamName),
+                                         /* name */        new List<>(listName),
                                          /* args */        new List<>(),
                                          /* inherits */    new List<>(),
                                          /* contract */    null,
-                                         /* impl */        new Impl(p, asStream, Impl.Kind.FieldDef));
-            stream._isIndexVarUpdatedByLoop = true;  // hack to prevent error AstErrors.initialValueNotAllowed(this)
-            _prologSuccessBlock.add(stream);
-            Call hasNext1 = new Call(p, new Call(p, streamName), "has_next" );
-            Call hasNext2 = new Call(p, new Call(p, streamName), "has_next" );
-            Call next1    = new Call(p, new Call(p, streamName), "next");
-            Call next2    = new Call(p, new Call(p, streamName), "next");
+                                         /* impl */        new Impl(p, asList, Impl.Kind.FieldDef));
+            list._isIndexVarUpdatedByLoop = true;  // hack to prevent error AstErrors.initialValueNotAllowed(this)
+            _prologSuccessBlock.add(list);
+            ParsedType nilType = new ParsedType(p, "nil", new List<>(), null);
+            ParsedType consType = new ParsedType(p, "Cons", new List<>(), null);
+            Call next1    = new Call(p, new Call(p, listName + "cons"), "head");
+            Call next2    = new Call(p, new Call(p, listName + "cons"), "head");
+            Call nextTail1 = new Call(p, new Call(p, listName + "cons"), "tail");
+            Call nextTail2 = new Call(p, new Call(p, listName + "cons"), "tail");
             List<Expr> prolog2 = new List<>();
             List<Expr> nextIt2 = new List<>();
-            If ifHasNext1 = new If(p, hasNext1, new Block(prolog2));
-            If ifHasNext2 = new If(p, hasNext2, new Block(nextIt2));
-            if (_loopElse != null)
-              {
-                ifHasNext1.setElse(Block.fromExpr(callLoopElse(true )));
-                ifHasNext2.setElse(Block.fromExpr(callLoopElse(false)));
-              }
-            _prologSuccessBlock.add(ifHasNext1);
-            _nextItSuccessBlock.add(ifHasNext2);
+            Case match1c = new Case(p, consType, listName + "cons", new Block(prolog2));
+            Case match1n = new Case(p, nilType, listName + "nil", (_loopElse != null) ? Block.fromExpr(callLoopElse(true)) : Block.newIfNull(null));
+            Match match1 = new Match(p, new Call(p, listName), new List<AbstractCase>(match1c, match1n));
+            Case match2c = new Case(p, consType, listName + "cons", new Block(nextIt2));
+            Case match2n = new Case(p, nilType, listName + "nil", (_loopElse != null) ? Block.fromExpr(callLoopElse(false)) : Block.newIfNull(null));
+            Match match2 = new Match(p, new Call(p, f.featureName().baseName() + "list"), new List<AbstractCase>(match2c, match2n));
+            _prologSuccessBlock.add(match1);
+            _nextItSuccessBlock.add(match2);
             _prologSuccessBlock = prolog2;
             _nextItSuccessBlock = nextIt2;
             f.setImpl(new Impl(f.impl().pos, next1, Impl.Kind.FieldDef));
             n.setImpl(new Impl(n.impl().pos, next2, Impl.Kind.FieldDef));
+            f._newValueWhatever = true;
+            n._newValueWhatever = true;
+            g = new Feature(f.pos(),
+                            Visi.PRIV,
+                            null,
+                            "#loop_" + f.featureName().baseName() + "_tail",
+                            new Impl(f.impl().pos, nextTail1, Impl.Kind.FieldDef));
+            m = new Feature(n.pos(),
+                            Visi.PRIV,
+                            null,
+                            "#loop_" + f.featureName().baseName() + "_tail",
+                            new Impl(n.impl().pos, nextTail2, Impl.Kind.FieldDef));
           }
         _prologSuccessBlock.add(f);
         _nextItSuccessBlock.add(n);
         f._isIndexVarUpdatedByLoop = true;
         n._isIndexVarUpdatedByLoop = true;
+        if (g != null)
+          {
+            _prologSuccessBlock.add(g);
+            g._isIndexVarUpdatedByLoop = true;
+          }
+        if (m != null)
+          {
+            _nextItSuccessBlock.add(m);
+            m._isIndexVarUpdatedByLoop = true;
+          }
       }
   }
 
