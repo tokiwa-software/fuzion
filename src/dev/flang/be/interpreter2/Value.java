@@ -315,13 +315,6 @@ public abstract class Value extends ANY
     throw new Error("value "+ this + " of class " + getClass() + " is not a tag");
   }
 
-
-  public void dump()
-  {
-    System.out.println(toString());
-  }
-
-
 }
 
 /* end of file */

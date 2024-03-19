@@ -43,6 +43,10 @@ import dev.flang.util.List;
 import dev.flang.util.Pair;
 
 
+/**
+ * The class Excecutor implements ProcessStatement of the AbstractInterpreter.
+ * It does the actual execution of the code.
+ */
 public class Excecutor extends ProcessStatement<Value, Object>
 {
 
@@ -51,11 +55,36 @@ public class Excecutor extends ProcessStatement<Value, Object>
    */
   private static final Instance _universe = new Instance(Clazzes.universe.get());
 
+
+  /**
+   * The fuir to be used for executing the code.
+   */
   private final FUIR _fuir;
+
+
+  /**
+   * List that holds the args to be returned by args().
+   */
   private final List<Value> _args;
+
+
+  /**
+   * The current instance to be returned by current().
+   */
   private final Instance _cur;
+
+
+  /**
+   * The current outer to be returned by outer().
+   */
   private final Value _outer;
 
+  /**
+   * The constructor to initialize the Excecutor
+   * at the start of the application.
+   *
+   * @param fuir
+   */
   public Excecutor(FUIR fuir)
   {
     this._fuir = fuir;
@@ -64,6 +93,16 @@ public class Excecutor extends ProcessStatement<Value, Object>
     this._args = new List<>();
   }
 
+
+  /**
+   * The constructor to initalize the excecutor
+   * with a custom current, outer and args.
+   *
+   * @param fuir
+   * @param cur
+   * @param outer
+   * @param args
+   */
   public Excecutor(FUIR fuir, Instance cur, Value outer, List<Value> args)
   {
     this._fuir = fuir;
@@ -199,12 +238,15 @@ public class Excecutor extends ProcessStatement<Value, Object>
         throw new RuntimeException("NYI");
       };
 
-
-
-
     return result;
   }
 
+
+  /**
+   * Get the target clazz and the called clazz as a Pair of two Integers.
+   *
+   * @param tvalue the actual value of the target.
+   */
   private Pair<Integer, Integer> ttcc(int cl, int c, int i, Value tvalue)
   {
     var ccs = _fuir.accessedClazzes(cl, c, i);
@@ -230,10 +272,18 @@ public class Excecutor extends ProcessStatement<Value, Object>
     return new Pair<>(tt, cc);
   }
 
+
+  /**
+   * wrap `v` into a `Pair<>(v, null)`
+   *
+   * @param v
+   * @return
+   */
   static Pair<Value, Object> pair(Value v)
   {
     return new Pair<Value,Object>(v, null);
   }
+
 
   @Override
   public Pair<Value, Object> box(Value v, int vc, int rc)
@@ -278,11 +328,11 @@ public class Excecutor extends ProcessStatement<Value, Object>
       case c_i16 -> new i16Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getShort());
       case c_i32 -> new i32Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getInt());
       case c_i64 -> new i64Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getLong());
-      case c_i8 -> new i8Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).get());
+      case c_i8  -> new i8Value (ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).get());
       case c_u16 -> new u16Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getChar());
       case c_u32 -> new u32Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getInt());
       case c_u64 -> new u64Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getLong());
-      case c_u8 -> new u8Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).get() & 0xff);
+      case c_u8  -> new u8Value (ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).get() & 0xff);
       default -> {
         if (_fuir.clazzIsArray(constCl))
           {
@@ -291,7 +341,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
             var bb = ByteBuffer.wrap(d);
             var elCount = bb.getInt();
 
-            var arrayData = ArrayData.alloc(elCount, _fuir.clazzForInterpreter(constCl));
+            var arrayData = ArrayData.alloc(elCount, _fuir.clazzForInterpreter(elementType)._type);
 
             for (int idx = 0; idx < elCount; idx++)
               {
@@ -374,9 +424,9 @@ public class Excecutor extends ProcessStatement<Value, Object>
   }
 
   /**
-   * @param staticSubjectClazz
+   * @param staticSubjectClazz the clazz of the subject, a choice
    *
-   * @param sub
+   * @param sub the subjects current value
    *
    * @return pair where first value is the tag, the second value the extracted value.
    */

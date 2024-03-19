@@ -1931,16 +1931,18 @@ hw25 is
   // NYI replace by more intelligent code
   public int matchCaseIndex(int cl, int c, int i, int tag)
   {
-    var j = 0;
-    while(true)
+    var result = -1;
+    for (var j = 0; result < 0 && j <  matchCaseCount(c, i); j++)
       {
         var mct = matchCaseTags(cl, c, i, j);
         if (Arrays.stream(mct).anyMatch(t -> t == tag))
           {
-            return j;
+            result = j;
           }
-        j++;
       }
+    if (CHECKS) check
+      (result != -1);
+    return result;
   }
 
 
@@ -1957,7 +1959,7 @@ hw25 is
    *
    * @return array of tag numbers this case matches
    */
-  // NYI: UNDER DEVELOPMENT thread safety
+  // NYI: UNDER DEVELOPMENT thread safety, #2760
   public synchronized int[] matchCaseTags(int cl, int c, int ix, int cix)
   {
     if (PRECONDITIONS) require

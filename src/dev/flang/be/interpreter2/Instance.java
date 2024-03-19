@@ -486,19 +486,6 @@ public class Instance extends ValueWithClazz
     return result;
   }
 
-
-  /**
-   * dump
-   */
-  public void dump()
-  {
-    System.out.println(toString());
-    for (int i=0; i<nonrefs.length; i++)
-      {
-        System.out.println(" field["+i+"] ==\t int:"+nonrefs[i]+"\tref: "+refs[i]);
-      }
-  }
-
 }
 
 /* end of file */

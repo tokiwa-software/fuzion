@@ -71,7 +71,7 @@ public class LValue extends ValueWithClazz
 
     if (PRECONDITIONS) require
       (cont != null,
-       off >= 0 || c.isUnitType(),
+       c.isUnitType() || off >= 0,
        c.isUnitType() || off < Layout.get(cont._clazz).size(),
        c.isUnitType() || off < cont.refs.length);
 
@@ -339,11 +339,16 @@ public class LValue extends ValueWithClazz
   public String toString()
   {
     return "lvalue[" + container + "@" + offset + "(" + _clazz + ")]" +
-      (_clazz == Clazzes.i32.getIfCreated() ? " (" + i32Value() + ")" :
-       _clazz == Clazzes.u32.getIfCreated() ? " (" + u32Value() + ")" :
-       _clazz == Clazzes.u8.getIfCreated() ? " (" + u8Value() + ")" :
-       _clazz == Clazzes.i64.getIfCreated() ? " (" + i64Value() + ")" :
-       _clazz == Clazzes.u64.getIfCreated() ? " (" + u64Value() + ")" :
+      (_clazz == Clazzes.i8  .getIfCreated() ? " (" + i8Value()   + ")" :
+       _clazz == Clazzes.u8  .getIfCreated() ? " (" + u8Value()   + ")" :
+       _clazz == Clazzes.i16 .getIfCreated() ? " (" + i16Value()  + ")" :
+       _clazz == Clazzes.u16 .getIfCreated() ? " (" + u16Value()  + ")" :
+       _clazz == Clazzes.i32 .getIfCreated() ? " (" + i32Value()  + ")" :
+       _clazz == Clazzes.u32 .getIfCreated() ? " (" + u32Value()  + ")" :
+       _clazz == Clazzes.i64 .getIfCreated() ? " (" + i64Value()  + ")" :
+       _clazz == Clazzes.u64 .getIfCreated() ? " (" + u64Value()  + ")" :
+       _clazz == Clazzes.f32 .getIfCreated() ? " (" + f32Value()  + ")" :
+       _clazz == Clazzes.f64 .getIfCreated() ? " (" + f64Value()  + ")" :
        _clazz == Clazzes.bool.getIfCreated() ? " (" + boolValue() + ")" : "");
   }
 

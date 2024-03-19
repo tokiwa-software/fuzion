@@ -121,11 +121,11 @@ public class ChoiceIdAsRef extends Value
 
 
   /**
-   * get returns the id corresponding to a result of get(clazz,int).
+   * tag returns the id corresponding to a result of get(clazz,int).
    *
-   * @param id the id stored in the returned value
+   * @param idAsRef the id stored in the returned value
    *
-   * @return the id stored in idAsRef, -1 if this is not an id but a normal ref.
+   * @return the id stored in idAsRef.
    */
   public static int tag(Clazz clazz, Value idAsRef)
   {
@@ -157,7 +157,7 @@ public class ChoiceIdAsRef extends Value
       }
 
     if (POSTCONDITIONS) ensure
-      (result != -1);
+      (0 <= result && result < clazz.choiceGenerics().size());
 
     return result;
   }

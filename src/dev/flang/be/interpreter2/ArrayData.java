@@ -179,26 +179,15 @@ public class ArrayData extends Value
   }
 
 
-  static AbstractType elementType(Clazz arrayClazz)
+  /**
+   * Allocate a new array
+   *
+   * @param sz size of the array
+   * @param et the elements type
+   * @return
+   */
+  public static ArrayData alloc(int sz, AbstractType elementType)
   {
-    // NYI: Properly determine generic argument type of array
-    var arrayType = arrayClazz._type;
-    if (arrayType.compareTo(Types.resolved.t_Const_String) == 0 /* NYI: Hack */)
-      {
-        return Types.resolved.t_i32;
-      }
-    else
-      {
-        return arrayType.generics().getFirst();
-      }
-  }
-
-
-  public static ArrayData alloc(int sz,
-                                       Clazz arrayClazz)
-  {
-    // NYI: Properly determine generic argument type of array
-    var elementType = elementType(arrayClazz);
     if      (elementType.compareTo(Types.resolved.t_i8  ) == 0) { return new ArrayData(new byte   [sz]); }
     else if (elementType.compareTo(Types.resolved.t_i16 ) == 0) { return new ArrayData(new short  [sz]); }
     else if (elementType.compareTo(Types.resolved.t_i32 ) == 0) { return new ArrayData(new int    [sz]); }
