@@ -1042,12 +1042,15 @@ public class Intrinsics extends ANY
     });
 
     putUnsafe("fuzion.sys.net.get_peer_address", (interpreter, innerClazz) -> args -> {
-      var sockfd = (SocketChannel)_openStreams_.get(args.get(1).i64Value());
       try
         {
-          byte[] address = ((InetSocketAddress)sockfd.getRemoteAddress()).getAddress().getAddress();
-          System.arraycopy(address, 0, args.get(2).arrayData()._array, 0, address.length);
-          return new i32Value(address.length);
+          if (_openStreams_.get(args.get(1).i64Value()) instanceof SocketChannel sockfd)
+            {
+              byte[] address = ((InetSocketAddress)sockfd.getRemoteAddress()).getAddress().getAddress();
+              System.arraycopy(address, 0, args.get(2).arrayData()._array, 0, address.length);
+              return new i32Value(address.length);
+            }
+          return new i32Value(-1);
         }
       catch (IOException e)
         {
@@ -1056,10 +1059,13 @@ public class Intrinsics extends ANY
     });
 
     putUnsafe("fuzion.sys.net.get_peer_port", (interpreter, innerClazz) -> args -> {
-      var sockfd = (SocketChannel)_openStreams_.get(args.get(1).i64Value());
       try
         {
-          return new u16Value(((InetSocketAddress)sockfd.getRemoteAddress()).getPort());
+          if (_openStreams_.get(args.get(1).i64Value()) instanceof SocketChannel sockfd)
+            {
+              return new u16Value(((InetSocketAddress)sockfd.getRemoteAddress()).getPort());
+            }
+          return new u16Value(0);
         }
       catch (IOException e)
         {
