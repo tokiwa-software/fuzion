@@ -143,6 +143,28 @@ public class Instance extends Value implements Comparable<Instance>
                  : e1.compareTo(e2);
   }
 
+  /**
+   * Compare this to another instance, used to compare effect instances in
+   * Env[ironmnents].  The main different to `compareTo` is that the effect
+   * environment is ignored since that would lead to an explosion of
+   * Environments.
+   */
+  public int envCompareTo(Instance other)
+  {
+    var i1 = this;
+    var i2 = other;
+    var c1 = i1._clazz;
+    var c2 = i2._clazz;
+    var s1 = i1._site;
+    var s2 = i2._site;
+    return
+      c1 < c2    ? -1 :
+      c1 > c2    ? +1 :
+      s1 < s2    ? -1 :
+      s1 > s2    ? +1
+                 :  0;
+  }
+
 
   /**
    * Add v to the set of values of given field within this instance.

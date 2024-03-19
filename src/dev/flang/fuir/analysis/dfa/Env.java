@@ -177,12 +177,9 @@ public class Env extends ANY implements Comparable<Env>
    */
   public int compareTo(Env other)
   {
-    // NYI: The code to distinguish two environments is currently poor, we just
-    // distinguish environments depending on the set types they set, so two
-    // environments that set, e.g., io.out, to different effects will be treated
-    // the same.  This must be improved in a way that gives more accuracy
-    // without state explosion!
-    var ta = _types;
+    // this is a little strict in the sense that the order of effects is
+    // relevant. Might need to relax this if this results in a state explosion.
+    var ta = this ._types;
     var oa = other._types;
     var res =
       ta.length < oa.length ? -1 :
@@ -191,9 +188,11 @@ public class Env extends ANY implements Comparable<Env>
       {
         var tt = ta[i];
         var ot = oa[i];
+        var te = this .getEffect(tt);
+        var oe = other.getEffect(ot);
         res =
           tt < ot ? -1 :
-          tt > ot ? +1 : 0;
+          tt > ot ? +1 : Value.envCompare(te, oe);
       }
     return res;
   }
