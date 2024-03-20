@@ -176,7 +176,9 @@ public class InlineArray extends ExprWithPos
           {
             for (var e : _elements)
               {
-                e.propagateExpectedType(res, outer, elementType);
+                var e2 = e.propagateExpectedType(res, outer, elementType);
+                if (CHECKS) check
+                  (e == e2);
               }
             _type = Types.resolved.f_array.resultTypeIfPresent(res, new List<>(elementType));
           }
