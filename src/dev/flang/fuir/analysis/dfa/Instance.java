@@ -234,7 +234,7 @@ public class Instance extends Value implements Comparable<Instance>
    */
   public String toString()
   {
-    return _dfa._fuir.clazzAsString(_clazz);
+    return _dfa._fuir.clazzAsString(_clazz) + "@" + _dfa._fuir.siteAsPos(_site);
   }
 
 }
