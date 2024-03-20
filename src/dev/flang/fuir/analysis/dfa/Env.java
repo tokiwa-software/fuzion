@@ -86,9 +86,17 @@ public class Env extends ANY implements Comparable<Env>
 
 
   /**
-   * The value of the effect.
+   * The initial value of the effect.  The initial values is part of the
+   * identity of this effect, i.e., compareTo will take this value into account.
    */
-  Value _effectValue;
+  final Value _initialEffectValue;
+
+
+  /**
+   * The actual values of the effect.  This will include all the values added
+   * via calls to `effect.replace`.
+   */
+  private Value _actualEffectValues;
 
 
   /*---------------------------  constructors  ---------------------------*/
@@ -136,7 +144,8 @@ public class Env extends ANY implements Comparable<Env>
       }
     _outer = outer;
     _effectType = et;
-    _effectValue = ev;
+    _initialEffectValue = ev;
+    _actualEffectValues = ev;
   }
 
 
@@ -188,11 +197,11 @@ public class Env extends ANY implements Comparable<Env>
       {
         var tt = ta[i];
         var ot = oa[i];
-        var te = this .getEffect(tt);
-        var oe = other.getEffect(ot);
+        var ti = this ._initialEffectValue;
+        var oi = other._initialEffectValue;
         res =
           tt < ot ? -1 :
-          tt > ot ? +1 : Value.envCompare(te, oe);
+          tt > ot ? +1 : Value.envCompare(ti, oi);
       }
     return res;
   }
@@ -210,7 +219,7 @@ public class Env extends ANY implements Comparable<Env>
         sb.append(sep)
           .append(_dfa._fuir.clazzAsString(et))
           .append("->")
-          .append(getEffect(et));
+          .append(getActualEffectValues(et));
         sep = ", ";
       }
     return sb.toString();
@@ -235,18 +244,19 @@ public class Env extends ANY implements Comparable<Env>
 
 
   /**
-   * Get effect of given type in this call's environment or the default if none
-   * found.
+   * Get all actual effect values of given type in this call's environment or
+   * the default if none found.
    *
    * @param ecl clazz defining the effect type.
    *
-   * @return null in case no effect of type ecl was found
+   * @return null in case no effect of type ecl was found, not even in the set
+   * of default effects.
    */
-  Value getEffect(int ecl)
+  Value getActualEffectValues(int ecl)
   {
     return
-      _effectType == ecl  ? _effectValue          :
-      _outer      != null ? _outer.getEffect(ecl)
+      _effectType == ecl  ? _actualEffectValues :
+      _outer      != null ? _outer.getActualEffectValues(ecl)
                           : _dfa._defaultEffects.get(ecl);
   }
 
@@ -275,11 +285,11 @@ public class Env extends ANY implements Comparable<Env>
   {
     if (_effectType == ecl)
       {
-        var oe = _effectValue;
+        var oe = _actualEffectValues;
         var ne = e.join(oe);
         if (Value.compare(oe, ne) != 0)
           {
-            _effectValue = ne;
+            _actualEffectValues = ne;
             _dfa.wasChanged(() -> "effect.replace called: "+_dfa._fuir.clazzAsString(ecl));
           }
       }

@@ -405,7 +405,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   Value getEffectCheck(int ecl)
   {
     return
-      _env != null ? _env.getEffect(ecl)
+      _env != null ? _env.getActualEffectValues(ecl)
                    : _dfa._defaultEffects.get(ecl);
   }
 
