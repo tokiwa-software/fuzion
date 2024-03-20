@@ -534,7 +534,7 @@ public class Loop extends ANY
         if (f._isLoopIterator)
           {
             var argList = new Feature(SourcePosition.notAvailable,
-                                      Visi.PUB,
+                                      Visi.PRIV,
                                       null,
                                       f._loopIteratorListName + "arg",
                                       new Impl(Impl.Kind.FieldActual));
