@@ -277,6 +277,14 @@ public class Feature extends AbstractFeature
 
 
   /**
+   * Is this a loop's variable that is being iterated over using the `in` keyword?
+   * If so, also store the internal list name.
+   */
+  boolean _isLoopIterator = false;
+  String _loopIteratorListName;
+
+
+  /**
    * All features that have been found to be directly redefined by this feature.
    * This does not include redefinitions of redefinitions.  Four Features loaded
    * from source code, this set is collected during RESOLVING_DECLARATIONS.  For
