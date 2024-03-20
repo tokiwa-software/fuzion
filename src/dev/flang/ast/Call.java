@@ -2851,7 +2851,9 @@ public class Call extends AbstractCall
         r = propagateExpectedTypeForPartial(res, outer, t);
         if (r != this)
           {
-            r.propagateExpectedType(res, outer, t);
+            var r2 = r.propagateExpectedType(res, outer, t);
+            if (CHECKS) check
+              (r == r2);
           }
       }
     return r;
