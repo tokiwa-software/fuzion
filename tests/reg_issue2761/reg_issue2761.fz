@@ -17,9 +17,10 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test Makefile
+#  Source code of Fuzion test
 #
 # -----------------------------------------------------------------------
 
-override NAME = sockets_test
-include ../simple.mk
+match "-1".parse_i32
+  e error => say e
+  i i32 => say i

@@ -21,5 +21,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = sockets_test
-include ../simple.mk
+override NAME = reg_issue2700.fz
+include ../positive.mk

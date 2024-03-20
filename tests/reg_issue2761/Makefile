@@ -21,5 +21,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = sockets_test
+override NAME = reg_issue2761
 include ../simple.mk
