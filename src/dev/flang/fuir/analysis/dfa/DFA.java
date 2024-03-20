@@ -64,7 +64,7 @@ public class DFA extends ANY
 
 
   /**
-   * Functional interface to crate intrinsics.
+   * Functional interface to create intrinsics.
    */
   @FunctionalInterface
   interface IntrinsicDFA
