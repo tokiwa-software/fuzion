@@ -533,7 +533,7 @@ public class Loop extends ANY
         nextActuals    .add(new Actual(na));
         if (f._isLoopIterator)
           {
-            var argList = new Feature(p,
+            var argList = new Feature(SourcePosition.notAvailable,
                                       Visi.PUB,
                                       null,
                                       f._loopIteratorListName + "arg",
@@ -611,12 +611,12 @@ public class Loop extends ANY
             f._loopIteratorListName = listName;
             n._isLoopIterator = true;
             n._loopIteratorListName = listName;
-            g = new Feature(f.pos(),
+            g = new Feature(p,
                             Visi.PRIV,
                             null,
                             listName + "tail",
                             new Impl(f.impl().pos, nextTail1, Impl.Kind.FieldDef));
-            m = new Feature(n.pos(),
+            m = new Feature(p,
                             Visi.PRIV,
                             null,
                             listName + "tail",
