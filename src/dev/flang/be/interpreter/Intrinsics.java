@@ -856,6 +856,10 @@ public class Intrinsics extends ANY
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(jb, resultClazz);
         });
+    putUnsafe("fuzion.java.null_to_java_object", (interpreter, innerClazz) -> args ->
+        {
+          return JavaInterface.javaObjectToInstance(null, innerClazz.resultClazz());
+        });
     put("fuzion.sys.internal_array_init.alloc", (interpreter, innerClazz) -> args ->
         {
           return fuzionSysArrayAlloc(/* size */ args.get(1).i32Value(),
