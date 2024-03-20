@@ -120,6 +120,17 @@ public class Instance extends Value implements Comparable<Instance>
 
 
   /**
+   * Get the environment this instance was created in, or null if none.
+   *
+   * This environment is taken into account when comparing instances.
+   */
+  Env env()
+  {
+    return _context instanceof Call ca1 ? ca1._env : null;
+  }
+
+
+  /**
    * Compare this to another instance.
    */
   public int compareTo(Instance other)
@@ -130,8 +141,8 @@ public class Instance extends Value implements Comparable<Instance>
     var c2 = i2._clazz;
     var s1 = i1._site;
     var s2 = i2._site;
-    var e1 = i1._context instanceof Call ca1 ? ca1._env : null;
-    var e2 = i2._context instanceof Call ca2 ? ca2._env : null;
+    var e1 = i1.env();
+    var e2 = i2.env();
     return
       c1 < c2    ? -1 :
       c1 > c2    ? +1 :
