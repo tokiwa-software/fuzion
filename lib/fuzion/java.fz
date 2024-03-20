@@ -325,4 +325,4 @@ public fuzion.java is
   # intrinsic to get an instance of a Java object of type T that is
   # a reference to null.
   #
-  public null_to_java_object(T type) T => intrinsic_constructor
+  public null_to_java_object(T type : Java_Object) T => intrinsic_constructor
