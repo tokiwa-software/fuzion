@@ -26,7 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.air.Clazz; // NYI: remove this dependency
+import dev.flang.air.Clazz;
 
 import dev.flang.util.ANY;
 
@@ -47,7 +47,13 @@ public abstract class Value extends ANY
    * Dummy value to be returned by Expr.execute for the case that the
    * expression does not produce a value
    */
-  public static Value NO_VALUE = new Value() { };
+  public static Value NO_VALUE = new Value() {
+    @Override
+    public String toString()
+    {
+      return "NO_VALUE";
+    }
+  };
 
 
   /**
@@ -58,6 +64,12 @@ public abstract class Value extends ANY
       void storeNonRef(LValue slot, int size)
       {
         // treat as NOP.
+      }
+
+      @Override
+      public String toString()
+      {
+        return "EMPTY_VALUE";
       }
     };
 
@@ -302,7 +314,6 @@ public abstract class Value extends ANY
   {
     throw new Error("value "+ this + " of class " + getClass() + " is not a tag");
   }
-
 
 }
 

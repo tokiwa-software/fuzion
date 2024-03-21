@@ -42,9 +42,6 @@ c:
 int:
 	NAME=partial_application_negative make -f ../negative.mk int
 	NAME=partial_application_negative FUZION_OPTIONS=-XmaxErrors=-1 make -f ../simple.mk int
-int2:
-	NAME=partial_application_negative make -f ../negative.mk int2
-	NAME=partial_application_negative FUZION_OPTIONS=-XmaxErrors=-1 make -f ../simple.mk int2
 
 show:
 	NAME=partial_application_negative make -f ../negative.mk show

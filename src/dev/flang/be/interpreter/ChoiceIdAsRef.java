@@ -114,31 +114,31 @@ public class ChoiceIdAsRef extends Value
       }
 
     if (POSTCONDITIONS) ensure
-      (get(clazz, result) == id);
+      (tag(clazz, result) == id);
 
     return result;
   }
 
 
   /**
-   * get returns the id corresponding to a result of get(clazz,int).
+   * tag returns the id corresponding to a result of get(clazz,int).
    *
    * @param idAsRef the id stored in the returned value
    *
-   * @return the id stored in idAsRef, -1 if this is not an id but a normal ref.
+   * @return the id stored in idAsRef.
    */
-  public static int get(Clazz clazz, Value idAsRef)
+  public static int tag(Clazz clazz, Value idAsRef)
   {
     if (PRECONDITIONS) require
       (clazz.isChoice());
 
-    int result;
+    int result = -1;
 
     if (idAsRef == null)
       {
         // null stands for the first (and only) non-reference type
         result = 0;
-        while (clazz._choiceGenerics.get(result).isRef())
+        while (clazz.choiceGenerics().get(result).isRef())
           {
             result++;
           }
@@ -149,18 +149,18 @@ public class ChoiceIdAsRef extends Value
       }
     else
       {
-        result = -1;
+        result = 0;
+        while (!clazz.choiceGenerics().get(result)._type.isAssignableFrom(((ValueWithClazz)idAsRef)._clazz._type))
+          {
+            result++;
+          }
       }
 
     if (POSTCONDITIONS) ensure
-      (result < 0 ||
-       result < clazz._choiceGenerics.size()
-       // && get(clazz, result) == idAsRef  -- would cause endless recursion
-       );
+      (0 <= result && result < clazz.choiceGenerics().size());
 
     return result;
   }
-
 
 
   /**

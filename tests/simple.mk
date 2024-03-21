@@ -46,9 +46,6 @@ all: jvm c int
 int:
 	$(ENV) ../check_simple_example_int.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
-int2:
-	$(ENV) ../check_simple_example_int2.sh "$(FUZION_RUN)" $(FILE) || exit 1
-
 jvm:
 	$(ENV) ../check_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
@@ -60,9 +57,6 @@ record:
 
 record_int:
 	$(ENV) ../record_simple_example_int.sh "$(FUZION_RUN)" $(FILE)
-
-record_int2:
-	$(ENV) ../record_simple_example_int2.sh "$(FUZION_RUN)" $(FILE)
 
 record_jvm:
 	$(ENV) ../record_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE)
