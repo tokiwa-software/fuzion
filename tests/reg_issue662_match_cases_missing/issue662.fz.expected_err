@@ -7,4 +7,10 @@ Match expression at --CURDIR--/issue662.fz:30:3:
 --^
 To solve this, add a case.  If a case exists, check that the indentation is deeper than that of the surrounding 'match' expression
 
-one error.
+
+--CURDIR--/issue662.fz:26:1: error 2: Failed to infer result type for feature 'issue662'.
+issue662 =>
+^^^^^^^^
+To solve this, please specify a result type explicitly.
+
+2 errors.
