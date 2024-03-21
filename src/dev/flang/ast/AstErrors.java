@@ -358,7 +358,7 @@ public class AstErrors extends ANY
                   .append(st(ts));
               }
           }
-        if (remedy == null && frmlT.asRef().isAssignableFrom(actlT))
+        if (remedy == null && !frmlT.isVoid() && frmlT.asRef().isAssignableFrom(actlT))
           {
             remedy = "To solve this, you could change the type of " + ss(target) + " to a " + st("ref")+ " type like " + s(frmlT.asRef()) + ".\n";
           }
