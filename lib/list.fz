@@ -37,7 +37,8 @@
 # more flexible than streams that require to store and update their state.
 #
 # A list is immutable, so it can be reused and shared between threads.
-# Compared to a stream, a list may require more (heap) allocation.
+# Due to the nature of lists, in which many Cons cells are used, a list
+# may require more (heap) allocation than an array.
 #
 #
 #
@@ -68,7 +69,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # count the elements of this list starting at n.
   # carries n around to make this tail-recursive
   #
-  private count (n i32) i32 =>
+  count (n i32) i32 =>
     list.this ? nil    => n
               | c Cons => c.tail.count n+1
 
@@ -136,7 +137,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   # helper feature for init to allow for tail recursion
   #
-  private init(res list A) list A
+  init(res list A) list A
     pre
       debug: !is_empty
   =>
@@ -316,7 +317,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # call this feature on the tail of this list otherwise, feeding it with the
   # same separator sep but appending sep and the current element to res.
   #
-  private prepend_to_all(sep A, res list A) list A =>
+  prepend_to_all(sep A, res list A) list A =>
     match head
       nil => res
       x A => tail.prepend_to_all sep (res ++ [sep, x])
@@ -426,7 +427,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
     filter0 p
 
 
-  private filter0 (p A -> bool) list A =>
+  filter0 (p A -> bool) list A =>
     match drop_while (a -> !(p a))
       _ nil  => nil
       c Cons => ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
@@ -457,20 +458,6 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
       head => list.this
       tail => (list.this ? nil    => nil
                          | c Cons => c.tail.tails)
-
-  # create stream from this list
-  #
-  # In contrast to list's immutable Cons cells, a stream instance is mutable, i.e,
-  # it cannot be shared with threads or used in pure functions
-  #
-  public redef as_stream ref : stream A is
-    cur := list.this
-    public redef has_next => (cur ? Cons => true
-                                  | nil  => false)
-    public redef next =>
-      res := cur.head.get
-      set cur := cur.force_tail
-      res
 
 
   # create a new list from the result of applying 'f' to the
