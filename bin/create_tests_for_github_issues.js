@@ -1,5 +1,5 @@
 // usage example:
-// gh issue list --limit 1000 --state open --json title,body,number -l bug | nodejs test.js
+// gh issue list --limit 1000 --state open --json title,body,number -l bug | nodejs create_tests_for_github_issues.js
 
 const fs = require('node:fs');
 
@@ -65,22 +65,23 @@ obj.forEach(element =>
 # -----------------------------------------------------------------------
 
 override NAME = reg_issue` + element.number +  "\n" +
-"include ../simple.mk\n"
-    ;
+"include ../simple.mk\n";
 
-    if (!fs.existsSync('tests/reg_issue' + element.number))
+    const dir = 'tests/reg_issue' + element.number;
+
+    if (!fs.existsSync(dir))
     {
-      fs.mkdirSync('tests/reg_issue' + element.number);
+      fs.mkdirSync(dir);
     }
-    if (!fs.existsSync('tests/reg_issue' + element.number + '/reg_issue' + element.number + '.fz'))
+    if (!fs.existsSync(dir + '/reg_issue' + element.number + '.fz'))
     {
-      fs.writeFile('tests/reg_issue' + element.number + '/skip', "NYI: this test was copied from issue automatically. Delete this skip file once implementation is done.", err =>
+      fs.writeFile(dir + '/skip', "NYI: this test was copied from issue automatically. Delete this skip file once implementation is done.", err =>
       {
       });
-      fs.writeFile('tests/reg_issue' + element.number + '/Makefile', makefile, err =>
+      fs.writeFile(dir + '/Makefile', makefile, err =>
       {
       });
-      fs.writeFile('tests/reg_issue' + element.number + '/reg_issue' + element.number + '.fz', content, err =>
+      fs.writeFile(dir + '/reg_issue' + element.number + '.fz', content, err =>
       {
       });
     }
