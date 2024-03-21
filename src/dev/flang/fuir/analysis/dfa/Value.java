@@ -86,6 +86,38 @@ public class Value extends Val
     };
 
 
+  /**
+   * Comparator instance to compare two Values of effect instances that are used in
+   * Env[ironmnents].
+   */
+  static Comparator<Value> ENV_COMPARATOR = new Comparator<>() {
+      /**
+       * compare two values.
+       */
+      public int compare(Value a, Value b)
+      {
+        if      (a == b)                                                       { return 0;                    }
+     // else if (a == UNIT                    || b == UNIT                   ) { return a == UNIT  ? +1 : -1; }
+        else if (a instanceof Instance     ai && b instanceof Instance     bi) { return ai.envCompareTo(bi);     }
+     // else if (a instanceof NumericValue an && b instanceof NumericValue bn) { return an.envCompareTo(bn);     }
+        else if (a instanceof RefValue     ab && b instanceof RefValue     bb) { return ab.envCompareTo(bb);     }
+     // else if (a instanceof TaggedValue  at && b instanceof TaggedValue  bt) { return at.envCompareTo(bt);     }
+     // else if (a instanceof SysArray     aa && b instanceof SysArray     ba) { return aa.envCompareTo(ba);     }
+        else if (a instanceof ValueSet     as && b instanceof ValueSet     bs) { return as.envCompareTo(bs);     }
+        else if (a instanceof Instance    ) { return +1; } else if (b instanceof Instance       ) { return -1; }
+     // else if (a instanceof NumericValue) { return +1; } else if (b instanceof NumericValue   ) { return -1; }
+        else if (a instanceof RefValue    ) { return +1; } else if (b instanceof RefValue       ) { return -1; }
+     // else if (a instanceof TaggedValue ) { return +1; } else if (b instanceof TaggedValue    ) { return -1; }
+     // else if (a instanceof SysArray    ) { return +1; } else if (b instanceof SysArray       ) { return -1; }
+        else if (a instanceof ValueSet    ) { return +1; } else if (b instanceof ValueSet       ) { return -1; }
+        else
+          {
+            throw new Error(getClass().toString() + "envCompareTo requires support for " + a.getClass() + " and " + b.getClass());
+          }
+      }
+    };
+
+
 
   /**
    * The unit value 'unit', '{}'
@@ -193,11 +225,20 @@ public class Value extends Val
 
 
   /**
-   * compare two values.
+   * compare two Values.
    */
   public static int compare(Value a, Value b)
   {
     return COMPARATOR.compare(a,b);
+  }
+
+
+  /**
+   * compare two Values of effect instances that are used in Env[ironmnents].
+   */
+  public static int envCompare(Value a, Value b)
+  {
+    return ENV_COMPARATOR.compare(a,b);
   }
 
 

@@ -96,6 +96,19 @@ public class RefValue extends Value
 
 
   /**
+   * Compare this to another RefValue, used to compare effect instances in
+   * Env[ironmnents].
+   */
+  public int envCompareTo(RefValue other)
+  {
+    return
+      _clazz < other._clazz ? -1 :
+      _clazz > other._clazz ? +1 :
+      Value.envCompare(_original, other._original);
+  }
+
+
+  /**
    * Add v to the set of values of given field within this instance.
    */
   public void setField(DFA dfa, int field, Value v)

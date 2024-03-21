@@ -747,8 +747,13 @@ public class DFA extends ANY
   /**
    * For debugging: dump stack when _changed is set, for debugging when fix point
    * is not reached.
+   *
+   * To enable, use fz with
+   *
+   *   FUZION_JAVA_OPTIONS=-Ddev.flang.fuir.analysis.dfa.DFA.SHOW_STACK_ON_CHANGE=true
    */
-  static boolean SHOW_STACK_ON_CHANGE = false;
+  static final boolean SHOW_STACK_ON_CHANGE =
+    Boolean.getBoolean("dev.flang.fuir.analysis.dfa.DFA.SHOW_STACK_ON_CHANGE");
 
 
   /**
@@ -1137,7 +1142,7 @@ public class DFA extends ANY
           {
             _options.verbosePrintln(2,
                                     "DFA iteration #"+cnt+": --------------------------------------------------" +
-                                    (_options.verbose(3) ? _calls.size() + "," + _instances.size() + "; " + _changedSetBy.get()
+                                    (_options.verbose(3) ? "calls:"+_calls.size() + ",instances:" + _instances.size() + ",envs:" + _envs.size() + "; " + _changedSetBy.get()
                                                          : ""                                                                  ));
           }
         _changed = false;

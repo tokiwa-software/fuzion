@@ -121,6 +121,44 @@ public class ValueSet extends Value
 
 
   /**
+   * Compare this to another ValueSet, both sets containing effect instances
+   * that are used in Env[ironmnents].
+   *
+   * @param other the other ValueSet
+   *
+   * @return -1, 0, or +1 depending on whether this < other, this == other or
+   * this > other by some order.
+   */
+  public int envCompareTo(ValueSet other)
+  {
+    var s1 = _components.size();
+    var s2 = other._components.size();
+    if (s1 == s2)
+      {
+        for (int i = 0; i < _componentsArray.length; i++)
+          {
+            var x1 = _componentsArray[i];
+            var x2 = other._componentsArray[i];
+            var res = Value.envCompare(x1, x2);
+            if (res != 0)
+              {
+                return res;
+              }
+          }
+        return 0;
+      }
+    else if (s1 < s2)
+      {
+        return -1;
+      }
+    else
+      {
+        return +1;
+      }
+  }
+
+
+  /**
    * Create human-readable string from this value.
    */
   public String toString()
