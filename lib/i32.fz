@@ -62,9 +62,9 @@ public i32(public val i32) : num.wrap_around, has_interval is
     safety: other != 0
   => mod other
 
-  # private division and remainder with crash in case of div-by-zero
-  private div (other i32) i32 => intrinsic
-  private mod (other i32) i32 => intrinsic
+  # division and remainder with crash in case of div-by-zero
+  div (other i32) i32 => intrinsic
+  mod (other i32) i32 => intrinsic
 
   # bitwise and, or and xor operations
   public fixed infix &  (other i32) i32 => intrinsic

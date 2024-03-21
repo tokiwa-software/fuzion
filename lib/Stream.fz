@@ -54,7 +54,7 @@ public stream(public T type) ref : Sequence T is
     as_list0.get
 
   # this must not be called more than once!
-  private from_stream list T =>
+  from_stream list T =>
     if has_next
       h := next
       ref : Cons T (list T)

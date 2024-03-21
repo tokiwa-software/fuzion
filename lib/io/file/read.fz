@@ -30,7 +30,7 @@ public read(ro Read_Handler) : simple_effect is
 
   # how much of a file do we read at a time, in bytes
   #
-  private bufsize u64 => 4096
+  bufsize u64 => 4096
 
 
   # reads all bytes from the file in the path
@@ -50,7 +50,7 @@ public read(ro Read_Handler) : simple_effect is
   # this just calls the read operation and returns the result in a more useful
   # format for the use case of read_file(fd, tmp).
   #
-  private read_proxy(fd i64, n u64) outcome (array u8) =>
+  read_proxy(fd i64, n u64) outcome (array u8) =>
     a := ro.read fd n
     replace
     a
@@ -58,7 +58,7 @@ public read(ro Read_Handler) : simple_effect is
 
   # helper feature for read_file to allow recursion
   #
-  private read_file(fd i64, tmp array u8) outcome (array u8) =>
+  read_file(fd i64, tmp array u8) outcome (array u8) =>
     t := read_proxy fd bufsize
 
     t.bind (array u8) (a->

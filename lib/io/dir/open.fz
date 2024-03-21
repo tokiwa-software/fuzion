@@ -26,7 +26,7 @@
 # T is used to distinguish several open directories
 #
 module:public open(public T type,
-                   private fd i64,
+                   fd i64,
                    public path String) : simple_effect is
 
   # reads the next entry of this directory
