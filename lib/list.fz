@@ -37,7 +37,8 @@
 # more flexible than streams that require to store and update their state.
 #
 # A list is immutable, so it can be reused and shared between threads.
-# Compared to a stream, a list may require more (heap) allocation.
+# Due to the nature of lists, in which many Cons cells are used, a list
+# may require more (heap) allocation than an array.
 #
 #
 #

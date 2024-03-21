@@ -42,9 +42,8 @@ public Sequence(public T type) ref is
   # create a list from this Sequence.
   #
   # A list is immutable, so it can be reused and shared between threads.
-  # Compared to a stream, a list may require more (heap) allocation.
   #
-  # Heirs must redefine as_list.
+  # Heirs must provide an implementation of as_list.
   #
   public as_list list T => abstract
 
