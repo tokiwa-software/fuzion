@@ -36,6 +36,9 @@ all: jvm c int
 int:
 	$(FUZION) -interpreter $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
 
+int2:
+	$(FUZION) -interpreter2 $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
+
 jvm:
 	$(FUZION) -jvm $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
 

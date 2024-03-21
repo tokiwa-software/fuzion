@@ -28,7 +28,7 @@ package dev.flang.fuir;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -240,6 +240,13 @@ public class FUIR extends IR
    * Get Clazz that given id maps to
    */
   private Clazz clazz(int id)
+  {
+    return _clazzIds.get(id);
+  }
+
+
+  /* NYI: UNDER DEVELOPEMENT: remove */
+  public Clazz clazzForInterpreter(int id)
   {
     return _clazzIds.get(id);
   }
@@ -1921,6 +1928,24 @@ hw25 is
   }
 
 
+  // NYI replace by more intelligent code
+  public int matchCaseIndex(int cl, int c, int i, int tag)
+  {
+    var result = -1;
+    for (var j = 0; result < 0 && j <  matchCaseCount(c, i); j++)
+      {
+        var mct = matchCaseTags(cl, c, i, j);
+        if (Arrays.stream(mct).anyMatch(t -> t == tag))
+          {
+            result = j;
+          }
+      }
+    if (CHECKS) check
+      (result != -1);
+    return result;
+  }
+
+
   /**
    * For a match expression, get the tags matched by a given case
    *
@@ -1934,7 +1959,8 @@ hw25 is
    *
    * @return array of tag numbers this case matches
    */
-  public int[] matchCaseTags(int cl, int c, int ix, int cix)
+  // NYI: UNDER DEVELOPMENT thread safety, #2760
+  public synchronized int[] matchCaseTags(int cl, int c, int ix, int cix)
   {
     if (PRECONDITIONS) require
       (ix >= 0,
