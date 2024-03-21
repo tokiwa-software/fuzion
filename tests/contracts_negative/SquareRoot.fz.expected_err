@@ -1,11 +1,4 @@
 
---CURDIR--/SquareRoot.fz:30:9: error 1: Precondition does not hold
-      a ≥ 0
---------^^^
-For call to SquareRoot.sqrt
-Call stack:
-SquareRoot: --CURDIR--/SquareRoot.fz:45:21:
-  say "sqrt(-16) = {sqrt(-16)}" // 1. should flag an error, precondition failed
---------------------^^^^
+error 1: CONTRACT FAILED: pre-condition on call to 'SquareRoot.sqrt'
 
 *** fatal errors encountered, stopping.
