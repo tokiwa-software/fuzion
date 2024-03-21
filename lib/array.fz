@@ -285,7 +285,7 @@ module:public array(
       safety: length ≥ 0
   =>
 
-    private indices => 0..length-1
+    indices => 0..length-1
 
     internal := fuzion.sys.internal_array_init T length
     for x in indices do

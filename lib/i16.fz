@@ -62,9 +62,9 @@ public i16(public val i16) : num.wrap_around, has_interval is
     safety: other != 0
   => mod other
 
-  # private division and remainder with crash in case of div-by-zero
-  private div (other i16) i16 => intrinsic
-  private mod (other i16) i16 => intrinsic
+  # division and remainder with crash in case of div-by-zero
+  div (other i16) i16 => intrinsic
+  mod (other i16) i16 => intrinsic
 
   # bitwise and, or and xor operations
   public fixed infix &  (other i16) i16 => intrinsic

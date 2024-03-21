@@ -107,7 +107,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # internal helper to create error for failed parsing
   #
-  private parse_error(msg String) => error "failed to parse '{String.this}': $msg"
+  parse_error(msg String) => error "failed to parse '{String.this}': $msg"
 
 
   # parse this string as a signed 32-bit integer value
@@ -194,7 +194,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # recursive helper for parse_integer T
   #
-  private parse_integer(
+  parse_integer(
     # the integer type
     T type : integer,
 
@@ -281,7 +281,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # the list instance returned by as_codepoints
   #
-  private codepoints_and_errors(l list u8) list (outcome codepoint) =>
+  codepoints_and_errors(l list u8) list (outcome codepoint) =>
     match l
       nil => nil
       c1 Cons =>
@@ -438,7 +438,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # find (utf8-byte-) index of last occurrence of 'substring'
   # within this string.
-  private find_last(substring String, found option i32) option i32 =>
+  find_last(substring String, found option i32) option i32 =>
     match find substring
       nil => found >>= (pos -> pos - substring.byte_length)
       idx i32 =>
@@ -540,7 +540,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   # helper feature which unifies the code of the different split features in one
   #
-  private split0(s String, limit option u32, split_after bool) list String
+  split0(s String, limit option u32, split_after bool) list String
     pre
       debug: !s.is_empty
       debug: match limit
@@ -615,7 +615,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # Helper for pad, pad_left and pad_right to determine minimum number of copies
   # of `p` needed to pad String.this to length >= n.
   #
-  private pad_count(p String, n i32) =>
+  pad_count(p String, n i32) =>
     pl := p.codepoint_length
     add_cps := max 0 n-codepoint_length
     (add_cps + pl - 1) / pl
