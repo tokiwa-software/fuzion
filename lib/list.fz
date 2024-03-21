@@ -458,20 +458,6 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
       tail => (list.this ? nil    => nil
                          | c Cons => c.tail.tails)
 
-  # create stream from this list
-  #
-  # In contrast to list's immutable Cons cells, a stream instance is mutable, i.e,
-  # it cannot be shared with threads or used in pure functions
-  #
-  public redef as_stream ref : stream A is
-    cur := list.this
-    public redef has_next => (cur ? Cons => true
-                                  | nil  => false)
-    public redef next =>
-      res := cur.head.get
-      set cur := cur.force_tail
-      res
-
 
   # create a new list from the result of applying 'f' to the
   # elements of this list and 'b' in order.
