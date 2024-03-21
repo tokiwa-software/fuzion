@@ -3518,7 +3518,7 @@ implRout    : "is" "abstract"
     else if (skipFullStop()        ) { result = new Impl(pos, emptyBlock(),Impl.Kind.Routine   ); }
     else
       {
-        syntaxError(tokenPos(), "'is', '{' or '=>' in routine declaration", "implRout");
+        syntaxError(tokenPos(), "'is', or '=>' in routine declaration", "implRout");
         result = Impl.ERROR;
       }
     return result;
