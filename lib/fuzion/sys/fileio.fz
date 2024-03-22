@@ -69,9 +69,8 @@ module fileio is
                         # the (relative or absolute) file name, using platform specific path separators
                         path String) outcome i64 =>
     md := fuzion.sys.internal_array_init i64 4
-    match stats (fuzion.sys.c_string path) md.data
-      TRUE  => md.as_array[0]
-      FALSE => error "error getting file size"
+    if stats (fuzion.sys.c_string path) md.data then md[0]
+    else error "error getting file size"
 
 
   # writes the content of an array of bytes to a file opened as fd
@@ -201,9 +200,8 @@ module fileio is
               path String,
               # a flag to speicify the open method (Read: 0, Write: 1, Append: 2)
               flag i8) outcome i64 =>
-    or := fuzion.sys.internal_array_init i64 2  # [file descriptor, error number]
-    open (fuzion.sys.c_string path) or.data flag
-    open_results := or.as_array
+    open_results := fuzion.sys.internal_array_init i64 2  # [file descriptor, error number]
+    open (fuzion.sys.c_string path) open_results.data flag
     if open_results[1] = i64 0
       open_results[0]
     else
@@ -253,9 +251,8 @@ module fileio is
               fd i64,
               # the offset to seek from the beginning of this file
               offset i64) outcome i64 =>
-    iarr := fuzion.sys.internal_array_init i64 2
-    seek fd offset iarr.data
-    arr := iarr.as_array
+    arr := fuzion.sys.internal_array_init i64 2
+    seek fd offset arr.data
     if arr[1] = i64 0
       arr[0]
     else
@@ -282,9 +279,8 @@ module fileio is
   module file_position(
                        # file descriptor
                        fd i64) outcome i64 =>
-    iarr := fuzion.sys.internal_array_init i64 2
-    file_position fd iarr.data
-    arr := iarr.as_array
+    arr := fuzion.sys.internal_array_init i64 2
+    file_position fd arr.data
     if arr[1] = i64 0
       arr[0]
     else
@@ -369,9 +365,8 @@ module fileio is
   # to the opened directory, or an error if one was encountered.
   #
   module open_dir(path String) outcome i64 =>
-    or := fuzion.sys.internal_array_init i64 2  # [file descriptor, error number]
-    open_dir (fuzion.sys.c_string path) or.data
-    open_results := or.as_array
+    open_results := fuzion.sys.internal_array_init i64 2  # [file descriptor, error number]
+    open_dir (fuzion.sys.c_string path) open_results.data
     if open_results[1] = i64 0
       open_results[0]
     else

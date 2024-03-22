@@ -478,6 +478,7 @@ public class Intrinsics extends ANY
     putUnsafe("fuzion.sys.fileio.open", (interpreter, innerClazz) -> args ->
         {
           var open_results = (long[])args.get(2).arrayData()._array;
+          open_results[1] = 0;
           try
             {
               switch (args.get(3).i8Value()) {
