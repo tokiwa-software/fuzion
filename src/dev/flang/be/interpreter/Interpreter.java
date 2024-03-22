@@ -38,33 +38,42 @@ import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionOptions;
-import dev.flang.util.List;
 
+
+/**
+ * Interpreter contains interpreter for Fuzion application that is present as
+ * intermediate code.
+ */
 public class Interpreter extends ANY
 {
-  public static AbstractInterpreter<Value, Object> _ai;
-  // NYI: HACK:
-  public static Interpreter instance;
-
-  public final FUIR _fuir;
-  public final FuzionOptions _options_;
-  private final Excecutor _processor;
-
+  private final AbstractInterpreter<Value, Object> _ai;
+  private final FUIR _fuir;
+  private final FuzionOptions _options_;
   public Interpreter(FuzionOptions options, FUIR fuir)
   {
     this._options_ = options;
     this._fuir = fuir;
-    this._processor = new Excecutor(fuir);
-    _ai = new AbstractInterpreter<Value, Object>(fuir, _processor);
-    instance = this;
+    var processor = new Excecutor(fuir, _options_);
+    _ai = new AbstractInterpreter<Value, Object>(fuir, processor);
     Intrinsics.ENABLE_UNSAFE_INTRINSICS = options.enableUnsafeIntrinsics();  // NYI: Add to Fuzion IR or BE Config
   }
 
+
+  /**
+   * Run the application with the given args.
+   * This is the main entry point of the interpreter and starts
+   * the execution of the main clazz.
+   *
+   *  param args -- NYI: command line args not supported yet
+   */
   public void run()
   {
     _ai.process(_fuir.mainClazzId(), true);
     _ai.process(_fuir.mainClazzId(), false);
   }
+
+
+  /*-----------------------------  statics  -----------------------------*/
 
 
   /**
@@ -339,28 +348,6 @@ public class Interpreter extends ANY
     int offset  = Layout.get(choiceClazz).choiceRefValOffset();
     LValue slot = choice.at(Clazzes.Any.get(), offset);
     return loadRefField(thiz, slot, false);
-  }
-
-
-  /**
-   * callOnInstance assigns the arguments to the argument fields of a newly
-   * created instance, calls the parents and then this feature.
-   *
-   * @param cur the newly created instance
-   *
-   * @param outer the target of the call
-   *
-   * @param args the arguments to be passed to this call.
-   *
-   * @param pre
-   *
-   * @return
-   */
-  Value callOnInstance(int cc, Instance cur, Value outer, List<Value> args, boolean pre)
-  {
-    new AbstractInterpreter<>(_fuir, new Excecutor(_fuir, cur, outer, args))
-      .process(cc, pre);
-    return null;
   }
 
 

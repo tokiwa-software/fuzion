@@ -39,6 +39,7 @@ import dev.flang.fuir.FUIR.ContractKind;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.AbstractInterpreter.ProcessStatement;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 
@@ -50,6 +51,10 @@ import dev.flang.util.Pair;
 public class Excecutor extends ProcessStatement<Value, Object>
 {
 
+
+  /*-----------------------------  static fields  -----------------------------*/
+
+
   /**
    * Universe instance
    */
@@ -59,7 +64,18 @@ public class Excecutor extends ProcessStatement<Value, Object>
   /**
    * The fuir to be used for executing the code.
    */
-  private final FUIR _fuir;
+  private static FUIR _fuir;
+
+
+  /**
+   * The current options for compiling and running the application.
+   */
+  private static FuzionOptions _options_;
+
+
+
+  /*-----------------------------  instance fields  -----------------------------*/
+
 
 
   /**
@@ -79,15 +95,18 @@ public class Excecutor extends ProcessStatement<Value, Object>
    */
   private final Value _outer;
 
+
+  /*-----------------------------  constructors  -----------------------------*/
+
+
   /**
    * The constructor to initialize the Excecutor
    * at the start of the application.
-   *
-   * @param fuir
    */
-  public Excecutor(FUIR fuir)
+  public Excecutor(FUIR fuir, FuzionOptions opt)
   {
-    this._fuir = fuir;
+    _fuir = fuir;
+    _options_ = opt;
     this._cur = _fuir.main()._idInFUIR == _fuir.clazzUniverse() ? _universe : new Instance(_fuir.main());
     this._outer = _universe;
     this._args = new List<>();
@@ -103,13 +122,43 @@ public class Excecutor extends ProcessStatement<Value, Object>
    * @param outer
    * @param args
    */
-  public Excecutor(FUIR fuir, Instance cur, Value outer, List<Value> args)
+  public Excecutor(Instance cur, Value outer, List<Value> args)
   {
-    this._fuir = fuir;
     this._cur = cur;
     this._outer = outer;
     this._args = args;
   }
+
+
+
+  /*-----------------------------  methods  -----------------------------*/
+
+
+
+  /*
+   * For obtaining the current FUIR by
+   * accessing the private static field _fuir.
+   */
+  public FUIR fuir()
+  {
+    if (PRECONDITIONS) require
+    (_fuir != null);
+
+    return _fuir;
+  }
+
+
+  /*
+   * For obtaining the current FuzionOptions by
+   */
+  public FuzionOptions options()
+  {
+    if (PRECONDITIONS) require
+      (_options_ != null);
+
+    return _options_;
+  }
+
 
   @Override
   public Object sequence(List<Object> l)
@@ -202,15 +251,15 @@ public class Excecutor extends ProcessStatement<Value, Object>
         // NYI change call to pass in ai as in match statement?
         var cur = new Instance(_fuir.clazzForInterpreter(cc));
 
-        Interpreter.instance.callOnInstance(cc, cur, tvalue, args, true);
-        Interpreter.instance.callOnInstance(cc, cur, tvalue, args, false);
+        callOnInstance(cc, cur, tvalue, args, true);
+        callOnInstance(cc, cur, tvalue, args, false);
 
         Value rres = cur;
         var resf = _fuir.clazzResultField(cc);
         if (resf != -1)
           {
             var rfc = _fuir.clazzForInterpreter(resf);
-            if (!Interpreter._ai.clazzHasUniqueValue(rfc.resultClazz()._idInFUIR))
+            if (!AbstractInterpreter.clazzHasUniqueValue(_fuir, rfc.resultClazz()._idInFUIR))
               {
                 rres = Interpreter.getField(rfc.feature(), rfc._select, _fuir.clazzForInterpreter(cc), cur, false);
               }
@@ -218,18 +267,18 @@ public class Excecutor extends ProcessStatement<Value, Object>
         yield pair(rres);
       case Field :
         var fc = _fuir.clazzForInterpreter(cc);
-        var fres = Interpreter._ai.clazzHasUniqueValue(rt)
+        var fres = AbstractInterpreter.clazzHasUniqueValue(_fuir, rt)
           ? pair(unitValue())
           : pair(Interpreter.getField(fc.feature(), fc._select, _fuir.clazzForInterpreter(tt), tt == _fuir.clazzUniverse() ? _universe : tvalue, false));
 
         if (CHECKS)
-          check(fres != null, Interpreter._ai.clazzHasUniqueValue(rt) || fres.v0() != unitValue());
+          check(fres != null, AbstractInterpreter.clazzHasUniqueValue(_fuir, rt) || fres.v0() != unitValue());
 
         yield fres;
       case Intrinsic :
         yield _fuir.clazzTypeParameterActualType(cc) != -1  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
           ? pair(unitValue())
-          : pair(Intrinsics.call(Interpreter.instance, _fuir.clazzForInterpreter(cc)).call(new List<>(tvalue, args)));
+          : pair(Intrinsics.call(this, _fuir.clazzForInterpreter(cc)).call(new List<>(tvalue, args)));
       case Abstract:
         throw new Error("Calling abstract not possible: " + _fuir.codeAtAsString(cl, c, i));
       case Native:
@@ -423,6 +472,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
     return ai.process(cl, pre, _fuir.matchCaseCode(c, i, cix));
   }
 
+
   /**
    * @param staticSubjectClazz the clazz of the subject, a choice
    *
@@ -497,5 +547,28 @@ public class Excecutor extends ProcessStatement<Value, Object>
       }
     return null;
   }
+
+
+  /**
+   * callOnInstance assigns the arguments to the argument fields of a newly
+   * created instance, calls the parents and then this feature.
+   *
+   * @param cur the newly created instance
+   *
+   * @param outer the target of the call
+   *
+   * @param args the arguments to be passed to this call.
+   *
+   * @param pre
+   *
+   * @return
+   */
+  Value callOnInstance(int cc, Instance cur, Value outer, List<Value> args, boolean pre)
+  {
+    new AbstractInterpreter<>(_fuir, new Excecutor(cur, outer, args))
+      .process(cc, pre);
+    return null;
+  }
+
 
 }
