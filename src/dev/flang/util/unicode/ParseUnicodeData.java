@@ -420,7 +420,6 @@ public class ParseUnicodeData extends ANY
   {
     var b = new Block(_firstCP, _lastCP);
     _blocks.add(b);
-    int delta = _lastCP._code + 1 - _firstCP._code;
     if (_firstCP._category.startsWith("L"))
       {
         _letterBlocks++;

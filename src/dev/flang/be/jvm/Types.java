@@ -29,7 +29,6 @@ package dev.flang.be.jvm;
 import dev.flang.fuir.FUIR;
 
 import dev.flang.be.jvm.classfile.ClassFile;
-import dev.flang.be.jvm.classfile.ClassFile.Attribute;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 import dev.flang.be.jvm.classfile.Expr;
 import dev.flang.be.jvm.classfile.VerificationType;

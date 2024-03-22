@@ -2241,7 +2241,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     else
       {
         var ft = f.resultType();
-        result = handDown(f.resultType(), _select, new List<>(), feature());
+        result = handDown(ft, _select, new List<>(), feature());
         if (result.feature().isTypeFeature())
           {
             var ac = handDown(result._type.generics().get(0), new List<>(), feature());

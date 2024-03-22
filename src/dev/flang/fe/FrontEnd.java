@@ -55,7 +55,6 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourceDir;
-import dev.flang.util.SourceFile;
 
 
 /**

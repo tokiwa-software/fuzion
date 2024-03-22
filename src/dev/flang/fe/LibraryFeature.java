@@ -50,7 +50,6 @@ import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.FeatureVisitor;
-import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
@@ -100,12 +99,6 @@ public class LibraryFeature extends AbstractFeature
    * cached result of featureName()
    */
   private FeatureName _featureName;
-
-
-  /**
-   * cached result of generics():
-   */
-  private FormalGenerics _generics;
 
 
   /**
@@ -808,7 +801,6 @@ public class LibraryFeature extends AbstractFeature
       {
         _redefines = new TreeSet<>();
         var n = _libModule.featureRedefinesCount(_index);
-        var ip = _libModule.featureRedefinesPos(_index);
         for (var i = 0; i < n; i++)
           {
             var r = _libModule.libraryFeature(_libModule.featureRedefine(_index, i));
