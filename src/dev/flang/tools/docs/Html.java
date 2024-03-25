@@ -42,6 +42,7 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.Visi;
 import dev.flang.tools.docs.Util.Kind;
 import dev.flang.util.ANY;
+import dev.flang.util.FuzionConstants;
 
 
 public class Html extends ANY
@@ -115,7 +116,7 @@ public class Html extends ANY
   {
     if (at.isGenericArgument())
       {
-        return htmlEncodeNbsp(at.name());
+        return htmlEncodeNbsp(at.toString());
       }
     return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.asString()))
       .replace("$2", featureAbsoluteURL(at.featureOfType()));
@@ -450,7 +451,7 @@ public class Html extends ANY
   {
     return f.pos()._sourceFile._fileName
       .toString()
-      .replace("$FUZION/lib", DocsOptions.baseApiDir)
+      .replace(FuzionConstants.SYMBOLIC_FUZION_MODULE.toString(), DocsOptions.baseApiDir)
       + "#l" + f.pos().line();
   }
 

@@ -33,7 +33,7 @@ functions is
       else
         r
 
-    y(f ()->i32){}
+    y(f ()->i32) is {}
     x0(f0 Function i32 Any i32) is
       say "here 1x0---------------"
       r1 i32 := f0.call "hallo" 3

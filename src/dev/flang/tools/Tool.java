@@ -227,19 +227,19 @@ public abstract class Tool extends ANY
         a.equals("-help" ) ||
         a.equals("--help")    )
       {
-        System.out.println(USAGE(false));
+        say(USAGE(false));
         System.exit(0);
       }
     else if (a.equals("-X"     ) ||
              a.equals("-Xhelp" ) ||
              a.equals("--Xhelp")    )
       {
-        System.out.println(USAGE(true));
+        say(USAGE(true));
         System.exit(0);
       }
     else if (a.equals("-version"))
       {
-        System.out.println(_rawCmd + " V" + fullVersion()); ;
+        say(_rawCmd + " V" + fullVersion()); ;
         System.exit(0);
       }
     else if (a.equals("-XjavaProf"))

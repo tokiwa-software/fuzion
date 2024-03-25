@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Main
+ * Source of class Docs
  *
  *---------------------------------------------------------------------*/
 
@@ -51,25 +51,18 @@ import dev.flang.fe.FrontEndOptions;
 import dev.flang.mir.MIR;
 import dev.flang.tools.FuzionHome;
 import dev.flang.tools.docs.Util.Kind;
+import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
-public class Docs
+public class Docs extends ANY
 {
 
   /**
    * Compare Features by basename + args
    */
   private static final Comparator<? super AbstractFeature> byFeatureName = Comparator.comparing(
-    af -> af.featureName().toString(),
-    (name1, name2) -> {
-      var caseInsensitive = name1.compareTo(name2);
-      if (caseInsensitive != 0)
-        {
-          return caseInsensitive;
-        }
-      return name1.compareTo(name2);
-    });
+    af -> af.featureName(), (name1, name2) -> name1.compareTo(name2));
 
 
   private final FrontEndOptions frontEndOptions = new FrontEndOptions(
@@ -153,7 +146,7 @@ public class Docs
   {
     if (args.length < 1)
       {
-        System.err.println(usage());
+        say_err(usage());
         System.exit(1);
       }
 
@@ -195,7 +188,7 @@ public class Docs
         String line;
         while ((line = br.readLine()) != null)
           {
-            System.out.println(line);
+            say(line);
           }
       }
   }

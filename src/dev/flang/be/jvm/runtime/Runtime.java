@@ -26,10 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm.runtime;
 
-import dev.flang.be.interpreter.JavaInterface;
-
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.JavaInterface;
 import dev.flang.util.Pair;
 
 import java.io.StringWriter;
@@ -295,8 +294,6 @@ public class Runtime extends ANY
    * Report a fatal error and exit.
    *
    * @param msg the error message
-   *
-   * @return does not
    */
   public static void fatal(String msg)
   {
@@ -489,7 +486,7 @@ public class Runtime extends ANY
    */
   public static void trace(String msg)
   {
-    System.out.println(msg);
+    say(msg);
   }
 
 
@@ -543,8 +540,6 @@ public class Runtime extends ANY
    * Otherwise, it causes a fatal error immediately.
    *
    * @param e the caught exception
-   *
-   * @return does not.
    */
   public static void handleInvocationTargetException(InvocationTargetException e)
   {
@@ -667,8 +662,6 @@ public class Runtime extends ANY
    * Called after a precondition/postcondition check failed
    *
    * @param msg a detail message explaining what failed
-   *
-   * @return does not.
    */
   public static void contract_fail(String msg)
   {
@@ -925,8 +918,8 @@ public class Runtime extends ANY
 
     Method m = null;
     var pcl = getParsAndClass("virtual", clName, name, sig);
-    var p = pcl._v0;
-    var cl = pcl._v1;
+    var p = pcl.v0();
+    var cl = pcl.v1();
     try
       {
         m = cl.getMethod(name, p);
@@ -976,11 +969,11 @@ public class Runtime extends ANY
   /**
    * Invoke a method using {@link #invokeAndWrapException(ReflectionInvoker)}.
    *
-   * @param the {@link Method} to be invoked
+   * @param m the {@link Method} to be invoked
    *
-   * @param the {@link Object instance} on which the {@link Method} shall be invoked
+   * @param thiz the {@link Object instance} on which the {@link Method} shall be invoked
    *
-   * @param the arguments to invoke this {@link Method} with
+   * @param args arguments to invoke this {@link Method} with
    *
    * @return the result of the invocation
    */
@@ -1014,8 +1007,8 @@ public class Runtime extends ANY
 
     Method m = null;
     var pcl = getParsAndClass("static", clName, name, sig);
-    var p = pcl._v0;
-    var cl = pcl._v1;
+    var p = pcl.v0();
+    var cl = pcl.v1();
     try
       {
         m = cl.getMethod(name,p);
@@ -1050,8 +1043,8 @@ public class Runtime extends ANY
     unsafeIntrinsic();
 
     var pcl = getParsAndClass("constructor", clName, null, sig);
-    var p = pcl._v0;
-    var cl = pcl._v1;
+    var p = pcl.v0();
+    var cl = pcl.v1();
     try
       {
         var co = cl.getConstructor(p);
@@ -1067,8 +1060,6 @@ public class Runtime extends ANY
 
 
   /**
-   * @param instance the effect instance that is installed
-   *
    * @param code the Unary instance to be executed
    *
    * @param call the Java clazz of the Unary instance to be executed.

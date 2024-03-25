@@ -56,7 +56,7 @@ public memoize(LM type : mutate, T type : property.orderable, R type, f T->R) T-
   ref : Unary R T
 
     # the memory
-    private store := LM.env.new (container.ordered_map T R [] [])
+    store := LM.env.new (container.ordered_map T R [] [])
 
     # implementation of abstract feature Unary.call
     #

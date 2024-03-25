@@ -738,7 +738,7 @@ abstract class CExpr extends CStmnt
   /**
    * Create CExpr that corresponds to C cast '(type)expr'
    *
-   * @param value the value to be assigned to this.
+   * @param type the type this expr should be cast to.
    *
    * @return the resulting expression
    */

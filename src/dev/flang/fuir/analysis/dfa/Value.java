@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
+import static dev.flang.ir.IR.NO_SITE;
+
 import java.util.Comparator;
 
 import java.util.function.Consumer;
@@ -84,6 +86,38 @@ public class Value extends Val
     };
 
 
+  /**
+   * Comparator instance to compare two Values of effect instances that are used in
+   * Env[ironmnents].
+   */
+  static Comparator<Value> ENV_COMPARATOR = new Comparator<>() {
+      /**
+       * compare two values.
+       */
+      public int compare(Value a, Value b)
+      {
+        if      (a == b)                                                       { return 0;                    }
+     // else if (a == UNIT                    || b == UNIT                   ) { return a == UNIT  ? +1 : -1; }
+        else if (a instanceof Instance     ai && b instanceof Instance     bi) { return ai.envCompareTo(bi);     }
+     // else if (a instanceof NumericValue an && b instanceof NumericValue bn) { return an.envCompareTo(bn);     }
+        else if (a instanceof RefValue     ab && b instanceof RefValue     bb) { return ab.envCompareTo(bb);     }
+     // else if (a instanceof TaggedValue  at && b instanceof TaggedValue  bt) { return at.envCompareTo(bt);     }
+     // else if (a instanceof SysArray     aa && b instanceof SysArray     ba) { return aa.envCompareTo(ba);     }
+        else if (a instanceof ValueSet     as && b instanceof ValueSet     bs) { return as.envCompareTo(bs);     }
+        else if (a instanceof Instance    ) { return +1; } else if (b instanceof Instance       ) { return -1; }
+     // else if (a instanceof NumericValue) { return +1; } else if (b instanceof NumericValue   ) { return -1; }
+        else if (a instanceof RefValue    ) { return +1; } else if (b instanceof RefValue       ) { return -1; }
+     // else if (a instanceof TaggedValue ) { return +1; } else if (b instanceof TaggedValue    ) { return -1; }
+     // else if (a instanceof SysArray    ) { return +1; } else if (b instanceof SysArray       ) { return -1; }
+        else if (a instanceof ValueSet    ) { return +1; } else if (b instanceof ValueSet       ) { return -1; }
+        else
+          {
+            throw new Error(getClass().toString() + "envCompareTo requires support for " + a.getClass() + " and " + b.getClass());
+          }
+      }
+    };
+
+
 
   /**
    * The unit value 'unit', '{}'
@@ -110,15 +144,15 @@ public class Value extends Val
        * Get set of values of given field within this value.  This works for unit
        * type results even if this is not an instance (but a unit type itself).
        */
-      public Val readField(DFA dfa, int field)
+      public Val readField(DFA dfa, int field, int site, Context why)
       {
         if (dfa._fuir.clazzUniverse() == dfa._fuir.clazzOuterClazz(field))
           {
-            return dfa._universe.readField(dfa, field);
+            return dfa._universe.readField(dfa, field, site, why);
           }
         else
           {
-            return super.readField(dfa, field);
+            return super.readField(dfa, field, site, why);
           }
       }
 
@@ -191,11 +225,20 @@ public class Value extends Val
 
 
   /**
-   * compare two values.
+   * compare two Values.
    */
   public static int compare(Value a, Value b)
   {
     return COMPARATOR.compare(a,b);
+  }
+
+
+  /**
+   * compare two Values of effect instances that are used in Env[ironmnents].
+   */
+  public static int envCompare(Value a, Value b)
+  {
+    return ENV_COMPARATOR.compare(a,b);
   }
 
 
@@ -229,11 +272,11 @@ public class Value extends Val
    * Get set of values of given field within this value.  This works for unit
    * type results even if this is not an instance (but a unit type itself).
    */
-  public Val readField(DFA dfa, int field)
+  public Val readField(DFA dfa, int field, int site, Context why)
   {
     var rt = dfa._fuir.clazzResultClazz(field);
     var res = dfa._fuir.clazzIsUnitType(rt) ? Value.UNIT
-                                         : readFieldFromInstance(dfa, field);
+                                            : readFieldFromInstance(dfa, field, site, why);
     return res;
   }
 
@@ -243,12 +286,12 @@ public class Value extends Val
    *
    * @param cc the inner value of the field that is called.
    */
-  Val callField(DFA dfa, int cc)
+  Val callField(DFA dfa, int cc, int site, Context why)
   {
     var resa = new Val[] { null };
     forAll(t ->
            {
-             var r = t.readField(dfa, cc);
+             var r = t.readField(dfa, cc, site, why);
              if (resa[0] == null)
                {
                  resa[0] = r;
@@ -265,7 +308,7 @@ public class Value extends Val
   /**
    * Get set of values of given field within this instance.
    */
-  Val readFieldFromInstance(DFA dfa, int field)
+  Val readFieldFromInstance(DFA dfa, int field, int site, Context why)
   {
     throw new Error("Value.readField '"+dfa._fuir.clazzAsString(field)+"' called on class " + this + " (" + getClass() + "), expected " + Instance.class);
   }
@@ -314,7 +357,7 @@ public class Value extends Val
     Value result;
     if (this == UNIT)
       {
-        result = dfa.newInstance(rc, context);
+        result = dfa.newInstance(rc, NO_SITE, context);
       }
     else
       {

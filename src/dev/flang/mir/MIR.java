@@ -228,7 +228,7 @@ hw25 is
     var ff = _featureIds.get(f);
     var code = prolog(ff);
     addCode(ff, code, ff);
-    return _codeIds.add(code);
+    return addCode(code);
   }
 
 
@@ -292,7 +292,7 @@ hw25 is
        codeAt(c, ix) == ExprKind.Assign    );
 
     var ff = _featureIds.get(f);
-    var s = _codeIds.get(c).get(ix);
+    var s = getExpr(c, ix);
     var af =
       (s instanceof AbstractCall   call) ? call.calledFeature() :
       (s instanceof AbstractAssign a   ) ? a._assignedField :

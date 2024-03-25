@@ -32,10 +32,12 @@ import java.util.TreeMap;
 import java.util.Set;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.fuir.FUIR.SpecialClazzes;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
+import dev.flang.util.Version;
 
 
 /**
@@ -975,7 +977,7 @@ public class Intrinsics extends ANY
               case "effect.abort0"  ->
                 CStmnt.seq(CStmnt.iff(evi, CExpr.call("longjmp",new List<>(evj.deref(), CExpr.int32const(1)))),
                            CExpr.fprintfstderr("*** C backend support for %s missing\n",
-                                               CExpr.string(c._fuir.clazzIntrinsicName(cl))),
+                                               CExpr.string(c._fuir.clazzOriginalName(cl))),
                            CExpr.exit(1));
               default -> throw new Error("unexpected intrinsic '" + in + "'.");
               };
@@ -987,28 +989,216 @@ public class Intrinsics extends ANY
           return CStmnt.seq(CStmnt.iff(evi, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret());
         });
 
-    IntrinsicCode noJava = (c,cl,outer,in) ->
-      CStmnt.seq(CExpr.fprintfstderr("*** C backend support does not support Java interface (yet).\n"),
+    var noJava = CStmnt.seq(
+                 CExpr.fprintfstderr("*** Set environment variable JAVA_HOME when compiling to be able to use intrinsics fuzion.java.*.\n"),
+                 CExpr.fprintfstderr("*** Example: JAVA_HOME=/usr/lib/jvm/java-" + Version.JAVA_VERSION + "-openjdk-amd64 fz -c file.fz\n"),
                  CExpr.exit(1));
-    put("fuzion.java.Java_Object.is_null0"  , noJava);
-    put("fuzion.java.array_get"             , noJava);
-    put("fuzion.java.array_length"          , noJava);
-    put("fuzion.java.array_to_java_object0" , noJava);
-    put("fuzion.java.bool_to_java_object"   , noJava);
-    put("fuzion.java.call_c0"               , noJava);
-    put("fuzion.java.call_s0"               , noJava);
-    put("fuzion.java.call_v0"               , noJava);
-    put("fuzion.java.f32_to_java_object"    , noJava);
-    put("fuzion.java.f64_to_java_object"    , noJava);
-    put("fuzion.java.get_field0"            , noJava);
-    put("fuzion.java.get_static_field0"     , noJava);
-    put("fuzion.java.i16_to_java_object"    , noJava);
-    put("fuzion.java.i32_to_java_object"    , noJava);
-    put("fuzion.java.i64_to_java_object"    , noJava);
-    put("fuzion.java.i8_to_java_object"     , noJava);
-    put("fuzion.java.java_string_to_string" , noJava);
-    put("fuzion.java.string_to_java_object0", noJava);
-    put("fuzion.java.u16_to_java_object"    , noJava);
+    put("fuzion.java.Java_Object.is_null0", (c, cl, outer, in) -> C.JAVA_HOME == null
+                                                                                       ? noJava
+                                                                                       : CExpr.call(
+                                                                                         "fzE_java_object_is_null",
+                                                                                         new List<CExpr>(outer.field(
+                                                                                           c._names.fieldName(c._fuir
+                                                                                             .clazz_fuzionJavaObject_Ref()))
+                                                                                           .castTo("jobject")))
+                                                                                         .cond(c._names.FZ_TRUE,
+                                                                                           c._names.FZ_FALSE)
+                                                                                         .ret());
+    put("fuzion.java.array_get"             , (c, cl, outer, in) -> {
+      if (C.JAVA_HOME == null)
+        {
+          return noJava;
+        }
+      else
+        {
+          return c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
+            .call("fzE_array_get",
+              new List<CExpr>(
+                c.javaRefField(A0).castTo("jarray"),
+                A1,
+                CExpr
+                  .string(
+                    c._fuir.javaSignature(c._fuir.clazzResultClazz(cl))))), false);
+        }
+    });
+    put("fuzion.java.array_length"          , (c,cl,outer,in) -> C.JAVA_HOME == null ? noJava : CExpr.call("fzE_array_length", new List<>(c.javaRefField(A0).castTo("jarray"))).ret());
+    put("fuzion.java.array_to_java_object0", (c, cl, outer, in) -> {
+      if (C.JAVA_HOME == null)
+        {
+          return noJava;
+        }
+      else
+        {
+          var elementType = c._fuir.clazzActualGeneric(c._fuir.clazzResultClazz(cl), 0);
+          var elements = c._names.newTemp();
+          return CStmnt
+            .seq(
+              c._fuir.getSpecialClazz(elementType) == SpecialClazzes.c_NOT_FOUND
+                                                                              ? c.extractJValues(elements, A0)
+                                                                              : CStmnt.EMPTY,
+              c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
+                .call("fzE_array_to_java_object0",
+                  new List<CExpr>(
+                    A0.field(c._names.fieldName(c._fuir.clazz_fuzionSysArray_u8_length())),
+                    c._fuir.getSpecialClazz(
+                      elementType) == SpecialClazzes.c_NOT_FOUND
+                                                                 ? elements
+                                                                 : A0.field(c._names
+                                                                   .fieldName(c._fuir.clazz_fuzionSysArray_u8_data()))
+                                                                   .castTo("jvalue *"),
+                    CExpr.string(c._fuir.javaClassName(elementType)))), false));
+        }
+    });
+    put("fuzion.java.get_field0",
+      (c, cl, outer, in) -> C.JAVA_HOME == null
+                                                  ? noJava
+                                                  : c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
+                                                    .call("fzE_get_field0",
+                                                      new List<>(c.javaRefField(A0).castTo("jobject"),
+                                                        c.javaRefField(A1).castTo("jstring"),
+                                                        CExpr
+                                                          .string(
+                                                            c._fuir.javaSignature(c._fuir.clazzResultClazz(cl))))), false));
+    put("fuzion.java.get_static_field0",
+      (c, cl, outer, in) -> C.JAVA_HOME == null
+                                                  ? noJava
+                                                  : c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
+                                                    .call("fzE_get_static_field0",
+                                                      new List<>(c.javaRefField(A0).castTo("jstring"),
+                                                        c.javaRefField(A1).castTo("jstring"),
+                                                        CExpr
+                                                          .string(
+                                                            c._fuir.javaSignature(c._fuir.clazzResultClazz(cl))))), false));
+    put("fuzion.java.call_c0", (c, cl, outer, in) -> {
+      if (C.JAVA_HOME == null)
+        {
+          return noJava;
+        }
+      else
+        {
+          return CStmnt
+            .seq(c.returnJavaObject(c._fuir.clazzResultClazz(cl),
+              CExpr
+                .call("fzE_call_c0",
+                  new List<CExpr>(
+                    c.javaRefField(A0).castTo("jstring"),
+                    c.javaRefField(A1).castTo("jstring"),
+                    A2.field(c._names.fieldName(c._fuir.clazz_fuzionSysArray_u8_data())).castTo("jvalue *"))), true));
+        }
+    });
+    put("fuzion.java.call_s0", (c, cl, outer, in) -> {
+      if (C.JAVA_HOME == null)
+        {
+          return noJava;
+        }
+      else
+        {
+          return CStmnt
+            .seq(
+              // NYI methods where result clazz is e.g. unit, f64 etc. that does
+              // not inherit Java_Object or Java_String
+              c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
+                .call("fzE_call_s0",
+                  new List<CExpr>(
+                    c.javaRefField(A0).castTo("jstring"),
+                    c.javaRefField(A1).castTo("jstring"),
+                    c.javaRefField(A2).castTo("jstring"),
+                    A3.field(c._names.fieldName(c._fuir.clazz_fuzionSysArray_u8_data())).castTo("jvalue *"))), true));
+        }
+    });
+    put("fuzion.java.call_v0", (c, cl, outer, in) -> {
+      if (C.JAVA_HOME == null)
+        {
+          return noJava;
+        }
+      else
+        {
+          return CStmnt
+            .seq(
+              c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
+                .call("fzE_call_v0",
+                  new List<CExpr>(
+                    c.javaRefField(A0).castTo("jstring"),
+                    c.javaRefField(A1).castTo("jstring"),
+                    c.javaRefField(A2).castTo("jstring"),
+                    A3.castTo("jobject"),
+                    A4.field(c._names.fieldName(c._fuir.clazz_fuzionSysArray_u8_data())).castTo("jvalue *"))), true));
+        }
+    });
+    put("fuzion.java.bool_to_java_object",
+      (c, cl, outer, in) -> C.JAVA_HOME == null
+                                                  ? noJava
+                                                  : c
+                                                    .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
+                                                      CExpr.call("fzE_bool_to_java_object", new List<CExpr>(A0.field(CNames.TAG_NAME))), false));
+    put("fuzion.java.f32_to_java_object",
+      (c, cl, outer, in) -> C.JAVA_HOME == null
+                                                  ? noJava
+                                                  : c
+                                                    .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
+                                                      CExpr.call("fzE_f32_to_java_object", new List<CExpr>(A0)), false));
+    put("fuzion.java.f64_to_java_object",
+      (c, cl, outer, in) -> C.JAVA_HOME == null
+                                                  ? noJava
+                                                  : c
+                                                    .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
+                                                      CExpr.call("fzE_f64_to_java_object", new List<CExpr>(A0)), false));
+    put("fuzion.java.i8_to_java_object",
+      (c, cl, outer, in) -> C.JAVA_HOME == null
+                                                  ? noJava
+                                                  : c
+                                                    .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
+                                                      CExpr.call("fzE_i8_to_java_object", new List<CExpr>(A0)), false));
+    put("fuzion.java.i16_to_java_object",
+      (c, cl, outer, in) -> C.JAVA_HOME == null
+                                                  ? noJava
+                                                  : c
+                                                    .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
+                                                      CExpr.call("fzE_i16_to_java_object", new List<CExpr>(A0)), false));
+    put("fuzion.java.i32_to_java_object",
+      (c, cl, outer, in) -> C.JAVA_HOME == null
+                                                  ? noJava
+                                                  : c
+                                                    .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
+                                                      CExpr.call("fzE_i32_to_java_object", new List<CExpr>(A0)), false));
+    put("fuzion.java.i64_to_java_object",
+      (c, cl, outer, in) -> C.JAVA_HOME == null
+                                                  ? noJava
+                                                  : c
+                                                    .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
+                                                      CExpr.call("fzE_i64_to_java_object", new List<CExpr>(A0)), false));
+    put("fuzion.java.u16_to_java_object",
+      (c, cl, outer, in) -> C.JAVA_HOME == null
+                                                  ? noJava
+                                                  : c
+                                                    .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
+                                                      CExpr.call("fzE_u16_to_java_object", new List<CExpr>(A0)), false));
+    put("fuzion.java.java_string_to_string" , (c,cl,outer,in) ->
+        {
+          if (C.JAVA_HOME == null)
+            {
+              return noJava;
+            }
+          else
+            {
+              var tmp = new CIdent("tmp");
+              var rc = c._fuir.clazzResultClazz(cl);
+              return CStmnt.seq(CStmnt.decl("const char *", tmp),
+                         tmp.assign(CExpr.call("fzE_java_string_to_utf8_bytes", new List<CExpr>(c.javaRefField(A0).castTo("jstring")))),
+                         c.heapClone(c.constString(tmp, CExpr.call("strlen",new List<>(tmp))), c._fuir.clazz_Const_String())
+                          .castTo(c._types.clazz(rc))
+                          .ret());
+            }
+        });
+    put("fuzion.java.string_to_java_object0", (c,cl,outer,in) -> C.JAVA_HOME == null
+      ? noJava
+      : c.returnJavaObject(c._fuir.clazz_fuzionJavaObject(), CExpr
+          .call("fzE_string_to_java_object", new List<CExpr>(
+            A0.field(c._names.fieldName(c._fuir.clazz_fuzionSysArray_u8_data())),
+            A0.field(c._names.fieldName(c._fuir.clazz_fuzionSysArray_u8_length()))
+          )), false)
+       );
+
   }
 
 
@@ -1063,7 +1253,7 @@ public class Intrinsics extends ANY
       c._fuir.clazzIsRef(c._fuir.clazzResultClazz(or)) ? CNames.OUTER.deref().field(CNames.FIELDS_IN_REF_CLAZZ)
                                                        : CNames.OUTER;
 
-    var in = c._fuir.clazzIntrinsicName(cl);
+    var in = c._fuir.clazzOriginalName(cl);
     var cg = _intrinsics_.get(in);
     var result = CStmnt.EMPTY;
     if (cg != null)
@@ -1080,7 +1270,7 @@ public class Intrinsics extends ANY
           }
         else
           {
-            var msg = "code for intrinsic " + c._fuir.clazzIntrinsicName(cl) + " is missing";
+            var msg = "code for intrinsic " + c._fuir.clazzOriginalName(cl) + " is missing";
             Errors.warning(msg);
             result = CStmnt.seq(CExpr.call("fprintf",
                                            new List<>(new CIdent("stderr"),

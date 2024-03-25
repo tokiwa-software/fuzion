@@ -802,7 +802,7 @@ public interface ClassFileConstants
    * is the sum of the slot count of all arguments in the descriptor, not
    * including the target value.
    *
-   * @param a call descriptor, e.g., "(JDZLjava/lang/Object;II)F"
+   * @param descriptor call descriptor, e.g., "(JDZLjava/lang/Object;II)F"
    *
    * @return the slot count, e.g., 8 for "(JDZLjava/lang/Object;II)F"
    * (==2+2+1+1+1+1).
@@ -818,7 +818,7 @@ public interface ClassFileConstants
    * is the sum of the slot count of all arguments in the descriptor, not
    * including the target value.
    *
-   * @param a call descriptor, e.g., "(JDZLjava/lang/Object;II)F"
+   * @param descriptor call descriptor, e.g., "(JDZLjava/lang/Object;II)F"
    *
    * @return the argument count, e.g., 6 for "(JDZLjava/lang/Object;II)F"
    */

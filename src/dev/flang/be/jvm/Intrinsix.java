@@ -183,7 +183,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
         "concur.atomic.compare_and_swap0",
         (jvm, cl, pre, cc, tvalue, args) ->
         {
-          var cf = jvm._types.classFile(cl);
           var ac = jvm._fuir.clazzOuterClazz(cc);
           var v = jvm._fuir.lookupAtomicValue(ac);
           var rc  = jvm._fuir.clazzResultClazz(v);
@@ -194,7 +193,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           int vslot  = jvm.allocLocal(cl, pre, jt.stackSlots());    // local var slot for old value, not casted.
 
           Expr pos, neg, oldv;
-          if (jvm._fuir.clazzIntrinsicName(cc).equals("concur.atomic.compare_and_set0"))
+          if (jvm._fuir.clazzOriginalName(cc).equals("concur.atomic.compare_and_set0"))
             { // compare_and_set: return true or false
               pos = Expr.iconst(1);            // 1
               neg = Expr.iconst(0);            // 0
@@ -352,7 +351,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
         {
           var jref = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc,0));
           var et = jvm._types.javaType(jvm._fuir.clazzActualGeneric(cc, 0)); // possibly resultType
-          var rt = jvm._types.resultType(cc);
           var res = args.get(0)
             .andThen(jvm.getfield(jref))
             .andThen(Expr.checkcast(et.array()))
@@ -594,7 +592,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
 
         (jvm, cl, pre, cc, tvalue, args) ->
         {
-          var in = jvm._fuir.clazzIntrinsicName(cc);
+          var in = jvm._fuir.clazzOriginalName(cc);
           var at = jvm._fuir.clazzOuterClazz(cc); // array type
           var et = jvm._fuir.clazzActualGeneric(at, 0); // element type
           var jt = jvm._types.resultType(et);
@@ -641,9 +639,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
 
         (jvm, cl, pre, cc, tvalue, args) ->
         {
-          var in = jvm._fuir.clazzIntrinsicName(cc);
+          var in = jvm._fuir.clazzOriginalName(cc);
           var at = jvm._fuir.clazzOuterClazz(cc);       // array type
-          var et = jvm._fuir.clazzActualGeneric(at, 0); // element type
           var val = Expr.UNIT;
           var code = Expr.UNIT;
           if (CHECKS)
@@ -820,7 +817,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, cl, pre, cc, tvalue, args) ->
         {
           var name = jvm._names.function(cc, false);
-          var in = jvm._fuir.clazzIntrinsicName(cc);
+          var in = jvm._fuir.clazzOriginalName(cc);
           var msg = "missing implementation of JVM backend intrinsic '" +
             in + "', need '" + Intrinsics.class.getName() + "." + name + "' or inline code in " +
             Intrinsix.class.getName() + ".";
@@ -920,7 +917,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
     var name = jvm._names.function(cc, false);
     if (!_availableIntrinsics.contains(name))
       {
-        var in = jvm._fuir.clazzIntrinsicName(cc);
+        var in = jvm._fuir.clazzOriginalName(cc);
         var g = Intrinsix._compiled_.get(in);
         if (g != null)
           {

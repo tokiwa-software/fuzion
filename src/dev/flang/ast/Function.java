@@ -374,8 +374,7 @@ public class Function extends AbstractLambda
    */
   public AbstractType type()
   {
-    var result = _type;
-    if (result == null)
+    if (_type == null)
       {
         AstErrors.noTypeInferenceFromLambda(pos());
         _type = Types.t_ERROR;

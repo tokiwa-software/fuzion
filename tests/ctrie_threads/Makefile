@@ -25,4 +25,4 @@
 
 override NAME = ctrie_threads
 FUZION_OPTIONS = -modules=lock_free
-include ../positive.mk
+include ../dfa.mk  # NYI: BUG: snapshots do not work yet

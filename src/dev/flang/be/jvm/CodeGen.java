@@ -264,9 +264,9 @@ class CodeGen
     var p = access(cl, pre, c, i, tvalue, new List<>(avalue));
 
     if (CHECKS) check
-      (p._v0 == Expr.UNIT);
+      (p.v0() == Expr.UNIT);
 
-    return p._v1;
+    return p.v1();
   }
 
 
@@ -294,7 +294,6 @@ class CodeGen
       }
     else
       {
-        var cf = _types.classFile(cl);
         var t = e.type();
         var l = _jvm.allocLocal(cl, pre, t.stackSlots());
         return new Pair<>(t.load(l),
@@ -308,7 +307,7 @@ class CodeGen
    * arguments.  The type of tvalue might be dynamic (a reference). See
    * FUIR.access*().
    *
-   * Result._v0 may be null to indicate that code generation should stop here
+   * Result.v0() may be null to indicate that code generation should stop here
    * (due to an error or tail recursion optimization).
    *
    * @param cl the clazz we are compiling
@@ -329,21 +328,20 @@ class CodeGen
     if (p == null)
       {
         var ccP = _fuir.accessedPreconditionClazz(cl, c, i);
-        var cc0 = _fuir.accessedClazz            (cl, c, i);
         var s = Expr.UNIT;
         var res = Expr.UNIT;
         if (ccP != -1)   // call precondition:
           {
             // evaluate target and args and copy to local vars to avoid evaluating them twice.
             var pt = storeInLocal(cl, pre, tvalue);
-            tvalue = pt._v0;
-            s = s.andThen(pt._v1);
+            tvalue = pt.v0();
+            s = s.andThen(pt.v1());
             var nargs = new List<Expr>();
             for (var a : args)
               {
                 var pa = storeInLocal(cl, pre, a);
-                s = s.andThen(pa._v1);
-                nargs.add(pa._v0);
+                s = s.andThen(pa.v1());
+                nargs.add(pa.v0());
               }
             args = nargs;
             s = s.andThen(staticCall(cl, pre, tvalue, args, ccP, true, c, i));
@@ -351,8 +349,8 @@ class CodeGen
         if (!_fuir.callPreconditionOnly(cl, c, i))
           {
             var r = access(cl, pre, c, i, tvalue, args);
-            s = s.andThen(r._v1);
-            res = r._v0;
+            s = s.andThen(r.v1());
+            res = r.v0();
           }
         p = new Pair<>(res, s);
       }
@@ -441,7 +439,7 @@ class CodeGen
         code = value;
         value = _fuir.clazzIsVoidType(rt) ? null : Expr.UNIT;
       }
-    return new Pair(value, code);
+    return new Pair<>(value, code);
   }
 
 
@@ -517,8 +515,8 @@ class CodeGen
             tvalue = tvalue.andThen(Expr.checkcast(_types.javaType(tt)));
           }
         var calpair = staticAccess(cl, pre, tt, cc, tvalue, args, isCall, c, i);
-        s = s.andThen(calpair._v1);
-        res = calpair._v0;
+        s = s.andThen(calpair.v1());
+        res = calpair.v0();
         if (_fuir.clazzIsVoidType(_fuir.clazzResultClazz(cc)))
           {
             if (res != null)
@@ -537,7 +535,7 @@ class CodeGen
    * interface with a dynamic function and add implementations to each actual
    * target.
    *
-   * @param cc a feature whose outer feature is a ref that has several actual instances.
+   * @param cc0 a feature whose outer feature is a ref that has several actual instances.
    *
    * @return the invokeinterface expression that performs the call
    */
@@ -618,8 +616,8 @@ class CodeGen
             na.add(t.load(1));
           }
         var p = staticAccess(-1, false, tt, cc, tv, na, isCall, -1, -1);
-        var code = p._v1
-          .andThen(p._v0 == null ? Expr.UNIT : p._v0)
+        var code = p.v1()
+          .andThen(p.v0() == null ? Expr.UNIT : p.v0())
           .andThen(retoern);
         var ca = cf.codeAttribute(dn + "in class for " + _fuir.clazzAsString(tt),
                                   code, new List<>(), new List<>(), ClassFile.StackMapTable.empty(cf, initLocals, code));
@@ -696,7 +694,7 @@ class CodeGen
     Pair<Expr, Expr> res;
     var oc = _fuir.clazzOuterClazz(cc);
     var rt = preCalled ? _fuir.clazz(FUIR.SpecialClazzes.c_unit) : _fuir.clazzResultClazz(cc);
-    var cf = _types.classFile(cl);
+
     switch (preCalled ? FUIR.FeatureKind.Routine : _fuir.clazzKind(cc))
       {
       case Abstract :
@@ -719,10 +717,12 @@ class CodeGen
         {
           if (_types.clazzNeedsCode(cc))
             {
-              if (!preCalled                                                             // not calling pre-condition
+              if (!pre                                                                   // not within precondition
+                  && !preCalled                                                          // not calling pre-condition
                   && cc == cl                                                            // calling myself
                   && c != -1 && i != -1 && _jvm._tailCall.callIsTailCall(cl, c, i)       // as a tail call
-                  && _fuir.lifeTime(cl, pre).ordinal() <= FUIR.LifeTime.Call.ordinal())
+                  && !_fuir.lifeTime(cl, pre).maySurviveCall()
+                  )
                 { // then we can do tail recursion optimization!
 
                   // if present, store target to local #0
@@ -739,7 +739,7 @@ class CodeGen
                   // perform tail call by goto startLabel
                   code = code.andThen(Expr.goBacktoLabel(_jvm.startLabel(cl)));
 
-                  res = new Pair(null,  // result is void, we do not return from this path.
+                  res = new Pair<>(null,  // result is void, we do not return from this path.
                                  code);
                 }
               else
@@ -756,7 +756,7 @@ class CodeGen
             }
           else
             {
-              res = new Pair(Expr.UNIT, Expr.UNIT);
+              res = new Pair<>(Expr.UNIT, Expr.UNIT);
             }
           break;
         }
@@ -843,8 +843,6 @@ class CodeGen
     if (PRECONDITIONS) require
       (_fuir.clazzResultClazz(_fuir.clazzOuterRef(cl)) == _fuir.clazzOuterClazz(cl));
 
-    var cf = _types.classFile(cl);
-
     return new Pair<>(_types.javaType(_fuir.clazzOuterClazz(cl)).load(0),
                       Expr.UNIT);
   }
@@ -866,7 +864,6 @@ class CodeGen
       (0 <= i,
        i < _fuir.clazzArgCount(cl));
 
-    var cf = _types.classFile(cl);
     var l = _jvm.argSlot(cl, i);
     var t = _fuir.clazzArgClazz(cl, i);
     var jt = _types.resultType(t);
@@ -897,7 +894,7 @@ class CodeGen
     var l = _jvm.argSlot(cl, i);
     var t = _fuir.clazzArgClazz(cl, i);
     var jt = _types.resultType(t);
-    var cf = _types.classFile(cl);
+
     return val.andThen(jt.store(l));
   }
 
@@ -922,8 +919,8 @@ class CodeGen
                         f,
                         jt.descriptor(),
                         new List<>());
-              ucl.addToClInit(c._v1);
-              ucl.addToClInit(c._v0.andThen(Expr.putstatic(ucl._name, f, jt)));
+              ucl.addToClInit(c.v1());
+              ucl.addToClInit(c.v0().andThen(Expr.putstatic(ucl._name, f, jt)));
             }
           yield new Pair<Expr, Expr>(Expr.getstatic(ucl._name, f, jt), Expr.UNIT);
         }
@@ -1003,8 +1000,8 @@ class CodeGen
                     .andThen(Expr.DUP)                             // T[], T[]
                     .andThen(Expr.checkcast(jt.array()))
                     .andThen(Expr.iconst(idx))                     // T[], T[], idx
-                    .andThen(c._v1)                                // T[], T[], idx, const-data-code
-                    .andThen(c._v0)                                // T[], T[], idx, const-data-code
+                    .andThen(c.v1())                                // T[], T[], idx, const-data-code
+                    .andThen(c.v0())                                // T[], T[], idx, const-data-code
                     .andThen(jt.xastore());                        // T[]
                 }
               yield _jvm.const_array(constCl, result, elCount);
@@ -1019,8 +1016,8 @@ class CodeGen
                   var bytes = _fuir.deseralizeConst(fr, b);
                   var c = createConstant(fr, bytes);
                   result = result
-                    .andThen(c._v1)
-                    .andThen(c._v0);
+                    .andThen(c.v1())
+                    .andThen(c.v0());
                 }
               result = result
                 .andThen(_types.invokeStaticCombindedPreAndCall(constCl));

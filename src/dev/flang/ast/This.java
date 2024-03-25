@@ -71,12 +71,6 @@ public class This extends ExprWithPos
 
   /**
    * Constructor
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param qual
-   *
-   * @param a
    */
   public This(List<ParsedName> qual)
   {
@@ -143,7 +137,7 @@ public class This extends ExprWithPos
    *
    * @param f the outer feature whose instance we want to access.
    *
-   * @param the type resolved expression to access f.this.
+   * @return the type resolved expression to access f.this.
    */
   public static Expr thiz(Resolution res, SourcePosition pos, AbstractFeature cur, AbstractFeature f)
   {

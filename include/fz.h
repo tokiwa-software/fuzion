@@ -32,19 +32,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <stdint.h>
 
-// NYI move to shared
-static inline void * fzE_malloc_safe(size_t size) {
-#ifdef GC_H
-  void *p = GC_MALLOC(size);
-#else
-  void *p = malloc(size);
-#endif
-  if (p == NULL) {
-    fprintf(stderr, "*** malloc(%zu) failed ***\n", size);
-    exit(1);
-  }
-  return p;
-}
+void * fzE_malloc_safe(size_t size);
 
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname);
@@ -274,5 +262,68 @@ int fzE_pipe_close(int64_t desc);
  */
 void fzE_file_open(char * file_name, int64_t * open_results, int8_t mode);
 
+
+#ifdef FUZION_LINK_JVM
+
+#include <jni.h>
+
+// definition of a struct for a jvm result
+// in case of success v0 is used
+// in case of exception v1 is used
+typedef struct fzE_jvm_result fzE_jvm_result;
+struct fzE_jvm_result
+{
+  int32_t fzTag;
+  union
+  {
+    jvalue v0;
+    jstring v1; // NYI should probably better be jthrowable
+  }fzChoice;
+};
+
+// initialize the JVM
+// executed once at the start of the application
+void fzE_init_jvm();
+
+// close the JVM.
+void fzE_destroy_jvm();
+
+// convert a jstring to a utf-8 byte array
+const char * fzE_java_string_to_utf8_bytes(jstring jstr);
+
+jvalue fzE_f32_to_java_object(double arg);
+jvalue fzE_f64_to_java_object(float arg);
+jvalue fzE_i8_to_java_object(int8_t arg);
+jvalue fzE_i16_to_java_object(int16_t arg);
+jvalue fzE_u16_to_java_object(uint16_t arg);
+jvalue fzE_i32_to_java_object(int32_t arg);
+jvalue fzE_i64_to_java_object(int64_t arg);
+jvalue fzE_bool_to_java_object(bool arg);
+
+// call a java constructor
+fzE_jvm_result fzE_call_c0(jstring class_name, jstring signature, jvalue *args);
+// call a java static method
+fzE_jvm_result fzE_call_s0(jstring class_name, jstring name, jstring signature, jvalue *args);
+// call a java virtual method
+fzE_jvm_result fzE_call_v0(jstring class_name, jstring name, jstring signature, jobject thiz, jvalue *args);
+
+// convert a 0-terminated utf8-bytes array to a jstring.
+jvalue fzE_string_to_java_object(const void * utf8_bytes, int byte_length);
+
+// test if jobj is null
+bool fzE_java_object_is_null(jobject jobj);
+
+// get length of the jarray
+int32_t fzE_array_length(jarray array);
+jvalue fzE_array_to_java_object0(jsize length, jvalue *args, char * element_class_name);
+// get element in array at index
+jvalue fzE_array_get(jarray array, jsize index, const char *sig);
+
+// get a non-static field on obj.
+jvalue fzE_get_field0(jobject obj, jstring name, const char *sig);
+// get a static field in class.
+jvalue fzE_get_static_field0(jstring class_name, jstring name, const char *sig);
+
+#endif
 
 #endif /* fz.h  */

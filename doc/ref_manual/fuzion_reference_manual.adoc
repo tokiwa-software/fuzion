@@ -345,7 +345,7 @@ A _child_ is hence used synonymously to an _heir_.
 
 [#fuzion_choice]
 ((Choice)):: A _choice_ is either the xref:fuzion_feature[feature] `choice` defined in the Fuzion base library or
-any feature declared using `is` that directly inherits from the base library feature `choice`. A choice's arguments
+any feature that is a xref:direct_child(direct child) of the base library feature `choice`.  A choice's arguments
 must all be xref:fuzion_typeparameter[type parameters] and a choice may not contain code.
 
 [#choice_type]
@@ -464,7 +464,7 @@ an xref:fuzion_abstract[abstract feature], a xref:fuzion_choice[choice], an xref
 xref:fuzion_native[native feature].
 
 [#real_child]
-((Real Child)):: A _real child_ of a xref:fuzion_feature[feature] `p` is any feature `c` the xref:real_inheritance[inherits really] from `p`.
+((Real Child)):: A _real child_ of a xref:fuzion_feature[feature] `p` is any feature `c` that xref:real_inheritance[inherits really] from `p`.
 
 [#real_inheritance]
 ((Real Inheritance)):: An xref:fuzion_feature[feature] `f` is said to _inherit really_ from a xref:fuzion_feature[feature] `g` if

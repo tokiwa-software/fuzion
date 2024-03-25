@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Visi;
+import dev.flang.fe.LibraryFeature;
 import dev.flang.tools.FuzionHome;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourcePosition;
@@ -77,7 +78,7 @@ public class Util
     while (true)
       {
         var pos = new SourcePosition(af.pos()._sourceFile, af.pos()._sourceFile.lineStartPos(line));
-        var strline = Util.lineAt(pos);
+        var strline = Util.lineAt((LibraryFeature) af, pos);
         if (line < 1 || !strline.matches("^\\s*#.*"))
           {
             break;
@@ -120,17 +121,16 @@ public class Util
   /**
    * get line as string of source position pos
    */
-  private static String lineAt(SourcePosition pos)
+  private static String lineAt(LibraryFeature lf, SourcePosition pos)
   {
     var uri = Path.of(pos._sourceFile._fileName.toString()
-      .replace(FuzionConstants.SYMBOLIC_FUZION_HOME.toString(), (new FuzionHome())._fuzionHome.normalize().toAbsolutePath().toString())).toUri();
+      .replace(FuzionConstants.SYMBOLIC_FUZION_MODULE.toString(), lf._libModule.srcPath())).toUri();
     try
       {
         return Files.readAllLines(Path.of(uri), StandardCharsets.UTF_8).get(pos.line() - 1);
       }
     catch (IOException e)
       {
-        // NYI comment lines from modules
         return "";
       }
   }

@@ -137,7 +137,7 @@ public class Case extends AbstractCase
   /**
    * Constructor for a Case that assigns the value to a new field
    *
-   * @param pos the sourcecode position, used for error messages.
+   * @param p the sourcecode position, used for error messages.
    *
    * @param f the field declared to hold the value in this case
    *

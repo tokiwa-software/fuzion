@@ -106,7 +106,7 @@ public class Feature extends AbstractFeature
     return
       // NYI anonymous feature should have correct visibility set.
       isAnonymousInnerFeature()
-      ? outer().visibility()
+      ? (state().atLeast(State.FINDING_DECLARATIONS) ? outer().visibility() : Visi.UNSPECIFIED)
       : _visibility == Visi.UNSPECIFIED
       ? Visi.PRIV
       : _visibility;
@@ -277,8 +277,16 @@ public class Feature extends AbstractFeature
 
 
   /**
+   * Is this a loop's variable that is being iterated over using the `in` keyword?
+   * If so, also store the internal list name.
+   */
+  boolean _isLoopIterator = false;
+  String _loopIteratorListName;
+
+
+  /**
    * All features that have been found to be directly redefined by this feature.
-   * This does not include redefinitions of redefinitions.  Four Features loaded
+   * This does not include redefinitions of redefinitions.  For Features loaded
    * from source code, this set is collected during RESOLVING_DECLARATIONS.  For
    * LibraryFeature, this will be loaded from the library module file.
    */
@@ -456,10 +464,6 @@ public class Feature extends AbstractFeature
    * @param t the result type, null in case it is inferred from initialValue
    *
    * @param qname the name of this feature
-   *
-   * @param initialValue the initial value used for type inference in case t == null
-   *
-   * @param outerOfInitialValue the feature that contains the expression initialValue
    */
   Feature(SourcePosition pos,
           Visi v,
@@ -594,7 +598,7 @@ public class Feature extends AbstractFeature
    *
    * @param r the result type
    *
-   * @param qname the name of this feature
+   * @param qpname the name of this feature
    *
    * @param a the arguments
    *
@@ -1205,6 +1209,25 @@ public class Feature extends AbstractFeature
   }
 
 
+  /**
+   * For every feature 'f', this produces the corresponding type feature
+   * 'f.type'.  This feature inherits from the abstract type features of all
+   * direct ancestors of this, and, if there are no direct ancestors (for
+   * Object), this inherits from 'Type'.
+   *
+   * @param res Resolution instance used to resolve this for types.
+   *
+   * @return The feature that should be the direct ancestor of this feature's
+   * type feature.
+   */
+  @Override
+  public AbstractFeature typeFeature(Resolution res)
+  {
+    resolveInheritance(res);
+    return super.typeFeature(res);
+  }
+
+
   /*
    * Declaration resolution for a feature f: For all declarations of features in
    * f (formal arguments, local features, implicit result field), add these
@@ -1716,14 +1739,17 @@ public class Feature extends AbstractFeature
             public Expr  action(If             i, AbstractFeature outer) { i.propagateExpectedType(res, outer); return i; }
           });
 
-        /* extra pass to automatically wrap values into 'Lazy' */
+        /*
+         * extra pass to automatically wrap values into 'Lazy'
+         * or unwrap values inherting `unwrap`
+         */
         visit(new FeatureVisitor() {
             // we must do this from the outside of calls towards the inside to
             // get the corrected nesting of Lazy features created during this
             // phase
             public boolean visitActualsLate() { return true; }
-            public void  action(AbstractAssign a, AbstractFeature outer) { a.wrapValueInLazy  (res, outer); }
-            public Expr  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, outer); return c; }
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.wrapValueInLazy  (res, outer); a.unwrapValue(res, outer); }
+            public Expr  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, outer); c.unwrapActuals(res, outer); return c; }
           });
 
         if (isConstructor())

@@ -63,17 +63,6 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * the name of this type.  For a type 'map<string,i32>.entry', this is just
-   * the base name 'entry'. For a type parameter 'A', this is 'A'. For an
-   * artificial type, this is one of Types.INTERNAL_NAMES (e.g., '--ADDRESS--).
-   */
-  public String name()
-  {
-    return _feature.featureName().baseName();
-  }
-
-
-  /**
    * For a normal type, this is the list of actual type parameters given to the type.
    */
   List<AbstractType> _generics;
@@ -201,7 +190,7 @@ public class ResolvedNormalType extends ResolvedType
    * @param f if this type corresponds to a feature, then this is the
    * feature, otherwise null.
    *
-   * @param ref true iff this type should be a ref type, otherwise it will be a
+   * @param refOrVal true iff this type should be a ref type, otherwise it will be a
    * value type.
    */
   private ResolvedNormalType(List<AbstractType> g,

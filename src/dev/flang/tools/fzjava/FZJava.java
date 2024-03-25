@@ -295,7 +295,7 @@ public class FZJava extends Tool
           {
             if (_verbose > 0)
               {
-                System.out.println(" + " + _options._dest);
+                say(" + " + _options._dest);
               }
             Files.createDirectory(_options._dest);
           }
@@ -324,7 +324,7 @@ public class FZJava extends Tool
     var p = modulePath(m);
     if (_verbose > 0)
       {
-        System.out.println("MODULE: " + m + " at " + p);
+        say("MODULE: " + m + " at " + p);
       }
 
     String url = "file:jar://" + p.toUri().getPath();
@@ -421,7 +421,7 @@ public class FZJava extends Tool
           }
         catch (ClassNotFoundException e)
           {
-            System.err.println("Failed to load class " + cn + ": " + e);
+            say_err("Failed to load class " + cn + ": " + e);
           }
       }
   }
@@ -430,10 +430,7 @@ public class FZJava extends Tool
   /**
    * Create Fuzion features to interface Java code for class with given name.
    *
-   * @param cl ClassLoader to load class from
-   *
    * @param cn the class name, e.g., "java.lang.Object".
-   *
    */
   boolean matchesClassPattern(String cn)
   {

@@ -40,7 +40,6 @@ is
 # map is returned.
 #
 public env_vars container.Map String String =>
-  if effect.type.is_installed env_vars
-    env_vars.env.get
-  else
-    (container.hash_map String String).type.empty
+  match env_vars.get_if_installed
+    e env_vars => e.get
+    nil        => (container.hash_map String String).type.empty

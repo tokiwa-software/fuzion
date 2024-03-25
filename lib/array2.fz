@@ -124,3 +124,19 @@ is
       if      j < length1-1 then enumerate_cons i j+1
       else if i < length0-1 then enumerate_cons i+1 0
       else                       nil
+
+
+  # the transpose of the array
+  #
+  # flips the array along its diagonal
+  #
+  public transpose =>
+    array2 length1 length0 i,j->index[](j, i)
+
+
+  # create an array2 from a Sequence of a Sequence of elements
+  #
+  public type.create2(s Sequence (Sequence T)) =>
+    a := s.map s1->s1.as_array
+          .as_array
+    array2 a.count a[0].count i,j->a[i][j]

@@ -91,12 +91,15 @@ public mutate : simple_effect is
     # check that this effect is the same as the currently installed effect of type
     # `mutate.this`
     #
-    private is_currently_installed =>  my_id = mutate.this.env.id
+    is_currently_installed =>
+      match mutate.this.type.get_if_installed
+        x mutate.this => my_id = x.id
+        nil           => false
 
 
     # check that this effect is installed and replace it.
     #
-    private check_and_replace
+    check_and_replace
     is
       if !is_currently_installed
         mpanic "*** invalid mutate for {mutate.this.type}"
@@ -121,8 +124,9 @@ public mutate : simple_effect is
     public T type,
 
     # initial value, will be updated by 'put' or 'infix <-'.
-    private mutable_value T
-    ) : mutable_element
+    mutable_value T
+    ) : mutable_element,
+        auto_unwrap T mutate
   is
 
 
@@ -181,6 +185,11 @@ public mutate : simple_effect is
     #
     public copy new T =>
       new T get
+
+
+    # unwrap this mutable value
+    #
+    public unwrap ! mutate => get
 
 
     # returns `as_string` of the current value

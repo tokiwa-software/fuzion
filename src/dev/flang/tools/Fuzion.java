@@ -46,6 +46,8 @@ import dev.flang.be.effects.Effects;
 
 import dev.flang.be.interpreter.Interpreter;
 
+import dev.flang.be.interpreter.Interpreter;
+
 import dev.flang.be.jvm.JVM;
 import dev.flang.be.jvm.JVMOptions;
 
@@ -100,6 +102,9 @@ public class Fuzion extends Tool
       }
       void process(FuzionOptions options, FUIR fuir)
       {
+        // run DFA, currently only done to find missing effects, see tests/reg_issue2273
+        var new_fuir = _xdfa_ ? new DFA(options, fuir).new_fuir() : fuir;
+
         new Interpreter(options, fuir).run();
       }
     },
@@ -332,7 +337,7 @@ public class Fuzion extends Tool
             var data = fe.module().data(n);
             if (data != null)
               {
-                System.out.println(" + " + p);
+                say(" + " + p);
                 try (var os = Files.newOutputStream(p))
                   {
                     Channels.newChannel(os).write(data);
@@ -469,7 +474,6 @@ public class Fuzion extends Tool
       var mir = fe.createMIR();                                                       f.timer("createMIR");
       var air = new MiddleEnd(fe._options, mir, fe.module() /* NYI: remove */).air(); f.timer("me");
       var fuir = new Optimizer(fe._options, air).fuir();                              f.timer("ir");
-      new Effects(fe._options, fuir).check();                                         f.timer("effectsCheck");
       process(fe._options, fuir);
     }
 
@@ -637,7 +641,6 @@ public class Fuzion extends Tool
     if (_backend == Backend.undefined)
       {
         var aba = new StringBuilder();
-        var abe = new StringBuilder();
         for (var ab : _allBackends_.entrySet())
           {
             var b = ab.getValue();
@@ -651,7 +654,7 @@ public class Fuzion extends Tool
         return
           "Usage: " + _cmd + " [-h|--help|-version]  --or--\n" +
           "       " + _cmd + " [" + aba + "] [-h|--help|-version] [<backend specific options>]  --or--\n" +
-          "       " + _cmd + " -pretty " + std + " ({<file>} | - | -e <code> | -execute <code>  --or--\n" +
+          "       " + _cmd + " -pretty " + std + " ({<file>} | - | -e <code> | -execute <code>)  --or--\n" +
           "       " + _cmd + " -latex " + std + "  --or--\n" +
           "       " + _cmd + " -acemode " + std + "  --or--\n";
       }
@@ -703,7 +706,7 @@ public class Fuzion extends Tool
    * Check that there is exactly one of these three input source set:
    * _readStdin, _executeCode != null or commandLineSomethings.
    *
-   * @param commandLineSomthings true iff input source is given via command line
+   * @param commandLineSomethings true iff input source is given via command line
    * argument or arguments
    *
    * @param nameOfSomething How to call the command line sources in an error
@@ -762,7 +765,7 @@ public class Fuzion extends Tool
    * parseExecute() to check that code was actually given following `-e` or
    * `-execute`.
    *
-   * @param noextIsCode did the call to `parseExecute` return true for the last
+   * @param nextIsCode did the call to `parseExecute` return true for the last
    * argument?
    */
   private void checkMissingCode(boolean nextIsCode)
@@ -847,7 +850,6 @@ public class Fuzion extends Tool
    */
   private Runnable parseArgsLatex(String[] args)
   {
-    var sourceFiles = new List<String>();
     for (var a : args)
       {
         if (!parseGenericArg(a) &&

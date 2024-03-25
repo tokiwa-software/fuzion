@@ -156,7 +156,7 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
    *
    * @param globalIndex a global, unique index into a module file
    *
-   * @param argcount the argument count
+   * @param argCount the argument count
    *
    * @param id the additional id
    */

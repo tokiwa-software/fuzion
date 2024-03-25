@@ -18,7 +18,9 @@ Scorecard](https://api.securityscorecards.dev/projects/github.com/tokiwa-softwar
    * [Examples](#examples)
    * [Documentation](#documentation)
    * [Clone](#clone)
-   * [Requirements](#requirements)
+   * [Required packages](#required-packages)
+     * [Linux](#linux)
+     * [MacOS](#macos)
      * [Windows](#windows)
    * [Build](#build)
    * [Run](#run)
@@ -144,7 +146,7 @@ Check [fuzion-lang.dev](https://fuzion-lang.dev) for language and implementation
 
     git clone https://github.com/tokiwa-software/fuzion
 
-## Requirements
+## Required packages
 
 ### Linux
 
@@ -156,6 +158,22 @@ Check [fuzion-lang.dev](https://fuzion-lang.dev) for language and implementation
 - clang LLVM C compiler
 - GNU make
 - libgc
+
+### MacOS
+
+> This command should install all requirements:
+>
+>     brew install bdw-gc gnu-sed make temurin llvm
+>
+> Additionally you may need to update your PATH environment variable e.g.:
+>
+>     export PATH:"/usr/local/opt/gnu-sed/libexec/gnubin:/usr/local/opt/gnu-make/libexec/gnubin:$PATH"
+
+- OpenJDK 21, e.g. [Adoptium](https://github.com/adoptium/temurin21-binaries/releases/)
+- clang LLVM C compiler
+- GNU make
+- libgc
+
 
 ### Windows
 

@@ -34,7 +34,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Check extends Expr
+public class Check extends ExprWithPos
 {
 
 
@@ -47,12 +47,6 @@ public class Check extends Expr
   Cond cond;
 
 
-  /**
-   * The sourcecode position of this expression, used for error messages.
-   */
-  public final SourcePosition _pos;
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -63,22 +57,13 @@ public class Check extends Expr
    */
   public Check(SourcePosition pos, Cond c)
   {
-    this._pos = pos;
+    super(pos);
     this.cond = c;
   }
 
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * The sourcecode position of this expression, used for error messages.
-   */
-  public SourcePosition pos()
-  {
-    return _pos;
-  }
 
 
   /**

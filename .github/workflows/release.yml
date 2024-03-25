@@ -31,7 +31,7 @@ jobs:
 
     - name: Read VERSION file
       id: getversion
-      run: echo "::set-output name=version::$(cat version.txt)"
+      run: echo "version=$(cat version.txt)" >> $GITHUB_OUTPUT
 
     - uses: ncipollo/release-action@2c591bcc8ecdcd2db72b97d6147f871fcd833ba5 # v1.14.0
       with:

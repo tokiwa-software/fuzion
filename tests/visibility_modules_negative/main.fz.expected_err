@@ -14,7 +14,7 @@ To solve this, check the spelling of the type you have used.
 Feature not found: 'mod_pub' (no arguments)
 Target feature: 'b'
 In call: 'b.mod_pub'
-To solve this, you might change the visibility of the feature 'mod_pub' (no arguments) at $FUZION/lib/b.fz:26:17:
+To solve this, you might change the visibility of the feature 'mod_pub' (no arguments) at $MODULE/b.fz:26:17:
   module:public mod_pub is
 ----------------^
 

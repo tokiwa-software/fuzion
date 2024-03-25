@@ -201,17 +201,17 @@ public class Parser extends Lexer
   /**
    * Parse a unit, i.e., exprs followed by Token.t_eof.
    *
-unit        : exprs EOF
+unit        : block EOF
             ;
    */
   public List<Expr> unit()
   {
-    var result = exprs();
+    var result = block();
     if (!Errors.any())
       {
         match(Token.t_eof, "Unit");
       }
-    return result;
+    return result._expressions;
   }
 
 
@@ -367,7 +367,7 @@ field       : returnType
             addFeaturesFromBlock(first, l, p.expr(), ng, p, v);
             c._generics = ng;
           }
-        p = new Impl(p.pos, new Block(new List<>()), Impl.Kind.Routine);
+        p = new Impl(p.pos, emptyBlock(), Impl.Kind.Routine);
       }
     return p;
   }
@@ -677,10 +677,9 @@ name        : IDENT                            // all parts of name must be in s
               next();
               if (skip(Token.t_question))
                 {
-                  var end = tokenEndPos();
                   if (skipColon())
                     {
-                      result = new ParsedName(sourceRange(pos, end), "ternary ? :");
+                      result = new ParsedName(sourceRange(pos), "ternary ? :");
                     }
                   else if (!ignoreError)
                     {
@@ -702,9 +701,8 @@ name        : IDENT                            // all parts of name must be in s
                   var dotdot = skip("..");
                   if (!ignoreError || current() == Token.t_rcrochet)
                     {
-                      var end = tokenEndPos();
                       match(Token.t_rcrochet, "name: index");
-                      result = new ParsedName(sourceRange(pos, end),
+                      result = new ParsedName(sourceRange(pos),
                                               dotdot ? FuzionConstants.FEATURE_NAME_INDEX_DOTDOT
                                                      : FuzionConstants.FEATURE_NAME_INDEX);
                     }
@@ -719,16 +717,15 @@ name        : IDENT                            // all parts of name must be in s
                   match(Token.t_lcrochet, "name: set");
                   if (!ignoreError || current() == Token.t_rcrochet)
                     {
-                      var end = tokenEndPos();
                       match(Token.t_rcrochet, "name: set");
-                      result = new ParsedName(sourceRange(pos, end), FuzionConstants.FEATURE_NAME_INDEX_ASSIGN);
+                      result = new ParsedName(sourceRange(pos), FuzionConstants.FEATURE_NAME_INDEX_ASSIGN);
                     }
                 }
               else if (current() == Token.t_ident)
                 {
-                  var end = tokenEndPos();
-                  result = new ParsedName(sourceRange(pos, end), identifier() + " =");
+                  var id = identifier();
                   match(Token.t_ident, "name: set");
+                  result = new ParsedName(sourceRange(pos), id + " =");
                 }
               else if (!ignoreError)
                 {
@@ -809,14 +806,13 @@ opName      : "infix"   op
     int pos = tokenPos();
     String inPrePost = current(mayBeAtMinIndent).keyword();
     next();
-    var end = tokenEndPos();
     String res = operatorOrError();
     if (!ignoreError || res != Errors.ERROR_STRING)
       {
         match(Token.t_op, "infix/prefix/postfix name");
         res = inPrePost + " " + res;
       }
-    return new ParsedName(sourceRange(pos, end), res);
+    return new ParsedName(sourceRange(pos), res);
   }
 
 
@@ -1582,7 +1578,7 @@ actualArgs  : actualsList
    * Does the current symbol end a list of space separated actual arguments to a
    * call.
    *
-   * @param in the indentation used for the actuals, null if none.
+   * @param atMinIndent the indentation used for the actuals, null if none.
    *
    * @return true if the next symbol ends actual arguments or in!=null and the
    * next symbol is not properly indented.
@@ -1727,7 +1723,7 @@ bracketTerm : brblock
     var c = current();
     switch (c)
       {
-      case t_lbrace  : return brblock();
+      case t_lbrace  : return block();
       case t_lparen  : return klammer();
       case t_lcrochet: return inlineArray();
       default: throw new Error("Unexpected case: "+c);
@@ -1805,45 +1801,12 @@ actual   : operatorExpr | type
    * ( ).
    *
 exprInLine  : operatorExpr   // within one line
-            | bracketTerm      // stretching over one or several lines
             ;
    */
   Expr exprInLine()
   {
-    Expr result;
-    int line = line();
-    int oldLine = sameLine(-1);
-    switch (current())
-      {
-      case t_lbrace:
-      case t_lparen:
-      case t_lcrochet:
-        { // allow
-          //
-          //   { a; b } + c
-          //
-          //   { a; b
-          //   }
-          //   .f
-          //
-          // but not
-          //
-          //   { a; b
-          //   }
-          //   + c
-          var f = fork();
-          f.bracketTerm();
-          if (f.line() != line && f.isOperator('.'))
-            {
-              line = -1;
-            }
-          break;
-        }
-      default:
-        break;
-      }
-    sameLine(line);
-    result = operatorExpr();
+    var oldLine = sameLine(line());
+    var result = operatorExpr();
     sameLine(oldLine);
     return result;
   }
@@ -1894,44 +1857,55 @@ operatorExpr  : opExpr
   /**
    * Parse opExpr
    *
-opExpr      : dotCall
-            | ( op
-              )*
-              opTail
+opExpr      :     opTail
+            | ops opTail
             | op
+            | dotCall
             ;
    */
   Expr opExpr()
   {
-     if (skipDot())
-      {
-        return Partial.dotCall(tokenSourcePos(), a->call(a));
-      }
-     else
+     if (!skipDot())
        {
          var oe = new OpExpr();
-         Operator singleOperator = null;
-         if (current() == Token.t_op)
+         skipOps(oe);
+         if (oe.size() != 1 || isTermPrefix())
            {
-             singleOperator = op();
-             oe.add(singleOperator);
-             while (current() == Token.t_op)
-               {
-                 singleOperator = null;
-                 oe.add(op());
-               }
-           }
-         if (singleOperator == null || isTermPrefix())
-           {
-             oe.add(opTail());
+             opTail(oe);
              return oe.toExpr();
            }
          else
            {
-             return new Partial(singleOperator._pos,
-                                singleOperator._text);
+             return new Partial(oe.op(0)._pos,
+                                oe.op(0)._text);
            }
        }
+     else
+       {
+         return Partial.dotCall(tokenSourcePos(), a->call(a));
+       }
+  }
+
+
+  /**
+   * Parse ops
+   *
+   * @param oe OpExpr instance the op()s should be added to
+   *
+   * @return true iff ops was parsed and op()s were added to oe
+   *
+ops         : op ops
+            | op
+            ;
+   */
+  boolean skipOps(OpExpr oe)
+  {
+    var oldcount = oe.size();
+    while (current() == Token.t_op)
+      {
+        oe.add(op());
+      }
+    return oldcount < oe.size();
   }
 
 
@@ -1939,31 +1913,17 @@ opExpr      : dotCall
    * Parse opTail
    *
 opTail      : term
-              ( ( op )+
-                ( opTail
-                |
-                )
-              |
-              )
+            | term ops
+            | term ops opTail
             ;
    */
-  OpExpr opTail()
+  void opTail(OpExpr oe)
   {
-    OpExpr oe = new OpExpr();
     oe.add(term());
-    if (current() == Token.t_op)
+    if (skipOps(oe) && isTermPrefix())
       {
-        do
-          {
-            oe.add(op());
-          }
-        while (current() == Token.t_op);
-        if (isTermPrefix())
-          {
-            oe.add(opTail());
-          }
+        opTail(oe);
       }
-    return oe;
   }
 
 
@@ -1999,26 +1959,20 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
                        () -> Void.TYPE);
 
 
-    // a lambda expression
-    if (isLambdaPrefix())
+    if (isLambdaPrefix())                  // a lambda expression
       {
         return lambda(f.bracketTermWithNLs(PARENS, "argNamesOpt", () -> f.argNamesOpt()));
       }
-    // an expr wrapped in parentheses, not a tuple
-    else if (tupleElements.size() == 1)
+    else if (tupleElements.size() == 1)    // an expr wrapped in parentheses, not a tuple
       {
-        var actual = tupleElements.get(0).expr(null);
-
-        // special handling for cases like:
-        // s9a i16 := -(32768)
-        // s9c i16 := -(-(-32768))
-        // s9a := i16 -(32768)
-        return (actual instanceof NumLiteral)
-          ? actual
-          : new Block(tokenSourcePos(), new List<>(actual));
+        var e = tupleElements.get(0).expr(null);
+        if (e instanceof ParsedOperatorCall oc)
+          { // disable chained boolean optimization or partial application:
+            oc.putInParentheses();
+          }
+        return e;
       }
-    // a tuple
-    else
+    else                                   // a tuple
       {
         return new Call(pos, null, "tuple", tupleElements);
       }
@@ -2067,8 +2021,7 @@ lambda      : "->" block
     matchOperator("->", "lambda");
     var startPos = n.isEmpty() ? pos : n.getFirst().pos().bytePos();
     var b = block();
-    var endPos = startPos < b.pos().byteEndPos() ? b.pos().byteEndPos() : tokenPos();
-    return new Function(sourceRange(startPos, endPos), n, b);
+    return new Function(sourceRange(startPos), n, b);
   }
 
 
@@ -2185,7 +2138,7 @@ simpleterm  : bracketTerm
   Expr term()
   {
     Expr result;
-    int p1 = tokenPos();
+    int pos = tokenPos();
     switch (isDotEnvOrTypePrefix())    // starts with name or '('
       {
       case env : result = dotEnv(); break;
@@ -2196,15 +2149,14 @@ simpleterm  : bracketTerm
           case t_lbrace    :
           case t_lparen    :
           case t_lcrochet  :         result = bracketTerm();                            break;
-          case t_numliteral: var endPos = tokenEndPos();
-                             var l = skipNumLiteral();
+          case t_numliteral: var l = skipNumLiteral();
                              var m = l.mantissaValue();
                              var b = l.mantissaBase();
                              var d = l.mantissaDotAt();
                              var e = l.exponent();
                              var eb = l.exponentBase();
                              var o = l._originalString;
-                             result = new NumLiteral(sourceRange(p1, endPos), o, b, m, d, e, eb); break;
+                             result = new NumLiteral(sourceRange(pos), o, b, m, d, e, eb); break;
           case t_match     :         result = match();                                  break;
           case t_for       :
           case t_variant   :
@@ -2221,7 +2173,7 @@ simpleterm  : bracketTerm
                 result = callOrFeatOrThis();
                 if (result == null)
                   {
-                    syntaxError(p1, "term (lbrace, lparen, lcrochet, fun, string, integer, old, match, or name)", "term");
+                    syntaxError(pos, "term (lbrace, lparen, lcrochet, fun, string, integer, old, match, or name)", "term");
                     result = Expr.ERROR_VALUE;
                   }
               }
@@ -2238,11 +2190,7 @@ simpleterm  : bracketTerm
       {
         result = call(result);
       }
-    var p2 = lastTokenEndPos();
-    if (p1 < p2) // in case or a parsing error, we might not have made any progress
-      {
-        result.setSourceRange(sourceRange(p1, p2));
-      }
+    result.setSourceRange(sourceRange(pos));
     return result;
   }
 
@@ -2271,7 +2219,7 @@ stringTermB : '}any chars&quot;'
         if (isString(t))
           {
             var ps = string(multiLineIndentation);
-            var str = new StrConst(tokenSourcePos().rangeTo(tokenEndPos()), ps._v0);
+            var str = new StrConst(tokenSourcePos().rangeTo(tokenEndPos()), ps.v0());
             result = concatString(tokenSourcePos(), leftString, str);
             next();
             if (isPartialString(t))
@@ -2279,7 +2227,7 @@ stringTermB : '}any chars&quot;'
                 var old = setMinIndent(-1);
                 var b = block();
                 setMinIndent(old);
-                result = stringTerm(concatString(tokenSourcePos(), result, b), ps._v1);
+                result = stringTerm(concatString(tokenSourcePos(), result, b), ps.v1());
               }
           }
         else
@@ -2353,7 +2301,8 @@ op          : OPERATOR
   /**
    * Parse match
    *
-match       : "match" exprInLine BRACEL cases BRACER
+match       : "match" exprInLine        cases
+            | "match" exprInLine BRACEL cases BRACER
             ;
    */
   Expr match()
@@ -2362,12 +2311,7 @@ match       : "match" exprInLine BRACEL cases BRACER
         SourcePosition pos = tokenSourcePos();
         match(Token.t_match, "match");
         Expr e = exprInLine();
-        boolean gotLBrace = skip(true, Token.t_lbrace);
-        var c = cases();
-        if (gotLBrace)
-          {
-            match(true, Token.t_rbrace, "match");
-          }
+        var c = optionalBrackets(BRACES, "cases",() -> cases());
         // missing match cases are checked for when resolving types
         return new Match(pos, e, c);
       });
@@ -2484,20 +2428,12 @@ caseBlock   : ARROW          // if followed by '|'
    */
   Block caseBlock()
   {
-    Block result;
     matchOperator("=>", "caseBlock");
     var oldLine = sameLine(-1);
     var bar = current() == Token.t_barLimit;
     sameLine(oldLine);
-    if (bar)
-      {
-        result = new Block(tokenSourcePos(), new List<>());
-      }
-    else
-      {
-        result = block();
-      }
-    return result;
+    return bar ? emptyBlock()
+               : block();
   }
 
 
@@ -2563,67 +2499,30 @@ caseBlock   : ARROW          // if followed by '|'
 block       : exprs
             | brblock
             ;
-   */
-  Block block()
-  {
-    var p1 = tokenPos();
-    var pos1 = tokenSourcePos();
-    if (current() == Token.t_semicolon)
-      { // we have code like
-        //
-        //   if cond;
-        //
-        // or
-        //
-        //   for x in set
-        //   while cond(x);
-        //
-        // so there is an empty block.
-        //
-        return new Block(pos1, new List<>());
-      }
-    else if (currentAtMinIndent() != Token.t_lbrace)
-      {
-        var l = exprs();
-        var pos2 = l.size() > 0 ? l.getLast().pos() : pos1;
-        if (pos1 == pos2 && current() == Token.t_indentationLimit)
-          { /* we have a non-indented new line, e.g., the empty block after `x i32 =>` in
-             *
-             *   x i32 =>
-             *   y u8 =>
-             *
-             * unless the result type of `x` is `unit`, we will get an error, but this error should not be
-             * reported at `y`, but at the end of `x i32 =>`, so we set start and end pos to the end of that line
-             */
-            pos1 = sourcePos(lineEndPos(lineNum(p1)-1));
-            pos2 = pos1;
-          }
-        return new Block(pos2, l);
-      }
-    else
-      {
-        return brblock();
-      }
-  }
-
-
-  /**
-   * Parse block
-   *
 brblock     : BRACEL exprs BRACER
             ;
    */
-  Block brblock()
+  Block block()
   {
-    SourcePosition pos1 = tokenSourcePos();
-    return bracketTermWithNLs(BRACES, "block",
-                              () -> {
-                                var l = exprs();
-                                var pos2 = tokenSourcePos();
-                                return new Block(l);
-                              });
+    var p0 = lastTokenEndPos();
+    var p1 = tokenPos();
+    var b = optionalBrackets(BRACES, "block", () -> new Block(exprs()));
+    var p2 = lastTokenEndPos();
+    b.setSourceRange(sourceRange(p0, p1, p2));
+    return b;
   }
 
+
+  Block emptyBlock()
+  {
+    if (PRECONDITIONS) require
+      (lastTokenEndPos() >= 0);
+
+    var b = new Block();
+    var p0 = lastTokenEndPos();
+    b.setSourceRange(sourceRange(p0, p0+1));
+    return b;
+  }
 
   /**
    * As long as this is false and we make progress, we try to parse more
@@ -2807,10 +2706,10 @@ exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
   /**
    * Parse expr
    *
-expr        : feature
+expr        : checkexpr
             | assign
             | destructure
-            | checkexpr
+            | feature
             | operatorExpr
             ;
    */
@@ -3004,7 +2903,7 @@ thenPart    : "then" block
   Block thenPart(boolean emptyBlockIfNoBlockPresent)
   {
     var p = tokenPos();
-    skip(Token.t_then);
+    skip(true, Token.t_then);
     var result = block();
     return emptyBlockIfNoBlockPresent && p == tokenPos() ? null : result;
   }
@@ -3077,7 +2976,7 @@ assign      : "set" name ":=" exprInLine
   {
     if (!ENABLE_SET_KEYWORD)
       {
-        AstErrors.illegalUseOfSetKeyword(tokenSourcePos());;
+        AstErrors.illegalUseOfSetKeyword(tokenSourcePos());
       }
     match(Token.t_set, "assign");
     var n = name();
@@ -3139,7 +3038,7 @@ destructrSet: "set" "(" argNames ")" ":=" exprInLine
         var hasSet = skip(Token.t_set);
         if (hasSet && !ENABLE_SET_KEYWORD)
           {
-            AstErrors.illegalUseOfSetKeyword(tokenSourcePos());;
+            AstErrors.illegalUseOfSetKeyword(tokenSourcePos());
           }
         match(Token.t_lparen, "destructure");
         var names = argNames();
@@ -3322,8 +3221,6 @@ anonymous   : "ref"
   /**
    * Parse qualThis
    *
-   * @param asType select to parse this as a list of names or as a Type.
-   *
    * @return non-empty list of names in the qualifier, excluding "this".
    *
 qualThis    : name ( dot name )* dot "this"
@@ -3405,10 +3302,12 @@ dotEnv      : typeInParens dot "env"
    */
   Env dotEnv()
   {
+    var p0 = tokenPos();
     var t = typeInParens();
     skipDot();
+    var pos = sourceRange(p0, tokenEndPos());
     match(Token.t_env, "env");
-    return new Env(tokenSourcePos(), t);
+    return new Env(pos, t);
   }
 
 
@@ -3534,7 +3433,7 @@ contract    : require
   /**
    * Parse require
    *
-require     : "pre" exprs
+require     : "pre" block
             |
             ;
    */
@@ -3543,7 +3442,7 @@ require     : "pre" exprs
     List<Cond> result = null;
     if (skip(atMinIndent, Token.t_pre))
       {
-        result = Cond.from(exprs());
+        result = Cond.from(block());
       }
     return result;
   }
@@ -3552,7 +3451,7 @@ require     : "pre" exprs
   /**
    * Parse ensure
    *
-ensure      : "post" exprs
+ensure      : "post" block
             |
             ;
    */
@@ -3561,7 +3460,7 @@ ensure      : "post" exprs
     List<Cond> result = null;
     if (skip(atMinIndent, Token.t_post))
       {
-        result = Cond.from(exprs());
+        result = Cond.from(block());
       }
     return result;
   }
@@ -3570,7 +3469,7 @@ ensure      : "post" exprs
   /**
    * Parse invariant
    *
-invariant   : "inv" exprs
+invariant   : "inv" block
             |
             ;
    */
@@ -3579,7 +3478,7 @@ invariant   : "inv" exprs
     List<Cond> result = null;
     if (skip(atMinIndent, Token.t_inv))
       {
-        result = Cond.from(exprs());
+        result = Cond.from(block());
       }
     return result;
   }
@@ -3588,8 +3487,7 @@ invariant   : "inv" exprs
   /**
    * Parse implRout
    *
-implRout    : block
-            | "is" "abstract"
+implRout    : "is" "abstract"
             | "is" "intrinsic"
             | "is" "intrinsic_constructor"
             | "is" "native"
@@ -3603,27 +3501,24 @@ implRout    : block
   {
     SourcePosition pos = tokenSourcePos();
     Impl result;
-
-    if (hasType && currentAtMinIndent() == Token.t_is)
+    var has_is    = skip(true, Token.t_is);
+    var has_arrow = !has_is && skip(true, "=>");
+    if (hasType && has_is)
       {
         AstErrors.constructorWithReturnType(pos);
       }
-
-    var routine =
-      currentAtMinIndent() == Token.t_lbrace ||
-      skip(true, Token.t_is)                 ||
-      hasType && skip(true, "=>");
-    if      (routine               ) { result = skip(Token.t_abstract             ) ? Impl.ABSTRACT              :
+    if      (has_is || has_arrow   ) { result = skip(Token.t_abstract             ) ? Impl.ABSTRACT              :
                                                 skip(Token.t_intrinsic            ) ? Impl.INTRINSIC             :
                                                 skip(Token.t_intrinsic_constructor) ? Impl.INTRINSIC_CONSTRUCTOR :
                                                 skip(Token.t_native               ) ? Impl.NATIVE                :
-                                                new Impl(pos, block()       , Impl.Kind.Routine   ); }
-    else if (skip(true, "=>"      )) { result = new Impl(pos, block()       , Impl.Kind.RoutineDef); }
-    else if (skip(true, Token.t_of)) { result = new Impl(pos, block()       , Impl.Kind.Of        ); }
-    else if (skipFullStop()        ) { result = new Impl(pos, new Block()   , Impl.Kind.Routine   ); }
+                                                new Impl(pos, block()    , has_is  ? Impl.Kind.Routine :
+                                                                           hasType ? Impl.Kind.Routine
+                                                                                   : Impl.Kind.RoutineDef); }
+    else if (skip(true, Token.t_of)) { result = new Impl(pos, block()    , Impl.Kind.Of        ); }
+    else if (skipFullStop()        ) { result = new Impl(pos, emptyBlock(),Impl.Kind.Routine   ); }
     else
       {
-        syntaxError(tokenPos(), "'is', '{' or '=>' in routine declaration", "implRout");
+        syntaxError(tokenPos(), "'is', or '=>' in routine declaration", "implRout");
         result = Impl.ERROR;
       }
     return result;
@@ -3674,7 +3569,7 @@ implFldInit : ":=" exprInLine
         syntaxError(tokenPos(), "':='", "implFldInit");
       }
     return new Impl(pos,
-                    exprInLine(),
+                    exprInLine(), // block()?
                     hasType ? Impl.Kind.FieldInit
                             : Impl.Kind.FieldDef);
   }

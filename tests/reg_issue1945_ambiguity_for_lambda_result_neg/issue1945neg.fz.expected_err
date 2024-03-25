@@ -2,7 +2,7 @@
 --CURDIR--/issue1945neg.fz:52:9: error 1: Syntax error: expected semicolon ';', found keyword 'is'
     i32 is () -> 4718   # illegal, no LF allowed after -> in function result
 --------^
-While parsing: semicolon or flat line break, parse stack: semiOrFlatLF, exprs, block, implRout, implFldOrRout, routOrField, feature, expr, exprs, unit
+While parsing: semicolon or flat line break, parse stack: semiOrFlatLF, exprs, block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, unit
 
 
 --CURDIR--/issue1945neg.fz:39:3: error 2: Could not find called feature

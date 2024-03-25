@@ -546,10 +546,13 @@ public class Choices extends ANY implements ClassFileConstants
                   if (_fuir.clazzIsRef(tc))
                     {
                       if (field != -1 && jvm.fieldExists(field))
-                        {                                                       //          sub
-                          pos = Expr.aload(jvm.current_index(cl), _types.resultType(cl)) //  sub, cur
-                            .andThen(Expr.SWAP)                                 //          cur, sub
-                            .andThen(jvm.putfield(field));                      //          -
+                        {                                                                      // sub
+                          pos =
+                            (cl == _fuir.clazzUniverse()
+                              ? jvm.LOAD_UNIVERSE
+                              : Expr.aload(jvm.current_index(cl), _types.resultType(cl)))      // sub, cur
+                            .andThen(Expr.SWAP)                                                // cur, sub
+                            .andThen(jvm.putfield(field));                                     // -
                         }
                       else
                         {                                                       //          sub
@@ -598,8 +601,9 @@ public class Choices extends ANY implements ClassFileConstants
                           var rt = _types.resultType(_fuir.clazzResultClazz(field));
                           pos =                                                 // stack is sub, tag
                             Expr.POP                                            //          sub
-                            .andThen(Expr.aload(jvm.current_index(cl),          //          sub, cur
-                                                _types.resultType(cl)))
+                            .andThen(cl == _fuir.clazzUniverse()
+                              ? jvm.LOAD_UNIVERSE
+                              : Expr.aload(jvm.current_index(cl), _types.resultType(cl))) // sub, cur
                             .andThen(Expr.SWAP)                                 //          cur, sub
                             .andThen(Expr.checkcast(rt))                        //          cur, val
                             .andThen(jvm.putfield(field));                      //          -
@@ -650,8 +654,9 @@ public class Choices extends ANY implements ClassFileConstants
                           var rt = _types.resultType(rc);
                           pos =                                                     // stack is sub, tag
                             Expr.POP                                                //          sub
-                            .andThen(Expr.aload(jvm.current_index(cl),              //          sub, cur
-                                                _types.resultType(cl)))
+                            .andThen(cl == _fuir.clazzUniverse()
+                              ? jvm.LOAD_UNIVERSE
+                              : Expr.aload(jvm.current_index(cl), _types.resultType(cl))) // sub, cur
                             .andThen(Expr.SWAP)                                     //          cur, sub
                             .andThen(Expr.getfield(_names.javaClass(subjClazz),     //          cur, val
                                                    generalValueFieldName(subjClazz, tagNum),

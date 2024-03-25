@@ -103,7 +103,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   /**
    * Source code position range of this Expression. null if not known.
    */
-  private SourceRange _range;
+  protected SourceRange _range;
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -519,7 +519,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    *
    * @param outer the feature that contains this expression
    *
-   * @param t the expected type.
+   * @param expectedType the expected type.
    */
   Expr propagateExpectedTypeForPartial(Resolution res, AbstractFeature outer, AbstractType expectedType)
   {
@@ -556,8 +556,8 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
                                 outer);
         r.scheduleForResolution(res);
         res.resolveTypes();
-        result = new Block(pos, new List<>(assignToField(res, outer, r),
-                                                    new Call(pos, new Current(pos, outer), r).resolveTypes(res, outer)));
+        result = new Block(new List<>(assignToField(res, outer, r),
+                                      new Call(pos, new Current(pos, outer), r).resolveTypes(res, outer)));
       }
     return result;
   }
@@ -733,6 +733,36 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
           !frmlT.isAssignableFrom(t) &&
           frmlT.isAssignableFrom(t.asRef());
       }
+  }
+
+
+  /**
+   * Do automatic unwrapping of features inheriting `unwrap`
+   * if the expected type fits the unwrapped type.
+   *
+   * @param res the resolution instance
+   *
+   * @param outer the context where the unwrapping may take place
+   *
+   * @param expectedType the expected type
+   *
+   * @return the unwrapped expression
+   */
+  public Expr unwrap(Resolution res, AbstractFeature outer, AbstractType expectedType)
+  {
+    var t = type();
+    return  !expectedType.isAssignableFrom(t)
+      && expectedType.compareTo(Types.resolved.t_Any) != 0
+      && !t.isGenericArgument()
+      && t.featureOfType()
+          .inherits()
+          .stream()
+          .anyMatch(c ->
+            c.calledFeature().equals(Types.resolved.f_auto_unwrap)
+            && !c.actualTypeParameters().isEmpty()
+            && expectedType.isAssignableFrom(c.actualTypeParameters().get(0).applyTypePars(t)))
+      ? new ParsedCall(this, new ParsedName(pos(), "unwrap")).resolveTypes(res, outer)
+      : this;
   }
 
 

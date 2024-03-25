@@ -151,9 +151,9 @@ public class Clazzes extends ANY
   public static final OnDemandClazz ref_u64     = new OnDemandClazz(() -> Types.resolved.t_u64.asRef()      );
   public static final OnDemandClazz ref_f32     = new OnDemandClazz(() -> Types.resolved.t_f32.asRef()      );
   public static final OnDemandClazz ref_f64     = new OnDemandClazz(() -> Types.resolved.t_f64.asRef()      );
-  public static final OnDemandClazz any         = new OnDemandClazz(() -> Types.resolved.t_any              );
+  public static final OnDemandClazz Any         = new OnDemandClazz(() -> Types.resolved.t_Any              );
   public static final OnDemandClazz Const_String= new OnDemandClazz(() -> Types.resolved.t_Const_String     );
-  public static final OnDemandClazz String      = new OnDemandClazz(() -> Types.resolved.t_string           );
+  public static final OnDemandClazz String      = new OnDemandClazz(() -> Types.resolved.t_String           );
   public static final OnDemandClazz c_unit      = new OnDemandClazz(() -> Types.resolved.t_unit             );
   public static final OnDemandClazz error       = new OnDemandClazz(() -> Types.t_ERROR                     )
     {
@@ -171,6 +171,7 @@ public class Clazzes extends ANY
   public static Clazz fuzionSysArray_u8;         // result clazz of Const_String.internal_array
   public static Clazz fuzionSysArray_u8_data;    // field fuzion.sys.array<u8>.data
   public static Clazz fuzionSysArray_u8_length;  // field fuzion.sys.array<u8>.length
+  public static Clazz c_error;                   // clazz representing error-feature
 
 
   /**
@@ -248,7 +249,7 @@ public class Clazzes extends ANY
    *
    * @param actualType the type of the clazz, must be free from generics
    *
-   * @param clazz the runtime clazz of the outer feature of
+   * @param outer the runtime clazz of the outer feature of
    * actualType.featureOfType.
    *
    * @return the existing or newly created Clazz that represents actualType
@@ -379,7 +380,7 @@ public class Clazzes extends ANY
     var toLayout = new LinkedList<Clazz>();
 
     // make sure internally referenced clazzes do exist:
-    any.get();
+    Any.get();
     var c_universe = universe.get();
     c_universe.called(SourcePosition.builtIn);
     c_universe.instantiated(SourcePosition.builtIn);
@@ -400,8 +401,9 @@ public class Clazzes extends ANY
     fuzionSysPtr = fuzionSysArray_u8_data.resultClazz();
     var fuzion = universe.get().lookup(Types.resolved.f_fuzion, SourcePosition.builtIn);
     var fuzionJava = fuzion.lookup(Types.resolved.f_fuzion_java, SourcePosition.builtIn);
-    fuzionJavaObject = fuzionJava.lookup(Types.resolved.f_fuzion_java_object, SourcePosition.builtIn);
-    fuzionJavaObject_Ref = fuzionJavaObject.lookup(Types.resolved.f_fuzion_java_object_ref, SourcePosition.builtIn);
+    fuzionJavaObject = fuzionJava.lookup(Types.resolved.f_fuzion_Java_Object, SourcePosition.builtIn);
+    fuzionJavaObject_Ref = fuzionJavaObject.lookup(Types.resolved.f_fuzion_Java_Object_Ref, SourcePosition.builtIn);
+    c_error = universe.get().lookup(Types.resolved.f_error, SourcePosition.builtIn);
 
     while (!clazzesToBeVisited.isEmpty())
       {
@@ -558,19 +560,19 @@ public class Clazzes extends ANY
               {
                 var f = e.getKey();
                 String fn = (f.isField() ? "field " : "routine ") + f.qualifiedName();
-                System.out.println(""+e.getValue().size()+" classes for " + fn);
+                say(""+e.getValue().size()+" classes for " + fn);
                 if (_options_.verbose(5))
                   {
                     int i = 0;
                     for (var c : e.getValue() )
                       {
                         i++;
-                        System.out.println(""+i+"/"+e.getValue().size()+" classes for " + fn + ": " + c);
+                        say(""+i+"/"+e.getValue().size()+" classes for " + fn + ": " + c);
                       }
                   }
               }
           }
-        System.out.println("Found "+Types.num()+" types and "+Clazzes.num()+" clazzes (" +
+        say("Found "+Types.num()+" types and "+Clazzes.num()+" clazzes (" +
                            clazzesForFields + " for " + fields+ " fields, " +
                            (clazzes.size()-clazzesForFields) + " for " + routines + " routines).");
       }
@@ -736,7 +738,7 @@ public class Clazzes extends ANY
         if (outerClazz.hasActualClazzes(c, outer))
           {
             // NYI: #2412: Check why this is done repeatedly and avoid redundant work!
-            //  System.out.println("REDUNDANT save for "+innerClazz+" to "+outerClazz+" at "+c.pos().show());
+            //  say("REDUNDANT save for "+innerClazz+" to "+outerClazz+" at "+c.pos().show());
           }
         else
           {
@@ -1188,7 +1190,7 @@ public class Clazzes extends ANY
     ref_u64.clear();
     ref_f32.clear();
     ref_f64.clear();
-    any.clear();
+    Any.clear();
     Const_String.clear();
     c_unit.clear();
     error.clear();
@@ -1198,6 +1200,7 @@ public class Clazzes extends ANY
     fuzionSysArray_u8_length = null;
     fuzionJavaObject = null;
     fuzionJavaObject_Ref = null;
+    c_error = null;
     closed = false;
     _whenCalledDynamically_.clear();
     _whenCalled_.clear();

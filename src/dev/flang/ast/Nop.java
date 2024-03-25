@@ -34,17 +34,11 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Nop extends Expr
+public class Nop extends ExprWithPos
 {
 
 
   /*----------------------------  variables  ----------------------------*/
-
-
-  /**
-   * The sourcecode position of this expression, used for error messages.
-   */
-  public final SourcePosition _pos;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -55,20 +49,11 @@ public class Nop extends Expr
    */
   public Nop(SourcePosition pos)
   {
-    _pos = pos;
+    super(pos);
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * The sourcecode position of this expression, used for error messages.
-   */
-  public SourcePosition pos()
-  {
-    return _pos;
-  }
 
 
   /**

@@ -92,7 +92,7 @@ public class MapToN<A, B>
   /**
    * Get the set of successors of a, return empty set if there are none.
    *
-   * @param an instance of A, not null.
+   * @param a instance of A, not null.
    */
   public Set<B> successors(A a)
   {

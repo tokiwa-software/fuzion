@@ -651,6 +651,7 @@ public class Intrinsics extends ANY
 
     var path = Runtime.utf8ByteArrayDataToString((byte[]) s);
     long[] open_results = (long[]) res;
+    open_results[1] = 0;
     try
       {
         switch (mode)
@@ -670,7 +671,7 @@ public class Intrinsics extends ANY
             break;
           default:
             open_results[1] = -1;
-            System.err.println("*** Unsupported open flag. Please use: 0 for READ, 1 for WRITE, 2 for APPEND. ***");
+            say_err("*** Unsupported open flag. Please use: 0 for READ, 1 for WRITE, 2 for APPEND. ***");
             System.exit(1);
           }
       }

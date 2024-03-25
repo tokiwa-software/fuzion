@@ -54,8 +54,6 @@ public class Cond
    * Constructor
    *
    * @param c
-   *
-   * @param t
    */
   public Cond(Expr c)
   {
@@ -69,13 +67,13 @@ public class Cond
   /**
    * Wrap Expr instances from given list into new `Cond` instances
    *
-   * @param l a list of `Expr` to be used as conditions
+   * @param b a list of `Expr` to be used as conditions
    *
    * @return a new list with each `Expr` form `l` wrapped into a `Cond`.
    */
-  public static List<Cond> from(List<Expr> l)
+  public static List<Cond> from(Block b)
   {
-    return l.map2(e->new Cond(e));
+    return b._expressions.map2(e->new Cond(e));
   }
 
 

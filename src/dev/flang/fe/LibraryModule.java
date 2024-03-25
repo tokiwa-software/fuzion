@@ -53,6 +53,7 @@ import dev.flang.util.HexDump;
 import dev.flang.util.List;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.Version;
 
 
 /**
@@ -207,7 +208,7 @@ public class LibraryModule extends Module
     if (DUMP ||
         dm != null && dm.contains(name()))
       {
-        System.out.println(dump());
+        say(dump());
       }
   }
 
@@ -2332,6 +2333,18 @@ SourceFile
   public String toString()
   {
     return "LibraryModule for '" + name() + "'";
+  }
+
+
+  /**
+   * The path of the sources of this library module.
+   */
+  public String srcPath()
+  {
+    // NYI: CLEANUP: library-module should/could know its source dirs.
+    return Path.of(Version.REPO_PATH)
+      .resolve(name().equals("base") ? "lib" : "modules/" + name() + "/src")
+      .toString();
   }
 
 }

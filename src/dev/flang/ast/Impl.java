@@ -431,14 +431,13 @@ public class Impl extends ANY
     if (needsImplicitAssignmentToResult(outer))
       {
         var resultField = outer.resultField();
-        var endPos = (this._expr instanceof Block) ? ((Block) this._expr)._closingBracePos : this._expr.pos();
         Assign ass = new Assign(res,
-                                endPos,
+                                this._expr.pos(),
                                 resultField,
                                 this._expr,
                                 outer);
         ass._value = this._expr.box(ass._assignedField.resultType());  // NYI: move to constructor of Assign?
-        this._expr = new Block (new List<Expr>(ass));
+        this._expr = ass;
       }
   }
 
@@ -447,7 +446,7 @@ public class Impl extends ANY
    * For an actual value passed to an argument field with this Impl, record the
    * actual and its outer feature for type inference
    *
-   * @param actl an actual argument expression
+   * @param call an actual argument expression
    *
    * @param outer the feature containing the actl expression
    */
