@@ -52,9 +52,15 @@ public class Interpreter extends ANY
   public Interpreter(FuzionOptions options, FUIR fuir)
   {
     this._options_ = options;
-    this._fuir = fuir;
-    var processor = new Excecutor(fuir, _options_);
-    _ai = new AbstractInterpreter<Value, Object>(fuir, processor);
+    this._fuir = new FUIR(fuir)
+      {
+        // NYI: BUG: fuir should be thread safe #2760
+        public synchronized int[] matchCaseTags(int cl, int c, int ix, int cix) {
+          return super.matchCaseTags(cl, c, ix, cix);
+        };
+      };
+    var processor = new Excecutor(_fuir, _options_);
+    _ai = new AbstractInterpreter<Value, Object>(_fuir, processor);
     Intrinsics.ENABLE_UNSAFE_INTRINSICS = options.enableUnsafeIntrinsics();  // NYI: Add to Fuzion IR or BE Config
   }
 
