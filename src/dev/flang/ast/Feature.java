@@ -106,7 +106,7 @@ public class Feature extends AbstractFeature
     return
       // NYI anonymous feature should have correct visibility set.
       isAnonymousInnerFeature()
-      ? outer().visibility()
+      ? (state().atLeast(State.FINDING_DECLARATIONS) ? outer().visibility() : Visi.UNSPECIFIED)
       : _visibility == Visi.UNSPECIFIED
       ? Visi.PRIV
       : _visibility;
