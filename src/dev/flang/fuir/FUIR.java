@@ -1968,7 +1968,6 @@ hw25 is
        codeAt(c, ix) == ExprKind.Match,
        0 <= cix && cix <= matchCaseCount(c, ix));
 
-    var cc = clazz(cl);
     var s = getExpr(c , ix);
     int[] result;
     if (s instanceof If)

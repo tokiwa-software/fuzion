@@ -90,8 +90,8 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
     safety: other != u128.zero
   => mod other
 
-  # private division and remainder with crash in case of div-by-zero
-  private div (other u128) u128 =>
+  # division and remainder with crash in case of div-by-zero
+  div (other u128) u128 =>
     if thiz < other
       u128.zero
     else
@@ -108,7 +108,7 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
           debug: res *° other + rem = thiz
         res
 
-  private mod (other u128) u128 =>
+  mod (other u128) u128 =>
     thiz - (div other) *° other
 
   # bitwise and, or and xor operations

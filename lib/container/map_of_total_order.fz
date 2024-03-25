@@ -28,7 +28,7 @@ private:public map_of_total_order (
   K type : property.orderable, V type,
   # the handler this effect uses to create a Map
   public new (array K, array V) -> Map K V,
-  private em effect_mode.val,
+  em effect_mode.val,
   _ unit
   ) : effect em
 is

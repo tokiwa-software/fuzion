@@ -58,7 +58,7 @@ is
   #
   # NYI: uses type parameter T only to simplify C backend
   #
-  private abortable(T type : Function unit, f T) unit => intrinsic
+  abortable(T type : Function unit, f T) unit => intrinsic
 
 
   # replace effect in the current context by this and abort current execution
@@ -72,7 +72,7 @@ is
   #
   # NYI: precondition does not seem to work for an intrinsic yet, causes test failure e.g., in tests/local_mutate
   # so we use cannot make `abort` intrinsic.
-  private abort0 void
+  abort0 void
   =>
     intrinsic
 
@@ -125,7 +125,7 @@ is
   # in case static analysis fails to verify that effect `E` is
   # actually installed.
   #
-  private type.unsafe_get(E type) =>
+  type.unsafe_get(E type) =>
     E.env
 
 
@@ -139,7 +139,7 @@ is
   #
   # NYI: CLEANUP: #2728 Needed since abortable supports only unit result
   #
-  private Effect_Call(
+  Effect_Call(
     # result type of the call
     R type,
 

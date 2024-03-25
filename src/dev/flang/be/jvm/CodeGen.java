@@ -294,7 +294,6 @@ class CodeGen
       }
     else
       {
-        var cf = _types.classFile(cl);
         var t = e.type();
         var l = _jvm.allocLocal(cl, pre, t.stackSlots());
         return new Pair<>(t.load(l),
@@ -329,7 +328,6 @@ class CodeGen
     if (p == null)
       {
         var ccP = _fuir.accessedPreconditionClazz(cl, c, i);
-        var cc0 = _fuir.accessedClazz            (cl, c, i);
         var s = Expr.UNIT;
         var res = Expr.UNIT;
         if (ccP != -1)   // call precondition:
@@ -441,7 +439,7 @@ class CodeGen
         code = value;
         value = _fuir.clazzIsVoidType(rt) ? null : Expr.UNIT;
       }
-    return new Pair(value, code);
+    return new Pair<>(value, code);
   }
 
 
@@ -696,7 +694,7 @@ class CodeGen
     Pair<Expr, Expr> res;
     var oc = _fuir.clazzOuterClazz(cc);
     var rt = preCalled ? _fuir.clazz(FUIR.SpecialClazzes.c_unit) : _fuir.clazzResultClazz(cc);
-    var cf = _types.classFile(cl);
+
     switch (preCalled ? FUIR.FeatureKind.Routine : _fuir.clazzKind(cc))
       {
       case Abstract :
@@ -741,7 +739,7 @@ class CodeGen
                   // perform tail call by goto startLabel
                   code = code.andThen(Expr.goBacktoLabel(_jvm.startLabel(cl)));
 
-                  res = new Pair(null,  // result is void, we do not return from this path.
+                  res = new Pair<>(null,  // result is void, we do not return from this path.
                                  code);
                 }
               else
@@ -758,7 +756,7 @@ class CodeGen
             }
           else
             {
-              res = new Pair(Expr.UNIT, Expr.UNIT);
+              res = new Pair<>(Expr.UNIT, Expr.UNIT);
             }
           break;
         }
@@ -845,8 +843,6 @@ class CodeGen
     if (PRECONDITIONS) require
       (_fuir.clazzResultClazz(_fuir.clazzOuterRef(cl)) == _fuir.clazzOuterClazz(cl));
 
-    var cf = _types.classFile(cl);
-
     return new Pair<>(_types.javaType(_fuir.clazzOuterClazz(cl)).load(0),
                       Expr.UNIT);
   }
@@ -868,7 +864,6 @@ class CodeGen
       (0 <= i,
        i < _fuir.clazzArgCount(cl));
 
-    var cf = _types.classFile(cl);
     var l = _jvm.argSlot(cl, i);
     var t = _fuir.clazzArgClazz(cl, i);
     var jt = _types.resultType(t);
@@ -899,7 +894,7 @@ class CodeGen
     var l = _jvm.argSlot(cl, i);
     var t = _fuir.clazzArgClazz(cl, i);
     var jt = _types.resultType(t);
-    var cf = _types.classFile(cl);
+
     return val.andThen(jt.store(l));
   }
 

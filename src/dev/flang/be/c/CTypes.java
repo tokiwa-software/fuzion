@@ -29,7 +29,6 @@ package dev.flang.be.c;
 import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
-import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.util.ANY;
 import dev.flang.util.List;
 

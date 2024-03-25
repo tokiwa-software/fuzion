@@ -26,7 +26,7 @@
 # T is used to distinguish several open files
 #
 module:public open(public T type,
-                   private fd i64,
+                   fd i64,
                    public file_name String) : simple_effect is
 
   # writes the content of an array of bytes to a file opened as fd
@@ -105,7 +105,7 @@ module:public open(public T type,
   #
   module:public mapped_buffer
     (# internal pointer to the mapped memory
-     private memory fuzion.sys.Pointer,
+     memory fuzion.sys.Pointer,
 
      # the length of this buffer
      public length i64

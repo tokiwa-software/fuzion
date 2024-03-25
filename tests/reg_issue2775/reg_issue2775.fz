@@ -17,26 +17,14 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature fuzion.sys.err
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test
 #
 # -----------------------------------------------------------------------
 
-# fuzion.sys.err -- unit type grouping routines to print to stderr
-#
-module err: character_encodings is
-
-  module print(s Any) =>
-    write s.as_string.utf8.as_array
-
-  module println(s Any) =>
-    write (s.as_string.utf8 ++ [ascii.lf]).as_array
-
-  module println =>
-    write [ascii.lf]
-
-  stderr i64 => intrinsic
-
-  write(arr array u8) =>
-    _ := fuzion.sys.fileio.write stderr arr
+a(v void) =>
+b(a Any) =>
+v choice unit := unit
+a (match (v) unit => exit)
+a (match (v) unit => 4711)
+b (match (v) unit => exit)
+b (match (v) unit => 4711)

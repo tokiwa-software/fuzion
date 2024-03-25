@@ -65,7 +65,7 @@ module fileio is
 
   # retrieves the file size in bytes and returns an outcome of error in case of an error
   #
-  private get_file_size(
+  get_file_size(
                         # the (relative or absolute) file name, using platform specific path separators
                         path String) outcome i64 =>
     md := fuzion.sys.internal_array_init i64 4
@@ -88,7 +88,7 @@ module fileio is
   # intrinsic to write bytes (internal array data) in a file using the file descriptor
   # returns 0 in case of success, -1 in case of failure
   #
-  private write(
+  write(
                 # the file descriptor
                 fd i64,
                 # the internal array data representing the content bytes to insert in file
@@ -113,7 +113,7 @@ module fileio is
   # intrinsic that deletes the file/dir represented by the path returning TRUE in case of success
   # and FALSE in case of failure
   #
-  private delete(
+  delete(
                  # the internal array data representing the file/dir path in bytes
                  path fuzion.sys.Pointer,
                  # dummy parameter to avoid duplicate feature name
@@ -138,7 +138,7 @@ module fileio is
 
   # intrinsic that returns TRUE in case the move was successful and FALSE in case not
   #
-  private move(
+  move(
                # the internal array data representing the old file/dir path in bytes
                old_path fuzion.sys.Pointer,
                # the internal array data representing the new file/dir path in bytes
@@ -161,7 +161,7 @@ module fileio is
 
   # intrinsic that returns TRUE in case of success or FALSE in case of failure during dir creation
   #
-  private create_dir(
+  create_dir(
                      # the internal array data representing the dir path in bytes
                      path fuzion.sys.Pointer,
                      # dummy parameter to enable overloading
@@ -210,7 +210,7 @@ module fileio is
   # intrinsic that fills a Fuzion object with the file descriptor and the error number from C back-end/ -1 in the interpreter
   # after opening the source represented by the path parameter
   #
-  private open(
+  open(
                # a Fuzion Pointer represention the path for the source to be opened
                path fuzion.sys.Pointer,
                # open_results[file descriptor, error number] as a Fuzion Pointer
@@ -235,7 +235,7 @@ module fileio is
   # returns an i8 to represent the result of the operation
   # 0 in case no errors occurred and the error number in case the operation failed in the C back-end/ -1 in the interpreter
   #
-  private close(
+  close(
                 # file descriptor
                 fd i64,
                 # dummy variable to enable overload
@@ -263,7 +263,7 @@ module fileio is
   # and fills a Fuzion object with the new offset
   # and the error number from the C back-end/ -1 in the interpreter
   #
-  private seek(
+  seek(
                # file descriptor
                fd i64,
                # the offset to seek from the beginning of this file
@@ -289,7 +289,7 @@ module fileio is
   # intrinsic that fills a Fuzion object with the current file stream position
   # and the error number from C back-end/ -1 in the interpreter
   #
-  private file_position(
+  file_position(
                         # file descriptor
                         fd i64,
                         # Array data [new file position, error number]
