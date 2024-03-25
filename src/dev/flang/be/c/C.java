@@ -816,21 +816,30 @@ public class C extends ANY
           "-I" + JAVA_HOME + "/include/linux",
           "-I" + JAVA_HOME + "/include/win32",
           "-I" + JAVA_HOME + "/include/darwin",
-          "-L" + JAVA_HOME + "/lib/server",
-          "-ljvm");
+          "-L" + JAVA_HOME + "/lib/server");
+
+       if (!isWindows())
+          {
+            command.add("-ljvm");
+          }
       }
 
     if (isWindows())
       {
         command.addAll("-lMswsock", "-lAdvApi32", "-lWs2_32");
 
-        if(_options._useBoehmGC)
+        if (_options._useBoehmGC)
           {
             command.addAll(
               System.getenv("FUZION_CLANG_INSTALLED_DIR") == null
                 ? "C:\\tools\\msys64\\ucrt64\\bin\\libgc-1.dll"
                 : System.getenv("FUZION_CLANG_INSTALLED_DIR") + "\\libgc-1.dll"
             );
+          }
+
+        if (linkJVM())
+          {
+            command.addAll(JAVA_HOME + "\\bin\\server\\jvm.dll");
           }
       }
     return command;
