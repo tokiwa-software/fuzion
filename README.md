@@ -18,7 +18,7 @@ Scorecard](https://api.securityscorecards.dev/projects/github.com/tokiwa-softwar
    * [Examples](#examples)
    * [Documentation](#documentation)
    * [Clone](#clone)
-   * [Requirements](#requirements)
+   * [Required packages](#required-packages)
      * [Linux](#linux)
      * [MacOS](#macos)
      * [Windows](#windows)
@@ -146,7 +146,7 @@ Check [fuzion-lang.dev](https://fuzion-lang.dev) for language and implementation
 
     git clone https://github.com/tokiwa-software/fuzion
 
-## Requirements
+## Required packages
 
 ### Linux
 
