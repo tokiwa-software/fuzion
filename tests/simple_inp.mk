@@ -42,9 +42,6 @@ all: jvm c int
 int:
 	cat $(STDIN) | ../check_simple_example_int.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
-int2:
-	cat $(STDIN) | ../check_simple_example_int2.sh "$(FUZION_RUN)" $(FILE) || exit 1
-
 c:
 	cat $(STDIN) | ../check_simple_example_c.sh "$(FUZION_RUN)" $(FILE) || exit 1
 

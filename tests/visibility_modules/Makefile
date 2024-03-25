@@ -41,9 +41,6 @@ CHECK = && echo $(OK) || (echo $(FAIL); exit 1)
 int: clean modules/mod.fum
 	$(ENV) ../check_simple_example_int.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
-int2: clean modules/mod.fum
-	$(ENV) ../check_simple_example_int2.sh "$(FUZION_RUN)" $(FILE) || exit 1
-
 jvm: clean modules/mod.fum
 	$(ENV) ../check_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE) || exit 1
 

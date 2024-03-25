@@ -36,9 +36,6 @@ all: jvm c int
 int:
 	$(FUZION) -no-backend $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
 
-int2:
-	$(FUZION) -no-backend $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
-
 jvm:
 	$(FUZION) -no-backend $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
 

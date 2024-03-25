@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
+import dev.flang.air.Clazz;
 import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Types;        // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.util.Errors;
@@ -83,7 +84,7 @@ public class ArrayData extends Value
     var l = length();
     if (x < 0 || x >= l)
       {
-        Errors.fatal("array index out of bounds: " + x + " not in 0.."+l+"\n"+Interpreter.callStack());
+        Errors.fatal("array index out of bounds: " + x + " not in 0.."+l+"\n" /* NYI  callStack() */);
       }
   }
 
@@ -171,6 +172,28 @@ public class ArrayData extends Value
     else if (elementType.compareTo(Types.resolved.t_f64 ) == 0 && _array instanceof double []) { return new f64Value (((double [])_array)[x]       ); }
     else if (elementType.compareTo(Types.resolved.t_bool) == 0 && _array instanceof boolean[]) { return new boolValue(((boolean[])_array)[x]       ); }
     else                                                        { return              ((Value   [])_array)[x]        ; }
+  }
+
+
+  /**
+   * Allocate a new array
+   *
+   * @param sz size of the array
+   * @param elementType the elements type
+   * @return
+   */
+  public static ArrayData alloc(int sz, AbstractType elementType)
+  {
+    if      (elementType.compareTo(Types.resolved.t_i8  ) == 0) { return new ArrayData(new byte   [sz]); }
+    else if (elementType.compareTo(Types.resolved.t_i16 ) == 0) { return new ArrayData(new short  [sz]); }
+    else if (elementType.compareTo(Types.resolved.t_i32 ) == 0) { return new ArrayData(new int    [sz]); }
+    else if (elementType.compareTo(Types.resolved.t_i64 ) == 0) { return new ArrayData(new long   [sz]); }
+    else if (elementType.compareTo(Types.resolved.t_u8  ) == 0) { return new ArrayData(new byte   [sz]); }
+    else if (elementType.compareTo(Types.resolved.t_u16 ) == 0) { return new ArrayData(new char   [sz]); }
+    else if (elementType.compareTo(Types.resolved.t_u32 ) == 0) { return new ArrayData(new int    [sz]); }
+    else if (elementType.compareTo(Types.resolved.t_u64 ) == 0) { return new ArrayData(new long   [sz]); }
+    else if (elementType.compareTo(Types.resolved.t_bool) == 0) { return new ArrayData(new boolean[sz]); }
+    else                                                        { return new ArrayData(new Value  [sz]); }
   }
 
 

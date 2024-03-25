@@ -29,9 +29,6 @@ all: jvm c int
 int: mod
 	$(FUZION) -modules=mod -moduleDirs=mod -interpreter $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
 
-int2: mod
-	$(FUZION) -modules=mod -moduleDirs=mod -interpreter2 $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
-
 jvm: mod
 	$(FUZION) -modules=mod -moduleDirs=mod -jvm $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
 

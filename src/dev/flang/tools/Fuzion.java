@@ -46,7 +46,7 @@ import dev.flang.be.effects.Effects;
 
 import dev.flang.be.interpreter.Interpreter;
 
-import dev.flang.be.interpreter2.Interpreter2;
+import dev.flang.be.interpreter.Interpreter;
 
 import dev.flang.be.jvm.JVM;
 import dev.flang.be.jvm.JVMOptions;
@@ -153,21 +153,6 @@ public class Fuzion extends Tool
       void process(FuzionOptions options, FUIR fuir)
       {
         new C(new COptions(options, _binaryName_, _useBoehmGC_, _xdfa_, _cCompiler_, _cFlags_, _keepGeneratedCode_), fuir).compile();
-      }
-    },
-
-    interpreter2          ("-interpreter2")
-    {
-      boolean takesApplicationArgs()
-      {
-        return true;
-      }
-      void process(FuzionOptions options, FUIR fuir)
-      {
-        // run DFA, currently only done to find missing effects, see tests/reg_issue2273
-        var new_fuir = _xdfa_ ? new DFA(options, fuir).new_fuir() : fuir;
-
-        new Interpreter2(options, fuir).run();
       }
     },
 

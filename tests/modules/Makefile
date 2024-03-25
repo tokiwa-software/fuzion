@@ -36,8 +36,6 @@ all: sources_only a ab b clean
 
 int: all
 
-int2: a_int2 ab_int2 b_int2
-
 c: a_c ab_c b_c
 
 jvm: a_jvm ab_jvm b_jvm
@@ -59,10 +57,6 @@ a: modules/a.fum
 a_jvm: modules/a.fum
 	$(FZ) -jvm -sourceDirs=./src_b,./src -modules=a   -moduleDirs=modules test_modules $(CHECK)
 
-# run example using a.fum and sources from src_b and src
-a_int2: modules/a.fum
-	$(FZ) -interpreter2 -sourceDirs=./src_b,./src -modules=a   -moduleDirs=modules test_modules $(CHECK)
-
 # compile to C code and run example using a.fum and sources from src_b and src
 a_c: modules/a.fum
 	($(FZ) -sourceDirs=./src_b,./src -modules=a   -moduleDirs=modules -c test_modules -o=testbin && ./testbin) $(CHECK)
@@ -80,10 +74,6 @@ ab: modules/a.fum modules/b.fum
 ab_jvm: modules/a.fum modules/b.fum
 	$(FZ) -jvm -sourceDirs=./src         -modules=a,b -moduleDirs=modules test_modules $(CHECK)
 
-# run example using a.fum and b.fum and sources src
-ab_int2: modules/a.fum modules/b.fum
-	$(FZ) -interpreter2 -sourceDirs=./src         -modules=a,b -moduleDirs=modules test_modules $(CHECK)
-
 # compile to C code and run example using a.fum and b.fum and sources src
 ab_c: modules/a.fum modules/b.fum
 	($(FZ) -sourceDirs=./src         -modules=a,b -moduleDirs=modules -c test_modules -o=testbin && ./testbin) $(CHECK)
@@ -97,11 +87,6 @@ b: modules/b.fum
 # a.fum is not added automatically, so this causes errors, see #484
 b_jvm: modules/b.fum
 	make -f b.make jvm
-
-# run example using b.fum and sources src.
-# a.fum is not added automatically, so this causes errors, see #484
-b_int2: modules/b.fum
-	make -f b.make int2
 
 # compile to C code and run example using b.fum and sources src.
 # a.fum is not added automatically, so this causes errors, see #484

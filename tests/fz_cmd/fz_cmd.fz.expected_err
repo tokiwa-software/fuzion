@@ -1,7 +1,7 @@
 
 error 1: missing main feature name in command line args
 Usage: ../../bin/fz [-h|--help|-version]  --or--
-       ../../bin/fz [-c|-classes|-dfa|-effects|-interpreter|-interpreter2|-jar|-java|-jvm|-llvm|-no-backend|-saveLib=<file>] [-h|--help|-version] [<backend specific options>]  --or--
+       ../../bin/fz [-c|-classes|-dfa|-effects|-interpreter|-jar|-java|-jvm|-llvm|-no-backend|-saveLib=<file>] [-h|--help|-version] [<backend specific options>]  --or--
        ../../bin/fz -pretty [-noANSI] [-verbose[=<n>]]  ({<file>} | - | -e <code> | -execute <code>)  --or--
        ../../bin/fz -latex [-noANSI] [-verbose[=<n>]]   --or--
        ../../bin/fz -acemode [-noANSI] [-verbose[=<n>]]   --or--
