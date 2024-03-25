@@ -1391,8 +1391,14 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   {
     return
       (this != Types.f_ERROR) &&
-      // !isAbstract() &&      // NYI: check why abstract requires outer ref
-      // !isIntrinsic() &&     // outer is require for backend code generator
+
+      // tricky: abstract features may have contracts
+      // that use outer references.
+      // !isAbstract() &&
+
+      // outer is require for backend code generator
+      // !isIntrinsic() &&
+
       !isField() &&
       !isChoice() &&
       !isUniverse() &&
