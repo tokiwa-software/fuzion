@@ -73,9 +73,8 @@ module:public open(public T type,
   pre offset % 4096 = 0 # NYI get real page size instead of 4096.
   =>
 
-    arr := fuzion.sys.internal_array_init i32 1
-    mapped_memory := fuzion.sys.fileio.mmap fd offset size arr.data
-    res := arr.as_array
+    res := fuzion.sys.internal_array_init i32 1
+    mapped_memory := fuzion.sys.fileio.mmap fd offset size res.data
 
     if res[0] = -1
       error "mmap failed"

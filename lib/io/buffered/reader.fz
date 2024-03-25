@@ -244,8 +244,7 @@ public read_fully array u8 ! reader =>
 # any trailing carriage returns (ASCII 13) from the resulting strings.
 #
 public read_lines array String ! reader =>
-  (String.from_bytes read_fully).split "\n"
-                                     .map s->
-                                       s.ends_with "\r" ? TRUE  => s.substring 0 s.byte_length-1
-                                                        | FALSE => s
-                                     .as_array
+  (String.from_bytes read_fully)
+    .split "\n"
+    .map (s -> if s.ends_with "\r" then s.substring 0 s.byte_length-1 else s)
+    .as_array

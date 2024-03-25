@@ -39,9 +39,8 @@ public now (p () -> time.date_time) : simple_effect is
   # the system is giving us.
   #
   type.default_now ()->time.date_time => () ->
-    arr := fuzion.sys.internal_array_init i32 6
-    fuzion.std.date_time arr.data
-    a := arr.as_array
+    a := fuzion.sys.internal_array_init i32 6
+    fuzion.std.date_time a.data
     time.date_time a[0] a[1] a[2] a[3] a[4] a[5]
 
 

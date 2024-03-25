@@ -651,6 +651,7 @@ public class Intrinsics extends ANY
 
     var path = Runtime.utf8ByteArrayDataToString((byte[]) s);
     long[] open_results = (long[]) res;
+    open_results[1] = 0;
     try
       {
         switch (mode)
