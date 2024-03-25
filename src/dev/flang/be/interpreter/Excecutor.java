@@ -259,7 +259,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
         if (resf != -1)
           {
             var rfc = _fuir.clazzForInterpreter(resf);
-            if (!AbstractInterpreter.clazzHasUniqueValue(_fuir, rfc.resultClazz()._idInFUIR))
+            if (!AbstractInterpreter.clazzHasUnitValue(_fuir, rfc.resultClazz()._idInFUIR))
               {
                 rres = Interpreter.getField(rfc.feature(), rfc._select, _fuir.clazzForInterpreter(cc), cur, false);
               }
@@ -267,12 +267,12 @@ public class Excecutor extends ProcessStatement<Value, Object>
         yield pair(rres);
       case Field :
         var fc = _fuir.clazzForInterpreter(cc);
-        var fres = AbstractInterpreter.clazzHasUniqueValue(_fuir, rt)
+        var fres = AbstractInterpreter.clazzHasUnitValue(_fuir, rt)
           ? pair(unitValue())
           : pair(Interpreter.getField(fc.feature(), fc._select, _fuir.clazzForInterpreter(tt), tt == _fuir.clazzUniverse() ? _universe : tvalue, false));
 
         if (CHECKS)
-          check(fres != null, AbstractInterpreter.clazzHasUniqueValue(_fuir, rt) || fres.v0() != unitValue());
+          check(fres != null, AbstractInterpreter.clazzHasUnitValue(_fuir, rt) || fres.v0() != unitValue());
 
         yield fres;
       case Intrinsic :

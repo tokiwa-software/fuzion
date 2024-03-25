@@ -299,7 +299,7 @@ public class DFA extends ANY
           var cc = ccs[cci+1];
           tvalue.value().forAll(t -> {
               check
-                (t != Value.UNIT || AbstractInterpreter.clazzHasUniqueValue(_fuir, tt));
+                (t != Value.UNIT || AbstractInterpreter.clazzHasUnitValue(_fuir, tt));
               if (t == Value.UNIT ||
                   t._clazz == tt ||
                   t != Value.UNDEFINED && _fuir.clazzAsValue(t._clazz) == tt)
