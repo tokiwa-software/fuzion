@@ -1,0 +1,10 @@
+
+error 1: CONTRACT FAILED: pre-condition on call to 'i32.infix +'
+Call stack:
+precondition of 1i32__1infix_plus
+i32_INTERN_type_i32__sum__2infix__U2219_
+i32_INTERN_type_i32__sum__2op
+list_i32__2fold
+  ... repeated 1018 times ...
+
+*** fatal errors encountered, stopping.
