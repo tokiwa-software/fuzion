@@ -40,8 +40,10 @@ import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.AbstractInterpreter.ProcessStatement;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
+import dev.flang.util.SourcePosition;
 
 
 /**
@@ -543,7 +545,9 @@ public class Excecutor extends ProcessStatement<Value, Object>
   {
     if (!cc.boolValue())
       {
-        Errors.fatal("CONTRACT FAILED: " + ck + " on call to '" + _fuir.clazzAsString(cl) + "'");
+        Errors.runTime(pos(),
+                       "Precondition does not hold",
+                       "For call to " + _fuir.clazzAsStringNew(cl) + "\n" + callStack());
       }
     return null;
   }
@@ -565,9 +569,99 @@ public class Excecutor extends ProcessStatement<Value, Object>
    */
   Value callOnInstance(int cc, Instance cur, Value outer, List<Value> args, boolean pre)
   {
+    FuzionThread.current()._callStackFrames.push(_fuir.clazzForInterpreter(cc));
+    var pos = this.pos();
+    FuzionThread.current()._callStack.push(new HasSourcePosition() {
+      @Override
+      public SourcePosition pos()
+      {
+        return pos;
+      }
+    });
+
     new AbstractInterpreter<>(_fuir, new Excecutor(cur, outer, args))
       .process(cc, pre);
+
+    FuzionThread.current()._callStack.pop();
+    FuzionThread.current()._callStackFrames.pop();
+
     return null;
+  }
+
+
+  /**
+   * Helper for callStack() to show one single frame
+   *
+   * @param frame the clazz of the entry to show
+   *
+   * @param call the call of the entry to show
+   */
+  private static void showFrame(StringBuilder sb, Clazz frame, HasSourcePosition call)
+  {
+    if (frame != null)
+      {
+        sb.append(frame).append(": ");
+      }
+    sb.append(call.pos().show()).append("\n");
+  }
+
+
+  /**
+   * Helper for callStack() to show a repeated frame
+   *
+   * @param sb used to append the output
+   *
+   * @param repeat how often was the previous entry repeated? >= 0 where 0 means
+   * it was not repeated, just appeared once, 1 means it was repeated once, so
+   * appeared twice, etc.
+   *
+   * @param frame the clazz of the previous entry
+   *
+   * @param call the call of the previous entry
+   */
+  private static void showRepeat(StringBuilder sb, int repeat, Clazz frame, HasSourcePosition call)
+  {
+    if (repeat > 1)
+      {
+        sb.append(Errors.repeated(repeat)).append("\n\n");
+      }
+    else if (repeat > 0)
+      {
+        showFrame(sb, frame, call);
+      }
+  }
+
+
+  /**
+   * Current call stack as a string for debugging output.
+   */
+  public static String callStack()
+  {
+    StringBuilder sb = new StringBuilder("Call stack:\n");
+    Clazz lastFrame = null;
+    HasSourcePosition lastCall = null;
+    int repeat = 0;
+    var s = FuzionThread.current()._callStack;
+    var sf = FuzionThread.current()._callStackFrames;
+    for (var i = s.size()-1; i >= 0; i--)
+      {
+        Clazz frame = i<sf.size() ? sf.get(i) : null;
+        var call = s.get(i);
+        if (frame == lastFrame && call == lastCall)
+          {
+            repeat++;
+          }
+        else
+          {
+            showRepeat(sb, repeat, lastFrame, lastCall);
+            repeat = 0;
+            showFrame(sb, frame, call);
+            lastFrame = frame;
+            lastCall = call;
+          }
+      }
+    showRepeat(sb, repeat, lastFrame, lastCall);
+    return sb.toString();
   }
 
 
