@@ -183,7 +183,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
         "concur.atomic.compare_and_swap0",
         (jvm, cl, pre, cc, tvalue, args) ->
         {
-          var cf = jvm._types.classFile(cl);
           var ac = jvm._fuir.clazzOuterClazz(cc);
           var v = jvm._fuir.lookupAtomicValue(ac);
           var rc  = jvm._fuir.clazzResultClazz(v);
@@ -352,7 +351,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
         {
           var jref = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc,0));
           var et = jvm._types.javaType(jvm._fuir.clazzActualGeneric(cc, 0)); // possibly resultType
-          var rt = jvm._types.resultType(cc);
           var res = args.get(0)
             .andThen(jvm.getfield(jref))
             .andThen(Expr.checkcast(et.array()))
@@ -643,7 +641,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
         {
           var in = jvm._fuir.clazzOriginalName(cc);
           var at = jvm._fuir.clazzOuterClazz(cc);       // array type
-          var et = jvm._fuir.clazzActualGeneric(at, 0); // element type
           var val = Expr.UNIT;
           var code = Expr.UNIT;
           if (CHECKS)

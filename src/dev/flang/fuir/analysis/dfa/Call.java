@@ -37,7 +37,6 @@ import dev.flang.util.Errors;
 import static dev.flang.util.FuzionConstants.EFFECT_ABORTABLE_NAME;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
-import dev.flang.util.Terminal;
 
 
 /**

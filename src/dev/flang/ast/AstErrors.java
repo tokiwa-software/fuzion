@@ -38,7 +38,6 @@ import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
-import dev.flang.util.Terminal;
 
 
 /**

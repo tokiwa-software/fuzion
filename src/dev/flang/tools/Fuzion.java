@@ -656,7 +656,6 @@ public class Fuzion extends Tool
     if (_backend == Backend.undefined)
       {
         var aba = new StringBuilder();
-        var abe = new StringBuilder();
         for (var ab : _allBackends_.entrySet())
           {
             var b = ab.getValue();
@@ -866,7 +865,6 @@ public class Fuzion extends Tool
    */
   private Runnable parseArgsLatex(String[] args)
   {
-    var sourceFiles = new List<String>();
     for (var a : args)
       {
         if (!parseGenericArg(a) &&
