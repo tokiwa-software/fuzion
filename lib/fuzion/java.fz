@@ -190,7 +190,7 @@ public fuzion.java is
 
   # intrinsic to get an element of a Java array of arbitrary type
   #
-  array_get(T type, a Array T, ix i32) T => intrinsic_constructor
+  array_get(T type, a Array T, ix i32) T => intrinsic
 
 
   # convert a Sequence to a Java Array object
