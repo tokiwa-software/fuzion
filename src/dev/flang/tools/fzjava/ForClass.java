@@ -208,7 +208,7 @@ class ForClass extends ANY
   /**
    * Find Java constructors to generate code for this class
    *
-   * @param c the constructor to create fuzion code for
+   * @param co the constructor to create fuzion code for
    */
   void findConstructor(Constructor co)
   {
@@ -502,7 +502,7 @@ class ForClass extends ANY
   /**
    * Create Fuzion feature for given constructors
    *
-   * @param c the constructor to create fuzion code for
+   * @param co the constructor to create fuzion code for
    *
    * @param data_static the fuzion feature containing the static members of
    * the class
@@ -534,9 +534,6 @@ class ForClass extends ANY
    * overloading, only one method will be chosen as a shortHand.
    *
    * @param me the method to create short hand fuzion code for
-   *
-   * @param data_dynamic the fuzion feature containing the instance members of
-   * the class
    */
   void shortHand(Method me,
                  StringBuilder data, String outer)

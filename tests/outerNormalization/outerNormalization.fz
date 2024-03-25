@@ -133,9 +133,6 @@ outerNormalization is
   # that should be converted to 'i32.infix ..' in FUIR:
   #
   testInterval is
-    x := 0..
-    y := x.as_stream
-    z := y.has_next
     for i in 0.. do
       say $i
     until i > 3

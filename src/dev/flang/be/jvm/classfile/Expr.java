@@ -365,17 +365,17 @@ public abstract class Expr extends ByteCode
     {
       stack.pop();
 
-      while (locals.size() <= (local()._v0 + (local()._v1.needsTwoSlots() ? 1 : 0)))
+      while (locals.size() <= (local().v0() + (local().v1().needsTwoSlots() ? 1 : 0)))
         {
           locals.add(VerificationType.Top);
         }
-      locals.set(local()._v0, local()._v1);
-      if (local()._v1.needsTwoSlots())
+      locals.set(local().v0(), local().v1());
+      if (local().v1().needsTwoSlots())
         {
-          locals.set(local()._v0+1, local()._v1);
+          locals.set(local().v0()+1, local().v1());
         }
 
-      smt.updateMaxLocal(local()._v0 + (local()._v1.needsTwoSlots() ? 2 : 1));
+      smt.updateMaxLocal(local().v0() + (local().v1().needsTwoSlots() ? 2 : 1));
     }
 
   }
@@ -1773,13 +1773,11 @@ public abstract class Expr extends ByteCode
    *
    * @param p a pair of value and statement, both encoded as expr. value may be
    * null to indicate the statements do not return.
-   *
-   * @param this connected with p._v1 and, if non-null, with p._v0.
    */
   public Expr andThen(Pair<Expr,Expr> p)
   {
-    var c = p._v1;
-    var v = p._v0 == null ? UNIT : p._v0;
+    var c = p.v1();
+    var v = p.v0() == null ? UNIT : p.v0();
     return andThen(c)
           .andThen(v);
   }

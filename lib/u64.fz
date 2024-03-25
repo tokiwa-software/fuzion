@@ -62,9 +62,9 @@ public u64(public val u64) : num.wrap_around, has_interval is
     safety: other != u64 0
   => mod other
 
-  # private division and remainder with crash in case of div-by-zero
-  private div (other u64) u64 => intrinsic
-  private mod (other u64) u64 => intrinsic
+  # division and remainder with crash in case of div-by-zero
+  div (other u64) u64 => intrinsic
+  mod (other u64) u64 => intrinsic
 
   # bitwise and, or and xor operations
   public fixed infix &  (other u64) u64 => intrinsic

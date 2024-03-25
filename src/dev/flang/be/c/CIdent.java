@@ -60,8 +60,6 @@ class CIdent extends CExpr
 
   /**
    * Create a C expression from a plain identifier
-   *
-   * @return the resulting expression
    */
   CIdent(String name)
   {

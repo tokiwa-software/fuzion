@@ -47,22 +47,22 @@ public fuzion.java is
 
   # intrinsic to read static field
   #
-  private get_static_field0(T type, clazz Java_Object, field Java_Object) T => intrinsic_constructor
+  get_static_field0(T type, clazz Java_Object, field Java_Object) T => intrinsic_constructor
 
 
   # intrinsic to read instance field
   #
-  private get_field0(T type, thiz Java_Object, field Java_Object) T => intrinsic_constructor
+  get_field0(T type, thiz Java_Object, field Java_Object) T => intrinsic_constructor
 
 
   # A Java reference
   #
-  public Java_Object(private Java_Ref fuzion.sys.Pointer) ref
+  public Java_Object(Java_Ref fuzion.sys.Pointer) ref
   is
     public is_null bool =>
       is_null0 Java_Ref
 
-    private is_null0(jr fuzion.sys.Pointer) bool => intrinsic_constructor
+    is_null0(jr fuzion.sys.Pointer) bool => intrinsic_constructor
 
     # dummy feature to make sure Java_Object.type exists. This is required since
     # Java-related intrinsics may return an array of Java_Object and require Java_Object.type.
@@ -73,7 +73,7 @@ public fuzion.java is
   # A Java array
   #
   public Array(public T type,
-               private redef Java_Ref fuzion.sys.Pointer) ref : Sequence T, Java_Object Java_Ref
+               redef Java_Ref fuzion.sys.Pointer) ref : Sequence T, Java_Object Java_Ref
   is
     public length                  => array_length T Array.this
     public redef finite            => true
@@ -91,7 +91,7 @@ public fuzion.java is
     # create a cons cell for a list of this array starting at the given
     # index
     #
-    private array_cons (i i32) : Cons T (list T)
+    array_cons (i i32) : Cons T (list T)
       pre
         debug: 0 ≤ i < length
     is
@@ -102,7 +102,7 @@ public fuzion.java is
 
   # Java's 'java.lang.String' type
   #
-  public Java_String(private redef Java_Ref fuzion.sys.Pointer) ref : String, Java_Object Java_Ref
+  public Java_String(redef Java_Ref fuzion.sys.Pointer) ref : String, Java_Object Java_Ref
   is
     public utf8 => (java_string_to_string Java_String.this).utf8
 
@@ -159,7 +159,7 @@ public fuzion.java is
 
   # intrinsic to call given Java instance method
   #
-  private call_v0(T type,
+  call_v0(T type,
                  class_name Java_Object,
                  name Java_Object,
                  signature Java_Object,
@@ -168,7 +168,7 @@ public fuzion.java is
 
   # intrinsic to call given Java static method
   #
-  private call_s0(T type,
+  call_s0(T type,
                  class_name Java_Object,
                  name Java_Object,
                  signature Java_Object,
@@ -177,7 +177,7 @@ public fuzion.java is
 
   # intrinsic to call given Java constructor
   #
-  private call_c0(T type,
+  call_c0(T type,
                  class_name Java_Object,
                  signature Java_Object,
                  args fuzion.sys.internal_array fuzion.sys.Pointer) T => intrinsic_constructor
@@ -185,12 +185,12 @@ public fuzion.java is
 
   # intrinsic to get the length of a Java array of arbitrary type
   #
-  private array_length(T type, a Array T) i32 => intrinsic
+  array_length(T type, a Array T) i32 => intrinsic
 
 
   # intrinsic to get an element of a Java array of arbitrary type
   #
-  private array_get(T type, a Array T, ix i32) T => intrinsic_constructor
+  array_get(T type, a Array T, ix i32) T => intrinsic
 
 
   # convert a Sequence to a Java Array object
@@ -201,7 +201,7 @@ public fuzion.java is
 
   # intrinsic to convert an array to a Java Array object
   #
-  private array_to_java_object0(T type, a fuzion.sys.internal_array T) Array T => intrinsic_constructor
+  array_to_java_object0(T type, a fuzion.sys.internal_array T) Array T => intrinsic_constructor
 
 
   # convert a string to a Java String object
@@ -212,12 +212,12 @@ public fuzion.java is
 
   # intrinsic to convert a string to a Java String object
   #
-  private string_to_java_object0(s fuzion.sys.internal_array u8) Java_Object => intrinsic_constructor
+  string_to_java_object0(s fuzion.sys.internal_array u8) Java_Object => intrinsic_constructor
 
 
   # convert a Java String to a string
   #
-  private java_string_to_string(# T is the actual String type, i.e., Java.java.lang._jString:
+  java_string_to_string(# T is the actual String type, i.e., Java.java.lang._jString:
                                 #
                                 T type : Java_String,
 

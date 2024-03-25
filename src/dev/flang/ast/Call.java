@@ -786,8 +786,8 @@ public class Call extends AbstractCall
       {
         res.resolveDeclarations(targetFeature);
         var found = findOnTarget(res, targetFeature);
-        var fos = found._v0;
-        var fo  = found._v1;
+        var fos = found.v0();
+        var fo  = found.v1();
         if (fo != null &&
             !isSpecialWrtArgs(fo._feature) &&
             fo._feature != Types.f_ERROR &&
@@ -948,7 +948,7 @@ public class Call extends AbstractCall
    *   ++ x       ==>  a -> a ++ x
    *   x ++       ==>  a -> x ++ a
    *
-   * @see Expr.propagateExpectedTypeForPartial for details.
+   * @see Expr#propagateExpectedTypeForPartial for details.
    *
    * @param res this is called during type inference, res gives the resolution
    * instance.
@@ -1049,7 +1049,7 @@ public class Call extends AbstractCall
    *
    * @param outer the feature that contains this expression
    *
-   * @param t the expected type.
+   * @param expectedType the expected type.
    */
   void checkPartialAmbiguity(Resolution res, AbstractFeature outer, AbstractType expectedType)
   {
@@ -1607,7 +1607,7 @@ public class Call extends AbstractCall
    *
    * @param outer the root feature that contains this expression.
    *
-   * @param result this in case this was not an immediate call, otherwise the
+   * @return result this in case this was not an immediate call, otherwise the
    * resulting call to Function/Routine.call.
    */
   private Call resolveImmediateFunctionCall(Resolution res, AbstractFeature outer)
@@ -1631,7 +1631,7 @@ public class Call extends AbstractCall
   {
     return
       _type.isFunctionType() &&
-      _calledFeature != Types.resolved.f_function && // exclude inherits call in function type
+      _calledFeature != Types.resolved.f_Function && // exclude inherits call in function type
       _calledFeature.arguments().size() == 0      &&
       hasParentheses()
     ||
@@ -2265,16 +2265,11 @@ public class Call extends AbstractCall
    */
   private void inferFormalArgTypesFromActualArgs(AbstractFeature outer)
   {
-    var aargs = _actuals.iterator();
     for (var frml : _calledFeature.valueArguments())
       {
-        if (aargs.hasNext())
+        if (frml instanceof Feature f)
           {
-            var actl = aargs.next();
-            if (frml instanceof Feature f)
-              {
-                f.impl().addInitialCall(this, outer);
-              }
+            f.impl().addInitialCall(this, outer);
           }
       }
   }
@@ -2613,8 +2608,9 @@ public class Call extends AbstractCall
         {
           var tf = tt.featureOfType();
           var ttf = tf.typeFeature(res);
-          var fo = findOnTarget(res, tf)._v1;
-          var tfo = findOnTarget(res, ttf)._v1;
+          res.resolveDeclarations(tf);
+          var fo = findOnTarget(res, tf).v1();
+          var tfo = findOnTarget(res, ttf).v1();
           var f = tfo == null ? null : tfo._feature;
           if (f != null
               && f.outer() != null
@@ -2855,7 +2851,9 @@ public class Call extends AbstractCall
         r = propagateExpectedTypeForPartial(res, outer, t);
         if (r != this)
           {
-            r.propagateExpectedType(res, outer, t);
+            var r2 = r.propagateExpectedType(res, outer, t);
+            if (CHECKS) check
+              (r == r2);
           }
       }
     return r;
@@ -2874,6 +2872,20 @@ public class Call extends AbstractCall
   public void wrapActualsInLazy(Resolution res, AbstractFeature outer)
   {
     applyToActualsAndFormalTypes((actual, formalType) -> actual.wrapInLazy(res, outer, formalType));
+  }
+
+
+  /**
+   * During type inference: automatically unwrap actuals.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param outer the feature that contains this expression
+   */
+  public void unwrapActuals(Resolution res, AbstractFeature outer)
+  {
+    applyToActualsAndFormalTypes((actual, formalType) -> actual.unwrap(res, outer, formalType));
   }
 
 
@@ -3060,10 +3072,12 @@ public class Call extends AbstractCall
         //   a: b   into if a then b     else true
         //   !a     into if a then false else true
         var cf = _calledFeature;
-        if      (cf == Types.resolved.f_bool_AND    ) { result = newIf(_target, _actuals.get(0), BoolConst.FALSE); }
-        else if (cf == Types.resolved.f_bool_OR     ) { result = newIf(_target, BoolConst.TRUE , _actuals.get(0)); }
-        else if (cf == Types.resolved.f_bool_IMPLIES) { result = newIf(_target, _actuals.get(0), BoolConst.TRUE ); }
-        else if (cf == Types.resolved.f_bool_NOT    ) { result = newIf(_target, BoolConst.FALSE, BoolConst.TRUE ); }
+        // need to do a propagateExpectedType since this might add a result field
+        // example where this results in an issue: `_ := [false: true]`
+        if      (cf == Types.resolved.f_bool_AND    ) { result = newIf(_target, _actuals.get(0), BoolConst.FALSE).propagateExpectedType(res, outer, Types.resolved.t_bool); }
+        else if (cf == Types.resolved.f_bool_OR     ) { result = newIf(_target, BoolConst.TRUE , _actuals.get(0)).propagateExpectedType(res, outer, Types.resolved.t_bool); }
+        else if (cf == Types.resolved.f_bool_IMPLIES) { result = newIf(_target, _actuals.get(0), BoolConst.TRUE ).propagateExpectedType(res, outer, Types.resolved.t_bool); }
+        else if (cf == Types.resolved.f_bool_NOT    ) { result = newIf(_target, BoolConst.FALSE, BoolConst.TRUE ).propagateExpectedType(res, outer, Types.resolved.t_bool); }
 
         // replace e.g. i16 7 by just the NumLiteral 7. This is necessary for syntaxSugar2 of InlineArray to work correctly.
         else if (cf == Types.resolved.t_i8 .featureOfType()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_i8 ); }

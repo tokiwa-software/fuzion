@@ -97,6 +97,12 @@ public class FuzionConstants extends ANY
 
 
   /**
+   * Name of intrinsic `effect.abortable`.
+   */
+  public static final String EFFECT_ABORTABLE_NAME = "effect.abortable";
+
+
+  /**
    * Name of feature `index []`.
    */
   public static final String FEATURE_NAME_INDEX = "index [ ]";

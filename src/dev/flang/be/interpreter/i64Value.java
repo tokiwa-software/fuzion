@@ -54,8 +54,6 @@ public class i64Value extends Value
 
   /**
    * Constructor
-   *
-   * @param i
    */
   public i64Value(long val)
   {

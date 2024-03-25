@@ -1578,7 +1578,7 @@ actualArgs  : actualsList
    * Does the current symbol end a list of space separated actual arguments to a
    * call.
    *
-   * @param in the indentation used for the actuals, null if none.
+   * @param atMinIndent the indentation used for the actuals, null if none.
    *
    * @return true if the next symbol ends actual arguments or in!=null and the
    * next symbol is not properly indented.
@@ -2219,7 +2219,7 @@ stringTermB : '}any chars&quot;'
         if (isString(t))
           {
             var ps = string(multiLineIndentation);
-            var str = new StrConst(tokenSourcePos().rangeTo(tokenEndPos()), ps._v0);
+            var str = new StrConst(tokenSourcePos().rangeTo(tokenEndPos()), ps.v0());
             result = concatString(tokenSourcePos(), leftString, str);
             next();
             if (isPartialString(t))
@@ -2227,7 +2227,7 @@ stringTermB : '}any chars&quot;'
                 var old = setMinIndent(-1);
                 var b = block();
                 setMinIndent(old);
-                result = stringTerm(concatString(tokenSourcePos(), result, b), ps._v1);
+                result = stringTerm(concatString(tokenSourcePos(), result, b), ps.v1());
               }
           }
         else
@@ -2706,10 +2706,10 @@ exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
   /**
    * Parse expr
    *
-expr        : feature
+expr        : checkexpr
             | assign
             | destructure
-            | checkexpr
+            | feature
             | operatorExpr
             ;
    */
@@ -2976,7 +2976,7 @@ assign      : "set" name ":=" exprInLine
   {
     if (!ENABLE_SET_KEYWORD)
       {
-        AstErrors.illegalUseOfSetKeyword(tokenSourcePos());;
+        AstErrors.illegalUseOfSetKeyword(tokenSourcePos());
       }
     match(Token.t_set, "assign");
     var n = name();
@@ -3038,7 +3038,7 @@ destructrSet: "set" "(" argNames ")" ":=" exprInLine
         var hasSet = skip(Token.t_set);
         if (hasSet && !ENABLE_SET_KEYWORD)
           {
-            AstErrors.illegalUseOfSetKeyword(tokenSourcePos());;
+            AstErrors.illegalUseOfSetKeyword(tokenSourcePos());
           }
         match(Token.t_lparen, "destructure");
         var names = argNames();
@@ -3221,8 +3221,6 @@ anonymous   : "ref"
   /**
    * Parse qualThis
    *
-   * @param asType select to parse this as a list of names or as a Type.
-   *
    * @return non-empty list of names in the qualifier, excluding "this".
    *
 qualThis    : name ( dot name )* dot "this"
@@ -3304,10 +3302,12 @@ dotEnv      : typeInParens dot "env"
    */
   Env dotEnv()
   {
+    var p0 = tokenPos();
     var t = typeInParens();
     skipDot();
+    var pos = sourceRange(p0, tokenEndPos());
     match(Token.t_env, "env");
-    return new Env(tokenSourcePos(), t);
+    return new Env(pos, t);
   }
 
 
@@ -3518,7 +3518,7 @@ implRout    : "is" "abstract"
     else if (skipFullStop()        ) { result = new Impl(pos, emptyBlock(),Impl.Kind.Routine   ); }
     else
       {
-        syntaxError(tokenPos(), "'is', '{' or '=>' in routine declaration", "implRout");
+        syntaxError(tokenPos(), "'is', or '=>' in routine declaration", "implRout");
         result = Impl.ERROR;
       }
     return result;

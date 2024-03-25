@@ -467,12 +467,12 @@ public class Lexer extends SourceFile
                   }
                 if (cp2 > cp+1)
                   {
-                    System.out.println("* " + codePointAsString(cp) + " .. " + codePointAsString(cp2));
+                    say("* " + codePointAsString(cp) + " .. " + codePointAsString(cp2));
                     cp = cp2;
                   }
                 else
                   {
-                    System.out.println("* " + codePointAsString(cp));
+                    say("* " + codePointAsString(cp));
                   }
               }
             else
@@ -483,7 +483,7 @@ public class Lexer extends SourceFile
       }
     if (!got.isEmpty())
       {
-        System.out.println("* Unicode " + Errors.plural(got.size(), "category") + " " +
+        say("* Unicode " + Errors.plural(got.size(), "category") + " " +
                            got.stream().map(x -> "`" + x + "`").collect(Collectors.joining (", ")));
       }
   }
@@ -512,7 +512,7 @@ public class Lexer extends SourceFile
                {
                  if (kind(cp) == K_WS)
                    {
-                     System.out.println(codePointAsString(cp));
+                     say(codePointAsString(cp));
                    }
                }
            }
@@ -527,11 +527,11 @@ public class Lexer extends SourceFile
                {
                  System.out.print("`"+k+"` ");
                }
-             System.out.println();
+             say();
            }
          else if (x.equals("-stringLiteralEscapes"))
            {
-             System.out.println("""
+             say("""
 [options=\"header\",cols=\"1,1\"]
 |====
    | escape sequence | resulting code point
@@ -542,12 +542,12 @@ public class Lexer extends SourceFile
                  var result = StringLexer.escapeChars[i][1];
                  if (c != '\n'  && c != '\r')
                    {
-                     System.out.println("  | `\\" + (char) c + "` | " + codePointAsString(result));
+                     say("  | `\\" + (char) c + "` | " + codePointAsString(result));
                    }
                }
-             System.out.println("  | `\\` + " + codePointAsString('\n') + " | _nothing_");
-             System.out.println("  | `\\` + " + codePointAsString('\r') + " + " + codePointAsString('\n') + " | _nothing_");
-             System.out.println("|====");
+             say("  | `\\` + " + codePointAsString('\n') + " | _nothing_");
+             say("  | `\\` + " + codePointAsString('\r') + " + " + codePointAsString('\n') + " | _nothing_");
+             say("|====");
            }
 
        });
@@ -1002,7 +1002,7 @@ public class Lexer extends SourceFile
    * @param sameLine the line number (-1 if any line) for the next token, return
    * t_lineLimit if next token is in a different line.
    *
-   * @param spaceLimit the white space restriction (Integer.MAX_VALUE if none):
+   * @param endAtSpace the white space restriction (Integer.MAX_VALUE if none):
    * Any token after this position will be replaced by t_spaceLimit.
    *
    * @param endAtColon true to replace operator ":" by t_colonLimit.
@@ -1198,7 +1198,7 @@ public class Lexer extends SourceFile
        endPos  <= byteLength());
 
     return pos < endPos ? sourceRange(pos, endPos)
-                        : sourceRange(prevPos, prevPos+1);
+                        : sourceRange(prevPos, Math.min(byteLength(), prevPos+1));
   }
 
 
@@ -2294,8 +2294,6 @@ Fuzion xref:input_source[input sources] must match the Fuzion grammar defined in
   /**
    * Produce a syntax error at the current token's position.
    *
-   * @param pos the byte offset of the error
-   *
    * @param expected the expected tokens
    *
    * @param currentRule the current rule we are trying to parse
@@ -2366,7 +2364,7 @@ Fuzion xref:input_source[input sources] must match the Fuzion grammar defined in
    * Match the current token, obtained via currentAtMinIndent() or
    * current() depending on atMinIndent, with the given token.
    *
-   * @param t the token we want to see
+   * @param to the token we want to see
    *
    * @return true iff current token matches
    */
@@ -2383,7 +2381,7 @@ Fuzion xref:input_source[input sources] must match the Fuzion grammar defined in
    * token matches and t != Token.t_eof, advance to the next token using
    * next(). Otherwise, cause a syntax error.
    *
-   * @param t the token we want to see
+   * @param to the token we want to see
    *
    * @param currentRule the current rule we are trying to parse
    */
@@ -2438,7 +2436,7 @@ PIPE        : "|"
    * Check if the current token is the given single-code point operator, i.e,
    * check that current() is Token.t_op and the operator is op.
    *
-   * @param op the operator we want to see
+   * @param codePoint the operator we want to see
    *
    * @return true iff the current token is the given operator.
    */
@@ -2454,7 +2452,7 @@ PIPE        : "|"
    *
    * @param atMinIndent
    *
-   * @param op the operator we want to see
+   * @param codePoint the operator we want to see
    *
    * @return true iff the current token is the given operator.
    */

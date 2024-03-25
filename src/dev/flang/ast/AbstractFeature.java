@@ -180,7 +180,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
   /**
    * All features that have been found to be directly redefined by this feature.
-   * This does not include redefinitions of redefinitions.  Four Features loaded
+   * This does not include redefinitions of redefinitions.  For Features loaded
    * from source code, this set is collected during RESOLVING_DECLARATIONS.  For
    * LibraryFeature, this will be loaded from the library module file.
    */
@@ -462,8 +462,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * NYI: Since there is a 1-to-1 correspondent between type parameter features
    * and Generic we could remove Generic completely.
-   *
-   * @param name the name of a formal generic argument.
    *
    * @return null if name is not the name of a formal generic argument
    * of this. Otherwise, a reference to the formal generic argument.

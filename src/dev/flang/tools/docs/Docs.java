@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Main
+ * Source of class Docs
  *
  *---------------------------------------------------------------------*/
 
@@ -51,10 +51,11 @@ import dev.flang.fe.FrontEndOptions;
 import dev.flang.mir.MIR;
 import dev.flang.tools.FuzionHome;
 import dev.flang.tools.docs.Util.Kind;
+import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
-public class Docs
+public class Docs extends ANY
 {
 
   /**
@@ -145,7 +146,7 @@ public class Docs
   {
     if (args.length < 1)
       {
-        System.err.println(usage());
+        say_err(usage());
         System.exit(1);
       }
 
@@ -187,7 +188,7 @@ public class Docs
         String line;
         while ((line = br.readLine()) != null)
           {
-            System.out.println(line);
+            say(line);
           }
       }
   }

@@ -27,7 +27,7 @@
 #
 # note: anything in the buffer when effect is uninstalled will be discarded.
 #
-public reader(private rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file) : effect effect_mode.plain is
+public reader(rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file) : effect effect_mode.plain is
 
 
   # install this effect and execute 'f'. Wrap the result of 'f' into an
@@ -70,7 +70,7 @@ public reader(private rp Read_Provider, buf_size i32, buffer array u8 | io.end_o
 
   # fill the currently empty buffer with up to max_n bytes
   #
-  private fill_buffer(max_n i32)
+  fill_buffer(max_n i32)
   pre match buffer
         a array => a.is_empty
         io.end_of_file => false
@@ -244,8 +244,7 @@ public read_fully array u8 ! reader =>
 # any trailing carriage returns (ASCII 13) from the resulting strings.
 #
 public read_lines array String ! reader =>
-  (String.from_bytes read_fully).split "\n"
-                                     .map s->
-                                       s.ends_with "\r" ? TRUE  => s.substring 0 s.byte_length-1
-                                                        | FALSE => s
-                                     .as_array
+  (String.from_bytes read_fully)
+    .split "\n"
+    .map (s -> if s.ends_with "\r" then s.substring 0 s.byte_length-1 else s)
+    .as_array

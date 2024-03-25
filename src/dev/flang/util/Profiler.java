@@ -272,7 +272,7 @@ public class Profiler extends ANY
               Arrays.sort(s,c);
               if (s.length > 0)
                 {
-                  System.out.println(" + " + _file);
+                  say(" + " + _file);
                   try (PrintWriter out = new PrintWriter(_file))
                     {
                       out.println("Fuzion sample-based Java profiling results:");
@@ -304,7 +304,7 @@ public class Profiler extends ANY
                 }
               else if (_file != null && !_file.endsWith(".svg"))
                 {
-                  System.out.println(" + " + _file);
+                  say(" + " + _file);
                   try (PrintWriter out = new PrintWriter(_file))
                     {
                       out.print(result);
@@ -332,7 +332,7 @@ public class Profiler extends ANY
                         : (false // we cannot use File.createTempFile since /tmp seems not to be accessible by browser
                            ? File.createTempFile("pid"+pid+"-fuzion-XjavaProf-", ".svg")
                            : new File("pid"+pid+"-fuzion-XjavaProf-flamegraph.svg"));
-                      System.out.println(" + " + svg);
+                      say(" + " + svg);
                       pb.redirectOutput(svg);
                       pb.command(FLAMEGRAPH_PL);
                       pb.start().waitFor();

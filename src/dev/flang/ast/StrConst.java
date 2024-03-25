@@ -78,7 +78,7 @@ public class StrConst extends Constant
   {
     return isCodepointLiteral()
       ? Types.resolved.t_codepoint
-      : Types.resolved.t_string;
+      : Types.resolved.t_String;
   }
 
 
@@ -93,7 +93,7 @@ public class StrConst extends Constant
   {
     return isCodepointLiteral()
       ? Types.resolved.t_codepoint
-      : Types.resolved.t_string;
+      : Types.resolved.t_String;
   }
 
 

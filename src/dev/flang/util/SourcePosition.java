@@ -200,7 +200,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
                 sb.append('-');
               }
           }
-        if (p < _sourceFile.lineEndPos(l) || p == byteEndPos()-1) // suppress '^' at LFs except for LF at end position
+        if (p < _sourceFile.lineEndPos(l) || p == _bytePos || p == byteEndPos()-1) // suppress '^' at LFs except for LF at end position
           {
             sb.append('^');
             if (p+1 < byteEndPos() && p+1 == _sourceFile.lineEndPos(l))

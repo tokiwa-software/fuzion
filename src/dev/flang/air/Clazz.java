@@ -76,7 +76,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /*-----------------------------  statics  -----------------------------*/
 
 
-  //  static int counter;  {counter++; if ((counter&(counter-1))==0) System.out.println("######################"+counter+" "+this.getClass()); }
+  //  static int counter;  {counter++; if ((counter&(counter-1))==0) say("######################"+counter+" "+this.getClass()); }
   // { if ((counter&(counter-1))==0) Thread.dumpStack(); }
 
 
@@ -1089,20 +1089,17 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * This is not intended for use at runtime, but during analysis of static
    * types or to fill the virtual call table.
    *
-   * @param f the feature that is called
+   * @param fa the feature and actual generics that is called
    *
    * @param select in case f is a field of open generic type, this selects the
    * actual field.  -1 otherwise.
-   *
-   * @param actualGenerics the actual generics provided in the call,
-   * AbstractCall.NO_GENERICS if none.
    *
    * @param p if this lookup would result in the returned feature to be called,
    * p gives the position in the source code that causes this call.  p must be
    * null if the lookup does not cause a call, but it just done to determine
    * the type.
    *
-   * @param isInstantiated true iff this is a call in an inheritance clause.  In
+   * @param isInheritanceCall true iff this is a call in an inheritance clause.  In
    * this case, the result clazz will not be marked as instantiated since the
    * call will work on the instance of the inheriting clazz.
    *
@@ -1344,7 +1341,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (CHECKS) check
       (Errors.any() || field.isField(),
-       Errors.any() || feature().inheritsFrom(field.outer()));
+       Errors.any() || feature().inheritsFrom(field.outer()),
+       Errors.any() || field.isOpenGenericField() == (select != -1));
 
     var result = _clazzForField.get(field);
     if (result == null)
@@ -1856,10 +1854,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
     switch (feature().qualifiedName())
       {
       case "effect.abortable":
-        argumentFields()[0].resultClazz().lookup(Types.resolved.f_function_call, at);
+        argumentFields()[0].resultClazz().lookup(Types.resolved.f_Function_call, at);
         break;
       case "fuzion.sys.thread.spawn0":
-        argumentFields()[0].resultClazz().lookup(Types.resolved.f_function_call, at);
+        argumentFields()[0].resultClazz().lookup(Types.resolved.f_Function_call, at);
         break;
       default: break;
       }
@@ -1931,7 +1929,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       // NYI: Once Clazz.normalize() is implemented better, a clazz C has
       // to be considered instantiated if there is any clazz D that
       // normalize() would replace by C if it occurs as an outer clazz.
-      _outer == Clazzes.any.getIfCreated()    ||
+      _outer == Clazzes.Any.getIfCreated()    ||
 
       _outer._isNormalized ||
 
@@ -2243,7 +2241,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     else
       {
         var ft = f.resultType();
-        result = handDown(f.resultType(), _select, new List<>(), feature());
+        result = handDown(ft, _select, new List<>(), feature());
         if (result.feature().isTypeFeature())
           {
             var ac = handDown(result._type.generics().get(0), new List<>(), feature());

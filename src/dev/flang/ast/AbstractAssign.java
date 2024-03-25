@@ -181,7 +181,6 @@ public abstract class AbstractAssign extends Expr
    *
    * @param outer the feature that contains this expression
    *
-   * @param t the expected type.
    */
   public void propagateExpectedType(Resolution res, AbstractFeature outer)
   {
@@ -212,6 +211,26 @@ public abstract class AbstractAssign extends Expr
     if (resultTypeKnown(res))
       {
         _value = _value.wrapInLazy(res, outer, _assignedField.resultType());
+      }
+  }
+
+
+  /**
+   * During type inference: automatically unwrap values.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param outer the feature that contains this expression
+   */
+  public void unwrapValue(Resolution res, AbstractFeature outer)
+  {
+    if (CHECKS) check
+      (_assignedField != Types.f_ERROR || Errors.any());
+
+    if (resultTypeKnown(res))
+      {
+        _value = _value.unwrap(res, outer, _assignedField.resultType());
       }
   }
 

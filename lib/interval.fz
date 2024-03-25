@@ -69,7 +69,7 @@ is
 
   # list representation of values in this interval
   #
-  redef as_list list T =>
+  public redef as_list list T =>
     if (through ? nil => false
                 | thru T => step.sign = (from ⋄ thru).sign) then
       nil

@@ -53,7 +53,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import java.util.ArrayList;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -596,12 +595,20 @@ should be avoided as much as possible.
               "dev/flang/be/jvm/runtime/Runtime$Abort.class",
               "dev/flang/util/ANY.class",
               "dev/flang/util/Errors.class",
+              "dev/flang/util/Errors$Error.class",
+              "dev/flang/util/Errors$Id.class",
+              "dev/flang/util/Errors$SRCF.class",
+              "dev/flang/util/Errors$SRCF$1.class",
               "dev/flang/util/FatalError.class",
               "dev/flang/util/HasSourcePosition.class",
               "dev/flang/util/List.class",
               "dev/flang/util/QuietThreadTermination.class",
+              "dev/flang/util/SourceFile.class",
               "dev/flang/util/SourcePosition.class",
+              "dev/flang/util/SourcePosition$1.class",
+              "dev/flang/util/SourcePosition$2.class",
               "dev/flang/util/SourceRange.class",
+              "dev/flang/util/Terminal.class",
             };
 
             for (var d : dependencies)
@@ -893,8 +900,6 @@ should be avoided as much as possible.
 
   /**
    * create byte code
-   *
-   * @throws IOException
    */
   private void createCode()
   {
@@ -921,8 +926,6 @@ should be avoided as much as possible.
    * Create code for given clazz cl.
    *
    * @param cl id of clazz to compile
-   *
-   * @return C statements with the forward declarations required for cl.
    */
   public void code(int cl)
   {
@@ -1074,24 +1077,47 @@ should be avoided as much as possible.
       }
     else
       {
-        /* NYI: UNDER DEVELOPMENT: the following simple examples creates an reference to an undefined result field:
-
-             a =>
-               b (c i32) is
-               b 0
-
-        */
-
         var ft = _types.resultType(t);
-        var getf =
-          fieldExists(r) ? (Expr.aload(current_index(cl), ft, _types.javaType(cl).vti())
-                            .andThen(getfield(r)))
-                         : Expr.UNIT;
-        return
-          traceReturn(cl, pre)
-          .andThen(getf)
-          .andThen(
-            fieldExists(r) ||
+        var tr =  traceReturn(cl, pre);
+
+        return fieldExists(r)
+          ? tr
+             .andThen(Expr.aload(current_index(cl), ft, _types.javaType(cl).vti()))
+             .andThen(getfield(r))
+             .andThen(ft.return0())
+          : ft != PrimitiveType.type_void
+          // field does not exist but signature is not void
+          ?
+              /*
+               * For special cases like:
+               *
+               * a Any => do
+               * _ := a
+               *
+               */
+            tr
+             .andThen(reportErrorInCode("Can not return result field that does not exist: " + _fuir.clazzAsStringNew(cl)))
+          // field does not exist and signature is void and real type is also fuzions void
+          : _fuir.clazzIsVoidType(t)
+          ?
+            /* Example:
+
+              count(a,b,n i32) =>
+                yak n
+                if a < b then
+                  yak " "
+                  count a+1 b n+1
+                else
+                  say ""
+                  count 1 b+1 n+1
+
+              count 1 1 1
+
+              */
+            tr
+              .andThen(reportErrorInCode("Can not return result field that does not exist: " + _fuir.clazzAsStringNew(cl)))
+          // field does not exist and signature is void and real type is not fuzions void
+          :
               /**
                * Example where fieldExists is false but we still need a return:
                *
@@ -1102,17 +1128,8 @@ should be avoided as much as possible.
                *     .read
                * _ := test0 unit_like unit
                */
-            ft == PrimitiveType.type_void
-              ? ft.return0()
-              /*
-               * For special cases like:
-               *
-               * a Any => do
-               * _ := a
-               *
-               */
-              : reportErrorInCode("Can not return result field that does not exist: " + _fuir.clazzAsStringNew(cl))
-            );
+            tr
+              .andThen(Expr.RETURN);
       }
   }
 
@@ -1121,11 +1138,9 @@ should be avoided as much as possible.
    * In case of an unexpected situation such as code that should be unreachable,
    * this should be used to print a corresponding error and exit(1).
    *
-   * @param msg the message to be shown, may include %-escapes for additional args
+   * @param msg the message to be shown
    *
-   * @param args the additional args to be fprintf-ed into msg.
-   *
-   * @return the C statement to report the error and exit(1).
+   * @return an Expr to report the error and exit(1).
    */
   Expr reportErrorInCode(String msg)
   {
@@ -1172,12 +1187,7 @@ should be avoided as much as possible.
   /**
    * Set the number of local var slots for the given routine or precondition.
    *
-   * @param cl id of clazz to generate code for
-   *
-   * @param pre true to create code for cl's precondition, false to create code
-   * for cl itself.
-   *
-   * @param n the number of slots needed for local vars
+   * @param cl id of clazz
    */
   Label startLabel(int cl)
   {
@@ -1241,7 +1251,7 @@ should be avoided as much as possible.
           {
             setNumLocals(cl, pre, current_index(cl) + Math.max(1, _types.javaType(cl).stackSlots()));
             prolog = prolog(cl, pre);
-            code = _ai.process(cl, pre)._v1;
+            code = _ai.process(cl, pre).v1();
             epilog = epilog(cl, pre);
           }
         else // intrinsic is a type parameter, type instances are unit types, so nothing to be done:

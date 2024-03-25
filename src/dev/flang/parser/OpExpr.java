@@ -231,7 +231,7 @@ public class OpExpr extends ANY
    */
   boolean isExpr(int i)
   {
-    return (i>=0) && (i<_els.size()) && (_els.get(i) instanceof Expr e);
+    return (i>=0) && (i<_els.size()) && (_els.get(i) instanceof Expr);
   }
 
 
@@ -334,7 +334,7 @@ public class OpExpr extends ANY
         else if (o instanceof Call c) System.out.print(c.name());
         else System.out.print("E");
       }
-    System.out.println();
+    say();
   }
 
 

@@ -32,37 +32,6 @@ package dev.flang.util;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Pair<A,B>
-{
-
-
-  /*----------------------------  variables  ----------------------------*/
-
-
-  /**
-   * The first value.
-   */
-  public final A _v0;
-
-
-  /**
-   * The second value.
-   */
-  public final B _v1;
-
-
-  /*--------------------------  constructors  ---------------------------*/
-
-
-  /**
-   * Create a Pair of v0 and v1.
-   */
-  public Pair(A v0, B v1)
-  {
-    _v0 = v0;
-    _v1 = v1;
-  }
-
-}
+public record Pair<A,B> (A v0, B v1) { }
 
 /* end of file */

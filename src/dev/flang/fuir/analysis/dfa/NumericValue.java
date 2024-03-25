@@ -118,8 +118,6 @@ public class NumericValue extends Value implements Comparable<NumericValue>
    * @param dfa the DFA analysis
    *
    * @param clazz the clazz this is an instance of.
-   *
-   * @param v the value, cast to long.
    */
   public NumericValue(DFA dfa, int clazz)
   {
@@ -167,7 +165,7 @@ public class NumericValue extends Value implements Comparable<NumericValue>
   /**
    * Get set of values of given field within this instance.
    */
-  Value readFieldFromInstance(DFA dfa, int field)
+  Value readFieldFromInstance(DFA dfa, int field, int site, Context why)
   {
     /* for a numeric value, this can only read the 'val' field, e.g., 'i32.val',
      * which (recursively) contains the numeric value, so we can just return

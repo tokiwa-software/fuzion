@@ -1,0 +1,82 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion example test_effect.fz
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# This is s simple test complementary to tests/effect_installed_negative/test_effect_neg.fz
+# that excludes all the failing cases to check that they work well.
+#
+test_effect is
+
+  a : mutate.
+  b : mutate.
+  c : mutate.
+  d : mutate.
+  use_a => v := a.env.new   42; v <- 1+v; say v
+  use_b => v := b.env.new 4711; v <- 1+v; say v
+  use_c => v := c.env.new 0815; v <- 1+v; say v
+  use_a_err1 => _ := a.env       # 1. should flag an error: effect not installed
+  use_b_err2 => _ := b.env       # 2. should flag an error: effect not installed
+  use_c_err3 => _ := c.env       # 3. should flag an error: effect not installed
+  use_d_err4 => _ := d.env       # 4. should flag an error: effect not installed
+  FA : Function unit is call => use_a
+  FB : Function unit is call => use_b
+  FC : Function unit is call => use_c
+  fa Function unit := FA
+  fb Function unit := FB
+  fc Function unit := FC
+  a.go unit fa
+  b.go unit fb
+  c.go unit fc
+  a.go ()->use_a
+  b.go ()->use_b
+  c.go ()->use_c
+  a.go ()->
+    b.go ()->
+      c.go ()->
+        use_a
+        use_b
+        use_c
+#  a.go ()->use_b_err2
+#  b.go ()->use_c_err3
+#  c.go ()->use_a_err1
+  a.go ()->
+    b.go ()->
+      c.go ()->
+        use_a
+        use_b
+        use_c
+#        use_d_err4
+
+  # the following ones are a little tricky since use_a/b/c are also used in
+  # positive cases above, so the call traces might get mixed up.
+  #
+  a.go ()->
+    b.go ()->
+#      use_c      # 5. should flag an error: effect not installed
+  a.go ()->
+    c.go ()->
+#      use_b      # 6. should flag an error: effect not installed
+  b.go ()->
+    c.go ()->
+#      use_a      # 7. should flag an error: effect not installed

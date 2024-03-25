@@ -61,15 +61,12 @@ public class Block extends AbstractBlock
   /**
    * Generic constructor
    *
-   * @param closingBracePos the sourcecode position of this block's closing
-   * brace. In case this block does not originate in source code, but was added
-   * by AST manipulations, this might as well be equal to pos.
-   *
-   * @param s the list of expressions
-   *
    * @param newScope true iff this block opens a new scope, false if declaration
    * in this block should remain visible after the block (which is usually the
    * case for artificially generated blocks)
+   *
+   * @param s the list of expressions
+   *
    */
   private Block(boolean newScope,
                List<Expr> s)
@@ -104,8 +101,6 @@ public class Block extends AbstractBlock
   /**
    * Generate a block of expressions that do not define a new scope, i.e.,
    * declarations remain visible after this block.
-   *
-   * @param pos the sourcecode position, used for error messages.
    *
    * @param s the list of expressions
    *
@@ -343,7 +338,7 @@ public class Block extends AbstractBlock
    *
    * @param outer the feature that contains this expression
    *
-   * @param t the expected type.
+   * @param type the expected type.
    *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this

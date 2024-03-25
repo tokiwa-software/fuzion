@@ -203,7 +203,7 @@ public class CFG extends ANY
   {
     if (PRECONDITIONS) require
       (_fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic);
-    var in = _fuir.clazzIntrinsicName(cl);
+    var in = _fuir.clazzOriginalName(cl);
     var c = _intrinsics_.get(in);
     if (c != null)
       {
@@ -218,7 +218,7 @@ public class CFG extends ANY
           }
         else
           {
-            var msg = "code for intrinsic " + _fuir.clazzIntrinsicName(cl) + " is missing";
+            var msg = "code for intrinsic " + _fuir.clazzOriginalName(cl) + " is missing";
             Errors.warning(msg);
           }
       }

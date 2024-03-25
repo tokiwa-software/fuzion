@@ -168,7 +168,7 @@ public class C extends ANY
      */
     public CStmnt assign(int cl, boolean pre, int c, int i, CExpr tvalue, CExpr avalue)
     {
-      return access(cl, pre, c, i, tvalue, new List<>(avalue))._v1;
+      return access(cl, pre, c, i, tvalue, new List<>(avalue)).v1();
     }
 
 
@@ -177,7 +177,7 @@ public class C extends ANY
      * arguments.  The type of tvalue might be dynamic (a reference). See
      * FUIR.access*().
      *
-     * Result._v0 may be null to indicate that code generation should stop here
+     * Result.v0() may be null to indicate that code generation should stop here
      * (due to an error or tail recursion optimization).
      */
     public Pair<CExpr, CStmnt> call(int cl, boolean pre, int c, int i, CExpr tvalue, List<CExpr> args)
@@ -188,14 +188,14 @@ public class C extends ANY
       if (ccP != -1)
         {
           var callpair = C.this.call(cl, pre, tvalue, args, c, i, ccP, true);
-          ol.add(callpair._v1);
+          ol.add(callpair.v1());
         }
       var res = CExpr.UNIT;
       if (!_fuir.callPreconditionOnly(cl, c, i))
         {
           var r = access(cl, pre, c, i, tvalue, args);
-          ol.add(r._v1);
-          res = r._v0;
+          ol.add(r.v1());
+          res = r.v0();
         }
       return new Pair<>(res, CStmnt.seq(ol));
     }
@@ -321,8 +321,8 @@ public class C extends ANY
           sb.append("." + _names.fieldName(arg).code());
           sb.append(" = ");
           var cd = constData(_fuir.clazzResultClazz(arg), bytes, false);
-          l.add(cd._v1);
-          sb.append(cd._v0.code());
+          l.add(cd.v1());
+          sb.append(cd.v0().code());
           if (i + 1 != argCount)
             {
               sb.append(",");
@@ -399,7 +399,7 @@ public class C extends ANY
               var b = _fuir.deseralizeConst(elementType, bb);
 
               constData(elementType, b, false)
-                ._v0
+                .v0()
                 .code(sb);
 
               if (idx+1 < elCount)
@@ -463,7 +463,7 @@ public class C extends ANY
                                                     : CExpr.UNIT;
               sl.add(C.this.assign(f, entry, fclazz));
             }
-          sl.add(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc))._v1);
+          sl.add(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc)).v1());
           sl.add(CStmnt.BREAK);
           var cazecode = CStmnt.seq(sl);
           tcases.add(CStmnt.caze(ctags, cazecode));  // tricky: this a NOP if ctags.isEmpty
@@ -1245,8 +1245,8 @@ public class C extends ANY
             if (isCall)
               {
                 var calpair = call(cl, pre, tv, args, c, i, cc, false);
-                var rv  = calpair._v0;
-                acc = calpair._v1;
+                var rv  = calpair.v0();
+                acc = calpair.v1();
                 if (ccs.length == 2)
                   {
                     res = rv;
@@ -1414,8 +1414,6 @@ public class C extends ANY
    *
    * @param bytes the serialized bytes of the UTF-8 string.
    *
-   * @param onHeap should the string be allocated on the heap?
-   *
    * Example code:
    * `(fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__array_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}`
    */
@@ -1462,8 +1460,6 @@ public class C extends ANY
 
   /**
    * Create code to assign value to a field
-   *
-   * @param stack the stack containing the value and the target instance
    *
    * @param tc the static target clazz
    *
@@ -1516,8 +1512,6 @@ public class C extends ANY
    *
    * @param cl clazz id of clazz containing the call
    *
-   * @param stack the stack containing the current arguments waiting to be used
-   *
    * @param c the code block to compile
    *
    * @param i the index of the call within c
@@ -1548,21 +1542,21 @@ public class C extends ANY
             {
 
               if (FUZION_DEBUG_TAIL_CALL                                 &&
+                  !pre                                                   &&  // not within precondition
                   !preCalled                                             &&  // not calling pre-condition
                   cc == cl                                               &&  // calling myself
                   _tailCall.callIsTailCall(cl, c, i)                     &&  // as a tail call
-                  _fuir.lifeTime(cl, pre).ordinal() >
-                  FUIR.LifeTime.Call.ordinal()                               // and current instance did not escape
+                  !_fuir.lifeTime(cl, pre).maySurviveCall()                  // and current instance did not escape
                 )
                 {
-                  System.out.println("Escapes, no tail call opt possible: " + _fuir.clazzAsStringNew(cl) + ", lifetime: " + _fuir.lifeTime(cl, pre).name());
+                  say("Escapes, no tail call opt possible: " + _fuir.clazzAsStringNew(cl) + ", lifetime: " + _fuir.lifeTime(cl, pre).name());
                 }
 
-              if (!preCalled                                             &&  // not calling pre-condition
+              if (!pre                                                   &&  // not within precondition
+                  !preCalled                                             &&  // not calling pre-condition
                   cc == cl                                               &&  // calling myself
                   _tailCall.callIsTailCall(cl, c, i)                     &&  // as a tail call
-                  _fuir.lifeTime(cl, pre).ordinal() <=
-                  FUIR.LifeTime.Call.ordinal()                               // and current instance did not escape
+                  !_fuir.lifeTime(cl, pre).maySurviveCall()                  // and current instance did not escape
                 )
                 { // then we can do tail recursion optimization!
                   result = tailRecursion(cl, c, i, tc, a);
@@ -1655,8 +1649,6 @@ public class C extends ANY
    * argument from the stack to a called feature.
    *
    * @param cc clazz that is called
-   *
-   * @param stack the stack containing the C code of the args.
    *
    * @param argCount the number of arguments.
    *
@@ -1812,7 +1804,7 @@ public class C extends ANY
 
     _names._tempVarId = 0;  // reset counter for unique temp variables for function results
     var l = new List<CStmnt>();
-    l.add(_ai.process(cl, pre)._v1);
+    l.add(_ai.process(cl, pre).v1());
     var res = _fuir.clazzResultClazz(cl);
     if (!pre && _fuir.hasData(res))
       {
@@ -1899,7 +1891,7 @@ public class C extends ANY
   {
     var res1 = CNames.CURRENT;
     var res2 = _fuir.clazzIsRef(cl) ? res1 : res1.deref();
-    var res3 =  _fuir.lifeTime(cl, pre).ordinal() <= FUIR.LifeTime.Call.ordinal() ? res2.adrOf() : res2;
+    var res3 =  _fuir.lifeTime(cl, pre).maySurviveCall() ? res2 : res2.adrOf();
     return !_fuir.hasData(cl) ? CExpr.UNIT : res3;
   }
 
@@ -1925,7 +1917,7 @@ public class C extends ANY
   /**
    * For an instance value refOrVal get the struct that contains its fields.
    *
-   * @param refOrValue C expression to access an instance
+   * @param refOrVal C expression to access an instance
    *
    * @param type the type of the instance, may be a ref or value type
    *

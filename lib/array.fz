@@ -146,6 +146,7 @@ module:public array(
   public redef slice(from, to i32) Sequence T
     pre
       debug: from ≥ 0
+      debug: to <= length
   =>
 
     ref : Sequence T
@@ -285,7 +286,7 @@ module:public array(
   =>
 
     // NYI: BUG: when removing `interval i32`: Illegal forward or cyclic type inference
-    private indices interval i32 => 0..length-1
+    indices interval i32 => 0..length-1
 
     internal := fuzion.sys.internal_array_init T length
     for x in indices do

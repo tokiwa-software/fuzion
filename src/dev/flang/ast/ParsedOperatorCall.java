@@ -85,7 +85,7 @@ public class ParsedOperatorCall extends ParsedCall
    *
    * @param name the name of the called feature
    *
-   * @param argument the right hand side
+   * @param rhs the right hand side
    */
   public ParsedOperatorCall(Expr target, ParsedName name, Expr rhs)
   {

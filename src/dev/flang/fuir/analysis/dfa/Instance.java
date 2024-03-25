@@ -27,9 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fuir.analysis.dfa;
 
 import java.util.TreeMap;
-import java.util.stream.Collectors;
-
-import dev.flang.util.Errors;
 
 
 /**
@@ -77,6 +74,17 @@ public class Instance extends Value implements Comparable<Instance>
   final boolean _isBoxed;
 
 
+  /**
+   * Site of the call that created this instance, -1 if the call site is not
+   * known, i.e., the call is coming from intrinsic call or the main entry
+   * point.
+   *
+   * Instances created at different sites will be considered as different
+   * instances.
+   */
+  final int _site;
+
+
   /*---------------------------  constructors  ---------------------------*/
 
 
@@ -90,7 +98,7 @@ public class Instance extends Value implements Comparable<Instance>
    * @param context for debugging: Reason that causes this instance to be part
    * of the analysis.
    */
-  public Instance(DFA dfa, int clazz, Context context)
+  public Instance(DFA dfa, int clazz, int site, Context context)
   {
     super(clazz);
 
@@ -98,6 +106,7 @@ public class Instance extends Value implements Comparable<Instance>
       (!dfa._fuir.clazzIsRef(clazz));
 
     _dfa = dfa;
+    _site = site;
     _context = context;
     _fields = new TreeMap<>();
     _isBoxed = false;
@@ -108,13 +117,60 @@ public class Instance extends Value implements Comparable<Instance>
 
 
   /**
+   * Get the environment this instance was created in, or null if none.
+   *
+   * This environment is taken into account when comparing instances.
+   */
+  Env env()
+  {
+    return _context instanceof Call ca1 ? ca1._env : null;
+  }
+
+
+  /**
    * Compare this to another instance.
    */
   public int compareTo(Instance other)
   {
+    var i1 = this;
+    var i2 = other;
+    var c1 = i1._clazz;
+    var c2 = i2._clazz;
+    var s1 = i1._site;
+    var s2 = i2._site;
+    var e1 = i1.env();
+    var e2 = i2.env();
     return
-      _clazz < other._clazz ? -1 :
-      _clazz > other._clazz ? +1 : 0;
+      c1 < c2    ? -1 :
+      c1 > c2    ? +1 :
+      s1 < s2    ? -1 :
+      s1 > s2    ? +1 :
+      e1 == e2   ?  0 :
+      e1 == null ? -1 :
+      e2 == null ? +1
+                 : e1.compareTo(e2);
+  }
+
+  /**
+   * Compare this to another instance, used to compare effect instances in
+   * Env[ironmnents].  The main different to `compareTo` is that the effect
+   * environment is ignored since that would lead to an explosion of
+   * Environments.
+   */
+  public int envCompareTo(Instance other)
+  {
+    var i1 = this;
+    var i2 = other;
+    var c1 = i1._clazz;
+    var c2 = i2._clazz;
+    var s1 = i1._site;
+    var s2 = i2._site;
+    return
+      c1 < c2    ? -1 :
+      c1 > c2    ? +1 :
+      s1 < s2    ? -1 :
+      s1 > s2    ? +1
+                 :  0;
   }
 
 
@@ -131,10 +187,10 @@ public class Instance extends Value implements Comparable<Instance>
       {
         v = oldv.join(v);
       }
-    if (!_dfa._changed && (oldv == null || Value.COMPARATOR.compare(oldv, v) != 0))
+    if (oldv == null || Value.COMPARATOR.compare(oldv, v) != 0)
       {
-        _dfa._changedSetBy = "setField: new values "+v+" (was "+oldv+") for " + this;
-        _dfa._changed = true;
+        var fv = v;
+        _dfa.wasChanged(() -> "setField: new values " + fv + " (was " + oldv + ") for " + this);
       }
     dfa._writtenFields.add(field);
     _fields.put(field, v);
@@ -144,7 +200,7 @@ public class Instance extends Value implements Comparable<Instance>
   /**
    * Get set of values of given field within this instance.
    */
-  Val readFieldFromInstance(DFA dfa, int field)
+  Val readFieldFromInstance(DFA dfa, int field, int site, Context why)
   {
     if (PRECONDITIONS) require
       (_clazz == dfa._fuir.clazzAsValue(dfa._fuir.clazzOuterClazz(field)));
@@ -156,18 +212,10 @@ public class Instance extends Value implements Comparable<Instance>
       {
         if (dfa._reportResults)
           {
-            Errors.error("reading uninitialized field " + dfa._fuir.clazzAsString(field) + " from instance of " + dfa._fuir.clazzAsString(_clazz) +
-                         (_isBoxed ? " Boxed!" : "") +
-                         "\n" +
-                         "fields available:\n  " + _fields.keySet().stream().map(x -> ""+x+":"+dfa._fuir.clazzAsString(x)).collect(Collectors.joining(",\n  ")));
-
-            for (var f : _fields.keySet())
-              {
-                if (dfa._fuir.clazzAsString(f).equals(dfa._fuir.clazzAsString(field).replace("ref ","")))
-                  {
-                    System.out.println("NYI: HACK: Using value version instead: "+v);
-                  }
-              }
+            DfaErrors.readingUninitializedField(dfa._fuir.siteAsPos(site),
+                                                dfa._fuir.clazzAsString(field),
+                                                dfa._fuir.clazzAsString(_clazz) + (_isBoxed ? " Boxed!" : ""),
+                                                why);
           }
       }
     else if (!dfa._fuir.clazzIsRef(dfa._fuir.clazzResultClazz(field)))
@@ -194,7 +242,7 @@ public class Instance extends Value implements Comparable<Instance>
    */
   public String toString()
   {
-    return _dfa._fuir.clazzAsString(_clazz);
+    return _dfa._fuir.clazzAsString(_clazz) + "@" + _dfa._fuir.siteAsPos(_site);
   }
 
 }

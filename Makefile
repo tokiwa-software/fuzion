@@ -24,7 +24,8 @@
 # -----------------------------------------------------------------------
 
 JAVA = java
-JAVAC = javac -encoding UTF8 -source 21
+JAVA_VERSION = 21
+JAVAC = javac -encoding UTF8 -source $(JAVA_VERSION)
 FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SRC = $(FZ_SRC)/src
 BUILD_DIR = ./build
@@ -372,7 +373,7 @@ FZ_C = \
 			 $(BUILD_DIR)/include \
 			 $(MOD_BASE)
 
-# files required for fz command with interpreter backend
+# files required for fz command with interpreter backends
 FZ_INT = \
 			 $(BUILD_DIR)/bin/fz \
 			 $(MOD_BASE)
@@ -438,6 +439,7 @@ $(JAVA_FILE_UTIL_VERSION): $(FZ_SRC)/version.txt $(JAVA_FILE_UTIL_VERSION_IN)
 	mkdir -p $(@D)
 	cat $(JAVA_FILE_UTIL_VERSION_IN) \
           | sed "s^@@VERSION@@^$(VERSION)^g" \
+          | sed "s^@@JAVA_VERSION@@^$(JAVA_VERSION)^g" \
           | sed "s^@@REPO_PATH@@^$(dir $(abspath $(lastword $(MAKEFILE_LIST))))^g" \
           | sed "s^@@GIT_HASH@@^`cd $(FZ_SRC); echo -n \`git rev-parse HEAD\` \`git diff-index --quiet HEAD -- || echo with local changes\``^g" >$@
 ifeq ($(FUZION_REPRODUCIBLE_BUILD),true)
@@ -541,7 +543,7 @@ $(CLASS_FILES_BE_JVM_CLASSFILE): $(JAVA_FILES_BE_JVM_CLASSFILE) $(CLASS_FILES_UT
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_JVM_CLASSFILE)
 	touch $@
 
-$(CLASS_FILES_BE_JVM_RUNTIME): $(JAVA_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_UTIL) $(CLASS_FILES_BE_INTERPRETER)
+$(CLASS_FILES_BE_JVM_RUNTIME): $(JAVA_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_UTIL)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_JVM_RUNTIME)
 	touch $@
@@ -1270,3 +1272,57 @@ $(MOD_FZ_CMD_FZ_FILES): $(MOD_FZ_CMD_DIR).jmod $(MOD_JAVA_BASE) $(MOD_JAVA_MANAG
 
 $(MOD_FZ_CMD): $(MOD_FZ_CMD_FZ_FILES)
 	$(BUILD_DIR)/bin/fz -sourceDirs=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop -saveLib=$@
+
+.PHONY: lint/java
+lint/java:
+	$(JAVAC) -Xlint -cp $(CLASSES_DIR) -d $(CLASSES_DIR) \
+		$(JAVA_FILES_UTIL) \
+		$(JAVA_FILES_UTIL_UNICODE) \
+		$(JAVA_FILES_AST) \
+		$(JAVA_FILES_PARSER) \
+		$(JAVA_FILES_IR) \
+		$(JAVA_FILES_MIR) \
+		$(JAVA_FILES_FE) \
+		$(JAVA_FILES_AIR) \
+		$(JAVA_FILES_ME) \
+		$(JAVA_FILES_FUIR) \
+		$(JAVA_FILES_FUIR_ANALYSIS) \
+		$(JAVA_FILES_FUIR_ANALYSIS_DFA) \
+		$(JAVA_FILES_FUIR_CFG) \
+		$(JAVA_FILES_OPT) \
+		$(JAVA_FILES_BE_INTERPRETER) \
+		$(JAVA_FILES_BE_C) \
+		$(JAVA_FILES_BE_EFFECTS) \
+		$(JAVA_FILES_BE_JVM) \
+		$(JAVA_FILES_BE_JVM_CLASSFILE) \
+		$(JAVA_FILES_BE_JVM_RUNTIME) \
+		$(JAVA_FILES_TOOLS) \
+		$(JAVA_FILES_TOOLS_FZJAVA) \
+		$(JAVA_FILES_TOOLS_DOCS)
+
+.PHONY: lint/javadoc
+lint/javadoc:
+	$(JAVAC) -Xdoclint:all,-syntax,-html,-missing -cp $(CLASSES_DIR) -d $(CLASSES_DIR) \
+		$(JAVA_FILES_UTIL) \
+		$(JAVA_FILES_UTIL_UNICODE) \
+		$(JAVA_FILES_AST) \
+		$(JAVA_FILES_PARSER) \
+		$(JAVA_FILES_IR) \
+		$(JAVA_FILES_MIR) \
+		$(JAVA_FILES_FE) \
+		$(JAVA_FILES_AIR) \
+		$(JAVA_FILES_ME) \
+		$(JAVA_FILES_FUIR) \
+		$(JAVA_FILES_FUIR_ANALYSIS) \
+		$(JAVA_FILES_FUIR_ANALYSIS_DFA) \
+		$(JAVA_FILES_FUIR_CFG) \
+		$(JAVA_FILES_OPT) \
+		$(JAVA_FILES_BE_INTERPRETER) \
+		$(JAVA_FILES_BE_C) \
+		$(JAVA_FILES_BE_EFFECTS) \
+		$(JAVA_FILES_BE_JVM) \
+		$(JAVA_FILES_BE_JVM_CLASSFILE) \
+		$(JAVA_FILES_BE_JVM_RUNTIME) \
+		$(JAVA_FILES_TOOLS) \
+		$(JAVA_FILES_TOOLS_FZJAVA) \
+		$(JAVA_FILES_TOOLS_DOCS)
