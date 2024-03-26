@@ -120,7 +120,7 @@ public class Types extends ANY implements ClassFileConstants
     if (hasClassFile(cl))
       {
         var cn = _names.javaClass(cl);
-        var cf = new ClassFile(_opt, cn, Names.ANY_CLASS);
+        var cf = new ClassFile(_opt, cn, Names.ANY_CLASS, _fuir.clazzSrcFile(cl));
         _classFiles.put(cl, cf);
 
         if (cl == _fuir.clazzUniverse())
@@ -322,7 +322,7 @@ public class Types extends ANY implements ClassFileConstants
    */
   private void makeInterface(int cl)
   {
-    var i = new ClassFile(_opt, _names.javaInterface(cl), "java/lang/Object", true);
+    var i = new ClassFile(_opt, _names.javaInterface(cl), "java/lang/Object", true, _fuir.clazzSrcFile(cl));
     _interfaceFiles.put(cl, i);
     if (!_fuir.clazzIsChoice(cl))
       {
