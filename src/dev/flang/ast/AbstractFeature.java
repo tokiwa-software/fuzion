@@ -1396,7 +1396,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       // that use outer references.
       // !isAbstract() &&
 
-      // outer is require for backend code generator
+      // outer is required for backend code generator
       // !isIntrinsic() &&
 
       !isField() &&
