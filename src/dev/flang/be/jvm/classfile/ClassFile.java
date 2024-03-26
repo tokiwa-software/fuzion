@@ -1375,6 +1375,33 @@ public class ClassFile extends ANY implements ClassFileConstants
     }
   }
 
+  /*
+   * https://docs.oracle.com/javase/specs/jvms/se21/jvms21.pdf
+   * §4.7.10 "The SourceFile attribute is an optional fixed-length attribute in the attributes
+   * table of a ClassFile structure (§4.1).
+   * There may be at most one SourceFile attribute in the attributes table of a
+   * ClassFile structure."
+   */
+  public class SourceFileAttribute extends Attribute {
+
+    private CPEntry _srcFile;
+
+    SourceFileAttribute(String srcFile)
+    {
+      super("SourceFile");
+      this._srcFile = cpUtf8(srcFile);
+    }
+
+    @Override
+    byte[] data()
+    {
+      var o = new Kaku();
+      o.writeU2(_srcFile.index());
+      return o._b.toByteArray();
+    }
+
+  }
+
 
   /*----------------------------  constants  ----------------------------*/
 
@@ -1421,9 +1448,9 @@ public class ClassFile extends ANY implements ClassFileConstants
    *
    * @param name the class name
    */
-  public ClassFile(FuzionOptions opt, String name, String supr)
+  public ClassFile(FuzionOptions opt, String name, String supr, String srcFile)
   {
-    this(opt, name, supr, false);
+    this(opt, name, supr, false, srcFile);
   }
 
 
@@ -1432,7 +1459,7 @@ public class ClassFile extends ANY implements ClassFileConstants
    *
    * @param name the class name
    */
-  public ClassFile(FuzionOptions opt, String name, String supr, boolean interfce)
+  public ClassFile(FuzionOptions opt, String name, String supr, boolean interfce, String srcFile)
   {
     _opt = opt;
     _name = name;
@@ -1442,6 +1469,7 @@ public class ClassFile extends ANY implements ClassFileConstants
     _flags = ACC_PUBLIC | (interfce ? (ACC_INTERFACE|ACC_ABSTRACT) : ACC_SUPER);
     _this = cpClass(name);
     _super = cpClass(supr == null ? "java/lang/Object" : supr);
+    _attributes.add(new SourceFileAttribute(srcFile));
   }
 
 

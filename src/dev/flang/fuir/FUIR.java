@@ -2766,6 +2766,17 @@ hw25 is
 
 
   /**
+   * Get the source file the clazz originates from.
+   *
+   * e.g. /fuzion/tests/hello/HelloWorld.fz, $FUZION/lib/panic.fz
+   */
+  public String clazzSrcFile(int cl)
+  {
+    return this.clazz(cl)._type.declarationPos()._sourceFile._fileName.toString();
+  }
+
+
+  /**
    * The java class name of a generated class. e.g. java/lang/String
    *
    * special cases: bool, i8, i16, u16, i32, i64, f32, f64
