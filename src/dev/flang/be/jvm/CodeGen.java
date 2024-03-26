@@ -496,7 +496,7 @@ class CodeGen
         var dynCall = args(true, tvalue, args, cc0, isCall ? _fuir.clazzArgCount(cc0) : 1)
           .andThen(Expr.comment("Dynamic access of " + _fuir.clazzAsString(cc0)))
           .andThen(addDynamicFunctionAndStubs(cc0, ccs, isCall));
-        if (AbstractInterpreter.clazzHasUniqueValue(_fuir, rt))
+        if (AbstractInterpreter.clazzHasUnitValue(_fuir, rt))
           {
             s = dynCall;  // make sure we do not throw away the code even if it is of unit type
           }
