@@ -408,6 +408,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         });
   }
 
+
   /**
    * Helper to convert String arguments passed to call_* into Java Strings.
    *
@@ -430,84 +431,110 @@ public class Intrinsix extends ANY implements ClassFileConstants
       .andThen(jvm.getfield(sref)) // class_name
       .andThen(Expr.checkcast(JAVA_LANG_STRING));
   }
-  static Pair<Expr, Expr> newFuzionJavaCall(JVM jvm, int rc, Expr exec)
-  {
-    var rc0 = rc;
-    if (jvm._fuir.clazzBaseName(rc).startsWith("outcome")) // NYI: HACK: proper check!
-      {
-        rc0 = jvm._fuir.clazzChoice(rc, 0);
-      }
-    var res = switch (jvm._fuir.getSpecialClazz(rc0))
-      {
-        case c_unit -> exec;
-        case c_i8 -> {
-          yield
-            exec
-            .andThen(Expr.checkcast(new ClassType("java/lang/Byte")))
-            .andThen(Expr.invokeVirtual("java/lang/Byte", "byteValue", "()B", PrimitiveType.type_byte));
-        }
-        case c_u16 -> {
-          yield
-            exec
-            .andThen(Expr.checkcast(new ClassType("java/lang/Character")))
-            .andThen(Expr.invokeVirtual("java/lang/Character", "charValue", "()C", PrimitiveType.type_char));
-        }
-        case c_i16 -> {
-          yield
-            exec
-            .andThen(Expr.checkcast(new ClassType("java/lang/Short")))
-            .andThen(Expr.invokeVirtual("java/lang/Short", "shortValue", "()S", PrimitiveType.type_short));
-        }
-        case c_i32 -> {
-          yield
-            exec
-            .andThen(Expr.checkcast(new ClassType("java/lang/Integer")))
-            .andThen(Expr.invokeVirtual("java/lang/Integer", "intValue", "()I", PrimitiveType.type_int));
-        }
-        case c_i64 -> {
-          yield
-            exec
-            .andThen(Expr.checkcast(new ClassType("java/lang/Long")))
-            .andThen(Expr.invokeVirtual("java/lang/Long", "longValue", "()L", PrimitiveType.type_long));
-        }
-        case c_f32 -> {
-          yield
-            exec
-            .andThen(Expr.checkcast(new ClassType("java/lang/Float")))
-            .andThen(Expr.invokeVirtual("java/lang/Float", "floatValue", "()F", PrimitiveType.type_float));
-        }
-        case c_f64 -> {
-          yield
-            exec
-            .andThen(Expr.checkcast(new ClassType("java/lang/Double")))
-            .andThen(Expr.invokeVirtual("java/lang/Double", "doubleValue", "()D", PrimitiveType.type_double));
-        }
-        case c_bool -> {
-          yield
-            exec
-            .andThen(Expr.checkcast(new ClassType("java/lang/Boolean")))
-            .andThen(Expr.invokeVirtual("java/lang/Boolean", "booleanValue", "()Z", PrimitiveType.type_boolean));
-        }
-        default -> {
-          var rt = jvm._types.javaType(rc0);
-          var jref = jvm._fuir.lookupJavaRef(rc0);
 
-          yield
-            jvm.new0(rc0)
-            .andThen(Expr.DUP)
-            .andThen(exec)
-            .andThen(jvm.putfield(jref))
-            .is(rt);
-        }
-      };
-    if (rc != rc0)
+
+  /**
+   * Return result evaluated by `exec`.
+   *
+   * @param jvm the jvm instance
+   * @param rc  outcome ...
+   * @param exec the code we are executing
+   * @return
+   */
+  static Pair<Expr, Expr> returnResult(JVM jvm, int cl, boolean pre, int rc, Expr exec)
+  {
+    if (PRECONDITIONS) require
+      (jvm._fuir.clazzBaseName(rc).startsWith("outcome"));
+
+    var rc0 = jvm._fuir.clazzChoice(rc, 0);
+    // for storing the result of exec
+    int slot  = jvm.allocLocal(cl, false, JAVA_LANG_OBJECT.stackSlots());      // local var slot.
+    var cl_err = jvm._fuir.clazz_error();
+
+    var pos = switch (jvm._fuir.getSpecialClazz(rc0))
       {
-        // NYI: UNDER DEVELOPMENT: check res instanceof JavaError and tag the exception from ((FuzionThrad)Thread.currentThread())._thrownException in this case!
-        res = jvm._types._choices.tag(jvm, rc0, res, rc, 0);
+      case c_unit -> Expr.ACONST_NULL;
+      case c_i8 -> {
+        yield Expr.aload(slot, JAVA_LANG_OBJECT)
+          .andThen(
+            Expr.checkcast(new ClassType("java/lang/Byte"))
+              .andThen(Expr.invokeVirtual("java/lang/Byte", "byteValue", "()B", PrimitiveType.type_byte)));
       }
-    return jvm._types.javaType(rc) == PrimitiveType.type_void ? new Pair<>(Expr.UNIT, res)
-                                                              : new Pair<>(res, Expr.UNIT);
+      case c_u16 -> {
+        yield Expr.aload(slot, JAVA_LANG_OBJECT)
+          .andThen(
+            Expr.checkcast(new ClassType("java/lang/Character"))
+              .andThen(Expr.invokeVirtual("java/lang/Character", "charValue", "()C", PrimitiveType.type_char)));
+      }
+      case c_i16 -> {
+        yield Expr.aload(slot, JAVA_LANG_OBJECT)
+          .andThen(
+            Expr.checkcast(new ClassType("java/lang/Short"))
+              .andThen(Expr.invokeVirtual("java/lang/Short", "shortValue", "()S", PrimitiveType.type_short)));
+      }
+      case c_i32 -> {
+        yield Expr.aload(slot, JAVA_LANG_OBJECT)
+          .andThen(
+            Expr.checkcast(new ClassType("java/lang/Integer"))
+              .andThen(Expr.invokeVirtual("java/lang/Integer", "intValue", "()I", PrimitiveType.type_int)));
+      }
+      case c_i64 -> {
+        yield Expr.aload(slot, JAVA_LANG_OBJECT)
+          .andThen(
+            Expr.checkcast(new ClassType("java/lang/Long"))
+              .andThen(Expr.invokeVirtual("java/lang/Long", "longValue", "()L", PrimitiveType.type_long)));
+      }
+      case c_f32 -> {
+        yield Expr.aload(slot, JAVA_LANG_OBJECT)
+          .andThen(
+            Expr.checkcast(new ClassType("java/lang/Float"))
+              .andThen(Expr.invokeVirtual("java/lang/Float", "floatValue", "()F", PrimitiveType.type_float)));
+      }
+      case c_f64 -> {
+        yield Expr.aload(slot, JAVA_LANG_OBJECT)
+          .andThen(
+            Expr.checkcast(new ClassType("java/lang/Double"))
+              .andThen(Expr.invokeVirtual("java/lang/Double", "doubleValue", "()D", PrimitiveType.type_double)));
+      }
+      case c_bool -> {
+        yield Expr.aload(slot, JAVA_LANG_OBJECT)
+          .andThen(
+            Expr.checkcast(new ClassType("java/lang/Boolean"))
+              .andThen(Expr.invokeVirtual("java/lang/Boolean", "booleanValue", "()Z", PrimitiveType.type_boolean)));
+      }
+      default -> {
+        var rt = jvm._types.javaType(rc0);
+        var jref = jvm._fuir.lookupJavaRef(rc0);
+
+        yield Expr.aload(slot, JAVA_LANG_OBJECT)
+          .andThen(jvm.new0(rc0))                                            // result, rc0
+          .andThen(Expr.DUP_X1)                                              // rc0, result, rc0
+          .andThen(Expr.SWAP)                                                // rc0, rc0, result
+          .andThen(jvm.putfield(jref))                                       // rc0
+          .is(rt);
+      }};
+
+    var neg = jvm.new0(cl_err)                                                               // error
+      .andThen(Expr.DUP)                                                                     // error, error
+      .andThen(jvm.constString(
+        Expr.invokeStatic(Names.RUNTIME_CLASS, "getException", "()Ljava/lang/String;", JAVA_LANG_STRING)
+          .andThen(Expr.getstatic("java/nio/charset/StandardCharsets", "UTF_8", new ClassType("java/nio/charset/Charset")))
+          .andThen(Expr.invokeVirtual("java/lang/String", "getBytes", "(Ljava/nio/charset/Charset;)[B", ClassFileConstants.PrimitiveType.type_byte.array()))
+      ))                                                                                     // error, error, string
+      .andThen(jvm.putfield(jvm._fuir.clazzArg(jvm._fuir.clazz_error(), 0)))                 // error
+      .andThen(Expr.checkcast(jvm._types.javaType(cl_err)));
+
+    var res = exec
+      .andThen(Expr.DUP)                                                               // result, result
+      .andThen(Expr.astore(slot, JAVA_LANG_OBJECT.vti()))                              // result
+      .andThen(Expr.instanceOf(ERROR_TYPE))                                            // boolean
+      .andThen(Expr.branch(O_ifeq, jvm._types._choices.tag(jvm, cl, pos, rc, 0),
+                                   jvm._types._choices.tag(jvm, cl, neg, rc, 1)));     // tagged_result
+
+    return new Pair<>(res, Expr.UNIT);
   }
+
+
   static
   {
     put("fuzion.java.call_v0",
@@ -526,7 +553,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                     "fuzion_java_call_v0",
                                     "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;",
                                     Names.JAVA_LANG_OBJECT));
-          return newFuzionJavaCall(jvm, rc, exec);
+          return returnResult(jvm, cl, pre, rc, exec);
         });
 
     put("fuzion.java.call_s0",
@@ -544,7 +571,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                        "fuzion_java_call_s0",
                                        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;",
                                        Names.JAVA_LANG_OBJECT));
-          return newFuzionJavaCall(jvm, rc, exec);
+          return returnResult(jvm, cl, pre, rc, exec);
         });
 
     put("fuzion.java.call_c0",
@@ -561,7 +588,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                        "fuzion_java_call_c0",
                                        "(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;",
                                        Names.JAVA_LANG_OBJECT));
-          return newFuzionJavaCall(jvm, rc, exec);
+          return returnResult(jvm, cl, pre, rc, exec);
         });
 
     put("fuzion.sys.args.count",

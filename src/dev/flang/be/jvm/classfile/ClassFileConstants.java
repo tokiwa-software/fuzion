@@ -674,6 +674,7 @@ public interface ClassFileConstants
   static ClassType JAVA_LANG_STRING = new ClassType("java/lang/String");
 
   static ClassType NULL_TYPE = new ClassType("java/lang/Object");
+  static ClassType ERROR_TYPE = new ClassType("dev/flang/be/jvm/runtime/JavaError");
 
   static class ArrayType extends AType
   {

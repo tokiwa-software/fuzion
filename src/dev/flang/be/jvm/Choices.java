@@ -773,10 +773,10 @@ public class Choices extends ANY implements ClassFileConstants
         }
       case general:
         {
-          var create = jvm.new0(newcl)
-            .andThen(Expr.DUP)
-            .andThen(Expr.iconst(tagNum))
-            .andThen(Expr.putfield(_names.javaClass(newcl),
+          var create = jvm.new0(newcl)                                            // choice
+            .andThen(Expr.DUP)                                                    // choice, choice
+            .andThen(Expr.iconst(tagNum))                                         // choice, choice, int
+            .andThen(Expr.putfield(_names.javaClass(newcl),                       // choice
                                    Names.TAG_NAME,
                                    ClassFileConstants.PrimitiveType.type_int));
           var fn = generalValueFieldName(newcl, tagNum);
@@ -787,10 +787,10 @@ public class Choices extends ANY implements ClassFileConstants
             }
           else
             {
-              res = create
-                .andThen(Expr.DUP)
-                .andThen(value)
-                .andThen(Expr.putfield(_names.javaClass(newcl),
+              res = create                                               // choice
+                .andThen(Expr.DUP)                                       // choice, choice
+                .andThen(value)                                          // choice, choice, value
+                .andThen(Expr.putfield(_names.javaClass(newcl),          // choice
                                        fn,
                                        ft));
             }

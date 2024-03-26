@@ -1646,6 +1646,36 @@ public abstract class Expr extends ByteCode
     };
   }
 
+  /**
+   * Do an instanceof check for current value on the stack
+   *
+   * @param jt the type the instanceof should check for.
+   *
+   * @return the Expr doing the instanceof check.
+   */
+  public static Expr instanceOf(JavaType jt)
+  {
+    return new Expr()
+      {
+        public String toString() { return "instanceof"; }
+        public JavaType type()
+        {
+          return PrimitiveType.type_boolean;
+        }
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
+        {
+          code(ba, O_instanceof, cf.cpClass(jt.refDescriptor()));
+        }
+        @Override
+        public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack,
+          List<VerificationType> locals)
+        {
+          stack.pop();
+          stack.push(VerificationType.Integer);
+        }
+    };
+  }
+
 
   /**
    * Create an empty, endless loop. This can be used for unreachable code to
