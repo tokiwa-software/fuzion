@@ -474,7 +474,7 @@ class ForClass extends ANY
         data_dynamic.append("\n" +
                             "  # call Java instance method '" + me + "':\n" +
                             "  #\n" +
-                            "  public " + fn + fp + " " + complexResultType(me, fr) + " =>\n" +
+                            "  public " + fn + fp + " " + outcomeResultType(me, fr) + " =>\n" +
                             "    " + ("match fuzion.java.call_virtual (" + fr + ") " +
                                       fuzionString(_class.getName()) + " " +
                                       fuzionString(jn) + " " +
@@ -490,7 +490,7 @@ class ForClass extends ANY
         data_static.append("\n" +
                             "  # call Java static method '" + me + "':\n" +
                             "  #\n" +
-                            "  public " + fn + fp + " " + complexResultType(me, fr) + " =>\n" +
+                            "  public " + fn + fp + " " + outcomeResultType(me, fr) + " =>\n" +
                             "    " + ("match fuzion.java.call_static (" + fr + ") " +
                                       fuzionString(me.getDeclaringClass().getName()) + " " +
                                       fuzionString(jn) + " " +
@@ -507,7 +507,7 @@ class ForClass extends ANY
    * If excecutable throws any checked exception
    * the result type `fr` is wrapped in an outcome.
    */
-  private String complexResultType(Executable exc, String fr)
+  private String outcomeResultType(Executable exc, String fr)
   {
     return hasCheckedExceptions(exc) ? "outcome("+fr+")" : fr;
   }
@@ -533,7 +533,7 @@ class ForClass extends ANY
     data_static.append("\n" +
                        "  # call Java constructor '" + co + "':\n" +
                        "  #\n" +
-                       "  public " + fn + fp + " " + complexResultType(co, fr) + " =>\n" +
+                       "  public " + fn + fp + " " + outcomeResultType(co, fr) + " =>\n" +
                        "    " + ("match fuzion.java.call_constructor (" + fr + ") " +
                                  fuzionString(co.getDeclaringClass().getName()) + " " +
                                  fuzionString(js) + " " +
