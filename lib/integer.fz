@@ -147,7 +147,7 @@ module:public integer : numeric is
     n := integer.this.as_string base
 
     # split n into sign and digits
-    (sgn, digits) := if (integer.this.sign < 0) ("-", String.from_bytes (n.utf8.drop 1)) else ("", n)
+    (sgn, digits) := if (integer.this.sign < 0) ($"-", String.from_bytes (n.utf8.drop 1)) else ("", n)
 
     # create required additional zeros
     zeros := "0" * (max 0 (len - n.byte_length))

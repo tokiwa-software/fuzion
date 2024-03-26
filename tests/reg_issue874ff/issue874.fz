@@ -277,10 +277,10 @@ test_return_this is
   a is
     x a.this =>
       a.this
-    redef as_string => "a"
+    redef as_string => $"a"
 
   b : a is
-    redef as_string => "b"
+    redef as_string => $"b"
 
   say a.x
   say b.x
@@ -293,10 +293,10 @@ test_return_this
 aaa is
   x aaa.this =>
     aaa.this
-  redef as_string => "a"
+  redef as_string => $"a"
 
 bbb : aaa is
-  redef as_string => "b"
+  redef as_string => $"b"
 
 say aaa.x
 say bbb.x
@@ -315,7 +315,7 @@ r is
     redef as_string => "r.a"
 
 c : r.a is
-  redef as_string => "c"
+  redef as_string => $"c"
 
 say q.b.x
 say r.a.x
@@ -327,7 +327,7 @@ say c.x
 d is
   y => 3
   x d.this =>
-    redef as_string => "d"
+    redef as_string => $"d"
     d.this
 
 t is
@@ -343,10 +343,10 @@ _ := t.e.x.y
 ua is
   x ua.this =>
     ua.this
-  redef as_string => "a"
+  redef as_string => $"a"
 
 ub : ua is
-  redef as_string => "b"
+  redef as_string => $"b"
 
 uq is
   v := "v"
@@ -361,7 +361,7 @@ ur is
     redef as_string => "r.a"
 
 uc : ur.a is
-  redef as_string => "c"
+  redef as_string => $"c"
 
 say ua.x
 say ub.x
@@ -385,7 +385,7 @@ test_generic_this_type is
     redef as_string => "g $T"
 
   h : g bool is
-    redef as_string => "h"
+    redef as_string => $"h"
 
   a := g i32
   b := g i32
