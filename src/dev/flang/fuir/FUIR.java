@@ -1928,7 +1928,13 @@ hw25 is
   }
 
 
-  // NYI replace by more intelligent code
+  /**
+   * For a given tag return the index of the corresponding case.
+   *
+   * @param tag e.g. 0,1,2,...
+   *
+   * @return the index of the case for tag `tag`
+   */
   public int matchCaseIndex(int cl, int c, int i, int tag)
   {
     var result = -1;
@@ -1959,8 +1965,7 @@ hw25 is
    *
    * @return array of tag numbers this case matches
    */
-  // NYI: UNDER DEVELOPMENT thread safety, #2760
-  public synchronized int[] matchCaseTags(int cl, int c, int ix, int cix)
+  public int[] matchCaseTags(int cl, int c, int ix, int cix)
   {
     if (PRECONDITIONS) require
       (ix >= 0,
