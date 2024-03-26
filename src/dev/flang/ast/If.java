@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import java.util.Iterator;
 
+import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -63,6 +64,7 @@ public class If extends ExprWithPos
    *
    */
   public If elseIf;
+  public Expr elseIfDesugared;
 
   public AbstractType _type;
 
@@ -224,7 +226,7 @@ public class If extends ExprWithPos
    *
    * @return this.
    */
-  public If visit(FeatureVisitor v, AbstractFeature outer)
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     createDefaultElseIfMissing();
     cond = cond.visit(v, outer);
@@ -235,10 +237,13 @@ public class If extends ExprWithPos
       }
     if (elseIf != null)
       {
-        elseIf = elseIf.visit(v, outer);
+        elseIfDesugared = elseIf.visit(v, outer);
+        if (elseIfDesugared instanceof If i)
+          {
+            elseIf = i;
+          }
       }
-    v.action(this, outer);
-    return this;
+    return v.action(this, outer);
   }
 
 
@@ -366,19 +371,44 @@ public class If extends ExprWithPos
 
 
   /**
-   * Get else block for this if.
+   * Resolve syntactic sugar, e.g., by replacing anonymous inner functions by
+   * declaration of corresponding inner features. Add (f,<>) to the list of
+   * features to be searched for runtime types to be layouted.
    *
-   * @return an else block.
+   * @param res this is called during type resolution, res gives the resolution
+   * instance.
+   *
+   * @param outer the feature that contains this implementation.
    */
-  public Expr elseBlock()
+  public Expr resolveSyntacticSugar2(Resolution res, AbstractFeature outer)
   {
     if (PRECONDITIONS) require
-      (elseBlock != null || elseIf != null);
+      ((elseBlock == null) != (elseIf == null));
 
-    return
-      elseBlock != null ? elseBlock
-                        : elseIf;
+    return Errors.any()
+      ? this  // no need to possible produce more errors
+      : new AbstractMatch() {
+          @Override
+          public Expr subject()
+          {
+            return cond;
+          }
+          @Override
+          public SourcePosition pos()
+          {
+            return If.this.pos();
+          }
+          @Override
+          public List<AbstractCase> cases()
+          {
+            var el = elseBlock != null ? elseBlock : elseIfDesugared;
+            return new List<AbstractCase>(
+              new Case(block.pos(), new List<AbstractType>(Types.resolved.f_TRUE.selfType()), block),
+              new Case(el.pos(), new List<AbstractType>(Types.resolved.f_FALSE.selfType()), el));
+          }
+        };
   }
+
 
   /**
    * toString
