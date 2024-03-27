@@ -129,7 +129,7 @@ public class Intrinsics extends ANY
         f.close();
         return true;
       }
-      catch(Exception e)
+      catch(Throwable e)
       {
         return false;
       }
@@ -404,7 +404,7 @@ public class Intrinsics extends ANY
 
               return new i32Value(bytesRead);
             }
-          catch (Exception e)
+          catch (Throwable e)
             {
               return new i32Value(-2);
             }
@@ -429,7 +429,7 @@ public class Intrinsics extends ANY
                 }
               return new i32Value(0);
             }
-          catch (Exception e)
+          catch (Throwable e)
             {
               return new i32Value(-1);
             }
@@ -442,7 +442,7 @@ public class Intrinsics extends ANY
               boolean b = Files.deleteIfExists(path);
               return new boolValue(b);
             }
-          catch (Exception e)
+          catch (Throwable e)
             {
               return new boolValue(false);
             }
@@ -456,7 +456,7 @@ public class Intrinsics extends ANY
               Files.move(oldPath, newPath);
               return new boolValue(true);
             }
-          catch (Exception e)
+          catch (Throwable e)
             {
               return new boolValue(false);
             }
@@ -469,7 +469,7 @@ public class Intrinsics extends ANY
               Files.createDirectory(path);
               return new boolValue(true);
             }
-          catch (Exception e)
+          catch (Throwable e)
             {
               return new boolValue(false);
             }
@@ -500,7 +500,7 @@ public class Intrinsics extends ANY
                   System.exit(1);
               }
             }
-          catch (Exception e)
+          catch (Throwable e)
             {
               open_results[1] = -1;
             }
@@ -541,6 +541,10 @@ public class Intrinsics extends ANY
             {
               err = SystemErrNo.EACCES;
             }
+          catch (Throwable e)
+            {
+              err = SystemErrNo.UNSPECIFIED;
+            }
 
           stats[0] = err.errno;
           stats[1] = 0;
@@ -559,7 +563,7 @@ public class Intrinsics extends ANY
               seekResults[0] = raf.getFilePointer();
               return Value.EMPTY_VALUE;
             }
-          catch (Exception e)
+          catch (Throwable e)
             {
               seekResults[1] = -1;
               return Value.EMPTY_VALUE;
@@ -574,7 +578,7 @@ public class Intrinsics extends ANY
               arr[0] = ((RandomAccessFile)_openStreams_.get(fd)).getFilePointer();
               return Value.EMPTY_VALUE;
             }
-          catch (Exception e)
+          catch (Throwable e)
             {
               arr[1] = -1;
               return Value.EMPTY_VALUE;
@@ -625,7 +629,7 @@ public class Intrinsics extends ANY
                   }
                 };
             }
-          catch (IOException e)
+          catch (Throwable e)
             {
               ((int[])args.get(4).arrayData()._array)[0] = -1;
               return new ArrayData(new byte[0]);
@@ -661,7 +665,7 @@ public class Intrinsics extends ANY
                 }
               });
             }
-          catch (IOException e)
+          catch (Throwable e)
             {
               open_results[1] = -1;
             }
@@ -972,7 +976,7 @@ public class Intrinsics extends ANY
           result[0] = SystemErrNo.EADDRINUSE.errno;
           return new i32Value(-1);
         }
-      catch(IOException e)
+      catch(Throwable e)
         {
           result[0] = -1;
           return new i32Value(-1);
@@ -1000,7 +1004,7 @@ public class Intrinsics extends ANY
             }
           throw new Error("NYI");
         }
-      catch(IOException e)
+      catch(Throwable e)
         {
           return new boolValue(false);
         }
@@ -1043,6 +1047,11 @@ public class Intrinsics extends ANY
           result[0] = SystemErrNo.ECONNREFUSED.errno;
           return new i32Value(-1);
         }
+      catch(Throwable e)
+        {
+          result[0] = SystemErrNo.UNSPECIFIED.errno;
+          return new i32Value(-1);
+        }
     });
 
     putUnsafe("fuzion.sys.net.get_peer_address", (excecutor, innerClazz) -> args -> {
@@ -1056,7 +1065,7 @@ public class Intrinsics extends ANY
             }
           return new i32Value(-1);
         }
-      catch (IOException e)
+      catch (Throwable e)
         {
           return new i32Value(-1);
         }
@@ -1071,7 +1080,7 @@ public class Intrinsics extends ANY
             }
           return new u16Value(0);
         }
-      catch (IOException e)
+      catch (Throwable e)
         {
           return new u16Value(0);
         }
@@ -1102,7 +1111,7 @@ public class Intrinsics extends ANY
           ((long[])args.get(4).arrayData()._array)[0] = bytesRead;
           return new boolValue(bytesRead != -1);
         }
-      catch(IOException e) //SocketTimeoutException and others
+      catch(Throwable e) //SocketTimeoutException and others
         {
           // unspecified error
           ((long[])args.get(4).arrayData()._array)[0] = -1;
@@ -1118,7 +1127,7 @@ public class Intrinsics extends ANY
           sc.write(ByteBuffer.wrap(fileContent));
           return new i32Value(0);
         }
-      catch(IOException e)
+      catch(Throwable e)
         {
           return new i32Value(-1);
         }
@@ -1139,7 +1148,7 @@ public class Intrinsics extends ANY
           asc.configureBlocking(blocking == 1);
           return new i32Value(0);
         }
-      catch(IOException e)
+      catch(Throwable e)
         {
           return new i32Value(-1);
         }
@@ -1411,7 +1420,7 @@ public class Intrinsics extends ANY
           result[3] = _openStreams_.add(process.getErrorStream());
           return new i32Value(0);
         }
-      catch (IOException e)
+      catch (Throwable e)
         {
           return new i32Value(-1);
         }
@@ -1426,7 +1435,7 @@ public class Intrinsics extends ANY
           _openProcesses_.remove(desc);
           return new i32Value(result);
         }
-      catch(InterruptedException e)
+      catch(Throwable e)
         {
           return new i32Value(-1);
         }
@@ -1444,7 +1453,7 @@ public class Intrinsics extends ANY
             ? new i32Value(0)
             : new i32Value(readBytes);
         }
-      catch (IOException e)
+      catch (Throwable e)
         {
           return new i32Value(-1);
         }
@@ -1459,7 +1468,7 @@ public class Intrinsics extends ANY
           os.write(buff);
           return new i32Value(buff.length);
         }
-      catch (IOException e)
+      catch (Throwable e)
         {
           return new i32Value(-1);
         }
