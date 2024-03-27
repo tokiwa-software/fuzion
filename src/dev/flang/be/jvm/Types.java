@@ -179,8 +179,8 @@ public class Types extends ANY implements ClassFileConstants
             var maincl = _fuir.mainClazzId();
             var bc_run =
               Expr.UNIT
-              .andThen(_fuir.hasPrecondition(maincl) ? invokeStatic(maincl, true) : Expr.UNIT)
-              .andThen(invokeStatic(maincl, false)).drop()
+              .andThen(_fuir.hasPrecondition(maincl) ? invokeStatic(maincl, true, -1) : Expr.UNIT)
+              .andThen(invokeStatic(maincl, false, -1)).drop()
               .andThen(Expr.RETURN);
             var code_run = cf.codeAttribute(Names.MAIN_RUN + " in " + _fuir.clazzAsString(cl), bc_run, new List<>(), new List<>(), ClassFile.StackMapTable.empty(cf, new List<>(VerificationType.UninitializedThis), bc_run));
             cf.method(ACC_PUBLIC, Names.MAIN_RUN, "()V", new List<>(code_run));
@@ -219,7 +219,7 @@ public class Types extends ANY implements ClassFileConstants
   }
 
 
-  Expr invokeStatic(int cc, boolean preCalled)
+  Expr invokeStatic(int cc, boolean preCalled, int line)
   {
     var callingIntrinsic = !preCalled && _fuir.clazzKind(cc) == FUIR.FeatureKind.Intrinsic;
     var cls   = callingIntrinsic ? Names.RUNTIME_INTRINSICS_CLASS
@@ -230,9 +230,10 @@ public class Types extends ANY implements ClassFileConstants
     return Expr.invokeStatic(cls,
                              fname,
                              descriptor(cc, preCalled),
-                             resultType(cc, preCalled));
+                             resultType(cc, preCalled),
+                             line);
   }
-  Expr invokeStaticCombindedPreAndCall(int cc)
+  Expr invokeStaticCombindedPreAndCall(int cc, int line)
   {
     var cls   = _names.javaClass(cc);
     var fname = _fuir.clazzContract(cc, FUIR.ContractKind.Pre, 0) >= 0 ? Names.COMBINED_NAME
@@ -240,7 +241,8 @@ public class Types extends ANY implements ClassFileConstants
     return Expr.invokeStatic(cls,
                              fname,
                              descriptor(cc, false),
-                             resultType(cc, false));
+                             resultType(cc, false),
+                             line);
   }
 
 
