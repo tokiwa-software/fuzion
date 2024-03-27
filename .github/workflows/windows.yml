@@ -60,18 +60,18 @@ jobs:
 
       - name: echo versions
         run: |
-          export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-21/bin:$PATH"
+          export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-21/bin:$JAVA_HOME/bin/server:$PATH"
           clang --version
           javac --version
 
       - name: build libgc
         run: |
-          export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-21/bin:$PATH"
+          export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-21/bin:$JAVA_HOME/bin/server:$PATH"
           ./bin/windows_install_boehm_gc.sh
 
       - name: run tests
         run: |
-          export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-21/bin:$PATH"
+          export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-21/bin:$JAVA_HOME/bin/server:$PATH"
           export FUZION_CLANG_INSTALLED_DIR="D:/a/_temp/msys64/ucrt64/bin"
           # change default codepage to utf-8 and run tests
           # if we don't change codepage emoji world in tests/javaBase will not work
