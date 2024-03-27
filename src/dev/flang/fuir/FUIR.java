@@ -1134,7 +1134,7 @@ hw25 is
           {
           case Abstract, Choice -> false;
           case Intrinsic, Routine, Field, Native ->
-            (cc.isInstantiated() || cc.feature().isOuterRef() || cc.feature().isTypeFeature())
+            (cc.isInstantiated() || cc.feature().isOuterRef())
             && cc != Clazzes.Const_String.getIfCreated()
             && !cc.isAbsurd()
             && !cc.isBoxed();
