@@ -81,11 +81,11 @@ public class Interpreter extends ANY
       }
     catch (StackOverflowError e)
       {
-        Errors.fatal("*** " + e + "\n" + Excecutor.callStack());
+        Errors.fatal("*** " + e + "\n" + Excecutor.callStack(_fuir));
       }
     catch (RuntimeException | Error e)
       {
-        Errors.error("*** " + e + "\n" + Excecutor.callStack());
+        Errors.error("*** " + e + "\n" + Excecutor.callStack(_fuir));
         throw e;
       }
   }

@@ -110,6 +110,16 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
       return _fuir.codeAtAsPos(_c, _i);
     }
 
+
+    /**
+     * Return the actual source code position held by this instance.
+     */
+    public int site()
+    {
+      return _fuir.siteFromCI(_c, _i);
+    }
+
+
     /**
      * Join a List of RESULT from subsequent statements into a compound
      * statement.  For a code generator, this could, e.g., join statements "a :=

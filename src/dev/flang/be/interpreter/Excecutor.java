@@ -547,7 +547,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
       {
         Errors.runTime(pos(),
                        "Precondition does not hold",
-                       "For call to " + _fuir.clazzAsStringNew(cl) + "\n" + callStack());
+                       "For call to " + _fuir.clazzAsStringNew(cl) + "\n" + callStack(fuir()));
       }
     return null;
   }
@@ -569,15 +569,8 @@ public class Excecutor extends ProcessStatement<Value, Object>
    */
   Value callOnInstance(int cc, Instance cur, Value outer, List<Value> args, boolean pre)
   {
-    FuzionThread.current()._callStackFrames.push(_fuir.clazzForInterpreter(cc));
-    var pos = this.pos();
-    FuzionThread.current()._callStack.push(new HasSourcePosition() {
-      @Override
-      public SourcePosition pos()
-      {
-        return pos;
-      }
-    });
+    FuzionThread.current()._callStackFrames.push(cc);
+    FuzionThread.current()._callStack.push(site());
 
     new AbstractInterpreter<>(_fuir, new Excecutor(cur, outer, args))
       .process(cc, pre);
@@ -596,13 +589,13 @@ public class Excecutor extends ProcessStatement<Value, Object>
    *
    * @param call the call of the entry to show
    */
-  private static void showFrame(StringBuilder sb, Clazz frame, HasSourcePosition call)
+  private static void showFrame(FUIR fuir, StringBuilder sb, int frame, int callSite)
   {
-    if (frame != null)
+    if (frame != -1)
       {
-        sb.append(frame).append(": ");
+        sb.append(_fuir.clazzAsStringNew(frame)).append(": ");
       }
-    sb.append(call.pos().show()).append("\n");
+    sb.append(_fuir.siteAsPos(callSite).show()).append("\n");
   }
 
 
@@ -619,7 +612,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
    *
    * @param call the call of the previous entry
    */
-  private static void showRepeat(StringBuilder sb, int repeat, Clazz frame, HasSourcePosition call)
+  private static void showRepeat(FUIR fuir, StringBuilder sb, int repeat, int frame, int callSite)
   {
     if (repeat > 1)
       {
@@ -627,7 +620,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
       }
     else if (repeat > 0)
       {
-        showFrame(sb, frame, call);
+        showFrame(fuir, sb, frame, callSite);
       }
   }
 
@@ -635,17 +628,17 @@ public class Excecutor extends ProcessStatement<Value, Object>
   /**
    * Current call stack as a string for debugging output.
    */
-  public static String callStack()
+  public static String callStack(FUIR fuir)
   {
     StringBuilder sb = new StringBuilder("Call stack:\n");
-    Clazz lastFrame = null;
-    HasSourcePosition lastCall = null;
+    int lastFrame = -1;
+    int lastCall = -1;
     int repeat = 0;
     var s = FuzionThread.current()._callStack;
     var sf = FuzionThread.current()._callStackFrames;
     for (var i = s.size()-1; i >= 0; i--)
       {
-        Clazz frame = i<sf.size() ? sf.get(i) : null;
+        int frame = i<sf.size() ? sf.get(i) : null;
         var call = s.get(i);
         if (frame == lastFrame && call == lastCall)
           {
@@ -653,14 +646,14 @@ public class Excecutor extends ProcessStatement<Value, Object>
           }
         else
           {
-            showRepeat(sb, repeat, lastFrame, lastCall);
+            showRepeat(fuir, sb, repeat, lastFrame, lastCall);
             repeat = 0;
-            showFrame(sb, frame, call);
+            showFrame(fuir, sb, frame, call);
             lastFrame = frame;
             lastCall = call;
           }
       }
-    showRepeat(sb, repeat, lastFrame, lastCall);
+    showRepeat(fuir, sb, repeat, lastFrame, lastCall);
     return sb.toString();
   }
 
