@@ -471,7 +471,7 @@ public class Fuzion extends Tool
     {
       var mir = fe.createMIR();                                                           f.timer("createMIR");
       var air = new MiddleEnd(fe._options, mir, fe.mainModule() /* NYI: remove */).air(); f.timer("me");
-      var fuir = new Optimizer(fe._options, air).fuir();                              f.timer("ir");
+      var fuir = new Optimizer(fe._options, air).fuir();                                  f.timer("ir");
       process(fe._options, fuir);
     }
 
