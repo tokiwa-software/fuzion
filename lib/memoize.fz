@@ -50,7 +50,7 @@
 # NYI this should be map implementation
 # agnostic via map effect. currently using mutate and ordered_map.
 #
-# NYI constraint for T should be property.orderable, has_hashcode, or has_ordinal
+# NYI constraint for T should be property.hashable
 #
 public memoize(LM type : mutate, T type : property.orderable, R type, f T->R) T->R =>
   ref : Unary R T
