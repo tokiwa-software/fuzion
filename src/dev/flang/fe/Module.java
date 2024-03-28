@@ -56,7 +56,7 @@ import java.util.TreeSet;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class Module extends ANY
+public abstract class Module extends ANY implements FeatureLookup
 {
 
 
@@ -392,13 +392,19 @@ public abstract class Module extends ANY
     var s = d._declaredOrInheritedFeatures;
     if (s == null)
       {
+        s = new TreeMap<>();
+
         if (outer instanceof LibraryFeature olf)
           {
             // NYI: cleanup: See #462: Remove once sub-directories are loaded
             // directly, not implicitly when outer feature is found
             loadInnerFeatures(outer);
+
+            for (var f : olf.declaredFeatures())
+              {
+                s.put(f.featureName(), f);
+              }
           }
-        s = new TreeMap<>();
 
         // first we search in additional modules
         for (Module libraryModule : modules)

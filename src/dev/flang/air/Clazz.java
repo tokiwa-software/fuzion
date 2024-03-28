@@ -54,7 +54,7 @@ import dev.flang.ast.ExpressionVisitor; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 
-import dev.flang.fe.Module;
+import dev.flang.fe.FeatureLookup;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -87,8 +87,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   static final Clazz[] NO_CLAZZES = new Clazz[0];
 
 
-  // NYI: CLEANUP #2411 remove this dependency, clazzes should be build from module files only
-  public static Module _module;
+  public static FeatureLookup _flu;
 
 
   /*-----------------------------  classes  -----------------------------*/
@@ -933,7 +932,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         (isUsedAsDynamicOuterRef() || isRef()))
       {
         // NYI: This should be removed, but this still finds some clazzes that findAllClasses() missed. Need to check why.
-        for (AbstractFeature f: _module.allInnerAndInheritedFeatures(feature()))
+        for (AbstractFeature f: _flu.allInnerAndInheritedFeatures(feature()))
           {
             lookupIfInstantiated(f);
           }
@@ -991,7 +990,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
               }
           }
       }
-    return _module.lookupFeature(feature(), fn, f);
+    return _flu.lookupFeature(feature(), fn, f);
   }
 
 
@@ -1549,7 +1548,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         var f = feature();
         inspectCode(new List<>(), f);
 
-        for (AbstractFeature ff: _module.allInnerAndInheritedFeatures(f))
+        for (AbstractFeature ff: _flu.allInnerAndInheritedFeatures(f))
           {
             Clazzes.whenCalledDynamically(ff, () -> lookupIfInstantiated(ff));
           }
@@ -2657,7 +2656,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           // note that intrinsics may have fields that are used in the intrinsic's pre-condition!
           false && isRef() /* NYI: would be good to add isRef() here and create _fields only for value types, does not work with C backend yet */
           ? NO_CLAZZES
-          : actualFields(_module.allInnerAndInheritedFeatures(feature()));
+          : actualFields(_flu.allInnerAndInheritedFeatures(feature()));
       }
     return isRef() ? NO_CLAZZES : _fields;
   }
