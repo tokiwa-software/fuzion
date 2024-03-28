@@ -802,7 +802,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # The performance of iterating the utf8 bytes of a string is O(l+n) for an
   # array of length l created by concatenating n sub-strings.
   #
-  public type.from_mutable_array(a Mutable_Array Any) ref : String is  // NYI: Remove?
+  public type.from_mutable_array(a container.Mutable_Array Any) ref : String is  // NYI: Remove?
 
     redef utf8 Sequence u8 =>
       a.flat_map u8 ai->ai.as_string.utf8

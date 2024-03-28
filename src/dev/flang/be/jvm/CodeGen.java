@@ -401,7 +401,7 @@ class CodeGen
                 tvalue = tvalue.andThen(Expr.checkcast(_types.javaType(tc)));
               }
             var call = args(false, tvalue, args, cc, _fuir.clazzArgCount(cc))
-              .andThen(_types.invokeStaticCombindedPreAndCall(cc));
+              .andThen(_types.invokeStaticCombindedPreAndCall(cc, pos().line()));
 
             var rt = _fuir.clazzResultClazz(cc);
             res = makePair(call, rt);
@@ -496,7 +496,7 @@ class CodeGen
         var dynCall = args(true, tvalue, args, cc0, isCall ? _fuir.clazzArgCount(cc0) : 1)
           .andThen(Expr.comment("Dynamic access of " + _fuir.clazzAsString(cc0)))
           .andThen(addDynamicFunctionAndStubs(cc0, ccs, isCall));
-        if (AbstractInterpreter.clazzHasUniqueValue(_fuir, rt))
+        if (AbstractInterpreter.clazzHasUnitValue(_fuir, rt))
           {
             s = dynCall;  // make sure we do not throw away the code even if it is of unit type
           }
@@ -567,7 +567,7 @@ class CodeGen
           }
         addStub(tt, cc, dn, ds, isCall, initLocals);
       }
-    return Expr.invokeInterface(intfc._name, dn, ds, dr);
+    return Expr.invokeInterface(intfc._name, dn, ds, dr, pos().line());
   }
 
 
@@ -749,7 +749,7 @@ class CodeGen
                       tvalue = tvalue.andThen(Expr.checkcast(_types.resultType(oc)));
                     }
                   var call = args(false, tvalue, args, cc, _fuir.clazzArgCount(cc))
-                    .andThen(_types.invokeStatic(cc, preCalled));
+                    .andThen(_types.invokeStatic(cc, preCalled, pos().line()));
 
                   res = makePair(call, rt);
                 }
@@ -1020,7 +1020,7 @@ class CodeGen
                     .andThen(c.v0());
                 }
               result = result
-                .andThen(_types.invokeStaticCombindedPreAndCall(constCl));
+                .andThen(_types.invokeStaticCombindedPreAndCall(constCl, pos().line()));
 
               yield new Pair<>(result, Expr.UNIT);
             }

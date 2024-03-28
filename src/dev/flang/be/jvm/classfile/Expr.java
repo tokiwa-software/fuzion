@@ -125,6 +125,11 @@ public abstract class Expr extends ByteCode
       }
     }
 
+    @Override
+    public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+    {
+      idx[0] += 3;
+    }
 
   }
 
@@ -150,6 +155,14 @@ public abstract class Expr extends ByteCode
     public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
     {
       code(ba, O_ldc, cpEntry(cf));
+    }
+    @Override
+    public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+    {
+      var o = new ClassFile.Kaku();
+      var bcw = new ClassFile.ByteCodeWrite("", o);
+      this.code(bcw, cf);
+      idx[0] += o._b.toByteArray().length;
     }
   }
 
@@ -327,6 +340,12 @@ public abstract class Expr extends ByteCode
         default:
           throw new UnsupportedOperationException("Unimplemented method");
         }
+    }
+
+    @Override
+    public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+    {
+      idx[0] += _bc.length;
     }
   }
 
@@ -550,6 +569,10 @@ public abstract class Expr extends ByteCode
    */
   public static Expr invokeStatic(String cls, String name, String descr, JavaType rt)
   {
+    return invokeStatic(cls, name, descr, rt, -1);
+  }
+  public static Expr invokeStatic(String cls, String name, String descr, JavaType rt, int lineNumber)
+  {
     return new Expr()
       {
         public String toString() { return "invokeStatic " + cls + "." + name; }
@@ -573,6 +596,15 @@ public abstract class Expr extends ByteCode
               stack.pop();
             }
           stack.push(rt.vti());
+        }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          if (lineNumber != -1)
+            {
+              lnt.add(new Pair<Integer,Integer>(idx[0], lineNumber));
+            }
+          idx[0] += 3;
         }
     };
   }
@@ -611,6 +643,11 @@ public abstract class Expr extends ByteCode
               stack.pop();
             }
         }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          idx[0] += 3;
+        }
     };
   }
 
@@ -640,6 +677,11 @@ public abstract class Expr extends ByteCode
         public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
         {
           stack.pop();
+        }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          idx[0] += 3;
         }
     };
   }
@@ -676,6 +718,11 @@ public abstract class Expr extends ByteCode
             }
           stack.push(rt.vti());
         }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          idx[0] += 3;
+        }
     };
   }
 
@@ -693,7 +740,7 @@ public abstract class Expr extends ByteCode
    *
    * @return Code to produce bytecode for the interface call.
    */
-  public static Expr invokeInterface(String cls, String name, String descr, JavaType rt)
+  public static Expr invokeInterface(String cls, String name, String descr, JavaType rt, int lineNumber)
   {
     return new Expr()
       {
@@ -726,6 +773,15 @@ public abstract class Expr extends ByteCode
             }
           stack.push(rt.vti());
         }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          if (lineNumber != -1)
+            {
+              lnt.add(new Pair<Integer,Integer>(idx[0], lineNumber));
+            }
+          idx[0] += 3;
+        }
     };
   }
 
@@ -756,6 +812,11 @@ public abstract class Expr extends ByteCode
           stack.pop();
           // value
           stack.push(type.vti());
+        }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          idx[0] += 3;
         }
     };
   }
@@ -788,6 +849,11 @@ public abstract class Expr extends ByteCode
           // value
           stack.pop();
         }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          idx[0] += 3;
+        }
     };
   }
 
@@ -819,6 +885,11 @@ public abstract class Expr extends ByteCode
         {
           stack.push(type.vti());
         }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          idx[0] += 3;
+        }
     };
   }
 
@@ -847,6 +918,11 @@ public abstract class Expr extends ByteCode
         {
           // value
           stack.pop();
+        }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          idx[0] += 3;
         }
     };
   }
@@ -884,6 +960,18 @@ public abstract class Expr extends ByteCode
         {
           stack.push(VerificationType.Integer);
         }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          if (c >= -1 && c <= 5)
+            {
+              idx[0] += 1;
+            }
+          else
+            {
+              super.buildLineNumberTable(cf, lnt, idx);
+            }
+        }
     };
   }
 
@@ -911,6 +999,18 @@ public abstract class Expr extends ByteCode
         public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
         {
           stack.push(VerificationType.Long);
+        }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          if (c == 0L || c == 1L)
+            {
+              idx[0] += 1;
+            }
+          else
+            {
+              super.buildLineNumberTable(cf, lnt, idx);
+            }
         }
     };
   }
@@ -941,6 +1041,18 @@ public abstract class Expr extends ByteCode
         {
           stack.push(VerificationType.Float);
         }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          if (c == 0F || c == 1F || c == 2F)
+            {
+              idx[0] += 1;
+            }
+          else
+            {
+              super.buildLineNumberTable(cf, lnt, idx);
+            }
+        }
     };
   }
 
@@ -968,6 +1080,18 @@ public abstract class Expr extends ByteCode
         public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
         {
           stack.push(VerificationType.Double);
+        }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          if (c == 0F || c == 1F)
+            {
+              idx[0] += 1;
+            }
+          else
+            {
+              super.buildLineNumberTable(cf, lnt, idx);
+            }
         }
     };
   }
@@ -1056,6 +1180,11 @@ public abstract class Expr extends ByteCode
         {
           stack.push(VerificationType.Integer);
         }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          idx[0] += (index > 3 ? 2 : 1);
+        }
     };
   }
 
@@ -1082,6 +1211,11 @@ public abstract class Expr extends ByteCode
         public Pair<Integer, VerificationType> local()
         {
           return new Pair<>(index, VerificationType.Integer);
+        }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          idx[0] += (index > 3 ? 2 : 1);
         }
     };
   }
@@ -1115,6 +1249,11 @@ public abstract class Expr extends ByteCode
         {
           stack.push(VerificationType.Long);
         }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          idx[0] += (index > 3 ? 2 : 1);
+        }
     };
   }
 
@@ -1142,6 +1281,11 @@ public abstract class Expr extends ByteCode
         public Pair<Integer, VerificationType> local()
         {
           return new Pair<>(index, VerificationType.Long);
+        }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          idx[0] += (index > 3 ? 2 : 1);
         }
     };
   }
@@ -1175,6 +1319,11 @@ public abstract class Expr extends ByteCode
         {
           stack.push(VerificationType.Float);
         }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          idx[0] += (index > 3 ? 2 : 1);
+        }
     };
   }
 
@@ -1202,6 +1351,11 @@ public abstract class Expr extends ByteCode
         public Pair<Integer, VerificationType> local()
         {
           return new Pair<>(index, VerificationType.Float);
+        }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          idx[0] += (index > 3 ? 2 : 1);
         }
     };
   }
@@ -1235,6 +1389,11 @@ public abstract class Expr extends ByteCode
         {
           stack.push(VerificationType.Double);
         }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          idx[0] += (index > 3 ? 2 : 1);
+        }
     };
   }
 
@@ -1262,6 +1421,11 @@ public abstract class Expr extends ByteCode
         public Pair<Integer, VerificationType> local()
         {
           return new Pair<>(index, VerificationType.Double);
+        }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          idx[0] += (index > 3 ? 2 : 1);
         }
     };
   }
@@ -1306,6 +1470,11 @@ public abstract class Expr extends ByteCode
         {
           stack.push(vti);
         }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          idx[0] += (n>4 ? 2 : 1);
+        }
     };
   }
 
@@ -1334,6 +1503,11 @@ public abstract class Expr extends ByteCode
         {
           // vti is null if we store a void-like type.
           return new Pair<Integer,VerificationType>(n, vti == null ? VerificationType.Top : vti);
+        }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          idx[0] += (n>3 ? 2 : 1);
         }
     };
   }
@@ -1390,6 +1564,11 @@ public abstract class Expr extends ByteCode
         {
           stack.push(new VerificationType(className, (cf)->cf.cpClass(className).index()));
         }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          idx[0] += 3;
+        }
     };
   }
 
@@ -1420,6 +1599,11 @@ public abstract class Expr extends ByteCode
           // count → arrayref
           stack.pop();
           stack.push(type.vti());
+        }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          idx[0] += 3;
         }
       };
   }
@@ -1567,6 +1751,14 @@ public abstract class Expr extends ByteCode
               }
 
           }
+
+          @Override
+          public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+          {
+            idx[0] += 3;
+            fneg.buildLineNumberTable(cf, lnt, idx);
+            fpos.buildLineNumberTable(cf, lnt, idx);
+          }
         })
       .andThen(lEnd);
   }
@@ -1642,6 +1834,41 @@ public abstract class Expr extends ByteCode
           // backend does not generate redundant
           // checkcasts anymore.
           isRedundant = type().vti().compareTo(stack.peek()) == 0;
+        }
+        @Override
+        public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+        {
+          idx[0] += 3;
+        }
+    };
+  }
+
+  /**
+   * Do an instanceof check for current value on the stack
+   *
+   * @param jt the type the instanceof should check for.
+   *
+   * @return the Expr doing the instanceof check.
+   */
+  public static Expr instanceOf(JavaType jt)
+  {
+    return new Expr()
+      {
+        public String toString() { return "instanceof"; }
+        public JavaType type()
+        {
+          return PrimitiveType.type_boolean;
+        }
+        public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
+        {
+          code(ba, O_instanceof, cf.cpClass(jt.refDescriptor()));
+        }
+        @Override
+        public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack,
+          List<VerificationType> locals)
+        {
+          stack.pop();
+          stack.push(VerificationType.Integer);
         }
     };
   }
@@ -1748,6 +1975,15 @@ public abstract class Expr extends ByteCode
             protected boolean isJumpBackwards()
             {
               return s.isJumpBackwards();
+            }
+            @Override
+            public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+            {
+              Expr.this.buildLineNumberTable(cf, lnt, idx);
+              if (!Expr.this.isJumpBackwards())
+                {
+                  s.buildLineNumberTable(cf, lnt, idx);
+                }
             }
           };
       }
@@ -1865,6 +2101,19 @@ public abstract class Expr extends ByteCode
   public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
   {
 
+  }
+
+
+  /**
+   * This method is for traversing the code for
+   * building a line number table.
+   *
+   * @param cf the class file we building the line number table in
+   * @param lnt the current line number table
+   * @param idx the code index we are currently at
+   */
+  public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
+  {
   }
 
 

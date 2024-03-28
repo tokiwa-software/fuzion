@@ -98,7 +98,7 @@ is
 
     rotate (d f64) => G2D g tx ty rot+d
 
-    three_times(draw (G2D, Java.java.awt.Color) -> unit) unit =>
+    three_times(draw (G2D, Java.java.awt.Color) -> T) =>
       draw  G2D.this                           C1
       draw (G2D.this.rotate -2.0*f64.π/3) C2
       draw (G2D.this.rotate -4.0*f64.π/3) C3
@@ -106,7 +106,7 @@ is
     # Draw a filled arc of color c, center at (x,y), radius r, starting at angle
     # start and extending of len degrees.
     #
-    arc(c Java.java.awt.Color, x, y, r f64, start, len i32) unit =>
+    arc(c Java.java.awt.Color, x, y, r f64, start, len i32) =>
       g.setColor c
       rx := x * (f64.cos rot) - y * (f64.sin rot)
       ry := x * (f64.sin rot) + y * (f64.cos rot)
@@ -115,7 +115,7 @@ is
 
     # Draw a filled circle of color c, center at (x,y), radius r
     #
-    cir(c Java.java.awt.Color, x, y, r f64) unit =>
+    cir(c Java.java.awt.Color, x, y, r f64) =>
       arc c x y r 0 360
 
     # Draw the Fuzion logo
@@ -137,11 +137,10 @@ is
       three_times (g, c -> g.cir c 0 -r+b+r2 r2)
 
       // small circles
-      (rotate -2.0*f64.π/3).three_times (g, c -> g.cir c 0 -r+b+r2 r3)
+      _ := (rotate -2.0*f64.π/3).three_times (g, c -> g.cir c 0 -r+b+r2 r3)
 
 
-  gfx
-  is
+  gfx =>
     match java.awt.Frame.new
       e error => say "error: $e"
       f Java.java.awt.Frame =>
@@ -171,7 +170,7 @@ is
 
         timeout := ((envir.args.nth 1).get "50000").parse_i64.val 0
         java.lang.Thread.sleep_J timeout
-        f.setVisible false
+        _ := f.setVisible false
 
   gfx.this.gfx
   exit 0   # explicitly exit since JVM would otherwise keep us alive

@@ -582,7 +582,8 @@ public class Choices extends ANY implements ClassFileConstants
             .andThen(Expr.invokeInterface(_types.interfaceFile(subjClazz)._name,
                                           _names.getTag(subjClazz),
                                           "()I",
-                                          PrimitiveType.type_int));
+                                          PrimitiveType.type_int,
+                                          ai._processor.pos().line()));
 
           var lEnd = new Label();
           for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
@@ -773,10 +774,10 @@ public class Choices extends ANY implements ClassFileConstants
         }
       case general:
         {
-          var create = jvm.new0(newcl)
-            .andThen(Expr.DUP)
-            .andThen(Expr.iconst(tagNum))
-            .andThen(Expr.putfield(_names.javaClass(newcl),
+          var create = jvm.new0(newcl)                                            // choice
+            .andThen(Expr.DUP)                                                    // choice, choice
+            .andThen(Expr.iconst(tagNum))                                         // choice, choice, int
+            .andThen(Expr.putfield(_names.javaClass(newcl),                       // choice
                                    Names.TAG_NAME,
                                    ClassFileConstants.PrimitiveType.type_int));
           var fn = generalValueFieldName(newcl, tagNum);
@@ -787,10 +788,10 @@ public class Choices extends ANY implements ClassFileConstants
             }
           else
             {
-              res = create
-                .andThen(Expr.DUP)
-                .andThen(value)
-                .andThen(Expr.putfield(_names.javaClass(newcl),
+              res = create                                               // choice
+                .andThen(Expr.DUP)                                       // choice, choice
+                .andThen(value)                                          // choice, choice, value
+                .andThen(Expr.putfield(_names.javaClass(newcl),          // choice
                                        fn,
                                        ft));
             }

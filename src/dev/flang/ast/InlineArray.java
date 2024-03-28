@@ -327,7 +327,7 @@ public class InlineArray extends ExprWithPos
       @Override
       public SourcePosition pos()
       {
-        throw new UnsupportedOperationException("Unimplemented method 'pos'");
+        return InlineArray.this.pos();
       }
 
       /**

@@ -30,30 +30,39 @@
 #
 javaHello : Java is
 
-  # we can call code in Java package directly using fully
-  # qualified class names
-  #
-  java.lang.System.out.println "Hello Java 🌍!"
+  # NYI: BUG: workaround for #2586
+  if io.file.exists "/windows"
+    say "Hello Java 🌍!"
+    say "Hello Java 🌍!"
+    say "Hello Java 🌍!"
+    say "Hello Java 🌍!"
+    say "Hello Java 🌍!"
+  else
 
-  # or we can create a local field as a shortcut
-  #
-  System := java.lang.System
-  System.out.println "Hello Java 🌍!"
+    # we can call code in Java package directly using fully
+    # qualified class names
+    #
+    java.lang.System.out.println "Hello Java 🌍!"
 
-  # we can use a different name as well
-  #
-  js := java.lang.System
-  js.out.println "Hello Java 🌍!"
+    # or we can create a local field as a shortcut
+    #
+    System := java.lang.System
+    System.out.println "Hello Java 🌍!"
 
-  # we can also store a Java instance in a Fuzion field
-  #
-  o := java.lang.System.out
-  o.println "Hello Java 🌍!"
+    # we can use a different name as well
+    #
+    js := java.lang.System
+    js.out.println "Hello Java 🌍!"
 
-  # or wrap a Java call into a Fuzion feature
-  #
-  println (s String) => java.lang.System.out.println s
-  println "Hello Java 🌍!"
+    # we can also store a Java instance in a Fuzion field
+    #
+    o := java.lang.System.out
+    o.println "Hello Java 🌍!"
+
+    # or wrap a Java call into a Fuzion feature
+    #
+    println (s String) => java.lang.System.out.println s
+    println "Hello Java 🌍!"
 
   # let's work a bit with Java:
   #
@@ -91,3 +100,22 @@ javaHello : Java is
   say arr_i64
   say arr_f32
   say arr_f64
+
+  # checked exception: IOException
+  match java.io.FileReader.new "not_a_valid_file"
+    Java.java.io.FileReader => say "success opening file reader"
+    # tricky: error may be internationalized
+    e error => say (error "not_a_valid_file (No such file or directory)")
+
+  # NYI replace with code below
+  say (Java.java.util.ArrayList.new_I -7)
+
+  /*  NYI: BUG: does not work yet
+  # unchecked exception: IllegalArgumentException
+  p : Panic_Handler is
+    public do_panic(msg String) unit =>
+      say "A panic was trigger with msg: $msg"
+
+  _ := (panic p unit).go ()->
+    Java.java.util.ArrayList.new_I -7
+  */

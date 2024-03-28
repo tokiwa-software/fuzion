@@ -261,7 +261,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
         if (resf != -1)
           {
             var rfc = _fuir.clazzForInterpreter(resf);
-            if (!AbstractInterpreter.clazzHasUniqueValue(_fuir, rfc.resultClazz()._idInFUIR))
+            if (!AbstractInterpreter.clazzHasUnitValue(_fuir, rfc.resultClazz()._idInFUIR))
               {
                 rres = Interpreter.getField(rfc.feature(), rfc._select, _fuir.clazzForInterpreter(cc), cur, false);
               }
@@ -269,12 +269,12 @@ public class Excecutor extends ProcessStatement<Value, Object>
         yield pair(rres);
       case Field :
         var fc = _fuir.clazzForInterpreter(cc);
-        var fres = AbstractInterpreter.clazzHasUniqueValue(_fuir, rt)
+        var fres = AbstractInterpreter.clazzHasUnitValue(_fuir, rt)
           ? pair(unitValue())
           : pair(Interpreter.getField(fc.feature(), fc._select, _fuir.clazzForInterpreter(tt), tt == _fuir.clazzUniverse() ? _universe : tvalue, false));
 
         if (CHECKS)
-          check(fres != null, AbstractInterpreter.clazzHasUniqueValue(_fuir, rt) || fres.v0() != unitValue());
+          check(fres != null, AbstractInterpreter.clazzHasUnitValue(_fuir, rt) || fres.v0() != unitValue());
 
         yield fres;
       case Intrinsic :
@@ -387,12 +387,12 @@ public class Excecutor extends ProcessStatement<Value, Object>
       default -> {
         if (_fuir.clazzIsArray(constCl))
           {
-            var elementType = this._fuir.inlineArrayElementClazz(constCl);
+            var elementType = _fuir.inlineArrayElementClazz(constCl);
 
             var bb = ByteBuffer.wrap(d);
             var elCount = bb.getInt();
 
-            var arrayData = ArrayData.alloc(elCount, _fuir.clazzForInterpreter(elementType)._type);
+            var arrayData = ArrayData.alloc(elCount, _fuir, elementType);
 
             for (int idx = 0; idx < elCount; idx++)
               {
@@ -406,6 +406,8 @@ public class Excecutor extends ProcessStatement<Value, Object>
                 else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_u16 ) == 0) { ((char[])   (arrayData._array))[idx] = (char)c.u16Value(); }
                 else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_u32 ) == 0) { ((int[])    (arrayData._array))[idx] = c.u32Value(); }
                 else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_u64 ) == 0) { ((long[])   (arrayData._array))[idx] = c.u64Value(); }
+                else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_f32 ) == 0) { ((float[])  (arrayData._array))[idx] = c.f32Value(); }
+                else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_f64 ) == 0) { ((double[]) (arrayData._array))[idx] = c.f64Value(); }
                 else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_bool) == 0) { ((boolean[])(arrayData._array))[idx] = c.boolValue(); }
                 else                                                                           { ((Value[])  (arrayData._array))[idx] = c; }
               }

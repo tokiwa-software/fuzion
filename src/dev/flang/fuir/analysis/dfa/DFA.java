@@ -299,7 +299,7 @@ public class DFA extends ANY
           var cc = ccs[cci+1];
           tvalue.value().forAll(t -> {
               check
-                (t != Value.UNIT || AbstractInterpreter.clazzHasUniqueValue(_fuir, tt));
+                (t != Value.UNIT || AbstractInterpreter.clazzHasUnitValue(_fuir, tt));
               if (t == Value.UNIT ||
                   t._clazz == tt ||
                   t != Value.UNDEFINED && _fuir.clazzAsValue(t._clazz) == tt)
@@ -1903,7 +1903,11 @@ public class DFA extends ANY
                           */
         );
 
-    put("fuzion.java.Java_Object.is_null0"  , cl -> cl._dfa._bool );
+    put("fuzion.java.Java_Object.is_null0"  , cl ->
+        {
+          cl._dfa._readFields.add(cl._dfa._fuir.clazzArg(cl._cc, 0));
+          return cl._dfa._bool;
+        });
     put("fuzion.java.array_get"             , cl ->
         {
           var jref = cl._dfa._fuir.lookupJavaRef(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
