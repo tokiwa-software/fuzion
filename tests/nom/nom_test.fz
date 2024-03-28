@@ -1,0 +1,83 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test nom
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# test for nom, a parser combinator framework
+#
+nom_test =>
+
+
+  simple_parser_test is
+    p := nom.parsers
+
+    say ((p.to_string_parser p.whitespace0).call "\n \tHello").as_string.codepoint_length
+
+
+  hex_parser_test is
+    p   := nom.parsers
+
+    hex_color(r,g,b u8) is
+      redef as_string String =>
+        "r: $r, g: $g, b: $b"
+
+    is_valid(c codepoint) bool =>
+      codepoint.type.ascii_digit.contains c.val
+        || (u32 0x41 .. 0x46).contains c.val
+
+    # example: `A1` => u8
+    parser_two_digit_hex := (p.take_while_m_n codepoint 2 2 (x -> is_valid x)).map u8 (o1 -> (String.type.from_codepoints o1).parse_u32(16).val.as_u8)
+    # example: `#9F3A10` => tuple u8 u8 u8
+    parser_hex_tuple := p.preceded (p.tag "#") (p.tuple3 parser_two_digit_hex parser_two_digit_hex parser_two_digit_hex)
+    # example: `#9F3A10` => hex_color
+    parser_hex_color_seq_codepoints := parser_hex_tuple.map hex_color (t -> (r,g,b) := t; hex_color r g b)
+    # convert parser to take string not codepoints as input
+    parser_hex_color := p.to_string_input parser_hex_color_seq_codepoints
+
+    say (parser_hex_color.call "#9F3A10")
+    say (parser_hex_color.call "#9F3A1G")
+    say (parser_hex_color.call "Hello")
+    say (parser_hex_color.call "")
+
+
+  json_parser_test is
+    json_parser := nom.parsers.json
+    say (json_parser.call "")
+    say (json_parser.call " ")
+    say (json_parser.call "\{}")
+    say (json_parser.call " 42 ")
+    say (json_parser.call " null ")
+    say (json_parser.call " true ")
+    say (json_parser.call " false ")
+    say (json_parser.call "[1, 2, 3]")
+    say (json_parser.call "[1.5,2.5,3.5]")
+    say (json_parser.call "[-1.5,2.5E2,5.0e-1]")
+    say (json_parser.call "\"hello\\nworld\"")
+    say (json_parser.call "\{ \"name \":  \"sonoo\" }")
+    say (json_parser.call "\{ \"name \":  [ 1, true, false, null, \"sonoo\", \{ \"name \":  \"sonoo\" } ] }")
+    say (json_parser.call "\{  \"employee \":  \{  \"name \":  \"sonoo\",  \"salary \": 56000,  \"married \": true } }")
+
+  simple_parser_test
+  hex_parser_test
+  json_parser_test
+

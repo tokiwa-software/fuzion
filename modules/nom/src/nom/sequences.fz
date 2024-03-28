@@ -1,0 +1,54 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# nom.sequence -- parsers working on sequences of data
+#
+module sequences is
+
+  # take while cond is satisfied
+  public take_while0(T type, cond T -> bool) Parser (Sequence T) (Sequence T) (Sequence T) =>
+    parser (Sequence T) (Sequence T) (Sequence T) (input ->
+      rest Sequence T := input.drop_while cond
+      matched Sequence T := input.take_while cond
+      success rest matched
+      )
+
+
+  # take while cond is satisfied, at least once
+  public take_while1(T type, cond T -> bool) Parser (Sequence T) (Sequence T) (Sequence T) =>
+    parser (Sequence T) (Sequence T) (Sequence T) (input ->
+      matched Sequence T := input.take_while cond
+      if matched.is_empty
+        error "expected at least one match in: $input"
+      else
+        rest Sequence T := input.drop_while cond
+        success rest matched
+      )
+
+
+  # matches input as often as possible but at least m times and at most n times.
+  public take_while_m_n(T type, m, n i32, cond (T) -> bool) Parser (Sequence T) (Sequence T) (Sequence T) =>
+    parser (Sequence T) (Sequence T) (Sequence T) (input ->
+      if input.is_empty
+        error "input is empty"
+      else
+        taken := input
+          .take n
+          .take_while (x -> cond x)
+        if taken.count < m
+          error "not enough codepoints matched, expected $m or more, got {taken.count}"
+        else
+          success (input.drop taken.count).as_seq taken.as_seq
+    )

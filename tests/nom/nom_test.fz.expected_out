@@ -1,0 +1,20 @@
+3
+r: 159, g: 58, b: 16
+error: not enough codepoints matched, expected 2 or more, got 1
+error: tag (#) not found
+error: tag (#) not found
+error: alt: no parser successful
+error: alt: no parser successful
+{}
+42.0
+null
+true
+false
+[1.0, 2.0, 3.0]
+[1.5, 2.5, 3.5]
+[-1.5, 250.0, 0.5]
+"hello
+world"
+{(name  => "sonoo")}
+{(name  => [1.0, true, false, null, "sonoo", {(name  => "sonoo")}])}
+{(employee  => {(name  => "sonoo"), (salary  => 56000.0), (married  => true)})}

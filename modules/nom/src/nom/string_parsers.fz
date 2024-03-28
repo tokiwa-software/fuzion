@@ -1,0 +1,57 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# nom.string_parsers -- string parsers
+#
+module string_parsers is
+
+  # match str
+  public tag(str String) Parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint)
+  =>
+    parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (input ->
+      if (String.type.from_codepoints input).starts_with str
+        success (input.drop str.codepoint_length).as_seq str.as_codepoints
+      else
+        error "tag ($str) not found"
+    )
+
+
+  # match zero or more whitespace
+  public whitespace0 Parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) =>
+    parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (input ->
+      ws := input.take_while (x -> x.is_blank)
+      success (input.drop ws.count).as_seq ws.as_seq
+    )
+
+
+  # match one or more digits
+  public digit1 Parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) =>
+    sequences.take_while1 codepoint (c -> codepoint.type.ascii_digit.contains c.val)
+
+
+  # convert a parser taking a sequence of codepoints to a parser that takes a string
+  public to_string_input(R, O type, p Parser (Sequence codepoint) R O) Parser String R O =>
+    p.map_input String (str -> str.as_codepoints)
+
+
+  # convert a parser returning a sequence of codepoints to a parser that returns a string
+  public to_string_output(I, R type, p Parser I R (Sequence codepoint)) Parser I R String =>
+    p.map String (seq -> String.type.from_codepoints seq)
+
+
+  # convert a parser taking and returning to codepoints to a parser taking and returning a string
+  public to_string_parser(R type, p Parser (Sequence codepoint) R (Sequence codepoint)) Parser String R String =>
+    to_string_output (to_string_input p)
+
