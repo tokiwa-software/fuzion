@@ -262,7 +262,7 @@ public class DFA extends ANY
         {
           res = access(cl, pre, c, i, tvalue, args);
         }
-      site(cl, c, i).recordResult(res == null);
+      DFA.this.site(cl, c, i).recordResult(res == null);
       return new Pair<>(res, _unit_);
     }
 
@@ -338,7 +338,7 @@ public class DFA extends ANY
      */
     Val access0(int cl, boolean pre, int c, int i, Val tvalue, List<Val> args, int cc, Val original_tvalue /* NYI: ugly */)
     {
-      var cs = site(cl, c, i);
+      var cs = DFA.this.site(cl, c, i);
       cs._accesses.add(cc);
       var isCall = _fuir.codeAt(c, i) == FUIR.ExprKind.Call;
       Val r;
@@ -656,7 +656,7 @@ public class DFA extends ANY
                 }
             }
         }
-      site(cl, c, i).recordResult(r == null);
+      DFA.this.site(cl, c, i).recordResult(r == null);
       return new Pair<>(r, _unit_);
     }
 
