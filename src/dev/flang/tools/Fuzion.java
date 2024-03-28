@@ -46,8 +46,6 @@ import dev.flang.be.effects.Effects;
 
 import dev.flang.be.interpreter.Interpreter;
 
-import dev.flang.be.interpreter.Interpreter;
-
 import dev.flang.be.jvm.JVM;
 import dev.flang.be.jvm.JVMOptions;
 
@@ -472,7 +470,7 @@ public class Fuzion extends Tool
     void processFrontEnd(Fuzion f, FrontEnd fe)
     {
       var mir = fe.createMIR();                                                       f.timer("createMIR");
-      var air = new MiddleEnd(fe._options, mir, fe.module() /* NYI: remove */).air(); f.timer("me");
+      var air = new MiddleEnd(fe._options, mir, fe.mainModule() /* NYI: remove */).air(); f.timer("me");
       var fuir = new Optimizer(fe._options, air).fuir();                              f.timer("ir");
       process(fe._options, fuir);
     }
@@ -1041,6 +1039,7 @@ public class Fuzion extends Tool
         timer("prep");
         var fe = new FrontEnd(options);
         timer("fe");
+        Errors.showAndExit();
         _backend.processFrontEnd(this, fe);
         timer("be");
         options.verbosePrintln(1, "Elapsed time for phases: " + _times);

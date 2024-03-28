@@ -966,36 +966,7 @@ part of the (((inner features))) declarations of the corresponding
   }
 
 
-  /**
-   * allInnerAndInheritedFeatures returns a complete set of inner features, used
-   * by Clazz.layout and Clazz.hasState.
-   *
-   * @return
-   */
-  public Collection<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f)
-  {
-    var d = data(f);
-    var result = d._allInnerAndInheritedFeatures;
-    if (result == null)
-      {
-        result = new TreeSet<>();
 
-        result.addAll(declaredFeatures(f).values());
-        for (var p : f.inherits())
-          {
-            var cf = p.calledFeature();
-            if (CHECKS) check
-              (Errors.any() || cf != null);
-
-            if (cf != null)
-              {
-                result.addAll(allInnerAndInheritedFeatures(cf));
-              }
-          }
-        d._allInnerAndInheritedFeatures = result;
-      }
-    return result;
-  }
 
 
   /*--------------------------  feature lookup  -------------------------*/
@@ -1005,30 +976,6 @@ part of the (((inner features))) declarations of the corresponding
   public SortedMap<FeatureName, AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer)
   {
     return this.declaredOrInheritedFeatures(outer, _dependsOn);
-  }
-
-
-  /**
-   * Find feature with given name in outer.
-   *
-   * @param outer the declaring or inheriting feature
-   */
-  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name, AbstractFeature original)
-  {
-    if (PRECONDITIONS) require
-      (outer.state().atLeast(State.LOADING));
-
-    var result = declaredOrInheritedFeatures(outer).get(name);
-
-    /* Was feature f added to the declared features of its outer features late,
-     * i.e., after the RESOLVING_DECLARATIONS phase?  These late features are
-     * currently not added to the sets of declared or inherited features by
-     * children of their outer clazz.
-     *
-     * This is a fix for #978 but it might need to be removed when fixing #932.
-     */
-    return result == null && original instanceof Feature of && of._addedLate ? original
-                                                                             : result;
   }
 
 

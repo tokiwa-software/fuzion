@@ -49,11 +49,12 @@ import dev.flang.ast.HasGlobalIndex; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.ResolvedNormalType; // NYI: remove dependency!
-import dev.flang.ast.SrcModule; // NYI: remove dependency!
 import dev.flang.ast.State; // NYI: remove dependency!
 import dev.flang.ast.ExpressionVisitor; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
+
+import dev.flang.fe.Module;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -87,7 +88,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   // NYI: CLEANUP #2411 remove this dependency, clazzes should be build from module files only
-  public static SrcModule _module;
+  public static Module _module;
 
 
   /*-----------------------------  classes  -----------------------------*/
