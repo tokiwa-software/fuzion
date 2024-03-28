@@ -1,0 +1,53 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test
+#
+# -----------------------------------------------------------------------
+
+reg_issue1591 is
+
+  nil_option(T type) option T is nil
+  val_option(T type, v T) option T is v
+
+  a(T type, x option T) =>
+    match x
+      v T => "val: $v"
+      nil => "nil!"
+
+  b(T type, x option T) =>
+    match x
+      nil => "nil!"
+      v T => "val: $v"
+
+  chck (a (nil_option i32)) "nil!"
+  chck (a (val_option 132)) "val: 132"
+  chck (a (nil_option nil)) "nil!"
+  chck (a (val_option nil)) "val: nil"
+
+  chck (b (nil_option i32)) "nil!"
+  chck (b (val_option 132)) "val: 132"
+  chck (b (nil_option nil)) "nil!"
+  chck (b (val_option nil)) "val: nil"
+
+  chck(a, b String) =>
+    if a = b
+      say "PASSED: $a = $b"
+    else
+      say "** FAILED **: $a /= $b"

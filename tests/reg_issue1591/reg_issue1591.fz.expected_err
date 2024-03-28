@@ -1,0 +1,9 @@
+
+--CURDIR--/reg_issue1591.fz:26:34: error 1: Actual type parameters to choice type must be disjoint types
+  nil_option(T type) option T is nil
+---------------------------------^^^
+The following types have overlapping values:
+'nil'
+'nil'
+
+one error.
