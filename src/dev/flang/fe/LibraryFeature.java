@@ -43,7 +43,6 @@ import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Box;
 import dev.flang.ast.Cond;
-import dev.flang.ast.Consts;
 import dev.flang.ast.Contract;
 import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
@@ -239,8 +238,8 @@ public class LibraryFeature extends AbstractFeature
   public int modifiers()
   {
     return
-      (_libModule.featureIsFixed       (_index)     ? Consts.MODIFIER_FIXED    : 0) |
-      (_libModule.featureRedefinesCount(_index) > 0 ? Consts.MODIFIER_REDEFINE : 0);
+      (_libModule.featureIsFixed       (_index)     ? FuzionConstants.MODIFIER_FIXED    : 0) |
+      (_libModule.featureRedefinesCount(_index) > 0 ? FuzionConstants.MODIFIER_REDEFINE : 0);
 
   }
 

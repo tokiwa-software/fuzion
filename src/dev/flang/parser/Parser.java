@@ -826,7 +826,7 @@ modifier    : "redef"
             | "fixed"
             ;
    *
-   * @return logically or'ed set of Consts.MODIFIER_* constants found.
+   * @return logically or'ed set of FuzionConstants.MODIFIER_* constants found.
    */
   int modifiers()
   {
@@ -838,8 +838,8 @@ modifier    : "redef"
         int p2 = tokenPos();
         switch (current())
           {
-          case t_redef       : m = Consts.MODIFIER_REDEFINE    ; break;
-          case t_fixed       : m = Consts.MODIFIER_FIXED       ; break;
+          case t_redef       : m = FuzionConstants.MODIFIER_REDEFINE    ; break;
+          case t_fixed       : m = FuzionConstants.MODIFIER_FIXED       ; break;
           default            : throw new Error();
           }
         if ((ms & m) != 0)
