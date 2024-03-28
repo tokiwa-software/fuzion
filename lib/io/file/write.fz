@@ -31,7 +31,7 @@ public write(fwh Write_Handler) : simple_effect is
   #
   # this might overwrite parts or all of an existing file.
   #
-  public write(fd i64, content array u8) =>
+  module write(fd i64, content array u8) =>
     tmp := fwh.write fd content unit
     replace
     tmp
@@ -71,7 +71,7 @@ public write(fwh Write_Handler) : simple_effect is
 # short-hand for accessing write effect in current environment
 #
 public write =>
-  write.type.install_default
+  write.install_default
   write.env
 
 

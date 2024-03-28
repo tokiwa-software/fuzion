@@ -18,11 +18,13 @@
 //
 //  Tokiwa Software GmbH, Germany
 //
-//  ASCIIdoc source of Fuzion Langauge Reference Manual
+//  ASCIIdoc source of the Fuzion Language Reference Manual
 //
 // -----------------------------------------------------------------------
 
-
+// This is the main asciidoc input file that defines the overall structure of the
+// reference manual.
+//
 = Fuzion Reference Manual [DRAFT]
 The Fuzion Team <info@tokiwa.software>
 include::../../version.txt[]
@@ -32,6 +34,7 @@ include::../../version.txt[]
 :sectanchors:
 :url-repo: https://github.com/tokiwa-software/fuzion/
 :sectnums:
+:icons: font
 :toc: macro
 
 toc::[]
@@ -40,63 +43,476 @@ toc::[]
 
 === Audience
 
-TBW
+CAUTION: *NYI*: Audience spec missing!
 
 === Conventions
 
-TBW
+This is work in progress. Areas where information is known to be preliminary,
+missing or wrong might be marked as follows:
+
+CAUTION: *NYI*: This spec is work in progress!
+
+Generally, *NYI* is used in this document, as well as through any other files
+related to the Fuzion project, to mark sections that need further work or future
+enhancements.  This is often equivalent to comments starting *TODO* or similar
+used in other projects.
+
+The specification contains a number of rules that must be implemented by the
+language implementations. These rules are identified by identifiers such as
+*DOMAIN_DETAIL*. Rules are shown as follows:
+
+:RULE_SRC: doc/ref_manual/demo_rule.txt
+:RULE_ID: DOMAIN_DETAIL
+include::rule.adoc[]
+
+
+== Input
+
+=== Input Sources
+
+Fuzion source code input may come from different sources including source code
+files, streams such as the standard input stream of a Unix shell command,
+interactive input in an interactive Read-Eval-Print-Loop (indexterm2:[REPL]), command line arguments, etc.
+
+For source code files, the following rule applies:
+
+:RULE_SRC: src/dev/flang/fe/SourceModule.java
+:RULE_ID: SRCF_DOTFZ
+include::rule.adoc[]
+
+=== Directories
+
+Source files may be organized in a hierarchy of directories.  Source files in
+sub-directories are automatically considered as input only if corresponding
+outer features exist:
+
+:RULE_SRC: src/dev/flang/fe/SourceModule.java
+:RULE_ID: SRCF_DIR
+include::rule.adoc[]
+
+
+=== Input encoding
+
+Fuzion input sources use UTF8 encoding.
+
+include::{GENERATED}/doc/unicode_version.adoc[]
+
+CAUTION: NYI: Actual Unicode version has not been fixed yet!
+
+:RULE_SRC: src/dev/flang/util/SourceFile.java
+:RULE_ID: SRCF_UTF8
+include::rule.adoc[]
+
+
 
 == Syntax
 
-=== Lexical Symbols
+=== Lexical Tokens
+
+The Unicode code points of the input data are grouped into lexical tokens.  The
+main groups of tokens are white space, reserved keywords, identifiers, literals
+and comments.  The following sub-sections describe these in detail.
+
+==== Unsupported Code Points
+
+[#unsupported_code_points]
+Certain code points are not supported and will not be converted into tokens by
+the lexer but instead result in an error when processing input data containing
+these code points. The following code points are ((unsupported code points)).
+
+// [none] means no bullet points
+[none]
+include::{GENERATED}/doc/codepoints_illegal.adoc[]
+
+:RULE_SRC: src/dev/flang/parser/Lexer.java
+:RULE_ID: LEXR_LEGALCP
+include::rule.adoc[]
+
+:RULE_SRC: src/dev/flang/parser/Lexer.java
+:RULE_ID: LEXR_UNUSEDCP
+include::rule.adoc[]
 
 ==== White Space
 
-TBW
+[#whitespace_code_points]
+White space are code points that are ignored when creating tokens. Nevertheless,
+white space often plays an important role in separating tokens such as a
+keyword from an identifier as in `if&nbsp;condition`.
+
+The following code points in the input are considered ((white space)).
+
+// [none] means no bullet points
+[none]
+include::{GENERATED}/doc/codepoints_white_space.adoc[]
+
+:RULE_SRC: src/dev/flang/parser/Lexer.java
+:RULE_ID: LEXR_WHITESPACE
+include::rule.adoc[]
+
+Even though white space does directly create tokens, the Fuzion language parser
+is affected by the presence of white space, e.g., to group blocks of code by a
+common level of indentation or to separate actual arguments provided to a call.
+
+==== Code point categories
+
+[#fuzion_letter]
+The following code points are considered Fuzion letters:
+
+// [none] means no bullet points
+[none]
+include::{GENERATED}/doc/codepoints_letter.adoc[]
+
+[#fuzion_digit]
+The following code points are considered Fuzion digits:
+
+// [none] means no bullet points
+[none]
+include::{GENERATED}/doc/codepoints_digit.adoc[]
+
+[#fuzion_numeric]
+The following code points are considered Fuzion numerics:
+
+// [none] means no bullet points
+[none]
+include::{GENERATED}/doc/codepoints_numeric.adoc[]
+
+[#fuzion_op]
+The following code points are considered Fuzion operator code points:
+
+// [none] means no bullet points
+[none]
+include::{GENERATED}/doc/codepoints_op.adoc[]
+
+==== Lines and Columns
+
+Each code point in an xref:input_source[Input sources] has an associated line
+and column. The first code point is in line `1` column `1`. Each code point that
+is not following a end of line marker is part of the same line as the previous
+code point and the line of the previous code point incremented by `1`.
+
+A code point that follows an end of line marker gets its line number increased
+by `1` and its column reset to `1`.
+
+:RULE_SRC: src/dev/flang/util/SourceFile.java
+:RULE_ID: LEXR_NEWLINE
+include::rule.adoc[]
+
+NOTE: In Fuzion, the lines and columns are not only relevant when referring to code
+location, e.g., when reporting error in the source code, but also have an effect
+on how code is parsed: In certain contexts such as in a one-line comment or at a
+given indentation level, the position of code affects the way the code is
+parsed.
 
 ==== Keywords
 
-TBW: `this` `env` `check` `else` `if` `then` `is` `abstract` `intrinsic` `intrinsic_constructor` `native` `for` `in` `do` `fixed` `loop` `while` `until` `variant` `pre` `post` `inv` `var` `match` `value` `ref` `synchronized` `redef` `const` `leaf` `infix` `prefix` `postfix` `ternary` `index` `set` `private` `module` `public` `of` `type` `univers`
+[#fuzion_keyword]
+The Fuzion grammar knows the following reserved keyword:
+
+====
+include::{GENERATED}/doc/keywords.adoc[]
+====
 
 ==== Identifiers
 
-TBW
+[#fuzion_identifier]
+Identifiers in Fuzion are used to attach names to xref:fuzion_feature[Fuzion
+features].  Identifiers may contain a large variety of letters, digits and
+numeric symbols, they must start with a letter.
 
-==== Literals
+:RULE_SRC: src/dev/flang/parser/Lexer.java
+:RULE_ID: LEXR_IDENT1
+include::rule.adoc[]
 
-TBW
+:RULE_SRC: src/dev/flang/parser/Lexer.java
+:RULE_ID: LEXR_IDENT2
+include::rule.adoc[]
 
-===== Numeric Literals
+==== Operators
 
-TBW
+[#fuzion_operator]
+Similar to an xref:fuzion_identifier[identifier], a Fuzion operator may be part of
+a name of a xref:fuzion_feature[Fuzion features].  Such features permit a call syntax
+that uses infix, prefix or postfix notation.
 
-===== String Literals
+:RULE_SRC: src/dev/flang/parser/Lexer.java
+:RULE_ID: LEXR_OPER1
+include::rule.adoc[]
 
-TBW
+:RULE_SRC: src/dev/flang/parser/Lexer.java
+:RULE_ID: LEXR_OPER2
+include::rule.adoc[]
+
+:RULE_SRC: src/dev/flang/parser/Lexer.java
+:RULE_ID: LEXR_OPER3
+include::rule.adoc[]
+
+:RULE_SRC: src/dev/flang/parser/Lexer.java
+:RULE_ID: LEXR_OPER4
+include::rule.adoc[]
+
+Examples for legal operators are `+`, `%%%`, `??`, `∀`, `∙`, `---` `>`, `/-/`, `*//`, `*#`.
+
+Examples for non-operators are `?`, `//`, `#*`.
 
 ==== Comments
 
-TBW
+Fuzion offers three kinds of comments: single line comments that start with
+either `#` or `//` and that extend to the end of the source code line, and
+nestable comments using `/\*` and `\*/` that may extends over several lines of
+code.
+
+:RULE_SRC: src/dev/flang/parser/Lexer.java
+:RULE_ID: LEXR_COMMENT1
+include::rule.adoc[]
+
+:RULE_SRC: src/dev/flang/parser/Lexer.java
+:RULE_ID: LEXR_COMMENT2
+include::rule.adoc[]
+
+:RULE_SRC: src/dev/flang/parser/Lexer.java
+:RULE_ID: LEXR_COMMENT3
+include::rule.adoc[]
+
+Examples of valid comments areas
+
+    i := 42     # this is a comment
+    this is not a comment
+    j := 32168  // this is also a comment
+    k := /* this is a comment */ 23
+    /* this /* comment /* is */ nested */ */
+    l := "not a comment, but a string literal"
+    /* this
+    /* comment
+    /* extends */
+       over several
+    */ lines */
+    m := l
+
+==== Literals
+
+CAUTION: *NYI*: Text Missing
+
+===== Numeric Literals
+
+CAUTION: *NYI*: Text Missing
+
+===== String Literals
+
+[#string_literal]
+CAUTION: *NYI*: Text Missing
+
+String literals support the following escape sequence to include special characters:
+
+====
+include::{GENERATED}/doc/stringEscapes.adoc[]
+====
+
+
 
 === Grammar
 
-TBW
+:RULE_SRC: src/dev/flang/parser/Lexer.java
+:RULE_ID: PARS_SYNTAX
+include::rule.adoc[]
+
+CAUTION: *NYI*: Text Missing
 
 == Semantics
 
-TBW
+CAUTION: *NYI*: Text Missing
 
 [appendix]
-== Definitions
+== Glossary
 
-((Argument)):: TBW
-((Constructor)):: TBW
-((Feature)):: TBW
-((Field)):: TBW
-((Function)):: TBW
-((Routine)):: TBW
-((Type)):: TBW
-((Type Parameter)):: TBW
+[#fuzion_abstract]
+((Abstract Feature)):: An _abstract feature_ is a xref:fuzion_feature[feature] declared using `=> abstract`.
+
+[#fuzion_actual]
+((Actual)):: An _actual argument_ is an expression that is parsed as an `actual` as part of a
+xref:feature_call[call] or the right hand side of an infix operator call.
+
+[#fuzion_actual_typeparameter]
+((Actual Type Parameter)):: An _actual type parameter_ is a xref:fuzion_type[type] that replaces a
+xref:fuzion_typeparameter[type parameter] of the feature a type is based on.
+
+[#fuzion_argument]
+((Argument)):: An _argument_ is a xref:fuzion_typeparameter[type parameter] or a xref:fuzion_field[field]
+that is declared in the `formArgs` section of a xref:fuzion_routine[routine].
+
+[#child_feature]
+((Child)):: A _child_ of a xref:fuzion_feature[feature] `f` is any feature `g` that xref:inheritance[inherits] from `f`.
+A _child_ is hence used synonymously to an _heir_.
+
+[#fuzion_choice]
+((Choice)):: A _choice_ is either the xref:fuzion_feature[feature] `choice` defined in the Fuzion base library or
+any feature that is a xref:direct_child(direct child) of the base library feature `choice`.  A choice's arguments
+must all be xref:fuzion_typeparameter[type parameters] and a choice may not contain code.
+
+[#choice_type]
+((Choice Type)):: A _choice type_ is a xref:fuzion_type[type] that is based
+on a xref:fuzion_feature[feature] that is a xref:fuzion_choice[choice].
+
+[#fuzion_constructor]
+((Constructor)):: A _constructor_ is a xref:fuzion_routine[routine] declared using `is`.  A
+constructor has exceutable code and defines a xref:fuzion_type[type].  On a call to a constructor,
+an instance of this type is created and this instance is implicitly returned as a result after
+execution of the constructor's code.
+
+// ((Clazz)):: CAUTION: *NYI*: Text Missing  -- maybe not needed in the ref manual, this is an IR / backend concept --
+
+[#call_destination]
+((Call Destination)):: The _destination_ of a call `t.f a b` is the feature `f'` that was selected at runtime
+by xref:dynamic_dispatch[dynamic dispatch] depending on the call target `t` and the xref:feature_name[feature name]
+given in the call.
+
+[#direct_child]
+((Direct Child)):: A _direct child_ of a xref:fuzion_feature[feature] `p` is any feature `c` that xref:direct_inheritance[inherits directly] from `p`.
+
+[#direct_inheritance]
+((Direct Inheritance)):: A xref:fuzion_feature[feature] `f` _inherits directly_ from another xref:fuzion_feature[feature] `g` if `f` lists
+`g` in the inherits clause of its declaration.
+
+[#direct_parent]
+((Direct Parent)):: A _direct parent_ of a xref:fuzion_feature[feature] `c` is any feature `p` such that `c` xref:direct_inheritance[inherits directly] from `p`.
+
+[#dynamic_type]
+((Dynamic Type)):: The _dynamic type_ of an expression is the xref:runtime_type[runtime type] of an
+xref:fuzion_instance[instance] produced as the result of that expression.
+
+[#dynamic_dispatch]
+((Dynamic Dispatch)):: _Dynamic dispatch_ is a mechanism that is used at runtime to determine the
+xref:call_destination[destination] of a xref:fuzion_call[call] depending on the
+xref:dynamic_type[dynamic type] of the xref:fuzion_target[target] and xref:feature_name[name] of the
+called feature.
+
+[#fuzion_feature]
+((Feature)):: A _feature_ is the most fundamental entity of Fuzion.  A feature can
+be declared and can be called.  Features generalize fairly different concepts
+found in other programming languages such as functions, methods, constructors,
+classes, structs, records, packages, interfaces, fields, and local variables.
+A Fuzion feature may be one of the following variants: a xref:fuzion_constructor[constructor],
+a xref:fuzion_function[function], a xref:fuzion_field[field], a xref:fuzion_choice[choice],
+a xref:fuzion_typeparameter[type parameter], an xref:fuzion_abstract[abstract feature],
+an xref:fuzion_intrinsic[intrinsic], a xref:fuzion_native[native feature],
+or the xref:universe[universe].  Every feature except the xref:universe[universe] is declared within
+an xref:outer_feature[outer feature].
+
+[#fuzion_call]
+((Feature Call)):: A _feature call_ is an expression in Fuzion code that calls a
+xref:call_destination[destination] xref:fuzion_feature[feature] on a given xref:fuzion_target[target] giving zero
+or more xref:fuzion_actual[actual arguments].  An example is `t.f a b` that calls
+a feature with xref:feature_name[name] `f,2` on target `t` giving two xref:fuzion_actual[actual arguments] `a` and `b`.
+
+[#feature_name]
+((Feature Name)):: A _feature name_ is the combination of an identifier and an integer xref:fuzion_argument[argument] count.
+
+[#fuzion_field]
+((Field)):: A _field_ is a xref:fuzion_feature[feature] that is either declared using `:=` or an xref:fuzion_argument[argument].  A
+field can hold an xref:fuzion_instance[instance] that is assigned to it at runtime when executing its declaration as an expression (for fields declared using `:=`) or when an
+xref:fuzion_actual[actual argument] is passed to a call. A field can be the xref:call_destination[destination] of a xref:feature_call[call], execution
+of that call at runtime results in the xref:fuzion_instance[instance] that was assigned to that field.
+
+[#fuzion_function]
+((Function)):: A _function_ is a xref:fuzion_routine[routine] declared using `=>`. A
+function has exceutable code that produces a result value `result` and an explicit or inferred result type `rt`.
+
+[#function_type]
+((Function Type)):: A _function type_ is any type derived from the Fuzion base
+library feature `Function` by giving actual arguments or a type that is derived
+from a Fuzion feature that inherits from a function type.
+
+[#inheritance]
+((Inheritance)):: An xref:fuzion_feature[feature] `f` is said to _inherit_ from a xref:fuzion_feature[feature] `g` if
+`f` equals `g` or, recursively, `f` xref:direct_inheritance[inherits directly] from a feature `h` that inherits from `g`.
+
+[#input_source]
+((Input Source)):: An _input source_ is a stream of bytes that contains Fuzion
+code that is used as an input for tools like Fuzion compilers.
+
+[#fuzion_instance]
+((Instance)):: An _instance_ is a value of a given xref:runtime_type[runtime type]. Instances exist only at runtime. Instances are created
+either by a xref:fuzion_call[call] or by xref:fuzion_tagging[tagging].
+
+[#fuzion_intrinsic]
+((Intrinsic Feature)):: An _intrinsic feature_ is a xref:fuzion_feature[feature] declared using `=> intrinsic` or `=> intrinsic_constructor`.
+
+[#fuzion_native]
+((Native Feature)):: A _native feature_ is a xref:fuzion_feature[feature] declared using `=> native`.
+CAUTION: *NYI*: Need more detail on native feature
+
+[#outer_instance]
+((Outer Instance)):: With the exception of the xref:universe_instance[universe instance], every instance is linked to a corresponding _outer instance_.
+For the instance of a xref:fuzion_routine[routine], the outer instance is the value of the xref:fuzion_target[target] of the call that created the
+instance. The outer instance of xref:choice_instance[choice instance] is the xref:universe_instance[universe instance].
+
+[#outer_feature]
+((Outer Feature)):: The _outer feature_ `o` of a feature `f` is the xref:fuzion_feature[feature] that contains the
+declaration of `f`.  If `f` is not declared inside any other feature, `f`'s outer feature is the
+xref:universe[universe], which itself does not have an outer feature.
+
+[#fuzion_outer_type]
+((Outer Type)):: For any xref:fuzion_type[type] that is based on a feature whose outer feature `o` exists and is not the xref:universe[universe],
+there is a corresponding _outer type_ based on a xref:child_feature[child] of `o`.
+
+[#parent_feature]
+((Parent)):: A _parent_ of a xref:fuzion_feature[feature] `f` is any feature `g` such that `f` xref:inheritance[inherits] from `g`.
+A _parent_ is hence used synonymously to an _ancestor_.
+
+[#fuzion_routine]
+((Routine)):: A _routine_ is a xref:fuzion_feature[Feature] declared using `is` or `=>` that is neither
+an xref:fuzion_abstract[abstract feature], a xref:fuzion_choice[choice], an xref:fuzion_intrinsic[intrinsic feature] nor a
+xref:fuzion_native[native feature].
+
+[#real_child]
+((Real Child)):: A _real child_ of a xref:fuzion_feature[feature] `p` is any feature `c` that xref:real_inheritance[inherits really] from `p`.
+
+[#real_inheritance]
+((Real Inheritance)):: An xref:fuzion_feature[feature] `f` is said to _inherit really_ from a xref:fuzion_feature[feature] `g` if
+`f` does not equal `g` and `f` xref:inheritance[inherits] from `g`.
+
+[#real_parent]
+((Real Parent)):: A _real parent_ of a xref:fuzion_feature[feature] `c` is any feature `p` such that `c` xref:real_inheritance[inherits really] from `p`.
+
+[#result_type]
+((Result Type)):: A _result type_ is xref:static_type[static type] defined for a feature that may be xref:fuzion_call[called].
+
+[#runtime_type]
+((Runtime Type)):: A _runtime type_ is a xref:fuzion_type[type] that does not contain any xref:fuzion_typeparameter[type parameters].
+
+[#static_type]
+((Static Type)):: The _static type_ is the xref:fuzion_type[type] of an expression or the xref:result_type[result type] of a routine or a
+field determined statically by tools like a Fuzion compiler.
+
+[#fuzion_tagging]
+((Tagging)):: _Tagging_ is the creation of an xref:fuzion_instance[instance] of a xref:choice_type[choice type] during an assignment
+of an instance to a xref:fuzion_field[field].
+
+[#fuzion_target]
+((Target)):: The _target_ is part of a xref:fuzion_call[feature call]. The xref:dynamic_type[dynamic type] of the target
+together with the xref:feature_name[feature name] of the call determines the xref:call_destination[destination] of the call.
+
+[#fuzion_type]
+((Type)):: A _type_ is either a reference to a xref:fuzion_typeparameter[type parameter] or based on a
+xref:fuzion_feature[feature] of type xref:fuzion_constructor[constructor] or
+xref:fuzion_choice[choice].  If that feature has xref:fuzion_typeparameter[type parameters], a type has
+corresponding xref:fuzion_actual_typeparameters[actual type parameters].  If the base has an xref:outer_feature[outer feature] that is
+not the xref:universe[universe], the type has an xref:fuzion_outer_type[outer type].
+
+[#fuzion_typeparameter]
+((Type Parameter)):: A _type parameter_ is an xref:fuzion_argument[argument] that can hold a xref:runtime_type[runtime type value].
+
+[#unit_type]
+((Unit type)):: A _unit type_ is a type that contains no direct xref:fuzion_field[inner fields] defined by a xref:fuzion_constructor[constructor]
+whose xref:outer_feature[outer feature] is either the xref:universe[universe]  or itself a xref:fuzion_constructor[constructor]
+defining a unit type.
+
+[#universe]
+((Universe)):: The _universe_ is an implicitly declared feature that
+is the xref:outer_feature[outer feature] of all xref:fuzion_feature[features] that are not explicitly declared within another feature.
+
+[#universe_instance]
+((Universe Instance)):: The _universe instance_ is an implicit singleton instance created by the implicit call to the xref:universe[universe] on system
+startup.
 
 [appendix]
 == File Formats
@@ -107,7 +523,7 @@ include::{GENERATED}/doc/fum_file.adoc[leveloffset=+0,lines=8..-1]
 
 
 [appendix]
-== BNF Grammer
+== BNF Grammar
 The following shows the Grammar using a notation similar to Backus–Naur form <<bnf>>.
 ----
 include::{FUZION_EBNF}[]
@@ -123,3 +539,6 @@ include::{FUZION_EBNF}[]
 
 [index]
 == Index
+
+LocalWords:  Fuzion MERCHANTABILITY ASCIIdoc SRCF DOTFZ UTF LEXR LEGALCP fuzion
+LocalWords:  UNUSEDCP whitespace IDENT OPER

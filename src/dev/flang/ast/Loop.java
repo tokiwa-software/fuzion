@@ -43,11 +43,11 @@ import dev.flang.util.SourcePosition;
  * In general, this is
 
   for
-    x1 := init1, next1;
-    x2 in set2;
-    x3 := init3, next3;
-    x4 in set4;
-    x5 := init5, next5;
+    x1 := init1, next1
+    x2 in set2
+    x3 := init3, next3
+    x4 in set4
+    x5 := init5, next5
   while <whileCond>
     <body>
   until <untilCond>
@@ -60,47 +60,41 @@ import dev.flang.util.SourcePosition;
  * index variables
 
   // loop prolog
-  x1 := init1;
-  stream2 := set2.asStream;
+  x1 := init1
+  list2 := set2.as_list
   ### loopElse will be put here ###
-  if (stream2.hasNext)
-    {
-      x2 := stream2.next;
-      x3 := init3;
-      stream4 := set4.asStream;
-      if (stream4.hasNext)
-        {
-          x4 := stream4.next;
-          x5 := init5;
+  match list2
+    c2 Cons =>
+      x2 := c2.head
+      x2t := c2.tail
+      x3 := init3
+      list4 := set4.as_list
+      match list4
+        c4 Cons =>
+          x4 := c4.head
+          x4t := c4.tail
+          x5 := init5
 
           ### loop will be put here ###
 
-        }
-      else
-        {
-           loopElse
-        }
-    }
-  else
-    {
-      loopElse
-    }
+        _ nil => loopElse
+    _ nil => loopElse
 
  * The loop will be implemented using a tail recursive feature as follows
 
-  loop(x1, x2, x3, x4, x5, ... inferred-type) =>
+  loop(x1, x2, x2a, x3, x4, x4a, x5, ... inferred-type) =>
      if whileCond
        <body>
        if untilCond
          <success>
          ### OPTIONAL TRUE ###
        else ### nextIteration will be put here ###
-         loop(x1,x2,x3,x4,x5,...)   // tail recursion
+         loop(x1,x2,x2t,x3,x4,x4t,x5,...)   // tail recursion
        else
          <failure>
      else
        <failure>
-  loop(x1,x2,x3,x4,x5,...)
+  loop(x1,x2,x2t,x3,x4,x4t,x5,...)
 
  * The part marked
  *
@@ -110,29 +104,23 @@ import dev.flang.util.SourcePosition;
  * to the prolog
 
   // nextIteration:
-  x1 := next1;
+  x1 := next1
   ### loopElse will be put here ###
-  if (stream2.hasNext)
-    {
-      x2 := stream2.next;
-      x3 := next3;
-      if (stream4.hasNext)
-        {
-          x4 := stream4.next;
-          x5 := next5;
+  match x2a
+    c2 Cons =>
+      x2 := c2.head
+      x2t := c2.tail
+      x3 := next3
+      match x4a
+        c4 Cons =>
+          x4 := c4.head
+          x4t := c4.tail
+          x5 := next5
 
           ### loop tail recursive call will be put here ###
 
-        }
-      else
-        {
-          loopElse
-        }
-    }
-  else
-    {
-      loopElse
-    }
+        _ nil => loopElse
+    _ nil => loopElse
 
  * If needed, the code for the <failure> case will be put into a loopElse
  * feature that can be called at different locations:
@@ -251,9 +239,9 @@ public class Loop extends ANY
    *
    * @param untilCond condition to exit loop successfully, null for false.
    *
-   * @param successBlock block to execute on successful loop exit, null for none.
+   * @param sb block to execute on successful loop exit, null for none.
    *
-   * @param elseBlock block to execute on unsuccessful loop exit, null for none.
+   * @param eb0 block to execute on unsuccessful loop exit, null for none.
    */
   public Loop(SourcePosition pos,
               List<Feature> iv,
@@ -359,7 +347,7 @@ public class Loop extends ANY
   {
     if (FUZION_DEBUG_LOOPS)
       {
-        System.out.println(_prolog);
+        say(_prolog);
       }
     return _prolog;
   }
@@ -519,12 +507,10 @@ public class Loop extends ANY
   {
     int i = -1;
     Iterator<Feature> ivi = _indexVars.iterator();
-    Iterator<Feature> nvi = _nextValues.iterator();
     while (ivi.hasNext())
       {
         i++;
         Feature f = ivi.next();
-        Feature n = nvi.next();
         if (CHECKS) check
           (f.impl()._kind != Impl.Kind.FieldIter);
         var p = f.pos();
@@ -543,6 +529,19 @@ public class Loop extends ANY
         formalArguments.add(arg);
         initialActuals .add(new Actual(ia));
         nextActuals    .add(new Actual(na));
+        if (f._isLoopIterator)
+          {
+            var argList = new Feature(SourcePosition.notAvailable,
+                                      Visi.PRIV,
+                                      null,
+                                      f._loopIteratorListName + "arg",
+                                      new Impl(Impl.Kind.FieldActual));
+            var ial = new Call(p, f._loopIteratorListName + "tail");
+            var nal = new Call(p, f._loopIteratorListName + "tail");
+            formalArguments.add(argList);
+            initialActuals.add(new Actual(ial));
+            nextActuals.add(new Actual(nal));
+          }
       }
   }
 
@@ -561,6 +560,8 @@ public class Loop extends ANY
       {
         Feature f = ivi.next();
         Feature n = nvi.next();
+        Feature g = null;
+        Feature m = null;
         if (f.impl()._kind == Impl.Kind.FieldIter)
           {
             if (mustDeclareLoopElse)
@@ -570,44 +571,69 @@ public class Loop extends ANY
                 _nextItSuccessBlock.add(_loopElse[1]);
                 mustDeclareLoopElse = false;
               }
-            var streamName = _rawLoopName + "stream" + (iteratorCount++);
+            var listName = _rawLoopName + "list" + (iteratorCount++);
             var p = SourcePosition.notAvailable;
-            Call asStream = new Call(p, f.impl()._initialValue, "as_stream");
-            Feature stream = new Feature(p,
+            Call asList = new Call(p, f.impl().expr(), "as_list");
+            Feature list = new Feature(p,
                                          Visi.PRIV,
                                          /* modifiers */   0,
                                          /* return type */ NoType.INSTANCE,
-                                         /* name */        new List<>(streamName),
+                                         /* name */        new List<>(listName),
                                          /* args */        new List<>(),
                                          /* inherits */    new List<>(),
                                          /* contract */    null,
-                                         /* impl */        new Impl(p, asStream, Impl.Kind.FieldDef));
-            stream._isIndexVarUpdatedByLoop = true;  // hack to prevent error AstErrors.initialValueNotAllowed(this)
-            _prologSuccessBlock.add(stream);
-            Call hasNext1 = new Call(p, new Call(p, streamName), "has_next" );
-            Call hasNext2 = new Call(p, new Call(p, streamName), "has_next" );
-            Call next1    = new Call(p, new Call(p, streamName), "next");
-            Call next2    = new Call(p, new Call(p, streamName), "next");
+                                         /* impl */        new Impl(p, asList, Impl.Kind.FieldDef));
+            list._isIndexVarUpdatedByLoop = true;  // hack to prevent error AstErrors.initialValueNotAllowed(this)
+            _prologSuccessBlock.add(list);
+            ParsedType nilType = new ParsedType(p, "nil", new List<>(), null);
+            ParsedType consType = new ParsedType(p, "Cons", new List<>(), null);
+            Call next1    = new Call(p, new Call(p, listName + "cons"), "head");
+            Call next2    = new Call(p, new Call(p, listName + "cons"), "head");
+            Call nextTail1 = new Call(p, new Call(p, listName + "cons"), "tail");
+            Call nextTail2 = new Call(p, new Call(p, listName + "cons"), "tail");
             List<Expr> prolog2 = new List<>();
             List<Expr> nextIt2 = new List<>();
-            If ifHasNext1 = new If(p, hasNext1, new Block(prolog2));
-            If ifHasNext2 = new If(p, hasNext2, new Block(nextIt2));
-            if (_loopElse != null)
-              {
-                ifHasNext1.setElse(Block.fromExpr(callLoopElse(true )));
-                ifHasNext2.setElse(Block.fromExpr(callLoopElse(false)));
-              }
-            _prologSuccessBlock.add(ifHasNext1);
-            _nextItSuccessBlock.add(ifHasNext2);
+            Case match1c = new Case(p, consType, listName + "cons", new Block(prolog2));
+            Case match1n = new Case(p, nilType, listName + "nil", (_loopElse != null) ? Block.fromExpr(callLoopElse(true)) : Block.newIfNull(null));
+            Match match1 = new Match(p, new Call(p, listName), new List<AbstractCase>(match1c, match1n));
+            Case match2c = new Case(p, consType, listName + "cons", new Block(nextIt2));
+            Case match2n = new Case(p, nilType, listName + "nil", (_loopElse != null) ? Block.fromExpr(callLoopElse(false)) : Block.newIfNull(null));
+            Match match2 = new Match(p, new Call(p, listName + "arg"), new List<AbstractCase>(match2c, match2n));
+            _prologSuccessBlock.add(match1);
+            _nextItSuccessBlock.add(match2);
             _prologSuccessBlock = prolog2;
             _nextItSuccessBlock = nextIt2;
             f.setImpl(new Impl(f.impl().pos, next1, Impl.Kind.FieldDef));
             n.setImpl(new Impl(n.impl().pos, next2, Impl.Kind.FieldDef));
+            f._isLoopIterator = true;
+            f._loopIteratorListName = listName;
+            n._isLoopIterator = true;
+            n._loopIteratorListName = listName;
+            g = new Feature(p,
+                            Visi.PRIV,
+                            null,
+                            listName + "tail",
+                            new Impl(f.impl().pos, nextTail1, Impl.Kind.FieldDef));
+            m = new Feature(p,
+                            Visi.PRIV,
+                            null,
+                            listName + "tail",
+                            new Impl(n.impl().pos, nextTail2, Impl.Kind.FieldDef));
           }
         _prologSuccessBlock.add(f);
         _nextItSuccessBlock.add(n);
         f._isIndexVarUpdatedByLoop = true;
         n._isIndexVarUpdatedByLoop = true;
+        if (g != null)
+          {
+            _prologSuccessBlock.add(g);
+            g._isIndexVarUpdatedByLoop = true;
+          }
+        if (m != null)
+          {
+            _nextItSuccessBlock.add(m);
+            m._isIndexVarUpdatedByLoop = true;
+          }
       }
   }
 

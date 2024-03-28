@@ -28,11 +28,11 @@
 #
 public date_time(public year, day_in_year, hour, minute, second, nano_second i32) : property.orderable
 pre
-  day_in_year ≥ 1  & day_in_year  ≤ days_in_year year,  # leap years have 366 days
-  hour        ≥ 0  & hour         ≤ 23,
-  minute      ≥ 0  & minute       ≤ 59,
-  second      ≥ 0  & second       ≤ 60,                 # 60 because of possible leap seconds
-  nano_second ≥ 0  & nano_second  ≤ 1E9
+  debug: (day_in_year ≥ 1  & day_in_year  ≤ days_in_year year)   # leap years have 366 days
+  debug: (hour        ≥ 0  & hour         ≤ 23               )
+  debug: (minute      ≥ 0  & minute       ≤ 59               )
+  debug: (second      ≥ 0  & second       ≤ 60               )   # 60 because of possible leap seconds
+  debug: (nano_second ≥ 0  & nano_second  ≤ 1E9              )
 is
 
   # how many days does february have in the given year?

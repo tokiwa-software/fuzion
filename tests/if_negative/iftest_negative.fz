@@ -47,26 +47,24 @@ iftest_negative is
 
   testIfBoolean1 { if false  { } else if false  { } }; testIfBoolean1 // ok
   testIfBoolean2 { if true   { } else if true   { } }; testIfBoolean2 // ok
-  testIfBoolean3 { if FALSE  { } else if FALSE  { } }; testIfBoolean3 // ok
-  testIfBoolean4 { if TRUE   { } else if TRUE   { } }; testIfBoolean4 // ok
   testIfBoolean5 { if !false { } else if !false { } }; testIfBoolean5 // ok
   testIfBoolean6 { if !true  { } else if !true  { } }; testIfBoolean6 // ok
 
-  routine_positive (b bool) choice unit String is
+  routine_positive (b bool) choice unit String =>
     if b // ok
       "Hello"
 
   # NYI improve error message
-  routine_negative (b bool) String is
+  routine_negative (b bool) String =>
     if b // 5. should flag an error: Incompatible types in assignment
       "Hello"
 
   # NYI improve error message
-  function1 (b bool) String is
+  function1 (b bool) String =>
     if b // 6. should flag an error: Incompatible types in branches of if expression
       "Hello"
 
-  function2 (b bool) unit is
+  function2 (b bool) unit =>
     if b // ok, we ignore a result in an `if` if assigned to `unit`
       "Hello"
 

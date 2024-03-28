@@ -27,7 +27,5 @@ all:
         # we need to provide two additional options:
         #
         #   -modules=java.base,...  to add Fuzion interface to Java modules
-        #   -unsafeIntrinsics=on    to allow the Fuzion interface to look up Java
-        #                           code through reflection.
         #
-	../../bin/fz -unsafeIntrinsics=on -modules=java.base,java.datatransfer,java.xml,java.desktop gfx
+	../../bin/fz -modules=java.base,java.datatransfer,java.xml,java.desktop gfx

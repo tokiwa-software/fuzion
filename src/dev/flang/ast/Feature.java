@@ -106,7 +106,7 @@ public class Feature extends AbstractFeature
     return
       // NYI anonymous feature should have correct visibility set.
       isAnonymousInnerFeature()
-      ? outer().visibility()
+      ? (state().atLeast(State.FINDING_DECLARATIONS) ? outer().visibility() : Visi.UNSPECIFIED)
       : _visibility == Visi.UNSPECIFIED
       ? Visi.PRIV
       : _visibility;
@@ -277,8 +277,16 @@ public class Feature extends AbstractFeature
 
 
   /**
+   * Is this a loop's variable that is being iterated over using the `in` keyword?
+   * If so, also store the internal list name.
+   */
+  boolean _isLoopIterator = false;
+  String _loopIteratorListName;
+
+
+  /**
    * All features that have been found to be directly redefined by this feature.
-   * This does not include redefinitions of redefinitions.  Four Features loaded
+   * This does not include redefinitions of redefinitions.  For Features loaded
    * from source code, this set is collected during RESOLVING_DECLARATIONS.  For
    * LibraryFeature, this will be loaded from the library module file.
    */
@@ -456,10 +464,6 @@ public class Feature extends AbstractFeature
    * @param t the result type, null in case it is inferred from initialValue
    *
    * @param qname the name of this feature
-   *
-   * @param initialValue the initial value used for type inference in case t == null
-   *
-   * @param outerOfInitialValue the feature that contains the expression initialValue
    */
   Feature(SourcePosition pos,
           Visi v,
@@ -594,7 +598,7 @@ public class Feature extends AbstractFeature
    *
    * @param r the result type
    *
-   * @param qname the name of this feature
+   * @param qpname the name of this feature
    *
    * @param a the arguments
    *
@@ -841,7 +845,7 @@ public class Feature extends AbstractFeature
     if (PRECONDITIONS) require
       (isRoutine());
 
-    return _impl._code;
+    return _impl.expr();
   }
 
 
@@ -1205,6 +1209,25 @@ public class Feature extends AbstractFeature
   }
 
 
+  /**
+   * For every feature 'f', this produces the corresponding type feature
+   * 'f.type'.  This feature inherits from the abstract type features of all
+   * direct ancestors of this, and, if there are no direct ancestors (for
+   * Object), this inherits from 'Type'.
+   *
+   * @param res Resolution instance used to resolve this for types.
+   *
+   * @return The feature that should be the direct ancestor of this feature's
+   * type feature.
+   */
+  @Override
+  public AbstractFeature typeFeature(Resolution res)
+  {
+    resolveInheritance(res);
+    return super.typeFeature(res);
+  }
+
+
   /*
    * Declaration resolution for a feature f: For all declarations of features in
    * f (formal arguments, local features, implicit result field), add these
@@ -1284,6 +1307,7 @@ public class Feature extends AbstractFeature
         res = r;
       }
     public void         action      (AbstractAssign a, AbstractFeature outer) {        a.resolveTypes   (res,   outer); }
+    public void         actionBefore(Call           c, AbstractFeature outer) {        c.tryResolveTypeCall(res,   outer); }
     public Call         action      (Call           c, AbstractFeature outer) { return c.resolveTypes   (res,   outer); }
     public Expr         action      (DotType        d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
     public Expr         action      (Destructure    d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
@@ -1715,19 +1739,22 @@ public class Feature extends AbstractFeature
             public void  action(If             i, AbstractFeature outer) { i.propagateExpectedType(res, outer); }
           });
 
-        /* extra pass to automatically wrap values into 'Lazy' */
+        /*
+         * extra pass to automatically wrap values into 'Lazy'
+         * or unwrap values inherting `unwrap`
+         */
         visit(new FeatureVisitor() {
             // we must do this from the outside of calls towards the inside to
             // get the corrected nesting of Lazy features created during this
             // phase
             public boolean visitActualsLate() { return true; }
-            public void  action(AbstractAssign a, AbstractFeature outer) { a.wrapValueInLazy  (res, outer); }
-            public Expr  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, outer); return c; }
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.wrapValueInLazy  (res, outer); a.unwrapValue(res, outer); }
+            public Expr  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, outer); c.unwrapActuals(res, outer); return c; }
           });
 
         if (isConstructor())
           {
-            _impl._code = _impl._code.propagateExpectedType(res, this, Types.resolved.t_unit);
+            _impl.propagateExpectedType(res, this, Types.resolved.t_unit);
           }
 
         _state = State.TYPES_INFERENCED;
@@ -1809,7 +1836,7 @@ public class Feature extends AbstractFeature
             public boolean visitActualsLate() { return true; }
 
             public void         action(AbstractAssign a, AbstractFeature outer) { a.checkTypes(res);             }
-            public Call         action(Call           c, AbstractFeature outer) { c.checkTypes(outer); return c; }
+            public Call         action(Call           c, AbstractFeature outer) { c.checkTypes(res, outer); return c; }
             public void         action(If             i, AbstractFeature outer) { i.checkTypes();                }
             public Expr         action(InlineArray    i, AbstractFeature outer) { i.checkTypes();      return i; }
             public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints();   }
@@ -1925,12 +1952,12 @@ public class Feature extends AbstractFeature
     // here, while impl.code is visited when impl.visit is called with this as
     // outer argument.
     //
-    if (_impl._initialValue != null &&
+    if (_impl.hasInitialValue() &&
         /* initial value has been replaced by explicit assignment during
          * RESOLVING_TYPES phase: */
         !outer.state().atLeast(State.RESOLVING_SUGAR1))
       {
-        _impl._initialValue = _impl._initialValue.visit(v, outer);
+        _impl.visitExpr(v, outer);
       }
     return v.action(this, outer);
   }
@@ -1955,13 +1982,13 @@ public class Feature extends AbstractFeature
          _impl._kind != Impl.Kind.FieldActual)
         || _returnType == NoType.INSTANCE);
 
-    if (_impl._initialValue != null)
+    if (_impl.hasInitialValue())
       {
         /* add assignment of initial value: */
         result = new Block
           (new List<>
            (this,
-            new Assign(res, _pos, this, _impl._initialValue, outer)
+            new Assign(res, _pos, this, _impl.expr(), outer)
             {
               public AbstractAssign visit(FeatureVisitor v, AbstractFeature outer)
               {
@@ -2108,11 +2135,10 @@ public class Feature extends AbstractFeature
             }
           else
             {
-              var iv = f._impl._initialValue;
-              if (iv != null &&
+              if (f._impl.hasInitialValue() &&
                   outer.state().atLeast(State.RESOLVING_SUGAR1) /* iv otherwise already visited by Feature.visit(fv,outer) */)
                 {
-                  iv.visit(this, f);
+                  f._impl.visitExpr(this, f);
                 }
             }
           if (f.isField() && f.featureName().baseName().equals(name))
@@ -2148,10 +2174,7 @@ public class Feature extends AbstractFeature
 
     // then iterate the expressions making fields visible as they are declared
     // and checking which one is visible when we reach call:
-    if (_impl._code != null)
-      {
-        _impl._code.visit(fv, this);
-      }
+    _impl.visit(fv, this);
 
     return curres[1];
   }
@@ -2280,23 +2303,11 @@ public class Feature extends AbstractFeature
       {
         result = outer().resultTypeIfPresent(res);
       }
-    else if (_impl._kind == Impl.Kind.FieldDef    ||
-             _impl._kind == Impl.Kind.FieldActual ||
-             _impl._kind == Impl.Kind.RoutineDef)
+    else if (_impl.typeInferable())
       {
         if (CHECKS) check
           (!state().atLeast(State.TYPES_INFERENCED));
         result = _impl.inferredType(res, this);
-
-        var from = _impl._kind == Impl.Kind.RoutineDef ? _impl._code
-                                                       : _impl._initialValue;
-        if (result != null &&
-            !result.isGenericArgument() &&
-            result.featureOfType().isTypeFeature() &&
-            !(from instanceof Call c && c.calledFeature() == Types.resolved.f_Types_get))
-          {
-            result = Types.resolved.f_Type.selfType();
-          }
       }
     else if (_returnType.isConstructorType())
       {
@@ -2577,6 +2588,20 @@ public class Feature extends AbstractFeature
    * Is this the `call` implementation of a lambda?
    */
   public boolean isLambdaCall()
+  {
+    return false;
+  }
+
+
+  /**
+   * Is this the 'THIS_TYPE' type parameter in a type feature?
+   *
+   * Overriding since AbstractFeature.isTypeFeaturesThisType needs outer to be
+   * in state of at least FINDING_DECLARATIONS which is not always the case
+   * when isTypeFeaturesThisType is called.
+   */
+  @Override
+  public boolean isTypeFeaturesThisType()
   {
     return false;
   }

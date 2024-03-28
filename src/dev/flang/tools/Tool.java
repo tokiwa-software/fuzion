@@ -31,17 +31,13 @@ import java.nio.file.Path;
 import java.util.TreeSet;
 import java.util.Set;
 
-
-
-
-
-
 import dev.flang.parser.Parser;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.Profiler;
+import dev.flang.util.Version;
 
 
 /**
@@ -109,7 +105,7 @@ public abstract class Tool extends ANY
   protected Tool(String name, String[] args)
   {
     _rawCmd = name;
-    _cmd = System.getProperty("fuzion.command", name);
+    _cmd = System.getProperty(FUZION_COMMAND_PROPERTY, name);
     _args = args;
   }
 
@@ -231,19 +227,19 @@ public abstract class Tool extends ANY
         a.equals("-help" ) ||
         a.equals("--help")    )
       {
-        System.out.println(USAGE(false));
+        say(USAGE(false));
         System.exit(0);
       }
     else if (a.equals("-X"     ) ||
              a.equals("-Xhelp" ) ||
              a.equals("--Xhelp")    )
       {
-        System.out.println(USAGE(true));
+        say(USAGE(true));
         System.exit(0);
       }
     else if (a.equals("-version"))
       {
-        System.out.println(_rawCmd + " V" + fullVersion()); ;
+        say(_rawCmd + " V" + fullVersion()); ;
         System.exit(0);
       }
     else if (a.equals("-XjavaProf"))

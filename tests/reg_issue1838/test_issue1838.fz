@@ -25,7 +25,7 @@ test_pre is
 
   x(bool c) unit
   pre c
-  is
+  =>
     say "x $c"
 
   x true

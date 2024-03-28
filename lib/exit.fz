@@ -57,7 +57,7 @@ is
   # install default instance of exit
   #
   type.install_default is
-    if !effect.type.is_installed exit
+    if !effect.is_installed exit
       _ := exit default_exit_handler effect_mode.default unit
 
 
@@ -102,7 +102,7 @@ is
 # exit handler.
 #
 exit0 =>
-  exit.type.install_default
+  exit.install_default
   exit.env
 
 
@@ -137,17 +137,17 @@ public Exit_Handler ref is
 
   # exit with the given code
   #
-  exit(code i32) void => abstract
+  public exit(code i32) void => abstract
 
 
   # exit with the stored code
   #
-  exit void => abstract
+  public exit void => abstract
 
 
   # set the stored exit code, which, by default, is zero
   #
-  set_exit_code(code i32) outcome unit
+  public set_exit_code(code i32) outcome unit
     pre
       0 ≤ code ≤ 127
     => abstract

@@ -32,6 +32,7 @@ import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -208,7 +209,7 @@ class ForClass extends ANY
   /**
    * Find Java constructors to generate code for this class
    *
-   * @param c the constructor to create fuzion code for
+   * @param co the constructor to create fuzion code for
    */
   void findConstructor(Constructor co)
   {
@@ -250,7 +251,6 @@ class ForClass extends ANY
             var fm = statique ? _generateSF   : _generateF;
             var jn = fi.getName();
             var fn = fuzionName(jn, null);
-            var fn0 = fn;
             int count = 0;
             var existing = hasFeature(statique, fn);
             while (existing)
@@ -341,7 +341,7 @@ class ForClass extends ANY
         var fn = fuzionName(jn, jp);
         if (!inheritsMethod(fn))
           {
-            processMethod(me, fcn, data_dynamic, data_static);
+            processMethod(me, fcn, data_dynamic, data_static, jtn);
           }
       }
     for (var me : _generateSM.values())
@@ -352,21 +352,21 @@ class ForClass extends ANY
         var fn = fuzionName(jn, jp);
         if (!inheritsStaticMethod(fn))
           {
-            processMethod(me, fcn, data_dynamic, data_static);
+            processMethod(me, fcn, data_dynamic, data_static, jtn);
           }
       }
     for (var me : _overloadedM.values())
       {
         if (!inheritsShortHand(me.getName(), me.getParameterTypes().length))
           {
-            shortHand(me, data_dynamic);
+            shortHand(me, data_dynamic, jtn);
           }
       }
     for (var me : _overloadedSM.values())
       {
         if (!inheritsShortHandStatic(me.getName(), me.getParameterTypes().length))
           {
-            shortHand(me, data_static);
+            shortHand(me, data_static, jtn + STATIC_SUFFIX);
           }
       }
     for (var fi : _generateF.entrySet())
@@ -379,11 +379,11 @@ class ForClass extends ANY
       }
     for (var co : _generateC)
       {
-        processConstructor(co, data_static);
+        processConstructor(co, data_static, jtn + STATIC_SUFFIX);
       }
     for (var co : _overloadedC.values())
       {
-        shortHand(co, data_static);
+        shortHand(co, data_static, jtn + STATIC_SUFFIX);
       }
 
     fzj.createOuter(jfn);
@@ -458,7 +458,8 @@ class ForClass extends ANY
   void processMethod(Method me,
                      String fcn,
                      StringBuilder data_dynamic,
-                     StringBuilder data_static)
+                     StringBuilder data_static,
+                     String outer)
   {
     var pa = me.getParameters();
     var rt = me.getReturnType();
@@ -473,13 +474,15 @@ class ForClass extends ANY
         data_dynamic.append("\n" +
                             "  # call Java instance method '" + me + "':\n" +
                             "  #\n" +
-                            "  public " + fn + fp + " " + fr + " is\n" +
-                            "    " + ("fuzion.java.call_virtual (" + fr + ") " +
+                            "  public " + fn + fp + " " + outcomeResultType(me, fr) + " =>\n" +
+                            "    " + ("match fuzion.java.call_virtual (" + fr + ") " +
                                       fuzionString(_class.getName()) + " " +
                                       fuzionString(jn) + " " +
                                       fuzionString(js) + " " +
                                       fcn + ".this "+
-                                  parametersArray(pa) + "\n")
+                                  parametersArray(outer + "." + fn, pa) + "\n") +
+                            "      " + "e error => " + (hasCheckedExceptions(me) ? "e" : "panic e.msg") + "\n" +
+                            "      " + "r " + fr + " => r\n"
                             );
       }
     else
@@ -487,42 +490,56 @@ class ForClass extends ANY
         data_static.append("\n" +
                             "  # call Java static method '" + me + "':\n" +
                             "  #\n" +
-                            "  public " + fn + fp + " " + fr + " is\n" +
-                            "    " + ("fuzion.java.call_static (" + fr + ") " +
+                            "  public " + fn + fp + " " + outcomeResultType(me, fr) + " =>\n" +
+                            "    " + ("match fuzion.java.call_static (" + fr + ") " +
                                       fuzionString(me.getDeclaringClass().getName()) + " " +
                                       fuzionString(jn) + " " +
                                       fuzionString(js) + " " +
-                                  parametersArray(pa) + "\n")
+                                  parametersArray(outer + STATIC_SUFFIX + "." + fn, pa) + "\n") +
+                            "      " + "e error => " + (hasCheckedExceptions(me) ? "e" : "panic e.msg") + "\n" +
+                            "      " + "r " + fr + " => r\n"
                             );
       }
   }
 
 
   /**
+   * If excecutable throws any checked exception
+   * the result type `fr` is wrapped in an outcome.
+   */
+  private String outcomeResultType(Executable exc, String fr)
+  {
+    return hasCheckedExceptions(exc) ? "outcome("+fr+")" : fr;
+  }
+
+
+  /**
    * Create Fuzion feature for given constructors
    *
-   * @param c the constructor to create fuzion code for
+   * @param co the constructor to create fuzion code for
    *
    * @param data_static the fuzion feature containing the static members of
    * the class
    */
   void processConstructor(Constructor co,
-                          StringBuilder data_static)
+                          StringBuilder data_static, String outer)
   {
     var pa = co.getParameters();
     var js = signature(pa, Void.TYPE);        // Java signature
     var jp = signature(pa);                   // Java signature of parameters
     var fp = formalParameters(pa);            // Fuzion parameters
-    var fr = resultType(co.getDeclaringClass(), co);
+    var fr = plainResultType(co.getDeclaringClass());
     var fn = fuzionName("new", jp);
     data_static.append("\n" +
                        "  # call Java constructor '" + co + "':\n" +
                        "  #\n" +
-                       "  public " + fn + fp + " " + fr + " is\n" +
-                       "    " + ("fuzion.java.call_constructor (" + fr + ") " +
+                       "  public " + fn + fp + " " + outcomeResultType(co, fr) + " =>\n" +
+                       "    " + ("match fuzion.java.call_constructor (" + fr + ") " +
                                  fuzionString(co.getDeclaringClass().getName()) + " " +
                                  fuzionString(js) + " " +
-                                 parametersArray(pa) + "\n")
+                                 parametersArray(outer + "." + fn, pa) + "\n") +
+                       "      " + "e error => " + (hasCheckedExceptions(co) ? "e" : "panic e.msg") + "\n" +
+                       "      " + "r " + fr + " => r\n"
                        );
   }
 
@@ -533,25 +550,21 @@ class ForClass extends ANY
    * overloading, only one method will be chosen as a shortHand.
    *
    * @param me the method to create short hand fuzion code for
-   *
-   * @param data_dynamic the fuzion feature containing the instance members of
-   * the class
    */
   void shortHand(Method me,
-                 StringBuilder data)
+                 StringBuilder data, String outer)
   {
     var pa = me.getParameters();
     var fp = formalParameters(pa);
     var jn = me.getName();
-    var fr = resultType(me);                  // Fuzion result type
     var jp = signature(pa);                   // Java signature of parameters
     var fn0= fuzionName(jn, null);
     var fn = fuzionName(jn, jp);
     data.append("\n" +
                 "  # short-hand to call Java method '" + me + "':\n" +
                 "  #\n" +
-                "  public " + fn0 + fp + " (" + fr + ") is\n" +
-                "    " + fn + parametersList(pa) + "\n");
+                "  public " + fn0 + fp + " =>\n" +
+                "    " + fn + parametersList(outer + "." + fn0, pa) + "\n");
   }
 
 
@@ -566,19 +579,18 @@ class ForClass extends ANY
    * the class
    */
   void shortHand(Constructor co,
-                 StringBuilder data_static)
+                 StringBuilder data_static, String outer)
   {
     var pa = co.getParameters();
     var fp = formalParameters(pa);
     var jp = signature(pa);                   // Java signature of parameters
-    var fr = resultType(co.getDeclaringClass(), co);
     var fn0= "new";
     var fn = fuzionName(fn0, jp);
     data_static.append("\n" +
                        "  # short-hand to call Java constructor '" + co + "':\n" +
                        "  #\n" +
-                       "  public " + fn0 + fp + " (" + fr + ") is\n" +
-                       "    " + fn + parametersList(pa) + "\n");
+                       "  public " + fn0 + fp + " =>\n" +
+                       "    " + fn + parametersList(outer + "." + fn0, pa) + "\n");
   }
 
 
@@ -783,7 +795,7 @@ class ForClass extends ANY
   /**
    * Get the Java signature string for a given type
    *
-   * @param t the tye
+   * @param t the type
    *
    * @return the signature, e.g., "V"
    */
@@ -812,12 +824,14 @@ class ForClass extends ANY
    * Get a string containing code to create a Fuzion array constraining Java
    * objects corresponding to all the parameters.
    *
+   * @param outer
+   *
    * @param pa array of parameters
    *
    * @return a string declaring such an array, e.g.,
    * "[fuzion.java.string_to_java_object arg0]".
    */
-  String parametersArray(Parameter[] pa)
+  String parametersArray(String outer, Parameter[] pa)
   {
     StringBuilder res = new StringBuilder("[");
     for (var p : pa)
@@ -836,7 +850,7 @@ class ForClass extends ANY
         else if (t == Double   .TYPE) { res.append("fuzion.java.f64_to_java_object "   ); }
         else if (t == Boolean  .TYPE) { res.append("fuzion.java.bool_to_java_object "  ); }
         else if (t == String.class  ) { res.append("fuzion.java.string_to_java_object "); }
-        res.append(mp);
+        res.append( outer + ".this." + mp );
         res.append(")");
       }
     res.append("]");
@@ -849,18 +863,20 @@ class ForClass extends ANY
    * This is used to pass parameters from short-hand features to those with
    * fully mangled signature in their name.
    *
+   * @param outer
+   *
    * @param pa array of parameters
    *
    * @return a string with space-separated parameter names, e.g., "arg0 arg1"
    */
-  String parametersList(Parameter[] pa)
+  String parametersList(String outer, Parameter[] pa)
   {
     StringBuilder res = new StringBuilder("");
     for (var p : pa)
       {
         res.append(" ");
         var mp = FeatureWriter.mangledCleanName(p.getName());
-        res.append(mp);
+        res.append(outer + ".this." + mp);
       }
     return res.toString();
   }
@@ -877,31 +893,17 @@ class ForClass extends ANY
    */
   String resultType(Method me)
   {
-    return resultType(me.getReturnType(), me);
+    return plainResultType(me.getReturnType());
   }
 
 
   /**
-   * Get the Fuzion result type corresponding to the return type of a Method,
-   * wrapping it onto 'outcome' in case exceptions are thrown.
-   *
-   * @param me the Java Method
-   *
-   * @return the corresponding Fuzion type, e.g., "i32", "outcome<string>",
-   * "Java.java.util.Vector".
+   * Does the given method or constructor throw any checked exceptions?
    */
-  String resultType(Class rt, java.lang.reflect.Executable me)
+  boolean hasCheckedExceptions(Executable ex)
   {
-    var res = plainResultType(rt);
-    if (res != null)
-      {
-        var e = me.getExceptionTypes();
-        if (e != null && e.length > 0)
-          {
-            res = "outcome (" + res + ")";
-          }
-      }
-    return res;
+    var e = ex.getExceptionTypes();
+    return e != null && e.length > 0;
   }
 
 
@@ -996,7 +998,7 @@ class ForClass extends ANY
             data_static.append("\n" +
                                "  # read static Java field '" + fi + "':\n" +
                                "  #\n" +
-                               "  public " + fn + " " + rt + " is\n" +
+                               "  public " + fn + " " + rt + " =>\n" +
                                "    " + ("fuzion.java.get_static_field (" + rt + ") " +
                                          fuzionString(cn) + " " +
                                          fuzionString(jn) + "\n"));
@@ -1006,7 +1008,7 @@ class ForClass extends ANY
             data_dynamic.append("\n" +
                                 "  # read instance Java field '" + fi + "':\n" +
                                 "  #\n" +
-                                "  public " + fn + " " + rt + " is\n" +
+                                "  public " + fn + " " + rt + " =>\n" +
                                 "    " + ("fuzion.java.get_field (" + rt + ") " +
                                           fcn + ".this " +
                                           fuzionString(jn) + "\n"

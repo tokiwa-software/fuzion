@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fe;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import java.nio.channels.FileChannel;
 
@@ -55,7 +56,6 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourceDir;
-import dev.flang.util.SourceFile;
 
 
 /**
@@ -154,7 +154,7 @@ public class FrontEnd extends ANY
   public FrontEnd(FrontEndOptions options)
   {
     _options = options;
-    Types.reset();
+    Types.reset(options);
     FeatureAndOuter.reset();
     Errors.reset();
     FeatureName.reset();
@@ -189,7 +189,7 @@ public class FrontEnd extends ANY
     var dependsOn = lms.toArray(LibraryModule[]::new);
     if (options._loadSources)
       {
-        _module = new SourceModule(options, sourceDirs, inputFile(options), options._main, dependsOn, universe);
+        _module = new SourceModule(options, sourceDirs, dependsOn, universe);
         _module.createASTandResolve();
       }
     else
@@ -212,7 +212,7 @@ public class FrontEnd extends ANY
    * Determine the path to load module 'name' from.  E.g., for module 'base',
    * this returns the path '<fuzionHome>/modules/base.fum'.
    *
-   * @param a module name, without path or suffix
+   * @param name module name, without path or suffix
    *
    * @return the path to the module, null if not found.
    */
@@ -240,13 +240,7 @@ public class FrontEnd extends ANY
     try (var ch = (FileChannel) Files.newByteChannel(p, EnumSet.of(StandardOpenOption.READ)))
       {
         var data = ch.map(FileChannel.MapMode.READ_ONLY, 0, ch.size());
-        var base = _totalModuleData;
-        _totalModuleData = base + data.limit();
-        result = new LibraryModule(GLOBAL_INDEX_OFFSET + base,
-                                   this,
-                                   data,
-                                   new LibraryModule[0],
-                                   _universe);
+        result = libModule(data, new LibraryModule[0]);
         if (!m.equals(result.name()))
           {
             Errors.error("Module name mismatch for module file '" + p + "' expected name '" +
@@ -261,6 +255,24 @@ public class FrontEnd extends ANY
       }
     return result;
   }
+
+
+  /**
+   * create a new LibraryModule from `data`
+   */
+  private LibraryModule libModule(ByteBuffer data, LibraryModule[] dependsOn)
+  {
+    LibraryModule result;
+    var base = _totalModuleData;
+    _totalModuleData = base + data.limit();
+    result = new LibraryModule(GLOBAL_INDEX_OFFSET + base,
+                               this,
+                               data,
+                               dependsOn,
+                               _universe);
+    return result;
+  }
+
 
   /**
    * Load library module with given module name
@@ -290,19 +302,6 @@ public class FrontEnd extends ANY
   }
 
 
-  /**
-   * Get the path of one additional main input file (like compiling from stdin
-   * or just one single source file).
-   */
-  private Path inputFile(FrontEndOptions options)
-  {
-    return
-      options._readStdin         ? SourceFile.STDIN   :
-      options._inputFile != null ? options._inputFile
-                                 : null;
-  }
-
-
   /*-----------------------------  methods  -----------------------------*/
 
 
@@ -319,25 +318,20 @@ public class FrontEnd extends ANY
 
 
   /**
-   * During resolution, load all inner classes of this that are
-   * defined in separate files.
-   */
-  void loadInnerFeatures(AbstractFeature f)
-  {
-    var m = module();
-    if (m != null)
-      {
-        m.loadInnerFeatures(f);
-      }
-  }
-
-
-  /**
    * Return the collection of loaded modules.
    */
   public Collection<LibraryModule> getModules()
   {
     return _modules.values();
+  }
+
+
+  /**
+   * Get the compiled module main.
+   */
+  public Module mainModule()
+  {
+    return libModule(_module.data("main"), _modules.values().toArray(new LibraryModule[_modules.size()]));
   }
 
 }

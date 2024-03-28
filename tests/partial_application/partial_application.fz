@@ -32,16 +32,16 @@ partial_application is
       say "FAILED: $msg: got '$got' expected '$exp'"
       _ := set_exit_code 1
 
-  test "map +(1+0)" $([1,2,3,4].map +(1+0)) "[2,3,4,5]"
+  test "map +(1+0)" $([1, 2, 3, 4].map +(1+0)) "[2, 3, 4, 5]"
 
   o := 1
   t := 2
-  test "map +o" $([1,2,3,4].map +o) "[2,3,4,5]"
-  test "map -o" $([1,2,3,4].map -o) "[0,1,2,3]"
-  test "map o+" $([1,2,3,4].map o+) "[2,3,4,5]"
-  test "map o-" $([1,2,3,4].map o-) "[0,-1,-2,-3]"
-  test "map *t" $([1,2,3,4].map *t) "[2,4,6,8]"
-  test "map %t" $([1,2,3,4].map %t) "[1,0,1,0]"
+  test "map +o" $([1, 2, 3, 4].map +o) "[2, 3, 4, 5]"
+  test "map -o" $([1, 2, 3, 4].map -o) "[0, 1, 2, 3]"
+  test "map o+" $([1, 2, 3, 4].map o+) "[2, 3, 4, 5]"
+  test "map o-" $([1, 2, 3, 4].map o-) "[0, -1, -2, -3]"
+  test "map *t" $([1, 2, 3, 4].map *t) "[2, 4, 6, 8]"
+  test "map %t" $([1, 2, 3, 4].map %t) "[1, 0, 1, 0]"
 
   qqq(f,g i32->i32) => "{f 42} {g 42}"
   test "qqq lambdas " (qqq x->2*x x->3*x) "84 126"
@@ -49,36 +49,36 @@ partial_application is
 
   data := 1..10
   # NYI:  m := data.map x->2*x; say m   # see #2251, semicolon does not work after lambda
-  test "data.map x->2*x    " (data.map x->2*x       ) "[2,4,6,8,10,12,14,16,18,20]"
-  test "data.map    2*     " (data.map    2*        ) "[2,4,6,8,10,12,14,16,18,20]"
-  test "data.map    *2     " (data.map    *2        ) "[2,4,6,8,10,12,14,16,18,20]"
-  test "data.map    2+     " (data.map    2+        ) "[3,4,5,6,7,8,9,10,11,12]"
-  test "data.map    +2     " (data.map    +2        ) "[3,4,5,6,7,8,9,10,11,12]"
-  test "data.map    2-     " (data.map    2-        ) "[1,0,-1,-2,-3,-4,-5,-6,-7,-8]"
-  test "data.map    -2     " (data.map    -2        ) "[-1,0,1,2,3,4,5,6,7,8]"
-  test "data.map 3.infix*  " (data.map    3.infix*  ) "[3,6,9,12,15,18,21,24,27,30]"
-  test "data.map 4.infix*  " (data.map    4.infix*  ) "[4,8,12,16,20,24,28,32,36,40]"
+  test "data.map x->2*x    " (data.map x->2*x       ) "[2, 4, 6, 8, 10, 12, 14, 16, 18, 20]"
+  test "data.map    2*     " (data.map    2*        ) "[2, 4, 6, 8, 10, 12, 14, 16, 18, 20]"
+  test "data.map    *2     " (data.map    *2        ) "[2, 4, 6, 8, 10, 12, 14, 16, 18, 20]"
+  test "data.map    2+     " (data.map    2+        ) "[3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"
+  test "data.map    +2     " (data.map    +2        ) "[3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"
+  test "data.map    2-     " (data.map    2-        ) "[1, 0, -1, -2, -3, -4, -5, -6, -7, -8]"
+  test "data.map    -2     " (data.map    -2        ) "[-1, 0, 1, 2, 3, 4, 5, 6, 7, 8]"
+  test "data.map 3.infix*  " (data.map    3.infix*  ) "[3, 6, 9, 12, 15, 18, 21, 24, 27, 30]"
+  test "data.map 4.infix*  " (data.map    4.infix*  ) "[4, 8, 12, 16, 20, 24, 28, 32, 36, 40]"
 
   i32.prefix      !! => if val <= 1 then 1 else val * !!(val-1)
-  integer.postfix !  => if integer.this <= integer.this.type.one then integer.this.type.one else integer.this * (integer.this-integer.this.type.one)!
+  integer.postfix !  => if integer.this <= integer.this.one then integer.this.one else integer.this * (integer.this-integer.this.one)!
   i32.postfix !  => if val <= 1 then 1 else val * (val-1)!
   u64.postfix     !!  => if val <= u64 1 then u64 1 else val * (val-1)!!
   u64.prefix      !!  => if val <= u64 1 then u64 1 else val * !!(val-1)
 
-  test "data.map (+)" (data.map (+)) "[1,2,3,4,5,6,7,8,9,10]"
-  test "data.map (-)" (data.map (-)) "[-1,-2,-3,-4,-5,-6,-7,-8,-9,-10]"
-  test "data.map (!!)" (data.map (!!)) "[1,2,6,24,120,720,5040,40320,362880,3628800]"
-  test "data.map (!)" (data.map (!)) "[1,2,6,24,120,720,5040,40320,362880,3628800]"
-  test "data.map (!) " (data.map (!) ) "[1,2,6,24,120,720,5040,40320,362880,3628800]"
-  test "((u64 11)..20).map (!)" (((u64 11)..20).map (!)) "[39916800,479001600,6227020800,87178291200,1307674368000,20922789888000,355687428096000,6402373705728000,121645100408832000,2432902008176640000]"
-  test "((u64 11)..15).map ( !)" (((u64 11)..15).map ( !)) "[39916800,479001600,6227020800,87178291200,1307674368000]"
-  test "((u64 11)..15).map (! )" (((u64 11)..15).map (! )) "[39916800,479001600,6227020800,87178291200,1307674368000]"
-  test "((u64 11)..15).map ( ! )" (((u64 11)..15).map ( ! )) "[39916800,479001600,6227020800,87178291200,1307674368000]"
+  test "data.map (+)" (data.map (+)) "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]"
+  test "data.map (-)" (data.map (-)) "[-1, -2, -3, -4, -5, -6, -7, -8, -9, -10]"
+  test "data.map (!!)" (data.map (!!)) "[1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800]"
+  test "data.map (!)" (data.map (!)) "[1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800]"
+  test "data.map (!) " (data.map (!) ) "[1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800]"
+  test "((u64 11)..20).map (!)" (((u64 11)..20).map (!)) "[39916800, 479001600, 6227020800, 87178291200, 1307674368000, 20922789888000, 355687428096000, 6402373705728000, 121645100408832000, 2432902008176640000]"
+  test "((u64 11)..15).map ( !)" (((u64 11)..15).map ( !)) "[39916800, 479001600, 6227020800, 87178291200, 1307674368000]"
+  test "((u64 11)..15).map (! )" (((u64 11)..15).map (! )) "[39916800, 479001600, 6227020800, 87178291200, 1307674368000]"
+  test "((u64 11)..15).map ( ! )" (((u64 11)..15).map ( ! )) "[39916800, 479001600, 6227020800, 87178291200, 1307674368000]"
 #  say (((u64 11)..20).map (!!))    # should cause an error: ambiguous prefix and postfix !
 
-  test "data.map (.as_string)  " (data.map (.as_string)) "[1,2,3,4,5,6,7,8,9,10]"
-  test "data.map (.as_string 2)" (data.map (.as_string 2)) "[1,10,11,100,101,110,111,1000,1001,1010]"
-  test "data.map (.as_string 3)" (data.map (.as_string 3)) "[1,2,10,11,12,20,21,22,100,101]"
+  test "data.map (.as_string)  " (data.map (.as_string)) "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]"
+  test "data.map (.as_string 2)" (data.map (.as_string 2)) "[1, 10, 11, 100, 101, 110, 111, 1000, 1001, 1010]"
+  test "data.map (.as_string 3)" (data.map (.as_string 3)) "[1, 2, 10, 11, 12, 20, 21, 22, 100, 101]"
 
   as00 i32->String := (.as_string)
   as01 i32->String := (.as_string 2)
@@ -86,25 +86,25 @@ partial_application is
   as03 i32->String := .as_string
   as04 i32->String := .as_string 2
   as05 i32->String := .as_string 3
-  test "data.map as00          " (data.map as00) "[1,2,3,4,5,6,7,8,9,10]"
-  test "data.map as01          " (data.map as01) "[1,10,11,100,101,110,111,1000,1001,1010]"
-  test "data.map as02          " (data.map as02) "[1,2,10,11,12,20,21,22,100,101]"
-  test "data.map as03          " (data.map as03) "[1,2,3,4,5,6,7,8,9,10]"
-  test "data.map as04          " (data.map as04) "[1,10,11,100,101,110,111,1000,1001,1010]"
-  test "data.map as05          " (data.map as05) "[1,2,10,11,12,20,21,22,100,101]"
+  test "data.map as00          " (data.map as00) "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]"
+  test "data.map as01          " (data.map as01) "[1, 10, 11, 100, 101, 110, 111, 1000, 1001, 1010]"
+  test "data.map as02          " (data.map as02) "[1, 2, 10, 11, 12, 20, 21, 22, 100, 101]"
+  test "data.map as03          " (data.map as03) "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]"
+  test "data.map as04          " (data.map as04) "[1, 10, 11, 100, 101, 110, 111, 1000, 1001, 1010]"
+  test "data.map as05          " (data.map as05) "[1, 2, 10, 11, 12, 20, 21, 22, 100, 101]"
 
-  data := [1,2,3,4,5,6,7,8,9,10]  # do not use 1..10 due to #2271
-  test "data.zip data x,y->x*y" (data.zip data x,y->x*y) "[1,4,9,16,25,36,49,64,81,100]"
-  test "data.zip data (+)" (data.zip data (+)) "[2,4,6,8,10,12,14,16,18,20]"
-  test "data.zip data (*)" (data.zip data (*)) "[1,4,9,16,25,36,49,64,81,100]"
+  data := [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # do not use 1..10 due to #2271
+  test "data.zip data x,y->x*y" (data.zip data x,y->x*y) "[1, 4, 9, 16, 25, 36, 49, 64, 81, 100]"
+  test "data.zip data (+)" (data.zip data (+)) "[2, 4, 6, 8, 10, 12, 14, 16, 18, 20]"
+  test "data.zip data (*)" (data.zip data (*)) "[1, 4, 9, 16, 25, 36, 49, 64, 81, 100]"
   z00 Function i32 i32 i32 := +
-  test "data.zip data +  " (data.zip data z00) "[2,4,6,8,10,12,14,16,18,20]"
+  test "data.zip data +  " (data.zip data z00) "[2, 4, 6, 8, 10, 12, 14, 16, 18, 20]"
   z01 Function i32 i32 i32 := -
-  test "data.zip data -  " (data.zip data z01) "[0,0,0,0,0,0,0,0,0,0]"
+  test "data.zip data -  " (data.zip data z01) "[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]"
   z02 Function i32 i32 i32 => *
-  test "data.zip data *  " (data.zip data z02) "[1,4,9,16,25,36,49,64,81,100]"
+  test "data.zip data *  " (data.zip data z02) "[1, 4, 9, 16, 25, 36, 49, 64, 81, 100]"
   z03 Function i32 i32 i32 => /
-  test "data.zip data *  " (data.zip data z03) "[1,1,1,1,1,1,1,1,1,1]"
+  test "data.zip data *  " (data.zip data z03) "[1, 1, 1, 1, 1, 1, 1, 1, 1, 1]"
 
   easy(f i32->i32) =>
     f 42
@@ -253,27 +253,27 @@ partial_application is
   r32 i32->i32 := ((-))
   test "easy ((-))    " (easy r32) "-42"
 
-  x01 Unary i32 i32 := 5 *;   test "data.map x01" (data.map x01) "[5,10,15,20,25,30,35,40,45,50]"
-  x02 Unary i32 i32 := 5*;    test "data.map x02" (data.map x02) "[5,10,15,20,25,30,35,40,45,50]"
-  x03 Unary i32 i32 := *5;    test "data.map x03" (data.map x03) "[5,10,15,20,25,30,35,40,45,50]"
-  x04 Unary i32 i32 := * 5;   test "data.map x04" (data.map x04) "[5,10,15,20,25,30,35,40,45,50]"
-  x05 Unary i32 i32 := (*5);  test "data.map x05" (data.map x05) "[5,10,15,20,25,30,35,40,45,50]"
-  x06 Unary i32 i32 := 5 *  ; test "data.map x06" (data.map x06) "[5,10,15,20,25,30,35,40,45,50]"
-  x07 Unary i32 i32 := 5*   ; test "data.map x07" (data.map x07) "[5,10,15,20,25,30,35,40,45,50]"
-  x08 Unary i32 i32 := *5   ; test "data.map x08" (data.map x08) "[5,10,15,20,25,30,35,40,45,50]"
-  x09 Unary i32 i32 := * 5  ; test "data.map x09" (data.map x09) "[5,10,15,20,25,30,35,40,45,50]"
-  x10 Unary i32 i32 := (*5) ; test "data.map x10" (data.map x10) "[5,10,15,20,25,30,35,40,45,50]"
+  x01 Unary i32 i32 := 5 *;   test "data.map x01" (data.map x01) "[5, 10, 15, 20, 25, 30, 35, 40, 45, 50]"
+  x02 Unary i32 i32 := 5*;    test "data.map x02" (data.map x02) "[5, 10, 15, 20, 25, 30, 35, 40, 45, 50]"
+  x03 Unary i32 i32 := *5;    test "data.map x03" (data.map x03) "[5, 10, 15, 20, 25, 30, 35, 40, 45, 50]"
+  x04 Unary i32 i32 := * 5;   test "data.map x04" (data.map x04) "[5, 10, 15, 20, 25, 30, 35, 40, 45, 50]"
+  x05 Unary i32 i32 := (*5);  test "data.map x05" (data.map x05) "[5, 10, 15, 20, 25, 30, 35, 40, 45, 50]"
+  x06 Unary i32 i32 := 5 *  ; test "data.map x06" (data.map x06) "[5, 10, 15, 20, 25, 30, 35, 40, 45, 50]"
+  x07 Unary i32 i32 := 5*   ; test "data.map x07" (data.map x07) "[5, 10, 15, 20, 25, 30, 35, 40, 45, 50]"
+  x08 Unary i32 i32 := *5   ; test "data.map x08" (data.map x08) "[5, 10, 15, 20, 25, 30, 35, 40, 45, 50]"
+  x09 Unary i32 i32 := * 5  ; test "data.map x09" (data.map x09) "[5, 10, 15, 20, 25, 30, 35, 40, 45, 50]"
+  x10 Unary i32 i32 := (*5) ; test "data.map x10" (data.map x10) "[5, 10, 15, 20, 25, 30, 35, 40, 45, 50]"
 
-  y01 Unary i32 i32 := 3 -;  test "data.map y01" (data.map y01) "[2,1,0,-1,-2,-3,-4,-5,-6,-7]"
-  y02 Unary i32 i32 := 3-;   test "data.map y02" (data.map y02) "[2,1,0,-1,-2,-3,-4,-5,-6,-7]"
-  y03 Unary i32 i32 := -3;   test "data.map y03" (data.map y03) "[-2,-1,0,1,2,3,4,5,6,7]"
-  y04 Unary i32 i32 := - 3;  test "data.map y04" (data.map y04) "[-2,-1,0,1,2,3,4,5,6,7]"
-  y05 Unary i32 i32 := (-3); test "data.map y05" (data.map y05) "[-2,-1,0,1,2,3,4,5,6,7]"
-  y06 Unary i32 i32 := 3 +;  test "data.map y06" (data.map y06) "[4,5,6,7,8,9,10,11,12,13]"
-  y07 Unary i32 i32 := 3+;   test "data.map y07" (data.map y07) "[4,5,6,7,8,9,10,11,12,13]"
-  y08 Unary i32 i32 := +3;   test "data.map y08" (data.map y08) "[4,5,6,7,8,9,10,11,12,13]"
-  y09 Unary i32 i32 := + 3;  test "data.map y09" (data.map y09) "[4,5,6,7,8,9,10,11,12,13]"
-  y10 Unary i32 i32 := (+3); test "data.map y10" (data.map y10) "[4,5,6,7,8,9,10,11,12,13]"
+  y01 Unary i32 i32 := 3 -;  test "data.map y01" (data.map y01) "[2, 1, 0, -1, -2, -3, -4, -5, -6, -7]"
+  y02 Unary i32 i32 := 3-;   test "data.map y02" (data.map y02) "[2, 1, 0, -1, -2, -3, -4, -5, -6, -7]"
+  y03 Unary i32 i32 := -3;   test "data.map y03" (data.map y03) "[-2, -1, 0, 1, 2, 3, 4, 5, 6, 7]"
+  y04 Unary i32 i32 := - 3;  test "data.map y04" (data.map y04) "[-2, -1, 0, 1, 2, 3, 4, 5, 6, 7]"
+  y05 Unary i32 i32 := (-3); test "data.map y05" (data.map y05) "[-2, -1, 0, 1, 2, 3, 4, 5, 6, 7]"
+  y06 Unary i32 i32 := 3 +;  test "data.map y06" (data.map y06) "[4, 5, 6, 7, 8, 9, 10, 11, 12, 13]"
+  y07 Unary i32 i32 := 3+;   test "data.map y07" (data.map y07) "[4, 5, 6, 7, 8, 9, 10, 11, 12, 13]"
+  y08 Unary i32 i32 := +3;   test "data.map y08" (data.map y08) "[4, 5, 6, 7, 8, 9, 10, 11, 12, 13]"
+  y09 Unary i32 i32 := + 3;  test "data.map y09" (data.map y09) "[4, 5, 6, 7, 8, 9, 10, 11, 12, 13]"
+  y10 Unary i32 i32 := (+3); test "data.map y10" (data.map y10) "[4, 5, 6, 7, 8, 9, 10, 11, 12, 13]"
 
   y2 Unary i32 i32 := -
   test "y2.call  42" (y2.call  42) "-42"

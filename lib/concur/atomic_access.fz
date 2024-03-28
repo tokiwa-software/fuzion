@@ -37,5 +37,5 @@ private:module atomic_access : simple_effect is
 # short-hand for accessing mut effect in current environment
 #
 module atomic_access_env =>
-  atomic_access.type.install_default
+  atomic_access.install_default
   atomic_access.env

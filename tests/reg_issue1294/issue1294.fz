@@ -36,7 +36,7 @@ scenario1 is
   fs b
 
   a(T type) is
-    type.zero T is abstract
+    type.zero T => abstract
 
   b : a bool is
     type.zero => true
@@ -58,18 +58,18 @@ scenario1
 scenario2 is
 
   M(T type) ref is
-    e T is abstract
+    e T => abstract
 
   a(T type) is
     type.z => zero
-    type.zero T is abstract
+    type.zero T => abstract
 
     type.sum : scenario2.M T is
       fixed e => zero
 
   b : a scenario2.b is
 
-    fixed type.zero scenario2.b is scenario2.b
+    fixed type.zero scenario2.b => scenario2.b
 
   fs(F type : a F) =>
     _ := F.z
@@ -123,7 +123,7 @@ ex202 is
 
   # using map and fold
   sum := a.map x->x*x
-          .fold i32.type.sum
+          .fold i32.sum
   say "sum is $sum"
 
   # using a loop
@@ -135,7 +135,7 @@ ex202 is
     say "sum is $sum"
 
   # using a tail-recursive function
-  sum_of_squares (sum i32, s list i32) i32 is
+  sum_of_squares (sum i32, s list i32) i32 =>
     s ? nil    => sum
       | c Cons => sum_of_squares (sum + c.head**2) c.tail
 
@@ -149,18 +149,18 @@ ex202
 # the example for idiom204 caused the problem from the next scenario:
 #
 ex204 is
-  frexp (f f64) tuple f64 i32 is
+  frexp (f f64) tuple f64 i32 =>
     bits := f.cast_to_u64
     # bits is f in the following representation
     # seeeeeeeeeeeffffffffffffffffffffffffffffffffffffffffffffffffffff
     # where s = sign, e = exponent, f = fraction
-    fract_bits := f64.type.significand_bits.as_u64 - 1
+    fract_bits := f64.significand_bits.as_u64 - 1
     # fract_bits is
     # 0000000000000000000000000000000000000000000000000000000000110100
-    bias := (u64 2 ** (f64.type.exponent_bits.as_u64 - 1) - 1)
+    bias := (u64 2 ** (f64.exponent_bits.as_u64 - 1) - 1)
     # bias is
     # 0000000000000000000000000000000000000000000000000000001111111111
-    mask := u64 2 ** f64.type.exponent_bits.as_u64 - 1
+    mask := u64 2 ** f64.exponent_bits.as_u64 - 1
     # mask is
     # 0000000000000000000000000000000000000000000000000000011111111111
     # bits >> fract_bits will give us
@@ -209,19 +209,19 @@ ex_204_bis := ~8
 scenario7 is
 
   p (W type: p W) is
-    type.abs W is abstract
+    type.abs W => abstract
     a => W.abs
 
   # Now, features `q`, `q2` and `q3` inherit from `p` and set the type parameter to `q`, `q2`
   # and `q3, resp. and implement the type feature `abs`
   #
   q : p scenario7.q is
-    redef type.abs scenario7.q is scenario7.q
+    redef type.abs scenario7.q => scenario7.q
 
   q2 : p scenario7.q2 is
-    redef type.abs scenario7.q2 is scenario7.q2
+    redef type.abs scenario7.q2 => scenario7.q2
   q3 : p scenario7.q3 is
-    redef type.abs scenario7.q3 is scenario7.q3
+    redef type.abs scenario7.q3 => scenario7.q3
 
   # Next, r, s and t build a long inheritance chain starting at `p q`:
   #
@@ -273,29 +273,29 @@ scenario8 is
 
     # special values
     #
-    type.zero num0.this is abstract
-    type.one  num0.this is abstract
+    type.zero num0.this => abstract
+    type.one  num0.this => abstract
 
     # if num0.this less than other?
     #
-    lessThan(other num0.this) bool is abstract
+    lessThan(other num0.this) bool => abstract
 
-    plus (other num0.this) num0.this is plus_intrinsic other
-    plus_intrinsic (other num0.this) num0.this is abstract
-    minus(other num0.this) num0.this is minus_intrinsic other
-    minus_intrinsic (other num0.this) num0.this is abstract
+    plus (other num0.this) num0.this => plus_intrinsic other
+    plus_intrinsic (other num0.this) num0.this => abstract
+    minus(other num0.this) num0.this => minus_intrinsic other
+    minus_intrinsic (other num0.this) num0.this => abstract
 
     to_u32_loop =>
       for
-        x := num0.this, x.minus num0.this.type.one
+        x := num0.this, x.minus num0.this.one
         u := u32 0, u+1
-      while num0.this.type.zero.lessThan x
+      while num0.this.zero.lessThan x
       else
         u
 
     # convert this to corresponding values as an 'u32'
     #
-    to_u32 u32 is
+    to_u32 u32 =>
       t := num0.this.type
       if t.zero.lessThan num0.this
         (minus t.one).to_u32 + 1
@@ -310,7 +310,7 @@ scenario8 is
     # string representation of this value, to be implemented by
     # children.
     #
-    valueString String is abstract
+    valueString String => abstract
 
     type.sum : Monoid num0.this is
       redef infix ∙ (a, b num0.this) => a.plus b

@@ -953,7 +953,7 @@ class LibraryOut extends ANY
       }
     else
       {
-        System.err.println("Missing handling of "+e.getClass()+" in LibraryOut.expressions");
+        say_err("Missing handling of "+e.getClass()+" in LibraryOut.expressions");
       }
     return lastPos;
   }
@@ -973,7 +973,7 @@ class LibraryOut extends ANY
     if (sd != null && sfp.startsWith(sd))
       {
         var sfr = sd.relativize(sfp);
-        sfp = FuzionConstants.SYMBOLIC_FUZION_HOME_LIB_SOURCE.resolve(sfr);
+        sfp = FuzionConstants.SYMBOLIC_FUZION_MODULE.resolve(sfr);
       }
     return sfp.toString();
   }
@@ -1007,7 +1007,7 @@ class LibraryOut extends ANY
   /**
    * Write source code position
    *
-   * @param post the position
+   * @param pos the position
    */
   void pos(SourcePosition pos)
   {

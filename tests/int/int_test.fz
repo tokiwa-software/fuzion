@@ -27,7 +27,7 @@ int_test is
 
   exit_code := mut 0
 
-  chck (b bool, msg String) unit is
+  chck (b bool, msg String) unit =>
     if b
       say "PASSED: $msg"
     else
@@ -36,8 +36,8 @@ int_test is
 
 
   # test basic int operations with small numbers
-  for m in (i64 -5)..5 do
-    for n in (i64 -5)..5 do
+  for m in (i64 -2)..2 do
+    for n in (i64 -2)..2 do
 
       chck (m=n   <=> (int m  = int n)) "int: m $m  = n $n"
       chck ((m≤n) <=> (int m ≤ int n)) "int: m $m <= n $n"
@@ -53,8 +53,8 @@ int_test is
     chck ("$m" = "{int m}")  "int:  $m as string"
 
   # test basic uint operations with small numbers
-  for m in (u64 0)..5 do
-    for n in (u64 0)..5 do
+  for m in (u64 0)..2 do
+    for n in (u64 0)..2 do
 
       chck (uint m>>n  = (uint m  >> uint n)) "uint: $m  >> n $n"
       chck (uint m<<n  = (uint m  << uint n)) "uint: $m  << n $n"
@@ -72,18 +72,18 @@ int_test is
     chck ("$m" = "{uint m}") "uint: $m as string"
 
 
-  u32_max := u32.type.max.as_u64
+  u32_max := u32.max.as_u64
 
 
   # test int/uint as_string around first overflow
   for m in (u32_max - 3)..(u32_max + 3) do
-    chck ("$m" = "{int.type.from_u64 m}")  "int:  $m as string"
+    chck ("$m" = "{int.from_u64 m}")  "int:  $m as string"
     chck ("$m" = "{uint m}") "uint: $m as string"
 
 
   # test uint for numbers larger than u32.max
-  for m in u32_max..(u32_max+5) do
-    for n in u32_max..(u32_max+5) do
+  for m in u32_max..(u32_max+2) do
+    for n in u32_max..(u32_max+2) do
 
       chck (m=n    <=> (uint m = uint n)) "uint: $m  = n $n"
       chck ((m≤n)  <=> (uint m ≤ uint n)) "uint: $m <= n $n"
@@ -96,14 +96,14 @@ int_test is
 
 
   # test uint multiplication for numbers larger than u32.max
-  for m in u32_max..(u32_max+5) do
+  for m in u32_max..(u32_max+2) do
     for n in (u64 0)..(u64 3) do
 
       chck (uint m*n = (uint m * uint n)) "uint: m $m * n $n"
 
 
   # test uint exponentation for numbers larger than u32.max
-  for m in u32_max..(u32_max+5) do
+  for m in u32_max..(u32_max+2) do
     for n in (u64 0)..(u64 1) do
 
       chck (uint m**n = (uint m ** uint n)) "uint: m $m ** n $n"

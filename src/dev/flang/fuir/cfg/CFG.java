@@ -203,7 +203,7 @@ public class CFG extends ANY
   {
     if (PRECONDITIONS) require
       (_fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic);
-    var in = _fuir.clazzIntrinsicName(cl);
+    var in = _fuir.clazzOriginalName(cl);
     var c = _intrinsics_.get(in);
     if (c != null)
       {
@@ -218,7 +218,7 @@ public class CFG extends ANY
           }
         else
           {
-            var msg = "code for intrinsic " + _fuir.clazzIntrinsicName(cl) + " is missing";
+            var msg = "code for intrinsic " + _fuir.clazzOriginalName(cl) + " is missing";
             Errors.warning(msg);
           }
       }
@@ -262,6 +262,10 @@ public class CFG extends ANY
     put("fuzion.sys.stdin.stdin0"        , (cfg, cl) -> { } );
     put("fuzion.sys.out.stdout"          , (cfg, cl) -> { } );
     put("fuzion.sys.err.stderr"          , (cfg, cl) -> { } );
+    put("fuzion.sys.fileio.open_dir"     , (cfg, cl) -> { } );
+    put("fuzion.sys.fileio.read_dir"     , (cfg, cl) -> { } );
+    put("fuzion.sys.fileio.read_dir_has_next", (cfg, cl) -> { } );
+    put("fuzion.sys.fileio.close_dir"    , (cfg, cl) -> { } );
 
     put("i8.prefix -°"                   , (cfg, cl) -> { } );
     put("i16.prefix -°"                  , (cfg, cl) -> { } );
@@ -492,6 +496,12 @@ public class CFG extends ANY
     put("fuzion.sys.net.close0"          , (cfg, cl) -> { } );
     put("fuzion.sys.net.set_blocking0"   , (cfg, cl) -> { } );
 
+    put("fuzion.sys.process.create"      , (cfg, cl) -> { } );
+    put("fuzion.sys.process.wait"        , (cfg, cl) -> { } );
+    put("fuzion.sys.pipe.read"           , (cfg, cl) -> { } );
+    put("fuzion.sys.pipe.write"          , (cfg, cl) -> { } );
+    put("fuzion.sys.pipe.close"          , (cfg, cl) -> { } );
+
     put("fuzion.std.nano_sleep"          , (cfg, cl) -> { } );
     put("fuzion.std.nano_time"           , (cfg, cl) -> { } );
     put("fuzion.std.date_time"           , (cfg, cl) -> { } );
@@ -509,7 +519,7 @@ public class CFG extends ANY
         });
     put("effect.abort0"                     , (cfg, cl) -> { } );
     put("effect.type.is_installed"          , (cfg, cl) -> { } );
-    put("fuzion.java.Java_Object.is_null"   , (cfg, cl) -> { } );
+    put("fuzion.java.Java_Object.is_null0"  , (cfg, cl) -> { } );
     put("fuzion.java.array_get"             , (cfg, cl) -> { } );
     put("fuzion.java.array_length"          , (cfg, cl) -> { } );
     put("fuzion.java.array_to_java_object0" , (cfg, cl) -> { } );

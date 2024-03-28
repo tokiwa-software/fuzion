@@ -33,7 +33,7 @@ is
 
   # type for a spawned thread
   #
-  private:public spawned(private id i64) is
+  private:public spawned(id i64) is
 
     # wait for this thread to finish execution
     #
@@ -70,7 +70,7 @@ is
 # source of thread concurrency.
 #
 public thread =>
-  thread.type.install_default
+  thread.install_default
   thread.env
 
 

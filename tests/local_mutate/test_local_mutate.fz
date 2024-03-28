@@ -77,20 +77,22 @@ test_local_mutate is
           s.update a->a+e
         option s
 
-      # NYI: move this into negative test
-      if envir.args.count = 2
-        say count    # *** will cause an error, requires m to be installed
-
-      # NYI: move this into negative test
-      if envir.args.count = 3
-        s := m.go ()->count2
-        say s        # *** will cause an error, requires m to be installed
+      # This was moved to test_local_mutate_neg
+      #
+      # say count    # *** will cause compile-time an error, requires m to be installed
 
       # handler for negative tests that cause panic:
       #
       my_panic : Panic_Handler is
         do_panic(msg String) =>
           say "*** got '$msg' ***"
+
+      neg_test3 =>
+        s := m.go ()->count2
+        say s             # *** will cause an error, requires m to be installed
+        "** failed, did not panic **"
+
+      # say (my_panic.use ()->neg_test3 ()->"ok")   -- NYI: UNDER DEVELOPMENT: this currently fails for the C backend, need to check why
 
       say (my_panic.use ()->neg_test4 ()->"ok")
 
@@ -121,7 +123,7 @@ test_local_mutate is
   #
   test_quicksort =>
 
-    quicksort(T type: property.orderable, data Sequence T) array T is
+    quicksort(T type: property.orderable, data Sequence T) array T =>
       c := data.count
       if c = 0
         []
@@ -149,13 +151,13 @@ test_local_mutate is
               swap b r
               b
 
-          qs(l, r i32) unit is # =>  does not work
+          qs(l, r i32) unit => # =>  does not work
             if l < r
               pi := partition l r (l + r)/2
               qs l pi-1
               qs pi+1 r
 
-          arr := (mutate.array T).type.new m c data[0]
+          arr := (mutate.array T).new m c data[0]
           for i in arr.indices do
             arr[i] := data[i]
 
@@ -191,7 +193,7 @@ test_local_mutate is
     =>
       m : mutate is
 
-      ring2(from list T) Cell T m is   # NYI '=>' causes error cyclic type inference
+      ring2(from list T) Cell T m =>   # NYI '=>' causes error cyclic type inference
         c := Cell T m from.head.get
         match from.tail
           nil    => c
@@ -202,7 +204,7 @@ test_local_mutate is
                     l.link c l.p.get
         c
 
-      ring3(from list T) Cell T m is
+      ring3(from list T) Cell T m =>
         r := ring2 from
 
         for
@@ -239,8 +241,8 @@ test_local_mutate is
     # abstract type for 'ring'
     #
     Ring(T type) ref is
-      next, prev Ring T is abstract
-      data T is abstract
+      next, prev Ring T => abstract
+      data T => abstract
 
       redef as_string =>
         for
@@ -348,7 +350,7 @@ test_local_mutate is
 
       # create ring, called with the env set to an instance of `m`.
       #
-      create_ring2(from list T) Ring T is
+      create_ring2(from list T) Ring T =>
         c := Mut_Ring m T from.head.get
         from.as_list.tail.for_each (x->c.merge (Mut_Ring m T x))
         c.freeze

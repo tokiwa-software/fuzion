@@ -26,7 +26,7 @@
 #
 # To start this webserver in the interpreter, use:
 #
-#   fz -unsafeIntrinsics=on webserver2.fz
+#   fz webserver2.fz
 #
 # Alternatively, compile it using the C backend and run the resulting
 # executable:
@@ -34,7 +34,7 @@
 #   fz -c webserver2.fz
 #   ./webserver
 #
-webserver is
+webserver2 is
   port u16 := 8080
   server := net.server net.family.ipv6 net.protocol.tcp port
 
@@ -49,13 +49,13 @@ webserver is
       read := (net.channel net.server)
         .read 1
         .or (error "read error")
-        .bind String (d -> String.type.from_bytes d)
+        .bind String (d -> String.from_bytes d)
       s := read.val, s + read.val
     while read.ok && read.val != "\n"
     else
       say s
 
-    send200(data String) outcome unit is
+    send200(data String) outcome unit =>
       (net.channel net.server)
         .write """
           HTTP/1.1 200 OK

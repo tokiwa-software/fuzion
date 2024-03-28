@@ -49,11 +49,12 @@ import dev.flang.ast.HasGlobalIndex; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.ResolvedNormalType; // NYI: remove dependency!
-import dev.flang.ast.SrcModule; // NYI: remove dependency!
 import dev.flang.ast.State; // NYI: remove dependency!
 import dev.flang.ast.ExpressionVisitor; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
+
+import dev.flang.fe.FeatureLookup;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -76,7 +77,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /*-----------------------------  statics  -----------------------------*/
 
 
-  //  static int counter;  {counter++; if ((counter&(counter-1))==0) System.out.println("######################"+counter+" "+this.getClass()); }
+  //  static int counter;  {counter++; if ((counter&(counter-1))==0) say("######################"+counter+" "+this.getClass()); }
   // { if ((counter&(counter-1))==0) Thread.dumpStack(); }
 
 
@@ -86,8 +87,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   static final Clazz[] NO_CLAZZES = new Clazz[0];
 
 
-  // NYI: CLEANUP #2411 remove this dependency, clazzes should be build from module files only
-  public static SrcModule _module;
+  public static FeatureLookup _flu;
 
 
   /*-----------------------------  classes  -----------------------------*/
@@ -609,7 +609,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     for (var p: feature().inherits())
       {
         var pt = p.type();
-        var t1 = isRef() && pt.compareTo(Types.resolved.t_void) != 0 ? pt.asRef() : pt.asValue();
+        var t1 = isRef() && !pt.isVoid() ? pt.asRef() : pt.asValue();
         var t2 = _type.actualType(t1);
         var pc = Clazzes.clazz(t2);
         if (CHECKS) check
@@ -932,7 +932,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         (isUsedAsDynamicOuterRef() || isRef()))
       {
         // NYI: This should be removed, but this still finds some clazzes that findAllClasses() missed. Need to check why.
-        for (AbstractFeature f: _module.allInnerAndInheritedFeatures(feature()))
+        for (AbstractFeature f: _flu.allInnerAndInheritedFeatures(feature()))
           {
             lookupIfInstantiated(f);
           }
@@ -990,7 +990,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
               }
           }
       }
-    return _module.lookupFeature(feature(), fn, f);
+    return _flu.lookupFeature(feature(), fn, f);
   }
 
 
@@ -1089,20 +1089,17 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * This is not intended for use at runtime, but during analysis of static
    * types or to fill the virtual call table.
    *
-   * @param f the feature that is called
+   * @param fa the feature and actual generics that is called
    *
    * @param select in case f is a field of open generic type, this selects the
    * actual field.  -1 otherwise.
-   *
-   * @param actualGenerics the actual generics provided in the call,
-   * AbstractCall.NO_GENERICS if none.
    *
    * @param p if this lookup would result in the returned feature to be called,
    * p gives the position in the source code that causes this call.  p must be
    * null if the lookup does not cause a call, but it just done to determine
    * the type.
    *
-   * @param isInstantiated true iff this is a call in an inheritance clause.  In
+   * @param isInheritanceCall true iff this is a call in an inheritance clause.  In
    * this case, the result clazz will not be marked as instantiated since the
    * call will work on the instance of the inheriting clazz.
    *
@@ -1344,7 +1341,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (CHECKS) check
       (Errors.any() || field.isField(),
-       Errors.any() || feature().inheritsFrom(field.outer()));
+       Errors.any() || feature().inheritsFrom(field.outer()),
+       Errors.any() || field.isOpenGenericField() == (select != -1));
 
     var result = _clazzForField.get(field);
     if (result == null)
@@ -1550,7 +1548,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         var f = feature();
         inspectCode(new List<>(), f);
 
-        for (AbstractFeature ff: _module.allInnerAndInheritedFeatures(f))
+        for (AbstractFeature ff: _flu.allInnerAndInheritedFeatures(f))
           {
             Clazzes.whenCalledDynamically(ff, () -> lookupIfInstantiated(ff));
           }
@@ -1856,10 +1854,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
     switch (feature().qualifiedName())
       {
       case "effect.abortable":
-        argumentFields()[0].resultClazz().lookup(Types.resolved.f_function_call, at);
+        argumentFields()[0].resultClazz().lookup(Types.resolved.f_Function_call, at);
         break;
       case "fuzion.sys.thread.spawn0":
-        argumentFields()[0].resultClazz().lookup(Types.resolved.f_function_call, at);
+        argumentFields()[0].resultClazz().lookup(Types.resolved.f_Function_call, at);
         break;
       default: break;
       }
@@ -1931,7 +1929,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       // NYI: Once Clazz.normalize() is implemented better, a clazz C has
       // to be considered instantiated if there is any clazz D that
       // normalize() would replace by C if it occurs as an outer clazz.
-      _outer == Clazzes.any.getIfCreated()    ||
+      _outer == Clazzes.Any.getIfCreated()    ||
 
       _outer._isNormalized ||
 
@@ -2243,7 +2241,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     else
       {
         var ft = f.resultType();
-        result = handDown(f.resultType(), _select, new List<>(), feature());
+        result = handDown(ft, _select, new List<>(), feature());
         if (result.feature().isTypeFeature())
           {
             var ac = handDown(result._type.generics().get(0), new List<>(), feature());
@@ -2658,7 +2656,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           // note that intrinsics may have fields that are used in the intrinsic's pre-condition!
           false && isRef() /* NYI: would be good to add isRef() here and create _fields only for value types, does not work with C backend yet */
           ? NO_CLAZZES
-          : actualFields(_module.allInnerAndInheritedFeatures(feature()));
+          : actualFields(_flu.allInnerAndInheritedFeatures(feature()));
       }
     return isRef() ? NO_CLAZZES : _fields;
   }

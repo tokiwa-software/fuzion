@@ -42,23 +42,10 @@ public Sequence(public T type) ref is
   # create a list from this Sequence.
   #
   # A list is immutable, so it can be reused and shared between threads.
-  # Compared to a stream, a list may require more (heap) allocation.
   #
-  # Default implementation uses as_stream. Heirs must redefine at least
-  # one of as_list or as_stream.
+  # Heirs must provide an implementation of as_list.
   #
-  public as_list list T => as_stream.as_list
-
-
-  # create a stream of T.
-  #
-  # A stream contains mutable state, so it cannot be reused or shared
-  # between threads.
-  #
-  # Default implementation uses as_list.  Heirs must redefine at least
-  # one of as_list or as_stream.
-  #
-  public as_stream stream T => as_list.as_stream
+  public as_list list T => abstract
 
 
   # is this sequence known to be finite?  For infinite sequences, features like
@@ -86,7 +73,7 @@ public Sequence(public T type) ref is
   public count
   pre
     analysis: finite  # in practice, we do not always have this information
-  => (map i32 (_ -> 1)).fold i32.type.sum
+  => (map i32 (_ -> 1)).fold i32.sum
 
 
   # get the first element of this Sequence
@@ -153,14 +140,32 @@ public Sequence(public T type) ref is
   public for_each(f T -> unit) unit => as_list.for_each f
 
 
-  # create a list and have it consumed by f, infix operator synonym of for_each.
+  # calls `f` for element in the Sequence.
   #
-  public infix | (f T -> unit) => for_each f
+  # Unlike `for_each` this returns itself
+  # allowing easier composition with
+  # other Sequence features.
+  #
+  # example:
+  # [1,2,3,4,5]
+  #   .filter is_prime
+  #   .peek say
+  #   .drop_while <10
+  #
+  public peek (f T -> unit) =>
+    as_list ? nil    =>
+            | c Cons => f c.head; c.tail.peek f
+    as_list
 
 
-  # create a stream, postfix operator synonym for as_stream
+  # consume all elements of this Sequence by f. This is an infix operator alias
+  # for for_each.
   #
-  public postfix | => as_stream
+  # Ex.: To print all the elements of a list, you can use
+  #
+  #  1..10 ! say
+  #
+  public infix ! (f T -> unit) => for_each f
 
 
   # apply 'f' to each element 'e' as long as 'f e'
@@ -265,7 +270,7 @@ public Sequence(public T type) ref is
 
   # infix operand synonym for concat_sequences
   #
-  public infix ++ (s Sequence T) => as_list ++ s.as_list
+  public infix ++ (s Sequence T) => concat_sequences s.as_list
 
 
   # create a list that repeats the current Sequence indefinitely.  In case 'Sequence.this'
@@ -284,11 +289,39 @@ public Sequence(public T type) ref is
   # representations of its contents, separated by ',' and enclosed in '['
   # and ']'.
   #
-  public redef as_string => as_list.as_string
+  # In case this Sequence is known to be `finite` or has at most (Sequence T).type
+  # .AS_STRING_NON_FINITE_MAX_ELEMENTS elements, all elements will be shown in the
+  # resulting string. Otherwise, only the first elements will be shown followed by
+  # ",…" as in "[1,2,3,4,5,6,7,8,9,10,…]".
+  #
+  # To force printing of all elements of a finite `Sequence` for which `finite` is
+  # false (which may be the case since a Sequence in general might not know that it
+  # if finite), you may use `as_string_all`.
+  #
+  public redef as_string =>
+    if finite
+      as_string_all
+    else
+      max := (Sequence T).AS_STRING_NON_FINITE_MAX_ELEMENTS
+      (zip i32 String /* NYI: BUG #2527: type inference not powerful enough to infer `i32` here */
+           0..max (v,n -> if n < max then $v else "…")).as_string_all
+
+
+  # create a string representation of this Sequence including all the string
+  # representations of its contents, separated by ", " and enclosed in '['
+  # and ']'.
+  #
+  # NOTE: In case this Sequence is not finite, this will attempt to create an
+  # infinitely long string resulting in failure due to resource exchaustion.
+  #
+  public as_string_all => "[{as_string ", "}]"
 
 
   # create a string representation of this Sequence including all the string
   # representations of its contents, separated by 'sep'.
+  #
+  # NOTE: In case this Sequence is not finite, this will attempt to create an
+  # infinitely long string resulting in failure due to resource exchaustion.
   #
   public as_string (sep String) => as_list.as_string sep
 
@@ -298,13 +331,34 @@ public Sequence(public T type) ref is
   public as_strings => map c->c.as_string
 
 
-  # map the Sequence to a new list applying function f to all elements
+  # map the Sequence to a new Sequence applying function f to all elements
   #
   # This performs a lazy mapping, f is called only when the elements
   # in the resulting list are accessed.
   #
   public map(B type, f Unary B T) Sequence B =>
     as_list.map_to_list f
+
+
+  # map the Sequence to a new Sequence applying function f to all elements
+  #
+  # This is an infix operator alias of map enabling piping code like
+  #
+  #   l := 1..10 | *10 | 300-
+  #
+  # to obtain 290,280,270,...200
+  #
+  # Note that map and therefore also this operator is lazy, so
+  #
+  #   _ := (1..10 | say)
+  #
+  # will not print anything while
+  #
+  #   (1..10 | say).for_each _->unit
+  #
+  # will print the elements since `for_each` is not lazy.
+  #
+  public infix | (B type, f Unary B T) Sequence B => map f
 
 
   # map each element of this Sequence to Sequence
@@ -481,7 +535,7 @@ public Sequence(public T type) ref is
   public into(TA type, xf transducer (Sequence TA) TA T) list TA =>
     red := xf.call ((res,val) -> res ++ [val])
     for
-      res (list TA) := (list TA).type.empty , (red.call res el).as_list
+      res (list TA) := (list TA).empty , (red.call res el).as_list
       el in Sequence.this do
     else
       res
@@ -503,8 +557,8 @@ public Sequence(public T type) ref is
   #
   public index [] (i i32) T
     pre
-      debug: 0 ≤ i,
-      debug: finite: i < count,
+      debug: 0 ≤ i
+      debug: finite: i < count
       debug: !finite: !(drop i-1).is_empty
   =>
     (nth i).get
@@ -538,7 +592,6 @@ public Sequence(public T type) ref is
       (take chunk_size).as_list : ((drop chunk_size).chunk chunk_size)
 
 
-
   # monoid of Sequences with infix concatentation operation.
   #
   public type.concat_monoid : Monoid (Sequence T) is
@@ -550,4 +603,10 @@ public Sequence(public T type) ref is
     # identity element
     #
     e Sequence T =>
-      (list T).type.empty
+      (list T).empty
+
+
+  # Maximum number of elements shown for on a call to `as_string` for a non-finite
+  # Sequence.
+  #
+  public type.AS_STRING_NON_FINITE_MAX_ELEMENTS => 10

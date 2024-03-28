@@ -32,10 +32,10 @@ module:public a is
     public aaa is
       say "aaa"
 
-  public hello_a unit is
+  public hello_a unit =>
     say "hello_a from a"
 
-  public get_aa aa is
+  public get_aa aa =>
     a.this.aa
 
   field := 0

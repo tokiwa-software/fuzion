@@ -60,8 +60,6 @@ class CIdent extends CExpr
 
   /**
    * Create a C expression from a plain identifier
-   *
-   * @return the resulting expression
    */
   CIdent(String name)
   {
@@ -101,6 +99,22 @@ class CIdent extends CExpr
    * @return 0
    */
   int precedence() { return 0; }
+
+
+  /**
+   * Return an incr-expression for this CIdent.
+   *
+   * e.g. ++my_ident;
+   */
+  public CExpr incr()
+  {
+    CExpr ident = this;
+    return new CExpr()
+    {
+      int precedence() { return ident.precedence(); }
+      void code(CString sb) { sb.append("++");ident.code(sb); }
+    };
+  }
 
 }
 

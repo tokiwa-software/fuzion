@@ -38,7 +38,7 @@ import java.util.stream.Stream;
  + Please refer to the Java Virtual Machine Specification for details,
  * latest version as time of writing available here
  *
- *   https://docs.oracle.com/javase/specs/jvms/se20/jvms20.pdf
+ *   https://docs.oracle.com/javase/specs/jvms/se21/jvms21.pdf
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -75,8 +75,7 @@ public interface ClassFileConstants
   public static byte[] VERSION_JDK_21  = new byte[] { 0, 0, 0, 65 };   // LTS
 
 
-  public static byte[] DEFAULT_VERSION = VERSION_JDK_5;  // NYI: should be LTS version 17, using 5 only to avoid need for stack frame info entries
-  // public static byte[] DEFAULT_VERSION = VERSION_JDK_17;
+  public static byte[] DEFAULT_VERSION = VERSION_JDK_21;
 
   public enum CPoolTag
   {
@@ -143,6 +142,9 @@ public interface ClassFileConstants
     default String argDescriptor() { return descriptor(); }
 
     String className();
+
+    // null for type void
+    VerificationType vti();
   }
 
 
@@ -190,6 +192,10 @@ public interface ClassFileConstants
       { // void[] type is java.lang.Object
         return JAVA_LANG_OBJECT;
       }
+      public VerificationType vti()
+      {
+        return null;
+      }
     },
     type_int     ("I", "I", 1)
     {
@@ -222,6 +228,10 @@ public interface ClassFileConstants
         return Expr.POP;
       }
       public String className() { return "int"; }
+      public VerificationType vti()
+      {
+        return VerificationType.Integer;
+      }
     },
     type_byte    ("B", "I", 1)
     {
@@ -254,6 +264,10 @@ public interface ClassFileConstants
         return Expr.POP;
       }
       public String className() { return "byte"; }
+      public VerificationType vti()
+      {
+        return VerificationType.Integer;
+      }
     },
     type_short   ("S", "I", 1)
     {
@@ -286,6 +300,10 @@ public interface ClassFileConstants
         return Expr.POP;
       }
       public String className() { return "short"; }
+      public VerificationType vti()
+      {
+        return VerificationType.Integer;
+      }
     },
     type_char    ("C", "I", 1)
     {
@@ -318,6 +336,10 @@ public interface ClassFileConstants
         return Expr.POP;
       }
       public String className() { return "char"; }
+      public VerificationType vti()
+      {
+        return VerificationType.Integer;
+      }
     },
     type_long    ("J", "J", 2)
     {
@@ -350,6 +372,10 @@ public interface ClassFileConstants
         return Expr.POP2;
       }
       public String className() { return "long"; }
+      public VerificationType vti()
+      {
+        return VerificationType.Long;
+      }
     },
     type_float   ("F", "F", 1)
     {
@@ -382,6 +408,10 @@ public interface ClassFileConstants
         return Expr.POP;
       }
       public String className() { return "float"; }
+      public VerificationType vti()
+      {
+        return VerificationType.Float;
+      }
     },
     type_double  ("D", "D", 2)
     {
@@ -414,6 +444,10 @@ public interface ClassFileConstants
         return Expr.POP2;
       }
       public String className() { return "double"; }
+      public VerificationType vti()
+      {
+        return VerificationType.Double;
+      }
     },
     type_boolean ("Z", "I", 1)
     {
@@ -446,6 +480,10 @@ public interface ClassFileConstants
         return Expr.POP;
       }
       public String className() { return "boolean"; }
+      public VerificationType vti()
+      {
+        return VerificationType.Integer;
+      }
     };
 
 
@@ -477,42 +515,42 @@ public interface ClassFileConstants
 
     public Expr load(int index)
     {
-      throw new Error("NYI: load for type " + this);
+      throw new Error("load for type " + this);
     }
 
     public Expr store(int index)
     {
-      throw new Error("NYI: store for type " + this);
+      throw new Error("store for type " + this);
     }
 
     public Expr return0()
     {
-      throw new Error("NYI: return for type " + this);
+      throw new Error("return for type " + this);
     }
 
     public Expr newArray()
     {
-      throw new Error("NYI: newArray for type " + this);
+      throw new Error("newArray for type " + this);
     }
 
     public Expr xaload()
     {
-      throw new Error("NYI: array load for type " + this);
+      throw new Error("array load for type " + this);
     }
 
     public Expr xastore()
     {
-      throw new Error("NYI: array load for type " + this);
+      throw new Error("array load for type " + this);
     }
 
     public Expr pop()
     {
-      throw new Error("NYI: pop for type " + this);
+      throw new Error("pop for type " + this);
     }
 
     public String className()
     {
-      throw new Error("NYI: className for type " + this);
+      throw new Error("className for type " + this);
     }
 
     public JavaType array()
@@ -547,12 +585,12 @@ public interface ClassFileConstants
 
     public Expr load(int index)
     {
-      return Expr.aload(index, this);
+      return Expr.aload(index, this, vti());
     }
 
     public Expr store(int index)
     {
-      return Expr.astore(index);
+      return Expr.astore(index, vti());
     }
 
     public Expr return0()
@@ -580,7 +618,7 @@ public interface ClassFileConstants
       return Expr.POP;
     }
 
-    public JavaType array()
+    public AType array()
     {
       return new ArrayType(this);
     }
@@ -589,6 +627,15 @@ public interface ClassFileConstants
     {
       return "ClassType('" + _descriptor + "')";
     }
+    public int cpIndex(ClassFile cf)
+    {
+      return cf.cpClass(this).index();
+    }
+    public VerificationType vti()
+    {
+      return new VerificationType(className(), (cf)->cpIndex(cf));
+    }
+
   }
 
   public static class ClassType extends AType
@@ -627,6 +674,7 @@ public interface ClassFileConstants
   static ClassType JAVA_LANG_STRING = new ClassType("java/lang/String");
 
   static ClassType NULL_TYPE = new ClassType("java/lang/Object");
+  static ClassType ERROR_TYPE = new ClassType("dev/flang/be/jvm/runtime/JavaError");
 
   static class ArrayType extends AType
   {
@@ -755,7 +803,7 @@ public interface ClassFileConstants
    * is the sum of the slot count of all arguments in the descriptor, not
    * including the target value.
    *
-   * @param a call descriptor, e.g., "(JDZLjava/lang/Object;II)F"
+   * @param descriptor call descriptor, e.g., "(JDZLjava/lang/Object;II)F"
    *
    * @return the slot count, e.g., 8 for "(JDZLjava/lang/Object;II)F"
    * (==2+2+1+1+1+1).
@@ -763,6 +811,21 @@ public interface ClassFileConstants
   static int slotCountForArgs(String descriptor)
   {
     return argTypesFromDescriptor(descriptor).mapToInt(x -> x.stackSlots()).sum();
+  }
+
+
+  /**
+   * This counts the number of slots for a call with the given descriptor.  This
+   * is the sum of the slot count of all arguments in the descriptor, not
+   * including the target value.
+   *
+   * @param descriptor call descriptor, e.g., "(JDZLjava/lang/Object;II)F"
+   *
+   * @return the argument count, e.g., 6 for "(JDZLjava/lang/Object;II)F"
+   */
+  static int argCount(String descriptor)
+  {
+    return (int)argTypesFromDescriptor(descriptor).count();
   }
 
 
@@ -1038,6 +1101,12 @@ public interface ClassFileConstants
    * a byte:
    */
   public static final int MAX_INVOKE_INTERFACE_SLOTS = 0xff;
+
+
+  /**
+   * The tag encoding a full frame in a stack map.
+   */
+  public static final int STACK_MAP_FRAME_FULL_FRAME = 255;
 
 
 }

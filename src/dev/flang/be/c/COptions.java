@@ -72,13 +72,20 @@ public class COptions extends FuzionOptions
   final String _cFlags;
 
 
+  /**
+   * Flag to keep the generated c code after compilation.
+   */
+  final boolean _keepGeneratedCode;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
    * Constructor initializing fields as given.
+   * @param keepGeneratedCode
    */
-  public COptions(FuzionOptions fo, String binaryName, boolean useBoehmGC, boolean Xdfa, String cCompiler, String cFlags)
+  public COptions(FuzionOptions fo, String binaryName, boolean useBoehmGC, boolean Xdfa, String cCompiler, String cFlags, boolean keepGeneratedCode)
   {
     super(fo);
 
@@ -87,10 +94,21 @@ public class COptions extends FuzionOptions
     _Xdfa = Xdfa;
     _cCompiler = cCompiler;
     _cFlags = cFlags;
+    _keepGeneratedCode = keepGeneratedCode;
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /*
+   * Get the absolute path of `p` as a String.
+   * `p` is relative to fuzionHome.
+   */
+  public String pathOf(String p)
+  {
+    return fuzionHome().resolve(p).normalize().toAbsolutePath().toString();
+  }
 
 }
 

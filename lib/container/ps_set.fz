@@ -73,7 +73,9 @@ is
 
   # add new element k to this set.
   #
-  public add (k K) Set K =>
+  # NYI: this should be intergrated in the mutate effect!
+  #
+  public redef add (k K) Set K =>
     add0 k
 
 
@@ -105,7 +107,7 @@ is
   # intersection of two ps_sets
   public infix ∩ (other ps_set.this) =>
     s := (ps_set.this ∪ other).filter (x -> ps_set.this.has x && other.has x)
-    (ps_set K).type.empty.add_all s
+    (ps_set K).empty.add_all s
 
 
   # add all elements of the given Sequence to this set
@@ -131,14 +133,14 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
   # an empty ps_set
   #
   public fixed type.empty container.ps_set K =>
-    container.ps_set K (container.ps_map K unit).type.empty unit
+    container.ps_set K (container.ps_map K unit).empty unit
 
 
   # monoid of ps_set with infix ∪ operation.
   #
   public type.union : Monoid (container.ps_set K) is
     redef infix ∙ (a, b container.ps_set K) => a ∪ b
-    redef e => (container.ps_set K).type.empty
+    redef e => (container.ps_set K).empty
 
 
   # equality
@@ -152,4 +154,4 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
   #
   # This feature creates a pre-initialized instance of ps_set.
   #
-  public type.from_sequence(vs Sequence K) => (container.ps_set K).type.empty.add_all vs
+  public type.from_sequence(vs Sequence K) => (container.ps_set K).empty.add_all vs

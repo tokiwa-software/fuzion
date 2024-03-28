@@ -54,8 +54,6 @@ public class u32Value extends Value
 
   /**
    * Constructor
-   *
-   * @param i
    */
   public u32Value(int val)
   {
@@ -97,7 +95,6 @@ public class u32Value extends Value
    */
   void storeNonRef(LValue slot, int size)
   {
-    if (size != 1) System.out.println("Assigning "+this);
     if (PRECONDITIONS) require
       (size == 1);
 

@@ -166,17 +166,7 @@ public class If extends ExprWithPos
    */
   private AbstractType typeFromIfOrElse()
   {
-    AbstractType result = Types.resolved.t_void;
-
-    Iterator<Expr> it = branches();
-    while (it.hasNext())
-      {
-        var t = it.next().typeForInferencing();
-        t = t == null
-          ? Types.resolved.t_void
-          : t;
-        result = result.union(t);
-      }
+    var result = Expr.union(new List<>(branches()));
     if (result==Types.t_ERROR)
       {
         new IncompatibleResultsOnBranches(pos(),
@@ -322,7 +312,6 @@ public class If extends ExprWithPos
    *
    * @param outer the feature that contains this expression
    *
-   * @param t the expected type.
    */
   public void propagateExpectedType(Resolution res, AbstractFeature outer)
   {

@@ -154,7 +154,7 @@ public class FuzionOptions extends ANY
 
     if (verbose(level))
       {
-        System.out.println(s);
+        say(s);
       }
   }
 

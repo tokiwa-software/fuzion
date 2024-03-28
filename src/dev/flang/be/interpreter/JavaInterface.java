@@ -34,6 +34,7 @@ import java.lang.reflect.Method;
 
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
+import dev.flang.ast.Types;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -84,117 +85,6 @@ public class JavaInterface extends ANY
 
 
   /**
-   * forName load a class with a given name using this accessible
-   * object's class loader.
-   *
-   * @param name the class name using "." as separator between package
-   * and class name.
-   *
-   * @return the loaded class.
-   */
-  static Class forName(String name)
-  {
-    Class result;
-    try
-      {
-        result = Class.forName(name);
-      }
-    catch (ClassNotFoundException e)
-      {
-        result = null;
-      }
-    return result;
-  }
-
-
-
-  /**
-   * str2type converts a type descriptor of a field into the corresponding type.
-   *
-   * @param str a type descriptor, e.g. "Z", "Ljava/lang/String;".
-   *
-   * @return the type, e.g. Boolean.TYPE, String.class, etc.
-   */
-  static Class str2type(String str) {
-    switch (str.charAt(0)) {
-    case 'Z': return Boolean.TYPE;
-    case 'B': return Byte.TYPE;
-    case 'C': return Character.TYPE;
-    case 'S': return Short.TYPE;
-    case 'I': return Integer.TYPE;
-    case 'J': return Long.TYPE;
-    case 'F': return Float.TYPE;
-    case 'D': return Double.TYPE;
-    case 'V': return Void.TYPE;
-    case '[': return forName(str                            .replace('/','.'));
-    case 'L': return forName(str.substring(1,str.length()-1).replace('/','.'));
-    }
-    return null;
-  }
-
-
-  /**
-   * getEnd find the end of a type string starting at index i of d.
-   *
-   * @param d the descriptor string
-   *
-   * @param i the current index
-   *
-   * @return the index after the last index of the subtype.
-   */
-  static int getEnd(String d, int i) { // end of a sub-type in descriptor
-    while (d.charAt(i) == '[') {
-      i++;
-    }
-    if (d.charAt(i) == 'L') {
-      return d.indexOf(';',i)+1;
-    } else {
-      return i+1;
-    }
-  }
-
-
-  /**
-   * getPars determines an array of parameter types of a given
-   * signature.
-   *
-   * @return a new parameter type array.
-   */
-  static Class[] getPars(String d)
-  {
-    Class[] result;
-
-    /* count parameters: */
-    int cnt = 0;
-    int i = 1;
-    while (d.charAt(i)!=')')
-      {
-        int e = getEnd(d,i);
-        if (e <= i)
-          {
-            return null;
-          }
-        cnt++;
-        i = e;
-      }
-
-    result = new Class[cnt];
-
-    /* get parameters: */
-    cnt = 0;
-    i = 1;
-    while (d.charAt(i)!=')')
-      {
-        int e = getEnd(d,i);
-        result[cnt] = str2type(d.substring(i,e));
-        cnt++;
-        i = e;
-      }
-    return result;
-  }
-
-
-  /**
    * Extract Java object from an Instance of fuzion.java.Java_Object
    *
    * @param i an instance, must be of a clazz that inherits
@@ -203,6 +93,101 @@ public class JavaInterface extends ANY
   static Object instanceToJavaObject(Instance i)
   {
     var res = ((JavaRef)i.refs[0])._javaRef;
+    if (res != null)
+      {
+        // convert Value[] containing Java instances into corresponding Java array
+        if (res instanceof ValueWithClazz[] va)
+          {
+            var oa = new Object[va.length];
+            for (var ix = 0; ix < va.length; ix++)
+              {
+                if (va[ix].clazz()._type == Types.resolved.t_i8)
+                  {
+                    oa[ix] = va[ix].i8Value();
+                  }
+                else if (va[ix].clazz()._type == Types.resolved.t_i16)
+                  {
+                    oa[ix] = va[ix].i16Value();
+                  }
+                else if (va[ix].clazz()._type == Types.resolved.t_i32)
+                  {
+                    oa[ix] = va[ix].i32Value();
+                  }
+                else if (va[ix].clazz()._type == Types.resolved.t_i64)
+                  {
+                    oa[ix] = va[ix].i64Value();
+                  }
+                else if (va[ix].clazz()._type == Types.resolved.t_u8)
+                  {
+                    oa[ix] = va[ix].u8Value();
+                  }
+                else if (va[ix].clazz()._type == Types.resolved.t_u8)
+                  {
+                    oa[ix] = va[ix].u16Value();
+                  }
+                else if (va[ix].clazz()._type == Types.resolved.t_u16)
+                  {
+                    oa[ix] = va[ix].u32Value();
+                  }
+                else if (va[ix].clazz()._type == Types.resolved.t_u32)
+                  {
+                    oa[ix] = va[ix].u64Value();
+                  }
+                else if (va[ix].clazz()._type == Types.resolved.t_u64)
+                  {
+                    oa[ix] = va[ix].f32Value();
+                  }
+                else if (va[ix].clazz()._type == Types.resolved.t_f32)
+                  {
+                    oa[ix] = va[ix].f64Value();
+                  }
+                else if (va[ix].clazz()._type == Types.resolved.t_f64)
+                  {
+                    oa[ix] = va[ix].boolValue();
+                  }
+                else
+                  {
+                    oa[ix] = instanceToJavaObject(va[ix].instance());
+                  }
+              }
+
+            // find most general array element clazz ec
+            Class ec = null;
+            for (var ix = 0; ix < va.length; ix++)
+              {
+                if (oa[ix] != null)
+                  {
+                    var nc = oa[ix].getClass();
+                    if (ec == null || nc.isAssignableFrom(ec))
+                      {
+                        ec = nc;
+                      }
+                  }
+              }
+
+            if (ec != null && ec != Object.class)
+              {
+                res = Array.newInstance(ec , va.length);
+                System.arraycopy(oa, 0, res, 0, oa.length);
+              }
+            else
+              {
+                res = oa;
+              }
+          }
+      }
+    return res;
+  }
+
+
+  /**
+   * Extract Java object from a fuzion.sys.Pointer stored by a JavaRef
+   *
+   * @param r a JavaRef, must be a fuzion.sys.Pointer
+   */
+  static Object javaRefToJavaObject(JavaRef r)
+  {
+    var res = r._javaRef;
     if (res != null)
       {
         // convert Value[] containing Java instances into corresponding Java array
@@ -224,6 +209,10 @@ public class JavaInterface extends ANY
                     if (ec == null || nc.isAssignableFrom(ec))
                       {
                         ec = nc;
+                      }
+                    else if (!ec.isAssignableFrom(nc))
+                      {
+                        ec = Object.class;
                       }
                   }
               }
@@ -317,14 +306,38 @@ public class JavaInterface extends ANY
     if (PRECONDITIONS) require
       (resultClazz != null);
 
-    if      (resultClazz == Clazzes.i8 .getIfCreated() && o instanceof Byte      b) { return new i8Value(b); }
-    else if (resultClazz == Clazzes.u16.getIfCreated() && o instanceof Character c) { return new u16Value(c); }
-    else if (resultClazz == Clazzes.i16.getIfCreated() && o instanceof Short     s) { return new i16Value(s); }
-    else if (resultClazz == Clazzes.i32.getIfCreated() && o instanceof Integer   i) { return new i32Value(i); }
-    else if (resultClazz == Clazzes.i64.getIfCreated() && o instanceof Long      j) { return new i64Value(j); }
-    else if (resultClazz == Clazzes.f32.getIfCreated() && o instanceof Float     f) { return new f32Value(f.floatValue()); }
-    else if (resultClazz == Clazzes.f64.getIfCreated() && o instanceof Double    d) { return new f64Value(d.doubleValue()); }
-    else if (resultClazz == Clazzes.bool  .getIfCreated() && o instanceof Boolean z) { return new boolValue(z); }
+    if (resultClazz == Clazzes.i8.getIfCreated())
+      {
+        return o instanceof Byte b ? new i8Value(b): new i8Value(((Value) o).i8Value());
+      }
+    else if (resultClazz == Clazzes.u16.getIfCreated())
+      {
+        return o instanceof Character c ? new u16Value(c): new u16Value(((Value) o).u16Value());
+      }
+    else if (resultClazz == Clazzes.i16.getIfCreated())
+      {
+        return o instanceof Short s ? new i16Value(s): new i16Value(((Value) o).i16Value());
+      }
+    else if (resultClazz == Clazzes.i32.getIfCreated())
+      {
+        return o instanceof Integer i ? new i32Value(i): new i32Value(((Value) o).i32Value());
+      }
+    else if (resultClazz == Clazzes.i64.getIfCreated())
+      {
+        return o instanceof Long j ? new i64Value(j): new i64Value(((Value) o).i64Value());
+      }
+    else if (resultClazz == Clazzes.f32.getIfCreated())
+      {
+        return o instanceof Float f ? new f32Value(f.floatValue()): new f32Value(((Value) o).f32Value());
+      }
+    else if (resultClazz == Clazzes.f64.getIfCreated())
+      {
+        return o instanceof Double d ? new f64Value(d.doubleValue()): new f64Value(((Value) o).f64Value());
+      }
+    else if (resultClazz == Clazzes.bool.getIfCreated())
+      {
+        return o instanceof Boolean z ? new boolValue(z): new boolValue(((Value) o).boolValue());
+      }
     else if (resultClazz == Clazzes.c_unit.getIfCreated() && o == null             ) { return new Instance(resultClazz); }
     else
       {
@@ -392,6 +405,27 @@ public class JavaInterface extends ANY
 
 
   /**
+   * Convert an instance of 'fuzion.sys.array<fuzion.sys.Pointer>' to a
+   * Java Object[] with the corresponding Java values.
+   *
+   * @param v a value of type ArrayData as it is stored in 'fuzion.sys.array.data'.
+   *
+   * @return corresponding Java array.
+   */
+  static Object[] javaRefToJavaObjects(Value v)
+  {
+    var a = v.arrayData();
+    var sz = a.length();
+    var result = new Object[sz];
+    for (var ix = 0; ix < sz; ix++)
+      {
+        result[ix] = javaRefToJavaObject((JavaRef)(((Object[])a._array)[ix]));
+      }
+    return result;
+  }
+
+
+  /**
    * Call virtual or static Java method or constructor
    *
    * @param clName name of the class that declares the method or constructor.
@@ -417,7 +451,7 @@ public class JavaInterface extends ANY
     Throwable err = null;
     Method m = null;
     Constructor co = null;
-    var  p = getPars(sig);
+    var  p = dev.flang.util.JavaInterface.getPars(sig);
     if (p == null)
       {
         Errors.fatal("could not parse signature >>"+sig+"<<");
@@ -449,7 +483,7 @@ public class JavaInterface extends ANY
         Errors.fatal("NoSuchMethodException when calling fuzion.java.call_static/call_virtual/call_constructor calling " +
                            (name == null ? "new " + clName : (cl.getName() + "." + name)) + sig);
       }
-    Object[] argz = instanceToJavaObjects(args);
+    Object[] argz = javaRefToJavaObjects(args);
     try
       {
         for (var i = 0; i < argz.length; i++)

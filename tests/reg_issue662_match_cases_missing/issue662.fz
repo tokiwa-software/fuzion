@@ -25,6 +25,6 @@
 
 issue662 =>
   a is
-    b choice String bool i32 i64 is
+    b choice String bool i32 i64 =>
       "String"
   match a.b

@@ -31,7 +31,7 @@ public seek(ps Seek_Handler) : simple_effect is
   # returns an outcome i64 that represents the new offset
   # returns an error in case of failure
   #
-  seek(
+  module seek(
        # the file descriptor
        fd i64,
        # the offset to seek from the beginning of the stream pointer
@@ -44,7 +44,7 @@ public seek(ps Seek_Handler) : simple_effect is
   # the offset is measured from the beginning of the file indicated by the file descriptor
   # returns the current offset in success and error in failure
   #
-  file_position(
+  module file_position(
                 # the file descriptor
                 fd i64) =>
     tmp := ps.file_position fd
@@ -78,19 +78,19 @@ seek(
      fd i64,
      # the offset to seek from the beginning of the stream pointer
      offset i64) =>
-  seek.type.install_default
+  seek.install_default
   seek.env.seek fd offset
 
 
 # short-hand for accessing seek effect in current environment
 #
-seek =>
-  seek.type.install_default
+module seek =>
+  seek.install_default
   seek.env
 
 
 # reference to the seek operations that could be provided
 #
-private:public Seek_Handler ref is
-  seek(fd i64, offset i64) outcome i64 => abstract
-  file_position(fd i64) outcome i64 => abstract
+public Seek_Handler ref is
+  public seek(fd i64, offset i64) outcome i64 => abstract
+  public file_position(fd i64) outcome i64 => abstract

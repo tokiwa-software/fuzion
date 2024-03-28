@@ -74,8 +74,8 @@ is
     ) array T
 
     pre
-      debug: heap_size ≥ 0,
-      debug: (heap_size & (heap_size-1)) = 0
+      debug: (heap_size ≥ 0)
+      debug: ((heap_size & (heap_size-1)) = 0)
       # NYI: analysis: for all i=0..a.length/heap_size: a[heap_size*i .. heap_size*(i+1)-1] is sorted
   =>
     # check if the array is fully sorted

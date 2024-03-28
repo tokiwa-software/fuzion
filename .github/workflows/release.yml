@@ -15,21 +15,25 @@ jobs:
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v2.6.0
 
-    - name: Setup jdk-17
-      uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93 # main
+    - name: Setup jdk
+      uses: actions/setup-java@9704b39bf258b59bc04b50fa2dd55e9ed76b47a8 # main
       with:
-        java-version: 17
+        java-version: 21
         distribution: 'adopt'
 
-  # NYI ebnf is not generated because of missing antlr/pcregrep
+    - name: install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install ruby-asciidoctor-pdf antlr4 pcregrep asciidoc-base
+
     - name: build release
       run: make release
 
     - name: Read VERSION file
       id: getversion
-      run: echo "::set-output name=version::$(cat version.txt)"
+      run: echo "version=$(cat version.txt)" >> $GITHUB_OUTPUT
 
-    - uses: ncipollo/release-action@6c75be85e571768fa31b40abf38de58ba0397db5 # v1.13.0
+    - uses: ncipollo/release-action@2c591bcc8ecdcd2db72b97d6147f871fcd833ba5 # v1.14.0
       with:
         artifacts: "fuzion_${{ steps.getversion.outputs.version }}.tar.gz"
         tag: "v${{ steps.getversion.outputs.version }}"

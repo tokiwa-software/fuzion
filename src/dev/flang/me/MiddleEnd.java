@@ -38,13 +38,14 @@ import dev.flang.ast.AbstractCall; // NYI: remove dependency!
 import dev.flang.ast.AbstractConstant; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
-import dev.flang.ast.Expr;
+import dev.flang.ast.Expr; // NYI: remove dependency!
+import dev.flang.ast.FeatureName; // NYI: remove dependency!
 import dev.flang.ast.FeatureVisitor; // NYI: remove dependency!
-import dev.flang.ast.InlineArray;
-import dev.flang.ast.SrcModule; // NYI: remove dependency!
+import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.State; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
-import dev.flang.ast.Types; // NYI: remove dependency!
+
+import dev.flang.fe.FeatureLookup;
 
 import dev.flang.mir.MIR;
 
@@ -96,11 +97,11 @@ public class MiddleEnd extends ANY
   /*--------------------------  constructors  ---------------------------*/
 
 
-  public MiddleEnd(FuzionOptions options, MIR mir, SrcModule mod)
+  public MiddleEnd(FuzionOptions options, MIR mir, FeatureLookup flu)
   {
     _options = options;
     _mir = mir;
-    Clazz._module = mod; // NYI: Bad hack!
+    Clazz._flu = flu; // NYI: Bad hack!
   }
 
 
@@ -138,12 +139,16 @@ public class MiddleEnd extends ANY
    */
   void markInternallyUsed() {
     var universe = _mir.universe();
-    var m = Clazz._module;
-    markUsed(Types.resolved.f_fuzion_java_object                  , SourcePosition.builtIn);
-    markUsed(Types.resolved.f_fuzion_java_object_ref              , SourcePosition.builtIn);
-    markUsed(universe.get(m, "Const_String")                      , SourcePosition.builtIn); // NYI this should be unnecessary?
-    markUsed(universe.get(m, FuzionConstants.UNIT_NAME)           , SourcePosition.builtIn);
-    markUsed(universe.get(m, "void")                              , SourcePosition.builtIn);
+    var flu = Clazz._flu;
+    var fuzion     = flu.lookupFeature(universe,   FeatureName.get("fuzion",      0), null);
+    var fuzionJava = flu.lookupFeature(fuzion,     FeatureName.get("java",        0), null);
+    var JavaObject = flu.lookupFeature(fuzionJava, FeatureName.get("Java_Object", 1), null);
+    var JavaRef    = flu.lookupFeature(JavaObject, FeatureName.get("Java_Ref",    0), null);
+    markUsed(JavaObject                                                                       , SourcePosition.builtIn);
+    markUsed(JavaRef                                                                          , SourcePosition.builtIn);
+    markUsed(flu.lookupFeature(universe, FeatureName.get("Const_String"           , 0), null) , SourcePosition.builtIn); // NYI this should be unnecessary?
+    markUsed(flu.lookupFeature(universe, FeatureName.get(FuzionConstants.UNIT_NAME, 0), null) , SourcePosition.builtIn);
+    markUsed(flu.lookupFeature(universe, FeatureName.get("void"                   , 0), null) , SourcePosition.builtIn);
   }
 
 

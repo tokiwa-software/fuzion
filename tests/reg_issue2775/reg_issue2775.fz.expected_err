@@ -1,0 +1,13 @@
+
+--CURDIR--/reg_issue2775.fz:28:4: error 1: Incompatible types when passing argument in a call
+a (match (v) unit => 4711)
+---^
+Actual type for argument #1 'v' does not match expected type.
+In call to          : 'a'
+expected formal type: 'void'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '(match (v) unit => 4711)'
+To solve this, you could change the type of the target 'v' to 'i32' or convert the type of the assigned value to 'void'.
+
+one error.

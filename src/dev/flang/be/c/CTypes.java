@@ -29,7 +29,6 @@ package dev.flang.be.c;
 import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
-
 import dev.flang.util.ANY;
 import dev.flang.util.List;
 
@@ -41,6 +40,21 @@ import dev.flang.util.List;
  */
 public class CTypes extends ANY
 {
+
+
+  /*----------------------------  constants  ----------------------------*/
+
+
+  /*
+   * type of clazzId field in ref instances
+   */
+  private static final String typeClazzID = "uint32_t";
+
+
+  /*
+   * type of the tag field in choices
+   */
+  private static final String typeTagName = "int32_t";
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -157,7 +171,7 @@ public class CTypes extends ANY
    */
   String scalar(int cl)
   {
-    return scalar(_fuir.getSpecialId(cl));
+    return scalar(_fuir.getSpecialClazz(cl));
   }
 
 
@@ -272,14 +286,14 @@ public class CTypes extends ANY
         if (_fuir.clazzIsRef(cl))
           {
             var vcl = _fuir.clazzAsValue(cl);
-            els.add(CStmnt.decl("uint32_t", _names.CLAZZ_ID));
+            els.add(CStmnt.decl(typeClazzID, _names.CLAZZ_ID));
             els.add(CStmnt.decl(clazz(vcl), _names.FIELDS_IN_REF_CLAZZ));
           }
         else if (_fuir.clazzIsChoice(cl))
           {
             if (!_fuir.clazzIsChoiceOfOnlyRefs(cl))
               {
-                els.add(CStmnt.decl("int32_t", _names.TAG_NAME));
+                els.add(CStmnt.decl(typeTagName, _names.TAG_NAME));
               }
             var uls = new List<CStmnt>();
             for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
@@ -317,6 +331,38 @@ public class CTypes extends ANY
         result = CStmnt.seq(l);
       }
     return result;
+  }
+
+
+  /**
+   * Get the matching atomic type for `rc`.
+   *
+   * For references this is: atomic_uintptr_t
+   * For scalars this is: e.g. atomic_uint_least32_t
+   * For bools (since tag is 32-bit): atomic_int_least32_t
+   */
+  public String atomicType(int rc)
+  {
+    var res = "atomic type not found for: " + _fuir.clazzAsStringNew(rc);
+    if (_fuir.clazzIsRef(rc))
+      {
+        res = "atomic_uintptr_t";
+      }
+    res = switch (_fuir.getSpecialClazz(rc))
+      {
+      case c_i8 -> "atomic_int_least8_t";
+      case c_i16 -> "atomic_int_least16_t";
+      case c_i32 -> "atomic_int_least32_t";
+      case c_i64 -> "atomic_int_least64_t";
+      case c_u8 -> "atomic_uint_least8_t";
+      case c_u16 -> "atomic_uint_least16_t";
+      case c_u32 -> "atomic_uint_least32_t";
+      case c_u64 -> "atomic_uint_least64_t";
+      case c_bool -> "atomic_int_least32_t";
+      default -> res;
+      };
+
+    return res;
   }
 
 }

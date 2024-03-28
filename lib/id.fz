@@ -31,10 +31,25 @@
 public id(T type, x T) T => x
 
 
-# id -- feature returing the unary identity function
+# identitiy -- feature returing the unary identity function
 #
 # When called, this feature returns a unary function that implements the
 # identity for the given type.
 #
+# In most cases, you can use `id` instead and rely on partial application to
+# create a Function instance, e.g. you can use any of these to produce the same
+# result
 #
-public id(T type) T->T => x->x
+#   all_true(s Sequence bool) => s ∀ id
+#   all_true(s Sequence bool) => s ∀ (x -> id bool x)
+#   all_true(s Sequence bool) => s ∀ (x -> id x)
+#   all_true(s Sequence bool) => s ∀ (identity bool)
+#
+# or, using an intermediate field,
+#
+#   all_true(s Sequence bool) => f (bool)->bool := id;               s ∀ f
+#   all_true(s Sequence bool) => f (bool)->bool := (x -> id bool x); s ∀ f
+#   all_true(s Sequence bool) => f (bool)->bool := (x -> id x);      s ∀ f
+#   all_true(s Sequence bool) => f (bool)->bool := identity bool;    s ∀ f
+#
+public identity(T type) T->T => x->x

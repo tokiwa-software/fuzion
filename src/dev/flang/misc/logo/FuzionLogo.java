@@ -223,7 +223,7 @@ public class FuzionLogo
           }
         else if (name != FILE_NAME || a.startsWith("-"))
           {
-            System.err.println("Usage: java FuzionLogo {-b|-c} <svg-filename>");
+            say_err("Usage: java FuzionLogo {-b|-c} <svg-filename>");
           }
         else
           {
@@ -236,12 +236,12 @@ public class FuzionLogo
     drawLogo(g2, geo, crop);
     try
       {
-        System.out.println(" + " + name);
+        say(" + " + name);
         SVGUtils.writeToSVG(new File(name), g2.getSVGElement());
       }
     catch (IOException e)
       {
-        System.err.println("*** failed to create file: " + e);
+        say_err("*** failed to create file: " + e);
       }
   }
 

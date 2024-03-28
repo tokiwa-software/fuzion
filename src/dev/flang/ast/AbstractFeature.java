@@ -180,7 +180,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
   /**
    * All features that have been found to be directly redefined by this feature.
-   * This does not include redefinitions of redefinitions.  Four Features loaded
+   * This does not include redefinitions of redefinitions.  For Features loaded
    * from source code, this set is collected during RESOLVING_DECLARATIONS.  For
    * LibraryFeature, this will be loaded from the library module file.
    */
@@ -278,18 +278,14 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public String qualifiedName()
   {
-    var n = featureName().baseName();
     var tfo = state().atLeast(State.FINDING_DECLARATIONS) && outer() != null && outer().isTypeFeature() ? outer().typeFeatureOrigin() : null;
     return
       /* special type parameter used for this.type in type features */
-      n == FuzionConstants.TYPE_FEATURE_THIS_TYPE ? (tfo != null ? tfo.qualifiedName() : "null") + ".this.type" :
+      isTypeFeaturesThisType() ? (tfo != null ? tfo.qualifiedName() : "null") + ".this.type" :
 
       /* type feature: use original name and add ".type": */
       isTypeFeature()             &&
-      typeFeatureOrigin() != null                 ? typeFeatureOrigin().qualifiedName() + ".type" :
-
-      /* NYI: remove when possible: typeFeatureOrigin() is currently null when loaded from library, so we treat these manually: */
-      isTypeFeature()                             ? qualifiedName0().replaceAll("." + FuzionConstants.TYPE_NAME, "") + ".type"
+      typeFeatureOrigin() != null                 ? typeFeatureOrigin().qualifiedName() + ".type"
 
       /* a normal feature name */
                                                   : qualifiedName0();
@@ -467,8 +463,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * NYI: Since there is a 1-to-1 correspondent between type parameter features
    * and Generic we could remove Generic completely.
    *
-   * @param name the name of a formal generic argument.
-   *
    * @return null if name is not the name of a formal generic argument
    * of this. Otherwise, a reference to the formal generic argument.
    */
@@ -582,8 +576,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public boolean isTypeFeature()
   {
-    // NYI: CLEANUP: Replace string operation by a flag marking this features as a type feature
-    return featureName().baseName().endsWith(FuzionConstants.TYPE_NAME) && !isOuterRef();
+    return _typeFeatureOrigin != null;
   }
 
 
@@ -592,11 +585,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public boolean isTypeFeaturesThisType()
   {
-    // NYI: CLEANUP: #706: Replace string operation by a flag marking this features as a 'THIS_TYPE' type parameter
-    return
-      isTypeParameter() &&
-      outer().isTypeFeature() &&
-      featureName().baseName().equals(FuzionConstants.TYPE_FEATURE_THIS_TYPE);
+    return outer() != null
+      && outer().isTypeFeature()
+      && outer().typeArguments().get(0) == this;
   }
 
 
@@ -734,7 +725,14 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                                       selfType(),
                                       FuzionConstants.TYPE_FEATURE_THIS_TYPE,
                                       Contract.EMPTY_CONTRACT,
-                                      Impl.TYPE_PARAMETER);
+                                      Impl.TYPE_PARAMETER)
+              {
+                @Override
+                public boolean isTypeFeaturesThisType()
+                {
+                  return true;
+                }
+              };
             var typeArgs = new List<AbstractFeature>(typeArg);
             for (var t : typeArguments())
               {
@@ -1393,8 +1391,14 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   {
     return
       (this != Types.f_ERROR) &&
-      // !isAbstract() &&      // NYI: check why abstract requires outer ref
-      // !isIntrinsic() &&     // outer is require for backend code generator
+
+      // tricky: abstract features may have contracts
+      // that use outer references.
+      // !isAbstract() &&
+
+      // outer is required for backend code generator
+      // !isIntrinsic() &&
+
       !isField() &&
       !isChoice() &&
       !isUniverse() &&

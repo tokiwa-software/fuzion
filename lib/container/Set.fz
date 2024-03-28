@@ -52,13 +52,8 @@ public Set(public E type : property.equatable) ref : Sequence E is
 
   # add new element k to this set.
   #
-  public add (k E) Set E => abstract
-
-
-  # remove an element k from the set if it exists.
-  # return the same set if it does not exist.
-  #
-  public remove (k E) Set E => abstract
+  public add (k E) Set E =>
+    panic "*** NYI: REMOVE Set.add, we need some support for mutable Sets ***"
 
 
   public redef as_string =>
@@ -66,5 +61,5 @@ public Set(public E type : property.equatable) ref : Sequence E is
       "∅"
     else
       ("\{"
-       + (as_list.map String (x -> x.as_string)).fold(String.type.concat ";")
+       + (as_list.map String (x -> x.as_string)).fold(String.concat ";")
        + "}")

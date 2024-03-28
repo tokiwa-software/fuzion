@@ -56,7 +56,7 @@ genericstest is
               set i := n.n
           Nil =>
 
-    size i32 is
+    size i32 =>
       set result := 0
       // for   -- NYI: must update i in the loop prolog
       i := h
@@ -95,39 +95,39 @@ genericstest is
   // generics from an operator consisting of multiple ">". So we check if such an
   // operator works here:
   q(a i32) is
-    infix >    (b i32) bool is a      > b
-    infix >>   (b i32) bool is a/10   > b
-    infix >>>  (b i32) bool is a/100  > b
-    infix >>>> (b i32) bool is a/1000 > b
+    infix >    (b i32) bool => a      > b
+    infix >>   (b i32) bool => a/10   > b
+    infix >>>  (b i32) bool => a/100  > b
+    infix >>>> (b i32) bool => a/1000 > b
 
-    prefix >    i32 is a+1      // >q is 1 larger than q
-    prefix >>   i32 is a+10     // >>q is 10 larger
-    prefix >>>  i32 is a+100    // >>q is 100 larger
-    prefix >>>> i32 is a+1000   // >>q is 1000 larger
+    prefix >    i32 => a+1      // >q is 1 larger than q
+    prefix >>   i32 => a+10     // >>q is 10 larger
+    prefix >>>  i32 => a+100    // >>q is 100 larger
+    prefix >>>> i32 => a+1000   // >>q is 1000 larger
 
-    postfix >    i32 is a-1     // q> is 1 smaller than q
-    postfix >>   i32 is a-10    // q>> is 10 smaller
-    postfix >>>  i32 is a-100   // q>>> is 100 smaller
-    postfix >>>> i32 is a-1000  // q>>>> is 1000 smaller
+    postfix >    i32 => a-1     // q> is 1 smaller than q
+    postfix >>   i32 => a-10    // q>> is 10 smaller
+    postfix >>>  i32 => a-100   // q>>> is 100 smaller
+    postfix >>>> i32 => a-1000  // q>>>> is 1000 smaller
 
   a q := q 1
-  set a := q     2; yak "a({a.a},10) infix > is {a > 10},{a >> 10},{a >>> 10},{a >>>> 10}"
-  set a := q    20; yak "a({a.a},10) infix > is {a > 10},{a >> 10},{a >>> 10},{a >>>> 10}"
-  set a := q   200; yak "a({a.a},10) infix > is {a > 10},{a >> 10},{a >>> 10},{a >>>> 10}"
-  set a := q  2000; yak "a({a.a},10) infix > is {a > 10},{a >> 10},{a >>> 10},{a >>>> 10}"
-  set a := q 20000; yak "a({a.a},10) infix > is {a > 10},{a >> 10},{a >>> 10},{a >>>> 10}"
+  set a := q     2; yak "a({a.a}, 10) infix > is {a > 10}, {a >> 10}, {a >>> 10}, {a >>>> 10}"
+  set a := q    20; yak "a({a.a}, 10) infix > is {a > 10}, {a >> 10}, {a >>> 10}, {a >>>> 10}"
+  set a := q   200; yak "a({a.a}, 10) infix > is {a > 10}, {a >> 10}, {a >>> 10}, {a >>>> 10}"
+  set a := q  2000; yak "a({a.a}, 10) infix > is {a > 10}, {a >> 10}, {a >>> 10}, {a >>>> 10}"
+  set a := q 20000; yak "a({a.a}, 10) infix > is {a > 10}, {a >> 10}, {a >>> 10}, {a >>>> 10}"
 
-  set a := q     2; yak "a({a.a}) prefix > is {>a},{>>a},{>>>a},{>>>>a}"
-  set a := q    20; yak "a({a.a}) prefix > is {>a},{>>a},{>>>a},{>>>>a}"
-  set a := q   200; yak "a({a.a}) prefix > is {>a},{>>a},{>>>a},{>>>>a}"
-  set a := q  2000; yak "a({a.a}) prefix > is {>a},{>>a},{>>>a},{>>>>a}"
-  set a := q 20000; yak "a({a.a}) prefix > is {>a},{>>a},{>>>a},{>>>>a}"
+  set a := q     2; yak "a({a.a}) prefix > is {>a}, {>>a}, {>>>a}, {>>>>a}"
+  set a := q    20; yak "a({a.a}) prefix > is {>a}, {>>a}, {>>>a}, {>>>>a}"
+  set a := q   200; yak "a({a.a}) prefix > is {>a}, {>>a}, {>>>a}, {>>>>a}"
+  set a := q  2000; yak "a({a.a}) prefix > is {>a}, {>>a}, {>>>a}, {>>>>a}"
+  set a := q 20000; yak "a({a.a}) prefix > is {>a}, {>>a}, {>>>a}, {>>>>a}"
 
-  set a := q     2; yak "a({a.a}) postfix > is {a>},{a>>},{a>>>},{a>>>>}"
-  set a := q    20; yak "a({a.a}) postfix > is {a>},{a>>},{a>>>},{a>>>>}"
-  set a := q   200; yak "a({a.a}) postfix > is {a>},{a>>},{a>>>},{a>>>>}"
-  set a := q  2000; yak "a({a.a}) postfix > is {a>},{a>>},{a>>>},{a>>>>}"
-  set a := q 20000; yak "a({a.a}) postfix > is {a>},{a>>},{a>>>},{a>>>>}"
+  set a := q     2; yak "a({a.a}) postfix > is {a>}, {a>>}, {a>>>}, {a>>>>}"
+  set a := q    20; yak "a({a.a}) postfix > is {a>}, {a>>}, {a>>>}, {a>>>>}"
+  set a := q   200; yak "a({a.a}) postfix > is {a>}, {a>>}, {a>>>}, {a>>>>}"
+  set a := q  2000; yak "a({a.a}) postfix > is {a>}, {a>>}, {a>>>}, {a>>>>}"
+  set a := q 20000; yak "a({a.a}) postfix > is {a>}, {a>>}, {a>>>}, {a>>>>}"
 
   lc1 := List Complex2
   lc1.add (Complex2 3 4)
@@ -170,10 +170,10 @@ genericstest is
   opengenerics12 is
 
     F(A type...) ref is
-      f(a A) unit is abstract
+      f(a A) unit => abstract
 
     G ref : F i32 bool i32 is
-      redef f(a0 i32, a1 bool, a2 i32) unit is
+      redef f(a0 i32, a1 bool, a2 i32) unit =>
        chck (a0 = a2) "f only called with first and last element equal"
        chck a1        "f only called with a1 true"
        unit
@@ -237,8 +237,8 @@ genericstest is
       f(x PARENT_TYPE_PARAMETER) => $x + $v + $x
       g(x BLABLA)                => $x + $v + $x
 
-    chck ((child.f [1,2,3]) = "[1,2,3]23[1,2,3]") "PARENT_TYPE_PARAMETER is not inherited, but a free type!"
-    chck ((child.g [4,5,6]) = "[4,5,6]23[4,5,6]") "BLABLA is a free type"
+    chck ((child.f [1, 2, 3]) = "[1, 2, 3]23[1, 2, 3]") "PARENT_TYPE_PARAMETER is not inherited, but a free type!"
+    chck ((child.g [4, 5, 6]) = "[4, 5, 6]23[4, 5, 6]") "BLABLA is a free type"
     chck ((child.f 2000000000) = "2000000000232000000000") "PARENT_TYPE_PARAMETER is not inherited, but a free type!"
     chck ((child.g 1230000000) = "1230000000231230000000") "BLABLA is a free type"
 

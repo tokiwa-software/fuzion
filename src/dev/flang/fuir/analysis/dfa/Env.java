@@ -44,6 +44,12 @@ public class Env extends ANY implements Comparable<Env>
   /*----------------------------  constants  ----------------------------*/
 
 
+  /**
+   * String used in human readable output for an empty environment.
+   */
+  static final String EMPTY_ENV = "--empty--";
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -80,9 +86,17 @@ public class Env extends ANY implements Comparable<Env>
 
 
   /**
-   * The value of the effect.
+   * The initial value of the effect.  The initial values is part of the
+   * identity of this effect, i.e., compareTo will take this value into account.
    */
-  Value _effectValue;
+  final Value _initialEffectValue;
+
+
+  /**
+   * The actual values of the effect.  This will include all the values added
+   * via calls to `effect.replace`.
+   */
+  private Value _actualEffectValues;
 
 
   /*---------------------------  constructors  ---------------------------*/
@@ -130,7 +144,25 @@ public class Env extends ANY implements Comparable<Env>
       }
     _outer = outer;
     _effectType = et;
-    _effectValue = ev;
+    _initialEffectValue = ev;
+    _actualEffectValues = ev;
+  }
+
+
+  /*-------------------------  static methods  --------------------------*/
+
+
+  /**
+   * Create a String for user output of the given environment
+   *
+   + @param env an environment or null.
+   *
+   * @return String for output in error messages etc.
+   */
+  public static String envAsString(Env env)
+  {
+    return env != null ? env.toStringShort()
+                       : EMPTY_ENV;
   }
 
 
@@ -154,12 +186,9 @@ public class Env extends ANY implements Comparable<Env>
    */
   public int compareTo(Env other)
   {
-    // NYI: The code to distinguish two environments is currently poor, we just
-    // distinguish environments depending on the set types they set, so two
-    // environments that set, e.g., io.out, to different effects will be treated
-    // the same.  This must be improved in a way that gives more accuracy
-    // without state explosion!
-    var ta = _types;
+    // this is a little strict in the sense that the order of effects is
+    // relevant. Might need to relax this if this results in a state explosion.
+    var ta = this ._types;
     var oa = other._types;
     var res =
       ta.length < oa.length ? -1 :
@@ -168,9 +197,11 @@ public class Env extends ANY implements Comparable<Env>
       {
         var tt = ta[i];
         var ot = oa[i];
+        var ti = this ._initialEffectValue;
+        var oi = other._initialEffectValue;
         res =
           tt < ot ? -1 :
-          tt > ot ? +1 : 0;
+          tt > ot ? +1 : Value.envCompare(ti, oi);
       }
     return res;
   }
@@ -188,7 +219,7 @@ public class Env extends ANY implements Comparable<Env>
         sb.append(sep)
           .append(_dfa._fuir.clazzAsString(et))
           .append("->")
-          .append(getEffect(et));
+          .append(getActualEffectValues(et));
         sep = ", ";
       }
     return sb.toString();
@@ -196,18 +227,36 @@ public class Env extends ANY implements Comparable<Env>
 
 
   /**
-   * Get effect of given type in this call's environment or the default if none
-   * found.
+   * Create human-readable string from this Env.
+   */
+  public String toStringShort()
+  {
+    var sb = new StringBuilder();
+    var sep = "";
+    for (var et : _types)
+      {
+        sb.append(sep)
+          .append(_dfa._fuir.clazzAsString(et));
+        sep = ", ";
+      }
+    return sb.toString();
+  }
+
+
+  /**
+   * Get all actual effect values of given type in this call's environment or
+   * the default if none found.
    *
    * @param ecl clazz defining the effect type.
    *
-   * @return null in case no effect of type ecl was found
+   * @return null in case no effect of type ecl was found, not even in the set
+   * of default effects.
    */
-  Value getEffect(int ecl)
+  Value getActualEffectValues(int ecl)
   {
     return
-      _effectType == ecl  ? _effectValue          :
-      _outer      != null ? _outer.getEffect(ecl)
+      _effectType == ecl  ? _actualEffectValues :
+      _outer      != null ? _outer.getActualEffectValues(ecl)
                           : _dfa._defaultEffects.get(ecl);
   }
 
@@ -236,16 +285,12 @@ public class Env extends ANY implements Comparable<Env>
   {
     if (_effectType == ecl)
       {
-        var oe = _effectValue;
+        var oe = _actualEffectValues;
         var ne = e.join(oe);
         if (Value.compare(oe, ne) != 0)
           {
-            _effectValue = ne;
-            if (!_dfa._changed)
-              {
-                _dfa._changedSetBy = "effect.replace called: "+_dfa._fuir.clazzAsString(ecl);
-              }
-            _dfa._changed = true;
+            _actualEffectValues = ne;
+            _dfa.wasChanged(() -> "effect.replace called: "+_dfa._fuir.clazzAsString(ecl));
           }
       }
     else if (_outer != null)

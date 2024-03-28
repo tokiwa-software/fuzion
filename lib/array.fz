@@ -64,7 +64,7 @@ module:public array(
   # create a list that consists of the elements of this Sequence except the first
   # n elements
   #
-  # For arrays, this has perfornace in O(1).
+  # For arrays, this has performance in O(1).
   #
   public redef drop (n i32) =>
     as_list (max 0 n)
@@ -83,7 +83,7 @@ module:public array(
   #
   public redef index [ ] (i i32) T
     pre
-      safety: 0 ≤ i,
+      safety: 0 ≤ i
       safety: i < length
   =>
     internal_array[i]
@@ -146,6 +146,7 @@ module:public array(
   public redef slice(from, to i32) Sequence T
     pre
       debug: from ≥ 0
+      debug: to <= length
   =>
 
     ref : Sequence T
@@ -185,7 +186,7 @@ module:public array(
       # create a list that consists of the elements of this Sequence except the first
       # n elements
       #
-      # For arrays, this has perfornace in O(1).
+      # For arrays, this has performance in O(1).
       #
       public redef drop (n i32) =>
         array.this.slice from+(max 0 n) to
@@ -262,7 +263,7 @@ module:public array(
   #
   enumerate_cons (i i32) : Cons (i32, T) (list (tuple i32 T))
     pre
-      debug: 0 ≤ i,
+      debug: 0 ≤ i
       debug: i < length
   is
     head => (i, index[] i)
@@ -284,7 +285,7 @@ module:public array(
       safety: length ≥ 0
   =>
 
-    private indices => 0..length-1
+    indices => 0..length-1
 
     internal := fuzion.sys.internal_array_init T length
     for x in indices do
@@ -297,4 +298,4 @@ module:public array(
 # array -- create initialized one-dimensional immutable array
 #
 public array(T type, length i32, init i32 -> T) array T =>
-  (array T).type.new length init
+  (array T).new length init

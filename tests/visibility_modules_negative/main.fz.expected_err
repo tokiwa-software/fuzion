@@ -8,13 +8,13 @@ in feature: 'a'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/main.fz:67:5: error 2: Could not find called feature
+--CURDIR--/main.fz:67:5: error 2: Feature not visible at call site
   b.mod_pub // should flag an error should not be callable
 ----^^^^^^^
 Feature not found: 'mod_pub' (no arguments)
 Target feature: 'b'
 In call: 'b.mod_pub'
-To solve this, you might change the visibility of the feature 'mod_pub' (no arguments) at $FUZION/lib/b.fz:26:17:
+To solve this, you might change the visibility of the feature 'mod_pub' (no arguments) at $MODULE/b.fz:26:17:
   module:public mod_pub is
 ----------------^
 
@@ -38,7 +38,7 @@ To solve this, remove the type visibility: 'public'.
 
 
 --CURDIR--/main.fz:36:10: error 6: Result type or any of its generics have more restrictive visibility than feature.
-  module mod priv is  // should flag an error result type visibility more restrictive than a
+  module mod priv =>  // should flag an error result type visibility more restrictive than a
 ---------^^^
 To solve this, increase the visibility of 'priv' (no arguments) or specify a different return type.
 
@@ -86,14 +86,20 @@ To solve this, increase the visibility of 'm.my_false' or do not use this featur
 
 
 --CURDIR--/main.fz:80:18: error 14: Redefinition must not have more restrictive visibility.
-    module redef b unit is // should flag an error Redefinition must not have more restrictive visibility.
+    module redef b unit => // should flag an error Redefinition must not have more restrictive visibility.
 -----------------^
 To solve this, increase the visibility of 'm.redef_test_0.b' to at least 'public'
 
 
 --CURDIR--/main.fz:82:12: error 15: Redefinition must not have more restrictive visibility.
-    module e unit is // should flag an error Redefinition must not have more restrictive visibility.
+    module e unit => // should flag an error Redefinition must not have more restrictive visibility.
 -----------^
 To solve this, increase the visibility of 'm.redef_test_0.e' to at least 'public'
 
-15 errors.
+
+--CURDIR--/main.fz:89:5: error 16: Abstract features visibility must not be more restrictive than outer features visibility.
+    inner_abstract i32 => abstract // should flag an error Abstract features visibility must not be more restrictive than outer features visibility.
+----^^^^^^^^^^^^^^
+To solve this, increase the visibility of 'm.outer.inner_abstract' to at least 'public'
+
+16 errors.

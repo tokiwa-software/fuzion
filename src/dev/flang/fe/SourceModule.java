@@ -96,24 +96,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
-   * If input comes from a specific file, this give the file.  May be
-   * SourceFile.STDIN.
-   */
-  private final Path _inputFile;
-
-
-  /**
    * The universe is the implicit root of all features that
    * themselves do not have their own root.
    */
   final Feature _universe;
-
-
-  /**
-   * If a main feature is defined for this module, this gives its name. Should
-   * be null if a specific _inputFile defines the main feature.
-   */
-  private String _defaultMain;
 
 
   /**
@@ -142,14 +128,12 @@ public class SourceModule extends Module implements SrcModule, MirModule
   /**
    * Create SourceModule for given options and sourceDirs.
    */
-  SourceModule(FrontEndOptions options, SourceDir[] sourceDirs, Path inputFile, String defaultMain, LibraryModule[] dependsOn, Feature universe)
+  SourceModule(FrontEndOptions options, SourceDir[] sourceDirs, LibraryModule[] dependsOn, Feature universe)
   {
     super(dependsOn);
 
     _options = options;
     _sourceDirs = sourceDirs;
-    _inputFile = inputFile;
-    _defaultMain = defaultMain;
     _universe = universe;
   }
 
@@ -168,6 +152,19 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
+   * Get the path of main input file (when compiling from stdin or just one
+   * single source file).
+   */
+  private Path inputFile()
+  {
+    return
+      _options._readStdin           ? SourceFile.STDIN              :
+      _options._inputFile != null   ? _options._inputFile           :
+      _options._executeCode != null ? SourceFile.COMMAND_LINE_DUMMY : null;
+  }
+
+
+  /**
    * If source comes from stdin or an explicit input file, parse this and
    * extract the main feature.  Otherwise, return the default main.
    *
@@ -175,11 +172,12 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   String parseMain()
   {
-    var res = _defaultMain;
-    var p = _inputFile;
-    if (p != null)
+    var res = _options._main;
+    var p = inputFile();
+    var ec = _options._executeCode;
+    if (p != null || ec != null)
       {
-        var expr = parseFile(p);
+        var expr = parseFile(p, ec);
         ((AbstractBlock) _universe.code())._expressions.addAll(expr);
         for (var s : expr)
           {
@@ -204,10 +202,13 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @return the features found in source file p, may be empty, never null.
    */
-  List<Expr> parseFile(Path p)
+  List<Expr> parseFile(Path p, byte[] ec)
   {
-    _options.verbosePrintln(2, " - " + p);
-    return new Parser(p).unit();
+    if (ec != null)
+      {
+        _options.verbosePrintln(2, " - " + p);
+      }
+    return new Parser(p, ec).unit();
   }
 
 
@@ -220,7 +221,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   List<Feature> parseAndGetFeatures(Path p)
   {
-    var exprs = parseFile(p);
+    var exprs = parseFile(p, null);
     var result = new List<Feature>();
     for (var s : exprs)
       {
@@ -350,16 +351,22 @@ public class SourceModule extends Module implements SrcModule, MirModule
   /**
    * Check if p denotes a file that should be read implicitly as source code,
    * i.e., its name ends with ".fz", it is a readable file and it is not the
-   * same as _inputFile (which will be read explicitly).
+   * same as inputFile() (which will be read explicitly).
    */
   boolean isValidSourceFile(Path p)
   {
+    /*
+    // tag::fuzion_rule_SRCF_DOTFZ[]
+Fuzion source files may have an arbitrary file name ending with the file name extension `.fz`.
+    // end::fuzion_rule_SRCF_DOTFZ[]
+    */
     try
       {
+        var inputFile = inputFile();
         return p.getFileName().toString().endsWith(".fz") &&
           !Files.isDirectory(p) &&
           Files.isReadable(p) &&
-          (_inputFile == null || _inputFile == SourceFile.STDIN || !Files.isSameFile(_inputFile, p));
+          (inputFile == null || inputFile == SourceFile.STDIN || !Files.isSameFile(inputFile, p));
       }
     catch (IOException e)
       {
@@ -385,6 +392,16 @@ public class SourceModule extends Module implements SrcModule, MirModule
                 var d = dirExists(root, f);
                 if (d != null)
                   {
+                    /*
+                    // tag::fuzion_rule_SRCF_DIR[]
+Files in a sub-directories within a directory are considered as input only if
+the directory name equals the (((base name))) of a (((constructor))).  Then, the
+files matching rule xref:SRCF_DOTFZ[SRCF_DOTFZ] within that directory are parsed as if they were
+part of the (((inner features))) declarations of the corresponding
+((constructor)).
+                    // end::fuzion_rule_SRCF_DIR[]
+                    */
+
                     Files.list(d._dir)
                       .filter(p -> isValidSourceFile(p))
                       .sorted()
@@ -614,7 +631,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         public Feature   action(Feature   f, AbstractFeature outer) { findDeclarations(f, outer); return f; }
       });
 
-    if (inner.impl().initialValue() != null &&
+    if (inner.impl().hasInitialValue() &&
         !outer.pos()._sourceFile.sameAs(inner.pos()._sourceFile) &&
         (!outer.isUniverse() || !inner.isLegalPartOfUniverse()) &&
         (outer.isUniverse() || !outer.pos().isBuiltIn()) && // some generated features in loops do not have source position
@@ -830,7 +847,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
       }
     else if (f instanceof Feature ff && (ff._modifiers & Consts.MODIFIER_REDEFINE) == 0 && !existing.isAbstract())
       { /* previous duplicate feature declaration could result in this error for
-         * type features, so suppress them in this case. See flang.dev's
+         * type features, so suppress them in this case. See fuzion-lang.dev's
          * design/examples/typ_const2.fz as an example.
          */
         if ((!Errors.any() || !f.isTypeFeature()) && visibleFor(existing, f))
@@ -949,36 +966,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   }
 
 
-  /**
-   * allInnerAndInheritedFeatures returns a complete set of inner features, used
-   * by Clazz.layout and Clazz.hasState.
-   *
-   * @return
-   */
-  public Collection<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f)
-  {
-    var d = data(f);
-    var result = d._allInnerAndInheritedFeatures;
-    if (result == null)
-      {
-        result = new TreeSet<>();
 
-        result.addAll(declaredFeatures(f).values());
-        for (var p : f.inherits())
-          {
-            var cf = p.calledFeature();
-            if (CHECKS) check
-              (Errors.any() || cf != null);
-
-            if (cf != null)
-              {
-                result.addAll(allInnerAndInheritedFeatures(cf));
-              }
-          }
-        d._allInnerAndInheritedFeatures = result;
-      }
-    return result;
-  }
 
 
   /*--------------------------  feature lookup  -------------------------*/
@@ -988,30 +976,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
   public SortedMap<FeatureName, AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer)
   {
     return this.declaredOrInheritedFeatures(outer, _dependsOn);
-  }
-
-
-  /**
-   * Find feature with given name in outer.
-   *
-   * @param outer the declaring or inheriting feature
-   */
-  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name, AbstractFeature original)
-  {
-    if (PRECONDITIONS) require
-      (outer.state().atLeast(State.LOADING));
-
-    var result = declaredOrInheritedFeatures(outer).get(name);
-
-    /* Was feature f added to the declared features of its outer features late,
-     * i.e., after the RESOLVING_DECLARATIONS phase?  These late features are
-     * currently not added to the sets of declared or inherited features by
-     * children of their outer clazz.
-     *
-     * This is a fix for #978 but it might need to be removed when fixing #932.
-     */
-    return result == null && original instanceof Feature of && of._addedLate ? original
-                                                                             : result;
   }
 
 
@@ -1206,6 +1170,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * outer's outer (i.e., use is unqualified), false to search in outer only
    * (i.e., use is qualified with outer).
    *
+   * @param ignoreNotFound If true, no errors are produced but null might be returned
+   *
    * @return FeatureAndOuter tuple of the found type's declaring feature,
    * FeatureAndOuter.ERROR in case of an error, null in case no type was found
    * and ignoreNotFound is true.
@@ -1244,7 +1210,14 @@ public class SourceModule extends Module implements SrcModule, MirModule
           }
         if (type_fs.size() > 1)
           {
-            AstErrors.ambiguousType(pos, name, type_fs);
+            if (ignoreNotFound)
+              {
+                result = null;
+              }
+            else
+              {
+                AstErrors.ambiguousType(pos, name, type_fs);
+              }
           }
         else if (type_fs.size() < 1)
           {
@@ -1425,7 +1398,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
             AstErrors.cannotRedefineChoice(f, o);
           }
         else if (!t1.isDirectlyAssignableFrom(t2) &&  // we (currently) do not tag the result in a redefined feature, see testRedefine
-                 t2.compareTo(Types.resolved.t_void) != 0 &&
+                 !t2.isVoid() &&
                  !isLegalCovariantThisType(o, f, t1, t2, fixed))
           {
             AstErrors.resultTypeMismatchInRedefinition(o, t1, f, isLegalCovariantThisType(o, f, t1, t2, true));
@@ -1454,9 +1427,26 @@ public class SourceModule extends Module implements SrcModule, MirModule
     checkResultTypeVisibility(f);
     checkArgTypesVisibility(f);
     checkPreconditionVisibility(f);
+    checkAbstractVisibility(f);
   }
 
 
+  /**
+   * Check that an abstract feature is at least as visible as the outer feature.
+   */
+  private void checkAbstractVisibility(Feature f) {
+    if(f.isAbstract() &&
+       f.visibility().featureVisibility().ordinal() < f.outer().visibility().featureVisibility().ordinal())
+      {
+        AstErrors.abstractFeaturesVisibilityMoreRestrictiveThanOuter(f);
+      }
+  }
+
+
+  /**
+   * Check that `f` does not have more restrictive
+   * visibility than every feature it redefines.
+   */
   private void checkRedefVisibility(Feature f)
   {
     if (!f.isTypeFeaturesThisType()

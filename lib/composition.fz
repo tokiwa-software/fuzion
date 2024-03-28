@@ -39,18 +39,54 @@
 #
 # BQN tutorial: https://mlochbaum.github.io/BQN/tutorial/index.html
 #
+# Talk for Fullstack Academy by Gabriel Lebec: Lambda Calculus - Fundamentals of Lambda Calculus & Functional
+# Pragramming in JavaScript
+# https://www.youtube.com/watch?v=3VQ382QG-y4
+#
+# David C Keenan
+# To Dissect a Mockingbird: A Graphical Notation for the Lambda Calculus with Animated Reduction
+# https://dkeenan.com/Lambda/
+#
 # Bird names from Raymond M Smullyan. 2000. To Mock a Mockingbird: and other
 # logic puzzles including an amazing adventure in combinatory logic. Oxford
 # University Press, USA.
+#
+# Combinator birds: https://www.angelfire.com/tx4/cus/combinator/birds.html
 #
 public composition is
 
   # I
   # identity
-  # Bird: ?
+  # Bird: Idiot (Smullyan) or Ibis (Gabriel Lebec)
   # BQN: ⊣⊢
-  # Haskell id
+  # Haskell: id
   public id(T type) T -> T => x->x
+
+  # M
+  # self application
+  # Bird: Mockingbird
+  # BQN: ?
+  # Haskell: (cannot define)
+  #
+  # This is not representable in Fuzion, we would need arguments with generic arguments
+  # here.  Using pseudo-syntax ((T,U type) <type using T,U>) to denote a type that is
+  # itself type parameteric...:
+  #
+  # public M(f ((T,U type) T -> U)) ((V,W type) V->W) => f f
+  #
+  # we can emulate this if we require the argument to be given twice:
+  public M(T, U, V type, f0 (T->U)->(T->V), f1 T->U) T->V => f0 f1
+  # applying M to id:
+  public Mid(T type) => M T T T x->x x->x   # NYI: should also work:  (composition.this.id T) (composition.this.id T)
+  # applying M to M
+  # public MM(T type) => M T T T x->(MM x) x->(MM x)
+
+  # M*
+  # self application once removed
+  # Bird: Mockingbird
+  # BQN: ?
+  # Haskell: ?
+  # public Mstar(f (T->T,T)->T) T->T => x-> f f x
 
   # ?
   # reverse apply
@@ -61,12 +97,27 @@ public composition is
   # this is already defined in universe:
   # public infix |>(T, U type, x T, f T->U) U => f x
 
+  # T
+  # hold an argument
+  # Bird: thrush
+  # BQN: ?
+  # Haskell: flip id
+  public thrush(T, U, V type, x T, f (T,U)->V) U->V => y->f x y  # NYI just `f x` with partial application should do , but does not
+
+  # V
+  # hold a pair of arguments
+  # Bird: vireo
+  # BQN: ?
+  # Haskell: flip . flip id
+  public vireo(T, U, V, W type, x T, y U, f (T,U,V)->W) V->W => z->f x y z  # NYI just `f x y` with partial application should do , but does not
+
   # K
-  # Elementary Cancellator
+  # Elementary Cancellator, first
   # Bird: Kestrel
   # BQN: ⊣
-  # Haskell ?
+  # Haskell const
   public left(T, U type) (T,U) -> T => (x,y) -> x
+  public constant(T, U type) (T,U) -> T => (x,y) -> x
 
   # S
   # hook, monadic after
@@ -76,21 +127,28 @@ public composition is
   public after1(f (T, U) -> V, g T -> U) T -> V => x -> f x (g x)
 
   # B
-  # Elementare Compositor
+  # Elementare Compositor, composition
   # Bird: Bluebird
   # BQN: ∘
   # Haskell: .
-  public compose( f U -> V, g T -> U) T -> V => f ∘ g
+  public compose(f U -> V, g T -> U) T -> V => f ∘ g
 
   # B1
-  # Elementare Compositor
+  # Elementare Compositor, 1° <- 2° composition
   # Bird: Blackbird
   # BQN: ∘
   # Haskell: .: or ...
   public atop(f V -> W, g (T,U) -> V) (T,U) -> W => (x,y) -> f (g x y)
 
+  # B
+  # composition of one unary function f and one binary function g...
+  # Bird: Bluebird
+  # BQN: ⊸
+  public before1(f V -> U, g (U, V) -> W) V     -> W => x     -> g (f x) x
+  public before2(f T -> U, g (U, V) -> W) (T,V) -> W => (x,y) -> g (f x) y
+
   # C
-  # Elementary Permutator
+  # Elementary Permutator, reverse arguments
   # Bird: Cardinal
   # BQN: ˜
   # Haskell: flip
@@ -138,17 +196,13 @@ public composition is
   # Haskell:
   public d2(f T -> V, g (V,W) -> X, h U -> W) (T,U) -> X => (x,y) -> g (f x) (h y)
 
+  # KI
+  # second
   # left ∘ flip
-  # Bird: ?
+  # Bird: Kite
   # BQN: ⊢
+  # Haskell: const id
   public right(T, U type) (T,U) -> U => (x,y) -> y
-
-  # ?
-  # composition of one unary function f and one binary function g...
-  # Bird: ?
-  # BQN: ⊸
-  public before1(f V -> U, g (U, V) -> W) V     -> W => x     -> g (f x) x
-  public before2(f T -> U, g (U, V) -> W) (T,V) -> W => (x,y) -> g (f x) y
 
   # ?
   # Constant cancellator?
@@ -156,3 +210,25 @@ public composition is
   # BQN: ˙
   public const1(T, U    type, v T) U     -> T => x     -> v
   public const2(T, U, V type, v T) (U,V) -> T => (x,y) -> v
+
+
+  # The Y fixed-point combinator
+  # \f.(\x.f(xx))(\x.f(xx))
+  # NYI: possible?
+
+  # The Z fixed-point combinator
+  # \f.(\x.f(\v.xxv))(\x.f(\v.xxv))
+  # \f.M(\x.f(\v.Mxv))
+  # NYI: possible?
+
+  # fixed-point combinator using Lazy:
+  #
+  # this can be used as follows:
+  #
+  #   f (Lazy i32)->i32 := x->3
+  #   say (fix i32 f)
+  #
+  #   g (Lazy (list i32))->list i32 := x->3:x
+  #   say ((fix (list i32) g).take 10)
+  #
+  fix(A type, f Lazy ((Lazy A)->A)) => f.call (fix A f)

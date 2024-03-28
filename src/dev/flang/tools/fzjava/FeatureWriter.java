@@ -86,7 +86,7 @@ class FeatureWriter extends ANY
           {
             if (fzj._verbose > 0)
               {
-                System.out.println(" + " + fzp);
+                say(" + " + fzp);
               }
             Files.write(fzp, data.getBytes(StandardCharsets.UTF_8));
           }
@@ -129,24 +129,25 @@ class FeatureWriter extends ANY
           {
             s = "_k_" + s;
           }
-        else if (s.equals(FuzionConstants.ANY_NAME))
-          {
-            // NYI: Due to #40, we cannot declare an inner feature with name 'Object',
-            // so we replace it by '_jObject'.
-            s = "_j" + FuzionConstants.ANY_NAME;
-          }
-        else if (s.equals("List"))
-          {
-            // NYI: Due to #40, we cannot declare an inner feature with name 'List',
-            // so we replace it by '_jList'.
-            s = "_jList";
-          }
-        else if (s.equals("Sequence") ||
-                 s.equals("hashCode") ||
+        else if (s.equals(FuzionConstants.RESULT_NAME) ||
+                 // Any is implicitly inherited
+                 // by every feature
+                 // leading to ambiguity since Java
+                 // also has an Any class.
+                 s.equals(FuzionConstants.ANY_NAME) ||
+                 // args use this type: e.g. `arg0 Sequence (i32)`
+                 s.equals("Sequence") ||
+                 s.equals("unit") || // clashes with Parser.java/unit()
                  s.equals(FuzionConstants.STRING_NAME) ||
-                 s.equals("array"   ) ||
-                 s.equals("isBlank" ) ||
-                 s.equals("split"   )    )
+                 /*
+                  * ```
+                  * __jString.fz: error: Redefinition must be declared using modifier 'redef'
+                  * public split(arg0 String) ... =>
+                  * ```
+                  * could be removed if we instead added a `redef` modifier for split
+                  */
+                 s.equals("split"   )
+                )
           {
             // NYI: this is just a precaution to avoid confusion with Fuzion
             // types.  Need to find a way to avoid this, e.g., by using

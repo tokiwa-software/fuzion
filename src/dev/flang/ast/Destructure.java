@@ -47,7 +47,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Destructure extends Expr
+public class Destructure extends ExprWithPos
 {
 
 
@@ -61,12 +61,6 @@ public class Destructure extends Expr
 
 
   /*----------------------------  variables  ----------------------------*/
-
-
-  /**
-   * The sourcecode position of this destructure, used for error messages.
-   */
-  final SourcePosition _pos;
 
 
   /**
@@ -107,12 +101,13 @@ public class Destructure extends Expr
    */
   private Destructure(SourcePosition pos, List<ParsedName> n, List<AbstractFeature> fs, boolean def, Expr v)
   {
+    super(pos);
+
     if (PRECONDITIONS) require
       (pos != null,
        !def || fs != null,
        v != null);
 
-    _pos = pos;
     _names = n;
     _fields = fs;
     _isDefinition = def;
@@ -121,15 +116,6 @@ public class Destructure extends Expr
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * The sourcecode position of this expression, used for error messages.
-   */
-  public SourcePosition pos()
-  {
-    return _pos;
-  }
 
 
   /**
@@ -238,9 +224,9 @@ public class Destructure extends Expr
                          Iterator<AbstractFeature> fields,
                          AbstractType t)
   {
-    Expr thiz     = This.thiz(res, _pos, outer, outer);
-    Call thiz_tmp = new Call(_pos, thiz    , tmp, -1    ).resolveTypes(res, outer);
-    Call call_f   = new Call(_pos, thiz_tmp, f  , select).resolveTypes(res, outer);
+    Expr thiz     = This.thiz(res, pos(), outer, outer);
+    Call thiz_tmp = new Call(pos(), thiz    , tmp, -1    ).resolveTypes(res, outer);
+    Call call_f   = new Call(pos(), thiz_tmp, f  , select).resolveTypes(res, outer);
     Assign assign = null;
     if (fields != null && fields.hasNext())
       {
@@ -249,7 +235,7 @@ public class Destructure extends Expr
           {
             newF._returnType = new FunctionReturnType(t);
           }
-        assign = new Assign(res, _pos, newF, call_f, outer);
+        assign = new Assign(res, pos(), newF, call_f, outer);
       }
     else if (fields == null && names.hasNext())
       {
@@ -283,7 +269,7 @@ public class Destructure extends Expr
     var t = _value.type();
     if (t.isGenericArgument())
       {
-        AstErrors.destructuringForGeneric(_pos, t, _names);
+        AstErrors.destructuringForGeneric(pos(), t, _names);
       }
     else if (t != Types.t_ERROR)
       {
@@ -292,16 +278,16 @@ public class Destructure extends Expr
           .map(n -> n._name)
           .filter(n -> !n.equals("_"))
           .filter(n -> Collections.frequency(_names, n) > 1)
-          .forEach(n -> AstErrors.destructuringRepeatedEntry(_pos, n, Collections.frequency(_names, n)));
+          .forEach(n -> AstErrors.destructuringRepeatedEntry(pos(), n, Collections.frequency(_names, n)));
         Feature tmp = new Feature(res,
-                                  _pos,
+                                  pos(),
                                   Visi.PRIV,
                                   t,
                                   FuzionConstants.DESTRUCTURE_PREFIX + id++,
                                   outer);
         tmp.scheduleForResolution(res);
         exprs.add(tmp.resolveTypes(res, outer));
-        Assign atmp = new Assign(res, _pos, tmp, _value, outer);
+        Assign atmp = new Assign(res, pos(), tmp, _value, outer);
         atmp.resolveTypes(res, outer);
         exprs.add(atmp);
         var names = _names.iterator();
@@ -330,7 +316,7 @@ public class Destructure extends Expr
           }
         if (fieldNames.size() != _names.size())
           {
-            AstErrors.destructuringMisMatch(_pos, fieldNames, _names);
+            AstErrors.destructuringMisMatch(pos(), fieldNames, _names);
           }
       }
     else if (_fields != null && _isDefinition)

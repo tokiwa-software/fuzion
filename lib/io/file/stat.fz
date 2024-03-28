@@ -47,15 +47,13 @@ public stat(ps Stat_Handler) : simple_effect is
   public stats(
         # the (relative or absolute) file name, using platform specific path separators
         path String) outcome meta_data =>
-    arr := fuzion.sys.internal_array_init i64 4  # will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
-    res := ps.stats (fuzion.sys.c_string path) arr.data
-    data := arr.as_array
-    if res
-      replace
-      meta_data data[0] data[1] (data[2] = i64 1) (data[3] = i64 1)
+    replace
+    # will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
+    res := fuzion.sys.internal_array_init i64 4
+    if ps.stats (fuzion.sys.c_string path) res.data
+      meta_data res[0] res[1] (res[2] = 1) (res[3] = 1)
     else
-      replace
-      error "stat error {data[0]} for {path}"
+      error "stat error {res[0]} for {path}"
 
   # returns stats of the file/dir passed in the pathname
   # in success it will return a meta_data outcome storing stats regarding the file/dir
@@ -65,15 +63,13 @@ public stat(ps Stat_Handler) : simple_effect is
   public lstats(
          # the (relative or absolute) file name, using platform specific path separators
          path String) outcome meta_data => # NYI : not sure whether to use meta_data or introduce a new feature for lstats metadata
-    arr := fuzion.sys.internal_array_init i64 4  # will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
-    res := ps.stats (fuzion.sys.c_string path) arr.data
-    data := arr.as_array
-    if res
-      replace
-      meta_data data[0] data[1] (data[2] = i64 1) (data[3] = i64 1)
+    replace
+    # will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
+    res := fuzion.sys.internal_array_init i64 4
+    if ps.stats (fuzion.sys.c_string path) res.data
+      meta_data res[0] res[1] (res[2] = 1) (res[3] = 1)
     else
-      replace
-      error "lstat error {data[0]} for {path}"
+      error "lstat error {res[0]} for {path}"
 
 
   # the default file stat provided
@@ -94,7 +90,7 @@ public stat(ps Stat_Handler) : simple_effect is
 # short-hand for accessing the stat effect in current environment
 #
 public stat =>
-  stat.type.install_default
+  stat.install_default
   stat.env
 
 
@@ -109,7 +105,7 @@ public stat(
      path String,
      # a boolean resolve flag to resolve symbolic links or not
      resolve bool) =>
-  stat.type.install_default
+  stat.install_default
   if resolve
     stat.env.stats path
   else

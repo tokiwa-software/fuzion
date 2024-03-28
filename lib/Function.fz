@@ -30,7 +30,7 @@
 public Function(public R type,
                 public A type...) ref is
 
-  # call this function on given arguments A...
+  # call this function on given arguments a...
   #
   public call(a A) R => abstract
 

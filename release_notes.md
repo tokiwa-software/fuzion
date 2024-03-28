@@ -1,4 +1,172 @@
-## 2024-**-**: V0.087
+## 2024-**-**: V0.088
+
+
+## 2024-03-07: V0.087
+
+- General
+
+  - The Fuzion GitHub repository is open for external contributors, we added a Contributor License Agreement and documentation for new contributors ([#2500](https://github.com/tokiwa-software/fuzion/pull/2500), [#2502](https://github.com/tokiwa-software/fuzion/pull/2502), [#2505](https://github.com/tokiwa-software/fuzion/pull/2505), [#2514](https://github.com/tokiwa-software/fuzion/pull/2514), [#2538](https://github.com/tokiwa-software/fuzion/pull/2538), [#2545](https://github.com/tokiwa-software/fuzion/pull/2545)).
+
+  - We have switched to using JDK 21 ([#2504](https://github.com/tokiwa-software/fuzion/pull/2504)).
+
+- Documentation
+
+  - API documentation</a> is now grouped by feature types ([#2431](https://github.com/tokiwa-software/fuzion/pull/2431)).
+
+  - Work on a Fuzion reference manual as started ([#2490](https://github.com/tokiwa-software/fuzion/pull/2490)).
+
+  - Documentation for the `universe` feature was added ([#2625](https://github.com/tokiwa-software/fuzion/pull/2625)).
+
+  - Type features are now included in the generated API documentation ([#2649](https://github.com/tokiwa-software/fuzion/pull/2649)).
+
+- Build infrastructure
+
+  - Added a `base-only` target to the `Makefile` for faster build-test cycles ([#2501](https://github.com/tokiwa-software/fuzion/pull/2501)).
+
+- Fuzion language
+
+  - A function feature can no longer be declared using `f rt is ...` it must be `f rt =&gt; ...`, declarations using `is` are used only for constructors ([#2401](https://github.com/tokiwa-software/fuzion/pull/2401), [#2443](https://github.com/tokiwa-software/fuzion/pull/2443), [#2444](https://github.com/tokiwa-software/fuzion/pull/2444)).
+
+  - The `.type.` can now be omitted in calls to type features ([#2631](https://github.com/tokiwa-software/fuzion/pull/2631)).
+
+- base library
+
+  - Minor additions to `composition.fz` adding links and more birds, but still work in progress [#2491](https://github.com/tokiwa-software/fuzion/pull/2491).
+
+  - Removed `as_stream` as a step towards removing streams altogether ([#2476](https://github.com/tokiwa-software/fuzion/pull/2476)).
+
+  - Added `Sequence.peek` ([#2475](https://github.com/tokiwa-software/fuzion/pull/2475)).
+
+  - Features `TRUE` and `FALSE` are no longer public, but the corresponding types are ([#2468](https://github.com/tokiwa-software/fuzion/pull/2468)).
+
+  - Added pipe features `&lt;|`, `&lt;||`, etc. to establish symmetry with `|&gt;`, `||&gt;`, etc. ([#2462](https://github.com/tokiwa-software/fuzion/pull/2462)).
+
+  - The `unit.type.monoid` is now `public` ([#2418](https://github.com/tokiwa-software/fuzion/pull/2418)).
+
+  - Removed `say` without arguments to print a new line to enable the use of `say` with one argument in partial applications like `l.for_each say` ([#2406](https://github.com/tokiwa-software/fuzion/pull/2406)).
+
+  - Replaced `is` by `=&gt;` in function features ([#2401](https://github.com/tokiwa-software/fuzion/pull/2401)).
+
+  - Intrinsics and effects that allow directory listing have been implemented ([#1688](https://github.com/tokiwa-software/fuzion/pull/1688), [#2635](https://github.com/tokiwa-software/fuzion/pull/2635)).
+
+  - Add `infix ::` to `list`, which allows creating a list from a given starting element and a partial function that gets applied on each iteration ([#2516](https://github.com/tokiwa-software/fuzion/pull/2516)).
+
+    This permits code like
+
+        ints := 0 :: +1
+
+    to create a list of all integers starting at `0` and calculating the next element by adding one using the partial function `+1`.
+
+  - Change `Sequence.infix |` to be an alias for `map`, the new alias for `for_each` is `Sequence.infix !` now ([#2517](https://github.com/tokiwa-software/fuzion/pull/2517)).
+
+  - Handling of infinite sequences has been made more convenient since the number of entries shown by `as_string` is limited for non-finite sequences ([#2528](https://github.com/tokiwa-software/fuzion/pull/2528)).
+
+    You can now safely do things like
+
+        say (1.. | x->x**2)
+
+    which used to crash, but now results in
+
+        [1, 4, 9, 16, 25, 36, 49, 64, 81, 100, …]
+
+  - Add feature `String.is_ascii` ([#2531](https://github.com/tokiwa-software/fuzion/pull/2531)).
+
+  - `Set.add` was implemented due to errors with the abstract version ([#2533](https://github.com/tokiwa-software/fuzion/pull/2533)).
+
+  - When producing a string from a sequence, separate the elements with `, ` instead of just a `,` ([#2548](https://github.com/tokiwa-software/fuzion/pull/2548)).
+
+  - Facilities to launch processes have been added ([#2575](https://github.com/tokiwa-software/fuzion/pull/2575)).
+
+  - Visibility of `Type` is now `module:public`, because nothing should inherit from or call `Type` ([#2581](https://github.com/tokiwa-software/fuzion/pull/2581)).
+
+  - `bench` now uses the `time.nano` effect ([#2606](https://github.com/tokiwa-software/fuzion/pull/2606)).
+
+  - `String`: add features for center, left, and right padding of strings ([#2609](https://github.com/tokiwa-software/fuzion/pull/2609)).
+
+  - Some fixes for unsafe intrinsics ([#2521](https://github.com/tokiwa-software/fuzion/pull/2521), [#2594](https://github.com/tokiwa-software/fuzion/pull/2594),
+    [#2627](https://github.com/tokiwa-software/fuzion/pull/2627)).
+
+  - Refactoring of `interval` ([#2551](https://github.com/tokiwa-software/fuzion/pull/2551), [#2560](https://github.com/tokiwa-software/fuzion/pull/2560), [#2608](https://github.com/tokiwa-software/fuzion/pull/2608)).
+
+- Front End
+
+  - Added visibility checks for `abstract` features ([#2453](https://github.com/tokiwa-software/fuzion/pull/2453)).
+
+  - Improve type inference for tagged union types ([#2582](https://github.com/tokiwa-software/fuzion/pull/2582)).
+
+        # infers that all the numbers to be of type option f64
+        a := [0.3, option 3.142, nil, 42]
+
+        # infers that all the numbers to be of type option f64
+        if b then 42  else option 3.14
+
+  - Improve type inference type parameters ([#2585](https://github.com/tokiwa-software/fuzion/pull/2585)).
+
+        # type parameters for `zip` can now be inferred in this case:
+        prods :=  ([1,2,3].zip 0.. a,b->a*b)
+
+  - Remove string comparisons in the code ([#2616](https://github.com/tokiwa-software/fuzion/pull/2616), [#2617](https://github.com/tokiwa-software/fuzion/pull/2617)).
+
+  - Replace `Could not find called feature` messages by more specific errors in case the feature could be found but is invisible or the argument count does not match ([#2622](https://github.com/tokiwa-software/fuzion/pull/2622)).
+
+  - Suppress `declarationsInLazy` error if it is a subsequent error, due to frequent false-positives ([#2628](https://github.com/tokiwa-software/fuzion/pull/2628)).
+
+  - Fix source range of parsed lambdas ([#2646](https://github.com/tokiwa-software/fuzion/pull/2646)).
+
+- Middle End
+
+  - Significant performance improvement and cleanup in the handling of run-time types (clazzes), ([#2416](https://github.com/tokiwa-software/fuzion/pull/2416), [#2413](https://github.com/tokiwa-software/fuzion/pull/2413)).
+
+- Analyzers
+
+  - `fz -effects` now uses the data-flow analysis (DFA) infrastructure instead of the less accurate control flow graph (CFG) ([#2407](https://github.com/tokiwa-software/fuzion/pull/2407)).
+
+- JVM back end
+
+  - Fixed `VerifyError` for features resulting in void ([#2477](https://github.com/tokiwa-software/fuzion/issues/2477), [#2485](https://github.com/tokiwa-software/fuzion/pull/2485)).
+
+  - Fixed race conditions between warnings printed by JVM back end and errors by running code that resulted in flaky test runs ([#2426](https://github.com/tokiwa-software/fuzion/pull/2426), [#2469](https://github.com/tokiwa-software/fuzion/pull/2469)).
+
+  - The fzjava interface known from the interpreter that allows calling into Java code is now supported by the JVM backend as well ( [#2487](https://github.com/tokiwa-software/fuzion/pull/2487)).
+
+  - Support for the stackmap table attribute was added ([#2499](https://github.com/tokiwa-software/fuzion/pull/2499), [#2556](https://github.com/tokiwa-software/fuzion/pull/2556)).  This allowed switching to class files for JDK version 21.
+
+  - Improvements to tail recursive call optimization (however, this does still not work in many cases) ([#2543](https://github.com/tokiwa-software/fuzion/pull/2543)).
+
+  - The `-jar` and `-classes` backends now create a run script that allows one to easily run the jar file or the classes ([#2547](https://github.com/tokiwa-software/fuzion/pull/2547)).
+
+  - For the `-jar` and `-classes` backends, fix the result of `envir.args` ([#2549](https://github.com/tokiwa-software/fuzion/pull/2549)).
+
+  - The `-jar` and `-classes` backends now support an optional argument `-o=&lt;outputName&gt;` to specify the name of the generated output ( [#2567](https://github.com/tokiwa-software/fuzion/pull/2567)).
+
+- C back end
+
+  - Fixed internal handling of `void` types ([#2466](https://github.com/tokiwa-software/fuzion/pull/2466)).
+
+  - The Boehm Garbage Collector is now enabled by default fixing a giant memory leak ([#2428](https://github.com/tokiwa-software/fuzion/pull/2428)).
+
+  - Separated `include/fz.h` into platform-specific files, refactored ([#2553](https://github.com/tokiwa-software/fuzion/pull/2553), [#2573](https://github.com/tokiwa-software/fuzion/pull/2573), [#2601](https://github.com/tokiwa-software/fuzion/pull/2601)).
+
+  - Replace `__atomic` compiler-specific built-ins by C11 standard atomics ([#2563](https://github.com/tokiwa-software/fuzion/pull/2563)).
+
+  - Not longer emits duplicate casts in generated code ([#2592](https://github.com/tokiwa-software/fuzion/pull/2592)).
+
+  - The generated C source files are not deleted unless `-XkeepGeneratedCode` is set ([#2605](https://github.com/tokiwa-software/fuzion/pull/2605)).
+
+- `fz` tool
+
+  - Run simple examples given on the command line using the `-e &lt;code&gt;` or `-execute &lt;code&gt;` argument ([#2618](https://github.com/tokiwa-software/fuzion/pull/2618)). So it is now possible to do
+
+        fz -e 'say "Hello, world!"'
+
+    to run a one-liner.
+
+  - In the case of a contract failure (pre/post-condition or check) due to a bug in the fz tool, the failed expression will now be shown ([#2619](https://github.com/tokiwa-software/fuzion/pull/2619)).
+
+  - Running `fz` without any arguments now shows the general help instead of the default backend help ([#2648](https://github.com/tokiwa-software/fuzion/pull/2648)).
+
+  - Experimentation with calling the Fuzion compiler via fzjava from the JVM backend have started ([#2536](https://github.com/tokiwa-software/fuzion/pull/2536)).
+
 
 ## 2024-01-11: V0.086
 
@@ -113,7 +281,7 @@
     ([#2355](https://github.com/tokiwa-software/fuzion/pull/2355)). This was required, e.g., for the pipe operator to work with partial
     application as in
 
-            "Hello> |> say.
+            "Hello" |> say.
 
   - Error output for this-types now uses `xyz.this` instead of `xyz.this.type` to match the current syntax ([#2356](https://github.com/tokiwa-software/fuzion/pull/2356)).
 
@@ -993,7 +1161,7 @@
   - renamed several features from 'camelCase' to 'snake_case' or
     'Capitalized_snake_case' for 'ref' types.
 
-  - abstract equality (see https://flang.dev/design/equality") as explained by
+  - abstract equality (see https://fuzion-lang.dev/design/equality") as explained by
     Noble et al in The Left Hand of Equals
     (http://web.cecs.pdx.edu/~black/publications/egal.pdf) is now supported:
 
@@ -1481,7 +1649,7 @@
 
   - support for f32 and f64
 
-- flang.dev
+- fuzion-lang.dev
 
 - tests
 
@@ -1495,10 +1663,10 @@
 
 ## 2022-02-25: V0.069
 
-- flang.dev
+- fuzion-lang.dev
   - design
     - added example for [Automatic Monadic
-      Lifting](https://flang.dev/design/monadic_lifting) using Knuth's
+      Lifting](https://fuzion-lang.dev/design/monadic_lifting) using Knuth's
       man-or-boy example and a new feature _handles_ that provides a state monad
       similar to Haskell's _IORef_.
 
@@ -1542,7 +1710,7 @@
 
 - stdlib
 
-  - lib: Minor improvements used in tutoral at flang.dev:
+  - lib: Minor improvements used in tutoral at fuzion-lang.dev:
 
     - added 'list head tail' as a counterpart to Haskell's 'head : tail' for
       list creation.
@@ -1597,11 +1765,11 @@
 
 ## 2022-01-21: V0.065
 
-- flang.dev
+- fuzion-lang.dev
 
-    - added .fum file documentation to https://flang.dev/design/fum_file
+    - added .fum file documentation to https://fuzion-lang.dev/design/fum_file
 
-    - added browsable fuzion API documentation to https://flang.dev/docs/index
+    - added browsable fuzion API documentation to https://fuzion-lang.dev/docs/index
 
 - parser
 
@@ -1699,7 +1867,7 @@
 
 ## 2021-10-29: V0.062
 
-- flang.dev website
+- fuzion-lang.dev website
 
   - added more idioms, e.g. #182 (quine), 242..258, etc.
 
@@ -1716,7 +1884,7 @@
 
 ## 2021-10-15: V0.061
 
-- flang.dev website
+- fuzion-lang.dev website
 
   - added many idioms, updated syntax of existing idioms
 
@@ -1737,7 +1905,7 @@
 
 ## 2021-09-30: V0.060
 
-- flang.dev website
+- fuzion-lang.dev website
 
   - new design for code input / execution output text areas
 
@@ -1798,7 +1966,7 @@
 
   - support for types i8, i16, u8, u16, f32, f64.
 
-- flang.dev website
+- fuzion-lang.dev website
 
   - added sections on integer and float constants to tutorial.
 
@@ -1818,7 +1986,7 @@
 
 - FrontEnd
 
-  - fix running examples such as tutorial/overflow* on flang.dev (see git commit
+  - fix running examples such as tutorial/overflow* on fuzion-lang.dev (see git commit
     for details).
 
 ## 2021-08-20: V0.057
@@ -1854,7 +2022,7 @@
 
   - string.utf8 now returns an List<u8>.
 
-- flang.dev website
+- fuzion-lang.dev website
 
   - now supportes ACE editor for source code
 
@@ -1907,11 +2075,11 @@
 
 ## 2021-07-08: V0.054
 
-- flang.dev
+- fuzion-lang.dev
 
   - changed path to load 'main.js' to be absolute '/main.js'.  Before, main.js
     could not be loaded if the first page access was in a sub directory such as
-    'flang.dev/tutorial/index' and anything requiring java script, like
+    'fuzion-lang.dev/tutorial/index' and anything requiring java script, like
     executing examples, did not work.
 
 - Front End
@@ -1985,9 +2153,9 @@
 
 ## 2021-06-29: V0.051
 
-- flang.dev
+- fuzion-lang.dev
 
-  - design: added flang.dev/design/calls.html for thoughts on Fuzion's call
+  - design: added fuzion-lang.dev/design/calls.html for thoughts on Fuzion's call
     syntax.
 
   - added idioms 134, 135, 136
@@ -2037,7 +2205,7 @@
 
   - new option -XjavaProf (for profiling fz's own Java code) and -X/--xhelp).
 
-- flang.dev
+- fuzion-lang.dev
 
   - added idiom 76
 
@@ -2057,7 +2225,7 @@
     'true'.  Reduces binary size when using C backend on HelloWorld with
     '-debug=0 -safety=off' by 3.5%.
 
-- flang.dev
+- fuzion-lang.dev
 
   - added idioms 39, 40, 49, 68, 76, 82, 116
 
@@ -2074,7 +2242,7 @@
 
   - added u128 for unsigned 128-bit integers
 
-- flang.dev
+- fuzion-lang.dev
 
   - added idioms 62, 63
 
@@ -2101,7 +2269,7 @@
   - string: added startsWith, endsWith
 
 
-- flang.dev
+- fuzion-lang.dev
 
   - added idioms 84, 85, 86, 87, 88, 89, 90, 93, 96, 97, 100, 108, 110, 112,
     113, 114, 117, 118, 119, 122, 124, 127, 227, 231
@@ -2127,7 +2295,7 @@
     possible values of typ 'option<some<nil>>' are 'nil' and 'some nil'
 
 
-- flang.dev
+- fuzion-lang.dev
 
   - added idioms # 38, 44, 46, 47, 48, 53, 54, 55, 57
 
@@ -2149,7 +2317,7 @@
     'infix ∈', so we can write '2 ∈ [1,2,3]' or '7 ∉ 10..300' (both result in
     bool value true).
 
-- flang.dev
+- fuzion-lang.dev
 
   - added idioms # 51, 52
 
@@ -2168,7 +2336,7 @@
     Support for grouping of digits using '_' as in 'ichiOku := 1_0000_0000',
     groups must be equal in size and at least two digits long.
 
-- flang.dev
+- fuzion-lang.dev
 
   - added idioms # 32, 41
 
@@ -2187,13 +2355,13 @@
   - added outcome.fz similar to Rust's result: a choice between a value and an
     error.
 
-- flang.dev
+- fuzion-lang.dev
 
   - added idioms # 18, 22, 26, 27, 34, 42
 
 ## 2021-05-19: V0.041
 
-- flang.dev
+- fuzion-lang.dev
 
   - added idioms # 8, 9, 13, 16, 19
 
@@ -2237,7 +2405,7 @@
 
   - now works with array initialization using '[a, b, c]'.
 
-- flang.dev
+- fuzion-lang.dev
 
   - updated examples to use array initialization instead of InitArray.fz
 
@@ -2622,7 +2790,7 @@ Benchmarks:
   - extracted dynamic binding related code from Clazz.java to
     DynamicBinging.java.
 
-- flang.dev
+- fuzion-lang.dev
 
   - Removed access restrictions, made website and tutorial accessible without
     login.
@@ -3221,4 +3389,11 @@ Benchmarks:
 
 ## 2020-09-29: V0.001
 
-- First version to be presented to very few selected users via the flang.dev website.
+- First version to be presented to very few selected users via the fuzion-lang.dev website.
+
+<!--  LocalWords:  Fuzion JDK Makefile fz lt ints ascii nano DFA CFG JVM fzjava
+ -->
+<!--  LocalWords:  VerifyError backend stackmap backends envir args Boehm
+ -->
+<!--  LocalWords:  atomics XkeepGeneratedCode
+ -->

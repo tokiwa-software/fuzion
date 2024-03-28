@@ -71,7 +71,7 @@ public cache(T type, f () -> T) T =>
   # the use of `state` for type T
   cache_item(val T) is
 
-  if !(effect.type.is_installed (state unit cache_item))
+  if !(effect.is_installed (state unit cache_item))
     _ := state unit cache_item unit (cache_item f()) effect_mode.default
 
   state_get cache_item

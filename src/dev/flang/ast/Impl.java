@@ -74,19 +74,15 @@ public class Impl extends ANY
 
 
   /**
-   *
+   * For a field declared using `:=` this
+   * gives the initial value of that field or function.
+   * For a function declared using `=>` this
+   * gives the code of that function.
    */
-  public Expr _code;
-
-
-  /**
-   * For a field declared using `:=` or a function declared using `=>`, this
-   * gives the value of that field or function.
-   */
-  Expr _initialValue;
-  public Expr initialValue()
+  private Expr _expr;
+  public Expr expr()
   {
-    return _initialValue;
+    return _expr;
   }
 
 
@@ -101,7 +97,7 @@ public class Impl extends ANY
    * For FieldActual: The outer features for all the actual calls that were
    * found for this argument field.
    */
-  final List<AbstractFeature> _outerOfInitialCalls;
+  private final List<AbstractFeature> _outerOfInitialCalls;
 
 
   public enum Kind
@@ -150,7 +146,7 @@ public class Impl extends ANY
    * Flag to detect infinite recursion when resolving types of initial
    * values. Used by @see initialValueFromCall.
    */
-  boolean _infiniteRecursionInResolveTypes = false;
+  private boolean _infiniteRecursionInResolveTypes = false;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -167,17 +163,7 @@ public class Impl extends ANY
    */
   public Impl(SourcePosition pos, Expr e, Kind kind)
   {
-    this._code = switch (kind)
-      {
-      case Routine, RoutineDef, Of -> e;
-      default -> null;
-      };
-    this._initialValue = switch (kind)
-      {
-      case FieldInit, FieldDef, FieldIter -> e;
-      default -> null;
-      };
-
+    this._expr = e;
     this.pos = pos;
     this._kind = kind;
     this._initialCalls         = kind == Kind.FieldActual ? new List<>() : null;
@@ -186,7 +172,8 @@ public class Impl extends ANY
 
 
   /**
-   * Implementation of a feature without an implementation (an abstract feature).
+   * Implementation of a feature without an implementation.
+   * e.g. for an abstract, intrinsic or type parameter feature.
    */
   public Impl(Kind kind)
   {
@@ -317,18 +304,52 @@ public class Impl extends ANY
    */
   public void visit(FeatureVisitor v, AbstractFeature outer)
   {
-    if (this._code != null)
+    if (isRoutineLike())
       {
-        this._code = this._code.visit(v, outer);
+        this._expr = this._expr.visit(v, outer);
       }
     else
       {
-        // initialValue is code executed by outer.outer(), so this is visited by
+        // In case this is a field:
+        // _code is code executed by outer.outer(), so this is visited by
         // Feature.visit for the outer feature and not here.
         //
-        // this.initialValue.visit(v, outer.outer());
+        // this.visitCode(v, outer.outer());
       }
     v.action(this, outer);
+  }
+
+
+  /**
+   * Visit the expression of this implementation.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited objects.
+   *
+   * @param outer the feature surrounding this expression.
+   */
+  public void visitExpr(FeatureVisitor v, AbstractFeature outer)
+  {
+    this._expr = this._expr.visit(v, outer);
+  }
+
+
+  /**
+   * Is this an implementation of a routine?
+   */
+  private boolean isRoutineLike()
+  {
+    return _kind == Kind.Routine || _kind == Kind.RoutineDef;
+  }
+
+
+  /*
+   * Does this implementation have an initial value?
+   * I.e. is it executed by the outer feature of its feature?
+   */
+  public boolean hasInitialValue()
+  {
+    return _kind == Kind.FieldInit || _kind == Kind.FieldDef || _kind == Kind.FieldIter;
   }
 
 
@@ -342,7 +363,7 @@ public class Impl extends ANY
   private boolean needsImplicitAssignmentToResult(AbstractFeature outer)
   {
     return
-      (this._code != null) &&
+      (isRoutineLike()) &&
       outer.hasResultField() &&
       outer instanceof Feature fouter && !fouter.hasAssignmentsToResult();
   }
@@ -364,8 +385,24 @@ public class Impl extends ANY
   {
     if (needsImplicitAssignmentToResult(outer))
       {
-        _code = _code.propagateExpectedType(res, outer, outer.resultType());
+        _expr = _expr.propagateExpectedType(res, outer, outer.resultType());
       }
+  }
+
+
+  /**
+   * Inform the expression of this implementation that its expected type is `t`.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param outer the feature that contains this expression
+   *
+   * @param t the expected type.
+   */
+  public void propagateExpectedType(Resolution res, Feature outer, AbstractType t)
+  {
+    _expr = _expr.propagateExpectedType(res, outer, t);
   }
 
 
@@ -375,7 +412,7 @@ public class Impl extends ANY
    */
   boolean containsOnlyDeclarations()
   {
-    return _code == null || _code.containsOnlyDeclarations();
+    return _expr == null || _expr.containsOnlyDeclarations();
   }
 
 
@@ -394,14 +431,13 @@ public class Impl extends ANY
     if (needsImplicitAssignmentToResult(outer))
       {
         var resultField = outer.resultField();
-        var endPos = (this._code instanceof Block) ? ((Block) this._code)._closingBracePos : this._code.pos();
         Assign ass = new Assign(res,
-                                endPos,
+                                this._expr.pos(),
                                 resultField,
-                                this._code,
+                                this._expr,
                                 outer);
-        ass._value = this._code.box(ass._assignedField.resultType());  // NYI: move to constructor of Assign?
-        this._code = new Block (new List<Expr>(ass));
+        ass._value = this._expr.box(ass._assignedField.resultType());  // NYI: move to constructor of Assign?
+        this._expr = ass;
       }
   }
 
@@ -410,7 +446,7 @@ public class Impl extends ANY
    * For an actual value passed to an argument field with this Impl, record the
    * actual and its outer feature for type inference
    *
-   * @param actl an actual argument expression
+   * @param call an actual argument expression
    *
    * @param outer the feature containing the actl expression
    */
@@ -482,19 +518,15 @@ public class Impl extends ANY
    * found such that we can report all occurrences of actuals and all actual
    * types that were found.
    */
-  AbstractType typeFromInitialValues(Resolution res, AbstractFeature formalArg, boolean reportError)
+  private AbstractType typeFromInitialValues(Resolution res, AbstractFeature formalArg, boolean reportError)
   {
-    AbstractType result = Types.resolved.t_void;
+    var exprs = new List<Expr>();
     for (var i = 0; i < _initialCalls.size(); i++)
       {
-        var io = _outerOfInitialCalls.get(i);
         var iv = initialValueFromCall(i, res);
-        AbstractType t = iv.typeForInferencing();
-        if (t != null)
-          {
-            result = result.union(t);
-          }
+        exprs.add(iv);
       }
+    var result = Expr.union(exprs);
     if (reportError)
       {
         if (_initialCalls.size() == 0)
@@ -529,6 +561,16 @@ public class Impl extends ANY
     return result;
   }
 
+
+  /*
+   * Is the type of this implementation possibly inferable?
+   */
+  public boolean typeInferable()
+  {
+    return _kind == Kind.RoutineDef || _kind == Kind.FieldDef || _kind == Kind.FieldActual;
+  }
+
+
   /**
    * For an Impl that uses type inference for the feature result type, this
    * determines the actual result type from the initial value, the code or the
@@ -540,18 +582,18 @@ public class Impl extends ANY
    */
   AbstractType inferredType(Resolution res, AbstractFeature f)
   {
-    if (PRECONDITIONS) require
-      (_kind == Kind.FieldDef    ||
-       _kind == Kind.FieldActual ||
-       _kind == Kind.RoutineDef     );
-
-    return switch (_kind)
+    var result = switch (_kind)
       {
-      case FieldDef    -> _initialValue.typeForInferencing();
-      case RoutineDef  -> _code.typeForInferencing();
+      case RoutineDef, FieldDef -> _expr.typeForInferencing();
       case FieldActual -> typeFromInitialValues(res, f, false);
-      default -> throw new Error("missing case "+_kind);
+      default -> null;
       };
+
+    return result != null &&
+           result.isTypeType() &&
+           !(_expr instanceof Call c && c.calledFeature() == Types.resolved.f_Types_get)
+      ? Types.resolved.f_Type.selfType()
+      : result;
   }
 
 
@@ -577,22 +619,22 @@ public class Impl extends ANY
   public String toString()
   {
     String result;
-    if (_code != null) {
-      result = _code.toString();
+    if (_expr != null) {
+      result = _expr.toString();
     } else {
       switch (_kind)
         {
-        case FieldInit  : result = " = "  + _initialValue.getClass() + ": " +_initialValue; break;
-        case FieldDef   : result = " := " + _initialValue.getClass() + ": " +_initialValue; break;
+        case FieldInit  : result = " = "  + _expr.getClass() + ": " +_expr; break;
+        case FieldDef   : result = " := " + _expr.getClass() + ": " +_expr; break;
         case FieldActual: result = " type_inferred_from_actual";                            break;
         case Field      : result = "";                                                      break;
         case TypeParameter:     result = "type";                                            break;
         case TypeParameterOpen: result = "type...";                                         break;
-        case RoutineDef : result = " => " + _code.toString();                               break;
-        case Routine    : result = " is " + _code.toString();                               break;
+        case RoutineDef : result = " => " + _expr.toString();                               break;
+        case Routine    : result = " is " + _expr.toString();                               break;
         case Abstract   : result = "is abstract";                                           break;
         case Intrinsic  : result = "is intrinsic";                                          break;
-        case Of         : result = "of " + _code.toString();                                break;
+        case Of         : result = "of " + _expr.toString();                                break;
         default: throw new Error("Unexpected Kind: "+_kind);
         }
     }

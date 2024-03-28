@@ -219,13 +219,11 @@ abstract class ByteCode extends ANY implements ClassFileConstants
    * Write bytecode instruction bc followed by 2 unsigned bytes giving the index
    * of the given CPool entry.
    *
-   * @param bw target to write bytecodes to.
+   * @param ba target to write bytecodes to.
    *
    * @param bc a bytecode operation that expects an unsigned index
    *
    * @param e the CPool entry whose index bc expects
-   *
-   * @return new byte[] { bx, hi-index, ho-index }
    */
   void code(ClassFile.ByteCodeWriter ba, byte bc, ClassFile.CPEntry e)
   {
@@ -271,7 +269,7 @@ abstract class ByteCode extends ANY implements ClassFileConstants
    *           new byte[] { O_wide, bc, hi-index, ho-index }     -- or --
    *           new byte[] { bc, hi-index, ho-index }
    *
-   * @param bw target to write bytecodes to.
+   * @param ba target to write bytecodes to.
    *
    * @param bc a bytecode operation that expects an unsigned integer index
    *
@@ -369,9 +367,6 @@ abstract class ByteCode extends ANY implements ClassFileConstants
    *
    * @param bc a bytecode operation that expects an unsigned integer index
    *
-   * @param offset the signed integer
-   *
-   * @return new byte[] { bc, hi-offset, ho-offset }
    */
   void code(ClassFile.ByteCodeWriter bw, byte bc, Label from, Label to)
   {
@@ -398,7 +393,7 @@ abstract class ByteCode extends ANY implements ClassFileConstants
          default           -> false;
          });
 
-    // NYI: Support for goto_w
+    // NYI: UNDER_DEVELOPMENT: Support for goto_w
     int offset = bw.offset(from, to);
     bw.write(bc);
     bw.write((byte) (offset >> 8));
@@ -466,24 +461,6 @@ abstract class ByteCode extends ANY implements ClassFileConstants
    */
   public abstract void code(ClassFile.ByteCodeWriter bw, ClassFile cf);
 
-
-  /**
-   * NYI: determine the max stack use of the bytecodes.
-   */
-  public int max_stack()
-  {
-    // NYI: ByteCode.max_stack/max_locals not implemented yet, just using 10
-    return 20;
-  }
-
-  /**
-   * NYI: determine the max local index used by the bytecodes.
-   */
-  public int max_locals()
-  {
-    // NYI: ByteCode.max_stack/max_locals not implemented yet, just using 10
-    return 10;
-  }
 
 }
 

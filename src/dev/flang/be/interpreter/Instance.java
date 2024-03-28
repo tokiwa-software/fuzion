@@ -48,12 +48,6 @@ public class Instance extends ValueWithClazz
   static final int UNINITIALIZED_INT = -555555555;
 
 
-  /**
-   * Handy preallocated global instances to be used during execution:
-   */
-  public static final Instance universe = new Instance(Clazzes.universe.get());
-
-
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -76,8 +70,6 @@ public class Instance extends ValueWithClazz
    * Constructor
    *
    * @param clazz
-   *
-   * @param outer
    */
   public Instance(Clazz clazz)
   {
@@ -482,20 +474,14 @@ public class Instance extends ValueWithClazz
    */
   public String toString()
   {
-    return "instance[" + _clazz + "]" + this.hashCode();
-  }
-
-
-  /**
-   * dump
-   */
-  public void dump()
-  {
-    System.out.println(toString());
-    for (int i=0; i<nonrefs.length; i++)
-      {
-        System.out.println(" field["+i+"] ==\t int:"+nonrefs[i]+"\tref: "+refs[i]);
-      }
+    var result = "instance[" + _clazz + "]" + this.hashCode() +
+      (_clazz == Clazzes.i32.getIfCreated() ? " (" + i32Value() + ")" :
+       _clazz == Clazzes.u32.getIfCreated() ? " (" + u32Value() + ")" :
+       _clazz == Clazzes.u8.getIfCreated() ? " (" + u8Value() + ")" :
+       _clazz == Clazzes.i64.getIfCreated() ? " (" + i64Value() + ")" :
+       _clazz == Clazzes.u64.getIfCreated() ? " (" + u64Value() + ")" :
+       _clazz == Clazzes.bool.getIfCreated() ? " (" + boolValue() + ")" : "");
+    return result;
   }
 
 }

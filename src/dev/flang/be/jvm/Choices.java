@@ -28,9 +28,11 @@ package dev.flang.be.jvm;
 
 import dev.flang.fuir.FUIR;
 
+import dev.flang.be.jvm.classfile.ClassFile;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 import dev.flang.be.jvm.classfile.Expr;
 import dev.flang.be.jvm.classfile.Label;
+import dev.flang.be.jvm.classfile.VerificationType;
 
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
@@ -239,8 +241,8 @@ public class Choices extends ANY implements ClassFileConstants
       case boollike           -> PrimitiveType.type_boolean;
       case intlike            -> PrimitiveType.type_int;
       case nullable           -> singleRefTypeInNullable(cl);
-      case refsAndUnits       -> new ClassType(_names.javaInterface(cl)); // NYI: caching!
-      case general            -> new ClassType(_names.javaClass(cl)); // NYI: caching!
+      case refsAndUnits       -> new ClassType(_names.javaInterface(cl)); // NYI: OPTIMIZATION: caching!
+      case general            -> new ClassType(_names.javaClass(cl)); // NYI: OPTIMIZATION: caching!
       };
   }
 
@@ -287,7 +289,7 @@ public class Choices extends ANY implements ClassFileConstants
                           var bc_tag = Expr.iconst(tagNum)
                             .andThen(Expr.IRETURN);
                           var code_tag = hcf.codeAttribute(gtn + "in interface for "+_fuir.clazzAsString(cl),
-                                                           bc_tag, new List<>(), new List<>());
+                                                           bc_tag, new List<>(), new List<>(), ClassFile.StackMapTable.empty(hcf, new List<>(VerificationType.UninitializedThis), bc_tag));
                           hcf.method(ACC_PUBLIC, gtn, "()I", new List<>(code_tag));
                         }
                     }
@@ -327,8 +329,10 @@ public class Choices extends ANY implements ClassFileConstants
                                        Names.TAG_NAME,
                                        PrimitiveType.type_int))
                 .andThen(Expr.RETURN);
+              var initLocals = Types.addToLocals(new List<>(), ut);
+              initLocals.add(VerificationType.Integer);
               var code_init = cf.codeAttribute("<init> in class for " + _fuir.clazzAsString(cl),
-                                               bc_init, new List<>(), new List<>());
+                                               bc_init, new List<>(), new List<>(), ClassFile.StackMapTable.empty(cf, initLocals, bc_init));
               cf.method(ACC_PUBLIC, "<init>", "(I)V", new List<>(code_init));
 
               var bc_tag = Expr.aload(0, ut)
@@ -337,7 +341,7 @@ public class Choices extends ANY implements ClassFileConstants
                                        PrimitiveType.type_int))
                 .andThen(Expr.IRETURN);
               var code_tag = cf.codeAttribute(gtn + "in class for " + _fuir.clazzAsString(cl),
-                                              bc_tag, new List<>(), new List<>());
+                                              bc_tag, new List<>(), new List<>(), ClassFile.StackMapTable.empty(cf, Types.addToLocals(new List<>(), ut), bc_tag));
               cf.method(ACC_PUBLIC, gtn, "()I", new List<>(code_tag));
 
               cf.addToClInit(bc_clinit);
@@ -440,6 +444,7 @@ public class Choices extends ANY implements ClassFileConstants
    */
   public Expr match(JVM jvm, AbstractInterpreter<Expr, Expr> ai, int cl, boolean pre, int c, int i, Expr sub)
   {
+    var cf = _types.classFile(cl);
     var subjClazz = _fuir.matchStaticSubject(cl, c, i);
     Expr code;
 
@@ -502,7 +507,7 @@ public class Choices extends ANY implements ClassFileConstants
           var lEnd = new Label();
           for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
             {
-              // NYI: This currently uses a cascade of if..else if.., should better uses tableswitch.
+              // NYI: OPTIMIZATION: This currently uses a cascade of if..else if.., should better uses tableswitch.
               var field = _fuir.matchCaseField(cl, c, i, mc);
               var tags = _fuir.matchCaseTags(cl, c, i, mc);
               for (var tagNum : tags)
@@ -541,10 +546,13 @@ public class Choices extends ANY implements ClassFileConstants
                   if (_fuir.clazzIsRef(tc))
                     {
                       if (field != -1 && jvm.fieldExists(field))
-                        {                                                       //          sub
-                          pos = Expr.aload(jvm.current_index(cl), _types.javaType(cl)) //  sub, cur
-                            .andThen(Expr.SWAP)                                 //          cur, sub
-                            .andThen(jvm.putfield(field));                      //          -
+                        {                                                                      // sub
+                          pos =
+                            (cl == _fuir.clazzUniverse()
+                              ? jvm.LOAD_UNIVERSE
+                              : Expr.aload(jvm.current_index(cl), _types.resultType(cl)))      // sub, cur
+                            .andThen(Expr.SWAP)                                                // cur, sub
+                            .andThen(jvm.putfield(field));                                     // -
                         }
                       else
                         {                                                       //          sub
@@ -574,12 +582,13 @@ public class Choices extends ANY implements ClassFileConstants
             .andThen(Expr.invokeInterface(_types.interfaceFile(subjClazz)._name,
                                           _names.getTag(subjClazz),
                                           "()I",
-                                          PrimitiveType.type_int));
+                                          PrimitiveType.type_int,
+                                          ai._processor.pos().line()));
 
           var lEnd = new Label();
           for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
             {
-              // NYI: This currently uses a cascade of if..else if.., should better uses tableswitch.
+              // NYI: OPTIMIZATION: This currently uses a cascade of if..else if.., should better uses tableswitch.
               var field = _fuir.matchCaseField(cl, c, i, mc);
               var tags = _fuir.matchCaseTags(cl, c, i, mc);
               for (var tagNum : tags)
@@ -593,8 +602,9 @@ public class Choices extends ANY implements ClassFileConstants
                           var rt = _types.resultType(_fuir.clazzResultClazz(field));
                           pos =                                                 // stack is sub, tag
                             Expr.POP                                            //          sub
-                            .andThen(Expr.aload(jvm.current_index(cl),          //          sub, cur
-                                                _types.javaType(cl)))
+                            .andThen(cl == _fuir.clazzUniverse()
+                              ? jvm.LOAD_UNIVERSE
+                              : Expr.aload(jvm.current_index(cl), _types.resultType(cl))) // sub, cur
                             .andThen(Expr.SWAP)                                 //          cur, sub
                             .andThen(Expr.checkcast(rt))                        //          cur, val
                             .andThen(jvm.putfield(field));                      //          -
@@ -630,7 +640,7 @@ public class Choices extends ANY implements ClassFileConstants
           var lEnd = new Label();
           for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
             {
-              // NYI: This currently uses a cascade of if..else if.., should better uses tableswitch.
+              // NYI: OPTIMIZATION: This currently uses a cascade of if..else if.., should better uses tableswitch.
               var field = _fuir.matchCaseField(cl, c, i, mc);
               var tags = _fuir.matchCaseTags(cl, c, i, mc);
               for (var tagNum : tags)
@@ -645,8 +655,9 @@ public class Choices extends ANY implements ClassFileConstants
                           var rt = _types.resultType(rc);
                           pos =                                                     // stack is sub, tag
                             Expr.POP                                                //          sub
-                            .andThen(Expr.aload(jvm.current_index(cl),              //          sub, cur
-                                                _types.javaType(cl)))
+                            .andThen(cl == _fuir.clazzUniverse()
+                              ? jvm.LOAD_UNIVERSE
+                              : Expr.aload(jvm.current_index(cl), _types.resultType(cl))) // sub, cur
                             .andThen(Expr.SWAP)                                     //          cur, sub
                             .andThen(Expr.getfield(_names.javaClass(subjClazz),     //          cur, val
                                                    generalValueFieldName(subjClazz, tagNum),
@@ -763,10 +774,10 @@ public class Choices extends ANY implements ClassFileConstants
         }
       case general:
         {
-          var create = jvm.new0(newcl)
-            .andThen(Expr.DUP)
-            .andThen(Expr.iconst(tagNum))
-            .andThen(Expr.putfield(_names.javaClass(newcl),
+          var create = jvm.new0(newcl)                                            // choice
+            .andThen(Expr.DUP)                                                    // choice, choice
+            .andThen(Expr.iconst(tagNum))                                         // choice, choice, int
+            .andThen(Expr.putfield(_names.javaClass(newcl),                       // choice
                                    Names.TAG_NAME,
                                    ClassFileConstants.PrimitiveType.type_int));
           var fn = generalValueFieldName(newcl, tagNum);
@@ -777,10 +788,10 @@ public class Choices extends ANY implements ClassFileConstants
             }
           else
             {
-              res = create
-                .andThen(Expr.DUP)
-                .andThen(value)
-                .andThen(Expr.putfield(_names.javaClass(newcl),
+              res = create                                               // choice
+                .andThen(Expr.DUP)                                       // choice, choice
+                .andThen(value)                                          // choice, choice, value
+                .andThen(Expr.putfield(_names.javaClass(newcl),          // choice
                                        fn,
                                        ft));
             }

@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Visi;
+import dev.flang.fe.LibraryFeature;
 import dev.flang.tools.FuzionHome;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourcePosition;
@@ -70,14 +71,14 @@ public class Util
   {
     if (af.isUniverse())
       {
-        return "";
+        return Html.processComment("universe", universeComment());
       }
     var line = af.pos().line() - 1;
     var commentLines = new ArrayList<String>();
     while (true)
       {
         var pos = new SourcePosition(af.pos()._sourceFile, af.pos()._sourceFile.lineStartPos(line));
-        var strline = Util.lineAt(pos);
+        var strline = Util.lineAt((LibraryFeature) af, pos);
         if (line < 1 || !strline.matches("^\\s*#.*"))
           {
             break;
@@ -98,21 +99,38 @@ public class Util
   }
 
 
+  private static String universeComment()
+  {
+    var uri = (new FuzionHome())._fuzionHome.normalize().toAbsolutePath().resolve("lib").resolve("universe.fz").toUri();
+    try
+      {
+        return Files.readAllLines(Path.of(uri), StandardCharsets.UTF_8)
+          .stream()
+          .dropWhile(l -> !l.startsWith("# universe is the mother"))
+          .map(l -> l.replaceAll("^#", "").trim())
+          .collect(Collectors.joining(System.lineSeparator()))
+          .trim();
+      }
+    catch (IOException e)
+      {
+        return "";
+      }
+  }
+
+
   /**
    * get line as string of source position pos
    */
-  private static String lineAt(SourcePosition pos)
+  private static String lineAt(LibraryFeature lf, SourcePosition pos)
   {
     var uri = Path.of(pos._sourceFile._fileName.toString()
-      .replace(FuzionConstants.SYMBOLIC_FUZION_HOME.toString(), (new FuzionHome())._fuzionHome.normalize().toAbsolutePath().toString())).toUri();
+      .replace(FuzionConstants.SYMBOLIC_FUZION_MODULE.toString(), lf._libModule.srcPath())).toUri();
     try
       {
         return Files.readAllLines(Path.of(uri), StandardCharsets.UTF_8).get(pos.line() - 1);
       }
     catch (IOException e)
       {
-        System.err.println("Fatal error getting line for: " + pos);
-        System.exit(1);
         return "";
       }
   }
@@ -133,10 +151,15 @@ public class Util
   static enum Kind {
     Constructor,
     Type,
+    TypeFeature,
     Other;
 
     static Kind classify(AbstractFeature af) {
-      return af.definesType()
+      return
+        af.outer() != null &&
+        af.outer().isTypeFeature()
+        ? Kind.TypeFeature
+        : af.definesType()
           ? !af.isChoice() && af.visibility().featureVisibility() == Visi.PUB
               ? Kind.Constructor
               : Kind.Type

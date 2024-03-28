@@ -36,16 +36,10 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class DotType extends Expr
+public class DotType extends ExprWithPos
 {
 
   /*----------------------------  variables  ----------------------------*/
-
-
-  /**
-   * The sourcecode position of this expression, used for error messages.
-   */
-  private final SourcePosition _pos;
 
 
   /**
@@ -62,26 +56,16 @@ public class DotType extends Expr
    *
    * @param pos the sourcecode position, used for error messages.
    *
-   * @param n
+   * @param lhs the left hand side of the dot-type.
    */
   public DotType(SourcePosition pos, AbstractType lhs)
   {
-    _pos = pos;
+    super(pos);
     _lhs = lhs;
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * The sourcecode position of this expression, used for error messages.
-   */
-  public SourcePosition pos()
-  {
-    return _pos;
-  }
-
 
 
   /**
@@ -102,6 +86,23 @@ public class DotType extends Expr
 
 
   /**
+   * typeForInferencing returns the type of this expression or null if the type is
+   * still unknown, i.e., before or during type resolution.  This is redefined
+   * by sub-classes of Expr to provide type information.
+   *
+   * @return this Expr's type or null if not known.
+   */
+  AbstractType typeForInferencing()
+  {
+    // could be _lhs.typeType(); but
+    // we can't be sure if feature of type
+    // is already resolved, which would lead
+    // to precondition failures.
+    return null;
+  }
+
+
+  /**
    * determine the static type of all expressions and declared features in this feature
    *
    * @param res the resolution instance.
@@ -110,9 +111,9 @@ public class DotType extends Expr
    */
   public Call resolveTypes(Resolution res, AbstractFeature outer)
   {
-    var tc = new Call(_pos, new Universe(), "Types");
+    var tc = new Call(pos(), new Universe(), "Types");
     tc.resolveTypes(res, outer);
-    return new Call(_pos,
+    return new Call(pos(),
                     tc,
                     "get",
                     new List<>(new Actual(_lhs))).resolveTypes(res, outer);

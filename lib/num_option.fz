@@ -62,10 +62,17 @@ is
   #
   public val T
     pre
-      safety: num_option.this??
+      safety: (num_option.this??)
   =>
     num_option.this ? v T => v
                     | nil => fuzion.std.panic "num_option.val called on nil"
+
+
+  # unwrap value or get default
+  #
+  public get (default Lazy T) =>
+    num_option.this ? v T => v
+                    | nil => default
 
 
   # monadic operator
@@ -124,6 +131,16 @@ is
 
   public abs num_option T =>
     num_option.this >>= v -> if v.sign ≥ 0 v else -?v
+
+
+  # converts num_option into a list of either a single element in case
+  # num_option.this.exists or `nil`otherwise
+  #
+  public as_list list T
+  =>
+    num_option.this ? v T => v : nil
+                    | nil => nil
+
 
   public redef as_string String =>
     num_option.this ? v T => v.as_string

@@ -31,7 +31,7 @@
 public atomic (
   T type,
   v T
-  )
+  ) : auto_unwrap T atomic_access
 is
 
   # Does the current system permit racy accesses to the value of type T
@@ -138,3 +138,8 @@ is
   # returns true, if successful
   #
   compare_and_set0(expected, new_value T) bool => intrinsic_constructor
+
+
+  # unwrap this atomic value
+  #
+  public unwrap ! atomic_access => read

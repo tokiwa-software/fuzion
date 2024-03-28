@@ -31,6 +31,7 @@ import dev.flang.fuir.FUIR;
 import dev.flang.be.jvm.classfile.ClassFile;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 import dev.flang.be.jvm.classfile.Expr;
+import dev.flang.be.jvm.classfile.VerificationType;
 
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionOptions;
@@ -119,7 +120,7 @@ public class Types extends ANY implements ClassFileConstants
     if (hasClassFile(cl))
       {
         var cn = _names.javaClass(cl);
-        var cf = new ClassFile(_opt, cn, Names.ANY_CLASS);
+        var cf = new ClassFile(_opt, cn, Names.ANY_CLASS, _fuir.clazzSrcFile(cl));
         _classFiles.put(cl, cf);
 
         if (cl == _fuir.clazzUniverse())
@@ -131,6 +132,7 @@ public class Types extends ANY implements ClassFileConstants
           }
 
         var sig = "()V";
+        var initLocals = new List<VerificationType>(VerificationType.UninitializedThis);
         var cod = Expr.UNIT;
         if (_fuir.clazzIsBoxed(cl))
           {
@@ -147,6 +149,7 @@ public class Types extends ANY implements ClassFileConstants
                          vt.descriptor(),
                          new List<>());
                 sig = "(" + vt.argDescriptor() + ")V";
+                initLocals = addToLocals(initLocals, vt);
                 cod = rt.load(0)
                   .andThen(vt.load(1))
                   .andThen(Expr.putfield(cn, Names.BOXED_VALUE_FIELD_NAME, vt));
@@ -156,17 +159,17 @@ public class Types extends ANY implements ClassFileConstants
               .andThen(vt.load(0))
               .andThen(Expr.invokeSpecial(cn, "<init>", sig))
               .andThen(rt.return0());
-            var code_box = cf.codeAttribute(Names.BOX_METHOD_NAME + " in " + _fuir.clazzAsString(cl), bc_box, new List<>(), new List<>());
+            var code_box = cf.codeAttribute(Names.BOX_METHOD_NAME + " in " + _fuir.clazzAsString(cl), bc_box, new List<>(), new List<>(), ClassFile.StackMapTable.empty(cf, addToLocals(new List<>(), vt), bc_box));
             cf.method(ACC_PUBLIC | ACC_STATIC,
                       Names.BOX_METHOD_NAME,
                       boxSignature(cl),
                       new List<>(code_box));
           }
-        var bc_init = Expr.aload(0, javaType(cl))
+        var bc_init = Expr.aload(0, javaType(cl), VerificationType.UninitializedThis)
           .andThen(Expr.invokeSpecial(cf._super,"<init>","()V"))
           .andThen(cod)
           .andThen(Expr.RETURN);
-        var code_init = cf.codeAttribute("<init> in " + _fuir.clazzAsString(cl), bc_init, new List<>(), new List<>());
+        var code_init = cf.codeAttribute("<init> in " + _fuir.clazzAsString(cl), bc_init, new List<>(), new List<>(), ClassFile.StackMapTable.empty(cf, initLocals, bc_init));
 
         cf.method(ACC_PUBLIC, "<init>", sig, new List<>(code_init));
 
@@ -176,10 +179,10 @@ public class Types extends ANY implements ClassFileConstants
             var maincl = _fuir.mainClazzId();
             var bc_run =
               Expr.UNIT
-              .andThen(_fuir.hasPrecondition(maincl) ? invokeStatic(maincl, true) : Expr.UNIT)
-              .andThen(invokeStatic(maincl, false)).drop()
+              .andThen(_fuir.hasPrecondition(maincl) ? invokeStatic(maincl, true, -1) : Expr.UNIT)
+              .andThen(invokeStatic(maincl, false, -1)).drop()
               .andThen(Expr.RETURN);
-            var code_run = cf.codeAttribute(Names.MAIN_RUN + " in " + _fuir.clazzAsString(cl), bc_run, new List<>(), new List<>());
+            var code_run = cf.codeAttribute(Names.MAIN_RUN + " in " + _fuir.clazzAsString(cl), bc_run, new List<>(), new List<>(), ClassFile.StackMapTable.empty(cf, new List<>(VerificationType.UninitializedThis), bc_run));
             cf.method(ACC_PUBLIC, Names.MAIN_RUN, "()V", new List<>(code_run));
 
             var bc_main =
@@ -190,7 +193,7 @@ public class Types extends ANY implements ClassFileConstants
               .andThen(Expr.invokeSpecial(cn, "<init>", "()V"))
               .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS, Names.RUNTIME_RUN, "(" + new ClassType(Names.MAIN_INTERFACE).argDescriptor() + ")V", PrimitiveType.type_void))
               .andThen(Expr.RETURN);
-            var code_main = cf.codeAttribute("main in " + _fuir.clazzAsString(cl), bc_main, new List<>(), new List<>());
+            var code_main = cf.codeAttribute("main in " + _fuir.clazzAsString(cl), bc_main, new List<>(), new List<>(), ClassFile.StackMapTable.empty(cf, new List<>(JAVA_LANG_STRING.array().vti()), bc_main));
             cf.method(ACC_STATIC | ACC_PUBLIC, "main", "([Ljava/lang/String;)V", new List<>(code_main));
           }
       }
@@ -216,7 +219,7 @@ public class Types extends ANY implements ClassFileConstants
   }
 
 
-  Expr invokeStatic(int cc, boolean preCalled)
+  Expr invokeStatic(int cc, boolean preCalled, int line)
   {
     var callingIntrinsic = !preCalled && _fuir.clazzKind(cc) == FUIR.FeatureKind.Intrinsic;
     var cls   = callingIntrinsic ? Names.RUNTIME_INTRINSICS_CLASS
@@ -227,9 +230,10 @@ public class Types extends ANY implements ClassFileConstants
     return Expr.invokeStatic(cls,
                              fname,
                              descriptor(cc, preCalled),
-                             resultType(cc, preCalled));
+                             resultType(cc, preCalled),
+                             line);
   }
-  Expr invokeStaticCombindedPreAndCall(int cc)
+  Expr invokeStaticCombindedPreAndCall(int cc, int line)
   {
     var cls   = _names.javaClass(cc);
     var fname = _fuir.clazzContract(cc, FUIR.ContractKind.Pre, 0) >= 0 ? Names.COMBINED_NAME
@@ -237,7 +241,8 @@ public class Types extends ANY implements ClassFileConstants
     return Expr.invokeStatic(cls,
                              fname,
                              descriptor(cc, false),
-                             resultType(cc, false));
+                             resultType(cc, false),
+                             line);
   }
 
 
@@ -253,8 +258,8 @@ public class Types extends ANY implements ClassFileConstants
             case voidlike, unitlike, boollike, intlike, nullable -> false;
             case refsAndUnits, general                           -> true;
             };
-      case Routine   -> true; // NYI clazzNeedsCode(cl);
-      case Intrinsic -> true; // NYI || _fuir.hasPrecondition(cl);
+      case Routine   -> true; // NYI: UNDER DEVELOPMENT: clazzNeedsCode(cl);
+      case Intrinsic -> true; // NYI: UNDER DEVELOPMENT: _fuir.hasPrecondition(cl);
       default        -> false;
       };
   }
@@ -319,7 +324,7 @@ public class Types extends ANY implements ClassFileConstants
    */
   private void makeInterface(int cl)
   {
-    var i = new ClassFile(_opt, _names.javaInterface(cl), "java/lang/Object", true);
+    var i = new ClassFile(_opt, _names.javaInterface(cl), "java/lang/Object", true, _fuir.clazzSrcFile(cl));
     _interfaceFiles.put(cl, i);
     if (!_fuir.clazzIsChoice(cl))
       {
@@ -401,7 +406,7 @@ public class Types extends ANY implements ClassFileConstants
    */
   boolean isScalar(int cl)
   {
-    var id = _fuir.getSpecialId(cl);
+    var id = _fuir.getSpecialClazz(cl);
     return switch (id)
       {
       case
@@ -422,7 +427,7 @@ public class Types extends ANY implements ClassFileConstants
    */
   JavaType javaType(int cl)
   {
-    var id = _fuir.getSpecialId(cl);
+    var id = _fuir.getSpecialClazz(cl);
     return switch (id)
       {
       case c_bool    -> PrimitiveType.type_boolean;
@@ -447,9 +452,9 @@ public class Types extends ANY implements ClassFileConstants
             {
               yield PrimitiveType.type_void;
             }
-          else if (_fuir.clazzIsBoxed(cl))  // NYI: for a boxed choice, _fuir.clazzIsChoice(cl) is true, but should better be false
+          else if (_fuir.clazzIsBoxed(cl))  // NYI: CLEANUP: for a boxed choice, _fuir.clazzIsChoice(cl) is true, but should better be false
             {
-              yield new ClassType(_names.javaClass(cl)); // NYI: caching!
+              yield new ClassType(_names.javaClass(cl)); // NYI: OPTIMIZATION: caching!
             }
           else if (_fuir.clazzIsChoice(cl))
             {
@@ -457,7 +462,7 @@ public class Types extends ANY implements ClassFileConstants
             }
           else
             {
-              yield new ClassType(_names.javaClass(cl)); // NYI: caching!
+              yield new ClassType(_names.javaClass(cl)); // NYI: OPTIMIZATION: caching!
             }
         }
       };
@@ -556,26 +561,40 @@ public class Types extends ANY implements ClassFileConstants
    */
   String descriptor(int cl, boolean pre)
   {
-    return descriptor(true /* NYI: this seems the wrong way around */, cl, pre);
+    return descriptor(true /* NYI: CLEANUP: this seems the wrong way around */, cl, pre);
   }
 
   String dynDescriptor(int cl, boolean pre)
   {
-    return descriptor(false /* NYI: this seems the wrong way around */, cl, pre);
+    return descriptor(false /* NYI: CLEANUP: this seems the wrong way around */, cl, pre);
   }
 
-  int dynDescriptorArgsCount(int cl, boolean pre)
+
+  /**
+   * Add `jt` to the list of locals.
+   * If `jt` is javaVoid-like it is not added.
+   * longs and doubles are added twice.
+   *
+   * @param locals
+   * @param jt
+   * @return
+   */
+  public static List<VerificationType> addToLocals(List<VerificationType> locals, JavaType jt)
   {
-    int res = 1;
-    for (var ai = 0; ai < _fuir.clazzArgCount(cl); ai++)
+    if (jt != PrimitiveType.type_void)
       {
-        var at = _fuir.clazzArgClazz(cl, ai);
-        var ft = resultType(at);
-        res += ft.stackSlots();
+        var vti = jt.vti();
+        if (vti.needsTwoSlots())
+          {
+            locals.addAll(vti, vti);
+          }
+        else
+          {
+            locals.add(vti);
+          }
       }
-    return res;
+    return locals;
   }
-
 
 }
 

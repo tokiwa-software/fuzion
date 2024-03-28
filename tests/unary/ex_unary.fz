@@ -24,11 +24,11 @@
 ex_unary is
 
   g ref : Unary i32 i32 is
-    redef call (x i32) i32 is 2*x
+    redef call (x i32) i32 => 2*x
 
 
   f ref : Unary i32 i32 is
-    redef call (y i32) i32 is y+2
+    redef call (y i32) i32 => y+2
 
   x := (f ∘ g).call 3
   say x
@@ -64,7 +64,7 @@ ex_unary is
     b ? TRUE => ["T", "r", "u", "e"].as_list
       | FALSE => ["F", "a", "l", "s", "e" ].as_list)
 
-  join_list list String -> String := l -> String.type.join(l, "")
+  join_list list String -> String := l -> String.join(l, "")
 
   bool_to_string := join_list ∘ bool_to_letters
 

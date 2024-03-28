@@ -26,14 +26,14 @@ issue2249 =>
   refs =>
     a =>
       ref : String
-        utf8 Sequence u8 is []
+        utf8 Sequence u8 => []
 
     say (type_of a)
     say a.dynamic_type
 
     b :=
       ref : String
-        utf8 Sequence u8 is []
+        utf8 Sequence u8 => []
 
     say (type_of b)
     say b.dynamic_type

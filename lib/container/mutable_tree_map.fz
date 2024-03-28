@@ -37,7 +37,7 @@ is
   #
   # if this map is entry, this is nil
   #
-  private root := LM.env.new (option Entry) nil
+  root := LM.env.new (option Entry) nil
 
 
   # returns the size of the map, i.e. the number of elements it contains
@@ -57,14 +57,14 @@ is
   public items Sequence (tuple KEY VAL) =>
     match root.get
       e Entry => e.items
-      nil => (list (tuple KEY VAL)).type.empty
+      nil => (list (tuple KEY VAL)).empty
 
 
   # returns a string representation of the map
   #
   public redef as_string String =>
     "\{" +
-      (String.type.join (fold (list String).type.empty ((i, x) -> list "{x.key}={x.val}" i)) ", ") +
+      (String.join (fold (list String).empty ((i, x) -> list "{x.key}={x.val}" i)) ", ") +
      "}"
 
 
@@ -106,7 +106,7 @@ is
     # in this step, the helper feature to actually add the mapping
     # is called first. then the AVL rebalancing is done
     #
-    private put_recursively(node option Entry) tuple (option Entry) (option VAL) =>
+    put_recursively(node option Entry) tuple (option Entry) (option VAL) =>
       (new_node, old_val) := insert_or_modify_entries node
       (rebalance new_node, old_val)
 
@@ -119,7 +119,7 @@ is
     # in this step, the actual addition of the mapping to the binary
     # tree is done, but this might violate the AVL invariants.
     #
-    private insert_or_modify_entries(node option Entry) tuple (option Entry) (option VAL) =>
+    insert_or_modify_entries(node option Entry) tuple (option Entry) (option VAL) =>
       match node
         nil =>
           new_node := Entry k v
@@ -159,7 +159,7 @@ is
     # in this step, the helper feature to actually remove the
     # mapping is called first. then the AVL rebalancing is done
     #
-    private remove_recursively(k KEY, node option Entry) tuple (option Entry) (option VAL) =>
+    remove_recursively(k KEY, node option Entry) tuple (option Entry) (option VAL) =>
       (new_node, old_val) := remove_or_modify_entries k node
       (rebalance new_node, old_val)
 
@@ -184,7 +184,7 @@ is
     # in this step, the actual removal of the mapping from the binary
     # tree is done, but this might violate the AVL invariants.
     #
-    private remove_or_modify_entries(k KEY, node option Entry) tuple (option Entry) (option VAL) =>
+    remove_or_modify_entries(k KEY, node option Entry) tuple (option Entry) (option VAL) =>
       match node
         nil => (option Entry nil, option VAL nil)
         e Entry =>
@@ -224,11 +224,11 @@ is
   # this determines the balance factor of the given node and applies
   # the appropriate rotations
   #
-  private rebalance(node option Entry) option Entry =>
+  rebalance(node option Entry) option Entry =>
     # returns the height of the subtree whose root is the given
     # node, or -1 if an empty subtree is given
     #
-    private height(node option Entry) i32 =>
+    height(node option Entry) i32 =>
       match node
         nil => -1
         e Entry => e.height.get
@@ -237,7 +237,7 @@ is
     # returns the (AVL) balance factor of the given node, or
     # 0 if a nil node is given
     #
-    private balance_factor(node option Entry) i32 =>
+    balance_factor(node option Entry) i32 =>
       match node
         nil => 0
         e Entry => (height e.right.get) - (height e.left.get)
@@ -246,7 +246,7 @@ is
     # recalculates and updates the heights of the subtrees in the
     # subtree whose root is the given node
     #
-    private fix_height(node option Entry) =>
+    fix_height(node option Entry) =>
       match node
         nil =>
         e Entry =>
@@ -258,7 +258,7 @@ is
 
     # rotate right at the given node
     #
-    private rotate_right(node option Entry) option Entry =>
+    rotate_right(node option Entry) option Entry =>
       # because this feature is only called when the tree is out of balance,
       # i.e. the left subtree has more nodes than the right one, we can safely
       # assume here that node and node.left are not nil.
@@ -275,7 +275,7 @@ is
 
     # rotate left at the given node
     #
-    private rotate_left(node option Entry) option Entry =>
+    rotate_left(node option Entry) option Entry =>
       # because this feature is only called when the tree is out of balance,
       # i.e. the right subtree has more nodes than the left one, we can safely
       # assume here that node and node.right are not nil.
@@ -323,7 +323,7 @@ is
   # f. the latter takes the last result of the computation and the node
   # currently visited and combines this information in some way.
   #
-  private fold(B type, init B, f (B, Entry) -> B) B =>
+  fold(B type, init B, f (B, Entry) -> B) B =>
     fold0(init B, node option Entry) B =>
       node ? nil => init
            | n Entry => fold0 (f (fold0 init n.left.get) n) n.right.get

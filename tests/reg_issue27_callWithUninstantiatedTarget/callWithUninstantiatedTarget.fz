@@ -34,7 +34,7 @@ callWithUninstantiatedTarget is
 
   # x is declared to return y, but never returns
   #
-  x y is
+  x y =>
     say "x takes the back door out"
     exit 0
 

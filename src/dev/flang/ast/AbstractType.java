@@ -81,17 +81,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * setOuter
-   *
-   * @param t
-   */
-  void setOuter(UnresolvedType t)
-  {
-    throw new Error("AbstractType.setOuter() should only be called on dev.flang.ast.Type");
-  }
-
-
-  /**
    * resolve this type. This is only needed for ast.Type, for fe.LibraryType
    * this is a NOP.
    *
@@ -209,7 +198,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * Check if this or any of its generic arguments is Types.t_UNDEFINED.
    *
-   * @param exceptFirstGenericArg if true, the first generic argument may be
+   * @param exceptFirst if true, the first generic argument may be
    * Types.t_UNDEFINED.  This is used in a lambda 'x -> f x' of type
    * 'Function<R,X>' when 'R' is unknown and to be inferred.
    */
@@ -305,7 +294,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var actual_type = actual.remove_type_parameter_used_for_this_type_in_type_feature();
     var result =
       target_type.compareTo(actual_type          ) == 0 ||
-      actual_type.compareTo(Types.resolved.t_void) == 0 ||
+      actual_type.isVoid() ||
       target_type == Types.t_ERROR                      ||
       actual_type == Types.t_ERROR;
     if (!result && !target_type.isGenericArgument() && isRef() && actual_type.isRef())
@@ -385,7 +374,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var result = containsError()                   ||
       actual.containsError()                       ||
       this  .compareTo(actual               ) == 0 ||
-      actual.compareTo(Types.resolved.t_void) == 0;
+      actual.isVoid();
     if (!result && !isGenericArgument())
       {
         if (actual.isGenericArgument())
@@ -971,8 +960,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   private boolean disjoint(AbstractType other)
   {
-    return this.compareTo(Types.resolved.t_void) == 0
-        || other.compareTo(Types.resolved.t_void) == 0
+    return this.isVoid()
+        || other.isVoid()
         || !this.isDirectlyAssignableFrom(other)
         && !other.isDirectlyAssignableFrom(this);
   }
@@ -1003,7 +992,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * isFunType checks if this is a function type used for lambda expressions,
+   * isFunctionType checks if this is a function type used for lambda expressions,
    * e.g., "(i32, i32) -> String".
    *
    * @return true iff this is a function type based on `Function` or `Unary`.
@@ -1013,7 +1002,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     return
       this != Types.t_ERROR &&
       !isGenericArgument() &&
-      (featureOfType() == Types.resolved.f_function ||
+      (featureOfType() == Types.resolved.f_Function ||
        featureOfType() == Types.resolved.f_Unary);
   }
 
@@ -1028,7 +1017,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     return
       !isGenericArgument() &&
-      (featureOfType() == Types.resolved.f_function ||
+      (featureOfType() == Types.resolved.f_Function ||
        featureOfType().inherits().stream().anyMatch(c -> c.calledFeature().selfType().isAnyFunctionType()));
   }
 
@@ -1058,7 +1047,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (isAnyFunctionType());
 
     var f = featureOfType();
-    if (f == Types.resolved.f_function)
+    if (f == Types.resolved.f_Function)
       {
         return generics().size() - 1;
       }
@@ -1087,7 +1076,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     for (var p : f.inherits())
       {
         var pf = p.calledFeature();
-        var result = pf.equals(Types.resolved.f_function)
+        var result = pf.equals(Types.resolved.f_Function)
           ? p.actualTypeParameters().size() - 1
           : arityFromParents(pf);
         if (result >= 0)
@@ -1128,8 +1117,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       this == Types.t_ERROR                      ? Types.t_ERROR     :
       that == Types.t_ERROR                      ? Types.t_ERROR     :
       that == null                               ? Types.t_ERROR     :
-      this.compareTo(Types.resolved.t_void) == 0 ? that              :
-      that.compareTo(Types.resolved.t_void) == 0 ? this              :
+      this.isVoid()                              ? that              :
+      that.isVoid()                              ? this              :
       this.isAssignableFrom(that)                ? this :
       that.isAssignableFrom(this)                ? that :
       this.isAssignableFrom(that.asRef())        ? this :
@@ -1137,12 +1126,21 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
     if (POSTCONDITIONS) ensure
       (result == Types.t_ERROR     ||
-       this.compareTo(Types.resolved.t_void) == 0 && result == that ||
-       that.compareTo(Types.resolved.t_void) == 0 && result == this ||
+       this.isVoid() && result == that ||
+       that.isVoid() && result == this ||
        (result.isAssignableFrom(this) || result.isAssignableFrom(this.asRef()) &&
         result.isAssignableFrom(that) || result.isAssignableFrom(that.asRef())    ));
 
     return result;
+  }
+
+
+  /**
+   * Is this the type denoting `void`?
+   */
+  public boolean isVoid()
+  {
+    return compareTo(Types.resolved.t_void) == 0;
   }
 
 
@@ -1154,7 +1152,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (PRECONDITIONS) require
       (checkedForGeneric(),
        other != null,
-       other.checkedForGeneric());
+       other.checkedForGeneric(),
+       !(this instanceof UnresolvedType),
+       !(other instanceof UnresolvedType));
 
     int result = compareToIgnoreOuter(other);
     if (result == 0 && !isGenericArgument())
@@ -1216,8 +1216,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
         if (result == 0)
           {
-            // for artificial built in types
-            result = name().compareTo(other.name());
+            result = artificialBuiltInID() - other.artificialBuiltInID();
           }
         if (result == 0 && isRef() ^ other.isRef())
           {
@@ -1236,9 +1235,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
-  public String name()
+  /**
+   * Id to differentiate artificial types.
+   */
+  public int artificialBuiltInID()
   {
-    return isGenericArgument() ? genericArgument().name() : featureOfType().featureName().baseName();
+    return 0;
   }
 
 
@@ -1379,8 +1381,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * For a given type t, get the type of t's type feature. E.g., for t==string,
    * this will return the type of string.type.
    *
-   * @param t the type whose type's type we want to get
-   *
    * @return the type of t's type.
    */
   public AbstractType typeType()
@@ -1399,8 +1399,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param res Resolution instance used to resolve the type feature that might
    * need to be created.
-   *
-   * @param t the type whose type's type we want to get
    *
    * @return the type of t's type.
    */
@@ -1707,7 +1705,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (isGenericArgument())
       {
         var ga = genericArgument();
-        result = ga.feature().qualifiedName() + "." + ga.name() + (this.isRef() ? " (boxed)" : "");
+        result = ga.toLongString() + (this.isRef() ? " (boxed)" : "");
       }
     else
       {
@@ -1787,10 +1785,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * Check that given actuals match formal type parameter constraints of given
    * feature.
    *
-   * @param pos position where to report an error in case actuals do not match
-   * f's type parameter's constraints.
-   *
-   * @param f the feature that has formal type parameters
+   * @param called the feature that has formal type parameters
    *
    * @param actuals the actual type parameters
    *

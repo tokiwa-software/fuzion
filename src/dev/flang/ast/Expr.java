@@ -103,7 +103,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   /**
    * Source code position range of this Expression. null if not known.
    */
-  private SourceRange _range;
+  protected SourceRange _range;
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -199,6 +199,77 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   AbstractType typeForInferencing()
   {
     return type();
+  }
+
+
+  /**
+   * typeForUnion returns the type of this expression or null if the type is
+   * still unknown, i.e., before or during type resolution.  This is redefined
+   * by sub-classes of Expr to provide type information.
+   *
+   * @return this Expr's type or null if not known.
+   */
+  AbstractType typeForUnion()
+  {
+    return typeForInferencing();
+  }
+
+
+  /**
+   * Get the result type of a union of all results of exprs.
+   *
+   * @param exprs the expression to unionize
+   *
+   * @return the union of exprs result type, defaulting to Types.resolved.t_void if
+   * no expression can be inferred yet.
+   */
+  public static AbstractType union(List<Expr> exprs)
+  {
+    AbstractType t = Types.resolved.t_void;
+
+    // First pass:
+    // Union of the types of the expressions
+    // that are sure about their types.
+    for (var e : exprs)
+      {
+        var et = e.typeForUnion();
+        if (et != null)
+          {
+            t = t.union(et);
+          }
+      }
+
+    // Propagate the found type to all expression
+    for (var e : exprs)
+      {
+        e.propagateExpectedType(t);
+      }
+
+    // Second pass:
+    // Union of the types of the expressions
+    AbstractType result = Types.resolved.t_void;
+    for (var e : exprs)
+      {
+        var et = e.typeForInferencing();
+        if (et != null)
+          {
+            result = result.union(et);
+          }
+      }
+
+    return result;
+  }
+
+
+  /**
+   * During type inference: Inform this expression that it is
+   * expected to result in the given type.
+   *
+   * @param t the expected type.
+   */
+  protected void propagateExpectedType(AbstractType t)
+  {
+
   }
 
 
@@ -448,7 +519,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    *
    * @param outer the feature that contains this expression
    *
-   * @param t the expected type.
+   * @param expectedType the expected type.
    */
   Expr propagateExpectedTypeForPartial(Resolution res, AbstractFeature outer, AbstractType expectedType)
   {
@@ -457,34 +528,24 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
 
 
   /**
-   * Check if this expression can also be parsed as a type and return that type. Otherwise,
-   * report an error (AstErrors.expectedActualTypeInCall).
+   * Return this expression as an (unresolved) type.
+   * This is null by default except for calls/this-expressions
+   * that can be used as the left hand side in a dot-type-call.
    *
-   * @param outer the outer feature containing this expression
-   *
-   * @param tp the type parameter this expression is assigned to, null if used
-   * in 'xyz.type' expression.
-   *
-   * @return the Type corresponding to this, Type.t_ERROR in case of an error.
+   * The type is returned as produced by the parser and needs
+   * to be resolved with the context it is used in to be of
+   * any use.
    */
-  AbstractType asType(Resolution res, AbstractFeature outer, AbstractFeature tp)
+  public AbstractType asUnresolvedType()
   {
-    if (tp == null)
-      {
-        AstErrors.expectedTypeExpression(pos(), this);
-      }
-    else
-      {
-        AstErrors.expectedActualTypeInCall(pos(), tp);
-      }
-    return Types.t_ERROR;
+    return null;
   }
 
 
   protected Expr addFieldForResult(Resolution res, AbstractFeature outer, AbstractType t)
   {
     var result = this;
-    if (t.compareTo(Types.resolved.t_void) != 0)
+    if (!t.isVoid())
       {
         var pos = pos();
         Feature r = new Feature(res,
@@ -495,8 +556,8 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
                                 outer);
         r.scheduleForResolution(res);
         res.resolveTypes();
-        result = new Block(pos, new List<>(assignToField(res, outer, r),
-                                                    new Call(pos, new Current(pos, outer), r).resolveTypes(res, outer)));
+        result = new Block(new List<>(assignToField(res, outer, r),
+                                      new Call(pos, new Current(pos, outer), r).resolveTypes(res, outer)));
       }
     return result;
   }
@@ -537,7 +598,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
     var result = this;
     var t = type();
 
-    if (t.compareTo(Types.resolved.t_void) != 0)
+    if (!t.isVoid())
       {
         if (needsBoxing(frmlT))
           {
@@ -554,7 +615,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
 
     if (POSTCONDITIONS) ensure
       (Errors.count() > 0
-        || t.compareTo(Types.resolved.t_void) == 0
+        || t.isVoid()
         || frmlT.isGenericArgument()
         || frmlT.isThisType()
         || !result.needsBoxing(frmlT));
@@ -672,6 +733,36 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
           !frmlT.isAssignableFrom(t) &&
           frmlT.isAssignableFrom(t.asRef());
       }
+  }
+
+
+  /**
+   * Do automatic unwrapping of features inheriting `unwrap`
+   * if the expected type fits the unwrapped type.
+   *
+   * @param res the resolution instance
+   *
+   * @param outer the context where the unwrapping may take place
+   *
+   * @param expectedType the expected type
+   *
+   * @return the unwrapped expression
+   */
+  public Expr unwrap(Resolution res, AbstractFeature outer, AbstractType expectedType)
+  {
+    var t = type();
+    return  !expectedType.isAssignableFrom(t)
+      && expectedType.compareTo(Types.resolved.t_Any) != 0
+      && !t.isGenericArgument()
+      && t.featureOfType()
+          .inherits()
+          .stream()
+          .anyMatch(c ->
+            c.calledFeature().equals(Types.resolved.f_auto_unwrap)
+            && !c.actualTypeParameters().isEmpty()
+            && expectedType.isAssignableFrom(c.actualTypeParameters().get(0).applyTypePars(t)))
+      ? new ParsedCall(this, new ParsedName(pos(), "unwrap")).resolveTypes(res, outer)
+      : this;
   }
 
 

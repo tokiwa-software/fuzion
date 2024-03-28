@@ -70,7 +70,7 @@ is
   # result will never be equal to f32 1
   #
   public next_f32 =>
-    max := u64 1 << f32.type.significand_bits.as_u64
+    max := u64 1 << f32.significand_bits.as_u64
     (next_u64 max).as_f64.as_f32 / max.as_f64.as_f32
 
 
@@ -78,7 +78,7 @@ is
   # result will never be equal to f64 1
   #
   public next_f64 =>
-    max := u64 1 << f64.type.significand_bits.as_u64
+    max := u64 1 << f64.significand_bits.as_u64
     (next_u64 max).as_f64 / max.as_f64
 
 
@@ -98,22 +98,22 @@ is
   # install default instance of random
   #
   type.install_default is
-    if !effect.type.is_installed random
-      _ := random simple_random_handler.type.default effect_mode.default
+    if !effect.is_installed random
+      _ := random simple_random_handler.default effect_mode.default
 
 
 # random with no argument returns random.env, i.e., the currently installed
 # source of randomness.
 #
 public random =>
-  random.type.install_default
+  random.install_default
   random.env
 
 public simple_random(seed u64, rr ()->unit) =>
   _ := random (simple_random_handler seed seed) (effect_mode.inst rr)
 
 public time_seeded_random(rr ()->unit) =>
-  _ := random simple_random_handler.type.time_seeded (effect_mode.inst rr)
+  _ := random simple_random_handler.time_seeded (effect_mode.inst rr)
 
 
 # Random_Handler -- abstract source of random numbers

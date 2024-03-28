@@ -34,6 +34,8 @@ import java.util.TreeSet;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.FuzionOptions;
+import dev.flang.util.List;
 
 /*---------------------------------------------------------------------*/
 
@@ -125,9 +127,9 @@ public class Types extends ANY
     public final AbstractType t_f32 ;
     public final AbstractType t_f64 ;
     public final AbstractType t_bool;
-    public final AbstractType t_any;
+    public final AbstractType t_Any;
     private final AbstractType t_fuzion;
-    public final AbstractType t_string;
+    public final AbstractType t_String;
     public final AbstractType t_Const_String;
     public final AbstractType t_unit;
 
@@ -151,15 +153,17 @@ public class Types extends ANY
     public final AbstractFeature f_bool_IMPLIES;
     public final AbstractFeature f_debug;
     public final AbstractFeature f_debug_level;
-    public final AbstractFeature f_function;
-    public final AbstractFeature f_function_call;
+    public final AbstractFeature f_Function;
+    public final AbstractFeature f_Function_call;
     public final AbstractFeature f_safety;
     public final AbstractFeature f_array;
     public final AbstractFeature f_array_internal_array;
+    public final AbstractFeature f_error;
+    public final AbstractFeature f_error_msg;
     public final AbstractFeature f_fuzion;
     public final AbstractFeature f_fuzion_java;
-    public final AbstractFeature f_fuzion_java_object;
-    public final AbstractFeature f_fuzion_java_object_ref;
+    public final AbstractFeature f_fuzion_Java_Object;
+    public final AbstractFeature f_fuzion_Java_Object_Ref;
     public final AbstractFeature f_fuzion_sys;
     public final AbstractFeature f_fuzion_sys_array;
     public final AbstractFeature f_fuzion_sys_array_length;
@@ -172,6 +176,8 @@ public class Types extends ANY
     public final AbstractFeature f_Types_get;
     public final AbstractFeature f_Lazy;
     public final AbstractFeature f_Unary;
+    public final AbstractFeature f_auto_unwrap;
+    public final Set<AbstractType> numericTypes;
     public static interface CreateType
     {
       AbstractType type(String name);
@@ -191,9 +197,9 @@ public class Types extends ANY
       t_f64           = ct.type("f64");
       t_bool          = ct.type("bool");
       t_fuzion        = ct.type("fuzion");
-      t_string        = ct.type(FuzionConstants.STRING_NAME);
+      t_String        = ct.type(FuzionConstants.STRING_NAME);
       t_Const_String  = ct.type("Const_String");
-      t_any           = ct.type(FuzionConstants.ANY_NAME);
+      t_Any           = ct.type(FuzionConstants.ANY_NAME);
       t_unit          = ct.type(FuzionConstants.UNIT_NAME);
       t_void          = ct.type("void");
       f_id            = universe.get(mod, "id", 2);
@@ -208,15 +214,17 @@ public class Types extends ANY
       f_bool_IMPLIES  = f_bool.get(mod, FuzionConstants.INFIX_OPERATOR_PREFIX + ":");
       f_debug         = universe.get(mod, "debug", 0);
       f_debug_level   = universe.get(mod, "debug_level");
-      f_function      = universe.get(mod, FUNCTION_NAME);
-      f_function_call = f_function.get(mod, "call");
+      f_Function      = universe.get(mod, FUNCTION_NAME);
+      f_Function_call = f_Function.get(mod, "call");
       f_safety        = universe.get(mod, "safety");
       f_array         = universe.get(mod, "array", 5);
       f_array_internal_array = f_array.get(mod, "internal_array");
+      f_error         = universe.get(mod, "error", 1);
+      f_error_msg     = f_error.get(mod, "msg");
       f_fuzion                     = universe.get(mod, "fuzion");
       f_fuzion_java                = f_fuzion.get(mod, "java");
-      f_fuzion_java_object         = f_fuzion_java.get(mod, "Java_Object");
-      f_fuzion_java_object_ref     = f_fuzion_java_object.get(mod, "Java_Ref");
+      f_fuzion_Java_Object         = f_fuzion_java.get(mod, "Java_Object");
+      f_fuzion_Java_Object_Ref     = f_fuzion_Java_Object.get(mod, "Java_Ref");
       f_fuzion_sys                 = f_fuzion.get(mod, "sys");
       f_fuzion_sys_array           = f_fuzion_sys.get(mod, "internal_array");
       f_fuzion_sys_array_data      = f_fuzion_sys_array.get(mod, "data");
@@ -229,6 +237,18 @@ public class Types extends ANY
       f_Types_get                  = f_Types.get(mod, "get");
       f_Lazy                       = universe.get(mod, LAZY_NAME);
       f_Unary                      = universe.get(mod, UNARY_NAME);
+      f_auto_unwrap                = universe.get(mod, "auto_unwrap");
+      numericTypes = new TreeSet<AbstractType>(new List<>(
+        t_i8,
+        t_i16,
+        t_i32,
+        t_i64,
+        t_u8,
+        t_u16,
+        t_u32,
+        t_u64,
+        t_f32,
+        t_f64));
       resolved = this;
       ((ArtificialBuiltInType) t_ADDRESS  ).resolveArtificialType(universe.get(mod, FuzionConstants.ANY_NAME));
       ((ArtificialBuiltInType) t_UNDEFINED).resolveArtificialType(universe);
@@ -251,9 +271,9 @@ public class Types extends ANY
         t_f64        ,
         t_bool       ,
         t_fuzion     ,
-        t_string     ,
+        t_String     ,
         t_Const_String,
-        t_any        ,
+        t_Any        ,
         t_unit       ,
         t_void
       };
@@ -265,6 +285,14 @@ public class Types extends ANY
     }
   }
 
+
+  /**
+   * The current options as a static field.
+   */
+  // NYI remove this when we have a better way of accessing current Resolution.
+  static FuzionOptions _options;
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -274,13 +302,14 @@ public class Types extends ANY
   /**
    * Reset static fields such as the intern()ed types.
    */
-  public static void reset()
+  public static void reset(FuzionOptions options)
   {
     resolved = null;
     t_ADDRESS   = new ArtificialBuiltInType(ADDRESS_NAME  );
     t_UNDEFINED = new ArtificialBuiltInType(UNDEFINED_NAME);
     t_ERROR     = new ArtificialBuiltInType(ERROR_NAME    );
     f_ERROR     = new Feature(true);
+    _options    = options;
   }
 
 }

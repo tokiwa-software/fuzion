@@ -27,23 +27,26 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.jvm.classfile;
 
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
-
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
-import java.nio.charset.StandardCharsets;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import java.util.TreeMap;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
+import dev.flang.util.Pair;
 
 
 /**
@@ -115,7 +118,7 @@ public class ClassFile extends ANY implements ClassFileConstants
     abstract void write(byte[] v);
 
 
-    void writeUTF(String s) // NYI: better use toUTF at the caller and cache the result there
+    void writeUTF(String s) // NYI: OPTIMIZATION: better use toUTF at the caller and cache the result there
     {
       write(toUTF(s));
     }
@@ -497,6 +500,9 @@ public class ClassFile extends ANY implements ClassFileConstants
       var result = _cpool._entries.get(this);
       if (result == null)
         {
+          if (CHECKS) check
+            (!_finished);
+
           _cpool._entries.put(this, this);
           _cpool._entriesList.add(this);
           _index = _cpool._totalSlots;
@@ -530,7 +536,7 @@ public class ClassFile extends ANY implements ClassFileConstants
 
     /**
      * Compare two entries with the same tag. This is used by compareTo after it
-     * was ensured that the tags of this and other are equa.
+     * was ensured that the tags of this and other are equal.
      */
     abstract int compareTo2(CPEntry other);
 
@@ -563,7 +569,7 @@ public class ClassFile extends ANY implements ClassFileConstants
   /**
    * Utf8-String cpool entry
    *
-   * NYI: These are modified utf8 strings and not standard utf8 strings. We need
+   * NYI: UNDER DEVELOPMENT: These are modified utf8 strings and not standard utf8 strings. We need
    * to check the corner cases (0 bytes) where these to differ!
    */
   class CPUtf8 extends CPEntry
@@ -584,7 +590,6 @@ public class ClassFile extends ANY implements ClassFileConstants
         (str != null);
 
       _str = str;
-      add();
     }
 
     CPoolTag tag() { return CPoolTag.tag_utf8; }
@@ -615,7 +620,6 @@ public class ClassFile extends ANY implements ClassFileConstants
     CPClass(CPUtf8 utf8)
     {
       _utf8 = utf8;
-      add();
     }
 
     CPClass(String name)
@@ -659,7 +663,6 @@ public class ClassFile extends ANY implements ClassFileConstants
     CPString(CPUtf8 utf8)
     {
       _utf8 = utf8;
-      add();
     }
 
     CPString(String name)
@@ -699,7 +702,6 @@ public class ClassFile extends ANY implements ClassFileConstants
     {
       _name = name;
       _type = type;
-      add();
     }
 
     CPNameAndType(String name, String type)
@@ -743,7 +745,6 @@ public class ClassFile extends ANY implements ClassFileConstants
     {
       _class = c;
       _nat = nat;
-      add();
     }
 
     CPoolTag tag() { return CPoolTag.tag_field_ref; }
@@ -781,7 +782,6 @@ public class ClassFile extends ANY implements ClassFileConstants
     {
       _class = c;
       _nat = nat;
-      add();
     }
 
     CPoolTag tag() { return CPoolTag.tag_method_ref; }
@@ -820,7 +820,6 @@ public class ClassFile extends ANY implements ClassFileConstants
     {
       _class = c;
       _nat = nat;
-      add();
     }
 
     CPoolTag tag() { return CPoolTag.tag_interface_method_ref; }
@@ -856,7 +855,6 @@ public class ClassFile extends ANY implements ClassFileConstants
     CPInteger(int value)
     {
       _value = value;
-      add();
     }
 
     CPoolTag tag() { return CPoolTag.tag_integer; }
@@ -888,7 +886,6 @@ public class ClassFile extends ANY implements ClassFileConstants
     CPLong(long value)
     {
       _value = value;
-      add();
     }
 
     CPoolTag tag() { return CPoolTag.tag_long; }
@@ -922,7 +919,6 @@ public class ClassFile extends ANY implements ClassFileConstants
     {
       _value = value;
       _bits  = bits;
-      add();
     }
     CPFloat(float value) { this(value, Float.floatToIntBits(value)); }
     CPFloat(int   value) { this(Float.intBitsToFloat(value), value);  }
@@ -959,7 +955,6 @@ public class ClassFile extends ANY implements ClassFileConstants
     {
       _value = value;
       _bits  = bits;
-      add();
     }
     CPDouble(double value) { this(value, Double.doubleToLongBits(value)); }
     CPDouble(long   value) { this(Double.longBitsToDouble(value), value); }
@@ -1088,7 +1083,7 @@ public class ClassFile extends ANY implements ClassFileConstants
   /**
    * Abstract attribute
    */
-  abstract class Attribute
+  public abstract class Attribute
   {
     final CPUtf8 _name;
 
@@ -1110,38 +1105,288 @@ public class ClassFile extends ANY implements ClassFileConstants
 
 
   /**
+   * StackMapTable-Attribute
+   *
+   * See section #4.7.4 in https://docs.oracle.com/javase/specs/jvms/se21/jvms21.pdf
+   */
+  public class StackMapTable extends Attribute
+  {
+
+    /**
+     * The stackmap frames of this table.
+     */
+    Set<StackMapFullFrame> stackMapFrames;
+
+    /**
+     * The state of the stack at bytecode position. Saved during buildStackMapTable.
+     * Note: long and double occupy only one stack slot.
+     */
+    final Map<Integer, Stack<VerificationType>> stacks = new TreeMap<>();
+
+
+    /**
+     * The state of locals at bytecode positions that are found during buildStackMapTable.
+     * Note: long and double always occupy two list entries.
+     */
+    final List<Pair<Integer, List<VerificationType>>> locals = new List<>();
+
+
+    /**
+     * The code for which to build this table.
+     */
+    private Expr _code;
+
+    private int _max_stack = 0;
+
+    private int _max_locals = 0;
+
+
+    /**
+     * @param initialLocals the initial state of the locals when
+     * this method starts executing.
+     *
+     * @param code the code for which to build this stackmap table.
+     *
+     */
+    StackMapTable(List<VerificationType> initialLocals, Expr code)
+    {
+      super("StackMapTable");
+      this._code = code;
+      stacks.put(0, new Stack<VerificationType>() {
+        @Override
+        public VerificationType push(VerificationType item)
+        {
+          var result = item == null ? null: super.push(item);
+          _max_stack = Math.max(_max_stack, this.stream().mapToInt(vti -> vti.needsTwoSlots() ? 2 : 1).sum());
+          return result;
+        }
+      });
+      _max_locals = initialLocals.size();
+      locals.add(new Pair<>(0, initialLocals));
+    }
+
+    /**
+     * The data of this attribute:
+     * - u2 number_of_entries;
+     * - stack_map_frame entries[number_of_entries];
+     */
+    @Override
+    byte[] data()
+    {
+      var o = new Kaku();
+      o.writeU2(stackMapFrames.size());
+      // NYI optimization potential
+      // currently we write full frames only
+      // we could use the other frame types as well:
+      // - same_frame
+      // - same_locals_1_stack_item_frame
+      // - same_locals_1_stack_item_frame_extended
+      // - chop_frame
+      // - same_frame_extended
+      // - append_frame
+      for (var s : stackMapFrames)
+        {
+          s.write(o);
+        }
+      return o._b.toByteArray();
+    }
+
+
+    /*
+     * evaluate the code and build this stackmap table.
+     */
+    private void build()
+    {
+      if (stackMapFrames == null)
+        {
+          stackMapFrames = new TreeSet<>();
+          stackMapFrames.add(new StackMapFullFrame(StackMapTable.this, 0));
+          _code.buildStackMapTable(
+            this,
+            (Stack)stacks.get(0).clone(),
+            locals.get(0).v1().clone()
+          );
+        }
+    }
+
+
+    /**
+     * @return A union all locals states that have been found for `byteCodePos`.
+     */
+    public List<VerificationType> unifiedLocals(int byteCodePos)
+    {
+      var result = locals
+        .stream()
+        .filter(x -> x.v0() == byteCodePos)
+        .map(x -> x.v1())
+        .reduce(null, (a, b) -> a == null ? b : VerificationType.union(a, b));
+
+      if (POSTCONDITIONS) ensure
+        (result != null);
+
+      return result;
+    }
+
+
+    /*
+     * The offset of this frame in the set of stackmap frames.
+     */
+    public int offset(StackMapFullFrame s)
+    {
+      return s.byteCodePos == 0
+        ? 0
+        : s.byteCodePos
+          - stackMapFrames
+            .stream()
+            .filter(x -> x.byteCodePos < s.byteCodePos)
+            .max(Comparator.comparingInt(x -> x.byteCodePos))
+            .get()
+            .byteCodePos
+          - 1;
+    }
+
+    /**
+     * @return the class file this table is part of
+     */
+    public ClassFile classFile()
+    {
+      return ClassFile.this;
+    }
+
+
+    /**
+     * static initializer for an empty table.
+     */
+    public static StackMapTable empty(ClassFile cf, List<VerificationType> argsLocals, Expr code)
+    {
+      return cf.new StackMapTable(argsLocals, code)
+        {
+          @Override
+          byte[] data()
+          {
+            var o = new Kaku();
+            o.writeU2(0);
+            return o._b.toByteArray();
+          }
+        };
+    }
+
+
+    /**
+     * @param cf the class file the stackmap table belongs to
+     * @param argsLocals the initial locals
+     * @param code the code for which to build this table.
+     * @return
+     */
+    public static StackMapTable fromCode(ClassFile cf, List<VerificationType> argsLocals, Expr code)
+    {
+      return cf.new StackMapTable(argsLocals, code);
+    }
+
+    public void updateMaxLocal(int n)
+    {
+      _max_locals = Math.max(_max_locals, n);
+    }
+
+    public int max_stack()
+    {
+      return _max_stack;
+    }
+
+    public int max_locals()
+    {
+      return _max_locals;
+    }
+
+  }
+
+
+  /**
+   * line number attribute table as described in §4.7.12 of JVM-Spec
+   */
+  class LineNumberTableAttribute extends Attribute
+  {
+    /**
+     * list of pairs of:
+     *   1) valid index into the code array (start_pc)
+     *   2) line number
+     */
+    private List<Pair<Integer, Integer>> _lnt = null;
+    private final Expr _code;
+
+    LineNumberTableAttribute(Expr code)
+    {
+      super("LineNumberTable");
+      this._code = code;
+    }
+
+    @Override
+    byte[] data()
+    {
+      // u2 line_number_table_length;
+      // { u2 start_pc;
+      //   u2 line_number;
+      // }
+      var o = new Kaku();
+      o.writeU2(_lnt.size());
+      for (var lnte : _lnt)
+        {
+          o.writeU2(lnte.v0());
+          o.writeU2(lnte.v1());
+        }
+      return o._b.toByteArray();
+    }
+
+    public void build()
+    {
+      if (_lnt == null)
+        {
+          _lnt = new List<>();
+          _code.buildLineNumberTable(ClassFile.this, _lnt, new int[]{0});
+        }
+    }
+  }
+
+
+  /**
    * code attribute for methods
    */
   class CodeAttribute extends Attribute
   {
     final String _where;
-    final int _num_locals;
     final ByteCode _code;
     final List<ExceptionTableEntry> _exception_table;
     final List<Attribute> _attributes;
     int _size;
+    private final StackMapTable _smt;
+    private final LineNumberTableAttribute _lnta;
     CodeAttribute(String where,
-                  int num_locals,
                   ByteCode code,
                   List<ExceptionTableEntry> exception_table,
-                  List<Attribute> attributes)
+                  List<Attribute> attributes,
+                  StackMapTable smt,
+                  LineNumberTableAttribute lnta)
     {
       super("Code");
       this._where = where;
-      this._num_locals = num_locals;
       this._code = code;
       this._exception_table = exception_table;
       this._attributes = attributes;
+      this._smt = smt;
+      this._lnta = lnta;
       var be = new ByteCodeSizeEstimate(_where   ); _code.code(be, ClassFile.this);
       var bf = new ByteCodeFixLabels   (_where   ); _code.code(bf, ClassFile.this);
       _size = bf.size();
+      _attributes.addAll(_smt, _lnta);
     }
 
     byte[] data()
     {
+      _smt.build();
+      _lnta.build();
       var o = new Kaku();
-      o.writeU2(_code.max_stack());
-      o.writeU2(true /* NYI, remove */ ? _num_locals :_code.max_locals());
+      o.writeU2(_smt.max_stack());
+      o.writeU2(_smt.max_locals());
       o.writeU4(_size);
       var ba = new ByteCodeWrite(_where, o);
       _code.code(ba, ClassFile.this);
@@ -1179,6 +1424,33 @@ public class ClassFile extends ANY implements ClassFileConstants
       this._handler_pc = handler_pc;
       this._catch_pc   = catch_pc;
     }
+  }
+
+  /*
+   * https://docs.oracle.com/javase/specs/jvms/se21/jvms21.pdf
+   * §4.7.10 "The SourceFile attribute is an optional fixed-length attribute in the attributes
+   * table of a ClassFile structure (§4.1).
+   * There may be at most one SourceFile attribute in the attributes table of a
+   * ClassFile structure."
+   */
+  public class SourceFileAttribute extends Attribute {
+
+    private CPEntry _srcFile;
+
+    SourceFileAttribute(String srcFile)
+    {
+      super("SourceFile");
+      this._srcFile = cpUtf8(srcFile);
+    }
+
+    @Override
+    byte[] data()
+    {
+      var o = new Kaku();
+      o.writeU2(_srcFile.index());
+      return o._b.toByteArray();
+    }
+
   }
 
 
@@ -1227,9 +1499,9 @@ public class ClassFile extends ANY implements ClassFileConstants
    *
    * @param name the class name
    */
-  public ClassFile(FuzionOptions opt, String name, String supr)
+  public ClassFile(FuzionOptions opt, String name, String supr, String srcFile)
   {
-    this(opt, name, supr, false);
+    this(opt, name, supr, false, srcFile);
   }
 
 
@@ -1238,7 +1510,7 @@ public class ClassFile extends ANY implements ClassFileConstants
    *
    * @param name the class name
    */
-  public ClassFile(FuzionOptions opt, String name, String supr, boolean interfce)
+  public ClassFile(FuzionOptions opt, String name, String supr, boolean interfce, String srcFile)
   {
     _opt = opt;
     _name = name;
@@ -1248,6 +1520,7 @@ public class ClassFile extends ANY implements ClassFileConstants
     _flags = ACC_PUBLIC | (interfce ? (ACC_INTERFACE|ACC_ABSTRACT) : ACC_SUPER);
     _this = cpClass(name);
     _super = cpClass(supr == null ? "java/lang/Object" : supr);
+    _attributes.add(new SourceFileAttribute(srcFile));
   }
 
 
@@ -1260,7 +1533,7 @@ public class ClassFile extends ANY implements ClassFileConstants
    */
   public Path classFile()
   {
-    // NYI: no support for packages yet!
+    // NYI: UNDER DEVELOPMENT: no support for packages yet!
     return Path.of(_name + ".class");
   }
 
@@ -1271,7 +1544,7 @@ public class ClassFile extends ANY implements ClassFileConstants
   public void write(Path dir) throws IOException
   {
     var fp = dir.resolve(classFile());
-    _opt.verbosePrintln(" + " + fp);
+    _opt.verbosePrintln(2, " + " + fp);
     Files.write(fp, bytes());
   }
 
@@ -1383,32 +1656,17 @@ public class ClassFile extends ANY implements ClassFileConstants
    * create a code attribute to be used in this class file.
    */
   public CodeAttribute codeAttribute(String where,
-                                     ByteCode code,
+                                     Expr code,
                                      List<ExceptionTableEntry> exception_table,
-                                     List<Attribute> attributes)
+                                     List<Attribute> attributes,
+                                     StackMapTable smt)
   {
     return new CodeAttribute(where,
-                             code.max_locals(),
                              code,
                              exception_table,
-                             attributes);
-  }
-
-
-  /**
-   * create a code attribute to be used in this class file.
-   */
-  public CodeAttribute codeAttribute(String where,
-                                     int num_locals,
-                                     ByteCode code,
-                                     List<ExceptionTableEntry> exception_table,
-                                     List<Attribute> attributes)
-  {
-    return new CodeAttribute(where,
-                             num_locals,
-                             code,
-                             exception_table,
-                             attributes);
+                             attributes,
+                             smt,
+                             new LineNumberTableAttribute(code));
   }
 
 
@@ -1460,16 +1718,30 @@ public class ClassFile extends ANY implements ClassFileConstants
     if (PRECONDITIONS) require
       (!_finished);
 
-    _finished = true;
     var bc_clinit = _clinitCode;
     if (bc_clinit != null)
       {
         bc_clinit = bc_clinit
           .andThen(Expr.RETURN);
         var code_clinit = codeAttribute("<clinit> in class for " + _name,
-                                        bc_clinit, new List<>(), new List<>());
+                                        bc_clinit, new List<>(), new List<>(), StackMapTable.empty(this, new List<>(), bc_clinit));
         method(ACC_PUBLIC | ACC_STATIC, "<clinit>", "()V", new List<>(code_clinit));
       }
+
+    // Doing this for the sake of side effects.
+    // This will sometimes add things to constant pool
+    // for description of stackmapframe.
+    // NYI we could only evaluate for stackmapframes...
+    // instead of simulating writing of whole bytecode
+    for (var m : _methods)
+      {
+        for (var a : m._attributes)
+        {
+          a.data();
+        }
+      }
+
+    _finished = true;
   }
 
 
@@ -1480,6 +1752,7 @@ public class ClassFile extends ANY implements ClassFileConstants
   {
     return "ClassFile instance for class '" + _name + "' to be saved to '" + classFile() + "'";
   }
+
 
 }
 

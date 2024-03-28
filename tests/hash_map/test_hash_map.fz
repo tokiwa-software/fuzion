@@ -24,7 +24,7 @@
 test_hash_map is
 
   # init an empty hash map
-  a := (container.hash_map i32 String).type.empty
+  a := (container.hash_map i32 String).empty
   say a
 
   # init a hash map without duplicate keys

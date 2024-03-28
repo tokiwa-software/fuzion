@@ -28,12 +28,12 @@ private:public map_of_total_order (
   K type : property.orderable, V type,
   # the handler this effect uses to create a Map
   public new (array K, array V) -> Map K V,
-  private em effect_mode.val,
+  em effect_mode.val,
   _ unit
   ) : effect em
 is
   type.install_default =>
-    if !effect.type.is_installed (container.map_of_total_order K V)
+    if !effect.is_installed (container.map_of_total_order K V)
       _ := container.map_of_total_order K V (ks,vs -> container.ordered_map ks vs) effect_mode.default unit
 
 
@@ -47,6 +47,6 @@ map_of_total_order(K type : property.orderable, V type, map_init (array K, array
 # get currently installed effect map_of_total_order
 # which allows creating a map from a keys array and a values array
 map_of_total_order(K type : property.orderable, V type) =>
-  (map_of_total_order K V).type.install_default
+  (map_of_total_order K V).install_default
   (map_of_total_order K V)
     .env

@@ -71,12 +71,6 @@ public class This extends ExprWithPos
 
   /**
    * Constructor
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param qual
-   *
-   * @param a
    */
   public This(List<ParsedName> qual)
   {
@@ -143,7 +137,7 @@ public class This extends ExprWithPos
    *
    * @param f the outer feature whose instance we want to access.
    *
-   * @param the type resolved expression to access f.this.
+   * @return the type resolved expression to access f.this.
    */
   public static Expr thiz(Resolution res, SourcePosition pos, AbstractFeature cur, AbstractFeature f)
   {
@@ -258,7 +252,7 @@ public class This extends ExprWithPos
   /**
    * Check if this is an implicit access to the universe, i.e., for a feature
    * call f.g.h where f is found in the universe, this call will be converted to
-   * "universe.this.f.g.h", this returns true for "universe.this".
+   * "universe.f.g.h", this returns true for "universe".
    *
    * NYI: CLEANUP: This is used only in Feature.isChoice, which should be
    * improved not to need this.
@@ -315,7 +309,7 @@ public class This extends ExprWithPos
         var q = p - qual.size() + 1;              // q           is 2, the index of 'c' in outer
         if (q >= 0)
           {
-            // we found qual at positions p..q in outer, no check that all these
+            // we found qual at positions p..q in outer, now check that all these
             // positions contain the correct name:
             var o2 = outer;
             var d2 = 0;

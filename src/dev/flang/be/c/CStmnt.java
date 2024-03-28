@@ -267,7 +267,7 @@ abstract class CStmnt extends ANY
    *
    * @param argTypes the argument types
    *
-   * @param argsIds the argument identifiers
+   * @param argIds the argument identifiers
    *
    * @param body the body of the function or null for forward declaration.
    *
@@ -542,6 +542,46 @@ abstract class CStmnt extends ANY
     };
   }
 
+
+  /**
+   * A for-loop that loops `count` times.
+   *
+   * example code:
+   *
+   * for (int ..loopVar.. = 0; ..loopVar.. < ..countExpr..; ..loopVar..++)
+   * {
+   *   ..body..;
+   * }
+   * @param loopVar
+   * @param count
+   * @param body
+   * @return
+   */
+  public static CStmnt forLoop(CLocal loopVar, CExpr count, CExpr body)
+  {
+    return new CStmnt() {
+      @Override
+      void code(CString sb)
+      {
+        sb.append("for (int ");
+        loopVar.code(sb);
+        sb.append(" = 0; ");
+        loopVar.code(sb);
+        sb.append(" < ");
+        count.code(sb);
+        sb.append("; ");
+        loopVar.code(sb);
+        sb.append("++)\n{\n");
+        body.code(sb.indent());
+        sb.append(";\n}\n");
+      }
+
+      boolean needsSemi()
+      {
+        return false;
+      }
+    };
+  }
 
 
   /**

@@ -29,11 +29,7 @@ module:public int (public s num.sign, public n uint) : has_interval
 is
 
   # normalize the sign => no minus zero
-  ns := if n = uint.type.zero then num.plus else s
-
-  fixed max int =>
-    panic "invalid, there is no max int."
-
+  ns := if n = uint.zero then num.plus else s
 
   public thiz => int ns n
 
@@ -41,10 +37,10 @@ is
     "int"
 
   public fixed type.zero int =>
-    int num.plus uint.type.zero
+    int num.plus uint.zero
 
   public fixed type.one int =>
-    int num.plus uint.type.one
+    int num.plus uint.one
 
 
   fixed redef prefix - int =>
@@ -80,7 +76,7 @@ is
 
   # the sign of the result of the
   # multiplication or division of thiz and other
-  private result_sign_mul_div(other int) num.sign =>
+  result_sign_mul_div(other int) num.sign =>
     if ns = other.ns then num.plus else num.minus
 
 
@@ -91,7 +87,7 @@ is
 
   # divide this int by other
   public fixed infix /  (other int) int
-  pre other != int.type.zero
+  pre other != int.zero
   =>
     s num.sign := result_sign_mul_div other
     int s n/other.n
@@ -106,7 +102,7 @@ is
   # exponentation operator:
   # this int to the power of other
   public fixed infix ** (other int) int
-  pre other ≥ int.type.zero
+  pre other ≥ int.zero
   =>
     match s
       num.plus => int num.plus (n ** other.n)
@@ -124,11 +120,11 @@ is
   public fixed infix -! (other int) bool => true
   public fixed infix *! (other int) bool => true
   public fixed infix /! (other int) bool =>
-    other != int.type.zero
+    other != int.zero
   public fixed infix %! (other int) bool => true
 
   public fixed infix **!(other int) bool =>
-    other ≥ int.type.zero  # 0 and 1 ** -other would be okay but we disallow nonetheless
+    other ≥ int.zero  # 0 and 1 ** -other would be okay but we disallow nonetheless
 
   public fixed infix **?(other int) num_option int =>
     match other.ns
@@ -203,8 +199,8 @@ is
   # helper feature to init int via an i64
   type.from_i64(val i64) int =>
     s num.sign := if val < (i64 0) then num.minus else num.plus
-    n u64 := if val = i64.type.min
-               i64.type.max.as_u64 + 1
+    n u64 := if val = i64.min
+               i64.max.as_u64 + 1
              else if val < (i64 0)
                (-val).as_u64
              else val.as_u64
@@ -224,4 +220,4 @@ is
 
 # shorthand to create an int via an i64
 public int (val i64) int =>
-  int.type.from_i64 val
+  int.from_i64 val

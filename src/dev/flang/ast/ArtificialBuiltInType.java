@@ -47,6 +47,18 @@ public class ArtificialBuiltInType extends ResolvedNormalType
   final String _name;
 
 
+  /**
+   * Global unique ids for artificial built in types.
+   */
+  private static int ids = 1;
+
+
+  /**
+   * The unique id of this artificial built in type.
+   */
+  private int _id;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -54,6 +66,7 @@ public class ArtificialBuiltInType extends ResolvedNormalType
   {
     super();
     _name = name;
+    _id = ids++;
   }
 
 
@@ -83,11 +96,12 @@ public class ArtificialBuiltInType extends ResolvedNormalType
 
 
   /**
-   * name is redefined here to avoid accessing _feature to create name.
+   * Id to differentiate artificial types.
    */
-  public String name()
+  @Override
+  public int artificialBuiltInID()
   {
-    return _name;
+    return _id;
   }
 
   /**

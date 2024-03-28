@@ -35,7 +35,8 @@ import java.util.stream.IntStream;
 
 
 /**
- * Map2Int gives an efficient mapping from a comparable instance to int
+ * Map2Int gives an efficient mapping from an (possibly comparable) instance to
+ * int.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -134,8 +135,6 @@ public class Map2Int<T> extends ANY
 
   /**
    * get the index of an element
-   *
-   * @param t an element
    *
    * @return t's index or _base-1 if t was not added.
    */

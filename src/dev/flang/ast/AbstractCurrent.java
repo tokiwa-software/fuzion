@@ -56,7 +56,7 @@ public abstract class AbstractCurrent extends Expr
   public AbstractCurrent(AbstractType t)
   {
     if (PRECONDITIONS) require
-      (t != null);
+      (t != null && !t.isVoid());
 
     this._type = t;
   }

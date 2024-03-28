@@ -30,19 +30,19 @@ issue293 is
   ages := map (Sequence i32) human i32 (x -> x.age)
   say (into i32 human [human 4, human 12, human 30] ages)
 
-  into(TACC, T type, seq Sequence T, xf (Transducer (Sequence TACC) TACC T)) Sequence TACC is
+  into(TACC, T type, seq Sequence T, xf (Transducer (Sequence TACC) TACC T)) Sequence TACC =>
     rf := ref : reducing_fn((Sequence TACC),TACC)
-      call(res Sequence TACC, val TACC) Sequence(TACC) is
+      call(res Sequence TACC, val TACC) Sequence(TACC) =>
         res ++ [val]
     red := xf.call rf
     for
-      res Sequence TACC := (list TACC).type.empty, red.call res el
+      res Sequence TACC := (list TACC).empty, red.call res el
       el in seq do
     else
       res
 
   # a Transducer mappping values from T to U
-  map(TACC, T, U type, mapper T -> U) Transducer TACC U T is
+  map(TACC, T, U type, mapper T -> U) Transducer TACC U T =>
     ref : Transducer TACC U T
       call(red reducing_fn TACC U) =>
         ref : reducing_fn TACC T
@@ -59,4 +59,4 @@ issue293 is
   Transducer(TACC, B, C type) ref : Function(reducing_fn TACC C, reducing_fn TACC B) is
 
     # NYI redef call abstract is currently necessary because of bug in c backend
-    call(rf reducing_fn TACC B) reducing_fn TACC C is abstract
+    call(rf reducing_fn TACC B) reducing_fn TACC C => abstract
