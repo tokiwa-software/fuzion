@@ -186,7 +186,7 @@ public class NumericValue extends Value implements Comparable<NumericValue>
           (_clazz == nv._clazz);
 
         var r =
-          _value == null || nv._value == null ? true :
+          _value == null || nv._value == null ||
           switch (_dfa._fuir.getSpecialClazz(_clazz))
           {
           case c_i8   -> i8 () == nv.i8 ();

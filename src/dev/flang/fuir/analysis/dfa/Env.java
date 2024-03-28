@@ -139,7 +139,7 @@ public class Env extends ANY implements Comparable<Env>
             var insert = j == ol || left && ot[j] > et;
             _types[i] = insert ? et : ot[j];
             j = j + (insert ? 0 : 1);
-            left = insert ? left : false;
+            left = insert && left;
           }
       }
     _outer = outer;
