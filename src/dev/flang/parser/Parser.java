@@ -2003,9 +2003,7 @@ argNamesOpt : argNames
    */
   boolean skipArgNamesOpt()
   {
-    return (current() == Token.t_ident)
-      ? skipArgNames()
-      : true;
+    return !(current() == Token.t_ident) || skipArgNames();
   }
 
 
@@ -3713,9 +3711,9 @@ boundType   : qualThis
     boolean result = skipQualThis();
     if (!result)
       {
-        var hasForbiddenParentheses = allowTypeInParentheses ? false : !fork().skipOneType(isFunctionReturnType,
-                                                                                           false,
-                                                                                           allowTypeThatIsNotExpression);
+        var hasForbiddenParentheses = !allowTypeInParentheses && !fork().skipOneType(isFunctionReturnType,
+                                                                                     false,
+                                                                                     allowTypeThatIsNotExpression);
         var res = skipOneType(isFunctionReturnType,
                               true,
                               allowTypeThatIsNotExpression);
