@@ -148,7 +148,7 @@ public class IR extends ANY
    * For every raw code block index in _codeIds, this gives the index of the
    * first site for the corresponding code block.
    */
-  private final List<Integer> _siteStart = new List<>(0);
+  private final List<Integer> _siteStart;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -157,6 +157,7 @@ public class IR extends ANY
   public IR()
   {
     _codeIds = new Map2Int<>(CODE_BASE);
+    _siteStart = new List<>(0);
   }
 
   /**
@@ -169,6 +170,7 @@ public class IR extends ANY
   protected IR(IR original)
   {
     _codeIds = original._codeIds;
+    _siteStart = original._siteStart;
   }
 
   /*-----------------------  code block handling  -----------------------*/
