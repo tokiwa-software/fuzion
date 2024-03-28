@@ -35,96 +35,33 @@
 # 2) writing to a channel installed by `server.accept` will result in an error.
 # 3) reading from a channel installed by `client ...` will block indefinitely.
 #
-module:public channel(T type, desc outcome i64, auto_close bool, m effect_mode.val) : effect m
+module:public channel(desc i64)
 is
-
-  # get the last error that occurred
-  last_error => desc.bind unit (_ -> unit)
-
-
-  # is this channel still active?
-  is_active => desc.ok
-
-
-  # shorthand to replace the effect installed in env
-  # and return a
-  replace(X type, a X) X =>
-    replace
-    a
-
-
-  # read bytes from channel
-  public read(max_bytes i32) outcome (array u8) =>
-    # close channel on certain read errors?
-    replace (match desc
-      d i64 => fuzion.sys.net.read d max_bytes
-      e error => e)
-
-
-  # NYI when to stop reading?
-  public read outcome String =>
-    # read buffer in bytes
-    buffer_size i32 := 10
-
-    match desc
-      d i64 =>
-        l := (1..)
-          .reduce((list u8), (list u8).empty, ((r,_) ->
-            match read buffer_size
-              e error => abort r
-              a array u8 => r ++ a))
-        String.from_bytes l
-      e error =>
-        e
 
 
   # write data to channel
-  public write(data Sequence u8) outcome unit =>
-    # close channel on certain write errors?
-    match desc
-      d i64 => replace (fuzion.sys.net.write d data.as_array)
-      e error => e
-
-
-  # close the channel
-  public close is
-    if auto_close
-      match desc
-        d i64 =>
-          match fuzion.sys.net.close d
-            unit =>
-              channel T (error "not initialized") false effect_mode.repl
-            e error =>
-              channel T e false effect_mode.repl
-        e error =>
-          channel T (error "not initialized") false effect_mode.repl
-    unit
+  public write(data Sequence u8) unit ! try net.request_handler =>
+    match fuzion.sys.net.write desc data.as_array
+      e error => unit # NYI: BUG: (try net.request_handler).raise e
+      * => unit
 
 
   # get the peer's ip address (tcp)
   public get_peer_address outcome (list u8) =>
-    match desc
-      sockfd i64 => fuzion.sys.net.get_peer_address sockfd
-      e error => e
+    fuzion.sys.net.get_peer_address desc
 
 
   # get the peer's port (tcp)
   public get_peer_port outcome u16 =>
-    match desc
-      sockfd i64 => fuzion.sys.net.get_peer_port sockfd
+    fuzion.sys.net.get_peer_port desc
+
+
+
+# helper feature to create a read provider
+# for a given descriptor
+#
+module read_provider(desc i64) : io.Read_Provider is
+  read(count i32) choice (array u8) io.end_of_file error =>
+    match fuzion.sys.net.read desc count
+      a array => a
       e error => e
-
-
-
-# short hand to install a new channel of type T
-module channel(T type, desc outcome i64, auto_close bool) =>
-  (channel T).close
-  channel T desc auto_close effect_mode.repl
-
-
-
-# short hand to get the currently installed channel of type T
-public channel(T type) =>
-  if !effect.is_installed (channel T)
-    channel T (error "not initialized") false effect_mode.default
-  (channel T).env

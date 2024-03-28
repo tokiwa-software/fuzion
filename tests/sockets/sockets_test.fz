@@ -36,41 +36,45 @@ sockets_test is
       # install server in env
       say "opened $protocol/$family-server on port $port: {(net.server family protocol port)}"
 
-      for ar := net.server.accept, net.server.accept
-      while net.server.is_active
-      do
-        say_silent "$protocol/$family-server, accepted connection: $ar"
-        say_silent (net.channel net.server).get_peer_address
-        say_silent (net.channel net.server).get_peer_port
 
-        rr1 := (net.channel net.server)
+
+      rh : net.Request_Handler is
+
+        handle_request(chan net.channel) unit =>
+
+          say_silent "$protocol/$family-server, accepted connection"
+          say_silent chan.get_peer_address
+          say_silent chan.get_peer_port
+
           # read less than available bytes
-          .read 11
-          .or(error "error")
-          .bind String (d -> String.from_bytes  d)
+          rr1 := String.from_bytes (io.buffered.read_bytes 11)
 
-        say_silent "$protocol/$family-server, read  11 bytes: >{rr1}<"
+          say_silent "$protocol/$family-server, read  11 bytes: >{rr1}<"
 
-        match protocol
-          net.protocol.tcp =>
-            rr2 := (net.channel net.server)
+          match protocol
+            net.protocol.tcp =>
               # read more than available bytes
-              .read 100
-              .or (error "error")
-              .bind String (d -> String.from_bytes  d)
+              rr2 := String.from_bytes (io.buffered.read_bytes 100)
 
-            say_silent "$protocol/$family-server, read 100 bytes: >{rr2}<"
+              say_silent "$protocol/$family-server, read 100 bytes: >{rr2}<"
 
-            res := "received: {rr1.as_string + rr2.as_string}"
+              res := "received: {rr1.as_string + rr2.as_string}"
 
-            wr := (net.channel net.server)
-              .write res.utf8
-              .or (error "error")
-            say_silent "$protocol/$family-server, write {wr}"
-          net.protocol.udp =>
-            # rest of udp datagram was discarded
-          * =>
-            panic "NI"
+              chan.write res.utf8
+
+              say_silent "$protocol/$family-server, write"
+            net.protocol.udp =>
+              # rest of udp datagram was discarded
+            * =>
+              panic "NI"
+
+
+
+      (net.request_handler rh).go ()->
+        while net.server.is_active do
+          match net.server.accept
+            e error => say e
+            * =>
 
 
     start_server f p (port f p)
@@ -80,37 +84,39 @@ sockets_test is
   # client
   #
   client(family net.family.val, protocol net.protocol.val, host String, port u16, num i32) is
-    match net.client sockets_test family protocol host port
-      err error =>
-        say "$protocol/$family-client {sockets_test.client.this.num}, $host:$port: error establishing connection"
-      unit =>
+
+    rh : net.Request_Handler is
+
+      handle_request(chan net.channel) unit =>
 
         req := ("GET / HTTP\n"
           + "Host: $host\n"
           + "Client: {sockets_test.client.this.num}\n")
 
-        say ("$protocol/$family-client {sockets_test.client.this.num}, write to $host:$port: {((net.channel sockets_test).write req.utf8).or(error "error")}")
-
+        say ("$protocol/$family-client {sockets_test.client.this.num}, write to $host:$port")
+        chan.write req.utf8
 
         match protocol
           net.protocol.tcp =>
             # for UDP this read would block indefinitely
-            rr := (net.channel sockets_test)
-              # read less than available bytes
-              .read 12
-              .or(error "error")
-              .bind String (d -> String.from_bytes  d)
+            # read less than available bytes
+            rr := String.from_bytes (io.buffered.read_bytes 12)
             say ("$protocol/$family-client {sockets_test.client.this.num}, read  12 bytes from  $host:$port: >{rr}<")
 
-            rr := (net.channel sockets_test)
-              # read more than available bytes
-              .read 100
-              .or(error "error")
-              .bind String (d -> String.from_bytes  d)
+            # read more than available bytes
+            rr := String.from_bytes (io.buffered.read_bytes 100)
             say ("$protocol/$family-client {sockets_test.client.this.num}, read 100 bytes from  $host:$port: >{rr}<")
           net.protocol.udp =>
             # rest of udp datagram was discarded
           * =>  panic "NI"
+
+
+
+    (net.request_handler rh).go ()->
+      match net.client family protocol host port
+        err error =>
+          say "$protocol/$family-client {sockets_test.client.this.num}, $host:$port: error establishing connection"
+        unit =>
 
 
   # a number for protocol p to be used for

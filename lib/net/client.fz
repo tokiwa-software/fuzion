@@ -23,18 +23,35 @@
 
 
 
-# open a new client-channel.
-# Any active channel with same type will
-# be closed on succesful connection.
+# This tries establishing a connection to `host`
+# on success it uses the installed `request_handler`
+# to process the request.
+#
+# Minimal example:
+# ```
+# rh : net.Request_Handler is
+#   handle_request(chan net.channel) unit =>
+#     say chan.read
+
+# (net.request_handler rh).go ()->
+#   net.client net.family.ipv4 net.protocol.tcp "tokiwa.software" 80
+# ```
+#
 # Blocks until connection is establised.
 # NYI blocking / none blocking
 #
-public client(T type, f net.family.val, p net.protocol.val, host String, port u16) outcome unit
+public client(f net.family.val, p net.protocol.val, host String, port u16) outcome unit ! request_handler
 =>
   s := net.socket_type.by_protocol p
-  match fuzion.sys.net.connect f.as_num s.as_num p.as_num host port
-    desc i64 =>
-      channel T desc true
-      unit
-    err error =>
-      err
+  fuzion.sys.net.connect f.as_num s.as_num p.as_num host port
+    .bind unit (desc)->
+      # NYI install custom thread spawn effect
+      # NYI: BUG: (try net.request_handler).on ()->
+
+      (io.buffered.reader (read_provider desc) 1024 []).with ()->
+        request_handler.env.handle_request (net.channel desc)
+
+      fuzion.sys.net.close desc
+
+
+# NYI: ENHANCEMENT: short-hands: client(host String) etc.

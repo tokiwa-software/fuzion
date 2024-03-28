@@ -1,0 +1,37 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature net.request_handler
+#
+# -----------------------------------------------------------------------
+
+# a request handler effect that is used by
+# `net.server.accept` and `net.client`
+# for handeling new connections.
+#
+public request_handler(h Request_Handler) : simple_effect is
+
+  public handle_request(c net.channel) unit =>
+    h.handle_request c
+
+
+# request handler
+public Request_Handler ref is
+  # NYI needs effect to abort handling of request?
+  public handle_request(c net.channel) unit => abstract
