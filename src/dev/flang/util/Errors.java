@@ -409,7 +409,6 @@ public class Errors extends ANY
                     "Change this via property '" + MAX_ERROR_MESSAGES_PROPERTY + "' or command line option '" + MAX_ERROR_MESSAGES_OPTION + "'.");
             showAndExit();
           }
-        //Thread.dumpStack();
       }
   }
 

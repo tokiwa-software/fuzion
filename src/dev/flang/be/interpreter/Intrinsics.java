@@ -59,10 +59,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-import dev.flang.air.Clazz;
-import dev.flang.air.Clazzes;
-import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.air.Clazz; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.air.Clazzes; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
+
+import dev.flang.fuir.FUIR;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
@@ -608,7 +610,8 @@ public class Intrinsics extends ANY
                   void set(
                     int x,
                     Value v,
-                    AbstractType elementType)
+                    FUIR fuir,
+                    int elementType)
                   {
                     checkIndex(x);
                     mmap.put(x, (byte)v.u8Value());
@@ -617,7 +620,8 @@ public class Intrinsics extends ANY
                   @Override
                   Value get(
                     int x,
-                    AbstractType elementType)
+                    FUIR fuir,
+                    int elementType)
                   {
                     checkIndex(x);
                     return new u8Value(mmap.get(x));
@@ -696,13 +700,15 @@ public class Intrinsics extends ANY
     put("fuzion.sys.fileio.mapped_buffer_get", (excecutor, innerClazz) -> args ->
         {
           return ((ArrayData)args.get(1)).get(/* index */ (int) args.get(2).i64Value(),
-                                              /* type  */ Types.resolved.t_u8);
+                                              excecutor.fuir(),
+                                              /* type  */ Clazzes.u8.get()._idInFUIR);
         });
     put("fuzion.sys.fileio.mapped_buffer_set", (excecutor, innerClazz) -> args ->
         {
           ((ArrayData)args.get(1)).set(/* index */ (int) args.get(2).i64Value(),
                                        /* value */ args.get(3),
-                                       /* type  */ Types.resolved.t_u8);
+                                       excecutor.fuir(),
+                                       /* type  */ Clazzes.u8.get()._idInFUIR);
           return Value.EMPTY_VALUE;
         });
 
@@ -865,7 +871,8 @@ public class Intrinsics extends ANY
           var at = excecutor.fuir().clazzOuterClazz(innerClazz._idInFUIR); // array type
           var et = excecutor.fuir().clazzActualGeneric(at, 0); // element type
           return ArrayData.alloc(/* size */ args.get(1).i32Value(),
-                                 /* type */ excecutor.fuir().clazzForInterpreter(et)._type);
+                                 excecutor.fuir(),
+                                 /* type */ et);
         });
     put("fuzion.sys.internal_array.get", (excecutor, innerClazz) -> args ->
         {
@@ -873,7 +880,8 @@ public class Intrinsics extends ANY
           var et = excecutor.fuir().clazzActualGeneric(at, 0); // element type
           return ((ArrayData)args.get(1)).get(
                                    /* index */ args.get(2).i32Value(),
-                                   /* type  */ excecutor.fuir().clazzForInterpreter(et)._type);
+                                   excecutor.fuir(),
+                                   /* type  */ et);
         });
     put("fuzion.sys.internal_array.setel", (excecutor, innerClazz) -> args ->
         {
@@ -882,7 +890,8 @@ public class Intrinsics extends ANY
           ((ArrayData)args.get(1)).set(
                               /* index */ args.get(2).i32Value(),
                               /* value */ args.get(3),
-                              /* type  */ excecutor.fuir().clazzForInterpreter(et)._type);
+                              excecutor.fuir(),
+                              /* type  */ et);
           return Value.EMPTY_VALUE;
         });
     put("fuzion.sys.internal_array.freeze", (excecutor, innerClazz) -> args ->
