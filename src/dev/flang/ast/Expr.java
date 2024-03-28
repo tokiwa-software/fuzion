@@ -230,34 +230,43 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
     // First pass:
     // Union of the types of the expressions
     // that are sure about their types.
+    var foundType = false;
     for (var e : exprs)
       {
         var et = e.typeForUnion();
         if (et != null)
           {
+            foundType = true;
             t = t.union(et);
           }
       }
 
-    // Propagate the found type to all expression
-    for (var e : exprs)
+    if (foundType)
       {
-        e.propagateExpectedType(t);
+        // Propagate the found type to all expression
+        for (var e : exprs)
+          {
+            e.propagateExpectedType(t);
+          }
       }
 
     // Second pass:
     // Union of the types of the expressions
     AbstractType result = Types.resolved.t_void;
+    foundType = false;
     for (var e : exprs)
       {
         var et = e.typeForInferencing();
         if (et != null)
           {
+            foundType = true;
             result = result.union(et);
           }
       }
 
-    return result;
+    return foundType
+      ? result
+      : null;
   }
 
 

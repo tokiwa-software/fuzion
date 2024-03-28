@@ -2156,7 +2156,7 @@ public class Call extends AbstractCall
           {
             var actual = aargs.next();
             var t = frml.resultTypeIfPresent(res, NO_GENERICS);
-            if (t.isFunctionType())
+            if (t != null && t.isFunctionType())
               {
                 var a = resultExpression(actual);
                 Expr l = a.propagateExpectedTypeForPartial(res, outer, t);
