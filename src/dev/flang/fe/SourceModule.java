@@ -34,7 +34,6 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.SortedMap;
 import java.util.TreeMap;

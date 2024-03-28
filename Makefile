@@ -1326,3 +1326,8 @@ lint/javadoc:
 		$(JAVA_FILES_TOOLS) \
 		$(JAVA_FILES_TOOLS_FZJAVA) \
 		$(JAVA_FILES_TOOLS_DOCS)
+
+.PHONY: remove_unused_imports
+remove_unused_imports:
+	wget -O /tmp/google-java-format-1.21.0-all-deps.jar https://github.com/google/google-java-format/releases/download/v1.21.0/google-java-format-1.21.0-all-deps.jar
+	java -jar /tmp/google-java-format-1.21.0-all-deps.jar -r --fix-imports-only  --skip-sorting-imports `find src/`
