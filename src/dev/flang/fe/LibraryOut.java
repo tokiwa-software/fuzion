@@ -45,7 +45,6 @@ import dev.flang.ast.Box;
 import dev.flang.ast.Call;
 import dev.flang.ast.Check;
 import dev.flang.ast.Constant;
-import dev.flang.ast.Consts;
 import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
@@ -448,7 +447,7 @@ class LibraryOut extends ANY
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_TYPE_FEATURE;
       }
-    if ((f.modifiers() & Consts.MODIFIER_FIXED) != 0)
+    if ((f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0)
       {
         k = k | FuzionConstants.MIR_FILE_KIND_IS_FIXED;
       }

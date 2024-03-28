@@ -740,7 +740,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                                                 : Impl.TYPE_PARAMETER;
                 var constraint0 = t instanceof Feature tf ? tf._returnType.functionReturnType() : t.resultType();
                 var constraint = rebaseTypeForTypeFeature(constraint0);
-                var ta = new Feature(p, t.visibility(), t.modifiers() & Consts.MODIFIER_REDEFINE, constraint, t.featureName().baseName(),
+                var ta = new Feature(p, t.visibility(), t.modifiers() & FuzionConstants.MODIFIER_REDEFINE, constraint, t.featureName().baseName(),
                                      Contract.EMPTY_CONTRACT,
                                      i);
                 typeArgs.add(ta);
@@ -1504,7 +1504,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public boolean isFixed()
   {
-    return (modifiers() & Consts.MODIFIER_FIXED) != 0 || isTypeParameter();
+    return (modifiers() & FuzionConstants.MODIFIER_FIXED) != 0 || isTypeParameter();
   }
 
   /**
@@ -1737,7 +1737,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public String toString()
   {
     return visibility() + " " +
-      Consts.modifierToString(modifiers()) +
+      FuzionConstants.modifierToString(modifiers()) +
       (isTypeFeature() ? "type." : "") +
       featureName().baseName() +
       (arguments().isEmpty() ? "" : "("+arguments()+")") + " " +

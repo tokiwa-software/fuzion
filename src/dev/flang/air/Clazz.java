@@ -42,7 +42,6 @@ import dev.flang.ast.AbstractConstant; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
-import dev.flang.ast.Consts; // NYI: remove dependency!
 import dev.flang.ast.Env; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
 import dev.flang.ast.HasGlobalIndex; // NYI: remove dependency!
@@ -58,6 +57,7 @@ import dev.flang.fe.FeatureLookup;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -1323,7 +1323,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (f != null);
 
     return f.isAbstract() ||
-      (f.modifiers() & Consts.MODIFIER_FIXED) != 0 && f.outer() != this.feature();
+      (f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0 && f.outer() != this.feature();
   }
 
 
