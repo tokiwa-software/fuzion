@@ -28,9 +28,7 @@ package dev.flang.ast;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.util.ANY;
@@ -52,8 +50,6 @@ public class Types extends ANY
 
   /*----------------------------  constants  ----------------------------*/
 
-
-  private static Map<ResolvedNormalType, ResolvedNormalType> types;
 
   /**
    * Name of abstract features for function types:
@@ -308,45 +304,12 @@ public class Types extends ANY
    */
   public static void reset(FuzionOptions options)
   {
-    types = new TreeMap<>();
     resolved = null;
     t_ADDRESS   = new ArtificialBuiltInType(ADDRESS_NAME  );
     t_UNDEFINED = new ArtificialBuiltInType(UNDEFINED_NAME);
     t_ERROR     = new ArtificialBuiltInType(ERROR_NAME    );
     f_ERROR     = new Feature(true);
     _options    = options;
-  }
-
-
-  /**
-   * Find the unique instance of t
-   */
-  public static AbstractType intern(AbstractType at)
-  {
-    if (PRECONDITIONS) require
-      (!(at instanceof UnresolvedType t) || Errors.any());
-
-    if (at instanceof ResolvedNormalType t && t.unresolvedGenerics().isEmpty())
-      {
-        var existing = types.get(t);
-        if (existing == null)
-          {
-            types.put(t,t);
-            existing = t;
-          }
-        t._generics.freeze();
-        at = existing;
-      }
-    return at;
-  }
-
-
-  /**
-   * Return the total number of unique types stored globally.
-   */
-  public static int num()
-  {
-    return types.size();
   }
 
 }

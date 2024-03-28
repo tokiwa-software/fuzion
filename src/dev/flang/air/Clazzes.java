@@ -573,7 +573,7 @@ public class Clazzes extends ANY
                   }
               }
           }
-        say("Found "+Types.num()+" types and "+Clazzes.num()+" clazzes (" +
+        say("Found "+Clazzes.num()+" clazzes (" +
                            clazzesForFields + " for " + fields+ " fields, " +
                            (clazzes.size()-clazzesForFields) + " for " + routines + " routines).");
       }
