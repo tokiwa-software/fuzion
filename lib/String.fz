@@ -761,7 +761,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # monoid of strings with infix '+ sep +' operation, i.e., concatenate with
   # given separator
   #
-  public type.concat(sep String) : Monoid String is
+  public type.concat1(sep String) : Monoid String is
     redef infix ∙ (a, b String) String => if (a.is_empty || b.is_empty) a + b else a + sep + b
     redef e => ""
 

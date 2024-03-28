@@ -1106,14 +1106,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public boolean definesType()
   {
-    var result = (isConstructor() || isChoice()) && !isUniverse();
-    var o = this;
-    while (result && o != null)
-      {
-        result = result && !o.isTypeFeature();
-        o = o.outer();
-      }
-    return result;
+    return (isConstructor() || isChoice())
+      && !isUniverse()
+      && !this.isTypeFeature();
   }
 
 

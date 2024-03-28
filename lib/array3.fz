@@ -104,7 +104,7 @@ is
       ("  [" + ascii.lf_str
         + indices1
             .map(j -> dim_2 i j)
-            .fold String.concat("," + ascii.lf_str)
+            .fold String.concat1("," + ascii.lf_str)
         + ascii.lf_str + "  ]")
 
     dim_2(i i32, j i32) =>
@@ -115,7 +115,7 @@ is
     ("[" + ascii.lf_str
       + indices0
           .map(i -> dim_1 i)
-          .fold String.concat("," + ascii.lf_str)
+          .fold String.concat1("," + ascii.lf_str)
       + ascii.lf_str + "]")
 
 
