@@ -507,12 +507,10 @@ public class Loop extends ANY
   {
     int i = -1;
     Iterator<Feature> ivi = _indexVars.iterator();
-    Iterator<Feature> nvi = _nextValues.iterator();
     while (ivi.hasNext())
       {
         i++;
         Feature f = ivi.next();
-        Feature n = nvi.next();
         if (CHECKS) check
           (f.impl()._kind != Impl.Kind.FieldIter);
         var p = f.pos();
