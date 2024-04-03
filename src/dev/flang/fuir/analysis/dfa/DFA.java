@@ -2031,11 +2031,12 @@ public class DFA extends ANY
         var sref0 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 0));
         var sref1 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 1));
         var sref2 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 2));
+        var sref3 = fuir.clazzArgClazz(cc, 3);
         var data4 = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 4));
         cl._dfa._readFields.add(sref0);
         cl._dfa._readFields.add(sref1);
         cl._dfa._readFields.add(sref2);
-        // NYI: add third argument to readFields
+        cl._dfa._readFields.add(sref3);
         cl._dfa._readFields.add(data4);
         return newFuzionJavaCall(cl);
       });
