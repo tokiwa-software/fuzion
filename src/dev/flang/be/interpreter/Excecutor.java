@@ -548,8 +548,8 @@ public class Excecutor extends ProcessStatement<Value, Object>
     if (!cc.boolValue())
       {
         Errors.runTime(pos(),
-                       "Precondition does not hold",
-                       "For call to " + _fuir.clazzAsStringNew(cl) + "\n" + callStack(fuir()));
+                       (ck == ContractKind.Pre ? "Precondition" : "Postcondition") + " does not hold",
+                       (ck == ContractKind.Pre ? "For" : "After") + " call to " + _fuir.clazzAsStringNew(cl) + "\n" + callStack(fuir()));
       }
     return null;
   }
