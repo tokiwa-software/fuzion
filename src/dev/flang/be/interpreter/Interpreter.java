@@ -78,6 +78,7 @@ public class Interpreter extends ANY
   {
     try
       {
+        FuzionThread.current()._callStackFrames.push(_fuir.mainClazzId());
         _ai.process(_fuir.mainClazzId(), true);
         _ai.process(_fuir.mainClazzId(), false);
       }
