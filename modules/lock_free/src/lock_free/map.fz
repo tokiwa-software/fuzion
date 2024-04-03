@@ -681,7 +681,7 @@ is
 
 
   # initialize a new ctrie
-  public type.empty =>
+  public fixed type.empty =>
 
     initial_gen := unique_id
 

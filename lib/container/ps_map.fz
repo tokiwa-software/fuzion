@@ -363,7 +363,7 @@ O(n log n).
   #
   # This feature creates an empty instance of ps_map.
   #
-  public type.empty => container.ps_map (fuzion.sys.internal_array_init (tuple PK V) 0) 0 0
+  public fixed type.empty => container.ps_map (fuzion.sys.internal_array_init (tuple PK V) 0) 0 0
 
 
   # ps_map -- routine to initialize a partially sorted map from two Sequences
