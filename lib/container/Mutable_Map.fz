@@ -1,0 +1,113 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature Mutable_Map
+#
+# -----------------------------------------------------------------------
+
+# Mutable_Map -- an abstract mutable map from keys K to values V
+#
+public Mutable_Map(public K type : property.equatable, public V type) ref is
+
+  # number of entries in this map
+  #
+  public size i32 => abstract
+
+
+  # get the value k is mapped to, or nil if none.
+  #
+  public index [] (k K) option V => abstract
+
+
+  # get a sequence of all key/value pairs in this map
+  #
+  public items Sequence (tuple K V) => abstract
+
+
+  # check if key k is present in the set of keys
+  #
+  public has (k K) => Mutable_Map.this[k]??
+
+
+  # get a sequence of all keys in this map
+  #
+  public keys Sequence K =>
+    items.map K (t -> (k,_) := t; k)
+
+
+  # get a sequence of all values in this map
+  #
+  public values Sequence V =>
+    items.map V (t -> (_,v) := t; v)
+
+
+  # add key-value pair to this map
+  #
+  # if key already exists, NYI what should happen?
+  #
+  public add(k K, v V) unit => abstract
+
+
+  # add all key-value pairs to this map
+  #
+  # if key already exists, NYI what should happen?
+  #
+  public add_all(kvs Sequence (tuple K V)) unit =>
+    for kv in kvs do
+      add kv.values.0 kv.values.1
+
+
+  # remove key from map
+  #
+  public remove(k K) option V => abstract
+
+
+  # create a string containing all mappings
+  #
+  public redef as_string =>
+    for
+      r := "", r + c + "($k => {index[] k})"
+      k in keys
+      c := "", ", "
+    else
+      r
+
+
+  # initializer for this mutable map
+  #
+  # every mutable map implementation needs to implement this
+  #
+  public type.empty Mutable_Map.this => abstract
+
+
+/*
+
+  NYI: BUG?: To solve this, you could change the type of the target 'k' to 'container.Mutable_Map.type.K' or convert the type of the assigned value to 'container.Mutable_Map.K'.
+
+
+  # from_entries -- routine to initialize a Mutable_Map from
+  # a sequence of key value tuples
+  #
+  public type.from_entries(kvs Sequence (tuple K V)) Mutable_Map.this =>
+    m := empty
+    for kv in kvs do
+      m.add kv.values.0 kv.values.1
+    m
+
+*/
