@@ -976,14 +976,14 @@ class CodeGen
       case c_f32          -> new Pair<>(Expr.fconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getInt  ()         ), Expr.UNIT);
       case c_f64          -> new Pair<>(Expr.dconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getLong ()         ), Expr.UNIT);
       case c_Const_String, c_String
-                          -> _jvm.constString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).getInt()+4));
+                          -> _jvm.constString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt()+4));
       default             ->
         {
           if (_fuir.clazzIsArray(constCl))
             {
               var elementType = this._fuir.inlineArrayElementClazz(constCl);
 
-              var bb = ByteBuffer.wrap(d);
+              var bb = ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN);
               var elCount = bb.getInt();
               var jt = this._types.resultType(elementType);
               var aLen = Expr

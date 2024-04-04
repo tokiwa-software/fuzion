@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fuir;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -2680,12 +2681,12 @@ hw25 is
     return switch (getSpecialClazz(cl))
       {
       case c_Const_String, c_String :
-        var len = bb.duplicate().getInt();
+        var len = bb.duplicate().order(ByteOrder.LITTLE_ENDIAN).getInt();
         yield bb.slice(bb.position(), 4+len);
       case c_bool :
         yield bb.slice(bb.position(), 1);
       case c_i8, c_i16, c_i32, c_i64, c_u8, c_u16, c_u32, c_u64, c_f32, c_f64 :
-        var bytes = bb.duplicate().getInt();
+        var bytes = bb.duplicate().order(ByteOrder.LITTLE_ENDIAN).getInt();
         yield bb.slice(bb.position(), 4+bytes);
       default:
         yield this.clazzIsArray(cl)
@@ -2701,7 +2702,7 @@ hw25 is
   private ByteBuffer deserializeValueConst(int cl, ByteBuffer bb)
   {
     var args = clazzArgCount(cl);
-    var bbb = bb.duplicate();
+    var bbb = bb.duplicate().order(ByteOrder.LITTLE_ENDIAN);
     var argBytes = 0;
     for (int i = 0; i < args; i++)
       {
@@ -2723,7 +2724,7 @@ hw25 is
    */
   public byte[] deseralizeConst(int cl, ByteBuffer bb)
   {
-    var elBytes = deserializeClazz(cl, bb.duplicate());
+    var elBytes = deserializeClazz(cl, bb.duplicate()).order(ByteOrder.LITTLE_ENDIAN);
     bb.position(bb.position()+elBytes.remaining());
     var b = new byte[elBytes.remaining()];
     elBytes.get(b);
@@ -2744,7 +2745,7 @@ hw25 is
    */
   private ByteBuffer deserializeArray(int elementClazz, ByteBuffer bb)
   {
-    var bbb = bb.duplicate();
+    var bbb = bb.duplicate().order(ByteOrder.LITTLE_ENDIAN);
     var elCount = bbb.getInt();
     var elBytes = 0;
     for (int i = 0; i < elCount; i++)
