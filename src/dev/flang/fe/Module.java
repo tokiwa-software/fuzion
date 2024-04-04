@@ -507,7 +507,7 @@ public abstract class Module extends ANY implements FeatureLookup
   public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name, AbstractFeature original)
   {
     if (PRECONDITIONS) require
-      (outer.state().atLeast(State.LOADING));
+      (outer.state().atLeast(State.RESOLVED_DECLARATIONS));
 
     var result = declaredOrInheritedFeatures(outer, _dependsOn).get(name);
 

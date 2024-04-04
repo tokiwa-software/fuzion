@@ -221,7 +221,7 @@ class LibraryOut extends ANY
 
   /**
    * Write all features declared in given source module into DeclFeatures
-   * sections of a library file.  This include the features declared in the
+   * sections of a library file.  This includes the features declared in the
    * 'universe' as well as all features declared within outer features that come
    * from other module files.
    *

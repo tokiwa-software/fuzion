@@ -69,13 +69,13 @@ public class FrontEnd extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
-  static FeatureName UNIVERSE_NAME = FeatureName.get(FuzionConstants.UNIVERSE_NAME, 0);
+  static final FeatureName UNIVERSE_NAME = FeatureName.get(FuzionConstants.UNIVERSE_NAME, 0);
 
 
   /**
    * Offset added to global indices to detect false usage of these early on.
    */
-  static int GLOBAL_INDEX_OFFSET = 0x40000000;
+  static final int GLOBAL_INDEX_OFFSET = 0x40000000;
   static
   {
     // NYI: CLEANUP: #2411: Temporary solution to give global indices to the AST
