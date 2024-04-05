@@ -292,9 +292,8 @@ public class DFA extends ANY
       var ccs = _fuir.accessedClazzes(cl, c, i);
       var found = new boolean[] { false };
       var resf = new Val[] { null };
-      for (var ccii = 0; ccii < ccs.length; ccii += 2)
+      for (var cci = 0; cci < ccs.length; cci += 2)
         {
-          var cci = ccii;
           var tt = ccs[cci  ];
           var cc = ccs[cci+1];
           tvalue.value().forAll(t -> {
