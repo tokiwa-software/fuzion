@@ -1,0 +1,3 @@
+NYI #764
+scoping issue, should raise error in front end.
+res should not be accessible by else clause.
