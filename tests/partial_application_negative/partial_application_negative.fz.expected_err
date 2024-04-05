@@ -83,7 +83,7 @@ Target feature: 'interval'
 In call: 'map'
 To solve this, you might change the actual number of arguments to match the feature 'map' (2 arguments) at $MODULE/Sequence.fz:339:10:
   public map(B type, f Unary B T) Sequence B =>
----------^
+---------^^^
 
 
 --CURDIR--/partial_application_negative.fz:72:21: error 10: Ambiguity between direct and partially applied call target

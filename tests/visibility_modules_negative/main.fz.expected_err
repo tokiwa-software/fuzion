@@ -16,7 +16,7 @@ Target feature: 'b'
 In call: 'b.mod_pub'
 To solve this, you might change the visibility of the feature 'mod_pub' (no arguments) at $MODULE/b.fz:26:17:
   module:public mod_pub is
-----------------^
+----------------^^^^^^^
 
 
 --CURDIR--/main.fz:28:18: error 3: Feature specifying type visibility does not define a type.
