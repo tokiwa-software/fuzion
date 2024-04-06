@@ -544,6 +544,10 @@ Module File
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | m      | DeclFeatures  | features declared in this module              |
    *   +        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | hasUniverse   | if this module has a universe written out     |
+   *   +        +--------+---------------+-----------------------------------------------+
+   *   |        | 0-1    | universe      | universe                                      |
+   *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | SourceFiles   | source code files                             |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
@@ -620,7 +624,7 @@ Module File
   {
     return moduleNumDeclFeaturesPos() + 4;
   }
-  int moduleSourceFilesPos()
+  int moduleHasUniversePos()
   {
     var n = moduleNumDeclFeatures();
     var at = moduleDeclFeaturesPos();
@@ -630,6 +634,16 @@ Module File
         at = declFeaturesNextPos(at);
       }
     return at;
+  }
+  int moduleUniversePos()
+  {
+    return moduleHasUniversePos() + 1;
+  }
+  int moduleSourceFilesPos()
+  {
+    return _data.get(moduleHasUniversePos()) == 1
+      ? featureNextPos(moduleUniversePos())
+      : moduleUniversePos();
   }
 
 

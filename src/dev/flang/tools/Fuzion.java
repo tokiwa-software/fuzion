@@ -321,7 +321,7 @@ public class Fuzion extends Tool
       void processFrontEnd(Fuzion f, FrontEnd fe)
       {
         /*
-         * Save _module to a module file
+         * Save module to a fum-file
          */
         if (!Errors.any())
           {

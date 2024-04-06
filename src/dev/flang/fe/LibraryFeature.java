@@ -52,6 +52,7 @@ import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
+import dev.flang.ast.Universe;
 import dev.flang.ast.Visi;
 
 import dev.flang.util.Errors;
@@ -585,7 +586,7 @@ public class LibraryFeature extends AbstractFeature
             {
               var field = _libModule.assignField(iat);
               var f = _libModule.libraryFeature(field);
-              var target = s.pop();
+              var target = f.outer().isUniverse() ? new Universe() : s.pop();
               var val = s.pop();
               c = new AbstractAssign(f, target, val)
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
