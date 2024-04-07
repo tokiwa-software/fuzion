@@ -144,32 +144,37 @@ O(n log n).
   # runtime of O(size)
   #
   public add (kv (tuple PK V)) ps_map PK V =>
-    nsize := size + 1
-    ndata := data
-    nfill := fill
 
-    # join arrays data[ole..ole+sz-1] and ndata[dest..dest+sz-1] to ndata[dest..dest+2*sz-1]
-    #
-    join (ole i32, dest i32, sz i32) ps_map PK V =>
-      if (size & sz) = 0
-        ps_map ndata nsize dest+sz
-      else
-        tmp := array (tuple PK V) sz (i -> ndata[dest+i])
-        for
-          i1 := 0, if (use1) i1+1 else i1
-          i2 := 0, if (use1) i2   else i2+1
-          use1 := i1 < sz && ((i2 ≥ sz) || data[ole + i1].values.0 < tmp[i2].values.0)
-          e := if use1 then data[ole + i1] else tmp[i2]
-        do
-          ndata[dest + i1 + i2] := e
-        until i1 + i2 = 2*sz-1
-        join (fill - sz - 2*(fill - ole - sz) - 2*sz) dest 2*sz
+    m : mutate is
 
-    if (nsize & size) = 0
-      set ndata := fuzion.sys.internal_array_init (tuple PK V) (data.length * 2 + (nsize+1) / 2)
-      set nfill := 0
-    ndata[nfill] := kv
-    join fill-1 nfill 1
+    m.go ()->
+
+      nsize := size + 1
+      ndata := m.env.new data
+      nfill := m.env.new fill
+
+      # join arrays data[ole..ole+sz-1] and ndata[dest..dest+sz-1] to ndata[dest..dest+2*sz-1]
+      #
+      join (ole i32, dest i32, sz i32) ps_map PK V =>
+        if (size & sz) = 0
+          ps_map ndata.get nsize dest+sz
+        else
+          tmp := array (tuple PK V) sz (i -> ndata.get[dest+i])
+          for
+            i1 := 0, if (use1) i1+1 else i1
+            i2 := 0, if (use1) i2   else i2+1
+            use1 := i1 < sz && ((i2 ≥ sz) || data[ole + i1].values.0 < tmp[i2].values.0)
+            e := if use1 then data[ole + i1] else tmp[i2]
+          do
+            ndata.get[dest + i1 + i2] := e
+          until i1 + i2 = 2*sz-1
+          join (fill - sz - 2*(fill - ole - sz) - 2*sz) dest 2*sz
+
+      if (nsize & size) = 0
+        ndata <- fuzion.sys.internal_array_init (tuple PK V) (data.length * 2 + (nsize+1) / 2)
+        nfill <- 0
+      ndata.get[nfill] := kv
+      join fill-1 nfill 1
 
 
   # find the value k is mapped to or nil if k is not part of this map
@@ -207,14 +212,6 @@ O(n log n).
 
     sub_sz := size.highest_one_bit
     get 0 sub_sz (data.length - sub_sz)
-
-
-  public show unit =>
-    for e in as_key_array
-        sep := "", " "
-    do
-      yak (sep + e)
-    say ""
 
 
   # create sorted array of all keys in this map

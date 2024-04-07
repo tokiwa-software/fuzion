@@ -53,11 +53,6 @@ is
   public redef as_list => psm.keys.as_list
 
 
-  # print contents of this set
-  #
-  show => psm.show
-
-
   # add new element k to this set.
   #
   # NYI: Resolve duality of `add0` (that results in `ps_set`) and `add` (that
