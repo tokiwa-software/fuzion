@@ -316,9 +316,16 @@ public class DFA extends ANY
       var res = resf[0];
       if (!found[0])
         { // NYI: proper error reporting
+          var detail = "Considered targets: ";
+          for (var ccii = 0; ccii < ccs.length; ccii += 2)
+            {
+              detail += _fuir.clazzAsStringNew(ccs[ccii]) + ", ";
+            }
           Errors.error(_fuir.codeAtAsPos(c, i),
                        "NYI: in "+_fuir.clazzAsString(cl)+" no targets for "+_fuir.codeAtAsString(cl, c, i)+" target "+tvalue,
-                       null);
+                       detail);
+
+          _call.showWhy();
         }
       else if (res != null &&
                tvalue instanceof EmbeddedValue &&
