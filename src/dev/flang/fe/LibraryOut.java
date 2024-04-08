@@ -1025,6 +1025,9 @@ class LibraryOut extends ANY
         var sf = pos._sourceFile;
         _sourceFiles.put(fileName(sf), sf);
       }
+    // start
+    _data.writeInt(0);
+    // end
     _data.writeInt(0);
   }
 
