@@ -25,11 +25,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *---------------------------------------------------------------------*/
 
 module fz_cmd {
-  // NYI remove this dependency?
-  // currently used in Fuzion.java:
-  // long _timer = java.lang.management.ManagementFactory.getRuntimeMXBean().getStartTime();
-  requires java.management;
-
   // used in util/Profiler.java : import java.awt.Desktop;
   requires java.desktop;
 }

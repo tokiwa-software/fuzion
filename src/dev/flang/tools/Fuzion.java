@@ -1069,7 +1069,8 @@ public class Fuzion extends Tool
   /**
    * Last time timer() was called, in System.currentTimeMillis();
    */
-  long _timer = java.lang.management.ManagementFactory.getRuntimeMXBean().getStartTime();
+  long _timer = System.currentTimeMillis();
+
 
 
 }
