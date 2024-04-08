@@ -79,6 +79,12 @@ public class Fuzion extends Tool
   /*----------------------------  constants  ----------------------------*/
 
 
+  /**
+   * Time at application start in System.currentTimeMillis();
+   */
+  protected static final long _timerStart = System.currentTimeMillis();
+
+
   static String  _binaryName_ = null;
   static boolean _useBoehmGC_ = true;
   static boolean _xdfa_ = true;
@@ -342,10 +348,10 @@ public class Fuzion extends Tool
             var data = fe.module().data(n);
             if (data != null)
               {
-                say(" + " + p);
                 try (var os = Files.newOutputStream(p))
                   {
                     Channels.newChannel(os).write(data);
+                    say(" + " + p + " in " + (System.currentTimeMillis() - _timerStart) + "ms");
                   }
                 catch (IOException io)
                   {
