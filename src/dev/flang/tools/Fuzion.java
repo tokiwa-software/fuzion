@@ -1044,10 +1044,6 @@ public class Fuzion extends Tool
                                           _executeCode,
                                           _main,
                                           _backend.needsSources());
-        if (_backend == Backend.c)
-          {
-            options.setTailRec();
-          }
         options.setBackendArgs(applicationArgs);
         timer("prep");
         var fe = new FrontEnd(options);
