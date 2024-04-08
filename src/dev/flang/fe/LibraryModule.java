@@ -47,7 +47,9 @@ import dev.flang.ast.Visi;
 import dev.flang.ir.IR;
 
 import dev.flang.mir.MIR;
+import dev.flang.mir.MirModule;
 
+import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HexDump;
 import dev.flang.util.List;
@@ -63,7 +65,7 @@ import dev.flang.util.Version;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class LibraryModule extends Module
+public class LibraryModule extends Module implements MirModule
 {
 
 
@@ -107,12 +109,6 @@ public class LibraryModule extends Module
 
 
   /**
-   * The module intermediate representation for this module.
-   */
-  final MIR _mir;
-
-
-  /**
    * Map from offset in _data to LibraryFeatures for features in this module.
    */
   TreeMap<Integer, LibraryFeature> _libraryFeatures = new TreeMap<>();
@@ -147,12 +143,6 @@ public class LibraryModule extends Module
 
 
   /**
-   * The universe
-   */
-  final AbstractFeature _universe;
-
-
-  /**
    * Modules referenced from this module
    */
   final ModuleRef[] _modules;
@@ -170,15 +160,13 @@ public class LibraryModule extends Module
   /**
    * Create LibraryModule for given options and sourceDirs.
    */
-  LibraryModule(int globalBase, FrontEnd fe, ByteBuffer data, LibraryModule[] dependsOn, AbstractFeature universe)
+  LibraryModule(int globalBase, FrontEnd fe, ByteBuffer data, LibraryModule[] dependsOn)
   {
     super(dependsOn);
 
     _globalBase = globalBase;
     _fe = fe;
-    _mir = null;
     _data = data;
-    _universe = universe;
     _sourceFiles = new ArrayList<>(sourceFilesCount());
     var sfc = sourceFilesCount();
     for (int i = 0; i < sfc; i++)
@@ -254,9 +242,24 @@ public class LibraryModule extends Module
   /**
    * The universe
    */
-  AbstractFeature universe()
+  private AbstractFeature universe()
   {
-    return _universe;
+    return _fe._universe;
+  }
+
+
+  boolean moduleHasUniverse()
+  {
+    return _data.get(moduleHasUniversePos()) == 1;
+  }
+
+
+  AbstractFeature moduleUniverse()
+  {
+    if (PRECONDITIONS) require
+      (moduleHasUniverse());
+
+    return feature(moduleUniversePos());
   }
 
 
@@ -271,10 +274,57 @@ public class LibraryModule extends Module
 
   /**
    * Create the module intermediate representation for this module.
+   *
+   * @param main the main features name
    */
-  public MIR createMIR()
+  public MIR createMIR(String main)
   {
-    return _mir;
+    var d = main == null
+      ? universe()
+      : lookupFeature(universe(), FeatureName.get(main, 0), null);
+
+    if (CHECKS) check
+      (d != null);
+
+    var result = createMIR(d);
+
+    Errors.showAndExit();
+
+    return result;
+  }
+
+
+  /**
+   * Create MIR based on given main feature.
+   */
+  MIR createMIR(AbstractFeature main)
+  {
+    if (main != null && !Errors.any())
+      {
+        if (main.valueArguments().size() != 0)
+          {
+            FeErrors.mainFeatureMustNotHaveArguments(main);
+          }
+        switch (main.kind())
+          {
+          case Field    : FeErrors.mainFeatureMustNotBeField    (main); break;
+          case Abstract : FeErrors.mainFeatureMustNotBeAbstract (main); break;
+          case Intrinsic: FeErrors.mainFeatureMustNotBeIntrinsic(main); break;
+          case Choice   : FeErrors.mainFeatureMustNotBeChoice   (main); break;
+          case Routine:
+            if (!main.generics().list.isEmpty())
+              {
+                FeErrors.mainFeatureMustNotHaveTypeArguments(main);
+              }
+          }
+      }
+    var result = new MIR(universe(), main, this);
+    if (!Errors.any())
+      {
+        new DFA(result).check();
+      }
+
+    return result;
   }
 
 
@@ -287,12 +337,20 @@ public class LibraryModule extends Module
   public SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer)
   {
     var result = new TreeMap<FeatureName, AbstractFeature>();
-    var l = (outer instanceof LibraryFeature lf && lf._libModule == this)
-      ? lf.declaredFeatures() // the declared features are declared in this module
-      : features(outer);      // the declared features are declared in another module
-    for (var d : l)
+    if (outer instanceof LibraryFeature lf)
+      {
+        for (var d : lf.declaredFeatures())
+          {
+            result.put(d.featureName(), d);  // NYI: handle equally named features from different modules
+          }
+      }
+    for (var d : features(outer))
       {
         result.put(d.featureName(), d);  // NYI: handle equally named features from different modules
+      }
+    for (Module d : _dependsOn)
+      {
+        result.putAll(d.declaredFeatures(outer));  // NYI: handle equally named features from different modules
       }
     return result;
   }
@@ -430,7 +488,7 @@ public class LibraryModule extends Module
           }
         else if (k == -3)
           {
-            return _fe._universe.selfType();
+            return universe().selfType();
           }
         else if (k == -2)
           {
@@ -642,7 +700,7 @@ Module File
   }
   int moduleSourceFilesPos()
   {
-    return _data.get(moduleHasUniversePos()) == 1
+    return moduleHasUniverse()
       ? featureNextPos(moduleUniversePos())
       : moduleUniversePos();
   }
@@ -2371,6 +2429,13 @@ SourceFile
     return Path.of(Version.REPO_PATH)
       .resolve(name().equals("base") ? "lib" : "modules/" + name() + "/src")
       .toString();
+  }
+
+
+  @Override
+  public ByteBuffer data(String name)
+  {
+    throw new UnsupportedOperationException("Unimplemented method 'data'");
   }
 
 }

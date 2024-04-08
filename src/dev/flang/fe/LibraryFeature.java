@@ -616,6 +616,8 @@ public class LibraryFeature extends AbstractFeature
             }
           case Current:
             {
+              if (CHECKS) check
+                (!featureName().baseName().equals("universe"));
               x = new AbstractCurrent(selfType())
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
               break;

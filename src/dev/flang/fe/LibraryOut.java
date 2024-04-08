@@ -156,7 +156,7 @@ class LibraryOut extends ANY
             moduleRef(m);
           }
         allDeclFeatures(sm);
-        var universeContainsCode = !sm._universe.containsOnlyDeclarations();
+        var universeContainsCode = !sm._universe.impl().containsOnlyDeclarations();
         _data.writeBool(universeContainsCode);
         if (universeContainsCode)
           {

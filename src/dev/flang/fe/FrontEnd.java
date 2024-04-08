@@ -136,7 +136,13 @@ public class FrontEnd extends ANY
   /**
    * The module we are compiling. null if !options._loadSources or Errors.count() != 0
    */
-  private final SourceModule _module;
+  private final SourceModule _srcModule;
+
+
+  /**
+   * The compiled main module. null if !options._loadSources or Errors.count() != 0 or not yet compiled.
+   */
+  private LibraryModule _mainModule;
 
 
   /**
@@ -154,13 +160,7 @@ public class FrontEnd extends ANY
   public FrontEnd(FrontEndOptions options)
   {
     _options = options;
-    Types.reset(options);
-    FeatureAndOuter.reset();
-    Errors.reset();
-    FeatureName.reset();
-    Expr.reset();
-    Call.reset();
-    HasGlobalIndex.reset();
+    reset();
     var universe = new Universe();
     _universe = universe;
 
@@ -189,13 +189,79 @@ public class FrontEnd extends ANY
     var dependsOn = lms.toArray(LibraryModule[]::new);
     if (options._loadSources)
       {
-        _module = new SourceModule(options, sourceDirs, dependsOn, universe);
-        _module.createASTandResolve();
+        _srcModule = new SourceModule(options, sourceDirs, dependsOn, universe);
+        _srcModule.createASTandResolve();
       }
     else
       {
-        _module = null;
+        _srcModule = null;
       }
+    _mainModule = null;
+  }
+
+
+  /**
+   * Create front end for given options + data to create a library module.
+   */
+  public FrontEnd(FrontEndOptions options, ByteBuffer data)
+  {
+    _options = options;
+    reset();
+
+    if (options._loadBaseLib)
+      {
+        _baseModule = module(FuzionConstants.BASE_MODULE_NAME, modulePath(FuzionConstants.BASE_MODULE_NAME));
+      }
+    else
+      {
+        _baseModule = null;
+      }
+
+    options._modules.stream().map(mn -> loadModule(mn))
+                             .filter(m -> m != null)
+                             .toList();
+
+    _srcModule = null;
+
+    _mainModule = new LibraryModule(GLOBAL_INDEX_OFFSET,
+                      this,
+                      data,
+                      _modules.values().toArray(LibraryModule[]::new));
+
+    _universe = new Universe()
+      {
+        { setState(State.RESOLVED); }
+        @Override
+        public Expr code() {
+          return _mainModule.moduleHasUniverse()
+            ? _mainModule.moduleUniverse().code()
+            : Expr.ERROR_VALUE;
+        };
+      };
+
+    new Types.Resolved((o, fn) -> {
+      var result = _mainModule.lookupFeature(o, fn, null);
+
+      if (POSTCONDITIONS) ensure
+        (result != null);
+
+      return result;
+    }, _universe);
+  }
+
+
+  /**
+   * Globally reset all statically held things.
+   */
+  private void reset()
+  {
+    Types.reset(_options);
+    FeatureAndOuter.reset();
+    Errors.reset();
+    FeatureName.reset();
+    Expr.reset();
+    Call.reset();
+    HasGlobalIndex.reset();
   }
 
 
@@ -268,8 +334,7 @@ public class FrontEnd extends ANY
     result = new LibraryModule(GLOBAL_INDEX_OFFSET + base,
                                this,
                                data,
-                               dependsOn,
-                               _universe);
+                               dependsOn);
     return result;
   }
 
@@ -307,13 +372,13 @@ public class FrontEnd extends ANY
 
   public MIR createMIR()
   {
-    return _module.createMIR();
+    return mainModule().createMIR(sourceModule()._main);
   }
 
 
-  public SourceModule module()
+  public SourceModule sourceModule()
   {
-    return _module;
+    return _srcModule;
   }
 
 
@@ -329,10 +394,24 @@ public class FrontEnd extends ANY
   /**
    * Get the compiled module main.
    */
-  public Module mainModule()
+  public LibraryModule mainModule()
   {
-    return libModule(_module.data("main"), _modules.values().toArray(new LibraryModule[_modules.size()]));
+    if (_mainModule == null)
+      {
+        if (CHECKS) check
+          (!Errors.any());
+
+        // create library module and get its bytebuffer.
+        var data = libModule(_srcModule.data("main"),
+                             _modules.values().toArray(new LibraryModule[_modules.size()]))
+                    .data();
+
+        // reinit frontend with bytebuffer and assign _mainModule.
+        _mainModule = new FrontEnd(_options, data)._mainModule;
+      }
+    return _mainModule;
   }
+
 
 }
 

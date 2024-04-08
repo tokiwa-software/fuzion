@@ -410,7 +410,7 @@ public class Impl extends ANY
    * Does this feature implementation consist of nothing but declarations? I.e.,
    * it has no code that actually would be executed at runtime.
    */
-  boolean containsOnlyDeclarations()
+  public boolean containsOnlyDeclarations()
   {
     return _expr == null || _expr.containsOnlyDeclarations();
   }

@@ -57,8 +57,6 @@ import dev.flang.ast.SrcModule;
 import dev.flang.ast.State;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
-import dev.flang.mir.MIR;
-import dev.flang.mir.MirModule;
 
 import dev.flang.parser.Parser;
 
@@ -75,7 +73,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class SourceModule extends Module implements SrcModule, MirModule
+public class SourceModule extends Module implements SrcModule
 {
 
   /*----------------------------  variables  ----------------------------*/
@@ -263,61 +261,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
     _universe.scheduleForResolution(_res);
     _res.resolve();
   }
-
-
-  /**
-   * Create the module intermediate representation for this module.
-   */
-  public MIR createMIR()
-  {
-    var d = _main == null
-      ? _universe
-      : _universe.get(this, _main);
-
-    if (false)  // NYI: Eventually, we might want to stop here in case of errors. This is disabled just to check the robustness of the next steps
-      {
-        Errors.showAndExit();
-      }
-
-    _closed = true;
-    return createMIR(d);
-  }
-
-
-
-  /**
-   * Create MIR based on given main feature.
-   */
-  MIR createMIR(AbstractFeature main)
-  {
-    if (main != null && !Errors.any())
-      {
-        if (main.valueArguments().size() != 0)
-          {
-            FeErrors.mainFeatureMustNotHaveArguments(main);
-          }
-        switch (main.kind())
-          {
-          case Field    : FeErrors.mainFeatureMustNotBeField    (main); break;
-          case Abstract : FeErrors.mainFeatureMustNotBeAbstract (main); break;
-          case Intrinsic: FeErrors.mainFeatureMustNotBeIntrinsic(main); break;
-          case Choice   : FeErrors.mainFeatureMustNotBeChoice   (main); break;
-          case Routine:
-            if (!main.generics().list.isEmpty())
-              {
-                FeErrors.mainFeatureMustNotHaveTypeArguments(main);
-              }
-          }
-      }
-    var result = new MIR(_universe, main, this);
-    if (!Errors.any())
-      {
-        new DFA(result).check();
-      }
-
-    return result;
-  }
-
 
 
   /**
