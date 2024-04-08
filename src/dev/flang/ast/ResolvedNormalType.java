@@ -250,8 +250,7 @@ public class ResolvedNormalType extends ResolvedType
       }
     else
       {
-        return (ResolvedType) Types.intern
-          (new ResolvedNormalType(g, ug, o, f, refOrVal, fixOuterThisType));
+        return new ResolvedNormalType(g, ug, o, f, refOrVal, fixOuterThisType);
       }
   }
 
@@ -287,7 +286,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   public static ResolvedNormalType create(ResolvedNormalType original, RefOrVal refOrVal)
   {
-    return (ResolvedNormalType)Types.intern(new ResolvedNormalType(original, refOrVal));
+    return new ResolvedNormalType(original, refOrVal);
   }
 
 
@@ -329,7 +328,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   public static ResolvedNormalType create(ResolvedNormalType original, AbstractFeature originalOuterFeature)
   {
-    return (ResolvedNormalType)Types.intern(new ResolvedNormalType(original, originalOuterFeature));
+    return new ResolvedNormalType(original, originalOuterFeature);
   }
 
   /**
@@ -409,8 +408,7 @@ public class ResolvedNormalType extends ResolvedType
   public AbstractType asRef()
   {
     if (PRECONDITIONS) require
-      (this == Types.intern(this),
-       !isVoid());
+      (!isVoid());
 
     AbstractType result = this;
     if (!isRef() && this != Types.t_ERROR)
@@ -427,9 +425,6 @@ public class ResolvedNormalType extends ResolvedType
    */
   public AbstractType asThis()
   {
-    if (PRECONDITIONS) require
-      (this == Types.intern(this));
-
     AbstractType result = this;
     if (!isThisType() && !isChoice() && this != Types.t_ERROR && this != Types.t_ADDRESS)
       {
@@ -450,9 +445,6 @@ public class ResolvedNormalType extends ResolvedType
    */
   public AbstractType asValue()
   {
-    if (PRECONDITIONS) require
-      (this == Types.intern(this));
-
     AbstractType result = this;
     if (isRef() && this != Types.t_ERROR)
       {
@@ -621,7 +613,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   AbstractType clone(AbstractFeature originalOuterFeature)
   {
-    return (ResolvedNormalType) Types.intern(
+    return
       new ResolvedNormalType(this, originalOuterFeature)
       {
         AbstractFeature originalOuterFeature(AbstractFeature currentOuter)
@@ -641,9 +633,7 @@ public class ResolvedNormalType extends ResolvedType
             }
           return _resolved;
         }
-
-
-      });
+      };
   }
 
 
