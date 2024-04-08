@@ -65,6 +65,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.SourceFile;
+import dev.flang.util.QuietThreadTermination;
 
 
 /**
@@ -174,7 +175,13 @@ public class Fuzion extends Tool
       }
       void process(FuzionOptions options, FUIR fuir)
       {
-        new JVM(new JVMOptions(options, _xdfa_, /* run */ true, /* save classes */ false, /* save JAR */ false, Optional.empty()), fuir).compile();
+        try
+          {
+            new JVM(new JVMOptions(options, _xdfa_, /* run */ true, /* save classes */ false, /* save JAR */ false, Optional.empty()), fuir).compile();
+          }
+        catch (QuietThreadTermination e)
+          {
+          }
       }
       boolean takesApplicationArgs()
       {
