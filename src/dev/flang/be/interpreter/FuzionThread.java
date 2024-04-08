@@ -29,11 +29,10 @@ package dev.flang.be.interpreter;
 import java.util.Stack;
 import java.util.TreeMap;
 
+import dev.flang.air.Clazz; // NYI: remove dependency! Use dev.flang.fuir instead.
+
 import dev.flang.util.ANY;
-
-import dev.flang.air.Clazz;
-
-import dev.flang.ast.AbstractCall; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.util.HasSourcePosition;
 
 
 /**
@@ -73,8 +72,8 @@ public class FuzionThread extends ANY
   /**
    * Current call stack, for debugging output
    */
-  Stack<AbstractCall> _callStack = new Stack<>();
-  Stack<Clazz> _callStackFrames = new Stack<>();
+  Stack<Integer> _callStack = new Stack<>();
+  Stack<Integer> _callStackFrames = new Stack<>();
 
 
   /**

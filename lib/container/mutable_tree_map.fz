@@ -333,7 +333,7 @@ is
 
   # returns an empty tree of elements of type A.
   #
-  public type.empty container.mutable_tree_map LM KEY VAL =>
+  public fixed type.empty container.mutable_tree_map LM KEY VAL =>
     container.mutable_tree_map LM KEY VAL
 
 

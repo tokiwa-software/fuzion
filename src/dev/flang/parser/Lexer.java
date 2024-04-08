@@ -3066,9 +3066,10 @@ PIPE        : "|"
      */
     private boolean atMultiLineStringDelimitor(int pos)
     {
-      return (pos < 0 || pos+2 >= byteLength())
-        ? false
-        : byteAt(pos) == '"' && byteAt(pos+1) == '"' && byteAt(pos+2) == '"';
+      return !(pos < 0 || pos+2 >= byteLength())
+        && byteAt(pos) == '"'
+        && byteAt(pos+1) == '"'
+        && byteAt(pos+2) == '"';
     }
 
 

@@ -65,6 +65,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.SourceFile;
+import dev.flang.util.QuietThreadTermination;
 
 
 /**
@@ -76,6 +77,12 @@ public class Fuzion extends Tool
 {
 
   /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * Time at application start in System.currentTimeMillis();
+   */
+  protected static final long _timerStart = System.currentTimeMillis();
 
 
   static String  _binaryName_ = null;
@@ -174,7 +181,13 @@ public class Fuzion extends Tool
       }
       void process(FuzionOptions options, FUIR fuir)
       {
-        new JVM(new JVMOptions(options, _xdfa_, /* run */ true, /* save classes */ false, /* save JAR */ false, Optional.empty()), fuir).compile();
+        try
+          {
+            new JVM(new JVMOptions(options, _xdfa_, /* run */ true, /* save classes */ false, /* save JAR */ false, Optional.empty()), fuir).compile();
+          }
+        catch (QuietThreadTermination e)
+          {
+          }
       }
       boolean takesApplicationArgs()
       {
@@ -335,10 +348,10 @@ public class Fuzion extends Tool
             var data = fe.module().data(n);
             if (data != null)
               {
-                say(" + " + p);
                 try (var os = Files.newOutputStream(p))
                   {
                     Channels.newChannel(os).write(data);
+                    say(" + " + p + " in " + (System.currentTimeMillis() - _timerStart) + "ms");
                   }
                 catch (IOException io)
                   {
@@ -1031,10 +1044,6 @@ public class Fuzion extends Tool
                                           _executeCode,
                                           _main,
                                           _backend.needsSources());
-        if (_backend == Backend.c)
-          {
-            options.setTailRec();
-          }
         options.setBackendArgs(applicationArgs);
         timer("prep");
         var fe = new FrontEnd(options);

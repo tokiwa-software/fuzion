@@ -826,7 +826,7 @@ modifier    : "redef"
             | "fixed"
             ;
    *
-   * @return logically or'ed set of Consts.MODIFIER_* constants found.
+   * @return logically or'ed set of FuzionConstants.MODIFIER_* constants found.
    */
   int modifiers()
   {
@@ -838,8 +838,8 @@ modifier    : "redef"
         int p2 = tokenPos();
         switch (current())
           {
-          case t_redef       : m = Consts.MODIFIER_REDEFINE    ; break;
-          case t_fixed       : m = Consts.MODIFIER_FIXED       ; break;
+          case t_redef       : m = FuzionConstants.MODIFIER_REDEFINE    ; break;
+          case t_fixed       : m = FuzionConstants.MODIFIER_FIXED       ; break;
           default            : throw new Error();
           }
         if ((ms & m) != 0)
@@ -2003,9 +2003,7 @@ argNamesOpt : argNames
    */
   boolean skipArgNamesOpt()
   {
-    return (current() == Token.t_ident)
-      ? skipArgNames()
-      : true;
+    return !(current() == Token.t_ident) || skipArgNames();
   }
 
 
@@ -3713,9 +3711,9 @@ boundType   : qualThis
     boolean result = skipQualThis();
     if (!result)
       {
-        var hasForbiddenParentheses = allowTypeInParentheses ? false : !fork().skipOneType(isFunctionReturnType,
-                                                                                           false,
-                                                                                           allowTypeThatIsNotExpression);
+        var hasForbiddenParentheses = !allowTypeInParentheses && !fork().skipOneType(isFunctionReturnType,
+                                                                                     false,
+                                                                                     allowTypeThatIsNotExpression);
         var res = skipOneType(isFunctionReturnType,
                               true,
                               allowTypeThatIsNotExpression);

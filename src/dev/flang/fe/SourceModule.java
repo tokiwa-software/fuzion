@@ -34,7 +34,6 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -46,7 +45,6 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
 import dev.flang.ast.Call;
-import dev.flang.ast.Consts;
 import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
@@ -837,7 +835,7 @@ part of the (((inner features))) declarations of the corresponding
     var existing = doi.get(fn);
     if (existing == null)
       {
-        if (f instanceof Feature ff && (ff._modifiers & Consts.MODIFIER_REDEFINE) != 0)
+        if (f instanceof Feature ff && (ff._modifiers & FuzionConstants.MODIFIER_REDEFINE) != 0)
           {
             AstErrors.redefineModifierDoesNotRedefine(f);
           }
@@ -845,7 +843,7 @@ part of the (((inner features))) declarations of the corresponding
     else if (existing == f)
       {
       }
-    else if (f instanceof Feature ff && (ff._modifiers & Consts.MODIFIER_REDEFINE) == 0 && !existing.isAbstract())
+    else if (f instanceof Feature ff && (ff._modifiers & FuzionConstants.MODIFIER_REDEFINE) == 0 && !existing.isAbstract())
       { /* previous duplicate feature declaration could result in this error for
          * type features, so suppress them in this case. See fuzion-lang.dev's
          * design/examples/typ_const2.fz as an example.
@@ -1355,7 +1353,7 @@ part of the (((inner features))) declarations of the corresponding
 
     f.impl().checkTypes(f);
     var args = f.arguments();
-    var fixed = (f.modifiers() & Consts.MODIFIER_FIXED) != 0;
+    var fixed = (f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0;
     for (var o : f.redefines())
       {
         var ta = o.handDown(_res, o.argTypes(), f.outer());

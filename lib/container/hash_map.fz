@@ -132,4 +132,4 @@ is
 
   # empty -- convenience routine to create an empty instance of hash_map
   #
-  public type.empty => container.hash_map HK V [] []
+  public fixed type.empty => container.hash_map HK V [] []

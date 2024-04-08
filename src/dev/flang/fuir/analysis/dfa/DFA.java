@@ -262,7 +262,7 @@ public class DFA extends ANY
         {
           res = access(cl, pre, c, i, tvalue, args);
         }
-      site(cl, c, i).recordResult(res == null);
+      DFA.this.site(cl, c, i).recordResult(res == null);
       return new Pair<>(res, _unit_);
     }
 
@@ -292,9 +292,8 @@ public class DFA extends ANY
       var ccs = _fuir.accessedClazzes(cl, c, i);
       var found = new boolean[] { false };
       var resf = new Val[] { null };
-      for (var ccii = 0; ccii < ccs.length; ccii += 2)
+      for (var cci = 0; cci < ccs.length; cci += 2)
         {
-          var cci = ccii;
           var tt = ccs[cci  ];
           var cc = ccs[cci+1];
           tvalue.value().forAll(t -> {
@@ -316,9 +315,16 @@ public class DFA extends ANY
       var res = resf[0];
       if (!found[0])
         { // NYI: proper error reporting
+          var detail = "Considered targets: ";
+          for (var ccii = 0; ccii < ccs.length; ccii += 2)
+            {
+              detail += _fuir.clazzAsStringNew(ccs[ccii]) + ", ";
+            }
           Errors.error(_fuir.codeAtAsPos(c, i),
                        "NYI: in "+_fuir.clazzAsString(cl)+" no targets for "+_fuir.codeAtAsString(cl, c, i)+" target "+tvalue,
-                       null);
+                       detail);
+
+          _call.showWhy();
         }
       else if (res != null &&
                tvalue instanceof EmbeddedValue &&
@@ -338,7 +344,7 @@ public class DFA extends ANY
      */
     Val access0(int cl, boolean pre, int c, int i, Val tvalue, List<Val> args, int cc, Val original_tvalue /* NYI: ugly */)
     {
-      var cs = site(cl, c, i);
+      var cs = DFA.this.site(cl, c, i);
       cs._accesses.add(cc);
       var isCall = _fuir.codeAt(c, i) == FUIR.ExprKind.Call;
       Val r;
@@ -504,14 +510,14 @@ public class DFA extends ANY
              c_u64  ,
              c_f32  ,
              c_f64  -> new NumericValue(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN));
-        case c_Const_String, c_String -> newConstString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).getInt()+4), _call);
+        case c_Const_String, c_String -> newConstString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt()+4), _call);
         default ->
           {
             if (!_fuir.clazzIsChoice(constCl))
               {
                 yield _fuir.clazzIsArray(constCl)
-                  ? newArrayConst(constCl, _call, ByteBuffer.wrap(d))
-                  : newValueConst(constCl, _call, ByteBuffer.wrap(d));
+                  ? newArrayConst(constCl, _call, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN))
+                  : newValueConst(constCl, _call, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN));
               }
             else
               {
@@ -656,7 +662,7 @@ public class DFA extends ANY
                 }
             }
         }
-      site(cl, c, i).recordResult(r == null);
+      DFA.this.site(cl, c, i).recordResult(r == null);
       return new Pair<>(r, _unit_);
     }
 
@@ -2031,11 +2037,12 @@ public class DFA extends ANY
         var sref0 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 0));
         var sref1 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 1));
         var sref2 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 2));
+        var sref3 = fuir.clazzArgClazz(cc, 3);
         var data4 = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 4));
         cl._dfa._readFields.add(sref0);
         cl._dfa._readFields.add(sref1);
         cl._dfa._readFields.add(sref2);
-        // NYI: add third argument to readFields
+        cl._dfa._readFields.add(sref3);
         cl._dfa._readFields.add(data4);
         return newFuzionJavaCall(cl);
       });

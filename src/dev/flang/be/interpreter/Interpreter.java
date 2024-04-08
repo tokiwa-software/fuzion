@@ -37,6 +37,8 @@ import dev.flang.ast.Types;                // NYI: remove this dependency
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
+import dev.flang.util.FatalError;
 import dev.flang.util.FuzionOptions;
 
 
@@ -74,8 +76,25 @@ public class Interpreter extends ANY
    */
   public void run()
   {
-    _ai.process(_fuir.mainClazzId(), true);
-    _ai.process(_fuir.mainClazzId(), false);
+    try
+      {
+        FuzionThread.current()._callStackFrames.push(_fuir.mainClazzId());
+        _ai.process(_fuir.mainClazzId(), true);
+        _ai.process(_fuir.mainClazzId(), false);
+      }
+    catch (FatalError e)
+      {
+        throw e;
+      }
+    catch (StackOverflowError e)
+      {
+        Errors.fatal("*** " + e + "\n" + Excecutor.callStack(_fuir));
+      }
+    catch (RuntimeException | Error e)
+      {
+        Errors.error("*** " + e + "\n" + Excecutor.callStack(_fuir));
+        throw e;
+      }
   }
 
 

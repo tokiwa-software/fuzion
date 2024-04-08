@@ -191,7 +191,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    */
   public UnresolvedType(UnresolvedType t, List<AbstractType> g, AbstractType o)
   {
-    this(t.pos(), t._name, g, o, t._refOrVal, false);
+    this(t.pos(), t._name, g, o, t._refOrVal);
 
     if (PRECONDITIONS) require
       (Errors.any() ||  (t.generics() instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
@@ -213,24 +213,6 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * value type.
    */
   public UnresolvedType(HasSourcePosition pos, String n, List<AbstractType> g, AbstractType o, RefOrVal refOrVal)
-  {
-    this(pos, n, g, o, refOrVal, true);
-  }
-
-
-  /**
-   * Constructor
-   *
-   * @param n
-   *
-   * @param g the actual generic arguments
-   *
-   * @param o
-   *
-   * @param refOrVal true iff this type should be a ref type, otherwise it will be a
-   * value type.
-   */
-  public UnresolvedType(HasSourcePosition pos, String n, List<AbstractType> g, AbstractType o, RefOrVal refOrVal, boolean fixOuterThisType)
   {
     if (PRECONDITIONS) require
       (pos != null,

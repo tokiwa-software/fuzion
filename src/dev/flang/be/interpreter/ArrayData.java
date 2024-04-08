@@ -82,7 +82,7 @@ public class ArrayData extends Value
     var l = length();
     if (x < 0 || x >= l)
       {
-        Errors.fatal("array index out of bounds: " + x + " not in 0.."+l+"\n" /* NYI  callStack() */);
+        Errors.fatal("array index out of bounds: " + x + " not in 0.."+l+"\n" /* NYI: need fuir + Excecutor.callStack(fuir) */);
       }
   }
 

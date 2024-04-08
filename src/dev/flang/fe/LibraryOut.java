@@ -45,7 +45,6 @@ import dev.flang.ast.Box;
 import dev.flang.ast.Call;
 import dev.flang.ast.Check;
 import dev.flang.ast.Constant;
-import dev.flang.ast.Consts;
 import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
@@ -222,7 +221,7 @@ class LibraryOut extends ANY
 
   /**
    * Write all features declared in given source module into DeclFeatures
-   * sections of a library file.  This include the features declared in the
+   * sections of a library file.  This includes the features declared in the
    * 'universe' as well as all features declared within outer features that come
    * from other module files.
    *
@@ -448,7 +447,7 @@ class LibraryOut extends ANY
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_TYPE_FEATURE;
       }
-    if ((f.modifiers() & Consts.MODIFIER_FIXED) != 0)
+    if ((f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0)
       {
         k = k | FuzionConstants.MIR_FILE_KIND_IS_FIXED;
       }
@@ -1026,6 +1025,9 @@ class LibraryOut extends ANY
         var sf = pos._sourceFile;
         _sourceFiles.put(fileName(sf), sf);
       }
+    // start
+    _data.writeInt(0);
+    // end
     _data.writeInt(0);
   }
 

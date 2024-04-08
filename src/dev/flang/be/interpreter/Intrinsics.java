@@ -747,7 +747,7 @@ public class Intrinsics extends ANY
           String in = innerClazz.feature().qualifiedName();   // == _fuir.clazzOriginalName(cl);
           var virtual     = in.equals("fuzion.java.call_v0");
           var constructor = in.equals("fuzion.java.call_c0");
-          Clazz resultClazz = innerClazz.actualGenerics()[0];
+          Clazz resultClazz = innerClazz.resultClazz();
           return args ->
             {
               int a = 1;
