@@ -21,6 +21,6 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = nom_test
+override NAME = nom_test
 FUZION_OPTIONS = -modules=nom
 include ../simple.mk
