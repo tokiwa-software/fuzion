@@ -1,0 +1,9 @@
+
+--CURDIR--/reg_issue2321.fz:24:11: error 1: Could not find called feature
+x bool => bla
+----------^^^
+Feature not found: 'bla' (no arguments)
+Target feature: 'x'
+In call: 'bla'
+
+one error.
