@@ -291,6 +291,7 @@ public class Loop extends ANY
 
     _prologSuccessBlock = new List<>();
     _prolog             = new Block(_prologSuccessBlock, hasImplicitResult);
+    _prolog._newScope = true;
     if (!_indexVars.isEmpty())
       {
         _nextItSuccessBlock = new List<>();
