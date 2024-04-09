@@ -360,7 +360,7 @@ public class Loop extends ANY
 
 
   /**
-   * Is any of the _indexVars an iteration ('x in set')?
+   * Is any of the _indexVars an iteration ('x in Set')?
    */
   private boolean iterates()
   {
@@ -512,13 +512,17 @@ public class Loop extends ANY
                                 List<Actual> nextActuals)
   {
     int i = -1;
+    int iteratorCount = 0;
     Iterator<Feature> ivi = _indexVars.iterator();
     while (ivi.hasNext())
       {
         i++;
         Feature f = ivi.next();
+
+        // iterators should have been replaced by FieldDef in `addIterators`
         if (CHECKS) check
           (f.impl()._kind != Impl.Kind.FieldIter);
+
         var p = f.pos();
         var ia = new Call(p, f.featureName().baseName());
         var na = new Call(p, f.featureName().baseName());
@@ -542,11 +546,10 @@ public class Loop extends ANY
                                       null,
                                       f._loopIteratorListName + "arg",
                                       new Impl(Impl.Kind.FieldActual));
-            var ial = new Call(p, f._loopIteratorListName + "tail");
-            var nal = new Call(p, f._loopIteratorListName + "tail");
             formalArguments.add(argList);
-            initialActuals.add(new Actual(ial));
-            nextActuals.add(new Actual(nal));
+            var listName = _rawLoopName + "list" + (iteratorCount++);
+            initialActuals.add(new Actual(new Call(p, new Call(p, listName + "cons"), "tail")));
+            nextActuals.add(new Actual(new Call(p, new Call(p, listName + "cons"), "tail")));
           }
       }
   }
@@ -566,8 +569,6 @@ public class Loop extends ANY
       {
         Feature f = ivi.next();
         Feature n = nvi.next();
-        Feature g = null;
-        Feature m = null;
         if (f.impl()._kind == Impl.Kind.FieldIter)
           {
             if (mustDeclareLoopElse)
@@ -595,8 +596,6 @@ public class Loop extends ANY
             ParsedType consType = new ParsedType(p, "Cons", new List<>(), null);
             Call next1    = new Call(p, new Call(p, listName + "cons"), "head");
             Call next2    = new Call(p, new Call(p, listName + "cons"), "head");
-            Call nextTail1 = new Call(p, new Call(p, listName + "cons"), "tail");
-            Call nextTail2 = new Call(p, new Call(p, listName + "cons"), "tail");
             List<Expr> prolog2 = new List<>();
             List<Expr> nextIt2 = new List<>();
             Case match1c = new Case(p, consType, listName + "cons", new Block(prolog2));
@@ -615,31 +614,11 @@ public class Loop extends ANY
             f._loopIteratorListName = listName;
             n._isLoopIterator = true;
             n._loopIteratorListName = listName;
-            g = new Feature(p,
-                            Visi.PRIV,
-                            null,
-                            listName + "tail",
-                            new Impl(f.impl().pos, nextTail1, Impl.Kind.FieldDef));
-            m = new Feature(p,
-                            Visi.PRIV,
-                            null,
-                            listName + "tail",
-                            new Impl(n.impl().pos, nextTail2, Impl.Kind.FieldDef));
           }
         _prologSuccessBlock.add(f);
         _nextItSuccessBlock.add(n);
         f._isIndexVarUpdatedByLoop = true;
         n._isIndexVarUpdatedByLoop = true;
-        if (g != null)
-          {
-            _prologSuccessBlock.add(g);
-            g._isIndexVarUpdatedByLoop = true;
-          }
-        if (m != null)
-          {
-            _nextItSuccessBlock.add(m);
-            m._isIndexVarUpdatedByLoop = true;
-          }
       }
   }
 
