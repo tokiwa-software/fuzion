@@ -31,19 +31,18 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import dev.flang.air.Clazz;
-import dev.flang.air.Clazzes;
-import dev.flang.ast.Types;
+import dev.flang.air.Clazz; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.air.Clazzes; // NYI: remove dependency! Use dev.flang.fuir instead.
+
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.ContractKind;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.AbstractInterpreter.ProcessStatement;
+
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
-import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
-import dev.flang.util.SourcePosition;
 
 
 /**
@@ -398,28 +397,31 @@ public class Excecutor extends ProcessStatement<Value, Object>
               {
                 var b = _fuir.deseralizeConst(elementType, bb);
                 var c = constData(elementType, b).v0();
-                if      (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_i8  ) == 0) { ((byte[])   (arrayData._array))[idx] = (byte)c.i8Value(); }
-                else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_i16 ) == 0) { ((short[])  (arrayData._array))[idx] = (short)c.i16Value(); }
-                else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_i32 ) == 0) { ((int[])    (arrayData._array))[idx] = c.i32Value(); }
-                else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_i64 ) == 0) { ((long[])   (arrayData._array))[idx] = c.i64Value(); }
-                else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_u8  ) == 0) { ((byte[])   (arrayData._array))[idx] = (byte)c.u8Value(); }
-                else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_u16 ) == 0) { ((char[])   (arrayData._array))[idx] = (char)c.u16Value(); }
-                else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_u32 ) == 0) { ((int[])    (arrayData._array))[idx] = c.u32Value(); }
-                else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_u64 ) == 0) { ((long[])   (arrayData._array))[idx] = c.u64Value(); }
-                else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_f32 ) == 0) { ((float[])  (arrayData._array))[idx] = c.f32Value(); }
-                else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_f64 ) == 0) { ((double[]) (arrayData._array))[idx] = c.f64Value(); }
-                else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_bool) == 0) { ((boolean[])(arrayData._array))[idx] = c.boolValue(); }
-                else                                                                           { ((Value[])  (arrayData._array))[idx] = c; }
+                switch (_fuir.getSpecialClazz(elementType))
+                  {
+                    case c_i8   : ((byte[])   (arrayData._array))[idx] = (byte)c.i8Value(); break;
+                    case c_i16  : ((short[])  (arrayData._array))[idx] = (short)c.i16Value(); break;
+                    case c_i32  : ((int[])    (arrayData._array))[idx] = c.i32Value(); break;
+                    case c_i64  : ((long[])   (arrayData._array))[idx] = c.i64Value(); break;
+                    case c_u8   : ((byte[])   (arrayData._array))[idx] = (byte)c.u8Value(); break;
+                    case c_u16  : ((char[])   (arrayData._array))[idx] = (char)c.u16Value(); break;
+                    case c_u32  : ((int[])    (arrayData._array))[idx] = c.u32Value(); break;
+                    case c_u64  : ((long[])   (arrayData._array))[idx] = c.u64Value(); break;
+                    case c_f32  : ((float[])  (arrayData._array))[idx] = c.f32Value(); break;
+                    case c_f64  : ((double[]) (arrayData._array))[idx] = c.f64Value(); break;
+                    case c_bool : ((boolean[])(arrayData._array))[idx] = c.boolValue(); break;
+                    default     : ((Value[])  (arrayData._array))[idx] = c;
+                  }
               }
 
             Instance result = new Instance(_fuir.clazzForInterpreter(constCl));
-            var internal_array = _fuir.clazzForInterpreter(constCl).lookup(Types.resolved.f_array_internal_array);
-            var saCl = internal_array.resultClazz();
+            var internalArray = _fuir.lookup_array_internal_array(constCl);
+            var sysArray = _fuir.clazzResultClazz(internalArray);
+            var saCl = _fuir.clazzForInterpreter(sysArray);
             Instance sa = new Instance(saCl);
-            Interpreter.setField(Types.resolved.f_fuzion_sys_array_length, -1, saCl, sa, new i32Value(elCount));
-            Interpreter.setField(Types.resolved.f_fuzion_sys_array_data, -1, saCl, sa, arrayData);
-            Interpreter.setField(Types.resolved.f_array_internal_array, -1, _fuir.clazzForInterpreter(constCl), result, sa);
-
+            Interpreter.setField(_fuir.clazzForInterpreter(_fuir.lookup_fuzion_sys_internal_array_length(sysArray)).feature(), -1, saCl,                               sa,     new i32Value(elCount));
+            Interpreter.setField(_fuir.clazzForInterpreter(_fuir.lookup_fuzion_sys_internal_array_data(sysArray)).feature(),   -1, saCl,                               sa,     arrayData);
+            Interpreter.setField(_fuir.clazzForInterpreter(internalArray).feature(),                                           -1, _fuir.clazzForInterpreter(constCl), result, sa);
             yield result;
           }
         else if (!_fuir.clazzIsChoice(constCl))

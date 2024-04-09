@@ -29,11 +29,11 @@ package dev.flang.be.interpreter;
 import java.util.Map;
 import java.util.TreeMap;
 
-import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.Types;
+import dev.flang.ast.AbstractFeature; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
 
-import dev.flang.air.Clazz;
-import dev.flang.air.Clazzes;
+import dev.flang.air.Clazz; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.air.Clazzes; // NYI: remove dependency! Use dev.flang.fuir instead.
 
 import dev.flang.util.ANY;
 

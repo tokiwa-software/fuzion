@@ -1739,17 +1739,17 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * Determine the index of the generic argument of this choice type that
    * matches the given static type.
    */
-  public int getChoiceTag(AbstractType staticTypeOfValue)
+  public int getChoiceTag(Clazz staticTypeOfValue)
   {
     if (PRECONDITIONS) require
       (isChoice(),
-       !staticTypeOfValue.dependsOnGenerics());
+       !staticTypeOfValue._type.dependsOnGenerics());
 
     int result = -1;
     int index = 0;
     for (Clazz g : _choiceGenerics)
       {
-        if (g._type.isDirectlyAssignableFrom(staticTypeOfValue))
+        if (g._type.isDirectlyAssignableFrom(staticTypeOfValue._type))
           {
             if (CHECKS) check
               (result < 0);

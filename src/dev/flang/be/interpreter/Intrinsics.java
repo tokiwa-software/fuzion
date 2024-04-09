@@ -61,6 +61,7 @@ import java.util.stream.Collectors;
 
 import dev.flang.air.Clazz; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.air.Clazzes; // NYI: remove dependency! Use dev.flang.fuir instead.
+
 import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
 
 import dev.flang.fuir.FUIR;
@@ -268,7 +269,7 @@ public class Intrinsics extends ANY
     put("concur.atomic.compare_and_swap0",  (excecutor, innerClazz) -> args ->
         {
           var a = innerClazz._outer;
-          var f = Types.resolved.f_concur_atomic_v;
+          var f = excecutor.fuir().clazzForInterpreter(excecutor.fuir().lookupAtomicValue(a._idInFUIR)).feature();
           var thiz      = args.get(0);
           var expected  = args.get(1);
           var new_value = args.get(2);
@@ -286,7 +287,7 @@ public class Intrinsics extends ANY
     put("concur.atomic.compare_and_set0",  (excecutor, innerClazz) -> args ->
         {
           var a = innerClazz._outer;
-          var f = Types.resolved.f_concur_atomic_v;
+          var f = excecutor.fuir().clazzForInterpreter(excecutor.fuir().lookupAtomicValue(a._idInFUIR)).feature();
           var thiz      = args.get(0);
           var expected  = args.get(1);
           var new_value = args.get(2);
@@ -317,7 +318,7 @@ public class Intrinsics extends ANY
     put("concur.atomic.read0",  (excecutor, innerClazz) -> args ->
         {
           var a = innerClazz._outer;
-          var f = Types.resolved.f_concur_atomic_v;
+          var f = excecutor.fuir().clazzForInterpreter(excecutor.fuir().lookupAtomicValue(a._idInFUIR)).feature();
           var thiz = args.get(0);
           synchronized (LOCK_FOR_ATOMIC)
             {
@@ -327,7 +328,7 @@ public class Intrinsics extends ANY
     put("concur.atomic.write0", (excecutor, innerClazz) -> args ->
         {
           var a = innerClazz._outer;
-          var f = Types.resolved.f_concur_atomic_v;
+          var f = excecutor.fuir().clazzForInterpreter(excecutor.fuir().lookupAtomicValue(a._idInFUIR)).feature();
           var thiz = args.get(0);
           synchronized (LOCK_FOR_ATOMIC)
             {
