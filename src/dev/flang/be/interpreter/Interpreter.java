@@ -31,11 +31,12 @@ import java.nio.charset.StandardCharsets;
 
 import dev.flang.air.Clazz;                // NYI: remove this dependency
 import dev.flang.air.Clazzes;              // NYI: remove this dependency
+
 import dev.flang.ast.AbstractFeature;      // NYI: remove this dependency
-import dev.flang.ast.AbstractType;         // NYI: remove this dependency
-import dev.flang.ast.Types;                // NYI: remove this dependency
+
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FatalError;
@@ -113,10 +114,10 @@ public class Interpreter extends ANY
     var saCl = Clazzes.fuzionSysArray_u8;
     Instance sa = new Instance(saCl);
     byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
-    setField(Types.resolved.f_fuzion_sys_array_length, -1, saCl, sa, new i32Value(bytes.length));
+    setField(Clazzes.fuzionSysArray_u8_length.feature(), -1, saCl, sa, new i32Value(bytes.length));
     var arrayData = new ArrayData(bytes);
-    setField(Types.resolved.f_fuzion_sys_array_data, -1, saCl, sa, arrayData);
-    setField(Types.resolved.f_array_internal_array, -1, cl, result, sa);
+    setField(Clazzes.fuzionSysArray_u8_data.feature(), -1, saCl, sa, arrayData);
+    setField(Clazzes.constStringInternalArray.feature(), -1, cl, result, sa);
 
     return result;
   }
@@ -175,7 +176,7 @@ public class Interpreter extends ANY
     setChoiceField(choiceClazz.feature(),
                    choiceClazz,
                    slot,
-                   valueClazz._type,
+                   valueClazz,
                    val);
     return result;
   }
@@ -422,13 +423,13 @@ public class Interpreter extends ANY
   private static void setChoiceField(AbstractFeature thiz,
                                      Clazz choiceClazz,
                                      LValue choice,
-                                     AbstractType staticTypeOfValue,
+                                     Clazz staticTypeOfValue,
                                      Value v)
   {
     if (PRECONDITIONS) require
       (choiceClazz.isChoice(),
        choiceClazz.feature() == thiz,
-       choiceClazz._type.compareTo(staticTypeOfValue) != 0);
+       choiceClazz.compareTo(staticTypeOfValue) != 0);
 
     int tag = choiceClazz.getChoiceTag(staticTypeOfValue);
     Clazz  vclazz  = choiceClazz.getChoiceClazz(tag);
@@ -439,7 +440,7 @@ public class Interpreter extends ANY
           { // the value is a stateless value type, so we store the tag as a reference.
             v = ChoiceIdAsRef.get(choiceClazz, tag);
             vclazz = Clazzes.Any.get();
-            staticTypeOfValue = vclazz._type;
+            staticTypeOfValue = vclazz;
             valSlot = choice.at(vclazz, Layout.get(choiceClazz).choiceRefValOffset());
           }
       }
@@ -448,8 +449,7 @@ public class Interpreter extends ANY
         LValue slot   = choice.at(vclazz, 0);
         (new i32Value(tag)).storeNonRef(slot, 1);
       }
-    if (CHECKS) check
-      (vclazz._type.isAssignableFrom(staticTypeOfValue));
+
     setFieldSlot(thiz, vclazz, valSlot, v);
 
     if (POSTCONDITIONS) ensure
@@ -490,7 +490,7 @@ public class Interpreter extends ANY
         clazz = ((Boxed)curValue)._valueClazz;
         curValue = ((Boxed)curValue)._contents;
       }
-      off = Layout.get(clazz).offset0(thiz, select);
+    off = Layout.get(clazz).offset0(thiz, select);
 
     // NYI: check if this is a can be enabled or removed:
     //
@@ -514,13 +514,13 @@ public class Interpreter extends ANY
     if (PRECONDITIONS) require
       (fclazz != null,
        slot != null,
-       v != null || thiz.isChoice() || fclazz._type.compareTo(Types.resolved.t_unit) == 0);
+       v != null || thiz.isChoice());
 
     if (fclazz.isRef())
       {
         setRefField   (thiz,        slot, v);
       }
-    else if (fclazz._type.compareTo(Types.resolved.t_unit) != 0)  // NYI: remove these assignments in earlier phase
+    else
       {
         setNonRefField(thiz, fclazz, slot, v);
       }
@@ -653,7 +653,7 @@ public class Interpreter extends ANY
     if (PRECONDITIONS) require
       (fclazz != null,
        slot != null,
-       v != null || thiz.isChoice() || fclazz._type.compareTo(Types.resolved.t_unit) == 0);
+       v != null || thiz.isChoice());
 
     if (fclazz.isRef())
       {

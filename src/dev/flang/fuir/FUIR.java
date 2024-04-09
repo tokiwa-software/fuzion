@@ -704,7 +704,7 @@ public class FUIR extends IR
 
     var cc = clazz(cl);
     var vc = clazz(valuecl);
-    return cc.getChoiceTag(vc._type);
+    return cc.getChoiceTag(vc);
   }
 
 

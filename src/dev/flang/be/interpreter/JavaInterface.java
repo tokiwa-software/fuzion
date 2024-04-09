@@ -32,9 +32,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import dev.flang.air.Clazz;
-import dev.flang.air.Clazzes;
-import dev.flang.ast.Types;
+import dev.flang.air.Clazz; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.air.Clazzes; // NYI: remove dependency! Use dev.flang.fuir instead.
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -101,47 +100,47 @@ public class JavaInterface extends ANY
             var oa = new Object[va.length];
             for (var ix = 0; ix < va.length; ix++)
               {
-                if (va[ix].clazz()._type == Types.resolved.t_i8)
+                if (va[ix].clazz() == Clazzes.i8.get())
                   {
                     oa[ix] = va[ix].i8Value();
                   }
-                else if (va[ix].clazz()._type == Types.resolved.t_i16)
+                else if (va[ix].clazz() == Clazzes.i16.get())
                   {
                     oa[ix] = va[ix].i16Value();
                   }
-                else if (va[ix].clazz()._type == Types.resolved.t_i32)
+                else if (va[ix].clazz() == Clazzes.i32.get())
                   {
                     oa[ix] = va[ix].i32Value();
                   }
-                else if (va[ix].clazz()._type == Types.resolved.t_i64)
+                else if (va[ix].clazz() == Clazzes.i64.get())
                   {
                     oa[ix] = va[ix].i64Value();
                   }
-                else if (va[ix].clazz()._type == Types.resolved.t_u8)
+                else if (va[ix].clazz() == Clazzes.u8.get())
                   {
                     oa[ix] = va[ix].u8Value();
                   }
-                else if (va[ix].clazz()._type == Types.resolved.t_u8)
+                else if (va[ix].clazz() == Clazzes.u16.get())
                   {
                     oa[ix] = va[ix].u16Value();
                   }
-                else if (va[ix].clazz()._type == Types.resolved.t_u16)
+                else if (va[ix].clazz() == Clazzes.u32.get())
                   {
                     oa[ix] = va[ix].u32Value();
                   }
-                else if (va[ix].clazz()._type == Types.resolved.t_u32)
+                else if (va[ix].clazz() == Clazzes.u64.get())
                   {
                     oa[ix] = va[ix].u64Value();
                   }
-                else if (va[ix].clazz()._type == Types.resolved.t_u64)
+                else if (va[ix].clazz() == Clazzes.f32.get())
                   {
                     oa[ix] = va[ix].f32Value();
                   }
-                else if (va[ix].clazz()._type == Types.resolved.t_f32)
+                else if (va[ix].clazz() == Clazzes.f64.get())
                   {
                     oa[ix] = va[ix].f64Value();
                   }
-                else if (va[ix].clazz()._type == Types.resolved.t_f64)
+                else if (va[ix].clazz() == Clazzes.bool.get())
                   {
                     oa[ix] = va[ix].boolValue();
                   }
