@@ -17,14 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion issue 238
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-
-issue238 =>
-
-  say ([0,1,2,3,4]
-    .group_by (x -> if x % 2 = 0 then "even" else "uneven")
-    .items.map (kv -> (k,v):=kv; "$k => $v")
-    .fold (String.concat1 "\n"))
+override NAME = reg_issue2402
+include ../simple.mk

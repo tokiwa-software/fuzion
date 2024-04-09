@@ -1972,8 +1972,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public boolean isInstantiated()
   {
-    return _checkingInstantiatedHeirs > 0 || (isOuterInstantiated() || isChoice()
-      || _outer.isRef() && _outer.hasInstantiatedHeirs()) && _isInstantiated || feature().isTypeFeature();
+    return _isInstantiated
+      && (_checkingInstantiatedHeirs > 0
+          || (isOuterInstantiated()
+            || isChoice()
+            || _outer.isRef() && _outer.hasInstantiatedHeirs()));
   }
 
 
