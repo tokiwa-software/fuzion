@@ -172,6 +172,7 @@ public class Clazzes extends ANY
   public static Clazz fuzionSysArray_u8;         // result clazz of Const_String.internal_array
   public static Clazz fuzionSysArray_u8_data;    // field fuzion.sys.array<u8>.data
   public static Clazz fuzionSysArray_u8_length;  // field fuzion.sys.array<u8>.length
+  public static Clazz c_address;                 // clazz representing address type
   public static Clazz c_error;                   // clazz representing error-feature
 
 
@@ -385,7 +386,7 @@ public class Clazzes extends ANY
     var c_universe = universe.get();
     c_universe.called(SourcePosition.builtIn);
     c_universe.instantiated(SourcePosition.builtIn);
-    create(Types.t_ADDRESS, c_universe);
+    c_address = create(Types.t_ADDRESS, c_universe);
 
     // mark internally referenced clazzes as called or instantiated:
     if (CHECKS) check

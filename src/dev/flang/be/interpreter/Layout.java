@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
 
 import dev.flang.air.Clazz; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.air.Clazzes; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -148,21 +147,21 @@ class Layout extends ANY
             var ff = f.feature();
             // NYI: Ugly special handling, clean up:
             var fc =
-              ff.isOuterRef() && ff.outer().isOuterRefAdrOfValue()  ? Clazzes.clazz(Types.t_ADDRESS)
+              ff.isOuterRef() && ff.outer().isOuterRefAdrOfValue()  ? Clazzes.c_address
                                                                     : f.resultClazz();
             int fsz;
             if        (fc.isRef()) { fsz = 1;
-            } else if (fc._type.compareTo(Types.resolved.t_i8    ) == 0) { fsz = 1;
-            } else if (fc._type.compareTo(Types.resolved.t_i16   ) == 0) { fsz = 1;
-            } else if (fc._type.compareTo(Types.resolved.t_i32   ) == 0) { fsz = 1;
-            } else if (fc._type.compareTo(Types.resolved.t_i64   ) == 0) { fsz = 2;
-            } else if (fc._type.compareTo(Types.resolved.t_u8    ) == 0) { fsz = 1;
-            } else if (fc._type.compareTo(Types.resolved.t_u16   ) == 0) { fsz = 1;
-            } else if (fc._type.compareTo(Types.resolved.t_u32   ) == 0) { fsz = 1;
-            } else if (fc._type.compareTo(Types.resolved.t_u64   ) == 0) { fsz = 2;
-            } else if (fc._type.compareTo(Types.resolved.t_f32   ) == 0) { fsz = 1;
-            } else if (fc._type.compareTo(Types.resolved.t_f64   ) == 0) { fsz = 2;
-            } else if (fc._type.compareTo(Types.resolved.t_void  ) == 0) { fsz = 0;
+            } else if (Clazzes.i8.getIfCreated()     != null && fc.compareTo(Clazzes.i8.get()      ) == 0) { fsz = 1;
+            } else if (Clazzes.i16.getIfCreated()    != null && fc.compareTo(Clazzes.i16.get()     ) == 0) { fsz = 1;
+            } else if (Clazzes.i32.getIfCreated()    != null && fc.compareTo(Clazzes.i32.get()     ) == 0) { fsz = 1;
+            } else if (Clazzes.i64.getIfCreated()    != null && fc.compareTo(Clazzes.i64.get()     ) == 0) { fsz = 2;
+            } else if (Clazzes.u8.getIfCreated()     != null && fc.compareTo(Clazzes.u8.get()      ) == 0) { fsz = 1;
+            } else if (Clazzes.u16.getIfCreated()    != null && fc.compareTo(Clazzes.u16.get()     ) == 0) { fsz = 1;
+            } else if (Clazzes.u32.getIfCreated()    != null && fc.compareTo(Clazzes.u32.get()     ) == 0) { fsz = 1;
+            } else if (Clazzes.u64.getIfCreated()    != null && fc.compareTo(Clazzes.u64.get()     ) == 0) { fsz = 2;
+            } else if (Clazzes.f32.getIfCreated()    != null && fc.compareTo(Clazzes.f32.get()     ) == 0) { fsz = 1;
+            } else if (Clazzes.f64.getIfCreated()    != null && fc.compareTo(Clazzes.f64.get()     ) == 0) { fsz = 2;
+            } else if (Clazzes.c_void.getIfCreated() != null && fc.compareTo(Clazzes.c_void.get()  ) == 0) { fsz = 0;
             } else {
               fsz = get(fc).size();
             }
