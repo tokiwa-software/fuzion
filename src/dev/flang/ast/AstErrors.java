@@ -1972,7 +1972,7 @@ public class AstErrors extends ANY
     );
   }
 
-  public static void illegalVisibilityModifier(Feature f)
+  public static void illegalTypeVisibilityModifier(Feature f)
   {
     error(f.pos(), "Feature specifying type visibility does not define a type.",
      "To solve this, remove the type visibility: " + s(f.visibility().typeVisibility()) + "."
@@ -1999,6 +1999,13 @@ public class AstErrors extends ANY
   {
     error(f.pos(), "Redefinition must not have more restrictive visibility.",
       "To solve this, increase the visibility of " + s(f) + " to at least " + s(redefined.visibility()));
+  }
+
+  public static void illegalVisibilityModifier(Feature f)
+  {
+    error(f.pos(), "Feature defined in inner block must not have visibility modifier.",
+      "To solve this, remove the visibility modifier " + s(f.visibility()) + " from feature " + s(f)
+        + " or move the feature to the main block of the containing feature.");
   }
 
   public static void contractExpressionMustResultInBool(Expr cond)
