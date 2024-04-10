@@ -2663,7 +2663,7 @@ hw25 is
    */
   public boolean clazzIsArray(int constCl)
   {
-    return clazz(constCl)._type.featureOfType() == Types.resolved.f_array;
+    return clazz(constCl)._type.feature() == Types.resolved.f_array;
   }
 
 
@@ -2793,7 +2793,7 @@ hw25 is
       require(cl >= 0);
 
     var qn = clazz(cl)._type
-      .featureOfType()
+      .feature()
       .qualifiedName();
 
     if (CHECKS) check

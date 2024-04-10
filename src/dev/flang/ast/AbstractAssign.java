@@ -288,7 +288,7 @@ public abstract class AbstractAssign extends Expr
           }
 
         if (CHECKS) check
-          (res._module.lookupFeature(this._target.type().featureOfType(), f.featureName(), f) == f || Errors.any());
+          (res._module.lookupFeature(this._target.type().feature(), f.featureName(), f) == f || Errors.any());
       }
   }
 

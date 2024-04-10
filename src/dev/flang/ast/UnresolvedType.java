@@ -531,7 +531,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
             o = o.resolve(res, of);
             var ot2 = o.isGenericArgument() ? o.genericArgument().constraint(res) // see tests/reg_issue1943 for examples
                                             : o;
-            of = ot2.featureOfType();
+            of = ot2.feature();
           }
         else
           {
@@ -641,7 +641,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
               }
             var ot2 = o.isGenericArgument() ? o.genericArgument().constraint(res) // see tests/reg_issue1943 for examples
                                             : o;
-            of = ot2.featureOfType();
+            of = ot2.feature();
           }
         else
           {
@@ -956,9 +956,9 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @throws Error if this is not resolved or isGenericArgument().
    */
-  public AbstractFeature featureOfType()
+  public AbstractFeature feature()
   {
-    throw new Error("featureOfType not available for unresolved type");
+    throw new Error("feature not available for unresolved type");
   }
 
 
