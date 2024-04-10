@@ -388,7 +388,7 @@ public class Feature extends AbstractFeature
                        c,
                        new Impl(b.pos(), b, Impl.Kind.Routine))
       {
-        boolean isAnonymousInnerFeature()
+        public boolean isAnonymousInnerFeature()
         {
           return true;
         }
@@ -856,7 +856,8 @@ public class Feature extends AbstractFeature
    *
    * @return true iff this feature is anonymous.
    */
-  boolean isAnonymousInnerFeature()
+  // NYI: remove this special handling. currently necessary, see Parser.anonymous()
+  public boolean isAnonymousInnerFeature()
   {
     return false;
   }

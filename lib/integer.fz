@@ -101,6 +101,7 @@ module:public integer : numeric is
   #
   public redef as_string String => integer.this.as_string 10
 
+  /* NYI: SourceModule.inScope does not find as_list0
 
   # convert this to a number using the given base.  If negative, add "-" as
   # the first character.
@@ -130,6 +131,38 @@ module:public integer : numeric is
           digit := (integer.this / power % b).as_u8
           list (digit_as_utf8_byte digit) (()-> as_list0 power/b)
 
+      String.from_bytes (as_list0 (integer.this.highest b))
+
+  */
+
+  # convert this to a number using the given base.  If negative, add "-" as
+  # the first character.
+  #
+  public as_string(base u32) String : character_encodings
+    pre
+      debug: 1 < base ≤ 36
+  =>
+    b := integer.this.from_u32 base
+
+    # this digit as an UTF-8 byte
+    digit_as_utf8_byte(d u8) u8
+    pre d ≤ 35 # 35 would be a Z
+    =>
+      if d < 10 then String.zero_char + d else String.a_char + d - 10
+
+    as_list0 (power integer.this) =>
+      if power.sign <= 0
+        nil
+      else
+        digit := (integer.this / power % b).as_u8
+        list (digit_as_utf8_byte digit) (()-> as_list0 power/b)
+
+    if integer.this.sign < 0
+      # there could be an overflow on negation
+      match -? integer.this
+        v integer.this => "-" + v.as_string base
+        nil => ("-" + (-(integer.this / b)).as_string base) + (-(integer.this % b)).as_string base
+    else
       String.from_bytes (as_list0 (integer.this.highest b))
 
 

@@ -97,7 +97,7 @@ public class Function extends AbstractLambda
    */
   List<ParsedName> _names;
 
-  Expr _expr;           // the right hand side of the '->'
+  public Expr _expr;           // the right hand side of the '->'
 
 
   /*--------------------------  constructors  ---------------------------*/

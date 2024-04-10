@@ -1,0 +1,69 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test
+#
+# -----------------------------------------------------------------------
+
+visibility_scoping_negative is
+
+  match (1..0).as_list
+    Cons =>
+      i := 2
+      say i // okay
+      /* NYI: scoping for anonymous features
+      anon_feat3 := ref : String
+                      say i // okay
+      */
+      inner_feat is
+        /* NYI: scoping for anonymous features
+        anon_feat4 := ref : String
+                        say i // okay
+                        */
+        say i // okay
+        inner_feat2 is
+          /* NYI: scoping for anonymous features
+          anon_feat5 := ref : String
+                          say i // okay
+                          */
+          say i // okay
+      unit
+    nil =>
+      unit
+  private loop_else =>
+    i              // should flag an error: Could not find called feature
+  say loop_else
+
+
+  inner is
+    match (1..0).as_list
+      Cons =>
+        i := 2
+        unit
+      nil =>
+        unit
+        /* NYI: scoping for anonymous features
+    anon_feat1 := ref : String
+                    say i // should flag an error: Could not find called feature
+
+  anon_feat2 := ref : String
+                  say i // should flag an error: Could not find called feature
+                  */
+
+  say inner.i     // should flag an error: Could not find called feature

@@ -36,14 +36,18 @@ import java.nio.file.Path;
 
 import java.util.Comparator;
 import java.util.SortedMap;
+import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.Vector;
 
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
+import dev.flang.ast.AbstractCase;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
+import dev.flang.ast.Block;
 import dev.flang.ast.Call;
 import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
@@ -51,6 +55,7 @@ import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.FeatureAndOuter;
 import dev.flang.ast.FeatureVisitor;
+import dev.flang.ast.Function;
 import dev.flang.ast.Impl;
 import dev.flang.ast.Resolution;
 import dev.flang.ast.SrcModule;
@@ -1133,7 +1138,7 @@ part of the (((inner features))) declarations of the corresponding
           {
             var v = e.getValue();
             if ((use == null || (hidden != featureVisible(use.pos()._sourceFile, v))) &&
-                (!v.isField() || !foundFieldInScope))
+                (!v.isField() || !foundFieldInScope) && (use == null || thisOrOuterAnonymous(outer) /* NYI: see Parser.anonymous() */ || inScope(v, use)))
               {
                 result.add(new FeatureAndOuter(v, curOuter, inner));
                 foundFieldInScope = foundFieldInScope || v.isField() && foundFieldInThisScope;
@@ -1144,6 +1149,105 @@ part of the (((inner features))) declarations of the corresponding
         curOuter = curOuter.outer();
       }
     while (traverseOuter && curOuter != null);
+    return result;
+  }
+
+
+  private boolean thisOrOuterAnonymous(AbstractFeature af)
+  {
+    return af == null
+      ? false
+      : af instanceof Feature f && f.isAnonymousInnerFeature() || thisOrOuterAnonymous(af.outer()) ;
+  }
+
+
+  @SuppressWarnings("unchecked")
+  private boolean inScope(AbstractFeature f, Expr use)
+  {
+    if (PRECONDITIONS) require
+      (use != null);
+
+    var result = true;
+
+    var o = f.outer();
+    Object[] calledFeatureBlockStack = new Object[]{ new Vector<>() };
+    Object[] usageBlockStack = new Object[]{ new Vector<>() };
+    Object[] calledFeatureBlock = new Object[]{ null };
+
+    if (o != null &&o.isRoutine())
+      {
+        o.code().visit(new FeatureVisitor()
+          {
+            private Stack<Object> stack = new Stack<Object>();
+            public void actionBefore(Block b, AbstractFeature outer) { if (b._newScope) { stack.push(b); } }
+            public void actionBefore(AbstractCase c) { stack.push(c); }
+            public void actionAfter(Block b, AbstractFeature outer)  { if (b._newScope) { stack.pop(); } }
+            public void actionAfter (AbstractCase c) { stack.pop(); }
+            public void action(AbstractCall c) { if (use == c) { usageBlockStack[0] = stack.clone(); } }
+            public Expr action(Function f, AbstractFeature outer)
+            {
+              // search lambdas
+              f._expr.visit(this, outer);
+              return super.action(f, outer);
+            }
+            public Expr action(Feature fd, AbstractFeature outer)
+            {
+              if (fd == f)
+                {
+                  calledFeatureBlockStack[0] = stack.clone();
+                  calledFeatureBlock[0] = stack.isEmpty() ? null : stack.peek();
+                }
+              return super.action(fd, outer);
+            }
+          }, o);
+
+        var nestedUsage = new Boolean[]{ false };
+
+        var innerFeaturesVisitor = new FeatureVisitor()
+          {
+            public void action(AbstractCall c) { if (use == c) { nestedUsage[0] = true; } }
+            @Override
+            public Expr action(Function f, AbstractFeature outer)
+            {
+              // search lambdas
+              if (!nestedUsage[0])
+                {
+                  f._expr.visit(this, outer);
+                }
+              return super.action(f, outer);
+            }
+            public Expr action(Feature fd, AbstractFeature outer) {
+              if (!nestedUsage[0] && fd.isRoutine())
+                {
+                  fd.code().visit(this, outer);
+                }
+              return super.action(fd, outer);
+            }
+          };
+
+        if (((Vector<Object>)calledFeatureBlockStack[0]).size() > 0)
+          {
+            if (calledFeatureBlock[0] instanceof AbstractCase ac)
+              {
+                ac.visit(innerFeaturesVisitor, o);
+              }
+            else
+              {
+                ((Block)calledFeatureBlock[0]).visit(innerFeaturesVisitor, o);
+              }
+          }
+
+
+        var stack = (Vector<Object>)calledFeatureBlockStack[0];
+        var stack2 = (Vector<Object>)usageBlockStack[0];
+        for (int i = 0; i < stack.size(); i++)
+          {
+            if (i > stack2.size()-1 || stack2.get(i) != stack.get(i))
+              {
+                result = nestedUsage[0] || false;
+              }
+          }
+      }
     return result;
   }
 

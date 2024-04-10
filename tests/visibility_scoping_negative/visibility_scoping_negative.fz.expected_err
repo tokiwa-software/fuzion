@@ -1,0 +1,17 @@
+
+--CURDIR--/visibility_scoping_negative.fz:50:5: error 1: Could not find called feature
+    i              // should flag an error: Could not find called feature
+----^
+Feature not found: 'i' (no arguments)
+Target feature: 'visibility_scoping_negative.loop_else'
+In call: 'i'
+
+
+--CURDIR--/visibility_scoping_negative.fz:69:13: error 2: Could not find called feature
+  say inner.i     // should flag an error: Could not find called feature
+------------^
+Feature not found: 'i' (no arguments)
+Target feature: 'visibility_scoping_negative.inner'
+In call: 'inner.i'
+
+2 errors.
