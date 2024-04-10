@@ -63,7 +63,7 @@ is
   #
   contents := mi.go ()->
     for
-      mcontents := (mutate.array (option (tuple HK V))).new mi allocated_size nil, mcontents
+      mcontents := (mutate.array (option (tuple HK V))).new mi allocated_size.as_i64 nil, mcontents
       k in ks
       v in vs
     do
@@ -72,14 +72,14 @@ is
       # store k,v for index at,
       store (at i32) unit =>
 
-        match mcontents[at]
+        match mcontents[at.as_i64]
           nil     =>     # slot is free, so use it:
-            mcontents[at] := (k, v)
+            mcontents[at.as_i64] := (k, v)
 
           t tuple =>     # we have a conflict
             (ek, _) := t
             if ek = k    # no conflict, but remapping of k
-              mcontents[at] := (k, v)
+              mcontents[at.as_i64] := (k, v)
             else         # conflict
               store (collision at)
 
