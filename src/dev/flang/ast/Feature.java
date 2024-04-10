@@ -803,8 +803,8 @@ public class Feature extends AbstractFeature
    */
   public Kind kind()
   {
-    return state().atLeast(State.RESOLVING_TYPES) && isChoiceAfterTypesResolved() ||
-          !state().atLeast(State.RESOLVING_TYPES) && isChoiceBeforeTypesResolved()
+    return state().atLeast(State.RESOLVING_TYPES) && Types.resolved != null && isChoiceAfterTypesResolved() ||
+                                                                               isChoiceBeforeTypesResolved()
       ? Kind.Choice
       : switch (implKind()) {
           case FieldInit, FieldDef, FieldActual, FieldIter, Field -> Kind.Field;
