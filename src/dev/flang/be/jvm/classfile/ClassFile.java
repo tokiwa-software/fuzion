@@ -1203,7 +1203,7 @@ public class ClassFile extends ANY implements ClassFileConstants
           stackMapFrames.add(new StackMapFullFrame(StackMapTable.this, 0));
           _code.buildStackMapTable(
             this,
-            (Stack)stacks.get(0).clone(),
+            Expr.clone(stacks.get(0)),
             locals.get(0).v1().clone()
           );
         }
