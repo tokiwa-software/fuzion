@@ -355,17 +355,34 @@ public class LibraryModule extends Module
    */
   List<AbstractFeature> features(AbstractFeature outer)
   {
-    var n = moduleNumDeclFeatures();
-    var at = moduleDeclFeaturesPos();
-    for (int i = 0; i < n; i++)
+    if (outer.isUniverse())
       {
-        if (feature(declFeaturesOuter(at)) == outer)
-          {
-            return innerFeatures(declFeaturesInnerPos(at));
-          }
-        at = declFeaturesNextPos(at);
+        return libraryUniverse()
+          .innerFeatures();
       }
-    return new List<>();
+    else
+      {
+        var n = moduleNumDeclFeatures();
+        var at = moduleDeclFeaturesPos();
+        for (int i = 0; i < n; i++)
+          {
+            if (feature(declFeaturesOuter(at)) == outer)
+              {
+                return innerFeatures(declFeaturesInnerPos(at));
+              }
+            at = declFeaturesNextPos(at);
+          }
+        return new List<>();
+      }
+  }
+
+
+  /**
+   * get the universe as persisted in this fum-file
+   */
+  private LibraryFeature libraryUniverse()
+  {
+    return (LibraryFeature)innerFeatures(declFeaturesInnerPos(moduleDeclFeaturesPos())).get(0);
   }
 
 
@@ -714,7 +731,7 @@ DeclFeatures
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | int           | outer feature index, 0 for outer()==universe  |
+   *   | true   | 1      | int           | outer feature index, 0 for outer()==null      |
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | InnerFeatures | inner Features                                |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -817,7 +834,7 @@ Feature
                        | int           | arg count
                        | int           | name id
                        | Pos           | source code position
-                       | int           | outer feature index, 0 for outer()==universe
+                       | int           | outer feature index, 0 for outer()==null
    | hasRT    | 1      | Type          | optional result type,
                                        hasRT = !isConstructor && !isChoice
 .2+| true NYI! !isField? !isIntrinsc
@@ -855,7 +872,7 @@ Feature
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Pos           | source code position                          |
    *   |        |        +---------------+-----------------------------------------------+
-   *   |        |        | int           | outer feature index, 0 for outer()==universe  |
+   *   |        |        | int           | outer feature index, 0 for outer()==null      |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | Y=1    | 1      | int           | type feature index                            |
    *   +--------+--------+---------------+-----------------------------------------------+
