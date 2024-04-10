@@ -98,9 +98,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * For a resolved normal type, return the underlying feature.
    *
-   * @return the underlying feature.
+   * Requires that this is resolved and !isGenericArgument().
    *
-   * @throws Error if this is not resolved or isGenericArgument().
+   * @return the underlying feature.
    */
   public abstract AbstractFeature feature();
 
@@ -108,7 +108,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * For a normal type, this is the list of actual type parameters given to the type.
    *
-   * @throws Error if this isGenericArgument().
+   * Requires that this is resolved and !isGenericArgument().
    */
   public abstract List<AbstractType> generics();
 
@@ -116,7 +116,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * For a resolved parametric type return the generic.
    *
-   * @throws Error if this is not a parametric type.
+   * Requires that this is resolved and isGenericArgument().
    */
   public abstract Generic genericArgument();
 
@@ -124,7 +124,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * The outer of this type. May be null.
    *
-   * @throws Error if this isGenericArgument().
+   * Requires that this is resolved and !isGenericArgument().
    */
   public abstract AbstractType outer();
 
@@ -157,7 +157,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * Return this type as a this-type, a type denoting the
    * instance of this type in the current context.
    *
-   * @throws Error if this is not resolved or isGenericArgument().
+   * Requires that this is resolved and !isGenericArgument().
    */
   public abstract AbstractType asThis();
 
