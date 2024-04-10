@@ -37,6 +37,8 @@ import dev.flang.ast.Types;                // NYI: remove this dependency
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
+import dev.flang.util.FatalError;
 import dev.flang.util.FuzionOptions;
 
 
@@ -52,9 +54,15 @@ public class Interpreter extends ANY
   public Interpreter(FuzionOptions options, FUIR fuir)
   {
     this._options_ = options;
-    this._fuir = fuir;
-    var processor = new Excecutor(fuir, _options_);
-    _ai = new AbstractInterpreter<Value, Object>(fuir, processor);
+    this._fuir = new FUIR(fuir)
+      {
+        // NYI: BUG: fuir should be thread safe #2760
+        public synchronized int[] matchCaseTags(int cl, int c, int ix, int cix) {
+          return super.matchCaseTags(cl, c, ix, cix);
+        };
+      };
+    var processor = new Excecutor(_fuir, _options_);
+    _ai = new AbstractInterpreter<Value, Object>(_fuir, processor);
     Intrinsics.ENABLE_UNSAFE_INTRINSICS = options.enableUnsafeIntrinsics();  // NYI: Add to Fuzion IR or BE Config
   }
 
@@ -68,8 +76,25 @@ public class Interpreter extends ANY
    */
   public void run()
   {
-    _ai.process(_fuir.mainClazzId(), true);
-    _ai.process(_fuir.mainClazzId(), false);
+    try
+      {
+        FuzionThread.current()._callStackFrames.push(_fuir.mainClazzId());
+        _ai.process(_fuir.mainClazzId(), true);
+        _ai.process(_fuir.mainClazzId(), false);
+      }
+    catch (FatalError e)
+      {
+        throw e;
+      }
+    catch (StackOverflowError e)
+      {
+        Errors.fatal("*** " + e + "\n" + Excecutor.callStack(_fuir));
+      }
+    catch (RuntimeException | Error e)
+      {
+        Errors.error("*** " + e + "\n" + Excecutor.callStack(_fuir));
+        throw e;
+      }
   }
 
 

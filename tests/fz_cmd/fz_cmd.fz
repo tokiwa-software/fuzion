@@ -22,4 +22,4 @@
 # -----------------------------------------------------------------------
 
 fz_cmd is
-  Java.dev.flang.tools.Fuzion.main []
+  _ := Java.dev.flang.tools.Fuzion.main []

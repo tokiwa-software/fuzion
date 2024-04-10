@@ -377,7 +377,7 @@ public class JavaInterface extends ANY
     var result = new Instance(resultClazz);
     if (CHECKS) check
       (result.refs.length == 1);    // an 'error' has exactly one ref field of type string
-    result.refs[0] = Interpreter.value(e.toString());
+    result.refs[0] = Interpreter.value(e.getMessage().toString());
 
     return result;
   }

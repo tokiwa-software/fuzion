@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -327,7 +328,7 @@ public class InlineArray extends ExprWithPos
       @Override
       public SourcePosition pos()
       {
-        throw new UnsupportedOperationException("Unimplemented method 'pos'");
+        return InlineArray.this.pos();
       }
 
       /**
@@ -337,11 +338,14 @@ public class InlineArray extends ExprWithPos
       @Override
       public byte[] data()
       {
-        var result = ByteBuffer.allocate(4 + InlineArray.this
-          ._elements
-          .stream()
-          .mapToInt(e -> e.asCompileTimeConstant().data().length)
-          .sum());
+        var result = ByteBuffer.allocate(
+            4 + InlineArray.this
+                           ._elements
+                           .stream()
+                           .mapToInt(e -> e.asCompileTimeConstant().data().length)
+                           .sum()
+          )
+          .order(ByteOrder.LITTLE_ENDIAN);
 
         result.putInt(_elements.size());
 

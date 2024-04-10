@@ -152,7 +152,7 @@ ctrie_threads is
 
           s2 := if k%5=0 then ctrie.snapshot true else ctrie
           match ctrie.remove kt
-            lock_free.not_found => panic "$kt not found"
+            nil => panic "$kt not found"
             i32 =>
           if ctrie[kt].exists
             say "removed key $kt still present"

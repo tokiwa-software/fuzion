@@ -33,35 +33,26 @@
 #
 # example:
 # ```
-# m : mutate is
-#
-# m.go (()->
-#   mem := memoize m i32 String ((x)->
-#     say "computing $x"
-#     x.as_string)
-#
-#   say (mem 1)
-#   say (mem 2)
-#   say (mem 1)
-#   say (mem 3)
-# )
+# mem := memoize (lock_free.map i32 String) i32 String x->
+#   say "computing $x"
+#   x.as_string
+
+# say (mem 1)
+# say (mem 2)
+# say (mem 1)
+# say (mem 3)
 # ```
 #
-# NYI this should be map implementation
-# agnostic via map effect. currently using mutate and ordered_map.
-#
-# NYI constraint for T should be property.orderable, has_hashcode, or has_ordinal
-#
-public memoize(LM type : mutate, T type : property.orderable, R type, f T->R) T->R =>
+public memoize(MM type : container.Mutable_Map T R, T type : property.equatable, R type, f T->R) T->R =>
   ref : Unary R T
 
     # the memory
-    store := LM.env.new (container.ordered_map T R [] [])
+    store := MM.empty
 
     # implementation of abstract feature Unary.call
     #
     call(a T) R =>
       # compute if not yet computed
-      if store.get[a].is_nil
-        store.put (store.get.add a (f a))
-      store.get[a].get
+      if store[a].is_nil
+        store.add a (f a)
+      store[a].get

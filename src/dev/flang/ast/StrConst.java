@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 
 import dev.flang.util.SourcePosition;
@@ -128,7 +129,7 @@ public class StrConst extends Constant
     else
       {
         var b = _str.getBytes(StandardCharsets.UTF_8);
-        var r = ByteBuffer.allocate(4 + b.length);
+        var r = ByteBuffer.allocate(4 + b.length).order(ByteOrder.LITTLE_ENDIAN);
         r.putInt(b.length);
         r.put(b);
         result = r.array();

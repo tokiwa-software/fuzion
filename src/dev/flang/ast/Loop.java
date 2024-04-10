@@ -277,10 +277,16 @@ public class Loop extends ANY
       }
 
     var hasImplicitResult = defaultSuccessAndElseBlocks(whileCond, untilCond);
+    // if there are no iteratees then else block may access every loop var.
+    // if there are iteratees we move else block to feature and
+    // insert it later, see `addIterators()`.
     if (_elseBlock0 != null && iterates())
       {
         moveElseBlockToRoutine();
-        _elseBlock0 = callLoopElse(false);
+        // NYI: BUG: this is wrong.
+        // need to use callLoopElse(true) in first iteration callLoopElse(false)
+        // in successive iterations.
+        _elseBlock0 = callLoopElse(true);
       }
 
     _prologSuccessBlock = new List<>();
@@ -507,12 +513,10 @@ public class Loop extends ANY
   {
     int i = -1;
     Iterator<Feature> ivi = _indexVars.iterator();
-    Iterator<Feature> nvi = _nextValues.iterator();
     while (ivi.hasNext())
       {
         i++;
         Feature f = ivi.next();
-        Feature n = nvi.next();
         if (CHECKS) check
           (f.impl()._kind != Impl.Kind.FieldIter);
         var p = f.pos();

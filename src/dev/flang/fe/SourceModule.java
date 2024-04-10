@@ -34,7 +34,6 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -46,7 +45,6 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
 import dev.flang.ast.Call;
-import dev.flang.ast.Consts;
 import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
@@ -837,7 +835,7 @@ part of the (((inner features))) declarations of the corresponding
     var existing = doi.get(fn);
     if (existing == null)
       {
-        if (f instanceof Feature ff && (ff._modifiers & Consts.MODIFIER_REDEFINE) != 0)
+        if (f instanceof Feature ff && (ff._modifiers & FuzionConstants.MODIFIER_REDEFINE) != 0)
           {
             AstErrors.redefineModifierDoesNotRedefine(f);
           }
@@ -845,7 +843,7 @@ part of the (((inner features))) declarations of the corresponding
     else if (existing == f)
       {
       }
-    else if (f instanceof Feature ff && (ff._modifiers & Consts.MODIFIER_REDEFINE) == 0 && !existing.isAbstract())
+    else if (f instanceof Feature ff && (ff._modifiers & FuzionConstants.MODIFIER_REDEFINE) == 0 && !existing.isAbstract())
       { /* previous duplicate feature declaration could result in this error for
          * type features, so suppress them in this case. See fuzion-lang.dev's
          * design/examples/typ_const2.fz as an example.
@@ -966,36 +964,7 @@ part of the (((inner features))) declarations of the corresponding
   }
 
 
-  /**
-   * allInnerAndInheritedFeatures returns a complete set of inner features, used
-   * by Clazz.layout and Clazz.hasState.
-   *
-   * @return
-   */
-  public Collection<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f)
-  {
-    var d = data(f);
-    var result = d._allInnerAndInheritedFeatures;
-    if (result == null)
-      {
-        result = new TreeSet<>();
 
-        result.addAll(declaredFeatures(f).values());
-        for (var p : f.inherits())
-          {
-            var cf = p.calledFeature();
-            if (CHECKS) check
-              (Errors.any() || cf != null);
-
-            if (cf != null)
-              {
-                result.addAll(allInnerAndInheritedFeatures(cf));
-              }
-          }
-        d._allInnerAndInheritedFeatures = result;
-      }
-    return result;
-  }
 
 
   /*--------------------------  feature lookup  -------------------------*/
@@ -1005,30 +974,6 @@ part of the (((inner features))) declarations of the corresponding
   public SortedMap<FeatureName, AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer)
   {
     return this.declaredOrInheritedFeatures(outer, _dependsOn);
-  }
-
-
-  /**
-   * Find feature with given name in outer.
-   *
-   * @param outer the declaring or inheriting feature
-   */
-  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name, AbstractFeature original)
-  {
-    if (PRECONDITIONS) require
-      (outer.state().atLeast(State.LOADING));
-
-    var result = declaredOrInheritedFeatures(outer).get(name);
-
-    /* Was feature f added to the declared features of its outer features late,
-     * i.e., after the RESOLVING_DECLARATIONS phase?  These late features are
-     * currently not added to the sets of declared or inherited features by
-     * children of their outer clazz.
-     *
-     * This is a fix for #978 but it might need to be removed when fixing #932.
-     */
-    return result == null && original instanceof Feature of && of._addedLate ? original
-                                                                             : result;
   }
 
 
@@ -1408,7 +1353,7 @@ part of the (((inner features))) declarations of the corresponding
 
     f.impl().checkTypes(f);
     var args = f.arguments();
-    var fixed = (f.modifiers() & Consts.MODIFIER_FIXED) != 0;
+    var fixed = (f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0;
     for (var o : f.redefines())
       {
         var ta = o.handDown(_res, o.argTypes(), f.outer());

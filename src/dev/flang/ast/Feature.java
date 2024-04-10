@@ -1741,7 +1741,7 @@ public class Feature extends AbstractFeature
 
         /*
          * extra pass to automatically wrap values into 'Lazy'
-         * or unwrap values inherting `unwrap`
+         * or unwrap values inheriting `unwrap`
          */
         visit(new FeatureVisitor() {
             // we must do this from the outside of calls towards the inside to

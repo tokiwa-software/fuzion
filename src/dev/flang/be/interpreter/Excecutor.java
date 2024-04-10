@@ -40,8 +40,10 @@ import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.AbstractInterpreter.ProcessStatement;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
+import dev.flang.util.SourcePosition;
 
 
 /**
@@ -259,7 +261,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
         if (resf != -1)
           {
             var rfc = _fuir.clazzForInterpreter(resf);
-            if (!AbstractInterpreter.clazzHasUniqueValue(_fuir, rfc.resultClazz()._idInFUIR))
+            if (!AbstractInterpreter.clazzHasUnitValue(_fuir, rfc.resultClazz()._idInFUIR))
               {
                 rres = Interpreter.getField(rfc.feature(), rfc._select, _fuir.clazzForInterpreter(cc), cur, false);
               }
@@ -267,12 +269,12 @@ public class Excecutor extends ProcessStatement<Value, Object>
         yield pair(rres);
       case Field :
         var fc = _fuir.clazzForInterpreter(cc);
-        var fres = AbstractInterpreter.clazzHasUniqueValue(_fuir, rt)
+        var fres = AbstractInterpreter.clazzHasUnitValue(_fuir, rt)
           ? pair(unitValue())
           : pair(Interpreter.getField(fc.feature(), fc._select, _fuir.clazzForInterpreter(tt), tt == _fuir.clazzUniverse() ? _universe : tvalue, false));
 
         if (CHECKS)
-          check(fres != null, AbstractInterpreter.clazzHasUniqueValue(_fuir, rt) || fres.v0() != unitValue());
+          check(fres != null, AbstractInterpreter.clazzHasUnitValue(_fuir, rt) || fres.v0() != unitValue());
 
         yield fres;
       case Intrinsic :
@@ -370,7 +372,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
     var val = switch (_fuir.getSpecialClazz(constCl))
       {
       case c_Const_String, c_String -> Interpreter
-        .value(new String(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).getInt() + 4), StandardCharsets.UTF_8));
+        .value(new String(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt() + 4), StandardCharsets.UTF_8));
       case c_bool -> { check(d.length == 1, d[0] == 0 || d[0] == 1); yield new boolValue(d[0] == 1); }
       case c_f32 -> new f32Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getFloat());
       case c_f64 -> new f64Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getDouble());
@@ -385,12 +387,12 @@ public class Excecutor extends ProcessStatement<Value, Object>
       default -> {
         if (_fuir.clazzIsArray(constCl))
           {
-            var elementType = this._fuir.inlineArrayElementClazz(constCl);
+            var elementType = _fuir.inlineArrayElementClazz(constCl);
 
-            var bb = ByteBuffer.wrap(d);
+            var bb = ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN);
             var elCount = bb.getInt();
 
-            var arrayData = ArrayData.alloc(elCount, _fuir.clazzForInterpreter(elementType)._type);
+            var arrayData = ArrayData.alloc(elCount, _fuir, elementType);
 
             for (int idx = 0; idx < elCount; idx++)
               {
@@ -404,6 +406,8 @@ public class Excecutor extends ProcessStatement<Value, Object>
                 else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_u16 ) == 0) { ((char[])   (arrayData._array))[idx] = (char)c.u16Value(); }
                 else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_u32 ) == 0) { ((int[])    (arrayData._array))[idx] = c.u32Value(); }
                 else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_u64 ) == 0) { ((long[])   (arrayData._array))[idx] = c.u64Value(); }
+                else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_f32 ) == 0) { ((float[])  (arrayData._array))[idx] = c.f32Value(); }
+                else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_f64 ) == 0) { ((double[]) (arrayData._array))[idx] = c.f64Value(); }
                 else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_bool) == 0) { ((boolean[])(arrayData._array))[idx] = c.boolValue(); }
                 else                                                                           { ((Value[])  (arrayData._array))[idx] = c; }
               }
@@ -543,7 +547,9 @@ public class Excecutor extends ProcessStatement<Value, Object>
   {
     if (!cc.boolValue())
       {
-        Errors.fatal("CONTRACT FAILED: " + ck + " on call to '" + _fuir.clazzAsString(cl) + "'");
+        Errors.runTime(pos(),
+                       (ck == ContractKind.Pre ? "Precondition" : "Postcondition") + " does not hold",
+                       (ck == ContractKind.Pre ? "For" : "After") + " call to " + _fuir.clazzAsStringNew(cl) + "\n" + callStack(fuir()));
       }
     return null;
   }
@@ -565,9 +571,92 @@ public class Excecutor extends ProcessStatement<Value, Object>
    */
   Value callOnInstance(int cc, Instance cur, Value outer, List<Value> args, boolean pre)
   {
+    FuzionThread.current()._callStackFrames.push(cc);
+    FuzionThread.current()._callStack.push(site());
+
     new AbstractInterpreter<>(_fuir, new Excecutor(cur, outer, args))
       .process(cc, pre);
+
+    FuzionThread.current()._callStack.pop();
+    FuzionThread.current()._callStackFrames.pop();
+
     return null;
+  }
+
+
+  /**
+   * Helper for callStack() to show one single frame
+   *
+   * @param frame the clazz of the entry to show
+   *
+   * @param call the call of the entry to show
+   */
+  private static void showFrame(FUIR fuir, StringBuilder sb, int frame, int callSite)
+  {
+    if (frame != -1)
+      {
+        sb.append(_fuir.clazzAsStringNew(frame)).append(": ");
+      }
+    sb.append(_fuir.siteAsPos(callSite).show()).append("\n");
+  }
+
+
+  /**
+   * Helper for callStack() to show a repeated frame
+   *
+   * @param sb used to append the output
+   *
+   * @param repeat how often was the previous entry repeated? >= 0 where 0 means
+   * it was not repeated, just appeared once, 1 means it was repeated once, so
+   * appeared twice, etc.
+   *
+   * @param frame the clazz of the previous entry
+   *
+   * @param call the call of the previous entry
+   */
+  private static void showRepeat(FUIR fuir, StringBuilder sb, int repeat, int frame, int callSite)
+  {
+    if (repeat > 1)
+      {
+        sb.append(Errors.repeated(repeat)).append("\n\n");
+      }
+    else if (repeat > 0)
+      {
+        showFrame(fuir, sb, frame, callSite);
+      }
+  }
+
+
+  /**
+   * Current call stack as a string for debugging output.
+   */
+  public static String callStack(FUIR fuir)
+  {
+    StringBuilder sb = new StringBuilder("Call stack:\n");
+    int lastFrame = -1;
+    int lastCall = -1;
+    int repeat = 0;
+    var s = FuzionThread.current()._callStack;
+    var sf = FuzionThread.current()._callStackFrames;
+    for (var i = s.size()-1; i >= 0; i--)
+      {
+        int frame = i<sf.size() ? sf.get(i) : null;
+        var call = s.get(i);
+        if (frame == lastFrame && call == lastCall)
+          {
+            repeat++;
+          }
+        else
+          {
+            showRepeat(fuir, sb, repeat, lastFrame, lastCall);
+            repeat = 0;
+            showFrame(fuir, sb, frame, call);
+            lastFrame = frame;
+            lastCall = call;
+          }
+      }
+    showRepeat(fuir, sb, repeat, lastFrame, lastCall);
+    return sb.toString();
   }
 
 

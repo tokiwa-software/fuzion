@@ -277,7 +277,7 @@ public class C extends ANY
           case c_f32  -> new Pair<>(primitiveExpression(SpecialClazzes.c_f32,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_f64  -> new Pair<>(primitiveExpression(SpecialClazzes.c_f64,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_String, c_Const_String
-                      -> new Pair<>(heapClone(constString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).getInt() + 4)), constCl)               ,CStmnt.EMPTY);
+                      -> new Pair<>(heapClone(constString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt() + 4)), constCl)               ,CStmnt.EMPTY);
           default     -> {
             if (CHECKS)
               check(!_fuir.clazzIsRef(constCl)); // NYI currently no refs
@@ -351,7 +351,7 @@ public class C extends ANY
       var data             = _names.fieldName(c_data);
       var length           = _names.fieldName(c_length);
 
-      var bb = ByteBuffer.wrap(d);
+      var bb = ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN);
       var elCount = bb.getInt();
 
       var sb = new StringBuilder();
@@ -391,7 +391,7 @@ public class C extends ANY
         {
           sb.append("(" + _types.clazz(elementType) + "[]){");
 
-          var bb = ByteBuffer.wrap(d);
+          var bb = ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN);
           var elCount = bb.getInt();
 
           for (int idx = 0; idx < elCount; idx++)
@@ -816,21 +816,30 @@ public class C extends ANY
           "-I" + JAVA_HOME + "/include/linux",
           "-I" + JAVA_HOME + "/include/win32",
           "-I" + JAVA_HOME + "/include/darwin",
-          "-L" + JAVA_HOME + "/lib/server",
-          "-ljvm");
+          "-L" + JAVA_HOME + "/lib/server");
+
+       if (!isWindows())
+          {
+            command.add("-ljvm");
+          }
       }
 
     if (isWindows())
       {
         command.addAll("-lMswsock", "-lAdvApi32", "-lWs2_32");
 
-        if(_options._useBoehmGC)
+        if (_options._useBoehmGC)
           {
             command.addAll(
               System.getenv("FUZION_CLANG_INSTALLED_DIR") == null
                 ? "C:\\tools\\msys64\\ucrt64\\bin\\libgc-1.dll"
                 : System.getenv("FUZION_CLANG_INSTALLED_DIR") + "\\libgc-1.dll"
             );
+          }
+
+        if (linkJVM())
+          {
+            command.addAll(JAVA_HOME + "\\bin\\server\\jvm.dll");
           }
       }
     return command;

@@ -1302,6 +1302,53 @@ public class ClassFile extends ANY implements ClassFileConstants
 
 
   /**
+   * line number attribute table as described in §4.7.12 of JVM-Spec
+   */
+  class LineNumberTableAttribute extends Attribute
+  {
+    /**
+     * list of pairs of:
+     *   1) valid index into the code array (start_pc)
+     *   2) line number
+     */
+    private List<Pair<Integer, Integer>> _lnt = null;
+    private final Expr _code;
+
+    LineNumberTableAttribute(Expr code)
+    {
+      super("LineNumberTable");
+      this._code = code;
+    }
+
+    @Override
+    byte[] data()
+    {
+      // u2 line_number_table_length;
+      // { u2 start_pc;
+      //   u2 line_number;
+      // }
+      var o = new Kaku();
+      o.writeU2(_lnt.size());
+      for (var lnte : _lnt)
+        {
+          o.writeU2(lnte.v0());
+          o.writeU2(lnte.v1());
+        }
+      return o._b.toByteArray();
+    }
+
+    public void build()
+    {
+      if (_lnt == null)
+        {
+          _lnt = new List<>();
+          _code.buildLineNumberTable(ClassFile.this, _lnt, new int[]{0});
+        }
+    }
+  }
+
+
+  /**
    * code attribute for methods
    */
   class CodeAttribute extends Attribute
@@ -1311,12 +1358,14 @@ public class ClassFile extends ANY implements ClassFileConstants
     final List<ExceptionTableEntry> _exception_table;
     final List<Attribute> _attributes;
     int _size;
-    private StackMapTable _smt;
+    private final StackMapTable _smt;
+    private final LineNumberTableAttribute _lnta;
     CodeAttribute(String where,
                   ByteCode code,
                   List<ExceptionTableEntry> exception_table,
                   List<Attribute> attributes,
-                  StackMapTable smt)
+                  StackMapTable smt,
+                  LineNumberTableAttribute lnta)
     {
       super("Code");
       this._where = where;
@@ -1324,14 +1373,17 @@ public class ClassFile extends ANY implements ClassFileConstants
       this._exception_table = exception_table;
       this._attributes = attributes;
       this._smt = smt;
+      this._lnta = lnta;
       var be = new ByteCodeSizeEstimate(_where   ); _code.code(be, ClassFile.this);
       var bf = new ByteCodeFixLabels   (_where   ); _code.code(bf, ClassFile.this);
       _size = bf.size();
+      _attributes.addAll(_smt, _lnta);
     }
 
     byte[] data()
     {
       _smt.build();
+      _lnta.build();
       var o = new Kaku();
       o.writeU2(_smt.max_stack());
       o.writeU2(_smt.max_locals());
@@ -1346,8 +1398,7 @@ public class ClassFile extends ANY implements ClassFileConstants
           o.writeU2(e._handler_pc);
           o.writeU2(e._catch_pc);
         }
-      o.writeU2(_attributes.size()+1);
-      _smt.write(o);
+      o.writeU2(_attributes.size());
       for (var a : _attributes)
         {
           a.write(o);
@@ -1373,6 +1424,33 @@ public class ClassFile extends ANY implements ClassFileConstants
       this._handler_pc = handler_pc;
       this._catch_pc   = catch_pc;
     }
+  }
+
+  /*
+   * https://docs.oracle.com/javase/specs/jvms/se21/jvms21.pdf
+   * §4.7.10 "The SourceFile attribute is an optional fixed-length attribute in the attributes
+   * table of a ClassFile structure (§4.1).
+   * There may be at most one SourceFile attribute in the attributes table of a
+   * ClassFile structure."
+   */
+  public class SourceFileAttribute extends Attribute {
+
+    private CPEntry _srcFile;
+
+    SourceFileAttribute(String srcFile)
+    {
+      super("SourceFile");
+      this._srcFile = cpUtf8(srcFile);
+    }
+
+    @Override
+    byte[] data()
+    {
+      var o = new Kaku();
+      o.writeU2(_srcFile.index());
+      return o._b.toByteArray();
+    }
+
   }
 
 
@@ -1421,9 +1499,9 @@ public class ClassFile extends ANY implements ClassFileConstants
    *
    * @param name the class name
    */
-  public ClassFile(FuzionOptions opt, String name, String supr)
+  public ClassFile(FuzionOptions opt, String name, String supr, String srcFile)
   {
-    this(opt, name, supr, false);
+    this(opt, name, supr, false, srcFile);
   }
 
 
@@ -1432,7 +1510,7 @@ public class ClassFile extends ANY implements ClassFileConstants
    *
    * @param name the class name
    */
-  public ClassFile(FuzionOptions opt, String name, String supr, boolean interfce)
+  public ClassFile(FuzionOptions opt, String name, String supr, boolean interfce, String srcFile)
   {
     _opt = opt;
     _name = name;
@@ -1442,6 +1520,7 @@ public class ClassFile extends ANY implements ClassFileConstants
     _flags = ACC_PUBLIC | (interfce ? (ACC_INTERFACE|ACC_ABSTRACT) : ACC_SUPER);
     _this = cpClass(name);
     _super = cpClass(supr == null ? "java/lang/Object" : supr);
+    _attributes.add(new SourceFileAttribute(srcFile));
   }
 
 
@@ -1586,7 +1665,8 @@ public class ClassFile extends ANY implements ClassFileConstants
                              code,
                              exception_table,
                              attributes,
-                             smt);
+                             smt,
+                             new LineNumberTableAttribute(code));
   }
 
 

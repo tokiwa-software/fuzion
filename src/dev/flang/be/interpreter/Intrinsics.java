@@ -59,10 +59,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-import dev.flang.air.Clazz;
-import dev.flang.air.Clazzes;
-import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.air.Clazz; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.air.Clazzes; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
+
+import dev.flang.fuir.FUIR;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
@@ -129,7 +131,7 @@ public class Intrinsics extends ANY
         f.close();
         return true;
       }
-      catch(Exception e)
+      catch(Throwable e)
       {
         return false;
       }
@@ -404,7 +406,7 @@ public class Intrinsics extends ANY
 
               return new i32Value(bytesRead);
             }
-          catch (Exception e)
+          catch (Throwable e)
             {
               return new i32Value(-2);
             }
@@ -429,7 +431,7 @@ public class Intrinsics extends ANY
                 }
               return new i32Value(0);
             }
-          catch (Exception e)
+          catch (Throwable e)
             {
               return new i32Value(-1);
             }
@@ -442,7 +444,7 @@ public class Intrinsics extends ANY
               boolean b = Files.deleteIfExists(path);
               return new boolValue(b);
             }
-          catch (Exception e)
+          catch (Throwable e)
             {
               return new boolValue(false);
             }
@@ -456,7 +458,7 @@ public class Intrinsics extends ANY
               Files.move(oldPath, newPath);
               return new boolValue(true);
             }
-          catch (Exception e)
+          catch (Throwable e)
             {
               return new boolValue(false);
             }
@@ -469,7 +471,7 @@ public class Intrinsics extends ANY
               Files.createDirectory(path);
               return new boolValue(true);
             }
-          catch (Exception e)
+          catch (Throwable e)
             {
               return new boolValue(false);
             }
@@ -500,7 +502,7 @@ public class Intrinsics extends ANY
                   System.exit(1);
               }
             }
-          catch (Exception e)
+          catch (Throwable e)
             {
               open_results[1] = -1;
             }
@@ -541,6 +543,10 @@ public class Intrinsics extends ANY
             {
               err = SystemErrNo.EACCES;
             }
+          catch (Throwable e)
+            {
+              err = SystemErrNo.UNSPECIFIED;
+            }
 
           stats[0] = err.errno;
           stats[1] = 0;
@@ -559,7 +565,7 @@ public class Intrinsics extends ANY
               seekResults[0] = raf.getFilePointer();
               return Value.EMPTY_VALUE;
             }
-          catch (Exception e)
+          catch (Throwable e)
             {
               seekResults[1] = -1;
               return Value.EMPTY_VALUE;
@@ -574,7 +580,7 @@ public class Intrinsics extends ANY
               arr[0] = ((RandomAccessFile)_openStreams_.get(fd)).getFilePointer();
               return Value.EMPTY_VALUE;
             }
-          catch (Exception e)
+          catch (Throwable e)
             {
               arr[1] = -1;
               return Value.EMPTY_VALUE;
@@ -604,7 +610,8 @@ public class Intrinsics extends ANY
                   void set(
                     int x,
                     Value v,
-                    AbstractType elementType)
+                    FUIR fuir,
+                    int elementType)
                   {
                     checkIndex(x);
                     mmap.put(x, (byte)v.u8Value());
@@ -613,7 +620,8 @@ public class Intrinsics extends ANY
                   @Override
                   Value get(
                     int x,
-                    AbstractType elementType)
+                    FUIR fuir,
+                    int elementType)
                   {
                     checkIndex(x);
                     return new u8Value(mmap.get(x));
@@ -625,7 +633,7 @@ public class Intrinsics extends ANY
                   }
                 };
             }
-          catch (IOException e)
+          catch (Throwable e)
             {
               ((int[])args.get(4).arrayData()._array)[0] = -1;
               return new ArrayData(new byte[0]);
@@ -661,7 +669,7 @@ public class Intrinsics extends ANY
                 }
               });
             }
-          catch (IOException e)
+          catch (Throwable e)
             {
               open_results[1] = -1;
             }
@@ -692,13 +700,15 @@ public class Intrinsics extends ANY
     put("fuzion.sys.fileio.mapped_buffer_get", (excecutor, innerClazz) -> args ->
         {
           return ((ArrayData)args.get(1)).get(/* index */ (int) args.get(2).i64Value(),
-                                              /* type  */ Types.resolved.t_u8);
+                                              excecutor.fuir(),
+                                              /* type  */ Clazzes.u8.get()._idInFUIR);
         });
     put("fuzion.sys.fileio.mapped_buffer_set", (excecutor, innerClazz) -> args ->
         {
           ((ArrayData)args.get(1)).set(/* index */ (int) args.get(2).i64Value(),
                                        /* value */ args.get(3),
-                                       /* type  */ Types.resolved.t_u8);
+                                       excecutor.fuir(),
+                                       /* type  */ Clazzes.u8.get()._idInFUIR);
           return Value.EMPTY_VALUE;
         });
 
@@ -737,7 +747,7 @@ public class Intrinsics extends ANY
           String in = innerClazz.feature().qualifiedName();   // == _fuir.clazzOriginalName(cl);
           var virtual     = in.equals("fuzion.java.call_v0");
           var constructor = in.equals("fuzion.java.call_c0");
-          Clazz resultClazz = innerClazz.actualGenerics()[0];
+          Clazz resultClazz = innerClazz.resultClazz();
           return args ->
             {
               int a = 1;
@@ -861,7 +871,8 @@ public class Intrinsics extends ANY
           var at = excecutor.fuir().clazzOuterClazz(innerClazz._idInFUIR); // array type
           var et = excecutor.fuir().clazzActualGeneric(at, 0); // element type
           return ArrayData.alloc(/* size */ args.get(1).i32Value(),
-                                 /* type */ excecutor.fuir().clazzForInterpreter(et)._type);
+                                 excecutor.fuir(),
+                                 /* type */ et);
         });
     put("fuzion.sys.internal_array.get", (excecutor, innerClazz) -> args ->
         {
@@ -869,7 +880,8 @@ public class Intrinsics extends ANY
           var et = excecutor.fuir().clazzActualGeneric(at, 0); // element type
           return ((ArrayData)args.get(1)).get(
                                    /* index */ args.get(2).i32Value(),
-                                   /* type  */ excecutor.fuir().clazzForInterpreter(et)._type);
+                                   excecutor.fuir(),
+                                   /* type  */ et);
         });
     put("fuzion.sys.internal_array.setel", (excecutor, innerClazz) -> args ->
         {
@@ -878,7 +890,8 @@ public class Intrinsics extends ANY
           ((ArrayData)args.get(1)).set(
                               /* index */ args.get(2).i32Value(),
                               /* value */ args.get(3),
-                              /* type  */ excecutor.fuir().clazzForInterpreter(et)._type);
+                              excecutor.fuir(),
+                              /* type  */ et);
           return Value.EMPTY_VALUE;
         });
     put("fuzion.sys.internal_array.freeze", (excecutor, innerClazz) -> args ->
@@ -972,7 +985,7 @@ public class Intrinsics extends ANY
           result[0] = SystemErrNo.EADDRINUSE.errno;
           return new i32Value(-1);
         }
-      catch(IOException e)
+      catch(Throwable e)
         {
           result[0] = -1;
           return new i32Value(-1);
@@ -1000,7 +1013,7 @@ public class Intrinsics extends ANY
             }
           throw new Error("NYI");
         }
-      catch(IOException e)
+      catch(Throwable e)
         {
           return new boolValue(false);
         }
@@ -1043,6 +1056,11 @@ public class Intrinsics extends ANY
           result[0] = SystemErrNo.ECONNREFUSED.errno;
           return new i32Value(-1);
         }
+      catch(Throwable e)
+        {
+          result[0] = SystemErrNo.UNSPECIFIED.errno;
+          return new i32Value(-1);
+        }
     });
 
     putUnsafe("fuzion.sys.net.get_peer_address", (excecutor, innerClazz) -> args -> {
@@ -1056,7 +1074,7 @@ public class Intrinsics extends ANY
             }
           return new i32Value(-1);
         }
-      catch (IOException e)
+      catch (Throwable e)
         {
           return new i32Value(-1);
         }
@@ -1071,7 +1089,7 @@ public class Intrinsics extends ANY
             }
           return new u16Value(0);
         }
-      catch (IOException e)
+      catch (Throwable e)
         {
           return new u16Value(0);
         }
@@ -1102,7 +1120,7 @@ public class Intrinsics extends ANY
           ((long[])args.get(4).arrayData()._array)[0] = bytesRead;
           return new boolValue(bytesRead != -1);
         }
-      catch(IOException e) //SocketTimeoutException and others
+      catch(Throwable e) //SocketTimeoutException and others
         {
           // unspecified error
           ((long[])args.get(4).arrayData()._array)[0] = -1;
@@ -1118,7 +1136,7 @@ public class Intrinsics extends ANY
           sc.write(ByteBuffer.wrap(fileContent));
           return new i32Value(0);
         }
-      catch(IOException e)
+      catch(Throwable e)
         {
           return new i32Value(-1);
         }
@@ -1139,7 +1157,7 @@ public class Intrinsics extends ANY
           asc.configureBlocking(blocking == 1);
           return new i32Value(0);
         }
-      catch(IOException e)
+      catch(Throwable e)
         {
           return new i32Value(-1);
         }
@@ -1411,7 +1429,7 @@ public class Intrinsics extends ANY
           result[3] = _openStreams_.add(process.getErrorStream());
           return new i32Value(0);
         }
-      catch (IOException e)
+      catch (Throwable e)
         {
           return new i32Value(-1);
         }
@@ -1426,7 +1444,7 @@ public class Intrinsics extends ANY
           _openProcesses_.remove(desc);
           return new i32Value(result);
         }
-      catch(InterruptedException e)
+      catch(Throwable e)
         {
           return new i32Value(-1);
         }
@@ -1444,7 +1462,7 @@ public class Intrinsics extends ANY
             ? new i32Value(0)
             : new i32Value(readBytes);
         }
-      catch (IOException e)
+      catch (Throwable e)
         {
           return new i32Value(-1);
         }
@@ -1459,7 +1477,7 @@ public class Intrinsics extends ANY
           os.write(buff);
           return new i32Value(buff.length);
         }
-      catch (IOException e)
+      catch (Throwable e)
         {
           return new i32Value(-1);
         }

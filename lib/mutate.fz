@@ -210,7 +210,7 @@ public mutate : simple_effect is
          module data fuzion.sys.internal_array T,
          _ unit
 
-        ) : Mutable_Array T, mutable_element
+        ) : container.Mutable_Array T, mutable_element
   pre
     safety: (length ≥ 0) && (length ≤ data.length)
   is
@@ -292,7 +292,7 @@ public mutate : simple_effect is
       # initial value for elements
       init T
 
-     ) Mutable_Array T
+     ) container.Mutable_Array T
     =>
       data := fuzion.sys.internal_array_init T length
 
@@ -304,7 +304,7 @@ public mutate : simple_effect is
 
     # initialize an empty mutable array of type T
     #
-    public type.new (LM type : mutate) Mutable_Array T =>
+    public type.new (LM type : mutate) container.Mutable_Array T =>
       LM.env.array T 0 (fuzion.sys.internal_array_init T 0) unit
 
 
@@ -326,36 +326,3 @@ public mut =>
 #
 public mut(T type, v T) => mut.new T v
 
-
-# an interface defining a mutable array
-#
-# NYI: Remove Sequence parent. Since Sequence is supposed to be immutable,
-# we should maybe not pretend to be a Sequence.
-#
-public Mutable_Array(public T type) ref : Sequence T is
-
-  # add an element at the end of the sequence
-  public add(t T) unit => abstract
-
-  # set element at index i to o
-  public set [ ] (i i32, o T) unit => abstract
-
-  # the indices of the array
-  public indices interval i32 => abstract
-
-  # the length of the array
-  public length i32 => abstract
-
-
-  # is this Sequence known to be array backed? If so, this means that operations
-  # like index[] are fast.
-  #
-  public redef is_array_backed => true
-
-
-  # count the number of elements in this Sequence.
-  #
-  # Since we know the exact length, this is redefined to achive O(1) performance instead
-  # of O(n) for counting the elements.
-  #
-  public redef count => length
