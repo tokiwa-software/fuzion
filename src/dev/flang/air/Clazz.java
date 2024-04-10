@@ -1292,9 +1292,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
                 innerClazzes[select] = innerClazz;
               }
 
+            // NYI: HACK: remove
             if (f.isField())
               {
-                clazzForFieldX(f, select);
+                clazzForFieldX(innerClazz);
               }
           }
       }
@@ -1333,27 +1334,24 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * NYI: try to remove, used only in interpreter
    *
    * @param field a field
-   *
-   * @param select in case field has an open generic type, this selects the
-   * actual field. -1 otherwise.
    */
-  public Clazz clazzForFieldX(AbstractFeature field, int select)
+  public Clazz clazzForFieldX(Clazz field)
   {
     if (CHECKS) check
-      (Errors.any() || field.isField(),
-       Errors.any() || feature().inheritsFrom(field.outer()),
-       Errors.any() || field.isOpenGenericField() == (select != -1));
+      (Errors.any() || field.feature().isField(),
+       Errors.any() || feature().inheritsFrom(field.feature().outer()),
+       Errors.any() || field.feature().isOpenGenericField() == (field._select != -1));
 
-    var result = _clazzForField.get(field);
+    var result = _clazzForField.get(field.feature());
     if (result == null)
       {
         result =
-          field.isOuterRef() &&
-          field.outer().isOuterRefAdrOfValue() ? Clazzes.clazz(Types.t_ADDRESS)
-                                               : lookup(new FeatureAndActuals(field), select, Clazzes.isUsedAt(field), false).resultClazz();
-        if (select < 0)
+          field.feature().isOuterRef() &&
+          field.feature().outer().isOuterRefAdrOfValue() ? Clazzes.clazz(Types.t_ADDRESS)
+                                               : lookup(new FeatureAndActuals(field.feature()), field._select, Clazzes.isUsedAt(field.feature()), false).resultClazz();
+        if (field._select < 0)
           {
-            _clazzForField.put(field, result);
+            _clazzForField.put(field.feature(), result);
           }
       }
     return result;
@@ -1473,13 +1471,23 @@ public class Clazz extends ANY implements Comparable<Clazz>
        this .getClass() == Clazz.class,
        other.getClass() == Clazz.class);
 
-    var result =
-      this._select < other._select ? -1 :
-      this._select > other._select ? +1 : this._type.compareToIgnoreOuter(other._type);
+    var result = compareToIgnoreOuter(other);
     if (result == 0)
       {
         result = compareOuter(other);
       }
+    return result;
+  }
+
+
+  /**
+   * Compare this to other ignoring outer.
+   */
+  public int compareToIgnoreOuter(Clazz other)
+  {
+    var result =
+      this._select < other._select ? -1 :
+      this._select > other._select ? +1 : this._type.compareToIgnoreOuter(other._type);
     return result;
   }
 

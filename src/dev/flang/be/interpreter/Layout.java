@@ -29,8 +29,6 @@ package dev.flang.be.interpreter;
 import java.util.Map;
 import java.util.TreeMap;
 
-import dev.flang.ast.AbstractFeature; // NYI: remove dependency! Use dev.flang.fuir instead.
-
 import dev.flang.air.Clazz; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.air.Clazzes; // NYI: remove dependency! Use dev.flang.fuir instead.
 
@@ -71,13 +69,22 @@ class Layout extends ANY
   }
 
 
-  /*----------------------------  variables  ----------------------------*/
+  /*----------------------------  constants  ----------------------------*/
 
 
   /**
    * The Clazz we are layouting
    */
-  Clazz _clazz;
+  private final Clazz _clazz;
+
+
+  /**
+   * Offsets of the fields in instances of this clazz.
+   */
+  public final Map<Clazz, Integer> _offsets = new TreeMap<>((o1, o2) -> o1.compareToIgnoreOuter(o2));
+
+
+  /*----------------------------  variables  ----------------------------*/
 
 
   /**
@@ -85,30 +92,14 @@ class Layout extends ANY
    * in progress, Integer.MIN_VALUE if layout is done but clazz cannot be
    * instantiated.
    */
-  int _size = -1;
+  private int _size = -1;
 
 
   /**
    * The size of the choice values in case _clazz.isChoice(). -1 if layout has
    * not started yet.
    */
-  int _choiceValsSize = -1;
-
-
-  /**
-   * Offsets of the fields in instances of this clazz.
-   */
-  Map<Clazz, Integer> _offsets = new TreeMap<>();
-
-
-  /**
-   * Offsets of the fields in instances of this clazz. This maps fields to
-   * Integer offsets and open generic fields to int[] with offsets for all
-   * select-variants.
-   *
-   * NYI: Remove, this should be replaced by _offsets.
-   */
-  Map<AbstractFeature, Object> _offsets0 = new TreeMap<>();
+  private int _choiceValsSize = -1;
 
 
   /*---------------------------  constructors  ---------------------------*/
@@ -166,20 +157,6 @@ class Layout extends ANY
               fsz = get(fc).size();
             }
             _offsets.put(f, _size - Integer.MIN_VALUE);
-            if (f._select < 0)
-              {
-                _offsets0.put(f.feature(), _size - Integer.MIN_VALUE);
-              }
-            else
-              {
-                int[] a = (int[]) _offsets0.get(f.feature());
-                if (a == null)
-                  {
-                    a = new int[_clazz.replaceOpenCount(f.feature())];
-                    _offsets0.put(f.feature(), a);
-                  }
-                a[f._select] = _size - Integer.MIN_VALUE;
-              }
             _size += fsz;
           }
         _size -= Integer.MIN_VALUE;
@@ -214,26 +191,6 @@ class Layout extends ANY
       (sizeAvailable());
 
     return _size;
-  }
-
-
-  /**
-   * Offset of field f within instances of _clazz.
-   *
-   * NYI: Remove, replace by offset(Clazz)
-   */
-  int offset0(AbstractFeature f, int select)
-  {
-    if (PRECONDITIONS) require
-      (_clazz.isRoutine() || _clazz.isChoice(),
-       f.resultType().isOpenGeneric() == (select >= 0),
-       sizeAvailable(),
-       _offsets0.containsKey(f));
-
-    var o = _offsets0.get(f);
-    var result = select < 0 ? ((Integer) o)
-                            : ((int[]) o)[select];
-    return result;
   }
 
 
