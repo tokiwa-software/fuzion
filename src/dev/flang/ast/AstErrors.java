@@ -1131,6 +1131,7 @@ public class AstErrors extends ANY
         var solution2 = solutionWrongArgumentNumber(candidatesArgCountMismatch);
         var solution3 = solutionAccidentalFreeType(target);
         var solution4 = solutionHidden(candidatesHidden);
+        var solution5 = solutionLambda(call);
         error(call.pos(), msg,
               "Feature not found: " + sbnf(calledName) + "\n" +
               "Target feature: " + s(targetFeature) + "\n" +
@@ -1138,8 +1139,26 @@ public class AstErrors extends ANY
               (solution1 != "" ? solution1 :
                solution2 != "" ? solution2 :
                solution3 != "" ? solution3 :
-               solution4 != "" ? solution4 : ""));
+               solution4 != "" ? solution4 :
+               solution5 != "" ? solution5 : ""));
       }
+  }
+
+  private static String solutionLambda(Call call)
+  {
+    var solution = "";
+
+    if (call._targetOf_forErrorSolutions != null
+     && call._targetOf_forErrorSolutions.name().startsWith("infix ->")
+     && call._targetOf_forErrorSolutions.name().length() > "infix ->".length())
+      {
+
+        solution = "Lambda operator is part of infix operator here:" + System.lineSeparator() +
+          call._targetOf_forErrorSolutions.pos().show() + System.lineSeparator() +
+          "To solve this, add a space after " + skw("->") + ".";
+      }
+
+    return solution;
   }
 
   public static void ambiguousType(SourcePosition pos,
