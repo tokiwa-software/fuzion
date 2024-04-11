@@ -97,8 +97,8 @@ public abstract class Expr extends ByteCode
       else
         {
           // save the current stack
-          smt.stacks.put(from._posFinal,(Stack) stack.clone());
-          smt.stacks.put(to._posFinal,  (Stack) stack.clone());
+          smt.stacks.put(from._posFinal,clone(stack));
+          smt.stacks.put(to._posFinal,  clone(stack));
         }
 
       // save the current locals
@@ -513,6 +513,16 @@ public abstract class Expr extends ByteCode
 
 
   /*-------------------------  static methods  --------------------------*/
+
+
+  /*
+   * Clone a stack of verification types.
+   */
+  @SuppressWarnings("unchecked")
+  static Stack<VerificationType> clone(Stack<VerificationType> stack)
+  {
+    return (Stack<VerificationType>) stack.clone();
+  }
 
 
   /**
@@ -1705,7 +1715,7 @@ public abstract class Expr extends ByteCode
           public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
           {
             // save stack and locals at branch
-            smt.stacks.put(lStart._posFinal, (Stack)stack.clone());
+            smt.stacks.put(lStart._posFinal, clone(stack));
             smt.locals.add(new Pair<>(lStart._posFinal, locals.clone()));
 
             // Case 1: there is ONLY fpos OR fneg, jump is to lEnd
@@ -1731,7 +1741,7 @@ public abstract class Expr extends ByteCode
               }
 
             // save stack and locals at jump position
-            smt.stacks.put(jumpPosition, (Stack<VerificationType>)stack.clone());
+            smt.stacks.put(jumpPosition, clone(stack));
             smt.locals.add(new Pair<>(jumpPosition, locals.clone()));
 
             var fposLocals = locals.clone();
@@ -1739,7 +1749,7 @@ public abstract class Expr extends ByteCode
 
             // assumption here is that fneg and fpos
             // affect the stack in the same way.
-            var stackPositive = (Stack<VerificationType>)stack.clone();
+            var stackPositive = clone(stack);
             fneg.buildStackMapTable(smt, stack, fnegLocals);
             fpos.buildStackMapTable(smt, stackPositive , fposLocals);
 

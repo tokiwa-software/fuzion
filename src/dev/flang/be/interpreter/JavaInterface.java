@@ -44,6 +44,7 @@ import dev.flang.util.Errors;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class JavaInterface extends ANY
 {
 

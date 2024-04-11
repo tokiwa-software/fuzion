@@ -677,7 +677,7 @@ public class Intrinsics extends ANY
         });
     putUnsafe("fuzion.sys.fileio.read_dir", (excecutor, innerClazz) -> args ->
         {
-          var i = (Iterator<Path>)_openStreams_.get(args.get(1).i64Value());
+          var i = getIterator(args.get(1).i64Value());
           try
             {
               return Interpreter.value(i.next().getFileName().toString());
@@ -689,7 +689,8 @@ public class Intrinsics extends ANY
         });
     putUnsafe("fuzion.sys.fileio.read_dir_has_next", (excecutor, innerClazz) -> args ->
         {
-          return new boolValue(((Iterator<Path>)_openStreams_.get(args.get(1).i64Value())).hasNext());
+          var it = getIterator(args.get(1).i64Value());
+          return new boolValue(it.hasNext());
         });
     putUnsafe("fuzion.sys.fileio.close_dir", (excecutor, innerClazz) -> args ->
         {
@@ -1546,6 +1547,13 @@ public class Intrinsics extends ANY
           }
         return Value.EMPTY_VALUE;
       };
+  }
+
+
+  @SuppressWarnings("unchecked")
+  private static Iterator<Path> getIterator(long v)
+  {
+    return (Iterator<Path>)_openStreams_.get(v);
   }
 
 
