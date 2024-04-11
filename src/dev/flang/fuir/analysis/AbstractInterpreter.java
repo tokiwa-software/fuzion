@@ -170,12 +170,6 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     }
 
     /**
-     * Determine the address of a given value.  This is used on a call to an
-     * inner feature to pass a reference to the outer value type instance.
-     */
-    public abstract Pair<VALUE, RESULT> adrOf(VALUE v);
-
-    /**
      * Perform an assignment val to field f in instance rt
      *
      * @param cl id of clazz we are interpreting
@@ -673,13 +667,6 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     _processor._i = i;
     switch (s)
       {
-      case AdrOf:
-        {
-          var v = stack.pop();
-          var r = _processor.adrOf(v);
-          stack.push(r.v0());
-          return r.v1();
-        }
       case Assign:
         {
           // NYI: pop the stack values even in case field is unused.

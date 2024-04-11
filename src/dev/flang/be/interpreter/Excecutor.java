@@ -192,12 +192,6 @@ public class Excecutor extends ProcessStatement<Value, Object>
   }
 
   @Override
-  public Pair<Value, Object> adrOf(Value v)
-  {
-    return pair(v);
-  }
-
-  @Override
   public Object assignStatic(int cl, boolean pre, int tc, int f, int rt, Value tvalue, Value val)
   {
     if (!(_fuir.clazzIsOuterRef(f) && _fuir.clazzIsUnitType(rt)))

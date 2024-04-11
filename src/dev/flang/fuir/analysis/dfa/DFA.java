@@ -162,16 +162,6 @@ public class DFA extends ANY
 
 
     /**
-     * Determine the address of a given value.  This is used on a call to an
-     * inner feature to pass a reference to the outer value type instance.
-     */
-    public Pair<Val, Unit> adrOf(Val v)
-    {
-      return new Pair<>(v.rewrap(DFA.this, x -> x.adrOf()), _unit_);
-    }
-
-
-    /**
      * Perform an assignment val to field f in instance rt
      *
      * @param cl id of clazz we are interpreting
