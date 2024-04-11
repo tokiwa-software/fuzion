@@ -250,7 +250,8 @@ public read_lines array String ! reader =>
     .as_array
 
 
-# Read input line by line while `f` is true.
+# Read input line by line calling `f` for each line until `f` returns false
+# or end_of_file is reached.
 #
 public read_line_while(f String -> bool) ! reader =>
   for s := "",  s+"\n"+match rl
