@@ -687,6 +687,12 @@ public class LibraryFeature extends AbstractFeature
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
               break;
             }
+          case Unit:
+            {
+              x = new AbstractBlock(new List<>())
+                { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
+              break;
+            }
           case InlineArray:
             {
               var codePos   = _libModule.inlineArrayCodePos(iat);
