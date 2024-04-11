@@ -299,7 +299,7 @@ public class Clazzes extends ANY
             // here `compose i32` is not a constructor but a normal routine.
             // `compose i32` does not define a type. Thus it will not lead
             // to a recursive value type.
-            actualType.featureOfType().definesType() &&
+            actualType.feature().definesType() &&
             actualType != Types.t_ERROR &&
             // a recursive outer-relation
 
