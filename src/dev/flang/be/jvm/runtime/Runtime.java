@@ -52,6 +52,7 @@ import java.util.WeakHashMap;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
+@SuppressWarnings({"rawtypes"})
 public class Runtime extends ANY
 {
 
@@ -753,7 +754,7 @@ public class Runtime extends ANY
   {
     unsafeIntrinsic();
 
-    var i = (Iterator<Path>)_openStreams_.get(fd);
+    var i = getIterator(fd);
     try
       {
         return stringToUtf8ByteArray(i.next().getFileName().toString());
@@ -763,6 +764,13 @@ public class Runtime extends ANY
         return stringToUtf8ByteArray("NoSuchElementException encountered!");
       }
   }
+
+  @SuppressWarnings("unchecked")
+  public static Iterator<Path> getIterator(long fd)
+  {
+    return (Iterator<Path>)_openStreams_.get(fd);
+  }
+
 
   public static byte[] fuzion_sys_env_vars_get0(Object d)
   {
@@ -918,6 +926,7 @@ public class Runtime extends ANY
    *
    * @return whatever the method returns given the arguments
    */
+  @SuppressWarnings("unchecked")
   public static Object fuzion_java_call_v0(String clName, String name, String sig, Object thiz, Object[] args)
   {
     if (PRECONDITIONS) require
@@ -1007,6 +1016,7 @@ public class Runtime extends ANY
    *
    * @return whatever the method returns given the arguments
    */
+  @SuppressWarnings("unchecked")
   public static Object fuzion_java_call_s0(String clName, String name, String sig, Object[] args)
   {
     if (PRECONDITIONS) require
@@ -1056,6 +1066,7 @@ public class Runtime extends ANY
     var cl = pcl.v1();
     try
       {
+        @SuppressWarnings("unchecked")
         var co = cl.getConstructor(p);
         return invokeAndWrapException(()->co.newInstance(args));
       }
@@ -1123,7 +1134,7 @@ public class Runtime extends ANY
    * Weak map of frozen (immutable) arrays, used to debug accidental
    * modifications of frozen array.
    */
-  static Map<Object, String> _frozenPointers_ = CHECKS ? Collections.synchronizedMap(new WeakHashMap()) : null;
+  static Map<Object, String> _frozenPointers_ = CHECKS ? Collections.synchronizedMap(new WeakHashMap<Object, String>()) : null;
 
 
   /**

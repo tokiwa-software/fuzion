@@ -46,6 +46,7 @@ import java.util.TreeMap;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
+@SuppressWarnings("rawtypes")
 class ForClass extends ANY
 {
 
@@ -605,6 +606,7 @@ class ForClass extends ANY
    *
    * @return true iff the first one with result r1 is preferred, false otherwise.
    */
+  @SuppressWarnings("unchecked")
   boolean preferredResult(Class r1, Class r2)
   {
     return r2.isAssignableFrom(r1);

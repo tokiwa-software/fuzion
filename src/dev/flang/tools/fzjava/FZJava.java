@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.lang.reflect.Modifier;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 
 import java.nio.file.Files;
@@ -59,6 +60,7 @@ import java.util.zip.ZipFile;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
+@SuppressWarnings("rawtypes")
 public class FZJava extends Tool
 {
 
@@ -330,7 +332,7 @@ public class FZJava extends Tool
     String url = "file:jar://" + p.toUri().getPath();
     try
       {
-        var cl = new java.net.URLClassLoader(new URL[] { new URL(url) });
+        var cl = new java.net.URLClassLoader(new URL[] { URI.create(url).toURL() });
         try
           {
             var zip = new ZipFile(p.toFile());
