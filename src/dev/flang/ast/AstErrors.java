@@ -1872,7 +1872,7 @@ public class AstErrors extends ANY
 
   public static void illegalCallResultType(Call c, AbstractType t, AbstractType o)
   {
-    var of = o.featureOfType();
+    var of = o.feature();
     error(c.pos(),
           "Call performed on a boxed (explicit " + code("ref") + ") type not permitted here.",
           "The problem is that the call result type " + s(t) + " contains the outer, boxed type while " +

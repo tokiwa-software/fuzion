@@ -367,8 +367,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (!Clazzes.closed,
        Errors.any() || !actualType.dependsOnGenerics(),
-       Errors.any() || actualType.featureOfType().outer() == null || outer.feature().inheritsFrom(actualType.featureOfType().outer()),
-       Errors.any() || actualType.featureOfType().outer() != null || outer == null,
+       Errors.any() || actualType.feature().outer() == null || outer.feature().inheritsFrom(actualType.feature().outer()),
+       Errors.any() || actualType.feature().outer() != null || outer == null,
        Errors.any() || (actualType != Types.t_ERROR     &&
                               actualType != Types.t_UNDEFINED   ),
        outer == null || outer._type != Types.t_ADDRESS,
@@ -495,10 +495,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   private Clazz normalizeOuter(AbstractType t, Clazz outer)
   {
-    var f = t.featureOfType();
+    var f = t.feature();
     if (outer != null && !hasUsedOuterRef(f) && !f.isField() && t != Types.t_ERROR)
       {
-        outer = outer.normalize(t.featureOfType().outer());
+        outer = outer.normalize(t.feature().outer());
       }
     return outer;
   }
@@ -541,7 +541,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   }
   private Clazz normalize2(AbstractType t)
   {
-    var f = t.featureOfType();
+    var f = t.feature();
     if (f.isUniverse())
       {
         return Clazzes.universe.get();
@@ -663,7 +663,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     t = replaceThisTypeForTypeFeature(t);
     if (t.isThisType())
       {
-        t = findOuter(t.featureOfType(), t.featureOfType())._type;
+        t = findOuter(t.feature(), t.feature())._type;
       }
     return t.applyToGenericsAndOuter(g -> replaceThisType(g));
   }
@@ -692,7 +692,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (feature().isTypeFeature() && !t.isGenericArgument())
       {
         var g = t.generics();
-        if (t.featureOfType().isTypeFeature())
+        if (t.feature().isTypeFeature())
           {
             var this_type = g.get(0);
             g = g.map(x -> x == this_type ? x   // leave first type parameter unchanged
@@ -738,7 +738,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public AbstractFeature feature()
   {
-    return this._type.featureOfType();
+    return this._type.feature();
   }
 
 
@@ -2350,7 +2350,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                 if (CHECKS) check
                   (Errors.any() || feature() == Types.resolved.f_Types_get);
 
-                gi = gi.featureOfType().isThisRef() ? gi.asRef() : gi.asValue();
+                gi = gi.feature().isThisRef() ? gi.asRef() : gi.asValue();
               }
             result[i] = Clazzes.clazz(gi);
           }

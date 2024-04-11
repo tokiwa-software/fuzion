@@ -546,7 +546,7 @@ class LibraryOut extends ANY
       {
         _data.writeInt(-4);
       }
-    else if (!t.isGenericArgument() && t.featureOfType().isUniverse())
+    else if (!t.isGenericArgument() && t.feature().isUniverse())
       {
         _data.writeInt(-3);
       }
@@ -563,7 +563,7 @@ class LibraryOut extends ANY
         else
           {
             _data.writeInt(t.generics().size());
-            _data.writeOffset(t.featureOfType());
+            _data.writeOffset(t.feature());
             _data.writeByte(t.isThisType() ? FuzionConstants.MIR_FILE_TYPE_IS_THIS :
                             t.isRef()      ? FuzionConstants.MIR_FILE_TYPE_IS_REF
                                            : FuzionConstants.MIR_FILE_TYPE_IS_VALUE);

@@ -152,7 +152,7 @@ public class Match extends AbstractMatch
           }
         else
           {
-            res.resolveTypes(st.featureOfType());
+            res.resolveTypes(st.feature());
           }
 
         if (!st.isChoice())

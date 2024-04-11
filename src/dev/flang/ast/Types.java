@@ -284,7 +284,7 @@ public class Types extends ANY
 
       for (var t : internalTypes)
         {
-          res.resolveTypes(t.featureOfType());
+          res.resolveTypes(t.feature());
         }
     }
   }

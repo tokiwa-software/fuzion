@@ -217,7 +217,7 @@ public class MiddleEnd extends ANY
               { // Since instances of choice types are never created explicitly,
                 // they will be marked as used if they are used as a result type
                 // of a function or field.
-                AbstractFeature rtf = f.resultType().featureOfType();
+                AbstractFeature rtf = f.resultType().feature();
                 if (rtf.isChoice())
                   {
                     markUsed(rtf, usedAt);
@@ -309,7 +309,7 @@ public class MiddleEnd extends ANY
   {
     if (!t.isGenericArgument())
       {
-        markUsed(t.featureOfType(), pos);
+        markUsed(t.feature(), pos);
         for (var tg : t.generics())
           {
             findUsedFeatures(tg, pos);
@@ -334,7 +334,7 @@ public class MiddleEnd extends ANY
           {
             if (!t.isGenericArgument())
               {
-                AbstractFeature f = t.featureOfType();
+                AbstractFeature f = t.feature();
                 markUsed(f, c);  // NYI: needed? If the actual generic type is not called anywhere, maybe it can go
                 if (CHECKS) check
                   (Errors.any() || f.hasTypeFeature());

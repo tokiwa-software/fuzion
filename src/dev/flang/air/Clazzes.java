@@ -252,7 +252,7 @@ public class Clazzes extends ANY
    * @param actualType the type of the clazz, must be free from generics
    *
    * @param outer the runtime clazz of the outer feature of
-   * actualType.featureOfType.
+   * actualType.feature.
    *
    * @return the existing or newly created Clazz that represents actualType
    * within outer.
@@ -273,7 +273,7 @@ public class Clazzes extends ANY
    * chooses the actual field from outer's actual generics. -1 otherwise.
    *
    * @param outer the runtime clazz of the outer feature of
-   * actualType.featureOfType.
+   * actualType.feature.
    *
    * @return the existing or newly created Clazz that represents actualType
    * within outer.
@@ -285,7 +285,7 @@ public class Clazzes extends ANY
        Errors.any() || !actualType.containsThisType());
 
     Clazz o = outer;
-    var ao = actualType.featureOfType().outer();
+    var ao = actualType.feature().outer();
     while (o != null)
       {
         if (actualType.isRef() && ao != null && ao.inheritsFrom(o.feature()) && !outer.isRef())
@@ -306,9 +306,9 @@ public class Clazzes extends ANY
             // the convenience of the backend.
             //
             // So instead of testing !o.isRef() we use
-            // !o._type.featureOfType().isThisRef().
-            !o._type.featureOfType().isThisRef() &&
-            !o._type.featureOfType().isIntrinsic())
+            // !o._type.feature().isThisRef().
+            !o._type.feature().isThisRef() &&
+            !o._type.feature().isIntrinsic())
           {  // but a recursive chain of value types is not permitted
 
             // NYI: recursive chain of value types should be detected during
@@ -329,7 +329,7 @@ public class Clazzes extends ANY
                          "Value type " + actualType + " equals type of outer feature.\n"+
                          "The chain of outer types that lead to this recursion is:\n"+
                          chain + "\n" +
-                         "To solve this, you could add a 'ref' after the arguments list at "+o._type.featureOfType().pos().show());
+                         "To solve this, you could add a 'ref' after the arguments list at "+o._type.feature().pos().show());
           }
         o = o._outer;
       }
@@ -1061,8 +1061,8 @@ public class Clazzes extends ANY
   {
     if (PRECONDITIONS) require
       (Errors.any() || !thiz.dependsOnGenerics(),
-       outerClazz != null || thiz.featureOfType().outer() == null,
-       Errors.any() || thiz == Types.t_ERROR || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.featureOfType().outer()));
+       outerClazz != null || thiz.feature().outer() == null,
+       Errors.any() || thiz == Types.t_ERROR || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.feature().outer()));
 
     var result = create(thiz, select, outerClazz);
 

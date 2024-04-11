@@ -1709,7 +1709,7 @@ public class Feature extends AbstractFeature
             _resultType.checkChoice(_posOfReturnType);
           }
 
-        if (_resultType.isThisType() && _resultType.featureOfType() == this)
+        if (_resultType.isThisType() && _resultType.feature() == this)
           { // we are in the case of issue #1186: A routine returns itself:
             //
             //  a => a.this
