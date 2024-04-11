@@ -2192,7 +2192,6 @@ hw25 is
       case Env     -> "Env";
       case Pop     -> "Pop";
       case Unit    -> "Unit";
-      case InlineArray -> "InlineArray";
       };
   }
 
@@ -2450,7 +2449,6 @@ hw25 is
       case Env     -> codeIndex(c, ix, -1);
       case Pop     -> skipBack(cl, c, codeIndex(c, ix, -1));
       case Unit    -> codeIndex(c, ix, -1);
-      case InlineArray -> { check(false); yield codeIndex(c, ix, -1); }
       };
   }
 
