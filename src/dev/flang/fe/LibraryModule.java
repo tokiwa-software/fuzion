@@ -53,6 +53,7 @@ import dev.flang.util.HexDump;
 import dev.flang.util.List;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.SourceRange;
 import dev.flang.util.Version;
 
 
@@ -1011,9 +1012,13 @@ Feature
   {
     return data().getInt(featurePositionPos(at));
   }
+  int featurePositionEnd(int at)
+  {
+    return data().getInt(featurePositionPos(at) + 4);
+  }
   int featurePositionNextPos(int at)
   {
-    return featurePositionPos(at) + 4;
+    return featurePositionPos(at) + 8;
   }
   int featureOuterPos(int at)
   {
@@ -1505,9 +1510,16 @@ Expression
 
     return data().getInt(expressionPositionPos(at));
   }
+  int expressionPositionEnd(int at)
+  {
+    if (PRECONDITIONS) require
+      (expressionHasPosition(at));
+
+    return data().getInt(expressionPositionPos(at)+4);
+  }
   int expressionExprPos(int at)
   {
-    return expressionPositionPos(at) + (expressionHasPosition(at) ? 4 : 0);
+    return expressionPositionPos(at) + (expressionHasPosition(at) ? 8 : 0);
   }
   int expressionNextPos(int at)
   {
@@ -1557,7 +1569,7 @@ Assign
   {
     if (PRECONDITIONS) require
       (expressionKindRaw(at-1) ==  IR.ExprKind.Assign.ordinal()         ||
-       expressionKindRaw(at-5) == (IR.ExprKind.Assign.ordinal() | 0x80)    );
+       expressionKindRaw(at-9) == (IR.ExprKind.Assign.ordinal() | 0x80)    );
 
     return at;
   }
@@ -1565,7 +1577,7 @@ Assign
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Assign.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Assign.ordinal() | 0x80)     );
+      expressionKindRaw(at-9) == (IR.ExprKind.Assign.ordinal() | 0x80)     );
 
     return data().getInt(assignFieldPos(at));
   }
@@ -1573,7 +1585,7 @@ Assign
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Assign.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Assign.ordinal() | 0x80)     );
+      expressionKindRaw(at-9) == (IR.ExprKind.Assign.ordinal() | 0x80)     );
 
     return assignFieldPos(at) + 4;
   }
@@ -1611,7 +1623,7 @@ Constant
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Const.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Const.ordinal() | 0x80)     );
+      expressionKindRaw(at-9) == (IR.ExprKind.Const.ordinal() | 0x80)     );
 
     return at;
   }
@@ -1619,7 +1631,7 @@ Constant
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Const.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Const.ordinal() | 0x80)     );
+      expressionKindRaw(at-9) == (IR.ExprKind.Const.ordinal() | 0x80)     );
 
     return type(constTypePos(at));
   }
@@ -1627,7 +1639,7 @@ Constant
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Const.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Const.ordinal() | 0x80)     );
+      expressionKindRaw(at-9) == (IR.ExprKind.Const.ordinal() | 0x80)     );
 
     return typeNextPos(constTypePos(at));
   }
@@ -1635,7 +1647,7 @@ Constant
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Const.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Const.ordinal() | 0x80)     );
+      expressionKindRaw(at-9) == (IR.ExprKind.Const.ordinal() | 0x80)     );
 
     return data().getInt(constLengthPos(at));
   }
@@ -1643,7 +1655,7 @@ Constant
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Const.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Const.ordinal() | 0x80)     );
+      expressionKindRaw(at-9) == (IR.ExprKind.Const.ordinal() | 0x80)     );
 
     return constLengthPos(at) + 4;
   }
@@ -1651,7 +1663,7 @@ Constant
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Const.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Const.ordinal() | 0x80)     );
+      expressionKindRaw(at-9) == (IR.ExprKind.Const.ordinal() | 0x80)     );
 
     var l = constLength(at);
     var result = new byte[l];
@@ -1662,7 +1674,7 @@ Constant
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Const.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Const.ordinal() | 0x80)     );
+      expressionKindRaw(at-9) == (IR.ExprKind.Const.ordinal() | 0x80)     );
 
     return constDataPos(at) + constLength(at);
   }
@@ -1722,7 +1734,7 @@ Call
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Call.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Call.ordinal() | 0x80)     );
+      expressionKindRaw(at-9) == (IR.ExprKind.Call.ordinal() | 0x80)     );
 
     return at;
   }
@@ -1730,7 +1742,7 @@ Call
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Call.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Call.ordinal() | 0x80)     );
+      expressionKindRaw(at-9) == (IR.ExprKind.Call.ordinal() | 0x80)     );
 
     return data().getInt(callCalledFeaturePos(at));
   }
@@ -1738,7 +1750,7 @@ Call
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Call.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Call.ordinal() | 0x80)     );
+      expressionKindRaw(at-9) == (IR.ExprKind.Call.ordinal() | 0x80)     );
 
     return callCalledFeaturePos(at) + 4;
   }
@@ -1746,7 +1758,7 @@ Call
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Call.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Call.ordinal() | 0x80)     );
+      expressionKindRaw(at-9) == (IR.ExprKind.Call.ordinal() | 0x80)     );
 
     return type(callTypePos(at));
   }
@@ -1754,7 +1766,7 @@ Call
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Call.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Call.ordinal() | 0x80)     );
+      expressionKindRaw(at-9) == (IR.ExprKind.Call.ordinal() | 0x80)     );
 
     var p = callTypePos(at);
     return typeNextPos(p);
@@ -1763,7 +1775,7 @@ Call
   {
     if (PRECONDITIONS) require
       (expressionKindRaw(at-1) ==  IR.ExprKind.Call.ordinal()         ||
-       expressionKindRaw(at-5) == (IR.ExprKind.Call.ordinal() | 0x80)       ,
+       expressionKindRaw(at-9) == (IR.ExprKind.Call.ordinal() | 0x80)       ,
        libraryFeature(callCalledFeature(at)).hasOpenGenericsArgList());
 
     return data().getInt(callNumArgsPos(at));
@@ -1772,7 +1784,7 @@ Call
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Call.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Call.ordinal() | 0x80)     );
+      expressionKindRaw(at-9) == (IR.ExprKind.Call.ordinal() | 0x80)     );
 
     var f = libraryFeature(callCalledFeature(at));
     return f.hasOpenGenericsArgList()
@@ -1783,7 +1795,7 @@ Call
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Call.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Call.ordinal() | 0x80)     );
+      expressionKindRaw(at-9) == (IR.ExprKind.Call.ordinal() | 0x80)     );
 
     return callNumArgsPos(at) +
       (libraryFeature(callCalledFeature(at)).hasOpenGenericsArgList() ? 4 : 0);
@@ -1792,7 +1804,7 @@ Call
   {
     if (PRECONDITIONS) require
       (expressionKindRaw(at-1) ==  IR.ExprKind.Call.ordinal()         ||
-       expressionKindRaw(at-5) == (IR.ExprKind.Call.ordinal() | 0x80)    ,
+       expressionKindRaw(at-9) == (IR.ExprKind.Call.ordinal() | 0x80)    ,
        libraryFeature(callCalledFeature(at)).generics().isOpen());
 
     return data().getInt(callNumTypeParametersPos(at));
@@ -1801,7 +1813,7 @@ Call
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Call.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Call.ordinal() | 0x80)     );
+      expressionKindRaw(at-9) == (IR.ExprKind.Call.ordinal() | 0x80)     );
 
     var f = libraryFeature(callCalledFeature(at));
     return f.generics().isOpen()
@@ -1812,7 +1824,7 @@ Call
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Call.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Call.ordinal() | 0x80)     );
+      expressionKindRaw(at-9) == (IR.ExprKind.Call.ordinal() | 0x80)     );
 
     return callNumTypeParametersPos(at) +
       (libraryFeature(callCalledFeature(at)).generics().isOpen() ? 4 : 0);
@@ -1821,7 +1833,7 @@ Call
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Call.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Call.ordinal() | 0x80)     );
+      expressionKindRaw(at-9) == (IR.ExprKind.Call.ordinal() | 0x80)     );
 
     var n = callNumTypeParameters(at);
     var tat = callTypeParametersPos(at);
@@ -1836,7 +1848,7 @@ Call
   {
     if (PRECONDITIONS) require
       (expressionKindRaw(at-1) ==  IR.ExprKind.Call.ordinal()         ||
-       expressionKindRaw(at-5) == (IR.ExprKind.Call.ordinal() | 0x80)    ,
+       expressionKindRaw(at-9) == (IR.ExprKind.Call.ordinal() | 0x80)    ,
        libraryFeature(callCalledFeature(at)).resultType().isOpenGeneric());
 
     return data().getInt(callSelectPos(at));
@@ -1845,7 +1857,7 @@ Call
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Call.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Call.ordinal() | 0x80)     );
+      expressionKindRaw(at-9) == (IR.ExprKind.Call.ordinal() | 0x80)     );
 
     var sat = callSelectPos(at);
     var nat = sat + (libraryFeature(callCalledFeature(at)).resultType().isOpenGeneric() ? 4 : 0);
@@ -1883,7 +1895,7 @@ Match
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Match.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Match.ordinal() | 0x80)     );
+      expressionKindRaw(at-9) == (IR.ExprKind.Match.ordinal() | 0x80)     );
 
     return at;
   }
@@ -1891,7 +1903,7 @@ Match
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Match.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Match.ordinal() | 0x80)     );
+      expressionKindRaw(at-9) == (IR.ExprKind.Match.ordinal() | 0x80)     );
 
     return data().getInt(matchNumberOfCasesPos(at));
   }
@@ -1899,7 +1911,7 @@ Match
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Match.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Match.ordinal() | 0x80)     );
+      expressionKindRaw(at-9) == (IR.ExprKind.Match.ordinal() | 0x80)     );
 
     return matchNumberOfCasesPos(at) + 4;
   }
@@ -1907,7 +1919,7 @@ Match
   {
     if (PRECONDITIONS) require
      (expressionKindRaw(at-1) ==  IR.ExprKind.Match.ordinal()         ||
-      expressionKindRaw(at-5) == (IR.ExprKind.Match.ordinal() | 0x80)     );
+      expressionKindRaw(at-9) == (IR.ExprKind.Match.ordinal() | 0x80)     );
 
     var n = matchNumberOfCases(at);
     at = matchCasesPos(at);
@@ -2248,7 +2260,7 @@ SourceFile
    * SourcePosition.builtIn, otherwise a valid index into a source file in this
    * module.
    */
-  SourcePosition pos(int pos)
+  SourcePosition pos(int pos, int posEnd)
   {
     if (pos < 0)
       {
@@ -2280,7 +2292,7 @@ SourceFile
             sf = new SourceFile(Path.of(sourceFileName(at)), ba);
             _sourceFiles.set(i, sf);
           }
-        return new SourcePosition(sf, pos - sourceFileBytesPos(at));
+        return new SourceRange(sf, pos - sourceFileBytesPos(at), posEnd - sourceFileBytesPos(at));
       }
   }
 

@@ -148,7 +148,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public boolean isChoice()
   {
-    return !isGenericArgument() && featureOfType().isChoice();
+    return !isGenericArgument() && feature().isChoice();
   }
 
 
@@ -162,7 +162,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (!(this instanceof UnresolvedType tt),
        isChoice());
 
-    var g = featureOfType().choiceGenerics();
+    var g = feature().choiceGenerics();
     return replaceGenerics(g)
       .map(t -> t.replace_this_type_by_actual_outer(this));
   }
@@ -282,8 +282,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public boolean isAssignableFrom(AbstractType actual, Set<String> assignableTo)
   {
     if (PRECONDITIONS) require
-      (this  .isGenericArgument() || this  .featureOfType() != null || Errors.any(),
-       actual.isGenericArgument() || actual.featureOfType() != null || Errors.any(),
+      (this  .isGenericArgument() || this  .feature() != null || Errors.any(),
+       actual.isGenericArgument() || actual.feature() != null || Errors.any(),
        Errors.any() || this != Types.t_ERROR && actual != Types.t_ERROR);
 
     if (assignableTo != null)
@@ -306,10 +306,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         else
           {
             if (CHECKS) check
-              (actual_type.featureOfType() != null || Errors.any());
-            if (actual_type.featureOfType() != null)
+              (actual_type.feature() != null || Errors.any());
+            if (actual_type.feature() != null)
               {
-                for (var p: actual_type.featureOfType().inherits())
+                for (var p: actual_type.feature().inherits())
                   {
                     var pt = actual_type.actualType(p.type());
                     if (actual_type.isRef())
@@ -342,10 +342,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   private boolean isChoiceMatch(AbstractType actual)
   {
     if (PRECONDITIONS) require
-      (!isGenericArgument() && featureOfType() != null || Errors.any());
+      (!isGenericArgument() && feature() != null || Errors.any());
 
     boolean result = false;
-    if (!isGenericArgument() && !isRef() && featureOfType().isChoice())
+    if (!isGenericArgument() && !isRef() && feature().isChoice())
       {
         for (var t : choiceGenerics())
           {
@@ -367,8 +367,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public boolean constraintAssignableFrom(AbstractType actual)
   {
     if (PRECONDITIONS) require
-      (this  .isGenericArgument() || this  .featureOfType() != null || Errors.any(),
-       actual.isGenericArgument() || actual.featureOfType() != null || Errors.any(),
+      (this  .isGenericArgument() || this  .feature() != null || Errors.any(),
+       actual.isGenericArgument() || actual.feature() != null || Errors.any(),
        Errors.any() || this != Types.t_ERROR && actual != Types.t_ERROR);
 
     var result = containsError()                   ||
@@ -384,10 +384,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         else
           {
             if (CHECKS) check
-              (actual.featureOfType() != null || Errors.any());
-            if (actual.featureOfType() != null)
+              (actual.feature() != null || Errors.any());
+            if (actual.feature() != null)
               {
-                if (actual.featureOfType() == featureOfType())
+                if (actual.feature() == feature())
                   {
                     if (genericsAssignable(actual)) // NYI: Check: What about open generics?
                       {
@@ -396,7 +396,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                   }
                 if (!result)
                   {
-                    for (var p: actual.featureOfType().inherits())
+                    for (var p: actual.feature().inherits())
                       {
                         var pt = p.type().applyTypePars(actual);
                         if (constraintAssignableFrom(pt))
@@ -490,15 +490,15 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param genericsToReplace a list of possibly generic types
    *
    * @return a new list of types with all formal generic arguments from
-   * featureOfType() replaced by the corresponding generics entry of this type.
+   * feature() replaced by the corresponding generics entry of this type.
    */
   public List<AbstractType> replaceGenerics(List<AbstractType> genericsToReplace)
   {
     if (PRECONDITIONS) require
       (Errors.any() ||
-       featureOfType().generics().sizeMatches(generics()));
+       feature().generics().sizeMatches(generics()));
 
-    return applyTypePars(featureOfType(), genericsToReplace, generics());
+    return applyTypePars(feature(), genericsToReplace, generics());
   }
 
 
@@ -552,7 +552,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param target a target type this is used in
    *
-   * @return this with all generic arguments from target.featureOfType._generics
+   * @return this with all generic arguments from target.feature._generics
    * replaced by target._generics.
    */
   public AbstractType applyTypePars(AbstractType target)
@@ -562,7 +562,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        target != null,
        target.checkedForGeneric(),
        Errors.any() || !isOpenGeneric(),
-       Errors.any() || target.isGenericArgument() || target.featureOfType().generics().sizeMatches(target.generics()));
+       Errors.any() || target.isGenericArgument() || target.feature().generics().sizeMatches(target.generics()));
 
     AbstractType result;
     if (_appliedTypeParsCachedFor1 == target)
@@ -590,13 +590,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param target a target type this is used in
    *
-   * @return this with all generic arguments from target.featureOfType._generics
+   * @return this with all generic arguments from target.feature._generics
    * replaced by target._generics.
    */
   private AbstractType applyTypePars_(AbstractType target)
   {
     /* NYI: Performance: This requires time in O(this.depth *
-     * featureOfType.inheritanceDepth * t.depth), i.e. it is in O(n³)! Caching
+     * feature.inheritanceDepth * t.depth), i.e. it is in O(n³)! Caching
      * is used to alleviate this a bit, but this is probably not sufficient!
      */
     var result = this;
@@ -608,7 +608,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
         else
           {
-            result = result.applyTypePars(target.featureOfType(), target.generics());
+            result = result.applyTypePars(target.feature(), target.generics());
             if (target.outer() != null)
               {
                 result = result.applyTypePars(target.outer());
@@ -669,7 +669,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   boolean isTypeType()
   {
-    return !isGenericArgument() && featureOfType().isTypeFeature();
+    return !isGenericArgument() && feature().isTypeFeature();
   }
 
 
@@ -775,7 +775,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var result = this;
     if (dependsOnGenerics())
       {
-        result = result.applyTypeParsLocally(target.featureOfType(), target.generics(), select);
+        result = result.applyTypeParsLocally(target.feature(), target.generics(), select);
       }
     return result;
   }
@@ -881,7 +881,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param o2 the new outer type to be used (which may also differ in its
    * actual generics).
    *
-   * @return a new type with same featureOfType(), but using g2/o2 as generics
+   * @return a new type with same feature(), but using g2/o2 as generics
    * and outer type.
    */
   public AbstractType applyTypePars(List<AbstractType> g2, AbstractType o2)
@@ -1002,8 +1002,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     return
       this != Types.t_ERROR &&
       !isGenericArgument() &&
-      (featureOfType() == Types.resolved.f_Function ||
-       featureOfType() == Types.resolved.f_Unary);
+      (feature() == Types.resolved.f_Function ||
+       feature() == Types.resolved.f_Unary);
   }
 
 
@@ -1017,8 +1017,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     return
       !isGenericArgument() &&
-      (featureOfType() == Types.resolved.f_Function ||
-       featureOfType().inherits().stream().anyMatch(c -> c.calledFeature().selfType().isAnyFunctionType()));
+      (feature() == Types.resolved.f_Function ||
+       feature().inherits().stream().anyMatch(c -> c.calledFeature().selfType().isAnyFunctionType()));
   }
 
 
@@ -1046,7 +1046,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (PRECONDITIONS) require
       (isAnyFunctionType());
 
-    var f = featureOfType();
+    var f = feature();
     if (f == Types.resolved.f_Function)
       {
         return generics().size() - 1;
@@ -1098,7 +1098,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     return
       this != Types.t_ERROR &&
       !isGenericArgument() &&
-      featureOfType() == Types.resolved.f_Lazy;
+      feature() == Types.resolved.f_Lazy;
   }
 
 
@@ -1188,7 +1188,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         result =
           isGenericArgument() &&  other.isGenericArgument() ?  0 :
           isGenericArgument() && !other.isGenericArgument() ? -1 :
-          !isGenericArgument() && other.isGenericArgument() ? +1 : featureOfType().compareTo(other.featureOfType());
+          !isGenericArgument() && other.isGenericArgument() ? +1 : feature().compareTo(other.feature());
         if (result == 0 && !isGenericArgument())
           {
             if (generics().size() != other.generics().size())  // this may happen for open generics lists
@@ -1308,7 +1308,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var att = (tt.isGenericArgument() ? tt.genericArgument().constraint() : tt);
     if (isThisTypeInTypeFeature() && tt.isGenericArgument()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
         ||
-        isThisType() && att.featureOfType().inheritsFrom(featureOfType())  // we have abc.this.type with att inheriting from abc, so use tt
+        isThisType() && att.feature().inheritsFrom(feature())  // we have abc.this.type with att inheriting from abc, so use tt
         )
       {
         if (foundRef != null && tt.isRef())
@@ -1351,7 +1351,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * Check this and, recursively, all types contained in this' type parameters
-   * and outer types if `this.isThisType && this.featureOfType() == parent` is
+   * and outer types if `this.isThisType && this.feature() == parent` is
    * true.  Replace all matches by the `heir.thisType()`.
    *
    * As an examples, in the code
@@ -1371,7 +1371,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public AbstractType replace_this_type(AbstractFeature parent, AbstractFeature heir)
   {
-    return isThisType() && featureOfType() == parent
+    return isThisType() && feature() == parent
       ? heir.thisType()
       : applyToGenericsAndOuter(g -> g.replace_this_type(parent, heir));
   }
@@ -1387,7 +1387,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     if (PRECONDITIONS) require
       (!isGenericArgument(),
-       featureOfType().state().atLeast(State.RESOLVED));
+       feature().state().atLeast(State.RESOLVED));
 
     return typeType(null);
   }
@@ -1406,34 +1406,23 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     if (PRECONDITIONS) require
       (!isGenericArgument(),
-       res != null || featureOfType().state().atLeast(State.RESOLVED));
+       res != null || feature().state().atLeast(State.RESOLVED));
 
-    var result = this;
-    var fot = featureOfType();
-    if (!fot.isUniverse() && this != Types.t_ERROR)
+    AbstractType result = null;
+    var fot = feature();
+    if (fot.isUniverse() || this == Types.t_ERROR || fot.isTypeFeature())
       {
-        var f =
-          fot.isTypeFeature()  ? null                 :
-          fot.hasTypeFeature() ? fot.typeFeature()    :
-          res != null          ? fot.typeFeature(res)
-                               : null;
-        if (f == null)  // NYI: This is the case for fot.isTypeFeature(), but also for some internal features like #anonymous. Need to check why.
-          {
-            result = Types.resolved.f_Type.selfType();
-          }
-        else
-          {
-            var g = new List<AbstractType>(this);
-            g.addAll(generics());
+        result = this;
+      }
+    else
+      {
+        var g = new List<AbstractType>(this);
+        g.addAll(generics());
 
-            if (CHECKS) check
-              (!f.isThisRef());
-
-            result = ResolvedNormalType.create(g,
-                                               g,
-                                               outer().typeType(res),
-                                               f);
-          }
+        result = ResolvedNormalType.create(g,
+                                           g,
+                                           outer().typeType(res),
+                                           res != null ? fot.typeFeature(res) : fot.typeFeature());
       }
     return result;
   }
@@ -1652,7 +1641,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @throws Error if this is not resolved or isGenericArgument().
    */
-  public abstract AbstractFeature featureOfType();
+  public abstract AbstractFeature feature();
 
   public abstract AbstractType asRef();
   public abstract AbstractType asValue();
@@ -1710,15 +1699,15 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     else
       {
         var o = outer();
-        String outer = o != null && !o.featureOfType().isUniverse() ? o.asStringWrapped() + "." : "";
-        var f = featureOfType();
+        String outer = o != null && !o.feature().isUniverse() ? o.asStringWrapped() + "." : "";
+        var f = feature();
         var fn = f.featureName();
         // for a feature that does not define a type itself, the name is not
         // unique due to overloading with different argument counts. So we add
         // the argument count to get a unique name.
         var fname = fn.baseName() + (f.definesType() ? "" : FuzionConstants.INTERNAL_NAME_PREFIX + fn.argCount());
         result = outer
-              + (isRef() != featureOfType().isThisRef() ? (isRef() ? "ref " : "value ") : "" )
+              + (isRef() != feature().isThisRef() ? (isRef() ? "ref " : "value ") : "" )
               + fname;
         if (isThisType())
           {
@@ -1772,7 +1761,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var result = this;
     if (!isGenericArgument())
       {
-        if (!checkActualTypePars(featureOfType(), generics(), unresolvedGenerics(), null))
+        if (!checkActualTypePars(feature(), generics(), unresolvedGenerics(), null))
           {
             result = Types.t_ERROR;
           }

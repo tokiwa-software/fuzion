@@ -574,7 +574,6 @@ public class CFG extends ANY
   {
     switch (s)
       {
-      case AdrOf : break;
       case Assign: break;
       case Box   : break;
       case Call:

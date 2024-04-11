@@ -102,7 +102,7 @@ public abstract class AbstractCurrent extends Expr
    */
   public String toString()
   {
-    return _type.featureOfType().featureName().baseName() + ".this";
+    return _type.feature().featureName().baseName() + ".this";
   }
 
 }

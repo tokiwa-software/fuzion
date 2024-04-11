@@ -1,0 +1,14 @@
+(3 => 3)
+(3 => 3), (5 => 5)
+size : 1
+size : 2
+min  : 3
+min  : 3
+max  : 3
+max  : 5
+keys : [3]
+keys : [3, 5]
+items: [instance[tuple i32 String]]
+items: [instance[tuple i32 String], instance[tuple i32 String]]
+union: (3 => 3), (5 => 5)
+union: (3 => 3), (5 => 5), (7 => 7)

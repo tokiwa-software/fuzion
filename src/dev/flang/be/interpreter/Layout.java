@@ -29,11 +29,8 @@ package dev.flang.be.interpreter;
 import java.util.Map;
 import java.util.TreeMap;
 
-import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.Types;
-
-import dev.flang.air.Clazz;
-import dev.flang.air.Clazzes;
+import dev.flang.air.Clazz; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.air.Clazzes; // NYI: remove dependency! Use dev.flang.fuir instead.
 
 import dev.flang.util.ANY;
 
@@ -72,13 +69,22 @@ class Layout extends ANY
   }
 
 
-  /*----------------------------  variables  ----------------------------*/
+  /*----------------------------  constants  ----------------------------*/
 
 
   /**
    * The Clazz we are layouting
    */
-  Clazz _clazz;
+  private final Clazz _clazz;
+
+
+  /**
+   * Offsets of the fields in instances of this clazz.
+   */
+  public final Map<Clazz, Integer> _offsets = new TreeMap<>((o1, o2) -> o1.compareToIgnoreOuter(o2));
+
+
+  /*----------------------------  variables  ----------------------------*/
 
 
   /**
@@ -86,30 +92,14 @@ class Layout extends ANY
    * in progress, Integer.MIN_VALUE if layout is done but clazz cannot be
    * instantiated.
    */
-  int _size = -1;
+  private int _size = -1;
 
 
   /**
    * The size of the choice values in case _clazz.isChoice(). -1 if layout has
    * not started yet.
    */
-  int _choiceValsSize = -1;
-
-
-  /**
-   * Offsets of the fields in instances of this clazz.
-   */
-  Map<Clazz, Integer> _offsets = new TreeMap<>();
-
-
-  /**
-   * Offsets of the fields in instances of this clazz. This maps fields to
-   * Integer offsets and open generic fields to int[] with offsets for all
-   * select-variants.
-   *
-   * NYI: Remove, this should be replaced by _offsets.
-   */
-  Map<AbstractFeature, Object> _offsets0 = new TreeMap<>();
+  private int _choiceValsSize = -1;
 
 
   /*---------------------------  constructors  ---------------------------*/
@@ -148,39 +138,25 @@ class Layout extends ANY
             var ff = f.feature();
             // NYI: Ugly special handling, clean up:
             var fc =
-              ff.isOuterRef() && ff.outer().isOuterRefAdrOfValue()  ? Clazzes.clazz(Types.t_ADDRESS)
+              ff.isOuterRef() && ff.outer().isOuterRefAdrOfValue()  ? Clazzes.c_address
                                                                     : f.resultClazz();
             int fsz;
             if        (fc.isRef()) { fsz = 1;
-            } else if (fc._type.compareTo(Types.resolved.t_i8    ) == 0) { fsz = 1;
-            } else if (fc._type.compareTo(Types.resolved.t_i16   ) == 0) { fsz = 1;
-            } else if (fc._type.compareTo(Types.resolved.t_i32   ) == 0) { fsz = 1;
-            } else if (fc._type.compareTo(Types.resolved.t_i64   ) == 0) { fsz = 2;
-            } else if (fc._type.compareTo(Types.resolved.t_u8    ) == 0) { fsz = 1;
-            } else if (fc._type.compareTo(Types.resolved.t_u16   ) == 0) { fsz = 1;
-            } else if (fc._type.compareTo(Types.resolved.t_u32   ) == 0) { fsz = 1;
-            } else if (fc._type.compareTo(Types.resolved.t_u64   ) == 0) { fsz = 2;
-            } else if (fc._type.compareTo(Types.resolved.t_f32   ) == 0) { fsz = 1;
-            } else if (fc._type.compareTo(Types.resolved.t_f64   ) == 0) { fsz = 2;
-            } else if (fc._type.compareTo(Types.resolved.t_void  ) == 0) { fsz = 0;
+            } else if (Clazzes.i8.getIfCreated()     != null && fc.compareTo(Clazzes.i8.get()      ) == 0) { fsz = 1;
+            } else if (Clazzes.i16.getIfCreated()    != null && fc.compareTo(Clazzes.i16.get()     ) == 0) { fsz = 1;
+            } else if (Clazzes.i32.getIfCreated()    != null && fc.compareTo(Clazzes.i32.get()     ) == 0) { fsz = 1;
+            } else if (Clazzes.i64.getIfCreated()    != null && fc.compareTo(Clazzes.i64.get()     ) == 0) { fsz = 2;
+            } else if (Clazzes.u8.getIfCreated()     != null && fc.compareTo(Clazzes.u8.get()      ) == 0) { fsz = 1;
+            } else if (Clazzes.u16.getIfCreated()    != null && fc.compareTo(Clazzes.u16.get()     ) == 0) { fsz = 1;
+            } else if (Clazzes.u32.getIfCreated()    != null && fc.compareTo(Clazzes.u32.get()     ) == 0) { fsz = 1;
+            } else if (Clazzes.u64.getIfCreated()    != null && fc.compareTo(Clazzes.u64.get()     ) == 0) { fsz = 2;
+            } else if (Clazzes.f32.getIfCreated()    != null && fc.compareTo(Clazzes.f32.get()     ) == 0) { fsz = 1;
+            } else if (Clazzes.f64.getIfCreated()    != null && fc.compareTo(Clazzes.f64.get()     ) == 0) { fsz = 2;
+            } else if (Clazzes.c_void.getIfCreated() != null && fc.compareTo(Clazzes.c_void.get()  ) == 0) { fsz = 0;
             } else {
               fsz = get(fc).size();
             }
             _offsets.put(f, _size - Integer.MIN_VALUE);
-            if (f._select < 0)
-              {
-                _offsets0.put(f.feature(), _size - Integer.MIN_VALUE);
-              }
-            else
-              {
-                int[] a = (int[]) _offsets0.get(f.feature());
-                if (a == null)
-                  {
-                    a = new int[_clazz.replaceOpenCount(f.feature())];
-                    _offsets0.put(f.feature(), a);
-                  }
-                a[f._select] = _size - Integer.MIN_VALUE;
-              }
             _size += fsz;
           }
         _size -= Integer.MIN_VALUE;
@@ -215,26 +191,6 @@ class Layout extends ANY
       (sizeAvailable());
 
     return _size;
-  }
-
-
-  /**
-   * Offset of field f within instances of _clazz.
-   *
-   * NYI: Remove, replace by offset(Clazz)
-   */
-  int offset0(AbstractFeature f, int select)
-  {
-    if (PRECONDITIONS) require
-      (_clazz.isRoutine() || _clazz.isChoice(),
-       f.resultType().isOpenGeneric() == (select >= 0),
-       sizeAvailable(),
-       _offsets0.containsKey(f));
-
-    var o = _offsets0.get(f);
-    var result = select < 0 ? ((Integer) o)
-                            : ((int[]) o)[select];
-    return result;
   }
 
 

@@ -297,7 +297,7 @@ public class Case extends AbstractCase
     List<AbstractType> matches = new List<>();
     int i = 0;
     t = t.resolve(res, outer);
-    var inferGenerics = !t.isGenericArgument() && t.generics().isEmpty() && t.featureOfType().generics() != FormalGenerics.NONE;
+    var inferGenerics = !t.isGenericArgument() && t.generics().isEmpty() && t.feature().generics() != FormalGenerics.NONE;
     var hasErrors = t.containsError();
     check
       (!hasErrors || Errors.any());
@@ -306,7 +306,7 @@ public class Case extends AbstractCase
         if (CHECKS) check
           (Errors.any() || cg != null);
         if (cg != null &&
-            (inferGenerics  && !cg.isGenericArgument() && t.featureOfType() == cg.featureOfType() /* match feature, take generics from cg */ ||
+            (inferGenerics  && !cg.isGenericArgument() && t.feature() == cg.feature() /* match feature, take generics from cg */ ||
              !inferGenerics && t.compareTo(cg) == 0                    /* match exactly */ ))
           {
             t = cg;

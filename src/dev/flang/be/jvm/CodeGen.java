@@ -201,16 +201,6 @@ class CodeGen
 
 
   /**
-   * Determine the address of a given value.  This is used on a call to an
-   * inner feature to pass a reference to the outer value type instance.
-   */
-  public Pair<Expr, Expr> adrOf(Expr v)
-  {
-    return new Pair<>(v, Expr.UNIT);
-  }
-
-
-  /**
    * Create code to assign value to a given field w/o dynamic binding.
    *
    * @param cl id of clazz we are interpreting

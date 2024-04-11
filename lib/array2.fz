@@ -98,7 +98,7 @@ is
       + ascii.lf_str
       + indices0
           .map(i -> "  " + (slice i*length1 (i+1)*length1))
-          .fold(String.concat("," + ascii.lf_str))
+          .fold(String.concat1("," + ascii.lf_str))
       + ascii.lf_str + "]")
 
 

@@ -27,7 +27,7 @@ ctrie_test is
   ctrie := (lock_free.map i32 String).empty
 
   set_from(s Sequence i32) =>
-    (container.ps_set i32).from_sequence s
+    (container.ps_set i32).new s
 
   all := set_from 0..100
   removed := set_from 0..100:2

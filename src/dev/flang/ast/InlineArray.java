@@ -170,7 +170,7 @@ public class InlineArray extends ExprWithPos
       {
         // if expected type is choice, examine if there is exactly one
         // array in choice generics, if so use this for further type propagation.
-        t = t.findInChoice(cg -> !cg.isGenericArgument() && cg.featureOfType() == Types.resolved.f_array);
+        t = t.findInChoice(cg -> !cg.isGenericArgument() && cg.feature() == Types.resolved.f_array);
 
         var elementType = elementType(t);
         if (elementType != Types.t_ERROR)
@@ -201,7 +201,7 @@ public class InlineArray extends ExprWithPos
       (t != null);
 
     // NYI see issue: #1817
-    if (Types.resolved.f_array.inheritsFrom(t.featureOfType()) &&
+    if (Types.resolved.f_array.inheritsFrom(t.feature()) &&
         t.generics().size() == 1)
       {
         return t.generics().get(0);

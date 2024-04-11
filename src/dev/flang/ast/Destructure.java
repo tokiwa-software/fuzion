@@ -293,7 +293,7 @@ public class Destructure extends ExprWithPos
         var names = _names.iterator();
         var fields = _fields == null ? null : _fields.iterator();
         List<String> fieldNames = new List<>();
-        for (var f : t.featureOfType().valueArguments())
+        for (var f : t.feature().valueArguments())
           {
             // NYI: check if f is visible
             var tf = f.resultTypeIfPresent(res, UnresolvedType.NONE);

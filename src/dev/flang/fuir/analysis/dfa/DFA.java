@@ -162,16 +162,6 @@ public class DFA extends ANY
 
 
     /**
-     * Determine the address of a given value.  This is used on a call to an
-     * inner feature to pass a reference to the outer value type instance.
-     */
-    public Pair<Val, Unit> adrOf(Val v)
-    {
-      return new Pair<>(v.rewrap(DFA.this, x -> x.adrOf()), _unit_);
-    }
-
-
-    /**
      * Perform an assignment val to field f in instance rt
      *
      * @param cl id of clazz we are interpreting
@@ -292,9 +282,8 @@ public class DFA extends ANY
       var ccs = _fuir.accessedClazzes(cl, c, i);
       var found = new boolean[] { false };
       var resf = new Val[] { null };
-      for (var ccii = 0; ccii < ccs.length; ccii += 2)
+      for (var cci = 0; cci < ccs.length; cci += 2)
         {
-          var cci = ccii;
           var tt = ccs[cci  ];
           var cc = ccs[cci+1];
           tvalue.value().forAll(t -> {
@@ -316,9 +305,16 @@ public class DFA extends ANY
       var res = resf[0];
       if (!found[0])
         { // NYI: proper error reporting
+          var detail = "Considered targets: ";
+          for (var ccii = 0; ccii < ccs.length; ccii += 2)
+            {
+              detail += _fuir.clazzAsStringNew(ccs[ccii]) + ", ";
+            }
           Errors.error(_fuir.codeAtAsPos(c, i),
                        "NYI: in "+_fuir.clazzAsString(cl)+" no targets for "+_fuir.codeAtAsString(cl, c, i)+" target "+tvalue,
-                       null);
+                       detail);
+
+          _call.showWhy();
         }
       else if (res != null &&
                tvalue instanceof EmbeddedValue &&
