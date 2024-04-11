@@ -267,17 +267,17 @@ public class Intrinsics extends ANY
     put("concur.atomic.compare_and_swap0",  (excecutor, innerClazz) -> args ->
         {
           var a = innerClazz._outer;
-          var f = excecutor.fuir().clazzForInterpreter(excecutor.fuir().lookupAtomicValue(a._idInFUIR)).feature();
+          var f = excecutor.fuir().clazzForInterpreter(excecutor.fuir().lookupAtomicValue(a._idInFUIR));
           var thiz      = args.get(0);
           var expected  = args.get(1);
           var new_value = args.get(2);
           synchronized (LOCK_FOR_ATOMIC)
             {
-              var res = Interpreter.getField(f, -1, a, thiz, false); // NYI: HACK: We must clone this!
-              if (Interpreter.compareField(f, -1, a, thiz, expected))
+              var res = Interpreter.getField(f, a, thiz, false); // NYI: HACK: We must clone this!
+              if (Interpreter.compareField(f, a, thiz, expected))
                 {
                   res = expected;   // NYI: HACK: workaround since res was not cloned
-                  Interpreter.setField(f, -1, a, thiz, new_value);
+                  Interpreter.setField(f, a, thiz, new_value);
                 }
               return res;
             }
@@ -285,15 +285,15 @@ public class Intrinsics extends ANY
     put("concur.atomic.compare_and_set0",  (excecutor, innerClazz) -> args ->
         {
           var a = innerClazz._outer;
-          var f = excecutor.fuir().clazzForInterpreter(excecutor.fuir().lookupAtomicValue(a._idInFUIR)).feature();
+          var f = excecutor.fuir().clazzForInterpreter(excecutor.fuir().lookupAtomicValue(a._idInFUIR));
           var thiz      = args.get(0);
           var expected  = args.get(1);
           var new_value = args.get(2);
           synchronized (LOCK_FOR_ATOMIC)
             {
-              if (Interpreter.compareField(f, -1, a, thiz, expected))
+              if (Interpreter.compareField(f, a, thiz, expected))
                 {
-                  Interpreter.setField(f, -1, a, thiz, new_value);
+                  Interpreter.setField(f, a, thiz, new_value);
                   return new boolValue(true);
                 }
               return new boolValue(false);
@@ -316,21 +316,21 @@ public class Intrinsics extends ANY
     put("concur.atomic.read0",  (excecutor, innerClazz) -> args ->
         {
           var a = innerClazz._outer;
-          var f = excecutor.fuir().clazzForInterpreter(excecutor.fuir().lookupAtomicValue(a._idInFUIR)).feature();
+          var f = excecutor.fuir().clazzForInterpreter(excecutor.fuir().lookupAtomicValue(a._idInFUIR));
           var thiz = args.get(0);
           synchronized (LOCK_FOR_ATOMIC)
             {
-              return Interpreter.getField(f, -1, a, thiz, false);
+              return Interpreter.getField(f, a, thiz, false);
             }
         });
     put("concur.atomic.write0", (excecutor, innerClazz) -> args ->
         {
           var a = innerClazz._outer;
-          var f = excecutor.fuir().clazzForInterpreter(excecutor.fuir().lookupAtomicValue(a._idInFUIR)).feature();
+          var f = excecutor.fuir().clazzForInterpreter(excecutor.fuir().lookupAtomicValue(a._idInFUIR));
           var thiz = args.get(0);
           synchronized (LOCK_FOR_ATOMIC)
             {
-              Interpreter.setField(f, -1, a, thiz, args.get(1));
+              Interpreter.setField(f, a, thiz, args.get(1));
             }
           return new Instance(Clazzes.c_unit.get());
         });
@@ -759,7 +759,7 @@ public class Intrinsics extends ANY
               var argfields = innerClazz.argumentFields();
               var argsArray = argfields[argfields.length - 1];
               var sac = argsArray.resultClazz();
-              var argzData = Interpreter.getField(Clazzes.fuzionSysArray_u8_data.feature(), -1, sac, argz, false);
+              var argzData = Interpreter.getField(Clazzes.fuzionSysArray_u8_data, sac, argz, false);
 
               String clName =                          (String) JavaInterface.instanceToJavaObject(clNameI);
               String name   = nameI   == null ? null : (String) JavaInterface.instanceToJavaObject(nameI  );
@@ -787,7 +787,7 @@ public class Intrinsics extends ANY
           var argfields = innerClazz.argumentFields();
           var argsArray = argfields[argfields.length - 1];
           var sac = argsArray.resultClazz();
-          var argzData = Interpreter.getField(Clazzes.fuzionSysArray_u8_data.feature(), -1, sac, argz, false);
+          var argzData = Interpreter.getField(Clazzes.fuzionSysArray_u8_data, sac, argz, false);
           var arrA = argzData.arrayData();
           var res = arrA._array;
           Clazz resultClazz = innerClazz.resultClazz();
@@ -799,7 +799,7 @@ public class Intrinsics extends ANY
           var argfields = innerClazz.argumentFields();
           var argsArray = argfields[argfields.length - 1];
           var sac = argsArray.resultClazz();
-          var argzData = Interpreter.getField(Clazzes.fuzionSysArray_u8_data.feature(), -1, sac, argz, false);
+          var argzData = Interpreter.getField(Clazzes.fuzionSysArray_u8_data, sac, argz, false);
           var str = utf8ByteArrayDataToString(argzData);
           Clazz resultClazz = innerClazz.resultClazz();
           return JavaInterface.javaObjectToInstance(str, resultClazz);

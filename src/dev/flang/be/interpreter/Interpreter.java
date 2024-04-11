@@ -32,8 +32,6 @@ import java.nio.charset.StandardCharsets;
 import dev.flang.air.Clazz;                // NYI: remove this dependency
 import dev.flang.air.Clazzes;              // NYI: remove this dependency
 
-import dev.flang.ast.AbstractFeature;      // NYI: remove this dependency
-
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
@@ -114,10 +112,10 @@ public class Interpreter extends ANY
     var saCl = Clazzes.fuzionSysArray_u8;
     Instance sa = new Instance(saCl);
     byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
-    setField(Clazzes.fuzionSysArray_u8_length.feature(), -1, saCl, sa, new i32Value(bytes.length));
+    setField(Clazzes.fuzionSysArray_u8_length, saCl, sa, new i32Value(bytes.length));
     var arrayData = new ArrayData(bytes);
-    setField(Clazzes.fuzionSysArray_u8_data.feature(), -1, saCl, sa, arrayData);
-    setField(Clazzes.constStringInternalArray.feature(), -1, cl, result, sa);
+    setField(Clazzes.fuzionSysArray_u8_data, saCl, sa, arrayData);
+    setField(Clazzes.constStringInternalArray, cl, result, sa);
 
     return result;
   }
@@ -129,25 +127,22 @@ public class Interpreter extends ANY
    * @param staticClazz is the static type of the clazz that contains the
    * written field
    *
-   * @param select in case thiz is a field of open generic type, this selects
-   * the actual field. -1 otherwise.
-   *
    * @param curValue the Instance or LValue of that contains the written field
    *
    * @param v the value to be stored in the field
    */
-  static void setField(AbstractFeature thiz, int select, Clazz staticClazz, Value curValue, Value v)
+  static void setField(Clazz thiz, Clazz staticClazz, Value curValue, Value v)
   {
     if (PRECONDITIONS) require
-      (thiz.isField(),
+      (thiz.feature().isField(),
        (curValue instanceof Instance) || curValue instanceof Boxed || (curValue instanceof LValue),
        staticClazz != null,
-       thiz.isOpenGenericField() == (select != -1));
+       thiz.feature().isOpenGenericField() == (thiz._select != -1));
 
-    if (Clazzes.isUsed(thiz))
+    if (Clazzes.isUsed(thiz.feature()))
       {
-        Clazz  fclazz = staticClazz.clazzForFieldX(thiz, select);
-        LValue slot   = fieldSlot(thiz, select, staticClazz, fclazz, curValue);
+        Clazz  fclazz = staticClazz.clazzForFieldX(thiz);
+        LValue slot   = fieldSlot(thiz, staticClazz, fclazz, curValue);
         setFieldSlot(thiz, fclazz, slot, v);
       }
   }
@@ -173,7 +168,7 @@ public class Interpreter extends ANY
 
     var result  = new Instance(choiceClazz);
     LValue slot = result.at(choiceClazz, 0); // NYI: needed? just result?
-    setChoiceField(choiceClazz.feature(),
+    setChoiceField(choiceClazz,
                    choiceClazz,
                    slot,
                    valueClazz,
@@ -201,10 +196,10 @@ public class Interpreter extends ANY
    * non-refs, Instance for normal refs, of type ChoiceIdAsRef, LValue or null
    * for boxed choice tag or ref to outer instance.
    */
-  static Value getField(AbstractFeature thiz, int select, Clazz staticClazz, Value curValue, boolean allowUninitializedRefField)
+  static Value getField(Clazz thiz, Clazz staticClazz, Value curValue, boolean allowUninitializedRefField)
   {
     if (PRECONDITIONS) require
-      (thiz.isField(),
+      (thiz.feature().isField(),
        (curValue instanceof Instance) || (curValue instanceof LValue) ||
        curValue instanceof i8Value   && staticClazz == Clazzes.i8  .getIfCreated() ||
        curValue instanceof i16Value  && staticClazz == Clazzes.i16 .getIfCreated() ||
@@ -218,67 +213,67 @@ public class Interpreter extends ANY
        curValue instanceof f64Value  && staticClazz == Clazzes.f64 .getIfCreated() ||
        curValue instanceof boolValue && staticClazz == Clazzes.bool.getIfCreated(),
        staticClazz != null,
-       thiz.isOpenGenericField() == (select != -1));
+       thiz.feature().isOpenGenericField() == (thiz._select != -1));
 
     Value result;
     if (staticClazz == Clazzes.i8.getIfCreated() && curValue instanceof i8Value)
       {
         if (CHECKS) check
-          (thiz.qualifiedName().equals("i8.val"));
+          (thiz.feature().qualifiedName().equals("i8.val"));
         result = curValue;
       }
     else if (staticClazz == Clazzes.i16.getIfCreated() && curValue instanceof i16Value)
       {
         if (CHECKS) check
-          (thiz.qualifiedName().equals("i16.val"));
+          (thiz.feature().qualifiedName().equals("i16.val"));
         result = curValue;
       }
     else if (staticClazz == Clazzes.i32.getIfCreated() && curValue instanceof i32Value)
       {
         if (CHECKS) check
-          (thiz.qualifiedName().equals("i32.val"));
+          (thiz.feature().qualifiedName().equals("i32.val"));
         result = curValue;
       }
     else if (staticClazz == Clazzes.i64.getIfCreated() && curValue instanceof i64Value)
       {
         if (CHECKS) check
-          (thiz.qualifiedName().equals("i64.val"));
+          (thiz.feature().qualifiedName().equals("i64.val"));
         result = curValue;
       }
     else if (staticClazz == Clazzes.u8.getIfCreated() && curValue instanceof u8Value)
       {
         if (CHECKS) check
-          (thiz.qualifiedName().equals("u8.val"));
+          (thiz.feature().qualifiedName().equals("u8.val"));
         result = curValue;
       }
     else if (staticClazz == Clazzes.u16.getIfCreated() && curValue instanceof u16Value)
       {
         if (CHECKS) check
-          (thiz.qualifiedName().equals("u16.val"));
+          (thiz.feature().qualifiedName().equals("u16.val"));
         result = curValue;
       }
     else if (staticClazz == Clazzes.u32.getIfCreated() && curValue instanceof u32Value)
       {
         if (CHECKS) check
-          (thiz.qualifiedName().equals("u32.val"));
+          (thiz.feature().qualifiedName().equals("u32.val"));
         result = curValue;
       }
     else if (staticClazz == Clazzes.u64.getIfCreated() && curValue instanceof u64Value)
       {
         if (CHECKS) check
-          (thiz.qualifiedName().equals("u64.val"));
+          (thiz.feature().qualifiedName().equals("u64.val"));
         result = curValue;
       }
     else if (staticClazz == Clazzes.f32.getIfCreated() && curValue instanceof f32Value)
       {
         if (CHECKS) check
-          (thiz.qualifiedName().equals("f32.val"));
+          (thiz.feature().qualifiedName().equals("f32.val"));
         result = curValue;
       }
     else if (staticClazz == Clazzes.f64.getIfCreated() && curValue instanceof f64Value)
       {
         if (CHECKS) check
-          (thiz.qualifiedName().equals("f64.val"));
+          (thiz.feature().qualifiedName().equals("f64.val"));
         result = curValue;
       }
     else if (staticClazz == Clazzes.bool.getIfCreated() && curValue instanceof boolValue)
@@ -289,8 +284,8 @@ public class Interpreter extends ANY
       }
     else
       {
-        Clazz  fclazz = staticClazz.clazzForFieldX(thiz, select);
-        LValue slot   = fieldSlot(thiz, select, staticClazz, fclazz, curValue);
+        Clazz  fclazz = staticClazz.clazzForFieldX(thiz);
+        LValue slot   = fieldSlot(thiz, staticClazz, fclazz, curValue);
         result = loadField(thiz, fclazz, slot, allowUninitializedRefField);
       }
 
@@ -310,25 +305,22 @@ public class Interpreter extends ANY
    * @param staticClazz is the static type of the clazz that contains the
    * written field
    *
-   * @param select in case thiz is a field of open generic type, this selects
-   * the actual field. -1 otherwise.
-   *
    * @param curValue the Instance or LValue of that contains the written field
    *
    * @param v the value to be compared to the field
    *
    * @return true iff both are equal
    */
-  static boolean compareField(AbstractFeature thiz, int select, Clazz staticClazz, Value curValue, Value v)
+  static boolean compareField(Clazz thiz, Clazz staticClazz, Value curValue, Value v)
   {
     if (PRECONDITIONS) require
-      (thiz.isField(),
+      (thiz.feature().isField(),
        (curValue instanceof Instance) || curValue instanceof Boxed || (curValue instanceof LValue),
        staticClazz != null,
-       Clazzes.isUsed(thiz));
+       Clazzes.isUsed(thiz.feature()));
 
-    Clazz  fclazz = staticClazz.clazzForFieldX(thiz, select);
-    LValue slot   = fieldSlot(thiz, select, staticClazz, fclazz, curValue);
+    Clazz  fclazz = staticClazz.clazzForFieldX(thiz);
+    LValue slot   = fieldSlot(thiz, staticClazz, fclazz, curValue);
     return compareFieldSlot(thiz, fclazz, slot, v);
   }
 
@@ -342,11 +334,11 @@ public class Interpreter extends ANY
    *
    * @param tag the tag value identifying the slot to be read.
    */
-  static Value getChoiceVal(AbstractFeature thiz, Clazz choiceClazz, Value choice, int tag)
+  static Value getChoiceVal(Clazz thiz, Clazz choiceClazz, Value choice, int tag)
   {
     if (PRECONDITIONS) require
       (choiceClazz != null,
-       choiceClazz.feature() == thiz,
+       choiceClazz.feature() == thiz.feature(),
        choice != null,
        tag >= 0);
 
@@ -363,11 +355,11 @@ public class Interpreter extends ANY
    *
    * @param choice the value containing the choice.
    */
-  static Value getChoiceRefVal(AbstractFeature thiz, Clazz choiceClazz, Value choice)
+  static Value getChoiceRefVal(Clazz thiz, Clazz choiceClazz, Value choice)
   {
     if (PRECONDITIONS) require
       (choiceClazz != null,
-       choiceClazz.feature() == thiz,
+       choiceClazz.feature() == thiz.feature(),
        choiceClazz.isChoiceWithRefs(),
        choice != null);
 
@@ -389,7 +381,7 @@ public class Interpreter extends ANY
    * normal refs, of type ChoiceIdAsRef, LValue for non-reference fields or ref
    * to outer instance, LValue or null for boxed choice tag.
    */
-  private static Value loadField(AbstractFeature thiz, Clazz fclazz, LValue slot, boolean allowUninitializedRefField)
+  private static Value loadField(Clazz thiz, Clazz fclazz, LValue slot, boolean allowUninitializedRefField)
   {
     if (CHECKS) check
       (fclazz != null,
@@ -420,7 +412,7 @@ public class Interpreter extends ANY
    *
    * @param v the value to be stored in choice.
    */
-  private static void setChoiceField(AbstractFeature thiz,
+  private static void setChoiceField(Clazz thiz,
                                      Clazz choiceClazz,
                                      LValue choice,
                                      Clazz staticTypeOfValue,
@@ -428,7 +420,7 @@ public class Interpreter extends ANY
   {
     if (PRECONDITIONS) require
       (choiceClazz.isChoice(),
-       choiceClazz.feature() == thiz,
+       choiceClazz.feature() == thiz.feature(),
        choiceClazz.compareTo(staticTypeOfValue) != 0);
 
     int tag = choiceClazz.getChoiceTag(staticTypeOfValue);
@@ -462,8 +454,6 @@ public class Interpreter extends ANY
    *
    * @param thiz the field to access.
    *
-   * @param select in case thiz is a field of open generic type, this selects
-   * the actual field. -1 otherwise.
    *
    * @param staticClazz is the static type of the clazz that contains the
    * this field
@@ -475,7 +465,7 @@ public class Interpreter extends ANY
    *
    * @return an LValue that refers directly to the memory for the field.
    */
-  private static LValue fieldSlot(AbstractFeature thiz, int select, Clazz staticClazz, Clazz fclazz, Value curValue)
+  private static LValue fieldSlot(Clazz thiz, Clazz staticClazz, Clazz fclazz, Value curValue)
   {
     int off;
     var clazz = staticClazz;
@@ -490,7 +480,7 @@ public class Interpreter extends ANY
         clazz = ((Boxed)curValue)._valueClazz;
         curValue = ((Boxed)curValue)._contents;
       }
-    off = Layout.get(clazz).offset0(thiz, select);
+    off = Layout.get(clazz).offset(thiz);
 
     // NYI: check if this is a can be enabled or removed:
     //
@@ -509,7 +499,7 @@ public class Interpreter extends ANY
    *
    * @param v the value to be stored in slot
    */
-  private static void setFieldSlot(AbstractFeature thiz, Clazz fclazz, LValue slot, Value v)
+  private static void setFieldSlot(Clazz thiz, Clazz fclazz, LValue slot, Value v)
   {
     if (PRECONDITIONS) require
       (fclazz != null,
@@ -537,7 +527,7 @@ public class Interpreter extends ANY
    *
    * @param v the value to be stored in cur at offset
    */
-  private static void setNonRefField(AbstractFeature thiz,
+  private static void setNonRefField(Clazz thiz,
                                      Clazz fclazz,
                                      LValue slot,
                                      Value v)
@@ -565,7 +555,7 @@ public class Interpreter extends ANY
    *
    * @param v the value to be stored in cur at offset
    */
-  private static void setRefField(AbstractFeature thiz,
+  private static void setRefField(Clazz thiz,
                                   LValue slot,
                                   Value v)
   {
@@ -590,7 +580,7 @@ public class Interpreter extends ANY
    * @param allowUninitializedRefField true if a ref field may be not
    * initialized (e.g., when boxing this).
    */
-  private static Value loadRefField(AbstractFeature thiz, LValue slot, boolean allowUninitializedRefField)
+  private static Value loadRefField(Clazz thiz, LValue slot, boolean allowUninitializedRefField)
   {
     if (PRECONDITIONS) require
       (slot != null);
@@ -614,7 +604,7 @@ public class Interpreter extends ANY
    * @param allowUninitializedRefField true if a ref field may be not
    * initialized (e.g., when boxing this).
    */
-  private static boolean valueTypeMatches(AbstractFeature thiz, Value v, boolean allowUninitializedRefField)
+  private static boolean valueTypeMatches(Clazz thiz, Value v, boolean allowUninitializedRefField)
   {
     return
       v instanceof Instance                                            /* a normal ref type     */ ||
@@ -632,7 +622,7 @@ public class Interpreter extends ANY
        v instanceof u32Value ||
        v instanceof u64Value ||
        v instanceof f32Value ||
-       v instanceof f64Value   ) && thiz.isOuterRef()     /* e.g. outerref in integer.infix /-/ */ ||
+       v instanceof f64Value   ) && thiz.feature().isOuterRef()    /* e.g. outerref in integer.infix /-/ */ ||
       v == null                  && thiz.isChoice()                /* Nil/Null boxed choice tag */ ||
       v == null                  && allowUninitializedRefField;
   }
@@ -648,7 +638,7 @@ public class Interpreter extends ANY
    *
    * @param v the value to be stored in slot
    */
-  private static boolean compareFieldSlot(AbstractFeature thiz, Clazz fclazz, LValue slot, Value v)
+  private static boolean compareFieldSlot(Clazz thiz, Clazz fclazz, LValue slot, Value v)
   {
     if (PRECONDITIONS) require
       (fclazz != null,
