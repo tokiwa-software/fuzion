@@ -1519,7 +1519,6 @@ Expression
       case Tag     -> tagNextPos  (eAt);
       case Env     -> envNextPos  (eAt);
       case Pop     -> eAt;
-      case Unit    -> eAt;
       case InlineArray -> inlineArrayNextPos(eAt);
       default      -> throw new Error("unexpected expression kind "+k+" at "+at+" in "+this);
       };

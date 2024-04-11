@@ -698,10 +698,6 @@ class LibraryOut extends ANY
                 dumpResult = dumpResult || expr instanceof AbstractBlock || expr.producesResult();
               }
           }
-        if (!dumpResult)
-          {
-            _data.writeByte(IR.ExprKind.Unit.ordinal());
-          }
       }
     else if (e instanceof Constant c)
       {
