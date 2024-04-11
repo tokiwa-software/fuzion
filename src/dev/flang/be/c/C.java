@@ -116,16 +116,6 @@ public class C extends ANY
 
 
     /**
-     * Determine the address of a given value.  This is used on a call to an
-     * inner feature to pass a reference to the outer value type instance.
-     */
-    public Pair<CExpr, CStmnt> adrOf(CExpr v)
-    {
-      return new Pair<>(v.adrOf(), CStmnt.EMPTY);
-    }
-
-
-    /**
      * Create code to assign value to a given field w/o dynamic binding.
      *
      * @param cl the clazz we are compiling
@@ -228,7 +218,12 @@ public class C extends ANY
      */
     public Pair<CExpr, CStmnt> outer(int cl)
     {
-      return new Pair<>(CNames.OUTER, CStmnt.EMPTY);
+      CExpr result = CNames.OUTER;
+      if (_fuir.clazzFieldIsAdrOfValue(_fuir.clazzOuterRef(cl)))
+        {
+          result = result.deref();
+        }
+      return new Pair<>(result, CStmnt.EMPTY);
     }
 
 
@@ -1478,6 +1473,10 @@ public class C extends ANY
    */
   CStmnt assignField(CExpr tvalue, int tc, int tt, int f, CExpr value, int rt)
   {
+    if (_fuir.clazzFieldIsAdrOfValue(f))
+      {
+        value = value.adrOf();
+      }
     if (_fuir.clazzIsRef(tt) && tc != tt)
       {
         tvalue = tvalue.castTo(_types.clazz(tt));

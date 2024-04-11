@@ -109,7 +109,6 @@ public class IR extends ANY
 
   public enum ExprKind
   {
-    AdrOf,
     Assign,
     Box,
     Call,

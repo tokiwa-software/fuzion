@@ -976,10 +976,6 @@ hw25 is
         toStack(code, p.target(), !needsOuterRef /* dump result if not needed */);
         if (needsOuterRef)
           {
-            if (clazzFieldIsAdrOfValue(or))
-              {
-                code.add(ExprKind.AdrOf);
-              }
             code.add(ExprKind.Current);
             code.add(or);  // field clazz means assignment to field
           }
@@ -2163,7 +2159,6 @@ hw25 is
   {
     return switch (codeAt(c,ix))
       {
-      case AdrOf   -> "AdrOf";
       case Assign  -> "Assign to " + clazzAsString(accessedClazz     (cl, c, ix));
       case Box     -> "Box "       + clazzAsString(boxValueClazz     (cl, c, ix)) + " => " + clazzAsString(boxResultClazz  (cl, c, ix));
       case Call    -> {
@@ -2411,7 +2406,6 @@ hw25 is
   {
     return switch (codeAt(c, ix))
       {
-      case AdrOf   -> skipBack(cl, c, codeIndex(c, ix, -1));
       case Assign  ->
         {
           var tc = accessTargetClazz(cl, c, ix);
