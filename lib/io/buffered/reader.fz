@@ -248,3 +248,18 @@ public read_lines array String ! reader =>
     .split "\n"
     .map (s -> if s.ends_with "\r" then s.substring 0 s.byte_length-1 else s)
     .as_array
+
+
+# Read input line by line while `f` is true.
+#
+public read_line_while(f String -> bool) ! reader =>
+  for s := "",  s+"\n"+match rl
+                        s String => s
+                        io.end_of_file => panic "unreachable code path"
+      rl := io.buffered.read_line
+  while match rl
+          str String => f str
+          io.end_of_file => false
+  do
+  else
+    s
