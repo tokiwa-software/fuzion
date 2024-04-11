@@ -52,7 +52,7 @@ for test in $TESTS; do
     echo "$test: skipped" >>"$BUILD_DIR"/run_tests.results
   else
     START_TIME=$(date +%s%N | cut -b1-13)
-    TEST_RESULT=$(make "$TARGET" -e -C "$test" >"$test"/out.txt 2>"$test"/stderr.txt)
+    TEST_RESULT=$(make "$TARGET" -e -C "$test" >"$test"/out.txt 2>"$test"/stderr.txt) && echo 1 || echo 0
     END_TIME=$(date +%s%N | cut -b1-13)
     if $TEST_RESULT; then
       echo -n "."
