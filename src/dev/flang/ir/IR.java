@@ -119,7 +119,6 @@ public class IR extends ANY
     Tag,
     Env,
     Pop,
-    Unit,
     // this is eliminated in FUIR
     InlineArray;
 
