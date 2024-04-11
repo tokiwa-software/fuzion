@@ -34,8 +34,6 @@ import dev.flang.ast.State;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 
-import dev.flang.mir.MIR;
-
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -122,12 +120,6 @@ public abstract class Module extends ANY implements FeatureLookup
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * Create the module intermediate representation for this module.
-   */
-  public abstract MIR createMIR();
 
 
   /**
@@ -413,8 +405,8 @@ public abstract class Module extends ANY implements FeatureLookup
               {
                 addToDeclaredOrInherited(s, e, outer);
               }
-            libraryModule.findInheritedFeatures(s, outer, modules);
           }
+        findInheritedFeatures(s, outer, modules);
 
         // then we search in this module
         for (var e : declaredFeatures(outer).entrySet())
@@ -451,7 +443,7 @@ public abstract class Module extends ANY implements FeatureLookup
       {
         AstErrors.duplicateFeatureDeclaration(f.pos(), outer, existing);
       }
-    else if (sameModule(f, outer) || visibleFor(f, outer))
+    else if (sameModule(f, outer) || visibleFor(f, outer) || /* NYI move this logic? */ this.name().equals("main"))
       {
         s.put(f.featureName(), f);
       }
@@ -520,8 +512,8 @@ public abstract class Module extends ANY implements FeatureLookup
      *
      * This is a fix for #978 but it might need to be removed when fixing #932.
      */
-    return result == null && original instanceof Feature of && of._addedLate ? original
-                                                                             : result;
+    return result == null /* NYI: does not work anymore && original instanceof Feature of && of._addedLate  */ ? original
+                          : result;
   }
 
 }

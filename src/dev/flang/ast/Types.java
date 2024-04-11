@@ -283,6 +283,82 @@ public class Types extends ANY
           res.resolveTypes(t.feature());
         }
     }
+    public static interface LookupFeature
+    {
+      AbstractFeature lookupFeature(AbstractFeature outer, FeatureName fn);
+    }
+    public Resolved(LookupFeature luf, AbstractFeature _universe)
+    {
+      this.universe = _universe;
+      resolved = this;
+      f_id                         = luf.lookupFeature(universe, FeatureName.get("id"    , 2));
+      f_void                       = luf.lookupFeature(universe, FeatureName.get("void"  , 0));
+      t_void                       = f_void.selfType();
+      f_choice                     = luf.lookupFeature(universe, FeatureName.get("choice", 1));
+      f_TRUE                       = luf.lookupFeature(universe, FeatureName.get("TRUE"  , 0));
+      f_FALSE                      = luf.lookupFeature(universe, FeatureName.get("FALSE" , 0));
+      f_bool                       = luf.lookupFeature(universe, FeatureName.get("bool"  , 0));
+      t_bool                       = f_bool.selfType();
+      f_bool_NOT                   = luf.lookupFeature(f_bool, FeatureName.get(FuzionConstants.PREFIX_OPERATOR_PREFIX + "!", 0));
+      f_bool_AND                   = luf.lookupFeature(f_bool, FeatureName.get(FuzionConstants.INFIX_OPERATOR_PREFIX + "&&", 1));
+      f_bool_OR                    = luf.lookupFeature(f_bool, FeatureName.get(FuzionConstants.INFIX_OPERATOR_PREFIX + "||", 1));
+      f_bool_IMPLIES               = luf.lookupFeature(f_bool, FeatureName.get(FuzionConstants.INFIX_OPERATOR_PREFIX + ":" , 1));
+      f_debug                      = luf.lookupFeature(universe, FeatureName.get("debug", 0));
+      f_debug_level                = luf.lookupFeature(universe, FeatureName.get("debug_level", 0));
+      f_Function                   = luf.lookupFeature(universe, FeatureName.get(FUNCTION_NAME, 2));
+      f_Function_call              = luf.lookupFeature(f_Function, FeatureName.get("call", 1));
+      f_safety                     = luf.lookupFeature(universe, FeatureName.get("safety", 0));
+      f_array                      = luf.lookupFeature(universe, FeatureName.get("array", 5));
+      f_array_internal_array       = luf.lookupFeature(f_array, FeatureName.get("internal_array", 0));
+      f_error                      = luf.lookupFeature(universe, FeatureName.get("error", 1));
+      f_error_msg                  = luf.lookupFeature(f_error, FeatureName.get("msg", 0));
+      f_fuzion                     = luf.lookupFeature(universe, FeatureName.get("fuzion", 0));
+      f_fuzion_java                = luf.lookupFeature(f_fuzion, FeatureName.get("java", 0));
+      f_fuzion_Java_Object         = luf.lookupFeature(f_fuzion_java, FeatureName.get("Java_Object", 1));
+      f_fuzion_Java_Object_Ref     = luf.lookupFeature(f_fuzion_Java_Object, FeatureName.get("Java_Ref", 0));
+      f_fuzion_sys                 = luf.lookupFeature(f_fuzion, FeatureName.get("sys", 0));
+      f_fuzion_sys_array           = luf.lookupFeature(f_fuzion_sys, FeatureName.get("internal_array", 3));
+      f_fuzion_sys_array_data      = luf.lookupFeature(f_fuzion_sys_array, FeatureName.get("data", 0));
+      f_fuzion_sys_array_length    = luf.lookupFeature(f_fuzion_sys_array, FeatureName.get("length", 0));
+      f_concur                     = luf.lookupFeature(universe, FeatureName.get("concur", 0));
+      f_concur_atomic              = luf.lookupFeature(f_concur, FeatureName.get("atomic", 2));
+      f_concur_atomic_v            = luf.lookupFeature(f_concur_atomic, FeatureName.get("v", 0));
+      f_Type                       = luf.lookupFeature(universe, FeatureName.get("Type", 0));
+      f_Types                      = luf.lookupFeature(universe, FeatureName.get("Types", 0));
+      f_Types_get                  = luf.lookupFeature(f_Types, FeatureName.get("get", 1));
+      f_Lazy                       = luf.lookupFeature(universe, FeatureName.get(LAZY_NAME , 1));
+      f_Unary                      = luf.lookupFeature(universe, FeatureName.get(UNARY_NAME, 2));
+      f_auto_unwrap                = luf.lookupFeature(universe, FeatureName.get("auto_unwrap", 2));
+      t_i8                         = luf.lookupFeature(universe, FeatureName.get("i8" , 1)).selfType();
+      t_i16                        = luf.lookupFeature(universe, FeatureName.get("i16", 1)).selfType();
+      t_i32                        = luf.lookupFeature(universe, FeatureName.get("i32", 1)).selfType();
+      t_i64                        = luf.lookupFeature(universe, FeatureName.get("i64", 1)).selfType();
+      t_u8                         = luf.lookupFeature(universe, FeatureName.get("u8" , 1)).selfType();
+      t_u16                        = luf.lookupFeature(universe, FeatureName.get("u16", 1)).selfType();
+      t_u32                        = luf.lookupFeature(universe, FeatureName.get("u32", 1)).selfType();
+      t_u64                        = luf.lookupFeature(universe, FeatureName.get("u64", 1)).selfType();
+      t_f32                        = luf.lookupFeature(universe, FeatureName.get("f32", 1)).selfType();
+      t_f64                        = luf.lookupFeature(universe, FeatureName.get("f64", 1)).selfType();
+      t_fuzion                     = f_fuzion.selfType();
+      t_String                     = luf.lookupFeature(universe, FeatureName.get(FuzionConstants.STRING_NAME, 0)).selfType();
+      t_Const_String               = luf.lookupFeature(universe, FeatureName.get("Const_String",0)).selfType();
+      t_Any                        = luf.lookupFeature(universe, FeatureName.get(FuzionConstants.ANY_NAME,0)).selfType();
+      t_unit                       = luf.lookupFeature(universe, FeatureName.get(FuzionConstants.UNIT_NAME,0)).selfType();
+      numericTypes = new TreeSet<AbstractType>(new List<>(
+        t_i8,
+        t_i16,
+        t_i32,
+        t_i64,
+        t_u8,
+        t_u16,
+        t_u32,
+        t_u64,
+        t_f32,
+        t_f64));
+      ((ArtificialBuiltInType) t_ADDRESS  ).resolveArtificialType(t_Any.feature());
+      ((ArtificialBuiltInType) t_UNDEFINED).resolveArtificialType(universe);
+      ((ArtificialBuiltInType) t_ERROR    ).resolveArtificialType(f_ERROR);
+    }
   }
 
 

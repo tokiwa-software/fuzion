@@ -114,7 +114,7 @@ public class Docs extends ANY
    */
   private Stream<AbstractFeature> declaredFeatures(AbstractFeature f)
   {
-    return fe.module()
+    return fe.mainModule()
       .declaredFeatures(f)
       .values()
       .stream();

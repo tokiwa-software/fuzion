@@ -88,7 +88,7 @@ public class Box extends Expr
   {
     if (PRECONDITIONS) require
       (value != null,
-       !value.type().isRef() || value.isCallToOuterRef());
+       !(value instanceof Box));
 
     this._value = value;
     var t = value.type();
