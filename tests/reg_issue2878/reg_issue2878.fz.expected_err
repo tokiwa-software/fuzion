@@ -1,0 +1,14 @@
+
+--CURDIR--/reg_issue2878.fz:28:5: error 1: Could not find called feature
+  a s->!s.is_empty # does not work: ->! is parsed as operator
+----^
+Feature not found: 's' (no arguments)
+Target feature: 'reg_issue2878'
+In call: 's'
+Lambda operator is part of infix operator here:
+--CURDIR--/reg_issue2878.fz:28:6:
+  a s->!s.is_empty # does not work: ->! is parsed as operator
+-----^^^
+To solve this, add a space after '->'.
+
+one error.
