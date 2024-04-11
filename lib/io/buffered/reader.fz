@@ -261,6 +261,5 @@ public read_line_while(f String -> bool) ! reader =>
   while match rl
           str String => f str
           io.end_of_file => false
-  do
   else
     s
