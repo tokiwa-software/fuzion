@@ -747,8 +747,6 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
         {
           var subjClazz = _fuir.matchStaticSubject(cl, c, i);
           var subv      = pop(stack, subjClazz);
-          RESULT code = _processor.nop();
-
           var r = _processor.match(this, cl, pre, c, i, subv);
           if (r.v0() == null)
             {
@@ -756,7 +754,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
             }
           if (CHECKS) check
             (r.v0() == null || r.v0() == _processor.unitValue());
-          return _processor.sequence(new List<>(code, r.v1()));
+          return r.v1();
         }
       case Tag:
         {
