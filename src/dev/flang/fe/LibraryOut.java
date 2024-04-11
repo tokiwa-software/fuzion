@@ -229,7 +229,7 @@ class LibraryOut extends ANY
   void allDeclFeatures(SourceModule sm)
   {
     _data.writeInt(1 + sm._outerWithDeclarations.size());
-    declFeatures(sm._universe);
+    declFeatures(null);
     for (var o : sm._outerWithDeclarations)
       {
         declFeatures(o);
@@ -247,7 +247,7 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | int           | outer feature index, 0 for outer()==universe  |
+   *   | true   | 1      | int           | outer feature index, 0 for outer()==null      |
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | InnerFeatures | inner Features                                |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -266,7 +266,7 @@ class LibraryOut extends ANY
    */
   void featureIndexOrZeroForUniverse(AbstractFeature f)
   {
-    if (f.isUniverse())
+    if (f == null)
       {
         _data.writeInt(0);
       }
@@ -297,50 +297,63 @@ class LibraryOut extends ANY
    */
   void innerFeatures(AbstractFeature f)
   {
-    var m = _sourceModule.declaredFeatures(f);
-    if (m == null)
+    if (f == null)
       {
-        _data.writeInt(0);
-      }
-    else
-      {
-        // the first inner features written out will be the formal arguments,
-        // followed by the result field (iff f.hasResultField()), followed by
-        // all other inner features in (alphabetical?) order.
-        var innerFeatures = new List<AbstractFeature>();
-        var added = new TreeSet<AbstractFeature>();
-        for (var a : f.arguments())
-          {
-            innerFeatures.add(a);
-            added.add(a);
-          }
-        if (f.hasResultField())
-          {
-            var r = f.resultField();
-            innerFeatures.add(r);
-            added.add(r);
-          }
-        if (f.hasOuterRef())
-          {
-            var or = f.outerRef();
-            innerFeatures.add(or);
-            added.add(or);
-          }
-        for (var i : m.values())
-          {
-            if (!added.contains(i))
-              {
-                innerFeatures.add(i);
-              }
-          }
-
         var szPos = _data.offset();
         _data.writeInt(0);
         var innerPos = _data.offset();
 
         // write the actual data
-        features(innerFeatures);
+        feature(_sourceModule._universe);
         _data.writeIntAt(szPos, _data.offset() - innerPos);
+      }
+    else
+      {
+        var m = _sourceModule.declaredFeatures(f);
+        if (m == null)
+          {
+            _data.writeInt(0);
+          }
+        else
+          {
+            // the first inner features written out will be the formal arguments,
+            // followed by the result field (iff f.hasResultField()), followed by
+            // all other inner features in (alphabetical?) order.
+            var innerFeatures = new List<AbstractFeature>();
+            var added = new TreeSet<AbstractFeature>();
+            for (var a : f.arguments())
+              {
+                innerFeatures.add(a);
+                added.add(a);
+              }
+            if (f.hasResultField())
+              {
+                var r = f.resultField();
+                innerFeatures.add(r);
+                added.add(r);
+              }
+            if (f.hasOuterRef())
+              {
+                var or = f.outerRef();
+                innerFeatures.add(or);
+                added.add(or);
+              }
+            for (var i : m.values())
+              {
+                if (!added.contains(i))
+                  {
+                    innerFeatures.add(i);
+                  }
+              }
+
+            var szPos = _data.offset();
+            _data.writeInt(0);
+            var innerPos = _data.offset();
+
+            // write the actual data
+            features(innerFeatures);
+            _data.writeIntAt(szPos, _data.offset() - innerPos);
+          }
       }
   }
 
@@ -394,7 +407,7 @@ class LibraryOut extends ANY
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Pos           | source code position                          |
    *   |        |        +---------------+-----------------------------------------------+
-   *   |        |        | int           | outer feature index, 0 for outer()==universe  |
+   *   |        |        | int           | outer feature index, 0 for outer()==null      |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | Y=1    | 1      | int           | type feature index                            |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -723,9 +736,12 @@ class LibraryOut extends ANY
         _data.writeInt(d.length);
         _data.write(d);
       }
-    else if (e instanceof AbstractCurrent)
+    else if (e instanceof AbstractCurrent ac)
       {
-        lastPos = exprKindAndPos(MirExprKind.Current, lastPos, e.pos());
+        if (!ac.type().feature().isUniverse())
+          {
+            lastPos = exprKindAndPos(MirExprKind.Current, lastPos, e.pos());
+          }
       }
     else if (e instanceof If i)
       {
