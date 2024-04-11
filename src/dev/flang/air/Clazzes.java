@@ -293,9 +293,14 @@ public class Clazzes extends ANY
             outer = o;  // short-circuit outer relation if suitable outer was found
           }
 
-        // NYI this should be, but tests/unary fails currently:
-        // o._type.compareTo(actualType) == 0 && ...
-        if (o._type == actualType && actualType != Types.t_ERROR &&
+        if (o._type.compareTo(actualType) == 0 &&
+            // example where the following logic is relevant:
+            // `((Unary i32 i32).compose i32).#fun`
+            // here `compose i32` is not a constructor but a normal routine.
+            // `compose i32` does not define a type. Thus it will not lead
+            // to a recursive value type.
+            actualType.featureOfType().definesType() &&
+            actualType != Types.t_ERROR &&
             // a recursive outer-relation
 
             // This is a little ugly: we do not want outer to be a value
@@ -574,7 +579,7 @@ public class Clazzes extends ANY
                   }
               }
           }
-        say("Found "+Types.num()+" types and "+Clazzes.num()+" clazzes (" +
+        say("Found "+Clazzes.num()+" clazzes (" +
                            clazzesForFields + " for " + fields+ " fields, " +
                            (clazzes.size()-clazzesForFields) + " for " + routines + " routines).");
       }
