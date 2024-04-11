@@ -44,6 +44,7 @@ import dev.flang.util.Errors;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class JavaInterface extends ANY
 {
 
@@ -341,9 +342,9 @@ public class JavaInterface extends ANY
     else
       {
         var result = new Instance(resultClazz);
-        for (var e : Layout.get(resultClazz)._offsets0.entrySet())
+        for (var e : Layout.get(resultClazz)._offsets.entrySet())
           {
-            var f = e.getKey();
+            var f = e.getKey().feature();
             var off = (Integer) e.getValue();
             var v = switch (f.featureName().baseName())
               {

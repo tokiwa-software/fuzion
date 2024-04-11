@@ -149,4 +149,4 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
   #
   # This feature creates a pre-initialized instance of ps_set.
   #
-  public type.from_sequence(vs Sequence K) => (container.ps_set K).empty.add_all vs
+  public type.new(vs Sequence K) => (container.ps_set K).empty.add_all vs

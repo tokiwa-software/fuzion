@@ -328,7 +328,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   /**
-   * Create a Types.intern()ed reference variant of this type.  Return this
+   * Create a reference variant of this type.  Return this
    * in case it is a reference already.
    */
   public AbstractType asRef()
@@ -346,7 +346,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   /**
-   * Create a Types.intern()ed this.type variant of this type.  Return this
+   * Create a this.type variant of this type.  Return this
    * in case it is a this.type or a choice variant already.
    */
   public AbstractType asThis()
@@ -370,7 +370,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   /**
-   * Create a Types.intern()ed value variant of this type.  Return this
+   * Create a value variant of this type.  Return this
    * in case it is a value already.
    */
   public AbstractType asValue()
@@ -531,7 +531,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
             o = o.resolve(res, of);
             var ot2 = o.isGenericArgument() ? o.genericArgument().constraint(res) // see tests/reg_issue1943 for examples
                                             : o;
-            of = ot2.featureOfType();
+            of = ot2.feature();
           }
         else
           {
@@ -641,7 +641,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
               }
             var ot2 = o.isGenericArgument() ? o.genericArgument().constraint(res) // see tests/reg_issue1943 for examples
                                             : o;
-            of = ot2.featureOfType();
+            of = ot2.feature();
           }
         else
           {
@@ -956,9 +956,9 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @throws Error if this is not resolved or isGenericArgument().
    */
-  public AbstractFeature featureOfType()
+  public AbstractFeature feature()
   {
-    throw new Error("featureOfType not available for unresolved type");
+    throw new Error("feature not available for unresolved type");
   }
 
 

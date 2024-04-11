@@ -2191,7 +2191,6 @@ hw25 is
       case Tag     -> "Tag";
       case Env     -> "Env";
       case Pop     -> "Pop";
-      case InlineArray -> "InlineArray";
       };
   }
 
@@ -2448,7 +2447,6 @@ hw25 is
       case Tag     -> skipBack(cl, c, codeIndex(c, ix, -1));
       case Env     -> codeIndex(c, ix, -1);
       case Pop     -> skipBack(cl, c, codeIndex(c, ix, -1));
-      case InlineArray -> { check(false); yield codeIndex(c, ix, -1); }
       };
   }
 
@@ -2655,7 +2653,7 @@ hw25 is
    */
   public boolean clazzIsArray(int constCl)
   {
-    return clazz(constCl)._type.featureOfType() == Types.resolved.f_array;
+    return clazz(constCl)._type.feature() == Types.resolved.f_array;
   }
 
 
@@ -2785,7 +2783,7 @@ hw25 is
       require(cl >= 0);
 
     var qn = clazz(cl)._type
-      .featureOfType()
+      .feature()
       .qualifiedName();
 
     if (CHECKS) check

@@ -118,21 +118,7 @@ public class IR extends ANY
     Match,
     Tag,
     Env,
-    Pop,
-    // this is eliminated in FUIR
-    InlineArray;
-
-    /**
-     * get the Kind that corresponds to the given ordinal number.
-     */
-    public static ExprKind from(int ordinal)
-    {
-      if (CHECKS) check
-        (values()[ordinal].ordinal() == ordinal);
-
-      return values()[ordinal];
-    }
-
+    Pop;
   }
 
 

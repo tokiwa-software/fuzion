@@ -417,7 +417,7 @@ public class LibraryFeature extends AbstractFeature
       (result != null,
        Errors.any() || result.isRef() == isThisRef(),
        // does not hold if feature is declared repeatedly
-       Errors.any() || result.featureOfType() == this);
+       Errors.any() || result.feature() == this);
 
     return result;
   }

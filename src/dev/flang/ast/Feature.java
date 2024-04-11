@@ -803,8 +803,8 @@ public class Feature extends AbstractFeature
    */
   public Kind kind()
   {
-    return state().atLeast(State.RESOLVING_TYPES) && isChoiceAfterTypesResolved() ||
-          !state().atLeast(State.RESOLVING_TYPES) && isChoiceBeforeTypesResolved()
+    return state().atLeast(State.RESOLVING_TYPES) && Types.resolved != null && isChoiceAfterTypesResolved() ||
+                                                                               isChoiceBeforeTypesResolved()
       ? Kind.Choice
       : switch (implKind()) {
           case FieldInit, FieldDef, FieldActual, FieldIter, Field -> Kind.Field;
@@ -1662,7 +1662,7 @@ public class Feature extends AbstractFeature
     for (AbstractFeature p : res._module.declaredOrInheritedFeatures(this).values())
       {
         // primitives must not have any fields
-        if (p.isField() && !p.isOuterRef() && !(p.featureName().baseName().equals("val") && p.resultType().equals(selfType())) )
+        if (p.isField() && !p.isOuterRef() && !(p.featureName().baseName().equals("val") && p.resultType().compareTo(selfType())==0) )
           {
             AstErrors.mustNotContainFields(_pos, p, this.featureName().baseName());
           }
@@ -1709,7 +1709,7 @@ public class Feature extends AbstractFeature
             _resultType.checkChoice(_posOfReturnType);
           }
 
-        if (_resultType.isThisType() && _resultType.featureOfType() == this)
+        if (_resultType.isThisType() && _resultType.feature() == this)
           { // we are in the case of issue #1186: A routine returns itself:
             //
             //  a => a.this

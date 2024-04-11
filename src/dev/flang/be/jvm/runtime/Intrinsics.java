@@ -878,7 +878,7 @@ public class Intrinsics extends ANY
   {
     Runtime.unsafeIntrinsic();
 
-    return ((Iterator<Path>)Runtime._openStreams_.get(fd)).hasNext();
+    return Runtime.getIterator(fd).hasNext();
   }
 
   public static long fuzion_sys_fileio_close_dir(long fd)

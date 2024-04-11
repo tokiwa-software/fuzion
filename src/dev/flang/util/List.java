@@ -162,6 +162,7 @@ public class List<T>
    *
    * @param i
    */
+  @SuppressWarnings("unchecked")
   public List(T... i)
   {
     super();
@@ -295,6 +296,7 @@ public class List<T>
    *
    * @param i an iterator
    */
+  @SuppressWarnings("unchecked")
   public void addAll(T... i)
   {
     for (T x : i)

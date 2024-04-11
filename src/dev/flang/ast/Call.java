@@ -587,7 +587,7 @@ public class Call extends AbstractCall
     else if (_target != null)
       {
         _target.loadCalledFeature(res, thiz);
-        result = targetTypeOrConstraint(res).featureOfType();
+        result = targetTypeOrConstraint(res).feature();
       }
     else
       { // search for feature in thiz
@@ -1577,7 +1577,7 @@ public class Call extends AbstractCall
     var result = this;
     if (_select >= 0 && !t.isGenericArgument())
       {
-        var f = res._module.lookupOpenTypeParameterResult(t.featureOfType(), this);
+        var f = res._module.lookupOpenTypeParameterResult(t.feature(), this);
         if (f != null)
           {
             // replace Function call `c.123` by `c.f.123`:
@@ -1663,9 +1663,9 @@ public class Call extends AbstractCall
 
     var declF = _calledFeature.outer();
     var heir = _target.typeForCallTarget();
-    if (!heir.isGenericArgument() && declF != heir.featureOfType())
+    if (!heir.isGenericArgument() && declF != heir.feature())
       {
-        var a = _calledFeature.handDown(res, new AbstractType[] { frmlT }, heir.featureOfType());
+        var a = _calledFeature.handDown(res, new AbstractType[] { frmlT }, heir.feature());
         if (a.length != 1)
           {
             // Check that the number or args can only change for the
@@ -1834,12 +1834,12 @@ public class Call extends AbstractCall
         // constraint of B, so we create the corresponding type feature's
         // selfType:
         // NYI: CLEANUP: remove this special handling!
-        _target.typeForCallTarget().featureOfType().selfType()
+        _target.typeForCallTarget().feature().selfType()
       : targetType(res);
 
     var t1 = resolveSelect(frmlT, tt);
     var t2 = t1.applyTypePars(tt);
-    var t3 = tt.isGenericArgument() ? t2 : t2.resolve(res, tt.featureOfType());
+    var t3 = tt.isGenericArgument() ? t2 : t2.resolve(res, tt.feature());
     var t4 = adjustThisTypeForTarget(t3);
     var t5 = resolveForCalledFeature(res, t4, tt);
     // call may be resolved repeatedly. In case of recursive use of FieldActual
@@ -1933,7 +1933,7 @@ public class Call extends AbstractCall
         !tt.isGenericArgument())
       {
         t = t.replace_type_parameter_used_for_this_type_in_type_feature
-          (tt.featureOfType(),
+          (tt.feature(),
            tc);
       }
     if (!calledFeature().isOuterRef())
@@ -1970,7 +1970,7 @@ public class Call extends AbstractCall
           {
             // a type parameter's result type is the constraint's type as a type
             // feature with actual type parameters as given to the constraint.
-            var tf = t.featureOfType().typeFeature(res);
+            var tf = t.feature().typeFeature(res);
             var tg = new List<AbstractType>(t); // the constraint type itself
             tg.addAll(t.generics());            // followed by the generics
             t = tf.selfType().applyTypePars(tf, tg);
@@ -1988,11 +1988,11 @@ public class Call extends AbstractCall
           {
             t = t.typeType(res);
           }
-        t = t.resolve(res, tt.featureOfType());
+        t = t.resolve(res, tt.feature());
       }
     else if (_calledFeature.isOuterRef())
       {
-        var o = t.featureOfType().outer();
+        var o = t.feature().outer();
         t = o == null || o.isUniverse() ? t : ResolvedNormalType.newType(t, o.thisType());
         t = t.asThis();
       }
@@ -2313,7 +2313,7 @@ public class Call extends AbstractCall
     if (actualType != null)
       {
         actualType = actualType.replace_type_parameters_of_type_feature_origin(outer);
-        if (!actualType.isGenericArgument() && actualType.featureOfType().isTypeFeature())
+        if (!actualType.isGenericArgument() && actualType.feature().isTypeFeature())
           {
             actualType = Types.resolved.f_Type.selfType();
           }
@@ -2392,9 +2392,9 @@ public class Call extends AbstractCall
       }
     else
       {
-        var fft = formalType.featureOfType();
+        var fft = formalType.feature();
         res.resolveTypes(fft);
-        var aft = actualType.isGenericArgument() ? null : actualType.featureOfType();
+        var aft = actualType.isGenericArgument() ? null : actualType.feature();
         if (fft == aft)
           {
             for (int i=0; i < formalType.generics().size(); i++)
@@ -2606,7 +2606,7 @@ public class Call extends AbstractCall
         }
       if (tt != null && tt != Types.t_ERROR)
         {
-          var tf = tt.featureOfType();
+          var tf = tt.feature();
           var ttf = tf.typeFeature(res);
           res.resolveDeclarations(tf);
           var fo = findOnTarget(res, tf).v1();
@@ -2767,7 +2767,7 @@ public class Call extends AbstractCall
                                       {
                                         if (!t2.isGenericArgument())
                                           {
-                                            var f2 = t2.featureOfType();
+                                            var f2 = t2.feature();
                                             if (!f2.isUniverse() && f2.state().atLeast(State.RESOLVED_INHERITANCE))
                                               {
                                                 var t2f = f2.typeFeature(res);
@@ -2974,7 +2974,7 @@ public class Call extends AbstractCall
         while (o != null && !o.isGenericArgument())
           {
             o = o.outer();
-            if (o != null && o.isRef() && !o.featureOfType().isThisRef())
+            if (o != null && o.isRef() && !o.feature().isThisRef())
               {
                 AstErrors.illegalCallResultType(this, _type, o);
                 o = null;
@@ -3080,16 +3080,16 @@ public class Call extends AbstractCall
         else if (cf == Types.resolved.f_bool_NOT    ) { result = newIf(_target, BoolConst.FALSE, BoolConst.TRUE ).propagateExpectedType(res, outer, Types.resolved.t_bool); }
 
         // replace e.g. i16 7 by just the NumLiteral 7. This is necessary for syntaxSugar2 of InlineArray to work correctly.
-        else if (cf == Types.resolved.t_i8 .featureOfType()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_i8 ); }
-        else if (cf == Types.resolved.t_i16.featureOfType()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_i16); }
-        else if (cf == Types.resolved.t_i32.featureOfType()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_i32); }
-        else if (cf == Types.resolved.t_i64.featureOfType()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_i64); }
-        else if (cf == Types.resolved.t_u8 .featureOfType()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_u8 ); }
-        else if (cf == Types.resolved.t_u16.featureOfType()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_u16); }
-        else if (cf == Types.resolved.t_u32.featureOfType()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_u32); }
-        else if (cf == Types.resolved.t_u64.featureOfType()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_u64); }
-        else if (cf == Types.resolved.t_f32.featureOfType()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_f32); }
-        else if (cf == Types.resolved.t_f64.featureOfType()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_f64); }
+        else if (cf == Types.resolved.t_i8 .feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_i8 ); }
+        else if (cf == Types.resolved.t_i16.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_i16); }
+        else if (cf == Types.resolved.t_i32.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_i32); }
+        else if (cf == Types.resolved.t_i64.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_i64); }
+        else if (cf == Types.resolved.t_u8 .feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_u8 ); }
+        else if (cf == Types.resolved.t_u16.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_u16); }
+        else if (cf == Types.resolved.t_u32.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_u32); }
+        else if (cf == Types.resolved.t_u64.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_u64); }
+        else if (cf == Types.resolved.t_f32.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_f32); }
+        else if (cf == Types.resolved.t_f64.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_f64); }
 
       }
     return result;
