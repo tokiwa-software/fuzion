@@ -227,61 +227,64 @@ public class Excecutor extends ProcessStatement<Value, Object>
   public Pair<Value, Object> call(int cl, boolean pre, int c, int i, Value tvalue, List<Value> args)
   {
     var cc0 = _fuir.accessedClazz(cl, c, i);
-    var rt = _fuir.clazzResultClazz(cc0);
-    var ttcc = ttcc(cl, c, i, tvalue);
-    var tt = ttcc.v0();
-    var cc = ttcc.v1();
-
-    // NYI: abstract interpreter should probably not give us boxed values
-    // in this case
-    if(_fuir.clazzIsBoxed(tt) && !_fuir.clazzIsRef(_fuir.clazzOuterClazz(cc /* NYI should this be cc0? */)))
+    var result = new Pair<>(unitValue(), nop());
+    if (_fuir.clazzHasSideEffectOrIsNotUnitType(cc0))
       {
-        tt = ((Boxed)tvalue)._valueClazz._idInFUIR;
-        tvalue = ((Boxed)tvalue)._contents;
-      }
+        var rt = _fuir.clazzResultClazz(cc0);
+        var ttcc = ttcc(cl, c, i, tvalue);
+        var tt = ttcc.v0();
+        var cc = ttcc.v1();
 
-    var result = switch (_fuir.clazzKind(cc))
-      {
-      case Routine :
-        // NYI change call to pass in ai as in match statement?
-        var cur = new Instance(_fuir.clazzForInterpreter(cc));
-
-        callOnInstance(cc, cur, tvalue, args, true);
-        callOnInstance(cc, cur, tvalue, args, false);
-
-        Value rres = cur;
-        var resf = _fuir.clazzResultField(cc);
-        if (resf != -1)
+        // NYI: abstract interpreter should probably not give us boxed values
+        // in this case
+        if(_fuir.clazzIsBoxed(tt) && !_fuir.clazzIsRef(_fuir.clazzOuterClazz(cc /* NYI should this be cc0? */)))
           {
-            var rfc = _fuir.clazzForInterpreter(resf);
-            if (!AbstractInterpreter.clazzHasUnitValue(_fuir, rfc.resultClazz()._idInFUIR))
-              {
-                rres = Interpreter.getField(rfc, _fuir.clazzForInterpreter(cc), cur, false);
-              }
+            tt = ((Boxed)tvalue)._valueClazz._idInFUIR;
+            tvalue = ((Boxed)tvalue)._contents;
           }
-        yield pair(rres);
-      case Field :
-        var fc = _fuir.clazzForInterpreter(cc);
-        var fres = AbstractInterpreter.clazzHasUnitValue(_fuir, rt)
-          ? pair(unitValue())
-          : pair(Interpreter.getField(fc, _fuir.clazzForInterpreter(tt), tt == _fuir.clazzUniverse() ? _universe : tvalue, false));
 
-        if (CHECKS)
-          check(fres != null, AbstractInterpreter.clazzHasUnitValue(_fuir, rt) || fres.v0() != unitValue());
+        result = switch (_fuir.clazzKind(cc))
+          {
+          case Routine :
+            // NYI change call to pass in ai as in match statement?
+            var cur = new Instance(_fuir.clazzForInterpreter(cc));
 
-        yield fres;
-      case Intrinsic :
-        yield _fuir.clazzTypeParameterActualType(cc) != -1  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
-          ? pair(unitValue())
-          : pair(Intrinsics.call(this, _fuir.clazzForInterpreter(cc)).call(new List<>(tvalue, args)));
-      case Abstract:
-        throw new Error("Calling abstract not possible: " + _fuir.codeAtAsString(cl, c, i));
-      case Native:
-        throw new Error("Calling native not yet supported in interpreter.");
-      default:
-        throw new RuntimeException("NYI");
-      };
+            callOnInstance(cc, cur, tvalue, args, true);
+            callOnInstance(cc, cur, tvalue, args, false);
 
+            Value rres = cur;
+            var resf = _fuir.clazzResultField(cc);
+            if (resf != -1)
+              {
+                var rfc = _fuir.clazzForInterpreter(resf);
+                if (!AbstractInterpreter.clazzHasUnitValue(_fuir, rfc.resultClazz()._idInFUIR))
+                  {
+                    rres = Interpreter.getField(rfc, _fuir.clazzForInterpreter(cc), cur, false);
+                  }
+              }
+            yield pair(rres);
+          case Field :
+            var fc = _fuir.clazzForInterpreter(cc);
+            var fres = AbstractInterpreter.clazzHasUnitValue(_fuir, rt)
+              ? pair(unitValue())
+              : pair(Interpreter.getField(fc, _fuir.clazzForInterpreter(tt), tt == _fuir.clazzUniverse() ? _universe : tvalue, false));
+
+            if (CHECKS)
+              check(fres != null, AbstractInterpreter.clazzHasUnitValue(_fuir, rt) || fres.v0() != unitValue());
+
+            yield fres;
+          case Intrinsic :
+            yield _fuir.clazzTypeParameterActualType(cc) != -1  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
+              ? pair(unitValue())
+              : pair(Intrinsics.call(this, _fuir.clazzForInterpreter(cc)).call(new List<>(tvalue, args)));
+          case Abstract:
+            throw new Error("Calling abstract not possible: " + _fuir.codeAtAsString(cl, c, i));
+          case Native:
+            throw new Error("Calling native not yet supported in interpreter.");
+          default:
+            throw new RuntimeException("NYI");
+          };
+        }
     return result;
   }
 

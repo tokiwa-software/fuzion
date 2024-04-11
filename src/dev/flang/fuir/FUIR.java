@@ -1134,11 +1134,31 @@ hw25 is
             (cc.isInstantiated() || cc.feature().isOuterRef())
             && cc != Clazzes.Const_String.getIfCreated()
             && !cc.isAbsurd()
-            && !cc.isBoxed();
+            && !cc.isBoxed()
+            && clazzHasSideEffectOrIsNotUnitType(cl);
           };
         (result ? _needsCode : _doesNotNeedCode).set(cl - CLAZZ_BASE);
         return result;
       }
+  }
+
+  /**
+   * Does this class have a side effect or is not of unit type?
+   */
+  public boolean clazzHasSideEffectOrIsNotUnitType(int cl)
+  {
+    return
+      // has contract
+         clazzContract(cl, FUIR.ContractKind.Pre , 0) != -1
+      || clazzContract(cl, FUIR.ContractKind.Post, 0) != -1
+      // is not a routine
+      || clazzKind(cl) != FeatureKind.Routine
+      // has code
+      || withinCode(clazzCode(cl), 0)
+      // is universe
+      || cl == clazzUniverse()
+      // is not a unit type
+      || !clazzIsUnitType(cl);
   }
 
 

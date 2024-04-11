@@ -242,7 +242,6 @@ public class DFA extends ANY
     public Pair<Val, Unit> call(int cl, boolean pre, int c, int i, Val tvalue, List<Val> args)
     {
       var ccP = _fuir.accessedPreconditionClazz(cl, c, i);
-      var cc0 = _fuir.accessedClazz            (cl, c, i);
       Val res = Value.UNIT;
       if (ccP != -1)
         {
@@ -303,7 +302,11 @@ public class DFA extends ANY
             });
         }
       var res = resf[0];
-      if (!found[0])
+      if (!found[0] && !_fuir.clazzNeedsCode(cc0))
+        {
+          res = unitValue();
+        }
+      else if (!found[0])
         { // NYI: proper error reporting
           var detail = "Considered targets: ";
           for (var ccii = 0; ccii < ccs.length; ccii += 2)
