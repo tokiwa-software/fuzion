@@ -1360,7 +1360,6 @@ public class Intrinsics extends ANY
     put("f64.type.square_root"  , (excecutor, innerClazz) -> args -> new f64Value (                 Math.sqrt(                args.get(1).f64Value())));
     put("f64.type.tan"          , (excecutor, innerClazz) -> args -> new f64Value (                 Math.tan(                 args.get(1).f64Value())));
     put("f64.type.tanh"         , (excecutor, innerClazz) -> args -> new f64Value (                 Math.tanh(                args.get(1).f64Value())));
-    put("Any.as_string"         , (excecutor, innerClazz) -> args -> Interpreter.value("instance[" + innerClazz._outer.toString() + "]"));
     put("fuzion.std.nano_time"  , (excecutor, innerClazz) -> args -> new u64Value (System.nanoTime()));
     put("fuzion.std.nano_sleep" , (excecutor, innerClazz) -> args ->
         {
