@@ -2191,7 +2191,6 @@ hw25 is
       case Tag     -> "Tag";
       case Env     -> "Env";
       case Pop     -> "Pop";
-      case Unit    -> "Unit";
       };
   }
 
@@ -2448,7 +2447,6 @@ hw25 is
       case Tag     -> skipBack(cl, c, codeIndex(c, ix, -1));
       case Env     -> codeIndex(c, ix, -1);
       case Pop     -> skipBack(cl, c, codeIndex(c, ix, -1));
-      case Unit    -> codeIndex(c, ix, -1);
       };
   }
 

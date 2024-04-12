@@ -118,8 +118,7 @@ public class IR extends ANY
     Match,
     Tag,
     Env,
-    Pop,
-    Unit;
+    Pop;
   }
 
 
