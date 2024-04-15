@@ -389,7 +389,9 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   HasSourcePosition callSitePos()
   {
-    return _dfa._fuir.codeAtAsPos(site());
+    var s = site();
+    return s == FUIR.NO_SITE ? null
+                             : _dfa._fuir.codeAtAsPos(s);
   }
 
 
