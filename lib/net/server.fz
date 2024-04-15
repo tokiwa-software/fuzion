@@ -28,10 +28,8 @@
 # Basic usage description:
 # 1) Initialize the server, e.g. like this:
 # `server family.ipv4 protocol.tcp 8080`
-# 2) Accept a connection:
-# `server.accept`
-# 3) Use the now installed channel for reading/writing.
-# `(channel server).read ...` / `(channel server).write ...`
+# 2) accept a new connection:
+#      `server.accept request_handler`
 #
 module:public server(
   state outcome i64,
@@ -52,7 +50,6 @@ is
 
   # close server, stop listening on port
   public close is
-    (channel server).close
     match state
       d i64 =>
         match fuzion.sys.net.close d
@@ -68,39 +65,36 @@ is
   # does nothing for UDP etc.
   # blocks until connection is established
   # NYI we may want to close server on certain errors?
-  public accept outcome unit =>
+  public accept(T type, rh Request_Handler T) outcome T =>
     match state
       d i64 =>
-        match p
-          protocol.tcp =>
-            ar := fuzion.sys.net.accept d
-            channel server ar true
-            ar.bind unit d->unit
-          * =>
-            channel server state false
-            unit
-      error =>
-        error "not initialized"
+        match fuzion.sys.net.accept d
+          desc i64 =>
 
+            # NYI install custom thread spawn effect
+            # to close desc when all threads are finished
+            #
+            # no_threads : concur.Thread_Handler is
+            #   spawn(code ()->unit) concur.thread.spawned =>
+            #     panic "may not spawn threads in request handler"
+            # (concur.thread no_threads).go ()->
+            #   _ := request_handler.env.handle_request (channel desc)
+            #   fuzion.sys.net.close desc
 
-  # accept new TCP connection in new thread, then runs code
-  # runs code immediately for UDP etc.
-  # NYI should need effect thread pool / work queue?, to run on a background thread.
-  # NYI on error ...
-  public accept_in_thread(code () -> unit) is
-    match state
-      d i64 =>
-        concur.thread.spawn ()->
-          match p
-            protocol.tcp =>
-              channel server (fuzion.sys.net.accept d) true
-              code()
-            * =>
-              channel server state true
-              code()
-      error =>
-        channel server (error "not initialized") true
-    unit
+            res := (io.buffered.reader (read_provider desc) 1024 []).with ()->
+              (net.channel desc).go ()->
+                rh.handle_request
+
+            fuzion.sys.net.close desc
+
+            res
+
+          e error =>
+            # NYI we may not need to close server on every error...
+            server e nil effect_mode.repl unit unit
+            e
+      e error =>
+        e
 
 
 # open new server bound to the any address listening on port
