@@ -550,10 +550,10 @@ public class CFG extends ANY
    */
   void createCallGraphForBlock(int cl, int c)
   {
-    for (int i = 0; /* NYI: !containsVoid(stack) &&*/ _fuir.withinCode(c, i); i = i + _fuir.codeSizeAt(c, i))
+    for (var s = c; /* NYI: !containsVoid(stack) &&*/ _fuir.withinCode(s); s = s + _fuir.codeSizeAt(s))
       {
-        var s = _fuir.codeAt(c, i);
-        createCallGraphForExpr(cl, c, i, s);
+        var e = _fuir.codeAt(s);
+        createCallGraphForExpr(cl, s, e);
       }
   }
 
@@ -570,22 +570,22 @@ public class CFG extends ANY
    *
    * @param s the FUIR.ExprKind of the statement to analyze
    */
-  void createCallGraphForExpr(int cl, int c, int i, FUIR.ExprKind s)
+  void createCallGraphForExpr(int cl, int s, FUIR.ExprKind e)
   {
-    switch (s)
+    switch (e)
       {
       case Assign: break;
       case Box   : break;
       case Call:
         {
-          var cc0 = _fuir.accessedClazz  (cl, c, i);
+          var cc0 = _fuir.accessedClazz  (cl, s);
           if (_fuir.hasPrecondition(cc0))
             {
               call(cl, cc0, true);
             }
-          if (!_fuir.callPreconditionOnly(cl, c, i))
+          if (!_fuir.callPreconditionOnly(cl, s))
             {
-              access(cl, c, i);
+              access(cl, s);
             }
           break;
         }
@@ -594,16 +594,16 @@ public class CFG extends ANY
       case Const  : break;
       case Match  :
         {
-          for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
+          for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
             {
-              createCallGraphForBlock(cl, _fuir.matchCaseCode(c, i, mc));
+              createCallGraphForBlock(cl, _fuir.matchCaseCode(s, mc));
             }
           break;
         }
       case Tag: break;
       case Env:
         {
-          var ecl = _fuir.envClazz(cl, c, i);
+          var ecl = _fuir.envClazz(cl, s);
           addEffect(cl, ecl);
           break;
         }
@@ -625,13 +625,13 @@ public class CFG extends ANY
    *
    * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
    */
-  void access(int cl, int c, int i)
+  void access(int cl, int s)
   {
-    var cc0 = _fuir.accessedClazz  (cl, c, i);
+    var cc0 = _fuir.accessedClazz  (cl, s);
 
-    if (_fuir.accessIsDynamic(cl, c, i))
+    if (_fuir.accessIsDynamic(cl, s))
       {
-        var ccs = _fuir.accessedClazzes(cl, c, i);
+        var ccs = _fuir.accessedClazzes(cl, s);
         for (var cci = 0; cci < ccs.length; cci += 2)
           {
             var tt = ccs[cci  ];

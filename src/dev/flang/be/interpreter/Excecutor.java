@@ -174,7 +174,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
   }
 
   @Override
-  public Object statementHeader(int cl, int c, int i)
+  public Object statementHeader(int cl, int s)
   {
     return null;
   }
@@ -205,7 +205,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
   }
 
   @Override
-  public Object assign(int cl, boolean pre, int c, int i, Value tvalue, Value avalue)
+  public Object assign(int cl, boolean pre, int s, Value tvalue, Value avalue)
   {
     // NYI: better check clazz containing field is universe
     if (tvalue == unitValue())
@@ -214,7 +214,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
       }
     if (avalue != unitValue())
       {
-        var ttcc = ttcc(cl, c, i, tvalue);
+        var ttcc = ttcc(cl, s, tvalue);
         var tt = ttcc.v0();
         var cc = ttcc.v1();
         var fc = _fuir.clazzForInterpreter(cc);
@@ -224,11 +224,11 @@ public class Excecutor extends ProcessStatement<Value, Object>
   }
 
   @Override
-  public Pair<Value, Object> call(int cl, boolean pre, int c, int i, Value tvalue, List<Value> args)
+  public Pair<Value, Object> call(int cl, boolean pre, int s, Value tvalue, List<Value> args)
   {
-    var cc0 = _fuir.accessedClazz(cl, c, i);
+    var cc0 = _fuir.accessedClazz(cl, s);
     var rt = _fuir.clazzResultClazz(cc0);
-    var ttcc = ttcc(cl, c, i, tvalue);
+    var ttcc = ttcc(cl, s, tvalue);
     var tt = ttcc.v0();
     var cc = ttcc.v1();
 
@@ -275,7 +275,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
           ? pair(unitValue())
           : pair(Intrinsics.call(this, _fuir.clazzForInterpreter(cc)).call(new List<>(tvalue, args)));
       case Abstract:
-        throw new Error("Calling abstract not possible: " + _fuir.codeAtAsString(cl, c, i));
+        throw new Error("Calling abstract not possible: " + _fuir.codeAtAsString(cl, s));
       case Native:
         throw new Error("Calling native not yet supported in interpreter.");
       default:
@@ -291,9 +291,9 @@ public class Excecutor extends ProcessStatement<Value, Object>
    *
    * @param tvalue the actual value of the target.
    */
-  private Pair<Integer, Integer> ttcc(int cl, int c, int i, Value tvalue)
+  private Pair<Integer, Integer> ttcc(int cl, int s, Value tvalue)
   {
-    var ccs = _fuir.accessedClazzes(cl, c, i);
+    var ccs = _fuir.accessedClazzes(cl, s);
     var tt = ccs.length != 2 ? -1 : ccs[0];
     var cc = ccs.length != 2 ? -1 : ccs[1];
 
@@ -447,7 +447,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
   }
 
   @Override
-  public Pair<Value, Object> match(AbstractInterpreter<Value, Object> ai, int cl, boolean pre, int c, int i,
+  public Pair<Value, Object> match(AbstractInterpreter<Value, Object> ai, int cl, boolean pre, int s,
     Value subv)
   {
     var staticSubjectClazz = subv instanceof boolValue ? Clazzes.bool.getIfCreated() : ((ValueWithClazz)subv)._clazz;
@@ -457,9 +457,9 @@ public class Excecutor extends ProcessStatement<Value, Object>
 
     var tagAndChoiceElement = tagAndVal(staticSubjectClazz, subv);
 
-    var cix = _fuir.matchCaseIndex(cl, c, i, tagAndChoiceElement.v0());
+    var cix = _fuir.matchCaseIndex(cl, s, tagAndChoiceElement.v0());
 
-    var field = _fuir.matchCaseField(cl, c, i, cix);
+    var field = _fuir.matchCaseField(cl, s, cix);
     if (field != -1)
       {
         Interpreter.setField(
@@ -468,7 +468,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
             _cur,
             tagAndChoiceElement.v1());
       }
-    return ai.process(cl, pre, _fuir.matchCaseCode(c, i, cix));
+    return ai.process(cl, pre, _fuir.matchCaseCode(s, cix));
   }
 
 
@@ -592,7 +592,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
       {
         sb.append(_fuir.clazzAsStringNew(frame)).append(": ");
       }
-    sb.append(_fuir.siteAsPos(callSite).show()).append("\n");
+    sb.append(_fuir.codeAtAsPos(callSite).show()).append("\n");
   }
 
 

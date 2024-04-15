@@ -26,7 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
-import static dev.flang.ir.IR.NO_SITE;
+import static dev.flang.fuir.FUIR.NO_SITE;
 
 import java.util.Comparator;
 
