@@ -1743,7 +1743,6 @@ public class DFA extends ANY
     put("f32.type.tanh"                  , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.type.tanh"                  , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
 
-    put("Any.as_string"                  , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.sys.internal_array_init.alloc", cl -> new SysArray(cl._dfa, new byte[0], -1)); // NYI: get length from args
     put("fuzion.sys.internal_array.setel", cl ->
         {
