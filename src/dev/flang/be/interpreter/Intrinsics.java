@@ -956,7 +956,7 @@ public class Intrinsics extends ANY
       var result = (long[])args.get(6).arrayData()._array;
       if (family != 2 && family != 10)
         {
-          throw new Error("NYI");
+          new RuntimeException("NYI: UNDER DEVELOPMENT: bind for family=" + family);
         }
       try
         {
@@ -976,7 +976,7 @@ public class Intrinsics extends ANY
                   result[0] = _openStreams_.add(ss);
                   yield new i32Value(0);
                 }
-              default -> throw new Error("NYI");
+              default -> throw new Error("NYI: UNDER DEVELOPMENT: bind for protocol=" + protocol);
             };
         }
       catch(BindException e)
@@ -1010,7 +1010,7 @@ public class Intrinsics extends ANY
               ((long[])args.get(2).arrayData()._array)[0] = args.get(1).i64Value();
               return new boolValue(true);
             }
-          throw new Error("NYI");
+          throw new Error("Misuse of intrinsic net.accept detected.");
         }
       catch(Throwable e)
         {
@@ -1027,7 +1027,7 @@ public class Intrinsics extends ANY
       var result = (long[])args.get(6).arrayData()._array;
       if (family != 2 && family != 10)
         {
-          throw new Error("NYI");
+          new RuntimeException("NYI: UNDER DEVELOPMENT: connect for family=" + family);
         }
       try
         {
@@ -1047,7 +1047,7 @@ public class Intrinsics extends ANY
                   result[0] = _openStreams_.add(ss);
                   yield new i32Value(0);
                 }
-              default -> throw new Error("NYI");
+              default -> throw new Error("NYI: UNDER DEVELOPMENT: connect for protocol=" + protocol);
             };
         }
       catch(IOException e)
@@ -1114,7 +1114,7 @@ public class Intrinsics extends ANY
             }
           else
             {
-              throw new Error("NYI");
+              throw new Error("Misuse of intrinsic net.read detected.");
             }
           ((long[])args.get(4).arrayData()._array)[0] = bytesRead;
           return new boolValue(bytesRead != -1);
