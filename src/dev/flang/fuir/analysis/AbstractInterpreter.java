@@ -369,8 +369,6 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
   public static boolean clazzHasUnitValue(FUIR fuir, int cl)
   {
     return cl == fuir.clazzUniverse() || fuir.clazzIsUnitType(cl) && !fuir.clazzIsRef(cl);
-    // NYI: maybe we should restrict this to c_unit only?
-    // return cl == _fuir.clazzUniverse() || FUIR.SpecialClazzes.c_unit != _fuir.getSpecialId(cl);
   }
 
 

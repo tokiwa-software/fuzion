@@ -276,10 +276,10 @@ public class Excecutor extends ProcessStatement<Value, Object>
           : pair(Intrinsics.call(this, _fuir.clazzForInterpreter(cc)).call(new List<>(tvalue, args)));
       case Abstract:
         throw new Error("Calling abstract not possible: " + _fuir.codeAtAsString(cl, s));
+      case Choice :
+        throw new Error("Calling choice not possible: " + _fuir.codeAtAsString(cl, s));
       case Native:
-        throw new Error("Calling native not yet supported in interpreter.");
-      default:
-        throw new RuntimeException("NYI");
+        throw new Error("NYI: UNDER DEVELOPEMENT: Calling native not yet supported in interpreter.");
       };
 
     return result;
