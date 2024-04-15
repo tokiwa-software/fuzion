@@ -17,15 +17,38 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature stopwatch
+#  Source code of Fuzion feature bench
 #
 #  Author: Michael Lill (michael.lill@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# stopwatch measures the execution duration of f
-public stopwatch(f () -> unit) duration =>
-  start := nano.read
-  f()
-  end := nano.read
-  durations.ns end-start
+# benchmark f by iterating it for nano_seconds
+#
+# only completed iterations are counted, any iterations started before
+# warm_up_nano_seconds has elapsed are not counted either
+#
+# returns: iterations per second
+#
+public bench(f ()->unit, nano_seconds u64, warm_up_nano_seconds u64) f64 ! time.nano =>
+  start := time.nano.read
+
+  is_warmup => time.nano.read - start < warm_up_nano_seconds
+
+  for iter := (u64 0), if (is_warmup) iter else iter + 1
+  while time.nano.read - start < warm_up_nano_seconds + nano_seconds
+  do
+    f.call
+  else
+    iter.as_f64 / (nano_seconds.as_f64 * 1E-9)
+
+
+# benchmark f for milli_seconds (1s warm up)
+#
+# only completed iterations are counted, any iterations started before
+# the one second warmup has elapsed are not counted either
+#
+# returns: iterations per second
+#
+public bench(f ()->unit, milli_seconds i32) f64 =>
+  bench f (milli_seconds.as_u64 * 1E6) (u64 1E9)
