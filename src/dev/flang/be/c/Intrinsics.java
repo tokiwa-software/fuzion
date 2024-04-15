@@ -735,16 +735,6 @@ public class Intrinsics extends ANY
     put("f32.type.tanh"        , (c,cl,outer,in) -> CExpr.call("tanhf",  new List<>(A0)).ret());
     put("f64.type.tanh"        , (c,cl,outer,in) -> CExpr.call("tanh",   new List<>(A0)).ret());
 
-    put("Any.as_string"        , (c,cl,outer,in) ->
-        {
-          var clname = c._fuir.clazzAsString(c._fuir.clazzOuterClazz(cl));
-          var instname = "instance[" + clname + "]";
-          var instchars = instname.getBytes(StandardCharsets.UTF_8);
-          var rc = c._fuir.clazzResultClazz(cl);
-          return c.heapClone(c.constString(instchars), rc)
-            .ret();
-        });
-
     put("fuzion.sys.internal_array_init.alloc", (c,cl,outer,in) ->
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
