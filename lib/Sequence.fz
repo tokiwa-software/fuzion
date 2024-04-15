@@ -513,34 +513,6 @@ public Sequence(public T type) ref is
     combine b x,y->(x,y)
 
 
-  # takes a transducer xf, a reducer f and an initial value
-  # returns the result of applying the reducer xf f to the Sequence
-  public transduce(TA,U type, xf transducer TA U T, rf (TA,U) -> TA, init TA) TA =>
-    red := xf.call rf
-    for
-      res := init, red.call res el
-      el in Sequence.this do
-    else
-      res
-
-
-  # apply transducer to sequence, returning a sequence of results
-  #
-  # example usage:
-  # human(age i32) is
-  # ages := map (Sequence i32) human i32 (x -> x.age)
-  # gt_ten := filter (Sequence i32) i32 (x -> x > 10)
-  # xf := ages ∘ gt_ten
-  # say ([human(4), human(12), human(30)].into xf) # [12,30]
-  public into(TA type, xf transducer (Sequence TA) TA T) list TA =>
-    red := xf.call ((res,val) -> res ++ [val])
-    for
-      res (list TA) := (list TA).empty , (red.call res el).as_list
-      el in Sequence.this do
-    else
-      res
-
-
   # the nth element in the sequence if it exists, wrapped in an option,
   # nil otherwise.
   #

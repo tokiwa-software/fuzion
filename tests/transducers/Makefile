@@ -24,4 +24,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = transducertest
+FUZION_OPTIONS = -modules=transducer
 include ../positive.mk

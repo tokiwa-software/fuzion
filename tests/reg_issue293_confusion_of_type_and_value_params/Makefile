@@ -24,4 +24,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = issue293
+FUZION_OPTIONS = -modules=transducer
 include ../simple.mk
