@@ -111,8 +111,7 @@ public i16(public val i16) : num.wrap_around, has_interval is
       debug: thiz ≥ 0
     =>
       cast_to_u128
-  public as_int int =>
-    int as_i64
+
 
   # casting to unsigned, adding 1<<16 if negative
   public low8bits    u8   => cast_to_u16.as_u8      # 0x1234 ->   0x34, -0x1234 -> 0xcc

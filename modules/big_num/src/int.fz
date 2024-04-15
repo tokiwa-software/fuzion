@@ -221,3 +221,31 @@ is
 # shorthand to create an int via an i64
 public int (val i64) int =>
   int.from_i64 val
+
+
+
+# add extension features to primitives
+# primitive as an int
+#
+public i8 .as_int int => int as_i64
+public i16.as_int int => int as_i64
+public i32.as_int int => int as_i64
+public i64.as_int int => int val
+public u8 .as_int int => int as_i64
+public u16.as_int int => int as_i64
+public u32.as_int int => int as_i64
+public u64.as_int int => int as_i64
+
+
+
+# parse this string as an int value of arbitrary size
+#
+public String.parse_int        => parse_int int(10)
+public String.parse_int_binary => parse_int int(2)
+public String.parse_int_octal  => parse_int int(8)
+public String.parse_int_hex    => parse_int int(16)
+public String.parse_int (base int) outcome int
+  pre (int 1) < base ≤ int 36
+=>
+  parse_integer int base
+

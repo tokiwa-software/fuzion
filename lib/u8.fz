@@ -89,7 +89,6 @@ public u8(public val u8) : num.wrap_around, has_interval is
   public as_u32  => as_i32.as_u32
   public as_u64  => as_i32.as_u64
   public as_u128 => as_i32.as_u128
-  public as_int  => int as_i64
 
   public cast_to_i8 i8 => intrinsic
 

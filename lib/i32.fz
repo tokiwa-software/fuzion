@@ -117,8 +117,6 @@ public i32(public val i32) : num.wrap_around, has_interval is
       debug: thiz ≥ 0
     =>
       u128 0 as_i64.as_u64
-  public as_int int =>
-    int as_i64
 
 
   # casting bit representation to unsigned

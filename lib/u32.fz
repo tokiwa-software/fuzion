@@ -137,14 +137,6 @@ public u32(public val u32) : num.wrap_around, has_interval is
       u128 0 as_u64
 
 
-  # this u32 as an int
-  public as_int  => int as_i64
-
-
-  # this u32 as an uint
-  public as_uint  => uint as_u64
-
-
   public low8bits  u8  => intrinsic
   public low16bits u16 => intrinsic
   public cast_to_i32 i32 => intrinsic

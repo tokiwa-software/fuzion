@@ -148,16 +148,6 @@ public u64(public val u64) : num.wrap_around, has_interval is
       u128 0 thiz
 
 
-  # this u64 as an int
-  public as_int  => int.from_u64 val
-
-
-  # this u64 as an uint
-  public as_uint uint
-  =>
-    uint val
-
-
   public low8bits   u8  => intrinsic
   public low16bits  u16 => intrinsic
   public low32bits  u32 => intrinsic

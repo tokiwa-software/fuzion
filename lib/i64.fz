@@ -155,18 +155,6 @@ public i64(public val i64) : num.wrap_around, has_interval is
       u128 0 cast_to_u64
 
 
-  # this i64 as an int
-  public as_int int =>
-    int val
-
-
-  # this i64 as an uint
-  public as_uint uint
-  pre thiz ≥ 0
-  =>
-    uint val.as_u64
-
-
   # casting bit representation to unsigned
   public low8bits   u8  => cast_to_u64.low8bits
   public low16bits  u16 => cast_to_u64.low16bits

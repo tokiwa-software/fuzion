@@ -22,4 +22,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = issue1490
+FUZION_OPTIONS = -modules=big_num
 include ../simple.mk

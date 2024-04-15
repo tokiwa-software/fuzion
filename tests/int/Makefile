@@ -24,4 +24,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = int_test
+FUZION_OPTIONS = -modules=big_num
 include ../positive.mk

@@ -96,7 +96,6 @@ public u16(public val u16) : num.wrap_around, has_interval is
   public as_u32  => thiz.as_i32.as_u32
   public as_u64  => thiz.as_i32.as_u64
   public as_u128 => thiz.as_i32.as_u128
-  public as_int  => int as_i64
 
   public low8bits u8 => intrinsic
   public cast_to_i16 i16 => intrinsic

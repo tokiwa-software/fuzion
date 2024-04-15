@@ -158,18 +158,6 @@ public String ref : property.equatable, property.hashable, property.orderable is
     parse_integer u64 base
 
 
-  # parse this string as an int value of arbitrary size
-  #
-  public parse_int        => parse_int int(10)
-  public parse_int_binary => parse_int int(2)
-  public parse_int_octal  => parse_int int(8)
-  public parse_int_hex    => parse_int int(16)
-  public parse_int (base int) outcome int
-    pre (int 1) < base ≤ int 36
-  =>
-    parse_integer int base
-
-
   # parse this string as a integer value given as type parameter
   #
   public parse_integer(
