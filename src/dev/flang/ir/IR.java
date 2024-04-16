@@ -233,6 +233,46 @@ public abstract class IR extends ANY
 
 
   /**
+   * From a given site, determine the site of the start of the code block that
+   * contains the given site.
+   *
+   * @param site any site
+   *
+   * @return the site of the first Expr in the code block containing `site`
+   */
+  public int codeBlockStart(int site)
+  {
+    var c = site - CODE_BASE;
+    var result = c;
+    while (result > 0 && _allCode.get(result-1) != null)
+      {
+        result--;
+      }
+    return result + CODE_BASE;
+  }
+
+
+
+  /**
+   * From a given site, determine the site of the last Expr in the code block
+   * that contains the given site.
+   *
+   * @param site any site
+   *
+   * @return the site of the last Expr in the code block containing `site`
+   */
+  public int codeBlockEnd(int site)
+  {
+    var s0 = codeBlockStart(site);
+    while (withinCode(s0 + codeSizeAt(s0)))
+      {
+        s0 = s0 + codeSizeAt(s0);
+      }
+    return s0;
+  }
+
+
+  /**
    * For a match expression, get the number of cases
    *
    * @param c code block containing the match
@@ -255,27 +295,6 @@ public abstract class IR extends ANY
         result = m.cases().size();
       }
     return result;
-  }
-
-
-  // REMOVE:
-  public int siteFromCI(int c, int i)
-  {
-    return c+i;
-  }
-  public int codeBlockStart(int site)
-  {
-    var c = site - CODE_BASE;
-    var result = c;
-    while (result > 0 && _allCode.get(result-1) != null)
-      {
-        result--;
-      }
-    return result + CODE_BASE;
-  }
-  public int exprIndexFromSite(int site)
-  {
-    return site - codeBlockStart(site);
   }
 
 

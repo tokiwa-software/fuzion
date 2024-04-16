@@ -109,7 +109,7 @@ public class TailCall extends ANY
 
     var c2 = _fuir.clazzCode(cl);
     return _fuir.codeSize(c2) > 0 &&
-      isTailCall(cl, c2, _fuir.codeSize(c2)-1, s, _fuir.clazzResultField(cl));
+      isTailCall(cl, _fuir.codeBlockEnd(c2), s, _fuir.clazzResultField(cl));
   }
 
 
@@ -134,14 +134,11 @@ public class TailCall extends ANY
 
     // skip back all argument to reach the target instance
     var nargs = _fuir.clazzArgCount(cc);
-    var s0 = _fuir.codeBlockStart(s);
-    var ti = _fuir.codeIndex(s0, _fuir.exprIndexFromSite(s), -1);
+    var ts = _fuir.codeIndex(s, -1);
     for (var i = 0; i < nargs; i++)
       {
-        ti = _fuir.skipBack(cl, s0, ti);
+        ts = _fuir.skipBack(cl, ts);
       }
-    var ts = _fuir.siteFromCI(s0, ti);
-
     // get type of target of call
     var tc = _fuir.accessTargetClazz(cl, s);
 
@@ -154,7 +151,7 @@ public class TailCall extends ANY
       (tc == _fuir.clazzUniverse() ||
        _fuir.codeAt       (    ts) == IR.ExprKind.Call    &&
        _fuir.accessedClazz(cl, ts) == outerRef            &&
-       _fuir.codeAt(s0 + _fuir.codeIndex(s0, ti, -1)) == IR.ExprKind.Current);
+       _fuir.codeAt(_fuir.codeIndex(ts, -1)) == IR.ExprKind.Current);
 
     return res;
   }
@@ -165,21 +162,16 @@ public class TailCall extends ANY
    *
    * @param cl index of clazz containing the call
    *
-   * @param clc the code block of cl that is currently searched for
+   * @param cls the site of the last Expr of a code block that is to be checked if it results in the tail call at s
    *
-   * @param clix the current index in clc
-   *
-   * @param c code block containing the call
-   *
-   * @param ix index of the call
+   * @param s site of the the call
    *
    * @param mustAssignTo -1 iff the result should be the last expr in the code
    * block, otherwise the clazz of a field in Current the result should be
    * assigned to.
    */
-  private boolean isTailCall(int cl, int clc, int clix, int s, int mustAssignTo)
+  private boolean isTailCall(int cl, int cls, int s, int mustAssignTo)
   {
-    var cls = _fuir.siteFromCI(clc, clix);
     return switch (_fuir.codeAt(cls))
       {
       case Call ->
@@ -192,9 +184,9 @@ public class TailCall extends ANY
              // in case we have a call to 'Current.f' for some field 'f',
              // recursively check if 'Current.f' is set to the call c/ix:
              _fuir.clazzKind(cc) == IR.FeatureKind.Field &&
-             clix > 1 &&
-             _fuir.codeAt(clc + _fuir.codeIndex(clc, clix, -1)) == IR.ExprKind.Current &&
-             isTailCall(cl, clc, _fuir.codeIndex(clc, clix, -2), s, cc));
+             cls > _fuir.codeBlockStart(cls)+1 &&
+             _fuir.codeAt(_fuir.codeIndex(cls, -1)) == IR.ExprKind.Current &&
+             isTailCall(cl, _fuir.codeIndex(cls, -2), s, cc));
         }
 
       case Assign ->
@@ -202,19 +194,19 @@ public class TailCall extends ANY
           var cc = _fuir.accessedClazz(cl, cls);
           yield
             // if this is an assignment to 'Current.mustAssignTo' with, recursively check if
-            // the value assigned is the call c/ix.
-            cc == mustAssignTo && clix > 1 &&
-            _fuir.codeAt(clc + _fuir.codeIndex(clc, clix, -1)) == IR.ExprKind.Current &&
-            isTailCall(cl, clc, _fuir.codeIndex(clc, clix,-2), s, -1);
+            // the value assigned is the call s.
+            cc == mustAssignTo && cls > _fuir.codeBlockStart(cls)+1 &&
+            _fuir.codeAt(_fuir.codeIndex(cls, -1)) == IR.ExprKind.Current &&
+            isTailCall(cl, _fuir.codeIndex(cls, -2), s, -1);
         }
 
       case Match ->
         {
-          // for a match, check if any case of the match results in c/ix:
+          // for a match, check if any case of the match results in s:
           for (var mc = 0; mc < _fuir.matchCaseCount(cls); mc++)
             {
               var mcc = _fuir.matchCaseCode(cls, mc);
-              if (_fuir.codeSize(mcc) > 0 && isTailCall(cl, mcc, _fuir.codeSize(mcc)-1, s, mustAssignTo))
+              if (_fuir.codeSize(mcc) > 0 && isTailCall(cl, _fuir.codeBlockEnd(mcc), s, mustAssignTo))
                 {
                   yield true;
                 }

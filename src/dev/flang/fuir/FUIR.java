@@ -2307,22 +2307,22 @@ hw25 is
    *
    * @param delta the number of instructions to go forward or back.
    */
-  public int codeIndex(int c, int ix, int delta)
+  public int codeIndex(int s, int delta)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c + ix));
+      (s >= CODE_BASE,
+       withinCode(s));
 
     while (delta > 0)
       {
-        ix = ix + codeSizeAt(c + ix);
+        s = s + codeSizeAt(s);
         delta--;
       }
     if (delta < 0)
       {
-        ix = codeIndex2(c, 0, ix, delta);
+        s = codeIndex2(codeBlockStart(s), s, delta);
       }
-    return ix;
+    return s;
   }
 
 
@@ -2344,22 +2344,22 @@ hw25 is
    * @return the index of the expression 'n' expressions before 'ix', or a
    * negative value '-m' if that instruction can be found 'm' recursive calls up.
    */
-  private int codeIndex2(int c, int i, int ix, int delta)
+  private int codeIndex2(int si, int s, int delta)
   {
-    if (i == ix)
+    if (si == s)
       {
         return delta;
       }
     else
       {
-        var r = codeIndex2(c, i + codeSizeAt(c + i), ix, delta);
+        var r = codeIndex2(si + codeSizeAt(si), s, delta);
         if (r < -1)
           {
             return r + 1;
           }
         else if (r == -1)
           {
-            return i;
+            return si;
           }
         else
           {
@@ -2371,7 +2371,7 @@ hw25 is
 
   /**
    * Helper routine to go back in the code jumping over the whole previous
-   * expression. Say you have the code
+   * expression. Say you have the code  -- NYI: This example is confusing and probably wrong --
    *
    *   0: const 1
    *   1: current
@@ -2383,67 +2383,64 @@ hw25 is
    *   7: sub
    *   8: mul
    *
-   * Then 'skip(cl, c, 6)' is 2 (popping 'add current.m 2'), while 'skip(cl, c,
-   * 2)' is 0 (popping 'current.n').
+   * Then 'skip(cl, 6)' is 2 (popping 'add current.m 2'), while 'skip(cl, 2)' is
+   * 0 (popping 'current.n').
    *
-   * 'skip(cl, c, 7)' will result in 7, while 'skip(cl, c, 8)' will result in an
+   * 'skip(cl, 7)' will result in 7, while 'skip(cl, 8)' will result in an
    * error since there is no expression before 'mul 1 (sub current.n (add
    * current.m 2))'.
    *
    * @param cl index of the clazz containing the code block.
    *
-   * @param c the code block
-   *
-   * @param ix an index in c
+   * @param s the site to start skiping backwards from
    */
-  public int skipBack(int cl, int c, int ix)
+  public int skipBack(int cl, int s)
   {
-    var s = siteFromCI(c, ix);
-    return switch (codeAt(c + ix))
+    return switch (codeAt(s))
       {
       case Assign  ->
         {
           var tc = accessTargetClazz(cl, s);
-          ix = skipBack(cl, c, codeIndex(c, ix, -1));
+          s = skipBack(cl, codeIndex(s, -1));
           if (tc != clazzUniverse())
             {
-              ix = skipBack(cl, c, ix);
+              s = skipBack(cl, s);
             }
-          yield ix;
+          yield s;
         }
-      case Box     -> skipBack(cl, c, codeIndex(c, ix, -1));
+      case Box     -> skipBack(cl, codeIndex(s, -1));
       case Call    ->
         {
           var tc = accessTargetClazz(cl, s);
           var cc = accessedClazz(cl, s);
           var ac = clazzArgCount(cc);
-          ix = codeIndex(c, ix, -1);
+          s = codeIndex(s, -1);
           for (var i = 0; i < ac; i++)
             {
               var acl = clazzArgClazz(cc, ac-1-i);
               if (clazzResultClazz(acl) != clazzUniverse())
                 {
-                  ix = skipBack(cl, c, ix);
+                  s = skipBack(cl, s);
                 }
             }
           if (tc != clazzUniverse())
             {
-              ix = skipBack(cl, c, ix);
+              s = skipBack(cl, s);
             }
-          yield ix;
+          yield s;
         }
-      case Current -> codeIndex(c, ix, -1);
-      case Comment -> skipBack(cl, c, codeIndex(c, ix, -1));
-      case Const   -> codeIndex(c, ix, -1);
+      case Current -> codeIndex(s, -1);
+      case Comment -> skipBack(cl, codeIndex(s, -1));
+      case Const   -> codeIndex(s, -1);
       case Match   ->
         {
-          ix = codeIndex(c, ix, -1);
-          ix = skipBack(cl, c, ix);
-          yield ix;
+          s = codeIndex(s, -1);
+          s = skipBack(cl, s);
+          yield s;
         }
-      case Tag     -> skipBack(cl, c, codeIndex(c, ix, -1));
-      case Env     -> codeIndex(c, ix, -1);
-      case Pop     -> skipBack(cl, c, codeIndex(c, ix, -1));
+      case Tag     -> skipBack(cl, codeIndex(s, -1));
+      case Env     -> codeIndex(s, -1);
+      case Pop     -> skipBack(cl, codeIndex(s, -1));
       };
   }
 
