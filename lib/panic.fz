@@ -29,7 +29,7 @@ public panic (
   # the handler this effect uses to panic
   p Panic_Handler,
   _ unit
-  ) : simple_effect
+  ) : abortable_effect
 is
 
   # panic with the given message
@@ -86,6 +86,6 @@ public Panic_Handler ref is
   # `code` on it. In case of an abort, return `def()` (NYI: def should be
   # removed and the result of do_panic should be returned instead).
   #
-  public use(R type, code, def ()->R) =>
+  public use(R type, code ()->R, def Lazy R) =>
     p := panic Panic_Handler.this unit
-    p.run code def
+    (p.run code).get def

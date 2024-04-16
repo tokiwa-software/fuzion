@@ -17,18 +17,29 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion standard library feature abortable_effect
 #
 # -----------------------------------------------------------------------
 
-reg_issue2231 is
-  a := mut ()->i32 ()->0
-  eff : abortable_effect is
-    inner := 7
-    a <- ()->inner
-    something is
-      abort
 
-  eff.go ()->
-    reg_issue2231.eff.env.something
-  say a.get.call
+# abortable_effect provides means to define and use an abortable computation
+#
+public abortable_effect : effect effect_mode.plain is
+
+
+  # does this effect support abort?
+  #
+  redef abortable => true
+
+
+  # replace effect in the current context by this and abort current execution
+  #
+  public abort void => abort0
+
+
+  # install this abortable_effect and run code that produces a result of
+  # type T or nil if aborted.
+  #
+  public go(T type, f ()->T) option T =>
+    run f
+

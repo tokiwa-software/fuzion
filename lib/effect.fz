@@ -38,7 +38,7 @@ is
 
   match r
     _ effect_mode.plain   =>
-    i effect_mode.inst    => run i.f ()->unit
+    i effect_mode.inst    => (run i.f).get ()->unit
     _ effect_mode.repl    => replace
     _ effect_mode.default => default
     _ effect_mode.new     =>
@@ -58,57 +58,40 @@ is
   #
   # NYI: uses type parameter T only to simplify C backend
   #
-  abortable(T type : Function unit, f T) unit => intrinsic
+  module abortable(T type : Function unit, f T) unit => intrinsic
 
-
-  # replace effect in the current context by this and abort current execution
-  public abort void
-  pre
-    safety: abortable
-  =>
-    abort0
 
   # Intrinsic version of abort.
   #
   # NYI: precondition does not seem to work for an intrinsic yet, causes test failure e.g., in tests/local_mutate
   # so we use cannot make `abort` intrinsic.
-  abort0 void
-  =>
-    intrinsic
+  module abort0 void => intrinsic
 
 
   # does this effect support abort?
   #
-  # Redefining this to return `false` helps to detect unexptected calls to
+  # Redefining this to return `true` helps to detect unexptected calls to
   # `abort` at runtime and ensure that the static analysis finds that the
   # code executed with this effect will always return normally and produce
   # a result. This is used, e.g, in `mutate` to avoid static analysis
   # reporting `panic` as an effect of the use of a local mutate instance.
   #
-  public abortable => true
+  abortable => false
 
 
   # set default effect in the current context to this if none is installed
   module default unit => intrinsic
 
+
   # execute the code of 'f' in the context of this effect
+  # return the result of f or nil if f was aborted
   #
-  module run(R type, f () -> R, def ()->R) R =>
+  module run(T type, f ()->T) option T =>
     cf := Effect_Call f
     abortable cf
     match cf.res
-      nil => def()
-      x R => x
-
-
-  # abort the current execution and return from the surrounding call to
-  # abortable with result == false.
-  #
-  public return void
-  pre
-    safety: abortable
-  =>
-    abort
+      nil => nil
+      x T => x
 
 
   # has an effect of the given type been installed?
@@ -165,54 +148,3 @@ public effect_mode is
 
   public val : choice plain repl default new inst of
 
-
-public code_effect : effect (effect_mode.inst code)
-is
-
-  # the code to be executed within this effect.  This is typically
-  # redefined as an argument field of a sub-feature of effect.
-  #
-  # NYI: Currently, there is no direct way to return a result value
-  # from the code.
-  #
-  public code ()->unit => abstract
-
-
-# simple_effect provides a simple means to define and use an effect
-#
-# user-defined effects should inherit from this feature and add
-# operations as inner features or fields of function type.
-#
-# To install this effect to execute a function, simple_effect.use
-# can be called.
-#
-public simple_effect : effect effect_mode.plain
-is
-
-  # install this simple_effect and run code
-  #
-  # In case of an `abort`, `use` returns silently (NYI: maybe this should better
-  # return an oucome with the abort wrapped in an error?).
-  #
-  public use(code ()->unit) unit =>
-    cf := Effect_Call code
-    abortable cf
-    # ignore cf.res
-
-
-  # install this effect and run code that produces a result of
-  # type T. panic in case abort is called.
-  #
-  public go(T type, f ()->T) T =>
-    cf := Effect_Call f
-    abortable cf
-    match cf.res
-      nil => msg := "*** unexpected abort in {simple_effect.this.type}"
-             if abortable
-               panic msg
-             else
-               # the user should not be able to produce this state: since the effect is
-               # not abortable cf can only return with a result. So we do a low-level
-               # panic that does not show up as a used effect:
-               fuzion.std.panic msg
-      x T => x

@@ -17,18 +17,34 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion standard library feature simple_effect
 #
 # -----------------------------------------------------------------------
 
-reg_issue2231 is
-  a := mut ()->i32 ()->0
-  eff : abortable_effect is
-    inner := 7
-    a <- ()->inner
-    something is
-      abort
 
-  eff.go ()->
-    reg_issue2231.eff.env.something
-  say a.get.call
+# simple_effect provides a simple means to define and use an effect
+#
+# user-defined effects should inherit from this feature and add
+# operations as inner features or fields of function type.
+#
+public simple_effect : effect effect_mode.plain
+is
+
+  # install this simple_effect and run code
+  #
+  # NYI: remove?
+  public use(code ()->unit) unit =>
+    _ := go code
+
+
+  # install this effect and run code that produces a result of
+  # type T.
+  #
+  public go(T type, f ()->T) T =>
+    match run f
+      nil =>
+        # the user should not be able to produce this state: since the effect is
+        # not abortable cf can only return with a result. So we do a low-level
+        # panic that does not show up as a used effect:
+        fuzion.std.panic "*** unexpected abort in {simple_effect.this.type}"
+      x T => x

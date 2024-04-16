@@ -56,10 +56,6 @@
 public mutate : simple_effect is
 
 
-  # does this effect support abort?
-  public redef abortable => false
-
-
   # short-hand to access effect type
   #
   # NYI: This does not work yet

@@ -28,7 +28,7 @@
 # try provides an operation 'raise' that immediately stops execution and
 # returns an 'error' wrapped in an 'outcome'.
 #
-public try (public T type) : effect effect_mode.plain
+public try (public T type) : abortable_effect
 is
 
   # mutuable field to receive the error in case raise is called
@@ -41,7 +41,7 @@ is
   # resulting 'outcome'.
   #
   public on(R type, f ()->R) outcome R =>
-    run (outcome R) (()->outcome f()) ()->err.get
+    (run (outcome R) (()->outcome f())).get ()->err.get
 
   # terminate immediately with the given error wrapped in 'option'.
   #
