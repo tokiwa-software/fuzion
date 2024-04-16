@@ -1291,12 +1291,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
               {
                 innerClazzes[select] = innerClazz;
               }
-
-            // NYI: HACK: remove
-            if (f.isField())
-              {
-                clazzForFieldX(innerClazz);
-              }
           }
       }
     if (p != null && !isInheritanceCall)
@@ -1325,36 +1319,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
     return f.isAbstract() ||
       (f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0 && f.outer() != this.feature();
-  }
-
-
-  /**
-   * Get the runtime clazz of a field in this clazz.
-   *
-   * NYI: try to remove, used only in interpreter
-   *
-   * @param field a field
-   */
-  public Clazz clazzForFieldX(Clazz field)
-  {
-    if (CHECKS) check
-      (Errors.any() || field.feature().isField(),
-       Errors.any() || feature().inheritsFrom(field.feature().outer()),
-       Errors.any() || field.feature().isOpenGenericField() == (field._select != -1));
-
-    var result = _clazzForField.get(field.feature());
-    if (result == null)
-      {
-        result =
-          field.feature().isOuterRef() &&
-          field.feature().outer().isOuterRefAdrOfValue() ? Clazzes.clazz(Types.t_ADDRESS)
-                                               : lookup(new FeatureAndActuals(field.feature()), field._select, Clazzes.isUsedAt(field.feature()), false).resultClazz();
-        if (field._select < 0)
-          {
-            _clazzForField.put(field.feature(), result);
-          }
-      }
-    return result;
   }
 
 

@@ -35,6 +35,8 @@ import java.lang.reflect.Method;
 import dev.flang.air.Clazz; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.air.Clazzes; // NYI: remove dependency! Use dev.flang.fuir instead.
 
+import dev.flang.fuir.FUIR;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 
@@ -52,7 +54,8 @@ public class JavaInterface extends ANY
   /*-----------------------------  methods  -----------------------------*/
 
 
-  static Value getField(String clazz,
+  static Value getField(FUIR fuir,
+                        String clazz,
                         Object thiz,
                         String field,
                         Clazz  resultClass)
@@ -63,7 +66,7 @@ public class JavaInterface extends ANY
         Class cl = clazz != null ? Class.forName(clazz) : thiz.getClass();
         Field f = cl.getDeclaredField(field);
         Object value = f.get(thiz);
-        result = javaObjectToInstance(value, resultClass);
+        result = javaObjectToInstance(fuir, value, resultClass);
       }
     catch (IllegalAccessException e)
       {
@@ -243,9 +246,9 @@ public class JavaInterface extends ANY
    *
    * @return a value of resultClazz that contains o.
    */
-  static Value javaObjectToInstance(Object o, Clazz resultClazz)
+  static Value javaObjectToInstance(FUIR fuir, Object o, Clazz resultClazz)
   {
-    return javaObjectToInstance(o, null, resultClazz);
+    return javaObjectToInstance(fuir, o, null, resultClazz);
   }
 
 
@@ -264,7 +267,7 @@ public class JavaInterface extends ANY
    *
    * @return a value of resultClazz that contains o or, in case e!=null, e.
    */
-  static Value javaObjectToInstance(Object o, Throwable e, Clazz resultClazz)
+  static Value javaObjectToInstance(FUIR fuir, Object o, Throwable e, Clazz resultClazz)
   {
     if (PRECONDITIONS) require
       (resultClazz != null);
@@ -275,7 +278,7 @@ public class JavaInterface extends ANY
       {
         var valClazz = resultClazz._choiceGenerics.get(ok ? 0 : 1);
         var res = ok ? javaObjectToPlainInstance(o, valClazz)
-                     : javaThrowableToError     (e, valClazz);
+                     : javaThrowableToError     (fuir, e, valClazz);
         result = Interpreter.tag(resultClazz, valClazz, res);
       }
     else if (ok)
@@ -368,7 +371,7 @@ public class JavaInterface extends ANY
    *
    * @param e the Java exception, must not be null,
    */
-  static Value javaThrowableToError(Throwable e, Clazz resultClazz)
+  static Value javaThrowableToError(FUIR fuir, Throwable e, Clazz resultClazz)
   {
     if (PRECONDITIONS) require
       (e != null,
@@ -377,7 +380,7 @@ public class JavaInterface extends ANY
     var result = new Instance(resultClazz);
     if (CHECKS) check
       (result.refs.length == 1);    // an 'error' has exactly one ref field of type string
-    result.refs[0] = Interpreter.value(e.getMessage().toString());
+    result.refs[0] = Interpreter.value(fuir, e.getMessage().toString());
 
     return result;
   }
@@ -442,7 +445,7 @@ public class JavaInterface extends ANY
    *
    * @param resultClazz the result type of the constructed instance
    */
-  static Value call(String clName, String name, String sig, Object thiz, Value args, Clazz resultClazz)
+  static Value call(FUIR fuir, String clName, String name, String sig, Object thiz, Value args, Clazz resultClazz)
   {
     if (PRECONDITIONS) require
       (clName != null);
@@ -508,7 +511,7 @@ public class JavaInterface extends ANY
       {
         err = e;
       }
-    return javaObjectToInstance(res, err, resultClazz);
+    return javaObjectToInstance(fuir, res, err, resultClazz);
   }
 
 

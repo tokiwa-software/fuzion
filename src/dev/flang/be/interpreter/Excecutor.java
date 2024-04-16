@@ -199,7 +199,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
         var fc = _fuir.clazzForInterpreter(f);
         var thiz = fc;
         var staticClazz = _fuir.clazzForInterpreter(tc);
-        Interpreter.setField(thiz, staticClazz, tvalue, val);
+        Interpreter.setField(fuir(), thiz, staticClazz, tvalue, val);
       }
     return null;
   }
@@ -218,7 +218,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
         var tt = ttcc.v0();
         var cc = ttcc.v1();
         var fc = _fuir.clazzForInterpreter(cc);
-        Interpreter.setField(fc, _fuir.clazzForInterpreter(tt), tvalue, avalue);
+        Interpreter.setField(fuir(), fc, _fuir.clazzForInterpreter(tt), tvalue, avalue);
       }
     return null;
   }
@@ -256,7 +256,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
             var rfc = _fuir.clazzForInterpreter(resf);
             if (!AbstractInterpreter.clazzHasUnitValue(_fuir, rfc.resultClazz()._idInFUIR))
               {
-                rres = Interpreter.getField(rfc, _fuir.clazzForInterpreter(cc), cur, false);
+                rres = Interpreter.getField(fuir(), rfc, _fuir.clazzForInterpreter(cc), cur, false);
               }
           }
         yield pair(rres);
@@ -264,7 +264,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
         var fc = _fuir.clazzForInterpreter(cc);
         var fres = AbstractInterpreter.clazzHasUnitValue(_fuir, rt)
           ? pair(unitValue())
-          : pair(Interpreter.getField(fc, _fuir.clazzForInterpreter(tt), tt == _fuir.clazzUniverse() ? _universe : tvalue, false));
+          : pair(Interpreter.getField(fuir(), fc, _fuir.clazzForInterpreter(tt), tt == _fuir.clazzUniverse() ? _universe : tvalue, false));
 
         if (CHECKS)
           check(fres != null, AbstractInterpreter.clazzHasUnitValue(_fuir, rt) || fres.v0() != unitValue());
@@ -365,7 +365,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
     var val = switch (_fuir.getSpecialClazz(constCl))
       {
       case c_Const_String, c_String -> Interpreter
-        .value(new String(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt() + 4), StandardCharsets.UTF_8));
+        .value(fuir(), new String(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt() + 4), StandardCharsets.UTF_8));
       case c_bool -> { check(d.length == 1, d[0] == 0 || d[0] == 1); yield new boolValue(d[0] == 1); }
       case c_f32 -> new f32Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getFloat());
       case c_f64 -> new f64Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getDouble());
@@ -413,9 +413,9 @@ public class Excecutor extends ProcessStatement<Value, Object>
             var sysArray = _fuir.clazzResultClazz(internalArray);
             var saCl = _fuir.clazzForInterpreter(sysArray);
             Instance sa = new Instance(saCl);
-            Interpreter.setField(_fuir.clazzForInterpreter(_fuir.lookup_fuzion_sys_internal_array_length(sysArray)), saCl,                               sa,     new i32Value(elCount));
-            Interpreter.setField(_fuir.clazzForInterpreter(_fuir.lookup_fuzion_sys_internal_array_data(sysArray))  , saCl,                               sa,     arrayData);
-            Interpreter.setField(_fuir.clazzForInterpreter(internalArray)                                          , _fuir.clazzForInterpreter(constCl), result, sa);
+            Interpreter.setField(fuir(), _fuir.clazzForInterpreter(_fuir.lookup_fuzion_sys_internal_array_length(sysArray)), saCl,                               sa,     new i32Value(elCount));
+            Interpreter.setField(fuir(), _fuir.clazzForInterpreter(_fuir.lookup_fuzion_sys_internal_array_data(sysArray))  , saCl,                               sa,     arrayData);
+            Interpreter.setField(fuir(), _fuir.clazzForInterpreter(internalArray)                                          , _fuir.clazzForInterpreter(constCl), result, sa);
             yield result;
           }
         else if (!_fuir.clazzIsChoice(constCl))
@@ -429,7 +429,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
                 var bytes = _fuir.deseralizeConst(fr, b);
                 var c = constData(fr, bytes).v0();
                 var acl = _fuir.clazzForInterpreter(_fuir.clazzArg(constCl, index));
-                Interpreter.setField(acl, _fuir.clazzForInterpreter(constCl), result, c);
+                Interpreter.setField(fuir(), acl, _fuir.clazzForInterpreter(constCl), result, c);
               }
 
             yield result;
@@ -462,7 +462,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
     var field = _fuir.matchCaseField(cl, c, i, cix);
     if (field != -1)
       {
-        Interpreter.setField(
+        Interpreter.setField(fuir(),
             _fuir.clazzForInterpreter(field),
             _cur._clazz,
             _cur,

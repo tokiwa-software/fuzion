@@ -105,17 +105,17 @@ public class Interpreter extends ANY
    *
    * @str the string in UTF-16
    */
-  static Value value(String str)
+  static Value value(FUIR fuir, String str)
   {
     Clazz cl = Clazzes.Const_String.get();
     Instance result = new Instance(cl);
     var saCl = Clazzes.fuzionSysArray_u8;
     Instance sa = new Instance(saCl);
     byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
-    setField(Clazzes.fuzionSysArray_u8_length, saCl, sa, new i32Value(bytes.length));
+    setField(fuir, Clazzes.fuzionSysArray_u8_length, saCl, sa, new i32Value(bytes.length));
     var arrayData = new ArrayData(bytes);
-    setField(Clazzes.fuzionSysArray_u8_data, saCl, sa, arrayData);
-    setField(Clazzes.constStringInternalArray, cl, result, sa);
+    setField(fuir, Clazzes.fuzionSysArray_u8_data, saCl, sa, arrayData);
+    setField(fuir, Clazzes.constStringInternalArray, cl, result, sa);
 
     return result;
   }
@@ -123,6 +123,7 @@ public class Interpreter extends ANY
 
   /**
    * setField stores a value into a field
+   * @param fuir
    *
    * @param staticClazz is the static type of the clazz that contains the
    * written field
@@ -131,7 +132,7 @@ public class Interpreter extends ANY
    *
    * @param v the value to be stored in the field
    */
-  static void setField(Clazz thiz, Clazz staticClazz, Value curValue, Value v)
+  static void setField(FUIR fuir, Clazz thiz, Clazz staticClazz, Value curValue, Value v)
   {
     if (PRECONDITIONS) require
       (thiz.feature().isField(),
@@ -141,10 +142,22 @@ public class Interpreter extends ANY
 
     if (Clazzes.isUsed(thiz.feature()))
       {
-        Clazz  fclazz = staticClazz.clazzForFieldX(thiz);
+        Clazz  fclazz = fieldClazz(fuir, thiz);
         LValue slot   = fieldSlot(thiz, staticClazz, fclazz, curValue);
         setFieldSlot(thiz, fclazz, slot, v);
       }
+  }
+
+
+  /**
+   * Get the result clazz of thiz
+   * or if thiz is an outer ref c_address.
+   */
+  private static Clazz fieldClazz(FUIR fuir, Clazz thiz)
+  {
+    return fuir.clazzFieldIsAdrOfValue(thiz._idInFUIR)
+      ? Clazzes.c_address
+      : fuir.clazzForInterpreter(fuir.clazzResultClazz(thiz._idInFUIR));
   }
 
 
@@ -196,7 +209,7 @@ public class Interpreter extends ANY
    * non-refs, Instance for normal refs, of type ChoiceIdAsRef, LValue or null
    * for boxed choice tag or ref to outer instance.
    */
-  static Value getField(Clazz thiz, Clazz staticClazz, Value curValue, boolean allowUninitializedRefField)
+  static Value getField(FUIR fuir, Clazz thiz, Clazz staticClazz, Value curValue, boolean allowUninitializedRefField)
   {
     if (PRECONDITIONS) require
       (thiz.feature().isField(),
@@ -284,7 +297,7 @@ public class Interpreter extends ANY
       }
     else
       {
-        Clazz  fclazz = staticClazz.clazzForFieldX(thiz);
+        Clazz  fclazz = fieldClazz(fuir, thiz);
         LValue slot   = fieldSlot(thiz, staticClazz, fclazz, curValue);
         result = loadField(thiz, fclazz, slot, allowUninitializedRefField);
       }
@@ -301,6 +314,7 @@ public class Interpreter extends ANY
   /**
    * compareField does a bitwise comparison of a value and the contents of a
    * field
+   * @param fuir
    *
    * @param staticClazz is the static type of the clazz that contains the
    * written field
@@ -311,7 +325,7 @@ public class Interpreter extends ANY
    *
    * @return true iff both are equal
    */
-  static boolean compareField(Clazz thiz, Clazz staticClazz, Value curValue, Value v)
+  static boolean compareField(FUIR fuir, Clazz thiz, Clazz staticClazz, Value curValue, Value v)
   {
     if (PRECONDITIONS) require
       (thiz.feature().isField(),
@@ -319,7 +333,7 @@ public class Interpreter extends ANY
        staticClazz != null,
        Clazzes.isUsed(thiz.feature()));
 
-    Clazz  fclazz = staticClazz.clazzForFieldX(thiz);
+    Clazz  fclazz = fieldClazz(fuir, thiz);
     LValue slot   = fieldSlot(thiz, staticClazz, fclazz, curValue);
     return compareFieldSlot(thiz, fclazz, slot, v);
   }
