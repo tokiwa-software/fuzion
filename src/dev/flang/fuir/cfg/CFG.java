@@ -545,11 +545,11 @@ public class CFG extends ANY
    *
    * @param cl clazz id
    *
-   * @param c the code block to analyze.
+   * @param s0 the site starting the block to analyze.
    */
-  void createCallGraphForBlock(int cl, int c)
+  void createCallGraphForBlock(int cl, int s0)
   {
-    for (var s = c; /* NYI: !containsVoid(stack) &&*/ _fuir.withinCode(s); s = s + _fuir.codeSizeAt(s))
+    for (var s = s0; /* NYI: !containsVoid(stack) &&*/ _fuir.withinCode(s); s = s + _fuir.codeSizeAt(s))
       {
         var e = _fuir.codeAt(s);
         createCallGraphForExpr(cl, s, e);
@@ -563,11 +563,9 @@ public class CFG extends ANY
    *
    * @param cl clazz id
    *
-   * @param c the code block to analyze
+   * @param s site of expression
    *
-   * @param i the index within c
-   *
-   * @param s the FUIR.ExprKind of the statement to analyze
+   * @param e the FUIR.ExprKind of the expression to analyze
    */
   void createCallGraphForExpr(int cl, int s, FUIR.ExprKind e)
   {
@@ -620,9 +618,7 @@ public class CFG extends ANY
    *
    * @param cl clazz id
    *
-   * @param c the code block to compile
-   *
-   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+   * @param s site of the access, must be ExprKind.Assign or ExprKind.Call
    */
   void access(int cl, int s)
   {

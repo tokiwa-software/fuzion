@@ -76,14 +76,6 @@ public class FUIR extends IR
   /*----------------------------  constants  ----------------------------*/
 
 
-
-  /**
-   * Special site index value for unknown site location (i.e, a site coming from
-   * an intrinsic or the program entry point).
-   */
-  public static final int NO_SITE = CODE_BASE-1;
-
-
   public enum ContractKind
   {
     Pre,
@@ -1372,16 +1364,14 @@ hw25 is
 
 
   /**
-   * Get the expr at the given index in given code block
+   * Get the expr at the given site
    *
-   * @param c the code block id
-   *
-   * @param ix an index within the code block
+   * @param s site
    */
   public ExprKind codeAt(int s)
   {
     if (PRECONDITIONS) require
-      (s >= CODE_BASE, withinCode(s));
+      (s >= SITE_BASE, withinCode(s));
 
     ExprKind result;
     var e = getExpr(s);
@@ -1406,7 +1396,7 @@ hw25 is
   public int tagValueClazz(int cl, int s)
   {
     if (PRECONDITIONS) require
-      (s >= CODE_BASE,
+      (s >= SITE_BASE,
        withinCode(s),
        codeAt(s) == ExprKind.Tag);
 
@@ -1419,7 +1409,7 @@ hw25 is
   public int tagNewClazz(int cl, int s)
   {
     if (PRECONDITIONS) require
-      (s >= CODE_BASE,
+      (s >= SITE_BASE,
        withinCode(s),
        codeAt(s) == ExprKind.Tag);
 
@@ -1430,13 +1420,13 @@ hw25 is
   }
 
   /**
-   * For outer clazz cl with an Env instruction in code c at ix, return the type
-   * of the env value.
+   * For outer clazz cl with an Env instruction at site s, return the type of
+   * the env value.
    */
   public int envClazz(int cl, int s)
   {
     if (PRECONDITIONS) require
-      (s >= CODE_BASE,
+      (s >= SITE_BASE,
        withinCode(s),
        codeAt(s) == ExprKind.Env);
 
@@ -1449,7 +1439,7 @@ hw25 is
   public int boxValueClazz(int cl, int s)
   {
     if (PRECONDITIONS) require
-      (s >= CODE_BASE,
+      (s >= SITE_BASE,
        withinCode(s),
        codeAt(s) == ExprKind.Box);
 
@@ -1462,7 +1452,7 @@ hw25 is
   public int boxResultClazz(int cl, int s)
   {
     if (PRECONDITIONS) require
-      (s >= CODE_BASE,
+      (s >= SITE_BASE,
        withinCode(s),
        codeAt(s) == ExprKind.Box);
 
@@ -1478,14 +1468,12 @@ hw25 is
    *
    * @param cl index of clazz containing the comment
    *
-   * @param c code block containing the comment
-   *
-   * @param ix index of the comment
+   * @param s site of the comment
    */
   public String comment(int s)
   {
     if (PRECONDITIONS) require
-      (s >= CODE_BASE,
+      (s >= SITE_BASE,
        withinCode(s),
        codeAt(s) == ExprKind.Comment);
 
@@ -1511,9 +1499,7 @@ hw25 is
    *
    * @param cl index of clazz containing the access
    *
-   * @param c code block containing the access
-   *
-   * @param ix index of the access
+   * @param s site of the access
    *
    * @return the clazz whose precondition has to be checked or -1 if there is no
    * precondition to be checked.
@@ -1521,7 +1507,7 @@ hw25 is
   public int accessedPreconditionClazz(int cl, int s)
   {
     if (PRECONDITIONS) require
-      (s >= CODE_BASE,
+      (s >= SITE_BASE,
        withinCode(s),
        codeAt(s) == ExprKind.Call   ||
        codeAt(s) == ExprKind.Assign    );
@@ -1543,9 +1529,7 @@ hw25 is
    *
    * @param cl index of clazz containing the access
    *
-   * @param c code block containing the access
-   *
-   * @param ix index of the access
+   * @param s site of the access
    *
    * @return the clazz that has to be accessed or -1 if the access is an
    * assignment to a field that is unused, so the assignment is not needed.
@@ -1553,7 +1537,7 @@ hw25 is
   public int accessedClazz(int cl, int s)
   {
     if (PRECONDITIONS) require
-      (s >= CODE_BASE,
+      (s >= SITE_BASE,
        withinCode(s),
        codeAt(s) == ExprKind.Call   ||
        codeAt(s) == ExprKind.Assign    );
@@ -1576,16 +1560,14 @@ hw25 is
    *
    * @param cl index of clazz containing the assignment
    *
-   * @param c code block containing the assignment
-   *
-   * @param ix index of the assignment
+   * @param s site of the assignment
    *
    * @return the type of the assigned value.
    */
   public int assignedType(int cl, int s)
   {
     if (PRECONDITIONS) require
-      (s >= CODE_BASE,
+      (s >= SITE_BASE,
        withinCode(s),
        codeAt(s) == ExprKind.Assign    );
 
@@ -1605,9 +1587,7 @@ hw25 is
    *
    * @param cl index of clazz containing the access
    *
-   * @param c code block containing the access
-   *
-   * @param ix index of the call
+   * @param s site of the access
    *
    * @return an array with an even number of element pairs with accessed target
    * clazzes at even indices followed by the corresponding inner clazz of the
@@ -1616,7 +1596,7 @@ hw25 is
   private int[] accessedClazzesDynamic(int cl, int s)
   {
     if (PRECONDITIONS) require
-      (s >= CODE_BASE,
+      (s >= SITE_BASE,
        withinCode(s),
        codeAt(s) == ExprKind.Call   ||
        codeAt(s) == ExprKind.Assign    ,
@@ -1695,9 +1675,7 @@ hw25 is
    *
    * @param cl index of clazz containing the access
    *
-   * @param c code block containing the access
-   *
-   * @param ix index of the call
+   * @param s site of the access
    *
    * @return an array with an even number of element pairs with accessed target
    * clazzes at even indices followed by the corresponding inner clazz of the
@@ -1706,7 +1684,7 @@ hw25 is
   public int[] accessedClazzes(int cl, int s)
   {
     if (PRECONDITIONS) require
-      (s >= CODE_BASE,
+      (s >= SITE_BASE,
        withinCode(s),
        codeAt(s) == ExprKind.Call   ||
        codeAt(s) == ExprKind.Assign    );
@@ -1732,9 +1710,7 @@ hw25 is
    *
    * @param cl index of clazz containing the access
    *
-   * @param c code block containing the access
-   *
-   * @param ix index of the access
+   * @param s site of the access
    *
    * @return true iff the assignment or call requires dynamic binding depending
    * on the actual target type.
@@ -1742,7 +1718,7 @@ hw25 is
   public boolean accessIsDynamic(int cl, int s)
   {
     if (PRECONDITIONS) require
-      (s >= CODE_BASE,
+      (s >= SITE_BASE,
        withinCode(s),
        codeAt(s) == ExprKind.Assign ||
        codeAt(s) == ExprKind.Call  );
@@ -1772,16 +1748,14 @@ hw25 is
    *
    * @param cl index of clazz containing the call
    *
-   * @param c code block containing the call
-   *
-   * @param ix index of the call
+   * @param s site of the call
    *
    * @return true if only the precondition should be executed.
    */
   public boolean callPreconditionOnly(int cl, int s)
   {
     if (PRECONDITIONS) require
-      (s >= CODE_BASE,
+      (s >= SITE_BASE,
        withinCode(s),
        codeAt(s) == ExprKind.Call);
 
@@ -1802,7 +1776,7 @@ hw25 is
   public int accessTargetClazz(int cl, int s)
   {
     if (PRECONDITIONS) require
-      (s >= CODE_BASE,
+      (s >= SITE_BASE,
        withinCode(s),
        codeAt(s) == ExprKind.Assign ||
        codeAt(s) == ExprKind.Call  );
@@ -1833,14 +1807,12 @@ hw25 is
    *
    * @param cl index of clazz containing the constant
    *
-   * @param c code block containing the constant
-   *
-   * @param ix index of the constant
+   * @param s site of the constant
    */
   public int constClazz(int cl, int s)
   {
     if (PRECONDITIONS) require
-      (s >= CODE_BASE,
+      (s >= SITE_BASE,
        withinCode(s),
        codeAt(s) == ExprKind.Const);
 
@@ -1861,7 +1833,7 @@ hw25 is
   public byte[] constData(int s)
   {
     if (PRECONDITIONS) require
-      (s >= CODE_BASE,
+      (s >= SITE_BASE,
        withinCode(s),
        codeAt(s) == ExprKind.Const);
 
@@ -1875,9 +1847,7 @@ hw25 is
    *
    * @param cl index of clazz containing the match
    *
-   * @param c code block containing the match
-   *
-   * @param ix index of the match
+   * @param s site of the match
    *
    * @return clazz id of type of the subject
    */
@@ -1900,9 +1870,7 @@ hw25 is
    *
    * @param cl index of clazz containing the match
    *
-   * @param c code block containing the match
-   *
-   * @param ix index of the match
+   * @param s site of the match
    *
    * @paramc cix index of the case in the match
    *
@@ -1912,7 +1880,7 @@ hw25 is
   public int matchCaseField(int cl, int s, int cix)
   {
     if (PRECONDITIONS) require
-      (s >= CODE_BASE,
+      (s >= SITE_BASE,
        withinCode(s),
        codeAt(s) == ExprKind.Match,
        0 <= cix && cix <= matchCaseCount(s));
@@ -1933,6 +1901,10 @@ hw25 is
 
   /**
    * For a given tag return the index of the corresponding case.
+   *
+   * @param cl index of clazz containing the match
+   *
+   * @param s site of the match
    *
    * @param tag e.g. 0,1,2,...
    *
@@ -1960,9 +1932,7 @@ hw25 is
    *
    * @param cl index of clazz containing the match
    *
-   * @param c code block containing the match
-   *
-   * @param ix index of the match
+   * @param s site of the match
    *
    * @paramc cix index of the case in the match
    *
@@ -1971,7 +1941,7 @@ hw25 is
   public int[] matchCaseTags(int cl, int s, int cix)
   {
     if (PRECONDITIONS) require
-      (s >= CODE_BASE,
+      (s >= SITE_BASE,
        withinCode(s),
        codeAt(s) == ExprKind.Match,
        0 <= cix && cix <= matchCaseCount(s));
@@ -2021,9 +1991,7 @@ hw25 is
   /**
    * For a match expression, get the code associated with a given case
    *
-   * @param c code block containing the match
-   *
-   * @param ix index of the match
+   * @param s site of the match
    *
    * @paramc cix index of the case in the match
    *
@@ -2032,7 +2000,7 @@ hw25 is
   public int matchCaseCode(int s, int cix)
   {
     if (PRECONDITIONS) require
-      (s >= CODE_BASE,
+      (s >= SITE_BASE,
        withinCode(s),
        codeAt(s) == ExprKind.Match,
        0 <= cix && cix <= matchCaseCount(s));
@@ -2150,7 +2118,7 @@ hw25 is
    */
   private String label(int c)
   {
-    return "l" + (c-CODE_BASE);
+    return "l" + (c-SITE_BASE);
   }
 
 
@@ -2160,9 +2128,7 @@ hw25 is
    *
    * @param cl index of the clazz containing the code block.
    *
-   * @param c the code block
-   *
-   * @param ix an index within the code block
+   * @param s site of an expression
    */
   public String codeAtAsString(int cl, int s)
   {
@@ -2208,9 +2174,7 @@ hw25 is
   /**
    * Get the source code position of an expr at the given index if it is available.
    *
-   * @param c the code block
-   *
-   * @param ix an index within the code block
+   * @param s site of an expression
    *
    * @return the source code position or null if not available.
    */
@@ -2298,19 +2262,17 @@ hw25 is
 
 
   /**
-   * For a given index 'ix' into the code block 'c', go 'delta' expressions
-   * further or back (in case 'delta < 0').
+   * For a given site 's', go 'delta' expressions further or back (in case
+   * 'delta < 0').
    *
-   * @param c the code block
-   *
-   * @param ix an index in c
+   * @param s a site
    *
    * @param delta the number of instructions to go forward or back.
    */
   public int codeIndex(int s, int delta)
   {
     if (PRECONDITIONS) require
-      (s >= CODE_BASE,
+      (s >= SITE_BASE,
        withinCode(s));
 
     while (delta > 0)
@@ -2333,38 +2295,30 @@ hw25 is
    * NYI: Performance: This requires time 'O(codeSize(c))', so using this
    * quickly results in quadratic performance!
    *
-   * @param c the code block
+   * @param si a site, our current position we are checking
    *
-   * @param i current index in c, starting at 0.
-   *
-   * @param ix an index in c
+   * @param s a site we are looking for
    *
    * @param delta the negative number of instructions to go back.
    *
-   * @return the index of the expression 'n' expressions before 'ix', or a
+   * @return the site of the expression 'delta' expressions before 's', or a
    * negative value '-m' if that instruction can be found 'm' recursive calls up.
    */
   private int codeIndex2(int si, int s, int delta)
   {
+    check
+      (si >= 0 && s >= 0); // this code uses negative results if site was not found yet, so better make sure a site is never negative!
+
     if (si == s)
       {
-        return delta;
+        return delta;  // found s, so result is -delta calls up
       }
     else
       {
         var r = codeIndex2(si + codeSizeAt(si), s, delta);
-        if (r < -1)
-          {
-            return r + 1;
-          }
-        else if (r == -1)
-          {
-            return si;
-          }
-        else
-          {
-            return r;
-          }
+        return r <  -1 ? r + 1  // found s, position of s + delta is at least one call up
+             : r == -1 ? si     // found s, position of s + delta is here!
+             :           r;     // found s, pass on result
       }
   }
 
@@ -2392,7 +2346,7 @@ hw25 is
    *
    * @param cl index of the clazz containing the code block.
    *
-   * @param s the site to start skiping backwards from
+   * @param s site to start skiping backwards from
    */
   public int skipBack(int cl, int s)
   {

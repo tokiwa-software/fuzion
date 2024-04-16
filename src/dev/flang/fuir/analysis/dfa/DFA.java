@@ -36,11 +36,11 @@ import java.util.TreeSet;
 
 import java.util.function.Supplier;
 
-import static dev.flang.fuir.FUIR.NO_SITE;
-
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
+
+import static dev.flang.ir.IR.NO_SITE;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -195,9 +195,7 @@ public class DFA extends ANY
      *
      * @param pre true iff interpreting cl's precondition, false for cl itself.
      *
-     * @param c current code block
-     *
-     * @param i index of call in current code block
+     * @param s site of assignment
      *
      * @param tvalue the target instance
      *
@@ -265,9 +263,7 @@ public class DFA extends ANY
      *
      * @param pre true iff interpreting cl's precondition, false for cl itself.
      *
-     * @param c the code block to compile
-     *
-     * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+     * @param s site of access, must be ExprKind.Assign or ExprKind.Call
      *
      * @param tvalue the target of this call, Value.UNIT if none.
      *
@@ -369,9 +365,7 @@ public class DFA extends ANY
      *
      * @param pre true iff interpreting cl's precondition, false for cl itself.
      *
-     * @param c the code block to compile
-     *
-     * @param i the index of the call within c
+     * @param s site of call
      *
      * @param cc clazz that is called
      *
@@ -1037,9 +1031,7 @@ public class DFA extends ANY
          *
          * @param cl the outer clazz of the call
          *
-         * @param c the code block containing the call
-         *
-         * @param i the index of the call in the code block
+         * @param s site of call
          *
          * @return true iff the result of the call must be cloned on the heap.
          */
@@ -1323,9 +1315,7 @@ public class DFA extends ANY
    *
    * @param cl the outer clazz whose code we are analysing.
    *
-   * @param c the code block containing we are analysing
-   *
-   * @param i the index of the call or assignment we are analysing
+   * @param s site of the call or assignment we are analysing
    *
    * @param v value we are taking an address of
    *

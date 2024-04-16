@@ -434,9 +434,7 @@ public class Choices extends ANY implements ClassFileConstants
    *
    * @param pre true iff we are compiling the precondition
    *
-   * @param c the code block to compile
-   *
-   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+   * @param s site of the match expression
    *
    * @param sub code to produce the match subject value
    *

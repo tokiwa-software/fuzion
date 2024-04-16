@@ -71,7 +71,15 @@ public abstract class IR extends ANY
    * For FUIR code represented by integers, this gives the base added to the
    * integers to detect wrong values quickly.
    */
-  protected static final int CODE_BASE    = 0x30000000;
+  protected static final int SITE_BASE    = 0x30000000;
+
+
+  /**
+   * Special site index value for unknown site location (i.e, a site coming from
+   * an intrinsic or the program entry point).
+   */
+  public static final int NO_SITE = SITE_BASE-1;
+
 
   /**
    * For Features represented by integers, this gives the base added to the
@@ -136,6 +144,7 @@ public abstract class IR extends ANY
     _allCode = original._allCode;
   }
 
+
   /*-----------------------  code block handling  -----------------------*/
 
 
@@ -150,7 +159,7 @@ public abstract class IR extends ANY
    */
   protected int addCode(List<Object> code)
   {
-    var result = _allCode.size() + CODE_BASE;
+    var result = _allCode.size() + SITE_BASE;
     for (var c : code)
       {
         _allCode.add(c);
@@ -158,143 +167,18 @@ public abstract class IR extends ANY
     _allCode.add(null);
     return result;
   }
+
+
+  /**
+   * Get the expression at the given site
+   *
+   * @param s a site
+   *
+   * @return the expression found at site s.
+   */
   protected Object getExpr(int s)
   {
-    return _allCode.get(s - CODE_BASE);
-  }
-  public boolean withinCode(int s)
-  {
-    if (PRECONDITIONS) require
-      (s >= CODE_BASE);
-
-    return _allCode.get(s - CODE_BASE) != null;
-  }
-  public int codeSize(int s)
-  {
-    var result = 0;
-    while (withinCode(s + result))
-      {
-        result++;
-      }
-    return result;
-  }
-
-
-  /**
-   * Get the expr at the given index in given code block
-   *
-   * @param c the code block id
-   *
-   * @param ix an index within the code block
-   */
-  public ExprKind codeAt(int s)
-  {
-    if (PRECONDITIONS) require
-      (s >= CODE_BASE, withinCode(s));
-
-    return exprKind(getExpr(s));
-  }
-
-
-  /**
-   * Get the source code position of an expr at the given index if it is available.
-   *
-   * @param c the code block
-   *
-   * @param ix an index within the code block
-   *
-   * @return the source code position or null if not available.
-   */
-  public SourcePosition codeAtAsPos(int s)
-  {
-    if (PRECONDITIONS) require
-      (s >= 0,
-       withinCode(s));
-
-    var e = getExpr(s);
-    return (e instanceof Expr expr) ? expr.pos()
-                                    : null;
-  }
-
-
-  /**
-   * Get the size of the intermediate command at index ix in codeblock c.
-   */
-  public int codeSizeAt(int s)
-  {
-    int result = 1;
-    var e = codeAt(s);
-    if (e == ExprKind.Match)
-      {
-        result = result + matchCaseCount(s);
-      }
-    return result;
-  }
-
-
-  /**
-   * From a given site, determine the site of the start of the code block that
-   * contains the given site.
-   *
-   * @param site any site
-   *
-   * @return the site of the first Expr in the code block containing `site`
-   */
-  public int codeBlockStart(int site)
-  {
-    var c = site - CODE_BASE;
-    var result = c;
-    while (result > 0 && _allCode.get(result-1) != null)
-      {
-        result--;
-      }
-    return result + CODE_BASE;
-  }
-
-
-
-  /**
-   * From a given site, determine the site of the last Expr in the code block
-   * that contains the given site.
-   *
-   * @param site any site
-   *
-   * @return the site of the last Expr in the code block containing `site`
-   */
-  public int codeBlockEnd(int site)
-  {
-    var s0 = codeBlockStart(site);
-    while (withinCode(s0 + codeSizeAt(s0)))
-      {
-        s0 = s0 + codeSizeAt(s0);
-      }
-    return s0;
-  }
-
-
-  /**
-   * For a match expression, get the number of cases
-   *
-   * @param c code block containing the match
-   *
-   * @param ix index of the match
-   *
-   * @return the number of cases
-   */
-  public int matchCaseCount(int s)
-  {
-    if (PRECONDITIONS) require
-      (s >= 0,
-       withinCode(s),
-       codeAt(s) == ExprKind.Match);
-
-    var e = getExpr(s);
-    int result = 2; // two cases for If
-    if (e instanceof AbstractMatch m)
-      {
-        result = m.cases().size();
-      }
-    return result;
+    return _allCode.get(s - SITE_BASE);
   }
 
 
@@ -459,6 +343,65 @@ public abstract class IR extends ANY
   }
 
 
+  /**
+   * Get size of the code starting at given site
+   *
+   * @param s a site
+   *
+   * @return the size of code block c, i.e., withinCode(s+0..s+result-1) <==> true.
+   */
+  public int codeSize(int s)
+  {
+    var result = 0;
+    while (withinCode(s + result))
+      {
+        result++;
+      }
+    return result;
+  }
+
+
+  /**
+   * Check if site s is still a valid site. For every valid site `s` wich `withinCode(s)`,
+   * it is legal to call `withinCode(s+codeSizteAt(s))` to check if the code continues.
+   *
+   * @param s a value site or the successor of a valid site
+   *
+   * @return true iff s is a valid valid site that contains an expression
+   */
+  public boolean withinCode(int s)
+  {
+    if (PRECONDITIONS) require
+      (s >= SITE_BASE);
+
+    return _allCode.get(s - SITE_BASE) != null;
+  }
+
+
+  /**
+   * Get the expr at the given site
+   *
+   * @param s a site
+   *
+   * @return the ExprKind of the expression at site, null if undefined.
+   */
+  public ExprKind codeAt(int s)
+  {
+    if (PRECONDITIONS) require
+      (s >= SITE_BASE, withinCode(s));
+
+    return exprKind(getExpr(s));
+  }
+
+
+  /**
+   * Helper for `codeAt` to determine the ExprKind forn an Object that is either
+   * an ast Expr or String.
+   *
+   * @param e an expression as stored in _allCode
+   *
+   * @return the corresponding ExprKind
+   */
   protected ExprKind exprKind(Object e)
   {
     ExprKind result;
@@ -509,6 +452,107 @@ public abstract class IR extends ANY
         result = null;
       }
     return result;
+  }
+
+
+  /**
+   * Get the source code position of an expr at the given site if it is available.
+   *
+   * @param site a site
+   *
+   * @return the source code position or null if not available.
+   */
+  public SourcePosition codeAtAsPos(int s)
+  {
+    if (PRECONDITIONS) require
+      (s >= 0,
+       withinCode(s));
+
+    var e = getExpr(s);
+    return (e instanceof Expr expr) ? expr.pos()
+                                    : null;
+  }
+
+
+  /**
+   * Get the size of the intermediate command at given site
+   *
+   * @param s a site
+   *
+   * @return the offset of the next expression relative to `s`.
+   */
+  public int codeSizeAt(int s)
+  {
+    int result = 1;
+    var e = codeAt(s);
+    if (e == ExprKind.Match)
+      {
+        result = result + matchCaseCount(s);
+      }
+    return result;
+  }
+
+
+  /**
+   * For a match expression, get the number of cases
+   *
+   * @param s site of the match
+   *
+   * @return the number of cases
+   */
+  public int matchCaseCount(int s)
+  {
+    if (PRECONDITIONS) require
+      (s >= 0,
+       withinCode(s),
+       codeAt(s) == ExprKind.Match);
+
+    var e = getExpr(s);
+    int result = 2; // two cases for If
+    if (e instanceof AbstractMatch m)
+      {
+        result = m.cases().size();
+      }
+    return result;
+  }
+
+
+  /**
+   * From a given site, determine the site of the start of the code block that
+   * contains the given site.
+   *
+   * @param site any site
+   *
+   * @return the site of the first Expr in the code block containing `site`
+   */
+  public int codeBlockStart(int site)
+  {
+    var c = site - SITE_BASE;
+    var result = c;
+    while (result > 0 && _allCode.get(result-1) != null)
+      {
+        result--;
+      }
+    return result + SITE_BASE;
+  }
+
+
+  /**
+   * From a given site, determine the site of the last Expr in the code block
+   * that contains the given site.
+   *
+   * @param site any site
+   *
+   * @return the site of the last Expr in the code block containing `site`
+   */
+  public int codeBlockEnd(int site)
+  {
+    var s0 = codeBlockStart(site);
+    while (withinCode(s0 + codeSizeAt(s0)))
+      {
+        s0 = s0 + codeSizeAt(s0);
+      }
+    return s0;
   }
 
 

@@ -129,6 +129,12 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     /**
      * Called before each statement is processed. May be used to, e.g., produce
      * tracing code for debugging or a comment.
+     *
+     * NYI: This should be renamed as expressionHeader, we no longer have statements.
+     *
+     * @param cl id of clazz we are interpreting
+     *
+     * @param s site of the next expression
      */
     public abstract RESULT statementHeader(int cl, int s);
 
@@ -191,15 +197,13 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      *
      * @param pre true iff interpreting cl's precondition, false for cl itself.
      *
-     * @param c current code block
-     *
-     * @param i index of call in current code block
+     * @param s site of the assignmt
      *
      * @param tvalue the target instance
      *
      * @param avalue the new value to be assigned to the field.
      */
-    public abstract RESULT              assign(int cl, boolean pre, int s, VALUE tvalue, VALUE avalue);
+    public abstract RESULT assign(int cl, boolean pre, int s, VALUE tvalue, VALUE avalue);
 
     /**
      * Perform a call of a feature with target instance tvalue with given
@@ -213,9 +217,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      *
      * @param pre true iff interpreting cl's precondition, false for cl itself.
      *
-     * @param c current code block
-     *
-     * @param i index of call in current code block
+     * @param s site of the call
      *
      * @param tvalue target value the call is performed on
      *
@@ -267,9 +269,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      *
      * @param pre true iff interpreting cl's precondition, false for cl itself.
      *
-     * @param c current code block
-     *
-     * @param i index of match in current code block
+     * @param s site of the match
      *
      * @param subv value of subject of this match that is being tested.
      */
@@ -547,18 +547,18 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    *
    * @param pre true to process cl's precondition, false to process cl's code.
    *
-   * @param c the code block to interpret
+   * @param s0 the site to start interpreting from
    *
    * @return A Pair consisting of a VALUE that is either
    * _processor().unitValue() or null (in case cl diverges) and the result of
    * the abstract interpretation, e.g., the generated code.
    */
-  public Pair<VALUE,RESULT> process(int cl, boolean pre, int c)
+  public Pair<VALUE,RESULT> process(int cl, boolean pre, int s0)
   {
     var stack = new Stack<VALUE>();
     var l = new List<RESULT>();
     int last_s = -1;
-    for (var s = c; !containsVoid(stack) && _fuir.withinCode(s) && !_fuir.alwaysResultsInVoid(cl, last_s); s = s + _fuir.codeSizeAt(s))
+    for (var s = s0; !containsVoid(stack) && _fuir.withinCode(s) && !_fuir.alwaysResultsInVoid(cl, last_s); s = s + _fuir.codeSizeAt(s))
       {
         l.add(_processor.statementHeader(cl, s));
         l.add(process(cl, pre, stack, s));
@@ -627,7 +627,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
 
   /**
-   * Perform abstract interpretation on given statement
+   * Perform abstract interpretation on given expression
    *
    * @param cl clazz id
    *
@@ -636,7 +636,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    *
    * @param stack the stack containing the current arguments waiting to be used
    *
-   * @param c the code block to compile
+   * @param s site of the expression to compile
    *
    * @param i the index within c
    *

@@ -144,26 +144,6 @@ public class MIR extends IR
   }
 
 
-
-  /**
-   * Get access to the code of a feature
-   *
-   * @param f a feature id
-   *
-   * @return a code id referring to f's code
-   */
-  public int featureCode(int f)
-  {
-    if (PRECONDITIONS) require
-      (featureKind(f) == MIR.FeatureKind.Routine);
-
-    var ff = _featureIds.get(f);
-    var code = prolog(ff);
-    addCode(ff, code, ff);
-    return addCode(code);
-  }
-
-
   /**
    * add the code of feature ff to code.  In case ff has inherits calls, also
    * include the code of the inherited features.
@@ -235,6 +215,25 @@ hw25 is
 
 
   /**
+   * Get access to the code of a feature
+   *
+   * @param f a feature id
+   *
+   * @return a code id referring to f's code
+   */
+  public int featureCode(int f)
+  {
+    if (PRECONDITIONS) require
+      (featureKind(f) == MIR.FeatureKind.Routine);
+
+    var ff = _featureIds.get(f);
+    var code = prolog(ff);
+    addCode(ff, code, ff);
+    return addCode(code);
+  }
+
+
+  /**
    * Determine the kind of a given feature.
    *
    * @param f a feature index
@@ -278,9 +277,7 @@ hw25 is
    *
    * @param f index of feature containing the access
    *
-   * @param c code block containing the access
-   *
-   * @param ix index of the access
+   * @param s site of the access
    *
    * @return the feature that has to be accessed or -1 if the access is an
    * assignment to a field that is unused, so the assignment is not needed.
@@ -288,7 +285,7 @@ hw25 is
   public int accessedFeature(int f, int s)
   {
     if (PRECONDITIONS) require
-      (s >= CODE_BASE,
+      (s >= SITE_BASE,
        withinCode(s),
        exprKind(getExpr(s)) == ExprKind.Call   ||
        exprKind(getExpr(s)) == ExprKind.Assign    );

@@ -148,9 +148,7 @@ class CodeGen
    *
    * @param cl the clazz we are compiling
    *
-   * @param c the code block to compile
-   *
-   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+   * @param s site of the next expression
    */
   @Override
   public Expr statementHeader(int cl, int s)
@@ -248,9 +246,7 @@ class CodeGen
    *
    * @param pre true iff we are compiling the precondition
    *
-   * @param c the code block to compile
-   *
-   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+   * @param s site of the assignment
    *
    * @param tvalue the target instance
    *
@@ -312,9 +308,7 @@ class CodeGen
    *
    * @param pre true iff we are compiling the precondition
    *
-   * @param c the code block to compile
-   *
-   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+   * @param si site of the call
    *
    * @param tvalue the target of this call, CExpr.UNIT if none.
    *
@@ -367,9 +361,7 @@ class CodeGen
    *
    * @param pre true iff we are compiling the precondition
    *
-   * @param c the code block to compile
-   *
-   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+   * @param s site of call
    *
    * @param tvalue the target of this call, CExpr.UNIT if none.
    *
@@ -449,9 +441,7 @@ class CodeGen
    *
    * @param pre true iff we are compiling the precondition
    *
-   * @param c the code block to compile
-   *
-   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+   * @param si site of the access expression, must be ExprKind.Assign or ExprKind.Call
    *
    * @param tvalue the target of this call, CExpr.UNIT if none.
    *
@@ -648,6 +638,8 @@ class CodeGen
    * @param isCall true if the access is a call, false if it is an assignment to
    * a field.
    *
+   * @param si site of the access
+   *
    * @return the result and code to perform the access.
    */
   Pair<Expr, Expr> staticAccess(int cl, boolean pre, int tt, int cc, Expr tv, List<Expr> args, boolean isCall, int si)
@@ -687,6 +679,8 @@ class CodeGen
    * @param preCalled true to call the precondition of cc instead of cc.
    *
    * @return the code to perform the call
+   *
+   * @param si site of the call
    */
   Pair<Expr, Expr> staticCall(int cl, boolean pre, Expr tvalue, List<Expr> args, int cc, boolean preCalled, int si)
   {
@@ -1043,9 +1037,7 @@ class CodeGen
    *
    * @param pre true iff we are compiling the precondition
    *
-   * @param c the code block to compile
-   *
-   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+   * @param s site of the match
    *
    * @param sub code to produce the match subject value
    *

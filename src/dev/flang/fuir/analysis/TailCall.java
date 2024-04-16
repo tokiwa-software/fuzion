@@ -94,9 +94,7 @@ public class TailCall extends ANY
    *
    * @param cl index of clazz containing the call
    *
-   * @param c code block containing the call
-   *
-   * @param ix index of the call
+   * @param s site of the call
    *
    * @return true if this is a tail call, false if this is no tail call or this
    * it is unknown whether this is a tail call.
@@ -119,9 +117,7 @@ public class TailCall extends ANY
    *
    * @param cl index of clazz containing the call
    *
-   * @param c code block containing the call
-   *
-   * @param ix index of the call
+   * @param s site of the call
    */
   public boolean firstArgIsOuter(int cl, int s)
   {

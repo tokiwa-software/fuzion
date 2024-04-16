@@ -74,6 +74,8 @@ public class Site extends ANY implements Comparable<Site>
 
   /**
    * Create call site for given clazz, code block and index.
+   *
+   * NYI: Eventually remove `cl` since sites are unique for every clazz.
    */
   Site(int cl, int s)
   {

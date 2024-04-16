@@ -154,9 +154,7 @@ public class C extends ANY
      *
      * @param pre true iff interpreting cl's precondition, false for cl itself.
      *
-     * @param c current code block
-     *
-     * @param i index of call in current code block
+     * @param s site of the assignment
      *
      * @param tvalue the target instance
      *
@@ -1188,9 +1186,7 @@ public class C extends ANY
    *
    * @param cl clazz id
    *
-   * @param c the code block to compile
-   *
-   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+   * @param s site of the access expression, must be ExprKind.Assign or ExprKind.Call
    *
    * @param tvalue the target of this call, CExpr.UNIT if none.
    *
@@ -1536,9 +1532,7 @@ public class C extends ANY
    *
    * @param cl clazz id of clazz containing the call
    *
-   * @param c the code block to compile
-   *
-   * @param i the index of the call within c
+   * @param s site of the call
    *
    * @param cc clazz that is called
    *
@@ -1631,9 +1625,7 @@ public class C extends ANY
    *
    * @param cl clazz id of clazz containing the call
    *
-   * @param c the code block to compile
-   *
-   * @param i the index of the call within c
+   * @param s site of the call
    *
    * @param tc the target clazz (type of outer) in this call
    *
