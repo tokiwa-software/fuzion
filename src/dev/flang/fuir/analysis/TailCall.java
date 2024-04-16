@@ -134,13 +134,13 @@ public class TailCall extends ANY
 
     // skip back all argument to reach the target instance
     var nargs = _fuir.clazzArgCount(cc);
-    var c = _fuir.codeIndexFromSite(s);
-    var ti = _fuir.codeIndex(c, _fuir.exprIndexFromSite(s), -1);
+    var s0 = _fuir.codeBlockStart(s);
+    var ti = _fuir.codeIndex(s0, _fuir.exprIndexFromSite(s), -1);
     for (var i = 0; i < nargs; i++)
       {
-        ti = _fuir.skipBack(cl, c, ti);
+        ti = _fuir.skipBack(cl, s0, ti);
       }
-    var ts = _fuir.siteFromCI(c, ti);
+    var ts = _fuir.siteFromCI(s0, ti);
 
     // get type of target of call
     var tc = _fuir.accessTargetClazz(cl, s);
@@ -154,7 +154,7 @@ public class TailCall extends ANY
       (tc == _fuir.clazzUniverse() ||
        _fuir.codeAt       (    ts) == IR.ExprKind.Call    &&
        _fuir.accessedClazz(cl, ts) == outerRef            &&
-       _fuir.codeAt(c + _fuir.codeIndex(c, ti, -1)) == IR.ExprKind.Current);
+       _fuir.codeAt(s0 + _fuir.codeIndex(s0, ti, -1)) == IR.ExprKind.Current);
 
     return res;
   }

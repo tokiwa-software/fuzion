@@ -144,9 +144,6 @@ public abstract class IR extends ANY
    *
    * This also sets _siteStart in case `b` was not already added.
    *
-   * NYI: UNDER DEVELOPMENT: The returned index should be replaced by a site
-   * index, i.e., siteFromCI(result, 0).
-   *
    * @param b a list of Expr statements to be added.
    *
    * @return the index of b
@@ -266,7 +263,7 @@ public abstract class IR extends ANY
   {
     return c+i;
   }
-  public int codeIndexFromSite(int site)
+  public int codeBlockStart(int site)
   {
     var c = site - CODE_BASE;
     var result = c;
@@ -278,7 +275,7 @@ public abstract class IR extends ANY
   }
   public int exprIndexFromSite(int site)
   {
-    return site - codeIndexFromSite(site);
+    return site - codeBlockStart(site);
   }
 
 

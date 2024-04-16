@@ -1053,8 +1053,6 @@ public class DFA extends ANY
         public int[] accessedClazzes(int cl, int s)
         {
           var ccs = super.accessedClazzes(cl, s);
-          var c = codeIndexFromSite(s);
-          var ix = exprIndexFromSite(s);
           var cs = site(cl, s);
           var nr = new int[ccs.length];
           int j = 0;

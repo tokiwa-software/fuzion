@@ -77,8 +77,6 @@ public class MIR extends IR
     _universe = universe;
     _main = main;
     _module = module;
-    _codeIds = new Map2Int<>(CODE_BASE);
-    _siteStart = new List<>(0);
   }
 
 
@@ -145,45 +143,6 @@ public class MIR extends IR
     return code;
   }
 
-
-  /**
-   * All the code blocks in this IR. They are added via `addCode`.
-   */
-  private final Map2Int<List<Object>> _codeIds;
-
-
-  /**
-   * For every raw code block index in _codeIds, this gives the index of the
-   * first site for the corresponding code block.
-   */
-  private final List<Integer> _siteStart;
-
-
-  /**
-   * Add given code block and obtain a unique id for it.
-   *
-   * This also sets _siteStart in case `b` was not already added.
-   *
-   * NYI: UNDER DEVELOPMENT: The returned index should be replaced by a site
-   * index, i.e., siteFromCI(result, 0).
-   *
-   * @param b a list of Expr statements to be added.
-   *
-   * @return the index of b
-   */
-  @Override
-  protected int addCode(List<Object> b)
-  {
-    b.freeze();
-    var res = _codeIds.add(b);
-    var index = res - CODE_BASE;
-    if (index >= _siteStart.size()-1)
-      {
-        var nextSiteStart = _siteStart.getLast() + b.size() + 1; // b.size() might be 0 so we add 1 to have disjoint site indices
-        _siteStart.add(nextSiteStart);
-      }
-    return res;
-  }
 
 
   /**

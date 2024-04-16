@@ -2229,20 +2229,6 @@ hw25 is
 
 
   /**
-   * Get the source code position of an expr at the given site if it is available.
-   *
-   * @param site the code position, IR.NO_SITE if unkown.
-   *
-   * @return the source code position or null if not available.
-  public SourcePosition siteAsPos(int site)
-  {
-    return site != NO_SITE ? codeAtAsPos(site)
-                           : null;
-  }
-   */
-
-
-  /**
    * Print the contents of the given code block to System.out, for debugging.
    *
    * @param cl index of the clazz containing the code block.
