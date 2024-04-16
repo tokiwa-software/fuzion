@@ -195,6 +195,7 @@ public class Loop extends ANY
    */
   private Expr _elseBlock0;
   private Expr _elseBlock1;
+  private Expr _elseBlock2;
 
 
   /**
@@ -253,7 +254,8 @@ public class Loop extends ANY
               Expr untilCond,
               Block sb,
               Expr eb0,
-              Expr eb1)
+              Expr eb1,
+              Expr eb2)
   {
     if (PRECONDITIONS) require
       (iv != null,
@@ -269,6 +271,7 @@ public class Loop extends ANY
     _successBlock = sb;
     _elseBlock0 = eb0;
     _elseBlock1 = eb1;
+    _elseBlock2 = eb2;
     var loopName = FuzionConstants.REC_LOOP_PREFIX +  _id_++ ;
     _rawLoopName = loopName;
     if (!iterates() && whileCond == null && _elseBlock0 != null)
@@ -283,10 +286,7 @@ public class Loop extends ANY
     if (_elseBlock0 != null && iterates())
       {
         moveElseBlockToRoutine();
-        // NYI: BUG: this is wrong.
-        // need to use callLoopElse(true) in first iteration callLoopElse(false)
-        // in successive iterations.
-        _elseBlock0 = callLoopElse(true);
+        _elseBlock0 = new Block(new List<>(_loopElse[1], callLoopElse(1)));
       }
 
     _prologSuccessBlock = new List<>();
@@ -440,15 +440,19 @@ public class Loop extends ANY
           {
             _elseBlock0 = BoolConst.FALSE;
             _elseBlock1 = BoolConst.FALSE;
+            _elseBlock2 = BoolConst.FALSE;
           }
         else
           {
             var e0 = Block.fromExpr(_elseBlock0);
             var e1 = Block.fromExpr(_elseBlock1);
+            var e2 = Block.fromExpr(_elseBlock1);
             e0._expressions.add(BoolConst.FALSE);
             e1._expressions.add(BoolConst.FALSE);
+            e2._expressions.add(BoolConst.FALSE);
             _elseBlock0 = e0;
             _elseBlock1 = e1;
+            _elseBlock2 = e2;
           }
         result = true;
       }
@@ -461,8 +465,8 @@ public class Loop extends ANY
    */
   private void moveElseBlockToRoutine()
   {
-    _loopElse = new Feature[2];
-    for (int ei=0; ei<2; ei++)
+    _loopElse = new Feature[3];
+    for (int ei=0; ei<3; ei++)
       {
         var name = _rawLoopName + "else" + ei;
         _loopElse[ei] = new Feature(_elsePos,
@@ -473,7 +477,7 @@ public class Loop extends ANY
                                     new List<>(),
                                     Function.NO_CALLS,
                                     Contract.EMPTY_CONTRACT,
-                                    new Impl(_elsePos, ei == 0 ? _elseBlock0 : _elseBlock1, Impl.Kind.RoutineDef))
+                                    new Impl(_elsePos, ei == 0 ? _elseBlock0 : (ei == 1 ? _elseBlock1 : _elseBlock2), Impl.Kind.RoutineDef))
           {
             public boolean resultInternal() { return true; }
           };
@@ -484,18 +488,20 @@ public class Loop extends ANY
   /**
    * Create a call to the feature that contains the else block of this loop.
    *
-   * @param inProlog true for a call in the loop prolog, false for a call after
-   * successful execution of the prolog.
+   * @param elseNum
+   * 0 for a call to else-clause in the loop prolog
+   * 1 for a call to else-clause if while-condition fails
+   * 2 for a call to else-clause in remaining cases
    *
    * @return an expression that performs the call
    */
-  private Expr callLoopElse(boolean inProlog)
+  private Expr callLoopElse(int elseNum)
   {
     if (PRECONDITIONS) require
                          (_loopElse != null);
 
     return new Call(_elsePos,
-                    _loopElse[inProlog ? 0 : 1].featureName().baseName());
+                    _loopElse[elseNum].featureName().baseName());
   }
 
 
@@ -575,7 +581,7 @@ public class Loop extends ANY
               { // we declare loopElse function after all non-iterating index
                 // vars such that the else clause can access these vars.
                 _prologSuccessBlock.add(_loopElse[0]);
-                _nextItSuccessBlock.add(_loopElse[1]);
+                _nextItSuccessBlock.add(_loopElse[2]);
                 mustDeclareLoopElse = false;
               }
             var listName = _rawLoopName + "list" + (iteratorCount++);
@@ -601,10 +607,10 @@ public class Loop extends ANY
             List<Expr> prolog2 = new List<>();
             List<Expr> nextIt2 = new List<>();
             Case match1c = new Case(p, consType, listName + "cons", new Block(prolog2));
-            Case match1n = new Case(p, nilType, listName + "nil", (_loopElse != null) ? Block.fromExpr(callLoopElse(true)) : Block.newIfNull(null));
+            Case match1n = new Case(p, nilType, listName + "nil", (_loopElse != null) ? Block.fromExpr(callLoopElse(0)) : Block.newIfNull(null));
             Match match1 = new Match(p, new Call(p, listName), new List<AbstractCase>(match1c, match1n));
             Case match2c = new Case(p, consType, listName + "cons", new Block(nextIt2));
-            Case match2n = new Case(p, nilType, listName + "nil", (_loopElse != null) ? Block.fromExpr(callLoopElse(false)) : Block.newIfNull(null));
+            Case match2n = new Case(p, nilType, listName + "nil", (_loopElse != null) ? Block.fromExpr(callLoopElse(2)) : Block.newIfNull(null));
             Match match2 = new Match(p, new Call(p, listName + "arg"), new List<AbstractCase>(match2c, match2n));
             _prologSuccessBlock.add(match1);
             _nextItSuccessBlock.add(match2);

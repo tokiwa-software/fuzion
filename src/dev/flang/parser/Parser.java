@@ -2756,13 +2756,14 @@ loopEpilog  : "until" exprInLine thenPart elseBlock
         var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprInLine()    : null;
                                                     var ub  = hasUntil            ? thenPart(true)  : null;
                                                     var els1= fork().elseBlock();
+                                                    var els2= fork().elseBlock();
                                                     var els =        elseBlock();
 
         if (!hasWhile && !hasDo && !hasUntil && els == null)
           {
             syntaxError(tokenPos(), "loopBody or loopEpilog: 'while', 'do', 'until' or 'else'", "loop");
           }
-        return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, els, els1).tailRecursiveLoop();
+        return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, els, els1, els2).tailRecursiveLoop();
       });
   }
 
