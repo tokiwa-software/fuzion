@@ -2238,7 +2238,7 @@ public class Feature extends AbstractFeature
     //    _featureName = FeatureName.get(_featureName.baseName(), _arguments.size());
     res._module.findDeclarations(ta, this);
 
-    var g = ta.generic();
+    var g = ta.asGeneric();
     _generics = _generics.addTypeParameter(g);
     res._module.addTypeParameter(this, ta);
     this.whenResolvedTypes(()->res.resolveTypes(ta));
