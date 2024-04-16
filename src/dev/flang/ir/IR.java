@@ -109,11 +109,18 @@ public abstract class IR extends ANY
   }
 
 
+  /**
+   * All the code blocks in this IR. They are added via `addCode`.
+   */
+  final List<Object> _allCode;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
   public IR()
   {
+    _allCode = new List<>();
   }
 
 
@@ -126,6 +133,7 @@ public abstract class IR extends ANY
    */
   protected IR(IR original)
   {
+    _allCode = original._allCode;
   }
 
   /*-----------------------  code block handling  -----------------------*/
@@ -143,7 +151,135 @@ public abstract class IR extends ANY
    *
    * @return the index of b
    */
-  protected abstract int addCode(List<Object> b);
+  protected int addCode(List<Object> code)
+  {
+    var result = _allCode.size() + CODE_BASE;
+    for (var c : code)
+      {
+        _allCode.add(c);
+      }
+    _allCode.add(null);
+    return result;
+  }
+  protected Object getExpr(int s)
+  {
+    return _allCode.get(s - CODE_BASE);
+  }
+  public boolean withinCode(int s)
+  {
+    if (PRECONDITIONS) require
+      (s >= CODE_BASE);
+
+    return _allCode.get(s - CODE_BASE) != null;
+  }
+  public int codeSize(int s)
+  {
+    var result = 0;
+    while (withinCode(s + result))
+      {
+        result++;
+      }
+    return result;
+  }
+
+
+  /**
+   * Get the expr at the given index in given code block
+   *
+   * @param c the code block id
+   *
+   * @param ix an index within the code block
+   */
+  public ExprKind codeAt(int s)
+  {
+    if (PRECONDITIONS) require
+      (s >= CODE_BASE, withinCode(s));
+
+    return exprKind(getExpr(s));
+  }
+
+
+  /**
+   * Get the source code position of an expr at the given index if it is available.
+   *
+   * @param c the code block
+   *
+   * @param ix an index within the code block
+   *
+   * @return the source code position or null if not available.
+   */
+  public SourcePosition codeAtAsPos(int s)
+  {
+    if (PRECONDITIONS) require
+      (s >= 0,
+       withinCode(s));
+
+    var e = getExpr(s);
+    return (e instanceof Expr expr) ? expr.pos()
+                                    : null;
+  }
+
+
+  /**
+   * Get the size of the intermediate command at index ix in codeblock c.
+   */
+  public int codeSizeAt(int s)
+  {
+    int result = 1;
+    var e = codeAt(s);
+    if (e == ExprKind.Match)
+      {
+        result = result + matchCaseCount(s);
+      }
+    return result;
+  }
+
+
+  /**
+   * For a match expression, get the number of cases
+   *
+   * @param c code block containing the match
+   *
+   * @param ix index of the match
+   *
+   * @return the number of cases
+   */
+  public int matchCaseCount(int s)
+  {
+    if (PRECONDITIONS) require
+      (s >= 0,
+       withinCode(s),
+       codeAt(s) == ExprKind.Match);
+
+    var e = getExpr(s);
+    int result = 2; // two cases for If
+    if (e instanceof AbstractMatch m)
+      {
+        result = m.cases().size();
+      }
+    return result;
+  }
+
+
+  // REMOVE:
+  public int siteFromCI(int c, int i)
+  {
+    return c+i;
+  }
+  public int codeIndexFromSite(int site)
+  {
+    var c = site - CODE_BASE;
+    var result = c;
+    while (result > 0 && _allCode.get(result-1) != null)
+      {
+        result--;
+      }
+    return result + CODE_BASE;
+  }
+  public int exprIndexFromSite(int site)
+  {
+    return site - codeIndexFromSite(site);
+  }
 
 
   /*--------------------------  stack handling  -------------------------*/
@@ -358,6 +494,7 @@ public abstract class IR extends ANY
       }
     return result;
   }
+
 
 }
 

@@ -54,7 +54,7 @@ import dev.flang.ast.NumLiteral; // NYI: remove dependency
 import dev.flang.ast.Tag; // NYI: remove dependency
 import dev.flang.ast.Types; // NYI: remove dependency
 
-import dev.flang.ir.IRwithSite;
+import dev.flang.ir.IR;
 
 import dev.flang.util.Errors;
 import dev.flang.util.IntTriplet;
@@ -69,7 +69,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class FUIR extends IRwithSite
+public class FUIR extends IR
 {
 
 
@@ -1403,21 +1403,6 @@ hw25 is
   }
 
 
-  /**
-   * Get the size of the intermediate command at index ix in codeblock c.
-   */
-  public int codeSizeAt(int s)
-  {
-    int result = 1;
-    var e = codeAt(s);
-    if (e == ExprKind.Match)
-      {
-        result = result + matchCaseCount(s);
-      }
-    return result;
-  }
-
-
   public int tagValueClazz(int cl, int s)
   {
     if (PRECONDITIONS) require
@@ -2029,32 +2014,6 @@ hw25 is
       }
     if(POSTCONDITIONS) ensure
       (result.length > 0);
-    return result;
-  }
-
-
-  /**
-   * For a match expression, get the number of cases
-   *
-   * @param c code block containing the match
-   *
-   * @param ix index of the match
-   *
-   * @return the number of cases
-   */
-  public int matchCaseCount(int s)
-  {
-    if (PRECONDITIONS) require
-      (s >= 0,
-       withinCode(s),
-       codeAt(s) == ExprKind.Match);
-
-    var e = getExpr(s);
-    int result = 2; // two cases for If
-    if (e instanceof AbstractMatch m)
-      {
-        result = m.cases().size();
-      }
     return result;
   }
 

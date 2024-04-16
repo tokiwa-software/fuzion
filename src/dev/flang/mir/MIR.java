@@ -31,7 +31,7 @@ import dev.flang.ast.AbstractCall;  // NYI: Remove dependency!
 import dev.flang.ast.AbstractFeature;  // NYI: Remove dependency!
 import dev.flang.ast.AbstractMatch;  // NYI: Remove dependency!
 
-import dev.flang.ir.IRwithCode;
+import dev.flang.ir.IR;
 
 import dev.flang.util.List;
 import dev.flang.util.Map2Int;
@@ -43,7 +43,7 @@ import dev.flang.util.MapComparable2Int;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class MIR extends IRwithCode
+public class MIR extends IR
 {
 
 
@@ -326,19 +326,19 @@ hw25 is
    * @return the feature that has to be accessed or -1 if the access is an
    * assignment to a field that is unused, so the assignment is not needed.
    */
-  public int accessedFeature(int f, int c, int ix)
+  public int accessedFeature(int f, int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Call   ||
-       codeAt(c, ix) == ExprKind.Assign    );
+      (s >= CODE_BASE,
+       withinCode(s),
+       exprKind(getExpr(s)) == ExprKind.Call   ||
+       exprKind(getExpr(s)) == ExprKind.Assign    );
 
     var ff = _featureIds.get(f);
-    var s = getExpr(c, ix);
+    var e = getExpr(s);
     var af =
-      (s instanceof AbstractCall   call) ? call.calledFeature() :
-      (s instanceof AbstractAssign a   ) ? a._assignedField :
+      (e instanceof AbstractCall   call) ? call.calledFeature() :
+      (e instanceof AbstractAssign a   ) ? a._assignedField :
       (AbstractFeature) (Object) new Object() { { if (true) throw new Error("accessedFeature found unexpected Expr."); } } /* Java is ugly... */;
 
     return af == null ? -1 : _featureIds.get(af);
