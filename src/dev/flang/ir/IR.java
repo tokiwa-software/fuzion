@@ -395,7 +395,7 @@ public abstract class IR extends ANY
 
 
   /**
-   * Helper for `codeAt` to determine the ExprKind forn an Object that is either
+   * Helper for `codeAt` to determine the ExprKind for an Object that is either
    * an ast Expr or String.
    *
    * @param e an expression as stored in _allCode
