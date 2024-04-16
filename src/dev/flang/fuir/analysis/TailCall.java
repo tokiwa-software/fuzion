@@ -94,23 +94,20 @@ public class TailCall extends ANY
    *
    * @param cl index of clazz containing the call
    *
-   * @param c code block containing the call
-   *
-   * @param ix index of the call
+   * @param s site of the call
    *
    * @return true if this is a tail call, false if this is no tail call or this
    * it is unknown whether this is a tail call.
    */
-  public boolean callIsTailCall(int cl, int c, int ix)
+  public boolean callIsTailCall(int cl, int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       _fuir.withinCode(c, ix),
-       _fuir.codeAt(c, ix) == IR.ExprKind.Call);
+      (_fuir.withinCode(s),
+       _fuir.codeAt(s) == IR.ExprKind.Call);
 
     var c2 = _fuir.clazzCode(cl);
     return _fuir.codeSize(c2) > 0 &&
-      isTailCall(cl, c2, _fuir.codeSize(c2)-1, c, ix, _fuir.clazzResultField(cl));
+      isTailCall(cl, _fuir.codeBlockEnd(c2), s, _fuir.clazzResultField(cl));
   }
 
 
@@ -120,30 +117,26 @@ public class TailCall extends ANY
    *
    * @param cl index of clazz containing the call
    *
-   * @param c code block containing the call
-   *
-   * @param ix index of the call
+   * @param s site of the call
    */
-  public boolean firstArgIsOuter(int cl, int c, int ix)
+  public boolean firstArgIsOuter(int cl, int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       _fuir.withinCode(c, ix),
-       _fuir.codeAt(c, ix) == IR.ExprKind.Call);
+      (_fuir.withinCode(s),
+       _fuir.codeAt(s) == IR.ExprKind.Call);
 
     // the called clazz:
-    var cc = _fuir.accessedClazz(cl, c, ix);
+    var cc = _fuir.accessedClazz(cl, s);
 
     // skip back all argument to reach the target instance
     var nargs = _fuir.clazzArgCount(cc);
-    var ti = _fuir.codeIndex(c, ix, -1);
+    var ts = _fuir.codeIndex(s, -1);
     for (var i = 0; i < nargs; i++)
       {
-        ti = _fuir.skipBack(cl, c, ti);
+        ts = _fuir.skipBack(cl, ts);
       }
-
     // get type of target of call
-    var tc = _fuir.accessTargetClazz(cl, c, ix);
+    var tc = _fuir.accessTargetClazz(cl, s);
 
     // we are ok if there is no outer ref in the current clazz, or if
     // the target provided in this call is 'Current.outerRef'.
@@ -152,9 +145,9 @@ public class TailCall extends ANY
       outerRef == -1 ||
       nargs >= 1 &&
       (tc == _fuir.clazzUniverse() ||
-       _fuir.codeAt       (    c, ti) == IR.ExprKind.Call    &&
-       _fuir.accessedClazz(cl, c, ti) == outerRef            &&
-       _fuir.codeAt(c, _fuir.codeIndex(c, ti, -1)) == IR.ExprKind.Current);
+       _fuir.codeAt       (    ts) == IR.ExprKind.Call    &&
+       _fuir.accessedClazz(cl, ts) == outerRef            &&
+       _fuir.codeAt(_fuir.codeIndex(ts, -1)) == IR.ExprKind.Current);
 
     return res;
   }
@@ -165,55 +158,51 @@ public class TailCall extends ANY
    *
    * @param cl index of clazz containing the call
    *
-   * @param clc the code block of cl that is currently searched for
+   * @param cls the site of the last Expr of a code block that is to be checked if it results in the tail call at s
    *
-   * @param clix the current index in clc
-   *
-   * @param c code block containing the call
-   *
-   * @param ix index of the call
+   * @param s site of the the call
    *
    * @param mustAssignTo -1 iff the result should be the last expr in the code
    * block, otherwise the clazz of a field in Current the result should be
    * assigned to.
    */
-  private boolean isTailCall(int cl, int clc, int clix, int c, int ix, int mustAssignTo)
+  private boolean isTailCall(int cl, int cls, int s, int mustAssignTo)
   {
-    return switch (_fuir.codeAt(clc, clix))
+    return switch (_fuir.codeAt(cls))
       {
       case Call ->
         {
-          var cc = _fuir.accessedClazz(cl, clc, clix);
+          var cc = _fuir.accessedClazz(cl, cls);
           yield mustAssignTo == -1 &&
             (// we found call c/ix and we do not need to assign any variable, so we have a success!
-             clc == c && clix == ix ||
+             cls == s ||
 
              // in case we have a call to 'Current.f' for some field 'f',
              // recursively check if 'Current.f' is set to the call c/ix:
              _fuir.clazzKind(cc) == IR.FeatureKind.Field &&
-             clix > 1 &&
-             _fuir.codeAt(clc, _fuir.codeIndex(clc, clix, -1)) == IR.ExprKind.Current &&
-             isTailCall(cl, clc, _fuir.codeIndex(clc, clix, -2), c, ix, cc));
+             cls > _fuir.codeBlockStart(cls)+1 &&
+             _fuir.codeAt(_fuir.codeIndex(cls, -1)) == IR.ExprKind.Current &&
+             isTailCall(cl, _fuir.codeIndex(cls, -2), s, cc));
         }
 
       case Assign ->
         {
-          var cc = _fuir.accessedClazz(cl, clc, clix);
+          var cc = _fuir.accessedClazz(cl, cls);
           yield
             // if this is an assignment to 'Current.mustAssignTo' with, recursively check if
-            // the value assigned is the call c/ix.
-            cc == mustAssignTo && clix > 1 &&
-            _fuir.codeAt(clc, _fuir.codeIndex(clc, clix, -1)) == IR.ExprKind.Current &&
-            isTailCall(cl, clc, _fuir.codeIndex(clc, clix,-2), c, ix, -1);
+            // the value assigned is the call s.
+            cc == mustAssignTo && cls > _fuir.codeBlockStart(cls)+1 &&
+            _fuir.codeAt(_fuir.codeIndex(cls, -1)) == IR.ExprKind.Current &&
+            isTailCall(cl, _fuir.codeIndex(cls, -2), s, -1);
         }
 
       case Match ->
         {
-          // for a match, check if any case of the match results in c/ix:
-          for (var mc = 0; mc < _fuir.matchCaseCount(clc, clix); mc++)
+          // for a match, check if any case of the match results in s:
+          for (var mc = 0; mc < _fuir.matchCaseCount(cls); mc++)
             {
-              var mcc = _fuir.matchCaseCode(clc, clix, mc);
-              if (_fuir.codeSize(mcc) > 0 && isTailCall(cl, mcc, _fuir.codeSize(mcc)-1, c, ix, mustAssignTo))
+              var mcc = _fuir.matchCaseCode(cls, mc);
+              if (_fuir.codeSize(mcc) > 0 && isTailCall(cl, _fuir.codeBlockEnd(mcc), s, mustAssignTo))
                 {
                   yield true;
                 }

@@ -56,8 +56,8 @@ public class Interpreter extends ANY
     this._fuir = new FUIR(fuir)
       {
         // NYI: BUG: fuir should be thread safe #2760
-        public synchronized int[] matchCaseTags(int cl, int c, int ix, int cix) {
-          return super.matchCaseTags(cl, c, ix, cix);
+        public synchronized int[] matchCaseTags(int cl, int s, int cix) {
+          return super.matchCaseTags(cl, s, cix);
         };
       };
     var processor = new Excecutor(_fuir, _options_);

@@ -64,8 +64,7 @@ public class EmbeddedValue extends Val
    * the call that produced this result. -1/-1 otherwise.
    */
   final int _cl;
-  final int _code;
-  final int _index;
+  final int _site;
 
 
   /**
@@ -87,7 +86,7 @@ public class EmbeddedValue extends Val
   public EmbeddedValue(Instance instance,
                        Value value)
   {
-    this(instance, -1, -1, -1, value);
+    this(instance, -1, -1, value);
 
     if (PRECONDITIONS) require
       (instance != null,
@@ -108,14 +107,13 @@ public class EmbeddedValue extends Val
    * @param value the value of the embedded field
    */
   public EmbeddedValue(int cl,
-                       int code,
-                       int index,
+                       int site,
                        Value value)
   {
-    this(null, cl, code, index, value);
+    this(null, cl, site, value);
 
     if (PRECONDITIONS) require
-      (code != -1 && index != -1,
+      (site != -1,
        value != null);
   }
 
@@ -135,19 +133,17 @@ public class EmbeddedValue extends Val
    */
   private EmbeddedValue(Instance instance,
                         int cl,
-                        int code,
-                        int index,
+                        int site,
                         Value value)
   {
     if (PRECONDITIONS) require
-      ((instance != null) != (code != -1 && index != -1),
+      ((instance != null) != (site != -1),
        value != null,
        instance == null || value._clazz == -1 || !instance._dfa._fuir.clazzIsRef(value._clazz));
 
     this._instance = instance;
     this._cl = cl;
-    this._code = code;
-    this._index = index;
+    this._site = site;
     this._value = value;
   }
 
@@ -169,7 +165,7 @@ public class EmbeddedValue extends Val
       {
         return res;
       }
-    return new EmbeddedValue(_instance, _cl, _code, _index, rv);
+    return new EmbeddedValue(_instance, _cl, _site, rv);
   }
 
 
@@ -201,7 +197,7 @@ public class EmbeddedValue extends Val
   {
     return
       (_instance != null ? _instance + " embedded in " + _instance.toString()
-       : "EMBEDDED in " + _code + "@" + _index);
+       : "EMBEDDED in " + _site);
   }
 
 
