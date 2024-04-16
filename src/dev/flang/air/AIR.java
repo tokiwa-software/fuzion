@@ -26,7 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.air;
 
-import dev.flang.ir.IRwithCode;
+import dev.flang.ir.IRwithSite;
 
 
 
@@ -35,7 +35,7 @@ import dev.flang.ir.IRwithCode;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class AIR extends IRwithCode
+public class AIR extends IRwithSite
 {
 
 

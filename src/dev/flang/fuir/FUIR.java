@@ -54,7 +54,7 @@ import dev.flang.ast.NumLiteral; // NYI: remove dependency
 import dev.flang.ast.Tag; // NYI: remove dependency
 import dev.flang.ast.Types; // NYI: remove dependency
 
-import dev.flang.ir.IR;
+import dev.flang.ir.IRwithSite;
 
 import dev.flang.util.Errors;
 import dev.flang.util.IntTriplet;
@@ -69,7 +69,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class FUIR extends IR
+public class FUIR extends IRwithSite
 {
 
 
@@ -230,7 +230,6 @@ public class FUIR extends IR
     _clazzIds = original._clazzIds;
     _clazzCode = original._clazzCode;
     _clazzContract = original._clazzContract;
-    _allCode = original._allCode;
   }
 
 
@@ -940,59 +939,6 @@ public class FUIR extends IR
   {
     var cc = clazz(cl);
     return id(cc.actualGenerics()[gix]);
-  }
-
-
-  List<Object> _allCode = new List<>();
-
-
-  protected int addCode(List<Object> code)
-  {
-    var result = _allCode.size() + CODE_BASE;
-    for (var c : code)
-      {
-        _allCode.add(c);
-      }
-    _allCode.add(null);
-    return result;
-  }
-  protected Object getExpr(int s)
-  {
-    return _allCode.get(s - CODE_BASE);
-  }
-  public int siteFromCI(int c, int i)
-  {
-    return c+i;
-  }
-  public int codeIndexFromSite(int site)
-  {
-    var c = site - CODE_BASE;
-    var result = c;
-    while (result > 0 && _allCode.get(result-1) != null)
-      {
-        result--;
-      }
-    return result + CODE_BASE;
-  }
-  public int exprIndexFromSite(int site)
-  {
-    return site - codeIndexFromSite(site);
-  }
-  public int codeSize(int s)
-  {
-    var result = 0;
-    while (withinCode(s + result))
-      {
-        result++;
-      }
-    return result;
-    }
-  public boolean withinCode(int s)
-  {
-    if (PRECONDITIONS) require
-      (s >= CODE_BASE);
-
-    return _allCode.get(s - CODE_BASE) != null;
   }
 
 
