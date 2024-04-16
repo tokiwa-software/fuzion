@@ -29,13 +29,9 @@ package dev.flang.be.interpreter;
 
 import java.nio.charset.StandardCharsets;
 
-import dev.flang.air.Clazz;                // NYI: remove this dependency
-import dev.flang.air.Clazzes;              // NYI: remove this dependency
-
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
-import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FatalError;
 import dev.flang.util.FuzionOptions;
@@ -45,7 +41,7 @@ import dev.flang.util.FuzionOptions;
  * Interpreter contains interpreter for Fuzion application that is present as
  * intermediate code.
  */
-public class Interpreter extends ANY
+public class Interpreter extends FUIRContext
 {
   private final AbstractInterpreter<Value, Object> _ai;
   private final FUIR _fuir;
@@ -60,6 +56,7 @@ public class Interpreter extends ANY
           return super.matchCaseTags(cl, c, ix, cix);
         };
       };
+    FUIRContext.set_fuir(fuir);
     var processor = new Excecutor(_fuir, _options_);
     _ai = new AbstractInterpreter<Value, Object>(_fuir, processor);
     Intrinsics.ENABLE_UNSAFE_INTRINSICS = options.enableUnsafeIntrinsics();  // NYI: Add to Fuzion IR or BE Config
@@ -107,15 +104,25 @@ public class Interpreter extends ANY
    */
   static Value value(String str)
   {
-    Clazz cl = Clazzes.Const_String.get();
-    Instance result = new Instance(cl);
-    var saCl = Clazzes.fuzionSysArray_u8;
-    Instance sa = new Instance(saCl);
     byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
-    setField(Clazzes.fuzionSysArray_u8_length, saCl, sa, new i32Value(bytes.length));
+    return value(bytes);
+  }
+
+  /**
+   * Create runtime value of given String constant.
+   *
+   * @bytes the string in UTF-16
+   */
+  public static Value value(byte[] bytes)
+  {
+    int cl = fuir().clazz_Const_String();
+    Instance result = new Instance(cl);
+    var saCl = fuir().clazz_fuzionSysArray_u8();
+    Instance sa = new Instance(saCl);
+    setField(fuir().clazz_fuzionSysArray_u8_length(), saCl, sa, new i32Value(bytes.length));
     var arrayData = new ArrayData(bytes);
-    setField(Clazzes.fuzionSysArray_u8_data, saCl, sa, arrayData);
-    setField(Clazzes.constStringInternalArray, cl, result, sa);
+    setField(fuir().clazz_fuzionSysArray_u8_data(), saCl, sa, arrayData);
+    setField(fuir().clazz_Const_String_internal_array(), cl, result, sa);
 
     return result;
   }
@@ -131,20 +138,30 @@ public class Interpreter extends ANY
    *
    * @param v the value to be stored in the field
    */
-  static void setField(Clazz thiz, Clazz staticClazz, Value curValue, Value v)
+  static void setField(int thiz, int staticClazz, Value curValue, Value v)
   {
     if (PRECONDITIONS) require
-      (thiz.feature().isField(),
+      (// NYI: thiz.feature().isField(),
        (curValue instanceof Instance) || curValue instanceof Boxed || (curValue instanceof LValue),
-       staticClazz != null,
-       thiz.feature().isOpenGenericField() == (thiz._select != -1));
+       staticClazz > 0
+       // NYI: thiz.feature().isOpenGenericField() == (thiz._select != -1)
+       );
 
-    if (Clazzes.isUsed(thiz.feature()))
-      {
-        Clazz  fclazz = staticClazz.clazzForFieldX(thiz);
-        LValue slot   = fieldSlot(thiz, staticClazz, fclazz, curValue);
-        setFieldSlot(thiz, fclazz, slot, v);
-      }
+    int  fclazz = clazzForField(thiz);
+    LValue slot   = fieldSlot(thiz, staticClazz, fclazz, curValue);
+    setFieldSlot(thiz, fclazz, slot, v);
+  }
+
+
+  /**
+   * Get the result clazz of thiz
+   * or if thiz is an outer ref c_address.
+   */
+  private static int clazzForField(int thiz)
+  {
+    return fuir().clazzFieldIsAdrOfValue(thiz)
+      ? fuir().clazzAddress()
+      : fuir().clazzResultClazz(thiz);
   }
 
 
@@ -161,10 +178,10 @@ public class Interpreter extends ANY
    *
    * @return a new value of type choiceClazz containing val.
    */
-  static Value tag(Clazz choiceClazz, Clazz valueClazz, Value val)
+  static Value tag(int choiceClazz, int valueClazz, Value val)
   {
     if (PRECONDITIONS) require
-      (choiceClazz.isChoice());
+      (fuir().clazzIsChoice(choiceClazz));
 
     var result  = new Instance(choiceClazz);
     LValue slot = result.at(choiceClazz, 0); // NYI: needed? just result?
@@ -196,87 +213,88 @@ public class Interpreter extends ANY
    * non-refs, Instance for normal refs, of type ChoiceIdAsRef, LValue or null
    * for boxed choice tag or ref to outer instance.
    */
-  static Value getField(Clazz thiz, Clazz staticClazz, Value curValue, boolean allowUninitializedRefField)
+  static Value getField(int thiz, int staticClazz, Value curValue, boolean allowUninitializedRefField)
   {
     if (PRECONDITIONS) require
-      (thiz.feature().isField(),
+      (// NYI: thiz.feature().isField(),
        (curValue instanceof Instance) || (curValue instanceof LValue) ||
-       curValue instanceof i8Value   && staticClazz == Clazzes.i8  .getIfCreated() ||
-       curValue instanceof i16Value  && staticClazz == Clazzes.i16 .getIfCreated() ||
-       curValue instanceof i32Value  && staticClazz == Clazzes.i32 .getIfCreated() ||
-       curValue instanceof i64Value  && staticClazz == Clazzes.i64 .getIfCreated() ||
-       curValue instanceof u8Value   && staticClazz == Clazzes.u8  .getIfCreated() ||
-       curValue instanceof u16Value  && staticClazz == Clazzes.u16 .getIfCreated() ||
-       curValue instanceof u32Value  && staticClazz == Clazzes.u32 .getIfCreated() ||
-       curValue instanceof u64Value  && staticClazz == Clazzes.u64 .getIfCreated() ||
-       curValue instanceof f32Value  && staticClazz == Clazzes.f32 .getIfCreated() ||
-       curValue instanceof f64Value  && staticClazz == Clazzes.f64 .getIfCreated() ||
-       curValue instanceof boolValue && staticClazz == Clazzes.bool.getIfCreated(),
-       staticClazz != null,
-       thiz.feature().isOpenGenericField() == (thiz._select != -1));
+       curValue instanceof i8Value   && staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_i8  ) ||
+       curValue instanceof i16Value  && staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_i16 ) ||
+       curValue instanceof i32Value  && staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_i32 ) ||
+       curValue instanceof i64Value  && staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_i64 ) ||
+       curValue instanceof u8Value   && staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_u8  ) ||
+       curValue instanceof u16Value  && staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_u16 ) ||
+       curValue instanceof u32Value  && staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_u32 ) ||
+       curValue instanceof u64Value  && staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_u64 ) ||
+       curValue instanceof f32Value  && staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_f32 ) ||
+       curValue instanceof f64Value  && staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_f64 ) ||
+       curValue instanceof boolValue && staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_bool),
+       staticClazz > 0
+      //  NYI: thiz.feature().isOpenGenericField() == (thiz._select != -1)
+       );
 
     Value result;
-    if (staticClazz == Clazzes.i8.getIfCreated() && curValue instanceof i8Value)
+    if (staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_i8) && curValue instanceof i8Value)
       {
         if (CHECKS) check
-          (thiz.feature().qualifiedName().equals("i8.val"));
+          (fuir().clazzOriginalName(thiz).equals("i8.val"));
         result = curValue;
       }
-    else if (staticClazz == Clazzes.i16.getIfCreated() && curValue instanceof i16Value)
+    else if (staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_i16) && curValue instanceof i16Value)
       {
         if (CHECKS) check
-          (thiz.feature().qualifiedName().equals("i16.val"));
+          (fuir().clazzOriginalName(thiz).equals("i16.val"));
         result = curValue;
       }
-    else if (staticClazz == Clazzes.i32.getIfCreated() && curValue instanceof i32Value)
+    else if (staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_i32) && curValue instanceof i32Value)
       {
         if (CHECKS) check
-          (thiz.feature().qualifiedName().equals("i32.val"));
+          (fuir().clazzOriginalName(thiz).equals("i32.val"));
         result = curValue;
       }
-    else if (staticClazz == Clazzes.i64.getIfCreated() && curValue instanceof i64Value)
+    else if (staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_i64) && curValue instanceof i64Value)
       {
         if (CHECKS) check
-          (thiz.feature().qualifiedName().equals("i64.val"));
+          (fuir().clazzOriginalName(thiz).equals("i64.val"));
         result = curValue;
       }
-    else if (staticClazz == Clazzes.u8.getIfCreated() && curValue instanceof u8Value)
+    else if (staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_u8) && curValue instanceof u8Value)
       {
         if (CHECKS) check
-          (thiz.feature().qualifiedName().equals("u8.val"));
+          (fuir().clazzOriginalName(thiz).equals("u8.val"));
         result = curValue;
       }
-    else if (staticClazz == Clazzes.u16.getIfCreated() && curValue instanceof u16Value)
+    else if (staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_u16) && curValue instanceof u16Value)
       {
         if (CHECKS) check
-          (thiz.feature().qualifiedName().equals("u16.val"));
+          (fuir().clazzOriginalName(thiz).equals("u16.val"));
         result = curValue;
       }
-    else if (staticClazz == Clazzes.u32.getIfCreated() && curValue instanceof u32Value)
+    else if (staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_u32) && curValue instanceof u32Value)
       {
         if (CHECKS) check
-          (thiz.feature().qualifiedName().equals("u32.val"));
+          (fuir().clazzOriginalName(thiz).equals("u32.val"));
         result = curValue;
       }
-    else if (staticClazz == Clazzes.u64.getIfCreated() && curValue instanceof u64Value)
+    else if (staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_u64) && curValue instanceof u64Value)
       {
         if (CHECKS) check
-          (thiz.feature().qualifiedName().equals("u64.val"));
+          (fuir().clazzOriginalName(thiz).equals("u64.val"));
         result = curValue;
       }
-    else if (staticClazz == Clazzes.f32.getIfCreated() && curValue instanceof f32Value)
+    else if (staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_f32) && curValue instanceof f32Value)
       {
         if (CHECKS) check
-          (thiz.feature().qualifiedName().equals("f32.val"));
+          (fuir().clazzOriginalName(thiz).equals("f32.val"));
         result = curValue;
       }
-    else if (staticClazz == Clazzes.f64.getIfCreated() && curValue instanceof f64Value)
+    else if (staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_f64) && curValue instanceof f64Value)
       {
         if (CHECKS) check
-          (thiz.feature().qualifiedName().equals("f64.val"));
+          (fuir().clazzOriginalName(thiz).equals("f64.val"));
         result = curValue;
       }
-    else if (staticClazz == Clazzes.bool.getIfCreated() && curValue instanceof boolValue)
+    else if (staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_bool) && curValue instanceof boolValue)
       {
         if (CHECKS) check
           (false);
@@ -284,7 +302,7 @@ public class Interpreter extends ANY
       }
     else
       {
-        Clazz  fclazz = staticClazz.clazzForFieldX(thiz);
+        int  fclazz = clazzForField(thiz);
         LValue slot   = fieldSlot(thiz, staticClazz, fclazz, curValue);
         result = loadField(thiz, fclazz, slot, allowUninitializedRefField);
       }
@@ -311,15 +329,14 @@ public class Interpreter extends ANY
    *
    * @return true iff both are equal
    */
-  static boolean compareField(Clazz thiz, Clazz staticClazz, Value curValue, Value v)
+  static boolean compareField(int thiz, int staticClazz, Value curValue, Value v)
   {
     if (PRECONDITIONS) require
-      (thiz.feature().isField(),
+      ( // NYI : thiz.feature().isField(),
        (curValue instanceof Instance) || curValue instanceof Boxed || (curValue instanceof LValue),
-       staticClazz != null,
-       Clazzes.isUsed(thiz.feature()));
+       staticClazz > 0);
 
-    Clazz  fclazz = staticClazz.clazzForFieldX(thiz);
+    int  fclazz = clazzForField(thiz);
     LValue slot   = fieldSlot(thiz, staticClazz, fclazz, curValue);
     return compareFieldSlot(thiz, fclazz, slot, v);
   }
@@ -334,16 +351,16 @@ public class Interpreter extends ANY
    *
    * @param tag the tag value identifying the slot to be read.
    */
-  static Value getChoiceVal(Clazz thiz, Clazz choiceClazz, Value choice, int tag)
+  static Value getChoiceVal(int thiz, int choiceClazz, Value choice, int tag)
   {
     if (PRECONDITIONS) require
-      (choiceClazz != null,
-       choiceClazz.feature() == thiz.feature(),
+      (choiceClazz > 0,
+       choiceClazz == thiz,
        choice != null,
        tag >= 0);
 
-    Clazz  vclazz = choiceClazz.getChoiceClazz(tag);
-    LValue slot   = choice.at(vclazz, Layout.get(choiceClazz).choiceValOffset(tag));
+    int vclazz = fuir().clazzChoice(choiceClazz, tag);
+    LValue slot = choice.at(vclazz, Layout.get(choiceClazz).choiceValOffset(tag));
     return loadField(thiz, vclazz, slot, false);
   }
 
@@ -355,16 +372,16 @@ public class Interpreter extends ANY
    *
    * @param choice the value containing the choice.
    */
-  static Value getChoiceRefVal(Clazz thiz, Clazz choiceClazz, Value choice)
+  static Value getChoiceRefVal(int thiz, int choiceClazz, Value choice)
   {
     if (PRECONDITIONS) require
-      (choiceClazz != null,
-       choiceClazz.feature() == thiz.feature(),
-       choiceClazz.isChoiceWithRefs(),
+      (choiceClazz > 0,
+       choiceClazz == thiz,
+       fuir().clazzIsChoiceWithRefs(choiceClazz),
        choice != null);
 
     int offset  = Layout.get(choiceClazz).choiceRefValOffset();
-    LValue slot = choice.at(Clazzes.Any.get(), offset);
+    LValue slot = choice.at(fuir().clazzAny(), offset);
     return loadRefField(thiz, slot, false);
   }
 
@@ -381,13 +398,13 @@ public class Interpreter extends ANY
    * normal refs, of type ChoiceIdAsRef, LValue for non-reference fields or ref
    * to outer instance, LValue or null for boxed choice tag.
    */
-  private static Value loadField(Clazz thiz, Clazz fclazz, LValue slot, boolean allowUninitializedRefField)
+  private static Value loadField(int thiz, int fclazz, LValue slot, boolean allowUninitializedRefField)
   {
     if (CHECKS) check
-      (fclazz != null,
+      (fclazz > 0,
        slot != null);
 
-    Value result = fclazz.isRef() ? loadRefField(thiz, slot, allowUninitializedRefField)
+    Value result = fuir().clazzIsRef(fclazz) ? loadRefField(thiz, slot, allowUninitializedRefField)
                                   : slot;
 
     if (POSTCONDITIONS) ensure
@@ -412,26 +429,26 @@ public class Interpreter extends ANY
    *
    * @param v the value to be stored in choice.
    */
-  private static void setChoiceField(Clazz thiz,
-                                     Clazz choiceClazz,
+  private static void setChoiceField(int thiz,
+                                     int choiceClazz,
                                      LValue choice,
-                                     Clazz staticTypeOfValue,
+                                     int staticTypeOfValue,
                                      Value v)
   {
     if (PRECONDITIONS) require
-      (choiceClazz.isChoice(),
-       choiceClazz.feature() == thiz.feature(),
-       choiceClazz.compareTo(staticTypeOfValue) != 0);
+      (fuir().clazzIsChoice(choiceClazz),
+       choiceClazz == thiz,
+       choiceClazz != staticTypeOfValue);
 
-    int tag = choiceClazz.getChoiceTag(staticTypeOfValue);
-    Clazz  vclazz  = choiceClazz.getChoiceClazz(tag);
+    int tag = fuir().clazzChoiceTag(choiceClazz, staticTypeOfValue);
+    int  vclazz  = fuir().clazzChoice(choiceClazz, tag);
     LValue valSlot = choice.at(vclazz, Layout.get(choiceClazz).choiceValOffset(tag));
-    if (choiceClazz.isChoiceOfOnlyRefs())
+    if (fuir().clazzIsChoiceOfOnlyRefs(choiceClazz))
       { // store reference only
-        if (!staticTypeOfValue.isRef())
+        if (!fuir().clazzIsRef(staticTypeOfValue))
           { // the value is a stateless value type, so we store the tag as a reference.
             v = ChoiceIdAsRef.get(choiceClazz, tag);
-            vclazz = Clazzes.Any.get();
+            vclazz = fuir().clazzAny();
             staticTypeOfValue = vclazz;
             valSlot = choice.at(vclazz, Layout.get(choiceClazz).choiceRefValOffset());
           }
@@ -445,7 +462,7 @@ public class Interpreter extends ANY
     setFieldSlot(thiz, vclazz, valSlot, v);
 
     if (POSTCONDITIONS) ensure
-      (choiceClazz.isChoiceOfOnlyRefs() || choice.container.nonrefs[0] >= 0);
+      (fuir().clazzIsChoiceOfOnlyRefs(choiceClazz) || choice.container.nonrefs[0] >= 0);
   }
 
 
@@ -465,17 +482,17 @@ public class Interpreter extends ANY
    *
    * @return an LValue that refers directly to the memory for the field.
    */
-  private static LValue fieldSlot(Clazz thiz, Clazz staticClazz, Clazz fclazz, Value curValue)
+  private static LValue fieldSlot(int thiz, int staticClazz, int fclazz, Value curValue)
   {
     int off;
     var clazz = staticClazz;
-    if (staticClazz.isRef())
+    if (fuir().clazzIsRef(staticClazz))
       {
         curValue = (curValue instanceof LValue lv) ? loadRefField(thiz, lv, false)
                                                    : curValue;
         clazz = ((ValueWithClazz) curValue).clazz();
       }
-    if (staticClazz.isBoxed())
+    if (fuir().clazzIsBoxed(staticClazz))
       {
         clazz = ((Boxed)curValue)._valueClazz;
         curValue = ((Boxed)curValue)._contents;
@@ -499,14 +516,14 @@ public class Interpreter extends ANY
    *
    * @param v the value to be stored in slot
    */
-  private static void setFieldSlot(Clazz thiz, Clazz fclazz, LValue slot, Value v)
+  private static void setFieldSlot(int thiz, int fclazz, LValue slot, Value v)
   {
     if (PRECONDITIONS) require
-      (fclazz != null,
+      (fclazz > 0,
        slot != null,
-       v != null || thiz.isChoice());
+       v != null || fuir().clazzIsChoice(thiz));
 
-    if (fclazz.isRef())
+    if (fuir().clazzIsRef(fclazz))
       {
         setRefField   (thiz,        slot, v);
       }
@@ -527,15 +544,15 @@ public class Interpreter extends ANY
    *
    * @param v the value to be stored in cur at offset
    */
-  private static void setNonRefField(Clazz thiz,
-                                     Clazz fclazz,
+  private static void setNonRefField(int thiz,
+                                     int fclazz,
                                      LValue slot,
                                      Value v)
   {
     if (PRECONDITIONS) require
-      (!fclazz.isRef(),
+      (!fuir().clazzIsRef(fclazz),
        slot != null,
-       v != null || thiz.isChoice() ||
+       v != null || fuir().clazzIsChoice(thiz) ||
        v instanceof LValue    ||
        v instanceof Instance  ||
        v instanceof i8Value   ||  // NYI: what about u8/u16/..
@@ -555,7 +572,7 @@ public class Interpreter extends ANY
    *
    * @param v the value to be stored in cur at offset
    */
-  private static void setRefField(Clazz thiz,
+  private static void setRefField(int thiz,
                                   LValue slot,
                                   Value v)
   {
@@ -580,7 +597,7 @@ public class Interpreter extends ANY
    * @param allowUninitializedRefField true if a ref field may be not
    * initialized (e.g., when boxing this).
    */
-  private static Value loadRefField(Clazz thiz, LValue slot, boolean allowUninitializedRefField)
+  private static Value loadRefField(int thiz, LValue slot, boolean allowUninitializedRefField)
   {
     if (PRECONDITIONS) require
       (slot != null);
@@ -604,7 +621,7 @@ public class Interpreter extends ANY
    * @param allowUninitializedRefField true if a ref field may be not
    * initialized (e.g., when boxing this).
    */
-  private static boolean valueTypeMatches(Clazz thiz, Value v, boolean allowUninitializedRefField)
+  private static boolean valueTypeMatches(int thiz, Value v, boolean allowUninitializedRefField)
   {
     return
       v instanceof Instance                                            /* a normal ref type     */ ||
@@ -612,7 +629,7 @@ public class Interpreter extends ANY
       v instanceof Boxed                                               /* a boxed value type    */ ||
       v instanceof ArrayData                                           /* fuzion.sys.array.data */ ||
       v instanceof LValue                                              /* ref type as LValue    */ ||
-      v instanceof ChoiceIdAsRef && thiz.isChoice()                    /* a boxed choice tag    */ ||
+      v instanceof ChoiceIdAsRef && fuir().clazzIsChoice(thiz)         /* a boxed choice tag    */ ||
       (v instanceof i8Value ||
        v instanceof i16Value ||
        v instanceof i32Value ||
@@ -622,8 +639,8 @@ public class Interpreter extends ANY
        v instanceof u32Value ||
        v instanceof u64Value ||
        v instanceof f32Value ||
-       v instanceof f64Value   ) && thiz.feature().isOuterRef()    /* e.g. outerref in integer.infix /-/ */ ||
-      v == null                  && thiz.isChoice()                /* Nil/Null boxed choice tag */ ||
+       v instanceof f64Value   ) && fuir().clazzIsOuterRef(thiz)        /* e.g. outerref in integer.infix /-/ */ ||
+      v == null                  && fuir().clazzIsChoice(thiz)          /* Nil/Null boxed choice tag */ ||
       v == null                  && allowUninitializedRefField;
   }
 
@@ -638,14 +655,14 @@ public class Interpreter extends ANY
    *
    * @param v the value to be stored in slot
    */
-  private static boolean compareFieldSlot(Clazz thiz, Clazz fclazz, LValue slot, Value v)
+  private static boolean compareFieldSlot(int thiz, int fclazz, LValue slot, Value v)
   {
     if (PRECONDITIONS) require
-      (fclazz != null,
+      (fclazz > 0,
        slot != null,
-       v != null || thiz.isChoice());
+       v != null || fuir().clazzIsChoice(thiz));
 
-    if (fclazz.isRef())
+    if (fuir().clazzIsRef(fclazz))
       {
         return slot.container.refs[slot.offset] == v;
       }

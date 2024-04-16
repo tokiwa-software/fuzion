@@ -228,7 +228,7 @@ public class FUIR extends IR
   /*-----------------------------  methods  -----------------------------*/
 
 
-  public Clazz main()
+  private Clazz main()
   {
     return _main;
   }
@@ -241,13 +241,6 @@ public class FUIR extends IR
    * Get Clazz that given id maps to
    */
   private Clazz clazz(int id)
-  {
-    return _clazzIds.get(id);
-  }
-
-
-  /* NYI: UNDER DEVELOPEMENT: remove */
-  public Clazz clazzForInterpreter(int id)
   {
     return _clazzIds.get(id);
   }
@@ -2853,6 +2846,46 @@ hw25 is
       default:
         throw new UnsupportedOperationException("Unexpected case: " + getSpecialClazz(cl));
       }
+  }
+
+
+
+  /**
+   * For a value clazz, obtain the corresponding reference clazz.
+   *
+   * @param cl a clazz id
+   *
+   * @return clazz id of corresponding reference clazz.
+   */
+  /* NYI remove? only used in interpreter */
+  @Deprecated
+  public int clazzAsRef(int cl)
+  {
+    var cc = clazz(cl);
+    return id(cc.asRef());
+  }
+
+
+  /* NYI remove? only used in interpreter */
+  @Deprecated
+  public boolean clazzIsRoutine(int cl)
+  {
+    return clazz(cl)._type.feature().isRoutine();
+  }
+
+  /* NYI remove? only used in interpreter */
+  @Deprecated
+  public boolean isAssignableFrom(int cl0, int cl1)
+  {
+    return clazz(cl0)._type.isAssignableFrom(clazz(cl1)._type);
+  }
+
+
+  /* NYI remove? only used in interpreter */
+  @Deprecated
+  public int clazzAddress()
+  {
+    return Clazzes.c_address._idInFUIR;
   }
 
 

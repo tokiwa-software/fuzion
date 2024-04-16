@@ -31,9 +31,6 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import dev.flang.air.Clazz; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.air.Clazzes; // NYI: remove dependency! Use dev.flang.fuir instead.
-
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.ContractKind;
 import dev.flang.fuir.analysis.AbstractInterpreter;
@@ -59,7 +56,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
   /**
    * Universe instance
    */
-  private static final Instance _universe = new Instance(Clazzes.universe.get());
+  private static Instance _universe;
 
 
   /**
@@ -108,7 +105,8 @@ public class Excecutor extends ProcessStatement<Value, Object>
   {
     _fuir = fuir;
     _options_ = opt;
-    this._cur = _fuir.main()._idInFUIR == _fuir.clazzUniverse() ? _universe : new Instance(_fuir.main());
+    _universe = new Instance(_fuir.clazzUniverse());
+    this._cur = _fuir.mainClazzId() == _fuir.clazzUniverse() ? _universe : new Instance(_fuir.mainClazzId());
     this._outer = _universe;
     this._args = new List<>();
   }
@@ -196,10 +194,8 @@ public class Excecutor extends ProcessStatement<Value, Object>
   {
     if (!(_fuir.clazzIsOuterRef(f) && _fuir.clazzIsUnitType(rt)))
       {
-        var fc = _fuir.clazzForInterpreter(f);
-        var thiz = fc;
-        var staticClazz = _fuir.clazzForInterpreter(tc);
-        Interpreter.setField(thiz, staticClazz, tvalue, val);
+        var staticClazz = tc;
+        Interpreter.setField(f, staticClazz, tvalue, val);
       }
     return null;
   }
@@ -217,8 +213,8 @@ public class Excecutor extends ProcessStatement<Value, Object>
         var ttcc = ttcc(cl, c, i, tvalue);
         var tt = ttcc.v0();
         var cc = ttcc.v1();
-        var fc = _fuir.clazzForInterpreter(cc);
-        Interpreter.setField(fc, _fuir.clazzForInterpreter(tt), tvalue, avalue);
+        var fc = cc;
+        Interpreter.setField(fc, tt, tvalue, avalue);
       }
     return null;
   }
@@ -236,7 +232,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
     // in this case
     if(_fuir.clazzIsBoxed(tt) && !_fuir.clazzIsRef(_fuir.clazzOuterClazz(cc /* NYI should this be cc0? */)))
       {
-        tt = ((Boxed)tvalue)._valueClazz._idInFUIR;
+        tt = ((Boxed)tvalue)._valueClazz;
         tvalue = ((Boxed)tvalue)._contents;
       }
 
@@ -244,7 +240,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
       {
       case Routine :
         // NYI change call to pass in ai as in match statement?
-        var cur = new Instance(_fuir.clazzForInterpreter(cc));
+        var cur = new Instance(cc);
 
         callOnInstance(cc, cur, tvalue, args, true);
         callOnInstance(cc, cur, tvalue, args, false);
@@ -253,18 +249,18 @@ public class Excecutor extends ProcessStatement<Value, Object>
         var resf = _fuir.clazzResultField(cc);
         if (resf != -1)
           {
-            var rfc = _fuir.clazzForInterpreter(resf);
-            if (!AbstractInterpreter.clazzHasUnitValue(_fuir, rfc.resultClazz()._idInFUIR))
+            var rfc = resf;
+            if (!AbstractInterpreter.clazzHasUnitValue(_fuir, fuir().clazzResultClazz(rfc)))
               {
-                rres = Interpreter.getField(rfc, _fuir.clazzForInterpreter(cc), cur, false);
+                rres = Interpreter.getField(rfc, cc, cur, false);
               }
           }
         yield pair(rres);
       case Field :
-        var fc = _fuir.clazzForInterpreter(cc);
+        var fc = cc;
         var fres = AbstractInterpreter.clazzHasUnitValue(_fuir, rt)
           ? pair(unitValue())
-          : pair(Interpreter.getField(fc, _fuir.clazzForInterpreter(tt), tt == _fuir.clazzUniverse() ? _universe : tvalue, false));
+          : pair(Interpreter.getField(fc, tt, tt == _fuir.clazzUniverse() ? _universe : tvalue, false));
 
         if (CHECKS)
           check(fres != null, AbstractInterpreter.clazzHasUnitValue(_fuir, rt) || fres.v0() != unitValue());
@@ -273,7 +269,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
       case Intrinsic :
         yield _fuir.clazzTypeParameterActualType(cc) != -1  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
           ? pair(unitValue())
-          : pair(Intrinsics.call(this, _fuir.clazzForInterpreter(cc)).call(new List<>(tvalue, args)));
+          : pair(Intrinsics.call(this, cc).call(new List<>(tvalue, args)));
       case Abstract:
         throw new Error("Calling abstract not possible: " + _fuir.codeAtAsString(cl, c, i));
       case Choice :
@@ -299,7 +295,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
 
     if (cc == -1)
       {
-        tt = ((ValueWithClazz)tvalue)._clazz._idInFUIR;
+        tt = ((ValueWithClazz)tvalue)._clazz;
 
         for (var cci = 0; cci < ccs.length && cc==-1; cci += 2)
         {
@@ -332,9 +328,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
   @Override
   public Pair<Value, Object> box(Value v, int vc, int rc)
   {
-    var rcc = _fuir.clazzForInterpreter(rc);
-    var vcc = _fuir.clazzForInterpreter(vc);
-    return pair(new Boxed(rcc, vcc, v /* .cloneValue(vcc) */));
+    return pair(new Boxed(rc, vc, v /* .cloneValue(vcc) */));
   }
 
   @Override
@@ -408,28 +402,28 @@ public class Excecutor extends ProcessStatement<Value, Object>
                   }
               }
 
-            Instance result = new Instance(_fuir.clazzForInterpreter(constCl));
+            Instance result = new Instance(constCl);
             var internalArray = _fuir.lookup_array_internal_array(constCl);
             var sysArray = _fuir.clazzResultClazz(internalArray);
-            var saCl = _fuir.clazzForInterpreter(sysArray);
+            var saCl = sysArray;
             Instance sa = new Instance(saCl);
-            Interpreter.setField(_fuir.clazzForInterpreter(_fuir.lookup_fuzion_sys_internal_array_length(sysArray)), saCl,                               sa,     new i32Value(elCount));
-            Interpreter.setField(_fuir.clazzForInterpreter(_fuir.lookup_fuzion_sys_internal_array_data(sysArray))  , saCl,                               sa,     arrayData);
-            Interpreter.setField(_fuir.clazzForInterpreter(internalArray)                                          , _fuir.clazzForInterpreter(constCl), result, sa);
+            Interpreter.setField(_fuir.lookup_fuzion_sys_internal_array_length(sysArray), saCl,                               sa,     new i32Value(elCount));
+            Interpreter.setField(_fuir.lookup_fuzion_sys_internal_array_data(sysArray)  , saCl,                               sa,     arrayData);
+            Interpreter.setField(internalArray                                          , constCl,                            result, sa);
             yield result;
           }
         else if (!_fuir.clazzIsChoice(constCl))
           {
             var b = ByteBuffer.wrap(d);
-            var result = new Instance(_fuir.clazzForInterpreter(constCl));
+            var result = new Instance(constCl);
             for (int index = 0; index < _fuir.clazzArgCount(constCl); index++)
               {
                 var fr = _fuir.clazzArgClazz(constCl, index);
 
                 var bytes = _fuir.deseralizeConst(fr, b);
                 var c = constData(fr, bytes).v0();
-                var acl = _fuir.clazzForInterpreter(_fuir.clazzArg(constCl, index));
-                Interpreter.setField(acl, _fuir.clazzForInterpreter(constCl), result, c);
+                var acl = _fuir.clazzArg(constCl, index);
+                Interpreter.setField(acl, constCl, result, c);
               }
 
             yield result;
@@ -450,10 +444,10 @@ public class Excecutor extends ProcessStatement<Value, Object>
   public Pair<Value, Object> match(AbstractInterpreter<Value, Object> ai, int cl, boolean pre, int c, int i,
     Value subv)
   {
-    var staticSubjectClazz = subv instanceof boolValue ? Clazzes.bool.getIfCreated() : ((ValueWithClazz)subv)._clazz;
+    var staticSubjectClazz = subv instanceof boolValue ? fuir().clazz(FUIR.SpecialClazzes.c_bool) : ((ValueWithClazz)subv)._clazz;
 
     if (CHECKS) check
-      (staticSubjectClazz.isChoice());
+      (fuir().clazzIsChoice(staticSubjectClazz));
 
     var tagAndChoiceElement = tagAndVal(staticSubjectClazz, subv);
 
@@ -463,7 +457,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
     if (field != -1)
       {
         Interpreter.setField(
-            _fuir.clazzForInterpreter(field),
+            field,
             _cur._clazz,
             _cur,
             tagAndChoiceElement.v1());
@@ -479,19 +473,19 @@ public class Excecutor extends ProcessStatement<Value, Object>
    *
    * @return pair where first value is the tag, the second value the extracted value.
    */
-  private Pair<Integer, Value> tagAndVal(Clazz staticSubjectClazz, Value sub)
+  private Pair<Integer, Value> tagAndVal(int staticSubjectClazz, Value sub)
   {
     if (PRECONDITIONS) require
-      (staticSubjectClazz.isChoice());
+      (fuir().clazzIsChoice(staticSubjectClazz));
 
     var tag = -1;
     Value val = null;
-    if (staticSubjectClazz.isChoiceOfOnlyRefs())
+    if (fuir().clazzIsChoiceOfOnlyRefs(staticSubjectClazz))
       {
         val = Interpreter.getChoiceRefVal(staticSubjectClazz, staticSubjectClazz, sub);
         tag = ChoiceIdAsRef.tag(staticSubjectClazz, val);
       }
-    else if (staticSubjectClazz == Clazzes.bool.getIfCreated())
+    else if (staticSubjectClazz == fuir().clazz(FUIR.SpecialClazzes.c_bool))
       {
         tag = sub.boolValue() ? 1 : 0;
         val = sub;
@@ -519,13 +513,13 @@ public class Excecutor extends ProcessStatement<Value, Object>
 
     var tc = _fuir.clazzChoice(newcl, tagNum);
 
-    return pair(Interpreter.tag(_fuir.clazzForInterpreter(newcl), _fuir.clazzForInterpreter(tc), value));
+    return pair(Interpreter.tag(newcl, tc, value));
   }
 
   @Override
   public Pair<Value, Object> env(int ecl)
   {
-    var result = FuzionThread.current()._effects.get(_fuir.clazzForInterpreter(ecl));
+    var result = FuzionThread.current()._effects.get(ecl);
     if (result == null)
       {
         Errors.fatal("No effect installed: " + _fuir.clazzAsStringNew(ecl));

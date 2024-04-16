@@ -26,17 +26,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.air.Clazz;
-
-import dev.flang.util.ANY;
-
-
 /**
  * Value <description>
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class Value extends ANY
+public abstract class Value extends FUIRContext
 {
 
 
@@ -92,7 +87,7 @@ public abstract class Value extends ANY
    * Create a copy (clone) of this value.  Used for boxing values into
    * ref-types.
    */
-  Value cloneValue(Clazz cl)
+  Value cloneValue(int cl)
   {
     return this;
   }
@@ -239,7 +234,7 @@ public abstract class Value extends ANY
    *
    * @return the LValue to rev
    */
-  public LValue at(Clazz c, int off)
+  public LValue at(int c, int off)
   {
     throw new Error("Cannot create LValue from " + getClass());
   }
@@ -281,7 +276,7 @@ public abstract class Value extends ANY
    *
    * @throws Error in case this does not match the expected clazz
    */
-  void checkStaticClazz(Clazz expected)
+  void checkStaticClazz(int expected)
   {
     throw new Error("value " + this + " not allowed for clazz "+ expected);
   }
