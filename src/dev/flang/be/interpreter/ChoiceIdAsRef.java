@@ -28,8 +28,7 @@ package dev.flang.be.interpreter;
 
 import java.util.ArrayList;
 
-import dev.flang.air.Clazz;
-
+import dev.flang.fuir.FUIR;
 
 /**
  * ChoiceIdAsRef represents the id stored in the tag of a choice type as a
@@ -91,15 +90,15 @@ public class ChoiceIdAsRef extends Value
    * @return the ChoiceIdAsRef value for id, may be null in case there is only
    * one such id.
    */
-  public static ChoiceIdAsRef get(Clazz clazz, int id)
+  public static ChoiceIdAsRef get(int clazz, int id)
   {
     if (PRECONDITIONS) require
-      (clazz.isChoice(),
+      (fuir().clazzIsChoice(clazz),
        id >= 0,
-       id <  clazz._choiceGenerics.size());
+       id <  fuir().clazzNumChoices(clazz));
 
     ChoiceIdAsRef result;
-    if (clazz._choiceGenerics.size() > 2)
+    if (fuir().clazzNumChoices(clazz) > 2)
       {
         // make sure all values are preallocated
         while (_preallocated.size() <= id)
@@ -127,10 +126,10 @@ public class ChoiceIdAsRef extends Value
    *
    * @return the id stored in idAsRef.
    */
-  public static int tag(Clazz clazz, Value idAsRef)
+  public static int tag(int clazz, Value idAsRef)
   {
     if (PRECONDITIONS) require
-      (clazz.isChoice());
+      (fuir().clazzIsChoice(clazz));
 
     int result = -1;
 
@@ -138,7 +137,7 @@ public class ChoiceIdAsRef extends Value
       {
         // null stands for the first (and only) non-reference type
         result = 0;
-        while (clazz.choiceGenerics().get(result).isRef())
+        while (result < fuir().clazzNumChoices(clazz) && fuir().clazzIsRef(fuir().clazzChoice(clazz, result)))
           {
             result++;
           }
@@ -150,14 +149,14 @@ public class ChoiceIdAsRef extends Value
     else
       {
         result = 0;
-        while (!clazz.choiceGenerics().get(result)._type.isAssignableFrom(((ValueWithClazz)idAsRef)._clazz._type))
+        while (!fuir().isAssignableFrom(fuir().clazzChoice(clazz, result), ((ValueWithClazz)idAsRef)._clazz))
           {
             result++;
           }
       }
 
     if (POSTCONDITIONS) ensure
-      (0 <= result && result < clazz.choiceGenerics().size());
+      (0 <= result && result < fuir().clazzNumChoices(clazz));
 
     return result;
   }

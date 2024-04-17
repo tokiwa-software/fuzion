@@ -26,10 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.air.Clazz;
-import dev.flang.air.Clazzes;
-
-
+import dev.flang.fuir.FUIR;
 
 /**
  * f64Value is a value of type f64
@@ -112,9 +109,9 @@ public class f64Value extends Value
    *
    * @throws Error in case this does not match the expected clazz
    */
-  void checkStaticClazz(Clazz expected)
+  void checkStaticClazz(int expected)
   {
-    if (expected != Clazzes.f64.getIfCreated())
+    if (expected != fuir().clazz(FUIR.SpecialClazzes.c_f64))
       {
         throw new Error("f64 value not allowed for clazz " + expected);
       }

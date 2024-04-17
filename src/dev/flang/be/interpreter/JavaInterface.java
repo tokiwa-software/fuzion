@@ -32,10 +32,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import dev.flang.air.Clazz; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.air.Clazzes; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.fuir.FUIR;
 
-import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 
 
@@ -45,7 +43,7 @@ import dev.flang.util.Errors;
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
-public class JavaInterface extends ANY
+public class JavaInterface extends FUIRContext
 {
 
 
@@ -55,7 +53,7 @@ public class JavaInterface extends ANY
   static Value getField(String clazz,
                         Object thiz,
                         String field,
-                        Clazz  resultClass)
+                        int  resultClass)
   {
     Value result;
     try
@@ -101,47 +99,47 @@ public class JavaInterface extends ANY
             var oa = new Object[va.length];
             for (var ix = 0; ix < va.length; ix++)
               {
-                if (va[ix].clazz() == Clazzes.i8.get())
+                if (va[ix].clazz() == fuir().clazz(FUIR.SpecialClazzes.c_i8))
                   {
                     oa[ix] = va[ix].i8Value();
                   }
-                else if (va[ix].clazz() == Clazzes.i16.get())
+                else if (va[ix].clazz() == fuir().clazz(FUIR.SpecialClazzes.c_i16))
                   {
                     oa[ix] = va[ix].i16Value();
                   }
-                else if (va[ix].clazz() == Clazzes.i32.get())
+                else if (va[ix].clazz() == fuir().clazz(FUIR.SpecialClazzes.c_i32))
                   {
                     oa[ix] = va[ix].i32Value();
                   }
-                else if (va[ix].clazz() == Clazzes.i64.get())
+                else if (va[ix].clazz() == fuir().clazz(FUIR.SpecialClazzes.c_i64))
                   {
                     oa[ix] = va[ix].i64Value();
                   }
-                else if (va[ix].clazz() == Clazzes.u8.get())
+                else if (va[ix].clazz() == fuir().clazz(FUIR.SpecialClazzes.c_u8))
                   {
                     oa[ix] = va[ix].u8Value();
                   }
-                else if (va[ix].clazz() == Clazzes.u16.get())
+                else if (va[ix].clazz() == fuir().clazz(FUIR.SpecialClazzes.c_u16))
                   {
                     oa[ix] = va[ix].u16Value();
                   }
-                else if (va[ix].clazz() == Clazzes.u32.get())
+                else if (va[ix].clazz() == fuir().clazz(FUIR.SpecialClazzes.c_u32))
                   {
                     oa[ix] = va[ix].u32Value();
                   }
-                else if (va[ix].clazz() == Clazzes.u64.get())
+                else if (va[ix].clazz() == fuir().clazz(FUIR.SpecialClazzes.c_u64))
                   {
                     oa[ix] = va[ix].u64Value();
                   }
-                else if (va[ix].clazz() == Clazzes.f32.get())
+                else if (va[ix].clazz() == fuir().clazz(FUIR.SpecialClazzes.c_f32))
                   {
                     oa[ix] = va[ix].f32Value();
                   }
-                else if (va[ix].clazz() == Clazzes.f64.get())
+                else if (va[ix].clazz() == fuir().clazz(FUIR.SpecialClazzes.c_f64))
                   {
                     oa[ix] = va[ix].f64Value();
                   }
-                else if (va[ix].clazz() == Clazzes.bool.get())
+                else if (va[ix].clazz() == fuir().clazz(FUIR.SpecialClazzes.c_bool))
                   {
                     oa[ix] = va[ix].boolValue();
                   }
@@ -243,7 +241,7 @@ public class JavaInterface extends ANY
    *
    * @return a value of resultClazz that contains o.
    */
-  static Value javaObjectToInstance(Object o, Clazz resultClazz)
+  static Value javaObjectToInstance(Object o, int resultClazz)
   {
     return javaObjectToInstance(o, null, resultClazz);
   }
@@ -264,16 +262,17 @@ public class JavaInterface extends ANY
    *
    * @return a value of resultClazz that contains o or, in case e!=null, e.
    */
-  static Value javaObjectToInstance(Object o, Throwable e, Clazz resultClazz)
+  static Value javaObjectToInstance(Object o, Throwable e, int resultClazz)
   {
     if (PRECONDITIONS) require
-      (resultClazz != null);
+      (resultClazz > 0);
 
     Value result;
     var ok = e == null;
-    if (resultClazz.feature().qualifiedName().equals("outcome"))
+    // NYI: HACK:
+    if (fuir().clazzAsStringNew(resultClazz).startsWith("outcome"))
       {
-        var valClazz = resultClazz._choiceGenerics.get(ok ? 0 : 1);
+        var valClazz = fuir().clazzChoice(resultClazz, ok ? 0 : 1);
         var res = ok ? javaObjectToPlainInstance(o, valClazz)
                      : javaThrowableToError     (e, valClazz);
         result = Interpreter.tag(resultClazz, valClazz, res);
@@ -301,59 +300,59 @@ public class JavaInterface extends ANY
    *
    * @return a new value that represents o
    */
-  static Value javaObjectToPlainInstance(Object o, Clazz resultClazz)
+  static Value javaObjectToPlainInstance(Object o, int resultClazz)
   {
     if (PRECONDITIONS) require
-      (resultClazz != null);
+      (resultClazz > 0);
 
-    if (resultClazz == Clazzes.i8.getIfCreated())
+    if (resultClazz == fuir().clazz(FUIR.SpecialClazzes.c_i8))
       {
         return o instanceof Byte b ? new i8Value(b): new i8Value(((Value) o).i8Value());
       }
-    else if (resultClazz == Clazzes.u16.getIfCreated())
+    else if (resultClazz == fuir().clazz(FUIR.SpecialClazzes.c_u16))
       {
         return o instanceof Character c ? new u16Value(c): new u16Value(((Value) o).u16Value());
       }
-    else if (resultClazz == Clazzes.i16.getIfCreated())
+    else if (resultClazz == fuir().clazz(FUIR.SpecialClazzes.c_i16))
       {
         return o instanceof Short s ? new i16Value(s): new i16Value(((Value) o).i16Value());
       }
-    else if (resultClazz == Clazzes.i32.getIfCreated())
+    else if (resultClazz == fuir().clazz(FUIR.SpecialClazzes.c_i32))
       {
         return o instanceof Integer i ? new i32Value(i): new i32Value(((Value) o).i32Value());
       }
-    else if (resultClazz == Clazzes.i64.getIfCreated())
+    else if (resultClazz == fuir().clazz(FUIR.SpecialClazzes.c_i64))
       {
         return o instanceof Long j ? new i64Value(j): new i64Value(((Value) o).i64Value());
       }
-    else if (resultClazz == Clazzes.f32.getIfCreated())
+    else if (resultClazz == fuir().clazz(FUIR.SpecialClazzes.c_f32))
       {
         return o instanceof Float f ? new f32Value(f.floatValue()): new f32Value(((Value) o).f32Value());
       }
-    else if (resultClazz == Clazzes.f64.getIfCreated())
+    else if (resultClazz == fuir().clazz(FUIR.SpecialClazzes.c_f64))
       {
         return o instanceof Double d ? new f64Value(d.doubleValue()): new f64Value(((Value) o).f64Value());
       }
-    else if (resultClazz == Clazzes.bool.getIfCreated())
+    else if (resultClazz == fuir().clazz(FUIR.SpecialClazzes.c_bool))
       {
         return o instanceof Boolean z ? new boolValue(z): new boolValue(((Value) o).boolValue());
       }
-    else if (resultClazz == Clazzes.c_unit.getIfCreated() && o == null             ) { return new Instance(resultClazz); }
+    else if (resultClazz == fuir().clazz(FUIR.SpecialClazzes.c_unit) && o == null             ) { return new Instance(resultClazz); }
     else
       {
         var result = new Instance(resultClazz);
         for (var e : Layout.get(resultClazz)._offsets.entrySet())
           {
-            var f = e.getKey().feature();
+            var f = fuir().clazzField(fuir().clazzAsValue(resultClazz), e.getKey());
             var off = (Integer) e.getValue();
-            var v = switch (f.featureName().baseName())
+            var v = switch (fuir().clazzBaseName(f))
               {
               case "Java_Ref"   -> new JavaRef(o);
               case "forbidden" -> Value.NO_VALUE;
-              default -> f.isOuterRef() ? new Instance(resultClazz._outer)
-                                        : (Value) (Object) new Object() { { if (true) throw new Error("unexpected field in fuzion.java.Array: "+f.qualifiedName()); }};
+              default -> fuir().clazzIsOuterRef(f) ? new Instance(fuir().clazzOuterClazz(resultClazz))
+                                        : (Value) (Object) new Object() { { if (true) throw new Error("unexpected field in fuzion.java.Array: "+fuir().clazzAsStringNew(f)); }};
               };
-            if (v != Value.NO_VALUE)
+            if (v != Value.NO_VALUE && /* NYI: HACK: */ result.refs.length > off)
               {
                 result.refs[off] = v;
               }
@@ -368,11 +367,11 @@ public class JavaInterface extends ANY
    *
    * @param e the Java exception, must not be null,
    */
-  static Value javaThrowableToError(Throwable e, Clazz resultClazz)
+  static Value javaThrowableToError(Throwable e, int resultClazz)
   {
     if (PRECONDITIONS) require
       (e != null,
-       resultClazz != null);
+       resultClazz > 0);
 
     var result = new Instance(resultClazz);
     if (CHECKS) check
@@ -442,7 +441,7 @@ public class JavaInterface extends ANY
    *
    * @param resultClazz the result type of the constructed instance
    */
-  static Value call(String clName, String name, String sig, Object thiz, Value args, Clazz resultClazz)
+  static Value call(String clName, String name, String sig, Object thiz, Value args, int resultClazz)
   {
     if (PRECONDITIONS) require
       (clName != null);
