@@ -24,6 +24,7 @@ Scorecard](https://api.securityscorecards.dev/projects/github.com/tokiwa-softwar
      * [Windows](#windows)
    * [Build](#build)
    * [Run](#run)
+   * [Install prebuilt](#install-prebuilt)
 <!--te-->
 
 ---
@@ -211,3 +212,7 @@ To compile the same example (requires clang C compiler):
     ./factors
 
 Have fun!
+
+## Install prebuilt
+
+[![Packaging status](https://repology.org/badge/vertical-allrepos/fuzion.svg)](https://repology.org/project/fuzion/versions)
