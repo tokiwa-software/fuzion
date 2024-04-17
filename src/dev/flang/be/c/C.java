@@ -34,6 +34,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import dev.flang.fuir.FUIR;
@@ -743,7 +744,12 @@ public class C extends ANY
       }
 
     var cCompiler = _options._cCompiler != null ? _options._cCompiler : "clang";
+    var cTarget = _options._cTarget != null ? Optional.of(_options._cTarget) : getClangDefaultTarget();
     var command = new List<String>(cCompiler);
+    if (cTarget.isPresent())
+      {
+        command.add("--target=" + cTarget.get());
+      }
     if(_options._cFlags != null)
       {
         command.addAll(_options._cFlags.split(" "));
@@ -808,6 +814,7 @@ public class C extends ANY
 
     // add the c-files
     command.addAll(_options.pathOf("include/shared.c"));
+    // NYI: should select includes based on cTarget
     if (isWindows())
       {
         command.addAll(_options.pathOf("include/win.c"));
@@ -985,6 +992,29 @@ public class C extends ANY
     catch (IOException | InterruptedException | NumberFormatException e)
       {
         return -1;
+      }
+  }
+
+
+  /**
+   * @return The default clang target or optional.empty().
+   */
+  private Optional<String> getClangDefaultTarget()
+  {
+    try
+      {
+        var p = new ProcessBuilder().command(Arrays.asList("clang", "-print-target-triple"))
+          .start();
+        p.waitFor();
+        return new String(p
+          .getInputStream()
+          .readAllBytes())
+            .lines()
+            .findFirst();
+      }
+    catch (Exception e)
+      {
+        return Optional.empty();
       }
   }
 
