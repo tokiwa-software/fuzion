@@ -51,7 +51,7 @@ import java.util.Arrays;
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 class CodeGen
-  extends AbstractInterpreter.ProcessStatement<Expr, Expr>  // both, values and statements are implemented by Expr
+  extends AbstractInterpreter.ProcessExpression<Expr, Expr>  // both, values and statements are implemented by Expr
   implements ClassFileConstants
 {
 
@@ -151,7 +151,7 @@ class CodeGen
    * @param s site of the next expression
    */
   @Override
-  public Expr statementHeader(int cl, int s)
+  public Expr expressionHeader(int cl, int s)
   {
     return _jvm.trace(cl, s);
   }
