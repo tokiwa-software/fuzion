@@ -435,7 +435,7 @@ public class Resolution extends ANY
       {
         if (Types.resolved == null)
           {
-            new Types.Resolved(this, universe);
+            new Types.Resolved(this);
           }
 
         Feature f = forType.removeFirst();

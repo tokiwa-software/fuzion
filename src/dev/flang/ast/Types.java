@@ -178,85 +178,9 @@ public class Types extends ANY
     public final AbstractFeature f_Unary;
     public final AbstractFeature f_auto_unwrap;
     public final Set<AbstractType> numericTypes;
-    public static interface CreateType
+    public Resolved(Resolution res)
     {
-      AbstractType type(String name);
-    }
-    public Resolved(SrcModule mod, CreateType ct, AbstractFeature universe)
-    {
-      this.universe = universe;
-      t_i8            = ct.type("i8");
-      t_i16           = ct.type("i16");
-      t_i32           = ct.type("i32");
-      t_i64           = ct.type("i64");
-      t_u8            = ct.type("u8");
-      t_u16           = ct.type("u16");
-      t_u32           = ct.type("u32");
-      t_u64           = ct.type("u64");
-      t_f32           = ct.type("f32");
-      t_f64           = ct.type("f64");
-      t_bool          = ct.type("bool");
-      t_fuzion        = ct.type("fuzion");
-      t_String        = ct.type(FuzionConstants.STRING_NAME);
-      t_Const_String  = ct.type("Const_String");
-      t_Any           = ct.type(FuzionConstants.ANY_NAME);
-      t_unit          = ct.type(FuzionConstants.UNIT_NAME);
-      t_void          = ct.type("void");
-      f_id            = universe.get(mod, "id", 2);
-      f_void          = universe.get(mod, "void");
-      f_choice        = universe.get(mod, "choice");
-      f_TRUE          = universe.get(mod, "TRUE");
-      f_FALSE         = universe.get(mod, "FALSE");
-      f_bool          = universe.get(mod, "bool");
-      f_bool_NOT      = f_bool.get(mod, FuzionConstants.PREFIX_OPERATOR_PREFIX + "!");
-      f_bool_AND      = f_bool.get(mod, FuzionConstants.INFIX_OPERATOR_PREFIX + "&&");
-      f_bool_OR       = f_bool.get(mod, FuzionConstants.INFIX_OPERATOR_PREFIX + "||");
-      f_bool_IMPLIES  = f_bool.get(mod, FuzionConstants.INFIX_OPERATOR_PREFIX + ":");
-      f_debug         = universe.get(mod, "debug", 0);
-      f_debug_level   = universe.get(mod, "debug_level");
-      f_Function      = universe.get(mod, FUNCTION_NAME);
-      f_Function_call = f_Function.get(mod, "call");
-      f_safety        = universe.get(mod, "safety");
-      f_array         = universe.get(mod, "array", 5);
-      f_array_internal_array = f_array.get(mod, "internal_array");
-      f_error         = universe.get(mod, "error", 1);
-      f_error_msg     = f_error.get(mod, "msg");
-      f_fuzion                     = universe.get(mod, "fuzion");
-      f_fuzion_java                = f_fuzion.get(mod, "java");
-      f_fuzion_Java_Object         = f_fuzion_java.get(mod, "Java_Object");
-      f_fuzion_Java_Object_Ref     = f_fuzion_Java_Object.get(mod, "Java_Ref");
-      f_fuzion_sys                 = f_fuzion.get(mod, "sys");
-      f_fuzion_sys_array           = f_fuzion_sys.get(mod, "internal_array");
-      f_fuzion_sys_array_data      = f_fuzion_sys_array.get(mod, "data");
-      f_fuzion_sys_array_length    = f_fuzion_sys_array.get(mod, "length");
-      f_concur                     = universe.get(mod, "concur");
-      f_concur_atomic              = f_concur.get(mod, "atomic");
-      f_concur_atomic_v            = f_concur_atomic.get(mod, "v");
-      f_Type                       = universe.get(mod, "Type");
-      f_Types                      = universe.get(mod, "Types");
-      f_Types_get                  = f_Types.get(mod, "get");
-      f_Lazy                       = universe.get(mod, LAZY_NAME);
-      f_Unary                      = universe.get(mod, UNARY_NAME);
-      f_auto_unwrap                = universe.get(mod, "auto_unwrap");
-      numericTypes = new TreeSet<AbstractType>(new List<>(
-        t_i8,
-        t_i16,
-        t_i32,
-        t_i64,
-        t_u8,
-        t_u16,
-        t_u32,
-        t_u64,
-        t_f32,
-        t_f64));
-      resolved = this;
-      ((ArtificialBuiltInType) t_ADDRESS  ).resolveArtificialType(universe.get(mod, FuzionConstants.ANY_NAME));
-      ((ArtificialBuiltInType) t_UNDEFINED).resolveArtificialType(universe);
-      ((ArtificialBuiltInType) t_ERROR    ).resolveArtificialType(f_ERROR);
-    }
-    Resolved(Resolution res, AbstractFeature universe)
-    {
-      this(res._module, (name) -> UnresolvedType.type(res, false, name, universe), universe);
+      this((outer, fn) -> res._module.lookupFeature(outer, fn, null), res.universe);
 
       var internalTypes = new AbstractType[] {
         t_i8         ,

@@ -246,14 +246,7 @@ public class SourceModule extends Module implements SrcModule
     if (_dependsOn.length > 0)
       {
         _universe.setState(State.RESOLVED);
-        new Types.Resolved(this,
-                           (name) ->
-                             {
-                               return lookupType(SourcePosition.builtIn, _universe, name, false, false)
-                                ._feature
-                                .selfType();
-                             },
-                           _universe);
+        new Types.Resolved(_res);
       }
 
     _main = parseMain();
