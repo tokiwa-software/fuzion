@@ -563,7 +563,7 @@ public class Call extends AbstractCall
       //
       // Would be better if AbstractFeature.resultType() would do this for us:
       _target instanceof Call tc &&
-      targetIsTypeParameter()          ? tc.calledFeature().genericType() :
+      targetIsTypeParameter()          ? tc.calledFeature().asGenericType() :
       calledFeature().isConstructor()  ? _target.typeForCallTarget()
                                        : targetTypeOrConstraint(res);
   }
