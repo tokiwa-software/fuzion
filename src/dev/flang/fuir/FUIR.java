@@ -1946,13 +1946,21 @@ hw25 is
         int tag = 0;
         for (var cg : match.subject().type().choiceGenerics())
           {
-            var t = f != null ? f.resultType() : ts.get(tix);
-            if (t.isDirectlyAssignableFrom(cg))
+            for (int tix = 0; tix < nt; tix++)
               {
-                resultL.add(tag);
+                var t = f != null ? f.resultType() : ts.get(tix);
+                if (t.isDirectlyAssignableFrom(cg))
+                  {
+                    resultL.add(tag);
+                  }
               }
+            tag++;
           }
-        tag++;
+        result = new int[resultL.size()];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = resultL.get(i);
+          }
       }
     else
       {
