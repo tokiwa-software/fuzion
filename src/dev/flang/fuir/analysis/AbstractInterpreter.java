@@ -65,7 +65,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    * Interface that defines the operations of the actual interpreter
    * that processes this code.
    */
-  public static abstract class ProcessStatement<VALUE, RESULT> extends ANY implements HasSourcePosition
+  public static abstract class ProcessExpression<VALUE, RESULT> extends ANY implements HasSourcePosition
   {
 
     /**
@@ -114,8 +114,8 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
 
     /**
-     * Join a List of RESULT from subsequent statements into a compound
-     * statement.  For a code generator, this could, e.g., join statements "a :=
+     * Join a List of RESULT from subsequent expressions into a compound
+     * expression.  For a code generator, this could, e.g., join expressions "a :=
      * 3;" and "b(x);" into a block "{ a := 3; b(x); }".
      */
     public abstract RESULT sequence(List<RESULT> l);
@@ -127,16 +127,14 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     public abstract VALUE unitValue();
 
     /**
-     * Called before each statement is processed. May be used to, e.g., produce
+     * Called before each expression is processed. May be used to, e.g., produce
      * tracing code for debugging or a comment.
-     *
-     * NYI: This should be renamed as expressionHeader, we no longer have statements.
      *
      * @param cl id of clazz we are interpreting
      *
      * @param s site of the next expression
      */
-    public abstract RESULT statementHeader(int cl, int s);
+    public abstract RESULT expressionHeader(int cl, int s);
 
     /**
      * A comment, adds human readable information
@@ -337,7 +335,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
   /**
    * The processor provided to the constructor.
    */
-  public final ProcessStatement<VALUE, RESULT> _processor;
+  public final ProcessExpression<VALUE, RESULT> _processor;
 
 
   /*---------------------------  constructors  ---------------------------*/
@@ -348,7 +346,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    *
    * @param fuir the intermediate code.
    */
-  public AbstractInterpreter(FUIR fuir, ProcessStatement<VALUE, RESULT> processor)
+  public AbstractInterpreter(FUIR fuir, ProcessExpression<VALUE, RESULT> processor)
   {
     if (PRECONDITIONS) require
       (fuir != null,
@@ -560,7 +558,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     int last_s = -1;
     for (var s = s0; !containsVoid(stack) && _fuir.withinCode(s) && !_fuir.alwaysResultsInVoid(cl, last_s); s = s + _fuir.codeSizeAt(s))
       {
-        l.add(_processor.statementHeader(cl, s));
+        l.add(_processor.expressionHeader(cl, s));
         l.add(process(cl, pre, stack, s));
         last_s = s;
       }
@@ -614,7 +612,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
         var stack = new Stack<VALUE>();
         for (var s = c; !containsVoid(stack) && _fuir.withinCode(s); s = s + _fuir.codeSizeAt(s))
           {
-            l.add(_processor.statementHeader(cl, s));
+            l.add(_processor.expressionHeader(cl, s));
             l.add(process(cl, ck == FUIR.ContractKind.Pre, stack, s));
           }
         if (!containsVoid(stack))
@@ -780,7 +778,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
         }
       default:
         {
-          Errors.fatal("AbstractInterpreter backend does not handle statements of type " + e);
+          Errors.fatal("AbstractInterpreter backend does not handle expressions of type " + e);
           return null;
         }
       }

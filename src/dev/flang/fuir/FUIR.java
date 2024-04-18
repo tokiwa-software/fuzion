@@ -1379,7 +1379,7 @@ hw25 is
     if (result == null)
       {
         Errors.fatal(codeAtAsPos(s),
-                     "Expr not supported in FUIR.codeAt", "Statement class: " + e.getClass());
+                     "Expr not supported in FUIR.codeAt", "Expression class: " + e.getClass());
         result = ExprKind.Current; // keep javac from complaining.
       }
     return result;

@@ -153,7 +153,7 @@ public abstract class IR extends ANY
    *
    * This also sets _siteStart in case `b` was not already added.
    *
-   * @param b a list of Expr statements to be added.
+   * @param b a list of Exprs, might contain non-Expr values for special cases.
    *
    * @return the index of b
    */

@@ -558,8 +558,7 @@ public class CFG extends ANY
 
 
   /**
-   * Create call graph for calls made by statement s at index i in code block c
-   * of clazz cl.
+   * Create call graph for calls made by expression at site s of clazz cl.
    *
    * @param cl clazz id
    *
@@ -607,7 +606,7 @@ public class CFG extends ANY
       case Pop: break;
       default:
         {
-          Errors.fatal("Effects backend does not handle statements of type " + s);
+          Errors.fatal("Effects backend does not handle expressions of type " + s);
         }
       }
   }

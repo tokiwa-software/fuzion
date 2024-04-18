@@ -1021,7 +1021,7 @@ Prepend
 println
 PRNG
 processModule
-ProcessStatement
+ProcessExpression
 Profiler
 prolog
 prologSuccessBlock
@@ -1193,7 +1193,6 @@ startRow
 startSampler
 startsWith
 statbuf
-StatementVisitor
 staticClazz
 staticTypeOfValue
 stdbool

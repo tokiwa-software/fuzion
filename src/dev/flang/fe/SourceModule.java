@@ -36,14 +36,17 @@ import java.nio.file.Path;
 
 import java.util.Comparator;
 import java.util.SortedMap;
+import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
+import dev.flang.ast.AbstractCase;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
+import dev.flang.ast.Block;
 import dev.flang.ast.Call;
 import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
@@ -1420,12 +1423,36 @@ part of the (((inner features))) declarations of the corresponding
             AstErrors.constraintMustNotBeGenericArgument(f);
           }
       }
+    checkLegalVisibility(f);
     checkRedefVisibility(f);
     checkLegalTypeVisibility(f);
     checkResultTypeVisibility(f);
     checkArgTypesVisibility(f);
     checkPreconditionVisibility(f);
     checkAbstractVisibility(f);
+  }
+
+
+  private void checkLegalVisibility(Feature f)
+  {
+    if (f.isRoutine())
+      {
+        f.code().visit(new FeatureVisitor()
+        {
+          private Stack<Object> stack = new Stack<Object>();
+          public void actionBefore(Block b, AbstractFeature outer) { if (b._newScope) { stack.push(b); } }
+          public void actionBefore(AbstractCase c) { stack.push(c); }
+          public void actionAfter(Block b, AbstractFeature outer)  { if (b._newScope) { stack.pop(); } }
+          public void actionAfter (AbstractCase c) { stack.pop(); }
+          public Expr action(Feature fd, AbstractFeature outer) {
+            if (!stack.isEmpty() && !fd.visibility().equals(Visi.PRIV))
+              {
+                AstErrors.illegalVisibilityModifier(fd);
+              }
+            return super.action(fd, outer);
+          }
+        }, f);
+      }
   }
 
 
@@ -1503,7 +1530,7 @@ part of the (((inner features))) declarations of the corresponding
   {
     if (!f.definesType() && f.visibility().definesTypeVisibility())
       {
-        AstErrors.illegalVisibilityModifier(f);
+        AstErrors.illegalTypeVisibilityModifier(f);
       }
   }
 
