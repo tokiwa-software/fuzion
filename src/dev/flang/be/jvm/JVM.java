@@ -53,7 +53,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import java.util.ArrayList;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -1030,12 +1029,12 @@ should be avoided as much as possible.
    *
    * @return code to output the trace or a NOP.
    */
-  Expr trace(int cl, int c, int i)
+  Expr trace(int cl, int s)
   {
     if (TRACE)
       {
-        var p = _fuir.codeAtAsPos(c,i);
-        var msg = "IN " + _fuir.clazzAsString(cl) + ": " + _fuir.codeAtAsString(cl,c,i) +
+        var p = _fuir.codeAtAsPos(s);
+        var msg = "IN " + _fuir.clazzAsString(cl) + ": " + _fuir.codeAtAsString(cl,s) +
           (p == null ? "" : " " + p.show());
         return callRuntimeTrace(msg);
       }

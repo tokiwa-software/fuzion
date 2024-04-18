@@ -31,10 +31,6 @@ import java.util.TreeMap;
 
 import dev.flang.util.ANY;
 
-import dev.flang.air.Clazz;
-
-import dev.flang.ast.AbstractCall; // NYI: remove dependency! Use dev.flang.fuir instead.
-
 
 /**
  * FuzionThread contains thread-local data used by interpreted Fuzion code.
@@ -73,14 +69,14 @@ public class FuzionThread extends ANY
   /**
    * Current call stack, for debugging output
    */
-  Stack<AbstractCall> _callStack = new Stack<>();
-  Stack<Clazz> _callStackFrames = new Stack<>();
+  Stack<Integer> _callStack = new Stack<>();
+  Stack<Integer> _callStackFrames = new Stack<>();
 
 
   /**
    * Currently installed effects.
    */
-  TreeMap<Clazz, Value> _effects = new TreeMap<>();
+  TreeMap<Integer, Value> _effects = new TreeMap<>();
 
 }
 

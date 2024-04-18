@@ -929,7 +929,7 @@ public class NumLiteral extends Constant
               }
           }
       }
-    var bb = ByteBuffer.wrap(new byte[4+result.length]);
+    var bb = ByteBuffer.wrap(new byte[4+result.length]).order(ByteOrder.LITTLE_ENDIAN);
     bb.putInt(ct._bytes);
     bb.put(result);
     return bb.array();

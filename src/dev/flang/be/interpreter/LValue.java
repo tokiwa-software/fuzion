@@ -26,8 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.air.Clazz;
-import dev.flang.air.Clazzes;
+import dev.flang.fuir.FUIR;
 
 
 /**
@@ -61,13 +60,15 @@ public class LValue extends ValueWithClazz
   /**
    * Constructor
    */
-  public LValue(Clazz c, Instance cont, int off)
+  public LValue(int c, Instance cont, int off)
   {
     super(c);
 
     if (PRECONDITIONS) require
       (cont != null,
-       off >= 0 || c.isUnitType());
+       fuir().clazzIsUnitType(c) || off >= 0,
+       fuir().clazzIsUnitType(c) || off < Layout.get(cont._clazz).size(),
+       fuir().clazzIsUnitType(c) || off < cont.refs.length);
 
     this.container = cont;
     this.offset = off;
@@ -81,11 +82,11 @@ public class LValue extends ValueWithClazz
    * Create a copy (clone) of this value.  Used for boxing values into
    * ref-types.
    */
-  Instance cloneValue(Clazz cl)
+  Instance cloneValue(int cl)
   {
     if (PRECONDITIONS) require
       (_clazz == cl,
-       !cl.isRef());
+       !fuir().clazzIsRef(cl));
 
     return new Instance(cl, container, offset);
   }
@@ -226,7 +227,7 @@ public class LValue extends ValueWithClazz
    *
    * @return the LValue to rev
    */
-  public LValue at(Clazz c, int off)
+  public LValue at(int c, int off)
   {
     return new LValue(c,
                       container,
@@ -273,9 +274,9 @@ public class LValue extends ValueWithClazz
    *
    * @throws Error in case this does not match the expected clazz
    */
-  void checkStaticClazz(Clazz expected)
+  void checkStaticClazz(int expected)
   {
-    if (expected.isRef())
+    if (fuir().clazzIsRef(expected))
       {
         throw new Error("LValue (" + _clazz + " not allowed for dynamic clazz " + expected);
       }
@@ -293,7 +294,7 @@ public class LValue extends ValueWithClazz
   Instance instance()
   {
     if (PRECONDITIONS) require
-      (_clazz.isRef());
+      (fuir().clazzIsRef(_clazz));
 
     return (Instance) container.refs[offset];
   }
@@ -315,7 +316,7 @@ public class LValue extends ValueWithClazz
   public int tag()
   {
     if (PRECONDITIONS) require
-      (_clazz.isChoice() & !_clazz.isChoiceOfOnlyRefs());
+      (fuir().clazzIsChoice(_clazz) & !fuir().clazzIsChoiceOfOnlyRefs(_clazz));
 
     var tag = container.nonrefs[offset];
     if (POSTCONDITIONS) ensure
@@ -332,12 +333,18 @@ public class LValue extends ValueWithClazz
    */
   public String toString()
   {
-    return "lvalue[" + container + "@" + offset + "(" + _clazz + ")]" +
-      (_clazz == Clazzes.i32.getIfCreated() ? " (" + i32Value() + ")" :
-       _clazz == Clazzes.u32.getIfCreated() ? " (" + u32Value() + ")" :
-       _clazz == Clazzes.i64.getIfCreated() ? " (" + i64Value() + ")" :
-       _clazz == Clazzes.u64.getIfCreated() ? " (" + u64Value() + ")" :
-       _clazz == Clazzes.bool.getIfCreated() ? " (" + boolValue() + ")" : "");
+    return "lvalue[" + container + "@" + offset + "(" + fuir().clazzAsStringNew(_clazz) + ")]" +
+      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_i8  ) ? " (" + i8Value()   + ")" :
+       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_u8  ) ? " (" + u8Value()   + ")" :
+       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_i16 ) ? " (" + i16Value()  + ")" :
+       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_u16 ) ? " (" + u16Value()  + ")" :
+       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_i32 ) ? " (" + i32Value()  + ")" :
+       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_u32 ) ? " (" + u32Value()  + ")" :
+       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_i64 ) ? " (" + i64Value()  + ")" :
+       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_u64 ) ? " (" + u64Value()  + ")" :
+       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_f32 ) ? " (" + f32Value()  + ")" :
+       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_f64 ) ? " (" + f64Value()  + ")" :
+       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_bool) ? " (" + boolValue() + ")" : "");
   }
 
 }

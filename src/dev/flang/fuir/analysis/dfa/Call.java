@@ -37,7 +37,6 @@ import dev.flang.util.Errors;
 import static dev.flang.util.FuzionConstants.EFFECT_ABORTABLE_NAME;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
-import dev.flang.util.Terminal;
 
 
 /**
@@ -77,9 +76,9 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
-   * If available, _site gives the call site of this Call (see IR.siteFromCI and
-   * FUIR.siteAsPos).  Calls with different call sites are analysed separately,
-   * even if the context and environment of the call is the same.
+   * If available, _site gives the call site of this Call as used in the IR.
+   * Calls with different call sites are analysed separately, even if the
+   * context and environment of the call is the same.
    *
    * IR.NO_SITE if the call site is not known, i.e., the call is coming from
    * intrinsic call or the main entry point.
@@ -390,7 +389,9 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   HasSourcePosition callSitePos()
   {
-    return _dfa._fuir.siteAsPos(site());
+    var s = site();
+    return s == IR.NO_SITE ? null
+                           : _dfa._fuir.codeAtAsPos(s);
   }
 
 
@@ -405,7 +406,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   Value getEffectCheck(int ecl)
   {
     return
-      _env != null ? _env.getEffect(ecl)
+      _env != null ? _env.getActualEffectValues(ecl)
                    : _dfa._defaultEffects.get(ecl);
   }
 

@@ -106,7 +106,7 @@ public class Feature extends AbstractFeature
     return
       // NYI anonymous feature should have correct visibility set.
       isAnonymousInnerFeature()
-      ? outer().visibility()
+      ? (state().atLeast(State.FINDING_DECLARATIONS) ? outer().visibility() : Visi.UNSPECIFIED)
       : _visibility == Visi.UNSPECIFIED
       ? Visi.PRIV
       : _visibility;
@@ -277,8 +277,16 @@ public class Feature extends AbstractFeature
 
 
   /**
+   * Is this a loop's variable that is being iterated over using the `in` keyword?
+   * If so, also store the internal list name.
+   */
+  boolean _isLoopIterator = false;
+  String _loopIteratorListName;
+
+
+  /**
    * All features that have been found to be directly redefined by this feature.
-   * This does not include redefinitions of redefinitions.  Four Features loaded
+   * This does not include redefinitions of redefinitions.  For Features loaded
    * from source code, this set is collected during RESOLVING_DECLARATIONS.  For
    * LibraryFeature, this will be loaded from the library module file.
    */
@@ -795,8 +803,8 @@ public class Feature extends AbstractFeature
    */
   public Kind kind()
   {
-    return state().atLeast(State.RESOLVING_TYPES) && isChoiceAfterTypesResolved() ||
-          !state().atLeast(State.RESOLVING_TYPES) && isChoiceBeforeTypesResolved()
+    return state().atLeast(State.RESOLVING_TYPES) && Types.resolved != null && isChoiceAfterTypesResolved() ||
+                                                                               isChoiceBeforeTypesResolved()
       ? Kind.Choice
       : switch (implKind()) {
           case FieldInit, FieldDef, FieldActual, FieldIter, Field -> Kind.Field;
@@ -1654,7 +1662,7 @@ public class Feature extends AbstractFeature
     for (AbstractFeature p : res._module.declaredOrInheritedFeatures(this).values())
       {
         // primitives must not have any fields
-        if (p.isField() && !p.isOuterRef() && !(p.featureName().baseName().equals("val") && p.resultType().equals(selfType())) )
+        if (p.isField() && !p.isOuterRef() && !(p.featureName().baseName().equals("val") && p.resultType().compareTo(selfType())==0) )
           {
             AstErrors.mustNotContainFields(_pos, p, this.featureName().baseName());
           }
@@ -1701,7 +1709,7 @@ public class Feature extends AbstractFeature
             _resultType.checkChoice(_posOfReturnType);
           }
 
-        if (_resultType.isThisType() && _resultType.featureOfType() == this)
+        if (_resultType.isThisType() && _resultType.feature() == this)
           { // we are in the case of issue #1186: A routine returns itself:
             //
             //  a => a.this
@@ -1733,7 +1741,7 @@ public class Feature extends AbstractFeature
 
         /*
          * extra pass to automatically wrap values into 'Lazy'
-         * or unwrap values inherting `unwrap`
+         * or unwrap values inheriting `unwrap`
          */
         visit(new FeatureVisitor() {
             // we must do this from the outside of calls towards the inside to
@@ -2230,7 +2238,7 @@ public class Feature extends AbstractFeature
     //    _featureName = FeatureName.get(_featureName.baseName(), _arguments.size());
     res._module.findDeclarations(ta, this);
 
-    var g = ta.generic();
+    var g = ta.asGeneric();
     _generics = _generics.addTypeParameter(g);
     res._module.addTypeParameter(this, ta);
     this.whenResolvedTypes(()->res.resolveTypes(ta));

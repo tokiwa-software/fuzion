@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -169,14 +170,16 @@ public class InlineArray extends ExprWithPos
       {
         // if expected type is choice, examine if there is exactly one
         // array in choice generics, if so use this for further type propagation.
-        t = t.findInChoice(cg -> !cg.isGenericArgument() && cg.featureOfType() == Types.resolved.f_array);
+        t = t.findInChoice(cg -> !cg.isGenericArgument() && cg.feature() == Types.resolved.f_array);
 
         var elementType = elementType(t);
         if (elementType != Types.t_ERROR)
           {
             for (var e : _elements)
               {
-                e.propagateExpectedType(res, outer, elementType);
+                var e2 = e.propagateExpectedType(res, outer, elementType);
+                if (CHECKS) check
+                  (e == e2);
               }
             _type = Types.resolved.f_array.resultTypeIfPresent(res, new List<>(elementType));
           }
@@ -198,7 +201,7 @@ public class InlineArray extends ExprWithPos
       (t != null);
 
     // NYI see issue: #1817
-    if (Types.resolved.f_array.inheritsFrom(t.featureOfType()) &&
+    if (Types.resolved.f_array.inheritsFrom(t.feature()) &&
         t.generics().size() == 1)
       {
         return t.generics().get(0);
@@ -325,7 +328,7 @@ public class InlineArray extends ExprWithPos
       @Override
       public SourcePosition pos()
       {
-        throw new UnsupportedOperationException("Unimplemented method 'pos'");
+        return InlineArray.this.pos();
       }
 
       /**
@@ -335,11 +338,14 @@ public class InlineArray extends ExprWithPos
       @Override
       public byte[] data()
       {
-        var result = ByteBuffer.allocate(4 + InlineArray.this
-          ._elements
-          .stream()
-          .mapToInt(e -> e.asCompileTimeConstant().data().length)
-          .sum());
+        var result = ByteBuffer.allocate(
+            4 + InlineArray.this
+                           ._elements
+                           .stream()
+                           .mapToInt(e -> e.asCompileTimeConstant().data().length)
+                           .sum()
+          )
+          .order(ByteOrder.LITTLE_ENDIAN);
 
         result.putInt(_elements.size());
 

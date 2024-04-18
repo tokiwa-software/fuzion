@@ -26,10 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.air.Clazz;
-import dev.flang.air.Clazzes;
-
-
+import dev.flang.fuir.FUIR;
 
 /**
  * u16Value is a value of type u16
@@ -98,7 +95,6 @@ public class u16Value extends Value
    */
   void storeNonRef(LValue slot, int size)
   {
-    if (size != 1) say("Assigning "+this);
     if (PRECONDITIONS) require
       (size == 1);
 
@@ -114,9 +110,9 @@ public class u16Value extends Value
    *
    * @throws Error in case this does not match the expected clazz
    */
-  void checkStaticClazz(Clazz expected)
+  void checkStaticClazz(int expected)
   {
-    if (expected != Clazzes.u16.getIfCreated())
+    if (expected != fuir().clazz(FUIR.SpecialClazzes.c_u16))
       {
         throw new Error("u16 value not allowed for clazz " + expected);
       }

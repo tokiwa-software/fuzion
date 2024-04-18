@@ -43,17 +43,16 @@ import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Box;
 import dev.flang.ast.Cond;
-import dev.flang.ast.Consts;
 import dev.flang.ast.Contract;
 import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.FeatureVisitor;
-import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
+import dev.flang.ast.Universe;
 import dev.flang.ast.Visi;
 
 import dev.flang.util.Errors;
@@ -100,12 +99,6 @@ public class LibraryFeature extends AbstractFeature
    * cached result of featureName()
    */
   private FeatureName _featureName;
-
-
-  /**
-   * cached result of generics():
-   */
-  private FormalGenerics _generics;
 
 
   /**
@@ -246,8 +239,8 @@ public class LibraryFeature extends AbstractFeature
   public int modifiers()
   {
     return
-      (_libModule.featureIsFixed       (_index)     ? Consts.MODIFIER_FIXED    : 0) |
-      (_libModule.featureRedefinesCount(_index) > 0 ? Consts.MODIFIER_REDEFINE : 0);
+      (_libModule.featureIsFixed       (_index)     ? FuzionConstants.MODIFIER_FIXED    : 0) |
+      (_libModule.featureRedefinesCount(_index) > 0 ? FuzionConstants.MODIFIER_REDEFINE : 0);
 
   }
 
@@ -425,7 +418,7 @@ public class LibraryFeature extends AbstractFeature
       (result != null,
        Errors.any() || result.isRef() == isThisRef(),
        // does not hold if feature is declared repeatedly
-       Errors.any() || result.featureOfType() == this);
+       Errors.any() || result.feature() == this);
 
     return result;
   }
@@ -484,7 +477,7 @@ public class LibraryFeature extends AbstractFeature
   {
     if (_pos == null)
       {
-        _pos = pos(_libModule.featurePosition(_index));
+        _pos = pos(_libModule.featurePosition(_index), _libModule.featurePositionEnd(_index));
       }
     return _pos;
   }
@@ -536,7 +529,7 @@ public class LibraryFeature extends AbstractFeature
     if (res == null)
       {
         var s = new Stack<Expr>();
-        code(at, s, -1);
+        code(at, s, -1, -1);
         if (CHECKS) check
           (s.size() == 1);
         res = s.pop();
@@ -555,7 +548,7 @@ public class LibraryFeature extends AbstractFeature
     if (res == null)
       {
         var s = new Stack<Expr>();
-        res = code(at, s, -1);
+        res = code(at, s, -1, -1);
         if (CHECKS) check
           (s.size() == 0);
         _libModule._code.put(at, res);
@@ -573,7 +566,7 @@ public class LibraryFeature extends AbstractFeature
    *
    * @param pos the current source code position from earlier code, -1 if none.
    */
-  AbstractBlock code(int at, Stack<Expr> s, int pos)
+  AbstractBlock code(int at, Stack<Expr> s, int pos, int posEnd)
   {
     var l = new List<Expr>();
     var sz = _libModule.codeSize(at);
@@ -584,7 +577,9 @@ public class LibraryFeature extends AbstractFeature
         var k = _libModule.expressionKind(e);
         var iat = _libModule.expressionExprPos(e);
         pos = _libModule.expressionHasPosition(e) ? _libModule.expressionPosition(e) : pos;
+        posEnd = _libModule.expressionHasPosition(e) ? _libModule.expressionPositionEnd(e) : posEnd;
         var fpos = pos;
+        var fposEnd = posEnd;
         Expr c = null;
         Expr x = null;
         switch (k)
@@ -593,16 +588,16 @@ public class LibraryFeature extends AbstractFeature
             {
               var field = _libModule.assignField(iat);
               var f = _libModule.libraryFeature(field);
-              var target = s.pop();
+              var target = f.outer().isUniverse() ? new Universe() : s.pop();
               var val = s.pop();
               c = new AbstractAssign(f, target, val)
-                { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
+                { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
               break;
             }
           case Box:
             {
               x = new Box(s.pop())
-                { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
+                { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
               break;
             }
           case Const:
@@ -615,14 +610,14 @@ public class LibraryFeature extends AbstractFeature
                   public byte[] data() { return d; }
                   public Expr visit(FeatureVisitor v, AbstractFeature af) { v.action(this); return this; };
                   public String toString() { return "LibraryFeature.Constant of type "+type(); }
-                  public SourcePosition pos() { return LibraryFeature.this.pos(fpos); }
+                  public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); }
                 };
               break;
             }
           case Current:
             {
               x = new AbstractCurrent(selfType())
-                { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
+                { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
               break;
             }
           case Match:
@@ -664,14 +659,14 @@ public class LibraryFeature extends AbstractFeature
                   public Expr subject() { return subj; }
                   public List<AbstractCase> cases() { return cases; }
                   public String toString() { return "LibraryFeature.AbstractMatch"; }
-                  public SourcePosition pos() { return LibraryFeature.this.pos(fpos); }
+                  public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); }
                 };
               break;
             }
           case Call:
             {
               x = new LibraryCall(_libModule, iat, s)
-                { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
+                { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
               break;
             }
           case Pop:
@@ -690,13 +685,13 @@ public class LibraryFeature extends AbstractFeature
             {
               var envType = _libModule.envType(iat);
               x = new Env(LibraryModule.DUMMY_POS, envType)
-                { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
+                { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
               break;
             }
           case Unit:
             {
               x = new AbstractBlock(new List<>())
-                { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
+                { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
               break;
             }
           case InlineArray:
@@ -706,17 +701,17 @@ public class LibraryFeature extends AbstractFeature
               var elCodePos = _libModule.inlineArrayCodeElementCodePos(iat);
 
               var el = new List<Expr>();
-              var code = code(codePos, new Stack<Expr>(), -1);
+              var code = code(codePos, new Stack<Expr>(), -1, -1);
 
               for (int index = 0; index < elCount; index++)
                 {
                   var st = new Stack<Expr>();
-                  var elCode = code(elCodePos, st, -1);
+                  var elCode = code(elCodePos, st, -1, -1);
                   el.add(st.isEmpty() ? elCode._expressions.get(0) : st.pop());
                   elCodePos = _libModule.codeNextPos(elCodePos);
                 }
 
-              x = new InlineArray(LibraryFeature.this.pos(fpos), el, code);
+              x = new InlineArray(LibraryFeature.this.pos(fpos, fposEnd), el, code);
               break;
             }
           default: throw new Error("Unexpected expression kind: " + k);
@@ -729,7 +724,7 @@ public class LibraryFeature extends AbstractFeature
               {
                 l.add(x);
                 x = new AbstractBlock(l)
-                  { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
+                  { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
                 l = new List<>();
               }
             s.push(x);
@@ -741,8 +736,9 @@ public class LibraryFeature extends AbstractFeature
         e = _libModule.expressionNextPos(e);
       }
     var fpos = pos;
+    var fposEnd = posEnd;
     return new AbstractBlock(l)
-      { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
+      { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
   }
 
 
@@ -753,9 +749,9 @@ public class LibraryFeature extends AbstractFeature
    * SourcePosition.builtIn, otherwise a valid index into a source file in this
    * module.
    */
-  private SourcePosition pos(int pos)
+  private SourcePosition pos(int pos, int posEnd)
   {
-    return _libModule.pos(pos);
+    return _libModule.pos(pos, posEnd);
   }
 
 
@@ -797,7 +793,7 @@ public class LibraryFeature extends AbstractFeature
 
   /**
    * All features that have been found to be directly redefined by this feature.
-   * This does not include redefinitions of redefinitions.  Four Features loaded
+   * This does not include redefinitions of redefinitions.  For Features loaded
    * from source code, this set is collected during RESOLVING_DECLARATIONS.  For
    * LibraryFeature, this will be loaded from the library module file.
    */
@@ -808,7 +804,6 @@ public class LibraryFeature extends AbstractFeature
       {
         _redefines = new TreeSet<>();
         var n = _libModule.featureRedefinesCount(_index);
-        var ip = _libModule.featureRedefinesPos(_index);
         for (var i = 0; i < n; i++)
           {
             var r = _libModule.libraryFeature(_libModule.featureRedefine(_index, i));

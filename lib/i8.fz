@@ -62,9 +62,9 @@ public i8(public val i8) : num.wrap_around, has_interval is
     safety: other != 0
   => mod other
 
-  # private division and remainder with crash in case of div-by-zero
-  private div (other i8) i8 => intrinsic
-  private mod (other i8) i8 => intrinsic
+  # division and remainder with crash in case of div-by-zero
+  div (other i8) i8 => intrinsic
+  mod (other i8) i8 => intrinsic
 
   # bitwise and, or and xor operations
   public fixed infix &  (other i8) i8 => intrinsic

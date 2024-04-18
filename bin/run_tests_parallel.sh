@@ -60,7 +60,7 @@ renice -n 19 $$ > /dev/null
 
 BUILD_DIR=$1
 TARGET=$2
-TESTS=$(find "$BUILD_DIR"/tests -name Makefile -print0 | xargs -0 -n1 dirname)
+TESTS=$(find "$BUILD_DIR"/tests -name Makefile -print0 | xargs -0 -n1 dirname | sort)
 VERBOSE="${VERBOSE:-""}"
 
 rm -rf "$BUILD_DIR"/run_tests.results
@@ -84,12 +84,19 @@ for test in $TESTS; do
       echo -n "_"
       echo "$test: skipped" >>"$BUILD_DIR"/run_tests.results
     else
+      START_TIME=$(date +%s%N | cut -b1-13)
       if make "$TARGET" -e -C "$test" >"$test"/out.txt 2>"$test"/stderr.txt; then
+         TEST_RESULT=true
+      else
+         TEST_RESULT=false
+      fi
+      END_TIME=$(date +%s%N | cut -b1-13)
+      if $TEST_RESULT; then
         echo -n "."
-        echo "$test: ok"     >>"$BUILD_DIR"/run_tests.results
+        echo "$test in $((END_TIME-START_TIME))ms: ok"     >>"$BUILD_DIR"/run_tests.results
       else
         echo -n "#"
-        echo "$test: failed" >>"$BUILD_DIR"/run_tests.results
+        echo "$test in $((END_TIME-START_TIME))ms: failed" >>"$BUILD_DIR"/run_tests.results
         cat "$test"/out.txt "$test"/stderr.txt >>"$BUILD_DIR"/run_tests.failures
       fi
     fi

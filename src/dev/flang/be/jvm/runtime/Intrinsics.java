@@ -332,7 +332,7 @@ public class Intrinsics extends ANY
         result[0] = SystemErrNo.EADDRINUSE.errno;
         return -1;
       }
-    catch(IOException e)
+    catch(Throwable e)
       {
         result[0] = -1;
         return -1;
@@ -369,6 +369,10 @@ public class Intrinsics extends ANY
         throw new RuntimeException("NYI: UNDER DEVELOPMENT: accept for asc instanceof " + asc.getClass());
       }
     catch(IOException e)
+      {
+        return false;
+      }
+    catch(Throwable e)
       {
         return false;
       }
@@ -413,6 +417,11 @@ public class Intrinsics extends ANY
         result[0] = SystemErrNo.ECONNREFUSED.errno;
         return -1;
       }
+    catch(Throwable e)
+      {
+        result[0] = SystemErrNo.UNSPECIFIED.errno;
+        return -1;
+      }
   }
 
   public static int fuzion_sys_net_get_peer_address(long sockfd, Object res)
@@ -432,7 +441,7 @@ public class Intrinsics extends ANY
           }
         return -1;
       }
-    catch (IOException e)
+    catch(Throwable e)
       {
         return -1;
       }
@@ -449,7 +458,7 @@ public class Intrinsics extends ANY
           }
         return 0;
       }
-    catch (IOException e)
+    catch (Throwable e)
       {
         return 0;
       }
@@ -490,7 +499,7 @@ public class Intrinsics extends ANY
         result[0] = bytesRead;
         return bytesRead != -1;
       }
-    catch(IOException e) //SocketTimeoutException and others
+    catch(Throwable e) //SocketTimeoutException and others
       {
         // unspecified error
         result[0] = -1;
@@ -507,7 +516,7 @@ public class Intrinsics extends ANY
         sc.write(ByteBuffer.wrap((byte[]) fileContent));
         return 0;
       }
-    catch(IOException e)
+    catch(Throwable e)
       {
         return -1;
       }
@@ -530,7 +539,8 @@ public class Intrinsics extends ANY
         asc.configureBlocking(blocking == 1);
         return 0;
       }
-    catch(IOException e)
+    // ClosedChannelException, IOException etc.
+    catch(Throwable e)
       {
         return -1;
       }
@@ -606,7 +616,7 @@ public class Intrinsics extends ANY
       {
         return Files.deleteIfExists(path);
       }
-    catch (Exception e)
+    catch (Throwable e)
       {
         return false;
       }
@@ -622,7 +632,7 @@ public class Intrinsics extends ANY
         Files.move(oldPath, newPath);
         return true;
       }
-    catch (Exception e)
+    catch (Throwable e)
       {
         return false;
       }
@@ -637,7 +647,7 @@ public class Intrinsics extends ANY
         Files.createDirectory(path);
         return true;
       }
-    catch (Exception e)
+    catch (Throwable e)
       {
         return false;
       }
@@ -651,6 +661,7 @@ public class Intrinsics extends ANY
 
     var path = Runtime.utf8ByteArrayDataToString((byte[]) s);
     long[] open_results = (long[]) res;
+    open_results[1] = 0;
     try
       {
         switch (mode)
@@ -674,7 +685,7 @@ public class Intrinsics extends ANY
             System.exit(1);
           }
       }
-    catch (Exception e)
+    catch (Throwable e)
       {
         open_results[1] = -1;
       }
@@ -725,6 +736,10 @@ public class Intrinsics extends ANY
       {
         err = SystemErrNo.EACCES;
       }
+    catch (Throwable e)
+      {
+        err = SystemErrNo.UNSPECIFIED;
+      }
 
     stats[0] = err.errno;
     stats[1] = 0;
@@ -747,7 +762,7 @@ public class Intrinsics extends ANY
         seekResults[0] = raf.getFilePointer();
         return;
       }
-    catch (Exception e)
+    catch (Throwable e)
       {
         seekResults[1] = -1;
         return;
@@ -766,7 +781,7 @@ public class Intrinsics extends ANY
         arr[0] = ((RandomAccessFile) Runtime._openStreams_.get(fd)).getFilePointer();
         return;
       }
-    catch (Exception e)
+    catch (Throwable e)
       {
         arr[1] = -1;
         return;
@@ -798,7 +813,7 @@ public class Intrinsics extends ANY
         result[0] = 0;
         return mmap;
       }
-    catch (IOException e)
+    catch (Throwable e)
       {
         result[0] = -1;
         return new byte[0];
@@ -853,7 +868,7 @@ public class Intrinsics extends ANY
           }
         });
       }
-    catch (IOException e)
+    catch (Throwable e)
       {
         open_results[1] = -1;
       }
@@ -863,7 +878,7 @@ public class Intrinsics extends ANY
   {
     Runtime.unsafeIntrinsic();
 
-    return ((Iterator<Path>)Runtime._openStreams_.get(fd)).hasNext();
+    return Runtime.getIterator(fd).hasNext();
   }
 
   public static long fuzion_sys_fileio_close_dir(long fd)
@@ -950,7 +965,7 @@ public class Intrinsics extends ANY
         result[3] = Runtime._openStreams_.add(process.getErrorStream());
         return 0;
       }
-    catch (IOException e)
+    catch (Throwable e)
       {
         return -1;
       }
@@ -965,7 +980,7 @@ public class Intrinsics extends ANY
         Runtime._openProcesses_.remove(desc);
         return result;
       }
-    catch(InterruptedException e)
+    catch(Throwable e)
       {
         return -1;
       }

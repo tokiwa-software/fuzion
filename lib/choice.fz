@@ -105,6 +105,3 @@
 #
 public choice(public CHOICE_ELEMENT_TYPE type...) is
 
-#  a(X type) X
-#    pre
-#      choice.this ? X => true, *=> false;

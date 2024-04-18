@@ -100,10 +100,9 @@ void * fzE_malloc_safe(size_t size) {
 #include <jni.h>
 
 // global instance of the jvm
-JavaVM *fzE_jvm              = NULL;
+JavaVM *fzE_jvm                = NULL;
 // global instance of the jvm environment
-// NYI thread-safety
-JNIEnv *fzE_jni_env          = NULL;
+__thread JNIEnv *fzE_jni_env   = NULL;
 
 // cached jclasses and jmethods which are frequently used
 
@@ -195,6 +194,16 @@ void utf8_to_mod_utf8(const char *utf8, char *mod_utf8) {
   *mod_utf8 = '\0';
 }
 
+// get jni-env for current thread
+JNIEnv * getJNIEnv()
+{
+  if (fzE_jni_env == NULL) {
+    // NYI: DetachCurrentThread
+    (*fzE_jvm)->AttachCurrentThread(fzE_jvm, (void **)&fzE_jni_env, NULL);
+  }
+  return fzE_jni_env;
+}
+
 // initialize the JVM
 // executed once at the start of the application
 void fzE_init_jvm() {
@@ -206,32 +215,32 @@ void fzE_init_jvm() {
     printf("Failed to start Java VM");
     exit(EXIT_FAILURE);
   }
-  fzE_class_float  = (*fzE_jni_env)->FindClass(fzE_jni_env, "java/lang/Float");
-  fzE_class_double = (*fzE_jni_env)->FindClass(fzE_jni_env, "java/lang/Double");
-  fzE_class_byte  = (*fzE_jni_env)->FindClass(fzE_jni_env, "java/lang/Byte");
-  fzE_class_short  = (*fzE_jni_env)->FindClass(fzE_jni_env, "java/lang/Short");
-  fzE_class_character  = (*fzE_jni_env)->FindClass(fzE_jni_env, "java/lang/Character");
-  fzE_class_integer  = (*fzE_jni_env)->FindClass(fzE_jni_env, "java/lang/Integer");
-  fzE_class_long  = (*fzE_jni_env)->FindClass(fzE_jni_env, "java/lang/Long");
-  fzE_class_boolean  = (*fzE_jni_env)->FindClass(fzE_jni_env, "java/lang/Boolean");
+  fzE_class_float  = (*getJNIEnv())->FindClass(getJNIEnv(), "java/lang/Float");
+  fzE_class_double = (*getJNIEnv())->FindClass(getJNIEnv(), "java/lang/Double");
+  fzE_class_byte  = (*getJNIEnv())->FindClass(getJNIEnv(), "java/lang/Byte");
+  fzE_class_short  = (*getJNIEnv())->FindClass(getJNIEnv(), "java/lang/Short");
+  fzE_class_character  = (*getJNIEnv())->FindClass(getJNIEnv(), "java/lang/Character");
+  fzE_class_integer  = (*getJNIEnv())->FindClass(getJNIEnv(), "java/lang/Integer");
+  fzE_class_long  = (*getJNIEnv())->FindClass(getJNIEnv(), "java/lang/Long");
+  fzE_class_boolean  = (*getJNIEnv())->FindClass(getJNIEnv(), "java/lang/Boolean");
 
-  fzE_float_valueof   = (*fzE_jni_env)->GetStaticMethodID(fzE_jni_env, fzE_class_float, "valueOf", "(F)Ljava/lang/Float;");
-  fzE_double_valueof = (*fzE_jni_env)->GetStaticMethodID(fzE_jni_env, fzE_class_double, "valueOf", "(D)Ljava/lang/Double;");
-  fzE_byte_valueof  = (*fzE_jni_env)->GetStaticMethodID(fzE_jni_env, fzE_class_byte, "valueOf", "(B)Ljava/lang/Byte;");
-  fzE_short_valueof  = (*fzE_jni_env)->GetStaticMethodID(fzE_jni_env, fzE_class_short, "valueOf", "(S)Ljava/lang/Short;");
-  fzE_character_valueof  = (*fzE_jni_env)->GetStaticMethodID(fzE_jni_env, fzE_class_character, "valueOf", "(C)Ljava/lang/Character;");
-  fzE_integer_valueof  = (*fzE_jni_env)->GetStaticMethodID(fzE_jni_env, fzE_class_integer, "valueOf", "(I)Ljava/lang/Integer;");
-  fzE_long_valueof  = (*fzE_jni_env)->GetStaticMethodID(fzE_jni_env, fzE_class_long, "valueOf", "(J)Ljava/lang/Long;");
-  fzE_boolean_valueof  = (*fzE_jni_env)->GetStaticMethodID(fzE_jni_env, fzE_class_boolean, "valueOf", "(Z)Ljava/lang/Boolean;");
+  fzE_float_valueof   = (*getJNIEnv())->GetStaticMethodID(getJNIEnv(), fzE_class_float, "valueOf", "(F)Ljava/lang/Float;");
+  fzE_double_valueof = (*getJNIEnv())->GetStaticMethodID(getJNIEnv(), fzE_class_double, "valueOf", "(D)Ljava/lang/Double;");
+  fzE_byte_valueof  = (*getJNIEnv())->GetStaticMethodID(getJNIEnv(), fzE_class_byte, "valueOf", "(B)Ljava/lang/Byte;");
+  fzE_short_valueof  = (*getJNIEnv())->GetStaticMethodID(getJNIEnv(), fzE_class_short, "valueOf", "(S)Ljava/lang/Short;");
+  fzE_character_valueof  = (*getJNIEnv())->GetStaticMethodID(getJNIEnv(), fzE_class_character, "valueOf", "(C)Ljava/lang/Character;");
+  fzE_integer_valueof  = (*getJNIEnv())->GetStaticMethodID(getJNIEnv(), fzE_class_integer, "valueOf", "(I)Ljava/lang/Integer;");
+  fzE_long_valueof  = (*getJNIEnv())->GetStaticMethodID(getJNIEnv(), fzE_class_long, "valueOf", "(J)Ljava/lang/Long;");
+  fzE_boolean_valueof  = (*getJNIEnv())->GetStaticMethodID(getJNIEnv(), fzE_class_boolean, "valueOf", "(Z)Ljava/lang/Boolean;");
 
-  fzE_float_value     = (*fzE_jni_env)->GetMethodID(fzE_jni_env, fzE_class_float, "floatValue", "()F");
-  fzE_double_value    = (*fzE_jni_env)->GetMethodID(fzE_jni_env, fzE_class_double, "doubleValue", "()D");
-  fzE_byte_value      = (*fzE_jni_env)->GetMethodID(fzE_jni_env, fzE_class_byte, "byteValue", "()B");
-  fzE_short_value     = (*fzE_jni_env)->GetMethodID(fzE_jni_env, fzE_class_short, "shortValue", "()S");
-  fzE_character_value = (*fzE_jni_env)->GetMethodID(fzE_jni_env, fzE_class_character, "charValue", "()C");
-  fzE_integer_value   = (*fzE_jni_env)->GetMethodID(fzE_jni_env, fzE_class_integer, "intValue", "()I");
-  fzE_long_value      = (*fzE_jni_env)->GetMethodID(fzE_jni_env, fzE_class_long, "longValue", "()J");
-  fzE_boolean_value   = (*fzE_jni_env)->GetMethodID(fzE_jni_env, fzE_class_boolean, "booleanValue", "()Z");
+  fzE_float_value     = (*getJNIEnv())->GetMethodID(getJNIEnv(), fzE_class_float, "floatValue", "()F");
+  fzE_double_value    = (*getJNIEnv())->GetMethodID(getJNIEnv(), fzE_class_double, "doubleValue", "()D");
+  fzE_byte_value      = (*getJNIEnv())->GetMethodID(getJNIEnv(), fzE_class_byte, "byteValue", "()B");
+  fzE_short_value     = (*getJNIEnv())->GetMethodID(getJNIEnv(), fzE_class_short, "shortValue", "()S");
+  fzE_character_value = (*getJNIEnv())->GetMethodID(getJNIEnv(), fzE_class_character, "charValue", "()C");
+  fzE_integer_value   = (*getJNIEnv())->GetMethodID(getJNIEnv(), fzE_class_integer, "intValue", "()I");
+  fzE_long_value      = (*getJNIEnv())->GetMethodID(getJNIEnv(), fzE_class_long, "longValue", "()J");
+  fzE_boolean_value   = (*getJNIEnv())->GetMethodID(getJNIEnv(), fzE_class_boolean, "booleanValue", "()Z");
 }
 
 // close the JVM.
@@ -257,19 +266,19 @@ char* fzE_replace_char(const char* str, char find, char replace){
 // NYI OPTIMIZATION do conversion in C not via the JVM.
 const char * fzE_java_string_to_utf8_bytes(jstring jstr)
 {
-  const jclass cls = (*fzE_jni_env)->GetObjectClass(fzE_jni_env, jstr);
-  const jmethodID getBytes = (*fzE_jni_env)->GetMethodID(fzE_jni_env, cls, "getBytes", "(Ljava/lang/String;)[B");
-  const jstring charsetName = (*fzE_jni_env)->NewStringUTF(fzE_jni_env, "UTF-8");
-  const jbyteArray arr = (jbyteArray) (*fzE_jni_env)->CallObjectMethod(fzE_jni_env, jstr, getBytes, charsetName);
-  (*fzE_jni_env)->DeleteLocalRef(fzE_jni_env, charsetName);
+  const jclass cls = (*getJNIEnv())->GetObjectClass(getJNIEnv(), jstr);
+  const jmethodID getBytes = (*getJNIEnv())->GetMethodID(getJNIEnv(), cls, "getBytes", "(Ljava/lang/String;)[B");
+  const jstring charsetName = (*getJNIEnv())->NewStringUTF(getJNIEnv(), "UTF-8");
+  const jbyteArray arr = (jbyteArray) (*getJNIEnv())->CallObjectMethod(getJNIEnv(), jstr, getBytes, charsetName);
+  (*getJNIEnv())->DeleteLocalRef(getJNIEnv(), charsetName);
 
-  jbyte * bytes = (*fzE_jni_env)->GetByteArrayElements(fzE_jni_env, arr, NULL);
-  const jsize length = (*fzE_jni_env)->GetArrayLength(fzE_jni_env, arr);
+  jbyte * bytes = (*getJNIEnv())->GetByteArrayElements(getJNIEnv(), arr, NULL);
+  const jsize length = (*getJNIEnv())->GetArrayLength(getJNIEnv(), arr);
   char * result = fzE_malloc_safe(length);
   memcpy(result, bytes, length);
 
-  (*fzE_jni_env)->ReleaseByteArrayElements(fzE_jni_env, arr, bytes, JNI_ABORT);
-  (*fzE_jni_env)->DeleteLocalRef(fzE_jni_env, arr);
+  (*getJNIEnv())->ReleaseByteArrayElements(getJNIEnv(), arr, bytes, JNI_ABORT);
+  (*getJNIEnv())->DeleteLocalRef(getJNIEnv(), arr);
 
   return result;
 }
@@ -278,46 +287,46 @@ const char * fzE_java_string_to_utf8_bytes(jstring jstr)
 // convert a jstring to modified utf-8 bytes
 const char * fzE_java_string_to_modified_utf8(jstring jstr)
 {
-  const char * str = (*fzE_jni_env)->GetStringUTFChars(fzE_jni_env, jstr, JNI_FALSE);
-  jsize sz = (*fzE_jni_env)->GetStringUTFLength(fzE_jni_env, jstr);
+  const char * str = (*getJNIEnv())->GetStringUTFChars(getJNIEnv(), jstr, JNI_FALSE);
+  jsize sz = (*getJNIEnv())->GetStringUTFLength(getJNIEnv(), jstr);
   char * result = fzE_malloc_safe(sz);
   memcpy(result, str, sz+1);
-  (*fzE_jni_env)->ReleaseStringUTFChars(fzE_jni_env, jstr, str);
+  (*getJNIEnv())->ReleaseStringUTFChars(getJNIEnv(), jstr, str);
   return result;
 }
 
 
 jvalue fzE_f32_to_java_object(double arg)
 {
-  return (jvalue) (*fzE_jni_env)->CallStaticObjectMethod(fzE_jni_env, fzE_class_float, fzE_float_valueof, arg);
+  return (jvalue) (*getJNIEnv())->CallStaticObjectMethod(getJNIEnv(), fzE_class_float, fzE_float_valueof, arg);
 }
 jvalue fzE_f64_to_java_object(float arg)
 {
-  return (jvalue) (*fzE_jni_env)->CallStaticObjectMethod(fzE_jni_env, fzE_class_double, fzE_double_valueof, arg);
+  return (jvalue) (*getJNIEnv())->CallStaticObjectMethod(getJNIEnv(), fzE_class_double, fzE_double_valueof, arg);
 }
 jvalue fzE_i8_to_java_object(int8_t arg)
 {
-  return (jvalue) (*fzE_jni_env)->CallStaticObjectMethod(fzE_jni_env, fzE_class_byte, fzE_byte_valueof, arg);
+  return (jvalue) (*getJNIEnv())->CallStaticObjectMethod(getJNIEnv(), fzE_class_byte, fzE_byte_valueof, arg);
 }
 jvalue fzE_i16_to_java_object(int16_t arg)
 {
-  return (jvalue) (*fzE_jni_env)->CallStaticObjectMethod(fzE_jni_env, fzE_class_short, fzE_short_valueof, arg);
+  return (jvalue) (*getJNIEnv())->CallStaticObjectMethod(getJNIEnv(), fzE_class_short, fzE_short_valueof, arg);
 }
 jvalue fzE_u16_to_java_object(uint16_t arg)
 {
-  return (jvalue) (*fzE_jni_env)->CallStaticObjectMethod(fzE_jni_env, fzE_class_character, fzE_character_valueof, arg);
+  return (jvalue) (*getJNIEnv())->CallStaticObjectMethod(getJNIEnv(), fzE_class_character, fzE_character_valueof, arg);
 }
 jvalue fzE_i32_to_java_object(int32_t arg)
 {
-  return (jvalue) (*fzE_jni_env)->CallStaticObjectMethod(fzE_jni_env, fzE_class_integer, fzE_integer_valueof, arg);
+  return (jvalue) (*getJNIEnv())->CallStaticObjectMethod(getJNIEnv(), fzE_class_integer, fzE_integer_valueof, arg);
 }
 jvalue fzE_i64_to_java_object(int64_t arg)
 {
-  return (jvalue) (*fzE_jni_env)->CallStaticObjectMethod(fzE_jni_env, fzE_class_long, fzE_long_valueof, arg);
+  return (jvalue) (*getJNIEnv())->CallStaticObjectMethod(getJNIEnv(), fzE_class_long, fzE_long_valueof, arg);
 }
 jvalue fzE_bool_to_java_object(bool arg)
 {
-  return (jvalue) (*fzE_jni_env)->CallStaticObjectMethod(fzE_jni_env, fzE_class_boolean, fzE_boolean_valueof, arg);
+  return (jvalue) (*getJNIEnv())->CallStaticObjectMethod(getJNIEnv(), fzE_class_boolean, fzE_boolean_valueof, arg);
 }
 
 
@@ -328,35 +337,35 @@ jvalue *fzE_convert_args(const char *sig, jvalue *args) {
   while (*sig != ')') {
     switch (*sig) {
     case 'F':
-      args[idx] = (jvalue) (*fzE_jni_env)->CallFloatMethod(fzE_jni_env, args[idx].l, fzE_float_value);
+      args[idx] = (jvalue) (*getJNIEnv())->CallFloatMethod(getJNIEnv(), args[idx].l, fzE_float_value);
       idx++;
       break;
     case 'D':
-      args[idx] = (jvalue) (*fzE_jni_env)->CallDoubleMethod(fzE_jni_env, args[idx].l, fzE_double_value);
+      args[idx] = (jvalue) (*getJNIEnv())->CallDoubleMethod(getJNIEnv(), args[idx].l, fzE_double_value);
       idx++;
       break;
     case 'B':
-      args[idx] = (jvalue) (*fzE_jni_env)->CallByteMethod(fzE_jni_env, args[idx].l, fzE_byte_value);
+      args[idx] = (jvalue) (*getJNIEnv())->CallByteMethod(getJNIEnv(), args[idx].l, fzE_byte_value);
       idx++;
       break;
     case 'S':
-      args[idx] = (jvalue) (*fzE_jni_env)->CallShortMethod(fzE_jni_env, args[idx].l, fzE_short_value);
+      args[idx] = (jvalue) (*getJNIEnv())->CallShortMethod(getJNIEnv(), args[idx].l, fzE_short_value);
       idx++;
       break;
     case 'C':
-      args[idx] = (jvalue) (*fzE_jni_env)->CallCharMethod(fzE_jni_env, args[idx].l, fzE_character_value);
+      args[idx] = (jvalue) (*getJNIEnv())->CallCharMethod(getJNIEnv(), args[idx].l, fzE_character_value);
       idx++;
       break;
     case 'I':
-      args[idx] = (jvalue) (*fzE_jni_env)->CallIntMethod(fzE_jni_env, args[idx].l, fzE_integer_value);
+      args[idx] = (jvalue) (*getJNIEnv())->CallIntMethod(getJNIEnv(), args[idx].l, fzE_integer_value);
       idx++;
       break;
     case 'J':
-      args[idx] = (jvalue) (*fzE_jni_env)->CallLongMethod(fzE_jni_env, args[idx].l, fzE_long_value);
+      args[idx] = (jvalue) (*getJNIEnv())->CallLongMethod(getJNIEnv(), args[idx].l, fzE_long_value);
       idx++;
       break;
     case 'Z':
-      args[idx] = (jvalue) (*fzE_jni_env)->CallBooleanMethod(fzE_jni_env, args[idx].l, fzE_boolean_value);
+      args[idx] = (jvalue) (*getJNIEnv())->CallBooleanMethod(getJNIEnv(), args[idx].l, fzE_boolean_value);
       idx++;
       break;
     case '[':
@@ -387,20 +396,20 @@ jvalue *fzE_convert_args(const char *sig, jvalue *args) {
 // return exception if there is any
 fzE_jvm_result fzE_return_result(jvalue jv)
 {
-  if ( (*fzE_jni_env)->ExceptionCheck(fzE_jni_env) == JNI_FALSE )
+  if ( (*getJNIEnv())->ExceptionCheck(getJNIEnv()) == JNI_FALSE )
   {
     return (fzE_jvm_result){ .fzTag = 0, .fzChoice = { .v0 = jv } };
   }
   else
   {
-    jthrowable exc =  (*fzE_jni_env)->ExceptionOccurred(fzE_jni_env);
+    jthrowable exc =  (*getJNIEnv())->ExceptionOccurred(getJNIEnv());
     assert (exc != NULL);
-    jclass cl  = (*fzE_jni_env)->FindClass(fzE_jni_env, "java/lang/Throwable");
+    jclass cl  = (*getJNIEnv())->FindClass(getJNIEnv(), "java/lang/Throwable");
     assert( cl != NULL );
-    jmethodID mid = (*fzE_jni_env)->GetMethodID(fzE_jni_env, cl, "getMessage", "()Ljava/lang/String;");
+    jmethodID mid = (*getJNIEnv())->GetMethodID(getJNIEnv(), cl, "getMessage", "()Ljava/lang/String;");
     assert( mid != NULL );
-    jstring exc_message = (jstring) (*fzE_jni_env)->CallObjectMethod(fzE_jni_env, exc, mid);
-    (*fzE_jni_env)->ExceptionClear(fzE_jni_env);
+    jstring exc_message = (jstring) (*getJNIEnv())->CallObjectMethod(getJNIEnv(), exc, mid);
+    (*getJNIEnv())->ExceptionClear(getJNIEnv());
     return (fzE_jvm_result){ .fzTag = 1, .fzChoice = { .v1 = exc_message } };
   }
 }
@@ -410,11 +419,11 @@ fzE_jvm_result fzE_return_result(jvalue jv)
 fzE_jvm_result fzE_call_c0(jstring class_name, jstring signature, jvalue *args)
 {
   const char * sig = fzE_java_string_to_modified_utf8(signature);
-  jclass cl  = (*fzE_jni_env)->FindClass(fzE_jni_env, fzE_replace_char(fzE_java_string_to_modified_utf8(class_name), '.', '/'));
+  jclass cl  = (*getJNIEnv())->FindClass(getJNIEnv(), fzE_replace_char(fzE_java_string_to_modified_utf8(class_name), '.', '/'));
   assert( cl != NULL );
-  jmethodID mid = (*fzE_jni_env)->GetMethodID(fzE_jni_env, cl, "<init>", sig);
+  jmethodID mid = (*getJNIEnv())->GetMethodID(getJNIEnv(), cl, "<init>", sig);
   assert( mid != NULL );
-  jvalue result = (jvalue) (*fzE_jni_env)->NewObjectA(fzE_jni_env, cl, mid, fzE_convert_args(sig, args));
+  jvalue result = (jvalue) (*getJNIEnv())->NewObjectA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args));
 
   return fzE_return_result(result);
 }
@@ -424,31 +433,31 @@ fzE_jvm_result fzE_call_c0(jstring class_name, jstring signature, jvalue *args)
 fzE_jvm_result fzE_call_s0(jstring class_name, jstring name, jstring signature, jvalue *args)
 {
   const char * sig = fzE_java_string_to_modified_utf8(signature);
-  jclass cl  = (*fzE_jni_env)->FindClass(fzE_jni_env, fzE_replace_char(fzE_java_string_to_modified_utf8(class_name), '.', '/'));
+  jclass cl  = (*getJNIEnv())->FindClass(getJNIEnv(), fzE_replace_char(fzE_java_string_to_modified_utf8(class_name), '.', '/'));
   assert( cl != NULL );
-  jmethodID mid = (*fzE_jni_env)->GetStaticMethodID(fzE_jni_env, cl, fzE_java_string_to_modified_utf8(name), sig);
+  jmethodID mid = (*getJNIEnv())->GetStaticMethodID(getJNIEnv(), cl, fzE_java_string_to_modified_utf8(name), sig);
   assert( mid != NULL );
   jvalue result;
   switch (sig[strlen(sig)-1])
     {
       case 'B':
-        result = (jvalue)  (*fzE_jni_env)->CallStaticByteMethodA(fzE_jni_env, cl, mid, fzE_convert_args(sig, args));
+        result = (jvalue)  (*getJNIEnv())->CallStaticByteMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args));
       case 'C':
-        result = (jvalue)  (*fzE_jni_env)->CallStaticCharMethodA(fzE_jni_env, cl, mid, fzE_convert_args(sig, args));
+        result = (jvalue)  (*getJNIEnv())->CallStaticCharMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args));
       case 'S':
-        result = (jvalue)  (*fzE_jni_env)->CallStaticShortMethodA(fzE_jni_env, cl, mid, fzE_convert_args(sig, args));
+        result = (jvalue)  (*getJNIEnv())->CallStaticShortMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args));
       case 'I':
-        result = (jvalue)  (*fzE_jni_env)->CallStaticIntMethodA(fzE_jni_env, cl, mid, fzE_convert_args(sig, args));
+        result = (jvalue)  (*getJNIEnv())->CallStaticIntMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args));
       case 'J':
-        result = (jvalue)  (*fzE_jni_env)->CallStaticLongMethodA(fzE_jni_env, cl, mid, fzE_convert_args(sig, args));
+        result = (jvalue)  (*getJNIEnv())->CallStaticLongMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args));
       case 'F':
-        result = (jvalue)  (*fzE_jni_env)->CallStaticFloatMethodA(fzE_jni_env, cl, mid, fzE_convert_args(sig, args));
+        result = (jvalue)  (*getJNIEnv())->CallStaticFloatMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args));
       case 'D':
-        result = (jvalue)  (*fzE_jni_env)->CallStaticDoubleMethodA(fzE_jni_env, cl, mid, fzE_convert_args(sig, args));
+        result = (jvalue)  (*getJNIEnv())->CallStaticDoubleMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args));
       case 'Z':
-        result = (jvalue)  (*fzE_jni_env)->CallStaticBooleanMethodA(fzE_jni_env, cl, mid, fzE_convert_args(sig, args));
+        result = (jvalue)  (*getJNIEnv())->CallStaticBooleanMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args));
       default:
-        result = (jvalue) (*fzE_jni_env)->CallStaticObjectMethodA(fzE_jni_env, cl, mid, fzE_convert_args(sig, args));
+        result = (jvalue) (*getJNIEnv())->CallStaticObjectMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args));
     }
 
   return fzE_return_result(result);
@@ -459,9 +468,9 @@ fzE_jvm_result fzE_call_s0(jstring class_name, jstring name, jstring signature, 
 fzE_jvm_result fzE_call_v0(jstring class_name, jstring name, jstring signature, jobject thiz, jvalue *args)
 {
   const char * sig = fzE_java_string_to_modified_utf8(signature);
-  jclass cl  = (*fzE_jni_env)->FindClass(fzE_jni_env, fzE_replace_char(fzE_java_string_to_modified_utf8(class_name), '.', '/'));
+  jclass cl  = (*getJNIEnv())->FindClass(getJNIEnv(), fzE_replace_char(fzE_java_string_to_modified_utf8(class_name), '.', '/'));
   assert( cl != NULL );
-  jmethodID mid = (*fzE_jni_env)->GetMethodID(fzE_jni_env, cl, fzE_java_string_to_modified_utf8(name), sig);
+  jmethodID mid = (*getJNIEnv())->GetMethodID(getJNIEnv(), cl, fzE_java_string_to_modified_utf8(name), sig);
   assert( mid != NULL );
   const char * sig2 = sig;
   while (*sig2 != ')') {
@@ -471,23 +480,23 @@ fzE_jvm_result fzE_call_v0(jstring class_name, jstring name, jstring signature, 
   switch (sig2[1])
     {
       case 'B':
-        result = (jvalue) (*fzE_jni_env)->CallByteMethodA(fzE_jni_env, thiz, mid, fzE_convert_args(sig, args));
+        result = (jvalue) (*getJNIEnv())->CallByteMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args));
       case 'C':
-        result = (jvalue) (*fzE_jni_env)->CallCharMethodA(fzE_jni_env, thiz, mid, fzE_convert_args(sig, args));
+        result = (jvalue) (*getJNIEnv())->CallCharMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args));
       case 'S':
-        result = (jvalue) (*fzE_jni_env)->CallShortMethodA(fzE_jni_env, thiz, mid, fzE_convert_args(sig, args));
+        result = (jvalue) (*getJNIEnv())->CallShortMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args));
       case 'I':
-        result = (jvalue) (*fzE_jni_env)->CallIntMethodA(fzE_jni_env, thiz, mid, fzE_convert_args(sig, args));
+        result = (jvalue) (*getJNIEnv())->CallIntMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args));
       case 'J':
-        result = (jvalue) (*fzE_jni_env)->CallLongMethodA(fzE_jni_env, thiz, mid, fzE_convert_args(sig, args));
+        result = (jvalue) (*getJNIEnv())->CallLongMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args));
       case 'F':
-        result = (jvalue) (*fzE_jni_env)->CallFloatMethodA(fzE_jni_env, thiz, mid, fzE_convert_args(sig, args));
+        result = (jvalue) (*getJNIEnv())->CallFloatMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args));
       case 'D':
-        result = (jvalue) (*fzE_jni_env)->CallDoubleMethodA(fzE_jni_env, thiz, mid, fzE_convert_args(sig, args));
+        result = (jvalue) (*getJNIEnv())->CallDoubleMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args));
       case 'Z':
-        result = (jvalue) (*fzE_jni_env)->CallBooleanMethodA(fzE_jni_env, thiz, mid, fzE_convert_args(sig, args));
+        result = (jvalue) (*getJNIEnv())->CallBooleanMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args));
       default:
-        result = (jvalue) (*fzE_jni_env)->CallObjectMethodA(fzE_jni_env, thiz, mid, fzE_convert_args(sig, args));
+        result = (jvalue) (*getJNIEnv())->CallObjectMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args));
     }
 
   return fzE_return_result(result);
@@ -501,7 +510,7 @@ jvalue fzE_string_to_java_object(const void * utf8_bytes, int byte_length)
   // https://github.com/openjdk/jdk/blob/eb9e754b3a439cc3ce36c2c9393bc8b250343844/src/java.instrument/share/native/libinstrument/EncodingSupport.c#L98
   char outstr[4*byte_length];
   utf8_to_mod_utf8(utf8_bytes, outstr);
-  jvalue result = (jvalue) (*fzE_jni_env)->NewStringUTF(fzE_jni_env, outstr);
+  jvalue result = (jvalue) (*getJNIEnv())->NewStringUTF(getJNIEnv(), outstr);
   return result;
 }
 
@@ -509,7 +518,7 @@ jvalue fzE_string_to_java_object(const void * utf8_bytes, int byte_length)
 // test if jobj is null
 bool fzE_java_object_is_null(jobject jobj)
 {
-  return (*fzE_jni_env)->IsSameObject(fzE_jni_env, jobj, NULL);
+  return (*getJNIEnv())->IsSameObject(getJNIEnv(), jobj, NULL);
 }
 
 
@@ -517,7 +526,7 @@ bool fzE_java_object_is_null(jobject jobj)
 int32_t fzE_array_length(jarray array)
 {
   assert (array != NULL);
-  return (*fzE_jni_env)->GetArrayLength(fzE_jni_env, array);
+  return (*getJNIEnv())->GetArrayLength(getJNIEnv(), array);
 }
 
 
@@ -525,65 +534,65 @@ jvalue fzE_array_to_java_object0(jsize length, jvalue *args, char * element_clas
 {
   if (strcmp(element_class_name, "bool") == 0 )
   {
-    jarray result = (*fzE_jni_env)->NewBooleanArray(fzE_jni_env, length);
+    jarray result = (*getJNIEnv())->NewBooleanArray(getJNIEnv(), length);
     const jboolean f[] = {JNI_FALSE};
     const jboolean t[] = {JNI_TRUE};
     for (int i = 0; i < length; i++)
       {
-        (*fzE_jni_env)->SetBooleanArrayRegion(fzE_jni_env, result, i, 1, ((int32_t *)args)[i] ? t : f);
+        (*getJNIEnv())->SetBooleanArrayRegion(getJNIEnv(), result, i, 1, ((int32_t *)args)[i] ? t : f);
       }
     return (jvalue) result;
   }
   if (strcmp(element_class_name, "i8") == 0 )
   {
-    jarray result = (*fzE_jni_env)->NewByteArray(fzE_jni_env, length);
-    (*fzE_jni_env)->SetByteArrayRegion(fzE_jni_env, result, 0, length, (jbyte *) args);
+    jarray result = (*getJNIEnv())->NewByteArray(getJNIEnv(), length);
+    (*getJNIEnv())->SetByteArrayRegion(getJNIEnv(), result, 0, length, (jbyte *) args);
     return (jvalue) result;
   }
   else if (strcmp(element_class_name, "i16") == 0 )
   {
-    jarray result = (*fzE_jni_env)->NewShortArray(fzE_jni_env, length);
-    (*fzE_jni_env)->SetShortArrayRegion(fzE_jni_env, result, 0, length, (jshort *) args);
+    jarray result = (*getJNIEnv())->NewShortArray(getJNIEnv(), length);
+    (*getJNIEnv())->SetShortArrayRegion(getJNIEnv(), result, 0, length, (jshort *) args);
     return (jvalue) result;
   }
   else if (strcmp(element_class_name, "u16") == 0 )
   {
-    jarray result = (*fzE_jni_env)->NewCharArray(fzE_jni_env, length);
-    (*fzE_jni_env)->SetCharArrayRegion(fzE_jni_env, result, 0, length, (jchar *) args);
+    jarray result = (*getJNIEnv())->NewCharArray(getJNIEnv(), length);
+    (*getJNIEnv())->SetCharArrayRegion(getJNIEnv(), result, 0, length, (jchar *) args);
     return (jvalue) result;
   }
   else if (strcmp(element_class_name, "i32") == 0 )
   {
-    jarray result = (*fzE_jni_env)->NewIntArray(fzE_jni_env, length);
-    (*fzE_jni_env)->SetIntArrayRegion(fzE_jni_env, result, 0, length, (jint *) args);
+    jarray result = (*getJNIEnv())->NewIntArray(getJNIEnv(), length);
+    (*getJNIEnv())->SetIntArrayRegion(getJNIEnv(), result, 0, length, (jint *) args);
     return (jvalue) result;
   }
   else if (strcmp(element_class_name, "i64") == 0 )
   {
-    jarray result = (*fzE_jni_env)->NewLongArray(fzE_jni_env, length);
-    (*fzE_jni_env)->SetLongArrayRegion(fzE_jni_env, result, 0, length, (jlong *) args);
+    jarray result = (*getJNIEnv())->NewLongArray(getJNIEnv(), length);
+    (*getJNIEnv())->SetLongArrayRegion(getJNIEnv(), result, 0, length, (jlong *) args);
     return (jvalue) result;
   }
   else if (strcmp(element_class_name, "f32") == 0 )
   {
-    jarray result = (*fzE_jni_env)->NewFloatArray(fzE_jni_env, length);
-    (*fzE_jni_env)->SetFloatArrayRegion(fzE_jni_env, result, 0, length, (jfloat *) args);
+    jarray result = (*getJNIEnv())->NewFloatArray(getJNIEnv(), length);
+    (*getJNIEnv())->SetFloatArrayRegion(getJNIEnv(), result, 0, length, (jfloat *) args);
     return (jvalue) result;
   }
   else if (strcmp(element_class_name, "f64") == 0 )
   {
-    jarray result = (*fzE_jni_env)->NewDoubleArray(fzE_jni_env, length);
-    (*fzE_jni_env)->SetDoubleArrayRegion(fzE_jni_env, result, 0, length, (jdouble *) args);
+    jarray result = (*getJNIEnv())->NewDoubleArray(getJNIEnv(), length);
+    (*getJNIEnv())->SetDoubleArrayRegion(getJNIEnv(), result, 0, length, (jdouble *) args);
     return (jvalue) result;
   }
   else
   {
-    jclass cl = (*fzE_jni_env)->FindClass(fzE_jni_env, element_class_name);
+    jclass cl = (*getJNIEnv())->FindClass(getJNIEnv(), element_class_name);
     assert( cl != NULL );
-    jobjectArray result = (*fzE_jni_env)->NewObjectArray(fzE_jni_env, length, cl, NULL);
+    jobjectArray result = (*getJNIEnv())->NewObjectArray(getJNIEnv(), length, cl, NULL);
     for (jsize i = 0; i < length; i++)
       {
-        (*fzE_jni_env)->SetObjectArrayElement(fzE_jni_env, result, i, ((jobject *) args)[i]);
+        (*getJNIEnv())->SetObjectArrayElement(getJNIEnv(), result, i, ((jobject *) args)[i]);
       }
     return (jvalue) result;
   }
@@ -596,23 +605,23 @@ jvalue fzE_array_get(jarray array, jsize index, const char *sig)
   switch (sig[0])
     {
       case 'B':
-        return (jvalue) (*fzE_jni_env)->GetByteArrayElements(fzE_jni_env, array, JNI_FALSE)[index];
+        return (jvalue) (*getJNIEnv())->GetByteArrayElements(getJNIEnv(), array, JNI_FALSE)[index];
       case 'C':
-        return (jvalue) (*fzE_jni_env)->GetCharArrayElements(fzE_jni_env, array, JNI_FALSE)[index];
+        return (jvalue) (*getJNIEnv())->GetCharArrayElements(getJNIEnv(), array, JNI_FALSE)[index];
       case 'S':
-        return (jvalue) (*fzE_jni_env)->GetShortArrayElements(fzE_jni_env, array, JNI_FALSE)[index];
+        return (jvalue) (*getJNIEnv())->GetShortArrayElements(getJNIEnv(), array, JNI_FALSE)[index];
       case 'I':
-        return (jvalue) (*fzE_jni_env)->GetIntArrayElements(fzE_jni_env, array, JNI_FALSE)[index];
+        return (jvalue) (*getJNIEnv())->GetIntArrayElements(getJNIEnv(), array, JNI_FALSE)[index];
       case 'J':
-        return (jvalue) (*fzE_jni_env)->GetLongArrayElements(fzE_jni_env, array, JNI_FALSE)[index];
+        return (jvalue) (*getJNIEnv())->GetLongArrayElements(getJNIEnv(), array, JNI_FALSE)[index];
       case 'F':
-        return (jvalue) (*fzE_jni_env)->GetFloatArrayElements(fzE_jni_env, array, JNI_FALSE)[index];
+        return (jvalue) (*getJNIEnv())->GetFloatArrayElements(getJNIEnv(), array, JNI_FALSE)[index];
       case 'D':
-        return (jvalue) (*fzE_jni_env)->GetDoubleArrayElements(fzE_jni_env, array, JNI_FALSE)[index];
+        return (jvalue) (*getJNIEnv())->GetDoubleArrayElements(getJNIEnv(), array, JNI_FALSE)[index];
       case 'Z':
-        return (jvalue) (*fzE_jni_env)->GetBooleanArrayElements(fzE_jni_env, array, JNI_FALSE)[index];
+        return (jvalue) (*getJNIEnv())->GetBooleanArrayElements(getJNIEnv(), array, JNI_FALSE)[index];
       default:
-        return (jvalue) (*fzE_jni_env)->GetObjectArrayElement(fzE_jni_env, array, index);
+        return (jvalue) (*getJNIEnv())->GetObjectArrayElement(getJNIEnv(), array, index);
     }
 }
 
@@ -620,30 +629,30 @@ jvalue fzE_array_get(jarray array, jsize index, const char *sig)
 // get a non-static field on obj.
 jvalue fzE_get_field0(jobject obj, jstring name, const char *sig)
 {
-  jclass cl = (*fzE_jni_env)->GetObjectClass(fzE_jni_env, obj);
+  jclass cl = (*getJNIEnv())->GetObjectClass(getJNIEnv(), obj);
   assert( cl != NULL );
-  jfieldID fieldID = (*fzE_jni_env)->GetFieldID(fzE_jni_env, cl, fzE_java_string_to_modified_utf8(name), sig);
+  jfieldID fieldID = (*getJNIEnv())->GetFieldID(getJNIEnv(), cl, fzE_java_string_to_modified_utf8(name), sig);
   assert( fieldID != NULL );
   switch (sig[0])
     {
       case 'B':
-        return (jvalue) (*fzE_jni_env)->GetByteField(fzE_jni_env, cl, fieldID);
+        return (jvalue) (*getJNIEnv())->GetByteField(getJNIEnv(), cl, fieldID);
       case 'C':
-        return (jvalue) (*fzE_jni_env)->GetCharField(fzE_jni_env, cl, fieldID);
+        return (jvalue) (*getJNIEnv())->GetCharField(getJNIEnv(), cl, fieldID);
       case 'S':
-        return (jvalue) (*fzE_jni_env)->GetShortField(fzE_jni_env, cl, fieldID);
+        return (jvalue) (*getJNIEnv())->GetShortField(getJNIEnv(), cl, fieldID);
       case 'I':
-        return (jvalue) (*fzE_jni_env)->GetIntField(fzE_jni_env, cl, fieldID);
+        return (jvalue) (*getJNIEnv())->GetIntField(getJNIEnv(), cl, fieldID);
       case 'J':
-        return (jvalue) (*fzE_jni_env)->GetLongField(fzE_jni_env, cl, fieldID);
+        return (jvalue) (*getJNIEnv())->GetLongField(getJNIEnv(), cl, fieldID);
       case 'F':
-        return (jvalue) (*fzE_jni_env)->GetFloatField(fzE_jni_env, cl, fieldID);
+        return (jvalue) (*getJNIEnv())->GetFloatField(getJNIEnv(), cl, fieldID);
       case 'D':
-        return (jvalue) (*fzE_jni_env)->GetDoubleField(fzE_jni_env, cl, fieldID);
+        return (jvalue) (*getJNIEnv())->GetDoubleField(getJNIEnv(), cl, fieldID);
       case 'Z':
-        return (jvalue) (*fzE_jni_env)->GetBooleanField(fzE_jni_env, cl, fieldID);
+        return (jvalue) (*getJNIEnv())->GetBooleanField(getJNIEnv(), cl, fieldID);
       default:
-        return (jvalue) (*fzE_jni_env)->GetObjectField(fzE_jni_env, cl, fieldID);
+        return (jvalue) (*getJNIEnv())->GetObjectField(getJNIEnv(), cl, fieldID);
     }
 }
 
@@ -651,30 +660,30 @@ jvalue fzE_get_field0(jobject obj, jstring name, const char *sig)
 // get a static field in class.
 jvalue fzE_get_static_field0(jstring class_name, jstring name, const char *sig)
 {
-  jclass cl  = (*fzE_jni_env)->FindClass(fzE_jni_env, fzE_replace_char(fzE_java_string_to_modified_utf8(class_name), '.', '/'));
+  jclass cl  = (*getJNIEnv())->FindClass(getJNIEnv(), fzE_replace_char(fzE_java_string_to_modified_utf8(class_name), '.', '/'));
   assert( cl != NULL );
-  jfieldID fieldID = (*fzE_jni_env)->GetStaticFieldID(fzE_jni_env, cl, fzE_java_string_to_modified_utf8(name), sig);
+  jfieldID fieldID = (*getJNIEnv())->GetStaticFieldID(getJNIEnv(), cl, fzE_java_string_to_modified_utf8(name), sig);
   assert( fieldID != NULL );
   switch (sig[0])
     {
       case 'B':
-        return (jvalue) (*fzE_jni_env)->GetStaticByteField(fzE_jni_env, cl, fieldID);
+        return (jvalue) (*getJNIEnv())->GetStaticByteField(getJNIEnv(), cl, fieldID);
       case 'C':
-        return (jvalue) (*fzE_jni_env)->GetStaticCharField(fzE_jni_env, cl, fieldID);
+        return (jvalue) (*getJNIEnv())->GetStaticCharField(getJNIEnv(), cl, fieldID);
       case 'S':
-        return (jvalue) (*fzE_jni_env)->GetStaticShortField(fzE_jni_env, cl, fieldID);
+        return (jvalue) (*getJNIEnv())->GetStaticShortField(getJNIEnv(), cl, fieldID);
       case 'I':
-        return (jvalue) (*fzE_jni_env)->GetStaticIntField(fzE_jni_env, cl, fieldID);
+        return (jvalue) (*getJNIEnv())->GetStaticIntField(getJNIEnv(), cl, fieldID);
       case 'J':
-        return (jvalue) (*fzE_jni_env)->GetStaticLongField(fzE_jni_env, cl, fieldID);
+        return (jvalue) (*getJNIEnv())->GetStaticLongField(getJNIEnv(), cl, fieldID);
       case 'F':
-        return (jvalue) (*fzE_jni_env)->GetStaticFloatField(fzE_jni_env, cl, fieldID);
+        return (jvalue) (*getJNIEnv())->GetStaticFloatField(getJNIEnv(), cl, fieldID);
       case 'D':
-        return (jvalue) (*fzE_jni_env)->GetStaticDoubleField(fzE_jni_env, cl, fieldID);
+        return (jvalue) (*getJNIEnv())->GetStaticDoubleField(getJNIEnv(), cl, fieldID);
       case 'Z':
-        return (jvalue) (*fzE_jni_env)->GetStaticBooleanField(fzE_jni_env, cl, fieldID);
+        return (jvalue) (*getJNIEnv())->GetStaticBooleanField(getJNIEnv(), cl, fieldID);
       default:
-        return (jvalue) (*fzE_jni_env)->GetStaticObjectField(fzE_jni_env, cl, fieldID);
+        return (jvalue) (*getJNIEnv())->GetStaticObjectField(getJNIEnv(), cl, fieldID);
     }
 }
 

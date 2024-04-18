@@ -76,6 +76,11 @@ is
   public postfix !! => is_error
 
 
+  # short-hand prefix operator for 'is_error'
+  #
+  public prefix ! => is_error
+
+
   # value of an outcome that is known to contain a value
   #
   # This can only be called in cases where it is known for sure that this

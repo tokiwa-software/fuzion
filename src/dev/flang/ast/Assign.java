@@ -121,6 +121,7 @@ public class Assign extends AbstractAssign
        res.state(outer) == State.RESOLVING_TYPES   ||
        res.state(outer) == State.RESOLVED_TYPES    ||
        res.state(outer) == State.TYPES_INFERENCING ||
+       res.state(outer) == State.RESOLVING_SUGAR1  ||
        res.state(outer) == State.RESOLVING_SUGAR2,
        f != null);
 

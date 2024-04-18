@@ -127,7 +127,7 @@ public composition is
   public after1(f (T, U) -> V, g T -> U) T -> V => x -> f x (g x)
 
   # B
-  # Elementare Compositor, composition
+  # Elementary Compositor, composition
   # Bird: Bluebird
   # BQN: ∘
   # Haskell: .

@@ -26,9 +26,9 @@
 # helper to allocate memory for an internal_array.
 # returns an internal_array.
 #
-module internal_array_init(T type, private length i32) =>
+module internal_array_init(T type, length i32) =>
 
-  private alloc(X type, l i32) fuzion.sys.Pointer => intrinsic
+  alloc(X type, l i32) fuzion.sys.Pointer => intrinsic
 
   internal_array T (alloc T length) length
 
@@ -36,8 +36,8 @@ module internal_array_init(T type, private length i32) =>
 # fuzion.sys.internal_array_init -- one-dimensional low-level array
 module internal_array(T type, module data fuzion.sys.Pointer, module length i32) is
 
-  private get  (X type, d fuzion.sys.Pointer, i i32) X => intrinsic
-  private setel(X type, d fuzion.sys.Pointer, i i32, o X) unit => intrinsic
+  get  (X type, d fuzion.sys.Pointer, i i32) X => intrinsic
+  setel(X type, d fuzion.sys.Pointer, i i32, o X) unit => intrinsic
 
   # make sure that this internal array will no longer be modified.  This is just for
   # debugging and will be a NOP in case internal checks are disabled or in case the

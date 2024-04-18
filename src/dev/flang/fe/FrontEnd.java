@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fe;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import java.nio.channels.FileChannel;
 
@@ -55,7 +56,6 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourceDir;
-import dev.flang.util.SourceFile;
 
 
 /**
@@ -69,13 +69,13 @@ public class FrontEnd extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
-  static FeatureName UNIVERSE_NAME = FeatureName.get(FuzionConstants.UNIVERSE_NAME, 0);
+  static final FeatureName UNIVERSE_NAME = FeatureName.get(FuzionConstants.UNIVERSE_NAME, 0);
 
 
   /**
    * Offset added to global indices to detect false usage of these early on.
    */
-  static int GLOBAL_INDEX_OFFSET = 0x40000000;
+  static final int GLOBAL_INDEX_OFFSET = 0x40000000;
   static
   {
     // NYI: CLEANUP: #2411: Temporary solution to give global indices to the AST
@@ -240,13 +240,7 @@ public class FrontEnd extends ANY
     try (var ch = (FileChannel) Files.newByteChannel(p, EnumSet.of(StandardOpenOption.READ)))
       {
         var data = ch.map(FileChannel.MapMode.READ_ONLY, 0, ch.size());
-        var base = _totalModuleData;
-        _totalModuleData = base + data.limit();
-        result = new LibraryModule(GLOBAL_INDEX_OFFSET + base,
-                                   this,
-                                   data,
-                                   new LibraryModule[0],
-                                   _universe);
+        result = libModule(data, new LibraryModule[0]);
         if (!m.equals(result.name()))
           {
             Errors.error("Module name mismatch for module file '" + p + "' expected name '" +
@@ -261,6 +255,24 @@ public class FrontEnd extends ANY
       }
     return result;
   }
+
+
+  /**
+   * create a new LibraryModule from `data`
+   */
+  private LibraryModule libModule(ByteBuffer data, LibraryModule[] dependsOn)
+  {
+    LibraryModule result;
+    var base = _totalModuleData;
+    _totalModuleData = base + data.limit();
+    result = new LibraryModule(GLOBAL_INDEX_OFFSET + base,
+                               this,
+                               data,
+                               dependsOn,
+                               _universe);
+    return result;
+  }
+
 
   /**
    * Load library module with given module name
@@ -306,25 +318,20 @@ public class FrontEnd extends ANY
 
 
   /**
-   * During resolution, load all inner classes of this that are
-   * defined in separate files.
-   */
-  void loadInnerFeatures(AbstractFeature f)
-  {
-    var m = module();
-    if (m != null)
-      {
-        m.loadInnerFeatures(f);
-      }
-  }
-
-
-  /**
    * Return the collection of loaded modules.
    */
   public Collection<LibraryModule> getModules()
   {
     return _modules.values();
+  }
+
+
+  /**
+   * Get the compiled module main.
+   */
+  public Module mainModule()
+  {
+    return libModule(_module.data("main"), _modules.values().toArray(new LibraryModule[_modules.size()]));
   }
 
 }

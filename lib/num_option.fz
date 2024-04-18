@@ -55,6 +55,11 @@ is
   public postfix !! => is_nil
 
 
+  # short-hand prefix operator for 'is_nil'
+  #
+  public prefix ! => is_nil
+
+
   # value of an option that is known to contain a value
   #
   # this can only be called in cases where it is known for sure that this option

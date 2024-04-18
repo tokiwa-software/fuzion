@@ -25,7 +25,7 @@
 
 # Map -- an abstract map from keys K to values V
 #
-public Map(public K, V type) ref is
+public Map(public K type : property.equatable, public V type) ref is
 
   # number of entries in this map
   #
@@ -68,3 +68,10 @@ public Map(public K, V type) ref is
       c := "", ", "
     else
       r
+
+
+  # initializer for this map
+  #
+  # every map implementation needs to implement this
+  #
+  public type.empty Map.this => abstract

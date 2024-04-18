@@ -42,23 +42,10 @@ public Sequence(public T type) ref is
   # create a list from this Sequence.
   #
   # A list is immutable, so it can be reused and shared between threads.
-  # Compared to a stream, a list may require more (heap) allocation.
   #
-  # Default implementation uses as_stream. Heirs must redefine at least
-  # one of as_list or as_stream.
+  # Heirs must provide an implementation of as_list.
   #
-  public as_list list T => as_stream.as_list
-
-
-  # create a stream of T.
-  #
-  # A stream contains mutable state, so it cannot be reused or shared
-  # between threads.
-  #
-  # Default implementation uses as_list.  Heirs must redefine at least
-  # one of as_list or as_stream.
-  #
-  public as_stream stream T => as_list.as_stream
+  public as_list list T => abstract
 
 
   # is this sequence known to be finite?  For infinite sequences, features like
@@ -591,6 +578,11 @@ public Sequence(public T type) ref is
     # NYI: This should work without the type hints again.
     zip I (tuple I T) (start_idx..) (a,b -> (b, a))
 
+
+  # convenience feature to work around type inference issues
+  # NYI remove when type inference gets better
+  public as_seq Sequence T =>
+    Sequence.this
 
 
   # chop this Sequence into chunks of `chunk_size`.

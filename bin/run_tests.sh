@@ -53,16 +53,18 @@ for test in $TESTS; do
   else
     START_TIME=$(date +%s%N | cut -b1-13)
     if make "$TARGET" -e -C "$test" >"$test"/out.txt 2>"$test"/stderr.txt; then
-        echo -n "."
-        echo "$test: ok"     >>"$BUILD_DIR"/run_tests.results
+       TEST_RESULT=true
     else
-        echo -n "#"
-        echo "$test: failed" >>"$BUILD_DIR"/run_tests.results
-        cat "$test"/out.txt "$test"/stderr.txt >>"$BUILD_DIR"/run_tests.failures
+       TEST_RESULT=false
     fi
     END_TIME=$(date +%s%N | cut -b1-13)
-    if test -n "$VERBOSE"; then
-      echo -en " time: $((END_TIME-START_TIME))ms"
+    if $TEST_RESULT; then
+      echo -n "."
+      echo "$test in $((END_TIME-START_TIME))ms: ok"     >>"$BUILD_DIR"/run_tests.results
+    else
+      echo -n "#"
+      echo "$test in $((END_TIME-START_TIME))ms: failed" >>"$BUILD_DIR"/run_tests.results
+      cat "$test"/out.txt "$test"/stderr.txt >>"$BUILD_DIR"/run_tests.failures
     fi
   fi
 done

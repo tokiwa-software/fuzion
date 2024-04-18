@@ -110,6 +110,6 @@ is
 
   # create an empty instance of ordered_map
   #
-  public type.empty => (container.ordered_map
+  public fixed type.empty => (container.ordered_map
                         (list OK).empty.as_array
                         (list V).empty.as_array)

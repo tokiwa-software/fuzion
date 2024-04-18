@@ -65,6 +65,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.SourceFile;
+import dev.flang.util.QuietThreadTermination;
 
 
 /**
@@ -78,11 +79,18 @@ public class Fuzion extends Tool
   /*----------------------------  constants  ----------------------------*/
 
 
+  /**
+   * Time at application start in System.currentTimeMillis();
+   */
+  protected static final long _timerStart = System.currentTimeMillis();
+
+
   static String  _binaryName_ = null;
   static boolean _useBoehmGC_ = true;
   static boolean _xdfa_ = true;
   static String _cCompiler_ = null;
   static String _cFlags_ = null;
+  static String _cTarget_ = null;
   static boolean _keepGeneratedCode_ = false;
   static String  _jvmOutName_ = null;
 
@@ -111,7 +119,7 @@ public class Fuzion extends Tool
     {
       String usage()
       {
-        return "[-o=<file>] [-Xgc=(on|off)] [-Xdfa=(on|off)] [-XkeepGeneratedCode=(on|off)] [-CC=<c compiler>] [-CFlags=\"list of c compiler flags\"]";
+        return "[-o=<file>] [-Xgc=(on|off)] [-Xdfa=(on|off)] [-XkeepGeneratedCode=(on|off)] [-CC=<c compiler>] [-CFlags=\"list of c compiler flags\"] [-CTarget=\"e.g. x86_64-pc-linux-gnu\"] ";
       }
       boolean handleOption(Fuzion f, String o)
       {
@@ -141,6 +149,11 @@ public class Fuzion extends Tool
             _cFlags_ = o.substring(8);
             result = true;
           }
+        else if (o.startsWith("-CTarget="))
+          {
+            _cTarget_ = o.substring(9);
+            result = true;
+          }
         else if (o.startsWith("-XkeepGeneratedCode="))
           {
             _keepGeneratedCode_ = parseOnOffArg(o);
@@ -150,7 +163,7 @@ public class Fuzion extends Tool
       }
       void process(FuzionOptions options, FUIR fuir)
       {
-        new C(new COptions(options, _binaryName_, _useBoehmGC_, _xdfa_, _cCompiler_, _cFlags_, _keepGeneratedCode_), fuir).compile();
+        new C(new COptions(options, _binaryName_, _useBoehmGC_, _xdfa_, _cCompiler_, _cFlags_, _cTarget_, _keepGeneratedCode_), fuir).compile();
       }
     },
 
@@ -174,7 +187,13 @@ public class Fuzion extends Tool
       }
       void process(FuzionOptions options, FUIR fuir)
       {
-        new JVM(new JVMOptions(options, _xdfa_, /* run */ true, /* save classes */ false, /* save JAR */ false, Optional.empty()), fuir).compile();
+        try
+          {
+            new JVM(new JVMOptions(options, _xdfa_, /* run */ true, /* save classes */ false, /* save JAR */ false, Optional.empty()), fuir).compile();
+          }
+        catch (QuietThreadTermination e)
+          {
+          }
       }
       boolean takesApplicationArgs()
       {
@@ -321,7 +340,7 @@ public class Fuzion extends Tool
       void processFrontEnd(Fuzion f, FrontEnd fe)
       {
         /*
-         * Save _module to a module file
+         * Save module to a fum-file
          */
         if (!Errors.any())
           {
@@ -335,10 +354,10 @@ public class Fuzion extends Tool
             var data = fe.module().data(n);
             if (data != null)
               {
-                say(" + " + p);
                 try (var os = Files.newOutputStream(p))
                   {
                     Channels.newChannel(os).write(data);
+                    say(" + " + p + " in " + (System.currentTimeMillis() - _timerStart) + "ms");
                   }
                 catch (IOException io)
                   {
@@ -469,9 +488,9 @@ public class Fuzion extends Tool
      */
     void processFrontEnd(Fuzion f, FrontEnd fe)
     {
-      var mir = fe.createMIR();                                                       f.timer("createMIR");
-      var air = new MiddleEnd(fe._options, mir, fe.module() /* NYI: remove */).air(); f.timer("me");
-      var fuir = new Optimizer(fe._options, air).fuir();                              f.timer("ir");
+      var mir = fe.createMIR();                                                           f.timer("createMIR");
+      var air = new MiddleEnd(fe._options, mir, fe.mainModule() /* NYI: remove */).air(); f.timer("me");
+      var fuir = new Optimizer(fe._options, air).fuir();                                  f.timer("ir");
       process(fe._options, fuir);
     }
 
@@ -639,7 +658,6 @@ public class Fuzion extends Tool
     if (_backend == Backend.undefined)
       {
         var aba = new StringBuilder();
-        var abe = new StringBuilder();
         for (var ab : _allBackends_.entrySet())
           {
             var b = ab.getValue();
@@ -849,7 +867,6 @@ public class Fuzion extends Tool
    */
   private Runnable parseArgsLatex(String[] args)
   {
-    var sourceFiles = new List<String>();
     for (var a : args)
       {
         if (!parseGenericArg(a) &&
@@ -1033,14 +1050,11 @@ public class Fuzion extends Tool
                                           _executeCode,
                                           _main,
                                           _backend.needsSources());
-        if (_backend == Backend.c)
-          {
-            options.setTailRec();
-          }
         options.setBackendArgs(applicationArgs);
         timer("prep");
         var fe = new FrontEnd(options);
         timer("fe");
+        Errors.showAndExit();
         _backend.processFrontEnd(this, fe);
         timer("be");
         options.verbosePrintln(1, "Elapsed time for phases: " + _times);

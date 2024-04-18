@@ -116,7 +116,7 @@ public class ResolvedParametricType extends ResolvedType
    *
    * @throws Error if this is not resolved or isGenericArgument().
    */
-  public AbstractFeature featureOfType()
+  public AbstractFeature feature()
   {
     if (CHECKS) check
       (Errors.any());

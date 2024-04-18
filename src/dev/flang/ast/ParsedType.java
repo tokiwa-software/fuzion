@@ -110,7 +110,7 @@ public class ParsedType extends UnresolvedType
    * @param o2 the new outer type to be used (which may also differ in its
    * actual generics).
    *
-   * @return a new type with same featureOfType(), but using g2/o2 as generics
+   * @return a new type with same feature(), but using g2/o2 as generics
    * and outer type.
    */
   public AbstractType applyTypePars(List<AbstractType> g2, AbstractType o2)

@@ -26,10 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.air.Clazz;
-import dev.flang.air.Clazzes;
-
-
+import dev.flang.fuir.FUIR;
 
 /**
  * Instance <description>
@@ -46,12 +43,6 @@ public class Instance extends ValueWithClazz
    * Just for debugging: value used for uninitialized non-ref data
    */
   static final int UNINITIALIZED_INT = -555555555;
-
-
-  /**
-   * Handy preallocated global instances to be used during execution:
-   */
-  public static final Instance universe = new Instance(Clazzes.universe.get());
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -77,12 +68,12 @@ public class Instance extends ValueWithClazz
    *
    * @param clazz
    */
-  public Instance(Clazz clazz)
+  public Instance(int clazz)
   {
     super(clazz);
 
     if (PRECONDITIONS) require
-      (clazz != null);
+      (clazz > 0);
 
     int sz = Layout.get(clazz).size();
     this.refs = new Value[sz];
@@ -104,7 +95,7 @@ public class Instance extends ValueWithClazz
    *
    * @param offset the position of the value within from.
    */
-  Instance(Clazz clazz, Instance from, int offset)
+  Instance(int clazz, Instance from, int offset)
   {
     this(clazz);
     int sz = Layout.get(clazz).size();
@@ -123,7 +114,7 @@ public class Instance extends ValueWithClazz
    *
    * @param from the original Instance.
    */
-  private Instance(Clazz clazz, Instance from)
+  private Instance(int clazz, Instance from)
   {
     this(clazz, from, 0);
   }
@@ -136,11 +127,11 @@ public class Instance extends ValueWithClazz
    * Create a copy (clone) of this value.  Used for boxing values into
    * ref-types.
    */
-  Instance cloneValue(Clazz cl)
+  Instance cloneValue(int cl)
   {
     if (PRECONDITIONS) require
       (_clazz == cl,
-       !cl.isRef());
+       !fuir().clazzIsRef(cl));
 
     return new Instance(cl, this);
   }
@@ -154,8 +145,8 @@ public class Instance extends ValueWithClazz
   public int i8Value()
   {
     if (PRECONDITIONS) require
-      (_clazz == Clazzes.i8    .getIfCreated() ||
-       _clazz == Clazzes.ref_i8.getIfCreated()   );
+      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_i8) ||
+       _clazz == fuir().clazzAsRef(fuir().clazz(FUIR.SpecialClazzes.c_i8))   );
 
     return nonrefs[0];
   }
@@ -169,8 +160,8 @@ public class Instance extends ValueWithClazz
   public int i16Value()
   {
     if (PRECONDITIONS) require
-      (_clazz == Clazzes.i16    .getIfCreated() ||
-       _clazz == Clazzes.ref_i16.getIfCreated()   );
+      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_i16) ||
+       _clazz == fuir().clazzAsRef(fuir().clazz(FUIR.SpecialClazzes.c_i16))   );
 
     return nonrefs[0];
   }
@@ -184,8 +175,8 @@ public class Instance extends ValueWithClazz
   public int i32Value()
   {
     if (PRECONDITIONS) require
-      (_clazz == Clazzes.i32    .getIfCreated() ||
-       _clazz == Clazzes.ref_i32.getIfCreated()   );
+      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_i32) ||
+       _clazz == fuir().clazzAsRef(fuir().clazz(FUIR.SpecialClazzes.c_i32))   );
 
     return nonrefs[0];
   }
@@ -199,8 +190,8 @@ public class Instance extends ValueWithClazz
   public long i64Value()
   {
     if (PRECONDITIONS) require
-      (_clazz == Clazzes.i64    .getIfCreated() ||
-       _clazz == Clazzes.ref_i64.getIfCreated()    );
+      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_i64) ||
+       _clazz == fuir().clazzAsRef(fuir().clazz(FUIR.SpecialClazzes.c_i64)));
 
     return
         nonrefs[0    ] & 0xFFFFffffL |
@@ -216,8 +207,8 @@ public class Instance extends ValueWithClazz
   public int u8Value()
   {
     if (PRECONDITIONS) require
-      (_clazz == Clazzes.u8    .getIfCreated() ||
-       _clazz == Clazzes.ref_u8.getIfCreated()    );
+      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_u8) ||
+       _clazz == fuir().clazzAsRef(fuir().clazz(FUIR.SpecialClazzes.c_u8)));
 
     return nonrefs[0];
   }
@@ -232,8 +223,8 @@ public class Instance extends ValueWithClazz
   public int u16Value()
   {
     if (PRECONDITIONS) require
-      (_clazz == Clazzes.u16    .getIfCreated() ||
-       _clazz == Clazzes.ref_u16.getIfCreated()    );
+      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_u16) ||
+       _clazz == fuir().clazzAsRef(fuir().clazz(FUIR.SpecialClazzes.c_u16)));
 
     return nonrefs[0];
   }
@@ -247,8 +238,8 @@ public class Instance extends ValueWithClazz
   public int u32Value()
   {
     if (PRECONDITIONS) require
-      (_clazz == Clazzes.u32    .getIfCreated() ||
-       _clazz == Clazzes.ref_u32.getIfCreated()    );
+      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_u32) ||
+       _clazz == fuir().clazzAsRef(fuir().clazz(FUIR.SpecialClazzes.c_u32)));
 
     return nonrefs[0];
   }
@@ -262,8 +253,8 @@ public class Instance extends ValueWithClazz
   public long u64Value()
   {
     if (PRECONDITIONS) require
-      (_clazz == Clazzes.u64    .getIfCreated() ||
-       _clazz == Clazzes.ref_u64.getIfCreated()    );
+      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_u64) ||
+       _clazz == fuir().clazzAsRef(fuir().clazz(FUIR.SpecialClazzes.c_u64)));
 
     return
         nonrefs[0    ] & 0xFFFFffffL |
@@ -279,8 +270,8 @@ public class Instance extends ValueWithClazz
   public float f32Value()
   {
     if (PRECONDITIONS) require
-      (_clazz == Clazzes.f32    .getIfCreated() ||
-       _clazz == Clazzes.ref_f32.getIfCreated()    );
+      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_f32) ||
+       _clazz == fuir().clazzAsRef(fuir().clazz(FUIR.SpecialClazzes.c_f32)));
 
     return Float.intBitsToFloat(nonrefs[0]);
   }
@@ -294,8 +285,8 @@ public class Instance extends ValueWithClazz
   public double f64Value()
   {
     if (PRECONDITIONS) require
-      (_clazz == Clazzes.f64    .getIfCreated() ||
-       _clazz == Clazzes.ref_f64.getIfCreated()    );
+      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_f64) ||
+       _clazz == fuir().clazzAsRef(fuir().clazz(FUIR.SpecialClazzes.c_f64)));
 
     var l =
         nonrefs[0    ] & 0xFFFFffffL |
@@ -312,13 +303,13 @@ public class Instance extends ValueWithClazz
   public boolean boolValue()
   {
     if (PRECONDITIONS) require
-      (_clazz == Clazzes.c_TRUE .getIfCreated() ||
-       _clazz == Clazzes.c_FALSE.getIfCreated() ||
-       _clazz.asValue() == Clazzes.bool.getIfCreated());
+      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_TRUE) ||
+       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_FALSE) ||
+       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_bool));
 
     return
-      _clazz == Clazzes.c_TRUE .getIfCreated() ? true  :
-      _clazz == Clazzes.c_FALSE.getIfCreated() ? false
+      _clazz == fuir().clazz(FUIR.SpecialClazzes.c_TRUE)  ? true  :
+      _clazz == fuir().clazz(FUIR.SpecialClazzes.c_FALSE) ? false
                                                : nonrefs[0] == 1;
   }
 
@@ -331,14 +322,15 @@ public class Instance extends ValueWithClazz
    *
    * @throws Error in case this does not match the expected clazz
    */
-  public void checkStaticClazz(Clazz expected)
+  public void checkStaticClazz(int expected)
   {
-    if (expected.isRef())
+    if (fuir().clazzIsRef(expected))
       {
-        if (!expected.isDirectlyAssignableFrom(clazz()))
-          {
-            throw new Error("Dynamic runtime clazz "+clazz()+" does not match static "+expected);
-          }
+        // NYI:
+        // if (!expected.isDirectlyAssignableFrom(clazz()))
+        //   {
+        //     throw new Error("Dynamic runtime clazz "+clazz()+" does not match static "+expected);
+        //   }
       }
     else
       {
@@ -359,7 +351,7 @@ public class Instance extends ValueWithClazz
    *
    * @return the LValue to rev
    */
-  public LValue at(Clazz c, int off)
+  public LValue at(int c, int off)
   {
     return new LValue(c, this, off);
   }
@@ -463,7 +455,7 @@ public class Instance extends ValueWithClazz
   public int tag()
   {
     if (PRECONDITIONS) require
-      (_clazz.isChoice() & !_clazz.isChoiceOfOnlyRefs());
+      (fuir().clazzIsChoice(_clazz) & !fuir().clazzIsChoiceOfOnlyRefs(_clazz));
 
     var tag = nonrefs[0];
     if (POSTCONDITIONS) ensure
@@ -480,20 +472,14 @@ public class Instance extends ValueWithClazz
    */
   public String toString()
   {
-    return "instance[" + _clazz + "]" + this.hashCode();
-  }
-
-
-  /**
-   * dump
-   */
-  public void dump()
-  {
-    say(toString());
-    for (int i=0; i<nonrefs.length; i++)
-      {
-        say(" field["+i+"] ==\t int:"+nonrefs[i]+"\tref: "+refs[i]);
-      }
+    var result = "instance[" + fuir().clazzAsStringNew(_clazz) + "]" + this.hashCode() +
+      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_i32)  ? " (" + i32Value() + ")" :
+       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_u32)  ? " (" + u32Value() + ")" :
+       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_u8)   ? " (" + u8Value() + ")" :
+       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_i64)  ? " (" + i64Value() + ")" :
+       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_u64)  ? " (" + u64Value() + ")" :
+       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_bool) ? " (" + boolValue() + ")" : "");
+    return result;
   }
 
 }

@@ -45,7 +45,6 @@ import dev.flang.ast.Box;
 import dev.flang.ast.Call;
 import dev.flang.ast.Check;
 import dev.flang.ast.Constant;
-import dev.flang.ast.Consts;
 import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
@@ -58,11 +57,10 @@ import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 
-import dev.flang.ir.IR;
-
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import static dev.flang.util.FuzionConstants.MirExprKind;
 import dev.flang.util.List;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
@@ -222,7 +220,7 @@ class LibraryOut extends ANY
 
   /**
    * Write all features declared in given source module into DeclFeatures
-   * sections of a library file.  This include the features declared in the
+   * sections of a library file.  This includes the features declared in the
    * 'universe' as well as all features declared within outer features that come
    * from other module files.
    *
@@ -231,7 +229,7 @@ class LibraryOut extends ANY
   void allDeclFeatures(SourceModule sm)
   {
     _data.writeInt(1 + sm._outerWithDeclarations.size());
-    declFeatures(sm._universe);
+    declFeatures(null);
     for (var o : sm._outerWithDeclarations)
       {
         declFeatures(o);
@@ -249,7 +247,7 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | int           | outer feature index, 0 for outer()==universe  |
+   *   | true   | 1      | int           | outer feature index, 0 for outer()==null      |
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | InnerFeatures | inner Features                                |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -268,7 +266,7 @@ class LibraryOut extends ANY
    */
   void featureIndexOrZeroForUniverse(AbstractFeature f)
   {
-    if (f.isUniverse())
+    if (f == null)
       {
         _data.writeInt(0);
       }
@@ -299,50 +297,63 @@ class LibraryOut extends ANY
    */
   void innerFeatures(AbstractFeature f)
   {
-    var m = _sourceModule.declaredFeatures(f);
-    if (m == null)
+    if (f == null)
       {
-        _data.writeInt(0);
-      }
-    else
-      {
-        // the first inner features written out will be the formal arguments,
-        // followed by the result field (iff f.hasResultField()), followed by
-        // all other inner features in (alphabetical?) order.
-        var innerFeatures = new List<AbstractFeature>();
-        var added = new TreeSet<AbstractFeature>();
-        for (var a : f.arguments())
-          {
-            innerFeatures.add(a);
-            added.add(a);
-          }
-        if (f.hasResultField())
-          {
-            var r = f.resultField();
-            innerFeatures.add(r);
-            added.add(r);
-          }
-        if (f.hasOuterRef())
-          {
-            var or = f.outerRef();
-            innerFeatures.add(or);
-            added.add(or);
-          }
-        for (var i : m.values())
-          {
-            if (!added.contains(i))
-              {
-                innerFeatures.add(i);
-              }
-          }
-
         var szPos = _data.offset();
         _data.writeInt(0);
         var innerPos = _data.offset();
 
         // write the actual data
-        features(innerFeatures);
+        feature(_sourceModule._universe);
         _data.writeIntAt(szPos, _data.offset() - innerPos);
+      }
+    else
+      {
+        var m = _sourceModule.declaredFeatures(f);
+        if (m == null)
+          {
+            _data.writeInt(0);
+          }
+        else
+          {
+            // the first inner features written out will be the formal arguments,
+            // followed by the result field (iff f.hasResultField()), followed by
+            // all other inner features in (alphabetical?) order.
+            var innerFeatures = new List<AbstractFeature>();
+            var added = new TreeSet<AbstractFeature>();
+            for (var a : f.arguments())
+              {
+                innerFeatures.add(a);
+                added.add(a);
+              }
+            if (f.hasResultField())
+              {
+                var r = f.resultField();
+                innerFeatures.add(r);
+                added.add(r);
+              }
+            if (f.hasOuterRef())
+              {
+                var or = f.outerRef();
+                innerFeatures.add(or);
+                added.add(or);
+              }
+            for (var i : m.values())
+              {
+                if (!added.contains(i))
+                  {
+                    innerFeatures.add(i);
+                  }
+              }
+
+            var szPos = _data.offset();
+            _data.writeInt(0);
+            var innerPos = _data.offset();
+
+            // write the actual data
+            features(innerFeatures);
+            _data.writeIntAt(szPos, _data.offset() - innerPos);
+          }
       }
   }
 
@@ -396,7 +407,7 @@ class LibraryOut extends ANY
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Pos           | source code position                          |
    *   |        |        +---------------+-----------------------------------------------+
-   *   |        |        | int           | outer feature index, 0 for outer()==universe  |
+   *   |        |        | int           | outer feature index, 0 for outer()==null      |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | Y=1    | 1      | int           | type feature index                            |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -448,7 +459,7 @@ class LibraryOut extends ANY
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_TYPE_FEATURE;
       }
-    if ((f.modifiers() & Consts.MODIFIER_FIXED) != 0)
+    if ((f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0)
       {
         k = k | FuzionConstants.MIR_FILE_KIND_IS_FIXED;
       }
@@ -547,7 +558,7 @@ class LibraryOut extends ANY
       {
         _data.writeInt(-4);
       }
-    else if (!t.isGenericArgument() && t.featureOfType().isUniverse())
+    else if (!t.isGenericArgument() && t.feature().isUniverse())
       {
         _data.writeInt(-3);
       }
@@ -564,7 +575,7 @@ class LibraryOut extends ANY
         else
           {
             _data.writeInt(t.generics().size());
-            _data.writeOffset(t.featureOfType());
+            _data.writeOffset(t.feature());
             _data.writeByte(t.isThisType() ? FuzionConstants.MIR_FILE_TYPE_IS_THIS :
                             t.isRef()      ? FuzionConstants.MIR_FILE_TYPE_IS_REF
                                            : FuzionConstants.MIR_FILE_TYPE_IS_VALUE);
@@ -640,7 +651,7 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte          | ExprKind k in bits 0..6,  hasPos in bit 7     |
+   *   | true   | 1      | byte          | MirExprKind k in bits 0..6,  hasPos in bit 7  |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | hasPos | 1      | int           | source position: index in this file's         |
    *   |        |        |               | SourceFiles section, 0 for builtIn pos        |
@@ -666,7 +677,7 @@ class LibraryOut extends ANY
       {
         lastPos = expressions(a._value, lastPos);
         lastPos = expressions(a._target, lastPos);
-        lastPos = exprKindAndPos(IR.ExprKind.Assign, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.Assign, lastPos, e.pos());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Assign                                                                          |
@@ -681,7 +692,7 @@ class LibraryOut extends ANY
     else if (e instanceof Box b)
       {
         lastPos = expressions(b._value, lastPos);
-        lastPos = exprKindAndPos(IR.ExprKind.Box, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.Box, lastPos, e.pos());
       }
     else if (e instanceof AbstractBlock b)
       {
@@ -701,12 +712,12 @@ class LibraryOut extends ANY
           }
         if (!dumpResult)
           {
-            _data.writeByte(IR.ExprKind.Unit.ordinal());
+            _data.writeByte(MirExprKind.Unit.ordinal());
           }
       }
     else if (e instanceof Constant c)
       {
-        lastPos = exprKindAndPos(IR.ExprKind.Const, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.Const, lastPos, e.pos());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Constant                                                                        |
@@ -725,14 +736,17 @@ class LibraryOut extends ANY
         _data.writeInt(d.length);
         _data.write(d);
       }
-    else if (e instanceof AbstractCurrent)
+    else if (e instanceof AbstractCurrent ac)
       {
-        lastPos = exprKindAndPos(IR.ExprKind.Current, lastPos, e.pos());
+        if (!ac.type().feature().isUniverse())
+          {
+            lastPos = exprKindAndPos(MirExprKind.Current, lastPos, e.pos());
+          }
       }
     else if (e instanceof If i)
       {
         lastPos = expressions(i.cond, lastPos);
-        lastPos = exprKindAndPos(IR.ExprKind.Match, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.Match, lastPos, e.pos());
         _data.writeInt(2);
         _data.writeInt(1);
         type(Types.resolved.f_TRUE.resultType());
@@ -759,7 +773,7 @@ class LibraryOut extends ANY
           {
             lastPos = expressions(a, lastPos);
           }
-        lastPos = exprKindAndPos(IR.ExprKind.Call, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.Call, lastPos, e.pos());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Call                                                                            |
@@ -818,13 +832,13 @@ class LibraryOut extends ANY
           }
         if (dumpResult)
           {
-            _data.writeByte(IR.ExprKind.Pop.ordinal());
+            _data.writeByte(MirExprKind.Pop.ordinal());
           }
       }
     else if (e instanceof AbstractMatch m)
       {
         lastPos = expressions(m.subject(), lastPos);
-        lastPos = exprKindAndPos(IR.ExprKind.Match, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.Match, lastPos, e.pos());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Match                                                                           |
@@ -878,7 +892,7 @@ class LibraryOut extends ANY
     else if (e instanceof Tag t)
       {
         lastPos = expressions(t._value, lastPos);
-        lastPos = exprKindAndPos(IR.ExprKind.Tag, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.Tag, lastPos, e.pos());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Tag                                                                             |
@@ -892,7 +906,7 @@ class LibraryOut extends ANY
       }
     else if (e instanceof Env)
       {
-        lastPos = exprKindAndPos(IR.ExprKind.Env, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.Env, lastPos, e.pos());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Env                                                                             |
@@ -912,11 +926,11 @@ class LibraryOut extends ANY
         // Universe is ignored, a call with target clazz universe will get its
         // target implicitly.
         //
-        // write(IR.ExprKind.Universe.ordinal());
+        // write(MirExprKind.Universe.ordinal());
       }
     else if (e instanceof InlineArray ia)
       {
-        lastPos = exprKindAndPos(IR.ExprKind.InlineArray, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.InlineArray, lastPos, e.pos());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | InlineArray                                                                     |
@@ -989,7 +1003,7 @@ class LibraryOut extends ANY
    * @param newPos the new position that is to be written if it differs from
    * lastPos
    */
-  SourcePosition exprKindAndPos(IR.ExprKind k, SourcePosition lastPos, SourcePosition newPos)
+  SourcePosition exprKindAndPos(MirExprKind k, SourcePosition lastPos, SourcePosition newPos)
   {
     if (lastPos == null || lastPos.compareTo(newPos) != 0)
       {
@@ -1026,6 +1040,9 @@ class LibraryOut extends ANY
         var sf = pos._sourceFile;
         _sourceFiles.put(fileName(sf), sf);
       }
+    // start
+    _data.writeInt(0);
+    // end
     _data.writeInt(0);
   }
 

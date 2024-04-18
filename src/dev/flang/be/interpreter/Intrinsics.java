@@ -26,36 +26,26 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.air.Clazz;
-import dev.flang.air.Clazzes;
-
-import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
-
-import dev.flang.util.ANY;
-import dev.flang.util.Errors;
-
-import java.lang.reflect.Array;
-import java.net.BindException;
-import java.net.InetSocketAddress;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
+import java.lang.reflect.Array;
+import java.net.BindException;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.DatagramChannel;
+import java.nio.channels.FileChannel.MapMode;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.nio.channels.FileChannel.MapMode;
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -69,6 +59,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
+import dev.flang.fuir.FUIR;
+
+import dev.flang.util.ANY;
+import dev.flang.util.Errors;
+import dev.flang.util.List;
+import dev.flang.util.SourcePosition;
+
 
 /**
  * Intrinsics provides the implementation of Fuzion's intrinsic features.
@@ -81,9 +78,10 @@ public class Intrinsics extends ANY
   /*----------------------------  interfaces  ---------------------------*/
 
 
+  @FunctionalInterface
   interface IntrinsicCode
   {
-    Callable get(Interpreter interpreter, Clazz innerClazz);
+    Callable get(Executor executor, int innerClazz);
   }
 
 
@@ -130,7 +128,7 @@ public class Intrinsics extends ANY
         f.close();
         return true;
       }
-      catch(Exception e)
+      catch(Throwable e)
       {
         return false;
       }
@@ -179,12 +177,12 @@ public class Intrinsics extends ANY
 
 
   private static void put(String n, IntrinsicCode c) { _intrinsics_.put(n, c); }
-  private static void putUnsafe(String n, IntrinsicCode c) { _intrinsics_.put(n, (interpreter, innerClazz) -> args -> {
+  private static void putUnsafe(String n, IntrinsicCode c) { _intrinsics_.put(n, (executor, innerClazz) -> args -> {
     if (!ENABLE_UNSAFE_INTRINSICS)
       {
         Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
       }
-    return c.get(interpreter, innerClazz).call(args);
+    return c.get(executor, innerClazz).call(args);
   }); }
   private static void put(String n1, String n2, IntrinsicCode c) { put(n1, c); put(n2, c); }
   private static void putUnsafe(String n1, String n2, IntrinsicCode c) { putUnsafe(n1, c); putUnsafe(n2, c); }
@@ -225,25 +223,21 @@ public class Intrinsics extends ANY
    *
    * @return a Callable instance to execute the intrinsic call.
    */
-  public static Callable call(Interpreter interpreter, Clazz innerClazz)
+  public static Callable call(Executor executor, int innerClazz)
   {
-    if (PRECONDITIONS) require
-      (innerClazz.feature().isIntrinsic());
-
     Callable result;
-    var f = innerClazz.feature();
-    String in = f.qualifiedName();   // == _fuir.clazzOriginalName(cl);
+    String in = executor.fuir().clazzOriginalName(innerClazz);
     // NYI: We must check the argument count in addition to the name!
     var ca = _intrinsics_.get(in);
     if (ca != null)
       {
-        result = ca.get(interpreter, innerClazz);
+        result = ca.get(executor, innerClazz);
       }
     else
       {
-        Errors.fatal(f.pos(),
+        Errors.fatal(SourcePosition.notAvailable,
                      "Intrinsic feature not supported",
-                     "Missing intrinsic feature: " + f.qualifiedName());
+                     "Missing intrinsic feature: " + in);
         result = (args) -> Value.NO_VALUE;
       }
     return result;
@@ -262,106 +256,107 @@ public class Intrinsics extends ANY
 
   static
   {
-    put("Type.name"            , (interpreter, innerClazz) -> args -> Interpreter.value(innerClazz._outer.typeName()));
+    put("Type.name"            , (executor, innerClazz) -> args ->
+      Interpreter.value(executor.fuir().clazzTypeName(executor.fuir().clazzOuterClazz(innerClazz))));
 
-    put("concur.atomic.compare_and_swap0",  (interpreter, innerClazz) -> args ->
+    put("concur.atomic.compare_and_swap0",  (executor, innerClazz) -> args ->
         {
-          var a = innerClazz._outer;
-          var f = Types.resolved.f_concur_atomic_v;
+          var a = executor.fuir().clazzOuterClazz(innerClazz);
+          var f = executor.fuir().lookupAtomicValue(a);
           var thiz      = args.get(0);
           var expected  = args.get(1);
           var new_value = args.get(2);
           synchronized (LOCK_FOR_ATOMIC)
             {
-              var res = interpreter.getField(f, a, thiz, false); // NYI: HACK: We must clone this!
-              if (interpreter.compareField(f, -1, a, thiz, expected))
+              var res = Interpreter.getField(f, a, thiz, false); // NYI: HACK: We must clone this!
+              if (Interpreter.compareField(f, a, thiz, expected))
                 {
                   res = expected;   // NYI: HACK: workaround since res was not cloned
-                  interpreter.setField(f, -1, a, thiz, new_value);
+                  Interpreter.setField(f, a, thiz, new_value);
                 }
               return res;
             }
         });
-    put("concur.atomic.compare_and_set0",  (interpreter, innerClazz) -> args ->
+    put("concur.atomic.compare_and_set0",  (executor, innerClazz) -> args ->
         {
-          var a = innerClazz._outer;
-          var f = Types.resolved.f_concur_atomic_v;
+          var a = executor.fuir().clazzOuterClazz(innerClazz);
+          var f = executor.fuir().lookupAtomicValue(a);
           var thiz      = args.get(0);
           var expected  = args.get(1);
           var new_value = args.get(2);
           synchronized (LOCK_FOR_ATOMIC)
             {
-              if (interpreter.compareField(f, -1, a, thiz, expected))
+              if (Interpreter.compareField(f, a, thiz, expected))
                 {
-                  interpreter.setField(f, -1, a, thiz, new_value);
+                  Interpreter.setField(f, a, thiz, new_value);
                   return new boolValue(true);
                 }
               return new boolValue(false);
             }
         });
-    put("concur.atomic.racy_accesses_supported",  (interpreter, innerClazz) -> args ->
+    put("concur.atomic.racy_accesses_supported",  (executor, innerClazz) -> args ->
         {
-          var t = innerClazz._outer._type.generics().get(0);
+          var t = executor.fuir().clazzActualGeneric(executor.fuir().clazzOuterClazz(innerClazz), 0);
           return new boolValue
-            (t.isRef()                                 ||
-             (t.compareTo(Types.resolved.t_i8  ) == 0) ||
-             (t.compareTo(Types.resolved.t_i16 ) == 0) ||
-             (t.compareTo(Types.resolved.t_i32 ) == 0) ||
-             (t.compareTo(Types.resolved.t_u8  ) == 0) ||
-             (t.compareTo(Types.resolved.t_u16 ) == 0) ||
-             (t.compareTo(Types.resolved.t_u32 ) == 0) ||
-             (t.compareTo(Types.resolved.t_f32 ) == 0) ||
-             (t.compareTo(Types.resolved.t_bool) == 0)    );
+            (executor.fuir().clazzIsRef(t)                            ||
+             (t == executor.fuir().clazz(FUIR.SpecialClazzes.c_i8  )) ||
+             (t == executor.fuir().clazz(FUIR.SpecialClazzes.c_i16 )) ||
+             (t == executor.fuir().clazz(FUIR.SpecialClazzes.c_i32 )) ||
+             (t == executor.fuir().clazz(FUIR.SpecialClazzes.c_u8  )) ||
+             (t == executor.fuir().clazz(FUIR.SpecialClazzes.c_u16 )) ||
+             (t == executor.fuir().clazz(FUIR.SpecialClazzes.c_u32 )) ||
+             (t == executor.fuir().clazz(FUIR.SpecialClazzes.c_f32 )) ||
+             (t == executor.fuir().clazz(FUIR.SpecialClazzes.c_bool)));
         });
-    put("concur.atomic.read0",  (interpreter, innerClazz) -> args ->
+    put("concur.atomic.read0",  (executor, innerClazz) -> args ->
         {
-          var a = innerClazz._outer;
-          var f = Types.resolved.f_concur_atomic_v;
+          var a = executor.fuir().clazzOuterClazz(innerClazz);
+          var f = executor.fuir().lookupAtomicValue(a);
           var thiz = args.get(0);
           synchronized (LOCK_FOR_ATOMIC)
             {
-              return interpreter.getField(f, a, thiz, false);
+              return Interpreter.getField(f, a, thiz, false);
             }
         });
-    put("concur.atomic.write0", (interpreter, innerClazz) -> args ->
+    put("concur.atomic.write0", (executor, innerClazz) -> args ->
         {
-          var a = innerClazz._outer;
-          var f = Types.resolved.f_concur_atomic_v;
+          var a = executor.fuir().clazzOuterClazz(innerClazz);
+          var f = executor.fuir().lookupAtomicValue(a);
           var thiz = args.get(0);
           synchronized (LOCK_FOR_ATOMIC)
             {
-              interpreter.setField(f, -1, a, thiz, args.get(1));
+              Interpreter.setField(f, a, thiz, args.get(1));
             }
-          return new Instance(Clazzes.c_unit.get());
+          return new Instance(executor.fuir().clazz(FUIR.SpecialClazzes.c_unit));
         });
 
-    put("concur.util.loadFence",   (interpreter, innerClazz) -> args ->
+    put("concur.util.loadFence",   (executor, innerClazz) -> args ->
         {
           synchronized (LOCK_FOR_ATOMIC) { };
-          return new Instance(Clazzes.c_unit.get());
+          return new Instance(executor.fuir().clazz(FUIR.SpecialClazzes.c_unit));
         });
 
-    put("concur.util.storeFence",  (interpreter, innerClazz) -> args ->
+    put("concur.util.storeFence",  (executor, innerClazz) -> args ->
         {
           synchronized (LOCK_FOR_ATOMIC) { };
-          return new Instance(Clazzes.c_unit.get());
+          return new Instance(executor.fuir().clazz(FUIR.SpecialClazzes.c_unit));
         });
 
-    put("fuzion.sys.args.count", (interpreter, innerClazz) -> args -> new i32Value(Interpreter._options_.getBackendArgs().size() + 1));
-    put("fuzion.sys.args.get"  , (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.args.count", (executor, innerClazz) -> args -> new i32Value(executor.options().getBackendArgs().size() + 1));
+    put("fuzion.sys.args.get"  , (executor, innerClazz) -> args ->
         {
           var i = args.get(1).i32Value();
-          var fuir = interpreter._fuir;
+          var fuir = executor.fuir();
           if (i == 0)
             {
               return  Interpreter.value(fuir.clazzAsString(fuir.mainClazzId()));
             }
           else
             {
-              return  Interpreter.value(Interpreter._options_.getBackendArgs().get(i - 1));
+              return  Interpreter.value(executor.options().getBackendArgs().get(i - 1));
             }
         });
-    put("fuzion.sys.fileio.flush"  , (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.fileio.flush"  , (executor, innerClazz) -> args ->
         {
           var s = _openStreams_.get(args.get(1).i64Value());
           if (s instanceof PrintStream ps)
@@ -371,19 +366,19 @@ public class Intrinsics extends ANY
           return new i32Value(0);
         });
 
-    put("fuzion.sys.stdin.stdin0"  , (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.stdin.stdin0"  , (executor, innerClazz) -> args ->
         {
           return _stdin;
         });
-    put("fuzion.sys.out.stdout"    , (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.out.stdout"    , (executor, innerClazz) -> args ->
         {
           return _stdout;
         });
-    put("fuzion.sys.err.stderr"    , (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.err.stderr"    , (executor, innerClazz) -> args ->
         {
           return _stderr;
         });
-    put("fuzion.sys.fileio.read", (interpreter, innerClazz)-> args ->
+    put("fuzion.sys.fileio.read", (executor, innerClazz)-> args ->
         {
           var byteArr = (byte[])args.get(2).arrayData()._array;
           try
@@ -405,12 +400,12 @@ public class Intrinsics extends ANY
 
               return new i32Value(bytesRead);
             }
-          catch (Exception e)
+          catch (Throwable e)
             {
               return new i32Value(-2);
             }
         });
-    put("fuzion.sys.fileio.write", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.fileio.write", (executor, innerClazz) -> args ->
         {
           byte[] fileContent = (byte[])args.get(2).arrayData()._array;
           try
@@ -430,12 +425,12 @@ public class Intrinsics extends ANY
                 }
               return new i32Value(0);
             }
-          catch (Exception e)
+          catch (Throwable e)
             {
               return new i32Value(-1);
             }
         });
-    putUnsafe("fuzion.sys.fileio.delete", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.sys.fileio.delete", (executor, innerClazz) -> args ->
         {
           Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           try
@@ -443,12 +438,12 @@ public class Intrinsics extends ANY
               boolean b = Files.deleteIfExists(path);
               return new boolValue(b);
             }
-          catch (Exception e)
+          catch (Throwable e)
             {
               return new boolValue(false);
             }
         });
-    putUnsafe("fuzion.sys.fileio.move", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.sys.fileio.move", (executor, innerClazz) -> args ->
         {
           Path oldPath = Path.of(utf8ByteArrayDataToString(args.get(1)));
           Path newPath = Path.of(utf8ByteArrayDataToString(args.get(2)));
@@ -457,12 +452,12 @@ public class Intrinsics extends ANY
               Files.move(oldPath, newPath);
               return new boolValue(true);
             }
-          catch (Exception e)
+          catch (Throwable e)
             {
               return new boolValue(false);
             }
         });
-    putUnsafe("fuzion.sys.fileio.create_dir", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.sys.fileio.create_dir", (executor, innerClazz) -> args ->
         {
           Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           try
@@ -470,14 +465,15 @@ public class Intrinsics extends ANY
               Files.createDirectory(path);
               return new boolValue(true);
             }
-          catch (Exception e)
+          catch (Throwable e)
             {
               return new boolValue(false);
             }
         });
-    putUnsafe("fuzion.sys.fileio.open", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.sys.fileio.open", (executor, innerClazz) -> args ->
         {
           var open_results = (long[])args.get(2).arrayData()._array;
+          open_results[1] = 0;
           try
             {
               switch (args.get(3).i8Value()) {
@@ -500,13 +496,13 @@ public class Intrinsics extends ANY
                   System.exit(1);
               }
             }
-          catch (Exception e)
+          catch (Throwable e)
             {
               open_results[1] = -1;
             }
           return Value.EMPTY_VALUE;
         });
-    putUnsafe("fuzion.sys.fileio.close", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.sys.fileio.close", (executor, innerClazz) -> args ->
         {
           long fd = args.get(1).i64Value();
           return _openStreams_.remove(fd)
@@ -515,7 +511,7 @@ public class Intrinsics extends ANY
         });
     putUnsafe("fuzion.sys.fileio.stats",
         "fuzion.sys.fileio.lstats", // NYI : should be altered in the future to not resolve symbolic links
-        (interpreter, innerClazz) -> args ->
+        (executor, innerClazz) -> args ->
         {
           Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
           long[] stats = (long[])args.get(2).arrayData()._array;
@@ -541,6 +537,10 @@ public class Intrinsics extends ANY
             {
               err = SystemErrNo.EACCES;
             }
+          catch (Throwable e)
+            {
+              err = SystemErrNo.UNSPECIFIED;
+            }
 
           stats[0] = err.errno;
           stats[1] = 0;
@@ -548,7 +548,7 @@ public class Intrinsics extends ANY
           stats[3] = 0;
           return new boolValue(false);
         });
-    putUnsafe("fuzion.sys.fileio.seek", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.sys.fileio.seek", (executor, innerClazz) -> args ->
         {
           long fd = args.get(1).i64Value();
           var seekResults = (long[])args.get(3).arrayData()._array;
@@ -559,13 +559,13 @@ public class Intrinsics extends ANY
               seekResults[0] = raf.getFilePointer();
               return Value.EMPTY_VALUE;
             }
-          catch (Exception e)
+          catch (Throwable e)
             {
               seekResults[1] = -1;
               return Value.EMPTY_VALUE;
             }
         });
-    putUnsafe("fuzion.sys.fileio.file_position", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.sys.fileio.file_position", (executor, innerClazz) -> args ->
         {
           long fd = args.get(1).i64Value();
           long[] arr = (long[])args.get(2).arrayData()._array;
@@ -574,13 +574,13 @@ public class Intrinsics extends ANY
               arr[0] = ((RandomAccessFile)_openStreams_.get(fd)).getFilePointer();
               return Value.EMPTY_VALUE;
             }
-          catch (Exception e)
+          catch (Throwable e)
             {
               arr[1] = -1;
               return Value.EMPTY_VALUE;
             }
         });
-    putUnsafe("fuzion.sys.fileio.mmap", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.sys.fileio.mmap", (executor, innerClazz) -> args ->
         {
           try
             {
@@ -604,7 +604,8 @@ public class Intrinsics extends ANY
                   void set(
                     int x,
                     Value v,
-                    AbstractType elementType)
+                    FUIR fuir,
+                    int elementType)
                   {
                     checkIndex(x);
                     mmap.put(x, (byte)v.u8Value());
@@ -613,7 +614,8 @@ public class Intrinsics extends ANY
                   @Override
                   Value get(
                     int x,
-                    AbstractType elementType)
+                    FUIR fuir,
+                    int elementType)
                   {
                     checkIndex(x);
                     return new u8Value(mmap.get(x));
@@ -625,17 +627,17 @@ public class Intrinsics extends ANY
                   }
                 };
             }
-          catch (IOException e)
+          catch (Throwable e)
             {
               ((int[])args.get(4).arrayData()._array)[0] = -1;
               return new ArrayData(new byte[0]);
             }
         });
-    putUnsafe("fuzion.sys.fileio.munmap", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.sys.fileio.munmap", (executor, innerClazz) -> args ->
         {
           return new i32Value(0);
         });
-    putUnsafe("fuzion.sys.fileio.open_dir", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.sys.fileio.open_dir", (executor, innerClazz) -> args ->
         {
           var open_results = (long[])args.get(2).arrayData()._array;
           try
@@ -661,16 +663,16 @@ public class Intrinsics extends ANY
                 }
               });
             }
-          catch (IOException e)
+          catch (Throwable e)
             {
               open_results[1] = -1;
             }
 
           return Value.EMPTY_VALUE;
         });
-    putUnsafe("fuzion.sys.fileio.read_dir", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.sys.fileio.read_dir", (executor, innerClazz) -> args ->
         {
-          var i = (Iterator<Path>)_openStreams_.get(args.get(1).i64Value());
+          var i = getIterator(args.get(1).i64Value());
           try
             {
               return Interpreter.value(i.next().getFileName().toString());
@@ -680,46 +682,49 @@ public class Intrinsics extends ANY
               return Interpreter.value("NoSuchElementException encountered!");
             }
         });
-    putUnsafe("fuzion.sys.fileio.read_dir_has_next", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.sys.fileio.read_dir_has_next", (executor, innerClazz) -> args ->
         {
-          return new boolValue(((Iterator<Path>)_openStreams_.get(args.get(1).i64Value())).hasNext());
+          var it = getIterator(args.get(1).i64Value());
+          return new boolValue(it.hasNext());
         });
-    putUnsafe("fuzion.sys.fileio.close_dir", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.sys.fileio.close_dir", (executor, innerClazz) -> args ->
         {
           _openStreams_.remove(args.get(1).i64Value());
           return new i64Value(0);
         });
-    put("fuzion.sys.fileio.mapped_buffer_get", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.fileio.mapped_buffer_get", (executor, innerClazz) -> args ->
         {
           return ((ArrayData)args.get(1)).get(/* index */ (int) args.get(2).i64Value(),
-                                              /* type  */ Types.resolved.t_u8);
+                                              executor.fuir(),
+                                              /* type  */ executor.fuir().clazz(FUIR.SpecialClazzes.c_u8));
         });
-    put("fuzion.sys.fileio.mapped_buffer_set", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.fileio.mapped_buffer_set", (executor, innerClazz) -> args ->
         {
           ((ArrayData)args.get(1)).set(/* index */ (int) args.get(2).i64Value(),
                                        /* value */ args.get(3),
-                                       /* type  */ Types.resolved.t_u8);
+                                       executor.fuir(),
+                                       /* type  */ executor.fuir().clazz(FUIR.SpecialClazzes.c_u8));
           return Value.EMPTY_VALUE;
         });
 
-    put("fuzion.std.exit", (interpreter, innerClazz) -> args ->
+    put("fuzion.std.exit", (executor, innerClazz) -> args ->
         {
           int rc = args.get(1).i32Value();
           System.exit(rc);
           return Value.EMPTY_VALUE;
         });
-    put("fuzion.java.Java_Object.is_null0", (interpreter, innerClazz) -> args ->
+    put("fuzion.java.Java_Object.is_null0", (executor, innerClazz) -> args ->
         {
           Instance thizI = (Instance) args.get(0);
           Object thiz = JavaInterface.instanceToJavaObject(thizI);
           return new boolValue(thiz == null);
         });
     putUnsafe("fuzion.java.get_static_field0",
-        "fuzion.java.get_field0"      , (interpreter, innerClazz) ->
+        "fuzion.java.get_field0"      , (executor, innerClazz) ->
         {
-          String in = innerClazz.feature().qualifiedName();   // == _fuir.clazzOriginalName(cl);
+          String in = executor.fuir().clazzOriginalName(innerClazz);
           var statique = in.equals("fuzion.java.get_static_field0");
-          Clazz resultClazz = innerClazz.actualGenerics()[0];
+          int resultClazz = executor.fuir().clazzActualGeneric(innerClazz, 0);
           return args ->
             {
               Instance clazzOrThizI = (Instance) args.get(1);
@@ -732,12 +737,12 @@ public class Intrinsics extends ANY
         });
     putUnsafe("fuzion.java.call_v0",
         "fuzion.java.call_s0",
-        "fuzion.java.call_c0", (interpreter, innerClazz) ->
+        "fuzion.java.call_c0", (executor, innerClazz) ->
         {
-          String in = innerClazz.feature().qualifiedName();   // == _fuir.clazzOriginalName(cl);
+          String in = executor.fuir().clazzOriginalName(innerClazz);
           var virtual     = in.equals("fuzion.java.call_v0");
           var constructor = in.equals("fuzion.java.call_c0");
-          Clazz resultClazz = innerClazz.actualGenerics()[0];
+          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return args ->
             {
               int a = 1;
@@ -747,10 +752,8 @@ public class Intrinsics extends ANY
               var thizR   = !virtual    ? null :  (JavaRef) args.get(a++);
 
               var argz = args.get(a); // of type fuzion.sys.internal_array<JavaObject>, we need to get field argz.data
-              var argfields = innerClazz.argumentFields();
-              var argsArray = argfields[argfields.length - 1];
-              var sac = argsArray.resultClazz();
-              var argzData = Interpreter.getField(Types.resolved.f_fuzion_sys_array_data, sac, argz, false);
+              var sac = executor.fuir().clazzArgClazz(innerClazz, executor.fuir().clazzArgCount(innerClazz) - 1);
+              var argzData = Interpreter.getField(executor.fuir().clazz_fuzionSysArray_u8_data(), sac, argz, false);
 
               String clName =                          (String) JavaInterface.instanceToJavaObject(clNameI);
               String name   = nameI   == null ? null : (String) JavaInterface.instanceToJavaObject(nameI  );
@@ -759,150 +762,152 @@ public class Intrinsics extends ANY
               return JavaInterface.call(clName, name, sig, thiz, argzData, resultClazz);
             };
         });
-    putUnsafe("fuzion.java.array_length",  (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.array_length",  (executor, innerClazz) -> args ->
         {
           var arr = JavaInterface.instanceToJavaObject(args.get(1).instance());
           return new i32Value(Array.getLength(arr));
         });
-    putUnsafe("fuzion.java.array_get", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.array_get", (executor, innerClazz) -> args ->
         {
           var arr = JavaInterface.instanceToJavaObject(args.get(1).instance());
           var ix  = args.get(2).i32Value();
           var res = Array.get(arr, ix);
-          Clazz resultClazz = innerClazz.resultClazz();
+          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return JavaInterface.javaObjectToInstance(res, resultClazz);
         });
-    putUnsafe("fuzion.java.array_to_java_object0", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.array_to_java_object0", (executor, innerClazz) -> args ->
         {
           var argz = args.get(1);
-          var argfields = innerClazz.argumentFields();
-          var argsArray = argfields[argfields.length - 1];
-          var sac = argsArray.resultClazz();
-          var argzData = Interpreter.getField(Types.resolved.f_fuzion_sys_array_data, sac, argz, false);
+          var sac = executor.fuir().clazzArgClazz(innerClazz, executor.fuir().clazzArgCount(innerClazz) - 1);
+          var argzData = Interpreter.getField(executor.fuir().clazz_fuzionSysArray_u8_data(), sac, argz, false);
           var arrA = argzData.arrayData();
           var res = arrA._array;
-          Clazz resultClazz = innerClazz.resultClazz();
+          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return JavaInterface.javaObjectToInstance(res, resultClazz);
         });
-    putUnsafe("fuzion.java.string_to_java_object0", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.string_to_java_object0", (executor, innerClazz) -> args ->
         {
           var argz = args.get(1);
-          var argfields = innerClazz.argumentFields();
-          var argsArray = argfields[argfields.length - 1];
-          var sac = argsArray.resultClazz();
-          var argzData = Interpreter.getField(Types.resolved.f_fuzion_sys_array_data, sac, argz, false);
+          var sac = executor.fuir().clazzArgClazz(innerClazz, executor.fuir().clazzArgCount(innerClazz) - 1);
+          var argzData = Interpreter.getField(executor.fuir().clazz_fuzionSysArray_u8_data(), sac, argz, false);
           var str = utf8ByteArrayDataToString(argzData);
-          Clazz resultClazz = innerClazz.resultClazz();
+          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return JavaInterface.javaObjectToInstance(str, resultClazz);
         });
-    putUnsafe("fuzion.java.java_string_to_string", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.java_string_to_string", (executor, innerClazz) -> args ->
         {
           var javaString = (String) JavaInterface.instanceToJavaObject(args.get(1).instance());
           return Interpreter.value(javaString == null ? "--null--" : javaString);
         });
-    putUnsafe("fuzion.java.i8_to_java_object", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.i8_to_java_object", (executor, innerClazz) -> args ->
         {
           var b = args.get(1).i8Value();
           var jb = Byte.valueOf((byte) b);
-          Clazz resultClazz = innerClazz.resultClazz();
+          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return JavaInterface.javaObjectToInstance(jb, resultClazz);
         });
-    putUnsafe("fuzion.java.u16_to_java_object", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.u16_to_java_object", (executor, innerClazz) -> args ->
         {
           var c = args.get(1).u16Value();
           var jc = Character.valueOf((char) c);
-          Clazz resultClazz = innerClazz.resultClazz();
+          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return JavaInterface.javaObjectToInstance(jc, resultClazz);
         });
-    putUnsafe("fuzion.java.i16_to_java_object", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.i16_to_java_object", (executor, innerClazz) -> args ->
         {
           var s = args.get(1).i16Value();
           var js = Short.valueOf((short) s);
-          Clazz resultClazz = innerClazz.resultClazz();
+          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return JavaInterface.javaObjectToInstance(js, resultClazz);
         });
-    putUnsafe("fuzion.java.i32_to_java_object", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.i32_to_java_object", (executor, innerClazz) -> args ->
         {
           var i = args.get(1).i32Value();
           var ji = Integer.valueOf(i);
-          Clazz resultClazz = innerClazz.resultClazz();
+          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return JavaInterface.javaObjectToInstance(ji, resultClazz);
         });
-    putUnsafe("fuzion.java.i64_to_java_object", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.i64_to_java_object", (executor, innerClazz) -> args ->
         {
           var l = args.get(1).i64Value();
           var jl = Long.valueOf(l);
-          Clazz resultClazz = innerClazz.resultClazz();
+          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return JavaInterface.javaObjectToInstance(jl, resultClazz);
         });
-    putUnsafe("fuzion.java.f32_to_java_object", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.f32_to_java_object", (executor, innerClazz) -> args ->
         {
           var f32 = args.get(1).f32Value();
           var jf = Float.valueOf(f32);
-          Clazz resultClazz = innerClazz.resultClazz();
+          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return JavaInterface.javaObjectToInstance(jf, resultClazz);
         });
-    putUnsafe("fuzion.java.f64_to_java_object", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.f64_to_java_object", (executor, innerClazz) -> args ->
         {
           var d = args.get(1).f64Value();
           var jd = Double.valueOf(d);
-          Clazz resultClazz = innerClazz.resultClazz();
+          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return JavaInterface.javaObjectToInstance(jd, resultClazz);
         });
-    putUnsafe("fuzion.java.bool_to_java_object", (interpreter, innerClazz) -> args ->
+    putUnsafe("fuzion.java.bool_to_java_object", (executor, innerClazz) -> args ->
         {
           var b = args.get(1).boolValue();
           var jb = Boolean.valueOf(b);
-          Clazz resultClazz = innerClazz.resultClazz();
+          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return JavaInterface.javaObjectToInstance(jb, resultClazz);
         });
-    put("fuzion.sys.internal_array_init.alloc", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.internal_array_init.alloc", (executor, innerClazz) -> args ->
         {
-          return fuzionSysArrayAlloc(/* size */ args.get(1).i32Value(),
-                                     /* type */ innerClazz._outer);
+          var at = executor.fuir().clazzOuterClazz(innerClazz); // array type
+          var et = executor.fuir().clazzActualGeneric(at, 0); // element type
+          return ArrayData.alloc(/* size */ args.get(1).i32Value(),
+                                 executor.fuir(),
+                                 /* type */ et);
         });
-    put("fuzion.sys.internal_array.get", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.internal_array.get", (executor, innerClazz) -> args ->
         {
+          var at = executor.fuir().clazzOuterClazz(innerClazz); // array type
+          var et = executor.fuir().clazzActualGeneric(at, 0); // element type
           return ((ArrayData)args.get(1)).get(
                                    /* index */ args.get(2).i32Value(),
-                                   /* type  */ elementType(innerClazz._outer));
+                                   executor.fuir(),
+                                   /* type  */ et);
         });
-    put("fuzion.sys.internal_array.setel", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.internal_array.setel", (executor, innerClazz) -> args ->
         {
+          var at = executor.fuir().clazzOuterClazz(innerClazz); // array type
+          var et = executor.fuir().clazzActualGeneric(at, 0); // element type
           ((ArrayData)args.get(1)).set(
                               /* index */ args.get(2).i32Value(),
                               /* value */ args.get(3),
-                              /* type  */ elementType(innerClazz._outer));
+                              executor.fuir(),
+                              /* type  */ et);
           return Value.EMPTY_VALUE;
         });
-    put("fuzion.sys.internal_array.freeze", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.internal_array.freeze", (executor, innerClazz) -> args ->
         {
           return Value.EMPTY_VALUE;
         });
-    put("fuzion.sys.internal_array.ensure_not_frozen", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.internal_array.ensure_not_frozen", (executor, innerClazz) -> args ->
         {
           return Value.EMPTY_VALUE;
         });
-    put("fuzion.sys.env_vars.has0", (interpreter, innerClazz) -> args -> new boolValue(System.getenv(utf8ByteArrayDataToString(args.get(1))) != null));
-    put("fuzion.sys.env_vars.get0", (interpreter, innerClazz) -> args -> Interpreter.value(System.getenv(utf8ByteArrayDataToString(args.get(1)))));
+    put("fuzion.sys.env_vars.has0", (executor, innerClazz) -> args -> new boolValue(System.getenv(utf8ByteArrayDataToString(args.get(1))) != null));
+    put("fuzion.sys.env_vars.get0", (executor, innerClazz) -> args -> Interpreter.value(System.getenv(utf8ByteArrayDataToString(args.get(1)))));
     // setting env variable not supported in java
-    put("fuzion.sys.env_vars.set0"  , (interpreter, innerClazz) -> args -> new boolValue(false));
+    put("fuzion.sys.env_vars.set0"  , (executor, innerClazz) -> args -> new boolValue(false));
     // unsetting env variable not supported in java
-    put("fuzion.sys.env_vars.unset0", (interpreter, innerClazz) -> args -> new boolValue(false));
-    put("fuzion.sys.misc.unique_id",(interpreter, innerClazz) -> args -> new u64Value(_last_unique_id_.incrementAndGet()));
-    put("fuzion.sys.thread.spawn0", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.env_vars.unset0", (executor, innerClazz) -> args -> new boolValue(false));
+    put("fuzion.sys.misc.unique_id",(executor, innerClazz) -> args -> new u64Value(_last_unique_id_.incrementAndGet()));
+    put("fuzion.sys.thread.spawn0", (executor, innerClazz) -> args ->
         {
-          var call = Types.resolved.f_Function_call;
-          var oc = innerClazz.argumentFields()[0].resultClazz();
-          var ic = oc.lookup(call);
-          var al = new ArrayList<Value>();
-          al.add(args.get(1));
-          var t = new Thread(() -> interpreter.callOnInstance(ic.feature(), ic, new Instance(ic), al));
+          var oc   = executor.fuir().clazzArgClazz(innerClazz, 0);
+          var call = executor.fuir().lookupCall(oc);
+          var t = new Thread(() -> executor.callOnInstance(call, new Instance(call), args.get(1), new List<>(), false));
           t.setDaemon(true);
           t.start();
           return new i64Value(_startedThreads_.add(t));
         });
-    put("fuzion.sys.thread.join0", (interpreter, innerClazz) -> args ->
+    put("fuzion.sys.thread.join0", (executor, innerClazz) -> args ->
         {
           var thread = _startedThreads_.get(args.get(1).i64Value());
           var result = false;
@@ -931,7 +936,7 @@ public class Intrinsics extends ANY
         });
 
 
-    putUnsafe("fuzion.sys.net.bind0"    , (interpreter, innerClazz) -> args -> {
+    putUnsafe("fuzion.sys.net.bind0"    , (executor, innerClazz) -> args -> {
       var family = args.get(1).i32Value();
       var socketType = args.get(2).i32Value();
       var protocol = args.get(3).i32Value();
@@ -940,7 +945,7 @@ public class Intrinsics extends ANY
       var result = (long[])args.get(6).arrayData()._array;
       if (family != 2 && family != 10)
         {
-          throw new Error("NYI");
+          new RuntimeException("NYI: UNDER DEVELOPMENT: bind for family=" + family);
         }
       try
         {
@@ -960,7 +965,7 @@ public class Intrinsics extends ANY
                   result[0] = _openStreams_.add(ss);
                   yield new i32Value(0);
                 }
-              default -> throw new Error("NYI");
+              default -> throw new Error("NYI: UNDER DEVELOPMENT: bind for protocol=" + protocol);
             };
         }
       catch(BindException e)
@@ -968,18 +973,18 @@ public class Intrinsics extends ANY
           result[0] = SystemErrNo.EADDRINUSE.errno;
           return new i32Value(-1);
         }
-      catch(IOException e)
+      catch(Throwable e)
         {
           result[0] = -1;
           return new i32Value(-1);
         }
     });
 
-    putUnsafe("fuzion.sys.net.listen"  , (interpreter, innerClazz) -> args -> {
+    putUnsafe("fuzion.sys.net.listen"  , (executor, innerClazz) -> args -> {
       return new i32Value(0);
     });
 
-    putUnsafe("fuzion.sys.net.accept"  , (interpreter, innerClazz) -> args -> {
+    putUnsafe("fuzion.sys.net.accept"  , (executor, innerClazz) -> args -> {
       try
         {
           var asc = _openStreams_.get(args.get(1).i64Value());
@@ -994,15 +999,15 @@ public class Intrinsics extends ANY
               ((long[])args.get(2).arrayData()._array)[0] = args.get(1).i64Value();
               return new boolValue(true);
             }
-          throw new Error("NYI");
+          throw new Error("Misuse of intrinsic net.accept detected.");
         }
-      catch(IOException e)
+      catch(Throwable e)
         {
           return new boolValue(false);
         }
     });
 
-    putUnsafe("fuzion.sys.net.connect0" , (interpreter, innerClazz) -> args -> {
+    putUnsafe("fuzion.sys.net.connect0" , (executor, innerClazz) -> args -> {
       var family = args.get(1).i32Value();
       var socketType = args.get(2).i32Value();
       var protocol = args.get(3).i32Value();
@@ -1011,7 +1016,7 @@ public class Intrinsics extends ANY
       var result = (long[])args.get(6).arrayData()._array;
       if (family != 2 && family != 10)
         {
-          throw new Error("NYI");
+          new RuntimeException("NYI: UNDER DEVELOPMENT: connect for family=" + family);
         }
       try
         {
@@ -1031,7 +1036,7 @@ public class Intrinsics extends ANY
                   result[0] = _openStreams_.add(ss);
                   yield new i32Value(0);
                 }
-              default -> throw new Error("NYI");
+              default -> throw new Error("NYI: UNDER DEVELOPMENT: connect for protocol=" + protocol);
             };
         }
       catch(IOException e)
@@ -1039,9 +1044,14 @@ public class Intrinsics extends ANY
           result[0] = SystemErrNo.ECONNREFUSED.errno;
           return new i32Value(-1);
         }
+      catch(Throwable e)
+        {
+          result[0] = SystemErrNo.UNSPECIFIED.errno;
+          return new i32Value(-1);
+        }
     });
 
-    putUnsafe("fuzion.sys.net.get_peer_address", (interpreter, innerClazz) -> args -> {
+    putUnsafe("fuzion.sys.net.get_peer_address", (executor, innerClazz) -> args -> {
       try
         {
           if (_openStreams_.get(args.get(1).i64Value()) instanceof SocketChannel sockfd)
@@ -1052,13 +1062,13 @@ public class Intrinsics extends ANY
             }
           return new i32Value(-1);
         }
-      catch (IOException e)
+      catch (Throwable e)
         {
           return new i32Value(-1);
         }
     });
 
-    putUnsafe("fuzion.sys.net.get_peer_port", (interpreter, innerClazz) -> args -> {
+    putUnsafe("fuzion.sys.net.get_peer_port", (executor, innerClazz) -> args -> {
       try
         {
           if (_openStreams_.get(args.get(1).i64Value()) instanceof SocketChannel sockfd)
@@ -1067,13 +1077,13 @@ public class Intrinsics extends ANY
             }
           return new u16Value(0);
         }
-      catch (IOException e)
+      catch (Throwable e)
         {
           return new u16Value(0);
         }
     });
 
-    putUnsafe("fuzion.sys.net.read" , (interpreter, innerClazz) -> args -> {
+    putUnsafe("fuzion.sys.net.read" , (executor, innerClazz) -> args -> {
       try
         {
           byte[] buff = (byte[])args.get(2).arrayData()._array;
@@ -1093,12 +1103,12 @@ public class Intrinsics extends ANY
             }
           else
             {
-              throw new Error("NYI");
+              throw new Error("Misuse of intrinsic net.read detected.");
             }
           ((long[])args.get(4).arrayData()._array)[0] = bytesRead;
           return new boolValue(bytesRead != -1);
         }
-      catch(IOException e) //SocketTimeoutException and others
+      catch(Throwable e) //SocketTimeoutException and others
         {
           // unspecified error
           ((long[])args.get(4).arrayData()._array)[0] = -1;
@@ -1106,7 +1116,7 @@ public class Intrinsics extends ANY
         }
     });
 
-    putUnsafe("fuzion.sys.net.write" , (interpreter, innerClazz) -> args -> {
+    putUnsafe("fuzion.sys.net.write" , (executor, innerClazz) -> args -> {
       try
         {
           var fileContent = (byte[])args.get(2).arrayData()._array;
@@ -1114,20 +1124,20 @@ public class Intrinsics extends ANY
           sc.write(ByteBuffer.wrap(fileContent));
           return new i32Value(0);
         }
-      catch(IOException e)
+      catch(Throwable e)
         {
           return new i32Value(-1);
         }
     });
 
-    putUnsafe("fuzion.sys.net.close0" , (interpreter, innerClazz) -> args -> {
+    putUnsafe("fuzion.sys.net.close0" , (executor, innerClazz) -> args -> {
       long fd = args.get(1).i64Value();
       return _openStreams_.remove(fd)
         ? new i32Value(0)
         : new i32Value(-1);
     });
 
-    putUnsafe("fuzion.sys.net.set_blocking0" , (interpreter, innerClazz) -> args -> {
+    putUnsafe("fuzion.sys.net.set_blocking0" , (executor, innerClazz) -> args -> {
       var asc = (AbstractSelectableChannel)_openStreams_.get(args.get(1).i64Value());
       var blocking = args.get(2).i32Value();
       try
@@ -1135,213 +1145,212 @@ public class Intrinsics extends ANY
           asc.configureBlocking(blocking == 1);
           return new i32Value(0);
         }
-      catch(IOException e)
+      catch(Throwable e)
         {
           return new i32Value(-1);
         }
     });
 
-    put("safety"                , (interpreter, innerClazz) -> args -> new boolValue(Interpreter._options_.fuzionSafety()));
-    put("debug"                 , (interpreter, innerClazz) -> args -> new boolValue(Interpreter._options_.fuzionDebug()));
-    put("debug_level"           , (interpreter, innerClazz) -> args -> new i32Value(Interpreter._options_.fuzionDebugLevel()));
-    put("i8.as_i32"             , (interpreter, innerClazz) -> args -> new i32Value (              (                           args.get(0).i8Value() )));
-    put("i8.cast_to_u8"         , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & (                           args.get(0).i8Value() )));
-    put("i8.prefix -°"          , (interpreter, innerClazz) -> args -> new i8Value  ((int) (byte)  (                       -   args.get(0).i8Value() )));
-    put("i8.infix +°"           , (interpreter, innerClazz) -> args -> new i8Value  ((int) (byte)  (args.get(0).i8Value()  +   args.get(1).i8Value() )));
-    put("i8.infix -°"           , (interpreter, innerClazz) -> args -> new i8Value  ((int) (byte)  (args.get(0).i8Value()  -   args.get(1).i8Value() )));
-    put("i8.infix *°"           , (interpreter, innerClazz) -> args -> new i8Value  ((int) (byte)  (args.get(0).i8Value()  *   args.get(1).i8Value() )));
-    put("i8.div"                , (interpreter, innerClazz) -> args -> new i8Value  ((int) (byte)  (args.get(0).i8Value()  /   args.get(1).i8Value() )));
-    put("i8.mod"                , (interpreter, innerClazz) -> args -> new i8Value  ((int) (byte)  (args.get(0).i8Value()  %   args.get(1).i8Value() )));
-    put("i8.infix &"            , (interpreter, innerClazz) -> args -> new i8Value  (              (args.get(0).i8Value()  &   args.get(1).i8Value() )));
-    put("i8.infix |"            , (interpreter, innerClazz) -> args -> new i8Value  (              (args.get(0).i8Value()  |   args.get(1).i8Value() )));
-    put("i8.infix ^"            , (interpreter, innerClazz) -> args -> new i8Value  (              (args.get(0).i8Value()  ^   args.get(1).i8Value() )));
-    put("i8.infix >>"           , (interpreter, innerClazz) -> args -> new i8Value  (              (args.get(0).i8Value()  >>  args.get(1).i8Value() )));
-    put("i8.infix <<"           , (interpreter, innerClazz) -> args -> new i8Value  ((int) (byte)  (args.get(0).i8Value()  <<  args.get(1).i8Value() )));
-    put("i8.type.equality"      , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i8Value()  ==  args.get(2).i8Value() )));
-    put("i8.type.lteq"          , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i8Value()  <=  args.get(2).i8Value() )));
-    put("i16.as_i32"            , (interpreter, innerClazz) -> args -> new i32Value (              (                           args.get(0).i16Value())));
-    put("i16.cast_to_u16"       , (interpreter, innerClazz) -> args -> new u16Value (     0xffff & (                           args.get(0).i16Value())));
-    put("i16.prefix -°"         , (interpreter, innerClazz) -> args -> new i16Value ((int) (short) (                       -   args.get(0).i16Value())));
-    put("i16.infix +°"          , (interpreter, innerClazz) -> args -> new i16Value ((int) (short) (args.get(0).i16Value() +   args.get(1).i16Value())));
-    put("i16.infix -°"          , (interpreter, innerClazz) -> args -> new i16Value ((int) (short) (args.get(0).i16Value() -   args.get(1).i16Value())));
-    put("i16.infix *°"          , (interpreter, innerClazz) -> args -> new i16Value ((int) (short) (args.get(0).i16Value() *   args.get(1).i16Value())));
-    put("i16.div"               , (interpreter, innerClazz) -> args -> new i16Value ((int) (short) (args.get(0).i16Value() /   args.get(1).i16Value())));
-    put("i16.mod"               , (interpreter, innerClazz) -> args -> new i16Value ((int) (short) (args.get(0).i16Value() %   args.get(1).i16Value())));
-    put("i16.infix &"           , (interpreter, innerClazz) -> args -> new i16Value (              (args.get(0).i16Value() &   args.get(1).i16Value())));
-    put("i16.infix |"           , (interpreter, innerClazz) -> args -> new i16Value (              (args.get(0).i16Value() |   args.get(1).i16Value())));
-    put("i16.infix ^"           , (interpreter, innerClazz) -> args -> new i16Value (              (args.get(0).i16Value() ^   args.get(1).i16Value())));
-    put("i16.infix >>"          , (interpreter, innerClazz) -> args -> new i16Value (              (args.get(0).i16Value() >>  args.get(1).i16Value())));
-    put("i16.infix <<"          , (interpreter, innerClazz) -> args -> new i16Value ((int) (short) (args.get(0).i16Value() <<  args.get(1).i16Value())));
-    put("i16.type.equality"     , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i16Value() ==  args.get(2).i16Value())));
-    put("i16.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i16Value() <=  args.get(2).i16Value())));
-    put("i32.as_i64"            , (interpreter, innerClazz) -> args -> new i64Value ((long)        (                           args.get(0).i32Value())));
-    put("i32.cast_to_u32"       , (interpreter, innerClazz) -> args -> new u32Value (              (                           args.get(0).i32Value())));
-    put("i32.as_f64"            , (interpreter, innerClazz) -> args -> new f64Value ((double)      (                           args.get(0).i32Value())));
-    put("i32.prefix -°"         , (interpreter, innerClazz) -> args -> new i32Value (              (                       -   args.get(0).i32Value())));
-    put("i32.infix +°"          , (interpreter, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() +   args.get(1).i32Value())));
-    put("i32.infix -°"          , (interpreter, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() -   args.get(1).i32Value())));
-    put("i32.infix *°"          , (interpreter, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() *   args.get(1).i32Value())));
-    put("i32.div"               , (interpreter, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() /   args.get(1).i32Value())));
-    put("i32.mod"               , (interpreter, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() %   args.get(1).i32Value())));
-    put("i32.infix &"           , (interpreter, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() &   args.get(1).i32Value())));
-    put("i32.infix |"           , (interpreter, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() |   args.get(1).i32Value())));
-    put("i32.infix ^"           , (interpreter, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() ^   args.get(1).i32Value())));
-    put("i32.infix >>"          , (interpreter, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() >>  args.get(1).i32Value())));
-    put("i32.infix <<"          , (interpreter, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() <<  args.get(1).i32Value())));
-    put("i32.type.equality"     , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i32Value() ==  args.get(2).i32Value())));
-    put("i32.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i32Value() <=  args.get(2).i32Value())));
-    put("i64.cast_to_u64"       , (interpreter, innerClazz) -> args -> new u64Value (              (                           args.get(0).i64Value())));
-    put("i64.as_f64"            , (interpreter, innerClazz) -> args -> new f64Value ((double)      (                           args.get(0).i64Value())));
-    put("i64.prefix -°"         , (interpreter, innerClazz) -> args -> new i64Value (              (                       -   args.get(0).i64Value())));
-    put("i64.infix +°"          , (interpreter, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() +   args.get(1).i64Value())));
-    put("i64.infix -°"          , (interpreter, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() -   args.get(1).i64Value())));
-    put("i64.infix *°"          , (interpreter, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() *   args.get(1).i64Value())));
-    put("i64.div"               , (interpreter, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() /   args.get(1).i64Value())));
-    put("i64.mod"               , (interpreter, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() %   args.get(1).i64Value())));
-    put("i64.infix &"           , (interpreter, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() &   args.get(1).i64Value())));
-    put("i64.infix |"           , (interpreter, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() |   args.get(1).i64Value())));
-    put("i64.infix ^"           , (interpreter, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() ^   args.get(1).i64Value())));
-    put("i64.infix >>"          , (interpreter, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() >>  args.get(1).i64Value())));
-    put("i64.infix <<"          , (interpreter, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() <<  args.get(1).i64Value())));
-    put("i64.type.equality"     , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i64Value() ==  args.get(2).i64Value())));
-    put("i64.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).i64Value() <=  args.get(2).i64Value())));
-    put("u8.as_i32"             , (interpreter, innerClazz) -> args -> new i32Value (              (                           args.get(0).u8Value() )));
-    put("u8.cast_to_i8"         , (interpreter, innerClazz) -> args -> new i8Value  ((int) (byte)  (                           args.get(0).u8Value() )));
-    put("u8.prefix -°"          , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & (                       -   args.get(0).u8Value() )));
-    put("u8.infix +°"           , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & (args.get(0).u8Value()  +   args.get(1).u8Value() )));
-    put("u8.infix -°"           , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & (args.get(0).u8Value()  -   args.get(1).u8Value() )));
-    put("u8.infix *°"           , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & (args.get(0).u8Value()  *   args.get(1).u8Value() )));
-    put("u8.div"                , (interpreter, innerClazz) -> args -> new u8Value  (Integer.divideUnsigned   (args.get(0).u8Value(), args.get(1).u8Value())));
-    put("u8.mod"                , (interpreter, innerClazz) -> args -> new u8Value  (Integer.remainderUnsigned(args.get(0).u8Value(), args.get(1).u8Value())));
-    put("u8.infix &"            , (interpreter, innerClazz) -> args -> new u8Value  (              (args.get(0).u8Value()  &   args.get(1).u8Value() )));
-    put("u8.infix |"            , (interpreter, innerClazz) -> args -> new u8Value  (              (args.get(0).u8Value()  |   args.get(1).u8Value() )));
-    put("u8.infix ^"            , (interpreter, innerClazz) -> args -> new u8Value  (              (args.get(0).u8Value()  ^   args.get(1).u8Value() )));
-    put("u8.infix >>"           , (interpreter, innerClazz) -> args -> new u8Value  (              (args.get(0).u8Value()  >>> args.get(1).u8Value() )));
-    put("u8.infix <<"           , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & (args.get(0).u8Value()  <<  args.get(1).u8Value() )));
-    put("u8.type.equality"      , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).u8Value()  ==  args.get(2).u8Value() )));
-    put("u8.type.lteq"          , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(1).u8Value(), args.get(2).u8Value()) <= 0));
-    put("u16.as_i32"            , (interpreter, innerClazz) -> args -> new i32Value (              (                           args.get(0).u16Value())));
-    put("u16.low8bits"          , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & (                           args.get(0).u16Value())));
-    put("u16.cast_to_i16"       , (interpreter, innerClazz) -> args -> new i16Value ((short)       (                           args.get(0).u16Value())));
-    put("u16.prefix -°"         , (interpreter, innerClazz) -> args -> new u16Value (     0xffff & (                       -   args.get(0).u16Value())));
-    put("u16.infix +°"          , (interpreter, innerClazz) -> args -> new u16Value (     0xffff & (args.get(0).u16Value() +   args.get(1).u16Value())));
-    put("u16.infix -°"          , (interpreter, innerClazz) -> args -> new u16Value (     0xffff & (args.get(0).u16Value() -   args.get(1).u16Value())));
-    put("u16.infix *°"          , (interpreter, innerClazz) -> args -> new u16Value (     0xffff & (args.get(0).u16Value() *   args.get(1).u16Value())));
-    put("u16.div"               , (interpreter, innerClazz) -> args -> new u16Value (Integer.divideUnsigned   (args.get(0).u16Value(), args.get(1).u16Value())));
-    put("u16.mod"               , (interpreter, innerClazz) -> args -> new u16Value (Integer.remainderUnsigned(args.get(0).u16Value(), args.get(1).u16Value())));
-    put("u16.infix &"           , (interpreter, innerClazz) -> args -> new u16Value (              (args.get(0).u16Value() &   args.get(1).u16Value())));
-    put("u16.infix |"           , (interpreter, innerClazz) -> args -> new u16Value (              (args.get(0).u16Value() |   args.get(1).u16Value())));
-    put("u16.infix ^"           , (interpreter, innerClazz) -> args -> new u16Value (              (args.get(0).u16Value() ^   args.get(1).u16Value())));
-    put("u16.infix >>"          , (interpreter, innerClazz) -> args -> new u16Value (              (args.get(0).u16Value() >>> args.get(1).u16Value())));
-    put("u16.infix <<"          , (interpreter, innerClazz) -> args -> new u16Value (     0xffff & (args.get(0).u16Value() <<  args.get(1).u16Value())));
-    put("u16.type.equality"     , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).u16Value() ==  args.get(2).u16Value())));
-    put("u16.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(1).u16Value(), args.get(2).u16Value()) <= 0));
-    put("u32.as_i64"            , (interpreter, innerClazz) -> args -> new i64Value (Integer.toUnsignedLong(args.get(0).u32Value())));
-    put("u32.low8bits"          , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & (                           args.get(0).u32Value())));
-    put("u32.low16bits"         , (interpreter, innerClazz) -> args -> new u16Value (     0xffff & (                           args.get(0).u32Value())));
-    put("u32.cast_to_i32"       , (interpreter, innerClazz) -> args -> new i32Value (              (                           args.get(0).u32Value())));
-    put("u32.as_f64"            , (interpreter, innerClazz) -> args -> new f64Value ((double)      Integer.toUnsignedLong(     args.get(0).u32Value())));
-    put("u32.cast_to_f32"       , (interpreter, innerClazz) -> args -> new f32Value (              Float.intBitsToFloat(       args.get(0).u32Value())));
-    put("u32.prefix -°"         , (interpreter, innerClazz) -> args -> new u32Value (              (                       -   args.get(0).u32Value())));
-    put("u32.infix +°"          , (interpreter, innerClazz) -> args -> new u32Value (              (args.get(0).u32Value() +   args.get(1).u32Value())));
-    put("u32.infix -°"          , (interpreter, innerClazz) -> args -> new u32Value (              (args.get(0).u32Value() -   args.get(1).u32Value())));
-    put("u32.infix *°"          , (interpreter, innerClazz) -> args -> new u32Value (              (args.get(0).u32Value() *   args.get(1).u32Value())));
-    put("u32.div"               , (interpreter, innerClazz) -> args -> new u32Value (Integer.divideUnsigned   (args.get(0).u32Value(), args.get(1).u32Value())));
-    put("u32.mod"               , (interpreter, innerClazz) -> args -> new u32Value (Integer.remainderUnsigned(args.get(0).u32Value(), args.get(1).u32Value())));
-    put("u32.infix &"           , (interpreter, innerClazz) -> args -> new u32Value (              (args.get(0).u32Value() &   args.get(1).u32Value())));
-    put("u32.infix |"           , (interpreter, innerClazz) -> args -> new u32Value (              (args.get(0).u32Value() |   args.get(1).u32Value())));
-    put("u32.infix ^"           , (interpreter, innerClazz) -> args -> new u32Value (              (args.get(0).u32Value() ^   args.get(1).u32Value())));
-    put("u32.infix >>"          , (interpreter, innerClazz) -> args -> new u32Value (              (args.get(0).u32Value() >>> args.get(1).u32Value())));
-    put("u32.infix <<"          , (interpreter, innerClazz) -> args -> new u32Value (              (args.get(0).u32Value() <<  args.get(1).u32Value())));
-    put("u32.type.equality"     , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).u32Value() ==  args.get(2).u32Value())));
-    put("u32.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(1).u32Value(), args.get(2).u32Value()) <= 0));
-    put("u64.low8bits"          , (interpreter, innerClazz) -> args -> new u8Value  (       0xff & ((int)                      args.get(0).u64Value())));
-    put("u64.low16bits"         , (interpreter, innerClazz) -> args -> new u16Value (     0xffff & ((int)                      args.get(0).u64Value())));
-    put("u64.low32bits"         , (interpreter, innerClazz) -> args -> new u32Value ((int)         (                           args.get(0).u64Value())));
-    put("u64.cast_to_i64"       , (interpreter, innerClazz) -> args -> new i64Value (              (                           args.get(0).u64Value())));
-    put("u64.as_f64"            , (interpreter, innerClazz) -> args -> new f64Value (Double.parseDouble(Long.toUnsignedString(args.get(0).u64Value()))));
-    put("u64.cast_to_f64"       , (interpreter, innerClazz) -> args -> new f64Value (              Double.longBitsToDouble(    args.get(0).u64Value())));
-    put("u64.prefix -°"         , (interpreter, innerClazz) -> args -> new u64Value (              (                       -   args.get(0).u64Value())));
-    put("u64.infix +°"          , (interpreter, innerClazz) -> args -> new u64Value (              (args.get(0).u64Value() +   args.get(1).u64Value())));
-    put("u64.infix -°"          , (interpreter, innerClazz) -> args -> new u64Value (              (args.get(0).u64Value() -   args.get(1).u64Value())));
-    put("u64.infix *°"          , (interpreter, innerClazz) -> args -> new u64Value (              (args.get(0).u64Value() *   args.get(1).u64Value())));
-    put("u64.div"               , (interpreter, innerClazz) -> args -> new u64Value (Long.divideUnsigned   (args.get(0).u64Value(), args.get(1).u64Value())));
-    put("u64.mod"               , (interpreter, innerClazz) -> args -> new u64Value (Long.remainderUnsigned(args.get(0).u64Value(), args.get(1).u64Value())));
-    put("u64.infix &"           , (interpreter, innerClazz) -> args -> new u64Value (              (args.get(0).u64Value() &   args.get(1).u64Value())));
-    put("u64.infix |"           , (interpreter, innerClazz) -> args -> new u64Value (              (args.get(0).u64Value() |   args.get(1).u64Value())));
-    put("u64.infix ^"           , (interpreter, innerClazz) -> args -> new u64Value (              (args.get(0).u64Value() ^   args.get(1).u64Value())));
-    put("u64.infix >>"          , (interpreter, innerClazz) -> args -> new u64Value (              (args.get(0).u64Value() >>> args.get(1).u64Value())));
-    put("u64.infix <<"          , (interpreter, innerClazz) -> args -> new u64Value (              (args.get(0).u64Value() <<  args.get(1).u64Value())));
-    put("u64.type.equality"     , (interpreter, innerClazz) -> args -> new boolValue(              (args.get(1).u64Value() ==  args.get(2).u64Value())));
-    put("u64.type.lteq"         , (interpreter, innerClazz) -> args -> new boolValue(Long.compareUnsigned(args.get(1).u64Value(), args.get(2).u64Value()) <= 0));
-    put("f32.prefix -"          , (interpreter, innerClazz) -> args -> new f32Value (                (                       -  args.get(0).f32Value())));
-    put("f32.infix +"           , (interpreter, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() +  args.get(1).f32Value())));
-    put("f32.infix -"           , (interpreter, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() -  args.get(1).f32Value())));
-    put("f32.infix *"           , (interpreter, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() *  args.get(1).f32Value())));
-    put("f32.infix /"           , (interpreter, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() /  args.get(1).f32Value())));
-    put("f32.infix %"           , (interpreter, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() %  args.get(1).f32Value())));
-    put("f32.infix **"          , (interpreter, innerClazz) -> args -> new f32Value ((float) Math.pow(args.get(0).f32Value(),   args.get(1).f32Value())));
-    put("f32.infix ="           , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() == args.get(1).f32Value())));
-    put("f32.infix <="          , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() <= args.get(1).f32Value())));
-    put("f32.infix >="          , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() >= args.get(1).f32Value())));
-    put("f32.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() <  args.get(1).f32Value())));
-    put("f32.infix >"           , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() >  args.get(1).f32Value())));
-    put("f32.as_f64"            , (interpreter, innerClazz) -> args -> new f64Value((double)                                    args.get(0).f32Value() ));
-    put("f32.cast_to_u32"       , (interpreter, innerClazz) -> args -> new u32Value (    Float.floatToIntBits(                  args.get(0).f32Value())));
-    put("f64.prefix -"          , (interpreter, innerClazz) -> args -> new f64Value (                (                       -  args.get(0).f64Value())));
-    put("f64.infix +"           , (interpreter, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() +  args.get(1).f64Value())));
-    put("f64.infix -"           , (interpreter, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() -  args.get(1).f64Value())));
-    put("f64.infix *"           , (interpreter, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() *  args.get(1).f64Value())));
-    put("f64.infix /"           , (interpreter, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() /  args.get(1).f64Value())));
-    put("f64.infix %"           , (interpreter, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() %  args.get(1).f64Value())));
-    put("f64.infix **"          , (interpreter, innerClazz) -> args -> new f64Value (        Math.pow(args.get(0).f64Value(),   args.get(1).f64Value())));
-    put("f64.infix ="           , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() == args.get(1).f64Value())));
-    put("f64.infix <="          , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() <= args.get(1).f64Value())));
-    put("f64.infix >="          , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() >= args.get(1).f64Value())));
-    put("f64.infix <"           , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() <  args.get(1).f64Value())));
-    put("f64.infix >"           , (interpreter, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() >  args.get(1).f64Value())));
-    put("f64.as_i64_lax"        , (interpreter, innerClazz) -> args -> new i64Value((long)                                      args.get(0).f64Value() ));
-    put("f64.as_f32"            , (interpreter, innerClazz) -> args -> new f32Value((float)                                     args.get(0).f64Value() ));
-    put("f64.cast_to_u64"       , (interpreter, innerClazz) -> args -> new u64Value (    Double.doubleToLongBits(               args.get(0).f64Value())));
-    put("f32.type.is_NaN"       , (interpreter, innerClazz) -> args -> new boolValue(                               Float.isNaN(args.get(1).f32Value())));
-    put("f64.type.is_NaN"       , (interpreter, innerClazz) -> args -> new boolValue(                              Double.isNaN(args.get(1).f64Value())));
-    put("f32.type.acos"         , (interpreter, innerClazz) -> args -> new f32Value ((float)           Math.acos(               args.get(1).f32Value())));
-    put("f32.type.asin"         , (interpreter, innerClazz) -> args -> new f32Value ((float)           Math.asin(               args.get(1).f32Value())));
-    put("f32.type.atan"         , (interpreter, innerClazz) -> args -> new f32Value ((float)           Math.atan(               args.get(1).f32Value())));
-    put("f32.type.cos"          , (interpreter, innerClazz) -> args -> new f32Value ((float)           Math.cos(                args.get(1).f32Value())));
-    put("f32.type.cosh"         , (interpreter, innerClazz) -> args -> new f32Value ((float)           Math.cosh(               args.get(1).f32Value())));
-    put("f32.type.epsilon"      , (interpreter, innerClazz) -> args -> new f32Value (                  Math.ulp(                (float)1)));
-    put("f32.type.exp"          , (interpreter, innerClazz) -> args -> new f32Value ((float)           Math.exp(                args.get(1).f32Value())));
-    put("f32.type.log"          , (interpreter, innerClazz) -> args -> new f32Value ((float)           Math.log(                args.get(1).f32Value())));
-    put("f32.type.max"          , (interpreter, innerClazz) -> args -> new f32Value (                                           Float.MAX_VALUE));
-    put("f32.type.max_exp"      , (interpreter, innerClazz) -> args -> new i32Value (                                           Float.MAX_EXPONENT));
-    put("f32.type.min_positive" , (interpreter, innerClazz) -> args -> new f32Value (                                           Float.MIN_NORMAL));
-    put("f32.type.min_exp"      , (interpreter, innerClazz) -> args -> new i32Value (                                           Float.MIN_EXPONENT));
-    put("f32.type.sin"          , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.sin(                 args.get(1).f32Value())));
-    put("f32.type.sinh"         , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.sinh(                args.get(1).f32Value())));
-    put("f32.type.square_root"  , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.sqrt(        (double)args.get(1).f32Value())));
-    put("f32.type.tan"          , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.tan(                 args.get(1).f32Value())));
-    put("f32.type.tanh"         , (interpreter, innerClazz) -> args -> new f32Value ((float)          Math.tanh(                args.get(1).f32Value())));
-    put("f64.type.acos"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.acos(                args.get(1).f64Value())));
-    put("f64.type.asin"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.asin(                args.get(1).f64Value())));
-    put("f64.type.atan"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.atan(                args.get(1).f64Value())));
-    put("f64.type.cos"          , (interpreter, innerClazz) -> args -> new f64Value (                 Math.cos(                 args.get(1).f64Value())));
-    put("f64.type.cosh"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.cosh(                args.get(1).f64Value())));
-    put("f64.type.epsilon"      , (interpreter, innerClazz) -> args -> new f64Value (                 Math.ulp(                 (double)1)));
-    put("f64.type.exp"          , (interpreter, innerClazz) -> args -> new f64Value (                 Math.exp(                 args.get(1).f64Value())));
-    put("f64.type.log"          , (interpreter, innerClazz) -> args -> new f64Value (                 Math.log(                 args.get(1).f64Value())));
-    put("f64.type.max"          , (interpreter, innerClazz) -> args -> new f64Value (                                               Double.MAX_VALUE));
-    put("f64.type.max_exp"      , (interpreter, innerClazz) -> args -> new i32Value (                                               Double.MAX_EXPONENT));
-    put("f64.type.min_positive" , (interpreter, innerClazz) -> args -> new f64Value (                                               Double.MIN_NORMAL));
-    put("f64.type.min_exp"      , (interpreter, innerClazz) -> args -> new i32Value (                                               Double.MIN_EXPONENT));
-    put("f64.type.sin"          , (interpreter, innerClazz) -> args -> new f64Value (                 Math.sin(                 args.get(1).f64Value())));
-    put("f64.type.sinh"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.sinh(                args.get(1).f64Value())));
-    put("f64.type.square_root"  , (interpreter, innerClazz) -> args -> new f64Value (                 Math.sqrt(                args.get(1).f64Value())));
-    put("f64.type.tan"          , (interpreter, innerClazz) -> args -> new f64Value (                 Math.tan(                 args.get(1).f64Value())));
-    put("f64.type.tanh"         , (interpreter, innerClazz) -> args -> new f64Value (                 Math.tanh(                args.get(1).f64Value())));
-    put("Any.as_string"         , (interpreter, innerClazz) -> args -> Interpreter.value("instance[" + innerClazz._outer.toString() + "]"));
-    put("fuzion.std.nano_time"  , (interpreter, innerClazz) -> args -> new u64Value (System.nanoTime()));
-    put("fuzion.std.nano_sleep" , (interpreter, innerClazz) -> args ->
+    put("safety"                , (executor, innerClazz) -> args -> new boolValue(executor.options().fuzionSafety()));
+    put("debug"                 , (executor, innerClazz) -> args -> new boolValue(executor.options().fuzionDebug()));
+    put("debug_level"           , (executor, innerClazz) -> args -> new i32Value (executor.options().fuzionDebugLevel()));
+    put("i8.as_i32"             , (executor, innerClazz) -> args -> new i32Value (              (                           args.get(0).i8Value() )));
+    put("i8.cast_to_u8"         , (executor, innerClazz) -> args -> new u8Value  (       0xff & (                           args.get(0).i8Value() )));
+    put("i8.prefix -°"          , (executor, innerClazz) -> args -> new i8Value  ((int) (byte)  (                       -   args.get(0).i8Value() )));
+    put("i8.infix +°"           , (executor, innerClazz) -> args -> new i8Value  ((int) (byte)  (args.get(0).i8Value()  +   args.get(1).i8Value() )));
+    put("i8.infix -°"           , (executor, innerClazz) -> args -> new i8Value  ((int) (byte)  (args.get(0).i8Value()  -   args.get(1).i8Value() )));
+    put("i8.infix *°"           , (executor, innerClazz) -> args -> new i8Value  ((int) (byte)  (args.get(0).i8Value()  *   args.get(1).i8Value() )));
+    put("i8.div"                , (executor, innerClazz) -> args -> new i8Value  ((int) (byte)  (args.get(0).i8Value()  /   args.get(1).i8Value() )));
+    put("i8.mod"                , (executor, innerClazz) -> args -> new i8Value  ((int) (byte)  (args.get(0).i8Value()  %   args.get(1).i8Value() )));
+    put("i8.infix &"            , (executor, innerClazz) -> args -> new i8Value  (              (args.get(0).i8Value()  &   args.get(1).i8Value() )));
+    put("i8.infix |"            , (executor, innerClazz) -> args -> new i8Value  (              (args.get(0).i8Value()  |   args.get(1).i8Value() )));
+    put("i8.infix ^"            , (executor, innerClazz) -> args -> new i8Value  (              (args.get(0).i8Value()  ^   args.get(1).i8Value() )));
+    put("i8.infix >>"           , (executor, innerClazz) -> args -> new i8Value  (              (args.get(0).i8Value()  >>  args.get(1).i8Value() )));
+    put("i8.infix <<"           , (executor, innerClazz) -> args -> new i8Value  ((int) (byte)  (args.get(0).i8Value()  <<  args.get(1).i8Value() )));
+    put("i8.type.equality"      , (executor, innerClazz) -> args -> new boolValue(              (args.get(1).i8Value()  ==  args.get(2).i8Value() )));
+    put("i8.type.lteq"          , (executor, innerClazz) -> args -> new boolValue(              (args.get(1).i8Value()  <=  args.get(2).i8Value() )));
+    put("i16.as_i32"            , (executor, innerClazz) -> args -> new i32Value (              (                           args.get(0).i16Value())));
+    put("i16.cast_to_u16"       , (executor, innerClazz) -> args -> new u16Value (     0xffff & (                           args.get(0).i16Value())));
+    put("i16.prefix -°"         , (executor, innerClazz) -> args -> new i16Value ((int) (short) (                       -   args.get(0).i16Value())));
+    put("i16.infix +°"          , (executor, innerClazz) -> args -> new i16Value ((int) (short) (args.get(0).i16Value() +   args.get(1).i16Value())));
+    put("i16.infix -°"          , (executor, innerClazz) -> args -> new i16Value ((int) (short) (args.get(0).i16Value() -   args.get(1).i16Value())));
+    put("i16.infix *°"          , (executor, innerClazz) -> args -> new i16Value ((int) (short) (args.get(0).i16Value() *   args.get(1).i16Value())));
+    put("i16.div"               , (executor, innerClazz) -> args -> new i16Value ((int) (short) (args.get(0).i16Value() /   args.get(1).i16Value())));
+    put("i16.mod"               , (executor, innerClazz) -> args -> new i16Value ((int) (short) (args.get(0).i16Value() %   args.get(1).i16Value())));
+    put("i16.infix &"           , (executor, innerClazz) -> args -> new i16Value (              (args.get(0).i16Value() &   args.get(1).i16Value())));
+    put("i16.infix |"           , (executor, innerClazz) -> args -> new i16Value (              (args.get(0).i16Value() |   args.get(1).i16Value())));
+    put("i16.infix ^"           , (executor, innerClazz) -> args -> new i16Value (              (args.get(0).i16Value() ^   args.get(1).i16Value())));
+    put("i16.infix >>"          , (executor, innerClazz) -> args -> new i16Value (              (args.get(0).i16Value() >>  args.get(1).i16Value())));
+    put("i16.infix <<"          , (executor, innerClazz) -> args -> new i16Value ((int) (short) (args.get(0).i16Value() <<  args.get(1).i16Value())));
+    put("i16.type.equality"     , (executor, innerClazz) -> args -> new boolValue(              (args.get(1).i16Value() ==  args.get(2).i16Value())));
+    put("i16.type.lteq"         , (executor, innerClazz) -> args -> new boolValue(              (args.get(1).i16Value() <=  args.get(2).i16Value())));
+    put("i32.as_i64"            , (executor, innerClazz) -> args -> new i64Value ((long)        (                           args.get(0).i32Value())));
+    put("i32.cast_to_u32"       , (executor, innerClazz) -> args -> new u32Value (              (                           args.get(0).i32Value())));
+    put("i32.as_f64"            , (executor, innerClazz) -> args -> new f64Value ((double)      (                           args.get(0).i32Value())));
+    put("i32.prefix -°"         , (executor, innerClazz) -> args -> new i32Value (              (                       -   args.get(0).i32Value())));
+    put("i32.infix +°"          , (executor, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() +   args.get(1).i32Value())));
+    put("i32.infix -°"          , (executor, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() -   args.get(1).i32Value())));
+    put("i32.infix *°"          , (executor, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() *   args.get(1).i32Value())));
+    put("i32.div"               , (executor, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() /   args.get(1).i32Value())));
+    put("i32.mod"               , (executor, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() %   args.get(1).i32Value())));
+    put("i32.infix &"           , (executor, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() &   args.get(1).i32Value())));
+    put("i32.infix |"           , (executor, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() |   args.get(1).i32Value())));
+    put("i32.infix ^"           , (executor, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() ^   args.get(1).i32Value())));
+    put("i32.infix >>"          , (executor, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() >>  args.get(1).i32Value())));
+    put("i32.infix <<"          , (executor, innerClazz) -> args -> new i32Value (              (args.get(0).i32Value() <<  args.get(1).i32Value())));
+    put("i32.type.equality"     , (executor, innerClazz) -> args -> new boolValue(              (args.get(1).i32Value() ==  args.get(2).i32Value())));
+    put("i32.type.lteq"         , (executor, innerClazz) -> args -> new boolValue(              (args.get(1).i32Value() <=  args.get(2).i32Value())));
+    put("i64.cast_to_u64"       , (executor, innerClazz) -> args -> new u64Value (              (                           args.get(0).i64Value())));
+    put("i64.as_f64"            , (executor, innerClazz) -> args -> new f64Value ((double)      (                           args.get(0).i64Value())));
+    put("i64.prefix -°"         , (executor, innerClazz) -> args -> new i64Value (              (                       -   args.get(0).i64Value())));
+    put("i64.infix +°"          , (executor, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() +   args.get(1).i64Value())));
+    put("i64.infix -°"          , (executor, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() -   args.get(1).i64Value())));
+    put("i64.infix *°"          , (executor, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() *   args.get(1).i64Value())));
+    put("i64.div"               , (executor, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() /   args.get(1).i64Value())));
+    put("i64.mod"               , (executor, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() %   args.get(1).i64Value())));
+    put("i64.infix &"           , (executor, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() &   args.get(1).i64Value())));
+    put("i64.infix |"           , (executor, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() |   args.get(1).i64Value())));
+    put("i64.infix ^"           , (executor, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() ^   args.get(1).i64Value())));
+    put("i64.infix >>"          , (executor, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() >>  args.get(1).i64Value())));
+    put("i64.infix <<"          , (executor, innerClazz) -> args -> new i64Value (              (args.get(0).i64Value() <<  args.get(1).i64Value())));
+    put("i64.type.equality"     , (executor, innerClazz) -> args -> new boolValue(              (args.get(1).i64Value() ==  args.get(2).i64Value())));
+    put("i64.type.lteq"         , (executor, innerClazz) -> args -> new boolValue(              (args.get(1).i64Value() <=  args.get(2).i64Value())));
+    put("u8.as_i32"             , (executor, innerClazz) -> args -> new i32Value (              (                           args.get(0).u8Value() )));
+    put("u8.cast_to_i8"         , (executor, innerClazz) -> args -> new i8Value  ((int) (byte)  (                           args.get(0).u8Value() )));
+    put("u8.prefix -°"          , (executor, innerClazz) -> args -> new u8Value  (       0xff & (                       -   args.get(0).u8Value() )));
+    put("u8.infix +°"           , (executor, innerClazz) -> args -> new u8Value  (       0xff & (args.get(0).u8Value()  +   args.get(1).u8Value() )));
+    put("u8.infix -°"           , (executor, innerClazz) -> args -> new u8Value  (       0xff & (args.get(0).u8Value()  -   args.get(1).u8Value() )));
+    put("u8.infix *°"           , (executor, innerClazz) -> args -> new u8Value  (       0xff & (args.get(0).u8Value()  *   args.get(1).u8Value() )));
+    put("u8.div"                , (executor, innerClazz) -> args -> new u8Value  (Integer.divideUnsigned   (args.get(0).u8Value(), args.get(1).u8Value())));
+    put("u8.mod"                , (executor, innerClazz) -> args -> new u8Value  (Integer.remainderUnsigned(args.get(0).u8Value(), args.get(1).u8Value())));
+    put("u8.infix &"            , (executor, innerClazz) -> args -> new u8Value  (              (args.get(0).u8Value()  &   args.get(1).u8Value() )));
+    put("u8.infix |"            , (executor, innerClazz) -> args -> new u8Value  (              (args.get(0).u8Value()  |   args.get(1).u8Value() )));
+    put("u8.infix ^"            , (executor, innerClazz) -> args -> new u8Value  (              (args.get(0).u8Value()  ^   args.get(1).u8Value() )));
+    put("u8.infix >>"           , (executor, innerClazz) -> args -> new u8Value  (              (args.get(0).u8Value()  >>> args.get(1).u8Value() )));
+    put("u8.infix <<"           , (executor, innerClazz) -> args -> new u8Value  (       0xff & (args.get(0).u8Value()  <<  args.get(1).u8Value() )));
+    put("u8.type.equality"      , (executor, innerClazz) -> args -> new boolValue(              (args.get(1).u8Value()  ==  args.get(2).u8Value() )));
+    put("u8.type.lteq"          , (executor, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(1).u8Value(), args.get(2).u8Value()) <= 0));
+    put("u16.as_i32"            , (executor, innerClazz) -> args -> new i32Value (              (                           args.get(0).u16Value())));
+    put("u16.low8bits"          , (executor, innerClazz) -> args -> new u8Value  (       0xff & (                           args.get(0).u16Value())));
+    put("u16.cast_to_i16"       , (executor, innerClazz) -> args -> new i16Value ((short)       (                           args.get(0).u16Value())));
+    put("u16.prefix -°"         , (executor, innerClazz) -> args -> new u16Value (     0xffff & (                       -   args.get(0).u16Value())));
+    put("u16.infix +°"          , (executor, innerClazz) -> args -> new u16Value (     0xffff & (args.get(0).u16Value() +   args.get(1).u16Value())));
+    put("u16.infix -°"          , (executor, innerClazz) -> args -> new u16Value (     0xffff & (args.get(0).u16Value() -   args.get(1).u16Value())));
+    put("u16.infix *°"          , (executor, innerClazz) -> args -> new u16Value (     0xffff & (args.get(0).u16Value() *   args.get(1).u16Value())));
+    put("u16.div"               , (executor, innerClazz) -> args -> new u16Value (Integer.divideUnsigned   (args.get(0).u16Value(), args.get(1).u16Value())));
+    put("u16.mod"               , (executor, innerClazz) -> args -> new u16Value (Integer.remainderUnsigned(args.get(0).u16Value(), args.get(1).u16Value())));
+    put("u16.infix &"           , (executor, innerClazz) -> args -> new u16Value (              (args.get(0).u16Value() &   args.get(1).u16Value())));
+    put("u16.infix |"           , (executor, innerClazz) -> args -> new u16Value (              (args.get(0).u16Value() |   args.get(1).u16Value())));
+    put("u16.infix ^"           , (executor, innerClazz) -> args -> new u16Value (              (args.get(0).u16Value() ^   args.get(1).u16Value())));
+    put("u16.infix >>"          , (executor, innerClazz) -> args -> new u16Value (              (args.get(0).u16Value() >>> args.get(1).u16Value())));
+    put("u16.infix <<"          , (executor, innerClazz) -> args -> new u16Value (     0xffff & (args.get(0).u16Value() <<  args.get(1).u16Value())));
+    put("u16.type.equality"     , (executor, innerClazz) -> args -> new boolValue(              (args.get(1).u16Value() ==  args.get(2).u16Value())));
+    put("u16.type.lteq"         , (executor, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(1).u16Value(), args.get(2).u16Value()) <= 0));
+    put("u32.as_i64"            , (executor, innerClazz) -> args -> new i64Value (Integer.toUnsignedLong(args.get(0).u32Value())));
+    put("u32.low8bits"          , (executor, innerClazz) -> args -> new u8Value  (       0xff & (                           args.get(0).u32Value())));
+    put("u32.low16bits"         , (executor, innerClazz) -> args -> new u16Value (     0xffff & (                           args.get(0).u32Value())));
+    put("u32.cast_to_i32"       , (executor, innerClazz) -> args -> new i32Value (              (                           args.get(0).u32Value())));
+    put("u32.as_f64"            , (executor, innerClazz) -> args -> new f64Value ((double)      Integer.toUnsignedLong(     args.get(0).u32Value())));
+    put("u32.cast_to_f32"       , (executor, innerClazz) -> args -> new f32Value (              Float.intBitsToFloat(       args.get(0).u32Value())));
+    put("u32.prefix -°"         , (executor, innerClazz) -> args -> new u32Value (              (                       -   args.get(0).u32Value())));
+    put("u32.infix +°"          , (executor, innerClazz) -> args -> new u32Value (              (args.get(0).u32Value() +   args.get(1).u32Value())));
+    put("u32.infix -°"          , (executor, innerClazz) -> args -> new u32Value (              (args.get(0).u32Value() -   args.get(1).u32Value())));
+    put("u32.infix *°"          , (executor, innerClazz) -> args -> new u32Value (              (args.get(0).u32Value() *   args.get(1).u32Value())));
+    put("u32.div"               , (executor, innerClazz) -> args -> new u32Value (Integer.divideUnsigned   (args.get(0).u32Value(), args.get(1).u32Value())));
+    put("u32.mod"               , (executor, innerClazz) -> args -> new u32Value (Integer.remainderUnsigned(args.get(0).u32Value(), args.get(1).u32Value())));
+    put("u32.infix &"           , (executor, innerClazz) -> args -> new u32Value (              (args.get(0).u32Value() &   args.get(1).u32Value())));
+    put("u32.infix |"           , (executor, innerClazz) -> args -> new u32Value (              (args.get(0).u32Value() |   args.get(1).u32Value())));
+    put("u32.infix ^"           , (executor, innerClazz) -> args -> new u32Value (              (args.get(0).u32Value() ^   args.get(1).u32Value())));
+    put("u32.infix >>"          , (executor, innerClazz) -> args -> new u32Value (              (args.get(0).u32Value() >>> args.get(1).u32Value())));
+    put("u32.infix <<"          , (executor, innerClazz) -> args -> new u32Value (              (args.get(0).u32Value() <<  args.get(1).u32Value())));
+    put("u32.type.equality"     , (executor, innerClazz) -> args -> new boolValue(              (args.get(1).u32Value() ==  args.get(2).u32Value())));
+    put("u32.type.lteq"         , (executor, innerClazz) -> args -> new boolValue(Integer.compareUnsigned(args.get(1).u32Value(), args.get(2).u32Value()) <= 0));
+    put("u64.low8bits"          , (executor, innerClazz) -> args -> new u8Value  (       0xff & ((int)                      args.get(0).u64Value())));
+    put("u64.low16bits"         , (executor, innerClazz) -> args -> new u16Value (     0xffff & ((int)                      args.get(0).u64Value())));
+    put("u64.low32bits"         , (executor, innerClazz) -> args -> new u32Value ((int)         (                           args.get(0).u64Value())));
+    put("u64.cast_to_i64"       , (executor, innerClazz) -> args -> new i64Value (              (                           args.get(0).u64Value())));
+    put("u64.as_f64"            , (executor, innerClazz) -> args -> new f64Value (Double.parseDouble(Long.toUnsignedString(args.get(0).u64Value()))));
+    put("u64.cast_to_f64"       , (executor, innerClazz) -> args -> new f64Value (              Double.longBitsToDouble(    args.get(0).u64Value())));
+    put("u64.prefix -°"         , (executor, innerClazz) -> args -> new u64Value (              (                       -   args.get(0).u64Value())));
+    put("u64.infix +°"          , (executor, innerClazz) -> args -> new u64Value (              (args.get(0).u64Value() +   args.get(1).u64Value())));
+    put("u64.infix -°"          , (executor, innerClazz) -> args -> new u64Value (              (args.get(0).u64Value() -   args.get(1).u64Value())));
+    put("u64.infix *°"          , (executor, innerClazz) -> args -> new u64Value (              (args.get(0).u64Value() *   args.get(1).u64Value())));
+    put("u64.div"               , (executor, innerClazz) -> args -> new u64Value (Long.divideUnsigned   (args.get(0).u64Value(), args.get(1).u64Value())));
+    put("u64.mod"               , (executor, innerClazz) -> args -> new u64Value (Long.remainderUnsigned(args.get(0).u64Value(), args.get(1).u64Value())));
+    put("u64.infix &"           , (executor, innerClazz) -> args -> new u64Value (              (args.get(0).u64Value() &   args.get(1).u64Value())));
+    put("u64.infix |"           , (executor, innerClazz) -> args -> new u64Value (              (args.get(0).u64Value() |   args.get(1).u64Value())));
+    put("u64.infix ^"           , (executor, innerClazz) -> args -> new u64Value (              (args.get(0).u64Value() ^   args.get(1).u64Value())));
+    put("u64.infix >>"          , (executor, innerClazz) -> args -> new u64Value (              (args.get(0).u64Value() >>> args.get(1).u64Value())));
+    put("u64.infix <<"          , (executor, innerClazz) -> args -> new u64Value (              (args.get(0).u64Value() <<  args.get(1).u64Value())));
+    put("u64.type.equality"     , (executor, innerClazz) -> args -> new boolValue(              (args.get(1).u64Value() ==  args.get(2).u64Value())));
+    put("u64.type.lteq"         , (executor, innerClazz) -> args -> new boolValue(Long.compareUnsigned(args.get(1).u64Value(), args.get(2).u64Value()) <= 0));
+    put("f32.prefix -"          , (executor, innerClazz) -> args -> new f32Value (                (                       -  args.get(0).f32Value())));
+    put("f32.infix +"           , (executor, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() +  args.get(1).f32Value())));
+    put("f32.infix -"           , (executor, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() -  args.get(1).f32Value())));
+    put("f32.infix *"           , (executor, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() *  args.get(1).f32Value())));
+    put("f32.infix /"           , (executor, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() /  args.get(1).f32Value())));
+    put("f32.infix %"           , (executor, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() %  args.get(1).f32Value())));
+    put("f32.infix **"          , (executor, innerClazz) -> args -> new f32Value ((float) Math.pow(args.get(0).f32Value(),   args.get(1).f32Value())));
+    put("f32.infix ="           , (executor, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() == args.get(1).f32Value())));
+    put("f32.infix <="          , (executor, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() <= args.get(1).f32Value())));
+    put("f32.infix >="          , (executor, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() >= args.get(1).f32Value())));
+    put("f32.infix <"           , (executor, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() <  args.get(1).f32Value())));
+    put("f32.infix >"           , (executor, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() >  args.get(1).f32Value())));
+    put("f32.as_f64"            , (executor, innerClazz) -> args -> new f64Value((double)                                    args.get(0).f32Value() ));
+    put("f32.cast_to_u32"       , (executor, innerClazz) -> args -> new u32Value (    Float.floatToIntBits(                  args.get(0).f32Value())));
+    put("f64.prefix -"          , (executor, innerClazz) -> args -> new f64Value (                (                       -  args.get(0).f64Value())));
+    put("f64.infix +"           , (executor, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() +  args.get(1).f64Value())));
+    put("f64.infix -"           , (executor, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() -  args.get(1).f64Value())));
+    put("f64.infix *"           , (executor, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() *  args.get(1).f64Value())));
+    put("f64.infix /"           , (executor, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() /  args.get(1).f64Value())));
+    put("f64.infix %"           , (executor, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() %  args.get(1).f64Value())));
+    put("f64.infix **"          , (executor, innerClazz) -> args -> new f64Value (        Math.pow(args.get(0).f64Value(),   args.get(1).f64Value())));
+    put("f64.infix ="           , (executor, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() == args.get(1).f64Value())));
+    put("f64.infix <="          , (executor, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() <= args.get(1).f64Value())));
+    put("f64.infix >="          , (executor, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() >= args.get(1).f64Value())));
+    put("f64.infix <"           , (executor, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() <  args.get(1).f64Value())));
+    put("f64.infix >"           , (executor, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() >  args.get(1).f64Value())));
+    put("f64.as_i64_lax"        , (executor, innerClazz) -> args -> new i64Value((long)                                      args.get(0).f64Value() ));
+    put("f64.as_f32"            , (executor, innerClazz) -> args -> new f32Value((float)                                     args.get(0).f64Value() ));
+    put("f64.cast_to_u64"       , (executor, innerClazz) -> args -> new u64Value (    Double.doubleToLongBits(               args.get(0).f64Value())));
+    put("f32.type.is_NaN"       , (executor, innerClazz) -> args -> new boolValue(                               Float.isNaN(args.get(1).f32Value())));
+    put("f64.type.is_NaN"       , (executor, innerClazz) -> args -> new boolValue(                              Double.isNaN(args.get(1).f64Value())));
+    put("f32.type.acos"         , (executor, innerClazz) -> args -> new f32Value ((float)           Math.acos(               args.get(1).f32Value())));
+    put("f32.type.asin"         , (executor, innerClazz) -> args -> new f32Value ((float)           Math.asin(               args.get(1).f32Value())));
+    put("f32.type.atan"         , (executor, innerClazz) -> args -> new f32Value ((float)           Math.atan(               args.get(1).f32Value())));
+    put("f32.type.cos"          , (executor, innerClazz) -> args -> new f32Value ((float)           Math.cos(                args.get(1).f32Value())));
+    put("f32.type.cosh"         , (executor, innerClazz) -> args -> new f32Value ((float)           Math.cosh(               args.get(1).f32Value())));
+    put("f32.type.epsilon"      , (executor, innerClazz) -> args -> new f32Value (                  Math.ulp(                (float)1)));
+    put("f32.type.exp"          , (executor, innerClazz) -> args -> new f32Value ((float)           Math.exp(                args.get(1).f32Value())));
+    put("f32.type.log"          , (executor, innerClazz) -> args -> new f32Value ((float)           Math.log(                args.get(1).f32Value())));
+    put("f32.type.max"          , (executor, innerClazz) -> args -> new f32Value (                                           Float.MAX_VALUE));
+    put("f32.type.max_exp"      , (executor, innerClazz) -> args -> new i32Value (                                           Float.MAX_EXPONENT));
+    put("f32.type.min_positive" , (executor, innerClazz) -> args -> new f32Value (                                           Float.MIN_NORMAL));
+    put("f32.type.min_exp"      , (executor, innerClazz) -> args -> new i32Value (                                           Float.MIN_EXPONENT));
+    put("f32.type.sin"          , (executor, innerClazz) -> args -> new f32Value ((float)          Math.sin(                 args.get(1).f32Value())));
+    put("f32.type.sinh"         , (executor, innerClazz) -> args -> new f32Value ((float)          Math.sinh(                args.get(1).f32Value())));
+    put("f32.type.square_root"  , (executor, innerClazz) -> args -> new f32Value ((float)          Math.sqrt(        (double)args.get(1).f32Value())));
+    put("f32.type.tan"          , (executor, innerClazz) -> args -> new f32Value ((float)          Math.tan(                 args.get(1).f32Value())));
+    put("f32.type.tanh"         , (executor, innerClazz) -> args -> new f32Value ((float)          Math.tanh(                args.get(1).f32Value())));
+    put("f64.type.acos"         , (executor, innerClazz) -> args -> new f64Value (                 Math.acos(                args.get(1).f64Value())));
+    put("f64.type.asin"         , (executor, innerClazz) -> args -> new f64Value (                 Math.asin(                args.get(1).f64Value())));
+    put("f64.type.atan"         , (executor, innerClazz) -> args -> new f64Value (                 Math.atan(                args.get(1).f64Value())));
+    put("f64.type.cos"          , (executor, innerClazz) -> args -> new f64Value (                 Math.cos(                 args.get(1).f64Value())));
+    put("f64.type.cosh"         , (executor, innerClazz) -> args -> new f64Value (                 Math.cosh(                args.get(1).f64Value())));
+    put("f64.type.epsilon"      , (executor, innerClazz) -> args -> new f64Value (                 Math.ulp(                 (double)1)));
+    put("f64.type.exp"          , (executor, innerClazz) -> args -> new f64Value (                 Math.exp(                 args.get(1).f64Value())));
+    put("f64.type.log"          , (executor, innerClazz) -> args -> new f64Value (                 Math.log(                 args.get(1).f64Value())));
+    put("f64.type.max"          , (executor, innerClazz) -> args -> new f64Value (                                               Double.MAX_VALUE));
+    put("f64.type.max_exp"      , (executor, innerClazz) -> args -> new i32Value (                                               Double.MAX_EXPONENT));
+    put("f64.type.min_positive" , (executor, innerClazz) -> args -> new f64Value (                                               Double.MIN_NORMAL));
+    put("f64.type.min_exp"      , (executor, innerClazz) -> args -> new i32Value (                                               Double.MIN_EXPONENT));
+    put("f64.type.sin"          , (executor, innerClazz) -> args -> new f64Value (                 Math.sin(                 args.get(1).f64Value())));
+    put("f64.type.sinh"         , (executor, innerClazz) -> args -> new f64Value (                 Math.sinh(                args.get(1).f64Value())));
+    put("f64.type.square_root"  , (executor, innerClazz) -> args -> new f64Value (                 Math.sqrt(                args.get(1).f64Value())));
+    put("f64.type.tan"          , (executor, innerClazz) -> args -> new f64Value (                 Math.tan(                 args.get(1).f64Value())));
+    put("f64.type.tanh"         , (executor, innerClazz) -> args -> new f64Value (                 Math.tanh(                args.get(1).f64Value())));
+    put("fuzion.std.nano_time"  , (executor, innerClazz) -> args -> new u64Value (System.nanoTime()));
+    put("fuzion.std.nano_sleep" , (executor, innerClazz) -> args ->
         {
           var d = args.get(1).u64Value();
           try
@@ -1352,9 +1361,9 @@ public class Intrinsics extends ANY
             {
               throw new Error("unexpected interrupt", ie);
             }
-          return new Instance(Clazzes.c_unit.get());
+          return new Instance(executor.fuir().clazz(FUIR.SpecialClazzes.c_unit));
         });
-    put("fuzion.std.date_time", (interpreter, innerClazz) -> args ->
+    put("fuzion.std.date_time", (executor, innerClazz) -> args ->
       {
         Date date = new Date();
         Calendar calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
@@ -1366,19 +1375,19 @@ public class Intrinsics extends ANY
         arg0[3] = calendar.get(Calendar.MINUTE);
         arg0[4] = calendar.get(Calendar.SECOND);
         arg0[5] = calendar.get(Calendar.MILLISECOND) * 1000;
-        return new Instance(Clazzes.c_unit.get());
+        return new Instance(executor.fuir().clazz(FUIR.SpecialClazzes.c_unit));
       });
     put("effect.replace"  ,
         "effect.default"  ,
         "effect.abortable",
-        "effect.abort0"   , (interpreter, innerClazz) -> effect(interpreter, innerClazz));
-    put("effect.type.is_installed", (interpreter, innerClazz) -> args ->
+        "effect.abort0"   , (executor, innerClazz) -> effect(executor, innerClazz));
+    put("effect.type.is_installed", (executor, innerClazz) -> args ->
         {
-          var cl = innerClazz.actualGenerics()[0];
+          int cl = executor.fuir().clazzActualGeneric(innerClazz, 0);
           return new boolValue(FuzionThread.current()._effects.get(cl) != null /* NOTE not containsKey since cl may map to null! */ );
         });
 
-    putUnsafe("fuzion.sys.process.create"  , (interpreter, innerClazz) -> args -> {
+    putUnsafe("fuzion.sys.process.create"  , (executor, innerClazz) -> args -> {
       var process_and_args = Arrays
         .stream(((Value[])args.get(1).arrayData()._array))
         .limit(args.get(2).i32Value()-1)
@@ -1407,13 +1416,13 @@ public class Intrinsics extends ANY
           result[3] = _openStreams_.add(process.getErrorStream());
           return new i32Value(0);
         }
-      catch (IOException e)
+      catch (Throwable e)
         {
           return new i32Value(-1);
         }
     });
 
-    put("fuzion.sys.process.wait"    , (interpreter, innerClazz) -> args -> {
+    put("fuzion.sys.process.wait"    , (executor, innerClazz) -> args -> {
       var desc = args.get(1).i64Value();
       var p = _openProcesses_.get(desc);
       try
@@ -1422,13 +1431,13 @@ public class Intrinsics extends ANY
           _openProcesses_.remove(desc);
           return new i32Value(result);
         }
-      catch(InterruptedException e)
+      catch(Throwable e)
         {
           return new i32Value(-1);
         }
     });
 
-    put("fuzion.sys.pipe.read"       , (interpreter, innerClazz) -> args -> {
+    put("fuzion.sys.pipe.read"       , (executor, innerClazz) -> args -> {
       var desc = args.get(1).i64Value();
       var buff = (byte[])args.get(2).arrayData()._array;
       var is = (InputStream) _openStreams_.get(desc);
@@ -1440,13 +1449,13 @@ public class Intrinsics extends ANY
             ? new i32Value(0)
             : new i32Value(readBytes);
         }
-      catch (IOException e)
+      catch (Throwable e)
         {
           return new i32Value(-1);
         }
     });
 
-    put("fuzion.sys.pipe.write"      , (interpreter, innerClazz) -> args -> {
+    put("fuzion.sys.pipe.write"      , (executor, innerClazz) -> args -> {
       var desc = args.get(1).i64Value();
       var buff = (byte[])args.get(2).arrayData()._array;
       var os = (OutputStream) _openStreams_.get(desc);
@@ -1455,13 +1464,13 @@ public class Intrinsics extends ANY
           os.write(buff);
           return new i32Value(buff.length);
         }
-      catch (IOException e)
+      catch (Throwable e)
         {
           return new i32Value(-1);
         }
     });
 
-    put("fuzion.sys.pipe.close"      , (interpreter, innerClazz) -> args -> {
+    put("fuzion.sys.pipe.close"      , (executor, innerClazz) -> args -> {
       var desc = args.get(1).i64Value();
       return _openStreams_.remove(desc)
         ? new i32Value(0)
@@ -1472,8 +1481,8 @@ public class Intrinsics extends ANY
 
   static class Abort extends Error
   {
-    Clazz _effect;
-    Abort(Clazz effect)
+    int _effect;
+    Abort(int effect)
     {
       super();
       this._effect = effect;
@@ -1488,28 +1497,25 @@ public class Intrinsics extends ANY
    *
    * @return a Callable instance to execute the intrinsic call.
    */
-  static Callable effect(Interpreter interpreter, Clazz innerClazz)
+  static Callable effect(Executor executor, int innerClazz)
   {
     return (args) ->
       {
         var m = args.get(0);
-        var cl = innerClazz._outer;
-        String in = innerClazz.feature().qualifiedName();   // == _fuir.clazzOriginalName(cl);
+        var cl = executor.fuir().clazzOuterClazz(innerClazz);
+        String in = executor.fuir().clazzOriginalName(innerClazz);
         switch (in)
           {
-          case "effect.replace": check(FuzionThread.current()._effects.get(cl) != null); FuzionThread.current()._effects.put(cl, m   );   break;
-          case "effect.default": if (FuzionThread.current()._effects.get(cl) == null) {  FuzionThread.current()._effects.put(cl, m   ); } break;
+          case "effect.replace": check(FuzionThread.current()._effects.get(cl) != null, m != Value.EMPTY_VALUE); FuzionThread.current()._effects.put(cl, m   );   break;
+          case "effect.default": if (FuzionThread.current()._effects.get(cl) == null) { check(m != Value.EMPTY_VALUE); FuzionThread.current()._effects.put(cl, m   ); } break;
           case "effect.abortable" :
             {
               var prev = FuzionThread.current()._effects.get(cl);
               FuzionThread.current()._effects.put(cl, m);
-              var call = Types.resolved.f_Function_call;
-              var oc = innerClazz.actualGenerics()[0]; //innerClazz.argumentFields()[0].resultClazz();
-              var ic = oc.lookup(call);
-              var al = new ArrayList<Value>();
-              al.add(args.get(1));
+              var oc   = executor.fuir().clazzActualGeneric(innerClazz, 0);
+              var call = executor.fuir().lookupCall(oc);
               try {
-                var ignore = interpreter.callOnInstance(ic.feature(), ic, new Instance(ic), al);
+                var ignore = executor.callOnInstance(call, new Instance(call), args.get(1), new List<>(), false);
                 return new boolValue(true);
               } catch (Abort a) {
                 if (a._effect == cl)
@@ -1525,45 +1531,31 @@ public class Intrinsics extends ANY
               }
             }
           case "effect.abort0": throw new Abort(cl);
-          default: throw new Error("unexpected effect intrinsic '"+innerClazz+"'");
+          default: throw new Error("unexpected effect intrinsic '"+in+"'");
           }
         return Value.EMPTY_VALUE;
       };
   }
 
 
-  static AbstractType elementType(Clazz arrayClazz)
+  @SuppressWarnings("unchecked")
+  private static Iterator<Path> getIterator(long v)
   {
-    // NYI: Properly determine generic argument type of array
-    var arrayType = arrayClazz._type;
-    if (arrayType.compareTo(Types.resolved.t_Const_String) == 0 /* NYI: Hack */)
-      {
-        return Types.resolved.t_i32;
-      }
-    else
-      {
-        return arrayType.generics().getFirst();
-      }
-  }
-
-  static ArrayData fuzionSysArrayAlloc(int sz,
-                                       Clazz arrayClazz)
-  {
-    // NYI: Properly determine generic argument type of array
-    var elementType = elementType(arrayClazz);
-    if      (elementType.compareTo(Types.resolved.t_i8  ) == 0) { return new ArrayData(new byte   [sz]); }
-    else if (elementType.compareTo(Types.resolved.t_i16 ) == 0) { return new ArrayData(new short  [sz]); }
-    else if (elementType.compareTo(Types.resolved.t_i32 ) == 0) { return new ArrayData(new int    [sz]); }
-    else if (elementType.compareTo(Types.resolved.t_i64 ) == 0) { return new ArrayData(new long   [sz]); }
-    else if (elementType.compareTo(Types.resolved.t_u8  ) == 0) { return new ArrayData(new byte   [sz]); }
-    else if (elementType.compareTo(Types.resolved.t_u16 ) == 0) { return new ArrayData(new char   [sz]); }
-    else if (elementType.compareTo(Types.resolved.t_u32 ) == 0) { return new ArrayData(new int    [sz]); }
-    else if (elementType.compareTo(Types.resolved.t_u64 ) == 0) { return new ArrayData(new long   [sz]); }
-    else if (elementType.compareTo(Types.resolved.t_bool) == 0) { return new ArrayData(new boolean[sz]); }
-    else                                                        { return new ArrayData(new Value  [sz]); }
+    return (Iterator<Path>)_openStreams_.get(v);
   }
 
 
+  /**
+   * Get InetSocketAddress of TCP (SocketChannel) or UDP (DatagramChannel) channel.
+   */
+  static InetSocketAddress getRemoteAddress(AutoCloseable asc) throws IOException
+  {
+    if (asc instanceof DatagramChannel dc)
+      {
+        return (InetSocketAddress) dc.getRemoteAddress();
+      }
+    return (InetSocketAddress)((SocketChannel)asc).getRemoteAddress();
+  }
 
 }
 
