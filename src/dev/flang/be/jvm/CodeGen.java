@@ -1072,8 +1072,9 @@ class CodeGen
    */
   public Expr contract(int s, FUIR.ContractKind ck, Expr cc)
   {
+    var cl = _fuir.clazzAt(s);
     return cc.andThen(Expr.branch(O_ifeq,
-                                  Expr.stringconst("" + ck + " on call to '" + _fuir.siteAsString(s) + "'")
+                                  Expr.stringconst("" + ck + " on call to '" + _fuir.clazzAsString(cl) + "'")
                                   .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                              Names.RUNTIME_CONTRACT_FAIL,
                                                              Names.RUNTIME_CONTRACT_FAIL_SIG,

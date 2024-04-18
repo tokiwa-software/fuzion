@@ -547,9 +547,10 @@ public class C extends ANY
     @Override
     public CStmnt contract(int s, FUIR.ContractKind ck, CExpr cc)
     {
+      var cl = _fuir.clazzAt(s);
       return CStmnt.iff(cc.field(CNames.TAG_NAME).not(),
                         CStmnt.seq(CExpr.fprintfstderr("*** failed " + ck + " on call to '%s'\n",
-                                                       CExpr.string(_fuir.siteAsString(s))),
+                                                       CExpr.string(_fuir.clazzAsString(cl))),
                                    CExpr.exit(1)));
     }
 
