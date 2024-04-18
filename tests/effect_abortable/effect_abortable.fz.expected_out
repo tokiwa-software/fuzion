@@ -1,0 +1,2 @@
+--error: innner exc raised--
+--error: outer exc raised--

@@ -28,12 +28,9 @@
 # try provides an operation 'raise' that immediately stops execution and
 # returns an 'error' wrapped in an 'outcome'.
 #
-public try (public T type) : abortable_effect
+public try (T type) : abortable_effect error
 is
 
-  # mutuable field to receive the error in case raise is called
-  #
-  err option error := nil
 
   # install this effect and execute 'f'. Wrap the result of 'f' into an
   # 'outcome' if 'f' returns normally, otherwise if 'f' is aborted early
@@ -41,13 +38,15 @@ is
   # resulting 'outcome'.
   #
   public on(R type, f ()->R) outcome R =>
-    (run (outcome R) (()->outcome f())).get ()->err.get
+    match go f
+      r R => r
+      e error => e
+
 
   # terminate immediately with the given error wrapped in 'option'.
   #
   public raise(e error) =>
-    set err := e
-    abort
+    abort e
 
 
 # convenience routine to create a new instance of 'try' and run 'f' in

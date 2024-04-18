@@ -24,22 +24,45 @@
 
 # abortable_effect provides means to define and use an abortable computation
 #
-public abortable_effect : effect effect_mode.plain is
+public abortable_effect(R type) : effect effect_mode.plain is
+
+
+  res option R := nil
 
 
   # does this effect support abort?
   #
-  redef abortable => true
+  public redef abortable => true
 
 
   # replace effect in the current context by this and abort current execution
   #
-  public abort void => abort0
+  public abort(r R) void
+  pre
+    safety: abortable
+  =>
+    set res := r
+    abort0
+
+
+  # abort the current execution and return from the surrounding call to
+  # abortable with result == false.
+  #
+  public return(r R) void
+  pre
+    safety: abortable
+  =>
+    abort r
 
 
   # install this abortable_effect and run code that produces a result of
   # type T or nil if aborted.
   #
-  public go(T type, f ()->T) option T =>
-    run f
+  public go(T type, f ()->T) choice T R =>
+    match run f
+      t T => t
+      nil =>
+        match res
+          nil => panic "fatal misuse detected, you did not use effect currently installed in env for aborting."
+          r R => r
 

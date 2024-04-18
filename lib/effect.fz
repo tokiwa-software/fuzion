@@ -36,19 +36,24 @@ module:public effect (
   )
 is
 
+  # evaluate the current mode of the effect
+  #
   match r
-    _ effect_mode.plain   =>
-    i effect_mode.inst    => (run i.f).get ()->unit
     _ effect_mode.repl    => replace
     _ effect_mode.default => default
-    _ effect_mode.new     =>
+    * =>
 
+
+  # the mode to use when
+  #
   public mode effect_mode.val =>
     match r
       effect_mode.plain => effect_mode.plain
       effect_mode.inst, effect_mode.repl, effect_mode.default, effect_mode.new => effect_mode.repl
 
+
   # replace effect in the current context by this
+  #
   module replace unit => intrinsic
 
 
@@ -89,15 +94,16 @@ is
   module run(T type, f ()->T) option T =>
     cf := Effect_Call f
     abortable cf
-    match cf.res
-      nil => nil
-      x T => x
+    cf.res
 
 
   # has an effect of the given type been installed?
+  #
   public type.is_installed(E type) bool => intrinsic_constructor
 
+
   # has an effect of the given type been installed?
+  #
   public type.get_if_installed option effect.this =>
     if is_installed effect.this
       unsafe_get effect.this

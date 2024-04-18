@@ -29,14 +29,14 @@ public panic (
   # the handler this effect uses to panic
   p Panic_Handler,
   _ unit
-  ) : abortable_effect
+  ) : abortable_effect unit
 is
 
   # panic with the given message
   #
   panic(msg String) =>
     p.do_panic msg
-    abort
+    abort unit
 
 
   type.install_default =>
