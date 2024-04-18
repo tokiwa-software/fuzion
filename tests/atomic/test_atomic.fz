@@ -63,7 +63,10 @@ test_atomic is
   test 1 2 3 4
   test 0.1 0.2 0.3 0.4
   test true true false false
+  # codepoints
   test "A" "B" "C" "D"
+  # strings
+  test $"A" $"B" $"C" $"D"
   test (p 1 1) (p 2 2) (p 3 3) (p 4 4)
 
   # test unit-like choice
