@@ -77,7 +77,102 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   Set<AbstractFeature> _usedFeatures = null;
 
 
+
+  /*--------------------------  abstract methods  --------------------------*/
+
+
+
+  /**
+   * The sourcecode position of the declaration point of this type, or, for
+   * unresolved types, the source code position of its use.
+   */
+  public abstract SourcePosition declarationPos();
+
+
+  /**
+   * Is this type a generic argument (true) or false backed by a feature (false)?
+   */
+  public abstract boolean isGenericArgument();
+
+
+  /**
+   * For a resolved normal type, return the underlying feature.
+   *
+   * Requires that this is resolved and !isGenericArgument().
+   *
+   * @return the underlying feature.
+   */
+  public abstract AbstractFeature feature();
+
+
+  /**
+   * For a normal type, this is the list of actual type parameters given to the type.
+   *
+   * Requires that this is resolved and !isGenericArgument().
+   */
+  public abstract List<AbstractType> generics();
+
+
+  /**
+   * For a resolved parametric type return the generic.
+   *
+   * Requires that this is resolved and isGenericArgument().
+   */
+  public abstract Generic genericArgument();
+
+
+  /**
+   * The outer of this type. May be null.
+   *
+   * Requires that this is resolved and !isGenericArgument().
+   */
+  public abstract AbstractType outer();
+
+
+  /**
+   * Is this type denoting a reference type?
+   */
+  public abstract boolean isRef();
+
+
+  /**
+   * Is this a this-type?
+   */
+  public abstract boolean isThisType();
+
+
+  /**
+   * This type as a reference.
+   */
+  public abstract AbstractType asRef();
+
+
+  /**
+   * This type as a value.
+   */
+  public abstract AbstractType asValue();
+
+
+  /**
+   * Return this type as a this-type, a type denoting the
+   * instance of this type in the current context.
+   *
+   * Requires that this is resolved and !isGenericArgument().
+   */
+  public abstract AbstractType asThis();
+
+
+  /**
+   * traverse a resolved type collecting all features this type uses.
+   *
+   * @param s the features that have already been found
+   */
+  protected abstract void usedFeatures(Set<AbstractFeature> s);
+
+
+
   /*-----------------------------  methods  -----------------------------*/
+
 
 
   /**
@@ -1634,33 +1729,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
-  /**
-   * For a resolved normal type, return the underlying feature.
-   *
-   * @return the underlying feature.
-   *
-   * @throws Error if this is not resolved or isGenericArgument().
-   */
-  public abstract AbstractFeature feature();
-
-  public abstract AbstractType asRef();
-  public abstract AbstractType asValue();
-  public abstract boolean isRef();
-  public abstract AbstractType asThis();
-  public abstract boolean isThisType();
-
-
-  /**
-   * The sourcecode position of the declaration point of this type, or, for
-   * unresolved types, the source code position of its use.
-   */
-  public abstract SourcePosition declarationPos();
-
-
-  /**
-   * For a normal type, this is the list of actual type parameters given to the type.
-   */
-  public abstract List<AbstractType> generics();
 
 
   /**
@@ -1671,10 +1739,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public List<AbstractType> unresolvedGenerics() { return generics(); }
 
-
-  public abstract boolean isGenericArgument();
-  public abstract AbstractType outer();
-  public abstract Generic genericArgument();
 
 
   /**
@@ -1846,14 +1910,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     return this;
   }
-
-
-  /**
-   * traverse a resolved type collecting all features this type uses.
-   *
-   * @param s the features that have already been found
-   */
-  protected abstract void usedFeatures(Set<AbstractFeature> s);
 
 
   /**
