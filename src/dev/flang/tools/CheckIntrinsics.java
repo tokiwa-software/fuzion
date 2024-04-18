@@ -39,7 +39,7 @@ import java.util.Set;
 
 
 /**
- * CheckIntrinsics is only a built-time helper to detect missing intrinsics in backends or analysis code like CFG.
+ * CheckIntrinsics is only a build-time helper to detect missing intrinsics in backends or analysis code like CFG.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

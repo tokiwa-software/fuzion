@@ -52,15 +52,9 @@ public class Site extends ANY implements Comparable<Site>
 
 
   /**
-   * The site's code block.
+   * The site's site.
    */
-  final int _c;
-
-
-  /**
-   * The index in _c.
-   */
-  final int _i;
+  final int _s;
 
 
   /**
@@ -80,12 +74,13 @@ public class Site extends ANY implements Comparable<Site>
 
   /**
    * Create call site for given clazz, code block and index.
+   *
+   * NYI: Eventually remove `cl` since sites are unique for every clazz.
    */
-  Site(int cl, int c, int i)
+  Site(int cl, int s)
   {
     _cl = cl;
-    _c = c;
-    _i = i;
+    _s = s;
   }
 
 
@@ -118,10 +113,8 @@ public class Site extends ANY implements Comparable<Site>
     return
       _cl < cs._cl ? -1 :
       _cl > cs._cl ? +1 :
-      _c < cs._c ? -1 :
-      _c > cs._c ? +1 :
-      _i < cs._i ? -1 :
-      _i > cs._i ? +1 : 0;
+      _s < cs._s ? -1 :
+      _s > cs._s ? +1 : 0;
   }
 
 }

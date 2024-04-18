@@ -31,7 +31,7 @@ public Any ref is
   # create a String from this instance.  Unless redefined, `a.as_string` will
   # create `"instance[T]"` where `T` is the dynamic type of `a`
   #
-  public as_string String => intrinsic
+  public as_string String => "instance[{Any.this.dynamic_type.name}]"
 
 
   # convenience prefix operator to create a string from a value.

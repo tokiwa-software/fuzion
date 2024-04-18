@@ -115,7 +115,7 @@ public fuzion.java is
                      name String,
                      signature String,
                      thiz Java_Object,
-                     args array Java_Object) T
+                     args array Java_Object) outcome T
   pre
     safety: !thiz.is_null
   =>
@@ -134,7 +134,7 @@ public fuzion.java is
                     class_name String,
                     name String,
                     signature String,
-                    args array Java_Object) T
+                    args array Java_Object) outcome T
   =>
     c := string_to_java_object class_name
     n := string_to_java_object name
@@ -149,7 +149,7 @@ public fuzion.java is
   public call_constructor(T type,
                          class_name String,
                          signature String,
-                         args array Java_Object) T
+                         args array Java_Object) outcome T
   =>
     c := string_to_java_object class_name
     s := string_to_java_object signature
@@ -164,7 +164,7 @@ public fuzion.java is
                  name Java_Object,
                  signature Java_Object,
                  thiz fuzion.sys.Pointer,
-                 args fuzion.sys.internal_array fuzion.sys.Pointer) T => intrinsic_constructor
+                 args fuzion.sys.internal_array fuzion.sys.Pointer) outcome T => intrinsic_constructor
 
   # intrinsic to call given Java static method
   #
@@ -172,7 +172,7 @@ public fuzion.java is
                  class_name Java_Object,
                  name Java_Object,
                  signature Java_Object,
-                 args fuzion.sys.internal_array fuzion.sys.Pointer) T => intrinsic_constructor
+                 args fuzion.sys.internal_array fuzion.sys.Pointer) outcome T => intrinsic_constructor
 
 
   # intrinsic to call given Java constructor
@@ -180,7 +180,7 @@ public fuzion.java is
   call_c0(T type,
                  class_name Java_Object,
                  signature Java_Object,
-                 args fuzion.sys.internal_array fuzion.sys.Pointer) T => intrinsic_constructor
+                 args fuzion.sys.internal_array fuzion.sys.Pointer) outcome T => intrinsic_constructor
 
 
   # intrinsic to get the length of a Java array of arbitrary type

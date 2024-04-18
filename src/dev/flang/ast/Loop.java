@@ -195,6 +195,7 @@ public class Loop extends ANY
    */
   private Expr _elseBlock0;
   private Expr _elseBlock1;
+  private Expr _elseBlock2;
 
 
   /**
@@ -253,7 +254,8 @@ public class Loop extends ANY
               Expr untilCond,
               Block sb,
               Expr eb0,
-              Expr eb1)
+              Expr eb1,
+              Expr eb2)
   {
     if (PRECONDITIONS) require
       (iv != null,
@@ -269,6 +271,7 @@ public class Loop extends ANY
     _successBlock = sb;
     _elseBlock0 = eb0;
     _elseBlock1 = eb1;
+    _elseBlock2 = eb2;
     var loopName = FuzionConstants.REC_LOOP_PREFIX +  _id_++ ;
     _rawLoopName = loopName;
     if (!iterates() && whileCond == null && _elseBlock0 != null)
@@ -277,14 +280,18 @@ public class Loop extends ANY
       }
 
     var hasImplicitResult = defaultSuccessAndElseBlocks(whileCond, untilCond);
+    // if there are no iteratees then else block may access every loop var.
+    // if there are iteratees we move else block to feature and
+    // insert it later, see `addIterators()`.
     if (_elseBlock0 != null && iterates())
       {
         moveElseBlockToRoutine();
-        _elseBlock0 = callLoopElse(false);
+        _elseBlock0 = new Block(new List<>(_loopElse[1], callLoopElse(1)));
       }
 
     _prologSuccessBlock = new List<>();
     _prolog             = new Block(_prologSuccessBlock, hasImplicitResult);
+    _prolog._newScope = true;
     if (!_indexVars.isEmpty())
       {
         _nextItSuccessBlock = new List<>();
@@ -354,7 +361,7 @@ public class Loop extends ANY
 
 
   /**
-   * Is any of the _indexVars an iteration ('x in set')?
+   * Is any of the _indexVars an iteration ('x in Set')?
    */
   private boolean iterates()
   {
@@ -433,15 +440,19 @@ public class Loop extends ANY
           {
             _elseBlock0 = BoolConst.FALSE;
             _elseBlock1 = BoolConst.FALSE;
+            _elseBlock2 = BoolConst.FALSE;
           }
         else
           {
             var e0 = Block.fromExpr(_elseBlock0);
             var e1 = Block.fromExpr(_elseBlock1);
+            var e2 = Block.fromExpr(_elseBlock1);
             e0._expressions.add(BoolConst.FALSE);
             e1._expressions.add(BoolConst.FALSE);
+            e2._expressions.add(BoolConst.FALSE);
             _elseBlock0 = e0;
             _elseBlock1 = e1;
+            _elseBlock2 = e2;
           }
         result = true;
       }
@@ -454,8 +465,8 @@ public class Loop extends ANY
    */
   private void moveElseBlockToRoutine()
   {
-    _loopElse = new Feature[2];
-    for (int ei=0; ei<2; ei++)
+    _loopElse = new Feature[3];
+    for (int ei=0; ei<3; ei++)
       {
         var name = _rawLoopName + "else" + ei;
         _loopElse[ei] = new Feature(_elsePos,
@@ -466,7 +477,7 @@ public class Loop extends ANY
                                     new List<>(),
                                     Function.NO_CALLS,
                                     Contract.EMPTY_CONTRACT,
-                                    new Impl(_elsePos, ei == 0 ? _elseBlock0 : _elseBlock1, Impl.Kind.RoutineDef))
+                                    new Impl(_elsePos, ei == 0 ? _elseBlock0 : (ei == 1 ? _elseBlock1 : _elseBlock2), Impl.Kind.RoutineDef))
           {
             public boolean resultInternal() { return true; }
           };
@@ -477,18 +488,20 @@ public class Loop extends ANY
   /**
    * Create a call to the feature that contains the else block of this loop.
    *
-   * @param inProlog true for a call in the loop prolog, false for a call after
-   * successful execution of the prolog.
+   * @param elseNum
+   * 0 for a call to else-clause in the loop prolog
+   * 1 for a call to else-clause if while-condition fails
+   * 2 for a call to else-clause in remaining cases
    *
    * @return an expression that performs the call
    */
-  private Expr callLoopElse(boolean inProlog)
+  private Expr callLoopElse(int elseNum)
   {
     if (PRECONDITIONS) require
                          (_loopElse != null);
 
     return new Call(_elsePos,
-                    _loopElse[inProlog ? 0 : 1].featureName().baseName());
+                    _loopElse[elseNum].featureName().baseName());
   }
 
 
@@ -506,15 +519,17 @@ public class Loop extends ANY
                                 List<Actual> nextActuals)
   {
     int i = -1;
+    int iteratorCount = 0;
     Iterator<Feature> ivi = _indexVars.iterator();
-    Iterator<Feature> nvi = _nextValues.iterator();
     while (ivi.hasNext())
       {
         i++;
         Feature f = ivi.next();
-        Feature n = nvi.next();
+
+        // iterators should have been replaced by FieldDef in `addIterators`
         if (CHECKS) check
           (f.impl()._kind != Impl.Kind.FieldIter);
+
         var p = f.pos();
         var ia = new Call(p, f.featureName().baseName());
         var na = new Call(p, f.featureName().baseName());
@@ -538,11 +553,10 @@ public class Loop extends ANY
                                       null,
                                       f._loopIteratorListName + "arg",
                                       new Impl(Impl.Kind.FieldActual));
-            var ial = new Call(p, f._loopIteratorListName + "tail");
-            var nal = new Call(p, f._loopIteratorListName + "tail");
             formalArguments.add(argList);
-            initialActuals.add(new Actual(ial));
-            nextActuals.add(new Actual(nal));
+            var listName = _rawLoopName + "list" + (iteratorCount++);
+            initialActuals.add(new Actual(new Call(p, new Call(p, listName + "cons"), "tail")));
+            nextActuals.add(new Actual(new Call(p, new Call(p, listName + "cons"), "tail")));
           }
       }
   }
@@ -562,15 +576,13 @@ public class Loop extends ANY
       {
         Feature f = ivi.next();
         Feature n = nvi.next();
-        Feature g = null;
-        Feature m = null;
         if (f.impl()._kind == Impl.Kind.FieldIter)
           {
             if (mustDeclareLoopElse)
               { // we declare loopElse function after all non-iterating index
                 // vars such that the else clause can access these vars.
                 _prologSuccessBlock.add(_loopElse[0]);
-                _nextItSuccessBlock.add(_loopElse[1]);
+                _nextItSuccessBlock.add(_loopElse[2]);
                 mustDeclareLoopElse = false;
               }
             var listName = _rawLoopName + "list" + (iteratorCount++);
@@ -591,15 +603,13 @@ public class Loop extends ANY
             ParsedType consType = new ParsedType(p, "Cons", new List<>(), null);
             Call next1    = new Call(p, new Call(p, listName + "cons"), "head");
             Call next2    = new Call(p, new Call(p, listName + "cons"), "head");
-            Call nextTail1 = new Call(p, new Call(p, listName + "cons"), "tail");
-            Call nextTail2 = new Call(p, new Call(p, listName + "cons"), "tail");
             List<Expr> prolog2 = new List<>();
             List<Expr> nextIt2 = new List<>();
             Case match1c = new Case(p, consType, listName + "cons", new Block(prolog2));
-            Case match1n = new Case(p, nilType, listName + "nil", (_loopElse != null) ? Block.fromExpr(callLoopElse(true)) : Block.newIfNull(null));
+            Case match1n = new Case(p, nilType, listName + "nil", (_loopElse != null) ? Block.fromExpr(callLoopElse(0)) : Block.newIfNull(null));
             Match match1 = new Match(p, new Call(p, listName), new List<AbstractCase>(match1c, match1n));
             Case match2c = new Case(p, consType, listName + "cons", new Block(nextIt2));
-            Case match2n = new Case(p, nilType, listName + "nil", (_loopElse != null) ? Block.fromExpr(callLoopElse(false)) : Block.newIfNull(null));
+            Case match2n = new Case(p, nilType, listName + "nil", (_loopElse != null) ? Block.fromExpr(callLoopElse(2)) : Block.newIfNull(null));
             Match match2 = new Match(p, new Call(p, listName + "arg"), new List<AbstractCase>(match2c, match2n));
             _prologSuccessBlock.add(match1);
             _nextItSuccessBlock.add(match2);
@@ -611,31 +621,11 @@ public class Loop extends ANY
             f._loopIteratorListName = listName;
             n._isLoopIterator = true;
             n._loopIteratorListName = listName;
-            g = new Feature(p,
-                            Visi.PRIV,
-                            null,
-                            listName + "tail",
-                            new Impl(f.impl().pos, nextTail1, Impl.Kind.FieldDef));
-            m = new Feature(p,
-                            Visi.PRIV,
-                            null,
-                            listName + "tail",
-                            new Impl(n.impl().pos, nextTail2, Impl.Kind.FieldDef));
           }
         _prologSuccessBlock.add(f);
         _nextItSuccessBlock.add(n);
         f._isIndexVarUpdatedByLoop = true;
         n._isIndexVarUpdatedByLoop = true;
-        if (g != null)
-          {
-            _prologSuccessBlock.add(g);
-            g._isIndexVarUpdatedByLoop = true;
-          }
-        if (m != null)
-          {
-            _nextItSuccessBlock.add(m);
-            m._isIndexVarUpdatedByLoop = true;
-          }
       }
   }
 

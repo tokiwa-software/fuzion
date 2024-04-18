@@ -22,5 +22,6 @@
 # -----------------------------------------------------------------------
 
 override NAME = fz_cmd
+export LD_LIBRARY_PATH ?= $(JAVA_HOME)/lib/server
 FUZION_OPTIONS = -modules=java.base,fz_cmd
 include ../simple.mk

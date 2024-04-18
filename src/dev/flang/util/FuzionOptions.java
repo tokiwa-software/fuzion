@@ -82,11 +82,6 @@ public class FuzionOptions extends ANY
   public ArrayList<String> getBackendArgs() { return _backendArgs; }
 
 
-  private boolean _tailRecursionInsteadOfLoops; // NYI: move to FrontendOptions
-  public void setTailRec() { _tailRecursionInsteadOfLoops = true; }
-  public boolean tailRecursionInsteadOfLoops() { return _tailRecursionInsteadOfLoops; }
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 

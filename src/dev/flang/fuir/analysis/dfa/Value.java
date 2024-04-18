@@ -203,12 +203,6 @@ public class Value extends Val
   Value _boxed;
 
 
-  /**
-   * Cached result of a call to adrOf().
-   */
-  Value _adrOf;
-
-
   /*---------------------------  constructors  ---------------------------*/
 
 
@@ -243,19 +237,6 @@ public class Value extends Val
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * Get the address of a value.
-   */
-  public Value adrOf()
-  {
-    if (_adrOf == null)
-      {
-        _adrOf = this; // NYI: this is a little lazy, but seems to work for simple cases
-      }
-    return _adrOf;
-  }
 
 
   /**

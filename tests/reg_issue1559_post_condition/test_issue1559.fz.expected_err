@@ -8,7 +8,7 @@ result type should be: 'Sequence u8'
 
 Original feature declared at $MODULE/String.fz:34:10:
   public utf8 Sequence u8 => abstract
----------^
+---------^^^^
 To solve this, change type of result to 'Sequence u8'
 
 one error.

@@ -13,7 +13,7 @@ To solve this, you may use a different name for free type 'EXISTING_TYPE'.
   c1 3.14 "e"        # 2. should flag an error, incompatible types inferred for `T`
 --^^
 Types inferred for first type parameter 'T':
-'String' found at --CURDIR--/test_free_types_negative.fz:49:11:
+'codepoint' found at --CURDIR--/test_free_types_negative.fz:49:11:
   c1 3.14 "e"        # 2. should flag an error, incompatible types inferred for `T`
 ----------^^^
 'f64' found at --CURDIR--/test_free_types_negative.fz:49:6:
@@ -25,7 +25,7 @@ Types inferred for first type parameter 'T':
   c2 3.14 "e"        # 3. should flag an error, incompatible types inferred for `T`
 --^^
 Types inferred for first type parameter 'T':
-'String' found at --CURDIR--/test_free_types_negative.fz:52:11:
+'codepoint' found at --CURDIR--/test_free_types_negative.fz:52:11:
   c2 3.14 "e"        # 3. should flag an error, incompatible types inferred for `T`
 ----------^^^
 'f64' found at --CURDIR--/test_free_types_negative.fz:52:6:
@@ -37,7 +37,7 @@ Types inferred for first type parameter 'T':
   d 3.14 "e"         # 4. should flag an error, incompatible types inferred for same anonymous type
 --^
 Types inferred for first type parameter '#_0':
-'String' found at --CURDIR--/test_free_types_negative.fz:61:10:
+'codepoint' found at --CURDIR--/test_free_types_negative.fz:61:10:
   d 3.14 "e"         # 4. should flag an error, incompatible types inferred for same anonymous type
 ---------^^^
 'f64' found at --CURDIR--/test_free_types_negative.fz:61:5:

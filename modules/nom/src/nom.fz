@@ -1,0 +1,92 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion nom module feature nom, a parser combinator framework
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# Port of https://github.com/Geal/nom/ by Geoffroy Couprie
+
+# NYI: This port is incomplete!
+
+# nom is a parser combinator framework
+# for more information go to:
+# https://github.com/Geal/nom/
+public nom is
+
+  # wrapper for the parsing function parse
+  #
+  # parse takes an input of type I
+  # and returns either an error
+  # or a result of type O and a rest of type R
+  #
+  public Parser(I, R, O type) ref : Unary (parse_result R O) I is
+
+    # returns a parser that uses this parser
+    # but maps the result to another type.
+    #
+    public map(OM type, mapper O -> outcome OM) Parser I R OM =>
+      parser I R OM i->
+        match Parser.this.call i
+          s success =>
+            match mapper s.out
+              o OM => success s.rest o
+              e2 error => e2
+          e1 error => e1
+
+
+    # map input to parser p
+    #
+    # wrap an existing parser.
+    # using `map_fn` to map input of type `I2`
+    # to the parsers input type `I1`.
+    #
+    public map_input(I2 type, map_fn I2 -> I) Parser I2 R O =>
+      ref : Parser I2 R O
+        call(input I2) => Parser.this.call (map_fn input)
+
+
+
+  # short hand for creating a Parser via
+  # given function `f`.
+  #
+  public parser(I, R, O type, f I -> parse_result R O) =>
+    ref : Parser I R O
+      call(i I) => f i
+
+
+
+  # the result of parsing, if successful
+  #
+  # rest = the rest of the input that was not consumed by the parser
+  # out  = the result of parsing, e.g. a concrete syntax tree
+  #
+  public success(R, O type, public rest R, public out O) is
+    redef as_string => $out
+
+
+
+  # the result of Parser.call()
+  public parse_result(I, O type) : choice (success I O) error is
+    public redef as_string =>
+      match parse_result.this
+        s success => $s
+        e error => $e

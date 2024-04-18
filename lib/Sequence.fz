@@ -579,6 +579,11 @@ public Sequence(public T type) ref is
     zip I (tuple I T) (start_idx..) (a,b -> (b, a))
 
 
+  # convenience feature to work around type inference issues
+  # NYI remove when type inference gets better
+  public as_seq Sequence T =>
+    Sequence.this
+
 
   # chop this Sequence into chunks of `chunk_size`.
   # the last chunk may be smaller than `chunk_size`.

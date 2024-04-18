@@ -31,13 +31,11 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import dev.flang.air.Clazz;
-import dev.flang.air.Clazzes;
-import dev.flang.ast.Types;
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.ContractKind;
 import dev.flang.fuir.analysis.AbstractInterpreter;
-import dev.flang.fuir.analysis.AbstractInterpreter.ProcessStatement;
+import dev.flang.fuir.analysis.AbstractInterpreter.ProcessExpression;
+
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
@@ -45,10 +43,10 @@ import dev.flang.util.Pair;
 
 
 /**
- * The class Excecutor implements ProcessStatement of the AbstractInterpreter.
+ * The class Excecutor implements ProcessExpression of the AbstractInterpreter.
  * It does the actual execution of the code.
  */
-public class Excecutor extends ProcessStatement<Value, Object>
+public class Excecutor extends ProcessExpression<Value, Object>
 {
 
 
@@ -58,7 +56,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
   /**
    * Universe instance
    */
-  private static final Instance _universe = new Instance(Clazzes.universe.get());
+  private static Instance _universe;
 
 
   /**
@@ -107,7 +105,8 @@ public class Excecutor extends ProcessStatement<Value, Object>
   {
     _fuir = fuir;
     _options_ = opt;
-    this._cur = _fuir.main()._idInFUIR == _fuir.clazzUniverse() ? _universe : new Instance(_fuir.main());
+    _universe = new Instance(_fuir.clazzUniverse());
+    this._cur = _fuir.mainClazzId() == _fuir.clazzUniverse() ? _universe : new Instance(_fuir.mainClazzId());
     this._outer = _universe;
     this._args = new List<>();
   }
@@ -173,7 +172,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
   }
 
   @Override
-  public Object statementHeader(int cl, int c, int i)
+  public Object expressionHeader(int cl, int s)
   {
     return null;
   }
@@ -191,26 +190,18 @@ public class Excecutor extends ProcessStatement<Value, Object>
   }
 
   @Override
-  public Pair<Value, Object> adrOf(Value v)
-  {
-    return pair(v);
-  }
-
-  @Override
   public Object assignStatic(int cl, boolean pre, int tc, int f, int rt, Value tvalue, Value val)
   {
     if (!(_fuir.clazzIsOuterRef(f) && _fuir.clazzIsUnitType(rt)))
       {
-        var fc = _fuir.clazzForInterpreter(f);
-        var thiz = fc.feature();
-        var staticClazz = _fuir.clazzForInterpreter(tc);
-        Interpreter.setField(thiz, fc._select, staticClazz, tvalue, val);
+        var staticClazz = tc;
+        Interpreter.setField(f, staticClazz, tvalue, val);
       }
     return null;
   }
 
   @Override
-  public Object assign(int cl, boolean pre, int c, int i, Value tvalue, Value avalue)
+  public Object assign(int cl, boolean pre, int s, Value tvalue, Value avalue)
   {
     // NYI: better check clazz containing field is universe
     if (tvalue == unitValue())
@@ -219,21 +210,21 @@ public class Excecutor extends ProcessStatement<Value, Object>
       }
     if (avalue != unitValue())
       {
-        var ttcc = ttcc(cl, c, i, tvalue);
+        var ttcc = ttcc(cl, s, tvalue);
         var tt = ttcc.v0();
         var cc = ttcc.v1();
-        var fc = _fuir.clazzForInterpreter(cc);
-        Interpreter.setField(fc.feature(), fc._select, _fuir.clazzForInterpreter(tt), tvalue, avalue);
+        var fc = cc;
+        Interpreter.setField(fc, tt, tvalue, avalue);
       }
     return null;
   }
 
   @Override
-  public Pair<Value, Object> call(int cl, boolean pre, int c, int i, Value tvalue, List<Value> args)
+  public Pair<Value, Object> call(int cl, boolean pre, int s, Value tvalue, List<Value> args)
   {
-    var cc0 = _fuir.accessedClazz(cl, c, i);
+    var cc0 = _fuir.accessedClazz(cl, s);
     var rt = _fuir.clazzResultClazz(cc0);
-    var ttcc = ttcc(cl, c, i, tvalue);
+    var ttcc = ttcc(cl, s, tvalue);
     var tt = ttcc.v0();
     var cc = ttcc.v1();
 
@@ -241,15 +232,15 @@ public class Excecutor extends ProcessStatement<Value, Object>
     // in this case
     if(_fuir.clazzIsBoxed(tt) && !_fuir.clazzIsRef(_fuir.clazzOuterClazz(cc /* NYI should this be cc0? */)))
       {
-        tt = ((Boxed)tvalue)._valueClazz._idInFUIR;
+        tt = ((Boxed)tvalue)._valueClazz;
         tvalue = ((Boxed)tvalue)._contents;
       }
 
     var result = switch (_fuir.clazzKind(cc))
       {
       case Routine :
-        // NYI change call to pass in ai as in match statement?
-        var cur = new Instance(_fuir.clazzForInterpreter(cc));
+        // NYI change call to pass in ai as in match expression?
+        var cur = new Instance(cc);
 
         callOnInstance(cc, cur, tvalue, args, true);
         callOnInstance(cc, cur, tvalue, args, false);
@@ -258,33 +249,33 @@ public class Excecutor extends ProcessStatement<Value, Object>
         var resf = _fuir.clazzResultField(cc);
         if (resf != -1)
           {
-            var rfc = _fuir.clazzForInterpreter(resf);
-            if (!AbstractInterpreter.clazzHasUniqueValue(_fuir, rfc.resultClazz()._idInFUIR))
+            var rfc = resf;
+            if (!AbstractInterpreter.clazzHasUnitValue(_fuir, fuir().clazzResultClazz(rfc)))
               {
-                rres = Interpreter.getField(rfc.feature(), rfc._select, _fuir.clazzForInterpreter(cc), cur, false);
+                rres = Interpreter.getField(rfc, cc, cur, false);
               }
           }
         yield pair(rres);
       case Field :
-        var fc = _fuir.clazzForInterpreter(cc);
-        var fres = AbstractInterpreter.clazzHasUniqueValue(_fuir, rt)
+        var fc = cc;
+        var fres = AbstractInterpreter.clazzHasUnitValue(_fuir, rt)
           ? pair(unitValue())
-          : pair(Interpreter.getField(fc.feature(), fc._select, _fuir.clazzForInterpreter(tt), tt == _fuir.clazzUniverse() ? _universe : tvalue, false));
+          : pair(Interpreter.getField(fc, tt, tt == _fuir.clazzUniverse() ? _universe : tvalue, false));
 
         if (CHECKS)
-          check(fres != null, AbstractInterpreter.clazzHasUniqueValue(_fuir, rt) || fres.v0() != unitValue());
+          check(fres != null, AbstractInterpreter.clazzHasUnitValue(_fuir, rt) || fres.v0() != unitValue());
 
         yield fres;
       case Intrinsic :
         yield _fuir.clazzTypeParameterActualType(cc) != -1  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
           ? pair(unitValue())
-          : pair(Intrinsics.call(this, _fuir.clazzForInterpreter(cc)).call(new List<>(tvalue, args)));
+          : pair(Intrinsics.call(this, cc).call(new List<>(tvalue, args)));
       case Abstract:
-        throw new Error("Calling abstract not possible: " + _fuir.codeAtAsString(cl, c, i));
+        throw new Error("Calling abstract not possible: " + _fuir.codeAtAsString(cl, s));
+      case Choice :
+        throw new Error("Calling choice not possible: " + _fuir.codeAtAsString(cl, s));
       case Native:
-        throw new Error("Calling native not yet supported in interpreter.");
-      default:
-        throw new RuntimeException("NYI");
+        throw new Error("NYI: UNDER DEVELOPEMENT: Calling native not yet supported in interpreter.");
       };
 
     return result;
@@ -296,15 +287,15 @@ public class Excecutor extends ProcessStatement<Value, Object>
    *
    * @param tvalue the actual value of the target.
    */
-  private Pair<Integer, Integer> ttcc(int cl, int c, int i, Value tvalue)
+  private Pair<Integer, Integer> ttcc(int cl, int s, Value tvalue)
   {
-    var ccs = _fuir.accessedClazzes(cl, c, i);
+    var ccs = _fuir.accessedClazzes(cl, s);
     var tt = ccs.length != 2 ? -1 : ccs[0];
     var cc = ccs.length != 2 ? -1 : ccs[1];
 
     if (cc == -1)
       {
-        tt = ((ValueWithClazz)tvalue)._clazz._idInFUIR;
+        tt = ((ValueWithClazz)tvalue)._clazz;
 
         for (var cci = 0; cci < ccs.length && cc==-1; cci += 2)
         {
@@ -337,9 +328,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
   @Override
   public Pair<Value, Object> box(Value v, int vc, int rc)
   {
-    var rcc = _fuir.clazzForInterpreter(rc);
-    var vcc = _fuir.clazzForInterpreter(vc);
-    return pair(new Boxed(rcc, vcc, v /* .cloneValue(vcc) */));
+    return pair(new Boxed(rc, vc, v /* .cloneValue(vcc) */));
   }
 
   @Override
@@ -370,7 +359,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
     var val = switch (_fuir.getSpecialClazz(constCl))
       {
       case c_Const_String, c_String -> Interpreter
-        .value(new String(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).getInt() + 4), StandardCharsets.UTF_8));
+        .value(new String(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt() + 4), StandardCharsets.UTF_8));
       case c_bool -> { check(d.length == 1, d[0] == 0 || d[0] == 1); yield new boolValue(d[0] == 1); }
       case c_f32 -> new f32Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getFloat());
       case c_f64 -> new f64Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getDouble());
@@ -385,51 +374,56 @@ public class Excecutor extends ProcessStatement<Value, Object>
       default -> {
         if (_fuir.clazzIsArray(constCl))
           {
-            var elementType = this._fuir.inlineArrayElementClazz(constCl);
+            var elementType = _fuir.inlineArrayElementClazz(constCl);
 
-            var bb = ByteBuffer.wrap(d);
+            var bb = ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN);
             var elCount = bb.getInt();
 
-            var arrayData = ArrayData.alloc(elCount, _fuir.clazzForInterpreter(elementType)._type);
+            var arrayData = ArrayData.alloc(elCount, _fuir, elementType);
 
             for (int idx = 0; idx < elCount; idx++)
               {
                 var b = _fuir.deseralizeConst(elementType, bb);
                 var c = constData(elementType, b).v0();
-                if      (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_i8  ) == 0) { ((byte[])   (arrayData._array))[idx] = (byte)c.i8Value(); }
-                else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_i16 ) == 0) { ((short[])  (arrayData._array))[idx] = (short)c.i16Value(); }
-                else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_i32 ) == 0) { ((int[])    (arrayData._array))[idx] = c.i32Value(); }
-                else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_i64 ) == 0) { ((long[])   (arrayData._array))[idx] = c.i64Value(); }
-                else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_u8  ) == 0) { ((byte[])   (arrayData._array))[idx] = (byte)c.u8Value(); }
-                else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_u16 ) == 0) { ((char[])   (arrayData._array))[idx] = (char)c.u16Value(); }
-                else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_u32 ) == 0) { ((int[])    (arrayData._array))[idx] = c.u32Value(); }
-                else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_u64 ) == 0) { ((long[])   (arrayData._array))[idx] = c.u64Value(); }
-                else if (_fuir.clazzForInterpreter(elementType)._type.compareTo(Types.resolved.t_bool) == 0) { ((boolean[])(arrayData._array))[idx] = c.boolValue(); }
-                else                                                                           { ((Value[])  (arrayData._array))[idx] = c; }
+                switch (_fuir.getSpecialClazz(elementType))
+                  {
+                    case c_i8   : ((byte[])   (arrayData._array))[idx] = (byte)c.i8Value(); break;
+                    case c_i16  : ((short[])  (arrayData._array))[idx] = (short)c.i16Value(); break;
+                    case c_i32  : ((int[])    (arrayData._array))[idx] = c.i32Value(); break;
+                    case c_i64  : ((long[])   (arrayData._array))[idx] = c.i64Value(); break;
+                    case c_u8   : ((byte[])   (arrayData._array))[idx] = (byte)c.u8Value(); break;
+                    case c_u16  : ((char[])   (arrayData._array))[idx] = (char)c.u16Value(); break;
+                    case c_u32  : ((int[])    (arrayData._array))[idx] = c.u32Value(); break;
+                    case c_u64  : ((long[])   (arrayData._array))[idx] = c.u64Value(); break;
+                    case c_f32  : ((float[])  (arrayData._array))[idx] = c.f32Value(); break;
+                    case c_f64  : ((double[]) (arrayData._array))[idx] = c.f64Value(); break;
+                    case c_bool : ((boolean[])(arrayData._array))[idx] = c.boolValue(); break;
+                    default     : ((Value[])  (arrayData._array))[idx] = c;
+                  }
               }
 
-            Instance result = new Instance(_fuir.clazzForInterpreter(constCl));
-            var internal_array = _fuir.clazzForInterpreter(constCl).lookup(Types.resolved.f_array_internal_array);
-            var saCl = internal_array.resultClazz();
+            Instance result = new Instance(constCl);
+            var internalArray = _fuir.lookup_array_internal_array(constCl);
+            var sysArray = _fuir.clazzResultClazz(internalArray);
+            var saCl = sysArray;
             Instance sa = new Instance(saCl);
-            Interpreter.setField(Types.resolved.f_fuzion_sys_array_length, -1, saCl, sa, new i32Value(elCount));
-            Interpreter.setField(Types.resolved.f_fuzion_sys_array_data, -1, saCl, sa, arrayData);
-            Interpreter.setField(Types.resolved.f_array_internal_array, -1, _fuir.clazzForInterpreter(constCl), result, sa);
-
+            Interpreter.setField(_fuir.lookup_fuzion_sys_internal_array_length(sysArray), saCl,                               sa,     new i32Value(elCount));
+            Interpreter.setField(_fuir.lookup_fuzion_sys_internal_array_data(sysArray)  , saCl,                               sa,     arrayData);
+            Interpreter.setField(internalArray                                          , constCl,                            result, sa);
             yield result;
           }
         else if (!_fuir.clazzIsChoice(constCl))
           {
             var b = ByteBuffer.wrap(d);
-            var result = new Instance(_fuir.clazzForInterpreter(constCl));
+            var result = new Instance(constCl);
             for (int index = 0; index < _fuir.clazzArgCount(constCl); index++)
               {
                 var fr = _fuir.clazzArgClazz(constCl, index);
 
                 var bytes = _fuir.deseralizeConst(fr, b);
                 var c = constData(fr, bytes).v0();
-                var acl = _fuir.clazzForInterpreter(_fuir.clazzArg(constCl, index));
-                Interpreter.setField(acl.feature(), acl._select, _fuir.clazzForInterpreter(constCl), result, c);
+                var acl = _fuir.clazzArg(constCl, index);
+                Interpreter.setField(acl, constCl, result, c);
               }
 
             yield result;
@@ -447,29 +441,28 @@ public class Excecutor extends ProcessStatement<Value, Object>
   }
 
   @Override
-  public Pair<Value, Object> match(AbstractInterpreter<Value, Object> ai, int cl, boolean pre, int c, int i,
+  public Pair<Value, Object> match(AbstractInterpreter<Value, Object> ai, int cl, boolean pre, int s,
     Value subv)
   {
-    var staticSubjectClazz = subv instanceof boolValue ? Clazzes.bool.getIfCreated() : ((ValueWithClazz)subv)._clazz;
+    var staticSubjectClazz = subv instanceof boolValue ? fuir().clazz(FUIR.SpecialClazzes.c_bool) : ((ValueWithClazz)subv)._clazz;
 
     if (CHECKS) check
-      (staticSubjectClazz.isChoice());
+      (fuir().clazzIsChoice(staticSubjectClazz));
 
     var tagAndChoiceElement = tagAndVal(staticSubjectClazz, subv);
 
-    var cix = _fuir.matchCaseIndex(cl, c, i, tagAndChoiceElement.v0());
+    var cix = _fuir.matchCaseIndex(cl, s, tagAndChoiceElement.v0());
 
-    var field = _fuir.matchCaseField(cl, c, i, cix);
+    var field = _fuir.matchCaseField(cl, s, cix);
     if (field != -1)
       {
         Interpreter.setField(
-            _fuir.clazzForInterpreter(field).feature(),
-            -1,
+            field,
             _cur._clazz,
             _cur,
             tagAndChoiceElement.v1());
       }
-    return ai.process(cl, pre, _fuir.matchCaseCode(c, i, cix));
+    return ai.process(cl, pre, _fuir.matchCaseCode(s, cix));
   }
 
 
@@ -480,19 +473,19 @@ public class Excecutor extends ProcessStatement<Value, Object>
    *
    * @return pair where first value is the tag, the second value the extracted value.
    */
-  private Pair<Integer, Value> tagAndVal(Clazz staticSubjectClazz, Value sub)
+  private Pair<Integer, Value> tagAndVal(int staticSubjectClazz, Value sub)
   {
     if (PRECONDITIONS) require
-      (staticSubjectClazz.isChoice());
+      (fuir().clazzIsChoice(staticSubjectClazz));
 
     var tag = -1;
     Value val = null;
-    if (staticSubjectClazz.isChoiceOfOnlyRefs())
+    if (fuir().clazzIsChoiceOfOnlyRefs(staticSubjectClazz))
       {
-        val = Interpreter.getChoiceRefVal(staticSubjectClazz.feature(), staticSubjectClazz, sub);
+        val = Interpreter.getChoiceRefVal(staticSubjectClazz, staticSubjectClazz, sub);
         tag = ChoiceIdAsRef.tag(staticSubjectClazz, val);
       }
-    else if (staticSubjectClazz == Clazzes.bool.getIfCreated())
+    else if (staticSubjectClazz == fuir().clazz(FUIR.SpecialClazzes.c_bool))
       {
         tag = sub.boolValue() ? 1 : 0;
         val = sub;
@@ -503,7 +496,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
       }
     if (val == null)
       {
-        val = Interpreter.getChoiceVal(staticSubjectClazz.feature(), staticSubjectClazz, sub, tag);
+        val = Interpreter.getChoiceVal(staticSubjectClazz, staticSubjectClazz, sub, tag);
       }
 
     if (POSTCONDITIONS) ensure
@@ -520,13 +513,13 @@ public class Excecutor extends ProcessStatement<Value, Object>
 
     var tc = _fuir.clazzChoice(newcl, tagNum);
 
-    return pair(Interpreter.tag(_fuir.clazzForInterpreter(newcl), _fuir.clazzForInterpreter(tc), value));
+    return pair(Interpreter.tag(newcl, tc, value));
   }
 
   @Override
   public Pair<Value, Object> env(int ecl)
   {
-    var result = FuzionThread.current()._effects.get(_fuir.clazzForInterpreter(ecl));
+    var result = FuzionThread.current()._effects.get(ecl);
     if (result == null)
       {
         Errors.fatal("No effect installed: " + _fuir.clazzAsStringNew(ecl));
@@ -543,7 +536,9 @@ public class Excecutor extends ProcessStatement<Value, Object>
   {
     if (!cc.boolValue())
       {
-        Errors.fatal("CONTRACT FAILED: " + ck + " on call to '" + _fuir.clazzAsString(cl) + "'");
+        Errors.runTime(pos(),
+                       (ck == ContractKind.Pre ? "Precondition" : "Postcondition") + " does not hold",
+                       (ck == ContractKind.Pre ? "For" : "After") + " call to " + _fuir.clazzAsStringNew(cl) + "\n" + callStack(fuir()));
       }
     return null;
   }
@@ -565,9 +560,92 @@ public class Excecutor extends ProcessStatement<Value, Object>
    */
   Value callOnInstance(int cc, Instance cur, Value outer, List<Value> args, boolean pre)
   {
+    FuzionThread.current()._callStackFrames.push(cc);
+    FuzionThread.current()._callStack.push(site());
+
     new AbstractInterpreter<>(_fuir, new Excecutor(cur, outer, args))
       .process(cc, pre);
+
+    FuzionThread.current()._callStack.pop();
+    FuzionThread.current()._callStackFrames.pop();
+
     return null;
+  }
+
+
+  /**
+   * Helper for callStack() to show one single frame
+   *
+   * @param frame the clazz of the entry to show
+   *
+   * @param call the call of the entry to show
+   */
+  private static void showFrame(FUIR fuir, StringBuilder sb, int frame, int callSite)
+  {
+    if (frame != -1)
+      {
+        sb.append(_fuir.clazzAsStringNew(frame)).append(": ");
+      }
+    sb.append(_fuir.codeAtAsPos(callSite).show()).append("\n");
+  }
+
+
+  /**
+   * Helper for callStack() to show a repeated frame
+   *
+   * @param sb used to append the output
+   *
+   * @param repeat how often was the previous entry repeated? >= 0 where 0 means
+   * it was not repeated, just appeared once, 1 means it was repeated once, so
+   * appeared twice, etc.
+   *
+   * @param frame the clazz of the previous entry
+   *
+   * @param call the call of the previous entry
+   */
+  private static void showRepeat(FUIR fuir, StringBuilder sb, int repeat, int frame, int callSite)
+  {
+    if (repeat > 1)
+      {
+        sb.append(Errors.repeated(repeat)).append("\n\n");
+      }
+    else if (repeat > 0)
+      {
+        showFrame(fuir, sb, frame, callSite);
+      }
+  }
+
+
+  /**
+   * Current call stack as a string for debugging output.
+   */
+  public static String callStack(FUIR fuir)
+  {
+    StringBuilder sb = new StringBuilder("Call stack:\n");
+    int lastFrame = -1;
+    int lastCall = -1;
+    int repeat = 0;
+    var s = FuzionThread.current()._callStack;
+    var sf = FuzionThread.current()._callStackFrames;
+    for (var i = s.size()-1; i >= 0; i--)
+      {
+        int frame = i<sf.size() ? sf.get(i) : null;
+        var call = s.get(i);
+        if (frame == lastFrame && call == lastCall)
+          {
+            repeat++;
+          }
+        else
+          {
+            showRepeat(fuir, sb, repeat, lastFrame, lastCall);
+            repeat = 0;
+            showFrame(fuir, sb, frame, call);
+            lastFrame = frame;
+            lastCall = call;
+          }
+      }
+    showRepeat(fuir, sb, repeat, lastFrame, lastCall);
+    return sb.toString();
   }
 
 

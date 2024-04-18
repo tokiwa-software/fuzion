@@ -141,16 +141,6 @@ public class Clazzes extends ANY
   public static final OnDemandClazz u64         = new OnDemandClazz(() -> Types.resolved.t_u64              );
   public static final OnDemandClazz f32         = new OnDemandClazz(() -> Types.resolved.t_f32              );
   public static final OnDemandClazz f64         = new OnDemandClazz(() -> Types.resolved.t_f64              );
-  public static final OnDemandClazz ref_i8      = new OnDemandClazz(() -> Types.resolved.t_i8 .asRef()      );
-  public static final OnDemandClazz ref_i16     = new OnDemandClazz(() -> Types.resolved.t_i16.asRef()      );
-  public static final OnDemandClazz ref_i32     = new OnDemandClazz(() -> Types.resolved.t_i32.asRef()      );
-  public static final OnDemandClazz ref_i64     = new OnDemandClazz(() -> Types.resolved.t_i64.asRef()      );
-  public static final OnDemandClazz ref_u8      = new OnDemandClazz(() -> Types.resolved.t_u8 .asRef()      );
-  public static final OnDemandClazz ref_u16     = new OnDemandClazz(() -> Types.resolved.t_u16.asRef()      );
-  public static final OnDemandClazz ref_u32     = new OnDemandClazz(() -> Types.resolved.t_u32.asRef()      );
-  public static final OnDemandClazz ref_u64     = new OnDemandClazz(() -> Types.resolved.t_u64.asRef()      );
-  public static final OnDemandClazz ref_f32     = new OnDemandClazz(() -> Types.resolved.t_f32.asRef()      );
-  public static final OnDemandClazz ref_f64     = new OnDemandClazz(() -> Types.resolved.t_f64.asRef()      );
   public static final OnDemandClazz Any         = new OnDemandClazz(() -> Types.resolved.t_Any              );
   public static final OnDemandClazz Const_String= new OnDemandClazz(() -> Types.resolved.t_Const_String     );
   public static final OnDemandClazz String      = new OnDemandClazz(() -> Types.resolved.t_String           );
@@ -171,6 +161,7 @@ public class Clazzes extends ANY
   public static Clazz fuzionSysArray_u8;         // result clazz of Const_String.internal_array
   public static Clazz fuzionSysArray_u8_data;    // field fuzion.sys.array<u8>.data
   public static Clazz fuzionSysArray_u8_length;  // field fuzion.sys.array<u8>.length
+  public static Clazz c_address;                 // clazz representing address type
   public static Clazz c_error;                   // clazz representing error-feature
 
 
@@ -250,7 +241,7 @@ public class Clazzes extends ANY
    * @param actualType the type of the clazz, must be free from generics
    *
    * @param outer the runtime clazz of the outer feature of
-   * actualType.featureOfType.
+   * actualType.feature.
    *
    * @return the existing or newly created Clazz that represents actualType
    * within outer.
@@ -271,7 +262,7 @@ public class Clazzes extends ANY
    * chooses the actual field from outer's actual generics. -1 otherwise.
    *
    * @param outer the runtime clazz of the outer feature of
-   * actualType.featureOfType.
+   * actualType.feature.
    *
    * @return the existing or newly created Clazz that represents actualType
    * within outer.
@@ -283,7 +274,7 @@ public class Clazzes extends ANY
        Errors.any() || !actualType.containsThisType());
 
     Clazz o = outer;
-    var ao = actualType.featureOfType().outer();
+    var ao = actualType.feature().outer();
     while (o != null)
       {
         if (actualType.isRef() && ao != null && ao.inheritsFrom(o.feature()) && !outer.isRef())
@@ -291,9 +282,14 @@ public class Clazzes extends ANY
             outer = o;  // short-circuit outer relation if suitable outer was found
           }
 
-        // NYI this should be, but tests/unary fails currently:
-        // o._type.compareTo(actualType) == 0 && ...
-        if (o._type == actualType && actualType != Types.t_ERROR &&
+        if (o._type.compareTo(actualType) == 0 &&
+            // example where the following logic is relevant:
+            // `((Unary i32 i32).compose i32).#fun`
+            // here `compose i32` is not a constructor but a normal routine.
+            // `compose i32` does not define a type. Thus it will not lead
+            // to a recursive value type.
+            actualType.feature().definesType() &&
+            actualType != Types.t_ERROR &&
             // a recursive outer-relation
 
             // This is a little ugly: we do not want outer to be a value
@@ -304,9 +300,9 @@ public class Clazzes extends ANY
             // the convenience of the backend.
             //
             // So instead of testing !o.isRef() we use
-            // !o._type.featureOfType().isThisRef().
-            !o._type.featureOfType().isThisRef() &&
-            !o._type.featureOfType().isIntrinsic())
+            // !o._type.feature().isThisRef().
+            !o._type.feature().isThisRef() &&
+            !o._type.feature().isIntrinsic())
           {  // but a recursive chain of value types is not permitted
 
             // NYI: recursive chain of value types should be detected during
@@ -327,7 +323,7 @@ public class Clazzes extends ANY
                          "Value type " + actualType + " equals type of outer feature.\n"+
                          "The chain of outer types that lead to this recursion is:\n"+
                          chain + "\n" +
-                         "To solve this, you could add a 'ref' after the arguments list at "+o._type.featureOfType().pos().show());
+                         "To solve this, you could add a 'ref' after the arguments list at "+o._type.feature().pos().show());
           }
         o = o._outer;
       }
@@ -384,7 +380,7 @@ public class Clazzes extends ANY
     var c_universe = universe.get();
     c_universe.called(SourcePosition.builtIn);
     c_universe.instantiated(SourcePosition.builtIn);
-    create(Types.t_ADDRESS, c_universe);
+    c_address = create(Types.t_ADDRESS, c_universe);
 
     // mark internally referenced clazzes as called or instantiated:
     if (CHECKS) check
@@ -572,7 +568,7 @@ public class Clazzes extends ANY
                   }
               }
           }
-        say("Found "+Types.num()+" types and "+Clazzes.num()+" clazzes (" +
+        say("Found "+Clazzes.num()+" clazzes (" +
                            clazzesForFields + " for " + fields+ " fields, " +
                            (clazzes.size()-clazzesForFields) + " for " + routines + " routines).");
       }
@@ -1042,8 +1038,8 @@ public class Clazzes extends ANY
   {
     if (PRECONDITIONS) require
       (Errors.any() || !thiz.dependsOnGenerics(),
-       outerClazz != null || thiz.featureOfType().outer() == null,
-       Errors.any() || thiz == Types.t_ERROR || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.featureOfType().outer()));
+       outerClazz != null || thiz.feature().outer() == null,
+       Errors.any() || thiz == Types.t_ERROR || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.feature().outer()));
 
     var result = create(thiz, select, outerClazz);
 
@@ -1180,16 +1176,6 @@ public class Clazzes extends ANY
     u64.clear();
     f32.clear();
     f64.clear();
-    ref_i8.clear();
-    ref_i16.clear();
-    ref_i32.clear();
-    ref_i64.clear();
-    ref_u8.clear();
-    ref_u16.clear();
-    ref_u32.clear();
-    ref_u64.clear();
-    ref_f32.clear();
-    ref_f64.clear();
     Any.clear();
     Const_String.clear();
     c_unit.clear();

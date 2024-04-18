@@ -191,7 +191,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    */
   public UnresolvedType(UnresolvedType t, List<AbstractType> g, AbstractType o)
   {
-    this(t.pos(), t._name, g, o, t._refOrVal, false);
+    this(t.pos(), t._name, g, o, t._refOrVal);
 
     if (PRECONDITIONS) require
       (Errors.any() ||  (t.generics() instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
@@ -213,24 +213,6 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * value type.
    */
   public UnresolvedType(HasSourcePosition pos, String n, List<AbstractType> g, AbstractType o, RefOrVal refOrVal)
-  {
-    this(pos, n, g, o, refOrVal, true);
-  }
-
-
-  /**
-   * Constructor
-   *
-   * @param n
-   *
-   * @param g the actual generic arguments
-   *
-   * @param o
-   *
-   * @param refOrVal true iff this type should be a ref type, otherwise it will be a
-   * value type.
-   */
-  public UnresolvedType(HasSourcePosition pos, String n, List<AbstractType> g, AbstractType o, RefOrVal refOrVal, boolean fixOuterThisType)
   {
     if (PRECONDITIONS) require
       (pos != null,
@@ -346,7 +328,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   /**
-   * Create a Types.intern()ed reference variant of this type.  Return this
+   * Create a reference variant of this type.  Return this
    * in case it is a reference already.
    */
   public AbstractType asRef()
@@ -364,7 +346,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   /**
-   * Create a Types.intern()ed this.type variant of this type.  Return this
+   * Create a this.type variant of this type.  Return this
    * in case it is a this.type or a choice variant already.
    */
   public AbstractType asThis()
@@ -388,7 +370,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   /**
-   * Create a Types.intern()ed value variant of this type.  Return this
+   * Create a value variant of this type.  Return this
    * in case it is a value already.
    */
   public AbstractType asValue()
@@ -549,7 +531,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
             o = o.resolve(res, of);
             var ot2 = o.isGenericArgument() ? o.genericArgument().constraint(res) // see tests/reg_issue1943 for examples
                                             : o;
-            of = ot2.featureOfType();
+            of = ot2.feature();
           }
         else
           {
@@ -598,9 +580,9 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                       {
                         if (!generics.isEmpty())
                           {
-                            AstErrors.formalGenericWithGenericArgs(pos(), this, f.generic());
+                            AstErrors.formalGenericWithGenericArgs(pos(), this, f.asGeneric());
                           }
-                        var gt = f.genericType();
+                        var gt = f.asGenericType();
                         if (gt.isOpenGeneric() && !(outerfeat instanceof Feature off && off.isLastArgType(this)))
                           {
                             AstErrors.illegalUseOfOpenFormalGeneric(pos(), gt.genericArgument());
@@ -659,7 +641,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
               }
             var ot2 = o.isGenericArgument() ? o.genericArgument().constraint(res) // see tests/reg_issue1943 for examples
                                             : o;
-            of = ot2.featureOfType();
+            of = ot2.feature();
           }
         else
           {
@@ -700,7 +682,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                           {
                             return null;
                           }
-                        var gt = f.genericType();
+                        var gt = f.asGenericType();
                         if (gt.isOpenGeneric() && !(outerfeat instanceof Feature off && off.isLastArgType(this)))
                           {
                             return null;
@@ -923,7 +905,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       {
         if (isMatchingTypeFeature(o))
           {
-            result = o.typeArguments().get(0).genericType();
+            result = o.typeArguments().get(0).asGenericType();
             o = null;
           }
         else
@@ -974,9 +956,9 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @throws Error if this is not resolved or isGenericArgument().
    */
-  public AbstractFeature featureOfType()
+  public AbstractFeature feature()
   {
-    throw new Error("featureOfType not available for unresolved type");
+    throw new Error("feature not available for unresolved type");
   }
 
 

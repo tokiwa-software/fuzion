@@ -53,7 +53,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class IR extends ANY
+public abstract class IR extends ANY
 {
 
 
@@ -70,19 +70,7 @@ public class IR extends ANY
    * For FUIR code represented by integers, this gives the base added to the
    * integers to detect wrong values quickly.
    */
-  protected static final int CODE_BASE    = 0x30000000;
-
-  /**
-   * For Features represented by integers, this gives the base added to the
-   * integers to detect wrong values quickly.
-   */
-  protected static final int FEATURE_BASE = 0x50000000;
-
-  /**
-   * For sites represented by integers, this gives the base added to the
-   * integers to detect wrong values quickly.
-   */
-  protected static final int SITE_BASE = 0x70000000;
+  protected static final int SITE_BASE    = 0x30000000;
 
 
   /**
@@ -90,6 +78,13 @@ public class IR extends ANY
    * an intrinsic or the program entry point).
    */
   public static final int NO_SITE = SITE_BASE-1;
+
+
+  /**
+   * For Features represented by integers, this gives the base added to the
+   * integers to detect wrong values quickly.
+   */
+  protected static final int FEATURE_BASE = 0x50000000;
 
 
   /**
@@ -108,7 +103,6 @@ public class IR extends ANY
 
   public enum ExprKind
   {
-    AdrOf,
     Assign,
     Box,
     Call,
@@ -118,36 +112,14 @@ public class IR extends ANY
     Match,
     Tag,
     Env,
-    Pop,
-    Unit,
-    // this is eliminated in FUIR
-    InlineArray;
-
-    /**
-     * get the Kind that corresponds to the given ordinal number.
-     */
-    public static ExprKind from(int ordinal)
-    {
-      if (CHECKS) check
-        (values()[ordinal].ordinal() == ordinal);
-
-      return values()[ordinal];
-    }
-
+    Pop;
   }
 
 
   /**
    * All the code blocks in this IR. They are added via `addCode`.
    */
-  private final Map2Int<List<Object>> _codeIds;
-
-
-  /**
-   * For every raw code block index in _codeIds, this gives the index of the
-   * first site for the corresponding code block.
-   */
-  private final List<Integer> _siteStart = new List<>(0);
+  final List<Object> _allCode;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -155,8 +127,9 @@ public class IR extends ANY
 
   public IR()
   {
-    _codeIds = new Map2Int<>(CODE_BASE);
+    _allCode = new List<>();
   }
+
 
   /**
    * Clone this IR such that modifications can be made by optimizers.  A heir of
@@ -167,133 +140,44 @@ public class IR extends ANY
    */
   protected IR(IR original)
   {
-    _codeIds = original._codeIds;
+    _allCode = original._allCode;
   }
+
 
   /*-----------------------  code block handling  -----------------------*/
 
 
   /**
-   * Add given code block and abtain a unique id for it.
+   * Add given code block and obtain a unique id for it.
    *
    * This also sets _siteStart in case `b` was not already added.
    *
-   * NYI: UNDER DEVELOPMENT: The returned index should be replaced by a site
-   * index, i.e., siteFromCI(result, 0).
-   *
-   * @param b a list of Expr statements to be added.
+   * @param b a list of Exprs, might contain non-Expr values for special cases.
    *
    * @return the index of b
    */
-  protected int addCode(List<Object> b)
+  protected int addCode(List<Object> code)
   {
-    b.freeze();
-    var res = _codeIds.add(b);
-    var index = res - CODE_BASE;
-    if (index >= _siteStart.size()-1)
+    var result = _allCode.size() + SITE_BASE;
+    for (var c : code)
       {
-        var nextSiteStart = _siteStart.getLast() + b.size() + 1; // b.size() might be 0 so we add 1 to have disjoint site indices
-        _siteStart.add(nextSiteStart);
+        _allCode.add(c);
       }
-    return res;
-  }
-
-
-  /**
-   * Get the Expr #i in code block c
-   *
-   * NYI: UNDER DEVELOPMENT: This should be replaced by `getExpr(int site)`.
-   *
-   * @param c the code block index returned by `addCode`
-   *
-   * @param i an index in c
-   */
-  protected Object getExpr(int c, int i)
-  {
-    return _codeIds.get(c).get(i);
-  }
-
-
-
-  /**
-   * Convert a code block index c and an Expr index in that code block to a site
-   * index.
-   *
-   * NYI: UNDER DEVELOPMENT: This should be removed once `site` is used throughout.
-   *
-   * @param c the code block index returned by `addCode`
-   *
-   * @param i an index in c
-   *
-   * @return a site index corresponding to `c`/`i`.
-   */
-  public int siteFromCI(int c, int i)
-  {
-    if (PRECONDITIONS) require
-      (0 <= i && i < _codeIds.get(c).size());
-
-    var index = c - CODE_BASE;
-    var result = _siteStart.get(index).intValue() + i + SITE_BASE;
-
-    if (POSTCONDITIONS) ensure
-      (c == codeIndexFromSite(result),
-       i == exprIndexFromSite(result));
-
+    _allCode.add(null);
     return result;
   }
 
 
   /**
-   * Extract code block index from a site.
+   * Get the expression at the given site
    *
-   * NYI: UNDER DEVELOPMENT: This should be removed once `site` is used throughout.
+   * @param s a site
    *
-   * @param site a code site
-   *
-   * @return the index of the code block containing the given site.
+   * @return the expression found at site s.
    */
-  protected int codeIndexFromSite(int site)
+  protected Object getExpr(int s)
   {
-    var rawSite = site - SITE_BASE;
-    // perform binary search in _siteStart
-    int l = 0;
-    int r = _siteStart.size()-1;
-    int result_raw_c;
-    do
-      {
-        int m = (l + r) / 2;
-        var s = _siteStart.get(m).intValue();
-        int cmp = Integer.compare(rawSite, s);
-        result_raw_c = cmp < 0 ? m-1 : m;
-        if (cmp <= 0) { r = m - 1; }
-        if (cmp >= 0) { l = m + 1; }
-      }
-    while (l <= r);
-    int result_c = result_raw_c + CODE_BASE;
-
-    if (POSTCONDITIONS) ensure
-      (site >= result_raw_c,
-       _siteStart.get(result_raw_c) <= rawSite,
-       result_raw_c == _siteStart.size()-1 || _siteStart.get(result_raw_c+1) > rawSite);
-
-    return result_c;
-  }
-
-
-  /**
-   * Extract expr index from a site.
-   *
-   * NYI: UNDER DEVELOPMENT: This should be removed once `site` is used throughout.
-   *
-   * @param site a code site
-   *
-   * @return the index of the Expr withing the code block containing the given site.
-   */
-  protected int exprIndexFromSite(int site)
-  {
-    var rawSite = site - SITE_BASE;
-    var index = codeIndexFromSite(site) - CODE_BASE;
-    return rawSite - _siteStart.get(index).intValue();
+    return _allCode.get(s - SITE_BASE);
   }
 
 
@@ -451,54 +335,67 @@ public class IR extends ANY
 
 
   /**
-   * Get size of given code
+   * Get size of the code starting at given site
    *
-   * @param c an index of a code block
+   * @param s a site
    *
-   * @return the size of code block c, i.e., withinCode(c, 0..result-1) <==> true.
+   * @return the size of code block c, i.e., withinCode(s+0..s+result-1) <==> true.
    */
-  public int codeSize(int c)
+  public int codeSize(int s)
   {
-    var code = _codeIds.get(c);
-    return code.size();
+    var result = 0;
+    while (withinCode(s + result))
+      {
+        result++;
+      }
+    return result;
   }
 
 
   /**
-   * Check if index ix is within code block c.
+   * Check if site s is still a valid site. For every valid site `s` wich `withinCode(s)`,
+   * it is legal to call `withinCode(s+codeSizteAt(s))` to check if the code continues.
    *
-   * @param c an index of a code block
+   * @param s a value site or the successor of a valid site
    *
-   * @param ix any non-negative integer
-   *
-   * @return true iff ix is a valid index in code block c.
+   * @return true iff s is a valid valid site that contains an expression
    */
-  public boolean withinCode(int c, int ix)
+  public boolean withinCode(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0);
+      (s >= SITE_BASE);
 
-    var code = _codeIds.get(c);
-    return ix < code.size();
+    return _allCode.get(s - SITE_BASE) != null;
   }
 
 
   /**
-   * Get the intermediate command at index ix in codeblock c.
+   * Get the expr at the given site
    *
-   * @param c an index of a code block
+   * @param s a site
    *
-   * @param ix an index within code block c.
-   *
-   * @return the intermediate command at that index.
+   * @return the ExprKind of the expression at site, null if undefined.
    */
-  public ExprKind codeAt(int c, int ix)
+  public ExprKind codeAt(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0, withinCode(c, ix));
+      (s >= SITE_BASE, withinCode(s));
 
+    return exprKind(getExpr(s));
+  }
+
+
+  /**
+   * Helper for `codeAt` to determine the ExprKind for an Object that is either
+   * an ast Expr or String.
+   *
+   * @param e an expression as stored in _allCode
+   *
+   * @return the corresponding ExprKind
+   */
+  protected ExprKind exprKind(Object e)
+  {
     ExprKind result;
-    var e = _codeIds.get(c).get(ix);
     if (e instanceof ExprKind ek)
       {
         result = ek;
@@ -549,30 +446,38 @@ public class IR extends ANY
 
 
   /**
-   * Get the source code position of expression #ix in given code block.
+   * Get the source code position of an expr at the given site if it is available.
    *
-   * @param c code block index
+   * @param site a site
    *
-   * @param ix index of expression within c
-   *
-   * @return the source code position of expression #ix in block c.
+   * @return the source code position or null if not available.
    */
-  public SourcePosition codeAtPos(int c, int ix)
+  public SourcePosition codeAtAsPos(int s)
   {
-    return ((Expr)_codeIds.get(c).get(ix)).pos();
+    if (PRECONDITIONS) require
+      (s >= 0,
+       withinCode(s));
+
+    var e = getExpr(s);
+    return (e instanceof Expr expr) ? expr.pos()
+                                    : null;
   }
 
 
   /**
-   * Get the size of the intermediate command at index ix in codeblock c.
+   * Get the size of the intermediate command at given site
+   *
+   * @param s a site
+   *
+   * @return the offset of the next expression relative to `s`.
    */
-  public int codeSizeAt(int c, int ix)
+  public int codeSizeAt(int s)
   {
     int result = 1;
-    var s = codeAt(c, ix);
-    if (s == ExprKind.Match)
+    var e = codeAt(s);
+    if (e == ExprKind.Match)
       {
-        result = result + matchCaseCount(c, ix);
+        result = result + matchCaseCount(s);
       }
     return result;
   }
@@ -581,22 +486,20 @@ public class IR extends ANY
   /**
    * For a match expression, get the number of cases
    *
-   * @param c code block containing the match
-   *
-   * @param ix index of the match
+   * @param s site of the match
    *
    * @return the number of cases
    */
-  public int matchCaseCount(int c, int ix)
+  public int matchCaseCount(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Match);
+      (s >= 0,
+       withinCode(s),
+       codeAt(s) == ExprKind.Match);
 
-    var s = _codeIds.get(c).get(ix);
+    var e = getExpr(s);
     int result = 2; // two cases for If
-    if (s instanceof AbstractMatch m)
+    if (e instanceof AbstractMatch m)
       {
         result = m.cases().size();
       }
@@ -605,21 +508,43 @@ public class IR extends ANY
 
 
   /**
-   * Get the code for a comment expression.  This is used for debugging.
+   * From a given site, determine the site of the start of the code block that
+   * contains the given site.
    *
-   * @param c code block containing the comment
+   * @param site any site
    *
-   * @param ix index of the comment
+   * @return the site of the first Expr in the code block containing `site`
    */
-  public String comment(int c, int ix)
+  public int codeBlockStart(int site)
   {
-    if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Comment);
-
-    return (String) _codeIds.get(c).get(ix);
+    var c = site - SITE_BASE;
+    var result = c;
+    while (result > 0 && _allCode.get(result-1) != null)
+      {
+        result--;
+      }
+    return result + SITE_BASE;
   }
+
+
+  /**
+   * From a given site, determine the site of the last Expr in the code block
+   * that contains the given site.
+   *
+   * @param site any site
+   *
+   * @return the site of the last Expr in the code block containing `site`
+   */
+  public int codeBlockEnd(int site)
+  {
+    var s0 = codeBlockStart(site);
+    while (withinCode(s0 + codeSizeAt(s0)))
+      {
+        s0 = s0 + codeSizeAt(s0);
+      }
+    return s0;
+  }
+
 
 }
 

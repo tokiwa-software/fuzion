@@ -177,7 +177,8 @@ public class DataOut extends ANY
   {
     if (PRECONDITIONS) require
       (0 <= at, at + 1 <= offset(),
-       0 <= b, b <= 0xFF);
+       0 <= b, b <= 0xFF,
+       _data[at] == 0 || _data[at] == -1);
 
     _data[at] = (byte) b;
   }

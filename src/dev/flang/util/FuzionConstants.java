@@ -322,6 +322,39 @@ public class FuzionConstants extends ANY
   public static final Path SYMBOLIC_FUZION_MODULE = Path.of("$MODULE");
 
 
+  /**
+   * Expression kind ids for use in FUM file are the ordinal numbers of these
+   * constants.
+   */
+  public enum MirExprKind
+  {
+    Assign,
+    Box,
+    Call,
+    Current,
+    Comment,
+    Const,
+    Match,
+    Tag,
+    Env,
+    Pop,
+    Unit,
+    InlineArray;
+
+    /**
+     * get the Kind that corresponds to the given ordinal number.
+     */
+    public static MirExprKind from(int ordinal)
+    {
+      if (CHECKS) check
+        (values()[ordinal].ordinal() == ordinal);
+
+      return values()[ordinal];
+    }
+
+  }
+
+
   /*-----------------  special values used in AIR file  -----------------*/
 
 
@@ -336,7 +369,51 @@ public class FuzionConstants extends ANY
   public static final byte[] FUIR_FILE_MAGIC = int2Bytes(FUIR_FILE_MAGIC0);
 
 
+  /*-----------------  special values for modifiers  -----------------*/
+
+
+  /**
+   *
+   */
+  public static final String[] MODIFIER_STRINGS = {"redef", "fixed"};
+
+
+  /**
+   *
+   */
+  public static final int MODIFIER_REDEFINE     = 0x01;
+  static { if (CHECKS) check(modifierToString(MODIFIER_REDEFINE).trim().equals("redef")); }
+
+  /**
+   * 'fixed' modifier to force feature to be fixed, i.e., not inherited by
+   * heirs.
+   */
+  public static final int MODIFIER_FIXED        = 0x02;
+  static { if (CHECKS) check(modifierToString(MODIFIER_FIXED).trim().equals("fixed")); }
+
+
+
   /*-------------------------  static methods  --------------------------*/
+
+
+
+  /**
+   * modifierToString
+   *
+   * @return space separated modifieres string.
+   */
+  public static String modifierToString(int m)
+  {
+    String result = "";
+    for(int i=0; i<32; i++)
+      {
+        if ((m & (1<<i))!=0)
+          {
+            result = result + MODIFIER_STRINGS[i] + " ";
+          }
+      }
+    return result;
+  }
 
 
   /**

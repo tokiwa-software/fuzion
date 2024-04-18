@@ -187,7 +187,7 @@ genericstest is
     unit
   opengenerics12
 
-  inherting_type_parameteres =>
+  inheriting_type_parameters =>
 
     # check that type parameters are not inherited and can be replaced
     # by a type parameter with the same name in the heir:
@@ -242,6 +242,6 @@ genericstest is
     chck ((child.f 2000000000) = "2000000000232000000000") "PARENT_TYPE_PARAMETER is not inherited, but a free type!"
     chck ((child.g 1230000000) = "1230000000231230000000") "BLABLA is a free type"
 
-  inherting_type_parameteres
+  inheriting_type_parameters
 
   exit

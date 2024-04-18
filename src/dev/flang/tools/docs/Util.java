@@ -52,11 +52,8 @@ public class Util
    */
   static boolean isArgument(AbstractFeature feature)
   {
-    if (feature.outer() == null)
-      {
-        return false;
-      }
-    return feature.outer()
+    return feature.outer() != null &&
+     feature.outer()
       .arguments()
       .stream()
       .anyMatch(f -> f.equals(feature));

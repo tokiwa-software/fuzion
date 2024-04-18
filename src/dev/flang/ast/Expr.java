@@ -754,7 +754,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
     return  !expectedType.isAssignableFrom(t)
       && expectedType.compareTo(Types.resolved.t_Any) != 0
       && !t.isGenericArgument()
-      && t.featureOfType()
+      && t.feature()
           .inherits()
           .stream()
           .anyMatch(c ->

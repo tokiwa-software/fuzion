@@ -99,23 +99,13 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
   /**
    * For a Feature that can be called and hasThisType() is true, this will be
-   * set to concrete the frame type during resolution.  This type uses the formal
-   * generics as actual generics. For a generic feature, these must be replaced.
-   *
-   * For a feature a.b.c, _selfType is a.b.c.
-   */
-  protected AbstractType _selfType = null;
-
-
-  /**
-   * For a Feature that can be called and hasThisType() is true, this will be
    * set to the abstract type referring to the instance, i.e., the actual value
    * by be _selfType or the _selfType of any heir feature of this or the self
    * type of this after it was inherited by any different outer type.
    *
    * For a feature a.b.c, _thisType is a.this.type.b.this.type.c.this.type.
    */
-  protected AbstractType _thisType = null;
+  private AbstractType _thisType = null;
 
 
   /**
@@ -126,21 +116,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * For a feature a.b.c, _thisTypeFixed is a.this.type.b.this.type.c.
    */
-  protected AbstractType _thisTypeFixed = null;
-
-
-  /**
-   * Reserved fields to be used by dev.flang.air to find used features and to
-   * mark features that are called dynamically.
-   */
-  public HasSourcePosition _usedAt;
-  public boolean _calledDynamically;
-
-
-  /**
-   * Caching used in front end.
-   */
-  public Object _frontEndData;
+  private AbstractType _thisTypeFixed = null;
 
 
   /**
@@ -152,19 +128,42 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * cached result of typeArguments();
    */
-  List<AbstractFeature> _typeArguments = null;
-
-
-  /**
-   * The formal generic arguments of this feature, cached result of generics()
-   */
-  FormalGenerics _generics;
+  private List<AbstractFeature> _typeArguments = null;
 
 
   /**
    * cached result of typeFeature()
    */
   private AbstractFeature _typeFeature = null;
+
+
+  /**
+   * Cached result of generic().
+   */
+  private Generic _generic;
+
+
+  /**
+   * For a Feature that can be called and hasThisType() is true, this will be
+   * set to concrete the frame type during resolution.  This type uses the formal
+   * generics as actual generics. For a generic feature, these must be replaced.
+   *
+   * For a feature a.b.c, _selfType is a.b.c.
+   */
+  protected AbstractType _selfType = null;
+
+
+  /**
+   * The formal generic arguments of this feature, cached result of generics()
+   */
+  protected FormalGenerics _generics;
+
+
+  /**
+   * For a type feature, this specifies the base feature the type feature was
+   * created for.
+   */
+  public AbstractFeature _typeFeatureOrigin;
 
 
   /**
@@ -176,7 +175,23 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public boolean _loadedInner = false;
 
 
-  /*-----------------------------  methods  -----------------------------*/
+  /**
+   * Reserved fields to be used by dev.flang.air to find used features and to
+   * mark features that are called dynamically.
+   */
+  public HasSourcePosition _usedAt;
+
+
+  /**
+   * Caching used in front end.
+   */
+  public Object _frontEndData;
+
+
+
+  /*----------------------------  abstract methods  ----------------------------*/
+
+
 
   /**
    * All features that have been found to be directly redefined by this feature.
@@ -185,6 +200,108 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * LibraryFeature, this will be loaded from the library module file.
    */
   public abstract Set<AbstractFeature> redefines();
+
+
+  /**
+   * What is this Feature's kind?
+   *
+   * @return Routine, Field, Intrinsic, Abstract or Choice.
+   */
+  public abstract Kind kind();
+
+
+  /**
+   * Is this an intrinsic feature that creates an instance of its result ref
+   * type?
+   */
+  public abstract boolean isIntrinsicConstructor();
+
+
+  /**
+   * Is this a routine that returns the current instance as its result?
+   */
+  public abstract boolean isConstructor();
+
+
+  /**
+   * Is this a constructor returning a reference result?
+   */
+  public abstract boolean isThisRef();
+
+
+  /**
+   * Visibility of this feature
+   */
+  public abstract Visi visibility();
+
+
+  /**
+   * the modifiers of this feature
+   */
+  public abstract int modifiers();
+
+
+  /**
+   * The feature name of this feature.
+   */
+  public abstract FeatureName featureName();
+
+
+  /**
+   * The inherits calls of this feature.
+   * Almost never empty since almost every feature inherits from `Any`.
+   */
+  public abstract List<AbstractCall> inherits();
+
+
+  /**
+   * The outer of this feature. For universe this returns null.
+   */
+  public abstract AbstractFeature outer();
+
+
+  /**
+   * All arguments of this feature. This includes type arguments.
+   */
+  public abstract List<AbstractFeature> arguments();
+
+
+  /**
+   * resultType returns the result type of this feature using.
+   *
+   * @return the result type. Never null.
+   */
+  public abstract AbstractType resultType();
+
+
+  /**
+   * The result field declared automatically in case hasResultField().
+   *
+   * @return the result or null if this does not have a result field.
+   */
+  public abstract AbstractFeature resultField();
+
+
+  /**
+   * The outer ref field field in case hasOuterRef().
+   *
+   * @return the outer ref or null if this does not have an outer ref.
+   */
+  public abstract AbstractFeature outerRef();
+
+
+  // following used in MIR or later,
+  // requires isRoutine() == true
+  public abstract Expr code();
+
+
+  // in FUIR or later
+  public abstract Contract contract();
+
+
+
+  /*-----------------------------  methods  -----------------------------*/
+
 
 
   /* pre-implemented convenience functions: */
@@ -214,24 +331,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * What is this Feature's kind?
-   *
-   * @return Routine, Field, Intrinsic, Abstract or Choice.
-   */
-  public abstract Kind kind();
-
-
-  /**
-   * Is this an intrinsic feature that creates an instance of its result ref
-   * type?
-   */
-  public abstract boolean isIntrinsicConstructor();
-
-
-  /**
    * get a reference to the outermost feature.
    */
-  public AbstractFeature universe()
+  private AbstractFeature universe()
   {
     if (PRECONDITIONS) require
       (state().atLeast(State.LOADED));
@@ -466,7 +568,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @return null if name is not the name of a formal generic argument
    * of this. Otherwise, a reference to the formal generic argument.
    */
-  public Generic generic()
+  public Generic asGeneric()
   {
     if (PRECONDITIONS) require
       (isTypeParameter());
@@ -480,21 +582,15 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Cached result of generic().
-   */
-  private Generic _generic;
-
-
-  /**
    * For a type parameter, this gives the ResolvedParametricType instance
    * corresponding to this type parameter.
    */
-  public AbstractType genericType()
+  public AbstractType asGenericType()
   {
     if (PRECONDITIONS) require
       (isTypeParameter());
 
-    return generic().type();
+    return asGeneric().type();
   }
 
 
@@ -523,7 +619,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       (result != null,
        Errors.any() || result.isRef() == isThisRef(),
        // does not hold if feature is declared repeatedly
-       Errors.any() || result.featureOfType() == this);
+       Errors.any() || result.feature() == this);
 
     return result;
   }
@@ -532,7 +628,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * Create '.this.type' for this feature.
    */
-  public AbstractType thisType()
+  AbstractType thisType()
   {
     return thisType(false);
   }
@@ -645,7 +741,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       {
         if (!first)
           {
-            tl.add(ta.genericType());
+            tl.add(ta.asGenericType());
           }
         first = false;
       }
@@ -663,7 +759,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @param t the type to be moved to the type feature.
    */
-  public AbstractType rebaseTypeForTypeFeature(AbstractType t)
+  private AbstractType rebaseTypeForTypeFeature(AbstractType t)
   {
     var tl = new List<AbstractType>();
     for (var ta0 : typeArguments())
@@ -740,7 +836,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                                                 : Impl.TYPE_PARAMETER;
                 var constraint0 = t instanceof Feature tf ? tf._returnType.functionReturnType() : t.resultType();
                 var constraint = rebaseTypeForTypeFeature(constraint0);
-                var ta = new Feature(p, t.visibility(), t.modifiers() & Consts.MODIFIER_REDEFINE, constraint, t.featureName().baseName(),
+                var ta = new Feature(p, t.visibility(), t.modifiers() & FuzionConstants.MODIFIER_REDEFINE, constraint, t.featureName().baseName(),
                                      Contract.EMPTY_CONTRACT,
                                      i);
                 typeArgs.add(ta);
@@ -847,14 +943,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * For a type feature, this specifies the base feature the type feature was
    * created for.
    */
-  public AbstractFeature _typeFeatureOrigin;
-
-
-  /**
-   * For a type feature, this specifies the base feature the type feature was
-   * created for.
-   */
-  public AbstractFeature typeFeatureOrigin()
+  AbstractFeature typeFeatureOrigin()
   {
     if (CHECKS) check
       (isTypeFeature());
@@ -902,7 +991,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * If we have an existing type feature (stored in a .fum library file), return that
    * type feature. return null otherwise.
    */
-  public AbstractFeature existingTypeFeature()
+  protected AbstractFeature existingTypeFeature()
   {
     return null;
   }
@@ -928,8 +1017,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       (result != null,
        Errors.any() || result.isRef() == isThisRef(),
        // does not hold if feature is declared repeatedly
-       Errors.any() || result.featureOfType() == this,
-       result.featureOfType().generics().sizeMatches(result.generics()));
+       Errors.any() || result.feature() == this,
+       result.feature().generics().sizeMatches(result.generics()));
 
     return result;
   }
@@ -1061,7 +1150,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * outerRef is the address of an outer value type or a reference to an outer
    * reference type.
    */
-  public boolean isOuterRefCopyOfValue()
+  private boolean isOuterRefCopyOfValue()
   {
     if (PRECONDITIONS) require
       (outer() != null);
@@ -1090,12 +1179,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Is this a routine that returns the current instance as its result?
-   */
-  public abstract boolean isConstructor();
-
-
-  /**
    * Does this feature define a type?
    *
    * This is the case for constructors and choice features.
@@ -1106,21 +1189,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public boolean definesType()
   {
-    var result = (isConstructor() || isChoice()) && !isUniverse();
-    var o = this;
-    while (result && o != null)
-      {
-        result = result && !o.isTypeFeature();
-        o = o.outer();
-      }
-    return result;
+    return (isConstructor() || isChoice())
+      && !isUniverse()
+      && !this.isTypeFeature();
   }
-
-
-  /**
-   * Is this a constructor returning a reference result?
-   */
-  public abstract boolean isThisRef();
 
 
   /**
@@ -1228,7 +1300,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @return a new array of types as they are visible in heir. The length might
    * be different due to open type parameters being replaced by a list of types.
    */
-  static AbstractType[] handDownInheritance(Resolution res, List<AbstractCall> inh, AbstractType[] a, AbstractFeature heir)
+  private static AbstractType[] handDownInheritance(Resolution res, List<AbstractCall> inh, AbstractType[] a, AbstractFeature heir)
   {
     for (AbstractCall c : inh)
       {
@@ -1391,8 +1463,14 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   {
     return
       (this != Types.f_ERROR) &&
-      // !isAbstract() &&      // NYI: check why abstract requires outer ref
-      // !isIntrinsic() &&     // outer is require for backend code generator
+
+      // tricky: abstract features may have contracts
+      // that use outer references.
+      // !isAbstract() &&
+
+      // outer is required for backend code generator
+      // !isIntrinsic() &&
+
       !isField() &&
       !isChoice() &&
       !isUniverse() &&
@@ -1472,25 +1550,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Visibility of this feature
-   */
-  public abstract Visi visibility();
-
-  /**
-   * the modifiers of this feature
-   */
-  public abstract int modifiers();
-
-  public abstract FeatureName featureName();
-  public abstract List<AbstractCall> inherits();
-  public abstract AbstractFeature outer();
-  public abstract List<AbstractFeature> arguments();
-  public abstract AbstractType resultType();
-  public abstract AbstractFeature resultField();
-  public abstract AbstractFeature outerRef();
-
-
-  /**
    * Is this feature marked with the `fixed` modifier. If so, this feature is
    * not inherited, i.e., we know that at runtime, the outer feature's type is
    * outer().selfType() and not a heir of outer().  However, outer().outer()
@@ -1498,8 +1557,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public boolean isFixed()
   {
-    return (modifiers() & Consts.MODIFIER_FIXED) != 0 || isTypeParameter();
+    return (modifiers() & FuzionConstants.MODIFIER_FIXED) != 0 || isTypeParameter();
   }
+
 
   /**
    * Get inner feature with given name, ignoring the argument count.
@@ -1556,13 +1616,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   }
 
 
-  // following used in MIR or later
-  public abstract Expr code();
-
-  // in FUIR or later
-  public abstract Contract contract();
-
-
   /**
    * List of arguments that are values, i.e., not type parameters or effects.
    */
@@ -1601,6 +1654,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       }
     return result;
   }
+
 
   /**
    * List of arguments that are types, i.e., not type parameters or effects.
@@ -1665,7 +1719,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             var l = new List<Generic>();
             for (var a0 : typeArguments())
               {
-                l.add(a0.generic());
+                l.add(a0.asGeneric());
               }
             _generics = new FormalGenerics(l);
           }
@@ -1731,7 +1785,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public String toString()
   {
     return visibility() + " " +
-      Consts.modifierToString(modifiers()) +
+      FuzionConstants.modifierToString(modifiers()) +
       (isTypeFeature() ? "type." : "") +
       featureName().baseName() +
       (arguments().isEmpty() ? "" : "("+arguments()+")") + " " +

@@ -26,9 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.air.Clazz;
-import dev.flang.air.Clazzes;
-
+import dev.flang.fuir.FUIR;
 
 /**
  * Boxed represents a value type instance that was boxed to create a ref type.
@@ -44,7 +42,7 @@ public class Boxed extends ValueWithClazz
   /*----------------------------  variables  ----------------------------*/
 
 
-  public Clazz _valueClazz;
+  public int _valueClazz;
 
 
   /**
@@ -59,13 +57,13 @@ public class Boxed extends ValueWithClazz
   /**
    * Constructor
    */
-  public Boxed(Clazz clazz, Clazz valueClazz, Value contents)
+  public Boxed(int clazz, int valueClazz, Value contents)
   {
     super(clazz);
 
     if (PRECONDITIONS) require
-      (clazz != null,
-       clazz.isBoxed());
+      (clazz > 0,
+       fuir().clazzIsBoxed(clazz));
 
     this._contents = contents;
     this._valueClazz = valueClazz;
@@ -79,7 +77,7 @@ public class Boxed extends ValueWithClazz
    * Create a copy (clone) of this value.  Used for boxing values into
    * ref-types.
    */
-  Instance cloneValue(Clazz cl)
+  Instance cloneValue(int cl)
   {
     if (PRECONDITIONS) require
       (false);
@@ -96,7 +94,7 @@ public class Boxed extends ValueWithClazz
   public int i8Value()
   {
     if (PRECONDITIONS) require
-      (_valueClazz == Clazzes.i8    .getIfCreated());
+      (_valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_i8));
 
     return _contents.i8Value();
   }
@@ -110,7 +108,7 @@ public class Boxed extends ValueWithClazz
   public int i16Value()
   {
     if (PRECONDITIONS) require
-      (_valueClazz == Clazzes.i16    .getIfCreated());
+      (_valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_i16));
 
     return _contents.i16Value();
   }
@@ -124,7 +122,7 @@ public class Boxed extends ValueWithClazz
   public int i32Value()
   {
     if (PRECONDITIONS) require
-      (_valueClazz == Clazzes.i32    .getIfCreated());
+      (_valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_i32));
 
     return _contents.i32Value();
   }
@@ -138,7 +136,7 @@ public class Boxed extends ValueWithClazz
   public long i64Value()
   {
     if (PRECONDITIONS) require
-      (_valueClazz == Clazzes.i64    .getIfCreated());
+      (_valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_i64));
 
     return _contents.i64Value();
   }
@@ -152,7 +150,7 @@ public class Boxed extends ValueWithClazz
   public int u8Value()
   {
     if (PRECONDITIONS) require
-      (_valueClazz == Clazzes.u8    .getIfCreated());
+      (_valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_u8));
 
     return _contents.u8Value();
   }
@@ -167,7 +165,7 @@ public class Boxed extends ValueWithClazz
   public int u16Value()
   {
     if (PRECONDITIONS) require
-      (_valueClazz == Clazzes.u16    .getIfCreated());
+      (_valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_u16));
 
     return _contents.u16Value();
   }
@@ -181,7 +179,7 @@ public class Boxed extends ValueWithClazz
   public int u32Value()
   {
     if (PRECONDITIONS) require
-      (_valueClazz == Clazzes.u32    .getIfCreated());
+      (_valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_u32));
 
     return _contents.u32Value();
   }
@@ -195,7 +193,7 @@ public class Boxed extends ValueWithClazz
   public long u64Value()
   {
     if (PRECONDITIONS) require
-      (_valueClazz == Clazzes.u64    .getIfCreated());
+      (_valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_u64));
 
     return _contents.u64Value();
   }
@@ -209,7 +207,7 @@ public class Boxed extends ValueWithClazz
   public float f32Value()
   {
     if (PRECONDITIONS) require
-      (_valueClazz == Clazzes.f32    .getIfCreated());
+      (_valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_f32));
 
     return _contents.f32Value();
   }
@@ -223,7 +221,7 @@ public class Boxed extends ValueWithClazz
   public double f64Value()
   {
     if (PRECONDITIONS) require
-      (_valueClazz == Clazzes.f64    .getIfCreated());
+      (_valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_f64));
 
     return _contents.f64Value();
   }
@@ -237,9 +235,9 @@ public class Boxed extends ValueWithClazz
   public boolean boolValue()
   {
     if (PRECONDITIONS) require
-      (_valueClazz == Clazzes.c_TRUE .getIfCreated() ||
-       _valueClazz == Clazzes.c_FALSE.getIfCreated() ||
-       _valueClazz == Clazzes.bool   .getIfCreated());
+      (_valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_TRUE) ||
+       _valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_FALSE) ||
+       _valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_bool));
 
     return _contents.boolValue();
   }
@@ -254,7 +252,7 @@ public class Boxed extends ValueWithClazz
    *
    * @return the LValue to rev
    */
-  public LValue at(Clazz c, int off)
+  public LValue at(int c, int off)
   {
     return _contents.at(c, off);
   }
@@ -267,7 +265,7 @@ public class Boxed extends ValueWithClazz
    */
   public String toString()
   {
-    return "boxed[" + _clazz + "]" + this.hashCode();
+    return "boxed[" + fuir().clazzAsStringNew(_clazz) + "]" + this.hashCode();
   }
 
 }

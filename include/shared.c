@@ -33,7 +33,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdbool.h>
 #include <string.h>
 #include <assert.h>
-#include <threads.h>
 
 
 /**
@@ -101,9 +100,9 @@ void * fzE_malloc_safe(size_t size) {
 #include <jni.h>
 
 // global instance of the jvm
-JavaVM *fzE_jvm              = NULL;
+JavaVM *fzE_jvm                = NULL;
 // global instance of the jvm environment
-_Thread_local JNIEnv *fzE_jni_env          = NULL;
+__thread JNIEnv *fzE_jni_env   = NULL;
 
 // cached jclasses and jmethods which are frequently used
 

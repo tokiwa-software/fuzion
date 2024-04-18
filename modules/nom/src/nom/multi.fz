@@ -1,0 +1,85 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# nom.multi -- parsers applied multiple times
+#
+module multi is
+
+  # apply parser multiple times, return results as sequence
+  public many0 (I, O type, p Parser I I O) Parser I I (Sequence O) =>
+    parse(input I) parse_result I (Sequence O) =>
+      match p.call input
+        s1 success I O =>
+          match (parse s1.rest)
+            s2 success I (Sequence O) => success s2.rest ([s1.out]++s2.out).as_seq
+            error => panic "invalid state, many0 must always succeed."
+        # NYI type inference should infer correct type of empty array
+        error => success input (list O).type.empty.as_seq
+    parser I I (Sequence O) (input -> parse input)
+
+
+  # apply parser at least once, return results as sequence
+  public many1 (I, O type, p Parser I I O) Parser I I (Sequence O) =>
+    parser I I (Sequence O) (input)->
+      match p.call input
+        s1 success I O => (many0 p).call input
+        e error => e
+
+
+  # apply parser between m and n times, return results as sequence
+  public many_m_n (I, O type, m, n i32, p Parser I I O) Parser I I (Sequence O)
+  pre m<=n
+      n>0
+  =>
+    parser I I (Sequence O) (input ->
+      (rest, acc) := (1..n)
+        .reduce (input, (list O).type.empty) (r, t ->
+          (rest, acc) := r
+          match p.call rest
+            s success =>
+              (s.rest, acc ++ [s.out])
+            error =>
+              abort (rest, acc)
+        )
+      if acc.count < m
+        error "matched only {acc.count} times"
+      else
+        success rest acc.as_seq)
+
+
+  # parse a separated list of values, zero or more values
+  public separated_list0(I, O, D type, p_sep Parser I I D, p_value Parser I I O) Parser I I (Sequence O) =>
+    parse(input I) parse_result I (Sequence O) =>
+      match p_value.call input
+        s1 success =>
+          match (many0 (sequence.preceded p_sep p_value)).call s1.rest
+            s2 success => success s2.rest ([s1.out]++s2.out).as_seq
+            e error => panic "invalid state, many0 always succeeds"
+        # NYI type inference should infer correct type of empty array
+        error => success input (list O).type.empty.as_seq
+    parser I I (Sequence O) (input -> parse input)
+
+
+  # parse a separated list of values, one or more values
+  public separated_list1(I, O, D type, p_sep Parser I I D, p_value () -> (Parser I I O)) Parser I I (Sequence O) =>
+    parse(input I) parse_result I (Sequence O) =>
+      match p_value().call input
+        s1 success =>
+          match (many0 (sequence.preceded p_sep p_value())).call s1.rest
+            s2 success => success s2.rest ([s1.out]++s2.out).as_seq
+            error => panic "invalid state, many0 always succeeds"
+        e error => e
+    parser I I (Sequence O) (input -> parse input)
+
