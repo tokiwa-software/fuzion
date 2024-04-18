@@ -57,7 +57,7 @@ public class Interpreter extends FUIRContext
         };
       };
     FUIRContext.set_fuir(fuir);
-    var processor = new Excecutor(_fuir, _options_);
+    var processor = new Executor(_fuir, _options_);
     _ai = new AbstractInterpreter<Value, Object>(_fuir, processor);
     Intrinsics.ENABLE_UNSAFE_INTRINSICS = options.enableUnsafeIntrinsics();  // NYI: Add to Fuzion IR or BE Config
   }
@@ -84,11 +84,11 @@ public class Interpreter extends FUIRContext
       }
     catch (StackOverflowError e)
       {
-        Errors.fatal("*** " + e + "\n" + Excecutor.callStack(_fuir));
+        Errors.fatal("*** " + e + "\n" + Executor.callStack(_fuir));
       }
     catch (RuntimeException | Error e)
       {
-        Errors.error("*** " + e + "\n" + Excecutor.callStack(_fuir));
+        Errors.error("*** " + e + "\n" + Executor.callStack(_fuir));
         throw e;
       }
   }
