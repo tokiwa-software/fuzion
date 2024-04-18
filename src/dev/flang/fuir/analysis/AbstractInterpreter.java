@@ -620,8 +620,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
   {
     if (DEBUG != null && _fuir.clazzAsString(_fuir.clazzAt(s)).matches(DEBUG))
       {
-        var cl = _fuir.clazzAt(s);
-        say("process "+_fuir.clazzAsString(cl)+"."+s+":\t"+_fuir.codeAtAsString(s)+" stack is "+stack);
+        say("process "+_fuir.siteAsString(s) + ":\t"+_fuir.codeAtAsString(s)+" stack is "+stack);
       }
     var e = _fuir.codeAt(s);
 

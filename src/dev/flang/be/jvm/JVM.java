@@ -1033,7 +1033,7 @@ should be avoided as much as possible.
     if (TRACE)
       {
         var p = _fuir.codeAtAsPos(s);
-        var msg = "IN " + _fuir.clazzAsString(_fuir.clazzAt(s)) + ": " + _fuir.codeAtAsString(s) +
+        var msg = "IN " + _fuir.siteAsString(s) + ": " + _fuir.codeAtAsString(s) +
           (p == null ? "" : " " + p.show());
         return callRuntimeTrace(msg);
       }

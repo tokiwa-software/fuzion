@@ -450,7 +450,7 @@ class CodeGen
           }
         if (isCall && (_fuir.hasData(rt) || _fuir.clazzIsVoidType(rt)))  // we need a non-unit result and do not know what to do with this call, so flag an error
           {
-            s = s.andThen(_jvm.reportErrorInCode("no targets for access of " + _fuir.clazzAsString(cc0) + " within " + _fuir.clazzAsString(_fuir.clazzAt(si))));
+            s = s.andThen(_jvm.reportErrorInCode("no targets for access of " + _fuir.clazzAsString(cc0) + " within " + _fuir.siteAsString(si)));
             res = null;
           }
         else  // an assignment to an unused field or unit-type call, that is fine to remove, just add a comment
@@ -485,8 +485,6 @@ class CodeGen
           {
             tvalue = tvalue.andThen(Expr.checkcast(_types.javaType(tt)));
           }
-        var cl = _fuir.clazzAt(si);
-        var pre = _fuir.isPreconditionAt(si);
         var calpair = staticAccess(si, tt, cc, tvalue, args, isCall);
         s = s.andThen(calpair.v1());
         res = calpair.v0();
@@ -1074,9 +1072,8 @@ class CodeGen
    */
   public Expr contract(int s, FUIR.ContractKind ck, Expr cc)
   {
-    var cl = _fuir.clazzAt(s);
     return cc.andThen(Expr.branch(O_ifeq,
-                                  Expr.stringconst("" + ck + " on call to '" + _fuir.clazzAsString(cl) + "'")
+                                  Expr.stringconst("" + ck + " on call to '" + _fuir.siteAsString(s) + "'")
                                   .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                              Names.RUNTIME_CONTRACT_FAIL,
                                                              Names.RUNTIME_CONTRACT_FAIL_SIG,

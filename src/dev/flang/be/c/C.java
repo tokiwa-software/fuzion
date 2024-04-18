@@ -504,9 +504,8 @@ public class C extends ANY
             (value == CExpr.UNIT);
           if (tagNum >= CConstants.PAGE_SIZE)
             {
-              var cl = _fuir.clazzAt(s);
               Errors.error("Number of tags for choice type exceeds page size.",
-                           "While creating code for '" + _fuir.clazzAsString(cl) + "'\n" +
+                           "While creating code for '" + _fuir.siteAsString(s) + "'\n" +
                            "Found in choice type '" + _fuir.clazzAsString(newcl)+ "'\n");
             }
           value = CExpr.int32const(tagNum);
@@ -548,10 +547,9 @@ public class C extends ANY
     @Override
     public CStmnt contract(int s, FUIR.ContractKind ck, CExpr cc)
     {
-      var cl = _fuir.clazzAt(s);
       return CStmnt.iff(cc.field(CNames.TAG_NAME).not(),
                         CStmnt.seq(CExpr.fprintfstderr("*** failed " + ck + " on call to '%s'\n",
-                                                       CExpr.string(_fuir.clazzAsString(cl))),
+                                                       CExpr.string(_fuir.siteAsString(s))),
                                    CExpr.exit(1)));
     }
 
@@ -1235,10 +1233,9 @@ public class C extends ANY
       {
         if (isCall && (_fuir.hasData(rt) || _fuir.clazzIsVoidType(rt)))
           {
-            var cl = _fuir.clazzAt(s);
             ol.add(reportErrorInCode("no targets for access of %s within %s",
                                      CExpr.string(_fuir.clazzAsString(cc0)),
-                                     CExpr.string(_fuir.clazzAsString(cl ))));
+                                     CExpr.string(_fuir.siteAsString(s))));
             res = null;
           }
         else
@@ -1314,13 +1311,12 @@ public class C extends ANY
           }
         if (ccs.length > 2)
           {
-            var cl = _fuir.clazzAt(s);
             var id = tvalue.deref().field(CNames.CLAZZ_ID);
             acc = CStmnt.suitch(id, cazes,
                                 reportErrorInCode("unhandled dynamic target %d in access of %s within %s",
                                                   id,
                                                   CExpr.string(_fuir.clazzAsString(cc0)),
-                                                  CExpr.string(_fuir.clazzAsString(cl ))));
+                                                  CExpr.string(_fuir.siteAsString(s))));
           }
         ol.add(acc);
         res = _fuir.clazzIsVoidType(rt)

@@ -447,7 +447,7 @@ public class Choices extends ANY implements ClassFileConstants
       {
       case voidlike:
         {
-          Errors.fatal("JVM backend match called for void-like choice type " + _fuir.clazzAsString(subjClazz) + " when compiling " + _fuir.clazzAsString(cl));
+          Errors.fatal("JVM backend match called for void-like choice type " + _fuir.clazzAsString(subjClazz) + " when compiling " + _fuir.siteAsString(s));
           throw new Error(); // never executed, just to keep javac from complaining.
         }
       case unitlike:
@@ -487,7 +487,7 @@ public class Choices extends ANY implements ClassFileConstants
                     case 0: neg = Expr.UNIT.andThen(ai.process(_fuir.matchCaseCode(s, mc))); break;
                     case 1: pos = Expr.UNIT.andThen(ai.process(_fuir.matchCaseCode(s, mc))); break;
                     case -1: break; //  void type
-                    default: throw new Error("JVM backend match found unexpected tag number " + t + " when compiling " + _fuir.clazzAsString(cl));
+                    default: throw new Error("JVM backend match found unexpected tag number " + t + " when compiling " + _fuir.siteAsString(s));
                   }
                 }
             }
@@ -714,8 +714,7 @@ public class Choices extends ANY implements ClassFileConstants
       {
       case voidlike:
         {
-          var cl = _fuir.clazzAt(s);
-          throw new Error("JVM backend tag called for voidlike choice type" + _fuir.clazzAsString(newcl) + " when compiling " + _fuir.clazzAsString(cl));
+          throw new Error("JVM backend tag called for voidlike choice type" + _fuir.clazzAsString(newcl) + " when compiling " + _fuir.siteAsString(s));
         }
       case unitlike:
         {

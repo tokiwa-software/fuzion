@@ -137,8 +137,7 @@ public class DFA extends ANY
     {
       if (_reportResults && _options.verbose(9))
         {
-          var cl = _fuir.clazzAt(s);
-          say("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+s+": "+_fuir.codeAtAsString(s));
+          say("DFA for "+_fuir.siteAsString(s)+" at "+s+": "+_fuir.codeAtAsString(s));
         }
       return _unit_;
     }
@@ -267,8 +266,6 @@ public class DFA extends ANY
      */
     Val access(int s, Val tvalue, List<Val> args)
     {
-      var cl = _fuir.clazzAt(s);
-      var pre = _fuir.isPreconditionAt(s);
       var tc = _fuir.accessTargetClazz(s);
       var cc0 = _fuir.accessedClazz  (s);
       var ccs = _fuir.accessedClazzes(s);
@@ -286,7 +283,7 @@ public class DFA extends ANY
                   t != Value.UNDEFINED && _fuir.clazzAsValue(t._clazz) == tt)
                 {
                   found[0] = true;
-                  var r = access0(cl, pre, s, t, args, cc, tvalue);
+                  var r = access0(s, t, args, cc, tvalue);
                   if (r != null)
                     {
                       resf[0] = resf[0] == null ? r : resf[0].joinVal(DFA.this, r);
@@ -303,7 +300,7 @@ public class DFA extends ANY
               detail += _fuir.clazzAsStringNew(ccs[ccii]) + ", ";
             }
           Errors.error(_fuir.codeAtAsPos(s),
-                       "NYI: in "+_fuir.clazzAsString(cl)+" no targets for "+_fuir.codeAtAsString(s)+" target "+tvalue,
+                       "NYI: in "+_fuir.siteAsString(s)+" no targets for "+_fuir.codeAtAsString(s)+" target "+tvalue,
                        detail);
 
           _call.showWhy();
@@ -324,7 +321,7 @@ public class DFA extends ANY
     /**
      * Helper routine for access (above) to perform a static access (cal or write).
      */
-    Val access0(int cl, boolean pre, int s, Val tvalue, List<Val> args, int cc, Val original_tvalue /* NYI: ugly */)
+    Val access0(int s, Val tvalue, List<Val> args, int cc, Val original_tvalue /* NYI: ugly */)
     {
       var cs = DFA.this.site(s);
       cs._accesses.add(cc);
@@ -340,7 +337,7 @@ public class DFA extends ANY
             {
               if (_reportResults && _options.verbose(9))
                 {
-                  say("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+s+": "+_fuir.codeAtAsString(s)+": " +
+                  say("DFA for "+_fuir.siteAsString(s) + ": "+_fuir.codeAtAsString(s)+": " +
                                      tvalue + ".set("+_fuir.clazzAsString(cc)+") := " + args.get(0));
                 }
               var v = args.get(0);
@@ -404,8 +401,7 @@ public class DFA extends ANY
                 tempEscapes(s, original_tvalue, _fuir.clazzOuterRef(cc));
                 if (_reportResults && _options.verbose(9))
                   {
-                    var cl = _fuir.clazzAt(s);
-                    say("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+s+": "+_fuir.codeAtAsString(s)+": " + ca);
+                    say("DFA for " +_fuir.siteAsString(s) + ": "+_fuir.codeAtAsString(s)+": " + ca);
                   }
               }
             break;
@@ -415,8 +411,7 @@ public class DFA extends ANY
             res = tvalue.value().callField(DFA.this, cc, s, _call);
             if (_reportResults && _options.verbose(9))
               {
-                var cl = _fuir.clazzAt(s);
-                say("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+s+": "+_fuir.codeAtAsString(s)+": " +
+                say("DFA for "+_fuir.siteAsString(s) + ": "+_fuir.codeAtAsString(s)+": " +
                                    tvalue + ".get(" + _fuir.clazzAsString(cc) + ") => " + res);
               }
             break;
@@ -631,8 +626,7 @@ public class DFA extends ANY
           var taken = takenA[0];
           if (_reportResults && _options.verbose(9))
             {
-              var cl = _fuir.clazzAt(s);
-              say("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+s+": "+_fuir.codeAtAsString(s)+": "+subv+" case "+mc+": "+
+              say("DFA for " + _fuir.siteAsString(s) + ": "+_fuir.codeAtAsString(s)+": "+subv+" case "+mc+": "+
                                  (taken ? "taken" : "not taken"));
             }
 

@@ -1426,6 +1426,35 @@ hw25 is
 
 
   /**
+   * Create a String representation of a site for debugging purposes:
+   *
+   * @param s a site or NO_SITE
+   *
+   * @return a String describing site
+   */
+  public String siteAsString(int s)
+  {
+    String res;
+    if (s == NO_SITE)
+      {
+        res = "** NO_SITE **";
+      }
+    else if (s >= SITE_BASE && (s - SITE_BASE < _allCode.size()))
+      {
+        var cl = clazzAt(s);
+        var pre = isPreconditionAt(s);
+        res = (pre ? "PRECONDITION OF " : "") +
+          clazzAsString(cl) + "(" + clazzArgCount(cl) + " args) at " + s;
+      }
+    else
+      {
+        res = "ILLEGAL site " + s;
+      }
+    return res;
+  }
+
+
+  /**
    * Get the expr at the given site
    *
    * @param s site
