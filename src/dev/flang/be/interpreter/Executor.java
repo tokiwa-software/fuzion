@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Excecutor
+ * Source of class Executor
  *
  *---------------------------------------------------------------------*/
 
@@ -43,10 +43,10 @@ import dev.flang.util.Pair;
 
 
 /**
- * The class Excecutor implements ProcessExpression of the AbstractInterpreter.
+ * The class Executor implements ProcessExpression of the AbstractInterpreter.
  * It does the actual execution of the code.
  */
-public class Excecutor extends ProcessExpression<Value, Object>
+public class Executor extends ProcessExpression<Value, Object>
 {
 
 
@@ -98,10 +98,10 @@ public class Excecutor extends ProcessExpression<Value, Object>
 
 
   /**
-   * The constructor to initialize the Excecutor
+   * The constructor to initialize the Executor
    * at the start of the application.
    */
-  public Excecutor(FUIR fuir, FuzionOptions opt)
+  public Executor(FUIR fuir, FuzionOptions opt)
   {
     _fuir = fuir;
     _options_ = opt;
@@ -113,7 +113,7 @@ public class Excecutor extends ProcessExpression<Value, Object>
 
 
   /**
-   * The constructor to initalize the excecutor
+   * The constructor to initalize the executor
    * with a custom current, outer and args.
    *
    * @param fuir
@@ -121,7 +121,7 @@ public class Excecutor extends ProcessExpression<Value, Object>
    * @param outer
    * @param args
    */
-  public Excecutor(Instance cur, Value outer, List<Value> args)
+  public Executor(Instance cur, Value outer, List<Value> args)
   {
     this._cur = cur;
     this._outer = outer;
@@ -563,7 +563,7 @@ public class Excecutor extends ProcessExpression<Value, Object>
     FuzionThread.current()._callStackFrames.push(cc);
     FuzionThread.current()._callStack.push(site());
 
-    new AbstractInterpreter<>(_fuir, new Excecutor(cur, outer, args))
+    new AbstractInterpreter<>(_fuir, new Executor(cur, outer, args))
       .process(cc, pre);
 
     FuzionThread.current()._callStack.pop();
