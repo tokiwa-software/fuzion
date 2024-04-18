@@ -61,9 +61,9 @@ public class C extends ANY
 
 
   /**
-   * Statement processor used with AbstractInterpreter to generate C code.
+   * Expression processor used with AbstractInterpreter to generate C code.
    */
-  class CodeGen extends AbstractInterpreter.ProcessStatement<CExpr,CStmnt>
+  class CodeGen extends AbstractInterpreter.ProcessExpression<CExpr,CStmnt>
   {
 
 
@@ -91,11 +91,11 @@ public class C extends ANY
 
 
     /**
-     * Called before each statement is processed. May be used to, e.g., produce
+     * Called before each expression is processed. May be used to, e.g., produce
      * tracing code for debugging or a comment.
      */
     @Override
-    public CStmnt statementHeader(int cl, int s)
+    public CStmnt expressionHeader(int cl, int s)
     {
       return comment(String.format("%4d: %s", s, _fuir.codeAtAsString(cl, s)));
     }
@@ -1327,7 +1327,7 @@ public class C extends ANY
         ol.add(acc);
         res = _fuir.clazzIsVoidType(rt)
           ? null
-          : callsResultEscapes || isCall && _fuir.hasData(rt) && _fuir.clazzFieldIsAdrOfValue(cc0)  // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
+          : callsResultEscapes || isCall && _fuir.hasData(rt) && _fuir.clazzFieldIsAdrOfValue(cc0)  // NYI: deref an outer ref to value type. Would be nice to have a separate expression for this
             ? res.deref()
             : res;
       }

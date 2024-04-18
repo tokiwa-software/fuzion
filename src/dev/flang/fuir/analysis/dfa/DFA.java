@@ -77,7 +77,7 @@ public class DFA extends ANY
 
 
   /**
-   * Dummy unit type as type parameter for AbstractInterpreter.ProcessStatement.
+   * Dummy unit type as type parameter for AbstractInterpreter.ProcessExpression.
    */
   static class Unit
   {
@@ -87,7 +87,7 @@ public class DFA extends ANY
   /**
    * Statement processor used with AbstractInterpreter to perform DFA analysis
    */
-  class Analyze extends AbstractInterpreter.ProcessStatement<Val,Unit>
+  class Analyze extends AbstractInterpreter.ProcessExpression<Val,Unit>
   {
 
 
@@ -133,7 +133,7 @@ public class DFA extends ANY
      * Called before each statement is processed. May be used to, e.g., produce
      * tracing code for debugging or a comment.
      */
-    public Unit statementHeader(int cl, int s)
+    public Unit expressionHeader(int cl, int s)
     {
       if (_reportResults && _options.verbose(9))
         {

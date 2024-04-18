@@ -34,7 +34,7 @@ import java.util.Arrays;
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.ContractKind;
 import dev.flang.fuir.analysis.AbstractInterpreter;
-import dev.flang.fuir.analysis.AbstractInterpreter.ProcessStatement;
+import dev.flang.fuir.analysis.AbstractInterpreter.ProcessExpression;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
@@ -43,10 +43,10 @@ import dev.flang.util.Pair;
 
 
 /**
- * The class Excecutor implements ProcessStatement of the AbstractInterpreter.
+ * The class Excecutor implements ProcessExpression of the AbstractInterpreter.
  * It does the actual execution of the code.
  */
-public class Excecutor extends ProcessStatement<Value, Object>
+public class Excecutor extends ProcessExpression<Value, Object>
 {
 
 
@@ -172,7 +172,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
   }
 
   @Override
-  public Object statementHeader(int cl, int s)
+  public Object expressionHeader(int cl, int s)
   {
     return null;
   }
@@ -239,7 +239,7 @@ public class Excecutor extends ProcessStatement<Value, Object>
     var result = switch (_fuir.clazzKind(cc))
       {
       case Routine :
-        // NYI change call to pass in ai as in match statement?
+        // NYI change call to pass in ai as in match expression?
         var cur = new Instance(cc);
 
         callOnInstance(cc, cur, tvalue, args, true);
