@@ -36,11 +36,11 @@ import java.util.TreeSet;
 
 import java.util.function.Supplier;
 
-import static dev.flang.ir.IR.NO_SITE;
-
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
+
+import static dev.flang.ir.IR.NO_SITE;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -77,7 +77,7 @@ public class DFA extends ANY
 
 
   /**
-   * Dummy unit type as type parameter for AbstractInterpreter.ProcessStatement.
+   * Dummy unit type as type parameter for AbstractInterpreter.ProcessExpression.
    */
   static class Unit
   {
@@ -87,7 +87,7 @@ public class DFA extends ANY
   /**
    * Statement processor used with AbstractInterpreter to perform DFA analysis
    */
-  class Analyze extends AbstractInterpreter.ProcessStatement<Val,Unit>
+  class Analyze extends AbstractInterpreter.ProcessExpression<Val,Unit>
   {
 
 
@@ -133,11 +133,11 @@ public class DFA extends ANY
      * Called before each statement is processed. May be used to, e.g., produce
      * tracing code for debugging or a comment.
      */
-    public Unit statementHeader(int cl, int c, int i)
+    public Unit expressionHeader(int cl, int s)
     {
       if (_reportResults && _options.verbose(9))
         {
-          say("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i));
+          say("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+s+": "+_fuir.codeAtAsString(cl,s));
         }
       return _unit_;
     }
@@ -195,17 +195,16 @@ public class DFA extends ANY
      *
      * @param pre true iff interpreting cl's precondition, false for cl itself.
      *
-     * @param c current code block
-     *
-     * @param i index of call in current code block
+     * @param s site of assignment
      *
      * @param tvalue the target instance
      *
      * @param avalue the new value to be assigned to the field.
      */
-    public Unit assign(int cl, boolean pre, int c, int i, Val tvalue, Val avalue)
+    @Override
+    public Unit assign(int cl, boolean pre, int s, Val tvalue, Val avalue)
     {
-      var res = access(cl, pre, c, i, tvalue, new List<>(avalue));
+      var res = access(cl, pre, s, tvalue, new List<>(avalue));
       return _unit_;
     }
 
@@ -239,20 +238,20 @@ public class DFA extends ANY
      * Result.v0() may be null to indicate that code generation should stop here
      * (due to an error or tail recursion optimization).
      */
-    public Pair<Val, Unit> call(int cl, boolean pre, int c, int i, Val tvalue, List<Val> args)
+    public Pair<Val, Unit> call(int cl, boolean pre, int s, Val tvalue, List<Val> args)
     {
-      var ccP = _fuir.accessedPreconditionClazz(cl, c, i);
-      var cc0 = _fuir.accessedClazz            (cl, c, i);
+      var ccP = _fuir.accessedPreconditionClazz(cl, s);
+      var cc0 = _fuir.accessedClazz            (cl, s);
       Val res = Value.UNIT;
       if (ccP != -1)
         {
-          res = call0(cl, pre, tvalue, args, c, i, ccP, true, tvalue);
+          res = call0(cl, pre, tvalue, args, s, ccP, true, tvalue);
         }
-      if (res != null && !_fuir.callPreconditionOnly(cl, c, i))
+      if (res != null && !_fuir.callPreconditionOnly(cl, s))
         {
-          res = access(cl, pre, c, i, tvalue, args);
+          res = access(cl, pre, s, tvalue, args);
         }
-      DFA.this.site(cl, c, i).recordResult(res == null);
+      DFA.this.site(cl, s).recordResult(res == null);
       return new Pair<>(res, _unit_);
     }
 
@@ -264,9 +263,7 @@ public class DFA extends ANY
      *
      * @param pre true iff interpreting cl's precondition, false for cl itself.
      *
-     * @param c the code block to compile
-     *
-     * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+     * @param s site of access, must be ExprKind.Assign or ExprKind.Call
      *
      * @param tvalue the target of this call, Value.UNIT if none.
      *
@@ -275,11 +272,11 @@ public class DFA extends ANY
      *
      * @return result value of the access
      */
-    Val access(int cl, boolean pre, int c, int i, Val tvalue, List<Val> args)
+    Val access(int cl, boolean pre, int s, Val tvalue, List<Val> args)
     {
-      var tc = _fuir.accessTargetClazz(cl, c, i);
-      var cc0 = _fuir.accessedClazz  (cl, c, i);
-      var ccs = _fuir.accessedClazzes(cl, c, i);
+      var tc = _fuir.accessTargetClazz(cl, s);
+      var cc0 = _fuir.accessedClazz  (cl, s);
+      var ccs = _fuir.accessedClazzes(cl, s);
       var found = new boolean[] { false };
       var resf = new Val[] { null };
       for (var cci = 0; cci < ccs.length; cci += 2)
@@ -294,7 +291,7 @@ public class DFA extends ANY
                   t != Value.UNDEFINED && _fuir.clazzAsValue(t._clazz) == tt)
                 {
                   found[0] = true;
-                  var r = access0(cl, pre, c, i, t, args, cc, tvalue);
+                  var r = access0(cl, pre, s, t, args, cc, tvalue);
                   if (r != null)
                     {
                       resf[0] = resf[0] == null ? r : resf[0].joinVal(DFA.this, r);
@@ -310,8 +307,8 @@ public class DFA extends ANY
             {
               detail += _fuir.clazzAsStringNew(ccs[ccii]) + ", ";
             }
-          Errors.error(_fuir.codeAtAsPos(c, i),
-                       "NYI: in "+_fuir.clazzAsString(cl)+" no targets for "+_fuir.codeAtAsString(cl, c, i)+" target "+tvalue,
+          Errors.error(_fuir.codeAtAsPos(s),
+                       "NYI: in "+_fuir.clazzAsString(cl)+" no targets for "+_fuir.codeAtAsString(cl, s)+" target "+tvalue,
                        detail);
 
           _call.showWhy();
@@ -332,15 +329,15 @@ public class DFA extends ANY
     /**
      * Helper routine for access (above) to perform a static access (cal or write).
      */
-    Val access0(int cl, boolean pre, int c, int i, Val tvalue, List<Val> args, int cc, Val original_tvalue /* NYI: ugly */)
+    Val access0(int cl, boolean pre, int s, Val tvalue, List<Val> args, int cc, Val original_tvalue /* NYI: ugly */)
     {
-      var cs = DFA.this.site(cl, c, i);
+      var cs = DFA.this.site(cl, s);
       cs._accesses.add(cc);
-      var isCall = _fuir.codeAt(c, i) == FUIR.ExprKind.Call;
+      var isCall = _fuir.codeAt(s) == FUIR.ExprKind.Call;
       Val r;
       if (isCall)
         {
-          r = call0(cl, pre, tvalue, args, c, i, cc, false, original_tvalue);
+          r = call0(cl, pre, tvalue, args, s, cc, false, original_tvalue);
         }
       else
         {
@@ -348,12 +345,12 @@ public class DFA extends ANY
             {
               if (_reportResults && _options.verbose(9))
                 {
-                  say("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " +
+                  say("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+s+": "+_fuir.codeAtAsString(cl, s)+": " +
                                      tvalue + ".set("+_fuir.clazzAsString(cc)+") := " + args.get(0));
                 }
               var v = args.get(0);
               tvalue.value().setField(DFA.this, cc, v.value());
-              tempEscapes(cl, c, i, v, cc);
+              tempEscapes(cl, s, v, cc);
             }
           r = Value.UNIT;
         }
@@ -368,9 +365,7 @@ public class DFA extends ANY
      *
      * @param pre true iff interpreting cl's precondition, false for cl itself.
      *
-     * @param c the code block to compile
-     *
-     * @param i the index of the call within c
+     * @param s site of call
      *
      * @param cc clazz that is called
      *
@@ -378,10 +373,10 @@ public class DFA extends ANY
      *
      * @return result values of the call
      */
-    Val call0(int cl, boolean pre, Val tvalue, List<Val> args, int c, int i, int cc, boolean preCalled, Val original_tvalue)
+    Val call0(int cl, boolean pre, Val tvalue, List<Val> args, int s, int cc, boolean preCalled, Val original_tvalue)
     {
       // in case we access the value in a boxed target, unbox it first:
-      tvalue = unboxTarget(tvalue, _fuir.accessTargetClazz(cl, c, i), cc);
+      tvalue = unboxTarget(tvalue, _fuir.accessTargetClazz(cl, s), cc);
       Val res = null;
       switch (preCalled ? FUIR.FeatureKind.Routine : _fuir.clazzKind(cc))
         {
@@ -394,11 +389,11 @@ public class DFA extends ANY
           {
             if (_fuir.clazzNeedsCode(cc))
               {
-                var ca = newCall(cc, preCalled, _fuir.siteFromCI(c,i), tvalue.value(), args, _call._env, _call);
+                var ca = newCall(cc, preCalled, s, tvalue.value(), args, _call._env, _call);
                 res = ca.result();
                 if (res != null && res != Value.UNIT && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)))
                   {
-                    res = new EmbeddedValue(cl, c, i, res.value());
+                    res = new EmbeddedValue(cl, s, res.value());
                   }
                 // check if target value of new call ca causes current _call's instance to escape.
                 var or = _fuir.clazzOuterRef(cc);
@@ -411,20 +406,20 @@ public class DFA extends ANY
                   {
                     _call.escapes();
                   }
-                tempEscapes(cl, c, i, original_tvalue, _fuir.clazzOuterRef(cc));
+                tempEscapes(cl, s, original_tvalue, _fuir.clazzOuterRef(cc));
                 if (_reportResults && _options.verbose(9))
                   {
-                    say("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " + ca);
+                    say("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+s+": "+_fuir.codeAtAsString(cl, s)+": " + ca);
                   }
               }
             break;
           }
         case Field:
           {
-            res = tvalue.value().callField(DFA.this, cc, _fuir.siteFromCI(c,i), _call);
+            res = tvalue.value().callField(DFA.this, cc, s, _call);
             if (_reportResults && _options.verbose(9))
               {
-                say("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " +
+                say("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+s+": "+_fuir.codeAtAsString(cl, s)+": " +
                                    tvalue + ".get(" + _fuir.clazzAsString(cc) + ") => " + res);
               }
             break;
@@ -605,18 +600,18 @@ public class DFA extends ANY
     /**
      * Perform a match on value subv.
      */
-    public Pair<Val, Unit> match(AbstractInterpreter<Val,Unit> ai, int cl, boolean pre, int c, int i, Val subv)
+    public Pair<Val, Unit> match(AbstractInterpreter<Val,Unit> ai, int cl, boolean pre, int s, Val subv)
     {
       Val r = null; // result value null <=> does not return.  Will be set to Value.UNIT if returning case was found.
-      for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
+      for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
         {
           // array to permit modification in lambda
           var takenA    = new boolean[] { false };
-          var field = _fuir.matchCaseField(cl, c, i, mc);
-          for (var t : _fuir.matchCaseTags(cl, c, i, mc))
+          var field = _fuir.matchCaseField(cl, s, mc);
+          for (var t : _fuir.matchCaseTags(cl, s, mc))
             {
-              subv.value().forAll(s -> {
-                  if (s.value() instanceof TaggedValue tv)
+              subv.value().forAll(v -> {
+                  if (v.value() instanceof TaggedValue tv)
                     {
                       if (tv._tag == t)
                         {
@@ -630,8 +625,8 @@ public class DFA extends ANY
                     }
                   else
                     {
-                      throw new Error("DFA encountered Unexpected value in match: " + s.getClass() + " '" + s + "' " +
-                                      " for match of type " + _fuir.clazzAsString(_fuir.matchStaticSubject(cl, c, i)));
+                      throw new Error("DFA encountered Unexpected value in match: " + v.getClass() + " '" + v + "' " +
+                                      " for match of type " + _fuir.clazzAsString(_fuir.matchStaticSubject(cl, s)));
                     }
                 });
 
@@ -639,20 +634,20 @@ public class DFA extends ANY
           var taken = takenA[0];
           if (_reportResults && _options.verbose(9))
             {
-              say("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": "+subv+" case "+mc+": "+
+              say("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+s+": "+_fuir.codeAtAsString(cl, s)+": "+subv+" case "+mc+": "+
                                  (taken ? "taken" : "not taken"));
             }
 
           if (taken)
             {
-              var resv = ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc));
+              var resv = ai.process(cl, pre, _fuir.matchCaseCode(s, mc));
               if (resv.v0() != null)
                 { // if at least one case returns (i.e., result is not null), this match returns.
                   r = Value.UNIT;
                 }
             }
         }
-      DFA.this.site(cl, c, i).recordResult(r == null);
+      DFA.this.site(cl, s).recordResult(r == null);
       return new Pair<>(r, _unit_);
     }
 
@@ -696,13 +691,15 @@ public class DFA extends ANY
 
   /**
    * Class representing the position of a statement in the code.
+   *
+   * NYI: Redundant with class `Site`.
    */
   static class CodePos implements Comparable<CodePos>
   {
     /**
      * Clazz, code block index and statement index of this position.
      */
-    int _cl, _code, _ix;
+    int _cl, _site;
 
     /**
      * Constructor
@@ -713,11 +710,10 @@ public class DFA extends ANY
      *
      * @param ix the index in the code block
      */
-    CodePos(int cl, int code, int ix)
+    CodePos(int cl, int site)
     {
       _cl = cl;
-      _code = code;
-      _ix = ix;
+      _site = site;
     }
 
 
@@ -729,10 +725,8 @@ public class DFA extends ANY
       return
         _cl < other._cl ? -1 :
         _cl > other._cl ? +1 :
-        _code < other._code ? -1 :
-        _code > other._code ? +1 :
-        _ix < other._ix     ? -1 :
-        _ix > other._ix     ? 1
+        _site < other._site ? -1 :
+        _site > other._site ? +1
                             : 0;
     }
   }
@@ -1037,22 +1031,21 @@ public class DFA extends ANY
          *
          * @param cl the outer clazz of the call
          *
-         * @param c the code block containing the call
-         *
-         * @param i the index of the call in the code block
+         * @param s site of call
          *
          * @return true iff the result of the call must be cloned on the heap.
          */
-        public boolean doesResultEscape(int cl, int c, int i)
+        public boolean doesResultEscape(int cl, int s)
         {
-          return _escapesCode.contains(new CodePos(cl, c, i));
+          return _escapesCode.contains(new CodePos(cl, s));
         }
 
 
-        public int[] accessedClazzes(int cl, int c, int ix)
+        @Override
+        public int[] accessedClazzes(int cl, int s)
         {
-          var ccs = super.accessedClazzes(cl, c, ix);
-          var cs = site(cl, c, ix);
+          var ccs = super.accessedClazzes(cl, s);
+          var cs = site(cl, s);
           var nr = new int[ccs.length];
           int j = 0;
           for (var cci = 0; cci < ccs.length; cci += 2)
@@ -1077,16 +1070,16 @@ public class DFA extends ANY
 
 
         @Override
-        public boolean alwaysResultsInVoid(int cl, int c, int i)
+        public boolean alwaysResultsInVoid(int cl, int s)
         {
-          if (i<0)
+          if (s < 0)
             {
               return false;
             }
           else
             {
-              var code = _fuir.codeAt(c, i);
-              return (code == ExprKind.Call || code == ExprKind.Match) && site(cl, c, i).alwaysResultsInVoid() || super.alwaysResultsInVoid(cl, c, i);
+              var code = _fuir.codeAt(s);
+              return (code == ExprKind.Call || code == ExprKind.Match) && site(cl, s).alwaysResultsInVoid() || super.alwaysResultsInVoid(cl, s);
             }
         }
 
@@ -1322,16 +1315,14 @@ public class DFA extends ANY
    *
    * @param cl the outer clazz whose code we are analysing.
    *
-   * @param c the code block containing we are analysing
-   *
-   * @param i the index of the call or assignment we are analysing
+   * @param s site of the call or assignment we are analysing
    *
    * @param v value we are taking an address of
    *
    * @param adrField field the address of `v` is assigned to.
    *
    */
-  void tempEscapes(int cl, int c, int i, Val v, int adrField)
+  void tempEscapes(int cl, int s, Val v, int adrField)
   {
     if (v instanceof EmbeddedValue ev &&
         adrField != -1 &&
@@ -1340,11 +1331,11 @@ public class DFA extends ANY
         && ev._cl != -1
         )
       {
-        var cp = new CodePos(ev._cl, ev._code, ev._index);
+        var cp = new CodePos(ev._cl, ev._site);
         if (!_escapesCode.contains(cp))
           {
             _escapesCode.add(cp);
-            wasChanged(() -> "code escapes: "+_fuir.codeAtAsString(cl,c,i));
+            wasChanged(() -> "code escapes: "+_fuir.codeAtAsString(cl, s));
           }
       }
   }
@@ -1740,7 +1731,6 @@ public class DFA extends ANY
     put("f32.type.tanh"                  , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.type.tanh"                  , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
 
-    put("Any.as_string"                  , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.sys.internal_array_init.alloc", cl -> new SysArray(cl._dfa, new byte[0], -1)); // NYI: get length from args
     put("fuzion.sys.internal_array.setel", cl ->
         {
@@ -2258,9 +2248,9 @@ public class DFA extends ANY
   /**
    * Create instance of 'Site' for given clazz, code block and index.
    */
-  Site site(int cl, int c, int i)
+  Site site(int cl, int s)
     {
-      var cs = new Site(cl, c, i);
+      var cs = new Site(cl, s);
       var res = _sites.get(cs);
       if (res == null)
         {

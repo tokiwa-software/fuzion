@@ -141,6 +141,7 @@ public class Types extends ANY
      * since the union of void  with any other type is the other type.
      */
     public final AbstractType t_void;
+    public final AbstractType t_codepoint;
     public final AbstractFeature f_id;
     public final AbstractFeature f_void;
     public final AbstractFeature f_choice;
@@ -199,7 +200,8 @@ public class Types extends ANY
         t_Const_String,
         t_Any        ,
         t_unit       ,
-        t_void
+        t_void       ,
+        t_codepoint
       };
 
       for (var t : internalTypes)
@@ -268,6 +270,7 @@ public class Types extends ANY
       t_Const_String               = luf.lookupFeature(universe, FeatureName.get("Const_String",0)).selfType();
       t_Any                        = luf.lookupFeature(universe, FeatureName.get(FuzionConstants.ANY_NAME,0)).selfType();
       t_unit                       = luf.lookupFeature(universe, FeatureName.get(FuzionConstants.UNIT_NAME,0)).selfType();
+      t_codepoint                  = luf.lookupFeature(universe, FeatureName.get("codepoint", 1)).selfType();
       numericTypes = new TreeSet<AbstractType>(new List<>(
         t_i8,
         t_i16,

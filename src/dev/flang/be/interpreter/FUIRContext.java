@@ -20,23 +20,39 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class BackendCallable
+ * Source of class FUIRContext
  *
  *---------------------------------------------------------------------*/
 
 package dev.flang.be.interpreter;
 
-/**
- * Backend specific result of Backend.callable()
- *
- * @author Fridtjof Siebert (siebert@tokiwa.software)
- */
-public interface BackendCallable
-{
+import dev.flang.fuir.FUIR;
+import dev.flang.util.ANY;
 
-  default int inner() { return -1; }
-  default int outer() { return -1; }
+public class FUIRContext extends ANY {
+
+  private static FUIR _fuir;
+
+  /**
+   * @return the fuir
+   */
+  public static FUIR fuir()
+  {
+    if (PRECONDITIONS) require
+      (_fuir != null);
+
+    return _fuir;
+  }
+
+  /**
+   * @param fuir the fuir to set
+   */
+  public static void set_fuir(FUIR fuir)
+  {
+    if (PRECONDITIONS) require
+      (_fuir == null);
+
+    _fuir = fuir;
+  }
 
 }
-
-/* end of file */

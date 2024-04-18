@@ -73,6 +73,15 @@ public class COptions extends FuzionOptions
 
 
   /**
+   * Target to use for compilation
+   * <arch><sub>-<vendor>-<sys>-<env>
+   *
+   * e.g.: x86_64-pc-linux-gnu
+   */
+  final String _cTarget;
+
+
+  /**
    * Flag to keep the generated c code after compilation.
    */
   final boolean _keepGeneratedCode;
@@ -85,7 +94,7 @@ public class COptions extends FuzionOptions
    * Constructor initializing fields as given.
    * @param keepGeneratedCode
    */
-  public COptions(FuzionOptions fo, String binaryName, boolean useBoehmGC, boolean Xdfa, String cCompiler, String cFlags, boolean keepGeneratedCode)
+  public COptions(FuzionOptions fo, String binaryName, boolean useBoehmGC, boolean Xdfa, String cCompiler, String cFlags, String cTarget, boolean keepGeneratedCode)
   {
     super(fo);
 
@@ -94,6 +103,7 @@ public class COptions extends FuzionOptions
     _Xdfa = Xdfa;
     _cCompiler = cCompiler;
     _cFlags = cFlags;
+    _cTarget = cTarget;
     _keepGeneratedCode = keepGeneratedCode;
   }
 

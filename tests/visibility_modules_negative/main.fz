@@ -89,3 +89,11 @@ public m =>
     inner_abstract i32 => abstract // should flag an error Abstract features visibility must not be more restrictive than outer features visibility.
 
   unit
+
+
+  # checkLegalVisibility
+
+  match (list i32).empty
+    c Cons =>
+      module my_feat is // should flag an error visibility modifier used in inner block
+    nil =>

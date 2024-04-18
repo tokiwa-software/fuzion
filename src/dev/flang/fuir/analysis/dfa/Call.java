@@ -76,9 +76,9 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
-   * If available, _site gives the call site of this Call (see IR.siteFromCI and
-   * FUIR.siteAsPos).  Calls with different call sites are analysed separately,
-   * even if the context and environment of the call is the same.
+   * If available, _site gives the call site of this Call as used in the IR.
+   * Calls with different call sites are analysed separately, even if the
+   * context and environment of the call is the same.
    *
    * IR.NO_SITE if the call site is not known, i.e., the call is coming from
    * intrinsic call or the main entry point.
@@ -389,7 +389,9 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   HasSourcePosition callSitePos()
   {
-    return _dfa._fuir.siteAsPos(site());
+    var s = site();
+    return s == IR.NO_SITE ? null
+                           : _dfa._fuir.codeAtAsPos(s);
   }
 
 

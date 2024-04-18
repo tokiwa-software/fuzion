@@ -90,6 +90,7 @@ public class Fuzion extends Tool
   static boolean _xdfa_ = true;
   static String _cCompiler_ = null;
   static String _cFlags_ = null;
+  static String _cTarget_ = null;
   static boolean _keepGeneratedCode_ = false;
   static String  _jvmOutName_ = null;
 
@@ -118,7 +119,7 @@ public class Fuzion extends Tool
     {
       String usage()
       {
-        return "[-o=<file>] [-Xgc=(on|off)] [-Xdfa=(on|off)] [-XkeepGeneratedCode=(on|off)] [-CC=<c compiler>] [-CFlags=\"list of c compiler flags\"]";
+        return "[-o=<file>] [-Xgc=(on|off)] [-Xdfa=(on|off)] [-XkeepGeneratedCode=(on|off)] [-CC=<c compiler>] [-CFlags=\"list of c compiler flags\"] [-CTarget=\"e.g. x86_64-pc-linux-gnu\"] ";
       }
       boolean handleOption(Fuzion f, String o)
       {
@@ -148,6 +149,11 @@ public class Fuzion extends Tool
             _cFlags_ = o.substring(8);
             result = true;
           }
+        else if (o.startsWith("-CTarget="))
+          {
+            _cTarget_ = o.substring(9);
+            result = true;
+          }
         else if (o.startsWith("-XkeepGeneratedCode="))
           {
             _keepGeneratedCode_ = parseOnOffArg(o);
@@ -157,7 +163,7 @@ public class Fuzion extends Tool
       }
       void process(FuzionOptions options, FUIR fuir)
       {
-        new C(new COptions(options, _binaryName_, _useBoehmGC_, _xdfa_, _cCompiler_, _cFlags_, _keepGeneratedCode_), fuir).compile();
+        new C(new COptions(options, _binaryName_, _useBoehmGC_, _xdfa_, _cCompiler_, _cFlags_, _cTarget_, _keepGeneratedCode_), fuir).compile();
       }
     },
 

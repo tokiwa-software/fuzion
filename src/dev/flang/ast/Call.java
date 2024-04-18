@@ -215,6 +215,16 @@ public class Call extends AbstractCall
   Call _movedTo = null;
 
 
+  /**
+   * This field is set to the target of the call
+   * before calling typeForCallTarget().
+   *
+   * Can then be used to produce errors that are target
+   * dependent.
+   */
+  public Call _targetOf_forErrorSolutions = null;
+
+
   /*-------------------------- constructors ---------------------------*/
 
 
@@ -473,7 +483,13 @@ public class Call extends AbstractCall
     if (PRECONDITIONS) require
       (_target != null);
 
+    if (_target instanceof Call tc)
+      {
+        tc._targetOf_forErrorSolutions = this;
+      }
+
     var result = _target.typeForCallTarget();
+
     if (result.isGenericArgument())
       {
         result = result.genericArgument().constraint(res);
@@ -547,7 +563,7 @@ public class Call extends AbstractCall
       //
       // Would be better if AbstractFeature.resultType() would do this for us:
       _target instanceof Call tc &&
-      targetIsTypeParameter()          ? tc.calledFeature().genericType() :
+      targetIsTypeParameter()          ? tc.calledFeature().asGenericType() :
       calledFeature().isConstructor()  ? _target.typeForCallTarget()
                                        : targetTypeOrConstraint(res);
   }

@@ -17,17 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-for b0 Sequence i32 := [], b
-    e in [ 3, 1, 4 ]
-    b Sequence i32 := [], c
-do
-  c Sequence i32 :=  if      e = 4         then b.filter _->false
-                     else if (b ∃ x->true) then b.map    _->e
-                     else                       [e]
-else
-  say b0.first
-
+override NAME = reg_issue465
+include ../simple.mk

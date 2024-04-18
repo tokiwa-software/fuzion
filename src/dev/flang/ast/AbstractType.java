@@ -1465,7 +1465,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           { // a call of the form `T.f x` where `f` is declared as
             // `abc.type.f(arg abc.this.type)`, so replace
             // `abc.this.type` by `T`.
-            result = tc.calledFeature().genericType();
+            result = tc.calledFeature().asGenericType();
           }
       }
     else
