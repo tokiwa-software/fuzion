@@ -124,6 +124,7 @@ public class Destructure extends ExprWithPos
   private Expr expand()
   {
     List<Expr> exprs = new List<Expr>();
+    exprs.add(this);
     if (_fields != null)
       {
         for (var f : _fields)
@@ -131,7 +132,6 @@ public class Destructure extends ExprWithPos
             exprs.add((Feature) f);
           }
       }
-    exprs.add(this);
     return new Block(exprs);
   }
 
