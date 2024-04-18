@@ -145,7 +145,16 @@ public class FUIR extends IR
   }
 
 
+  /**
+   * For each site, this gives the clazz id of the clazz that contains the code at that site.
+   */
   private final IntArray _siteClazzes;
+
+
+  /**
+   * For each site, this holds the information if the code that site belongs to
+   * a precondition or to a feature code.
+   */
   private final BoolArray _siteIsPrecondition;
 
 
@@ -1000,7 +1009,17 @@ hw25 is
     toStack(code, ff.code());
   }
 
-  private void addClazzAndPreForCode(int cl, boolean pre)
+
+  /**
+   * This has to be called after `super.addoCode(List)` was called to record the
+   * clazz and whether the code belongs to a precondition for all sites of the
+   * newly added code.
+   *
+   * @param cl the clazz id of the clazz that contains the new code
+   *
+   * @param pre true iff the new code was part of a precondition.
+   */
+  private void recordClazzAndPreForSitesOfRecentlyAddedCode(int cl, boolean pre)
   {
     if (PRECONDITIONS) require
       (_siteClazzes.size() < _allCode.size());
@@ -1010,14 +1029,6 @@ hw25 is
         _siteClazzes       .add(cl);
         _siteIsPrecondition.add(pre);
       }
-  }
-
-  private int addCode(int cl, boolean pre, Supplier<List<Object>> f)
-  {
-    var code = f.get();
-    var res = addCode(code);
-    addClazzAndPreForCode(cl, pre);
-    return res;
   }
 
 
@@ -1051,7 +1062,7 @@ hw25 is
             addCode(cc, code, ff);
           }
         res = addCode(code);
-        addClazzAndPreForCode(cl, false);
+        recordClazzAndPreForSitesOfRecentlyAddedCode(cl, false);
         _clazzCode.put(cl, res);
       }
     return res;
@@ -1125,7 +1136,7 @@ hw25 is
             var code = new List<Object>();
             toStack(code, cond.get(fi).cond);
             resBoxed = addCode(code);
-            addClazzAndPreForCode(cl, ck == ContractKind.Pre);
+            recordClazzAndPreForSitesOfRecentlyAddedCode(cl, ck == ContractKind.Pre);
             _clazzContract.put(key, resBoxed);
           }
         res = resBoxed;
