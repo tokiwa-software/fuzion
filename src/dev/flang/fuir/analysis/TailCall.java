@@ -119,34 +119,35 @@ public class TailCall extends ANY
    *
    * @param s site of the call
    */
-  public boolean firstArgIsOuter(int cl, int s)
+  public boolean firstArgIsOuter(int s)
   {
     if (PRECONDITIONS) require
       (_fuir.withinCode(s),
        _fuir.codeAt(s) == IR.ExprKind.Call);
 
     // the called clazz:
-    var cc = _fuir.accessedClazz(cl, s);
+    var cc = _fuir.accessedClazz(s);
 
     // skip back all argument to reach the target instance
     var nargs = _fuir.clazzArgCount(cc);
     var ts = _fuir.codeIndex(s, -1);
     for (var i = 0; i < nargs; i++)
       {
-        ts = _fuir.skipBack(cl, ts);
+        ts = _fuir.skipBack(ts);
       }
     // get type of target of call
-    var tc = _fuir.accessTargetClazz(cl, s);
+    var tc = _fuir.accessTargetClazz(s);
 
     // we are ok if there is no outer ref in the current clazz, or if
     // the target provided in this call is 'Current.outerRef'.
+    var cl = _fuir.clazzAt(s);
     var outerRef = _fuir.clazzOuterRef(cl);
     var res =
       outerRef == -1 ||
       nargs >= 1 &&
       (tc == _fuir.clazzUniverse() ||
-       _fuir.codeAt       (    ts) == IR.ExprKind.Call    &&
-       _fuir.accessedClazz(cl, ts) == outerRef            &&
+       _fuir.codeAt       (ts) == IR.ExprKind.Call    &&
+       _fuir.accessedClazz(ts) == outerRef            &&
        _fuir.codeAt(_fuir.codeIndex(ts, -1)) == IR.ExprKind.Current);
 
     return res;
@@ -172,7 +173,7 @@ public class TailCall extends ANY
       {
       case Call ->
         {
-          var cc = _fuir.accessedClazz(cl, cls);
+          var cc = _fuir.accessedClazz(cls);
           yield mustAssignTo == -1 &&
             (// we found call c/ix and we do not need to assign any variable, so we have a success!
              cls == s ||
@@ -187,7 +188,7 @@ public class TailCall extends ANY
 
       case Assign ->
         {
-          var cc = _fuir.accessedClazz(cl, cls);
+          var cc = _fuir.accessedClazz(cls);
           yield
             // if this is an assignment to 'Current.mustAssignTo' with, recursively check if
             // the value assigned is the call s.

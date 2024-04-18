@@ -46,12 +46,6 @@ public class Site extends ANY implements Comparable<Site>
 
 
   /**
-   * The site's clazz' id.
-   */
-  final int _cl;
-
-
-  /**
    * The site's site.
    */
   final int _s;
@@ -73,13 +67,12 @@ public class Site extends ANY implements Comparable<Site>
 
 
   /**
-   * Create call site for given clazz, code block and index.
+   * Create call site for site s.
    *
-   * NYI: Eventually remove `cl` since sites are unique for every clazz.
+   * @param s a FUIR site
    */
-  Site(int cl, int s)
+  Site(int s)
   {
-    _cl = cl;
     _s = s;
   }
 
@@ -110,11 +103,7 @@ public class Site extends ANY implements Comparable<Site>
    */
   public int compareTo(Site cs)
   {
-    return
-      _cl < cs._cl ? -1 :
-      _cl > cs._cl ? +1 :
-      _s < cs._s ? -1 :
-      _s > cs._s ? +1 : 0;
+    return Integer.compare(_s, cs._s);
   }
 
 }

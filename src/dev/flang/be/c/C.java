@@ -95,9 +95,9 @@ public class C extends ANY
      * tracing code for debugging or a comment.
      */
     @Override
-    public CStmnt expressionHeader(int cl, int s)
+    public CStmnt expressionHeader(int s)
     {
-      return comment(String.format("%4d: %s", s, _fuir.codeAtAsString(cl, s)));
+      return comment(String.format("%4d: %s", s, _fuir.codeAtAsString(s)));
     }
 
 
@@ -124,9 +124,7 @@ public class C extends ANY
     /**
      * Create code to assign value to a given field w/o dynamic binding.
      *
-     * @param cl the clazz we are compiling
-     *
-     * @param pre true iff we are compiling the precondition
+     * @param s site of the expression causing this assignment
      *
      * @param tc clazz id of the target instance
      *
@@ -141,7 +139,7 @@ public class C extends ANY
      * @return statement to perform the given access
      */
     @Override
-    public CStmnt assignStatic(int cl, boolean pre, int tc, int f, int rt, CExpr tvalue, CExpr val)
+    public CStmnt assignStatic(int s, int tc, int f, int rt, CExpr tvalue, CExpr val)
     {
       return assignField(tvalue, tc, tc, f, val, rt);
     }
@@ -151,10 +149,6 @@ public class C extends ANY
      * Perform an assignment of a value to a field in tvalue. The type of tvalue
      * might be dynamic (a reference). See FUIR.access*().
      *
-     * @param cl id of clazz we are interpreting
-     *
-     * @param pre true iff interpreting cl's precondition, false for cl itself.
-     *
      * @param s site of the assignment
      *
      * @param tvalue the target instance
@@ -162,9 +156,9 @@ public class C extends ANY
      * @param avalue the new value to be assigned to the field.
      */
     @Override
-    public CStmnt assign(int cl, boolean pre, int s, CExpr tvalue, CExpr avalue)
+    public CStmnt assign(int s, CExpr tvalue, CExpr avalue)
     {
-      return access(cl, pre, s, tvalue, new List<>(avalue)).v1();
+      return access(s, tvalue, new List<>(avalue)).v1();
     }
 
 
@@ -177,20 +171,20 @@ public class C extends ANY
      * (due to an error or tail recursion optimization).
      */
     @Override
-    public Pair<CExpr, CStmnt> call(int cl, boolean pre, int s, CExpr tvalue, List<CExpr> args)
+    public Pair<CExpr, CStmnt> call(int s, CExpr tvalue, List<CExpr> args)
     {
-      var ccP = _fuir.accessedPreconditionClazz(cl, s);
-      var cc0 = _fuir.accessedClazz            (cl, s);
+      var ccP = _fuir.accessedPreconditionClazz(s);
+      var cc0 = _fuir.accessedClazz            (s);
       var ol = new List<CStmnt>();
       if (ccP != -1)
         {
-          var callpair = C.this.call(cl, pre, tvalue, args, s, ccP, true);
+          var callpair = C.this.call(s, tvalue, args, ccP, true);
           ol.add(callpair.v1());
         }
       var res = CExpr.UNIT;
-      if (!_fuir.callPreconditionOnly(cl, s))
+      if (!_fuir.callPreconditionOnly(s))
         {
-          var r = access(cl, pre, s, tvalue, args);
+          var r = access(s, tvalue, args);
           ol.add(r.v1());
           res = r.v0();
         }
@@ -216,9 +210,9 @@ public class C extends ANY
      * Get the current instance
      */
     @Override
-    public Pair<CExpr, CStmnt> current(int cl, boolean pre)
+    public Pair<CExpr, CStmnt> current(int s)
     {
-      return new Pair<>(C.this.current(cl, pre), CStmnt.EMPTY);
+      return new Pair<>(C.this.current(s), CStmnt.EMPTY);
     }
 
 
@@ -226,8 +220,9 @@ public class C extends ANY
      * Get the outer instance the given clazz is called on.
      */
     @Override
-    public Pair<CExpr, CStmnt> outer(int cl)
+    public Pair<CExpr, CStmnt> outer(int s)
     {
+      var cl = _fuir.clazzAt(s);
       CExpr result = CNames.OUTER;
       if (_fuir.clazzFieldIsAdrOfValue(_fuir.clazzOuterRef(cl)))
         {
@@ -241,7 +236,7 @@ public class C extends ANY
      * Get the argument #i
      */
     @Override
-    public CExpr arg(int cl, int i) { return CIdent.arg(i); }
+    public CExpr arg(int s, int i) { return CIdent.arg(i); }
 
 
     /**
@@ -426,9 +421,9 @@ public class C extends ANY
      * Perform a match on value subv.
      */
     @Override
-    public Pair<CExpr, CStmnt> match(AbstractInterpreter<CExpr, CStmnt> ai, int cl, boolean pre, int s, CExpr sub)
+    public Pair<CExpr, CStmnt> match(int s, AbstractInterpreter<CExpr, CStmnt> ai, CExpr sub)
     {
-      var subjClazz = _fuir.matchStaticSubject(cl, s);
+      var subjClazz = _fuir.matchStaticSubject(s);
       var uniyon    = sub.field(CNames.CHOICE_UNION_NAME);
       var hasTag    = !_fuir.clazzIsChoiceOfOnlyRefs(subjClazz);
       var refEntry  = uniyon.field(CNames.CHOICE_REF_ENTRY_NAME);
@@ -442,7 +437,7 @@ public class C extends ANY
         {
           var ctags = new List<CExpr>();
           var rtags = new List<CExpr>();
-          var tags = _fuir.matchCaseTags(cl, s, mc);
+          var tags = _fuir.matchCaseTags(s, mc);
           for (var tagNum : tags)
             {
               var tc = _fuir.clazzChoice(subjClazz, tagNum);
@@ -461,17 +456,18 @@ public class C extends ANY
                 }
             }
           var sl = new List<CStmnt>();
-          var field = _fuir.matchCaseField(cl, s, mc);
+          var field = _fuir.matchCaseField(s, mc);
           if (field != -1)
             {
               var fclazz = _fuir.clazzResultClazz(field);     // static clazz of assigned field
-              var f      = field(cl, C.this.current(cl, pre), field);
+              var cl     = _fuir.clazzAt(s);
+              var f      = field(cl, C.this.current(s), field);
               var entry  = _fuir.clazzIsRef(fclazz) ? ref.castTo(_types.clazz(fclazz)) :
                            _fuir.hasData(fclazz)   ? uniyon.field(new CIdent(CNames.CHOICE_ENTRY_NAME + tags[0]))
                                                     : CExpr.UNIT;
               sl.add(C.this.assign(f, entry, fclazz));
             }
-          sl.add(ai.process(cl, pre, _fuir.matchCaseCode(s, mc)).v1());
+          sl.add(ai.process(_fuir.matchCaseCode(s, mc)).v1());
           sl.add(CStmnt.BREAK);
           var cazecode = CStmnt.seq(sl);
           tcases.add(CStmnt.caze(ctags, cazecode));  // tricky: this a NOP if ctags.isEmpty
@@ -495,7 +491,7 @@ public class C extends ANY
      * Create a tagged value of type newcl from an untagged value for type valuecl.
      */
     @Override
-    public Pair<CExpr, CStmnt> tag(int cl, CExpr value, int newcl, int tagNum)
+    public Pair<CExpr, CStmnt> tag(int s, CExpr value, int newcl, int tagNum)
     {
       var valuecl = _fuir.clazzChoice(newcl, tagNum);
       var res     = _names.newTemp();
@@ -508,6 +504,7 @@ public class C extends ANY
             (value == CExpr.UNIT);
           if (tagNum >= CConstants.PAGE_SIZE)
             {
+              var cl = _fuir.clazzAt(s);
               Errors.error("Number of tags for choice type exceeds page size.",
                            "While creating code for '" + _fuir.clazzAsString(cl) + "'\n" +
                            "Found in choice type '" + _fuir.clazzAsString(newcl)+ "'\n");
@@ -549,8 +546,9 @@ public class C extends ANY
      * (i.e., the contract fails if !cc).
      */
     @Override
-    public CStmnt contract(int cl, FUIR.ContractKind ck, CExpr cc)
+    public CStmnt contract(int s, FUIR.ContractKind ck, CExpr cc)
     {
+      var cl = _fuir.clazzAt(s);
       return CStmnt.iff(cc.field(CNames.TAG_NAME).not(),
                         CStmnt.seq(CExpr.fprintfstderr("*** failed " + ck + " on call to '%s'\n",
                                                        CExpr.string(_fuir.clazzAsString(cl))),
@@ -1214,8 +1212,6 @@ public class C extends ANY
   /**
    * Create code to access (call or write) a feature.
    *
-   * @param cl clazz id
-   *
    * @param s site of the access expression, must be ExprKind.Assign or ExprKind.Call
    *
    * @param tvalue the target of this call, CExpr.UNIT if none.
@@ -1226,19 +1222,20 @@ public class C extends ANY
    * @return pair of expression containing result value and statement to perform
    * the given access
    */
-  Pair<CExpr, CStmnt> access(int cl, boolean pre, int s, CExpr tvalue, List<CExpr> args)
+  Pair<CExpr, CStmnt> access(int s, CExpr tvalue, List<CExpr> args)
   {
     CExpr res = CExpr.UNIT;
     var isCall = _fuir.codeAt(s) == FUIR.ExprKind.Call;
-    var cc0 = _fuir.accessedClazz  (cl, s);
-    var tc = _fuir.accessTargetClazz(cl, s);
+    var cc0 = _fuir.accessedClazz  (s);
+    var tc = _fuir.accessTargetClazz(s);
     var rt = _fuir.clazzResultClazz(cc0); // only needed if isCall
     var ol = new List<CStmnt>();
-    var ccs = _fuir.accessedClazzes(cl, s);
+    var ccs = _fuir.accessedClazzes(s);
     if (ccs.length == 0)
       {
         if (isCall && (_fuir.hasData(rt) || _fuir.clazzIsVoidType(rt)))
           {
+            var cl = _fuir.clazzAt(s);
             ol.add(reportErrorInCode("no targets for access of %s within %s",
                                      CExpr.string(_fuir.clazzAsString(cc0)),
                                      CExpr.string(_fuir.clazzAsString(cl ))));
@@ -1246,12 +1243,12 @@ public class C extends ANY
           }
         else
           {
-            ol.add(CStmnt.lineComment("access to " + _fuir.codeAtAsString(cl, s) + " eliminated"));
+            ol.add(CStmnt.lineComment("access to " + _fuir.codeAtAsString(s) + " eliminated"));
           }
       }
     else
       {
-        if (_fuir.hasData(tc) && _fuir.accessIsDynamic(cl, s) && ccs.length > 2)
+        if (_fuir.hasData(tc) && _fuir.accessIsDynamic(s) && ccs.length > 2)
           {
             ol.add(CStmnt.lineComment("Dynamic access of " + _fuir.clazzAsString(cc0)));
             var tvar = _names.newTemp();
@@ -1266,7 +1263,7 @@ public class C extends ANY
         var callsResultEscapes = isCall
           && _fuir.hasData(rt)
           && ccs.length > 2
-          && _fuir.doesResultEscape(cl, s)
+          && _fuir.doesResultEscape(s)
           && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc0));
 
         if (isCall && _fuir.hasData(rt) && ccs.length > 2)
@@ -1290,7 +1287,7 @@ public class C extends ANY
               }
             if (isCall)
               {
-                var calpair = call(cl, pre, tv, args, s, cc, false);
+                var calpair = call(s, tv, args, cc, false);
                 var rv  = calpair.v0();
                 acc = calpair.v1();
                 if (ccs.length == 2)
@@ -1317,6 +1314,7 @@ public class C extends ANY
           }
         if (ccs.length > 2)
           {
+            var cl = _fuir.clazzAt(s);
             var id = tvalue.deref().field(CNames.CLAZZ_ID);
             acc = CStmnt.suitch(id, cazes,
                                 reportErrorInCode("unhandled dynamic target %d in access of %s within %s",
@@ -1560,17 +1558,19 @@ public class C extends ANY
   /**
    * Create C code for a statically bound call.
    *
-   * @param cl clazz id of clazz containing the call
-   *
    * @param s site of the call
+   *
+   * @param tvalue
+   *
+   * @param args
    *
    * @param cc clazz that is called
    *
-   * @param pre true to call the precondition of cl instead of cl.
+   * @param preCalled true to call the precondition of cl instead of cl.
    *
    * @return the code to perform the call
    */
-  Pair<CExpr, CStmnt> call(int cl, boolean pre, CExpr tvalue, List<CExpr> args, int s, int cc, boolean preCalled)
+  Pair<CExpr, CStmnt> call(int s, CExpr tvalue, List<CExpr> args, int cc, boolean preCalled)
   {
     var tc = _fuir.clazzOuterClazz(cc);
     CStmnt result = CStmnt.EMPTY;
@@ -1588,7 +1588,8 @@ public class C extends ANY
           var a = args(tvalue, args, cc, _fuir.clazzArgCount(cc));
           if (_fuir.clazzNeedsCode(cc))
             {
-
+              var cl = _fuir.clazzAt(s);
+              var pre = _fuir.isPreconditionAt(s);
               if (FUZION_DEBUG_TAIL_CALL                                 &&
                   !pre                                                   &&  // not within precondition
                   !preCalled                                             &&  // not calling pre-condition
@@ -1622,7 +1623,7 @@ public class C extends ANY
                           var tmp = _names.newTemp();
                           res = tmp;
                           var heapClone = CStmnt.EMPTY;
-                          if (_fuir.doesResultEscape(cl, s))
+                          if (_fuir.doesResultEscape(s))
                             {
                               var tmp2 = _names.newTemp();
                               heapClone = CStmnt.seq(CStmnt.decl(_types.clazz(rt)+"*", tmp2),
@@ -1664,7 +1665,7 @@ public class C extends ANY
   CStmnt tailRecursion(int cl, int s, int tc, List<CExpr> a)
   {
     var l = new List<CStmnt>();
-    if (_fuir.hasData(tc) && !_tailCall.firstArgIsOuter(cl, s))
+    if (_fuir.hasData(tc) && !_tailCall.firstArgIsOuter(s))
       {
         l.add(CStmnt.lineComment("tail recursion with changed target"));
         l.add(assign(CNames.OUTER, a.get(0), tc));
@@ -1855,8 +1856,8 @@ public class C extends ANY
     if (!pre && _fuir.hasData(res))
       {
         var rf = _fuir.clazzResultField(cl);
-        l.add(rf != -1 ? current(cl, pre).field(_names.fieldName(rf)).ret()  // a routine, return result field
-                       : current(cl, pre).ret()                              // a constructor, return current instance
+        l.add(rf != -1 ? current(_fuir.clazzCode(cl)).field(_names.fieldName(rf)).ret()  // a routine, return result field
+                       : current(_fuir.clazzCode(cl)).ret()                              // a constructor, return current instance
               );
       }
     var allocCurrent = switch (_fuir.lifeTime(cl, pre))
@@ -1933,8 +1934,10 @@ public class C extends ANY
    *
    * @param pre true iff generating code for cl's precondition, false for cl itself.
    */
-  CExpr current(int cl, boolean pre)
+  CExpr current(int s)
   {
+    var cl = _fuir.clazzAt(s);
+    var pre = _fuir.isPreconditionAt(s);
     var res1 = CNames.CURRENT;
     var res2 = _fuir.clazzIsRef(cl) ? res1 : res1.deref();
     var res3 =  _fuir.lifeTime(cl, pre).maySurviveCall() ? res2 : res2.adrOf();
