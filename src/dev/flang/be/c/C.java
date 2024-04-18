@@ -41,6 +41,7 @@ import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.dfa.DFA;
+import dev.flang.ir.IR.FeatureKind;
 import dev.flang.fuir.analysis.TailCall;
 
 import dev.flang.util.ANY;
@@ -1266,8 +1267,11 @@ public class C extends ANY
         var callsResultEscapes = isCall
           && _fuir.hasData(rt)
           && ccs.length > 2
-          && _fuir.doesResultEscape(cl, s)
-          && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc0));
+          && (_fuir.doesResultEscape(cl, s) && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc0))
+            // see: #2072 why we need this. Without this we would copy the field.
+            // But we just want a reference to the field.
+            || _fuir.clazzKind(cc0) == FeatureKind.Field && !_fuir.clazzFieldIsAdrOfValue(cc0)
+            );
 
         if (isCall && _fuir.hasData(rt) && ccs.length > 2)
           {
