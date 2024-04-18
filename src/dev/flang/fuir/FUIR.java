@@ -1344,10 +1344,6 @@ hw25 is
   {
     addClasses();
     var cc = c.getIfCreated();
-    if (cc != null)
-      {
-        add(cc);
-      }
     return cc == null ? -1 : id(cc);
   }
 
