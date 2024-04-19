@@ -1483,7 +1483,7 @@ hw25 is
       }
     if (result == null)
       {
-        Errors.fatal(codeAtAsPos(s),
+        Errors.fatal(sitePos(s),
                      "Expr not supported in FUIR.codeAt", "Expression class: " + e.getClass());
         result = ExprKind.Current; // keep javac from complaining.
       }
@@ -1730,7 +1730,7 @@ hw25 is
         else
           {
             throw new Error("Unexpected expression in accessedClazzesDynamic, must be ExprKind.Call or ExprKind.Assign, is " +
-                            codeAt(s) + " " + e.getClass() + " at " + codeAtAsPos(s).show());
+                            codeAt(s) + " " + e.getClass() + " at " + sitePos(s).show());
           }
         var found = new TreeSet<Integer>();
         var result = new List<Integer>();
@@ -2198,7 +2198,7 @@ hw25 is
 
 
   /**
-   * Helper for dumpCode and codeAtAsPos to create a label for given code block.
+   * Helper for dumpCode and sitePos to create a label for given code block.
    *
    * @param c a code block;
    *
@@ -2265,7 +2265,7 @@ hw25 is
    *
    * @return the source code position or null if not available.
    */
-  public SourcePosition codeAtAsPos(int s)
+  public SourcePosition sitePos(int s)
   {
     if (PRECONDITIONS) require
       (s >= 0,

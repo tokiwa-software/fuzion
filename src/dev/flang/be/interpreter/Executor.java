@@ -536,7 +536,7 @@ public class Executor extends ProcessExpression<Value, Object>
     if (!cc.boolValue())
       {
         var cl = _fuir.clazzAt(s);
-        Errors.runTime(_fuir.codeAtAsPos(s),
+        Errors.runTime(_fuir.sitePos(s),
                        (ck == ContractKind.Pre ? "Precondition" : "Postcondition") + " does not hold",
                        (ck == ContractKind.Pre ? "For" : "After") + " call to " + _fuir.clazzAsStringNew(cl) + "\n" + callStack(fuir()));
       }
@@ -590,7 +590,7 @@ public class Executor extends ProcessExpression<Value, Object>
       {
         sb.append(_fuir.clazzAsStringNew(frame)).append(": ");
       }
-    sb.append(_fuir.codeAtAsPos(callSite).show()).append("\n");
+    sb.append(_fuir.sitePos(callSite).show()).append("\n");
   }
 
 

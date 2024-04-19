@@ -299,7 +299,7 @@ public class DFA extends ANY
             {
               detail += _fuir.clazzAsStringNew(ccs[ccii]) + ", ";
             }
-          Errors.error(_fuir.codeAtAsPos(s),
+          Errors.error(_fuir.sitePos(s),
                        "NYI: in "+_fuir.siteAsString(s)+" no targets for "+_fuir.codeAtAsString(s)+" target "+tvalue,
                        detail);
 

@@ -391,7 +391,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   {
     var s = site();
     return s == IR.NO_SITE ? null
-                           : _dfa._fuir.codeAtAsPos(s);
+                           : _dfa._fuir.sitePos(s);
   }
 
 
@@ -429,7 +429,7 @@ public class Call extends ANY implements Comparable<Call>, Context
     var result = getEffectCheck(ecl);
     if (result == null && _dfa._reportResults && !_dfa._fuir.clazzOriginalName(_cc).equals("effect.type.unsafe_get"))
       {
-        DfaErrors.usedEffectNeverInstantiated(_dfa._fuir.codeAtAsPos(s),
+        DfaErrors.usedEffectNeverInstantiated(_dfa._fuir.sitePos(s),
                                               _dfa._fuir.clazzAsString(ecl),
                                               this);
         _dfa._missingEffects.add(ecl);

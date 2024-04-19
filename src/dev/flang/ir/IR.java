@@ -462,7 +462,7 @@ public abstract class IR extends ANY
    *
    * @return the source code position or null if not available.
    */
-  public SourcePosition codeAtAsPos(int s)
+  public SourcePosition sitePos(int s)
   {
     if (PRECONDITIONS) require
       (s >= 0,

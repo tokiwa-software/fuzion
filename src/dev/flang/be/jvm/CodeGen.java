@@ -378,7 +378,7 @@ class CodeGen
                 tvalue = tvalue.andThen(Expr.checkcast(_types.javaType(tc)));
               }
             var call = args(false, tvalue, args, cc, _fuir.clazzArgCount(cc))
-              .andThen(_types.invokeStaticCombindedPreAndCall(cc, _fuir.codeAtAsPos(s).line()));
+              .andThen(_types.invokeStaticCombindedPreAndCall(cc, _fuir.sitePos(s).line()));
 
             var rt = _fuir.clazzResultClazz(cc);
             res = makePair(call, rt);
@@ -540,7 +540,7 @@ class CodeGen
           }
         addStub(si, tt, cc, dn, ds, isCall, initLocals);
       }
-    return Expr.invokeInterface(intfc._name, dn, ds, dr, _fuir.codeAtAsPos(si).line());
+    return Expr.invokeInterface(intfc._name, dn, ds, dr, _fuir.sitePos(si).line());
   }
 
 
@@ -726,7 +726,7 @@ class CodeGen
                       tvalue = tvalue.andThen(Expr.checkcast(_types.resultType(oc)));
                     }
                   var call = args(false, tvalue, args, cc, _fuir.clazzArgCount(cc))
-                    .andThen(_types.invokeStatic(cc, preCalled, _fuir.codeAtAsPos(si).line()));
+                    .andThen(_types.invokeStatic(cc, preCalled, _fuir.sitePos(si).line()));
 
                   res = makePair(call, rt);
                 }
@@ -1000,7 +1000,7 @@ class CodeGen
                     .andThen(c.v0());
                 }
               result = result
-                .andThen(_types.invokeStaticCombindedPreAndCall(constCl, _fuir.codeAtAsPos(si).line()));
+                .andThen(_types.invokeStaticCombindedPreAndCall(constCl, _fuir.sitePos(si).line()));
 
               yield new Pair<>(result, Expr.UNIT);
             }
