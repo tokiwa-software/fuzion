@@ -136,7 +136,9 @@ public class Map2Int<T> extends ANY
   /**
    * get the index of an element
    *
-   * @return the T that belongs to index i.
+   * @param i an index returned by a call to add.
+   *
+   * @return the T passed to add when it returned i.
    */
   public T get(int i)
   {
