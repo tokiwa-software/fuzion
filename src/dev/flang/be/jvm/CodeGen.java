@@ -378,7 +378,7 @@ class CodeGen
                 tvalue = tvalue.andThen(Expr.checkcast(_types.javaType(tc)));
               }
             var call = args(false, tvalue, args, cc, _fuir.clazzArgCount(cc))
-              .andThen(_types.invokeStaticCombindedPreAndCall(cc, pos().line()));
+              .andThen(_types.invokeStaticCombindedPreAndCall(cc, _fuir.codeAtAsPos(s).line()));
 
             var rt = _fuir.clazzResultClazz(cc);
             res = makePair(call, rt);
@@ -466,7 +466,7 @@ class CodeGen
 
         var dynCall = args(true, tvalue, args, cc0, isCall ? _fuir.clazzArgCount(cc0) : 1)
           .andThen(Expr.comment("Dynamic access of " + _fuir.clazzAsString(cc0)))
-          .andThen(addDynamicFunctionAndStubs(cc0, ccs, isCall));
+          .andThen(addDynamicFunctionAndStubs(si, cc0, ccs, isCall));
         if (AbstractInterpreter.clazzHasUnitValue(_fuir, rt))
           {
             s = dynCall;  // make sure we do not throw away the code even if it is of unit type
@@ -506,17 +506,19 @@ class CodeGen
    * interface with a dynamic function and add implementations to each actual
    * target.
    *
+   * @param si site of the access expression, must be ExprKind.Assign or ExprKind.Call
+   *
    * @param cc0 a feature whose outer feature is a ref that has several actual instances.
    *
    * @return the invokeinterface expression that performs the call
    */
-  private Expr addDynamicFunctionAndStubs(int cc0, int[] ccs, boolean isCall)
+  private Expr addDynamicFunctionAndStubs(int si, int cc0, int[] ccs, boolean isCall)
   {
     var intfc = _types.interfaceFile(_fuir.clazzOuterClazz(cc0));
     var rc = _fuir.clazzResultClazz(cc0);
     var dn = _names.dynamicFunction(cc0);
-    var ds = isCall ? _types.dynDescriptor(cc0, false)          : "(" + _types.javaType(rc).argDescriptor() + ")V";
-    var dr = isCall ? _types.resultType(rc)                       : PrimitiveType.type_void;
+    var ds = isCall ? _types.dynDescriptor(cc0, false) : "(" + _types.javaType(rc).argDescriptor() + ")V";
+    var dr = isCall ? _types.resultType(rc)            : PrimitiveType.type_void;
     if (!intfc.hasMethod(dn))
       {
         intfc.method(ACC_PUBLIC | ACC_ABSTRACT, dn, ds, new List<>());
@@ -534,17 +536,19 @@ class CodeGen
           }
         else
           {
-            initLocals = Types.addToLocals(initLocals,  _types.javaType(rc));
+            initLocals = Types.addToLocals(initLocals, _types.javaType(rc));
           }
-        addStub(tt, cc, dn, ds, isCall, initLocals);
+        addStub(si, tt, cc, dn, ds, isCall, initLocals);
       }
-    return Expr.invokeInterface(intfc._name, dn, ds, dr, pos().line());
+    return Expr.invokeInterface(intfc._name, dn, ds, dr, _fuir.codeAtAsPos(si).line());
   }
 
 
   /**
    * Create a stub method, i.e., an implementation of a dynamic function defined
    * in an interface that performs a static access for the given target type.
+   *
+   * @param si site of the access expression, must be ExprKind.Assign or ExprKind.Call
    *
    * @param tt the target clazz. Note that tt may be different to
    * _fuir.clazzOuterClazz(cc), e.g., if tt is some type defining abstract
@@ -560,7 +564,7 @@ class CodeGen
    * @param isCall true if the access is a call, false if it is an assignment to
    * a field.
    */
-  private void addStub(int tt, int cc, String dn, String ds, boolean isCall, List<VerificationType> initLocals)
+  private void addStub(int si, int tt, int cc, String dn, String ds, boolean isCall, List<VerificationType> initLocals)
   {
     var cf = _types.classFile(tt);
     if (!cf.hasMethod(dn))
@@ -586,7 +590,7 @@ class CodeGen
             var t = _types.javaType(_fuir.clazzResultClazz(cc));
             na.add(t.load(1));
           }
-        var p = staticAccess(NO_SITE, tt, cc, tv, na, isCall);
+        var p = staticAccess(si, tt, cc, tv, na, isCall);
         var code = p.v1()
           .andThen(p.v0() == null ? Expr.UNIT : p.v0())
           .andThen(retoern);
@@ -602,7 +606,7 @@ class CodeGen
    * access to create code if there is only one possible target and by stubs to
    * perform the actual access.
    *
-   * @param s site of the access or NO_SITE if this is a call in an interface method stub.
+   * @param si site of the access or NO_SITE if this is a call in an interface method stub.
    *
    * @param tt the target clazz. Note that tt may be different to
    * _fuir.clazzOuterClazz(cc), e.g., if tt is some type defining abstract
@@ -722,7 +726,7 @@ class CodeGen
                       tvalue = tvalue.andThen(Expr.checkcast(_types.resultType(oc)));
                     }
                   var call = args(false, tvalue, args, cc, _fuir.clazzArgCount(cc))
-                    .andThen(_types.invokeStatic(cc, preCalled, pos().line()));
+                    .andThen(_types.invokeStatic(cc, preCalled, _fuir.codeAtAsPos(si).line()));
 
                   res = makePair(call, rt);
                 }
@@ -878,9 +882,9 @@ class CodeGen
   /**
    * Get a constant value of type constCl with given byte data d.
    */
-  public Pair<Expr, Expr> constData(int constCl, byte[] d)
+  public Pair<Expr, Expr> constData(int si, int constCl, byte[] d)
   {
-    var c = createConstant(constCl, d);
+    var c = createConstant(si, constCl, d);
     return switch (constantCreationStrategy(constCl))
       {
       case onEveryUse               -> c;  // create constant inline
@@ -936,7 +940,7 @@ class CodeGen
    *
    * @return the value and code to produce the constant
    */
-  Pair<Expr, Expr> createConstant(int constCl, byte[] d)
+  Pair<Expr, Expr> createConstant(int si, int constCl, byte[] d)
   {
     return switch (_fuir.getSpecialClazz(constCl))
       {
@@ -971,7 +975,7 @@ class CodeGen
               for (int idx = 0; idx < elCount; idx++)
                 {
                   var b = _fuir.deseralizeConst(elementType, bb);
-                  var c = createConstant(elementType, b);
+                  var c = createConstant(si, elementType, b);
                   result = result
                     .andThen(Expr.DUP)                             // T[], T[]
                     .andThen(Expr.checkcast(jt.array()))
@@ -990,13 +994,13 @@ class CodeGen
                 {
                   var fr = _fuir.clazzArgClazz(constCl, index);
                   var bytes = _fuir.deseralizeConst(fr, b);
-                  var c = createConstant(fr, bytes);
+                  var c = createConstant(si, fr, bytes);
                   result = result
                     .andThen(c.v1())
                     .andThen(c.v0());
                 }
               result = result
-                .andThen(_types.invokeStaticCombindedPreAndCall(constCl, pos().line()));
+                .andThen(_types.invokeStaticCombindedPreAndCall(constCl, _fuir.codeAtAsPos(si).line()));
 
               yield new Pair<>(result, Expr.UNIT);
             }
@@ -1053,7 +1057,7 @@ class CodeGen
   /**
    * Access the effect of type ecl that is installed in the environment.
    */
-  public Pair<Expr, Expr> env(int ecl)
+  public Pair<Expr, Expr> env(int s, int ecl)
   {
     var res =
       Expr.iconst(_fuir.clazzId2num(ecl))

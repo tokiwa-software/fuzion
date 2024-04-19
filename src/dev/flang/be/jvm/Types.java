@@ -28,6 +28,8 @@ package dev.flang.be.jvm;
 
 import dev.flang.fuir.FUIR;
 
+import static dev.flang.ir.IR.NO_SITE;
+
 import dev.flang.be.jvm.classfile.ClassFile;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 import dev.flang.be.jvm.classfile.Expr;
@@ -236,8 +238,8 @@ public class Types extends ANY implements ClassFileConstants
   Expr invokeStaticCombindedPreAndCall(int cc, int line)
   {
     var cls   = _names.javaClass(cc);
-    var fname = _fuir.clazzContract(cc, FUIR.ContractKind.Pre, 0) >= 0 ? Names.COMBINED_NAME
-                                                                       : Names.ROUTINE_NAME;
+    var fname = _fuir.clazzContract(cc, FUIR.ContractKind.Pre, 0) != NO_SITE ? Names.COMBINED_NAME
+                                                                             : Names.ROUTINE_NAME;
     return Expr.invokeStatic(cls,
                              fname,
                              descriptor(cc, false),

@@ -1081,7 +1081,7 @@ hw25 is
    * @param ix the index of the pre- or post-condition, 0 for the first
    * condition
    *
-   * @return a code id referring to cl's pre- or post-condition, -1 if cl does
+   * @return a site referring to cl's pre- or post-condition, NO_SITE if cl does
    * not have a pre- or post-condition with the given index
    */
   public int clazzContract(int cl, ContractKind ck, int ix)
@@ -1112,7 +1112,7 @@ hw25 is
           }
         i++;
       }
-    var res = -1;
+    var res = NO_SITE;
     if (cond != null && i < cond.size())
       {
         // create 64-bit key from cl, ck and ix as follows:
@@ -2552,7 +2552,7 @@ hw25 is
    */
   public boolean hasPrecondition(int cl)
   {
-    return clazzContract(cl, FUIR.ContractKind.Pre, 0) != -1;
+    return clazzContract(cl, FUIR.ContractKind.Pre, 0) != NO_SITE;
   }
 
 

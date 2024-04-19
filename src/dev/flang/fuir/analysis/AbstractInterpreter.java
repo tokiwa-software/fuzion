@@ -30,6 +30,8 @@ import java.util.Stack;
 
 import dev.flang.fuir.FUIR;
 
+import static dev.flang.ir.IR.NO_SITE;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
@@ -65,52 +67,13 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    * Interface that defines the operations of the actual interpreter
    * that processes this code.
    */
-  public static abstract class ProcessExpression<VALUE, RESULT> extends ANY implements HasSourcePosition
+  public static abstract class ProcessExpression<VALUE, RESULT> extends ANY
   {
 
     /**
      * FUIR we are currently interpreting
      */
     FUIR _fuir;
-
-
-    /**
-     * id of clazz we are interpreting, will be set by AbstractInterpreter before
-     * performing an Expression.
-     */
-    int _cl = -1;
-
-
-    /**
-     * true iff interpreting _cl's precondition, false for _cl itself, will be
-     * set by AbstractInterpreter before performing an Expression.
-     */
-    boolean _pre = false;
-
-
-    /**
-     * current site, will be set by AbstractInterpreter before performing an
-     * Expression.
-     */
-    int _s;
-
-
-    /**
-     * Create and return the actual source code position held by this instance.
-     */
-    public SourcePosition pos()
-    {
-      return _fuir.codeAtAsPos(_s);
-    }
-
-
-    /**
-     * Return the actual source code position held by this instance.
-     */
-    public int site()
-    {
-      return _s;
-    }
 
 
     /**
@@ -241,8 +204,14 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
     /**
      * Get a constant value of type constCl with given byte data d.
+     *
+     * @param s site of the constant
+     *
+     * @param constCl clazz id of the type of the constant
+     *
+     * @param d the constants as serialized bytes.
      */
-    public abstract Pair<VALUE, RESULT> constData(int constCl, byte[] d);
+    public abstract Pair<VALUE, RESULT> constData(int s, int constCl, byte[] d);
 
     /**
      * Perform a match on value subv.
@@ -257,13 +226,26 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
     /**
      * Create a tagged value of type newcl from an untagged value for type valuecl.
+     *
+     * @param s site of the match
+     *
+     * @param value the value that is to be tagged
+     *
+     * @param newcl the clazz id of the new choice type of the tagged value
+     *
+     * @param tagNum the number of the of the choice types's variant value is
+     * tagged as
      */
     public abstract Pair<VALUE, RESULT> tag(int s, VALUE value, int newcl, int tagNum);
 
     /**
      * Access the effect of type ecl that is installed in the environment.
+     *
+     * @param s site of the env expression
+     *
+     * @param ecl clazz id of the effect type
      */
-    public abstract Pair<VALUE, RESULT> env(int ecl);
+    public abstract Pair<VALUE, RESULT> env(int s, int ecl);
 
     /**
      * Process a contract of kind ck of clazz cl that results in bool value cc
@@ -503,7 +485,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     var l = new List<RESULT>();
     var s = pre ? _fuir.clazzContract(cl, FUIR.ContractKind.Pre, 0)
                 : _fuir.clazzCode(cl);
-    if (s != -1) // NYI: NO_SITE?
+    if (s != NO_SITE)
       {
         assignOuterAndArgFields(l, s);
       }
@@ -587,7 +569,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
   {
     var l = new List<RESULT>();
     for (var ci = 0;
-         _fuir.clazzContract(cl, ck, ci) != -1;
+         _fuir.clazzContract(cl, ck, ci) != NO_SITE;
          ci++)
       {
         var s = _fuir.clazzContract(cl, ck, ci);
@@ -624,12 +606,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
       }
     var e = _fuir.codeAt(s);
 
-    var cl = _fuir.clazzAt(s);
-    var pre = _fuir.isPreconditionAt(s);
     _processor._fuir = _fuir;
-    _processor._cl = cl;
-    _processor._pre = pre;
-    _processor._s = s;
     switch (e)
       {
       case Assign:
@@ -692,6 +669,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
       case Current:
         {
           var r = _processor.current(s);
+          var cl = _fuir.clazzAt(s);
           push(stack, cl, r.v0());
           return r.v1();
         }
@@ -699,7 +677,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
         {
           var constCl = _fuir.constClazz(s);
           var d = _fuir.constData(s);
-          var r = _processor.constData(constCl, d);
+          var r = _processor.constData(s, constCl, d);
 
           if (CHECKS) check
             // check that constant creation has no side effects.
@@ -736,7 +714,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
       case Env:
         {
           var ecl = _fuir.envClazz(s);
-          var r = _processor.env(ecl);
+          var r = _processor.env(s, ecl);
           push(stack, ecl, r.v0());
           return r.v1();
         }

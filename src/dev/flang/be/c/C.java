@@ -244,7 +244,7 @@ public class C extends ANY
      * Get a constant value of type constCl with given byte data d.
      */
     @Override
-    public Pair<CExpr, CStmnt> constData(int constCl, byte[] d)
+    public Pair<CExpr, CStmnt> constData(int s, int constCl, byte[] d)
     {
       return constData(constCl, d, true);
     }
@@ -529,7 +529,7 @@ public class C extends ANY
     /**
      * Access the effect of type ecl that is installed in the environment.
      */
-    public Pair<CExpr, CStmnt> env(int ecl)
+    public Pair<CExpr, CStmnt> env(int s, int ecl)
     {
       var res = CNames.fzThreadEffectsEnvironment.deref().field(_names.env(ecl));
       var evi = CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl));

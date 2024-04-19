@@ -471,7 +471,7 @@ public class DFA extends ANY
     /**
      * Get a constant value of type constCl with given byte data d.
      */
-    public Pair<Val, Unit> constData(int constCl, byte[] d)
+    public Pair<Val, Unit> constData(int s, int constCl, byte[] d)
     {
       var o = _unit_;
       var r = switch (_fuir.getSpecialClazz(constCl))
@@ -493,8 +493,8 @@ public class DFA extends ANY
             if (!_fuir.clazzIsChoice(constCl))
               {
                 yield _fuir.clazzIsArray(constCl)
-                  ? newArrayConst(constCl, _call, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN))
-                  : newValueConst(constCl, _call, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN));
+                  ? newArrayConst(s, constCl, _call, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN))
+                  : newValueConst(s, constCl, _call, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN));
               }
             else
               {
@@ -511,6 +511,8 @@ public class DFA extends ANY
     /**
      * deserialize value constant of type `constCl` from `b`
      *
+     * @param s the site of the constant
+     *
      * @param constCl the constants clazz, e.g. `(tuple u32 codepoint)`
      *
      * @param context for debugging: Reason that causes this const string to be
@@ -520,7 +522,7 @@ public class DFA extends ANY
      *
      * @return an instance of `constCl` with fields initialized using the data from `b`.
      */
-    private Value newValueConst(int constCl, Context context, ByteBuffer b)
+    private Value newValueConst(int s, int constCl, Context context, ByteBuffer b)
     {
       var result = newInstance(constCl, NO_SITE, context);
       var args = new List<Val>();
@@ -529,7 +531,7 @@ public class DFA extends ANY
           var f = _fuir.clazzArg(constCl, index);
           var fr = _fuir.clazzArgClazz(constCl, index);
           var bytes = _fuir.deseralizeConst(fr, b);
-          var arg = constData(fr, bytes).v0().value();
+          var arg = constData(s, fr, bytes).v0().value();
           args.add(arg);
           result.setField(DFA.this, f, arg);
         }
@@ -549,6 +551,8 @@ public class DFA extends ANY
     /**
      * deserialize array constant of type `constCl` from `d`
      *
+     * @param s the site of the constant
+     *
      * @param constCl the constants clazz, e.g. `array (tuple i32 codepoint)`
      *
      * @param context for debugging: Reason that causes this const string to be
@@ -558,7 +562,7 @@ public class DFA extends ANY
      *
      * @return an instance of `constCl` with fields initialized using the data from `d`.
      */
-    private Value newArrayConst(int constCl, Call context, ByteBuffer d)
+    private Value newArrayConst(int s, int constCl, Call context, ByteBuffer d)
     {
       var result = newInstance(constCl, NO_SITE, context);
       var sa = _fuir.clazzField(constCl, 0);
@@ -577,8 +581,8 @@ public class DFA extends ANY
         {
           var b = _fuir.deseralizeConst(elementClazz, d);
           elements = elements == null
-            ? constData(elementClazz, b).v0().value()
-            : elements.join(constData(elementClazz, b).v0().value());
+            ? constData(s, elementClazz, b).v0().value()
+            : elements.join(constData(s, elementClazz, b).v0().value());
         }
       SysArray sysArray = elCount == 0 ? new SysArray(DFA.this, new byte[0], elementClazz) :  new SysArray(DFA.this, elements);
 
@@ -657,9 +661,9 @@ public class DFA extends ANY
     /**
      * Access the effect of type ecl that is installed in the environment.
      */
-    public Pair<Val, Unit> env(int ecl)
+    public Pair<Val, Unit> env(int s, int ecl)
     {
-      return new Pair<>(_call.getEffectForce(Analyze.this, ecl), _unit_);
+      return new Pair<>(_call.getEffectForce(s, ecl), _unit_);
     }
 
 
