@@ -120,7 +120,7 @@ public abstract class IR extends ANY
   /**
    * All the code blocks in this IR. They are added via `addCode`.
    */
-  final List<Object> _allCode;
+  protected final List<Object> _allCode;
 
 
   /*--------------------------  constructors  ---------------------------*/

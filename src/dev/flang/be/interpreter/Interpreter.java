@@ -53,9 +53,9 @@ public class Interpreter extends FUIRContext
       {
         // NYI: BUG: fuir should be thread safe #2760
         @Override
-        public synchronized int[] matchCaseTags(int cl, int s, int cix)
+        public synchronized int[] matchCaseTags(int s, int cix)
         {
-          return super.matchCaseTags(cl, s, cix);
+          return super.matchCaseTags(s, cix);
         };
       };
     FUIRContext.set_fuir(fuir);
