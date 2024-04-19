@@ -70,12 +70,6 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
   {
 
     /**
-     * FUIR we are currently interpreting
-     */
-    FUIR _fuir;
-
-
-    /**
      * Join a List of RESULT from subsequent expressions into a compound
      * expression.  For a code generator, this could, e.g., join expressions "a :=
      * 3;" and "b(x);" into a block "{ a := 3; b(x); }".
@@ -444,7 +438,6 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    */
   void assignOuterAndArgFields(List<RESULT> l, int s)
   {
-    _processor._fuir = _fuir;
     var cl = _fuir.clazzAt(s);
     var or = _fuir.clazzOuterRef(cl);
     if (or != -1)
@@ -611,7 +604,6 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
       }
     var e = _fuir.codeAt(s);
 
-    _processor._fuir = _fuir;
     switch (e)
       {
       case Assign:
