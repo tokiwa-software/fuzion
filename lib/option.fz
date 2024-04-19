@@ -96,7 +96,15 @@ is
 
 
   # synonym for infix >>=
+  #
   public and_then (f T -> option T) => option.this >>= f
+
+
+  # if this option is nil return the result of f
+  # otherwise just return this option.
+  #
+  public or (f Lazy (option T)) option T =>
+    if is_nil then f() else option.this
 
 
   # map this option using f, i.e., map nil to nil and any value v to f v
@@ -131,7 +139,7 @@ is
 
   # unwraps an option if it exists, returns default value otherwise.
   #
-  public get(default Lazy T)
+  public or_else(default Lazy T)
   =>
     option.this ? v T => v
                 | nil => default
