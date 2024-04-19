@@ -148,7 +148,24 @@ public class SourceFile extends ANY
    */
   private int _lines[];
 
-  private int _indentation[];
+
+  /**
+   * For each position of a codepoint, _indentationByte[p] will hold the
+   * indentation in number of codepoints from the beginning of the line as an
+   * unsigned 8-bit integer.  If the indentation is >= 128, this will be an
+   * offset that must be added to _indentationBase[p/128] to get the
+   * actual indentation.
+   */
+  private byte _indentationByte[];
+
+
+  /**
+   * For groups of 128 bytes of source code data: if for a position p the
+   * indentation from the start of its line exceeds 127, then
+   * _indentationBase[p/128] will be a base indentation to be added to
+   * _ndentationByte[p].
+   */
+  private int _indentationBase[];
 
 
   /**
@@ -224,13 +241,14 @@ public class SourceFile extends ANY
    */
   public SourceFile(SourceFile original)
   {
-    _fileName = original._fileName;
-    _bytes    = original._bytes;
-    _lines    = original._lines;
-    _indentation = original._indentation;
-    _pos      = original._pos;
-    _cur      = original._cur;
-    _size     = original._size;
+    _fileName        = original._fileName;
+    _bytes           = original._bytes;
+    _lines           = original._lines;
+    _indentationByte = original._indentationByte;
+    _indentationBase = original._indentationBase;
+    _pos             = original._pos;
+    _cur             = original._cur;
+    _size            = original._size;
   }
 
 
@@ -623,12 +641,16 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
    * line. result[0] is unused and set to -1,
    *
    * The result is cached in _lines.
+   *
+   * As a side-effect, this determines the indenetation data for
+   * _indentationByte and _indentationBase that is used in codePointIndentation.
    */
   private int[] lines()
   {
     if (_lines == null)
       {
-        _indentation = new int[_bytes.length+1];
+        _indentationByte = new byte[_bytes.length+1];
+        _indentationBase = new int[(_bytes.length+1+127)/128];
         IntStream.Builder b = IntStream.builder();
         b.add(-1);  // dummy line # 0 does not exist.
         int sz;
@@ -644,7 +666,7 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
                 b.add(pos);
                 ind = 1;
               }
-            _indentation[pos] = ind;
+            storeIndentation(pos, ind);
             int cpAndSz  = decodeCodePointAndSize(pos);
             curCodePoint = codePointFromCpAndSize(cpAndSz);
             sz           = sizeFromCpAndSize     (cpAndSz);
@@ -654,10 +676,29 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
             b.add(_bytes.length);
             ind = 1;
           }
-        _indentation[_bytes.length] = ind;
+        storeIndentation(_bytes.length, ind);
         _lines = b.build().toArray();
       }
     return _lines;
+  }
+
+
+  /**
+   * record the codepoint indentation at pos to be ind.
+   */
+  void storeIndentation(int pos, int ind)
+  {
+    if (ind >= 128)
+      {
+        if (_indentationBase[pos / 128] == 0)
+          {
+            _indentationBase[pos / 128] = ind - 128;
+          }
+        ind = ind - _indentationBase[pos/128];
+        if (CHECKS) check
+          (ind >= 128);
+      }
+    _indentationByte[pos] = (byte) ind;
   }
 
 
@@ -840,48 +881,18 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
 
 
   /**
-   * Determine the code point index of pos within the given line, starting at 1
-   * for the first code point in a line.
-   */
-  public int codePointInLine(int pos, int line)
-  {
-    if (PRECONDITIONS) require
-      (line > 0);
-
-    var res = _indentation[pos];
-    if (true) return res;
-    int c = 1;
-    for (int i = lineStartPos(line); i < pos; i = i + sizeFromCpAndSize(decodeCodePointAndSize(i)))
-      {
-        c++;
-        _cnt++; if ((_cnt&(_cnt-1))==0) { System.err.println("CNT: "+_cnt); Thread.dumpStack();}
-      }
-    if (!_stop && res < 255 && res != c)
-      {
-        _stop = true;
-        System.out.println("codePointInLine "+pos+" "+line+" is "+c+" res is "+res+" for "+sourcePos(pos).show());
-        System.exit(1);
-      }
-    return c;
-  }
-  static boolean _stop;
-  static long _cnt = 0;
-
-
-  /**
    * Determine the code point index of pos within its line, starting at 1 for
    * the first code point in a line.
    */
-  public int codePointInLine(int pos)
+  public int codePointIndentation(int pos)
   {
-    var res = _indentation[pos];
-    if (true) return res;
-    int line = lineNum(pos);
-    if (line == 0)
+    lines();  // make sure indentation data is present.
+    var res = _indentationByte[pos] & 0xff;
+    if (res >= 128)
       {
-        return BEGINNING_OF_FILE;
+        res = _indentationBase[pos/128] + res;
       }
-    return codePointInLine(pos, line);
+    return res;
   }
 
 
