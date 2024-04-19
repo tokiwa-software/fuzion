@@ -197,7 +197,7 @@ public class C extends ANY
      * For a given value v of value type vc create a boxed ref value of type rc.
      */
     @Override
-    public Pair<CExpr, CStmnt> box(CExpr val, int vc, int rc)
+    public Pair<CExpr, CStmnt> box(int s, CExpr val, int vc, int rc)
     {
       var t = _names.newTemp();
       var o = CStmnt.seq(CStmnt.lineComment("Box " + _fuir.clazzAsString(vc)),

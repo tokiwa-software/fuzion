@@ -176,8 +176,14 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
     /**
      * For a given value v of value type vc create a boxed ref value of type rc.
+     *
+     * @param s site of the box expression
+     *
+     * @param vc the clazz id of the type of the unboxed value
+     *
+     * @param rc the clazz id of the type of the boxed value
      */
-    public abstract Pair<VALUE, RESULT> box(VALUE v, int vc, int rc);
+    public abstract Pair<VALUE, RESULT> box(int s, VALUE v, int vc, int rc);
 
     /**
      * Get the current instance
@@ -639,7 +645,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           else
             {
               var val = pop(stack, vc);
-              var r = _processor.box(val, vc, rc);
+              var r = _processor.box(s, val, vc, rc);
               push(stack, rc, r.v0());
               return r.v1();
             }

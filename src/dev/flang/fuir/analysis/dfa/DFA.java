@@ -433,7 +433,7 @@ public class DFA extends ANY
      * For a given value v of value type vc create a boxed ref value of type rc.
      */
     @Override
-    public Pair<Val, Unit> box(Val val, int vc, int rc)
+    public Pair<Val, Unit> box(int s, Val val, int vc, int rc)
     {
       var boxed = val.value().box(DFA.this, vc, rc, _call);
       return new Pair<>(boxed, _unit_);

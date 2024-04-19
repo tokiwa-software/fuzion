@@ -780,7 +780,7 @@ class CodeGen
    * For a given value v of value type vc create a boxed ref value of type rc.
    */
   @Override
-  public Pair<Expr, Expr> box(Expr val, int vc, int rc)
+  public Pair<Expr, Expr> box(int s, Expr val, int vc, int rc)
   {
     var res = val;
     if (!_fuir.clazzIsRef(vc) && _fuir.clazzIsRef(rc))  // NYI: CLEANUP: would be good if the AbstractInterpreter would not call box() in this case
