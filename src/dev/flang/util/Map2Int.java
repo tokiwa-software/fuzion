@@ -136,7 +136,7 @@ public class Map2Int<T> extends ANY
   /**
    * get the index of an element
    *
-   * @return t's index or _base-1 if t was not added.
+   * @return the T that belongs to index i.
    */
   public T get(int i)
   {
