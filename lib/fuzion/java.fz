@@ -64,11 +64,6 @@ public fuzion.java is
 
     is_null0(jr fuzion.sys.Pointer) bool => intrinsic_constructor
 
-    # dummy feature to make sure Java_Object.type exists. This is required since
-    # Java-related intrinsics may return an array of Java_Object and require Java_Object.type.
-    #
-    _ignore_ => Java_Object.type
-
 
   # A Java array
   #
