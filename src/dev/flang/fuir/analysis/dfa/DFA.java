@@ -441,16 +441,6 @@ public class DFA extends ANY
 
 
     /**
-     * For a given reference value v create an unboxed value of type vc.
-     */
-    public Pair<Val, Unit> unbox(Val val, int orc)
-    {
-      var unboxed = val.value().unbox(orc);
-      return new Pair<>(unboxed, _unit_);
-    }
-
-
-    /**
      * Get the current instance
      */
     @Override
