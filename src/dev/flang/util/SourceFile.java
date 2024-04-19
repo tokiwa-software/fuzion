@@ -148,6 +148,8 @@ public class SourceFile extends ANY
    */
   private int _lines[];
 
+  private int _indentation[];
+
 
   /**
    * The current codePoint, i.e., the last result of decodeCodePoint[AndSize].
@@ -225,6 +227,7 @@ public class SourceFile extends ANY
     _fileName = original._fileName;
     _bytes    = original._bytes;
     _lines    = original._lines;
+    _indentation = original._indentation;
     _pos      = original._pos;
     _cur      = original._cur;
     _size     = original._size;
@@ -625,18 +628,23 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
   {
     if (_lines == null)
       {
+        _indentation = new int[_bytes.length+1];
         IntStream.Builder b = IntStream.builder();
         b.add(-1);  // dummy line # 0 does not exist.
         int sz;
         int curCodePoint  = BEGINNING_OF_FILE;
+        var ind = 1;
         for (int pos = 0;
              _bytes != null && pos < _bytes.length;
-             pos = pos + sz)
+             pos = pos + sz,
+             ind = ind + 1)
           {
             if (isNewLine(curCodePoint))
               {
                 b.add(pos);
+                ind = 1;
               }
+            _indentation[pos] = ind;
             int cpAndSz  = decodeCodePointAndSize(pos);
             curCodePoint = codePointFromCpAndSize(cpAndSz);
             sz           = sizeFromCpAndSize     (cpAndSz);
@@ -644,7 +652,9 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
         if (isNewLine(curCodePoint))
           {
             b.add(_bytes.length);
+            ind = 1;
           }
+        _indentation[_bytes.length] = ind;
         _lines = b.build().toArray();
       }
     return _lines;
@@ -838,13 +848,24 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
     if (PRECONDITIONS) require
       (line > 0);
 
+    var res = _indentation[pos];
+    if (true) return res;
     int c = 1;
     for (int i = lineStartPos(line); i < pos; i = i + sizeFromCpAndSize(decodeCodePointAndSize(i)))
       {
         c++;
+        _cnt++; if ((_cnt&(_cnt-1))==0) { System.err.println("CNT: "+_cnt); Thread.dumpStack();}
+      }
+    if (!_stop && res < 255 && res != c)
+      {
+        _stop = true;
+        System.out.println("codePointInLine "+pos+" "+line+" is "+c+" res is "+res+" for "+sourcePos(pos).show());
+        System.exit(1);
       }
     return c;
   }
+  static boolean _stop;
+  static long _cnt = 0;
 
 
   /**
@@ -853,6 +874,8 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
    */
   public int codePointInLine(int pos)
   {
+    var res = _indentation[pos];
+    if (true) return res;
     int line = lineNum(pos);
     if (line == 0)
       {
