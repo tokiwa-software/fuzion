@@ -52,7 +52,9 @@ public class Interpreter extends FUIRContext
     this._fuir = new FUIR(fuir)
       {
         // NYI: BUG: fuir should be thread safe #2760
-        public synchronized int[] matchCaseTags(int s, int cix) {
+        @Override
+        public synchronized int[] matchCaseTags(int s, int cix)
+        {
           return super.matchCaseTags(s, cix);
         };
       };
@@ -215,97 +217,35 @@ public class Interpreter extends FUIRContext
    */
   static Value getField(int thiz, int staticClazz, Value curValue, boolean allowUninitializedRefField)
   {
+    var staticClazzSpecial = fuir().getSpecialClazz(staticClazz);
     if (PRECONDITIONS) require
       (// NYI: thiz.feature().isField(),
        (curValue instanceof Instance) || (curValue instanceof LValue) ||
-       curValue instanceof i8Value   && staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_i8  ) ||
-       curValue instanceof i16Value  && staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_i16 ) ||
-       curValue instanceof i32Value  && staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_i32 ) ||
-       curValue instanceof i64Value  && staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_i64 ) ||
-       curValue instanceof u8Value   && staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_u8  ) ||
-       curValue instanceof u16Value  && staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_u16 ) ||
-       curValue instanceof u32Value  && staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_u32 ) ||
-       curValue instanceof u64Value  && staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_u64 ) ||
-       curValue instanceof f32Value  && staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_f32 ) ||
-       curValue instanceof f64Value  && staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_f64 ) ||
-       curValue instanceof boolValue && staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_bool),
+       curValue instanceof i8Value   && staticClazzSpecial == FUIR.SpecialClazzes.c_i8   ||
+       curValue instanceof i16Value  && staticClazzSpecial == FUIR.SpecialClazzes.c_i16  ||
+       curValue instanceof i32Value  && staticClazzSpecial == FUIR.SpecialClazzes.c_i32  ||
+       curValue instanceof i64Value  && staticClazzSpecial == FUIR.SpecialClazzes.c_i64  ||
+       curValue instanceof u8Value   && staticClazzSpecial == FUIR.SpecialClazzes.c_u8   ||
+       curValue instanceof u16Value  && staticClazzSpecial == FUIR.SpecialClazzes.c_u16  ||
+       curValue instanceof u32Value  && staticClazzSpecial == FUIR.SpecialClazzes.c_u32  ||
+       curValue instanceof u64Value  && staticClazzSpecial == FUIR.SpecialClazzes.c_u64  ||
+       curValue instanceof f32Value  && staticClazzSpecial == FUIR.SpecialClazzes.c_f32  ||
+       curValue instanceof f64Value  && staticClazzSpecial == FUIR.SpecialClazzes.c_f64  ||
+       curValue instanceof boolValue && staticClazzSpecial == FUIR.SpecialClazzes.c_bool,
        staticClazz > 0
       //  NYI: thiz.feature().isOpenGenericField() == (thiz._select != -1)
        );
 
-    Value result;
-    if (staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_i8) && curValue instanceof i8Value)
+    Value result = switch (staticClazzSpecial)
       {
-        if (CHECKS) check
-          (fuir().clazzOriginalName(thiz).equals("i8.val"));
-        result = curValue;
-      }
-    else if (staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_i16) && curValue instanceof i16Value)
-      {
-        if (CHECKS) check
-          (fuir().clazzOriginalName(thiz).equals("i16.val"));
-        result = curValue;
-      }
-    else if (staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_i32) && curValue instanceof i32Value)
-      {
-        if (CHECKS) check
-          (fuir().clazzOriginalName(thiz).equals("i32.val"));
-        result = curValue;
-      }
-    else if (staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_i64) && curValue instanceof i64Value)
-      {
-        if (CHECKS) check
-          (fuir().clazzOriginalName(thiz).equals("i64.val"));
-        result = curValue;
-      }
-    else if (staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_u8) && curValue instanceof u8Value)
-      {
-        if (CHECKS) check
-          (fuir().clazzOriginalName(thiz).equals("u8.val"));
-        result = curValue;
-      }
-    else if (staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_u16) && curValue instanceof u16Value)
-      {
-        if (CHECKS) check
-          (fuir().clazzOriginalName(thiz).equals("u16.val"));
-        result = curValue;
-      }
-    else if (staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_u32) && curValue instanceof u32Value)
-      {
-        if (CHECKS) check
-          (fuir().clazzOriginalName(thiz).equals("u32.val"));
-        result = curValue;
-      }
-    else if (staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_u64) && curValue instanceof u64Value)
-      {
-        if (CHECKS) check
-          (fuir().clazzOriginalName(thiz).equals("u64.val"));
-        result = curValue;
-      }
-    else if (staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_f32) && curValue instanceof f32Value)
-      {
-        if (CHECKS) check
-          (fuir().clazzOriginalName(thiz).equals("f32.val"));
-        result = curValue;
-      }
-    else if (staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_f64) && curValue instanceof f64Value)
-      {
-        if (CHECKS) check
-          (fuir().clazzOriginalName(thiz).equals("f64.val"));
-        result = curValue;
-      }
-    else if (staticClazz == fuir().clazz(FUIR.SpecialClazzes.c_bool) && curValue instanceof boolValue)
-      {
-        if (CHECKS) check
-          (false);
-        result = curValue;
-      }
-    else
-      {
-        int  fclazz = clazzForField(thiz);
-        LValue slot   = fieldSlot(thiz, staticClazz, fclazz, curValue);
-        result = loadField(thiz, fclazz, slot, allowUninitializedRefField);
-      }
+      case c_f32 , c_f64 , c_i8 , c_i16 , c_i32 , c_i64 , c_u8 , c_u16 , c_u32 , c_u64 , c_bool -> curValue;
+      default ->
+        {
+          int fclazz = clazzForField(thiz);
+          LValue slot = fieldSlot(thiz, staticClazz, fclazz, curValue);
+          yield loadField(thiz, fclazz, slot, allowUninitializedRefField);
+        }
+      };
 
     if (POSTCONDITIONS) ensure
       (   result != null                          // there must not be any null
