@@ -113,6 +113,7 @@ public class DFA extends ANY
      * statement.  For a code generator, this could, e.g., join statements "a :=
      * 3;" and "b(x);" into a block "{ a := 3; b(x); }".
      */
+    @Override
     public Unit sequence(List<Unit> l)
     {
       return _unit_;
@@ -123,6 +124,7 @@ public class DFA extends ANY
      * Produce the unit type value.  This is used as a placeholder
      * for the universe instance as well as for the instance 'unit'.
      */
+    @Override
     public Val unitValue()
     {
       return Value.UNIT;
@@ -133,6 +135,7 @@ public class DFA extends ANY
      * Called before each statement is processed. May be used to, e.g., produce
      * tracing code for debugging or a comment.
      */
+    @Override
     public Unit expressionHeader(int s)
     {
       if (_reportResults && _options.verbose(9))
@@ -146,6 +149,7 @@ public class DFA extends ANY
     /**
      * A comment, adds human readable information
      */
+    @Override
     public Unit comment(String s)
     {
       return _unit_;
@@ -155,6 +159,7 @@ public class DFA extends ANY
     /**
      * no operation, like comment, but without giving any comment.
      */
+    @Override
     public Unit nop()
     {
       return _unit_;
@@ -180,6 +185,7 @@ public class DFA extends ANY
      *
      * @return resulting code of this assignment.
      */
+    @Override
     public Unit assignStatic(int s, int tc, int f, int rt, Val tvalue, Val val)
     {
       tvalue.value().setField(DFA.this, f, val.value());
@@ -234,6 +240,7 @@ public class DFA extends ANY
      * Result.v0() may be null to indicate that code generation should stop here
      * (due to an error or tail recursion optimization).
      */
+    @Override
     public Pair<Val, Unit> call(int s, Val tvalue, List<Val> args)
     {
       var ccP = _fuir.accessedPreconditionClazz(s);
@@ -425,6 +432,7 @@ public class DFA extends ANY
     /**
      * For a given value v of value type vc create a boxed ref value of type rc.
      */
+    @Override
     public Pair<Val, Unit> box(Val val, int vc, int rc)
     {
       var boxed = val.value().box(DFA.this, vc, rc, _call);
@@ -445,6 +453,7 @@ public class DFA extends ANY
     /**
      * Get the current instance
      */
+    @Override
     public Pair<Val, Unit> current(int s)
     {
       return new Pair<>(_call._instance, _unit_);
@@ -454,6 +463,7 @@ public class DFA extends ANY
     /**
      * Get the outer instance
      */
+    @Override
     public Pair<Val, Unit> outer(int s)
     {
       return new Pair<>(_call._target, _unit_);
@@ -462,6 +472,7 @@ public class DFA extends ANY
     /**
      * Get the argument #i
      */
+    @Override
     public Val arg(int s, int i)
     {
       return _call._args.get(i);
@@ -471,6 +482,7 @@ public class DFA extends ANY
     /**
      * Get a constant value of type constCl with given byte data d.
      */
+    @Override
     public Pair<Val, Unit> constData(int s, int constCl, byte[] d)
     {
       var o = _unit_;
@@ -596,6 +608,7 @@ public class DFA extends ANY
     /**
      * Perform a match on value subv.
      */
+    @Override
     public Pair<Val, Unit> match(int s, AbstractInterpreter<Val,Unit> ai, Val subv)
     {
       Val r = null; // result value null <=> does not return.  Will be set to Value.UNIT if returning case was found.
@@ -651,6 +664,7 @@ public class DFA extends ANY
     /**
      * Create a tagged value of type newcl from an untagged value.
      */
+    @Override
     public Pair<Val, Unit> tag(int s, Val value, int newcl, int tagNum)
     {
       Val res = value.value().tag(_call._dfa, newcl, tagNum);
@@ -661,6 +675,7 @@ public class DFA extends ANY
     /**
      * Access the effect of type ecl that is installed in the environment.
      */
+    @Override
     public Pair<Val, Unit> env(int s, int ecl)
     {
       return new Pair<>(_call.getEffectForce(s, ecl), _unit_);
@@ -671,6 +686,7 @@ public class DFA extends ANY
      * Process a contract of kind ck of clazz cl that results in bool value cc
      * (i.e., the contract fails if !cc).
      */
+    @Override
     public Unit contract(int s, FUIR.ContractKind ck, Val cc)
     {
       return _unit_;

@@ -779,6 +779,7 @@ class CodeGen
   /**
    * For a given value v of value type vc create a boxed ref value of type rc.
    */
+  @Override
   public Pair<Expr, Expr> box(Expr val, int vc, int rc)
   {
     var res = val;
@@ -799,6 +800,7 @@ class CodeGen
   /**
    * Get the current instance
    */
+  @Override
   public Pair<Expr, Expr> current(int s)
   {
     var cl = _fuir.clazzAt(s);
@@ -816,6 +818,7 @@ class CodeGen
   /**
    * Get the outer instance the given clazz is called on.
    */
+  @Override
   public Pair<Expr, Expr> outer(int s)
   {
     if (PRECONDITIONS) require
@@ -837,6 +840,7 @@ class CodeGen
    *
    * @return code to read arg #i from its slot.
    */
+  @Override
   public Expr arg(int s, int i)
   {
     if (PRECONDITIONS) require
@@ -882,6 +886,7 @@ class CodeGen
   /**
    * Get a constant value of type constCl with given byte data d.
    */
+  @Override
   public Pair<Expr, Expr> constData(int si, int constCl, byte[] d)
   {
     var c = createConstant(si, constCl, d);
@@ -1026,6 +1031,7 @@ class CodeGen
    *
    * @return the code for the match, produces unit type result.
    */
+  @Override
   public Pair<Expr, Expr> match(int s, AbstractInterpreter<Expr, Expr> ai, Expr sub)
   {
     var code = _choices.match(_jvm, ai, s, sub);
@@ -1047,6 +1053,7 @@ class CodeGen
    *
    * @return code to produce the tagged value as a result.
    */
+  @Override
   public Pair<Expr, Expr> tag(int s, Expr value, int newcl, int tagNum)
   {
     var res = _choices.tag(_jvm, s, value, newcl, tagNum);
@@ -1057,6 +1064,7 @@ class CodeGen
   /**
    * Access the effect of type ecl that is installed in the environment.
    */
+  @Override
   public Pair<Expr, Expr> env(int s, int ecl)
   {
     var res =
@@ -1074,6 +1082,7 @@ class CodeGen
    * Process a contract of kind ck of clazz cl that results in bool value cc
    * (i.e., the contract fails if !cc).
    */
+  @Override
   public Expr contract(int s, FUIR.ContractKind ck, Expr cc)
   {
     var cl = _fuir.clazzAt(s);
