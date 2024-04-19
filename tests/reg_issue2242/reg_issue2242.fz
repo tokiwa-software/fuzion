@@ -23,12 +23,12 @@
 
 reg_issue2242 =>
 
-  print(T type, arr Mutable_Array T) =>
+  print(T type, arr container.Mutable_Array T) =>
     for x in arr do
       yak "$x, "
     say ""
 
-  partition(T type : property.orderable, arr Mutable_Array T, low i32, high i32) =>
+  partition(T type : property.orderable, arr container.Mutable_Array T, low i32, high i32) =>
 
     swap(x i32, y i32)
       =>
@@ -46,7 +46,7 @@ reg_issue2242 =>
     swap (i.get + 1) high
     (i.get + 1)
 
-  quick_sort(T type : property.orderable, arr Mutable_Array T, low i32, high i32) =>
+  quick_sort(T type : property.orderable, arr container.Mutable_Array T, low i32, high i32) =>
     if (low < high)
       pi := partition T arr low high
       quick_sort arr low (pi - 1)
