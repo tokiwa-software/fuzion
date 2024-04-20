@@ -239,6 +239,10 @@ public class SourceFile extends ANY
     _pos = 0;
     _cur = BAD_CODEPOINT;
     _size = 0;
+    if (_FAST_LINE_NUM_)
+      {
+        lines();  // eagerly determine lines
+      }
   }
 
 
@@ -884,7 +888,6 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
     int line;
     if (_FAST_LINE_NUM_)
       {
-        lines();
         line = _lineNumBase[pos / 128] + _lineNumOffset[pos];
       }
     else
@@ -943,7 +946,10 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
    */
   public int codePointIndentation(int pos)
   {
-    lines();  // make sure indentation data is present.
+    if (!_FAST_LINE_NUM_)
+      {
+        lines();  // make sure indentation data is present.
+      }
     var res = _indentationByte[pos] & 0xff;
     if (res >= 128)
       {
