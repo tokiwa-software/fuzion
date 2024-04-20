@@ -124,6 +124,13 @@ public class SourceFile extends ANY
   /*-----------------------------  statics  -----------------------------*/
 
 
+  /**
+   * We might want to move this optimization to a special variant of SourceFile,
+   * so I make this dependent on a static final flag for now:
+   */
+  private static final boolean _FAST_LINE_NUM_ = true;
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -147,6 +154,15 @@ public class SourceFile extends ANY
    * This is created on demand by lines();
    */
   private int _lines[];
+
+
+  /**
+   * For each byte position p that starts a code point, if _FAST_LINE_NUM_ is
+   * set, the line number of the line containing that code point is
+   * _lineNumOffset[p] + _lineNumBase[p/128].
+   */
+  private byte _lineNumOffset[];
+  private int _lineNumBase[];
 
 
   /**
@@ -244,6 +260,8 @@ public class SourceFile extends ANY
     _fileName        = original._fileName;
     _bytes           = original._bytes;
     _lines           = original._lines;
+    _lineNumOffset   = original._lineNumOffset;
+    _lineNumBase     = original._lineNumBase;
     _indentationByte = original._indentationByte;
     _indentationBase = original._indentationBase;
     _pos             = original._pos;
@@ -651,8 +669,14 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
       {
         _indentationByte = new byte[_bytes.length+1];
         _indentationBase = new int[(_bytes.length+1+127)/128];
+        if (_FAST_LINE_NUM_)
+          {
+            _lineNumOffset   = new byte[_bytes.length+1];
+            _lineNumBase     = new int[(_bytes.length+1+127)/128];
+          }
         IntStream.Builder b = IntStream.builder();
         b.add(-1);  // dummy line # 0 does not exist.
+        int lineCnt = 0;
         int sz;
         int curCodePoint  = BEGINNING_OF_FILE;
         var ind = 1;
@@ -664,9 +688,11 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
             if (isNewLine(curCodePoint))
               {
                 b.add(pos);
+                lineCnt = lineCnt + 1;
                 ind = 1;
               }
             storeIndentation(pos, ind);
+            storeLineNum(pos, lineCnt);
             int cpAndSz  = decodeCodePointAndSize(pos);
             curCodePoint = codePointFromCpAndSize(cpAndSz);
             sz           = sizeFromCpAndSize     (cpAndSz);
@@ -674,9 +700,11 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
         if (isNewLine(curCodePoint))
           {
             b.add(_bytes.length);
+            lineCnt = lineCnt + 1;
             ind = 1;
           }
         storeIndentation(_bytes.length, ind);
+        storeLineNum(_bytes.length, lineCnt);
         _lines = b.build().toArray();
       }
     return _lines;
@@ -699,6 +727,27 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
           (ind >= 128);
       }
     _indentationByte[pos] = (byte) ind;
+  }
+
+
+  /**
+   * record the line num at pos to be l
+   */
+  void storeLineNum(int pos, int l)
+  {
+    if (_FAST_LINE_NUM_)
+      {
+        var l0 = l;
+        if (_lineNumBase[pos / 128] == 0)
+          {
+            _lineNumBase[pos / 128] = l;
+          }
+        l = l - _lineNumBase[pos / 128];
+        if (CHECKS) check
+          (0 <= l,
+           l < 128);
+        _lineNumOffset[pos] = (byte) l;
+      }
   }
 
 
@@ -832,10 +881,18 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
       (pos >= 0,
        pos <= _bytes.length);
 
-    int l = Arrays.binarySearch(lines(), pos);
-    int line = (l >= 0) ? l :
-      -l - 2; // l == -ip-1, where ip is the element behind the desired line index (ip == line + 1), so line == ip - 1 = -l - 2
-
+    int line;
+    if (_FAST_LINE_NUM_)
+      {
+        lines();
+        line = _lineNumBase[pos / 128] + _lineNumOffset[pos];
+      }
+    else
+      {
+        int l = Arrays.binarySearch(lines(), pos);
+        line = (l >= 0) ? l :
+          -l - 2; // l == -ip-1, where ip is the element behind the desired line index (ip == line + 1), so line == ip - 1 = -l - 2
+      }
     if (POSTCONDITIONS) ensure
       (lines().length == 1 || line >= 1,
        _bytes.length != 0 || line == 1,
