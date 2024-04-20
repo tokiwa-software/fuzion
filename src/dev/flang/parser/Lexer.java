@@ -750,6 +750,40 @@ public class Lexer extends SourceFile
    */
   public boolean ignoredTokenAfter()
   {
+    // this is performance-relevant, so we provide a fast path if this can be
+    // decided from the ASCII value of the current code point:
+    var p = curCodePoint();
+    if (p <= 0x7f)
+      {
+        var k = _asciiKind[p];
+        switch (k)
+          {
+          case K_OP      :
+          case K_COMMA   :
+          case K_LPAREN  :
+          case K_RPAREN  :
+          case K_LBRACE  :
+          case K_RBRACE  :
+          case K_LCROCH  :
+          case K_RCROCH  :
+          case K_SEMI    :
+          case K_DIGIT   :
+          case K_LETTER  :
+          case K_GRAVE   :
+          case K_DQUOTE  :
+          case K_SQUOTE  :
+          case K_BACKSL  :
+          case K_NUMERIC : return false;   // fast-path for common positive cases
+          case K_WS      : return true;    // fast path for common negative cases
+          case K_UNKNOWN :
+          case K_SLASH   :
+          case K_SHARP   :
+          case K_EOF     :
+          case K_ERROR   : break;  // comments and special cases, use slow path
+          default        : throw new Error("unknown case in Lexer.ignoredTokenAfter for " + k + "!");
+          }
+      }
+    // slow path: fork lexer and check using `ignore()`:
     var f = new Lexer(this);
     f.nextRaw();
     return ignore(f._curToken);
