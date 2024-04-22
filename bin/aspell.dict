@@ -1432,7 +1432,7 @@ byteLength
 checkIndentation
 clangVersion
 cloneValue
-codePointInLine
+codePointIndentation
 constraintMustNotBeGenericArgument
 curPos
 datagram

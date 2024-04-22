@@ -2697,7 +2697,7 @@ exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
    */
   int indent(int pos)
   {
-    return pos >= 0 ? codePointInLine(pos) : 0;
+    return pos >= 0 ? codePointIndentation(pos) : 0;
   }
 
 

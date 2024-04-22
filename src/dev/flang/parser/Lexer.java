@@ -751,7 +751,7 @@ public class Lexer extends SourceFile
   int setMinIndent(int startPos)
   {
     int result = _minIndentStartPos;
-    _minIndent = startPos >= 0 ? codePointInLine(startPos) : -1;
+    _minIndent = startPos >= 0 ? codePointIndentation(startPos) : -1;
     _minIndentStartPos = startPos;
 
     return result;
@@ -1015,18 +1015,18 @@ public class Lexer extends SourceFile
     int l = line();
     int p = _tokenPos;
     return
-      t == Token.t_eof                                     ? t                        :
-      sameLine  >= 0 && l != sameLine                      ? Token.t_lineLimit        :
-      p > endAtSpace && ignoredTokenBefore()               ? Token.t_spaceLimit       :
-      p == _minIndentStartPos                              ? t                        :
-      minIndent >= 0 && codePointInLine(p, l) <= minIndent ? Token.t_indentationLimit :
+      t == Token.t_eof                                       ? t                        :
+      sameLine  >= 0 && l != sameLine                        ? Token.t_lineLimit        :
+      p > endAtSpace && ignoredTokenBefore()                 ? Token.t_spaceLimit       :
+      p == _minIndentStartPos                                ? t                        :
+      minIndent >= 0 && codePointIndentation(p) <= minIndent ? Token.t_indentationLimit :
       endAtColon                  &&
       _curToken == Token.t_op     &&
-      tokenAsString().equals(":")                          ? Token.t_colonLimit       :
+      tokenAsString().equals(":")                            ? Token.t_colonLimit       :
       endAtBar                    &&
       _curToken == Token.t_op     &&
-      tokenAsString().equals("|")                          ? Token.t_barLimit
-                                                           : _curToken;
+      tokenAsString().equals("|")                            ? Token.t_barLimit
+                                                             : _curToken;
   }
 
 
@@ -1266,8 +1266,8 @@ A code point sharp 0x023 `#` that is not part of an operator starts a comment th
               boolean SHARP_COMMENT_ONLY_IF_IN_COL_1 = false;
               token =
                 !SHARP_COMMENT_ONLY_IF_IN_COL_1 ||
-                codePointInLine(_tokenPos) == 1      ? skipUntilEOL() // comment until end of line
-                                                   : skipOp(Token.t_op);
+                codePointIndentation(_tokenPos) == 1 ? skipUntilEOL() // comment until end of line
+                                                     : skipOp(Token.t_op);
               break;
             }
           /**
@@ -3032,7 +3032,7 @@ PIPE        : "|"
      */
     int column(Optional<Integer> pos)
     {
-      return codePointInLine(getPos(pos));
+      return codePointIndentation(getPos(pos));
     }
 
 
