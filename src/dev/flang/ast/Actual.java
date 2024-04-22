@@ -70,16 +70,6 @@ public class Actual extends ExprWithPos
        e != null);
 
     _expr = e;
-    if (e != NO_VALUE)
-      {
-        var et = e.asParsedType();
-        // if ((et == null) != (t == null))
-        if ((et == null) && (t != null))
-          {
-            dev.flang.util.Debug.uprintln("Actual type mismatch for "+e.getClass()+" "+et+" vs. "+t+" at "+pos.show());
-          }
-        t = et;
-      }
     _type = t;
   }
 
@@ -107,7 +97,7 @@ public class Actual extends ExprWithPos
    */
   public Actual(Expr e)
   {
-    this(e.pos(), null, e);
+    this(e.pos(), e.asParsedType(), e);
 
     if (PRECONDITIONS) require
       (e != Expr.NO_VALUE,
