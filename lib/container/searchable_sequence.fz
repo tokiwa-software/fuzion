@@ -99,7 +99,7 @@ is
         # NYI: #637: perhaps make it possible to do
         #     if limit = option 0
         # here.
-        if (limit.map_to_option (v -> v = (u64 0))).get false
+        if (limit.map_to_option (v -> v = (u64 0))).or_else false
           already_replaced ++ to_be_replaced
         else
           a := already_replaced ++ (to_be_replaced.take n) ++ new

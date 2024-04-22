@@ -179,7 +179,7 @@ public class SourceFile extends ANY
    * For groups of 128 bytes of source code data: if for a position p the
    * indentation from the start of its line exceeds 127, then
    * _indentationBase[p/128] will be a base indentation to be added to
-   * _ndentationByte[p].
+   * _indentationByte[p].
    */
   private int _indentationBase[];
 
@@ -664,7 +664,7 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
    *
    * The result is cached in _lines.
    *
-   * As a side-effect, this determines the indenetation data for
+   * As a side-effect, this determines the indentation data for
    * _indentationByte and _indentationBase that is used in codePointIndentation.
    */
   private int[] lines()
