@@ -1761,6 +1761,7 @@ actual   : operatorExpr | type
   {
     var pos = tokenSourcePos();
 
+    /*
     boolean hasType = fork().skipType();
     // instead of implementing 'isExpr()', which would be complex, we use
     // 'skipType' with second argument set to false to check if we can parse
@@ -1768,7 +1769,8 @@ actual   : operatorExpr | type
     boolean hasExpr = (!hasType ||
                        fork().skipType(false,
                                        true,
-                                       false  /* disallow types that cannot be parsed as expression */));
+                                       false  // disallow types that cannot be parsed as expression
+                                       ));
     AbstractType t;
     Expr e;
     if (hasExpr && hasType)
@@ -1784,6 +1786,7 @@ actual   : operatorExpr | type
       }
     else if (hasExpr)
       {
+        //        System.out.println("NO Type at "+tokenSourcePos().show());
         t = null;
         e = operatorExpr();
       }
@@ -1792,10 +1795,13 @@ actual   : operatorExpr | type
         if (CHECKS) check
           (hasType);
 
+        System.out.println("NO Type at "+tokenSourcePos().show());
         t = type();
         e = Expr.NO_VALUE;
       }
     return new Actual(pos, t, e);
+*/
+    return new Actual(pos, null, operatorExpr());
   }
 
 
@@ -1977,7 +1983,7 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
       }
     else                                   // a tuple
       {
-        return new Call(pos, null, "tuple", tupleElements);
+        return new ParsedCall(null, new ParsedName(pos, "tuple"), tupleElements);
       }
   }
 

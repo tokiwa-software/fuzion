@@ -134,6 +134,32 @@ public class Function extends AbstractLambda
   }
 
 
+
+
+
+  @Override
+  public ParsedType asParsedType()
+  {
+    var res = _expr.asParsedType();
+    if (res == null)
+      {
+        //System.out.println("res is null for "+_expr.getClass()+"!"+ (_expr instanceof Block b ? b._expressions.size() : -123));
+        if (_expr instanceof Block b && b._expressions.size() == 1)
+            {
+              //    System.out.println("BLOCK Is "+_expr);
+            }
+      }
+    var l = new List<AbstractType>();
+    for (var n : _names)
+      {
+        l.add(new ParsedType(n.pos(), n._name, new List<>(), null));
+      }
+    var result = res != null ? UnresolvedType.funType(pos(), res, l)
+                             : null;
+    return result;
+  }
+
+
   /*-----------------------------  methods  -----------------------------*/
 
 

@@ -81,6 +81,30 @@ public class ParsedCall extends Call
   }
 
 
+
+  public ParsedType asParsedType()
+  {
+    var target = target();
+    var o = target == null ? null : target().asParsedType();
+    var ok = target == null || o != null;
+    var l = new List<AbstractType>();
+    for (var a : _actualsNew)
+      {
+        var at = a._type;
+        ok = ok && at != null;
+        l.add(at);
+      }
+    if (ok)
+      {
+        return new ParsedType(pos(), name(), l, o);
+      }
+    else
+      {
+        return null;
+      }
+  }
+
+
 }
 
 /* end of file */

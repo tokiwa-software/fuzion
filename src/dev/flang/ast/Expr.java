@@ -811,6 +811,12 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   }
 
 
+  public UnresolvedType asParsedType()
+  {
+    return null;
+  }
+
+
 }
 
 /* end of file */

@@ -69,8 +69,18 @@ public class Actual extends ExprWithPos
       (t != null || e != Expr.NO_VALUE,
        e != null);
 
-    _type = t;
     _expr = e;
+    if (e != NO_VALUE)
+      {
+        var et = e.asParsedType();
+        // if ((et == null) != (t == null))
+        if ((et == null) && (t != null))
+          {
+            dev.flang.util.Debug.uprintln("Actual type mismatch for "+e.getClass()+" "+et+" vs. "+t+" at "+pos.show());
+          }
+        t = et;
+      }
+    _type = t;
   }
 
 
