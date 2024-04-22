@@ -34,6 +34,7 @@ import java.util.Optional;
 import java.util.TreeSet;
 
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import dev.flang.util.Callable;
@@ -279,6 +280,23 @@ public class Lexer extends SourceFile
       .sorted((t1, t2) -> t1.keyword().compareTo(t2.keyword()))
       .toArray(Token[]::new);
 
+    /**
+     * maximum length of the keywords.
+     */
+    public static int _maxKeywordLength = Stream.of(_keywords)
+      .mapToInt(k -> k.keyword().length())
+      .max()
+      .orElseThrow();
+
+    /**
+     * Array of sorted arrays of keywords of equal length.  Used to reduce
+     * effort to find keyword by checking only those with a correct length.
+     */
+    public static Token[][] _keywordsOfLength = IntStream.range(0, _maxKeywordLength+1)
+    .mapToObj(i -> Stream.of(_keywords)
+              .filter(k -> k.keyword().length() == i)
+              .toArray(Token[]::new))
+      .toArray(Token[][]::new);
 
     /**
      * String representation for debugging.
@@ -1542,25 +1560,32 @@ A xref:fuzion_keyword[Fuzion keyword] cannot be used as a Fuzion identifier.
     */
 
     Token result = Token.t_ident;
-    // perform binary search in Token.keywords array:
-    int l = 0;
-    int r = Token._keywords.length-1;
-    while (l <= r)
+    var s = tokenPos();
+    var e = tokenEndPos();
+    var len = e - s;
+    if (len <= Token._maxKeywordLength)
       {
-        int m = (l + r) / 2;
-        Token t = Token._keywords[m];
-        int c = compareToString(tokenPos(), tokenEndPos(), t._keyword);
-        if (c == 0)
+        var a = Token._keywordsOfLength[len];
+        // perform binary search in Token.keywords array:
+        int l = 0;
+        int r = a.length-1;
+        while (l <= r)
           {
-            result = t;
-          }
-        if (c <= 0)
-          {
-            r = m - 1;
-          }
-        if (c >= 0)
-          {
-            l = m + 1;
+            int m = (l + r) / 2;
+            Token t = a[m];
+            int c = compareToString(s, e, t._keyword);
+            if (c == 0)
+              {
+                result = t;
+              }
+            if (c <= 0)
+              {
+                r = m - 1;
+              }
+            if (c >= 0)
+              {
+                l = m + 1;
+              }
           }
       }
     return result;
