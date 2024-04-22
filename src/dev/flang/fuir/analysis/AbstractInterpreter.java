@@ -572,8 +572,9 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
       {
         var s = _fuir.clazzContract(cl, ck, ci);
         var stack = new Stack<VALUE>();
-        for (; !containsVoid(stack) && _fuir.withinCode(s); s = s + _fuir.codeSizeAt(s))
+        for (var si = s; !containsVoid(stack) && _fuir.withinCode(si); si = si + _fuir.codeSizeAt(si))
           {
+            s = si; // when exiting this loop, s will be the site of the last expression, while si no be within the code
             l.add(_processor.expressionHeader(s));
             l.add(process(s, stack));
           }
