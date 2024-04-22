@@ -81,27 +81,45 @@ public class ParsedCall extends Call
   }
 
 
+  boolean isInfixPipe(boolean parenthesesAllowed)
+  {
+    return isOperatorCall(parenthesesAllowed) && name().equals("infix |") && _actualsNew.size() == 1;
+  }
+
+
 
   public ParsedType asParsedType()
   {
     var target = target();
-    var o = target == null ? null : target().asParsedType();
-    var ok = target == null || o != null;
+    var tt = target == null ? null : target().asParsedType();
+    var ok = target == null || tt != null;
+    var name = name();
     var l = new List<AbstractType>();
-    for (var a : _actualsNew)
-      {
-        var at = a._type;
-        ok = ok && at != null;
-        l.add(at);
-      }
     if (ok)
       {
-        return new ParsedType(pos(), name(), l, o);
+        if (tt != null && isInfixPipe(true))   // choice type syntax sugar: 'tt | arg'
+          {
+            if (target instanceof ParsedCall tc && tc.isInfixPipe(false))
+              { // tt is `x | y` in  'x | y | arg',
+                // but not `(x | y)`!
+                l.addAll(tt.generics());
+              }
+            else
+              { // `tt | arg` where `tt` is not itself `x | y`
+                l.add(tt);
+              }
+            name = "choice";
+            tt = null;
+          }
+        for (var a : _actualsNew)
+          {
+            var at = a._expr.asParsedType();
+            ok = ok && at != null;
+            l.add(at);
+          }
       }
-    else
-      {
-        return null;
-      }
+    return ok ? new ParsedType(pos(), name, l, tt)
+              : null;
   }
 
 
