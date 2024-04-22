@@ -668,7 +668,10 @@ name        : IDENT                            // all parts of name must be in s
         var oldLine = sameLine(line());
         switch (current(mayBeAtMinIndent))
           {
-          case t_ident  : result = new ParsedName(tokenSourceRange(), identifier(mayBeAtMinIndent)); next(); break;
+          case t_ident  : result = ignoreError ? ParsedName.DUMMY
+                                               : new ParsedName(tokenSourceRange(), identifier(mayBeAtMinIndent));
+                          next();
+                          break;
           case t_infix  :
           case t_prefix :
           case t_postfix: result = opName(mayBeAtMinIndent, ignoreError);  break;
