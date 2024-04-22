@@ -1469,7 +1469,8 @@ hw25 is
   public ExprKind codeAt(int s)
   {
     if (PRECONDITIONS) require
-      (s >= SITE_BASE, withinCode(s));
+      (s >= SITE_BASE,
+       withinCode(s));
 
     ExprKind result;
     var e = getExpr(s);
@@ -2268,7 +2269,7 @@ hw25 is
   public SourcePosition sitePos(int s)
   {
     if (PRECONDITIONS) require
-      (s >= 0,
+      (s >= SITE_BASE,
        withinCode(s));
 
     var e = getExpr(s);
@@ -2394,7 +2395,7 @@ hw25 is
   private int codeIndex2(int si, int s, int delta)
   {
     check
-      (si >= 0 && s >= 0); // this code uses negative results if site was not found yet, so better make sure a site is never negative!
+      (si >= SITE_BASE && s >= SITE_BASE); // this code uses negative results if site was not found yet, so better make sure a site is never negative!
 
     if (si == s)
       {

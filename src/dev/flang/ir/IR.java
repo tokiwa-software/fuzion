@@ -388,7 +388,8 @@ public abstract class IR extends ANY
   public ExprKind codeAt(int s)
   {
     if (PRECONDITIONS) require
-      (s >= SITE_BASE, withinCode(s));
+      (s >= SITE_BASE,
+       withinCode(s));
 
     return exprKind(getExpr(s));
   }
