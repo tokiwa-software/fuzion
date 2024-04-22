@@ -1759,9 +1759,9 @@ actual   : operatorExpr | type
    */
   Actual actual()
   {
+    /*
     var pos = tokenSourcePos();
 
-    /*
     boolean hasType = fork().skipType();
     // instead of implementing 'isExpr()', which would be complex, we use
     // 'skipType' with second argument set to false to check if we can parse
@@ -1801,7 +1801,7 @@ actual   : operatorExpr | type
       }
     return new Actual(pos, t, e);
 */
-    return new Actual(pos, null, operatorExpr());
+    return new Actual(operatorExpr());
   }
 
 

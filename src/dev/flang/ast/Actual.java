@@ -61,7 +61,7 @@ public class Actual extends ExprWithPos
    *
    * t must be non-null or e must not be NO_VALUE.
    */
-  public Actual(SourcePosition pos, AbstractType t, Expr e)
+  private Actual(SourcePosition pos, AbstractType t, Expr e)
   {
     super(pos);
 
