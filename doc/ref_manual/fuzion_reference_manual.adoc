@@ -273,7 +273,7 @@ include::rule.adoc[]
 :RULE_ID: LEXR_COMMENT3
 include::rule.adoc[]
 
-Examples of valid comments areas
+Examples of valid comments are
 
     i := 42     # this is a comment
     this is not a comment
@@ -281,12 +281,16 @@ Examples of valid comments areas
     k := /* this is a comment */ 23
     /* this /* comment /* is */ nested */ */
     l := "not a comment, but a string literal"
+    m := "/* also not a comment, but a string literal */"
+    n := "// still a string literal"
+    o := "# also a string literal"
     /* this
     /* comment
     /* extends */
        over several
     */ lines */
-    m := l
+    p := o
+    /*" a comment, not a string */
 
 ==== Literals
 

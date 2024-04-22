@@ -100,8 +100,8 @@ is
   # does this interval contain the given value?
   #
   public contains(e T) =>
-    if      step.sign > 0 then from <= e <= through.get e && (e %  step = from %  step)
-    else if step.sign < 0 then from >= e >= through.get e && (e % -step = from % -step)
+    if      step.sign > 0 then from <= e <= through.or_else e && (e %  step = from %  step)
+    else if step.sign < 0 then from >= e >= through.or_else e && (e % -step = from % -step)
     else                       from =  e
 
 
@@ -109,7 +109,7 @@ is
   #
   public redef as_string =>
     thru := through.map_to_option ($)
-                   .get ()->if step.sign < 0 then "-∞" else "∞"
+                   .or_else ()->if step.sign < 0 then "-∞" else "∞"
     "$from..$thru{if step = T.one then "" else ":$step"}"
 
 
