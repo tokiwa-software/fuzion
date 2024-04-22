@@ -752,7 +752,7 @@ public class Lexer extends SourceFile
   {
     var f = new Lexer(this);
     f.nextRaw();
-    return ignore(f.currentNoLimit());
+    return ignore(f._curToken);
   }
 
 
@@ -1002,7 +1002,7 @@ public class Lexer extends SourceFile
     _lastTokenEndPos = tokenEndPos();
     _ignoredTokenBefore = false;
     nextRaw();
-    while (ignore(currentNoLimit()))
+    while (ignore(_curToken))
       {
         _ignoredTokenBefore = true;
         nextRaw();
@@ -1084,7 +1084,7 @@ public class Lexer extends SourceFile
    */
   Token currentNoLimit()
   {
-    return current(-1, -1, Integer.MAX_VALUE, false, false);
+    return _curToken;
   }
 
 
