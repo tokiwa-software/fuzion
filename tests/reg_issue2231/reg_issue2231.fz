@@ -23,11 +23,11 @@
 
 reg_issue2231 is
   a := mut ()->i32 ()->0
-  eff : abortable_effect is
+  eff : abortable_effect unit is
     inner := 7
     a <- ()->inner
     something is
-      abort
+      abort unit
 
   eff.go ()->
     reg_issue2231.eff.env.something
