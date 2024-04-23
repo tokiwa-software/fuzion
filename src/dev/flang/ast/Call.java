@@ -2705,18 +2705,6 @@ public class Call extends AbstractCall
         _generics = FormalGenerics.resolve(res, _generics, outer);
         _generics = _generics.map(g -> g.resolve(res, _calledFeature.outer()));
 
-        ListIterator<Expr> i = _actuals.listIterator();
-        while (i.hasNext())
-          {
-            Expr actl = i.next();
-            if (actl instanceof Actual aa)
-              {
-                actl = aa.expr(this);
-              }
-            if (CHECKS) check
-              (actl != null);
-            i.set(actl);
-          }
 
         propagateForPartial(res, outer);
         if (needsToInferTypeParametersFromArgs())
