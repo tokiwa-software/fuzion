@@ -413,8 +413,7 @@ uint64_t fzE_nanotime()
 void fzE_nanosleep(uint64_t n)
 {
   struct timespec req = (struct timespec){n/1000000000LL,n-n/1000000000LL*1000000000LL};
-  // NYI while{}
-  nanosleep(&req,&req);
+  while (nanosleep(&req, &req));
 }
 
 

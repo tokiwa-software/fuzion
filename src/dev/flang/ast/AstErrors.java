@@ -1131,6 +1131,7 @@ public class AstErrors extends ANY
         var solution2 = solutionWrongArgumentNumber(candidatesArgCountMismatch);
         var solution3 = solutionAccidentalFreeType(target);
         var solution4 = solutionHidden(candidatesHidden);
+        var solution5 = solutionLambda(call);
         error(call.pos(), msg,
               "Feature not found: " + sbnf(calledName) + "\n" +
               "Target feature: " + s(targetFeature) + "\n" +
@@ -1138,8 +1139,26 @@ public class AstErrors extends ANY
               (solution1 != "" ? solution1 :
                solution2 != "" ? solution2 :
                solution3 != "" ? solution3 :
-               solution4 != "" ? solution4 : ""));
+               solution4 != "" ? solution4 :
+               solution5 != "" ? solution5 : ""));
       }
+  }
+
+  private static String solutionLambda(Call call)
+  {
+    var solution = "";
+
+    if (call._targetOf_forErrorSolutions != null
+     && call._targetOf_forErrorSolutions.name().startsWith("infix ->")
+     && call._targetOf_forErrorSolutions.name().length() > "infix ->".length())
+      {
+
+        solution = "Lambda operator is part of infix operator here:" + System.lineSeparator() +
+          call._targetOf_forErrorSolutions.pos().show() + System.lineSeparator() +
+          "To solve this, add a space after " + skw("->") + ".";
+      }
+
+    return solution;
   }
 
   public static void ambiguousType(SourcePosition pos,
@@ -1872,7 +1891,7 @@ public class AstErrors extends ANY
 
   public static void illegalCallResultType(Call c, AbstractType t, AbstractType o)
   {
-    var of = o.featureOfType();
+    var of = o.feature();
     error(c.pos(),
           "Call performed on a boxed (explicit " + code("ref") + ") type not permitted here.",
           "The problem is that the call result type " + s(t) + " contains the outer, boxed type while " +
@@ -1972,7 +1991,7 @@ public class AstErrors extends ANY
     );
   }
 
-  public static void illegalVisibilityModifier(Feature f)
+  public static void illegalTypeVisibilityModifier(Feature f)
   {
     error(f.pos(), "Feature specifying type visibility does not define a type.",
      "To solve this, remove the type visibility: " + s(f.visibility().typeVisibility()) + "."
@@ -1999,6 +2018,13 @@ public class AstErrors extends ANY
   {
     error(f.pos(), "Redefinition must not have more restrictive visibility.",
       "To solve this, increase the visibility of " + s(f) + " to at least " + s(redefined.visibility()));
+  }
+
+  public static void illegalVisibilityModifier(Feature f)
+  {
+    error(f.pos(), "Feature defined in inner block must not have visibility modifier.",
+      "To solve this, remove the visibility modifier " + s(f.visibility()) + " from feature " + s(f)
+        + " or move the feature to the main block of the containing feature.");
   }
 
   public static void contractExpressionMustResultInBool(Expr cond)

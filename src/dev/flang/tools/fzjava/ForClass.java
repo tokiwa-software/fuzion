@@ -46,6 +46,7 @@ import java.util.TreeMap;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
+@SuppressWarnings("rawtypes")
 class ForClass extends ANY
 {
 
@@ -605,6 +606,7 @@ class ForClass extends ANY
    *
    * @return true iff the first one with result r1 is preferred, false otherwise.
    */
+  @SuppressWarnings("unchecked")
   boolean preferredResult(Class r1, Class r2)
   {
     return r2.isAssignableFrom(r1);
@@ -840,7 +842,12 @@ class ForClass extends ANY
         res.append(res.length() == 1 ? "" : "; ");
         var mp = FeatureWriter.mangledCleanName(p.getName());
         res.append("(");
-        if      (t.isArray()        ) { res.append("fuzion.java.array_to_java_object (" + plainResultType(t.getComponentType()) + ") "); }
+        if      (t.isArray()        )
+          {
+            res.append(
+              "fuzion.java.array_to_java_object (" + plainResultType(t.getComponentType()) + ") "
+                + fuzionString(signature(t.getComponentType())) + " ");
+          }
         else if (t == Byte     .TYPE) { res.append("fuzion.java.i8_to_java_object "    ); }
         else if (t == Character.TYPE) { res.append("fuzion.java.u16_to_java_object "   ); }
         else if (t == Short    .TYPE) { res.append("fuzion.java.i16_to_java_object "   ); }
@@ -1001,7 +1008,8 @@ class ForClass extends ANY
                                "  public " + fn + " " + rt + " =>\n" +
                                "    " + ("fuzion.java.get_static_field (" + rt + ") " +
                                          fuzionString(cn) + " " +
-                                         fuzionString(jn) + "\n"));
+                                         fuzionString(jn) + " " +
+                                         fuzionString(signature(fi.getType())) + "\n"));  // NYI fi.getType.getClass??
           }
         else
           {
@@ -1011,7 +1019,8 @@ class ForClass extends ANY
                                 "  public " + fn + " " + rt + " =>\n" +
                                 "    " + ("fuzion.java.get_field (" + rt + ") " +
                                           fcn + ".this " +
-                                          fuzionString(jn) + "\n"
+                                          fuzionString(jn) + " " +
+                                          fuzionString(signature(fi.getType())) + "\n"
                                           ));
           }
       }

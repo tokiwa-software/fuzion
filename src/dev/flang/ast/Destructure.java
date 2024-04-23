@@ -124,6 +124,7 @@ public class Destructure extends ExprWithPos
   private Expr expand()
   {
     List<Expr> exprs = new List<Expr>();
+    exprs.add(this);
     if (_fields != null)
       {
         for (var f : _fields)
@@ -131,7 +132,6 @@ public class Destructure extends ExprWithPos
             exprs.add((Feature) f);
           }
       }
-    exprs.add(this);
     return new Block(exprs);
   }
 
@@ -293,7 +293,7 @@ public class Destructure extends ExprWithPos
         var names = _names.iterator();
         var fields = _fields == null ? null : _fields.iterator();
         List<String> fieldNames = new List<>();
-        for (var f : t.featureOfType().valueArguments())
+        for (var f : t.feature().valueArguments())
           {
             // NYI: check if f is visible
             var tf = f.resultTypeIfPresent(res, UnresolvedType.NONE);

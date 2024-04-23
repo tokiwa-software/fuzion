@@ -668,7 +668,10 @@ name        : IDENT                            // all parts of name must be in s
         var oldLine = sameLine(line());
         switch (current(mayBeAtMinIndent))
           {
-          case t_ident  : result = new ParsedName(tokenSourceRange(), identifier(mayBeAtMinIndent)); next(); break;
+          case t_ident  : result = ignoreError ? ParsedName.DUMMY
+                                               : new ParsedName(tokenSourceRange(), identifier(mayBeAtMinIndent));
+                          next();
+                          break;
           case t_infix  :
           case t_prefix :
           case t_postfix: result = opName(mayBeAtMinIndent, ignoreError);  break;
@@ -2697,7 +2700,7 @@ exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
    */
   int indent(int pos)
   {
-    return pos >= 0 ? codePointInLine(pos) : 0;
+    return pos >= 0 ? codePointIndentation(pos) : 0;
   }
 
 
@@ -2756,13 +2759,14 @@ loopEpilog  : "until" exprInLine thenPart elseBlock
         var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprInLine()    : null;
                                                     var ub  = hasUntil            ? thenPart(true)  : null;
                                                     var els1= fork().elseBlock();
+                                                    var els2= fork().elseBlock();
                                                     var els =        elseBlock();
 
         if (!hasWhile && !hasDo && !hasUntil && els == null)
           {
             syntaxError(tokenPos(), "loopBody or loopEpilog: 'while', 'do', 'until' or 'else'", "loop");
           }
-        return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, els, els1).tailRecursiveLoop();
+        return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, els, els1, els2).tailRecursiveLoop();
       });
   }
 
@@ -3815,9 +3819,9 @@ typeOpt     : type
   {
     boolean result;
     var f = fork();
-    var f2 = fork();
     if (f.skipBracketTermWithNLs(PARENS, () -> f.current() == Token.t_rparen || f.skipTypeList(allowTypeThatIsNotExpression)))
       {
+        var f2 = fork();
         result = skipBracketTermWithNLs(PARENS, () -> current() == Token.t_rparen || skipTypeList(allowTypeThatIsNotExpression));
         var p = tokenPos();
         var l = line();

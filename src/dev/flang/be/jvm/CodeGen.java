@@ -29,6 +29,8 @@ package dev.flang.be.jvm;
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
+import static dev.flang.ir.IR.NO_SITE;
+
 import dev.flang.be.jvm.classfile.Expr;
 import dev.flang.be.jvm.classfile.VerificationType;
 import dev.flang.be.jvm.classfile.ClassFile;
@@ -51,7 +53,7 @@ import java.util.Arrays;
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 class CodeGen
-  extends AbstractInterpreter.ProcessStatement<Expr, Expr>  // both, values and statements are implemented by Expr
+  extends AbstractInterpreter.ProcessExpression<Expr, Expr>  // both, values and statements are implemented by Expr
   implements ClassFileConstants
 {
 
@@ -115,6 +117,7 @@ class CodeGen
    * statement.  For a code generator, this could, e.g., join statements "a :=
    * 3;" and "b(x);" into a block "{ a := 3; b(x); }".
    */
+  @Override
   public Expr sequence(List<Expr> l)
   {
     var res = Expr.UNIT;
@@ -134,6 +137,7 @@ class CodeGen
    * Produce the unit type value.  This is used as a placeholder
    * for the universe instance as well as for the instance 'unit'.
    */
+  @Override
   public Expr unitValue()
   {
     return Expr.UNIT;
@@ -146,19 +150,19 @@ class CodeGen
    *
    * @param cl the clazz we are compiling
    *
-   * @param c the code block to compile
-   *
-   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+   * @param s site of the next expression
    */
-  public Expr statementHeader(int cl, int c, int i)
+  @Override
+  public Expr expressionHeader(int s)
   {
-    return _jvm.trace(cl, c, i);
+    return _jvm.trace(s);
   }
 
 
   /**
    * A comment, adds human readable information
    */
+  @Override
   public Expr comment(String s)
   {
     return Expr.comment(s);
@@ -168,6 +172,7 @@ class CodeGen
   /**
    * no operation, like comment, but without giving any comment.
    */
+  @Override
   public Expr nop()
   {
     return Expr.UNIT;
@@ -185,6 +190,7 @@ class CodeGen
    *
    * @return code to perform the side effects of v and ignoring the produced value.
    */
+  @Override
   public Expr drop(Expr v, int type)
   {
     // Check consistency between v.type() and type:
@@ -201,21 +207,9 @@ class CodeGen
 
 
   /**
-   * Determine the address of a given value.  This is used on a call to an
-   * inner feature to pass a reference to the outer value type instance.
-   */
-  public Pair<Expr, Expr> adrOf(Expr v)
-  {
-    return new Pair<>(v, Expr.UNIT);
-  }
-
-
-  /**
    * Create code to assign value to a given field w/o dynamic binding.
    *
-   * @param cl id of clazz we are interpreting
-   *
-   * @param pre true iff interpreting cl's precondition, false for cl itself.
+   * @param s cl id of clazz we are interpreting
    *
    * @param tc clazz id of the target instance
    *
@@ -229,7 +223,8 @@ class CodeGen
    *
    * @return statement to perform the given assignment
    */
-  public Expr assignStatic(int cl, boolean pre, int tc, int f, int rt, Expr tvalue, Expr val)
+  @Override
+  public Expr assignStatic(int s, int tc, int f, int rt, Expr tvalue, Expr val)
   {
     if (_fuir.clazzIsOuterRef(f) && _fuir.clazzIsUnitType(rt))
       {
@@ -237,7 +232,7 @@ class CodeGen
       }
     else
       {
-        return _jvm.assignField(cl, pre, tvalue, f, val, rt);
+        return _jvm.assignField(s, tvalue, f, val, rt);
       }
   }
 
@@ -247,21 +242,16 @@ class CodeGen
    * might be dynamic (a reference). See FUIR.access*().
    * local variable.
    *
-   * @param cl the clazz we are compiling
-   *
-   * @param pre true iff we are compiling the precondition
-   *
-   * @param c the code block to compile
-   *
-   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+   * @param s site of the assignment
    *
    * @param tvalue the target instance
    *
    * @param avalue the new value to be assigned to the field.
    */
-  public Expr assign(int cl, boolean pre, int c, int i, Expr tvalue, Expr avalue)
+  @Override
+  public Expr assign(int s, Expr tvalue, Expr avalue)
   {
-    var p = access(cl, pre, c, i, tvalue, new List<>(avalue));
+    var p = access(s, tvalue, new List<>(avalue));
 
     if (CHECKS) check
       (p.v0() == Expr.UNIT);
@@ -277,16 +267,14 @@ class CodeGen
    * This is used in case e's value is needed repeatedly as in passing it to a
    * precondition check before it is passed to the actual call.
    *
-   * @param cl the clazz we are compiling
-   *
-   * @param pre true iff we are compiling the precondition
+   * @param si site of the expr requiring this
    *
    * @param e expression to evaluation and store in a local, null for void value
    *
    * @return a pair of a new expression that loads the value of e and an
    * expression that evaluates e and stores it in a local variable.
    */
-  Pair<Expr,Expr> storeInLocal(int cl, boolean pre, Expr e)
+  Pair<Expr,Expr> storeInLocal(int si, Expr e)
   {
     if (e == null)
       {
@@ -295,7 +283,7 @@ class CodeGen
     else
       {
         var t = e.type();
-        var l = _jvm.allocLocal(cl, pre, t.stackSlots());
+        var l = _jvm.allocLocal(si, t.stackSlots());
         return new Pair<>(t.load(l),
                           e.andThen(t.store(l)));
       }
@@ -310,45 +298,40 @@ class CodeGen
    * Result.v0() may be null to indicate that code generation should stop here
    * (due to an error or tail recursion optimization).
    *
-   * @param cl the clazz we are compiling
-   *
-   * @param pre true iff we are compiling the precondition
-   *
-   * @param c the code block to compile
-   *
-   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+   * @param si site of the call
    *
    * @param tvalue the target of this call, CExpr.UNIT if none.
    *
    * @param args the arguments of this call.
    */
-  public Pair<Expr, Expr> call(int cl, boolean pre, int c, int i, Expr tvalue, List<Expr> args)
+  @Override
+  public Pair<Expr, Expr> call(int si, Expr tvalue, List<Expr> args)
   {
-    var p = combinePreconditionAndCall(cl, pre, c, i, tvalue, args);
+    var p = combinePreconditionAndCall(si, tvalue, args);
     if (p == null)
       {
-        var ccP = _fuir.accessedPreconditionClazz(cl, c, i);
+        var ccP = _fuir.accessedPreconditionClazz(si);
         var s = Expr.UNIT;
         var res = Expr.UNIT;
         if (ccP != -1)   // call precondition:
           {
             // evaluate target and args and copy to local vars to avoid evaluating them twice.
-            var pt = storeInLocal(cl, pre, tvalue);
+            var pt = storeInLocal(si, tvalue);
             tvalue = pt.v0();
             s = s.andThen(pt.v1());
             var nargs = new List<Expr>();
             for (var a : args)
               {
-                var pa = storeInLocal(cl, pre, a);
+                var pa = storeInLocal(si, a);
                 s = s.andThen(pa.v1());
                 nargs.add(pa.v0());
               }
             args = nargs;
-            s = s.andThen(staticCall(cl, pre, tvalue, args, ccP, true, c, i));
+            s = s.andThen(staticCall(si, tvalue, args, ccP, true));
           }
-        if (!_fuir.callPreconditionOnly(cl, c, i))
+        if (!_fuir.callPreconditionOnly(si))
           {
-            var r = access(cl, pre, c, i, tvalue, args);
+            var r = access(si, tvalue, args);
             s = s.andThen(r.v1());
             res = r.v0();
           }
@@ -364,13 +347,7 @@ class CodeGen
    * call is then replaced by a call to a combined method that checks the
    * precondition and then calls the routine.
    *
-   * @param cl the clazz we are compiling
-   *
-   * @param pre true iff we are compiling the precondition
-   *
-   * @param c the code block to compile
-   *
-   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+   * @param s site of call
    *
    * @param tvalue the target of this call, CExpr.UNIT if none.
    *
@@ -379,11 +356,11 @@ class CodeGen
    * @return Result value and code generated for this combined call, null if
    * combined call is not possible.
    */
-  Pair<Expr, Expr> combinePreconditionAndCall(int cl, boolean pre, int c, int i, Expr tvalue, List<Expr> args)
+  Pair<Expr, Expr> combinePreconditionAndCall(int s, Expr tvalue, List<Expr> args)
   {
     Pair<Expr, Expr> res = null;
-    var ccP = _fuir.accessedPreconditionClazz(cl, c, i);
-    var ccs = _fuir.accessedClazzes(cl, c, i);
+    var ccP = _fuir.accessedPreconditionClazz(s);
+    var ccs = _fuir.accessedClazzes(s);
     if (ccs.length == 2)
       {
         var tt = ccs[0];                   // target clazz we match against
@@ -391,11 +368,11 @@ class CodeGen
         if (cc == ccP &&
             _fuir.clazzKind(ccP) == FUIR.FeatureKind.Routine &&
             !_fuir.clazzIsBoxed(tt) &&
-            cc != cl /* not a call to current clazz that might need tail-call optimization */ &&
+            cc != _fuir.clazzAt(s) /* not a call to current clazz that might need tail-call optimization */ &&
             _types.clazzNeedsCode(cc)
             )
           {
-            var tc = _fuir.accessTargetClazz(cl, c, i);
+            var tc = _fuir.accessTargetClazz(s);
             if (tc != tt || _types.hasInterfaceFile(tc))
               {
                 tvalue = tvalue.andThen(Expr.checkcast(_types.javaType(tc)));
@@ -446,13 +423,7 @@ class CodeGen
   /**
    * Create code to access (call or write) a feature.
    *
-   * @param cl the clazz we are compiling
-   *
-   * @param pre true iff we are compiling the precondition
-   *
-   * @param c the code block to compile
-   *
-   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+   * @param si site of the access expression, must be ExprKind.Assign or ExprKind.Call
    *
    * @param tvalue the target of this call, CExpr.UNIT if none.
    *
@@ -462,13 +433,13 @@ class CodeGen
    * @return pair of expression containing result value and statement to perform
    * the given access
    */
-  Pair<Expr, Expr> access(int cl, boolean pre, int c, int i, Expr tvalue, List<Expr> args)
+  Pair<Expr, Expr> access(int si, Expr tvalue, List<Expr> args)
   {
     var res = Expr.UNIT;
     var s   = Expr.UNIT;
-    var isCall = _fuir.codeAt(c, i) == FUIR.ExprKind.Call;  // call or assignment?
-    var cc0 = _fuir.accessedClazz  (cl, c, i);
-    var ccs = _fuir.accessedClazzes(cl, c, i);
+    var isCall = _fuir.codeAt(si) == FUIR.ExprKind.Call;  // call or assignment?
+    var cc0 = _fuir.accessedClazz  (si);
+    var ccs = _fuir.accessedClazzes(si);
     var rt = isCall ? _fuir.clazzResultClazz(cc0) : _fuir.clazz(FUIR.SpecialClazzes.c_unit);
     if (ccs.length == 0)
       {
@@ -479,19 +450,19 @@ class CodeGen
           }
         if (isCall && (_fuir.hasData(rt) || _fuir.clazzIsVoidType(rt)))  // we need a non-unit result and do not know what to do with this call, so flag an error
           {
-            s = s.andThen(_jvm.reportErrorInCode("no targets for access of " + _fuir.clazzAsString(cc0) + " within " + _fuir.clazzAsString(cl)));
+            s = s.andThen(_jvm.reportErrorInCode("no targets for access of " + _fuir.clazzAsString(cc0) + " within " + _fuir.siteAsString(si)));
             res = null;
           }
         else  // an assignment to an unused field or unit-type call, that is fine to remove, just add a comment
           {
-            s = s.andThen(Expr.comment("access to " + _fuir.codeAtAsString(cl, c, i) + " eliminated"));
+            s = s.andThen(Expr.comment("access to " + _fuir.codeAtAsString(si) + " eliminated"));
           }
       }
     else if (ccs.length > 2)
       {
         if (CHECKS) check
-          (_fuir.hasData(_fuir.accessTargetClazz(cl, c, i)),  // would be strange if target is unit type
-           _fuir.accessIsDynamic(cl, c, i));                  // or call is not dynamic
+          (_fuir.hasData(_fuir.accessTargetClazz(si)),  // would be strange if target is unit type
+           _fuir.accessIsDynamic(si));                  // or call is not dynamic
 
         var dynCall = args(true, tvalue, args, cc0, isCall ? _fuir.clazzArgCount(cc0) : 1)
           .andThen(Expr.comment("Dynamic access of " + _fuir.clazzAsString(cc0)))
@@ -507,14 +478,14 @@ class CodeGen
       }
     else
       {
-        var tc = _fuir.accessTargetClazz(cl, c, i);
+        var tc = _fuir.accessTargetClazz(si);
         var tt = ccs[0];                   // target clazz we match against
         var cc = ccs[1];                   // called clazz in case of match
         if (tc != tt || _types.hasInterfaceFile(tc))
           {
             tvalue = tvalue.andThen(Expr.checkcast(_types.javaType(tt)));
           }
-        var calpair = staticAccess(cl, pre, tt, cc, tvalue, args, isCall, c, i);
+        var calpair = staticAccess(si, tt, cc, tvalue, args, isCall);
         s = s.andThen(calpair.v1());
         res = calpair.v0();
         if (_fuir.clazzIsVoidType(_fuir.clazzResultClazz(cc)))
@@ -615,7 +586,7 @@ class CodeGen
             var t = _types.javaType(_fuir.clazzResultClazz(cc));
             na.add(t.load(1));
           }
-        var p = staticAccess(-1, false, tt, cc, tv, na, isCall, -1, -1);
+        var p = staticAccess(NO_SITE, tt, cc, tv, na, isCall);
         var code = p.v1()
           .andThen(p.v0() == null ? Expr.UNIT : p.v0())
           .andThen(retoern);
@@ -631,9 +602,7 @@ class CodeGen
    * access to create code if there is only one possible target and by stubs to
    * perform the actual access.
    *
-   * @param cl the clazz we are compiling or -1 if we are creating a stub
-   *
-   * @param pre true iff we are compiling the precondition
+   * @param s site of the access or NO_SITE if this is a call in an interface method stub.
    *
    * @param tt the target clazz. Note that tt may be different to
    * _fuir.clazzOuterClazz(cc), e.g., if tt is some type defining abstract
@@ -649,9 +618,11 @@ class CodeGen
    * @param isCall true if the access is a call, false if it is an assignment to
    * a field.
    *
+   * @param si site of the access
+   *
    * @return the result and code to perform the access.
    */
-  Pair<Expr, Expr> staticAccess(int cl, boolean pre, int tt, int cc, Expr tv, List<Expr> args, boolean isCall, int c, int i)
+  Pair<Expr, Expr> staticAccess(int si, int tt, int cc, Expr tv, List<Expr> args, boolean isCall)
   {
     var cco = _fuir.clazzOuterClazz(cc);   // actual outer clazz of called clazz, more specific than tt
     if (_fuir.clazzIsBoxed(tt) &&
@@ -666,18 +637,16 @@ class CodeGen
                                      _types.javaType(cco)));
       }
 
-    return isCall ? staticCall(cl, pre, tv, args, cc, false, c, i)
+    return isCall ? staticCall(si, tv, args, cc, false)
                   : new Pair<>(Expr.UNIT,
-                               _jvm.assignField(cl, pre, tv, cc, args.get(0), _fuir.clazzResultClazz(cc)));
+                               _jvm.assignField(si, tv, cc, args.get(0), _fuir.clazzResultClazz(cc)));
   }
 
 
   /**
    * Create code for a statically bound call.
    *
-   * @param cl the clazz we are compiling, -1 if this is a call in an interface method stub.
-   *
-   * @param pre true iff we are compiling the precondition
+   * @param si site of the access or NO_SITE if this is a call in an interface method stub.
    *
    * @param tvalue the target value of the call
    *
@@ -688,8 +657,10 @@ class CodeGen
    * @param preCalled true to call the precondition of cc instead of cc.
    *
    * @return the code to perform the call
+   *
+   * @param si site of the call
    */
-  Pair<Expr, Expr> staticCall(int cl, boolean pre, Expr tvalue, List<Expr> args, int cc, boolean preCalled, int c, int i)
+  Pair<Expr, Expr> staticCall(int si, Expr tvalue, List<Expr> args, int cc, boolean preCalled)
   {
     Pair<Expr, Expr> res;
     var oc = _fuir.clazzOuterClazz(cc);
@@ -708,7 +679,7 @@ class CodeGen
             }
           else if (!(preCalled || Intrinsix.inRuntime(_jvm, cc)))
             {
-              return Intrinsix.inlineCode(_jvm, cl, pre, cc, tvalue, args);
+              return Intrinsix.inlineCode(_jvm, si, cc, tvalue, args);
             }
           // fall through!
         }
@@ -717,10 +688,12 @@ class CodeGen
         {
           if (_types.clazzNeedsCode(cc))
             {
-              if (!pre                                                                   // not within precondition
-                  && !preCalled                                                          // not calling pre-condition
-                  && cc == cl                                                            // calling myself
-                  && c != -1 && i != -1 && _jvm._tailCall.callIsTailCall(cl, c, i)       // as a tail call
+              var cl = si == NO_SITE ? -1 :_fuir.clazzAt(si);
+              var pre = si != NO_SITE && _fuir.isPreconditionAt(si);
+              if (!pre                                                  // not within precondition
+                  && !preCalled                                         // not calling pre-condition
+                  && cc == cl                                           // calling myself
+                  && _jvm._tailCall.callIsTailCall(cl, si)              // as a tail call
                   && !_fuir.lifeTime(cl, pre).maySurviveCall()
                   )
                 { // then we can do tail recursion optimization!
@@ -822,8 +795,9 @@ class CodeGen
   /**
    * Get the current instance
    */
-  public Pair<Expr, Expr> current(int cl, boolean pre)
+  public Pair<Expr, Expr> current(int s)
   {
+    var cl = _fuir.clazzAt(s);
     if (_types.isScalar(cl))
       {
         return new Pair<>(_types.javaType(cl).load(0), Expr.UNIT);
@@ -838,11 +812,12 @@ class CodeGen
   /**
    * Get the outer instance the given clazz is called on.
    */
-  public Pair<Expr, Expr> outer(int cl)
+  public Pair<Expr, Expr> outer(int s)
   {
     if (PRECONDITIONS) require
-      (_fuir.clazzResultClazz(_fuir.clazzOuterRef(cl)) == _fuir.clazzOuterClazz(cl));
+      (_fuir.clazzResultClazz(_fuir.clazzOuterRef(_fuir.clazzAt(s))) == _fuir.clazzOuterClazz(_fuir.clazzAt(s)));
 
+    var cl = _fuir.clazzAt(s);
     return new Pair<>(_types.javaType(_fuir.clazzOuterClazz(cl)).load(0),
                       Expr.UNIT);
   }
@@ -852,18 +827,19 @@ class CodeGen
    * Get the value argument #i from the slot that contains the argument at the
    * beginning of a call to the Java code of cl.
    *
-   * @param cl the clazz we are compiling.
+   * @param s site of the current expression
    *
    * @param i index the local variable we want to get
    *
    * @return code to read arg #i from its slot.
    */
-  public Expr arg(int cl, int i)
+  public Expr arg(int s, int i)
   {
     if (PRECONDITIONS) require
       (0 <= i,
-       i < _fuir.clazzArgCount(cl));
+       i < _fuir.clazzArgCount(_fuir.clazzAt(s)));
 
+    var cl = _fuir.clazzAt(s);
     var l = _jvm.argSlot(cl, i);
     var t = _fuir.clazzArgClazz(cl, i);
     var jt = _types.resultType(t);
@@ -1038,23 +1014,17 @@ class CodeGen
   /**
    * Perform a match on value subv.
    *
+   * @param s site of the match
+   *
    * @param ai the abstract interpreter instance
-   *
-   * @param cl the clazz we are compiling
-   *
-   * @param pre true iff we are compiling the precondition
-   *
-   * @param c the code block to compile
-   *
-   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
    *
    * @param sub code to produce the match subject value
    *
    * @return the code for the match, produces unit type result.
    */
-  public Pair<Expr, Expr> match(AbstractInterpreter<Expr, Expr> ai, int cl, boolean pre, int c, int i, Expr sub)
+  public Pair<Expr, Expr> match(int s, AbstractInterpreter<Expr, Expr> ai, Expr sub)
   {
-    var code = _choices.match(_jvm, ai, cl, pre, c, i, sub);
+    var code = _choices.match(_jvm, ai, s, sub);
     return new Pair<>(Expr.UNIT, code);
   }
 
@@ -1073,9 +1043,9 @@ class CodeGen
    *
    * @return code to produce the tagged value as a result.
    */
-  public Pair<Expr, Expr> tag(int cl, Expr value, int newcl, int tagNum)
+  public Pair<Expr, Expr> tag(int s, Expr value, int newcl, int tagNum)
   {
-    var res = _choices.tag(_jvm, cl, value, newcl, tagNum);
+    var res = _choices.tag(_jvm, s, value, newcl, tagNum);
     return new Pair<>(res, Expr.UNIT);
   }
 
@@ -1100,8 +1070,9 @@ class CodeGen
    * Process a contract of kind ck of clazz cl that results in bool value cc
    * (i.e., the contract fails if !cc).
    */
-  public Expr contract(int cl, FUIR.ContractKind ck, Expr cc)
+  public Expr contract(int s, FUIR.ContractKind ck, Expr cc)
   {
+    var cl = _fuir.clazzAt(s);
     return cc.andThen(Expr.branch(O_ifeq,
                                   Expr.stringconst("" + ck + " on call to '" + _fuir.clazzAsString(cl) + "'")
                                   .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,

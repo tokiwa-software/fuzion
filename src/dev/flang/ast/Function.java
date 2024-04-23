@@ -73,6 +73,9 @@ public class Function extends AbstractLambda
   AbstractFeature _feature;
 
 
+  /**
+   * The inferred type
+   */
   AbstractType _type;
 
 
@@ -81,12 +84,14 @@ public class Function extends AbstractLambda
    * arguments to Function/Routine the anonymous feature inherits from. This
    * will be used put the correct return type in case of a fun declaration using
    * => that requires type inference.
+   *
+   * I.e. a call to (Function/Unary/Lazy <generics>)
    */
   Call _inheritsCall;
 
 
   /**
-   * The feature that inherits from `Function` that implements this lambda in
+   * The feature that inherits from `Function/Unary/Lazy/...` that implements this lambda in
    * its `call` feature.
    */
   Feature _wrapper;
@@ -97,7 +102,11 @@ public class Function extends AbstractLambda
    */
   List<ParsedName> _names;
 
-  Expr _expr;           // the right hand side of the '->'
+
+  /**
+   * the right hand side of the '->'
+   */
+  Expr _expr;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -261,8 +270,8 @@ public class Function extends AbstractLambda
               };
 
             var inheritsName =
-              (t.featureOfType() == Types.resolved.f_Unary && gs.size() == 2) ? Types.UNARY_NAME :
-              (t.featureOfType() == Types.resolved.f_Lazy  && gs.size() == 1) ? Types.LAZY_NAME
+              (t.feature() == Types.resolved.f_Unary && gs.size() == 2) ? Types.UNARY_NAME :
+              (t.feature() == Types.resolved.f_Lazy  && gs.size() == 1) ? Types.LAZY_NAME
                                                                               : Types.FUNCTION_NAME;
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
@@ -328,7 +337,9 @@ public class Function extends AbstractLambda
    */
   public void resolveTypes(Resolution res, AbstractFeature outer)
   {
-    check(this._call == null || this._feature != null);
+    if (CHECKS) check
+      (this._call == null || this._feature != null);
+
     if (this._call == null)
       {
         // do not do anything yet, we are waiting for propagateExpectedType to

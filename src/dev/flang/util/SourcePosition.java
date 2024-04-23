@@ -236,7 +236,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
   {
     if (_column == null)
       {
-        _column = _sourceFile.codePointInLine(_bytePos);
+        _column = _sourceFile.codePointIndentation(_bytePos);
       }
     return _column;
   }

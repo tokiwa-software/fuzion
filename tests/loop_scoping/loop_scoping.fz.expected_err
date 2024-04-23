@@ -1,0 +1,9 @@
+
+--CURDIR--/loop_scoping.fz:27:7: error 1: Could not find called feature
+  say i
+------^
+Feature not found: 'i' (no arguments)
+Target feature: 'loop_scoping'
+In call: 'i'
+
+one error.

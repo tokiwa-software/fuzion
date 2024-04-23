@@ -26,10 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.air.Clazz;
-
-
-
 /**
  * Backend specific result of Backend.callable()
  *
@@ -38,8 +34,8 @@ import dev.flang.air.Clazz;
 public interface BackendCallable
 {
 
-  default Clazz inner() { return null; }
-  default Clazz outer() { return null; }
+  default int inner() { return -1; }
+  default int outer() { return -1; }
 
 }
 

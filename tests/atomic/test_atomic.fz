@@ -63,7 +63,10 @@ test_atomic is
   test 1 2 3 4
   test 0.1 0.2 0.3 0.4
   test true true false false
+  # codepoints
   test "A" "B" "C" "D"
+  # strings
+  test $"A" $"B" $"C" $"D"
   test (p 1 1) (p 2 2) (p 3 3) (p 4 4)
 
   # test unit-like choice
@@ -157,81 +160,33 @@ test_atomic is
   c2 := concur.atomic i64 0
   s2 := concur.atomic i64 -1
 
-  if false  # NYI: The tail recursion is not properly recognized in this case yet,
-            #      resulting in stack overflow for the C and interpreter backends:
-    concur.thread.spawn (()->
-      end := time.nano.read + (time.durations.seconds 5).nanos
-      for
-        s := i64 0, o=v ? s+1 : s
-        c in (i64 0)..
-      while time.nano.read < end do
-        v := a.read
-        n := v + 1
-        o := a.compare_and_swap v n
-      else
-        c1.write c
-        s1.write s
-      )
+  concur.thread.spawn (()->
+    end := time.nano.read + (time.durations.seconds 5).nanos
+    for
+      s := i64 0, o=v ? s+1 : s
+      c := i64 0, c+1
+    while time.nano.read < end do
+      v := a.read
+      n := v + 1
+      o := a.compare_and_swap v n
+    else
+      c1.write c
+      s1.write s
+    )
 
-    concur.thread.spawn (()->
-      end := time.nano.read + (time.durations.seconds 5).nanos
-      for
-        s := i64 0, o=v ? s+1 : s
-        c in (i64 0)..
-      while time.nano.read < end do
-        v := a.read
-        n := v + 0x1_0000_0000
-        o := a.compare_and_swap v n
-      else
-        c2.write c
-        s2.write s
-      )
-
-  else
-    # alternative avoiding loops/tail recursion
-    end := time.nano.read + (time.durations.ms 100).nanos
-    concur.thread.spawn (()->
-      rec(d i32) (i32, i32) =>
-        if time.nano.read < end
-          if d > 0
-            (succ0,count0) := (rec d-1)
-            (succ1,count1) := (rec d-1)
-            (succ0 + succ1, count0 + count1)
-          else
-            v := a.read
-            n := v + 0x1
-            o := a.compare_and_swap v n
-            if o = v
-              (1,1)
-            else
-              (0,1)
-        else
-          (0, 0)
-      (s, c) := rec 32
-      c1.write c.as_i64
-      s1.write s.as_i64
-      )
-    concur.thread.spawn (()->
-      rec(d i32) (i32, i32) =>
-        if time.nano.read < end
-          if d > 0
-            (succ0,count0) := (rec d-1)
-            (succ1,count1) := (rec d-1)
-            (succ0 + succ1, count0 + count1)
-          else
-            v := a.read
-            n := v + 0x1_0000_0000
-            o := a.compare_and_swap v n
-            if o = v
-              (1,1)
-            else
-              (0,1)
-        else
-          (0, 0)
-      (s, c) := rec 32
-      c2.write c.as_i64
-      s2.write s.as_i64
-      )
+  concur.thread.spawn (()->
+    end := time.nano.read + (time.durations.seconds 5).nanos
+    for
+      s := i64 0, o=v ? s+1 : s
+      c := i64 0, c+1
+    while time.nano.read < end do
+      v := a.read
+      n := v + 0x1_0000_0000
+      o := a.compare_and_swap v n
+    else
+      c2.write c
+      s2.write s
+    )
 
   while s1.read < 0 || s2.read < 0 do
     time.nano.sleep (time.durations.ms 20)
@@ -244,7 +199,7 @@ test_atomic is
 
   # use `-debug` argument to show CAS success / failure statistics:
   #
-  if ((envir.args.nth 1).get "")="-debug"
+  if ((envir.args.nth 1).or_else "")="-debug"
     say "thread 1: CAS successful: "+s1.read+" failed "+(c1.read-s1.read)+" total "+c1.read
     say "thread 2: CAS successful: "+s2.read+" failed "+(c2.read-s2.read)+" total "+c2.read
     say "a is "+a.read.hex

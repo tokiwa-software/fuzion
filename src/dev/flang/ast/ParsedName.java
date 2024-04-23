@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourcePosition;
 
@@ -49,6 +50,13 @@ public class ParsedName extends ANY implements HasSourcePosition
    */
   public final static ParsedName ERROR_NAME = new ParsedName(SourcePosition.builtIn,
                                                              Errors.ERROR_STRING);
+
+
+  /**
+   * Name to be used in case the actual name is to be ignored.
+   */
+  public final static ParsedName DUMMY = new ParsedName(SourcePosition.builtIn,
+                                                        FuzionConstants.DUMMY_NAME_STRING);
 
 
   /*----------------------------  variables  ----------------------------*/

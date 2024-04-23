@@ -40,4 +40,4 @@ lib_container_ps_map is
   say "items: {a1.items}"
   say "items: {a2.items}"
   say "union: {a1.union a2}"
-  say "union: {a2.union ((container.ps_map i32 String).from_sequence [7] ["7"])}"
+  say "union: {a2.union ((container.ps_map i32 String).new [7] ["7"])}"

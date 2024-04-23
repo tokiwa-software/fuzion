@@ -367,7 +367,7 @@ O(n log n).
   #
   # This feature creates a pre-initialized instance of ps_map.
   #
-  public type.from_sequence(
+  public type.new(
       # list of keys in the map
       ks Sequence PK,
       # list of values corresponding to keys in the map

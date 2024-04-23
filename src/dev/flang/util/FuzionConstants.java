@@ -47,6 +47,13 @@ public class FuzionConstants extends ANY
    */
   public static final String NO_VALUE_STRING = "**no value**";
 
+
+  /**
+   * String used in the dummy ParsedName.
+   */
+  public static final String DUMMY_NAME_STRING = "## dummy name ##";
+
+
   /**
    * Names of Java properties accepted by fz command:
    */
@@ -320,6 +327,39 @@ public class FuzionConstants extends ANY
    * relative path of module directory.
    */
   public static final Path SYMBOLIC_FUZION_MODULE = Path.of("$MODULE");
+
+
+  /**
+   * Expression kind ids for use in FUM file are the ordinal numbers of these
+   * constants.
+   */
+  public enum MirExprKind
+  {
+    Assign,
+    Box,
+    Call,
+    Current,
+    Comment,
+    Const,
+    Match,
+    Tag,
+    Env,
+    Pop,
+    Unit,
+    InlineArray;
+
+    /**
+     * get the Kind that corresponds to the given ordinal number.
+     */
+    public static MirExprKind from(int ordinal)
+    {
+      if (CHECKS) check
+        (values()[ordinal].ordinal() == ordinal);
+
+      return values()[ordinal];
+    }
+
+  }
 
 
   /*-----------------  special values used in AIR file  -----------------*/

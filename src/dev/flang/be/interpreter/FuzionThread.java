@@ -29,10 +29,7 @@ package dev.flang.be.interpreter;
 import java.util.Stack;
 import java.util.TreeMap;
 
-import dev.flang.air.Clazz; // NYI: remove dependency! Use dev.flang.fuir instead.
-
 import dev.flang.util.ANY;
-import dev.flang.util.HasSourcePosition;
 
 
 /**
@@ -79,7 +76,7 @@ public class FuzionThread extends ANY
   /**
    * Currently installed effects.
    */
-  TreeMap<Clazz, Value> _effects = new TreeMap<>();
+  TreeMap<Integer, Value> _effects = new TreeMap<>();
 
 }
 

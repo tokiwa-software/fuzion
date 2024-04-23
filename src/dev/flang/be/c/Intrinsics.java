@@ -735,16 +735,6 @@ public class Intrinsics extends ANY
     put("f32.type.tanh"        , (c,cl,outer,in) -> CExpr.call("tanhf",  new List<>(A0)).ret());
     put("f64.type.tanh"        , (c,cl,outer,in) -> CExpr.call("tanh",   new List<>(A0)).ret());
 
-    put("Any.as_string"        , (c,cl,outer,in) ->
-        {
-          var clname = c._fuir.clazzAsString(c._fuir.clazzOuterClazz(cl));
-          var instname = "instance[" + clname + "]";
-          var instchars = instname.getBytes(StandardCharsets.UTF_8);
-          var rc = c._fuir.clazzResultClazz(cl);
-          return c.heapClone(c.constString(instchars), rc)
-            .ret();
-        });
-
     put("fuzion.sys.internal_array_init.alloc", (c,cl,outer,in) ->
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
@@ -1016,9 +1006,8 @@ public class Intrinsics extends ANY
               new List<CExpr>(
                 c.javaRefField(A0).castTo("jarray"),
                 A1,
-                CExpr
-                  .string(
-                    c._fuir.javaSignature(c._fuir.clazzResultClazz(cl))))), false);
+                A2.castTo("char *"))),
+            false);
         }
     });
     put("fuzion.java.array_length"          , (c,cl,outer,in) -> C.JAVA_HOME == null ? noJava : CExpr.call("fzE_array_length", new List<>(c.javaRefField(A0).castTo("jarray"))).ret());
@@ -1046,29 +1035,29 @@ public class Intrinsics extends ANY
                                                                  : A0.field(c._names
                                                                    .fieldName(c._fuir.clazz_fuzionSysArray_u8_data()))
                                                                    .castTo("jvalue *"),
-                    CExpr.string(c._fuir.javaClassName(elementType)))), false));
+                    A1.castTo("char *"))), false));
         }
     });
     put("fuzion.java.get_field0",
-      (c, cl, outer, in) -> C.JAVA_HOME == null
-                                                  ? noJava
-                                                  : c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
-                                                    .call("fzE_get_field0",
-                                                      new List<>(c.javaRefField(A0).castTo("jobject"),
-                                                        c.javaRefField(A1).castTo("jstring"),
-                                                        CExpr
-                                                          .string(
-                                                            c._fuir.javaSignature(c._fuir.clazzResultClazz(cl))))), false));
+      (c, cl, outer, in) ->
+        C.JAVA_HOME == null
+          ? noJava
+          : c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
+              .call("fzE_get_field0",
+                new List<>(c.javaRefField(A0).castTo("jobject"),
+                  c.javaRefField(A1).castTo("jstring"),
+                  A2.castTo("char *"))),
+            false));
     put("fuzion.java.get_static_field0",
-      (c, cl, outer, in) -> C.JAVA_HOME == null
-                                                  ? noJava
-                                                  : c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
-                                                    .call("fzE_get_static_field0",
-                                                      new List<>(c.javaRefField(A0).castTo("jstring"),
-                                                        c.javaRefField(A1).castTo("jstring"),
-                                                        CExpr
-                                                          .string(
-                                                            c._fuir.javaSignature(c._fuir.clazzResultClazz(cl))))), false));
+      (c, cl, outer, in) ->
+        C.JAVA_HOME == null
+          ? noJava
+          : c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
+              .call("fzE_get_static_field0",
+                new List<>(c.javaRefField(A0).castTo("jstring"),
+                  c.javaRefField(A1).castTo("jstring"),
+                  A2.castTo("char *"))),
+              false));
     put("fuzion.java.call_c0", (c, cl, outer, in) -> {
       if (C.JAVA_HOME == null)
         {

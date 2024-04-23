@@ -31,6 +31,9 @@ import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.dfa.DFA;
 import dev.flang.fuir.analysis.TailCall;
+
+import static dev.flang.ir.IR.NO_SITE;
+
 import dev.flang.be.jvm.classfile.ClassFile;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 import dev.flang.be.jvm.classfile.Expr;
@@ -1021,20 +1024,16 @@ should be avoided as much as possible.
   /**
    * If trace output is enabled, create bytecode for the given instruction
    *
-   * @param cl the current clazz that is being compiled
-   *
-   * @param c the current code block
-   *
-   * @param i the index in the current code block
+   * @param s the current site to trace
    *
    * @return code to output the trace or a NOP.
    */
-  Expr trace(int cl, int c, int i)
+  Expr trace(int s)
   {
     if (TRACE)
       {
-        var p = _fuir.codeAtAsPos(c,i);
-        var msg = "IN " + _fuir.clazzAsString(cl) + ": " + _fuir.codeAtAsString(cl,c,i) +
+        var p = _fuir.codeAtAsPos(s);
+        var msg = "IN " + _fuir.siteAsString(s) + ": " + _fuir.codeAtAsString(s) +
           (p == null ? "" : " " + p.show());
         return callRuntimeTrace(msg);
       }
@@ -1214,8 +1213,10 @@ should be avoided as much as possible.
    *
    * @return the local var index of the allocated slots
    */
-  int allocLocal(int cl, boolean pre, int numSlots)
+  int allocLocal(int si, int numSlots)
   {
+    var cl = _fuir.clazzAt(si);
+    var pre = _fuir.isPreconditionAt(si);
     var res = numLocals(cl, pre);
     setNumLocals(cl, pre, res + numSlots);
     return res;
@@ -1766,9 +1767,7 @@ should be avoided as much as possible.
   /**
    * Create code to assign value to a field
    *
-   * @param cl the clazz we are compiling
-   *
-   * @param pre true iff we are compiling the precondition
+   * @param s site of the assignment or NO_SITE if this is a call in an interface method stub.
    *
    * @param tvalue the target value that contains the field
    *
@@ -1779,7 +1778,7 @@ should be avoided as much as possible.
    * @param rt the type of the field.
    *
    */
-  Expr assignField(int cl, boolean pre, Expr tvalue, int f, Expr value, int rt)
+  Expr assignField(int s, Expr tvalue, int f, Expr value, int rt)
   {
     if (CHECKS) check
       (tvalue != null || !_fuir.hasData(rt) || _fuir.clazzOuterClazz(f) == _fuir.clazzUniverse());
@@ -1800,7 +1799,8 @@ should be avoided as much as possible.
             tvalue = tvalue
               .andThen(LOAD_UNIVERSE);
           }
-        var v = cloneValue(cl, pre, value, rt, f);
+        var v = s == NO_SITE ? value
+                             : cloneValue(s, value, rt, f);
         return tvalue
           .andThen(v)
           .andThen(putfield(f));
@@ -1831,9 +1831,7 @@ should be avoided as much as possible.
    * of Java classes (`class Point { int x, y; }`, this cloning will no longer
    * be needed.
    *
-   * @param cl the class whose code requires this cloning
-   *
-   * @param pre true iff this happens in cl's pre-condition.
+   * @param s site of code that requires this cloning
    *
    * @param value the value that might need to be cloned.
    *
@@ -1846,8 +1844,9 @@ should be avoided as much as possible.
    * @return value iff cloning was not required, or an expression that creates a
    * clone of value.
    */
-  Expr cloneValue(int cl, boolean pre, Expr value, int rt, int f)
+  Expr cloneValue(int s, Expr value, int rt, int f)
   {
+    var cl = _fuir.clazzAt(s);
     var cf = _types.classFile(cl);
     if (!_fuir.clazzIsRef(rt) &&
         (f == -1 || !_fuir.clazzFieldIsAdrOfValue(f)) && // an outer ref field must not be cloned
@@ -1855,8 +1854,8 @@ should be avoided as much as possible.
         (!_fuir.clazzIsChoice(rt) || _types._choices.kind(rt) == Choices.ImplKind.general))
       {
         var vti = _types.resultType(rt).vti();
-        var vl = allocLocal(cl, pre, 1);
-        var nl = allocLocal(cl, pre, 1);
+        var vl = allocLocal(s, 1);
+        var nl = allocLocal(s, 1);
         var e = value
           .andThen(Expr.astore(vl, vti))
           .andThen(new0(rt))
@@ -1886,7 +1885,7 @@ should be avoided as much as possible.
                         var fn = _types._choices.generalValueFieldName(rt, i);
                         var v = Expr.aload(vl, jt)
                           .andThen(Expr.getfield(cc, fn, ft));
-                        var cv = cloneValueOrNull(cl, pre, v, tc, -1);
+                        var cv = cloneValueOrNull(s, v, tc, -1);
                         e = e
                           .andThen(Expr.aload(nl, jt))
                           .andThen(cv)
@@ -1915,7 +1914,7 @@ should be avoided as much as possible.
                                          rt,
                                          fi,
                                          rti);
-                    var cv = cloneValueOrNull(cl, pre, v, rti, fi);
+                    var cv = cloneValueOrNull(s, v, rti, fi);
                     e = e
                       .andThen(Expr.aload(nl,jt))
                       .andThen(cv)
@@ -1951,7 +1950,7 @@ should be avoided as much as possible.
    *   p := Point 3 4
    *
    */
-  private Expr cloneValueOrNull(int cl, boolean pre, Expr value, int rt, int f)
+  private Expr cloneValueOrNull(int s, Expr value, int rt, int f)
   {
     Expr result;
     if (_types.resultType(rt) instanceof AType)
@@ -1960,11 +1959,11 @@ should be avoided as much as possible.
         result = value
           .andThen(Expr.DUP)
           .andThen(Expr.branch(O_ifnonnull,
-                               cloneValue(cl, pre, Expr.UNIT /* target is DUPped on stack */, rt, f)));
+                               cloneValue(s, Expr.UNIT /* target is DUPped on stack */, rt, f)));
       }
     else
       {
-        result = cloneValue(cl, pre, value, rt, f);
+        result = cloneValue(s, value, rt, f);
 
       }
     return result;
@@ -1974,9 +1973,7 @@ should be avoided as much as possible.
   /**
    * Create code for field-by-field comparison of two value or choice type values.
    *
-   * @param cl the class whose code requires this comparison
-   *
-   * @param pre true iff this happens in cl's pre-condition.
+   * @param s site of the comparison
    *
    * @param value1 the first value to compare
    *
@@ -1987,10 +1984,10 @@ should be avoided as much as possible.
    * @return value iff cloning was not required, or an expression that creates a
    * clone of value.
    */
-  Expr compareValues(int cl, boolean pre, Expr value1, Expr value2, int rt)
+  Expr compareValues(int s, Expr value1, Expr value2, int rt)
   {
     if (PRECONDITIONS) require
-      (cl != -1,
+      (s != NO_SITE,
        value1 != null,
        value2 != null);
 
@@ -2000,7 +1997,7 @@ should be avoided as much as possible.
     Expr cmp  = Expr.UNIT;
     var jt = _types.resultType(rt);
     var jt2 = jt;
-    var cf = _types.classFile(cl);
+    var cf = _types.classFile(_fuir.clazzAt(s));
 
     if (jt == ClassFileConstants.PrimitiveType.type_void)
       { // unit-type values are always equal:
@@ -2062,8 +2059,8 @@ should be avoided as much as possible.
           }
         else
           { // we have a structured type:
-            var v1 = allocLocal(cl, pre, 1);
-            var v2 = allocLocal(cl, pre, 1);
+            var v1 = allocLocal(s, 1);
+            var v2 = allocLocal(s, 1);
             result = value1
               .andThen(Expr.astore(v1, jt.vti()))
               .andThen(value2)
@@ -2097,7 +2094,7 @@ should be avoided as much as possible.
                             var fn = _types._choices.generalValueFieldName(rt, i);
                             var vi1 = Expr.aload(v1, jt).andThen(Expr.getfield(cc, fn, ft));
                             var vi2 = Expr.aload(v2, jt).andThen(Expr.getfield(cc, fn, ft));
-                            var cmpi = compareValues(cl, pre, vi1, vi2, _fuir.clazzChoice(rt, i))
+                            var cmpi = compareValues(s, vi1, vi2, _fuir.clazzChoice(rt, i))
                               .andThen(Expr.IAND);
                             if ( !_fuir.clazzIsRef(tc) && ft instanceof AType)
                               { // the value type may be a null reference if it is unused.
@@ -2140,7 +2137,7 @@ should be avoided as much as possible.
                         var f1 = readField(Expr.aload(v1, jt), rt, fi, rti);
                         var f2 = readField(Expr.aload(v2, jt), rt, fi, rti);
                         result = result
-                          .andThen(compareValues(cl, pre, f1, f2, rti))
+                          .andThen(compareValues(s, f1, f2, rti))
                           .andThen(count > 0 ? Expr.IAND  // if several field, use AND to cumulate result
                                              : Expr.UNIT);
                         count++;

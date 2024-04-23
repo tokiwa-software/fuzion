@@ -26,10 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.air.Clazz;
-import dev.flang.air.Clazzes;
-
-
+import dev.flang.fuir.FUIR;
 
 /**
  * boolValue is a value of type bool
@@ -110,9 +107,9 @@ public class boolValue extends Value
    *
    * @throws Error in case this does not match the expected clazz
    */
-  void checkStaticClazz(Clazz expected)
+  void checkStaticClazz(int expected)
   {
-    if (expected != Clazzes.bool.getIfCreated())
+    if (expected != fuir().clazz(FUIR.SpecialClazzes.c_bool))
       {
         throw new Error("bool value not allowed for clazz " + expected);
       }

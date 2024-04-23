@@ -455,7 +455,6 @@ FeatureKind
 featureName
 FeatureName
 FeatureNames
-featureOfType
 FeaturesAndOuter
 featureURL
 FeatureVisitor
@@ -1022,7 +1021,7 @@ Prepend
 println
 PRNG
 processModule
-ProcessStatement
+ProcessExpression
 Profiler
 prolog
 prologSuccessBlock
@@ -1194,7 +1193,6 @@ startRow
 startSampler
 startsWith
 statbuf
-StatementVisitor
 staticClazz
 staticTypeOfValue
 stdbool
@@ -1434,7 +1432,7 @@ byteLength
 checkIndentation
 clangVersion
 cloneValue
-codePointInLine
+codePointIndentation
 constraintMustNotBeGenericArgument
 curPos
 datagram
