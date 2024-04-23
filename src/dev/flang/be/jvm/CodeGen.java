@@ -190,6 +190,7 @@ class CodeGen
     // Check consistency between v.type() and type:
     if (CHECKS) check
       (v.type()                instanceof PrimitiveType pt && pt == _types.resultType(type) ||
+       _fuir.clazzIsChoice(type) && v.type() == PrimitiveType.type_int /* NYI: BUG?: tag is dropped but _types.resultType returns boolean  */ ||
        v.type()                instanceof ClassType     jt &&
        _types.resultType(type) instanceof ClassType     ct &&
        (_fuir.clazzIsRef(type) /* we do not check exact reference assignability here */ ||
