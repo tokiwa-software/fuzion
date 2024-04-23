@@ -1433,7 +1433,7 @@ actuals     : actualArgs
             @Override
             public AbstractType asUnresolvedType()
             {
-              return new ParsedType(n, n._name, l.map2(x -> x._exprXXX.asParsedType()), target == null ? null : target.asUnresolvedType());
+              return new ParsedType(n, n._name, l.map2(x -> x.asParsedType()), target == null ? null : target.asUnresolvedType());
             }
           };
       }
@@ -1461,7 +1461,7 @@ indexTail   : ":=" exprInLine
         String n = FuzionConstants.FEATURE_NAME_INDEX;
         if (skip(":="))
           {
-            l.add(new Actual(exprInLine()));
+            l.add(exprInLine());
             n = FuzionConstants.FEATURE_NAME_INDEX_ASSIGN;
           }
         if (l.isEmpty())
@@ -1569,7 +1569,7 @@ actualArgs  : actualsList
             | LPAREN actualList RPAREN
             ;
    */
-  List<Actual> actualArgs()
+  List<Expr> actualArgs()
   {
     return (ignoredTokenBefore() || current() != Token.t_lparen)
       ? actualsList()
@@ -1667,9 +1667,9 @@ actualMore  : COMMA actualSome
             |
             ;
    */
-  List<Actual> actualList()
+  List<Expr> actualList()
   {
-    var result = new List<Actual>();
+    var result = new List<Expr>();
     if (current() != Token.t_rparen   &&
         current() != Token.t_rcrochet   )
       {
@@ -1690,9 +1690,9 @@ actualsList : actualSp actualsList
             |
             ;
    */
-  List<Actual> actualsList()
+  List<Expr> actualsList()
   {
-    List<Actual> result = Call.NO_PARENTHESES;
+    List<Expr> result = Call.NO_PARENTHESES;
     if (ignoredTokenBefore() && !endsActuals(false))
       {
         var in = new Indentation();
@@ -1741,7 +1741,7 @@ actualSp : actual         // no white space except enclosed in { }, [ ], or ( ).
          ;
 
    */
-  Actual actualSpace()
+  Expr actualSpace()
   {
     var eas = endAtSpace(tokenPos());
     var result = actual();
@@ -1757,7 +1757,7 @@ actual   : operatorExpr | type
          ;
 
    */
-  Actual actual()
+  Expr actual()
   {
     /*
     var pos = tokenSourcePos();
@@ -1801,7 +1801,7 @@ actual   : operatorExpr | type
       }
     return new Actual(pos, t, e);
 */
-    return new Actual(operatorExpr());
+    return operatorExpr();
   }
 
 
@@ -1855,8 +1855,7 @@ operatorExpr  : opExpr
             matchOperator(":", "expr of the form >>a ? b : c<<");
             Expr g = operatorExpr();
             i.end();
-            result = new Call(pos, result, "ternary ? :", new List<>(new Actual(f),
-                                                                     new Actual(g)));
+            result = new Call(pos, result, "ternary ? :", new List<>(f, g));
           }
       }
     return result;
@@ -1955,12 +1954,12 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
   {
     SourcePosition pos = tokenSourcePos();
     var f = fork();
-    var tupleElements = new List<Actual>();
+    var tupleElements = new List<Expr>();
     bracketTermWithNLs(PARENS, "klammer",
                        () -> {
                          do
                            {
-                             tupleElements.add(new Actual(operatorExpr()));
+                             tupleElements.add(operatorExpr());
                            }
                          while (skipComma());
                          return Void.TYPE;
@@ -1974,7 +1973,7 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
       }
     else if (tupleElements.size() == 1)    // an expr wrapped in parentheses, not a tuple
       {
-        var e = tupleElements.get(0).expr(null);
+        var e = tupleElements.get(0);
         if (e instanceof ParsedOperatorCall oc)
           { // disable chained boolean optimization or partial application:
             oc.putInParentheses();
@@ -2259,7 +2258,7 @@ stringTermB : '}any chars&quot;'
    */
   Expr concatString(SourcePosition pos, Expr string1, Expr string2)
   {
-    return string1 == null ? string2 : new Call(pos, string1, "infix +", new List<>(new Actual(string2)));
+    return string1 == null ? string2 : new Call(pos, string1, "infix +", new List<>(string2));
   }
 
 

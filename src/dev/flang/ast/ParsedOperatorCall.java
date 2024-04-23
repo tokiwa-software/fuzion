@@ -89,7 +89,7 @@ public class ParsedOperatorCall extends ParsedCall
    */
   public ParsedOperatorCall(Expr target, ParsedName name, Expr rhs)
   {
-    super(target, name, new List<>(new Actual(rhs)));
+    super(target, name, new List<>(rhs));
   }
 
 

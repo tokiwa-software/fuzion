@@ -397,8 +397,8 @@ public class InlineArray extends ExprWithPos
   {
     var et = elementType();
     var eT           = new List<AbstractType>(et);
-    var argsA        = new List<Actual>(new Actual(Expr.ERROR_VALUE),
-                                        new Actual(new NumLiteral(_elements.size())));
+    var argsA        = new List<Expr>(Expr.ERROR_VALUE,
+                                      new NumLiteral(_elements.size()));
     var argsT        = new List<AbstractType>(et);
     var argsE        = new List<Expr>(new NumLiteral(_elements.size()));
     var fuzion       = new Call(SourcePosition.builtIn, null, "fuzion"                     ).resolveTypes(res, outer);
@@ -417,8 +417,8 @@ public class InlineArray extends ExprWithPos
     for (var i = 0; i < _elements.size(); i++)
       {
         var e = _elements.get(i);
-        var setArgs         = new List<Actual>(new Actual(new NumLiteral(i)),
-                                                new Actual(e));
+        var setArgs         = new List<Expr>(new NumLiteral(i),
+                                             e);
         var readSysArrayVar = new Call(SourcePosition.builtIn, null           , sysArrayName     ).resolveTypes(res, outer);
         var setElement      = new Call(SourcePosition.builtIn, readSysArrayVar,
                                         FuzionConstants.FEATURE_NAME_INDEX_ASSIGN,
@@ -429,11 +429,11 @@ public class InlineArray extends ExprWithPos
     var unit1           = new Call(SourcePosition.builtIn, null, "unit"                            ).resolveTypes(res, outer);
     var unit2           = new Call(SourcePosition.builtIn, null, "unit"                            ).resolveTypes(res, outer);
     var unit3           = new Call(SourcePosition.builtIn, null, "unit"                            ).resolveTypes(res, outer);
-    var sysArrArgsA     = new List<Actual>(new Actual(Expr.ERROR_VALUE),
-                                            new Actual(readSysArrayVar),
-                                            new Actual(unit1),
-                                            new Actual(unit2),
-                                            new Actual(unit3));
+    var sysArrArgsA     = new List<Expr>(Expr.ERROR_VALUE,
+                                         readSysArrayVar,
+                                         unit1,
+                                         unit2,
+                                         unit3);
     var sysArrArgsT     = new List<AbstractType>(et);
     var sysArrArgsE     = new List<Expr>(readSysArrayVar,
                                          unit1,

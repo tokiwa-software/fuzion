@@ -193,13 +193,13 @@ public class Partial extends AbstractLambda
       {
         var a = argName(pos());
         List<ParsedName> args = new List<>(a);
-        List<Actual> actuals = new List<>();
+        List<Expr> actuals = new List<>();
         String op = FuzionConstants.UNARY_OPERATOR_PREFIX + _op;
         if (t.arity() == 2)
           {
             var b = argName(pos());
             args.add(b);
-            actuals.add(new Actual(new ParsedCall(null, b)));
+            actuals.add(new ParsedCall(null, b));
             op = FuzionConstants.INFIX_OPERATOR_PREFIX + _op;
           }
         _function = new Function(pos(),

@@ -56,7 +56,7 @@ public class Call extends AbstractCall
    * parenthesis ("a.b") from a call with parenthesis and an empty actual
    * arguments list ("a.b()").
    */
-  public static final List<Actual> NO_PARENTHESES = new List<>();
+  public static final List<Expr> NO_PARENTHESES = new List<>();
 
 
   /**
@@ -131,7 +131,7 @@ public class Call extends AbstractCall
   /**
    * Actual arguments, set by parser
    */
-  public List<Actual> _actualsNew;
+  public List<Expr> _actualsNew;
   public List<Expr> _actuals;
   public List<Expr> actuals() { return _actuals; }
 
@@ -268,7 +268,7 @@ public class Call extends AbstractCall
    *
    * @param la list of actual arguments
    */
-  public Call(SourcePosition pos, Expr t, String n, List<Actual> la)
+  public Call(SourcePosition pos, Expr t, String n, List<Expr> la)
   {
     this(pos, t, n, -1, la);
 
@@ -278,10 +278,10 @@ public class Call extends AbstractCall
 
 
   /**
-   * static helper for Call() constructor to create List<Expr> from List<Actual>
+   * static helper for Call() constructor to create List<Expr> from List<Expr>
    * and directly pass it to this().
    */
-  private static List<Expr> asExprList(List<Actual> la)
+  private static List<Expr> asExprList(List<Expr> la)
   {
     var res = new List<Expr>();
     for (var a : la)
@@ -306,7 +306,7 @@ public class Call extends AbstractCall
    *
    * @param la list of actual arguments
    */
-  public Call(SourcePosition pos, Expr t, String n, int select, List<Actual> la)
+  public Call(SourcePosition pos, Expr t, String n, int select, List<Expr> la)
   {
     this(pos, t, n, select, la, NO_GENERICS, asExprList(la), null, null);
 
@@ -388,7 +388,7 @@ public class Call extends AbstractCall
    */
   Call(SourcePosition pos,
        Expr target,
-       List<Actual> actualsNew,
+       List<Expr> actualsNew,
        List<AbstractType> generics,
        List<Expr> actuals,
        AbstractFeature calledFeature,
@@ -425,7 +425,7 @@ public class Call extends AbstractCall
                Expr target,
                String name,
                int select,
-               List<Actual> actualsNew,
+               List<Expr> actualsNew,
                List<AbstractType> generics,
                List<Expr> actuals,
                AbstractFeature calledFeature,
@@ -1156,7 +1156,7 @@ public class Call extends AbstractCall
               (Errors.any() || n == 1,
                Errors.any() || _actuals.size() == 0);
             _actuals   .add(           _target );
-            _actualsNew.add(new Actual(_target));
+            _actualsNew.add(_target);
             _target = new ParsedCall(null, pns.get(0));
           }
         else
@@ -1165,7 +1165,7 @@ public class Call extends AbstractCall
               {
                 var c = new ParsedCall(null, pns.get(i));
                 _actuals   .add(           c );
-                _actualsNew.add(new Actual(c));
+                _actualsNew.add(c);
               }
           }
         var nn = newNameForPartial(t);
@@ -1332,7 +1332,7 @@ public class Call extends AbstractCall
 
         if (_actuals.size() - i > vn)
           {
-            AbstractType t = _actualsNew.get(i)._exprXXX.asParsedType();
+            AbstractType t = _actualsNew.get(i).asParsedType();
             if (t != null)
               {
                 g.add(t);
@@ -2685,7 +2685,7 @@ public class Call extends AbstractCall
         // _target`.
         result = new Call(pos(),
                           new Universe(),
-                          new List<>(new Actual(_target)),
+                          new List<>(_target),
                           new List<>(Types.resolved.t_void),
                           new List<>(_target),
                           Types.resolved.f_id,
@@ -3013,7 +3013,7 @@ public class Call extends AbstractCall
                     if (actl == Expr.NO_VALUE)
                       {
                         var pos = _actualsNew.get(_generics.size() + count).pos();
-                        var typ = _actualsNew.get(_generics.size() + count)._exprXXX.asParsedType();
+                        var typ = _actualsNew.get(_generics.size() + count).asParsedType();
                         AstErrors.unexpectedTypeParameterInCall(pos,
                                                                 _calledFeature,
                                                                 count,

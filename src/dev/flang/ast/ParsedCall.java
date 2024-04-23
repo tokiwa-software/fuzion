@@ -58,7 +58,7 @@ public class ParsedCall extends Call
    *
    * @param arguments list of actual arguments
    */
-  public ParsedCall(Expr target, ParsedName name, List<Actual> arguments)
+  public ParsedCall(Expr target, ParsedName name, List<Expr> arguments)
   {
     super(name._pos, target, name._name, arguments);
   }
@@ -113,7 +113,7 @@ public class ParsedCall extends Call
           }
         for (var a : _actualsNew)
           {
-            var at = a._exprXXX.asParsedType();
+            var at = a.asParsedType();
             ok = ok && at != null;
             l.add(at);
           }
