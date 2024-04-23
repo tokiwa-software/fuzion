@@ -42,15 +42,9 @@ public class Actual extends ExprWithPos
 
 
   /**
-   * This actual parsed as a type, null if it can only be parsed as a value.
-   */
-  public final AbstractType _type;
-
-
-  /**
    * This actual parsed as a value, Expr.NO_VALUE if it can only be parsed as a type.
    */
-  Expr _expr;
+  public Expr _exprXXX;
 
 
   /*-------------------------- constructors ---------------------------*/
@@ -69,8 +63,7 @@ public class Actual extends ExprWithPos
       (t != null || e != Expr.NO_VALUE,
        e != null);
 
-    _expr = e;
-    _type = t;
+    _exprXXX = e;
   }
 
 
@@ -78,7 +71,6 @@ public class Actual extends ExprWithPos
    * Constructor for an actual consisting of type t.
    *
    * t must be non-null or e must not be NO_VALUE.
-   */
   public Actual(AbstractType t)
   {
     this(t instanceof UnresolvedType ut ? ut.pos()
@@ -89,6 +81,7 @@ public class Actual extends ExprWithPos
     if (PRECONDITIONS) require
       (t != null);
   }
+   */
 
 
   /**
@@ -97,7 +90,7 @@ public class Actual extends ExprWithPos
    */
   public Actual(Expr e)
   {
-    this(e.pos(), e.asParsedType(), e);
+    this(e.pos(), null, e);
 
     if (PRECONDITIONS) require
       (e != Expr.NO_VALUE,
@@ -122,9 +115,9 @@ public class Actual extends ExprWithPos
    */
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
-    if (_expr != Expr.NO_VALUE)
+    if (_exprXXX != Expr.NO_VALUE)
       {
-        _expr = _expr.visit(v, outer);
+        _exprXXX = _exprXXX.visit(v, outer);
       }
     return this;
   }
@@ -138,10 +131,10 @@ public class Actual extends ExprWithPos
    */
   public Expr expr(Call usedIn)
   {
-    var e = _expr;
+    var e = _exprXXX;
     if (e == Expr.NO_VALUE)
       {
-        AstErrors.actualTypeParameterUsedAsExpression(this, usedIn);
+        //        AstErrors.actualTypeParameterUsedAsExpression(this, usedIn);
         e =  Expr.ERROR_VALUE;
       }
 
@@ -156,7 +149,7 @@ public class Actual extends ExprWithPos
    */
   public String toString()
   {
-    return (_expr == Expr.NO_VALUE ? _type.toString() : _expr.toString());
+    return _exprXXX.toString();
   }
 
 }

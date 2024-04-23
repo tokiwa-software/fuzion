@@ -1433,7 +1433,7 @@ actuals     : actualArgs
             @Override
             public AbstractType asUnresolvedType()
             {
-              return new ParsedType(n, n._name, l.map2(x -> x._type), target == null ? null : target.asUnresolvedType());
+              return new ParsedType(n, n._name, l.map2(x -> x._exprXXX.asParsedType()), target == null ? null : target.asUnresolvedType());
             }
           };
       }

@@ -421,7 +421,7 @@ public class Call extends AbstractCall
    *
    * @param type
    */
-  private Call(SourcePosition pos,
+  /*private */ Call(SourcePosition pos,
                Expr target,
                String name,
                int select,
@@ -1332,7 +1332,7 @@ public class Call extends AbstractCall
 
         if (_actuals.size() - i > vn)
           {
-            AbstractType t = _actualsNew.get(i)._type;
+            AbstractType t = _actualsNew.get(i)._exprXXX.asParsedType();
             if (t != null)
               {
                 g.add(t);
@@ -3013,7 +3013,7 @@ public class Call extends AbstractCall
                     if (actl == Expr.NO_VALUE)
                       {
                         var pos = _actualsNew.get(_generics.size() + count).pos();
-                        var typ = _actualsNew.get(_generics.size() + count)._type;
+                        var typ = _actualsNew.get(_generics.size() + count)._exprXXX.asParsedType();
                         AstErrors.unexpectedTypeParameterInCall(pos,
                                                                 _calledFeature,
                                                                 count,

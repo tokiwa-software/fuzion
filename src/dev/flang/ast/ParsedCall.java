@@ -113,7 +113,7 @@ public class ParsedCall extends Call
           }
         for (var a : _actualsNew)
           {
-            var at = a._expr.asParsedType();
+            var at = a._exprXXX.asParsedType();
             ok = ok && at != null;
             l.add(at);
           }

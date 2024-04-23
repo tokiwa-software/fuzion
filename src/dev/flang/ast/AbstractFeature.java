@@ -712,7 +712,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     for (var tp : typeParameters)
       {
         var tpa = that.rebaseTypeForTypeFeature(tp);
-        args.add(new Actual(tpa));
+        args.add(new Actual(Expr.ERROR_VALUE));  // NYI: REMOVE actual type
         typeParameters2.add(typeParameters2.size() == 0 ? tp : tpa);
       }
     return new Call(p,
