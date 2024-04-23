@@ -63,9 +63,7 @@ public class EmbeddedValue extends Val
    * If this is a temporary result, the called feature, code block and index of
    * the call that produced this result. -1/-1 otherwise.
    */
-  final int _cl;
-  final int _code;
-  final int _index;
+  final int _site;
 
 
   /**
@@ -87,7 +85,7 @@ public class EmbeddedValue extends Val
   public EmbeddedValue(Instance instance,
                        Value value)
   {
-    this(instance, -1, -1, -1, value);
+    this(instance, -1, value);
 
     if (PRECONDITIONS) require
       (instance != null,
@@ -99,31 +97,23 @@ public class EmbeddedValue extends Val
   /**
    * Create EmbeddedValue for given call/code/index and value.
    *
-   * @param cl the call that contains the code
-   *
-   * @param code code block index
-   *
-   * @param index expr index in code block
+   * @param site site of the call
    *
    * @param value the value of the embedded field
    */
-  public EmbeddedValue(int cl,
-                       int code,
-                       int index,
+  public EmbeddedValue(int site,
                        Value value)
   {
-    this(null, cl, code, index, value);
+    this(null, site, value);
 
     if (PRECONDITIONS) require
-      (code != -1 && index != -1,
+      (site != -1,
        value != null);
   }
 
 
   /**
    * Create EmbeddedValue for given instance or code/index and value.
-   *
-   * @param cl the call that contains the code
    *
    * @param instance the instance containing this embedded value
    *
@@ -134,20 +124,16 @@ public class EmbeddedValue extends Val
    * @param value the value of the embedded field
    */
   private EmbeddedValue(Instance instance,
-                        int cl,
-                        int code,
-                        int index,
+                        int site,
                         Value value)
   {
     if (PRECONDITIONS) require
-      ((instance != null) != (code != -1 && index != -1),
+      ((instance != null) != (site != -1),
        value != null,
        instance == null || value._clazz == -1 || !instance._dfa._fuir.clazzIsRef(value._clazz));
 
     this._instance = instance;
-    this._cl = cl;
-    this._code = code;
-    this._index = index;
+    this._site = site;
     this._value = value;
   }
 
@@ -169,7 +155,7 @@ public class EmbeddedValue extends Val
       {
         return res;
       }
-    return new EmbeddedValue(_instance, _cl, _code, _index, rv);
+    return new EmbeddedValue(_instance, _site, rv);
   }
 
 
@@ -201,7 +187,7 @@ public class EmbeddedValue extends Val
   {
     return
       (_instance != null ? _instance + " embedded in " + _instance.toString()
-       : "EMBEDDED in " + _code + "@" + _index);
+       : "EMBEDDED in " + _site);
   }
 
 

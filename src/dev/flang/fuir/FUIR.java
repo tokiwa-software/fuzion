@@ -34,6 +34,8 @@ import java.util.BitSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import java.util.function.Supplier;
+
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
 import dev.flang.air.FeatureAndActuals;
@@ -57,7 +59,8 @@ import dev.flang.ast.Types; // NYI: remove dependency
 import dev.flang.ir.IR;
 
 import dev.flang.util.Errors;
-import dev.flang.util.IntTriplet;
+import dev.flang.util.BoolArray;
+import dev.flang.util.IntArray;
 import dev.flang.util.List;
 import dev.flang.util.Map2Int;
 import dev.flang.util.MapComparable2Int;
@@ -142,6 +145,19 @@ public class FUIR extends IR
   }
 
 
+  /**
+   * For each site, this gives the clazz id of the clazz that contains the code at that site.
+   */
+  private final IntArray _siteClazzes;
+
+
+  /**
+   * For each site, this holds the information if the code that site belongs to
+   * a precondition or to a feature code.
+   */
+  private final BoolArray _siteIsPrecondition;
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -188,7 +204,7 @@ public class FUIR extends IR
   /**
    * Cached results of accessedClazzesDynamic.
    */
-  TreeMap<IntTriplet,int[]> _accessedClazzesDynamicCache = new TreeMap<>(IntTriplet._comparator_);
+  TreeMap<Integer,int[]> _accessedClazzesDynamicCache = new TreeMap<>();
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -205,6 +221,8 @@ public class FUIR extends IR
     _clazzIds = new MapComparable2Int<>(CLAZZ_BASE);
     _clazzCode = new TreeMap<>();
     _clazzContract = new TreeMap<>();
+    _siteClazzes = new IntArray();
+    _siteIsPrecondition = new BoolArray();
     Clazzes.findAllClasses(main());
   }
 
@@ -222,13 +240,15 @@ public class FUIR extends IR
     _clazzIds = original._clazzIds;
     _clazzCode = original._clazzCode;
     _clazzContract = original._clazzContract;
+    _siteClazzes = original._siteClazzes;
+    _siteIsPrecondition = original._siteIsPrecondition;
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
 
 
-  public Clazz main()
+  private Clazz main()
   {
     return _main;
   }
@@ -241,13 +261,6 @@ public class FUIR extends IR
    * Get Clazz that given id maps to
    */
   private Clazz clazz(int id)
-  {
-    return _clazzIds.get(id);
-  }
-
-
-  /* NYI: UNDER DEVELOPEMENT: remove */
-  public Clazz clazzForInterpreter(int id)
   {
     return _clazzIds.get(id);
   }
@@ -997,7 +1010,29 @@ hw25 is
   }
 
 
-  public boolean doesResultEscape(int cl, int c, int i)
+  /**
+   * This has to be called after `super.addoCode(List)` was called to record the
+   * clazz and whether the code belongs to a precondition for all sites of the
+   * newly added code.
+   *
+   * @param cl the clazz id of the clazz that contains the new code
+   *
+   * @param pre true iff the new code was part of a precondition.
+   */
+  private void recordClazzAndPreForSitesOfRecentlyAddedCode(int cl, boolean pre)
+  {
+    if (PRECONDITIONS) require
+      (_siteClazzes.size() < _allCode.size());
+
+    while (_siteClazzes.size() < _allCode.size())
+      {
+        _siteClazzes       .add(cl);
+        _siteIsPrecondition.add(pre);
+      }
+  }
+
+
+  public boolean doesResultEscape(int s)
   {
     return true;
   }
@@ -1018,6 +1053,7 @@ hw25 is
     var res = _clazzCode.get(cl);
     if (res == null)
       {
+        var codeStart = _allCode.size();
         var cc = clazz(cl);
         var ff = cc.feature();
         var code = new List<Object>();
@@ -1026,6 +1062,7 @@ hw25 is
             addCode(cc, code, ff);
           }
         res = addCode(code);
+        recordClazzAndPreForSitesOfRecentlyAddedCode(cl, false);
         _clazzCode.put(cl, res);
       }
     return res;
@@ -1094,9 +1131,12 @@ hw25 is
         var resBoxed = _clazzContract.get(key);
         if (resBoxed == null)
           {
+            var codeStart = _allCode.size();
+            var fi = i;
             var code = new List<Object>();
-            toStack(code, cond.get(i).cond);
+            toStack(code, cond.get(fi).cond);
             resBoxed = addCode(code);
+            recordClazzAndPreForSitesOfRecentlyAddedCode(cl, ck == ContractKind.Pre);
             _clazzContract.put(key, resBoxed);
           }
         res = resBoxed;
@@ -1351,10 +1391,6 @@ hw25 is
   {
     addClasses();
     var cc = c.getIfCreated();
-    if (cc != null)
-      {
-        add(cc);
-      }
     return cc == null ? -1 : id(cc);
   }
 
@@ -1362,104 +1398,169 @@ hw25 is
   /*--------------------------  accessing code  -------------------------*/
 
 
-
   /**
-   * Get the expr at the given index in given code block
+   * Get the clazz id at the given site
    *
-   * @param c the code block id
+   * @param s a site, may be !withinCode(s), i.e., this may be used on
+   * `clazzCode(cl)` if the code is empty.
    *
-   * @param ix an index within the code block
+   * @return the clazz id that code at site s belongs to.
    */
-  public ExprKind codeAt(int c, int ix)
+  public int clazzAt(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0, withinCode(c, ix));
+      (s >= SITE_BASE);
+
+    return _siteClazzes.get(s - SITE_BASE);
+  }
+
+
+  /**
+   * Is the the given site part of a precondition?
+   *
+   * @param s a site, may be !withinCode(s), i.e., this may be used on
+   * `clazzCode(cl)` if the code is empty.
+   *
+   * @return true iff code at site s belongs to a precondition.
+   */
+  public boolean isPreconditionAt(int s)
+  {
+    if (PRECONDITIONS) require
+      (s >= SITE_BASE);
+
+    return _siteIsPrecondition.get(s - SITE_BASE);
+  }
+
+
+  /**
+   * Create a String representation of a site for debugging purposes:
+   *
+   * @param s a site or NO_SITE
+   *
+   * @return a String describing site
+   */
+  public String siteAsString(int s)
+  {
+    String res;
+    if (s == NO_SITE)
+      {
+        res = "** NO_SITE **";
+      }
+    else if (s >= SITE_BASE && (s - SITE_BASE < _allCode.size()))
+      {
+        var cl = clazzAt(s);
+        var pre = isPreconditionAt(s);
+        res = (pre ? "PRECONDITION OF " : "") +
+          clazzAsString(cl) + "(" + clazzArgCount(cl) + " args) at " + s;
+      }
+    else
+      {
+        res = "ILLEGAL site " + s;
+      }
+    return res;
+  }
+
+
+  /**
+   * Get the expr at the given site
+   *
+   * @param s site
+   */
+  public ExprKind codeAt(int s)
+  {
+    if (PRECONDITIONS) require
+      (s >= SITE_BASE, withinCode(s));
 
     ExprKind result;
-    var e = getExpr(c , ix);
+    var e = getExpr(s);
     if (e instanceof Clazz    )  /* Clazz represents the field we assign a value to */
       {
         result = ExprKind.Assign;
       }
     else
       {
-        result = super.codeAt(c, ix);
+        result = exprKind(e);
       }
     if (result == null)
       {
-        Errors.fatal(codeAtAsPos(c, ix),
-                     "Expr not supported in FUIR.codeAt", "Statement class: " + e.getClass());
+        Errors.fatal(codeAtAsPos(s),
+                     "Expr not supported in FUIR.codeAt", "Expression class: " + e.getClass());
         result = ExprKind.Current; // keep javac from complaining.
       }
     return result;
   }
 
 
-  public int tagValueClazz(int cl, int c, int ix)
+  public int tagValueClazz(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Tag);
+      (s >= SITE_BASE,
+       withinCode(s),
+       codeAt(s) == ExprKind.Tag);
 
+    var cl = clazzAt(s);
     var outerClazz = clazz(cl);
-    var t = (Tag) getExpr(c , ix);
+    var t = (Tag) getExpr(s);
     var vcl = outerClazz.actualClazzes(t, null)[0];
     return vcl == null ? -1 : id(vcl);
   }
 
-  public int tagNewClazz(int cl, int c, int ix)
+  public int tagNewClazz(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Tag);
+      (s >= SITE_BASE,
+       withinCode(s),
+       codeAt(s) == ExprKind.Tag);
 
+    var cl = clazzAt(s);
     var outerClazz = clazz(cl);
-    var t = (Tag) getExpr(c , ix);
+    var t = (Tag) getExpr(s);
     var ncl = outerClazz.actualClazzes(t, null)[1];
     return ncl == null ? -1 : id(ncl);
   }
 
   /**
-   * For outer clazz cl with an Env instruction in code c at ix, return the type
-   * of the env value.
+   * For outer clazz cl with an Env instruction at site s, return the type of
+   * the env value.
    */
-  public int envClazz(int cl, int c, int ix)
+  public int envClazz(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Env);
+      (s >= SITE_BASE,
+       withinCode(s),
+       codeAt(s) == ExprKind.Env);
 
+    var cl = clazzAt(s);
     var outerClazz = clazz(cl);
-    var v = (Env) getExpr(c , ix);
+    var v = (Env) getExpr(s);
     var vcl = outerClazz.actualClazzes(v, null)[0];
     return vcl == null ? -1 : id(vcl);
   }
 
-  public int boxValueClazz(int cl, int c, int ix)
+  public int boxValueClazz(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Box);
+      (s >= SITE_BASE,
+       withinCode(s),
+       codeAt(s) == ExprKind.Box);
 
+    var cl = clazzAt(s);
     var outerClazz = clazz(cl);
-    var b = (Box) getExpr(c , ix);
+    var b = (Box) getExpr(s);
     Clazz vc = outerClazz.actualClazzes(b, null)[0];
     return id(vc);
   }
 
-  public int boxResultClazz(int cl, int c, int ix)
+  public int boxResultClazz(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Box);
+      (s >= SITE_BASE,
+       withinCode(s),
+       codeAt(s) == ExprKind.Box);
 
+    var cl = clazzAt(s);
     var outerClazz = clazz(cl);
-    var b = (Box) getExpr(c , ix);
+    var b = (Box) getExpr(s);
     Clazz rc = outerClazz.actualClazzes(b, null)[1];
     return id(rc);
   }
@@ -1468,20 +1569,16 @@ hw25 is
   /**
    * Get the code for a comment expression.  This is used for debugging.
    *
-   * @param cl index of clazz containing the comment
-   *
-   * @param c code block containing the comment
-   *
-   * @param ix index of the comment
+   * @param s site of the comment
    */
-  public String comment(int cl, int c, int ix)
+  public String comment(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Comment);
+      (s >= SITE_BASE,
+       withinCode(s),
+       codeAt(s) == ExprKind.Comment);
 
-    return comment(c, ix);
+    return (String) getExpr(s);
   }
 
 
@@ -1501,28 +1598,25 @@ hw25 is
    * the precondition clazz for the call `r.f` is `(ref x).f`, while the
    * accessedClazz may be `x.f` (NYI: check!).
    *
-   * @param cl index of clazz containing the access
-   *
-   * @param c code block containing the access
-   *
-   * @param ix index of the access
+   * @param s site of the access
    *
    * @return the clazz whose precondition has to be checked or -1 if there is no
    * precondition to be checked.
    */
-  public int accessedPreconditionClazz(int cl, int c, int ix)
+  public int accessedPreconditionClazz(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Call   ||
-       codeAt(c, ix) == ExprKind.Assign    );
+      (s >= SITE_BASE,
+       withinCode(s),
+       codeAt(s) == ExprKind.Call   ||
+       codeAt(s) == ExprKind.Assign    );
 
+    var cl = clazzAt(s);
     var outerClazz = clazz(cl);
-    var s = getExpr(c , ix);
+    var e = getExpr(s);
     Clazz innerClazz =
-      (s instanceof AbstractCall   call) ? outerClazz.actualClazzes(call, null)[2] :
-      (Clazz) (Object) new Object() { { if (true) throw new Error("accessedClazz found unexpected Expr."); } } /* Java is ugly... */;
+      (e instanceof AbstractCall   call) ? outerClazz.actualClazzes(call, null)[2] :
+      (Clazz) (Object) new Object() { { if (true) throw new Error("accessedClazz found unexpected Expr " + (e == null ? e : e.getClass()) + "."); } } /* Java is ugly... */;
 
     var res = innerClazz == null ? -1 : id(innerClazz);
     return res != -1 && hasPrecondition(res) ? res : -1;
@@ -1533,30 +1627,27 @@ hw25 is
    * Get the inner clazz for a non dynamic access or the static clazz of a dynamic
    * access.
    *
-   * @param cl index of clazz containing the access
-   *
-   * @param c code block containing the access
-   *
-   * @param ix index of the access
+   * @param s site of the access
    *
    * @return the clazz that has to be accessed or -1 if the access is an
    * assignment to a field that is unused, so the assignment is not needed.
    */
-  public int accessedClazz(int cl, int c, int ix)
+  public int accessedClazz(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Call   ||
-       codeAt(c, ix) == ExprKind.Assign    );
+      (s >= SITE_BASE,
+       withinCode(s),
+       codeAt(s) == ExprKind.Call   ||
+       codeAt(s) == ExprKind.Assign    );
 
+    var cl = clazzAt(s);
     var outerClazz = clazz(cl);
-    var s = getExpr(c , ix);
+    var e = getExpr(s);
     Clazz innerClazz =
-      (s instanceof AbstractCall   call) ? outerClazz.actualClazzes(call, null)[0] :
-      (s instanceof AbstractAssign a   ) ? outerClazz.actualClazzes(a   , null)[1] :
-      (s instanceof Clazz          fld ) ? fld :
-      (Clazz) (Object) new Object() { { if (true) throw new Error("accessedClazz found unexpected Expr."); } } /* Java is ugly... */;
+      (e instanceof AbstractCall   call) ? outerClazz.actualClazzes(call, null)[0] :
+      (e instanceof AbstractAssign a   ) ? outerClazz.actualClazzes(a   , null)[1] :
+      (e instanceof Clazz          fld ) ? fld :
+      (Clazz) (Object) new Object() { { if (true) throw new Error("accessedClazz found unexpected Expr " + (e == null ? e : e.getClass()) + "."); } } /* Java is ugly... */;
 
     return innerClazz == null ? -1 : id(innerClazz);
   }
@@ -1566,27 +1657,24 @@ hw25 is
    * Get the type of an assigned value. This returns the type even if the
    * assigned field has been removed and accessedClazz() returns -1.
    *
-   * @param cl index of clazz containing the assignment
-   *
-   * @param c code block containing the assignment
-   *
-   * @param ix index of the assignment
+   * @param s site of the assignment
    *
    * @return the type of the assigned value.
    */
-  public int assignedType(int cl, int c, int ix)
+  public int assignedType(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Assign    );
+      (s >= SITE_BASE,
+       withinCode(s),
+       codeAt(s) == ExprKind.Assign    );
 
+    var cl = clazzAt(s);
     var outerClazz = clazz(cl);
-    var s = getExpr(c , ix);
+    var e = getExpr(s);
     var t =
-      (s instanceof AbstractAssign a   ) ? outerClazz.actualClazzes(a, null)[2] :
-      (s instanceof Clazz          fld ) ? fld.resultClazz() :
-      (Clazz) (Object) new Object() { { if (true) throw new Error("assignedType found unexpected Expr."); } } /* Java is ugly... */;
+      (e instanceof AbstractAssign a   ) ? outerClazz.actualClazzes(a, null)[2] :
+      (e instanceof Clazz          fld ) ? fld.resultClazz() :
+      (Clazz) (Object) new Object() { { if (true) throw new Error("assignedType found unexpected Expr " + (e == null ? e : e.getClass()) + "."); } } /* Java is ugly... */;
 
     return id(t);
   }
@@ -1595,49 +1683,46 @@ hw25 is
   /**
    * Get the possible inner clazzes for a dynamic call or assignment to a field
    *
-   * @param cl index of clazz containing the access
-   *
-   * @param c code block containing the access
-   *
-   * @param ix index of the call
+   * @param s site of the access
    *
    * @return an array with an even number of element pairs with accessed target
    * clazzes at even indices followed by the corresponding inner clazz of the
    * feature to be accessed for this target.
    */
-  private int[] accessedClazzesDynamic(int cl, int c, int ix)
+  private int[] accessedClazzesDynamic(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Call   ||
-       codeAt(c, ix) == ExprKind.Assign    ,
-       accessIsDynamic(cl, c, ix));
+      (s >= SITE_BASE,
+       withinCode(s),
+       codeAt(s) == ExprKind.Call   ||
+       codeAt(s) == ExprKind.Assign    ,
+       accessIsDynamic(s));
 
-    var key = new IntTriplet(cl, c, ix);
+    var key = Integer.valueOf(s);
     var res = _accessedClazzesDynamicCache.get(key);
     if (res == null)
       {
+        var cl = clazzAt(s);
         var outerClazz = clazz(cl);
-        var s = getExpr(c , ix);
+        var e = getExpr(s);
         Clazz tclazz;
         AbstractFeature f;
         var typePars = AbstractCall.NO_GENERICS;
 
-        if (s instanceof AbstractCall call)
+        if (e instanceof AbstractCall call)
           {
             f = call.calledFeature();
             tclazz   = outerClazz.actualClazzes(call, null)[1];
             typePars = outerClazz.actualGenerics(call.actualTypeParameters());
           }
-        else if (s instanceof AbstractAssign ass)
+        else if (e instanceof AbstractAssign ass)
           {
             var acl = outerClazz.actualClazzes(ass, null);
             var assignedField = acl[1];
             tclazz = acl[0];  // NYI: This should be the same as assignedField._outer
             f = assignedField.feature();
           }
-        else if (s instanceof Clazz fld)
+        else if (e instanceof Clazz fld)
           {
             tclazz = (Clazz) fld._outer;
             f = fld.feature();
@@ -1645,7 +1730,7 @@ hw25 is
         else
           {
             throw new Error("Unexpected expression in accessedClazzesDynamic, must be ExprKind.Call or ExprKind.Assign, is " +
-                            codeAt(c, ix) + " " + s.getClass() + " at " + codeAtAsPos(c,ix).show());
+                            codeAt(s) + " " + e.getClass() + " at " + codeAtAsPos(s).show());
           }
         var found = new TreeSet<Integer>();
         var result = new List<Integer>();
@@ -1685,32 +1770,28 @@ hw25 is
   /**
    * Get the possible inner clazzes for a call or assignment to a field
    *
-   * @param cl index of clazz containing the access
-   *
-   * @param c code block containing the access
-   *
-   * @param ix index of the call
+   * @param s site of the access
    *
    * @return an array with an even number of element pairs with accessed target
    * clazzes at even indices followed by the corresponding inner clazz of the
    * feature to be accessed for this target.
    */
-  public int[] accessedClazzes(int cl, int c, int ix)
+  public int[] accessedClazzes(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Call   ||
-       codeAt(c, ix) == ExprKind.Assign    );
+      (s >= SITE_BASE,
+       withinCode(s),
+       codeAt(s) == ExprKind.Call   ||
+       codeAt(s) == ExprKind.Assign    );
 
     int[] result;
-    if (accessIsDynamic(cl, c, ix))
+    if (accessIsDynamic(s))
       {
-        result = accessedClazzesDynamic(cl, c, ix);
+        result = accessedClazzesDynamic(s);
       }
     else
       {
-        var innerClazz = accessedClazz(cl, c, ix);
+        var innerClazz = accessedClazz(s);
         var tt = clazzOuterClazz(innerClazz);
         result = clazzNeedsCode(innerClazz) ? new int[] { tt, innerClazz }
                                             : new int[0];
@@ -1722,31 +1803,28 @@ hw25 is
   /**
    * Is an access to a feature (assignment, call) dynamic?
    *
-   * @param cl index of clazz containing the access
-   *
-   * @param c code block containing the access
-   *
-   * @param ix index of the access
+   * @param s site of the access
    *
    * @return true iff the assignment or call requires dynamic binding depending
    * on the actual target type.
    */
-  public boolean accessIsDynamic(int cl, int c, int ix)
+  public boolean accessIsDynamic(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Assign ||
-       codeAt(c, ix) == ExprKind.Call  );
+      (s >= SITE_BASE,
+       withinCode(s),
+       codeAt(s) == ExprKind.Assign ||
+       codeAt(s) == ExprKind.Call  );
 
+    var cl = clazzAt(s);
     var outerClazz = clazz(cl);
-    var s = getExpr(c , ix);
+    var e = getExpr(s);
     var res =
-      (s instanceof AbstractAssign ass ) ? outerClazz.actualClazzes(ass, null)[0].isRef() : // NYI: This should be the same as assignedField._outer
-      (s instanceof Clazz          arg ) ? outerClazz.isRef() && !arg.feature().isOuterRef() : // assignment to arg field in inherits call (dynamic if outerClazz is ref)
+      (e instanceof AbstractAssign ass ) ? outerClazz.actualClazzes(ass, null)[0].isRef() : // NYI: This should be the same as assignedField._outer
+      (e instanceof Clazz          arg ) ? outerClazz.isRef() && !arg.feature().isOuterRef() : // assignment to arg field in inherits call (dynamic if outerClazz is ref)
                                                                                        // or to outer ref field (not dynamic)
-      (s instanceof AbstractCall   call) ? outerClazz.actualClazzes(call,null)[1].isRef()  :
-      new Object() { { if (true) throw new Error("accessIsDynamic found unexpected Expr."); } } == null /* Java is ugly... */;
+      (e instanceof AbstractCall   call) ? outerClazz.actualClazzes(call,null)[1].isRef()  :
+      new Object() { { if (true) throw new Error("accessIsDynamic found unexpected Expr " + (e == null ? e : e.getClass()) + "."); } } == null /* Java is ugly... */;
 
     return res;
   }
@@ -1762,22 +1840,18 @@ hw25 is
    *
    * The result of a the call in this case is unit.
    *
-   * @param cl index of clazz containing the call
-   *
-   * @param c code block containing the call
-   *
-   * @param ix index of the call
+   * @param s site of the call
    *
    * @return true if only the precondition should be executed.
    */
-  public boolean callPreconditionOnly(int cl, int c, int ix)
+  public boolean callPreconditionOnly(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Call);
+      (s >= SITE_BASE,
+       withinCode(s),
+       codeAt(s) == ExprKind.Call);
 
-    var call = (AbstractCall) getExpr(c , ix);
+    var call = (AbstractCall) getExpr(s);
     return call.isInheritanceCall();
   }
 
@@ -1787,27 +1861,26 @@ hw25 is
    *
    * @param cl index of clazz containing the access
    *
-   * @param c code block containing the access
-   *
-   * @param ix index of the access
+   * @param s site of the access
    *
    * @return index of the static outer clazz of the accessed feature.
    */
-  public int accessTargetClazz(int cl, int c, int ix)
+  public int accessTargetClazz(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Assign ||
-       codeAt(c, ix) == ExprKind.Call  );
+      (s >= SITE_BASE,
+       withinCode(s),
+       codeAt(s) == ExprKind.Assign ||
+       codeAt(s) == ExprKind.Call  );
 
+    var cl = clazzAt(s);
     var outerClazz = clazz(cl);
-    var s = getExpr(c , ix);
+    var e = getExpr(s);
     var tclazz =
-      (s instanceof AbstractAssign ass ) ? outerClazz.actualClazzes(ass, null)[0] : // NYI: This should be the same as assignedField._outer
-      (s instanceof Clazz          arg ) ? outerClazz : // assignment to arg field in inherits call, so outer clazz is current instance
-      (s instanceof AbstractCall   call) ? outerClazz.actualClazzes(call, null)[1] :
-      (Clazz) (Object) new Object() { { if (true) throw new Error("accessTargetClazz found unexpected Expr."); } } /* Java is ugly... */;
+      (e instanceof AbstractAssign ass ) ? outerClazz.actualClazzes(ass, null)[0] : // NYI: This should be the same as assignedField._outer
+      (e instanceof Clazz          arg ) ? outerClazz : // assignment to arg field in inherits call, so outer clazz is current instance
+      (e instanceof AbstractCall   call) ? outerClazz.actualClazzes(call, null)[1] :
+      (Clazz) (Object) new Object() { { if (true) throw new Error("accessTargetClazz found unexpected Expr " + (e == null ? e : e.getClass()) + "."); } } /* Java is ugly... */;
 
     return id(tclazz);
   }
@@ -1827,19 +1900,18 @@ hw25 is
    *
    * @param cl index of clazz containing the constant
    *
-   * @param c code block containing the constant
-   *
-   * @param ix index of the constant
+   * @param s site of the constant
    */
-  public int constClazz(int cl, int c, int ix)
+  public int constClazz(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Const);
+      (s >= SITE_BASE,
+       withinCode(s),
+       codeAt(s) == ExprKind.Const);
 
+    var cl = clazzAt(s);
     var cc = clazz(cl);
-    var ac = (AbstractConstant) getExpr(c , ix);
+    var ac = (AbstractConstant) getExpr(s);
     var acl = cc.actualClazzes(ac.origin(), null);
     // origin might be AbstractConstant, AbstractCall or InlineArray.  In all
     // cases, the clazz of the result is the first actual clazz:
@@ -1852,14 +1924,14 @@ hw25 is
    * For an intermediate command of type ExprKind.Const, return the constant
    * data using little endian encoding, i.e, 0x12345678 -> { 0x78, 0x56, 0x34, 0x12 }.
    */
-  public byte[] constData(int c, int ix)
+  public byte[] constData(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Const);
+      (s >= SITE_BASE,
+       withinCode(s),
+       codeAt(s) == ExprKind.Const);
 
-    var ic = getExpr(c , ix);
+    var ic = getExpr(s);
     return ((AbstractConstant) ic).data();
   }
 
@@ -1867,24 +1939,21 @@ hw25 is
   /**
    * For a match expression, get the static clazz of the subject.
    *
-   * @param cl index of clazz containing the match
-   *
-   * @param c code block containing the match
-   *
-   * @param ix index of the match
+   * @param s site of the match
    *
    * @return clazz id of type of the subject
    */
-  public int matchStaticSubject(int cl, int c, int ix)
+  public int matchStaticSubject(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Match);
+      (s >= 0,
+       withinCode(s),
+       codeAt(s) == ExprKind.Match);
 
+    var cl = clazzAt(s);
     var cc = clazz(cl);
-    var s = getExpr(c , ix);
-    Clazz ss = cc.actualClazzes((Expr) s, null)[0];
+    var e = getExpr(s);
+    Clazz ss = cc.actualClazzes((Expr) e, null)[0];
     return id(ss);
   }
 
@@ -1892,29 +1961,26 @@ hw25 is
   /**
    * For a match expression, get the field of a given case
    *
-   * @param cl index of clazz containing the match
-   *
-   * @param c code block containing the match
-   *
-   * @param ix index of the match
+   * @param s site of the match
    *
    * @paramc cix index of the case in the match
    *
    * @return clazz id of field the value in this case is assigned to, -1 if this
    * case does not have a field or the field is unused.
    */
-  public int matchCaseField(int cl, int c, int ix, int cix)
+  public int matchCaseField(int s, int cix)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Match,
-       0 <= cix && cix <= matchCaseCount(c, ix));
+      (s >= SITE_BASE,
+       withinCode(s),
+       codeAt(s) == ExprKind.Match,
+       0 <= cix && cix <= matchCaseCount(s));
 
+    var cl = clazzAt(s);
     var cc = clazz(cl);
-    var s = getExpr(c , ix);
+    var e = getExpr(s);
     int result = -1; // no field for If
-    if (s instanceof AbstractMatch m)
+    if (e instanceof AbstractMatch m)
       {
         var mc = m.cases().get(cix);
         var f = mc.field();
@@ -1928,16 +1994,18 @@ hw25 is
   /**
    * For a given tag return the index of the corresponding case.
    *
+   * @param s site of the match
+   *
    * @param tag e.g. 0,1,2,...
    *
    * @return the index of the case for tag `tag`
    */
-  public int matchCaseIndex(int cl, int c, int i, int tag)
+  public int matchCaseIndex(int s, int tag)
   {
     var result = -1;
-    for (var j = 0; result < 0 && j <  matchCaseCount(c, i); j++)
+    for (var j = 0; result < 0 && j <  matchCaseCount(s); j++)
       {
-        var mct = matchCaseTags(cl, c, i, j);
+        var mct = matchCaseTags(s, j);
         if (Arrays.stream(mct).anyMatch(t -> t == tag))
           {
             result = j;
@@ -1952,33 +2020,28 @@ hw25 is
   /**
    * For a match expression, get the tags matched by a given case
    *
-   * @param cl index of clazz containing the match
-   *
-   * @param c code block containing the match
-   *
-   * @param ix index of the match
+   * @param s site of the match
    *
    * @paramc cix index of the case in the match
    *
    * @return array of tag numbers this case matches
    */
-  public int[] matchCaseTags(int cl, int c, int ix, int cix)
+  public int[] matchCaseTags(int s, int cix)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Match,
-       0 <= cix && cix <= matchCaseCount(c, ix));
+      (s >= SITE_BASE,
+       withinCode(s),
+       codeAt(s) == ExprKind.Match,
+       0 <= cix && cix <= matchCaseCount(s));
 
-    var s = getExpr(c , ix);
+    var e = getExpr(s);
     int[] result;
-    if (s instanceof If)
+    if (e instanceof If)
       {
         result = new int[] { cix == 0 ? 1 : 0 };
       }
-    else
+    else if (e instanceof AbstractMatch match)
       {
-        var match = (AbstractMatch) s;
         var mc = match.cases().get(cix);
         var ts = mc.types();
         var f = mc.field();
@@ -2003,6 +2066,10 @@ hw25 is
             result[i] = resultL.get(i);
           }
       }
+    else
+      {
+        throw new Error("match expr has wrong class " + (e == null ? e : e.getClass()));
+      }
     if(POSTCONDITIONS) ensure
       (result.length > 0);
     return result;
@@ -2012,24 +2079,22 @@ hw25 is
   /**
    * For a match expression, get the code associated with a given case
    *
-   * @param c code block containing the match
-   *
-   * @param ix index of the match
+   * @param s site of the match
    *
    * @paramc cix index of the case in the match
    *
    * @return code block for the case
    */
-  public int matchCaseCode(int c, int ix, int cix)
+  public int matchCaseCode(int s, int cix)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Match,
-       0 <= cix && cix <= matchCaseCount(c, ix));
+      (s >= SITE_BASE,
+       withinCode(s),
+       codeAt(s) == ExprKind.Match,
+       0 <= cix && cix <= matchCaseCount(s));
 
-    var s = getExpr(c, ix + 1 + cix);
-    return ((NumLiteral)s).intValue().intValueExact();
+    var e = getExpr(s + 1 + cix);
+    return ((NumLiteral) e).intValue().intValueExact();
   }
 
 
@@ -2141,7 +2206,7 @@ hw25 is
    */
   private String label(int c)
   {
-    return "l" + (c-CODE_BASE);
+    return "l" + (c-SITE_BASE);
   }
 
 
@@ -2149,30 +2214,27 @@ hw25 is
    * Get a string representation of the expr at the given index in given code
    * block.  Useful for debugging.
    *
-   * @param cl index of the clazz containing the code block.
-   *
-   * @param c the code block
-   *
-   * @param ix an index within the code block
+   * @param s site of an expression
    */
-  public String codeAtAsString(int cl, int c, int ix)
+  public String codeAtAsString(int s)
   {
-    return switch (codeAt(c,ix))
+    var cl = clazzAt(s);
+    return switch (codeAt(s))
       {
-      case Assign  -> "Assign to " + clazzAsString(accessedClazz     (cl, c, ix));
-      case Box     -> "Box "       + clazzAsString(boxValueClazz     (cl, c, ix)) + " => " + clazzAsString(boxResultClazz  (cl, c, ix));
+      case Assign  -> "Assign to " + clazzAsString(accessedClazz(s));
+      case Box     -> "Box "       + clazzAsString(boxValueClazz(s)) + " => " + clazzAsString(boxResultClazz  (s));
       case Call    -> {
                         var sb = new StringBuilder("Call ");
-                        var cc = accessedClazz(cl, c, ix);
+                        var cc = accessedClazz(s);
                         sb.append(clazzAsStringWithArgsAndResult(cc));
                         yield sb.toString();
                        }
       case Current -> "Current";
-      case Comment -> "Comment: " + comment(c, ix);
+      case Comment -> "Comment: " + comment(s);
       case Const   -> {
-                        var data = constData(c, ix);
+                        var data = constData(s);
                         var sb = new StringBuilder("Const of type ");
-                        sb.append(clazzAsString(constClazz(cl, c, ix)));
+                        sb.append(clazzAsString(constClazz(s)));
                         for (var i = 0; i < Math.min(8, data.length); i++)
                           {
                             sb.append(String.format(" %02x", data[i] & 0xff));
@@ -2181,10 +2243,10 @@ hw25 is
                       }
       case Match   -> {
                         var sb = new StringBuilder("Match");
-                        for (var cix = 0; cix < matchCaseCount(c, ix); cix++)
+                        for (var cix = 0; cix < matchCaseCount(s); cix++)
                           {
-                            var f = matchCaseField(cl, c, ix, cix);
-                            sb.append(" " + cix + (f == -1 ? "" : "("+clazzAsString(clazzResultClazz(f))+")") + "=>" + label(matchCaseCode(c, ix, cix)));
+                            var f = matchCaseField(s, cix);
+                            sb.append(" " + cix + (f == -1 ? "" : "("+clazzAsString(clazzResultClazz(f))+")") + "=>" + label(matchCaseCode(s, cix)));
                           }
                         yield sb.toString();
                       }
@@ -2199,37 +2261,22 @@ hw25 is
   /**
    * Get the source code position of an expr at the given index if it is available.
    *
-   * @param c the code block
-   *
-   * @param ix an index within the code block
+   * @param s site of an expression
    *
    * @return the source code position or null if not available.
    */
-  public SourcePosition codeAtAsPos(int c, int ix)
+  public SourcePosition codeAtAsPos(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0, withinCode(c, ix));
+      (s >= 0,
+       withinCode(s));
 
-    var e = getExpr(c , ix);
+    var e = getExpr(s);
     return (e instanceof Expr expr) ? expr.pos() :
            (e instanceof Clazz z) ? z._type.declarationPos()  /* implicit assignment to argument field */
                                   : null;
   }
 
-
-
-  /**
-   * Get the source code position of an expr at the given site if it is available.
-   *
-   * @param site the code position, IR.NO_SITE if unkown.
-   *
-   * @return the source code position or null if not available.
-   */
-  public SourcePosition siteAsPos(int site)
-  {
-    return site != NO_SITE ? codeAtAsPos(codeIndexFromSite(site), exprIndexFromSite(site))
-                           : null;
-  }
 
 
   /**
@@ -2242,17 +2289,17 @@ hw25 is
   public void dumpCode(int cl, int c)
   {
     String label = label(c) +  ":";
-    for (var ix = 0; withinCode(c, ix); ix = ix + codeSizeAt(c, ix))
+    for (var s = c; withinCode(s); s = s + codeSizeAt(s))
       {
-        System.out.printf("%s\t%d: %s\n", label, ix, codeAtAsString(cl, c, ix));
+        System.out.printf("%s\t%d: %s\n", label, s, codeAtAsString(s));
         label = "";
-        switch (codeAt(c,ix))
+        switch (codeAt(s))
           {
           case Match:
-            var l = label(c) + "_" + ix;
-            for (var cix = 0; cix < matchCaseCount(c, ix); cix++)
+            var l = label(c) + "_" + (s-c);
+            for (var cix = 0; cix < matchCaseCount(s); cix++)
               {
-                var mc = matchCaseCode(c, ix, cix);
+                var mc = matchCaseCode(s, cix);
 
                 dumpCode(cl, mc);
                 say("\tgoto " + l);
@@ -2302,31 +2349,29 @@ hw25 is
 
 
   /**
-   * For a given index 'ix' into the code block 'c', go 'delta' expressions
-   * further or back (in case 'delta < 0').
+   * For a given site 's', go 'delta' expressions further or back (in case
+   * 'delta < 0').
    *
-   * @param c the code block
-   *
-   * @param ix an index in c
+   * @param s a site
    *
    * @param delta the number of instructions to go forward or back.
    */
-  public int codeIndex(int c, int ix, int delta)
+  public int codeIndex(int s, int delta)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix));
+      (s >= SITE_BASE,
+       withinCode(s));
 
     while (delta > 0)
       {
-        ix = ix + codeSizeAt(c, ix);
+        s = s + codeSizeAt(s);
         delta--;
       }
     if (delta < 0)
       {
-        ix = codeIndex2(c, 0, ix, delta);
+        s = codeIndex2(codeBlockStart(s), s, delta);
       }
-    return ix;
+    return s;
   }
 
 
@@ -2337,45 +2382,37 @@ hw25 is
    * NYI: Performance: This requires time 'O(codeSize(c))', so using this
    * quickly results in quadratic performance!
    *
-   * @param c the code block
+   * @param si a site, our current position we are checking
    *
-   * @param i current index in c, starting at 0.
-   *
-   * @param ix an index in c
+   * @param s a site we are looking for
    *
    * @param delta the negative number of instructions to go back.
    *
-   * @return the index of the expression 'n' expressions before 'ix', or a
+   * @return the site of the expression 'delta' expressions before 's', or a
    * negative value '-m' if that instruction can be found 'm' recursive calls up.
    */
-  private int codeIndex2(int c, int i, int ix, int delta)
+  private int codeIndex2(int si, int s, int delta)
   {
-    if (i == ix)
+    check
+      (si >= 0 && s >= 0); // this code uses negative results if site was not found yet, so better make sure a site is never negative!
+
+    if (si == s)
       {
-        return delta;
+        return delta;  // found s, so result is -delta calls up
       }
     else
       {
-        var r = codeIndex2(c, i + codeSizeAt(c, i), ix, delta);
-        if (r < -1)
-          {
-            return r + 1;
-          }
-        else if (r == -1)
-          {
-            return i;
-          }
-        else
-          {
-            return r;
-          }
+        var r = codeIndex2(si + codeSizeAt(si), s, delta);
+        return r <  -1 ? r + 1  // found s, position of s + delta is at least one call up
+             : r == -1 ? si     // found s, position of s + delta is here!
+             :           r;     // found s, pass on result
       }
   }
 
 
   /**
    * Helper routine to go back in the code jumping over the whole previous
-   * expression. Say you have the code
+   * expression. Say you have the code  -- NYI: This example is confusing and probably wrong --
    *
    *   0: const 1
    *   1: current
@@ -2387,66 +2424,62 @@ hw25 is
    *   7: sub
    *   8: mul
    *
-   * Then 'skip(cl, c, 6)' is 2 (popping 'add current.m 2'), while 'skip(cl, c,
-   * 2)' is 0 (popping 'current.n').
+   * Then 'skip(cl, 6)' is 2 (popping 'add current.m 2'), while 'skip(cl, 2)' is
+   * 0 (popping 'current.n').
    *
-   * 'skip(cl, c, 7)' will result in 7, while 'skip(cl, c, 8)' will result in an
+   * 'skip(cl, 7)' will result in 7, while 'skip(cl, 8)' will result in an
    * error since there is no expression before 'mul 1 (sub current.n (add
    * current.m 2))'.
    *
-   * @param cl index of the clazz containing the code block.
-   *
-   * @param c the code block
-   *
-   * @param ix an index in c
+   * @param s site to start skiping backwards from
    */
-  public int skipBack(int cl, int c, int ix)
+  public int skipBack(int s)
   {
-    return switch (codeAt(c, ix))
+    return switch (codeAt(s))
       {
       case Assign  ->
         {
-          var tc = accessTargetClazz(cl, c, ix);
-          ix = skipBack(cl, c, codeIndex(c, ix, -1));
+          var tc = accessTargetClazz(s);
+          s = skipBack(codeIndex(s, -1));
           if (tc != clazzUniverse())
             {
-              ix = skipBack(cl, c, ix);
+              s = skipBack(s);
             }
-          yield ix;
+          yield s;
         }
-      case Box     -> skipBack(cl, c, codeIndex(c, ix, -1));
+      case Box     -> skipBack(codeIndex(s, -1));
       case Call    ->
         {
-          var tc = accessTargetClazz(cl, c, ix);
-          var cc = accessedClazz(cl, c, ix);
+          var tc = accessTargetClazz(s);
+          var cc = accessedClazz(s);
           var ac = clazzArgCount(cc);
-          ix = codeIndex(c, ix, -1);
+          s = codeIndex(s, -1);
           for (var i = 0; i < ac; i++)
             {
               var acl = clazzArgClazz(cc, ac-1-i);
               if (clazzResultClazz(acl) != clazzUniverse())
                 {
-                  ix = skipBack(cl, c, ix);
+                  s = skipBack(s);
                 }
             }
           if (tc != clazzUniverse())
             {
-              ix = skipBack(cl, c, ix);
+              s = skipBack(s);
             }
-          yield ix;
+          yield s;
         }
-      case Current -> codeIndex(c, ix, -1);
-      case Comment -> skipBack(cl, c, codeIndex(c, ix, -1));
-      case Const   -> codeIndex(c, ix, -1);
+      case Current -> codeIndex(s, -1);
+      case Comment -> skipBack(codeIndex(s, -1));
+      case Const   -> codeIndex(s, -1);
       case Match   ->
         {
-          ix = codeIndex(c, ix, -1);
-          ix = skipBack(cl, c, ix);
-          yield ix;
+          s = codeIndex(s, -1);
+          s = skipBack(s);
+          yield s;
         }
-      case Tag     -> skipBack(cl, c, codeIndex(c, ix, -1));
-      case Env     -> codeIndex(c, ix, -1);
-      case Pop     -> skipBack(cl, c, codeIndex(c, ix, -1));
+      case Tag     -> skipBack(codeIndex(s, -1));
+      case Env     -> codeIndex(s, -1);
+      case Pop     -> skipBack(codeIndex(s, -1));
       };
   }
 
@@ -2768,91 +2801,50 @@ hw25 is
 
 
   /**
-   * The java class name of a generated class. e.g. java/lang/String
-   *
-   * special cases: bool, i8, i16, u16, i32, i64, f32, f64
-   *
-   * @param cl
-   */
-  // NYI: cleanup remove this HACK once
-  // fuzion.java.array_get, fuzion.java.get_field0 and get_static_field0
-  // pass down signature.
-  public String javaClassName(int cl)
-  {
-    if (PRECONDITIONS)
-      require(cl >= 0);
-
-    var qn = clazz(cl)._type
-      .feature()
-      .qualifiedName();
-
-    if (CHECKS) check
-      (qn.startsWith("Java.java")
-      || qn.equals("bool")
-      || qn.equals("i8")
-      || qn.equals("i16")
-      || qn.equals("u16")
-      || qn.equals("i32")
-      || qn.equals("i64")
-      || qn.equals("f32")
-      || qn.equals("f64")
-      );
-
-    return qn.startsWith("Java.")
-      ? qn
-          .substring(5)
-          .replace(".", "/")
-          // NYI correct demangling
-          .replace("__j", "")
-      : qn;
-  }
-
-
-  /**
    * @return If the expression has only been found to result in void.
    */
-  public boolean alwaysResultsInVoid(int cl, int c, int i)
+  public boolean alwaysResultsInVoid(int s)
   {
     return false;
   }
 
 
   /**
-   * Get the Java signature string for a given type
+   * For a value clazz, obtain the corresponding reference clazz.
    *
-   * @param cl the type
+   * @param cl a clazz id
    *
-   * @return the signature, e.g., "V"
+   * @return clazz id of corresponding reference clazz.
    */
-  // NYI: cleanup remove this HACK once
-  // fuzion.java.array_get, fuzion.java.get_field0 and get_static_field0
-  // pass down signature.
-  public String javaSignature(int cl)
+  /* NYI remove? only used in interpreter */
+  @Deprecated
+  public int clazzAsRef(int cl)
   {
-    switch (getSpecialClazz(cl))
-      {
-      case c_bool :
-        return "Z";
-      case c_i8 :
-        return "B";
-      case c_i16 :
-        return "S";
-      case c_u16 :
-        return "C";
-      case c_i32 :
-        return "I";
-      case c_i64 :
-        return "J";
-      case c_f32 :
-        return "F";
-      case c_f64 :
-        return "D";
-      case c_NOT_FOUND :
-        // NYI what about arrays?
-        return "L" + javaClassName(cl) + ";";
-      default:
-        throw new UnsupportedOperationException("Unexpected case: " + getSpecialClazz(cl));
-      }
+    var cc = clazz(cl);
+    return id(cc.asRef());
+  }
+
+
+  /* NYI remove? only used in interpreter */
+  @Deprecated
+  public boolean clazzIsRoutine(int cl)
+  {
+    return clazz(cl)._type.feature().isRoutine();
+  }
+
+  /* NYI remove? only used in interpreter */
+  @Deprecated
+  public boolean isAssignableFrom(int cl0, int cl1)
+  {
+    return clazz(cl0)._type.isAssignableFrom(clazz(cl1)._type);
+  }
+
+
+  /* NYI remove? only used in interpreter */
+  @Deprecated
+  public int clazzAddress()
+  {
+    return Clazzes.c_address._idInFUIR;
   }
 
 

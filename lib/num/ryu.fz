@@ -970,25 +970,28 @@ public ryū(public T type : float) is
 
 
   # step 5: construct the string
-  step_5(output, output_length, exponent i64, is_negative, scientific_notation bool) String =>
+  step_5(output, output_length, exponent i64, is_negative, scientific_notation bool) String
+  pre debug: output_length > 0
+  =>
 
 
     # convert output to string
     output_as_string(output i64, output_length i64) String =>
-      for _ in (i64 1)..(output_length)
-          o := output, o / 10
+      for o := output, o / 10
           s := "{o % 10}", "{o % 10}$s"
+          _ in (i64 1)..(output_length-1 )
       do
       else
         s
 
     # this float as a scientific string e.g. 3.2E2
     scientific =>
-      for idx in i64 1 .. output_length
+      for str0 := "** internal error **", str
+          idx in i64 1 .. output_length
           output := output, output / 10
           str := "{output % 10}", "{output % 10}" + (if idx = output_length then "." else "") + str
       else
-        "{str}E{exponent}"
+        "{str0}E{exponent}"
 
     # the float as a decimal string
     full =>
@@ -997,12 +1000,13 @@ public ryū(public T type : float) is
       else if exponent + 1 >= output_length
         "{output_as_string output output_length}{"0" * (exponent+1-output_length).as_i32}.0"
       else
-        for idx in i64 0 .. output_length
+        for str0 := "** internal error **", str
+            idx in i64 0 .. output_length
             is_dot_pos := false, output_length - idx - 1 = exponent
             output := output, if is_dot_pos then output else output / 10
             str := "{output % 10}", (if is_dot_pos then "." else "{output % 10}") + str
         else
-          str
+          str0
 
     if is_negative then "-" else ""
       + (if scientific_notation then scientific else full)

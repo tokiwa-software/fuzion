@@ -580,9 +580,9 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                       {
                         if (!generics.isEmpty())
                           {
-                            AstErrors.formalGenericWithGenericArgs(pos(), this, f.generic());
+                            AstErrors.formalGenericWithGenericArgs(pos(), this, f.asGeneric());
                           }
-                        var gt = f.genericType();
+                        var gt = f.asGenericType();
                         if (gt.isOpenGeneric() && !(outerfeat instanceof Feature off && off.isLastArgType(this)))
                           {
                             AstErrors.illegalUseOfOpenFormalGeneric(pos(), gt.genericArgument());
@@ -682,7 +682,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                           {
                             return null;
                           }
-                        var gt = f.genericType();
+                        var gt = f.asGenericType();
                         if (gt.isOpenGeneric() && !(outerfeat instanceof Feature off && off.isLastArgType(this)))
                           {
                             return null;
@@ -905,7 +905,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       {
         if (isMatchingTypeFeature(o))
           {
-            result = o.typeArguments().get(0).genericType();
+            result = o.typeArguments().get(0).asGenericType();
             o = null;
           }
         else

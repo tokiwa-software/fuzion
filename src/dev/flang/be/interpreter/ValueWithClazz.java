@@ -26,9 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.air.Clazz;
-
-
 
 /**
  * ValueWithClazz represents a value that is equipped with an instance of
@@ -51,7 +48,7 @@ public abstract class ValueWithClazz extends Value
   /**
    * The clazz of this value.
    */
-  public final Clazz _clazz;
+  public final int _clazz;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -60,11 +57,10 @@ public abstract class ValueWithClazz extends Value
   /**
    * Constructor for a value with the given clazz.
    */
-  ValueWithClazz(Clazz clazz)
+  ValueWithClazz(int clazz)
   {
     if (PRECONDITIONS) require
-      (clazz != null);
-
+      (clazz > 0);
     this._clazz = clazz;
   }
 
@@ -77,13 +73,18 @@ public abstract class ValueWithClazz extends Value
    *
    * @return the clazz
    */
-  public Clazz clazz()
+  public int clazz()
   {
-    Clazz result = _clazz;
-    if (CHECKS) check
-      (result == null || result.isRef() || result.isUsedAsDynamicOuterRef());
-    return result;
+    return _clazz;
   }
+
+
+  @Override
+  public String toString()
+  {
+    return fuir().clazzAsStringNew(_clazz);
+  }
+
 
 }
 

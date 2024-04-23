@@ -75,6 +75,7 @@ echo "$(echo "$TESTS" | wc -l) tests, running $N tests in parallel."
 
 open_sem "$N"
 
+START_TIME_TOTAL=$(date +%s%N | cut -b1-13)
 for test in $TESTS; do
   task(){
     if test -n "$VERBOSE"; then
@@ -104,6 +105,7 @@ for test in $TESTS; do
   run_with_lock task
 done
 wait
+END_TIME_TOTAL=$(date +%s%N | cut -b1-13)
 
 OK=$(     grep --count ok$      "$BUILD_DIR"/run_tests.results || true)
 SKIPPED=$(grep --count skipped$ "$BUILD_DIR"/run_tests.results || true)
@@ -111,7 +113,7 @@ FAILED=$( grep --count failed$  "$BUILD_DIR"/run_tests.results || true)
 
 echo -n " $OK/$(echo "$TESTS" | wc -w) tests passed,"
 echo -n " $SKIPPED skipped,"
-echo    " $FAILED failed."
+echo    " $FAILED failed in $((END_TIME_TOTAL-START_TIME_TOTAL))ms."
 grep failed$ "$BUILD_DIR"/run_tests.results || echo -n
 
 if [ "$FAILED" -ge 1 ]; then

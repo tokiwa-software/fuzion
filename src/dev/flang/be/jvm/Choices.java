@@ -430,37 +430,32 @@ public class Choices extends ANY implements ClassFileConstants
    *
    * @param ai the abstract interpreter instance
    *
-   * @param cl the clazz we are compiling
-   *
-   * @param pre true iff we are compiling the precondition
-   *
-   * @param c the code block to compile
-   *
-   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+   * @param s site of the match expression
    *
    * @param sub code to produce the match subject value
    *
    * @return the code for the match, produces unit type result.
    */
-  public Expr match(JVM jvm, AbstractInterpreter<Expr, Expr> ai, int cl, boolean pre, int c, int i, Expr sub)
+  public Expr match(JVM jvm, AbstractInterpreter<Expr, Expr> ai, int s, Expr sub)
   {
+    var cl = _fuir.clazzAt(s);
     var cf = _types.classFile(cl);
-    var subjClazz = _fuir.matchStaticSubject(cl, c, i);
+    var subjClazz = _fuir.matchStaticSubject(s);
     Expr code;
 
     switch (kind(subjClazz))
       {
       case voidlike:
         {
-          Errors.fatal("JVM backend match called for void-like choice type " + _fuir.clazzAsString(subjClazz) + " when compiling " + _fuir.clazzAsString(cl));
+          Errors.fatal("JVM backend match called for void-like choice type " + _fuir.clazzAsString(subjClazz) + " when compiling " + _fuir.siteAsString(s));
           throw new Error(); // never executed, just to keep javac from complaining.
         }
       case unitlike:
         {
           code = null;
-          for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
+          for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
             {
-              var tags = _fuir.matchCaseTags(cl, c, i, mc);
+              var tags = _fuir.matchCaseTags(s, mc);
               for (var tagNum : tags)
                 {
                   var tc = _fuir.clazzChoice(subjClazz, tagNum);
@@ -468,7 +463,7 @@ public class Choices extends ANY implements ClassFileConstants
                     {
                       if (CHECKS) check
                         (code == null);  // if there are several non-voids, we would have at least boollike kind
-                      code = Expr.UNIT.andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc)));
+                      code = Expr.UNIT.andThen(ai.process(_fuir.matchCaseCode(s, mc)));
                     }
                 }
             }
@@ -481,18 +476,18 @@ public class Choices extends ANY implements ClassFileConstants
           var pos = Expr.UNIT;
           var neg = Expr.UNIT;
 
-          for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
+          for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
             {
-              var tags = _fuir.matchCaseTags(cl, c, i, mc);
+              var tags = _fuir.matchCaseTags(s, mc);
               for (var tagNum : tags)
                 {
                   var t = intValueForTagNum(subjClazz, tagNum);
                   switch (t)
                     {
-                    case 0: neg = Expr.UNIT.andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc))); break;
-                    case 1: pos = Expr.UNIT.andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc))); break;
+                    case 0: neg = Expr.UNIT.andThen(ai.process(_fuir.matchCaseCode(s, mc))); break;
+                    case 1: pos = Expr.UNIT.andThen(ai.process(_fuir.matchCaseCode(s, mc))); break;
                     case -1: break; //  void type
-                    default: throw new Error("JVM backend match found unexpected tag number " + t + " when compiling " + _fuir.clazzAsString(cl));
+                    default: throw new Error("JVM backend match found unexpected tag number " + t + " when compiling " + _fuir.siteAsString(s));
                   }
                 }
             }
@@ -505,11 +500,11 @@ public class Choices extends ANY implements ClassFileConstants
           code = sub;  // == tag!
 
           var lEnd = new Label();
-          for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
+          for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
             {
               // NYI: OPTIMIZATION: This currently uses a cascade of if..else if.., should better uses tableswitch.
-              var field = _fuir.matchCaseField(cl, c, i, mc);
-              var tags = _fuir.matchCaseTags(cl, c, i, mc);
+              var field = _fuir.matchCaseField(s, mc);
+              var tags = _fuir.matchCaseTags(s, mc);
               for (var tagNum : tags)
                 {
                   var tc = _fuir.clazzChoice(subjClazz, tagNum);
@@ -521,7 +516,7 @@ public class Choices extends ANY implements ClassFileConstants
                         .andThen(Expr.iconst(tagNum))                               //          tag, tag, tagNum
                         .andThen(Expr.branch(ClassFileConstants.O_if_icmpeq,        //          tag
                                              Expr.POP                               //          -
-                                               .andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc)))
+                                               .andThen(ai.process(_fuir.matchCaseCode(s, mc)))
                                                .andThen(Expr.gotoLabel(lEnd))));
                     }
                 }
@@ -536,10 +531,10 @@ public class Choices extends ANY implements ClassFileConstants
           var pos = Expr.UNIT;
           var neg = Expr.UNIT;
 
-          for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
+          for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
             {
-              var field = _fuir.matchCaseField(cl, c, i, mc);
-              var tags = _fuir.matchCaseTags(cl, c, i, mc);
+              var field = _fuir.matchCaseField(s, mc);
+              var tags = _fuir.matchCaseTags(s, mc);
               for (var tagNum : tags)
                 {
                   var tc = _fuir.clazzChoice(subjClazz, tagNum);
@@ -558,12 +553,12 @@ public class Choices extends ANY implements ClassFileConstants
                         {                                                       //          sub
                           pos = Expr.POP;                                       //          -
                         }
-                      pos = pos.andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc)));
+                      pos = pos.andThen(ai.process(_fuir.matchCaseCode(s, mc)));
                     }
                   else if (_fuir.clazzIsUnitType(tc))
                     {
                       neg = Expr.POP                                            //          -
-                        .andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc)));
+                        .andThen(ai.process(_fuir.matchCaseCode(s, mc)));
                     }
                 }
             }
@@ -586,11 +581,11 @@ public class Choices extends ANY implements ClassFileConstants
                                           ai._processor.pos().line()));
 
           var lEnd = new Label();
-          for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
+          for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
             {
               // NYI: OPTIMIZATION: This currently uses a cascade of if..else if.., should better uses tableswitch.
-              var field = _fuir.matchCaseField(cl, c, i, mc);
-              var tags = _fuir.matchCaseTags(cl, c, i, mc);
+              var field = _fuir.matchCaseField(s, mc);
+              var tags = _fuir.matchCaseTags(s, mc);
               for (var tagNum : tags)
                 {
                   Expr pos;
@@ -615,7 +610,7 @@ public class Choices extends ANY implements ClassFileConstants
                             .andThen(Expr.POP)                                  //          sub
                             .andThen(Expr.POP);                                 //          -
                         }
-                      pos = pos.andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc)))
+                      pos = pos.andThen(ai.process(_fuir.matchCaseCode(s, mc)))
                         .andThen(Expr.gotoLabel(lEnd));
                       code = code.andThen(Expr.DUP)                             //          sub, tag, tag
                         .andThen(Expr.iconst(tagNum))                           //          sub, tag, tag, tagNum
@@ -638,11 +633,11 @@ public class Choices extends ANY implements ClassFileConstants
                                    Names.TAG_NAME,
                                    ClassFileConstants.PrimitiveType.type_int));
           var lEnd = new Label();
-          for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
+          for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
             {
               // NYI: OPTIMIZATION: This currently uses a cascade of if..else if.., should better uses tableswitch.
-              var field = _fuir.matchCaseField(cl, c, i, mc);
-              var tags = _fuir.matchCaseTags(cl, c, i, mc);
+              var field = _fuir.matchCaseField(s, mc);
+              var tags = _fuir.matchCaseTags(s, mc);
               for (var tagNum : tags)
                 {
                   Expr pos;
@@ -673,7 +668,7 @@ public class Choices extends ANY implements ClassFileConstants
                             .andThen(Expr.POP);                                     //          -
                         }
                       pos = pos
-                        .andThen(ai.process(cl, pre, _fuir.matchCaseCode(c, i, mc)))
+                        .andThen(ai.process(_fuir.matchCaseCode(s, mc)))
                         .andThen(Expr.gotoLabel(lEnd));
                       code = code.andThen(Expr.DUP)                                 //          sub, tag, tag
                         .andThen(Expr.iconst(tagNum))                               //          sub, tag, tag, tagNum
@@ -699,7 +694,7 @@ public class Choices extends ANY implements ClassFileConstants
    *
    * @param jvm the JVM instance
    *
-   * @param cl the clazz we are compiling
+   * @param s site of the tag expression
    *
    * @param value code to produce the value we are tagging
    *
@@ -710,7 +705,7 @@ public class Choices extends ANY implements ClassFileConstants
    *
    * @return code to produce the tagged value as a result.
    */
-  Expr tag(JVM jvm, int cl, Expr value, int newcl, int tagNum)
+  Expr tag(JVM jvm, int s, Expr value, int newcl, int tagNum)
   {
     Expr res;
     var tc = _fuir.clazzChoice(newcl, tagNum);
@@ -719,7 +714,7 @@ public class Choices extends ANY implements ClassFileConstants
       {
       case voidlike:
         {
-          throw new Error("JVM backend tag called for voidlike choice type" + _fuir.clazzAsString(newcl) + " when compiling " + _fuir.clazzAsString(cl));
+          throw new Error("JVM backend tag called for voidlike choice type" + _fuir.clazzAsString(newcl) + " when compiling " + _fuir.siteAsString(s));
         }
       case unitlike:
         {

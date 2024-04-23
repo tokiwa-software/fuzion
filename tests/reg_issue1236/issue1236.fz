@@ -42,13 +42,13 @@ test1 is
 test2 is
   a ref is
     dt => a.this.type
-    redef as_string => "a"
+    redef as_string => $"a"
     b : c is
-      redef as_string => "b"
+      redef as_string => $"b"
       say a.this.type
 
   c : a is
-    redef as_string => "c"
+    redef as_string => $"c"
 
   ex_1236b =>
     _ := a.b

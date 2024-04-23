@@ -29,10 +29,7 @@ package dev.flang.be.interpreter;
 import java.util.Map;
 import java.util.TreeMap;
 
-import dev.flang.air.Clazz; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.air.Clazzes; // NYI: remove dependency! Use dev.flang.fuir instead.
-
-import dev.flang.util.ANY;
+import dev.flang.fuir.FUIR;
 
 
 /**
@@ -40,32 +37,35 @@ import dev.flang.util.ANY;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-class Layout extends ANY
+class Layout extends FUIRContext
 {
 
 
   /*-----------------------------  statics  -----------------------------*/
 
 
+  private static final TreeMap<Integer, Layout> _layouts_ = new TreeMap<>();
+
+
   /**
    * Determine the size of an instance of the given clazz.
    */
-  static synchronized Layout get(Clazz c)
+  static synchronized Layout get(int cl)
   {
-    var l = (Layout) c._backendData; // _layouts_.get(c);
-    if (l == null)
+    Layout result = _layouts_.get(cl);
+    if (result == null)
       {
-        if (c.isRef())
+        if (fuir().clazzIsRef(cl))
           {
-            l = get(c.asValue());
-            c._backendData = l;
+            result = get(fuir().clazzAsValue(cl));
           }
         else
           {
-            l = new Layout(c);
+            result = new Layout(cl);
+            _layouts_.put(cl, result);
           }
       }
-    return l;
+    return result;
   }
 
 
@@ -75,13 +75,13 @@ class Layout extends ANY
   /**
    * The Clazz we are layouting
    */
-  private final Clazz _clazz;
+  private final int _clazz;
 
 
   /**
    * Offsets of the fields in instances of this clazz.
    */
-  public final Map<Clazz, Integer> _offsets = new TreeMap<>((o1, o2) -> o1.compareToIgnoreOuter(o2));
+  public final Map<Integer, Integer> _offsets = new TreeMap<>();
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -92,11 +92,11 @@ class Layout extends ANY
    * in progress, Integer.MIN_VALUE if layout is done but clazz cannot be
    * instantiated.
    */
-  private int _size = -1;
+  private final int _size;
 
 
   /**
-   * The size of the choice values in case _clazz.isChoice(). -1 if layout has
+   * The size of the choice values in case fuir.clazzIsChoice(_clazz). -1 if layout has
    * not started yet.
    */
   private int _choiceValsSize = -1;
@@ -105,65 +105,57 @@ class Layout extends ANY
   /*---------------------------  constructors  ---------------------------*/
 
 
-  Layout(Clazz cl)
+  Layout(int cl)
   {
-    if (PRECONDITIONS) require
-      (cl != null);
-
     _clazz = cl;
-    cl._backendData = this;
 
-    _size = Integer.MIN_VALUE;
-    if (_clazz.isChoice())
+    var size = Integer.MIN_VALUE;
+    if (fuir().clazzIsChoice(_clazz))
       {
         // reserved for tagging
-        _size += (_clazz.isChoiceOfOnlyRefs() ? 0 : 1);
+        size += (fuir().clazzIsChoiceOfOnlyRefs(_clazz) ? 0 : 1);
         int maxSz = 0;
-        for (var cg : _clazz.choiceGenerics())
+        for (int i = 0; i < fuir().clazzNumChoices(cl); i++)
           {
-            var sz = cg.isRef() ? 1 : get(cg).size();
+            var cg = fuir().clazzChoice(cl, i);
+            var sz = fuir().clazzIsRef(cg) ? 1 : get(cg).size();
             if (sz > maxSz)
               {
                 maxSz = sz;
               }
           }
         _choiceValsSize = maxSz;
-        _size = _size + maxSz;
-        _size -= Integer.MIN_VALUE;
+        size = size + maxSz;
+        size -= Integer.MIN_VALUE;
       }
-    else if (_clazz.isRoutine())
+    else if (fuir().clazzIsRoutine(_clazz))
       {
-        for (var f : _clazz.fields())
+        for (int i = 0; i < fuir().clazzNumFields(cl); i++)
           {
-            var ff = f.feature();
+            var f = fuir().clazzField(cl, i);
             // NYI: Ugly special handling, clean up:
-            var fc =
-              ff.isOuterRef() && ff.outer().isOuterRefAdrOfValue()  ? Clazzes.c_address
-                                                                    : f.resultClazz();
+            int fc = fuir().clazzFieldIsAdrOfValue(f)  ? fuir().clazzAddress()
+                                                       : fuir().clazzResultClazz(f);
             int fsz;
-            if        (fc.isRef()) { fsz = 1;
-            } else if (Clazzes.i8.getIfCreated()     != null && fc.compareTo(Clazzes.i8.get()      ) == 0) { fsz = 1;
-            } else if (Clazzes.i16.getIfCreated()    != null && fc.compareTo(Clazzes.i16.get()     ) == 0) { fsz = 1;
-            } else if (Clazzes.i32.getIfCreated()    != null && fc.compareTo(Clazzes.i32.get()     ) == 0) { fsz = 1;
-            } else if (Clazzes.i64.getIfCreated()    != null && fc.compareTo(Clazzes.i64.get()     ) == 0) { fsz = 2;
-            } else if (Clazzes.u8.getIfCreated()     != null && fc.compareTo(Clazzes.u8.get()      ) == 0) { fsz = 1;
-            } else if (Clazzes.u16.getIfCreated()    != null && fc.compareTo(Clazzes.u16.get()     ) == 0) { fsz = 1;
-            } else if (Clazzes.u32.getIfCreated()    != null && fc.compareTo(Clazzes.u32.get()     ) == 0) { fsz = 1;
-            } else if (Clazzes.u64.getIfCreated()    != null && fc.compareTo(Clazzes.u64.get()     ) == 0) { fsz = 2;
-            } else if (Clazzes.f32.getIfCreated()    != null && fc.compareTo(Clazzes.f32.get()     ) == 0) { fsz = 1;
-            } else if (Clazzes.f64.getIfCreated()    != null && fc.compareTo(Clazzes.f64.get()     ) == 0) { fsz = 2;
-            } else if (Clazzes.c_void.getIfCreated() != null && fc.compareTo(Clazzes.c_void.get()  ) == 0) { fsz = 0;
-            } else {
-              fsz = get(fc).size();
-            }
-            _offsets.put(f, _size - Integer.MIN_VALUE);
-            _size += fsz;
+            if        (fuir().clazzIsRef(fc)) {                         fsz = 1;
+            } else if (fc == fuir().clazz(FUIR.SpecialClazzes.c_i8))  { fsz = 1;
+            } else if (fc == fuir().clazz(FUIR.SpecialClazzes.c_i16)) { fsz = 1;
+            } else if (fc == fuir().clazz(FUIR.SpecialClazzes.c_i32)) { fsz = 1;
+            } else if (fc == fuir().clazz(FUIR.SpecialClazzes.c_i64)) { fsz = 2;
+            } else if (fc == fuir().clazz(FUIR.SpecialClazzes.c_u8))  { fsz = 1;
+            } else if (fc == fuir().clazz(FUIR.SpecialClazzes.c_u16)) { fsz = 1;
+            } else if (fc == fuir().clazz(FUIR.SpecialClazzes.c_u32)) { fsz = 1;
+            } else if (fc == fuir().clazz(FUIR.SpecialClazzes.c_u64)) { fsz = 2;
+            } else if (fc == fuir().clazz(FUIR.SpecialClazzes.c_f32)) { fsz = 1;
+            } else if (fc == fuir().clazz(FUIR.SpecialClazzes.c_f64)) { fsz = 2;
+            } else if (fuir().clazzIsVoidType(cl))                    { fsz = 0;
+            } else {                                                    fsz = get(fc).size(); }
+            _offsets.put(i, size - Integer.MIN_VALUE);
+            size += fsz;
           }
-        _size -= Integer.MIN_VALUE;
+        size -= Integer.MIN_VALUE;
       }
-
-    if (POSTCONDITIONS) ensure
-      (!_clazz.isChoice() && !_clazz.isRoutine() || sizeAvailable());
+    _size  = size;
   }
 
 
@@ -171,25 +163,10 @@ class Layout extends ANY
 
 
   /**
-   * Can size() be called?  Just for use in precondition.
-   */
-  boolean sizeAvailable()
-  {
-    if (PRECONDITIONS) require
-      (_clazz.isChoice() || _clazz.isRoutine());
-
-    return _size >= 0;
-  }
-
-
-  /**
    * The size of instances for _clazz.
    */
   int size()
   {
-    if (PRECONDITIONS) require
-      (sizeAvailable());
-
     return _size;
   }
 
@@ -197,14 +174,14 @@ class Layout extends ANY
   /**
    * Offset of field f within instances of _clazz.
    */
-  int offset(Clazz f)
+  int offset(int f)
   {
     if (PRECONDITIONS) require
-      (_clazz.isRoutine() || _clazz.isChoice(),
-       sizeAvailable(),
-       _offsets.containsKey(f));
+      (fuir().clazzIsRoutine(_clazz) || fuir().clazzIsChoice(_clazz),
+       _offsets.containsKey(fuir().fieldIndex(f))
+       );
 
-    return _offsets.get(f);
+    return _offsets.get(fuir().fieldIndex(f));
   }
 
 
@@ -214,9 +191,9 @@ class Layout extends ANY
   int choiceValsOffset()
   {
     if (PRECONDITIONS) require
-      (_clazz.isChoice() && sizeAvailable());
+      (fuir().clazzIsChoice(_clazz));
 
-    return _clazz.isChoiceOfOnlyRefs() ? 0 : 1;
+    return fuir().clazzIsChoiceOfOnlyRefs(_clazz) ? 0 : 1;
   }
 
 
@@ -226,7 +203,7 @@ class Layout extends ANY
   int choiceValsSize()
   {
     if (PRECONDITIONS) require
-      (_clazz.isChoice() && sizeAvailable());
+      (fuir().clazzIsChoice(_clazz));
 
     return _choiceValsSize;
   }
@@ -245,9 +222,9 @@ class Layout extends ANY
   int choiceValOffset(int id)
   {
     if (PRECONDITIONS) require
-      (_clazz.isChoice() && sizeAvailable(),
+      (fuir().clazzIsChoice(_clazz),
        id >= 0,
-       id < _clazz.choiceGenerics().size());
+       id < fuir().clazzNumChoices(_clazz));
 
     // id is ignored, all vals are currently stored at the same offset:
     return choiceValsOffset();
@@ -264,9 +241,16 @@ class Layout extends ANY
   int choiceRefValOffset()
   {
     if (PRECONDITIONS) require
-      (_clazz.isChoice() && sizeAvailable());
+      (fuir().clazzIsChoice(_clazz));
 
     return choiceValsOffset();
+  }
+
+
+  @Override
+  public String toString()
+  {
+    return fuir().clazzAsStringNew(_clazz);
   }
 
 }

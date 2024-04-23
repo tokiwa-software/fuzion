@@ -20,35 +20,39 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source code of class IntTriplet
+ * Source of class FUIRContext
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.util;
+package dev.flang.be.interpreter;
 
-import java.util.Comparator;
+import dev.flang.fuir.FUIR;
+import dev.flang.util.ANY;
 
+public class FUIRContext extends ANY {
 
-/**
- * IntTriplet contains three int values.
- *
- * @author Fridtjof Siebert (siebert@tokiwa.software)
- */
-public record IntTriplet(int v0, int v1, int v2)
-{
+  private static FUIR _fuir;
 
   /**
-   * Comparator that defines a total order for IntTriplet.
+   * @return the fuir
    */
-  public static Comparator<IntTriplet> _comparator_ = new Comparator<IntTriplet>()
-    {
-      public int compare(IntTriplet a, IntTriplet b)
-      {
-        return a.v0 != b.v0 ? Integer.compare(a.v0, b.v0) :
-               a.v1 != b.v1 ? Integer.compare(a.v1, b.v1)
-                            : Integer.compare(a.v2, b.v2);
-      }
-    };
+  public static FUIR fuir()
+  {
+    if (PRECONDITIONS) require
+      (_fuir != null);
+
+    return _fuir;
+  }
+
+  /**
+   * @param fuir the fuir to set
+   */
+  public static void set_fuir(FUIR fuir)
+  {
+    if (PRECONDITIONS) require
+      (_fuir == null);
+
+    _fuir = fuir;
+  }
 
 }
-/* end of file */

@@ -31,28 +31,28 @@ public fuzion.java is
   # read a static field of given name in class with given name.  Wrap result into
   # an instance of T.
   #
-  public get_static_field(T type, clazz String, field String) =>
+  public get_static_field(T type, clazz String, field String, signature String) =>
     c := string_to_java_object clazz
     f := string_to_java_object field
-    get_static_field0 T c f
+    get_static_field0 T c f (sys.c_string signature)
 
 
   # read a field of given name from given object instance thiz.  Wrap result into
   # an instance of T.
   #
-  public get_field(T type, thiz Java_Object, field String) =>
+  public get_field(T type, thiz Java_Object, field String, signature String) =>
     f := string_to_java_object field
-    get_field0 T thiz f
+    get_field0 T thiz f (sys.c_string signature)
 
 
   # intrinsic to read static field
   #
-  get_static_field0(T type, clazz Java_Object, field Java_Object) T => intrinsic_constructor
+  get_static_field0(T type, clazz Java_Object, field Java_Object, signature fuzion.sys.Pointer) T => intrinsic_constructor
 
 
   # intrinsic to read instance field
   #
-  get_field0(T type, thiz Java_Object, field Java_Object) T => intrinsic_constructor
+  get_field0(T type, thiz Java_Object, field Java_Object, signature fuzion.sys.Pointer) T => intrinsic_constructor
 
 
   # A Java reference
@@ -64,11 +64,6 @@ public fuzion.java is
 
     is_null0(jr fuzion.sys.Pointer) bool => intrinsic_constructor
 
-    # dummy feature to make sure Java_Object.type exists. This is required since
-    # Java-related intrinsics may return an array of Java_Object and require Java_Object.type.
-    #
-    _ignore_ => Java_Object.type
-
 
   # A Java array
   #
@@ -77,8 +72,9 @@ public fuzion.java is
   is
     public length                  => array_length T Array.this
     public redef finite            => true
-    public redef index [ ] (i i32) => array_get    T Array.this i
+    public redef index [ ] (i i32) => array_get    T Array.this i (sys.c_string signature)
     public redef as_list => as_list 0
+
 
     # create list starting at index from
     #
@@ -87,6 +83,7 @@ public fuzion.java is
         nil
       else
         array_cons from
+
 
     # create a cons cell for a list of this array starting at the given
     # index
@@ -98,6 +95,28 @@ public fuzion.java is
       head => Array.this[i]
       tail => as_list i+1
 
+
+    # get the signature of the element
+    #
+    signature =>
+      if T.name = "i8"
+        "B"
+      else if T.name = "i16"
+        "S"
+      else if T.name = "u16"
+        "C"
+      else if T.name = "i32"
+        "I"
+      else if T.name = "i64"
+        "J"
+      else if T.name = "f32"
+        "F"
+      else if T.name = "f64"
+        "D"
+      else if T.name = "bool"
+        "Z"
+      else
+        "NOT_A_PRIMITIVE"
 
 
   # Java's 'java.lang.String' type
@@ -190,18 +209,28 @@ public fuzion.java is
 
   # intrinsic to get an element of a Java array of arbitrary type
   #
-  array_get(T type, a Array T, ix i32) T => intrinsic
+  array_get(T type, a Array T, ix i32, signature fuzion.sys.Pointer) T => intrinsic
 
 
   # convert a Sequence to a Java Array object
   #
-  public array_to_java_object(T type, a Sequence T) Array T =>
-    array_to_java_object0 T a.as_array.internal_array
+  public array_to_java_object(T type, element_signature String, a Sequence T) Array T
+  pre (T.name = "i8"  ||
+       T.name = "i16" ||
+       T.name = "u16" ||
+       T.name = "i32" ||
+       T.name = "i64" ||
+       T.name = "f32" ||
+       T.name = "f64" ||
+       T.name = "bool" ||
+       T.name.starts_with "Java.java.")
+  =>
+    array_to_java_object0 T a.as_array.internal_array (sys.c_string element_signature)
 
 
   # intrinsic to convert an array to a Java Array object
   #
-  array_to_java_object0(T type, a fuzion.sys.internal_array T) Array T => intrinsic_constructor
+  array_to_java_object0(T type, a fuzion.sys.internal_array T, element_signature fuzion.sys.Pointer) Array T => intrinsic_constructor
 
 
   # convert a string to a Java String object
@@ -264,3 +293,21 @@ public fuzion.java is
   # intrinsic to convert a bool to a Java Boolean object
   #
   public bool_to_java_object(b bool) Java_Object => intrinsic_constructor
+
+
+  # short-hands
+  #
+  public i8    .as_java_object => fuzion.java.i8_to_java_object  val
+  public i16   .as_java_object => fuzion.java.i16_to_java_object val
+  public u16   .as_java_object => fuzion.java.u16_to_java_object val
+  public i32   .as_java_object => fuzion.java.i32_to_java_object val
+  public i64   .as_java_object => fuzion.java.i64_to_java_object val
+  public f32   .as_java_object => fuzion.java.f32_to_java_object val
+  public f64   .as_java_object => fuzion.java.f64_to_java_object val
+  public bool  .as_java_object => fuzion.java.bool_to_java_object bool.this
+  public String.as_java_object => fuzion.java.string_to_java_object String.this
+  # NYI: UNDER DEVELOPEMENT: Repeated inheritance of conflicting features
+  # public array .as_java_object => fuzion.java.array_to_java_object array.this
+  # NYI: BUG:Feature declared using modifier 'redef' does not redefine another feature
+  # public redef Const_String.as_java_object => fuzion.java.array_to_java_object Const_String.this
+
