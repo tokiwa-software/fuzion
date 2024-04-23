@@ -88,4 +88,4 @@ public Panic_Handler ref is
   #
   public use(R type, code ()->R, def Lazy R) =>
     p := panic Panic_Handler.this unit
-    (p.run code).get def
+    (p.run code).or_else def

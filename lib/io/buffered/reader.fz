@@ -37,7 +37,7 @@ public reader(rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file) 
   #
   public with(R type, f ()->R) outcome R =>
     try reader R ()->
-      (run f).get ()->
+      (run f).or_else ()->
         exit 1
 
 
