@@ -235,7 +235,7 @@ public class Intrinsics extends ANY
       }
     else
       {
-        Errors.fatal(SourcePosition.notAvailable,
+        Errors.fatal(executor.fuir().declarationPos(innerClazz),
                      "Intrinsic feature not supported",
                      "Missing intrinsic feature: " + in);
         result = (args) -> Value.NO_VALUE;

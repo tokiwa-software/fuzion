@@ -2848,6 +2848,16 @@ hw25 is
   }
 
 
+  /**
+   * Get the position where the clazz is declared
+   * in the source code.
+   */
+  public SourcePosition declarationPos(int cl)
+  {
+    return clazz(cl)._type.declarationPos();
+  }
+
+
 }
 
 /* end of file */
