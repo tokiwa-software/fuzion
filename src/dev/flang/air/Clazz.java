@@ -1164,7 +1164,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
             if (f != Types.f_ERROR && (af != null || !isEffectivelyAbstract(f)))
               {
                 var aaf = af != null ? af : f;
-                if (isEffectivelyAbstract(aaf))
+                if (isEffectivelyAbstract(aaf) && !_type.feature().isTypeFeature() /* NYI: WORKAROUND! */)
                   {
                     if (_abstractCalled == null)
                       {

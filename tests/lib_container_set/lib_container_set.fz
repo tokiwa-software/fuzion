@@ -1,0 +1,44 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test
+#
+# -----------------------------------------------------------------------
+
+lib_container_set is
+
+  a := container.set_of_ordered [1,2,3]
+  b := container.set_of_ordered [3,4,5]
+  c := container.set_of_ordered [1,2]
+
+  say "$a union\t\t$b: {a.union b}"
+  say "$a intersection\t$b: {a.intersection b}"
+  say "$a except\t\t$b: {a.except b}"
+
+  say "$a\tis subset\tof $b:\t{a.is_subset_of b}"
+  say "$a\tis superset\tof $b:\t{a.is_superset_of b}"
+
+  say "$a\tis subset\tof $a:\t{a.is_subset_of a}"
+  say "$a\tis superset\tof $a:\t{a.is_superset_of a}"
+
+  say "$a\tis superset\tof $c:\t{a.is_superset_of c}"
+  say "$c\tis superset\tof $a:\t{c.is_superset_of a}"
+  say "$a\tis subset\tof $c:\t{a.is_subset_of c}"
+  say "$c\tis subset\tof $a:\t{c.is_subset_of a}"
+
