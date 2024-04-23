@@ -39,6 +39,17 @@ import dev.flang.util.SourcePosition;
 public class ParsedCall extends Call
 {
 
+  /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * Special value for an empty actuals lists to distinguish a call without
+   * parenthesis ("a.b") from a call with parenthesis and an empty actual
+   * arguments list ("a.b()").
+   */
+  public static final List<Expr> NO_PARENTHESES = new List<>();
+
+
 
   final List<Expr> _parsedActuals;
   boolean _appliedPartially = false;

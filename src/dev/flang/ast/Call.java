@@ -52,14 +52,6 @@ public class Call extends AbstractCall
 
 
   /**
-   * Special value for an empty actuals lists to distinguish a call without
-   * parenthesis ("a.b") from a call with parenthesis and an empty actual
-   * arguments list ("a.b()").
-   */
-  public static final List<Expr> NO_PARENTHESES = new List<>();
-
-
-  /**
    * Empty map for general use.
    */
   public static final SortedMap<FeatureName, Feature> EMPTY_MAP = new TreeMap<>();
@@ -251,7 +243,7 @@ public class Call extends AbstractCall
    */
   public Call(SourcePosition pos, Expr t, String n)
   {
-    this(pos, t, n, -1, NO_PARENTHESES);
+    this(pos, t, n, -1, Expr.NO_EXPRS);
   }
 
 
@@ -317,7 +309,7 @@ public class Call extends AbstractCall
    */
   public Call(SourcePosition pos, Expr t, AbstractFeature calledFeature, int select)
   {
-    this(pos, t, calledFeature.featureName().baseName(), select, NO_PARENTHESES);
+    this(pos, t, calledFeature.featureName().baseName(), select, Expr.NO_EXPRS);
     this._calledFeature = calledFeature;
   }
 
@@ -350,7 +342,7 @@ public class Call extends AbstractCall
               Expr            target,
               AbstractFeature anonymous)
   {
-    this(pos, target, null, NO_PARENTHESES);
+    this(pos, target, null, Expr.NO_EXPRS);
     this._calledFeature = anonymous;
   }
 
@@ -1376,8 +1368,8 @@ public class Call extends AbstractCall
    * e.g., a tuple access `t.3` that is converted to `t.values.3`.
    *
    * The actual arguments and _select of this call are moved over to the new
-   * call, this calls arguments are replaced by NO_PARENTHESES/NO_EXPRS and this
-   * calls _select is set to -1.
+   * call, this call's arguments are replaced by Expr.NO_EXPRS and this calls
+   * _select is set to -1.
    *
    * @param res Resolution instance
    *
@@ -1417,7 +1409,7 @@ public class Call extends AbstractCall
     _movedTo = result;
     _wasImplicitImmediateCall = true;
     _originalArgCount = _actuals.size();
-    _actuals = NO_PARENTHESES;
+    _actuals = Expr.NO_EXPRS;
     _select = -1;
     return result;
   }

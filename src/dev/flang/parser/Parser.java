@@ -1467,7 +1467,7 @@ indexTail   : ":=" exprInLine
         if (l.isEmpty())
           { // In case result is Function, avoid automatic conversion `a[i]`
             // into `a[i].call`
-            l = Call.NO_PARENTHESES;
+            l = ParsedCall.NO_PARENTHESES;
           }
         result = new Call(pos, target, n, l);
         target = result;
@@ -1692,7 +1692,7 @@ actualsList : actualSp actualsList
    */
   List<Expr> actualsList()
   {
-    List<Expr> result = Call.NO_PARENTHESES;
+    List<Expr> result = ParsedCall.NO_PARENTHESES;
     if (ignoredTokenBefore() && !endsActuals(false))
       {
         var in = new Indentation();
