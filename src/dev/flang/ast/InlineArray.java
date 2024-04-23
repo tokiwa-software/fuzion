@@ -397,13 +397,11 @@ public class InlineArray extends ExprWithPos
   {
     var et = elementType();
     var eT           = new List<AbstractType>(et);
-    var argsA        = new List<Expr>(Expr.ERROR_VALUE,
-                                      new NumLiteral(_elements.size()));
     var argsT        = new List<AbstractType>(et);
     var argsE        = new List<Expr>(new NumLiteral(_elements.size()));
     var fuzion       = new Call(SourcePosition.builtIn, null, "fuzion"                     ).resolveTypes(res, outer);
     var sys          = new Call(SourcePosition.builtIn, fuzion, "sys"                      ).resolveTypes(res, outer);
-    var sysArrayCall = new Call(SourcePosition.builtIn, sys , "internal_array_init", -1, argsA, argsT, argsE, null, null  ).resolveTypes(res, outer);
+    var sysArrayCall = new Call(SourcePosition.builtIn, sys , "internal_array_init", -1, argsT, argsE, null, null  ).resolveTypes(res, outer);
     var fuzionT      = new ParsedType(SourcePosition.builtIn, "fuzion", UnresolvedType.NONE, null);
     var sysT         = new ParsedType(SourcePosition.builtIn, "sys"   , UnresolvedType.NONE, fuzionT);
     var sysArrayT    = new ParsedType(SourcePosition.builtIn, "internal_array", eT, sysT);
@@ -429,18 +427,12 @@ public class InlineArray extends ExprWithPos
     var unit1           = new Call(SourcePosition.builtIn, null, "unit"                            ).resolveTypes(res, outer);
     var unit2           = new Call(SourcePosition.builtIn, null, "unit"                            ).resolveTypes(res, outer);
     var unit3           = new Call(SourcePosition.builtIn, null, "unit"                            ).resolveTypes(res, outer);
-    var sysArrArgsA     = new List<Expr>(Expr.ERROR_VALUE,
-                                         readSysArrayVar,
-                                         unit1,
-                                         unit2,
-                                         unit3);
     var sysArrArgsT     = new List<AbstractType>(et);
     var sysArrArgsE     = new List<Expr>(readSysArrayVar,
                                          unit1,
                                          unit2,
                                          unit3);
     var arrayCall       = new Call(SourcePosition.builtIn, null, "array"     , -1,
-                                   sysArrArgsA,
                                    sysArrArgsT,
                                    sysArrArgsE, null, null).resolveTypes(res, outer);
     exprs.add(arrayCall);

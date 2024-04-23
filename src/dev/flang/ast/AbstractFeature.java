@@ -707,17 +707,14 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       ? new Universe()
       : outer().typeCall(p, new List<>(outer().selfType()), res, that);
     var tf = typeFeature(res);
-    var args = new List<Expr>();
     var typeParameters2 = new List<AbstractType>();
     for (var tp : typeParameters)
       {
         var tpa = that.rebaseTypeForTypeFeature(tp);
-        args.add(Expr.ERROR_VALUE);  // NYI: REMOVE actual type
         typeParameters2.add(typeParameters2.size() == 0 ? tp : tpa);
       }
     return new Call(p,
                     oc,
-                    args,
                     typeParameters2,
                     Expr.NO_EXPRS,
                     tf,

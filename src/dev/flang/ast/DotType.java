@@ -117,7 +117,6 @@ public class DotType extends ExprWithPos
                     tc,
                     "get",
                     -1,
-                    new List<>(Expr.ERROR_VALUE),
                     new List<>(_lhs),
                     new List<>(),
                     null,

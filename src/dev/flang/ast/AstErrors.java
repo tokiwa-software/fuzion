@@ -435,44 +435,6 @@ public class AstErrors extends ANY
    *
    * @param frmlT the expected formal type
    *
-   * @param typePar the unexpected type parameter
-   */
-  static void unexpectedTypeParameterInCall(SourcePosition pos,
-                                            AbstractFeature calledFeature,
-                                            int count,
-                                            AbstractType frmlT,
-                                            AbstractType typePar)
-  {
-    var frmls = calledFeature.valueArguments().iterator();
-    AbstractFeature frml = null;
-    int c;
-    for (c = 0; c <= count && frmls.hasNext(); c++)
-      {
-        frml = frmls.next();
-      }
-    var f = ((c == count+1) && (frml != null)) ? frml : null;
-    incompatibleType(pos,
-                     "when passing argument in a call",
-                     "Actual type for argument #" + (count+1) + (f == null ? "" : " " + sbnf(f)) + " does not match expected type.\n" +
-                     "In call to          : " + s(calledFeature) + "\n",
-                     (f == null ? "argument #" + (count+1) : f.featureName().baseName()),
-                     frmlT,
-                     null,
-                     typePar);
-  }
-
-
-  /**
-   * Create an error message for incompatible types when passing an argument to
-   * a call.
-   *
-   * @param calledFeature the feature that is called
-   *
-   * @param count the number of the actual argument (0 == first argument, 1 ==
-   * second argument, etc.)
-   *
-   * @param frmlT the expected formal type
-   *
    * @param value the value to be assigned.
    */
   static void incompatibleArgumentTypeInCall(AbstractFeature calledFeature,
