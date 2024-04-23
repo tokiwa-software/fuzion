@@ -3819,9 +3819,9 @@ typeOpt     : type
   {
     boolean result;
     var f = fork();
-    var f2 = fork();
     if (f.skipBracketTermWithNLs(PARENS, () -> f.current() == Token.t_rparen || f.skipTypeList(allowTypeThatIsNotExpression)))
       {
+        var f2 = fork();
         result = skipBracketTermWithNLs(PARENS, () -> current() == Token.t_rparen || skipTypeList(allowTypeThatIsNotExpression));
         var p = tokenPos();
         var l = line();
