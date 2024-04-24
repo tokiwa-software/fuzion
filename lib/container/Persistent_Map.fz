@@ -1,0 +1,34 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature Persistent_Map
+#
+# -----------------------------------------------------------------------
+
+# Persistent_Map -- an abstract persistent map from keys K to values V
+#
+public Persistent_Map(public K type : property.hashable, public V type) ref : Map K V is
+
+  # returns a new Persistent_Map
+  # which contains all entries of the
+  # current Map and k,v.
+  # An already existing k will be replaced.
+  #
+  public put(k K, v V) Persistent_Map K V => abstract
+
