@@ -2269,12 +2269,17 @@ hw25 is
   {
     if (PRECONDITIONS) require
       (s >= 0,
-       withinCode(s));
+       s == NO_SITE || withinCode(s));
 
-    var e = getExpr(s);
-    return (e instanceof Expr expr) ? expr.pos() :
-           (e instanceof Clazz z) ? z._type.declarationPos()  /* implicit assignment to argument field */
-                                  : null;
+    SourcePosition result = SourcePosition.notAvailable;
+    if (s != NO_SITE)
+      {
+        var e = getExpr(s);
+        result = (e instanceof Expr expr) ? expr.pos() :
+                 (e instanceof Clazz z)   ? z._type.declarationPos()  /* implicit assignment to argument field */
+                                          : null;
+      }
+    return result;
   }
 
 
