@@ -252,6 +252,7 @@ public class Types extends ANY implements ClassFileConstants
     return _fuir.clazzIsBoxed(cl) ||
       switch (_fuir.clazzKind(cl))
       {
+      case Abstract -> _fuir.hasPrecondition(cl);
       case Choice    ->
           switch (_choices.kind(cl))
             {
