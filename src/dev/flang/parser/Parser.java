@@ -3749,14 +3749,7 @@ typeOpt     : type
         var l = line();
         if (skip("->"))
           {
-            result =
-              (!isFunctionReturnType || l == line()) &&
-              // an lambda-expression would allow only arg names
-              // '(x,y)->..', while a lambda-type can have arbitrary types
-              // '(list bool, io.file.buffer) -> bool'.
-              (f2.skipBracketTermWithNLs(PARENS,
-                                         () -> f2.current() == Token.t_rparen || f2.skipArgNamesOpt())) &&
-              skipType();
+            result = (!isFunctionReturnType || l == line()) && skipType();
           }
         else
           {
