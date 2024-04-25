@@ -3283,6 +3283,10 @@ qualThis    : name ( dot name )* dot "this"
   /**
    * Parse dotEnv
    *
+   + NYI: This should be `dotEnv : expr dot "env"` and use
+   * `expr.asParsedType()`, then the grammar would be simpler and repeated
+   * parsing would be avoided.
+   *
 dotEnv      : typeInParens dot "env"
             ;
    */
@@ -3299,6 +3303,10 @@ dotEnv      : typeInParens dot "env"
 
   /**
    * Parse dotType
+   *
+   + NYI: This should be `dotType : expr dotTypeSuffix` and use
+   * `expr.asParsedType()`, then the grammar would be simpler and repeated
+   * parsing would be avoided.
    *
 dotType     : typeInParens dotTypeSuffx
             ;
