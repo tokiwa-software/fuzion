@@ -1522,18 +1522,6 @@ typeList    : type ( COMMA typeList
    */
   boolean skipTypeList()
   {
-    return skipTypeList(true);
-  }
-
-
-  /**
-   * Check if the current position has typeList and skip it.
-   *
-   * @return true iff the next token(s) form typeList, otherwise no typeList was
-   * found and the parser/lexer is at an undefined position.
-   */
-  boolean skipTypeList()
-  {
     boolean result = skipType(false, true);
     while (skipComma())
       {
@@ -3660,7 +3648,7 @@ boundType   : qualThis
         var res = skipOneType(isFunctionReturnType, true);
         while (res && skip('|'))
           {
-            res = skipOneType(isFunctionReturnType,vtrue);
+            res = skipOneType(isFunctionReturnType, true);
             hasForbiddenParentheses = false;
           }
         result = res && !hasForbiddenParentheses && (!skipColon() || skipType());
