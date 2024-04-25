@@ -29,14 +29,13 @@
 #
 valWithDynOuter is
 
-  exit_code := mut 0
 
   chck(str, expected String) =>
     if str = expected
       say "PASSED: $str"
     else
       say "FAILED: $str /= $expected"
-      exit_code <- 1
+      _ := set_exit_code 1
 
   # test if e.y produces expected as result
   #
@@ -179,4 +178,4 @@ valWithDynOuter is
 #  tests_mut o.g ".ss-s:s.x."
 #  chck o.f "ss"
 
-  exit exit_code.get
+  exit

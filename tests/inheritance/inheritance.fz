@@ -25,7 +25,6 @@
 
 inheritance is
 
-  exit_code := mut 0
 
   curid i32 := 0
   id i32 =>
@@ -229,7 +228,7 @@ inheritance is
         say "PASSED: $msg"
       else
         say "FAILED: $msg"
-        exit_code <- 1
+        _ := set_exit_code 1
 
     cnt_A_y := 0
     cnt_C_y := 0
@@ -263,7 +262,7 @@ inheritance is
         say "PASSED: $msg"
       else
         say "FAILED: $msg"
-        exit_code <- 1
+        _ := set_exit_code 1
 
     cnt_A_y := 0
     cnt_C_y := 0
@@ -294,7 +293,7 @@ inheritance is
   check_dyn_binding_when_inheriting_value is
     AA is
       a => x
-      x => say "A.x: FAILED."; exit_code <- 1
+      x => say "A.x: FAILED."; _ := set_exit_code 1
     BB ref : AA is
       a
       redef x unit => say "B.x: PASSED."
@@ -309,7 +308,7 @@ inheritance is
         say "PASSED: $msg"
       else
         say "FAILED: $msg"
-        exit_code <- 1
+        _ := set_exit_code 1
 
     cnt_A_y := 0
     cnt_C_y := 0
@@ -397,7 +396,7 @@ inheritance is
         say "$msg: PASSED."
       else
         say "$msg: $v != $expected *** FAILED."
-        exit_code <- 1
+        _ := set_exit_code 1
   inheritOuter
 
   # regression test from issue #2058 that failed for C and JVM backends
@@ -416,7 +415,7 @@ inheritance is
         say "$msg: PASSED."
       else
         say "$msg: $v != $expected *** FAILED."
-        exit_code <- 1
+        _ := set_exit_code 1
 
   reg_test_2058
 
@@ -447,4 +446,4 @@ inheritance is
 
   reg_test_2064
 
-  exit exit_code.get
+  exit

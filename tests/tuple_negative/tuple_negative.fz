@@ -25,14 +25,13 @@
 
 tuple_negative {
 
-  exit_code := mut 0
 
   chck (b bool, msg String) unit =>
     if b
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
-      exit_code <- 1
+      _ := set_exit_code 1
 
   p(s Any) => say s
 
@@ -278,6 +277,6 @@ tuple_negative {
   (_,t15a2,_)                := (01, true, 23); // 38. should flag an error, duplicate declaration
   (_,_,t15a3)                := (01, true, 23); // 39. should flag an error, duplicate declaration
 
-  exit exit_code.get
+  exit
 
 }
