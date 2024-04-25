@@ -536,7 +536,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * to be resolved with the context it is used in to be of
    * any use.
    */
-  public AbstractType asUnresolvedType()
+  public UnresolvedType asParsedType()
   {
     return null;
   }
@@ -808,12 +808,6 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   public String toStringWrapped()
   {
     return StringHelpers.wrapInParentheses(toString());
-  }
-
-
-  public UnresolvedType asParsedType()
-  {
-    return null;
   }
 
 

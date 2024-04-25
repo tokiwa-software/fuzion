@@ -1414,28 +1414,14 @@ actuals     : actualArgs
           }
         else
           {
-            result = new ParsedCall(target, n)
-              {
-                @Override
-                public AbstractType asUnresolvedType()
-                {
-                  return new ParsedType(n, n._name, new List<>(), target == null ? null : target.asUnresolvedType());
-                }
-              };
+            result = new ParsedCall(target, n);
             skippedDot = true;
           }
       }
     else
       {
         var l = actualArgs();
-        result = new ParsedCall(target, n, l)
-          {
-            @Override
-            public AbstractType asUnresolvedType()
-            {
-              return new ParsedType(n, n._name, l.map2(x -> x.asParsedType()), target == null ? null : target.asUnresolvedType());
-            }
-          };
+        result = new ParsedCall(target, n, l);
       }
     result = callTail(skippedDot, result);
     return result;
@@ -3150,14 +3136,7 @@ qualThisType: qualThis
       }
     else
       {
-        result = new This(q)
-          {
-            @Override
-            public AbstractType asUnresolvedType()
-            {
-              return new QualThisType(q);
-            }
-          };
+        result = new This(q);
       }
     return result;
   }

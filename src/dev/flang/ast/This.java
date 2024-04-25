@@ -151,7 +151,8 @@ public class This extends ExprWithPos
   @Override
   public UnresolvedType asParsedType()
   {
-    return new QualThisType(_qual);
+    return _qual != null ? new QualThisType(_qual)
+                         : null;
   }
 
 
