@@ -1410,6 +1410,10 @@ public class Call extends AbstractCall
     _wasImplicitImmediateCall = true;
     _originalArgCount = _actuals.size();
     _actuals = Expr.NO_EXPRS;
+    if (this instanceof ParsedCall pc)
+      {
+        pc._parsedActuals = ParsedCall.NO_PARENTHESES;
+      }
     _select = -1;
     return result;
   }
