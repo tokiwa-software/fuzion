@@ -165,10 +165,7 @@ public class Block extends AbstractBlock
   @Override
   public UnresolvedType asParsedType()
   {
-    return
-      _expressions.size() == 0 ? new ParsedType(pos(), "unit!", new List<>(), null) /* NYI: why is this needed? */ :
-      _expressions.size() == 1 ? _expressions.getFirst().asParsedType()
-                               : null;
+    return _expressions.size() == 1 ? _expressions.getFirst().asParsedType() : null;
   }
 
   /**

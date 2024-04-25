@@ -2423,9 +2423,8 @@ public class Call extends AbstractCall
   {
     if (_calledFeature == null && _target != null && thiz.state().atLeast(State.RESOLVED_INHERITANCE))
     {
-      AbstractType tt = null;
-      var ut = _target.asParsedType();
-      if (ut != null)
+      AbstractType tt = _target.asParsedType();
+      if (tt != null && tt instanceof UnresolvedType ut)
         {
           // check if this might be a
           // left hand side of dot-type-call
@@ -2456,7 +2455,7 @@ public class Call extends AbstractCall
                 {
                   // we found a feature that fits a dot-type-call.
                   _calledFeature = f;
-                  _target = new DotType(_pos, ut).resolveTypes(res, thiz);
+                  _target = new DotType(_pos, _target.asParsedType()).resolveTypes(res, thiz);
                 }
             }
           if (_calledFeature != null &&
