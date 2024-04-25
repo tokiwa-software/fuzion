@@ -123,6 +123,16 @@ public class ParsedCall extends Call
   }
 
 
+  /**
+   * Is this an operator excpression of the form `expr1 | expr2`?
+   *
+   * @param parenthesesAllowed if true, `(expr1 | expr2)` is accepted, with an
+   * arbitrary number of parentheses, if false there must not be any surrounding
+   * parentheses.
+   *
+   * @true iff this is a call to `infix |`, possibly with surrounding
+   * parentheses depending on the argument's value.
+   */
   boolean isInfixPipe(boolean parenthesesAllowed)
   {
     return isOperatorCall(parenthesesAllowed) && name().equals("infix |") && _parsedActuals.size() == 1;
