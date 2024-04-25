@@ -207,12 +207,28 @@ public class ParsedCall extends Call
         pc.isInfixOperator() &&
         pc.isOperatorCall(false))
       {
-        result = (pc._actuals.get(0) instanceof Call acc && acc.isChainedBoolRHS())
+        result = (pc._actuals.get(0) instanceof ParsedCall acc && acc.isChainedBoolRHS())
           ? acc
           : pc;
       }
     return result;
   }
+
+
+  /**
+   * Predicate that is true if this call is the result of pushArgToTemp in a
+   * chain of boolean operators.  This is used for longer chains such as
+   *
+   *   a < b <= c < d
+   *
+   * which is first converted into
+   *
+   *   (a < {t1 := b; t1} && t1 <= c) < d
+   *
+   * where this returns 'true' for the call 't1 <= c', that in the next steps
+   * needs to get 'c' stored into a temporary variable as well.
+   */
+  boolean isChainedBoolRHS() { return false; }
 
 
   /**
@@ -245,7 +261,7 @@ public class ParsedCall extends Call
                                   thiz);
             Expr t1 = new Call(pos(), new Current(pos(), thiz), tmp, -1);
             Expr t2 = new Call(pos(), new Current(pos(), thiz), tmp, -1);
-            var movedTo = new Call(pos(), t2, name(), _parsedActuals)
+            var movedTo = new ParsedCall(pos(), t2, new ParsedName(pos(), name()), _parsedActuals)
               {
                 boolean isChainedBoolRHS() { return true; }
               };
@@ -324,6 +340,83 @@ public class ParsedCall extends Call
       }
     _generics = g;
     _actuals = a;
+  }
+
+
+  /**
+   * Create a new call and push the current call to the target of that call.
+   * This is used for implicit calls to Function and Lazy values where `f()` is
+   * converted to `f.call()`, and for implicit fields in a select call such as,
+   * e.g., a tuple access `t.3` that is converted to `t.values.3`.
+   *
+   * The actual arguments and _select of this call are moved over to the new
+   * call, this call's arguments are replaced by Expr.NO_EXPRS and this calls
+   * _select is set to -1.
+   *
+   * @param res Resolution instance
+   *
+   * @param outer the feature surrounding this call
+   *
+   * @param name the name of the feature to be called.
+   *
+   * @return the newly created call
+   */
+  Call pushCall(Resolution res, AbstractFeature outer, String name)
+  {
+    var wasLazy = _type != null && _type.isLazyType();
+    var result = new Call(pos(),   // NYI: ParsedCall?
+                          this /* this becomes target of "call" */,
+                          name,
+                          select(),
+                          NO_GENERICS,
+                          _actuals,
+                          null,
+                          null)
+      {
+        @Override
+        Expr originalLazyValue()
+        {
+          return wasLazy ? ParsedCall.this : super.originalLazyValue();
+        }
+        @Override
+        public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType expectedType)
+        {
+          if (expectedType.isFunctionType())
+            { // produce an error if the original call is ambiguous with partial application
+              ParsedCall.this.checkPartialAmbiguity(res, outer, expectedType);
+            }
+          return super.propagateExpectedType(res, outer, expectedType);
+        }
+      };
+    _movedTo = result;
+    _wasImplicitImmediateCall = true;
+    _originalArgCount = _actuals.size();
+    _actuals = Expr.NO_EXPRS;
+    if (this instanceof ParsedCall pc)
+      {
+        pc._parsedActuals = ParsedCall.NO_PARENTHESES;
+      }
+    _select = -1;
+    return result;
+  }
+
+
+  @Override
+  Call resolveImplicitSelect(Resolution res, AbstractFeature outer, AbstractType t)
+  {
+    Call result = this;
+    if (_select >= 0 && !t.isGenericArgument())
+      {
+        var f = res._module.lookupOpenTypeParameterResult(t.feature(), this);
+        if (f != null)
+          {
+            // replace Function call `c.123` by `c.f.123`:
+            result = pushCall(res, outer, f.featureName().baseName());
+            setActualResultType(res, t); // setActualResultType will be done again by resolveTypes, but we need it now.
+            result = result.resolveTypes(res, outer);
+          }
+      }
+    return result;
   }
 
 

@@ -92,7 +92,7 @@ public class Call extends AbstractCall
    * For a call a.b.4 with a select clause ".4" to pick a variant from a field
    * of an open generic type, this is the chosen variant.
    */
-  private int _select;
+  protected int _select;
   public int select() { return _select; }
 
 
@@ -395,7 +395,7 @@ public class Call extends AbstractCall
    *
    * @param type
    */
-  /*private */ Call(SourcePosition pos,
+  /* private NYI: should be private */ Call(SourcePosition pos,
                Expr target,
                String name,
                int select,
@@ -593,22 +593,6 @@ public class Call extends AbstractCall
   protected void findChainedBooleans(Resolution res, AbstractFeature thiz)
   {
   }
-
-
-  /**
-   * Predicate that is true if this call is the result of pushArgToTemp in a
-   * chain of boolean operators.  This is used for longer chains such as
-   *
-   *   a < b <= c < d
-   *
-   * which is first converted into
-   *
-   *   (a < {t1 := b; t1} && t1 <= c) < d
-   *
-   * where this returns 'true' for the call 't1 <= c', that in the next steps
-   * needs to get 'c' stored into a temporary variable as well.
-   */
-  boolean isChainedBoolRHS() { return false; }
 
 
   /*-------------------------------------------------------------------*/
@@ -1362,64 +1346,6 @@ public class Call extends AbstractCall
 
 
   /**
-   * Create a new call and push the current call to the target of that call.
-   * This is used for implicit calls to Function and Lazy values where `f()` is
-   * converted to `f.call()`, and for implicit fields in a select call such as,
-   * e.g., a tuple access `t.3` that is converted to `t.values.3`.
-   *
-   * The actual arguments and _select of this call are moved over to the new
-   * call, this call's arguments are replaced by Expr.NO_EXPRS and this calls
-   * _select is set to -1.
-   *
-   * @param res Resolution instance
-   *
-   * @param outer the feature surrounding this call
-   *
-   * @param name the name of the feature to be called.
-   *
-   * @return the newly created call
-   */
-  Call pushCall(Resolution res, AbstractFeature outer, String name)
-  {
-    var wasLazy = _type != null && _type.isLazyType();
-    var result = new Call(pos(),
-                      this /* this becomes target of "call" */,
-                      name,
-                      _select,
-                      NO_GENERICS,
-                      _actuals,
-                      null,
-                      null)
-      {
-        @Override
-        Expr originalLazyValue()
-        {
-          return wasLazy ? Call.this : super.originalLazyValue();
-        }
-        @Override
-        public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType expectedType)
-        {
-          if (expectedType.isFunctionType())
-            { // produce an error if the original call is ambiguous with partial application
-              Call.this.checkPartialAmbiguity(res, outer, expectedType);
-            }
-          return super.propagateExpectedType(res, outer, expectedType);
-        }
-      };
-    _movedTo = result;
-    _wasImplicitImmediateCall = true;
-    _originalArgCount = _actuals.size();
-    _actuals = Expr.NO_EXPRS;
-    if (this instanceof ParsedCall pc)
-      {
-        pc._parsedActuals = ParsedCall.NO_PARENTHESES;
-      }
-    _select = -1;
-    return result;
-  }
-
-
-  /**
    * Helper function called during resolveTypes to implicitly call a feature
    * with an open type parameter result in case _select >= 0 and t is not a type
    * parameter.
@@ -1428,19 +1354,7 @@ public class Call extends AbstractCall
    */
   Call resolveImplicitSelect(Resolution res, AbstractFeature outer, AbstractType t)
   {
-    var result = this;
-    if (_select >= 0 && !t.isGenericArgument())
-      {
-        var f = res._module.lookupOpenTypeParameterResult(t.feature(), this);
-        if (f != null)
-          {
-            // replace Function call `c.123` by `c.f.123`:
-            result = pushCall(res, outer, f.featureName().baseName());
-            setActualResultType(res, t); // setActualResultType will be done again by resolveTypes, but we need it now.
-            result = result.resolveTypes(res, outer);
-          }
-      }
-    return result;
+    return this;
   }
 
 
@@ -1653,7 +1567,7 @@ public class Call extends AbstractCall
    *
    * @param frmlT the result type of the called feature, might be open generic.
    */
-  private void setActualResultType(Resolution res, AbstractType frmlT)
+  protected void setActualResultType(Resolution res, AbstractType frmlT)
   {
     var tt =
       targetIsTypeParameter() && frmlT.isThisTypeInTypeFeature()
