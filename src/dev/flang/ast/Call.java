@@ -130,7 +130,7 @@ public class Call extends AbstractCall
   /**
    * the target of the call, null for "this". Set by parser
    */
-  private Expr _target;
+  protected Expr _target;
   public Expr target() { return _target; }
   private FeatureAndOuter _targetFrom = null;
 
@@ -819,63 +819,6 @@ public class Call extends AbstractCall
 
 
   /**
-   * Perform partial application for a Call. In particular, this can make the
-   * following changes:
-   *
-   *   f x y      ==>  a,b,c -> f x y a b c
-   *   ++ x       ==>  a -> a ++ x
-   *   x ++       ==>  a -> x ++ a
-   *
-   * @see Expr#propagateExpectedTypeForPartial for details.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param outer the feature that contains this expression
-   *
-   * @param expectedType the expected type.
-   */
-  @Override
-  Expr propagateExpectedTypeForPartial(Resolution res, AbstractFeature outer, AbstractType expectedType)
-  {
-    if (PRECONDITIONS) require
-      (expectedType.isFunctionType());
-
-    // NYI: CLEANUP: The logic in this method seems overly complex, there might be potential to simplify!
-    Expr l = this;
-    if (partiallyApplicableAlternative(res, outer, expectedType) != null)
-      {
-        if (_calledFeature != null)
-          {
-            res.resolveTypes(_calledFeature);
-            var rt = _calledFeature.resultTypeIfPresent(res);
-            if (rt != null && (!rt.isAnyFunctionType() || rt.arity() != expectedType.arity()))
-              {
-                l = applyPartially(res, outer, expectedType);
-              }
-          }
-        else
-          {
-            if (_pendingError == null)
-              {
-                l = resolveTypes(res, outer);  // this ensures _calledFeature is set such that possible ambiguity is reported
-              }
-            if (l == this)
-              {
-                l = applyPartially(res, outer, expectedType);
-              }
-          }
-      }
-    else if (_pendingError != null                   || /* nothing found */
-             newNameForPartial(expectedType) != null    /* search for a different name */)
-      {
-        l = applyPartially(res, outer, expectedType);
-      }
-    return l;
-  }
-
-
-  /**
    * Try to find an alternative called feature by using partial application. If
    * a suitable alternative is found, return it.
    *
@@ -908,40 +851,6 @@ public class Call extends AbstractCall
         result = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> ff.valueArguments().size() == n);
       }
     return result;
-  }
-
-
-  /**
-   * check that partial application would not lead to to ambiguity. See
-   * tests/partial_application_negative for examples: In case a call can be made
-   * directly and partial application would find another possible target that
-   * would also be valid, we flag an error.
-   *
-   * This prevents the situation where a library API change that adds a new
-   * feature f' with fewer arguments than an existing feature f would result in
-   * code that used partial application in a call to f to suddenly call f'
-   * without notice.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param outer the feature that contains this expression
-   *
-   * @param expectedType the expected type.
-   */
-  void checkPartialAmbiguity(Resolution res, AbstractFeature outer, AbstractType expectedType)
-  {
-    if (_calledFeature != null && _calledFeature != Types.f_ERROR && this instanceof ParsedCall)
-      {
-        var fo = partiallyApplicableAlternative(res, outer, expectedType);
-        if (fo != null &&
-            fo._feature != _calledFeature &&
-            newNameForPartial(expectedType) == null)
-          {
-            AstErrors.partialApplicationAmbiguity(pos(), _calledFeature, fo._feature);
-            setToErrorState();
-          }
-      }
   }
 
 
@@ -980,81 +889,6 @@ public class Call extends AbstractCall
           { // -v ==> x->x-v
             result = FuzionConstants.INFIX_OPERATOR_PREFIX + name.substring(FuzionConstants.POSTFIX_OPERATOR_PREFIX.length());
           }
-      }
-    return result;
-  }
-
-
-  /**
-   * After propagateExpectedType: if type inference up until now has figured
-   * out that a Lazy feature is expected, but the current expression is not
-   * a Lazy feature, then wrap this expression in a Lazy feature.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param  outer the feature that contains this expression
-   *
-   * @param t the type this expression is assigned to.
-   */
-  public Expr applyPartially(Resolution res, AbstractFeature outer, AbstractType t)
-  {
-    checkPartialAmbiguity(res, outer, t);
-    Expr result;
-    var n = t.arity();
-    if (mustNotContainDeclarations("a partially applied function call", outer))
-      {
-        _pendingError = null;
-        List<ParsedName> pns = new List<>();
-        for (var i = 0; i < n; i++)
-          {
-            pns.add(Partial.argName(pos()));
-          }
-        _actuals    = _actuals   .clone();
-        if (this instanceof ParsedCall pc)
-          {
-            pc._appliedPartially = true;
-          }
-        if (_name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX))
-          { // -v ==> x->x-v   -- swap target and first actual:
-            if (CHECKS) check
-              (Errors.any() || n == 1,
-               Errors.any() || _actuals.size() == 0);
-            _actuals   .add(           _target );
-            _target = new ParsedCall(null, pns.get(0));
-          }
-        else
-          { // fill up actuals with arguments of the lambda:
-            for (var i = 0; i < n; i++)
-              {
-                var c = new ParsedCall(null, pns.get(i));
-                _actuals   .add(           c );
-              }
-          }
-        var nn = newNameForPartial(t);
-        if (nn != null)
-          {
-            _name = nn;
-            _calledFeature = null;
-            _pendingError = null;
-          }
-        var fn = new Function(pos(),
-                              pns,
-                              this)
-          {
-            public AbstractType propagateTypeAndInferResult(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)
-            {
-              var rs = super.propagateTypeAndInferResult(res, outer, t, inferResultType);
-              updateTarget(res);
-              return rs;
-            }
-          };
-        result = fn;
-        fn.resolveTypes(res, outer);
-      }
-    else
-      {
-        result = ERROR_VALUE;
       }
     return result;
   }
