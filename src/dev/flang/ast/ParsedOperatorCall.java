@@ -39,7 +39,7 @@ import dev.flang.util.List;
  *
  *   a.prefix -
  *
- * This is needed since the former could serve as a partial call an expand
+ * This is needed since the former could serve as a partial call and expand
  * to
  *
  *  x -> x-a
