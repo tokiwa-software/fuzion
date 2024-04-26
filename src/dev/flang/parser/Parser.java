@@ -1874,13 +1874,12 @@ klammerExpr : LPAREN expr RPAREN
 tuple       : LPAREN RPAREN
             | LPAREN operatorExpr (COMMA operatorExpr)+ RPAREN
             ;
-klammerLambd: LPAREN argNamesOpt RPAREN lambda
+klammerLambd: tuple lambda
             ;
    */
   Expr klammer()
   {
     SourcePosition pos = tokenSourcePos();
-    var f = fork();
     var tupleElements = new List<Expr>();
     bracketTermWithNLs(PARENS, "klammer",
                        () -> {
@@ -1896,7 +1895,7 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
 
     if (isLambdaPrefix())                  // a lambda expression
       {
-        return lambda(f.bracketTermWithNLs(PARENS, "argNamesOpt", () -> f.argNamesOpt()));
+        return lambda(tupleElements);
       }
     else if (tupleElements.size() == 1)    // an expr wrapped in parentheses, not a tuple
       {
@@ -1915,40 +1914,12 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
 
 
   /**
-   * Parse argNamesOpt
-   *
-argNamesOpt : argNames
-            |
-            ;
-   */
-  List<ParsedName> argNamesOpt()
-  {
-    return (current() == Token.t_ident)
-      ? argNames()
-      : new List<>();
-  }
-
-
-  /**
-   * Check if the current position can be parsed as an argNamesOpt and skip it if
-   * this is the case.
-   *
-   * @return true iff an argNamesOpt was found and skipped, otherwise no argNamesOpt
-   * was found and the parser/lexer is at an undefined position.
-   */
-  boolean skipArgNamesOpt()
-  {
-    return !(current() == Token.t_ident) || skipArgNames();
-  }
-
-
-  /**
    * Parse the right hand side of a lambda expression including the `->`.
    *
 lambda      : "->" block
             ;
    */
-  Expr lambda(List<ParsedName> n)
+  Expr lambda(List<Expr> n)
   {
     var pos = tokenPos();
     matchOperator("->", "lambda");
@@ -1979,7 +1950,7 @@ plainLambda : argNames lambda
    */
   Expr plainLambda()
   {
-    return lambda(argNames());
+    return lambda(argNames().map2(n -> new ParsedCall(null, n)));
   }
 
 

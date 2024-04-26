@@ -542,6 +542,17 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   }
 
 
+  /**
+   * Return this expression as a simple name.  This is null by default except
+   * for calls that without an explicit target and without any actual arguments
+   * or select clause.
+   */
+  public ParsedName asParsedName()
+  {
+    return null;
+  }
+
+
   protected Expr addFieldForResult(Resolution res, AbstractFeature outer, AbstractType t)
   {
     var result = this;

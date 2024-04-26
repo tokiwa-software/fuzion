@@ -51,7 +51,7 @@ public class ParsedCall extends Call
   public static final List<Expr> NO_PARENTHESES = new List<>();
 
 
-
+  private final ParsedName _parsedName;
   List<Expr> _parsedActuals;
   boolean _appliedPartially = false;
 
@@ -66,6 +66,7 @@ public class ParsedCall extends Call
   {
     super(name._pos, target, name._name);
 
+    _parsedName = name;
     _parsedActuals = NO_PARENTHESES;// Expr.NO_EXPRS;
   }
 
@@ -100,6 +101,7 @@ public class ParsedCall extends Call
   {
     super(pos, target, name._name, arguments);
 
+    _parsedName = name;
     _parsedActuals = arguments;
   }
 
@@ -119,6 +121,7 @@ public class ParsedCall extends Call
   {
     super(name._pos, target, name._name, select, NO_PARENTHESES);
 
+    _parsedName = name;
     _parsedActuals = NO_PARENTHESES;
   }
 
@@ -140,6 +143,17 @@ public class ParsedCall extends Call
 
 
   /**
+   * Is this an operator excpression of the form `expr1 -> expr2`?
+   *
+   * @true iff this is a call to `infix ->`.
+   */
+  boolean isInfixArrow()
+  {
+    return isOperatorCall(true) && name().equals("infix ->") && _parsedActuals.size() == 1;
+  }
+
+
+  /**
    * True iff this call was performed giving 0 or more actual arguments in
    * parentheses.  This allows a distinction between "a.b" and "a.b()" if b has
    * no formal arguments and is of a fun type. In this case, "a.b" calls only b,
@@ -156,36 +170,52 @@ public class ParsedCall extends Call
   @Override
   public ParsedType asParsedType()
   {
+    ParsedType result = null;
     var target = target();
     var tt = target == null ? null : target().asParsedType();
     var ok = target == null || tt != null;
     var name = name();
     var l = new List<AbstractType>();
+    for (var a : _parsedActuals)
+      {
+        var at = a.asParsedType();
+        ok = ok && at != null;
+        l.add(at);
+      }
     if (ok)
       {
-        if (tt != null && isInfixPipe(true))   // choice type syntax sugar: 'tt | arg'
+        if (tt != null && isInfixArrow())
           {
-            if (target instanceof ParsedCall tc && tc.isInfixPipe(false))
-              { // tt is `x | y` in  'x | y | arg',
-                // but not `(x | y)`!
-                l.addAll(tt.generics());
-              }
-            else
-              { // `tt | arg` where `tt` is not itself `x | y`
-                l.add(tt);
-              }
-            name = "choice";
-            tt = null;
+            // Convert call of the form (util.stack i32,io.file)->net.socket
+            // into the corresponding function type.
+            var a = new List<AbstractType>(tt);
+            // NYI: if tt is of the form `()` or `(a,b,c)`, we need to create an
+            // empty list or a list of types `a`, `b` and `c`.
+            result =  UnresolvedType.funType(pos(), l.getFirst(), a);
           }
-        for (var a : _parsedActuals)
+        else
           {
-            var at = a.asParsedType();
-            ok = ok && at != null;
-            l.add(at);
+            if (tt != null && isInfixPipe(true))   // choice type syntax sugar: 'tt | arg'
+              {
+                var l2 = new List<AbstractType>();
+                if (target instanceof ParsedCall tc && tc.isInfixPipe(false))
+                  { // tt is `x | y` in  'x | y | arg',
+                    // but not `(x | y)`!
+                    l2.addAll(tt.generics());
+                  }
+                else
+                  { // `tt | arg` where `tt` is not itself `x | y`
+                    l2.add(tt);
+                  }
+                l2.addAll(l);
+                l = l2;
+                name = "choice";
+                tt = null;
+              }
+            result = new ParsedType(pos(), name, l, tt);
           }
       }
-    return ok ? new ParsedType(pos(), name, l, tt)
-              : null;
+    return result;
   }
 
 
@@ -351,6 +381,18 @@ public class ParsedCall extends Call
       }
     _generics = g;
     _actuals = a;
+  }
+
+
+  @Override
+  public ParsedName asParsedName()
+  {
+    if (!_parsedActuals.isEmpty() && _select == -1)
+      {
+        // Errors.error("NYI: PROPER ERROR: Expr "+getClass()+" is not a variable name in a lambda, must not have actual args at "+_parsedName.pos().show());
+        return null;
+      }
+    return _parsedName;
   }
 
 
@@ -576,10 +618,10 @@ public class ParsedCall extends Call
     if (mustNotContainDeclarations("a partially applied function call", outer))
       {
         _pendingError = null;
-        List<ParsedName> pns = new List<>();
+        List<Expr> pns = new List<>();
         for (var i = 0; i < n; i++)
           {
-            pns.add(Partial.argName(pos()));
+            pns.add(new ParsedCall(null, Partial.argName(pos())));
           }
         _actuals    = _actuals   .clone();
         if (this instanceof ParsedCall pc)
@@ -591,15 +633,15 @@ public class ParsedCall extends Call
             if (CHECKS) check
               (Errors.any() || n == 1,
                Errors.any() || _actuals.size() == 0);
-            _actuals   .add(           _target );
-            _target = new ParsedCall(null, pns.get(0));
+            _actuals.add(_target);
+            _target = pns.get(0);
           }
         else
           { // fill up actuals with arguments of the lambda:
             for (var i = 0; i < n; i++)
               {
-                var c = new ParsedCall(null, pns.get(i));
-                _actuals   .add(           c );
+                var c = pns.get(i);
+                _actuals.add(c);
               }
           }
         var nn = newNameForPartial(t);

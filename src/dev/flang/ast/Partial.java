@@ -127,8 +127,8 @@ public class Partial extends AbstractLambda
    */
   public static Function dotCall(SourcePosition pos, java.util.function.Function<Expr,Call> call)
   {
-    var a = argName(pos);
-    var c = call.apply(new ParsedCall(null, a));
+    var a = new ParsedCall(null, argName(pos));
+    var c = call.apply(a);
     return new Function(c.pos(),
                         new List<>(a),
                         c);
@@ -191,20 +191,20 @@ public class Partial extends AbstractLambda
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_function == null && t.isFunctionType() && (t.arity() == 1 || t.arity() == 2))
       {
-        var a = argName(pos());
-        List<ParsedName> args = new List<>(a);
+        var a = new ParsedCall(null, argName(pos()));
+        List<Expr> args = new List<>(a);
         List<Expr> actuals = new List<>();
         String op = FuzionConstants.UNARY_OPERATOR_PREFIX + _op;
         if (t.arity() == 2)
           {
-            var b = argName(pos());
+            var b = new ParsedCall(null, argName(pos()));
             args.add(b);
-            actuals.add(new ParsedCall(null, b));
+            actuals.add(b);
             op = FuzionConstants.INFIX_OPERATOR_PREFIX + _op;
           }
         _function = new Function(pos(),
                                  args,
-                                 new ParsedCall(new ParsedCall(null, a),
+                                 new ParsedCall(a,
                                                 new ParsedName(pos(), op),
                                                 actuals));
       }
