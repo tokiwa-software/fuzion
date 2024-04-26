@@ -1178,6 +1178,13 @@ public class Clazz extends ANY implements Comparable<Clazz>
           {
             t = _type.actualType(t);  // e.g., `(Types.get (array f64)).T` -> `array f64`
 
+            // NYI: this is the wrong place for raising this error...
+            if (t.dependsOnGenerics())
+              {
+                AirErrors.abstractFeatureNotImplemented(feature(), _abstractCalled, p);
+                Errors.showAndExit();
+              }
+
 /*
   We have the following possibilities when calling a feature `f` declared in do `on`
   actual outer clazz `oa`:

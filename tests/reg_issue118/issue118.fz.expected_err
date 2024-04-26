@@ -1,0 +1,28 @@
+
+--CURDIR--/issue118.fz:55:3: error 1: Used abstract features 'numeric.type.zero', 'numeric.type.one', 'num.wrap_around.type.max' are not implemented by 'issue118.a.type'
+  a : i32 3 is
+--^
+Feature 'issue118.a.type' instantiated at $MODULE/num/wrap_around.fz:116:100:
+  public redef infix +^ (other wrap_around.this) => if overflow_on_add other then wrap_around.this.max else if underflow_on_add other then wrap_around.this.min else wrap_around.this + other
+---------------------------------------------------------------------------------------------------^^^
+inherits or declares abstract feature 'numeric.type.zero' declared at $MODULE/numeric.fz:181:15:
+  public type.zero numeric.this => abstract
+--------------^^^^
+which is called at $MODULE/numeric.fz:116:49:
+  public sign => if numeric.this = numeric.this.zero then 0 else if numeric.this > numeric.this.zero then 1 else -1
+------------------------------------------------^^^^
+and abstract feature 'numeric.type.one' declared at $MODULE/numeric.fz:186:15:
+  public type.one  numeric.this => abstract
+--------------^^^
+which is called at $MODULE/interval.fz:129:58:
+    interval has_interval.this through has_interval.this.one
+---------------------------------------------------------^^^
+and abstract feature 'num.wrap_around.type.max' declared at $MODULE/num/wrap_around.fz:230:15:
+  public type.max wrap_around.this => abstract
+--------------^^^
+which is called at $MODULE/num/wrap_around.fz:116:100:
+  public redef infix +^ (other wrap_around.this) => if overflow_on_add other then wrap_around.this.max else if underflow_on_add other then wrap_around.this.min else wrap_around.this + other
+---------------------------------------------------------------------------------------------------^^^
+without providing an implementation
+
+one error.
