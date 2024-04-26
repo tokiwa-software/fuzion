@@ -819,7 +819,7 @@ public class NumLiteral extends Constant
     if (t.isFunctionType() && t.arity() == 1 && explicitSign() != null)
       { // convert `map -1` into `map x->x-1`
         var pns = new List<Expr>();
-        pns.add(new ParsedCall(null, Partial.argName(pos())));
+        pns.add(Partial.argName(pos()));
         var fn = new Function(pos(),
                               pns,
                               new ParsedCall(pns.get(0),                                  // target #p<n>

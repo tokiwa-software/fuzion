@@ -55,8 +55,20 @@ public class ParsedCall extends Call
   List<Expr> _parsedActuals;
   boolean _appliedPartially = false;
 
+
   /**
-   * Constructor to read a field in target t
+   * Constructor to call feature without any arguments in the default target
+   *
+   * @param name the name of the called feature
+   */
+  public ParsedCall(ParsedName name)
+  {
+    this(null, name);
+  }
+
+
+  /**
+   * Constructor to call feature without any arguments in target t
    *
    * @param target the target of the call, null if none.
    *
@@ -64,10 +76,7 @@ public class ParsedCall extends Call
    */
   public ParsedCall(Expr target, ParsedName name)
   {
-    super(name._pos, target, name._name);
-
-    _parsedName = name;
-    _parsedActuals = NO_PARENTHESES;// Expr.NO_EXPRS;
+    this(target, name, NO_PARENTHESES);
   }
 
 
@@ -83,23 +92,7 @@ public class ParsedCall extends Call
    */
   public ParsedCall(Expr target, ParsedName name, List<Expr> arguments)
   {
-    this(name._pos, target, name, arguments);
-  }
-
-
-  /**
-   * Constructor to call feature with name 'n' on target 't' with actual
-   * arguments 'la'.
-   *
-   * @param target the target of the call, null if none.
-   *
-   * @param name the name of the called feature
-   *
-   * @param arguments list of actual arguments
-   */
-  public ParsedCall(SourcePosition pos, Expr target, ParsedName name, List<Expr> arguments)
-  {
-    super(pos, target, name._name, arguments);
+    super(name._pos, target, name._name, arguments);
 
     _parsedName = name;
     _parsedActuals = arguments;
@@ -124,6 +117,9 @@ public class ParsedCall extends Call
     _parsedName = name;
     _parsedActuals = NO_PARENTHESES;
   }
+
+
+  /*-----------------------------  methods  -----------------------------*/
 
 
   /**
@@ -302,7 +298,7 @@ public class ParsedCall extends Call
                                   thiz);
             Expr t1 = new Call(pos(), new Current(pos(), thiz), tmp, -1);
             Expr t2 = new Call(pos(), new Current(pos(), thiz), tmp, -1);
-            var movedTo = new ParsedCall(pos(), t2, new ParsedName(pos(), name()), _parsedActuals)
+            var movedTo = new ParsedCall(t2, new ParsedName(pos(), name()), _parsedActuals)
               {
                 boolean isChainedBoolRHS() { return true; }
               };
@@ -389,7 +385,6 @@ public class ParsedCall extends Call
   {
     if (!_parsedActuals.isEmpty() && _select == -1)
       {
-        // Errors.error("NYI: PROPER ERROR: Expr "+getClass()+" is not a variable name in a lambda, must not have actual args at "+_parsedName.pos().show());
         return null;
       }
     return _parsedName;
@@ -621,7 +616,7 @@ public class ParsedCall extends Call
         List<Expr> pns = new List<>();
         for (var i = 0; i < n; i++)
           {
-            pns.add(new ParsedCall(null, Partial.argName(pos())));
+            pns.add(Partial.argName(pos()));
           }
         _actuals    = _actuals   .clone();
         if (this instanceof ParsedCall pc)

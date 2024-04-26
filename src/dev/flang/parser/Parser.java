@@ -1950,7 +1950,7 @@ plainLambda : argNames lambda
    */
   Expr plainLambda()
   {
-    return lambda(argNames().map2(n -> new ParsedCall(null, n)));
+    return lambda(argNames().map2(n -> new ParsedCall(n)));
   }
 
 
