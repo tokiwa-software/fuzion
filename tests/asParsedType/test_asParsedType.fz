@@ -178,6 +178,10 @@ say "EXP: y Type of 'io.out'"
 y (io.out.env)
 say ""
 
+say "EXP: y Type of 'Type'"
+y (io.out.type)
+say ""
+
 t := (u8 3, f32 4, i64 5)
 
 say "EXP: y Type of 'u8'"

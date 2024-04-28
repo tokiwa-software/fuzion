@@ -90,6 +90,9 @@ GOT: y Type of 'codepoint'
 EXP: y Type of 'io.out'
 GOT: y Type of 'io.out'
 
+EXP: y Type of 'Type'
+GOT: y Type of 'Type'
+
 EXP: y Type of 'u8'
 GOT: y Type of 'u8'
 

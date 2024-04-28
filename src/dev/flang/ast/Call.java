@@ -928,15 +928,12 @@ public class Call extends AbstractCall
          while (i.hasNext())
            {
              var a = i.next();
-             if (a != null) // splitOffTypeArgs might have set this to null
+             if (_calledFeature != null && _calledFeature != Types.f_ERROR)
                {
-                 if (_calledFeature != null && _calledFeature != Types.f_ERROR)
-                   {
-                     var a1 = res.resolveType(a, outer);
-                     if (CHECKS) check
-                       (a1 != null);
-                     i.set(a1);
-                   }
+                 var a1 = res.resolveType(a, outer);
+                 if (CHECKS) check
+                   (a1 != null);
+                 i.set(a1);
                }
            }
        });

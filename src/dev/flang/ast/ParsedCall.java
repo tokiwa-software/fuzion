@@ -129,7 +129,8 @@ public class ParsedCall extends Call
 
 
   /**
-   * Is this an operator excpression of the form `expr1 | expr2`?
+   * Is this an operator excpression of the form `expr1 | expr2`?  This is used
+   * by `asParsedType` for choice-type syntax sugar.
    *
    * @param parenthesesAllowed if true, `(expr1 | expr2)` is accepted, with an
    * arbitrary number of parentheses, if false there must not be any surrounding
@@ -145,7 +146,8 @@ public class ParsedCall extends Call
 
 
   /**
-   * Is this an operator excpression of the form `expr1 -> expr2`?
+   * Is this an operator excpression of the form `expr1 -> expr2`?  This is used
+   * by `asParsedType` for function-type syntax sugar.
    *
    * @true iff this is a call to `infix ->`.
    */
@@ -208,60 +210,18 @@ public class ParsedCall extends Call
   }
 
 
-  /*-------------------------------------------------------------------*/
-
-
-  /**
-   * Check if this call is a chained boolean call of the form
-   *
-   *   b <= c < d
-   *
-   * or, if the LHS is also a chained bool
-   *
-   *   (a < {t1 := b; t1} && t1 <= c) < d
-   *
-   * and return the part of the LHS that has the term that will need to be
-   * stored in a temp variable, 'c', as an argument, i.e., 'b <= c' or 't1 <=
-   * c', resp.
-   *
-   * @return the term whose RHS would have to be stored in a temp variable for a
-   * chained boolean call.
-   */
-  private Call chainedBoolTarget(Resolution res, AbstractFeature thiz)
+  @Override
+  public ParsedName asParsedName()
   {
-    Call result = null;
-    if (Types.resolved != null &&
-        targetFeature(res, thiz) == Types.resolved.f_bool &&
-        isInfixOperator() &&
-        target() instanceof ParsedCall pc &&
-        pc.isInfixOperator() &&
-        pc.isOperatorCall(false))
+    if (!_actuals.isEmpty() && _select == -1)
       {
-        result = (pc._actuals.get(0) instanceof ParsedCall acc && acc.isChainedBoolRHS())
-          ? acc
-          : pc;
+        return null;
       }
-    return result;
+    return _parsedName;
   }
 
 
-  /**
-   * Predicate that is true if this call is the result of pushArgToTemp in a
-   * chain of boolean operators.  This is used for longer chains such as
-   *
-   *   a < b <= c < d
-   *
-   * which is first converted into
-   *
-   *   (a < {t1 := b; t1} && t1 <= c) < d
-   *
-   * where this returns 'true' for the call 't1 <= c', that in the next steps
-   * needs to get 'c' stored into a temporary variable as well.
-   */
-  boolean isChainedBoolRHS()
-  {
-    return false;
-  }
+  /*-------------------------------------------------------------------*/
 
 
   /**
@@ -315,6 +275,25 @@ public class ParsedCall extends Call
 
 
   /**
+   * Predicate that is true if this call is the result of pushArgToTemp in a
+   * chain of boolean operators.  This is used for longer chains such as
+   *
+   *   a < b <= c < d
+   *
+   * which is first converted into
+   *
+   *   (a < {t1 := b; t1} && t1 <= c) < d
+   *
+   * where this returns 'true' for the call 't1 <= c', that in the next steps
+   * needs to get 'c' stored into a temporary variable as well.
+   */
+  boolean isChainedBoolRHS()
+  {
+    return false;
+  }
+
+
+  /**
    * Does this call a non-generic infix operator?
    */
   private boolean isInfixOperator()
@@ -327,170 +306,37 @@ public class ParsedCall extends Call
   }
 
 
-  @Override
-  protected void splitOffTypeArgs(Resolution res, AbstractFeature calledFeature, AbstractFeature outer)
-  {
-    var g = new List<AbstractType>();
-    var a = new List<Expr>();
-    var ts = calledFeature.typeArguments();
-    var tn = ts.size();
-    var ti = 0;
-    var vs = calledFeature.valueArguments();
-    var vn = vs.size();
-    var i = 0;
-    ListIterator<Expr> ai = _actuals.listIterator();
-    while (ai.hasNext())
-      {
-        var aa = ai.next();
-
-        // check that ts[ti] is open type parameter only iff ti == tn-1, ie.,
-        // only the last type parameter may be open
-        if (CHECKS) check
-          (ti >= tn-1 ||
-           ts.get(ti).kind() == AbstractFeature.Kind.TypeParameter    ,
-           ti != tn-1 ||
-           ts.get(ti).kind() == AbstractFeature.Kind.TypeParameter     ||
-           ts.get(ti).kind() == AbstractFeature.Kind.OpenTypeParameter);
-
-        if (_actuals.size() - i > vn)
-          {
-            AbstractType t = _actuals.get(i).asParsedType();
-            if (t != null)
-              {
-                g.add(t);
-              }
-            ai.set(Expr.NO_VALUE);  // make sure visit() no longer visits this
-            if (ts.get(ti).kind() != AbstractFeature.Kind.OpenTypeParameter)
-              {
-                ti++;
-              }
-          }
-        else
-          {
-            a.add(aa);
-          }
-        i++;
-      }
-    _generics = g;
-    _actuals = a;
-  }
-
-
-  @Override
-  public ParsedName asParsedName()
-  {
-    if (!_actuals.isEmpty() && _select == -1)
-      {
-        return null;
-      }
-    return _parsedName;
-  }
-
-
   /**
-   * Create a new call and push the current call to the target of that call.
-   * This is used for implicit calls to Function and Lazy values where `f()` is
-   * converted to `f.call()`, and for implicit fields in a select call such as,
-   * e.g., a tuple access `t.3` that is converted to `t.values.3`.
+   * Check if this call is a chained boolean call of the form
    *
-   * The actual arguments and _select of this call are moved over to the new
-   * call, this call's arguments are replaced by Expr.NO_EXPRS and this calls
-   * _select is set to -1.
+   *   b <= c < d
    *
-   * @param res Resolution instance
+   * or, if the LHS is also a chained bool
    *
-   * @param outer the feature surrounding this call
+   *   (a < {t1 := b; t1} && t1 <= c) < d
    *
-   * @param name the name of the feature to be called.
+   * and return the part of the LHS that has the term that will need to be
+   * stored in a temp variable, 'c', as an argument, i.e., 'b <= c' or 't1 <=
+   * c', resp.
    *
-   * @return the newly created call
+   * @return the term whose RHS would have to be stored in a temp variable for a
+   * chained boolean call.
    */
-  Call pushCall(Resolution res, AbstractFeature outer, String name)
+  private Call chainedBoolTarget(Resolution res, AbstractFeature thiz)
   {
-    var wasLazy = _type != null && _type.isLazyType();
-    var result = new Call(pos(),   // NYI: ParsedCall?
-                          this /* this becomes target of "call" */,
-                          name,
-                          select(),
-                          NO_GENERICS,
-                          _actuals,
-                          null,
-                          null)
+    Call result = null;
+    if (Types.resolved != null &&
+        targetFeature(res, thiz) == Types.resolved.f_bool &&
+        isInfixOperator() &&
+        target() instanceof ParsedCall pc &&
+        pc.isInfixOperator() &&
+        pc.isOperatorCall(false))
       {
-        @Override
-        Expr originalLazyValue()
-        {
-          return wasLazy ? ParsedCall.this : super.originalLazyValue();
-        }
-        @Override
-        public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType expectedType)
-        {
-          if (expectedType.isFunctionType())
-            { // produce an error if the original call is ambiguous with partial application
-              ParsedCall.this.checkPartialAmbiguity(res, outer, expectedType);
-            }
-          return super.propagateExpectedType(res, outer, expectedType);
-        }
-      };
-    _movedTo = result;
-    _wasImplicitImmediateCall = true;
-    _originalArgCount = _actuals.size();
-    _actuals = ParsedCall.NO_PARENTHESES;
-    _select = -1;
-    return result;
-  }
-
-
-  @Override
-  Call resolveImplicitSelect(Resolution res, AbstractFeature outer, AbstractType t)
-  {
-    Call result = this;
-    if (_select >= 0 && !t.isGenericArgument())
-      {
-        var f = res._module.lookupOpenTypeParameterResult(t.feature(), this);
-        if (f != null)
-          {
-            // replace Function call `c.123` by `c.f.123`:
-            result = pushCall(res, outer, f.featureName().baseName());
-            setActualResultType(res, t); // setActualResultType will be done again by resolveTypes, but we need it now.
-            result = result.resolveTypes(res, outer);
-          }
+        result = (pc._actuals.get(0) instanceof ParsedCall acc && acc.isChainedBoolRHS())
+          ? acc
+          : pc;
       }
     return result;
-  }
-
-
-  @Override
-  protected Call resolveImmediateFunctionCall(Resolution res, AbstractFeature outer)
-  {
-    Call result = this;
-
-    // replace Function or Lazy value `l` by `l.call`:
-    if (isImmediateFunctionCall())
-      {
-        result = pushCall(res, outer, "call").resolveTypes(res, outer);
-      }
-    return result;
-  }
-
-
-  /**
-   * Is this call returning a Function/lambda that should
-   * immediately be called?
-   */
-  private boolean isImmediateFunctionCall()
-  {
-    return
-      _type.isFunctionType()                      &&
-      _calledFeature != Types.resolved.f_Function && // exclude inherits call in function type
-      _calledFeature.arguments().size() == 0      &&
-      _actuals != NO_PARENTHESES
-      ||
-      _type.isLazyType()                          &&   // we are `Lazy T`
-      _calledFeature != Types.resolved.f_Lazy     &&   // but not an explicit call to `Lazy` (e.g., in inherits clause)
-      _calledFeature.arguments().size() == 0      &&   // no arguments (NYI: maybe allow args for `Lazy (Function R V)`, then `l a` could become `c.call.call a`
-      _actuals.isEmpty()                          &&   // dto.
-      originalLazyValue() == this;                     // prevent repeated `l.call.call` when resolving the newly created Call to `call`.
   }
 
 
@@ -653,6 +499,162 @@ public class ParsedCall extends Call
         result = ERROR_VALUE;
       }
     return result;
+  }
+
+
+  @Override
+  protected void splitOffTypeArgs(Resolution res, AbstractFeature calledFeature, AbstractFeature outer)
+  {
+    var g = new List<AbstractType>();
+    var a = new List<Expr>();
+    var ts = calledFeature.typeArguments();
+    var tn = ts.size();
+    var ti = 0;
+    var vs = calledFeature.valueArguments();
+    var vn = vs.size();
+    var i = 0;
+    ListIterator<Expr> ai = _actuals.listIterator();
+    while (ai.hasNext())
+      {
+        var aa = ai.next();
+
+        // check that ts[ti] is open type parameter only iff ti == tn-1, ie.,
+        // only the last type parameter may be open
+        if (CHECKS) check
+          (ti >= tn-1 ||
+           ts.get(ti).kind() == AbstractFeature.Kind.TypeParameter    ,
+           ti != tn-1 ||
+           ts.get(ti).kind() == AbstractFeature.Kind.TypeParameter     ||
+           ts.get(ti).kind() == AbstractFeature.Kind.OpenTypeParameter);
+
+        if (_actuals.size() - i > vn)
+          {
+            AbstractType t = _actuals.get(i).asParsedType();
+            if (t != null)
+              {
+                g.add(t);
+              }
+            ai.set(Expr.NO_VALUE);  // make sure visit() no longer visits this
+            if (ts.get(ti).kind() != AbstractFeature.Kind.OpenTypeParameter)
+              {
+                ti++;
+              }
+          }
+        else
+          {
+            a.add(aa);
+          }
+        i++;
+      }
+    _generics = g;
+    _actuals = a;
+  }
+
+
+  /**
+   * Create a new call and push the current call to the target of that call.
+   * This is used for implicit calls to Function and Lazy values where `f()` is
+   * converted to `f.call()`, and for implicit fields in a select call such as,
+   * e.g., a tuple access `t.3` that is converted to `t.values.3`.
+   *
+   * The actual arguments and _select of this call are moved over to the new
+   * call, this call's arguments are replaced by Expr.NO_EXPRS and this calls
+   * _select is set to -1.
+   *
+   * @param res Resolution instance
+   *
+   * @param outer the feature surrounding this call
+   *
+   * @param name the name of the feature to be called.
+   *
+   * @return the newly created call
+   */
+  Call pushCall(Resolution res, AbstractFeature outer, String name)
+  {
+    var wasLazy = _type != null && _type.isLazyType();
+    var result = new Call(pos(),   // NYI: ParsedCall?
+                          this /* this becomes target of "call" */,
+                          name,
+                          select(),
+                          NO_GENERICS,
+                          _actuals,
+                          null,
+                          null)
+      {
+        @Override
+        Expr originalLazyValue()
+        {
+          return wasLazy ? ParsedCall.this : super.originalLazyValue();
+        }
+        @Override
+        public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType expectedType)
+        {
+          if (expectedType.isFunctionType())
+            { // produce an error if the original call is ambiguous with partial application
+              ParsedCall.this.checkPartialAmbiguity(res, outer, expectedType);
+            }
+          return super.propagateExpectedType(res, outer, expectedType);
+        }
+      };
+    _movedTo = result;
+    _wasImplicitImmediateCall = true;
+    _originalArgCount = _actuals.size();
+    _actuals = ParsedCall.NO_PARENTHESES;
+    _select = -1;
+    return result;
+  }
+
+
+  @Override
+  Call resolveImplicitSelect(Resolution res, AbstractFeature outer, AbstractType t)
+  {
+    Call result = this;
+    if (_select >= 0 && !t.isGenericArgument())
+      {
+        var f = res._module.lookupOpenTypeParameterResult(t.feature(), this);
+        if (f != null)
+          {
+            // replace Function call `c.123` by `c.f.123`:
+            result = pushCall(res, outer, f.featureName().baseName());
+            setActualResultType(res, t); // setActualResultType will be done again by resolveTypes, but we need it now.
+            result = result.resolveTypes(res, outer);
+          }
+      }
+    return result;
+  }
+
+
+  @Override
+  protected Call resolveImmediateFunctionCall(Resolution res, AbstractFeature outer)
+  {
+    Call result = this;
+
+    // replace Function or Lazy value `l` by `l.call`:
+    if (isImmediateFunctionCall())
+      {
+        result = pushCall(res, outer, "call").resolveTypes(res, outer);
+      }
+    return result;
+  }
+
+
+  /**
+   * Is this call returning a Function/lambda that should
+   * immediately be called?
+   */
+  private boolean isImmediateFunctionCall()
+  {
+    return
+      _type.isFunctionType()                      &&
+      _calledFeature != Types.resolved.f_Function && // exclude inherits call in function type
+      _calledFeature.arguments().size() == 0      &&
+      _actuals != NO_PARENTHESES
+      ||
+      _type.isLazyType()                          &&   // we are `Lazy T`
+      _calledFeature != Types.resolved.f_Lazy     &&   // but not an explicit call to `Lazy` (e.g., in inherits clause)
+      _calledFeature.arguments().size() == 0      &&   // no arguments (NYI: maybe allow args for `Lazy (Function R V)`, then `l a` could become `c.call.call a`
+      _actuals.isEmpty()                          &&   // dto.
+      originalLazyValue() == this;                     // prevent repeated `l.call.call` when resolving the newly created Call to `call`.
   }
 
 }
