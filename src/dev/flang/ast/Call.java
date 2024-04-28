@@ -226,7 +226,7 @@ public class Call extends AbstractCall
    *
    * @param n the name of the called feature
    */
-  public Call(SourcePosition pos, String n)
+  Call(SourcePosition pos, String n)
   {
     this(pos, null, n);
   }
@@ -241,7 +241,7 @@ public class Call extends AbstractCall
    *
    * @param n the name of the called feature
    */
-  public Call(SourcePosition pos, Expr t, String n)
+  Call(SourcePosition pos, Expr t, String n)
   {
     this(pos, t, n, -1, Expr.NO_EXPRS);
   }
@@ -259,7 +259,7 @@ public class Call extends AbstractCall
    *
    * @param la list of actual arguments
    */
-  public Call(SourcePosition pos, Expr t, String n, List<Expr> la)
+  Call(SourcePosition pos, Expr t, String n, List<Expr> la)
   {
     this(pos, t, n, -1, la);
 
@@ -283,7 +283,7 @@ public class Call extends AbstractCall
    *
    * @param la list of actual arguments
    */
-  public Call(SourcePosition pos, Expr t, String n, int select, List<Expr> la)
+  Call(SourcePosition pos, Expr t, String n, int select, List<Expr> la)
   {
     this(pos, t, n, select, NO_GENERICS, la, null, null);
 
@@ -307,7 +307,7 @@ public class Call extends AbstractCall
    * @param select for selecting a open type parameter field, this gives the
    * index '.0', '.1', etc. -1 for none.
    */
-  public Call(SourcePosition pos, Expr t, AbstractFeature calledFeature, int select)
+  Call(SourcePosition pos, Expr t, AbstractFeature calledFeature, int select)
   {
     this(pos, t, calledFeature.featureName().baseName(), select, Expr.NO_EXPRS);
     this._calledFeature = calledFeature;
@@ -338,9 +338,9 @@ public class Call extends AbstractCall
    * @param anonymous the anonymous feature, which is the wrapper created around
    * the call to "c".
    */
-  public Call(SourcePosition  pos,
-              Expr            target,
-              AbstractFeature anonymous)
+  Call(SourcePosition  pos,
+       Expr            target,
+       AbstractFeature anonymous)
   {
     this(pos, target, null, Expr.NO_EXPRS);
     this._calledFeature = anonymous;
@@ -395,7 +395,7 @@ public class Call extends AbstractCall
    *
    * @param type
    */
-  /* private NYI: should be private */ Call(SourcePosition pos,
+  Call(SourcePosition pos,
                Expr target,
                String name,
                int select,

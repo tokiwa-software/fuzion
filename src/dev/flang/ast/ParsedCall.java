@@ -40,6 +40,7 @@ import dev.flang.util.SourcePosition;
 public class ParsedCall extends Call
 {
 
+
   /*----------------------------  constants  ----------------------------*/
 
 
@@ -51,9 +52,16 @@ public class ParsedCall extends Call
   public static final List<Expr> NO_PARENTHESES = new List<>();
 
 
+  /*----------------------------  variables  ----------------------------*/
+
+
+  /**
+   * The name of the called feature as produced by the parser.
+   */
   private final ParsedName _parsedName;
-  List<Expr> _parsedActuals;
-  boolean _appliedPartially = false;
+
+
+  /*---------------------------  constructors  --------------------------*/
 
 
   /**
@@ -95,7 +103,6 @@ public class ParsedCall extends Call
     super(name._pos, target, name._name, arguments);
 
     _parsedName = name;
-    _parsedActuals = arguments;
   }
 
 
@@ -115,7 +122,6 @@ public class ParsedCall extends Call
     super(name._pos, target, name._name, select, NO_PARENTHESES);
 
     _parsedName = name;
-    _parsedActuals = NO_PARENTHESES;
   }
 
 
@@ -134,7 +140,7 @@ public class ParsedCall extends Call
    */
   boolean isInfixPipe(boolean parenthesesAllowed)
   {
-    return isOperatorCall(parenthesesAllowed) && name().equals("infix |") && _parsedActuals.size() == 1;
+    return isOperatorCall(parenthesesAllowed) && name().equals("infix |") && _actuals.size() == 1;
   }
 
 
@@ -145,21 +151,7 @@ public class ParsedCall extends Call
    */
   boolean isInfixArrow()
   {
-    return isOperatorCall(true) && name().equals("infix ->") && _parsedActuals.size() == 1;
-  }
-
-
-  /**
-   * True iff this call was performed giving 0 or more actual arguments in
-   * parentheses.  This allows a distinction between "a.b" and "a.b()" if b has
-   * no formal arguments and is of a fun type. In this case, "a.b" calls only b,
-   * while "a.b()" is syntactic sugar for "a.b.call".
-   *
-   * @return true if parentheses were present.
-   */
-  public boolean hasParentheses()
-  {
-    return _appliedPartially || _parsedActuals != NO_PARENTHESES;
+    return isOperatorCall(true) && name().equals("infix ->") && _actuals.size() == 1;
   }
 
 
@@ -172,7 +164,7 @@ public class ParsedCall extends Call
     var ok = target == null || tt != null;
     var name = name();
     var l = new List<AbstractType>();
-    for (var a : _parsedActuals)
+    for (var a : _actuals)
       {
         var at = a.asParsedType();
         ok = ok && at != null;
@@ -298,7 +290,7 @@ public class ParsedCall extends Call
                                   thiz);
             Expr t1 = new Call(pos(), new Current(pos(), thiz), tmp, -1);
             Expr t2 = new Call(pos(), new Current(pos(), thiz), tmp, -1);
-            var movedTo = new ParsedCall(t2, new ParsedName(pos(), name()), _parsedActuals)
+            var movedTo = new ParsedCall(t2, new ParsedName(pos(), name()), _actuals)
               {
                 boolean isChainedBoolRHS() { return true; }
               };
@@ -358,7 +350,7 @@ public class ParsedCall extends Call
 
         if (_actuals.size() - i > vn)
           {
-            AbstractType t = _parsedActuals.get(i).asParsedType();
+            AbstractType t = _actuals.get(i).asParsedType();
             if (t != null)
               {
                 g.add(t);
@@ -383,7 +375,7 @@ public class ParsedCall extends Call
   @Override
   public ParsedName asParsedName()
   {
-    if (!_parsedActuals.isEmpty() && _select == -1)
+    if (!_actuals.isEmpty() && _select == -1)
       {
         return null;
       }
@@ -439,11 +431,7 @@ public class ParsedCall extends Call
     _movedTo = result;
     _wasImplicitImmediateCall = true;
     _originalArgCount = _actuals.size();
-    _actuals = Expr.NO_EXPRS;
-    if (this instanceof ParsedCall pc)
-      {
-        pc._parsedActuals = ParsedCall.NO_PARENTHESES;
-      }
+    _actuals = ParsedCall.NO_PARENTHESES;
     _select = -1;
     return result;
   }
@@ -492,12 +480,12 @@ public class ParsedCall extends Call
       _type.isFunctionType()                      &&
       _calledFeature != Types.resolved.f_Function && // exclude inherits call in function type
       _calledFeature.arguments().size() == 0      &&
-      hasParentheses()
+      _actuals != NO_PARENTHESES
       ||
       _type.isLazyType()                          &&   // we are `Lazy T`
       _calledFeature != Types.resolved.f_Lazy     &&   // but not an explicit call to `Lazy` (e.g., in inherits clause)
       _calledFeature.arguments().size() == 0      &&   // no arguments (NYI: maybe allow args for `Lazy (Function R V)`, then `l a` could become `c.call.call a`
-      _parsedActuals.isEmpty()                    &&   // dto.
+      _actuals.isEmpty()                          &&   // dto.
       originalLazyValue() == this;                     // prevent repeated `l.call.call` when resolving the newly created Call to `call`.
   }
 
@@ -618,11 +606,7 @@ public class ParsedCall extends Call
           {
             pns.add(Partial.argName(pos()));
           }
-        _actuals    = _actuals   .clone();
-        if (this instanceof ParsedCall pc)
-          {
-            pc._appliedPartially = true;
-          }
+        _actuals = _actuals.size() == 0 ? new List<>() : _actuals;
         if (_name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX))
           { // -v ==> x->x-v   -- swap target and first actual:
             if (CHECKS) check

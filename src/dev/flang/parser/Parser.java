@@ -1454,7 +1454,7 @@ indexTail   : ":=" exprInLine
             // into `a[i].call`
             l = ParsedCall.NO_PARENTHESES;
           }
-        result = new Call(pos, target, n, l);
+        result = new ParsedCall(target, new ParsedName(pos, n), l);
         target = result;
       }
     while (!ignoredTokenBefore() && current() == Token.t_lcrochet);
@@ -1782,7 +1782,7 @@ operatorExpr  : opExpr
             matchOperator(":", "expr of the form >>a ? b : c<<");
             Expr g = operatorExpr();
             i.end();
-            result = new Call(pos, result, "ternary ? :", new List<>(f, g));
+            result = new ParsedCall(result, new ParsedName(pos, "ternary ? :"), new List<>(f, g));
           }
       }
     return result;
@@ -2156,7 +2156,7 @@ stringTermB : '}any chars&quot;'
    */
   Expr concatString(SourcePosition pos, Expr string1, Expr string2)
   {
-    return string1 == null ? string2 : new Call(pos, string1, "infix +", new List<>(string2));
+    return string1 == null ? string2 : new ParsedCall(string1, new ParsedName(pos, "infix +"), new List<>(string2));
   }
 
 
