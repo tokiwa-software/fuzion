@@ -174,8 +174,9 @@ public class ParsedCall extends Call
       {
         if (tt != null && isInfixArrow())
           {
-            // Convert call of the form (util.stack i32,io.file)->net.socket
-            // into the corresponding function type.
+            // NYI: a function type like `a.b->c` is currently parsed as a call
+            // to `infix ->`. Would be better if the parser generated the
+            // function type directly, for new we do it here:
             var a = new List<AbstractType>(tt);
             // NYI: if tt is of the form `()` or `(a,b,c)`, we need to create an
             // empty list or a list of types `a`, `b` and `c`.
@@ -257,7 +258,10 @@ public class ParsedCall extends Call
    * where this returns 'true' for the call 't1 <= c', that in the next steps
    * needs to get 'c' stored into a temporary variable as well.
    */
-  boolean isChainedBoolRHS() { return false; }
+  boolean isChainedBoolRHS()
+  {
+    return false;
+  }
 
 
   /**
