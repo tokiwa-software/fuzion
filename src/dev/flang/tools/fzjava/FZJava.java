@@ -329,7 +329,7 @@ public class FZJava extends Tool
         say("MODULE: " + m + " at " + p);
       }
 
-    String url = "file:jar://" + p.toUri().getPath();
+    String url = "file:jar://" + p.toUri();
     try
       {
         var cl = new java.net.URLClassLoader(new URL[] { URI.create(url).toURL() });
