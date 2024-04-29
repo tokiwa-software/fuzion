@@ -1430,7 +1430,7 @@ actuals     : actualArgs
   /**
    * Parse indexcall
    *
-indexCall   : LBRACKET actualList RBRACKET indexTail
+indexCall   : LBRACKET actualCommas RBRACKET indexTail
             ;
 indexTail   : ":=" exprInLine
             |
@@ -1442,7 +1442,7 @@ indexTail   : ":=" exprInLine
     do
       {
         SourcePosition pos = tokenSourcePos();
-        var l = bracketTermWithNLs(CROCHETS, "indexCall", () -> actualList());
+        var l = bracketTermWithNLs(CROCHETS, "indexCall", () -> actualCommas());
         String n = FuzionConstants.FEATURE_NAME_INDEX;
         if (skip(":="))
           {
@@ -1534,15 +1534,15 @@ typeList    : type ( COMMA typeList
   /**
    * Parse actualArgs
    *
-actualArgs  : actualsList
-            | LPAREN actualList RPAREN
+actualArgs  : actualSpaces
+            | LPAREN actualCommas RPAREN
             ;
    */
   List<Expr> actualArgs()
   {
     return (ignoredTokenBefore() || current() != Token.t_lparen)
-      ? actualsList()
-      : bracketTermWithNLs(PARENS, "actualArgs", () -> actualList());
+      ? actualSpaces()
+      : bracketTermWithNLs(PARENS, "actualArgs", () -> actualCommas());
   }
 
 
@@ -1625,18 +1625,18 @@ actualArgs  : actualsList
 
 
   /**
-   * Parse actualList
+   * Parse actualCommas
    *
-actualList  : actualSome
+actualCommas: actualSome
             |
             ;
-actualSome  : actual actualMore
+actualSome  : operatorExpr actualMore
             ;
 actualMore  : COMMA actualSome
             |
             ;
    */
-  List<Expr> actualList()
+  List<Expr> actualCommas()
   {
     var result = new List<Expr>();
     if (current() != Token.t_rparen   &&
@@ -1644,7 +1644,7 @@ actualMore  : COMMA actualSome
       {
         do
           {
-            result.add(actual());
+            result.add(operatorExpr());
           }
         while (skipComma());
       }
@@ -1655,11 +1655,11 @@ actualMore  : COMMA actualSome
   /**
    * Parse space separated actual arguments
    *
-actualsList : actualSp actualsList
+actualSpaces: actualSpace actualSpaces
             |
             ;
    */
-  List<Expr> actualsList()
+  List<Expr> actualSpaces()
   {
     List<Expr> result = ParsedCall.NO_PARENTHESES;
     if (ignoredTokenBefore() && !endsActuals(false))
@@ -1706,29 +1706,16 @@ bracketTerm : brblock
   /**
    * An actual that ends in white space unless enclosed in { }, [ ], or ( ).
    *
-actualSp : actual         // no white space except enclosed in { }, [ ], or ( ).
-         ;
+actualSpace :  operatorExpr         // no white space except enclosed in { }, [ ], or ( ).
+            ;
 
    */
   Expr actualSpace()
   {
     var eas = endAtSpace(tokenPos());
-    var result = actual();
+    var result = operatorExpr();
     endAtSpace(eas);
     return result;
-  }
-
-
-  /**
-   * An actual argument
-   *
-actual   : operatorExpr | type
-         ;
-
-   */
-  Expr actual()
-  {
-    return operatorExpr();
   }
 
 
