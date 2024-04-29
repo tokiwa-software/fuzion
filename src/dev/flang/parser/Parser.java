@@ -1530,11 +1530,11 @@ callTail    : indexCall  callTail
       {
         if (skip(Token.t_env))
           {
-            result = callTail(false, new Env    (tokenSourcePos(), result.asParsedType()));
+            result = callTail(false, new Env    (sourceRange(target.pos()), result.asParsedType()));
           }
         else if (skip(Token.t_type))
           {
-            result = callTail(false, new DotType(tokenSourcePos(), result.asParsedType()));
+            result = callTail(false, new DotType(sourceRange(target.pos()), result.asParsedType()));
           }
         else
           {
