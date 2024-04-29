@@ -572,23 +572,6 @@ visiFlag    : "private" colon "module"
 
 
   /**
-   * Parse visi
-   *
-visi        : COLON qual
-            | qual
-            ;
-   */
-  List<ParsedName> visi()
-  {
-    if (skipColon())
-      {
-        // NYI: record ':', i.e., export to all heirs
-      }
-    return qual(false);
-  }
-
-
-  /**
    * Parse qualified name
    *
 qual        : name
