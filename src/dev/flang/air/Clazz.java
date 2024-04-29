@@ -1164,7 +1164,12 @@ public class Clazz extends ANY implements Comparable<Clazz>
             if (f != Types.f_ERROR && (af != null || !isEffectivelyAbstract(f)))
               {
                 var aaf = af != null ? af : f;
-                if (isEffectivelyAbstract(aaf) && !_type.feature().isTypeFeature() /* NYI: WORKAROUND! */)
+                if (isEffectivelyAbstract(aaf)
+                    /* NYI: WORKAROUND!
+                    tests/lib_container_set fails without this:
+                    "Used abstract feature 'container.Set.type.new' is not implemented by 'container.Set.type'"
+                    */
+                   && !_type.feature().isTypeFeature() )
                   {
                     if (_abstractCalled == null)
                       {

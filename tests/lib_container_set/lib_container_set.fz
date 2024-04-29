@@ -27,9 +27,9 @@ lib_container_set is
   b := container.set_of_ordered [3,4,5]
   c := container.set_of_ordered [1,2]
 
-  say "$a union\t\t$b: {a.union b}"
-  say "$a intersection\t$b: {a.intersection b}"
-  say "$a except\t\t$b: {a.except b}"
+  say "$a union\t\t$b: {a ∪ b}"
+  say "$a intersection\t$b: {a ∩ b}"
+  say "$a except\t\t$b: {a ∖ b}"
 
   say "$a\tis subset\tof $b:\t{a.is_subset_of b}"
   say "$a\tis superset\tof $b:\t{a.is_superset_of b}"

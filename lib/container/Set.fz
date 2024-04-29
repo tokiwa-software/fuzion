@@ -85,6 +85,13 @@ public Set(public E type : property.equatable) ref : Sequence E is
     Set.this.new filter(el -> !other.contains el)
 
 
+  # infix variant for Set.except
+  #
+  public infix ∖ (other Set E) =>
+    Set.this.except other
+
+
+
   # is this Set a subset of other?
   # true, iff other contains all
   # elements that this Set contains.
@@ -98,7 +105,7 @@ public Set(public E type : property.equatable) ref : Sequence E is
   # elements that other contains.
   #
   public is_superset_of(other Set E) =>
-    other ∀ (el -> contains el)
+    other ∀ contains
 
 
 
