@@ -64,9 +64,8 @@ is
   # get element at given index i
   #
   public index [ ] (i i64) T ! E
-    # NYI: BUG: triggers bug in DFA. Some calls are not found to return...
-    # pre
-    #   safety: 0 ≤ i < length
+    pre
+      safety: 0 ≤ i < length
   =>
     abstract
 
@@ -74,9 +73,8 @@ is
   # set element at given index i to given value o
   #
   public set [ ] (i i64, o T) unit ! E
-    # NYI: BUG: triggers bug in DFA. Some calls are not found to return...
-    # pre
-    #   safety: 0 ≤ i < length
+    pre
+      safety: 0 ≤ i < length
   =>
     abstract
 
