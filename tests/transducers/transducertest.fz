@@ -25,14 +25,13 @@
 
 transducertest is
 
-  exit_code := mut 0
 
   chck (b bool, msg String) unit =>
     if b
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
-      exit_code <- 1
+      _ := set_exit_code 1
 
   td1 := (transducer (Sequence i32) i32 human).type
 
@@ -53,4 +52,4 @@ transducertest is
   r := [human 4, human 12, human 30].into (ages ∘ gt_ten)
   chck ((container.searchable_sequence r) = (container.searchable_sequence [12, 30]))                          "compose transducers"
 
-  exit exit_code.get
+  exit
