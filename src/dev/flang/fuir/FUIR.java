@@ -1169,7 +1169,8 @@ hw25 is
         var cc = clazz(cl);
         var result = switch (clazzKind(cc))
           {
-          case Abstract, Choice -> false;
+          case Abstract -> hasPrecondition(cl);
+          case Choice -> false;
           case Intrinsic, Routine, Field, Native ->
             (cc.isInstantiated() || cc.feature().isOuterRef())
             && cc != Clazzes.Const_String.getIfCreated()

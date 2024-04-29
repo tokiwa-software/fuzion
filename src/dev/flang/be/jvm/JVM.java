@@ -458,10 +458,10 @@ should be avoided as much as possible.
         switch (k)
           {
           case Intrinsic    :
-          case Routine      : jvm.code(cl); break;
+          case Routine      :
+          case Abstract     : jvm.code(cl); break;
           case Choice       : jvm._types._choices.createCode(cl); break;
           case Field        : break;
-          case Abstract     : break;
           case Native       : Errors.warning("JVM backend cannot compile native " + jvm._fuir.clazzAsString(cl)); break;
           default           : throw new Error ("Unexpected feature kind: " + k);
           };

@@ -2322,6 +2322,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     var f = feature();
     switch (f.kind())
       {
+      case Abstract   : // tricky: abstract may have precondition that uses outer ref
       case Intrinsic  :
       case Routine    :
         {
