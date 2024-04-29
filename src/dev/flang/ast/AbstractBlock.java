@@ -191,25 +191,6 @@ public abstract class AbstractBlock extends Expr
 
 
   /**
-   * Return this expression as an (unresolved) type.
-   * This is null by default except for calls/this-expressions
-   * that can be used as the left hand side in a dot-type-call.
-   *
-   * The type is returned as produced by the parser and needs
-   * to be resolved with the context it is used in to be of
-   * any use.
-   */
-  @Override
-  public AbstractType asUnresolvedType()
-  {
-    Expr resExpr = resultExpression();
-    return resExpr == null || _expressions.size() != 1
-      ? Types.resolved.t_unit
-      : resExpr.asUnresolvedType();
-  }
-
-
-  /**
    * During type inference: Inform this expression that it is
    * expected to result in the given type.
    *

@@ -391,7 +391,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   {
     var s = site();
     return s == IR.NO_SITE ? null
-                           : _dfa._fuir.codeAtAsPos(s);
+                           : _dfa._fuir.sitePos(s);
   }
 
 
@@ -418,18 +418,18 @@ public class Call extends ANY implements Comparable<Call>, Context
    * Report an error if no effect found during last pass (i.e.,
    * _dfa._reportResults is set).
    *
-   * @param pos a source for a position to be used in error produced
+   * @param s site of the code requiring the effect
    *
    * @param ecl clazz defining the effect type.
    *
    * @return null in case no effect of type ecl was found
    */
-  Value getEffectForce(HasSourcePosition pos, int ecl)
+  Value getEffectForce(int s, int ecl)
   {
     var result = getEffectCheck(ecl);
     if (result == null && _dfa._reportResults && !_dfa._fuir.clazzOriginalName(_cc).equals("effect.type.unsafe_get"))
       {
-        DfaErrors.usedEffectNeverInstantiated(pos,
+        DfaErrors.usedEffectNeverInstantiated(_dfa._fuir.sitePos(s),
                                               _dfa._fuir.clazzAsString(ecl),
                                               this);
         _dfa._missingEffects.add(ecl);

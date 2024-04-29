@@ -26,13 +26,12 @@
 # tests basic floating point operations for f32/f64
 floating_point_numbers is
 
-  exit_code := mut 0
 
   chck(b bool, msg String) =>
     s := if b
       "PASSED: "
     else
-      exit_code <- 1
+      _ := set_exit_code 1
       "FAILED: "
     say (s + msg)
 
@@ -236,4 +235,4 @@ floating_point_numbers is
   chck ((f64 1.0)   .fract  =   0.0)                                          "f64.fraction of  1.0 equals expected"
 
 
-  exit exit_code.get
+  exit

@@ -25,13 +25,12 @@
 
 typeinference is
 
-  exit_code := mut 0
 
   chck(b bool, msg String) is
     s := if b
       "PASSED: "
     else
-      exit_code <- 1
+      _ := set_exit_code 1
       "FAILED: "
     say (s + msg)
 
@@ -98,4 +97,4 @@ typeinference is
             e E => e
         )
 
-  exit exit_code.get
+  exit

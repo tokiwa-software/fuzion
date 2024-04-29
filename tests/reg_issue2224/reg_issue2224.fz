@@ -17,11 +17,8 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test Makefile
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test
 #
 # -----------------------------------------------------------------------
 
-override NAME = mix_inheritance_and_outer
-include ../fe.mk # NYI: BUG see #88
+_ := set_exit_code 1

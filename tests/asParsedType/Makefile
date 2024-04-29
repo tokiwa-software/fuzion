@@ -19,9 +19,7 @@
 #
 #  Source code of Fuzion test Makefile
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
-#
 # -----------------------------------------------------------------------
 
-override NAME = mix_inheritance_and_outer
-include ../fe.mk # NYI: BUG see #88
+override NAME = test_asParsedType
+include ../simple.mk

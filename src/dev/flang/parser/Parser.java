@@ -482,7 +482,7 @@ field       : returnType
       }
     var p = fork();
     return
-      (!p.isTypePrefix() || p.skipType(true, true, true)) &&
+      (!p.isTypePrefix() || p.skipType(true, true)) &&
       (!p.isOperator("!") || p.skipEffects()) &&
       p.skipInherits() &&
       (p.isContractPrefix  () ||
@@ -568,23 +568,6 @@ visiFlag    : "private" colon "module"
       case t_public      : return true;
       default         : return false;
       }
-  }
-
-
-  /**
-   * Parse visi
-   *
-visi        : COLON qual
-            | qual
-            ;
-   */
-  List<ParsedName> visi()
-  {
-    if (skipColon())
-      {
-        // NYI: record ':', i.e., export to all heirs
-      }
-    return qual(false);
   }
 
 
@@ -918,8 +901,7 @@ formArgsOpt : formArgs
     return
       current() != Token.t_lparen ||
       fork().skipType(false,
-                      false,
-                      true);  // result type such as '(i32)->bool' or
+                      false); // result type such as '(i32)->bool' or
                               // '(a,b)|(c,d)|()' is parsed as resulttype, but
                               // a type in parentheses like '(list i32)', '(a,
                               // b i32)' is parsed as an args list.
@@ -1414,28 +1396,14 @@ actuals     : actualArgs
           }
         else
           {
-            result = new ParsedCall(target, n)
-              {
-                @Override
-                public AbstractType asUnresolvedType()
-                {
-                  return new ParsedType(n, n._name, new List<>(), target == null ? null : target.asUnresolvedType());
-                }
-              };
+            result = new ParsedCall(target, n);
             skippedDot = true;
           }
       }
     else
       {
         var l = actualArgs();
-        result = new ParsedCall(target, n, l)
-          {
-            @Override
-            public AbstractType asUnresolvedType()
-            {
-              return new ParsedType(n, n._name, l.map2(x -> x._type), target == null ? null : target.asUnresolvedType());
-            }
-          };
+        result = new ParsedCall(target, n, l);
       }
     result = callTail(skippedDot, result);
     return result;
@@ -1445,7 +1413,7 @@ actuals     : actualArgs
   /**
    * Parse indexcall
    *
-indexCall   : LBRACKET actualList RBRACKET indexTail
+indexCall   : LBRACKET actualCommas RBRACKET indexTail
             ;
 indexTail   : ":=" exprInLine
             |
@@ -1457,19 +1425,19 @@ indexTail   : ":=" exprInLine
     do
       {
         SourcePosition pos = tokenSourcePos();
-        var l = bracketTermWithNLs(CROCHETS, "indexCall", () -> actualList());
+        var l = bracketTermWithNLs(CROCHETS, "indexCall", () -> actualCommas());
         String n = FuzionConstants.FEATURE_NAME_INDEX;
         if (skip(":="))
           {
-            l.add(new Actual(exprInLine()));
+            l.add(exprInLine());
             n = FuzionConstants.FEATURE_NAME_INDEX_ASSIGN;
           }
         if (l.isEmpty())
           { // In case result is Function, avoid automatic conversion `a[i]`
             // into `a[i].call`
-            l = Call.NO_PARENTHESES;
+            l = ParsedCall.NO_PARENTHESES;
           }
-        result = new Call(pos, target, n, l);
+        result = new ParsedCall(target, new ParsedName(pos, n), l);
         target = result;
       }
     while (!ignoredTokenBefore() && current() == Token.t_lcrochet);
@@ -1537,26 +1505,10 @@ typeList    : type ( COMMA typeList
    */
   boolean skipTypeList()
   {
-    return skipTypeList(true);
-  }
-
-
-  /**
-   * Check if the current position has typeList and skip it.
-   *
-   * @param allowTypeThatIsNotExpression false to forbid types that cannot be
-   * parsed as expressions such as lambdas types with argument types that are
-   * not just argNames.
-   *
-   * @return true iff the next token(s) form typeList, otherwise no typeList was
-   * found and the parser/lexer is at an undefined position.
-   */
-  boolean skipTypeList(boolean allowTypeThatIsNotExpression)
-  {
-    boolean result = skipType(false, true, allowTypeThatIsNotExpression);
+    boolean result = skipType(false, true);
     while (skipComma())
       {
-        result = result && skipType(false, true, allowTypeThatIsNotExpression);
+        result = result && skipType(false, true);
       }
     return result;
   }
@@ -1565,15 +1517,15 @@ typeList    : type ( COMMA typeList
   /**
    * Parse actualArgs
    *
-actualArgs  : actualsList
-            | LPAREN actualList RPAREN
+actualArgs  : actualSpaces
+            | LPAREN actualCommas RPAREN
             ;
    */
-  List<Actual> actualArgs()
+  List<Expr> actualArgs()
   {
     return (ignoredTokenBefore() || current() != Token.t_lparen)
-      ? actualsList()
-      : bracketTermWithNLs(PARENS, "actualArgs", () -> actualList());
+      ? actualSpaces()
+      : bracketTermWithNLs(PARENS, "actualArgs", () -> actualCommas());
   }
 
 
@@ -1656,26 +1608,26 @@ actualArgs  : actualsList
 
 
   /**
-   * Parse actualList
+   * Parse actualCommas
    *
-actualList  : actualSome
+actualCommas: actualSome
             |
             ;
-actualSome  : actual actualMore
+actualSome  : operatorExpr actualMore
             ;
 actualMore  : COMMA actualSome
             |
             ;
    */
-  List<Actual> actualList()
+  List<Expr> actualCommas()
   {
-    var result = new List<Actual>();
+    var result = new List<Expr>();
     if (current() != Token.t_rparen   &&
         current() != Token.t_rcrochet   )
       {
         do
           {
-            result.add(actual());
+            result.add(operatorExpr());
           }
         while (skipComma());
       }
@@ -1686,13 +1638,13 @@ actualMore  : COMMA actualSome
   /**
    * Parse space separated actual arguments
    *
-actualsList : actualSp actualsList
+actualSpaces: actualSpace actualSpaces
             |
             ;
    */
-  List<Actual> actualsList()
+  List<Expr> actualSpaces()
   {
-    List<Actual> result = Call.NO_PARENTHESES;
+    List<Expr> result = ParsedCall.NO_PARENTHESES;
     if (ignoredTokenBefore() && !endsActuals(false))
       {
         var in = new Indentation();
@@ -1737,65 +1689,16 @@ bracketTerm : brblock
   /**
    * An actual that ends in white space unless enclosed in { }, [ ], or ( ).
    *
-actualSp : actual         // no white space except enclosed in { }, [ ], or ( ).
-         ;
+actualSpace :  operatorExpr         // no white space except enclosed in { }, [ ], or ( ).
+            ;
 
    */
-  Actual actualSpace()
+  Expr actualSpace()
   {
     var eas = endAtSpace(tokenPos());
-    var result = actual();
+    var result = operatorExpr();
     endAtSpace(eas);
     return result;
-  }
-
-
-  /**
-   * An actual argument
-   *
-actual   : operatorExpr | type
-         ;
-
-   */
-  Actual actual()
-  {
-    var pos = tokenSourcePos();
-
-    boolean hasType = fork().skipType();
-    // instead of implementing 'isExpr()', which would be complex, we use
-    // 'skipType' with second argument set to false to check if we can parse
-    // an expression.
-    boolean hasExpr = (!hasType ||
-                       fork().skipType(false,
-                                       true,
-                                       false  /* disallow types that cannot be parsed as expression */));
-    AbstractType t;
-    Expr e;
-    if (hasExpr && hasType)
-      {
-        var f = fork();
-        var t0 = f.type();
-        e = operatorExpr();
-        // we might have an expr 'a.x+d(4)' while the type parsed is
-        // just 'a.x', so eagerly take the expr in this case:
-        t = f.tokenPos() == tokenPos() ? t0 : null;
-        if (CHECKS) check
-          (f.tokenPos() <= tokenPos());
-      }
-    else if (hasExpr)
-      {
-        t = null;
-        e = operatorExpr();
-      }
-    else
-      {
-        if (CHECKS) check
-          (hasType);
-
-        t = type();
-        e = Expr.NO_VALUE;
-      }
-    return new Actual(pos, t, e);
   }
 
 
@@ -1849,8 +1752,7 @@ operatorExpr  : opExpr
             matchOperator(":", "expr of the form >>a ? b : c<<");
             Expr g = operatorExpr();
             i.end();
-            result = new Call(pos, result, "ternary ? :", new List<>(new Actual(f),
-                                                                     new Actual(g)));
+            result = new ParsedCall(result, new ParsedName(pos, "ternary ? :"), new List<>(f, g));
           }
       }
     return result;
@@ -1942,19 +1844,18 @@ klammerExpr : LPAREN expr RPAREN
 tuple       : LPAREN RPAREN
             | LPAREN operatorExpr (COMMA operatorExpr)+ RPAREN
             ;
-klammerLambd: LPAREN argNamesOpt RPAREN lambda
+klammerLambd: tuple lambda
             ;
    */
   Expr klammer()
   {
     SourcePosition pos = tokenSourcePos();
-    var f = fork();
-    var tupleElements = new List<Actual>();
+    var tupleElements = new List<Expr>();
     bracketTermWithNLs(PARENS, "klammer",
                        () -> {
                          do
                            {
-                             tupleElements.add(new Actual(operatorExpr()));
+                             tupleElements.add(operatorExpr());
                            }
                          while (skipComma());
                          return Void.TYPE;
@@ -1964,11 +1865,11 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
 
     if (isLambdaPrefix())                  // a lambda expression
       {
-        return lambda(f.bracketTermWithNLs(PARENS, "argNamesOpt", () -> f.argNamesOpt()));
+        return lambda(tupleElements);
       }
     else if (tupleElements.size() == 1)    // an expr wrapped in parentheses, not a tuple
       {
-        var e = tupleElements.get(0).expr(null);
+        var e = tupleElements.get(0);
         if (e instanceof ParsedOperatorCall oc)
           { // disable chained boolean optimization or partial application:
             oc.putInParentheses();
@@ -1977,36 +1878,8 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
       }
     else                                   // a tuple
       {
-        return new Call(pos, null, "tuple", tupleElements);
+        return new ParsedCall(null, new ParsedName(pos, "tuple"), tupleElements);
       }
-  }
-
-
-  /**
-   * Parse argNamesOpt
-   *
-argNamesOpt : argNames
-            |
-            ;
-   */
-  List<ParsedName> argNamesOpt()
-  {
-    return (current() == Token.t_ident)
-      ? argNames()
-      : new List<>();
-  }
-
-
-  /**
-   * Check if the current position can be parsed as an argNamesOpt and skip it if
-   * this is the case.
-   *
-   * @return true iff an argNamesOpt was found and skipped, otherwise no argNamesOpt
-   * was found and the parser/lexer is at an undefined position.
-   */
-  boolean skipArgNamesOpt()
-  {
-    return !(current() == Token.t_ident) || skipArgNames();
   }
 
 
@@ -2016,7 +1889,7 @@ argNamesOpt : argNames
 lambda      : "->" block
             ;
    */
-  Expr lambda(List<ParsedName> n)
+  Expr lambda(List<Expr> n)
   {
     var pos = tokenPos();
     matchOperator("->", "lambda");
@@ -2047,7 +1920,7 @@ plainLambda : argNames lambda
    */
   Expr plainLambda()
   {
-    return lambda(argNames());
+    return lambda(argNames().map2(n -> new ParsedCall(n)));
   }
 
 
@@ -2253,7 +2126,7 @@ stringTermB : '}any chars&quot;'
    */
   Expr concatString(SourcePosition pos, Expr string1, Expr string2)
   {
-    return string1 == null ? string2 : new Call(pos, string1, "infix +", new List<>(new Actual(string2)));
+    return string1 == null ? string2 : new ParsedCall(string1, new ParsedName(pos, "infix +"), new List<>(string2));
   }
 
 
@@ -3145,14 +3018,7 @@ qualThisType: qualThis
       }
     else
       {
-        result = new This(q)
-          {
-            @Override
-            public AbstractType asUnresolvedType()
-            {
-              return new QualThisType(q);
-            }
-          };
+        result = new This(q);
       }
     return result;
   }
@@ -3299,6 +3165,10 @@ qualThis    : name ( dot name )* dot "this"
   /**
    * Parse dotEnv
    *
+   + NYI: This should be `dotEnv : expr dot "env"` and use
+   * `expr.asParsedType()`, then the grammar would be simpler and repeated
+   * parsing would be avoided.
+   *
 dotEnv      : typeInParens dot "env"
             ;
    */
@@ -3315,6 +3185,10 @@ dotEnv      : typeInParens dot "env"
 
   /**
    * Parse dotType
+   *
+   + NYI: This should be `dotType : expr dotTypeSuffix` and use
+   * `expr.asParsedType()`, then the grammar would be simpler and repeated
+   * parsing would be avoided.
    *
 dotType     : typeInParens dotTypeSuffx
             ;
@@ -3685,7 +3559,7 @@ boundType   : qualThis
    */
   boolean skipType()
   {
-    return skipType(false, true, true);
+    return skipType(false, true);
   }
 
 
@@ -3699,16 +3573,11 @@ boundType   : qualThis
    * @param allowTypeInParentheses true iff the type may be surrounded by
    * parentheses, i.e., '(i32, list bool)', '(stack f64)', '()'.
    *
-   * @param allowTypeThatIsNotExpression false to forbid types that cannot be
-   * parsed as expressions such as lambda types with argument types that are
-   * not just argNames.
-   *
    * @return true iff a type was found and skipped, otherwise no type was found
    * and the parser/lexer is at an undefined position.
    */
   boolean skipType(boolean isFunctionReturnType,
-                   boolean allowTypeInParentheses,
-                   boolean allowTypeThatIsNotExpression)
+                   boolean allowTypeInParentheses)
   { // we forbid tuples like '(a,b)', '(a)', '()', but we allow lambdas '(a,b)->c' and choice
     // types '(a,b) | (d,e)'
 
@@ -3716,16 +3585,11 @@ boundType   : qualThis
     if (!result)
       {
         var hasForbiddenParentheses = !allowTypeInParentheses && !fork().skipOneType(isFunctionReturnType,
-                                                                                     false,
-                                                                                     allowTypeThatIsNotExpression);
-        var res = skipOneType(isFunctionReturnType,
-                              true,
-                              allowTypeThatIsNotExpression);
+                                                                                     false);
+        var res = skipOneType(isFunctionReturnType, true);
         while (res && skip('|'))
           {
-            res = skipOneType(isFunctionReturnType,
-                              true,
-                              allowTypeThatIsNotExpression);
+            res = skipOneType(isFunctionReturnType, true);
             hasForbiddenParentheses = false;
           }
         result = res && !hasForbiddenParentheses && (!skipColon() || skipType());
@@ -3792,7 +3656,7 @@ typeOpt     : type
    */
   boolean skipOneType()
   {
-    return skipOneType(false, true, true);
+    return skipOneType(false, true);
   }
 
 
@@ -3814,28 +3678,19 @@ typeOpt     : type
    * found and the parser/lexer is at an undefined position.
    */
   boolean skipOneType(boolean isFunctionReturnType,
-                      boolean allowTypeInParentheses,
-                      boolean allowTypeThatIsNotExpression)
+                      boolean allowTypeInParentheses)
   {
     boolean result;
     var f = fork();
-    if (f.skipBracketTermWithNLs(PARENS, () -> f.current() == Token.t_rparen || f.skipTypeList(allowTypeThatIsNotExpression)))
+    if (f.skipBracketTermWithNLs(PARENS, () -> f.current() == Token.t_rparen || f.skipTypeList()))
       {
         var f2 = fork();
-        result = skipBracketTermWithNLs(PARENS, () -> current() == Token.t_rparen || skipTypeList(allowTypeThatIsNotExpression));
+        result = skipBracketTermWithNLs(PARENS, () -> current() == Token.t_rparen || skipTypeList());
         var p = tokenPos();
         var l = line();
         if (skip("->"))
           {
-            result =
-              (!isFunctionReturnType || l == line()) &&
-              // an lambda-expression would allow only arg names
-              // '(x,y)->..', while a lambda-type can have arbitrary types
-              // '(list bool, io.file.buffer) -> bool'.
-              (allowTypeThatIsNotExpression ||
-               f2.skipBracketTermWithNLs(PARENS,
-                                         () -> f2.current() == Token.t_rparen || f2.skipArgNamesOpt())) &&
-              skipType();
+            result = (!isFunctionReturnType || l == line()) && skipType();
           }
         else
           {

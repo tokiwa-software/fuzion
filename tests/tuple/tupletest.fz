@@ -25,14 +25,13 @@
 
 tupletest is
 
-  exit_code := mut 0
 
   chck (b bool, msg String) unit =>
     if b
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
-      exit_code <- 1
+      _ := set_exit_code 1
 
   p(s Any) is say s
 
@@ -286,4 +285,4 @@ tupletest is
 # (_,t15a2,_) := (01, true, 23); // 28. should flag an error, duplicate declaration
 # (_,_,t15a3) := (01, true, 23); // 28. should flag an error, duplicate declaration
 
-  exit exit_code.get
+  exit

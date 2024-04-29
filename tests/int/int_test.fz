@@ -25,14 +25,13 @@
 
 int_test is
 
-  exit_code := mut 0
 
   chck (b bool, msg String) unit =>
     if b
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
-      exit_code <- 1
+      _ := set_exit_code 1
 
 
   # test basic int operations with small numbers
@@ -120,4 +119,4 @@ int_test is
   chck ((u64 3) .as_int = int 3 ) "i64.as_int"
 
 
-  exit exit_code.get
+  exit

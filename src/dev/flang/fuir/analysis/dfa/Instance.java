@@ -212,7 +212,7 @@ public class Instance extends Value implements Comparable<Instance>
       {
         if (dfa._reportResults)
           {
-            DfaErrors.readingUninitializedField(dfa._fuir.codeAtAsPos(site),
+            DfaErrors.readingUninitializedField(dfa._fuir.sitePos(site),
                                                 dfa._fuir.clazzAsString(field),
                                                 dfa._fuir.clazzAsString(_clazz) + (_isBoxed ? " Boxed!" : ""),
                                                 why);
@@ -242,7 +242,7 @@ public class Instance extends Value implements Comparable<Instance>
    */
   public String toString()
   {
-    return _dfa._fuir.clazzAsString(_clazz) + "@" + _dfa._fuir.codeAtAsPos(_site);
+    return _dfa._fuir.clazzAsString(_clazz) + "@" + _dfa._fuir.sitePos(_site);
   }
 
 }

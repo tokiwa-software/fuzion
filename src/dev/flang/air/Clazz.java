@@ -2322,6 +2322,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     var f = feature();
     switch (f.kind())
       {
+      case Abstract   : // tricky: abstract may have precondition that uses outer ref
       case Intrinsic  :
       case Routine    :
         {
@@ -2458,7 +2459,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
            )
       {
         var f = oc.feature();
-        var inh2 = oc.feature().tryFindInheritanceChain(o);
+        var inh2 = f.tryFindInheritanceChain(o);
         if (CHECKS) check
           (Errors.any() || inh2 != null);
         if (inh2 != null)
@@ -2467,7 +2468,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
             t1 = t1.applyTypeParsLocally(oc._type, select);
             if (inh2.size() > 0)
               {
-                o = oc.feature();
+                o = f;
               }
           }
         t1 = t1.replace_this_type_by_actual_outer(oc._type);
@@ -2488,7 +2489,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (t != null,
        Errors.any() || t != Types.t_ERROR,
-       pos != null);
+       pos != null,
+       !t.isOpenGeneric());
 
     return handDown(t, -1, inh, pos);
   }

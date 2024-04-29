@@ -162,6 +162,11 @@ public class Block extends AbstractBlock
 
   /*-----------------------------  methods  -----------------------------*/
 
+  @Override
+  public UnresolvedType asParsedType()
+  {
+    return _expressions.size() == 1 ? _expressions.getFirst().asParsedType() : null;
+  }
 
   /**
    * The sourcecode position of this expression, used for error messages.

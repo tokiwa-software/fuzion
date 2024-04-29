@@ -25,13 +25,12 @@
 
 test_type_of is
 
-  exit_code := mut 0
 
   chck(b bool, msg String) =>
     s := if b
       "PASSED: "
     else
-      exit_code <- 1
+      _ := set_exit_code 1
       "FAILED: "
     say (s + msg)
 
@@ -97,4 +96,4 @@ test_type_of is
   chck_cmp $(type_of_lazy ()->"bal"                         ) "Type of 'String'"
   chck_cmp $(type_of_lazy ()->(panic "***")                 ) "Type of 'void'"
 
-  exit exit_code.get
+  exit

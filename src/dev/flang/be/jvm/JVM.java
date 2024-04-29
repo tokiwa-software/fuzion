@@ -458,10 +458,10 @@ should be avoided as much as possible.
         switch (k)
           {
           case Intrinsic    :
-          case Routine      : jvm.code(cl); break;
+          case Routine      :
+          case Abstract     : jvm.code(cl); break;
           case Choice       : jvm._types._choices.createCode(cl); break;
           case Field        : break;
-          case Abstract     : break;
           case Native       : Errors.warning("JVM backend cannot compile native " + jvm._fuir.clazzAsString(cl)); break;
           default           : throw new Error ("Unexpected feature kind: " + k);
           };
@@ -1032,7 +1032,7 @@ should be avoided as much as possible.
   {
     if (TRACE)
       {
-        var p = _fuir.codeAtAsPos(s);
+        var p = _fuir.sitePos(s);
         var msg = "IN " + _fuir.siteAsString(s) + ": " + _fuir.codeAtAsString(s) +
           (p == null ? "" : " " + p.show());
         return callRuntimeTrace(msg);
