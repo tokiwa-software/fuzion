@@ -61,6 +61,8 @@ import java.util.stream.Collectors;
 
 import dev.flang.fuir.FUIR;
 
+import static dev.flang.ir.IR.NO_SITE;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
@@ -902,7 +904,7 @@ public class Intrinsics extends ANY
         {
           var oc   = executor.fuir().clazzArgClazz(innerClazz, 0);
           var call = executor.fuir().lookupCall(oc);
-          var t = new Thread(() -> executor.callOnInstance(call, new Instance(call), args.get(1), new List<>(), false));
+          var t = new Thread(() -> executor.callOnInstance(NO_SITE, call, new Instance(call), args.get(1), new List<>(), false));
           t.setDaemon(true);
           t.start();
           return new i64Value(_startedThreads_.add(t));
@@ -1515,7 +1517,7 @@ public class Intrinsics extends ANY
               var oc   = executor.fuir().clazzActualGeneric(innerClazz, 0);
               var call = executor.fuir().lookupCall(oc);
               try {
-                var ignore = executor.callOnInstance(call, new Instance(call), args.get(1), new List<>(), false);
+                var ignore = executor.callOnInstance(NO_SITE, call, new Instance(call), args.get(1), new List<>(), false);
                 return new boolValue(true);
               } catch (Abort a) {
                 if (a._effect == cl)

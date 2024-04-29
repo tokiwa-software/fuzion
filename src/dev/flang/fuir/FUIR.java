@@ -1081,7 +1081,7 @@ hw25 is
    * @param ix the index of the pre- or post-condition, 0 for the first
    * condition
    *
-   * @return a code id referring to cl's pre- or post-condition, -1 if cl does
+   * @return a site referring to cl's pre- or post-condition, NO_SITE if cl does
    * not have a pre- or post-condition with the given index
    */
   public int clazzContract(int cl, ContractKind ck, int ix)
@@ -1112,7 +1112,7 @@ hw25 is
           }
         i++;
       }
-    var res = -1;
+    var res = NO_SITE;
     if (cond != null && i < cond.size())
       {
         // create 64-bit key from cl, ck and ix as follows:
@@ -1469,7 +1469,8 @@ hw25 is
   public ExprKind codeAt(int s)
   {
     if (PRECONDITIONS) require
-      (s >= SITE_BASE, withinCode(s));
+      (s >= SITE_BASE,
+       withinCode(s));
 
     ExprKind result;
     var e = getExpr(s);
@@ -1483,7 +1484,7 @@ hw25 is
       }
     if (result == null)
       {
-        Errors.fatal(codeAtAsPos(s),
+        Errors.fatal(sitePos(s),
                      "Expr not supported in FUIR.codeAt", "Expression class: " + e.getClass());
         result = ExprKind.Current; // keep javac from complaining.
       }
@@ -1730,7 +1731,7 @@ hw25 is
         else
           {
             throw new Error("Unexpected expression in accessedClazzesDynamic, must be ExprKind.Call or ExprKind.Assign, is " +
-                            codeAt(s) + " " + e.getClass() + " at " + codeAtAsPos(s).show());
+                            codeAt(s) + " " + e.getClass() + " at " + sitePos(s).show());
           }
         var found = new TreeSet<Integer>();
         var result = new List<Integer>();
@@ -2198,7 +2199,7 @@ hw25 is
 
 
   /**
-   * Helper for dumpCode and codeAtAsPos to create a label for given code block.
+   * Helper for dumpCode and sitePos to create a label for given code block.
    *
    * @param c a code block;
    *
@@ -2265,10 +2266,10 @@ hw25 is
    *
    * @return the source code position or null if not available.
    */
-  public SourcePosition codeAtAsPos(int s)
+  public SourcePosition sitePos(int s)
   {
     if (PRECONDITIONS) require
-      (s >= 0,
+      (s == NO_SITE || s >= SITE_BASE,
        s == NO_SITE || withinCode(s));
 
     SourcePosition result = SourcePosition.notAvailable;
@@ -2399,7 +2400,7 @@ hw25 is
   private int codeIndex2(int si, int s, int delta)
   {
     check
-      (si >= 0 && s >= 0); // this code uses negative results if site was not found yet, so better make sure a site is never negative!
+      (si >= SITE_BASE && s >= SITE_BASE); // this code uses negative results if site was not found yet, so better make sure a site is never negative!
 
     if (si == s)
       {
@@ -2557,7 +2558,7 @@ hw25 is
    */
   public boolean hasPrecondition(int cl)
   {
-    return clazzContract(cl, FUIR.ContractKind.Pre, 0) != -1;
+    return clazzContract(cl, FUIR.ContractKind.Pre, 0) != NO_SITE;
   }
 
 

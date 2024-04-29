@@ -130,7 +130,7 @@ public class DFA extends ANY
                         !_mir.fieldIsOuterRef(af) &&
                         !giveUpDueToControlFlowNYI)
                       {
-                        FeErrors.fieldNotInitialized(_mir, _mir.codeAtAsPos(s), af);
+                        FeErrors.fieldNotInitialized(_mir, _mir.sitePos(s), af);
                       }
                   }
                 lastWasCurrent = false;
