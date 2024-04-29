@@ -899,7 +899,7 @@ formArgsOpt : formArgs
 
 
   /**
-   * Parse optional formal argument list. Result is empty List in case no formArgs is found.
+   * Parse optional formal argument list. Result is true in case no formArgs is found.
    */
   boolean isEmptyFormArgs()
   {
