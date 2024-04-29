@@ -17,11 +17,26 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test Makefile
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test Makefile to be included for fe tests
+#  This is used e.g. for tests that do not fully work yet.
 #
 # -----------------------------------------------------------------------
 
-override NAME = mix_inheritance_and_outer
-include ../fe.mk # NYI: BUG see #88
+# expected variables
+#
+#  NAME -- the name of the main feature to be tested
+#  FUZION -- the fz command
+
+FUZION_OPTIONS ?=
+FUZION = ../../bin/fz $(FUZION_OPTIONS)
+
+all: jvm c int
+
+int:
+	$(FUZION) -frontend-only $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
+
+jvm:
+	$(FUZION) -frontend-only $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
+
+c:
+	$(FUZION) -frontend-only $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
