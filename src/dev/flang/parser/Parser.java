@@ -1731,12 +1731,12 @@ operatorExpr  : opExpr
   Expr operatorExpr()
   {
     Expr result = opExpr();
-    SourcePosition pos = tokenSourcePos();
-    var f0 = fork();
-    if (f0.skip(Token.t_question))
+    if (current() == Token.t_question)
       {
+        SourcePosition pos = tokenSourcePos();
         var i = new Indentation();
         skip(Token.t_question);
+        var f0 = fork();
         if (f0.isCasesAndNotExpr())
           {
             result = new Match(pos, result, casesBars(i));
