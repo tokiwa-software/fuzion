@@ -232,7 +232,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      *
      * @param newcl the clazz id of the new choice type of the tagged value
      *
-     * @param tagNum the number of the of the choice types's variant value is
+     * @param tagNum the number of the choice types's variant value is
      * tagged as
      */
     public abstract Pair<VALUE, RESULT> tag(int s, VALUE value, int newcl, int tagNum);
