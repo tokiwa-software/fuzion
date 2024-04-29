@@ -34,6 +34,7 @@ import java.util.Optional;
 import java.util.TreeSet;
 
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import dev.flang.util.Callable;
@@ -279,6 +280,23 @@ public class Lexer extends SourceFile
       .sorted((t1, t2) -> t1.keyword().compareTo(t2.keyword()))
       .toArray(Token[]::new);
 
+    /**
+     * maximum length of the keywords.
+     */
+    public static int _maxKeywordLength = Stream.of(_keywords)
+      .mapToInt(k -> k.keyword().length())
+      .max()
+      .orElseThrow();
+
+    /**
+     * Array of sorted arrays of keywords of equal length.  Used to reduce
+     * effort to find keyword by checking only those with a correct length.
+     */
+    public static Token[][] _keywordsOfLength = IntStream.range(0, _maxKeywordLength+1)
+    .mapToObj(i -> Stream.of(_keywords)
+              .filter(k -> k.keyword().length() == i)
+              .toArray(Token[]::new))
+      .toArray(Token[][]::new);
 
     /**
      * String representation for debugging.
@@ -732,9 +750,43 @@ public class Lexer extends SourceFile
    */
   public boolean ignoredTokenAfter()
   {
+    // this is performance-relevant, so we provide a fast path if this can be
+    // decided from the ASCII value of the current code point:
+    var p = curCodePoint();
+    if (p <= 0x7f)
+      {
+        var k = _asciiKind[p];
+        switch (k)
+          {
+          case K_OP      :
+          case K_COMMA   :
+          case K_LPAREN  :
+          case K_RPAREN  :
+          case K_LBRACE  :
+          case K_RBRACE  :
+          case K_LCROCH  :
+          case K_RCROCH  :
+          case K_SEMI    :
+          case K_DIGIT   :
+          case K_LETTER  :
+          case K_GRAVE   :
+          case K_DQUOTE  :
+          case K_SQUOTE  :
+          case K_BACKSL  :
+          case K_NUMERIC : return false;   // fast-path for common positive cases
+          case K_WS      : return true;    // fast path for common negative cases
+          case K_UNKNOWN :
+          case K_SLASH   :
+          case K_SHARP   :
+          case K_EOF     :
+          case K_ERROR   : break;  // comments and special cases, use slow path
+          default        : throw new Error("unknown case in Lexer.ignoredTokenAfter for " + k + "!");
+          }
+      }
+    // slow path: fork lexer and check using `ignore()`:
     var f = new Lexer(this);
     f.nextRaw();
-    return ignore(f.currentNoLimit());
+    return ignore(f._curToken);
   }
 
 
@@ -751,7 +803,7 @@ public class Lexer extends SourceFile
   int setMinIndent(int startPos)
   {
     int result = _minIndentStartPos;
-    _minIndent = startPos >= 0 ? codePointInLine(startPos) : -1;
+    _minIndent = startPos >= 0 ? codePointIndentation(startPos) : -1;
     _minIndentStartPos = startPos;
 
     return result;
@@ -984,7 +1036,7 @@ public class Lexer extends SourceFile
     _lastTokenEndPos = tokenEndPos();
     _ignoredTokenBefore = false;
     nextRaw();
-    while (ignore(currentNoLimit()))
+    while (ignore(_curToken))
       {
         _ignoredTokenBefore = true;
         nextRaw();
@@ -1015,18 +1067,18 @@ public class Lexer extends SourceFile
     int l = line();
     int p = _tokenPos;
     return
-      t == Token.t_eof                                     ? t                        :
-      sameLine  >= 0 && l != sameLine                      ? Token.t_lineLimit        :
-      p > endAtSpace && ignoredTokenBefore()               ? Token.t_spaceLimit       :
-      p == _minIndentStartPos                              ? t                        :
-      minIndent >= 0 && codePointInLine(p, l) <= minIndent ? Token.t_indentationLimit :
+      t == Token.t_eof                                       ? t                        :
+      sameLine  >= 0 && l != sameLine                        ? Token.t_lineLimit        :
+      p > endAtSpace && ignoredTokenBefore()                 ? Token.t_spaceLimit       :
+      p == _minIndentStartPos                                ? t                        :
+      minIndent >= 0 && codePointIndentation(p) <= minIndent ? Token.t_indentationLimit :
       endAtColon                  &&
       _curToken == Token.t_op     &&
-      tokenAsString().equals(":")                          ? Token.t_colonLimit       :
+      tokenAsString().equals(":")                            ? Token.t_colonLimit       :
       endAtBar                    &&
       _curToken == Token.t_op     &&
-      tokenAsString().equals("|")                          ? Token.t_barLimit
-                                                           : _curToken;
+      tokenAsString().equals("|")                            ? Token.t_barLimit
+                                                             : _curToken;
   }
 
 
@@ -1066,7 +1118,7 @@ public class Lexer extends SourceFile
    */
   Token currentNoLimit()
   {
-    return current(-1, -1, Integer.MAX_VALUE, false, false);
+    return _curToken;
   }
 
 
@@ -1266,8 +1318,8 @@ A code point sharp 0x023 `#` that is not part of an operator starts a comment th
               boolean SHARP_COMMENT_ONLY_IF_IN_COL_1 = false;
               token =
                 !SHARP_COMMENT_ONLY_IF_IN_COL_1 ||
-                codePointInLine(_tokenPos) == 1      ? skipUntilEOL() // comment until end of line
-                                                   : skipOp(Token.t_op);
+                codePointIndentation(_tokenPos) == 1 ? skipUntilEOL() // comment until end of line
+                                                     : skipOp(Token.t_op);
               break;
             }
           /**
@@ -1542,25 +1594,32 @@ A xref:fuzion_keyword[Fuzion keyword] cannot be used as a Fuzion identifier.
     */
 
     Token result = Token.t_ident;
-    // perform binary search in Token.keywords array:
-    int l = 0;
-    int r = Token._keywords.length-1;
-    while (l <= r)
+    var s = tokenPos();
+    var e = tokenEndPos();
+    var len = e - s;
+    if (len <= Token._maxKeywordLength)
       {
-        int m = (l + r) / 2;
-        Token t = Token._keywords[m];
-        int c = compareToString(tokenPos(), tokenEndPos(), t._keyword);
-        if (c == 0)
+        var a = Token._keywordsOfLength[len];
+        // perform binary search in Token.keywords array:
+        int l = 0;
+        int r = a.length-1;
+        while (l <= r)
           {
-            result = t;
-          }
-        if (c <= 0)
-          {
-            r = m - 1;
-          }
-        if (c >= 0)
-          {
-            l = m + 1;
+            int m = (l + r) / 2;
+            Token t = a[m];
+            int c = compareToString(s, e, t._keyword);
+            if (c == 0)
+              {
+                result = t;
+              }
+            if (c <= 0)
+              {
+                r = m - 1;
+              }
+            if (c >= 0)
+              {
+                l = m + 1;
+              }
           }
       }
     return result;
@@ -3032,7 +3091,7 @@ PIPE        : "|"
      */
     int column(Optional<Integer> pos)
     {
-      return codePointInLine(getPos(pos));
+      return codePointIndentation(getPos(pos));
     }
 
 

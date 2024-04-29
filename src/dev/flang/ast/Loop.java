@@ -427,9 +427,11 @@ public class Loop extends ANY
         var readLastIndexVar0 = new Call(p, lastIndexVar.featureName().baseName());
         var readLastIndexVar1 = new Call(p, lastIndexVar.featureName().baseName());
         var readLastIndexVar2 = new Call(p, lastIndexVar.featureName().baseName());
+        var readLastIndexVar3 = new Call(p, lastIndexVar.featureName().baseName());
         _elseBlock0   = Block.fromExpr(readLastIndexVar0);
         _elseBlock1   = Block.fromExpr(readLastIndexVar1);
-        _successBlock = Block.fromExpr(readLastIndexVar2);
+        _elseBlock2   = Block.fromExpr(readLastIndexVar2);
+        _successBlock = Block.fromExpr(readLastIndexVar3);
         result = true;
       }
     else if (booleanAsImplicitResult(whileCond, untilCond))
@@ -446,7 +448,7 @@ public class Loop extends ANY
           {
             var e0 = Block.fromExpr(_elseBlock0);
             var e1 = Block.fromExpr(_elseBlock1);
-            var e2 = Block.fromExpr(_elseBlock1);
+            var e2 = Block.fromExpr(_elseBlock2);
             e0._expressions.add(BoolConst.FALSE);
             e1._expressions.add(BoolConst.FALSE);
             e2._expressions.add(BoolConst.FALSE);

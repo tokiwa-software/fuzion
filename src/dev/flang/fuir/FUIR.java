@@ -2269,13 +2269,18 @@ hw25 is
   public SourcePosition sitePos(int s)
   {
     if (PRECONDITIONS) require
-      (s >= SITE_BASE,
-       withinCode(s));
+      (s == NO_SITE || s >= SITE_BASE,
+       s == NO_SITE || withinCode(s));
 
-    var e = getExpr(s);
-    return (e instanceof Expr expr) ? expr.pos() :
-           (e instanceof Clazz z) ? z._type.declarationPos()  /* implicit assignment to argument field */
-                                  : null;
+    SourcePosition result = SourcePosition.notAvailable;
+    if (s != NO_SITE)
+      {
+        var e = getExpr(s);
+        result = (e instanceof Expr expr) ? expr.pos() :
+                 (e instanceof Clazz z)   ? z._type.declarationPos()  /* implicit assignment to argument field */
+                                          : null;
+      }
+    return result;
   }
 
 
@@ -2802,93 +2807,12 @@ hw25 is
 
 
   /**
-   * The java class name of a generated class. e.g. java/lang/String
-   *
-   * special cases: bool, i8, i16, u16, i32, i64, f32, f64
-   *
-   * @param cl
-   */
-  // NYI: cleanup remove this HACK once
-  // fuzion.java.array_get, fuzion.java.get_field0 and get_static_field0
-  // pass down signature.
-  public String javaClassName(int cl)
-  {
-    if (PRECONDITIONS)
-      require(cl >= 0);
-
-    var qn = clazz(cl)._type
-      .feature()
-      .qualifiedName();
-
-    if (CHECKS) check
-      (qn.startsWith("Java.java")
-      || qn.equals("bool")
-      || qn.equals("i8")
-      || qn.equals("i16")
-      || qn.equals("u16")
-      || qn.equals("i32")
-      || qn.equals("i64")
-      || qn.equals("f32")
-      || qn.equals("f64")
-      );
-
-    return qn.startsWith("Java.")
-      ? qn
-          .substring(5)
-          .replace(".", "/")
-          // NYI correct demangling
-          .replace("__j", "")
-      : qn;
-  }
-
-
-  /**
    * @return If the expression has only been found to result in void.
    */
   public boolean alwaysResultsInVoid(int s)
   {
     return false;
   }
-
-
-  /**
-   * Get the Java signature string for a given type
-   *
-   * @param cl the type
-   *
-   * @return the signature, e.g., "V"
-   */
-  // NYI: cleanup remove this HACK once
-  // fuzion.java.array_get, fuzion.java.get_field0 and get_static_field0
-  // pass down signature.
-  public String javaSignature(int cl)
-  {
-    switch (getSpecialClazz(cl))
-      {
-      case c_bool :
-        return "Z";
-      case c_i8 :
-        return "B";
-      case c_i16 :
-        return "S";
-      case c_u16 :
-        return "C";
-      case c_i32 :
-        return "I";
-      case c_i64 :
-        return "J";
-      case c_f32 :
-        return "F";
-      case c_f64 :
-        return "D";
-      case c_NOT_FOUND :
-        // NYI what about arrays?
-        return "L" + javaClassName(cl) + ";";
-      default:
-        throw new UnsupportedOperationException("Unexpected case: " + getSpecialClazz(cl));
-      }
-  }
-
 
 
   /**
@@ -2927,6 +2851,16 @@ hw25 is
   public int clazzAddress()
   {
     return Clazzes.c_address._idInFUIR;
+  }
+
+
+  /**
+   * Get the position where the clazz is declared
+   * in the source code.
+   */
+  public SourcePosition declarationPos(int cl)
+  {
+    return clazz(cl)._type.declarationPos();
   }
 
 

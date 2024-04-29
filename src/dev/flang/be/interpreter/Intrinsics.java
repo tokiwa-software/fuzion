@@ -237,7 +237,7 @@ public class Intrinsics extends ANY
       }
     else
       {
-        Errors.fatal(SourcePosition.notAvailable,
+        Errors.fatal(executor.fuir().declarationPos(innerClazz),
                      "Intrinsic feature not supported",
                      "Missing intrinsic feature: " + in);
         result = (args) -> Value.NO_VALUE;
@@ -780,7 +780,7 @@ public class Intrinsics extends ANY
     putUnsafe("fuzion.java.array_to_java_object0", (executor, innerClazz) -> args ->
         {
           var argz = args.get(1);
-          var sac = executor.fuir().clazzArgClazz(innerClazz, executor.fuir().clazzArgCount(innerClazz) - 1);
+          var sac = executor.fuir().clazzArgClazz(innerClazz, 0);
           var argzData = Interpreter.getField(executor.fuir().clazz_fuzionSysArray_u8_data(), sac, argz, false);
           var arrA = argzData.arrayData();
           var res = arrA._array;
@@ -790,7 +790,7 @@ public class Intrinsics extends ANY
     putUnsafe("fuzion.java.string_to_java_object0", (executor, innerClazz) -> args ->
         {
           var argz = args.get(1);
-          var sac = executor.fuir().clazzArgClazz(innerClazz, executor.fuir().clazzArgCount(innerClazz) - 1);
+          var sac = executor.fuir().clazzArgClazz(innerClazz, 0);
           var argzData = Interpreter.getField(executor.fuir().clazz_fuzionSysArray_u8_data(), sac, argz, false);
           var str = utf8ByteArrayDataToString(argzData);
           var resultClazz = executor.fuir().clazzResultClazz(innerClazz);

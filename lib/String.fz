@@ -445,7 +445,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
         skip := idx + substring.byte_length
         s := String.from_bytes (utf8.drop skip)
 
-        s.find_last substring (skip + (found.get 0))
+        s.find_last substring (skip + (found.or_else 0))
 
 
   # replace all occurrences of old by new
@@ -737,12 +737,12 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # convert this string to upper case
   public upper_case String =>
-    String.from_codepoints (as_codepoints.map (c -> character_encodings.unicode.mappings.upper_case[c.val].get c))
+    String.from_codepoints (as_codepoints.map (c -> character_encodings.unicode.mappings.upper_case[c.val].or_else c))
 
 
   # convert this string to lower case
   public lower_case String =>
-    String.from_codepoints (as_codepoints.map (c -> character_encodings.unicode.mappings.lower_case[c.val].get c))
+    String.from_codepoints (as_codepoints.map (c -> character_encodings.unicode.mappings.lower_case[c.val].or_else c))
 
 
   # Does this String consist of nothing but ascii codepoints?

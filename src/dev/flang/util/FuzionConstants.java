@@ -47,6 +47,13 @@ public class FuzionConstants extends ANY
    */
   public static final String NO_VALUE_STRING = "**no value**";
 
+
+  /**
+   * String used in the dummy ParsedName.
+   */
+  public static final String DUMMY_NAME_STRING = "## dummy name ##";
+
+
   /**
    * Names of Java properties accepted by fz command:
    */
