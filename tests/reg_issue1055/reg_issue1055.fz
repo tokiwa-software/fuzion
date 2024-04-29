@@ -1,0 +1,87 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test
+#
+# -----------------------------------------------------------------------
+
+
+# failure in findInheritanceChain when trying to call feature of instance on type feature
+# ===
+#
+#
+# `fract` is a feature that needs an instance. This should result in a proper error message:
+# ```
+# ex =>
+#
+#   c(T type : float T) is
+#     say T.type.fract
+#
+#   c f32
+# ```
+# ```
+# error 1: java.lang.Error: ensure-condition failed: dev.flang.ast.AbstractFeature:findInheritanceChain:1264
+# 	at dev.flang.util.ANY.ensure(ANY.java:236)
+# 	at dev.flang.ast.AbstractFeature.findInheritanceChain(AbstractFeature.java:1264)
+# 	at dev.flang.air.Clazz.findRedefinition(Clazz.java:953)
+# 	at dev.flang.air.Clazz.lookup(Clazz.java:1120)
+# 	at dev.flang.air.Clazzes.findClazzes(Clazzes.java:888)
+# 	at dev.flang.air.Clazz$1.action(Clazz.java:1397)
+# 	at dev.flang.ast.Stmnt.visitStatements(Stmnt.java:72)
+# 	at dev.flang.ast.AbstractCall.visitStatements(AbstractCall.java:123)
+# 	at dev.flang.ast.Box.visitStatements(Box.java:157)
+# 	at dev.flang.ast.AbstractCall.visitStatements(AbstractCall.java:117)
+# 	at dev.flang.ast.AbstractBlock.visitStatements(AbstractBlock.java:101)
+# 	at dev.flang.ast.AbstractFeature.visitStatements(AbstractFeature.java:1356)
+# 	at dev.flang.air.Clazz.inspectCode(Clazz.java:1347)
+# 	at dev.flang.air.Clazz.findAllClasses(Clazz.java:1391)
+# 	at dev.flang.air.Clazzes.findAllClasses(Clazzes.java:456)
+# 	at dev.flang.fuir.FUIR.<init>(FUIR.java:196)
+# 	at dev.flang.opt.Optimizer.fuir(Optimizer.java:73)
+# 	at dev.flang.tools.Fuzion$Backend.processFrontEnd(Fuzion.java:367)
+# 	at dev.flang.tools.Fuzion.lambda$parseArgsForBackend$3(Fuzion.java:832)
+# 	at dev.flang.tools.Tool.lambda$run$0(Tool.java:154)
+# 	at dev.flang.util.Errors.runAndExit(Errors.java:704)
+# 	at dev.flang.tools.Tool.run(Tool.java:154)
+# 	at dev.flang.tools.Fuzion.main(Fuzion.java:481)
+# ```
+#
+# another flavor:
+# `c` is never instantiated so `self_referential_feature` is also never instantiated
+# but via `c.type.a_type_feature` I can call `some_feat_requiring_instance` which is supposed to return an instance
+# of `self_referential_feature`
+# ```
+#   self_referential_feature(T type:self_referential_feature T) is
+#     some_feat_requiring_instance self_referential_feature.this.type is
+#       self_referential_feature.this
+#     type.a_type_feature =>
+#       self_referential_feature.this.type.some_feat_requiring_instance
+#
+#   c : self_referential_feature c is
+#
+#   say c.type.a_type_feature
+# ```
+
+
+reg_issue1055 =>
+
+  c(T type : float T) is
+    say T.type.fract
+
+  c f32

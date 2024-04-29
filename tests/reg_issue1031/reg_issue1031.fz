@@ -1,0 +1,78 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test
+#
+# -----------------------------------------------------------------------
+
+
+# Cyclic value field error that does not seem to be justified
+# ===
+#
+#
+# See this example:
+# ```
+#  > cat test_this_type_in_genericsB.fz
+# test_this_type_in_generics is
+#
+#   a is
+#     f1(b bool) option a.this.type is
+#       if b then
+#         a.this
+#       else
+#         nil
+#
+#   say (a.f1 true)
+#  > ./build/bin/fz  test_this_type_in_genericsB.fz
+#
+# /home/fridi/fuzion/work/test_this_type_in_genericsB.fz:4:5: error 1: Cyclic field nesting is not permitted
+#     f1(b bool) option a.this.type is
+# ----^
+# Cyclic value field nesting would result in infinitely large objects.
+# Cycle of nesting found during clazz layout:
+# $FUZION/lib/option.fz:30:1:
+# option(T type) :
+# ^
+#
+# To solve this, you could change one or several of the fields involved to a reference type by adding 'ref' before the type.
+#
+#
+# <built-in>: error 2: Cyclic field nesting is not permitted
+# Cyclic value field nesting would result in infinitely large objects.
+# Cycle of nesting found during clazz layout:
+# $FUZION/lib/choice.fz:106:1:
+# choice(CHOICE_ELEMENT_TYPE type...) is
+# ^
+#
+# To solve this, you could change one or several of the fields involved to a reference type by adding 'ref' before the type.
+#
+# 2 errors.
+#
+# ```
+
+
+reg_issue1031 is
+  a is
+    f1(b bool) option a.this =>
+      if b then
+        a.this
+      else
+        nil
+
+  say (a.f1 true)
