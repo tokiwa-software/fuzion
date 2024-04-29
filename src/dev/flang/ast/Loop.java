@@ -300,8 +300,8 @@ public class Loop extends ANY
       }
 
     var formalArguments = new List<AbstractFeature>();
-    var initialActuals = new List<Actual>();
-    var nextActuals = new List<Actual>();
+    var initialActuals = new List<Expr>();
+    var nextActuals = new List<Expr>();
     initialArguments(formalArguments, initialActuals, nextActuals);
     var initialCall       = new Call(pos, null, loopName, initialActuals);
     var tailRecursiveCall = new Call(pos, null, loopName, nextActuals   );
@@ -517,8 +517,8 @@ public class Loop extends ANY
    * @param nextActuals will receive the actual arguments after nextIteration
    */
   private void initialArguments(List<AbstractFeature> formalArguments,
-                                List<Actual> initialActuals,
-                                List<Actual> nextActuals)
+                                List<Expr> initialActuals,
+                                List<Expr> nextActuals)
   {
     int i = -1;
     int iteratorCount = 0;
@@ -546,8 +546,8 @@ public class Loop extends ANY
                                            : new Impl(Impl.Kind.FieldActual));
         arg._isIndexVarUpdatedByLoop = true;
         formalArguments.add(arg);
-        initialActuals .add(new Actual(ia));
-        nextActuals    .add(new Actual(na));
+        initialActuals .add(ia);
+        nextActuals    .add(na);
         if (f._isLoopIterator)
           {
             var argList = new Feature(SourcePosition.notAvailable,
@@ -557,8 +557,8 @@ public class Loop extends ANY
                                       new Impl(Impl.Kind.FieldActual));
             formalArguments.add(argList);
             var listName = _rawLoopName + "list" + (iteratorCount++);
-            initialActuals.add(new Actual(new Call(p, new Call(p, listName + "cons"), "tail")));
-            nextActuals.add(new Actual(new Call(p, new Call(p, listName + "cons"), "tail")));
+            initialActuals.add(new Call(p, new Call(p, listName + "cons"), "tail"));
+            nextActuals.add(new Call(p, new Call(p, listName + "cons"), "tail"));
           }
       }
   }

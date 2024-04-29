@@ -536,7 +536,18 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * to be resolved with the context it is used in to be of
    * any use.
    */
-  public AbstractType asUnresolvedType()
+  public UnresolvedType asParsedType()
+  {
+    return null;
+  }
+
+
+  /**
+   * Return this expression as a simple name.  This is null by default except
+   * for calls that without an explicit target and without any actual arguments
+   * or select clause.
+   */
+  public ParsedName asParsedName()
   {
     return null;
   }
