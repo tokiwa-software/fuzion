@@ -574,7 +574,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
         var stack = new Stack<VALUE>();
         for (var si = s; !containsVoid(stack) && _fuir.withinCode(si); si = si + _fuir.codeSizeAt(si))
           {
-            s = si; // when exiting this loop, s will be the site of the last expression, while si no be within the code
+            s = si; // when exiting this loop, s will be the site of the last expression, while si will not be within the code
             l.add(_processor.expressionHeader(s));
             l.add(process(s, stack));
           }
