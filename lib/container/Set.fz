@@ -127,7 +127,7 @@ public Set(public E type : property.equatable) ref : Sequence E is
     (a ∪ b).size_option.val = a.size_option.val
 
 
-  # monoid of ps_set with infix ∪ operation.
+  # monoid of Set with infix ∪ operation.
   #
   # NYI: BUG: name clash with union
   public type.unionize : Monoid (container.Set E) is
