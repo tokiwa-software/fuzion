@@ -1003,7 +1003,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public AbstractType actualType(AbstractType t)
   {
     if (PRECONDITIONS) require
-      (!isGenericArgument());
+      (!isGenericArgument(),
+       !t.isOpenGeneric());
 
     return t.applyTypePars(this)
       .replace_this_type_by_actual_outer(this);
