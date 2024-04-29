@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 import dev.flang.util.ANY;
 import static dev.flang.util.Errors.*;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
@@ -1995,6 +1996,13 @@ public class AstErrors extends ANY
       "or                     : " + s(tf) + "\n" +
       "To solve this, rename one of the called features.");
   }
+
+  public static void qualifierExpectedForDotThis(SourcePosition pos, HasSourcePosition e)
+  {
+    error(pos, "Qualifier expected for "+code(".this")+" expression.",
+          "Found expression "+e.pos().show()+" where a simple qualifier " +  code("a.b.c") + " was expected");
+  }
+
 
 }
 

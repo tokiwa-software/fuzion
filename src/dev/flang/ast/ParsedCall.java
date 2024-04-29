@@ -213,11 +213,28 @@ public class ParsedCall extends Call
   @Override
   public ParsedName asParsedName()
   {
-    if (!_actuals.isEmpty() && _select == -1)
+    if (!_actuals.isEmpty() || _select != -1)
       {
         return null;
       }
     return _parsedName;
+  }
+
+
+  @Override
+  public List<ParsedName> asQualifier()
+  {
+    if (!_actuals.isEmpty() || _select != -1)
+      {
+        return null;
+      }
+    var t = target();
+    var l = t == null ? new List<ParsedName>() : t.asQualifier();
+    if (l != null)
+      {
+        l.add(_parsedName);
+      }
+    return l;
   }
 
 

@@ -553,6 +553,17 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   }
 
 
+  /**
+   * Return this expression as a simple qualifier. This is null by default
+   * except for calls without explicit target or one whose asQualifier() is not
+   * null and without any actual arguments or select clause.
+   */
+  public List<ParsedName> asQualifier()
+  {
+    return null;
+  }
+
+
   protected Expr addFieldForResult(Resolution res, AbstractFeature outer, AbstractType t)
   {
     var result = this;
