@@ -57,18 +57,6 @@ public class Parser extends Lexer
   }
 
 
-  /**
-   * Enum returned by isDotEnvOrTypePrefix and skipDotEnvOrType to
-   * indicate if .env or .type expression or something else was found.
-   */
-  static enum EnvOrType
-  {
-    env,
-    type,
-    none
-  }
-
-
   /*----------------------------  constants  ----------------------------*/
 
 
@@ -1329,10 +1317,10 @@ callList    : call ( COMMA callList
    */
   List<AbstractCall> callList()
   {
-    var result = new List<AbstractCall>(call(null));
+    var result = new List<AbstractCall>(pureCall(null));
     while (skipComma())
       {
-        result.add(call(null));
+        result.add(pureCall(null));
       }
     return result;
   }
@@ -1362,15 +1350,43 @@ callList    : call ( COMMA callList
 
 
   /**
-   * Parse call
+   * Parse pure call, i.e. a call that is really a call and not a.b.env or x.y.type.
    *
+   * @param target the target of the call or null if none.
+   */
+  Call pureCall(Call target)
+  {
+    return (Call) call(true, target);
+  }
+
+
+  /**
+   * Parse call, including `.env` and `.type` calls
+   *
+   * @param target the target of the call or null if none.
+   */
+  Expr call(Expr target)
+  {
+    return call(false, target);
+  }
+
+
+  /**
+   * Parse pure or non-pure call depending on `pure` argument.
+   *
+   * @param pure true iff `pureCall` is to be parsed, otherwise `call` is parsed.
+   *
+   * @param target the target of the call or null if none.
+   *
+pureCall    : name actuals pureCallTail
+            ;
 call        : name actuals callTail
             ;
 actuals     : actualArgs
             | dot NUM_LITERAL
             ;
    */
-  Call call(Expr target)
+  Expr call(boolean pure, Expr target)
   {
     SourcePosition pos = tokenSourcePos();
     var n = name();
@@ -1405,8 +1421,8 @@ actuals     : actualArgs
         var l = actualArgs();
         result = new ParsedCall(target, n, l);
       }
-    result = callTail(skippedDot, result);
-    return result;
+    return pure ? pureCallTail(skippedDot, result)
+                : callTail(    skippedDot, result);
   }
 
 
@@ -1446,33 +1462,67 @@ indexTail   : ":=" exprInLine
 
 
   /**
+   * Parse callTail and pureCallTail
+   *
+   * @param skippedDot true if a dot was already skipDot()ed.
+   *
+   * @param target the target of the call
+   *
+pureCallTail: indexCall pureCallTail
+            | dot call  pureCallTail
+            |
+            ;
+   */
+  Call pureCallTail(boolean skippedDot, Call target)
+  {
+    var result = target;
+    if (!skippedDot && !ignoredTokenBefore() && current() == Token.t_lcrochet)
+      {
+        result = pureCallTail(false, indexCall(result));
+      }
+    else if (skippedDot || skipDot())
+      {
+        result = pureCallTail(false, pureCall(result));
+      }
+    return result;
+  }
+
+
+  /**
    * Parse callTail
    *
    * @param skippedDot true if a dot was already skipDot()ed.
    *
    * @param target the target of the call
    *
-callTail    : indexCallOpt dotCallOpt
-            ;
-indexCallOpt: indexCall
+callTail    : indexCall  callTail
+            | dot call   callTail
+            | dot "env"  callTail
+            | dot "type" callTail
             |
-            ;
-dotCallOpt  : dotCall
-            |
-            ;
-dotCall     : dot call
             ;
    */
-  Call callTail(boolean skippedDot, Call target)
+  Expr callTail(boolean skippedDot, Expr target)
   {
-    var result = target;
+    Expr result = target;
     if (!skippedDot && !ignoredTokenBefore() && current() == Token.t_lcrochet)
       {
-        result = indexCall(result);
+        result = callTail(false, indexCall(result));
       }
-    if (skippedDot || skipDot())
+    else if (skippedDot || skipDot())
       {
-        result = call(result);
+        if (skip(Token.t_env))
+          {
+            result = callTail(false, new Env    (sourceRange(target.pos()), result.asParsedType()));
+          }
+        else if (skip(Token.t_type))
+          {
+            result = callTail(false, new DotType(sourceRange(target.pos()), result.asParsedType()));
+          }
+        else
+          {
+            result = call(result);
+          }
       }
     return result;
   }
@@ -1765,7 +1815,7 @@ operatorExpr  : opExpr
 opExpr      :     opTail
             | ops opTail
             | op
-            | dotCall
+            | dot call
             ;
    */
   Expr opExpr()
@@ -1787,7 +1837,7 @@ opExpr      :     opTail
        }
      else
        {
-         return Partial.dotCall(tokenSourcePos(), a->call(a));
+         return Partial.dotCall(tokenSourcePos(), a->pureCall(a));
        }
   }
 
@@ -1992,11 +2042,7 @@ addSemiElmts: SEMI semiSepElmts
   /**
    * Parse term
    *
-term        : simpleterm ( indexCall
-                         |
-                         )           ( dot call
-                                     |
-                                     )
+term        : simpleterm callTail
             ;
 simpleterm  : bracketTerm
             | stringTerm
@@ -2004,66 +2050,49 @@ simpleterm  : bracketTerm
             | match
             | loop
             | ifexpr
-            | dotEnv
-            | dotType
             | callOrFeatOrThis
             ;
    */
   Expr term()
   {
-    Expr result;
     int pos = tokenPos();
-    switch (isDotEnvOrTypePrefix())    // starts with name or '('
+    var result = switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
       {
-      case env : result = dotEnv(); break;
-      case type: result = dotType(); break;
-      case none:
-        switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
-          {
-          case t_lbrace    :
-          case t_lparen    :
-          case t_lcrochet  :         result = bracketTerm();                            break;
-          case t_numliteral: var l = skipNumLiteral();
+      case t_lbrace, t_lparen, t_lcrochet ->  bracketTerm();
+      case t_numliteral -> {
+                             var l = skipNumLiteral();
                              var m = l.mantissaValue();
                              var b = l.mantissaBase();
                              var d = l.mantissaDotAt();
                              var e = l.exponent();
                              var eb = l.exponentBase();
                              var o = l._originalString;
-                             result = new NumLiteral(sourceRange(pos), o, b, m, d, e, eb); break;
-          case t_match     :         result = match();                                  break;
-          case t_for       :
-          case t_variant   :
-          case t_while     :
-          case t_do        :         result = loop();                                   break;
-          case t_if        :         result = ifexpr();                                 break;
-          default          :
-            if (isStartedString(current()))
-              {
-                result = stringTerm(null, Optional.empty());
-              }
-            else
-              {
-                result = callOrFeatOrThis();
-                if (result == null)
-                  {
-                    syntaxError(pos, "term (lbrace, lparen, lcrochet, fun, string, integer, old, match, or name)", "term");
-                    result = Expr.ERROR_VALUE;
-                  }
-              }
-            break;
-          }
-        break;
-      default: throw new Error("unhandled switch case");
-      }
-    if (!ignoredTokenBefore() && current() == Token.t_lcrochet)
-      {
-        result = indexCall(result);
-      }
-    if (skipDot())
-      {
-        result = call(result);
-      }
+                             yield new NumLiteral(sourceRange(pos), o, b, m, d, e, eb);
+                           }
+      case t_match     -> match();
+      case t_for,
+           t_variant,
+           t_while,
+           t_do        -> loop();
+      case t_if        -> ifexpr();
+      default          -> {
+                            if (isStartedString(current()))
+                              {
+                                yield stringTerm(null, Optional.empty());
+                              }
+                            else
+                              {
+                                var res = callOrFeatOrThis();
+                                if (res == null)
+                                  {
+                                    syntaxError(pos, "term (lbrace, lparen, lcrochet, fun, string, integer, old, match, or name)", "term");
+                                    res = Expr.ERROR_VALUE;
+                                  }
+                                yield res;
+                              }
+                          }
+      };
+    result = callTail(false, result);
     result.setSourceRange(sourceRange(pos));
     return result;
   }
@@ -3163,44 +3192,6 @@ qualThis    : name ( dot name )* dot "this"
 
 
   /**
-   * Parse dotEnv
-   *
-   + NYI: This should be `dotEnv : expr dot "env"` and use
-   * `expr.asParsedType()`, then the grammar would be simpler and repeated
-   * parsing would be avoided.
-   *
-dotEnv      : typeInParens dot "env"
-            ;
-   */
-  Env dotEnv()
-  {
-    var p0 = tokenPos();
-    var t = typeInParens();
-    skipDot();
-    var pos = sourceRange(p0, tokenEndPos());
-    match(Token.t_env, "env");
-    return new Env(pos, t);
-  }
-
-
-  /**
-   * Parse dotType
-   *
-   + NYI: This should be `dotType : expr dotTypeSuffix` and use
-   * `expr.asParsedType()`, then the grammar would be simpler and repeated
-   * parsing would be avoided.
-   *
-dotType     : typeInParens dotTypeSuffx
-            ;
-   */
-  Expr dotType()
-  {
-    var t = typeInParens();
-    return dotTypeSuffx(t);
-  }
-
-
-  /**
    * Parse dotTypeSuffx
    *
 dotTypeSuffx: dot "type"
@@ -3212,53 +3203,6 @@ dotTypeSuffx: dot "type"
     matchOperator(".", "dotTypeSuffx");
     match(Token.t_type, "dotTypeSuffx");
     return new DotType(p, t);
-  }
-
-
-  /**
-   * Check if the current position starts an env.  Does not change the
-   * position of the parser.
-   *
-   * @return true iff the next token(s) start a env
-   */
-  EnvOrType isDotEnvOrTypePrefix()
-  {
-    return (isNamePrefix() || current() == Token.t_lparen) ? fork().skipDotEnvOrType()
-      : EnvOrType.none;
-  }
-
-
-  /**
-   * Check if the current position can be parsed as a dotEnv or dotType and skip
-   * it if this is the case.
-
-   * @return true iff a dotEnv or dotType was found and skipped, otherwise no
-   * dotEnv nor dotType was found and the parser/lexer is at an undefined
-   * position.
-   */
-  EnvOrType skipDotEnvOrType()
-  {
-    return
-      !(skipTypeInParens() && skipDot()) ? EnvOrType.none :
-      skip(Token.t_env )                 ? EnvOrType.env  :
-      skip(Token.t_type)                 ? EnvOrType.type
-                                         : EnvOrType.none;
-  }
-
-
-  /**
-   * Check if the current position can be parsed as a dotType and skip it if
-   * this is the case.
-
-   * @return true iff a dotType was found and skipped, otherwise no dotType was
-   * found and the parser/lexer is at an undefined position.
-   */
-  boolean skipDotType()
-  {
-    return
-      skipTypeInParens()
-      && skipDot()
-      && skip(Token.t_type);
   }
 
 
@@ -3747,24 +3691,6 @@ simpletype  : name typePars typeTail
 
 
   /**
-   * Check if the current position is a dot followed by "env" or "type".  Does
-   * not change the position of the parser.
-   *
-   * @return true iff the next token(s) is a dot followed by "env"
-   */
-  boolean isDotEnvOrType()
-  {
-    if (isDot())
-      {
-        var f = fork();
-        return f.skipDot() && (f.skip(Token.t_env ) ||
-                               f.skip(Token.t_type)    );
-      }
-    return false;
-  }
-
-
-  /**
    * Parse typeTail
    *
    * @param lhs the left hand side for this type that was already parsed, null
@@ -3777,7 +3703,7 @@ typeTail    : dot simpletype
   UnresolvedType typeTail(UnresolvedType lhs)
   {
     var result = lhs;
-    if (!isDotEnvOrType() && skipDot())
+    if (skipDot())
       {
         result = simpletype(lhs);
       }
@@ -3794,7 +3720,7 @@ typeTail    : dot simpletype
   boolean skipTypeTail()
   {
     return
-      isDotEnvOrType() || !skipDot() || skipSimpletype();
+      !skipDot() || skipSimpletype();
   }
 
 

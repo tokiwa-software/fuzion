@@ -1179,6 +1179,21 @@ public class Lexer extends SourceFile
 
 
   /**
+   * Obtain the given range pos.bytePos()..lastTokenEndPos() as a SourceRange object.
+   *
+   * @param pos a source position within this file, must be before lastTokenEndPos().
+   */
+  public SourceRange sourceRange(SourcePosition pos)
+  {
+    if (PRECONDITIONS) require
+      (pos != null,
+       Errors.any() || pos.bytePos() < lastTokenEndPos());
+
+    return sourceRange(pos.bytePos());
+  }
+
+
+  /**
    * Obtain the given range pos..lastTokenEndPos() as a SourceRange object.
    *
    * @param pos a byte position within this file, must be smaller than
