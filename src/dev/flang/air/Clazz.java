@@ -1925,8 +1925,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
     return _isInstantiated
       && (_checkingInstantiatedHeirs > 0
           || (isOuterInstantiated()
-            || isChoice()
-            || _outer.isRef() && _outer.hasInstantiatedHeirs()));
+              || isChoice()
+              || _outer.isRef() && _outer.hasInstantiatedHeirs()))
+
+      // type features are implicitly instantiated unit types:
+      || feature().isTypeFeature();
   }
 
 
