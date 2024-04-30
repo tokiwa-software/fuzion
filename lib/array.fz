@@ -289,7 +289,10 @@ module:public array(
     indices interval i32 => 0..length-1
 
     internal := fuzion.sys.internal_array_init T length
-    for x in indices do
+    # NYI: workaround for stack overflow when using .as_array,
+    # tail recursion in loop not yet optimized
+    # for x in indices do
+    indices.for_each x->
       internal[x] := init x
 
     array T internal unit unit unit
