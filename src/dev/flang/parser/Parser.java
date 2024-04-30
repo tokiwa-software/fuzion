@@ -882,7 +882,7 @@ formArgsOpt : formArgs
 
 
   /**
-   * Parse optional formal argument list. Result is empty List in case no formArgs is found.
+   * Parse optional formal argument list. Result is true in case no formArgs is found.
    */
   boolean isEmptyFormArgs()
   {
@@ -1499,6 +1499,7 @@ callTail    : indexCall  callTail
             | dot call   callTail
             | dot "env"  callTail
             | dot "type" callTail
+            | dot "this" callTail
             |
             ;
    */
@@ -1518,6 +1519,18 @@ callTail    : indexCall  callTail
         else if (skip(Token.t_type))
           {
             result = callTail(false, new DotType(sourceRange(target.pos()), result.asParsedType()));
+          }
+        else if (skip(Token.t_this))
+          {
+            var q = result.asQualifier();
+            if (q == null)
+              {
+                AstErrors.qualifierExpectedForDotThis(tokenSourcePos(), result);
+              }
+            else
+              {
+                result = callTail(false, new This(q));
+              }
           }
         else
           {
@@ -2177,7 +2190,7 @@ stringTermB : '}any chars&quot;'
       default          :
         return
           isStartedString(current())
-          || isNamePrefix()    // Matches call, qualThis and env
+          || isNamePrefix()      // Matches call
           || isAnonymousPrefix() // matches anonymous inner feature declaration
           ;
       }
@@ -3009,7 +3022,6 @@ destructrSet: "set" "(" argNames ")" ":=" exprInLine
    * Parse call or anonymous feature or this
    *
 callOrFeatOrThis  : anonymous
-                  | qualThisType
                   | plainLambda
                   | call
                   | universeCall
@@ -3019,37 +3031,10 @@ callOrFeatOrThis  : anonymous
   {
     return
       isAnonymousPrefix()           ? anonymous()      : // starts with value/ref/:/fun/name
-      isQualThisPrefix()            ? qualThisType()   : // "a.b.this" or "a.b.this.type", starts with name
       isPlainLambdaPrefix()         ? plainLambda()    : // x,y,z post result = x*y*z -> x*y*z
       isNamePrefix()                ? call(null)       : // starts with name
       current() == Token.t_universe ? universeCall()
                                     : null;
-  }
-
-
-  /**
-   * Parse qualThisType
-   *
-qualThisType: qualThis
-            | qualThis dotTypeSuffx
-            ;
-   */
-  Expr qualThisType()
-  {
-    Expr result;
-    var q = qualThis();
-    var f = fork();
-    if (f.skipDot() && f.skip(Token.t_type))
-      {
-        skipDot();
-        skip(Token.t_type);
-        result = new DotType(SourcePosition.range(q), new QualThisType(q));
-      }
-    else
-      {
-        result = new This(q);
-      }
-    return result;
   }
 
 
@@ -3112,82 +3097,6 @@ anonymous   : "ref"
   boolean isAnonymousPrefix()
   {
     return current() == Token.t_ref;
-  }
-
-
-  /**
-   * Parse qualThis
-   *
-   * @return non-empty list of names in the qualifier, excluding "this".
-   *
-qualThis    : name ( dot name )* dot "this"
-            ;
-   */
-  List<ParsedName> qualThis()
-  {
-    var q = new List<ParsedName>();
-    do
-      {
-        q.add(name());
-        if (!skipDot())
-          {
-            if (isFullStop())
-              {
-                syntaxError("'.' (not followed by white space)", "qualThis");
-              }
-            else
-              {
-                syntaxError("'.'", "qualThis");
-              }
-          }
-      }
-    while (!skip(Token.t_this));
-    return q;
-  }
-
-
-  /**
-   * Check if the current position starts a qualThis.  Does not change the
-   * position of the parser.
-   *
-   * @return true iff the next token(s) start a qualThis.
-   */
-  boolean isQualThisPrefix()
-  {
-    return isNamePrefix() && fork().skipQualThisPrefix();
-  }
-
-
-  /**
-   * Check if the current position starts a qualThis.
-   *
-   * @return true iff the next token(s) start a qualThis.
-   */
-  boolean skipQualThisPrefix()
-  {
-    boolean result = false;
-    while (!result && skipName() && skipDot())
-      {
-        result = skip(Token.t_this);
-      }
-    return result;
-  }
-
-
-  /**
-   * Check if the current position starts a qualThis and skip it.
-   *
-   * @return true iff the next token(s) is a qualThis, otherwise no qualThis was
-   * found and the parser/lexer is at an undefined position.
-   */
-  boolean skipQualThis()
-  {
-    var result = isQualThisPrefix();
-    if (result)
-      {
-        var ignore = qualThis();
-      }
-    return result;
   }
 
 
@@ -3439,29 +3348,20 @@ freeType    : name ":" type
   /**
    * Parse boundType
    *
-boundType   : qualThis
-            | onetype ( PIPE onetype ) *
+boundType   : onetype ( PIPE onetype ) *
             ;
    */
   UnresolvedType boundType()
   {
-    UnresolvedType result;
-    if (isQualThisPrefix())
+    var result = onetype();
+    if (isOperator('|'))
       {
-        result = new QualThisType(qualThis());
-      }
-    else
-      {
-        result = onetype();
-        if (isOperator('|'))
+        List<AbstractType> l = new List<>(result);
+        while (skip('|'))
           {
-            List<AbstractType> l = new List<>(result);
-            while (skip('|'))
-              {
-                l.add(onetype());
-              }
-            result = new ParsedType(result.pos(), "choice", l, null);
+            l.add(onetype());
           }
+        result = new ParsedType(result.pos(), "choice", l, null);
       }
     return result;
   }
@@ -3525,20 +3425,15 @@ boundType   : qualThis
   { // we forbid tuples like '(a,b)', '(a)', '()', but we allow lambdas '(a,b)->c' and choice
     // types '(a,b) | (d,e)'
 
-    boolean result = skipQualThis();
-    if (!result)
-      {
-        var hasForbiddenParentheses = !allowTypeInParentheses && !fork().skipOneType(isFunctionReturnType,
+    var hasForbiddenParentheses = !allowTypeInParentheses && !fork().skipOneType(isFunctionReturnType,
                                                                                      false);
-        var res = skipOneType(isFunctionReturnType, true);
-        while (res && skip('|'))
-          {
-            res = skipOneType(isFunctionReturnType, true);
-            hasForbiddenParentheses = false;
-          }
-        result = res && !hasForbiddenParentheses && (!skipColon() || skipType());
+    var res = skipOneType(isFunctionReturnType, true);
+    while (res && skip('|'))
+      {
+        res = skipOneType(isFunctionReturnType, true);
+        hasForbiddenParentheses = false;
       }
-    return result;
+    return res && !hasForbiddenParentheses && (!skipColon() || skipType());
   }
 
 
@@ -3697,6 +3592,7 @@ simpletype  : name typePars typeTail
    * if none.
    *
 typeTail    : dot simpletype
+            | dot "this"
             |
             ;
    */
@@ -3705,7 +3601,23 @@ typeTail    : dot simpletype
     var result = lhs;
     if (skipDot())
       {
-        result = simpletype(lhs);
+        if (skip(Token.t_this))
+          {
+            var qn = lhs.asQualifier();
+            if (qn == null)
+              {
+                AstErrors.qualifierExpectedForDotThis(sourceRange(lhs.pos()), lhs);
+                result = new ParsedType(tokenSourcePos(), Errors.ERROR_STRING, new List<>(), null);
+              }
+            else
+              {
+                result = new QualThisType(qn);
+              }
+          }
+        else
+          {
+            result = simpletype(lhs);
+          }
       }
     return result;
   }
@@ -3720,7 +3632,7 @@ typeTail    : dot simpletype
   boolean skipTypeTail()
   {
     return
-      !skipDot() || skipSimpletype();
+      !skipDot() || skip(Token.t_this) || skipSimpletype();
   }
 
 
