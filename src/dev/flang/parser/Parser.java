@@ -2631,11 +2631,16 @@ expr        : checkexpr
    */
   Expr expr()
   {
-    return
+    var p0 = lastTokenEndPos();
+    var p1 = tokenPos();
+    var e =
       isCheckPrefix()       ? checkexpr()   :
       isAssignPrefix()      ? assign()      :
       isDestructurePrefix() ? destructure() :
       isFeaturePrefix()     ? feature()     : operatorExpr();
+    var p2 = lastTokenEndPos();
+    e.setSourceRange(sourceRange(p0, p1, p2));
+    return e;
   }
 
 
@@ -3149,13 +3154,11 @@ contract    : require
    */
   boolean isContractPrefix()
   {
-    switch (currentAtMinIndent())
+    return switch (currentAtMinIndent())
       {
-      case t_pre      :
-      case t_post     :
-      case t_inv      : return true;
-      default         : return false;
-      }
+      case t_pre, t_post -> true;
+      default            -> false;
+      };
   }
 
 

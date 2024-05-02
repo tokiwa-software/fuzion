@@ -101,7 +101,7 @@ public abstract class AbstractCase extends HasGlobalIndex implements HasSourcePo
   /**
    * code to be executed in case of a match
    */
-  public abstract AbstractBlock code();
+  public abstract Expr code();
 
 
   /**

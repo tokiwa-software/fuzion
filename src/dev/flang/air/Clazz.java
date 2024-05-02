@@ -45,7 +45,6 @@ import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Env; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
 import dev.flang.ast.HasGlobalIndex; // NYI: remove dependency!
-import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.ResolvedNormalType; // NYI: remove dependency!
 import dev.flang.ast.State; // NYI: remove dependency!
@@ -132,7 +131,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
       if      (e instanceof AbstractAssign   a) { Clazzes.findClazzes(a, _originalFeature, Clazz.this, _inh); }
       else if (e instanceof AbstractCall     c) { Clazzes.findClazzes(c, _originalFeature, Clazz.this, _inh); }
       else if (e instanceof AbstractConstant c) { Clazzes.findClazzes(c, _originalFeature, Clazz.this, _inh); }
-      else if (e instanceof If               i) { Clazzes.findClazzes(i, _originalFeature, Clazz.this, _inh); }
       else if (e instanceof InlineArray      i) { Clazzes.findClazzes(i, _originalFeature, Clazz.this, _inh); }
       else if (e instanceof Env              b) { Clazzes.findClazzes(b, _originalFeature, Clazz.this, _inh); }
       else if (e instanceof AbstractMatch    m) { Clazzes.findClazzes(m, _originalFeature, Clazz.this, _inh); }
@@ -1158,7 +1156,12 @@ public class Clazz extends ANY implements Comparable<Clazz>
             if (f != Types.f_ERROR && (af != null || !isEffectivelyAbstract(f)))
               {
                 var aaf = af != null ? af : f;
-                if (isEffectivelyAbstract(aaf))
+                if (isEffectivelyAbstract(aaf)
+                    /* NYI: WORKAROUND!
+                    tests/lib_container_set fails without this:
+                    "Used abstract feature 'container.Set.type.new' is not implemented by 'container.Set.type'"
+                    */
+                   && !_type.feature().isTypeFeature() )
                   {
                     if (_abstractCalled == null)
                       {
@@ -1837,9 +1840,13 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public boolean isCalled()
   {
-    return _isCalled && isOuterInstantiated() && !feature().isAbstract() &&
-      (_argumentFields == null || /* this may happen when creating deterḿining isUnitType() on cyclic value type, will cause an error during layout() */
-       !isAbsurd());
+    return _isCalled &&
+      (isOuterInstantiated()            ||
+       _outer.feature().isTypeFeature()         // type features are implicitly instantiated unit types:
+                                           ) &&
+      !feature().isAbstract()                &&
+      (_argumentFields == null          ||      // this may happen when creating deterḿining isUnitType() on cyclic value type, will cause an error during layout() */
+       !isAbsurd()                         );
   }
 
   /**
@@ -1925,8 +1932,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
     return _isInstantiated
       && (_checkingInstantiatedHeirs > 0
           || (isOuterInstantiated()
-            || isChoice()
-            || _outer.isRef() && _outer.hasInstantiatedHeirs()));
+              || isChoice()
+              || _outer.isRef() && _outer.hasInstantiatedHeirs()));
   }
 
 
