@@ -113,6 +113,15 @@ is
     "$from..$thru{if step = T.one then "" else ":$step"}"
 
 
+  # NYI: BUG: workaround without this
+  # test lib_container_set fails with
+  # require-condition1 failed: Clazzes.java:1068
+  # "(Errors.any() || !thiz.dependsOnGenerics(),
+  #   outerClazz != null || thiz.feature().outer() == null, Errors.any()
+  #     || thiz == Types.t_ERROR || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.feature().outer()));"
+  public fixed type.new (s Sequence T) interval.this => panic "not applicable"
+
+
 # has_interval -- feature for integers that can define an interval
 #
 public has_interval : integer is
