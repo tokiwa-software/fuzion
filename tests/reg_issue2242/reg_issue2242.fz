@@ -1,0 +1,70 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test
+#
+# -----------------------------------------------------------------------
+
+reg_issue2242 =>
+
+  print(T type, arr container.Mutable_Array T) =>
+    for x in arr do
+      yak "$x, "
+    say ""
+
+  partition(T type : property.orderable, arr container.Mutable_Array T, low i32, high i32) =>
+
+    swap(x i32, y i32)
+      =>
+      tmp := arr[x]
+      arr[x] := arr[y]
+      arr[y] := tmp
+
+    pivot := arr[high]
+    i := mut (low - 1)
+    for j in low..(high- 1) do
+      if (arr[j] < pivot)
+        i <- (i.get + 1)
+        if i.get != j
+          swap i.get j
+    swap (i.get + 1) high
+    (i.get + 1)
+
+  quick_sort(T type : property.orderable, arr container.Mutable_Array T, low i32, high i32) =>
+    if (low < high)
+      pi := partition T arr low high
+      quick_sort arr low (pi - 1)
+      quick_sort arr (pi + 1) high
+
+  mi : mutate is
+  mi.go ()->
+
+    a := (mutate.array f64).type.new mi 10 0.0
+    for i in a.indices do
+      a[i] := random.next_f64
+
+
+    say "unsorted"
+    print a
+
+    quick_sort a 0 (a.count - 1)
+
+    say "sorted"
+    print a
+

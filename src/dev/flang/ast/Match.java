@@ -190,6 +190,7 @@ public class Match extends AbstractMatch
         if (!missingMatches.isEmpty() && ok)
           {
             AstErrors.missingMatches(pos(), cgs, missingMatches);
+            _type = Types.t_ERROR;
           }
       }
   }
