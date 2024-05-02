@@ -93,17 +93,7 @@ public class Check extends ANY
     var l = new List<Expr>();
     for (var c : this._conditions)
       {
-        var p = c.cond.pos();
-        var rg = c.cond.sourceRange();
-        if (rg != null)
-          {
-            p = rg;
-            System.out.println("GOT RANGE: "+(c.cond.getClass())+" is "+p.show());
-          }
-        else
-          {
-            System.out.println("ONLY POS: "+p.show());
-          }
+        var p = c.cond.sourceRange();
         var f = new Call(p, "fuzion");
         var r = new Call(p, f, "runtime");
         var e = new Call(p, r, "check_fault", new List<>(new StrConst(p, p.sourceText())));
