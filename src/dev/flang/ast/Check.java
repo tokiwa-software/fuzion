@@ -98,7 +98,6 @@ public class Check extends ANY
         var r = new Call(p, f, "runtime");
         var e = new Call(p, r, "check_fault", new List<>(new StrConst(p, p.sourceText())));
         l.add(new If(p, c.cond, new Block(), e));
-        System.out.println("SORUCE TEST '"+p.sourceText()+"' for "+p.show());
       }
     return new Block(l);
   }
