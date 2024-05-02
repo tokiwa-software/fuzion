@@ -36,7 +36,6 @@ import dev.flang.ast.Box; // NYI: remove dependency
 import dev.flang.ast.Check; // NYI: remove dependency
 import dev.flang.ast.Env; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
-import dev.flang.ast.If; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
 import dev.flang.ast.Nop; // NYI: remove dependency
@@ -277,14 +276,6 @@ public abstract class IR extends ANY
             l.add(ExprKind.Current);
           }
       }
-    else if (e instanceof If i)
-      {
-        // if is converted to If, blockId, elseBlockId
-        toStack(l, i.cond);
-        l.add(i);
-        l.add(new NumLiteral(addCode(toStack(i.block      ))));
-        l.add(new NumLiteral(addCode(toStack(i.elseBlock()))));
-      }
     else if (e instanceof AbstractCall c)
       {
         toStack(l, c.target());
@@ -388,7 +379,8 @@ public abstract class IR extends ANY
   public ExprKind codeAt(int s)
   {
     if (PRECONDITIONS) require
-      (s >= SITE_BASE, withinCode(s));
+      (s >= SITE_BASE,
+       withinCode(s));
 
     return exprKind(getExpr(s));
   }
@@ -425,8 +417,7 @@ public abstract class IR extends ANY
       {
         result = ExprKind.Call;
       }
-    else if (e instanceof If            ||
-             e instanceof AbstractMatch    )
+    else if (e instanceof AbstractMatch)
       {
         result = ExprKind.Match;
       }
@@ -462,7 +453,7 @@ public abstract class IR extends ANY
    *
    * @return the source code position or null if not available.
    */
-  public SourcePosition codeAtAsPos(int s)
+  public SourcePosition sitePos(int s)
   {
     if (PRECONDITIONS) require
       (s >= 0,

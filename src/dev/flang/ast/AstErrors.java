@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 import dev.flang.util.ANY;
 import static dev.flang.util.Errors.*;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
@@ -79,7 +80,7 @@ public class AstErrors extends ANY
       }
     return sl.toString();
   }
-  static String s(AbstractType t)
+  protected static String s(AbstractType t)
   {
     return st(t == null ? "--null--" : t.toString());
   }
@@ -421,44 +422,6 @@ public class AstErrors extends ANY
                      frmlT,
                      value,
                      null);
-  }
-
-
-  /**
-   * Create an error message for incompatible types when passing an argument to
-   * a call.
-   *
-   * @param calledFeature the feature that is called
-   *
-   * @param count the number of the actual argument (0 == first argument, 1 ==
-   * second argument, etc.)
-   *
-   * @param frmlT the expected formal type
-   *
-   * @param typePar the unexpected type parameter
-   */
-  static void unexpectedTypeParameterInCall(SourcePosition pos,
-                                            AbstractFeature calledFeature,
-                                            int count,
-                                            AbstractType frmlT,
-                                            AbstractType typePar)
-  {
-    var frmls = calledFeature.valueArguments().iterator();
-    AbstractFeature frml = null;
-    int c;
-    for (c = 0; c <= count && frmls.hasNext(); c++)
-      {
-        frml = frmls.next();
-      }
-    var f = ((c == count+1) && (frml != null)) ? frml : null;
-    incompatibleType(pos,
-                     "when passing argument in a call",
-                     "Actual type for argument #" + (count+1) + (f == null ? "" : " " + sbnf(f)) + " does not match expected type.\n" +
-                     "In call to          : " + s(calledFeature) + "\n",
-                     (f == null ? "argument #" + (count+1) : f.featureName().baseName()),
-                     frmlT,
-                     null,
-                     typePar);
   }
 
 
@@ -1819,42 +1782,6 @@ public class AstErrors extends ANY
       }
   }
 
-  public static void actualTypeParameterUsedAsExpression(Actual a, Call usedIn)
-  {
-    var cf = usedIn != null ? usedIn._calledFeature : null;
-    String at = null;
-    if (cf != null)
-      {
-        var allUnknown = true;
-        String t = null;
-        var args = cf.arguments();
-        if (args != null)
-          {
-            for (var arg : args)
-              {
-                var argtype = "--still unknown--";
-                if (arg.state().atLeast(State.RESOLVED_TYPES))
-                  {
-                    allUnknown = false;
-                    argtype = s(arg.resultType());
-                  }
-                t = (t == null ? "" : t + " ") + argtype;
-              }
-          }
-        if (!allUnknown)
-          {
-            at = t;
-          }
-      }
-    error(a.pos(),
-          "Actual parameter in a call is a type, but the call expects an expression",
-          (usedIn != null ? "in call: "+ s(usedIn) + "\n" : "") +
-          (cf != null ? "call to " + s(cf) + "\n" : "" ) +
-          "actual type argument found: " + s(a._type) + "\n" +
-          (at != null ? "expected argument types: " + at + "\n" : "" ) +
-          "To solve this, check if the actual arguments match the expected formal arguments. Maybe add missing arguments or remove "+
-          "extra arguments.  If the arguments match, make sure that " + s(a._type) + " is parsable as an expression.");
-  }
 
   /**
    * Produce error for the of issue #1186: A routine returns itself:
@@ -2069,6 +1996,13 @@ public class AstErrors extends ANY
       "or                     : " + s(tf) + "\n" +
       "To solve this, rename one of the called features.");
   }
+
+  public static void qualifierExpectedForDotThis(SourcePosition pos, HasSourcePosition e)
+  {
+    error(pos, "Qualifier expected for "+code(".this")+" expression.",
+          "Found expression "+e.pos().show()+" where a simple qualifier " +  code("a.b.c") + " was expected");
+  }
+
 
 }
 

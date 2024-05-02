@@ -31,7 +31,7 @@ door : choice open closed is
     closed => "closed"
 
 d := (mutate.array door).new mutate 100 closed
-for i in 0..99 do
-  for j in i..99 do
+for i in (i64 0)..99 do
+  for j in (i64 i)..99 do
     d[j] := d[j].toggle
 say d

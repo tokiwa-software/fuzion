@@ -230,34 +230,43 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
     // First pass:
     // Union of the types of the expressions
     // that are sure about their types.
+    var foundType = false;
     for (var e : exprs)
       {
         var et = e.typeForUnion();
         if (et != null)
           {
+            foundType = true;
             t = t.union(et);
           }
       }
 
-    // Propagate the found type to all expression
-    for (var e : exprs)
+    if (foundType)
       {
-        e.propagateExpectedType(t);
+        // Propagate the found type to all expression
+        for (var e : exprs)
+          {
+            e.propagateExpectedType(t);
+          }
       }
 
     // Second pass:
     // Union of the types of the expressions
     AbstractType result = Types.resolved.t_void;
+    foundType = false;
     for (var e : exprs)
       {
         var et = e.typeForInferencing();
         if (et != null)
           {
+            foundType = true;
             result = result.union(et);
           }
       }
 
-    return result;
+    return foundType
+      ? result
+      : null;
   }
 
 
@@ -536,7 +545,29 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * to be resolved with the context it is used in to be of
    * any use.
    */
-  public AbstractType asUnresolvedType()
+  public UnresolvedType asParsedType()
+  {
+    return null;
+  }
+
+
+  /**
+   * Return this expression as a simple name.  This is null by default except
+   * for calls that without an explicit target and without any actual arguments
+   * or select clause.
+   */
+  public ParsedName asParsedName()
+  {
+    return null;
+  }
+
+
+  /**
+   * Return this expression as a simple qualifier. This is null by default
+   * except for calls without explicit target or one whose asQualifier() is not
+   * null and without any actual arguments or select clause.
+   */
+  public List<ParsedName> asQualifier()
   {
     return null;
   }

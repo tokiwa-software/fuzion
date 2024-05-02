@@ -148,6 +148,14 @@ public class This extends ExprWithPos
   /*-----------------------------  methods  -----------------------------*/
 
 
+  @Override
+  public UnresolvedType asParsedType()
+  {
+    return _qual != null ? new QualThisType(_qual)
+                         : null;
+  }
+
+
   /**
    * typeForInferencing returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined

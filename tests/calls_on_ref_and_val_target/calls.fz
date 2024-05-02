@@ -28,7 +28,6 @@
 #
 calls is
 
-  exit_code := mut 0
   passed := mut 0
   failed := mut 0
 
@@ -39,7 +38,7 @@ calls is
     else
       say "FAILED: $str /= $expected"
       failed <- failed.get + 1
-      exit_code <- 1
+      _ := set_exit_code 1
 
 /*
   We have the following possibilities when calling a feature `f` declared in `on` with
@@ -564,4 +563,4 @@ calls is
 */
 
   say "{failed.get} failed {passed.get} passed."
-  exit exit_code.get
+  exit

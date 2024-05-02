@@ -200,50 +200,34 @@ public mutate : simple_effect is
          public T type,
 
          # length of the array to create
-         public length i32,
+         public length i64,
 
          # contents of the array
          module data fuzion.sys.internal_array T,
          _ unit
 
-        ) : container.Mutable_Array T, mutable_element
+        ) : container.Mutable_Array T mutate.this, mutable_element
   pre
-    safety: (length ≥ 0) && (length ≤ data.length)
+    safety: (length ≥ 0) && (length ≤ data.length.as_i64)
   is
-
-
-    # a sequence of all valid indices to access this array. Useful e.g., for
-    # `for`-loops:
-    #
-    #   for i in arr.indices do
-    #     say arr[i]
-    #
-    public indices => 0..length-1
-
-
-    # is this sequence known to be finite?  For infinite sequences, features like
-    # count diverge.
-    #
-    public redef finite => true
-
 
     # get element at given index i
     #
-    public redef index [ ] (i i32) T
+    public redef index [ ] (i i64) T
       pre
-        safety: 0 ≤ i < length
+        safety: (i64 0) ≤ i < length
     =>
-      data[i]
+      data[i.as_i32]
 
 
     # set element at given index i to given value o
     #
-    public set [ ] (i i32, o T) unit
+    public set [ ] (i i64, o T) unit
       pre
-        safety: 0 ≤ i < length
+        safety: (i64 0) ≤ i < length
     =>
       check_and_replace
-      data[i] := o
+      data[i.as_i32] := o
 
 
     # add an element at the end of this array
@@ -251,13 +235,13 @@ public mutate : simple_effect is
     public add (o T) unit
     =>
       check_and_replace
-      d := if (data.length > length) data
+      d := if (data.length.as_i64 > length) data
         else
           new_data := fuzion.sys.internal_array_init T (max 8 data.length*2)
           for i in indices do
-            new_data[i] := data[i]
+            new_data[i.as_i32] := data[i.as_i32]
           new_data
-      d[length] := o
+      d[length.as_i32] := o
       set data := d
       set length := length+1
 
@@ -265,7 +249,7 @@ public mutate : simple_effect is
     # create immutable array from this
     #
     public redef as_array =>
-      array T length (i -> data[i])
+      array T length.as_i32 (i -> data[i])
 
 
     # create a list from this array
@@ -283,14 +267,14 @@ public mutate : simple_effect is
      (LM type : mutate,
 
       # length of the array to create
-      length i32,
+      length i64,
 
       # initial value for elements
       init T
 
-     ) container.Mutable_Array T
+     ) container.Mutable_Array T LM
     =>
-      data := fuzion.sys.internal_array_init T length
+      data := fuzion.sys.internal_array_init T length.as_i32
 
       for x in data.indices do
         data[x] := init
@@ -300,7 +284,7 @@ public mutate : simple_effect is
 
     # initialize an empty mutable array of type T
     #
-    public type.new (LM type : mutate) container.Mutable_Array T =>
+    public type.new (LM type : mutate) container.Mutable_Array T LM =>
       LM.env.array T 0 (fuzion.sys.internal_array_init T 0) unit
 
 

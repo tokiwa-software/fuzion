@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = issue118
-include ../dfa.mk # NYI: BUG: see #2146
+include ../fe.mk # NYI: BUG: see #2146

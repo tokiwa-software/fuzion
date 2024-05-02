@@ -27,13 +27,12 @@
 #
 stringstest is
 
-  exit_code := mut 0
 
   chck(b bool, msg String) is
     s := if b
         "PASSED: "
       else
-        exit_code <- 1
+        _ := set_exit_code 1
         "FAILED: "
     say (s + msg)
 
@@ -51,4 +50,4 @@ stringstest is
 
   chck "Nested: { "-{ a + b }-" * 3 }"="Nested: -7--7--7-" "nested \{}"
 
-  exit exit_code.get
+  exit

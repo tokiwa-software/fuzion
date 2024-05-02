@@ -1,0 +1,101 @@
+EXP: x Type of 'i32'
+GOT: x Type of 'i32'
+
+EXP: x Type of 'a'
+GOT: x Type of 'a'
+
+EXP: x Type of 'a.b'
+GOT: x Type of 'a.b'
+
+EXP: x Type of 'tuple a.b a i32'
+GOT: x Type of 'tuple a.b a i32'
+
+EXP: x Type of 'choice a.b a i32'
+GOT: x Type of 'choice a.b a i32'
+
+EXP: x Type of 'Unary String i32'
+GOT: x Type of 'Unary String i32'
+GOT: x Type of 'Unary String i32'
+
+EXP: x Type of 'Unary String a'
+GOT: x Type of 'Unary String a'
+GOT: x Type of 'Unary String a'
+
+EXP: x Type of 'Unary a.b a'
+GOT: x Type of 'Unary a.b a'
+GOT: x Type of 'Unary a.b a'
+
+EXP: x Type of 'Unary a a.b'
+GOT: x Type of 'Unary a a.b'
+GOT: x Type of 'Unary a a.b'
+
+EXP: x Type of 'Function String i32 u64'
+GOT: x Type of 'Function String i32 u64'
+GOT: x Type of 'Function String i32 u64'
+
+EXP: x Type of 'Function String (Sequence u64) a.b'
+GOT: x Type of 'Function String (Sequence u64) a.b'
+GOT: x Type of 'Function String (Sequence u64) a.b'
+
+EXP: x Type of 'choice a.b i32 (Unary (choice i32 Any) String)'
+GOT: x Type of 'choice a.b i32 (Unary (choice i32 Any) String)'
+GOT: x Type of 'choice a.b i32 (Unary (choice i32 Any) String)'
+GOT: x Type of 'choice a.b i32 (Unary (choice i32 Any) String)'
+GOT: x Type of 'choice a.b i32 (Unary (choice i32 Any) String)'
+
+EXP: x Type of 'Unary (choice i32 Any) (choice a.b i32 String)'
+GOT: x Type of 'Unary (choice i32 Any) (choice a.b i32 String)'
+GOT: x Type of 'Unary (choice i32 Any) (choice a.b i32 String)'
+
+EXP: x Type of 'choice (Unary i32 (choice a.b i32 String)) Any'
+GOT: x Type of 'choice (Unary i32 (choice a.b i32 String)) Any'
+GOT: x Type of 'choice (Unary i32 (choice a.b i32 String)) Any'
+
+EXP: x Type of 'tuple'
+GOT: x Type of 'tuple'
+GOT: x Type of 'tuple'
+GOT: x Type of 'tuple'
+GOT: x Type of 'tuple'
+GOT: x Type of 'tuple'
+GOT: x Type of 'tuple'
+GOT: x Type of 'tuple'
+
+EXP: y Type of 'Function String (Sequence u64) a.b'
+GOT: y Type of 'Function String (Sequence u64) a.b'
+
+EXP: y Type of 'tuple (option unit) a.b'
+GOT: y Type of 'tuple (option unit) a.b'
+
+EXP: y Type of 'f64'
+GOT: y Type of 'f64'
+
+EXP: y Type of 'String'
+GOT: y Type of 'String'
+
+EXP: y Type of 'bool'
+GOT: y Type of 'bool'
+
+EXP: y Type of 'i32'
+GOT: y Type of 'i32'
+
+EXP: y Type of 'codepoint'
+GOT: y Type of 'codepoint'
+
+EXP: y Type of 'codepoint'
+GOT: y Type of 'codepoint'
+
+EXP: y Type of 'codepoint'
+GOT: y Type of 'codepoint'
+
+EXP: y Type of 'io.out'
+GOT: y Type of 'io.out'
+
+EXP: y Type of 'Type'
+GOT: y Type of 'Type'
+
+EXP: y Type of 'u8'
+GOT: y Type of 'u8'
+
+EXP: y Type of 'i64'
+GOT: y Type of 'i64'
+
