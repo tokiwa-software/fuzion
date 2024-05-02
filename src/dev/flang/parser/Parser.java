@@ -2631,11 +2631,16 @@ expr        : checkexpr
    */
   Expr expr()
   {
-    return
+    var p0 = lastTokenEndPos();
+    var p1 = tokenPos();
+    var e =
       isCheckPrefix()       ? checkexpr()   :
       isAssignPrefix()      ? assign()      :
       isDestructurePrefix() ? destructure() :
       isFeaturePrefix()     ? feature()     : operatorExpr();
+    var p2 = lastTokenEndPos();
+    e.setSourceRange(sourceRange(p0, p1, p2));
+    return e;
   }
 
 
