@@ -3149,13 +3149,11 @@ contract    : require
    */
   boolean isContractPrefix()
   {
-    switch (currentAtMinIndent())
+    return switch (currentAtMinIndent())
       {
-      case t_pre      :
-      case t_post     :
-      case t_inv      : return true;
-      default         : return false;
-      }
+      case t_pre, t_post -> true;
+      default            -> false;
+      };
   }
 
 
