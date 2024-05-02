@@ -1837,9 +1837,13 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public boolean isCalled()
   {
-    return _isCalled && isOuterInstantiated() && !feature().isAbstract() &&
-      (_argumentFields == null || /* this may happen when creating deterḿining isUnitType() on cyclic value type, will cause an error during layout() */
-       !isAbsurd());
+    return _isCalled &&
+      (isOuterInstantiated()            ||
+       _outer.feature().isTypeFeature()         // type features are implicitly instantiated unit types:
+                                           ) &&
+      !feature().isAbstract()                &&
+      (_argumentFields == null          ||      // this may happen when creating deterḿining isUnitType() on cyclic value type, will cause an error during layout() */
+       !isAbsurd()                         );
   }
 
   /**
@@ -1925,8 +1929,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
     return _isInstantiated
       && (_checkingInstantiatedHeirs > 0
           || (isOuterInstantiated()
-            || isChoice()
-            || _outer.isRef() && _outer.hasInstantiatedHeirs()));
+              || isChoice()
+              || _outer.isRef() && _outer.hasInstantiatedHeirs()));
   }
 
 
