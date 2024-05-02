@@ -27,8 +27,7 @@
 #
 public fault (
   # the handler this effect uses to fail
-  p Fault_Handler,
-  _ unit
+  p Fault_Handler
   ) : simple_effect
 is
 
@@ -60,7 +59,7 @@ is
 
   # install default fault handler
   type.install_default =>
-    (fuzion.runtime.fault default_fault_handler unit).default
+    (fuzion.runtime.fault default_fault_handler).default
 
 
   # default fault handler using io.err and exit with return code 1
@@ -113,5 +112,5 @@ public Fault_Handler ref is
   # removed and the result of fail should be returned instead).
   #
   public use(R type, code, def ()->R) =>
-    p := fault Fault_Handler.this unit
+    p := fault Fault_Handler.this
     p.run code def
