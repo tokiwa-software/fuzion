@@ -75,7 +75,7 @@ choicetest is
     a[7] := Quarter
     a[8] := Quarter
     a[9] := Quarter
-    a
+    a.as_array
   )
 
 
