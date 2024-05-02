@@ -50,7 +50,6 @@ import dev.flang.ast.BoolConst; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
 import dev.flang.ast.Env; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
-import dev.flang.ast.If; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
 import dev.flang.ast.Tag; // NYI: remove dependency
@@ -2038,11 +2037,7 @@ hw25 is
 
     var e = getExpr(s);
     int[] result;
-    if (e instanceof If)
-      {
-        result = new int[] { cix == 0 ? 1 : 0 };
-      }
-    else if (e instanceof AbstractMatch match)
+    if (e instanceof AbstractMatch match)
       {
         var mc = match.cases().get(cix);
         var ts = mc.types();

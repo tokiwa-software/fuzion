@@ -40,7 +40,6 @@ import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Block;
 import dev.flang.ast.Box;
 import dev.flang.ast.Call;
 import dev.flang.ast.Check;
@@ -49,7 +48,6 @@ import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FormalGenerics;
-import dev.flang.ast.If;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.Nop;
 import dev.flang.ast.State;
@@ -741,29 +739,6 @@ class LibraryOut extends ANY
         if (!ac.type().feature().isUniverse())
           {
             lastPos = exprKindAndPos(MirExprKind.Current, lastPos, e.pos());
-          }
-      }
-    else if (e instanceof If i)
-      {
-        lastPos = expressions(i.cond, lastPos);
-        lastPos = exprKindAndPos(MirExprKind.Match, lastPos, e.pos());
-        _data.writeInt(2);
-        _data.writeInt(1);
-        type(Types.resolved.f_TRUE.resultType());
-        code(i.block);
-        _data.writeInt(1);
-        type(Types.resolved.f_FALSE.resultType());
-        if (i.elseBlock != null)
-          {
-            code(i.elseBlock);
-          }
-        else if (i.elseIf != null)
-          {
-            code(i.elseIf);
-          }
-        else
-          {
-            code(new Block(new List<>()));
           }
       }
     else if (e instanceof Call c)
