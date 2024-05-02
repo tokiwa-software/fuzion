@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature panic
+#  Source code of Fuzion standard library feature fault
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
@@ -26,7 +26,7 @@
 # fault -- effect that terminates a computation due to a runtime fault
 #
 public fault (
-  # the handler this effect uses to panic
+  # the handler this effect uses to fail
   p Fault_Handler,
   _ unit
   ) : simple_effect
@@ -54,7 +54,7 @@ is
   # cause fault with the given message
   #
   cause(kind, msg String) =>
-    p.do_fault msg
+    p.fail msg
     abort
 
 
@@ -63,14 +63,14 @@ is
     (fuzion.runtime.fault default_fault_handler unit).default
 
 
-  # default panic handler using io.err and exit with return code 1
+  # default fault handler using io.err and exit with return code 1
   #
   type.default_fault_handler : fuzion.runtime.Fault_Handler is
 
-    # panic with the given message and exit with return code 1
+    # fail with the given message and exit with return code 1
     #
-    do_fault(kind, msg String) =>
-      io.err.println "*** runtime fault: $kind $msg"
+    fail(kind, msg String) =>
+      io.err.println "*** runtime failure: $kind $msg"
       exit 1
 
 
@@ -97,7 +97,7 @@ public precondition_fault(msg String) => fault.cause_pre msg
 # fault with a msg argument calls fault.cause_post msg, i.e., it uses the
 # current fault effect to cause an fault with the given message.
 #
-public postondition_fault(msg String) => fault.cause_post msg
+public postcondition_fault(msg String) => fault.cause_post msg
 
 
 # Fault_Handler -- abstract fault hadler
@@ -106,11 +106,11 @@ public Fault_Handler ref is
 
   # fault with the given message
   #
-  public do_fault(msg String) unit => abstract
+  public fail(msg String) unit => abstract
 
-  # Install this panic handler using a new instance of panic and run
-  # `code` on it. In case of an abort, return `def()` (NYI: def should be
-  # removed and the result of do_fault should be returned instead).
+  # Install this fault handler using a new instance of fault and run
+  # `code` on it.  In case of an abort, return `def()` (NYI: def should be
+  # removed and the result of fail should be returned instead).
   #
   public use(R type, code, def ()->R) =>
     p := fault Fault_Handler.this unit
