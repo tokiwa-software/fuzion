@@ -28,7 +28,7 @@
 public fault (
   # the handler this effect uses to fail
   p Fault_Handler
-  ) : simple_effect
+  ) : abortable_effect unit
 is
 
 
@@ -54,7 +54,7 @@ is
   #
   cause(kind, msg String) =>
     p.fail msg
-    abort
+    abort unit
 
 
   # install default fault handler
@@ -113,4 +113,6 @@ public Fault_Handler ref is
   #
   public use(R type, code, def ()->R) =>
     p := fault Fault_Handler.this
-    p.run code def
+    match p.go code
+      r R => r
+      unit => def()
