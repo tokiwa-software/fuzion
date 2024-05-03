@@ -1034,6 +1034,9 @@ part of the (((inner features))) declarations of the corresponding
    * outer's outer (i.e., use is unqualified), false to search in outer only
    * (i.e., use is qualified with outer).
    *
+   * @param hidden true to return features that are not visible, used for error
+   * messages.
+   *
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.
    */
@@ -1072,6 +1075,9 @@ part of the (((inner features))) declarations of the corresponding
    * @param traverseOuter true to collect all the features found in outer and
    * outer's outer (i.e., use is unqualified), false to search in outer only
    * (i.e., use is qualified with outer).
+   *
+   * @param hidden true to return features that are not visible, used for error
+   * messages.
    *
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.
@@ -1193,6 +1199,18 @@ part of the (((inner features))) declarations of the corresponding
         var type_fs = new List<AbstractFeature>();
         var nontype_fs = new List<AbstractFeature>();
         var fs = lookup(outer, name, null, traverseOuter, false);
+        var o = outer;
+        while (traverseOuter && o != null)
+          {
+            if (o.isTypeFeature())
+              {
+                lookup(o._typeFeatureOrigin, name, null, false, false)
+                  .stream()
+                  .filter(fo -> !fo._feature.isTypeParameter())  // type parameters are duplicated in type feature and taken from there
+                  .forEach(fo -> fs.add(fo));
+              }
+            o = o.outer();
+          }
         for (var fo : fs)
           {
             var f = fo._feature;
