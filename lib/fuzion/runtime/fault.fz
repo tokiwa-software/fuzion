@@ -50,10 +50,17 @@ is
     cause "postcondition" msg
 
 
-  # cause fault with the given message
+  # cause fault of given kind with the given message
   #
-  cause(kind, msg String) =>
-    p.fail msg
+  cause(# the kind of failure, e.g., "precondition", "check", etc.
+        #
+        kind,
+
+        # message describing what failed, e.g. "debug: a > 0"
+        #
+        msg String)
+  =>
+    p.fail kind msg
     abort
 
 
@@ -66,9 +73,19 @@ is
   #
   type.default_fault_handler : fuzion.runtime.Fault_Handler is
 
-    # fail with the given message and exit with return code 1
+    # fail with given kind and given message.
     #
-    fail(kind, msg String) =>
+    # This implementation will print "*** runtime failure: $kind $msg"
+    # and perform `exit 1`.
+    #
+    fail(# the kind of failure, e.g., "precondition", "check", etc.
+         #
+         kind,
+
+         # message describing what failed, e.g. "debug: a > 0"
+         #
+         msg String)
+    =>
       io.err.println "*** runtime failure: $kind $msg"
       exit 1
 
@@ -81,20 +98,20 @@ public fault =>
   fault.env
 
 
-# fault with a msg argument calls fault.cause_chekc msg, i.e., it uses the
-# current fault effect to cause an fault with the given message.
+# cause a check fault with given msg argument, i.e., call fault.cause_check msg, i.e.,
+# use the current fault effect to fail with the given message.
 #
 public check_fault(msg String) => fault.cause_check msg
 
 
-# fault with a msg argument calls fault.cause_pre msg, i.e., it uses the
-# current fault effect to cause an fault with the given message.
+# cause a precondition fault with given msg argument, i.e., call fault.cause_pre
+# msg, i.e., use the current fault effect to fail with the given message.
 #
 public precondition_fault(msg String) => fault.cause_pre msg
 
 
-# fault with a msg argument calls fault.cause_post msg, i.e., it uses the
-# current fault effect to cause an fault with the given message.
+# cause a postcondition fault with given msg argument, i.e., call fault.cause_post
+# msg, i.e., use the current fault effect to fail with the given message.
 #
 public postcondition_fault(msg String) => fault.cause_post msg
 
@@ -103,9 +120,9 @@ public postcondition_fault(msg String) => fault.cause_post msg
 #
 public Fault_Handler ref is
 
-  # fault with the given message
+  # fail with given kind and given message
   #
-  public fail(msg String) unit => abstract
+  public fail(kind, msg String) unit => abstract
 
   # Install this fault handler using a new instance of fault and run
   # `code` on it.  In case of an abort, return `def()` (NYI: def should be
