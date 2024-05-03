@@ -50,10 +50,17 @@ is
     cause "postcondition" msg
 
 
-  # cause fault with the given message
+  # cause fault of given kind with the given message
   #
-  cause(kind, msg String) =>
-    p.fail msg
+  cause(# the kind of failure, e.g., "precondition", "check", etc.
+        #
+        kind,
+
+        # message describing what failed, e.g. "debug: a > 0"
+        #
+        msg String)
+  =>
+    p.fail kind msg
     abort
 
 
@@ -68,7 +75,14 @@ is
 
     # fail with the given message and exit with return code 1
     #
-    fail(kind, msg String) =>
+    fail(# the kind of failure, e.g., "precondition", "check", etc.
+         #
+         kind,
+
+         # message describing what failed, e.g. "debug: a > 0"
+         #
+         msg String)
+    =>
       io.err.println "*** runtime failure: $kind $msg"
       exit 1
 
@@ -105,7 +119,7 @@ public Fault_Handler ref is
 
   # fault with the given message
   #
-  public fail(msg String) unit => abstract
+  public fail(kind, msg String) unit => abstract
 
   # Install this fault handler using a new instance of fault and run
   # `code` on it.  In case of an abort, return `def()` (NYI: def should be
