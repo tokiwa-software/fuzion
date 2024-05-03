@@ -25,7 +25,7 @@
 
 # i32 -- 32-bit signed integer values
 #
-public i32(public val i32) : num.wrap_around, has_interval is
+public i32(public val i32) : num.wrap_around, has_interval, Index is
 
   public thiz => i32.this.val
 
@@ -156,6 +156,9 @@ public i32(public val i32) : num.wrap_around, has_interval is
   #
   public ones_count i32 =>
     val.cast_to_u32.ones_count
+
+
+  public as_i32 i32 => val
 
 
   # -----------------------------------------------------------------------

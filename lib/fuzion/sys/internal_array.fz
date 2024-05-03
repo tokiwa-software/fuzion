@@ -60,11 +60,11 @@ module internal_array(T type, module data fuzion.sys.Pointer, module length i32)
 
   module indices => 0..length-1
 
-  module index [ ] (i i32) T
+  module index [ ] (i Index) T
     pre
-      safety: 0 ≤ i < length
+      safety: 0 ≤ i.as_i32 < length
   =>
-    get T data i
+    get T data i.as_i32
 
   module set [ ] (i i32, o T) unit
     pre
