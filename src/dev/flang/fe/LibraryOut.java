@@ -42,7 +42,6 @@ import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Box;
 import dev.flang.ast.Call;
-import dev.flang.ast.Check;
 import dev.flang.ast.Constant;
 import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
@@ -933,12 +932,6 @@ class LibraryOut extends ANY
         ia._elements.forEach(x -> code(x));
 
         _data.writeIntAt(szPos, _data.offset() - codePos);
-      }
-    else if (e instanceof Check c)
-      {
-        // NYI: Check not supported yet
-        //
-        // l.add(s);
       }
     else
       {

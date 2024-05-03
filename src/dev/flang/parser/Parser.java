@@ -2866,13 +2866,13 @@ elseBlock   : "else" block
   /**
    * Parse checkexpr
    *
-checkexpr   : "check" expr
+checkexpr   : "check" block
             ;
    */
   Expr checkexpr()
   {
     match(Token.t_check, "checkexpr");
-    return new Check(tokenSourcePos(), new Cond(expr()));
+    return new Check(Cond.from(block())).asIfs();
   }
 
 

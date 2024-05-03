@@ -1,0 +1,116 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature fault
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# fault -- effect that terminates a computation due to a runtime fault
+#
+public fault (
+  # the handler this effect uses to fail
+  p Fault_Handler
+  ) : simple_effect
+is
+
+
+  # cause check fault with the given message
+  #
+  cause_check(msg String) =>
+    cause "check" msg
+
+
+  # cause precondition fault with the given message
+  #
+  cause_pre(msg String) =>
+    cause "precondition" msg
+
+
+  # cause postcondition fault with the given message
+  #
+  cause_post(msg String) =>
+    cause "postcondition" msg
+
+
+  # cause fault with the given message
+  #
+  cause(kind, msg String) =>
+    p.fail msg
+    abort
+
+
+  # install default fault handler
+  type.install_default =>
+    (fuzion.runtime.fault default_fault_handler).default
+
+
+  # default fault handler using io.err and exit with return code 1
+  #
+  type.default_fault_handler : fuzion.runtime.Fault_Handler is
+
+    # fail with the given message and exit with return code 1
+    #
+    fail(kind, msg String) =>
+      io.err.println "*** runtime failure: $kind $msg"
+      exit 1
+
+
+# fault with no argument returns fault.env, the currently installed
+# runtime fault handler.
+#
+public fault =>
+  fault.install_default
+  fault.env
+
+
+# fault with a msg argument calls fault.cause_chekc msg, i.e., it uses the
+# current fault effect to cause an fault with the given message.
+#
+public check_fault(msg String) => fault.cause_check msg
+
+
+# fault with a msg argument calls fault.cause_pre msg, i.e., it uses the
+# current fault effect to cause an fault with the given message.
+#
+public precondition_fault(msg String) => fault.cause_pre msg
+
+
+# fault with a msg argument calls fault.cause_post msg, i.e., it uses the
+# current fault effect to cause an fault with the given message.
+#
+public postcondition_fault(msg String) => fault.cause_post msg
+
+
+# Fault_Handler -- abstract fault hadler
+#
+public Fault_Handler ref is
+
+  # fault with the given message
+  #
+  public fail(msg String) unit => abstract
+
+  # Install this fault handler using a new instance of fault and run
+  # `code` on it.  In case of an abort, return `def()` (NYI: def should be
+  # removed and the result of fail should be returned instead).
+  #
+  public use(R type, code, def ()->R) =>
+    p := fault Fault_Handler.this
+    p.run code def
