@@ -112,7 +112,8 @@ public class Cond
    */
   public void checkTypes()
   {
-    if (Types.resolved.t_bool.compareTo(cond.type()) != 0)
+    var t = cond.type();
+    if (t != Types.t_ERROR && Types.resolved.t_bool.compareTo(t) != 0)
       {
         AstErrors.contractExpressionMustResultInBool(cond);
       }
