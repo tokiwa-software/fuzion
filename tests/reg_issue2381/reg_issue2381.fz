@@ -30,12 +30,12 @@ reg_issue2381 is
   part1 =>
     lm : mutate.
     lm.go ()->
-      visited := (lm.array i32).type.new lm area.length 0
+      visited := (lm.array i32).type.new lm area.length.as_i64 0
       r => 1
       l => 2
       u => 4
       d => 8
-      ix(x,y) => y+x*area.length1
+      ix(x,y) => (y+x*area.length1).as_i64
       trace(x,y,w i32) =>
         if ((x ∈ area.indices1) &&
             (y ∈ area.indices0) &&
@@ -59,6 +59,6 @@ reg_issue2381 is
           if (w = d) && (c = "/"  || c = "-") then trace x-1 y   l
           if (w = d) && (c = "\\" || c = "-") then trace x+1 y   r
       trace 0 0 r
-      (visited.filter !=0).count
+      (visited.as_array.filter !=0).count
 
   say "part1 $part1"
