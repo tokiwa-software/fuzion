@@ -1199,16 +1199,17 @@ part of the (((inner features))) declarations of the corresponding
         var type_fs = new List<AbstractFeature>();
         var nontype_fs = new List<AbstractFeature>();
         var fs = lookup(outer, name, null, traverseOuter, false);
-        while (traverseOuter && outer != null)
+        var o = outer;
+        while (traverseOuter && o != null)
           {
-            if (outer.isTypeFeature())
+            if (o.isTypeFeature())
               {
-                lookup(outer._typeFeatureOrigin, name, null, false, false)
+                lookup(o._typeFeatureOrigin, name, null, false, false)
                   .stream()
                   .filter(fo -> !fo._feature.isTypeParameter())  // type parameters are duplicated in type feature and taken from there
                   .forEach(fo -> fs.add(fo));
               }
-            outer = outer.outer();
+            o = o.outer();
           }
         for (var fo : fs)
           {
