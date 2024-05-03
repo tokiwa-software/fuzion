@@ -1,7 +1,8 @@
 
---CURDIR--/test_issue1838.fz:27:7: error 1: A expression of a contract must result in bool.
+--CURDIR--/test_issue1838.fz:27:7: error 1: A expression of a contract must result in type 'bool'.
   pre c
 ------^
-To solve this, change the expression to return a bool.
+Expression type is 'Any.type'
+To solve this, change the expression to return a value of type 'bool'.
 
 one error.
