@@ -33,7 +33,6 @@ import dev.flang.ast.AbstractConstant; // NYI: remove dependency
 import dev.flang.ast.AbstractCurrent; // NYI: remove dependency
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
-import dev.flang.ast.Check; // NYI: remove dependency
 import dev.flang.ast.Env; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
@@ -320,12 +319,6 @@ public abstract class IR extends ANY
     else if (e instanceof Universe)
       {
         var un = (Universe) e;
-      }
-    else if (e instanceof Check c)
-      {
-        // NYI: Check not supported yet
-        //
-        // l.add(s);
       }
     else
       {
