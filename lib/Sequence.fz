@@ -23,8 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# Sequence -- ancestor for features that can be converted to a 'list' or a
-# 'stream'
+# Sequence -- ancestor for features that can be converted to a 'list'
 #
 # Sequences are empty, finite or infinite ordered collections of instances
 # of a given type.  Sequences may calculate elements lazily on demand.
@@ -32,9 +31,7 @@
 # Sequence is a 'ref' type, i.e., different sub-features may be assigned
 # to a field of type 'Sequence'.
 #
-# Heirs of Sequence must implement either 'as_list' or 'as_stream'.  Failure
-# to implement any of these results in an endless recursion when the Sequence
-# is used.
+# Heirs of Sequence must implement 'as_list'.
 #
 public Sequence(public T type) ref is
 
