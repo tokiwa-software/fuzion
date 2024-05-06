@@ -327,13 +327,24 @@ class ForClass extends ANY
     var sc = _superClass == null ? null : _superClass._class;
     var inh = sc != null ? typeName(sc) + "(forbidden), " : "";
     var rf  = sc != null ? "redef " : "";
-    var base = _class == String.class ? "fuzion.java.Java_String" : "fuzion.java.Java_Object";
+    var base = _class == String.class
+      ? "fuzion.java.Java_String"
+      : _class.isArray()
+      ? "fuzion.java.Array"
+      : "fuzion.java.Java_Object";
     StringBuilder data_dynamic = new StringBuilder(header(fzj, "Fuzion interface to instance members of Java instance class '" + cn + "'") +
-                                                   "public " + jtn + "(" + rf + "forbidden void) ref : " + inh + base + "(forbidden) is\n");
+                                                   "public " + jtn + "(" + rf + "forbidden void) ref : " + inh + base + (_class.isArray() ? "(forbidden) is\n" : "(forbidden) is\n"));
     StringBuilder data_static  = new StringBuilder(header(fzj, "Fuzion interface to static members of Java class '" + cn + "'") +
                                                    "public " + jtn + STATIC_SUFFIX + " is\n");
     StringBuilder data_unit    = new StringBuilder(header(fzj, "Fuzion unit feature to call static members of Java class '" + cn + "'") +
                                                    "public " + jtn + " => " + jtn + STATIC_SUFFIX + "\n");
+
+    data_dynamic.append("\n");
+    data_dynamic.append("\n");
+    data_dynamic.append("  public " + (sc==null ? "" : "redef ") +  "type.get_java_class => (Java.java.lang.Class.forName " + fuzionString(cn) + ").val");
+    data_dynamic.append("\n");
+    data_dynamic.append("\n");
+
     for (var me : _generateM.values())
       {
         var pa = me.getParameters();
@@ -732,7 +743,7 @@ class ForClass extends ANY
         res.append(res.length() == 0 ? "(" : ", ");
         var mp = FeatureWriter.mangledCleanName(p.getName());
         String mt;
-        if (t.isArray())
+        if (t.isArray() && !t.getComponentType().isArray() /* NYI: nested arrays */)
           {
             var et = plainResultType(t.getComponentType());
             mt = (et == null) ? null : "Sequence (" + et + ")";
@@ -844,9 +855,15 @@ class ForClass extends ANY
         res.append("(");
         if      (t.isArray()        )
           {
-            res.append(
-              "fuzion.java.array_to_java_object (" + plainResultType(t.getComponentType()) + ") "
-                + fuzionString(signature(t.getComponentType())) + " ");
+            if (t.getComponentType().isPrimitive())
+              {
+                res.append(
+                  "fuzion.java.array_to_java_object (" + plainResultType(t.getComponentType()) + ") ");
+              }
+            else
+              {
+                res.append("Java.as_java_object ");
+              }
           }
         else if (t == Byte     .TYPE) { res.append("fuzion.java.i8_to_java_object "    ); }
         else if (t == Character.TYPE) { res.append("fuzion.java.u16_to_java_object "   ); }
@@ -920,7 +937,7 @@ class ForClass extends ANY
    * @param t a Java type, e.g., Integer.TYPE, String.class,
    * java.util.Vector.class
    *
-   * @return the corresponding Fuzion type, e.g., "i32", "string",
+   * @return the corresponding Fuzion type, e.g., "i32", "String",
    * "Java.java.util.Vector", null if not supported.
    */
   String plainResultType(Class t)
@@ -942,14 +959,7 @@ class ForClass extends ANY
     else if (t == Boolean  .TYPE) { return "bool";      }
     else if (t == Void     .TYPE) { return "unit";      }
     else if (!t.isArray()       ) { return typeName(t); }
-    else
-      {
-        var et = plainResultType(t.getComponentType());
-        if (et != null)
-          {
-            return "fuzion.java.Array (" + et + ")";
-          }
-      }
+    else { return "fuzion.java.Array " + (t.getComponentType().isArray() ? "Java.java.lang.Object" : plainResultType(t.getComponentType())); }
     return null;
   }
 

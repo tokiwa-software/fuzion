@@ -145,6 +145,14 @@ public interface ClassFileConstants
 
     // null for type void
     VerificationType vti();
+
+    /**
+     * true if this describes a java primitive such as int, long, boolean etc.
+     */
+    default boolean isPrimitive()
+    {
+      return this instanceof PrimitiveType;
+    }
   }
 
 
