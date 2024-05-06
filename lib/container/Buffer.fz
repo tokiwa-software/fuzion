@@ -92,3 +92,9 @@ is
     # we first copy the elements
     # to an immutable array.
     as_array.as_list
+
+
+  # the current state of the buffer
+  # as a string.
+  #
+  public redef as_string => as_array.as_string
