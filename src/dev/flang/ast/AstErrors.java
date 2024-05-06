@@ -1956,8 +1956,9 @@ public class AstErrors extends ANY
 
   public static void contractExpressionMustResultInBool(Expr cond)
   {
-    error(cond.pos(), "A expression of a contract must result in bool.",
-      "To solve this, change the expression to return a bool.");
+    error(cond.pos(), "An expression of a contract must result in type " + st("bool") + ".",
+          "Expression type is " + s(cond.type()) + "\n" +
+          "To solve this, change the expression to return a value of type " + st("bool") + ".");
   }
 
   public static void partialApplicationAmbiguity(SourcePosition pos,
