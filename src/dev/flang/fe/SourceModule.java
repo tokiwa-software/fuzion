@@ -951,7 +951,7 @@ part of the (((inner features))) declarations of the corresponding
         for (var h : d._heirs)
           {
             var pos = SourcePosition.builtIn; // NYI: Would be nicer to use Call.pos for the inheritance call in h.inherits
-            addInheritedFeature(data(outer)._declaredOrInheritedFeatures, h, pos, fn, f);
+            addDeclaredOrInherited(data(outer)._declaredOrInheritedFeatures, h, fn, f);
             addToHeirs(h, fn, f);
           }
       }
