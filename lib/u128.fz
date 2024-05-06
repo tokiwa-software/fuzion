@@ -81,14 +81,8 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
      u128 p03<<32 0         )
 
   # division and remainder with check for div-by-zero
-  public fixed infix / (other u128)
-  pre
-    safety: other != u128.zero
-  => div other
-  public fixed infix %  (other u128)
-  pre
-    safety: other != u128.zero
-  => mod other
+  public fixed infix / (other u128) => div other
+  public fixed infix % (other u128) => mod other
 
   # division and remainder with crash in case of div-by-zero
   div (other u128) u128 =>
@@ -149,6 +143,14 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
   fixed type.lteq(a, b u128) =>
     a.hi < b.hi || (a.hi = b.hi) && (a.lo ≤ b.lo)
 
+  # does this u128 fit into an u8?
+  #
+  public fixed redef fits_in_u8  => u128.this ≤ u8.max.as_u128
+
+  # does this u128 fit into an u32?
+  #
+  public fixed redef fits_in_u32 => u128.this ≤ u32.max.as_u128
+
   public as_i8 i8
     pre
       thiz ≤ i8.max.as_u128
@@ -172,9 +174,7 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
     =>
       lo.as_i64
   public as_u8 u8
-    pre
-      thiz ≤ u8.max.as_u128
-    post
+    post then
       analysis: result.as_u128 = thiz
     =>
       lo.as_u8

@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import dev.flang.util.List;
+import dev.flang.util.SourceRange;
 
 
 /**
@@ -49,7 +50,8 @@ public class Contract
   /**
    * Empty contract
    */
-  public static final Contract EMPTY_CONTRACT = new Contract(NO_COND, NO_COND);
+  public static final Contract EMPTY_CONTRACT = new Contract(NO_COND, null, null,
+                                                             NO_COND, null, null);
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -66,17 +68,38 @@ public class Contract
   public List<Cond> ens;
 
 
+  /**
+   * Did the parser find `pre` / `post` or even `pre else` / `post then` ? These
+   * might be present even if the condition list is NO_COND.
+   */
+  public final SourceRange _hasPre,     _hasPost;
+  public final SourceRange _hasPreElse, _hasPostThen;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
    * Constructor
    */
-  public Contract(List<Cond> r,
-                  List<Cond> e)
+  public Contract(List<Cond> r, SourceRange hasPre,  SourceRange hasElse,
+                  List<Cond> e, SourceRange hasPost, SourceRange hasThen)
   {
+    _hasPre  = hasPre;
+    _hasPost = hasPost;
+    _hasPreElse  = hasElse;
+    _hasPostThen = hasThen;
     req = r == null || r.isEmpty() ? NO_COND : r;
     ens = e == null || e.isEmpty() ? NO_COND : e;
+  }
+
+
+  /**
+   * Constructor
+   */
+  public Contract(List<Cond> r, List<Cond> e)
+  {
+    this(r, null, null, e, null, null);
   }
 
 

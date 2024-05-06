@@ -53,14 +53,8 @@ public u8(public val u8) : num.wrap_around, has_interval is
   public fixed infix *° (other u8) u8 => intrinsic
 
   # division and remainder with check for div-by-zero
-  public fixed infix / (other u8)
-  pre
-    safety: other != 0
-  => div other
-  public fixed infix % (other u8)
-  pre
-    safety: other != 0
-  => mod other
+  public fixed infix / (other u8) => div other
+  public fixed infix % (other u8) => mod other
 
   # division and remainder with crash in case of div-by-zero
   div (other u8) u8 => intrinsic

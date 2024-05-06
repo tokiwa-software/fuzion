@@ -50,6 +50,47 @@ public class AstErrors extends ANY
 {
 
 
+  /*------------------------------  enums  ------------------------------*/
+
+
+  /**
+   * Enum to distringuish contract parts: precondition vs. postcondition.
+   */
+  enum PreOrPost
+  {
+
+    Pre,
+    Post;
+
+    /**
+     * "Precondition" or "Postcondition" for pre-/post-condition.
+     */
+    @Override
+    public String toString()
+    {
+      return switch (this)
+        {
+          case Pre  -> "Precondition";
+          case Post -> "Postcontion";
+        };
+    }
+
+
+    /**
+     * "else" or "then" for pre-/post-condition.
+     */
+    String elseOrThen()
+    {
+      return switch (this)
+        {
+          case Pre  -> "else";
+          case Post -> "then";
+        };
+    }
+
+  }
+
+
   /*-------------------------  static methods  --------------------------*/
 
 
@@ -957,6 +998,55 @@ public class AstErrors extends ANY
           "Redefining feature: " + s(f) + "\n" +
           "To solve this, check spelling and argument count against the feature you want to redefine or " +
           "remove " + skw("redef") + " modifier in the declaration of " + s(f) + ".");
+  }
+
+  static void notRedefinedContractMustNotUseElseOrThen(SourcePosition pos, AbstractFeature f, PreOrPost preOrPost)
+  {
+    error(pos,
+          preOrPost + " must use " + code(preOrPost.elseOrThen()) + " only in a feature that redefines another feature.",
+          "Surrounding feature: " + s(f) + "\n" +
+          "To solve this, check if you are properly redefining another feature or, if you do not intend " +
+          "to do so, remove the " + code(preOrPost.elseOrThen()) + " keyword ");
+  }
+
+  public static void notRedefinedPreconditionMustNotUseElse(SourcePosition pos, AbstractFeature f)
+  {
+    notRedefinedContractMustNotUseElseOrThen(pos, f, PreOrPost.Pre);
+  }
+  public static void notRedefinedPostconditionMustNotUseThen(SourcePosition pos, AbstractFeature f)
+  {
+    notRedefinedContractMustNotUseElseOrThen(pos, f, PreOrPost.Post);
+  }
+
+  static void redefineContractMustUseElseOrThen(SourcePosition pos, AbstractFeature f, PreOrPost preOrPost)
+  {
+    var redefs = new StringBuilder();
+    for (var r : f.redefines())
+      {
+        var c = r.contract();
+        var cp = switch (preOrPost)
+          {
+          case Pre  -> c._hasPre;
+          case Post -> c._hasPost;
+          };
+        var rp = cp == null ? r.pos() : cp;
+        redefs.append("Redefines: " + s(r) + " from " + rp.show() + "\n");
+      }
+    error(pos,
+          preOrPost + " must use " + code(preOrPost.elseOrThen()) + " in a feature that redefines another feature.",
+          "Affected feature: " + s(f) + "\n" +
+          (redefs.length() > 0 ? redefs : "No redefined features found\n") +
+          "To solve this, check if you are accidentally redefining another feature or, if you do not intend " +
+          "to do so, add the " + code(preOrPost.elseOrThen()) + " keyword ");
+  }
+
+  public static void redefinePreconditionMustUseElse(SourcePosition pos, AbstractFeature f)
+  {
+    redefineContractMustUseElseOrThen(pos, f, PreOrPost.Pre);
+  }
+  public static void redefinePostconditionMustUseThen(SourcePosition pos, AbstractFeature f)
+  {
+    redefineContractMustUseElseOrThen(pos, f, PreOrPost.Post);
   }
 
   static void ambiguousTargets(SourcePosition pos,

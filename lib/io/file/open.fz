@@ -116,8 +116,6 @@ module:public open(public T type,
     # get byte at given index i
     #
     public index [ ] (i i64) u8 ! open T
-      pre
-        safety: i64 0 ≤ i < length
     =>
       mapped_buffer_get memory i
 
@@ -125,8 +123,6 @@ module:public open(public T type,
     # set byte at given index i to given value o
     #
     public set [ ] (i i64, o u8) unit ! io.file.open T
-      pre
-        safety: i64 0 ≤ i < length
     =>
       mapped_buffer_set memory i o
 

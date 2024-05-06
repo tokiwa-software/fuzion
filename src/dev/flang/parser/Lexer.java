@@ -1170,6 +1170,15 @@ public class Lexer extends SourceFile
 
 
   /**
+   * The start and end position of the previous token as a SourceRange instance
+   */
+  SourceRange lastTokenSourceRange()
+  {
+    return sourceRange(lastTokenPos(), lastTokenEndPos());
+  }
+
+
+  /**
    * Position of the first byte in source file after the current token.
    */
   int tokenEndPos()
