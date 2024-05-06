@@ -33,7 +33,7 @@ illegal_assignment is
     E ref is { x is { say "*** should never be here ***" }; xb {}; xc {} }
 
   curid i32 := 0
-  id i32 is
+  id i32 =>
     set result := curid
     set curid := result + 1
 
@@ -44,20 +44,20 @@ illegal_assignment is
 
   B ref : A is
     say "B's body"
-    redef x is say "B.x"
-    xb is say "B.xb"
+    redef x => say "B.x"
+    xb => say "B.xb"
 
   C ref : A is
-    redef x is say "C.x"
-    xc is say "C.xc"
+    redef x => say "C.x"
+    xc => say "C.xc"
 
   D ref : B, C is
-    redef x is say "D.x"
+    redef x => say "D.x"
 
   E ref : D is
-    redef x  is say "E.x"
-    redef xb is say "E.xb"
-    redef xc is say "E.xc"
+    redef x  => say "E.x"
+    redef xb => say "E.xb"
+    redef xc => say "E.xc"
 
   bi := B
   ci Q.C := C  // 1. should flag an error: illegal assignment
