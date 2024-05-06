@@ -47,11 +47,11 @@ test_this_type_negative is
 
 
   xa is
-    op0(v xa.this) xa.this is abstract
+    op0(v xa.this) xa.this => abstract
 
 
   xb(val String) : xa is
-    op0(v xb.this) xb.this is xb.this
+    op0(v xb.this) xb.this => xb.this
 
   xc : xb "cx" is
 

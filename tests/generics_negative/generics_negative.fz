@@ -63,9 +63,9 @@ generics_negative is
     x3 : choice A C B is  // 8. should flag an error: choice cannot use open generic
 
   opengenerics11 ref : Function i32 is
-    redef call() i32 is 42
+    redef call() i32 => 42
   opengenerics15 ref : Function i32 bool is
-    redef call(x bool) i32 is 42
+    redef call(x bool) i32 => 42
   opengenerics17 ref : Function unit is
     redef call() unit =>
   opengenerics21 ref : Function unit i32 is
@@ -102,7 +102,7 @@ generics_negative is
   r2r4a := r2 3 false 7          // 22. should flag an error, wrong number of arguments
 
   opengenerics23(A, B, C type) is
-    f(a A.i32) i32 is 3          // 23. should flag an error: generic used as outer type
+    f(a A.i32) i32 => 3          // 23. should flag an error: generic used as outer type
     x A i32 := any               // 24. should flag an error: generic must not have generic args
 
   opengenerics24 is
