@@ -670,7 +670,7 @@ part of the (((inner features))) declarations of the corresponding
                              Feature typeFeature)
   {
     findDeclarations(typeFeature, outerType);
-    addDeclared(true,  outerType, typeFeature);
+    addDeclared(outerType, typeFeature);
     typeFeature.scheduleForResolution(_res);
     resolveDeclarations(typeFeature);
   }
@@ -701,26 +701,17 @@ part of the (((inner features))) declarations of the corresponding
    * while the sets of declared and inherited features had already been
    * determined.
    *
-   * @param inherited true to add inner to declaredOrInherited, false to add it
-   * to declaredFeatures and declaredOrInherited.
-   *
    * @param outer the outer feature
    *
    * @param inner the feature to be added.
    */
-  private void addDeclared(boolean inherited, AbstractFeature outer, AbstractFeature inner)
+  private void addDeclared(AbstractFeature outer, AbstractFeature inner)
   {
     if (PRECONDITIONS)
       require(outer.isConstructor(), inner.isTypeFeature());
 
     var d = data(outer);
     var fn = inner.featureName();
-    if (!inherited && d._declaredFeatures != null)
-      {
-        if (CHECKS) check
-          (!d._declaredFeatures.containsKey(fn) || d._declaredFeatures.get(fn) == inner);
-        d._declaredFeatures.put(fn, inner);
-      }
     if (d._declaredOrInheritedFeatures != null)
       {
         if (CHECKS) check
