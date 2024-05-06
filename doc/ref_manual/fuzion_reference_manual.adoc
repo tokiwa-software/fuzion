@@ -349,7 +349,8 @@ include::rule.adoc[]
 :RULE_ID: PARS_CONTR_POST_NO_THEN
 include::rule.adoc[]
 
-In case of redefining an inhertied feature. pre- and postconditions are introduced using the `pre else` or `post then`, respectively.
+In case of redefining an inhertied feature, pre- and postconditions are
+introduced using `pre else` or `post then`, respectively:
 
 :RULE_SRC: src/dev/flang/fe/SourceModule.java
 :RULE_ID: PARS_CONTR_PRE_ELSE

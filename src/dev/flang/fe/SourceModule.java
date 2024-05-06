@@ -836,7 +836,7 @@ part of the (((inner features))) declarations of the corresponding
               {
                 /*
     // tag::fuzion_rule_PARS_NO_REDEF[]
-A feature that does not redefine an inherited featue must use the `redef` modifier.
+A feature that does not redefine an inherited featue must not use the `redef` modifier.
     // end::fuzion_rule_PARS_NO_REDEF[]
                 */
                 AstErrors.redefineModifierDoesNotRedefine(f);
@@ -873,7 +873,7 @@ A post-condition of a feature that does not redefine an inherited featue must st
           {
                 /*
     // tag::fuzion_rule_PARS_REDEF[]
-A feature that redefines an inherited featue must use the `redef` modifier unless the inherited fature is `abstract`.
+A feature that redefines at least one an inherited featue must use the `redef` modifier unless all redefined, inherited feature are `abstract`.
     // end::fuzion_rule_PARS_REDEF[]
                 */
             AstErrors.redefineModifierMissing(f.pos(), f, existing);
@@ -886,7 +886,7 @@ A feature that redefines an inherited featue must use the `redef` modifier unles
           {
               /*
     // tag::fuzion_rule_PARS_CONTR_PRE_ELSE[]
-A pre-condition of a feature that redefines an inherited featue must start with `pre else`.
+A pre-condition of a feature that redefines one or several inherited featues must start with `pre else`, indepdentent of wether the redefined, inherited features are `abstract` or not.
     // end::fuzion_rule_PARS_CONTR_PRE_ELSE[]
               */
             AstErrors.redefinePreconditionMustUseElse(c._hasPre, f);
@@ -895,7 +895,7 @@ A pre-condition of a feature that redefines an inherited featue must start with 
           {
               /*
     // tag::fuzion_rule_PARS_CONTR_POST_THEN[]
-A post-condition of a feature that redefines an inherited featue must start with `post else`.
+A post-condition of a feature that redefines one or several inherited featues must start with `post else`, indepdentent of wether the redefined, inherited features are `abstract` or not.
     // end::fuzion_rule_PARS_CONTR_POST_THEN[]
               */
             AstErrors.redefinePostconditionMustUseThen(c._hasPost, f);
