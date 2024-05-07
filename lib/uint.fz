@@ -306,12 +306,6 @@ is
     as_u32.as_u8
 
 
-  # does this uint fit into an u32?
-  #
-  public redef fits_in_u32 =>
-    data.count ≤ 1
-
-
   # does this uint fit into an u8?
   #
   public redef fits_in_u8 =>
@@ -319,10 +313,11 @@ is
 
 
   # this uint as an u32
-  public as_u32 u32
-  pre fits_in_u32
+  public fixed as_u32 u32
+    pre
+      debug: (uint.this ≤ uint.type.from_u32 u32.max)
   =>
-    data.first (u32 0)
+    data.first 0
 
 
   # does this uint fit in 64 bits?
@@ -364,6 +359,11 @@ is
       "0"
     else
       as_string0
+
+
+  # helper feature to init uint from an u32
+  public redef fixed type.from_u32(val u32) uint =>
+    uint [val] unit
 
 
   # helper feature to init uint from an u64

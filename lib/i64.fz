@@ -99,10 +99,6 @@ public i64(public val i64) : num.wrap_around, has_interval is
   #
   public fixed redef fits_in_u8  => 0 ≤ val ≤ u8.max.as_i64
 
-  # does this i64 fit into an u32?
-  #
-  public fixed redef fits_in_u32 => 0 ≤ val ≤ u32.max.as_i64
-
 
   # this i64 as an u8
   public as_u8 u8

@@ -79,10 +79,6 @@ public i8(public val i8) : num.wrap_around, has_interval is
   #
   public redef fixed fits_in_u8  => 0 ≤ val
 
-  # does this i8 fit into an u32?  This is true for all non-negative values.
-  #
-  public redef fixed fits_in_u32 => 0 ≤ val
-
   public as_u8  u8  => cast_to_u8
   public as_u16 u16
     pre
