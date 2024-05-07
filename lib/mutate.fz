@@ -76,7 +76,7 @@ public mutate : simple_effect is
   # base lib to make sure fundamental uses of local mutability do not cause dependency
   # on the panic effect.
   #
-  mpanic(msg String) => panic msg
+  module mpanic(msg String) => panic msg
 
 
   # common type for mutable data

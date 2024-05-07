@@ -30,7 +30,7 @@ private:public exit (
   # the handler this effect uses to exit
   p Exit_Handler,
 
-  redef r effect_mode.val,
+  r effect_mode.val,
 
   _ unit
   ) : effect r

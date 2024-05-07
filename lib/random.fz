@@ -30,7 +30,7 @@ public random (
   # the handler this effect uses to create random numbers
   p Random_Handler,
 
-  redef r effect_mode.val
+  r effect_mode.val
   ) : effect r
 is
 

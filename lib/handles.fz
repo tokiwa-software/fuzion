@@ -68,7 +68,7 @@ private:public handles(
   ar array T,
 
   # action to be taken: plain monad, install or replace?
-  redef r effect_mode.val
+  r effect_mode.val
   ) : oneway_monad X (handles T X) r
 is
 

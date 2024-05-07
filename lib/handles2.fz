@@ -42,7 +42,7 @@ private:public handles2(
   last_opt option (handle2_0 T),
 
   # action to be taken: plain monad, install or replace?
-  redef r effect_mode.val
+  r effect_mode.val
   ) : oneway_monad X (handles2 T X) r
 is
 
