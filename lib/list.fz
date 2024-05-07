@@ -115,9 +115,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # list must not be empty, causes precondition failure if debug is enabled.
   #
   public redef first
-  pre
-    debug: !is_empty
-  => head.get
+  =>
+    head.get
 
 
   # returns the list of all but the last element of this list
@@ -155,8 +154,6 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # for an infinite list.
   #
   public redef last A
-    pre
-      debug: !is_empty
   =>
     force_tail ? nil    => first
                | c Cons => force_tail.last
@@ -229,8 +226,6 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # e.g., to find the minimum of a list of i32, use `l.fold1 (<=)`
   #
   public redef fold1 (f (A,A)->A) A
-  pre
-    debug: !is_empty
   => (list.this ? nil    => panic "list.fold1 called on empty list"
                 | c Cons => c.tail.foldf f c.head)
 

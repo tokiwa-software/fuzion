@@ -237,7 +237,11 @@ public Sequence(public T type) ref is
   # create a slice from this Sequence that consists of the elements starting at index
   # from (including) up to index to (excluding).
   #
-  public slice(from, to i32) Sequence T =>
+  public slice(from, to i32) Sequence T
+    pre
+      debug: from ≥ 0
+      debug: to = 0 || is_valid_index to-1
+  =>
     drop(from).take to-from
 
 
@@ -550,13 +554,21 @@ public Sequence(public T type) ref is
       c Cons => c.head
 
 
+  # check if argument is a valid index in this sequence.
+  #
+  # Note that this may have has performance in O(i) unless this
+  # Sequence is_array_backed.
+  #
+  public is_valid_index(i i32) =>
+    (0 ≤ i && (if is_array_backed then i ≤ count
+                                  else !(drop i-1).is_empty))
+
+
   # the nth element in the sequence, must exist
   #
   public index [] (i i32) T
     pre
-      debug: 0 ≤ i
-      debug: finite: i < count
-      debug: !finite: !(drop i-1).is_empty
+      debug: is_valid_index(i)
   =>
     (nth i).get
 
