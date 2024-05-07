@@ -32,7 +32,7 @@
 # float_sequence -- a Sequence whose elements inherit from float
 #
 public float_sequence(public F type : float,
-                      redef from Sequence F) : numeric_sequence F from is
+                      from Sequence F) : numeric_sequence F from is
 
   # create a list from this Sequence.
   #

@@ -39,11 +39,9 @@ import dev.flang.mir.MIR;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
-import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourceFile;
 
 import java.util.Collection;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -250,6 +248,7 @@ public abstract class Module extends ANY implements FeatureLookup
    *
    * @param f the feature to be added.
    */
+  // NYI: merge addToDeclaredOrInheritedFeatures and addDeclaredOrInherited
   protected void addDeclaredOrInherited(SortedMap<FeatureName, AbstractFeature> set, AbstractFeature outer, FeatureName fn, AbstractFeature f)
   {
     if (PRECONDITIONS)
@@ -257,33 +256,42 @@ public abstract class Module extends ANY implements FeatureLookup
 
     var isInherited = outer != f.outer();
 
-    var existing = set.get(fn);
+    // e.g. Sequence.my_zip0 in test_free_types
+    // will be added to Sequence and its heirs
+    var isExtensionFeature = !sameModule(f, f.outer()) && f instanceof Feature;
 
-    if (existing != null && f != existing)
+    if (visibleFor(f, outer) || !isInherited || isExtensionFeature)
       {
-        var df = declaredFeatures(outer).get(fn);
+        var existing = set.get(fn);
 
-        if (isInherited &&
-            // no error if redefinition
-            !redefines(f, existing) &&
-            !redefines(existing, f) &&
-            // no error if declared features already contains redefinition
-            (df == null || (df.modifiers() & FuzionConstants.MODIFIER_REDEFINE) == 0))
-          { // NYI: Should be ok if existing or f is abstract.
-            AstErrors.repeatedInheritanceCannotBeResolved(outer.pos(), outer, fn, existing, f);
-          }
-
-        if (!isInherited && !sameModule(f, outer))
+        if (existing != null && f != existing)
           {
-            AstErrors.duplicateFeatureDeclaration(f.pos(), f, existing);
-          }
-      }
+            var df = declaredFeatures(outer).get(fn);
 
-    if (existing == null ||
-        redefines(f, existing) ||
-        !isInherited && (sameModule(f, outer) || visibleFor(f, outer)))
-      {
-        set.put(fn, f);
+            if (isInherited &&
+                // no error if redefinition
+                !redefines(f, existing) &&
+                !redefines(existing, f) &&
+                // no error if declared features already contains redefinition
+                (df == null || (df.modifiers() & FuzionConstants.MODIFIER_REDEFINE) == 0))
+              { // NYI: Should be ok if existing or f is abstract.
+                AstErrors.repeatedInheritanceCannotBeResolved(outer.pos(), outer, fn, existing, f);
+              }
+
+            if (!isInherited && !sameModule(f, outer))
+              {
+                AstErrors.duplicateFeatureDeclaration(f.pos(), f, existing);
+              }
+          }
+
+        if (existing == null ||
+            redefines(f, existing) ||
+            !isInherited &&
+              /* extension features */
+              (sameModule(f, outer) || visibleFor(f, outer)))
+          {
+            set.put(fn, f);
+          }
       }
   }
 

@@ -822,17 +822,29 @@ part of the (((inner features))) declarations of the corresponding
    *
    * @param f the declared or inherited feature.
    */
+  // NYI: merge addToDeclaredOrInheritedFeatures and addDeclaredOrInherited
   private void addToDeclaredOrInheritedFeatures(AbstractFeature outer, AbstractFeature f)
   {
     var fn = f.featureName();
     var doi = declaredOrInheritedFeatures(outer);
     var existing = doi.get(fn);
     var c = f.contract();
-    if (existing == null)
+
+    var isInherited = outer != f.outer();
+
+    if (
+      // declarations do not have to satisfy visibility rules
+      !isInherited ||
+      // inherited features must be visible where we inherit them
+      visibleFor(f, outer)
+    )
       {
-        if (f instanceof Feature ff)
+        if (CHECKS) check
+          (existing == null || existing == f || visibleFor(existing, outer));
+
+        if (existing == null)
           {
-            if ((ff._modifiers & FuzionConstants.MODIFIER_REDEFINE) != 0)
+            if ((f.modifiers() & FuzionConstants.MODIFIER_REDEFINE) != 0)
               {
                 /*
     // tag::fuzion_rule_PARS_NO_REDEF[]
@@ -860,57 +872,58 @@ A post-condition of a feature that does not redefine an inherited featue must st
                 AstErrors.notRedefinedPostconditionMustNotUseThen(c._hasPostThen, f);
               }
           }
-      }
-    else if (existing == f)
-      {
-      }
-    else if (f instanceof Feature ff && (ff._modifiers & FuzionConstants.MODIFIER_REDEFINE) == 0 && !existing.isAbstract())
-      { /* previous duplicate feature declaration could result in this error for
-         * type features, so suppress them in this case. See fuzion-lang.dev's
-         * design/examples/typ_const2.fz as an example.
-         */
-        if ((!Errors.any() || !f.isTypeFeature()) && visibleFor(existing, f))
+
+        if (existing != null && existing != f)
           {
+            if ((f.modifiers() & FuzionConstants.MODIFIER_REDEFINE) == 0 &&
+                !existing.isAbstract() &&
+                /* previous duplicate feature declaration could result in this error for
+                * type features, so suppress them in this case. See fuzion-lang.dev's
+                * design/examples/typ_const2.fz as an example.
+                */
+                (!Errors.any() || !f.isTypeFeature()))
+              {
                 /*
     // tag::fuzion_rule_PARS_REDEF[]
 A feature that redefines at least one inherited feature must use the `redef` modifier unless all redefined, inherited features are `abstract`.
     // end::fuzion_rule_PARS_REDEF[]
                 */
-            AstErrors.redefineModifierMissing(f.pos(), f, existing);
-          }
-      }
-    else
-      {
-        f.redefines().add(existing);
-        if (c._hasPre != null && c._hasPreElse == null)
-          {
+                AstErrors.redefineModifierMissing(f.pos(), f, existing);
+              }
+            else
+              {
+                f.redefines().add(existing);
+                if (c._hasPre != null && c._hasPreElse == null)
+                  {
               /*
     // tag::fuzion_rule_PARS_CONTR_PRE_ELSE[]
 A pre-condition of a feature that redefines one or several inherited features must start with `pre else`, independent of whether the redefined, inherited features are `abstract` or not.
     // end::fuzion_rule_PARS_CONTR_PRE_ELSE[]
               */
-            AstErrors.redefinePreconditionMustUseElse(c._hasPre, f);
-          }
-        else if (c._hasPost != null && c._hasPostThen == null)
-          {
+                    AstErrors.redefinePreconditionMustUseElse(c._hasPre, f);
+                  }
+                else if (c._hasPost != null && c._hasPostThen == null)
+                  {
               /*
     // tag::fuzion_rule_PARS_CONTR_POST_THEN[]
 A post-condition of a feature that redefines one or several inherited features must start with `post else`, independent of whether the redefined, inherited features are `abstract` or not.
     // end::fuzion_rule_PARS_CONTR_POST_THEN[]
               */
-            AstErrors.redefinePostconditionMustUseThen(c._hasPost, f);
+                    AstErrors.redefinePostconditionMustUseThen(c._hasPost, f);
+                  }
+              }
           }
+
+        // This is a fix for #978 but it might need to be removed when fixing #932.
+        if (f instanceof Feature ff &&
+            (outer.state().atLeast(State.RESOLVED_DECLARATIONS) ||
+                ff.state().atLeast(State.RESOLVED_DECLARATIONS)))
+          {
+            ff._addedLate = true;
+          }
+
+        doi.put(fn, f);
       }
-    if (f     instanceof Feature ff &&
-        outer.state().atLeast(State.RESOLVED_DECLARATIONS))
-      {
-        ff._addedLate = true;
-      }
-    if (f instanceof Feature ff && ff.state().atLeast(State.RESOLVED_DECLARATIONS))
-      {
-        ff._addedLate = true;
-      }
-    doi.put(fn, f);
   }
 
 

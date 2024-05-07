@@ -982,7 +982,29 @@ public class Clazz extends ANY implements Comparable<Clazz>
               }
           }
       }
-    return _flu.lookupFeature(feature(), fn, f);
+
+    // first look in the feature itself
+    AbstractFeature result = _flu.lookupFeature(feature(), fn, f);
+
+    // the inherited feature might not be
+    // visible to the inheriting feature
+    var chain = tf.findInheritanceChain(f.outer());
+    if (result == null && chain != null)
+      {
+        for (var p: chain)
+          {
+            result = _flu.lookupFeature(p.calledFeature(), fn, f);
+            if (result != null)
+              {
+                break;
+              }
+          }
+      }
+
+    if (POSTCONDITIONS) ensure
+      (result != null || Errors.any());
+
+    return result;
   }
 
 

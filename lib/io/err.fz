@@ -25,7 +25,7 @@
 
 # err -- effect providing an output stream
 #
-public err (redef p Print_Handler) : print_effect p is
+public err (p Print_Handler) : print_effect p is
 
 
   type.install_default =>
