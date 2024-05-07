@@ -873,7 +873,7 @@ A post-condition of a feature that does not redefine an inherited featue must st
           {
                 /*
     // tag::fuzion_rule_PARS_REDEF[]
-A feature that redefines at least one an inherited featue must use the `redef` modifier unless all redefined, inherited feature are `abstract`.
+A feature that redefines at least one inherited feature must use the `redef` modifier unless all redefined, inherited features are `abstract`.
     // end::fuzion_rule_PARS_REDEF[]
                 */
             AstErrors.redefineModifierMissing(f.pos(), f, existing);
@@ -886,7 +886,7 @@ A feature that redefines at least one an inherited featue must use the `redef` m
           {
               /*
     // tag::fuzion_rule_PARS_CONTR_PRE_ELSE[]
-A pre-condition of a feature that redefines one or several inherited featues must start with `pre else`, indepdentent of wether the redefined, inherited features are `abstract` or not.
+A pre-condition of a feature that redefines one or several inherited features must start with `pre else`, independent of whether the redefined, inherited features are `abstract` or not.
     // end::fuzion_rule_PARS_CONTR_PRE_ELSE[]
               */
             AstErrors.redefinePreconditionMustUseElse(c._hasPre, f);
@@ -895,7 +895,7 @@ A pre-condition of a feature that redefines one or several inherited featues mus
           {
               /*
     // tag::fuzion_rule_PARS_CONTR_POST_THEN[]
-A post-condition of a feature that redefines one or several inherited featues must start with `post else`, indepdentent of wether the redefined, inherited features are `abstract` or not.
+A post-condition of a feature that redefines one or several inherited features must start with `post else`, independent of whether the redefined, inherited features are `abstract` or not.
     // end::fuzion_rule_PARS_CONTR_POST_THEN[]
               */
             AstErrors.redefinePostconditionMustUseThen(c._hasPost, f);

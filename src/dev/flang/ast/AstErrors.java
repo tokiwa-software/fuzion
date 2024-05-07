@@ -54,7 +54,7 @@ public class AstErrors extends ANY
 
 
   /**
-   * Enum to distringuish contract parts: precondition vs. postcondition.
+   * Enum to distinguish contract parts: precondition vs. postcondition.
    */
   enum PreOrPost
   {
