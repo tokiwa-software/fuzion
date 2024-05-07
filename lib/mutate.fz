@@ -218,8 +218,6 @@ public mutate : simple_effect is
     # get element at given index i
     #
     public redef index [ ] (i i64) T
-      pre
-        safety: (i64 0) ≤ i < length
     =>
       data[i.as_i32]
 
@@ -227,8 +225,6 @@ public mutate : simple_effect is
     # set element at given index i to given value o
     #
     public set [ ] (i i64, o T) unit
-      pre
-        safety: (i64 0) ≤ i < length
     =>
       check_and_replace
       data[i.as_i32] := o
@@ -309,4 +305,3 @@ public mut =>
 # create a new mutable value of type T with initial value v
 #
 public mut(T type, v T) => mut.new T v
-

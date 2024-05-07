@@ -87,7 +87,6 @@ is
 
   # divide this int by other
   public fixed infix /  (other int) int
-  pre other != int.zero
   =>
     s num.sign := result_sign_mul_div other
     int s n/other.n
@@ -102,7 +101,6 @@ is
   # exponentation operator:
   # this int to the power of other
   public fixed infix ** (other int) int
-  pre other ≥ int.zero
   =>
     match s
       num.plus => int num.plus (n ** other.n)

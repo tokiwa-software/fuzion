@@ -670,7 +670,7 @@ part of the (((inner features))) declarations of the corresponding
                              Feature typeFeature)
   {
     findDeclarations(typeFeature, outerType);
-    addDeclared(true,  outerType, typeFeature);
+    addDeclared(outerType, typeFeature);
     typeFeature.scheduleForResolution(_res);
     resolveDeclarations(typeFeature);
   }
@@ -701,26 +701,17 @@ part of the (((inner features))) declarations of the corresponding
    * while the sets of declared and inherited features had already been
    * determined.
    *
-   * @param inherited true to add inner to declaredOrInherited, false to add it
-   * to declaredFeatures and declaredOrInherited.
-   *
    * @param outer the outer feature
    *
    * @param inner the feature to be added.
    */
-  private void addDeclared(boolean inherited, AbstractFeature outer, AbstractFeature inner)
+  private void addDeclared(AbstractFeature outer, AbstractFeature inner)
   {
     if (PRECONDITIONS)
       require(outer.isConstructor(), inner.isTypeFeature());
 
     var d = data(outer);
     var fn = inner.featureName();
-    if (!inherited && d._declaredFeatures != null)
-      {
-        if (CHECKS) check
-          (!d._declaredFeatures.containsKey(fn) || d._declaredFeatures.get(fn) == inner);
-        d._declaredFeatures.put(fn, inner);
-      }
     if (d._declaredOrInheritedFeatures != null)
       {
         if (CHECKS) check
@@ -836,11 +827,38 @@ part of the (((inner features))) declarations of the corresponding
     var fn = f.featureName();
     var doi = declaredOrInheritedFeatures(outer);
     var existing = doi.get(fn);
+    var c = f.contract();
     if (existing == null)
       {
-        if (f instanceof Feature ff && (ff._modifiers & FuzionConstants.MODIFIER_REDEFINE) != 0)
+        if (f instanceof Feature ff)
           {
-            AstErrors.redefineModifierDoesNotRedefine(f);
+            if ((ff._modifiers & FuzionConstants.MODIFIER_REDEFINE) != 0)
+              {
+                /*
+    // tag::fuzion_rule_PARS_NO_REDEF[]
+A feature that does not redefine an inherited featue must not use the `redef` modifier.
+    // end::fuzion_rule_PARS_NO_REDEF[]
+                */
+                AstErrors.redefineModifierDoesNotRedefine(f);
+              }
+            else if (c._hasPreElse != null)
+              {
+              /*
+    // tag::fuzion_rule_PARS_CONTR_PRE_NO_ELSE[]
+A pre-condition of a feature that does not redefine an inherited featue must start with `pre`, not `pre else`.
+    // end::fuzion_rule_PARS_CONTR_PRE_NO_ELSE[]
+              */
+                AstErrors.notRedefinedPreconditionMustNotUseElse(c._hasPreElse, f);
+              }
+            else if (c._hasPostThen != null)
+              {
+              /*
+    // tag::fuzion_rule_PARS_CONTR_POST_NO_THEN[]
+A post-condition of a feature that does not redefine an inherited featue must start with `post`, not `post then`.
+    // end::fuzion_rule_PARS_CONTR_POST_NO_THEN[]
+              */
+                AstErrors.notRedefinedPostconditionMustNotUseThen(c._hasPostThen, f);
+              }
           }
       }
     else if (existing == f)
@@ -853,12 +871,35 @@ part of the (((inner features))) declarations of the corresponding
          */
         if ((!Errors.any() || !f.isTypeFeature()) && visibleFor(existing, f))
           {
+                /*
+    // tag::fuzion_rule_PARS_REDEF[]
+A feature that redefines at least one inherited feature must use the `redef` modifier unless all redefined, inherited features are `abstract`.
+    // end::fuzion_rule_PARS_REDEF[]
+                */
             AstErrors.redefineModifierMissing(f.pos(), f, existing);
           }
       }
     else
       {
         f.redefines().add(existing);
+        if (c._hasPre != null && c._hasPreElse == null)
+          {
+              /*
+    // tag::fuzion_rule_PARS_CONTR_PRE_ELSE[]
+A pre-condition of a feature that redefines one or several inherited features must start with `pre else`, independent of whether the redefined, inherited features are `abstract` or not.
+    // end::fuzion_rule_PARS_CONTR_PRE_ELSE[]
+              */
+            AstErrors.redefinePreconditionMustUseElse(c._hasPre, f);
+          }
+        else if (c._hasPost != null && c._hasPostThen == null)
+          {
+              /*
+    // tag::fuzion_rule_PARS_CONTR_POST_THEN[]
+A post-condition of a feature that redefines one or several inherited features must start with `post else`, independent of whether the redefined, inherited features are `abstract` or not.
+    // end::fuzion_rule_PARS_CONTR_POST_THEN[]
+              */
+            AstErrors.redefinePostconditionMustUseThen(c._hasPost, f);
+          }
       }
     if (f     instanceof Feature ff &&
         outer.state().atLeast(State.RESOLVED_DECLARATIONS))
@@ -960,7 +1001,7 @@ part of the (((inner features))) declarations of the corresponding
         for (var h : d._heirs)
           {
             var pos = SourcePosition.builtIn; // NYI: Would be nicer to use Call.pos for the inheritance call in h.inherits
-            addInheritedFeature(data(outer)._declaredOrInheritedFeatures, h, pos, fn, f);
+            addDeclaredOrInherited(data(outer)._declaredOrInheritedFeatures, h, fn, f);
             addToHeirs(h, fn, f);
           }
       }

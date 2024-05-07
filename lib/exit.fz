@@ -86,9 +86,7 @@ is
     # set the stored exit code
     #
     set_exit_code(code i32) outcome unit
-      pre
-        0 ≤ code ≤ 127
-      post
+      post then
         exit_code = code
       =>
         if exit_code = 0

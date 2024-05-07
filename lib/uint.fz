@@ -55,8 +55,9 @@ is
 
   # shift right
   public fixed infix >> (other uint) uint
-  pre other ≤ uint i32.max.as_u64
   =>
+    check
+      other ≤ uint i32.max.as_u64
     if other = uint.zero
       thiz
     else if other ≥ uint 32
@@ -75,8 +76,9 @@ is
 
   # shift left
   public fixed infix << (other uint) uint
-  pre other ≤ uint i32.max.as_u64
   =>
+    check
+      other ≤ uint i32.max.as_u64
     if other = uint.zero
       thiz
     else if other ≥ uint 32
@@ -160,7 +162,6 @@ is
 
   # subtract other from this unsigned int
   public fixed infix - (other uint) uint
-  pre thiz ≥ other
   =>
     two_pow_32 := ((u64 1)<<32)
     (b1, b2) := equalize other
@@ -208,7 +209,6 @@ is
 
   # divide these unsigned ints
   public fixed infix /  (other uint) uint
-  pre other != uint.zero
   =>
     (quotient,_) := (divide_with_remainder other)
     quotient
@@ -216,7 +216,8 @@ is
 
   # modulo
   # returns the remainder of the division
-  public fixed infix %  (other uint) uint =>
+  public fixed infix %  (other uint) uint
+  =>
     (_,remainder) := (divide_with_remainder other)
     remainder
 
@@ -305,9 +306,16 @@ is
     as_u32.as_u8
 
 
-  # does this uint fit in 32 bits?
-  public fits_in_u32 =>
+  # does this uint fit into an u32?
+  #
+  public redef fits_in_u32 =>
     data.count ≤ 1
+
+
+  # does this uint fit into an u8?
+  #
+  public redef fits_in_u8 =>
+    data.count ≤ 1 && data[0].fits_in_u8
 
 
   # this uint as an u32
