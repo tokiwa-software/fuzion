@@ -130,23 +130,6 @@ module:public numeric : property.hashable, property.orderable is
   public fits_in_u8 => false
 
 
-  # does this numeric value fit into an u32? This is redefined by children
-  # of numeric that support `as_u32`.
-  #
-  public fits_in_u32 => false
-
-
-  # the u32 value corresponding to this
-  # note: potential fraction will be discarded
-  # NYI replace this by as_u32?
-  to_u32 u32
-    pre
-      debug: fits_in_u32
-  =>
-    if (numeric.this ≥ numeric.this.one) ((numeric.this - numeric.this.one).to_u32 + 1)
-    else 0
-
-
   # this numeric value as an u8
   public as_u8 u8
     pre

@@ -73,10 +73,6 @@ public u16(public val u16) : num.wrap_around, has_interval is
   #
   public redef fixed fits_in_u8  => val ≤ u8.max.as_u16
 
-  # does this u16 fit into an u8? This is always true.
-  #
-  public redef fixed fits_in_u32 => true
-
   public as_i8 i8
     pre
       debug: thiz ≤ i8.max.as_u16
