@@ -1,0 +1,60 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion example test_conflicting_inheritance.fz
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# test_conflicting_inheritance contains code that should produce compile time
+# errors due to inheritance of features with conflicting result or argument types
+#
+
+# original example from #3027
+a         is        f => 42
+B ref     is        f => "B.f"
+aB : a, B is  redef f => 4711
+
+b B := aB
+say b.f
+
+# systematic tests for result using different types, inheritance order and redefinitions types
+ri32    is        f => 42
+rString is        f => "B.f"
+rconflic_i32_String_i32    : ri32, rString is redef f => 4711
+rconflic_String_i32_i32    : rString, ri32 is redef f => 4711
+rconflic_i32_String_String : ri32, rString is redef f => "bla"
+rconflic_String_i32_String : rString, ri32 is redef f => "bla"
+rconflic_i32_String_f64    : ri32, rString is redef f => 3.14
+rconflic_String_i32_f64    : rString, ri32 is redef f => 3.14
+rconflic_i32_String_none   : ri32, rString is
+rconflic_String_i32_none   : rString, ri32 is
+
+# systematic tests for argument using different types, inheritance order and redefinitions types
+ai32    is        f(a i32   ) =>
+aString is        f(a String) =>
+aconflic_i32_String_i32    : ai32, aString is redef f(a i32) =>
+aconflic_String_i32_i32    : aString, ai32 is redef f(a i32) =>
+aconflic_i32_String_String : ai32, aString is redef f(a String) =>
+aconflic_String_i32_String : aString, ai32 is redef f(a String) =>
+aconflic_i32_String_f64    : ai32, aString is redef f(a f64) =>
+aconflic_String_i32_f64    : aString, ai32 is redef f(a f64) =>
+aconflic_i32_String_none   : ai32, aString is
+aconflic_String_i32_none   : aString, ai32 is

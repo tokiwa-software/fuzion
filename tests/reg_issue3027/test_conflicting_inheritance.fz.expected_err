@@ -1,0 +1,230 @@
+
+--CURDIR--/test_conflicting_inheritance.fz:47:1: error 1: Repeated inheritance of conflicting features
+rconflic_i32_String_none   : ri32, rString is
+^^^^^^^^^^^^^^^^^^^^^^^^
+Feature 'rconflic_i32_String_none' inherits feature 'f' (no arguments) repeatedly: 'ri32.f' defined at --CURDIR--/test_conflicting_inheritance.fz:39:19:
+ri32    is        f => 42
+------------------^
+and 'rString.f' defined at --CURDIR--/test_conflicting_inheritance.fz:40:19:
+rString is        f => "B.f"
+------------------^
+To solve this, you could add a redefinition of 'f' to 'rconflic_i32_String_none'.
+
+
+--CURDIR--/test_conflicting_inheritance.fz:48:1: error 2: Repeated inheritance of conflicting features
+rconflic_String_i32_none   : rString, ri32 is
+^^^^^^^^^^^^^^^^^^^^^^^^
+Feature 'rconflic_String_i32_none' inherits feature 'f' (no arguments) repeatedly: 'rString.f' defined at --CURDIR--/test_conflicting_inheritance.fz:40:19:
+rString is        f => "B.f"
+------------------^
+and 'ri32.f' defined at --CURDIR--/test_conflicting_inheritance.fz:39:19:
+ri32    is        f => 42
+------------------^
+To solve this, you could add a redefinition of 'f' to 'rconflic_String_i32_none'.
+
+
+--CURDIR--/test_conflicting_inheritance.fz:59:1: error 3: Repeated inheritance of conflicting features
+aconflic_i32_String_none   : ai32, aString is
+^^^^^^^^^^^^^^^^^^^^^^^^
+Feature 'aconflic_i32_String_none' inherits feature 'f' (one argument) repeatedly: 'ai32.f' defined at --CURDIR--/test_conflicting_inheritance.fz:51:19:
+ai32    is        f(a i32   ) =>
+------------------^
+and 'aString.f' defined at --CURDIR--/test_conflicting_inheritance.fz:52:19:
+aString is        f(a String) =>
+------------------^
+To solve this, you could add a redefinition of 'f' to 'aconflic_i32_String_none'.
+
+
+--CURDIR--/test_conflicting_inheritance.fz:60:1: error 4: Repeated inheritance of conflicting features
+aconflic_String_i32_none   : aString, ai32 is
+^^^^^^^^^^^^^^^^^^^^^^^^
+Feature 'aconflic_String_i32_none' inherits feature 'f' (one argument) repeatedly: 'aString.f' defined at --CURDIR--/test_conflicting_inheritance.fz:52:19:
+aString is        f(a String) =>
+------------------^
+and 'ai32.f' defined at --CURDIR--/test_conflicting_inheritance.fz:51:19:
+ai32    is        f(a i32   ) =>
+------------------^
+To solve this, you could add a redefinition of 'f' to 'aconflic_String_i32_none'.
+
+
+--CURDIR--/test_conflicting_inheritance.fz:33:21: error 5: Wrong result type in redefined feature
+aB : a, B is  redef f => 4711
+--------------------^
+In 'aB.f' that redefines 'B.f'
+result type is       : 'i32'
+result type should be: 'String'
+
+Original feature declared at --CURDIR--/test_conflicting_inheritance.fz:32:21:
+B ref     is        f => "B.f"
+--------------------^
+To solve this, change type of result to 'String'
+
+
+--CURDIR--/test_conflicting_inheritance.fz:41:53: error 6: Wrong result type in redefined feature
+rconflic_i32_String_i32    : ri32, rString is redef f => 4711
+----------------------------------------------------^
+In 'rconflic_i32_String_i32.f' that redefines 'rString.f'
+result type is       : 'i32'
+result type should be: 'String'
+
+Original feature declared at --CURDIR--/test_conflicting_inheritance.fz:40:19:
+rString is        f => "B.f"
+------------------^
+To solve this, change type of result to 'String'
+
+
+--CURDIR--/test_conflicting_inheritance.fz:42:53: error 7: Wrong result type in redefined feature
+rconflic_String_i32_i32    : rString, ri32 is redef f => 4711
+----------------------------------------------------^
+In 'rconflic_String_i32_i32.f' that redefines 'rString.f'
+result type is       : 'i32'
+result type should be: 'String'
+
+Original feature declared at --CURDIR--/test_conflicting_inheritance.fz:40:19:
+rString is        f => "B.f"
+------------------^
+To solve this, change type of result to 'String'
+
+
+--CURDIR--/test_conflicting_inheritance.fz:43:53: error 8: Wrong result type in redefined feature
+rconflic_i32_String_String : ri32, rString is redef f => "bla"
+----------------------------------------------------^
+In 'rconflic_i32_String_String.f' that redefines 'ri32.f'
+result type is       : 'String'
+result type should be: 'i32'
+
+Original feature declared at --CURDIR--/test_conflicting_inheritance.fz:39:19:
+ri32    is        f => 42
+------------------^
+To solve this, change type of result to 'i32'
+
+
+--CURDIR--/test_conflicting_inheritance.fz:44:53: error 9: Wrong result type in redefined feature
+rconflic_String_i32_String : rString, ri32 is redef f => "bla"
+----------------------------------------------------^
+In 'rconflic_String_i32_String.f' that redefines 'ri32.f'
+result type is       : 'String'
+result type should be: 'i32'
+
+Original feature declared at --CURDIR--/test_conflicting_inheritance.fz:39:19:
+ri32    is        f => 42
+------------------^
+To solve this, change type of result to 'i32'
+
+
+--CURDIR--/test_conflicting_inheritance.fz:45:53: error 10: Wrong result type in redefined feature
+rconflic_i32_String_f64    : ri32, rString is redef f => 3.14
+----------------------------------------------------^
+In 'rconflic_i32_String_f64.f' that redefines 'ri32.f'
+result type is       : 'f64'
+result type should be: 'i32'
+
+Original feature declared at --CURDIR--/test_conflicting_inheritance.fz:39:19:
+ri32    is        f => 42
+------------------^
+To solve this, change type of result to 'i32'
+
+
+--CURDIR--/test_conflicting_inheritance.fz:46:53: error 11: Wrong result type in redefined feature
+rconflic_String_i32_f64    : rString, ri32 is redef f => 3.14
+----------------------------------------------------^
+In 'rconflic_String_i32_f64.f' that redefines 'ri32.f'
+result type is       : 'f64'
+result type should be: 'i32'
+
+Original feature declared at --CURDIR--/test_conflicting_inheritance.fz:39:19:
+ri32    is        f => 42
+------------------^
+To solve this, change type of result to 'i32'
+
+
+--CURDIR--/test_conflicting_inheritance.fz:53:55: error 12: Wrong argument type in redefined feature
+aconflic_i32_String_i32    : ai32, aString is redef f(a i32) =>
+------------------------------------------------------^
+In 'aconflic_i32_String_i32.f' that redefines 'aString.f'
+argument type is       : 'i32'
+argument type should be: 'String'
+
+Original argument declared at --CURDIR--/test_conflicting_inheritance.fz:52:21:
+aString is        f(a String) =>
+--------------------^
+To solve this, change type of argument to 'String' at --CURDIR--/test_conflicting_inheritance.fz:53:55:
+aconflic_i32_String_i32    : ai32, aString is redef f(a i32) =>
+------------------------------------------------------^
+
+
+--CURDIR--/test_conflicting_inheritance.fz:54:55: error 13: Wrong argument type in redefined feature
+aconflic_String_i32_i32    : aString, ai32 is redef f(a i32) =>
+------------------------------------------------------^
+In 'aconflic_String_i32_i32.f' that redefines 'aString.f'
+argument type is       : 'i32'
+argument type should be: 'String'
+
+Original argument declared at --CURDIR--/test_conflicting_inheritance.fz:52:21:
+aString is        f(a String) =>
+--------------------^
+To solve this, change type of argument to 'String' at --CURDIR--/test_conflicting_inheritance.fz:54:55:
+aconflic_String_i32_i32    : aString, ai32 is redef f(a i32) =>
+------------------------------------------------------^
+
+
+--CURDIR--/test_conflicting_inheritance.fz:55:55: error 14: Wrong argument type in redefined feature
+aconflic_i32_String_String : ai32, aString is redef f(a String) =>
+------------------------------------------------------^
+In 'aconflic_i32_String_String.f' that redefines 'ai32.f'
+argument type is       : 'String'
+argument type should be: 'i32'
+
+Original argument declared at --CURDIR--/test_conflicting_inheritance.fz:51:21:
+ai32    is        f(a i32   ) =>
+--------------------^
+To solve this, change type of argument to 'i32' at --CURDIR--/test_conflicting_inheritance.fz:55:55:
+aconflic_i32_String_String : ai32, aString is redef f(a String) =>
+------------------------------------------------------^
+
+
+--CURDIR--/test_conflicting_inheritance.fz:56:55: error 15: Wrong argument type in redefined feature
+aconflic_String_i32_String : aString, ai32 is redef f(a String) =>
+------------------------------------------------------^
+In 'aconflic_String_i32_String.f' that redefines 'ai32.f'
+argument type is       : 'String'
+argument type should be: 'i32'
+
+Original argument declared at --CURDIR--/test_conflicting_inheritance.fz:51:21:
+ai32    is        f(a i32   ) =>
+--------------------^
+To solve this, change type of argument to 'i32' at --CURDIR--/test_conflicting_inheritance.fz:56:55:
+aconflic_String_i32_String : aString, ai32 is redef f(a String) =>
+------------------------------------------------------^
+
+
+--CURDIR--/test_conflicting_inheritance.fz:57:55: error 16: Wrong argument type in redefined feature
+aconflic_i32_String_f64    : ai32, aString is redef f(a f64) =>
+------------------------------------------------------^
+In 'aconflic_i32_String_f64.f' that redefines 'ai32.f'
+argument type is       : 'f64'
+argument type should be: 'i32'
+
+Original argument declared at --CURDIR--/test_conflicting_inheritance.fz:51:21:
+ai32    is        f(a i32   ) =>
+--------------------^
+To solve this, change type of argument to 'i32' at --CURDIR--/test_conflicting_inheritance.fz:57:55:
+aconflic_i32_String_f64    : ai32, aString is redef f(a f64) =>
+------------------------------------------------------^
+
+
+--CURDIR--/test_conflicting_inheritance.fz:58:55: error 17: Wrong argument type in redefined feature
+aconflic_String_i32_f64    : aString, ai32 is redef f(a f64) =>
+------------------------------------------------------^
+In 'aconflic_String_i32_f64.f' that redefines 'ai32.f'
+argument type is       : 'f64'
+argument type should be: 'i32'
+
+Original argument declared at --CURDIR--/test_conflicting_inheritance.fz:51:21:
+ai32    is        f(a i32   ) =>
+--------------------^
+To solve this, change type of argument to 'i32' at --CURDIR--/test_conflicting_inheritance.fz:58:55:
+aconflic_String_i32_f64    : aString, ai32 is redef f(a f64) =>
+------------------------------------------------------^
+
+17 errors.
