@@ -599,7 +599,7 @@ public abstract class Module extends ANY implements FeatureLookup
       }
     check
       (l == null || l.size() == 1 || Errors.any());
-    var result = l.getFirst();
+    var result = l == null ? null : l.getFirst();
 
 
     /* NYI: CLEANUP: can this be removed?
