@@ -219,13 +219,11 @@ public abstract class Module extends ANY implements FeatureLookup
                   {
                 if (CHECKS) check
                   (cf != outer);
-        if (fn.baseName().equals("f")) System.out.println("findInheritedFeatures found "+f.qualifiedName()+" for "+outer.qualifiedName()+"...");
 
                 var res = this instanceof SourceModule sm ? sm._res : null;
                 if (!f.isFixed())
                   {
                     var newfn = cf.handDown(res, f, fn, p, outer);
-        if (fn.baseName().equals("f")) System.out.println("findInheritedFeatures found "+f.qualifiedName()+" for "+outer.qualifiedName()+" addDOI "+newfn+"..");
                     addDeclaredOrInherited(set, outer, newfn, f);
                   }
                 else
@@ -273,13 +271,21 @@ public abstract class Module extends ANY implements FeatureLookup
     if (l != null) for (var existing : l)
       {
 
-        if (fn.baseName().equals("f")) System.out.println("addDOI for "+f.qualifiedName()+" outer "+outer.qualifiedName()+" existing "+
-                                                          (existing == null ? "nulL ": existing.qualifiedName())+" new: "+(f != existing));
     if (f != existing)
       {
         var existing = set.get(fn);
 
-        if (existing != null && f != existing)
+        if (isInherited &&
+            // no error if redefinition
+            !redefines(f, existing) &&
+            !redefines(existing, f) &&
+            // no error if declared features already contains redefinition
+            (df == null || (df.modifiers() & FuzionConstants.MODIFIER_REDEFINE) == 0))
+          { // NYI: Should be ok if existing or f is abstract.
+            AstErrors.repeatedInheritanceCannotBeResolved(outer.pos(), outer, fn, existing, f);
+          }
+
+        if (!false) if (!isInherited && !sameModule(f, outer))
           {
             AstErrors.duplicateFeatureDeclaration(f.pos(), f, existing);
           }
@@ -287,17 +293,14 @@ public abstract class Module extends ANY implements FeatureLookup
       }
       }
 
-    if (true || redefinesAllExisting ||
+    if (redefinesAllExisting ||
         !isInherited && (sameModule(f, outer) || visibleFor(f, outer)))
       {
         set.put(fn, new List<>(f));
-        if (fn.baseName().equals("f")) System.out.println("addDOI for "+f.qualifiedName()+" outer "+outer.qualifiedName()+" existing "+
-                                                          (l == null ? "null" : l.map2(existing->existing.qualifiedName()))+" new: ADDED!!!");
       }
     else
       {
-        if (fn.baseName().equals("f")) System.out.println("addDOI for "+f.qualifiedName()+" outer "+outer.qualifiedName()+" existing "+
-                                                          (l == null ? "null" : l.map2(existing->existing.qualifiedName()))+" new: NOT ADDED!");
+        //        add(set, f);
       }
   }
 

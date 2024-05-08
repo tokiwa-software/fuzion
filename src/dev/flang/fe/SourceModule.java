@@ -684,7 +684,6 @@ part of the (((inner features))) declarations of the corresponding
         if (CHECKS) check
           (!d._declaredFeatures.containsKey(fn) || d._declaredFeatures.get(fn) == typeParameter);
         d._declaredFeatures.put(fn, typeParameter);
-        if (fn.baseName().equals("f")) System.out.println("addTypeParameter: "+typeParameter.qualifiedName()+" to "+outer.qualifiedName()+" PUT df!");
       }
     if (d._declaredOrInheritedFeatures != null)
       {
@@ -695,7 +694,6 @@ part of the (((inner features))) declarations of the corresponding
           {
             add(doi, typeParameter);
           }
-        if (fn.baseName().equals("f")) System.out.println("addTypeParameter: "+typeParameter.qualifiedName()+" to "+outer.qualifiedName()+" PUT doif!");
       }
   }
 
@@ -718,7 +716,6 @@ part of the (((inner features))) declarations of the corresponding
 
     var d = data(outer);
     var fn = inner.featureName();
-    if (fn.baseName().equals("f")) System.out.println("addDeclared: "+inner.qualifiedName()+" to "+outer.qualifiedName());
     if (d._declaredOrInheritedFeatures != null)
       {
         var doi = d._declaredOrInheritedFeatures;
@@ -728,7 +725,6 @@ part of the (((inner features))) declarations of the corresponding
           {
             add(doi, inner);
           }
-        if (fn.baseName().equals("f")) System.out.println("addDeclared: "+inner.qualifiedName()+" to "+outer.qualifiedName()+" PUT doif!");
       }
   }
 
@@ -838,13 +834,10 @@ part of the (((inner features))) declarations of the corresponding
   private void addToDeclaredOrInheritedFeatures(AbstractFeature outer, AbstractFeature f)
   {
     var fn = f.featureName();
-    if (fn.baseName().equals("f")) System.out.println("ADDING "+f.qualifiedName()+" to "+outer.qualifiedName());
     var doi = declaredOrInheritedFeatures(outer);
     var existingl = doi.get(fn);
-    if (fn.baseName().equals("f")) System.out.println("EXISTING "+f.qualifiedName()+": "+(existingl == null ? "--" : existingl.map2(x->x.qualifiedName())));
     if (existingl != null) for (var existing : existingl)
       {
-    if (fn.baseName().equals("f") && existing != null) System.out.println("EXISTING "+existing.qualifiedName()+" in "+outer.qualifiedName());
     var c = f.contract();
 
     var isInherited = outer != f.outer();
@@ -940,7 +933,6 @@ A post-condition of a feature that redefines one or several inherited features m
       {
         ff._addedLate = true;
       }
-        if (fn.baseName().equals("f")) System.out.println("addToDeclaredOrInheritedFeatures: "+f.qualifiedName()+" to "+outer.qualifiedName()+" PUT doi!");
     doi.remove(fn);
     add(doi, f);
   }
@@ -1003,7 +995,6 @@ A post-condition of a feature that redefines one or several inherited features m
           }
       }
     df.put(fn, f);
-        if (fn.baseName().equals("f")) System.out.println("addDeclaredInner: "+f.qualifiedName()+" to "+outer.qualifiedName()+" PUT df!");
     if (outer.state().atLeast(State.RESOLVED_DECLARATIONS))
       {
         addToDeclaredOrInheritedFeatures(outer, f);
