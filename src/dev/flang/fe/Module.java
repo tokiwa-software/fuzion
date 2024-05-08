@@ -257,6 +257,67 @@ public abstract class Module extends ANY implements FeatureLookup
     if (PRECONDITIONS)
       require(!f.isFixed() || outer == f.outer());
 
+    //    add(set, fn, f);
+    var isInherited = outer != f.outer();
+
+    var l = set.get(fn);
+    if (l != null)
+      {
+        var it = l.listIterator();
+        while (f != null && it.hasNext())
+          {
+            var existing = it.next();
+            if (f != existing)
+              {
+                var df = declaredFeatures(outer).get(fn);
+
+                if (redefines(f, existing))
+                  {
+                    it.remove();
+                  }
+                else if (redefines(existing, f))
+                  {
+                    f = null;
+                  }
+                else if (isInherited && outer != existing.outer())
+                /*
+                // no error if declared features already contains redefinition
+                (df == null || (df.modifiers() & FuzionConstants.MODIFIER_REDEFINE) == 0))
+                */
+                  { // NYI: Should be ok if existing or f is abstract.
+                    //    AstErrors.repeatedInheritanceCannotBeResolved(outer.pos(), outer, fn, existing, f);
+                  }
+                else
+                  {
+                    // NYI: if (!isInherited && !sameModule(f, outer))
+                    //   AstErrors.duplicateFeatureDeclaration(f.pos(), f, existing);
+                  }
+              }
+          }
+      }
+    if (f != null)
+      {
+        add(set, fn, f);
+      }
+    /*
+        redefinesAllExisting = redefinesAllExisting && redefines(f, existing);
+      }
+      }
+
+    if (redefinesAllExisting ||
+        !isInherited && (sameModule(f, outer) || visibleFor(f, outer)))
+      {
+        set.put(fn, new List<>(f));
+      }
+    else
+      {
+        //        add(set, f);
+      }
+
+    */
+
+    //    add(set, f);
+    /*
     var isInherited = outer != f.outer();
 
     /* NYI:
@@ -302,6 +363,7 @@ public abstract class Module extends ANY implements FeatureLookup
       {
         //        add(set, f);
       }
+    */
   }
 
 
@@ -405,9 +467,8 @@ public abstract class Module extends ANY implements FeatureLookup
   }
 
 
-  void add(SortedMap<FeatureName, List<AbstractFeature>> s, AbstractFeature f)
+  void add(SortedMap<FeatureName, List<AbstractFeature>> s, FeatureName fn, AbstractFeature f)
   {
-    var fn =f.featureName();
     var l = s.get(fn);
     if (l == null)
       {
@@ -447,7 +508,7 @@ public abstract class Module extends ANY implements FeatureLookup
 
             for (var f : olf.declaredFeatures())
               {
-                add(s, f);
+                add(s, f.featureName(), f);
               }
           }
 

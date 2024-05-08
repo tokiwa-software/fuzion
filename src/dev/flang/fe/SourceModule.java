@@ -685,15 +685,12 @@ part of the (((inner features))) declarations of the corresponding
           (!d._declaredFeatures.containsKey(fn) || d._declaredFeatures.get(fn) == typeParameter);
         d._declaredFeatures.put(fn, typeParameter);
       }
-    if (d._declaredOrInheritedFeatures != null)
+    var doi = d._declaredOrInheritedFeatures;
+    if (doi != null)
       {
-        var doi = d._declaredOrInheritedFeatures;
         if (CHECKS) check
           (!doi.containsKey(fn) || doi.get(fn).size() == 1 && doi.get(fn).getFirst() == typeParameter);
-        if (!doi.containsKey(fn))
-          {
-            add(doi, typeParameter);
-          }
+        add(doi, fn, typeParameter);
       }
   }
 
@@ -716,15 +713,12 @@ part of the (((inner features))) declarations of the corresponding
 
     var d = data(outer);
     var fn = inner.featureName();
-    if (d._declaredOrInheritedFeatures != null)
+    var doi = d._declaredOrInheritedFeatures;
+    if (doi != null)
       {
-        var doi = d._declaredOrInheritedFeatures;
         if (CHECKS) check
           (!doi.containsKey(fn) || doi.get(fn).size() == 1 && doi.get(fn).getFirst() == inner);
-        if (!doi.containsKey(fn))
-          {
-            add(doi, inner);
-          }
+        add(doi, fn, inner);
       }
   }
 
@@ -934,7 +928,7 @@ A post-condition of a feature that redefines one or several inherited features m
         ff._addedLate = true;
       }
     doi.remove(fn);
-    add(doi, f);
+    add(doi, fn, f);
   }
 
 
@@ -1202,7 +1196,7 @@ A post-condition of a feature that redefines one or several inherited features m
                   }
                 if (f != null)
                   {
-                    add(fs, f);
+                    add(fs, f.featureName(), f);
                     foundFieldInThisScope = true;
                   }
               }
@@ -1520,6 +1514,7 @@ A post-condition of a feature that redefines one or several inherited features m
     checkArgTypesVisibility(f);
     checkPreconditionVisibility(f);
     checkAbstractVisibility(f);
+    checkDuplicateFeatures(f);
   }
 
 
@@ -1682,6 +1677,53 @@ A post-condition of a feature that redefines one or several inherited features m
     return result;
   }
 
+
+  private void checkDuplicateFeatures(Feature f)
+  {
+    var doi = data(f)._declaredOrInheritedFeatures;
+    if (doi != null)
+      {
+        for (var fn : doi.keySet())
+          {
+            checkDuplicateFeatures(f, fn, doi.get(fn));
+          }
+      }
+  }
+
+  private void checkDuplicateFeatures(AbstractFeature outer, FeatureName fn, List<AbstractFeature> fl)
+  {
+    if (PRECONDITIONS)
+      require(outer != null,
+              fn != null,
+              fl != null);
+
+    for (var f1 : fl)
+      {
+        for (var f2 : fl)
+          {
+            if (f1 != f2)
+              {
+                var isInherited1 = outer != f1.outer();
+                var isInherited2 = outer != f2.outer();
+
+                // NYI: take visibility into account!!!
+                if (isInherited1 && isInherited2)
+                /*
+                // no error if declared features already contains redefinition
+                (df == null || (df.modifiers() & FuzionConstants.MODIFIER_REDEFINE) == 0))
+                */
+                  { // NYI: Should be ok if existing or f is abstract.
+                    AstErrors.repeatedInheritanceCannotBeResolved(outer.pos(), outer, fn, f1, f2);
+                  }
+                else
+                  {
+                    // NYI: if (!isInherited && !sameModule(f, outer))
+                    AstErrors.duplicateFeatureDeclaration(f1.pos(), f1, f2);
+                  }
+              }
+          }
+      }
+  }
 
 
   /*---------------------------  library file  --------------------------*/
