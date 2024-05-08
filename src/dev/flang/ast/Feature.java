@@ -1445,7 +1445,8 @@ public class Feature extends AbstractFeature
   private List<AbstractCall> closureAccesses(Resolution res)
   {
     List<AbstractCall> result = new List<>();
-    for (AbstractFeature af : res._module.declaredOrInheritedFeatures(this).values())
+    for (var l: res._module.declaredOrInheritedFeatures(this).values())
+    for (var af : l)
       {
         af.visitExpressions(s -> {
             if (s instanceof AbstractCall c && dependsOnOuterRef(c))
@@ -1538,7 +1539,8 @@ public class Feature extends AbstractFeature
         AstErrors.choiceMustNotBeRef(_pos);
       }
 
-    for (AbstractFeature p : res._module.declaredOrInheritedFeatures(this).values())
+    for (var pl : res._module.declaredOrInheritedFeatures(this).values())
+    for (var p : pl)
       {
         // choice type must not have any fields
         if (p.isField() && !p.isOuterRef())
@@ -1659,7 +1661,8 @@ public class Feature extends AbstractFeature
    */
   private void checkBuiltInPrimitive(Resolution res)
   {
-    for (AbstractFeature p : res._module.declaredOrInheritedFeatures(this).values())
+    for (var pl : res._module.declaredOrInheritedFeatures(this).values())
+    for (var p : pl)
       {
         // primitives must not have any fields
         if (p.isField() && !p.isOuterRef() && !(p.featureName().baseName().equals("val") && p.resultType().compareTo(selfType())==0) )

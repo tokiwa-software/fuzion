@@ -140,6 +140,43 @@ public class Contract
   }
 
 
+  public void addInheritedContract(AbstractFeature from)
+  {
+    // precondition inheritance is the disjunction with the conjunction of all inherited conditions, i.e, in
+    //
+    //   a is
+    //     f pre a; b; c => ...
+    //   b : a is
+    //     redef f pre else d; e; f =>
+    //
+    // b.f becomes
+    //
+    //   b : a is
+    //     redef f pre (a && b && c) || (d && e && f) =>
+    //
+    for (var e : from.contract().req)
+      {
+        // NYI: missing support precondition inheritance!
+      }
+
+    // postcondition inheritance is just the conjunction of all inherited conditions
+    //
+    //   a is
+    //     f post a; b; c => ...
+    //   b : a is
+    //     redef f post then d; e; f =>
+    //
+    // b.f becomes
+    //
+    //     redef f post a && b && c && d && e && f =>
+    //
+    for (var e : from.contract().ens)
+      {
+        ens.add(e);
+      }
+  }
+
+
   /**
    * toString
    *

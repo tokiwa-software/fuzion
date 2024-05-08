@@ -920,7 +920,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     var outerType = outer().isUniverse()    ? universe() :
                     outer().isTypeFeature() ? outer()
                                             : outer().typeFeature(res);
-    var result = res._module.declaredOrInheritedFeatures(outerType).get(FeatureName.get(name, 0));
+    var l = res._module.declaredOrInheritedFeatures(outerType).get(FeatureName.get(name, 0));
+    var result = l == null ? null : l.getFirst();
     if (result == null)
       {
         var p = pos();

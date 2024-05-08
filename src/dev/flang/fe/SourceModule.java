@@ -684,12 +684,18 @@ part of the (((inner features))) declarations of the corresponding
         if (CHECKS) check
           (!d._declaredFeatures.containsKey(fn) || d._declaredFeatures.get(fn) == typeParameter);
         d._declaredFeatures.put(fn, typeParameter);
+        if (fn.baseName().equals("f")) System.out.println("addTypeParameter: "+typeParameter.qualifiedName()+" to "+outer.qualifiedName()+" PUT df!");
       }
     if (d._declaredOrInheritedFeatures != null)
       {
+        var doi = d._declaredOrInheritedFeatures;
         if (CHECKS) check
-          (!d._declaredOrInheritedFeatures.containsKey(fn) || d._declaredOrInheritedFeatures.get(fn) == typeParameter);
-        d._declaredOrInheritedFeatures.put(fn, typeParameter);
+          (!doi.containsKey(fn) || doi.get(fn).size() == 1 && doi.get(fn).getFirst() == typeParameter);
+        if (!doi.containsKey(fn))
+          {
+            add(doi, typeParameter);
+          }
+        if (fn.baseName().equals("f")) System.out.println("addTypeParameter: "+typeParameter.qualifiedName()+" to "+outer.qualifiedName()+" PUT doif!");
       }
   }
 
@@ -712,11 +718,17 @@ part of the (((inner features))) declarations of the corresponding
 
     var d = data(outer);
     var fn = inner.featureName();
+    if (fn.baseName().equals("f")) System.out.println("addDeclared: "+inner.qualifiedName()+" to "+outer.qualifiedName());
     if (d._declaredOrInheritedFeatures != null)
       {
+        var doi = d._declaredOrInheritedFeatures;
         if (CHECKS) check
-          (!d._declaredOrInheritedFeatures.containsKey(fn) || d._declaredOrInheritedFeatures.get(fn) == inner);
-        d._declaredOrInheritedFeatures.put(fn, inner);
+          (!doi.containsKey(fn) || doi.get(fn).size() == 1 && doi.get(fn).getFirst() == inner);
+        if (!doi.containsKey(fn))
+          {
+            add(doi, inner);
+          }
+        if (fn.baseName().equals("f")) System.out.println("addDeclared: "+inner.qualifiedName()+" to "+outer.qualifiedName()+" PUT doif!");
       }
   }
 
@@ -826,8 +838,13 @@ part of the (((inner features))) declarations of the corresponding
   private void addToDeclaredOrInheritedFeatures(AbstractFeature outer, AbstractFeature f)
   {
     var fn = f.featureName();
+    if (fn.baseName().equals("f")) System.out.println("ADDING "+f.qualifiedName()+" to "+outer.qualifiedName());
     var doi = declaredOrInheritedFeatures(outer);
-    var existing = doi.get(fn);
+    var existingl = doi.get(fn);
+    if (fn.baseName().equals("f")) System.out.println("EXISTING "+f.qualifiedName()+": "+(existingl == null ? "--" : existingl.map2(x->x.qualifiedName())));
+    if (existingl != null) for (var existing : existingl)
+      {
+    if (fn.baseName().equals("f") && existing != null) System.out.println("EXISTING "+existing.qualifiedName()+" in "+outer.qualifiedName());
     var c = f.contract();
 
     var isInherited = outer != f.outer();
@@ -913,17 +930,19 @@ A post-condition of a feature that redefines one or several inherited features m
                   }
               }
           }
-
-        // This is a fix for #978 but it might need to be removed when fixing #932.
-        if (f instanceof Feature ff &&
-            (outer.state().atLeast(State.RESOLVED_DECLARATIONS) ||
-                ff.state().atLeast(State.RESOLVED_DECLARATIONS)))
-          {
-            ff._addedLate = true;
-          }
-
-        doi.put(fn, f);
+        c.addInheritedContract(existing);
       }
+      }
+    // This is a fix for #978 but it might need to be removed when fixing #932.
+    if (f instanceof Feature ff &&
+        (outer.state().atLeast(State.RESOLVED_DECLARATIONS) ||
+            ff.state().atLeast(State.RESOLVED_DECLARATIONS)))
+      {
+        ff._addedLate = true;
+      }
+        if (fn.baseName().equals("f")) System.out.println("addToDeclaredOrInheritedFeatures: "+f.qualifiedName()+" to "+outer.qualifiedName()+" PUT doi!");
+    doi.remove(fn);
+    add(doi, f);
   }
 
 
@@ -984,6 +1003,7 @@ A post-condition of a feature that redefines one or several inherited features m
           }
       }
     df.put(fn, f);
+        if (fn.baseName().equals("f")) System.out.println("addDeclaredInner: "+f.qualifiedName()+" to "+outer.qualifiedName()+" PUT df!");
     if (outer.state().atLeast(State.RESOLVED_DECLARATIONS))
       {
         addToDeclaredOrInheritedFeatures(outer, f);
@@ -1028,7 +1048,7 @@ A post-condition of a feature that redefines one or several inherited features m
 
 
   @Override
-  public SortedMap<FeatureName, AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer)
+  public SortedMap<FeatureName, List<AbstractFeature>> declaredOrInheritedFeatures(AbstractFeature outer)
   {
     return this.declaredOrInheritedFeatures(outer, _dependsOn);
   }
@@ -1055,7 +1075,8 @@ A post-condition of a feature that redefines one or several inherited features m
       }
     var count = 0;
     AbstractFeature found = null;
-    for (var f : declaredOrInheritedFeatures(outer).values())
+    for (var l : declaredOrInheritedFeatures(outer).values())
+    for (var f : l)
       {
         if (featureVisible(use.pos()._sourceFile, f) &&
             f instanceof LibraryFeature lf &&
@@ -1163,10 +1184,12 @@ A post-condition of a feature that redefines one or several inherited features m
             for (var e : fs.entrySet())
               {
                 var fn = e.getKey();
-                var f = e.getValue();
+                for (var f : e.getValue())
+                  {
                 if (f.isField() && (f.outer()==null || f.outer().resultField() != f))
                   {
                     fields.add(fn);
+                  }
                   }
               }
             if (!fields.isEmpty())
@@ -1178,15 +1201,17 @@ A post-condition of a feature that redefines one or several inherited features m
                 // if we found f in scope, remove all other entries, otherwise remove all entries within this since they are not in scope.
                 for (var fn : fields)
                   {
-                    var fi = fs.get(fn);
+                    for (var fi : fs.get(fn))
+                      {
                     if (f != null || fi.outer() == outer && (!(fi instanceof Feature fif) || !fif.isArtificialField()))
                       {
                         fs.remove(fn);
                       }
+                      }
                   }
                 if (f != null)
                   {
-                    fs.put(f.featureName(), f);
+                    add(fs, f);
                     foundFieldInThisScope = true;
                   }
               }
@@ -1194,12 +1219,14 @@ A post-condition of a feature that redefines one or several inherited features m
 
         for (var e : fs.entrySet())
           {
-            var v = e.getValue();
+            for(var v : e.getValue())
+              {
             if ((use == null || (hidden != featureVisible(use.pos()._sourceFile, v))) &&
                 (!v.isField() || !foundFieldInScope))
               {
                 result.add(new FeatureAndOuter(v, curOuter, inner));
                 foundFieldInScope = foundFieldInScope || v.isField() && foundFieldInThisScope;
+              }
               }
           }
 
