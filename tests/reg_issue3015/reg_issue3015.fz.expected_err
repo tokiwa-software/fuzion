@@ -1,0 +1,9 @@
+
+--CURDIR--/reg_issue3015.fz:25:33: error 1: Could not find called feature
+  say ["一", "二", "三", "四" ].my_zip1
+--------------------------------^^^^^^^
+Feature not found: 'my_zip1' (no arguments)
+Target feature: 'array'
+In call: '["一", "二", "三", "四" ].my_zip1'
+
+one error.
