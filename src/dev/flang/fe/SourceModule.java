@@ -843,8 +843,8 @@ part of the (((inner features))) declarations of the corresponding
       visibleFor(f, outer)
     )
       {
-        if (CHECKS) check
-          (existing == null || existing == f || visibleFor(existing, outer));
+        //        if (CHECKS) check
+        //          (existing == null || existing == f || visibleFor(existing, outer));
 
         if (existing == null)
           {
@@ -892,6 +892,7 @@ A post-condition of a feature that does not redefine an inherited featue must st
 A feature that redefines at least one inherited feature must use the `redef` modifier unless all redefined, inherited features are `abstract`.
     // end::fuzion_rule_PARS_REDEF[]
                 */
+                if (visibleFor(existing, f.outer()))
                 AstErrors.redefineModifierMissing(f.pos(), f, existing);
               }
             else

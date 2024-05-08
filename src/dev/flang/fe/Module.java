@@ -327,6 +327,7 @@ public abstract class Module extends ANY implements FeatureLookup
 
     if (visibleFor(f, outer) || !isInherited || isExtensionFeature)
     */
+    /*
     var redefinesAllExisting = true;
     var l = set.get(fn);
     if (l != null) for (var existing : l)
