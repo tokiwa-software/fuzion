@@ -108,6 +108,53 @@ public abstract class Module extends ANY implements FeatureLookup
   LibraryModule[] _dependsOn;
 
 
+  /*--------------------------  static methods  -------------------------*/
+
+
+  /**
+   * From the given map s, get the list of entries for given FeatureName. Wil
+   * return an empty list if no mapping was found.
+   *
+   * @param s a set of features
+   *
+   * @param fn a name we are looking for
+   *
+   * @return the list of features store for `fn`, never null.
+   */
+  protected static List<AbstractFeature> get(SortedMap<FeatureName, List<AbstractFeature>> s, FeatureName fn)
+  {
+    var result = s.get(fn);
+    return result == null ? AbstractFeature._NO_FEATURES_ : result;
+  }
+
+
+  /**
+   * Add feature `f` for name `fn` to the map `s`. If a mapping exists that does
+   * not contain `f`, add `f` to the existing mapping.  Otherwise, create a new
+   * mapping that only contains `f`.
+   *
+   * @param s a set of features we are modifying.
+   *
+   * @param fn a name we want to map to `f`. Note that `fn` might be diffrent to
+   * `f.featureName()`.
+   *
+   * @param f a feature.
+   */
+  protected static void add(SortedMap<FeatureName, List<AbstractFeature>> s, FeatureName fn, AbstractFeature f)
+  {
+    var l = s.get(fn);
+    if (l == null)
+      {
+        l = new List<>();
+        s.put(fn, l);
+      }
+    if (!l.stream().anyMatch(x->x==f))
+      {
+        l.add(f);
+      }
+  }
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -382,50 +429,6 @@ public abstract class Module extends ANY implements FeatureLookup
 
 
   /**
-   * From the given map s, get the list of entries for given FeatureName. Wil
-   * return an empty list if no mapping was found.
-   *
-   * @param s a set of features
-   *
-   * @param fn a name we are looking for
-   *
-   * @return the list of features store for `fn`, never null.
-   */
-  List<AbstractFeature> get(SortedMap<FeatureName, List<AbstractFeature>> s, FeatureName fn)
-  {
-    var result = s.get(fn);
-    return result == null ? AbstractFeature._NO_FEATURES_ : result;
-  }
-
-
-  /**
-   * Add feature `f` for name `fn` to the map `s`. If a mapping exists that does
-   * not contain `f`, add `f` to the existing mapping.  Otherwise, create a new
-   * mapping that only contains `f`.
-   *
-   * @param s a set of features we are modifying.
-   *
-   * @param fn a name we want to map to `f`. Note that `fn` might be diffrent to
-   * `f.featureName()`.
-   *
-   * @param f a feature.
-   */
-  void add(SortedMap<FeatureName, List<AbstractFeature>> s, FeatureName fn, AbstractFeature f)
-  {
-    var l = s.get(fn);
-    if (l == null)
-      {
-        l = new List<>();
-        s.put(fn, l);
-      }
-    if (!l.stream().anyMatch(x->x==f))
-      {
-        l.add(f);
-      }
-  }
-
-
-  /**
    * Get declared and inherited features for given outer Feature as seen by this
    * module.  Result is never null.
    *
@@ -517,6 +520,10 @@ public abstract class Module extends ANY implements FeatureLookup
 
   /**
    * Helper to apply given function to all declared or inherited features of this feature.
+   *
+   * @param af a feature as seen from this module
+   *
+   * @param fun operation to apply to all declared or inherited features of af.
    */
   public void forEachDeclaredOrInheritedFeature(AbstractFeature af, Consumer<AbstractFeature> fun)
   {

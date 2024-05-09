@@ -1667,6 +1667,12 @@ A post-condition of a feature that does not redefine an inherited featue must st
   }
 
 
+  /**
+   * Check f's declared or inherited features for duplicates and flag errors if
+   * incompatible duplicates are encountered.
+   *
+   * @param f a feature
+   */
   private void checkDuplicateFeatures(Feature f)
   {
     var doi = data(f)._declaredOrInheritedFeatures;
@@ -1679,6 +1685,16 @@ A post-condition of a feature that does not redefine an inherited featue must st
       }
   }
 
+  /**
+   * Check outer's declared or inherited features with effective name `fn` for duplicates and flag errors if
+   * incompatible duplicates are encountered.
+   *
+   * @param outer a feature
+   *
+   * @param fn the effective feature name within outer, used for error messages only
+   *
+   * @param fl list of features declared or inherited by outer with effective name fn.
+   */
   private void checkDuplicateFeatures(AbstractFeature outer, FeatureName fn, List<AbstractFeature> fl)
   {
     if (PRECONDITIONS)
@@ -1697,10 +1713,6 @@ A post-condition of a feature that does not redefine an inherited featue must st
 
                 // NYI: take visibility into account!!!
                 if (isInherited1 && isInherited2)
-                /*
-                // no error if declared features already contains redefinition
-                (df == null || (df.modifiers() & FuzionConstants.MODIFIER_REDEFINE) == 0))
-                */
                   { // NYI: Should be ok if existing or f is abstract.
                     AstErrors.repeatedInheritanceCannotBeResolved(outer.pos(), outer, fn, f1, f2);
                   }
