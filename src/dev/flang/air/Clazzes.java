@@ -729,7 +729,6 @@ public class Clazzes extends ANY
             calledDynamically(cf, typePars);
           }
 
-        try {
         var innerClazz        = tclazz.lookup(new FeatureAndActuals(cf, typePars, false), c.select(), c, c.isInheritanceCall());
         var preconditionClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars, true ), c.select(), c, c.isInheritanceCall());
         if (outerClazz.hasActualClazzes(c, outer))
@@ -768,10 +767,6 @@ public class Clazzes extends ANY
               }
             while (tpc != null && !tpc.feature().isUniverse());
           }
-        } catch (Error e) {
-          System.out.println("IN "+outerClazz+" PROBLEM FOR "+c+" at "+c.pos().show());
-          throw e;
-        }
       }
   }
 

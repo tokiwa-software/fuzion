@@ -316,6 +316,15 @@ public class List<T>
 
 
   /**
+   * Get first element of the list, null if list is empty.
+   */
+  public T getFirstOrNull()
+  {
+    return size() == 0 ? null : get(0);
+  }
+
+
+  /**
    * Get last element of the list.
    */
   public T getLast()

@@ -830,19 +830,17 @@ part of the (((inner features))) declarations of the corresponding
     var fn = f.featureName();
     var isInherited = outer != f.outer();
     var c = f.contract();
-    var doi = declaredOrInheritedFeatures(outer);
-    var existingl = doi.get(fn);
-    if (existingl != null) for (var existing : existingl)
+    for (var existing : declaredOrInheritedFeatures(outer, fn))
       {
-
-    if (
-      // declarations do not have to satisfy visibility rules
-      !isInherited ||
-      // inherited features must be visible where we inherit them
-      visibleFor(f, outer)
-    )
-      {
-        if (existing != f)
+        if ((
+             // declarations do not have to satisfy visibility rules
+             !isInherited ||
+             // inherited features must be visible where we inherit them
+             visibleFor(f, outer)
+             )
+            &&
+            existing != f
+            )
           {
             if ((f.modifiers() & FuzionConstants.MODIFIER_REDEFINE) == 0 &&
                 !existing.isAbstract() &&
@@ -858,7 +856,9 @@ A feature that redefines at least one inherited feature must use the `redef` mod
     // end::fuzion_rule_PARS_REDEF[]
                 */
                 if (visibleFor(existing, f.outer()))
-                AstErrors.redefineModifierMissing(f.pos(), f, existing);
+                  {
+                    AstErrors.redefineModifierMissing(f.pos(), f, existing);
+                  }
               }
             else
               {
@@ -884,7 +884,6 @@ A post-condition of a feature that redefines one or several inherited features m
               }
           }
         c.addInheritedContract(existing);
-      }
       }
 
     if (f.redefines().isEmpty())
@@ -925,6 +924,7 @@ A post-condition of a feature that does not redefine an inherited featue must st
       {
         ff._addedLate = true;
       }
+    var doi = declaredOrInheritedFeatures(outer);
     doi.remove(fn);  // NYI: remove only those features that are redefined by f!
     add(doi, fn, f);
   }
@@ -1030,13 +1030,6 @@ A post-condition of a feature that does not redefine an inherited featue must st
   /*--------------------------  feature lookup  -------------------------*/
 
 
-  @Override
-  public SortedMap<FeatureName, List<AbstractFeature>> declaredOrInheritedFeatures(AbstractFeature outer)
-  {
-    return this.declaredOrInheritedFeatures(outer, _dependsOn);
-  }
-
-
   /**
    * Check if outer defines or inherits exactly one feature with no arguments
    * and an open type parameter as its result type. If such a feature exists and
@@ -1056,21 +1049,19 @@ A post-condition of a feature that does not redefine an inherited featue must st
       {
         _res.resolveDeclarations(outer);
       }
-    var count = 0;
-    AbstractFeature found = null;
-    for (var l : declaredOrInheritedFeatures(outer).values())
-    for (var f : l)
-      {
-        if (featureVisible(use.pos()._sourceFile, f) &&
-            f instanceof LibraryFeature lf &&
-            lf.resultType().isOpenGeneric() &&
-            f.arguments().isEmpty())
-          {
-            found = f;
-            count++;
-          }
-      }
-    return count == 1 ? found : null;
+    var result = new List<AbstractFeature>();
+    forEachDeclaredOrInheritedFeature(outer,
+                                      f ->
+                                      {
+                                        if (featureVisible(use.pos()._sourceFile, f) &&
+                                            f instanceof LibraryFeature lf &&
+                                            lf.resultType().isOpenGeneric() &&
+                                            f.arguments().isEmpty())
+                                          {
+                                            result.add(f);
+                                          }
+                                      });
+    return result.size() == 1 ? result.getFirst() : null;
   }
 
 
@@ -1169,10 +1160,10 @@ A post-condition of a feature that does not redefine an inherited featue must st
                 var fn = e.getKey();
                 for (var f : e.getValue())
                   {
-                if (f.isField() && (f.outer()==null || f.outer().resultField() != f))
-                  {
-                    fields.add(fn);
-                  }
+                    if (f.isField() && (f.outer()==null || f.outer().resultField() != f))
+                      {
+                        fields.add(fn);
+                      }
                   }
               }
             if (!fields.isEmpty())
@@ -1184,13 +1175,12 @@ A post-condition of a feature that does not redefine an inherited featue must st
                 // if we found f in scope, remove all other entries, otherwise remove all entries within this since they are not in scope.
                 for (var fn : fields)
                   {
-                    var l = fs.get(fn);
-                    if (l != null) for (var fi : l)
+                    for (var fi : get(fs, fn))
                       {
-                    if (f != null || fi.outer() == outer && (!(fi instanceof Feature fif) || !fif.isArtificialField()))
-                      {
-                        fs.remove(fn);
-                      }
+                        if (f != null || fi.outer() == outer && (!(fi instanceof Feature fif) || !fif.isArtificialField()))
+                          {
+                            fs.remove(fn);
+                          }
                       }
                   }
                 if (f != null)
@@ -1203,14 +1193,14 @@ A post-condition of a feature that does not redefine an inherited featue must st
 
         for (var e : fs.entrySet())
           {
-            for(var v : e.getValue())
+            for (var v : e.getValue())
               {
-            if ((use == null || (hidden != featureVisible(use.pos()._sourceFile, v))) &&
-                (!v.isField() || !foundFieldInScope))
-              {
-                result.add(new FeatureAndOuter(v, curOuter, inner));
-                foundFieldInScope = foundFieldInScope || v.isField() && foundFieldInThisScope;
-              }
+                if ((use == null || (hidden != featureVisible(use.pos()._sourceFile, v))) &&
+                    (!v.isField() || !foundFieldInScope))
+                  {
+                    result.add(new FeatureAndOuter(v, curOuter, inner));
+                    foundFieldInScope = foundFieldInScope || v.isField() && foundFieldInThisScope;
+                  }
               }
           }
 

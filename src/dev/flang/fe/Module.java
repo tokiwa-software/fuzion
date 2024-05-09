@@ -47,6 +47,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 
 
 /**
@@ -57,7 +58,6 @@ import java.util.TreeSet;
  */
 public abstract class Module extends ANY implements FeatureLookup
 {
-
 
 
   /*-----------------------------  classes  -----------------------------*/
@@ -214,26 +214,25 @@ public abstract class Module extends ANY implements FeatureLookup
             for (var fnf : declaredOrInheritedFeatures(cf, modules).entrySet())
               {
                 var fn = fnf.getKey();
-                var l = fnf.getValue();
-                for (var f : l)
+                for (var f : fnf.getValue())
                   {
-                if (CHECKS) check
-                  (cf != outer);
+                    if (CHECKS) check
+                      (cf != outer);
 
-                var res = this instanceof SourceModule sm ? sm._res : null;
-                if (!f.isFixed())
-                  {
-                    var newfn = cf.handDown(res, f, fn, p, outer);
-                    addDeclaredOrInherited(set, outer, newfn, f);
-                  }
-                else
-                  {
-                    for (var f2 : f.redefines())
+                    var res = this instanceof SourceModule sm ? sm._res : null;
+                    if (!f.isFixed())
                       {
-                        var newfn = cf.handDown(res, f2, fn, p, outer);
-                        addDeclaredOrInherited(set, outer, newfn, f2);
+                        var newfn = cf.handDown(res, f, fn, p, outer);
+                        addDeclaredOrInherited(set, outer, newfn, f);
                       }
-                  }
+                    else
+                      {
+                        for (var f2 : f.redefines())
+                          {
+                            var newfn = cf.handDown(res, f2, fn, p, outer);
+                            addDeclaredOrInherited(set, outer, newfn, f2);
+                          }
+                      }
                   }
               }
           }
@@ -257,41 +256,21 @@ public abstract class Module extends ANY implements FeatureLookup
     if (PRECONDITIONS)
       require(!f.isFixed() || outer == f.outer());
 
-    //    add(set, fn, f);
-    var isInherited = outer != f.outer();
-
-    var l = set.get(fn);
-    if (l != null)
+    var it = get(set, fn).listIterator();
+    while (f != null && it.hasNext())
       {
-        var it = l.listIterator();
-        while (f != null && it.hasNext())
+        var existing = it.next();
+        if (f != existing)
           {
-            var existing = it.next();
-            if (f != existing)
-              {
-                var df = declaredFeatures(outer).get(fn);
+            var df = declaredFeatures(outer).get(fn);
 
-                if (redefines(f, existing))
-                  {
-                    it.remove();
-                  }
-                else if (redefines(existing, f))
-                  {
-                    f = null;
-                  }
-                else if (isInherited && outer != existing.outer())
-                /*
-                // no error if declared features already contains redefinition
-                (df == null || (df.modifiers() & FuzionConstants.MODIFIER_REDEFINE) == 0))
-                */
-                  { // NYI: Should be ok if existing or f is abstract.
-                    //    AstErrors.repeatedInheritanceCannotBeResolved(outer.pos(), outer, fn, existing, f);
-                  }
-                else
-                  {
-                    // NYI: if (!isInherited && !sameModule(f, outer))
-                    //   AstErrors.duplicateFeatureDeclaration(f.pos(), f, existing);
-                  }
+            if (redefines(f, existing))
+              {
+                it.remove();
+              }
+            else if (redefines(existing, f))
+              {
+                f = null;
               }
           }
       }
@@ -299,72 +278,6 @@ public abstract class Module extends ANY implements FeatureLookup
       {
         add(set, fn, f);
       }
-    /*
-        redefinesAllExisting = redefinesAllExisting && redefines(f, existing);
-      }
-      }
-
-    if (redefinesAllExisting ||
-        !isInherited && (sameModule(f, outer) || visibleFor(f, outer)))
-      {
-        set.put(fn, new List<>(f));
-      }
-    else
-      {
-        //        add(set, f);
-      }
-
-    */
-
-    //    add(set, f);
-    /*
-    var isInherited = outer != f.outer();
-
-    /* NYI:
-    // e.g. Sequence.my_zip0 in test_free_types
-    // will be added to Sequence and its heirs
-    var isExtensionFeature = !sameModule(f, f.outer()) && f instanceof Feature;
-
-    if (visibleFor(f, outer) || !isInherited || isExtensionFeature)
-    */
-    /*
-    var redefinesAllExisting = true;
-    var l = set.get(fn);
-    if (l != null) for (var existing : l)
-      {
-
-    if (f != existing)
-      {
-        var existing = set.get(fn);
-
-        if (isInherited &&
-            // no error if redefinition
-            !redefines(f, existing) &&
-            !redefines(existing, f) &&
-            // no error if declared features already contains redefinition
-            (df == null || (df.modifiers() & FuzionConstants.MODIFIER_REDEFINE) == 0))
-          { // NYI: Should be ok if existing or f is abstract.
-            AstErrors.repeatedInheritanceCannotBeResolved(outer.pos(), outer, fn, existing, f);
-          }
-
-        if (!false) if (!isInherited && !sameModule(f, outer))
-          {
-            AstErrors.duplicateFeatureDeclaration(f.pos(), f, existing);
-          }
-        redefinesAllExisting = redefinesAllExisting && redefines(f, existing);
-      }
-      }
-
-    if (redefinesAllExisting ||
-        !isInherited && (sameModule(f, outer) || visibleFor(f, outer)))
-      {
-        set.put(fn, new List<>(f));
-      }
-    else
-      {
-        //        add(set, f);
-      }
-    */
   }
 
 
@@ -468,6 +381,35 @@ public abstract class Module extends ANY implements FeatureLookup
   }
 
 
+  /**
+   * From the given map s, get the list of entries for given FeatureName. Wil
+   * return an empty list if no mapping was found.
+   *
+   * @param s a set of features
+   *
+   * @param fn a name we are looking for
+   *
+   * @return the list of features store for `fn`, never null.
+   */
+  List<AbstractFeature> get(SortedMap<FeatureName, List<AbstractFeature>> s, FeatureName fn)
+  {
+    var result = s.get(fn);
+    return result == null ? AbstractFeature._NO_FEATURES_ : result;
+  }
+
+
+  /**
+   * Add feature `f` for name `fn` to the map `s`. If a mapping exists that does
+   * not contain `f`, add `f` to the existing mapping.  Otherwise, create a new
+   * mapping that only contains `f`.
+   *
+   * @param s a set of features we are modifying.
+   *
+   * @param fn a name we want to map to `f`. Note that `fn` might be diffrent to
+   * `f.featureName()`.
+   *
+   * @param f a feature.
+   */
   void add(SortedMap<FeatureName, List<AbstractFeature>> s, FeatureName fn, AbstractFeature f)
   {
     var l = s.get(fn);
@@ -482,6 +424,7 @@ public abstract class Module extends ANY implements FeatureLookup
       }
   }
 
+
   /**
    * Get declared and inherited features for given outer Feature as seen by this
    * module.  Result is never null.
@@ -489,8 +432,10 @@ public abstract class Module extends ANY implements FeatureLookup
    * @param outer the declaring feature
    *
    * @param modules the additional modules where we should look for declared or inherited features
+   *
+   * @return the map of names within outer and corresponding features. Never null.
    */
-  public SortedMap<FeatureName, List<AbstractFeature>> declaredOrInheritedFeatures(AbstractFeature outer, Module[] modules)
+  private SortedMap<FeatureName, List<AbstractFeature>> declaredOrInheritedFeatures(AbstractFeature outer, Module[] modules)
   {
     if (PRECONDITIONS) require
       (outer.state().atLeast(State.RESOLVING_DECLARATIONS) || outer.isUniverse());
@@ -539,6 +484,50 @@ public abstract class Module extends ANY implements FeatureLookup
 
 
   /**
+   * Get declared and inherited features for given outer Feature as seen by this
+   * module.  Result is never null.
+   *
+   * @param outer the declaring feature
+   *
+   * @return the map of names within outer and corresponding features. Never null.
+   */
+  SortedMap<FeatureName, List<AbstractFeature>> declaredOrInheritedFeatures(AbstractFeature outer)
+  {
+    return this.declaredOrInheritedFeatures(outer, _dependsOn);
+  }
+
+
+  /**
+   * Get declared and inherited features with given effective name for given
+   * outer Feature as seen by this module.  Result is never null.
+   *
+   * @param outer the declaring feature
+   *
+   * @param fn the effective name in outer.
+   *
+   * @return the list of features in outer for name fn, never null.
+   */
+  public List<AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer, FeatureName fn)
+  {
+    var s = declaredOrInheritedFeatures(outer);
+    var l = s.get(fn);
+    return l == null ? AbstractFeature._NO_FEATURES_ : l;
+  }
+
+
+  /**
+   * Helper to apply given function to all declared or inherited features of this feature.
+   */
+  public void forEachDeclaredOrInheritedFeature(AbstractFeature af, Consumer<AbstractFeature> fun)
+  {
+    for (var l: declaredOrInheritedFeatures(af).values())
+      {
+        l.forEach(fun);
+      }
+  }
+
+
+  /**
    * Are `a` and `b` defined in the same module?
    */
   private boolean sameModule(AbstractFeature a, AbstractFeature b)
@@ -560,7 +549,7 @@ public abstract class Module extends ANY implements FeatureLookup
     if (result == null)
       {
         result = new TreeSet<>();
-        for (var s : declaredOrInheritedFeatures(f, _dependsOn).values())
+        for (var s : declaredOrInheritedFeatures(f).values())
           {
             result.addAll(s);
           }
@@ -592,15 +581,7 @@ public abstract class Module extends ANY implements FeatureLookup
     if (PRECONDITIONS) require
       (outer.state().atLeast(State.RESOLVED_DECLARATIONS));
 
-    var l = declaredOrInheritedFeatures(outer, _dependsOn).get(name);
-    if (l != null && l.size() != 1)
-      {
-        Errors.error("duplicate features in "+outer.qualifiedName()+": "+l.map2(x->x.qualifiedName()));
-      }
-    check
-      (l == null || l.size() == 1 || Errors.any());
-    var result = l == null ? null : l.getFirst();
-
+    var result = declaredOrInheritedFeatures(outer, name).getFirstOrNull();
 
     /* NYI: CLEANUP: can this be removed?
      *
