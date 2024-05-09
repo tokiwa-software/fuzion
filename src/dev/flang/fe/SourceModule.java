@@ -828,13 +828,12 @@ part of the (((inner features))) declarations of the corresponding
   private void addToDeclaredOrInheritedFeatures(AbstractFeature outer, AbstractFeature f)
   {
     var fn = f.featureName();
+    var isInherited = outer != f.outer();
+    var c = f.contract();
     var doi = declaredOrInheritedFeatures(outer);
     var existingl = doi.get(fn);
     if (existingl != null) for (var existing : existingl)
       {
-    var c = f.contract();
-
-    var isInherited = outer != f.outer();
 
     if (
       // declarations do not have to satisfy visibility rules
@@ -843,41 +842,7 @@ part of the (((inner features))) declarations of the corresponding
       visibleFor(f, outer)
     )
       {
-        //        if (CHECKS) check
-        //          (existing == null || existing == f || visibleFor(existing, outer));
-
-        if (existing == null)
-          {
-            if ((f.modifiers() & FuzionConstants.MODIFIER_REDEFINE) != 0)
-              {
-                /*
-    // tag::fuzion_rule_PARS_NO_REDEF[]
-A feature that does not redefine an inherited featue must not use the `redef` modifier.
-    // end::fuzion_rule_PARS_NO_REDEF[]
-                */
-                AstErrors.redefineModifierDoesNotRedefine(f);
-              }
-            else if (c._hasPreElse != null)
-              {
-              /*
-    // tag::fuzion_rule_PARS_CONTR_PRE_NO_ELSE[]
-A pre-condition of a feature that does not redefine an inherited featue must start with `pre`, not `pre else`.
-    // end::fuzion_rule_PARS_CONTR_PRE_NO_ELSE[]
-              */
-                AstErrors.notRedefinedPreconditionMustNotUseElse(c._hasPreElse, f);
-              }
-            else if (c._hasPostThen != null)
-              {
-              /*
-    // tag::fuzion_rule_PARS_CONTR_POST_NO_THEN[]
-A post-condition of a feature that does not redefine an inherited featue must start with `post`, not `post then`.
-    // end::fuzion_rule_PARS_CONTR_POST_NO_THEN[]
-              */
-                AstErrors.notRedefinedPostconditionMustNotUseThen(c._hasPostThen, f);
-              }
-          }
-
-        if (existing != null && existing != f)
+        if (existing != f)
           {
             if ((f.modifiers() & FuzionConstants.MODIFIER_REDEFINE) == 0 &&
                 !existing.isAbstract() &&
@@ -921,6 +886,38 @@ A post-condition of a feature that redefines one or several inherited features m
         c.addInheritedContract(existing);
       }
       }
+
+    if (f.redefines().isEmpty())
+      {
+        if ((f.modifiers() & FuzionConstants.MODIFIER_REDEFINE) != 0)
+          {
+            /*
+    // tag::fuzion_rule_PARS_NO_REDEF[]
+A feature that does not redefine an inherited featue must not use the `redef` modifier.
+    // end::fuzion_rule_PARS_NO_REDEF[]
+            */
+            AstErrors.redefineModifierDoesNotRedefine(f);
+          }
+        else if (c._hasPreElse != null)
+          {
+            /*
+    // tag::fuzion_rule_PARS_CONTR_PRE_NO_ELSE[]
+A pre-condition of a feature that does not redefine an inherited featue must start with `pre`, not `pre else`.
+    // end::fuzion_rule_PARS_CONTR_PRE_NO_ELSE[]
+            */
+            AstErrors.notRedefinedPreconditionMustNotUseElse(c._hasPreElse, f);
+          }
+        else if (c._hasPostThen != null)
+          {
+            /*
+    // tag::fuzion_rule_PARS_CONTR_POST_NO_THEN[]
+A post-condition of a feature that does not redefine an inherited featue must start with `post`, not `post then`.
+    // end::fuzion_rule_PARS_CONTR_POST_NO_THEN[]
+            */
+            AstErrors.notRedefinedPostconditionMustNotUseThen(c._hasPostThen, f);
+          }
+      }
+
     // This is a fix for #978 but it might need to be removed when fixing #932.
     if (f instanceof Feature ff &&
         (outer.state().atLeast(State.RESOLVED_DECLARATIONS) ||
@@ -928,7 +925,7 @@ A post-condition of a feature that redefines one or several inherited features m
       {
         ff._addedLate = true;
       }
-    doi.remove(fn);
+    doi.remove(fn);  // NYI: remove only those features that are redefined by f!
     add(doi, fn, f);
   }
 
@@ -1187,7 +1184,8 @@ A post-condition of a feature that redefines one or several inherited features m
                 // if we found f in scope, remove all other entries, otherwise remove all entries within this since they are not in scope.
                 for (var fn : fields)
                   {
-                    for (var fi : fs.get(fn))
+                    var l = fs.get(fn);
+                    if (l != null) for (var fi : l)
                       {
                     if (f != null || fi.outer() == outer && (!(fi instanceof Feature fif) || !fif.isArtificialField()))
                       {
