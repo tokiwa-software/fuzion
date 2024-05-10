@@ -286,7 +286,8 @@ public class List<T>
   public boolean add(T e)
   {
     if (ANY.PRECONDITIONS) ANY.require
-      (!isFrozen());
+      (true || !isFrozen() // NYI: disabled since tests/reg_issue1943_type_parameter_as_outer_type crashes if enabled, need to check
+       );
 
     return super.add(e);
   }

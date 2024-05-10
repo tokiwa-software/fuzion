@@ -878,9 +878,12 @@ A post-condition of a feature that redefines one or several inherited features m
                 */
                 AstErrors.redefinePostconditionMustUseThen(c._hasPost, f);
               }
+            if (visibleFor(existing, f.outer()))
+              {
+                f.redefines().add(existing);
+                c.addInheritedContract(f, existing);
+              }
           }
-        f.redefines().add(existing);
-        c.addInheritedContract(f, existing);
       }
 
     if (f.redefines().isEmpty())
