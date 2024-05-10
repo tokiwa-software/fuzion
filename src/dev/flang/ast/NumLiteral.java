@@ -323,7 +323,6 @@ public class NumLiteral extends Constant
   /*-----------------------------  methods  -----------------------------*/
 
 
-
   /**
    * Was this declared with a '.'?  If so, the preferred type is f64, not
    * i32/i64.

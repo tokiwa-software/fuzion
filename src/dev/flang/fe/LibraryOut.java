@@ -496,7 +496,7 @@ class LibraryOut extends ANY
       {
         code(c.cond, false);
       }
-    var post = f.contract().ens;
+    var post = f.contract().all_postconditions();  // NYI: what about inherited postconditions?
     _data.writeInt(post.size());
     for (var c : post)
       {

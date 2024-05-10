@@ -860,30 +860,27 @@ A feature that redefines at least one inherited feature must use the `redef` mod
                     AstErrors.redefineModifierMissing(f.pos(), f, existing);
                   }
               }
-            else
+            else if (c._hasPre != null && c._hasPreElse == null)
               {
-                f.redefines().add(existing);
-                if (c._hasPre != null && c._hasPreElse == null)
-                  {
-              /*
+                /*
     // tag::fuzion_rule_PARS_CONTR_PRE_ELSE[]
 A pre-condition of a feature that redefines one or several inherited features must start with `pre else`, independent of whether the redefined, inherited features are `abstract` or not.
     // end::fuzion_rule_PARS_CONTR_PRE_ELSE[]
-              */
-                    AstErrors.redefinePreconditionMustUseElse(c._hasPre, f);
-                  }
-                else if (c._hasPost != null && c._hasPostThen == null)
-                  {
-              /*
+                */
+                AstErrors.redefinePreconditionMustUseElse(c._hasPre, f);
+              }
+            else if (c._hasPost != null && c._hasPostThen == null)
+              {
+                /*
     // tag::fuzion_rule_PARS_CONTR_POST_THEN[]
 A post-condition of a feature that redefines one or several inherited features must start with `post else`, independent of whether the redefined, inherited features are `abstract` or not.
     // end::fuzion_rule_PARS_CONTR_POST_THEN[]
-              */
-                    AstErrors.redefinePostconditionMustUseThen(c._hasPost, f);
-                  }
+                */
+                AstErrors.redefinePostconditionMustUseThen(c._hasPost, f);
               }
           }
-        c.addInheritedContract(existing);
+        f.redefines().add(existing);
+        c.addInheritedContract(f, existing);
       }
 
     if (f.redefines().isEmpty())
@@ -1467,9 +1464,33 @@ A post-condition of a feature that does not redefine an inherited featue must st
         if (o.isTypeFeaturesThisType() && f.isTypeFeaturesThisType())
           { // NYI: CLEANUP: #706: allow redefinition of THIS_TYPE in type features for now, these are created internally.
           }
-        else if (o.isChoice())
+        else if (o.isConstructor() ||
+                 switch (o.kind())
+                 {
+                   case Routine, Field, Intrinsic, Abstract, Native -> false; // ok
+                   case TypeParameter, OpenTypeParameter, Choice    -> true;  // not ok
+                 })
           {
-            AstErrors.cannotRedefineChoice(f, o);
+            /*
+    // tag::fuzion_rule_PARS_REDEF_KIND[]
+A feature that is a constructor, choice or a type parameter may not be redefined.
+    // end::fuzion_rule_PARS_REDEF_KIND[]
+            */
+            AstErrors.cannotRedefine(f, o);
+          }
+        else if (f.isConstructor() ||
+                 switch (f.kind())
+                 {
+                   case Routine, Field, Intrinsic, Abstract, Native -> false; // ok
+                   case TypeParameter, OpenTypeParameter, Choice    -> true;  // not ok
+                 })
+          {
+            /*
+    // tag::fuzion_rule_PARS_REDEF_AS_KIND[]
+A feature that is a constructor, choice or a type parameter may not redefine an inherited feature.
+    // end::fuzion_rule_PARS_REDEF_AS_KIND[]
+            */
+            AstErrors.cannotRedefine(f, o);
           }
         else if (!t1.isDirectlyAssignableFrom(t2) &&  // we (currently) do not tag the result in a redefined feature, see testRedefine
                  !t2.isVoid() &&
@@ -1504,6 +1525,7 @@ A post-condition of a feature that does not redefine an inherited featue must st
     checkPreconditionVisibility(f);
     checkAbstractVisibility(f);
     checkDuplicateFeatures(f);
+    checkContractAccesses(f);
   }
 
 
@@ -1723,6 +1745,34 @@ A post-condition of a feature that does not redefine an inherited featue must st
                   }
               }
           }
+      }
+  }
+
+
+  /**
+   *
+   */
+  private void checkContractAccesses(AbstractFeature f)
+  {
+    for (var c : f.contract()._declared_postconditions)
+      {
+        c.visitExpressions(e ->
+                           {
+                             if (!f.isConstructor() &&
+                                 e instanceof AbstractCall ca &&
+                                 ca.target() instanceof Current &&
+                                 !(ca.calledFeature() instanceof Feature cf && (cf.isResultField() ||
+                                                                                cf.isArgument() ||
+                                                                                cf.isOuterRef() ||
+                                                                                cf.isCaseField() ||
+
+                                                                                // NYI: there are some `#exprResultNNN` fields used, need to check why:
+                                                                                cf.isArtificialField()
+                                                                                )))
+                               {
+                                 AstErrors.postConditionMayNotAccessInnerFeature(f, ca);
+                               }
+                           });
       }
   }
 

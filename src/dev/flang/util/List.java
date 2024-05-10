@@ -278,6 +278,38 @@ public class List<T>
 
 
   /**
+   * add adds given element to the list
+   *
+   * @param e element to add
+   */
+  @Override
+  public boolean add(T e)
+  {
+    if (ANY.PRECONDITIONS) ANY.require
+      (!isFrozen());
+
+    return super.add(e);
+  }
+
+
+  /**
+   * add adds given element to the list after possibly cloning the list in case
+   * it was frozen.
+   *
+   * @param e element to add
+   *
+   * @return this if !isFrozen(), a clone of this otherwise, in any case with e
+   * added.
+   */
+  public List<T> addAfterUnfreeze(T e)
+  {
+    var result = isFrozen() ? clone() : this;
+    result.add(e);
+    return result;
+  }
+
+
+  /**
    * addAll adds all elements produced by the given Iterator.
    *
    * @param i an iterator
