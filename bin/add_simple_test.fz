@@ -79,7 +79,7 @@ add_simple_test is
           say "$test already exists."
           exit 1
 
-        io.file.write.create_dir "tests/$test"
+        io.dir.make "tests/$test"
         io.file.use unit "tests/$test/$test.fz" io.file.mode.write (()->io.file.open.write ((header false)+(test_body test)).utf8)
         _ := io.file.use unit "tests/$test/Makefile" io.file.mode.write (()->io.file.open.write ((header true)+(makefile_body test)).utf8)
 

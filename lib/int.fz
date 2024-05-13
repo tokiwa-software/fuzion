@@ -31,8 +31,6 @@ is
   # normalize the sign => no minus zero
   ns := if n = uint.zero then num.plus else s
 
-  public thiz => int ns n
-
   name String =>
     "int"
 
@@ -55,8 +53,8 @@ is
       int ns n+other.n
     else
       match ns
-        num.plus => thiz - (-other)
-        num.minus => other - (-thiz)
+        num.plus => int.this - (-other)
+        num.minus => other - (-int.this)
 
 
   # subtract other from this int
@@ -75,7 +73,7 @@ is
 
 
   # the sign of the result of the
-  # multiplication or division of thiz and other
+  # multiplication or division of int.this and other
   result_sign_mul_div(other int) num.sign =>
     if ns = other.ns then num.plus else num.minus
 
@@ -126,12 +124,12 @@ is
 
   public fixed infix **?(other int) num_option int =>
     match other.ns
-      num.plus => thiz ** other
+      num.plus => int.this ** other
       num.minus => nil # 0 and 1 ** -other would be okay but we disallow nonetheless
 
   public fixed infix **^(other int) int =>
     match other.ns
-      num.plus => thiz ** other
+      num.plus => int.this ** other
       num.minus => panic "negativ exponent is not allowed." # 0 or 1 ** -other would be okay but we disallow nonetheless
 
   # equality: are these two ints equal?

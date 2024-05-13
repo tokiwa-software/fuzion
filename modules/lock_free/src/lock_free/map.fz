@@ -680,6 +680,23 @@ is
       .as_list (i -> gcas_read i)
 
 
+  # this ctrie as a persistent map
+  #
+  # a snapshot is taken every time
+  # the map is modified.
+  #
+  as_persistent_map container.Persistent_Map CTK CTV =>
+    s := snapshot false
+    ref : container.Persistent_Map CTK CTV
+      public size i32 => s.size
+      public index [] (k CTK) option CTV => s[k]
+      public items Sequence (tuple CTK CTV) => s.items
+      public put(k CTK, v CTV) container.Persistent_Map CTK CTV =>
+        sp := s.snapshot false
+        sp.add k v
+        sp.as_persistent_map
+
+
   # initialize a new ctrie
   public fixed type.empty =>
 
