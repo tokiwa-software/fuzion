@@ -685,11 +685,12 @@ part of the (((inner features))) declarations of the corresponding
           (!d._declaredFeatures.containsKey(fn) || d._declaredFeatures.get(fn) == typeParameter);
         d._declaredFeatures.put(fn, typeParameter);
       }
-    if (d._declaredOrInheritedFeatures != null)
+    var doi = d._declaredOrInheritedFeatures;
+    if (doi != null)
       {
         if (CHECKS) check
-          (!d._declaredOrInheritedFeatures.containsKey(fn) || d._declaredOrInheritedFeatures.get(fn) == typeParameter);
-        d._declaredOrInheritedFeatures.put(fn, typeParameter);
+          (!doi.containsKey(fn) || doi.get(fn).size() == 1 && doi.get(fn).getFirst() == typeParameter);
+        add(doi, fn, typeParameter);
       }
   }
 
@@ -712,11 +713,12 @@ part of the (((inner features))) declarations of the corresponding
 
     var d = data(outer);
     var fn = inner.featureName();
-    if (d._declaredOrInheritedFeatures != null)
+    var doi = d._declaredOrInheritedFeatures;
+    if (doi != null)
       {
         if (CHECKS) check
-          (!d._declaredOrInheritedFeatures.containsKey(fn) || d._declaredOrInheritedFeatures.get(fn) == inner);
-        d._declaredOrInheritedFeatures.put(fn, inner);
+          (!doi.containsKey(fn) || doi.get(fn).size() == 1 && doi.get(fn).getFirst() == inner);
+        add(doi, fn, inner);
       }
   }
 
@@ -826,54 +828,19 @@ part of the (((inner features))) declarations of the corresponding
   private void addToDeclaredOrInheritedFeatures(AbstractFeature outer, AbstractFeature f)
   {
     var fn = f.featureName();
-    var doi = declaredOrInheritedFeatures(outer);
-    var existing = doi.get(fn);
-    var c = f.contract();
-
     var isInherited = outer != f.outer();
-
-    if (
-      // declarations do not have to satisfy visibility rules
-      !isInherited ||
-      // inherited features must be visible where we inherit them
-      visibleFor(f, outer)
-    )
+    var c = f.contract();
+    for (var existing : declaredOrInheritedFeatures(outer, fn))
       {
-        if (CHECKS) check
-          (existing == null || existing == f || visibleFor(existing, outer));
-
-        if (existing == null)
-          {
-            if ((f.modifiers() & FuzionConstants.MODIFIER_REDEFINE) != 0)
-              {
-                /*
-    // tag::fuzion_rule_PARS_NO_REDEF[]
-A feature that does not redefine an inherited featue must not use the `redef` modifier.
-    // end::fuzion_rule_PARS_NO_REDEF[]
-                */
-                AstErrors.redefineModifierDoesNotRedefine(f);
-              }
-            else if (c._hasPreElse != null)
-              {
-              /*
-    // tag::fuzion_rule_PARS_CONTR_PRE_NO_ELSE[]
-A pre-condition of a feature that does not redefine an inherited featue must start with `pre`, not `pre else`.
-    // end::fuzion_rule_PARS_CONTR_PRE_NO_ELSE[]
-              */
-                AstErrors.notRedefinedPreconditionMustNotUseElse(c._hasPreElse, f);
-              }
-            else if (c._hasPostThen != null)
-              {
-              /*
-    // tag::fuzion_rule_PARS_CONTR_POST_NO_THEN[]
-A post-condition of a feature that does not redefine an inherited featue must start with `post`, not `post then`.
-    // end::fuzion_rule_PARS_CONTR_POST_NO_THEN[]
-              */
-                AstErrors.notRedefinedPostconditionMustNotUseThen(c._hasPostThen, f);
-              }
-          }
-
-        if (existing != null && existing != f)
+        if ((
+             // declarations do not have to satisfy visibility rules
+             !isInherited ||
+             // inherited features must be visible where we inherit them
+             visibleFor(f, outer)
+             )
+            &&
+            existing != f
+            )
           {
             if ((f.modifiers() & FuzionConstants.MODIFIER_REDEFINE) == 0 &&
                 !existing.isAbstract() &&
@@ -888,7 +855,10 @@ A post-condition of a feature that does not redefine an inherited featue must st
 A feature that redefines at least one inherited feature must use the `redef` modifier unless all redefined, inherited features are `abstract`.
     // end::fuzion_rule_PARS_REDEF[]
                 */
-                AstErrors.redefineModifierMissing(f.pos(), f, existing);
+                if (visibleFor(existing, f.outer()))
+                  {
+                    AstErrors.redefineModifierMissing(f.pos(), f, existing);
+                  }
               }
             else
               {
@@ -913,17 +883,50 @@ A post-condition of a feature that redefines one or several inherited features m
                   }
               }
           }
-
-        // This is a fix for #978 but it might need to be removed when fixing #932.
-        if (f instanceof Feature ff &&
-            (outer.state().atLeast(State.RESOLVED_DECLARATIONS) ||
-                ff.state().atLeast(State.RESOLVED_DECLARATIONS)))
-          {
-            ff._addedLate = true;
-          }
-
-        doi.put(fn, f);
+        c.addInheritedContract(existing);
       }
+
+    if (f.redefines().isEmpty())
+      {
+        if ((f.modifiers() & FuzionConstants.MODIFIER_REDEFINE) != 0)
+          {
+            /*
+    // tag::fuzion_rule_PARS_NO_REDEF[]
+A feature that does not redefine an inherited featue must not use the `redef` modifier.
+    // end::fuzion_rule_PARS_NO_REDEF[]
+            */
+            AstErrors.redefineModifierDoesNotRedefine(f);
+          }
+        else if (c._hasPreElse != null)
+          {
+            /*
+    // tag::fuzion_rule_PARS_CONTR_PRE_NO_ELSE[]
+A pre-condition of a feature that does not redefine an inherited featue must start with `pre`, not `pre else`.
+    // end::fuzion_rule_PARS_CONTR_PRE_NO_ELSE[]
+            */
+            AstErrors.notRedefinedPreconditionMustNotUseElse(c._hasPreElse, f);
+          }
+        else if (c._hasPostThen != null)
+          {
+            /*
+    // tag::fuzion_rule_PARS_CONTR_POST_NO_THEN[]
+A post-condition of a feature that does not redefine an inherited featue must start with `post`, not `post then`.
+    // end::fuzion_rule_PARS_CONTR_POST_NO_THEN[]
+            */
+            AstErrors.notRedefinedPostconditionMustNotUseThen(c._hasPostThen, f);
+          }
+      }
+
+    // This is a fix for #978 but it might need to be removed when fixing #932.
+    if (f instanceof Feature ff &&
+        (outer.state().atLeast(State.RESOLVED_DECLARATIONS) ||
+            ff.state().atLeast(State.RESOLVED_DECLARATIONS)))
+      {
+        ff._addedLate = true;
+      }
+    var doi = declaredOrInheritedFeatures(outer);
+    doi.remove(fn);  // NYI: remove only those features that are redefined by f!
+    add(doi, fn, f);
   }
 
 
@@ -1027,13 +1030,6 @@ A post-condition of a feature that redefines one or several inherited features m
   /*--------------------------  feature lookup  -------------------------*/
 
 
-  @Override
-  public SortedMap<FeatureName, AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer)
-  {
-    return this.declaredOrInheritedFeatures(outer, _dependsOn);
-  }
-
-
   /**
    * Check if outer defines or inherits exactly one feature with no arguments
    * and an open type parameter as its result type. If such a feature exists and
@@ -1053,20 +1049,19 @@ A post-condition of a feature that redefines one or several inherited features m
       {
         _res.resolveDeclarations(outer);
       }
-    var count = 0;
-    AbstractFeature found = null;
-    for (var f : declaredOrInheritedFeatures(outer).values())
-      {
-        if (featureVisible(use.pos()._sourceFile, f) &&
-            f instanceof LibraryFeature lf &&
-            lf.resultType().isOpenGeneric() &&
-            f.arguments().isEmpty())
-          {
-            found = f;
-            count++;
-          }
-      }
-    return count == 1 ? found : null;
+    var result = new List<AbstractFeature>();
+    forEachDeclaredOrInheritedFeature(outer,
+                                      f ->
+                                      {
+                                        if (featureVisible(use.pos()._sourceFile, f) &&
+                                            f instanceof LibraryFeature lf &&
+                                            lf.resultType().isOpenGeneric() &&
+                                            f.arguments().isEmpty())
+                                          {
+                                            result.add(f);
+                                          }
+                                      });
+    return result.size() == 1 ? result.getFirst() : null;
   }
 
 
@@ -1163,10 +1158,12 @@ A post-condition of a feature that redefines one or several inherited features m
             for (var e : fs.entrySet())
               {
                 var fn = e.getKey();
-                var f = e.getValue();
-                if (f.isField() && (f.outer()==null || f.outer().resultField() != f))
+                for (var f : e.getValue())
                   {
-                    fields.add(fn);
+                    if (f.isField() && (f.outer()==null || f.outer().resultField() != f))
+                      {
+                        fields.add(fn);
+                      }
                   }
               }
             if (!fields.isEmpty())
@@ -1178,15 +1175,17 @@ A post-condition of a feature that redefines one or several inherited features m
                 // if we found f in scope, remove all other entries, otherwise remove all entries within this since they are not in scope.
                 for (var fn : fields)
                   {
-                    var fi = fs.get(fn);
-                    if (f != null || fi.outer() == outer && (!(fi instanceof Feature fif) || !fif.isArtificialField()))
+                    for (var fi : get(fs, fn))
                       {
-                        fs.remove(fn);
+                        if (f != null || fi.outer() == outer && (!(fi instanceof Feature fif) || !fif.isArtificialField()))
+                          {
+                            fs.remove(fn);
+                          }
                       }
                   }
                 if (f != null)
                   {
-                    fs.put(f.featureName(), f);
+                    add(fs, f.featureName(), f);
                     foundFieldInThisScope = true;
                   }
               }
@@ -1194,12 +1193,14 @@ A post-condition of a feature that redefines one or several inherited features m
 
         for (var e : fs.entrySet())
           {
-            var v = e.getValue();
-            if ((use == null || (hidden != featureVisible(use.pos()._sourceFile, v))) &&
-                (!v.isField() || !foundFieldInScope))
+            for (var v : e.getValue())
               {
-                result.add(new FeatureAndOuter(v, curOuter, inner));
-                foundFieldInScope = foundFieldInScope || v.isField() && foundFieldInThisScope;
+                if ((use == null || (hidden != featureVisible(use.pos()._sourceFile, v))) &&
+                    (!v.isField() || !foundFieldInScope))
+                  {
+                    result.add(new FeatureAndOuter(v, curOuter, inner));
+                    foundFieldInScope = foundFieldInScope || v.isField() && foundFieldInThisScope;
+                  }
               }
           }
 
@@ -1502,6 +1503,7 @@ A post-condition of a feature that redefines one or several inherited features m
     checkArgTypesVisibility(f);
     checkPreconditionVisibility(f);
     checkAbstractVisibility(f);
+    checkDuplicateFeatures(f);
   }
 
 
@@ -1664,6 +1666,65 @@ A post-condition of a feature that redefines one or several inherited features m
     return result;
   }
 
+
+  /**
+   * Check f's declared or inherited features for duplicates and flag errors if
+   * incompatible duplicates are encountered.
+   *
+   * @param f a feature
+   */
+  private void checkDuplicateFeatures(Feature f)
+  {
+    var doi = data(f)._declaredOrInheritedFeatures;
+    if (doi != null)
+      {
+        for (var fn : doi.keySet())
+          {
+            checkDuplicateFeatures(f, fn, doi.get(fn));
+          }
+      }
+  }
+
+  /**
+   * Check outer's declared or inherited features with effective name `fn` for duplicates and flag errors if
+   * incompatible duplicates are encountered.
+   *
+   * @param outer a feature
+   *
+   * @param fn the effective feature name within outer, used for error messages only
+   *
+   * @param fl list of features declared or inherited by outer with effective name fn.
+   */
+  private void checkDuplicateFeatures(AbstractFeature outer, FeatureName fn, List<AbstractFeature> fl)
+  {
+    if (PRECONDITIONS)
+      require(outer != null,
+              fn != null,
+              fl != null);
+
+    for (var f1 : fl)
+      {
+        for (var f2 : fl)
+          {
+            if (f1 != f2)
+              {
+                var isInherited1 = outer != f1.outer();
+                var isInherited2 = outer != f2.outer();
+
+                // NYI: take visibility into account!!!
+                if (isInherited1 && isInherited2)
+                  { // NYI: Should be ok if existing or f is abstract.
+                    AstErrors.repeatedInheritanceCannotBeResolved(outer.pos(), outer, fn, f1, f2);
+                  }
+                else
+                  {
+                    // NYI: if (!isInherited && !sameModule(f, outer))
+                    AstErrors.duplicateFeatureDeclaration(f1.pos(), f1, f2);
+                  }
+              }
+          }
+      }
+  }
 
 
   /*---------------------------  library file  --------------------------*/

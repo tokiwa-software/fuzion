@@ -80,6 +80,17 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     }
   }
 
+
+  /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * empty list of AbstractFeature
+   */
+  public static List<AbstractFeature> _NO_FEATURES_ = new List<>();
+  static { _NO_FEATURES_.freeze(); }
+
+
   /*------------------------  static variables  -------------------------*/
 
 
@@ -920,7 +931,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     var outerType = outer().isUniverse()    ? universe() :
                     outer().isTypeFeature() ? outer()
                                             : outer().typeFeature(res);
-    var result = res._module.declaredOrInheritedFeatures(outerType).get(FeatureName.get(name, 0));
+    var result = res._module.declaredOrInheritedFeatures(outerType,
+                                                         FeatureName.get(name, 0)).getFirstOrNull();
     if (result == null)
       {
         var p = pos();

@@ -25,11 +25,11 @@
 
 # this is both a negative test to make sure that all required errors are
 # shown, and then, as a simple test to make sure that the
-# error output is correct, i.e., lists all the ambiguities correctly.
+# error output is correct.
 #
 # Even though the negative variant could not fail if the simple variant fails,
 # running both ensures that an update of error output cannot accidentally
 # introduce some missing errors.
 #
-override NAME = partial_application_negative
+override NAME = test_conflicting_inheritance
 include ../simple_and_negative.mk

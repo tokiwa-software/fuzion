@@ -141,6 +141,55 @@ public class Contract
 
 
   /**
+   * When redefining a feature, the original contract is inherited with
+   * preconditions ORed and postconditions ANDed.  This feature performs this
+   * condition inheritance.
+   *
+   * @param from the redefined feature this contract should inherit from.
+   */
+  public void addInheritedContract(AbstractFeature from)
+  {
+    // precondition inheritance is the disjunction with the conjunction of all inherited conditions, i.e, in
+    //
+    //   a is
+    //     f pre a; b; c => ...
+    //   b : a is
+    //     redef f pre else d; e; f =>
+    //
+    // b.f becomes
+    //
+    //   b : a is
+    //     redef f pre (a && b && c) || (d && e && f) =>
+    //
+    for (var e : from.contract().req)
+      {
+        // NYI: missing support precondition inheritance!
+      }
+
+    // postcondition inheritance is just the conjunction of all inherited conditions
+    //
+    //   a is
+    //     f post a; b; c => ...
+    //   b : a is
+    //     redef f post then d; e; f =>
+    //
+    // b.f becomes
+    //
+    //     redef f post a && b && c && d && e && f =>
+    //
+    for (var e : from.contract().ens)
+      {
+        // NYI: missing support for postcondition inheritance, works for simple
+        // cases if `if (false)` is removed, but requires tests!
+        if (false)
+          {
+            ens.add(e);
+          }
+      }
+  }
+
+
+  /**
    * toString
    *
    * @return

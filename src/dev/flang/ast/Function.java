@@ -44,7 +44,6 @@ public class Function extends AbstractLambda
   /*----------------------------  constants  ----------------------------*/
 
 
-  static final List<AbstractFeature> NO_FEATURES = new List<>();
   static final List<AbstractCall> NO_CALLS = new List<>();
 
 
@@ -313,7 +312,7 @@ public class Function extends AbstractLambda
                                    0,
                                    RefType.INSTANCE,
                                    new List<String>(wrapperName),
-                                   NO_FEATURES,
+                                   AbstractFeature._NO_FEATURES_,
                                    new List<>(_inheritsCall),
                                    Contract.EMPTY_CONTRACT,
                                    new Impl(pos(), new Block(expressions), Impl.Kind.Routine));

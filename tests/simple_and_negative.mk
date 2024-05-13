@@ -23,13 +23,37 @@
 #
 # -----------------------------------------------------------------------
 
-# this is both a negative test to make sure that all required errors are
-# shown, and then, as a simple test to make sure that the
-# error output is correct, i.e., lists all the ambiguities correctly.
+# this runs the tests twice, once as a negative test to make sure that all
+# required errors are shown, and then as a simple test to make sure that the
+# error output is correct.
 #
-# Even though the negative variant could not fail if the simple variant fails,
+# Even though the negative variante could not fail if the simple variant fails,
 # running both ensures that an update of error output cannot accidentally
 # introduce some missing errors.
 #
-override NAME = partial_application_negative
-include ../simple_and_negative.mk
+all: jvm int c
+
+jvm:
+	NAME=$(NAME) make -f ../negative.mk jvm
+	NAME=$(NAME) FUZION_OPTIONS=-XmaxErrors=-1 make -f ../simple.mk jvm
+c:
+	NAME=$(NAME) make -f ../negative.mk c
+	NAME=$(NAME) FUZION_OPTIONS=-XmaxErrors=-1 make -f ../simple.mk c
+int:
+	NAME=$(NAME) make -f ../negative.mk int
+	NAME=$(NAME) FUZION_OPTIONS=-XmaxErrors=-1 make -f ../simple.mk int
+
+show:
+	NAME=$(NAME) make -f ../negative.mk show
+
+record:
+	NAME=$(NAME) FUZION_OPTIONS=-XmaxErrors=-1 make -f ../simple.mk record
+
+record_jvm:
+	NAME=$(NAME) FUZION_OPTIONS=-XmaxErrors=-1 make -f ../simple.mk record_jvm
+
+record_c:
+	NAME=$(NAME) FUZION_OPTIONS=-XmaxErrors=-1 make -f ../simple.mk record_c
+
+record_int:
+	NAME=$(NAME) FUZION_OPTIONS=-XmaxErrors=-1 make -f ../simple.mk record_int

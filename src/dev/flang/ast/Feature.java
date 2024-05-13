@@ -33,6 +33,7 @@ import java.util.ListIterator;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import dev.flang.util.Errors;
@@ -1445,15 +1446,14 @@ public class Feature extends AbstractFeature
   private List<AbstractCall> closureAccesses(Resolution res)
   {
     List<AbstractCall> result = new List<>();
-    for (AbstractFeature af : res._module.declaredOrInheritedFeatures(this).values())
-      {
-        af.visitExpressions(s -> {
-            if (s instanceof AbstractCall c && dependsOnOuterRef(c))
-              {
-                result.add(c);
-              }
-          });
-      }
+    res._module.forEachDeclaredOrInheritedFeature(this,
+                                                  af -> af.visitExpressions(s -> {
+          if (s instanceof AbstractCall c && dependsOnOuterRef(c))
+            {
+              result.add(c);
+            }
+        })
+      );
     return result;
   }
 
@@ -1538,14 +1538,15 @@ public class Feature extends AbstractFeature
         AstErrors.choiceMustNotBeRef(_pos);
       }
 
-    for (AbstractFeature p : res._module.declaredOrInheritedFeatures(this).values())
+    res._module.forEachDeclaredOrInheritedFeature(this,
+                                                  p ->
       {
         // choice type must not have any fields
         if (p.isField() && !p.isOuterRef())
           {
             AstErrors.mustNotContainFields(_pos, p, "Choice");
           }
-      }
+      });
     // choice type must not contain any code, but may contain inner features
     switch (_impl._kind)
       {
@@ -1659,14 +1660,15 @@ public class Feature extends AbstractFeature
    */
   private void checkBuiltInPrimitive(Resolution res)
   {
-    for (AbstractFeature p : res._module.declaredOrInheritedFeatures(this).values())
+    res._module.forEachDeclaredOrInheritedFeature(this,
+                                                  p ->
       {
         // primitives must not have any fields
         if (p.isField() && !p.isOuterRef() && !(p.featureName().baseName().equals("val") && p.resultType().compareTo(selfType())==0) )
           {
             AstErrors.mustNotContainFields(_pos, p, this.featureName().baseName());
           }
-      }
+      });
   }
 
 
