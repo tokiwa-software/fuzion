@@ -53,14 +53,8 @@ public i64(public val i64) : num.wrap_around, has_interval is
   public fixed infix *° (other i64) i64 => intrinsic
 
   # division and remainder with check for div-by-zero
-  public fixed infix / (other i64)
-  pre
-    safety: other != i64 0
-  => div other
-  public fixed infix % (other i64)
-  pre
-    safety: other != i64 0
-  => mod other
+  public fixed infix / (other i64) => div other
+  public fixed infix % (other i64) => mod other
 
   # division and remainder with crash in case of div-by-zero
   div (other i64) i64 => intrinsic
@@ -101,12 +95,13 @@ public i64(public val i64) : num.wrap_around, has_interval is
     =>
       low32bits.cast_to_i32
 
+  # does this i64 fit into an u8?
+  #
+  public fixed redef fits_in_u8  => 0 ≤ val ≤ u8.max.as_i64
+
 
   # this i64 as an u8
   public as_u8 u8
-    pre
-      thiz ≥ (i64 0)
-#      thiz ≤ u8.max.as_i64
 #    post
 #      analysis: result.as_u64 = thiz
     =>
@@ -126,10 +121,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
 
   # this i64 as an u32
   public as_u32 u32
-    pre
-      thiz ≥ (i64 0)
-#      thiz ≤ u32.max.as_i64
-#    post
+#    post then
 #      analysis:  result.as_i64 = thiz
     =>
       low32bits

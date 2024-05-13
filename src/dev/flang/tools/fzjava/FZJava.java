@@ -45,6 +45,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -244,7 +245,39 @@ public class FZJava extends Tool
                 m = m + ".jmod";
               }
             processModule(m);
+            if (m.equals("java.base.jmod"))
+              {
+                addAsJavaObjectHelper();
+              }
           }
+      }
+  }
+
+
+  /*
+   * Add helper feature Java.as_java_object that
+   * allows easy java array creation of complex objects.
+   */
+  private void addAsJavaObjectHelper()
+  {
+    var fzp = _options._dest;
+    fzp = fzp.resolve("ext.fz");
+    try
+      {
+        var str = new StringBuilder(
+                    "public Java.as_java_object(T type : Java.java.lang.Object, seq Sequence T) =>\n");
+        str.append("  res := (Java.java.lang.reflect.Array.newInstance T.get_java_class seq.count).val\n");
+        str.append("  for idx := 0, idx+1\n");
+        str.append("      el in seq\n");
+        str.append("  do\n");
+        str.append("    Java.java.lang.reflect.Array.__k__set res idx el\n");
+        str.append("  fuzion.java.Array T res.Java_Ref\n");
+        str.append("\n");
+        Files.write(fzp, str.toString().getBytes(StandardCharsets.UTF_8));
+      }
+    catch (IOException e)
+      {
+        Errors.fatal("could not write ext.fz");
       }
   }
 
@@ -459,10 +492,7 @@ public class FZJava extends Tool
           {
             ForClass sfc = null;
             var sc = c.getSuperclass();
-            while (sc != null && (sc.getModifiers() & Modifier.PUBLIC) == 0)
-              {
-                sc = sc.getSuperclass();
-              }
+            sc = sc == null && c != java.lang.Object.class ? java.lang.Object.class : sc;
             if (sc != null)
               {
                 sfc = forClass(sc);

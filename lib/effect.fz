@@ -81,7 +81,7 @@ is
   # a result. This is used, e.g, in `mutate` to avoid static analysis
   # reporting `panic` as an effect of the use of a local mutate instance.
   #
-  abortable => false
+  module abortable => false
 
 
   # set default effect in the current context to this if none is installed

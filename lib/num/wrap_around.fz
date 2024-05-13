@@ -79,27 +79,27 @@ module:public wrap_around : integer is
 
   # negation, with check for overflow
   public redef prefix - wrap_around.this
-    pre
+    pre else
       debug: !wrapped_on_neg
   => -° wrap_around.this
 
   # addition, with check for overflow
   public redef infix +  (other wrap_around.this) wrap_around.this
-    pre
+    pre else
       debug: !(overflow_on_add other)
       debug: !(underflow_on_add other)
   => wrap_around.this +° other
 
   # subtraction, with check for overflow
   public redef infix -  (other wrap_around.this) wrap_around.this
-    pre
+    pre else
       debug: !(overflow_on_sub other)
       debug: !(underflow_on_sub other)
   => wrap_around.this -° other
 
   # multiplication, with check for overflow
   public redef infix *  (other wrap_around.this) wrap_around.this
-    pre
+    pre else
       debug: !(overflow_on_mul other)
       debug: !(underflow_on_mul other)
   => wrap_around.this *° other
@@ -123,9 +123,6 @@ module:public wrap_around : integer is
   # 'zero ** zero' is permitted and results in 'one'.
   #
   public infix ** (other wrap_around.this) wrap_around.this
-    pre
-      safety: (other ≥ wrap_around.this.zero)
-      debug: (!overflow_on_exp other)
   =>
     wrap_around.this **° other
 
@@ -153,8 +150,6 @@ module:public wrap_around : integer is
   # 'zero **? zero' is permitted and results in 'one'.
   #
   public infix **? (other wrap_around.this) num_option wrap_around.this
-    pre
-      safety: (other ≥ wrap_around.this.zero)
   =>
     if      (other = wrap_around.this.zero) wrap_around.this.one
     else if (other = wrap_around.this.one ) wrap_around.this
@@ -176,8 +171,6 @@ module:public wrap_around : integer is
   # 'zero **^ zero' is permitted and results in 'one'.
   #
   public infix **^ (other wrap_around.this) wrap_around.this
-    pre
-      safety: (other ≥ wrap_around.this.zero)
   =>
     if overflow_on_exp other
       if (wrap_around.this ≥ wrap_around.this.zero) || (other %% wrap_around.this.two)
@@ -189,8 +182,6 @@ module:public wrap_around : integer is
 
   # bitwise NOT
   public redef prefix ~ wrap_around.this
-    pre
-      is_bounded
   =>
     wrap_around.this ^ wrap_around.this.all_bits_set
 

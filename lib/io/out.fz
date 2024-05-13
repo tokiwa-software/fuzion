@@ -25,7 +25,7 @@
 
 # out -- effect providing an output stream
 #
-public out (redef p Print_Handler) : print_effect p is
+public out (p Print_Handler) : print_effect p is
 
 
   type.install_default =>

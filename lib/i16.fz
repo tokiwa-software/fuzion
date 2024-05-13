@@ -53,14 +53,8 @@ public i16(public val i16) : num.wrap_around, has_interval is
   public fixed infix *° (other i16) i16 => intrinsic
 
   # division and remainder with check for div-by-zero
-  public fixed infix / (other i16)
-  pre
-    safety: other != 0
-  => div other
-  public fixed infix % (other i16)
-  pre
-    safety: other != 0
-  => mod other
+  public fixed infix / (other i16) => div other
+  public fixed infix % (other i16) => mod other
 
   # division and remainder with crash in case of div-by-zero
   div (other i16) i16 => intrinsic
@@ -75,6 +69,10 @@ public i16(public val i16) : num.wrap_around, has_interval is
   public fixed infix >> (other i16) i16 => intrinsic
   public fixed infix << (other i16) i16 => intrinsic
 
+  # does this i16 fit into an u8?
+  #
+  public fixed redef fits_in_u8  => 0 ≤ val ≤ u8.max.as_i16
+
   # conversion to u32, i64 and u64, with range check
   public as_i8 i8
     pre
@@ -86,11 +84,7 @@ public i16(public val i16) : num.wrap_around, has_interval is
   public as_i64  => thiz.as_i32.as_i64
 # as_i128 => thiz.as_i32.as_i128
 
-  public as_u8 u8
-    pre
-      debug: (thiz ≥ 0) && (thiz ≤ u8.max.as_i16)
-    =>
-      low8bits
+  public as_u8  u8  => low8bits
   public as_u16 u16
     pre
       debug: thiz ≥ 0

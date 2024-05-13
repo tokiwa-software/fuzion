@@ -35,6 +35,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.SourceRange;
 
 
 /**
@@ -3132,17 +3133,43 @@ dotTypeSuffx: dot "type"
   /**
    * Parse contract
    *
-contract    : require
-              ensure
+contract    : require ensure
+            ;
+require     : "pre"        block
+            | "pre" "else" block
+            |
+            ;
+ensure      : "post"        block
+            | "post" "then" block
+            |
             ;
    */
   Contract contract(boolean atMinIndent)
   {
-    var pre  = requir(atMinIndent);
-    var post = ensur (atMinIndent);
+    SourceRange prePos = null;
+    SourceRange postPos = null;
+    SourceRange hasElse = null;
+    SourceRange hasThen = null;
+    List<Cond> pre = null;
+    List<Cond> post = null;
+    if (skip(atMinIndent, Token.t_pre))
+      {
+        var p = lastTokenPos();
+        hasElse = skip(Token.t_else) ? lastTokenSourceRange() : null;
+        pre = Cond.from(block());
+        prePos = sourceRange(p);
+      }
+    if (skip(atMinIndent, Token.t_post))
+      {
+        var p = lastTokenPos();
+        hasThen = skip(Token.t_then) ? lastTokenSourceRange() : null;
+        post = Cond.from(block());
+        postPos = sourceRange(p);
+      }
     return pre == null && post == null
       ? Contract.EMPTY_CONTRACT
-      : new Contract(pre, post);
+      : new Contract(pre,  prePos,  hasElse,
+                     post, postPos, hasThen);
   }
 
 
@@ -3161,41 +3188,6 @@ contract    : require
       };
   }
 
-
-  /**
-   * Parse require
-   *
-require     : "pre" block
-            |
-            ;
-   */
-  List<Cond> requir(boolean atMinIndent)
-  {
-    List<Cond> result = null;
-    if (skip(atMinIndent, Token.t_pre))
-      {
-        result = Cond.from(block());
-      }
-    return result;
-  }
-
-
-  /**
-   * Parse ensure
-   *
-ensure      : "post" block
-            |
-            ;
-   */
-  List<Cond> ensur(boolean atMinIndent)
-  {
-    List<Cond> result = null;
-    if (skip(atMinIndent, Token.t_post))
-      {
-        result = Cond.from(block());
-      }
-    return result;
-  }
 
 
   /**

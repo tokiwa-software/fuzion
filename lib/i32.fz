@@ -53,14 +53,8 @@ public i32(public val i32) : num.wrap_around, has_interval is
   public fixed infix *° (other i32) i32 => intrinsic
 
   # division and remainder with check for div-by-zero
-  public fixed infix / (other i32)
-  pre
-    safety: other != 0
-  => div other
-  public fixed infix % (other i32)
-  pre
-    safety: other != 0
-  => mod other
+  public fixed infix / (other i32) => div other
+  public fixed infix % (other i32) => mod other
 
   # division and remainder with crash in case of div-by-zero
   div (other i32) i32 => intrinsic
@@ -74,6 +68,10 @@ public i32(public val i32) : num.wrap_around, has_interval is
   # shift operations (signed)
   public fixed infix >> (other i32) i32 => intrinsic
   public fixed infix << (other i32) i32 => intrinsic
+
+  # does this i32 fit into an u8?
+  #
+  public fixed redef fits_in_u8  => 0 ≤ val ≤ u8.max.as_i32
 
   # conversion to u32, i64 and u64, with range check
   public as_i8 i8
@@ -90,12 +88,7 @@ public i32(public val i32) : num.wrap_around, has_interval is
       low16bits.cast_to_i16
   public as_i64 i64 => intrinsic
 # as_i128 NYI
-  public as_u8 u8
-    pre
-      thiz ≥ u8.min.as_i32
-      thiz ≤ u8.max.as_i32
-    =>
-      low8bits
+  public as_u8  u8  => low8bits
   public as_u16 u16
     pre
       thiz ≥ u16.min.as_i32

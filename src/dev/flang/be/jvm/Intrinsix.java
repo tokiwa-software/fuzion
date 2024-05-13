@@ -333,7 +333,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var et = jvm._types.javaType(jvm._fuir.clazzActualGeneric(cc, 0)); // possibly resultType
           var res = args.get(0)
             .andThen(jvm.getfield(jref))
-            .andThen(Expr.checkcast(et.array()))
+            .andThen(Expr.checkcast(et.isPrimitive() ? et.array() : ClassFileConstants.JAVA_LANG_OBJECT.array()))
             .andThen(Expr.ARRAYLENGTH);
           return new Pair<>(res, Expr.UNIT);
         });
@@ -345,9 +345,17 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var et = jvm._types.javaType(jvm._fuir.clazzActualGeneric(cc, 0)); // possibly resultType
           var res = args.get(0)
             .andThen(jvm.getfield(jref))
-            .andThen(Expr.checkcast(et.array()))
+            .andThen(Expr.checkcast(et.isPrimitive() ? et.array() : ClassFileConstants.JAVA_LANG_OBJECT.array()))
             .andThen(args.get(1))
-            .andThen(et.xaload());
+            .andThen((et.isPrimitive() ? et : ClassFileConstants.JAVA_LANG_OBJECT).xaload());
+          if (!et.isPrimitive())
+            {
+              res = res
+                .andThen(jvm.new0(jvm._fuir.clazzActualGeneric(cc, 0)))                               // result, rc0
+                .andThen(Expr.DUP_X1)                                                                 // rc0, result, rc0
+                .andThen(Expr.SWAP)                                                                   // rc0, rc0, result
+                .andThen(jvm.putfield(jvm._fuir.lookupJavaRef(jvm._fuir.clazzActualGeneric(cc, 0)))); // rc0
+            }
           return new Pair<>(res, Expr.UNIT);
         });
 

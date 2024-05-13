@@ -45,8 +45,6 @@ is
   public fixed redef infix - (b complex.this) => complex real-b.real imag-b.imag
   public fixed redef infix * (b complex.this) => complex real*b.real-imag*b.imag real*b.imag+imag*b.real
   public fixed redef infix / (b complex.this)
-  pre
-    safety: b.real != C.zero || b.imag != C.zero
   =>
     n := b.real*b.real+b.imag*b.imag
     complex (real*b.real+imag*b.imag)/n (imag*b.real-real*b.imag)/n

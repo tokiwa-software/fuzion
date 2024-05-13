@@ -50,6 +50,47 @@ public class AstErrors extends ANY
 {
 
 
+  /*------------------------------  enums  ------------------------------*/
+
+
+  /**
+   * Enum to distinguish contract parts: precondition vs. postcondition.
+   */
+  enum PreOrPost
+  {
+
+    Pre,
+    Post;
+
+    /**
+     * "Precondition" or "Postcondition" for pre-/post-condition.
+     */
+    @Override
+    public String toString()
+    {
+      return switch (this)
+        {
+          case Pre  -> "Precondition";
+          case Post -> "Postcontion";
+        };
+    }
+
+
+    /**
+     * "else" or "then" for pre-/post-condition.
+     */
+    String elseOrThen()
+    {
+      return switch (this)
+        {
+          case Pre  -> "else";
+          case Post -> "then";
+        };
+    }
+
+  }
+
+
   /*-------------------------  static methods  --------------------------*/
 
 
@@ -606,23 +647,30 @@ public class AstErrors extends ANY
   public static void argumentTypeMismatchInRedefinition(AbstractFeature originalFeature, AbstractFeature originalArg, AbstractType originalArgType,
                                                         AbstractFeature redefinedFeature, AbstractFeature redefinedArg, boolean suggestAddingFixed)
   {
-    error(redefinedArg.pos(),
-          "Wrong argument type in redefined feature",
-          "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + "\n" +
-          "argument type is       : " + s(redefinedArg.resultType()) + "\n" +
-          "argument type should be: " +
-          // originalArg.resultType() might be a type parameter that has been replaced by originalArgType:
-          typeWithFrom(originalArgType, originalArg.resultType()) + "\n\n" +
-          "Original argument declared at " + originalArg.pos().show() + "\n" +
-          (suggestAddingFixed ? "To solve this, add " + code("fixed") + " modifier at declaration of "+s(redefinedFeature) + " at " + redefinedFeature.pos().show()
-                              : "To solve this, change type of argument to " + s(originalArgType) + " at " + redefinedArg.pos().show()));
+    if (!any() || !redefinedFeature.isTypeFeature() // type features generated from broken original features may cause subsequent errors
+        )
+      {
+        error(redefinedArg.pos(),
+              "Wrong argument type in redefined feature",
+              "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + "\n" +
+              "argument type is       : " + s(redefinedArg.resultType()) + "\n" +
+              "argument type should be: " +
+              // originalArg.resultType() might be a type parameter that has been replaced by originalArgType:
+              typeWithFrom(originalArgType, originalArg.resultType()) + "\n\n" +
+              "Original argument declared at " + originalArg.pos().show() + "\n" +
+              (suggestAddingFixed ? "To solve this, add " + code("fixed") + " modifier at declaration of "+s(redefinedFeature) + " at " + redefinedFeature.pos().show()
+                                  : "To solve this, change type of argument to " + s(originalArgType) + " at " + redefinedArg.pos().show()));
+      }
   }
 
   public static void resultTypeMismatchInRedefinition(AbstractFeature originalFeature, AbstractType originalType,
                                                       AbstractFeature redefinedFeature, boolean suggestAddingFixed)
   {
     if (!any() || (originalType                  != Types.t_ERROR &&
-                         redefinedFeature.resultType() != Types.t_ERROR    ))
+                   redefinedFeature.resultType() != Types.t_ERROR &&
+                   !redefinedFeature.isTypeFeature() // type features generated from broken original features may cause subsequent errors
+                   )
+        )
       {
         error(redefinedFeature.pos(),
               "Wrong result type in redefined feature",
@@ -957,6 +1005,55 @@ public class AstErrors extends ANY
           "Redefining feature: " + s(f) + "\n" +
           "To solve this, check spelling and argument count against the feature you want to redefine or " +
           "remove " + skw("redef") + " modifier in the declaration of " + s(f) + ".");
+  }
+
+  static void notRedefinedContractMustNotUseElseOrThen(SourcePosition pos, AbstractFeature f, PreOrPost preOrPost)
+  {
+    error(pos,
+          preOrPost + " must use " + code(preOrPost.elseOrThen()) + " only in a feature that redefines another feature.",
+          "Surrounding feature: " + s(f) + "\n" +
+          "To solve this, check if you are properly redefining another feature or, if you do not intend " +
+          "to do so, remove the " + code(preOrPost.elseOrThen()) + " keyword ");
+  }
+
+  public static void notRedefinedPreconditionMustNotUseElse(SourcePosition pos, AbstractFeature f)
+  {
+    notRedefinedContractMustNotUseElseOrThen(pos, f, PreOrPost.Pre);
+  }
+  public static void notRedefinedPostconditionMustNotUseThen(SourcePosition pos, AbstractFeature f)
+  {
+    notRedefinedContractMustNotUseElseOrThen(pos, f, PreOrPost.Post);
+  }
+
+  static void redefineContractMustUseElseOrThen(SourcePosition pos, AbstractFeature f, PreOrPost preOrPost)
+  {
+    var redefs = new StringBuilder();
+    for (var r : f.redefines())
+      {
+        var c = r.contract();
+        var cp = switch (preOrPost)
+          {
+          case Pre  -> c._hasPre;
+          case Post -> c._hasPost;
+          };
+        var rp = cp == null ? r.pos() : cp;
+        redefs.append("Redefines: " + s(r) + " from " + rp.show() + "\n");
+      }
+    error(pos,
+          preOrPost + " must use " + code(preOrPost.elseOrThen()) + " in a feature that redefines another feature.",
+          "Affected feature: " + s(f) + "\n" +
+          (redefs.length() > 0 ? redefs : "No redefined features found\n") +
+          "To solve this, check if you are accidentally redefining another feature or, if you do not intend " +
+          "to do so, add the " + code(preOrPost.elseOrThen()) + " keyword ");
+  }
+
+  public static void redefinePreconditionMustUseElse(SourcePosition pos, AbstractFeature f)
+  {
+    redefineContractMustUseElseOrThen(pos, f, PreOrPost.Pre);
+  }
+  public static void redefinePostconditionMustUseThen(SourcePosition pos, AbstractFeature f)
+  {
+    redefineContractMustUseElseOrThen(pos, f, PreOrPost.Post);
   }
 
   static void ambiguousTargets(SourcePosition pos,
@@ -1956,8 +2053,9 @@ public class AstErrors extends ANY
 
   public static void contractExpressionMustResultInBool(Expr cond)
   {
-    error(cond.pos(), "A expression of a contract must result in bool.",
-      "To solve this, change the expression to return a bool.");
+    error(cond.pos(), "An expression of a contract must result in type " + st("bool") + ".",
+          "Expression type is " + s(cond.type()) + "\n" +
+          "To solve this, change the expression to return a value of type " + st("bool") + ".");
   }
 
   public static void partialApplicationAmbiguity(SourcePosition pos,

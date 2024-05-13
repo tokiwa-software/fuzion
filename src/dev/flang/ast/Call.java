@@ -1806,15 +1806,25 @@ public class Call extends AbstractCall
                   {
                     count++;
                     var actual = resolveTypeForNextActual(pass == 0 ? null : t, aargs, res, outer);
-                    var actualType = typeFromActual(actual, outer);
-                    if (actualType != null)
+                    /*
+                      without this if, type inference in this example would not work:
+                      ```
+                      feat(T type, u i64, str T) is
+                      feat 0 "hello"
+                      ```
+                    */
+                    if (t.dependsOnGenerics())
                       {
-                        inferGeneric(res, outer, t, actualType, actual.pos(), conflict, foundAt);
-                        checked[vai] = true;
-                      }
-                    else if (resultExpression(actual) instanceof AbstractLambda al)
-                      {
-                        checked[vai] = inferGenericLambdaResult(res, outer, t, al, actual.pos(), conflict, foundAt);
+                        var actualType = typeFromActual(actual, outer);
+                        if (actualType != null)
+                          {
+                            inferGeneric(res, outer, t, actualType, actual.pos(), conflict, foundAt);
+                            checked[vai] = true;
+                          }
+                        else if (resultExpression(actual) instanceof AbstractLambda al)
+                          {
+                            checked[vai] = inferGenericLambdaResult(res, outer, t, al, actual.pos(), conflict, foundAt);
+                          }
                       }
                   }
               }

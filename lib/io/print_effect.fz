@@ -51,10 +51,10 @@ is
 
 public Print_Handler ref is
 
-  println(s Any) =>
+  public println(s Any) =>
     print (s.as_string + (codepoint 10))
 
-  println =>
+  public println =>
     print (codepoint 10)
 
   public print(s Any) unit => abstract
