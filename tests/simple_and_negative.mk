@@ -29,7 +29,7 @@
 #
 # Even though the negative variante could not fail if the simple variant fails,
 # running both ensures that an update of error output cannot accidentally
-# inctroduce some missing errors.
+# introduce some missing errors.
 #
 all: jvm int c
 
