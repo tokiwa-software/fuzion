@@ -419,6 +419,15 @@ public class Call extends AbstractCall
 
 
 
+  /**
+   * Constructor used to clone a call for clonePostCondition.
+   *
+   * @param thiz the original call
+   *
+   * @param the redefined feature that inherits this call as part of its postcondition.
+   *
+   * @param from the original feature this was used in.
+   */
   Call(Call thiz, AbstractFeature to, AbstractFeature from)
   {
     this._pos = thiz._pos;

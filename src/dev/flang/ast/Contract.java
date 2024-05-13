@@ -70,7 +70,7 @@ public class Contract extends ANY
   public List<Cond> _declared_postconditions;
 
   /**
-   *
+   * post-conditions inherited from redefined features.
    */
   public List<Cond> _inherited_postconditions = NO_COND;
 
@@ -149,6 +149,10 @@ public class Contract extends ANY
   }
 
 
+  /**
+   * Get a List of all post-conditions in order, i.e., inherited first in order
+   * defined by order of the inherit-clauses, then declared.
+   */
   public List<Cond> all_postconditions()
   {
     List<Cond> result;
