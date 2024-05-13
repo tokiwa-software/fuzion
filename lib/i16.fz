@@ -27,22 +27,20 @@
 #
 public i16(public val i16) : num.wrap_around, has_interval is
 
-  public thiz => i16.this.val
-
   # overflow checking
 
-  # would negation -thiz cause an overflow?
+  # would negation cause an overflow?
   redef wrapped_on_neg => is_min
 
-  # would addition thiz + other cause an overflow or underflow?
-  public fixed overflow_on_add (other i16) => thiz > 0 && i16.max -° thiz < other
-  public fixed underflow_on_add(other i16) => thiz < 0 && i16.min -° thiz > other
+  # would addition + other cause an overflow or underflow?
+  public fixed overflow_on_add (other i16) => val > 0 && i16.max -° val < other
+  public fixed underflow_on_add(other i16) => val < 0 && i16.min -° val > other
 
-  # would subtraction thiz - other cause an overflow or underflow?
-  public fixed overflow_on_sub (other i16) => thiz > 0 && thiz -° i16.max > other
-  public fixed underflow_on_sub(other i16) => thiz < 0 && thiz -° i16.min < other
+  # would subtraction - other cause an overflow or underflow?
+  public fixed overflow_on_sub (other i16) => val > 0 && val -° i16.max > other
+  public fixed underflow_on_sub(other i16) => val < 0 && val -° i16.min < other
 
-  # would multiplication thiz * other cause an overflow or underflow?
+  # would multiplication * other cause an overflow or underflow?
   public fixed overflow_on_mul (other i16) => as_i32 *° other.as_i32 > i16.max.as_i32
   public fixed underflow_on_mul(other i16) => as_i32 *° other.as_i32 < i16.min.as_i32
 
@@ -76,33 +74,33 @@ public i16(public val i16) : num.wrap_around, has_interval is
   # conversion to u32, i64 and u64, with range check
   public as_i8 i8
     pre
-      thiz ≥ i8.min.as_i16
-      thiz ≤ i8.max.as_i16
+      val ≥ i8.min.as_i16
+      val ≤ i8.max.as_i16
     =>
       low8bits.cast_to_i8
   public as_i32 i32 => intrinsic
-  public as_i64  => thiz.as_i32.as_i64
-# as_i128 => thiz.as_i32.as_i128
+  public as_i64  => val.as_i32.as_i64
+# as_i128 => val.as_i32.as_i128
 
   public as_u8  u8  => low8bits
   public as_u16 u16
     pre
-      debug: thiz ≥ 0
+      debug: val ≥ 0
     =>
       cast_to_u16
   public as_u32 u32
     pre
-      debug: thiz ≥ 0
+      debug: val ≥ 0
     =>
       cast_to_u32
   public as_u64 u64
     pre
-      debug: thiz ≥ 0
+      debug: val ≥ 0
     =>
       cast_to_u64
   public as_u128 u128
     pre
-      debug: thiz ≥ 0
+      debug: val ≥ 0
     =>
       cast_to_u128
   public as_int int =>

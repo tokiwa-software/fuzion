@@ -27,23 +27,21 @@
 #
 public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
 
-  public thiz => u128 hi lo
-
   # overflow checking
 
-  # would negation -thiz cause an overflow?
+  # would negation cause an overflow?
   redef wrapped_on_neg => !is_zero
 
-  # would addition thiz + other cause an overflow or underflow?
-  public fixed overflow_on_add (other u128) => u128.max -° thiz < other
+  # would addition + other cause an overflow or underflow?
+  public fixed overflow_on_add (other u128) => u128.max -° u128.this < other
   public fixed underflow_on_add(other u128) => false
 
-  # would subtraction thiz - other cause an overflow or underflow?
+  # would subtraction - other cause an overflow or underflow?
   public fixed overflow_on_sub (other u128) => false
-  public fixed underflow_on_sub(other u128) => thiz < other
+  public fixed underflow_on_sub(other u128) => u128.this < other
 
-  # would multiplication thiz * other cause an overflow or underflow?
-  public fixed overflow_on_mul (other u128) => if (other = u128.zero) false else (thiz *° other / other) != thiz
+  # would multiplication * other cause an overflow or underflow?
+  public fixed overflow_on_mul (other u128) => if (other = u128.zero) false else (u128.this *° other / other) != u128.this
   public fixed underflow_on_mul(other u128) => false
 
   # neg, add, sub, mul with wrap-around semantics
@@ -85,13 +83,13 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
   public fixed infix % (other u128) => mod other
 
   # division and remainder with crash in case of div-by-zero
-  div (other u128) u128 =>
-    if thiz < other
+  fixed div (other u128) u128 =>
+    if u128.this < other
       u128.zero
     else
       ob := other.highest_one_bit.trailing_zeros
       for
-        rem := thiz, rem - s
+        rem := u128.this, rem - s
         bit := rem.highest_one_bit >> ob.as_u128, bit >> u128.one
         d := other << bit.trailing_zeros.as_u128, d >> u128.one
         s := if (rem < d) u128.zero else d
@@ -99,11 +97,11 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
         res := p, res + p
       until bit = u128.zero
         check
-          debug: res *° other + rem = thiz
+          debug: res *° other + rem = u128.this
         res
 
-  mod (other u128) u128 =>
-    thiz - (div other) *° other
+  fixed mod (other u128) u128 =>
+    u128.this - (div other) *° other
 
   # bitwise and, or and xor operations
   public fixed infix &  (other u128) u128 => u128 (hi & other.hi) (lo & other.lo)
@@ -120,7 +118,7 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
     else if n > u64 0
       u128 (hi >> n) ((lo >> n) | (hi << (u64 64 - n)))
     else
-      thiz
+      u128.this
 
   public fixed infix << (other u128) u128 =>
     n := other.as_u64  # NYI: other should be of type u32
@@ -131,7 +129,7 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
     else if n > u64 0
       u128 ((hi << n) | (lo >> (u64 64 - n))) (lo << n)
     else
-      thiz
+      u128.this
 
   # equality
   #
@@ -147,52 +145,52 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
   #
   public fixed redef fits_in_u8  => u128.this ≤ u8.max.as_u128
 
-  public as_i8 i8
+  public fixed as_i8 i8
     pre
-      thiz ≤ i8.max.as_u128
+      u128.this ≤ i8.max.as_u128
     =>
       lo.as_i8
-  public as_i16 i16
+  public fixed as_i16 i16
     pre
-      thiz ≤ i16.max.as_u128
+      u128.this ≤ i16.max.as_u128
     =>
       lo.as_i16
-  public as_i32 i32
+  public fixed as_i32 i32
     pre
-      thiz ≤ i32.max.as_u128
+      u128.this ≤ i32.max.as_u128
     =>
       lo.as_i32
-  public as_i64 i64
+  public fixed as_i64 i64
     pre
-      thiz ≤ i64.max.as_u128
+      u128.this ≤ i64.max.as_u128
     post
-      analysis: result.as_u128 = thiz
+      analysis: result.as_u128 = u128.this
     =>
       lo.as_i64
-  public as_u8 u8
+  public fixed as_u8 u8
     post then
-      analysis: result.as_u128 = thiz
+      analysis: result.as_u128 = u128.this
     =>
       lo.as_u8
-  public as_u16 u16
+  public fixed as_u16 u16
     pre
-      thiz ≤ u16.max.as_u128
+      u128.this ≤ u16.max.as_u128
     post
-      analysis: result.as_u128 = thiz
+      analysis: result.as_u128 = u128.this
     =>
       lo.as_u16
-  public as_u32 u32
+  public fixed as_u32 u32
     pre
-      thiz ≤ u32.max.as_u128
+      u128.this ≤ u32.max.as_u128
     post
-      analysis: result.as_u128 = thiz
+      analysis: result.as_u128 = u128.this
     =>
       lo.as_u32
-  public as_u64 u64
+  public fixed as_u64 u64
     pre
-      thiz ≤ u64.max.as_u128
+      u128.this ≤ u64.max.as_u128
     post
-      analysis: result.as_u128 = thiz
+      analysis: result.as_u128 = u128.this
     =>
       lo
 
