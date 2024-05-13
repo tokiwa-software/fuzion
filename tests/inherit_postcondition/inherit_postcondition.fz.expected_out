@@ -96,3 +96,15 @@ redef 4716
 hi
 redef2 4716
 hi
+original 42 333 666
+hi
+original 4711 333 666
+hi
+redef 4711
+hi
+original 4716 333 666
+hi
+redef 4716
+hi
+redef2 4716
+hi

@@ -24,4 +24,14 @@
 # -----------------------------------------------------------------------
 
 override NAME = inherit_postcondition
+FUZION_OPTIONS = -modules=mod -moduleDirs=modules
+FUZION_DEPENDENCIES = modules/mod.fum
 include ../simple.mk
+
+# compile mod into mod.fum
+modules/mod.fum: module_src/mod.fz
+	mkdir -p $(@D)
+	$(FUZION) -sourceDirs=./module_src -saveLib=$@ || exit 1
+
+clean:
+	rm -rf modules

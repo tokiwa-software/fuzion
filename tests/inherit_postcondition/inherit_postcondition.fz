@@ -225,6 +225,35 @@ test_postcondition is
   post_accessing_result_child.f
   post_accessing_result_child2.f
 
+
+  # ------ accesssing postconditions in a module
+
+  mod.post_accessing_result.f
+  mod.post_accessing_result_child.f
+  mod.post_accessing_result_child2.f
+
+  inh_module1 : mod.post_accessing_result is
+    redef f
+      post then
+        ok "redef $result"
+    =>
+      32168
+
+  inh_module2 : mod.post_accessing_result is
+    redef n := 64
+    redef r => 128
+    redef f
+      post then
+        ok "redef $result"
+    =>
+      32168
+
+/*
+  inh_module1.f
+  inh_module2.f
+*/
+
+
   exit
 
 _ := test_postcondition
