@@ -3212,9 +3212,13 @@ invariant   : "inv" block
    * Parse implRout
    *
 implRout    : "is" "abstract"
+            | ARROW "abstract"
             | "is" "intrinsic"
+            | ARROW "intrinsic"
             | "is" "intrinsic_constructor"
+            | ARROW "intrinsic_constructor"
             | "is" "native"
+            | ARROW "native"
             | "is" block
             | ARROW block
             | "of" block
