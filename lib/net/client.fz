@@ -29,11 +29,11 @@
 #
 # Minimal example:
 # ```
-# rh : net.Request_Handler is
-#   handle_request(chan net.channel) T =>
-#     say chan.get_peer_address
+# rh : net.Request_Handler unit is
+#   handle_request unit =>
+#     say net.channel.env.get_peer_address
 #
-# net.client rh net.family.ipv4 net.protocol.tcp "tokiwa.software" 80
+# net.client rh net.family.ipv4 net.protocol.tcp "tokiwa.software" (u16 80) # NYI: type inference
 # ```
 #
 # Blocks until connection is establised.
