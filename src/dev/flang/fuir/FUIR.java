@@ -1010,7 +1010,7 @@ hw25 is
 
 
   /**
-   * This has to be called after `super.addoCode(List)` was called to record the
+   * This has to be called after `super.addCode(List)` was called to record the
    * clazz and whether the code belongs to a precondition for all sites of the
    * newly added code.
    *
@@ -2433,7 +2433,7 @@ hw25 is
    * error since there is no expression before 'mul 1 (sub current.n (add
    * current.m 2))'.
    *
-   * @param s site to start skiping backwards from
+   * @param s site to start skipping backwards from
    */
   public int skipBack(int s)
   {
