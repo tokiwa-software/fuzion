@@ -377,7 +377,6 @@ CAUTION: *NYI*: Text Missing
 include::rule.adoc[]
 
 
-
 [appendix]
 
 == Glossary
