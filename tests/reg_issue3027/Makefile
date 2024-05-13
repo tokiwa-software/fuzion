@@ -29,7 +29,7 @@
 #
 # Even though the negative variant could not fail if the simple variant fails,
 # running both ensures that an update of error output cannot accidentally
-# inctroduce some missing errors.
+# introduce some missing errors.
 #
 override NAME = test_conflicting_inheritance
 include ../simple_and_negative.mk

@@ -112,7 +112,7 @@ public abstract class Module extends ANY implements FeatureLookup
 
 
   /**
-   * From the given map s, get the list of entries for given FeatureName. Wil
+   * From the given map s, get the list of entries for given FeatureName. Will
    * return an empty list if no mapping was found.
    *
    * @param s a set of features
@@ -135,8 +135,8 @@ public abstract class Module extends ANY implements FeatureLookup
    *
    * @param s a set of features we are modifying.
    *
-   * @param fn a name we want to map to `f`. Note that `fn` might be diffrent to
-   * `f.featureName()`.
+   * @param fn a name we want to map to `f`. Note that `fn` might be different
+   * to `f.featureName()`.
    *
    * @param f a feature.
    */
