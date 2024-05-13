@@ -34,7 +34,6 @@ import java.util.BitSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import java.util.function.Supplier;
 
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
