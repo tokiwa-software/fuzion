@@ -198,7 +198,8 @@ test_postcondition is
       post
         ok "original $result"
         { io.out.env.println "hi"; true }
-//        { v := post_accessing_result.this; true }    # -- does not work yet!
+#        { v := post_accessing_result.this; true }    # NYI:  does not work yet!
+#        { [1,result,2].fold i32.sum > 3 }            # NYI:  does not work yet!
         result > 23
     =>
       42
