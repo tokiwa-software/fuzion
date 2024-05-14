@@ -744,10 +744,23 @@ public class C extends ANY
     var cCompiler = _options._cCompiler != null ? _options._cCompiler : "clang";
     var cTarget = _options._cTarget != null ? Optional.of(_options._cTarget) : getClangDefaultTarget();
     var command = new List<String>(cCompiler);
+
     if (cTarget.isPresent())
       {
         command.add("--target=" + cTarget.get());
       }
+
+    /*
+     * "Generate code to catch integer overflow errors.
+     *  Signed integer overflow is undefined in C. With this flag,
+     *  extra code is generated to detect this and abort when it happens."
+     * source: man clang
+     */
+    command.add("-ftrapv");
+
+    // NYI: UNDER DEVELOPMENT: enable this once we have gotten rid of implicit conversions
+    // command.add("-Wconversion");
+
     if(_options._cFlags != null)
       {
         command.addAll(_options._cFlags.split(" "));
@@ -774,14 +787,17 @@ public class C extends ANY
 
         command.addAll("-O3");
       }
+
     if(_options._useBoehmGC)
       {
         command.addAll("-lgc", "-DGC_THREADS", "-DGC_PTHREADS", "-DPTW32_STATIC_LIB", "-DGC_WIN32_PTHREADS");
       }
+
     if (linkJVM())
       {
         command.addAll("-DFUZION_LINK_JVM");
       }
+
     if (usesThreads())
       {
         command.addAll("-DFUZION_ENABLE_THREADS");
@@ -821,6 +837,7 @@ public class C extends ANY
       {
         command.addAll(_options.pathOf("include/posix.c"));
       }
+
     command.addAll(cf.fileName());
 
     if (linkJVM())
