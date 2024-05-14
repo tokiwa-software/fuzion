@@ -1678,7 +1678,7 @@ public class C extends ANY
     var vcl = _fuir.clazzAsValue(cl);
     var ac = _fuir.clazzArgCount(vcl);
     var aii = _fuir.hasData(tc) ? 1 : 0;
-    for (int ai = 0; ai < ac; ai++)
+    for (int ai = 0; ai < ac && aii < a.size(); ai++)
       {
         var at = _fuir.clazzArgClazz(vcl, ai);
         if (_fuir.hasData(at))
