@@ -397,8 +397,8 @@ REF_MANUAL_SOURCES = $(wildcard $(FZ_SRC)/doc/ref_manual/*.adoc) \
                      $(JAVA_FILES_UTIL) \
                      $(JAVA_FILES_PARSER) \
                      $(JAVA_FILES_FE)
-REF_MANUAL_PDF     = $(BUILD_DIR)/doc/refeference_manual/fuzion_reference_manual.pdf
-REF_MANUAL_HTML    = $(BUILD_DIR)/doc/refeference_manual/html/index.html
+REF_MANUAL_PDF     = $(BUILD_DIR)/doc/reference_manual/fuzion_reference_manual.pdf
+REF_MANUAL_HTML    = $(BUILD_DIR)/doc/reference_manual/html/index.html
 
 DOCUMENTATION = \
 	$(DOC_FILES_FUMFILE) \
