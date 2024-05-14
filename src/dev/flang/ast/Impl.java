@@ -587,7 +587,20 @@ public class Impl extends ANY
   {
     var result = switch (_kind)
       {
-      case RoutineDef, FieldDef -> _expr.typeForInferencing();
+      case RoutineDef -> _expr.typeForInferencing();
+      case FieldDef ->
+        {
+          var t = _expr.typeForInferencing();
+          // second try, the feature containing the field
+          // may not be resolved yet.
+          // see #348 for an example.
+          if (t == null && !_infiniteRecursionInResolveTypes)
+            {
+              f.visit(res.resolveTypesFully, f.outer());
+              t  = _expr.typeForInferencing();
+            }
+          yield t;
+        }
       case FieldActual -> typeFromInitialValues(res, f, false);
       default -> null;
       };
