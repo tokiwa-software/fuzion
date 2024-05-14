@@ -142,7 +142,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      * Perform an assignment of a value to a field in tvalue. The type of tvalue
      * might be dynamic (a reference). See FUIR.access*().
      *
-     * @param s site of the assignmt
+     * @param s site of the assignment
      *
      * @param tvalue the target instance
      *

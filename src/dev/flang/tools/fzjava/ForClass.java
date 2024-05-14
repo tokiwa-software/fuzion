@@ -515,7 +515,7 @@ class ForClass extends ANY
 
 
   /**
-   * If excecutable throws any checked exception
+   * If executable throws any checked exception
    * the result type `fr` is wrapped in an outcome.
    */
   private String outcomeResultType(Executable exc, String fr)

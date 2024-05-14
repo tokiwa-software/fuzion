@@ -123,13 +123,13 @@ public interface Context
 
 
   /**
-   * Convenience function for `conextString(true)`
+   * Convenience function for `contextString(true)`
    */
   default String contextStringForEnv() { return contextString(true); }
 
 
   /**
-   * Convenience function for `conextString(false)`
+   * Convenience function for `contextString(false)`
    */
   default String contextString()       { return contextString(false); }
 
