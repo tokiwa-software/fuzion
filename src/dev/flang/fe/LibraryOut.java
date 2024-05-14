@@ -43,7 +43,6 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.Box;
 import dev.flang.ast.Call;
 import dev.flang.ast.Constant;
-import dev.flang.ast.Cond;
 import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;

@@ -43,7 +43,6 @@ import dev.flang.ast.Universe; // NYI: remove dependency
 
 import dev.flang.util.ANY;
 import dev.flang.util.List;
-import dev.flang.util.Map2Int;
 import dev.flang.util.SourcePosition;
 
 

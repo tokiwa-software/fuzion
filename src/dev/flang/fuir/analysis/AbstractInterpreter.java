@@ -36,7 +36,6 @@ import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
-import dev.flang.util.SourcePosition;
 
 
 /**

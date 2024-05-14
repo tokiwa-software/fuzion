@@ -33,7 +33,6 @@ import java.util.ListIterator;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import dev.flang.util.Errors;
