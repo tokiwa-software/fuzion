@@ -479,7 +479,7 @@ code that is used as an input for tools like Fuzion compilers.
 either by a xref:fuzion_call[call] or by xref:fuzion_tagging[tagging].
 
 [#fuzion_intrinsic]
-((Intrinsic Feature)):: An _intrinsic feature_ is a xref:fuzion_feature[feature] declared using `=> intrinsic` or `=> intrinsic_constructor`.
+((Intrinsic Feature)):: An _intrinsic feature_ is a xref:fuzion_feature[feature] declared using `=> intrinsic`.
 
 [#fuzion_native]
 ((Native Feature)):: A _native feature_ is a xref:fuzion_feature[feature] declared using `=> native`.

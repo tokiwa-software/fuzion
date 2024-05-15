@@ -224,12 +224,12 @@ public u64(public val u64) : num.wrap_around, has_interval is
 
   # equality
   #
-  fixed type.equality(a, b u64) bool => intrinsic_constructor
+  fixed type.equality(a, b u64) bool => intrinsic
 
 
   # total order
   #
-  fixed type.lteq(a, b u64) bool => intrinsic_constructor
+  fixed type.lteq(a, b u64) bool => intrinsic
 
 
   # returns the number in whose bit representation all bits are ones

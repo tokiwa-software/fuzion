@@ -47,12 +47,12 @@ public fuzion.java is
 
   # intrinsic to read static field
   #
-  get_static_field0(T type, clazz Java_Object, field Java_Object, signature fuzion.sys.Pointer) T => intrinsic_constructor
+  get_static_field0(T type, clazz Java_Object, field Java_Object, signature fuzion.sys.Pointer) T => intrinsic
 
 
   # intrinsic to read instance field
   #
-  get_field0(T type, thiz Java_Object, field Java_Object, signature fuzion.sys.Pointer) T => intrinsic_constructor
+  get_field0(T type, thiz Java_Object, field Java_Object, signature fuzion.sys.Pointer) T => intrinsic
 
 
   # A Java reference
@@ -62,7 +62,7 @@ public fuzion.java is
     public is_null bool =>
       is_null0 Java_Ref
 
-    is_null0(jr fuzion.sys.Pointer) bool => intrinsic_constructor
+    is_null0(jr fuzion.sys.Pointer) bool => intrinsic
 
     # NYI: UNDER DEVELOPMENT:
     # redef as_string String =>
@@ -187,7 +187,7 @@ public fuzion.java is
                  name Java_Object,
                  signature Java_Object,
                  thiz fuzion.sys.Pointer,
-                 args fuzion.sys.internal_array fuzion.sys.Pointer) outcome T => intrinsic_constructor
+                 args fuzion.sys.internal_array fuzion.sys.Pointer) outcome T => intrinsic
 
   # intrinsic to call given Java static method
   #
@@ -195,7 +195,7 @@ public fuzion.java is
                  class_name Java_Object,
                  name Java_Object,
                  signature Java_Object,
-                 args fuzion.sys.internal_array fuzion.sys.Pointer) outcome T => intrinsic_constructor
+                 args fuzion.sys.internal_array fuzion.sys.Pointer) outcome T => intrinsic
 
 
   # intrinsic to call given Java constructor
@@ -203,7 +203,7 @@ public fuzion.java is
   call_c0(T type,
                  class_name Java_Object,
                  signature Java_Object,
-                 args fuzion.sys.internal_array fuzion.sys.Pointer) outcome T => intrinsic_constructor
+                 args fuzion.sys.internal_array fuzion.sys.Pointer) outcome T => intrinsic
 
 
   # intrinsic to get the length of a Java array of arbitrary type
@@ -237,7 +237,7 @@ public fuzion.java is
 
   # intrinsic to convert an array to a Java Array object
   #
-  array_to_java_object0(T type, a fuzion.sys.internal_array T) Array T => intrinsic_constructor
+  array_to_java_object0(T type, a fuzion.sys.internal_array T) Array T => intrinsic
 
 
   # convert a string to a Java String object
@@ -248,7 +248,7 @@ public fuzion.java is
 
   # intrinsic to convert a string to a Java String object
   #
-  string_to_java_object0(s fuzion.sys.internal_array u8) Java_Object => intrinsic_constructor
+  string_to_java_object0(s fuzion.sys.internal_array u8) Java_Object => intrinsic
 
 
   # convert a Java String to a string
@@ -264,42 +264,42 @@ public fuzion.java is
 
   # intrinsic to convert an i8 to a Java Byte object
   #
-  public i8_to_java_object(v i8) Java_Object => intrinsic_constructor
+  public i8_to_java_object(v i8) Java_Object => intrinsic
 
 
   # intrinsic to convert an u16 to a Java Character object
   #
-  public u16_to_java_object(v u16) Java_Object => intrinsic_constructor
+  public u16_to_java_object(v u16) Java_Object => intrinsic
 
 
   # intrinsic to convert an i16 to a Java Short object
   #
-  public i16_to_java_object(v i16) Java_Object => intrinsic_constructor
+  public i16_to_java_object(v i16) Java_Object => intrinsic
 
 
   # intrinsic to convert an i32 to a Java Integer object
   #
-  public i32_to_java_object(v i32) Java_Object => intrinsic_constructor
+  public i32_to_java_object(v i32) Java_Object => intrinsic
 
 
   # intrinsic to convert an i64 to a Java Long object
   #
-  public i64_to_java_object(v i64) Java_Object => intrinsic_constructor
+  public i64_to_java_object(v i64) Java_Object => intrinsic
 
 
   # intrinsic to convert an f32 to a Java Float object
   #
-  public f32_to_java_object(v f32) Java_Object => intrinsic_constructor
+  public f32_to_java_object(v f32) Java_Object => intrinsic
 
 
   # intrinsic to convert a f64 to a Java Double object
   #
-  public f64_to_java_object(v f64) Java_Object => intrinsic_constructor
+  public f64_to_java_object(v f64) Java_Object => intrinsic
 
 
   # intrinsic to convert a bool to a Java Boolean object
   #
-  public bool_to_java_object(b bool) Java_Object => intrinsic_constructor
+  public bool_to_java_object(b bool) Java_Object => intrinsic
 
 
   # short-hands

@@ -79,7 +79,7 @@ module net is
   # true  => arr_result[0] is the socket descriptor
   # false => arr_result[0] is an error number
   #
-  accept (sd i64, arr_result fuzion.sys.Pointer) bool => intrinsic_constructor
+  accept (sd i64, arr_result fuzion.sys.Pointer) bool => intrinsic
 
 
   # accept a new connection for given socket descriptor, wrapper for accept intrinsic.
@@ -117,7 +117,7 @@ module net is
   # true  => arr_result[0] is the number of bytes read
   # false => arr_result[0] is an error number
   #
-  read(sd i64, arr_data fuzion.sys.Pointer, length i32, arr_result fuzion.sys.Pointer) bool => intrinsic_constructor
+  read(sd i64, arr_data fuzion.sys.Pointer, length i32, arr_result fuzion.sys.Pointer) bool => intrinsic
 
 
   # read a maximum of max_bytes from descriptor, wrapper for read intrinsic

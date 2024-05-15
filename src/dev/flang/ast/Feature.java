@@ -828,16 +828,6 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * Is this an intrinsic feature that creates an instance of its result ref
-   * type?
-   */
-  public boolean isIntrinsicConstructor()
-  {
-    return _impl == Impl.INTRINSIC_CONSTRUCTOR;
-  }
-
-
-  /**
    * get the code of this feature.
    */
   public Expr code()

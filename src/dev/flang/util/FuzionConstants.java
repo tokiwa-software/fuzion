@@ -304,11 +304,6 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Flag OR'ed to kind for intrinsics that create an instance of their result ref type.
-   */
-  public static final int MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR = 0x20;
-
-  /**
    * Flag OR'ed to kind for features with modifier 'fixed'
    */
   public static final int MIR_FILE_KIND_IS_FIXED = 0x40;

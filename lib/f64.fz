@@ -43,11 +43,11 @@ public f64(public val f64) : float is
 
   # comparision
   #
-  fixed infix = (other f64) bool => intrinsic_constructor
-  fixed infix <= (other f64) bool => intrinsic_constructor
-  fixed infix >= (other f64) bool => intrinsic_constructor
-  fixed infix < (other f64) bool => intrinsic_constructor
-  fixed infix > (other f64) bool => intrinsic_constructor
+  fixed infix = (other f64) bool => intrinsic
+  fixed infix <= (other f64) bool => intrinsic
+  fixed infix >= (other f64) bool => intrinsic
+  fixed infix < (other f64) bool => intrinsic
+  fixed infix > (other f64) bool => intrinsic
 
 
   # conversion
@@ -199,7 +199,7 @@ public f64(public val f64) : float is
     val.as_f64
 
 
-  public fixed type.is_NaN(val f64) bool => intrinsic_constructor
+  public fixed type.is_NaN(val f64) bool => intrinsic
 
 
   public fixed type.min_exp i32 => intrinsic

@@ -44,11 +44,11 @@ public f32(public val f32) : float is
 
   # comparision
   #
-  fixed infix = (other f32) bool => intrinsic_constructor
-  fixed infix <= (other f32) bool => intrinsic_constructor
-  fixed infix >= (other f32) bool => intrinsic_constructor
-  fixed infix < (other f32) bool => intrinsic_constructor
-  fixed infix > (other f32) bool => intrinsic_constructor
+  fixed infix = (other f32) bool => intrinsic
+  fixed infix <= (other f32) bool => intrinsic
+  fixed infix >= (other f32) bool => intrinsic
+  fixed infix < (other f32) bool => intrinsic
+  fixed infix > (other f32) bool => intrinsic
 
 
   # conversion
@@ -192,7 +192,7 @@ public f32(public val f32) : float is
     val.as_f32
 
 
-  public fixed type.is_NaN(val f32) bool => intrinsic_constructor
+  public fixed type.is_NaN(val f32) bool => intrinsic
 
 
   public fixed type.min_exp i32 => intrinsic
