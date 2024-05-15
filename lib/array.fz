@@ -36,54 +36,15 @@ module:public array(
       module internal_array fuzion.sys.internal_array T,
       _ unit,
       _ unit,
-      _ unit) : Sequence T is
+      _ unit) : Indexable_Sequence T is
 
   internal_array.freeze
-
-  public length => internal_array.length
 
 
   # redefines Sequence.count for array,
   # reducing complexity from O(n) to O(1).
   #
-  public redef count => length
-
-
-  # is this sequence known to be finite?  For infinite sequences, features like
-  # count diverge.
-  #
-  public redef finite => true
-
-
-  # is this Sequence known to be array backed? If so, this means that operations
-  # like index[] are fast.
-  #
-  public redef is_array_backed => true
-
-
-  # check if argument is a valid index in this array.
-  #
-  # Unlike for general Sequences, this perfoms in O(1).
-  #
-  public redef is_valid_index(i i32) => 0 ≤ i ≤ length
-
-
-  # create a list that consists of the elements of this Sequence except the first
-  # n elements
-  #
-  # For arrays, this has performance in O(1).
-  #
-  public redef drop (n i32) =>
-    as_list (max 0 n)
-
-
-  # a sequence of all valid indices to access this array. Useful e.g., for
-  # `for`-loops:
-  #
-  #   for i in arr.indices do
-  #     say arr[i]
-  #
-  public indices => 0..length-1
+  public redef count => internal_array.length
 
 
   # get the contents of this array at the given index
@@ -91,6 +52,7 @@ module:public array(
   public redef index [ ] (i i32) T
   =>
     internal_array[i]
+
 
   # create a new array with element i set to v. Grow the array in case i == length.
   #
@@ -104,6 +66,7 @@ module:public array(
     # better use a persistent array implementation such as persistent hash array
     # mapped trie.
     array T (max length i+1) (ix -> if (ix = i) v else array.this[ix])
+
 
   # create a new array with element i set to v. Grow the array in case i >= length.
   # New array elements at indices array.this.length..i-1 will be set to z.
@@ -120,165 +83,10 @@ module:public array(
     array T (max length i+1) (ix -> if (ix = i) v else if (ix ≥ length) z else array.this[ix])
 
 
-  # apply f to all elements in this array
-  public redef for_each (f T -> unit) unit =>
-    for i in indices do
-      f index[](i)
-
-
-  # create a list from this array
-  #
-  public redef as_list => as_list 0
-
-
-  # create a list from this array starting at the given index
-  #
-  public as_list(i i32) list T
-    pre
-      debug: i ≥ 0
-  =>
-    (slice i length).as_list
-
-
-  # create a slice from this array's elements at index 'from' (included)
-  # up to 'to' (excluded).
-  #
-  # Complexity:
-  # index access : O(1)
-  # count        : O(1)
-  #
-  public redef slice(from, to i32) Sequence T
-  =>
-    arrayslice : Sequence T is
-
-      # this array slice as a list
-      #
-      public redef as_list list T =>
-        if to ≤ from
-          nil
-        else
-          array_cons from to
-
-      # get the contents of this slice at the given index
-      #
-      public redef index [ ] (i i32) T
-      =>
-        array.this[from+i]
-
-      # is this sequence known to be finite?  For infinite sequences, features like
-      # count diverge.
-      #
-      public redef finite => true
-
-
-      # is this Sequence known to be array backed? If so, this means that operations
-      # like index[] are fast.
-      #
-      public redef is_array_backed => true
-
-
-      # redefines Sequence.count for array.slice,
-      # reducing complexity from O(n) to O(1).
-      #
-      public redef count => to-from
-
-
-      # check if argument is a valid index in this array.
-      #
-      # Unlike for general Sequences, this perfoms in O(1).
-      #
-      public redef is_valid_index(i i32) => 0 ≤ i ≤ arrayslice.this.count
-
-
-      # create a list that consists of the elements of this Sequence except the first
-      # n elements
-      #
-      # For arrays, this has performance in O(1).
-      #
-      public redef drop (n i32) =>
-        array.this.slice from+(max 0 n) to
-                  .as_list
-
-    arrayslice
-
-
-  # create a cons cell for a list of this array starting at the given
-  # index `i` and up to `to`
-  #
-  array_cons (i, to i32) : Cons T (list T)
-    pre
-      debug: 0 ≤ i < to ≤ length
-  is
-    head => array.this[i]
-    tail => (slice i+1 to).as_list
-
-
-  # map the array to a new array applying function f to all elements
-  #
-  public map_to_array(B type, f T -> B) array B =>
-    array B array.this.length (i -> f array.this[i])
-
-
-  # variant of map which additionally passes the index to
-  # the mapping function f
-  #
-  public map_indexed(B type, f (T, i32) -> B) array B =>
-    array B array.this.length (i -> f array.this[i] i)
-
-
-  # fold the elements of this array using the given monoid.
-  #
-  # e.g., to sum the elements of an array of i32, use a.fold i32.sum
-  #
-  public redef fold (m Monoid T) => fold 0 m.e m
-
-
-  # fold the elements of this array using the given monoid and initial value
-  #
-  # Used to fold an array tail-recursively
-  #
-  public fold (i i32, s T, m Monoid T) T
-    pre
-      debug: 0 ≤ i ≤ length
-  =>
-    if i = length
-      s
-    else
-      fold i+1 (m.op s array.this[i]) m
-
-
-  # reverse the order of the elements in this array
-  #
-  public redef reverse Sequence T => reverse_array
-
-
   # reverse the order of the elements in this array
   #
   public reverse_array array T =>
     array T array.this.length (i -> array.this[array.this.length-1-i])
-
-
-  # get a list of tuples indices and elements in this array
-  #
-  public enumerate list (tuple i32 T) =>
-    if length = 0
-      nil
-    else
-      enumerate_cons 0
-
-
-  # create a cons cell for a list of tuples of this array's indices and elements
-  # starting at the given indices.
-  #
-  enumerate_cons (i i32) : Cons (i32, T) (list (tuple i32 T))
-    pre
-      debug: 0 ≤ i
-      debug: i < length
-  is
-    head => (i, index[] i)
-    tail list (tuple i32 T) =>
-      if i < length-1 then enumerate_cons i+1
-      else                 nil
 
 
   # collect the contents of this Sequence into an array

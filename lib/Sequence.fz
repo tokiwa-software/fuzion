@@ -51,12 +51,6 @@ public Sequence(public T type) ref is
   public finite => false
 
 
-  # is this Sequence known to be array backed? If so, this means that operations
-  # like index[] are fast.
-  #
-  public is_array_backed => false
-
-
   # is this Sequence empty?
   #
   public is_empty => as_list.is_empty
@@ -120,16 +114,11 @@ public Sequence(public T type) ref is
   # backed.  This will ensure that operations like index[] or drop perform
   # in constant time.
   #
-  # returns Sequence.this if is_array_backed.
+  # returns Sequence.this if already is_array_backed.
   #
-  public as_array_backed Sequence T
-  post
-    result.is_array_backed
+  public as_array_backed Indexable_Sequence T
   =>
-    if is_array_backed
-      Sequence.this
-    else
-      as_array
+    as_array
 
 
   # create a list and call 'for_each f' on it
@@ -551,12 +540,9 @@ public Sequence(public T type) ref is
     pre
       debug: n ≥ 0
   =>
-    if is_array_backed
-      if is_valid_index(n) then Sequence.this[n] else nil
-    else
-      match drop n
-        nil => nil
-        c Cons => c.head
+    match drop n
+      nil => nil
+      c Cons => c.head
 
 
   # check if argument is a valid index in this sequence.
@@ -565,8 +551,7 @@ public Sequence(public T type) ref is
   # Sequence is_array_backed.
   #
   public is_valid_index(i i32) =>
-    (0 ≤ i && (if is_array_backed then i ≤ count
-                                  else !(drop i-1).is_empty))
+    (0 ≤ i && !(drop i-1).is_empty)
 
 
   # the nth element in the sequence, must exist
