@@ -953,7 +953,7 @@ public class Feature extends AbstractFeature
       (_state.atLeast(State.RESOLVING_TYPES),
        Errors.any());
 
-    if (this == Types.resolved.f_choice)
+    if (this.isBaseChoice())
       { // if this == choice, there are only formal generics, so nothing to erase
       }
     else
@@ -963,7 +963,7 @@ public class Feature extends AbstractFeature
             if (CHECKS) check
               (Errors.any() || p.calledFeature() != null);
 
-            if (p.calledFeature() == Types.resolved.f_choice)
+            if (p.calledFeature().isBaseChoice())
               {
                 if (p instanceof Call cp)
                   {
@@ -1636,7 +1636,7 @@ public class Feature extends AbstractFeature
         if (CHECKS) check
           (Errors.any() || cf != null);
 
-        if (cf != null && cf.isChoice() && cf != Types.resolved.f_choice)
+        if (cf != null && cf.isChoice() && !cf.isBaseChoice())
           {
             AstErrors.cannotInheritFromChoice(p.pos());
           }
@@ -2606,6 +2606,21 @@ public class Feature extends AbstractFeature
   public boolean isTypeFeaturesThisType()
   {
     return false;
+  }
+
+
+  /**
+   * Is this base-lib's choice-feature?
+   */
+  @Override
+  boolean isBaseChoice()
+  {
+    if (PRECONDITIONS) require
+      (state().atLeast(State.RESOLVED_DECLARATIONS));
+
+    return Types.resolved != null
+      ? this == Types.resolved.f_choice
+      : (featureName().baseName().equals("choice") && featureName().argCount() == 1 && outer().isUniverse());
   }
 
 
