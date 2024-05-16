@@ -1,0 +1,55 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test wrap_around_semantics
+#
+# -----------------------------------------------------------------------
+
+wrap_around_semantics_test is
+
+
+  chck (b bool, msg String) unit =>
+    if b
+      say "PASSED: $msg"
+    else
+      say "FAILED: $msg"
+      _ := set_exit_code 1
+
+
+  test_unsigned (T type : num.wrap_around) =>
+    chck (T.max +° (T.from_u32 7) = (T.from_u32 6)) "{T.name}.max + 7 = 6"
+    chck (T.zero -° (T.from_u32 7) = T.max - (T.from_u32 6)) "0 - 7 = {T.name}.max - 6"
+    chck (T.max *° T.max = (T.from_u32 1)) "{T.name}.max * {T.name}.max = 1"
+
+  test_unsigned u8
+  test_unsigned u16
+  test_unsigned u32
+  test_unsigned u64
+
+  test_signed (T type : num.wrap_around) =>
+    chck (T.max +° (T.from_u32 7) = T.min + (T.from_u32 6)) "{T.name}.max + 7 = {T.name}.min + 6"
+    chck (T.min -° (T.from_u32 7) = T.max - (T.from_u32 6)) "{T.name}.min - 7 = {T.name}.max - 6"
+    chck (T.max *° T.max = (T.from_u32 1)) "{T.name}.max * {T.name}.max = 1"
+
+  test_signed i8
+  test_signed i16
+  test_signed i32
+  test_signed i64
+
+  exit
