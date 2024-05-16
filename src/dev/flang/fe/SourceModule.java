@@ -1753,10 +1753,15 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
 
 
   /**
+   * Check that code in contract does not access inner features apart from
+   * arguments, result field, outer refs or case fields (in case condition uses
+   * a `match`).  Procude AstErrors if needed.
    *
+   * @parm f the feature whose contract should be checked.
    */
   private void checkContractAccesses(AbstractFeature f)
   {
+    // NYI: check pre-condition accesses, not only post-condition
     for (var c : f.contract()._declared_postconditions)
       {
         c.visitExpressions(e ->
