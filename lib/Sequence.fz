@@ -545,13 +545,18 @@ public Sequence(public T type) ref is
   # the nth element in the sequence if it exists, wrapped in an option,
   # nil otherwise.
   #
+  # Complexity: if Sequence is array backed O(1) otherwise O(n)
+  #
   public nth(n i32) option T
     pre
       debug: n ≥ 0
   =>
-    match drop n
-      nil => nil
-      c Cons => c.head
+    if is_array_backed
+      if (is_valid_index n) then Sequence.this[n] else nil
+    else
+      match drop n
+        nil => nil
+        c Cons => c.head
 
 
   # check if argument is a valid index in this sequence.
