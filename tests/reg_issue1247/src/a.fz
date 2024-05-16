@@ -1,7 +1,7 @@
 
 module a : property.equatable is
   module sign =>
-    if a.this ≟ a.this.identity
+    if a.this = a.this.identity
       0
     else
       1
