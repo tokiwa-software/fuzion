@@ -44,7 +44,6 @@ import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Box; // NYI: remove dependency!
 import dev.flang.ast.Env; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
-import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.State; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
@@ -813,18 +812,6 @@ public class Clazzes extends ANY
   /**
    * Find all static clazzes for this case and store them in outerClazz.
    */
-  public static void findClazzes(If i, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
-  {
-    if (!outerClazz.hasActualClazzes(i, outer))
-      {
-        outerClazz.saveActualClazzes(i, outer, new Clazz[] { clazz(i.cond, outerClazz, inh) });
-      }
-  }
-
-
-  /**
-   * Find all static clazzes for this case and store them in outerClazz.
-   */
   public static void findClazzes(AbstractCase c, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
   {
     // NYI: Check if this works for a case that is part of an inherits clause, do
@@ -952,11 +939,6 @@ public class Clazzes extends ANY
     else if (e instanceof AbstractCurrent c)
       {
         result = outerClazz;
-      }
-
-    else if (e instanceof If i)
-      {
-        result = outerClazz.handDown(i.type(), inh, e);
       }
 
     else if (e instanceof AbstractMatch m)

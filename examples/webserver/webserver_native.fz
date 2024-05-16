@@ -26,53 +26,57 @@
 #
 # To start this webserver in the interpreter, use:
 #
-#   fz webserver2.fz
+#   fz webserver_native.fz
 #
 # Alternatively, compile it using the C backend and run the resulting
 # executable:
 #
-#   fz -c webserver2.fz
+#   fz -c webserver_native.fz
 #   ./webserver
 #
-webserver2 is
+webserver_native is
+
   port u16 := 8080
-  server := net.server net.family.ipv6 net.protocol.tcp port
+  match net.server net.family.ipv6 net.protocol.tcp port
+    e error => say e
+    unit =>
+      say "started server on port: $port"
+      say "you may now send a request, e.g.:"
+      say "echo 'Hello' | curl 'http://[::1]:8080'"
 
-  for
-    ar := net.server.accept, net.server.accept
-    n in 1..
+
+  # definition of a request handler
+  #
+  rh(n i32) : net.Request_Handler unit is
+
+    handle_request unit =>
+      say "accepted connection:"
+
+      match io.buffered.read_line
+        str String => say str
+        * =>
+
+      send200(data String) outcome unit =>
+        net.channel.env
+          .write """
+            HTTP/1.1 200 OK
+            Connection: close
+            Server: Fuzion demo WebServer v0.02
+            Content-Length: {data.byte_length}
+            Content-Type: text/html
+
+            {data}
+          """.utf8
+
+      _ := send200 "<html>Hello Fuzion $n!</html>"
+
+      say "closed connection"
+
+
+  # accept connections while server is active
+  #
+  for n in 1..
   while net.server.is_active
-  do
-    say "accepted connection: {ar}"
+    net.server.accept (rh n)
 
-    for
-      read := (net.channel net.server)
-        .read 1
-        .or (error "read error")
-        .bind String (d -> String.from_bytes d)
-      s := read.val, s + read.val
-    while read.ok && read.val != "\n"
-    else
-      say s
 
-    send200(data String) outcome unit =>
-      (net.channel net.server)
-        .write """
-          HTTP/1.1 200 OK
-          Connection: close
-          Server: Fuzion demo WebServer v0.02
-          Content-Length: {data.byte_length}
-          Content-Type: text/html
-
-          {data}
-        """.utf8
-        .or (error "write error")
-
-    _ := send200 "<html>Hello Fuzion $n!</html>"
-
-    _ := (net.channel net.server)
-      .close
-
-    say "closed connection"
-
-  unit

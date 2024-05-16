@@ -317,6 +317,30 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   /**
+   * Return this type as a simple qualifier.  This is null by default except for
+   * types without generics and without `ref` modifier.
+   */
+  public List<ParsedName> asQualifier()
+  {
+    List<ParsedName> res = _outer instanceof UnresolvedType uo ? uo.asQualifier()
+                                                               : new List<>();
+
+    if (res == null ||
+        !_generics.isEmpty() ||
+        _refOrVal != RefOrVal.LikeUnderlyingFeature)
+      {
+        res = null;
+      }
+    else
+      {
+        res.add(new ParsedName(pos(), _name));
+      }
+    return res;
+  }
+
+
+
+  /**
    * This method usually just returns currentOuter. Only for clone()d types that
    * are used in a different outer context, this permits to look up features the
    * type is based on in the original context.

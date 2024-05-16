@@ -1,0 +1,12 @@
+
+--CURDIR--/reg_issue2275.fz:24:1: error 1: Incompatible types in assignment
+x String := 3
+^
+assignment to field : 'x'
+expected formal type: 'String'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '3'
+To solve this, you could change the type of the target 'x' to 'i32' or convert the type of the assigned value to 'String'.
+
+one error.

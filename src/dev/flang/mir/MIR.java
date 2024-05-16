@@ -29,7 +29,6 @@ package dev.flang.mir;
 import dev.flang.ast.AbstractAssign;  // NYI: Remove dependency!
 import dev.flang.ast.AbstractCall;  // NYI: Remove dependency!
 import dev.flang.ast.AbstractFeature;  // NYI: Remove dependency!
-import dev.flang.ast.AbstractMatch;  // NYI: Remove dependency!
 
 import dev.flang.ir.IR;
 

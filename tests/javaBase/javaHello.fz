@@ -76,21 +76,16 @@ javaHello : Java is
       say "Hello "+javaString2                                                 # append Java string to Fuzion string and print it
 
   # convert fuzion arrays to java arrays
-  #
-  say (fuzion.java.array_to_java_object [1,2,3])
-  say (fuzion.java.array_to_java_object [java.lang.System.out])
-  # NYI does not work yet: error 1: Used abstract feature 'String.utf8' is not implemented by 'String'
-  # say (fuzion.java.array_to_java_object ["1","2","3"])
-
   # array with primitives
   arr_bool := fuzion.java.array_to_java_object [false, true, false, true]
-  arr_i8 := fuzion.java.array_to_java_object [i8.zero, i8.one, i8.min, i8.max]
-  arr_i16 := fuzion.java.array_to_java_object [i16.zero, i16.one, i16.min, i16.max]
-  arr_u16 := fuzion.java.array_to_java_object [u16.zero, u16.one, u16.min, u16.max]
-  arr_i32 := fuzion.java.array_to_java_object [i32.zero, i32.one, i32.min, i32.max]
-  arr_i64 := fuzion.java.array_to_java_object [i64.zero, i64.one, i64.min, i64.max]
-  arr_f32 := fuzion.java.array_to_java_object [f32.zero, f32.one, f32.π, f32.max]
-  arr_f64 := fuzion.java.array_to_java_object [f64.zero, f64.one, f64.π, f64.max]
+  arr_i8   := fuzion.java.array_to_java_object [i8.zero, i8.one, i8.min, i8.max]
+  arr_i16  := fuzion.java.array_to_java_object [i16.zero, i16.one, i16.min, i16.max]
+  arr_u16  := fuzion.java.array_to_java_object [u16.zero, u16.one, u16.min, u16.max]
+  arr_i32  := fuzion.java.array_to_java_object [i32.zero, i32.one, i32.min, i32.max]
+  arr_i64  := fuzion.java.array_to_java_object [i64.zero, i64.one, i64.min, i64.max]
+  arr_f32  := fuzion.java.array_to_java_object [f32.zero, f32.one, f32.π, f32.max]
+  arr_f64  := fuzion.java.array_to_java_object [f64.zero, f64.one, f64.π, f64.max]
+
 
   say arr_bool
   say arr_i8
@@ -100,6 +95,16 @@ javaHello : Java is
   say arr_i64
   say arr_f32
   say arr_f64
+
+  # array of none-primitives
+  say (Java.as_java_object [java.lang.System.err])
+  (Java.as_java_object [java.lang.System.err])[0].println "I was printed via java."
+
+
+  # NYI: BUG: does not work yet in c-backend: mixture of say and java-println
+  # gets output mixed up. We probably need to flush before executing this?
+  # (Java.as_java_object [java.lang.System.out])[0].println "I was printed via java."
+
 
   # checked exception: IOException
   match java.io.FileReader.new "not_a_valid_file"
@@ -119,3 +124,6 @@ javaHello : Java is
   _ := (panic p unit).go ()->
     Java.java.util.ArrayList.new_I -7
   */
+
+  # NYI: BUG:
+  # say "static field test {Java.com.sun.security.ntlm.NTLMException_static.AUTH__FAILED}"

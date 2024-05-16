@@ -28,7 +28,7 @@
 #
 # See Makefile for how to start fuzion to run this webserver.
 #
-webserver is
+webserver_java is
 
    # declare short hands to access Java net and io packages
    net := Java.java.net
@@ -36,7 +36,7 @@ webserver is
 
    # open socket
    port := 8080
-   serversocket := webserver.this.net.ServerSocket.new port
+   serversocket := webserver_java.this.net.ServerSocket.new port
    match serversocket
      err error => say "#### $err ####"
      ss Java.java.net.ServerSocket =>

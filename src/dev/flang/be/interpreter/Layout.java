@@ -92,7 +92,7 @@ class Layout extends FUIRContext
    * in progress, Integer.MIN_VALUE if layout is done but clazz cannot be
    * instantiated.
    */
-  private int _size = -1;
+  private final int _size;
 
 
   /**
@@ -109,11 +109,11 @@ class Layout extends FUIRContext
   {
     _clazz = cl;
 
-    _size = Integer.MIN_VALUE;
+    var size = Integer.MIN_VALUE;
     if (fuir().clazzIsChoice(_clazz))
       {
         // reserved for tagging
-        _size += (fuir().clazzIsChoiceOfOnlyRefs(_clazz) ? 0 : 1);
+        size += (fuir().clazzIsChoiceOfOnlyRefs(_clazz) ? 0 : 1);
         int maxSz = 0;
         for (int i = 0; i < fuir().clazzNumChoices(cl); i++)
           {
@@ -125,8 +125,8 @@ class Layout extends FUIRContext
               }
           }
         _choiceValsSize = maxSz;
-        _size = _size + maxSz;
-        _size -= Integer.MIN_VALUE;
+        size = size + maxSz;
+        size -= Integer.MIN_VALUE;
       }
     else if (fuir().clazzIsRoutine(_clazz))
       {
@@ -150,14 +150,12 @@ class Layout extends FUIRContext
             } else if (fc == fuir().clazz(FUIR.SpecialClazzes.c_f64)) { fsz = 2;
             } else if (fuir().clazzIsVoidType(cl))                    { fsz = 0;
             } else {                                                    fsz = get(fc).size(); }
-            _offsets.put(i, _size - Integer.MIN_VALUE);
-            _size += fsz;
+            _offsets.put(i, size - Integer.MIN_VALUE);
+            size += fsz;
           }
-        _size -= Integer.MIN_VALUE;
+        size -= Integer.MIN_VALUE;
       }
-
-    if (POSTCONDITIONS) ensure
-      (!fuir().clazzIsChoice(_clazz) && !fuir().clazzIsRoutine(_clazz) || sizeAvailable());
+    _size  = size;
   }
 
 
@@ -165,25 +163,10 @@ class Layout extends FUIRContext
 
 
   /**
-   * Can size() be called?  Just for use in precondition.
-   */
-  boolean sizeAvailable()
-  {
-    if (PRECONDITIONS) require
-      (fuir().clazzIsChoice(_clazz) || fuir().clazzIsRoutine(_clazz));
-
-    return _size >= 0;
-  }
-
-
-  /**
    * The size of instances for _clazz.
    */
   int size()
   {
-    if (PRECONDITIONS) require
-      (sizeAvailable());
-
     return _size;
   }
 
@@ -195,7 +178,6 @@ class Layout extends FUIRContext
   {
     if (PRECONDITIONS) require
       (fuir().clazzIsRoutine(_clazz) || fuir().clazzIsChoice(_clazz),
-       sizeAvailable(),
        _offsets.containsKey(fuir().fieldIndex(f))
        );
 
@@ -209,7 +191,7 @@ class Layout extends FUIRContext
   int choiceValsOffset()
   {
     if (PRECONDITIONS) require
-      (fuir().clazzIsChoice(_clazz) && sizeAvailable());
+      (fuir().clazzIsChoice(_clazz));
 
     return fuir().clazzIsChoiceOfOnlyRefs(_clazz) ? 0 : 1;
   }
@@ -221,7 +203,7 @@ class Layout extends FUIRContext
   int choiceValsSize()
   {
     if (PRECONDITIONS) require
-      (fuir().clazzIsChoice(_clazz) && sizeAvailable());
+      (fuir().clazzIsChoice(_clazz));
 
     return _choiceValsSize;
   }
@@ -240,7 +222,7 @@ class Layout extends FUIRContext
   int choiceValOffset(int id)
   {
     if (PRECONDITIONS) require
-      (fuir().clazzIsChoice(_clazz) && sizeAvailable(),
+      (fuir().clazzIsChoice(_clazz),
        id >= 0,
        id < fuir().clazzNumChoices(_clazz));
 
@@ -259,7 +241,7 @@ class Layout extends FUIRContext
   int choiceRefValOffset()
   {
     if (PRECONDITIONS) require
-      (fuir().clazzIsChoice(_clazz) && sizeAvailable());
+      (fuir().clazzIsChoice(_clazz));
 
     return choiceValsOffset();
   }

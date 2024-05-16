@@ -36,6 +36,6 @@ module process is
   #
   module wait(p i64) i32 => intrinsic
 
-  # NYI send_signal(p i64, signal i32) is intrinsic
-  # NYI is_alive(p i64) is intrinsic
-  # NYI exit_code(p i64) is intrinsic
+  # NYI send_signal(p i64, signal i32) unit => intrinsic
+  # NYI is_alive(p i64) unit => intrinsic
+  # NYI exit_code(p i64) unit => intrinsic

@@ -30,7 +30,7 @@ private:public exit (
   # the handler this effect uses to exit
   p Exit_Handler,
 
-  redef r effect_mode.val,
+  r effect_mode.val,
 
   _ unit
   ) : effect r
@@ -38,7 +38,7 @@ is
 
   # exit with the given code
   #
-  exit(code i32) => p.exit code
+  exit(code u8) => p.exit code
 
 
   # exit with the stored code
@@ -48,9 +48,8 @@ is
 
   # set the stored exit code, which, by default, is zero
   #
-  set_exit_code(code i32)
-  pre
-    0 ≤ code ≤ 127
+  set_exit_code(code u8)
+  pre code ≤ 127
   => p.set_exit_code code
 
 
@@ -68,27 +67,25 @@ is
 
     # mutable value of the current exit code set
     #
-    exit_code := 0
+    exit_code := u8 0
 
 
     # exit with the given code
     #
-    exit(code i32) =>
-      fuzion.std.exit code
+    exit(code u8) =>
+      fuzion.std.exit code.as_i32
 
 
     # exit with the stored code
     #
     exit =>
-      fuzion.std.exit exit_code
+      fuzion.std.exit exit_code.as_i32
 
 
     # set the stored exit code
     #
-    set_exit_code(code i32) outcome unit
-      pre
-        0 ≤ code ≤ 127
-      post
+    set_exit_code(code u8) outcome unit
+      post then
         exit_code = code
       =>
         if exit_code = 0
@@ -109,7 +106,7 @@ exit0 =>
 # exit with a code argument calls exit.exit code, i.e., it uses the
 # current exit effect to exit with the given message.
 #
-public exit(code i32) => exit0.exit code
+public exit(code u8) => exit0.exit code
 
 
 # exit with the currently stored exit code
@@ -119,9 +116,8 @@ public exit => exit0.exit
 
 # change the currently stored exit code
 #
-public set_exit_code(code i32)
-  pre
-    0 ≤ code ≤ 127
+public set_exit_code(code u8)
+pre code ≤ 127
   => exit0.set_exit_code code
 
 
@@ -137,7 +133,7 @@ public Exit_Handler ref is
 
   # exit with the given code
   #
-  public exit(code i32) void => abstract
+  public exit(code u8) void => abstract
 
 
   # exit with the stored code
@@ -147,7 +143,6 @@ public Exit_Handler ref is
 
   # set the stored exit code, which, by default, is zero
   #
-  public set_exit_code(code i32) outcome unit
-    pre
-      0 ≤ code ≤ 127
+  public set_exit_code(code u8) outcome unit
+  pre code ≤ 127
     => abstract

@@ -61,10 +61,11 @@ import java.util.stream.Collectors;
 
 import dev.flang.fuir.FUIR;
 
+import static dev.flang.ir.IR.NO_SITE;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
-import dev.flang.util.SourcePosition;
 
 
 /**
@@ -235,7 +236,7 @@ public class Intrinsics extends ANY
       }
     else
       {
-        Errors.fatal(SourcePosition.notAvailable,
+        Errors.fatal(executor.fuir().declarationPos(innerClazz),
                      "Intrinsic feature not supported",
                      "Missing intrinsic feature: " + in);
         result = (args) -> Value.NO_VALUE;
@@ -778,7 +779,7 @@ public class Intrinsics extends ANY
     putUnsafe("fuzion.java.array_to_java_object0", (executor, innerClazz) -> args ->
         {
           var argz = args.get(1);
-          var sac = executor.fuir().clazzArgClazz(innerClazz, executor.fuir().clazzArgCount(innerClazz) - 1);
+          var sac = executor.fuir().clazzArgClazz(innerClazz, 0);
           var argzData = Interpreter.getField(executor.fuir().clazz_fuzionSysArray_u8_data(), sac, argz, false);
           var arrA = argzData.arrayData();
           var res = arrA._array;
@@ -788,7 +789,7 @@ public class Intrinsics extends ANY
     putUnsafe("fuzion.java.string_to_java_object0", (executor, innerClazz) -> args ->
         {
           var argz = args.get(1);
-          var sac = executor.fuir().clazzArgClazz(innerClazz, executor.fuir().clazzArgCount(innerClazz) - 1);
+          var sac = executor.fuir().clazzArgClazz(innerClazz, 0);
           var argzData = Interpreter.getField(executor.fuir().clazz_fuzionSysArray_u8_data(), sac, argz, false);
           var str = utf8ByteArrayDataToString(argzData);
           var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
@@ -902,7 +903,7 @@ public class Intrinsics extends ANY
         {
           var oc   = executor.fuir().clazzArgClazz(innerClazz, 0);
           var call = executor.fuir().lookupCall(oc);
-          var t = new Thread(() -> executor.callOnInstance(call, new Instance(call), args.get(1), new List<>(), false));
+          var t = new Thread(() -> executor.callOnInstance(NO_SITE, call, new Instance(call), args.get(1), new List<>(), false));
           t.setDaemon(true);
           t.start();
           return new i64Value(_startedThreads_.add(t));
@@ -1515,7 +1516,7 @@ public class Intrinsics extends ANY
               var oc   = executor.fuir().clazzActualGeneric(innerClazz, 0);
               var call = executor.fuir().lookupCall(oc);
               try {
-                var ignore = executor.callOnInstance(call, new Instance(call), args.get(1), new List<>(), false);
+                var ignore = executor.callOnInstance(NO_SITE, call, new Instance(call), args.get(1), new List<>(), false);
                 return new boolValue(true);
               } catch (Abort a) {
                 if (a._effect == cl)

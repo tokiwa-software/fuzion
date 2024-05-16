@@ -168,7 +168,7 @@ is
           java.lang.Thread.sleep_J 200
           (G2D f.getGraphics 400 400 0).draw_logo
 
-        timeout := ((envir.args.nth 1).get "50000").parse_i64.val 0
+        timeout := ((envir.args.nth 1).or_else "50000").parse_i64.val 0
         java.lang.Thread.sleep_J timeout
         _ := f.setVisible false
 

@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 import dev.flang.util.ANY;
 import static dev.flang.util.Errors.*;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
@@ -47,6 +48,47 @@ import dev.flang.util.SourcePosition;
  */
 public class AstErrors extends ANY
 {
+
+
+  /*------------------------------  enums  ------------------------------*/
+
+
+  /**
+   * Enum to distinguish contract parts: precondition vs. postcondition.
+   */
+  enum PreOrPost
+  {
+
+    Pre,
+    Post;
+
+    /**
+     * "Precondition" or "Postcondition" for pre-/post-condition.
+     */
+    @Override
+    public String toString()
+    {
+      return switch (this)
+        {
+          case Pre  -> "Precondition";
+          case Post -> "Postcondition";
+        };
+    }
+
+
+    /**
+     * "else" or "then" for pre-/post-condition.
+     */
+    String elseOrThen()
+    {
+      return switch (this)
+        {
+          case Pre  -> "else";
+          case Post -> "then";
+        };
+    }
+
+  }
 
 
   /*-------------------------  static methods  --------------------------*/
@@ -79,7 +121,7 @@ public class AstErrors extends ANY
       }
     return sl.toString();
   }
-  static String s(AbstractType t)
+  protected static String s(AbstractType t)
   {
     return st(t == null ? "--null--" : t.toString());
   }
@@ -435,44 +477,6 @@ public class AstErrors extends ANY
    *
    * @param frmlT the expected formal type
    *
-   * @param typePar the unexpected type parameter
-   */
-  static void unexpectedTypeParameterInCall(SourcePosition pos,
-                                            AbstractFeature calledFeature,
-                                            int count,
-                                            AbstractType frmlT,
-                                            AbstractType typePar)
-  {
-    var frmls = calledFeature.valueArguments().iterator();
-    AbstractFeature frml = null;
-    int c;
-    for (c = 0; c <= count && frmls.hasNext(); c++)
-      {
-        frml = frmls.next();
-      }
-    var f = ((c == count+1) && (frml != null)) ? frml : null;
-    incompatibleType(pos,
-                     "when passing argument in a call",
-                     "Actual type for argument #" + (count+1) + (f == null ? "" : " " + sbnf(f)) + " does not match expected type.\n" +
-                     "In call to          : " + s(calledFeature) + "\n",
-                     (f == null ? "argument #" + (count+1) : f.featureName().baseName()),
-                     frmlT,
-                     null,
-                     typePar);
-  }
-
-
-  /**
-   * Create an error message for incompatible types when passing an argument to
-   * a call.
-   *
-   * @param calledFeature the feature that is called
-   *
-   * @param count the number of the actual argument (0 == first argument, 1 ==
-   * second argument, etc.)
-   *
-   * @param frmlT the expected formal type
-   *
    * @param value the value to be assigned.
    */
   static void incompatibleArgumentTypeInCall(AbstractFeature calledFeature,
@@ -643,23 +647,30 @@ public class AstErrors extends ANY
   public static void argumentTypeMismatchInRedefinition(AbstractFeature originalFeature, AbstractFeature originalArg, AbstractType originalArgType,
                                                         AbstractFeature redefinedFeature, AbstractFeature redefinedArg, boolean suggestAddingFixed)
   {
-    error(redefinedArg.pos(),
-          "Wrong argument type in redefined feature",
-          "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + "\n" +
-          "argument type is       : " + s(redefinedArg.resultType()) + "\n" +
-          "argument type should be: " +
-          // originalArg.resultType() might be a type parameter that has been replaced by originalArgType:
-          typeWithFrom(originalArgType, originalArg.resultType()) + "\n\n" +
-          "Original argument declared at " + originalArg.pos().show() + "\n" +
-          (suggestAddingFixed ? "To solve this, add " + code("fixed") + " modifier at declaration of "+s(redefinedFeature) + " at " + redefinedFeature.pos().show()
-                              : "To solve this, change type of argument to " + s(originalArgType) + " at " + redefinedArg.pos().show()));
+    if (!any() || !redefinedFeature.isTypeFeature() // type features generated from broken original features may cause subsequent errors
+        )
+      {
+        error(redefinedArg.pos(),
+              "Wrong argument type in redefined feature",
+              "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + "\n" +
+              "argument type is       : " + s(redefinedArg.resultType()) + "\n" +
+              "argument type should be: " +
+              // originalArg.resultType() might be a type parameter that has been replaced by originalArgType:
+              typeWithFrom(originalArgType, originalArg.resultType()) + "\n\n" +
+              "Original argument declared at " + originalArg.pos().show() + "\n" +
+              (suggestAddingFixed ? "To solve this, add " + code("fixed") + " modifier at declaration of "+s(redefinedFeature) + " at " + redefinedFeature.pos().show()
+                                  : "To solve this, change type of argument to " + s(originalArgType) + " at " + redefinedArg.pos().show()));
+      }
   }
 
   public static void resultTypeMismatchInRedefinition(AbstractFeature originalFeature, AbstractType originalType,
                                                       AbstractFeature redefinedFeature, boolean suggestAddingFixed)
   {
     if (!any() || (originalType                  != Types.t_ERROR &&
-                         redefinedFeature.resultType() != Types.t_ERROR    ))
+                   redefinedFeature.resultType() != Types.t_ERROR &&
+                   !redefinedFeature.isTypeFeature() // type features generated from broken original features may cause subsequent errors
+                   )
+        )
       {
         error(redefinedFeature.pos(),
               "Wrong result type in redefined feature",
@@ -994,6 +1005,55 @@ public class AstErrors extends ANY
           "Redefining feature: " + s(f) + "\n" +
           "To solve this, check spelling and argument count against the feature you want to redefine or " +
           "remove " + skw("redef") + " modifier in the declaration of " + s(f) + ".");
+  }
+
+  static void notRedefinedContractMustNotUseElseOrThen(SourcePosition pos, AbstractFeature f, PreOrPost preOrPost)
+  {
+    error(pos,
+          preOrPost + " must use " + code(preOrPost.elseOrThen()) + " only in a feature that redefines another feature.",
+          "Surrounding feature: " + s(f) + "\n" +
+          "To solve this, check if you are properly redefining another feature or, if you do not intend " +
+          "to do so, remove the " + code(preOrPost.elseOrThen()) + " keyword ");
+  }
+
+  public static void notRedefinedPreconditionMustNotUseElse(SourcePosition pos, AbstractFeature f)
+  {
+    notRedefinedContractMustNotUseElseOrThen(pos, f, PreOrPost.Pre);
+  }
+  public static void notRedefinedPostconditionMustNotUseThen(SourcePosition pos, AbstractFeature f)
+  {
+    notRedefinedContractMustNotUseElseOrThen(pos, f, PreOrPost.Post);
+  }
+
+  static void redefineContractMustUseElseOrThen(SourcePosition pos, AbstractFeature f, PreOrPost preOrPost)
+  {
+    var redefs = new StringBuilder();
+    for (var r : f.redefines())
+      {
+        var c = r.contract();
+        var cp = switch (preOrPost)
+          {
+          case Pre  -> c._hasPre;
+          case Post -> c._hasPost;
+          };
+        var rp = cp == null ? r.pos() : cp;
+        redefs.append("Redefines: " + s(r) + " from " + rp.show() + "\n");
+      }
+    error(pos,
+          preOrPost + " must use " + code(preOrPost.elseOrThen()) + " in a feature that redefines another feature.",
+          "Affected feature: " + s(f) + "\n" +
+          (redefs.length() > 0 ? redefs : "No redefined features found\n") +
+          "To solve this, check if you are accidentally redefining another feature or, if you do not intend " +
+          "to do so, add the " + code(preOrPost.elseOrThen()) + " keyword ");
+  }
+
+  public static void redefinePreconditionMustUseElse(SourcePosition pos, AbstractFeature f)
+  {
+    redefineContractMustUseElseOrThen(pos, f, PreOrPost.Pre);
+  }
+  public static void redefinePostconditionMustUseThen(SourcePosition pos, AbstractFeature f)
+  {
+    redefineContractMustUseElseOrThen(pos, f, PreOrPost.Post);
   }
 
   static void ambiguousTargets(SourcePosition pos,
@@ -1819,42 +1879,6 @@ public class AstErrors extends ANY
       }
   }
 
-  public static void actualTypeParameterUsedAsExpression(Actual a, Call usedIn)
-  {
-    var cf = usedIn != null ? usedIn._calledFeature : null;
-    String at = null;
-    if (cf != null)
-      {
-        var allUnknown = true;
-        String t = null;
-        var args = cf.arguments();
-        if (args != null)
-          {
-            for (var arg : args)
-              {
-                var argtype = "--still unknown--";
-                if (arg.state().atLeast(State.RESOLVED_TYPES))
-                  {
-                    allUnknown = false;
-                    argtype = s(arg.resultType());
-                  }
-                t = (t == null ? "" : t + " ") + argtype;
-              }
-          }
-        if (!allUnknown)
-          {
-            at = t;
-          }
-      }
-    error(a.pos(),
-          "Actual parameter in a call is a type, but the call expects an expression",
-          (usedIn != null ? "in call: "+ s(usedIn) + "\n" : "") +
-          (cf != null ? "call to " + s(cf) + "\n" : "" ) +
-          "actual type argument found: " + s(a._type) + "\n" +
-          (at != null ? "expected argument types: " + at + "\n" : "" ) +
-          "To solve this, check if the actual arguments match the expected formal arguments. Maybe add missing arguments or remove "+
-          "extra arguments.  If the arguments match, make sure that " + s(a._type) + " is parsable as an expression.");
-  }
 
   /**
    * Produce error for the of issue #1186: A routine returns itself:
@@ -2029,8 +2053,9 @@ public class AstErrors extends ANY
 
   public static void contractExpressionMustResultInBool(Expr cond)
   {
-    error(cond.pos(), "A expression of a contract must result in bool.",
-      "To solve this, change the expression to return a bool.");
+    error(cond.pos(), "An expression of a contract must result in type " + st("bool") + ".",
+          "Expression type is " + s(cond.type()) + "\n" +
+          "To solve this, change the expression to return a value of type " + st("bool") + ".");
   }
 
   public static void partialApplicationAmbiguity(SourcePosition pos,
@@ -2069,6 +2094,13 @@ public class AstErrors extends ANY
       "or                     : " + s(tf) + "\n" +
       "To solve this, rename one of the called features.");
   }
+
+  public static void qualifierExpectedForDotThis(SourcePosition pos, HasSourcePosition e)
+  {
+    error(pos, "Qualifier expected for "+code(".this")+" expression.",
+          "Found expression "+e.pos().show()+" where a simple qualifier " +  code("a.b.c") + " was expected");
+  }
+
 
 }
 

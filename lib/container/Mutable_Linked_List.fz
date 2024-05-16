@@ -37,7 +37,7 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
                     data T) ref : Linked_List T is
 
 
-  # mutable references to next. Initalizes to refer to nil to form
+  # mutable references to next. Initializes to refer to nil to form
   # a list with a single element.
   #
   n := LM.env.new (option (Mutable_Linked_List LM T)) nil

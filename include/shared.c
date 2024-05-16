@@ -532,7 +532,7 @@ int32_t fzE_array_length(jarray array)
 
 jvalue fzE_array_to_java_object0(jsize length, jvalue *args, char * element_class_name)
 {
-  if (strcmp(element_class_name, "bool") == 0 )
+  if (strcmp(element_class_name, "Z") == 0 )
   {
     jarray result = (*getJNIEnv())->NewBooleanArray(getJNIEnv(), length);
     const jboolean f[] = {JNI_FALSE};
@@ -543,43 +543,43 @@ jvalue fzE_array_to_java_object0(jsize length, jvalue *args, char * element_clas
       }
     return (jvalue) result;
   }
-  if (strcmp(element_class_name, "i8") == 0 )
+  else if (strcmp(element_class_name, "B") == 0 )
   {
     jarray result = (*getJNIEnv())->NewByteArray(getJNIEnv(), length);
     (*getJNIEnv())->SetByteArrayRegion(getJNIEnv(), result, 0, length, (jbyte *) args);
     return (jvalue) result;
   }
-  else if (strcmp(element_class_name, "i16") == 0 )
+  else if (strcmp(element_class_name, "S") == 0 )
   {
     jarray result = (*getJNIEnv())->NewShortArray(getJNIEnv(), length);
     (*getJNIEnv())->SetShortArrayRegion(getJNIEnv(), result, 0, length, (jshort *) args);
     return (jvalue) result;
   }
-  else if (strcmp(element_class_name, "u16") == 0 )
+  else if (strcmp(element_class_name, "C") == 0 )
   {
     jarray result = (*getJNIEnv())->NewCharArray(getJNIEnv(), length);
     (*getJNIEnv())->SetCharArrayRegion(getJNIEnv(), result, 0, length, (jchar *) args);
     return (jvalue) result;
   }
-  else if (strcmp(element_class_name, "i32") == 0 )
+  else if (strcmp(element_class_name, "I") == 0 )
   {
     jarray result = (*getJNIEnv())->NewIntArray(getJNIEnv(), length);
     (*getJNIEnv())->SetIntArrayRegion(getJNIEnv(), result, 0, length, (jint *) args);
     return (jvalue) result;
   }
-  else if (strcmp(element_class_name, "i64") == 0 )
+  else if (strcmp(element_class_name, "J") == 0 )
   {
     jarray result = (*getJNIEnv())->NewLongArray(getJNIEnv(), length);
     (*getJNIEnv())->SetLongArrayRegion(getJNIEnv(), result, 0, length, (jlong *) args);
     return (jvalue) result;
   }
-  else if (strcmp(element_class_name, "f32") == 0 )
+  else if (strcmp(element_class_name, "F") == 0 )
   {
     jarray result = (*getJNIEnv())->NewFloatArray(getJNIEnv(), length);
     (*getJNIEnv())->SetFloatArrayRegion(getJNIEnv(), result, 0, length, (jfloat *) args);
     return (jvalue) result;
   }
-  else if (strcmp(element_class_name, "f64") == 0 )
+  else if (strcmp(element_class_name, "D") == 0 )
   {
     jarray result = (*getJNIEnv())->NewDoubleArray(getJNIEnv(), length);
     (*getJNIEnv())->SetDoubleArrayRegion(getJNIEnv(), result, 0, length, (jdouble *) args);
@@ -588,6 +588,7 @@ jvalue fzE_array_to_java_object0(jsize length, jvalue *args, char * element_clas
   else
   {
     jclass cl = (*getJNIEnv())->FindClass(getJNIEnv(), element_class_name);
+    // NYI: UNDER DEVELOPMENT: crash more gracefully
     assert( cl != NULL );
     jobjectArray result = (*getJNIEnv())->NewObjectArray(getJNIEnv(), length, cl, NULL);
     for (jsize i = 0; i < length; i++)
@@ -632,6 +633,7 @@ jvalue fzE_get_field0(jobject obj, jstring name, const char *sig)
   jclass cl = (*getJNIEnv())->GetObjectClass(getJNIEnv(), obj);
   assert( cl != NULL );
   jfieldID fieldID = (*getJNIEnv())->GetFieldID(getJNIEnv(), cl, fzE_java_string_to_modified_utf8(name), sig);
+  // NYI: UNDER DEVELOPMENT: crash more gracefully
   assert( fieldID != NULL );
   switch (sig[0])
     {
@@ -663,6 +665,7 @@ jvalue fzE_get_static_field0(jstring class_name, jstring name, const char *sig)
   jclass cl  = (*getJNIEnv())->FindClass(getJNIEnv(), fzE_replace_char(fzE_java_string_to_modified_utf8(class_name), '.', '/'));
   assert( cl != NULL );
   jfieldID fieldID = (*getJNIEnv())->GetStaticFieldID(getJNIEnv(), cl, fzE_java_string_to_modified_utf8(name), sig);
+  // NYI: UNDER DEVELOPMENT: crash more gracefully
   assert( fieldID != NULL );
   switch (sig[0])
     {

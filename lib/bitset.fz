@@ -51,6 +51,9 @@ is
       match bitset.this
         _ nil   => bit
         x u64   => array bool (max bit x).as_i32+1 (i -> i.as_u64 = bit || i.as_u64 = x)
+        # NYI: This is very inefficent since it copies the whole array. Should
+        # better use a persistent array implementation such as persistent hash array
+        # mapped trie.
         a array => a.put bit.as_i32 true false
 
   # union of two bitsets

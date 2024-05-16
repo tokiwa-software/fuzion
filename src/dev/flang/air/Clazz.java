@@ -45,7 +45,6 @@ import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Env; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
 import dev.flang.ast.HasGlobalIndex; // NYI: remove dependency!
-import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.ResolvedNormalType; // NYI: remove dependency!
 import dev.flang.ast.State; // NYI: remove dependency!
@@ -132,7 +131,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
       if      (e instanceof AbstractAssign   a) { Clazzes.findClazzes(a, _originalFeature, Clazz.this, _inh); }
       else if (e instanceof AbstractCall     c) { Clazzes.findClazzes(c, _originalFeature, Clazz.this, _inh); }
       else if (e instanceof AbstractConstant c) { Clazzes.findClazzes(c, _originalFeature, Clazz.this, _inh); }
-      else if (e instanceof If               i) { Clazzes.findClazzes(i, _originalFeature, Clazz.this, _inh); }
       else if (e instanceof InlineArray      i) { Clazzes.findClazzes(i, _originalFeature, Clazz.this, _inh); }
       else if (e instanceof Env              b) { Clazzes.findClazzes(b, _originalFeature, Clazz.this, _inh); }
       else if (e instanceof AbstractMatch    m) { Clazzes.findClazzes(m, _originalFeature, Clazz.this, _inh); }
@@ -984,7 +982,29 @@ public class Clazz extends ANY implements Comparable<Clazz>
               }
           }
       }
-    return _flu.lookupFeature(feature(), fn, f);
+
+    // first look in the feature itself
+    AbstractFeature result = _flu.lookupFeature(feature(), fn, f);
+
+    // the inherited feature might not be
+    // visible to the inheriting feature
+    var chain = tf.findInheritanceChain(f.outer());
+    if (result == null && chain != null)
+      {
+        for (var p: chain)
+          {
+            result = _flu.lookupFeature(p.calledFeature(), fn, f);
+            if (result != null)
+              {
+                break;
+              }
+          }
+      }
+
+    if (POSTCONDITIONS) ensure
+      (result != null || Errors.any());
+
+    return result;
   }
 
 
@@ -1158,7 +1178,12 @@ public class Clazz extends ANY implements Comparable<Clazz>
             if (f != Types.f_ERROR && (af != null || !isEffectivelyAbstract(f)))
               {
                 var aaf = af != null ? af : f;
-                if (isEffectivelyAbstract(aaf))
+                if (isEffectivelyAbstract(aaf)
+                    /* NYI: WORKAROUND!
+                    tests/lib_container_set fails without this:
+                    "Used abstract feature 'container.Set.type.new' is not implemented by 'container.Set.type'"
+                    */
+                   && !_type.feature().isTypeFeature() )
                   {
                     if (_abstractCalled == null)
                       {
@@ -1837,9 +1862,13 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public boolean isCalled()
   {
-    return _isCalled && isOuterInstantiated() && !feature().isAbstract() &&
-      (_argumentFields == null || /* this may happen when creating deterḿining isUnitType() on cyclic value type, will cause an error during layout() */
-       !isAbsurd());
+    return _isCalled &&
+      (isOuterInstantiated()            ||
+       _outer.feature().isTypeFeature()         // type features are implicitly instantiated unit types:
+                                           ) &&
+      !feature().isAbstract()                &&
+      (_argumentFields == null          ||      // this may happen when creating deterḿining isUnitType() on cyclic value type, will cause an error during layout() */
+       !isAbsurd()                         );
   }
 
   /**
@@ -1925,8 +1954,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
     return _isInstantiated
       && (_checkingInstantiatedHeirs > 0
           || (isOuterInstantiated()
-            || isChoice()
-            || _outer.isRef() && _outer.hasInstantiatedHeirs()));
+              || isChoice()
+              || _outer.isRef() && _outer.hasInstantiatedHeirs()));
   }
 
 
@@ -2322,6 +2351,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     var f = feature();
     switch (f.kind())
       {
+      case Abstract   : // tricky: abstract may have precondition that uses outer ref
       case Intrinsic  :
       case Routine    :
         {
@@ -2458,7 +2488,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
            )
       {
         var f = oc.feature();
-        var inh2 = oc.feature().tryFindInheritanceChain(o);
+        var inh2 = f.tryFindInheritanceChain(o);
         if (CHECKS) check
           (Errors.any() || inh2 != null);
         if (inh2 != null)
@@ -2467,7 +2497,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
             t1 = t1.applyTypeParsLocally(oc._type, select);
             if (inh2.size() > 0)
               {
-                o = oc.feature();
+                o = f;
               }
           }
         t1 = t1.replace_this_type_by_actual_outer(oc._type);
@@ -2488,7 +2518,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (t != null,
        Errors.any() || t != Types.t_ERROR,
-       pos != null);
+       pos != null,
+       !t.isOpenGeneric());
 
     return handDown(t, -1, inh, pos);
   }

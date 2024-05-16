@@ -273,7 +273,7 @@ include::rule.adoc[]
 :RULE_ID: LEXR_COMMENT3
 include::rule.adoc[]
 
-Examples of valid comments areas
+Examples of valid comments are
 
     i := 42     # this is a comment
     this is not a comment
@@ -281,12 +281,16 @@ Examples of valid comments areas
     k := /* this is a comment */ 23
     /* this /* comment /* is */ nested */ */
     l := "not a comment, but a string literal"
+    m := "/* also not a comment, but a string literal */"
+    n := "// still a string literal"
+    o := "# also a string literal"
     /* this
     /* comment
     /* extends */
        over several
     */ lines */
-    m := l
+    p := o
+    /*" a comment, not a string */
 
 ==== Literals
 
@@ -317,11 +321,52 @@ include::rule.adoc[]
 
 CAUTION: *NYI*: Text Missing
 
+
+==== Redefining inherited features
+
+If and only if a feature redefines an inherited feature, it must use the
+modifier `redef` in its declaration:
+
+:RULE_SRC: src/dev/flang/fe/SourceModule.java
+:RULE_ID: PARS_NO_REDEF
+include::rule.adoc[]
+
+:RULE_SRC: src/dev/flang/fe/SourceModule.java
+:RULE_ID: PARS_REDEF
+include::rule.adoc[]
+
+
+==== Redefining inherited features
+
+Pre- and postconditions of features are introduced using the `pre` or `post`
+keyword if those features do not redefine an inherited feature:
+
+:RULE_SRC: src/dev/flang/fe/SourceModule.java
+:RULE_ID: PARS_CONTR_PRE_NO_ELSE
+include::rule.adoc[]
+
+:RULE_SRC: src/dev/flang/fe/SourceModule.java
+:RULE_ID: PARS_CONTR_POST_NO_THEN
+include::rule.adoc[]
+
+In case of redefining an inhertied feature, pre- and postconditions are
+introduced using `pre else` or `post then`, respectively:
+
+:RULE_SRC: src/dev/flang/fe/SourceModule.java
+:RULE_ID: PARS_CONTR_PRE_ELSE
+include::rule.adoc[]
+
+:RULE_SRC: src/dev/flang/fe/SourceModule.java
+:RULE_ID: PARS_CONTR_POST_THEN
+include::rule.adoc[]
+
+
 == Semantics
 
 CAUTION: *NYI*: Text Missing
 
 [appendix]
+
 == Glossary
 
 [#fuzion_abstract]

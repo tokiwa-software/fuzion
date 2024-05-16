@@ -113,7 +113,7 @@ public class Executor extends ProcessExpression<Value, Object>
 
 
   /**
-   * The constructor to initalize the executor
+   * The constructor to initialize the executor
    * with a custom current, outer and args.
    *
    * @param fuir
@@ -172,7 +172,7 @@ public class Executor extends ProcessExpression<Value, Object>
   }
 
   @Override
-  public Object expressionHeader(int cl, int s)
+  public Object expressionHeader(int s)
   {
     return null;
   }
@@ -190,7 +190,7 @@ public class Executor extends ProcessExpression<Value, Object>
   }
 
   @Override
-  public Object assignStatic(int cl, boolean pre, int tc, int f, int rt, Value tvalue, Value val)
+  public Object assignStatic(int s, int tc, int f, int rt, Value tvalue, Value val)
   {
     if (!(_fuir.clazzIsOuterRef(f) && _fuir.clazzIsUnitType(rt)))
       {
@@ -201,7 +201,7 @@ public class Executor extends ProcessExpression<Value, Object>
   }
 
   @Override
-  public Object assign(int cl, boolean pre, int s, Value tvalue, Value avalue)
+  public Object assign(int s, Value tvalue, Value avalue)
   {
     // NYI: better check clazz containing field is universe
     if (tvalue == unitValue())
@@ -210,7 +210,7 @@ public class Executor extends ProcessExpression<Value, Object>
       }
     if (avalue != unitValue())
       {
-        var ttcc = ttcc(cl, s, tvalue);
+        var ttcc = ttcc(s, tvalue);
         var tt = ttcc.v0();
         var cc = ttcc.v1();
         var fc = cc;
@@ -220,11 +220,11 @@ public class Executor extends ProcessExpression<Value, Object>
   }
 
   @Override
-  public Pair<Value, Object> call(int cl, boolean pre, int s, Value tvalue, List<Value> args)
+  public Pair<Value, Object> call(int s, Value tvalue, List<Value> args)
   {
-    var cc0 = _fuir.accessedClazz(cl, s);
+    var cc0 = _fuir.accessedClazz(s);
     var rt = _fuir.clazzResultClazz(cc0);
-    var ttcc = ttcc(cl, s, tvalue);
+    var ttcc = ttcc(s, tvalue);
     var tt = ttcc.v0();
     var cc = ttcc.v1();
 
@@ -242,8 +242,8 @@ public class Executor extends ProcessExpression<Value, Object>
         // NYI change call to pass in ai as in match expression?
         var cur = new Instance(cc);
 
-        callOnInstance(cc, cur, tvalue, args, true);
-        callOnInstance(cc, cur, tvalue, args, false);
+        callOnInstance(s, cc, cur, tvalue, args, true);
+        callOnInstance(s, cc, cur, tvalue, args, false);
 
         Value rres = cur;
         var resf = _fuir.clazzResultField(cc);
@@ -271,11 +271,11 @@ public class Executor extends ProcessExpression<Value, Object>
           ? pair(unitValue())
           : pair(Intrinsics.call(this, cc).call(new List<>(tvalue, args)));
       case Abstract:
-        throw new Error("Calling abstract not possible: " + _fuir.codeAtAsString(cl, s));
+        throw new Error("Calling abstract not possible: " + _fuir.codeAtAsString(s));
       case Choice :
-        throw new Error("Calling choice not possible: " + _fuir.codeAtAsString(cl, s));
+        throw new Error("Calling choice not possible: " + _fuir.codeAtAsString(s));
       case Native:
-        throw new Error("NYI: UNDER DEVELOPEMENT: Calling native not yet supported in interpreter.");
+        throw new Error("NYI: UNDER DEVELOPMENT: Calling native not yet supported in interpreter.");
       };
 
     return result;
@@ -287,9 +287,9 @@ public class Executor extends ProcessExpression<Value, Object>
    *
    * @param tvalue the actual value of the target.
    */
-  private Pair<Integer, Integer> ttcc(int cl, int s, Value tvalue)
+  private Pair<Integer, Integer> ttcc(int s, Value tvalue)
   {
-    var ccs = _fuir.accessedClazzes(cl, s);
+    var ccs = _fuir.accessedClazzes(s);
     var tt = ccs.length != 2 ? -1 : ccs[0];
     var cc = ccs.length != 2 ? -1 : ccs[1];
 
@@ -326,36 +326,36 @@ public class Executor extends ProcessExpression<Value, Object>
 
 
   @Override
-  public Pair<Value, Object> box(Value v, int vc, int rc)
+  public Pair<Value, Object> box(int s, Value v, int vc, int rc)
   {
     return pair(new Boxed(rc, vc, v /* .cloneValue(vcc) */));
   }
 
   @Override
-  public Pair<Value, Object> current(int cl, boolean pre)
+  public Pair<Value, Object> current(int s)
   {
     return pair(_cur);
   }
 
   @Override
-  public Pair<Value, Object> outer(int cl)
+  public Pair<Value, Object> outer(int s)
   {
     if (PRECONDITIONS) require
-      (_fuir.clazzResultClazz(_fuir.clazzOuterRef(cl)) == _fuir.clazzOuterClazz(cl));
+      (_fuir.clazzResultClazz(_fuir.clazzOuterRef(_fuir.clazzAt(s))) == _fuir.clazzOuterClazz(_fuir.clazzAt(s)));
 
     return pair(_outer);
   }
 
   @Override
-  public Value arg(int cl, int i)
+  public Value arg(int s, int i)
   {
     return _args.get(i);
   }
 
   @Override
-  public Pair<Value, Object> constData(int constCl, byte[] d)
+  public Pair<Value, Object> constData(int s, int constCl, byte[] d)
   {
-    // NYI: UNDERDEVELOPEMENT: cache?
+    // NYI: UNDERDEVELOPMENT: cache?
     var val = switch (_fuir.getSpecialClazz(constCl))
       {
       case c_Const_String, c_String -> Interpreter
@@ -384,7 +384,7 @@ public class Executor extends ProcessExpression<Value, Object>
             for (int idx = 0; idx < elCount; idx++)
               {
                 var b = _fuir.deseralizeConst(elementType, bb);
-                var c = constData(elementType, b).v0();
+                var c = constData(s, elementType, b).v0();
                 switch (_fuir.getSpecialClazz(elementType))
                   {
                     case c_i8   : ((byte[])   (arrayData._array))[idx] = (byte)c.i8Value(); break;
@@ -421,7 +421,7 @@ public class Executor extends ProcessExpression<Value, Object>
                 var fr = _fuir.clazzArgClazz(constCl, index);
 
                 var bytes = _fuir.deseralizeConst(fr, b);
-                var c = constData(fr, bytes).v0();
+                var c = constData(s, fr, bytes).v0();
                 var acl = _fuir.clazzArg(constCl, index);
                 Interpreter.setField(acl, constCl, result, c);
               }
@@ -441,8 +441,7 @@ public class Executor extends ProcessExpression<Value, Object>
   }
 
   @Override
-  public Pair<Value, Object> match(AbstractInterpreter<Value, Object> ai, int cl, boolean pre, int s,
-    Value subv)
+  public Pair<Value, Object> match(int s, AbstractInterpreter<Value, Object> ai, Value subv)
   {
     var staticSubjectClazz = subv instanceof boolValue ? fuir().clazz(FUIR.SpecialClazzes.c_bool) : ((ValueWithClazz)subv)._clazz;
 
@@ -451,9 +450,9 @@ public class Executor extends ProcessExpression<Value, Object>
 
     var tagAndChoiceElement = tagAndVal(staticSubjectClazz, subv);
 
-    var cix = _fuir.matchCaseIndex(cl, s, tagAndChoiceElement.v0());
+    var cix = _fuir.matchCaseIndex(s, tagAndChoiceElement.v0());
 
-    var field = _fuir.matchCaseField(cl, s, cix);
+    var field = _fuir.matchCaseField(s, cix);
     if (field != -1)
       {
         Interpreter.setField(
@@ -462,7 +461,7 @@ public class Executor extends ProcessExpression<Value, Object>
             _cur,
             tagAndChoiceElement.v1());
       }
-    return ai.process(cl, pre, _fuir.matchCaseCode(s, cix));
+    return ai.process(_fuir.matchCaseCode(s, cix));
   }
 
 
@@ -506,7 +505,7 @@ public class Executor extends ProcessExpression<Value, Object>
   }
 
   @Override
-  public Pair<Value, Object> tag(int cl, Value value, int newcl, int tagNum)
+  public Pair<Value, Object> tag(int s, Value value, int newcl, int tagNum)
   {
     if (PRECONDITIONS) require
       (_fuir.clazzIsChoice(newcl));
@@ -517,7 +516,7 @@ public class Executor extends ProcessExpression<Value, Object>
   }
 
   @Override
-  public Pair<Value, Object> env(int ecl)
+  public Pair<Value, Object> env(int s, int ecl)
   {
     var result = FuzionThread.current()._effects.get(ecl);
     if (result == null)
@@ -532,11 +531,12 @@ public class Executor extends ProcessExpression<Value, Object>
   }
 
   @Override
-  public Object contract(int cl, ContractKind ck, Value cc)
+  public Object contract(int s, ContractKind ck, Value cc)
   {
     if (!cc.boolValue())
       {
-        Errors.runTime(pos(),
+        var cl = _fuir.clazzAt(s);
+        Errors.runTime(_fuir.sitePos(s),
                        (ck == ContractKind.Pre ? "Precondition" : "Postcondition") + " does not hold",
                        (ck == ContractKind.Pre ? "For" : "After") + " call to " + _fuir.clazzAsStringNew(cl) + "\n" + callStack(fuir()));
       }
@@ -548,6 +548,10 @@ public class Executor extends ProcessExpression<Value, Object>
    * callOnInstance assigns the arguments to the argument fields of a newly
    * created instance, calls the parents and then this feature.
    *
+   * @parm s site of the call or NO_SITE if unknown (e.g., form intrinsic)
+   *
+   * @param cc clazz id of the called clazz
+   *
    * @param cur the newly created instance
    *
    * @param outer the target of the call
@@ -558,10 +562,10 @@ public class Executor extends ProcessExpression<Value, Object>
    *
    * @return
    */
-  Value callOnInstance(int cc, Instance cur, Value outer, List<Value> args, boolean pre)
+  Value callOnInstance(int s, int cc, Instance cur, Value outer, List<Value> args, boolean pre)
   {
     FuzionThread.current()._callStackFrames.push(cc);
-    FuzionThread.current()._callStack.push(site());
+    FuzionThread.current()._callStack.push(s);
 
     new AbstractInterpreter<>(_fuir, new Executor(cur, outer, args))
       .process(cc, pre);
@@ -586,7 +590,7 @@ public class Executor extends ProcessExpression<Value, Object>
       {
         sb.append(_fuir.clazzAsStringNew(frame)).append(": ");
       }
-    sb.append(_fuir.codeAtAsPos(callSite).show()).append("\n");
+    sb.append(_fuir.sitePos(callSite).show()).append("\n");
   }
 
 

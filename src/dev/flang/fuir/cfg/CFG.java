@@ -574,12 +574,12 @@ public class CFG extends ANY
       case Box   : break;
       case Call:
         {
-          var cc0 = _fuir.accessedClazz  (cl, s);
+          var cc0 = _fuir.accessedClazz(s);
           if (_fuir.hasPrecondition(cc0))
             {
               call(cl, cc0, true);
             }
-          if (!_fuir.callPreconditionOnly(cl, s))
+          if (!_fuir.callPreconditionOnly(s))
             {
               access(cl, s);
             }
@@ -599,7 +599,7 @@ public class CFG extends ANY
       case Tag: break;
       case Env:
         {
-          var ecl = _fuir.envClazz(cl, s);
+          var ecl = _fuir.envClazz(s);
           addEffect(cl, ecl);
           break;
         }
@@ -621,11 +621,11 @@ public class CFG extends ANY
    */
   void access(int cl, int s)
   {
-    var cc0 = _fuir.accessedClazz  (cl, s);
+    var cc0 = _fuir.accessedClazz(s);
 
-    if (_fuir.accessIsDynamic(cl, s))
+    if (_fuir.accessIsDynamic(s))
       {
-        var ccs = _fuir.accessedClazzes(cl, s);
+        var ccs = _fuir.accessedClazzes(s);
         for (var cci = 0; cci < ccs.length; cci += 2)
           {
             var tt = ccs[cci  ];

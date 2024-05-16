@@ -32,7 +32,7 @@ unicodetest is
     s := if b
         "PASSED: "
       else
-        set_exit_code 1
+        _ := set_exit_code 1
         "FAILED: "
     say (s + msg)
 

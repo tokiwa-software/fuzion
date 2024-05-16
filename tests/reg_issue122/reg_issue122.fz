@@ -1,0 +1,60 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test
+#
+# -----------------------------------------------------------------------
+
+
+# destructuring that declares a new field that masks a field used on the rhs does not work
+# ===
+#
+#
+# This small example should print '103' and '144':
+# ```
+#  > cat testDestructure.fz
+# testDestructure is
+#   a := 3
+#   b := 44
+#   x(v i32) => 100+v
+#   (a,b) := ((x a),(x b))
+#   say "a is $a"  # should print '103'
+#   say "b is $b"  # should print '144'
+# ```
+# but its output shows that an uninitialized value was used:
+# ```
+#  > ./build/bin/fz testDestructure
+# a is -555555455
+# b is -555555455
+# ```
+# the output when compiled is wrong as well, but in a different way:
+# ```
+#  > ./build/bin/fz -c testDestructure
+#  > ./testDestructure
+# a is 0
+# b is 0
+# ```
+
+reg_issue122 is
+  a := 3
+  b := 44
+  x(v i32) => 100+v
+  (a,b) := ((x a),(x b))
+  say "a is $a"  # should print '103'
+  say "b is $b"  # should print '144'

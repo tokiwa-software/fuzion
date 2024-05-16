@@ -39,7 +39,7 @@ import dev.flang.util.List;
  *
  *   a.prefix -
  *
- * This is needed since the former could serve as a partial call an expand
+ * This is needed since the former could serve as a partial call and expand
  * to
  *
  *  x -> x-a
@@ -89,7 +89,7 @@ public class ParsedOperatorCall extends ParsedCall
    */
   public ParsedOperatorCall(Expr target, ParsedName name, Expr rhs)
   {
-    super(target, name, new List<>(new Actual(rhs)));
+    super(target, name, new List<>(rhs));
   }
 
 

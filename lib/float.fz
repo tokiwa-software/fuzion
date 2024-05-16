@@ -61,10 +61,19 @@ public float : numeric is
   public infix < (other float.this) bool => abstract
 
 
+  # does this float value fit into an i64? This is redefined by children
+  # of float that support `as_i64`.
+  #
+  public fits_in_i64 => false
+
+
   # convert a float value to i64 dropping any fraction.
   # the value must be in the range of i64
   #
-  public as_i64 i64 => abstract
+  public as_i64 i64
+    pre
+      safety: fits_in_i64
+  => abstract
 
 
   # convert a float value to i32 dropping any fraction.

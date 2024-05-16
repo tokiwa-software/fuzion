@@ -33,8 +33,11 @@ module:public open(public T type,
   #
   # this might overwrite parts or all of an existing file.
   #
-  public write(content Sequence u8) ! io.file.write =>
-    io.file.write.write fd content.as_array
+  public write(content Sequence u8) =>
+    # NYI we should probably not override existing effect in all cases..
+    # also write effect would not show up if used like this.
+    (io.file.write (io.file.write.default_write_handler fd)).go ()->
+      io.file.write.write content.as_array
 
 
   # reads all bytes from the file in the path
@@ -116,8 +119,6 @@ module:public open(public T type,
     # get byte at given index i
     #
     public index [ ] (i i64) u8 ! open T
-      pre
-        safety: i64 0 ≤ i < length
     =>
       mapped_buffer_get memory i
 
@@ -125,8 +126,6 @@ module:public open(public T type,
     # set byte at given index i to given value o
     #
     public set [ ] (i i64, o u8) unit ! io.file.open T
-      pre
-        safety: i64 0 ≤ i < length
     =>
       mapped_buffer_set memory i o
 

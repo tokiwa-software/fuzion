@@ -44,7 +44,6 @@ public class Function extends AbstractLambda
   /*----------------------------  constants  ----------------------------*/
 
 
-  static final List<AbstractFeature> NO_FEATURES = new List<>();
   static final List<AbstractCall> NO_CALLS = new List<>();
 
 
@@ -100,7 +99,8 @@ public class Function extends AbstractLambda
   /**
    * Names of argument fields `x, y` of a lambda `x, y -> f x y`
    */
-  List<ParsedName> _names;
+  final List<Expr> _namesAsExprs;
+  final List<ParsedName> _names;
 
 
   /**
@@ -119,18 +119,46 @@ public class Function extends AbstractLambda
    *
    * @param pos the sourcecode position, used for error messages.
    *
-   * @param names the names of the arguments, "x", "y"
+   * @param names the names of the arguments, "x", "y". The are parsed as
+   * expressions and these might end up being turned into types by asParsedType
+   * if this lambda ends up used as an actual type argument.
    *
    * @param e the code on the right hand side of '->'.
    */
   public Function(SourcePosition pos,
-                  List<ParsedName> names,
+                  List<Expr> names,
                   Expr e)
   {
     super(pos);
 
-    _names = names;
+    _namesAsExprs = names;
+    _names = names.map2(n->n.asParsedName());
     _expr = e;
+  }
+
+
+  @Override
+  public ParsedType asParsedType()
+  {
+    var resType = _expr.asParsedType();
+    ParsedType result = null;
+    if (resType != null)
+      {
+        List<AbstractType> argTypes = _namesAsExprs != null
+          ? _namesAsExprs.map2(e -> e.asParsedType())
+          : _names.map2(n -> new ParsedType(n.pos(),
+                                            n._name,
+                                            new List<>(),
+                                            null)
+                        );
+        if (argTypes.stream().allMatch(t -> t != null))
+          {
+            result = UnresolvedType.funType(pos(),
+                                            resType,
+                                            argTypes);
+          }
+      }
+    return result;
   }
 
 
@@ -284,7 +312,7 @@ public class Function extends AbstractLambda
                                    0,
                                    RefType.INSTANCE,
                                    new List<String>(wrapperName),
-                                   NO_FEATURES,
+                                   AbstractFeature._NO_FEATURES_,
                                    new List<>(_inheritsCall),
                                    Contract.EMPTY_CONTRACT,
                                    new Impl(pos(), new Block(expressions), Impl.Kind.Routine));

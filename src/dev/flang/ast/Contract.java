@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import dev.flang.util.List;
+import dev.flang.util.SourceRange;
 
 
 /**
@@ -49,7 +50,8 @@ public class Contract
   /**
    * Empty contract
    */
-  public static final Contract EMPTY_CONTRACT = new Contract(NO_COND, NO_COND);
+  public static final Contract EMPTY_CONTRACT = new Contract(NO_COND, null, null,
+                                                             NO_COND, null, null);
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -66,17 +68,38 @@ public class Contract
   public List<Cond> ens;
 
 
+  /**
+   * Did the parser find `pre` / `post` or even `pre else` / `post then` ? These
+   * might be present even if the condition list is NO_COND.
+   */
+  public final SourceRange _hasPre,     _hasPost;
+  public final SourceRange _hasPreElse, _hasPostThen;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
    * Constructor
    */
-  public Contract(List<Cond> r,
-                  List<Cond> e)
+  public Contract(List<Cond> r, SourceRange hasPre,  SourceRange hasElse,
+                  List<Cond> e, SourceRange hasPost, SourceRange hasThen)
   {
+    _hasPre  = hasPre;
+    _hasPost = hasPost;
+    _hasPreElse  = hasElse;
+    _hasPostThen = hasThen;
     req = r == null || r.isEmpty() ? NO_COND : r;
     ens = e == null || e.isEmpty() ? NO_COND : e;
+  }
+
+
+  /**
+   * Constructor
+   */
+  public Contract(List<Cond> r, List<Cond> e)
+  {
+    this(r, null, null, e, null, null);
   }
 
 
@@ -113,6 +136,55 @@ public class Contract
       {
         for (Cond c: req) { c.visitExpressions(v); }
         for (Cond c: ens) { c.visitExpressions(v); }
+      }
+  }
+
+
+  /**
+   * When redefining a feature, the original contract is inherited with
+   * preconditions ORed and postconditions ANDed.  This feature performs this
+   * condition inheritance.
+   *
+   * @param from the redefined feature this contract should inherit from.
+   */
+  public void addInheritedContract(AbstractFeature from)
+  {
+    // precondition inheritance is the disjunction with the conjunction of all inherited conditions, i.e, in
+    //
+    //   a is
+    //     f pre a; b; c => ...
+    //   b : a is
+    //     redef f pre else d; e; f =>
+    //
+    // b.f becomes
+    //
+    //   b : a is
+    //     redef f pre (a && b && c) || (d && e && f) =>
+    //
+    for (var e : from.contract().req)
+      {
+        // NYI: missing support precondition inheritance!
+      }
+
+    // postcondition inheritance is just the conjunction of all inherited conditions
+    //
+    //   a is
+    //     f post a; b; c => ...
+    //   b : a is
+    //     redef f post then d; e; f =>
+    //
+    // b.f becomes
+    //
+    //     redef f post a && b && c && d && e && f =>
+    //
+    for (var e : from.contract().ens)
+      {
+        // NYI: missing support for postcondition inheritance, works for simple
+        // cases if `if (false)` is removed, but requires tests!
+        if (false)
+          {
+            ens.add(e);
+          }
       }
   }
 
