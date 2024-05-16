@@ -917,7 +917,7 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * Is this a case-field decalred in a match-clause?
+   * Is this a case-field declared in a match-clause?
    */
   public boolean isCaseField()
   {
