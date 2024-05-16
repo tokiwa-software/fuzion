@@ -1755,7 +1755,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
   /**
    * Check that code in contract does not access inner features apart from
    * arguments, result field, outer refs or case fields (in case condition uses
-   * a `match`).  Procude AstErrors if needed.
+   * a `match`). Produce AstErrors if needed.
    *
    * @parm f the feature whose contract should be checked.
    */
