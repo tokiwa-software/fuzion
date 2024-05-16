@@ -629,7 +629,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
     var result = this;
     var t = type();
 
-    if (!t.isVoid())
+    if (!t.isVoid() && (frmlT.isAssignableFrom(t) || frmlT.isAssignableFrom(t.asRef())))
       {
         if (needsBoxing(frmlT))
           {
@@ -649,7 +649,8 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
         || t.isVoid()
         || frmlT.isGenericArgument()
         || frmlT.isThisType()
-        || !result.needsBoxing(frmlT));
+        || !result.needsBoxing(frmlT)
+        || !(frmlT.isAssignableFrom(t) || frmlT.isAssignableFrom(t.asRef())));
 
     return result;
   }

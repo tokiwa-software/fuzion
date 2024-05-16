@@ -46,7 +46,7 @@ echo "$(echo "$TESTS" | wc -l) tests."
 
 # get nanoseconds, with workaround for macOS
 nanosec () {
-  if date --help | grep nanoseconds > /dev/null; then
+  if date --help 2> /dev/null | grep nanoseconds > /dev/null; then
     date +%s%N | cut -b1-13
   else
     date +%s000000000 | cut -b1-13

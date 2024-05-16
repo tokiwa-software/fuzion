@@ -71,7 +71,7 @@ public class AstErrors extends ANY
       return switch (this)
         {
           case Pre  -> "Precondition";
-          case Post -> "Postcontion";
+          case Post -> "Postcondition";
         };
     }
 

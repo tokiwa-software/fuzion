@@ -66,7 +66,6 @@ import static dev.flang.ir.IR.NO_SITE;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
-import dev.flang.util.SourcePosition;
 
 
 /**

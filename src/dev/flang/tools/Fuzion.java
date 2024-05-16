@@ -763,7 +763,7 @@ public class Fuzion extends Tool
   /**
    * Check if `a` is `-e` or `-execute`.
    *
-   * Cause an error in case of repreted `-e` or `-execute` arguments.
+   * Cause an error in case of repeated `-e` or `-execute` arguments.
    *
    * @return true if that is that case and the next argument gives the code.
    */

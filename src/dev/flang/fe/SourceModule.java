@@ -892,7 +892,7 @@ A post-condition of a feature that redefines one or several inherited features m
           {
             /*
     // tag::fuzion_rule_PARS_NO_REDEF[]
-A feature that does not redefine an inherited featue must not use the `redef` modifier.
+A feature that does not redefine an inherited feature must not use the `redef` modifier.
     // end::fuzion_rule_PARS_NO_REDEF[]
             */
             AstErrors.redefineModifierDoesNotRedefine(f);
@@ -901,7 +901,7 @@ A feature that does not redefine an inherited featue must not use the `redef` mo
           {
             /*
     // tag::fuzion_rule_PARS_CONTR_PRE_NO_ELSE[]
-A pre-condition of a feature that does not redefine an inherited featue must start with `pre`, not `pre else`.
+A pre-condition of a feature that does not redefine an inherited feature must start with `pre`, not `pre else`.
     // end::fuzion_rule_PARS_CONTR_PRE_NO_ELSE[]
             */
             AstErrors.notRedefinedPreconditionMustNotUseElse(c._hasPreElse, f);
@@ -910,7 +910,7 @@ A pre-condition of a feature that does not redefine an inherited featue must sta
           {
             /*
     // tag::fuzion_rule_PARS_CONTR_POST_NO_THEN[]
-A post-condition of a feature that does not redefine an inherited featue must start with `post`, not `post then`.
+A post-condition of a feature that does not redefine an inherited feature must start with `post`, not `post then`.
     // end::fuzion_rule_PARS_CONTR_POST_NO_THEN[]
             */
             AstErrors.notRedefinedPostconditionMustNotUseThen(c._hasPostThen, f);
