@@ -103,11 +103,7 @@ public class Feature extends AbstractFeature
   private Visi _visibility;
   public Visi visibility()
   {
-    return
-      // NYI anonymous feature should have correct visibility set.
-      isAnonymousInnerFeature()
-      ? (state().atLeast(State.FINDING_DECLARATIONS) ? outer().visibility() : Visi.UNSPECIFIED)
-      : _visibility == Visi.UNSPECIFIED
+    return _visibility == Visi.UNSPECIFIED
       ? Visi.PRIV
       : _visibility;
   }
@@ -2087,12 +2083,6 @@ public class Feature extends AbstractFeature
         {
           if (c == use)
             { // Found the call, so we got the result!
-              found();
-            }
-          else if (c.calledFeatureKnown() &&
-                   c.calledFeature() instanceof Feature cf && cf.isAnonymousInnerFeature() &&
-                   c.calledFeature() == inner)
-            { // NYI: Special handling for anonymous inner features that currently do not appear as expressions
               found();
             }
           else if (c == Call.ERROR && curres[1] == null)
