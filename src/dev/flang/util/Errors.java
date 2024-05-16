@@ -610,6 +610,7 @@ public class Errors extends ANY
     else if (warningStatistics && warningCount() > 0)
       {
         println(singularOrPlural(warningCount(), "warning") + ".");
+        _warnings_.clear();  // there might be repeated calls to `showAndExit`, so do not repeat the warnings statistics
       }
   }
 

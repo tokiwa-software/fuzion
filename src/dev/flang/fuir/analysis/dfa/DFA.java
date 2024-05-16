@@ -113,6 +113,7 @@ public class DFA extends ANY
      * statement.  For a code generator, this could, e.g., join statements "a :=
      * 3;" and "b(x);" into a block "{ a := 3; b(x); }".
      */
+    @Override
     public Unit sequence(List<Unit> l)
     {
       return _unit_;
@@ -123,6 +124,7 @@ public class DFA extends ANY
      * Produce the unit type value.  This is used as a placeholder
      * for the universe instance as well as for the instance 'unit'.
      */
+    @Override
     public Val unitValue()
     {
       return Value.UNIT;
@@ -133,6 +135,7 @@ public class DFA extends ANY
      * Called before each statement is processed. May be used to, e.g., produce
      * tracing code for debugging or a comment.
      */
+    @Override
     public Unit expressionHeader(int s)
     {
       if (_reportResults && _options.verbose(9))
@@ -146,6 +149,7 @@ public class DFA extends ANY
     /**
      * A comment, adds human readable information
      */
+    @Override
     public Unit comment(String s)
     {
       return _unit_;
@@ -155,6 +159,7 @@ public class DFA extends ANY
     /**
      * no operation, like comment, but without giving any comment.
      */
+    @Override
     public Unit nop()
     {
       return _unit_;
@@ -180,6 +185,7 @@ public class DFA extends ANY
      *
      * @return resulting code of this assignment.
      */
+    @Override
     public Unit assignStatic(int s, int tc, int f, int rt, Val tvalue, Val val)
     {
       tvalue.value().setField(DFA.this, f, val.value());
@@ -234,6 +240,7 @@ public class DFA extends ANY
      * Result.v0() may be null to indicate that code generation should stop here
      * (due to an error or tail recursion optimization).
      */
+    @Override
     public Pair<Val, Unit> call(int s, Val tvalue, List<Val> args)
     {
       var ccP = _fuir.accessedPreconditionClazz(s);
@@ -299,7 +306,7 @@ public class DFA extends ANY
             {
               detail += _fuir.clazzAsStringNew(ccs[ccii]) + ", ";
             }
-          Errors.error(_fuir.codeAtAsPos(s),
+          Errors.error(_fuir.sitePos(s),
                        "NYI: in "+_fuir.siteAsString(s)+" no targets for "+_fuir.codeAtAsString(s)+" target "+tvalue,
                        detail);
 
@@ -425,7 +432,8 @@ public class DFA extends ANY
     /**
      * For a given value v of value type vc create a boxed ref value of type rc.
      */
-    public Pair<Val, Unit> box(Val val, int vc, int rc)
+    @Override
+    public Pair<Val, Unit> box(int s, Val val, int vc, int rc)
     {
       var boxed = val.value().box(DFA.this, vc, rc, _call);
       return new Pair<>(boxed, _unit_);
@@ -433,18 +441,9 @@ public class DFA extends ANY
 
 
     /**
-     * For a given reference value v create an unboxed value of type vc.
-     */
-    public Pair<Val, Unit> unbox(Val val, int orc)
-    {
-      var unboxed = val.value().unbox(orc);
-      return new Pair<>(unboxed, _unit_);
-    }
-
-
-    /**
      * Get the current instance
      */
+    @Override
     public Pair<Val, Unit> current(int s)
     {
       return new Pair<>(_call._instance, _unit_);
@@ -454,6 +453,7 @@ public class DFA extends ANY
     /**
      * Get the outer instance
      */
+    @Override
     public Pair<Val, Unit> outer(int s)
     {
       return new Pair<>(_call._target, _unit_);
@@ -462,6 +462,7 @@ public class DFA extends ANY
     /**
      * Get the argument #i
      */
+    @Override
     public Val arg(int s, int i)
     {
       return _call._args.get(i);
@@ -471,7 +472,8 @@ public class DFA extends ANY
     /**
      * Get a constant value of type constCl with given byte data d.
      */
-    public Pair<Val, Unit> constData(int constCl, byte[] d)
+    @Override
+    public Pair<Val, Unit> constData(int s, int constCl, byte[] d)
     {
       var o = _unit_;
       var r = switch (_fuir.getSpecialClazz(constCl))
@@ -493,8 +495,8 @@ public class DFA extends ANY
             if (!_fuir.clazzIsChoice(constCl))
               {
                 yield _fuir.clazzIsArray(constCl)
-                  ? newArrayConst(constCl, _call, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN))
-                  : newValueConst(constCl, _call, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN));
+                  ? newArrayConst(s, constCl, _call, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN))
+                  : newValueConst(s, constCl, _call, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN));
               }
             else
               {
@@ -511,6 +513,8 @@ public class DFA extends ANY
     /**
      * deserialize value constant of type `constCl` from `b`
      *
+     * @param s the site of the constant
+     *
      * @param constCl the constants clazz, e.g. `(tuple u32 codepoint)`
      *
      * @param context for debugging: Reason that causes this const string to be
@@ -520,7 +524,7 @@ public class DFA extends ANY
      *
      * @return an instance of `constCl` with fields initialized using the data from `b`.
      */
-    private Value newValueConst(int constCl, Context context, ByteBuffer b)
+    private Value newValueConst(int s, int constCl, Context context, ByteBuffer b)
     {
       var result = newInstance(constCl, NO_SITE, context);
       var args = new List<Val>();
@@ -529,7 +533,7 @@ public class DFA extends ANY
           var f = _fuir.clazzArg(constCl, index);
           var fr = _fuir.clazzArgClazz(constCl, index);
           var bytes = _fuir.deseralizeConst(fr, b);
-          var arg = constData(fr, bytes).v0().value();
+          var arg = constData(s, fr, bytes).v0().value();
           args.add(arg);
           result.setField(DFA.this, f, arg);
         }
@@ -549,6 +553,8 @@ public class DFA extends ANY
     /**
      * deserialize array constant of type `constCl` from `d`
      *
+     * @param s the site of the constant
+     *
      * @param constCl the constants clazz, e.g. `array (tuple i32 codepoint)`
      *
      * @param context for debugging: Reason that causes this const string to be
@@ -558,7 +564,7 @@ public class DFA extends ANY
      *
      * @return an instance of `constCl` with fields initialized using the data from `d`.
      */
-    private Value newArrayConst(int constCl, Call context, ByteBuffer d)
+    private Value newArrayConst(int s, int constCl, Call context, ByteBuffer d)
     {
       var result = newInstance(constCl, NO_SITE, context);
       var sa = _fuir.clazzField(constCl, 0);
@@ -577,8 +583,8 @@ public class DFA extends ANY
         {
           var b = _fuir.deseralizeConst(elementClazz, d);
           elements = elements == null
-            ? constData(elementClazz, b).v0().value()
-            : elements.join(constData(elementClazz, b).v0().value());
+            ? constData(s, elementClazz, b).v0().value()
+            : elements.join(constData(s, elementClazz, b).v0().value());
         }
       SysArray sysArray = elCount == 0 ? new SysArray(DFA.this, new byte[0], elementClazz) :  new SysArray(DFA.this, elements);
 
@@ -592,6 +598,7 @@ public class DFA extends ANY
     /**
      * Perform a match on value subv.
      */
+    @Override
     public Pair<Val, Unit> match(int s, AbstractInterpreter<Val,Unit> ai, Val subv)
     {
       Val r = null; // result value null <=> does not return.  Will be set to Value.UNIT if returning case was found.
@@ -647,6 +654,7 @@ public class DFA extends ANY
     /**
      * Create a tagged value of type newcl from an untagged value.
      */
+    @Override
     public Pair<Val, Unit> tag(int s, Val value, int newcl, int tagNum)
     {
       Val res = value.value().tag(_call._dfa, newcl, tagNum);
@@ -657,9 +665,10 @@ public class DFA extends ANY
     /**
      * Access the effect of type ecl that is installed in the environment.
      */
-    public Pair<Val, Unit> env(int ecl)
+    @Override
+    public Pair<Val, Unit> env(int s, int ecl)
     {
-      return new Pair<>(_call.getEffectForce(Analyze.this, ecl), _unit_);
+      return new Pair<>(_call.getEffectForce(s, ecl), _unit_);
     }
 
 
@@ -667,6 +676,7 @@ public class DFA extends ANY
      * Process a contract of kind ck of clazz cl that results in bool value cc
      * (i.e., the contract fails if !cc).
      */
+    @Override
     public Unit contract(int s, FUIR.ContractKind ck, Val cc)
     {
       return _unit_;
@@ -1108,7 +1118,7 @@ public class DFA extends ANY
    * Set flag _changed to record the fact that the current iteration has not
    * reached a fix point yet.
    *
-   * @param by in case _changed was not set yet, by is used to procude a message
+   * @param by in case _changed was not set yet, by is used to produce a message
    * why we have not reached a fix point yet.
    */
   void wasChanged(Supplier<String> by)
@@ -1254,7 +1264,7 @@ public class DFA extends ANY
     var escapeSet = pre ? _escapesPre : _escapes;
     if (escapeSet.add(cc))
       {
-        wasChanged(() -> "Esacpes: " + (pre ? "precondition of " : "") + _fuir.clazzAsString(cc));
+        wasChanged(() -> "Escapes: " + (pre ? "precondition of " : "") + _fuir.clazzAsString(cc));
       }
   }
 
@@ -2034,7 +2044,7 @@ public class DFA extends ANY
    * @param cl the clazz
    *
    * @param site the site index where the new instances is creates, NO_SITE
-   * if not within code (instrinsics etc.)
+   * if not within code (intrinsics etc.)
    *
    * @param context for debugging: Reason that causes this instance to be part
    * of the analysis.

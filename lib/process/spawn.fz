@@ -104,6 +104,8 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
 
   # wait for process to finish
   #
+  # returns the exit code of the process or an error
+  #
   public wait outcome u32 =>
     # NYI make sure std_in can not be used anymore
     if std_in!! || fuzion.sys.pipe.close std_in.get = 0
@@ -135,12 +137,12 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
 
   # pipe this processes output to new process
   #
-  public infix | (process_and_args array String) outcome Process ! env_vars
+  public infix | (process_and_args Sequence String) outcome Process ! env_vars
   pre
     (process_and_args ∀ str -> str.is_ascii)
     !process_and_args[0].contains_whitespace
   =>
-    (spawn0 process_and_args).bind Process tup->
+    (spawn0 process_and_args.as_array).bind Process tup->
       (pid, std_in, std_out, std_err) := tup
 
       # NYI make sure std_out, std_err are not used anymore
@@ -170,12 +172,12 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
 # NOTE: environment variables that should be passed to the process
 # will be taken from effect process.env_vars
 #
-public spawn(process_and_args array String) outcome Process ! env_vars
+public spawn(process_and_args Sequence String) outcome Process ! env_vars
 pre
   (process_and_args ∀ str -> str.is_ascii)
   !process_and_args[0].contains_whitespace
 =>
-  (spawn0 process_and_args).bind Process (tup)->
+  (spawn0 process_and_args.as_array).bind Process (tup)->
     (id, std_in, std_out, std_err) := tup
     Process id std_in std_out std_err
 

@@ -108,10 +108,9 @@ public class Fuzion extends Tool
       }
       void process(FuzionOptions options, FUIR fuir)
       {
-        // run DFA, currently only done to find missing effects, see tests/reg_issue2273
         var new_fuir = _xdfa_ ? new DFA(options, fuir).new_fuir() : fuir;
 
-        new Interpreter(options, fuir).run();
+        new Interpreter(options, new_fuir).run();
       }
     },
 
@@ -374,10 +373,24 @@ public class Fuzion extends Tool
      * any errors that happened in the frontend.
      * Can be used for syntax checking of fz files.
      */
-    noBackend("-no-backend")
+    frontEndOnly("-frontend-only")
     {
       void processFrontEnd(Fuzion f, FrontEnd fe)
       {
+        Errors.showAndExit();
+      }
+    },
+
+    /**
+     * This backend does nothing except showing
+     * any errors that happened in the stages up to
+     * and including the DFA.
+     */
+    noBackend("-no-backend")
+    {
+      void process(FuzionOptions options, FUIR fuir)
+      {
+        new DFA(options, fuir).new_fuir();
         Errors.showAndExit();
       }
     },
@@ -750,7 +763,7 @@ public class Fuzion extends Tool
   /**
    * Check if `a` is `-e` or `-execute`.
    *
-   * Cause an error in case of repreted `-e` or `-execute` arguments.
+   * Cause an error in case of repeated `-e` or `-execute` arguments.
    *
    * @return true if that is that case and the next argument gives the code.
    */

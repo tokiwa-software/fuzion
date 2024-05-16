@@ -670,7 +670,7 @@ part of the (((inner features))) declarations of the corresponding
                              Feature typeFeature)
   {
     findDeclarations(typeFeature, outerType);
-    addDeclared(true,  outerType, typeFeature);
+    addDeclared(outerType, typeFeature);
     typeFeature.scheduleForResolution(_res);
     resolveDeclarations(typeFeature);
   }
@@ -685,11 +685,12 @@ part of the (((inner features))) declarations of the corresponding
           (!d._declaredFeatures.containsKey(fn) || d._declaredFeatures.get(fn) == typeParameter);
         d._declaredFeatures.put(fn, typeParameter);
       }
-    if (d._declaredOrInheritedFeatures != null)
+    var doi = d._declaredOrInheritedFeatures;
+    if (doi != null)
       {
         if (CHECKS) check
-          (!d._declaredOrInheritedFeatures.containsKey(fn) || d._declaredOrInheritedFeatures.get(fn) == typeParameter);
-        d._declaredOrInheritedFeatures.put(fn, typeParameter);
+          (!doi.containsKey(fn) || doi.get(fn).size() == 1 && doi.get(fn).getFirst() == typeParameter);
+        add(doi, fn, typeParameter);
       }
   }
 
@@ -701,31 +702,23 @@ part of the (((inner features))) declarations of the corresponding
    * while the sets of declared and inherited features had already been
    * determined.
    *
-   * @param inherited true to add inner to declaredOrInherited, false to add it
-   * to declaredFeatures and declaredOrInherited.
-   *
    * @param outer the outer feature
    *
    * @param inner the feature to be added.
    */
-  private void addDeclared(boolean inherited, AbstractFeature outer, AbstractFeature inner)
+  private void addDeclared(AbstractFeature outer, AbstractFeature inner)
   {
     if (PRECONDITIONS)
       require(outer.isConstructor(), inner.isTypeFeature());
 
     var d = data(outer);
     var fn = inner.featureName();
-    if (!inherited && d._declaredFeatures != null)
+    var doi = d._declaredOrInheritedFeatures;
+    if (doi != null)
       {
         if (CHECKS) check
-          (!d._declaredFeatures.containsKey(fn) || d._declaredFeatures.get(fn) == inner);
-        d._declaredFeatures.put(fn, inner);
-      }
-    if (d._declaredOrInheritedFeatures != null)
-      {
-        if (CHECKS) check
-          (!d._declaredOrInheritedFeatures.containsKey(fn) || d._declaredOrInheritedFeatures.get(fn) == inner);
-        d._declaredOrInheritedFeatures.put(fn, inner);
+          (!doi.containsKey(fn) || doi.get(fn).size() == 1 && doi.get(fn).getFirst() == inner);
+        add(doi, fn, inner);
       }
   }
 
@@ -831,45 +824,109 @@ part of the (((inner features))) declarations of the corresponding
    *
    * @param f the declared or inherited feature.
    */
+  // NYI: merge addToDeclaredOrInheritedFeatures and addDeclaredOrInherited
   private void addToDeclaredOrInheritedFeatures(AbstractFeature outer, AbstractFeature f)
   {
     var fn = f.featureName();
-    var doi = declaredOrInheritedFeatures(outer);
-    var existing = doi.get(fn);
-    if (existing == null)
+    var isInherited = outer != f.outer();
+    var c = f.contract();
+    for (var existing : declaredOrInheritedFeatures(outer, fn))
       {
-        if (f instanceof Feature ff && (ff._modifiers & FuzionConstants.MODIFIER_REDEFINE) != 0)
+        if ((
+             // declarations do not have to satisfy visibility rules
+             !isInherited ||
+             // inherited features must be visible where we inherit them
+             visibleFor(f, outer)
+             )
+            &&
+            existing != f
+            )
           {
+            if ((f.modifiers() & FuzionConstants.MODIFIER_REDEFINE) == 0 &&
+                !existing.isAbstract() &&
+                /* previous duplicate feature declaration could result in this error for
+                * type features, so suppress them in this case. See fuzion-lang.dev's
+                * design/examples/typ_const2.fz as an example.
+                */
+                (!Errors.any() || !f.isTypeFeature()))
+              {
+                /*
+    // tag::fuzion_rule_PARS_REDEF[]
+A feature that redefines at least one inherited feature must use the `redef` modifier unless all redefined, inherited features are `abstract`.
+    // end::fuzion_rule_PARS_REDEF[]
+                */
+                if (visibleFor(existing, f.outer()))
+                  {
+                    AstErrors.redefineModifierMissing(f.pos(), f, existing);
+                  }
+              }
+            else if (c._hasPre != null && c._hasPreElse == null)
+              {
+                /*
+    // tag::fuzion_rule_PARS_CONTR_PRE_ELSE[]
+A pre-condition of a feature that redefines one or several inherited features must start with `pre else`, independent of whether the redefined, inherited features are `abstract` or not.
+    // end::fuzion_rule_PARS_CONTR_PRE_ELSE[]
+                */
+                AstErrors.redefinePreconditionMustUseElse(c._hasPre, f);
+              }
+            else if (c._hasPost != null && c._hasPostThen == null)
+              {
+                /*
+    // tag::fuzion_rule_PARS_CONTR_POST_THEN[]
+A post-condition of a feature that redefines one or several inherited features must start with `post else`, independent of whether the redefined, inherited features are `abstract` or not.
+    // end::fuzion_rule_PARS_CONTR_POST_THEN[]
+                */
+                AstErrors.redefinePostconditionMustUseThen(c._hasPost, f);
+              }
+            if (visibleFor(existing, f.outer()))
+              {
+                f.redefines().add(existing);
+                c.addInheritedContract(f, existing);
+              }
+          }
+      }
+
+    if (f.redefines().isEmpty())
+      {
+        if ((f.modifiers() & FuzionConstants.MODIFIER_REDEFINE) != 0)
+          {
+            /*
+    // tag::fuzion_rule_PARS_NO_REDEF[]
+A feature that does not redefine an inherited feature must not use the `redef` modifier.
+    // end::fuzion_rule_PARS_NO_REDEF[]
+            */
             AstErrors.redefineModifierDoesNotRedefine(f);
           }
-      }
-    else if (existing == f)
-      {
-      }
-    else if (f instanceof Feature ff && (ff._modifiers & FuzionConstants.MODIFIER_REDEFINE) == 0 && !existing.isAbstract())
-      { /* previous duplicate feature declaration could result in this error for
-         * type features, so suppress them in this case. See fuzion-lang.dev's
-         * design/examples/typ_const2.fz as an example.
-         */
-        if ((!Errors.any() || !f.isTypeFeature()) && visibleFor(existing, f))
+        else if (c._hasPreElse != null)
           {
-            AstErrors.redefineModifierMissing(f.pos(), f, existing);
+            /*
+    // tag::fuzion_rule_PARS_CONTR_PRE_NO_ELSE[]
+A pre-condition of a feature that does not redefine an inherited feature must start with `pre`, not `pre else`.
+    // end::fuzion_rule_PARS_CONTR_PRE_NO_ELSE[]
+            */
+            AstErrors.notRedefinedPreconditionMustNotUseElse(c._hasPreElse, f);
+          }
+        else if (c._hasPostThen != null)
+          {
+            /*
+    // tag::fuzion_rule_PARS_CONTR_POST_NO_THEN[]
+A post-condition of a feature that does not redefine an inherited feature must start with `post`, not `post then`.
+    // end::fuzion_rule_PARS_CONTR_POST_NO_THEN[]
+            */
+            AstErrors.notRedefinedPostconditionMustNotUseThen(c._hasPostThen, f);
           }
       }
-    else
-      {
-        f.redefines().add(existing);
-      }
-    if (f     instanceof Feature ff &&
-        outer.state().atLeast(State.RESOLVED_DECLARATIONS))
-      {
-        ff._addedLate = true;
-      }
-    if (f instanceof Feature ff && ff.state().atLeast(State.RESOLVED_DECLARATIONS))
+
+    // This is a fix for #978 but it might need to be removed when fixing #932.
+    if (f instanceof Feature ff &&
+        (outer.state().atLeast(State.RESOLVED_DECLARATIONS) ||
+            ff.state().atLeast(State.RESOLVED_DECLARATIONS)))
       {
         ff._addedLate = true;
       }
-    doi.put(fn, f);
+    var doi = declaredOrInheritedFeatures(outer);
+    doi.remove(fn);  // NYI: remove only those features that are redefined by f!
+    add(doi, fn, f);
   }
 
 
@@ -960,7 +1017,7 @@ part of the (((inner features))) declarations of the corresponding
         for (var h : d._heirs)
           {
             var pos = SourcePosition.builtIn; // NYI: Would be nicer to use Call.pos for the inheritance call in h.inherits
-            addInheritedFeature(data(outer)._declaredOrInheritedFeatures, h, pos, fn, f);
+            addDeclaredOrInherited(data(outer)._declaredOrInheritedFeatures, h, fn, f);
             addToHeirs(h, fn, f);
           }
       }
@@ -971,13 +1028,6 @@ part of the (((inner features))) declarations of the corresponding
 
 
   /*--------------------------  feature lookup  -------------------------*/
-
-
-  @Override
-  public SortedMap<FeatureName, AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer)
-  {
-    return this.declaredOrInheritedFeatures(outer, _dependsOn);
-  }
 
 
   /**
@@ -999,20 +1049,19 @@ part of the (((inner features))) declarations of the corresponding
       {
         _res.resolveDeclarations(outer);
       }
-    var count = 0;
-    AbstractFeature found = null;
-    for (var f : declaredOrInheritedFeatures(outer).values())
-      {
-        if (featureVisible(use.pos()._sourceFile, f) &&
-            f instanceof LibraryFeature lf &&
-            lf.resultType().isOpenGeneric() &&
-            f.arguments().isEmpty())
-          {
-            found = f;
-            count++;
-          }
-      }
-    return count == 1 ? found : null;
+    var result = new List<AbstractFeature>();
+    forEachDeclaredOrInheritedFeature(outer,
+                                      f ->
+                                      {
+                                        if (featureVisible(use.pos()._sourceFile, f) &&
+                                            f instanceof LibraryFeature lf &&
+                                            lf.resultType().isOpenGeneric() &&
+                                            f.arguments().isEmpty())
+                                          {
+                                            result.add(f);
+                                          }
+                                      });
+    return result.size() == 1 ? result.getFirst() : null;
   }
 
 
@@ -1033,6 +1082,9 @@ part of the (((inner features))) declarations of the corresponding
    * @param traverseOuter true to collect all the features found in outer and
    * outer's outer (i.e., use is unqualified), false to search in outer only
    * (i.e., use is qualified with outer).
+   *
+   * @param hidden true to return features that are not visible, used for error
+   * messages.
    *
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.
@@ -1073,6 +1125,9 @@ part of the (((inner features))) declarations of the corresponding
    * outer's outer (i.e., use is unqualified), false to search in outer only
    * (i.e., use is qualified with outer).
    *
+   * @param hidden true to return features that are not visible, used for error
+   * messages.
+   *
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.
    */
@@ -1103,10 +1158,12 @@ part of the (((inner features))) declarations of the corresponding
             for (var e : fs.entrySet())
               {
                 var fn = e.getKey();
-                var f = e.getValue();
-                if (f.isField() && (f.outer()==null || f.outer().resultField() != f))
+                for (var f : e.getValue())
                   {
-                    fields.add(fn);
+                    if (f.isField() && (f.outer()==null || f.outer().resultField() != f))
+                      {
+                        fields.add(fn);
+                      }
                   }
               }
             if (!fields.isEmpty())
@@ -1118,15 +1175,17 @@ part of the (((inner features))) declarations of the corresponding
                 // if we found f in scope, remove all other entries, otherwise remove all entries within this since they are not in scope.
                 for (var fn : fields)
                   {
-                    var fi = fs.get(fn);
-                    if (f != null || fi.outer() == outer && (!(fi instanceof Feature fif) || !fif.isArtificialField()))
+                    for (var fi : get(fs, fn))
                       {
-                        fs.remove(fn);
+                        if (f != null || fi.outer() == outer && (!(fi instanceof Feature fif) || !fif.isArtificialField()))
+                          {
+                            fs.remove(fn);
+                          }
                       }
                   }
                 if (f != null)
                   {
-                    fs.put(f.featureName(), f);
+                    add(fs, f.featureName(), f);
                     foundFieldInThisScope = true;
                   }
               }
@@ -1134,12 +1193,14 @@ part of the (((inner features))) declarations of the corresponding
 
         for (var e : fs.entrySet())
           {
-            var v = e.getValue();
-            if ((use == null || (hidden != featureVisible(use.pos()._sourceFile, v))) &&
-                (!v.isField() || !foundFieldInScope))
+            for (var v : e.getValue())
               {
-                result.add(new FeatureAndOuter(v, curOuter, inner));
-                foundFieldInScope = foundFieldInScope || v.isField() && foundFieldInThisScope;
+                if ((use == null || (hidden != featureVisible(use.pos()._sourceFile, v))) &&
+                    (!v.isField() || !foundFieldInScope))
+                  {
+                    result.add(new FeatureAndOuter(v, curOuter, inner));
+                    foundFieldInScope = foundFieldInScope || v.isField() && foundFieldInThisScope;
+                  }
               }
           }
 
@@ -1193,6 +1254,18 @@ part of the (((inner features))) declarations of the corresponding
         var type_fs = new List<AbstractFeature>();
         var nontype_fs = new List<AbstractFeature>();
         var fs = lookup(outer, name, null, traverseOuter, false);
+        var o = outer;
+        while (traverseOuter && o != null)
+          {
+            if (o.isTypeFeature())
+              {
+                lookup(o._typeFeatureOrigin, name, null, false, false)
+                  .stream()
+                  .filter(fo -> !fo._feature.isTypeParameter())  // type parameters are duplicated in type feature and taken from there
+                  .forEach(fo -> fs.add(fo));
+              }
+            o = o.outer();
+          }
         for (var fo : fs)
           {
             var f = fo._feature;
@@ -1394,9 +1467,33 @@ part of the (((inner features))) declarations of the corresponding
         if (o.isTypeFeaturesThisType() && f.isTypeFeaturesThisType())
           { // NYI: CLEANUP: #706: allow redefinition of THIS_TYPE in type features for now, these are created internally.
           }
-        else if (o.isChoice())
+        else if (o.isConstructor() ||
+                 switch (o.kind())
+                 {
+                   case Routine, Field, Intrinsic, Abstract, Native -> false; // ok
+                   case TypeParameter, OpenTypeParameter, Choice    -> true;  // not ok
+                 })
           {
-            AstErrors.cannotRedefineChoice(f, o);
+            /*
+    // tag::fuzion_rule_PARS_REDEF_KIND[]
+A feature that is a constructor, choice or a type parameter may not be redefined.
+    // end::fuzion_rule_PARS_REDEF_KIND[]
+            */
+            AstErrors.cannotRedefine(f, o);
+          }
+        else if (f.isConstructor() ||
+                 switch (f.kind())
+                 {
+                   case Routine, Field, Intrinsic, Abstract, Native -> false; // ok
+                   case TypeParameter, OpenTypeParameter, Choice    -> true;  // not ok
+                 })
+          {
+            /*
+    // tag::fuzion_rule_PARS_REDEF_AS_KIND[]
+A feature that is a constructor, choice or a type parameter may not redefine an inherited feature.
+    // end::fuzion_rule_PARS_REDEF_AS_KIND[]
+            */
+            AstErrors.cannotRedefine(f, o);
           }
         else if (!t1.isDirectlyAssignableFrom(t2) &&  // we (currently) do not tag the result in a redefined feature, see testRedefine
                  !t2.isVoid() &&
@@ -1430,6 +1527,8 @@ part of the (((inner features))) declarations of the corresponding
     checkArgTypesVisibility(f);
     checkPreconditionVisibility(f);
     checkAbstractVisibility(f);
+    checkDuplicateFeatures(f);
+    checkContractAccesses(f);
   }
 
 
@@ -1592,6 +1691,98 @@ part of the (((inner features))) declarations of the corresponding
     return result;
   }
 
+
+  /**
+   * Check f's declared or inherited features for duplicates and flag errors if
+   * incompatible duplicates are encountered.
+   *
+   * @param f a feature
+   */
+  private void checkDuplicateFeatures(Feature f)
+  {
+    var doi = data(f)._declaredOrInheritedFeatures;
+    if (doi != null)
+      {
+        for (var fn : doi.keySet())
+          {
+            checkDuplicateFeatures(f, fn, doi.get(fn));
+          }
+      }
+  }
+
+  /**
+   * Check outer's declared or inherited features with effective name `fn` for duplicates and flag errors if
+   * incompatible duplicates are encountered.
+   *
+   * @param outer a feature
+   *
+   * @param fn the effective feature name within outer, used for error messages only
+   *
+   * @param fl list of features declared or inherited by outer with effective name fn.
+   */
+  private void checkDuplicateFeatures(AbstractFeature outer, FeatureName fn, List<AbstractFeature> fl)
+  {
+    if (PRECONDITIONS)
+      require(outer != null,
+              fn != null,
+              fl != null);
+
+    for (var f1 : fl)
+      {
+        for (var f2 : fl)
+          {
+            if (f1 != f2)
+              {
+                var isInherited1 = outer != f1.outer();
+                var isInherited2 = outer != f2.outer();
+
+                // NYI: take visibility into account!!!
+                if (isInherited1 && isInherited2)
+                  { // NYI: Should be ok if existing or f is abstract.
+                    AstErrors.repeatedInheritanceCannotBeResolved(outer.pos(), outer, fn, f1, f2);
+                  }
+                else
+                  {
+                    // NYI: if (!isInherited && !sameModule(f, outer))
+                    AstErrors.duplicateFeatureDeclaration(f1.pos(), f1, f2);
+                  }
+              }
+          }
+      }
+  }
+
+
+  /**
+   * Check that code in contract does not access inner features apart from
+   * arguments, result field, outer refs or case fields (in case condition uses
+   * a `match`).  Procude AstErrors if needed.
+   *
+   * @parm f the feature whose contract should be checked.
+   */
+  private void checkContractAccesses(AbstractFeature f)
+  {
+    // NYI: check pre-condition accesses, not only post-condition
+    for (var c : f.contract()._declared_postconditions)
+      {
+        c.visitExpressions(e ->
+                           {
+                             if (!f.isConstructor() &&
+                                 e instanceof AbstractCall ca &&
+                                 ca.target() instanceof Current &&
+                                 !(ca.calledFeature() instanceof Feature cf && (cf.isResultField() ||
+                                                                                cf.isArgument() ||
+                                                                                cf.isOuterRef() ||
+                                                                                cf.isCaseField() ||
+
+                                                                                // NYI: there are some `#exprResultNNN` fields used, need to check why:
+                                                                                cf.isArtificialField()
+                                                                                )))
+                               {
+                                 AstErrors.postConditionMayNotAccessInnerFeature(f, ca);
+                               }
+                           });
+      }
+  }
 
 
   /*---------------------------  library file  --------------------------*/

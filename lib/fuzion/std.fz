@@ -42,8 +42,8 @@ module fuzion.std is
   module nano_time u64 => intrinsic
 
   # no guarantee can be given for precision nor resolution
-  module nano_sleep(n u64) is intrinsic
+  module nano_sleep(n u64) unit => intrinsic
 
 
   # fills arg with current UTC date time
-  module date_time(array_of_i32 fuzion.sys.Pointer) is intrinsic
+  module date_time(array_of_i32 fuzion.sys.Pointer) unit => intrinsic

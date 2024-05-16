@@ -687,7 +687,7 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
         for (int pos = 0;
              _bytes != null && pos < _bytes.length;
              pos = pos + sz,
-             ind = ind + 1)
+             ind = ind + cpWidth(curCodePoint))
           {
             if (isNewLine(curCodePoint))
               {
@@ -712,6 +712,41 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
         _lines = b.build().toArray();
       }
     return _lines;
+  }
+
+
+  /**
+   * get the width of a codepoint as specified in:
+   * https://www.unicode.org/reports/tr11/
+   */
+  private int cpWidth(int curCodePoint)
+  {
+    // Unassigned code points in ranges intended for CJK ideographs are classified as Wide. Those ranges are:
+
+    // the CJK Unified Ideographs Extension A block, 3400..4DBF
+    // the CJK Unified Ideographs block, 4E00..9FFF
+    // the CJK Compatibility Ideographs block, F900..FAFF
+    // the Supplementary Ideographic Plane, 20000..2FFFF
+    // the Tertiary Ideographic Plane, 30000..3FFFF
+
+    // NYI: UNDER DEVELOPMENT
+    // could be made faster (binary search?)
+
+    // NYI: UNDER DEVELOPMENT
+    // We would need to evaluate list
+    // http://www.unicode.org/Public/UNIDATA/EastAsianWidth.txt
+    // to be more correct.
+
+          // common case first
+    return curCodePoint < 0x3400
+      ? 1
+      : 0x3400 <= curCodePoint && curCodePoint <= 0x4DBF ||
+        0x4E00 <= curCodePoint && curCodePoint <= 0x9FFF ||
+        0xF900 <= curCodePoint && curCodePoint <= 0xFAFF ||
+        0x20000 <= curCodePoint && curCodePoint <= 0x2FFFF ||
+        0x30000 <= curCodePoint && curCodePoint <= 0x3FFFF
+      ? 2
+      : 1;
   }
 
 

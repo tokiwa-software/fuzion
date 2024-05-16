@@ -113,7 +113,7 @@ public class Executor extends ProcessExpression<Value, Object>
 
 
   /**
-   * The constructor to initalize the executor
+   * The constructor to initialize the executor
    * with a custom current, outer and args.
    *
    * @param fuir
@@ -242,8 +242,8 @@ public class Executor extends ProcessExpression<Value, Object>
         // NYI change call to pass in ai as in match expression?
         var cur = new Instance(cc);
 
-        callOnInstance(cc, cur, tvalue, args, true);
-        callOnInstance(cc, cur, tvalue, args, false);
+        callOnInstance(s, cc, cur, tvalue, args, true);
+        callOnInstance(s, cc, cur, tvalue, args, false);
 
         Value rres = cur;
         var resf = _fuir.clazzResultField(cc);
@@ -275,7 +275,7 @@ public class Executor extends ProcessExpression<Value, Object>
       case Choice :
         throw new Error("Calling choice not possible: " + _fuir.codeAtAsString(s));
       case Native:
-        throw new Error("NYI: UNDER DEVELOPEMENT: Calling native not yet supported in interpreter.");
+        throw new Error("NYI: UNDER DEVELOPMENT: Calling native not yet supported in interpreter.");
       };
 
     return result;
@@ -326,7 +326,7 @@ public class Executor extends ProcessExpression<Value, Object>
 
 
   @Override
-  public Pair<Value, Object> box(Value v, int vc, int rc)
+  public Pair<Value, Object> box(int s, Value v, int vc, int rc)
   {
     return pair(new Boxed(rc, vc, v /* .cloneValue(vcc) */));
   }
@@ -353,9 +353,9 @@ public class Executor extends ProcessExpression<Value, Object>
   }
 
   @Override
-  public Pair<Value, Object> constData(int constCl, byte[] d)
+  public Pair<Value, Object> constData(int s, int constCl, byte[] d)
   {
-    // NYI: UNDERDEVELOPEMENT: cache?
+    // NYI: UNDERDEVELOPMENT: cache?
     var val = switch (_fuir.getSpecialClazz(constCl))
       {
       case c_Const_String, c_String -> Interpreter
@@ -384,7 +384,7 @@ public class Executor extends ProcessExpression<Value, Object>
             for (int idx = 0; idx < elCount; idx++)
               {
                 var b = _fuir.deseralizeConst(elementType, bb);
-                var c = constData(elementType, b).v0();
+                var c = constData(s, elementType, b).v0();
                 switch (_fuir.getSpecialClazz(elementType))
                   {
                     case c_i8   : ((byte[])   (arrayData._array))[idx] = (byte)c.i8Value(); break;
@@ -421,7 +421,7 @@ public class Executor extends ProcessExpression<Value, Object>
                 var fr = _fuir.clazzArgClazz(constCl, index);
 
                 var bytes = _fuir.deseralizeConst(fr, b);
-                var c = constData(fr, bytes).v0();
+                var c = constData(s, fr, bytes).v0();
                 var acl = _fuir.clazzArg(constCl, index);
                 Interpreter.setField(acl, constCl, result, c);
               }
@@ -516,7 +516,7 @@ public class Executor extends ProcessExpression<Value, Object>
   }
 
   @Override
-  public Pair<Value, Object> env(int ecl)
+  public Pair<Value, Object> env(int s, int ecl)
   {
     var result = FuzionThread.current()._effects.get(ecl);
     if (result == null)
@@ -536,7 +536,7 @@ public class Executor extends ProcessExpression<Value, Object>
     if (!cc.boolValue())
       {
         var cl = _fuir.clazzAt(s);
-        Errors.runTime(pos(),
+        Errors.runTime(_fuir.sitePos(s),
                        (ck == ContractKind.Pre ? "Precondition" : "Postcondition") + " does not hold",
                        (ck == ContractKind.Pre ? "For" : "After") + " call to " + _fuir.clazzAsStringNew(cl) + "\n" + callStack(fuir()));
       }
@@ -548,6 +548,10 @@ public class Executor extends ProcessExpression<Value, Object>
    * callOnInstance assigns the arguments to the argument fields of a newly
    * created instance, calls the parents and then this feature.
    *
+   * @parm s site of the call or NO_SITE if unknown (e.g., form intrinsic)
+   *
+   * @param cc clazz id of the called clazz
+   *
    * @param cur the newly created instance
    *
    * @param outer the target of the call
@@ -558,10 +562,10 @@ public class Executor extends ProcessExpression<Value, Object>
    *
    * @return
    */
-  Value callOnInstance(int cc, Instance cur, Value outer, List<Value> args, boolean pre)
+  Value callOnInstance(int s, int cc, Instance cur, Value outer, List<Value> args, boolean pre)
   {
     FuzionThread.current()._callStackFrames.push(cc);
-    FuzionThread.current()._callStack.push(site());
+    FuzionThread.current()._callStack.push(s);
 
     new AbstractInterpreter<>(_fuir, new Executor(cur, outer, args))
       .process(cc, pre);
@@ -586,7 +590,7 @@ public class Executor extends ProcessExpression<Value, Object>
       {
         sb.append(_fuir.clazzAsStringNew(frame)).append(": ");
       }
-    sb.append(_fuir.codeAtAsPos(callSite).show()).append("\n");
+    sb.append(_fuir.sitePos(callSite).show()).append("\n");
   }
 
 

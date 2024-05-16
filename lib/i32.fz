@@ -27,22 +27,20 @@
 #
 public i32(public val i32) : num.wrap_around, has_interval is
 
-  public thiz => i32.this.val
-
   # overflow checking
 
-  # would negation -thiz cause an overflow?
+  # would negation cause an overflow?
   redef wrapped_on_neg => is_min
 
-  # would addition thiz + other cause an overflow or underflow?
-  public fixed overflow_on_add (other i32) => thiz > 0 && i32.max -° thiz < other
-  public fixed underflow_on_add(other i32) => thiz < 0 && i32.min -° thiz > other
+  # would addition + other cause an overflow or underflow?
+  public fixed overflow_on_add (other i32) => val > 0 && i32.max -° val < other
+  public fixed underflow_on_add(other i32) => val < 0 && i32.min -° val > other
 
-  # would subtraction thiz - other cause an overflow or underflow?
-  public fixed overflow_on_sub (other i32) => thiz > 0 && thiz -° i32.max > other
-  public fixed underflow_on_sub(other i32) => thiz < 0 && thiz -° i32.min < other
+  # would subtraction - other cause an overflow or underflow?
+  public fixed overflow_on_sub (other i32) => val > 0 && val -° i32.max > other
+  public fixed underflow_on_sub(other i32) => val < 0 && val -° i32.min < other
 
-  # would multiplication thiz * other cause an overflow or underflow?
+  # would multiplication * other cause an overflow or underflow?
   public fixed overflow_on_mul (other i32) => as_i64 *° other.as_i64 > i32.max.as_i64
   public fixed underflow_on_mul(other i32) => as_i64 *° other.as_i64 < i32.min.as_i64
 
@@ -54,13 +52,12 @@ public i32(public val i32) : num.wrap_around, has_interval is
 
   # division and remainder with check for div-by-zero
   public fixed infix / (other i32)
-  pre
-    safety: other != 0
+    pre else
+      // NYI: #3051 precondition inheritance does not work yet
+      // remove this redundant precondition once #3051 is fixed
+      safety: other != 0
   => div other
-  public fixed infix % (other i32)
-  pre
-    safety: other != 0
-  => mod other
+  public fixed infix % (other i32) => mod other
 
   # division and remainder with crash in case of div-by-zero
   div (other i32) i32 => intrinsic
@@ -75,46 +72,45 @@ public i32(public val i32) : num.wrap_around, has_interval is
   public fixed infix >> (other i32) i32 => intrinsic
   public fixed infix << (other i32) i32 => intrinsic
 
+  # does this i32 fit into an u8?
+  #
+  public fixed redef fits_in_u8  => 0 ≤ val ≤ u8.max.as_i32
+
   # conversion to u32, i64 and u64, with range check
   public as_i8 i8
     pre
-      thiz ≥ i8.min.as_i32
-      thiz ≤ i8.max.as_i32
+      val ≥ i8.min.as_i32
+      val ≤ i8.max.as_i32
     =>
       low8bits.cast_to_i8
   public as_i16 i16
     pre
-      thiz ≥ i16.min.as_i32
-      thiz ≤ i16.max.as_i32
+      val ≥ i16.min.as_i32
+      val ≤ i16.max.as_i32
     =>
       low16bits.cast_to_i16
   public as_i64 i64 => intrinsic
 # as_i128 NYI
-  public as_u8 u8
-    pre
-      thiz ≥ u8.min.as_i32
-      thiz ≤ u8.max.as_i32
-    =>
-      low8bits
+  public as_u8  u8  => low8bits
   public as_u16 u16
     pre
-      thiz ≥ u16.min.as_i32
-      thiz ≤ u16.max.as_i32
+      val ≥ u16.min.as_i32
+      val ≤ u16.max.as_i32
     =>
       low16bits
   public as_u32 u32
     pre
-      debug: thiz ≥ 0
+      debug: val ≥ 0
     =>
       cast_to_u32
   public as_u64 u64
     pre
-      debug: thiz ≥ 0
+      debug: val ≥ 0
     =>
       as_i64.as_u64
   public as_u128 u128
     pre
-      debug: thiz ≥ 0
+      debug: val ≥ 0
     =>
       u128 0 as_i64.as_u64
   public as_int int =>

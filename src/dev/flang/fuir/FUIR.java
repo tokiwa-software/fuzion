@@ -34,7 +34,6 @@ import java.util.BitSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import java.util.function.Supplier;
 
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
@@ -50,7 +49,6 @@ import dev.flang.ast.BoolConst; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
 import dev.flang.ast.Env; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
-import dev.flang.ast.If; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
 import dev.flang.ast.Tag; // NYI: remove dependency
@@ -1011,7 +1009,7 @@ hw25 is
 
 
   /**
-   * This has to be called after `super.addoCode(List)` was called to record the
+   * This has to be called after `super.addCode(List)` was called to record the
    * clazz and whether the code belongs to a precondition for all sites of the
    * newly added code.
    *
@@ -1081,7 +1079,7 @@ hw25 is
    * @param ix the index of the pre- or post-condition, 0 for the first
    * condition
    *
-   * @return a code id referring to cl's pre- or post-condition, -1 if cl does
+   * @return a site referring to cl's pre- or post-condition, NO_SITE if cl does
    * not have a pre- or post-condition with the given index
    */
   public int clazzContract(int cl, ContractKind ck, int ix)
@@ -1098,7 +1096,7 @@ hw25 is
     var ff = cc.feature();
     var ccontract = ff.contract();
     var cond = (ccontract != null && ck == ContractKind.Pre  ? ccontract.req :
-                ccontract != null && ck == ContractKind.Post ? ccontract.ens : null);
+                ccontract != null && ck == ContractKind.Post ? ccontract.all_postconditions() : null);
     // NYI: PERFORMANCE: Always iterating the conditions results in performance
     // quadratic in the number of conditions.  This could be improved by
     // filtering BoolConst.TRUE once and reusing the resulting cond.
@@ -1112,7 +1110,7 @@ hw25 is
           }
         i++;
       }
-    var res = -1;
+    var res = NO_SITE;
     if (cond != null && i < cond.size())
       {
         // create 64-bit key from cl, ck and ix as follows:
@@ -1169,7 +1167,8 @@ hw25 is
         var cc = clazz(cl);
         var result = switch (clazzKind(cc))
           {
-          case Abstract, Choice -> false;
+          case Abstract -> hasPrecondition(cl);
+          case Choice -> false;
           case Intrinsic, Routine, Field, Native ->
             (cc.isInstantiated() || cc.feature().isOuterRef())
             && cc != Clazzes.Const_String.getIfCreated()
@@ -1469,7 +1468,8 @@ hw25 is
   public ExprKind codeAt(int s)
   {
     if (PRECONDITIONS) require
-      (s >= SITE_BASE, withinCode(s));
+      (s >= SITE_BASE,
+       withinCode(s));
 
     ExprKind result;
     var e = getExpr(s);
@@ -1483,7 +1483,7 @@ hw25 is
       }
     if (result == null)
       {
-        Errors.fatal(codeAtAsPos(s),
+        Errors.fatal(sitePos(s),
                      "Expr not supported in FUIR.codeAt", "Expression class: " + e.getClass());
         result = ExprKind.Current; // keep javac from complaining.
       }
@@ -1730,7 +1730,7 @@ hw25 is
         else
           {
             throw new Error("Unexpected expression in accessedClazzesDynamic, must be ExprKind.Call or ExprKind.Assign, is " +
-                            codeAt(s) + " " + e.getClass() + " at " + codeAtAsPos(s).show());
+                            codeAt(s) + " " + e.getClass() + " at " + sitePos(s).show());
           }
         var found = new TreeSet<Integer>();
         var result = new List<Integer>();
@@ -2036,11 +2036,7 @@ hw25 is
 
     var e = getExpr(s);
     int[] result;
-    if (e instanceof If)
-      {
-        result = new int[] { cix == 0 ? 1 : 0 };
-      }
-    else if (e instanceof AbstractMatch match)
+    if (e instanceof AbstractMatch match)
       {
         var mc = match.cases().get(cix);
         var ts = mc.types();
@@ -2198,7 +2194,7 @@ hw25 is
 
 
   /**
-   * Helper for dumpCode and codeAtAsPos to create a label for given code block.
+   * Helper for dumpCode and sitePos to create a label for given code block.
    *
    * @param c a code block;
    *
@@ -2265,10 +2261,10 @@ hw25 is
    *
    * @return the source code position or null if not available.
    */
-  public SourcePosition codeAtAsPos(int s)
+  public SourcePosition sitePos(int s)
   {
     if (PRECONDITIONS) require
-      (s >= 0,
+      (s == NO_SITE || s >= SITE_BASE,
        s == NO_SITE || withinCode(s));
 
     SourcePosition result = SourcePosition.notAvailable;
@@ -2399,7 +2395,7 @@ hw25 is
   private int codeIndex2(int si, int s, int delta)
   {
     check
-      (si >= 0 && s >= 0); // this code uses negative results if site was not found yet, so better make sure a site is never negative!
+      (si >= SITE_BASE && s >= SITE_BASE); // this code uses negative results if site was not found yet, so better make sure a site is never negative!
 
     if (si == s)
       {
@@ -2436,7 +2432,7 @@ hw25 is
    * error since there is no expression before 'mul 1 (sub current.n (add
    * current.m 2))'.
    *
-   * @param s site to start skiping backwards from
+   * @param s site to start skipping backwards from
    */
   public int skipBack(int s)
   {
@@ -2557,7 +2553,7 @@ hw25 is
    */
   public boolean hasPrecondition(int cl)
   {
-    return clazzContract(cl, FUIR.ContractKind.Pre, 0) != -1;
+    return clazzContract(cl, FUIR.ContractKind.Pre, 0) != NO_SITE;
   }
 
 
@@ -2850,6 +2846,16 @@ hw25 is
   public int clazzAddress()
   {
     return Clazzes.c_address._idInFUIR;
+  }
+
+
+  /**
+   * Get the position where the clazz is declared
+   * in the source code.
+   */
+  public SourcePosition declarationPos(int cl)
+  {
+    return clazz(cl)._type.declarationPos();
   }
 
 

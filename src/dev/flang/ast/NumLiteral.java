@@ -323,7 +323,6 @@ public class NumLiteral extends Constant
   /*-----------------------------  methods  -----------------------------*/
 
 
-
   /**
    * Was this declared with a '.'?  If so, the preferred type is f64, not
    * i32/i64.
@@ -818,15 +817,15 @@ public class NumLiteral extends Constant
     Expr result = this;
     if (t.isFunctionType() && t.arity() == 1 && explicitSign() != null)
       { // convert `map -1` into `map x->x-1`
-        List<ParsedName> pns = new List<>();
+        var pns = new List<Expr>();
         pns.add(Partial.argName(pos()));
         var fn = new Function(pos(),
                               pns,
-                              new ParsedCall(new ParsedCall(null, pns.get(0)),                        // target #p<n>
+                              new ParsedCall(pns.get(0),                                  // target #p<n>
                                              new ParsedName(signPos(),
                                                             FuzionConstants.INFIX_OPERATOR_PREFIX +
-                                                            explicitSign()),                          // `infix +` or `infix -`
-                                             new List<>(new Actual(stripSign()))));                   // constant w/o sign
+                                                            explicitSign()),              // `infix +` or `infix -`
+                                             new List<>(stripSign())));                   // constant w/o sign
         fn.resolveTypes(res, outer);
         result = fn;
       }

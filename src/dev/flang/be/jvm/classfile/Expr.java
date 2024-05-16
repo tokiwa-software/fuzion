@@ -943,12 +943,28 @@ public abstract class Expr extends ByteCode
    */
   public static Expr iconst(int c)
   {
+    return iconst(c, PrimitiveType.type_int);
+  }
+
+
+  /**
+   * Load a 32-bit integer constant
+   */
+  public static Expr iconst(int c, JavaType jt)
+  {
+    if (PRECONDITIONS) require
+      (jt == PrimitiveType.type_boolean ||
+       jt == PrimitiveType.type_byte    ||
+       jt == PrimitiveType.type_char    ||
+       jt == PrimitiveType.type_int     ||
+       jt == PrimitiveType.type_short);
+
     return new LoadConst()
       {
         public String toString() { return "iconst"; }
         public JavaType type()
         {
-          return PrimitiveType.type_int;
+          return jt;
         }
         ClassFile.CPEntry cpEntry(ClassFile cf) { return cf.cpInteger(c); }
         public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)

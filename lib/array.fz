@@ -61,6 +61,13 @@ module:public array(
   public redef is_array_backed => true
 
 
+  # check if argument is a valid index in this array.
+  #
+  # Unlike for general Sequences, this perfoms in O(1).
+  #
+  public redef is_valid_index(i i32) => 0 ≤ i ≤ length
+
+
   # create a list that consists of the elements of this Sequence except the first
   # n elements
   #
@@ -82,9 +89,6 @@ module:public array(
   # get the contents of this array at the given index
   #
   public redef index [ ] (i i32) T
-    pre
-      safety: 0 ≤ i
-      safety: i < length
   =>
     internal_array[i]
 
@@ -144,12 +148,8 @@ module:public array(
   # count        : O(1)
   #
   public redef slice(from, to i32) Sequence T
-    pre
-      debug: from ≥ 0
-      debug: to <= length
   =>
-
-    ref : Sequence T
+    arrayslice : Sequence T is
 
       # this array slice as a list
       #
@@ -183,6 +183,13 @@ module:public array(
       public redef count => to-from
 
 
+      # check if argument is a valid index in this array.
+      #
+      # Unlike for general Sequences, this perfoms in O(1).
+      #
+      public redef is_valid_index(i i32) => 0 ≤ i ≤ arrayslice.this.count
+
+
       # create a list that consists of the elements of this Sequence except the first
       # n elements
       #
@@ -191,6 +198,8 @@ module:public array(
       public redef drop (n i32) =>
         array.this.slice from+(max 0 n) to
                   .as_list
+
+    arrayslice
 
 
   # create a cons cell for a list of this array starting at the given

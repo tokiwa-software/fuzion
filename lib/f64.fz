@@ -31,9 +31,6 @@
 #
 public f64(public val f64) : float is
 
-  public thiz => f64.this.val
-
-
   # basic operations: 'prefix -' (negation)
   public fixed redef prefix - f64 => intrinsic
   public fixed infix + (other f64) f64 => intrinsic
@@ -61,14 +58,11 @@ public f64(public val f64) : float is
   public as_i64_lax i64 => intrinsic
 
 
-  public fits_in_i64 =>
-    (thiz ≥ i64.min.as_f64) && (thiz ≤ i64.max.as_f64)
+  public redef fits_in_i64 =>
+    (val ≥ i64.min.as_f64) && (val ≤ i64.max.as_f64)
 
 
-  public redef as_i64
-  pre
-    safety: fits_in_i64
-  => as_i64_lax
+  public redef as_i64 => as_i64_lax
 
 
   public as_f32 f32 => intrinsic

@@ -1,0 +1,11 @@
+{1;2;3} union		{3;4;5}: {1;2;3;4;5}
+{1;2;3} intersection	{3;4;5}: {3}
+{1;2;3} except		{3;4;5}: {1;2}
+{1;2;3}	is subset	of {3;4;5}:	false
+{1;2;3}	is superset	of {3;4;5}:	false
+{1;2;3}	is subset	of {1;2;3}:	true
+{1;2;3}	is superset	of {1;2;3}:	true
+{1;2;3}	is superset	of {1;2}:	true
+{1;2}	is superset	of {1;2;3}:	false
+{1;2;3}	is subset	of {1;2}:	false
+{1;2}	is subset	of {1;2;3}:	true

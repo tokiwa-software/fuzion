@@ -87,7 +87,7 @@ public class Site extends ANY implements Comparable<Site>
 
 
   /**
-   * Record result of an analyzis of this site.
+   * Record result of an analysis of this site.
    */
   public void recordResult(boolean isVoid)
   {

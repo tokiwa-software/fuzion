@@ -397,11 +397,11 @@ public class InlineArray extends ExprWithPos
   {
     var et = elementType();
     var eT           = new List<AbstractType>(et);
-    var args         = new List<Actual>(new Actual(et),
-                                        new Actual(new NumLiteral(_elements.size())));
+    var argsT        = new List<AbstractType>(et);
+    var argsE        = new List<Expr>(new NumLiteral(_elements.size()));
     var fuzion       = new Call(SourcePosition.builtIn, null, "fuzion"                     ).resolveTypes(res, outer);
     var sys          = new Call(SourcePosition.builtIn, fuzion, "sys"                      ).resolveTypes(res, outer);
-    var sysArrayCall = new Call(SourcePosition.builtIn, sys , "internal_array_init", args  ).resolveTypes(res, outer);
+    var sysArrayCall = new Call(SourcePosition.builtIn, sys , "internal_array_init", -1, argsT, argsE, null, null  ).resolveTypes(res, outer);
     var fuzionT      = new ParsedType(SourcePosition.builtIn, "fuzion", UnresolvedType.NONE, null);
     var sysT         = new ParsedType(SourcePosition.builtIn, "sys"   , UnresolvedType.NONE, fuzionT);
     var sysArrayT    = new ParsedType(SourcePosition.builtIn, "internal_array", eT, sysT);
@@ -415,8 +415,8 @@ public class InlineArray extends ExprWithPos
     for (var i = 0; i < _elements.size(); i++)
       {
         var e = _elements.get(i);
-        var setArgs         = new List<Actual>(new Actual(new NumLiteral(i)),
-                                                new Actual(e));
+        var setArgs         = new List<Expr>(new NumLiteral(i),
+                                             e);
         var readSysArrayVar = new Call(SourcePosition.builtIn, null           , sysArrayName     ).resolveTypes(res, outer);
         var setElement      = new Call(SourcePosition.builtIn, readSysArrayVar,
                                         FuzionConstants.FEATURE_NAME_INDEX_ASSIGN,
@@ -427,12 +427,14 @@ public class InlineArray extends ExprWithPos
     var unit1           = new Call(SourcePosition.builtIn, null, "unit"                            ).resolveTypes(res, outer);
     var unit2           = new Call(SourcePosition.builtIn, null, "unit"                            ).resolveTypes(res, outer);
     var unit3           = new Call(SourcePosition.builtIn, null, "unit"                            ).resolveTypes(res, outer);
-    var sysArrArgs      = new List<Actual>(new Actual(et),
-                                            new Actual(readSysArrayVar),
-                                            new Actual(unit1),
-                                            new Actual(unit2),
-                                            new Actual(unit3));
-    var arrayCall       = new Call(SourcePosition.builtIn, null, "array"     , sysArrArgs).resolveTypes(res, outer);
+    var sysArrArgsT     = new List<AbstractType>(et);
+    var sysArrArgsE     = new List<Expr>(readSysArrayVar,
+                                         unit1,
+                                         unit2,
+                                         unit3);
+    var arrayCall       = new Call(SourcePosition.builtIn, null, "array"     , -1,
+                                   sysArrArgsT,
+                                   sysArrArgsE, null, null).resolveTypes(res, outer);
     exprs.add(arrayCall);
 
     // we do not "replace" this inline array by instantiation code

@@ -578,7 +578,7 @@ public class Choices extends ANY implements ClassFileConstants
                                           _names.getTag(subjClazz),
                                           "()I",
                                           PrimitiveType.type_int,
-                                          ai._processor.pos().line()));
+                                          _fuir.sitePos(s).line()));
 
           var lEnd = new Label();
           for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)

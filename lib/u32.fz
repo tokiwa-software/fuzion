@@ -27,22 +27,20 @@
 #
 public u32(public val u32) : num.wrap_around, has_interval is
 
-  public thiz => u32.this.val
-
   # overflow checking
 
-  # would negation -thiz cause an overflow?
+  # would negation cause an overflow?
   redef wrapped_on_neg => !is_zero
 
-  # would addition thiz + other cause an overflow or underflow?
-  public fixed overflow_on_add (other u32) => u32.max -° thiz < other
+  # would addition + other cause an overflow or underflow?
+  public fixed overflow_on_add (other u32) => u32.max -° val < other
   public fixed underflow_on_add(other u32) => false
 
-  # would subtraction thiz - other cause an overflow or underflow?
+  # would subtraction - other cause an overflow or underflow?
   public fixed overflow_on_sub (other u32) => false
-  public fixed underflow_on_sub(other u32) => thiz < other
+  public fixed underflow_on_sub(other u32) => val < other
 
-  # would multiplication thiz * other cause an overflow or underflow?
+  # would multiplication * other cause an overflow or underflow?
   public fixed overflow_on_mul (other u32) => as_i64 *° other.as_i64 > u32.max.as_i64
   public fixed underflow_on_mul(other u32) => false
 
@@ -53,14 +51,8 @@ public u32(public val u32) : num.wrap_around, has_interval is
   public fixed infix *° (other u32) u32 => intrinsic
 
   # division and remainder with check for div-by-zero
-  public fixed infix / (other u32)
-  pre
-    safety: other != u32 0
-  => div other
-  public fixed infix % (other u32)
-  pre
-    safety: other != u32 0
-  => mod other
+  public fixed infix / (other u32) => div other
+  public fixed infix % (other u32) => mod other
 
   # division and remainder with crash in case of div-by-zero
   div (other u32) u32 => intrinsic
@@ -75,10 +67,15 @@ public u32(public val u32) : num.wrap_around, has_interval is
   public fixed infix >> (other u32) u32 => intrinsic
   public fixed infix << (other u32) u32 => intrinsic
 
+  # does this u32 fit into an u8?
+  #
+  public redef fixed fits_in_u8  => val ≤ u8.max.as_u32
+
+
   # this u32 as an i8
   public as_i8 i8
     pre
-      debug: thiz ≤ i8.max.as_u32
+      debug: val ≤ i8.max.as_u32
     =>
       cast_to_i32.as_i8
 
@@ -86,7 +83,7 @@ public u32(public val u32) : num.wrap_around, has_interval is
   # this u32 as an i16
   public as_i16 i16
     pre
-      debug: thiz ≤ i16.max.as_u32
+      debug: val ≤ i16.max.as_u32
     =>
       cast_to_i32.as_i16
 
@@ -94,7 +91,7 @@ public u32(public val u32) : num.wrap_around, has_interval is
   # this u32 as an i32
   public as_i32 i32
     pre
-      debug: thiz ≤ i32.max.as_u32
+      debug: val ≤ i32.max.as_u32
     =>
       cast_to_i32
 
@@ -110,17 +107,13 @@ public u32(public val u32) : num.wrap_around, has_interval is
 
 
   # this u32 as an u8
-  public as_u8 u8
-    pre
-      debug: thiz ≤ u8.max.as_u32
-    =>
-      cast_to_i32.as_u8
+  public as_u8 => cast_to_i32.as_u8
 
 
   # this u32 as an u16
   public as_u16 u16
     pre
-      debug: thiz ≤ u16.max.as_u32
+      debug: val ≤ u16.max.as_u32
     =>
       cast_to_i32.as_u16
 
@@ -128,7 +121,7 @@ public u32(public val u32) : num.wrap_around, has_interval is
   # this u32 as an u64
   public as_u64 u64
     =>
-      thiz.as_i64.as_u64
+      val.as_i64.as_u64
 
 
   # this u32 as an u128

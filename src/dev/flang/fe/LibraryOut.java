@@ -36,20 +36,17 @@ import java.security.NoSuchAlgorithmException;
 
 import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
+import dev.flang.ast.AbstractCall;
+import dev.flang.ast.AbstractConstant;
 import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Block;
 import dev.flang.ast.Box;
-import dev.flang.ast.Call;
-import dev.flang.ast.Check;
-import dev.flang.ast.Constant;
 import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FormalGenerics;
-import dev.flang.ast.If;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.Nop;
 import dev.flang.ast.State;
@@ -498,14 +495,15 @@ class LibraryOut extends ANY
       {
         code(c.cond, false);
       }
-    _data.writeInt(f.contract().ens.size());
-    for (var c : f.contract().ens)
+    var post = f.contract().all_postconditions();  // NYI: what about inherited postconditions?
+    _data.writeInt(post.size());
+    for (var c : post)
       {
         code(c.cond, false);
       }
-    var r = f.redefines();
-    _data.writeInt(r.size());
-    for(var rf : r)
+    var redefines = f.redefines();
+    _data.writeInt(redefines.size());
+    for(var rf : redefines)
       {
         _data.writeOffset(rf);
       }
@@ -715,7 +713,7 @@ class LibraryOut extends ANY
             _data.writeByte(MirExprKind.Unit.ordinal());
           }
       }
-    else if (e instanceof Constant c)
+    else if (e instanceof AbstractConstant c)
       {
         lastPos = exprKindAndPos(MirExprKind.Const, lastPos, e.pos());
   /*
@@ -743,33 +741,10 @@ class LibraryOut extends ANY
             lastPos = exprKindAndPos(MirExprKind.Current, lastPos, e.pos());
           }
       }
-    else if (e instanceof If i)
-      {
-        lastPos = expressions(i.cond, lastPos);
-        lastPos = exprKindAndPos(MirExprKind.Match, lastPos, e.pos());
-        _data.writeInt(2);
-        _data.writeInt(1);
-        type(Types.resolved.f_TRUE.resultType());
-        code(i.block);
-        _data.writeInt(1);
-        type(Types.resolved.f_FALSE.resultType());
-        if (i.elseBlock != null)
-          {
-            code(i.elseBlock);
-          }
-        else if (i.elseIf != null)
-          {
-            code(i.elseIf);
-          }
-        else
-          {
-            code(new Block(new List<>()));
-          }
-      }
-    else if (e instanceof Call c)
+    else if (e instanceof AbstractCall c)
       {
         lastPos = expressions(c.target(), lastPos);
-        for (var a : c._actuals)
+        for (var a : c.actuals())
           {
             lastPos = expressions(a, lastPos);
           }
@@ -807,22 +782,22 @@ class LibraryOut extends ANY
         var cf = c.calledFeature();
         if (cf.hasOpenGenericsArgList())
           {
-            _data.writeInt(c._actuals.size());
+            _data.writeInt(c.actuals().size());
           }
         if (cf.generics().isOpen())
           {
-            n = c._generics.size();
+            n = c.actualTypeParameters().size();
             _data.writeInt(n);
           }
         else
           {
             n = cf.generics().list.size();
             if (CHECKS) check
-              (c._generics.size() == n);
+              (c.actualTypeParameters().size() == n);
           }
         for (int i = 0; i < n; i++)
           {
-            type(c._generics.get(i));
+            type(c.actualTypeParameters().get(i));
           }
         if (CHECKS) check
           (cf.resultType().isOpenGeneric() == (c.select() >= 0));
@@ -959,15 +934,9 @@ class LibraryOut extends ANY
 
         _data.writeIntAt(szPos, _data.offset() - codePos);
       }
-    else if (e instanceof Check c)
-      {
-        // NYI: Check not supported yet
-        //
-        // l.add(s);
-      }
     else
       {
-        say_err("Missing handling of "+e.getClass()+" in LibraryOut.expressions");
+        say_err("Missing handling of "+e.getClass()+" "+e.getClass().getSuperclass()+" in LibraryOut.expressions");
       }
     return lastPos;
   }

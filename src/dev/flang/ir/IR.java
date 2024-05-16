@@ -33,10 +33,8 @@ import dev.flang.ast.AbstractConstant; // NYI: remove dependency
 import dev.flang.ast.AbstractCurrent; // NYI: remove dependency
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
-import dev.flang.ast.Check; // NYI: remove dependency
 import dev.flang.ast.Env; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
-import dev.flang.ast.If; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
 import dev.flang.ast.Nop; // NYI: remove dependency
@@ -45,7 +43,6 @@ import dev.flang.ast.Universe; // NYI: remove dependency
 
 import dev.flang.util.ANY;
 import dev.flang.util.List;
-import dev.flang.util.Map2Int;
 import dev.flang.util.SourcePosition;
 
 
@@ -277,14 +274,6 @@ public abstract class IR extends ANY
             l.add(ExprKind.Current);
           }
       }
-    else if (e instanceof If i)
-      {
-        // if is converted to If, blockId, elseBlockId
-        toStack(l, i.cond);
-        l.add(i);
-        l.add(new NumLiteral(addCode(toStack(i.block      ))));
-        l.add(new NumLiteral(addCode(toStack(i.elseBlock()))));
-      }
     else if (e instanceof AbstractCall c)
       {
         toStack(l, c.target());
@@ -330,12 +319,6 @@ public abstract class IR extends ANY
       {
         var un = (Universe) e;
       }
-    else if (e instanceof Check c)
-      {
-        // NYI: Check not supported yet
-        //
-        // l.add(s);
-      }
     else
       {
         say_err("Missing handling of "+e.getClass()+" in IR.toStack");
@@ -362,8 +345,8 @@ public abstract class IR extends ANY
 
 
   /**
-   * Check if site s is still a valid site. For every valid site `s` wich `withinCode(s)`,
-   * it is legal to call `withinCode(s+codeSizteAt(s))` to check if the code continues.
+   * Check if site s is still a valid site. For every valid site `s` with `withinCode(s)`,
+   * it is legal to call `withinCode(s+codeSizeAt(s))` to check if the code continues.
    *
    * @param s a value site or the successor of a valid site
    *
@@ -388,7 +371,8 @@ public abstract class IR extends ANY
   public ExprKind codeAt(int s)
   {
     if (PRECONDITIONS) require
-      (s >= SITE_BASE, withinCode(s));
+      (s >= SITE_BASE,
+       withinCode(s));
 
     return exprKind(getExpr(s));
   }
@@ -425,8 +409,7 @@ public abstract class IR extends ANY
       {
         result = ExprKind.Call;
       }
-    else if (e instanceof If            ||
-             e instanceof AbstractMatch    )
+    else if (e instanceof AbstractMatch)
       {
         result = ExprKind.Match;
       }
@@ -462,7 +445,7 @@ public abstract class IR extends ANY
    *
    * @return the source code position or null if not available.
    */
-  public SourcePosition codeAtAsPos(int s)
+  public SourcePosition sitePos(int s)
   {
     if (PRECONDITIONS) require
       (s >= 0,

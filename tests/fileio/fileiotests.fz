@@ -33,7 +33,6 @@ fileiotests =>
 
   f := io.file
 
-  writer := f.write
   reader := f.read
 
   exists(path String) bool =>
@@ -42,7 +41,7 @@ fileiotests =>
       error => false
 
   say "$dir exists: {exists dir}"
-  match writer.create_dir dir
+  match io.dir.make dir
     unit => say "$dir was created"
     error =>
   say "$dir exists: {exists dir}"

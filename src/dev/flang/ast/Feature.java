@@ -880,7 +880,7 @@ public class Feature extends AbstractFeature
    *
    * @return true iff this is a result field.
    */
-  boolean isResultField()
+  public boolean isResultField()
   {
     return false;
   }
@@ -910,9 +910,18 @@ public class Feature extends AbstractFeature
                                                     : FuzionConstants.RESULT_NAME,
                                    this)
           {
-            protected boolean isResultField() { return true; }
+            public boolean isResultField() { return true; }
           };
       }
+  }
+
+
+  /**
+   * Is this a case-field declared in a match-clause?
+   */
+  public boolean isCaseField()
+  {
+    return false;
   }
 
 
@@ -953,7 +962,7 @@ public class Feature extends AbstractFeature
       (_state.atLeast(State.RESOLVING_TYPES),
        Errors.any());
 
-    if (this == Types.resolved.f_choice)
+    if (this.isBaseChoice())
       { // if this == choice, there are only formal generics, so nothing to erase
       }
     else
@@ -963,7 +972,7 @@ public class Feature extends AbstractFeature
             if (CHECKS) check
               (Errors.any() || p.calledFeature() != null);
 
-            if (p.calledFeature() == Types.resolved.f_choice)
+            if (p.calledFeature().isBaseChoice())
               {
                 if (p instanceof Call cp)
                   {
@@ -1445,15 +1454,14 @@ public class Feature extends AbstractFeature
   private List<AbstractCall> closureAccesses(Resolution res)
   {
     List<AbstractCall> result = new List<>();
-    for (AbstractFeature af : res._module.declaredOrInheritedFeatures(this).values())
-      {
-        af.visitExpressions(s -> {
-            if (s instanceof AbstractCall c && dependsOnOuterRef(c))
-              {
-                result.add(c);
-              }
-          });
-      }
+    res._module.forEachDeclaredOrInheritedFeature(this,
+                                                  af -> af.visitExpressions(s -> {
+          if (s instanceof AbstractCall c && dependsOnOuterRef(c))
+            {
+              result.add(c);
+            }
+        })
+      );
     return result;
   }
 
@@ -1538,14 +1546,15 @@ public class Feature extends AbstractFeature
         AstErrors.choiceMustNotBeRef(_pos);
       }
 
-    for (AbstractFeature p : res._module.declaredOrInheritedFeatures(this).values())
+    res._module.forEachDeclaredOrInheritedFeature(this,
+                                                  p ->
       {
         // choice type must not have any fields
         if (p.isField() && !p.isOuterRef())
           {
             AstErrors.mustNotContainFields(_pos, p, "Choice");
           }
-      }
+      });
     // choice type must not contain any code, but may contain inner features
     switch (_impl._kind)
       {
@@ -1636,7 +1645,7 @@ public class Feature extends AbstractFeature
         if (CHECKS) check
           (Errors.any() || cf != null);
 
-        if (cf != null && cf.isChoice() && cf != Types.resolved.f_choice)
+        if (cf != null && cf.isChoice() && !cf.isBaseChoice())
           {
             AstErrors.cannotInheritFromChoice(p.pos());
           }
@@ -1659,14 +1668,15 @@ public class Feature extends AbstractFeature
    */
   private void checkBuiltInPrimitive(Resolution res)
   {
-    for (AbstractFeature p : res._module.declaredOrInheritedFeatures(this).values())
+    res._module.forEachDeclaredOrInheritedFeature(this,
+                                                  p ->
       {
         // primitives must not have any fields
         if (p.isField() && !p.isOuterRef() && !(p.featureName().baseName().equals("val") && p.resultType().compareTo(selfType())==0) )
           {
             AstErrors.mustNotContainFields(_pos, p, this.featureName().baseName());
           }
-      }
+      });
   }
 
 
@@ -1736,7 +1746,7 @@ public class Feature extends AbstractFeature
             public Call  action(Call           c, AbstractFeature outer) { c.propagateExpectedType(res, outer); return c; }
             public void  action(Cond           c, AbstractFeature outer) { c.propagateExpectedType(res, outer); }
             public void  action(Impl           i, AbstractFeature outer) { i.propagateExpectedType(res, outer); }
-            public void  action(If             i, AbstractFeature outer) { i.propagateExpectedType(res, outer); }
+            public Expr  action(If             i, AbstractFeature outer) { i.propagateExpectedType(res, outer); return i; }
           });
 
         /*
@@ -1837,7 +1847,7 @@ public class Feature extends AbstractFeature
 
             public void         action(AbstractAssign a, AbstractFeature outer) { a.checkTypes(res);             }
             public Call         action(Call           c, AbstractFeature outer) { c.checkTypes(res, outer); return c; }
-            public void         action(If             i, AbstractFeature outer) { i.checkTypes();                }
+            public Expr         action(If             i, AbstractFeature outer) { i.checkTypes();      return i; }
             public Expr         action(InlineArray    i, AbstractFeature outer) { i.checkTypes();      return i; }
             public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints();   }
             public void         action(Cond           c, AbstractFeature outer) { c.checkTypes();                }
@@ -1925,6 +1935,7 @@ public class Feature extends AbstractFeature
             public Expr  action(Function    f, AbstractFeature outer) { return f.resolveSyntacticSugar2(res, outer); }
             public Expr  action(InlineArray i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, outer); }
             public void  action(Impl        i, AbstractFeature outer) {        i.resolveSyntacticSugar2(res, outer); }
+            public Expr  action(If          i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, outer); }
           });
 
         _state = State.RESOLVED_SUGAR2;
@@ -2157,16 +2168,7 @@ public class Feature extends AbstractFeature
         }
       };
 
-    for (var c : _contract.req)
-      {
-        c.cond.visit(fv, this);
-      }
-
-    for (var c : _contract.ens)
-      {
-        c.cond.visit(fv, this);
-      }
-
+    _contract.visit(fv, this);
     for (var p: _inherits)
       {
         p.visit(fv, this);
@@ -2183,7 +2185,7 @@ public class Feature extends AbstractFeature
   /**
    * Is this feature an argument of its outer feature?
    */
-  boolean isArgument()
+  public boolean isArgument()
   {
     if (_outer != null)
       {
@@ -2604,6 +2606,21 @@ public class Feature extends AbstractFeature
   public boolean isTypeFeaturesThisType()
   {
     return false;
+  }
+
+
+  /**
+   * Is this base-lib's choice-feature?
+   */
+  @Override
+  boolean isBaseChoice()
+  {
+    if (PRECONDITIONS) require
+      (state().atLeast(State.RESOLVED_DECLARATIONS));
+
+    return Types.resolved != null
+      ? this == Types.resolved.f_choice
+      : (featureName().baseName().equals("choice") && featureName().argCount() == 1 && outer().isUniverse());
   }
 
 

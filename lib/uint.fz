@@ -55,10 +55,11 @@ is
 
   # shift right
   public fixed infix >> (other uint) uint
-  pre other ≤ uint i32.max.as_u64
   =>
+    check
+      other ≤ uint i32.max.as_u64
     if other = uint.zero
-      thiz
+      uint.this
     else if other ≥ uint 32
       discard := other.as_i32 / 32
       (uint (data.take data.count-discard) unit) >> (other % (uint 32))
@@ -75,10 +76,11 @@ is
 
   # shift left
   public fixed infix << (other uint) uint
-  pre other ≤ uint i32.max.as_u64
   =>
+    check
+      other ≤ uint i32.max.as_u64
     if other = uint.zero
-      thiz
+      uint.this
     else if other ≥ uint 32
       uint (data ++ zeros (other.as_i32 / 32)) unit << other % (uint 32)
     else
@@ -107,14 +109,14 @@ is
   # divide with remainder the two given positive ints
   # returns the quotient and the remainder
   # NYI performance: https://cs.opensource.google/go/go/+/refs/tags/go1.19:src/math/big/natdiv.go
-  divide_with_remainder (divisor uint) tuple uint uint
+  fixed divide_with_remainder (divisor uint) tuple uint uint
   pre divisor > uint.zero
   =>
-    if thiz = uint.zero
+    if uint.this = uint.zero
       (uint.zero, uint.zero)
-    else if thiz < divisor
-      (uint.zero, thiz)
-    else if thiz = divisor
+    else if uint.this < divisor
+      (uint.zero, uint.this)
+    else if uint.this = divisor
       (uint.one, uint.zero)
     else
       # The idea is to shift the divisor left as
@@ -123,8 +125,8 @@ is
       # This is done recursively and the results
       # are added up.
       highest_bit_diff uint := highest_bit - divisor.highest_bit
-      shift := if thiz -! (divisor << highest_bit_diff) then highest_bit_diff else highest_bit_diff-uint.one
-      remainder := thiz - (divisor << shift)
+      shift := if uint.this -! (divisor << highest_bit_diff) then highest_bit_diff else highest_bit_diff-uint.one
+      remainder := uint.this - (divisor << shift)
       (q,rem) := remainder.divide_with_remainder divisor
       ((uint.one << shift) + q, rem)
 
@@ -133,9 +135,9 @@ is
   # example: uint 0 => 0
   # example: uint 1 => 1
   # example: uint 8 => 4
-  public highest_bit uint
+  public fixed highest_bit uint
   =>
-    if thiz = uint.zero
+    if uint.this = uint.zero
       uint.zero
     else
       uint ((data.count.as_u32 - 1) * 32 + data.first.highest_bit).as_u64
@@ -160,7 +162,6 @@ is
 
   # subtract other from this unsigned int
   public fixed infix - (other uint) uint
-  pre thiz ≥ other
   =>
     two_pow_32 := ((u64 1)<<32)
     (b1, b2) := equalize other
@@ -208,7 +209,6 @@ is
 
   # divide these unsigned ints
   public fixed infix /  (other uint) uint
-  pre other != uint.zero
   =>
     (quotient,_) := (divide_with_remainder other)
     quotient
@@ -216,7 +216,8 @@ is
 
   # modulo
   # returns the remainder of the division
-  public fixed infix %  (other uint) uint =>
+  public fixed infix %  (other uint) uint
+  =>
     (_,remainder) := (divide_with_remainder other)
     remainder
 
@@ -228,13 +229,13 @@ is
     if other = uint.zero
       uint.one
     else if other = uint.one
-      thiz
+      uint.this
     else
       if other %% (uint 2)
-        tmp := thiz**(other / uint 2)
+        tmp := uint.this**(other / uint 2)
         tmp * tmp
       else
-        thiz * (thiz**(other-uint.one))
+        uint.this * (uint.this**(other-uint.one))
 
 
   # equality: are these unsigned integers equal?
@@ -263,9 +264,9 @@ is
 
   # checks if operations are allowed
 
-  public fixed prefix -! bool => thiz = uint.zero
+  public fixed prefix -! bool => uint.this = uint.zero
   public fixed infix +! (other uint) bool => true
-  public fixed infix -! (other uint) bool => thiz ≥ other
+  public fixed infix -! (other uint) bool => uint.this ≥ other
   public fixed infix *! (other uint) bool => true
   public fixed infix /! (other uint) bool => other != uint.zero
   public fixed infix %! (other uint) bool => true
@@ -274,16 +275,14 @@ is
   # exponentation always works, even though it might be
   # slow for large numbers
 
-  public fixed infix **?(other uint) num_option uint => thiz ** other
-  public fixed infix **^(other uint) uint => thiz ** other
+  public fixed infix **?(other uint) num_option uint => uint.this ** other
+  public fixed infix **^(other uint) uint => uint.this ** other
 
   public fixed type.zero uint =>
     uint [u32 0] unit
 
   public fixed type.one uint =>
     uint [u32 1] unit
-
-  public thiz => uint b unit
 
 
   # this uint as an i32
@@ -305,16 +304,18 @@ is
     as_u32.as_u8
 
 
-  # does this uint fit in 32 bits?
-  public fits_in_u32 =>
-    data.count ≤ 1
+  # does this uint fit into an u8?
+  #
+  public redef fits_in_u8 =>
+    data.count ≤ 1 && data[0].fits_in_u8
 
 
   # this uint as an u32
-  public as_u32 u32
-  pre fits_in_u32
+  public fixed as_u32 u32
+    pre
+      debug: (uint.this ≤ uint.type.from_u32 u32.max)
   =>
-    data.first (u32 0)
+    data.first 0
 
 
   # does this uint fit in 64 bits?
@@ -351,11 +352,16 @@ is
       q.as_string0 + (rem.data.first (u32 0)).as_string.pad_codepoint_start 9 "0"
 
 
-  public redef as_string String =>
-    if thiz = uint.zero
+  public fixed redef as_string String =>
+    if uint.this = uint.zero
       "0"
     else
       as_string0
+
+
+  # helper feature to init uint from an u32
+  public redef fixed type.from_u32(val u32) uint =>
+    uint [val] unit
 
 
   # helper feature to init uint from an u64

@@ -23,8 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# Sequence -- ancestor for features that can be converted to a 'list' or a
-# 'stream'
+# Sequence -- ancestor for features that can be converted to a 'list'
 #
 # Sequences are empty, finite or infinite ordered collections of instances
 # of a given type.  Sequences may calculate elements lazily on demand.
@@ -32,9 +31,7 @@
 # Sequence is a 'ref' type, i.e., different sub-features may be assigned
 # to a field of type 'Sequence'.
 #
-# Heirs of Sequence must implement either 'as_list' or 'as_stream'.  Failure
-# to implement any of these results in an endless recursion when the Sequence
-# is used.
+# Heirs of Sequence must implement 'as_list'.
 #
 public Sequence(public T type) ref is
 
@@ -240,7 +237,11 @@ public Sequence(public T type) ref is
   # create a slice from this Sequence that consists of the elements starting at index
   # from (including) up to index to (excluding).
   #
-  public slice(from, to i32) Sequence T =>
+  public slice(from, to i32) Sequence T
+    pre
+      debug: from ≥ 0
+      debug: to = 0 || is_valid_index to-1
+  =>
     drop(from).take to-from
 
 
@@ -544,22 +545,35 @@ public Sequence(public T type) ref is
   # the nth element in the sequence if it exists, wrapped in an option,
   # nil otherwise.
   #
+  # Complexity: if Sequence is array backed O(1) otherwise O(n)
+  #
   public nth(n i32) option T
     pre
       debug: n ≥ 0
   =>
-    match drop n
-      nil => nil
-      c Cons => c.head
+    if is_array_backed
+      if (is_valid_index n) then Sequence.this[n] else nil
+    else
+      match drop n
+        nil => nil
+        c Cons => c.head
+
+
+  # check if argument is a valid index in this sequence.
+  #
+  # Note that this may have has performance in O(i) unless this
+  # Sequence is_array_backed.
+  #
+  public is_valid_index(i i32) =>
+    (0 ≤ i && (if is_array_backed then i ≤ count
+                                  else !(drop i-1).is_empty))
 
 
   # the nth element in the sequence, must exist
   #
   public index [] (i i32) T
     pre
-      debug: 0 ≤ i
-      debug: finite: i < count
-      debug: !finite: !(drop i-1).is_empty
+      debug: is_valid_index(i)
   =>
     (nth i).get
 

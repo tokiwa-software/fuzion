@@ -74,8 +74,8 @@ public class Case extends AbstractCase
   /**
    * code to be executed in case of a match
    */
-  public Block _code;
-  public Block code() { return _code; }
+  public Expr _code;
+  public Expr code() { return _code; }
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -98,7 +98,14 @@ public class Case extends AbstractCase
               String n,
               Block c)
   {
-    this(pos, new Feature(pos, Visi.PRIV, t, n), null, c);
+    this(pos,
+         new Feature(pos, Visi.PRIV, t, n)
+         {
+           @Override
+           public boolean isCaseField() { return true; }
+         },
+         null,
+         c);
   }
 
 
@@ -113,7 +120,7 @@ public class Case extends AbstractCase
    */
   public Case(SourcePosition pos,
               List<AbstractType> l,
-              Block c)
+              Expr c)
   {
     this(pos, null, l, c);
   }
@@ -121,6 +128,7 @@ public class Case extends AbstractCase
 
   /**
    * Constructor for a Case that matches all cases
+   * which are not matched by other cases.
    *
    * @param pos the sourcecode position, used for error messages.
    *
@@ -147,7 +155,7 @@ public class Case extends AbstractCase
   private Case(SourcePosition p,
                Feature f,
                List<AbstractType> l,
-               Block c)
+               Expr c)
   {
     super(p);
 

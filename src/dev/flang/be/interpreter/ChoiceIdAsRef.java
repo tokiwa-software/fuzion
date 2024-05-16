@@ -28,7 +28,6 @@ package dev.flang.be.interpreter;
 
 import java.util.ArrayList;
 
-import dev.flang.fuir.FUIR;
 
 /**
  * ChoiceIdAsRef represents the id stored in the tag of a choice type as a

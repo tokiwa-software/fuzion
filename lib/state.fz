@@ -40,7 +40,7 @@ public state(
   # the current state
   get S,
 
-  redef r effect_mode.val
+  r effect_mode.val
   ) : oneway_monad T (state T S) r
 is
 

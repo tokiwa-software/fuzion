@@ -1003,7 +1003,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public AbstractType actualType(AbstractType t)
   {
     if (PRECONDITIONS) require
-      (!isGenericArgument());
+      (!isGenericArgument(),
+       !t.isOpenGeneric());
 
     return t.applyTypePars(this)
       .replace_this_type_by_actual_outer(this);
@@ -1765,6 +1766,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var o = outer();
         String outer = o != null && !o.feature().isUniverse() ? o.asStringWrapped() + "." : "";
         var f = feature();
+        var typeType = f.isTypeFeature();
+        if (typeType)
+          {
+            f = f._typeFeatureOrigin;
+          }
         var fn = f.featureName();
         // for a feature that does not define a type itself, the name is not
         // unique due to overloading with different argument counts. So we add
@@ -1777,9 +1783,18 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             result = result + ".this";
           }
+        else if (typeType)
+          {
+            result = result + ".type";
+          }
+        var skip = typeType;
         for (var g : generics())
           {
-            result = result + " " + g.asStringWrapped();
+            if (!skip) // skip first generic 'THIS#TYPE' for types of type features.
+              {
+                result = result + " " + g.asStringWrapped();
+              }
+            skip = false;
           }
       }
     return result;

@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = mix_inheritance_and_outer
-include ../dfa.mk # NYI: BUG see #88
+include ../fe.mk # NYI: BUG see #88
