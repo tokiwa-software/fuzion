@@ -32,6 +32,7 @@
 #  FUZION_OPTIONS -- options to be passed to $(FUZION)
 
 FUZION_OPTIONS ?=
+FUZION_DEPENDENCIES ?=
 FUZION ?= ../../bin/fz
 FUZION_RUN = $(FUZION) $(FUZION_OPTIONS)
 FILE = $(NAME).fz
@@ -43,23 +44,23 @@ ENV = \
 
 all: jvm c int
 
-int:
+int: $(FUZION_DEPENDENCIES)
 	$(ENV) ../check_simple_example_int.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
-jvm:
+jvm: $(FUZION_DEPENDENCIES)
 	$(ENV) ../check_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
-c:
+c: $(FUZION_DEPENDENCIES)
 	$(ENV) ../check_simple_example_c.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
-record:
+record: $(FUZION_DEPENDENCIES)
 	$(ENV) ../record_simple_example.sh "$(FUZION_RUN)" $(FILE)
 
-record_int:
+record_int: $(FUZION_DEPENDENCIES)
 	$(ENV) ../record_simple_example_int.sh "$(FUZION_RUN)" $(FILE)
 
-record_jvm:
+record_jvm: $(FUZION_DEPENDENCIES)
 	$(ENV) ../record_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE)
 
-record_c:
+record_c: $(FUZION_DEPENDENCIES)
 	$(ENV) ../record_simple_example_c.sh "$(FUZION_RUN)" $(FILE)

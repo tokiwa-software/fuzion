@@ -136,6 +136,20 @@ public class Cond
 
 
   /**
+   * When inheriting a post-condition during redefintion, this creates a clone
+   * of the inherited condition.
+   *
+   * @param to the redefining feature that inherits a contract
+   *
+   * @param from the redefined feature this contract should inherit from.
+   */
+  public Cond clonePostCondition(AbstractFeature to, AbstractFeature from)
+  {
+    return new Cond(cond.clonePostCondition(to, from));
+  }
+
+
+  /**
    * toString
    *
    * @return

@@ -880,7 +880,7 @@ public class Feature extends AbstractFeature
    *
    * @return true iff this is a result field.
    */
-  boolean isResultField()
+  public boolean isResultField()
   {
     return false;
   }
@@ -910,9 +910,18 @@ public class Feature extends AbstractFeature
                                                     : FuzionConstants.RESULT_NAME,
                                    this)
           {
-            protected boolean isResultField() { return true; }
+            public boolean isResultField() { return true; }
           };
       }
+  }
+
+
+  /**
+   * Is this a case-field declared in a match-clause?
+   */
+  public boolean isCaseField()
+  {
+    return false;
   }
 
 
@@ -2159,16 +2168,7 @@ public class Feature extends AbstractFeature
         }
       };
 
-    for (var c : _contract.req)
-      {
-        c.cond.visit(fv, this);
-      }
-
-    for (var c : _contract.ens)
-      {
-        c.cond.visit(fv, this);
-      }
-
+    _contract.visit(fv, this);
     for (var p: _inherits)
       {
         p.visit(fv, this);
@@ -2185,7 +2185,7 @@ public class Feature extends AbstractFeature
   /**
    * Is this feature an argument of its outer feature?
    */
-  boolean isArgument()
+  public boolean isArgument()
   {
     if (_outer != null)
       {
