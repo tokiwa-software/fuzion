@@ -294,8 +294,12 @@ public class List<T>
 
 
   /**
-   * add adds given element to the list after possibly cloning the list in case
-   * it was frozen.
+   * addAfterUnfreeze adds given element to the list after possibly cloning the
+   * list in case it was frozen.
+   *
+   * This permits use of pre-allocated lists that are shared and frozen (e.g.,
+   * empty lists), and create a local clone in case one such instance is
+   * changed.
    *
    * @param e element to add
    *
