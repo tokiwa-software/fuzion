@@ -190,14 +190,7 @@ public class Assign extends AbstractAssign
              ff.isIndexVarUpdatedByLoop()) { AstErrors.assignmentToIndexVar    (this, f, outer); }
     else if (f == f.outer().resultField())
       {
-        if (f.outer() instanceof Feature fo)
-          {
-            fo.foundAssignmentToResult();
-          }
-        else
-          {
-            throw new Error("NYI: Assignment to result defined in library feature not handled well yet!");
-          }
+        throw new Error("NYI: Assignment to result defined in library feature not permitted!");
       }
   }
 

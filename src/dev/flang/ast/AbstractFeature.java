@@ -788,9 +788,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public AbstractFeature typeFeature(Resolution res)
   {
     if (PRECONDITIONS) require
-      (res.state(this).atLeast(State.FINDING_DECLARATIONS),
-       res != null,
+      (res != null,
        Errors.any() || !isUniverse(),
+       res.state(this).atLeast(State.FINDING_DECLARATIONS),
        !isTypeFeature());
 
     if (_typeFeature == null)

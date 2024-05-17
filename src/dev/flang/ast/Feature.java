@@ -232,12 +232,6 @@ public class Feature extends AbstractFeature
    */
   private Feature _resultField = null;
 
-  /**
-   * Flag set during resolveTypes if this feature's code has at least one
-   * assignment to the result field.
-   */
-  private boolean _hasAssignmentsToResult = false;
-
 
   /**
    * For Features with !returnType.isConstructorType(), this will be set to the
@@ -906,6 +900,7 @@ public class Feature extends AbstractFeature
                                    _pos,
                                    Visi.PRIV,
                                    t,
+                                   // NYI: Always use INTERNAL_RESULT_NAME except for post conditions!
                                    resultInternal() ? FuzionConstants.INTERNAL_RESULT_NAME
                                                     : FuzionConstants.RESULT_NAME,
                                    this)
@@ -1429,6 +1424,7 @@ public class Feature extends AbstractFeature
       {
         _state = State.RESOLVING_SUGAR1;
 
+        _contract.addContractFeatures(this, res);
         if (definesType())
           {
             typeFeature(res);
@@ -1881,33 +1877,6 @@ public class Feature extends AbstractFeature
     if (POSTCONDITIONS) ensure
       (Errors.any() || hasResultField() == (result != null));
     return result;
-  }
-
-
-  /**
-   * During type resolution, record that we found an assignment to
-   * resultField().
-   */
-  void foundAssignmentToResult()
-  {
-    if (PRECONDITIONS) require
-      (_state == State.RESOLVING_TYPES ||
-       _state == State.RESOLVED_TYPES);
-
-    _hasAssignmentsToResult = true;
-  }
-
-
-  /**
-   * After type resolution, this checks if an assignment tot he result variable
-   * has been found.
-   */
-  public boolean hasAssignmentsToResult()
-  {
-    if (PRECONDITIONS) require
-      (_state.atLeast(State.RESOLVED_TYPES));
-
-    return _hasAssignmentsToResult;
   }
 
 

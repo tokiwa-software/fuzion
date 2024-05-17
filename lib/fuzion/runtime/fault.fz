@@ -38,27 +38,15 @@ is
     cause "check" msg
 
 
-  # cause precondition fault with the given message
-  #
-  cause_pre(msg String) =>
-    cause "precondition" msg
-
-
-  # cause postcondition fault with the given message
-  #
-  cause_post(msg String) =>
-    cause "postcondition" msg
-
-
   # cause fault of given kind with the given message
   #
-  cause(# the kind of failure, e.g., "precondition", "check", etc.
-        #
-        kind,
+  public cause(# the kind of failure, e.g., "precondition", "check", etc.
+               #
+               kind,
 
-        # message describing what failed, e.g. "debug: a > 0"
-        #
-        msg String)
+               # message describing what failed, e.g. "debug: a > 0"
+               #
+               msg String)
   =>
     p.fail kind msg
     abort
@@ -102,18 +90,6 @@ public fault =>
 # use the current fault effect to fail with the given message.
 #
 public check_fault(msg String) => fault.cause_check msg
-
-
-# cause a precondition fault with given msg argument, i.e., call fault.cause_pre
-# msg, i.e., use the current fault effect to fail with the given message.
-#
-public precondition_fault(msg String) => fault.cause_pre msg
-
-
-# cause a postcondition fault with given msg argument, i.e., call fault.cause_post
-# msg, i.e., use the current fault effect to fail with the given message.
-#
-public postcondition_fault(msg String) => fault.cause_post msg
 
 
 # Fault_Handler -- abstract fault hadler

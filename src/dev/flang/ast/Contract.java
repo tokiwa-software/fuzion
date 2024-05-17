@@ -27,6 +27,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourceRange;
 
@@ -53,7 +55,27 @@ public class Contract extends ANY
    * Empty contract
    */
   public static final Contract EMPTY_CONTRACT = new Contract(NO_COND, null, null,
-                                                             NO_COND, null, null);
+                                                             NO_COND, null, null,
+                                                             NO_COND, null,
+                                                             NO_COND, null);
+
+
+  /*--------------------------  static fields  --------------------------*/
+
+
+  /**
+   * Id used to generate unique names for pre- and postcondution features.
+   */
+  public static int _id_ = 0;
+
+
+  /**
+   * Reset static fields
+   */
+  public static void reset()
+  {
+    _id_ = 0;
+  }
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -63,11 +85,17 @@ public class Contract extends ANY
    *
    */
   public List<Cond> req;
+  public List<Cond>            _declared_preconditions_as_feature;
+  public List<AbstractFeature> _declared_preconditions_as_feature_args;
+  Feature _preFeature;
 
   /**
    *
    */
-  public List<Cond> _declared_postconditions;
+  public List<Cond>            _declared_postconditions;
+  public List<Cond>            _declared_postconditions_as_feature;
+  public List<AbstractFeature> _declared_postconditions_as_feature_args;
+  Feature _postFeature;
 
   /**
    * post-conditions inherited from redefined features.
@@ -90,23 +118,29 @@ public class Contract extends ANY
    * Constructor
    */
   public Contract(List<Cond> r, SourceRange hasPre,  SourceRange hasElse,
-                  List<Cond> e, SourceRange hasPost, SourceRange hasThen)
+                  List<Cond> e, SourceRange hasPost, SourceRange hasThen,
+                  List<Cond> preAsFeature, List<AbstractFeature> preArgs,
+                  List<Cond> postAsFeature, List<AbstractFeature> postArgs)
   {
     _hasPre  = hasPre;
     _hasPost = hasPost;
     _hasPreElse  = hasElse;
     _hasPostThen = hasThen;
     req = r == null || r.isEmpty() ? NO_COND : r;
+    _declared_preconditions_as_feature = preAsFeature == null || preAsFeature.isEmpty() ? NO_COND : preAsFeature;
+    _declared_preconditions_as_feature_args = preArgs;
     _declared_postconditions = e == null || e.isEmpty() ? NO_COND : e;
+    _declared_postconditions_as_feature = postAsFeature == null || postAsFeature.isEmpty() ? NO_COND: postAsFeature;
+    _declared_postconditions_as_feature_args = postArgs;
   }
 
 
   /**
-   * Constructor
+   * Constructor use for contract loaded from fum file
    */
-  public Contract(List<Cond> r, List<Cond> e)
+  public Contract(List<Cond> r, List<Cond> e, List<Cond> e2)
   {
-    this(r, null, null, e, null, null);
+    this(r, null, null, e, null, null, null, null, e2, null);
   }
 
 
@@ -225,6 +259,64 @@ The conditions of a post-condition are checked at run-time in sequential source-
       {
         var ne = e.clonePostCondition(to, from);
         _inherited_postconditions = _inherited_postconditions.addAfterUnfreeze(ne);
+      }
+  }
+
+
+  /**
+   * Part of the syntax sugar phase: For all contracts, create artificial
+   * features that check that contract.
+   */
+  void addContractFeatures(Feature f, Resolution res)
+  {
+    if (PRECONDITIONS) require
+      (f != null,
+       res != null,
+       res.state(f) == State.RESOLVING_SUGAR1,
+       Errors.any() || !f.isUniverse() || (_declared_preconditions_as_feature.isEmpty() &&
+                                           _declared_postconditions_as_feature.isEmpty()));
+
+    // NYI: code to add precondition feature missing
+
+    // add postcondition feature
+    if (!_declared_postconditions_as_feature.isEmpty())
+      {
+        var name = FuzionConstants.POSTCONDITION_FEATURE_PREFIX + f.featureName().baseName() +  "_" + (_id_++);
+        var args = new List<AbstractFeature>(_declared_postconditions_as_feature_args);
+        var resultField = new Feature(_hasPost,
+                                      Visi.PRIV,
+                                      f.resultType(), // NYI: replace type parameter of f by type parameters of _postFeature!
+                                      FuzionConstants.RESULT_NAME)
+          {
+            public boolean isResultField() { return true; }
+          };
+        args.add(resultField);
+        var l = new List<Expr>();
+        for (var c : _declared_postconditions_as_feature)
+          {
+            var p = c.cond.pos();
+            l.add(new If(p,
+                         c.cond,
+                         new Block(),
+                         new ParsedCall(new ParsedCall(new ParsedCall(new ParsedName(p, "fuzion")), new ParsedName(p, "runtime")), new ParsedName(p, "postcondition_fault"),
+                                        new List<>(new StrConst(p, p.sourceText()))
+                                        )
+                         )
+                  );
+          }
+        var code = new Block(l);
+        _postFeature = new Feature(_hasPost,
+                                   f.visibility(),
+                                   f.modifiers() & FuzionConstants.MODIFIER_FIXED, // modifiers
+                                   NoType.INSTANCE,
+                                   new List<>(name),
+                                   args,
+                                   new List<>(), // inheritance
+                                   Contract.EMPTY_CONTRACT,
+                                   new Impl(_hasPost, code, Impl.Kind.RoutineDef));
+        res._module.findDeclarations(_postFeature, f.outer());
+        res.resolveDeclarations(_postFeature);
+        res.resolveTypes(_postFeature);
       }
   }
 

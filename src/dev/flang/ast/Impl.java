@@ -363,9 +363,7 @@ public class Impl extends ANY
   private boolean needsImplicitAssignmentToResult(AbstractFeature outer)
   {
     return
-      (isRoutineLike()) &&
-      outer.hasResultField() &&
-      outer instanceof Feature fouter && !fouter.hasAssignmentsToResult();
+      isRoutineLike() && outer.hasResultField();
   }
 
 
@@ -439,6 +437,7 @@ public class Impl extends ANY
         ass._value = this._expr.box(ass._assignedField.resultType());  // NYI: move to constructor of Assign?
         this._expr = ass;
       }
+    // NYI: Add call to post condition feature!
   }
 
 

@@ -784,6 +784,7 @@ public class LibraryFeature extends AbstractFeature
         else
           {
             _contract = new Contract(condList(pre_n , _libModule.featurePreCondPos (_index)),
+                                     condList(post_n, _libModule.featurePostCondPos(_index)),
                                      condList(post_n, _libModule.featurePostCondPos(_index)));
           }
       }
