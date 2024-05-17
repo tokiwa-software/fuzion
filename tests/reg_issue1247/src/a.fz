@@ -1,0 +1,11 @@
+
+module a : property.equatable is
+  module sign =>
+    if a.this = a.this.identity
+      0
+    else
+      1
+
+  module type.identity a.this => abstract
+
+  type.equality(a, b a.this) bool => true
