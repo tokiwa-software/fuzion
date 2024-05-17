@@ -999,6 +999,12 @@ public class AstErrors extends ANY
       {
         cannotRedefineChoice(f, existing);
       }
+    else if (f.isChoice())
+      {
+        cannotRedefine(f.pos(), f, existing,
+                       "Redefinition cannot be a choice",
+                       "To solve this, re-think what you want to do.  Maybe define a new choice type with a different name instead.");
+      }
     else if (existing.isConstructor() || f.isConstructor())
       {
         cannotRedefine(f.pos(), f, existing,
