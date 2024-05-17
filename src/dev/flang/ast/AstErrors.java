@@ -991,7 +991,11 @@ public class AstErrors extends ANY
 
   public static void cannotRedefine(AbstractFeature f, AbstractFeature existing)
   {
-    if (existing.isChoice())
+    if (any() && f.isTypeFeature() || existing.isTypeFeature())
+      {
+        // suppress subsequent errors in auto-generated type features
+      }
+    else if (existing.isChoice())
       {
         cannotRedefineChoice(f, existing);
       }
@@ -1011,6 +1015,11 @@ public class AstErrors extends ANY
                        existing.isTypeParameter() ? "Cannot redefine a type parameter"
                                                   : "Redefinition cannot be a type parameter",
                        "To solve this, re-think what you want to do.  Maybe introduce a type parameter with a new name.");
+      }
+    else
+      {
+        check
+          (false);
       }
   }
 
