@@ -33,11 +33,11 @@
 
   - A string literal containing exactly one codepoint is not of type codepoint, which inherits form String ([#2676](https://github.com/tokiwa-software/fuzion/pull/2676)). This permits writing
 
-      code := "࿋".val                        # results in `4043`
+        code := "࿋".val                        # results in `4043`
 
     instead of
 
-      code := "࿋".as_codepoints.first.val    # results in `4043`
+        code := "࿋".as_codepoints.first.val    # results in `4043`
 
   - Support for multiple inheritance and redefinition of several features ([#3034](https://github.com/tokiwa-software/fuzion/pull/3034))
 
@@ -45,19 +45,19 @@
 
     e.g., in
 
-      abc is
-        def is
+        abc is
+          def is
 
-        type.test(x abc.def) is
-          say x
+          type.test(x abc.def) is
+            say x
 
     it is no longer required to qualify the type abc.def, one can use def instead:
 
-      abc is
-        def is
+        abc is
+          def is
 
-        type.test(x def) is
-          say x
+          type.test(x def) is
+            say x
 
 
   - pre/post conditions in redef-ined features now need else/then to clarify that preconditions are weakened and postconditions are strengthened ([#3023](https://github.com/tokiwa-software/fuzion/pull/3023))
@@ -232,38 +232,37 @@
 
   - Here is an example output:
 
-       > ./build/bin/fz -XdumpFUIR -e "for a := 1, a+1 while a < 10 else say a" | tail -n 30
-      Code for #loop0(outer universe#0, a i32) unit
-      l3:	0: Current
-      	1: Call #loop0.a(outer #loop0) i32
-      	2: Const of type i32 00 00 00 04 0a 00 00 00
-      	3: Call infix < i32(outer universe#0, a i32, b i32) bool
-      	4: Match 0=>l1 1=>l2
-      l1:	0: Current
-      	1: Call #loop0.a(outer #loop0) i32
-      	2: Const of type i32 00 00 00 04 01 00 00 00
-      	3: Call i32.infix +(outer i32, other i32) i32
-      	4: Current
-      	5: Assign to #loop0.a
-      	6: Current
-      	7: Call #loop0.a(outer #loop0) i32
-      	8: Call #loop0(outer universe#0, a i32) unit
-      	9: Current
-      	10: Assign to #loop0.#exprResult0
-      	goto l3_4
-      l2:	0: Current
-      	1: Call #loop0.a(outer #loop0) i32
-      	2: Box i32 => ref i32
-      	3: Call say(outer universe#0, s Any) unit
-      	4: Current
-      	5: Assign to #loop0.#exprResult0
-      	goto l3_4
-      l3_4:
-      	7: Current
-      	8: Call #loop0.#exprResult0(outer #loop0) unit
-      	9: Current
-      	10: Assign to #loop0.#result
-
+         > ./build/bin/fz -XdumpFUIR -e "for a := 1, a+1 while a < 10 else say a" | tail -n 30
+        Code for #loop0(outer universe#0, a i32) unit
+        l3:	0: Current
+        	1: Call #loop0.a(outer #loop0) i32
+        	2: Const of type i32 00 00 00 04 0a 00 00 00
+        	3: Call infix < i32(outer universe#0, a i32, b i32) bool
+        	4: Match 0=>l1 1=>l2
+        l1:	0: Current
+        	1: Call #loop0.a(outer #loop0) i32
+        	2: Const of type i32 00 00 00 04 01 00 00 00
+        	3: Call i32.infix +(outer i32, other i32) i32
+        	4: Current
+        	5: Assign to #loop0.a
+        	6: Current
+        	7: Call #loop0.a(outer #loop0) i32
+        	8: Call #loop0(outer universe#0, a i32) unit
+        	9: Current
+        	10: Assign to #loop0.#exprResult0
+        	goto l3_4
+        l2:	0: Current
+        	1: Call #loop0.a(outer #loop0) i32
+        	2: Box i32 => ref i32
+        	3: Call say(outer universe#0, s Any) unit
+        	4: Current
+        	5: Assign to #loop0.#exprResult0
+        	goto l3_4
+        l3_4:
+        	7: Current
+        	8: Call #loop0.#exprResult0(outer #loop0) unit
+        	9: Current
+        	10: Assign to #loop0.#result
 
   - Added support for a site, i.e., a code position in a class ([#2752](https://github.com/tokiwa-software/fuzion/pull/2752)).
 
