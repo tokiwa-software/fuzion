@@ -856,6 +856,10 @@ public class Intrinsics extends ANY
           var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return JavaInterface.javaObjectToInstance(jb, resultClazz);
         });
+    putUnsafe("fuzion.java.null_to_java_object", (executor, innerClazz) -> args ->
+        {
+          return JavaInterface.javaObjectToInstance(null, executor.fuir().clazzResultClazz(innerClazz));
+        });
     put("fuzion.sys.internal_array_init.alloc", (executor, innerClazz) -> args ->
         {
           var at = executor.fuir().clazzOuterClazz(innerClazz); // array type

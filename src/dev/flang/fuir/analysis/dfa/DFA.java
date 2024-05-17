@@ -1891,6 +1891,14 @@ public class DFA extends ANY
         jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
         return jobj;
       });
+    put("fuzion.java.null_to_java_object", cl ->
+      {
+        var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
+        var jref = cl._dfa._fuir.lookupJavaRef(rc);
+        var jobj = cl._dfa.newInstance(rc, NO_SITE, null);
+        jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
+        return jobj;
+      });
   }
   static Value newFuzionJavaCall(Call cl) {
     var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
