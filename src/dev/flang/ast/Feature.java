@@ -2404,7 +2404,7 @@ public class Feature extends AbstractFeature
    * @return true iff this has or any heir of this might have a frame object on
    * a call.
    */
-  boolean hasThisType()
+  private boolean hasThisType()
   {
     return
       _impl._kind != Impl.Kind.Intrinsic &&
@@ -2456,36 +2456,6 @@ public class Feature extends AbstractFeature
     _featureName = newFeatureName;
   }
 
-
-  /**
-   *
-   */
-  private boolean definedInOwnFile = false;
-
-
-  /**
-   * definedInOwnFile
-   *
-   * @return
-   */
-  public boolean definedInOwnFile() {
-    boolean result = definedInOwnFile;
-    return result;
-  }
-
-  /**
-   * setDefinedInOwnFile
-   */
-  public void setDefinedInOwnFile()
-  {
-    if (PRECONDITIONS) require
-      (!definedInOwnFile);
-
-    definedInOwnFile = true;
-
-    if (POSTCONDITIONS) ensure
-      (definedInOwnFile);
-  }
 
   /**
    * outerRefName
