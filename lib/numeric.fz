@@ -130,7 +130,9 @@ module:public numeric : property.hashable, property.orderable is
 
   # absolute value
   #
-  public abs => if sign ≥ 0 then numeric.this else -numeric.this
+  public abs =>
+    if sign ≥ 0 then  numeric.this
+    else             -numeric.this
 
 
   # absolute value using `|a|` built from a `prefix |` and `postfix |` instead of `a.abs`
@@ -146,6 +148,7 @@ module:public numeric : property.hashable, property.orderable is
   public postfix | is
 
     # only useful operation is the corresponding `prefix |`
+    #
     public prefix | => numeric.this.abs
 
     # redefine as_string to try to explain what is wrong if only one `|` is used
