@@ -104,6 +104,7 @@ public ryū(public T type : float) is
   step_3(exponent, smaller_halfway_point, mv, larger_halfway_point i64, mm_shift bool, is_even bool, rounding_mode rounding_mode) tuple i64 i64 i64 bool bool i64 =>
 
     # calculates: ⌈log₂ 5ᵉ⌉
+    #
     pow5bits(e i64)
     pre debug: (e >= 0)
         debug: (e <= 3528)
@@ -111,6 +112,30 @@ public ryū(public T type : float) is
       pow5bits.this.result = (T.log T.two (five ** T.from_i64 e)).as_i64
     =>
       (e * 1217359) >> 19
+
+
+    # computes ⌊log₁₀ 2ᵉ⌋
+    #
+    floor_log₁₀_pow_2(e i64) i64
+    pre debug: (e >= 0)
+        debug: (e <= 1650)
+    post
+      # NYI ugly that we have to qualify this
+      floor_log₁₀_pow_2.this.result = (T.log T.ten (T.two ** T.from_i64 e)).floor.as_i64
+    =>
+      e*78913 >> 18
+
+
+    # computes ⌊log₁₀ 5ᵉ⌋
+    #
+    floor_log₁₀_pow_5 (e i64) i64
+    pre debug: (e >= 0)
+        debug: (e <= 2620)
+    post
+      ( T.log T.ten (five ** T.from_i64 e) = T.infinity
+        || floor_log₁₀_pow_5.this.result = (T.log T.ten (five ** T.from_i64 e)).floor.as_i64)
+    =>
+      e*732923 >> 20
 
 
     # max 3*31 = 124
@@ -824,16 +849,6 @@ public ryū(public T type : float) is
 
     if (exponent >= 0)
 
-      # computes ⌊log₁₀ 2ᵉ⌋
-      floor_log₁₀_pow_2(e i64) i64
-      pre debug: (e >= 0)
-          debug: (e <= 1650)
-      post
-        floor_log₁₀_pow_2.this.result = (T.log T.ten (T.two ** T.from_i64 e)).floor.as_i64
-      =>
-        exponent*78913 >> 18
-
-
       q := max (i64 0) (floor_log₁₀_pow_2 exponent)-1
       k := pow5_inv_bitcount + pow5bits q
       i := -exponent + q + k
@@ -854,18 +869,6 @@ public ryū(public T type : float) is
       else
         (dv, dp, dm, false, false, q)
     else
-
-
-      # computes ⌊log₁₀ 5ᵉ⌋
-      floor_log₁₀_pow_5 (e i64) i64
-      pre debug: (e >= 0)
-          debug: (e <= 2620)
-      post
-        ( T.log T.ten (five ** T.from_i64 e) = T.infinity
-          || floor_log₁₀_pow_5.this.result = (T.log T.ten (five ** T.from_i64 e)).floor.as_i64)
-      =>
-        e*732923 >> 20
-
 
       q := max (i64 0) (floor_log₁₀_pow_5 -exponent)-1
       i := -exponent - q
