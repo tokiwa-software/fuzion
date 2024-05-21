@@ -119,9 +119,43 @@ module:public numeric : property.hashable, property.orderable is
   => abstract
 
 
-  public sign => if numeric.this = numeric.this.zero then 0 else if numeric.this > numeric.this.zero then 1 else -1
+  # sign function resulting in `-1`/`0`/`+1` depending on whether `numeric.this`
+  # is less than, equal or larger than zero
+  #
+  public sign =>
+    if      numeric.this = numeric.this.zero then  0
+    else if numeric.this > numeric.this.zero then  1
+    else                                          -1
 
-  public abs => if sign ≥ 0 then numeric.this else -numeric.this
+
+  # absolute value
+  #
+  public abs =>
+    if sign ≥ 0 then  numeric.this
+    else             -numeric.this
+
+
+  # absolute value using `|a|` built from a `prefix |` and `postfix |` as an operator
+  # alias of `a.abs`
+  #
+  # Due to the low precedence of `|`, this works also on expressions like `|a-b|`, even
+  # with spaces `| a-b |`, `|a - b|`, `| a-b|` or `|a-b |`.
+  #
+  # Nesting, however, does not work, e.g, `| - |a| |`, this requires parenthese `|(- |a|)|`.
+  #
+  # NYI: CLEANUP: Due to #3081, we need `postfix |` as the first operation, should be
+  # `prefix |` first
+  #
+  public postfix | is
+
+    # only useful operation is the corresponding `prefix |`
+    #
+    public prefix | => numeric.this.abs
+
+    # redefine as_string to try to explain what is wrong if only one `|` is used
+    #
+    public redef as_string =>
+      "*** numeric.postfix |, requires corresponding prefix | for abs value ***"
 
 
   # does this numeric value fit into an u8? This is redefined by children

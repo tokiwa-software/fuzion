@@ -36,6 +36,8 @@ basicIntegers =>
     if !b.is_zero
       say "{T.name}: $a / $b = {a / b}"
       say "{T.name}: $a % $b = {a % b}"
+    if a -! b
+      say "{T.name}: |$a - $b| = {|a-b|}"
 
   test_i64 (a, b i64) unit => test i64 a                      b
   test_i32 (a, b i64) unit => test i32 a.low32bits.cast_to_i32 b.low32bits.cast_to_i32
