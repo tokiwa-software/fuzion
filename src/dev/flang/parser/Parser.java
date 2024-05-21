@@ -3075,13 +3075,7 @@ anonymous   : "ref"
     var f = Feature.anonymous(pos, r, i, Contract.EMPTY_CONTRACT, b);
     var ca = new Call(pos, f);
     sameLine(sl);
-    return ca;
-    // NYI: This would simplify the code (in Feature.findFieldDefInScope that
-    // has special handling for c.calledFeature().isAnonymousInnerFeature()) but
-    // does not work yet, probably because of too much that is done explicitly
-    // for anonymous features.
-    //
-    // return new Block(b.closingBracePos_, new List<>(f, ca));
+    return new Block(new List<>(f, ca));
   }
 
 

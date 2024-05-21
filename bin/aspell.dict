@@ -307,7 +307,6 @@ deduplicate
 defaultBehaviour
 defaultToken
 defawlt
-definedInOwnFile
 denormalized
 deP
 dependsOnGenerics
@@ -1031,7 +1030,6 @@ secNextPos
 semiOrFlatLF
 semiSepElmts
 sep
-setDefinedInOwnFile
 setElse
 setenv
 setField

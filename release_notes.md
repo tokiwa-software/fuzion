@@ -1,3 +1,6 @@
+## 2024-**-**: V0.089
+
+
 ## 2024-05-17: V0.088
 
 - General
@@ -31,7 +34,7 @@
 
 - Fuzion language
 
-  - A string literal containing exactly one codepoint is not of type codepoint, which inherits form String ([#2676](https://github.com/tokiwa-software/fuzion/pull/2676)). This permits writing
+  - A string literal containing exactly one codepoint is now of type codepoint, which inherits from String ([#2676](https://github.com/tokiwa-software/fuzion/pull/2676)). This permits writing
 
         code := "࿋".val                        # results in `4043`
 

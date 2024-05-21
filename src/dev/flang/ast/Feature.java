@@ -103,11 +103,7 @@ public class Feature extends AbstractFeature
   private Visi _visibility;
   public Visi visibility()
   {
-    return
-      // NYI anonymous feature should have correct visibility set.
-      isAnonymousInnerFeature()
-      ? (state().atLeast(State.FINDING_DECLARATIONS) ? outer().visibility() : Visi.UNSPECIFIED)
-      : _visibility == Visi.UNSPECIFIED
+    return _visibility == Visi.UNSPECIFIED
       ? Visi.PRIV
       : _visibility;
   }
@@ -2065,12 +2061,6 @@ public class Feature extends AbstractFeature
             { // Found the call, so we got the result!
               found();
             }
-          else if (c.calledFeatureKnown() &&
-                   c.calledFeature() instanceof Feature cf && cf.isAnonymousInnerFeature() &&
-                   c.calledFeature() == inner)
-            { // NYI: Special handling for anonymous inner features that currently do not appear as expressions
-              found();
-            }
           else if (c == Call.ERROR && curres[1] == null)
             {
               curres[1] = Types.f_ERROR;
@@ -2380,7 +2370,7 @@ public class Feature extends AbstractFeature
    * @return true iff this has or any heir of this might have a frame object on
    * a call.
    */
-  boolean hasThisType()
+  private boolean hasThisType()
   {
     return
       _impl._kind != Impl.Kind.Intrinsic &&
@@ -2432,36 +2422,6 @@ public class Feature extends AbstractFeature
     _featureName = newFeatureName;
   }
 
-
-  /**
-   *
-   */
-  private boolean definedInOwnFile = false;
-
-
-  /**
-   * definedInOwnFile
-   *
-   * @return
-   */
-  public boolean definedInOwnFile() {
-    boolean result = definedInOwnFile;
-    return result;
-  }
-
-  /**
-   * setDefinedInOwnFile
-   */
-  public void setDefinedInOwnFile()
-  {
-    if (PRECONDITIONS) require
-      (!definedInOwnFile);
-
-    definedInOwnFile = true;
-
-    if (POSTCONDITIONS) ensure
-      (definedInOwnFile);
-  }
 
   /**
    * outerRefName
