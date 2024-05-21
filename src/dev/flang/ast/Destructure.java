@@ -37,13 +37,13 @@ import dev.flang.util.SourcePosition;
 /**
  * Destructure represents syntactic sugar for a destructuring assignment of the form
  *
- * (a,b) = point;
+ * (a,b) := point;
  *
  * which will be converted into
  *
  * tmp := point;
- * a = tmp.x;
- * b = tmp.y;
+ * a   := tmp.x;
+ * b   := tmp.y;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -77,7 +77,11 @@ public class Destructure extends ExprWithPos
   final List<AbstractFeature> _fields;
 
 
+  /*
+   * true if destructuring using :=
+   */
   final boolean _isDefinition;
+
 
   /**
    * The value that will be destructured
@@ -93,11 +97,15 @@ public class Destructure extends ExprWithPos
    *
    * @param pos the sourcecode position, used for error messages.
    *
-   * @param n
+   * @param n The field names of the fields we are destructuring into. May not be empty.
+   * null if _fields != null.
    *
-   * @param def
+   * @param fs The fields created by this destructuring.  May be empty. null if _names !=
+   * null.
    *
-   * @param v
+   * @param def true if destructuring using :=
+   *
+   * @param v The value that will be destructured
    */
   private Destructure(SourcePosition pos, List<ParsedName> n, List<AbstractFeature> fs, boolean def, Expr v)
   {
