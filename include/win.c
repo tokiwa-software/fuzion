@@ -539,7 +539,8 @@ void fzE_init()
 /**
  * Start a new thread, returns a pointer to the thread.
  */
-int64_t fzE_thread_create(void* code, void* args)
+int64_t fzE_thread_create(void *(*code)(void *),
+                          void *restrict args)
 {
 #ifdef FUZION_ENABLE_THREADS
   pthread_t * pt = fzE_malloc_safe(sizeof(pthread_t));

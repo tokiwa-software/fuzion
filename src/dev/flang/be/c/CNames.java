@@ -358,8 +358,8 @@ public class CNames extends ANY
   /**
    * C constants corresponding to Fuzion's true and false values.
    */
-  final CExpr FZ_FALSE =  CExpr.compoundLiteral(_structNames._prefix + "bool", "0");
-  final CExpr FZ_TRUE  =  CExpr.compoundLiteral(_structNames._prefix + "bool", "1");
+  final CExpr FZ_FALSE =  CExpr.compoundLiteral(_structNames._prefix + "bool", "." + TAG_NAME.code() + "=0");
+  final CExpr FZ_TRUE  =  CExpr.compoundLiteral(_structNames._prefix + "bool", "." + TAG_NAME.code() + "=1");
 
 
   /*---------------------------  constructors  ---------------------------*/

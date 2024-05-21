@@ -757,6 +757,23 @@ public class C extends ANY
         command.addAll(
           "-Wall",
           "-Werror",
+          // some suggestions taken from: https://github.com/mcinglis/c-style
+          "-Wextra",
+          "-Wpedantic",
+          "-Wformat=2",
+          "-Wno-unused-parameter",
+          "-Wshadow",
+          "-Wwrite-strings",
+          "-Wold-style-definition",
+          "-Wredundant-decls",
+          "-Wnested-externs",
+          "-Wmissing-include-dirs",
+          // NYI: UNDER DEVELOPEMENT:
+          // "-Wstrict-prototypes",
+          // NYI: UNDER DEVELOPEMENT:
+          "-Wno-gnu-empty-initializer",
+          // NYI: UNDER DEVELOPEMENT:
+          "-Wno-zero-length-array",
           "-Wno-trigraphs",
           "-Wno-gnu-empty-struct",
           "-Wno-unused-variable",
