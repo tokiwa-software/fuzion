@@ -2804,14 +2804,12 @@ ifexpr      : "if" exprInLine thenPart elseBlock
         match(Token.t_if, "ifexpr");
         Expr e = exprInLine();
         Block b = thenPart(false);
-        If result = new If(pos, e, b);
         var els = elseBlock();
-        if (els != null && els._expressions.size() > 0)
-          { // do no set empty blocks as else blocks since the source position
-            // of those block might be somewhere unexpected.
-            result.setElse(els);
-          }
-        return result;
+        return new If(pos, e, b,
+          // do no use empty blocks as else blocks since the source position
+          // of those block might be somewhere unexpected.
+          els != null && els._expressions.size() > 0 ? els : null
+        );
       });
   }
 
