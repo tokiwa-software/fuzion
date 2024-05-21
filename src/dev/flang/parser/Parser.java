@@ -3250,8 +3250,8 @@ implRout    : "is" "abstract"
   /**
    * Parse implFldOrRout
    *
-implFldOrRout   : implRout
-                | implFldInit
+implFldOrRout   : implRout           // may start at min indent
+                | implFldInit        // may start at min indent
                 |
                 ;
    */
@@ -3280,13 +3280,13 @@ implFldOrRout   : implRout
   /**
    * Parse implFldInit
    *
-implFldInit : ":=" exprInLine
+implFldInit : ":=" exprInLine      // may start at min indent
             ;
    */
   Impl implFldInit(boolean hasType)
   {
     SourcePosition pos = tokenSourcePos();
-    if (!skip(":="))
+    if (!skip(true, ":="))
       {
         syntaxError(tokenPos(), "':='", "implFldInit");
       }
