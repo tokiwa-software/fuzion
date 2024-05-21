@@ -164,7 +164,7 @@ is
     f T->T
     )
   =>
-    handles T X v (ar.put x (f ar[x])) mode
+    _ := handles T X v (ar.put x (f ar[x])) mode
 
 
   public infix >>= (f X -> handles T X) => bind X f
@@ -177,8 +177,7 @@ is
 # short-hand for creating and installing an empty set of handles of given type.
 #
 public handles(T type, rr ()->unit) =>
-  handles T unit unit (array T 0 x->do) (effect_mode.inst rr)
-  unit
+  _ := handles T unit unit (array T 0 x->do) (effect_mode.inst rr)
 
 # short-hand for creating an empty set of handles of given type.
 #
@@ -226,8 +225,7 @@ handles_type(T type) is
   # install default instance of handles
   #
   install_default unit =>
-    handles T unit unit (array T 0 x->do) effect_mode.default
-    unit
+    _ := handles T unit unit (array T 0 x->do) effect_mode.default
 
 
 # initializes a new handle with the given initial value

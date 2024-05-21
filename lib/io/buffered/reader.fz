@@ -70,11 +70,11 @@ public reader(rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file) 
 
   # fill the currently empty buffer with up to max_n bytes
   #
-  fill_buffer(max_n i32)
+  fill_buffer(max_n i32) unit
   pre match buffer
         a array => a.is_empty
         io.end_of_file => false
-  is
+  =>
     match rp.read max_n
       a array =>
         set buffer := a
@@ -88,9 +88,9 @@ public reader(rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file) 
 
   # discard n items from buffer
   #
-  public discard(n i32)
+  public discard(n i32) unit
   pre n >= 0
-  is
+  =>
     match buffer
       b array =>
         set buffer := (b.slice n b.length).as_array
@@ -102,8 +102,8 @@ public reader(rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file) 
   # discard complete buffer
   #
   # NYI naming this feature discard leads to error: Duplicate feature declaration
-  public discard_all
-  is
+  public discard_all unit
+  =>
     match buffer
       b array =>
         set buffer := []
@@ -130,16 +130,17 @@ public read_bytes(n i32) Sequence u8 ! reader =>
 
     res := (mutate.array u8).new mi
 
-    for n_read := 0, n_read + r
-    while n_read < n
-      r := match reader.read   # NYI: we should limit the number of byted read by reader.read, we can exceed n!
-          io.end_of_file => -1
-          a (array u8) =>
-            reader.discard a.length
-            for b in a do
-              res.add b
-            a.length
-    until r < 0
+    _ :=
+      for n_read := 0, n_read + r
+      while n_read < n
+        r := match reader.read   # NYI: we should limit the number of byted read by reader.read, we can exceed n!
+            io.end_of_file => -1
+            a (array u8) =>
+              reader.discard a.length
+              for b in a do
+                res.add b
+              a.length
+      until r < 0
     res.as_array
 
 
@@ -208,7 +209,7 @@ public read_delimiter (delim u8, strip_cr bool) String|io.end_of_file ! reader =
           a array =>
 
             # trailing carriage returns are dropped
-            add_to_res(a Sequence u8) is
+            add_to_res(a Sequence u8) unit =>
               if !a.is_empty
                 a1 := if strip_cr && a.last = character_encodings.ascii.cr
                           (a.slice 0 a.count-1)

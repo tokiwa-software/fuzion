@@ -146,8 +146,7 @@ is
 # short-hand for creating and installing an empty set of handles2 of given type.
 #
 handles2(T type, rr ()->unit) =>
-  handles2 T unit unit nil (effect_mode.inst rr)
-  unit
+  _ := handles2 T unit unit nil (effect_mode.inst rr)
 
 # short-hand for creating an empty set of handles2 of given type.
 #
@@ -174,7 +173,7 @@ is
 
   # set value stored in this handle to new_val
   #
-  public put(new_val T) is
+  public put(new_val T) =>
     set get := new_val
     (handles2 T unit).env.replace
 
@@ -192,8 +191,7 @@ handles2_type(T type) is
   # install default instance of handles2
   #
   install_default unit =>
-    handles2 T unit unit nil effect_mode.default
-    unit
+    _ := handles2 T unit unit nil effect_mode.default
 
 
 # create a new handle2 using the handles2 instance from the current environment

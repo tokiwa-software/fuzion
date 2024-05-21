@@ -151,7 +151,7 @@ public Sequence(public T type) ref is
   #
   public peek (f T -> unit) =>
     as_list ? nil    =>
-            | c Cons => f c.head; c.tail.peek f
+            | c Cons => f c.head; _ := c.tail.peek f
     as_list
 
 
