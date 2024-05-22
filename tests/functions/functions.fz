@@ -64,8 +64,8 @@ functions is
     // all of these are equivalent:
 //    x ((o, i) -> o.hash_code + i)
 //    x (fun (o, i) -> o.hash_code + i)
-//    x (fun (o, i) { set result := o.hash_code + i})
-    x ((o, i) -> { set result := o.hash_code + i })
+//    x (fun (o, i) { o.hash_code + i})
+    x ((o, i) -> { o.hash_code + i })
     x ((o, i) -> { o.hash_code + i })  // implicit assignment to result from last expression
 
     say "here 1c---------------"
@@ -78,15 +78,16 @@ functions is
     F ref : Function i32 Any i32 is
         redef call(o Any, i i32) i32 =>
           say "here F.call---------------"
-          set result := o.hash_code + i
+          res := o.hash_code + i
           say "here F.call done---------------"
+          res
 
     say "here x0 F()---------------"
     x0 F()
     say "here x0 F---------------"
     x0 F
-    say "here x0 (fun i32 (Any o, i32 i) \{ set result := o.hash_code + i })---------------"
-    x0 ((o, i) -> { set result := o.hash_code + i })
+    say "here x0 (fun i32 (Any o, i32 i) \{ o.hash_code + i })---------------"
+    x0 ((o, i) -> { o.hash_code + i })
     say "here x F()---------------"
     x F()
     say "here x(F)---------------"

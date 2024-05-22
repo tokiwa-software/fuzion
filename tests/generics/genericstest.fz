@@ -56,16 +56,12 @@ genericstest is
               set i := n.n
           Nil =>
 
-    size i32 =>
-      set result := 0
-      // for   -- NYI: must update i in the loop prolog
-      i := h
-      while (i ? Node => { true } | Nil => false)   // NYI: This screams for recursion
-        match i
-          n Node =>
-              set result := result + 1
-              set i := n.n
-          Nil =>
+    size => size h
+
+    size(o OptNode) =>
+      match o
+        n Node => 1 + size n.n
+        Nil    => 0
 
   li := List i32
   li.add 3
