@@ -24,5 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = tupletest
-FUZION_OPTIONS = -XenableSetKeyword
 include ../positive.mk

@@ -2936,13 +2936,10 @@ assign      : "set" name ":=" exprInLine
    *
 destructure : destructr
             | destructrDcl
-            | destructrSet
             ;
 destructr   : "(" argNames ")"       ":=" exprInLine
             ;
 destructrDcl: formArgs               ":=" exprInLine
-            ;
-destructrSet: "set" "(" argNames ")" ":=" exprInLine
             ;
    */
   Expr destructure()
@@ -2952,21 +2949,16 @@ destructrSet: "set" "(" argNames ")" ":=" exprInLine
         var a = formArgs();
         var pos = tokenSourcePos();
         matchOperator(":=", "destructure");
-        return Destructure.create(pos, a, null, false, exprInLine());
+        return Destructure.create(pos, a, null, exprInLine());
       }
     else
       {
-        var hasSet = skip(Token.t_set);
-        if (hasSet && !ENABLE_SET_KEYWORD)
-          {
-            AstErrors.illegalUseOfSetKeyword(tokenSourcePos());
-          }
         match(Token.t_lparen, "destructure");
         var names = argNames();
         match(Token.t_rparen, "destructure");
         var pos = tokenSourcePos();
         matchOperator(":=", "destructure");
-        return Destructure.create(pos, null, names, !hasSet, exprInLine());
+        return Destructure.create(pos, null, names, exprInLine());
       }
   }
 
