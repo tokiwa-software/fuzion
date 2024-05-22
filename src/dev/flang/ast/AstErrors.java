@@ -1024,7 +1024,7 @@ public class AstErrors extends ANY
       }
     else
       {
-        Error.fatal("AstErrors.cannotRedefine called with existing: "+existing.kind()+" f: "+f.kind());
+        fatal("AstErrors.cannotRedefine called with existing: "+existing.kind()+" f: "+f.kind());
       }
   }
 
