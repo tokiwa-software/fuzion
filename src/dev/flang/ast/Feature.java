@@ -1542,15 +1542,6 @@ public class Feature extends AbstractFeature
         AstErrors.choiceMustNotBeRef(_pos);
       }
 
-    res._module.forEachDeclaredOrInheritedFeature(this,
-                                                  p ->
-      {
-        // choice type must not have any fields
-        if (p.isField() && !p.isOuterRef())
-          {
-            AstErrors.mustNotContainFields(_pos, p, "Choice");
-          }
-      });
     // choice type must not contain any code, but may contain inner features
     switch (_impl._kind)
       {
@@ -1586,6 +1577,22 @@ public class Feature extends AbstractFeature
           break;
         }
       }
+
+    res._module.forEachDeclaredOrInheritedFeature(this,
+                                                  p ->
+      {
+        // choice type must not have any fields
+        if (p.isField() && !p.isOuterRef() &&
+            !(Errors.any() && (p instanceof Feature pf && (pf.isArtificialField() || /* do not report auto-generated fields like `result` in choice if there are other problems */
+                                                           pf.isResultField()
+                                                           )
+                               )
+              )
+            )
+          {
+            AstErrors.mustNotContainFields(_pos, p, "Choice");
+          }
+      });
 
     for (var t : choiceGenerics())
       {
