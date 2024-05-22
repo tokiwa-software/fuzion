@@ -405,7 +405,9 @@ public class Call extends AbstractCall
                AbstractType type)
   {
     if (PRECONDITIONS) require
-      (Errors.any() || generics.stream().allMatch(g -> !g.containsError()));
+      (Errors.any() || generics.stream().allMatch(g -> !g.containsError()),
+       name != FuzionConstants.UNIVERSE_NAME);
+
     this._pos = pos;
     this._name = name;
     this._select = select;

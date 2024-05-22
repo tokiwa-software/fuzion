@@ -708,7 +708,7 @@ name        : IDENT                            // all parts of name must be in s
                 }
               break;
             }
-          default: throw new Error();
+          default: throw new Error(current(mayBeAtMinIndent).toString());
           }
         sameLine(oldLine);
       }
@@ -3029,8 +3029,8 @@ destructrSet: "set" "(" argNames ")" ":=" exprInLine
    *
 callOrFeatOrThis  : anonymous
                   | plainLambda
-                  | call
                   | universeCall
+                  | call
                   ;
    */
   Expr callOrFeatOrThis()
@@ -3038,9 +3038,26 @@ callOrFeatOrThis  : anonymous
     return
       isAnonymousPrefix()           ? anonymous()      : // starts with value/ref/:/fun/name
       isPlainLambdaPrefix()         ? plainLambda()    : // x,y,z post result = x*y*z -> x*y*z
-      isNamePrefix()                ? call(null)       : // starts with name
-      current() == Token.t_universe ? universeCall()
+      current() == Token.t_universe ? universeCall()   :
+      isNamePrefix()                ? call(null)         // starts with name
                                     : null;
+  }
+
+
+  /**
+   * Parse universe
+   *
+   * Note that we do not allow `universe` which is not followed by `.`, i.e., it
+   * is not possible to get the value of the `universe`.
+   *
+universe          : "universe"
+                  ;
+   */
+  private Expr universe()
+  {
+    var pos = tokenSourcePos();
+    match(Token.t_universe, "universe");
+    return new Universe(pos);
   }
 
 
@@ -3050,15 +3067,14 @@ callOrFeatOrThis  : anonymous
    * Note that we do not allow `universe` which is not followed by `.`, i.e., it
    * is not possible to get the value of the `universe`.
    *
-universeCall      : "universe" dot call
+universeCall      : universe dot call
                   ;
    */
   Expr universeCall()
   {
-    var pos = tokenSourcePos();
-    match(Token.t_universe, "universeCall");
+    var universe = universe();
     matchOperator(".",      "universeCall");
-    return call(new Universe(pos));
+    return call(universe);
   }
 
 
@@ -3377,6 +3393,7 @@ boundType   : onetype ( PIPE onetype ) *
     switch (current())
       {
       case t_lparen: return true;
+      case t_universe: return true;
       default: return isNamePrefix();
       }
   }
@@ -3562,9 +3579,16 @@ simpletype  : name typePars typeTail
    */
   UnresolvedType simpletype(UnresolvedType lhs)
   {
-    var n = name();
-    var a = typePars();
-    lhs = new ParsedType(n._pos, n._name, a, lhs);
+    if (lhs == null && current() == Token.t_universe)
+      {
+        lhs = universe().asParsedType();
+      }
+    else
+      {
+        var n = name();
+        var a = typePars();
+        lhs = new ParsedType(n._pos, n._name, a, lhs);
+      }
     return typeTail(lhs);
   }
 
@@ -3577,9 +3601,7 @@ simpletype  : name typePars typeTail
    */
   boolean skipSimpletype()
   {
-    return
-      skipName() &&
-      skipTypePars() &&
+    return (skip(Token.t_universe) || skipName() && skipTypePars()) &&
       skipTypeTail();
   }
 
