@@ -1585,11 +1585,11 @@ public class Feature extends AbstractFeature
       {
         // choice type must not have any fields
         if (p.isField() && !p.isOuterRef() &&
-            (!Errors.any() || !(p instanceof Feature pf && (pf.isArtificialField() || /* do not report auto-generated fields like `result` in choice if there are other problems */
-                                                            pf.isResultField()
-                                                            )
-                                )
-             )
+            !(Errors.any() && (p instanceof Feature pf && (pf.isArtificialField() || /* do not report auto-generated fields like `result` in choice if there are other problems */
+                                                           pf.isResultField()
+                                                           )
+                               )
+              )
             )
           {
             AstErrors.mustNotContainFields(_pos, p, "Choice");

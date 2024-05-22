@@ -2797,14 +2797,12 @@ ifexpr      : "if" exprInLine thenPart elseBlock
         match(Token.t_if, "ifexpr");
         Expr e = exprInLine();
         Block b = thenPart(false);
-        If result = new If(pos, e, b);
         var els = elseBlock();
-        if (els != null && els._expressions.size() > 0)
-          { // do no set empty blocks as else blocks since the source position
-            // of those block might be somewhere unexpected.
-            result.setElse(els);
-          }
-        return result;
+        return new If(pos, e, b,
+          // do no use empty blocks as else blocks since the source position
+          // of those block might be somewhere unexpected.
+          els != null && els._expressions.size() > 0 ? els : null
+        );
       });
   }
 
@@ -2931,13 +2929,10 @@ assign      : "set" name ":=" exprInLine
    *
 destructure : destructr
             | destructrDcl
-            | destructrSet
             ;
 destructr   : "(" argNames ")"       ":=" exprInLine
             ;
 destructrDcl: formArgs               ":=" exprInLine
-            ;
-destructrSet: "set" "(" argNames ")" ":=" exprInLine
             ;
    */
   Expr destructure()
@@ -2947,21 +2942,16 @@ destructrSet: "set" "(" argNames ")" ":=" exprInLine
         var a = formArgs();
         var pos = tokenSourcePos();
         matchOperator(":=", "destructure");
-        return Destructure.create(pos, a, null, false, exprInLine());
+        return Destructure.create(pos, a, null, exprInLine());
       }
     else
       {
-        var hasSet = skip(Token.t_set);
-        if (hasSet && !ENABLE_SET_KEYWORD)
-          {
-            AstErrors.illegalUseOfSetKeyword(tokenSourcePos());
-          }
         match(Token.t_lparen, "destructure");
         var names = argNames();
         match(Token.t_rparen, "destructure");
         var pos = tokenSourcePos();
         matchOperator(":=", "destructure");
-        return Destructure.create(pos, null, names, !hasSet, exprInLine());
+        return Destructure.create(pos, null, names, exprInLine());
       }
   }
 
@@ -3244,8 +3234,8 @@ implRout    : "is" "abstract"
   /**
    * Parse implFldOrRout
    *
-implFldOrRout   : implRout
-                | implFldInit
+implFldOrRout   : implRout           // may start at min indent
+                | implFldInit        // may start at min indent
                 |
                 ;
    */
@@ -3274,13 +3264,13 @@ implFldOrRout   : implRout
   /**
    * Parse implFldInit
    *
-implFldInit : ":=" exprInLine
+implFldInit : ":=" exprInLine      // may start at min indent
             ;
    */
   Impl implFldInit(boolean hasType)
   {
     SourcePosition pos = tokenSourcePos();
-    if (!skip(":="))
+    if (!skip(true, ":="))
       {
         syntaxError(tokenPos(), "':='", "implFldInit");
       }
