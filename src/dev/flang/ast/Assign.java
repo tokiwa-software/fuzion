@@ -136,6 +136,11 @@ public class Assign extends AbstractAssign
 
   /*-----------------------------  methods  -----------------------------*/
 
+  public Expr clonePostCondition(AbstractFeature to, AbstractFeature from)
+  {
+    return new Assign(_pos, _name, _value.clonePostCondition(to, from));
+  }
+
 
   /**
    * The sourcecode position of this expression, used for error messages.
@@ -188,10 +193,6 @@ public class Assign extends AbstractAssign
     else if (!_indexVarAllowed       &&
              f instanceof Feature ff &&
              ff.isIndexVarUpdatedByLoop()) { AstErrors.assignmentToIndexVar    (this, f, outer); }
-    else if (f == f.outer().resultField())
-      {
-        throw new Error("NYI: Assignment to result defined in library feature not permitted!");
-      }
   }
 
 

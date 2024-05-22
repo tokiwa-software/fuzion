@@ -81,6 +81,9 @@ public class Contract extends ANY
   /*----------------------------  variables  ----------------------------*/
 
 
+  private List<AbstractFeature> _inherited = new List<>();
+
+
   /**
    *
    */
@@ -95,7 +98,7 @@ public class Contract extends ANY
   public List<Cond>            _declared_postconditions;
   public List<Cond>            _declared_postconditions_as_feature;
   public List<AbstractFeature> _declared_postconditions_as_feature_args;
-  Feature _postFeature;
+  public Feature _postFeature;
 
   /**
    * post-conditions inherited from redefined features.
@@ -255,13 +258,95 @@ The conditions of a post-condition are checked at run-time in sequential source-
     //
     //     redef f post a && b && c && d && e && f =>
     //
+    if (false)
     for (var e : c.all_postconditions())
       {
         var ne = e.clonePostCondition(to, from);
         _inherited_postconditions = _inherited_postconditions.addAfterUnfreeze(ne);
       }
+
+    if (c != EMPTY_CONTRACT)
+      {
+        _inherited.add(from);
+      }
   }
 
+
+  boolean hasPostConditionsFeature()
+  {
+    return !_declared_postconditions_as_feature.isEmpty();
+  }
+
+
+  private String _postConditionFeatureName = null;
+  String postConditionsFeatureName(AbstractFeature f)
+  {
+    if (PRECONDITIONS) require
+      (hasPostConditionsFeature());
+
+    if (_postConditionFeatureName == null)
+      {
+        _postConditionFeatureName = FuzionConstants.POSTCONDITION_FEATURE_PREFIX + f.featureName().baseName() +  "_" + (_id_++);
+      }
+    return _postConditionFeatureName;
+  }
+
+  Call callPostCondition(Resolution res, Feature outer)
+  {
+    var p = _hasPost;
+    List<Expr> args = new List<>();
+    for (var a : outer.valueArguments())
+      {
+        var ca = new Call(p,
+                          new Current(p, outer),
+                          a,
+                          -1);
+        ca = ca.resolveTypes(res, outer);
+        args.add(ca);
+      }
+    if (outer.hasResultField())
+      {
+        var c2 = new Call(p,
+                          new Current(p, outer),
+                          outer.resultField(),
+                          -1);
+        c2 = c2.resolveTypes(res, outer);
+        args.add(c2);
+      }
+    return callPostCondition(res, outer, outer, outer, args);
+  }
+  Call callPostCondition(Resolution res, AbstractFeature outer, Feature actualOuterAfterInheritance, Feature in, List<Expr> args)
+  {
+    var p = _hasPost != null ? _hasPost : outer.pos();
+    Expr t = null;
+    var or = in.outerRef();
+    if (or != null)
+      {
+        t = new This(p, in, in.outer()).resolveTypes(res, in);
+      }
+    else
+      {
+        t = new Universe();
+      }
+    AbstractFeature pF = null;
+    if (outer instanceof Feature of)
+      {
+        addContractFeatures(of, res);
+        pF = _postFeature;
+      }
+    else
+      {
+        pF = outer.postFeature();
+      }
+    var callPostCondition = new Call(p,
+                                     t,
+                                     in.generics().asActuals(),
+                                     args,
+                                     pF,
+                                     Types.resolved.t_unit);
+    callPostCondition = callPostCondition.resolveTypes(res, in);
+    return callPostCondition;
+  }
 
   /**
    * Part of the syntax sugar phase: For all contracts, create artificial
@@ -272,16 +357,16 @@ The conditions of a post-condition are checked at run-time in sequential source-
     if (PRECONDITIONS) require
       (f != null,
        res != null,
-       res.state(f) == State.RESOLVING_SUGAR1,
+       //       res.state(f) == State.RESOLVING_SUGAR1,
        Errors.any() || !f.isUniverse() || (_declared_preconditions_as_feature.isEmpty() &&
                                            _declared_postconditions_as_feature.isEmpty()));
 
     // NYI: code to add precondition feature missing
 
     // add postcondition feature
-    if (!_declared_postconditions_as_feature.isEmpty())
+    if (hasPostConditionsFeature() && _postFeature == null)
       {
-        var name = FuzionConstants.POSTCONDITION_FEATURE_PREFIX + f.featureName().baseName() +  "_" + (_id_++);
+        var name = postConditionsFeatureName(f);
         var args = new List<AbstractFeature>(_declared_postconditions_as_feature_args);
         var resultField = new Feature(_hasPost,
                                       Visi.PRIV,
@@ -317,6 +402,40 @@ The conditions of a post-condition are checked at run-time in sequential source-
         res._module.findDeclarations(_postFeature, f.outer());
         res.resolveDeclarations(_postFeature);
         res.resolveTypes(_postFeature);
+
+        // We add calls to postconditions of redefined features after creating _postFeature since
+        // this enables us to access _postFeaturealready:
+        List<Expr> l2 = null;
+        for (var inh : _inherited)
+          {
+            var ic = inh.contract();
+            if (ic.hasPostConditionsFeature())
+              {
+                List<Expr> args2 = new List<>();
+                for (var a : args)
+                  {
+                    var p = _hasPost;
+                    var ca = new Call(p,
+                                      new Current(p, _postFeature),
+                                      a,
+                                      -1);
+                    ca = ca.resolveTypes(res, _postFeature);
+                    args2.add(ca);
+                  }
+                var inhpost = ic.callPostCondition(res, inh, f, _postFeature, args2);
+                inhpost = inhpost.resolveTypes(res, _postFeature);
+                if (l2 == null)
+                  {
+                    l2 = new List<>();
+                  }
+                l2.add(inhpost);
+              }
+          }
+        if (l2 != null)
+          {
+            l2.addAll(code._expressions);
+            code._expressions = l2;
+          }
       }
   }
 

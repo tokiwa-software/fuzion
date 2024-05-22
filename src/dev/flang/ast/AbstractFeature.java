@@ -310,6 +310,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public abstract Contract contract();
 
 
+  public abstract AbstractFeature postFeature();
+
+
 
   /*-----------------------------  methods  -----------------------------*/
 

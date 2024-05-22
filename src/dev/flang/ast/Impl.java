@@ -29,6 +29,7 @@ package dev.flang.ast;
 import java.util.TreeMap;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -437,7 +438,26 @@ public class Impl extends ANY
         ass._value = this._expr.box(ass._assignedField.resultType());  // NYI: move to constructor of Assign?
         this._expr = ass;
       }
-    // NYI: Add call to post condition feature!
+
+    // Add call to post condition feature:
+    var c = outer.contract();
+    if (c._postFeature != null)
+      {
+        switch (outer.kind())
+          {
+          case Field             -> {} // Errors.fatal("NYI: postcondition for field not supported yet");
+          case TypeParameter     ,
+               OpenTypeParameter -> {} // Errors.fatal("NYI: postcondition for type parameter should not exist");
+          case Routine           ->
+            {
+              var callPostCondition = c.callPostCondition(res, (Feature) outer);
+              this._expr = new Block(new List<>(this._expr, callPostCondition));
+            }
+          case Abstract          -> {} // ok, must be checked by redefinitions
+          case Intrinsic         -> {} // Errors.fatal("NYI: postcondition for intrinsic");
+          case Native            -> {} // Errors.fatal("NYI: postcondition for native");
+          }
+      }
   }
 
 

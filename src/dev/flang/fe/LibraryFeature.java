@@ -791,6 +791,12 @@ public class LibraryFeature extends AbstractFeature
     return _contract;
   }
 
+  @Override
+  public AbstractFeature postFeature()
+  {
+    return _libModule.featurePostFeature(_index);
+  }
+
 
   /**
    * All features that have been found to be directly redefined by this feature.

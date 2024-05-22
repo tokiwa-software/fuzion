@@ -199,6 +199,12 @@ public class Feature extends AbstractFeature
   private final Contract _contract;
   public Contract contract() { return _contract; }
 
+  @Override
+  public AbstractFeature postFeature()
+  {
+    throw new Error("NYI: Feature.postFeature()");
+  }
+
 
   /**
    * The implementation of this feature

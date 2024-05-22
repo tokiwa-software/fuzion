@@ -389,12 +389,14 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | short         | 000000vvvFCYkkkk                              |
+   *   | true   | 1      | short         | 0000REvvvFCYkkkk                              |
    *   |        |        |               |           k = kind                            |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is intrinsic constructor        |
    *   |        |        |               |           F = has 'fixed' modifier            |
    *   |        |        |               |           v = visibility                      |
+   *   |        |        |               |           R = has precondition feature        |
+   *   |        |        |               |           E = has postcondition feature       |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -424,6 +426,10 @@ class LibraryOut extends ANY
    *   |        | 1      | int           | postcondition count post_n                    |
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | post_n | Code          | postcondition code                            |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | R      | 1      | int           | feature offset of precondition feature        |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | E      | 1      | int           | feature offset of pistcondition feature       |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | redefines count r                             |
    *   |        +--------+---------------+-----------------------------------------------+
@@ -459,6 +465,16 @@ class LibraryOut extends ANY
     if ((f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0)
       {
         k = k | FuzionConstants.MIR_FILE_KIND_IS_FIXED;
+      }
+    var preF = (AbstractFeature) null; // NYII f.contract()._preFeature;
+    if (preF != null)
+      {
+        k = k | FuzionConstants.MIR_FILE_KIND_HAS_PRE_CONDITION_FEATURE;
+      }
+    var postF = f.contract()._postFeature;
+    if (postF != null)
+      {
+        k = k | FuzionConstants.MIR_FILE_KIND_HAS_POST_CONDITION_FEATURE;
       }
     var n = f.featureName();
     _data.writeShort(k);
@@ -501,6 +517,9 @@ class LibraryOut extends ANY
       {
         code(c.cond, false);
       }
+    if (preF  != null) { _data.writeOffset(preF ); }
+    if (postF != null) { _data.writeOffset(postF); }
+
     var redefines = f.redefines();
     _data.writeInt(redefines.size());
     for(var rf : redefines)
