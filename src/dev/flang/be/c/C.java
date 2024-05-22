@@ -769,7 +769,7 @@ public class C extends ANY
           "-Wnested-externs",
           "-Wmissing-include-dirs",
           // NYI: UNDER DEVELOPEMENT:
-          // "-Wstrict-prototypes",
+          "-Wno-strict-prototypes",
           // NYI: UNDER DEVELOPEMENT:
           "-Wno-gnu-empty-initializer",
           // NYI: UNDER DEVELOPEMENT:
