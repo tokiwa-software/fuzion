@@ -385,7 +385,7 @@ long fzE_get_file_size(FILE* file) {
  */
 void * fzE_mmap(FILE * file, off_t offset, size_t size, int * result) {
 
-  if (fzE_get_file_size(file) < (offset + size)){
+  if ((unsigned long)fzE_get_file_size(file) < (offset + size)){
     result[0] = -1;
     return NULL;
   }
