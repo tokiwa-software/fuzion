@@ -247,24 +247,6 @@ The conditions of a post-condition are checked at run-time in sequential source-
         // NYI: missing support precondition inheritance!
       }
 
-    // postcondition inheritance is just the conjunction of all inherited conditions
-    //
-    //   a is
-    //     f post a; b; c => ...
-    //   b : a is
-    //     redef f post then d; e; f =>
-    //
-    // b.f becomes
-    //
-    //     redef f post a && b && c && d && e && f =>
-    //
-    if (false)
-    for (var e : c.all_postconditions())
-      {
-        var ne = e.clonePostCondition(to, from);
-        _inherited_postconditions = _inherited_postconditions.addAfterUnfreeze(ne);
-      }
-
     if (c != EMPTY_CONTRACT)
       {
         _inherited.add(from);

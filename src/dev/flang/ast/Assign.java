@@ -136,11 +136,6 @@ public class Assign extends AbstractAssign
 
   /*-----------------------------  methods  -----------------------------*/
 
-  public Expr clonePostCondition(AbstractFeature to, AbstractFeature from)
-  {
-    return new Assign(_pos, _name, _value.clonePostCondition(to, from));
-  }
-
 
   /**
    * The sourcecode position of this expression, used for error messages.
