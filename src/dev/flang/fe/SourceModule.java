@@ -1761,27 +1761,6 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
    */
   private void checkContractAccesses(AbstractFeature f)
   {
-    // NYI: check pre-condition accesses, not only post-condition
-    for (var c : f.contract()._declared_postconditions)
-      {
-        c.visitExpressions(e ->
-                           {
-                             if (!f.isConstructor() &&
-                                 e instanceof AbstractCall ca &&
-                                 ca.target() instanceof Current &&
-                                 !(ca.calledFeature() instanceof Feature cf && (cf.isResultField() ||
-                                                                                cf.isArgument() ||
-                                                                                cf.isOuterRef() ||
-                                                                                cf.isCaseField() ||
-
-                                                                                // NYI: there are some `#exprResultNNN` fields used, need to check why:
-                                                                                cf.isArtificialField()
-                                                                                )))
-                               {
-                                 AstErrors.postConditionMayNotAccessInnerFeature(f, ca);
-                               }
-                           });
-      }
   }
 
 

@@ -1095,19 +1095,6 @@ public class AstErrors extends ANY
     redefineContractMustUseElseOrThen(pos, f, PreOrPost.Post);
   }
 
-  public static void postConditionMayNotAccessInnerFeature(AbstractFeature f,
-                                                           AbstractCall access)
-  {
-    var cf = access.calledFeature();
-    error(access.pos(),
-          "Postcondition of feature that is not a constructor may not access any features except the result or argument or implicit outer reference fields.",
-          "Accessed feature: " + s(cf) + "\n" +
-          "The reason is that postconditions may be inherited by a redefinition of " + s(f) + " while that redefinition "+
-          "may not have access to " + s(cf) + ".\n" +
-          "To solve this, it might help to use a fully qualified call as in "+code("universe." + cf.qualifiedName()) + ".");
-  }
-
-
   static void ambiguousTargets(SourcePosition pos,
                                FeatureAndOuter.Operation operation,
                                FeatureName fn,
