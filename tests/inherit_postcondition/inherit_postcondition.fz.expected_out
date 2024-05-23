@@ -90,11 +90,21 @@ original 4711
 hi
 redef 4711
 hi
+redef g 69
+ho
 original 4716
 hi
 redef 4716
 hi
 redef2 4716
+hi
+redef g 42069
+ho
+redef g 42069
+he
+original 32168
+hi
+original 112
 hi
 original 42 333 666
 hi
@@ -102,11 +112,21 @@ original 4711 333 666
 hi
 redef 4711
 hi
+redef g 69
+ho
 original 4716 333 666
 hi
 redef 4716
 hi
 redef2 4716
+hi
+redef g 42069
+ho
+redef g 42069
+he
+original 32168 333 666
+hi
+original 112 333 666
 hi
 original 32168 333 666
 hi

@@ -203,7 +203,7 @@ public class Contract extends ANY
         // NYI: missing support precondition inheritance!
       }
 
-    if (c != EMPTY_CONTRACT)
+    if (c.hasPostConditionsFeature(from))
       {
         _inherited.add(from);
       }
@@ -215,7 +215,7 @@ public class Contract extends ANY
     if (PRECONDITIONS) require
       (this == f.contract());
 
-    return f instanceof Feature  && !_declared_postconditions.isEmpty() ||
+    return f instanceof Feature  && (!_declared_postconditions.isEmpty() || !_inherited.isEmpty()) ||
         (!(f instanceof Feature) && f.postFeature() != null);
 
   }
@@ -236,7 +236,7 @@ public class Contract extends ANY
 
   Call callPostCondition(Resolution res, Feature outer)
   {
-    var p = _hasPost;
+    var p = _hasPost != null ? _hasPost : outer.pos();
     List<Expr> args = new List<>();
     for (var a : outer.valueArguments())
       {
@@ -307,7 +307,8 @@ public class Contract extends ANY
       {
         var name = postConditionsFeatureName(f);
         var args = new List<AbstractFeature>(_declared_postconditions_as_feature_args);
-        var resultField = new Feature(_hasPost,
+        var pos = _hasPost != null ? _hasPost : f.pos();
+        var resultField = new Feature(pos,
                                       Visi.PRIV,
                                       f.resultType(), // NYI: replace type parameter of f by type parameters of _postFeature!
                                       FuzionConstants.RESULT_NAME)
@@ -329,7 +330,7 @@ public class Contract extends ANY
                   );
           }
         var code = new Block(l);
-        var pF = new Feature(_hasPost,
+        var pF = new Feature(pos,
                              f.visibility(),
                              f.modifiers() & FuzionConstants.MODIFIER_FIXED, // modifiers
                              NoType.INSTANCE,
@@ -337,7 +338,7 @@ public class Contract extends ANY
                              args,
                              new List<>(), // inheritance
                              Contract.EMPTY_CONTRACT,
-                             new Impl(_hasPost, code, Impl.Kind.RoutineDef));
+                             new Impl(pos, code, Impl.Kind.RoutineDef));
         res._module.findDeclarations(pF, f.outer());
         res.resolveDeclarations(pF);
         res.resolveTypes(pF);
@@ -354,9 +355,8 @@ public class Contract extends ANY
                 List<Expr> args2 = new List<>();
                 for (var a : args)
                   {
-                    var p = _hasPost;
-                    var ca = new Call(p,
-                                      new Current(p, pF),
+                    var ca = new Call(pos,
+                                      new Current(pos, pF),
                                       a,
                                       -1);
                     ca = ca.resolveTypes(res, pF);

@@ -45,6 +45,9 @@ public mod is
     =>
       42
 
+    public g
+    => 420
+
   public post_accessing_result_child : post_accessing_result is
     public redef f
       post then
@@ -54,6 +57,13 @@ public mod is
     =>
       4711
 
+    redef g
+      post then
+        ok "redef g $result"
+        { io.out.env.println "ho"; true }
+        result % 5 = 4
+    => 69
+
   public post_accessing_result_child2 : post_accessing_result_child is
     public redef f
       post then
@@ -62,3 +72,21 @@ public mod is
         true
     =>
       4716
+
+    redef g
+      post then
+        ok "redef g $result"
+        { io.out.env.println "he"; true }
+        result % 10 = 9
+    => 42069
+
+  public post_accessing_result_child3 : post_accessing_result is
+    redef f
+      post then
+    =>
+      32168
+
+  public post_accessing_result_child4 : post_accessing_result is
+    redef f
+    =>
+      112

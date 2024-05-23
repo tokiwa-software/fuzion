@@ -3139,8 +3139,8 @@ ensure      : "post"        block   // may start at min indent
         postPos = sourceRange(p);
       }
     var preArgs  = pre  == null ? null : forkAtFormArgs == null ? new List<AbstractFeature>() : forkAtFormArgs.fork().formArgsOpt();
-    var postArgs = post == null ? null : forkAtFormArgs == null ? new List<AbstractFeature>() : forkAtFormArgs.formArgsOpt();
-    return pre == null && post == null
+    var postArgs = forkAtFormArgs == null ? new List<AbstractFeature>() : forkAtFormArgs.formArgsOpt();
+    return pre == null && post == null && postArgs == null
       ? Contract.EMPTY_CONTRACT
       : new Contract(pre,  prePos,  hasElse,
                      post, postPos, hasThen,
