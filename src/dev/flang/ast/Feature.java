@@ -1581,7 +1581,8 @@ public class Feature extends AbstractFeature
     res._module.forEachDeclaredOrInheritedFeature(this,
                                                   p ->
       {
-        if (_returnType != NoType.INSTANCE)
+        if (_returnType != NoType.INSTANCE &&
+            _returnType != ValueType.INSTANCE)
           { // choice type must not have a result type
             if (!(Errors.any() && _returnType == RefType.INSTANCE))  // this was covered by AstErrors.choiceMustNotBeRef
               {
