@@ -56,7 +56,7 @@ public class Contract extends ANY
    */
   public static final Contract EMPTY_CONTRACT = new Contract(NO_COND, null, null,
                                                              NO_COND, null, null,
-                                                             NO_COND, null,
+                                                             null,
                                                              null);
 
 
@@ -88,7 +88,6 @@ public class Contract extends ANY
    *
    */
   public List<Cond> req;
-  public List<Cond>            _declared_preconditions_as_feature;
   public List<AbstractFeature> _declared_preconditions_as_feature_args;
   Feature _preFeature;
 
@@ -114,15 +113,14 @@ public class Contract extends ANY
    */
   public Contract(List<Cond> r, SourceRange hasPre,  SourceRange hasElse,
                   List<Cond> e, SourceRange hasPost, SourceRange hasThen,
-                  List<Cond> preAsFeature, List<AbstractFeature> preArgs,
-                                           List<AbstractFeature> postArgs)
+                  List<AbstractFeature> preArgs,
+                  List<AbstractFeature> postArgs)
   {
     _hasPre  = hasPre;
     _hasPost = hasPost;
     _hasPreElse  = hasElse;
     _hasPostThen = hasThen;
     req = r == null || r.isEmpty() ? NO_COND : r;
-    _declared_preconditions_as_feature = preAsFeature == null || preAsFeature.isEmpty() ? NO_COND : preAsFeature;
     _declared_preconditions_as_feature_args = preArgs;
     _declared_postconditions = e == null || e.isEmpty() ? NO_COND : e;
     _declared_postconditions_as_feature_args = postArgs;
@@ -134,7 +132,7 @@ public class Contract extends ANY
    */
   public Contract(List<Cond> r, List<Cond> e)
   {
-    this(r, null, null, e, null, null, null, null, null);
+    this(r, null, null, e, null, null, null, null);
   }
 
 
@@ -203,40 +201,66 @@ public class Contract extends ANY
         // NYI: missing support precondition inheritance!
       }
 
-    if (c.hasPostConditionsFeature(from))
+    if (hasPostConditionsFeature(from))
       {
         _inherited.add(from);
       }
   }
 
 
-  boolean hasPostConditionsFeature(AbstractFeature f)
+  /**
+   * Does this contract require a post condition feature due to inherited or declared post
+   * conditions?
+   */
+  boolean requiresPostConditionsFeature()
   {
-    if (PRECONDITIONS) require
-      (this == f.contract());
+    return !_declared_postconditions.isEmpty() || !_inherited.isEmpty();
 
-    return f instanceof Feature  && (!_declared_postconditions.isEmpty() || !_inherited.isEmpty()) ||
-        (!(f instanceof Feature) && f.postFeature() != null);
+  }
 
+
+  /**
+   * Does the given feature either have a post condition feature or, for an
+   * dev.flang.ast.Feature, will it get one due to inherited or declared post
+   * conditions?
+   *
+   * @param f a feature
+   */
+  static boolean hasPostConditionsFeature(AbstractFeature f)
+  {
+    return f.postFeature() != null || f.contract().requiresPostConditionsFeature();
   }
 
 
   private String _postConditionFeatureName = null;
-  String postConditionsFeatureName(AbstractFeature f)
+  static String postConditionsFeatureName(AbstractFeature f)
   {
     if (PRECONDITIONS) require
       (hasPostConditionsFeature(f));
 
-    if (_postConditionFeatureName == null)
+    var c = f.contract();
+    if (c._postConditionFeatureName == null)
       {
-        _postConditionFeatureName = FuzionConstants.POSTCONDITION_FEATURE_PREFIX + f.featureName().baseName() +  "_" + (_id_++);
+        c._postConditionFeatureName = FuzionConstants.POSTCONDITION_FEATURE_PREFIX + f.featureName().baseName() +  "_" + (_id_++);
       }
-    return _postConditionFeatureName;
+    return c._postConditionFeatureName;
   }
 
-  Call callPostCondition(Resolution res, Feature outer)
+
+  /**
+   * Create call to outer's post condition feature
+   *
+   * @param res resolution instance
+   *
+   * @param outer a feature with a post condition whose body the result will be
+   * added to
+   *
+   * @return a call to outer.postFeature() to be added to code of outer.
+   */
+  static Call callPostCondition(Resolution res, Feature outer)
   {
-    var p = _hasPost != null ? _hasPost : outer.pos();
+    var oc = outer.contract();
+    var p = oc._hasPost != null ? oc._hasPost : outer.pos();
     List<Expr> args = new List<>();
     for (var a : outer.valueArguments())
       {
@@ -256,32 +280,42 @@ public class Contract extends ANY
         c2 = c2.resolveTypes(res, outer);
         args.add(c2);
       }
-    return callPostCondition(res, outer, outer, outer, args);
+    return callPostCondition(res, outer, outer, args);
   }
-  Call callPostCondition(Resolution res, AbstractFeature outer, Feature actualOuterAfterInheritance, Feature in, List<Expr> args)
+
+
+  /**
+   * Create call to outer's post condition feature to be added to code of feature `in`.
+   *
+   * @param res resolution instance
+   *
+   * @param outer a feature with a post condition
+   *
+   * @param in either equal to outer or the post condition feature of a
+   * redefinition of outer. The call ot outer's postcondition is to be added to
+   * in's code.
+   *
+   * @param args actual arguments to be passed to the call
+   *
+   * @return a call to outer.postFeature() to be added to code of in.
+   */
+  private static Call callPostCondition(Resolution res, AbstractFeature outer, Feature in, List<Expr> args)
   {
-    var p = _hasPost != null ? _hasPost : outer.pos();
-    Expr t = null;
-    var or = in.outerRef();
-    if (or != null)
-      {
-        t = new This(p, in, in.outer()).resolveTypes(res, in);
-      }
-    else
-      {
-        t = new Universe();
-      }
-    AbstractFeature pF = null;
-    if (outer instanceof Feature of)
+    var p = in.contract()._hasPost != null
+          ? in.contract()._hasPost   // use `post` position if `in` is of the form `f post cc is ...`
+          : in.pos();                // `in` does not have `post` clause, only inherits post conditions. So use the feature position instead
+
+    var t = (in.outerRef() != null) ? new This(p, in, in.outer()).resolveTypes(res, in)
+                                    : new Universe();
+    if (outer instanceof Feature of)  // if outer is currently being compiled, make sure its post feature added
       {
         addContractFeatures(of, res);
       }
-    pF = outer.postFeature();
     var callPostCondition = new Call(p,
                                      t,
                                      in.generics().asActuals(),
                                      args,
-                                     pF,
+                                     outer.postFeature(),
                                      Types.resolved.t_unit);
     callPostCondition = callPostCondition.resolveTypes(res, in);
     return callPostCondition;
@@ -291,23 +325,24 @@ public class Contract extends ANY
    * Part of the syntax sugar phase: For all contracts, create artificial
    * features that check that contract.
    */
-  void addContractFeatures(Feature f, Resolution res)
+  static void addContractFeatures(Feature f, Resolution res)
   {
     if (PRECONDITIONS) require
       (f != null,
        res != null,
-       this == f.contract(),
-       Errors.any() || !f.isUniverse() || (_declared_preconditions_as_feature.isEmpty() &&
-                                           _declared_postconditions.isEmpty()));
+       Errors.any() || !f.isUniverse() || (f.contract().req.isEmpty() &&
+                                           f.contract()._declared_postconditions.isEmpty()));
+
+    var fc = f.contract();
 
     // NYI: code to add precondition feature missing
 
     // add postcondition feature
-    if (hasPostConditionsFeature(f) && f._postFeature == null)
+    if (fc.requiresPostConditionsFeature() && f._postFeature == null)
       {
         var name = postConditionsFeatureName(f);
-        var args = new List<AbstractFeature>(_declared_postconditions_as_feature_args);
-        var pos = _hasPost != null ? _hasPost : f.pos();
+        var args = new List<AbstractFeature>(fc._declared_postconditions_as_feature_args);
+        var pos = fc._hasPost != null ? fc._hasPost : f.pos();
         var resultField = new Feature(pos,
                                       Visi.PRIV,
                                       f.resultType(), // NYI: replace type parameter of f by type parameters of _postFeature!
@@ -317,7 +352,7 @@ public class Contract extends ANY
           };
         args.add(resultField);
         var l = new List<Expr>();
-        for (var c : _declared_postconditions)
+        for (var c : fc._declared_postconditions)
           {
             var p = c.cond.pos();
             l.add(new If(p,
@@ -347,10 +382,9 @@ public class Contract extends ANY
         // We add calls to postconditions of redefined features after creating pF since
         // this enables us to access pF directly:
         List<Expr> l2 = null;
-        for (var inh : _inherited)
+        for (var inh : fc._inherited)
           {
-            var ic = inh.contract();
-            if (ic.hasPostConditionsFeature(inh))
+            if (hasPostConditionsFeature(inh))
               {
                 List<Expr> args2 = new List<>();
                 for (var a : args)
@@ -362,7 +396,7 @@ public class Contract extends ANY
                     ca = ca.resolveTypes(res, pF);
                     args2.add(ca);
                   }
-                var inhpost = ic.callPostCondition(res, inh, f, pF, args2);
+                var inhpost = callPostCondition(res, inh, pF, args2);
                 inhpost = inhpost.resolveTypes(res, pF);
                 if (l2 == null)
                   {

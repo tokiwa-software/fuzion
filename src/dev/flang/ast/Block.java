@@ -181,8 +181,6 @@ public class Block extends AbstractBlock
       || _expressions.getFirst().pos().isBuiltIn()
       || _expressions.getLast().pos().isBuiltIn()
       ? SourcePosition.notAvailable
-      : _expressions.getFirst().pos()._sourceFile != _expressions.getLast().pos()._sourceFile  // NYI this might happen for postconditions, need to check why
-      ? _expressions.getFirst().pos()
       // NYI hack, positions used for loops are not always in right order.
       : _expressions.getFirst().pos().bytePos() > _expressions.getLast().pos().byteEndPos()
       ? SourcePosition.notAvailable

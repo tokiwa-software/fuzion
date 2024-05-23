@@ -450,7 +450,7 @@ public class Impl extends ANY
                OpenTypeParameter -> { if (!Errors.any()) { Errors.fatal("postcondition for type parameter should not exist for " + outer.pos().show()); } }
           case Routine           ->
             {
-              var callPostCondition = outer.contract().callPostCondition(res, (Feature) outer);
+              var callPostCondition = Contract.callPostCondition(res, (Feature) outer);
               this._expr = new Block(new List<>(this._expr, callPostCondition));
             }
           case Abstract          -> {} // ok, must be checked by redefinitions

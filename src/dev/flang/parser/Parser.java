@@ -3122,12 +3122,10 @@ ensure      : "post"        block   // may start at min indent
     SourceRange hasThen = null;
     List<Cond> pre = null;
     List<Cond> post = null;
-    List<Cond> preAsFeature = null;
     if (skip(true, Token.t_pre))
       {
         var p = lastTokenPos();
         hasElse = skip(Token.t_else) ? lastTokenSourceRange() : null;
-        preAsFeature = Cond.from(fork().block());
         pre = Cond.from(block());
         prePos = sourceRange(p);
       }
@@ -3144,7 +3142,7 @@ ensure      : "post"        block   // may start at min indent
       ? Contract.EMPTY_CONTRACT
       : new Contract(pre,  prePos,  hasElse,
                      post, postPos, hasThen,
-                     preAsFeature,  preArgs,
+                     preArgs,
                      postArgs);
   }
 
