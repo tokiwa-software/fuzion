@@ -81,20 +81,31 @@ public class Contract extends ANY
   /*----------------------------  variables  ----------------------------*/
 
 
-  private List<AbstractFeature> _inherited = new List<>();
+  /**
+   * List of features we redefine and hence from which we inherit post
+   * conditions.  Used during front end only to create calls to redefined
+   * features post conditions when generating post condition feature for this
+   * contract.
+   */
+  private List<AbstractFeature> _inheritedPost = new List<>();
 
 
   /**
    *
    */
   public List<Cond> req;
-  public List<AbstractFeature> _declared_preconditions_as_feature_args;
-  Feature _preFeature;
 
   /**
    *
    */
   public List<Cond>            _declared_postconditions;
+
+
+  /**
+   * Clone of parsed arguments of the feature this contract belongs to.  To be
+   * used to create arguments for precondition and postcondition features.
+   */
+  public List<AbstractFeature> _declared_preconditions_as_feature_args;
   public List<AbstractFeature> _declared_postconditions_as_feature_args;
 
   /**
@@ -203,7 +214,7 @@ public class Contract extends ANY
 
     if (hasPostConditionsFeature(from))
       {
-        _inherited.add(from);
+        _inheritedPost.add(from);
       }
   }
 
@@ -214,7 +225,7 @@ public class Contract extends ANY
    */
   boolean requiresPostConditionsFeature()
   {
-    return !_declared_postconditions.isEmpty() || !_inherited.isEmpty();
+    return !_declared_postconditions.isEmpty() || !_inheritedPost.isEmpty();
 
   }
 
@@ -307,7 +318,7 @@ public class Contract extends ANY
 
     var t = (in.outerRef() != null) ? new This(p, in, in.outer()).resolveTypes(res, in)
                                     : new Universe();
-    if (outer instanceof Feature of)  // if outer is currently being compiled, make sure its post feature added
+    if (outer instanceof Feature of)  // if outer is currently being compiled, make sure its post feature is added first
       {
         addContractFeatures(of, res);
       }
@@ -379,10 +390,16 @@ public class Contract extends ANY
         res.resolveTypes(pF);
         f._postFeature = pF;
 
+        /*
+    // tag::fuzion_rule_SEMANTIC_CONTRACT_POST_ORDER[]
+The conditions of a post-condition are checked at run-time in sequential source-code order after any inherited post-conditions have been checked. Inherited post-conditions of redefined inherited features are checked at runtime in the source code order of the `inherit` clause of the corresponding outer features.
+    // end::fuzion_rule_SEMANTIC_CONTRACT_POST_ORDER[]
+        */
+
         // We add calls to postconditions of redefined features after creating pF since
         // this enables us to access pF directly:
         List<Expr> l2 = null;
-        for (var inh : fc._inherited)
+        for (var inh : fc._inheritedPost)
           {
             if (hasPostConditionsFeature(inh))
               {
