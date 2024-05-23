@@ -903,9 +903,7 @@ public class Feature extends AbstractFeature
                                    _pos,
                                    Visi.PRIV,
                                    t,
-                                   // NYI: Always use INTERNAL_RESULT_NAME except for post conditions!
-                                   resultInternal() ? FuzionConstants.INTERNAL_RESULT_NAME
-                                                    : FuzionConstants.RESULT_NAME,
+                                   FuzionConstants.INTERNAL_RESULT_NAME,
                                    this)
           {
             public boolean isResultField() { return true; }
@@ -920,20 +918,6 @@ public class Feature extends AbstractFeature
   public boolean isCaseField()
   {
     return false;
-  }
-
-
-  /**
-   * Check if the result variable should be internal, i.e., have a name that is
-   * not accessible by source code.  This is true for routines defined using
-   * '=>" (RoutineDef) that are internally generated, e.g. for loops.
-   * In these cases, the result variable of the enclosing outer feature can be
-   * accessed without qualification.
-   */
-  public boolean resultInternal()
-  {
-    return _impl._kind == Impl.Kind.RoutineDef &&
-      _featureName.isInternal();
   }
 
 
