@@ -1021,10 +1021,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (isChoice())
       {
         var g = choiceGenerics();
-        if (isRef())
-          {
-            AstErrors.refToChoice(pos);
-          }
+        if (CHECKS) check
+          (Errors.any() || !isRef());
 
         int i1 = 0;
         for (var t1 : g)
