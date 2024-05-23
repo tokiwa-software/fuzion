@@ -467,7 +467,7 @@ class LibraryOut extends ANY
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_PRE_CONDITION_FEATURE;
       }
-    var postF = f.contract()._postFeature;
+    var postF = f.postFeature();
     if (postF != null)
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_POST_CONDITION_FEATURE;

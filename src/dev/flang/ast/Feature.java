@@ -199,10 +199,11 @@ public class Feature extends AbstractFeature
   private final Contract _contract;
   public Contract contract() { return _contract; }
 
+  Feature _postFeature = null;
   @Override
   public AbstractFeature postFeature()
   {
-    throw new Error("NYI: Feature.postFeature()");
+    return _postFeature;
   }
 
 

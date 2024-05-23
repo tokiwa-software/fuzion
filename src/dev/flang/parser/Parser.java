@@ -3123,7 +3123,6 @@ ensure      : "post"        block   // may start at min indent
     List<Cond> pre = null;
     List<Cond> post = null;
     List<Cond> preAsFeature = null;
-    List<Cond> postAsFeature = null;
     if (skip(true, Token.t_pre))
       {
         var p = lastTokenPos();
@@ -3136,7 +3135,6 @@ ensure      : "post"        block   // may start at min indent
       {
         var p = lastTokenPos();
         hasThen = skip(Token.t_then) ? lastTokenSourceRange() : null;
-        postAsFeature = Cond.from(fork().block());
         post = Cond.from(block());
         postPos = sourceRange(p);
       }
@@ -3147,7 +3145,7 @@ ensure      : "post"        block   // may start at min indent
       : new Contract(pre,  prePos,  hasElse,
                      post, postPos, hasThen,
                      preAsFeature,  preArgs,
-                     postAsFeature, postArgs);
+                     postArgs);
   }
 
 

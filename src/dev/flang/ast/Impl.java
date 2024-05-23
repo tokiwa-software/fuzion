@@ -440,22 +440,22 @@ public class Impl extends ANY
       }
 
     // Add call to post condition feature:
-    var c = outer.contract();
-    if (c._postFeature != null)
+    var pF = outer.postFeature();
+    if (pF != null)
       {
         switch (outer.kind())
           {
-          case Field             -> {} // Errors.fatal("NYI: postcondition for field not supported yet");
+          case Field             -> {} // Errors.fatal("NYI: UNDER DEVELOPMENT #3092 postcondition for field not supported yet");
           case TypeParameter     ,
-               OpenTypeParameter -> {} // Errors.fatal("NYI: postcondition for type parameter should not exist");
+               OpenTypeParameter -> { if (!Errors.any()) { Errors.fatal("postcondition for type parameter should not exist for " + outer.pos().show()); } }
           case Routine           ->
             {
-              var callPostCondition = c.callPostCondition(res, (Feature) outer);
+              var callPostCondition = outer.contract().callPostCondition(res, (Feature) outer);
               this._expr = new Block(new List<>(this._expr, callPostCondition));
             }
           case Abstract          -> {} // ok, must be checked by redefinitions
-          case Intrinsic         -> {} // Errors.fatal("NYI: postcondition for intrinsic");
-          case Native            -> {} // Errors.fatal("NYI: postcondition for native");
+          case Intrinsic         -> {} // Errors.fatal("NYI: UNDER DEVELOPMENT #3105 postcondition for intrinsic");
+          case Native            -> {} // Errors.fatal("NYI: UNDER DEVELOPMENT #3105 postcondition for native");
           }
       }
   }
