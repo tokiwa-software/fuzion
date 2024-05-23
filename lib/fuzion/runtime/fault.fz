@@ -74,8 +74,7 @@ is
          #
          msg String)
     =>
-      io.err.println "*** runtime failure: $kind $msg"
-      exit 1
+      fuzion.sys.fatal_fault kind msg
 
 
 # fault with no argument returns fault.env, the currently installed
