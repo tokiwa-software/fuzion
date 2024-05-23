@@ -1430,13 +1430,6 @@ public class AstErrors extends ANY
           "Formal type parameter declared in " + generic.typeParameter().pos().show() + "\n");
   }
 
-  static void refToChoice(SourcePosition pos)
-  {
-    error(pos,
-          "ref to a choice type is not allowed",
-          "a choice is always a value type");
-  }
-
   static void genericsMustBeDisjoint(SourcePosition pos, AbstractType t1, AbstractType t2)
   {
     error(pos,
