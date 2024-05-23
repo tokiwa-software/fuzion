@@ -422,10 +422,6 @@ class LibraryOut extends ANY
    *   | true   | 1      | int           | precondition count pre_n                      |
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | pre_n  | Code          | precondition code                             |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | int           | postcondition count post_n                    |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | post_n | Code          | postcondition code                            |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | R      | 1      | int           | feature offset of precondition feature        |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -508,12 +504,6 @@ class LibraryOut extends ANY
       }
     _data.writeInt(f.contract().req.size());
     for (var c : f.contract().req)
-      {
-        code(c.cond, false);
-      }
-    var post = f.contract().all_postconditions();  // NYI: what about inherited postconditions?
-    _data.writeInt(post.size());
-    for (var c : post)
       {
         code(c.cond, false);
       }

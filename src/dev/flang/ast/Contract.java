@@ -101,12 +101,6 @@ public class Contract extends ANY
   public Feature _postFeature;
 
   /**
-   * post-conditions inherited from redefined features.
-   */
-  public List<Cond> _inherited_postconditions = NO_COND;
-
-
-  /**
    * Did the parser find `pre` / `post` or even `pre else` / `post then` ? These
    * might be present even if the condition list is NO_COND.
    */
@@ -163,8 +157,6 @@ public class Contract extends ANY
     if (this != EMPTY_CONTRACT)
       {
         for (Cond c: req) { c.visit(v, outer); }
-        for (Cond c: _inherited_postconditions) { c.visit(v, outer); }
-        for (Cond c: _declared_postconditions) { c.visit(v, outer); }
       }
   }
 
@@ -180,40 +172,7 @@ public class Contract extends ANY
     if (this != EMPTY_CONTRACT)
       {
         for (Cond c: req) { c.visitExpressions(v); }
-        for (Cond c: _inherited_postconditions) { c.visitExpressions(v); }
-        for (Cond c: _declared_postconditions) { c.visitExpressions(v); }
       }
-  }
-
-
-  /**
-   * Get a List of all post-conditions in order, i.e., inherited first in order
-   * defined by order of the inherit-clauses, then declared.
-   */
-  public List<Cond> all_postconditions()
-  {
-    List<Cond> result;
-    if (_inherited_postconditions.isEmpty())
-      {
-        result = _declared_postconditions;
-      }
-    else if (_declared_postconditions.isEmpty())
-      {
-        result = _inherited_postconditions;
-      }
-    else
-      {
-
-        /*
-    // tag::fuzion_rule_SEMANTIC_CONTRACT_POST_ORDER[]
-The conditions of a post-condition are checked at run-time in sequential source-code order after any inherited post-conditions have been checked. Inherited post-conditions of redefined inherited features are checked at runtime in the source code order of the `inherit` clause of the corresponding outer features.
-    // end::fuzion_rule_SEMANTIC_CONTRACT_POST_ORDER[]
-        */
-        result = new List<>();
-        result.addAll(_inherited_postconditions);
-        result.addAll(_declared_postconditions);
-      }
-    return result;
   }
 
 
@@ -254,7 +213,7 @@ The conditions of a post-condition are checked at run-time in sequential source-
   }
 
 
-  boolean hasPostConditionsFeature()
+  public boolean hasPostConditionsFeature()
   {
     return !_declared_postconditions_as_feature.isEmpty();
   }

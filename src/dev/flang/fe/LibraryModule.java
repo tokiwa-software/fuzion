@@ -843,8 +843,6 @@ Feature
               | i      | Code          | inherits calls
 .4+| true     | 1      | int           | precondition count pre_n
               | pre_n  | Code          | precondition code
-              | 1      | int           | postcondition count post_n
-              | post_n | Code          | postcondition code
    | R        | 1      | int           | feature offset of precondition feature
    | E        | 1      | int           | feature offset of postcondition feature
 .2+| true     | 1      | int           | redefines count r
@@ -893,10 +891,6 @@ Feature
    *   | true   | 1      | int           | precondition count pre_n                      |
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | pre_n  | Code          | precondition code                             |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | int           | postcondition count post_n                    |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | post_n | Code          | postcondition code                            |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | R      | 1      | int           | feature offset of precondition feature        |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -1104,30 +1098,10 @@ Feature
     return featurePreCondCountPos(at) + 4;
   }
 
-  int featurePostCondCountPos(int at)
+  int featurePreFeaturePos(int at)
   {
     var i = featurePreCondPos(at);
     var ic = featurePreCondCount(at);
-    while (ic > 0)
-      {
-        i = codeNextPos(i);
-        ic--;
-      }
-    return i;
-  }
-  int featurePostCondCount(int at)
-  {
-    return data().getInt(featurePostCondCountPos(at));
-  }
-  int featurePostCondPos(int at)
-  {
-    return featurePostCondCountPos(at) + 4;
-  }
-
-  int featurePreFeaturePos(int at)
-  {
-    var i = featurePostCondPos(at);
-    var ic = featurePostCondCount(at);
     while (ic > 0)
       {
         i = codeNextPos(i);
