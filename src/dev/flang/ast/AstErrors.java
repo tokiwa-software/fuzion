@@ -1623,6 +1623,17 @@ public class AstErrors extends ANY
           "A choice feature must be a normal feature with empty code section");
   }
 
+  static void choiceMustNotHaveResultType(SourcePosition pos, ReturnType rt)
+  {
+    var rtPos = rt.posOrNull();
+    error(pos,
+          "Choice feature must not have a result type",
+          "A choice feature cannot be called, so it does not make sense to define a result type of a choice.\n" +
+          "Result type " + s(rt) + (rtPos != null
+                                    ? " at " + rtPos.show()
+                                    : ""));
+  }
+
   static void choiceMustNotBeIntrinsic(SourcePosition pos)
   {
     error(pos,
