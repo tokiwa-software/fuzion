@@ -1,0 +1,371 @@
+
+error 1: Postcondition `equals` does not hold after call
+Call stack:
+fuzion.type.runtime.type.fault.type.default_fault_handler.fail#2: $MODULE/fuzion/runtime/fault.fz:77:18:
+      fuzion.sys.fatal_fault kind msg
+-----------------^^^^^^^^^^^
+fuzion.runtime.fault.cause#2: $MODULE/fuzion/runtime/fault.fz:51:7:
+    p.fail kind msg
+------^^^^
+fuzion.type.runtime.type.post_fault.type.default_post_fault_handler.cause#1: $MODULE/fuzion/runtime/post_fault.fz:60:28:
+      fuzion.runtime.fault.cause "postcondition" msg
+---------------------------^^^^^
+fuzion.runtime.post_fault.cause#1: $MODULE/fuzion/runtime/post_fault.fz:39:7:
+    p.cause msg
+------^^^^^
+fuzion.runtime.postcondition_fault#1: $MODULE/fuzion/runtime/post_fault.fz:74:54:
+public postcondition_fault(msg String) => post_fault.cause msg
+-----------------------------------------------------^^^^^
+(catch_postcondition.test#1 i32).double.postcondition: --CURDIR--/catch_postcondition.fz:38:9:
+        equals result-x x
+--------^^^^^^
+(catch_postcondition.test#1 i32).double#1: --CURDIR--/catch_postcondition.fz:37:7:
+      post
+------^^^^
+        equals result-x x
+^^^^^^^^^^^^^^^^^^^^^^^^^
+(catch_postcondition.test#1 i32).#loop0#3: --CURDIR--/catch_postcondition.fz:43:21:
+    for v := T.one, double v
+--------------------^^^^^^
+(catch_postcondition.test#1 i32).#loop0#3: --CURDIR--/catch_postcondition.fz:43:5:
+    for v := T.one, double v
+----^
+... repeated 29 times ...
+
+catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
+    for v := T.one, double v
+----^
+(catch_postcondition.test#1 i16).#loop0#3: --CURDIR--/catch_postcondition.fz:177:8:
+  say (test i32)
+-------^^^^
+(catch_postcondition.test#1 i16).#loop0#3: --CURDIR--/catch_postcondition.fz:43:5:
+    for v := T.one, double v
+----^
+... repeated 12 times ...
+
+catch_postcondition.test#1 i16: --CURDIR--/catch_postcondition.fz:43:5:
+    for v := T.one, double v
+----^
+catch_postcondition.#fun5.call#0: --CURDIR--/catch_postcondition.fz:145:56:
+  tries array ()->String := [ (() -> test i32), (() -> test i16), (() -> test i64) ]
+-------------------------------------------------------^^^^
+catch_postcondition.#loop1#2.h.try#0: --CURDIR--/catch_postcondition.fz:163:38:
+      try option String  => tries[c].call
+-------------------------------------^^^^
+catch_postcondition.#loop1#2.h.#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:112:31:
+        (rt.post_fault h).run try (()->catch m.get.get)
+------------------------------^^^
+(fuzion.runtime.post_fault.run#3 (option String)).#fun1.call#0: $MODULE/effect.fz:97:23:
+    cf := Effect_Call f
+----------------------^
+(fuzion.runtime.post_fault.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+      set res := f()
+-----------------^
+fuzion.runtime.post_fault.run#3 (option String): <source position not available>:
+
+catch_postcondition.#loop1#2.h.#fun0.call#0: --CURDIR--/catch_postcondition.fz:112:27:
+        (rt.post_fault h).run try (()->catch m.get.get)
+--------------------------^^^
+(catch_postcondition.#loop1#2.h.M.go#2 (option String)).#fun3.call#0: $MODULE/effect.fz:207:23:
+    cf := Effect_Call f
+----------------------^
+(catch_postcondition.#loop1#2.h.M.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+      set res := f()
+-----------------^
+catch_postcondition.#loop1#2.h.M.go#2 (option String): <source position not available>:
+
+catch_postcondition.#loop1#2.h: --CURDIR--/catch_postcondition.fz:106:14:
+    res := M.go ()->
+-------------^^
+catch_postcondition.#loop1#2: --CURDIR--/catch_postcondition.fz:165:10:
+    r := h.res
+---------^
+(catch_postcondition.test#1 i32).double#1: --CURDIR--/catch_postcondition.fz:161:3:
+  for c in tries.indices do
+--^
+(catch_postcondition.test#1 i32).#loop0#3: --CURDIR--/catch_postcondition.fz:43:21:
+    for v := T.one, double v
+--------------------^^^^^^
+(catch_postcondition.test#1 i32).#loop0#3: --CURDIR--/catch_postcondition.fz:43:5:
+    for v := T.one, double v
+----^
+... repeated 29 times ...
+
+catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
+    for v := T.one, double v
+----^
+catch_postcondition.#fun4.call#0: --CURDIR--/catch_postcondition.fz:145:38:
+  tries array ()->String := [ (() -> test i32), (() -> test i16), (() -> test i64) ]
+-------------------------------------^^^^
+catch_postcondition.#loop1#2.h.try#0: --CURDIR--/catch_postcondition.fz:163:38:
+      try option String  => tries[c].call
+-------------------------------------^^^^
+catch_postcondition.#loop1#2.h.#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:112:31:
+        (rt.post_fault h).run try (()->catch m.get.get)
+------------------------------^^^
+(fuzion.runtime.post_fault.run#3 (option String)).#fun1.call#0: $MODULE/effect.fz:97:23:
+    cf := Effect_Call f
+----------------------^
+(fuzion.runtime.post_fault.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+      set res := f()
+-----------------^
+fuzion.runtime.post_fault.run#3 (option String): <source position not available>:
+
+catch_postcondition.#loop1#2.h.#fun0.call#0: --CURDIR--/catch_postcondition.fz:112:27:
+        (rt.post_fault h).run try (()->catch m.get.get)
+--------------------------^^^
+(catch_postcondition.#loop1#2.h.M.go#2 (option String)).#fun3.call#0: $MODULE/effect.fz:207:23:
+    cf := Effect_Call f
+----------------------^
+(catch_postcondition.#loop1#2.h.M.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+      set res := f()
+-----------------^
+catch_postcondition.#loop1#2.h.M.go#2 (option String): <source position not available>:
+
+catch_postcondition.#loop1#2.h: --CURDIR--/catch_postcondition.fz:106:14:
+    res := M.go ()->
+-------------^^
+catch_postcondition.#loop1#2: --CURDIR--/catch_postcondition.fz:165:10:
+    r := h.res
+---------^
+(catch_postcondition.test#1 i16).#loop0#3: --CURDIR--/catch_postcondition.fz:161:3:
+  for c in tries.indices do
+--^
+(catch_postcondition.test#1 i16).#loop0#3: --CURDIR--/catch_postcondition.fz:43:5:
+    for v := T.one, double v
+----^
+... repeated 6 times ...
+
+catch_postcondition.test#1 i16: --CURDIR--/catch_postcondition.fz:43:5:
+    for v := T.one, double v
+----^
+catch_postcondition.#fun5.call#0: --CURDIR--/catch_postcondition.fz:145:56:
+  tries array ()->String := [ (() -> test i32), (() -> test i16), (() -> test i64) ]
+-------------------------------------------------------^^^^
+catch_postcondition.z.try#0: --CURDIR--/catch_postcondition.fz:150:36:
+    try option String  => tries[c].call
+-----------------------------------^^^^
+catch_postcondition.z.#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:112:31:
+        (rt.post_fault h).run try (()->catch m.get.get)
+------------------------------^^^
+(fuzion.runtime.post_fault.run#3 (option String)).#fun1.call#0: $MODULE/effect.fz:97:23:
+    cf := Effect_Call f
+----------------------^
+(fuzion.runtime.post_fault.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+      set res := f()
+-----------------^
+fuzion.runtime.post_fault.run#3 (option String): <source position not available>:
+
+catch_postcondition.z.#fun0.call#0: --CURDIR--/catch_postcondition.fz:112:27:
+        (rt.post_fault h).run try (()->catch m.get.get)
+--------------------------^^^
+(catch_postcondition.z.M.go#2 (option String)).#fun3.call#0: $MODULE/effect.fz:207:23:
+    cf := Effect_Call f
+----------------------^
+(catch_postcondition.z.M.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+      set res := f()
+-----------------^
+catch_postcondition.z.M.go#2 (option String): <source position not available>:
+
+catch_postcondition.z: --CURDIR--/catch_postcondition.fz:106:14:
+    res := M.go ()->
+-------------^^
+catch_postcondition.z.catch#1: --CURDIR--/catch_postcondition.fz:151:108:
+    catch(s String) option String => say "*** failed: $s ***"; c <- c.get + 1; if c.get < tries.count then z.res else nil
+-----------------------------------------------------------------------------------------------------------^
+catch_postcondition.z.#fun0.call#0.#fun7.call#0: --CURDIR--/catch_postcondition.fz:112:40:
+        (rt.post_fault h).run try (()->catch m.get.get)
+---------------------------------------^^^^^
+fuzion.runtime.post_fault.abort#0: $MODULE/effect.fz:100:14:
+      nil => def()
+-------------^^^
+fuzion.runtime.post_fault.return#0: $MODULE/effect.fz:111:5:
+    abort
+----^^^^^
+catch_postcondition.z.#fun0.call#0.h.cause#1: --CURDIR--/catch_postcondition.fz:111:27:
+            rt.post_fault.return
+--------------------------^^^^^^
+fuzion.runtime.post_fault.cause#1: $MODULE/fuzion/runtime/post_fault.fz:39:7:
+    p.cause msg
+------^^^^^
+fuzion.runtime.postcondition_fault#1: $MODULE/fuzion/runtime/post_fault.fz:74:54:
+public postcondition_fault(msg String) => post_fault.cause msg
+-----------------------------------------------------^^^^^
+(catch_postcondition.test#1 i32).double.postcondition: --CURDIR--/catch_postcondition.fz:38:9:
+        equals result-x x
+--------^^^^^^
+(catch_postcondition.test#1 i32).double#1: --CURDIR--/catch_postcondition.fz:37:7:
+      post
+------^^^^
+        equals result-x x
+^^^^^^^^^^^^^^^^^^^^^^^^^
+(catch_postcondition.test#1 i32).#loop0#3: --CURDIR--/catch_postcondition.fz:43:21:
+    for v := T.one, double v
+--------------------^^^^^^
+(catch_postcondition.test#1 i32).#loop0#3: --CURDIR--/catch_postcondition.fz:43:5:
+    for v := T.one, double v
+----^
+... repeated 29 times ...
+
+catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
+    for v := T.one, double v
+----^
+catch_postcondition.#fun4.call#0: --CURDIR--/catch_postcondition.fz:145:38:
+  tries array ()->String := [ (() -> test i32), (() -> test i16), (() -> test i64) ]
+-------------------------------------^^^^
+catch_postcondition.z.try#0: --CURDIR--/catch_postcondition.fz:150:36:
+    try option String  => tries[c].call
+-----------------------------------^^^^
+catch_postcondition.z.#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:112:31:
+        (rt.post_fault h).run try (()->catch m.get.get)
+------------------------------^^^
+(fuzion.runtime.post_fault.run#3 (option String)).#fun1.call#0: $MODULE/effect.fz:97:23:
+    cf := Effect_Call f
+----------------------^
+(fuzion.runtime.post_fault.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+      set res := f()
+-----------------^
+fuzion.runtime.post_fault.run#3 (option String): <source position not available>:
+
+catch_postcondition.z.#fun0.call#0: --CURDIR--/catch_postcondition.fz:112:27:
+        (rt.post_fault h).run try (()->catch m.get.get)
+--------------------------^^^
+(catch_postcondition.z.M.go#2 (option String)).#fun3.call#0: $MODULE/effect.fz:207:23:
+    cf := Effect_Call f
+----------------------^
+(catch_postcondition.z.M.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+      set res := f()
+-----------------^
+catch_postcondition.z.M.go#2 (option String): <source position not available>:
+
+catch_postcondition.z: --CURDIR--/catch_postcondition.fz:106:14:
+    res := M.go ()->
+-------------^^
+(catch_postcondition.test#1 i32).double#1: --CURDIR--/catch_postcondition.fz:153:7:
+  say z.res
+------^
+(catch_postcondition.test#1 i32).#loop0#3: --CURDIR--/catch_postcondition.fz:43:21:
+    for v := T.one, double v
+--------------------^^^^^^
+(catch_postcondition.test#1 i32).#loop0#3: --CURDIR--/catch_postcondition.fz:43:5:
+    for v := T.one, double v
+----^
+... repeated 29 times ...
+
+catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
+    for v := T.one, double v
+----^
+catch_postcondition.#anonymous0.try#0: --CURDIR--/catch_postcondition.fz:133:7:
+      test i32
+------^^^^
+(catch_postcondition.ref handle_post String).#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:112:31:
+        (rt.post_fault h).run try (()->catch m.get.get)
+------------------------------^^^
+(fuzion.runtime.post_fault.run#3 String).#fun1.call#0: $MODULE/effect.fz:97:23:
+    cf := Effect_Call f
+----------------------^
+(fuzion.runtime.post_fault.Effect_Call String).call#0: $MODULE/effect.fz:153:18:
+      set res := f()
+-----------------^
+fuzion.runtime.post_fault.run#3 String: <source position not available>:
+
+(catch_postcondition.ref handle_post String).#fun0.call#0: --CURDIR--/catch_postcondition.fz:112:27:
+        (rt.post_fault h).run try (()->catch m.get.get)
+--------------------------^^^
+((catch_postcondition.ref handle_post String).M.go#2 String).#fun3.call#0: $MODULE/effect.fz:207:23:
+    cf := Effect_Call f
+----------------------^
+((catch_postcondition.ref handle_post String).M.Effect_Call String).call#0: $MODULE/effect.fz:153:18:
+      set res := f()
+-----------------^
+(catch_postcondition.ref handle_post String).M.go#2 String: <source position not available>:
+
+catch_postcondition.#anonymous0: --CURDIR--/catch_postcondition.fz:106:14:
+    res := M.go ()->
+-------------^^
+(catch_postcondition.test#1 i32).double#1: --CURDIR--/catch_postcondition.fz:131:8:
+  say (ref : handle_post String
+-------^
+(catch_postcondition.test#1 i32).#loop0#3: --CURDIR--/catch_postcondition.fz:43:21:
+    for v := T.one, double v
+--------------------^^^^^^
+(catch_postcondition.test#1 i32).#loop0#3: --CURDIR--/catch_postcondition.fz:43:5:
+    for v := T.one, double v
+----^
+... repeated 29 times ...
+
+catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
+    for v := T.one, double v
+----^
+catch_postcondition.y.try#0: --CURDIR--/catch_postcondition.fz:120:24:
+    try             => test i32
+-----------------------^^^^
+catch_postcondition.y.#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:112:31:
+        (rt.post_fault h).run try (()->catch m.get.get)
+------------------------------^^^
+(fuzion.runtime.post_fault.run#3 String).#fun1.call#0: $MODULE/effect.fz:97:23:
+    cf := Effect_Call f
+----------------------^
+(fuzion.runtime.post_fault.Effect_Call String).call#0: $MODULE/effect.fz:153:18:
+      set res := f()
+-----------------^
+fuzion.runtime.post_fault.run#3 String: <source position not available>:
+
+catch_postcondition.y.#fun0.call#0: --CURDIR--/catch_postcondition.fz:112:27:
+        (rt.post_fault h).run try (()->catch m.get.get)
+--------------------------^^^
+(catch_postcondition.y.M.go#2 String).#fun3.call#0: $MODULE/effect.fz:207:23:
+    cf := Effect_Call f
+----------------------^
+(catch_postcondition.y.M.Effect_Call String).call#0: $MODULE/effect.fz:153:18:
+      set res := f()
+-----------------^
+catch_postcondition.y.M.go#2 String: <source position not available>:
+
+catch_postcondition.y: --CURDIR--/catch_postcondition.fz:106:14:
+    res := M.go ()->
+-------------^^
+catch_postcondition.my_hdlr.cause#1: --CURDIR--/catch_postcondition.fz:123:7:
+  say y.res
+------^
+fuzion.runtime.post_fault.cause#1: $MODULE/fuzion/runtime/post_fault.fz:39:7:
+    p.cause msg
+------^^^^^
+fuzion.runtime.postcondition_fault#1: $MODULE/fuzion/runtime/post_fault.fz:74:54:
+public postcondition_fault(msg String) => post_fault.cause msg
+-----------------------------------------------------^^^^^
+(catch_postcondition.test#1 i32).double.postcondition: --CURDIR--/catch_postcondition.fz:38:9:
+        equals result-x x
+--------^^^^^^
+(catch_postcondition.test#1 i32).double#1: --CURDIR--/catch_postcondition.fz:37:7:
+      post
+------^^^^
+        equals result-x x
+^^^^^^^^^^^^^^^^^^^^^^^^^
+(catch_postcondition.test#1 i32).#loop0#3: --CURDIR--/catch_postcondition.fz:43:21:
+    for v := T.one, double v
+--------------------^^^^^^
+(catch_postcondition.test#1 i32).#loop0#3: --CURDIR--/catch_postcondition.fz:43:5:
+    for v := T.one, double v
+----^
+... repeated 29 times ...
+
+catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
+    for v := T.one, double v
+----^
+catch_postcondition.#fun2.call#0: --CURDIR--/catch_postcondition.fz:87:6:
+    (test i32)
+-----^^^^
+(fuzion.runtime.post_fault.run#3 String).#fun1.call#0: $MODULE/effect.fz:97:23:
+    cf := Effect_Call f
+----------------------^
+(fuzion.runtime.post_fault.Effect_Call String).call#0: $MODULE/effect.fz:153:18:
+      set res := f()
+-----------------^
+fuzion.runtime.post_fault.run#3 String: <source position not available>:
+
+catch_postcondition: --CURDIR--/catch_postcondition.fz:86:32:
+  say ((rt.post_fault my_hdlr).run
+-------------------------------^^^
+
+*** fatal errors encountered, stopping.

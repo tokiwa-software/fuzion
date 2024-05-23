@@ -1,0 +1,16 @@
+
+error 1: Postcondition `equals` does not hold after call
+Call stack:
+fuzion__sys__2fatal_fault
+_L13481_fuzion_INT__time_fault__default_fault_handler__2fail
+fuzion__runtime__1fault__2cause
+_L13496_fuzion_INT__ault__default_post_fault_handler__1cause
+fuzion__runtime__1post_fault__1cause
+fuzion__runtime__1postcondition_fault
+catch_postcondition__test_i32__2INTERN_POSTdouble_0
+catch_postcondition__test_i32__1double
+catch_postcondition__test_i32__3INTERN_loop0
+catch_postcondition__test_i32
+catch_postcondition
+
+*** fatal errors encountered, stopping.
