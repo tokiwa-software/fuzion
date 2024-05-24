@@ -773,6 +773,8 @@ public class C extends ANY
           // NYI: UNDER DEVELOPEMENT:
           "-Wno-gnu-empty-initializer",
           // NYI: UNDER DEVELOPEMENT:
+          "-Wno-c23-extensions",
+          // NYI: UNDER DEVELOPEMENT:
           "-Wno-zero-length-array",
           "-Wno-trigraphs",
           "-Wno-gnu-empty-struct",
