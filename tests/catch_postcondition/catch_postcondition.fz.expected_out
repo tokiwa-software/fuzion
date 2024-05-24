@@ -20,5 +20,18 @@ trying Type of 'i32'... *** failed: equals ***
 trying Type of 'i16'... *** failed: equals ***
 trying Type of 'i64'... 2251799813685248
 
+using try_post code .catch code
+trying Type of 'i32'... *** failed: equals ***
+trying Type of 'u64'... 2251799813685248
+
+using try_post code || code
+trying Type of 'i32'... *** failed: equals ***
+trying Type of 'u64'... 2251799813685248
+
+using try_post for repeated `try` and `catch` using loop
+trying Type of 'i32'... *** failed: equals ***
+trying Type of 'i16'... *** failed: equals ***
+trying Type of 'i64'... 2251799813685248
+
 using default post handler, will crash:
 trying Type of 'i32'... 

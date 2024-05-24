@@ -172,6 +172,81 @@ catch_postcondition is
 
   # -------------------------------
 
+  # helper feature that allows Java-like try-catch syntax for post conditions
+  #
+  #   res := try_post ()->
+  #             code
+  #          .catch s->
+  #             handle post condition failure `s`
+  #
+  # or even
+  #
+  #   res := try_post code || (s->handle post condition failure `s`)
+  #
+  try_post(T type, code_try ()->T) is
+
+    # define code to execute in case of fault and run code
+    #
+    catch(code_catch String->T) =>
+      h : handle_post T is
+        try             => code_try()
+        catch(s String) => code_catch s
+      h.res
+
+    # alternative implementation of catch using anonymous feature
+    #
+    catch1(code_catch String->T) =>
+      (ref : handle_post T
+        try             => code_try()
+        catch(s String) => code_catch s).res
+
+    # infix alias for catch
+    #
+    infix || (code_catch String->T) => catch code_catch
+
+  # -------------------------------
+
+  say "using try_post code .catch code"
+
+  res => try_post ()->
+           test i32
+         .catch s->
+           say "*** failed: $s ***"
+           test u64
+  say res
+
+  say ""
+
+  # -------------------------------
+
+  say "using try_post code || code"
+
+  res2 => try_post (test i32) || (s->say "*** failed: $s ***"; test u64)
+  say res2
+
+  say ""
+
+  # -------------------------------
+
+  say "using try_post for repeated `try` and `catch` using loop"
+
+  for
+    c in tries.indices
+  do
+    r := try_post ()->
+           option tries[c].call
+         .catch s->
+           say "*** failed: $s ***"
+           nil
+  until r??
+    say r
+  else
+    say "*** all failed ***"
+
+  say ""
+
+  # -------------------------------
+
   say "using default post handler, will crash:"
 
   say (test i32)
