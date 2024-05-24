@@ -2669,6 +2669,7 @@ loopEpilog  : "until" exprInLine thenPart elseBlock
   Expr loop()
   {
     return relaxLineAndSpaceLimit(() -> {
+        var indent = new Indentation();
         SourcePosition pos = tokenSourcePos();
         List<Feature> indexVars  = new List<>();
         List<Feature> nextValues = new List<>();
@@ -2687,6 +2688,7 @@ loopEpilog  : "until" exprInLine thenPart elseBlock
           {
             syntaxError(tokenPos(), "loopBody or loopEpilog: 'while', 'do', 'until' or 'else'", "loop");
           }
+        indent.end();
         return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, els, els1, els2).tailRecursiveLoop();
       });
   }
