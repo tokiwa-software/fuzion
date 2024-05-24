@@ -490,14 +490,16 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             if (CHECKS) check
               (Errors.any() || p.calledFeature() != null);
 
-            if (p.calledFeature().isBaseChoice())
+            if (p.calledFeature().isChoice())
               {
                 if (lastP != null)
                   {
                     AstErrors.repeatedInheritanceOfChoice(p.pos(), lastP.pos());
                   }
                 lastP = p;
+                // NYI: BUG: we need sth. like hand down to figure out the choice generics.
                 result = p.actualTypeParameters();
+                var inh = tryFindInheritanceChain(Types.resolved.f_choice);
               }
           }
       }

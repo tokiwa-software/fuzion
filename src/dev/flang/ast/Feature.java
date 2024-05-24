@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.ListIterator;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
@@ -796,6 +797,8 @@ public class Feature extends AbstractFeature
   }
 
 
+  // this caching reduces build time of base.fum by ~50%
+  private Optional<Kind> _kind = Optional.empty();
   /**
    * What is this Feature's kind?
    *
@@ -803,18 +806,29 @@ public class Feature extends AbstractFeature
    */
   public Kind kind()
   {
-    return state().atLeast(State.RESOLVING_TYPES) && Types.resolved != null && isChoiceAfterTypesResolved() ||
-                                                                               isChoiceBeforeTypesResolved()
-      ? Kind.Choice
-      : switch (implKind()) {
-          case FieldInit, FieldDef, FieldActual, FieldIter, Field -> Kind.Field;
-          case TypeParameter                                      -> Kind.TypeParameter;
-          case TypeParameterOpen                                  -> Kind.OpenTypeParameter;
-          case Routine, RoutineDef, Of                            -> Kind.Routine;
-          case Abstract                                           -> Kind.Abstract;
-          case Intrinsic                                          -> Kind.Intrinsic;
-          case Native                                             -> Kind.Native;
-        };
+    var result = _kind;
+    if (result.isEmpty())
+      {
+        var kind = state().atLeast(State.RESOLVING_TYPES) && Types.resolved != null && isChoiceAfterTypesResolved()
+                     || isChoiceBeforeTypesResolved()
+          ? Kind.Choice
+          : switch (implKind()) {
+              case FieldInit, FieldDef, FieldActual, FieldIter, Field -> Kind.Field;
+              case TypeParameter                                      -> Kind.TypeParameter;
+              case TypeParameterOpen                                  -> Kind.OpenTypeParameter;
+              case Routine, RoutineDef, Of                            -> Kind.Routine;
+              case Abstract                                           -> Kind.Abstract;
+              case Intrinsic                                          -> Kind.Intrinsic;
+              case Native                                             -> Kind.Native;
+            };
+        // cache only when we have resolved types.
+        if (state().atLeast(State.RESOLVING_TYPES) && Types.resolved != null)
+          {
+            _kind = Optional.of(kind);
+          }
+         result = Optional.of(kind);
+      }
+    return result.get();
   }
 
 
@@ -994,7 +1008,7 @@ public class Feature extends AbstractFeature
                   (Errors.any() || p.calledFeature() != null);
 
                 var pf = p.calledFeature();
-                if (pf != null && pf.isBaseChoice())
+                if (pf != null && pf.isChoice())
                   {
                     return true;
                   }
@@ -1629,18 +1643,6 @@ public class Feature extends AbstractFeature
    */
   void choiceTypeCheckAndInternalFields(Resolution res)
   {
-    for (var p : _inherits)
-      {
-        // choice type is leaf
-        var cf = p.calledFeature();
-        if (CHECKS) check
-          (Errors.any() || cf != null);
-
-        if (cf != null && cf.isChoice() && !cf.isBaseChoice())
-          {
-            AstErrors.cannotInheritFromChoice(p.pos());
-          }
-      }
     if (isChoice())
       {
         checkChoiceAndAddInternalFields(res);
