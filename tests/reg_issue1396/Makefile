@@ -17,27 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-reg_issue764 is
-
-  add_ints(elems Sequence i32) i32 =>
-    for
-      elem in elems
-      res := elem, res + elem
-    else
-      res
-
-  add_strings(elems Sequence String) String =>
-    for
-      elem in elems
-      res := elem, res + elem
-    else
-      res
-
-  say (add_ints [1, 2, 3, 4, 5])
-  say (add_ints (array 0 i->i))
-  say (add_strings ["hello", "world"])
-  say (add_strings (array 0 (i -> $" ")))
+override NAME = reg_issue1396
+include ../simple.mk

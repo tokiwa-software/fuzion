@@ -21,23 +21,20 @@
 #
 # -----------------------------------------------------------------------
 
-reg_issue764 is
+reg_issue1396 is
 
-  add_ints(elems Sequence i32) i32 =>
-    for
-      elem in elems
-      res := elem, res + elem
-    else
-      res
+  target is
+    my_call is
+  create choice target error =>
+    error ""
 
-  add_strings(elems Sequence String) String =>
-    for
-      elem in elems
-      res := elem, res + elem
-    else
-      res
+  match create
+    p target =>
+      p.my_call
+    error =>
 
-  say (add_ints [1, 2, 3, 4, 5])
-  say (add_ints (array 0 i->i))
-  say (add_strings ["hello", "world"])
-  say (add_strings (array 0 (i -> $" ")))
+  match create
+    p target =>
+      _ := concur.thread.spawn (() ->
+        _:= p.my_call)
+    error =>

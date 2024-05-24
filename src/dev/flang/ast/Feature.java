@@ -309,6 +309,15 @@ public class Feature extends AbstractFeature
   public boolean _addedLate = false;
 
 
+  /*
+   * true if this feature is found to be
+   * declared in a block with
+   * _newscope=true (e.g. if/else, loop)
+   * or in a case-block
+   */
+  public boolean _scoped = false;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -1976,7 +1985,7 @@ public class Feature extends AbstractFeature
     if (_impl.hasInitialValue() &&
         /* initial value has been replaced by explicit assignment during
          * RESOLVING_TYPES phase: */
-        !outer.state().atLeast(State.RESOLVING_SUGAR1))
+        (outer == null || !outer.state().atLeast(State.RESOLVING_SUGAR1)))
       {
         _impl.visitExpr(v, outer);
       }
