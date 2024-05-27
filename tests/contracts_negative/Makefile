@@ -24,5 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = SquareRoot
-FUZION_OPTIONS = -XenableSetKeyword
 include ../simple.mk

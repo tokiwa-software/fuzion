@@ -36,11 +36,8 @@ public complex (
 is
 
 
-  # enable generic features in ancestors
-  public thiz => complex real imag
-
   # basic operations
-  public fixed redef prefix + => thiz
+  public fixed redef prefix + => complex.this
   public fixed redef infix + (b complex.this) => complex real+b.real imag+b.imag
   public fixed redef infix - (b complex.this) => complex real-b.real imag-b.imag
   public fixed redef infix * (b complex.this) => complex real*b.real-imag*b.imag real*b.imag+imag*b.real

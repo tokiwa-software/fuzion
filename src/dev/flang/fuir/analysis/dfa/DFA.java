@@ -1118,7 +1118,7 @@ public class DFA extends ANY
    * Set flag _changed to record the fact that the current iteration has not
    * reached a fix point yet.
    *
-   * @param by in case _changed was not set yet, by is used to procude a message
+   * @param by in case _changed was not set yet, by is used to produce a message
    * why we have not reached a fix point yet.
    */
   void wasChanged(Supplier<String> by)
@@ -1264,7 +1264,7 @@ public class DFA extends ANY
     var escapeSet = pre ? _escapesPre : _escapes;
     if (escapeSet.add(cc))
       {
-        wasChanged(() -> "Esacpes: " + (pre ? "precondition of " : "") + _fuir.clazzAsString(cc));
+        wasChanged(() -> "Escapes: " + (pre ? "precondition of " : "") + _fuir.clazzAsString(cc));
       }
   }
 
@@ -1479,6 +1479,7 @@ public class DFA extends ANY
         });
 
     put("fuzion.sys.fileio.flush"        , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("fuzion.sys.fatal_fault0"        , cl-> null                                                              );
     put("fuzion.sys.stdin.stdin0"        , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.out.stdout"          , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.err.stderr"          , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
@@ -2044,7 +2045,7 @@ public class DFA extends ANY
    * @param cl the clazz
    *
    * @param site the site index where the new instances is creates, NO_SITE
-   * if not within code (instrinsics etc.)
+   * if not within code (intrinsics etc.)
    *
    * @param context for debugging: Reason that causes this instance to be part
    * of the analysis.

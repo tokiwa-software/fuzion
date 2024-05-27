@@ -105,25 +105,25 @@ module:public integer : numeric is
   =>
     b := integer.this.from_u32 base
 
+    # this digit as an UTF-8 byte
+    digit_as_utf8_byte(d u8) u8
+    pre d ≤ 35 # 35 would be a Z
+    =>
+      if d < 10 then String.zero_char + d else String.a_char + d - 10
+
+    as_list0 (power integer.this) =>
+      if power.sign <= 0
+        nil
+      else
+        digit := (integer.this / power % b).as_u8
+        list (digit_as_utf8_byte digit) (()-> as_list0 power/b)
+
     if integer.this.sign < 0
       # there could be an overflow on negation
       match -? integer.this
         v integer.this => "-" + v.as_string base
         nil => ("-" + (-(integer.this / b)).as_string base) + (-(integer.this % b)).as_string base
     else
-      # this digit as an UTF-8 byte
-      digit_as_utf8_byte(d u8) u8
-      pre d ≤ 35 # 35 would be a Z
-      =>
-        if d < 10 then String.zero_char + d else String.a_char + d - 10
-
-      as_list0 (power integer.this) =>
-        if power.sign <= 0
-          nil
-        else
-          digit := (integer.this / power % b).as_u8
-          list (digit_as_utf8_byte digit) (()-> as_list0 power/b)
-
       String.from_bytes (as_list0 (integer.this.highest b))
 
 

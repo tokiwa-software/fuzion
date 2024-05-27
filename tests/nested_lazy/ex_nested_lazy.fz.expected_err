@@ -5,58 +5,31 @@
 Actual type for argument #1 'f' does not match expected type.
 In call to          : 'ex_nested_lazy.lazy1'
 expected formal type: 'Function (Lazy i32)'
-actual type found   : 'ref i32'
-assignable to       : 'Any',
-                      'num.ref wrap_around',
-                      'property.ref equatable',
-                      'property.ref hashable',
-                      'property.ref orderable',
-                      'property.ref partially_orderable',
-                      'ref has_interval',
-                      'ref i32',
-                      'ref integer',
-                      'ref numeric'
+actual type found   : 'i32'
+assignable to       : 'i32'
 for value assigned  : 'x1'
-To solve this, you could change the type of the target 'f' to 'ref i32' or convert the type of the assigned value to 'Function (Lazy i32)'.
+To solve this, you could change the type of the target 'f' to 'i32' or convert the type of the assigned value to 'Function (Lazy i32)'.
 
 
 --CURDIR--/ex_nested_lazy.fz:39:18: error 2: Incompatible types in assignment
   say (lazy0 ()->42)
 -----------------^^
-assignment to field : 'ex_nested_lazy.#fun1.call.result'
+assignment to field : 'ex_nested_lazy.#fun1.call.#result'
 expected formal type: 'Function i32'
-actual type found   : 'ref i32'
-assignable to       : 'Any',
-                      'num.ref wrap_around',
-                      'property.ref equatable',
-                      'property.ref hashable',
-                      'property.ref orderable',
-                      'property.ref partially_orderable',
-                      'ref has_interval',
-                      'ref i32',
-                      'ref integer',
-                      'ref numeric'
+actual type found   : 'i32'
+assignable to       : 'i32'
 for value assigned  : '42'
-To solve this, you could change the type of the target 'ex_nested_lazy.#fun1.call.result' to 'ref i32' or convert the type of the assigned value to 'Function i32'.
+To solve this, you could change the type of the target 'ex_nested_lazy.#fun1.call.#result' to 'i32' or convert the type of the assigned value to 'Function i32'.
 
 
 --CURDIR--/ex_nested_lazy.fz:47:18: error 3: Incompatible types in assignment
   say (lazy1 ()->42)
 -----------------^^
-assignment to field : 'ex_nested_lazy.#fun3.call.result'
+assignment to field : 'ex_nested_lazy.#fun3.call.#result'
 expected formal type: 'Lazy i32'
-actual type found   : 'ref i32'
-assignable to       : 'Any',
-                      'num.ref wrap_around',
-                      'property.ref equatable',
-                      'property.ref hashable',
-                      'property.ref orderable',
-                      'property.ref partially_orderable',
-                      'ref has_interval',
-                      'ref i32',
-                      'ref integer',
-                      'ref numeric'
+actual type found   : 'i32'
+assignable to       : 'i32'
 for value assigned  : '42'
-To solve this, you could change the type of the target 'ex_nested_lazy.#fun3.call.result' to 'ref i32' or convert the type of the assigned value to 'Lazy i32'.
+To solve this, you could change the type of the target 'ex_nested_lazy.#fun3.call.#result' to 'i32' or convert the type of the assigned value to 'Lazy i32'.
 
 3 errors.

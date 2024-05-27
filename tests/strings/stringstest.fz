@@ -28,7 +28,7 @@
 stringstest is
 
 
-  chck(b bool, msg String) is
+  chck(b bool, msg String) =>
     s := if b
         "PASSED: "
       else

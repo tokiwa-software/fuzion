@@ -80,6 +80,17 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     }
   }
 
+
+  /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * empty list of AbstractFeature
+   */
+  public static List<AbstractFeature> _NO_FEATURES_ = new List<>();
+  static { _NO_FEATURES_.freeze(); }
+
+
   /*------------------------  static variables  -------------------------*/
 
 
@@ -299,6 +310,16 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public abstract Contract contract();
 
 
+  /**
+   * If this feature has a post condition or redefines a feature from which it
+   * inherits a post condition, this gives the feature that implements the post
+   * condition check.  The postFeature has tha same outer feature as the
+   * original feature and the same arguments except for an additional `result`
+   * argument in case the feature has a non-unit result.
+   */
+  public abstract AbstractFeature postFeature();
+
+
 
   /*-----------------------------  methods  -----------------------------*/
 
@@ -319,14 +340,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   boolean isBaseChoice()
   {
-    if (PRECONDITIONS) require
-      (state().atLeast(State.RESOLVED_DECLARATIONS));
-
-    // NYI: cleanup: would be nice to implement this as follows or similar:
-    //
-    //   return this == Types.resolved.f_choice;
-    //
-    return (featureName().baseName().equals("choice") && featureName().argCount() == 1 && outer().isUniverse());
+    return this == Types.resolved.f_choice;
   }
 
 
@@ -486,7 +500,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             if (CHECKS) check
               (Errors.any() || p.calledFeature() != null);
 
-            if (p.calledFeature() == Types.resolved.f_choice)
+            if (p.calledFeature().isBaseChoice())
               {
                 if (lastP != null)
                   {
@@ -784,9 +798,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public AbstractFeature typeFeature(Resolution res)
   {
     if (PRECONDITIONS) require
-      (res.state(this).atLeast(State.FINDING_DECLARATIONS),
-       res != null,
+      (res != null,
        Errors.any() || !isUniverse(),
+       res.state(this).atLeast(State.FINDING_DECLARATIONS),
        !isTypeFeature());
 
     if (_typeFeature == null)
@@ -920,7 +934,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     var outerType = outer().isUniverse()    ? universe() :
                     outer().isTypeFeature() ? outer()
                                             : outer().typeFeature(res);
-    var result = res._module.declaredOrInheritedFeatures(outerType).get(FeatureName.get(name, 0));
+    var result = res._module.declaredOrInheritedFeatures(outerType,
+                                                         FeatureName.get(name, 0)).getFirstOrNull();
     if (result == null)
       {
         var p = pos();

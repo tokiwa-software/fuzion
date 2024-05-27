@@ -42,7 +42,7 @@ public use(T, R type, path String, code ()-> outcome R) outcome R =>
       r := open T fd path
         .go code
       # close file
-      fuzion.sys.fileio.close_dir fd
+      _ := fuzion.sys.fileio.close_dir fd
       # return result
       r
     e error =>

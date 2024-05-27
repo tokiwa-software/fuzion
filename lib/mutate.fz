@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature mut
+#  Source code of Fuzion standard library feature mutate
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
@@ -77,7 +77,7 @@ public mutate : simple_effect is
 
   # common type for mutable data
   #
-  private:public mutable_element is
+  module:public mutable_element is
 
     # id used to verify that mutation made with the same effect
     # the mutable value was created with
@@ -95,8 +95,8 @@ public mutate : simple_effect is
 
     # check that this effect is installed and replace it.
     #
-    check_and_replace
-    is
+    module check_and_replace
+    =>
       if !is_currently_installed
         mpanic "*** invalid mutate for {mutate.this.type}"
       mutate.this.env.replace
@@ -109,7 +109,7 @@ public mutate : simple_effect is
 
     # stop any further mutations of this element
     #
-    public close is
+    public close =>
       set id := 0
 
 
@@ -191,97 +191,6 @@ public mutate : simple_effect is
     # returns `as_string` of the current value
     #
     public redef as_string => get.as_string
-
-
-  # create a mutable array.
-  #
-  module:public array (
-         # element type
-         public T type,
-
-         # length of the array to create
-         public length i64,
-
-         # contents of the array
-         module data fuzion.sys.internal_array T,
-         _ unit
-
-        ) : container.Mutable_Array T mutate.this, mutable_element
-  pre
-    safety: (length ≥ 0) && (length ≤ data.length.as_i64)
-  is
-
-    # get element at given index i
-    #
-    public redef index [ ] (i i64) T
-    =>
-      data[i.as_i32]
-
-
-    # set element at given index i to given value o
-    #
-    public set [ ] (i i64, o T) unit
-    =>
-      check_and_replace
-      data[i.as_i32] := o
-
-
-    # add an element at the end of this array
-    #
-    public add (o T) unit
-    =>
-      check_and_replace
-      d := if (data.length.as_i64 > length) data
-        else
-          new_data := fuzion.sys.internal_array_init T (max 8 data.length*2)
-          for i in indices do
-            new_data[i.as_i32] := data[i.as_i32]
-          new_data
-      d[length.as_i32] := o
-      set data := d
-      set length := length+1
-
-
-    # create immutable array from this
-    #
-    public redef as_array =>
-      array T length.as_i32 (i -> data[i])
-
-
-    # create a list from this array
-    #
-    public redef as_list =>
-      # since array is mutable,
-      # we first copy the elements
-      # to an immutable array.
-      as_array.as_list
-
-
-    # initialize one-dimensional mutable array
-    #
-    public type.new
-     (LM type : mutate,
-
-      # length of the array to create
-      length i64,
-
-      # initial value for elements
-      init T
-
-     ) container.Mutable_Array T LM
-    =>
-      data := fuzion.sys.internal_array_init T length.as_i32
-
-      for x in data.indices do
-        data[x] := init
-
-      LM.env.array T length data unit
-
-
-    # initialize an empty mutable array of type T
-    #
-    public type.new (LM type : mutate) container.Mutable_Array T LM =>
-      LM.env.array T 0 (fuzion.sys.internal_array_init T 0) unit
 
 
 

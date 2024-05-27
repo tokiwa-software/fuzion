@@ -41,7 +41,9 @@ is
   match r
     _ effect_mode.repl    => replace
     _ effect_mode.default => default
-    * =>
+    _ effect_mode.plain   => unit
+    _ effect_mode.new     => unit
+    _ effect_mode.inst    => unit
 
 
   # the mode to use when

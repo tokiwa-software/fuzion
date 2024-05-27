@@ -29,7 +29,7 @@ public panic (
   # the handler this effect uses to panic
   p Panic_Handler,
   _ unit
-  ) : abortable_effect unit
+  ) : abortable_effect
 is
 
   # panic with the given message

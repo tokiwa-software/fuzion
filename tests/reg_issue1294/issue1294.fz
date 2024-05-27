@@ -32,7 +32,7 @@
 # the simplest variant of this issue is an abstract type feature used via a type parameter:
 #
 
-scenario1 is
+scenario1 =>
   fs b
 
   a(T type) is
@@ -86,7 +86,7 @@ run_scenario2
 #
 # Using `float.sum` monoid to cause this problem:
 #
-scenario3 is
+scenario3 =>
 
   fs f64
 
@@ -113,7 +113,7 @@ ex201
 #
 # the example for idiom202 caused the a similar problem in monoids defined for integers:
 #
-ex202 is
+ex202 =>
 
   a := [0, 8, 15, 47, 11]
 
@@ -148,7 +148,7 @@ ex202
 #
 # the example for idiom204 caused the problem from the next scenario:
 #
-ex204 is
+ex204 =>
   frexp (f f64) tuple f64 i32 =>
     bits := f.cast_to_u64
     # bits is f in the following representation

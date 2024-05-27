@@ -113,7 +113,7 @@ public class Executor extends ProcessExpression<Value, Object>
 
 
   /**
-   * The constructor to initalize the executor
+   * The constructor to initialize the executor
    * with a custom current, outer and args.
    *
    * @param fuir
@@ -194,8 +194,7 @@ public class Executor extends ProcessExpression<Value, Object>
   {
     if (!(_fuir.clazzIsOuterRef(f) && _fuir.clazzIsUnitType(rt)))
       {
-        var staticClazz = tc;
-        Interpreter.setField(f, staticClazz, tvalue, val);
+        Interpreter.setField(f, tc, tvalue, val);
       }
     return null;
   }
@@ -213,8 +212,7 @@ public class Executor extends ProcessExpression<Value, Object>
         var ttcc = ttcc(s, tvalue);
         var tt = ttcc.v0();
         var cc = ttcc.v1();
-        var fc = cc;
-        Interpreter.setField(fc, tt, tvalue, avalue);
+        Interpreter.setField(cc, tt, tvalue, avalue);
       }
     return null;
   }
@@ -275,7 +273,7 @@ public class Executor extends ProcessExpression<Value, Object>
       case Choice :
         throw new Error("Calling choice not possible: " + _fuir.codeAtAsString(s));
       case Native:
-        throw new Error("NYI: UNDER DEVELOPEMENT: Calling native not yet supported in interpreter.");
+        throw new Error("NYI: UNDER DEVELOPMENT: Calling native not yet supported in interpreter.");
       };
 
     return result;
@@ -355,7 +353,7 @@ public class Executor extends ProcessExpression<Value, Object>
   @Override
   public Pair<Value, Object> constData(int s, int constCl, byte[] d)
   {
-    // NYI: UNDERDEVELOPEMENT: cache?
+    // NYI: UNDERDEVELOPMENT: cache?
     var val = switch (_fuir.getSpecialClazz(constCl))
       {
       case c_Const_String, c_String -> Interpreter
@@ -548,7 +546,7 @@ public class Executor extends ProcessExpression<Value, Object>
    * callOnInstance assigns the arguments to the argument fields of a newly
    * created instance, calls the parents and then this feature.
    *
-   * @parm s site of the call or NO_SITE if unknown (e.g., form instrinsic)
+   * @parm s site of the call or NO_SITE if unknown (e.g., form intrinsic)
    *
    * @param cc clazz id of the called clazz
    *

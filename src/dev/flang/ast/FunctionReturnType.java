@@ -108,6 +108,18 @@ public class FunctionReturnType extends ReturnType
 
 
   /**
+   * If this has a source code position, return it
+   *
+   * @return the source position or null if there is none (e.g. for NoType).
+   */
+  @Override
+  public SourcePosition posOrNull()
+  {
+    return _pos;
+  }
+
+
+  /**
    * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on

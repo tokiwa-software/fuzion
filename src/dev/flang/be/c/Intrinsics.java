@@ -397,8 +397,7 @@ public class Intrinsics extends ANY
           return CExpr.call("fzE_file_open", new List<>(
               A0.castTo("char *"),
               A1.castTo("int64_t *"),
-              A2.castTo("int8_t")))
-              .ret();
+              A2.castTo("int8_t")));
         }
         );
     put("fuzion.sys.fileio.close"   , (c,cl,outer,in) ->
@@ -469,6 +468,12 @@ public class Intrinsics extends ANY
 
     put("fuzion.sys.fileio.flush"      , (c,cl,outer,in) ->
       CExpr.call("fflush", new List<>(A0.castTo("FILE *"))).ret());
+
+    put("fuzion.sys.fatal_fault0"      , (c,cl,outer,in) ->
+        CStmnt.seq(CExpr.fprintfstderr("*** failed %s: `%s`\n", new CExpr[] {A0.castTo("char *"),
+                                                                             A1.castTo("char *")}),
+                   CExpr.exit(1)));
+
     put("fuzion.sys.stdin.stdin0"      , (c,cl,outer,in) ->
       new CIdent("stdin").castTo("fzT_1i64").ret());
     put("fuzion.sys.out.stdout"      , (c,cl,outer,in) ->

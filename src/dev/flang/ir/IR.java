@@ -43,7 +43,6 @@ import dev.flang.ast.Universe; // NYI: remove dependency
 
 import dev.flang.util.ANY;
 import dev.flang.util.List;
-import dev.flang.util.Map2Int;
 import dev.flang.util.SourcePosition;
 
 
@@ -346,8 +345,8 @@ public abstract class IR extends ANY
 
 
   /**
-   * Check if site s is still a valid site. For every valid site `s` wich `withinCode(s)`,
-   * it is legal to call `withinCode(s+codeSizteAt(s))` to check if the code continues.
+   * Check if site s is still a valid site. For every valid site `s` with `withinCode(s)`,
+   * it is legal to call `withinCode(s+codeSizeAt(s))` to check if the code continues.
    *
    * @param s a value site or the successor of a valid site
    *

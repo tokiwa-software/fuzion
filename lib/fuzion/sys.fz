@@ -35,3 +35,21 @@ module sys is
   #
   module c_string (s String) =>
     (s + codepoint 0).utf8.as_array.internal_array.data
+
+
+  # intrinsic to stop execution signalling a fault of given kind with given message.
+  #
+  fatal_fault0(kind, msg fuzion.sys.Pointer) void => intrinsic
+
+  # stop execution signalling a fault of given kind with given message.
+  #
+  module fatal_fault(# fault kind, e.g. "postcondition"
+                     kind String,
+
+                     # fault detail message, depends on kind
+                     msg String
+                     ) void
+  =>
+    k := fuzion.sys.c_string kind
+    m := fuzion.sys.c_string msg
+    fatal_fault0 k m

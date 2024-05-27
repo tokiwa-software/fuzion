@@ -28,7 +28,7 @@
 public fault (
   # the handler this effect uses to fail
   p Fault_Handler
-  ) : abortable_effect unit
+  ) : abortable_effect
 is
 
 
@@ -38,30 +38,18 @@ is
     cause "check" msg
 
 
-  # cause precondition fault with the given message
-  #
-  cause_pre(msg String) =>
-    cause "precondition" msg
-
-
-  # cause postcondition fault with the given message
-  #
-  cause_post(msg String) =>
-    cause "postcondition" msg
-
-
   # cause fault of given kind with the given message
   #
-  cause(# the kind of failure, e.g., "precondition", "check", etc.
-        #
-        kind,
+  public cause(# the kind of failure, e.g., "precondition", "check", etc.
+               #
+               kind,
 
-        # message describing what failed, e.g. "debug: a > 0"
-        #
-        msg String)
+               # message describing what failed, e.g. "debug: a > 0"
+               #
+               msg String)
   =>
     p.fail kind msg
-    abort unit
+    abort
 
 
   # install default fault handler
@@ -86,8 +74,7 @@ is
          #
          msg String)
     =>
-      io.err.println "*** runtime failure: $kind $msg"
-      exit 1
+      fuzion.sys.fatal_fault kind msg
 
 
 # fault with no argument returns fault.env, the currently installed
@@ -104,18 +91,6 @@ public fault =>
 public check_fault(msg String) => fault.cause_check msg
 
 
-# cause a precondition fault with given msg argument, i.e., call fault.cause_pre
-# msg, i.e., use the current fault effect to fail with the given message.
-#
-public precondition_fault(msg String) => fault.cause_pre msg
-
-
-# cause a postcondition fault with given msg argument, i.e., call fault.cause_post
-# msg, i.e., use the current fault effect to fail with the given message.
-#
-public postcondition_fault(msg String) => fault.cause_post msg
-
-
 # Fault_Handler -- abstract fault hadler
 #
 public Fault_Handler ref is
@@ -128,8 +103,6 @@ public Fault_Handler ref is
   # `code` on it.  In case of an abort, return `def()` (NYI: def should be
   # removed and the result of fail should be returned instead).
   #
-  public use(R type, code, def ()->R) =>
+  public use(R type, code ()->R, def Lazy R) =>
     p := fault Fault_Handler.this
-    match p.go code
-      r R => r
-      unit => def()
+    (p.run code).or_else def

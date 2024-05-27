@@ -266,11 +266,11 @@ public class FZJava extends Tool
       {
         var str = new StringBuilder(
                     "public Java.as_java_object(T type : Java.java.lang.Object, seq Sequence T) =>\n");
-        str.append("  res := (Java.java.lang.reflect.Array.newInstance T.get_java_class seq.count).val\n");
+        str.append("  res := (Java.java.lang.reflect.Array.newInstance_Ljava_7_lang_7_Class_s_I T.get_java_class seq.count).val\n");
         str.append("  for idx := 0, idx+1\n");
         str.append("      el in seq\n");
         str.append("  do\n");
-        str.append("    Java.java.lang.reflect.Array.__k__set res idx el\n");
+        str.append("    _ := Java.java.lang.reflect.Array.__k__set res idx el\n");
         str.append("  fuzion.java.Array T res.Java_Ref\n");
         str.append("\n");
         Files.write(fzp, str.toString().getBytes(StandardCharsets.UTF_8));

@@ -33,8 +33,11 @@ module:public open(public T type,
   #
   # this might overwrite parts or all of an existing file.
   #
-  public write(content Sequence u8) ! io.file.write =>
-    io.file.write.write fd content.as_array
+  public write(content Sequence u8) =>
+    # NYI we should probably not override existing effect in all cases..
+    # also write effect would not show up if used like this.
+    (io.file.write (io.file.write.default_write_handler fd)).go ()->
+      io.file.write.write content.as_array
 
 
   # reads all bytes from the file in the path

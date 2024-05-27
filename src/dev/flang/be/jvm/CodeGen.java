@@ -489,14 +489,14 @@ class CodeGen
         var calpair = staticAccess(si, tt, cc, tvalue, args, isCall);
         s = s.andThen(calpair.v1());
         res = calpair.v0();
-        if (_fuir.clazzIsVoidType(_fuir.clazzResultClazz(cc)))
+      }
+    if (_fuir.clazzIsVoidType(_fuir.clazzResultClazz(cc0)))
+      {
+        if (res != null)
           {
-            if (res != null)
-              {
-                s = s.andThen(res);
-              }
-            res = null;
+            s = s.andThen(res);
           }
+        res = null;
       }
     return new Pair<>(res, s);
   }

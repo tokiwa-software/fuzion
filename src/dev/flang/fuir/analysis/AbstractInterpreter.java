@@ -36,7 +36,6 @@ import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
-import dev.flang.util.SourcePosition;
 
 
 /**
@@ -143,7 +142,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      * Perform an assignment of a value to a field in tvalue. The type of tvalue
      * might be dynamic (a reference). See FUIR.access*().
      *
-     * @param s site of the assignmt
+     * @param s site of the assignment
      *
      * @param tvalue the target instance
      *
@@ -491,15 +490,6 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
                 : process(s);
     l.add(p.v1());
     var res = p.v0();
-    if (!pre)
-      {
-        var post = processContract(cl, FUIR.ContractKind.Post);
-        l.add(post.v1());
-        if (post.v0() == null) // post condition results in void, so we do not return:
-          {
-            res = null;
-          }
-      }
     return new Pair<>(res, _processor.sequence(l));
   }
 

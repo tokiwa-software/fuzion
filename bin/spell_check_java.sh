@@ -11,7 +11,7 @@ shopt -s globstar dotglob
 for f in **/*.java; do
   if [[ "$f" != *"content/docs/"* ]]; then
     # aspell mode is for checking C++ comments but seems to work for Java as well.
-    UNKOWN_WORDS=$(aspell --lang=en_US -p "$PWD/bin/aspell.dict" --mode=ccpp list < "$f")
+    UNKOWN_WORDS=$(aspell --lang=en_US -p "$PWD/bin/aspell.dict" --ignore=2 --mode=ccpp list < "$f")
 
     if [ -n "${UNKOWN_WORDS##+([[:space:]])}" ];
     then

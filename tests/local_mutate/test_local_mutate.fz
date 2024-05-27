@@ -180,7 +180,7 @@ test_local_mutate is
     Cell(T type, LM type : mutate, data T) ref is
       n := LM.env.new (Cell T LM) Cell.this
       p := LM.env.new (Cell T LM) Cell.this
-      link(ne, pr Cell T LM) is
+      link(ne, pr Cell T LM) =>
         n <- ne
         p <- pr
 
@@ -196,7 +196,7 @@ test_local_mutate is
       ring2(from list T) Cell T m =>   # NYI '=>' causes error cyclic type inference
         c := Cell T m from.head.get
         match from.tail
-          nil    => c
+          nil    => _ := c
           t Cons => f := ring2 t
                     l := f.p.get
                     c.link f l
@@ -213,7 +213,7 @@ test_local_mutate is
         do
           say "$i: {e.data}"
 
-        for cur := r, cur.next
+        _ := for cur := r, cur.next
         while cur.n.open do
           cur.n.close
           cur.p.close
@@ -269,7 +269,7 @@ test_local_mutate is
              data T) ref : Ring T is
 
 
-      # mutable references to next and previous. Initalizes to refer to
+      # mutable references to next and previous. Initializes to refer to
       # Mut_Ring.this to form a minimal ring
       #
       private n := LM.env.new (Mut_Ring LM T) Mut_Ring.this

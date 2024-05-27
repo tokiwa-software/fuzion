@@ -26,7 +26,7 @@
 looptest is
 
 
-  chck(b bool, msg String) is
+  chck(b bool, msg String) =>
     s := if b
       "PASSED: "
     else
@@ -37,7 +37,7 @@ looptest is
   a := array i32 100 (i -> if (i % 23 = 0) then -2*i else i*i)
 
   say "testLoop0: plain while loop"
-  testLoop0(data array i32, isWhatWeWant (i32) -> bool) is
+  testLoop0(data array i32, isWhatWeWant (i32) -> bool) =>
     found := false
     ix := 0
     while ix < data.length && !found
@@ -58,7 +58,7 @@ looptest is
   yak "searching first larger 100000: "; testLoop0 a (i -> i > 100000)
 
   say "testLoop1: plain while-until loop"
-  testLoop1(data array i32, isWhatWeWant (i32) -> bool) is
+  testLoop1(data array i32, isWhatWeWant (i32) -> bool) =>
     ix := 0
     while ix < data.length
       element := data[ix]
@@ -77,7 +77,7 @@ looptest is
   yak "searching first larger 100000: "; testLoop1 a (i -> i > 100000)
 
   say "testLoop2: loop with index variables"
-  testLoop2(data array i32, isWhatWeWant (i32) -> bool) is
+  testLoop2(data array i32, isWhatWeWant (i32) -> bool) =>
     for ix := 0, ix + 1
     while ix < data.length
       element := data[ix]
@@ -95,7 +95,7 @@ looptest is
   yak "searching first larger 100000: "; testLoop2 a (i -> i > 100000)
 
   say "testLoop3: loop with index variables, variant and invariant"
-  testLoop3(data array i32, isWhatWeWant (i32) -> bool) is
+  testLoop3(data array i32, isWhatWeWant (i32) -> bool) =>
     for ix := 0, ix + 1
     variant data.length - ix
     inv (0..ix-1) ∀ (x -> !isWhatWeWant data[x])
@@ -115,7 +115,7 @@ looptest is
   yak "searching first larger 100000: "; testLoop3 a (i -> i > 100000)
 
   say "testLoop4: loop with index variables, empty body"
-  testLoop4(data array i32, isWhatWeWant (i32) -> bool) is
+  testLoop4(data array i32, isWhatWeWant (i32) -> bool) =>
     for ix := 0, ix + 1
     variant data.length - ix
     inv (0..ix-1) ∀ (x -> !isWhatWeWant data[x])
@@ -134,7 +134,7 @@ looptest is
   yak "searching first larger 100000: "; testLoop4 a (i -> i > 100000)
 
   say "testLoop5: loop with index variables, no while and empty body"
-  testLoop5(data array i32, isWhatWeWant (i32) -> bool) is
+  testLoop5(data array i32, isWhatWeWant (i32) -> bool) =>
     for ix := 0, ix + 1
     variant data.length - ix
     inv (0..ix-1) ∀ (x -> !isWhatWeWant data[x])

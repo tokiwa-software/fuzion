@@ -27,22 +27,20 @@
 #
 public u32(public val u32) : num.wrap_around, has_interval is
 
-  public thiz => u32.this.val
-
   # overflow checking
 
-  # would negation -thiz cause an overflow?
+  # would negation cause an overflow?
   redef wrapped_on_neg => !is_zero
 
-  # would addition thiz + other cause an overflow or underflow?
-  public fixed overflow_on_add (other u32) => u32.max -° thiz < other
+  # would addition + other cause an overflow or underflow?
+  public fixed overflow_on_add (other u32) => u32.max -° val < other
   public fixed underflow_on_add(other u32) => false
 
-  # would subtraction thiz - other cause an overflow or underflow?
+  # would subtraction - other cause an overflow or underflow?
   public fixed overflow_on_sub (other u32) => false
-  public fixed underflow_on_sub(other u32) => thiz < other
+  public fixed underflow_on_sub(other u32) => val < other
 
-  # would multiplication thiz * other cause an overflow or underflow?
+  # would multiplication * other cause an overflow or underflow?
   public fixed overflow_on_mul (other u32) => as_i64 *° other.as_i64 > u32.max.as_i64
   public fixed underflow_on_mul(other u32) => false
 
@@ -77,7 +75,7 @@ public u32(public val u32) : num.wrap_around, has_interval is
   # this u32 as an i8
   public as_i8 i8
     pre
-      debug: thiz ≤ i8.max.as_u32
+      debug: val ≤ i8.max.as_u32
     =>
       cast_to_i32.as_i8
 
@@ -85,7 +83,7 @@ public u32(public val u32) : num.wrap_around, has_interval is
   # this u32 as an i16
   public as_i16 i16
     pre
-      debug: thiz ≤ i16.max.as_u32
+      debug: val ≤ i16.max.as_u32
     =>
       cast_to_i32.as_i16
 
@@ -93,7 +91,7 @@ public u32(public val u32) : num.wrap_around, has_interval is
   # this u32 as an i32
   public as_i32 i32
     pre
-      debug: thiz ≤ i32.max.as_u32
+      debug: val ≤ i32.max.as_u32
     =>
       cast_to_i32
 
@@ -115,7 +113,7 @@ public u32(public val u32) : num.wrap_around, has_interval is
   # this u32 as an u16
   public as_u16 u16
     pre
-      debug: thiz ≤ u16.max.as_u32
+      debug: val ≤ u16.max.as_u32
     =>
       cast_to_i32.as_u16
 
@@ -123,7 +121,7 @@ public u32(public val u32) : num.wrap_around, has_interval is
   # this u32 as an u64
   public as_u64 u64
     =>
-      thiz.as_i64.as_u64
+      val.as_i64.as_u64
 
 
   # this u32 as an u128
@@ -159,14 +157,13 @@ public u32(public val u32) : num.wrap_around, has_interval is
   # this single bit set or 0 if this is 0.
   #
   public highest_one_bit u32 =>
-    // NYI: should be possible to reuse v, s names
-    (v0, s0) := (val, u32 0)
-    (v1, s1) := if ((v0 ≥ u32 0) && (v0 < u32 0x10000)) (v0, s0) else (v0 >> 16, s0 + 16)
-    (v2, s2) := if (                 v1 <   u32 0x100 ) (v1, s1) else (v1 >>  8, s1 +  8)
-    (v3, s3) := if (                 v2 <    u32 0x10 ) (v2, s2) else (v2 >>  4, s2 +  4)
-    (v4, s4) := if (                 v3 <       u32 4 ) (v3, s3) else (v3 >>  2, s3 +  2)
-    (v5, s5) := if (                 v4 <       u32 2 ) (v4, s4) else (v4 >>  1, s4 +  1)
-    v5 << s5
+    (v, s) := (val, u32 0)
+    (v, s) := if ((v ≥ u32 0) && (v < u32 0x10000)) (v, s) else (v >> 16, s + 16)
+    (v, s) := if (                 v <   u32 0x100 ) (v, s) else (v >>  8, s +  8)
+    (v, s) := if (                 v <    u32 0x10 ) (v, s) else (v >>  4, s +  4)
+    (v, s) := if (                 v <       u32 4 ) (v, s) else (v >>  2, s +  2)
+    (v, s) := if (                 v <       u32 2 ) (v, s) else (v >>  1, s +  1)
+    v << s
 
 
   # the highest 1 bit in this integer
@@ -175,28 +172,25 @@ public u32(public val u32) : num.wrap_around, has_interval is
     if val = u32.zero
       0
     else
-      // NYI: should be possible to reuse v, s names
-      (v0, s0) := (val, u32 0)
-      (v1, s1) := if ((v0 ≥ u32 0) && (v0 < u32 0x10000)) (v0, s0) else (v0 >> 16, s0 + 16)
-      (v2, s2) := if (                v1 <   u32 0x100 ) (v1, s1) else (v1 >>  8, s1 +  8)
-      (v3, s3) := if (                v2 <    u32 0x10 ) (v2, s2) else (v2 >>  4, s2 +  4)
-      (v4, s4) := if (                v3 <       u32 4 ) (v3, s3) else (v3 >>  2, s3 +  2)
-      (v5, s5) := if (                v4 <       u32 2 ) (v4, s4) else (v4 >>  1, s4 +  1)
-      s5 + 1
+      (v, s) := (val, u32 0)
+      (v, s) := if ((v ≥ u32 0) && (v < u32 0x10000)) (v, s) else (v >> 16, s + 16)
+      (v, s) := if (                v <   u32 0x100 ) (v, s) else (v >>  8, s +  8)
+      (v, s) := if (                v <    u32 0x10 ) (v, s) else (v >>  4, s +  4)
+      (v, s) := if (                v <       u32 4 ) (v, s) else (v >>  2, s +  2)
+      (v, s) := if (                v <       u32 2 ) (v, s) else (v >>  1, s +  1)
+      s + 1
 
 
   # count the number of trailing zeros in this integer.
   #
   public trailing_zeros i32 =>
-    // NYI: should be possible to reuse v, s names
-    (v0, s0) := (val, 0)
-    (v1, s1) := if ((v0 &     0xffff) != u32 0) (v0, s0) else (v0 >> 16, s0 + 16)
-    (v2, s2) := if ((v1 &       0xff) != u32 0) (v1, s1) else (v1 >>  8, s1 +  8)
-    (v3, s3) := if ((v2 &        0xf) != u32 0) (v2, s2) else (v2 >>  4, s2 +  4)
-    (v4, s4) := if ((v3 &          3) != u32 0) (v3, s3) else (v3 >>  2, s3 +  2)
-    (v5, s5) := if ((v4 &          1) != u32 0) (v4, s4) else (v4 >>  1, s4 +  1)
-    s6       := if ((v5 &          1) != u32 0)      s5  else                 32
-    s6
+    (v, s) := (val, 0)
+    (v, s) := if ((v &     0xffff) != u32 0) (v, s) else (v >> 16, s + 16)
+    (v, s) := if ((v &       0xff) != u32 0) (v, s) else (v >>  8, s +  8)
+    (v, s) := if ((v &        0xf) != u32 0) (v, s) else (v >>  4, s +  4)
+    (v, s) := if ((v &          3) != u32 0) (v, s) else (v >>  2, s +  2)
+    (v, s) := if ((v &          1) != u32 0) (v, s) else (v >>  1, s +  1)
+    if           ((v &          1) != u32 0)      s else                32
 
 
   # count the number of 1 bits in the binary representation of this

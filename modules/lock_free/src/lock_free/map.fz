@@ -358,7 +358,7 @@ is
   # 2. if successful complete committing the descriptor
   rdcss_root(desc Rdcss_Descriptor CTK CTV) =>
     if cas_root desc.ov desc
-      rdcss_complete false
+      _ := rdcss_complete false
       desc.committed.read
     else
       false
@@ -382,7 +382,7 @@ is
           else
             gcas_commit i m
         else
-          m.cas_prev prev (failed_node n)
+          _ := m.cas_prev prev (failed_node n)
           gcas_commit i i.data.read
 
   # read `data`, if prev is set commit first
@@ -406,7 +406,7 @@ is
   =>
     nn := Main_Node n o
     if i.cas o nn
-      gcas_commit i nn
+      _ := gcas_commit i nn
       match nn.prev.read
         nil => ctrie_ok
         * => restart
@@ -458,20 +458,19 @@ is
   # clean an indirection node:
   # compress contained container node
   clean(nd option (Indirection_Node CTK CTV), lev u32) =>
-    nd.bind unit (i ->
+    _ := nd.bind unit i->
       m := gcas_read i
-      match m.data
-        c container_node => gcas i m (compress c lev i.gen)
+      _ := match m.data
+        c container_node =>
+          _ := gcas i m (compress c lev i.gen)
         * =>
-      unit
-    )
     restart
 
 
   # turns this: container_node -> Indirection_Node -> tomb_node -> singleton_node
   # into  this: container_node -> singleton_node
-  clean_parent(parent option (Indirection_Node CTK CTV), i Indirection_Node CTK CTV, hash, lev u32, gen u64) =>
-    parent >>= p->
+  clean_parent(parent option (Indirection_Node CTK CTV), i Indirection_Node CTK CTV, hash, lev u32, gen u64) unit =>
+    _ := parent >>= p->
       m := gcas_read p
       match m.data
         cn container_node =>
@@ -680,6 +679,23 @@ is
       .as_list (i -> gcas_read i)
 
 
+  # this ctrie as a persistent map
+  #
+  # a snapshot is taken every time
+  # the map is modified.
+  #
+  as_persistent_map container.Persistent_Map CTK CTV =>
+    s := snapshot false
+    ref : container.Persistent_Map CTK CTV
+      public size i32 => s.size
+      public index [] (k CTK) option CTV => s[k]
+      public items Sequence (tuple CTK CTV) => s.items
+      public put(k CTK, v CTV) container.Persistent_Map CTK CTV =>
+        sp := s.snapshot false
+        sp.add k v
+        sp.as_persistent_map
+
+
   # initialize a new ctrie
   public fixed type.empty =>
 
@@ -747,7 +763,7 @@ public container.set_of_hashable(K type : property.hashable, vs (lock_free.map K
     #
     public remove (k K) Set K =>
       ss := map.snapshot false
-      ss.remove k
+      _ := ss.remove k
       set_of_hashable ss
 
 

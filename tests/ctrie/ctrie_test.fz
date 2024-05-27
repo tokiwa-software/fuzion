@@ -41,7 +41,7 @@ ctrie_test is
   all_items := ctrie.snapshot true
 
   for k in removed do
-    ctrie.remove k
+    _ := ctrie.remove k
 
   half_of_items := ctrie.snapshot true
 

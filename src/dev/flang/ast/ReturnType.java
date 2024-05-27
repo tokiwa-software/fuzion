@@ -56,6 +56,16 @@ public abstract class ReturnType extends ANY
 
 
   /**
+   * If this has a source code position, return it
+   *
+   * @return the source position or null if there is none (e.g. for NoType).
+   */
+  public SourcePosition posOrNull()
+  {
+    return null;
+  }
+
+  /**
    * true iff this is the return type of a constructor feature, i.e., "this" is
    * returned implicitly instead of "result".
    *

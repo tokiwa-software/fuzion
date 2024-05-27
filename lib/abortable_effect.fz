@@ -66,3 +66,20 @@ public abortable_effect(R type) : effect effect_mode.plain is
           nil => panic "fatal misuse detected, you did not use effect currently installed in env for aborting."
           r R => r
 
+
+
+  # run `f`.
+  # if `f` ran to completion its result
+  # otherwise run def and return its result.
+  #
+  public run(T type, f, def ()->T) T =>
+    match go f
+      t T => t
+      r R => def()
+
+
+# abortable_effect that does not return value on abort
+#
+public abortable_effect : abortable_effect unit is
+  public abort => abort unit
+  public return => return unit

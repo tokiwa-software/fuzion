@@ -71,7 +71,7 @@ public class AstErrors extends ANY
       return switch (this)
         {
           case Pre  -> "Precondition";
-          case Post -> "Postcontion";
+          case Post -> "Postcondition";
         };
     }
 
@@ -981,12 +981,51 @@ public class AstErrors extends ANY
           solution);
   }
 
-  public static void cannotRedefineChoice(AbstractFeature f, AbstractFeature existing)
+  static void cannotRedefineChoice(AbstractFeature f, AbstractFeature existing)
   {
     cannotRedefine(f.pos(), f, existing, "Cannot redefine choice feature",
                    "To solve this, re-think what you want to do.  Choice types are fairly static and not extensible. " +
                    "If you need an extensible type, an abstract "+code("ref")+" feature with children for each case " +
                    "might fit better. ");
+  }
+
+  public static void cannotRedefine(AbstractFeature f, AbstractFeature existing)
+  {
+    if (any() && f.isTypeFeature() || existing.isTypeFeature())
+      {
+        // suppress subsequent errors in auto-generated type features
+      }
+    else if (existing.isChoice())
+      {
+        cannotRedefineChoice(f, existing);
+      }
+    else if (f.isChoice())
+      {
+        cannotRedefine(f.pos(), f, existing,
+                       "Redefinition cannot be a choice",
+                       "To solve this, re-think what you want to do.  Maybe define a new choice type with a different name instead.");
+      }
+    else if (existing.isConstructor() || f.isConstructor())
+      {
+        cannotRedefine(f.pos(), f, existing,
+                       existing.isConstructor() ? "Cannot redefine constructor"
+                                                : "Redefinition cannot be a constructor",
+                       "To solve this, re-think what you want to do.  The result type of a constructor is defined " +
+                       "by the feature itself, so the result type of a redefinition would usually be incompatible. " +
+                       "If you do not intend to use the result value, just make this a routine with unit type result, "+
+                       "i.e., use " + code("=> unit") + " instead of " + code("is") + ".");
+      }
+    else if (existing.isTypeParameter() || f.isTypeParameter())
+      {
+        cannotRedefine(f.pos(), f, existing,
+                       existing.isTypeParameter() ? "Cannot redefine a type parameter"
+                                                  : "Redefinition cannot be a type parameter",
+                       "To solve this, re-think what you want to do.  Maybe introduce a type parameter with a new name.");
+      }
+    else
+      {
+        fatal("AstErrors.cannotRedefine called with existing: "+existing.kind()+" f: "+f.kind());
+      }
   }
 
   public static void redefineModifierMissing(SourcePosition pos, AbstractFeature f, AbstractFeature existing)
@@ -1377,13 +1416,6 @@ public class AstErrors extends ANY
           "Formal type parameter declared in " + generic.typeParameter().pos().show() + "\n");
   }
 
-  static void refToChoice(SourcePosition pos)
-  {
-    error(pos,
-          "ref to a choice type is not allowed",
-          "a choice is always a value type");
-  }
-
   static void genericsMustBeDisjoint(SourcePosition pos, AbstractType t1, AbstractType t2)
   {
     error(pos,
@@ -1568,6 +1600,17 @@ public class AstErrors extends ANY
     error(pos,
           "Choice feature must not be abstract",
           "A choice feature must be a normal feature with empty code section");
+  }
+
+  static void choiceMustNotHaveResultType(SourcePosition pos, ReturnType rt)
+  {
+    var rtPos = rt.posOrNull();
+    error(pos,
+          "Choice feature must not have a result type",
+          "A choice feature cannot be called, so it does not make sense to define a result type of a choice.\n" +
+          "Result type " + s(rt) + (rtPos != null
+                                    ? " at " + rtPos.show()
+                                    : ""));
   }
 
   static void choiceMustNotBeIntrinsic(SourcePosition pos)

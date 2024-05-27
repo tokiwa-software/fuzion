@@ -385,7 +385,7 @@ long fzE_get_file_size(FILE* file) {
  */
 void * fzE_mmap(FILE * file, off_t offset, size_t size, int * result) {
 
-  if (fzE_get_file_size(file) < (offset + size)){
+  if ((unsigned long)fzE_get_file_size(file) < (offset + size)){
     result[0] = -1;
     return NULL;
   }
@@ -539,7 +539,8 @@ void fzE_init()
 /**
  * Start a new thread, returns a pointer to the thread.
  */
-int64_t fzE_thread_create(void* code, void* args)
+int64_t fzE_thread_create(void *(*code)(void *),
+                          void *restrict args)
 {
 #ifdef FUZION_ENABLE_THREADS
   pthread_t * pt = fzE_malloc_safe(sizeof(pthread_t));

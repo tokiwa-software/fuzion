@@ -64,7 +64,7 @@ public fuzion.java is
 
     is_null0(jr fuzion.sys.Pointer) bool => intrinsic_constructor
 
-    # NYI: UNDER DEVELOPEMENT:
+    # NYI: UNDER DEVELOPMENT:
     # redef as_string String =>
     #   call_virtual "java.lang.Object" "toString" "()Ljava.lang.String;" Java_Object.this []
 
@@ -313,7 +313,7 @@ public fuzion.java is
   public f64   .as_java_object => fuzion.java.f64_to_java_object val
   public bool  .as_java_object => fuzion.java.bool_to_java_object bool.this
   public String.as_java_object => fuzion.java.string_to_java_object String.this
-  # NYI: UNDER DEVELOPEMENT: Repeated inheritance of conflicting features
+  # NYI: UNDER DEVELOPMENT: Repeated inheritance of conflicting features
   # public array .as_java_object => fuzion.java.array_to_java_object array.this
   # NYI: BUG:Feature declared using modifier 'redef' does not redefine another feature
   # public redef Const_String.as_java_object => fuzion.java.array_to_java_object Const_String.this
