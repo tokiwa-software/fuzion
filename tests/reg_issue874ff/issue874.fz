@@ -168,7 +168,7 @@ test_cov_DFA_pop is
 test_cov_DFA_pop
 
 
-# exmple from #891, but declaring n as ref
+# example from #891, but declaring n as ref
 #
 test_cov2 is
 
@@ -189,7 +189,7 @@ s := (test_cov2.i false).as_string
 say s
 
 
-# exmple from #891, but declaring n as ref and simplified
+# example from #891, but declaring n as ref and simplified
 #
 test_cov2a0 is
 
@@ -208,7 +208,7 @@ _ := (test_cov2a0.i false).f
 
 
 
-# example form #904
+# example from #904
 #
 test_cov3 is
   a ref is
@@ -223,7 +223,7 @@ test_cov3 is
 _ := test_cov3
 
 
-# example form #904, modified to call g
+# example from #904, modified to call g
 #
 test_cov3a is
   a ref is
@@ -237,7 +237,7 @@ test_cov3a is
 _ := test_cov3a
 
 
-# exmple form #905
+# example from #905
 #
 test_cov4 is
   a ref is
@@ -254,7 +254,7 @@ test_cov4 is
 _ := test_cov4
 
 
-# exmple form #905 with a and b containing data, so not unit types
+# example from #905 with a and b containing data, so not unit types
 #
 test_cov4a is
   a ref is
@@ -370,7 +370,7 @@ say ur.a.x
 say uc.x
 
 
-# exmple from #930
+# example from #930
 #
 test_generic_this_type is
 
