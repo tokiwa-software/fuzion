@@ -342,7 +342,7 @@ public class Call extends AbstractCall
        Expr            target,
        AbstractFeature anonymous)
   {
-    this(pos, target, null, Expr.NO_EXPRS);
+    this(pos, target, anonymous.featureName().baseName(), Expr.NO_EXPRS);
     this._calledFeature = anonymous;
   }
 
@@ -418,7 +418,49 @@ public class Call extends AbstractCall
   }
 
 
+
+  /**
+   * Constructor used to clone a call for clonePostCondition.
+   *
+   * @param thiz the original call
+   *
+   * @param the redefined feature that inherits this call as part of its postcondition.
+   *
+   * @param from the original feature this was used in.
+   */
+  Call(Call thiz, AbstractFeature to, AbstractFeature from)
+  {
+    this._pos = thiz._pos;
+    this._name = thiz._name;
+    this._select = thiz._select;
+    this._generics = thiz._generics;
+    this._unresolvedGenerics = thiz._unresolvedGenerics;
+    this._actuals = thiz._actuals.map2(x->x.clonePostCondition(to, from));
+    this._target = thiz._target == null ? null : thiz._target.clonePostCondition(to, from);
+    check
+      (thiz._calledFeature == null);
+    var cf = thiz._calledFeature;
+    if (cf != null /*&& cf.isOuterRef()*/) System.out.println("ACCESSING "+cf.qualifiedName()+" at "+pos().show());
+    this._calledFeature = cf;
+    this._type = thiz._type;
+  }
+
+
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * When inheriting a post-condition during redefintion, this creates a clone
+   * of the inherited condition.
+   *
+   * @param to the redefining feature that inherits a contract
+   *
+   * @param from the redefined feature this contract should inherit from.
+   */
+  public Expr clonePostCondition(AbstractFeature to, AbstractFeature from)
+  {
+    return new Call(this, to, from);
+  }
 
 
   /**
@@ -832,24 +874,22 @@ public class Call extends AbstractCall
   FeatureAndOuter partiallyApplicableAlternative(Resolution res, AbstractFeature outer, AbstractType expectedType)
   {
     if (PRECONDITIONS) require
-      (expectedType.isFunctionType());
+      (expectedType.isFunctionType(),
+       _name != null);
 
     FeatureAndOuter result = null;
-    if (_name != null)  // NYI: CLEANUP: _name is null for call to anonymous inner feature. Should better be the name of the called feature
-      {
-        var n = expectedType.arity() + (_wasImplicitImmediateCall ? _originalArgCount : _actuals.size());
-        var newName = newNameForPartial(expectedType);
-        var name = newName != null ? newName : _name;
+    var n = expectedType.arity() + (_wasImplicitImmediateCall ? _originalArgCount : _actuals.size());
+    var newName = newNameForPartial(expectedType);
+    var name = newName != null ? newName : _name;
 
-        // if loadCalledFeatureUnlessTargetVoid has found a suitable called
-        // feature in an outer feature, it will have replaced a null _target, so
-        // we check _originalTarget here to not check all outer features:
-        var traverseOuter = _originalTarget == null;
-        var targetFeature = traverseOuter ? outer : targetFeature(res, outer);
-        var fos = res._module.lookup(targetFeature, name, this, traverseOuter, false);
-        var calledName = FeatureName.get(name, n);
-        result = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> ff.valueArguments().size() == n);
-      }
+    // if loadCalledFeatureUnlessTargetVoid has found a suitable called
+    // feature in an outer feature, it will have replaced a null _target, so
+    // we check _originalTarget here to not check all outer features:
+    var traverseOuter = _originalTarget == null;
+    var targetFeature = traverseOuter ? outer : targetFeature(res, outer);
+    var fos = res._module.lookup(targetFeature, name, this, traverseOuter, false);
+    var calledName = FeatureName.get(name, n);
+    result = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> ff.valueArguments().size() == n);
     return result;
   }
 

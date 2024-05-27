@@ -189,7 +189,8 @@ void fzE_init();
 /**
  * Start a new thread, returns a pointer to the thread.
  */
-int64_t fzE_thread_create(void* code, void* args);
+int64_t fzE_thread_create(void *(*code)(void *),
+                          void *restrict);
 
 /**
  * Join with a running thread.
@@ -315,7 +316,7 @@ bool fzE_java_object_is_null(jobject jobj);
 
 // get length of the jarray
 int32_t fzE_array_length(jarray array);
-jvalue fzE_array_to_java_object0(jsize length, jvalue *args, char * element_class_name);
+jvalue fzE_array_to_java_object0(jsize length, jvalue *args, const char * element_class_name);
 // get element in array at index
 jvalue fzE_array_get(jarray array, jsize index, const char *sig);
 

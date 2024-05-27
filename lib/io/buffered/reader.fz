@@ -70,11 +70,11 @@ public reader(rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file) 
 
   # fill the currently empty buffer with up to max_n bytes
   #
-  fill_buffer(max_n i32)
+  fill_buffer(max_n i32) unit
   pre match buffer
         a array => a.is_empty
         io.end_of_file => false
-  is
+  =>
     match rp.read max_n
       a array =>
         set buffer := a
@@ -88,9 +88,9 @@ public reader(rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file) 
 
   # discard n items from buffer
   #
-  public discard(n i32)
+  public discard(n i32) unit
   pre n >= 0
-  is
+  =>
     match buffer
       b array =>
         set buffer := (b.slice n b.length).as_array
@@ -102,8 +102,8 @@ public reader(rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file) 
   # discard complete buffer
   #
   # NYI naming this feature discard leads to error: Duplicate feature declaration
-  public discard_all
-  is
+  public discard_all unit
+  =>
     match buffer
       b array =>
         set buffer := []
@@ -130,16 +130,17 @@ public read_bytes(n i32) Sequence u8 ! reader =>
 
     res := (mutate.array u8).new mi
 
-    for n_read := 0, n_read + r
-    while n_read < n
-      r := match reader.read   # NYI: we should limit the number of byted read by reader.read, we can exceed n!
-          io.end_of_file => -1
-          a (array u8) =>
-            reader.discard a.length
-            for b in a do
-              res.add b
-            a.length
-    until r < 0
+    _ :=
+      for n_read := 0, n_read + r
+      while n_read < n
+        r := match reader.read   # NYI: we should limit the number of byted read by reader.read, we can exceed n!
+            io.end_of_file => -1
+            a (array u8) =>
+              reader.discard a.length
+              for b in a do
+                res.add b
+              a.length
+      until r < 0
     res.as_array
 
 
@@ -187,10 +188,11 @@ pre n >= 0
 
 
 # use the currently installed byte reader effect
-# to read until a line feed occurs.
-# returns the line
+# to read until the specified delimiter byte occurs
+# if specified, strips carriage return bytes before
+# the delimiter before returning the read data
 #
-public read_line String|io.end_of_file ! reader =>
+public read_delimiter (delim u8, strip_cr bool) String|io.end_of_file ! reader =>
 
   if reader.read ? io.end_of_file => true | * => false
     io.end_of_file
@@ -207,16 +209,16 @@ public read_line String|io.end_of_file ! reader =>
           a array =>
 
             # trailing carriage returns are dropped
-            add_to_res(a Sequence u8) is
+            add_to_res(a Sequence u8) unit =>
               if !a.is_empty
-                a1 := if a.last = character_encodings.ascii.cr
+                a1 := if strip_cr && a.last = character_encodings.ascii.cr
                           (a.slice 0 a.count-1)
                         else
                           a
                 for b in a1 do
                   res.add b
 
-            match (container.searchable_sequence a).index_of character_encodings.ascii.lf
+            match (container.searchable_sequence a).index_of delim
               idx i32 =>
                 add_to_res (a.slice 0 idx)
                 reader.discard idx+1
@@ -230,6 +232,14 @@ public read_line String|io.end_of_file ! reader =>
         utf8 Sequence u8 := res.as_array
 
 
+# use the currently installed byte reader effect
+# to read until a line feed occurs.
+# returns the line
+#
+public read_line String|io.end_of_file ! reader =>
+  read_delimiter character_encodings.ascii.lf true
+
+
 # Read input fully into an array of bytes until end_of_file is reached
 #
 public read_fully array u8 ! reader =>
@@ -240,14 +250,21 @@ public read_fully array u8 ! reader =>
     r.as_array
 
 
+# Read input fully and split it at the given delimiter. If specified, delete
+# any trailing carriage returns (ASCII 13) from the resulting strings.
+#
+public read_delimiter_full (delim String, strip_cr bool) array String ! reader =>
+  (String.from_bytes read_fully)
+    .split delim
+    .map (s -> if strip_cr && s.ends_with "\r" then s.substring 0 s.byte_length-1 else s)
+    .as_array
+
+
 # Read input fully and split it at linefeed (ASCII 10) characters. Delete
 # any trailing carriage returns (ASCII 13) from the resulting strings.
 #
 public read_lines array String ! reader =>
-  (String.from_bytes read_fully)
-    .split "\n"
-    .map (s -> if s.ends_with "\r" then s.substring 0 s.byte_length-1 else s)
-    .as_array
+  read_delimiter_full "\n" true
 
 
 # Read input line by line calling `f` for each line until `f` returns false

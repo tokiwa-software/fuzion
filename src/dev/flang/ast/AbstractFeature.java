@@ -330,14 +330,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   boolean isBaseChoice()
   {
-    if (PRECONDITIONS) require
-      (state().atLeast(State.RESOLVED_DECLARATIONS));
-
-    // NYI: cleanup: would be nice to implement this as follows or similar:
-    //
-    //   return this == Types.resolved.f_choice;
-    //
-    return (featureName().baseName().equals("choice") && featureName().argCount() == 1 && outer().isUniverse());
+    return this == Types.resolved.f_choice;
   }
 
 
@@ -497,7 +490,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             if (CHECKS) check
               (Errors.any() || p.calledFeature() != null);
 
-            if (p.calledFeature() == Types.resolved.f_choice)
+            if (p.calledFeature().isBaseChoice())
               {
                 if (lastP != null)
                   {

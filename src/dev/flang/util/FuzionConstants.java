@@ -407,7 +407,7 @@ public class FuzionConstants extends ANY
   /**
    * modifierToString
    *
-   * @return space separated modifieres string.
+   * @return space separated modifiers string.
    */
   public static String modifierToString(int m)
   {

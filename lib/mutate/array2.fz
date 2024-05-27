@@ -1,0 +1,98 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature mutate.array2
+#
+# -----------------------------------------------------------------------
+
+# create a mutable array with two dimensions.
+#
+module:public array2 (
+       # element type
+       public T type,
+
+       # length of the array to create
+       public length0 i64,
+       public length1 i64,
+
+       # contents of the array
+       module data fuzion.sys.internal_array T,
+       _ unit
+
+      ) : container.Mutable_Array2 T mutate.this, mutable_element
+pre
+  safety: length0 ≥ 0
+  safety: length0 ≤ data.length.as_i64
+  safety: length1 ≥ 0
+  safety: length1 ≤ data.length.as_i64
+  safety: length0 *? length1 >=? 0
+  safety: length0 * length1 ≤ data.length.as_i64
+is
+
+  # get element at given index i
+  #
+  public redef index [ ] (i1, i2 i64) T
+  =>
+    data[i1.as_i32 * length1.as_i32 + i2.as_i32]
+
+
+  # set element at given index i to given value o
+  #
+  public redef set [ ] (i1, i2 i64, o T) unit
+  =>
+    check_and_replace
+    data[i1.as_i32 * length1.as_i32 + i2.as_i32] := o
+
+
+  # create immutable array from this
+  #
+  public redef as_array =>
+    array T (length0.as_i32 * length1.as_i32) (i -> data[i])
+
+
+  # create a list from this array
+  #
+  public redef as_list =>
+    # since array is mutable,
+    # we first copy the elements
+    # to an immutable array.
+    as_array.as_list
+
+
+  # initialize two-dimensional mutable array
+  #
+  public type.new
+   (LM type : mutate,
+
+    # length of the array to create
+    length0 i64,
+    length1 i64,
+
+    # initial value for elements
+    init2 (i64, i64) -> T
+
+   ) container.Mutable_Array2 T LM
+  =>
+    data := fuzion.sys.internal_array_init T (length0.as_i32 * length1.as_i32)
+
+    for i1 in (i64 0)..length0-1 do
+      for i2 in (i64 0)..length1-1 do
+        data[i1.as_i32 * length1.as_i32 + i2.as_i32] := init2 i1 i2
+
+    LM.env.array2 T length0 length1 data unit

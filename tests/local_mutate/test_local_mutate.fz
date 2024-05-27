@@ -269,7 +269,7 @@ test_local_mutate is
              data T) ref : Ring T is
 
 
-      # mutable references to next and previous. Initalizes to refer to
+      # mutable references to next and previous. Initializes to refer to
       # Mut_Ring.this to form a minimal ring
       #
       private n := LM.env.new (Mut_Ring LM T) Mut_Ring.this

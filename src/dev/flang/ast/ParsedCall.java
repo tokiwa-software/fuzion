@@ -31,7 +31,6 @@ import java.util.ListIterator;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
-import dev.flang.util.SourcePosition;
 
 
 /**
@@ -125,11 +124,32 @@ public class ParsedCall extends Call
   }
 
 
+  public ParsedCall(ParsedCall thiz, AbstractFeature to, AbstractFeature from)
+  {
+    super(thiz, to, from);
+    _parsedName = thiz._parsedName;
+  }
+
+
   /*-----------------------------  methods  -----------------------------*/
 
 
   /**
-   * Is this an operator excpression of the form `expr1 | expr2`?  This is used
+   * When inheriting a post-condition during redefintion, this creates a clone
+   * of the inherited condition.
+   *
+   * @param to the redefining feature that inherits a contract
+   *
+   * @param from the redefined feature this contract should inherit from.
+   */
+  public Expr clonePostCondition(AbstractFeature to, AbstractFeature from)
+  {
+    return new ParsedCall(this, to, from);
+  }
+
+
+  /**
+   * Is this an operator expression of the form `expr1 | expr2`?  This is used
    * by `asParsedType` for choice-type syntax sugar.
    *
    * @param parenthesesAllowed if true, `(expr1 | expr2)` is accepted, with an
@@ -146,7 +166,7 @@ public class ParsedCall extends Call
 
 
   /**
-   * Is this an operator excpression of the form `expr1 -> expr2`?  This is used
+   * Is this an operator expression of the form `expr1 -> expr2`?  This is used
    * by `asParsedType` for function-type syntax sugar.
    *
    * @true iff this is a call to `infix ->`.

@@ -629,7 +629,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
     var result = this;
     var t = type();
 
-    if (!t.isVoid())
+    if (!t.isVoid() && (frmlT.isAssignableFrom(t) || frmlT.isAssignableFrom(t.asRef())))
       {
         if (needsBoxing(frmlT))
           {
@@ -649,7 +649,8 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
         || t.isVoid()
         || frmlT.isGenericArgument()
         || frmlT.isThisType()
-        || !result.needsBoxing(frmlT));
+        || !result.needsBoxing(frmlT)
+        || !(frmlT.isAssignableFrom(t) || frmlT.isAssignableFrom(t.asRef())));
 
     return result;
   }
@@ -813,6 +814,20 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   public boolean producesResult()
   {
     return true;
+  }
+
+
+  /**
+   * When inheriting a post-condition during redefintion, this creates a clone
+   * of the inherited condition.
+   *
+   * @param to the redefining feature that inherits a contract
+   *
+   * @param from the redefined feature this contract should inherit from.
+   */
+  public Expr clonePostCondition(AbstractFeature to, AbstractFeature from)
+  {
+    return this;
   }
 
 

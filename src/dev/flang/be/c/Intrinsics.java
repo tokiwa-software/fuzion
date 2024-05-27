@@ -397,8 +397,7 @@ public class Intrinsics extends ANY
           return CExpr.call("fzE_file_open", new List<>(
               A0.castTo("char *"),
               A1.castTo("int64_t *"),
-              A2.castTo("int8_t")))
-              .ret();
+              A2.castTo("int8_t")));
         }
         );
     put("fuzion.sys.fileio.close"   , (c,cl,outer,in) ->

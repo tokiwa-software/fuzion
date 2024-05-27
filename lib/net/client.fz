@@ -51,7 +51,7 @@ public client(T type, rh Request_Handler T, f net.family.val, p net.protocol.val
         (net.channel desc).go ()->
           rh.handle_request
 
-      fuzion.sys.net.close desc
+      _ := fuzion.sys.net.close desc
 
       res
 

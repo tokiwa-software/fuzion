@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.ANY;
 import dev.flang.util.List;
 import dev.flang.util.SourceRange;
 
@@ -35,7 +36,7 @@ import dev.flang.util.SourceRange;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Contract
+public class Contract extends ANY
 {
 
   /*----------------------------  constants  ----------------------------*/
@@ -45,6 +46,7 @@ public class Contract
    * Empty list of conditions.
    */
   static final List<Cond> NO_COND = new List<>();
+  static { NO_COND.freeze(); }
 
 
   /**
@@ -65,7 +67,12 @@ public class Contract
   /**
    *
    */
-  public List<Cond> ens;
+  public List<Cond> _declared_postconditions;
+
+  /**
+   * post-conditions inherited from redefined features.
+   */
+  public List<Cond> _inherited_postconditions = NO_COND;
 
 
   /**
@@ -90,7 +97,7 @@ public class Contract
     _hasPreElse  = hasElse;
     _hasPostThen = hasThen;
     req = r == null || r.isEmpty() ? NO_COND : r;
-    ens = e == null || e.isEmpty() ? NO_COND : e;
+    _declared_postconditions = e == null || e.isEmpty() ? NO_COND : e;
   }
 
 
@@ -119,7 +126,8 @@ public class Contract
     if (this != EMPTY_CONTRACT)
       {
         for (Cond c: req) { c.visit(v, outer); }
-        for (Cond c: ens) { c.visit(v, outer); }
+        for (Cond c: _inherited_postconditions) { c.visit(v, outer); }
+        for (Cond c: _declared_postconditions) { c.visit(v, outer); }
       }
   }
 
@@ -135,8 +143,40 @@ public class Contract
     if (this != EMPTY_CONTRACT)
       {
         for (Cond c: req) { c.visitExpressions(v); }
-        for (Cond c: ens) { c.visitExpressions(v); }
+        for (Cond c: _inherited_postconditions) { c.visitExpressions(v); }
+        for (Cond c: _declared_postconditions) { c.visitExpressions(v); }
       }
+  }
+
+
+  /**
+   * Get a List of all post-conditions in order, i.e., inherited first in order
+   * defined by order of the inherit-clauses, then declared.
+   */
+  public List<Cond> all_postconditions()
+  {
+    List<Cond> result;
+    if (_inherited_postconditions.isEmpty())
+      {
+        result = _declared_postconditions;
+      }
+    else if (_declared_postconditions.isEmpty())
+      {
+        result = _inherited_postconditions;
+      }
+    else
+      {
+
+        /*
+    // tag::fuzion_rule_SEMANTIC_CONTRACT_POST_ORDER[]
+The conditions of a post-condition are checked at run-time in sequential source-code order after any inherited post-conditions have been checked. Inherited post-conditions of redefined inherited features are checked at runtime in the source code order of the `inherit` clause of the corresponding outer features.
+    // end::fuzion_rule_SEMANTIC_CONTRACT_POST_ORDER[]
+        */
+        result = new List<>();
+        result.addAll(_inherited_postconditions);
+        result.addAll(_declared_postconditions);
+      }
+    return result;
   }
 
 
@@ -145,10 +185,14 @@ public class Contract
    * preconditions ORed and postconditions ANDed.  This feature performs this
    * condition inheritance.
    *
+   * @param to the redefining feature that inherits a contract
+   *
    * @param from the redefined feature this contract should inherit from.
    */
-  public void addInheritedContract(AbstractFeature from)
+  public void addInheritedContract(AbstractFeature to, AbstractFeature from)
   {
+    var c = from.contract();
+
     // precondition inheritance is the disjunction with the conjunction of all inherited conditions, i.e, in
     //
     //   a is
@@ -161,7 +205,7 @@ public class Contract
     //   b : a is
     //     redef f pre (a && b && c) || (d && e && f) =>
     //
-    for (var e : from.contract().req)
+    for (var e : c.req)
       {
         // NYI: missing support precondition inheritance!
       }
@@ -177,14 +221,10 @@ public class Contract
     //
     //     redef f post a && b && c && d && e && f =>
     //
-    for (var e : from.contract().ens)
+    for (var e : c.all_postconditions())
       {
-        // NYI: missing support for postcondition inheritance, works for simple
-        // cases if `if (false)` is removed, but requires tests!
-        if (false)
-          {
-            ens.add(e);
-          }
+        var ne = e.clonePostCondition(to, from);
+        _inherited_postconditions = _inherited_postconditions.addAfterUnfreeze(ne);
       }
   }
 
@@ -197,13 +237,19 @@ public class Contract
   public String toString()
   {
     StringBuffer res = new StringBuffer();
-    if ((req != null) && (!req.isEmpty()))
+    if (_hasPre != null)
       {
-        res.append("\n  require ").append(req);
+        res
+          .append("\n  pre ")
+          .append(_hasPreElse != null ? "else " : "")
+          .append(req);
       }
-    if ((ens != null) && (!ens.isEmpty()))
+    if (_hasPost != null)
       {
-        res.append("\n  ensure ").append(ens);
+        res
+          .append("\n  post ")
+          .append(_hasPostThen != null ? "then " : "")
+          .append(_declared_postconditions);
       }
     return res.toString();
   }

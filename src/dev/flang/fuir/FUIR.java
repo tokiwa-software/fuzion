@@ -34,7 +34,6 @@ import java.util.BitSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import java.util.function.Supplier;
 
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
@@ -1010,7 +1009,7 @@ hw25 is
 
 
   /**
-   * This has to be called after `super.addoCode(List)` was called to record the
+   * This has to be called after `super.addCode(List)` was called to record the
    * clazz and whether the code belongs to a precondition for all sites of the
    * newly added code.
    *
@@ -1097,7 +1096,7 @@ hw25 is
     var ff = cc.feature();
     var ccontract = ff.contract();
     var cond = (ccontract != null && ck == ContractKind.Pre  ? ccontract.req :
-                ccontract != null && ck == ContractKind.Post ? ccontract.ens : null);
+                ccontract != null && ck == ContractKind.Post ? ccontract.all_postconditions() : null);
     // NYI: PERFORMANCE: Always iterating the conditions results in performance
     // quadratic in the number of conditions.  This could be improved by
     // filtering BoolConst.TRUE once and reusing the resulting cond.
@@ -2433,7 +2432,7 @@ hw25 is
    * error since there is no expression before 'mul 1 (sub current.n (add
    * current.m 2))'.
    *
-   * @param s site to start skiping backwards from
+   * @param s site to start skipping backwards from
    */
   public int skipBack(int s)
   {
