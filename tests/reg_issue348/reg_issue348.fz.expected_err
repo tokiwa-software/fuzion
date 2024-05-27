@@ -1,7 +1,7 @@
 
-$MODULE/mutate.fz:282:7: error 1: Failed to verify that effect 'reg_issue348.m' is installed in current environment.
-      LM.env.array T length data unit
-------^^^^^^
+$MODULE/mutate/array.fz:106:5: error 1: Failed to verify that effect 'reg_issue348.m' is installed in current environment.
+    LM.env.array T length data unit
+----^^^^^^
 Callchain that lead to this point:
 
 effect environment '--empty--' for call to '((mutate.#type mutate).array.#type (mutate.array reg_issue348#0.a) reg_issue348#0.a).new reg_issue348#0.m' at --CURDIR--/reg_issue348.fz:33:32:
