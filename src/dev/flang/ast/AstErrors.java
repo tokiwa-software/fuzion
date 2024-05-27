@@ -1416,13 +1416,6 @@ public class AstErrors extends ANY
           "Formal type parameter declared in " + generic.typeParameter().pos().show() + "\n");
   }
 
-  static void refToChoice(SourcePosition pos)
-  {
-    error(pos,
-          "ref to a choice type is not allowed",
-          "a choice is always a value type");
-  }
-
   static void genericsMustBeDisjoint(SourcePosition pos, AbstractType t1, AbstractType t2)
   {
     error(pos,
@@ -1607,6 +1600,17 @@ public class AstErrors extends ANY
     error(pos,
           "Choice feature must not be abstract",
           "A choice feature must be a normal feature with empty code section");
+  }
+
+  static void choiceMustNotHaveResultType(SourcePosition pos, ReturnType rt)
+  {
+    var rtPos = rt.posOrNull();
+    error(pos,
+          "Choice feature must not have a result type",
+          "A choice feature cannot be called, so it does not make sense to define a result type of a choice.\n" +
+          "Result type " + s(rt) + (rtPos != null
+                                    ? " at " + rtPos.show()
+                                    : ""));
   }
 
   static void choiceMustNotBeIntrinsic(SourcePosition pos)

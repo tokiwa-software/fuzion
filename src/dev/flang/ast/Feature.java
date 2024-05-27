@@ -1568,15 +1568,22 @@ public class Feature extends AbstractFeature
     res._module.forEachDeclaredOrInheritedFeature(this,
                                                   p ->
       {
-        // choice type must not have any fields
-        if (p.isField() && !p.isOuterRef() &&
-            !(Errors.any() && (p instanceof Feature pf && (pf.isArtificialField() || /* do not report auto-generated fields like `result` in choice if there are other problems */
-                                                           pf.isResultField()
-                                                           )
-                               )
-              )
-            )
-          {
+        if (_returnType != NoType.INSTANCE &&
+            _returnType != ValueType.INSTANCE)
+          { // choice type must not have a result type
+            if (!(Errors.any() && _returnType == RefType.INSTANCE))  // this was covered by AstErrors.choiceMustNotBeRef
+              {
+                AstErrors.choiceMustNotHaveResultType(_pos, _returnType);
+              }
+          }
+        else if (p.isField() && !p.isOuterRef() &&
+                 !(Errors.any() && (p instanceof Feature pf && (pf.isArtificialField() || /* do not report auto-generated fields like `result` in choice if there are other problems */
+                                                                pf.isResultField()
+                                                                )
+                                    )
+                   )
+                 )
+          { // choice type must not have any fields
             AstErrors.mustNotContainFields(_pos, p, "Choice");
           }
       });
