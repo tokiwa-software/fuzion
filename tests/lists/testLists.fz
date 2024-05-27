@@ -34,7 +34,7 @@ testLists is
     OptNode : choice Node Nil is
 
     h := mut OptNode Nil
-    add(e T) is
+    add(e T) =>
       h <- Node e h Nil
 
     print => print h.get

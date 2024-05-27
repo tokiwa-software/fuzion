@@ -25,7 +25,7 @@
 
 genericstest is
 
-  chck(b bool, msg String) is
+  chck(b bool, msg String) =>
     s := if b
       "PASSED: "
     else
@@ -43,10 +43,10 @@ genericstest is
     OptNode : choice Node Nil is
 
     h OptNode := Nil
-    add(e T) is
+    add(e T) =>
       set h := Node e h Nil
 
-    print is
+    print =>
       // for   -- NYI: must update i in the loop prolog
       i := h
       while (i ? Node => { true } | Nil => false)  // NYI: This screams for recursion
@@ -151,10 +151,10 @@ genericstest is
   lc3.print
   yak "3: size: {lc3.size}"
 
-  outerGenerics is
+  outerGenerics =>
     A(T, U type) is
       B(V, W type, y U) is
-        p is
+        p =>
           say "y is{y}"
     x0 A i32 bool := A i32 bool
     x1 (A i32 bool).B String bool := (A i32 bool).B String bool true
@@ -163,7 +163,7 @@ genericstest is
 
   outerGenerics  // should print "y is true".
 
-  opengenerics12 is
+  opengenerics12 =>
 
     F(A type...) ref is
       f(a A) unit => abstract

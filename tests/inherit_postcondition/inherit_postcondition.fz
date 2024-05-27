@@ -56,7 +56,7 @@ test_postcondition is
       say "PASS: $order"
     else
       say "FAIL: EXPECTED $expected GOT $order"
-      set_exit_code 1
+      _ := set_exit_code 1
     order <- ""
 
 
@@ -251,26 +251,26 @@ test_postcondition is
     =>
       112
 
-  post_accessing_result.f
-  post_accessing_result.g
-  post_accessing_result_child.f
-  post_accessing_result_child.g
-  post_accessing_result_child2.f
-  post_accessing_result_child2.g
-  post_accessing_result_child3.f
-  post_accessing_result_child4.f
+  _ := post_accessing_result.f
+  _ := post_accessing_result.g
+  _ := post_accessing_result_child.f
+  _ := post_accessing_result_child.g
+  _ := post_accessing_result_child2.f
+  _ := post_accessing_result_child2.g
+  _ := post_accessing_result_child3.f
+  _ := post_accessing_result_child4.f
 
 
   # ------ accesssing postconditions in a module
 
-  mod.post_accessing_result.f
-  mod.post_accessing_result.g
-  mod.post_accessing_result_child.f
-  mod.post_accessing_result_child.g
-  mod.post_accessing_result_child2.f
-  mod.post_accessing_result_child2.g
-  mod.post_accessing_result_child3.f
-  mod.post_accessing_result_child4.f
+  _ := mod.post_accessing_result.f
+  _ := mod.post_accessing_result.g
+  _ := mod.post_accessing_result_child.f
+  _ := mod.post_accessing_result_child.g
+  _ := mod.post_accessing_result_child2.f
+  _ := mod.post_accessing_result_child2.g
+  _ := mod.post_accessing_result_child3.f
+  _ := mod.post_accessing_result_child4.f
 
   inh_module1 : mod.post_accessing_result is
     redef f

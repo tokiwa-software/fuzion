@@ -23,7 +23,7 @@
 
 reg_issue2878 =>
 
-  a (f String -> bool) is
+  a (f String -> bool) =>
 
   a s->!s.is_empty # does not work: ->! is parsed as operator
 

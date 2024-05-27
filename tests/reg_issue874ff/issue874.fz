@@ -28,7 +28,7 @@
 
 # first example from #874 assigning n.this to a field
 #
-test_this1 is
+test_this1 =>
 
   n is
     m => 3
@@ -47,7 +47,7 @@ test_this1
 
 # second example from #874 assigning n.this to a field
 #
-test_this2 is
+test_this2 =>
 
   n is
     m => 3
@@ -149,7 +149,7 @@ say (test_cov.i false)
 
 # example from #891 change such that is caused pop on empty stack
 #
-test_cov_DFA_pop is
+test_cov_DFA_pop =>
 
   rn ref is
     r String => abstract
@@ -210,7 +210,7 @@ _ := (test_cov2a0.i false).f
 
 # example from #904
 #
-test_cov3 is
+test_cov3 =>
   a ref is
 
     f (o a.this) unit =>
@@ -225,7 +225,7 @@ _ := test_cov3
 
 # example from #904, modified to call g
 #
-test_cov3a is
+test_cov3a =>
   a ref is
 
     f (o a.this) unit =>
@@ -239,7 +239,7 @@ _ := test_cov3a
 
 # example from #905
 #
-test_cov4 is
+test_cov4 =>
   a ref is
 
   #  x := ""
@@ -256,7 +256,7 @@ _ := test_cov4
 
 # example from #905 with a and b containing data, so not unit types
 #
-test_cov4a is
+test_cov4a =>
   a ref is
 
     x := ""
@@ -268,12 +268,12 @@ test_cov4a is
 
   _ := b
 
-_ := test_cov4a
+test_cov4a
 
 
 # example from #923
 #
-test_return_this is
+test_return_this =>
   a is
     x a.this =>
       a.this

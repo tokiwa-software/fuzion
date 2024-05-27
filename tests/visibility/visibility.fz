@@ -40,34 +40,34 @@ visibility is
       say "FAILED: expected $b got $a"
       _ := set_exit_code 1
 
-  visi1 is
+  visi1 =>
     a1 is
       b1 is
         c1(b bool) i32 =>
-          if b { a1; a2; b1; b2; c1 false; c2 false }
+          if b { _:=a1; _:=a2; _:=b1; _:=b2; _:=c1 false; _:=c2 false }
           11
 
         c2(b bool) i32 =>
-          if b { a1; a2; b1; b2; c1 false; c2 false }
+          if b { _:=a1; _:=a2; _:=b1; _:=b2; _:=c1 false; _:=c2 false }
           22
 
       b2 is
         c3(b bool) i32 =>
-          if b { a1; a2; b1; b2; c3 false; c4 false }
+          if b { _:=a1; _:=a2; _:=b1; _:=b2; _:=c3 false; _:=c4 false }
           33
 
         c4(b bool) i32 =>
-          if b { a1; a2; b1; b2; c3 false; c4 false }
+          if b { _:=a1; _:=a2; _:=b1; _:=b2; _:=c3 false; _:=c4 false }
           44
 
     a2 is
       b3 is
         c5(b bool) i32 =>
-          if b { a1; a2; b3; c5 false; c6 false }
+          if b { _:=a1; _:=a2; _:=b3; _:=c5 false; _:=c6 false }
           55
 
         c6(b bool) i32 =>
-          if b { a1; a2; b3; c5 false; c6 false }
+          if b { _:=a1; _:=a2; _:=b3; _:=c5 false; _:=c6 false }
           66
 
     chck (a1.b1.c1(true) = 11) "call a1.b1.c1"
@@ -79,7 +79,7 @@ visibility is
   visi1
 
 
-  visi2 is
+  visi2 =>
     count := 0
     expr => set count := count + 11; count
 
@@ -91,7 +91,7 @@ visibility is
         f2 := expr
         chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
         chck (f2 = 33 || f2 = 99) "can access f2"
-        c1 is
+        c1 =>
           chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
           chck (f2 = 33 || f2 = 99) "can access f2"
           f3 := expr
@@ -106,7 +106,7 @@ visibility is
         chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
         chck (f2 = 33 || f2 = 99) "can access f2"
 
-        c2 is
+        c2 =>
           chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
           chck (f2 = 33 || f2 = 99) "can access f2"
           f5 := expr
@@ -129,7 +129,7 @@ visibility is
       chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
       chck (f8 = 22 || f8 = 88 || f8 = 154) "can access f8"
 
-      b2 is
+      b2 =>
         chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
         chck (f8 = 22 || f8 = 88 || f8 = 154) "can access f8"
         f9 := expr
@@ -145,7 +145,7 @@ visibility is
   visi2
 
 
-  visi3 is
+  visi3 =>
     count := 0
     expr => set count := count + 11; count
 
@@ -157,7 +157,7 @@ visibility is
         f2 := expr
         set f1 := 111; chck (f1 = 111) "can assign f1"
         set f2 := 222; chck (f2 = 222) "can assign f2"
-        c1 is
+        c1 =>
           set f1 := 111; chck (f1 = 111) "can assign f1"
           set f2 := 222; chck (f2 = 222) "can assign f2"
           f3 := expr
@@ -172,7 +172,7 @@ visibility is
         set f1 := 111; chck (f1 = 111) "can assign f1"
         set f2 := 222; chck (f2 = 222) "can assign f2"
 
-        c2 is
+        c2 =>
           set f1 := 111; chck (f1 = 111) "can assign f1"
           set f2 := 222; chck (f2 = 222) "can assign f2"
           f5 := expr
@@ -195,7 +195,7 @@ visibility is
       set f1 := 111; chck (f1 = 111) "can assign f1"
       set f8 := 888; chck (f8 = 888) "can assign f8"
 
-      b2 is
+      b2 =>
         set f1 := 111; chck (f1 = 111) "can assign f1"
         set f8 := 888; chck (f8 = 888) "can assign f8"
         f9 := expr
@@ -210,7 +210,7 @@ visibility is
     unit
   visi3
 
-  visi4 is
+  visi4 =>
     a is
       x => "Outer!"
       chck (x = "Outer!") "outer x"
@@ -220,7 +220,7 @@ visibility is
         chck (a.this.x = "Outer!") "a.this.x"
         chck (b.this.x = "Inner!") "b.this.x"
 
-        c is
+        c =>
           # chck (x = "Inner Inner!") "inner inner x"     -- causes an error, `x` is ambiguous
           x => "Inner Inner!"
           # chck (x = "Inner Inner!") "inner inner x"     -- causes an error, `x` is ambiguous
@@ -231,7 +231,7 @@ visibility is
     unit
   visi4
 
-  visi5 is
+  visi5 =>
     a is
       x := "Outer!"
       chck (x = "Outer!") "outer x"
@@ -244,7 +244,7 @@ visibility is
         chck (a.this.x = "Outer!") "a.this.x"
         chck (b.this.x = "Inner!") "b.this.x"
 
-        c is
+        c =>
           chck (x = "Inner!") "inner x"
           chck (a.this.x = "Outer!") "a.this.x"
           chck (b.this.x = "Inner!") "b.this.x"
@@ -257,14 +257,14 @@ visibility is
     unit
   visi5
 
-  visi6 is
+  visi6 =>
     x := 2;        chck $x="2"                                    "x := 2"
     x := x.as_f64; chck ($x="2.0" || $x="2")                      "x := x.as_f64"
     x := x * 3.14; chck ($x="6.28"|| $x="6.28000000000000024869") "x := x * 3.14"
     x := x.as_i32; chck $x="6"                                    "x := x.as_i32"
   visi6
 
-  visi7 is
+  visi7 =>
     x := 2;          f () -> String := () -> "x is "+x+""
     x := x*x*x*x;    g () -> String := () -> "x is "+x+""
     x := x.as_string; h () -> String := () -> "x is "+x+""
@@ -283,22 +283,21 @@ visibility is
     chck (i1 = "x is 1616161616") "x is 1616161616"
   visi7
 
-  visi8(cond bool) is
-    a is
+  visi8(cond bool) =>
+    a => unit
     if cond
         a; b
-        b is
+        b => unit
         a; b
     else
         a; c
-        c is
+        c => unit
         a; c
     a
-    unit
   visi8 true
   visi8 false
 
-  visi9 is
+  visi9 =>
     a i32 => 3
     for
       ix1 := a, ix1 + a                  // can make unqualified call to a, ix1 ..
@@ -316,7 +315,7 @@ visibility is
     t := a
   visi9
 
-  visiB is
+  visiB =>
     rgb  (r,g,b   i32) is
     rgba (r,g,b,a i32) is
     cmyk (c,m,y,k i32) is

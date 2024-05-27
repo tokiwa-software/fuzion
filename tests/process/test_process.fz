@@ -32,7 +32,7 @@ test_process =>
           .map u8 (x -> codepoint.type.zero_char)
 
 
-  test(str String, f () -> outcome unit) is
+  test(str String, f () -> outcome unit) =>
     say "===  Test: $str  ==="
     match f()
       e error => say e
@@ -42,7 +42,7 @@ test_process =>
 
   test "write to stdin of process" ()->
     (process.spawn ["cat"]).bind unit p->
-      p.write_string "Hello from the other side."
+      _ := p.write_string "Hello from the other side."
       say p.wait
       say p.read_string
 
