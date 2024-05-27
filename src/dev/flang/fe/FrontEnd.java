@@ -43,6 +43,7 @@ import dev.flang.mir.MIR;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
+import dev.flang.ast.Contract;
 import dev.flang.ast.Expr;
 import dev.flang.ast.HasGlobalIndex;
 import dev.flang.ast.Feature;
@@ -160,6 +161,7 @@ public class FrontEnd extends ANY
     FeatureName.reset();
     Expr.reset();
     Call.reset();
+    Contract.reset();
     HasGlobalIndex.reset();
     var universe = new Universe();
     _universe = universe;

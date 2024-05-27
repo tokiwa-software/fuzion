@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = SquareRoot
+override NAME = catch_postcondition
 include ../simple.mk

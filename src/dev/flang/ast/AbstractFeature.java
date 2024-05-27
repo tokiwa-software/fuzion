@@ -310,6 +310,16 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public abstract Contract contract();
 
 
+  /**
+   * If this feature has a post condition or redefines a feature from which it
+   * inherits a post condition, this gives the feature that implements the post
+   * condition check.  The postFeature has tha same outer feature as the
+   * original feature and the same arguments except for an additional `result`
+   * argument in case the feature has a non-unit result.
+   */
+  public abstract AbstractFeature postFeature();
+
+
 
   /*-----------------------------  methods  -----------------------------*/
 
@@ -788,9 +798,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public AbstractFeature typeFeature(Resolution res)
   {
     if (PRECONDITIONS) require
-      (res.state(this).atLeast(State.FINDING_DECLARATIONS),
-       res != null,
+      (res != null,
        Errors.any() || !isUniverse(),
+       res.state(this).atLeast(State.FINDING_DECLARATIONS),
        !isTypeFeature());
 
     if (_typeFeature == null)

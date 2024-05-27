@@ -198,11 +198,15 @@ test_postcondition is
       post
         ok "original $result"
         { io.out.env.println "hi"; true }
-#        { v := post_accessing_result.this; true }    # NYI:  does not work yet!
-#        { [1,result,2].fold i32.sum > 3 }            # NYI:  does not work yet!
+        { v := post_accessing_result.this; true }
+        { [1,result,2].fold i32.sum > 3 }
+        { fn i32->i32 := *result; fn 3 > 120 }
         result > 23
     =>
       42
+
+    public g
+    => 420
 
   post_accessing_result_child : post_accessing_result is
     redef f
@@ -213,6 +217,13 @@ test_postcondition is
     =>
       4711
 
+    redef g
+      post then
+        ok "redef g $result"
+        { io.out.env.println "ho"; true }
+        result % 5 = 4
+    => 69
+
   post_accessing_result_child2 : post_accessing_result_child is
     redef f
       post then
@@ -222,16 +233,44 @@ test_postcondition is
     =>
       4716
 
+    redef g
+      post then
+        ok "redef g $result"
+        { io.out.env.println "he"; true }
+        result % 10 = 9
+    => 42069
+
+  post_accessing_result_child3 : post_accessing_result is
+    redef f
+      post then
+    =>
+      32168
+
+  post_accessing_result_child4 : post_accessing_result is
+    redef f
+    =>
+      112
+
   post_accessing_result.f
+  post_accessing_result.g
   post_accessing_result_child.f
+  post_accessing_result_child.g
   post_accessing_result_child2.f
+  post_accessing_result_child2.g
+  post_accessing_result_child3.f
+  post_accessing_result_child4.f
 
 
   # ------ accesssing postconditions in a module
 
   mod.post_accessing_result.f
+  mod.post_accessing_result.g
   mod.post_accessing_result_child.f
+  mod.post_accessing_result_child.g
   mod.post_accessing_result_child2.f
+  mod.post_accessing_result_child2.g
+  mod.post_accessing_result_child3.f
+  mod.post_accessing_result_child4.f
 
   inh_module1 : mod.post_accessing_result is
     redef f
@@ -249,11 +288,8 @@ test_postcondition is
     =>
       32168
 
-/*
   inh_module1.f
   inh_module2.f
-*/
-
 
   exit
 

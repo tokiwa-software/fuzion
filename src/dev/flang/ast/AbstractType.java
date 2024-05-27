@@ -1774,6 +1774,17 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         // unique due to overloading with different argument counts. So we add
         // the argument count to get a unique name.
         var fname = fn.baseName() + (f.definesType() ? "" : FuzionConstants.INTERNAL_NAME_PREFIX + fn.argCount());
+
+        // NYI: would be good if postFeatures could be identified not be string comparison, but with something like
+        // `f.isPostFeature()`. Note that this would need to be saved in .fum file as well!
+        ///
+        if (fname.startsWith(FuzionConstants.POSTCONDITION_FEATURE_PREFIX))
+          {
+            fname = fname.substring(FuzionConstants.POSTCONDITION_FEATURE_PREFIX.length(),
+                                    fname.lastIndexOf("_")) +
+              ".postcondition";
+          }
+
         result = outer
               + (isRef() != feature().isThisRef() ? (isRef() ? "ref " : "value ") : "" )
               + fname;

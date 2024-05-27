@@ -26,10 +26,11 @@
 inheritance is
 
 
-  curid i32 := 0
+  curid := mut 0
   id i32 =>
-    set result := curid
-    set curid := result + 1
+    res := curid.get
+    curid <- res + 1
+    res
 
   A ref is
     ident i32 := id
