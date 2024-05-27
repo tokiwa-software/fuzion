@@ -56,7 +56,7 @@ outerNormalization is
     b : a 3 is
     c : a 4 is
 
-    call_f (v a) unit is
+    call_f (v a) unit =>
       x a.f := v.f
       say "testConstructor: {x.s}"
 
@@ -77,7 +77,7 @@ outerNormalization is
 
     b : a 3 is
 
-    call_f (v a) unit is
+    call_f (v a) unit =>
       x a.f := v.f
       say "testConstructor2: {x.s}"
 
@@ -90,8 +90,8 @@ outerNormalization is
   #
   testNormalize is
     n(T type : n T) is
-      a T is abstract
-      b T is a
+      a T => abstract
+      b T => a
 
     rj ref : n j is
     j : rj is
@@ -112,8 +112,8 @@ outerNormalization is
   #
   testNormalize2 is
     n is
-      a i32 is abstract
-      b i32 is a
+      a i32 => abstract
+      b i32 => a
 
     rj ref : n is
     j : rj is
@@ -133,9 +133,6 @@ outerNormalization is
   # that should be converted to 'i32.infix ..' in FUIR:
   #
   testInterval is
-    x := 0..
-    y := x.as_stream
-    z := y.has_next
     for i in 0.. do
       say $i
     until i > 3

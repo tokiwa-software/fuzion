@@ -24,7 +24,8 @@
 # -----------------------------------------------------------------------
 
 JAVA = java
-JAVAC = javac -encoding UTF8 -source 17
+JAVA_VERSION = 21
+JAVAC = javac -encoding UTF8 -source $(JAVA_VERSION)
 FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SRC = $(FZ_SRC)/src
 BUILD_DIR = ./build
@@ -35,10 +36,12 @@ ifeq ($(FUZION_DEBUG_SYMBOLS),true)
 	JAVAC += -g
 endif
 
-JAVA_FILE_TOOLS_VERSION_IN =  $(SRC)/dev/flang/tools/Version.java.in
-JAVA_FILE_TOOLS_VERSION    =  $(BUILD_DIR)/generated/src/dev/flang/tools/Version.java
+UNICODE_SOURCE = https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt
 
-JAVA_FILES_UTIL              = $(wildcard $(SRC)/dev/flang/util/*.java          )
+JAVA_FILE_UTIL_VERSION_IN =  $(SRC)/dev/flang/util/Version.java.in
+JAVA_FILE_UTIL_VERSION    =  $(BUILD_DIR)/generated/src/dev/flang/util/Version.java
+
+JAVA_FILES_UTIL              = $(wildcard $(SRC)/dev/flang/util/*.java          ) $(JAVA_FILE_UTIL_VERSION)
 JAVA_FILES_UTIL_UNICODE      = $(wildcard $(SRC)/dev/flang/util/unicode/*.java  )
 JAVA_FILES_AST               = $(wildcard $(SRC)/dev/flang/ast/*.java           )
 JAVA_FILES_PARSER            = $(wildcard $(SRC)/dev/flang/parser/*.java        )
@@ -58,7 +61,7 @@ JAVA_FILES_BE_EFFECTS        = $(wildcard $(SRC)/dev/flang/be/effects/*.java    
 JAVA_FILES_BE_JVM            = $(wildcard $(SRC)/dev/flang/be/jvm/*.java        )
 JAVA_FILES_BE_JVM_CLASSFILE  = $(wildcard $(SRC)/dev/flang/be/jvm/classfile/*.java)
 JAVA_FILES_BE_JVM_RUNTIME    = $(wildcard $(SRC)/dev/flang/be/jvm/runtime/*.java)
-JAVA_FILES_TOOLS             = $(wildcard $(SRC)/dev/flang/tools/*.java         ) $(JAVA_FILE_TOOLS_VERSION)
+JAVA_FILES_TOOLS             = $(wildcard $(SRC)/dev/flang/tools/*.java         ) $(SRC)/module-info.java
 JAVA_FILES_TOOLS_FZJAVA      = $(wildcard $(SRC)/dev/flang/tools/fzjava/*.java  )
 JAVA_FILES_TOOLS_DOCS        = $(wildcard $(SRC)/dev/flang/tools/docs/*.java    )
 JAVA_FILES_MISC_LOGO         = $(wildcard $(SRC)/dev/flang/misc/logo/*.java     )
@@ -103,6 +106,8 @@ FUZION_FILES_INCLUDE = $(shell find $(FZ_SRC_INCLUDE) -name "*.h")
 MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_TERMINAL          = $(BUILD_DIR)/modules/terminal.fum
 MOD_LOCK_FREE         = $(BUILD_DIR)/modules/lock_free.fum
+MOD_NOM               = $(BUILD_DIR)/modules/nom.fum
+
 MOD_JAVA_BASE_DIR              = $(BUILD_DIR)/modules/java.base
 MOD_JAVA_XML_DIR               = $(BUILD_DIR)/modules/java.xml
 MOD_JAVA_DATATRANSFER_DIR      = $(BUILD_DIR)/modules/java.datatransfer
@@ -272,14 +277,17 @@ MOD_JDK_SECURITY_JGSS_FZ_FILES = $(MOD_JDK_SECURITY_JGSS_DIR)/__marker_for_make_
 MOD_JDK_XML_DOM_FZ_FILES = $(MOD_JDK_XML_DOM_DIR)/__marker_for_make__
 MOD_JDK_ZIPFS_FZ_FILES = $(MOD_JDK_ZIPFS_DIR)/__marker_for_make__
 
+MOD_FZ_CMD_DIR = $(BUILD_DIR)/modules/fz_cmd
+MOD_FZ_CMD_FZ_FILES = $(MOD_FZ_CMD_DIR)/__marker_for_make__
+MOD_FZ_CMD = $(MOD_FZ_CMD_DIR).fum
+
 VERSION = $(shell cat $(FZ_SRC)/version.txt)
 
 FUZION_BASE = \
 			$(BUILD_DIR)/bin/fz \
 			$(BUILD_DIR)/bin/fzjava \
-			$(MOD_BASE) \
-			$(MOD_TERMINAL) \
-			$(MOD_LOCK_FREE)
+			$(FZ_MODULES)
+
 
 # NYI: This is missing the following modules from JDK 17:
 #
@@ -354,9 +362,10 @@ FUZION_FILES = \
 			 $(BUILD_DIR)/README.md \
 			 $(BUILD_DIR)/release_notes.md
 
-# files required for fz command with interpreter backend
-FZ_INT = \
+# files required for fz command with jvm backend
+FZ_JVM = \
 			 $(BUILD_DIR)/bin/fz \
+			 $(CLASS_FILES_BE_JVM_RUNTIME) \
 			 $(MOD_BASE)
 
 # files required for fz command with C backend
@@ -365,15 +374,50 @@ FZ_C = \
 			 $(BUILD_DIR)/include \
 			 $(MOD_BASE)
 
+# files required for fz command with interpreter backends
+FZ_INT = \
+			 $(BUILD_DIR)/bin/fz \
+			 $(MOD_BASE)
+
+DOC_FILES_FUMFILE = $(BUILD_DIR)/doc/files/fumfile.html     # fum file format documentation created with asciidoc
+DOC_DESIGN_JVM    = $(BUILD_DIR)/doc/design/jvm.html
+
+REF_MANUAL_SOURCE  = $(FZ_SRC)/doc/ref_manual/fuzion_reference_manual.adoc
+REF_MANUAL_SOURCES = $(wildcard $(FZ_SRC)/doc/ref_manual/*.adoc) \
+                     $(wildcard $(FZ_SRC)/doc/ref_manual/*.txt) \
+                     $(BUILD_DIR)/generated/doc/unicode_version.adoc \
+                     $(BUILD_DIR)/generated/doc/codepoints_white_space.adoc \
+                     $(BUILD_DIR)/generated/doc/codepoints_illegal.adoc \
+                     $(BUILD_DIR)/generated/doc/codepoints_letter.adoc \
+                     $(BUILD_DIR)/generated/doc/codepoints_digit.adoc \
+                     $(BUILD_DIR)/generated/doc/codepoints_numeric.adoc \
+                     $(BUILD_DIR)/generated/doc/codepoints_op.adoc \
+                     $(BUILD_DIR)/generated/doc/keywords.adoc \
+                     $(BUILD_DIR)/generated/doc/stringEscapes.adoc \
+                     $(JAVA_FILES_UTIL) \
+                     $(JAVA_FILES_PARSER) \
+                     $(JAVA_FILES_FE)
+REF_MANUAL_PDF     = $(BUILD_DIR)/doc/reference_manual/fuzion_reference_manual.pdf
+REF_MANUAL_HTML    = $(BUILD_DIR)/doc/reference_manual/html/index.html
+
 DOCUMENTATION = \
-	$(BUILD_DIR)/doc/fumfile.html     # fum file format documentation created with asciidoc
+	$(DOC_FILES_FUMFILE) \
+	$(DOC_DESIGN_JVM)    \
+        $(REF_MANUAL_PDF)    \
+        $(REF_MANUAL_HTML)
 
 SHELL_SCRIPTS = \
 	bin/fz \
 	bin/fzjava
 
+FZ_MODULES = \
+			$(MOD_BASE) \
+			$(MOD_TERMINAL) \
+			$(MOD_LOCK_FREE) \
+			$(MOD_NOM)
+
 .PHONY: all
-all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES)
+all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD)
 
 # everything but rarely used java modules
 .PHONY: min-java
@@ -382,6 +426,10 @@ min-java: $(FUZION_BASE) $(MOD_JAVA_BASE) $(MOD_JAVA_XML) $(MOD_JAVA_DATATRANSFE
 # everything but the java modules
 .PHONY: no-java
 no-java: $(FUZION_BASE) $(FUZION_FILES)
+
+# only up to base module
+.PHONY: base-only
+base-only: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(FUZION_FILES)
 
 # phony target to compile all java sources
 .PHONY: javac
@@ -394,10 +442,12 @@ $(FUZION_EBNF): $(SRC)/dev/flang/parser/Parser.java
 	mkdir -p $(@D)
 	$(FZ_SRC)/bin/ebnf.sh > $@
 
-$(JAVA_FILE_TOOLS_VERSION): $(FZ_SRC)/version.txt $(JAVA_FILE_TOOLS_VERSION_IN)
+$(JAVA_FILE_UTIL_VERSION): $(FZ_SRC)/version.txt $(JAVA_FILE_UTIL_VERSION_IN)
 	mkdir -p $(@D)
-	cat $(JAVA_FILE_TOOLS_VERSION_IN) \
+	cat $(JAVA_FILE_UTIL_VERSION_IN) \
           | sed "s^@@VERSION@@^$(VERSION)^g" \
+          | sed "s^@@JAVA_VERSION@@^$(JAVA_VERSION)^g" \
+          | sed "s^@@REPO_PATH@@^$(dir $(abspath $(lastword $(MAKEFILE_LIST))))^g" \
           | sed "s^@@GIT_HASH@@^`cd $(FZ_SRC); echo -n \`git rev-parse HEAD\` \`git diff-index --quiet HEAD -- || echo with local changes\``^g" >$@
 ifeq ($(FUZION_REPRODUCIBLE_BUILD),true)
 	sed -i "s^@@DATE@@^^g;s^@@BUILTBY@@^^g" $@
@@ -576,6 +626,10 @@ $(MOD_TERMINAL): $(MOD_BASE) $(BUILD_DIR)/bin/fz $(FZ_SRC)/modules/terminal/src/
 $(MOD_LOCK_FREE): $(MOD_BASE) $(BUILD_DIR)/bin/fz $(FZ_SRC)/modules/lock_free/src/lock_free.fz
 	mkdir -p $(@D)
 	$(BUILD_DIR)/bin/fz -sourceDirs=$(FZ_SRC)/modules/lock_free/src -saveLib=$@
+
+$(MOD_NOM): $(MOD_BASE) $(BUILD_DIR)/bin/fz $(FZ_SRC)/modules/nom/src/nom.fz
+	mkdir -p $(@D)
+	$(BUILD_DIR)/bin/fz -sourceDirs=$(FZ_SRC)/modules/nom/src -saveLib=$@
 
 $(BUILD_DIR)/bin/fzjava: $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 	mkdir -p $(@D)
@@ -1016,7 +1070,7 @@ $(BUILD_DIR)/examples: $(FZ_SRC)/examples
 	cp -rf $^ $@
 
 $(BUILD_DIR)/UnicodeData.txt:
-	cd $(BUILD_DIR) && wget https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt
+	cd $(BUILD_DIR) && wget $(UNICODE_SOURCE)
 
 $(BUILD_DIR)/UnicodeData.java.generated: $(CLASS_FILES_UTIL_UNICODE) $(BUILD_DIR)/UnicodeData.txt
 	$(JAVA) -cp $(CLASSES_DIR) dev.flang.util.unicode.ParseUnicodeData $(BUILD_DIR)/UnicodeData.txt >$@
@@ -1025,15 +1079,70 @@ $(BUILD_DIR)/UnicodeData.java: $(BUILD_DIR)/UnicodeData.java.generated $(SRC)/de
 	sed -e '/@@@ generated code start @@@/r build/UnicodeData.java.generated' $(SRC)/dev/flang/util/UnicodeData.java.in >$@
 
 .phony: doc
-doc: $(DOCUMENTATION) $(BUILD_DIR)/doc/jvm.html
+doc: $(DOCUMENTATION)
 
-$(BUILD_DIR)/doc/fumfile.html: $(SRC)/dev/flang/fe/LibraryModule.java
+$(BUILD_DIR)/generated/doc/fum_file.adoc: $(SRC)/dev/flang/fe/LibraryModule.java
+	mkdir -p $(@D)
+	sed -n '/--asciidoc--/,/--asciidoc--/p' $^ | grep -v "\--asciidoc--" >$@
+
+$(DOC_FILES_FUMFILE): $(BUILD_DIR)/generated/doc/fum_file.adoc
+	mkdir -p $(@D)
+	asciidoc - <$^ >$@
+
+$(DOC_DESIGN_JVM): $(SRC)/dev/flang/be/jvm/JVM.java
 	mkdir -p $(@D)
 	sed -n '/--asciidoc--/,/--asciidoc--/p' $^ | grep -v "\--asciidoc--" | asciidoc - >$@
 
-$(BUILD_DIR)/doc/jvm.html: $(SRC)/dev/flang/be/jvm/JVM.java
+REF_MANUAL_ATTRIBUTES = \
+  --attribute FZ_SRC=$(realpath $(FZ_SRC)) \
+  --attribute GENERATED=$(realpath $(BUILD_DIR)/generated) \
+  --attribute FUZION_EBNF=$(realpath $(FUZION_EBNF)) \
+  --attribute UNICODE_SOURCE=$(UNICODE_SOURCE)
+
+$(BUILD_DIR)/generated/doc/unicode_version.adoc:
 	mkdir -p $(@D)
-	sed -n '/--asciidoc--/,/--asciidoc--/p' $^ | grep -v "\--asciidoc--" | asciidoc - >$@
+	cd $(FZ_SRC) && git log lib/character_encodings/unicode/data.fz  | grep -E "^Date:" | head | sed "s-Date:   -:UNICODE_VERSION: -g" | head -n1 > $(realpath $(@D))/unicode_version.adoc
+
+$(BUILD_DIR)/generated/doc/codepoints_white_space.adoc: $(CLASS_FILES_PARSER)
+	mkdir -p $(@D)
+	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -whiteSpace >$@
+
+$(BUILD_DIR)/generated/doc/codepoints_illegal.adoc: $(CLASS_FILES_PARSER)
+	mkdir -p $(@D)
+	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -illegal >$@
+
+$(BUILD_DIR)/generated/doc/codepoints_letter.adoc: $(CLASS_FILES_PARSER)
+	mkdir -p $(@D)
+	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -letter >$@
+
+$(BUILD_DIR)/generated/doc/codepoints_digit.adoc: $(CLASS_FILES_PARSER)
+	mkdir -p $(@D)
+	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -digit >$@
+
+$(BUILD_DIR)/generated/doc/codepoints_numeric.adoc: $(CLASS_FILES_PARSER)
+	mkdir -p $(@D)
+	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -numeric >$@
+
+$(BUILD_DIR)/generated/doc/codepoints_op.adoc: $(CLASS_FILES_PARSER)
+	mkdir -p $(@D)
+	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -op >$@
+
+$(BUILD_DIR)/generated/doc/keywords.adoc: $(CLASS_FILES_PARSER)
+	mkdir -p $(@D)
+	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -keywords >$@
+
+$(BUILD_DIR)/generated/doc/stringEscapes.adoc: $(CLASS_FILES_PARSER)
+	mkdir -p $(@D)
+	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -stringLiteralEscapes >$@
+
+$(REF_MANUAL_PDF): $(REF_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
+	mkdir -p $(@D)
+	asciidoctor-pdf $(REF_MANUAL_ATTRIBUTES) --out-file $@ $(REF_MANUAL_SOURCE)
+
+$(REF_MANUAL_HTML): $(REF_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
+	mkdir -p $(@D)
+	asciidoctor $(REF_MANUAL_ATTRIBUTES) --out-file=$@ $(REF_MANUAL_SOURCE)
+
 
 # NYI integrate into fz: fz -docs
 $(BUILD_DIR)/apidocs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(FUZION_FILES)
@@ -1072,19 +1181,19 @@ run_tests: run_tests_jvm run_tests_c run_tests_int run_tests_jar
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int
-run_tests_int: $(FZ_INT) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
+run_tests_int: $(FZ_INT) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
 	echo -n "testing interpreter: "
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) int
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c
-run_tests_c: $(FZ_C) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(BUILD_DIR)/tests
+run_tests_c: $(FZ_C) $(FZ_MODULES) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
 	echo -n "testing C backend: "; \
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) c
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_jvm
-run_tests_jvm: $(FZ_JVM) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
+run_tests_jvm: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
 	echo -n "testing JVM backend: "; \
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) jvm
 
@@ -1094,25 +1203,25 @@ run_tests_parallel: run_tests_jvm_parallel run_tests_c_parallel run_tests_int_pa
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int_parallel
-run_tests_int_parallel: $(FZ_INT) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
+run_tests_int_parallel: $(FZ_INT) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
 	echo -n "testing interpreter: "
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) int
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c_parallel
-run_tests_c_parallel: $(FZ_C) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(BUILD_DIR)/tests
+run_tests_c_parallel: $(FZ_C) $(FZ_MODULES) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
 	echo -n "testing C backend: "; \
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) c
 
 # phony target to run Fuzion tests using jvm backend and report number of failures
 .PHONY .SILENT: run_tests_jvm_parallel
-run_tests_jvm_parallel: $(FZ_JVM) $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(BUILD_DIR)/tests
+run_tests_jvm_parallel: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
 	echo -n "testing JVM backend: "; \
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) jvm
 
 .PHONY .SILENT: run_tests_jar
-run_tests_jar: $(FZ_JVM)
-	$(BUILD_DIR)/bin/fz -jar tests/hello/HelloWorld.fz
+run_tests_jar: $(FZ_JVM) $(BUILD_DIR)/tests
+	$(BUILD_DIR)/bin/fz -jar $(BUILD_DIR)/tests/hello/HelloWorld.fz
 	java -jar HelloWorld.jar > /dev/null
 
 .PHONY: clean
@@ -1150,4 +1259,86 @@ spellcheck:
 # currently only examples/ are checked.
 .PHONY: syntaxcheck
 syntaxcheck: min-java
-	find ./examples/ -name '*.fz' -print0 | xargs -0L1 ./build/bin/fz -unsafeIntrinsics=on -modules=java.base,java.datatransfer,java.xml,java.desktop -no-backend
+	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(BUILD_DIR)/bin/fz -modules=java.base,java.datatransfer,java.xml,java.desktop -no-backend
+	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(BUILD_DIR)/bin/fz -modules=java.base,java.datatransfer,java.xml,java.desktop -no-backend
+
+.PHONY: add_simple_test
+add_simple_test: no-java
+	$(BUILD_DIR)/bin/fz bin/add_simple_test.fz
+
+.PHONY: rerecord_simple_tests
+rerecord_simple_tests:
+	echo "ATTENTION: This rerecording is naive. You will have to manually revert any inappropriate changes after recording session."
+	for file in tests/*/ ; do if [ "$$(find "$$file" -maxdepth 1 -type f -name "*.expected_out" -print -quit)" ]; then make record -C build/"$$file"/ && cp build/"$$file"/*.expected_* "$$file"; fi done
+
+$(MOD_FZ_CMD_DIR).jmod: $(FUZION_BASE)
+	rm -f $(MOD_FZ_CMD_DIR).jmod
+	jmod create --class-path $(CLASSES_DIR) $(MOD_FZ_CMD_DIR).jmod
+	echo " + build/modules/fz_cmd.jmod"
+
+$(MOD_FZ_CMD_FZ_FILES): $(MOD_FZ_CMD_DIR).jmod $(MOD_JAVA_BASE) $(MOD_JAVA_MANAGEMENT) $(MOD_JAVA_DESKTOP)
+	rm -Rf $(MOD_FZ_CMD_DIR)
+	$(FUZION_BIN_SH) -c "$(BUILD_DIR)/bin/fzjava -to=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop -verbose=0 $(MOD_FZ_CMD_DIR)"
+	touch $@
+
+$(MOD_FZ_CMD): $(MOD_FZ_CMD_FZ_FILES)
+	$(BUILD_DIR)/bin/fz -sourceDirs=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop -saveLib=$@
+
+.PHONY: lint/java
+lint/java:
+	$(JAVAC) -Xlint -cp $(CLASSES_DIR) -d $(CLASSES_DIR) \
+		$(JAVA_FILES_UTIL) \
+		$(JAVA_FILES_UTIL_UNICODE) \
+		$(JAVA_FILES_AST) \
+		$(JAVA_FILES_PARSER) \
+		$(JAVA_FILES_IR) \
+		$(JAVA_FILES_MIR) \
+		$(JAVA_FILES_FE) \
+		$(JAVA_FILES_AIR) \
+		$(JAVA_FILES_ME) \
+		$(JAVA_FILES_FUIR) \
+		$(JAVA_FILES_FUIR_ANALYSIS) \
+		$(JAVA_FILES_FUIR_ANALYSIS_DFA) \
+		$(JAVA_FILES_FUIR_CFG) \
+		$(JAVA_FILES_OPT) \
+		$(JAVA_FILES_BE_INTERPRETER) \
+		$(JAVA_FILES_BE_C) \
+		$(JAVA_FILES_BE_EFFECTS) \
+		$(JAVA_FILES_BE_JVM) \
+		$(JAVA_FILES_BE_JVM_CLASSFILE) \
+		$(JAVA_FILES_BE_JVM_RUNTIME) \
+		$(JAVA_FILES_TOOLS) \
+		$(JAVA_FILES_TOOLS_FZJAVA) \
+		$(JAVA_FILES_TOOLS_DOCS)
+
+.PHONY: lint/javadoc
+lint/javadoc:
+	$(JAVAC) -Xdoclint:all,-syntax,-html,-missing -cp $(CLASSES_DIR) -d $(CLASSES_DIR) \
+		$(JAVA_FILES_UTIL) \
+		$(JAVA_FILES_UTIL_UNICODE) \
+		$(JAVA_FILES_AST) \
+		$(JAVA_FILES_PARSER) \
+		$(JAVA_FILES_IR) \
+		$(JAVA_FILES_MIR) \
+		$(JAVA_FILES_FE) \
+		$(JAVA_FILES_AIR) \
+		$(JAVA_FILES_ME) \
+		$(JAVA_FILES_FUIR) \
+		$(JAVA_FILES_FUIR_ANALYSIS) \
+		$(JAVA_FILES_FUIR_ANALYSIS_DFA) \
+		$(JAVA_FILES_FUIR_CFG) \
+		$(JAVA_FILES_OPT) \
+		$(JAVA_FILES_BE_INTERPRETER) \
+		$(JAVA_FILES_BE_C) \
+		$(JAVA_FILES_BE_EFFECTS) \
+		$(JAVA_FILES_BE_JVM) \
+		$(JAVA_FILES_BE_JVM_CLASSFILE) \
+		$(JAVA_FILES_BE_JVM_RUNTIME) \
+		$(JAVA_FILES_TOOLS) \
+		$(JAVA_FILES_TOOLS_FZJAVA) \
+		$(JAVA_FILES_TOOLS_DOCS)
+
+.PHONY: remove_unused_imports
+remove_unused_imports:
+	wget -O /tmp/google-java-format-1.21.0-all-deps.jar https://github.com/google/google-java-format/releases/download/v1.21.0/google-java-format-1.21.0-all-deps.jar
+	java -jar /tmp/google-java-format-1.21.0-all-deps.jar -r --fix-imports-only  --skip-sorting-imports `find src/`

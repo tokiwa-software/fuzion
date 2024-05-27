@@ -44,7 +44,6 @@ public class Function extends AbstractLambda
   /*----------------------------  constants  ----------------------------*/
 
 
-  static final List<AbstractFeature> NO_FEATURES = new List<>();
   static final List<AbstractCall> NO_CALLS = new List<>();
 
 
@@ -73,6 +72,9 @@ public class Function extends AbstractLambda
   AbstractFeature _feature;
 
 
+  /**
+   * The inferred type
+   */
   AbstractType _type;
 
 
@@ -81,12 +83,14 @@ public class Function extends AbstractLambda
    * arguments to Function/Routine the anonymous feature inherits from. This
    * will be used put the correct return type in case of a fun declaration using
    * => that requires type inference.
+   *
+   * I.e. a call to (Function/Unary/Lazy <generics>)
    */
   Call _inheritsCall;
 
 
   /**
-   * The feature that inherits from `Function` that implements this lambda in
+   * The feature that inherits from `Function/Unary/Lazy/...` that implements this lambda in
    * its `call` feature.
    */
   Feature _wrapper;
@@ -95,9 +99,14 @@ public class Function extends AbstractLambda
   /**
    * Names of argument fields `x, y` of a lambda `x, y -> f x y`
    */
-  List<ParsedName> _names;
+  final List<Expr> _namesAsExprs;
+  final List<ParsedName> _names;
 
-  Expr _expr;           // the right hand side of the '->'
+
+  /**
+   * the right hand side of the '->'
+   */
+  Expr _expr;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -110,18 +119,46 @@ public class Function extends AbstractLambda
    *
    * @param pos the sourcecode position, used for error messages.
    *
-   * @param names the names of the arguments, "x", "y"
+   * @param names the names of the arguments, "x", "y". The are parsed as
+   * expressions and these might end up being turned into types by asParsedType
+   * if this lambda ends up used as an actual type argument.
    *
    * @param e the code on the right hand side of '->'.
    */
   public Function(SourcePosition pos,
-                  List<ParsedName> names,
+                  List<Expr> names,
                   Expr e)
   {
     super(pos);
 
-    _names = names;
+    _namesAsExprs = names;
+    _names = names.map2(n->n.asParsedName());
     _expr = e;
+  }
+
+
+  @Override
+  public ParsedType asParsedType()
+  {
+    var resType = _expr.asParsedType();
+    ParsedType result = null;
+    if (resType != null)
+      {
+        List<AbstractType> argTypes = _namesAsExprs != null
+          ? _namesAsExprs.map2(e -> e.asParsedType())
+          : _names.map2(n -> new ParsedType(n.pos(),
+                                            n._name,
+                                            new List<>(),
+                                            null)
+                        );
+        if (argTypes.stream().allMatch(t -> t != null))
+          {
+            result = UnresolvedType.funType(pos(),
+                                            resType,
+                                            argTypes);
+          }
+      }
+    return result;
   }
 
 
@@ -261,8 +298,8 @@ public class Function extends AbstractLambda
               };
 
             var inheritsName =
-              (t.featureOfType() == Types.resolved.f_Unary && gs.size() == 2) ? Types.UNARY_NAME :
-              (t.featureOfType() == Types.resolved.f_Lazy  && gs.size() == 1) ? Types.LAZY_NAME
+              (t.feature() == Types.resolved.f_Unary && gs.size() == 2) ? Types.UNARY_NAME :
+              (t.feature() == Types.resolved.f_Lazy  && gs.size() == 1) ? Types.LAZY_NAME
                                                                               : Types.FUNCTION_NAME;
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
@@ -275,7 +312,7 @@ public class Function extends AbstractLambda
                                    0,
                                    RefType.INSTANCE,
                                    new List<String>(wrapperName),
-                                   NO_FEATURES,
+                                   AbstractFeature._NO_FEATURES_,
                                    new List<>(_inheritsCall),
                                    Contract.EMPTY_CONTRACT,
                                    new Impl(pos(), new Block(expressions), Impl.Kind.Routine));
@@ -328,7 +365,9 @@ public class Function extends AbstractLambda
    */
   public void resolveTypes(Resolution res, AbstractFeature outer)
   {
-    check(this._call == null || this._feature != null);
+    if (CHECKS) check
+      (this._call == null || this._feature != null);
+
     if (this._call == null)
       {
         // do not do anything yet, we are waiting for propagateExpectedType to
@@ -374,8 +413,7 @@ public class Function extends AbstractLambda
    */
   public AbstractType type()
   {
-    var result = _type;
-    if (result == null)
+    if (_type == null)
       {
         AstErrors.noTypeInferenceFromLambda(pos());
         _type = Types.t_ERROR;

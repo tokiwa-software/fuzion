@@ -27,10 +27,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.jvm;
 
 import dev.flang.fuir.FUIR;
-
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
+import static dev.flang.ir.IR.NO_SITE;
+
 import dev.flang.be.jvm.classfile.Expr;
+import dev.flang.be.jvm.classfile.VerificationType;
+import dev.flang.be.jvm.classfile.ClassFile;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 
 import dev.flang.util.Errors;
@@ -39,6 +42,7 @@ import dev.flang.util.Pair;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 
 
@@ -49,7 +53,7 @@ import java.nio.ByteOrder;
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 class CodeGen
-  extends AbstractInterpreter.ProcessStatement<Expr, Expr>  // both, values and statements are implemented by Expr
+  extends AbstractInterpreter.ProcessExpression<Expr, Expr>  // both, values and statements are implemented by Expr
   implements ClassFileConstants
 {
 
@@ -113,6 +117,7 @@ class CodeGen
    * statement.  For a code generator, this could, e.g., join statements "a :=
    * 3;" and "b(x);" into a block "{ a := 3; b(x); }".
    */
+  @Override
   public Expr sequence(List<Expr> l)
   {
     var res = Expr.UNIT;
@@ -132,6 +137,7 @@ class CodeGen
    * Produce the unit type value.  This is used as a placeholder
    * for the universe instance as well as for the instance 'unit'.
    */
+  @Override
   public Expr unitValue()
   {
     return Expr.UNIT;
@@ -144,19 +150,19 @@ class CodeGen
    *
    * @param cl the clazz we are compiling
    *
-   * @param c the code block to compile
-   *
-   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+   * @param s site of the next expression
    */
-  public Expr statementHeader(int cl, int c, int i)
+  @Override
+  public Expr expressionHeader(int s)
   {
-    return _jvm.trace(cl, c, i);
+    return _jvm.trace(s);
   }
 
 
   /**
    * A comment, adds human readable information
    */
+  @Override
   public Expr comment(String s)
   {
     return Expr.comment(s);
@@ -166,6 +172,7 @@ class CodeGen
   /**
    * no operation, like comment, but without giving any comment.
    */
+  @Override
   public Expr nop()
   {
     return Expr.UNIT;
@@ -183,6 +190,7 @@ class CodeGen
    *
    * @return code to perform the side effects of v and ignoring the produced value.
    */
+  @Override
   public Expr drop(Expr v, int type)
   {
     // Check consistency between v.type() and type:
@@ -199,21 +207,9 @@ class CodeGen
 
 
   /**
-   * Determine the address of a given value.  This is used on a call to an
-   * inner feature to pass a reference to the outer value type instance.
-   */
-  public Pair<Expr, Expr> adrOf(Expr v)
-  {
-    return new Pair<>(v, Expr.UNIT);
-  }
-
-
-  /**
    * Create code to assign value to a given field w/o dynamic binding.
    *
-   * @param cl id of clazz we are interpreting
-   *
-   * @param pre true iff interpreting cl's precondition, false for cl itself.
+   * @param s cl id of clazz we are interpreting
    *
    * @param tc clazz id of the target instance
    *
@@ -227,7 +223,8 @@ class CodeGen
    *
    * @return statement to perform the given assignment
    */
-  public Expr assignStatic(int cl, boolean pre, int tc, int f, int rt, Expr tvalue, Expr val)
+  @Override
+  public Expr assignStatic(int s, int tc, int f, int rt, Expr tvalue, Expr val)
   {
     if (_fuir.clazzIsOuterRef(f) && _fuir.clazzIsUnitType(rt))
       {
@@ -235,7 +232,7 @@ class CodeGen
       }
     else
       {
-        return _jvm.assignField(cl, pre, tvalue, f, val, rt);
+        return _jvm.assignField(s, tvalue, f, val, rt);
       }
   }
 
@@ -245,26 +242,21 @@ class CodeGen
    * might be dynamic (a reference). See FUIR.access*().
    * local variable.
    *
-   * @param cl the clazz we are compiling
-   *
-   * @param pre true iff we are compiling the precondition
-   *
-   * @param c the code block to compile
-   *
-   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+   * @param s site of the assignment
    *
    * @param tvalue the target instance
    *
    * @param avalue the new value to be assigned to the field.
    */
-  public Expr assign(int cl, boolean pre, int c, int i, Expr tvalue, Expr avalue)
+  @Override
+  public Expr assign(int s, Expr tvalue, Expr avalue)
   {
-    var p = access(cl, pre, c, i, tvalue, new List<>(avalue));
+    var p = access(s, tvalue, new List<>(avalue));
 
     if (CHECKS) check
-      (p._v0 == Expr.UNIT);
+      (p.v0() == Expr.UNIT);
 
-    return p._v1;
+    return p.v1();
   }
 
 
@@ -275,16 +267,14 @@ class CodeGen
    * This is used in case e's value is needed repeatedly as in passing it to a
    * precondition check before it is passed to the actual call.
    *
-   * @param cl the clazz we are compiling
-   *
-   * @param pre true iff we are compiling the precondition
+   * @param si site of the expr requiring this
    *
    * @param e expression to evaluation and store in a local, null for void value
    *
    * @return a pair of a new expression that loads the value of e and an
    * expression that evaluates e and stores it in a local variable.
    */
-  Pair<Expr,Expr> storeInLocal(int cl, boolean pre, Expr e)
+  Pair<Expr,Expr> storeInLocal(int si, Expr e)
   {
     if (e == null)
       {
@@ -293,7 +283,7 @@ class CodeGen
     else
       {
         var t = e.type();
-        var l = _jvm.allocLocal(cl, pre, t.stackSlots());
+        var l = _jvm.allocLocal(si, t.stackSlots());
         return new Pair<>(t.load(l),
                           e.andThen(t.store(l)));
       }
@@ -305,51 +295,45 @@ class CodeGen
    * arguments.  The type of tvalue might be dynamic (a reference). See
    * FUIR.access*().
    *
-   * Result._v0 may be null to indicate that code generation should stop here
+   * Result.v0() may be null to indicate that code generation should stop here
    * (due to an error or tail recursion optimization).
    *
-   * @param cl the clazz we are compiling
-   *
-   * @param pre true iff we are compiling the precondition
-   *
-   * @param c the code block to compile
-   *
-   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+   * @param si site of the call
    *
    * @param tvalue the target of this call, CExpr.UNIT if none.
    *
    * @param args the arguments of this call.
    */
-  public Pair<Expr, Expr> call(int cl, boolean pre, int c, int i, Expr tvalue, List<Expr> args)
+  @Override
+  public Pair<Expr, Expr> call(int si, Expr tvalue, List<Expr> args)
   {
-    var p = combinePreconditionAndCall(cl, pre, c, i, tvalue, args);
+    var p = combinePreconditionAndCall(si, tvalue, args);
     if (p == null)
       {
-        var ccP = _fuir.accessedPreconditionClazz(cl, c, i);
-        var cc0 = _fuir.accessedClazz            (cl, c, i);
+        var ccP = _fuir.accessedPreconditionClazz(si);
         var s = Expr.UNIT;
         var res = Expr.UNIT;
         if (ccP != -1)   // call precondition:
           {
             // evaluate target and args and copy to local vars to avoid evaluating them twice.
-            var pt = storeInLocal(cl, pre, tvalue);
-            tvalue = pt._v0;
-            s = s.andThen(pt._v1);
+            var pt = storeInLocal(si, tvalue);
+            tvalue = pt.v0();
+            s = s.andThen(pt.v1());
             var nargs = new List<Expr>();
             for (var a : args)
               {
-                var pa = storeInLocal(cl, pre, a);
-                s = s.andThen(pa._v1);
-                nargs.add(pa._v0);
+                var pa = storeInLocal(si, a);
+                s = s.andThen(pa.v1());
+                nargs.add(pa.v0());
               }
             args = nargs;
-            s = s.andThen(staticCall(cl, pre, tvalue, args, ccP, true, c, i));
+            s = s.andThen(staticCall(si, tvalue, args, ccP, true));
           }
-        if (!_fuir.callPreconditionOnly(cl, c, i))
+        if (!_fuir.callPreconditionOnly(si))
           {
-            var r = access(cl, pre, c, i, tvalue, args);
-            s = s.andThen(r._v1);
-            res = r._v0;
+            var r = access(si, tvalue, args);
+            s = s.andThen(r.v1());
+            res = r.v0();
           }
         p = new Pair<>(res, s);
       }
@@ -363,13 +347,7 @@ class CodeGen
    * call is then replaced by a call to a combined method that checks the
    * precondition and then calls the routine.
    *
-   * @param cl the clazz we are compiling
-   *
-   * @param pre true iff we are compiling the precondition
-   *
-   * @param c the code block to compile
-   *
-   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+   * @param s site of call
    *
    * @param tvalue the target of this call, CExpr.UNIT if none.
    *
@@ -378,11 +356,11 @@ class CodeGen
    * @return Result value and code generated for this combined call, null if
    * combined call is not possible.
    */
-  Pair<Expr, Expr> combinePreconditionAndCall(int cl, boolean pre, int c, int i, Expr tvalue, List<Expr> args)
+  Pair<Expr, Expr> combinePreconditionAndCall(int s, Expr tvalue, List<Expr> args)
   {
     Pair<Expr, Expr> res = null;
-    var ccP = _fuir.accessedPreconditionClazz(cl, c, i);
-    var ccs = _fuir.accessedClazzes(cl, c, i);
+    var ccP = _fuir.accessedPreconditionClazz(s);
+    var ccs = _fuir.accessedClazzes(s);
     if (ccs.length == 2)
       {
         var tt = ccs[0];                   // target clazz we match against
@@ -390,17 +368,17 @@ class CodeGen
         if (cc == ccP &&
             _fuir.clazzKind(ccP) == FUIR.FeatureKind.Routine &&
             !_fuir.clazzIsBoxed(tt) &&
-            cc != cl /* not a call to current clazz that might need tail-call optimization */ &&
+            cc != _fuir.clazzAt(s) /* not a call to current clazz that might need tail-call optimization */ &&
             _types.clazzNeedsCode(cc)
             )
           {
-            var tc = _fuir.accessTargetClazz(cl, c, i);
+            var tc = _fuir.accessTargetClazz(s);
             if (tc != tt || _types.hasInterfaceFile(tc))
               {
                 tvalue = tvalue.andThen(Expr.checkcast(_types.javaType(tc)));
               }
             var call = args(false, tvalue, args, cc, _fuir.clazzArgCount(cc))
-              .andThen(_types.invokeStaticCombindedPreAndCall(cc));
+              .andThen(_types.invokeStaticCombindedPreAndCall(cc, _fuir.sitePos(s).line()));
 
             var rt = _fuir.clazzResultClazz(cc);
             res = makePair(call, rt);
@@ -433,25 +411,19 @@ class CodeGen
   Pair<Expr, Expr> makePair(Expr value, int rt)
   {
     var code = Expr.UNIT;
-    if (_types.javaType(rt) == PrimitiveType.type_void)
+    if (_types.resultType(rt) == PrimitiveType.type_void)
       { // there is no Java value, so treat as code:
         code = value;
         value = _fuir.clazzIsVoidType(rt) ? null : Expr.UNIT;
       }
-    return new Pair(value, code);
+    return new Pair<>(value, code);
   }
 
 
   /**
    * Create code to access (call or write) a feature.
    *
-   * @param cl the clazz we are compiling
-   *
-   * @param pre true iff we are compiling the precondition
-   *
-   * @param c the code block to compile
-   *
-   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+   * @param si site of the access expression, must be ExprKind.Assign or ExprKind.Call
    *
    * @param tvalue the target of this call, CExpr.UNIT if none.
    *
@@ -461,13 +433,13 @@ class CodeGen
    * @return pair of expression containing result value and statement to perform
    * the given access
    */
-  Pair<Expr, Expr> access(int cl, boolean pre, int c, int i, Expr tvalue, List<Expr> args)
+  Pair<Expr, Expr> access(int si, Expr tvalue, List<Expr> args)
   {
     var res = Expr.UNIT;
     var s   = Expr.UNIT;
-    var isCall = _fuir.codeAt(c, i) == FUIR.ExprKind.Call;  // call or assignment?
-    var cc0 = _fuir.accessedClazz  (cl, c, i);
-    var ccs = _fuir.accessedClazzes(cl, c, i);
+    var isCall = _fuir.codeAt(si) == FUIR.ExprKind.Call;  // call or assignment?
+    var cc0 = _fuir.accessedClazz  (si);
+    var ccs = _fuir.accessedClazzes(si);
     var rt = isCall ? _fuir.clazzResultClazz(cc0) : _fuir.clazz(FUIR.SpecialClazzes.c_unit);
     if (ccs.length == 0)
       {
@@ -478,24 +450,24 @@ class CodeGen
           }
         if (isCall && (_fuir.hasData(rt) || _fuir.clazzIsVoidType(rt)))  // we need a non-unit result and do not know what to do with this call, so flag an error
           {
-            s = s.andThen(_jvm.reportErrorInCode("no targets for access of " + _fuir.clazzAsString(cc0) + " within " + _fuir.clazzAsString(cl)));
+            s = s.andThen(_jvm.reportErrorInCode("no targets for access of " + _fuir.clazzAsString(cc0) + " within " + _fuir.siteAsString(si)));
             res = null;
           }
         else  // an assignment to an unused field or unit-type call, that is fine to remove, just add a comment
           {
-            s = s.andThen(Expr.comment("access to " + _fuir.codeAtAsString(cl, c, i) + " eliminated"));
+            s = s.andThen(Expr.comment("access to " + _fuir.codeAtAsString(si) + " eliminated"));
           }
       }
     else if (ccs.length > 2)
       {
         if (CHECKS) check
-          (_fuir.hasData(_fuir.accessTargetClazz(cl, c, i)),  // would be strange if target is unit type
-           _fuir.accessIsDynamic(cl, c, i));                  // or call is not dynamic
+          (_fuir.hasData(_fuir.accessTargetClazz(si)),  // would be strange if target is unit type
+           _fuir.accessIsDynamic(si));                  // or call is not dynamic
 
         var dynCall = args(true, tvalue, args, cc0, isCall ? _fuir.clazzArgCount(cc0) : 1)
           .andThen(Expr.comment("Dynamic access of " + _fuir.clazzAsString(cc0)))
-          .andThen(addDynamicFunctionAndStubs(cc0, ccs, isCall));
-        if (AbstractInterpreter.clazzHasUniqueValue(_fuir, rt))
+          .andThen(addDynamicFunctionAndStubs(si, cc0, ccs, isCall));
+        if (AbstractInterpreter.clazzHasUnitValue(_fuir, rt))
           {
             s = dynCall;  // make sure we do not throw away the code even if it is of unit type
           }
@@ -506,16 +478,16 @@ class CodeGen
       }
     else
       {
-        var tc = _fuir.accessTargetClazz(cl, c, i);
+        var tc = _fuir.accessTargetClazz(si);
         var tt = ccs[0];                   // target clazz we match against
         var cc = ccs[1];                   // called clazz in case of match
         if (tc != tt || _types.hasInterfaceFile(tc))
           {
             tvalue = tvalue.andThen(Expr.checkcast(_types.javaType(tt)));
           }
-        var calpair = staticAccess(cl, pre, tt, cc, tvalue, args, isCall, c, i);
-        s = s.andThen(calpair._v1);
-        res = calpair._v0;
+        var calpair = staticAccess(si, tt, cc, tvalue, args, isCall);
+        s = s.andThen(calpair.v1());
+        res = calpair.v0();
         if (_fuir.clazzIsVoidType(_fuir.clazzResultClazz(cc)))
           {
             if (res != null)
@@ -534,17 +506,19 @@ class CodeGen
    * interface with a dynamic function and add implementations to each actual
    * target.
    *
-   * @param cc a feature whose outer feature is a ref that has several actual instances.
+   * @param si site of the access expression, must be ExprKind.Assign or ExprKind.Call
+   *
+   * @param cc0 a feature whose outer feature is a ref that has several actual instances.
    *
    * @return the invokeinterface expression that performs the call
    */
-  private Expr addDynamicFunctionAndStubs(int cc0, int[] ccs, boolean isCall)
+  private Expr addDynamicFunctionAndStubs(int si, int cc0, int[] ccs, boolean isCall)
   {
     var intfc = _types.interfaceFile(_fuir.clazzOuterClazz(cc0));
     var rc = _fuir.clazzResultClazz(cc0);
     var dn = _names.dynamicFunction(cc0);
-    var ds = isCall ? _types.dynDescriptor(cc0, false)          : "(" + _types.javaType(rc).argDescriptor() + ")V";
-    var dr = isCall ? _types.javaType(rc)                       : PrimitiveType.type_void;
+    var ds = isCall ? _types.dynDescriptor(cc0, false) : "(" + _types.javaType(rc).argDescriptor() + ")V";
+    var dr = isCall ? _types.resultType(rc)            : PrimitiveType.type_void;
     if (!intfc.hasMethod(dn))
       {
         intfc.method(ACC_PUBLIC | ACC_ABSTRACT, dn, ds, new List<>());
@@ -555,15 +529,26 @@ class CodeGen
         var tt = ccs[cci  ];    // target clazz we match against
         var cc = ccs[cci+1];    // called clazz
         _types.classFile(tt).addImplements(intfc._name);
-        addStub(tt, cc, dn, ds, isCall);
+        var initLocals = new List<>(VerificationType.UninitializedThis);
+        if (isCall)
+          {
+            initLocals.addAll(_jvm.initialLocals(cc0));
+          }
+        else
+          {
+            initLocals = Types.addToLocals(initLocals, _types.javaType(rc));
+          }
+        addStub(si, tt, cc, dn, ds, isCall, initLocals);
       }
-    return Expr.invokeInterface(intfc._name, dn, ds, dr);
+    return Expr.invokeInterface(intfc._name, dn, ds, dr, _fuir.sitePos(si).line());
   }
 
 
   /**
    * Create a stub method, i.e., an implementation of a dynamic function defined
    * in an interface that performs a static access for the given target type.
+   *
+   * @param si site of the access expression, must be ExprKind.Assign or ExprKind.Call
    *
    * @param tt the target clazz. Note that tt may be different to
    * _fuir.clazzOuterClazz(cc), e.g., if tt is some type defining abstract
@@ -579,12 +564,13 @@ class CodeGen
    * @param isCall true if the access is a call, false if it is an assignment to
    * a field.
    */
-  private void addStub(int tt, int cc, String dn, String ds, boolean isCall)
+  private void addStub(int si, int tt, int cc, String dn, String ds, boolean isCall, List<VerificationType> initLocals)
   {
     var cf = _types.classFile(tt);
     if (!cf.hasMethod(dn))
       {
-        var tv = _types.javaType(tt).load(0);
+        var jtt = _types.javaType(tt);
+        var tv = jtt.load(0);
         var na = new List<Expr>();
         int slot = 1;
         Expr retoern = Expr.RETURN;
@@ -597,19 +583,19 @@ class CodeGen
                 na.add(t.load(slot));
                 slot = slot + t.stackSlots();
               }
-            retoern = _types.javaType(_fuir.clazzResultClazz(cc)).return0();
+            retoern = _types.resultType(_fuir.clazzResultClazz(cc)).return0();
           }
         else
           {
             var t = _types.javaType(_fuir.clazzResultClazz(cc));
             na.add(t.load(1));
           }
-        var p = staticAccess(-1, false, tt, cc, tv, na, isCall, -1, -1);
-        var code = p._v1
-          .andThen(p._v0 == null ? Expr.UNIT : p._v0)
+        var p = staticAccess(si, tt, cc, tv, na, isCall);
+        var code = p.v1()
+          .andThen(p.v0() == null ? Expr.UNIT : p.v0())
           .andThen(retoern);
         var ca = cf.codeAttribute(dn + "in class for " + _fuir.clazzAsString(tt),
-                                  code, new List<>(), new List<>());
+                                  code, new List<>(), new List<>(), ClassFile.StackMapTable.empty(cf, initLocals, code));
         cf.method(ACC_PUBLIC, dn, ds, new List<>(ca));
       }
   }
@@ -620,9 +606,7 @@ class CodeGen
    * access to create code if there is only one possible target and by stubs to
    * perform the actual access.
    *
-   * @param cl the clazz we are compiling or -1 if we are creating a stub
-   *
-   * @param pre true iff we are compiling the precondition
+   * @param si site of the access or NO_SITE if this is a call in an interface method stub.
    *
    * @param tt the target clazz. Note that tt may be different to
    * _fuir.clazzOuterClazz(cc), e.g., if tt is some type defining abstract
@@ -638,13 +622,15 @@ class CodeGen
    * @param isCall true if the access is a call, false if it is an assignment to
    * a field.
    *
+   * @param si site of the access
+   *
    * @return the result and code to perform the access.
    */
-  Pair<Expr, Expr> staticAccess(int cl, boolean pre, int tt, int cc, Expr tv, List<Expr> args, boolean isCall, int c, int i)
+  Pair<Expr, Expr> staticAccess(int si, int tt, int cc, Expr tv, List<Expr> args, boolean isCall)
   {
     var cco = _fuir.clazzOuterClazz(cc);   // actual outer clazz of called clazz, more specific than tt
     if (_fuir.clazzIsBoxed(tt) &&
-        !_fuir.clazzIsRef(cco)  // NYI: would be better if the AbstractInterpreter would
+        !_fuir.clazzIsRef(cco)  // NYI: CLEANUP: would be better if the AbstractInterpreter would
                                 // not confront us with boxed references here, such that
                                 // this special handling could be removed.
         )
@@ -655,18 +641,16 @@ class CodeGen
                                      _types.javaType(cco)));
       }
 
-    return isCall ? staticCall(cl, pre, tv, args, cc, false, c, i)
+    return isCall ? staticCall(si, tv, args, cc, false)
                   : new Pair<>(Expr.UNIT,
-                               _jvm.assignField(cl, pre, tv, cc, args.get(0), _fuir.clazzResultClazz(cc)));
+                               _jvm.assignField(si, tv, cc, args.get(0), _fuir.clazzResultClazz(cc)));
   }
 
 
   /**
    * Create code for a statically bound call.
    *
-   * @param cl the clazz we are compiling, -1 if this is a call in an interface method stub.
-   *
-   * @param pre true iff we are compiling the precondition
+   * @param si site of the access or NO_SITE if this is a call in an interface method stub.
    *
    * @param tvalue the target value of the call
    *
@@ -677,12 +661,15 @@ class CodeGen
    * @param preCalled true to call the precondition of cc instead of cc.
    *
    * @return the code to perform the call
+   *
+   * @param si site of the call
    */
-  Pair<Expr, Expr> staticCall(int cl, boolean pre, Expr tvalue, List<Expr> args, int cc, boolean preCalled, int c, int i)
+  Pair<Expr, Expr> staticCall(int si, Expr tvalue, List<Expr> args, int cc, boolean preCalled)
   {
     Pair<Expr, Expr> res;
     var oc = _fuir.clazzOuterClazz(cc);
     var rt = preCalled ? _fuir.clazz(FUIR.SpecialClazzes.c_unit) : _fuir.clazzResultClazz(cc);
+
     switch (preCalled ? FUIR.FeatureKind.Routine : _fuir.clazzKind(cc))
       {
       case Abstract :
@@ -690,13 +677,13 @@ class CodeGen
                      "Found call to  " + _fuir.clazzAsString(cc));
       case Intrinsic:
         {
-          if (_fuir.clazzTypeParameterActualType(cc) != -1)  /* type parameter is also of Kind Intrinsic, NYI: should better have its own kind?  */
+          if (_fuir.clazzTypeParameterActualType(cc) != -1)  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
             {
               return new Pair<>(Expr.UNIT, tvalue.drop());
             }
           else if (!(preCalled || Intrinsix.inRuntime(_jvm, cc)))
             {
-              return Intrinsix.inlineCode(_jvm, cl, pre, cc, tvalue, args);
+              return Intrinsix.inlineCode(_jvm, si, cc, tvalue, args);
             }
           // fall through!
         }
@@ -705,14 +692,13 @@ class CodeGen
         {
           if (_types.clazzNeedsCode(cc))
             {
-              if (!preCalled                                                             // not calling pre-condition
-                  && cc == cl                                                            // calling myself
-                  && c != -1 && i != -1 && _jvm._tailCall.callIsTailCall(cl, c, i)       // as a tail call
-
-                  // NYI: ignore life time for now. This needs to be revisited when code that is generated
-                  // for tests/calls_on_ref_and_val_target and outerNormalization is fixed.
-                  //
-                  // _fuir.lifeTime(cl, pre).ordinal() <= FUIR.LifeTime.Call.ordinal()
+              var cl = si == NO_SITE ? -1 :_fuir.clazzAt(si);
+              var pre = si != NO_SITE && _fuir.isPreconditionAt(si);
+              if (!pre                                                  // not within precondition
+                  && !preCalled                                         // not calling pre-condition
+                  && cc == cl                                           // calling myself
+                  && _jvm._tailCall.callIsTailCall(cl, si)              // as a tail call
+                  && !_fuir.lifeTime(cl, pre).maySurviveCall()
                   )
                 { // then we can do tail recursion optimization!
 
@@ -728,9 +714,9 @@ class CodeGen
                     }
 
                   // perform tail call by goto startLabel
-                  code = code.andThen(Expr.gotoLabel(_jvm.startLabel(cl)));
+                  code = code.andThen(Expr.goBacktoLabel(_jvm.startLabel(cl)));
 
-                  res = new Pair(null,  // result is void, we do not return from this path.
+                  res = new Pair<>(null,  // result is void, we do not return from this path.
                                  code);
                 }
               else
@@ -740,14 +726,14 @@ class CodeGen
                       tvalue = tvalue.andThen(Expr.checkcast(_types.resultType(oc)));
                     }
                   var call = args(false, tvalue, args, cc, _fuir.clazzArgCount(cc))
-                    .andThen(_types.invokeStatic(cc, preCalled));
+                    .andThen(_types.invokeStatic(cc, preCalled, _fuir.sitePos(si).line()));
 
                   res = makePair(call, rt);
                 }
             }
           else
             {
-              res = new Pair(Expr.UNIT, Expr.UNIT);
+              res = new Pair<>(Expr.UNIT, Expr.UNIT);
             }
           break;
         }
@@ -793,10 +779,11 @@ class CodeGen
   /**
    * For a given value v of value type vc create a boxed ref value of type rc.
    */
-  public Pair<Expr, Expr> box(Expr val, int vc, int rc)
+  @Override
+  public Pair<Expr, Expr> box(int s, Expr val, int vc, int rc)
   {
     var res = val;
-    if (!_fuir.clazzIsRef(vc) && _fuir.clazzIsRef(rc))  // NYI: would be good if the AbstractInterpreter would not call box() in this case
+    if (!_fuir.clazzIsRef(vc) && _fuir.clazzIsRef(rc))  // NYI: CLEANUP: would be good if the AbstractInterpreter would not call box() in this case
       {
         var n = _names.javaClass(rc);
         res = Expr.comment("box from "+_fuir.clazzAsString(vc)+" to "+_fuir.clazzAsString(rc))
@@ -813,15 +800,17 @@ class CodeGen
   /**
    * Get the current instance
    */
-  public Pair<Expr, Expr> current(int cl, boolean pre)
+  @Override
+  public Pair<Expr, Expr> current(int s)
   {
+    var cl = _fuir.clazzAt(s);
     if (_types.isScalar(cl))
       {
         return new Pair<>(_types.javaType(cl).load(0), Expr.UNIT);
       }
     else
       {
-        return new Pair<>(Expr.aload(_jvm.current_index(cl), _types.javaType(cl)), Expr.UNIT);
+        return new Pair<>(Expr.aload(_jvm.current_index(cl), _types.resultType(cl)), Expr.UNIT);
       }
   }
 
@@ -829,11 +818,13 @@ class CodeGen
   /**
    * Get the outer instance the given clazz is called on.
    */
-  public Pair<Expr, Expr> outer(int cl)
+  @Override
+  public Pair<Expr, Expr> outer(int s)
   {
     if (PRECONDITIONS) require
-      (_fuir.clazzResultClazz(_fuir.clazzOuterRef(cl)) == _fuir.clazzOuterClazz(cl));
+      (_fuir.clazzResultClazz(_fuir.clazzOuterRef(_fuir.clazzAt(s))) == _fuir.clazzOuterClazz(_fuir.clazzAt(s)));
 
+    var cl = _fuir.clazzAt(s);
     return new Pair<>(_types.javaType(_fuir.clazzOuterClazz(cl)).load(0),
                       Expr.UNIT);
   }
@@ -843,21 +834,23 @@ class CodeGen
    * Get the value argument #i from the slot that contains the argument at the
    * beginning of a call to the Java code of cl.
    *
-   * @param cl the clazz we are compiling.
+   * @param s site of the current expression
    *
    * @param i index the local variable we want to get
    *
    * @return code to read arg #i from its slot.
    */
-  public Expr arg(int cl, int i)
+  @Override
+  public Expr arg(int s, int i)
   {
     if (PRECONDITIONS) require
       (0 <= i,
-       i < _fuir.clazzArgCount(cl));
+       i < _fuir.clazzArgCount(_fuir.clazzAt(s)));
 
+    var cl = _fuir.clazzAt(s);
     var l = _jvm.argSlot(cl, i);
     var t = _fuir.clazzArgClazz(cl, i);
-    var jt = _types.javaType(t);
+    var jt = _types.resultType(t);
     return jt.load(l);
   }
 
@@ -884,7 +877,8 @@ class CodeGen
 
     var l = _jvm.argSlot(cl, i);
     var t = _fuir.clazzArgClazz(cl, i);
-    var jt = _types.javaType(t);
+    var jt = _types.resultType(t);
+
     return val.andThen(jt.store(l));
   }
 
@@ -892,9 +886,10 @@ class CodeGen
   /**
    * Get a constant value of type constCl with given byte data d.
    */
-  public Pair<Expr, Expr> constData(int constCl, byte[] d)
+  @Override
+  public Pair<Expr, Expr> constData(int si, int constCl, byte[] d)
   {
-    var c = createConstant(constCl, d);
+    var c = createConstant(si, constCl, d);
     return switch (constantCreationStrategy(constCl))
       {
       case onEveryUse               -> c;  // create constant inline
@@ -909,8 +904,8 @@ class CodeGen
                         f,
                         jt.descriptor(),
                         new List<>());
-              ucl.addToClInit(c._v1);
-              ucl.addToClInit(c._v0.andThen(Expr.putstatic(ucl._name, f, jt)));
+              ucl.addToClInit(c.v1());
+              ucl.addToClInit(c.v0().andThen(Expr.putstatic(ucl._name, f, jt)));
             }
           yield new Pair<Expr, Expr>(Expr.getstatic(ucl._name, f, jt), Expr.UNIT);
         }
@@ -930,7 +925,7 @@ class CodeGen
    */
   JVMOptions.ConstantCreation constantCreationStrategy(int constCl)
   {
-    return switch (_fuir.getSpecialId(constCl))
+    return switch (_fuir.getSpecialClazz(constCl))
       {
       case c_bool, c_i8 , c_i16, c_i32,
            c_i64 , c_u8 , c_u16, c_u32,
@@ -950,85 +945,67 @@ class CodeGen
    *
    * @return the value and code to produce the constant
    */
-  Pair<Expr, Expr> createConstant(int constCl, byte[] d)
+  Pair<Expr, Expr> createConstant(int si, int constCl, byte[] d)
   {
-    return switch (_fuir.getSpecialId(constCl))
+    return switch (_fuir.getSpecialClazz(constCl))
       {
-      case c_bool         -> new Pair<>(Expr.iconst(d[0]                                                                 ), Expr.UNIT);
-      case c_i8           -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get     ()         ), Expr.UNIT);
-      case c_i16          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getShort()         ), Expr.UNIT);
-      case c_i32          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ()         ), Expr.UNIT);
-      case c_i64          -> new Pair<>(Expr.lconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ()         ), Expr.UNIT);
-      case c_u8           -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get     () &   0xff), Expr.UNIT);
-      case c_u16          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getShort() & 0xffff), Expr.UNIT);
-      case c_u32          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ()         ), Expr.UNIT);
-      case c_u64          -> new Pair<>(Expr.lconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ()         ), Expr.UNIT);
-      case c_f32          -> new Pair<>(Expr.fconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ()         ), Expr.UNIT);
-      case c_f64          -> new Pair<>(Expr.dconst(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ()         ), Expr.UNIT);
-      case c_Const_String -> _jvm.constString(d);
-      case c_array_i8     -> _jvm.constArray8  (constCl, d);
-      case c_array_i16    -> _jvm.constArrayI16(constCl, d);
-      case c_array_i32    -> _jvm.constArray32 (constCl, d);
-      case c_array_i64    -> _jvm.constArray64 (constCl, d);
-      case c_array_u8     -> _jvm.constArray8  (constCl, d);
-      case c_array_u16    -> _jvm.constArrayU16(constCl, d);
-      case c_array_u32    -> _jvm.constArray32 (constCl, d);
-      case c_array_u64    -> _jvm.constArray64 (constCl, d);
-      case c_array_f32    -> _jvm.constArrayF32(constCl, d);
-      case c_array_f64    -> _jvm.constArrayF64(constCl, d);
+      case c_bool         -> new Pair<>(Expr.iconst(d[0]                                                                             , _types.javaType(constCl)), Expr.UNIT);
+      case c_i8           -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).get     ()         , _types.javaType(constCl)), Expr.UNIT);
+      case c_i16          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getShort()         , _types.javaType(constCl)), Expr.UNIT);
+      case c_i32          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getInt  ()         , _types.javaType(constCl)), Expr.UNIT);
+      case c_i64          -> new Pair<>(Expr.lconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getLong ())                                   , Expr.UNIT);
+      case c_u8           -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).get     () &   0xff, _types.javaType(constCl)), Expr.UNIT);
+      case c_u16          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getShort() & 0xffff, _types.javaType(constCl)), Expr.UNIT);
+      case c_u32          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getInt  ()         , _types.javaType(constCl)), Expr.UNIT);
+      case c_u64          -> new Pair<>(Expr.lconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getLong ())                                   , Expr.UNIT);
+      case c_f32          -> new Pair<>(Expr.fconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getInt  ())                                   , Expr.UNIT);
+      case c_f64          -> new Pair<>(Expr.dconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getLong ())                                   , Expr.UNIT);
+      case c_Const_String, c_String
+                          -> _jvm.constString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt()+4));
       default             ->
         {
           if (_fuir.clazzIsArray(constCl))
             {
               var elementType = this._fuir.inlineArrayElementClazz(constCl);
-              var bytesPerField = _fuir.clazzBytes(elementType);
-              if (CHECKS) check
-                (d.length % bytesPerField == 0);
 
+              var bb = ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN);
+              var elCount = bb.getInt();
               var jt = this._types.resultType(elementType);
               var aLen = Expr
-                .iconst(d.length / bytesPerField);
+                .iconst(elCount);
 
               var result =  aLen
                 .andThen(jt.newArray());
 
-              var b = ByteBuffer.wrap(d);
-              for (int i = 0; i < d.length; i=i+bytesPerField)
+              for (int idx = 0; idx < elCount; idx++)
                 {
-                  var bytes = b.slice(i, bytesPerField);
-                  byte[] bb = new byte[bytes.remaining()];
-                  bytes.get(bb);
-                  var c = createConstant(elementType, bb);
+                  var b = _fuir.deseralizeConst(elementType, bb);
+                  var c = createConstant(si, elementType, b);
                   result = result
                     .andThen(Expr.DUP)                             // T[], T[]
                     .andThen(Expr.checkcast(jt.array()))
-                    .andThen(Expr.iconst(i / bytesPerField))       // T[], T[], idx
-                    .andThen(c._v1)                                // T[], T[], idx, const-data-code
-                    .andThen(c._v0)                                // T[], T[], idx, const-data-code
+                    .andThen(Expr.iconst(idx))                     // T[], T[], idx
+                    .andThen(c.v1())                               // T[], T[], idx, const-data-code
+                    .andThen(c.v0())                               // T[], T[], idx, const-data-code
                     .andThen(jt.xastore());                        // T[]
                 }
-              yield _jvm.const_array(constCl, result);
+              yield _jvm.const_array(constCl, result, elCount);
             }
           else if (!_fuir.clazzIsChoice(constCl))
             {
               var b = ByteBuffer.wrap(d);
               var result = Expr.UNIT;
-              var offset = 0;
               for (int index = 0; index < _fuir.clazzArgCount(constCl); index++)
                 {
                   var fr = _fuir.clazzArgClazz(constCl, index);
-                  var n = _fuir.clazzArgFieldBytes(constCl, index);
-                  var bytes = b.slice(offset, n);
-                  byte[] bb = new byte[bytes.remaining()];
-                  bytes.get(bb);
-                  offset += n;
-                  var c = createConstant(fr, bb);
+                  var bytes = _fuir.deseralizeConst(fr, b);
+                  var c = createConstant(si, fr, bytes);
                   result = result
-                    .andThen(c._v1)
-                    .andThen(c._v0);
+                    .andThen(c.v1())
+                    .andThen(c.v0());
                 }
               result = result
-                .andThen(_types.invokeStaticCombindedPreAndCall(constCl));
+                .andThen(_types.invokeStaticCombindedPreAndCall(constCl, _fuir.sitePos(si).line()));
 
               yield new Pair<>(result, Expr.UNIT);
             }
@@ -1046,23 +1023,18 @@ class CodeGen
   /**
    * Perform a match on value subv.
    *
+   * @param s site of the match
+   *
    * @param ai the abstract interpreter instance
-   *
-   * @param cl the clazz we are compiling
-   *
-   * @param pre true iff we are compiling the precondition
-   *
-   * @param c the code block to compile
-   *
-   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
    *
    * @param sub code to produce the match subject value
    *
    * @return the code for the match, produces unit type result.
    */
-  public Pair<Expr, Expr> match(AbstractInterpreter<Expr, Expr> ai, int cl, boolean pre, int c, int i, Expr sub)
+  @Override
+  public Pair<Expr, Expr> match(int s, AbstractInterpreter<Expr, Expr> ai, Expr sub)
   {
-    var code = _choices.match(_jvm, ai, cl, pre, c, i, sub);
+    var code = _choices.match(_jvm, ai, s, sub);
     return new Pair<>(Expr.UNIT, code);
   }
 
@@ -1071,8 +1043,6 @@ class CodeGen
    * Create a tagged value of type newcl from an untagged value for type valuecl.
    *
    * @param cl the clazz we are compiling
-   *
-   * @param valuecl the original clazz of the value that is to be tagged. NYI: remove?
    *
    * @param value code to produce the value we are tagging
    *
@@ -1083,9 +1053,10 @@ class CodeGen
    *
    * @return code to produce the tagged value as a result.
    */
-  public Pair<Expr, Expr> tag(int cl, int valuecl, Expr value, int newcl, int tagNum)
+  @Override
+  public Pair<Expr, Expr> tag(int s, Expr value, int newcl, int tagNum)
   {
-    var res = _choices.tag(_jvm, cl, value, newcl, tagNum);
+    var res = _choices.tag(_jvm, s, value, newcl, tagNum);
     return new Pair<>(res, Expr.UNIT);
   }
 
@@ -1093,7 +1064,8 @@ class CodeGen
   /**
    * Access the effect of type ecl that is installed in the environment.
    */
-  public Pair<Expr, Expr> env(int ecl)
+  @Override
+  public Pair<Expr, Expr> env(int s, int ecl)
   {
     var res =
       Expr.iconst(_fuir.clazzId2num(ecl))
@@ -1110,8 +1082,10 @@ class CodeGen
    * Process a contract of kind ck of clazz cl that results in bool value cc
    * (i.e., the contract fails if !cc).
    */
-  public Expr contract(int cl, FUIR.ContractKind ck, Expr cc)
+  @Override
+  public Expr contract(int s, FUIR.ContractKind ck, Expr cc)
   {
+    var cl = _fuir.clazzAt(s);
     return cc.andThen(Expr.branch(O_ifeq,
                                   Expr.stringconst("" + ck + " on call to '" + _fuir.clazzAsString(cl) + "'")
                                   .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,

@@ -36,7 +36,7 @@ module out : character_encodings is
   module println =>
     write [ascii.lf]
 
-  module stdout i64 is intrinsic
+  module stdout i64 => intrinsic
 
-  private write(arr array u8) =>
+  write(arr array u8) =>
     _ := fuzion.sys.fileio.write stdout arr

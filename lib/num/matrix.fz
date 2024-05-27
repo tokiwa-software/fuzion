@@ -78,7 +78,7 @@ is
 
   # transpose
   #
-  public transpose matrix M is
+  public transpose matrix M =>
     matrix (array2 M e.length1 e.length0 i,j->e[j,i])
 
 

@@ -25,13 +25,12 @@
 
 typeinference is
 
-  exit_code := mut 0
 
   chck(b bool, msg String) is
     s := if b
       "PASSED: "
     else
-      exit_code <- 1
+      _ := set_exit_code 1
       "FAILED: "
     say (s + msg)
 
@@ -64,7 +63,7 @@ typeinference is
     E is
     abcde : choice A B C D E is
 
-    f(x abcde) choice i32 String bool E is
+    f(x abcde) choice i32 String bool E =>
       match x
         a A => 3
         B,C => "String"
@@ -90,7 +89,7 @@ typeinference is
     abcde : choice A B C D E is
 
     test(x abcde) is
-      f(a choice i32 String bool E) unit is
+      f(a choice i32 String bool E) unit =>
       f (match x
             a A => 3
             B,C => "String"
@@ -98,4 +97,4 @@ typeinference is
             e E => e
         )
 
-  exit exit_code.get
+  exit

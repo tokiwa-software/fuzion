@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# Regression test for issue #37: https://github.com/fridis/fuzion/issues/37
+# Regression test for issue #37: https://github.com/tokiwa-software/fuzion/issues/37
 #
 # A simple test that inherits from a generic outer feature.
 #
@@ -34,7 +34,7 @@ inheritGenericOuter is
       say "ok, in a.b"
       c
       d
-      d is say "in (a T=.b.d"
+      d is say "in (a T).b.d"
     c is say "in (a T).c"
 
   (a i32).b

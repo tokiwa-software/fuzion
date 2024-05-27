@@ -57,10 +57,10 @@ public delete(dop Delete_Handler, _ unit) : simple_effect is
 # if the targeted dir has content, then the return value will be error and the deletion will not take place
 #
 public delete(path String) =>
-  delete.type.install_default
+  delete.install_default
   delete.env.delete path
 
 # reference to the delete operations that could take place
 #
 private:public Delete_Handler ref is
-    delete(path String) outcome unit is abstract
+    delete(path String) outcome unit => abstract

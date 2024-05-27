@@ -74,49 +74,52 @@ is
     ) array T
 
     pre
-      debug: heap_size ≥ 0,
-      debug: (heap_size & (heap_size-1)) = 0
+      debug: (heap_size ≥ 0)
+      debug: ((heap_size & (heap_size-1)) = 0)
       # NYI: analysis: for all i=0..a.length/heap_size: a[heap_size*i .. heap_size*(i+1)-1] is sorted
-  is
+  =>
+
+    m : mutate is
+
     # check if the array is fully sorted
     if heap_size ≥ a.length
       a
     else
-      # h1 is the mutable index within the current first heap, this is updated
-      # by the function passed to the array constructor.
-      #
-      # NYI: This might eventually be done using a monad with monadic lifting
-      # of array.
-      h1 := 0;
+      m.go ()->
 
-      na := array T a.length (i ->
-        # index in current pair of heaps
-        hi := i & (heap_size*2-1)
-        # reset h1 in case we start new pair of heaps
-        set h1 := if (hi = 0) 0 else h1
-        # index within second heap
-        h2 := hi - h1
+        # h1 is the mutable index within the current first heap, this is updated
+        # by the function passed to the array constructor.
+        #
+        h1 := m.env.new 0
 
-        # absolute indices in first and second heap
-        i1 := i - hi + h1;
-        i2 := i - hi + heap_size + h2;
+        na := array T a.length (i ->
+          # index in current pair of heaps
+          hi := i & (heap_size*2-1)
+          # reset h1 in case we start new pair of heaps
+          h1 <- (if (hi = 0) 0 else h1)
+          # index within second heap
+          h2 := hi - h1
 
-        # did we reach end of first or second heap?
-        heap1_empty := h1 ≥ heap_size
-        heap2_empty := (h2 ≥ heap_size) || (i2 ≥ a.length)
+          # absolute indices in first and second heap
+          i1 := i - hi + h1;
+          i2 := i - hi + heap_size + h2;
 
-        # check if next element comes from first heap
-        if heap2_empty || !heap1_empty && less_or_equal(a[i1], a[i2])
-          # if so, increment index in first heap and return element from first heap
-          set h1 := h1 + 1
-          a[i1]
-        else
-          # otherwise, return element from second heap
-          a[i2]
-        )
+          # did we reach end of first or second heap?
+          heap1_empty := h1.get ≥ heap_size
+          heap2_empty := (h2 ≥ heap_size) || (i2 ≥ a.length)
 
-      # continue sorting with doubled heap size
-      sort na 2*heap_size
+          # check if next element comes from first heap
+          if heap2_empty || !heap1_empty && less_or_equal(a[i1], a[i2])
+            # if so, increment index in first heap and return element from first heap
+            h1 <- h1.get + 1
+            a[i1]
+          else
+            # otherwise, return element from second heap
+            a[i2]
+          )
+
+        # continue sorting with doubled heap size
+        sort na 2*heap_size
 
 
   # find index of given key using binary search
@@ -136,8 +139,8 @@ is
                  #
                  less_or_equal sorted_array.this[i] key && less_or_equal key sorted_array.this[i]
         nil   => true # NYI: analyis: for all i=a.indices, sorted_array.this[i] != key
-  is
-    binary_search(l, r i32) option i32 is
+  =>
+    binary_search(l, r i32) option i32 =>
       m := (l + r) / 2
       if l > r                                     then nil
       else if !less_or_equal key sorted_array.this[m] then binary_search m+1 r
@@ -170,8 +173,8 @@ is
       match result
         i i32 => (cmp sorted_array.this[i]) = 0
         nil   => true # NYI: analyis: for all i=a.indices, sorted_array.this[i] /= key
-  is
-    binary_search(l, r i32) option i32 is
+  =>
+    binary_search(l, r i32) option i32 =>
       m := (l + r) / 2
       if l > r
         nil
@@ -198,5 +201,5 @@ public sorted_array_of
   from Sequence T
   ) sorted_array T
 
-is
+=>
   sorted_array T from (a,b -> a ≤ b)

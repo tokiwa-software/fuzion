@@ -67,7 +67,7 @@ else
     if [ -f "$2".expected_err_jvm ]; then
         experr=$2.expected_err_jvm
     fi
-    # show diff in stdout unless an unexpected output occured to stderr:
+    # show diff in stdout unless an unexpected output occurred to stderr:
     (diff "$experr" tmp_err.txt && diff "$expout" tmp_out.txt) || echo -e "\033[31;1m*** FAILED\033[0m out on $2"
     diff "$expout" tmp_out.txt >/dev/null && diff "$experr" tmp_err.txt >/dev/null && echo -e "\033[32;1mPASSED\033[0m."
     RC=$?

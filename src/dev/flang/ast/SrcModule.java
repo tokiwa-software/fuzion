@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import java.util.Collection;
 import java.util.SortedMap;
+import java.util.function.Consumer;
 
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -64,10 +65,12 @@ public interface SrcModule
   void findDeclarations(Feature inner, AbstractFeature outer);
 
 
-  SortedMap<FeatureName, AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer);
+  List<AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer, FeatureName fn);
+  void forEachDeclaredOrInheritedFeature(AbstractFeature af, Consumer<AbstractFeature> f);
   AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name, AbstractFeature original);
   void findDeclaredOrInheritedFeatures(Feature outer);
   List<FeatureAndOuter> lookup(AbstractFeature thiz, String name, Expr use, boolean traverseOuter, boolean hidden);
+  AbstractFeature lookupOpenTypeParameterResult(AbstractFeature outer, Expr use);
   void checkTypes(Feature f);
   FeatureAndOuter lookupType(SourcePosition pos, AbstractFeature outer, String name, boolean traverseOuter, boolean ignoreNotFound);
 

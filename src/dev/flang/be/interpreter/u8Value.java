@@ -26,10 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.air.Clazz;
-import dev.flang.air.Clazzes;
-
-
+import dev.flang.fuir.FUIR;
 
 /**
  * u8Value is a value of type u8
@@ -54,8 +51,6 @@ public class u8Value extends Value
 
   /**
    * Constructor
-   *
-   * @param i
    */
   public u8Value(int val)
   {
@@ -100,7 +95,6 @@ public class u8Value extends Value
    */
   void storeNonRef(LValue slot, int size)
   {
-    if (size != 1) System.out.println("Assigning "+this);
     if (PRECONDITIONS) require
       (size == 1);
 
@@ -116,9 +110,9 @@ public class u8Value extends Value
    *
    * @throws Error in case this does not match the expected clazz
    */
-  void checkStaticClazz(Clazz expected)
+  void checkStaticClazz(int expected)
   {
-    if (expected != Clazzes.u8.getIfCreated())
+    if (expected != fuir().clazz(FUIR.SpecialClazzes.c_u8))
       {
         throw new Error("u8 value not allowed for clazz " + expected);
       }

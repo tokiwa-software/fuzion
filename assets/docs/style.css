@@ -153,7 +153,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .fd .sidenav{
-  overflow-y: auto;
   max-height: 100vh;
   padding-right: 15px;
 }
@@ -164,6 +163,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   font-size: 2em;
 }
 
+.fd .sidenav nav{
+  min-width: 25ch;
+}
+
 .fd .sidenav nav ul{
   list-style: none;
   padding-left: 0;
@@ -171,4 +174,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 .fd .sidenav nav li{
   line-height: 1;
+}
+
+.fd .sidenav nav .fd-feat-kind{
+  font-style: italic;
+  font-weight: 600;
+  font-size: x-small;
 }

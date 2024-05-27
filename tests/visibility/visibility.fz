@@ -25,49 +25,48 @@
 
 visibility is
 
-  exit_code := mut 0
 
-  chck (b bool, msg String) unit is
+  chck (b bool, msg String) unit =>
     if b
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
-      exit_code <- 1
+      _ := set_exit_code 1
 
-  chck (a,b i32, msg String) unit is
+  chck (a,b i32, msg String) unit =>
     if a = b
       say "PASSED: $msg"
     else
       say "FAILED: expected $b got $a"
-      exit_code <- 1
+      _ := set_exit_code 1
 
   visi1 is
     a1 is
       b1 is
-        c1(b bool) i32 is
+        c1(b bool) i32 =>
           if b { a1; a2; b1; b2; c1 false; c2 false }
           11
 
-        c2(b bool) i32 is
+        c2(b bool) i32 =>
           if b { a1; a2; b1; b2; c1 false; c2 false }
           22
 
       b2 is
-        c3(b bool) i32 is
+        c3(b bool) i32 =>
           if b { a1; a2; b1; b2; c3 false; c4 false }
           33
 
-        c4(b bool) i32 is
+        c4(b bool) i32 =>
           if b { a1; a2; b1; b2; c3 false; c4 false }
           44
 
     a2 is
       b3 is
-        c5(b bool) i32 is
+        c5(b bool) i32 =>
           if b { a1; a2; b3; c5 false; c6 false }
           55
 
-        c6(b bool) i32 is
+        c6(b bool) i32 =>
           if b { a1; a2; b3; c5 false; c6 false }
           66
 
@@ -256,7 +255,7 @@ visibility is
           chck (c.this.x = "Inner Inner!") "c.this.x"
     a.b.c
     unit
-// NYI:   visi5
+  visi5
 
   visi6 is
     x := 2;        chck $x="2"                                    "x := 2"
@@ -300,7 +299,7 @@ visibility is
   visi8 false
 
   visi9 is
-    a i32 is 3
+    a i32 => 3
     for
       ix1 := a, ix1 + a                  // can make unqualified call to a, ix1 ..
       ix2 := 3 * ix1 + a, a + ix2 + ix1  // can make unqualified call to a, ix1, ix2 ..
@@ -337,4 +336,4 @@ visibility is
     r := red magenta; say "red magenta is $r"
   visiB
 
-  exit exit_code.get
+  exit

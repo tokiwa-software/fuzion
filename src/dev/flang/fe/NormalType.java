@@ -114,7 +114,7 @@ public class NormalType extends LibraryType
    * The sourcecode position of the declaration point of this type, or, for
    * unresolved types, the source code position of its use.
    */
-  public SourcePosition declarationPos() { return featureOfType().pos(); }
+  public SourcePosition declarationPos() { return feature().pos(); }
 
 
   /**
@@ -138,7 +138,7 @@ public class NormalType extends LibraryType
    * @param o2 the new outer type to be used (which may also differ in its
    * actual generics).
    *
-   * @return a new type with same featureOfType(), but using g2/o2 as generics
+   * @return a new type with same feature(), but using g2/o2 as generics
    * and outer type.
    */
   public AbstractType applyTypePars(List<AbstractType> g2, AbstractType o2)
@@ -157,7 +157,7 @@ public class NormalType extends LibraryType
    *
    * @throws Error if this is not resolved or isGenericArgument().
    */
-  public AbstractFeature featureOfType()
+  public AbstractFeature feature()
   {
     return _feature;
   }

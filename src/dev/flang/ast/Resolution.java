@@ -268,9 +268,6 @@ public class Resolution extends ANY
    * resolution, then try to find those that meanwhile have found a call.  Only
    * if none were found, start resolving those without calls (i.e., argument
    * types will end up being void).
-   *
-   * @param waitingForCalls a list of features that await any calls to be found
-   * before they coudl be resolved.
    */
   Feature resolveDelayed()
   {
@@ -299,7 +296,7 @@ public class Resolution extends ANY
       f.valueArguments().stream()
         .anyMatch(a -> a instanceof Feature af &&
                   af.impl()._kind == Impl.Kind.FieldActual &&
-                  af.impl()._initialValues.isEmpty()           ) ||
+                  af.impl()._initialCalls.isEmpty()           ) ||
       f.outer() instanceof Feature of && !of.isUniverse() && requiresCall(of);
   }
 
@@ -478,7 +475,10 @@ public class Resolution extends ANY
     else if (!forSyntacticSugar2.isEmpty())
       {
         Feature f = forSyntacticSugar2.removeFirst();
-        f.resolveSyntacticSugar2(this);
+        if (!_options.isLanguageServer())
+          {
+            f.resolveSyntacticSugar2(this);
+          }
       }
     else if (!forCheckTypes2.isEmpty())
       {
@@ -505,7 +505,7 @@ public class Resolution extends ANY
    * recursive resolution during RESOLVING_TYPES when declarations in a
    * referenced feature are needed.
    *
-   * @param f the feature to be resolved
+   * @param af the feature to be resolved
    */
   public void resolveDeclarations(AbstractFeature af)
   {
@@ -530,7 +530,7 @@ public class Resolution extends ANY
    * recursive resolution of artificially added features during
    * RESOLVING_TYPES.
    *
-   * @param f the feature to be resolved
+   * @param af the feature to be resolved
    */
   void resolveTypes(AbstractFeature af)
   {

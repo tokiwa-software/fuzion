@@ -48,7 +48,7 @@ is
 
   # calculate the index of k within contents array in case of no conflict
   #
-  at (k HK) => ((hash k).low32bits.cast_to_i32 & 0.max) % allocated_size
+  at (k HK) => ((hash k).low32bits.cast_to_i32 & i32.max) % allocated_size
 
 
   # in case of a collision at given position,
@@ -63,23 +63,23 @@ is
   #
   contents := mi.go ()->
     for
-      mcontents := (mutate.array (option (tuple HK V))).type.new mi allocated_size nil, mcontents
+      mcontents := (mutate.array (option (tuple HK V))).new mi allocated_size.as_i64 nil, mcontents
       k in ks
       v in vs
     do
       store (at k)
 
       # store k,v for index at,
-      store (at i32) unit is
+      store (at i32) unit =>
 
-        match mcontents[at]
+        match mcontents[at.as_i64]
           nil     =>     # slot is free, so use it:
-            mcontents[at] := (k, v)
+            mcontents[at.as_i64] := (k, v)
 
           t tuple =>     # we have a conflict
             (ek, _) := t
             if ek = k    # no conflict, but remapping of k
-              mcontents[at] := (k, v)
+              mcontents[at.as_i64] := (k, v)
             else         # conflict
               store (collision at)
 
@@ -96,9 +96,9 @@ is
 
   # get the value k is mapped to
   #
-  public index [] (k HK) option V is
+  public index [] (k HK) option V =>
 
-    retrieve (at i32) option V is
+    retrieve (at i32) option V =>
       match contents[at]
         nil     => nil
         t tuple =>
@@ -113,7 +113,7 @@ is
 
   # get a list of all key/value pairs in this map
   #
-  public items Sequence (tuple HK V) is
+  public items Sequence (tuple HK V) =>
     contents
       .filter      (o -> o??)
       .map (o -> match o
@@ -132,4 +132,4 @@ is
 
   # empty -- convenience routine to create an empty instance of hash_map
   #
-  public type.empty => container.hash_map HK V [] []
+  public fixed type.empty => container.hash_map HK V [] []

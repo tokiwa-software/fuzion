@@ -26,23 +26,40 @@
 # T is used to distinguish several open files
 #
 module:public open(public T type,
-                   private fd i64,
+                   fd i64,
                    public file_name String) : simple_effect is
 
   # writes the content of an array of bytes to a file opened as fd
   #
   # this might overwrite parts or all of an existing file.
   #
-  public write(content Sequence u8) ! io.file.write =>
-    io.file.write.write fd content.as_array
+  public write(content Sequence u8) =>
+    # NYI we should probably not override existing effect in all cases..
+    # also write effect would not show up if used like this.
+    (io.file.write (io.file.write.default_write_handler fd)).go ()->
+      io.file.write.write content.as_array
 
 
   # reads all bytes from the file in the path
   # returns outcome array u8, a byte array representing the content of the file if the operation was successful
   # returns an error in case the operation fails
   #
-  public read outcome (array u8) ! io.file.read is
+  public read outcome (array u8) ! io.file.read =>
     io.file.read.read_file fd
+
+
+  # seek in file
+  #
+  public seek(
+       # the offset to seek from the beginning of the stream pointer
+       offset i64) =>
+    io.file.seek.seek fd offset
+
+
+  # get the current byte position in the file
+  #
+  public file_position =>
+    io.file.seek.file_position fd
 
 
   # install mmap effect an run code
@@ -57,11 +74,10 @@ module:public open(public T type,
   #
   public mmap(R type, offset i64, size i64, code mapped_buffer->R) outcome R
   pre offset % 4096 = 0 # NYI get real page size instead of 4096.
-  is
+  =>
 
-    arr := fuzion.sys.internal_array_init i32 1
-    mapped_memory := fuzion.sys.fileio.mmap fd offset size arr.data
-    res := arr.as_array
+    res := fuzion.sys.internal_array_init i32 1
+    mapped_memory := fuzion.sys.fileio.mmap fd offset size res.data
 
     if res[0] = -1
       error "mmap failed"
@@ -92,7 +108,7 @@ module:public open(public T type,
   #
   module:public mapped_buffer
     (# internal pointer to the mapped memory
-     private memory fuzion.sys.Pointer,
+     memory fuzion.sys.Pointer,
 
      # the length of this buffer
      public length i64
@@ -103,8 +119,6 @@ module:public open(public T type,
     # get byte at given index i
     #
     public index [ ] (i i64) u8 ! open T
-      pre
-        safety: i64 0 ≤ i < length
     =>
       mapped_buffer_get memory i
 
@@ -112,9 +126,7 @@ module:public open(public T type,
     # set byte at given index i to given value o
     #
     public set [ ] (i i64, o u8) unit ! io.file.open T
-      pre
-        safety: i64 0 ≤ i < length
-    is
+    =>
       mapped_buffer_set memory i o
 
 

@@ -25,17 +25,17 @@
 
 inheritance_negative2 is
 
-  inheritedNotFound1 unit is
+  inheritedNotFound1 unit =>
     A is
     C : B1 is  // 1. should flag an error, inheritance of a feature that does not exist
   inheritedNotFound1
 
-  inheritedNotFound2 unit is
+  inheritedNotFound2 unit =>
     A is
     C : A.B is  // 2. should flag an error, inheritance of an inner feature that does not exist
   inheritedNotFound2
 
-  outerInheritsNotFound3 unit is
+  outerInheritsNotFound3 unit =>
     A ref is
       B ref is
         C ref is

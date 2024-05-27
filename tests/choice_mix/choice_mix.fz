@@ -169,8 +169,8 @@ choice_mix is
     set d := e
     set e := x
 
-  colors1 unit is  // using choice over features inheriting from abstract feature
-    color is rgb u32 is abstract
+  colors1 unit =>  // using choice over features inheriting from abstract feature
+    color is rgb u32 => abstract
     red     : color is redef rgb => u32 255 * 256 * 256
     green   : color is redef rgb => u32 255 * 256
     blue    : color is redef rgb => u32 255
@@ -179,7 +179,7 @@ choice_mix is
     black   : color is redef rgb => u32 0
     white   : color is redef rgb => red.rgb + blue.rgb + green.rgb
     transparent (alpha u32) : color
-      pre alpha ≥ u32 0, alpha ≤ u32 255
+      pre alpha ≥ u32 0; alpha ≤ u32 255
     is
       redef rgb => alpha * 256*256*256
 
@@ -200,7 +200,7 @@ choice_mix is
                    black
                    white
                    transparent) unit
-    is
+    =>
       match c
         r red         => say "red {r.rgb}"
         g green       => say "grn {g.rgb}"
@@ -223,8 +223,8 @@ choice_mix is
     print t
   colors1
 
-  colors2 unit is // same as colors1, using pipe notation
-    color is rgb u32 is abstract
+  colors2 unit => // same as colors1, using pipe notation
+    color is rgb u32 => abstract
     red     : color is redef rgb => u32 255 * 256 * 256
     green   : color is redef rgb => u32 255 * 256
     blue    : color is redef rgb => u32 255
@@ -233,7 +233,7 @@ choice_mix is
     black   : color is redef rgb => u32 0
     white   : color is redef rgb => red.rgb + blue.rgb + green.rgb
     transparent (alpha u32) : color
-      pre alpha ≥ u32 0, alpha ≤ u32 255
+      pre alpha ≥ u32 0; alpha ≤ u32 255
     is
       redef rgb => alpha * 256*256*256
 
@@ -254,7 +254,7 @@ choice_mix is
           | black
           | white
           | transparent) unit
-    is
+    =>
       match c
         r red         => say "red{r.rgb}"
         g green       => say "grn{g.rgb}"
@@ -276,8 +276,8 @@ choice_mix is
     print t
   colors2
 
-  alternatives1 unit is // use pipe for choice result type
-    f(i i32) i32 | bool | String is
+  alternatives1 unit => // use pipe for choice result type
+    f(i i32) i32 | bool | String =>
       if i < 10 { i }
       else if i < 20 { i > 15 }
       else { "Large" }
@@ -289,18 +289,18 @@ choice_mix is
         x i32 => yak x
         b bool => { if b { yak  "true" } else { yak "false" } }
         s String => yak s
-      say
+      say ""
 
     // check that pipe also works as operator:
-    (1..10) | i -> yak i
-    say
+    (1..10) ! yak
+    say ""
   alternatives1
 
-  alternatives2 unit is // use pipe for choice argument type
+  alternatives2 unit => // use pipe for choice argument type
     Nil2 is
     MyRef2 (a,b,c i32) ref is
 
-    test(p i32 | bool | String | Nil2 | MyRef2) unit is
+    test(p i32 | bool | String | Nil2 | MyRef2) unit =>
       match p
         i i32    => say "i32:    $i"
         b bool   => say "bool:   $b"

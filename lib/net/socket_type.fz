@@ -38,14 +38,14 @@ public socket_type is
 
 
   private:module val : choice socket_type.stream datagram is
-    module as_num i32 is
+    module as_num i32 =>
       match val.this
         socket_type.stream => 1
         datagram => 2
 
 
   # convenience feature to get the socket type by used protocol
-  module by_protocol(p protocol.val) net.socket_type.val is
+  module by_protocol(p protocol.val) net.socket_type.val =>
     match p
       protocol.tcp => net.socket_type.stream
       protocol.udp => net.socket_type.datagram

@@ -74,15 +74,8 @@ public class Case extends AbstractCase
   /**
    * code to be executed in case of a match
    */
-  public Block _code;
-  public Block code() { return _code; }
-
-
-  /**
-   * Counter for a unique id for this case expression. This is used to store data
-   * in the runtime clazz for this case.
-   */
-  public int _runtimeClazzId = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
+  public Expr _code;
+  public Expr code() { return _code; }
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -105,7 +98,14 @@ public class Case extends AbstractCase
               String n,
               Block c)
   {
-    this(pos, new Feature(pos, Visi.PRIV, t, n), null, c);
+    this(pos,
+         new Feature(pos, Visi.PRIV, t, n)
+         {
+           @Override
+           public boolean isCaseField() { return true; }
+         },
+         null,
+         c);
   }
 
 
@@ -120,7 +120,7 @@ public class Case extends AbstractCase
    */
   public Case(SourcePosition pos,
               List<AbstractType> l,
-              Block c)
+              Expr c)
   {
     this(pos, null, l, c);
   }
@@ -128,6 +128,7 @@ public class Case extends AbstractCase
 
   /**
    * Constructor for a Case that matches all cases
+   * which are not matched by other cases.
    *
    * @param pos the sourcecode position, used for error messages.
    *
@@ -143,7 +144,7 @@ public class Case extends AbstractCase
   /**
    * Constructor for a Case that assigns the value to a new field
    *
-   * @param pos the sourcecode position, used for error messages.
+   * @param p the sourcecode position, used for error messages.
    *
    * @param f the field declared to hold the value in this case
    *
@@ -154,7 +155,7 @@ public class Case extends AbstractCase
   private Case(SourcePosition p,
                Feature f,
                List<AbstractType> l,
-               Block c)
+               Expr c)
   {
     super(p);
 
@@ -304,7 +305,7 @@ public class Case extends AbstractCase
     List<AbstractType> matches = new List<>();
     int i = 0;
     t = t.resolve(res, outer);
-    var inferGenerics = !t.isGenericArgument() && t.generics().isEmpty() && t.featureOfType().generics() != FormalGenerics.NONE;
+    var inferGenerics = !t.isGenericArgument() && t.generics().isEmpty() && t.feature().generics() != FormalGenerics.NONE;
     var hasErrors = t.containsError();
     check
       (!hasErrors || Errors.any());
@@ -313,7 +314,7 @@ public class Case extends AbstractCase
         if (CHECKS) check
           (Errors.any() || cg != null);
         if (cg != null &&
-            (inferGenerics  && !cg.isGenericArgument() && t.featureOfType() == cg.featureOfType() /* match feature, take generics from cg */ ||
+            (inferGenerics  && !cg.isGenericArgument() && t.feature() == cg.feature() /* match feature, take generics from cg */ ||
              !inferGenerics && t.compareTo(cg) == 0                    /* match exactly */ ))
           {
             t = cg;

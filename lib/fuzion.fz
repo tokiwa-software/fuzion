@@ -25,5 +25,4 @@
 
 # fuzion -- unit feature to group fuzion-infrustructure related features
 #
-# NYI visibility=module
 public fuzion is

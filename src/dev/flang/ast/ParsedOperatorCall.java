@@ -39,7 +39,7 @@ import dev.flang.util.List;
  *
  *   a.prefix -
  *
- * This is needed since the former could serve as a partial call an expand
+ * This is needed since the former could serve as a partial call and expand
  * to
  *
  *  x -> x-a
@@ -48,6 +48,20 @@ import dev.flang.util.List;
  */
 public class ParsedOperatorCall extends ParsedCall
 {
+
+  /*-----------------------------  fields  ------------------------------*/
+
+
+  /**
+   * Has this been put into parentheses? If so, it may no longer be used as
+   * chained boolean `(a < b) < c`, but it may still used as partial call `l.map
+   * (+x)`.
+   */
+  private boolean _inParentheses = false;
+
+
+  /*--------------------------  constructors  ---------------------------*/
+
 
   /**
    * Constructor for a prefix or postfix operator on target.
@@ -71,11 +85,11 @@ public class ParsedOperatorCall extends ParsedCall
    *
    * @param name the name of the called feature
    *
-   * @param argument the right hand side
+   * @param rhs the right hand side
    */
   public ParsedOperatorCall(Expr target, ParsedName name, Expr rhs)
   {
-    super(target, name, new List<>(new Actual(rhs)));
+    super(target, name, new List<>(rhs));
   }
 
 
@@ -85,10 +99,24 @@ public class ParsedOperatorCall extends ParsedCall
   /**
    * Is this an operator call like `a+b` or `-x` in contrast to a named call `f`
    * or `t.g`?
+   *
+   * @param parenthesesAllowed true if an operator call in parentheses is still
+   * ok.  (+x)`.
    */
-  boolean isOperatorCall()
+  boolean isOperatorCall(boolean parenthesesAllowed)
   {
-    return true;
+    return parenthesesAllowed || !_inParentheses;
+  }
+
+
+  /**
+   * Is this Expr put into parentheses `(`/`)`. If so, we no longer want to do
+   * certain transformations like chained booleans `a < b < c` to `a < b && b <
+   * c`.
+   */
+  public void putInParentheses()
+  {
+    _inParentheses = true;
   }
 
 }

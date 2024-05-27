@@ -35,6 +35,7 @@ import java.math.BigInteger;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.stream.Collectors;
 
 /**
  * NumLiteral <description>
@@ -322,7 +323,6 @@ public class NumLiteral extends Constant
   /*-----------------------------  methods  -----------------------------*/
 
 
-
   /**
    * Was this declared with a '.'?  If so, the preferred type is f64, not
    * i32/i64.
@@ -405,6 +405,7 @@ public class NumLiteral extends Constant
     return _originalString.startsWith("-");
   }
 
+
   /**
    * typeForInferencing returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
@@ -420,6 +421,49 @@ public class NumLiteral extends Constant
         checkRange();
       }
     return _type;
+  }
+
+
+  /**
+   * typeForUnion returns the type of this expression or null if the type is
+   * still unknown, i.e., before or during type resolution.  This is redefined
+   * by sub-classes of Expr to provide type information.
+   *
+   * @return this Expr's type or null if not known.
+   */
+  @Override
+  AbstractType typeForUnion()
+  {
+    return _type;
+  }
+
+
+  /**
+   * During type inference: Inform this expression that it is
+   * expected to result in the given type.
+   *
+   * @param t the expected type.
+   */
+  @Override
+  protected void propagateExpectedType(AbstractType t)
+  {
+    if (PRECONDITIONS) require
+      (_type == null || extractNumericType(t) == null || _type.compareTo(extractNumericType(t)) == 0);
+
+    _type = extractNumericType(t);
+  }
+
+
+  private AbstractType extractNumericType(AbstractType t)
+  {
+    var result = t
+      .choices()
+      .filter(x -> Types.resolved.numericTypes.contains(x))
+      .collect(Collectors.toList());
+
+    return result.size() == 1
+      ? result.get(0)
+      : null;
   }
 
 
@@ -731,14 +775,14 @@ public class NumLiteral extends Constant
 
 
   /**
-   * Check if type t is one of the known integer types i8, i16, i32, i64, u8,
-   * u16, u32, u64 and return the corresponding ConstantType constant.
+   * Check if type t is one of the known numeric types i8, i16, i32, i64, u8,
+   * u16, u32, u64, f32, f64 and return the corresponding ConstantType constant.
    *
    * @param t an interned type
    *
    * @return the corresponding ConstantType or null if none.
    */
-  public static ConstantType findConstantType(AbstractType t)
+  private static ConstantType findConstantType(AbstractType t)
   {
     if      (t.compareTo(Types.resolved.t_i8 ) == 0) { return ConstantType.ct_i8 ; }
     else if (t.compareTo(Types.resolved.t_i16) == 0) { return ConstantType.ct_i16; }
@@ -758,7 +802,7 @@ public class NumLiteral extends Constant
    * Perform partial application for a NumLiteral. In particular, this converts
    * a literal with a sign such as `-2` into a lambda of the form `x -> x - 2`.
    *
-   * @see Expr.propagateExpectedTypeForPartial for details.
+   * @see Expr#propagateExpectedTypeForPartial for details.
    *
    * @param res this is called during type inference, res gives the resolution
    * instance.
@@ -773,15 +817,15 @@ public class NumLiteral extends Constant
     Expr result = this;
     if (t.isFunctionType() && t.arity() == 1 && explicitSign() != null)
       { // convert `map -1` into `map x->x-1`
-        List<ParsedName> pns = new List<>();
+        var pns = new List<Expr>();
         pns.add(Partial.argName(pos()));
         var fn = new Function(pos(),
                               pns,
-                              new ParsedCall(new ParsedCall(null, pns.get(0)),                        // target #p<n>
+                              new ParsedCall(pns.get(0),                                  // target #p<n>
                                              new ParsedName(signPos(),
                                                             FuzionConstants.INFIX_OPERATOR_PREFIX +
-                                                            explicitSign()),                          // `infix +` or `infix -`
-                                             new List<>(new Actual(stripSign()))));                   // constant w/o sign
+                                                            explicitSign()),              // `infix +` or `infix -`
+                                             new List<>(stripSign())));                   // constant w/o sign
         fn.resolveTypes(res, outer);
         result = fn;
       }
@@ -830,6 +874,29 @@ public class NumLiteral extends Constant
 
 
   /**
+   * After propagateExpectedType: if type inference up until now has figured
+   * out that a Lazy feature is expected, but the current expression is not
+   * a Lazy feature, then wrap this expression in a Lazy feature.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param  outer the feature that contains this expression
+   *
+   * @param t the type this expression is assigned to.
+   */
+  @Override
+  public Expr wrapInLazy(Resolution res, AbstractFeature outer, AbstractType t)
+  {
+    if (t.isLazyType())
+      {
+        propagateExpectedType(res, outer, t.generics().get(0));
+      }
+    return super.wrapInLazy(res, outer, t);
+  }
+
+
+  /**
    * Get the little-endian representation of this constant.
    *
    * @return an array with length findConstantType(type_)._bytes containing the
@@ -838,16 +905,17 @@ public class NumLiteral extends Constant
   public byte[] data()
   {
     var ct = findConstantType(_type);
+    byte[] result;
     if (ct._isFloat)
       {
-        return floatBits();
+        result = floatBits();
       }
     else
       {
         var i = intValue(ct);
         var b = i.toByteArray();
         var bytes = ct._bytes;
-        var result = new byte[bytes];
+        result = new byte[bytes];
         for (var ix = 0; ix < bytes; ix++)
           {
             if (ix >= b.length)
@@ -859,8 +927,11 @@ public class NumLiteral extends Constant
                 result[ix] = b[b.length - 1 - ix];
               }
           }
-        return result;
       }
+    var bb = ByteBuffer.wrap(new byte[4+result.length]).order(ByteOrder.LITTLE_ENDIAN);
+    bb.putInt(ct._bytes);
+    bb.put(result);
+    return bb.array();
   }
 
 

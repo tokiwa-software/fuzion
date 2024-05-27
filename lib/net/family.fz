@@ -29,29 +29,29 @@ public family is
 
   # Internet Protocol Version 4
   public ipv4 is
-    public redef as_string String is
+    public redef as_string String =>
       "IPv4"
 
   # Internet Protocol Version 6
   public ipv6 is
-    public redef as_string String is
+    public redef as_string String =>
       "IPv6"
 
 
   private:public val : choice ipv4 ipv6 is
-    module as_num i32 is
+    module as_num i32 =>
       match val.this
         ipv4  => 2
         ipv6  => 10
 
-    public redef as_string String is
+    public redef as_string String =>
       match val.this
         i4 ipv4  => i4.as_string
         i6 ipv6  => i6.as_string
 
 
   # convenience feature to get the localhost address of a family
-  public localhost(f net.family.val) String is
+  public localhost(f net.family.val) String =>
     match f
       net.family.ipv4 => "127.0.0.1"
       net.family.ipv6 => "::1"

@@ -43,19 +43,9 @@ private:public ps_set
 is
 
 
-  # number of elements in this set
-  #
-  public size => psm.size
-
-
   # list representation of values in this set
   #
   public redef as_list => psm.keys.as_list
-
-
-  # print contents of this set
-  #
-  show => psm.show
 
 
   # add new element k to this set.
@@ -64,7 +54,7 @@ is
   #      results in `Set`). Maybe `Set.add` should result in `Set.this.type`,
   #      so we do not need `add0`?
   #
-  fixed add0 (k K) ps_set K is
+  fixed add0 (k K) ps_set K =>
     if has k
       ps_set.this
     else
@@ -73,7 +63,9 @@ is
 
   # add new element k to this set.
   #
-  public add (k K) Set K is
+  # NYI: this should be intergrated in the mutate effect!
+  #
+  public redef add (k K) Set K =>
     add0 k
 
 
@@ -97,32 +89,21 @@ is
   public max => psm.max
 
 
-  # union of two ps_sets
-  #
-  public infix ∪ (other ps_set.this) => ps_set K (psm ∪ other.psm) unit
-
-
-  # intersection of two ps_sets
-  public infix ∩ (other ps_set.this) =>
-    s := (ps_set.this ∪ other).filter (x -> ps_set.this.has x && other.has x)
-    (ps_set K).type.empty.add_all s
-
-
   # add all elements of the given Sequence to this set
   #
-  public fixed add_all (s Sequence K) ps_set K is
+  public fixed add_all (s Sequence K) ps_set K =>
     s.reduce (ps_set K) ps_set.this ((r,k) -> r.add0 k)
 
 
   # number of entries in this set.  May be undefined, i.e., a range of
   # floating point numbers or an infinite set.
   #
-  public redef size_option option i32 is size
+  public redef size_option option i32 => psm.size
 
 
   # does this set contain the given value?
   #
-  public contains (e K) bool is has e
+  public contains (e K) bool => has e
 
 /*
 has     -- NYI: 'has' keyword not supported yet, so the following require an instance to be called on
@@ -130,26 +111,12 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
 
   # an empty ps_set
   #
-  public fixed type.empty container.ps_set K is
-    container.ps_set K (container.ps_map K unit).type.empty unit
-
-
-  # monoid of ps_set with infix ∪ operation.
-  #
-  public type.union : Monoid (container.ps_set K) is
-    redef infix ∙ (a, b container.ps_set K) => a ∪ b
-    redef e => (container.ps_set K).type.empty
-
-
-  # equality
-  #
-  public fixed type.equality(a, b container.ps_set K) bool is
-    # NYI: a bit expensive
-    (a ∪ b).size = a.size
+  public fixed type.empty container.ps_set K =>
+    container.ps_set K (container.ps_map K unit).empty unit
 
 
   # initialize a partially sorted set from one Sequence
   #
   # This feature creates a pre-initialized instance of ps_set.
   #
-  public type.from_sequence(vs Sequence K) => (container.ps_set K).type.empty.add_all vs
+  public fixed type.new(vs Sequence K) => (container.ps_set K).empty.add_all vs

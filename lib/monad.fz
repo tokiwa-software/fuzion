@@ -42,7 +42,7 @@ public monad (public A type,
   #
   # Apply f to elements of type A and re-wrap them in this monad.
   #
-  public infix >>= (f A -> MA) MA is abstract
+  public infix >>= (f A -> MA) MA => abstract
 
 
   # monadic operator to another monad
@@ -53,7 +53,7 @@ public monad (public A type,
   # allowed for features with generic arguments. Is there a way
   # we could allow this anyway?
   #
-  public infix >>=~ (B, MB type, f A -> MB) MB is abstract
+  public infix >>=~ (B, MB type, f A -> MB) MB => abstract
 
 
   # join operator
@@ -61,7 +61,7 @@ public monad (public A type,
   # NYI: useless since redefinition currently not supported for
   # feature with generics.
   #
-  join(MMA type : monad MA (monad A MA), a MMA) MA is abstract
+  public join(MMA type : monad MA (monad A MA), a MMA) MA => abstract
 
 
   # NYI: fmap:
@@ -71,4 +71,4 @@ public monad (public A type,
 
   # return function
   #
-  type.return (a A) MA is abstract
+  public type.return (a A) MA => abstract

@@ -72,13 +72,29 @@ public class COptions extends FuzionOptions
   final String _cFlags;
 
 
+  /**
+   * Target to use for compilation
+   * <arch><sub>-<vendor>-<sys>-<env>
+   *
+   * e.g.: x86_64-pc-linux-gnu
+   */
+  final String _cTarget;
+
+
+  /**
+   * Flag to keep the generated c code after compilation.
+   */
+  final boolean _keepGeneratedCode;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
    * Constructor initializing fields as given.
+   * @param keepGeneratedCode
    */
-  public COptions(FuzionOptions fo, String binaryName, boolean useBoehmGC, boolean Xdfa, String cCompiler, String cFlags)
+  public COptions(FuzionOptions fo, String binaryName, boolean useBoehmGC, boolean Xdfa, String cCompiler, String cFlags, String cTarget, boolean keepGeneratedCode)
   {
     super(fo);
 
@@ -87,10 +103,22 @@ public class COptions extends FuzionOptions
     _Xdfa = Xdfa;
     _cCompiler = cCompiler;
     _cFlags = cFlags;
+    _cTarget = cTarget;
+    _keepGeneratedCode = keepGeneratedCode;
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /*
+   * Get the absolute path of `p` as a String.
+   * `p` is relative to fuzionHome.
+   */
+  public String pathOf(String p)
+  {
+    return fuzionHome().resolve(p).normalize().toAbsolutePath().toString();
+  }
 
 }
 

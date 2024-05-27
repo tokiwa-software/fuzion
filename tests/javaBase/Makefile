@@ -24,5 +24,10 @@
 # -----------------------------------------------------------------------
 
 override NAME = javaHello
-FUZION_OPTIONS = -unsafeIntrinsics=on -modules=java.base
+export LD_LIBRARY_PATH ?= $(JAVA_HOME)/lib/server
+# fix libjvm.dylib not found: see also https://stackoverflow.com/a/3172515
+export DYLD_FALLBACK_LIBRARY_PATH ?= $(JAVA_HOME)/lib/server
+FUZION_OPTIONS = -modules=java.base
+# needed for the exception text: see #3106
+export LANGUAGE = en_US:en
 include ../simple.mk

@@ -31,18 +31,18 @@
 # a result value.  These are features that typically have an outside effect
 # such as
 #
-#   println(String s) unit is ...
+#   println(String s) unit => ...
 #
 # or features that change the state of an instance such as
 #
-#   increment(delta i64) unit is
+#   increment(delta i64) unit =>
 #     set counter := counter + delta
 #
 # The Fuzion language implementation automatically inserts code that returns the
 # unit value as a result of these features, there is no need for an explicit unit
 # result as in
 #
-#   increment(delta i64) unit is
+#   increment(delta i64) unit =>
 #     set counter := counter + delta
 #     unit
 #
@@ -73,7 +73,7 @@
 # The first declares a feature red that defines a new unit type red, the second
 # declares a feature red with result type unit, i.e., a synonym for unit as in
 #
-#   red unit is {}
+#   red unit => {}
 #
 # The memory required to store a value of unit type is 0 bits, so you can use
 # plenty without worrying about space constraints.  The Fuzion code generators
@@ -98,6 +98,6 @@ public unit is
   #
   # Since there is exactly one value of type unit, the operation, the equality
   # and the identity element of this monoid are canonically defined.
-  type.monoid : Monoid unit is
-    redef infix ∙ (a, b unit) unit is unit
-    redef e unit is unit
+  public type.monoid : Monoid unit is
+    public redef infix ∙ (a, b unit) unit => unit
+    public redef e unit => unit

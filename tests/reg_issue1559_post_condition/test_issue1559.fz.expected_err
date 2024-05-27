@@ -1,14 +1,14 @@
 
 --CURDIR--/test_issue1559.fz:27:7: error 1: Wrong result type in redefined feature
-      utf8 => (list u8).type.empty
+      utf8 => (list u8).empty
 ------^^^^
 In 'a.#fun0.call.#anonymous0.utf8' that redefines 'String.utf8'
 result type is       : 'list u8'
 result type should be: 'Sequence u8'
 
-Original feature declared at $FUZION/lib/String.fz:34:10:
-  public utf8 Sequence u8 is abstract
----------^
+Original feature declared at $MODULE/String.fz:34:10:
+  public utf8 Sequence u8 => abstract
+---------^^^^
 To solve this, change type of result to 'Sequence u8'
 
 one error.

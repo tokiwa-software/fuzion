@@ -223,12 +223,12 @@ hw25 is
   public int featureCode(int f)
   {
     if (PRECONDITIONS) require
-      (featureKind(f) == FeatureKind.Routine);
+      (featureKind(f) == MIR.FeatureKind.Routine);
 
     var ff = _featureIds.get(f);
     var code = prolog(ff);
     addCode(ff, code, ff);
-    return _codeIds.add(code);
+    return addCode(code);
   }
 
 
@@ -276,26 +276,24 @@ hw25 is
    *
    * @param f index of feature containing the access
    *
-   * @param c code block containing the access
-   *
-   * @param ix index of the access
+   * @param s site of the access
    *
    * @return the feature that has to be accessed or -1 if the access is an
    * assignment to a field that is unused, so the assignment is not needed.
    */
-  public int accessedFeature(int f, int c, int ix)
+  public int accessedFeature(int f, int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Call   ||
-       codeAt(c, ix) == ExprKind.Assign    );
+      (s >= SITE_BASE,
+       withinCode(s),
+       exprKind(getExpr(s)) == ExprKind.Call   ||
+       exprKind(getExpr(s)) == ExprKind.Assign    );
 
     var ff = _featureIds.get(f);
-    var s = _codeIds.get(c).get(ix);
+    var e = getExpr(s);
     var af =
-      (s instanceof AbstractCall   call) ? call.calledFeature() :
-      (s instanceof AbstractAssign a   ) ? a._assignedField :
+      (e instanceof AbstractCall   call) ? call.calledFeature() :
+      (e instanceof AbstractAssign a   ) ? a._assignedField :
       (AbstractFeature) (Object) new Object() { { if (true) throw new Error("accessedFeature found unexpected Expr."); } } /* Java is ugly... */;
 
     return af == null ? -1 : _featureIds.get(af);

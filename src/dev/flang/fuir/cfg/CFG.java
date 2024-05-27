@@ -203,7 +203,7 @@ public class CFG extends ANY
   {
     if (PRECONDITIONS) require
       (_fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic);
-    var in = _fuir.clazzIntrinsicName(cl);
+    var in = _fuir.clazzOriginalName(cl);
     var c = _intrinsics_.get(in);
     if (c != null)
       {
@@ -218,7 +218,7 @@ public class CFG extends ANY
           }
         else
           {
-            var msg = "code for intrinsic " + _fuir.clazzIntrinsicName(cl) + " is missing";
+            var msg = "code for intrinsic " + _fuir.clazzOriginalName(cl) + " is missing";
             Errors.warning(msg);
           }
       }
@@ -262,6 +262,10 @@ public class CFG extends ANY
     put("fuzion.sys.stdin.stdin0"        , (cfg, cl) -> { } );
     put("fuzion.sys.out.stdout"          , (cfg, cl) -> { } );
     put("fuzion.sys.err.stderr"          , (cfg, cl) -> { } );
+    put("fuzion.sys.fileio.open_dir"     , (cfg, cl) -> { } );
+    put("fuzion.sys.fileio.read_dir"     , (cfg, cl) -> { } );
+    put("fuzion.sys.fileio.read_dir_has_next", (cfg, cl) -> { } );
+    put("fuzion.sys.fileio.close_dir"    , (cfg, cl) -> { } );
 
     put("i8.prefix -°"                   , (cfg, cl) -> { } );
     put("i16.prefix -°"                  , (cfg, cl) -> { } );
@@ -465,7 +469,6 @@ public class CFG extends ANY
     put("f32.type.tanh"                  , (cfg, cl) -> { } );
     put("f64.type.tanh"                  , (cfg, cl) -> { } );
 
-    put("Any.as_string"                  , (cfg, cl) -> { } );
     put("fuzion.sys.internal_array_init.alloc", (cfg, cl) -> { } );
     put("fuzion.sys.internal_array.setel", (cfg, cl) -> { } );
     put("fuzion.sys.internal_array.get"  , (cfg, cl) -> { } );
@@ -492,6 +495,12 @@ public class CFG extends ANY
     put("fuzion.sys.net.close0"          , (cfg, cl) -> { } );
     put("fuzion.sys.net.set_blocking0"   , (cfg, cl) -> { } );
 
+    put("fuzion.sys.process.create"      , (cfg, cl) -> { } );
+    put("fuzion.sys.process.wait"        , (cfg, cl) -> { } );
+    put("fuzion.sys.pipe.read"           , (cfg, cl) -> { } );
+    put("fuzion.sys.pipe.write"          , (cfg, cl) -> { } );
+    put("fuzion.sys.pipe.close"          , (cfg, cl) -> { } );
+
     put("fuzion.std.nano_sleep"          , (cfg, cl) -> { } );
     put("fuzion.std.nano_time"           , (cfg, cl) -> { } );
     put("fuzion.std.date_time"           , (cfg, cl) -> { } );
@@ -507,9 +516,9 @@ public class CFG extends ANY
               cfg.addToCallGraph(cl, call, false);
             }
         });
-    put("effect.abort"                      , (cfg, cl) -> { } );
+    put("effect.abort0"                     , (cfg, cl) -> { } );
     put("effect.type.is_installed"          , (cfg, cl) -> { } );
-    put("fuzion.java.Java_Object.is_null"   , (cfg, cl) -> { } );
+    put("fuzion.java.Java_Object.is_null0"  , (cfg, cl) -> { } );
     put("fuzion.java.array_get"             , (cfg, cl) -> { } );
     put("fuzion.java.array_length"          , (cfg, cl) -> { } );
     put("fuzion.java.array_to_java_object0" , (cfg, cl) -> { } );
@@ -536,47 +545,43 @@ public class CFG extends ANY
    *
    * @param cl clazz id
    *
-   * @param c the code block to analyze.
+   * @param s0 the site starting the block to analyze.
    */
-  void createCallGraphForBlock(int cl, int c)
+  void createCallGraphForBlock(int cl, int s0)
   {
-    for (int i = 0; /* NYI: !containsVoid(stack) &&*/ _fuir.withinCode(c, i); i = i + _fuir.codeSizeAt(c, i))
+    for (var s = s0; /* NYI: !containsVoid(stack) &&*/ _fuir.withinCode(s); s = s + _fuir.codeSizeAt(s))
       {
-        var s = _fuir.codeAt(c, i);
-        createCallGraphForExpr(cl, c, i, s);
+        var e = _fuir.codeAt(s);
+        createCallGraphForExpr(cl, s, e);
       }
   }
 
 
   /**
-   * Create call graph for calls made by statement s at index i in code block c
-   * of clazz cl.
+   * Create call graph for calls made by expression at site s of clazz cl.
    *
    * @param cl clazz id
    *
-   * @param c the code block to analyze
+   * @param s site of expression
    *
-   * @param i the index within c
-   *
-   * @param s the FUIR.ExprKind of the statement to analyze
+   * @param e the FUIR.ExprKind of the expression to analyze
    */
-  void createCallGraphForExpr(int cl, int c, int i, FUIR.ExprKind s)
+  void createCallGraphForExpr(int cl, int s, FUIR.ExprKind e)
   {
-    switch (s)
+    switch (e)
       {
-      case AdrOf : break;
       case Assign: break;
       case Box   : break;
       case Call:
         {
-          var cc0 = _fuir.accessedClazz  (cl, c, i);
+          var cc0 = _fuir.accessedClazz(s);
           if (_fuir.hasPrecondition(cc0))
             {
               call(cl, cc0, true);
             }
-          if (!_fuir.callPreconditionOnly(cl, c, i))
+          if (!_fuir.callPreconditionOnly(s))
             {
-              access(cl, c, i);
+              access(cl, s);
             }
           break;
         }
@@ -585,23 +590,23 @@ public class CFG extends ANY
       case Const  : break;
       case Match  :
         {
-          for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
+          for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
             {
-              createCallGraphForBlock(cl, _fuir.matchCaseCode(c, i, mc));
+              createCallGraphForBlock(cl, _fuir.matchCaseCode(s, mc));
             }
           break;
         }
       case Tag: break;
       case Env:
         {
-          var ecl = _fuir.envClazz(cl, c, i);
+          var ecl = _fuir.envClazz(s);
           addEffect(cl, ecl);
           break;
         }
       case Pop: break;
       default:
         {
-          Errors.fatal("Effects backend does not handle statements of type " + s);
+          Errors.fatal("Effects backend does not handle expressions of type " + s);
         }
       }
   }
@@ -612,17 +617,15 @@ public class CFG extends ANY
    *
    * @param cl clazz id
    *
-   * @param c the code block to compile
-   *
-   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+   * @param s site of the access, must be ExprKind.Assign or ExprKind.Call
    */
-  void access(int cl, int c, int i)
+  void access(int cl, int s)
   {
-    var cc0 = _fuir.accessedClazz  (cl, c, i);
+    var cc0 = _fuir.accessedClazz(s);
 
-    if (_fuir.accessIsDynamic(cl, c, i))
+    if (_fuir.accessIsDynamic(s))
       {
-        var ccs = _fuir.accessedClazzes(cl, c, i);
+        var ccs = _fuir.accessedClazzes(s);
         for (var cci = 0; cci < ccs.length; cci += 2)
           {
             var tt = ccs[cci  ];

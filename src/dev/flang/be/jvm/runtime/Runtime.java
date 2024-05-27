@@ -28,16 +28,22 @@ package dev.flang.be.jvm.runtime;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.JavaInterface;
+import dev.flang.util.Pair;
 
 import java.io.StringWriter;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.WeakHashMap;
 
 
@@ -46,6 +52,7 @@ import java.util.WeakHashMap;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
+@SuppressWarnings({"rawtypes"})
 public class Runtime extends ANY
 {
 
@@ -99,6 +106,13 @@ public class Runtime extends ANY
   public static final String PRECONDITION_NAME = "fzPrecondition";
   public static final String ROUTINE_NAME      = "fzRoutine";
   public static final String CLASS_PREFIX      = "fzC_";
+
+
+  /**
+   * Result value used when returning from a call into Java code in case an
+   * exception was thrown by that code.
+   */
+  public static final JavaError _JAVA_ERROR_ = new JavaError();
 
 
   /*--------------------------  static fields  --------------------------*/
@@ -157,6 +171,21 @@ public class Runtime extends ANY
 
 
   /**
+   * This contains all open processes.
+   */
+  public static OpenResources<Process> _openProcesses_ = new OpenResources<Process>()
+  {
+    @Override
+    protected boolean close(Process p) {
+      if(PRECONDITIONS) require
+        (p != null);
+
+      return true;
+    }
+  };
+
+
+  /**
    * This contains all started threads.
    */
   static OpenResources<Thread> _startedThreads_ = new OpenResources<Thread>() {
@@ -179,7 +208,21 @@ public class Runtime extends ANY
   public static final Object LOCK_FOR_ATOMIC = new Object();
 
 
-  public static String[] args = new String[] { "argument list not initialized", "this may indicate a severe bug" };
+  /**
+   * The result of `envir.args[0]`
+   */
+  public static String _cmd_ =
+    System.getProperties().computeIfAbsent(FUZION_COMMAND_PROPERTY,
+                                           k -> ProcessHandle.current()
+                                                             .info()
+                                                             .command()
+                                                             .orElse("")) instanceof String str ? str : "";
+
+
+  /**
+   * The results of `envir.args[1..n]`
+   */
+  public static String[] _args_ = new String[] { "argument list not initialized", "this may indicate a severe bug" };
 
 
   /*-------------------------  static methods  --------------------------*/
@@ -242,7 +285,7 @@ public class Runtime extends ANY
       }
     else
       {
-        Errors.fatal("Fuzion Runtime used from detached thread " + ct);
+        Errors.fatal("Fuzion Runtime used from detached thread " + ct, stackTrace());
       }
     return result;
   }
@@ -252,12 +295,10 @@ public class Runtime extends ANY
    * Report a fatal error and exit.
    *
    * @param msg the error message
-   *
-   * @return does not
    */
   public static void fatal(String msg)
   {
-    Errors.fatal(msg);
+    Errors.fatal(msg, stackTrace());
   }
 
 
@@ -446,7 +487,7 @@ public class Runtime extends ANY
    */
   public static void trace(String msg)
   {
-    System.out.println(msg);
+    say(msg);
   }
 
 
@@ -500,8 +541,6 @@ public class Runtime extends ANY
    * Otherwise, it causes a fatal error immediately.
    *
    * @param e the caught exception
-   *
-   * @return does not.
    */
   public static void handleInvocationTargetException(InvocationTargetException e)
   {
@@ -624,12 +663,19 @@ public class Runtime extends ANY
    * Called after a precondition/postcondition check failed
    *
    * @param msg a detail message explaining what failed
-   *
-   * @return does not.
    */
   public static void contract_fail(String msg)
   {
     Errors.fatal("CONTRACT FAILED: " + msg, stackTrace());
+  }
+
+
+  /**
+   * Get the message of last exception thrown in the current thread.
+   */
+  public static String getException()
+  {
+    return ((FuzionThread)Thread.currentThread())._thrownException.getMessage();
   }
 
 
@@ -704,6 +750,27 @@ public class Runtime extends ANY
     return stacktrace.toString();
   }
 
+  public static byte[] fuzion_sys_fileio_read_dir(long fd)
+  {
+    unsafeIntrinsic();
+
+    var i = getIterator(fd);
+    try
+      {
+        return stringToUtf8ByteArray(i.next().getFileName().toString());
+      }
+    catch (NoSuchElementException e)
+      {
+        return stringToUtf8ByteArray("NoSuchElementException encountered!");
+      }
+  }
+
+  @SuppressWarnings("unchecked")
+  public static Iterator<Path> getIterator(long fd)
+  {
+    return (Iterator<Path>)_openStreams_.get(fd);
+  }
+
 
   public static byte[] fuzion_sys_env_vars_get0(Object d)
   {
@@ -712,8 +779,307 @@ public class Runtime extends ANY
 
 
   /**
-   * @param instance the effect instance that is installed
+   * Helper method called by the fuzion.java.string_to_java_object0 intrinsic.
    *
+   * Creates a new instance of String from the byte array passed as argument,
+   * assuming the byte array contains an UTF-8 encoded string.
+   *
+   * @param b byte array consisting of a string encoded as UTF-8 bytes
+   *
+   * @return the string from the array, as an instance of Java's String
+   */
+  public static String fuzion_java_string_to_java_object0(byte[] b)
+  {
+    unsafeIntrinsic();
+
+    return new String(b, StandardCharsets.UTF_8);
+  }
+
+
+  /**
+   * Helper method called by the fuzion.java.get_static_field0 intrinsic.
+   *
+   * Retrieves the content of a given static field.
+   *
+   * @param clazz name of the class of the field
+   *
+   * @param field name of the field
+   *
+   * @return whatever is stored in the specified static field
+   */
+  public static Object fuzion_java_get_static_field0(String clazz, String field)
+  {
+    unsafeIntrinsic();
+
+    Object result;
+
+    try
+      {
+        Class cl = Class.forName(clazz);
+        Field f = cl.getDeclaredField(field);
+        result = f.get(null);
+      }
+    catch (IllegalAccessException | ClassNotFoundException | NoSuchFieldException e)
+      {
+        Errors.fatal(e.toString()+" when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        result = null;
+      }
+
+    return result;
+  }
+
+
+  /**
+   * Helper method called by the fuzion.java.get_field0 intrinsic.
+   *
+   * Given some instance of a Java class, retrieves the content of a given field in
+   * this instance.
+   *
+   * @param thiz the Java instance
+   *
+   * @param field name of the field
+   *
+   * @return whatever is stored in the specified field of the instance
+   */
+  public static Object fuzion_java_get_field0(Object thiz, String field)
+  {
+    unsafeIntrinsic();
+
+    Object result;
+    String clazz = null;
+
+    try
+      {
+        Class cl = thiz.getClass();
+        Field f = cl.getDeclaredField(field);
+        result = f.get(thiz);
+      }
+    catch (IllegalAccessException | NoSuchFieldException e)
+      {
+        Errors.fatal(e.toString()+" when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        result = null;
+      }
+
+    return result;
+  }
+
+
+  /**
+   * Helper method for fuzion_java_call_v0, fuzion_java_call_s0, and fuzion_java_call_c0.
+   *
+   * Given the name of a class, the name of a method and the signature of the method or
+   * (if no method is given), the classes' constructors' signature, parses the signature
+   * that is given in string form into an array of instances of {@link java.lang.Class},
+   * and parses the name of the class given as a string into an instance of
+   * {@link java.lang.Class}.
+   *
+   * @param what what is calling this helper (used in the error message), should be one of
+   * virtual, static, or constructor
+   *
+   * @param clName name of the class
+   *
+   * @param name name of the method
+   *
+   * @param sig signature of the method (or if method not given, the constructor)
+   *
+   * @return a {@link dev.flang.util.Pair} of the array of {@link java.lang.Class} instances
+   * representing the given signature, and an instance of {@link java.lang.Class} representing
+   * the given class.
+   */
+  private static Pair<Class[], Class> getParsAndClass(String what, String clName, String name, String sig)
+  {
+    var p = JavaInterface.getPars(sig);
+    if (p == null)
+      {
+        Errors.fatal("could not parse signature >>"+sig+"<<");
+      }
+    Class cl;
+    try
+      {
+        cl = Class.forName(clName);
+      }
+    catch (ClassNotFoundException e)
+      {
+        Errors.fatal("ClassNotFoundException when calling fuzion.java.call_"+what+" for class" +
+                           clName + " calling " + ((name != null) ? name : ("new " + clName)) + sig);
+        cl = Object.class; // not reached.
+      }
+
+    return new Pair<>(p, cl);
+  }
+
+
+  /**
+   * Helper method called by the fuzion.java.call_v0 intrinsic.
+   *
+   * Calls a Java method on a specified instance.
+   *
+   * @param clName name of the class of the method to be called
+   *
+   * @param name name of the method to be called
+   *
+   * @param sig signature of the method to be called
+   *
+   * @param thiz instance of the class on which the method should be called
+   *
+   * @param args the arguments with which the method should be called
+   *
+   * @return whatever the method returns given the arguments
+   */
+  @SuppressWarnings("unchecked")
+  public static Object fuzion_java_call_v0(String clName, String name, String sig, Object thiz, Object[] args)
+  {
+    if (PRECONDITIONS) require
+      (clName != null);
+
+    unsafeIntrinsic();
+
+    Method m = null;
+    var pcl = getParsAndClass("virtual", clName, name, sig);
+    var p = pcl.v0();
+    var cl = pcl.v1();
+    try
+      {
+        m = cl.getMethod(name, p);
+      }
+    catch (NoSuchMethodException e)
+      {
+        Errors.fatal("NoSuchMethodException when calling fuzion.java.call_virtual calling " +
+                           (cl.getName() + "." + name) + sig);
+      }
+    return invoke(m, thiz, args);
+  }
+
+
+  static interface ReflectionInvoker
+  {
+    Object invoke() throws InvocationTargetException, IllegalAccessException, InstantiationException;
+  }
+
+
+  /**
+   * Helper to catch a possible {@link Exception} thrown by an invocation.
+   *
+   * @return the result of the invocation, or, if an error occurred, the global
+   * instance of {@link JavaError}.
+   */
+  private static Object invokeAndWrapException(ReflectionInvoker invoke)
+  {
+    Object res;
+    try
+      {
+        res = invoke.invoke();
+      }
+    catch (InvocationTargetException e)
+      {
+        ((FuzionThread)Thread.currentThread())._thrownException = e.getCause();
+        res = _JAVA_ERROR_;
+      }
+    catch (Throwable e)
+      {
+        ((FuzionThread)Thread.currentThread())._thrownException = e;
+        res = _JAVA_ERROR_;
+      }
+    return res;
+  }
+
+
+  /**
+   * Invoke a method using {@link #invokeAndWrapException(ReflectionInvoker)}.
+   *
+   * @param m the {@link Method} to be invoked
+   *
+   * @param thiz the {@link Object instance} on which the {@link Method} shall be invoked
+   *
+   * @param args arguments to invoke this {@link Method} with
+   *
+   * @return the result of the invocation
+   */
+  private static Object invoke(Method m, Object thiz, Object[] args)
+  {
+    return invokeAndWrapException(()->m.invoke(thiz, args));
+  }
+
+
+  /**
+   * Helper method called by the fuzion.java.call_s0 intrinsic.
+   *
+   * Calls a static Java method of a specified class.
+   *
+   * @param clName name of the class of the method to be called
+   *
+   * @param name name of the method to be called
+   *
+   * @param sig signature of the method to be called
+   *
+   * @param args the arguments with which the method should be called
+   *
+   * @return whatever the method returns given the arguments
+   */
+  @SuppressWarnings("unchecked")
+  public static Object fuzion_java_call_s0(String clName, String name, String sig, Object[] args)
+  {
+    if (PRECONDITIONS) require
+      (clName != null);
+
+    unsafeIntrinsic();
+
+    Method m = null;
+    var pcl = getParsAndClass("static", clName, name, sig);
+    var p = pcl.v0();
+    var cl = pcl.v1();
+    try
+      {
+        m = cl.getMethod(name,p);
+      }
+    catch (NoSuchMethodException e)
+      {
+        Errors.fatal("NoSuchMethodException when calling fuzion.java.call_static calling " +
+                           (cl.getName() + "." + name) + sig);
+      }
+    return invoke(m, null, args);
+  }
+
+
+  /**
+   * Helper method called by the fuzion.java.call_c0 intrinsic.
+   *
+   * Calls a Java constructor of a specified class.
+   *
+   * @param clName name of the class whose constructor should be called
+   *
+   * @param sig signature of the constructor to be called
+   *
+   * @param args the arguments with which the constructor should be called
+   *
+   * @return the instance of the class returned by the constructor
+   */
+  public static Object fuzion_java_call_c0(String clName, String sig, Object[] args)
+  {
+    if (PRECONDITIONS) require
+      (clName != null);
+
+    unsafeIntrinsic();
+
+    var pcl = getParsAndClass("constructor", clName, null, sig);
+    var p = pcl.v0();
+    var cl = pcl.v1();
+    try
+      {
+        @SuppressWarnings("unchecked")
+        var co = cl.getConstructor(p);
+        return invokeAndWrapException(()->co.newInstance(args));
+      }
+    catch (NoSuchMethodException e)
+      {
+        Errors.fatal("NoSuchMethodException when calling fuzion.java.call_constructor calling " +
+                           ("new " + clName) + sig);
+        return null; // not reached
+      }
+  }
+
+
+  /**
    * @param code the Unary instance to be executed
    *
    * @param call the Java clazz of the Unary instance to be executed.
@@ -756,7 +1122,8 @@ public class Runtime extends ANY
 
   public static byte[] args_get(int i)
   {
-    return stringToUtf8ByteArray(args[i]);
+    return stringToUtf8ByteArray(i == 0 ? _cmd_
+                                        : _args_[i-1]);
   }
 
 
@@ -767,7 +1134,7 @@ public class Runtime extends ANY
    * Weak map of frozen (immutable) arrays, used to debug accidental
    * modifications of frozen array.
    */
-  static Map<Object, String> _frozenPointers_ = CHECKS ? Collections.synchronizedMap(new WeakHashMap()) : null;
+  static Map<Object, String> _frozenPointers_ = CHECKS ? Collections.synchronizedMap(new WeakHashMap<Object, String>()) : null;
 
 
   /**

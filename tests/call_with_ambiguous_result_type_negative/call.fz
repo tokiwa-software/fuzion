@@ -31,7 +31,7 @@ call_with_ambiguous_result_type is
   r ref is
     e is
 
-    # result type of g is r.this.type.e
+    # result type of g is r.this.e
     g => e
 
   h1 : r is

@@ -196,12 +196,6 @@ public class CNames extends ANY
 
 
   /**
-   * global C variable to hold global lock
-   */
-  static final CIdent GLOBAL_LOCK = new CIdent("fzG_lock");
-
-
-  /**
    * Prefix for thread related things
    */
   private static final String THRD_PREFIX = "fzThrd_";
@@ -212,7 +206,7 @@ public class CNames extends ANY
   static final CIdent fzThreadEffectsEnvironment = new CIdent(THRD_PREFIX + "effectsEnvironment");
 
   /*
-   * the identifier of the function passed to pthread_create
+   * the identifier of the function passed to fzE_thread_create
    */
   static final CIdent fzThreadStartRoutine       = new CIdent(THRD_PREFIX + "startRoutine");
 
@@ -293,8 +287,6 @@ public class CNames extends ANY
      *
      * Ex. Feature "i32.prefix -"  will result in  "i32__prefix_wm"
      *
-     * @param f a feature id
-     *
      * @param sb a StringBuilder
      */
     private void clazzMangledName(int cl, StringBuilder sb)
@@ -366,8 +358,8 @@ public class CNames extends ANY
   /**
    * C constants corresponding to Fuzion's true and false values.
    */
-  final CExpr FZ_FALSE =  CExpr.compoundLiteral(_structNames._prefix + "bool", "0");
-  final CExpr FZ_TRUE  =  CExpr.compoundLiteral(_structNames._prefix + "bool", "1");
+  final CExpr FZ_FALSE =  CExpr.compoundLiteral(_structNames._prefix + "bool", "." + TAG_NAME.code() + "=0");
+  final CExpr FZ_TRUE  =  CExpr.compoundLiteral(_structNames._prefix + "bool", "." + TAG_NAME.code() + "=1");
 
 
   /*---------------------------  constructors  ---------------------------*/

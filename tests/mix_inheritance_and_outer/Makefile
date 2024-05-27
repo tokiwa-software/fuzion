@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = mix_inheritance_and_outer
-include ../positive.mk
+include ../fe.mk # NYI: BUG see #88

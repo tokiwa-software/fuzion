@@ -1,0 +1,3 @@
+// tag::fuzion_rule_DOMAIN_DETAIL[]
+Rules in the Fuzion Reference Manual are identified by a *DOMAIN* combinded via `_` with a *DETAIL* that identifies the specific area the rule applies to.
+// end::fuzion_rule_DOMAIN_DETAIL[]

@@ -44,7 +44,7 @@ is
 
   # does this sequence start with l?
   #
-  public starts_with (l Sequence A) bool is
+  public starts_with (l Sequence A) bool =>
     match l.as_list
       nil    => true
       c2 Cons =>
@@ -63,7 +63,7 @@ is
 
   # get the index of l within this list or nil if it does not exist
   #
-  public find (l Sequence A) option i32 is
+  public find (l Sequence A) option i32 =>
     if starts_with l
       0
     else
@@ -88,18 +88,18 @@ is
 
   # tail recursive helper for the replace features
   #
-  private replace (old, new,
+  replace (old, new,
                    already_replaced,          # the head part with old already replaced by new
                    to_be_replaced Sequence A, # the tail that still needs to be searched for old
                    limit option u64) list A
-  is
+  =>
     match (searchable_sequence to_be_replaced).find old
       nil   => already_replaced ++ to_be_replaced
       n i32 =>
         # NYI: #637: perhaps make it possible to do
         #     if limit = option 0
         # here.
-        if (limit.map_to_option (v -> v = (u64 0))).get false
+        if (limit.map_to_option (v -> v = (u64 0))).or_else false
           already_replaced ++ to_be_replaced
         else
           a := already_replaced ++ (to_be_replaced.take n) ++ new
@@ -109,7 +109,7 @@ is
 
   # get the number of matches of l
   #
-  public count_matches_overlapping (l Sequence A) i32 is
+  public count_matches_overlapping (l Sequence A) i32 =>
     tails
       .filter (t -> (searchable_sequence t).starts_with l)
       .count
@@ -117,7 +117,7 @@ is
 
   # get the number of non-overlapping matches of l within this
   #
-  public count_matches (l Sequence A) i32 is
+  public count_matches (l Sequence A) i32 =>
     match from.as_list
       nil     => 0
       c1 Cons => (if (starts_with l) 1 + (searchable_sequence (drop l.count)).count_matches l
@@ -134,11 +134,11 @@ is
   #
   module split0(s Sequence A, limit option u32, split_after bool) list (Sequence A)
     pre
-      !s.is_empty,
-      match limit
-        nil => true
-        n u32 => n > (u32 0)
-    is
+      debug: !s.is_empty
+      debug: match limit
+              nil => true
+              n u32 => n > (u32 0)
+    =>
       match (find s)
         nil     => from : nil
         idx i32 =>
@@ -160,7 +160,7 @@ is
 
   # equality check implementation for inherited property.equatable
   #
-  public fixed type.equality(a, b container.searchable_sequence A) bool is
+  public fixed type.equality(a, b container.searchable_sequence A) bool =>
     aa := a.as_array
     ba := b.as_array
     aa.count = ba.count

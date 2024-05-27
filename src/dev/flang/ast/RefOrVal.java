@@ -35,5 +35,5 @@ enum RefOrVal
     Boxed,                  // this is boxed value type or an explicit reference type
     Value,                  // this is an explicit value type
     LikeUnderlyingFeature,  // this is ref or value as declared for the underlying feature
-    ThisType,               // this is the type of featureOfType().this.type, i.e., it may be an heir type
+    ThisType,               // this is the type of feature().this.type, i.e., it may be an heir type
   }

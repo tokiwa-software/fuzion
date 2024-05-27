@@ -104,15 +104,15 @@ public class DFA extends ANY
               }
           }
         var giveUpDueToControlFlowNYI = false;
-        for (int i = 0; _mir.withinCode(c, i); i = i + _mir.codeSizeAt(c, i))
+        for (int s = c; _mir.withinCode(s); s = s + _mir.codeSizeAt(s))
           {
-            var s = _mir.codeAt(c, i);
-            switch (s)
+            var e = _mir.codeAt(s);
+            switch (e)
               {
               case Assign:
                 if (lastWasCurrent)
                   {
-                    var af = _mir.accessedFeature(f, c, i);
+                    var af = _mir.accessedFeature(f, s);
                     initialized.add(af);
                   }
                 lastWasCurrent = false;
@@ -123,14 +123,14 @@ public class DFA extends ANY
               case Call:
                 if (lastWasCurrent)
                   {
-                    var af = _mir.accessedFeature(f, c, i);
+                    var af = _mir.accessedFeature(f, s);
                     if (_mir.featureKind(af) == MIR.FeatureKind.Field &&
                         declaredInF_NYI.contains(af) &&
                         !initialized.contains(af) &&
                         !_mir.fieldIsOuterRef(af) &&
                         !giveUpDueToControlFlowNYI)
                       {
-                        FeErrors.fieldNotInitialized(_mir, _mir.codeAtPos(c, i), af);
+                        FeErrors.fieldNotInitialized(_mir, _mir.sitePos(s), af);
                       }
                   }
                 lastWasCurrent = false;

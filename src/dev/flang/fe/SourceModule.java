@@ -34,19 +34,20 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.SortedMap;
+import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
+import dev.flang.ast.AbstractCase;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
+import dev.flang.ast.Block;
 import dev.flang.ast.Call;
-import dev.flang.ast.Consts;
 import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
@@ -96,24 +97,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
-   * If input comes from a specific file, this give the file.  May be
-   * SourceFile.STDIN.
-   */
-  private final Path _inputFile;
-
-
-  /**
    * The universe is the implicit root of all features that
    * themselves do not have their own root.
    */
   final Feature _universe;
-
-
-  /**
-   * If a main feature is defined for this module, this gives its name. Should
-   * be null if a specific _inputFile defines the main feature.
-   */
-  private String _defaultMain;
 
 
   /**
@@ -142,14 +129,12 @@ public class SourceModule extends Module implements SrcModule, MirModule
   /**
    * Create SourceModule for given options and sourceDirs.
    */
-  SourceModule(FrontEndOptions options, SourceDir[] sourceDirs, Path inputFile, String defaultMain, LibraryModule[] dependsOn, Feature universe)
+  SourceModule(FrontEndOptions options, SourceDir[] sourceDirs, LibraryModule[] dependsOn, Feature universe)
   {
     super(dependsOn);
 
     _options = options;
     _sourceDirs = sourceDirs;
-    _inputFile = inputFile;
-    _defaultMain = defaultMain;
     _universe = universe;
   }
 
@@ -168,6 +153,19 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
+   * Get the path of main input file (when compiling from stdin or just one
+   * single source file).
+   */
+  private Path inputFile()
+  {
+    return
+      _options._readStdin           ? SourceFile.STDIN              :
+      _options._inputFile != null   ? _options._inputFile           :
+      _options._executeCode != null ? SourceFile.COMMAND_LINE_DUMMY : null;
+  }
+
+
+  /**
    * If source comes from stdin or an explicit input file, parse this and
    * extract the main feature.  Otherwise, return the default main.
    *
@@ -175,11 +173,12 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   String parseMain()
   {
-    var res = _defaultMain;
-    var p = _inputFile;
-    if (p != null)
+    var res = _options._main;
+    var p = inputFile();
+    var ec = _options._executeCode;
+    if (p != null || ec != null)
       {
-        var expr = parseFile(p);
+        var expr = parseFile(p, ec);
         ((AbstractBlock) _universe.code())._expressions.addAll(expr);
         for (var s : expr)
           {
@@ -204,10 +203,13 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @return the features found in source file p, may be empty, never null.
    */
-  List<Expr> parseFile(Path p)
+  List<Expr> parseFile(Path p, byte[] ec)
   {
-    _options.verbosePrintln(2, " - " + p);
-    return new Parser(p).unit();
+    if (ec != null)
+      {
+        _options.verbosePrintln(2, " - " + p);
+      }
+    return new Parser(p, ec).unit();
   }
 
 
@@ -220,7 +222,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   List<Feature> parseAndGetFeatures(Path p)
   {
-    var exprs = parseFile(p);
+    var exprs = parseFile(p, null);
     var result = new List<Feature>();
     for (var s : exprs)
       {
@@ -350,16 +352,22 @@ public class SourceModule extends Module implements SrcModule, MirModule
   /**
    * Check if p denotes a file that should be read implicitly as source code,
    * i.e., its name ends with ".fz", it is a readable file and it is not the
-   * same as _inputFile (which will be read explicitly).
+   * same as inputFile() (which will be read explicitly).
    */
   boolean isValidSourceFile(Path p)
   {
+    /*
+    // tag::fuzion_rule_SRCF_DOTFZ[]
+Fuzion source files may have an arbitrary file name ending with the file name extension `.fz`.
+    // end::fuzion_rule_SRCF_DOTFZ[]
+    */
     try
       {
+        var inputFile = inputFile();
         return p.getFileName().toString().endsWith(".fz") &&
           !Files.isDirectory(p) &&
           Files.isReadable(p) &&
-          (_inputFile == null || _inputFile == SourceFile.STDIN || !Files.isSameFile(_inputFile, p));
+          (inputFile == null || inputFile == SourceFile.STDIN || !Files.isSameFile(inputFile, p));
       }
     catch (IOException e)
       {
@@ -385,6 +393,16 @@ public class SourceModule extends Module implements SrcModule, MirModule
                 var d = dirExists(root, f);
                 if (d != null)
                   {
+                    /*
+                    // tag::fuzion_rule_SRCF_DIR[]
+Files in a sub-directories within a directory are considered as input only if
+the directory name equals the (((base name))) of a (((constructor))).  Then, the
+files matching rule xref:SRCF_DOTFZ[SRCF_DOTFZ] within that directory are parsed as if they were
+part of the (((inner features))) declarations of the corresponding
+((constructor)).
+                    // end::fuzion_rule_SRCF_DIR[]
+                    */
+
                     Files.list(d._dir)
                       .filter(p -> isValidSourceFile(p))
                       .sorted()
@@ -614,7 +632,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         public Feature   action(Feature   f, AbstractFeature outer) { findDeclarations(f, outer); return f; }
       });
 
-    if (inner.impl().initialValue() != null &&
+    if (inner.impl().hasInitialValue() &&
         !outer.pos()._sourceFile.sameAs(inner.pos()._sourceFile) &&
         (!outer.isUniverse() || !inner.isLegalPartOfUniverse()) &&
         (outer.isUniverse() || !outer.pos().isBuiltIn()) && // some generated features in loops do not have source position
@@ -652,7 +670,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                              Feature typeFeature)
   {
     findDeclarations(typeFeature, outerType);
-    addDeclared(true,  outerType, typeFeature);
+    addDeclared(outerType, typeFeature);
     typeFeature.scheduleForResolution(_res);
     resolveDeclarations(typeFeature);
   }
@@ -667,11 +685,12 @@ public class SourceModule extends Module implements SrcModule, MirModule
           (!d._declaredFeatures.containsKey(fn) || d._declaredFeatures.get(fn) == typeParameter);
         d._declaredFeatures.put(fn, typeParameter);
       }
-    if (d._declaredOrInheritedFeatures != null)
+    var doi = d._declaredOrInheritedFeatures;
+    if (doi != null)
       {
         if (CHECKS) check
-          (!d._declaredOrInheritedFeatures.containsKey(fn) || d._declaredOrInheritedFeatures.get(fn) == typeParameter);
-        d._declaredOrInheritedFeatures.put(fn, typeParameter);
+          (!doi.containsKey(fn) || doi.get(fn).size() == 1 && doi.get(fn).getFirst() == typeParameter);
+        add(doi, fn, typeParameter);
       }
   }
 
@@ -683,31 +702,23 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * while the sets of declared and inherited features had already been
    * determined.
    *
-   * @param inherited true to add inner to declaredOrInherited, false to add it
-   * to declaredFeatures and declaredOrInherited.
-   *
    * @param outer the outer feature
    *
    * @param inner the feature to be added.
    */
-  private void addDeclared(boolean inherited, AbstractFeature outer, AbstractFeature inner)
+  private void addDeclared(AbstractFeature outer, AbstractFeature inner)
   {
     if (PRECONDITIONS)
       require(outer.isConstructor(), inner.isTypeFeature());
 
     var d = data(outer);
     var fn = inner.featureName();
-    if (!inherited && d._declaredFeatures != null)
+    var doi = d._declaredOrInheritedFeatures;
+    if (doi != null)
       {
         if (CHECKS) check
-          (!d._declaredFeatures.containsKey(fn) || d._declaredFeatures.get(fn) == inner);
-        d._declaredFeatures.put(fn, inner);
-      }
-    if (d._declaredOrInheritedFeatures != null)
-      {
-        if (CHECKS) check
-          (!d._declaredOrInheritedFeatures.containsKey(fn) || d._declaredOrInheritedFeatures.get(fn) == inner);
-        d._declaredOrInheritedFeatures.put(fn, inner);
+          (!doi.containsKey(fn) || doi.get(fn).size() == 1 && doi.get(fn).getFirst() == inner);
+        add(doi, fn, inner);
       }
   }
 
@@ -813,45 +824,109 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @param f the declared or inherited feature.
    */
+  // NYI: merge addToDeclaredOrInheritedFeatures and addDeclaredOrInherited
   private void addToDeclaredOrInheritedFeatures(AbstractFeature outer, AbstractFeature f)
   {
     var fn = f.featureName();
-    var doi = declaredOrInheritedFeatures(outer);
-    var existing = doi.get(fn);
-    if (existing == null)
+    var isInherited = outer != f.outer();
+    var c = f.contract();
+    for (var existing : declaredOrInheritedFeatures(outer, fn))
       {
-        if (f instanceof Feature ff && (ff._modifiers & Consts.MODIFIER_REDEFINE) != 0)
+        if ((
+             // declarations do not have to satisfy visibility rules
+             !isInherited ||
+             // inherited features must be visible where we inherit them
+             visibleFor(f, outer)
+             )
+            &&
+            existing != f
+            )
           {
+            if ((f.modifiers() & FuzionConstants.MODIFIER_REDEFINE) == 0 &&
+                !existing.isAbstract() &&
+                /* previous duplicate feature declaration could result in this error for
+                * type features, so suppress them in this case. See fuzion-lang.dev's
+                * design/examples/typ_const2.fz as an example.
+                */
+                (!Errors.any() || !f.isTypeFeature()))
+              {
+                /*
+    // tag::fuzion_rule_PARS_REDEF[]
+A feature that redefines at least one inherited feature must use the `redef` modifier unless all redefined, inherited features are `abstract`.
+    // end::fuzion_rule_PARS_REDEF[]
+                */
+                if (visibleFor(existing, f.outer()))
+                  {
+                    AstErrors.redefineModifierMissing(f.pos(), f, existing);
+                  }
+              }
+            else if (c._hasPre != null && c._hasPreElse == null)
+              {
+                /*
+    // tag::fuzion_rule_PARS_CONTR_PRE_ELSE[]
+A pre-condition of a feature that redefines one or several inherited features must start with `pre else`, independent of whether the redefined, inherited features are `abstract` or not.
+    // end::fuzion_rule_PARS_CONTR_PRE_ELSE[]
+                */
+                AstErrors.redefinePreconditionMustUseElse(c._hasPre, f);
+              }
+            else if (c._hasPost != null && c._hasPostThen == null)
+              {
+                /*
+    // tag::fuzion_rule_PARS_CONTR_POST_THEN[]
+A post-condition of a feature that redefines one or several inherited features must start with `post else`, independent of whether the redefined, inherited features are `abstract` or not.
+    // end::fuzion_rule_PARS_CONTR_POST_THEN[]
+                */
+                AstErrors.redefinePostconditionMustUseThen(c._hasPost, f);
+              }
+            if (visibleFor(existing, f.outer()))
+              {
+                f.redefines().add(existing);
+                c.addInheritedContract(f, existing);
+              }
+          }
+      }
+
+    if (f.redefines().isEmpty())
+      {
+        if ((f.modifiers() & FuzionConstants.MODIFIER_REDEFINE) != 0)
+          {
+            /*
+    // tag::fuzion_rule_PARS_NO_REDEF[]
+A feature that does not redefine an inherited feature must not use the `redef` modifier.
+    // end::fuzion_rule_PARS_NO_REDEF[]
+            */
             AstErrors.redefineModifierDoesNotRedefine(f);
           }
-      }
-    else if (existing == f)
-      {
-      }
-    else if (f instanceof Feature ff && (ff._modifiers & Consts.MODIFIER_REDEFINE) == 0 && !existing.isAbstract())
-      { /* previous duplicate feature declaration could result in this error for
-         * type features, so suppress them in this case. See flang.dev's
-         * design/examples/typ_const2.fz as an example.
-         */
-        if ((!Errors.any() || !f.isTypeFeature()) && visibleFor(existing, f))
+        else if (c._hasPreElse != null)
           {
-            AstErrors.redefineModifierMissing(f.pos(), f, existing);
+            /*
+    // tag::fuzion_rule_PARS_CONTR_PRE_NO_ELSE[]
+A pre-condition of a feature that does not redefine an inherited feature must start with `pre`, not `pre else`.
+    // end::fuzion_rule_PARS_CONTR_PRE_NO_ELSE[]
+            */
+            AstErrors.notRedefinedPreconditionMustNotUseElse(c._hasPreElse, f);
+          }
+        else if (c._hasPostThen != null)
+          {
+            /*
+    // tag::fuzion_rule_PARS_CONTR_POST_NO_THEN[]
+A post-condition of a feature that does not redefine an inherited feature must start with `post`, not `post then`.
+    // end::fuzion_rule_PARS_CONTR_POST_NO_THEN[]
+            */
+            AstErrors.notRedefinedPostconditionMustNotUseThen(c._hasPostThen, f);
           }
       }
-    else
-      {
-        f.redefines().add(existing);
-      }
-    if (f     instanceof Feature ff &&
-        outer.state().atLeast(State.RESOLVED_DECLARATIONS))
-      {
-        ff._addedLate = true;
-      }
-    if (f instanceof Feature ff && ff.state().atLeast(State.RESOLVED_DECLARATIONS))
+
+    // This is a fix for #978 but it might need to be removed when fixing #932.
+    if (f instanceof Feature ff &&
+        (outer.state().atLeast(State.RESOLVED_DECLARATIONS) ||
+            ff.state().atLeast(State.RESOLVED_DECLARATIONS)))
       {
         ff._addedLate = true;
       }
-    doi.put(fn, f);
+    var doi = declaredOrInheritedFeatures(outer);
+    doi.remove(fn);  // NYI: remove only those features that are redefined by f!
+    add(doi, fn, f);
   }
 
 
@@ -942,76 +1017,51 @@ public class SourceModule extends Module implements SrcModule, MirModule
         for (var h : d._heirs)
           {
             var pos = SourcePosition.builtIn; // NYI: Would be nicer to use Call.pos for the inheritance call in h.inherits
-            addInheritedFeature(data(outer)._declaredOrInheritedFeatures, h, pos, fn, f);
+            addDeclaredOrInherited(data(outer)._declaredOrInheritedFeatures, h, fn, f);
             addToHeirs(h, fn, f);
           }
       }
   }
 
 
-  /**
-   * allInnerAndInheritedFeatures returns a complete set of inner features, used
-   * by Clazz.layout and Clazz.hasState.
-   *
-   * @return
-   */
-  public Collection<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f)
-  {
-    var d = data(f);
-    var result = d._allInnerAndInheritedFeatures;
-    if (result == null)
-      {
-        result = new TreeSet<>();
 
-        result.addAll(declaredFeatures(f).values());
-        for (var p : f.inherits())
-          {
-            var cf = p.calledFeature();
-            if (CHECKS) check
-              (Errors.any() || cf != null);
-
-            if (cf != null)
-              {
-                result.addAll(allInnerAndInheritedFeatures(cf));
-              }
-          }
-        d._allInnerAndInheritedFeatures = result;
-      }
-    return result;
-  }
 
 
   /*--------------------------  feature lookup  -------------------------*/
 
 
-  @Override
-  public SortedMap<FeatureName, AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer)
-  {
-    return this.declaredOrInheritedFeatures(outer, _dependsOn);
-  }
-
-
   /**
-   * Find feature with given name in outer.
+   * Check if outer defines or inherits exactly one feature with no arguments
+   * and an open type parameter as its result type. If such a feature exists and
+   * is visible by `use`, it will be returned.
    *
    * @param outer the declaring or inheriting feature
+   *
+   * @param use the expression that uses the feature, so it must be visible to
+   * this.
+   *
+   * @return the unique feature that was found, null if none or several were
+   * found.
    */
-  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name, AbstractFeature original)
+  public AbstractFeature lookupOpenTypeParameterResult(AbstractFeature outer, Expr use)
   {
-    if (PRECONDITIONS) require
-      (outer.state().atLeast(State.LOADING));
-
-    var result = declaredOrInheritedFeatures(outer).get(name);
-
-    /* Was feature f added to the declared features of its outer features late,
-     * i.e., after the RESOLVING_DECLARATIONS phase?  These late features are
-     * currently not added to the sets of declared or inherited features by
-     * children of their outer clazz.
-     *
-     * This is a fix for #978 but it might need to be removed when fixing #932.
-     */
-    return result == null && original instanceof Feature of && of._addedLate ? original
-                                                                             : result;
+    if (!outer.state().atLeast(State.RESOLVING_DECLARATIONS))
+      {
+        _res.resolveDeclarations(outer);
+      }
+    var result = new List<AbstractFeature>();
+    forEachDeclaredOrInheritedFeature(outer,
+                                      f ->
+                                      {
+                                        if (featureVisible(use.pos()._sourceFile, f) &&
+                                            f instanceof LibraryFeature lf &&
+                                            lf.resultType().isOpenGeneric() &&
+                                            f.arguments().isEmpty())
+                                          {
+                                            result.add(f);
+                                          }
+                                      });
+    return result.size() == 1 ? result.getFirst() : null;
   }
 
 
@@ -1032,6 +1082,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * @param traverseOuter true to collect all the features found in outer and
    * outer's outer (i.e., use is unqualified), false to search in outer only
    * (i.e., use is qualified with outer).
+   *
+   * @param hidden true to return features that are not visible, used for error
+   * messages.
    *
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.
@@ -1072,6 +1125,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * outer's outer (i.e., use is unqualified), false to search in outer only
    * (i.e., use is qualified with outer).
    *
+   * @param hidden true to return features that are not visible, used for error
+   * messages.
+   *
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.
    */
@@ -1102,10 +1158,12 @@ public class SourceModule extends Module implements SrcModule, MirModule
             for (var e : fs.entrySet())
               {
                 var fn = e.getKey();
-                var f = e.getValue();
-                if (f.isField() && (f.outer()==null || f.outer().resultField() != f))
+                for (var f : e.getValue())
                   {
-                    fields.add(fn);
+                    if (f.isField() && (f.outer()==null || f.outer().resultField() != f))
+                      {
+                        fields.add(fn);
+                      }
                   }
               }
             if (!fields.isEmpty())
@@ -1117,15 +1175,17 @@ public class SourceModule extends Module implements SrcModule, MirModule
                 // if we found f in scope, remove all other entries, otherwise remove all entries within this since they are not in scope.
                 for (var fn : fields)
                   {
-                    var fi = fs.get(fn);
-                    if (f != null || fi.outer() == outer && (!(fi instanceof Feature fif) || !fif.isArtificialField()))
+                    for (var fi : get(fs, fn))
                       {
-                        fs.remove(fn);
+                        if (f != null || fi.outer() == outer && (!(fi instanceof Feature fif) || !fif.isArtificialField()))
+                          {
+                            fs.remove(fn);
+                          }
                       }
                   }
                 if (f != null)
                   {
-                    fs.put(f.featureName(), f);
+                    add(fs, f.featureName(), f);
                     foundFieldInThisScope = true;
                   }
               }
@@ -1133,12 +1193,14 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
         for (var e : fs.entrySet())
           {
-            var v = e.getValue();
-            if ((use == null || (hidden != featureVisible(use.pos()._sourceFile, v))) &&
-                (!v.isField() || !foundFieldInScope))
+            for (var v : e.getValue())
               {
-                result.add(new FeatureAndOuter(v, curOuter, inner));
-                foundFieldInScope = foundFieldInScope || v.isField() && foundFieldInThisScope;
+                if ((use == null || (hidden != featureVisible(use.pos()._sourceFile, v))) &&
+                    (!v.isField() || !foundFieldInScope))
+                  {
+                    result.add(new FeatureAndOuter(v, curOuter, inner));
+                    foundFieldInScope = foundFieldInScope || v.isField() && foundFieldInThisScope;
+                  }
               }
           }
 
@@ -1170,6 +1232,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * outer's outer (i.e., use is unqualified), false to search in outer only
    * (i.e., use is qualified with outer).
    *
+   * @param ignoreNotFound If true, no errors are produced but null might be returned
+   *
    * @return FeatureAndOuter tuple of the found type's declaring feature,
    * FeatureAndOuter.ERROR in case of an error, null in case no type was found
    * and ignoreNotFound is true.
@@ -1190,6 +1254,18 @@ public class SourceModule extends Module implements SrcModule, MirModule
         var type_fs = new List<AbstractFeature>();
         var nontype_fs = new List<AbstractFeature>();
         var fs = lookup(outer, name, null, traverseOuter, false);
+        var o = outer;
+        while (traverseOuter && o != null)
+          {
+            if (o.isTypeFeature())
+              {
+                lookup(o._typeFeatureOrigin, name, null, false, false)
+                  .stream()
+                  .filter(fo -> !fo._feature.isTypeParameter())  // type parameters are duplicated in type feature and taken from there
+                  .forEach(fo -> fs.add(fo));
+              }
+            o = o.outer();
+          }
         for (var fo : fs)
           {
             var f = fo._feature;
@@ -1208,7 +1284,14 @@ public class SourceModule extends Module implements SrcModule, MirModule
           }
         if (type_fs.size() > 1)
           {
-            AstErrors.ambiguousType(pos, name, type_fs);
+            if (ignoreNotFound)
+              {
+                result = null;
+              }
+            else
+              {
+                AstErrors.ambiguousType(pos, name, type_fs);
+              }
           }
         else if (type_fs.size() < 1)
           {
@@ -1346,7 +1429,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
     f.impl().checkTypes(f);
     var args = f.arguments();
-    var fixed = (f.modifiers() & Consts.MODIFIER_FIXED) != 0;
+    var fixed = (f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0;
     for (var o : f.redefines())
       {
         var ta = o.handDown(_res, o.argTypes(), f.outer());
@@ -1384,12 +1467,36 @@ public class SourceModule extends Module implements SrcModule, MirModule
         if (o.isTypeFeaturesThisType() && f.isTypeFeaturesThisType())
           { // NYI: CLEANUP: #706: allow redefinition of THIS_TYPE in type features for now, these are created internally.
           }
-        else if (o.isChoice())
+        else if (o.isConstructor() ||
+                 switch (o.kind())
+                 {
+                   case Routine, Field, Intrinsic, Abstract, Native -> false; // ok
+                   case TypeParameter, OpenTypeParameter, Choice    -> true;  // not ok
+                 })
           {
-            AstErrors.cannotRedefineChoice(f, o);
+            /*
+    // tag::fuzion_rule_PARS_REDEF_KIND[]
+A feature that is a constructor, choice or a type parameter may not be redefined.
+    // end::fuzion_rule_PARS_REDEF_KIND[]
+            */
+            AstErrors.cannotRedefine(f, o);
+          }
+        else if (f.isConstructor() ||
+                 switch (f.kind())
+                 {
+                   case Routine, Field, Intrinsic, Abstract, Native -> false; // ok
+                   case TypeParameter, OpenTypeParameter, Choice    -> true;  // not ok
+                 })
+          {
+            /*
+    // tag::fuzion_rule_PARS_REDEF_AS_KIND[]
+A feature that is a constructor, choice or a type parameter may not redefine an inherited feature.
+    // end::fuzion_rule_PARS_REDEF_AS_KIND[]
+            */
+            AstErrors.cannotRedefine(f, o);
           }
         else if (!t1.isDirectlyAssignableFrom(t2) &&  // we (currently) do not tag the result in a redefined feature, see testRedefine
-                 t2 != Types.resolved.t_void &&
+                 !t2.isVoid() &&
                  !isLegalCovariantThisType(o, f, t1, t2, fixed))
           {
             AstErrors.resultTypeMismatchInRedefinition(o, t1, f, isLegalCovariantThisType(o, f, t1, t2, true));
@@ -1413,14 +1520,57 @@ public class SourceModule extends Module implements SrcModule, MirModule
             AstErrors.constraintMustNotBeGenericArgument(f);
           }
       }
+    checkLegalVisibility(f);
     checkRedefVisibility(f);
     checkLegalTypeVisibility(f);
     checkResultTypeVisibility(f);
     checkArgTypesVisibility(f);
     checkPreconditionVisibility(f);
+    checkAbstractVisibility(f);
+    checkDuplicateFeatures(f);
+    checkContractAccesses(f);
   }
 
 
+  private void checkLegalVisibility(Feature f)
+  {
+    if (f.isRoutine())
+      {
+        f.code().visit(new FeatureVisitor()
+        {
+          private Stack<Object> stack = new Stack<Object>();
+          public void actionBefore(Block b, AbstractFeature outer) { if (b._newScope) { stack.push(b); } }
+          public void actionBefore(AbstractCase c) { stack.push(c); }
+          public void actionAfter(Block b, AbstractFeature outer)  { if (b._newScope) { stack.pop(); } }
+          public void actionAfter (AbstractCase c) { stack.pop(); }
+          public Expr action(Feature fd, AbstractFeature outer) {
+            if (!stack.isEmpty() && !fd.visibility().equals(Visi.PRIV))
+              {
+                AstErrors.illegalVisibilityModifier(fd);
+              }
+            return super.action(fd, outer);
+          }
+        }, f);
+      }
+  }
+
+
+  /**
+   * Check that an abstract feature is at least as visible as the outer feature.
+   */
+  private void checkAbstractVisibility(Feature f) {
+    if(f.isAbstract() &&
+       f.visibility().featureVisibility().ordinal() < f.outer().visibility().featureVisibility().ordinal())
+      {
+        AstErrors.abstractFeaturesVisibilityMoreRestrictiveThanOuter(f);
+      }
+  }
+
+
+  /**
+   * Check that `f` does not have more restrictive
+   * visibility than every feature it redefines.
+   */
   private void checkRedefVisibility(Feature f)
   {
     if (!f.isTypeFeaturesThisType()
@@ -1479,7 +1629,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   {
     if (!f.definesType() && f.visibility().definesTypeVisibility())
       {
-        AstErrors.illegalVisibilityModifier(f);
+        AstErrors.illegalTypeVisibilityModifier(f);
       }
   }
 
@@ -1541,6 +1691,98 @@ public class SourceModule extends Module implements SrcModule, MirModule
     return result;
   }
 
+
+  /**
+   * Check f's declared or inherited features for duplicates and flag errors if
+   * incompatible duplicates are encountered.
+   *
+   * @param f a feature
+   */
+  private void checkDuplicateFeatures(Feature f)
+  {
+    var doi = data(f)._declaredOrInheritedFeatures;
+    if (doi != null)
+      {
+        for (var fn : doi.keySet())
+          {
+            checkDuplicateFeatures(f, fn, doi.get(fn));
+          }
+      }
+  }
+
+  /**
+   * Check outer's declared or inherited features with effective name `fn` for duplicates and flag errors if
+   * incompatible duplicates are encountered.
+   *
+   * @param outer a feature
+   *
+   * @param fn the effective feature name within outer, used for error messages only
+   *
+   * @param fl list of features declared or inherited by outer with effective name fn.
+   */
+  private void checkDuplicateFeatures(AbstractFeature outer, FeatureName fn, List<AbstractFeature> fl)
+  {
+    if (PRECONDITIONS)
+      require(outer != null,
+              fn != null,
+              fl != null);
+
+    for (var f1 : fl)
+      {
+        for (var f2 : fl)
+          {
+            if (f1 != f2)
+              {
+                var isInherited1 = outer != f1.outer();
+                var isInherited2 = outer != f2.outer();
+
+                // NYI: take visibility into account!!!
+                if (isInherited1 && isInherited2)
+                  { // NYI: Should be ok if existing or f is abstract.
+                    AstErrors.repeatedInheritanceCannotBeResolved(outer.pos(), outer, fn, f1, f2);
+                  }
+                else
+                  {
+                    // NYI: if (!isInherited && !sameModule(f, outer))
+                    AstErrors.duplicateFeatureDeclaration(f1.pos(), f1, f2);
+                  }
+              }
+          }
+      }
+  }
+
+
+  /**
+   * Check that code in contract does not access inner features apart from
+   * arguments, result field, outer refs or case fields (in case condition uses
+   * a `match`). Produce AstErrors if needed.
+   *
+   * @parm f the feature whose contract should be checked.
+   */
+  private void checkContractAccesses(AbstractFeature f)
+  {
+    // NYI: check pre-condition accesses, not only post-condition
+    for (var c : f.contract()._declared_postconditions)
+      {
+        c.visitExpressions(e ->
+                           {
+                             if (!f.isConstructor() &&
+                                 e instanceof AbstractCall ca &&
+                                 ca.target() instanceof Current &&
+                                 !(ca.calledFeature() instanceof Feature cf && (cf.isResultField() ||
+                                                                                cf.isArgument() ||
+                                                                                cf.isOuterRef() ||
+                                                                                cf.isCaseField() ||
+
+                                                                                // NYI: there are some `#exprResultNNN` fields used, need to check why:
+                                                                                cf.isArtificialField()
+                                                                                )))
+                               {
+                                 AstErrors.postConditionMayNotAccessInnerFeature(f, ca);
+                               }
+                           });
+      }
+  }
 
 
   /*---------------------------  library file  --------------------------*/

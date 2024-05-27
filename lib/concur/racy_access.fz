@@ -37,5 +37,5 @@ private:module racy_access : simple_effect is
 # short-hand for accessing mut effect in current environment
 #
 module racy_access_env =>
-  racy_access.type.install_default
+  racy_access.install_default
   racy_access.env

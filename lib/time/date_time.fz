@@ -28,11 +28,11 @@
 #
 public date_time(public year, day_in_year, hour, minute, second, nano_second i32) : property.orderable
 pre
-  day_in_year ≥ 1  & day_in_year  ≤ days_in_year year,  # leap years have 366 days
-  hour        ≥ 0  & hour         ≤ 23,
-  minute      ≥ 0  & minute       ≤ 59,
-  second      ≥ 0  & second       ≤ 60,                 # 60 because of possible leap seconds
-  nano_second ≥ 0  & nano_second  ≤ 1E9
+  debug: (day_in_year ≥ 1  & day_in_year  ≤ days_in_year year)   # leap years have 366 days
+  debug: (hour        ≥ 0  & hour         ≤ 23               )
+  debug: (minute      ≥ 0  & minute       ≤ 59               )
+  debug: (second      ≥ 0  & second       ≤ 60               )   # 60 because of possible leap seconds
+  debug: (nano_second ≥ 0  & nano_second  ≤ 1E9              )
 is
 
   # how many days does february have in the given year?
@@ -81,7 +81,7 @@ is
 
   # returns ISO 8601 UTC string, precision millisecond
   # example: 2018-09-14T23:59:59.079Z
-  public redef as_string String is
+  public redef as_string String =>
     "{year.as_string 2 10}-{month.as_string 2 10}-{day_of_month.as_string 2 10}" +
       "T{hour.as_string 2 10}:{minute.as_string 2 10}:{second.as_string 2 10}.{milli_second.as_string 3 10}Z"
 
@@ -95,9 +95,9 @@ is
 
   # as_string(f date_time_format, local/time_zone) String is
 
-  # is_before(other date_time) bool is
-  # is_after(other date_time) bool is
-  # is_between(o1, o2 date_time) bool is
+  # is_before(other date_time) bool =>
+  # is_after(other date_time) bool =>
+  # is_between(o1, o2 date_time) bool =>
   # ...
 
   # 0 = Sunday, 1 = Monday, etc.
@@ -105,7 +105,7 @@ is
   # source: https://c-faq.com/misc/zeller.html
   # original code by: Tomohiko Sakamoto
   #
-  public day_of_week i32 is
+  public day_of_week i32 =>
     t := [0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4]
     y := year - (if month < 3 then 1 else 0)
     (y + y/4 - y/100 + y/400 + t[month-1] + day_of_month) % 7
@@ -116,7 +116,7 @@ is
 
   # defines equality for date time
   # this is normally used via infix operator =
-  public type.equality(a, b date_time.this) bool is
+  public type.equality(a, b date_time.this) bool =>
     a.nano_second = b.nano_second &
      a.year = b.year &
      a.day_in_year = b.day_in_year &
@@ -128,7 +128,7 @@ is
 
   # defines partial order for date time
   # this is normally used via infix operators <, >, <= etc.
-  public type.lteq(a, b date_time.this) bool is
+  public type.lteq(a, b date_time.this) bool =>
     [(a.year, b.year),
      (a.day_in_year, b.day_in_year),
      (a.hour, b.hour),

@@ -1,0 +1,107 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test test_process
+#
+# -----------------------------------------------------------------------
+
+test_process =>
+
+
+  # create string of given byte size
+  get_str(byte_size i32) =>
+    ref : String
+      utf8 Sequence u8 =>
+        (1..byte_size)
+          .map u8 (x -> codepoint.type.zero_char)
+
+
+  test(str String, f () -> outcome unit) is
+    say "===  Test: $str  ==="
+    match f()
+      e error => say e
+      * =>
+
+
+
+  test "write to stdin of process" ()->
+    (process.spawn ["cat"]).bind unit p->
+      p.write_string "Hello from the other side."
+      say p.wait
+      say p.read_string
+
+
+
+  test "read stdout of process" ()->
+    (process.spawn ["echo", "eecchhoo"]).bind unit p->
+      say p.read_string
+
+
+
+  test "pass environment variable" ()->
+    (process.env_vars (container.map_of [("MYENVVAR", "content")])).go ()->
+      (process.spawn ["printenv", "MYENVVAR"]).bind unit p->
+        say p.read_string
+
+
+
+  test "feed output of process 1 to process 2" ()->
+    (process.spawn ["echo", "'feed me to cat'"]).bind unit p->
+      (p | ["cat"]).bind unit p2->
+        say p2.read_string
+
+
+
+  test "1kb argument, piped to another process" ()->
+    (process.spawn ["echo", "-n", (get_str 1E3)]).bind unit p->
+      (p | ["cat"]).bind unit p2->
+        say p2.read_string.val.byte_length
+        say p2.wait
+
+
+/* NYI Too slow
+
+  test "100kb argument, piped to another process" ()->
+    (process.spawn ["echo", "-n", (get_str 1E5)]).bind unit p->
+      (p | ["cat"]).bind unit p2->
+        say p2.read_string.val.byte_length
+        say "exit code: {p2.wait}"
+        # execute wait twice:
+        say "exit code: {p2.wait}"
+
+
+
+
+  test "10mb write to stdin, piped to another process"
+  p := process.spawn ["cat"]
+    p := spawned
+    concur.thread.spawn ()->
+      time.nano.sleep (time.durations.s 1)
+      say "start reading"
+      while
+        match p.read_bytes 100
+          Sequence => true
+          * => false
+
+    # NYI write should block here?
+    say (p.write_bytes (get_str 1E7).utf8)
+    say "exit code: {p.wait}"
+  */
+
+

@@ -26,6 +26,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.util;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
  * ANY implements static methods for pre- and post-conditions as in Eiffel.
  *
@@ -50,6 +55,12 @@ public class ANY
     System.getenv().getOrDefault("CHECKS", "false").equals("true");
 
 
+  /**
+   * Property to set the command name, i.e. the result of `envir.args[0]`.
+   */
+  public static final String FUZION_COMMAND_PROPERTY = "fuzion.command";
+
+
   /*-----------------------------  methods  -----------------------------*/
 
 
@@ -62,7 +73,18 @@ public class ANY
       {
         return "Unknown origin.";
       }
-    return st[2].getClassName() + ":" + st[2].getMethodName() + ":" + st[2].getLineNumber();
+    try (Stream<String> lines = Files.lines(Path.of(Version.REPO_PATH).resolve("src").resolve(st[2].getClassName().replaceAll("\\.", "/") + ".java")))
+      {
+        var l = lines.skip(st[2].getLineNumber()-1).map(str -> str.trim()).collect(Collectors.toList());
+        return st[2].getFileName() + ":" + st[2].getLineNumber() + Terminal.BLUE + " \""
+          + l.stream().limit(Math.min(l.stream().takeWhile(s->!s.endsWith(");")).count()+1,7))
+            .collect(Collectors.joining(" ")) + "\""
+          + Terminal.REGULAR_COLOR;
+      }
+    catch (Exception e)
+      {
+        return st[2].getFileName() + ":" + st[2].getLineNumber();
+      }
   }
 
 
@@ -725,6 +747,39 @@ public class ANY
   }
 
 
+  /**
+   * Utility feature say to print str to stdout
+   */
+  public static void say(Object str)
+  {
+    System.out.println(str);
+  }
+
+  /**
+   * Utility feature say to print new line to stdout
+   */
+  public static void say()
+  {
+    say("");
+  }
+
+  /**
+   * Utility feature say_err to print str to stderr
+   */
+  public static void say_err(Object str)
+  {
+    System.err.println(str);
+  }
+
+  /**
+   * Utility feature say_err to print new line to stderr
+   */
+  public static void say_err()
+  {
+    say_err("");
+  }
+
+
   /* ----------------------------------------------------------------------------- */
 
 
@@ -759,7 +814,7 @@ public class ANY
        {
          for (var e : _counts_.entrySet())
            {
-             System.out.println("ALLOCS: "+e.getValue()+"\t: "+e.getKey());
+             say("ALLOCS: "+e.getValue()+"\t: "+e.getKey());
            }
        }
                   ));

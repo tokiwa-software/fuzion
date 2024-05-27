@@ -36,16 +36,16 @@
 #
 #     ex_handles is
 #       hdl := handle 42
-#     
+#
 #       say hdl.get
-#     
-#       x(h handle0 i32) unit is
+#
+#       x(h handle0 i32) unit =>
 #         b := hdl.put 17
 #         say b
 #         say hdl.get
-#     
+#
 #       x hdl
-#     
+#
 #       say hdl.get
 #
 # the example also shows the difference between handles and the mutate effect:
@@ -65,15 +65,15 @@ private:public handles(
   # NYI: As soon as one-way monads are enforced, this array can be implemented
   # using marray, reducing the overhead of an update from O(count) to O(1)!
   #
-  private ar array T,
+  ar array T,
 
   # action to be taken: plain monad, install or replace?
-  redef r effect_mode.val
+  r effect_mode.val
   ) : oneway_monad X (handles T X) r
 is
 
   # number of handles created
-  private count => ar.length
+  count => ar.length
 
 
   # create a new instance with one additional handle
@@ -86,7 +86,7 @@ is
     ) handles T X
   post
     result.has_last
-  is
+  =>
     na := array T count+1 (i -> if (i < count) ar[i] else w)
     handles T X v na mode
 
@@ -156,7 +156,7 @@ is
   # create a new instance with the value refered to by a given handle read and
   # updated.
   #
-  private update0 (
+  update0 (
     # a handle created by 'new'
     x i32,
 
@@ -164,12 +164,12 @@ is
     f T->T
     )
   =>
-    handles T X v (ar.put x (f ar[x])) mode
+    _ := handles T X v (ar.put x (f ar[x])) mode
 
 
   public infix >>= (f X -> handles T X) => bind X f
 
-  public bind(B type, f X -> handles T B) handles T B is
+  public bind(B type, f X -> handles T B) handles T B =>
     handles T B (f v).v ar effect_mode.plain
 
   public return( B type, w B) => handles T B w ar effect_mode.plain
@@ -177,8 +177,7 @@ is
 # short-hand for creating and installing an empty set of handles of given type.
 #
 public handles(T type, rr ()->unit) =>
-  handles T unit unit (array T 0 x->do) (effect_mode.inst rr)
-  unit
+  _ := handles T unit unit (array T 0 x->do) (effect_mode.inst rr)
 
 # short-hand for creating an empty set of handles of given type.
 #
@@ -198,7 +197,7 @@ public handles(T type) =>
 private:public handle0(
   T type,
   # the index in 'handles.ar'
-  private x i32
+  x i32
   )
 is
 
@@ -225,9 +224,8 @@ handles_type(T type) is
 
   # install default instance of handles
   #
-  install_default unit is
-    handles T unit unit (array T 0 x->do) effect_mode.default
-    unit
+  install_default unit =>
+    _ := handles T unit unit (array T 0 x->do) effect_mode.default
 
 
 # initializes a new handle with the given initial value

@@ -95,9 +95,9 @@ public class Names extends ANY implements ClassFileConstants
 
 
   /**
-   * Name and signature of Runtime.args field / Runtime.args_get method
+   * Name and signature of Runtime._args_ field and Runtime.args_get method
    */
-  static final String RUNTIME_ARGS = "args";
+  static final String RUNTIME_ARGS = "_args_";
   static final String RUNTIME_ARGS_GET = "args_get";
   static final String RUNTIME_ARGS_GET_SIG = "(I)[B";
 
@@ -294,8 +294,6 @@ public class Names extends ANY implements ClassFileConstants
      *
      * Ex. Feature "i32.prefix -"  will result in  "i32__prefix_wm"
      *
-     * @param f a feature id
-     *
      * @param sb a StringBuilder
      */
     private void clazzMangledName(int cl, StringBuilder sb)
@@ -387,7 +385,7 @@ public class Names extends ANY implements ClassFileConstants
       var p = _prefix;
       var sb = new StringBuilder(p);
       clazzMangledName(cl, sb);
-      // NYI: there might be name conflicts due to different generic instances, so
+      // NYI: UNDER DEVELOPMENT: there might be name conflicts due to different generic instances, so
       // we need to add the clazz id or the actual generics if this is the case:
       //
       //   sb.append("_").append(clazzId2num(cl)).append("_");
@@ -544,7 +542,6 @@ public class Names extends ANY implements ClassFileConstants
    */
   String javaInterface(int cl)
   {
-    if (_interfaceNames.get(cl).equals("fzI_num_optionᐨwᐨi32")) Thread.dumpStack();
     return _interfaceNames.get(cl);
   }
 
@@ -561,7 +558,7 @@ public class Names extends ANY implements ClassFileConstants
   {
     return pre                                               ? PRECONDITION_NAME :
            _fuir.clazzKind(cl) != FUIR.FeatureKind.Intrinsic ? ROUTINE_NAME
-                                                             : mangle(_fuir.clazzIntrinsicName(cl));
+                                                             : mangle(_fuir.clazzOriginalName(cl));
   }
 
 
@@ -615,7 +612,7 @@ public class Names extends ANY implements ClassFileConstants
   String choiceEntryName(int cc, int tagNum)
   {
     if (PRECONDITIONS) check
-      (// NYI: _types not available here:  _types.choiceKind(cc) == Types.ChoiceImplementations.general,
+      (// NYI: CLEANUP: _types not available here:  _types.choiceKind(cc) == Types.ChoiceImplementations.general,
        tagNum >= 0,
        tagNum < _fuir.clazzNumChoices(cc));
 

@@ -63,17 +63,6 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * the name of this type.  For a type 'map<string,i32>.entry', this is just
-   * the base name 'entry'. For a type parameter 'A', this is 'A'. For an
-   * artificial type, this is one of Types.INTERNAL_NAMES (e.g., '--ADDRESS--).
-   */
-  public String name()
-  {
-    return _feature.featureName().baseName();
-  }
-
-
-  /**
    * For a normal type, this is the list of actual type parameters given to the type.
    */
   List<AbstractType> _generics;
@@ -147,7 +136,7 @@ public class ResolvedNormalType extends ResolvedType
        !(t.generics() instanceof FormalGenerics.AsActuals aa) || aa.sizeMatches(g),
         t == Types.t_ERROR || (t.outer() == null) == (o == null));
 
-    return create(g, ug, o, t.featureOfType(), refOrVal(t), fixOuterThisType);
+    return create(g, ug, o, t.feature(), refOrVal(t), fixOuterThisType);
   }
 
 
@@ -201,7 +190,7 @@ public class ResolvedNormalType extends ResolvedType
    * @param f if this type corresponds to a feature, then this is the
    * feature, otherwise null.
    *
-   * @param ref true iff this type should be a ref type, otherwise it will be a
+   * @param refOrVal true iff this type should be a ref type, otherwise it will be a
    * value type.
    */
   private ResolvedNormalType(List<AbstractType> g,
@@ -261,8 +250,7 @@ public class ResolvedNormalType extends ResolvedType
       }
     else
       {
-        return (ResolvedType) Types.intern
-          (new ResolvedNormalType(g, ug, o, f, refOrVal, fixOuterThisType));
+        return new ResolvedNormalType(g, ug, o, f, refOrVal, fixOuterThisType);
       }
   }
 
@@ -279,7 +267,7 @@ public class ResolvedNormalType extends ResolvedType
     if (PRECONDITIONS) require
       (refOrVal != original._refOrVal,
        Types.resolved == null
-         || original.compareTo(Types.resolved.t_void) != 0
+         || !original.isVoid()
          || refOrVal == RefOrVal.LikeUnderlyingFeature
       );
 
@@ -290,7 +278,7 @@ public class ResolvedNormalType extends ResolvedType
     this._feature           = original._feature;
 
     if (POSTCONDITIONS) ensure
-      (featureOfType().generics().sizeMatches(generics()));
+      (feature().generics().sizeMatches(generics()));
   }
 
   /**
@@ -298,7 +286,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   public static ResolvedNormalType create(ResolvedNormalType original, RefOrVal refOrVal)
   {
-    return (ResolvedNormalType)Types.intern(new ResolvedNormalType(original, refOrVal));
+    return new ResolvedNormalType(original, refOrVal);
   }
 
 
@@ -340,7 +328,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   public static ResolvedNormalType create(ResolvedNormalType original, AbstractFeature originalOuterFeature)
   {
-    return (ResolvedNormalType)Types.intern(new ResolvedNormalType(original, originalOuterFeature));
+    return new ResolvedNormalType(original, originalOuterFeature);
   }
 
   /**
@@ -364,7 +352,7 @@ public class ResolvedNormalType extends ResolvedType
   {
     return
       t instanceof ResolvedNormalType tt         ? tt._refOrVal                   :
-      t.isRef() == t.featureOfType().isThisRef() ? RefOrVal.LikeUnderlyingFeature :
+      t.isRef() == t.feature().isThisRef() ? RefOrVal.LikeUnderlyingFeature :
       t.isRef()                                  ? RefOrVal.Boxed
                                                  : RefOrVal.Value;
   }
@@ -391,7 +379,7 @@ public class ResolvedNormalType extends ResolvedType
       }
     else
       {
-        result = ResolvedNormalType.create(t.generics(), t.unresolvedGenerics(), o, t.featureOfType(),
+        result = ResolvedNormalType.create(t.generics(), t.unresolvedGenerics(), o, t.feature(),
                                         refOrVal(t),
                                         false);
       }
@@ -420,8 +408,7 @@ public class ResolvedNormalType extends ResolvedType
   public AbstractType asRef()
   {
     if (PRECONDITIONS) require
-      (this == Types.intern(this),
-       compareTo(Types.resolved.t_void) != 0);
+      (!isVoid());
 
     AbstractType result = this;
     if (!isRef() && this != Types.t_ERROR)
@@ -438,9 +425,6 @@ public class ResolvedNormalType extends ResolvedType
    */
   public AbstractType asThis()
   {
-    if (PRECONDITIONS) require
-      (this == Types.intern(this));
-
     AbstractType result = this;
     if (!isThisType() && !isChoice() && this != Types.t_ERROR && this != Types.t_ADDRESS)
       {
@@ -461,9 +445,6 @@ public class ResolvedNormalType extends ResolvedType
    */
   public AbstractType asValue()
   {
-    if (PRECONDITIONS) require
-      (this == Types.intern(this));
-
     AbstractType result = this;
     if (isRef() && this != Types.t_ERROR)
       {
@@ -565,7 +546,7 @@ public class ResolvedNormalType extends ResolvedType
    *
    * @throws Error if this is not resolved or isGenericArgument().
    */
-  public AbstractFeature featureOfType()
+  public AbstractFeature feature()
   {
     if (PRECONDITIONS) require
       (Errors.any() || _feature != null);
@@ -610,7 +591,7 @@ public class ResolvedNormalType extends ResolvedType
    * @param o2 the new outer type to be used (which may also differ in its
    * actual generics).
    *
-   * @return a new type with same featureOfType(), but using g2/o2 as generics
+   * @return a new type with same feature(), but using g2/o2 as generics
    * and outer type.
    */
   public AbstractType applyTypePars(List<AbstractType> g2, AbstractType o2)
@@ -632,7 +613,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   AbstractType clone(AbstractFeature originalOuterFeature)
   {
-    return (ResolvedNormalType) Types.intern(
+    return
       new ResolvedNormalType(this, originalOuterFeature)
       {
         AbstractFeature originalOuterFeature(AbstractFeature currentOuter)
@@ -652,9 +633,7 @@ public class ResolvedNormalType extends ResolvedType
             }
           return _resolved;
         }
-
-
-      });
+      };
   }
 
 
@@ -667,7 +646,7 @@ public class ResolvedNormalType extends ResolvedType
   {
     // NYI: "This currently does not touch the outer features.
     //       This means that for a type like (x T).y U the visibility of x and T will be ignored, which is probably wrong."
-    var f = featureOfType();
+    var f = feature();
     if (s.add(f))
       {
         for (var g : generics())

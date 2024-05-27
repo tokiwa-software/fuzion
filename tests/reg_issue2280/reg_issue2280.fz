@@ -1,0 +1,54 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test
+#
+# -----------------------------------------------------------------------
+
+reg_issue2280 is
+
+  # 0 to 9
+  codepoint_type_ascii_digit => u32 0x30 .. 0x39
+  # NYI: this should be public in codepoint, had to copy it over!
+
+  _ := io.stdin.with ()->
+    for
+
+      t := u32 0, s
+      # NYI: would be nice if `u32` would be inferred and not needed explicitly here
+
+      l := io.buffered.read_line ? str String => str | io.end_of_file => ""
+      # NYI: read_line should return a choice of String | end_of_file or similar
+
+      l2 := l.as_codepoints
+              .as_list       # NYI: would be good not to need this
+              .map (.val)    # NYI: would be good not to need this
+              .filter codepoint_type_ascii_digit.contains    # using brand new partial application!
+
+      first := l2.head.or_else (u32 0)
+      #      last  :=  l2.is_empty ? 0 : l2.last        # NYI: does not work since ? : is not lazy on its arguments!
+
+      last  :=  {if l2.is_empty then u32 0 else l2.last}
+      # NYI: why this assymmetry between head returning option and last returning the element or panicking?
+      # NYI: would be nice if `u32` would be inferred and not needed explicitly here!
+      # NYI: can we get rid of the `{`/`}`
+
+      s := t + first + last
+    while l != "" do
+      say s

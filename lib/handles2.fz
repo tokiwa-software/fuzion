@@ -42,7 +42,7 @@ private:public handles2(
   last_opt option (handle2_0 T),
 
   # action to be taken: plain monad, install or replace?
-  redef r effect_mode.val
+  r effect_mode.val
   ) : oneway_monad X (handles2 T X) r
 is
 
@@ -56,7 +56,7 @@ is
     ) handles2 T X
   post
     result.has_last
-  is
+  =>
     handles2 T X v (handle2_0 w) mode
 
 
@@ -109,7 +109,6 @@ is
       effect_mode.plain   => false  # must be used as oneway_monad only
       effect_mode.default => false
       effect_mode.new     => false
-      effect_mode.abort   => false
       effect_mode.inst, effect_mode.repl => true
   =>
     h.put w
@@ -131,7 +130,6 @@ is
       effect_mode.plain   => false  # must be used as oneway_monad only
       effect_mode.default => false
       effect_mode.new     => false
-      effect_mode.abort   => false
       effect_mode.inst, effect_mode.repl => true
   =>
     h.put (f h.get)
@@ -140,7 +138,7 @@ is
 
   public infix >>= (f X -> handles2 T X) => bind X f
 
-  public bind(B type, f X -> handles2 T B) handles2 T B is
+  public bind(B type, f X -> handles2 T B) handles2 T B =>
     handles2 T B (f v).v last_opt effect_mode.plain
 
   public return(B type, w B) => handles2 T B w last_opt effect_mode.plain
@@ -148,8 +146,7 @@ is
 # short-hand for creating and installing an empty set of handles2 of given type.
 #
 handles2(T type, rr ()->unit) =>
-  handles2 T unit unit nil (effect_mode.inst rr)
-  unit
+  _ := handles2 T unit unit nil (effect_mode.inst rr)
 
 # short-hand for creating an empty set of handles2 of given type.
 #
@@ -176,7 +173,7 @@ is
 
   # set value stored in this handle to new_val
   #
-  public put(new_val T) is
+  public put(new_val T) =>
     set get := new_val
     (handles2 T unit).env.replace
 
@@ -193,9 +190,8 @@ handles2_type(T type) is
 
   # install default instance of handles2
   #
-  install_default unit is
-    handles2 T unit unit nil effect_mode.default
-    unit
+  install_default unit =>
+    _ := handles2 T unit unit nil effect_mode.default
 
 
 # create a new handle2 using the handles2 instance from the current environment

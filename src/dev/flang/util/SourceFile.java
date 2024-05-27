@@ -113,7 +113,22 @@ public class SourceFile extends ANY
   public static Path STDIN = Path.of("-");
 
 
+  /**
+   * Dummy value for fileName argument for data from command line. Unlike STDIN,
+   * no data can be read from this, it must not be passed to the constructor of
+   * SourceFile without providing a `byte[]` or file data!
+   */
+  public static Path COMMAND_LINE_DUMMY = Path.of("command line");
+
+
   /*-----------------------------  statics  -----------------------------*/
+
+
+  /**
+   * We might want to move this optimization to a special variant of SourceFile,
+   * so I make this dependent on a static final flag for now:
+   */
+  private static final boolean _FAST_LINE_NUM_ = true;
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -142,6 +157,34 @@ public class SourceFile extends ANY
 
 
   /**
+   * For each byte position p that starts a code point, if _FAST_LINE_NUM_ is
+   * set, the line number of the line containing that code point is
+   * _lineNumOffset[p] + _lineNumBase[p/128].
+   */
+  private byte _lineNumOffset[];
+  private int _lineNumBase[];
+
+
+  /**
+   * For each position of a codepoint, _indentationByte[p] will hold the
+   * indentation in number of codepoints from the beginning of the line as an
+   * unsigned 8-bit integer.  If the indentation is >= 128, this will be an
+   * offset that must be added to _indentationBase[p/128] to get the
+   * actual indentation.
+   */
+  private byte _indentationByte[];
+
+
+  /**
+   * For groups of 128 bytes of source code data: if for a position p the
+   * indentation from the start of its line exceeds 127, then
+   * _indentationBase[p/128] will be a base indentation to be added to
+   * _indentationByte[p].
+   */
+  private int _indentationBase[];
+
+
+  /**
    * The current codePoint, i.e., the last result of decodeCodePoint[AndSize].
    * BAD_CODEPOINT if decodeCodePoint has not been called yet, END_OF_FILE if
    * all codePoints have been decoded.
@@ -165,8 +208,11 @@ public class SourceFile extends ANY
 
 
   /**
-   * Load UTF-8 encoded source code from given file and reset the position to
-   * the beginning of this file.
+   * If sf is null, Load UTF-8 encoded source code from given file. Otherwise,
+   * load UTF-8 encoded source code sf as if it came from a file with the given
+   * Path.
+   *
+   * Reset the position to the beginning of this file.
    */
   public SourceFile(Path fileName, byte[] sf)
   {
@@ -174,10 +220,29 @@ public class SourceFile extends ANY
       (fileName != null);
 
     _fileName = fileName;
+    if (sf == null)
+      {
+        try
+          {
+            sf = fileName == STDIN ? System.in.readAllBytes()
+                                   : Files    .readAllBytes(fileName);
+          }
+        catch (IOException e)
+          {
+            Errors.error(new SourcePosition(this, 0),
+                         "I/O Error: " + e.getMessage(),
+                         "");
+            sf = new byte[0];
+          }
+      }
     _bytes = sf;
     _pos = 0;
     _cur = BAD_CODEPOINT;
     _size = 0;
+    if (_FAST_LINE_NUM_)
+      {
+        lines();  // eagerly determine lines
+      }
   }
 
 
@@ -187,28 +252,7 @@ public class SourceFile extends ANY
    */
   public SourceFile(Path fileName)
   {
-    if (PRECONDITIONS) require
-      (fileName != null);
-
-    _fileName = fileName;
-    byte[] sf;
-    try
-      {
-        sf = fileName == STDIN ? System.in.readAllBytes()
-                               : Files    .readAllBytes(fileName);
-      }
-    catch (IOException e)
-      {
-        Errors.error(new SourcePosition(this, 0),
-                     "I/O Error: " + e.getMessage(),
-                     "");
-        sf = new byte[0];
-      }
-
-    _bytes = sf;
-    _pos = 0;
-    _cur = BAD_CODEPOINT;
-    _size = 0;
+    this(fileName, null);
   }
 
 
@@ -217,12 +261,16 @@ public class SourceFile extends ANY
    */
   public SourceFile(SourceFile original)
   {
-    _fileName = original._fileName;
-    _bytes    = original._bytes;
-    _lines    = original._lines;
-    _pos      = original._pos;
-    _cur      = original._cur;
-    _size     = original._size;
+    _fileName        = original._fileName;
+    _bytes           = original._bytes;
+    _lines           = original._lines;
+    _lineNumOffset   = original._lineNumOffset;
+    _lineNumBase     = original._lineNumBase;
+    _indentationByte = original._indentationByte;
+    _indentationBase = original._indentationBase;
+    _pos             = original._pos;
+    _cur             = original._cur;
+    _size            = original._size;
   }
 
 
@@ -249,6 +297,11 @@ public class SourceFile extends ANY
    */
   private int decodeCodePointAndSize(int pos)
   {
+    /*
+    // tag::fuzion_rule_SRCF_UTF8[]
+Fuzion input uses UTF8 encoding version {UNICODE_VERSION} from {UNICODE_SOURCE}[].  Improperly encoded input will be treated as an error.
+    // end::fuzion_rule_SRCF_UTF8[]
+    */
     int result;
     int sz;
     int b1 = _bytes[pos] & 0xff;
@@ -262,9 +315,9 @@ public class SourceFile extends ANY
       {
         if (pos + 2 > _bytes.length)
           {
-            Errors.error(sourcePos(pos),
-                         "Bad UTF8 encoding found at end-of-file: "+hex(b1),
-                         "Expected one continuation byte, but reached end of file.");
+            Errors.SRCF.UTF8.report(sourcePos(pos),
+                                    ": found end-of-file while decoding " + hex(b1),
+                                    "Expected one continuation byte, but reached end of file.");
             result = BAD_CODEPOINT;
             sz = 1;
           }
@@ -273,9 +326,9 @@ public class SourceFile extends ANY
             int b2 = _bytes[pos + 1] & 0xff;
             if ((b2 & 0xc0) != 0x80)
               {
-                Errors.error(sourcePos(pos),
-                             "Bad UTF8 encoding found: " + hex(b1) + " " + hex(b2),
-                             "Expected one continuation byte in the range 0x80..0xbf.");
+                Errors.SRCF.UTF8.report(sourcePos(pos),
+                                        ": while decoding " + hex(b1) + " " + hex(b2),
+                                        "Expected one continuation byte in the range 0x80..0xbf.");
                 result = BAD_CODEPOINT;
                 sz = 1;
               }
@@ -285,16 +338,16 @@ public class SourceFile extends ANY
                 sz = 2;
                 if (result == 0x00)
                   {
-                    Errors.error(sourcePos(pos),
-                                 "Bad UTF8 encoding found: " + hex(b1) + " " + hex(b2),
-                                 "Two-byte NUL-character encoding is allowed in modified UTF-8 only, not in standard UTF-8 encoding.");
+                    Errors.SRCF.UTF8.report(sourcePos(pos),
+                                            ": while decoding " + hex(b1) + " " + hex(b2),
+                                            "Two-byte NUL-character encoding is allowed in modified UTF-8 only, not in standard UTF-8 encoding.");
                     result = BAD_CODEPOINT;
                   }
                 else if (result < 0x80)
                   {
-                    Errors.error(sourcePos(pos),
-                                 "Bad UTF8 encoding found: " + hex(b1) + " " + hex(b2),
-                                 "Code point "+Integer.toHexString(result)+" uses overlong 2-byte encoding.");
+                    Errors.SRCF.UTF8.report(sourcePos(pos),
+                                            ": while decoding " + hex(b1) + " " + hex(b2),
+                                            "Code point "+Integer.toHexString(result)+" uses overlong 2-byte encoding.");
                     result = BAD_CODEPOINT;
                   }
               }
@@ -304,11 +357,11 @@ public class SourceFile extends ANY
       {
         if (pos + 3 > _bytes.length)
           {
-            Errors.error(sourcePos(pos),
-                         "Bad UTF8 encoding found at end-of-file: "+hex(b1),
-                         "Expected two continuation bytes, but reached end of file.");
+            Errors.SRCF.UTF8.report(sourcePos(pos),
+                                    ": found end-of-file while decoding " + hex(b1),
+                                    "Expected two continuation bytes, but reached end of file.");
             result = BAD_CODEPOINT;
-            sz = _bytes.length - pos;;
+            sz = _bytes.length - pos;
           }
         else
           {
@@ -317,9 +370,9 @@ public class SourceFile extends ANY
             if ((b2 & 0xc0) != 0x80 ||
                 (b3 & 0xc0) != 0x80)
               {
-                Errors.error(sourcePos(pos),
-                             "Bad UTF8 encoding found: " + hex(b1) + " " + hex(b2) + " " + hex(b3),
-                             "Expected two continuation bytes in the range 0x80..0xbf.");
+                Errors.SRCF.UTF8.report(sourcePos(pos),
+                                        ": while decoding " + hex(b1) + " " + hex(b2) + " " + hex(b3),
+                                        "Expected two continuation bytes in the range 0x80..0xbf.");
                 result = BAD_CODEPOINT;
                 sz = ((b2 & 0xc0) != 0x80) ? 1 : 2;
               }
@@ -330,17 +383,17 @@ public class SourceFile extends ANY
                           ((b3 & 0x3f)      )   );
                 if (result < 0x800)
                   {
-                    Errors.error(sourcePos(pos),
-                                 "Bad UTF8 encoding found: " + hex(b1) + " " + hex(b2) + " " + hex(b3),
-                                 "Code point "+Integer.toHexString(result)+" uses overlong 3-byte encoding.");
+                    Errors.SRCF.UTF8.report(sourcePos(pos),
+                                            ": while decoding " + hex(b1) + " " + hex(b2) + " " + hex(b3),
+                                            "Code point "+Integer.toHexString(result)+" uses overlong 3-byte encoding.");
                     result = BAD_CODEPOINT;
                   }
                 else if (result >= 0xd800 && result <= 0xdfff)
                   {
-                    Errors.error(sourcePos(pos),
-                                 "Bad UTF8 encoding found: " + hex(b1) + " " + hex(b2) + " " + hex(b3),
-                                 "Code point "+Integer.toHexString(result)+" is invalid, values in the " +
-                                 "range 0xd800..0xdfff are reserved for UTF-16 surrogate halves.");
+                    Errors.SRCF.UTF8.report(sourcePos(pos),
+                                            ": while decoding " + hex(b1) + " " + hex(b2) + " " + hex(b3),
+                                            "Code point "+Integer.toHexString(result)+" is invalid, values in the " +
+                                            "range 0xd800..0xdfff are reserved for UTF-16 surrogate halves.");
                     result = BAD_CODEPOINT;
                   }
                 sz = 3;
@@ -351,9 +404,9 @@ public class SourceFile extends ANY
       {
         if (pos + 4 > _bytes.length)
           {
-            Errors.error(sourcePos(pos),
-                         "Bad UTF8 encoding found at end-of-file: "+hex(b1),
-                         "Expected three continuation bytes, but reached end of file.");
+            Errors.SRCF.UTF8.report(sourcePos(pos),
+                                    ": found end-of-file while decoding " + hex(b1),
+                                    "Expected three continuation bytes, but reached end of file.");
             result = BAD_CODEPOINT;
             sz = _bytes.length - pos;
           }
@@ -366,9 +419,9 @@ public class SourceFile extends ANY
                 (b3 & 0xc0) != 0x80 ||
                 (b4 & 0xc0) != 0x80)
               {
-                Errors.error(sourcePos(pos),
-                             "Bad UTF8 encoding found: " + hex(b1) + " " + hex(b2) + " " + hex(b3) + " " + hex(b4),
-                             "Expected three continuation bytes in the range 0x80..0xbf.");
+                Errors.SRCF.UTF8.report(sourcePos(pos),
+                                        ": while decoding " + hex(b1) + " " + hex(b2) + " " + hex(b3) + " " + hex(b4),
+                                        "Expected three continuation bytes in the range 0x80..0xbf.");
                 result = BAD_CODEPOINT;
                 sz = (((b2 & 0xc0) != 0x80) ? 1 :
                       ((b3 & 0xc0) != 0x80) ? 2 : 3);
@@ -381,17 +434,17 @@ public class SourceFile extends ANY
                           ((b4 & 0x3f)      )   );
                 if (result < 0x10000)
                   {
-                    Errors.error(sourcePos(pos),
-                                 "Bad UTF8 encoding found: " + hex(b1) + " " + hex(b2) + " " + hex(b3) + " " + hex(b4),
-                                 "Code point "+Integer.toHexString(result)+" uses overlong 4-byte encoding.");
+                    Errors.SRCF.UTF8.report(sourcePos(pos),
+                                            ": while decoding " + hex(b1) + " " + hex(b2) + " " + hex(b3) + " " + hex(b4),
+                                            "Code point "+Integer.toHexString(result)+" uses overlong 4-byte encoding.");
                     result = BAD_CODEPOINT;
                   }
                 else if (result > 0x10ffff)
                   {
-                    Errors.error(sourcePos(pos),
-                                 "Bad UTF8 encoding found: " + hex(b1) + " " + hex(b2) + " " + hex(b3) + " " + hex(b4),
-                                 "Code point "+Integer.toHexString(result)+" is outside of the allowed range for " +
-                                 "codepoints 0x000000..0x10ffff.");
+                    Errors.SRCF.UTF8.report(sourcePos(pos),
+                                            ": while decoding " + hex(b1) + " " + hex(b2) + " " + hex(b3) + " " + hex(b4),
+                                            "Code point "+Integer.toHexString(result)+" is outside of the allowed range for " +
+                                            "codepoints 0x000000..0x10ffff.");
                     result = BAD_CODEPOINT;
                   }
                 sz = 4;
@@ -400,31 +453,31 @@ public class SourceFile extends ANY
       }
     else if (0x80 <= b1 && b1 <= 0xbf)
       {
-        Errors.error(sourcePos(pos),
-                     "Bad UTF8 encoding found: "+hex(b1),
-                     "Stray continuation byte without preceding leading byte.");
+        Errors.SRCF.UTF8.report(sourcePos(pos),
+                                ": while decoding " + hex(b1),
+                                "Stray continuation byte without preceding leading byte.");
         result = BAD_CODEPOINT;
         sz = 1;
       }
     else if (0xf5 <= b1 && b1 <= 0xfd)
       {
-        Errors.error(sourcePos(pos),
-                     "Bad UTF8 encoding found:: "+hex(b1),
-                     "Code 0xf8..0xff are undefined.");
+        Errors.SRCF.UTF8.report(sourcePos(pos),
+                                ": while decoding " + hex(b1),
+                                "Code 0xf8..0xff are undefined.");
         result = BAD_CODEPOINT;
         sz = 1;
       }
     else if (0xfe <= b1 && b1 <= 0xff)
       {
-        Errors.error(sourcePos(pos),
-                     "Bad UTF8 encoding found:: "+hex(b1),
+        Errors.SRCF.UTF8.report(sourcePos(pos),
+                     "while decoding : " + hex(b1),
                      "Code 0xfe and 0xff are undefined.");
         result = BAD_CODEPOINT;
         sz = 1;
       }
     else
       {
-        throw new Error("Missing case: "+hex(b1));
+        throw new Error("Missing case: " + hex(b1));
       }
     return makeCodePointWithSize(result, sz);
   }
@@ -555,6 +608,12 @@ public class SourceFile extends ANY
    */
   public boolean isNewLine(int codePoint)
   {
+    /*
+    // tag::fuzion_rule_LEXR_NEWLINE[]
+The end of a source code line is marked by one of the code points LF 0x000a, VT 0x000b, FF 0x000c, NEL 0x0085, LS 0x2028 or PF 0x2029.
+    // end::fuzion_rule_LEXR_NEWLINE[]
+    */
+
     // line break, taken from https://en.wikipedia.org/wiki/Newline#Unicode
     return switch (codePoint)
       {
@@ -604,23 +663,40 @@ public class SourceFile extends ANY
    * line. result[0] is unused and set to -1,
    *
    * The result is cached in _lines.
+   *
+   * As a side-effect, this determines the indentation data for
+   * _indentationByte and _indentationBase that is used in codePointIndentation.
    */
   private int[] lines()
   {
     if (_lines == null)
       {
+        _indentationByte = new byte[_bytes.length+1];
+        _indentationBase = new int[(_bytes.length+1+127)/128];
+        if (_FAST_LINE_NUM_)
+          {
+            _lineNumOffset   = new byte[_bytes.length+1];
+            _lineNumBase     = new int[(_bytes.length+1+127)/128];
+          }
         IntStream.Builder b = IntStream.builder();
         b.add(-1);  // dummy line # 0 does not exist.
+        int lineCnt = 0;
         int sz;
         int curCodePoint  = BEGINNING_OF_FILE;
+        var ind = 1;
         for (int pos = 0;
              _bytes != null && pos < _bytes.length;
-             pos = pos + sz)
+             pos = pos + sz,
+             ind = ind + cpWidth(curCodePoint))
           {
             if (isNewLine(curCodePoint))
               {
                 b.add(pos);
+                lineCnt = lineCnt + 1;
+                ind = 1;
               }
+            storeIndentation(pos, ind);
+            storeLineNum(pos, lineCnt);
             int cpAndSz  = decodeCodePointAndSize(pos);
             curCodePoint = codePointFromCpAndSize(cpAndSz);
             sz           = sizeFromCpAndSize     (cpAndSz);
@@ -628,10 +704,89 @@ public class SourceFile extends ANY
         if (isNewLine(curCodePoint))
           {
             b.add(_bytes.length);
+            lineCnt = lineCnt + 1;
+            ind = 1;
           }
+        storeIndentation(_bytes.length, ind);
+        storeLineNum(_bytes.length, lineCnt);
         _lines = b.build().toArray();
       }
     return _lines;
+  }
+
+
+  /**
+   * get the width of a codepoint as specified in:
+   * https://www.unicode.org/reports/tr11/
+   */
+  private int cpWidth(int curCodePoint)
+  {
+    // Unassigned code points in ranges intended for CJK ideographs are classified as Wide. Those ranges are:
+
+    // the CJK Unified Ideographs Extension A block, 3400..4DBF
+    // the CJK Unified Ideographs block, 4E00..9FFF
+    // the CJK Compatibility Ideographs block, F900..FAFF
+    // the Supplementary Ideographic Plane, 20000..2FFFF
+    // the Tertiary Ideographic Plane, 30000..3FFFF
+
+    // NYI: UNDER DEVELOPMENT
+    // could be made faster (binary search?)
+
+    // NYI: UNDER DEVELOPMENT
+    // We would need to evaluate list
+    // http://www.unicode.org/Public/UNIDATA/EastAsianWidth.txt
+    // to be more correct.
+
+          // common case first
+    return curCodePoint < 0x3400
+      ? 1
+      : 0x3400 <= curCodePoint && curCodePoint <= 0x4DBF ||
+        0x4E00 <= curCodePoint && curCodePoint <= 0x9FFF ||
+        0xF900 <= curCodePoint && curCodePoint <= 0xFAFF ||
+        0x20000 <= curCodePoint && curCodePoint <= 0x2FFFF ||
+        0x30000 <= curCodePoint && curCodePoint <= 0x3FFFF
+      ? 2
+      : 1;
+  }
+
+
+  /**
+   * record the codepoint indentation at pos to be ind.
+   */
+  void storeIndentation(int pos, int ind)
+  {
+    if (ind >= 128)
+      {
+        if (_indentationBase[pos / 128] == 0)
+          {
+            _indentationBase[pos / 128] = ind - 128;
+          }
+        ind = ind - _indentationBase[pos/128];
+        if (CHECKS) check
+          (ind >= 128);
+      }
+    _indentationByte[pos] = (byte) ind;
+  }
+
+
+  /**
+   * record the line num at pos to be l
+   */
+  void storeLineNum(int pos, int l)
+  {
+    if (_FAST_LINE_NUM_)
+      {
+        var l0 = l;
+        if (_lineNumBase[pos / 128] == 0)
+          {
+            _lineNumBase[pos / 128] = l;
+          }
+        l = l - _lineNumBase[pos / 128];
+        if (CHECKS) check
+          (0 <= l,
+           l < 128);
+        _lineNumOffset[pos] = (byte) l;
+      }
   }
 
 
@@ -765,10 +920,17 @@ public class SourceFile extends ANY
       (pos >= 0,
        pos <= _bytes.length);
 
-    int l = Arrays.binarySearch(lines(), pos);
-    int line = (l >= 0) ? l :
-      -l - 2; // l == -ip-1, where ip is the element behind the desired line index (ip == line + 1), so line == ip - 1 = -l - 2
-
+    int line;
+    if (_FAST_LINE_NUM_)
+      {
+        line = _lineNumBase[pos / 128] + _lineNumOffset[pos];
+      }
+    else
+      {
+        int l = Arrays.binarySearch(lines(), pos);
+        line = (l >= 0) ? l :
+          -l - 2; // l == -ip-1, where ip is the element behind the desired line index (ip == line + 1), so line == ip - 1 = -l - 2
+      }
     if (POSTCONDITIONS) ensure
       (lines().length == 1 || line >= 1,
        _bytes.length != 0 || line == 1,
@@ -814,35 +976,21 @@ public class SourceFile extends ANY
 
 
   /**
-   * Determine the code point index of pos within the given line, starting at 1
-   * for the first code point in a line.
-   */
-  public int codePointInLine(int pos, int line)
-  {
-    if (PRECONDITIONS) require
-      (line > 0);
-
-    int c = 1;
-    for (int i = lineStartPos(line); i < pos; i = i + sizeFromCpAndSize(decodeCodePointAndSize(i)))
-      {
-        c++;
-      }
-    return c;
-  }
-
-
-  /**
    * Determine the code point index of pos within its line, starting at 1 for
    * the first code point in a line.
    */
-  public int codePointInLine(int pos)
+  public int codePointIndentation(int pos)
   {
-    int line = lineNum(pos);
-    if (line == 0)
+    if (!_FAST_LINE_NUM_)
       {
-        return BEGINNING_OF_FILE;
+        lines();  // make sure indentation data is present.
       }
-    return codePointInLine(pos, line);
+    var res = _indentationByte[pos] & 0xff;
+    if (res >= 128)
+      {
+        res = _indentationBase[pos/128] + res;
+      }
+    return res;
   }
 
 
@@ -877,7 +1025,6 @@ public class SourceFile extends ANY
   {
     if (PRECONDITIONS) require
       (0 <= pos,
-       pos < endPos,
        endPos <= byteLength());
 
     return new SourceRange(this, pos, endPos);

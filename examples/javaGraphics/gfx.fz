@@ -38,10 +38,10 @@ is
    */
 
   // Width of black lines as percentage of main radius
-  BLACK_LINE_WIDTH := 1000 / 15              # NYI: floats: 1.0D/15
+  BLACK_LINE_WIDTH := 1.0/15
 
   // size of three small circles relative to their surrounding circles
-  SMALL_CIRCLE_PERCENTAGE := 250             # NYI: floats: 0.25D
+  SMALL_CIRCLE_PERCENTAGE := 0.25
 
 
   /* the following values are geometry values that are fixed and should not be
@@ -49,13 +49,13 @@ is
    */
 
   // total size
-  SIZE := 512
+  SIZE := 512.0
 
   // main radius
   r := SIZE / 2
 
   // width of black lines
-  b := r * BLACK_LINE_WIDTH / 1000           # NYI: floats: r * BLACK_LINE_WIDTH;
+  b := r * BLACK_LINE_WIDTH
 
   // outer radius of three main wedges
   r1 := r - b
@@ -81,10 +81,10 @@ is
   //     = (r - (b * (1 + 1/sqrt(3)))) / (1 + 2 / sqrt(3))
   //
   // radius of three main circles:
-  r2 := (r*1000 - b * 1577) / 2155           # NYI: floats (r - b * (1+Math.sqrt(1/3.0D)))/(1 + 2*Math.sqrt(1/3.0D))
+  r2 := (r - b * (1.0 + (f64.sqrt 1.0/3))) / (1.0 + 2.0*(f64.sqrt 1.0/3))
 
   // radius of three small circles
-  r3 := r2 * SMALL_CIRCLE_PERCENTAGE / 1000  # NYI: floats: r2 * SMALL_CIRCLE_PERCENTAGE
+  r3 := r2 * SMALL_CIRCLE_PERCENTAGE
 
 
   // background and wedge colors:
@@ -93,69 +93,54 @@ is
   C2 := java.awt.Color.new_III 81 36 128     # NYI: Overloading of Java constructors
   C3 := java.awt.Color.new_III 130 106 175
 
-  # NYI: floats and trigonometry missing
-  cos120 := -500
-  sin120 := 866
-  cos240 := -500
-  sin240 := -866
 
+  G2D (g Java.java.awt.Graphics, tx, ty, rot f64) ref is  # NYI: #167: 'ref' due to lack of 'like this'
 
-  G2D (g Java.java.awt.Graphics, tx, ty, rot0 i32) ref is  # NYI: #167: 'ref' due to lack of 'like this'
-    rot := if rot0 >= 0 rot0 % 360 else rot0 % 360 + 360
+    rotate (d f64) => G2D g tx ty rot+d
 
-    rotate (d i32) => G2D g tx ty rot+d
-
-    threeTimes(d (G2D, Java.java.awt.Color) -> unit) unit is
-      d  G2D.this              C1
-      d (G2D.this.rotate -120) C2
-      d (G2D.this.rotate -240) C3
+    three_times(draw (G2D, Java.java.awt.Color) -> T) =>
+      draw  G2D.this                           C1
+      draw (G2D.this.rotate -2.0*f64.π/3) C2
+      draw (G2D.this.rotate -4.0*f64.π/3) C3
 
     # Draw a filled arc of color c, center at (x,y), radius r, starting at angle
     # start and extending of len degrees.
     #
-    arc(c Java.java.awt.Color, x, y, r, start, len i32) unit is
+    arc(c Java.java.awt.Color, x, y, r f64, start, len i32) =>
       g.setColor c
-      # NYI: rotation hard coded for 0°/120°/240°
-      (rx, ry) := if      rot % 360 = 0   then (x, y)
-                  else if rot % 360 = 120 then (x * cos120 / 1000 - y * sin120 / 1000,
-                                                x * sin120 / 1000 + y * cos120 / 1000)
-                  else if rot % 360 = 240 then (x * cos240 / 1000 - y * sin240 / 1000,
-                                                x * sin240 / 1000 + y * cos240 / 1000)
-                  else
-                    say "rotation by {rot%360} not supported yet"
-                    (x, y)
-      g.fillArc tx+rx-r ty+ry-r 2*r 2*r (start-rot)%360 len
+      rx := x * (f64.cos rot) - y * (f64.sin rot)
+      ry := x * (f64.sin rot) + y * (f64.cos rot)
+      g.fillArc (tx+rx-r).as_i32 (ty+ry-r).as_i32 (2.0*r).as_i32 (2.0*r).as_i32 (start-(rot*360/(2.0*f64.π)).as_i32)%360 len
 
 
     # Draw a filled circle of color c, center at (x,y), radius r
     #
-    cir(c Java.java.awt.Color, x, y, r i32) unit is
+    cir(c Java.java.awt.Color, x, y, r f64) =>
       arc c x y r 0 360
 
     # Draw the Fuzion logo
     #
-    drawLogo is
+    draw_logo is
       // black background circle
       cir BACKGROUND 0 0 r
 
       // three arcs
-      threeTimes (g, c -> g.arc c 0 0 r1 -30 120)
+      three_times (g, c -> g.arc c 0 0 r1 -30 120)
 
       // black circle in the center, radius to touch the sides of the inner triangle
-      cir BACKGROUND 0 0 ((r - r2 - b) / 2)
+      cir BACKGROUND 0 0 (r-r2-b)/2
 
       // black arcs around inner circles
-      threeTimes (g, c -> g.arc BACKGROUND 0 -r+r2+b r2+b 90 210)
+      three_times (g, c -> g.arc BACKGROUND 0 -r+r2+b r2+b 90 210)
 
       // inner circles
-      threeTimes (g, c -> g.cir c 0 -r+b+r2 r2)
+      three_times (g, c -> g.cir c 0 -r+b+r2 r2)
 
       // small circles
-      (rotate -120).threeTimes (g, c -> g.cir c 0 -r+b+r2 r3)
+      _ := (rotate -2.0*f64.π/3).three_times (g, c -> g.cir c 0 -r+b+r2 r3)
 
 
-  gfx
-  is
+  gfx =>
     match java.awt.Frame.new
       e error => say "error: $e"
       f Java.java.awt.Frame =>
@@ -172,7 +157,7 @@ is
               f.setVisible true
               g := f.getGraphics
               say "g is "+g.getClass.toString
-              (G2D g 400 400 0).drawLogo
+              (G2D g 400 400 0).draw_logo
               f.setVisible true
 
         else  # draw logo
@@ -180,12 +165,12 @@ is
 
           # NYI: cannot redefine Frame.paint, so instead we use a hack: wait for 200ms
           # for the Frame to perform its paint(), and then just draw over it:
-          java.lang.Thread.sleep 200
-          (G2D f.getGraphics 400 400 0).drawLogo
+          java.lang.Thread.sleep_J 200
+          (G2D f.getGraphics 400 400 0).draw_logo
 
-        timeout := ((envir.args.nth 1).get "50000").parse_i64.val 0
-        java.lang.Thread.sleep timeout
-        f.setVisible false
+        timeout := ((envir.args.nth 1).or_else "50000").parse_i64.val 0
+        java.lang.Thread.sleep_J timeout
+        _ := f.setVisible false
 
   gfx.this.gfx
   exit 0   # explicitly exit since JVM would otherwise keep us alive

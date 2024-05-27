@@ -44,8 +44,6 @@ import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Box; // NYI: remove dependency!
 import dev.flang.ast.Env; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
-import dev.flang.ast.ExpressionVisitor; // NYI: remove dependency!
-import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.State; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
@@ -143,29 +141,10 @@ public class Clazzes extends ANY
   public static final OnDemandClazz u64         = new OnDemandClazz(() -> Types.resolved.t_u64              );
   public static final OnDemandClazz f32         = new OnDemandClazz(() -> Types.resolved.t_f32              );
   public static final OnDemandClazz f64         = new OnDemandClazz(() -> Types.resolved.t_f64              );
-  public static final OnDemandClazz ref_i8      = new OnDemandClazz(() -> Types.resolved.t_i8 .asRef()      );
-  public static final OnDemandClazz ref_i16     = new OnDemandClazz(() -> Types.resolved.t_i16.asRef()      );
-  public static final OnDemandClazz ref_i32     = new OnDemandClazz(() -> Types.resolved.t_i32.asRef()      );
-  public static final OnDemandClazz ref_i64     = new OnDemandClazz(() -> Types.resolved.t_i64.asRef()      );
-  public static final OnDemandClazz ref_u8      = new OnDemandClazz(() -> Types.resolved.t_u8 .asRef()      );
-  public static final OnDemandClazz ref_u16     = new OnDemandClazz(() -> Types.resolved.t_u16.asRef()      );
-  public static final OnDemandClazz ref_u32     = new OnDemandClazz(() -> Types.resolved.t_u32.asRef()      );
-  public static final OnDemandClazz ref_u64     = new OnDemandClazz(() -> Types.resolved.t_u64.asRef()      );
-  public static final OnDemandClazz ref_f32     = new OnDemandClazz(() -> Types.resolved.t_f32.asRef()      );
-  public static final OnDemandClazz ref_f64     = new OnDemandClazz(() -> Types.resolved.t_f64.asRef()      );
-  public static final OnDemandClazz any         = new OnDemandClazz(() -> Types.resolved.t_any              );
+  public static final OnDemandClazz Any         = new OnDemandClazz(() -> Types.resolved.t_Any              );
   public static final OnDemandClazz Const_String= new OnDemandClazz(() -> Types.resolved.t_Const_String     );
+  public static final OnDemandClazz String      = new OnDemandClazz(() -> Types.resolved.t_String           );
   public static final OnDemandClazz c_unit      = new OnDemandClazz(() -> Types.resolved.t_unit             );
-  public static final OnDemandClazz array_i8    = new OnDemandClazz(() -> Types.resolved.t_array_i8         );
-  public static final OnDemandClazz array_i16   = new OnDemandClazz(() -> Types.resolved.t_array_i16        );
-  public static final OnDemandClazz array_i32   = new OnDemandClazz(() -> Types.resolved.t_array_i32        );
-  public static final OnDemandClazz array_i64   = new OnDemandClazz(() -> Types.resolved.t_array_i64        );
-  public static final OnDemandClazz array_u8    = new OnDemandClazz(() -> Types.resolved.t_array_u8         );
-  public static final OnDemandClazz array_u16   = new OnDemandClazz(() -> Types.resolved.t_array_u16        );
-  public static final OnDemandClazz array_u32   = new OnDemandClazz(() -> Types.resolved.t_array_u32        );
-  public static final OnDemandClazz array_u64   = new OnDemandClazz(() -> Types.resolved.t_array_u64        );
-  public static final OnDemandClazz array_f32   = new OnDemandClazz(() -> Types.resolved.t_array_f32        );
-  public static final OnDemandClazz array_f64   = new OnDemandClazz(() -> Types.resolved.t_array_f64        );
   public static final OnDemandClazz error       = new OnDemandClazz(() -> Types.t_ERROR                     )
     {
       public Clazz get()
@@ -182,6 +161,8 @@ public class Clazzes extends ANY
   public static Clazz fuzionSysArray_u8;         // result clazz of Const_String.internal_array
   public static Clazz fuzionSysArray_u8_data;    // field fuzion.sys.array<u8>.data
   public static Clazz fuzionSysArray_u8_length;  // field fuzion.sys.array<u8>.length
+  public static Clazz c_address;                 // clazz representing address type
+  public static Clazz c_error;                   // clazz representing error-feature
 
 
   /**
@@ -259,8 +240,8 @@ public class Clazzes extends ANY
    *
    * @param actualType the type of the clazz, must be free from generics
    *
-   * @param clazz the runtime clazz of the outer feature of
-   * actualType.featureOfType.
+   * @param outer the runtime clazz of the outer feature of
+   * actualType.feature.
    *
    * @return the existing or newly created Clazz that represents actualType
    * within outer.
@@ -280,8 +261,8 @@ public class Clazzes extends ANY
    * @param select in case actualType is a field with open generic result, this
    * chooses the actual field from outer's actual generics. -1 otherwise.
    *
-   * @param clazz the runtime clazz of the outer feature of
-   * actualType.featureOfType.
+   * @param outer the runtime clazz of the outer feature of
+   * actualType.feature.
    *
    * @return the existing or newly created Clazz that represents actualType
    * within outer.
@@ -293,7 +274,7 @@ public class Clazzes extends ANY
        Errors.any() || !actualType.containsThisType());
 
     Clazz o = outer;
-    var ao = actualType.featureOfType().outer();
+    var ao = actualType.feature().outer();
     while (o != null)
       {
         if (actualType.isRef() && ao != null && ao.inheritsFrom(o.feature()) && !outer.isRef())
@@ -301,7 +282,14 @@ public class Clazzes extends ANY
             outer = o;  // short-circuit outer relation if suitable outer was found
           }
 
-        if (o._type == actualType && actualType != Types.t_ERROR &&
+        if (o._type.compareTo(actualType) == 0 &&
+            // example where the following logic is relevant:
+            // `((Unary i32 i32).compose i32).#fun`
+            // here `compose i32` is not a constructor but a normal routine.
+            // `compose i32` does not define a type. Thus it will not lead
+            // to a recursive value type.
+            actualType.feature().definesType() &&
+            actualType != Types.t_ERROR &&
             // a recursive outer-relation
 
             // This is a little ugly: we do not want outer to be a value
@@ -312,9 +300,9 @@ public class Clazzes extends ANY
             // the convenience of the backend.
             //
             // So instead of testing !o.isRef() we use
-            // !o._type.featureOfType().isThisRef().
-            !o._type.featureOfType().isThisRef() &&
-            !o._type.featureOfType().isIntrinsic())
+            // !o._type.feature().isThisRef().
+            !o._type.feature().isThisRef() &&
+            !o._type.feature().isIntrinsic())
           {  // but a recursive chain of value types is not permitted
 
             // NYI: recursive chain of value types should be detected during
@@ -323,7 +311,7 @@ public class Clazzes extends ANY
             chain.append("1: "+actualType+" at "+actualType.declarationPos().show()+"\n");
             int i = 2;
             Clazz c = outer;
-            while (c._type != actualType)
+            while (c._type.compareTo(actualType) != 0)
               {
                 chain.append(""+i+": "+c._type+" at "+c._type.declarationPos().show()+"\n");
                 c = c._outer;
@@ -335,7 +323,7 @@ public class Clazzes extends ANY
                          "Value type " + actualType + " equals type of outer feature.\n"+
                          "The chain of outer types that lead to this recursion is:\n"+
                          chain + "\n" +
-                         "To solve this, you could add a 'ref' after the arguments list at "+o._type.featureOfType().pos().show());
+                         "To solve this, you could add a 'ref' after the arguments list at "+o._type.feature().pos().show());
           }
         o = o._outer;
       }
@@ -388,11 +376,11 @@ public class Clazzes extends ANY
     var toLayout = new LinkedList<Clazz>();
 
     // make sure internally referenced clazzes do exist:
-    any.get();
+    Any.get();
     var c_universe = universe.get();
     c_universe.called(SourcePosition.builtIn);
     c_universe.instantiated(SourcePosition.builtIn);
-    create(Types.t_ADDRESS, c_universe);
+    c_address = create(Types.t_ADDRESS, c_universe);
 
     // mark internally referenced clazzes as called or instantiated:
     if (CHECKS) check
@@ -409,8 +397,9 @@ public class Clazzes extends ANY
     fuzionSysPtr = fuzionSysArray_u8_data.resultClazz();
     var fuzion = universe.get().lookup(Types.resolved.f_fuzion, SourcePosition.builtIn);
     var fuzionJava = fuzion.lookup(Types.resolved.f_fuzion_java, SourcePosition.builtIn);
-    fuzionJavaObject = fuzionJava.lookup(Types.resolved.f_fuzion_java_object, SourcePosition.builtIn);
-    fuzionJavaObject_Ref = fuzionJavaObject.lookup(Types.resolved.f_fuzion_java_object_ref, SourcePosition.builtIn);
+    fuzionJavaObject = fuzionJava.lookup(Types.resolved.f_fuzion_Java_Object, SourcePosition.builtIn);
+    fuzionJavaObject_Ref = fuzionJavaObject.lookup(Types.resolved.f_fuzion_Java_Object_Ref, SourcePosition.builtIn);
+    c_error = universe.get().lookup(Types.resolved.f_error, SourcePosition.builtIn);
 
     while (!clazzesToBeVisited.isEmpty())
       {
@@ -567,19 +556,19 @@ public class Clazzes extends ANY
               {
                 var f = e.getKey();
                 String fn = (f.isField() ? "field " : "routine ") + f.qualifiedName();
-                System.out.println(""+e.getValue().size()+" classes for " + fn);
+                say(""+e.getValue().size()+" classes for " + fn);
                 if (_options_.verbose(5))
                   {
                     int i = 0;
                     for (var c : e.getValue() )
                       {
                         i++;
-                        System.out.println(""+i+"/"+e.getValue().size()+" classes for " + fn + ": " + c);
+                        say(""+i+"/"+e.getValue().size()+" classes for " + fn + ": " + c);
                       }
                   }
               }
           }
-        System.out.println("Found "+Types.num()+" types and "+Clazzes.num()+" clazzes (" +
+        say("Found "+Clazzes.num()+" clazzes (" +
                            clazzesForFields + " for " + fields+ " fields, " +
                            (clazzes.size()-clazzesForFields) + " for " + routines + " routines).");
       }
@@ -608,78 +597,9 @@ public class Clazzes extends ANY
 
 
   /**
-   * # if ids created by getRuntimeClazzId[s].
-   *
-   * NYI! This is static to create unique ids. It is sufficient to have unique ids for sets of clazzes used by the same expression.
-   */
-  private static int _runtimeClazzIdCount = 0;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
-
-
-  /**
-   * Obtain new unique ids for runtime clazz data stored in
-   * Clazz.setRuntimeClazz/getRuntimeClazz.
-   *
-   * @param count the number of ids to reserve
-   *
-   * @return the first of the ids result..result+count-1 ids reserved.
-   */
-  static int getRuntimeClazzIds(int count)
-  {
-    if (PRECONDITIONS) require
-      (runtimeClazzIdCount() <= Integer.MAX_VALUE - count,
-       count >= 0);
-
-    int result = _runtimeClazzIdCount;
-    _runtimeClazzIdCount = result + count;
-
-    if (POSTCONDITIONS) ensure
-      (result >= 0,
-       result + count <= runtimeClazzIdCount());
-
-    return result;
-  }
-
-
-  /**
-   * Obtain a new unique id for runtime clazz data stored in
-   * Clazz.setRuntimeClazz/getRuntimeClazz.
-   *
-   * @return the id that was reserved.
-   */
-  private static int getRuntimeClazzId()
-  {
-    if (PRECONDITIONS) require
-      (runtimeClazzIdCount() < Integer.MAX_VALUE);
-
-    int result = getRuntimeClazzIds(1);
-
-    if (POSTCONDITIONS) ensure
-      (result >= 0,
-       result < runtimeClazzIdCount());
-
-    return result;
-  }
-
-  /**
-   * Total number of ids crated by getRuntimeClazzId[s].
-   *
-   * @return the id count.
-   */
-  static int runtimeClazzIdCount()
-  {
-    int result = _runtimeClazzIdCount;
-
-    if (POSTCONDITIONS) ensure
-      (result >= 0);
-
-    return result;
-  }
-
-
-  /**
    * Find all static clazzes for this case and store them in outerClazz.
    */
-  public static void findClazzes(AbstractAssign a, Clazz outerClazz, List<AbstractCall> inh)
+  public static void findClazzes(AbstractAssign a, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (a != null, outerClazz != null);
@@ -689,21 +609,18 @@ public class Clazzes extends ANY
 
     if (a._target != null)
       {
-        if (a._tid < 0)
-          {
-            a._tid = getRuntimeClazzIds(3);
-          }
-
         Clazz sClazz = clazz(a._target, outerClazz, inh);
-        outerClazz.setRuntimeClazz(a._tid, sClazz);
         var vc = sClazz.asValue();
         var fc = vc.lookup(a._assignedField, a);
-        propagateExpectedClazz(a._value, fc.resultClazz(), outerClazz, inh);
-        if (isUsed(a._assignedField))
+        propagateExpectedClazz(a._value, fc.resultClazz(), outer, outerClazz, inh);
+        if (!outerClazz.hasActualClazzes(a, outer))
           {
-            outerClazz.setRuntimeClazz(a._tid + 1, fc);
+            outerClazz.saveActualClazzes(a, outer,
+                                         new Clazz[] { sClazz,
+                                                       isUsed(a._assignedField) ? fc : null,
+                                                       fc.resultClazz()
+                                         });
           }
-        outerClazz.setRuntimeClazz(a._tid + 2, fc.resultClazz());
       }
   }
 
@@ -723,34 +640,32 @@ public class Clazzes extends ANY
    * @param inh the inheritance chain that brought the code here (in case it is
    * an inlined inherits call).
    */
-  static void propagateExpectedClazz(Expr e, Clazz ec, Clazz outerClazz, List<AbstractCall> inh)
+  static void propagateExpectedClazz(Expr e, Clazz ec, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
   {
     if (e instanceof Box b)
       {
-        Clazz vc = clazz(b._value, outerClazz, inh);
-        Clazz rc = vc;
-        if (ec.isRef() ||
-            (ec._type.isChoice() &&
-             !ec._type.isAssignableFrom(vc._type) &&
-             ec._type.isAssignableFrom(vc._type.asRef())))
+        if (!outerClazz.hasActualClazzes(b, outer))
           {
-            rc = vc.asRef();
-            if (CHECKS) check
-              (Errors.any() || ec._type.isAssignableFrom(rc._type));
-          }
-        if (b._valAndRefClazzId < 0)
-          {
-            b._valAndRefClazzId = getRuntimeClazzIds(2);
-          }
-        outerClazz.setRuntimeClazz(b._valAndRefClazzId    , vc);
-        outerClazz.setRuntimeClazz(b._valAndRefClazzId + 1, rc);
-        if (vc != rc)
-          {
-            rc.instantiated(b);
-          }
-        else
-          {
-            propagateExpectedClazz(b._value, ec, outerClazz, inh);
+            Clazz vc = clazz(b._value, outerClazz, inh);
+            Clazz rc = vc;
+            if (ec.isRef() ||
+                (ec._type.isChoice() &&
+                 !ec._type.isAssignableFrom(vc._type) &&
+                 ec._type.isAssignableFrom(vc._type.asRef())))
+              {
+                rc = vc.asRef();
+                if (CHECKS) check
+                  (Errors.any() || ec._type.isAssignableFrom(rc._type));
+              }
+            outerClazz.saveActualClazzes(b, outer, new Clazz[] {vc, rc});
+            if (vc != rc)
+              {
+                rc.instantiated(b);
+              }
+            else
+              {
+                propagateExpectedClazz(b._value, ec, outer, outerClazz, inh);
+              }
           }
       }
     else if (e instanceof AbstractBlock b)
@@ -758,12 +673,12 @@ public class Clazzes extends ANY
         var s = b._expressions;
         if (!s.isEmpty())
           {
-            propagateExpectedClazz(s.getLast(), ec, outerClazz, inh);
+            propagateExpectedClazz(s.getLast(), ec, outer, outerClazz, inh);
           }
       }
     else if (e instanceof Tag t)
       {
-        propagateExpectedClazz(t._value, ec, outerClazz, inh);
+        propagateExpectedClazz(t._value, ec, outer, outerClazz, inh);
       }
   }
 
@@ -788,7 +703,7 @@ public class Clazzes extends ANY
    * and will be used both as frame clazz for d<i32,p> and as the context for
    * call to e<z>.
    */
-  public static void findClazzes(AbstractCall c, Clazz outerClazz, List<AbstractCall> inh)
+  public static void findClazzes(AbstractCall c, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (Errors.any() || c.calledFeature() != null && c.target() != null);
@@ -816,16 +731,16 @@ public class Clazzes extends ANY
 
         var innerClazz        = tclazz.lookup(new FeatureAndActuals(cf, typePars, false), c.select(), c, c.isInheritanceCall());
         var preconditionClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars, true ), c.select(), c, c.isInheritanceCall());
-        if (c._sid < 0)
+        if (outerClazz.hasActualClazzes(c, outer))
           {
-            c._sid = getRuntimeClazzIds(3);
+            // NYI: #2412: Check why this is done repeatedly and avoid redundant work!
+            //  say("REDUNDANT save for "+innerClazz+" to "+outerClazz+" at "+c.pos().show());
           }
-        // A bit hacky..., this is used for calls that
-        // are turned into constants in FUIR.
-        c.innerClazz = innerClazz;
-        outerClazz.setRuntimeData(c._sid + 0, innerClazz       );
-        outerClazz.setRuntimeData(c._sid + 1, tclazz           );
-        outerClazz.setRuntimeData(c._sid + 2, preconditionClazz);
+        else
+          {
+            outerClazz.saveActualClazzes(c, outer, new Clazz[] {innerClazz, tclazz, preconditionClazz});
+          }
+
         var afs = innerClazz.argumentFields();
         var i = 0;
         for (var a : c.actuals())
@@ -835,7 +750,7 @@ public class Clazzes extends ANY
             if (i < afs.length) // actuals and formals may mismatch due to previous errors,
                                 // see tests/typeinference_for_formal_args_negative
               {
-                propagateExpectedClazz(a, afs[i].resultClazz(), outerClazz, inh);
+                propagateExpectedClazz(a, afs[i].resultClazz(), outer, outerClazz, inh);
               }
             i++;
           }
@@ -863,77 +778,32 @@ public class Clazzes extends ANY
    *
    * @param outerClazz the surrounding clazz
    */
-  public static void findClazzes(AbstractConstant c, Clazz outerClazz, List<AbstractCall> inh)
+  public static void findClazzes(AbstractConstant c, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (c != null, outerClazz != null);
 
-    var p = c.pos();
-    var const_clazz = clazz(c, outerClazz, inh);
-    c.runtimeClazz = const_clazz;
-    const_clazz.instantiated(p);
-    if (const_clazz.feature() == Types.resolved.f_array)
-      { // add clazzes touched by constant creation:
-        //
-        //   array.internal_array
-        //   fuzion.sys.internal_array
-        //   fuzion.sys.internal_array.data
-        //   fuzion.sys.Pointer
-        //
-        var array          = const_clazz;
-        var internal_array = array.lookup(Types.resolved.f_array_internal_array);
-        var sys_array      = internal_array.resultClazz();
-        var data           = sys_array.lookup(Types.resolved.f_fuzion_sys_array_data);
-        array.instantiated(p);
-        sys_array.instantiated(p);
-        data.resultClazz().instantiated(p);
-      }
-  }
-
-
-  /**
-   * Find all static clazzes for this case and store them in outerClazz.
-   */
-  public static void findClazzes(If i, Clazz outerClazz, List<AbstractCall> inh)
-  {
-    if (i._runtimeClazzId < 0)
+    if (!outerClazz.hasActualClazzes(c, outer))
       {
-        i._runtimeClazzId = getRuntimeClazzIds(1);
-      }
-    outerClazz.setRuntimeClazz(i._runtimeClazzId, clazz(i.cond, outerClazz, inh));
-  }
-
-
-  /**
-   * Find all static clazzes for this case and store them in outerClazz.
-   */
-  public static void findClazzes(AbstractCase c, Clazz outerClazz, List<AbstractCall> inh)
-  {
-    // NYI: Check if this works for a case that is part of an inherits clause, do
-    // we need to store in outerClazz.outer?
-    var f = c.field();
-    var t = c.types();
-    if (c._runtimeClazzId < 0)
-      {
-        c._runtimeClazzId = getRuntimeClazzIds(f != null ? 1 :
-                                               t != null ? t.size()
-                                                         : 0);
-      }
-    int i = c._runtimeClazzId;
-    if (f != null)
-      {
-        var fOrFc = isUsed(f)
-          ? outerClazz.lookup(f)
-          : Clazzes.clazz(outerClazz._type.actualType(f.resultType())); // NYI: better Clazzes.c_void.get(), does not work in interpreter backend yet...
-        outerClazz.setRuntimeClazz(i, fOrFc);
-      }
-    else if (t != null)
-      {
-        for (var caseType : t)
-          {
-            var ct = outerClazz.handDown(caseType, inh, c);
-            outerClazz.setRuntimeClazz(i, ct);
-            i++;
+        var p = c.pos();
+        var const_clazz = clazz(c, outerClazz, inh);
+        outerClazz.saveActualClazzes(c, outer, new Clazz[] {const_clazz});
+        const_clazz.instantiated(p);
+        if (const_clazz.feature() == Types.resolved.f_array)
+          { // add clazzes touched by constant creation:
+            //
+            //   array.internal_array
+            //   fuzion.sys.internal_array
+            //   fuzion.sys.internal_array.data
+            //   fuzion.sys.Pointer
+            //
+            var array          = const_clazz;
+            var internal_array = array.lookup(Types.resolved.f_array_internal_array);
+            var sys_array      = internal_array.resultClazz();
+            var data           = sys_array.lookup(Types.resolved.f_fuzion_sys_array_data);
+            array.instantiated(p);
+            sys_array.instantiated(p);
+            data.resultClazz().instantiated(p);
           }
       }
   }
@@ -942,65 +812,88 @@ public class Clazzes extends ANY
   /**
    * Find all static clazzes for this case and store them in outerClazz.
    */
-  public static void findClazzes(AbstractMatch m, Clazz outerClazz, List<AbstractCall> inh)
+  public static void findClazzes(AbstractCase c, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
   {
-    if (m._runtimeClazzId < 0)
+    // NYI: Check if this works for a case that is part of an inherits clause, do
+    // we need to store in outerClazz.outer?
+    var f = c.field();
+    var t = c.types();
+    if ((f != null || t != null) &&  !outerClazz.hasActualClazzes(c, outer))
       {
-        // NYI: Check if this works for a match that is part of a inherits clause, do
-        // we need to store in outerClazz.outer?
-        m._runtimeClazzId = getRuntimeClazzIds(1);
+        Clazz[] acl;
+        if (f != null)
+          {
+            var fOrFc = isUsed(f)
+              ? outerClazz.lookup(f)
+              : Clazzes.clazz(outerClazz._type.actualType(f.resultType())); // NYI: better Clazzes.c_void.get(), does not work in interpreter backend yet...
+            acl = new Clazz[] {fOrFc};
+          }
+        else
+          {
+            acl = new Clazz[t.size()];
+            int i = 0;
+            for (var caseType : t)
+              {
+                acl[i] = outerClazz.handDown(caseType, inh, c);
+                i++;
+              }
+          }
+        outerClazz.saveActualClazzes(c, outer, acl);
       }
-    var subjClazz = clazz(m.subject(), outerClazz, inh);
-    outerClazz.setRuntimeClazz(m._runtimeClazzId, subjClazz);
+  }
+
+
+  /**
+   * Find all static clazzes for this case and store them in outerClazz.
+   */
+  public static void findClazzes(AbstractMatch m, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
+  {
+    if (!outerClazz.hasActualClazzes(m, outer))
+      {
+        var subjClazz = clazz(m.subject(), outerClazz, inh);
+        outerClazz.saveActualClazzes(m, outer, new Clazz[] {subjClazz});
+      }
   }
 
 
   /**
    * Find all static clazzes for this Tag and store them in outerClazz.
    */
-  public static void findClazzes(Tag t, Clazz outerClazz, List<AbstractCall> inh)
+  public static void findClazzes(Tag t, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
   {
-    Clazz vc = clazz(t._value, outerClazz, inh);
-    var tc = outerClazz.handDown(t._taggedType, inh, t);
-    if (t._valAndTaggedClazzId < 0)
+    if (!outerClazz.hasActualClazzes(t, outer))
       {
-        t._valAndTaggedClazzId = getRuntimeClazzIds(2);
+        Clazz vc = clazz(t._value, outerClazz, inh);
+        var tc = outerClazz.handDown(t._taggedType, inh, t);
+        outerClazz.saveActualClazzes(t, outer, new Clazz[] { vc, tc });
+        tc.instantiated(t);
       }
-    outerClazz.setRuntimeClazz(t._valAndTaggedClazzId    , vc);
-    outerClazz.setRuntimeClazz(t._valAndTaggedClazzId + 1, tc);
-    tc.instantiated(t);
   }
 
 
   /**
    * Find all static clazzes for this array and store them in outerClazz.
-   *
-   * @param v
    */
-  public static void findClazzes(ExpressionVisitor v, InlineArray i, Clazz outerClazz, List<AbstractCall> inh)
+  public static void findClazzes(InlineArray i, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
   {
-    // we can not yet decide if array is const
-    // so we need to visit the code
-    i.code().visitExpressions(v);
-
-    Clazz ac = clazz(i, outerClazz, inh);
-    // memorize the runtime type to be used when turning
-    // this inline array into a compile-time constant.
-    i.clazz = ac;
+    if (!outerClazz.hasActualClazzes(i, outer))
+      {
+        Clazz ac = clazz(i, outerClazz, inh);
+        outerClazz.saveActualClazzes(i, outer, new Clazz[] {ac});
+      }
   }
 
 
   /**
    * Find all static clazzes for this Env and store them in outerClazz.
    */
-  public static void findClazzes(Env v, Clazz outerClazz, List<AbstractCall> inh)
+  public static void findClazzes(Env v, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
   {
-    Clazz ac = clazz(v, outerClazz, inh);
-    if (v._clazzId < 0)
+    if (!outerClazz.hasActualClazzes(v, outer))
       {
-        v._clazzId = getRuntimeClazzId();
+        Clazz ac = clazz(v, outerClazz, inh);
+        outerClazz.saveActualClazzes(v, outer, new Clazz[] {ac});
       }
-    outerClazz.setRuntimeClazz(v._clazzId, ac);
   }
 
 
@@ -1046,11 +939,6 @@ public class Clazzes extends ANY
     else if (e instanceof AbstractCurrent c)
       {
         result = outerClazz;
-      }
-
-    else if (e instanceof If i)
-      {
-        result = outerClazz.handDown(i.type(), inh, e);
       }
 
     else if (e instanceof AbstractMatch m)
@@ -1150,8 +1038,8 @@ public class Clazzes extends ANY
   {
     if (PRECONDITIONS) require
       (Errors.any() || !thiz.dependsOnGenerics(),
-       outerClazz != null || thiz.featureOfType().outer() == null,
-       Errors.any() || thiz == Types.t_ERROR || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.featureOfType().outer()));
+       outerClazz != null || thiz.feature().outer() == null,
+       Errors.any() || thiz == Types.t_ERROR || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.feature().outer()));
 
     var result = create(thiz, select, outerClazz);
 
@@ -1288,17 +1176,7 @@ public class Clazzes extends ANY
     u64.clear();
     f32.clear();
     f64.clear();
-    ref_i8.clear();
-    ref_i16.clear();
-    ref_i32.clear();
-    ref_i64.clear();
-    ref_u8.clear();
-    ref_u16.clear();
-    ref_u32.clear();
-    ref_u64.clear();
-    ref_f32.clear();
-    ref_f64.clear();
-    any.clear();
+    Any.clear();
     Const_String.clear();
     c_unit.clear();
     error.clear();
@@ -1308,6 +1186,7 @@ public class Clazzes extends ANY
     fuzionSysArray_u8_length = null;
     fuzionJavaObject = null;
     fuzionJavaObject_Ref = null;
+    c_error = null;
     closed = false;
     _whenCalledDynamically_.clear();
     _whenCalled_.clear();

@@ -33,14 +33,14 @@
 unboxOuterRef is
 
   ry ref is
-    f unit is abstract
+    f unit => abstract
 
   y (i i32) : ry is
     redef as_string => "y $i"
     g (v y) is
       vs := v.as_string
       say "in g: $vs $i"
-    fixed f unit is
+    fixed f unit =>
       g y.this
       g (y i)
       unit

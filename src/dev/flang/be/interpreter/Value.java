@@ -26,17 +26,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.air.Clazz;
-
-import dev.flang.util.ANY;
-
-
 /**
  * Value <description>
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class Value extends ANY
+public abstract class Value extends FUIRContext
 {
 
 
@@ -47,7 +42,13 @@ public abstract class Value extends ANY
    * Dummy value to be returned by Expr.execute for the case that the
    * expression does not produce a value
    */
-  public static Value NO_VALUE = new Value() { };
+  public static Value NO_VALUE = new Value() {
+    @Override
+    public String toString()
+    {
+      return "NO_VALUE";
+    }
+  };
 
 
   /**
@@ -58,6 +59,12 @@ public abstract class Value extends ANY
       void storeNonRef(LValue slot, int size)
       {
         // treat as NOP.
+      }
+
+      @Override
+      public String toString()
+      {
+        return "EMPTY_VALUE";
       }
     };
 
@@ -80,7 +87,7 @@ public abstract class Value extends ANY
    * Create a copy (clone) of this value.  Used for boxing values into
    * ref-types.
    */
-  Value cloneValue(Clazz cl)
+  Value cloneValue(int cl)
   {
     return this;
   }
@@ -227,7 +234,7 @@ public abstract class Value extends ANY
    *
    * @return the LValue to rev
    */
-  public LValue at(Clazz c, int off)
+  public LValue at(int c, int off)
   {
     throw new Error("Cannot create LValue from " + getClass());
   }
@@ -269,7 +276,7 @@ public abstract class Value extends ANY
    *
    * @throws Error in case this does not match the expected clazz
    */
-  void checkStaticClazz(Clazz expected)
+  void checkStaticClazz(int expected)
   {
     throw new Error("value " + this + " not allowed for clazz "+ expected);
   }
@@ -302,7 +309,6 @@ public abstract class Value extends ANY
   {
     throw new Error("value "+ this + " of class " + getClass() + " is not a tag");
   }
-
 
 }
 

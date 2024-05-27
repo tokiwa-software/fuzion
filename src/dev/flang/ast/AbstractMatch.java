@@ -53,13 +53,6 @@ public abstract class AbstractMatch extends Expr
   AbstractType _type;
 
 
-  /**
-   * Id to store the match's subject's clazz in the static outer clazz at
-   * runtime.
-   */
-  public int _runtimeClazzId = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -135,12 +128,7 @@ public abstract class AbstractMatch extends Expr
    */
   private AbstractType typeFromCases()
   {
-    AbstractType result = Types.resolved.t_void;
-    for (var c: cases())
-      {
-        var t = c.code().typeForInferencing();
-        result = result == null || t == null ? null : result.union(t);
-      }
+    var result = Expr.union(cases().map2(x -> x.code()));
     if (result == Types.t_ERROR)
       {
         new IncompatibleResultsOnBranches(pos(),

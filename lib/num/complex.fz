@@ -36,19 +36,12 @@ public complex (
 is
 
 
-  # enable generic features in ancestors
-  public thiz => complex real imag
-
   # basic operations
-  public fixed redef prefix + => thiz
+  public fixed redef prefix + => complex.this
   public fixed redef infix + (b complex.this) => complex real+b.real imag+b.imag
   public fixed redef infix - (b complex.this) => complex real-b.real imag-b.imag
   public fixed redef infix * (b complex.this) => complex real*b.real-imag*b.imag real*b.imag+imag*b.real
   public fixed redef infix / (b complex.this)
-  pre
-    # NYI: use type features
-    # safety: b != zero
-    safety: b.real != C.zero || b.imag != C.zero
   =>
     n := b.real*b.real+b.imag*b.imag
     complex (real*b.real+imag*b.imag)/n (imag*b.real-real*b.imag)/n
@@ -56,7 +49,7 @@ is
 
   # equality
   #
-  public fixed type.equality(a, b num.complex C) bool is
+  public fixed type.equality(a, b num.complex C) bool =>
     a.real = b.real && a.imag = b.imag
 
 
@@ -64,7 +57,7 @@ is
   #
   # NYI: Does this make sense mathematically?
   #
-  public fixed type.lteq(a, b num.complex C) bool is
+  public fixed type.lteq(a, b num.complex C) bool =>
     a.real ≤ b.real
 
 
@@ -84,17 +77,17 @@ is
 
   # identity element for 'infix +'
   #
-  public fixed type.zero num.complex C is
+  public fixed type.zero num.complex C =>
     num.complex C.zero C.zero
 
 
   # identity element for 'infix *'
   #
-  public fixed type.one num.complex C is
+  public fixed type.one num.complex C =>
     num.complex C.one C.zero
 
 
   # the imaginary unit
   #
-  public fixed type.i num.complex C is
+  public fixed type.i num.complex C =>
     num.complex C.zero C.one

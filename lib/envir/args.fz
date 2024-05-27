@@ -36,5 +36,5 @@ public args (all array String) : container.searchable_sequence String all.as_lis
 # short-hand for accessing envir.args effect in current environment
 #
 public args =>
-  args.type.install_default
+  args.install_default
   envir.args.env

@@ -37,28 +37,82 @@ public Set(public E type : property.equatable) ref : Sequence E is
   # number of entries in this set.  May be undefined, i.e., a range of
   # floating point numbers or an infinite set.
   #
-  public size_option option i32 is nil
+  public size_option option i32 => nil
 
 
   # does this set contain the given value?
   #
-  public contains (e E) bool is abstract
+  public contains (e E) bool => abstract
 
 
   # list representation of values in this set
   #
-  public redef as_list list E is abstract
+  public redef as_list list E => abstract
+
+
+  # create a new Set from a sequence of elements
+  #
+  public type.new (s Sequence E) Set.this => abstract
+
+
+  # create a union of these two Sets
+  #
+  public union(other Set E) Set E =>
+    Set.this.new (Set.this ++ other)
+
+
+  # infix variant for Set.union
+  #
+  public infix ∪ (other Set E) =>
+    Set.this.union other
+
+
+  # create an intersection of these two Sets
+  #
+  public intersection(other Set E) Set E =>
+    Set.this.new (Set.this ++ other).filter(el -> Set.this.contains el && other.contains el)
+
+
+  # infix variant for Set.intersection
+  #
+  public infix ∩ (other Set E) =>
+    Set.this.intersection other
+
+
+  # this Set except all elements in other
+  #
+  public except(other Set E) Set E =>
+    Set.this.new filter(el -> !other.contains el)
+
+
+  # infix variant for Set.except
+  #
+  public infix ∖ (other Set E) =>
+    Set.this.except other
+
+
+
+  # is this Set a subset of other?
+  # true, iff other contains all
+  # elements that this Set contains.
+  #
+  public is_subset_of(other Set E) =>
+    Set.this ∀ (el -> other.contains el)
+
+
+  # is this Set a superset of other?
+  # true, iff this Set contains all
+  # elements that other contains.
+  #
+  public is_superset_of(other Set E) =>
+    other ∀ contains
+
 
 
   # add new element k to this set.
   #
-  public add (k E) Set E is abstract
-
-
-  # remove an element k from the set if it exists.
-  # return the same set if it does not exist.
-  #
-  public remove (k E) Set E is abstract
+  public add (k E) Set E =>
+    panic "*** NYI: REMOVE Set.add, we need some support for mutable Sets ***"
 
 
   public redef as_string =>
@@ -66,5 +120,23 @@ public Set(public E type : property.equatable) ref : Sequence E is
       "∅"
     else
       ("\{"
-       + (as_list.map String (x -> x.as_string)).fold(String.type.concat ";")
+       + (as_list.map String (x -> x.as_string)).fold(String.concat1 ";")
        + "}")
+
+
+  # equality
+  #
+  public fixed type.equality(a, b container.Set E) bool
+  pre a.finite
+      b.finite
+  =>
+    # NYI: a bit expensive
+    (a ∪ b).size_option.val = a.size_option.val
+
+
+  # monoid of Set with infix ∪ operation.
+  #
+  # NYI: BUG: name clash with union
+  public type.unionize : Monoid (container.Set E) is
+    redef infix ∙ (a, b container.Set E) => a ∪ b
+    redef e => (container.Set E).new []

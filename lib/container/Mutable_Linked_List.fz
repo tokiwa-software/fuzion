@@ -37,15 +37,15 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
                     data T) ref : Linked_List T is
 
 
-  # mutable references to next. Initalizes to refer to nil to form
+  # mutable references to next. Initializes to refer to nil to form
   # a list with a single element.
   #
-  private n := LM.env.new (option (Mutable_Linked_List LM T)) nil
+  n := LM.env.new (option (Mutable_Linked_List LM T)) nil
 
 
   # short-hand features to get the mutable references from `n`
   #
-  public next option (Linked_List T) is
+  public next option (Linked_List T) =>
     match n.get
       ll Mutable_Linked_List => ll
       nil => nil
@@ -84,11 +84,11 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
   # can still be modified. however, the list needs to be frozen manually
   # before leaving the mutate environment.
   #
-  public type.from_sequence(from Sequence T) container.Mutable_Linked_List LM T
+  public type.new(from Sequence T) container.Mutable_Linked_List LM T
     pre
       !from.is_empty
-  is
-    from_sequence from true
+  =>
+    new from true
 
 
   # create a mutable linked list from a given sequence
@@ -97,10 +97,10 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
   # true, the list is frozen after creation, i.e. it can no longer be changed,
   # but the mutate environment can be left.
   #
-  public type.from_sequence(from Sequence T, freeze bool) container.Mutable_Linked_List LM T
+  public type.new(from Sequence T, freeze bool) container.Mutable_Linked_List LM T
     pre
       !from.is_empty
-  is
+  =>
     from_list := from.as_list
     c := container.Mutable_Linked_List LM T from_list.head.get
     from_list.tail.for_each (x -> c.append x)

@@ -37,34 +37,34 @@ is
   #
   # if this map is entry, this is nil
   #
-  private root := LM.env.new (option Entry) nil
+  root := LM.env.new (option Entry) nil
 
 
   # returns the size of the map, i.e. the number of elements it contains
   #
-  public size i32 is
+  public size i32 =>
     fold i32 0 ((i, _) -> i + 1)
 
 
   # get the value k is mapped to, or nil if none.
   #
-  public index [] (k KEY) option VAL is
+  public index [] (k KEY) option VAL =>
     get k
 
 
   # get a sequence of all key/value pairs in this map
   #
-  public items Sequence (tuple KEY VAL) is
+  public items Sequence (tuple KEY VAL) =>
     match root.get
       e Entry => e.items
-      nil => (list (tuple KEY VAL)).type.empty
+      nil => (list (tuple KEY VAL)).empty
 
 
   # returns a string representation of the map
   #
-  public redef as_string String is
+  public redef as_string String =>
     "\{" +
-      (String.type.join (fold (list String).type.empty ((i, x) -> list "{x.key}={x.val}" i)) ", ") +
+      (String.join (fold (list String).empty ((i, x) -> list "{x.key}={x.val}" i)) ", ") +
      "}"
 
 
@@ -87,7 +87,7 @@ is
   # get the value stored in this map at key k, nil if k is not
   # contained in this map
   #
-  public get(k KEY) option VAL is
+  public get(k KEY) option VAL =>
     root.get ? nil => nil
              | e Entry => e.get k
 
@@ -97,7 +97,7 @@ is
   # returns the value that k previously mapped to, or nil if
   # k was not yet contained in this map
   #
-  public put(k KEY, v VAL) option VAL is
+  public put(k KEY, v VAL) option VAL =>
     # helper feature to add a mapping to this map. this feature
     # additionally takes the node we are currently working at, and
     # also returns any new node, or the reference to the existing
@@ -106,7 +106,7 @@ is
     # in this step, the helper feature to actually add the mapping
     # is called first. then the AVL rebalancing is done
     #
-    private put_recursively(node option Entry) tuple (option Entry) (option VAL) is
+    put_recursively(node option Entry) tuple (option Entry) (option VAL) =>
       (new_node, old_val) := insert_or_modify_entries node
       (rebalance new_node, old_val)
 
@@ -119,7 +119,7 @@ is
     # in this step, the actual addition of the mapping to the binary
     # tree is done, but this might violate the AVL invariants.
     #
-    private insert_or_modify_entries(node option Entry) tuple (option Entry) (option VAL) is
+    insert_or_modify_entries(node option Entry) tuple (option Entry) (option VAL) =>
       match node
         nil =>
           new_node := Entry k v
@@ -151,7 +151,7 @@ is
   # returns the value that k previously mapped to, or nil if
   # no mapping was actually removed
   #
-  public remove(k KEY) option VAL is
+  public remove(k KEY) option VAL =>
     # helper feature to remove a mapping from this map. this feature
     # additionally takes the node we are currently working at, and
     # also returns the reference to the node that was worked on.
@@ -159,7 +159,7 @@ is
     # in this step, the helper feature to actually remove the
     # mapping is called first. then the AVL rebalancing is done
     #
-    private remove_recursively(k KEY, node option Entry) tuple (option Entry) (option VAL) is
+    remove_recursively(k KEY, node option Entry) tuple (option Entry) (option VAL) =>
       (new_node, old_val) := remove_or_modify_entries k node
       (rebalance new_node, old_val)
 
@@ -170,7 +170,7 @@ is
     # minimal here means the node with the smallest key, by the given
     # ordering of the keys
     #
-    minimum(node option Entry) option Entry is
+    minimum(node option Entry) option Entry =>
       node ? nil => nil
            | e Entry =>
              e.left.get ? nil => e
@@ -184,7 +184,7 @@ is
     # in this step, the actual removal of the mapping from the binary
     # tree is done, but this might violate the AVL invariants.
     #
-    private remove_or_modify_entries(k KEY, node option Entry) tuple (option Entry) (option VAL) is
+    remove_or_modify_entries(k KEY, node option Entry) tuple (option Entry) (option VAL) =>
       match node
         nil => (option Entry nil, option VAL nil)
         e Entry =>
@@ -224,11 +224,11 @@ is
   # this determines the balance factor of the given node and applies
   # the appropriate rotations
   #
-  private rebalance(node option Entry) option Entry is
+  rebalance(node option Entry) option Entry =>
     # returns the height of the subtree whose root is the given
     # node, or -1 if an empty subtree is given
     #
-    private height(node option Entry) i32 is
+    height(node option Entry) i32 =>
       match node
         nil => -1
         e Entry => e.height.get
@@ -237,7 +237,7 @@ is
     # returns the (AVL) balance factor of the given node, or
     # 0 if a nil node is given
     #
-    private balance_factor(node option Entry) i32 is
+    balance_factor(node option Entry) i32 =>
       match node
         nil => 0
         e Entry => (height e.right.get) - (height e.left.get)
@@ -246,7 +246,7 @@ is
     # recalculates and updates the heights of the subtrees in the
     # subtree whose root is the given node
     #
-    private fix_height(node option Entry) =>
+    fix_height(node option Entry) =>
       match node
         nil =>
         e Entry =>
@@ -258,7 +258,7 @@ is
 
     # rotate right at the given node
     #
-    private rotate_right(node option Entry) option Entry is
+    rotate_right(node option Entry) option Entry =>
       # because this feature is only called when the tree is out of balance,
       # i.e. the left subtree has more nodes than the right one, we can safely
       # assume here that node and node.left are not nil.
@@ -275,7 +275,7 @@ is
 
     # rotate left at the given node
     #
-    private rotate_left(node option Entry) option Entry is
+    rotate_left(node option Entry) option Entry =>
       # because this feature is only called when the tree is out of balance,
       # i.e. the right subtree has more nodes than the left one, we can safely
       # assume here that node and node.right are not nil.
@@ -323,8 +323,8 @@ is
   # f. the latter takes the last result of the computation and the node
   # currently visited and combines this information in some way.
   #
-  private fold(B type, init B, f (B, Entry) -> B) B is
-    fold0(init B, node option Entry) B is
+  fold(B type, init B, f (B, Entry) -> B) B =>
+    fold0(init B, node option Entry) B =>
       node ? nil => init
            | n Entry => fold0 (f (fold0 init n.left.get) n) n.right.get
 
@@ -333,15 +333,15 @@ is
 
   # returns an empty tree of elements of type A.
   #
-  public type.empty container.mutable_tree_map LM KEY VAL is
+  public fixed type.empty container.mutable_tree_map LM KEY VAL =>
     container.mutable_tree_map LM KEY VAL
 
 
   # returns a tree of elements of type A that contains just the element a.
   #
-  public type.singleton(k KEY, v VAL) container.mutable_tree_map LM KEY VAL is
+  public type.singleton(k KEY, v VAL) container.mutable_tree_map LM KEY VAL =>
     new_map := empty
-    new_map.put k v
+    _ := new_map.put k v
 
     new_map
 
@@ -357,11 +357,10 @@ is
   # if the freeze argument is true, then the map is frozen
   # after being populated with the entries from the array.
   #
-  public type.from_array(kvs array (tuple KEY VAL), freeze bool) container.mutable_tree_map LM KEY VAL is
+  public type.from_array(kvs array (tuple KEY VAL), freeze bool) container.mutable_tree_map LM KEY VAL =>
     new_map := empty
-    kvs.for_each (x ->
-      new_map.put x.values.0 x.values.1
-      unit)
+    kvs.for_each x->
+      _ := new_map.put x.values.0 x.values.1
 
     if freeze
       new_map.freeze

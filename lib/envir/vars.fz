@@ -38,7 +38,7 @@ public vars (p Vars_Handler) : simple_effect is
   # Otherwise, return default
   #
   public get(v String, default String) =>
-    (get v).get get.this.default
+    (get v).or_else get.this.default
 
   # Set the environment variable corresponding to n to have the
   # value v.
@@ -75,7 +75,7 @@ public vars (p Vars_Handler) : simple_effect is
 # short-hand for accessing envir.args effect in current environment
 #
 public vars =>
-  vars.type.install_default
+  vars.install_default
   envir.vars.env
 
 
@@ -88,17 +88,17 @@ private:public Vars_Handler ref is
 
   # If set, get the environment variable corresponding to v
   #
-  get(v String) option String is abstract
+  get(v String) option String => abstract
 
   # Set the environment variable corresponding to n to have the
   # value v.
   #
   # This will overwrite the value of the environment variable, if
   # it is set already.
-  set1(n String, v String) outcome unit is abstract
+  set1(n String, v String) outcome unit => abstract
 
   # Unset the environment variable corresponding to n.
   #
   # This will also return success (unit) if the variable was not
   # set anyway.
-  unset(n String) outcome unit is abstract
+  unset(n String) outcome unit => abstract

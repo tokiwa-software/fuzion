@@ -36,17 +36,17 @@ is
   # bitwise operations
 
   # bitwise and
-  public fixed infix & (other uint) uint is
+  public fixed infix & (other uint) uint =>
     (b1, b2) := equalize other
     uint (b1.zip b2 (x,y)->x&y) unit
 
   # bitwise or
-  public fixed infix | (other uint) uint is
+  public fixed infix | (other uint) uint =>
     (b1, b2) := equalize other
     uint (b1.zip b2 (x,y)->x|y) unit
 
   # bitwise xor
-  public fixed infix ^ (other uint) uint is
+  public fixed infix ^ (other uint) uint =>
     (b1, b2) := equalize other
     uint (b1.zip b2 (x,y)->x^y) unit
 
@@ -55,17 +55,18 @@ is
 
   # shift right
   public fixed infix >> (other uint) uint
-  pre other ≤ uint i32.type.max.as_u64
-  is
-    if other = uint.type.zero
-      thiz
+  =>
+    check
+      other ≤ uint i32.max.as_u64
+    if other = uint.zero
+      uint.this
     else if other ≥ uint 32
       discard := other.as_i32 / 32
       (uint (data.take data.count-discard) unit) >> (other % (uint 32))
     else
       shift := other.as_u32
       (l,_) := data
-        .reduce ((list u32).type.empty, u32 0) (r,t ->
+        .reduce ((list u32).empty, u32 0) (r,t ->
           (res, carry_over) := r
           next := t>>shift | carry_over
           (res ++ [next], t << (u32 32)-shift)
@@ -75,17 +76,18 @@ is
 
   # shift left
   public fixed infix << (other uint) uint
-  pre other ≤ uint i32.type.max.as_u64
-  is
-    if other = uint.type.zero
-      thiz
+  =>
+    check
+      other ≤ uint i32.max.as_u64
+    if other = uint.zero
+      uint.this
     else if other ≥ uint 32
       uint (data ++ zeros (other.as_i32 / 32)) unit << other % (uint 32)
     else
       shift := other.as_u32
       (l,carry_over) := data
         .reverse
-        .reduce ((list u32).type.empty, u32 0) (r,t ->
+        .reduce ((list u32).empty, u32 0) (r,t ->
           (res, carry_over) := r
           next := t<<shift | carry_over
           ([next] ++ res, t >> ((u32 32)-shift))
@@ -95,7 +97,7 @@ is
 
   # return two sequences of equal length
   # by prepending zero(s) to the shorter sequence
-  private equalize(other uint)
+  equalize(other uint)
   post result.values.0.count = result.values.1.count
   =>
     if other.data.count < data.count
@@ -107,15 +109,15 @@ is
   # divide with remainder the two given positive ints
   # returns the quotient and the remainder
   # NYI performance: https://cs.opensource.google/go/go/+/refs/tags/go1.19:src/math/big/natdiv.go
-  private divide_with_remainder (divisor uint) tuple uint uint
-  pre divisor > uint.type.zero
-  is
-    if thiz = uint.type.zero
-      (uint.type.zero, uint.type.zero)
-    else if thiz < divisor
-      (uint.type.zero, thiz)
-    else if thiz = divisor
-      (uint.type.one, uint.type.zero)
+  fixed divide_with_remainder (divisor uint) tuple uint uint
+  pre divisor > uint.zero
+  =>
+    if uint.this = uint.zero
+      (uint.zero, uint.zero)
+    else if uint.this < divisor
+      (uint.zero, uint.this)
+    else if uint.this = divisor
+      (uint.one, uint.zero)
     else
       # The idea is to shift the divisor left as
       # far as possible so that the subtraction of this and
@@ -123,30 +125,30 @@ is
       # This is done recursively and the results
       # are added up.
       highest_bit_diff uint := highest_bit - divisor.highest_bit
-      shift := if thiz -! (divisor << highest_bit_diff) then highest_bit_diff else highest_bit_diff-uint.type.one
-      remainder := thiz - (divisor << shift)
+      shift := if uint.this -! (divisor << highest_bit_diff) then highest_bit_diff else highest_bit_diff-uint.one
+      remainder := uint.this - (divisor << shift)
       (q,rem) := remainder.divide_with_remainder divisor
-      ((uint.type.one << shift) + q, rem)
+      ((uint.one << shift) + q, rem)
 
 
   # the highest 1 bit in this integer
   # example: uint 0 => 0
   # example: uint 1 => 1
   # example: uint 8 => 4
-  public highest_bit uint
-  is
-    if thiz = uint.type.zero
-      uint.type.zero
+  public fixed highest_bit uint
+  =>
+    if uint.this = uint.zero
+      uint.zero
     else
       uint ((data.count.as_u32 - 1) * 32 + data.first.highest_bit).as_u64
 
 
   # add two unsigned ints
-  public fixed infix +  (other uint) uint is
+  public fixed infix +  (other uint) uint =>
     (b1, b2) := equalize other
     (d, _, _) := ([u32 0] ++ b1)
       .reverse_list
-      .reduce (((list u32).type.empty), ([u32 0] ++ b2).reverse_list, u64 0) (r, t ->
+      .reduce (((list u32).empty), ([u32 0] ++ b2).reverse_list, u64 0) (r, t ->
 
         (bits, rest, carry_over) := r
 
@@ -160,14 +162,13 @@ is
 
   # subtract other from this unsigned int
   public fixed infix - (other uint) uint
-  pre thiz ≥ other
-  is
+  =>
     two_pow_32 := ((u64 1)<<32)
     (b1, b2) := equalize other
     (r, _) := b1
       .zip b2 (x, y -> (x,y))
       .reverse_list
-      .reduce ((list u32).type.empty, u64 0) (r,t ->
+      .reduce ((list u32).empty, u64 0) (r,t ->
         (minuend, subtrahend) := t
         (res, carry_over) := r
 
@@ -180,13 +181,13 @@ is
 
   # return an array of length n
   # initialized with u32 zeros.
-  private zeros(n i32) =>
+  zeros(n i32) =>
     array n (_ -> u32 0)
 
 
   # NYI make faster: https://en.wikipedia.org/wiki/Multiplication_algorithm#Computational_complexity_of_multiplication
   # multiply these unsigned ints
-  public fixed infix *  (other uint) uint is
+  public fixed infix *  (other uint) uint =>
     data
       .reverse_list
       .indexed
@@ -203,20 +204,20 @@ is
           )
         )
       .flat_map uint (x -> x)
-      .fold uint.type.sum
+      .fold uint.sum
 
 
   # divide these unsigned ints
   public fixed infix /  (other uint) uint
-  pre other != uint.type.zero
-  is
+  =>
     (quotient,_) := (divide_with_remainder other)
     quotient
 
 
   # modulo
   # returns the remainder of the division
-  public fixed infix %  (other uint) uint is
+  public fixed infix %  (other uint) uint
+  =>
     (_,remainder) := (divide_with_remainder other)
     remainder
 
@@ -224,22 +225,22 @@ is
   # exponentation operator:
   # this uint to the power of other
   public fixed infix ** (other uint) uint
-  is
-    if other = uint.type.zero
-      uint.type.one
-    else if other = uint.type.one
-      thiz
+  =>
+    if other = uint.zero
+      uint.one
+    else if other = uint.one
+      uint.this
     else
       if other %% (uint 2)
-        tmp := thiz**(other / uint 2)
+        tmp := uint.this**(other / uint 2)
         tmp * tmp
       else
-        thiz * (thiz**(other-uint.type.one))
+        uint.this * (uint.this**(other-uint.one))
 
 
   # equality: are these unsigned integers equal?
   #
-  fixed type.equality(a, b uint) bool is
+  fixed type.equality(a, b uint) bool =>
     a.data.count = b.data.count &&
       ((a.data.zip b.data (c,d -> c = d)) ∀ (x->x))
 
@@ -263,58 +264,58 @@ is
 
   # checks if operations are allowed
 
-  public fixed prefix -! bool is thiz = uint.type.zero
-  public fixed infix +! (other uint) bool is true
-  public fixed infix -! (other uint) bool is thiz ≥ other
-  public fixed infix *! (other uint) bool is true
-  public fixed infix /! (other uint) bool is other != uint.type.zero
-  public fixed infix %! (other uint) bool is true
-  public fixed infix **!(other uint) bool is true
+  public fixed prefix -! bool => uint.this = uint.zero
+  public fixed infix +! (other uint) bool => true
+  public fixed infix -! (other uint) bool => uint.this ≥ other
+  public fixed infix *! (other uint) bool => true
+  public fixed infix /! (other uint) bool => other != uint.zero
+  public fixed infix %! (other uint) bool => true
+  public fixed infix **!(other uint) bool => true
 
   # exponentation always works, even though it might be
   # slow for large numbers
 
-  public fixed infix **?(other uint) num_option uint is thiz ** other
-  public fixed infix **^(other uint) uint is thiz ** other
+  public fixed infix **?(other uint) num_option uint => uint.this ** other
+  public fixed infix **^(other uint) uint => uint.this ** other
 
-  public fixed type.zero uint is
+  public fixed type.zero uint =>
     uint [u32 0] unit
 
-  public fixed type.one uint is
+  public fixed type.one uint =>
     uint [u32 1] unit
-
-  public thiz => uint b unit
 
 
   # this uint as an i32
   public as_i32 i32
-  pre as_u32 ≤ i32.type.max.as_u32
-  is
+  pre as_u32 ≤ i32.max.as_u32
+  =>
     as_u32.as_i32
 
 
   # this uint as an i64
   public as_i64 i64
-  is
+  =>
     as_u64.as_i64
 
 
   # this uint as an u8
   public as_u8 u8
-  is
+  =>
     as_u32.as_u8
 
 
-  # does this uint fit in 32 bits?
-  public fits_in_u32 =>
-    data.count ≤ 1
+  # does this uint fit into an u8?
+  #
+  public redef fits_in_u8 =>
+    data.count ≤ 1 && data[0].fits_in_u8
 
 
   # this uint as an u32
-  public as_u32 u32
-  pre fits_in_u32
-  is
-    data.first (u32 0)
+  public fixed as_u32 u32
+    pre
+      debug: (uint.this ≤ uint.type.from_u32 u32.max)
+  =>
+    data.first 0
 
 
   # does this uint fit in 64 bits?
@@ -326,7 +327,7 @@ is
   # this uint as an u64
   public as_u64 u64
   pre fits_in_u64
-  is
+  =>
     if data.count = 2
       data[1].as_u64<<32 | data[0].as_u64
     else
@@ -335,35 +336,40 @@ is
 
   # this uint as an int
   public as_int int
-  is
+  =>
     int num.plus (uint b unit)
 
 
   # this uint as a string, may contain leading zeros
   #
-  private as_string0 String is
+  as_string0 String =>
     mrd := uint 1_000_000_000
     (q, rem) := uint.this.divide_with_remainder mrd
 
-    if q = uint.type.zero
+    if q = uint.zero
       (rem.data.first (u32 0)).as_string
     else
       q.as_string0 + (rem.data.first (u32 0)).as_string.pad_codepoint_start 9 "0"
 
 
-  public redef as_string String is
-    if thiz = uint.type.zero
+  public fixed redef as_string String =>
+    if uint.this = uint.zero
       "0"
     else
       as_string0
 
 
+  # helper feature to init uint from an u32
+  public redef fixed type.from_u32(val u32) uint =>
+    uint [val] unit
+
+
   # helper feature to init uint from an u64
-  type.from_u64(val u64) uint is
+  type.from_u64(val u64) uint =>
     uint [(val>>32).low32bits , val.low32bits] unit
 
 
 
 # shorthand to create an uint via an u64
-public uint (val u64) uint is
-  uint.type.from_u64 val
+public uint (val u64) uint =>
+  uint.from_u64 val

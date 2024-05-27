@@ -1,2 +1,3 @@
 build
-fuzion_generated_clazzes
+fuzion_generated_classes
+*.classes

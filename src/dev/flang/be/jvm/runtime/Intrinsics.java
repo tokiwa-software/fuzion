@@ -42,12 +42,16 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import dev.flang.be.jvm.runtime.Runtime.SystemErrNo;
 import dev.flang.util.ANY;
@@ -271,7 +275,6 @@ public class Intrinsics extends ANY
 
   public static void fuzion_std_exit (int code)
   {
-    Runtime.unsafeIntrinsic();
     System.exit(code);
   }
 
@@ -301,7 +304,7 @@ public class Intrinsics extends ANY
 
     if (family != 2 && family != 10)
       {
-        throw new RuntimeException("NYI");
+        throw new RuntimeException("NYI: UNDER DEVELOPMENT: bind for family=" + family);
       }
     try
       {
@@ -321,7 +324,7 @@ public class Intrinsics extends ANY
                 result[0] = Runtime._openStreams_.add(ss);
                 yield 0;
               }
-            default -> throw new RuntimeException("NYI");
+            default -> throw new RuntimeException("NYI: UNDER DEVELOPMENT: bind for protocol=" + protocol);
           };
       }
     catch(BindException e)
@@ -329,7 +332,7 @@ public class Intrinsics extends ANY
         result[0] = SystemErrNo.EADDRINUSE.errno;
         return -1;
       }
-    catch(IOException e)
+    catch(Throwable e)
       {
         result[0] = -1;
         return -1;
@@ -363,9 +366,13 @@ public class Intrinsics extends ANY
             result[0] = sockfd;
             return true;
           }
-        throw new RuntimeException("NYI");
+        throw new RuntimeException("NYI: UNDER DEVELOPMENT: accept for asc instanceof " + asc.getClass());
       }
     catch(IOException e)
+      {
+        return false;
+      }
+    catch(Throwable e)
       {
         return false;
       }
@@ -382,7 +389,7 @@ public class Intrinsics extends ANY
     var port = Runtime.utf8ByteArrayDataToString((byte[]) port0);
     if (family != 2 && family != 10)
       {
-        throw new RuntimeException("NYI");
+        throw new RuntimeException("NYI: UNDER DEVELOPMENT: bind for family=" + family);
       }
     try
       {
@@ -402,12 +409,17 @@ public class Intrinsics extends ANY
                 result[0] = Runtime._openStreams_.add(ss);
                 yield 0;
               }
-            default -> throw new RuntimeException("NYI");
+            default -> throw new RuntimeException("NYI: UNDER DEVELOPMENT: bind for protocol=" + protocol);
           };
       }
     catch(IOException e)
       {
         result[0] = SystemErrNo.ECONNREFUSED.errno;
+        return -1;
+      }
+    catch(Throwable e)
+      {
+        result[0] = SystemErrNo.UNSPECIFIED.errno;
         return -1;
       }
   }
@@ -429,7 +441,7 @@ public class Intrinsics extends ANY
           }
         return -1;
       }
-    catch (IOException e)
+    catch(Throwable e)
       {
         return -1;
       }
@@ -446,7 +458,7 @@ public class Intrinsics extends ANY
           }
         return 0;
       }
-    catch (IOException e)
+    catch (Throwable e)
       {
         return 0;
       }
@@ -467,13 +479,13 @@ public class Intrinsics extends ANY
     try
       {
         var desc = Runtime._openStreams_.get(sockfd);
-        // NYI blocking / none blocking read
+        // NYI: UNDER DEVELOPMENT: blocking / none blocking read
         long bytesRead;
         if (desc instanceof DatagramChannel dc)
           {
             bytesRead = dc.receive(ByteBuffer.wrap(buff)) == null
               ? 0
-              // NYI how to determine datagram length?
+              // NYI: UNDER DEVELOPMENT: how to determine datagram length?
               : buff.length;
           }
         else if (desc instanceof ByteChannel sc)
@@ -482,12 +494,12 @@ public class Intrinsics extends ANY
           }
         else
           {
-            throw new RuntimeException("NYI");
+            throw new RuntimeException("NYI: UNDER DEVELOPMENT: read for desc instanceof " + desc.getClass());
           }
         result[0] = bytesRead;
         return bytesRead != -1;
       }
-    catch(IOException e) //SocketTimeoutException and others
+    catch(Throwable e) //SocketTimeoutException and others
       {
         // unspecified error
         result[0] = -1;
@@ -504,7 +516,7 @@ public class Intrinsics extends ANY
         sc.write(ByteBuffer.wrap((byte[]) fileContent));
         return 0;
       }
-    catch(IOException e)
+    catch(Throwable e)
       {
         return -1;
       }
@@ -527,7 +539,8 @@ public class Intrinsics extends ANY
         asc.configureBlocking(blocking == 1);
         return 0;
       }
-    catch(IOException e)
+    // ClosedChannelException, IOException etc.
+    catch(Throwable e)
       {
         return -1;
       }
@@ -603,7 +616,7 @@ public class Intrinsics extends ANY
       {
         return Files.deleteIfExists(path);
       }
-    catch (Exception e)
+    catch (Throwable e)
       {
         return false;
       }
@@ -619,7 +632,7 @@ public class Intrinsics extends ANY
         Files.move(oldPath, newPath);
         return true;
       }
-    catch (Exception e)
+    catch (Throwable e)
       {
         return false;
       }
@@ -634,7 +647,7 @@ public class Intrinsics extends ANY
         Files.createDirectory(path);
         return true;
       }
-    catch (Exception e)
+    catch (Throwable e)
       {
         return false;
       }
@@ -648,6 +661,7 @@ public class Intrinsics extends ANY
 
     var path = Runtime.utf8ByteArrayDataToString((byte[]) s);
     long[] open_results = (long[]) res;
+    open_results[1] = 0;
     try
       {
         switch (mode)
@@ -667,11 +681,11 @@ public class Intrinsics extends ANY
             break;
           default:
             open_results[1] = -1;
-            System.err.println("*** Unsupported open flag. Please use: 0 for READ, 1 for WRITE, 2 for APPEND. ***");
+            say_err("*** Unsupported open flag. Please use: 0 for READ, 1 for WRITE, 2 for APPEND. ***");
             System.exit(1);
           }
       }
-    catch (Exception e)
+    catch (Throwable e)
       {
         open_results[1] = -1;
       }
@@ -686,7 +700,7 @@ public class Intrinsics extends ANY
                                     : -1);
   }
 
-  public static boolean fuzion_sys_fileio_lstats(Object s, Object stats) // NYI : should be altered in the future to not resolve symbolic links
+  public static boolean fuzion_sys_fileio_lstats(Object s, Object stats) // NYI: UNDER DEVELOPMENT: should be altered in the future to not resolve symbolic links
   {
     Runtime.unsafeIntrinsic();
     return fuzion_sys_fileio_stats(s, stats);
@@ -722,6 +736,10 @@ public class Intrinsics extends ANY
       {
         err = SystemErrNo.EACCES;
       }
+    catch (Throwable e)
+      {
+        err = SystemErrNo.UNSPECIFIED;
+      }
 
     stats[0] = err.errno;
     stats[1] = 0;
@@ -730,7 +748,7 @@ public class Intrinsics extends ANY
     return false;
   }
 
-  public static void fuzion_sys_fileio_seek(long fd, short s, Object res)
+  public static void fuzion_sys_fileio_seek(long fd, long s, Object res)
   {
     Runtime.unsafeIntrinsic();
     if (CHECKS)
@@ -744,7 +762,7 @@ public class Intrinsics extends ANY
         seekResults[0] = raf.getFilePointer();
         return;
       }
-    catch (Exception e)
+    catch (Throwable e)
       {
         seekResults[1] = -1;
         return;
@@ -763,7 +781,7 @@ public class Intrinsics extends ANY
         arr[0] = ((RandomAccessFile) Runtime._openStreams_.get(fd)).getFilePointer();
         return;
       }
-    catch (Exception e)
+    catch (Throwable e)
       {
         arr[1] = -1;
         return;
@@ -795,7 +813,7 @@ public class Intrinsics extends ANY
         result[0] = 0;
         return mmap;
       }
-    catch (IOException e)
+    catch (Throwable e)
       {
         result[0] = -1;
         return new byte[0];
@@ -819,6 +837,58 @@ public class Intrinsics extends ANY
     ((ByteBuffer)buf).put((int) i, b);
   }
 
+  public static void fuzion_sys_fileio_open_dir(Object s, Object res)
+  {
+    Runtime.unsafeIntrinsic();
+    if (CHECKS)
+      Runtime.ensure_not_frozen(res);
+
+    long[] open_results = (long[]) res;
+    try
+      {
+        var i = Files.walk(Paths.get(Runtime.utf8ByteArrayDataToString((byte[]) s)), 1).iterator();
+        interface CloseableIterator<T> extends Iterator<T>, AutoCloseable {};
+        open_results[0] = Runtime._openStreams_.add(new CloseableIterator<Path>() {
+          public void close() throws IOException
+          {
+            // do nothing :)
+          }
+
+          public boolean hasNext() {
+            return i.hasNext();
+          }
+
+          public Path next() {
+            return i.next();
+          }
+
+          public void remove()
+          {
+            i.remove();
+          }
+        });
+      }
+    catch (Throwable e)
+      {
+        open_results[1] = -1;
+      }
+  }
+
+  public static boolean fuzion_sys_fileio_read_dir_has_next(long fd)
+  {
+    Runtime.unsafeIntrinsic();
+
+    return Runtime.getIterator(fd).hasNext();
+  }
+
+  public static long fuzion_sys_fileio_close_dir(long fd)
+  {
+    Runtime.unsafeIntrinsic();
+
+    Runtime._openStreams_.remove(fd);
+    return 0;
+  }
+
   public static void fuzion_std_nano_sleep(long d)
   {
     try
@@ -829,11 +899,10 @@ public class Intrinsics extends ANY
       {
         throw new Error("unexpected interrupt", ie);
       }
-  };
+  }
 
   public static boolean fuzion_sys_env_vars_has0(Object s)
   {
-    Runtime.unsafeIntrinsic();
     return System.getenv(Runtime.utf8ByteArrayDataToString((byte[]) s)) != null;
   }
 
@@ -855,14 +924,106 @@ public class Intrinsics extends ANY
       }
     while (!result);
 
-    // NYI: comment, fridi:
-    // Furthermore, remove should probably not be called by join, but either by
-    // the Thread itself or by some cleanup mechanism that removes terminated
-    // threads, either when new threads are started or by a system thread that
-    // joins and removes threads that are about to terminate.
+    // NYI: UNDER DEVELOPMENT: remove should probably not be called by join, but
+    // either by the Thread itself or by some cleanup mechanism that removes
+    // terminated threads, either when new threads are started or by a system
+    // thread that joins and removes threads that are about to terminate.
     Runtime._startedThreads_.remove(threadId);
   }
 
+
+  public static int fuzion_sys_process_create(Object args, int arg_len, Object env_vars, int env_vars_len, Object res, Object args_str, Object env_str)
+  {
+    Runtime.unsafeIntrinsic();
+
+    var process_and_args = Arrays
+      .stream((Object[]) args)
+      .limit(arg_len - 1)
+      .map(x -> Runtime.utf8ByteArrayDataToString((byte[]) x))
+      .collect(Collectors.toList());
+
+    var env_var_map = Arrays
+      .stream((Object[]) env_vars)
+      .limit(env_vars_len - 1)
+      .map(x -> Runtime.utf8ByteArrayDataToString((byte[]) x))
+      .collect(Collectors.toMap((x -> x.split("=")[0]), (x -> x.split("=")[1])));
+
+    var result = (long[]) res;
+
+    try
+      {
+        var pb = new ProcessBuilder()
+          .command(process_and_args);
+
+        pb.environment().putAll(env_var_map);
+
+        var process = pb.start();
+
+        result[0] = Runtime._openProcesses_.add(process);
+        result[1] = Runtime._openStreams_.add(process.getOutputStream());
+        result[2] = Runtime._openStreams_.add(process.getInputStream());
+        result[3] = Runtime._openStreams_.add(process.getErrorStream());
+        return 0;
+      }
+    catch (Throwable e)
+      {
+        return -1;
+      }
+  }
+
+  public static int fuzion_sys_process_wait(long desc)
+  {
+    var p = Runtime._openProcesses_.get(desc);
+    try
+      {
+        var result = p.waitFor();
+        Runtime._openProcesses_.remove(desc);
+        return result;
+      }
+    catch(Throwable e)
+      {
+        return -1;
+      }
+  }
+
+  public static int fuzion_sys_pipe_read(long desc, Object buffer, int len)
+  {
+    var is = (InputStream) Runtime._openStreams_.get(desc);
+    try
+      {
+        var readBytes = is.read((byte[])buffer);
+
+        return readBytes == -1
+                                ? 0
+                                : readBytes;
+      }
+    catch (IOException e)
+      {
+        return -1;
+      }
+  }
+
+  public static int fuzion_sys_pipe_write(long desc, Object buffer, int len)
+  {
+    var os = (OutputStream)Runtime._openStreams_.get(desc);
+    try
+      {
+        var buff = (byte[]) buffer;
+        os.write(buff);
+        return buff.length;
+      }
+    catch (IOException e)
+      {
+        return -1;
+      }
+  }
+
+  public static int fuzion_sys_pipe_close(long desc)
+  {
+    return Runtime._openStreams_.remove(desc)
+                                              ? 0
+                                              : -1;
+  }
 
 }
 

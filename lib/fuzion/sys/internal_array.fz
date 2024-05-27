@@ -26,9 +26,9 @@
 # helper to allocate memory for an internal_array.
 # returns an internal_array.
 #
-module internal_array_init(T type, private length i32) =>
+module internal_array_init(T type, length i32) =>
 
-  private alloc(X type, l i32) fuzion.sys.Pointer is intrinsic
+  alloc(X type, l i32) fuzion.sys.Pointer => intrinsic
 
   internal_array T (alloc T length) length
 
@@ -36,20 +36,20 @@ module internal_array_init(T type, private length i32) =>
 # fuzion.sys.internal_array_init -- one-dimensional low-level array
 module internal_array(T type, module data fuzion.sys.Pointer, module length i32) is
 
-  private get  (X type, d fuzion.sys.Pointer, i i32) X is intrinsic
-  private setel(X type, d fuzion.sys.Pointer, i i32, o X) unit is intrinsic
+  get  (X type, d fuzion.sys.Pointer, i i32) X => intrinsic
+  setel(X type, d fuzion.sys.Pointer, i i32, o X) unit => intrinsic
 
   # make sure that this internal array will no longer be modified.  This is just for
   # debugging and will be a NOP in case internal checks are disabled or in case the
   # backend does not support this.
   #
-  module freeze unit is intrinsic
+  module freeze unit => intrinsic
 
   # check that this internal array was not frozen, i.e., `freeze` was not called.
   # Cause a runtime error if this `freeze` was called.  Note that this is a NOP if
   # the backend does not support these checks or intenal checks are disabled.
   #
-  module ensure_not_frozen unit is intrinsic
+  module ensure_not_frozen unit => intrinsic
 
 
   # wrap this into an immutable array.
@@ -63,7 +63,7 @@ module internal_array(T type, module data fuzion.sys.Pointer, module length i32)
   module index [ ] (i i32) T
     pre
       safety: 0 ≤ i < length
-  is
+  =>
     get T data i
 
   module set [ ] (i i32, o T) unit
@@ -71,5 +71,5 @@ module internal_array(T type, module data fuzion.sys.Pointer, module length i32)
       safety: 0 ≤ i < length
   # post   NYI
     #array.this[i] == o
-  is
+  =>
     setel T data i o

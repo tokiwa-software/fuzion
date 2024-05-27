@@ -25,26 +25,26 @@
 
 # Map -- an abstract map from keys K to values V
 #
-public Map(public K, V type) ref is
+public Map(public K type : property.equatable, public V type) ref is
 
   # number of entries in this map
   #
-  public size i32 is abstract
+  public size i32 => abstract
 
 
   # get the value k is mapped to, or nil if none.
   #
-  public index [] (k K) option V is abstract
+  public index [] (k K) option V => abstract
 
 
   # get a sequence of all key/value pairs in this map
   #
-  public items Sequence (tuple K V) is abstract
+  public items Sequence (tuple K V) => abstract
 
 
   # get a sequence of all keys in this map
   #
-  public keys Sequence K is
+  public keys Sequence K =>
     items.map K (t -> (k,_) := t; k)
 
 
@@ -55,7 +55,7 @@ public Map(public K, V type) ref is
 
   # get a sequence of all values in this map
   #
-  public values Sequence V is
+  public values Sequence V =>
     items.map V (t -> (_,v) := t; v)
 
 
@@ -68,3 +68,10 @@ public Map(public K, V type) ref is
       c := "", ", "
     else
       r
+
+
+  # initializer for this map
+  #
+  # every map implementation needs to implement this
+  #
+  public type.empty Map.this => abstract

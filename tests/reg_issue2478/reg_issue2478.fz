@@ -1,0 +1,44 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test
+#
+# -----------------------------------------------------------------------
+
+x is
+b1 array x := []
+b2 array x := [x,x]
+b3 := [x,x]
+c1 array unit := []
+c2 array unit := [unit,unit]
+c3 := [unit,unit]
+d1 array void   := []    # not sure if type propagation works here
+d2 array choice := []    # not sure if type propagation works here
+d3 := array void   0 (_ -> panic "*** not reached ***")
+d4 := array choice 0 (_ -> panic "*** not reached ***")
+say b1
+say b2
+say b3
+say c1
+say c2
+say c3
+say d1
+say d2
+say d3
+say d4

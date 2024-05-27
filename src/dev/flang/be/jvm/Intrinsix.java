@@ -63,7 +63,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
    */
   interface IntrinsicCode
   {
-    Pair<Expr,Expr> get(JVM jvm, int cl, boolean pr, int cc, Expr tvalue, List<Expr> args);
+    Pair<Expr,Expr> get(JVM jvm, int si, int cc, Expr tvalue, List<Expr> args);
   }
 
 
@@ -115,22 +115,15 @@ public class Intrinsix extends ANY implements ClassFileConstants
   static final TreeMap<String, IntrinsicCode> _compiled_ = new TreeMap<>();
   static
   {
-    put("Any.as_string",
-        (jvm, cl, pre, cc, tvalue, args) ->
-        {
-          var clname = jvm._fuir.clazzAsString(jvm._fuir.clazzOuterClazz(cc));
-          return jvm.constString("instance["+clname+"]");
-        });
-
     put("Type.name",
-        (jvm, cl, pre, cc, tvalue, args) ->
+        (jvm, si, cc, tvalue, args) ->
         {
           var str = jvm._fuir.clazzTypeName(jvm._fuir.clazzOuterClazz(cc));
           return new Pair<>(tvalue.drop().andThen(jvm.constString(str)), Expr.UNIT);
         });
 
     put("concur.atomic.racy_accesses_supported",
-        (jvm, cl, pre, cc, tvalue, args) ->
+        (jvm, si, cc, tvalue, args) ->
         {
           var v = jvm._fuir.lookupAtomicValue(jvm._fuir.clazzOuterClazz(cc));
           var rc  = jvm._fuir.clazzResultClazz(v);
@@ -152,14 +145,14 @@ public class Intrinsix extends ANY implements ClassFileConstants
 
     put("concur.util.loadFence",
         "concur.util.storeFence",
-        (jvm, cl, pre, cc, tvalue, args) ->
+        (jvm, si, cc, tvalue, args) ->
         {
           return new Pair<>(Expr.UNIT,
                             locked(Expr.UNIT));
         });
 
     put("concur.atomic.read0",
-        (jvm, cl, pre, cc, tvalue, args) ->
+        (jvm, si, cc, tvalue, args) ->
         {
           var ac = jvm._fuir.clazzOuterClazz(cc);
           var v = jvm._fuir.lookupAtomicValue(ac);
@@ -169,7 +162,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         });
 
     put("concur.atomic.write0",
-        (jvm, cl, pre, cc, tvalue, args) ->
+        (jvm, si, cc, tvalue, args) ->
         {
           var ac = jvm._fuir.clazzOuterClazz(cc);
           var v = jvm._fuir.lookupAtomicValue(ac);
@@ -181,19 +174,19 @@ public class Intrinsix extends ANY implements ClassFileConstants
 
     put("concur.atomic.compare_and_set0",
         "concur.atomic.compare_and_swap0",
-        (jvm, cl, pre, cc, tvalue, args) ->
+        (jvm, si, cc, tvalue, args) ->
         {
           var ac = jvm._fuir.clazzOuterClazz(cc);
           var v = jvm._fuir.lookupAtomicValue(ac);
           var rc  = jvm._fuir.clazzResultClazz(v);
           var tt = tvalue.type();
-          var jt = jvm._types.javaType(rc);
-          int tslot  = jvm.allocLocal(cl, pre, 1);                  // local var slot for target
-          int nvslot = jvm.allocLocal(cl, pre, jt.stackSlots());    // local var slot for arg(1), new value, not casted
-          int vslot  = jvm.allocLocal(cl, pre, jt.stackSlots());    // local var slot for old value, not casted.
+          var jt = jvm._types.resultType(rc);
+          int tslot  = jvm.allocLocal(si, 1);                  // local var slot for target
+          int nvslot = jvm.allocLocal(si, jt.stackSlots());    // local var slot for arg(1), new value, not casted
+          int vslot  = jvm.allocLocal(si, jt.stackSlots());    // local var slot for old value, not casted.
 
           Expr pos, neg, oldv;
-          if (jvm._fuir.clazzIntrinsicName(cc).equals("concur.atomic.compare_and_set0"))
+          if (jvm._fuir.clazzOriginalName(cc).equals("concur.atomic.compare_and_set0"))
             { // compare_and_set: return true or false
               pos = Expr.iconst(1);            // 1
               neg = Expr.iconst(0);            // 0
@@ -209,179 +202,409 @@ public class Intrinsix extends ANY implements ClassFileConstants
           Expr val =
             locked(
                    // preparation: store target in tslot, arg1 in nvslot and value field in vslot
-                   tvalue                                       // target       -> tslot
-                   .andThen(Expr.astore(tslot))                 //
-                   .andThen(args.get(1))                        // new value    -> nslot
-                   .andThen(jt.store(nvslot))                   //
-                   .andThen(tt.load(tslot))                     // target.value -> vslot
-                   .andThen(jvm.getfield(v))                    //
-                   .andThen(jt.store(vslot))                    //
+                   tvalue                                   // target       -> tslot
+                   .andThen(Expr.astore(tslot, tt.vti()))   //
+                   .andThen(args.get(1))                    // new value    -> nslot
+                   .andThen(jt.store(nvslot))               //
+                   .andThen(tt.load(tslot))                 // target.value -> vslot
+                   .andThen(jvm.getfield(v))                //
+                   .andThen(jt.store(vslot))                //
                    // actual comparison:
-                   .andThen(jvm.compareValues(cl,
-                                              pre,
+                   .andThen(jvm.compareValues(si,
                                               args.get(0),
                                               jt.load(vslot),
                                               rc))              // cmp_result
                    // conditional assignment code and result
-                   .andThen(Expr.branch(O_ifne,                     // -
-                                        tt.load(tslot)              // tv
-                                        .andThen(jt.load(nvslot))   // tv nv
-                                        .andThen(jvm.putfield(v))   // -
-                                        .andThen(pos),              // - --or-- 1
-                                        neg))                       // - --or-- 0
-                   .andThen(oldv));                                 // v --or-- 0/1
+                   .andThen(Expr.branch(O_ifne,                         // -
+                                        tt.load(tslot)                  // tv
+                                        .andThen(jt.load(nvslot))       // tv nv
+                                        .andThen(jvm.putfield(v))       // -
+                                        .andThen(pos),                  // - --or-- 1
+                                        neg))                           // - --or-- 0
+                   .andThen(oldv));                                     // v --or-- 0/1
           return new Pair<>(val, Expr.UNIT);
         });
 
     put("debug",
-        (jvm, cl, pre, cc, tvalue, args) ->
+        (jvm, si, cc, tvalue, args) ->
         {
           return new Pair<>(Expr.UNIT, Expr.iconst(jvm._options.fuzionDebug() ? 1 : 0));
         });
 
     put("debug_level",
-        (jvm, cl, pre, cc, tvalue, args) ->
+        (jvm, si, cc, tvalue, args) ->
         {
           return new Pair<>(Expr.UNIT, Expr.iconst(jvm._options.fuzionDebugLevel()));
         });
 
-    put("fuzion.java.Java_Object.is_null",
-        (jvm, cl, pre, cc, tvalue, args) ->
+    put("fuzion.java.Java_Object.is_null0",
+        (jvm, si, cc, tvalue, args) ->
         {
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
-          var res = tvalue
-            .andThen(jvm.getfield(jref))
+          var res = args.get(0)
+            .andThen(Expr.checkcast(JAVA_LANG_OBJECT))
             .andThen(Expr.branch(O_ifnull,
                                  Expr.iconst(1),
-                                 Expr.iconst(0)))
-            ;
+                                 Expr.iconst(0)));
           return new Pair<>(res, Expr.UNIT);
         });
 
-    put("fuzion.java.i8_to_java_object",
-        (jvm, cl, pre, cc, tvalue, args) ->
+    // arrays of fuzion-type, java reference type and java primitive type id
+    String[][] primitive_to_java_object =  {
+      {"i8"  , "Byte"     , "B" },
+      {"i16" , "Short"    , "S" },
+      {"i32" , "Integer"  , "I" },
+      {"i64" , "Long"     , "J" },
+      {"u16" , "Character", "C" },
+      {"f32" , "Float"    , "F" },
+      {"f64" , "Double"   , "D" },
+      {"bool", "Boolean"  , "Z" },
+    };
+
+    for (var a : primitive_to_java_object)
+      {
+        var fz_type = a[0];
+        var java_Type = a[1];
+        var java_type = a[2];
+
+        put("fuzion.java." + fz_type + "_to_java_object",
+            (jvm, si, cc, tvalue, args) ->
+            {
+              var rc = jvm._fuir.clazz_fuzionJavaObject();
+              var jref = jvm._fuir.lookupJavaRef(rc);
+              var res = jvm.new0(rc)
+                .andThen(Expr.DUP)
+                .andThen(args.get(0))
+                .andThen(Expr.invokeStatic("java/lang/" + java_Type, "valueOf", "(" + java_type + ")Ljava/lang/" + java_Type + ";", Names.JAVA_LANG_OBJECT))
+                .andThen(jvm.putfield(jref))
+                .is(jvm._types.javaType(rc));
+              return new Pair<>(res, Expr.UNIT);
+            });
+      }
+
+    put("fuzion.java.string_to_java_object0",
+        (jvm, si, cc, tvalue, args) ->
         {
           var rc = jvm._fuir.clazz_fuzionJavaObject();
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var jref = jvm._fuir.lookupJavaRef(rc);
+          var data = jvm._fuir.lookup_fuzion_sys_internal_array_data(jvm._fuir.clazzArgClazz(cc,0));
           var res = jvm.new0(rc)
             .andThen(Expr.DUP)
             .andThen(args.get(0))
-            .andThen(Expr.invokeStatic("java/lang/Byte", "valueOf", "(B)Ljava/lang/Byte;", Names.JAVA_LANG_OBJECT))
+            .andThen(jvm.getfield(data))
+            .andThen(Expr.checkcast(PrimitiveType.type_byte.array()))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS, "fuzion_java_string_to_java_object0", "([B)Ljava/lang/String;", Names.JAVA_LANG_OBJECT))
             .andThen(jvm.putfield(jref))
             .is(jvm._types.javaType(rc));
           return new Pair<>(res, Expr.UNIT);
         });
 
-    put("fuzion.java.i16_to_java_object",
-        (jvm, cl, pre, cc, tvalue, args) ->
+    put("fuzion.java.java_string_to_string",
+        (jvm, si, cc, tvalue, args) ->
         {
-          var rc = jvm._fuir.clazz_fuzionJavaObject();
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var jref = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc, 0));
+          return jvm.constString(args.get(0)
+                                 .andThen(jvm.getfield(jref))
+                                 .andThen(Expr.checkcast(JAVA_LANG_STRING))
+                                 .andThen(Expr.getstatic("java/nio/charset/StandardCharsets", "UTF_8", new ClassType("java/nio/charset/Charset")))
+                                 .andThen(Expr.invokeVirtual("java/lang/String", "getBytes", "(Ljava/nio/charset/Charset;)[B", ClassFileConstants.PrimitiveType.type_byte.array())));
+        });
+
+    put("fuzion.java.array_to_java_object0",
+        (jvm, si, cc, tvalue, args) ->
+        {
+          var rc = jvm._fuir.clazzResultClazz(cc);
+          var jref = jvm._fuir.lookupJavaRef(rc);
+          var et = jvm._types.javaType(jvm._fuir.clazzActualGeneric(cc, 0)); // possibly resultType
+          var data = jvm._fuir.lookup_fuzion_sys_internal_array_data(jvm._fuir.clazzArgClazz(cc,0));
           var res = jvm.new0(rc)
             .andThen(Expr.DUP)
             .andThen(args.get(0))
-            .andThen(Expr.invokeStatic("java/lang/Short", "valueOf", "(S)Ljava/lang/Short;", Names.JAVA_LANG_OBJECT))
+            .andThen(jvm.getfield(data))
+            .andThen(Expr.checkcast(et.array()))
             .andThen(jvm.putfield(jref))
             .is(jvm._types.javaType(rc));
           return new Pair<>(res, Expr.UNIT);
         });
 
-    put("fuzion.java.i32_to_java_object",
-        (jvm, cl, pre, cc, tvalue, args) ->
+    put("fuzion.java.array_length",
+        (jvm, si, cc, tvalue, args) ->
         {
-          var rc = jvm._fuir.clazz_fuzionJavaObject();
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
-          var res = jvm.new0(rc)
-            .andThen(Expr.DUP)
-            .andThen(args.get(0))
-            .andThen(Expr.invokeStatic("java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", Names.JAVA_LANG_OBJECT))
-            .andThen(jvm.putfield(jref))
-            .is(jvm._types.javaType(rc));
+          var jref = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc,0));
+          var et = jvm._types.javaType(jvm._fuir.clazzActualGeneric(cc, 0)); // possibly resultType
+          var res = args.get(0)
+            .andThen(jvm.getfield(jref))
+            .andThen(Expr.checkcast(et.isPrimitive() ? et.array() : ClassFileConstants.JAVA_LANG_OBJECT.array()))
+            .andThen(Expr.ARRAYLENGTH);
           return new Pair<>(res, Expr.UNIT);
         });
 
-    put("fuzion.java.i64_to_java_object",
-        (jvm, cl, pre, cc, tvalue, args) ->
+    put("fuzion.java.array_get",
+        (jvm, si, cc, tvalue, args) ->
         {
-          var rc = jvm._fuir.clazz_fuzionJavaObject();
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
-          var res = jvm.new0(rc)
-            .andThen(Expr.DUP)
-            .andThen(args.get(0))
-            .andThen(Expr.invokeStatic("java/lang/Long", "valueOf", "(J)Ljava/lang/Long;", Names.JAVA_LANG_OBJECT))
-            .andThen(jvm.putfield(jref))
-            .is(jvm._types.javaType(rc));
+          var jref = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc,0));
+          var et = jvm._types.javaType(jvm._fuir.clazzActualGeneric(cc, 0)); // possibly resultType
+          var res = args.get(0)
+            .andThen(jvm.getfield(jref))
+            .andThen(Expr.checkcast(et.isPrimitive() ? et.array() : ClassFileConstants.JAVA_LANG_OBJECT.array()))
+            .andThen(args.get(1))
+            .andThen((et.isPrimitive() ? et : ClassFileConstants.JAVA_LANG_OBJECT).xaload());
+          if (!et.isPrimitive())
+            {
+              res = res
+                .andThen(jvm.new0(jvm._fuir.clazzActualGeneric(cc, 0)))                               // result, rc0
+                .andThen(Expr.DUP_X1)                                                                 // rc0, result, rc0
+                .andThen(Expr.SWAP)                                                                   // rc0, rc0, result
+                .andThen(jvm.putfield(jvm._fuir.lookupJavaRef(jvm._fuir.clazzActualGeneric(cc, 0)))); // rc0
+            }
           return new Pair<>(res, Expr.UNIT);
         });
 
-    put("fuzion.java.u16_to_java_object",
-        (jvm, cl, pre, cc, tvalue, args) ->
+    put("fuzion.java.get_static_field0",
+        (jvm, si, cc, tvalue, args) ->
         {
-          var rc = jvm._fuir.clazz_fuzionJavaObject();
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
-          var res = jvm.new0(rc)
+          var rc = jvm._fuir.clazzResultClazz(cc);
+          var rt = jvm._types.javaType(rc);
+          var jt = jvm._types.javaType(jvm._fuir.clazz_fuzionJavaObject());
+          var sref0 = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc, 0));
+          var sref1 = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc, 1));
+          var jref = jvm._fuir.lookupJavaRef(rc);
+          var res =
+            jvm.new0(rc)
             .andThen(Expr.DUP)
             .andThen(args.get(0))
-            .andThen(Expr.invokeStatic("java/lang/Character", "valueOf", "(C)Ljava/lang/Character;", Names.JAVA_LANG_OBJECT))
+            .andThen(Expr.checkcast(jt))
+            .andThen(jvm.getfield(sref0)) // class name as String
+            .andThen(Expr.checkcast(JAVA_LANG_STRING))
+            .andThen(args.get(1))
+            .andThen(Expr.checkcast(jt))
+            .andThen(jvm.getfield(sref1)) // class name as String, field name as String
+            .andThen(Expr.checkcast(JAVA_LANG_STRING))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "fuzion_java_get_static_field0",
+                                       "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;",
+                                       Names.JAVA_LANG_OBJECT))
             .andThen(jvm.putfield(jref))
-            .is(jvm._types.javaType(rc));
+            .andThen(Expr.checkcast(rt))
+            .is(rt);
           return new Pair<>(res, Expr.UNIT);
         });
 
-    put("fuzion.java.f32_to_java_object",
-        (jvm, cl, pre, cc, tvalue, args) ->
+    put("fuzion.java.get_field0",
+        (jvm, si, cc, tvalue, args) ->
         {
-          var rc = jvm._fuir.clazz_fuzionJavaObject();
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
-          var res = jvm.new0(rc)
-            .andThen(Expr.DUP)
-            .andThen(args.get(0))
-            .andThen(Expr.invokeStatic("java/lang/Float", "valueOf", "(F)Ljava/lang/Float;", Names.JAVA_LANG_OBJECT))
-            .andThen(jvm.putfield(jref))
-            .is(jvm._types.javaType(rc));
+          var jref0 = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc, 0));
+          var sref1 = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc, 1));
+          var res =
+            args.get(0)
+            .andThen(jvm.getfield(jref0)) // instance as Object
+            .andThen(args.get(1))
+            .andThen(jvm.getfield(sref1)) // instance as Object, field name as String
+            .andThen(Expr.checkcast(JAVA_LANG_STRING))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "fuzion_java_get_field0",
+                                       "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;",
+                                       Names.JAVA_LANG_OBJECT));
           return new Pair<>(res, Expr.UNIT);
         });
+  }
 
-    put("fuzion.java.f64_to_java_object",
-        (jvm, cl, pre, cc, tvalue, args) ->
+
+  /**
+   * Helper to convert String arguments passed to call_* into Java Strings.
+   *
+   * NYI: CLEANUP: This might profit from some cleanup: These arguments are
+   * currently always instances of fuzion.java.Java_Object created by
+   * string_to_java_object, and this fact is used here to access the
+   * javaRef-field using static binding.
+   *
+   * It would be easier if string_to_java_object would just return the
+   * java.lang.String as a fuzion.sys.Pointer, then we could avoid the first
+   * checkcast and the getfield here.
+   */
+  static Expr call_jlStringArg(JVM jvm, int cc, List<Expr> args, int argi)
+  {
+    var at = jvm._fuir.clazzArgClazz(cc, argi);
+    var jt = jvm._types.javaType(at);
+    var sref = jvm._fuir.lookupJavaRef(at);
+    return args.get(argi)
+      .andThen(Expr.checkcast(jt)) /* ugly: String is passed as fuzion.Java_Object, not fuzion.Java_String or Java.java.lang._jString */
+      .andThen(jvm.getfield(sref)) // class_name
+      .andThen(Expr.checkcast(JAVA_LANG_STRING));
+  }
+
+
+  /**
+   * Return result evaluated by `exec`.
+   *
+   * @param jvm the jvm instance
+   * @param rc  outcome ...
+   * @param exec the code we are executing
+   * @return
+   */
+  static Pair<Expr, Expr> returnResult(JVM jvm, int si, int rc, Expr exec)
+  {
+    if (PRECONDITIONS) require
+      (jvm._fuir.clazzBaseName(rc).startsWith("outcome"));
+
+    var rc0 = jvm._fuir.clazzChoice(rc, 0);
+    // for storing the result of exec
+    int slot  = jvm.allocLocal(si, JAVA_LANG_OBJECT.stackSlots());      // local var slot.
+    var cl_err = jvm._fuir.clazz_error();
+
+    var pos = switch (jvm._fuir.getSpecialClazz(rc0))
+      {
+      case c_unit -> Expr.ACONST_NULL;
+      case c_i8 -> {
+        yield Expr.aload(slot, JAVA_LANG_OBJECT)
+          .andThen(
+            Expr.checkcast(new ClassType("java/lang/Byte"))
+              .andThen(Expr.invokeVirtual("java/lang/Byte", "byteValue", "()B", PrimitiveType.type_byte)));
+      }
+      case c_u16 -> {
+        yield Expr.aload(slot, JAVA_LANG_OBJECT)
+          .andThen(
+            Expr.checkcast(new ClassType("java/lang/Character"))
+              .andThen(Expr.invokeVirtual("java/lang/Character", "charValue", "()C", PrimitiveType.type_char)));
+      }
+      case c_i16 -> {
+        yield Expr.aload(slot, JAVA_LANG_OBJECT)
+          .andThen(
+            Expr.checkcast(new ClassType("java/lang/Short"))
+              .andThen(Expr.invokeVirtual("java/lang/Short", "shortValue", "()S", PrimitiveType.type_short)));
+      }
+      case c_i32 -> {
+        yield Expr.aload(slot, JAVA_LANG_OBJECT)
+          .andThen(
+            Expr.checkcast(new ClassType("java/lang/Integer"))
+              .andThen(Expr.invokeVirtual("java/lang/Integer", "intValue", "()I", PrimitiveType.type_int)));
+      }
+      case c_i64 -> {
+        yield Expr.aload(slot, JAVA_LANG_OBJECT)
+          .andThen(
+            Expr.checkcast(new ClassType("java/lang/Long"))
+              .andThen(Expr.invokeVirtual("java/lang/Long", "longValue", "()L", PrimitiveType.type_long)));
+      }
+      case c_f32 -> {
+        yield Expr.aload(slot, JAVA_LANG_OBJECT)
+          .andThen(
+            Expr.checkcast(new ClassType("java/lang/Float"))
+              .andThen(Expr.invokeVirtual("java/lang/Float", "floatValue", "()F", PrimitiveType.type_float)));
+      }
+      case c_f64 -> {
+        yield Expr.aload(slot, JAVA_LANG_OBJECT)
+          .andThen(
+            Expr.checkcast(new ClassType("java/lang/Double"))
+              .andThen(Expr.invokeVirtual("java/lang/Double", "doubleValue", "()D", PrimitiveType.type_double)));
+      }
+      case c_bool -> {
+        yield Expr.aload(slot, JAVA_LANG_OBJECT)
+          .andThen(
+            Expr.checkcast(new ClassType("java/lang/Boolean"))
+              .andThen(Expr.invokeVirtual("java/lang/Boolean", "booleanValue", "()Z", PrimitiveType.type_boolean)));
+      }
+      default -> {
+        var rt = jvm._types.javaType(rc0);
+        var jref = jvm._fuir.lookupJavaRef(rc0);
+
+        yield Expr.aload(slot, JAVA_LANG_OBJECT)
+          .andThen(jvm.new0(rc0))                                            // result, rc0
+          .andThen(Expr.DUP_X1)                                              // rc0, result, rc0
+          .andThen(Expr.SWAP)                                                // rc0, rc0, result
+          .andThen(jvm.putfield(jref))                                       // rc0
+          .is(rt);
+      }};
+
+    var neg = jvm.new0(cl_err)                                                               // error
+      .andThen(Expr.DUP)                                                                     // error, error
+      .andThen(jvm.constString(
+        Expr.invokeStatic(Names.RUNTIME_CLASS, "getException", "()Ljava/lang/String;", JAVA_LANG_STRING)
+          .andThen(Expr.getstatic("java/nio/charset/StandardCharsets", "UTF_8", new ClassType("java/nio/charset/Charset")))
+          .andThen(Expr.invokeVirtual("java/lang/String", "getBytes", "(Ljava/nio/charset/Charset;)[B", ClassFileConstants.PrimitiveType.type_byte.array()))
+      ))                                                                                     // error, error, string
+      .andThen(jvm.putfield(jvm._fuir.clazzArg(jvm._fuir.clazz_error(), 0)))                 // error
+      .andThen(Expr.checkcast(jvm._types.javaType(cl_err)));
+
+    var res = exec
+      .andThen(Expr.DUP)                                                               // result, result
+      .andThen(Expr.astore(slot, JAVA_LANG_OBJECT.vti()))                              // result
+      .andThen(Expr.instanceOf(ERROR_TYPE))                                            // boolean
+      .andThen(Expr.branch(O_ifeq, jvm._types._choices.tag(jvm, si, pos, rc, 0),
+                                   jvm._types._choices.tag(jvm, si, neg, rc, 1)));     // tagged_result
+
+    return new Pair<>(res, Expr.UNIT);
+  }
+
+
+  static
+  {
+    put("fuzion.java.call_v0",
+        (jvm, si, cc, tvalue, args) ->
         {
-          var rc = jvm._fuir.clazz_fuzionJavaObject();
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
-          var res = jvm.new0(rc)
-            .andThen(Expr.DUP)
-            .andThen(args.get(0))
-            .andThen(Expr.invokeStatic("java/lang/Double", "valueOf", "(D)Ljava/lang/Double;", Names.JAVA_LANG_OBJECT))
-            .andThen(jvm.putfield(jref))
-            .is(jvm._types.javaType(rc));
-          return new Pair<>(res, Expr.UNIT);
+          var rc = jvm._fuir.clazzResultClazz(cc);
+          var data = jvm._fuir.clazzArg(jvm._fuir.clazzArgClazz(cc, 4), 0);
+          var exec = call_jlStringArg(jvm, cc, args, 0)
+            .andThen(call_jlStringArg(jvm, cc, args, 1))
+            .andThen(call_jlStringArg(jvm, cc, args, 2))
+            .andThen(args.get(3))
+            .andThen(args.get(4))
+            .andThen(jvm.getfield(data)) // args
+            .andThen(Expr.checkcast(JAVA_LANG_OBJECT.array()))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                    "fuzion_java_call_v0",
+                                    "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;",
+                                    Names.JAVA_LANG_OBJECT));
+          return returnResult(jvm, si, rc, exec);
         });
 
-    put("fuzion.java.bool_to_java_object",
-        (jvm, cl, pre, cc, tvalue, args) ->
+    put("fuzion.java.call_s0",
+        (jvm, si, cc, tvalue, args) ->
         {
-          var rc = jvm._fuir.clazz_fuzionJavaObject();
-          var jref = jvm._fuir.clazz_fuzionJavaObject_Ref();
-          var res = jvm.new0(rc)
-            .andThen(Expr.DUP)
-            .andThen(args.get(0))
-            .andThen(Expr.invokeStatic("java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;", Names.JAVA_LANG_OBJECT))
-            .andThen(jvm.putfield(jref))
-            .is(jvm._types.javaType(rc));
-          return new Pair<>(res, Expr.UNIT);
+          var rc = jvm._fuir.clazzResultClazz(cc);
+          var data = jvm._fuir.clazzArg(jvm._fuir.clazzArgClazz(cc, 3), 0);
+          var exec = call_jlStringArg(jvm, cc, args, 0)
+            .andThen(call_jlStringArg(jvm, cc, args, 1))
+            .andThen(call_jlStringArg(jvm, cc, args, 2))
+            .andThen(args.get(3))
+            .andThen(jvm.getfield(data)) // args
+            .andThen(Expr.checkcast(JAVA_LANG_OBJECT.array()))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "fuzion_java_call_s0",
+                                       "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;",
+                                       Names.JAVA_LANG_OBJECT));
+          return returnResult(jvm, si, rc, exec);
+        });
+
+    put("fuzion.java.call_c0",
+        (jvm, si, cc, tvalue, args) ->
+        {
+          var rc = jvm._fuir.clazzResultClazz(cc);
+          var data = jvm._fuir.lookup_fuzion_sys_internal_array_data(jvm._fuir.clazzArgClazz(cc, 2));
+          var exec = call_jlStringArg(jvm, cc, args, 0)
+            .andThen(call_jlStringArg(jvm, cc, args, 1))
+            .andThen(args.get(2))
+            .andThen(jvm.getfield(data)) // args
+            .andThen(Expr.checkcast(JAVA_LANG_OBJECT.array()))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "fuzion_java_call_c0",
+                                       "(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;",
+                                       Names.JAVA_LANG_OBJECT));
+          return returnResult(jvm, si, rc, exec);
         });
 
     put("fuzion.sys.args.count",
-        (jvm, cl, pre, cc, tvalue, args) ->
+        (jvm, si, cc, tvalue, args) ->
         {
           var val = Expr.getstatic(Names.RUNTIME_CLASS,
                                    Names.RUNTIME_ARGS,
                                    JAVA_LANG_STRING.array())
-            .andThen(Expr.ARRAYLENGTH);
+            .andThen(Expr.ARRAYLENGTH)
+            .andThen(Expr.iconst(1))
+            .andThen(Expr.IADD);
           return new Pair<>(val, Expr.UNIT);
         });
 
     put("fuzion.sys.args.get",
-        (jvm, cl, pre, cc, tvalue, args) ->
+        (jvm, si, cc, tvalue, args) ->
         {
           return jvm.constString(args.get(0)
                                  .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
@@ -394,9 +617,9 @@ public class Intrinsix extends ANY implements ClassFileConstants
         "fuzion.sys.internal_array.setel",
         "fuzion.sys.internal_array_init.alloc",
 
-        (jvm, cl, pre, cc, tvalue, args) ->
+        (jvm, si, cc, tvalue, args) ->
         {
-          var in = jvm._fuir.clazzIntrinsicName(cc);
+          var in = jvm._fuir.clazzOriginalName(cc);
           var at = jvm._fuir.clazzOuterClazz(cc); // array type
           var et = jvm._fuir.clazzActualGeneric(at, 0); // element type
           var jt = jvm._types.resultType(et);
@@ -441,11 +664,10 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("fuzion.sys.internal_array.freeze",
         "fuzion.sys.internal_array.ensure_not_frozen",
 
-        (jvm, cl, pre, cc, tvalue, args) ->
+        (jvm, si, cc, tvalue, args) ->
         {
-          var in = jvm._fuir.clazzIntrinsicName(cc);
+          var in = jvm._fuir.clazzOriginalName(cc);
           var at = jvm._fuir.clazzOuterClazz(cc);       // array type
-          var et = jvm._fuir.clazzActualGeneric(at, 0); // element type
           var val = Expr.UNIT;
           var code = Expr.UNIT;
           if (CHECKS)
@@ -461,8 +683,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(val, code);
         });
 
-    put("effect.abort",
-        (jvm, cl, pre, cc, tvalue, args) ->
+    put("effect.abort0",
+        (jvm, si, cc, tvalue, args) ->
         {
           var ecl = jvm._fuir.effectType(cc);
           var code = Expr.iconst(jvm._fuir.clazzId2num(ecl))
@@ -474,7 +696,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         });
 
     put("effect.abortable",
-        (jvm, cl, pre, cc, tvalue, args) ->
+        (jvm, si, cc, tvalue, args) ->
         {
           var ecl = jvm._fuir.effectType(cc);
           var oc = jvm._fuir.clazzActualGeneric(cc, 0);
@@ -503,7 +725,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         });
 
     put("effect.default",
-        (jvm, cl, pre, cc, tvalue, args) ->
+        (jvm, si, cc, tvalue, args) ->
         {
           var ecl = jvm._fuir.effectType(cc);
           var result = Expr.iconst(jvm._fuir.clazzId2num(ecl))
@@ -517,7 +739,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(Expr.UNIT, result);
         });
     put("effect.replace",
-        (jvm, cl, pre, cc, tvalue, args) ->
+        (jvm, si, cc, tvalue, args) ->
         {
           var ecl = jvm._fuir.effectType(cc);
           var result = Expr.iconst(jvm._fuir.clazzId2num(ecl))
@@ -531,7 +753,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(Expr.UNIT, result);
         });
     put("effect.type.is_installed",
-        (jvm, cl, pre, cc, tvalue, args) ->
+        (jvm, si, cc, tvalue, args) ->
         {
           var ecl = jvm._fuir.clazzActualGeneric(cc, 0);
           var val = Expr.iconst(jvm._fuir.clazzId2num(ecl))
@@ -543,12 +765,21 @@ public class Intrinsix extends ANY implements ClassFileConstants
         });
 
     put("safety",
-        (jvm, cl, pre, cc, tvalue, args) ->
+        (jvm, si, cc, tvalue, args) ->
         {
           return new Pair<>(Expr.UNIT, Expr.iconst(jvm._options.fuzionSafety() ? 1 : 0));
         });
 
-    put("fuzion.std.nano_time", (jvm, cl, pre, cc, tvalue, args) -> {
+    put("fuzion.sys.fileio.read_dir", (jvm, si, cc, tvalue, args) -> {
+      return jvm.constString(
+        args.get(0)
+          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                     "fuzion_sys_fileio_read_dir",
+                                     methodDescriptor(Runtime.class, "fuzion_sys_fileio_read_dir"),
+                                     PrimitiveType.type_byte.array())));
+    });
+
+    put("fuzion.std.nano_time", (jvm, si, cc, tvalue, args) -> {
       var res =
         tvalue.drop()
           .andThen(Expr.invokeStatic(System.class.getName().replace(".", "/"),
@@ -557,7 +788,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
             PrimitiveType.type_long));
       return new Pair<>(res, Expr.UNIT);
     });
-    put("fuzion.sys.env_vars.get0", (jvm, cl, pre, cc, tvalue, args) -> {
+    put("fuzion.sys.env_vars.get0", (jvm, si, cc, tvalue, args) -> {
       return jvm.constString(
         tvalue.drop()
           .andThen(args.get(0))
@@ -566,13 +797,13 @@ public class Intrinsix extends ANY implements ClassFileConstants
             methodDescriptor(Runtime.class, "fuzion_sys_env_vars_get0"),
             PrimitiveType.type_byte.array())));
     });
-    put("fuzion.sys.env_vars.set0", (jvm, cl, pre, cc, tvalue, args) -> {
+    put("fuzion.sys.env_vars.set0", (jvm, si, cc, tvalue, args) -> {
       var res =
         tvalue.drop()
           .andThen(Expr.iconst(0)); // false
       return new Pair<>(res, Expr.UNIT);
     });
-    put("fuzion.sys.env_vars.unset0", (jvm, cl, pre, cc, tvalue, args) -> {
+    put("fuzion.sys.env_vars.unset0", (jvm, si, cc, tvalue, args) -> {
       var res =
         tvalue.drop()
           .andThen(Expr.iconst(0)); // false
@@ -580,7 +811,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
     });
 
     put("fuzion.sys.thread.spawn0",
-        (jvm, cl, pre, cc, tvalue, args) ->
+        (jvm, si, cc, tvalue, args) ->
         {
           var oc = jvm._fuir.clazzActualGeneric(cc, 0);
           var call = jvm._fuir.lookupCall(oc);
@@ -607,22 +838,14 @@ public class Intrinsix extends ANY implements ClassFileConstants
         });
 
     put(new String[]
-      { "fuzion.java.array_get",
-        "fuzion.java.array_length",
-        "fuzion.java.array_to_java_object0",
-        "fuzion.java.call_c0",
-        "fuzion.java.call_s0",
-        "fuzion.java.call_v0",
-        "fuzion.java.get_field0",
-        "fuzion.java.get_static_field0",
-        "fuzion.java.java_string_to_string",
-        "fuzion.java.string_to_java_object0"
+      {
+        // the names of intrinsics that are not implemented in the JVM backend should go here
       },
-        (jvm, cl, pre, cc, tvalue, args) ->
+        (jvm, si, cc, tvalue, args) ->
         {
           var name = jvm._names.function(cc, false);
-          var in = jvm._fuir.clazzIntrinsicName(cc);
-          var msg = "NYI: missing implementation of JVM backend intrinsic '" +
+          var in = jvm._fuir.clazzOriginalName(cc);
+          var msg = "missing implementation of JVM backend intrinsic '" +
             in + "', need '" + Intrinsics.class.getName() + "." + name + "' or inline code in " +
             Intrinsix.class.getName() + ".";
           return new Pair<>(null,
@@ -701,9 +924,11 @@ public class Intrinsix extends ANY implements ClassFileConstants
   /**
    * Check if given intrinsic cc is implemented as inline code.  Create inline
    * code if that is the case or code to produce an error if that is not the
-   * case and there is no implementation in runtime.Instrinsics either.
+   * case and there is no implementation in runtime.Intrinsics either.
    *
    * @param jvm the backend
+   *
+   * @param si site of the call
    *
    * @param cc the intrinsic to be called
    *
@@ -715,17 +940,17 @@ public class Intrinsix extends ANY implements ClassFileConstants
    * be called normally, otherwise the code created for the intrinsic or to
    * produce an error message since the intrinsic is missing.
    */
-  static Pair<Expr, Expr> inlineCode(JVM jvm, int cl, boolean pre, int cc, Expr tvalue, List<Expr> args)
+  static Pair<Expr, Expr> inlineCode(JVM jvm, int si, int cc, Expr tvalue, List<Expr> args)
   {
     Pair<Expr, Expr> result = null;
     var name = jvm._names.function(cc, false);
     if (!_availableIntrinsics.contains(name))
       {
-        var in = jvm._fuir.clazzIntrinsicName(cc);
+        var in = jvm._fuir.clazzOriginalName(cc);
         var g = Intrinsix._compiled_.get(in);
         if (g != null)
           {
-            result = g.get(jvm, cl, pre, cc, tvalue, args);
+            result = g.get(jvm, si, cc, tvalue, args);
           }
         else
           {
@@ -740,7 +965,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
 
 
   /**
-   * Check if given intrinsic cc has an implementation in runtime.Instrinsics.
+   * Check if given intrinsic cc has an implementation in runtime.Intrinsics.
    *
    * @param jvm the backend
    *

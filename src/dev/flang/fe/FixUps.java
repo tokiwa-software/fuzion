@@ -205,9 +205,11 @@ class FixUps extends DataOut
         var sf = p._sourceFile;
         var n = lo.fileName(sf);
         var o = _sourceFilePositions.get(n) + p.bytePos();
+        var oe = _sourceFilePositions.get(n) + p.byteEndPos();
         if (CHECKS) check
-          (o > 0);
+          (o > 0, oe > 0);
         writeIntAt(at, o);
+        writeIntAt(at+4, oe);
       }
   }
 

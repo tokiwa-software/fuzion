@@ -42,8 +42,8 @@ stringtest is
   say 10
   say [0,1,2]
 
-  say (String.type.from_codepoints "hell😀".as_codepoints)
+  say (String.from_codepoints "hell😀".as_codepoints)
 
   mi : mutate is
   mi.go ()->
-    say (String.type.from_mutable_array ((mutate.array Any).type.new mi 1 nil))
+    say (String.from_mutable_array mi ((mutate.array Any).new mi 1 nil))

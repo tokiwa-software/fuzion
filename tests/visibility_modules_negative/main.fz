@@ -33,7 +33,7 @@ public m =>
   # checkResultTypeVisibility
 
   private priv is
-  module mod priv is  // should flag an error result type visibility more restrictive than a
+  module mod priv =>  // should flag an error result type visibility more restrictive than a
     priv
   module mod8 := priv_ce  // should flag an error priv_ce visibility more restrictive than mod8
 
@@ -49,7 +49,7 @@ public m =>
   module mod3 : choice priv_ce unit is // should flag an error priv_ce visibility more restrictive than mod3
   module mod4(T type : priv_ce) is // should flag an error priv_ce visibility more restrictive than mod4
   module mod5(arg array priv_ce) is // should flag an error priv_ce visibility more restrictive than mod5
-  module mod9 := (list priv_ce).type.empty // should flag an error priv_ce visibility more restrictive than mod9
+  module mod9 := (list priv_ce).empty // should flag an error priv_ce visibility more restrictive than mod9
 
   priv3 : Sequence a.mod is // should flag an error a.mod is not visible in this file
 
@@ -72,16 +72,28 @@ public m =>
 
   # Redefinition must not have more restrictive visibility.
   redef_test is
-    public b unit is
+    public b unit =>
       unit
-    public e unit is abstract
+    public e unit => abstract
 
   redef_test_0 : redef_test is
-    module redef b unit is // should flag an error Redefinition must not have more restrictive visibility.
+    module redef b unit => // should flag an error Redefinition must not have more restrictive visibility.
       unit
-    module e unit is // should flag an error Redefinition must not have more restrictive visibility.
+    module e unit => // should flag an error Redefinition must not have more restrictive visibility.
       unit
 
 
+  # checkAbstractVisibility
+
+  public outer is
+    inner_abstract i32 => abstract // should flag an error Abstract features visibility must not be more restrictive than outer features visibility.
 
   unit
+
+
+  # checkLegalVisibility
+
+  match (list i32).empty
+    c Cons =>
+      module my_feat is // should flag an error visibility modifier used in inner block
+    nil =>

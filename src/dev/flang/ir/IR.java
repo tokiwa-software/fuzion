@@ -33,10 +33,8 @@ import dev.flang.ast.AbstractConstant; // NYI: remove dependency
 import dev.flang.ast.AbstractCurrent; // NYI: remove dependency
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
-import dev.flang.ast.Check; // NYI: remove dependency
 import dev.flang.ast.Env; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
-import dev.flang.ast.If; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
 import dev.flang.ast.Nop; // NYI: remove dependency
@@ -45,7 +43,6 @@ import dev.flang.ast.Universe; // NYI: remove dependency
 
 import dev.flang.util.ANY;
 import dev.flang.util.List;
-import dev.flang.util.Map2Int;
 import dev.flang.util.SourcePosition;
 
 
@@ -54,7 +51,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class IR extends ANY
+public abstract class IR extends ANY
 {
 
 
@@ -71,7 +68,15 @@ public class IR extends ANY
    * For FUIR code represented by integers, this gives the base added to the
    * integers to detect wrong values quickly.
    */
-  protected static final int CODE_BASE    = 0x30000000;
+  protected static final int SITE_BASE    = 0x30000000;
+
+
+  /**
+   * Special site index value for unknown site location (i.e, a site coming from
+   * an intrinsic or the program entry point).
+   */
+  public static final int NO_SITE = SITE_BASE-1;
+
 
   /**
    * For Features represented by integers, this gives the base added to the
@@ -96,7 +101,6 @@ public class IR extends ANY
 
   public enum ExprKind
   {
-    AdrOf,
     Assign,
     Box,
     Call,
@@ -106,26 +110,14 @@ public class IR extends ANY
     Match,
     Tag,
     Env,
-    Pop,
-    Unit,
-    // this is eliminated in FUIR
-    InlineArray;
-
-    /**
-     * get the Kind that corresponds to the given ordinal number.
-     */
-    public static ExprKind from(int ordinal)
-    {
-      if (CHECKS) check
-        (values()[ordinal].ordinal() == ordinal);
-
-      return values()[ordinal];
-    }
-
+    Pop;
   }
 
 
-  protected final Map2Int<List<Object>> _codeIds;
+  /**
+   * All the code blocks in this IR. They are added via `addCode`.
+   */
+  protected final List<Object> _allCode;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -133,8 +125,9 @@ public class IR extends ANY
 
   public IR()
   {
-    _codeIds = new Map2Int<>(CODE_BASE);
+    _allCode = new List<>();
   }
+
 
   /**
    * Clone this IR such that modifications can be made by optimizers.  A heir of
@@ -145,7 +138,44 @@ public class IR extends ANY
    */
   protected IR(IR original)
   {
-    _codeIds = original._codeIds;
+    _allCode = original._allCode;
+  }
+
+
+  /*-----------------------  code block handling  -----------------------*/
+
+
+  /**
+   * Add given code block and obtain a unique id for it.
+   *
+   * This also sets _siteStart in case `b` was not already added.
+   *
+   * @param b a list of Exprs, might contain non-Expr values for special cases.
+   *
+   * @return the index of b
+   */
+  protected int addCode(List<Object> code)
+  {
+    var result = _allCode.size() + SITE_BASE;
+    for (var c : code)
+      {
+        _allCode.add(c);
+      }
+    _allCode.add(null);
+    return result;
+  }
+
+
+  /**
+   * Get the expression at the given site
+   *
+   * @param s a site
+   *
+   * @return the expression found at site s.
+   */
+  protected Object getExpr(int s)
+  {
+    return _allCode.get(s - SITE_BASE);
   }
 
 
@@ -244,14 +274,6 @@ public class IR extends ANY
             l.add(ExprKind.Current);
           }
       }
-    else if (e instanceof If i)
-      {
-        // if is converted to If, blockId, elseBlockId
-        toStack(l, i.cond);
-        l.add(i);
-        l.add(new NumLiteral(_codeIds.add(toStack(i.block      ))));
-        l.add(new NumLiteral(_codeIds.add(toStack(i.elseBlock()))));
-      }
     else if (e instanceof AbstractCall c)
       {
         toStack(l, c.target());
@@ -272,7 +294,7 @@ public class IR extends ANY
         for (var c : m.cases())
           {
             var caseCode = toStack(c.code());
-            l.add(new NumLiteral(_codeIds.add(caseCode)));
+            l.add(new NumLiteral(addCode(caseCode)));
           }
       }
     else if (e instanceof Tag t)
@@ -297,68 +319,76 @@ public class IR extends ANY
       {
         var un = (Universe) e;
       }
-    else if (e instanceof Check c)
-      {
-        // NYI: Check not supported yet
-        //
-        // l.add(s);
-      }
     else
       {
-        System.err.println("Missing handling of "+e.getClass()+" in IR.toStack");
+        say_err("Missing handling of "+e.getClass()+" in IR.toStack");
       }
   }
 
 
   /**
-   * Get size of given code
+   * Get size of the code starting at given site
    *
-   * @param c an index of a code block
+   * @param s a site
    *
-   * @return the size of code block c, i.e., withinCode(c, 0..result-1) <==> true.
+   * @return the size of code block c, i.e., withinCode(s+0..s+result-1) <==> true.
    */
-  public int codeSize(int c)
+  public int codeSize(int s)
   {
-    var code = _codeIds.get(c);
-    return code.size();
+    var result = 0;
+    while (withinCode(s + result))
+      {
+        result++;
+      }
+    return result;
   }
 
 
   /**
-   * Check if index ix is within code block c.
+   * Check if site s is still a valid site. For every valid site `s` with `withinCode(s)`,
+   * it is legal to call `withinCode(s+codeSizeAt(s))` to check if the code continues.
    *
-   * @param c an index of a code block
+   * @param s a value site or the successor of a valid site
    *
-   * @param ix any non-negative integer
-   *
-   * @return true iff ix is a valid index in code block c.
+   * @return true iff s is a valid valid site that contains an expression
    */
-  public boolean withinCode(int c, int ix)
+  public boolean withinCode(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0);
+      (s >= SITE_BASE);
 
-    var code = _codeIds.get(c);
-    return ix < code.size();
+    return _allCode.get(s - SITE_BASE) != null;
   }
 
 
   /**
-   * Get the intermediate command at index ix in codeblock c.
+   * Get the expr at the given site
    *
-   * @param c an index of a code block
+   * @param s a site
    *
-   * @param ix an index within code block c.
-   *
-   * @return the intermediate command at that index.
+   * @return the ExprKind of the expression at site, null if undefined.
    */
-  public ExprKind codeAt(int c, int ix)
+  public ExprKind codeAt(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0, withinCode(c, ix));
+      (s >= SITE_BASE,
+       withinCode(s));
 
+    return exprKind(getExpr(s));
+  }
+
+
+  /**
+   * Helper for `codeAt` to determine the ExprKind for an Object that is either
+   * an ast Expr or String.
+   *
+   * @param e an expression as stored in _allCode
+   *
+   * @return the corresponding ExprKind
+   */
+  protected ExprKind exprKind(Object e)
+  {
     ExprKind result;
-    var e = _codeIds.get(c).get(ix);
     if (e instanceof ExprKind ek)
       {
         result = ek;
@@ -379,8 +409,7 @@ public class IR extends ANY
       {
         result = ExprKind.Call;
       }
-    else if (e instanceof If            ||
-             e instanceof AbstractMatch    )
+    else if (e instanceof AbstractMatch)
       {
         result = ExprKind.Match;
       }
@@ -410,30 +439,38 @@ public class IR extends ANY
 
 
   /**
-   * Get the source code position of expression #ix in given code block.
+   * Get the source code position of an expr at the given site if it is available.
    *
-   * @param c code block index
+   * @param site a site
    *
-   * @param ix index of expression within c
-   *
-   * @return the source code position of expression #ix in block c.
+   * @return the source code position or null if not available.
    */
-  public SourcePosition codeAtPos(int c, int ix)
+  public SourcePosition sitePos(int s)
   {
-    return ((Expr)_codeIds.get(c).get(ix)).pos();
+    if (PRECONDITIONS) require
+      (s >= 0,
+       withinCode(s));
+
+    var e = getExpr(s);
+    return (e instanceof Expr expr) ? expr.pos()
+                                    : null;
   }
 
 
   /**
-   * Get the size of the intermediate command at index ix in codeblock c.
+   * Get the size of the intermediate command at given site
+   *
+   * @param s a site
+   *
+   * @return the offset of the next expression relative to `s`.
    */
-  public int codeSizeAt(int c, int ix)
+  public int codeSizeAt(int s)
   {
     int result = 1;
-    var s = codeAt(c, ix);
-    if (s == ExprKind.Match)
+    var e = codeAt(s);
+    if (e == ExprKind.Match)
       {
-        result = result + matchCaseCount(c, ix);
+        result = result + matchCaseCount(s);
       }
     return result;
   }
@@ -442,22 +479,20 @@ public class IR extends ANY
   /**
    * For a match expression, get the number of cases
    *
-   * @param c code block containing the match
-   *
-   * @param ix index of the match
+   * @param s site of the match
    *
    * @return the number of cases
    */
-  public int matchCaseCount(int c, int ix)
+  public int matchCaseCount(int s)
   {
     if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Match);
+      (s >= 0,
+       withinCode(s),
+       codeAt(s) == ExprKind.Match);
 
-    var s = _codeIds.get(c).get(ix);
+    var e = getExpr(s);
     int result = 2; // two cases for If
-    if (s instanceof AbstractMatch m)
+    if (e instanceof AbstractMatch m)
       {
         result = m.cases().size();
       }
@@ -466,21 +501,43 @@ public class IR extends ANY
 
 
   /**
-   * Get the code for a comment expression.  This is used for debugging.
+   * From a given site, determine the site of the start of the code block that
+   * contains the given site.
    *
-   * @param c code block containing the comment
+   * @param site any site
    *
-   * @param ix index of the comment
+   * @return the site of the first Expr in the code block containing `site`
    */
-  public String comment(int c, int ix)
+  public int codeBlockStart(int site)
   {
-    if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Comment);
-
-    return (String) _codeIds.get(c).get(ix);
+    var c = site - SITE_BASE;
+    var result = c;
+    while (result > 0 && _allCode.get(result-1) != null)
+      {
+        result--;
+      }
+    return result + SITE_BASE;
   }
+
+
+  /**
+   * From a given site, determine the site of the last Expr in the code block
+   * that contains the given site.
+   *
+   * @param site any site
+   *
+   * @return the site of the last Expr in the code block containing `site`
+   */
+  public int codeBlockEnd(int site)
+  {
+    var s0 = codeBlockStart(site);
+    while (withinCode(s0 + codeSizeAt(s0)))
+      {
+        s0 = s0 + codeSizeAt(s0);
+      }
+    return s0;
+  }
+
 
 }
 

@@ -31,7 +31,7 @@ bugOptionFalse is
 
   x(V type)
   is
-    b(l i32) option V is
+    b(l i32) option V =>
       if l > 0
         false  # SHOULD FLAG AN ERROR!
       else

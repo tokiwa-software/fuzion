@@ -1,0 +1,166 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test sockets
+#
+# -----------------------------------------------------------------------
+
+sockets_test is
+
+
+  # server
+  #
+  server(f net.family.val, p net.protocol.val) =>
+
+    # server handles one connection at a time
+    start_server(family net.family.val, protocol net.protocol.val, port u16) =>
+
+      say_silent(s Any) => unit
+
+      # install server in env
+      say "opened $protocol/$family-server on port $port: {(net.server family protocol port)}"
+
+
+
+      rh : net.Request_Handler unit is
+
+        handle_request unit =>
+
+          chan => net.channel.env
+
+          say_silent "$protocol/$family-server, accepted connection"
+          say_silent chan.get_peer_address
+          say_silent chan.get_peer_port
+
+          rr := io.buffered.read_line_while (s -> !s.is_empty)
+
+          say_silent "$protocol/$family-server, read lines: >{rr}<"
+
+          match protocol
+            net.protocol.tcp =>
+
+              res := "received: {rr.as_string}\n\n"
+
+              match chan.write res.utf8
+                e error => say_silent "$protocol/$family-server, write error $e"
+                * => say_silent "$protocol/$family-server, write succeeded"
+
+
+            net.protocol.udp =>
+              # rest of udp datagram was discarded
+            * =>
+              panic "NI"
+
+
+
+      while net.server.is_active && match net.server.accept rh
+                                      e error => false
+                                      * => true
+      do
+
+
+
+    start_server f p (port f p)
+
+
+
+  # client
+  #
+  client(family net.family.val, protocol net.protocol.val, host String, port u16, num i32) is
+
+    rh : net.Request_Handler String is
+
+      handle_request =>
+
+        chan => net.channel.env
+
+        req := ("GET / HTTP\n"
+          + "Host: $host\n"
+          + "Client: {sockets_test.client.this.num}\n\n")
+
+        res := "$protocol/$family-client {sockets_test.client.this.num}, write to $host:$port => {chan.write req.utf8}"
+
+        match protocol
+          net.protocol.tcp =>
+
+            rr := io.buffered.read_line_while (s -> !s.is_empty)
+
+            res + "\n" + "$protocol/$family-client {sockets_test.client.this.num}, read lines from  $host:$port: >{rr}<"
+
+          # for UDP reading would block indefinitely
+          net.protocol.udp =>
+            # rest of udp datagram was discarded
+            res
+
+          * =>  panic "NI"
+
+
+
+    match net.client rh family protocol host port
+      err error =>
+        say "$protocol/$family-client {sockets_test.client.this.num}, $host:$port: error establishing connection"
+      str String =>
+        say str
+
+
+  # a number for protocol p to be used for
+  # choosing a unique port for every protocol/family
+  #
+  protocol_num(p net.protocol.val) u16 =>
+    match p
+      net.protocol.tcp => 0
+      net.protocol.udp => 1
+      nil => 2
+
+  # a number for family f to be used for
+  # choosing a unique port for every protocol/family
+  #
+  family_num(f net.family.val) u16 =>
+    match f
+      net.family.ipv4 => 0
+      net.family.ipv6 => 3
+
+
+  # For now use a different port for every test.
+  port(f net.family.val, p net.protocol.val) => u16 40000 + (protocol_num p) + (family_num f)
+
+
+########### Tests ################
+
+  families array net.family.val := [net.family.ipv4, net.family.ipv6]
+  protocols array net.protocol.val := [net.protocol.tcp, net.protocol.udp]
+  for f in families do
+    for p in protocols do
+      time.nano.sleep (time.durations.s 1)
+      concur.thread.spawn ()->
+        _ := server f p
+
+  time.nano.sleep (time.durations.seconds 10)
+
+  for f in families do
+    for p in protocols do
+      say "### $p/$f-Tests ###"
+
+
+
+      # write request to server and read response
+      for i in 1..2 do
+        client f p (net.family.localhost f) (port f p) i
+
+  exit 0

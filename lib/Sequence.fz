@@ -23,8 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# Sequence -- ancestor for features that can be converted to a 'list' or a
-# 'stream'
+# Sequence -- ancestor for features that can be converted to a 'list'
 #
 # Sequences are empty, finite or infinite ordered collections of instances
 # of a given type.  Sequences may calculate elements lazily on demand.
@@ -32,9 +31,7 @@
 # Sequence is a 'ref' type, i.e., different sub-features may be assigned
 # to a field of type 'Sequence'.
 #
-# Heirs of Sequence must implement either 'as_list' or 'as_stream'.  Failure
-# to implement any of these results in an endless recursion when the Sequence
-# is used.
+# Heirs of Sequence must implement 'as_list'.
 #
 public Sequence(public T type) ref is
 
@@ -42,23 +39,10 @@ public Sequence(public T type) ref is
   # create a list from this Sequence.
   #
   # A list is immutable, so it can be reused and shared between threads.
-  # Compared to a stream, a list may require more (heap) allocation.
   #
-  # Default implementation uses as_stream. Heirs must redefine at least
-  # one of as_list or as_stream.
+  # Heirs must provide an implementation of as_list.
   #
-  public as_list list T is as_stream.as_list
-
-
-  # create a stream of T.
-  #
-  # A stream contains mutable state, so it cannot be reused or shared
-  # between threads.
-  #
-  # Default implementation uses as_list.  Heirs must redefine at least
-  # one of as_list or as_stream.
-  #
-  public as_stream stream T is as_list.as_stream
+  public as_list list T => abstract
 
 
   # is this sequence known to be finite?  For infinite sequences, features like
@@ -81,10 +65,12 @@ public Sequence(public T type) ref is
   # count the number of elements in this Sequence.  Note that this typically
   # runs forever if executed on an endless list
   #
+  # For lists that are not array backed, this might require time in O(count).
+  #
   public count
   pre
     analysis: finite  # in practice, we do not always have this information
-  => (map i32 (_ -> 1)).fold i32.type.sum
+  => (map i32 (_ -> 1)).fold i32.sum
 
 
   # get the first element of this Sequence
@@ -148,22 +134,40 @@ public Sequence(public T type) ref is
 
   # create a list and call 'for_each f' on it
   #
-  public for_each(f T -> unit) unit is as_list.for_each f
+  public for_each(f T -> unit) unit => as_list.for_each f
 
 
-  # create a list and have it consumed by f, infix operator synonym of for_each.
+  # calls `f` for element in the Sequence.
   #
-  public infix | (f T -> unit) => for_each f
-
-
-  # create a stream, postfix operator synonym for as_stream
+  # Unlike `for_each` this returns itself
+  # allowing easier composition with
+  # other Sequence features.
   #
-  public postfix | => as_stream
+  # example:
+  # [1,2,3,4,5]
+  #   .filter is_prime
+  #   .peek say
+  #   .drop_while <10
+  #
+  public peek (f T -> unit) =>
+    as_list ? nil    =>
+            | c Cons => f c.head; _ := c.tail.peek f
+    as_list
+
+
+  # consume all elements of this Sequence by f. This is an infix operator alias
+  # for for_each.
+  #
+  # Ex.: To print all the elements of a list, you can use
+  #
+  #  1..10 ! say
+  #
+  public infix ! (f T -> unit) => for_each f
 
 
   # apply 'f' to each element 'e' as long as 'f e'
   #
-  public for_while(f T -> bool) unit is
+  public for_while(f T -> bool) unit =>
     take_while f
       .for_each _->unit
 
@@ -171,14 +175,14 @@ public Sequence(public T type) ref is
   # create a new list that contains the first elements of
   # this Sequence for which 'f e' is false
   #
-  public before(f T -> bool) list T is
+  public before(f T -> bool) list T =>
     take_while (x -> !(f x))
 
 
   # filter elements using predicate f
   # values for which f is false are dropped
   #
-  public filter   (f T -> bool) list T is as_list.filter f
+  public filter   (f T -> bool) list T => as_list.filter f
 
 
   # filter elements using predicate f, infix operator
@@ -197,12 +201,12 @@ public Sequence(public T type) ref is
 
   # check if predicate f holds for all elements
   #
-  public infix ∀ (f T -> bool) bool is as_list ∀ f
+  public infix ∀ (f T -> bool) bool => as_list ∀ f
 
 
   # check if predicate f holds for at least one element
   #
-  public infix ∃ (f T -> bool) bool is as_list ∃ f
+  public infix ∃ (f T -> bool) bool => as_list ∃ f
 
 
   # create a list that consists only of the first n elements of this
@@ -219,18 +223,25 @@ public Sequence(public T type) ref is
   # create a list that consists of the elements of this Sequence except the first
   # n elements
   #
+  # NOTE: this may have performance in O(n) unless it is backed by an immutable array.
+  #
+  #
   public drop (n i32) => as_list.drop n
 
 
   # get a function that, given an index, returns the element at that index
   #
-  public index [] () i32 -> T is n -> Sequence.this[n]
+  public index [] () i32 -> T => n -> Sequence.this[n]
 
 
   # create a slice from this Sequence that consists of the elements starting at index
   # from (including) up to index to (excluding).
   #
-  public slice(from, to i32) Sequence T is
+  public slice(from, to i32) Sequence T
+    pre
+      debug: from ≥ 0
+      debug: to = 0 || is_valid_index to-1
+  =>
     drop(from).take to-from
 
 
@@ -255,35 +266,63 @@ public Sequence(public T type) ref is
   # create a Sequence that consists of all the elements of this Sequence followed
   # by all the elements of s
   #
-  public concat_sequences (s Sequence T) list T is as_list.concat s.as_list
+  public concat_sequences (s Sequence T) list T => as_list.concat s.as_list
 
 
   # infix operand synonym for concat_sequences
   #
-  public infix ++ (s Sequence T) => as_list ++ s.as_list
+  public infix ++ (s Sequence T) => concat_sequences s.as_list
 
 
   # create a list that repeats the current Sequence indefinitely.  In case 'Sequence.this'
   # is empty, returns 'nil'
   #
-  public cycle list T is as_list.cycle
+  public cycle list T => as_list.cycle
 
 
   # create a lazy list of all the tails of this Sequence, including the complete Sequence
   # as a list and the empty list 'nil'.
   #
-  public tails list (list T) is as_list.tails
+  public tails list (list T) => as_list.tails
 
 
   # create a string representation of this Sequence including all the string
   # representations of its contents, separated by ',' and enclosed in '['
   # and ']'.
   #
-  public redef as_string => as_list.as_string
+  # In case this Sequence is known to be `finite` or has at most (Sequence T).type
+  # .AS_STRING_NON_FINITE_MAX_ELEMENTS elements, all elements will be shown in the
+  # resulting string. Otherwise, only the first elements will be shown followed by
+  # ",…" as in "[1,2,3,4,5,6,7,8,9,10,…]".
+  #
+  # To force printing of all elements of a finite `Sequence` for which `finite` is
+  # false (which may be the case since a Sequence in general might not know that it
+  # if finite), you may use `as_string_all`.
+  #
+  public redef as_string =>
+    if finite
+      as_string_all
+    else
+      max := (Sequence T).AS_STRING_NON_FINITE_MAX_ELEMENTS
+      (zip i32 String /* NYI: BUG #2527: type inference not powerful enough to infer `i32` here */
+           0..max (v,n -> if n < max then $v else "…")).as_string_all
+
+
+  # create a string representation of this Sequence including all the string
+  # representations of its contents, separated by ", " and enclosed in '['
+  # and ']'.
+  #
+  # NOTE: In case this Sequence is not finite, this will attempt to create an
+  # infinitely long string resulting in failure due to resource exchaustion.
+  #
+  public as_string_all => "[{as_string ", "}]"
 
 
   # create a string representation of this Sequence including all the string
   # representations of its contents, separated by 'sep'.
+  #
+  # NOTE: In case this Sequence is not finite, this will attempt to create an
+  # infinitely long string resulting in failure due to resource exchaustion.
   #
   public as_string (sep String) => as_list.as_string sep
 
@@ -293,20 +332,41 @@ public Sequence(public T type) ref is
   public as_strings => map c->c.as_string
 
 
-  # map the Sequence to a new list applying function f to all elements
+  # map the Sequence to a new Sequence applying function f to all elements
   #
   # This performs a lazy mapping, f is called only when the elements
   # in the resulting list are accessed.
   #
-  public map(B type, f Unary B T) Sequence B is
+  public map(B type, f Unary B T) Sequence B =>
     as_list.map_to_list f
+
+
+  # map the Sequence to a new Sequence applying function f to all elements
+  #
+  # This is an infix operator alias of map enabling piping code like
+  #
+  #   l := 1..10 | *10 | 300-
+  #
+  # to obtain 290,280,270,...200
+  #
+  # Note that map and therefore also this operator is lazy, so
+  #
+  #   _ := (1..10 | say)
+  #
+  # will not print anything while
+  #
+  #   (1..10 | say).for_each _->unit
+  #
+  # will print the elements since `for_each` is not lazy.
+  #
+  public infix | (B type, f Unary B T) Sequence B => map f
 
 
   # map each element of this Sequence to Sequence
   # Then flatten the result by one level,
   # essentially combining all the sequences.
   #
-  public flat_map(B type, f T -> Sequence B) Sequence B is
+  public flat_map(B type, f T -> Sequence B) Sequence B =>
     as_list.flat_map_to_list f
 
 
@@ -318,7 +378,7 @@ public Sequence(public T type) ref is
   #
   # ex. to obtain a list of differences you, you may use `map_pairs (-)`:
   #
-  #   [2,3,5,7,11,13,17,19,23,29].map_pairs a,b->b-a)
+  #   [2,3,5,7,11,13,17,19,23,29].map_pairs a,b->b-a
   #
   # results in `[1,2,2,4,2,4,2,4,6]`
   #
@@ -370,7 +430,7 @@ public Sequence(public T type) ref is
   # the reduction is finished once f yields abort or
   # if the end of the sequence is reached.
   #
-  public reduce(R type, init R, f (R,T) -> R | abort R) R is
+  public reduce(R type, init R, f (R,T) -> R | abort R) R =>
     match as_list
       nil => init
       c Cons =>
@@ -384,7 +444,7 @@ public Sequence(public T type) ref is
   # the reduction is finished once `f` yields `abort` or
   # if the end of the sequence is reached.
   #
-  public reduce_or_error(R type, init R, f (R,T) -> R | abort (outcome R)) outcome R is
+  public reduce_or_error(R type, init R, f (R,T) -> R | abort (outcome R)) outcome R =>
     match as_list
       nil => init
       c Cons =>
@@ -456,7 +516,7 @@ public Sequence(public T type) ref is
 
   # takes a transducer xf, a reducer f and an initial value
   # returns the result of applying the reducer xf f to the Sequence
-  public transduce(TA,U type, xf transducer TA U T, rf (TA,U) -> TA, init TA) TA is
+  public transduce(TA,U type, xf transducer TA U T, rf (TA,U) -> TA, init TA) TA =>
     red := xf.call rf
     for
       res := init, red.call res el
@@ -473,10 +533,10 @@ public Sequence(public T type) ref is
   # gt_ten := filter (Sequence i32) i32 (x -> x > 10)
   # xf := ages ∘ gt_ten
   # say ([human(4), human(12), human(30)].into xf) # [12,30]
-  public into(TA type, xf transducer (Sequence TA) TA T) list TA is
+  public into(TA type, xf transducer (Sequence TA) TA T) list TA =>
     red := xf.call ((res,val) -> res ++ [val])
     for
-      res (list TA) := (list TA).type.empty , (red.call res el).as_list
+      res (list TA) := (list TA).empty , (red.call res el).as_list
       el in Sequence.this do
     else
       res
@@ -485,40 +545,58 @@ public Sequence(public T type) ref is
   # the nth element in the sequence if it exists, wrapped in an option,
   # nil otherwise.
   #
+  # Complexity: if Sequence is array backed O(1) otherwise O(n)
+  #
   public nth(n i32) option T
     pre
       debug: n ≥ 0
-  is
-    match drop n
-      nil => nil
-      c Cons => c.head
+  =>
+    if is_array_backed
+      if (is_valid_index n) then Sequence.this[n] else nil
+    else
+      match drop n
+        nil => nil
+        c Cons => c.head
+
+
+  # check if argument is a valid index in this sequence.
+  #
+  # Note that this may have a performance in O(i) unless this
+  # Sequence is_array_backed.
+  #
+  public is_valid_index(i i32) =>
+    (0 ≤ i && (if is_array_backed then i ≤ count
+                                  else !(drop i-1).is_empty))
 
 
   # the nth element in the sequence, must exist
   #
   public index [] (i i32) T
     pre
-      debug: 0 ≤ i,
-      debug: finite: i < count,
-      debug: !finite: !(drop i-1).is_empty
-  is
+      debug: is_valid_index(i)
+  =>
     (nth i).get
 
 
   # adds the corresponding index to
   # every element in the sequence
   #
-  public indexed list (tuple i32 T) is
+  public indexed list (tuple i32 T) =>
     indexed 0
 
 
   # adds an index to every element
   # in the sequence starting at start_idx
   #
-  public indexed(I type : has_interval, start_idx I) list (tuple I T) is
+  public indexed(I type : has_interval, start_idx I) list (tuple I T) =>
     # NYI: This should work without the type hints again.
     zip I (tuple I T) (start_idx..) (a,b -> (b, a))
 
+
+  # convenience feature to work around type inference issues
+  # NYI remove when type inference gets better
+  public as_seq Sequence T =>
+    Sequence.this
 
 
   # chop this Sequence into chunks of `chunk_size`.
@@ -526,12 +604,11 @@ public Sequence(public T type) ref is
   #
   public chunk(chunk_size i32) list (list T)
   pre chunk_size > 0
-  is
+  =>
     if is_empty
       nil
     else
       (take chunk_size).as_list : ((drop chunk_size).chunk chunk_size)
-
 
 
   # monoid of Sequences with infix concatentation operation.
@@ -540,9 +617,15 @@ public Sequence(public T type) ref is
 
     # associative operation
     #
-    infix ∙ (a, b Sequence T) Sequence T is a.concat_sequences b
+    infix ∙ (a, b Sequence T) Sequence T => a.concat_sequences b
 
     # identity element
     #
-    e Sequence T is
-      (list T).type.empty
+    e Sequence T =>
+      (list T).empty
+
+
+  # Maximum number of elements shown for on a call to `as_string` for a non-finite
+  # Sequence.
+  #
+  public type.AS_STRING_NON_FINITE_MAX_ELEMENTS => 10

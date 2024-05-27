@@ -26,6 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
+import dev.flang.util.ANY;
+import dev.flang.util.Errors;
+
 
 /**
  * Context to show why something is found to be used.
@@ -39,7 +42,31 @@ public interface Context
   /*-----------------------------  classes  -----------------------------*/
 
 
+  /**
+   * The main application entry point as a Context.
+   */
+  static class MainEntryPoint extends ANY implements Context
+  {
+    public String showWhy()
+    {
+      say("program entry point");
+      return "  ";
+    }
+    public String toString(boolean forEnv)
+    {
+      return forEnv ? "effect environment " + Errors.effe(Env.envAsString(null)) + " at program entry"
+                    : "program entry point";
+    }
+  };
+
+
   /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * Singleton instance of MainEntryPoint.
+   */
+  static final Context _MAIN_ENTRY_POINT_ = new MainEntryPoint();
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -62,6 +89,50 @@ public interface Context
    * nested contexts.  "  " is to be added to the result on each recursive call.
    */
   String showWhy();
+
+
+  /**
+   * Show the context that caused the inclusion of this instance into the
+   * analysis in a way that is useful for error related to effects.
+   */
+  String toString(boolean forEnv);
+
+
+  /**
+   * Create a multi-line String describing this context to be used in error
+   * messages.
+   *
+   * @param forEnv true if effect environments should be included in the
+   * resulting string.
+   *
+   * @return A LF-terminated String of the call context starting with the
+   * innermost context going towards older and older contexts until we reach the
+   * program entry point.
+   */
+  default String contextString(boolean forEnv)
+  {
+    var result = new StringBuilder();
+    Context co = this;
+    while (co != null)
+      {
+        result.append(co.toString(forEnv) + "\n");
+        co = co instanceof Call cc ? cc._context : null;
+      }
+    return result.toString();
+  }
+
+
+  /**
+   * Convenience function for `contextString(true)`
+   */
+  default String contextStringForEnv() { return contextString(true); }
+
+
+  /**
+   * Convenience function for `contextString(false)`
+   */
+  default String contextString()       { return contextString(false); }
+
 
 }
 

@@ -1,0 +1,64 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test
+#
+# -----------------------------------------------------------------------
+
+reg_issue2381 is
+
+  input := (io.stdin.with ()->io.buffered.read_lines).val.filter !=""
+                                                      .map (.as_codepoints)
+  area := array2 String input.count input[0].count i,j->input[i][j]
+
+  part1 =>
+    lm : mutate.
+    lm.go ()->
+      visited := (lm.array i32).type.new lm area.length.as_i64 0
+      r => 1
+      l => 2
+      u => 4
+      d => 8
+      ix(x,y) => (y+x*area.length1).as_i64
+      trace(x,y,w i32) =>
+        if ((x ∈ area.indices1) &&
+            (y ∈ area.indices0) &&
+            (visited[ix x y] & d) = 0) then
+          visited[ix x y] := visited[ix x y] | d
+          c := area[y,x]
+          if  w = r  &&  c = "."              then trace x+1 y   w
+          if  w = l  &&  c = "."              then trace x-1 y   w
+          if  w = u  &&  c = "."              then trace x   y-1 w
+          if  w = d  &&  c = "."              then trace x   y+1 w
+          if  w = r  &&  c = "-"              then trace x+1 y   w
+          if  w = l  &&  c = "-"              then trace x-1 y   w
+          if  w = u  &&  c = "|"              then trace x   y-1 w
+          if  w = d  &&  c = "|"              then trace x   y+1 w
+          if (w = r) && (c = "/"  || c = "|") then trace x   y-1 u
+          if (w = r) && (c = "\\" || c = "|") then trace x   y+1 d
+          if (w = l) && (c = "/"  || c = "|") then trace x   y-1 d
+          if (w = l) && (c = "\\" || c = "|") then trace x   y+1 u
+          if (w = u) && (c = "/"  || c = "-") then trace x-1 y   l
+          if (w = u) && (c = "\\" || c = "-") then trace x+1 y   r
+          if (w = d) && (c = "/"  || c = "-") then trace x-1 y   l
+          if (w = d) && (c = "\\" || c = "-") then trace x+1 y   r
+      trace 0 0 r
+      (visited.as_array.filter !=0).count
+
+  say "part1 $part1"

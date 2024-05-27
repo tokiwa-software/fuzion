@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Main
+ * Source of class Docs
  *
  *---------------------------------------------------------------------*/
 
@@ -37,8 +37,8 @@ import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -50,25 +50,19 @@ import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.mir.MIR;
 import dev.flang.tools.FuzionHome;
+import dev.flang.tools.docs.Util.Kind;
+import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
-public class Docs
+public class Docs extends ANY
 {
 
   /**
    * Compare Features by basename + args
    */
   private static final Comparator<? super AbstractFeature> byFeatureName = Comparator.comparing(
-    af -> af.featureName().toString(),
-    (name1, name2) -> {
-      var caseInsensitive = name1.compareToIgnoreCase(name2);
-      if (caseInsensitive != 0)
-        {
-          return caseInsensitive;
-        }
-      return name1.compareTo(name2);
-    });
+    af -> af.featureName(), (name1, name2) -> name1.compareTo(name2));
 
 
   private final FrontEndOptions frontEndOptions = new FrontEndOptions(
@@ -76,7 +70,7 @@ public class Docs
     /* fuzionHome              */ new FuzionHome()._fuzionHome,
     /* loadBaseLib             */ true,
     /* eraseInternalNamesInLib */ false,
-    /* modules                 */ new List<>(),
+    /* modules                 */ new List<>("terminal", "lock_free"),
     /* moduleDirs              */ new List<>(),
     /* dumpModules             */ new List<>(),
     /* fuzionDebugLevel        */ 0,
@@ -84,6 +78,7 @@ public class Docs
     /* enableUnsafeIntrinsics  */ false,
     /* sourceDirs              */ null,
     /* readStdin               */ true,
+    /* executeCode             */ null,
     /* main                    */ null,
     /* loadSources             */ true);
 
@@ -151,7 +146,7 @@ public class Docs
   {
     if (args.length < 1)
       {
-        System.err.println(usage());
+        say_err(usage());
         System.exit(1);
       }
 
@@ -193,7 +188,7 @@ public class Docs
         String line;
         while ((line = br.readLine()) != null)
           {
-            System.out.println(line);
+            say(line);
           }
       }
   }
@@ -272,7 +267,7 @@ public class Docs
   private void run(DocsOptions config)
   {
     // declared features are sorted by feature name
-    var mapOfDeclaredFeatures = new HashMap<AbstractFeature, SortedSet<AbstractFeature>>();
+    var mapOfDeclaredFeatures = new HashMap<AbstractFeature, Map<Kind, TreeSet<AbstractFeature>>>();
 
     breadthFirstTraverse(feature -> {
       if (ignoreFeature(feature, config.ignoreVisibility()))
@@ -280,10 +275,23 @@ public class Docs
           return;
         }
       var s = declaredFeatures(feature)
-        .filter(af -> !ignoreFeature(af, config.ignoreVisibility()))
-        .collect(Collectors.toCollection(
-          () -> new TreeSet<>(byFeatureName)));
-      mapOfDeclaredFeatures.put(feature, s);
+        .filter(af -> !ignoreFeature(af, config.ignoreVisibility()));
+
+      Stream<AbstractFeature> st = Stream.empty();
+      if (feature.hasTypeFeature())
+        {
+          var tf = feature.typeFeature();
+          st = declaredFeatures(tf)
+            .filter(af -> !ignoreFeature(af, config.ignoreVisibility()));
+        }
+
+      mapOfDeclaredFeatures.put(
+        feature,
+        Stream
+          .concat(s, st)
+          .collect(Collectors.groupingBy(x -> Kind.classify(x), Collectors.toCollection(() -> new TreeSet<>(byFeatureName))))
+      );
+
     }, universe);
 
     var htmlTool = new Html(config, mapOfDeclaredFeatures, universe);

@@ -44,18 +44,18 @@ simple_test_for_this_type_ref =>
   r : q is
     redef print => yak "r"
 
-# say; yak "q.x.b1.print: (expecting qq) "; q.x.b1.print   -- not allowed, result type q.this.type of b1 is ambiguous
-# say; yak "q.x.b2.print: (expecting qq) "; q.x.b2.print   -- not allowed, result type q.this.type of b1 is ambiguous
-  say; yak "q.x.b3.print: (expecting qq) "; q.x.b3.print
-  say; yak "q.x.b4.print: (expecting qq) "; q.x.b4.print
-  say; yak "q.x.b5.print: (expecting qq) "; q.x.b5.print
+# say ""; yak "q.x.b1.print: (expecting qq) "; q.x.b1.print   -- not allowed, result type q.this.type of b1 is ambiguous
+# say ""; yak "q.x.b2.print: (expecting qq) "; q.x.b2.print   -- not allowed, result type q.this.type of b1 is ambiguous
+  say ""; yak "q.x.b3.print: (expecting qq) "; q.x.b3.print
+  say ""; yak "q.x.b4.print: (expecting qq) "; q.x.b4.print
+  say ""; yak "q.x.b5.print: (expecting qq) "; q.x.b5.print
 
-  say; yak "r.x.b1.print: (expecting rr) "; r.x.b1.print
-  say; yak "r.x.b2.print: (expecting rr) "; r.x.b2.print
-  say; yak "r.x.b3.print: (expecting rr) "; r.x.b3.print
-  say; yak "r.x.b4.print: (expecting rr) "; r.x.b4.print
-  say; yak "r.x.b5.print: (expecting rr) "; r.x.b5.print
-  say
+  say ""; yak "r.x.b1.print: (expecting rr) "; r.x.b1.print
+  say ""; yak "r.x.b2.print: (expecting rr) "; r.x.b2.print
+  say ""; yak "r.x.b3.print: (expecting rr) "; r.x.b3.print
+  say ""; yak "r.x.b4.print: (expecting rr) "; r.x.b4.print
+  say ""; yak "r.x.b5.print: (expecting rr) "; r.x.b5.print
+  say ""
 
 simple_test_for_this_type_ref
 
@@ -67,7 +67,7 @@ simple_test_for_this_type_value =>
   # a simple test for 'this.type'
   #
   rq ref is
-    print unit is abstract
+    print unit => abstract
   q : rq is
     x is
       print
@@ -82,18 +82,18 @@ simple_test_for_this_type_value =>
   r : q is
     redef print => yak "r"
 
-  say; yak "q.x.b1.print: (expecting qq) "; q.x.b1.print
-  say; yak "q.x.b2.print: (expecting qq) "; q.x.b2.print
-  say; yak "q.x.b3.print: (expecting qq) "; q.x.b3.print
-  say; yak "q.x.b4.print: (expecting qq) "; q.x.b4.print
-  say; yak "q.x.b5.print: (expecting qq) "; q.x.b5.print
+  say ""; yak "q.x.b1.print: (expecting qq) "; q.x.b1.print
+  say ""; yak "q.x.b2.print: (expecting qq) "; q.x.b2.print
+  say ""; yak "q.x.b3.print: (expecting qq) "; q.x.b3.print
+  say ""; yak "q.x.b4.print: (expecting qq) "; q.x.b4.print
+  say ""; yak "q.x.b5.print: (expecting qq) "; q.x.b5.print
 
-  # say; yak "r.x.b1.print: (expecting rr) "; r.x.b1.print   // NYI: test fails
-  # say; yak "r.x.b2.print: (expecting rr) "; r.x.b2.print   // NYI: test fails
-  say; yak "r.x.b3.print: (expecting rr) "; r.x.b3.print
-  # say; yak "r.x.b4.print: (expecting rr) "; r.x.b4.print   // NYI: test fails
-  # say; yak "r.x.b5.print: (expecting rr) "; r.x.b5.print   // NYI: test fails
-  say
+  # say ""; yak "r.x.b1.print: (expecting rr) "; r.x.b1.print   // NYI: test fails
+  # say ""; yak "r.x.b2.print: (expecting rr) "; r.x.b2.print   // NYI: test fails
+  say ""; yak "r.x.b3.print: (expecting rr) "; r.x.b3.print
+  # say ""; yak "r.x.b4.print: (expecting rr) "; r.x.b4.print   // NYI: test fails
+  # say ""; yak "r.x.b5.print: (expecting rr) "; r.x.b5.print   // NYI: test fails
+  say ""
 
 simple_test_for_this_type_value
 
@@ -111,38 +111,38 @@ test_redef_using_fixed =>
 
     # abstract feature that will be redefined as abstract
     #
-    op_abstract(v a.this) a.this is abstract
+    op_abstract(v a.this) a.this => abstract
 
     # abstract that will be implemented with fixed features
     #
-    op(v a.this) a.this is abstract
+    op(v a.this) a.this => abstract
 
     # An implemented feature that will be redefined only by b, not by c
     #
-    op_implemented String is "a.op_implemented"
+    op_implemented String => "a.op_implemented"
 
-    me1 a.this is a.this
-    me2 a.this is a.this
+    me1 a.this => a.this
+    me2 a.this => a.this
 
 
   b(val String) : a is
 
     redef as_string => "instance of {b.type.as_string} with $val"
 
-    redef me2 b.this is b.this
+    redef me2 b.this => b.this
 
     # redefine abstract feature with co-variant argument and result
     #
-    op_abstract(v b.this) b.this is abstract
+    op_abstract(v b.this) b.this => abstract
 
     # redefine abstract with concrete type, must be fixed since this is
     # not a legal redefinition in a sub-type
     #
-    fixed op(v b) b is if debug then b "debug" /* b.this */ else b "non-debug"
+    fixed op(v b) b => if debug then b "debug" /* b.this */ else b "non-debug"
 
     # An implemented feature that will be redefined only by b, not by c
     #
-    redef fixed op_implemented String is "b.op_implemented"
+    redef fixed op_implemented String => "b.op_implemented"
 
 
   c : b "from c" is
@@ -151,11 +151,11 @@ test_redef_using_fixed =>
 
     # redefine abstract feature with co-variant argument and result
     #
-    op_abstract(v c.this) c.this is abstract
+    op_abstract(v c.this) c.this => abstract
 
     # redefine abstract that was implemented as fixed by parent b:
     #
-    fixed op(v c) c is if debug then c.this else c
+    fixed op(v c) c => if debug then c.this else c
 
   b1 := b "1"
   b2 := b "2"

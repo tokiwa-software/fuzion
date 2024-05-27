@@ -1,0 +1,71 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature Stack
+#
+# -----------------------------------------------------------------------
+
+
+# interface definition for stacks
+#
+public Stack(T type) ref is
+  public push(e T) unit => abstract
+  public pop option T => abstract
+  public peek option T => abstract
+
+
+
+# A stack implementation using local mutation
+#
+public stack(LM type : mutate, T type) : Stack T is
+
+  Element(data T, next option Element) ref is
+
+
+  top := LM.env.new (option Element) nil
+
+
+  # push an element to the stack
+  #
+  public push (e T) unit =>
+    match top.get
+      n Element =>
+        top <- (Element e n)
+      nil =>
+        top <- (Element e nil)
+
+
+  # pop an element from the stack
+  #
+  public pop option T =>
+    match top.get
+      n Element =>
+        top <- n.next
+        n.data
+      nil => nil
+
+
+  # peek at the top element from the stack
+  #
+  public peek option T =>
+    match top.get
+      n Element => n.data
+      nil => nil
+
+

@@ -33,11 +33,11 @@ public Unary(public T, U type) ref : Function T U is
 
   # function composition
   #
-  public compose(V type, other Unary U V) Unary T V is
+  public compose(V type, other Unary U V) Unary T V =>
     v -> Unary.this.call (other v)
 
 
   # function composition (Unicode alias)
   #
-  public infix ∘ (V type, other Unary U V) Unary T V is
+  public infix ∘ (V type, other Unary U V) Unary T V =>
     compose V other

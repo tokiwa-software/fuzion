@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-redef_test unit is
+redef_test unit =>
 
   # first case, plainly redefining feature x.q
   #

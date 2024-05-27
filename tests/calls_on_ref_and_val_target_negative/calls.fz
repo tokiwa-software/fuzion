@@ -1,0 +1,83 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test calls
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# This tests calls to functions and constructors declared in value or ref
+# features that are called on targets that are value, ref or boxed types.
+#
+calls is
+
+  passed := mut 0
+  failed := mut 0
+
+  chck(str, expected String) =>
+    if str ≟ expected
+      say "PASSED: $str"
+      passed <- passed.get + 1
+    else
+      say "FAILED: $str /= $expected"
+      failed <- failed.get + 1
+      _ := set_exit_code 1
+
+
+  caseC3 is
+    #    * constructor
+    #      * declared for value
+    #        * called on boxed
+    #          - *** error ***
+
+    ron ref is
+
+    on : ron is
+      cnt := mut 0
+      f is
+        cnt <- cnt.get + 1
+        s := "f#$cnt in $where type {on.this.type.name}"
+      where => "on"
+
+    roa ref : on is
+
+    oa : roa is
+      redef where => "oa"
+
+    oa1 ron => on
+    oa2 ron => oa
+
+    t := oa1
+    yak "caseC3a: "; chck t.f.s "f#1 in oa type calls.caseC2.oa"     // 01. should flag an error:
+    yak "caseC3a: "; chck t.f.s "f#2 in oa type calls.caseC2.oa"     // 02. should flag an error:
+    yak "caseC3a: "; chck t.f.s "f#3 in oa type calls.caseC2.oa"     // 03. should flag an error:
+    yak "caseC3a: "; chck $t.cnt.get $3                              // 04. should flag an error:
+
+    t := oa2
+    yak "caseC3b: "; chck t.f.s "f#1 in on type calls.caseC2.on"     // 05. should flag an error:
+    yak "caseC3b: "; chck t.f.s "f#2 in on type calls.caseC2.on"     // 06. should flag an error:
+    yak "caseC3b: "; chck t.f.s "f#3 in on type calls.caseC2.on"     // 07. should flag an error:
+    yak "caseC3b: "; chck $t.cnt.get $3                              // 08. should flag an error:
+
+  caseC3
+
+
+  say "{failed.get} failed {passed.get} passed."
+  exit

@@ -30,13 +30,13 @@
 #
 # returns: iterations per second
 #
-public bench(f ()->unit, nano_seconds u64, warm_up_nano_seconds u64) f64 is
-  start := fuzion.std.nano_time
+public bench(f ()->unit, nano_seconds u64, warm_up_nano_seconds u64) f64 ! time.nano =>
+  start := time.nano.read
 
-  is_warmup => fuzion.std.nano_time - start < warm_up_nano_seconds
+  is_warmup => time.nano.read - start < warm_up_nano_seconds
 
   for iter := (u64 0), if (is_warmup) iter else iter + 1
-  while fuzion.std.nano_time - start < warm_up_nano_seconds + nano_seconds
+  while time.nano.read - start < warm_up_nano_seconds + nano_seconds
   do
     f.call
   else
@@ -50,5 +50,5 @@ public bench(f ()->unit, nano_seconds u64, warm_up_nano_seconds u64) f64 is
 #
 # returns: iterations per second
 #
-public bench(f ()->unit, milli_seconds i32) f64 is
+public bench(f ()->unit, milli_seconds i32) f64 =>
   bench f (milli_seconds.as_u64 * 1E6) (u64 1E9)

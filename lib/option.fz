@@ -30,7 +30,8 @@
 public option(public T type)
   : choice T nil,
     monad T (option T),
-    Sequence T
+    Sequence T,
+    auto_unwrap T (try (option T)) /* NYI: BUG: auto_unwrap T (try option.this) */
 is
 
   # Does this option contain a value of type T?
@@ -54,6 +55,24 @@ is
   public postfix !! => is_nil
 
 
+  # short-hand prefix operator for 'is_nil'
+  #
+  public prefix ! => is_nil
+
+
+  # value of an option that is known to contain a value
+  #
+  # this can only be called in cases where it is known for sure that this option
+  # is not nil.  A runtime error will be created otherwise.
+  #
+  public val T
+    pre
+      safety: (option.this??) # NYI: REGRESSION: parantheses currently necessary, due to PR #2572
+  =>
+    option.this ? v T => v
+                | nil => fuzion.std.panic "option.val called on nil"
+
+
   # monadic operator
   #
   # This is handy to implement functions on optional values. As an example,
@@ -71,18 +90,26 @@ is
   #
   # Same as non-generic >>=, but also maps to a different type B.
   #
-  public bind(B type, f T -> option B) option B is
+  public bind(B type, f T -> option B) option B =>
     option.this ? v T => f v
                 | nil => nil
 
 
   # synonym for infix >>=
+  #
   public and_then (f T -> option T) => option.this >>= f
+
+
+  # if this option is nil return the result of f
+  # otherwise just return this option.
+  #
+  public or (f Lazy (option T)) option T =>
+    if is_nil then f() else option.this
 
 
   # map this option using f, i.e., map nil to nil and any value v to f v
   #
-  public map_to_option(B type, f T -> B) option B is
+  public map_to_option(B type, f T -> B) option B =>
     option.this ? v T => f v
                 | nil => nil
 
@@ -92,7 +119,7 @@ is
   # returns the result of $T for an option containing an instance
   # of T, alternatively returns $nil for an option that is nil.
   #
-  public redef as_string String is
+  public redef as_string String =>
     option.this ? v T => $v
                 | nil => $nil
 
@@ -104,7 +131,7 @@ is
   #
   public get
   pre
-    safety: option.this??
+    safety: (option.this??)
   =>
     option.this ? v T => v
                 | nil => fuzion.std.panic "option.get called on nil"
@@ -112,7 +139,7 @@ is
 
   # unwraps an option if it exists, returns default value otherwise.
   #
-  public get(default Lazy T)
+  public or_else(default Lazy T)
   =>
     option.this ? v T => v
                 | nil => default
@@ -127,9 +154,17 @@ is
                 | nil => nil
 
 
+  # unwrap this option
+  #
+  public unwrap ! try (option T) =>
+    option.this ? v T => v
+                | nil => (try (option T)).env.raise (error "error unwrapping option: {option.this}")
+
+
   # return function
   #
   public fixed type.return (a T) => option a
+
 
 
 # option with 1 argument provides an short-hand to wrap a value into an option

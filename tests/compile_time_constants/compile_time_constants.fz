@@ -1,0 +1,49 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test compile_time_constants
+#
+# -----------------------------------------------------------------------
+
+
+compile_time_constants =>
+
+  a := [1, 2, 3, 4, 5]
+  say a
+  a := "hello"
+  say a
+  a := [[1, 2 ,3, 4, 5]]
+  say a
+  a := [[1.0, 2.0, 3.0, 4.0, 5.0]]
+  say a
+  a := [[f32 1.0, f32 2.0, f32 3.0, f32 4.0, f32 5.0]]
+  say a
+  a := [(1, codepoint 65, true)][0].values.1
+  say a
+  a := [(1, codepoint 65, true)][0].values.2
+  say a
+  a := [(1, "hello")][0].values.1
+  say a
+  a := [[("hello", "world")]]
+  say a
+  a := [(1, "world")][0].values.1
+  say a
+
+  say ["hello"]
+

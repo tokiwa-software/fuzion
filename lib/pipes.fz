@@ -32,7 +32,7 @@
 #
 # you can write
 #
-#   l := [1,2,3].map **2 |> sum
+#   l := [1,2,3,4].map **2 |> sum
 #
 # which often correponds more naturally to the data flow through the code.
 #
@@ -69,7 +69,7 @@ public infix ||> (A, B, R type, a (A,B), f (A,B)->R) =>
 #
 #   f(a,b,c i32) => a+b+c
 #   t := (1,2,3)
-#   r := f t.values.0 t.values.1 t.values.2
+#   r := f t.0 t.1 t.2
 #
 # you can write
 #
@@ -89,7 +89,7 @@ public infix |||> (A, B, C, R type, a (A,B,C), f (A,B,C)->R) =>
 #
 #   f(a,b,c,d i32) => a+b+c+d
 #   t := (1,2,3,4)
-#   r := f t.values.0 t.values.1 t.values.2 t.values.3
+#   r := f t.0 t.1 t.2 t.3
 #
 # you can write
 #
@@ -109,7 +109,7 @@ public infix ||||> (A, B, C, D, R type, a (A,B,C,D), f (A,B,C,D)->R) =>
 #
 #   f(a,b,c,d,e i32) => a+b+c+d+e
 #   t := (1,2,3,4,5)
-#   r := f t.values.0 t.values.1 t.values.2 t.values.3 t.values.4
+#   r := f t.0 t.1 t.2 t.3 t.4
 #
 # you can write
 #
@@ -129,7 +129,7 @@ public infix |||||> (A, B, C, D, E, R type, a (A,B,C,D,E), f (A,B,C,D,E)->R) =>
 #
 #   f(a,b,c,d,e,f i32) => a+b+c+d+e+f
 #   t := (1,2,3,4,5,6)
-#   r := f t.values.0 t.values.1 t.values.2 t.values.3 t.values.4 t.values.5
+#   r := f t.0 t.1 t.2 t.3 t.4 t.5
 #
 # you can write
 #
@@ -141,6 +141,129 @@ public infix |||||> (A, B, C, D, E, R type, a (A,B,C,D,E), f (A,B,C,D,E)->R) =>
 #
 public infix ||||||> (A, B, C, D, E, F, R type, a (A,B,C,D,E,F), f (A,B,C,D,E,F)->R) =>
   f a.values.0 a.values.1 a.values.2 a.values.3 a.values.4 a.values.5
+
+
+# a six-tuple is large enough for two 3-D coordinates, so let's stop here for now....
+
+
+# infix <| -- backwards pipe with one argument
+#
+# This operation is seldom useful, it is provided only for reasons of symmetry with |>.
+# Instead of
+#
+#   l := [1,2,3,4].map **2 |> sum
+#
+# you can also write
+#
+#   l := sum <| [1,2,3,4].map **2
+#
+# which often correponds more naturally to the data flow through the code.
+#
+public infix <| (A, R type, f A->R, a A) =>
+  f a
+
+
+# infix <|| -- backwards pipe with a two-tuple argument, destructuring the tuple into arguments
+#
+# This allows destructuring of tuples as actual arguments: instead of
+#
+#   f(a,b i32) => a+b
+#   l1 := [1,2,3,4]
+#   l2 := [4,3,2,1}
+#   l := l1.pairs l2
+#          .map p->{(p1,p2) := p; f p1 p2}
+#
+# you can write
+#
+#   l1 := [1,2,3,4]
+#   l2 := [4,3,2,1}
+#   l := l1.pairs l2
+#          .map (p -> f <|| p)
+#
+# .
+#
+public infix <|| (A, B, R type, f (A,B)->R, a (A,B)) =>
+  a ||> f
+
+
+# infix <||| -- backwards pipe with a three-tuple argument, destructuring the tuple into arguments
+#
+# This allows destructuring of 3-tuples as actual arguments: instead of
+#
+#   f(a,b,c i32) => a+b+c
+#   t := (1,2,3)
+#   r := f t.0 t.1 t.2
+#
+# you can write
+#
+#   f(a,b,c i32) => a+b+c
+#   t := (1,2,3)
+#   r := f <||| t
+#
+# which often correponds more naturally to the data flow through the code.
+#
+public infix <||| (A, B, C, R type, f (A,B,C)->R, a (A,B,C)) =>
+  a |||> f
+
+
+# infix <|||| -- backwards pipe with a four-tuple argument, destructuring the tuple into arguments
+#
+# This allows destructuring of 4-tuples as actual arguments: instead of
+#
+#   f(a,b,c,d i32) => a+b+c+d
+#   t := (1,2,3,4)
+#   r := f t.0 t.1 t.2 t.3
+#
+# you can write
+#
+#   f(a,b,c,d i32) => a+b+c+d
+#   t := (1,2,3,4)
+#   r := f <|||| t
+#
+# which often correponds more naturally to the data flow through the code.
+#
+public infix <|||| (A, B, C, D, R type, f (A,B,C,D)->R, a (A,B,C,D)) =>
+  a ||||> f
+
+
+# infix <||||| -- backwards pipe with a five-tuple argument, destructuring the tuple into arguments
+#
+# This allows destructuring of 5-tuples as actual arguments: instead of
+#
+#   f(a,b,c,d,e i32) => a+b+c+d+e
+#   t := (1,2,3,4,5)
+#   r := f t.0 t.1 t.2 t.3 t.4
+#
+# you can write
+#
+#   f(a,b,c,d,e i32) => a+b+c+d+e
+#   t := (1,2,3,4,5)
+#   r := f <||||| t
+#
+# which often correponds more naturally to the data flow through the code.
+#
+public infix <||||| (A, B, C, D, E, R type, f (A,B,C,D,E)->R, a (A,B,C,D,E)) =>
+  a |||||> f
+
+
+# infix <|||||| -- backwards pipe with a six-tuple argument, destructuring the tuple into arguments
+#
+# This allows destructuring of 6-tuples as actual arguments: instead of
+#
+#   f(a,b,c,d,e,f i32) => a+b+c+d+e+f
+#   t := (1,2,3,4,5,6)
+#   r := f t.0 t.1 t.2 t.3 t.4 t.5
+#
+# you can write
+#
+#   f(a,b,c,d,e,f i32) => a+b+c+d+e+f
+#   t := (1,2,3,4,5,6)
+#   r := f <|||||| t
+#
+# which often correponds more naturally to the data flow through the code.
+#
+public infix <|||||| (A, B, C, D, E, F, R type, f (A,B,C,D,E,F)->R, a (A,B,C,D,E,F)) =>
+  a ||||||> f
 
 
 # a six-tuple is large enough for two 3-D coordinates, so let's stop here for now....

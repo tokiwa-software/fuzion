@@ -1,0 +1,1872 @@
+0 right ||
+0 left  ||
+0 center||
+0 right ||
+0 left  ||
+0 center||
+0 right ||
+0 left  ||
+0 center||
+0 right ||
+0 left  ||
+0 center||
+0 right |A|
+0 left  |A|
+0 center|A|
+0 right |A|
+0 left  |A|
+0 center|A|
+0 right |A|
+0 left  |A|
+0 center|A|
+0 right |A|
+0 left  |A|
+0 center|A|
+0 right |AA|
+0 left  |AA|
+0 center|AA|
+0 right |AA|
+0 left  |AA|
+0 center|AA|
+0 right |AA|
+0 left  |AA|
+0 center|AA|
+0 right |AA|
+0 left  |AA|
+0 center|AA|
+0 right |AAA|
+0 left  |AAA|
+0 center|AAA|
+0 right |AAA|
+0 left  |AAA|
+0 center|AAA|
+0 right |AAA|
+0 left  |AAA|
+0 center|AAA|
+0 right |AAA|
+0 left  |AAA|
+0 center|AAA|
+1 right | |
+1 left  | |
+1 center| |
+1 right |<>|
+1 left  |<>|
+1 center|<>|
+1 right |<->|
+1 left  |<->|
+1 center|<->|
+1 right |<-->|
+1 left  |<-->|
+1 center|<-->|
+1 right |A|
+1 left  |A|
+1 center|A|
+1 right |A|
+1 left  |A|
+1 center|A|
+1 right |A|
+1 left  |A|
+1 center|A|
+1 right |A|
+1 left  |A|
+1 center|A|
+1 right |AA|
+1 left  |AA|
+1 center|AA|
+1 right |AA|
+1 left  |AA|
+1 center|AA|
+1 right |AA|
+1 left  |AA|
+1 center|AA|
+1 right |AA|
+1 left  |AA|
+1 center|AA|
+1 right |AAA|
+1 left  |AAA|
+1 center|AAA|
+1 right |AAA|
+1 left  |AAA|
+1 center|AAA|
+1 right |AAA|
+1 left  |AAA|
+1 center|AAA|
+1 right |AAA|
+1 left  |AAA|
+1 center|AAA|
+2 right |  |
+2 left  |  |
+2 center|  |
+2 right |<>|
+2 left  |<>|
+2 center|<>|
+2 right |<->|
+2 left  |<->|
+2 center|<->|
+2 right |<-->|
+2 left  |<-->|
+2 center|<-->|
+2 right |A |
+2 left  | A|
+2 center|A |
+2 right |A<>|
+2 left  |<>A|
+2 center|A<>|
+2 right |A<->|
+2 left  |<->A|
+2 center|A<->|
+2 right |A<-->|
+2 left  |<-->A|
+2 center|A<-->|
+2 right |AA|
+2 left  |AA|
+2 center|AA|
+2 right |AA|
+2 left  |AA|
+2 center|AA|
+2 right |AA|
+2 left  |AA|
+2 center|AA|
+2 right |AA|
+2 left  |AA|
+2 center|AA|
+2 right |AAA|
+2 left  |AAA|
+2 center|AAA|
+2 right |AAA|
+2 left  |AAA|
+2 center|AAA|
+2 right |AAA|
+2 left  |AAA|
+2 center|AAA|
+2 right |AAA|
+2 left  |AAA|
+2 center|AAA|
+3 right |   |
+3 left  |   |
+3 center|   |
+3 right |<><>|
+3 left  |<><>|
+3 center|<><>|
+3 right |<->|
+3 left  |<->|
+3 center|<->|
+3 right |<-->|
+3 left  |<-->|
+3 center|<-->|
+3 right |A  |
+3 left  |  A|
+3 center| A |
+3 right |A<>|
+3 left  |<>A|
+3 center|A<>|
+3 right |A<->|
+3 left  |<->A|
+3 center|A<->|
+3 right |A<-->|
+3 left  |<-->A|
+3 center|A<-->|
+3 right |AA |
+3 left  | AA|
+3 center|AA |
+3 right |AA<>|
+3 left  |<>AA|
+3 center|AA<>|
+3 right |AA<->|
+3 left  |<->AA|
+3 center|AA<->|
+3 right |AA<-->|
+3 left  |<-->AA|
+3 center|AA<-->|
+3 right |AAA|
+3 left  |AAA|
+3 center|AAA|
+3 right |AAA|
+3 left  |AAA|
+3 center|AAA|
+3 right |AAA|
+3 left  |AAA|
+3 center|AAA|
+3 right |AAA|
+3 left  |AAA|
+3 center|AAA|
+4 right |    |
+4 left  |    |
+4 center|    |
+4 right |<><>|
+4 left  |<><>|
+4 center|<><>|
+4 right |<-><->|
+4 left  |<-><->|
+4 center|<-><->|
+4 right |<-->|
+4 left  |<-->|
+4 center|<-->|
+4 right |A   |
+4 left  |   A|
+4 center| A  |
+4 right |A<><>|
+4 left  |<><>A|
+4 center|<>A<>|
+4 right |A<->|
+4 left  |<->A|
+4 center|A<->|
+4 right |A<-->|
+4 left  |<-->A|
+4 center|A<-->|
+4 right |AA  |
+4 left  |  AA|
+4 center| AA |
+4 right |AA<>|
+4 left  |<>AA|
+4 center|AA<>|
+4 right |AA<->|
+4 left  |<->AA|
+4 center|AA<->|
+4 right |AA<-->|
+4 left  |<-->AA|
+4 center|AA<-->|
+4 right |AAA |
+4 left  | AAA|
+4 center|AAA |
+4 right |AAA<>|
+4 left  |<>AAA|
+4 center|AAA<>|
+4 right |AAA<->|
+4 left  |<->AAA|
+4 center|AAA<->|
+4 right |AAA<-->|
+4 left  |<-->AAA|
+4 center|AAA<-->|
+5 right |     |
+5 left  |     |
+5 center|     |
+5 right |<><><>|
+5 left  |<><><>|
+5 center|<><><>|
+5 right |<-><->|
+5 left  |<-><->|
+5 center|<-><->|
+5 right |<--><-->|
+5 left  |<--><-->|
+5 center|<--><-->|
+5 right |A    |
+5 left  |    A|
+5 center|  A  |
+5 right |A<><>|
+5 left  |<><>A|
+5 center|<>A<>|
+5 right |A<-><->|
+5 left  |<-><->A|
+5 center|<->A<->|
+5 right |A<-->|
+5 left  |<-->A|
+5 center|A<-->|
+5 right |AA   |
+5 left  |   AA|
+5 center| AA  |
+5 right |AA<><>|
+5 left  |<><>AA|
+5 center|<>AA<>|
+5 right |AA<->|
+5 left  |<->AA|
+5 center|AA<->|
+5 right |AA<-->|
+5 left  |<-->AA|
+5 center|AA<-->|
+5 right |AAA  |
+5 left  |  AAA|
+5 center| AAA |
+5 right |AAA<>|
+5 left  |<>AAA|
+5 center|AAA<>|
+5 right |AAA<->|
+5 left  |<->AAA|
+5 center|AAA<->|
+5 right |AAA<-->|
+5 left  |<-->AAA|
+5 center|AAA<-->|
+6 right |      |
+6 left  |      |
+6 center|      |
+6 right |<><><>|
+6 left  |<><><>|
+6 center|<><><>|
+6 right |<-><->|
+6 left  |<-><->|
+6 center|<-><->|
+6 right |<--><-->|
+6 left  |<--><-->|
+6 center|<--><-->|
+6 right |A     |
+6 left  |     A|
+6 center|  A   |
+6 right |A<><><>|
+6 left  |<><><>A|
+6 center|<>A<><>|
+6 right |A<-><->|
+6 left  |<-><->A|
+6 center|<->A<->|
+6 right |A<--><-->|
+6 left  |<--><-->A|
+6 center|<-->A<-->|
+6 right |AA    |
+6 left  |    AA|
+6 center|  AA  |
+6 right |AA<><>|
+6 left  |<><>AA|
+6 center|<>AA<>|
+6 right |AA<-><->|
+6 left  |<-><->AA|
+6 center|<->AA<->|
+6 right |AA<-->|
+6 left  |<-->AA|
+6 center|AA<-->|
+6 right |AAA   |
+6 left  |   AAA|
+6 center| AAA  |
+6 right |AAA<><>|
+6 left  |<><>AAA|
+6 center|<>AAA<>|
+6 right |AAA<->|
+6 left  |<->AAA|
+6 center|AAA<->|
+6 right |AAA<-->|
+6 left  |<-->AAA|
+6 center|AAA<-->|
+7 right |       |
+7 left  |       |
+7 center|       |
+7 right |<><><><>|
+7 left  |<><><><>|
+7 center|<><><><>|
+7 right |<-><-><->|
+7 left  |<-><-><->|
+7 center|<-><-><->|
+7 right |<--><-->|
+7 left  |<--><-->|
+7 center|<--><-->|
+7 right |A      |
+7 left  |      A|
+7 center|   A   |
+7 right |A<><><>|
+7 left  |<><><>A|
+7 center|<>A<><>|
+7 right |A<-><->|
+7 left  |<-><->A|
+7 center|<->A<->|
+7 right |A<--><-->|
+7 left  |<--><-->A|
+7 center|<-->A<-->|
+7 right |AA     |
+7 left  |     AA|
+7 center|  AA   |
+7 right |AA<><><>|
+7 left  |<><><>AA|
+7 center|<>AA<><>|
+7 right |AA<-><->|
+7 left  |<-><->AA|
+7 center|<->AA<->|
+7 right |AA<--><-->|
+7 left  |<--><-->AA|
+7 center|<-->AA<-->|
+7 right |AAA    |
+7 left  |    AAA|
+7 center|  AAA  |
+7 right |AAA<><>|
+7 left  |<><>AAA|
+7 center|<>AAA<>|
+7 right |AAA<-><->|
+7 left  |<-><->AAA|
+7 center|<->AAA<->|
+7 right |AAA<-->|
+7 left  |<-->AAA|
+7 center|AAA<-->|
+8 right |        |
+8 left  |        |
+8 center|        |
+8 right |<><><><>|
+8 left  |<><><><>|
+8 center|<><><><>|
+8 right |<-><-><->|
+8 left  |<-><-><->|
+8 center|<-><-><->|
+8 right |<--><-->|
+8 left  |<--><-->|
+8 center|<--><-->|
+8 right |A       |
+8 left  |       A|
+8 center|   A    |
+8 right |A<><><><>|
+8 left  |<><><><>A|
+8 center|<><>A<><>|
+8 right |A<-><-><->|
+8 left  |<-><-><->A|
+8 center|<->A<-><->|
+8 right |A<--><-->|
+8 left  |<--><-->A|
+8 center|<-->A<-->|
+8 right |AA      |
+8 left  |      AA|
+8 center|   AA   |
+8 right |AA<><><>|
+8 left  |<><><>AA|
+8 center|<>AA<><>|
+8 right |AA<-><->|
+8 left  |<-><->AA|
+8 center|<->AA<->|
+8 right |AA<--><-->|
+8 left  |<--><-->AA|
+8 center|<-->AA<-->|
+8 right |AAA     |
+8 left  |     AAA|
+8 center|  AAA   |
+8 right |AAA<><><>|
+8 left  |<><><>AAA|
+8 center|<>AAA<><>|
+8 right |AAA<-><->|
+8 left  |<-><->AAA|
+8 center|<->AAA<->|
+8 right |AAA<--><-->|
+8 left  |<--><-->AAA|
+8 center|<-->AAA<-->|
+9 right |         |
+9 left  |         |
+9 center|         |
+9 right |<><><><><>|
+9 left  |<><><><><>|
+9 center|<><><><><>|
+9 right |<-><-><->|
+9 left  |<-><-><->|
+9 center|<-><-><->|
+9 right |<--><--><-->|
+9 left  |<--><--><-->|
+9 center|<--><--><-->|
+9 right |A        |
+9 left  |        A|
+9 center|    A    |
+9 right |A<><><><>|
+9 left  |<><><><>A|
+9 center|<><>A<><>|
+9 right |A<-><-><->|
+9 left  |<-><-><->A|
+9 center|<->A<-><->|
+9 right |A<--><-->|
+9 left  |<--><-->A|
+9 center|<-->A<-->|
+9 right |AA       |
+9 left  |       AA|
+9 center|   AA    |
+9 right |AA<><><><>|
+9 left  |<><><><>AA|
+9 center|<><>AA<><>|
+9 right |AA<-><-><->|
+9 left  |<-><-><->AA|
+9 center|<->AA<-><->|
+9 right |AA<--><-->|
+9 left  |<--><-->AA|
+9 center|<-->AA<-->|
+9 right |AAA      |
+9 left  |      AAA|
+9 center|   AAA   |
+9 right |AAA<><><>|
+9 left  |<><><>AAA|
+9 center|<>AAA<><>|
+9 right |AAA<-><->|
+9 left  |<-><->AAA|
+9 center|<->AAA<->|
+9 right |AAA<--><-->|
+9 left  |<--><-->AAA|
+9 center|<-->AAA<-->|
+10 right |          |
+10 left  |          |
+10 center|          |
+10 right |<><><><><>|
+10 left  |<><><><><>|
+10 center|<><><><><>|
+10 right |<-><-><-><->|
+10 left  |<-><-><-><->|
+10 center|<-><-><-><->|
+10 right |<--><--><-->|
+10 left  |<--><--><-->|
+10 center|<--><--><-->|
+10 right |A         |
+10 left  |         A|
+10 center|    A     |
+10 right |A<><><><><>|
+10 left  |<><><><><>A|
+10 center|<><>A<><><>|
+10 right |A<-><-><->|
+10 left  |<-><-><->A|
+10 center|<->A<-><->|
+10 right |A<--><--><-->|
+10 left  |<--><--><-->A|
+10 center|<-->A<--><-->|
+10 right |AA        |
+10 left  |        AA|
+10 center|    AA    |
+10 right |AA<><><><>|
+10 left  |<><><><>AA|
+10 center|<><>AA<><>|
+10 right |AA<-><-><->|
+10 left  |<-><-><->AA|
+10 center|<->AA<-><->|
+10 right |AA<--><-->|
+10 left  |<--><-->AA|
+10 center|<-->AA<-->|
+10 right |AAA       |
+10 left  |       AAA|
+10 center|   AAA    |
+10 right |AAA<><><><>|
+10 left  |<><><><>AAA|
+10 center|<><>AAA<><>|
+10 right |AAA<-><-><->|
+10 left  |<-><-><->AAA|
+10 center|<->AAA<-><->|
+10 right |AAA<--><-->|
+10 left  |<--><-->AAA|
+10 center|<-->AAA<-->|
+11 right |           |
+11 left  |           |
+11 center|           |
+11 right |<><><><><><>|
+11 left  |<><><><><><>|
+11 center|<><><><><><>|
+11 right |<-><-><-><->|
+11 left  |<-><-><-><->|
+11 center|<-><-><-><->|
+11 right |<--><--><-->|
+11 left  |<--><--><-->|
+11 center|<--><--><-->|
+11 right |A          |
+11 left  |          A|
+11 center|     A     |
+11 right |A<><><><><>|
+11 left  |<><><><><>A|
+11 center|<><>A<><><>|
+11 right |A<-><-><-><->|
+11 left  |<-><-><-><->A|
+11 center|<-><->A<-><->|
+11 right |A<--><--><-->|
+11 left  |<--><--><-->A|
+11 center|<-->A<--><-->|
+11 right |AA         |
+11 left  |         AA|
+11 center|    AA     |
+11 right |AA<><><><><>|
+11 left  |<><><><><>AA|
+11 center|<><>AA<><><>|
+11 right |AA<-><-><->|
+11 left  |<-><-><->AA|
+11 center|<->AA<-><->|
+11 right |AA<--><--><-->|
+11 left  |<--><--><-->AA|
+11 center|<-->AA<--><-->|
+11 right |AAA        |
+11 left  |        AAA|
+11 center|    AAA    |
+11 right |AAA<><><><>|
+11 left  |<><><><>AAA|
+11 center|<><>AAA<><>|
+11 right |AAA<-><-><->|
+11 left  |<-><-><->AAA|
+11 center|<->AAA<-><->|
+11 right |AAA<--><-->|
+11 left  |<--><-->AAA|
+11 center|<-->AAA<-->|
+12 right |            |
+12 left  |            |
+12 center|            |
+12 right |<><><><><><>|
+12 left  |<><><><><><>|
+12 center|<><><><><><>|
+12 right |<-><-><-><->|
+12 left  |<-><-><-><->|
+12 center|<-><-><-><->|
+12 right |<--><--><-->|
+12 left  |<--><--><-->|
+12 center|<--><--><-->|
+12 right |A           |
+12 left  |           A|
+12 center|     A      |
+12 right |A<><><><><><>|
+12 left  |<><><><><><>A|
+12 center|<><><>A<><><>|
+12 right |A<-><-><-><->|
+12 left  |<-><-><-><->A|
+12 center|<-><->A<-><->|
+12 right |A<--><--><-->|
+12 left  |<--><--><-->A|
+12 center|<-->A<--><-->|
+12 right |AA          |
+12 left  |          AA|
+12 center|     AA     |
+12 right |AA<><><><><>|
+12 left  |<><><><><>AA|
+12 center|<><>AA<><><>|
+12 right |AA<-><-><-><->|
+12 left  |<-><-><-><->AA|
+12 center|<-><->AA<-><->|
+12 right |AA<--><--><-->|
+12 left  |<--><--><-->AA|
+12 center|<-->AA<--><-->|
+12 right |AAA         |
+12 left  |         AAA|
+12 center|    AAA     |
+12 right |AAA<><><><><>|
+12 left  |<><><><><>AAA|
+12 center|<><>AAA<><><>|
+12 right |AAA<-><-><->|
+12 left  |<-><-><->AAA|
+12 center|<->AAA<-><->|
+12 right |AAA<--><--><-->|
+12 left  |<--><--><-->AAA|
+12 center|<-->AAA<--><-->|
+13 right |             |
+13 left  |             |
+13 center|             |
+13 right |<><><><><><><>|
+13 left  |<><><><><><><>|
+13 center|<><><><><><><>|
+13 right |<-><-><-><-><->|
+13 left  |<-><-><-><-><->|
+13 center|<-><-><-><-><->|
+13 right |<--><--><--><-->|
+13 left  |<--><--><--><-->|
+13 center|<--><--><--><-->|
+13 right |A            |
+13 left  |            A|
+13 center|      A      |
+13 right |A<><><><><><>|
+13 left  |<><><><><><>A|
+13 center|<><><>A<><><>|
+13 right |A<-><-><-><->|
+13 left  |<-><-><-><->A|
+13 center|<-><->A<-><->|
+13 right |A<--><--><-->|
+13 left  |<--><--><-->A|
+13 center|<-->A<--><-->|
+13 right |AA           |
+13 left  |           AA|
+13 center|     AA      |
+13 right |AA<><><><><><>|
+13 left  |<><><><><><>AA|
+13 center|<><><>AA<><><>|
+13 right |AA<-><-><-><->|
+13 left  |<-><-><-><->AA|
+13 center|<-><->AA<-><->|
+13 right |AA<--><--><-->|
+13 left  |<--><--><-->AA|
+13 center|<-->AA<--><-->|
+13 right |AAA          |
+13 left  |          AAA|
+13 center|     AAA     |
+13 right |AAA<><><><><>|
+13 left  |<><><><><>AAA|
+13 center|<><>AAA<><><>|
+13 right |AAA<-><-><-><->|
+13 left  |<-><-><-><->AAA|
+13 center|<-><->AAA<-><->|
+13 right |AAA<--><--><-->|
+13 left  |<--><--><-->AAA|
+13 center|<-->AAA<--><-->|
+14 right |              |
+14 left  |              |
+14 center|              |
+14 right |<><><><><><><>|
+14 left  |<><><><><><><>|
+14 center|<><><><><><><>|
+14 right |<-><-><-><-><->|
+14 left  |<-><-><-><-><->|
+14 center|<-><-><-><-><->|
+14 right |<--><--><--><-->|
+14 left  |<--><--><--><-->|
+14 center|<--><--><--><-->|
+14 right |A             |
+14 left  |             A|
+14 center|      A       |
+14 right |A<><><><><><><>|
+14 left  |<><><><><><><>A|
+14 center|<><><>A<><><><>|
+14 right |A<-><-><-><-><->|
+14 left  |<-><-><-><-><->A|
+14 center|<-><->A<-><-><->|
+14 right |A<--><--><--><-->|
+14 left  |<--><--><--><-->A|
+14 center|<--><-->A<--><-->|
+14 right |AA            |
+14 left  |            AA|
+14 center|      AA      |
+14 right |AA<><><><><><>|
+14 left  |<><><><><><>AA|
+14 center|<><><>AA<><><>|
+14 right |AA<-><-><-><->|
+14 left  |<-><-><-><->AA|
+14 center|<-><->AA<-><->|
+14 right |AA<--><--><-->|
+14 left  |<--><--><-->AA|
+14 center|<-->AA<--><-->|
+14 right |AAA           |
+14 left  |           AAA|
+14 center|     AAA      |
+14 right |AAA<><><><><><>|
+14 left  |<><><><><><>AAA|
+14 center|<><><>AAA<><><>|
+14 right |AAA<-><-><-><->|
+14 left  |<-><-><-><->AAA|
+14 center|<-><->AAA<-><->|
+14 right |AAA<--><--><-->|
+14 left  |<--><--><-->AAA|
+14 center|<-->AAA<--><-->|
+15 right |               |
+15 left  |               |
+15 center|               |
+15 right |<><><><><><><><>|
+15 left  |<><><><><><><><>|
+15 center|<><><><><><><><>|
+15 right |<-><-><-><-><->|
+15 left  |<-><-><-><-><->|
+15 center|<-><-><-><-><->|
+15 right |<--><--><--><-->|
+15 left  |<--><--><--><-->|
+15 center|<--><--><--><-->|
+15 right |A              |
+15 left  |              A|
+15 center|       A       |
+15 right |A<><><><><><><>|
+15 left  |<><><><><><><>A|
+15 center|<><><>A<><><><>|
+15 right |A<-><-><-><-><->|
+15 left  |<-><-><-><-><->A|
+15 center|<-><->A<-><-><->|
+15 right |A<--><--><--><-->|
+15 left  |<--><--><--><-->A|
+15 center|<--><-->A<--><-->|
+15 right |AA             |
+15 left  |             AA|
+15 center|      AA       |
+15 right |AA<><><><><><><>|
+15 left  |<><><><><><><>AA|
+15 center|<><><>AA<><><><>|
+15 right |AA<-><-><-><-><->|
+15 left  |<-><-><-><-><->AA|
+15 center|<-><->AA<-><-><->|
+15 right |AA<--><--><--><-->|
+15 left  |<--><--><--><-->AA|
+15 center|<--><-->AA<--><-->|
+15 right |AAA            |
+15 left  |            AAA|
+15 center|      AAA      |
+15 right |AAA<><><><><><>|
+15 left  |<><><><><><>AAA|
+15 center|<><><>AAA<><><>|
+15 right |AAA<-><-><-><->|
+15 left  |<-><-><-><->AAA|
+15 center|<-><->AAA<-><->|
+15 right |AAA<--><--><-->|
+15 left  |<--><--><-->AAA|
+15 center|<-->AAA<--><-->|
+16 right |                |
+16 left  |                |
+16 center|                |
+16 right |<><><><><><><><>|
+16 left  |<><><><><><><><>|
+16 center|<><><><><><><><>|
+16 right |<-><-><-><-><-><->|
+16 left  |<-><-><-><-><-><->|
+16 center|<-><-><-><-><-><->|
+16 right |<--><--><--><-->|
+16 left  |<--><--><--><-->|
+16 center|<--><--><--><-->|
+16 right |A               |
+16 left  |               A|
+16 center|       A        |
+16 right |A<><><><><><><><>|
+16 left  |<><><><><><><><>A|
+16 center|<><><><>A<><><><>|
+16 right |A<-><-><-><-><->|
+16 left  |<-><-><-><-><->A|
+16 center|<-><->A<-><-><->|
+16 right |A<--><--><--><-->|
+16 left  |<--><--><--><-->A|
+16 center|<--><-->A<--><-->|
+16 right |AA              |
+16 left  |              AA|
+16 center|       AA       |
+16 right |AA<><><><><><><>|
+16 left  |<><><><><><><>AA|
+16 center|<><><>AA<><><><>|
+16 right |AA<-><-><-><-><->|
+16 left  |<-><-><-><-><->AA|
+16 center|<-><->AA<-><-><->|
+16 right |AA<--><--><--><-->|
+16 left  |<--><--><--><-->AA|
+16 center|<--><-->AA<--><-->|
+16 right |AAA             |
+16 left  |             AAA|
+16 center|      AAA       |
+16 right |AAA<><><><><><><>|
+16 left  |<><><><><><><>AAA|
+16 center|<><><>AAA<><><><>|
+16 right |AAA<-><-><-><-><->|
+16 left  |<-><-><-><-><->AAA|
+16 center|<-><->AAA<-><-><->|
+16 right |AAA<--><--><--><-->|
+16 left  |<--><--><--><-->AAA|
+16 center|<--><-->AAA<--><-->|
+17 right |                 |
+17 left  |                 |
+17 center|                 |
+17 right |<><><><><><><><><>|
+17 left  |<><><><><><><><><>|
+17 center|<><><><><><><><><>|
+17 right |<-><-><-><-><-><->|
+17 left  |<-><-><-><-><-><->|
+17 center|<-><-><-><-><-><->|
+17 right |<--><--><--><--><-->|
+17 left  |<--><--><--><--><-->|
+17 center|<--><--><--><--><-->|
+17 right |A                |
+17 left  |                A|
+17 center|        A        |
+17 right |A<><><><><><><><>|
+17 left  |<><><><><><><><>A|
+17 center|<><><><>A<><><><>|
+17 right |A<-><-><-><-><-><->|
+17 left  |<-><-><-><-><-><->A|
+17 center|<-><-><->A<-><-><->|
+17 right |A<--><--><--><-->|
+17 left  |<--><--><--><-->A|
+17 center|<--><-->A<--><-->|
+17 right |AA               |
+17 left  |               AA|
+17 center|       AA        |
+17 right |AA<><><><><><><><>|
+17 left  |<><><><><><><><>AA|
+17 center|<><><><>AA<><><><>|
+17 right |AA<-><-><-><-><->|
+17 left  |<-><-><-><-><->AA|
+17 center|<-><->AA<-><-><->|
+17 right |AA<--><--><--><-->|
+17 left  |<--><--><--><-->AA|
+17 center|<--><-->AA<--><-->|
+17 right |AAA              |
+17 left  |              AAA|
+17 center|       AAA       |
+17 right |AAA<><><><><><><>|
+17 left  |<><><><><><><>AAA|
+17 center|<><><>AAA<><><><>|
+17 right |AAA<-><-><-><-><->|
+17 left  |<-><-><-><-><->AAA|
+17 center|<-><->AAA<-><-><->|
+17 right |AAA<--><--><--><-->|
+17 left  |<--><--><--><-->AAA|
+17 center|<--><-->AAA<--><-->|
+18 right |                  |
+18 left  |                  |
+18 center|                  |
+18 right |<><><><><><><><><>|
+18 left  |<><><><><><><><><>|
+18 center|<><><><><><><><><>|
+18 right |<-><-><-><-><-><->|
+18 left  |<-><-><-><-><-><->|
+18 center|<-><-><-><-><-><->|
+18 right |<--><--><--><--><-->|
+18 left  |<--><--><--><--><-->|
+18 center|<--><--><--><--><-->|
+18 right |A                 |
+18 left  |                 A|
+18 center|        A         |
+18 right |A<><><><><><><><><>|
+18 left  |<><><><><><><><><>A|
+18 center|<><><><>A<><><><><>|
+18 right |A<-><-><-><-><-><->|
+18 left  |<-><-><-><-><-><->A|
+18 center|<-><-><->A<-><-><->|
+18 right |A<--><--><--><--><-->|
+18 left  |<--><--><--><--><-->A|
+18 center|<--><-->A<--><--><-->|
+18 right |AA                |
+18 left  |                AA|
+18 center|        AA        |
+18 right |AA<><><><><><><><>|
+18 left  |<><><><><><><><>AA|
+18 center|<><><><>AA<><><><>|
+18 right |AA<-><-><-><-><-><->|
+18 left  |<-><-><-><-><-><->AA|
+18 center|<-><-><->AA<-><-><->|
+18 right |AA<--><--><--><-->|
+18 left  |<--><--><--><-->AA|
+18 center|<--><-->AA<--><-->|
+18 right |AAA               |
+18 left  |               AAA|
+18 center|       AAA        |
+18 right |AAA<><><><><><><><>|
+18 left  |<><><><><><><><>AAA|
+18 center|<><><><>AAA<><><><>|
+18 right |AAA<-><-><-><-><->|
+18 left  |<-><-><-><-><->AAA|
+18 center|<-><->AAA<-><-><->|
+18 right |AAA<--><--><--><-->|
+18 left  |<--><--><--><-->AAA|
+18 center|<--><-->AAA<--><-->|
+19 right |                   |
+19 left  |                   |
+19 center|                   |
+19 right |<><><><><><><><><><>|
+19 left  |<><><><><><><><><><>|
+19 center|<><><><><><><><><><>|
+19 right |<-><-><-><-><-><-><->|
+19 left  |<-><-><-><-><-><-><->|
+19 center|<-><-><-><-><-><-><->|
+19 right |<--><--><--><--><-->|
+19 left  |<--><--><--><--><-->|
+19 center|<--><--><--><--><-->|
+19 right |A                  |
+19 left  |                  A|
+19 center|         A         |
+19 right |A<><><><><><><><><>|
+19 left  |<><><><><><><><><>A|
+19 center|<><><><>A<><><><><>|
+19 right |A<-><-><-><-><-><->|
+19 left  |<-><-><-><-><-><->A|
+19 center|<-><-><->A<-><-><->|
+19 right |A<--><--><--><--><-->|
+19 left  |<--><--><--><--><-->A|
+19 center|<--><-->A<--><--><-->|
+19 right |AA                 |
+19 left  |                 AA|
+19 center|        AA         |
+19 right |AA<><><><><><><><><>|
+19 left  |<><><><><><><><><>AA|
+19 center|<><><><>AA<><><><><>|
+19 right |AA<-><-><-><-><-><->|
+19 left  |<-><-><-><-><-><->AA|
+19 center|<-><-><->AA<-><-><->|
+19 right |AA<--><--><--><--><-->|
+19 left  |<--><--><--><--><-->AA|
+19 center|<--><-->AA<--><--><-->|
+19 right |AAA                |
+19 left  |                AAA|
+19 center|        AAA        |
+19 right |AAA<><><><><><><><>|
+19 left  |<><><><><><><><>AAA|
+19 center|<><><><>AAA<><><><>|
+19 right |AAA<-><-><-><-><-><->|
+19 left  |<-><-><-><-><-><->AAA|
+19 center|<-><-><->AAA<-><-><->|
+19 right |AAA<--><--><--><-->|
+19 left  |<--><--><--><-->AAA|
+19 center|<--><-->AAA<--><-->|
+20 right |                    |
+20 left  |                    |
+20 center|                    |
+20 right |<><><><><><><><><><>|
+20 left  |<><><><><><><><><><>|
+20 center|<><><><><><><><><><>|
+20 right |<-><-><-><-><-><-><->|
+20 left  |<-><-><-><-><-><-><->|
+20 center|<-><-><-><-><-><-><->|
+20 right |<--><--><--><--><-->|
+20 left  |<--><--><--><--><-->|
+20 center|<--><--><--><--><-->|
+20 right |A                   |
+20 left  |                   A|
+20 center|         A          |
+20 right |A<><><><><><><><><><>|
+20 left  |<><><><><><><><><><>A|
+20 center|<><><><><>A<><><><><>|
+20 right |A<-><-><-><-><-><-><->|
+20 left  |<-><-><-><-><-><-><->A|
+20 center|<-><-><->A<-><-><-><->|
+20 right |A<--><--><--><--><-->|
+20 left  |<--><--><--><--><-->A|
+20 center|<--><-->A<--><--><-->|
+20 right |AA                  |
+20 left  |                  AA|
+20 center|         AA         |
+20 right |AA<><><><><><><><><>|
+20 left  |<><><><><><><><><>AA|
+20 center|<><><><>AA<><><><><>|
+20 right |AA<-><-><-><-><-><->|
+20 left  |<-><-><-><-><-><->AA|
+20 center|<-><-><->AA<-><-><->|
+20 right |AA<--><--><--><--><-->|
+20 left  |<--><--><--><--><-->AA|
+20 center|<--><-->AA<--><--><-->|
+20 right |AAA                 |
+20 left  |                 AAA|
+20 center|        AAA         |
+20 right |AAA<><><><><><><><><>|
+20 left  |<><><><><><><><><>AAA|
+20 center|<><><><>AAA<><><><><>|
+20 right |AAA<-><-><-><-><-><->|
+20 left  |<-><-><-><-><-><->AAA|
+20 center|<-><-><->AAA<-><-><->|
+20 right |AAA<--><--><--><--><-->|
+20 left  |<--><--><--><--><-->AAA|
+20 center|<--><-->AAA<--><--><-->|
+21 right |                     |
+21 left  |                     |
+21 center|                     |
+21 right |<><><><><><><><><><><>|
+21 left  |<><><><><><><><><><><>|
+21 center|<><><><><><><><><><><>|
+21 right |<-><-><-><-><-><-><->|
+21 left  |<-><-><-><-><-><-><->|
+21 center|<-><-><-><-><-><-><->|
+21 right |<--><--><--><--><--><-->|
+21 left  |<--><--><--><--><--><-->|
+21 center|<--><--><--><--><--><-->|
+21 right |A                    |
+21 left  |                    A|
+21 center|          A          |
+21 right |A<><><><><><><><><><>|
+21 left  |<><><><><><><><><><>A|
+21 center|<><><><><>A<><><><><>|
+21 right |A<-><-><-><-><-><-><->|
+21 left  |<-><-><-><-><-><-><->A|
+21 center|<-><-><->A<-><-><-><->|
+21 right |A<--><--><--><--><-->|
+21 left  |<--><--><--><--><-->A|
+21 center|<--><-->A<--><--><-->|
+21 right |AA                   |
+21 left  |                   AA|
+21 center|         AA          |
+21 right |AA<><><><><><><><><><>|
+21 left  |<><><><><><><><><><>AA|
+21 center|<><><><><>AA<><><><><>|
+21 right |AA<-><-><-><-><-><-><->|
+21 left  |<-><-><-><-><-><-><->AA|
+21 center|<-><-><->AA<-><-><-><->|
+21 right |AA<--><--><--><--><-->|
+21 left  |<--><--><--><--><-->AA|
+21 center|<--><-->AA<--><--><-->|
+21 right |AAA                  |
+21 left  |                  AAA|
+21 center|         AAA         |
+21 right |AAA<><><><><><><><><>|
+21 left  |<><><><><><><><><>AAA|
+21 center|<><><><>AAA<><><><><>|
+21 right |AAA<-><-><-><-><-><->|
+21 left  |<-><-><-><-><-><->AAA|
+21 center|<-><-><->AAA<-><-><->|
+21 right |AAA<--><--><--><--><-->|
+21 left  |<--><--><--><--><-->AAA|
+21 center|<--><-->AAA<--><--><-->|
+22 right |                      |
+22 left  |                      |
+22 center|                      |
+22 right |<><><><><><><><><><><>|
+22 left  |<><><><><><><><><><><>|
+22 center|<><><><><><><><><><><>|
+22 right |<-><-><-><-><-><-><-><->|
+22 left  |<-><-><-><-><-><-><-><->|
+22 center|<-><-><-><-><-><-><-><->|
+22 right |<--><--><--><--><--><-->|
+22 left  |<--><--><--><--><--><-->|
+22 center|<--><--><--><--><--><-->|
+22 right |A                     |
+22 left  |                     A|
+22 center|          A           |
+22 right |A<><><><><><><><><><><>|
+22 left  |<><><><><><><><><><><>A|
+22 center|<><><><><>A<><><><><><>|
+22 right |A<-><-><-><-><-><-><->|
+22 left  |<-><-><-><-><-><-><->A|
+22 center|<-><-><->A<-><-><-><->|
+22 right |A<--><--><--><--><--><-->|
+22 left  |<--><--><--><--><--><-->A|
+22 center|<--><--><-->A<--><--><-->|
+22 right |AA                    |
+22 left  |                    AA|
+22 center|          AA          |
+22 right |AA<><><><><><><><><><>|
+22 left  |<><><><><><><><><><>AA|
+22 center|<><><><><>AA<><><><><>|
+22 right |AA<-><-><-><-><-><-><->|
+22 left  |<-><-><-><-><-><-><->AA|
+22 center|<-><-><->AA<-><-><-><->|
+22 right |AA<--><--><--><--><-->|
+22 left  |<--><--><--><--><-->AA|
+22 center|<--><-->AA<--><--><-->|
+22 right |AAA                   |
+22 left  |                   AAA|
+22 center|         AAA          |
+22 right |AAA<><><><><><><><><><>|
+22 left  |<><><><><><><><><><>AAA|
+22 center|<><><><><>AAA<><><><><>|
+22 right |AAA<-><-><-><-><-><-><->|
+22 left  |<-><-><-><-><-><-><->AAA|
+22 center|<-><-><->AAA<-><-><-><->|
+22 right |AAA<--><--><--><--><-->|
+22 left  |<--><--><--><--><-->AAA|
+22 center|<--><-->AAA<--><--><-->|
+23 right |                       |
+23 left  |                       |
+23 center|                       |
+23 right |<><><><><><><><><><><><>|
+23 left  |<><><><><><><><><><><><>|
+23 center|<><><><><><><><><><><><>|
+23 right |<-><-><-><-><-><-><-><->|
+23 left  |<-><-><-><-><-><-><-><->|
+23 center|<-><-><-><-><-><-><-><->|
+23 right |<--><--><--><--><--><-->|
+23 left  |<--><--><--><--><--><-->|
+23 center|<--><--><--><--><--><-->|
+23 right |A                      |
+23 left  |                      A|
+23 center|           A           |
+23 right |A<><><><><><><><><><><>|
+23 left  |<><><><><><><><><><><>A|
+23 center|<><><><><>A<><><><><><>|
+23 right |A<-><-><-><-><-><-><-><->|
+23 left  |<-><-><-><-><-><-><-><->A|
+23 center|<-><-><-><->A<-><-><-><->|
+23 right |A<--><--><--><--><--><-->|
+23 left  |<--><--><--><--><--><-->A|
+23 center|<--><--><-->A<--><--><-->|
+23 right |AA                     |
+23 left  |                     AA|
+23 center|          AA           |
+23 right |AA<><><><><><><><><><><>|
+23 left  |<><><><><><><><><><><>AA|
+23 center|<><><><><>AA<><><><><><>|
+23 right |AA<-><-><-><-><-><-><->|
+23 left  |<-><-><-><-><-><-><->AA|
+23 center|<-><-><->AA<-><-><-><->|
+23 right |AA<--><--><--><--><--><-->|
+23 left  |<--><--><--><--><--><-->AA|
+23 center|<--><--><-->AA<--><--><-->|
+23 right |AAA                    |
+23 left  |                    AAA|
+23 center|          AAA          |
+23 right |AAA<><><><><><><><><><>|
+23 left  |<><><><><><><><><><>AAA|
+23 center|<><><><><>AAA<><><><><>|
+23 right |AAA<-><-><-><-><-><-><->|
+23 left  |<-><-><-><-><-><-><->AAA|
+23 center|<-><-><->AAA<-><-><-><->|
+23 right |AAA<--><--><--><--><-->|
+23 left  |<--><--><--><--><-->AAA|
+23 center|<--><-->AAA<--><--><-->|
+24 right |                        |
+24 left  |                        |
+24 center|                        |
+24 right |<><><><><><><><><><><><>|
+24 left  |<><><><><><><><><><><><>|
+24 center|<><><><><><><><><><><><>|
+24 right |<-><-><-><-><-><-><-><->|
+24 left  |<-><-><-><-><-><-><-><->|
+24 center|<-><-><-><-><-><-><-><->|
+24 right |<--><--><--><--><--><-->|
+24 left  |<--><--><--><--><--><-->|
+24 center|<--><--><--><--><--><-->|
+24 right |A                       |
+24 left  |                       A|
+24 center|           A            |
+24 right |A<><><><><><><><><><><><>|
+24 left  |<><><><><><><><><><><><>A|
+24 center|<><><><><><>A<><><><><><>|
+24 right |A<-><-><-><-><-><-><-><->|
+24 left  |<-><-><-><-><-><-><-><->A|
+24 center|<-><-><-><->A<-><-><-><->|
+24 right |A<--><--><--><--><--><-->|
+24 left  |<--><--><--><--><--><-->A|
+24 center|<--><--><-->A<--><--><-->|
+24 right |AA                      |
+24 left  |                      AA|
+24 center|           AA           |
+24 right |AA<><><><><><><><><><><>|
+24 left  |<><><><><><><><><><><>AA|
+24 center|<><><><><>AA<><><><><><>|
+24 right |AA<-><-><-><-><-><-><-><->|
+24 left  |<-><-><-><-><-><-><-><->AA|
+24 center|<-><-><-><->AA<-><-><-><->|
+24 right |AA<--><--><--><--><--><-->|
+24 left  |<--><--><--><--><--><-->AA|
+24 center|<--><--><-->AA<--><--><-->|
+24 right |AAA                     |
+24 left  |                     AAA|
+24 center|          AAA           |
+24 right |AAA<><><><><><><><><><><>|
+24 left  |<><><><><><><><><><><>AAA|
+24 center|<><><><><>AAA<><><><><><>|
+24 right |AAA<-><-><-><-><-><-><->|
+24 left  |<-><-><-><-><-><-><->AAA|
+24 center|<-><-><->AAA<-><-><-><->|
+24 right |AAA<--><--><--><--><--><-->|
+24 left  |<--><--><--><--><--><-->AAA|
+24 center|<--><--><-->AAA<--><--><-->|
+25 right |                         |
+25 left  |                         |
+25 center|                         |
+25 right |<><><><><><><><><><><><><>|
+25 left  |<><><><><><><><><><><><><>|
+25 center|<><><><><><><><><><><><><>|
+25 right |<-><-><-><-><-><-><-><-><->|
+25 left  |<-><-><-><-><-><-><-><-><->|
+25 center|<-><-><-><-><-><-><-><-><->|
+25 right |<--><--><--><--><--><--><-->|
+25 left  |<--><--><--><--><--><--><-->|
+25 center|<--><--><--><--><--><--><-->|
+25 right |A                        |
+25 left  |                        A|
+25 center|            A            |
+25 right |A<><><><><><><><><><><><>|
+25 left  |<><><><><><><><><><><><>A|
+25 center|<><><><><><>A<><><><><><>|
+25 right |A<-><-><-><-><-><-><-><->|
+25 left  |<-><-><-><-><-><-><-><->A|
+25 center|<-><-><-><->A<-><-><-><->|
+25 right |A<--><--><--><--><--><-->|
+25 left  |<--><--><--><--><--><-->A|
+25 center|<--><--><-->A<--><--><-->|
+25 right |AA                       |
+25 left  |                       AA|
+25 center|           AA            |
+25 right |AA<><><><><><><><><><><><>|
+25 left  |<><><><><><><><><><><><>AA|
+25 center|<><><><><><>AA<><><><><><>|
+25 right |AA<-><-><-><-><-><-><-><->|
+25 left  |<-><-><-><-><-><-><-><->AA|
+25 center|<-><-><-><->AA<-><-><-><->|
+25 right |AA<--><--><--><--><--><-->|
+25 left  |<--><--><--><--><--><-->AA|
+25 center|<--><--><-->AA<--><--><-->|
+25 right |AAA                      |
+25 left  |                      AAA|
+25 center|           AAA           |
+25 right |AAA<><><><><><><><><><><>|
+25 left  |<><><><><><><><><><><>AAA|
+25 center|<><><><><>AAA<><><><><><>|
+25 right |AAA<-><-><-><-><-><-><-><->|
+25 left  |<-><-><-><-><-><-><-><->AAA|
+25 center|<-><-><-><->AAA<-><-><-><->|
+25 right |AAA<--><--><--><--><--><-->|
+25 left  |<--><--><--><--><--><-->AAA|
+25 center|<--><--><-->AAA<--><--><-->|
+26 right |                          |
+26 left  |                          |
+26 center|                          |
+26 right |<><><><><><><><><><><><><>|
+26 left  |<><><><><><><><><><><><><>|
+26 center|<><><><><><><><><><><><><>|
+26 right |<-><-><-><-><-><-><-><-><->|
+26 left  |<-><-><-><-><-><-><-><-><->|
+26 center|<-><-><-><-><-><-><-><-><->|
+26 right |<--><--><--><--><--><--><-->|
+26 left  |<--><--><--><--><--><--><-->|
+26 center|<--><--><--><--><--><--><-->|
+26 right |A                         |
+26 left  |                         A|
+26 center|            A             |
+26 right |A<><><><><><><><><><><><><>|
+26 left  |<><><><><><><><><><><><><>A|
+26 center|<><><><><><>A<><><><><><><>|
+26 right |A<-><-><-><-><-><-><-><-><->|
+26 left  |<-><-><-><-><-><-><-><-><->A|
+26 center|<-><-><-><->A<-><-><-><-><->|
+26 right |A<--><--><--><--><--><--><-->|
+26 left  |<--><--><--><--><--><--><-->A|
+26 center|<--><--><-->A<--><--><--><-->|
+26 right |AA                        |
+26 left  |                        AA|
+26 center|            AA            |
+26 right |AA<><><><><><><><><><><><>|
+26 left  |<><><><><><><><><><><><>AA|
+26 center|<><><><><><>AA<><><><><><>|
+26 right |AA<-><-><-><-><-><-><-><->|
+26 left  |<-><-><-><-><-><-><-><->AA|
+26 center|<-><-><-><->AA<-><-><-><->|
+26 right |AA<--><--><--><--><--><-->|
+26 left  |<--><--><--><--><--><-->AA|
+26 center|<--><--><-->AA<--><--><-->|
+26 right |AAA                       |
+26 left  |                       AAA|
+26 center|           AAA            |
+26 right |AAA<><><><><><><><><><><><>|
+26 left  |<><><><><><><><><><><><>AAA|
+26 center|<><><><><><>AAA<><><><><><>|
+26 right |AAA<-><-><-><-><-><-><-><->|
+26 left  |<-><-><-><-><-><-><-><->AAA|
+26 center|<-><-><-><->AAA<-><-><-><->|
+26 right |AAA<--><--><--><--><--><-->|
+26 left  |<--><--><--><--><--><-->AAA|
+26 center|<--><--><-->AAA<--><--><-->|
+27 right |                           |
+27 left  |                           |
+27 center|                           |
+27 right |<><><><><><><><><><><><><><>|
+27 left  |<><><><><><><><><><><><><><>|
+27 center|<><><><><><><><><><><><><><>|
+27 right |<-><-><-><-><-><-><-><-><->|
+27 left  |<-><-><-><-><-><-><-><-><->|
+27 center|<-><-><-><-><-><-><-><-><->|
+27 right |<--><--><--><--><--><--><-->|
+27 left  |<--><--><--><--><--><--><-->|
+27 center|<--><--><--><--><--><--><-->|
+27 right |A                          |
+27 left  |                          A|
+27 center|             A             |
+27 right |A<><><><><><><><><><><><><>|
+27 left  |<><><><><><><><><><><><><>A|
+27 center|<><><><><><>A<><><><><><><>|
+27 right |A<-><-><-><-><-><-><-><-><->|
+27 left  |<-><-><-><-><-><-><-><-><->A|
+27 center|<-><-><-><->A<-><-><-><-><->|
+27 right |A<--><--><--><--><--><--><-->|
+27 left  |<--><--><--><--><--><--><-->A|
+27 center|<--><--><-->A<--><--><--><-->|
+27 right |AA                         |
+27 left  |                         AA|
+27 center|            AA             |
+27 right |AA<><><><><><><><><><><><><>|
+27 left  |<><><><><><><><><><><><><>AA|
+27 center|<><><><><><>AA<><><><><><><>|
+27 right |AA<-><-><-><-><-><-><-><-><->|
+27 left  |<-><-><-><-><-><-><-><-><->AA|
+27 center|<-><-><-><->AA<-><-><-><-><->|
+27 right |AA<--><--><--><--><--><--><-->|
+27 left  |<--><--><--><--><--><--><-->AA|
+27 center|<--><--><-->AA<--><--><--><-->|
+27 right |AAA                        |
+27 left  |                        AAA|
+27 center|            AAA            |
+27 right |AAA<><><><><><><><><><><><>|
+27 left  |<><><><><><><><><><><><>AAA|
+27 center|<><><><><><>AAA<><><><><><>|
+27 right |AAA<-><-><-><-><-><-><-><->|
+27 left  |<-><-><-><-><-><-><-><->AAA|
+27 center|<-><-><-><->AAA<-><-><-><->|
+27 right |AAA<--><--><--><--><--><-->|
+27 left  |<--><--><--><--><--><-->AAA|
+27 center|<--><--><-->AAA<--><--><-->|
+28 right |                            |
+28 left  |                            |
+28 center|                            |
+28 right |<><><><><><><><><><><><><><>|
+28 left  |<><><><><><><><><><><><><><>|
+28 center|<><><><><><><><><><><><><><>|
+28 right |<-><-><-><-><-><-><-><-><-><->|
+28 left  |<-><-><-><-><-><-><-><-><-><->|
+28 center|<-><-><-><-><-><-><-><-><-><->|
+28 right |<--><--><--><--><--><--><-->|
+28 left  |<--><--><--><--><--><--><-->|
+28 center|<--><--><--><--><--><--><-->|
+28 right |A                           |
+28 left  |                           A|
+28 center|             A              |
+28 right |A<><><><><><><><><><><><><><>|
+28 left  |<><><><><><><><><><><><><><>A|
+28 center|<><><><><><><>A<><><><><><><>|
+28 right |A<-><-><-><-><-><-><-><-><->|
+28 left  |<-><-><-><-><-><-><-><-><->A|
+28 center|<-><-><-><->A<-><-><-><-><->|
+28 right |A<--><--><--><--><--><--><-->|
+28 left  |<--><--><--><--><--><--><-->A|
+28 center|<--><--><-->A<--><--><--><-->|
+28 right |AA                          |
+28 left  |                          AA|
+28 center|             AA             |
+28 right |AA<><><><><><><><><><><><><>|
+28 left  |<><><><><><><><><><><><><>AA|
+28 center|<><><><><><>AA<><><><><><><>|
+28 right |AA<-><-><-><-><-><-><-><-><->|
+28 left  |<-><-><-><-><-><-><-><-><->AA|
+28 center|<-><-><-><->AA<-><-><-><-><->|
+28 right |AA<--><--><--><--><--><--><-->|
+28 left  |<--><--><--><--><--><--><-->AA|
+28 center|<--><--><-->AA<--><--><--><-->|
+28 right |AAA                         |
+28 left  |                         AAA|
+28 center|            AAA             |
+28 right |AAA<><><><><><><><><><><><><>|
+28 left  |<><><><><><><><><><><><><>AAA|
+28 center|<><><><><><>AAA<><><><><><><>|
+28 right |AAA<-><-><-><-><-><-><-><-><->|
+28 left  |<-><-><-><-><-><-><-><-><->AAA|
+28 center|<-><-><-><->AAA<-><-><-><-><->|
+28 right |AAA<--><--><--><--><--><--><-->|
+28 left  |<--><--><--><--><--><--><-->AAA|
+28 center|<--><--><-->AAA<--><--><--><-->|
+29 right |                             |
+29 left  |                             |
+29 center|                             |
+29 right |<><><><><><><><><><><><><><><>|
+29 left  |<><><><><><><><><><><><><><><>|
+29 center|<><><><><><><><><><><><><><><>|
+29 right |<-><-><-><-><-><-><-><-><-><->|
+29 left  |<-><-><-><-><-><-><-><-><-><->|
+29 center|<-><-><-><-><-><-><-><-><-><->|
+29 right |<--><--><--><--><--><--><--><-->|
+29 left  |<--><--><--><--><--><--><--><-->|
+29 center|<--><--><--><--><--><--><--><-->|
+29 right |A                            |
+29 left  |                            A|
+29 center|              A              |
+29 right |A<><><><><><><><><><><><><><>|
+29 left  |<><><><><><><><><><><><><><>A|
+29 center|<><><><><><><>A<><><><><><><>|
+29 right |A<-><-><-><-><-><-><-><-><-><->|
+29 left  |<-><-><-><-><-><-><-><-><-><->A|
+29 center|<-><-><-><-><->A<-><-><-><-><->|
+29 right |A<--><--><--><--><--><--><-->|
+29 left  |<--><--><--><--><--><--><-->A|
+29 center|<--><--><-->A<--><--><--><-->|
+29 right |AA                           |
+29 left  |                           AA|
+29 center|             AA              |
+29 right |AA<><><><><><><><><><><><><><>|
+29 left  |<><><><><><><><><><><><><><>AA|
+29 center|<><><><><><><>AA<><><><><><><>|
+29 right |AA<-><-><-><-><-><-><-><-><->|
+29 left  |<-><-><-><-><-><-><-><-><->AA|
+29 center|<-><-><-><->AA<-><-><-><-><->|
+29 right |AA<--><--><--><--><--><--><-->|
+29 left  |<--><--><--><--><--><--><-->AA|
+29 center|<--><--><-->AA<--><--><--><-->|
+29 right |AAA                          |
+29 left  |                          AAA|
+29 center|             AAA             |
+29 right |AAA<><><><><><><><><><><><><>|
+29 left  |<><><><><><><><><><><><><>AAA|
+29 center|<><><><><><>AAA<><><><><><><>|
+29 right |AAA<-><-><-><-><-><-><-><-><->|
+29 left  |<-><-><-><-><-><-><-><-><->AAA|
+29 center|<-><-><-><->AAA<-><-><-><-><->|
+29 right |AAA<--><--><--><--><--><--><-->|
+29 left  |<--><--><--><--><--><--><-->AAA|
+29 center|<--><--><-->AAA<--><--><--><-->|
+30 right |                              |
+30 left  |                              |
+30 center|                              |
+30 right |<><><><><><><><><><><><><><><>|
+30 left  |<><><><><><><><><><><><><><><>|
+30 center|<><><><><><><><><><><><><><><>|
+30 right |<-><-><-><-><-><-><-><-><-><->|
+30 left  |<-><-><-><-><-><-><-><-><-><->|
+30 center|<-><-><-><-><-><-><-><-><-><->|
+30 right |<--><--><--><--><--><--><--><-->|
+30 left  |<--><--><--><--><--><--><--><-->|
+30 center|<--><--><--><--><--><--><--><-->|
+30 right |A                             |
+30 left  |                             A|
+30 center|              A               |
+30 right |A<><><><><><><><><><><><><><><>|
+30 left  |<><><><><><><><><><><><><><><>A|
+30 center|<><><><><><><>A<><><><><><><><>|
+30 right |A<-><-><-><-><-><-><-><-><-><->|
+30 left  |<-><-><-><-><-><-><-><-><-><->A|
+30 center|<-><-><-><-><->A<-><-><-><-><->|
+30 right |A<--><--><--><--><--><--><--><-->|
+30 left  |<--><--><--><--><--><--><--><-->A|
+30 center|<--><--><--><-->A<--><--><--><-->|
+30 right |AA                            |
+30 left  |                            AA|
+30 center|              AA              |
+30 right |AA<><><><><><><><><><><><><><>|
+30 left  |<><><><><><><><><><><><><><>AA|
+30 center|<><><><><><><>AA<><><><><><><>|
+30 right |AA<-><-><-><-><-><-><-><-><-><->|
+30 left  |<-><-><-><-><-><-><-><-><-><->AA|
+30 center|<-><-><-><-><->AA<-><-><-><-><->|
+30 right |AA<--><--><--><--><--><--><-->|
+30 left  |<--><--><--><--><--><--><-->AA|
+30 center|<--><--><-->AA<--><--><--><-->|
+30 right |AAA                           |
+30 left  |                           AAA|
+30 center|             AAA              |
+30 right |AAA<><><><><><><><><><><><><><>|
+30 left  |<><><><><><><><><><><><><><>AAA|
+30 center|<><><><><><><>AAA<><><><><><><>|
+30 right |AAA<-><-><-><-><-><-><-><-><->|
+30 left  |<-><-><-><-><-><-><-><-><->AAA|
+30 center|<-><-><-><->AAA<-><-><-><-><->|
+30 right |AAA<--><--><--><--><--><--><-->|
+30 left  |<--><--><--><--><--><--><-->AAA|
+30 center|<--><--><-->AAA<--><--><--><-->|
+31 right |                               |
+31 left  |                               |
+31 center|                               |
+31 right |<><><><><><><><><><><><><><><><>|
+31 left  |<><><><><><><><><><><><><><><><>|
+31 center|<><><><><><><><><><><><><><><><>|
+31 right |<-><-><-><-><-><-><-><-><-><-><->|
+31 left  |<-><-><-><-><-><-><-><-><-><-><->|
+31 center|<-><-><-><-><-><-><-><-><-><-><->|
+31 right |<--><--><--><--><--><--><--><-->|
+31 left  |<--><--><--><--><--><--><--><-->|
+31 center|<--><--><--><--><--><--><--><-->|
+31 right |A                              |
+31 left  |                              A|
+31 center|               A               |
+31 right |A<><><><><><><><><><><><><><><>|
+31 left  |<><><><><><><><><><><><><><><>A|
+31 center|<><><><><><><>A<><><><><><><><>|
+31 right |A<-><-><-><-><-><-><-><-><-><->|
+31 left  |<-><-><-><-><-><-><-><-><-><->A|
+31 center|<-><-><-><-><->A<-><-><-><-><->|
+31 right |A<--><--><--><--><--><--><--><-->|
+31 left  |<--><--><--><--><--><--><--><-->A|
+31 center|<--><--><--><-->A<--><--><--><-->|
+31 right |AA                             |
+31 left  |                             AA|
+31 center|              AA               |
+31 right |AA<><><><><><><><><><><><><><><>|
+31 left  |<><><><><><><><><><><><><><><>AA|
+31 center|<><><><><><><>AA<><><><><><><><>|
+31 right |AA<-><-><-><-><-><-><-><-><-><->|
+31 left  |<-><-><-><-><-><-><-><-><-><->AA|
+31 center|<-><-><-><-><->AA<-><-><-><-><->|
+31 right |AA<--><--><--><--><--><--><--><-->|
+31 left  |<--><--><--><--><--><--><--><-->AA|
+31 center|<--><--><--><-->AA<--><--><--><-->|
+31 right |AAA                            |
+31 left  |                            AAA|
+31 center|              AAA              |
+31 right |AAA<><><><><><><><><><><><><><>|
+31 left  |<><><><><><><><><><><><><><>AAA|
+31 center|<><><><><><><>AAA<><><><><><><>|
+31 right |AAA<-><-><-><-><-><-><-><-><-><->|
+31 left  |<-><-><-><-><-><-><-><-><-><->AAA|
+31 center|<-><-><-><-><->AAA<-><-><-><-><->|
+31 right |AAA<--><--><--><--><--><--><-->|
+31 left  |<--><--><--><--><--><--><-->AAA|
+31 center|<--><--><-->AAA<--><--><--><-->|
+32 right |                                |
+32 left  |                                |
+32 center|                                |
+32 right |<><><><><><><><><><><><><><><><>|
+32 left  |<><><><><><><><><><><><><><><><>|
+32 center|<><><><><><><><><><><><><><><><>|
+32 right |<-><-><-><-><-><-><-><-><-><-><->|
+32 left  |<-><-><-><-><-><-><-><-><-><-><->|
+32 center|<-><-><-><-><-><-><-><-><-><-><->|
+32 right |<--><--><--><--><--><--><--><-->|
+32 left  |<--><--><--><--><--><--><--><-->|
+32 center|<--><--><--><--><--><--><--><-->|
+32 right |A                               |
+32 left  |                               A|
+32 center|               A                |
+32 right |A<><><><><><><><><><><><><><><><>|
+32 left  |<><><><><><><><><><><><><><><><>A|
+32 center|<><><><><><><><>A<><><><><><><><>|
+32 right |A<-><-><-><-><-><-><-><-><-><-><->|
+32 left  |<-><-><-><-><-><-><-><-><-><-><->A|
+32 center|<-><-><-><-><->A<-><-><-><-><-><->|
+32 right |A<--><--><--><--><--><--><--><-->|
+32 left  |<--><--><--><--><--><--><--><-->A|
+32 center|<--><--><--><-->A<--><--><--><-->|
+32 right |AA                              |
+32 left  |                              AA|
+32 center|               AA               |
+32 right |AA<><><><><><><><><><><><><><><>|
+32 left  |<><><><><><><><><><><><><><><>AA|
+32 center|<><><><><><><>AA<><><><><><><><>|
+32 right |AA<-><-><-><-><-><-><-><-><-><->|
+32 left  |<-><-><-><-><-><-><-><-><-><->AA|
+32 center|<-><-><-><-><->AA<-><-><-><-><->|
+32 right |AA<--><--><--><--><--><--><--><-->|
+32 left  |<--><--><--><--><--><--><--><-->AA|
+32 center|<--><--><--><-->AA<--><--><--><-->|
+32 right |AAA                             |
+32 left  |                             AAA|
+32 center|              AAA               |
+32 right |AAA<><><><><><><><><><><><><><><>|
+32 left  |<><><><><><><><><><><><><><><>AAA|
+32 center|<><><><><><><>AAA<><><><><><><><>|
+32 right |AAA<-><-><-><-><-><-><-><-><-><->|
+32 left  |<-><-><-><-><-><-><-><-><-><->AAA|
+32 center|<-><-><-><-><->AAA<-><-><-><-><->|
+32 right |AAA<--><--><--><--><--><--><--><-->|
+32 left  |<--><--><--><--><--><--><--><-->AAA|
+32 center|<--><--><--><-->AAA<--><--><--><-->|
+33 right |                                 |
+33 left  |                                 |
+33 center|                                 |
+33 right |<><><><><><><><><><><><><><><><><>|
+33 left  |<><><><><><><><><><><><><><><><><>|
+33 center|<><><><><><><><><><><><><><><><><>|
+33 right |<-><-><-><-><-><-><-><-><-><-><->|
+33 left  |<-><-><-><-><-><-><-><-><-><-><->|
+33 center|<-><-><-><-><-><-><-><-><-><-><->|
+33 right |<--><--><--><--><--><--><--><--><-->|
+33 left  |<--><--><--><--><--><--><--><--><-->|
+33 center|<--><--><--><--><--><--><--><--><-->|
+33 right |A                                |
+33 left  |                                A|
+33 center|                A                |
+33 right |A<><><><><><><><><><><><><><><><>|
+33 left  |<><><><><><><><><><><><><><><><>A|
+33 center|<><><><><><><><>A<><><><><><><><>|
+33 right |A<-><-><-><-><-><-><-><-><-><-><->|
+33 left  |<-><-><-><-><-><-><-><-><-><-><->A|
+33 center|<-><-><-><-><->A<-><-><-><-><-><->|
+33 right |A<--><--><--><--><--><--><--><-->|
+33 left  |<--><--><--><--><--><--><--><-->A|
+33 center|<--><--><--><-->A<--><--><--><-->|
+33 right |AA                               |
+33 left  |                               AA|
+33 center|               AA                |
+33 right |AA<><><><><><><><><><><><><><><><>|
+33 left  |<><><><><><><><><><><><><><><><>AA|
+33 center|<><><><><><><><>AA<><><><><><><><>|
+33 right |AA<-><-><-><-><-><-><-><-><-><-><->|
+33 left  |<-><-><-><-><-><-><-><-><-><-><->AA|
+33 center|<-><-><-><-><->AA<-><-><-><-><-><->|
+33 right |AA<--><--><--><--><--><--><--><-->|
+33 left  |<--><--><--><--><--><--><--><-->AA|
+33 center|<--><--><--><-->AA<--><--><--><-->|
+33 right |AAA                              |
+33 left  |                              AAA|
+33 center|               AAA               |
+33 right |AAA<><><><><><><><><><><><><><><>|
+33 left  |<><><><><><><><><><><><><><><>AAA|
+33 center|<><><><><><><>AAA<><><><><><><><>|
+33 right |AAA<-><-><-><-><-><-><-><-><-><->|
+33 left  |<-><-><-><-><-><-><-><-><-><->AAA|
+33 center|<-><-><-><-><->AAA<-><-><-><-><->|
+33 right |AAA<--><--><--><--><--><--><--><-->|
+33 left  |<--><--><--><--><--><--><--><-->AAA|
+33 center|<--><--><--><-->AAA<--><--><--><-->|
+34 right |                                  |
+34 left  |                                  |
+34 center|                                  |
+34 right |<><><><><><><><><><><><><><><><><>|
+34 left  |<><><><><><><><><><><><><><><><><>|
+34 center|<><><><><><><><><><><><><><><><><>|
+34 right |<-><-><-><-><-><-><-><-><-><-><-><->|
+34 left  |<-><-><-><-><-><-><-><-><-><-><-><->|
+34 center|<-><-><-><-><-><-><-><-><-><-><-><->|
+34 right |<--><--><--><--><--><--><--><--><-->|
+34 left  |<--><--><--><--><--><--><--><--><-->|
+34 center|<--><--><--><--><--><--><--><--><-->|
+34 right |A                                 |
+34 left  |                                 A|
+34 center|                A                 |
+34 right |A<><><><><><><><><><><><><><><><><>|
+34 left  |<><><><><><><><><><><><><><><><><>A|
+34 center|<><><><><><><><>A<><><><><><><><><>|
+34 right |A<-><-><-><-><-><-><-><-><-><-><->|
+34 left  |<-><-><-><-><-><-><-><-><-><-><->A|
+34 center|<-><-><-><-><->A<-><-><-><-><-><->|
+34 right |A<--><--><--><--><--><--><--><--><-->|
+34 left  |<--><--><--><--><--><--><--><--><-->A|
+34 center|<--><--><--><-->A<--><--><--><--><-->|
+34 right |AA                                |
+34 left  |                                AA|
+34 center|                AA                |
+34 right |AA<><><><><><><><><><><><><><><><>|
+34 left  |<><><><><><><><><><><><><><><><>AA|
+34 center|<><><><><><><><>AA<><><><><><><><>|
+34 right |AA<-><-><-><-><-><-><-><-><-><-><->|
+34 left  |<-><-><-><-><-><-><-><-><-><-><->AA|
+34 center|<-><-><-><-><->AA<-><-><-><-><-><->|
+34 right |AA<--><--><--><--><--><--><--><-->|
+34 left  |<--><--><--><--><--><--><--><-->AA|
+34 center|<--><--><--><-->AA<--><--><--><-->|
+34 right |AAA                               |
+34 left  |                               AAA|
+34 center|               AAA                |
+34 right |AAA<><><><><><><><><><><><><><><><>|
+34 left  |<><><><><><><><><><><><><><><><>AAA|
+34 center|<><><><><><><><>AAA<><><><><><><><>|
+34 right |AAA<-><-><-><-><-><-><-><-><-><-><->|
+34 left  |<-><-><-><-><-><-><-><-><-><-><->AAA|
+34 center|<-><-><-><-><->AAA<-><-><-><-><-><->|
+34 right |AAA<--><--><--><--><--><--><--><-->|
+34 left  |<--><--><--><--><--><--><--><-->AAA|
+34 center|<--><--><--><-->AAA<--><--><--><-->|
+35 right |                                   |
+35 left  |                                   |
+35 center|                                   |
+35 right |<><><><><><><><><><><><><><><><><><>|
+35 left  |<><><><><><><><><><><><><><><><><><>|
+35 center|<><><><><><><><><><><><><><><><><><>|
+35 right |<-><-><-><-><-><-><-><-><-><-><-><->|
+35 left  |<-><-><-><-><-><-><-><-><-><-><-><->|
+35 center|<-><-><-><-><-><-><-><-><-><-><-><->|
+35 right |<--><--><--><--><--><--><--><--><-->|
+35 left  |<--><--><--><--><--><--><--><--><-->|
+35 center|<--><--><--><--><--><--><--><--><-->|
+35 right |A                                  |
+35 left  |                                  A|
+35 center|                 A                 |
+35 right |A<><><><><><><><><><><><><><><><><>|
+35 left  |<><><><><><><><><><><><><><><><><>A|
+35 center|<><><><><><><><>A<><><><><><><><><>|
+35 right |A<-><-><-><-><-><-><-><-><-><-><-><->|
+35 left  |<-><-><-><-><-><-><-><-><-><-><-><->A|
+35 center|<-><-><-><-><-><->A<-><-><-><-><-><->|
+35 right |A<--><--><--><--><--><--><--><--><-->|
+35 left  |<--><--><--><--><--><--><--><--><-->A|
+35 center|<--><--><--><-->A<--><--><--><--><-->|
+35 right |AA                                 |
+35 left  |                                 AA|
+35 center|                AA                 |
+35 right |AA<><><><><><><><><><><><><><><><><>|
+35 left  |<><><><><><><><><><><><><><><><><>AA|
+35 center|<><><><><><><><>AA<><><><><><><><><>|
+35 right |AA<-><-><-><-><-><-><-><-><-><-><->|
+35 left  |<-><-><-><-><-><-><-><-><-><-><->AA|
+35 center|<-><-><-><-><->AA<-><-><-><-><-><->|
+35 right |AA<--><--><--><--><--><--><--><--><-->|
+35 left  |<--><--><--><--><--><--><--><--><-->AA|
+35 center|<--><--><--><-->AA<--><--><--><--><-->|
+35 right |AAA                                |
+35 left  |                                AAA|
+35 center|                AAA                |
+35 right |AAA<><><><><><><><><><><><><><><><>|
+35 left  |<><><><><><><><><><><><><><><><>AAA|
+35 center|<><><><><><><><>AAA<><><><><><><><>|
+35 right |AAA<-><-><-><-><-><-><-><-><-><-><->|
+35 left  |<-><-><-><-><-><-><-><-><-><-><->AAA|
+35 center|<-><-><-><-><->AAA<-><-><-><-><-><->|
+35 right |AAA<--><--><--><--><--><--><--><-->|
+35 left  |<--><--><--><--><--><--><--><-->AAA|
+35 center|<--><--><--><-->AAA<--><--><--><-->|
+36 right |                                    |
+36 left  |                                    |
+36 center|                                    |
+36 right |<><><><><><><><><><><><><><><><><><>|
+36 left  |<><><><><><><><><><><><><><><><><><>|
+36 center|<><><><><><><><><><><><><><><><><><>|
+36 right |<-><-><-><-><-><-><-><-><-><-><-><->|
+36 left  |<-><-><-><-><-><-><-><-><-><-><-><->|
+36 center|<-><-><-><-><-><-><-><-><-><-><-><->|
+36 right |<--><--><--><--><--><--><--><--><-->|
+36 left  |<--><--><--><--><--><--><--><--><-->|
+36 center|<--><--><--><--><--><--><--><--><-->|
+36 right |A                                   |
+36 left  |                                   A|
+36 center|                 A                  |
+36 right |A<><><><><><><><><><><><><><><><><><>|
+36 left  |<><><><><><><><><><><><><><><><><><>A|
+36 center|<><><><><><><><><>A<><><><><><><><><>|
+36 right |A<-><-><-><-><-><-><-><-><-><-><-><->|
+36 left  |<-><-><-><-><-><-><-><-><-><-><-><->A|
+36 center|<-><-><-><-><-><->A<-><-><-><-><-><->|
+36 right |A<--><--><--><--><--><--><--><--><-->|
+36 left  |<--><--><--><--><--><--><--><--><-->A|
+36 center|<--><--><--><-->A<--><--><--><--><-->|
+36 right |AA                                  |
+36 left  |                                  AA|
+36 center|                 AA                 |
+36 right |AA<><><><><><><><><><><><><><><><><>|
+36 left  |<><><><><><><><><><><><><><><><><>AA|
+36 center|<><><><><><><><>AA<><><><><><><><><>|
+36 right |AA<-><-><-><-><-><-><-><-><-><-><-><->|
+36 left  |<-><-><-><-><-><-><-><-><-><-><-><->AA|
+36 center|<-><-><-><-><-><->AA<-><-><-><-><-><->|
+36 right |AA<--><--><--><--><--><--><--><--><-->|
+36 left  |<--><--><--><--><--><--><--><--><-->AA|
+36 center|<--><--><--><-->AA<--><--><--><--><-->|
+36 right |AAA                                 |
+36 left  |                                 AAA|
+36 center|                AAA                 |
+36 right |AAA<><><><><><><><><><><><><><><><><>|
+36 left  |<><><><><><><><><><><><><><><><><>AAA|
+36 center|<><><><><><><><>AAA<><><><><><><><><>|
+36 right |AAA<-><-><-><-><-><-><-><-><-><-><->|
+36 left  |<-><-><-><-><-><-><-><-><-><-><->AAA|
+36 center|<-><-><-><-><->AAA<-><-><-><-><-><->|
+36 right |AAA<--><--><--><--><--><--><--><--><-->|
+36 left  |<--><--><--><--><--><--><--><--><-->AAA|
+36 center|<--><--><--><-->AAA<--><--><--><--><-->|
+37 right |                                     |
+37 left  |                                     |
+37 center|                                     |
+37 right |<><><><><><><><><><><><><><><><><><><>|
+37 left  |<><><><><><><><><><><><><><><><><><><>|
+37 center|<><><><><><><><><><><><><><><><><><><>|
+37 right |<-><-><-><-><-><-><-><-><-><-><-><-><->|
+37 left  |<-><-><-><-><-><-><-><-><-><-><-><-><->|
+37 center|<-><-><-><-><-><-><-><-><-><-><-><-><->|
+37 right |<--><--><--><--><--><--><--><--><--><-->|
+37 left  |<--><--><--><--><--><--><--><--><--><-->|
+37 center|<--><--><--><--><--><--><--><--><--><-->|
+37 right |A                                    |
+37 left  |                                    A|
+37 center|                  A                  |
+37 right |A<><><><><><><><><><><><><><><><><><>|
+37 left  |<><><><><><><><><><><><><><><><><><>A|
+37 center|<><><><><><><><><>A<><><><><><><><><>|
+37 right |A<-><-><-><-><-><-><-><-><-><-><-><->|
+37 left  |<-><-><-><-><-><-><-><-><-><-><-><->A|
+37 center|<-><-><-><-><-><->A<-><-><-><-><-><->|
+37 right |A<--><--><--><--><--><--><--><--><-->|
+37 left  |<--><--><--><--><--><--><--><--><-->A|
+37 center|<--><--><--><-->A<--><--><--><--><-->|
+37 right |AA                                   |
+37 left  |                                   AA|
+37 center|                 AA                  |
+37 right |AA<><><><><><><><><><><><><><><><><><>|
+37 left  |<><><><><><><><><><><><><><><><><><>AA|
+37 center|<><><><><><><><><>AA<><><><><><><><><>|
+37 right |AA<-><-><-><-><-><-><-><-><-><-><-><->|
+37 left  |<-><-><-><-><-><-><-><-><-><-><-><->AA|
+37 center|<-><-><-><-><-><->AA<-><-><-><-><-><->|
+37 right |AA<--><--><--><--><--><--><--><--><-->|
+37 left  |<--><--><--><--><--><--><--><--><-->AA|
+37 center|<--><--><--><-->AA<--><--><--><--><-->|
+37 right |AAA                                  |
+37 left  |                                  AAA|
+37 center|                 AAA                 |
+37 right |AAA<><><><><><><><><><><><><><><><><>|
+37 left  |<><><><><><><><><><><><><><><><><>AAA|
+37 center|<><><><><><><><>AAA<><><><><><><><><>|
+37 right |AAA<-><-><-><-><-><-><-><-><-><-><-><->|
+37 left  |<-><-><-><-><-><-><-><-><-><-><-><->AAA|
+37 center|<-><-><-><-><-><->AAA<-><-><-><-><-><->|
+37 right |AAA<--><--><--><--><--><--><--><--><-->|
+37 left  |<--><--><--><--><--><--><--><--><-->AAA|
+37 center|<--><--><--><-->AAA<--><--><--><--><-->|
+38 right |                                      |
+38 left  |                                      |
+38 center|                                      |
+38 right |<><><><><><><><><><><><><><><><><><><>|
+38 left  |<><><><><><><><><><><><><><><><><><><>|
+38 center|<><><><><><><><><><><><><><><><><><><>|
+38 right |<-><-><-><-><-><-><-><-><-><-><-><-><->|
+38 left  |<-><-><-><-><-><-><-><-><-><-><-><-><->|
+38 center|<-><-><-><-><-><-><-><-><-><-><-><-><->|
+38 right |<--><--><--><--><--><--><--><--><--><-->|
+38 left  |<--><--><--><--><--><--><--><--><--><-->|
+38 center|<--><--><--><--><--><--><--><--><--><-->|
+38 right |A                                     |
+38 left  |                                     A|
+38 center|                  A                   |
+38 right |A<><><><><><><><><><><><><><><><><><><>|
+38 left  |<><><><><><><><><><><><><><><><><><><>A|
+38 center|<><><><><><><><><>A<><><><><><><><><><>|
+38 right |A<-><-><-><-><-><-><-><-><-><-><-><-><->|
+38 left  |<-><-><-><-><-><-><-><-><-><-><-><-><->A|
+38 center|<-><-><-><-><-><->A<-><-><-><-><-><-><->|
+38 right |A<--><--><--><--><--><--><--><--><--><-->|
+38 left  |<--><--><--><--><--><--><--><--><--><-->A|
+38 center|<--><--><--><--><-->A<--><--><--><--><-->|
+38 right |AA                                    |
+38 left  |                                    AA|
+38 center|                  AA                  |
+38 right |AA<><><><><><><><><><><><><><><><><><>|
+38 left  |<><><><><><><><><><><><><><><><><><>AA|
+38 center|<><><><><><><><><>AA<><><><><><><><><>|
+38 right |AA<-><-><-><-><-><-><-><-><-><-><-><->|
+38 left  |<-><-><-><-><-><-><-><-><-><-><-><->AA|
+38 center|<-><-><-><-><-><->AA<-><-><-><-><-><->|
+38 right |AA<--><--><--><--><--><--><--><--><-->|
+38 left  |<--><--><--><--><--><--><--><--><-->AA|
+38 center|<--><--><--><-->AA<--><--><--><--><-->|
+38 right |AAA                                   |
+38 left  |                                   AAA|
+38 center|                 AAA                  |
+38 right |AAA<><><><><><><><><><><><><><><><><><>|
+38 left  |<><><><><><><><><><><><><><><><><><>AAA|
+38 center|<><><><><><><><><>AAA<><><><><><><><><>|
+38 right |AAA<-><-><-><-><-><-><-><-><-><-><-><->|
+38 left  |<-><-><-><-><-><-><-><-><-><-><-><->AAA|
+38 center|<-><-><-><-><-><->AAA<-><-><-><-><-><->|
+38 right |AAA<--><--><--><--><--><--><--><--><-->|
+38 left  |<--><--><--><--><--><--><--><--><-->AAA|
+38 center|<--><--><--><-->AAA<--><--><--><--><-->|

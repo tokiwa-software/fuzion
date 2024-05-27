@@ -102,33 +102,6 @@ public class Assign extends AbstractAssign
    * create an implicit assignment to result if the code does not do this
    * explicitly.
    *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param f
-   *
-   * @param v
-   *
-   * @param outer the root feature that contains this expression.
-   */
-  public Assign(SourcePosition pos, AbstractFeature f, Expr v, AbstractFeature outer)
-  {
-    super(f, new This(pos, outer, f.outer()), v);
-
-    if (PRECONDITIONS) require
-      (Errors.any() ||
-       outer.state().atLeast(State.RESOLVED_TYPES),
-       f != null);
-
-    this._name = null;
-    this._pos = pos;
-  }
-
-
-  /**
-   * Constructor to create an assignment to a given field.  This is used to
-   * create an implicit assignment to result if the code does not do this
-   * explicitly.
-   *
    * @param res the resolution instance.
    *
    * @param pos the sourcecode position, used for error messages.
@@ -148,6 +121,7 @@ public class Assign extends AbstractAssign
        res.state(outer) == State.RESOLVING_TYPES   ||
        res.state(outer) == State.RESOLVED_TYPES    ||
        res.state(outer) == State.TYPES_INFERENCING ||
+       res.state(outer) == State.RESOLVING_SUGAR1  ||
        res.state(outer) == State.RESOLVING_SUGAR2,
        f != null);
 

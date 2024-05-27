@@ -35,27 +35,27 @@ test_covariance is
 
     # special values
     #
-    type.zero num0.this is abstract
-    type.one  num0.this is abstract
+    type.zero num0.this => abstract
+    type.one  num0.this => abstract
 
     # if num0.this less than other?
     #
-    lessThan(other num0.this) bool is abstract
+    lessThan(other num0.this) bool => abstract
 
-    plus (other num0.this) num0.this is abstract
-    minus(other num0.this) num0.this is abstract
+    plus (other num0.this) num0.this => abstract
+    minus(other num0.this) num0.this => abstract
 
     to_u32_loop =>
       for
-        x := num0.this, x.minus num0.this.type.one
+        x := num0.this, x.minus num0.this.one
         u := u32 0, u+1
-      while num0.this.type.zero.lessThan x
+      while num0.this.zero.lessThan x
       else
         u
 
     # convert this to corresponding values as an 'u32'
     #
-    to_u32 u32 is
+    to_u32 u32 =>
       t := num0.this.type
       if t.zero.lessThan num0.this
         (minus t.one).to_u32 + 1
@@ -70,7 +70,7 @@ test_covariance is
     # string representation of this value, to be implemented by
     # children.
     #
-    valueString String is abstract
+    valueString String => abstract
 
 
   # integer mod 2 implementation of num0
@@ -155,15 +155,15 @@ test_this_type =>
 
   a is
     type.s => "a"
-    redef as_string => "{a.this.type.s}"
+    redef as_string => "{a.this.s}"
     b is
       type.s => "b"
-      redef as_string => "{a.this.type.s}{b.this.type.s}"
+      redef as_string => "{a.this.s}{b.this.s}"
       c is
         type.s => "c"
         d is
           type.s => "d"
-          redef as_string => "{a.this.type.s}{b.this.type.s}{c.this.type.s}{d.this.type.s}"
+          redef as_string => "{a.this.s}{b.this.s}{c.this.s}{d.this.s}"
 
   k : a is
     redef type.s => "k"
@@ -227,25 +227,25 @@ test_this_type_in_type_feature =>
     def(s String) is
       ghi is
         jkl(val i32, msg String) is
-          type.choose1(a, b             jkl.this)             jkl.this is if a.val < b.val then a else b
-          type.choose2(a, b         ghi.jkl.this)         ghi.jkl.this is if a.val < b.val then a else b
-          type.choose3(a, b     def.ghi.jkl.this)     def.ghi.jkl.this is if a.val < b.val then a else b
-          type.choose4(a, b abc.def.ghi.jkl.this) abc.def.ghi.jkl.this is if a.val < b.val then a else b
-          type.choose5(a, b     def.ghi.jkl.this) abc.def.ghi.jkl.this is if a.val < b.val then a else b
-          type.choose6(a, b         ghi.jkl.this) abc.def.ghi.jkl.this is if a.val < b.val then a else b
-          type.choose7(a, b             jkl.this) abc.def.ghi.jkl.this is if a.val < b.val then a else b
-          type.choose8(a, b abc.def.ghi.jkl.this)     def.ghi.jkl.this is if a.val < b.val then a else b
-          type.choose9(a, b abc.def.ghi.jkl.this)         ghi.jkl.this is if a.val < b.val then a else b
-          type.chooseA(a, b abc.def.ghi.jkl.this)             jkl.this is if a.val < b.val then a else b
+          type.choose1(a, b             jkl.this)             jkl.this => if a.val < b.val then a else b
+          type.choose2(a, b         ghi.jkl.this)         ghi.jkl.this => if a.val < b.val then a else b
+          type.choose3(a, b     def.ghi.jkl.this)     def.ghi.jkl.this => if a.val < b.val then a else b
+          type.choose4(a, b abc.def.ghi.jkl.this) abc.def.ghi.jkl.this => if a.val < b.val then a else b
+          type.choose5(a, b     def.ghi.jkl.this) abc.def.ghi.jkl.this => if a.val < b.val then a else b
+          type.choose6(a, b         ghi.jkl.this) abc.def.ghi.jkl.this => if a.val < b.val then a else b
+          type.choose7(a, b             jkl.this) abc.def.ghi.jkl.this => if a.val < b.val then a else b
+          type.choose8(a, b abc.def.ghi.jkl.this)     def.ghi.jkl.this => if a.val < b.val then a else b
+          type.choose9(a, b abc.def.ghi.jkl.this)         ghi.jkl.this => if a.val < b.val then a else b
+          type.chooseA(a, b abc.def.ghi.jkl.this)             jkl.this => if a.val < b.val then a else b
 
-          type.choose1L(a, b     def.this)     def.this is a
-          type.choose1R(a, b     def.this)     def.this is b
-          type.choose2L(a, b abc.def.this) abc.def.this is a
-          type.choose2R(a, b abc.def.this) abc.def.this is b
-          type.choose3L(a, b abc.def.this)     def.this is a
-          type.choose3R(a, b abc.def.this)     def.this is b
-          type.choose4L(a, b     def.this) abc.def.this is a
-          type.choose4R(a, b     def.this) abc.def.this is b
+          type.choose1L(a, b     def.this)     def.this => a
+          type.choose1R(a, b     def.this)     def.this => b
+          type.choose2L(a, b abc.def.this) abc.def.this => a
+          type.choose2R(a, b abc.def.this) abc.def.this => b
+          type.choose3L(a, b abc.def.this)     def.this => a
+          type.choose3R(a, b abc.def.this)     def.this => b
+          type.choose4L(a, b     def.this) abc.def.this => a
+          type.choose4R(a, b     def.this) abc.def.this => b
 
           redef as_string => "abc.def.ghi.jkl $val $msg"
 
@@ -254,39 +254,39 @@ test_this_type_in_type_feature =>
   v1 := (abc.def "ignore").ghi.jkl 1 "PASS"
   v2 := (abc.def "ignore").ghi.jkl 2 "*** FAIL ***"
 
-  say (abc.def.ghi.jkl.type.choose1 v1 v2)
-  say (abc.def.ghi.jkl.type.choose2 v1 v2)
-  say (abc.def.ghi.jkl.type.choose3 v1 v2)
-  say (abc.def.ghi.jkl.type.choose4 v1 v2)
-  say (abc.def.ghi.jkl.type.choose5 v1 v2)
-  say (abc.def.ghi.jkl.type.choose6 v1 v2)
-  say (abc.def.ghi.jkl.type.choose7 v1 v2)
-  say (abc.def.ghi.jkl.type.choose8 v1 v2)
-  say (abc.def.ghi.jkl.type.choose9 v1 v2)
-  say (abc.def.ghi.jkl.type.chooseA v1 v2)
+  say (abc.def.ghi.jkl.choose1 v1 v2)
+  say (abc.def.ghi.jkl.choose2 v1 v2)
+  say (abc.def.ghi.jkl.choose3 v1 v2)
+  say (abc.def.ghi.jkl.choose4 v1 v2)
+  say (abc.def.ghi.jkl.choose5 v1 v2)
+  say (abc.def.ghi.jkl.choose6 v1 v2)
+  say (abc.def.ghi.jkl.choose7 v1 v2)
+  say (abc.def.ghi.jkl.choose8 v1 v2)
+  say (abc.def.ghi.jkl.choose9 v1 v2)
+  say (abc.def.ghi.jkl.chooseA v1 v2)
 
-  say (abc.def.ghi.jkl.type.choose1 v2 v1)
-  say (abc.def.ghi.jkl.type.choose2 v2 v1)
-  say (abc.def.ghi.jkl.type.choose3 v2 v1)
-  say (abc.def.ghi.jkl.type.choose4 v2 v1)
-  say (abc.def.ghi.jkl.type.choose5 v2 v1)
-  say (abc.def.ghi.jkl.type.choose6 v2 v1)
-  say (abc.def.ghi.jkl.type.choose7 v2 v1)
-  say (abc.def.ghi.jkl.type.choose8 v2 v1)
-  say (abc.def.ghi.jkl.type.choose9 v2 v1)
-  say (abc.def.ghi.jkl.type.chooseA v2 v1)
+  say (abc.def.ghi.jkl.choose1 v2 v1)
+  say (abc.def.ghi.jkl.choose2 v2 v1)
+  say (abc.def.ghi.jkl.choose3 v2 v1)
+  say (abc.def.ghi.jkl.choose4 v2 v1)
+  say (abc.def.ghi.jkl.choose5 v2 v1)
+  say (abc.def.ghi.jkl.choose6 v2 v1)
+  say (abc.def.ghi.jkl.choose7 v2 v1)
+  say (abc.def.ghi.jkl.choose8 v2 v1)
+  say (abc.def.ghi.jkl.choose9 v2 v1)
+  say (abc.def.ghi.jkl.chooseA v2 v1)
 
   w1 := abc.def "PASS"
   w2 := abc.def "*** FAIL ***"
 
-  say (abc.def.ghi.jkl.type.choose1L w1 w2)
-  say (abc.def.ghi.jkl.type.choose1R w2 w1)
-  say (abc.def.ghi.jkl.type.choose2L w1 w2)
-  say (abc.def.ghi.jkl.type.choose2R w2 w1)
-  say (abc.def.ghi.jkl.type.choose3L w1 w2)
-  say (abc.def.ghi.jkl.type.choose3R w2 w1)
-  say (abc.def.ghi.jkl.type.choose4L w1 w2)
-  say (abc.def.ghi.jkl.type.choose4R w2 w1)
+  say (abc.def.ghi.jkl.choose1L w1 w2)
+  say (abc.def.ghi.jkl.choose1R w2 w1)
+  say (abc.def.ghi.jkl.choose2L w1 w2)
+  say (abc.def.ghi.jkl.choose2R w2 w1)
+  say (abc.def.ghi.jkl.choose3L w1 w2)
+  say (abc.def.ghi.jkl.choose3R w2 w1)
+  say (abc.def.ghi.jkl.choose4L w1 w2)
+  say (abc.def.ghi.jkl.choose4R w2 w1)
 
 run_test_covariance
 test_this_type

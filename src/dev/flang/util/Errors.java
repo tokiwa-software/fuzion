@@ -163,8 +163,108 @@ public class Errors extends ANY
     }
   }
 
+
+  /**
+   * Abstract Error Identifier.
+   *
+   * This will be implemented by all error identifier enums.
+   */
+  public static interface Id
+  {
+    default void report(SourcePosition pos, String msg, String detail)
+    {
+      error(Id.this, pos, msg, detail);
+    }
+    String msgText();
+  }
+
+
+  /*-----------------------------  enums  ------------------------------*/
+
+
+  /**
+   * Error related to source file rules block SRCF_*.
+   */
+  public enum SRCF implements Id
+  {
+    UTF8
+    {
+      public String msgText()
+      {
+        return "Bad UTF8 encoding found";
+      }
+      public void report(SourcePosition pos, String append_to_msg, String detail)
+      {
+        error(UTF8, pos, msgText() + append_to_msg, detail);
+      }
+    }
+  }
+
+
   /*--------------------------  constructors  ---------------------------*/
 
+
+  /*-------------------------  static methods  --------------------------*/
+
+
+  /**
+   * Handy functions to convert common types to strings in error messages. Will
+   * set a color and enclose the string in single quotes.
+   */
+  public static String skw(String s) // keyword
+  {
+    return code(s);
+  }
+  public static String sbn(String s) // feature base name
+  {
+    return code(s);
+  }
+  public static String sqn(String s) // feature qualified name
+  {
+    return code(s);
+  }
+  public static String st(String t) // type
+  {
+    return type(t);
+  }
+  public static String ss(String s) // expression
+  {
+    return expr(s);
+  }
+  public static String sn(List<String> names) // names as list "a, b, c"
+  {
+    return ss(names.toString());
+  }
+  public static String sn2(List<String> names) // names as list "`a`, `b`, `c`"
+  {
+    return names.map(s -> ss(s)).toString();
+  }
+  public static String sqn(List<String> names) // names as qualified name "a.b.c"
+  {
+    return ss(names.toString("", ".", ""));
+  }
+
+
+  public static String code(String s) { return ticksOrNewLine(Terminal.PURPLE         + s + Terminal.REGULAR_COLOR); }
+  public static String type(String s) { return ticksOrNewLine(Terminal.YELLOW         + s + Terminal.REGULAR_COLOR); }
+  public static String expr(String s) { return ticksOrNewLine(Terminal.CYAN           + s + Terminal.REGULAR_COLOR); }
+  public static String effe(String s) { return ticksOrNewLine(Terminal.INTENSE_PURPLE + s + dev.flang.util.Terminal.RESET); }
+  public static String err()          { return Terminal.RED + ERROR_STRING + Terminal.REGULAR_COLOR; }
+
+
+  /**
+   * Enclose s in "'" unless s contains a new line. If s contains a new line,
+   * add new lines at the starts or the ends with not present already.
+   */
+  public static String ticksOrNewLine(String s)
+  {
+    return
+      s.indexOf("\n") < 0                    ? "'"  + s + "'"  :
+      s.startsWith("\n") && s.endsWith("\n") ?        s        :
+      s.startsWith("\n")                     ?        s + "\n" :
+                            s.endsWith("\n") ? "\n" + s
+                                             : "\n" + s + "\n";
+  }
 
 
   /*-----------------------------  methods  -----------------------------*/
@@ -173,7 +273,7 @@ public class Errors extends ANY
   /**
    * Total number of errors encountered so far
    */
-  public static int count()
+  public static synchronized int count()
   {
     return _errors_.size();
   }
@@ -182,7 +282,7 @@ public class Errors extends ANY
   /**
    * Where any errors encountered so far?
    */
-  public static boolean any()
+  public static synchronized boolean any()
   {
     return !_errors_.isEmpty();
   }
@@ -191,7 +291,7 @@ public class Errors extends ANY
   /**
    * Total number of warnings encountered so far
    */
-  public static int warningCount()
+  public static synchronized int warningCount()
   {
     return _warnings_.size();
   }
@@ -238,7 +338,7 @@ public class Errors extends ANY
       }
     else
       {
-        System.err.println(s);
+        say_err(s);
       }
   }
 
@@ -267,13 +367,31 @@ public class Errors extends ANY
   /**
    * Record the given error found during compilation.
    *
+   * @param id rule identifier for this error
+   *
    * @param pos source code position where this error occurred, may be null
    *
    * @param msg the error message, should not contain any LF or any case specific details
    *
    * @param detail details for this error, may contain LFs and case specific details, may be null
    */
-  public static void error(SourcePosition pos, String msg, String detail)
+  public static void error(Id id, SourcePosition pos, String msg, String detail)
+  {
+    // NYI: id is currently ignored
+    error(pos, msg, detail);
+  }
+
+
+  /**
+   * Record the given error found during compilation.
+   *
+   * @param pos source code position where this error occurred, may be null
+   *
+   * @param msg the error message, should not contain any LF or any case specific details
+   *
+   * @param detail details for this error, may contain LFs and case specific details, may be null
+   */
+  public static synchronized void error(SourcePosition pos, String msg, String detail)
   {
     if (PRECONDITIONS) require
       (msg != null);
@@ -291,7 +409,6 @@ public class Errors extends ANY
                     "Change this via property '" + MAX_ERROR_MESSAGES_PROPERTY + "' or command line option '" + MAX_ERROR_MESSAGES_OPTION + "'.");
             showAndExit();
           }
-        //Thread.dumpStack();
       }
   }
 
@@ -333,11 +450,11 @@ public class Errors extends ANY
   {
     if (true)  // true: a blank line before errors, false: separation line between errors
       {
-        System.err.println();
+        say_err();
       }
     else
       {
-        System.err.println("------------");
+        say_err("------------");
       }
     if (pos == null)
       {
@@ -375,10 +492,10 @@ public class Errors extends ANY
    *
    * @param detail details for this error, may contain LFs and case specific details, may be null
    */
-  public static void fatal(String s, String detail)
+  public static synchronized void fatal(String s, String detail)
   {
     error(s, detail);
-    System.err.println("*** fatal errors encountered, stopping.");
+    say_err("*** fatal errors encountered, stopping.");
     exit(1);
   }
 
@@ -422,10 +539,10 @@ public class Errors extends ANY
    *
    * @param detail details for this error, may contain LFs and case specific details, may be null
    */
-  public static void fatal(SourcePosition pos, String s, String detail)
+  public static synchronized void fatal(SourcePosition pos, String s, String detail)
   {
     error(pos, s, detail);
-    System.err.println("*** fatal errors encountered, stopping.");
+    say_err("*** fatal errors encountered, stopping.");
     exit(1);
   }
 
@@ -463,10 +580,10 @@ public class Errors extends ANY
    *
    * @param detail details for this error, may contain LFs and case specific details, may be null
    */
-  public static void runTime(SourcePosition pos, String s, String detail)
+  public static synchronized void runTime(SourcePosition pos, String s, String detail)
   {
     error(pos, s, detail);
-    System.err.println("*** fatal errors encountered, stopping.");
+    say_err("*** fatal errors encountered, stopping.");
     exit(1);
   }
 
@@ -480,7 +597,7 @@ public class Errors extends ANY
    *
    * @param warningStatistics true iff warning count should be printed.
    */
-  public static void showAndExit(boolean warningStatistics)
+  public static synchronized void showAndExit(boolean warningStatistics)
   {
     if (any())
       {
@@ -493,6 +610,7 @@ public class Errors extends ANY
     else if (warningStatistics && warningCount() > 0)
       {
         println(singularOrPlural(warningCount(), "warning") + ".");
+        _warnings_.clear();  // there might be repeated calls to `showAndExit`, so do not repeat the warnings statistics
       }
   }
 
@@ -514,9 +632,41 @@ public class Errors extends ANY
   public static String singularOrPlural(int count, String what)
   {
     return
-      count == 0 ? "no " + what + "s" :
+      count == 0 ? "no " + plural(what) :
       count == 1 ? "one " + what
-                 : "" + count + " " + what + "s";
+                 : "" + count + " " + plural(what);
+  }
+
+
+  /**
+   * Build plural of a noun iff count is not 1.
+   *
+   * @param count a counter
+   *
+   * @param what a noun like "car", "baby", etc.
+   *
+   * @return what iff count==1, otherwise the plural form "cars", "babies", etc.
+   */
+  public static String plural(int count, String what)
+  {
+    if (PRECONDITIONS) require
+      (count >= 0);
+
+    return count == 1 ? what : plural(what);
+  }
+
+
+  /**
+   * Build plural of a noun
+   *
+   * @param what a noun like "car", "baby", etc.
+   *
+   * @return the plural form "cars", "babies", etc.
+   */
+  public static String plural(String what)
+  {
+    return what.endsWith("y") ? what.substring(0, what.length()-1) + "ies"
+                              : what + "s";
   }
 
 
@@ -565,7 +715,7 @@ public class Errors extends ANY
    *
    * @param detail details for this warning, may contain LFs and case specific details, may be null
    */
-  public static void warning(SourcePosition pos, String msg, String detail)
+  public static synchronized void warning(SourcePosition pos, String msg, String detail)
   {
     if (PRECONDITIONS) require
       (msg != null);
@@ -747,16 +897,11 @@ public class Errors extends ANY
                 "To solve this, remove this whitespace or replace it by escape codes.");
   }
 
-  public static void usedEffectNeverInstantiated(String e)
-  {
-    error(null, "Used effect `"  + e + "` never instantiated.", "");
-  }
-
 
   /*
    * get copy of current errors
    */
-  public static TreeSet<Error> errors()
+  public static synchronized TreeSet<Error> errors()
   {
     return new TreeSet<>(_errors_);
   }
@@ -765,7 +910,7 @@ public class Errors extends ANY
   /*
    * get copy of current warnings
    */
-  public static TreeSet<Error> warnings()
+  public static synchronized TreeSet<Error> warnings()
   {
     return new TreeSet<>(_warnings_);
   }
@@ -774,7 +919,7 @@ public class Errors extends ANY
   /**
    * Reset static fields
    */
-  public static void reset()
+  public static synchronized void reset()
   {
     _errors_.clear();
     _warnings_.clear();

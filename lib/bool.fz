@@ -39,12 +39,12 @@
 public bool : choice FALSE TRUE, property.equatable is
 
   # not
-  public prefix ! bool is
+  public prefix ! bool =>
     if bool.this then FALSE else TRUE
 
   # or with lazy evaluation
   #
-  public infix || (other Lazy bool) bool is
+  public infix || (other Lazy bool) bool =>
     if bool.this
       true
     else
@@ -52,7 +52,7 @@ public bool : choice FALSE TRUE, property.equatable is
 
   # and with lazy evaluation
   #
-  public infix && (other Lazy bool) bool is
+  public infix && (other Lazy bool) bool =>
     if bool.this
       other
     else
@@ -84,7 +84,7 @@ public bool : choice FALSE TRUE, property.equatable is
 
   # implies
   #
-  public infix : (other Lazy bool) bool is
+  public infix : (other Lazy bool) bool =>
     if bool.this
       other
     else
@@ -142,7 +142,7 @@ public bool : choice FALSE TRUE, property.equatable is
 # >>TRUE<< to it.  You can use >>false<< as an alternative to get type >>bool<<.
 #
 #
-public FALSE is
+private:public FALSE is
 
 
 # boolean value "true"
@@ -156,16 +156,16 @@ public FALSE is
 # >>FALSE<< to it.  You can use >>true<< as an alternative to get type >>bool<<.
 #
 #
-public TRUE is
+private:public TRUE is
 
 
 # boolean value "false" as a constant of type >>bool<<.
 #
 #
-public false bool is FALSE
+public false bool => FALSE
 
 
 # boolean value "true" as a constant of type >>bool<<.
 #
 #
-public true bool is TRUE
+public true bool => TRUE

@@ -30,9 +30,9 @@ import java.util.Set;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AstErrors;
-import dev.flang.ast.Consts;
 
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourcePosition;
 
@@ -83,7 +83,7 @@ public class AirErrors extends AstErrors
     for (var af : abstractFeature)
       {
         foundAbstract |= af.isAbstract();
-        foundFixed    |= (af.modifiers() & Consts.MODIFIER_FIXED) != 0;
+        foundFixed    |= (af.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0;
       }
     if (CHECKS) check
       (foundAbstract || foundFixed);

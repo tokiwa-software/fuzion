@@ -61,12 +61,12 @@ public ryū(public T type : float) is
   # or greater than 9_999_999
   # scientific notation will be used.
   #
-  public as_string(val T) String is
+  public as_string(val T) String =>
     as_string val val.use_scientific_notation rounding_conservative
 
 
   # convert float to string
-  public as_string(val T, scientific_notation bool, rounding_mode rounding_mode) String is
+  public as_string(val T, scientific_notation bool, rounding_mode rounding_mode) String =>
     # trivial cases first
     if (T.is_NaN val) then "NaN"
     else if (val = T.positive_infinity) then "Infinity"
@@ -79,7 +79,7 @@ public ryū(public T type : float) is
 
 
   # convert float to string for nontrivial case
-  private as_string_nontrivial(val T, scientific_notation bool, rounding_mode rounding_mode) String is
+  as_string_nontrivial(val T, scientific_notation bool, rounding_mode rounding_mode) String =>
 
     (smaller_halfway_point, mv, larger_halfway_point, mm_shift, is_even) := step_2 val
 
@@ -92,7 +92,7 @@ public ryū(public T type : float) is
 
 
   # step 2: get the interval of legal decimal representations
-  private step_2(val T) tuple i64 i64 i64 bool bool is
+  step_2(val T) tuple i64 i64 i64 bool bool =>
     m := val.mantissa.as_i64
     mv := m << 2
     mm_shift := m != (i64 1 << T.mantissa_bits.as_i64) || val.exponent_biased <= 1
@@ -101,36 +101,61 @@ public ryū(public T type : float) is
 
 
   # step 3: convert to decimal power base
-  private step_3(exponent, smaller_halfway_point, mv, larger_halfway_point i64, mm_shift bool, is_even bool, rounding_mode rounding_mode) tuple i64 i64 i64 bool bool i64 is
+  step_3(exponent, smaller_halfway_point, mv, larger_halfway_point i64, mm_shift bool, is_even bool, rounding_mode rounding_mode) tuple i64 i64 i64 bool bool i64 =>
 
     # calculates: ⌈log₂ 5ᵉ⌉
-    private pow5bits(e i64)
-    pre e >= 0,
-        e <= 3528
+    #
+    pow5bits(e i64)
+    pre debug: (e >= 0)
+        debug: (e <= 3528)
     post
       pow5bits.this.result = (T.log T.two (five ** T.from_i64 e)).as_i64
     =>
       (e * 1217359) >> 19
 
 
+    # computes ⌊log₁₀ 2ᵉ⌋
+    #
+    floor_log₁₀_pow_2(e i64) i64
+    pre debug: (e >= 0)
+        debug: (e <= 1650)
+    post
+      # NYI ugly that we have to qualify this
+      floor_log₁₀_pow_2.this.result = (T.log T.ten (T.two ** T.from_i64 e)).floor.as_i64
+    =>
+      e*78913 >> 18
+
+
+    # computes ⌊log₁₀ 5ᵉ⌋
+    #
+    floor_log₁₀_pow_5 (e i64) i64
+    pre debug: (e >= 0)
+        debug: (e <= 2620)
+    post
+      ( T.log T.ten (five ** T.from_i64 e) = T.infinity
+        || floor_log₁₀_pow_5.this.result = (T.log T.ten (five ** T.from_i64 e)).floor.as_i64)
+    =>
+      e*732923 >> 20
+
+
     # max 3*31 = 124
-    private pow5_bitcount => i64 121
+    pow5_bitcount => i64 121
     # max 3*31 = 124
-    private pow5_inv_bitcount => i64 122
+    pow5_inv_bitcount => i64 122
 
 
     /***********  code to generate the tables below
 
-    private pow5_quarter_bitcount => i64 31
-    private mask => ((i64 1 << pow5_quarter_bitcount) - 1).as_uint
+    pow5_quarter_bitcount => i64 31
+    mask => ((i64 1 << pow5_quarter_bitcount) - 1).as_uint
 
     # 5⁰, 5¹, 5², .. , 5^325
-    private powers_of_5_cache_key(data array uint) is
-    private powers_of_5 => (cache powers_of_5_cache_key ()->(powers_of_5_cache_key (array 326 i->(uint 5 ** uint i.as_u64)))).data
+    powers_of_5_cache_key(data array uint) is
+    powers_of_5 => (cache powers_of_5_cache_key ()->(powers_of_5_cache_key (array 326 i->(uint 5 ** uint i.as_u64)))).data
 
 
-    private pow5_split_cache_key(data array (array i64)) is
-    private pow5_split => (cache pow5_split_cache_key (() ->
+    pow5_split_cache_key(data array (array i64)) is
+    pow5_split => (cache pow5_split_cache_key (() ->
       pow5_split_cache_key (array 326 (i -> array 4 (j ->
         shift := powers_of_5[i].highest_bit.as_i64 - pow5_bitcount + (i64 3 - j.as_i64) * pow5_quarter_bitcount
         shifted := if shift >= 0 then powers_of_5[i] >> shift.as_uint else powers_of_5[i] << (-shift).as_uint
@@ -138,8 +163,8 @@ public ryū(public T type : float) is
       ))))).data
 
 
-    private pow5_inv_split_cache_key(data array (array i64)) is
-    private pow5_inv_split => (cache pow5_inv_split_cache_key (() ->
+    pow5_inv_split_cache_key(data array (array i64)) is
+    pow5_inv_split => (cache pow5_inv_split_cache_key (() ->
       pow5_inv_split_cache_key (array 291 (i -> array 4 (k ->
         j := powers_of_5[i].highest_bit.as_i64 - 1 + pow5_inv_bitcount
         inve := (uint 1 << j.as_uint) / powers_of_5[i] + uint 1
@@ -151,7 +176,7 @@ public ryū(public T type : float) is
 
     ***************/
 
-    private pow5_split_cache_key(val array (array i64)) is
+    pow5_split_cache_key(val array (array i64)) is
     pow5_split array (array i64) := (cache pow5_split_cache_key (()->pow5_split_cache_key [
         [134217728,0,0,0],
         [167772160,0,0,0],
@@ -481,7 +506,7 @@ public ryū(public T type : float) is
         [207226151,990961428,1327244845,1711949873]
       ])).val
 
-    private pow5_inv_split_cache_key(val array (array i64)) is
+    pow5_inv_split_cache_key(val array (array i64)) is
     pow5_inv_split array (array i64) := (cache pow5_inv_split_cache_key (()->pow5_inv_split_cache_key [
         [536870912,0,0,1],
         [429496729,1288490188,1717986918,858993460],
@@ -777,11 +802,11 @@ public ryū(public T type : float) is
       ])).val
 
 
-    private actual_shift(j i64) =>
+    actual_shift(j i64) =>
       j - 114
 
 
-    private mul_pow5_div_pow2(m, i, j i64, table array (array i64)) =>
+    mul_pow5_div_pow2(m, i, j i64, table array (array i64)) =>
       m_high := m >> 31
       m_low := m & 0x7fffffff
       bits13 := m_high * table[i.as_i32][0]
@@ -800,17 +825,17 @@ public ryū(public T type : float) is
                           + (bits13 << 10)) >> (actual_shift j)
 
 
-    private mul_pow5_div_pow2(m, i, j i64)
-    pre (actual_shift j) >= 0,
-        exponent < 0
+    mul_pow5_div_pow2(m, i, j i64)
+    pre debug: (actual_shift j >= 0)
+        debug: (exponent < 0)
     =>
       mul_pow5_div_pow2 m i j pow5_split
 
 
-    private mul_pow5_inv_div_pow2(m, i, j i64) i64
-    pre (actual_shift j) >= 0,
-        exponent >= 0
-    is
+    mul_pow5_inv_div_pow2(m, i, j i64) i64
+    pre debug: (actual_shift j >= 0)
+        debug: (exponent >= 0)
+    =>
       mul_pow5_div_pow2 m i j pow5_inv_split
 
 
@@ -823,16 +848,6 @@ public ryū(public T type : float) is
 
 
     if (exponent >= 0)
-
-      # computes ⌊log₁₀ 2ᵉ⌋
-      floor_log₁₀_pow_2(e i64) i64
-      pre e >= 0,
-          e <= 1650
-      post
-        floor_log₁₀_pow_2.this.result = (T.log T.ten (T.two ** T.from_i64 e)).floor.as_i64
-      is
-        exponent*78913 >> 18
-
 
       q := max (i64 0) (floor_log₁₀_pow_2 exponent)-1
       k := pow5_inv_bitcount + pow5bits q
@@ -854,18 +869,6 @@ public ryū(public T type : float) is
       else
         (dv, dp, dm, false, false, q)
     else
-
-
-      # computes ⌊log₁₀ 5ᵉ⌋
-      floor_log₁₀_pow_5 (e i64) i64
-      pre e >= 0,
-          e <= 2620
-      post
-        ( T.log T.ten (five ** T.from_i64 e) = T.infinity
-          || floor_log₁₀_pow_5.this.result = (T.log T.ten (five ** T.from_i64 e)).floor.as_i64)
-      is
-        e*732923 >> 20
-
 
       q := max (i64 0) (floor_log₁₀_pow_5 -exponent)-1
       i := -exponent - q
@@ -890,11 +893,11 @@ public ryū(public T type : float) is
 
 
   # step 4: shortest decimal representation
-  private step_4(dv, dp, dm i64, dm_is_trailing_zeros, dv_is_trailing_zeros bool, e10 i64, even, scientific_notation bool, rounding_mode rounding_mode) tuple i64 i64 i64 is
+  step_4(dv, dp, dm i64, dm_is_trailing_zeros, dv_is_trailing_zeros bool, e10 i64, even, scientific_notation bool, rounding_mode rounding_mode) tuple i64 i64 i64 =>
 
 
     # get the decimal length of this i64
-    private decimal_length(v i64) i64 is
+    decimal_length(v i64) i64 =>
       if      v >= 1000000000000000000 then 19
       else if v >= 100000000000000000  then 18
       else if v >= 10000000000000000   then 17
@@ -970,25 +973,28 @@ public ryū(public T type : float) is
 
 
   # step 5: construct the string
-  private step_5(output, output_length, exponent i64, is_negative, scientific_notation bool) String is
+  step_5(output, output_length, exponent i64, is_negative, scientific_notation bool) String
+  pre debug: output_length > 0
+  =>
 
 
     # convert output to string
-    output_as_string(output i64, output_length i64) String is
-      for _ in (i64 1)..(output_length)
-          o := output, o / 10
+    output_as_string(output i64, output_length i64) String =>
+      for o := output, o / 10
           s := "{o % 10}", "{o % 10}$s"
+          _ in (i64 1)..(output_length-1 )
       do
       else
         s
 
     # this float as a scientific string e.g. 3.2E2
     scientific =>
-      for idx in i64 1 .. output_length
+      for str0 := "** internal error **", str
+          idx in i64 1 .. output_length
           output := output, output / 10
           str := "{output % 10}", "{output % 10}" + (if idx = output_length then "." else "") + str
       else
-        "{str}E{exponent}"
+        "{str0}E{exponent}"
 
     # the float as a decimal string
     full =>
@@ -997,12 +1003,13 @@ public ryū(public T type : float) is
       else if exponent + 1 >= output_length
         "{output_as_string output output_length}{"0" * (exponent+1-output_length).as_i32}.0"
       else
-        for idx in i64 0 .. output_length
+        for str0 := "** internal error **", str
+            idx in i64 0 .. output_length
             is_dot_pos := false, output_length - idx - 1 = exponent
             output := output, if is_dot_pos then output else output / 10
             str := "{output % 10}", (if is_dot_pos then "." else "{output % 10}") + str
         else
-          str
+          str0
 
     if is_negative then "-" else ""
       + (if scientific_notation then scientific else full)

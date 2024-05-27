@@ -75,15 +75,15 @@ Target feature: 'i32'
 In call: '3.postfix*'
 
 
---CURDIR--/partial_application_negative.fz:77:38: error 9: Could not find called feature
+--CURDIR--/partial_application_negative.fz:77:38: error 9: Different count of arguments needed when calling feature
   test "data.map  .as_string " (data.map  .as_string ) "[1,2,3,4,5,6,7,8,9,10]"  // 11. should flag an error: dot-call partials require parentheses
 -------------------------------------^^^
 Feature not found: 'map' (no arguments)
-Target feature: 'has_interval.infix ..'
+Target feature: 'interval'
 In call: 'map'
-To solve this, you might change the actual number of arguments to match the feature 'map' (2 arguments) at $FUZION/lib/Sequence.fz:301:10:
-  public map(B type, f Unary B T) Sequence B is
----------^
+To solve this, you might change the actual number of arguments to match the feature 'map' (2 arguments) at $MODULE/Sequence.fz:340:10:
+  public map(B type, f Unary B T) Sequence B =>
+---------^^^
 
 
 --CURDIR--/partial_application_negative.fz:72:21: error 10: Ambiguity between direct and partially applied call target

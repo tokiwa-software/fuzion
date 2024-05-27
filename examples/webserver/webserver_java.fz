@@ -1,0 +1,143 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion example webserver
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# webserver is a minimalistic webserver example based on the Java module
+# java.base.
+#
+# See Makefile for how to start fuzion to run this webserver.
+#
+webserver_java is
+
+   # declare short hands to access Java net and io packages
+   net := Java.java.net
+   jio := Java.java.io
+
+   # open socket
+   port := 8080
+   serversocket := webserver_java.this.net.ServerSocket.new port
+   match serversocket
+     err error => say "#### $err ####"
+     ss Java.java.net.ServerSocket =>
+
+       for n in 1.. do
+         say "accepting connections to localhost:$port"
+
+         match accept
+           unit      => say "ok."
+           err error => say "#### $err ####"
+
+/* NYI: This syntactic sugar is not supported yet: 'pstfix ?' should return immediately in case of error and unwrap outcome otherwise:
+
+     accept outcome unit is
+       # accept and handle connection
+       s := serversocket.accept?
+       input  := jio.BufferedReader.new (jio.InputStreamReader.new s.getInputStream?)
+       output := jio.DataOutputStream.new s.getOutputStream?
+
+       req := read?
+       say "got request ({req.byte_length} bytes): $req"
+       if req.starts_with "GET "
+         (send200 "<html>Hello Fuzion $n!</html>")?
+
+       # close streams
+       input.close?
+       output.close?
+
+       # helper to read request
+       #
+       read outcome String is
+         for
+           r := "", "$r$s\n"
+           s := input.readLine?
+           ready := input.ready?
+         until s = "" || !ready
+           r
+
+       # helper to send data in HTTP response with status 200
+       #
+       send200(data String) outcome unit is
+         output.writeBytes ( "HTTP/1.1 200 OK\n"
+                           + "Connection: close\n"
+                           + "Server: Fuzion demo WebServer v0.01\n"
+                           + "Content-Length: " + data.byte_length + "\n"
+                           + "Content-Type: text/html\n"
+                           + "\n"
+                           + data)?
+
+       unit
+*/
+
+         accept outcome unit =>
+           # accept and handle connection
+           match ss.accept
+             e error => e
+             s Java.java.net.Socket =>
+               match s.getInputStream
+                 e error => e
+                 i Java.java.io.InputStream =>
+                   input  := jio.BufferedReader.new (jio.InputStreamReader.new i)
+                   match s.getOutputStream
+                     e error => e
+                     o Java.java.io.OutputStream =>
+                       output := jio.DataOutputStream.new o
+
+                       req := read
+                       say "got request ({req.byte_length} bytes): $req"
+                       if req.starts_with "GET "
+                         send200 "<html>Hello Fuzion $n!</html>"
+
+                       # close streams
+                       input.close
+                       output.close
+
+                       # helper to read request
+                       #
+                       read String =>
+                         for
+                           r := "", "$r$s\n"
+                           s := input.readLine
+                           ready := input.ready
+                         while s?? && (ready??)
+                         until s.val = "" || !ready.val
+                           r
+                         else
+                           say "#### {if (s.ok) s.err else ready.err}"
+                           "--error--"
+
+
+                       # helper to send data in HTTP response with status 200
+                       #
+                       send200(data String) =>
+                         ok := output.writeBytes ( "HTTP/1.1 200 OK\n"
+                                           + "Connection: close\n"
+                                           + "Server: Fuzion demo WebServer v0.01\n"
+                                           + "Content-Length: " + data.byte_length + "\n"
+                                           + "Content-Type: text/html\n"
+                                           + "\n"
+                                           + data)
+                         if ok!!
+                           say "#### "+ok.err
+
+                       unit

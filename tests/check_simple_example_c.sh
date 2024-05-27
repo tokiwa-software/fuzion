@@ -78,7 +78,7 @@ else
     head -n 100 "$expout" >tmp_exp_out.txt
     expout=tmp_exp_out.txt
 
-    # show diff in stdout unless an unexpected output occured to stderr
+    # show diff in stdout unless an unexpected output occurred to stderr
     (diff "$experr" tmp_err.txt && diff "$expout" tmp_out.txt) || echo -e "\033[31;1m*** FAILED\033[0m out on $2"
     diff "$expout" tmp_out.txt >/dev/null && diff "$experr" tmp_err.txt >/dev/null && echo -e "\033[32;1mPASSED\033[0m."
     RC=$?
@@ -87,6 +87,6 @@ else
     else
         echo " (no binary)"
     fi
-    rm -f tmp_out.txt tmp_err.txt tmp_exp_out.txt testbin testbin.c
+    rm -f tmp_out.txt tmp_err.txt tmp_exp_out.txt testbin
 fi
 exit $RC

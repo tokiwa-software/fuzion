@@ -46,42 +46,56 @@ public class Site extends ANY implements Comparable<Site>
 
 
   /**
-   * The site's clazz' id.
+   * The site's site.
    */
-  int _cl;
-
-
-  /**
-   * The site's code block.
-   */
-  int _c;
-
-
-  /**
-   * The index in _c.
-   */
-  int _i;
+  final int _s;
 
 
   /**
    * set of features accessed at this site.
    */
-  TreeSet<Integer> _accesses = new TreeSet<>();
+  final TreeSet<Integer> _accesses = new TreeSet<>();
+
+
+  /**
+   * Results of analyzing this Site
+   */
+  private boolean _mayReturn = false;
 
 
   /*---------------------------  constructors  ---------------------------*/
 
 
   /**
-   * Create call site for given clazz, code block and index.
+   * Create call site for site s.
+   *
+   * @param s a FUIR site
    */
-  Site(int cl, int c, int i)
+  Site(int s)
   {
-    _cl = cl;
-    _c = c;
-    _i = i;
+    _s = s;
   }
 
+
+  /**
+   * This site is found to always only result in void.
+   */
+  public boolean alwaysResultsInVoid()
+  {
+    return !_mayReturn;
+  }
+
+
+  /**
+   * Record result of an analysis of this site.
+   */
+  public void recordResult(boolean isVoid)
+  {
+    if (!isVoid)
+      {
+        _mayReturn = true;
+      }
+  }
 
 
   /**
@@ -89,13 +103,7 @@ public class Site extends ANY implements Comparable<Site>
    */
   public int compareTo(Site cs)
   {
-    return
-      _cl < cs._cl ? -1 :
-      _cl > cs._cl ? +1 :
-      _c < cs._c ? -1 :
-      _c > cs._c ? +1 :
-      _i < cs._i ? -1 :
-      _i > cs._i ? +1 : 0;
+    return Integer.compare(_s, cs._s);
   }
 
 }

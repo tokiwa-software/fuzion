@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 ex_nested_lazy is
-  lazy_evaluator(T type, lv Lazy T) T is lv
+  lazy_evaluator(T type, lv Lazy T) T => lv
 
   f Function bool i32 := x -> x = 0
 
@@ -32,7 +32,7 @@ ex_nested_lazy is
   say (f (lazy_evaluator i32 42))
   say (f (lazy_evaluator i32 0))
 
-  lazy0(l Lazy (Function i32)) i32 is
+  lazy0(l Lazy (Function i32)) i32 =>
     l.call
 
   # NYI: does not work:
@@ -40,7 +40,7 @@ ex_nested_lazy is
   x Function i32 := ()->42
   say (lazy0 x)
 
-  lazy1(f Function (Lazy i32)) i32 is
+  lazy1(f Function (Lazy i32)) i32 =>
     f().call
 
   # NYI: does not work:

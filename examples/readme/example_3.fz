@@ -7,7 +7,7 @@ generator_effect is
 
   # traverse a list and yield the elements
   #
-  list.traverse unit is
+  list.traverse unit =>
     match list.this
       c Cons => (generator_effect.gen A).env.yield c.head; c.tail.traverse
       nil =>

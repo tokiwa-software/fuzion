@@ -103,11 +103,7 @@ public class Feature extends AbstractFeature
   private Visi _visibility;
   public Visi visibility()
   {
-    return
-      // NYI anonymous feature should have correct visibility set.
-      isAnonymousInnerFeature()
-      ? outer().visibility()
-      : _visibility == Visi.UNSPECIFIED
+    return _visibility == Visi.UNSPECIFIED
       ? Visi.PRIV
       : _visibility;
   }
@@ -277,8 +273,16 @@ public class Feature extends AbstractFeature
 
 
   /**
+   * Is this a loop's variable that is being iterated over using the `in` keyword?
+   * If so, also store the internal list name.
+   */
+  boolean _isLoopIterator = false;
+  String _loopIteratorListName;
+
+
+  /**
    * All features that have been found to be directly redefined by this feature.
-   * This does not include redefinitions of redefinitions.  Four Features loaded
+   * This does not include redefinitions of redefinitions.  For Features loaded
    * from source code, this set is collected during RESOLVING_DECLARATIONS.  For
    * LibraryFeature, this will be loaded from the library module file.
    */
@@ -456,10 +460,6 @@ public class Feature extends AbstractFeature
    * @param t the result type, null in case it is inferred from initialValue
    *
    * @param qname the name of this feature
-   *
-   * @param initialValue the initial value used for type inference in case t == null
-   *
-   * @param outerOfInitialValue the feature that contains the expression initialValue
    */
   Feature(SourcePosition pos,
           Visi v,
@@ -594,7 +594,7 @@ public class Feature extends AbstractFeature
    *
    * @param r the result type
    *
-   * @param qname the name of this feature
+   * @param qpname the name of this feature
    *
    * @param a the arguments
    *
@@ -799,8 +799,8 @@ public class Feature extends AbstractFeature
    */
   public Kind kind()
   {
-    return state().atLeast(State.RESOLVING_TYPES) && isChoiceAfterTypesResolved() ||
-          !state().atLeast(State.RESOLVING_TYPES) && isChoiceBeforeTypesResolved()
+    return state().atLeast(State.RESOLVING_TYPES) && Types.resolved != null && isChoiceAfterTypesResolved() ||
+                                                                               isChoiceBeforeTypesResolved()
       ? Kind.Choice
       : switch (implKind()) {
           case FieldInit, FieldDef, FieldActual, FieldIter, Field -> Kind.Field;
@@ -841,7 +841,7 @@ public class Feature extends AbstractFeature
     if (PRECONDITIONS) require
       (isRoutine());
 
-    return _impl._code;
+    return _impl.expr();
   }
 
 
@@ -876,7 +876,7 @@ public class Feature extends AbstractFeature
    *
    * @return true iff this is a result field.
    */
-  boolean isResultField()
+  public boolean isResultField()
   {
     return false;
   }
@@ -906,9 +906,18 @@ public class Feature extends AbstractFeature
                                                     : FuzionConstants.RESULT_NAME,
                                    this)
           {
-            protected boolean isResultField() { return true; }
+            public boolean isResultField() { return true; }
           };
       }
+  }
+
+
+  /**
+   * Is this a case-field declared in a match-clause?
+   */
+  public boolean isCaseField()
+  {
+    return false;
   }
 
 
@@ -949,7 +958,7 @@ public class Feature extends AbstractFeature
       (_state.atLeast(State.RESOLVING_TYPES),
        Errors.any());
 
-    if (this == Types.resolved.f_choice)
+    if (this.isBaseChoice())
       { // if this == choice, there are only formal generics, so nothing to erase
       }
     else
@@ -959,7 +968,7 @@ public class Feature extends AbstractFeature
             if (CHECKS) check
               (Errors.any() || p.calledFeature() != null);
 
-            if (p.calledFeature() == Types.resolved.f_choice)
+            if (p.calledFeature().isBaseChoice())
               {
                 if (p instanceof Call cp)
                   {
@@ -1205,6 +1214,25 @@ public class Feature extends AbstractFeature
   }
 
 
+  /**
+   * For every feature 'f', this produces the corresponding type feature
+   * 'f.type'.  This feature inherits from the abstract type features of all
+   * direct ancestors of this, and, if there are no direct ancestors (for
+   * Object), this inherits from 'Type'.
+   *
+   * @param res Resolution instance used to resolve this for types.
+   *
+   * @return The feature that should be the direct ancestor of this feature's
+   * type feature.
+   */
+  @Override
+  public AbstractFeature typeFeature(Resolution res)
+  {
+    resolveInheritance(res);
+    return super.typeFeature(res);
+  }
+
+
   /*
    * Declaration resolution for a feature f: For all declarations of features in
    * f (formal arguments, local features, implicit result field), add these
@@ -1284,6 +1312,7 @@ public class Feature extends AbstractFeature
         res = r;
       }
     public void         action      (AbstractAssign a, AbstractFeature outer) {        a.resolveTypes   (res,   outer); }
+    public void         actionBefore(Call           c, AbstractFeature outer) {        c.tryResolveTypeCall(res,   outer); }
     public Call         action      (Call           c, AbstractFeature outer) { return c.resolveTypes   (res,   outer); }
     public Expr         action      (DotType        d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
     public Expr         action      (Destructure    d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
@@ -1340,11 +1369,6 @@ public class Feature extends AbstractFeature
           {
             var tt = selfType();
             _selfType = tt.resolve(res, this);
-          }
-
-        if (_impl._kind == Impl.Kind.FieldActual)
-          {
-            _impl.visitInitialValues(res.resolveTypesFully);
           }
 
         _state = State.RESOLVED_TYPES;
@@ -1426,15 +1450,14 @@ public class Feature extends AbstractFeature
   private List<AbstractCall> closureAccesses(Resolution res)
   {
     List<AbstractCall> result = new List<>();
-    for (AbstractFeature af : res._module.declaredOrInheritedFeatures(this).values())
-      {
-        af.visitExpressions(s -> {
-            if (s instanceof AbstractCall c && dependsOnOuterRef(c))
-              {
-                result.add(c);
-              }
-          });
-      }
+    res._module.forEachDeclaredOrInheritedFeature(this,
+                                                  af -> af.visitExpressions(s -> {
+          if (s instanceof AbstractCall c && dependsOnOuterRef(c))
+            {
+              result.add(c);
+            }
+        })
+      );
     return result;
   }
 
@@ -1519,14 +1542,6 @@ public class Feature extends AbstractFeature
         AstErrors.choiceMustNotBeRef(_pos);
       }
 
-    for (AbstractFeature p : res._module.declaredOrInheritedFeatures(this).values())
-      {
-        // choice type must not have any fields
-        if (p.isField() && !p.isOuterRef())
-          {
-            AstErrors.mustNotContainFields(_pos, p, "Choice");
-          }
-      }
     // choice type must not contain any code, but may contain inner features
     switch (_impl._kind)
       {
@@ -1562,6 +1577,29 @@ public class Feature extends AbstractFeature
           break;
         }
       }
+
+    res._module.forEachDeclaredOrInheritedFeature(this,
+                                                  p ->
+      {
+        if (_returnType != NoType.INSTANCE &&
+            _returnType != ValueType.INSTANCE)
+          { // choice type must not have a result type
+            if (!(Errors.any() && _returnType == RefType.INSTANCE))  // this was covered by AstErrors.choiceMustNotBeRef
+              {
+                AstErrors.choiceMustNotHaveResultType(_pos, _returnType);
+              }
+          }
+        else if (p.isField() && !p.isOuterRef() &&
+                 !(Errors.any() && (p instanceof Feature pf && (pf.isArtificialField() || /* do not report auto-generated fields like `result` in choice if there are other problems */
+                                                                pf.isResultField()
+                                                                )
+                                    )
+                   )
+                 )
+          { // choice type must not have any fields
+            AstErrors.mustNotContainFields(_pos, p, "Choice");
+          }
+      });
 
     for (var t : choiceGenerics())
       {
@@ -1617,7 +1655,7 @@ public class Feature extends AbstractFeature
         if (CHECKS) check
           (Errors.any() || cf != null);
 
-        if (cf != null && cf.isChoice() && cf != Types.resolved.f_choice)
+        if (cf != null && cf.isChoice() && !cf.isBaseChoice())
           {
             AstErrors.cannotInheritFromChoice(p.pos());
           }
@@ -1640,14 +1678,15 @@ public class Feature extends AbstractFeature
    */
   private void checkBuiltInPrimitive(Resolution res)
   {
-    for (AbstractFeature p : res._module.declaredOrInheritedFeatures(this).values())
+    res._module.forEachDeclaredOrInheritedFeature(this,
+                                                  p ->
       {
         // primitives must not have any fields
-        if (p.isField() && !p.isOuterRef() && !(p.featureName().baseName().equals("val") && p.resultType().equals(selfType())) )
+        if (p.isField() && !p.isOuterRef() && !(p.featureName().baseName().equals("val") && p.resultType().compareTo(selfType())==0) )
           {
             AstErrors.mustNotContainFields(_pos, p, this.featureName().baseName());
           }
-      }
+      });
   }
 
 
@@ -1690,7 +1729,7 @@ public class Feature extends AbstractFeature
             _resultType.checkChoice(_posOfReturnType);
           }
 
-        if (_resultType.isThisType() && _resultType.featureOfType() == this)
+        if (_resultType.isThisType() && _resultType.feature() == this)
           { // we are in the case of issue #1186: A routine returns itself:
             //
             //  a => a.this
@@ -1717,22 +1756,25 @@ public class Feature extends AbstractFeature
             public Call  action(Call           c, AbstractFeature outer) { c.propagateExpectedType(res, outer); return c; }
             public void  action(Cond           c, AbstractFeature outer) { c.propagateExpectedType(res, outer); }
             public void  action(Impl           i, AbstractFeature outer) { i.propagateExpectedType(res, outer); }
-            public void  action(If             i, AbstractFeature outer) { i.propagateExpectedType(res, outer); }
+            public Expr  action(If             i, AbstractFeature outer) { i.propagateExpectedType(res, outer); return i; }
           });
 
-        /* extra pass to automatically wrap values into 'Lazy' */
+        /*
+         * extra pass to automatically wrap values into 'Lazy'
+         * or unwrap values inheriting `unwrap`
+         */
         visit(new FeatureVisitor() {
             // we must do this from the outside of calls towards the inside to
             // get the corrected nesting of Lazy features created during this
             // phase
             public boolean visitActualsLate() { return true; }
-            public void  action(AbstractAssign a, AbstractFeature outer) { a.wrapValueInLazy  (res, outer); }
-            public Expr  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, outer); return c; }
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.wrapValueInLazy  (res, outer); a.unwrapValue(res, outer); }
+            public Expr  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, outer); c.unwrapActuals(res, outer); return c; }
           });
 
         if (isConstructor())
           {
-            _impl._code = _impl._code.propagateExpectedType(res, this, Types.resolved.t_unit);
+            _impl.propagateExpectedType(res, this, Types.resolved.t_unit);
           }
 
         _state = State.TYPES_INFERENCED;
@@ -1814,8 +1856,8 @@ public class Feature extends AbstractFeature
             public boolean visitActualsLate() { return true; }
 
             public void         action(AbstractAssign a, AbstractFeature outer) { a.checkTypes(res);             }
-            public Call         action(Call           c, AbstractFeature outer) { c.checkTypes(outer); return c; }
-            public void         action(If             i, AbstractFeature outer) { i.checkTypes();                }
+            public Call         action(Call           c, AbstractFeature outer) { c.checkTypes(res, outer); return c; }
+            public Expr         action(If             i, AbstractFeature outer) { i.checkTypes();      return i; }
             public Expr         action(InlineArray    i, AbstractFeature outer) { i.checkTypes();      return i; }
             public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints();   }
             public void         action(Cond           c, AbstractFeature outer) { c.checkTypes();                }
@@ -1903,6 +1945,7 @@ public class Feature extends AbstractFeature
             public Expr  action(Function    f, AbstractFeature outer) { return f.resolveSyntacticSugar2(res, outer); }
             public Expr  action(InlineArray i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, outer); }
             public void  action(Impl        i, AbstractFeature outer) {        i.resolveSyntacticSugar2(res, outer); }
+            public Expr  action(If          i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, outer); }
           });
 
         _state = State.RESOLVED_SUGAR2;
@@ -1930,12 +1973,12 @@ public class Feature extends AbstractFeature
     // here, while impl.code is visited when impl.visit is called with this as
     // outer argument.
     //
-    if (_impl._initialValue != null &&
+    if (_impl.hasInitialValue() &&
         /* initial value has been replaced by explicit assignment during
          * RESOLVING_TYPES phase: */
         !outer.state().atLeast(State.RESOLVING_SUGAR1))
       {
-        _impl._initialValue = _impl._initialValue.visit(v, outer);
+        _impl.visitExpr(v, outer);
       }
     return v.action(this, outer);
   }
@@ -1960,13 +2003,13 @@ public class Feature extends AbstractFeature
          _impl._kind != Impl.Kind.FieldActual)
         || _returnType == NoType.INSTANCE);
 
-    if (_impl._initialValue != null)
+    if (_impl.hasInitialValue())
       {
         /* add assignment of initial value: */
         result = new Block
           (new List<>
            (this,
-            new Assign(res, _pos, this, _impl._initialValue, outer)
+            new Assign(res, _pos, this, _impl.expr(), outer)
             {
               public AbstractAssign visit(FeatureVisitor v, AbstractFeature outer)
               {
@@ -2056,12 +2099,6 @@ public class Feature extends AbstractFeature
             { // Found the call, so we got the result!
               found();
             }
-          else if (c.calledFeatureKnown() &&
-                   c.calledFeature() instanceof Feature cf && cf.isAnonymousInnerFeature() &&
-                   c.calledFeature() == inner)
-            { // NYI: Special handling for anonymous inner features that currently do not appear as expressions
-              found();
-            }
           else if (c == Call.ERROR && curres[1] == null)
             {
               curres[1] = Types.f_ERROR;
@@ -2113,11 +2150,10 @@ public class Feature extends AbstractFeature
             }
           else
             {
-              var iv = f._impl._initialValue;
-              if (iv != null &&
+              if (f._impl.hasInitialValue() &&
                   outer.state().atLeast(State.RESOLVING_SUGAR1) /* iv otherwise already visited by Feature.visit(fv,outer) */)
                 {
-                  iv.visit(this, f);
+                  f._impl.visitExpr(this, f);
                 }
             }
           if (f.isField() && f.featureName().baseName().equals(name))
@@ -2136,16 +2172,7 @@ public class Feature extends AbstractFeature
         }
       };
 
-    for (var c : _contract.req)
-      {
-        c.cond.visit(fv, this);
-      }
-
-    for (var c : _contract.ens)
-      {
-        c.cond.visit(fv, this);
-      }
-
+    _contract.visit(fv, this);
     for (var p: _inherits)
       {
         p.visit(fv, this);
@@ -2153,10 +2180,7 @@ public class Feature extends AbstractFeature
 
     // then iterate the expressions making fields visible as they are declared
     // and checking which one is visible when we reach call:
-    if (_impl._code != null)
-      {
-        _impl._code.visit(fv, this);
-      }
+    _impl.visit(fv, this);
 
     return curres[1];
   }
@@ -2165,7 +2189,7 @@ public class Feature extends AbstractFeature
   /**
    * Is this feature an argument of its outer feature?
    */
-  boolean isArgument()
+  public boolean isArgument()
   {
     if (_outer != null)
       {
@@ -2220,7 +2244,7 @@ public class Feature extends AbstractFeature
     //    _featureName = FeatureName.get(_featureName.baseName(), _arguments.size());
     res._module.findDeclarations(ta, this);
 
-    var g = ta.generic();
+    var g = ta.asGeneric();
     _generics = _generics.addTypeParameter(g);
     res._module.addTypeParameter(this, ta);
     this.whenResolvedTypes(()->res.resolveTypes(ta));
@@ -2285,23 +2309,11 @@ public class Feature extends AbstractFeature
       {
         result = outer().resultTypeIfPresent(res);
       }
-    else if (_impl._kind == Impl.Kind.FieldDef    ||
-             _impl._kind == Impl.Kind.FieldActual ||
-             _impl._kind == Impl.Kind.RoutineDef)
+    else if (_impl.typeInferable())
       {
         if (CHECKS) check
           (!state().atLeast(State.TYPES_INFERENCED));
         result = _impl.inferredType(res, this);
-
-        var from = _impl._kind == Impl.Kind.RoutineDef ? _impl._code
-                                                       : _impl._initialValue;
-        if (result != null &&
-            !result.isGenericArgument() &&
-            result.featureOfType().isTypeFeature() &&
-            !(from instanceof Call c && c.calledFeature() == Types.resolved.f_Types_get))
-          {
-            result = Types.resolved.f_Type.selfType();
-          }
       }
     else if (_returnType.isConstructorType())
       {
@@ -2396,7 +2408,7 @@ public class Feature extends AbstractFeature
    * @return true iff this has or any heir of this might have a frame object on
    * a call.
    */
-  boolean hasThisType()
+  private boolean hasThisType()
   {
     return
       _impl._kind != Impl.Kind.Intrinsic &&
@@ -2448,36 +2460,6 @@ public class Feature extends AbstractFeature
     _featureName = newFeatureName;
   }
 
-
-  /**
-   *
-   */
-  private boolean definedInOwnFile = false;
-
-
-  /**
-   * definedInOwnFile
-   *
-   * @return
-   */
-  public boolean definedInOwnFile() {
-    boolean result = definedInOwnFile;
-    return result;
-  }
-
-  /**
-   * setDefinedInOwnFile
-   */
-  public void setDefinedInOwnFile()
-  {
-    if (PRECONDITIONS) require
-      (!definedInOwnFile);
-
-    definedInOwnFile = true;
-
-    if (POSTCONDITIONS) ensure
-      (definedInOwnFile);
-  }
 
   /**
    * outerRefName
@@ -2584,6 +2566,35 @@ public class Feature extends AbstractFeature
   public boolean isLambdaCall()
   {
     return false;
+  }
+
+
+  /**
+   * Is this the 'THIS_TYPE' type parameter in a type feature?
+   *
+   * Overriding since AbstractFeature.isTypeFeaturesThisType needs outer to be
+   * in state of at least FINDING_DECLARATIONS which is not always the case
+   * when isTypeFeaturesThisType is called.
+   */
+  @Override
+  public boolean isTypeFeaturesThisType()
+  {
+    return false;
+  }
+
+
+  /**
+   * Is this base-lib's choice-feature?
+   */
+  @Override
+  boolean isBaseChoice()
+  {
+    if (PRECONDITIONS) require
+      (state().atLeast(State.RESOLVED_DECLARATIONS));
+
+    return Types.resolved != null
+      ? this == Types.resolved.f_choice
+      : (featureName().baseName().equals("choice") && featureName().argCount() == 1 && outer().isUniverse());
   }
 
 

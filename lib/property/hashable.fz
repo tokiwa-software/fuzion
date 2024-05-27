@@ -35,4 +35,4 @@ public hashable : property.equatable is
   #
   #   (T.equality a b) : (T.hash_code a = T.hash_code b)
   #
-  public type.hash_code(a hashable.this) u64 is abstract
+  public type.hash_code(a hashable.this) u64 => abstract

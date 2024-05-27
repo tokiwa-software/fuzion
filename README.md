@@ -18,10 +18,13 @@ Scorecard](https://api.securityscorecards.dev/projects/github.com/tokiwa-softwar
    * [Examples](#examples)
    * [Documentation](#documentation)
    * [Clone](#clone)
-   * [Requirements](#requirements)
+   * [Required packages](#required-packages)
+     * [Linux](#linux)
+     * [MacOS](#macos)
      * [Windows](#windows)
    * [Build](#build)
    * [Run](#run)
+   * [Install prebuilt](#install-prebuilt)
 <!--te-->
 
 ---
@@ -32,10 +35,11 @@ Scorecard](https://api.securityscorecards.dev/projects/github.com/tokiwa-softwar
 hello_world is
   # read someone's name from standard input
   #
-  get_name String is
-    (io.stdin.with ()->
-      io.buffered.read_line) ? name String => name
-                             | e error => panic "Could not get your name!"
+  get_name String =>
+    match (io.stdin.with ()->
+             io.buffered.read_line ? str String => str | io.end_of_file => "")
+      name String => name
+      e error => panic "Could not get your name!"
 
   # greet someone with the name given
   #
@@ -62,26 +66,27 @@ outside.
 
 ```
 ex_gcd is
-  max(a, b i32) i32 is
+  max(a, b i32) i32 =>
     if a > b then a else b
 
-  common_divisors_of(a, b i32) list i32 is
+  common_divisors_of(a, b i32) list i32 =>
     x := max a.abs b.abs
     y := 1..x
-    y.as_list.flat_map i32 (i->
+    y.flat_map i32 (i->
       if (a % i = 0) && (b % i = 0)
-        [-i, i].as_list
+        [-i, i]
       else
-        (list i32).type.empty)
+        [])
+     .as_list
 
   gcd(a, b i32) i32
     pre
       safety: (a != 0 || b != 0)
     post
-      safety: a % result = 0,
-      safety: b % result = 0,
+      safety: a % result = 0
+      safety: b % result = 0
       pedantic: (common_divisors_of a b).reduce bool true (tmp,cur->tmp && (gcd.this.result % cur = 0))
-  is
+  =>
     if b = 0
       a
     else
@@ -108,7 +113,7 @@ generator_effect is
 
   # traverse a list and yield the elements
   #
-  list.traverse unit is
+  list.traverse unit =>
     match list.this
       c Cons => (generator_effect.gen A).env.yield c.head; c.tail.traverse
       nil =>
@@ -129,11 +134,11 @@ with a `yield` operation. In some other languages, this requires a keyword
 without language support.
 
 If you want to play around with Fuzion, try the
-[interactive tutorial](https://flang.dev/tutorial/index).
+[interactive tutorial](https://fuzion-lang.dev/tutorial/index).
 
 ## Documentation
 
-Check [flang.dev](https://flang.dev) for language and implementation design.
+Check [fuzion-lang.dev](https://fuzion-lang.dev) for language and implementation design.
 
 
 ## Clone
@@ -142,18 +147,34 @@ Check [flang.dev](https://flang.dev) for language and implementation design.
 
     git clone https://github.com/tokiwa-software/fuzion
 
-## Requirements
+## Required packages
 
 ### Linux
 
 > For Debian based systems this command should install all requirements:
 >
->     sudo apt-get install make clang libgc1 libgc-dev openjdk-17-jdk
+>     sudo apt-get install make clang libgc1 libgc-dev openjdk-21-jdk
 
-- OpenJDK 17, e.g. [Adoptium](https://github.com/adoptium/temurin17-binaries/releases/)
+- OpenJDK 21, e.g. [Adoptium](https://github.com/adoptium/temurin21-binaries/releases/)
 - clang LLVM C compiler
 - GNU make
 - libgc
+
+### MacOS
+
+> This command should install all requirements:
+>
+>     brew install bdw-gc gnu-sed make temurin llvm
+>
+> Additionally you may need to update your PATH environment variable e.g.:
+>
+>     export PATH:"/usr/local/opt/gnu-sed/libexec/gnubin:/usr/local/opt/gnu-make/libexec/gnubin:$PATH"
+
+- OpenJDK 21, e.g. [Adoptium](https://github.com/adoptium/temurin21-binaries/releases/)
+- clang LLVM C compiler
+- GNU make
+- libgc
+
 
 ### Windows
 
@@ -162,11 +183,12 @@ Check [flang.dev](https://flang.dev) for language and implementation design.
 1) Install chocolatey: [chocolatey.org](https://chocolatey.org/install)
 2) In Powershell:
     1) choco install git openjdk make msys2 diffutils
-    2) [Environment]::SetEnvironmentVariable("Path","c:\tools\msys64\mingw64\bin;" + $env:Path , "User")
+    2) [Environment]::SetEnvironmentVariable("Path","c:\tools\msys64\ucrt64\bin;" + $env:Path , "User")
 3) In file C:\tools\msys64\msys2_shell.cmd change line: 'rem set MSYS2_PATH_TYPE=inherit' to 'set MSYS2_PATH_TYPE=inherit'
 4) In msys2 shell (execute C:\tools\msys64\msys2_shell.cmd):
     1) pacman -S mingw-w64-x86_64-clang
     2) make
+5) execute ./bin/windows_install_boehm_gc.sh
 
 ## Build
 
@@ -190,3 +212,7 @@ To compile the same example (requires clang C compiler):
     ./factors
 
 Have fun!
+
+## Install prebuilt
+
+[![Packaging status](https://repology.org/badge/vertical-allrepos/fuzion.svg)](https://repology.org/project/fuzion/versions)

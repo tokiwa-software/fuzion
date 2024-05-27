@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = issue118
-include ../simple.mk
+include ../fe.mk # NYI: BUG: see #2146

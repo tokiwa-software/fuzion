@@ -37,7 +37,7 @@ testOnesCount is
     yak ($x.low16bits.highest_one_bit+" "+x.low16bits.cast_to_i16.highest_one_bit+" "+x.low8bits.highest_one_bit+" "+x.low8bits.cast_to_i8.highest_one_bit + " ")
     yak ($x.trailing_zeros+" "+x.cast_to_i64.trailing_zeros+" "+x.low32bits.trailing_zeros+" "+x.low32bits.cast_to_i32.trailing_zeros + " ")
     yak ($x.low16bits.trailing_zeros+" "+x.low16bits.cast_to_i16.trailing_zeros+" "+x.low8bits.trailing_zeros+" "+x.low8bits.cast_to_i8.trailing_zeros + ".")
-    say
+    say ""
 
   show 0
   show 1

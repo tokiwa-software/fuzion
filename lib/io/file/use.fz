@@ -44,9 +44,9 @@ public mode is
 # use some_type file_name mode.read ()->
 #   match (open some_type).read
 #     e error => e
-#     a array => String.type.from_bytes a
+#     a array => String.from_bytes a
 # ```
-public use(T, R type, file_name String, m mode.val, code ()-> outcome R) outcome R is
+public use(T, R type, file_name String, m mode.val, code ()-> outcome R) outcome R =>
 
   mode_num := match m
                 mode.read => i8 0
@@ -59,7 +59,7 @@ public use(T, R type, file_name String, m mode.val, code ()-> outcome R) outcome
       r := open T fd file_name
         .go code
       # close file
-      fuzion.sys.fileio.close fd
+      _ := fuzion.sys.fileio.close fd
       # return result
       r
     e error =>
@@ -75,7 +75,7 @@ public use(T, R type, file_name String, m mode.val, code ()-> outcome R) outcome
 # use file_name mode.read ()->
 #   match open.read
 #     e error => e
-#     a array => String.type.from_bytes a
+#     a array => String.from_bytes a
 # ```
-public use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R is
+public use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R =>
   use open_unique_type R file_name m code

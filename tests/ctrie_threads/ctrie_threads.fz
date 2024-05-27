@@ -31,7 +31,7 @@ ctrie_threads is
   test1 is
     say "test: in {$num_threads} threads, adding 999 keys, removing every third key and taking a snapshot at key=500."
 
-    ctrie := (lock_free.map i32 i32).type.empty
+    ctrie := (lock_free.map i32 i32).empty
 
     empty := ctrie.snapshot true
 
@@ -52,7 +52,7 @@ ctrie_threads is
     # all keys which are multiples of 3 should have been removed
     say "all keys multiple of three removed: {(ctrie.items ∀ (x -> x.values.0 % 3 != 0))}"
 
-    if ((envir.args.nth 1).get "")="-debug"
+    if ((envir.args.nth 1).or_else "")="-debug"
       say "==="
       say (ctrie.items.map x->"{x.values.0} was inserted by thread {x.values.1}")
       say "==="
@@ -62,7 +62,7 @@ ctrie_threads is
   test2(take_snapshots bool) is
     say "test: in {$num_threads} threads, {if take_snapshots then "adding keys while taking snapshots, removing keys while taking snapshots." else "add keys, remove keys."}"
 
-    ctrie := (lock_free.map i32 i32).type.empty
+    ctrie := (lock_free.map i32 i32).empty
 
     (array num_threads t->
       concur.thread.spawn ()->
@@ -105,7 +105,7 @@ ctrie_threads is
   test3 is
     say "test: in {$num_threads} threads, add non-overlapping keys, then remove key, test if added/removed."
 
-    ctrie := (lock_free.map i32 i32).type.empty
+    ctrie := (lock_free.map i32 i32).empty
 
     (array num_threads t->
       concur.thread.spawn ()->
@@ -136,7 +136,7 @@ ctrie_threads is
   test4 is
     say "test: in {$num_threads} threads, add non-overlapping keys, then remove key, test if added/removed."
 
-    ctrie := (lock_free.map i32 i32).type.empty
+    ctrie := (lock_free.map i32 i32).empty
 
     (array num_threads t->
       concur.thread.spawn ()->
@@ -152,7 +152,7 @@ ctrie_threads is
 
           s2 := if k%5=0 then ctrie.snapshot true else ctrie
           match ctrie.remove kt
-            lock_free.not_found => panic "$kt not found"
+            nil => panic "$kt not found"
             i32 =>
           if ctrie[kt].exists
             say "removed key $kt still present"

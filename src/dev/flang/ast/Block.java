@@ -45,9 +45,7 @@ public class Block extends AbstractBlock
   /*----------------------------  variables  ----------------------------*/
 
 
-  SourcePosition _closingBracePos;
-
-  boolean _newScope;
+  public boolean _newScope;
 
 
   /**
@@ -63,40 +61,18 @@ public class Block extends AbstractBlock
   /**
    * Generic constructor
    *
-   * @param closingBracePos the sourcecode position of this block's closing
-   * brace. In case this block does not originate in source code, but was added
-   * by AST manipulations, this might as well be equal to pos.
-   *
-   * @param s the list of expressions
-   *
    * @param newScope true iff this block opens a new scope, false if declaration
    * in this block should remain visible after the block (which is usually the
    * case for artificially generated blocks)
-   */
-  private Block(SourcePosition closingBracePos,
-                List<Expr> s,
-                boolean newScope)
-  {
-    super(s);
-    this._closingBracePos = closingBracePos;
-    this._newScope = newScope;
-  }
-
-
-  /**
-   * Generate a block of expressions that define a new scope. This is generally
-   * called from the Parser when the source contains a block.
-   *
-   * @param closingBracePos the sourcecode position of this block's closing
-   * brace. In case this block does not originate in source code, but was added
-   * by AST manipulations, this might as well be equal to pos.
    *
    * @param s the list of expressions
+   *
    */
-  public Block(SourcePosition closingBracePos,
+  private Block(boolean newScope,
                List<Expr> s)
   {
-    this(closingBracePos, s, true);
+    super(s);
+    this._newScope = newScope;
   }
 
 
@@ -106,7 +82,7 @@ public class Block extends AbstractBlock
    */
   public Block()
   {
-    this(SourcePosition.notAvailable, new List<>());
+    this(true, new List<>());
   }
 
 
@@ -118,15 +94,13 @@ public class Block extends AbstractBlock
    */
   public Block(List<Expr> s)
   {
-    this(SourcePosition.notAvailable, s, false);
+    this(false, s);
   }
 
 
   /**
    * Generate a block of expressions that do not define a new scope, i.e.,
    * declarations remain visible after this block.
-   *
-   * @param pos the sourcecode position, used for error messages.
    *
    * @param s the list of expressions
    *
@@ -190,11 +164,33 @@ public class Block extends AbstractBlock
 
 
   /**
+   * When inheriting a post-condition during redefintion, this creates a clone
+   * of the inherited condition.
+   *
+   * @param to the redefining feature that inherits a contract
+   *
+   * @param from the redefined feature this contract should inherit from.
+   */
+  public Expr clonePostCondition(AbstractFeature to, AbstractFeature from)
+  {
+    return new Block(_newScope, _expressions.map2(x -> x.clonePostCondition(to, from)));
+  }
+
+
+  @Override
+  public UnresolvedType asParsedType()
+  {
+    return _expressions.size() == 1 ? _expressions.getFirst().asParsedType() : null;
+  }
+
+  /**
    * The sourcecode position of this expression, used for error messages.
    */
   public SourcePosition pos()
   {
-    return _expressions.isEmpty()
+    return _range != null
+      ? _range
+      : _expressions.isEmpty()
       || _expressions.getFirst().pos().isBuiltIn()
       || _expressions.getLast().pos().isBuiltIn()
       ? SourcePosition.notAvailable
@@ -264,13 +260,9 @@ public class Block extends AbstractBlock
    */
   SourcePosition posOfLast()
   {
-    SourcePosition result = _closingBracePos;
     Expr resExpr = resultExpression();
-    if (resExpr != null)
-      {
-        result = resExpr.pos();
-      }
-    return result;
+    return resExpr != null ? resExpr.pos()
+                           : pos();
   }
 
 
@@ -349,7 +341,7 @@ public class Block extends AbstractBlock
       }
     else if (r.resultType().compareTo(Types.resolved.t_unit) != 0)
       {
-        AstErrors.blockMustEndWithExpression(_closingBracePos, r.resultType());
+        AstErrors.blockMustEndWithExpression(pos(), r.resultType());
       }
     return this;
   }
@@ -366,7 +358,7 @@ public class Block extends AbstractBlock
    *
    * @param outer the feature that contains this expression
    *
-   * @param t the expected type.
+   * @param type the expected type.
    *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this

@@ -35,14 +35,6 @@ package dev.flang.ast;
 public abstract class AbstractConstant extends Expr
 {
 
-  /**
-   * The clazz this abstract constant will result in.
-   *
-   * Not null only for calls that are turned into compile time constants.
-   */
-  public Object runtimeClazz;
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -98,22 +90,21 @@ public abstract class AbstractConstant extends Expr
 
 
   /**
-   * Is this a compile-time constant?
-   */
-  @Override
-  public boolean isCompileTimeConst()
-  {
-    // NYI everything ref, e.g. strings do not work yet.
-    // everything ref needs to live on the heap, does not work with compound literals.
-    return !type().isRef();
-  }
-
-
-  /**
    * This expression as a compile time constant.
    */
   @Override
   public AbstractConstant asCompileTimeConstant()
+  {
+    return this;
+  }
+
+
+  /**
+   * Origin of this constant. This is either this constant itself for a
+   * BoolConst, NumLiteral or StrConst, or the instance of AbstractCall or
+   * InlineArray this was created from.
+   */
+  public Expr origin()
   {
     return this;
   }

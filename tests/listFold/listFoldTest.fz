@@ -27,14 +27,13 @@
 #
 listFoldTest is
 
-  exit_code := mut 0
 
-  chck (b bool, msg String) unit is
+  chck (b bool, msg String) unit =>
     if b
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
-      exit_code <- 1
+      _ := set_exit_code 1
 
   l1 list i32 := nil
   l2 list i32 := cons         9 l1
@@ -59,42 +58,42 @@ listFoldTest is
   slA list String := cons "The " sl9
 
   sl := ["The ", "quick ", "brown ", "fox ", "jumps ", "over ", "the ", "lazy ", "dog."].as_list;
-  say "Fold String list: {sl.fold String.type.concat}"
+  say "Fold String list: {sl.fold String.concat}"
 
-  chck ((sl.fold String.type.concat) = "The quick brown fox jumps over the lazy dog.") "check String concat"
+  chck ((sl.fold String.concat) = "The quick brown fox jumps over the lazy dog.") "check String concat"
 
-  say "sum 1 is {l1.fold i32.type.sum}"; chck ((l1.fold i32.type.sum) = 0) "sum l1"
-  say "sum 2 is {l2.fold i32.type.sum}"; chck ((l2.fold i32.type.sum) = 9) "sum l2"
-  say "sum 3 is {l3.fold i32.type.sum}"; chck ((l3.fold i32.type.sum) = 89) "sum l3"
-  say "sum 4 is {l4.fold i32.type.sum}"; chck ((l4.fold i32.type.sum) = 789) "sum l4"
-  say "sum 5 is {l5.fold i32.type.sum}"; chck ((l5.fold i32.type.sum) = 6789) "sum l5"
-  say "sum 6 is {l6.fold i32.type.sum}"; chck ((l6.fold i32.type.sum) = 56789) "sum l6"
-  say "sum 7 is {l7.fold i32.type.sum}"; chck ((l7.fold i32.type.sum) = 456789) "sum l7"
-  say "sum 8 is {l8.fold i32.type.sum}"; chck ((l8.fold i32.type.sum) = 3456789) "sum l8"
-  say "sum 9 is {l9.fold i32.type.sum}"; chck ((l9.fold i32.type.sum) = 23456789) "sum l9"
-  say "sum 10 is {lA.fold i32.type.sum}"; chck ((lA.fold i32.type.sum) = 123456789) "sum lA"
+  say "sum 1 is {l1.fold i32.sum}"; chck ((l1.fold i32.sum) = 0) "sum l1"
+  say "sum 2 is {l2.fold i32.sum}"; chck ((l2.fold i32.sum) = 9) "sum l2"
+  say "sum 3 is {l3.fold i32.sum}"; chck ((l3.fold i32.sum) = 89) "sum l3"
+  say "sum 4 is {l4.fold i32.sum}"; chck ((l4.fold i32.sum) = 789) "sum l4"
+  say "sum 5 is {l5.fold i32.sum}"; chck ((l5.fold i32.sum) = 6789) "sum l5"
+  say "sum 6 is {l6.fold i32.sum}"; chck ((l6.fold i32.sum) = 56789) "sum l6"
+  say "sum 7 is {l7.fold i32.sum}"; chck ((l7.fold i32.sum) = 456789) "sum l7"
+  say "sum 8 is {l8.fold i32.sum}"; chck ((l8.fold i32.sum) = 3456789) "sum l8"
+  say "sum 9 is {l9.fold i32.sum}"; chck ((l9.fold i32.sum) = 23456789) "sum l9"
+  say "sum 10 is {lA.fold i32.sum}"; chck ((lA.fold i32.sum) = 123456789) "sum lA"
 
-  say "sum 1 is {l1.take(5).fold i32.type.sum}"; chck ((l1.take(5).fold i32.type.sum) = 0) "take(5).sum l1"
-  say "sum 2 is {l2.take(5).fold i32.type.sum}"; chck ((l2.take(5).fold i32.type.sum) = 9) "take(5).sum l2"
-  say "sum 3 is {l3.take(5).fold i32.type.sum}"; chck ((l3.take(5).fold i32.type.sum) = 89) "take(5).sum l3"
-  say "sum 4 is {l4.take(5).fold i32.type.sum}"; chck ((l4.take(5).fold i32.type.sum) = 789) "take(5).sum l4"
-  say "sum 5 is {l5.take(5).fold i32.type.sum}"; chck ((l5.take(5).fold i32.type.sum) = 6789) "take(5).sum l5"
-  say "sum 6 is {l6.take(5).fold i32.type.sum}"; chck ((l6.take(5).fold i32.type.sum) = 56789) "take(5).sum l6"
-  say "sum 7 is {l7.take(5).fold i32.type.sum}"; chck ((l7.take(5).fold i32.type.sum) = 456780) "take(5).sum l7"
-  say "sum 8 is {l8.take(5).fold i32.type.sum}"; chck ((l8.take(5).fold i32.type.sum) = 3456700) "take(5).sum l8"
-  say "sum 9 is {l9.take(5).fold i32.type.sum}"; chck ((l9.take(5).fold i32.type.sum) = 23456000) "take(5).sum l9"
-  say "sum 10 is {lA.take(5).fold i32.type.sum}"; chck ((lA.take(5).fold i32.type.sum) = 123450000) "take(5).sum lA"
+  say "sum 1 is {l1.take(5).fold i32.sum}"; chck ((l1.take(5).fold i32.sum) = 0) "take(5).sum l1"
+  say "sum 2 is {l2.take(5).fold i32.sum}"; chck ((l2.take(5).fold i32.sum) = 9) "take(5).sum l2"
+  say "sum 3 is {l3.take(5).fold i32.sum}"; chck ((l3.take(5).fold i32.sum) = 89) "take(5).sum l3"
+  say "sum 4 is {l4.take(5).fold i32.sum}"; chck ((l4.take(5).fold i32.sum) = 789) "take(5).sum l4"
+  say "sum 5 is {l5.take(5).fold i32.sum}"; chck ((l5.take(5).fold i32.sum) = 6789) "take(5).sum l5"
+  say "sum 6 is {l6.take(5).fold i32.sum}"; chck ((l6.take(5).fold i32.sum) = 56789) "take(5).sum l6"
+  say "sum 7 is {l7.take(5).fold i32.sum}"; chck ((l7.take(5).fold i32.sum) = 456780) "take(5).sum l7"
+  say "sum 8 is {l8.take(5).fold i32.sum}"; chck ((l8.take(5).fold i32.sum) = 3456700) "take(5).sum l8"
+  say "sum 9 is {l9.take(5).fold i32.sum}"; chck ((l9.take(5).fold i32.sum) = 23456000) "take(5).sum l9"
+  say "sum 10 is {lA.take(5).fold i32.sum}"; chck ((lA.take(5).fold i32.sum) = 123450000) "take(5).sum lA"
 
-  say "String list 1 is {sl1.fold String.type.concat}"; chck ((sl1.fold String.type.concat) = "") "concat sl1"
-  say "String list 2 is {sl2.fold String.type.concat}"; chck ((sl2.fold String.type.concat) = "dog.") "concat sl2"
-  say "String list 3 is {sl3.fold String.type.concat}"; chck ((sl3.fold String.type.concat) = "lazy dog.") "concat sl3"
-  say "String list 4 is {sl4.fold String.type.concat}"; chck ((sl4.fold String.type.concat) = "the lazy dog.") "concat sl4"
-  say "String list 5 is {sl5.fold String.type.concat}"; chck ((sl5.fold String.type.concat) = "over the lazy dog.") "concat sl5"
-  say "String list 6 is {sl6.fold String.type.concat}"; chck ((sl6.fold String.type.concat) = "jumps over the lazy dog.") "concat sl6"
-  say "String list 7 is {sl7.fold String.type.concat}"; chck ((sl7.fold String.type.concat) = "fox jumps over the lazy dog.") "concat sl"
-  say "String list 8 is {sl8.fold String.type.concat}"; chck ((sl8.fold String.type.concat) = "brown fox jumps over the lazy dog.") "concat sl"
-  say "String list 9 is {sl9.fold String.type.concat}"; chck ((sl9.fold String.type.concat) = "quick brown fox jumps over the lazy dog.") "concat sl9"
-  say "String list 10 is {slA.fold String.type.concat}"; chck ((slA.fold String.type.concat) = "The quick brown fox jumps over the lazy dog.") "concat slA"
+  say "String list 1 is {sl1.fold String.concat}"; chck ((sl1.fold String.concat) = "") "concat sl1"
+  say "String list 2 is {sl2.fold String.concat}"; chck ((sl2.fold String.concat) = "dog.") "concat sl2"
+  say "String list 3 is {sl3.fold String.concat}"; chck ((sl3.fold String.concat) = "lazy dog.") "concat sl3"
+  say "String list 4 is {sl4.fold String.concat}"; chck ((sl4.fold String.concat) = "the lazy dog.") "concat sl4"
+  say "String list 5 is {sl5.fold String.concat}"; chck ((sl5.fold String.concat) = "over the lazy dog.") "concat sl5"
+  say "String list 6 is {sl6.fold String.concat}"; chck ((sl6.fold String.concat) = "jumps over the lazy dog.") "concat sl6"
+  say "String list 7 is {sl7.fold String.concat}"; chck ((sl7.fold String.concat) = "fox jumps over the lazy dog.") "concat sl"
+  say "String list 8 is {sl8.fold String.concat}"; chck ((sl8.fold String.concat) = "brown fox jumps over the lazy dog.") "concat sl"
+  say "String list 9 is {sl9.fold String.concat}"; chck ((sl9.fold String.concat) = "quick brown fox jumps over the lazy dog.") "concat sl9"
+  say "String list 10 is {slA.fold String.concat}"; chck ((slA.fold String.concat) = "The quick brown fox jumps over the lazy dog.") "concat slA"
 
   // product mod 11
   m : Monoid i32 is
@@ -112,22 +111,22 @@ listFoldTest is
   say "product mod 11 is {l9.fold m}"; chck ((l9.fold m) = 1) "l9.fold produc mod 11"
   say "product mod 11 is {lA.fold m}"; chck ((lA.fold m) = 1) "lA.fold produc mod 11"
 
-  say "product_saturating 1 is {l1.fold i32.type.product_saturating}"; chck ((l1.fold i32.type.product_saturating) = 1) "l1.fold i32.type.product_saturating"
-  say "product_saturating 2 is {l2.fold i32.type.product_saturating}"; chck ((l2.fold i32.type.product_saturating) = 9) "l2.fold i32.type.product_saturating"
-  say "product_saturating 3 is {l3.fold i32.type.product_saturating}"; chck ((l3.fold i32.type.product_saturating) = 720) "l3.fold i32.type.product_saturating"
-  say "product_saturating 4 is {l4.fold i32.type.product_saturating}"; chck ((l4.fold i32.type.product_saturating) = 504000) "l4.fold i32.type.product_saturating"
-  say "product_saturating 5 is {l5.fold i32.type.product_saturating}"; chck ((l5.fold i32.type.product_saturating) = 2147483647) "l5.fold i32.type.product_saturating"
-  say "product_saturating 6 is {l6.fold i32.type.product_saturating}"; chck ((l6.fold i32.type.product_saturating) = 2147483647) "l6.fold i32.type.product_saturating"
-  say "product_saturating 7 is {l7.fold i32.type.product_saturating}"; chck ((l7.fold i32.type.product_saturating) = 2147483647) "l7.fold i32.type.product_saturating"
-  say "product_saturating 8 is {l8.fold i32.type.product_saturating}"; chck ((l8.fold i32.type.product_saturating) = 2147483647) "l8.fold i32.type.product_saturating"
-  say "product_saturating 9 is {l9.fold i32.type.product_saturating}"; chck ((l9.fold i32.type.product_saturating) = 2147483647) "l9.fold i32.type.product_saturating"
-  say "product_saturating 10 is {lA.fold i32.type.product_saturating}"; chck ((lA.fold i32.type.product_saturating) = 2147483647) "lA.fold i32.type.product_saturating"
+  say "product_saturating 1 is {l1.fold i32.product_saturating}"; chck ((l1.fold i32.product_saturating) = 1) "l1.fold i32.product_saturating"
+  say "product_saturating 2 is {l2.fold i32.product_saturating}"; chck ((l2.fold i32.product_saturating) = 9) "l2.fold i32.product_saturating"
+  say "product_saturating 3 is {l3.fold i32.product_saturating}"; chck ((l3.fold i32.product_saturating) = 720) "l3.fold i32.product_saturating"
+  say "product_saturating 4 is {l4.fold i32.product_saturating}"; chck ((l4.fold i32.product_saturating) = 504000) "l4.fold i32.product_saturating"
+  say "product_saturating 5 is {l5.fold i32.product_saturating}"; chck ((l5.fold i32.product_saturating) = 2147483647) "l5.fold i32.product_saturating"
+  say "product_saturating 6 is {l6.fold i32.product_saturating}"; chck ((l6.fold i32.product_saturating) = 2147483647) "l6.fold i32.product_saturating"
+  say "product_saturating 7 is {l7.fold i32.product_saturating}"; chck ((l7.fold i32.product_saturating) = 2147483647) "l7.fold i32.product_saturating"
+  say "product_saturating 8 is {l8.fold i32.product_saturating}"; chck ((l8.fold i32.product_saturating) = 2147483647) "l8.fold i32.product_saturating"
+  say "product_saturating 9 is {l9.fold i32.product_saturating}"; chck ((l9.fold i32.product_saturating) = 2147483647) "l9.fold i32.product_saturating"
+  say "product_saturating 10 is {lA.fold i32.product_saturating}"; chck ((lA.fold i32.product_saturating) = 2147483647) "lA.fold i32.product_saturating"
 
-  say "product 1 is {l1.fold i32.type.product}"; chck ((l1.fold i32.type.product) = 1) "l1.fold i32.type.product"
-  say "product 2 is {l2.fold i32.type.product}"; chck ((l2.fold i32.type.product) = 9) "l2.fold i32.type.product"
-  say "product 3 is {l3.fold i32.type.product}"; chck ((l3.fold i32.type.product) = 720) "l3.fold i32.type.product"
-  say "product 4 is {l4.fold i32.type.product}"; chck ((l4.fold i32.type.product) = 504000) "l4.fold i32.type.product"
+  say "product 1 is {l1.fold i32.product}"; chck ((l1.fold i32.product) = 1) "l1.fold i32.product"
+  say "product 2 is {l2.fold i32.product}"; chck ((l2.fold i32.product) = 9) "l2.fold i32.product"
+  say "product 3 is {l3.fold i32.product}"; chck ((l3.fold i32.product) = 720) "l3.fold i32.product"
+  say "product 4 is {l4.fold i32.product}"; chck ((l4.fold i32.product) = 504000) "l4.fold i32.product"
   // product 5 ff would overflow
-  //  say "product 5 is {l5.fold i32.type.product}"
+  //  say "product 5 is {l5.fold i32.product}"
 
-  exit exit_code.get
+  exit

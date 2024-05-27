@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import dev.flang.util.Errors;
-import dev.flang.util.SourcePosition;
 
 
 /**
@@ -38,7 +37,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Tag extends Expr
+public class Tag extends ExprWithPos
 {
 
 
@@ -57,14 +56,6 @@ public class Tag extends Expr
   public AbstractType _taggedType;
 
 
-  /**
-   * Clazz index for value clazz that is being boxed and, at
-   * _valAndRefClazzId+1, reference clazz that is the result clazz of the
-   * boxing.
-   */
-  public int _valAndTaggedClazzId = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -75,7 +66,7 @@ public class Tag extends Expr
    */
   public Tag(Expr value, AbstractType taggedType)
   {
-    super();
+    super(value.pos());
 
     taggedType.checkChoice(value.pos());
 
@@ -98,15 +89,6 @@ public class Tag extends Expr
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * The sourcecode position of this expression, used for error messages.
-   */
-  public SourcePosition pos()
-  {
-    return _value.pos();
-  }
 
 
   /**

@@ -77,7 +77,7 @@ public class NumericValue extends Value implements Comparable<NumericValue>
 
     _dfa = dfa;
 
-    _value = switch (_dfa._fuir.getSpecialId(_clazz))
+    _value = switch (_dfa._fuir.getSpecialClazz(_clazz))
       {
       case c_i8   -> (long) data.get      ();
       case c_i16  -> (long) data.getShort ();
@@ -118,8 +118,6 @@ public class NumericValue extends Value implements Comparable<NumericValue>
    * @param dfa the DFA analysis
    *
    * @param clazz the clazz this is an instance of.
-   *
-   * @param v the value, cast to long.
    */
   public NumericValue(DFA dfa, int clazz)
   {
@@ -167,7 +165,7 @@ public class NumericValue extends Value implements Comparable<NumericValue>
   /**
    * Get set of values of given field within this instance.
    */
-  Value readFieldFromInstance(DFA dfa, int field)
+  Value readFieldFromInstance(DFA dfa, int field, int site, Context why)
   {
     /* for a numeric value, this can only read the 'val' field, e.g., 'i32.val',
      * which (recursively) contains the numeric value, so we can just return
@@ -188,8 +186,8 @@ public class NumericValue extends Value implements Comparable<NumericValue>
           (_clazz == nv._clazz);
 
         var r =
-          _value == null || nv._value == null ? true :
-          switch (_dfa._fuir.getSpecialId(_clazz))
+          _value == null || nv._value == null ||
+          switch (_dfa._fuir.getSpecialClazz(_clazz))
           {
           case c_i8   -> i8 () == nv.i8 ();
           case c_i16  -> i16() == nv.i16();
@@ -251,7 +249,7 @@ public class NumericValue extends Value implements Comparable<NumericValue>
     return _dfa._fuir.clazzAsString(_clazz) + ":" +
       (_value == null
        ? "--any value--"
-       : switch (_dfa._fuir.getSpecialId(_clazz))
+       : switch (_dfa._fuir.getSpecialClazz(_clazz))
           {
           case c_i8   -> "" + i8 ();
           case c_i16  -> "" + i16();

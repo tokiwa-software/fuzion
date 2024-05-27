@@ -1,7 +1,7 @@
 PASSED: called p.in_p: got ''
 PASSED: called q.in_q: got ''
 PASSED: called r.in_r: got ''
-PASSED: ping poing: got '[1,2,3]'
+PASSED: ping poing: got '[1, 2, 3]'
 PASSED: scenario3: type of m2.y is : got 'Type of 'String''
 PASSED: scenario4: type of m2.y is : got 'Type of 'void''
 PASSED: scenario4: type of m2.y is : got 'Type of 'void''

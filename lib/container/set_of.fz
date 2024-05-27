@@ -27,4 +27,4 @@
 #
 # This feature creates an instance of a Set.
 #
-public set_of_ordered(K type : property.orderable, vs Sequence K) container.Set K is (container.ps_set K).type.from_sequence vs
+public set_of_ordered(K type : property.orderable, vs Sequence K) container.Set K => (container.ps_set K).new vs

@@ -25,18 +25,17 @@
 
 redef_args is
 
-  exit_code := mut 0
 
   chck(b bool, msg String) =>
     s := if (b)
       "PASSED: "
     else
-      exit_code <- 1
+      _ := set_exit_code 1
       "FAILED: "
     say (s + msg)
 
   RComplex(RT type) ref is
-    real, imag RT is abstract
+    real, imag RT => abstract
 
   Complex(T type, real, imag T) : RComplex T is
   Complex1(real, imag i32) is
@@ -77,4 +76,4 @@ redef_args is
     chck (a = 2) "redefined field as in #165"
 
 
-  exit exit_code.get
+  exit

@@ -30,7 +30,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -39,17 +39,22 @@ import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
+import dev.flang.ast.Visi;
+import dev.flang.tools.docs.Util.Kind;
+import dev.flang.util.ANY;
+import dev.flang.util.FuzionConstants;
 
-public class Html
+
+public class Html extends ANY
 {
   final DocsOptions config;
-  private final Map<AbstractFeature, SortedSet<AbstractFeature>> mapOfDeclaredFeatures;
+  private final Map<AbstractFeature, Map<Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures;
   private final String navigation;
 
   /**
    * the constructor taking the options
    */
-  public Html(DocsOptions config, Map<AbstractFeature, SortedSet<AbstractFeature>> mapOfDeclaredFeatures, AbstractFeature universe)
+  public Html(DocsOptions config, Map<AbstractFeature, Map<Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe)
   {
     this.config = config;
     this.mapOfDeclaredFeatures = mapOfDeclaredFeatures;
@@ -111,10 +116,10 @@ public class Html
   {
     if (at.isGenericArgument())
       {
-        return htmlEncodeNbsp(at.name());
+        return htmlEncodeNbsp(at.toString());
       }
     return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.asString()))
-      .replace("$2", featureAbsoluteURL(at.featureOfType()));
+      .replace("$2", featureAbsoluteURL(at.feature()));
   }
 
 
@@ -210,10 +215,24 @@ public class Html
 
   /**
    * the summaries and the comments of the features
+   * @param map
+   * @return
+   */
+  private String mainSection(Map<Kind, TreeSet<AbstractFeature>> map)
+  {
+    return (map.get(Kind.Constructor) == null ? "" :  "<h4>Constructors</h4>" + mainSection0(map.get(Kind.Constructor)))
+    + (map.get(Kind.Other) == null ? "" : "<h4>Functions</h4>" + mainSection0(map.get(Kind.Other)))
+    + (map.get(Kind.Type) == null ? "" : "<h4>Types</h4>" + mainSection0(map.get(Kind.Type)))
+    + (map.get(Kind.TypeFeature) == null ? "" : "<h4>Type Features</h4>" + mainSection0(map.get(Kind.TypeFeature)));
+  }
+
+
+  /**
+   * the summaries and the comments of the features
    * @param set
    * @return
    */
-  private String mainSection(SortedSet<AbstractFeature> set)
+  private String mainSection0(TreeSet<AbstractFeature> set)
   {
     return set
       .stream()
@@ -256,7 +275,9 @@ public class Html
    */
   private String htmlEncodedBasename(AbstractFeature af)
   {
-    return htmlEncodeNbsp(af.featureName().baseName());
+    var n = (af.outer() != null && af.outer().isTypeFeature() ? "type." : "") + af.featureName().baseName();
+
+    return htmlEncodeNbsp(n);
   }
 
 
@@ -304,7 +325,7 @@ public class Html
           {
             if (!codeLines.isEmpty())
               {
-                /* dump codeLines into a flang.dev runcode box */
+                /* dump codeLines into a fuzion-lang.dev runcode box */
                 var id = "fzdocs." + name + codeNo.size();
                 var code = codeLines
                   .stream()
@@ -430,7 +451,7 @@ public class Html
   {
     return f.pos()._sourceFile._fileName
       .toString()
-      .replace("$FUZION/lib", DocsOptions.baseApiDir)
+      .replace(FuzionConstants.SYMBOLIC_FUZION_MODULE.toString(), DocsOptions.baseApiDir)
       + "#l" + f.pos().line();
   }
 
@@ -471,12 +492,16 @@ public class Html
    */
   private String arguments(AbstractFeature f)
   {
-    if (f.arguments().isEmpty())
+    if (f.arguments()
+         .stream()
+         .filter(a -> a.isTypeParameter() || f.visibility().featureVisibility() == Visi.PUB)
+         .count() == 0)
       {
         return "";
       }
     return "(" + f.arguments()
       .stream()
+      .filter(a -> a.isTypeParameter() || f.visibility().featureVisibility() == Visi.PUB)
       .map(a ->
         htmlEncodedBasename(a) + "&nbsp;"
         + (a.isTypeParameter() ? typeArgAsString(a): anchor(a.resultType())))
@@ -495,7 +520,7 @@ public class Html
 
 
   /**
-   * render the the navigation at the left side
+   * render the navigation at the left side
    */
   private String navigation(AbstractFeature start, int depth)
   {
@@ -504,29 +529,37 @@ public class Html
       {
         return "";
       }
+    var spacer = IntStream.range(0, depth)
+        .mapToObj(i -> "| ")
+        .collect(Collectors.joining())
+        .replaceAll("\s$", "―");
+    var f =  spacer + "<a href='" + featureAbsoluteURL(start) + "'>" + htmlEncodedBasename(start) + args(start) + "</a>";
     return """
       <ul class="white-space-no-wrap">
         <li>
-          $3<a href='$2'>$0</a>
           $1
         </li>
       </ul>"""
-      .replace("$3", IntStream.range(0, depth)
-        .mapToObj(i -> "| ")
-        .collect(Collectors.joining())
-        .replaceAll("\s$", "―"))
-      .replace("$2", featureAbsoluteURL(start))
-      .replace("$0", htmlEncodedBasename(start) + args(start))
-      .replace("$1",
-        declaredFeatures.stream()
-          .map(af -> navigation(af, depth + 1))
-          .collect(Collectors.joining(System.lineSeparator())));
+        .replace("$1",
+            (declaredFeatures.get(Kind.Constructor) == null
+              ? ""
+              : "<div>" + f + "<small class=\"fd-feat-kind\"> Constructors</small></div>" + declaredFeatures.get(Kind.Constructor).stream()
+                .map(af -> navigation(af, depth + 1))
+                .collect(Collectors.joining(System.lineSeparator())))
+            + (declaredFeatures.get(Kind.Constructor) == null && declaredFeatures.get(Kind.Type) == null
+              ? "<div>" + f + "</div>"
+              : "")
+            + (declaredFeatures.get(Kind.Type) == null
+              ? ""
+              : "<div>" + f + "<small class=\"fd-feat-kind\"> Types</small></div>" + declaredFeatures.get(Kind.Type).stream()
+                .map(af -> navigation(af, depth + 1))
+                .collect(Collectors.joining(System.lineSeparator()))));
   }
 
 
   private String args(AbstractFeature start)
   {
-    if (start.valueArguments().size() == 0)
+    if (start.valueArguments().size() == 0 || Kind.classify(start) == Kind.Type)
       {
         return "";
       }

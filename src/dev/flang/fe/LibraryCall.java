@@ -171,6 +171,15 @@ public abstract class LibraryCall extends AbstractCall
 
 
   /**
+   * Unique global index of this Call.
+   */
+  public int globalIndex()
+  {
+    return _libModule.globalIndex(_index);
+  }
+
+
+  /**
    * toString
    *
    * @return

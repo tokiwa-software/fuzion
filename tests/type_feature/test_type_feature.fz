@@ -24,20 +24,20 @@
 # -----------------------------------------------------------------------
 
 hasTypeArg is
-  type.showTypeArgs String is abstract
+  type.showTypeArgs String => abstract
 
 ex(T, U type) : hasTypeArg, property.equatable is
   type.showTypeArgs => "T:$T U:$U"
-  fixed type.equality(a, b ex T U) bool is false
+  fixed type.equality(a, b ex T U) bool => false
 
 ex2(T, U type: property.equatable, a, b T, c U) : hasTypeArg, property.equatable is
   type.showTypeArgs => "T:$T U:$U"
-  fixed type.equality(a, b ex2 T U) bool is
+  fixed type.equality(a, b ex2 T U) bool =>
     (a.a = b.a &&
      a.b = b.b &&
      a.c = b.c   )
 
-prefix !(X type: hasTypeArg, v X) String is X.showTypeArgs
+prefix !(X type: hasTypeArg, v X) String => X.showTypeArgs
 
 say !(ex i32 bool)
 say !(ex (array String) (array (array bool)))

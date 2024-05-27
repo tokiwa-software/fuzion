@@ -72,7 +72,7 @@ is
   #
   # performance is O(log size).
   #
-  public index [] (k OK) option V is
+  public index [] (k OK) option V =>
     sorted_entries
       .find (e -> ks[e.i] ⋄ k)
       .map_to_option i->sorted_entries[i].val
@@ -80,12 +80,12 @@ is
 
   # get an array of all key/value pairs in this map
   #
-  public items Sequence (tuple OK V) is sorted_entries.map (e -> (e.key, e.val))
+  public items Sequence (tuple OK V) => sorted_entries.map (e -> (e.key, e.val))
 
 
   # add mapping from k to v
   #
-  public add(k OK, v V) ordered_map OK V is
+  public add(k OK, v V) ordered_map OK V =>
     match index[](k)
       nil =>
         (ordered_map
@@ -110,6 +110,6 @@ is
 
   # create an empty instance of ordered_map
   #
-  public type.empty => (container.ordered_map
-                        (list OK).type.empty.as_array
-                        (list V).type.empty.as_array)
+  public fixed type.empty => (container.ordered_map
+                        (list OK).empty.as_array
+                        (list V).empty.as_array)

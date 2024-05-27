@@ -30,7 +30,7 @@ SquareRoot is
       a ≥ 0
     post
       (result * result ≤ a) && ((result+1) * (result+1) > a)
-  is
+  =>
     set result := 1
     for it in 0..99 do
       n := a / result

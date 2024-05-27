@@ -53,31 +53,11 @@ public abstract class AbstractCall extends Expr
   public static final List<AbstractType> NO_GENERICS = new List<>();
 
 
-  /*----------------------------  variables  ----------------------------*/
-
-
-  // NYI: Move _sid to target?
-  public int _sid = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
-
-
-  // For a call to parent in an inherits clause, these are the ids of the
-  // argument fields for the parent feature.
-  //
-  // NYI: remove, used in FUIR.  This should be replaced by explicit assignments to fields
-  public int _parentCallArgFieldIds = -1;
-
-
-  // used if this call is turned into a compile time constant in FUIR.
-  public Object innerClazz;
-
-
   /*-------------------------- constructors ---------------------------*/
 
 
   /**
    * Constructor
-   *
-   * @param pos the sourcecode position, used for error messages.
    */
   public AbstractCall()
   {
@@ -95,7 +75,7 @@ public abstract class AbstractCall extends Expr
   public abstract boolean isInheritanceCall();
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
-    System.err.println("Called "+this.getClass()+".visit");
+    say_err("Called "+this.getClass()+".visit");
     return this;
   }
 
@@ -138,9 +118,6 @@ public abstract class AbstractCall extends Expr
    */
   public AbstractConstant asCompileTimeConstant()
   {
-    if (PRECONDITIONS) require
-      (isCompileTimeConst());
-
     var result = new AbstractConstant() {
 
       @Override
@@ -184,29 +161,14 @@ public abstract class AbstractCall extends Expr
       {
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
       }
+
+      @Override
+      public Expr origin() { return AbstractCall.this; }
+
     };
-    result.runtimeClazz = innerClazz;
     return result;
   }
 
-
-  @Override
-  public boolean isCompileTimeConst()
-  {
-    var result =
-      !isInheritanceCall() &&
-      calledFeature().isConstructor() &&
-      // contains no fields
-      calledFeature().code().containsOnlyDeclarations() &&
-      // we are calling a value type feature
-      !calledFeature().selfType().isRef() &&
-      // only features without args and no fields may be inherited
-      calledFeature().inherits().stream().allMatch(c -> c.calledFeature().arguments().isEmpty() && c.calledFeature().code().containsOnlyDeclarations()) &&
-      // no unit
-      this.actuals().size() > 0 &&
-      this.actuals().stream().allMatch(x -> x.isCompileTimeConst());
-    return result;
-  }
 
 }
 

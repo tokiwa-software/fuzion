@@ -1,0 +1,33 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test issue2368
+#
+# -----------------------------------------------------------------------
+
+ex_a2 =>
+  x := array2 10 10 i,j->i*10+j
+  say x
+  say x.transpose
+  # NYI: #2662: remove explicit types once type inference works
+  y1 Sequence i32 := [1,2,3].as_list
+  y2 Sequence i32 := [4,5,6].as_list
+  y3 Sequence i32 := [7,8,9].as_list
+  y Sequence (Sequence i32) := [y1,y2,y3].as_list
+  say (array2 i32).create2(y)

@@ -33,7 +33,7 @@ is
 
   # test if the given bit is part of this bitset
   #
-  public has (bit u64) bool is
+  public has (bit u64) bool =>
     match bitset.this
       _ nil   => false
       x u64   => bit = x
@@ -44,18 +44,21 @@ is
   public index[] (bit u64) => has bit
 
   # set the given bit
-  public put (bit u64) bitset is
+  public put (bit u64) bitset =>
     if has bit
       bitset.this
     else
       match bitset.this
         _ nil   => bit
         x u64   => array bool (max bit x).as_i32+1 (i -> i.as_u64 = bit || i.as_u64 = x)
+        # NYI: This is very inefficent since it copies the whole array. Should
+        # better use a persistent array implementation such as persistent hash array
+        # mapped trie.
         a array => a.put bit.as_i32 true false
 
   # union of two bitsets
   #
-  public infix ∪ (other bitset) bitset is
+  public infix ∪ (other bitset) bitset =>
     match bitset.this
       _ nil   => other
       x u64   => other.put x
@@ -68,7 +71,7 @@ is
 
   # get the highest bit in this bitset
   #
-  public highest option u64 is
+  public highest option u64 =>
     match bitset.this
       _ nil   => nil
       x u64   => x
@@ -76,7 +79,7 @@ is
 
   # equality
   #
-  public fixed type.equality(a, b bitset) bool is
+  public fixed type.equality(a, b bitset) bool =>
      h := a.highest >>= i -> b.highest >>= j -> max i j
      match h
        _ nil => a.highest!! && b.highest!!
@@ -89,7 +92,7 @@ is
 
   # create a string representation of a bitset of the form "{2, 4}"
   #
-  public redef as_string String is
+  public redef as_string String =>
     match highest
       _ nil => "\{}"
       h u64 =>
@@ -104,10 +107,10 @@ is
 
   # an empty bitset
   #
-  public type.empty bitset is nil
+  public type.empty bitset => nil
 
   # monoid of bitset with infix ∪ operation.
   #
   public type.union : Monoid bitset is
     redef infix ∙ (a, b bitset) => a ∪ b
-    redef e bitset is bitset.type.empty
+    redef e bitset => bitset.empty

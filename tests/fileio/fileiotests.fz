@@ -33,16 +33,15 @@ fileiotests =>
 
   f := io.file
 
-  writer := f.write
   reader := f.read
 
-  exists(path String) bool is
+  exists(path String) bool =>
     match f.stat path true
       io.file.meta_data => true
       error => false
 
   say "$dir exists: {exists dir}"
-  match writer.create_dir dir
+  match io.dir.make dir
     unit => say "$dir was created"
     error =>
   say "$dir exists: {exists dir}"
@@ -55,11 +54,19 @@ fileiotests =>
     error =>
   say "$file exists: {exists file}"
 
-  say "$file size is {(f.stat file true).val.size}"
+  say "stat resolve=true : $file size is {(f.stat file true).val.size}"
+  say "stat resolve=false: $file size is {(f.stat file false).val.size}"
+
+  f.use unit file io.file.mode.read ()->
+    say io.file.open.file_position
+    say (io.file.open.seek 1)
+    say io.file.open.file_position
+    say (io.file.open.seek 0)
+
 
   match f.use (array u8) file io.file.mode.read ()->io.file.open.read
     bytes array u8 =>
-      filecontent := String.type.from_bytes bytes
+      filecontent := String.from_bytes bytes
       say "file content bytes: $bytes"
       say "file content is $filecontent"
     error =>

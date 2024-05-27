@@ -26,8 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import java.util.Iterator;
-
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
@@ -151,35 +149,6 @@ public class FormalGenerics extends ANY
                                                 detail1,
                                                 detail2);
       }
-    return result;
-  }
-
-
-  /**
-   * Find formal generic argument with given name.
-   *
-   * @param name the name of a formal generic argument.
-   *
-   * @return null if name is not the name of a formal generic argument
-   * in this.  Otherwise, a reference to the formal generic argument.
-   */
-  public Generic get(String name)
-  {
-    Generic result = null;
-    Iterator it = list.iterator();
-    while ((result == null) && it.hasNext())
-      {
-        Generic g = (Generic) it.next();
-        if (g.name().equals(name))
-          {
-            result = g;
-          }
-      }
-
-    if (POSTCONDITIONS) ensure
-      ((result == null) || (result.name().equals(name)));
-    // result == null ==> for all g in generics: !g.name.equals(name)
-
     return result;
   }
 

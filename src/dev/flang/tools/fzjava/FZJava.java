@@ -42,8 +42,10 @@ import java.io.IOException;
 import java.lang.reflect.Modifier;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -59,6 +61,7 @@ import java.util.zip.ZipFile;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
+@SuppressWarnings("rawtypes")
 public class FZJava extends Tool
 {
 
@@ -230,6 +233,7 @@ public class FZJava extends Tool
                                             /* enableUnsafeIntrinsics */ true,
                                             /* sourceDirs */ emptyList,
                                             /* readStdin */ false,
+                                            /* executeCode */ null,
                                             /* main */ null,
                                             /* loadSources */ true);
         _fe = new FrontEnd(feOptions);
@@ -241,7 +245,39 @@ public class FZJava extends Tool
                 m = m + ".jmod";
               }
             processModule(m);
+            if (m.equals("java.base.jmod"))
+              {
+                addAsJavaObjectHelper();
+              }
           }
+      }
+  }
+
+
+  /*
+   * Add helper feature Java.as_java_object that
+   * allows easy java array creation of complex objects.
+   */
+  private void addAsJavaObjectHelper()
+  {
+    var fzp = _options._dest;
+    fzp = fzp.resolve("ext.fz");
+    try
+      {
+        var str = new StringBuilder(
+                    "public Java.as_java_object(T type : Java.java.lang.Object, seq Sequence T) =>\n");
+        str.append("  res := (Java.java.lang.reflect.Array.newInstance_Ljava_7_lang_7_Class_s_I T.get_java_class seq.count).val\n");
+        str.append("  for idx := 0, idx+1\n");
+        str.append("      el in seq\n");
+        str.append("  do\n");
+        str.append("    _ := Java.java.lang.reflect.Array.__k__set res idx el\n");
+        str.append("  fuzion.java.Array T res.Java_Ref\n");
+        str.append("\n");
+        Files.write(fzp, str.toString().getBytes(StandardCharsets.UTF_8));
+      }
+    catch (IOException e)
+      {
+        Errors.fatal("could not write ext.fz");
       }
   }
 
@@ -294,7 +330,7 @@ public class FZJava extends Tool
           {
             if (_verbose > 0)
               {
-                System.out.println(" + " + _options._dest);
+                say(" + " + _options._dest);
               }
             Files.createDirectory(_options._dest);
           }
@@ -323,13 +359,13 @@ public class FZJava extends Tool
     var p = modulePath(m);
     if (_verbose > 0)
       {
-        System.out.println("MODULE: " + m + " at " + p);
+        say("MODULE: " + m + " at " + p);
       }
 
-    String url = "file:jar://" + p.toUri().getPath();
+    String url = "file:jar://" + p.toUri();
     try
       {
-        var cl = new java.net.URLClassLoader(new URL[] { new URL(url) });
+        var cl = new java.net.URLClassLoader(new URL[] { URI.create(url).toURL() });
         try
           {
             var zip = new ZipFile(p.toFile());
@@ -420,7 +456,7 @@ public class FZJava extends Tool
           }
         catch (ClassNotFoundException e)
           {
-            System.err.println("Failed to load class " + cn + ": " + e);
+            say_err("Failed to load class " + cn + ": " + e);
           }
       }
   }
@@ -429,10 +465,7 @@ public class FZJava extends Tool
   /**
    * Create Fuzion features to interface Java code for class with given name.
    *
-   * @param cl ClassLoader to load class from
-   *
    * @param cn the class name, e.g., "java.lang.Object".
-   *
    */
   boolean matchesClassPattern(String cn)
   {
@@ -459,10 +492,7 @@ public class FZJava extends Tool
           {
             ForClass sfc = null;
             var sc = c.getSuperclass();
-            while (sc != null && (sc.getModifiers() & Modifier.PUBLIC) == 0)
-              {
-                sc = sc.getSuperclass();
-              }
+            sc = sc == null && c != java.lang.Object.class ? java.lang.Object.class : sc;
             if (sc != null)
               {
                 sfc = forClass(sc);

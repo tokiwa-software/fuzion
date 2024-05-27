@@ -24,10 +24,10 @@
 # -----------------------------------------------------------------------
 
 ctrie_test is
-  ctrie := (lock_free.map i32 String).type.empty
+  ctrie := (lock_free.map i32 String).empty
 
   set_from(s Sequence i32) =>
-    (container.ps_set i32).type.from_sequence s
+    (container.ps_set i32).new s
 
   all := set_from 0..100
   removed := set_from 0..100:2
@@ -56,7 +56,7 @@ ctrie_test is
 
   say (yes ∀ (k -> ctrie[k].get = "v$k"))
 
-  say (ctrie.size = yes.size)
+  say (ctrie.size = yes.size_option.val)
 
   say no_items.items.count # 0
 

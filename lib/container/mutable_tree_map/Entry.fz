@@ -45,7 +45,7 @@ module Entry(module key KEY, module val VAL) ref is
   # get the value stored in this submap at key k, nil if k is not a key
   # in this submap
   #
-  module get(k KEY) option VAL is
+  module get(k KEY) option VAL =>
     if k < key
       left.get.bind VAL (e -> e.get k)
     else if key < k
@@ -56,12 +56,12 @@ module Entry(module key KEY, module val VAL) ref is
 
   # get a sequence of all key/value pairs in this Entry
   #
-  module items Sequence (tuple KEY VAL) is
+  module items Sequence (tuple KEY VAL) =>
 
     head := (key, val)
 
     tail Lazy (list (tuple KEY VAL)) := ()->
-      (left.get.map_to_option x->x.items).get (list (tuple KEY VAL)).type.empty ++
-        (right.get.map_to_option x->x.items).get (list (tuple KEY VAL)).type.empty
+      (left.get.map_to_option x->x.items).or_else (list (tuple KEY VAL)).empty ++
+        (right.get.map_to_option x->x.items).or_else (list (tuple KEY VAL)).empty
 
     list head tail

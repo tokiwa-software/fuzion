@@ -25,30 +25,29 @@
 
 inheritance is
 
-  exit_code := mut 0
 
   curid i32 := 0
-  id i32 is
+  id i32 =>
     set result := curid
     set curid := result + 1
 
   A ref is
     ident i32 := id
     say "A's body$ident"
-    x unit is abstract
+    x unit => abstract
   B ref : A is
     say "B's body$ident"
-    redef x unit is say "B.x"
-    xb unit is say "B.xb"
+    redef x unit => say "B.x"
+    xb unit => say "B.xb"
   C ref : A is
-    redef x unit is say "C.x"
-    xc unit is say "C.xc"
+    redef x unit => say "C.x"
+    xc unit => say "C.xc"
   D ref : B, C is
-    redef x unit is say "D.x"
+    redef x unit => say "D.x"
   E ref : D is
-    redef x  unit is say "E.x"
-    redef xb unit is say "E.xb"
-    redef xc unit is say "E.xc"
+    redef x  unit => say "E.x"
+    redef xb unit => say "E.xb"
+    redef xc unit => say "E.xc"
   bi B := B
   ci C := C
   aa A := bi
@@ -224,24 +223,24 @@ inheritance is
 
   /* calling inherited feature y from arguments to parent class D(y), feature y is inherited from value feature A */
   call_inherited_from_parent_args is
-    chck (b bool, msg String) unit is
+    chck (b bool, msg String) unit =>
       if b
         say "PASSED: $msg"
       else
         say "FAILED: $msg"
-        exit_code <- 1
+        _ := set_exit_code 1
 
     cnt_A_y := 0
     cnt_C_y := 0
     AA is
       x is rx := y
-      y i32 is
+      y i32 =>
         set cnt_A_y := cnt_A_y + 1
         say "inherit.A.y"
         0
 
       CC ref : AA is
-        redef y i32 is
+        redef y i32 =>
           set cnt_C_y := cnt_C_y + 1
           say "inherit.C.y"
           1
@@ -258,24 +257,24 @@ inheritance is
 
   /* calling inherited feature y from arguments to parent class D(y), feature y is inherited from ref feature A */
   call_inherited_from_parent_args2 is
-    chck (b bool, msg String) unit is
+    chck (b bool, msg String) unit =>
       if b
         say "PASSED: $msg"
       else
         say "FAILED: $msg"
-        exit_code <- 1
+        _ := set_exit_code 1
 
     cnt_A_y := 0
     cnt_C_y := 0
     AA ref is
       x is rx := y
-      y i32 is
+      y i32 =>
         set cnt_A_y := cnt_A_y + 1
         say "inherit.A.y"
         0
 
       CC ref : AA is
-        redef y i32 is
+        redef y i32 =>
           set cnt_C_y := cnt_C_y + 1
           say "inherit.C.y"
           1
@@ -294,34 +293,34 @@ inheritance is
   check_dyn_binding_when_inheriting_value is
     AA is
       a => x
-      x => say "A.x: FAILED."; exit_code <- 1
+      x => say "A.x: FAILED."; _ := set_exit_code 1
     BB ref : AA is
       a
-      redef x unit is say "B.x: PASSED."
+      redef x unit => say "B.x: PASSED."
     BB
     unit
   check_dyn_binding_when_inheriting_value
 
   /* calling inherited feature x from arguments to parent class D(x), feature x is inherited from value feature A and calls A.y which is redefined in C */
   call_inherited_from_parent_args3 is
-    chck (b bool, msg String) unit is
+    chck (b bool, msg String) unit =>
       if b
         say "PASSED: $msg"
       else
         say "FAILED: $msg"
-        exit_code <- 1
+        _ := set_exit_code 1
 
     cnt_A_y := 0
     cnt_C_y := 0
     AA is
       x is rx := y
-      y i32 is
+      y i32 =>
         set cnt_A_y := cnt_A_y + 1
         say "inherit.A.y"
         0
 
       CC ref : AA is
-        redef y i32 is
+        redef y i32 =>
           set cnt_C_y := cnt_C_y + 1
           say "inherit.C.y"
           1
@@ -397,7 +396,7 @@ inheritance is
         say "$msg: PASSED."
       else
         say "$msg: $v != $expected *** FAILED."
-        exit_code <- 1
+        _ := set_exit_code 1
   inheritOuter
 
   # regression test from issue #2058 that failed for C and JVM backends
@@ -416,7 +415,7 @@ inheritance is
         say "$msg: PASSED."
       else
         say "$msg: $v != $expected *** FAILED."
-        exit_code <- 1
+        _ := set_exit_code 1
 
   reg_test_2058
 
@@ -441,10 +440,10 @@ inheritance is
         B ref : A 66 is
           _ := A.this.i
       _ := (A 3).B
-      C1 ref : A 4  is
+      C1 ref : A 4 is
       _ := C1.B
     v2
 
   reg_test_2064
 
-  exit exit_code.get
+  exit

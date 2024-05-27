@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -34,7 +33,7 @@ import dev.flang.util.SourcePosition;
 
 /**
  * Partial represents partially applied operators and related syntax sugar and
- * provides methods for handling of partial evalution.
+ * provides methods for handling of partial evaluation.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -76,7 +75,7 @@ public class Partial extends AbstractLambda
 
 
   /**
-   * Constructor for a partially applied operator expresion like `+` or
+   * Constructor for a partially applied operator expression like `+` or
    * `**`. This can expand to a lambda of the form `x -> +x`, `x -> x+`, or `x,y
    * -> x+y`.
    *
@@ -107,11 +106,11 @@ public class Partial extends AbstractLambda
 
   /**
    * Create a new, unique argument name for use in a automatically generated
-   * lambda and return is as an instance of ParsedName at the given position.
+   * lambda and return is as an instance of ParsedCall at the given position.
    */
-  static ParsedName argName(SourcePosition pos)
+  static ParsedCall argName(SourcePosition pos)
   {
-    return new ParsedName(pos, argName());
+    return new ParsedCall(new ParsedName(pos, argName()));
   }
 
 
@@ -126,10 +125,10 @@ public class Partial extends AbstractLambda
    *
    * @return the corresponding lambda expression.
    */
-  public static Function dotCall(SourcePosition pos, java.util.function.Function<Expr,Call> call)
+  public static Function dotCall(SourcePosition pos, java.util.function.Function<Call,Call> call)
   {
     var a = argName(pos);
-    var c = call.apply(new ParsedCall(null, a));
+    var c = call.apply(a);
     return new Function(c.pos(),
                         new List<>(a),
                         c);
@@ -193,19 +192,19 @@ public class Partial extends AbstractLambda
     if (_function == null && t.isFunctionType() && (t.arity() == 1 || t.arity() == 2))
       {
         var a = argName(pos());
-        List<ParsedName> args = new List<>(a);
-        List<Actual> actuals = new List<>();
+        List<Expr> args = new List<>(a);
+        List<Expr> actuals = new List<>();
         String op = FuzionConstants.UNARY_OPERATOR_PREFIX + _op;
         if (t.arity() == 2)
           {
             var b = argName(pos());
             args.add(b);
-            actuals.add(new Actual(new ParsedCall(null, b)));
+            actuals.add(b);
             op = FuzionConstants.INFIX_OPERATOR_PREFIX + _op;
           }
         _function = new Function(pos(),
                                  args,
-                                 new ParsedCall(new ParsedCall(null, a),
+                                 new ParsedCall(a,
                                                 new ParsedName(pos(), op),
                                                 actuals));
       }
@@ -260,7 +259,7 @@ public class Partial extends AbstractLambda
     // unlike type(), we do not produce an error but just return null here since
     // everything might eventually turn out fine in this case.
     return _function == null ? null
-                             : _function.type();
+                             : _function.typeForInferencing();
   }
 
 

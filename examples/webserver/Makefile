@@ -23,11 +23,13 @@
 #
 # -----------------------------------------------------------------------
 
-all:
-        # we need to provide two additional options:
+webserver/java:
+        # we need to provide an additional option:
         #
         #   -modules=java.base    to add Fuzion interface to java.base module
-        #   -unsafeIntrinsics=on  to allow the Fuzion interface to look up Java
-        #                         code through reflection.
         #
-	../../bin/fz -unsafeIntrinsics=on -modules=java.base webserver
+	../../bin/fz -modules=java.base webserver_java.fz
+
+
+webserver/native:
+	../../bin/fz webserver_native.fz

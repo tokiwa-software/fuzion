@@ -131,7 +131,7 @@ O(n log n).
 
   # add mapping from k to v
   #
-  public fixed add (k PK, v V) ps_map PK V is
+  public fixed add (k PK, v V) ps_map PK V =>
     if has k
       panic "NYI: ps_map currently does not handle updates for existing key"
     else
@@ -143,40 +143,46 @@ O(n log n).
   # Adding has a cumulative average runtime in O(log size) and a worst-case
   # runtime of O(size)
   #
-  public add (kv (tuple PK V)) ps_map PK V is
-    nsize := size + 1
-    ndata := data
-    nfill := fill
+  public add (kv (tuple PK V)) ps_map PK V =>
 
-    # join arrays data[ole..ole+sz-1] and ndata[dest..dest+sz-1] to ndata[dest..dest+2*sz-1]
-    #
-    join (ole i32, dest i32, sz i32) ps_map PK V is
-      if (size & sz) = 0
-        ps_map ndata nsize dest+sz
-      else
-        tmp := array (tuple PK V) sz (i -> ndata[dest+i])
-        for
-          i1 := 0, if (use1) i1+1 else i1
-          i2 := 0, if (use1) i2   else i2+1
-          use1 := i1 < sz && ((i2 ≥ sz) || data[ole + i1].values.0 < tmp[i2].values.0)
-          e := if use1 then data[ole + i1] else tmp[i2]
-        do
-          ndata[dest + i1 + i2] := e
-        until i1 + i2 = 2*sz-1
-        join (fill - sz - 2*(fill - ole - sz) - 2*sz) dest 2*sz
+    m : mutate is
 
-    if (nsize & size) = 0
-      set ndata := fuzion.sys.internal_array_init (tuple PK V) (data.length * 2 + (nsize+1) / 2)
-      set nfill := 0
-    ndata[nfill] := kv
-    join fill-1 nfill 1
+    m.go ()->
+
+      nsize := size + 1
+      ndata := m.env.new data
+      nfill := m.env.new fill
+
+      # join arrays data[ole..ole+sz-1] and ndata[dest..dest+sz-1] to ndata[dest..dest+2*sz-1]
+      #
+      join (ole i32, dest i32, sz i32) ps_map PK V =>
+        if (size & sz) = 0
+          ps_map ndata.get nsize dest+sz
+        else
+          tmp := array (tuple PK V) sz (i -> ndata.get[dest+i])
+          _ :=
+            for
+              i1 := 0, if (use1) i1+1 else i1
+              i2 := 0, if (use1) i2   else i2+1
+              use1 := i1 < sz && ((i2 ≥ sz) || data[ole + i1].values.0 < tmp[i2].values.0)
+              e := if use1 then data[ole + i1] else tmp[i2]
+            do
+              ndata.get[dest + i1 + i2] := e
+            until i1 + i2 = 2*sz-1
+          join (fill - sz - 2*(fill - ole - sz) - 2*sz) dest 2*sz
+
+      if (nsize & size) = 0
+        ndata <- fuzion.sys.internal_array_init (tuple PK V) (data.length * 2 + (nsize+1) / 2)
+        nfill <- 0
+      ndata.get[nfill] := kv
+      join fill-1 nfill 1
 
 
   # find the value k is mapped to or nil if k is not part of this map
   #
-  public index [] (k PK) option V is
+  public index [] (k PK) option V =>
 
-    binary_search(l, r i32) option V is
+    binary_search(l, r i32) option V =>
       m := (l + r) / 2
       if l > r
         nil
@@ -189,7 +195,7 @@ O(n log n).
 
     # find k in sub-arrays starting at data[at]
     #
-    get (at i32, sz i32, tail i32) option V is
+    get (at i32, sz i32, tail i32) option V =>
       if sz = 0
         nil
       else
@@ -209,33 +215,26 @@ O(n log n).
     get 0 sub_sz (data.length - sub_sz)
 
 
-  public show unit is
-    for e in as_key_array
-        sep := "", " "
-    do
-      yak (sep + e)
-    say
-
-
   # create sorted array of all keys in this map
   #
-  public as_key_array array PK is
+  public as_key_array array PK =>
     r := fuzion.sys.internal_array_init PK size
 
     # join arrays data[ole..ole+sz-1] and r[dest..dest+rsz-1] to r[dest..dest+sz+rsz-1]
     #
-    join (ole i32, sz i32, rsz i32, skip i32) unit is
+    join (ole i32, sz i32, rsz i32, skip i32) unit =>
       if sz ≤ size
         if (size & sz) != 0
           tmp := array PK rsz (i -> r[i])
-          for
-            i1 := 0, if (use1) i1+1 else i1
-            i2 := 0, if (use1) i2   else i2+1
-            use1 := i1 < sz && ((i2 ≥ rsz) || (data[ole + i1].values.0 < tmp[i2]))
-            e := if (use1) data[ole + i1].values.0 else tmp[i2]
-          do
-            r[i1 + i2] := e
-          until i1 + i2 = sz+rsz-1
+          _ :=
+            for
+              i1 := 0, if (use1) i1+1 else i1
+              i2 := 0, if (use1) i2   else i2+1
+              use1 := i1 < sz && ((i2 ≥ rsz) || (data[ole + i1].values.0 < tmp[i2]))
+              e := if (use1) data[ole + i1].values.0 else tmp[i2]
+            do
+              r[i1 + i2] := e
+            until i1 + i2 = sz+rsz-1
           join (ole - skip - 2*sz) 2*sz rsz+sz (skip + sz + skip)
         else
           join ole-sz 2*sz rsz (skip + sz + skip)
@@ -247,64 +246,66 @@ O(n log n).
 
   # get an array of all key/value pairs in this map
   #
-  public redef items Sequence (tuple PK V) is
+  public redef items Sequence (tuple PK V) =>
     as_key_array.map (tuple PK V) (k -> (k, ps_map.this[k].get))
 
 
   # get the lowest key in this map
   #
-  public min option PK is
+  public min option PK =>
+
+    min0 (m PK, l i32, r i32) PK =>
+      (lk, _) := data[l]
+      if (m ≤ lk) m else lk
+
+    min (m PK, at i32, sz i32, tail i32) PK =>
+      if sz = 0
+        m
+      else
+        sz0 := sz / 2
+        nt := (tail - sz0) / 2
+        at0 := (at
+                + (if (size & sz0) != 0 nt else 0)
+                + (if (size & sz ) != 0 sz else 0))
+        m0 := if (size & sz) != 0
+            min0 m at at+sz-1
+          else
+            m
+        min m0 at0 sz0 nt
+
     if size = 0
       nil
     else
-      min0 (m PK, l i32, r i32) PK is
-        (lk, _) := data[l]
-        if (m ≤ lk) m else lk
-
-      min (m PK, at i32, sz i32, tail i32) PK is
-        if sz = 0
-          m
-        else
-          sz0 := sz / 2
-          nt := (tail - sz0) / 2
-          at0 := (at
-                  + (if (size & sz0) != 0 nt else 0)
-                  + (if (size & sz ) != 0 sz else 0))
-          m0 := if (size & sz) != 0
-              min0 m at at+sz-1
-            else
-              m
-          min m0 at0 sz0 nt
-
       sub_sz := size.highest_one_bit
       min data[0].values.0 0 sub_sz (data.length - sub_sz)
 
 
   # get the highest key in this map
   #
-  public max option PK is
+  public max option PK =>
+
+    max0 (m PK, l i32, r i32) PK =>
+      (rk, _) := data[r]
+      if (m ≥ rk) m else rk
+
+    max (m PK, at i32, sz i32, tail i32) PK =>
+      if sz = 0
+        m
+      else
+        sz0 := sz / 2
+        nt := (tail - sz0) / 2
+        at0 := (at
+                + (if (size & sz0) != 0 nt else 0)
+                + (if (size & sz ) != 0 sz else 0))
+        m0 := if (size & sz) != 0
+            max0 m at at+sz-1
+          else
+            m
+        max m0 at0 sz0 nt
+
     if size = 0
       nil
     else
-      max0 (m PK, l i32, r i32) PK is
-        (rk, _) := data[r]
-        if (m ≥ rk) m else rk
-
-      max (m PK, at i32, sz i32, tail i32) PK is
-        if sz = 0
-          m
-        else
-          sz0 := sz / 2
-          nt := (tail - sz0) / 2
-          at0 := (at
-                  + (if (size & sz0) != 0 nt else 0)
-                  + (if (size & sz ) != 0 sz else 0))
-          m0 := if (size & sz) != 0
-              max0 m at at+sz-1
-            else
-              m
-          max m0 at0 sz0 nt
-
       sub_sz := size.highest_one_bit
       max data[0].values.0 0 sub_sz (data.length - sub_sz)
 
@@ -316,41 +317,42 @@ O(n log n).
   # both ps_map.this and other, it will be mapped to ps_map.this[k] or to other[k],
   # but it is undefined to which of these two.
   #
-  public fixed union (other ps_map PK V) ps_map PK V is
+  public fixed union (other ps_map PK V) ps_map PK V =>
+
+    # helper to add 'ps_map.this.data[l..r]' to 'a' and return the resulting map.
+    #
+    add_all (a ps_map PK V, l i32, r i32) ps_map PK V =>
+      if l > r
+        a
+      else
+        kv := data[l]
+        a0 := if (a.has kv.values.0) a else a.add kv
+        add_all a0 l+1 r
+
+    # helper to add 'sz' elements from 'ps_map.this.data[at..at+sz]' to 'a', with
+    # 'tail' elements at indices larger or equal to 'at+sz' added recursively as
+    # well.
+    #
+    add_all (a ps_map PK V, at i32, sz i32, tail i32) ps_map PK V =>
+      if sz = 0
+        a
+      else
+        sz0 := sz / 2
+        nt := (tail - sz0) / 2
+        at0 := (at
+                + (if (size & sz0) != 0 nt else 0)
+                + (if (size & sz ) != 0 sz else 0))
+        a0 := if (size & sz) != 0
+            add_all a at at+sz-1
+          else
+            a
+        add_all a0 at0 sz0 nt
+
     if other.size < size
       other ∪ ps_map.this
     else
-
-      # helper to add 'ps_map.this.data[l..r]' to 'a' and return the resulting map.
-      #
-      add_all (a ps_map PK V, l i32, r i32) ps_map PK V is
-        if l > r
-          a
-        else
-          kv := data[l]
-          a0 := if (a.has kv.values.0) a else a.add kv
-          add_all a0 l+1 r
-
-      # helper to add 'sz' elements from 'ps_map.this.data[at..at+sz]' to 'a', with
-      # 'tail' elements at indices larger or equal to 'at+sz' added recursively as
-      # well.
-      #
-      add_all (a ps_map PK V, at i32, sz i32, tail i32) ps_map PK V is
-        if sz = 0
-          a
-        else
-          sz0 := sz / 2
-          nt := (tail - sz0) / 2
-          at0 := (at
-                  + (if (size & sz0) != 0 nt else 0)
-                  + (if (size & sz ) != 0 sz else 0))
-          a0 := if (size & sz) != 0
-              add_all a at at+sz-1
-            else
-              a
-          add_all a0 at0 sz0 nt
-
-      add_all other 0 size.highest_one_bit (data.length - size.highest_one_bit)
+      sub_sz := size.highest_one_bit
+      add_all other 0 sub_sz (data.length - sub_sz)
 
 
   # infix operator synonym for union of two ps_maps
@@ -363,21 +365,21 @@ O(n log n).
   #
   # This feature creates an empty instance of ps_map.
   #
-  public type.empty => container.ps_map (fuzion.sys.internal_array_init (tuple PK V) 0) 0 0
+  public fixed type.empty => container.ps_map (fuzion.sys.internal_array_init (tuple PK V) 0) 0 0
 
 
   # ps_map -- routine to initialize a partially sorted map from two Sequences
   #
   # This feature creates a pre-initialized instance of ps_map.
   #
-  public type.from_sequence(
+  public type.new(
       # list of keys in the map
       ks Sequence PK,
       # list of values corresponding to keys in the map
       vs Sequence V)
   =>
     for
-      r := (container.ps_map PK V).type.empty, r.add k v
+      r := (container.ps_map PK V).empty, r.add k v
       k in ks
       v in vs
     else

@@ -47,15 +47,14 @@ module net is
   # 0  => arr_result[0] is the socket descriptor
   # -1 => arr_result[0] is an error number
   #
-  bind0   (family, socket_type, protocol i32, host fuzion.sys.Pointer, port fuzion.sys.Pointer, arr_result fuzion.sys.Pointer) i32 is intrinsic
+  bind0   (family, socket_type, protocol i32, host fuzion.sys.Pointer, port fuzion.sys.Pointer, arr_result fuzion.sys.Pointer) i32 => intrinsic
 
 
   # bind a name to a newly created socket, wrapper for bind0 intrinsic
   #
-  module bind    (family, socket_type, protocol i32, host String, port u16) outcome i64 is
-    iarr := fuzion.sys.internal_array_init i64 1
-    r := bind0 family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string port.as_string) iarr.data = 0
-    arr := iarr.as_array
+  module bind    (family, socket_type, protocol i32, host String, port u16) outcome i64 =>
+    arr := fuzion.sys.internal_array_init i64 1
+    r := bind0 family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string port.as_string) arr.data = 0
     if r
       arr[0]
     else
@@ -69,7 +68,7 @@ module net is
   #
   # returns zero on success, anything else is an error.
   #
-  module listen (sd i64, backlog i32) i32 is intrinsic
+  module listen (sd i64, backlog i32) i32 => intrinsic
 
 
   # accept a new connection for given socket descriptor.
@@ -80,12 +79,12 @@ module net is
   # true  => arr_result[0] is the socket descriptor
   # false => arr_result[0] is an error number
   #
-  accept (sd i64, arr_result fuzion.sys.Pointer) bool is intrinsic_constructor
+  accept (sd i64, arr_result fuzion.sys.Pointer) bool => intrinsic_constructor
 
 
   # accept a new connection for given socket descriptor, wrapper for accept intrinsic.
   # returns an error or a new descriptor.
-  module accept(sd i64) outcome i64 is
+  module accept(sd i64) outcome i64 =>
     iarr := fuzion.sys.internal_array_init i64 1
     if accept sd iarr.data then
       iarr[0]
@@ -98,15 +97,14 @@ module net is
   # 0  => arr_result[0] is the socket descriptor
   # -1 => arr_result[0] is an error number
   #
-  connect0(family, socket_type, protocol i32, host fuzion.sys.Pointer, port fuzion.sys.Pointer, arr_result fuzion.sys.Pointer) i32 is intrinsic
+  connect0(family, socket_type, protocol i32, host fuzion.sys.Pointer, port fuzion.sys.Pointer, arr_result fuzion.sys.Pointer) i32 => intrinsic
 
 
   # open and connect a client socket
   #
-  module connect(family, socket_type, protocol i32, host String, port u16) outcome i64 is
-    iarr := fuzion.sys.internal_array_init i64 1
-    res := connect0 family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string port.as_string) iarr.data = 0
-    arr := iarr.as_array
+  module connect(family, socket_type, protocol i32, host String, port u16) outcome i64 =>
+    arr := fuzion.sys.internal_array_init i64 1
+    res := connect0 family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string port.as_string) arr.data = 0
     if res
       arr[0]
     else
@@ -119,17 +117,16 @@ module net is
   # true  => arr_result[0] is the number of bytes read
   # false => arr_result[0] is an error number
   #
-  read(sd i64, arr_data fuzion.sys.Pointer, length i32, arr_result fuzion.sys.Pointer) bool is intrinsic_constructor
+  read(sd i64, arr_data fuzion.sys.Pointer, length i32, arr_result fuzion.sys.Pointer) bool => intrinsic_constructor
 
 
   # read a maximum of max_bytes from descriptor, wrapper for read intrinsic
   # may block if descriptor is set to blocking.
   #
-  module read(descriptor i64, max_bytes i32) outcome (array u8) is
+  module read(descriptor i64, max_bytes i32) outcome (array u8) =>
     buff := fuzion.sys.internal_array_init u8 max_bytes
-    iarr := fuzion.sys.internal_array_init i64 1
-    res := read descriptor buff.data max_bytes iarr.data
-    arr := iarr.as_array
+    arr := fuzion.sys.internal_array_init i64 1
+    res := read descriptor buff.data max_bytes arr.data
     if res
       if arr[0].as_i32 = max_bytes
         buff.as_array
@@ -144,13 +141,13 @@ module net is
   #
   # returns zero on success, anything else is an error.
   #
-  write(sd i64, arr_data fuzion.sys.Pointer, length i32) i32 is intrinsic
+  write(sd i64, arr_data fuzion.sys.Pointer, length i32) i32 => intrinsic
 
 
   # write data to descriptor, wrapper for write intrinsic
   # may block if descriptor is set to blocking.
   #
-  module write(descriptor i64, data array u8) outcome unit is
+  module write(descriptor i64, data array u8) outcome unit =>
     res := write descriptor data.internal_array.data data.length
     if res = -1 then error "error: $res" else unit
 
@@ -159,11 +156,11 @@ module net is
   #
   # returns zero on success, anything else is an error.
   #
-  close0(sd i64) i32 is intrinsic
+  close0(sd i64) i32 => intrinsic
 
 
   # close socket descriptor
-  module close(sd i64) outcome unit is
+  module close(sd i64) outcome unit =>
     res := close0 sd
     if res = -1 then error "error: $res" else unit
 
@@ -179,11 +176,11 @@ module net is
   #           low limit for many modern applications"
   # - poll is in O(n)
   # difficult to implement on windows, read here: https://notgull.github.io/device-afd/
-  set_blocking0(sd i64, blocking i32) i32 is intrinsic
+  set_blocking0(sd i64, blocking i32) i32 => intrinsic
 
 
   # set descriptor to blocking / none blocking mode.
-  module set_blocking(sd i64, blocking bool) outcome unit is
+  module set_blocking(sd i64, blocking bool) outcome unit =>
     res := if blocking then set_blocking0 sd 0 else set_blocking0 sd 1
     if res = 0 then unit else error "error: $res"
 
@@ -196,7 +193,7 @@ module net is
   # returns the length of the IP address written to the array,
   # in bytes (4 for IPv4, 16 for IPv6)
   #
-  get_peer_address(sockfd i64, address fuzion.sys.Pointer) i32 is intrinsic
+  get_peer_address(sockfd i64, address fuzion.sys.Pointer) i32 => intrinsic
 
 
   # get a socket's peer's ip address
@@ -206,7 +203,7 @@ module net is
   #
   # not useful for UDP sockets (information not necessarily available)
   #
-  module get_peer_address(sockfd i64) outcome (list u8) is
+  module get_peer_address(sockfd i64) outcome (list u8) =>
     iarr := fuzion.sys.internal_array_init u8 16
     l := get_peer_address sockfd iarr.data
     iarr.as_array.take l
@@ -219,4 +216,4 @@ module net is
   #
   # not useful for UDP sockets (information not necessarily available)
   #
-  module get_peer_port(sockfd i64) u16 is intrinsic
+  module get_peer_port(sockfd i64) u16 => intrinsic

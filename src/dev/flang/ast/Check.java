@@ -26,15 +26,28 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import dev.flang.util.SourcePosition;
+import dev.flang.util.ANY;
+import dev.flang.util.List;
 
 
 /**
- * Check <description>
+ * Check is the result of parsing a Fuzion `check` statement. A Check is very
+ * short lived since it is only syntax sugar, fuzion code of the form
+ *
+ *   check
+ *     debug: e1
+ *     safety: e2
+ *
+ * will be turned into
+ *
+ *   if (debug: e1)
+ *     fuzion.runtime.fault "debug: e1"
+ *   if (safety: e2)
+ *     fuzion.runtime.fault "safety: e2"
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Check extends Expr
+public class Check extends ANY
 {
 
 
@@ -44,13 +57,7 @@ public class Check extends Expr
   /**
    *
    */
-  Cond cond;
-
-
-  /**
-   * The sourcecode position of this expression, used for error messages.
-   */
-  public final SourcePosition _pos;
+  List<Cond> _conditions;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -61,24 +68,14 @@ public class Check extends Expr
    *
    * @param c
    */
-  public Check(SourcePosition pos, Cond c)
+  public Check(List<Cond> c)
   {
-    this._pos = pos;
-    this.cond = c;
+    this._conditions = c;
   }
 
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * The sourcecode position of this expression, used for error messages.
-   */
-  public SourcePosition pos()
-  {
-    return _pos;
-  }
 
 
   /**
@@ -91,43 +88,18 @@ public class Check extends Expr
    *
    * @return this.
    */
-  public Check visit(FeatureVisitor v, AbstractFeature outer)
+  public Expr asIfs()
   {
-    cond.visit(v, outer);
-    return this;
-  }
-
-
-  /**
-   * visit all the expressions within this Check.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited expressions
-   */
-  public void visitExpressions(ExpressionVisitor v)
-  {
-    super.visitExpressions(v);
-    cond.visitExpressions(v);
-  }
-
-
-  /**
-   * Does this expression consist of nothing but declarations? I.e., it has no
-   * code that actually would be executed at runtime.
-   */
-  public boolean containsOnlyDeclarations()
-  {
-    return false;
-  };
-
-
-  /**
-   * Some Expressions do not produce a result, e.g., a Block that is empty or
-   * whose last expression is not an expression that produces a result.
-   */
-  public boolean producesResult()
-  {
-    return false;
+    var l = new List<Expr>();
+    for (var c : this._conditions)
+      {
+        var p = c.cond.sourceRange();
+        var f = new Call(p, "fuzion");
+        var r = new Call(p, f, "runtime");
+        var e = new Call(p, r, "check_fault", new List<>(new StrConst(p, p.sourceText())));
+        l.add(new If(p, c.cond, new Block(), e));
+      }
+    return new Block(l);
   }
 
 
@@ -139,7 +111,7 @@ public class Check extends Expr
   public String toString()
   {
     return
-      "check "+cond+"\n";
+      "check " + _conditions.toString() + "\n";
   }
 
 }

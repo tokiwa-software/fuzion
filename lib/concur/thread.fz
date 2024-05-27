@@ -33,7 +33,7 @@ is
 
   # type for a spawned thread
   #
-  private:public spawned(private id i64) is
+  private:public spawned(id i64) is
 
     # wait for this thread to finish execution
     #
@@ -70,7 +70,7 @@ is
 # source of thread concurrency.
 #
 public thread =>
-  thread.type.install_default
+  thread.install_default
   thread.env
 
 
@@ -80,4 +80,4 @@ private:public Thread_Handler ref is
 
   # spawn a new thread using given code
   #
-  spawn(code ()->unit) concur.thread.spawned is abstract
+  spawn(code ()->unit) concur.thread.spawned => abstract

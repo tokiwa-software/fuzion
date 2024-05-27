@@ -1,7 +1,0 @@
-currently does not work in interpreter:
-Exception in thread "Thread-13" java.lang.Error: check-condition failed: dev.flang.air.Clazz:getChoiceTag:1804
-	at dev.flang.util.ANY.check(ANY.java:383)
-	at dev.flang.air.Clazz.getChoiceTag(Clazz.java:1804)
-	at dev.flang.be.interpreter.Interpreter.setChoiceField(Interpreter.java:958)
-	at dev.flang.be.interpreter.Interpreter.tag(Interpreter.java:272)
-

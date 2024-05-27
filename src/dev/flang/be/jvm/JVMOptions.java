@@ -29,6 +29,7 @@ package dev.flang.be.jvm;
 import dev.flang.util.FuzionOptions;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 
 /**
@@ -110,6 +111,12 @@ public class JVMOptions extends FuzionOptions
   final ConstantCreation _constantCreationStrategy = ConstantCreation.onUniverseInitialization;
 
 
+  /**
+   * Custom output name when using option `-classes` or `-jvm`.
+   */
+  final Optional<String> _outputName;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -120,7 +127,8 @@ public class JVMOptions extends FuzionOptions
                     boolean Xdfa,
                     boolean run,
                     boolean saveClasses,
-                    boolean saveJAR)
+                    boolean saveJAR,
+                    Optional<String> outputName)
   {
     super(fo);
 
@@ -129,6 +137,7 @@ public class JVMOptions extends FuzionOptions
     this._saveClasses = saveClasses;
     this._saveJAR     = saveJAR;
     this._applicationArgs = fo.getBackendArgs();
+    this._outputName = outputName;
   }
 
 
