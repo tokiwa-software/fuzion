@@ -283,7 +283,7 @@ indentation is
   # 'if' requires the condition to be in a single line: args in next line are ignored
   #
   if callWith0Args
-    arg
+    _ := arg
     say "ok"
   else
     panic "expected true"
@@ -297,7 +297,7 @@ indentation is
 
   # 'if'-condition with '('/')' can be followed by code
   #
-  if (callWith0Args) arg
+  if (callWith0Args) _ := arg
                      say "ok"
   else
     panic "expected true"

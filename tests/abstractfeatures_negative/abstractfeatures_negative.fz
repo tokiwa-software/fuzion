@@ -25,7 +25,7 @@
 
 abstractfeatures_negative is
 
-  opengenerics12 is
+  opengenerics12 =>
     F(A type...) ref is
       f(a A) is abstract                         //  1. should flag an error: abstract feature not implemented
       g(a A) is abstract                         // ok, not called.
@@ -38,7 +38,7 @@ abstractfeatures_negative is
 
   opengenerics12
 
-  opengenerics12a is
+  opengenerics12a =>
     F(A type...) ref is
       f1(a A) is abstract                          //  3. should flag an error: abstract feature not implemented
       f2(a A) is abstract                          //  4. should flag an error: abstract feature not implemented
@@ -56,7 +56,7 @@ abstractfeatures_negative is
 
   opengenerics12a
 
-  opengenerics12b is
+  opengenerics12b =>
     F(A type...) ref is
       f(a A) is abstract                           //  7. should flag an error: abstract feature not implemented
       g(a A) is abstract                           // ok, not called.
@@ -68,7 +68,7 @@ abstractfeatures_negative is
 
   opengenerics12b
 
-  opengenerics12c is
+  opengenerics12c =>
     F(A type...) ref is
       f1(a A) is abstract                          //  9. should flag an error: abstract feature not implemented
       f2(a A) is abstract                          // 10. should flag an error: abstract feature not implemented

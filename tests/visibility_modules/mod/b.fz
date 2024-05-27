@@ -24,11 +24,11 @@
 public b : a is
 
   # reuse hello without redef, hello is private in a
-  public hello is
+  public hello =>
     say "hello from b"
 
-  public hello3 is
-    _ := hello2 # calling hello2 visibile only in module
+  public hello3 =>
+    hello2 # calling hello2 visibile only in module
 
   public ret_a a =>
     a

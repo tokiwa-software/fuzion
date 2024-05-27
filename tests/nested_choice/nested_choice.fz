@@ -25,7 +25,7 @@
 nested_choice =>
   issue492 =>
 
-    simple is
+    simple =>
       the_choice : choice i32 f64 is
         redef as_string =>
           match the_choice.this
@@ -45,7 +45,7 @@ nested_choice =>
 
 
 
-    assign_choice_to_nested_choice is
+    assign_choice_to_nested_choice =>
       bool_or_u64 : choice u64 bool is
 
       tripel_nested_choice : choice i32 bool_or_u64 is
@@ -74,7 +74,7 @@ nested_choice =>
 
 
 
-    only_references is
+    only_references =>
       My_Ref1 ref is
         redef as_string => "ref1"
       My_Ref2 ref is
@@ -109,7 +109,7 @@ nested_choice =>
 
 
 
-    mix_ref_and_non_ref is
+    mix_ref_and_non_ref =>
       choice_mixed : choice i32 (choice String u64) is
         redef as_string =>
           match choice_mixed.this

@@ -23,7 +23,7 @@
 
 ryu_test =>
 
-  f64_test is
+  f64_test =>
 
     say "ryū test f64"
 
@@ -75,7 +75,7 @@ ryu_test =>
       say "--"
 
 
-  f32_test is
+  f32_test =>
 
     say "ryū test f32"
 

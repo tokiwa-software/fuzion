@@ -37,7 +37,7 @@ floating_point_numbers is
 
 
   # shared tests for f32/f64
-  generic_tests(T type: float) is
+  generic_tests(T type: float) =>
     zero := T.zero
     one := T.one
     two := one + one

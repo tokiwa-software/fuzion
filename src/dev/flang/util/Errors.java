@@ -530,7 +530,7 @@ public class Errors extends ANY
 
 
   /**
-   * Record the given error found during compilation and exit immediately with
+   * Record the given error during compilation and exit immediately with
    * exit code 1.
    *
    * @param pos source code position where this error occurred, may be null
@@ -548,7 +548,7 @@ public class Errors extends ANY
 
 
   /**
-   * Record the given runtime error found and exit immediately with exit code 1.
+   * Record the given runtime error and exit immediately with exit code 1.
    *
    * @param s the error message, should not contain any LF or any case specific details
    */
@@ -559,7 +559,7 @@ public class Errors extends ANY
 
 
   /**
-   * Record the given runtime error found and exit immediately with exit code 1.
+   * Record the given runtime error and exit immediately with exit code 1.
    *
    * @param s the error message, should not contain any LF or any case specific details
    *
@@ -567,12 +567,36 @@ public class Errors extends ANY
    */
   public static void runTime(String s, String detail)
   {
-    runTime(null, s, detail);
+    runTime((SourcePosition) null, s, detail);
   }
 
 
   /**
-   * Record the given runtime error found and exit immediately with exit code 1.
+   * Record the given runtime error and exit immediately with exit code 1.
+   *
+   * @param k the kind of error we encountered, currently "postcondition" is the
+   * only supported kind that is treated specially.
+   *
+   * @param msg a message to be shown
+   *
+   * @param stackTrace a stack trace of the location of the problem.
+   */
+  public static void runTime(String kind, String msg, String stackTrace)
+  {
+    if (kind.equals("postcondition"))
+      {
+        msg = "Postcondition `" + msg + "` does not hold after call";
+      }
+    else
+      {
+        msg = "FATAL FAULT `" + kind + "`: " + msg;
+      }
+    runTime((SourcePosition) null, msg, stackTrace);
+  }
+
+
+  /**
+   * Record the given runtime error and exit immediately with exit code 1.
    *
    * @param pos source code position where this error occurred, may be null
    *

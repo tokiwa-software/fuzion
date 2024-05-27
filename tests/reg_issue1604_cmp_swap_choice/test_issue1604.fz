@@ -1,6 +1,6 @@
 test_issue1604 is
 
-  test_cas0 is
+  test_cas0 =>
 
     c : choice large small is
 
@@ -22,7 +22,7 @@ test_issue1604 is
 
 
 
-  test_cas is
+  test_cas =>
 
     c : choice large small is
 
@@ -70,4 +70,4 @@ test_issue1604 is
 
 
   test_cas0
-  _ := test_cas
+  test_cas

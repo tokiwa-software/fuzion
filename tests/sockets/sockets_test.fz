@@ -82,7 +82,7 @@ sockets_test is
 
   # client
   #
-  client(family net.family.val, protocol net.protocol.val, host String, port u16, num i32) is
+  client(family net.family.val, protocol net.protocol.val, host String, port u16, num i32) =>
 
     rh : net.Request_Handler String is
 
@@ -148,7 +148,7 @@ sockets_test is
   for f in families do
     for p in protocols do
       time.nano.sleep (time.durations.s 1)
-      concur.thread.spawn ()->
+      _ := concur.thread.spawn ()->
         _ := server f p
 
   time.nano.sleep (time.durations.seconds 10)

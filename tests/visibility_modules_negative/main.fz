@@ -64,7 +64,7 @@ public m =>
 
 
   # features from different modules
-  b.mod_pub // should flag an error should not be callable
+  _ := b.mod_pub // should flag an error should not be callable
   feat1(arg1 b.mod_pub) is // even though type is usable
   b.get_mod_pub.child // and we can call feature on the type
 

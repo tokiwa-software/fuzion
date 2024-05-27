@@ -32,10 +32,10 @@ stdintest =>
 
     a := read 1
     # read 0 should not read anything
-    read 0
+    _ := read 0
     b := read 1
     # read 0 should not read anything
-    read 0
+    _ := read 0
     # read 1 utf8 codepoint
     smiley := read 1
 
