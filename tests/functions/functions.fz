@@ -34,7 +34,7 @@ functions is
         r
 
     y(f ()->i32) is {}
-    x0(f0 Function i32 Any i32) is
+    x0(f0 Function i32 Any i32) =>
       say "here 1x0---------------"
       r1 i32 := f0.call "hallo" 3
       say "here 2x0---------------"
@@ -44,7 +44,7 @@ functions is
       say "$r1  $r2"
       say "here 1x0 done---------------"
 
-    x(f0 (Any, i32) -> i32) is
+    x(f0 (Any, i32) -> i32) =>
       say "here 1x---------------"
       r1 i32 := f0.call "hallo" 3
       g (Any, i32) -> i32 := f0;

@@ -32,19 +32,18 @@
 #
 redefineAsVoid is
 
- p is
-  f String => abstract
-  res := f
-  say "FAILED: $res!"
+  p is
+    f String => abstract
+    res := f
+    say "FAILED: $res!"
 
- h : p is
+  h : p is
 
-  # void is assignment compatible to anything, so we can redefine f
-  # to return void!
-  #
-  redef f void =>
-    say "PASSED: exiting f that was redefined to return void."
-    exit 0
+    # void is assignment compatible to anything, so we can redefine f
+    # to return void!
+    #
+    redef f void =>
+      say "PASSED: exiting f that was redefined to return void."
+      exit 0
 
- h
- unit
+  _ := h

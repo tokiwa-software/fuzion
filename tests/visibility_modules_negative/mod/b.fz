@@ -25,7 +25,7 @@ public b : a is
 
   module:public mod_pub is
     say "should not be directly callable from outside of module"
-    public child is
+    public child =>
       say "child"
 
   public get_mod_pub => mod_pub

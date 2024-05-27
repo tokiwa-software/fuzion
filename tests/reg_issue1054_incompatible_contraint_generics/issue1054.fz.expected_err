@@ -1,7 +1,7 @@
 
---CURDIR--/issue1054.fz:30:3: error 1: Incompatible type parameter
-  c (floaty f32) // bad
---^
+--CURDIR--/issue1054.fz:30:8: error 1: Incompatible type parameter
+  _ := c (floaty f32) // bad
+-------^
 formal type parameter 'T' with constraint 'ex.this.floaty f64'
 actual type parameter 'ex.this.floaty f32'
 

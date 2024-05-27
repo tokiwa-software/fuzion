@@ -33,12 +33,12 @@ tupletest is
       say "FAILED: $msg"
       _ := set_exit_code 1
 
-  p(s Any) is say s
+  p(s Any) => say s
 
   // start with some generic type inference tests, which are a pre-requisite for tuples to work
   g1(A type, a A) is
-  g1 "Hello" // should infer String
-  g1 123 // should infer i32
+  _ := g1 "Hello" // should infer String
+  _ := g1 123 // should infer i32
   chck g1("Hello").a.codepoint_length=5 "g1 A infer A==string"
   chck g1(123).a=123 "g1 A infer A==i32"
 

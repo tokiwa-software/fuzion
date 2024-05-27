@@ -34,10 +34,10 @@ testLists is
     OptNode : choice Node Nil is
 
     h OptNode := Nil
-    add(e T) is
+    add(e T) =>
       set h := Node e h Nil
 
-    print is
+    print =>
       // for   -- NYI: must update i in the loop prolog
       i := h;
       while (i ? Node => { true } | Nil => false)   // NYI: This screams for recursion

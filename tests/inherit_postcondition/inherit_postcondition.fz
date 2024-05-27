@@ -56,7 +56,7 @@ test_postcondition is
       say "PASS: $order"
     else
       say "FAIL: EXPECTED $expected GOT $order"
-      set_exit_code 1
+      _ := set_exit_code 1
     order <- ""
 
 
@@ -222,16 +222,16 @@ test_postcondition is
     =>
       4716
 
-  post_accessing_result.f
-  post_accessing_result_child.f
-  post_accessing_result_child2.f
+  _ := post_accessing_result.f
+  _ := post_accessing_result_child.f
+  _ := post_accessing_result_child2.f
 
 
   # ------ accesssing postconditions in a module
 
-  mod.post_accessing_result.f
-  mod.post_accessing_result_child.f
-  mod.post_accessing_result_child2.f
+  _ := mod.post_accessing_result.f
+  _ := mod.post_accessing_result_child.f
+  _ := mod.post_accessing_result_child2.f
 
   inh_module1 : mod.post_accessing_result is
     redef f

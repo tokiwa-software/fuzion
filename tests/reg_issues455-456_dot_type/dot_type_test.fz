@@ -44,7 +44,6 @@ testTypes is
   x := testTypes.t.type
   say x                      # crashes
 
-testType0
-testType1
-testTypes
-unit
+_ := testType0
+_ := testType1
+_ := testTypes
