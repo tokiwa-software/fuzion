@@ -28,6 +28,7 @@
 # A simple negative test using incompatible actual type argument
 #
 checkGenericConstraint is
+
   m32 is
     h i32 => 3
 
@@ -35,7 +36,6 @@ checkGenericConstraint is
     h i32 => abstract
 
   hm (T type : H, x T) is
-    x.h
-    unit
+    _ := x.h
 
   m := hm m32 m32     # should produce error, m32 is not compatible to H

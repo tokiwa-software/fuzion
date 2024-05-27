@@ -106,6 +106,7 @@ public class Runtime extends ANY
   public static final String PRECONDITION_NAME = "fzPrecondition";
   public static final String ROUTINE_NAME      = "fzRoutine";
   public static final String CLASS_PREFIX      = "fzC_";
+  public static final String CLASS_PREFIX_WITH_ID = "fzC__L";
 
 
   /**
@@ -720,7 +721,17 @@ public class Runtime extends ANY
         var cl = s.getClassName();
         if (r != null && cl.startsWith(CLASS_PREFIX))
           {
-            cl = cl.substring(CLASS_PREFIX.length());
+            int start;
+            if (cl.startsWith(CLASS_PREFIX_WITH_ID))
+              {
+                var pre = CLASS_PREFIX_WITH_ID.length();
+                start = Math.max(cl.indexOf("_", pre)+1, pre);
+              }
+            else
+              {
+                start = CLASS_PREFIX.length();
+              }
+            cl = cl.substring(start);
             var str = r + cl;
             if (str.equals(last))
               {

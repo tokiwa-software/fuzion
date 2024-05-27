@@ -289,8 +289,8 @@ partial_application is
 
   test "test     ambig        " (test     ambig        ) "#32168#"
   test "test x->(ambig 4711 x)" (test x->(ambig 4711 x)) "4711 32168"
-  test ambig
-  test x->(ambig 4711 x)
+  _ := test ambig
+  _ := test x->(ambig 4711 x)
   am1 := test     ambig
   am2 := test x->(ambig 64 x)
   test "test am1              " am1                      "#32168#"

@@ -27,12 +27,10 @@
 issue580 is
   abort0(T type, a T) is
 
-  a(T type, b T | abort0 T) is
+  a(T type, b T | abort0 T) =>
     match b
       T => say "t"
       abort0 => say "i"
 
   a 2
   a i32 (abort0 2)
-
-  unit

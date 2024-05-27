@@ -28,7 +28,7 @@ choice_negative is
   cyclic7 is
     A is
       x A | i32 | String := "Hello"  // 4. should flag an error: cyclic choice
-      s is
+      s =>
         match x
           a A      => say "A.x is A"
           i i32    => say "A.x is i32"
@@ -40,7 +40,7 @@ choice_negative is
     rA ref is
     A : rA is
       x rA | i32 | String := "Hello"
-      s is
+      s =>
         match x
           a rA     => say "A.x is A"
           i i32    => say "A.x is i32"
@@ -51,7 +51,7 @@ choice_negative is
   cyclic9 is
     A is
       x i32 | A | String := "Hello"  // 5. should flag an error: cyclic choice
-      s is
+      s =>
         match x
           a A      => say "A.x is A"
           i i32    => say "A.x is i32"
@@ -63,7 +63,7 @@ choice_negative is
     rA ref is
     A : rA is
       x i32 | rA | String := "Hello"
-      s is
+      s =>
         match x
           a rA     => say "A.x is A"
           i i32    => say "A.x is i32"
@@ -74,7 +74,7 @@ choice_negative is
   cyclic11 is
     A is
       x i32 | String | A := "Hello"  // 6. should flag an error: cyclic choice
-      s is
+      s =>
         match x
           a A      => say "A.x is A"
           i i32    => say "A.x is i32"
@@ -86,7 +86,7 @@ choice_negative is
     rA ref is
     A : rA is
       x i32 | String | rA := "Hello"
-      s is
+      s =>
         match x
           a rA  => say "A.x is A"
           i i32    => say "A.x is i32"

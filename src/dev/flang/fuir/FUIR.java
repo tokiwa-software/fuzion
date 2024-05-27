@@ -1095,8 +1095,7 @@ hw25 is
     var cc = clazz(cl);
     var ff = cc.feature();
     var ccontract = ff.contract();
-    var cond = (ccontract != null && ck == ContractKind.Pre  ? ccontract.req :
-                ccontract != null && ck == ContractKind.Post ? ccontract.all_postconditions() : null);
+    var cond = (ccontract != null && ck == ContractKind.Pre  ? ccontract.req : null);
     // NYI: PERFORMANCE: Always iterating the conditions results in performance
     // quadratic in the number of conditions.  This could be improved by
     // filtering BoolConst.TRUE once and reusing the resulting cond.

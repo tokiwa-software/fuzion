@@ -152,12 +152,14 @@ public class Names extends ANY implements ClassFileConstants
   static final String PRECONDITION_NAME = "fzPrecondition";           // method with code for the precondition
   static final String ROUTINE_NAME      = "fzRoutine";                // method with code for the routine
   static final String COMBINED_NAME     = "fzPreconditionAndRoutine"; // method that calls precondition followed by routine, to reduce code size
+  static final String NAME_ID           = "_L";
   static
   {
     if (CHECKS) check
       (PRECONDITION_NAME.equals(Runtime.PRECONDITION_NAME),
        ROUTINE_NAME.equals(Runtime.ROUTINE_NAME),
-       CLASS_PREFIX.equals(Runtime.CLASS_PREFIX));
+       CLASS_PREFIX.equals(Runtime.CLASS_PREFIX),
+       (CLASS_PREFIX + NAME_ID).equals(Runtime.CLASS_PREFIX_WITH_ID));
   }
 
   /**
@@ -341,7 +343,7 @@ public class Names extends ANY implements ClassFileConstants
           if (res.length() > MAX_JAVA_NAME_LENGTH)
             {
               var p = _prefix;
-              var s = p + "_L" + num + "_";
+              var s = p + NAME_ID + num + "_";
               res = s +
                 res.substring(p.length(), p.length() + 10) + "__" +
                 res.substring(res.length() - MAX_JAVA_NAME_LENGTH + s.length() + 12);

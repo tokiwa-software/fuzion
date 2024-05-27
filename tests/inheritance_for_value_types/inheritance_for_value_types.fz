@@ -58,9 +58,8 @@ inheritance_for_value_types is
   c : a is
     redef x (msg String, expected i32) unit => chck msg expected=3
 
-  v (v a.q) is
-    v.xx
-    unit
+  v (v a.q) =>
+    _ := v.xx
 
   rx (rv ra, msg String, expected i32) unit =>
     rv.x msg expected

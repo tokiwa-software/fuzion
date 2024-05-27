@@ -55,6 +55,7 @@ import java.util.stream.Collectors;
 
 import dev.flang.be.jvm.runtime.Runtime.SystemErrNo;
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
 
 
 /**
@@ -70,6 +71,12 @@ public class Intrinsics extends ANY
   /*-------------------------  static methods  --------------------------*/
 
 
+  public static void fuzion_sys_fatal_fault0(Object kind, Object msg)
+  {
+    Errors.runTime(Runtime.utf8ByteArrayDataToString((byte[]) kind),
+                   Runtime.utf8ByteArrayDataToString((byte[]) msg),
+                   Runtime.stackTrace());
+  }
   public static long    fuzion_sys_stdin_stdin0 () { return Runtime._stdin;  }
   public static long    fuzion_sys_out_stdout   () { return Runtime._stdout; }
   public static long    fuzion_sys_err_stderr   () { return Runtime._stderr; }

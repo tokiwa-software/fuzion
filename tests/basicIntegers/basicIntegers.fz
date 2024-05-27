@@ -48,7 +48,7 @@ basicIntegers =>
   test_u16 (a, b i64) unit => test u16 a.low16bits            b.low16bits
   test_u8  (a, b i64) unit => test u8  a.low8bits             b.low8bits
 
-  testAll (a, b i64) is
+  testAll (a, b i64) =>
     test_i64 a b
     test_i32 a b
     test_i16 a b

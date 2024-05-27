@@ -4,7 +4,7 @@
 --------^^^
 For call to SquareRoot.sqrt#1
 Call stack:
-SquareRoot: --CURDIR--/SquareRoot.fz:45:21:
+SquareRoot: --CURDIR--/SquareRoot.fz:44:21:
   say "sqrt(-16) = {sqrt(-16)}" // 1. should flag an error, precondition failed
 --------------------^^^^
 
