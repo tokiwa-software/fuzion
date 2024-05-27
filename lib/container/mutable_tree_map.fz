@@ -341,7 +341,7 @@ is
   #
   public type.singleton(k KEY, v VAL) container.mutable_tree_map LM KEY VAL =>
     new_map := empty
-    new_map.put k v
+    _ := new_map.put k v
 
     new_map
 
@@ -359,9 +359,8 @@ is
   #
   public type.from_array(kvs array (tuple KEY VAL), freeze bool) container.mutable_tree_map LM KEY VAL =>
     new_map := empty
-    kvs.for_each (x ->
-      new_map.put x.values.0 x.values.1
-      unit)
+    kvs.for_each x->
+      _ := new_map.put x.values.0 x.values.1
 
     if freeze
       new_map.freeze
