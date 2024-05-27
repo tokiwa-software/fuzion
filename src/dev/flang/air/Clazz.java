@@ -436,6 +436,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     _argumentFields = isBoxed() ? NO_CLAZZES : determineArgumentFields();
     _actualGenerics = determineActualGenerics();
     _resultField    = isBoxed() ? null : determineResultField();
+    _asValue        = determineAsValue();
     /*
      * Calls may be compile time constants.
      * In this case we need the result clazz
@@ -445,7 +446,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
      * ex is
      *   say (u64 4, u8 1)
      */
-    _asValue        = determineAsValue();
     _resultClazz    = /* isBoxed() ? null : */ determineResultClazz();
     _outerRef       = isBoxed() ? null : determineOuterRef();
   }
