@@ -50,7 +50,7 @@ public stat(ps Stat_Handler) : simple_effect is
     replace
     # will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     res := fuzion.sys.internal_array_init i64 4
-    if ps.stats (fuzion.sys.c_string path) res.data
+    if ps.stats path.as_pointer res.data
       meta_data res[0] res[1] (res[2] = 1) (res[3] = 1)
     else
       error "stat error {res[0]} for {path}"
@@ -66,7 +66,7 @@ public stat(ps Stat_Handler) : simple_effect is
     replace
     # will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     res := fuzion.sys.internal_array_init i64 4
-    if ps.stats (fuzion.sys.c_string path) res.data
+    if ps.stats path.as_pointer res.data
       meta_data res[0] res[1] (res[2] = 1) (res[3] = 1)
     else
       error "lstat error {res[0]} for {path}"

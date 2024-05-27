@@ -233,12 +233,7 @@ public class Runtime extends ANY
    */
   public static String utf8ByteArrayDataToString(byte[] ba)
   {
-    var l = 0;
-    while (l < ba.length && ba[l] != 0)
-      {
-        l++;
-      }
-    return new String(ba, 0, l, StandardCharsets.UTF_8);
+    return new String(ba, StandardCharsets.UTF_8);
   }
 
 

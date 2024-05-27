@@ -69,7 +69,7 @@ module fileio is
                         # the (relative or absolute) file name, using platform specific path separators
                         path String) outcome i64 =>
     md := fuzion.sys.internal_array_init i64 4
-    if stats (fuzion.sys.c_string path) md.data then md[0]
+    if stats path.as_pointer md.data then md[0]
     else error "error getting file size"
 
 
@@ -104,7 +104,7 @@ module fileio is
   module delete(
                 # the (relative or absolute) file name, using platform specific path separators
                 path String) outcome unit =>
-    arr := fuzion.sys.c_string path
+    arr := path.as_pointer
     if delete arr unit
       unit
     else
@@ -129,8 +129,8 @@ module fileio is
               old_path String,
               # the new (relative or absolute) file name, using platform specific path separators
               new_path String) outcome unit =>
-    arr0 := fuzion.sys.c_string old_path
-    arr1 := fuzion.sys.c_string new_path
+    arr0 := old_path.as_pointer
+    arr1 := new_path.as_pointer
     if move arr0 arr1 unit
       unit
     else
@@ -153,7 +153,7 @@ module fileio is
   module create_dir(
                     # the (relative or absolute) dir name, using platform specific path separators
                     path String) outcome unit =>
-    arr := fuzion.sys.c_string path
+    arr := path.as_pointer
     if create_dir arr unit
       unit
     else
@@ -201,7 +201,7 @@ module fileio is
               # a flag to speicify the open method (Read: 0, Write: 1, Append: 2)
               flag i8) outcome i64 =>
     open_results := fuzion.sys.internal_array_init i64 2  # [file descriptor, error number]
-    open (fuzion.sys.c_string path) open_results.data flag
+    open path.as_pointer open_results.data flag
     if open_results[1] = i64 0
       open_results[0]
     else
@@ -349,7 +349,7 @@ module fileio is
 
   # open the directory given by path
   #
-  # accepts as arguments a path (processed by fuzion.sys.c_string) and a pointer to
+  # accepts as arguments a path and a pointer to
   # an array of two i64.
   #
   # after calling, the array will contain an integer that is intended to be used as an
@@ -366,7 +366,7 @@ module fileio is
   #
   module open_dir(path String) outcome i64 =>
     open_results := fuzion.sys.internal_array_init i64 2  # [file descriptor, error number]
-    open_dir (fuzion.sys.c_string path) open_results.data
+    open_dir path.as_pointer open_results.data
     if open_results[1] = i64 0
       open_results[0]
     else

@@ -28,10 +28,10 @@
 module sys is
 
 
-  # Create a 0-terminated internal array of bytes from
+  # Create an internal array of bytes from
   # a given string.
   #
   # This is used to pass strings down to intrinsics
   #
-  module c_string (s String) =>
-    (s + codepoint 0).utf8.as_array.internal_array.data
+  module String.as_pointer =>
+    String.this.utf8.as_array.internal_array.data

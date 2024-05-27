@@ -737,8 +737,14 @@ public class Intrinsics extends ANY
     put("fuzion.sys.internal_array_init.alloc", (c,cl,outer,in) ->
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
-          return CExpr.call(c.malloc(),
-                            new List<>(CExpr.sizeOfType(c._types.clazz(gc)).mul(A0))).ret();
+          var tmp = new CIdent("tmp");
+          return CStmnt.seq(
+            CExpr.decl("void *", tmp,
+              CExpr.call(c.malloc(), new List<>(CExpr.sizeOfType(c._types.clazz(gc)).mul(A0).add(CIdent.int32const(1))))),
+            CExpr.lineComment("set last byte to zero."),
+            tmp.castTo("uint8_t *").index(CExpr.sizeOfType(c._types.clazz(gc)).mul(A0)).assign(CIdent.uint8const(0)),
+            tmp.ret()
+          );
         });
     put("fuzion.sys.internal_array.setel", (c,cl,outer,in) ->
         {

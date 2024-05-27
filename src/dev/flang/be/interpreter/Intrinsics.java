@@ -203,18 +203,12 @@ public class Intrinsics extends ANY
 
 
   /**
-   * Create a Java string from 0-terminated given byte array.
+   * Create a Java string from given byte array.
    */
   private static String utf8ByteArrayDataToString(Value internalArray)
   {
     var strA = internalArray.arrayData();
-    var ba = (byte[]) strA._array;
-    var l = 0;
-    while (l < ba.length && ba[l] != 0)
-      {
-        l++;
-      }
-    return new String(ba, 0, l, StandardCharsets.UTF_8);
+    return new String((byte[]) strA._array, StandardCharsets.UTF_8);
   }
 
   /**
