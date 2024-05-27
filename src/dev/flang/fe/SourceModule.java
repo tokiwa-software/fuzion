@@ -1760,7 +1760,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
    * @parm f the feature whose contract should be checked.
    */
   private void checkContractAccesses(AbstractFeature f)
-  {
+  { //NYI: CLEANUP:  remove, has no effect.
   }
 
 
