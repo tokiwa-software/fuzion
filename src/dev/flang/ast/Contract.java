@@ -291,6 +291,10 @@ public class Contract extends ANY
         c2 = c2.resolveTypes(res, outer);
         args.add(c2);
       }
+    else if (outer.isConstructor())
+      {
+        args.add(new Current(p, outer));
+      }
     return callPostCondition(res, outer, outer, args);
   }
 
@@ -356,7 +360,9 @@ public class Contract extends ANY
         var pos = fc._hasPost != null ? fc._hasPost : f.pos();
         var resultField = new Feature(pos,
                                       Visi.PRIV,
-                                      f.resultType(), // NYI: replace type parameter of f by type parameters of _postFeature!
+                                      f.isConstructor()
+                                      ? f.thisType()
+                                      : f.resultType(), // NYI: replace type parameter of f by type parameters of _postFeature!
                                       FuzionConstants.RESULT_NAME)
           {
             public boolean isResultField() { return true; }
