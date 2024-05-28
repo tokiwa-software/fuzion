@@ -175,7 +175,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    */
   public UnresolvedType(HasSourcePosition pos, String n, List<AbstractType> g, AbstractType o)
   {
-    this(pos, n,g,o,RefOrVal.LikeUnderlyingFeature);
+    this(pos, n, g, o, RefOrVal.LikeUnderlyingFeature);
   }
 
 
