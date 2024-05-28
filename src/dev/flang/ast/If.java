@@ -62,6 +62,8 @@ public class If extends ExprWithPos
 
   public AbstractType _type;
 
+  private boolean _assignedToField = false;
+
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -251,6 +253,7 @@ public class If extends ExprWithPos
       {
         elseBlock = elseBlock.assignToField(res, outer, r);
       }
+    _assignedToField = true;
     return this;
   }
 
@@ -332,6 +335,17 @@ public class If extends ExprWithPos
               new Case(elseBlock.pos(), new List<AbstractType>(Types.resolved.f_FALSE.selfType()), elseBlock));
           }
         };
+  }
+
+
+
+  /**
+   * Some Expressions do not produce a result, e.g., a Block that is empty or
+   * whose last expression is not an expression that produces a result.
+   */
+  public boolean producesResult()
+  {
+    return !_assignedToField;
   }
 
 

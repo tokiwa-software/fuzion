@@ -99,9 +99,9 @@ is
     rotate (d f64) => G2D g tx ty rot+d
 
     three_times(draw (G2D, Java.java.awt.Color) -> T) =>
-      draw  G2D.this                           C1
-      draw (G2D.this.rotate -2.0*f64.π/3) C2
-      draw (G2D.this.rotate -4.0*f64.π/3) C3
+      _ := draw  G2D.this                      C1
+      _ := draw (G2D.this.rotate -2.0*f64.π/3) C2
+      _ := draw (G2D.this.rotate -4.0*f64.π/3) C3
 
     # Draw a filled arc of color c, center at (x,y), radius r, starting at angle
     # start and extending of len degrees.
@@ -153,11 +153,11 @@ is
             e error => say "error: $e"
             b Java.java.awt.Button =>
               b.setBounds 50 50 50 50
-              f.add_Ljava_7_awt_7_Component_s_ b
+              _ := f.add_Ljava_7_awt_7_Component_s_ b
               f.setVisible true
               g := f.getGraphics
               say "g is "+g.getClass.toString
-              (G2D g 400 400 0).draw_logo
+              _ := (G2D g 400 400 0).draw_logo
               f.setVisible true
 
         else  # draw logo
@@ -165,12 +165,12 @@ is
 
           # NYI: cannot redefine Frame.paint, so instead we use a hack: wait for 200ms
           # for the Frame to perform its paint(), and then just draw over it:
-          java.lang.Thread.sleep_J 200
-          (G2D f.getGraphics 400 400 0).draw_logo
+          _ := java.lang.Thread.sleep_J 200
+          _ := (G2D f.getGraphics 400 400 0).draw_logo
 
         timeout := ((envir.args.nth 1).or_else "50000").parse_i64.val 0
-        java.lang.Thread.sleep_J timeout
-        _ := f.setVisible false
+        _ := java.lang.Thread.sleep_J timeout
+        f.setVisible false
 
   gfx.this.gfx
   exit 0   # explicitly exit since JVM would otherwise keep us alive

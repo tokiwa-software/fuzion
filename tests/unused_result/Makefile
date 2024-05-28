@@ -17,24 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test redef_choice_result
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# Regression test for issue #8: https://github.com/tokiwa-software/fuzion/issues/8
-#
-# A simple negative test returning 'false' as 'option V'
-#
-bugOptionFalse is
-
-  x(V type)
-  is
-    b(l i32) option V =>
-      if l > 0
-        false  # SHOULD FLAG AN ERROR!
-      else
-        b l+1
-
-  _ := (x unit).b 0
+override NAME = unused_result
+include ../simple.mk

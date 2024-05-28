@@ -77,6 +77,6 @@ webserver_native is
   #
   for n in 1..
   while net.server.is_active
-    net.server.accept (rh n)
+    _ := net.server.accept (rh n)
 
 
