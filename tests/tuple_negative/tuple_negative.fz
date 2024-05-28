@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-tuple_negative {
+tuple_negative is
 
 
   chck (b bool, msg String) unit =>
@@ -252,4 +252,3 @@ tuple_negative {
 
   exit
 
-}

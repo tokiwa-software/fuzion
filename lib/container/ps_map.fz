@@ -160,14 +160,15 @@ O(n log n).
           ps_map ndata.get nsize dest+sz
         else
           tmp := array (tuple PK V) sz (i -> ndata.get[dest+i])
-          for
-            i1 := 0, if (use1) i1+1 else i1
-            i2 := 0, if (use1) i2   else i2+1
-            use1 := i1 < sz && ((i2 ≥ sz) || data[ole + i1].values.0 < tmp[i2].values.0)
-            e := if use1 then data[ole + i1] else tmp[i2]
-          do
-            ndata.get[dest + i1 + i2] := e
-          until i1 + i2 = 2*sz-1
+          _ :=
+            for
+              i1 := 0, if (use1) i1+1 else i1
+              i2 := 0, if (use1) i2   else i2+1
+              use1 := i1 < sz && ((i2 ≥ sz) || data[ole + i1].values.0 < tmp[i2].values.0)
+              e := if use1 then data[ole + i1] else tmp[i2]
+            do
+              ndata.get[dest + i1 + i2] := e
+            until i1 + i2 = 2*sz-1
           join (fill - sz - 2*(fill - ole - sz) - 2*sz) dest 2*sz
 
       if (nsize & size) = 0
@@ -225,14 +226,15 @@ O(n log n).
       if sz ≤ size
         if (size & sz) != 0
           tmp := array PK rsz (i -> r[i])
-          for
-            i1 := 0, if (use1) i1+1 else i1
-            i2 := 0, if (use1) i2   else i2+1
-            use1 := i1 < sz && ((i2 ≥ rsz) || (data[ole + i1].values.0 < tmp[i2]))
-            e := if (use1) data[ole + i1].values.0 else tmp[i2]
-          do
-            r[i1 + i2] := e
-          until i1 + i2 = sz+rsz-1
+          _ :=
+            for
+              i1 := 0, if (use1) i1+1 else i1
+              i2 := 0, if (use1) i2   else i2+1
+              use1 := i1 < sz && ((i2 ≥ rsz) || (data[ole + i1].values.0 < tmp[i2]))
+              e := if (use1) data[ole + i1].values.0 else tmp[i2]
+            do
+              r[i1 + i2] := e
+            until i1 + i2 = sz+rsz-1
           join (ole - skip - 2*sz) 2*sz rsz+sz (skip + sz + skip)
         else
           join ole-sz 2*sz rsz (skip + sz + skip)

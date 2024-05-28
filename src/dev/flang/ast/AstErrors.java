@@ -1024,8 +1024,7 @@ public class AstErrors extends ANY
       }
     else
       {
-        check
-          (false);
+        fatal("AstErrors.cannotRedefine called with existing: "+existing.kind()+" f: "+f.kind());
       }
   }
 
@@ -1095,19 +1094,6 @@ public class AstErrors extends ANY
   {
     redefineContractMustUseElseOrThen(pos, f, PreOrPost.Post);
   }
-
-  public static void postConditionMayNotAccessInnerFeature(AbstractFeature f,
-                                                           AbstractCall access)
-  {
-    var cf = access.calledFeature();
-    error(access.pos(),
-          "Postcondition of feature that is not a constructor may not access any features except the result or argument or implicit outer reference fields.",
-          "Accessed feature: " + s(cf) + "\n" +
-          "The reason is that postconditions may be inherited by a redefinition of " + s(f) + " while that redefinition "+
-          "may not have access to " + s(cf) + ".\n" +
-          "To solve this, it might help to use a fully qualified call as in "+code("universe." + cf.qualifiedName()) + ".");
-  }
-
 
   static void ambiguousTargets(SourcePosition pos,
                                FeatureAndOuter.Operation operation,
@@ -1430,13 +1416,6 @@ public class AstErrors extends ANY
           "Formal type parameter declared in " + generic.typeParameter().pos().show() + "\n");
   }
 
-  static void refToChoice(SourcePosition pos)
-  {
-    error(pos,
-          "ref to a choice type is not allowed",
-          "a choice is always a value type");
-  }
-
   static void genericsMustBeDisjoint(SourcePosition pos, AbstractType t1, AbstractType t2)
   {
     error(pos,
@@ -1621,6 +1600,17 @@ public class AstErrors extends ANY
     error(pos,
           "Choice feature must not be abstract",
           "A choice feature must be a normal feature with empty code section");
+  }
+
+  static void choiceMustNotHaveResultType(SourcePosition pos, ReturnType rt)
+  {
+    var rtPos = rt.posOrNull();
+    error(pos,
+          "Choice feature must not have a result type",
+          "A choice feature cannot be called, so it does not make sense to define a result type of a choice.\n" +
+          "Result type " + s(rt) + (rtPos != null
+                                    ? " at " + rtPos.show()
+                                    : ""));
   }
 
   static void choiceMustNotBeIntrinsic(SourcePosition pos)

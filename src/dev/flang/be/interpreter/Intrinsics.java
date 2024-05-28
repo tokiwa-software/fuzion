@@ -361,6 +361,13 @@ public class Intrinsics extends ANY
           return new i32Value(0);
         });
 
+    put("fuzion.sys.fatal_fault0", (executor, innerClazz) -> args ->
+        {
+          Errors.runTime(utf8ByteArrayDataToString(args.get(1)),
+                         utf8ByteArrayDataToString(args.get(2)),
+                         executor.callStack(executor.fuir()));
+          return Value.EMPTY_VALUE;
+        });
     put("fuzion.sys.stdin.stdin0"  , (executor, innerClazz) -> args ->
         {
           return _stdin;

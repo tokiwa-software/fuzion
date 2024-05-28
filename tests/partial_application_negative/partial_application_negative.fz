@@ -57,9 +57,9 @@ partial_application_negative is
 
   test(f i32->String) => f 32168
 
-  test ambig             // 6. should flag an error: Ambiguous call to `ambig (0 arguments)` or `ambig (1 arguments)`
-  test (ambig 42   )     // 7. should flag an error: Ambiguous call to `ambig (1 arguments)` or `ambig (2 arguments)`
-  test (ambig 47 11)     // 8. should flag an error: Ambiguous call to `ambig (2 arguments)` or `ambig (3 arguments)`
+  _ := test ambig             // 6. should flag an error: Ambiguous call to `ambig (0 arguments)` or `ambig (1 arguments)`
+  _ := test (ambig 42   )     // 7. should flag an error: Ambiguous call to `ambig (1 arguments)` or `ambig (2 arguments)`
+  _ := test (ambig 47 11)     // 8. should flag an error: Ambiguous call to `ambig (2 arguments)` or `ambig (3 arguments)`
 
   test "test x->(ambig 4711 x)" (test x->(ambig 4711 x)) "4711 32168"
 
@@ -70,8 +70,8 @@ partial_application_negative is
 
   a1 i32->String := ambig2          // ok
   a2 i32->String := ambig2 4711     // 9. should flag an error: ambiguous call to implicit ambig2.call (1 argument) or partially applied ambig2 (2 arguments)
-  test2             ambig2          // ok
-  test2            (ambig2 4711)    // 10. should flag an error: ambiguous call to implicit `ambig2.call (1 argument)` or partially applied `ambig2 (2 arguments)`
+  _ := test2             ambig2          // ok
+  _ := test2            (ambig2 4711)    // 10. should flag an error: ambiguous call to implicit `ambig2.call (1 argument)` or partially applied `ambig2 (2 arguments)`
 
   test "data.map (.as_string)" (data.map (.as_string)) "[1,2,3,4,5,6,7,8,9,10]"
   test "data.map  .as_string " (data.map  .as_string ) "[1,2,3,4,5,6,7,8,9,10]"  // 11. should flag an error: dot-call partials require parentheses

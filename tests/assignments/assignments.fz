@@ -78,7 +78,7 @@ value_assignments =>
     say d
     say e
     say f
-    modify
+    _ := modify
     say a
     say d
     say e
@@ -187,7 +187,7 @@ ref_assignments =>
     say d
     say e
     say f
-    modify
+    _ := modify
     say a
     say d
     say e

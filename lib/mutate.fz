@@ -100,7 +100,7 @@ public mutate : simple_effect is
     # check that this effect is installed and replace it.
     #
     module check_and_replace
-    is
+    =>
       if !is_currently_installed
         mpanic "*** invalid mutate for {mutate.this.type}"
       mutate.this.env.replace
@@ -113,7 +113,7 @@ public mutate : simple_effect is
 
     # stop any further mutations of this element
     #
-    public close is
+    public close =>
       set id := 0
 
 

@@ -1,0 +1,93 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature post_fault
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# post_fault -- effect that terminates a computation due to a failed runtime post
+# condition check
+#
+public post_fault (
+  # the handler this effect uses to fail
+  p Post_Fault_Handler
+  ) : effect effect_mode.plain
+is
+
+
+  # cause postcondition fault with the given message
+  #
+  cause(msg String) =>
+    p.cause msg
+
+
+  # install default post_fault handler
+  type.install_default =>
+    (fuzion.runtime.post_fault default_post_fault_handler).default
+
+
+  # default post_fault handler using io.err and exit with return code 1
+  #
+  type.default_post_fault_handler : fuzion.runtime.Post_Fault_Handler is
+
+    # fail with given kind and given message.
+    #
+    # This implementation will print "*** runtime failure: $kind $msg"
+    # and perform `exit 1`.
+    #
+    cause(# message describing what failed, e.g. "debug: a > 0"
+          #
+          msg String)
+    =>
+      fuzion.runtime.fault.cause "postcondition" msg
+
+
+# post_fault with no argument returns post_fault.env, the currently installed
+# runtime post_fault handler.
+#
+public post_fault =>
+  post_fault.install_default
+  post_fault.env
+
+
+# cause a postcondition fault with given msg argument, i.e., call post_fault.cause
+# msg, i.e., use the current post_fault effect to fail with the given message.
+#
+public postcondition_fault(msg String) => post_fault.cause msg
+
+
+# Post_Fault_Handler -- abstract post_fault hadler
+#
+public Post_Fault_Handler ref is
+
+
+  # fail with given kind and given message
+  #
+  public cause(msg String) void => abstract
+
+
+  # Install this post_fault handler using a new instance of post_fault and run
+  # `code` on it.  In case of an abort, return `def()` (NYI: def should be
+  # removed and the result of fail should be returned instead).
+  #
+  public use(R type, code, def ()->R) =>
+    p := post_fault Post_Fault_Handler.this
+    p.run code def

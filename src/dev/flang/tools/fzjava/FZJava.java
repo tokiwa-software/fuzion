@@ -270,7 +270,7 @@ public class FZJava extends Tool
         str.append("  for idx := 0, idx+1\n");
         str.append("      el in seq\n");
         str.append("  do\n");
-        str.append("    Java.java.lang.reflect.Array.__k__set res idx el\n");
+        str.append("    _ := Java.java.lang.reflect.Array.__k__set res idx el\n");
         str.append("  fuzion.java.Array T res.Java_Ref\n");
         str.append("\n");
         Files.write(fzp, str.toString().getBytes(StandardCharsets.UTF_8));

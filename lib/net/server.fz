@@ -49,16 +49,15 @@ is
 
 
   # close server, stop listening on port
-  public close is
+  public close =>
     match state
       d i64 =>
-        match fuzion.sys.net.close d
+        _ := match fuzion.sys.net.close d
           unit =>
             server (error "not initialized") nil effect_mode.repl unit unit
           error error =>
             server error nil effect_mode.repl unit unit
       * =>
-    unit
 
 
   # accept new TCP connection
@@ -85,13 +84,13 @@ is
               (net.channel desc).go ()->
                 rh.handle_request
 
-            fuzion.sys.net.close desc
+            _ := fuzion.sys.net.close desc
 
             res
 
           e error =>
             # NYI we may not need to close server on every error...
-            server e nil effect_mode.repl unit unit
+            _ := server e nil effect_mode.repl unit unit
             e
       e error =>
         e
@@ -119,7 +118,7 @@ public server(f family.val, p protocol.val, addr String, port u16) outcome unit 
 
   match init_ip_server f p addr port
     desc i64 =>
-      server desc p effect_mode.repl unit unit
+      _ := server desc p effect_mode.repl unit unit
       unit
     e error =>
       e
@@ -128,7 +127,7 @@ public server(f family.val, p protocol.val, addr String, port u16) outcome unit 
 # get currently installed server from env
 public server =>
   if !effect.is_installed server
-    server (error "not initialized") nil effect_mode.default unit unit
+    _ := server (error "not initialized") nil effect_mode.default unit unit
   server.env
 
 
@@ -150,7 +149,7 @@ init_ip_server(f family.val, p protocol.val, addr String, port u16) outcome i64 
           # listen
           listen_res := fuzion.sys.net.listen sd backlog
           if listen_res != 0
-            fuzion.sys.net.close sd
+            _ := fuzion.sys.net.close sd
             error "listening on socket failed with error $listen_res."
           else
             sd

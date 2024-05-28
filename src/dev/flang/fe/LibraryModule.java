@@ -830,7 +830,7 @@ Feature
 [options="header",cols="1,1,2,5"]
 |====
    |cond.     | repeat | type          | what
-.6+| true  .6+| 1      | short         | 000000vvvFCYkkkk  k = kind, Y = has Type feature (i.e., 'f.type'), C = is intrinsic constructor, F = has 'fixed' modifier, v = visibility
+.6+| true  .6+| 1      | short         | 0000REvvvFCYkkkk  k = kind, Y = has Type feature (i.e., 'f.type'), C = is intrinsic constructor, F = has 'fixed' modifier, v = visibility, R/E = has pre-/post-condition feature
                        | Name          | name
                        | int           | arg count
                        | int           | name id
@@ -843,8 +843,8 @@ Feature
               | i      | Code          | inherits calls
 .4+| true     | 1      | int           | precondition count pre_n
               | pre_n  | Code          | precondition code
-              | 1      | int           | postcondition count post_n
-              | post_n | Code          | postcondition code
+   | R        | 1      | int           | feature offset of precondition feature
+   | E        | 1      | int           | feature offset of postcondition feature
 .2+| true     | 1      | int           | redefines count r
               | r      | int           | feature offset of redefined feature
    | isRoutine| 1      | Code          | Feature code
@@ -858,12 +858,14 @@ Feature
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | short         | 000000vvvFCYkkkk                              |
+   *   | true   | 1      | short         | 0000REvvvFCYkkkk                              |
    *   |        |        |               |           k = kind                            |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is intrinsic constructor        |
    *   |        |        |               |           F = has 'fixed' modifier            |
    *   |        |        |               |           v = visibility                      |
+   *   |        |        |               |           R = has precondition feature        |
+   *   |        |        |               |           E = has postcondition feature       |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -889,10 +891,10 @@ Feature
    *   | true   | 1      | int           | precondition count pre_n                      |
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | pre_n  | Code          | precondition code                             |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | int           | postcondition count post_n                    |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | post_n | Code          | postcondition code                            |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | R      | 1      | int           | feature offset of precondition feature        |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | E      | 1      | int           | feature offset of pistcondition feature       |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | redefines count r                             |
    *   |        +--------+---------------+-----------------------------------------------+
@@ -1096,7 +1098,7 @@ Feature
     return featurePreCondCountPos(at) + 4;
   }
 
-  int featurePostCondCountPos(int at)
+  int featurePreFeaturePos(int at)
   {
     var i = featurePreCondPos(at);
     var ic = featurePreCondCount(at);
@@ -1107,24 +1109,42 @@ Feature
       }
     return i;
   }
-  int featurePostCondCount(int at)
+
+  AbstractFeature featurePreFeature(int at)
   {
-    return data().getInt(featurePostCondCountPos(at));
+    AbstractFeature result = null;
+    var k = featureKind(at);
+    if ((k & FuzionConstants.MIR_FILE_KIND_HAS_PRE_CONDITION_FEATURE ) != 0)
+      {
+        result = feature(data().getInt(featurePreFeaturePos(at)));
+      }
+    return result;
   }
-  int featurePostCondPos(int at)
+
+  int featurePostFeaturePos(int at)
   {
-    return featurePostCondCountPos(at) + 4;
+    var i = featurePreFeaturePos(at);
+    var k = featureKind(at);
+    i = i + ((k & FuzionConstants.MIR_FILE_KIND_HAS_PRE_CONDITION_FEATURE ) != 0 ? 4 : 0);
+    return i;
+  }
+
+  AbstractFeature featurePostFeature(int at)
+  {
+    AbstractFeature result = null;
+    var k = featureKind(at);
+    if ((k & FuzionConstants.MIR_FILE_KIND_HAS_POST_CONDITION_FEATURE ) != 0)
+      {
+        result = feature(data().getInt(featurePostFeaturePos(at)));
+      }
+    return result;
   }
 
   int featureRedefinesCountPos(int at)
   {
-    var i = featurePostCondPos(at);
-    var ic = featurePostCondCount(at);
-    while (ic > 0)
-      {
-        i = codeNextPos(i);
-        ic--;
-      }
+    var i = featurePostFeaturePos(at);
+    var k = featureKind(at);
+    i = i + ((k & FuzionConstants.MIR_FILE_KIND_HAS_POST_CONDITION_FEATURE) != 0 ? 4 : 0);
     return i;
   }
   int featureRedefinesCount(int at)

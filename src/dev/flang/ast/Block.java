@@ -160,21 +160,8 @@ public class Block extends AbstractBlock
     return b == null ? new Block(new List<>()) : b;
   }
 
+
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * When inheriting a post-condition during redefintion, this creates a clone
-   * of the inherited condition.
-   *
-   * @param to the redefining feature that inherits a contract
-   *
-   * @param from the redefined feature this contract should inherit from.
-   */
-  public Expr clonePostCondition(AbstractFeature to, AbstractFeature from)
-  {
-    return new Block(_newScope, _expressions.map2(x -> x.clonePostCondition(to, from)));
-  }
 
 
   @Override

@@ -25,7 +25,8 @@
 
 # i128 -- 128-bit signed integer values
 #
-public i128(public hi i64, public lo u64) : num.wrap_around, has_interval is
+# NYI: UNDER DEVELOPMENT: see #3107
+module i128(public hi i64, public lo u64) : num.wrap_around, has_interval is
   fixed redef infix + (other i128) i128 => panic "NYI: i128 is not supported"
   fixed redef infix - (other i128) i128 => panic "NYI: i128 is not supported"
   fixed redef infix * (other i128) i128 => panic "NYI: i128 is not supported"

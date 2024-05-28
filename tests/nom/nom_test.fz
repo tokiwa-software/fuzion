@@ -28,13 +28,13 @@
 nom_test =>
 
 
-  simple_parser_test is
+  simple_parser_test =>
     p := nom.parsers
 
     say ((p.to_string_parser p.whitespace0).call "\n \tHello").as_string.codepoint_length
 
 
-  hex_parser_test is
+  hex_parser_test =>
     p   := nom.parsers
 
     hex_color(r,g,b u8) is
@@ -60,7 +60,7 @@ nom_test =>
     say (parser_hex_color.call "")
 
 
-  json_parser_test is
+  json_parser_test =>
     json_parser := nom.parsers.json
     say (json_parser.call "")
     say (json_parser.call " ")

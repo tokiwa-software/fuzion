@@ -152,16 +152,17 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
       # NYI this works only when pipes buffer is large enough for
       # what is being written/read to/from pipes
       # thread to pipe from one process to other
-      concur.thread.spawn ()->
-        for p1rb := read_bytes
-        while
-          match p1rb
-            s array u8 => (write_bytes std_in s).ok
-            * => false
+      _ := concur.thread.spawn ()->
+        _ :=
+          for p1rb := read_bytes
+          while
+            match p1rb
+              s array u8 => (write_bytes std_in s).ok
+              * => false
 
         # NYI error handling
-        fuzion.sys.pipe.close std_in
-        fuzion.sys.pipe.close Process.this.std_out
+        _ := fuzion.sys.pipe.close std_in
+        _ := fuzion.sys.pipe.close Process.this.std_out
         _ := fuzion.sys.pipe.close Process.this.std_err
 
       p

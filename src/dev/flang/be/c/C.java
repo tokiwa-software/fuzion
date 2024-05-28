@@ -769,7 +769,7 @@ public class C extends ANY
           "-Wnested-externs",
           "-Wmissing-include-dirs",
           // NYI: UNDER DEVELOPEMENT:
-          // "-Wstrict-prototypes",
+          "-Wno-strict-prototypes",
           // NYI: UNDER DEVELOPEMENT:
           "-Wno-gnu-empty-initializer",
           // NYI: UNDER DEVELOPEMENT:
@@ -1880,7 +1880,7 @@ public class C extends ANY
       }
     var allocCurrent = switch (_fuir.lifeTime(cl, pre))
       {
-      case Call      -> CStmnt.seq(CStmnt.lineComment("cur does not escape, alloc on stack"), CStmnt.decl(_names.struct(cl), CNames.CURRENT));
+      case Call      -> CStmnt.seq(CStmnt.lineComment("cur does not escape, alloc on stack"), CStmnt.decl(_names.struct(cl), CNames.CURRENT, CExpr.compoundLiteral(_names.struct(cl), "")));
       case Unknown   -> CStmnt.seq(CStmnt.lineComment("cur may escape, so use malloc"      ), declareAllocAndInitClazzId(cl, CNames.CURRENT));
       case Undefined -> CExpr.dummy("undefined life time");
       };
