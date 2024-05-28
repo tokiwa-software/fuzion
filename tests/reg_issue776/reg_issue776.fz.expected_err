@@ -1,0 +1,12 @@
+
+--CURDIR--/reg_issue776.fz:28:5: error 1: Call has an ambiguous result type since target of the call is a 'ref' type.
+    ref : String
+----^
+The result type of this call depends on the target type.  Since the target type is a 'ref' type that may represent a number of different actual dynamic types, the result type is not clearly defined.
+Called feature: 'String.mysubstring.#anonymous0'
+Raw result type: '(value String.this).mysubstring.#anonymous0'
+Type depending on target: 'value String.this'
+Target type: '(value String.this).mysubstring.this.#anonymous0'
+To solve this, you could try to use a value type as the target type of the call, e,g., '(value String.this).mysubstring', or change the result type of 'String.mysubstring.#anonymous0' to no longer depend on 'value String.this'.
+
+one error.
