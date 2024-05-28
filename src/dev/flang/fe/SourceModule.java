@@ -1442,7 +1442,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
           {
             for (int i = 0; i < ta.length; i++)
               {
-                var t1 = ta[i];
+                var t1 = ta[i].applyTypePars(o, f.generics().asActuals());
                 var t2 = ra[i];
                 if (!isLegalCovariantThisType(o, f, t1, t2, fixed))
                   {
@@ -1462,7 +1462,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
               }
           }
 
-        var t1 = o.handDownNonOpen(_res, o.resultType(), f.outer());
+        var t1 = o.handDownNonOpen(_res, o.resultType(), f).applyTypePars(o, f.generics().asActuals());
         var t2 = f.resultType();
         if (o.isTypeFeaturesThisType() && f.isTypeFeaturesThisType())
           { // NYI: CLEANUP: #706: allow redefinition of THIS_TYPE in type features for now, these are created internally.
