@@ -118,10 +118,11 @@ public class Assign extends AbstractAssign
 
     if (PRECONDITIONS) require
       (Errors.any() ||
-       res.state(outer) == State.RESOLVING_TYPES   ||
-       res.state(outer) == State.RESOLVED_TYPES    ||
-       res.state(outer) == State.TYPES_INFERENCING ||
-       res.state(outer) == State.RESOLVING_SUGAR1  ||
+       res.state(outer) == State.RESOLVED_DECLARATIONS ||
+       res.state(outer) == State.RESOLVING_TYPES       ||
+       res.state(outer) == State.RESOLVED_TYPES        ||
+       res.state(outer) == State.TYPES_INFERENCING     ||
+       res.state(outer) == State.RESOLVING_SUGAR1      ||
        res.state(outer) == State.RESOLVING_SUGAR2,
        f != null);
 
