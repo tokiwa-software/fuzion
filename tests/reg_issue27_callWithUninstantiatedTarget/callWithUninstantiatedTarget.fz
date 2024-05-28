@@ -44,7 +44,7 @@ callWithUninstantiatedTarget is
 
     # y.z is never called and not compiled!
     #
-    z is say "z!"
+    z => say "z!"
 
   # y0 will never be set since x will not return
   y0 := x;

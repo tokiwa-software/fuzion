@@ -160,7 +160,7 @@ test_atomic is
   c2 := concur.atomic i64 0
   s2 := concur.atomic i64 -1
 
-  concur.thread.spawn (()->
+  thrd1 := concur.thread.spawn (()->
     end := time.nano.read + (time.durations.seconds 5).nanos
     for
       s := i64 0, o=v ? s+1 : s
@@ -174,7 +174,7 @@ test_atomic is
       s1.write s
     )
 
-  concur.thread.spawn (()->
+  thrd2 := concur.thread.spawn (()->
     end := time.nano.read + (time.durations.seconds 5).nanos
     for
       s := i64 0, o=v ? s+1 : s
@@ -188,8 +188,8 @@ test_atomic is
       s2.write s
     )
 
-  while s1.read < 0 || s2.read < 0 do
-    time.nano.sleep (time.durations.ms 20)
+  thrd1.join
+  thrd2.join
 
   chck s1.read>=0 true
   chck s1.read=(a.read & 0x7fff_ffff) true

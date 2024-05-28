@@ -93,7 +93,7 @@ is
 
   # execute the code of 'f' in the context of this effect
   #
-  module run(R type, f () -> R, def ()->R) R =>
+  public run(R type, f () -> R, def ()->R) R =>
     cf := Effect_Call f
     abortable cf
     match cf.res

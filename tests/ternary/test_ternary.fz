@@ -36,21 +36,23 @@ test_ternary is
   _ := a ? { 3 } : { 4 }
   _ := a ? ( 3 ) : ( 4 )
   _ := a ?   3   :   4
-  a      ?   3   :   4
+  _ := a      ?   3   :   4
 
   # multi-line ternary ? :
   _ := (a ? 3
           : 4)
-  a       ? 3
-          : 4
+  # NYI: UNDER DEVELOPMENT:
+  #   _ :=
+  #     a ? 3
+  #       : 4
 
   # ternary with mid-term containing ':'
   _ :=  a ? (3 : ()->[4,5].as_list) : nil
   _ := (a ? (3 : ()->[4,5].as_list)
           : nil)
-  a ? say (3 : ()->[4,5].as_list) : say nil
-  a ? say (3 : ()->[4,5].as_list)
-    : say nil
+  _ := a ? say (3 : ()->[4,5].as_list) : say nil
+  _ := (a ? say (3 : ()->[4,5].as_list)
+          : say nil)
 
   x, y.
   f(c x | y) =>

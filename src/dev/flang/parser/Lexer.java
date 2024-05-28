@@ -689,6 +689,7 @@ public class Lexer extends SourceFile
     super(original);
 
     _curToken = original._curToken;
+    _curLiteral = original._curLiteral;
     _tokenPos = original._tokenPos;
     _lastTokenPos = original._lastTokenPos;
     _lastTokenEndPos = original._lastTokenEndPos;

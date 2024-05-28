@@ -29,6 +29,7 @@ package dev.flang.ast;
 import java.util.TreeMap;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -361,9 +362,7 @@ public class Impl extends ANY
   private boolean needsImplicitAssignmentToResult(AbstractFeature outer)
   {
     return
-      (isRoutineLike()) &&
-      outer.hasResultField() &&
-      outer instanceof Feature fouter && !fouter.hasAssignmentsToResult();
+      isRoutineLike() && outer.hasResultField();
   }
 
 
@@ -436,6 +435,26 @@ public class Impl extends ANY
                                 outer);
         ass._value = this._expr.box(ass._assignedField.resultType());  // NYI: move to constructor of Assign?
         this._expr = ass;
+      }
+
+    // Add call to post condition feature:
+    var pF = outer.postFeature();
+    if (pF != null)
+      {
+        switch (outer.kind())
+          {
+          case Field             -> {} // Errors.fatal("NYI: UNDER DEVELOPMENT #3092 postcondition for field not supported yet");
+          case TypeParameter     ,
+               OpenTypeParameter -> { if (!Errors.any()) { Errors.fatal("postcondition for type parameter should not exist for " + outer.pos().show()); } }
+          case Routine           ->
+            {
+              var callPostCondition = Contract.callPostCondition(res, (Feature) outer);
+              this._expr = new Block(new List<>(this._expr, callPostCondition));
+            }
+          case Abstract          -> {} // ok, must be checked by redefinitions
+          case Intrinsic         -> {} // Errors.fatal("NYI: UNDER DEVELOPMENT #3105 postcondition for intrinsic");
+          case Native            -> {} // Errors.fatal("NYI: UNDER DEVELOPMENT #3105 postcondition for native");
+          }
       }
   }
 

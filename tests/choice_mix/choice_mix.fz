@@ -151,7 +151,7 @@ choice_mix is
   yak "d: "; show0 d
   yak "e: "; show0 e
 
-  for
+  _ := for
     i := 0, i + 1
   while i < 6
     if i > 0 say "-------------"
@@ -281,7 +281,7 @@ choice_mix is
       if i < 10 { i }
       else if i < 20 { i > 15 }
       else { "Large" }
-    for
+    _ := for
       i := 0, i + 1
     while i < 25
       yak "$i ==> "

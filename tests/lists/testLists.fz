@@ -33,30 +33,25 @@ testLists is
     Nil is
     OptNode : choice Node Nil is
 
-    h OptNode := Nil
-    add(e T) is
-      set h := Node e h Nil
+    h := mut OptNode Nil
+    add(e T) =>
+      h <- Node e h Nil
 
-    print is
-      // for   -- NYI: must update i in the loop prolog
-      i := h;
-      while (i ? Node => { true } | Nil => false)   // NYI: This screams for recursion
-        match i
-          n Node =>
-              say "print el in loop: {n.el}"
-              set i := n.n
-          Nil =>
+    print => print h.get
 
-    size i32 =>
-      set result := 0;
-      // for   -- NYI: must update i in the loop prolog
-      i := h;
-      while (i ? Node => { true } | Nil => false)    // NYI: This screams for recursion
-        match i
-          n Node =>
-              set result := result + 1
-              set i := n.n
-          Nil =>
+    print(on) =>
+      match on
+        n Node =>
+            say "print el in recursion: {n.el}"
+            print n.n
+        Nil =>
+
+    size => size h.get
+
+    size(on) =>
+      match on
+        n Node => 1 + size n.n
+        Nil    => 0
 
   li List i32 := List i32
   li.add 3

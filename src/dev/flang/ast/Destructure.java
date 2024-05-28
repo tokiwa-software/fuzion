@@ -37,13 +37,13 @@ import dev.flang.util.SourcePosition;
 /**
  * Destructure represents syntactic sugar for a destructuring assignment of the form
  *
- * (a,b) = point;
+ * (a,b) := point;
  *
  * which will be converted into
  *
  * tmp := point;
- * a = tmp.x;
- * b = tmp.y;
+ * a   := tmp.x;
+ * b   := tmp.y;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -77,8 +77,6 @@ public class Destructure extends ExprWithPos
   final List<AbstractFeature> _fields;
 
 
-  final boolean _isDefinition;
-
   /**
    * The value that will be destructured
    */
@@ -93,24 +91,28 @@ public class Destructure extends ExprWithPos
    *
    * @param pos the sourcecode position, used for error messages.
    *
-   * @param n
+   * @param n The field names of the fields we are destructuring into. May not be empty.
+   * null if _fields != null.
    *
-   * @param def
+   * @param fs The fields created by this destructuring.  May be empty. null if _names !=
+   * null.
    *
-   * @param v
+   * @param def true if destructuring using :=
+   *
+   * @param v The value that will be destructured
    */
-  private Destructure(SourcePosition pos, List<ParsedName> n, List<AbstractFeature> fs, boolean def, Expr v)
+  private Destructure(SourcePosition pos, List<ParsedName> n, List<AbstractFeature> fs, Expr v)
   {
     super(pos);
 
     if (PRECONDITIONS) require
       (pos != null,
-       !def || fs != null,
+       n != null,
+       fs != null,
        v != null);
 
     _names = n;
     _fields = fs;
-    _isDefinition = def;
     _value = v;
   }
 
@@ -125,12 +127,9 @@ public class Destructure extends ExprWithPos
   {
     List<Expr> exprs = new List<Expr>();
     exprs.add(this);
-    if (_fields != null)
+    for (var f : _fields)
       {
-        for (var f : _fields)
-          {
-            exprs.add((Feature) f);
-          }
+        exprs.add((Feature) f);
       }
     return new Block(exprs);
   }
@@ -147,48 +146,40 @@ public class Destructure extends ExprWithPos
    * @param names the names of the variables to store the destructured values if
    * we are not destructuring to new fields.
    *
-   * @param def true if destructuring using :=
-   *
    * @param v the value that is destructured.
    *
    * @return a expression that implements the destructuring.
    */
-  public static Expr create(SourcePosition pos, List<AbstractFeature> fields, List<ParsedName> names, boolean def, Expr v)
+  public static Expr create(SourcePosition pos, List<AbstractFeature> fields, List<ParsedName> names, Expr v)
   {
     if (PRECONDITIONS) require
-      ((fields == null) != (names == null),
-       !def || (names != null && fields == null));
+      ((fields == null) != (names == null));
 
     if (fields == null)
       {
-        if (def)
+        fields = new List<AbstractFeature>();
+        for (var name : names)
           {
-            fields = new List<AbstractFeature>();
-            for (var name : names)
-              {
-                fields.add(new Feature(name._pos,
-                                       Visi.PRIV,
-                                       0,
-                                       new FunctionReturnType(Types.t_UNDEFINED), // NoType.INSTANCE,
-                                       new List<String>(name._name),
-                                       new List<>(),
-                                       new List<>(),
-                                       Contract.EMPTY_CONTRACT,
-                                       Impl.FIELD));
-              }
+            fields.add(new Feature(name._pos,
+                                   Visi.PRIV,
+                                   0,
+                                   new FunctionReturnType(Types.t_UNDEFINED), // NoType.INSTANCE,
+                                   new List<String>(name._name),
+                                   new List<>(),
+                                   new List<>(),
+                                   Contract.EMPTY_CONTRACT,
+                                   Impl.FIELD));
           }
       }
     else
       {
-        if (CHECKS) check
-          (!def);
         names = new List<>();
         for (var f : fields)
           {
             names.add(new ParsedName(f.pos(), f.featureName().baseName()));
           }
       }
-    return new Destructure(pos, names, fields, def, v).expand();
+    return new Destructure(pos, names, fields, v).expand();
   }
 
 
@@ -231,10 +222,7 @@ public class Destructure extends ExprWithPos
     if (fields != null && fields.hasNext())
       {
         var newF = (Feature) fields.next();
-        if (_isDefinition)
-          {
-            newF._returnType = new FunctionReturnType(t);
-          }
+        newF._returnType = new FunctionReturnType(t);
         assign = new Assign(res, pos(), newF, call_f, outer);
       }
     else if (fields == null && names.hasNext())
@@ -291,7 +279,7 @@ public class Destructure extends ExprWithPos
         atmp.resolveTypes(res, outer);
         exprs.add(atmp);
         var names = _names.iterator();
-        var fields = _fields == null ? null : _fields.iterator();
+        var fields = _fields.iterator();
         List<String> fieldNames = new List<>();
         for (var f : t.feature().valueArguments())
           {
@@ -319,7 +307,7 @@ public class Destructure extends ExprWithPos
             AstErrors.destructuringMisMatch(pos(), fieldNames, _names);
           }
       }
-    else if (_fields != null && _isDefinition)
+    else
       { // in case of an error in value, set the type of fields to Types.t_ERROR
         // to avoid subsequent errors:
         for (var f : _fields)

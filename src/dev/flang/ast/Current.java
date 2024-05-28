@@ -80,6 +80,7 @@ public class Current extends AbstractCurrent
     return _pos;
   }
 
+
 }
 
 /* end of file */

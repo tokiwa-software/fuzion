@@ -34,8 +34,8 @@ mmap_test is
 
   say (io.file.use unit testfile io.file.mode.append ()->
 
-    f.write (array u8 page_size i->0)
-    f.write "hello!".utf8
+    _ := f.write (array u8 page_size i->0)
+    _ := f.write "hello!".utf8
 
     offset := page_size.as_i64
 

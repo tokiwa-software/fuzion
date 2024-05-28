@@ -103,11 +103,7 @@ public class Feature extends AbstractFeature
   private Visi _visibility;
   public Visi visibility()
   {
-    return
-      // NYI anonymous feature should have correct visibility set.
-      isAnonymousInnerFeature()
-      ? (state().atLeast(State.FINDING_DECLARATIONS) ? outer().visibility() : Visi.UNSPECIFIED)
-      : _visibility == Visi.UNSPECIFIED
+    return _visibility == Visi.UNSPECIFIED
       ? Visi.PRIV
       : _visibility;
   }
@@ -203,6 +199,13 @@ public class Feature extends AbstractFeature
   private final Contract _contract;
   public Contract contract() { return _contract; }
 
+  Feature _postFeature = null;
+  @Override
+  public AbstractFeature postFeature()
+  {
+    return _postFeature;
+  }
+
 
   /**
    * The implementation of this feature
@@ -231,12 +234,6 @@ public class Feature extends AbstractFeature
    * LOADING.
    */
   private Feature _resultField = null;
-
-  /**
-   * Flag set during resolveTypes if this feature's code has at least one
-   * assignment to the result field.
-   */
-  private boolean _hasAssignmentsToResult = false;
 
 
   /**
@@ -870,7 +867,7 @@ public class Feature extends AbstractFeature
    *
    * @return true iff this is a result field.
    */
-  boolean isResultField()
+  public boolean isResultField()
   {
     return false;
   }
@@ -896,27 +893,21 @@ public class Feature extends AbstractFeature
                                    _pos,
                                    Visi.PRIV,
                                    t,
-                                   resultInternal() ? FuzionConstants.INTERNAL_RESULT_NAME
-                                                    : FuzionConstants.RESULT_NAME,
+                                   FuzionConstants.INTERNAL_RESULT_NAME,
                                    this)
           {
-            protected boolean isResultField() { return true; }
+            public boolean isResultField() { return true; }
           };
       }
   }
 
 
   /**
-   * Check if the result variable should be internal, i.e., have a name that is
-   * not accessible by source code.  This is true for routines defined using
-   * '=>" (RoutineDef) that are internally generated, e.g. for loops.
-   * In these cases, the result variable of the enclosing outer feature can be
-   * accessed without qualification.
+   * Is this a case-field declared in a match-clause?
    */
-  public boolean resultInternal()
+  public boolean isCaseField()
   {
-    return _impl._kind == Impl.Kind.RoutineDef &&
-      _featureName.isInternal();
+    return false;
   }
 
 
@@ -1410,6 +1401,7 @@ public class Feature extends AbstractFeature
       {
         _state = State.RESOLVING_SUGAR1;
 
+        _contract.addContractFeatures(this, res);
         if (definesType())
           {
             typeFeature(res);
@@ -1527,15 +1519,6 @@ public class Feature extends AbstractFeature
         AstErrors.choiceMustNotBeRef(_pos);
       }
 
-    res._module.forEachDeclaredOrInheritedFeature(this,
-                                                  p ->
-      {
-        // choice type must not have any fields
-        if (p.isField() && !p.isOuterRef())
-          {
-            AstErrors.mustNotContainFields(_pos, p, "Choice");
-          }
-      });
     // choice type must not contain any code, but may contain inner features
     switch (_impl._kind)
       {
@@ -1571,6 +1554,29 @@ public class Feature extends AbstractFeature
           break;
         }
       }
+
+    res._module.forEachDeclaredOrInheritedFeature(this,
+                                                  p ->
+      {
+        if (_returnType != NoType.INSTANCE &&
+            _returnType != ValueType.INSTANCE)
+          { // choice type must not have a result type
+            if (!(Errors.any() && _returnType == RefType.INSTANCE))  // this was covered by AstErrors.choiceMustNotBeRef
+              {
+                AstErrors.choiceMustNotHaveResultType(_pos, _returnType);
+              }
+          }
+        else if (p.isField() && !p.isOuterRef() &&
+                 !(Errors.any() && (p instanceof Feature pf && (pf.isArtificialField() || /* do not report auto-generated fields like `result` in choice if there are other problems */
+                                                                pf.isResultField()
+                                                                )
+                                    )
+                   )
+                 )
+          { // choice type must not have any fields
+            AstErrors.mustNotContainFields(_pos, p, "Choice");
+          }
+      });
 
     for (var t : choiceGenerics())
       {
@@ -1866,33 +1872,6 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * During type resolution, record that we found an assignment to
-   * resultField().
-   */
-  void foundAssignmentToResult()
-  {
-    if (PRECONDITIONS) require
-      (_state == State.RESOLVING_TYPES ||
-       _state == State.RESOLVED_TYPES);
-
-    _hasAssignmentsToResult = true;
-  }
-
-
-  /**
-   * After type resolution, this checks if an assignment tot he result variable
-   * has been found.
-   */
-  public boolean hasAssignmentsToResult()
-  {
-    if (PRECONDITIONS) require
-      (_state.atLeast(State.RESOLVED_TYPES));
-
-    return _hasAssignmentsToResult;
-  }
-
-
-  /**
    * Syntactic sugar resolution of a feature f: For all expressions and
    * expressions in f's inheritance clause, contract, and implementation, resolve
    * syntactic sugar, e.g., by replacing anonymous inner functions by
@@ -2070,12 +2049,6 @@ public class Feature extends AbstractFeature
             { // Found the call, so we got the result!
               found();
             }
-          else if (c.calledFeatureKnown() &&
-                   c.calledFeature() instanceof Feature cf && cf.isAnonymousInnerFeature() &&
-                   c.calledFeature() == inner)
-            { // NYI: Special handling for anonymous inner features that currently do not appear as expressions
-              found();
-            }
           else if (c == Call.ERROR && curres[1] == null)
             {
               curres[1] = Types.f_ERROR;
@@ -2149,16 +2122,7 @@ public class Feature extends AbstractFeature
         }
       };
 
-    for (var c : _contract.req)
-      {
-        c.cond.visit(fv, this);
-      }
-
-    for (var c : _contract.ens)
-      {
-        c.cond.visit(fv, this);
-      }
-
+    _contract.visit(fv, this);
     for (var p: _inherits)
       {
         p.visit(fv, this);
@@ -2175,7 +2139,7 @@ public class Feature extends AbstractFeature
   /**
    * Is this feature an argument of its outer feature?
    */
-  boolean isArgument()
+  public boolean isArgument()
   {
     if (_outer != null)
       {
@@ -2394,7 +2358,7 @@ public class Feature extends AbstractFeature
    * @return true iff this has or any heir of this might have a frame object on
    * a call.
    */
-  boolean hasThisType()
+  private boolean hasThisType()
   {
     return
       _impl._kind != Impl.Kind.Intrinsic &&
@@ -2446,36 +2410,6 @@ public class Feature extends AbstractFeature
     _featureName = newFeatureName;
   }
 
-
-  /**
-   *
-   */
-  private boolean definedInOwnFile = false;
-
-
-  /**
-   * definedInOwnFile
-   *
-   * @return
-   */
-  public boolean definedInOwnFile() {
-    boolean result = definedInOwnFile;
-    return result;
-  }
-
-  /**
-   * setDefinedInOwnFile
-   */
-  public void setDefinedInOwnFile()
-  {
-    if (PRECONDITIONS) require
-      (!definedInOwnFile);
-
-    definedInOwnFile = true;
-
-    if (POSTCONDITIONS) ensure
-      (definedInOwnFile);
-  }
 
   /**
    * outerRefName

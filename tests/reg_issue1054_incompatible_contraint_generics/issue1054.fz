@@ -26,5 +26,5 @@ ex =>
 
   c(T type : floaty f64) is
 
-  c (floaty f64) // good
-  c (floaty f32) // bad
+  _ := c (floaty f64) // good
+  _ := c (floaty f32) // bad

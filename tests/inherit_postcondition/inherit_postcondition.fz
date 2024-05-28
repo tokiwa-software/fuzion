@@ -1,0 +1,296 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test inherit_postcondition
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+test_postcondition is
+
+
+  # ------ some helpers ------
+
+
+  # function that prints a string using `say` and returns `true`, used to create output
+  # as a side-effect to verify execution of postconditions
+  #
+  ok(s) => say s; true
+
+
+  # ------ recording and checking execution order ------
+
+
+  # mutable var to record order of postcondition execution
+  #
+  order := mut ""
+
+  # record execution of post condition `s` by appending it to `order`
+  #
+  rec(s String) =>
+    old := order.get
+    order <- old + (old = "" ? "" : " ") + s
+    true
+
+
+  # check that order.get = expected and reset order if this is not the case
+  check_order(expected String) =>
+    if expected = order.get then
+      say "PASS: $order"
+    else
+      say "FAIL: EXPECTED $expected GOT $order"
+      _ := set_exit_code 1
+    order <- ""
+
+
+  # ------ inheritance of post conditions in different numbers and order ------
+
+
+  a is
+    f
+      post
+        rec "pa"
+        ok("a.f.post 1")
+        ok("a.f.post 2")
+    => say "body of a.f"
+
+  b is
+    f
+      post
+        rec "pb"
+        ok("b.f.post 1")
+        ok("b.f.post 2")
+    => say "body of b.f"
+
+  c is
+    f unit
+      post
+        rec "pc"
+        ok("c.f.post 1")
+        ok("c.f.post 2")
+    => abstract
+
+  xa : a is
+    redef f
+      post then
+        rec "pxa"
+        ok("xa.f.post 1")
+        ok("xa.f.post 2")
+    => say "body of xa.f"
+
+  xb : b is
+    redef f
+      post then
+        rec "pxb"
+        ok("xb.f.post 1")
+        ok("xb.f.post 2")
+    => say "body of xb.f"
+
+  xc : c is
+    redef f
+      post then
+        rec "pxc"
+        ok("xc.f.post 1")
+        ok("xc.f.post 2")
+    => say "body of xc.f"
+
+  xab : a, b is
+    redef f
+      post then
+        rec "pxab"
+        ok("xab.f.post 1")
+        ok("xab.f.post 2")
+    => say "body of xab.f"
+
+  xba : b, a is
+    redef f
+      post then
+        rec "pxba"
+        ok("xba.f.post 1")
+        ok("xba.f.post 2")
+    => say "body of xba.f"
+
+  xac : a, c is
+    redef f
+      post then
+        rec "pxac"
+        ok("xac.f.post 1")
+        ok("xac.f.post 2")
+    => say "body of cac.f"
+
+  xbc : b, c is
+    redef f
+      post then
+        rec "pxbc"
+        ok("xbc.f.post 1")
+        ok("xbc.f.post 2")
+    => say "body of xbc.f"
+
+  xca : c, a is
+    redef f
+      post then
+        rec "pxca"
+        ok("xca.f.post 1")
+        ok("xca.f.post 2")
+    => say "body of xca.f"
+
+  xcb : c, b is
+    redef f
+      post then
+        rec "pxcb"
+        ok("xcb.f.post 1")
+        ok("xcb.f.post 2")
+    => say "body of xcb.f"
+
+  xabc : a, b, c is
+    redef f
+      post then
+        rec "pxabc"
+        ok("xabc.f.post 1")
+        ok("xabc.f.post 2")
+    => say "body of xabc.f"
+
+  xcba : c, b, a is
+    redef f
+      post then
+        rec "pxcba"
+        ok("xcba.f.post 1")
+        ok("xcba.f.post 2")
+    => say "body of xcba.f"
+
+  xa.f; check_order "pa pxa"
+  xb.f; check_order "pb pxb"
+  xc.f; check_order "pc pxc"
+
+  xab.f; check_order "pa pb pxab"
+  xba.f; check_order "pb pa pxba"
+  xac.f; check_order "pa pc pxac"
+  xbc.f; check_order "pb pc pxbc"
+  xca.f; check_order "pc pa pxca"
+  xcb.f; check_order "pc pb pxcb"
+
+  xabc.f; check_order "pa pb pc pxabc"
+  xcba.f; check_order "pc pb pa pxcba"
+
+
+  # ------  accessing result and other features in post conditions and inheriting them: ------
+
+
+  post_accessing_result is
+    f
+      post
+        ok "original $result"
+        { io.out.env.println "hi"; true }
+        { v := post_accessing_result.this; true }
+        { [1,result,2].fold i32.sum > 3 }
+        { fn i32->i32 := *result; fn 3 > 120 }
+        result > 23
+    =>
+      42
+
+    public g
+    => 420
+
+  post_accessing_result_child : post_accessing_result is
+    redef f
+      post then
+        ok "redef $result"
+        { io.out.env.println "hi"; true }
+        result % 5 = 1
+    =>
+      4711
+
+    redef g
+      post then
+        ok "redef g $result"
+        { io.out.env.println "ho"; true }
+        result % 5 = 4
+    => 69
+
+  post_accessing_result_child2 : post_accessing_result_child is
+    redef f
+      post then
+        ok "redef2 $result"
+        { io.out.env.println "hi"; true }
+        true
+    =>
+      4716
+
+    redef g
+      post then
+        ok "redef g $result"
+        { io.out.env.println "he"; true }
+        result % 10 = 9
+    => 42069
+
+  post_accessing_result_child3 : post_accessing_result is
+    redef f
+      post then
+    =>
+      32168
+
+  post_accessing_result_child4 : post_accessing_result is
+    redef f
+    =>
+      112
+
+  _ := post_accessing_result.f
+  _ := post_accessing_result.g
+  _ := post_accessing_result_child.f
+  _ := post_accessing_result_child.g
+  _ := post_accessing_result_child2.f
+  _ := post_accessing_result_child2.g
+  _ := post_accessing_result_child3.f
+  _ := post_accessing_result_child4.f
+
+
+  # ------ accesssing postconditions in a module
+
+  _ := mod.post_accessing_result.f
+  _ := mod.post_accessing_result.g
+  _ := mod.post_accessing_result_child.f
+  _ := mod.post_accessing_result_child.g
+  _ := mod.post_accessing_result_child2.f
+  _ := mod.post_accessing_result_child2.g
+  _ := mod.post_accessing_result_child3.f
+  _ := mod.post_accessing_result_child4.f
+
+  inh_module1 : mod.post_accessing_result is
+    redef f
+      post then
+        ok "redef $result"
+    =>
+      32168
+
+  inh_module2 : mod.post_accessing_result is
+    redef n := 64
+    redef r => 128
+    redef f
+      post then
+        ok "redef $result"
+    =>
+      32168
+
+  inh_module1.f
+  inh_module2.f
+
+  exit
+
+_ := test_postcondition

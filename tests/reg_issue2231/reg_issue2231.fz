@@ -26,7 +26,7 @@ reg_issue2231 is
   eff : simple_effect is
     inner := 7
     a <- ()->inner
-    something is
+    something =>
       abort
 
   eff.go ()->

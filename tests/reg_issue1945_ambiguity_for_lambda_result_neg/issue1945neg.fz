@@ -36,8 +36,8 @@ ambiguous_declaration is
   b () -> i32 := () -> 4712
   c () (() ->         # we (currently) need explicit arg list `()` to help parser
         i32  ) := () -> 4713
-  d () ->
-    i32 := () -> 4714   # illegal, no LF allowed after -> in function result
+  _ := (d () ->
+          i32 := () -> 4714)   # illegal, no LF allowed after -> in function result
 
   say a.call
   say b.call
@@ -48,8 +48,8 @@ ambiguous_declaration is
   j () -> i32 => () -> 4716
   k () (() ->         # we (currently) need explicit arg list `()` to help parser
         i32  ) => () -> 4717
-  l () ->
-    i32 is () -> 4718   # illegal, no LF allowed after -> in function result
+  _ := (l () ->
+          i32 => () -> 4718)   # illegal, no LF allowed after -> in function result
 
   say i.call
   say j.call

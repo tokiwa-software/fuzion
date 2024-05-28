@@ -220,8 +220,8 @@ public f32(public val f32) : float is
   #
   public fixed type.atan2(y, x f32) f32 =>
     if is_NaN y || is_NaN x
-      NaN
-    if y = 0
+      f32.NaN
+    else if y = 0
       if x > 0 || (x = 0 && x.is_sign_bit_set)
         y
       else

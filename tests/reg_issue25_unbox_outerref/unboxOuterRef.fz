@@ -37,7 +37,7 @@ unboxOuterRef is
 
   y (i i32) : ry is
     redef as_string => "y $i"
-    g (v y) is
+    g (v y) =>
       vs := v.as_string
       say "in g: $vs $i"
     fixed f unit =>

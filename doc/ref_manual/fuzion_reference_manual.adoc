@@ -335,6 +335,13 @@ include::rule.adoc[]
 :RULE_ID: PARS_REDEF
 include::rule.adoc[]
 
+:RULE_SRC: src/dev/flang/fe/SourceModule.java
+:RULE_ID: PARS_REDEF_KIND
+include::rule.adoc[]
+
+:RULE_SRC: src/dev/flang/fe/SourceModule.java
+:RULE_ID: PARS_REDEF_AS_KIND
+include::rule.adoc[]
 
 ==== Redefining inherited features
 
@@ -364,6 +371,11 @@ include::rule.adoc[]
 == Semantics
 
 CAUTION: *NYI*: Text Missing
+
+:RULE_SRC: src/dev/flang/ast/Contract.java
+:RULE_ID: SEMANTIC_CONTRACT_POST_ORDER
+include::rule.adoc[]
+
 
 [appendix]
 
