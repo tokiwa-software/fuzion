@@ -1,0 +1,47 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test redef_with_type_pars
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# Regression test for #3136.
+#
+# This redefines a feature `f` that has type parameters and shuffles
+# around the names of the type parameters while doing so.
+#
+redef_with_type_pars is
+
+  a is
+    f      (X, Y, Z type, p X, q Y, r Z) X => abstract
+
+  b : a is
+    redef f(Z, Y, X type, r Z, q Y, p X) Z => r
+
+  c : b is
+    redef f(A, B, C type, x A, y B, z C) A => x
+
+  show(x T) => say "$x ($T)"
+
+  show (b.f i32 String unit 42 "fourty-two" unit)
+  show (c.f i32 String unit 42 "fourty-two" unit)
+  show (b.f String bool i32 "fourty-two" false 42)
+  show (c.f String bool i32 "fourty-two" false 42)
