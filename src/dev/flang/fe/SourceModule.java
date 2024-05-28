@@ -1462,7 +1462,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
               }
           }
 
-        var t1 = o.handDownNonOpen(_res, o.resultType(), f)
+        var t1 = o.handDownNonOpen(_res, o.resultType(), f.outer())
                   .applyTypePars(o, f.generics().asActuals());    /* replace o's type pars by f's */
         var t2 = f.resultType();
         if (o.isTypeFeaturesThisType() && f.isTypeFeaturesThisType())
