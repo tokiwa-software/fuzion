@@ -570,3 +570,4 @@ catch_postcondition: --CURDIR--/catch_postcondition.fz:86:32:
 -------------------------------^^^
 
 *** fatal errors encountered, stopping.
+one error.
