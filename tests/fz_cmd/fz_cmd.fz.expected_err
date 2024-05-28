@@ -7,3 +7,4 @@ Usage: ../../bin/fz [-h|--help|-version]  --or--
        ../../bin/fz -acemode [-noANSI] [-verbose[=<n>]]   --or--
 
 *** fatal errors encountered, stopping.
+one error.
