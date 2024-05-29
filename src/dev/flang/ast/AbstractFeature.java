@@ -477,7 +477,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       {
         result = null;
       }
-    else if (this.compareTo(Types.resolved.f_choice) == 0)
+    else if (isBaseChoice())
       {
         result = generics().asActuals();
       }
@@ -497,9 +497,17 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                     AstErrors.repeatedInheritanceOfChoice(p.pos(), lastP.pos());
                   }
                 lastP = p;
-                // NYI: BUG: we need sth. like hand down to figure out the choice generics.
-                result = p.actualTypeParameters();
-                var inh = tryFindInheritanceChain(Types.resolved.f_choice);
+                result = p.calledFeature().isBaseChoice()
+                  ? p.actualTypeParameters()
+                  : p.calledFeature().choiceGenerics();
+                // we need to do a hand down to get the actual choice generics
+                if (!p.calledFeature().isBaseChoice())
+                  {
+                    var arr = new AbstractType[result.size()];
+                    result.toArray(arr);
+                    var inh = this.findInheritanceChain(p.calledFeature());
+                    result = new List<>(AbstractFeature.handDownInheritance(null, inh, arr, this));
+                  }
               }
           }
       }

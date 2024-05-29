@@ -648,10 +648,7 @@ public class Clazzes extends ANY
           {
             Clazz vc = clazz(b._value, outerClazz, inh);
             Clazz rc = vc;
-            if (ec.isRef() ||
-                (ec._type.isChoice() &&
-                 !ec._type.isAssignableFrom(vc._type) &&
-                 ec._type.isAssignableFrom(vc._type.asRef())))
+            if (asRefAssignable(ec, vc))
               {
                 rc = vc.asRef();
                 if (CHECKS) check
@@ -680,6 +677,35 @@ public class Clazzes extends ANY
       {
         propagateExpectedClazz(t._value, ec, outer, outerClazz, inh);
       }
+  }
+
+
+  /*
+   * Is vc.asRef assignable to ec?
+   */
+  private static boolean asRefAssignable(Clazz ec, Clazz vc)
+  {
+    return asRefDirectlyAssignable(ec, vc) || asRefAssignableToChoice(ec, vc);
+  }
+
+
+  /*
+   * Is vc.asRef directly assignable to ec, i.e. without the need for tagging?
+   */
+  private static boolean asRefDirectlyAssignable(Clazz ec, Clazz vc)
+  {
+    return ec.isRef() && ec._type.isAssignableFrom(vc.asRef()._type);
+  }
+
+
+  /*
+   * Is ec a choice and vc.asRef assignable to ec?
+   */
+  private static boolean asRefAssignableToChoice(Clazz ec, Clazz vc)
+  {
+    return ec._type.isChoice() &&
+      !ec._type.isAssignableFrom(vc._type) &&
+      ec._type.isAssignableFrom(vc._type.asRef());
   }
 
 
