@@ -1,0 +1,50 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature try
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# try -- try to run code requiring fallible effect and handle failure
+#
+# This feature allows Java-like try-catch syntax for fallible
+#
+#   res := try ERROR_TYPE FALLIBLE_TYPE RESULT_TYPE ()->
+#             code
+#          .catch s->
+#             handle failure condition `s`
+#
+# or even
+#
+#   res := try ERROR_TYPE FALLIBLE_TYPE RESULT_TYPE code || (s->handle post condition failure `s`)
+#
+public try(ERROR type, F type : fallible ERROR, T type, code_try ()->T) is
+
+  # define code to execute in case of fault and run code
+  #
+  public catch(code_catch ERROR->T) =>
+    F.try   code_try
+     .catch code_catch
+
+
+  # infix alias for catch
+  #
+  infix || (code_catch ERROR->T) => catch code_catch

@@ -28,36 +28,18 @@
 #
 public post_fault (
   # the handler this effect uses to fail
-  p Post_Fault_Handler
-  ) : effect effect_mode.plain
+  p String->void
+  ) : eff.fallible (String) /* NYI: BUG: this type parameter is require, type inference results in NullPointException */ p
 is
-
-
-  # cause postcondition fault with the given message
-  #
-  cause(msg String) =>
-    p.cause msg
 
 
   # install default post_fault handler
   type.install_default =>
-    (fuzion.runtime.post_fault default_post_fault_handler).default
+    (fuzion.runtime.post_fault msg->
+      fuzion.runtime.fault.cause ("postcondition", msg)).default
 
 
-  # default post_fault handler using io.err and exit with return code 1
-  #
-  type.default_post_fault_handler : fuzion.runtime.Post_Fault_Handler is
-
-    # fail with given kind and given message.
-    #
-    # This implementation will print "*** runtime failure: $kind $msg"
-    # and perform `exit 1`.
-    #
-    cause(# message describing what failed, e.g. "debug: a > 0"
-          #
-          msg String)
-    =>
-      fuzion.runtime.fault.cause "postcondition" msg
+  public fixed type.new(p String->void) => fuzion.runtime.post_fault p
 
 
 # post_fault with no argument returns post_fault.env, the currently installed
@@ -72,22 +54,3 @@ public post_fault =>
 # msg, i.e., use the current post_fault effect to fail with the given message.
 #
 public postcondition_fault(msg String) => post_fault.cause msg
-
-
-# Post_Fault_Handler -- abstract post_fault hadler
-#
-public Post_Fault_Handler ref is
-
-
-  # fail with given kind and given message
-  #
-  public cause(msg String) void => abstract
-
-
-  # Install this post_fault handler using a new instance of post_fault and run
-  # `code` on it.  In case of an abort, return `def()` (NYI: def should be
-  # removed and the result of fail should be returned instead).
-  #
-  public use(R type, code, def ()->R) =>
-    p := post_fault Post_Fault_Handler.this
-    p.run code def
