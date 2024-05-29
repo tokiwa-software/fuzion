@@ -39,7 +39,9 @@ is
       fuzion.runtime.fault.cause ("postcondition", msg)).default
 
 
-  public fixed type.new(p String->void) => fuzion.runtime.post_fault p
+  # create an instance of `post_fault` with the given error handler.
+  #
+  public fixed type.new(h String->void) => fuzion.runtime.post_fault h
 
 
 # post_fault with no argument returns post_fault.env, the currently installed

@@ -38,6 +38,7 @@
 #
 public try(ERROR type, F type : fallible ERROR, T type, code_try ()->T) is
 
+
   # define code to execute in case of fault and run code
   #
   public catch(code_catch ERROR->T) =>

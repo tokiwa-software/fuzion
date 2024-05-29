@@ -45,7 +45,10 @@ is
       fuzion.sys.fatal_fault kind msg
     ).default
 
-  public fixed type.new(p ((String,String))->void) => fuzion.runtime.fault p
+
+  # create an instance of `fault` with the given error handler.
+  #
+  public fixed type.new(h ((String,String))->void) => fuzion.runtime.fault h
 
 
 # fault with no argument returns fault.env, the currently installed

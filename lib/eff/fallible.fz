@@ -29,24 +29,30 @@
 public fallible(ERROR type, h ERROR->void) : effect effect_mode.plain is
 
 
-  # cause fault of given kind with the given message
+  # cause fault with the given error
   #
   public cause(e ERROR) void
   => h e
 
 
-  public type.with_try(R type, code ()->R) is
-
-
-  public type.new(p ERROR->void) fallible.this => abstract
-
-
-  # try -- simple exception effect
+  # type feature that must be implemented by all children to create an
+  # instance of `fallible.this.type` with the given error handler.
   #
-  # try provides an operation 'raise' that immediately stops execution and
-  # returns an 'error' wrapped in an 'outcome'.
+  public type.new(# the error handler, this will usually abort this effect or
+                  # abort using another effect (e.g., panic),
+                  #
+                  h ERROR->void
+                  ) fallible.this
+  => abstract
+
+
+  # try -- run code and handle fault of type `fallible.this`.
   #
-  # helper feature that allows Java-like try-catch syntax for fallible
+  # try is a type feature that can be called on any chilid of `fallible`
+  # to run the code given as an argument and handle an error using the
+  # `Unary` provided to `catch`.
+  #
+  # This enables Java-like try-catch syntax as follows
   #
   #   res := FALLIBLE_TYPE.try ()->
   #             code
@@ -55,11 +61,14 @@ public fallible(ERROR type, h ERROR->void) : effect effect_mode.plain is
   #
   # or even
   #
-  #   res := try_post code || (s->handle post condition failure `s`)
+  #   res := FALLIBLE_TYPE.try code || (s->handle post condition failure `s`)
+  #
+  # Note that the code is not executed unless `.catch` or `infix ||` is applied
+  # to the result of the call to `try`.
   #
   public type.try(T type, code_try ()->T) is
 
-    # define code to execute in case of fault and run code
+    # define code to execute in case of fault and run code_try.
     #
     public catch(code_catch ERROR->T) =>
       (ref : eff.handle ERROR fallible.this T
@@ -67,11 +76,11 @@ public fallible(ERROR type, h ERROR->void) : effect effect_mode.plain is
          catch(e ERROR) => code_catch e
       ).res
 
-    # define code to execute in case of fault and run code
+    # define code to execute in case of fault and run code_try.
     #
-    # NYI: BUG: This is a variant of `catch` that uses inline code instead of `handle`. Using this variant
-    # currently causes errors in the back end (`AbstractMethodError` for JVM backend, `unhandled dynamic
-    # target` for C backend), need to analyse and fix this.
+    # NYI: BUG: #3159 This is a variant of `catch` that uses inline code instead of `handle`. Using this
+    # variant currently causes errors in the back end (`AbstractMethodError` for JVM backend, `unhandled
+    # dynamic target` for C backend), need to analyse and fix this.
     #
     public catch_broken(code_catch ERROR->T) =>
       # use local mutate to store msg passed to `cause`
@@ -90,8 +99,9 @@ public fallible(ERROR type, h ERROR->void) : effect effect_mode.plain is
     infix || (code_catch ERROR->T) => catch code_catch
 
 
-
+# helper for fallible.type.try.
 #
+# NYI: CLEANUP: remove when `try.catch`'s code is replaced by the code in `try.catch_broken`.
 #
 handle(ERROR type, F type : fallible ERROR, T type) is
 
@@ -111,7 +121,7 @@ handle(ERROR type, F type : fallible ERROR, T type) is
       ).run try (()->catch m.get.get)
 
 
-  # NYI: BUG: The following code is a variant using the state effect instead of mutate. This
+  # NYI: BUG: #3159 The following code is a variant using the state effect instead of mutate. This
   # currently causes errors in the back end (`AbstractMethodError` for JVM backend, `unhandled dynamic
   # target` for C backend), need to analyse and fix this.
 
