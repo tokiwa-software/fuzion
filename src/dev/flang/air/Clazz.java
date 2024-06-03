@@ -1803,13 +1803,12 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (feature().isIntrinsic(),
        isCalled());
 
-    // value instances returned from intrinsics are automatically
-    // recorded to be instantiated, refs only if intrinsic is marked as
-    // 'intrinsic_constructor'.
+    // instances returned from intrinsics are automatically
+    // recorded to be instantiated.
     var rc = resultClazz();
     if (rc.isChoice())
       {
-        if (feature().isIntrinsicConstructor())
+        if (feature().isIntrinsic())
           {
             for (var cg : rc.choiceGenerics())
               {
@@ -1819,7 +1818,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
             rc.instantiated(at);
           }
       }
-    else if (!rc.isRef() || feature().isIntrinsicConstructor())
+    else if (!rc.isRef() || feature().isIntrinsic())
       {
         rc.instantiated(at);
       }

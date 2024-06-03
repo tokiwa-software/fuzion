@@ -158,12 +158,12 @@ public u8(public val u8) : num.wrap_around, has_interval is
 
   # equality
   #
-  fixed type.equality(a, b u8) bool => intrinsic_constructor
+  fixed type.equality(a, b u8) bool => intrinsic
 
 
   # total order
   #
-  fixed type.lteq(a, b u8) bool => intrinsic_constructor
+  fixed type.lteq(a, b u8) bool => intrinsic
 
 
   # returns the number in whose bit representation all bits are ones

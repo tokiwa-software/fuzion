@@ -3205,8 +3205,6 @@ implRout    : "is" "abstract"
             | ARROW "abstract"
             | "is" "intrinsic"
             | ARROW "intrinsic"
-            | "is" "intrinsic_constructor"
-            | ARROW "intrinsic_constructor"
             | "is" "native"
             | ARROW "native"
             | "is" block
@@ -3227,7 +3225,6 @@ implRout    : "is" "abstract"
       }
     if      (has_is || has_arrow   ) { result = skip(Token.t_abstract             ) ? Impl.ABSTRACT              :
                                                 skip(Token.t_intrinsic            ) ? Impl.INTRINSIC             :
-                                                skip(Token.t_intrinsic_constructor) ? Impl.INTRINSIC_CONSTRUCTOR :
                                                 skip(Token.t_native               ) ? Impl.NATIVE                :
                                                 new Impl(pos, block()    , has_is  ? Impl.Kind.Routine :
                                                                            hasType ? Impl.Kind.Routine

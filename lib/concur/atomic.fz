@@ -41,7 +41,7 @@ is
   # such as `i32`, `f64`, etc. while this is typically not the case for
   # more complex types such as `point(x,y i64)`.
   #
-  public racy_accesses_supported bool => intrinsic_constructor
+  public racy_accesses_supported bool => intrinsic
 
 
   # read the value stored in this atomic and do not care about synchronization.
@@ -137,7 +137,7 @@ is
   #
   # returns true, if successful
   #
-  compare_and_set0(expected, new_value T) bool => intrinsic_constructor
+  compare_and_set0(expected, new_value T) bool => intrinsic
 
 
   # unwrap this atomic value

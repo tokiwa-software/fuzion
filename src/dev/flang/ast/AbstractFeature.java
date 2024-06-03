@@ -222,13 +222,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Is this an intrinsic feature that creates an instance of its result ref
-   * type?
-   */
-  public abstract boolean isIntrinsicConstructor();
-
-
-  /**
    * Is this a routine that returns the current instance as its result?
    */
   public abstract boolean isConstructor();
