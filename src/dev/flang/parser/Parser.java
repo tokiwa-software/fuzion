@@ -2794,10 +2794,13 @@ ifexpr      : "if" exprInLine thenPart elseBlock
   {
     return relaxLineAndSpaceLimit(() -> {
         SourcePosition pos = tokenSourcePos();
+        // set new min indent unless this `if` is part of an `else if`
+        var old = lastToken() == Token.t_else ? null : setMinIndent(tokenPos());
         match(Token.t_if, "ifexpr");
         Expr e = exprInLine();
         Block b = thenPart(false);
         var els = elseBlock();
+        if (old != null) { setMinIndent(old); }
         return new If(pos, e, b,
           // do no use empty blocks as else blocks since the source position
           // of those block might be somewhere unexpected.

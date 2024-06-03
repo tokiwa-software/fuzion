@@ -17,27 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test unicodetest
-#
-#  Author: Michael Lill (michael.lill@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# A small test for unicode data related things
-# like string to upper/lower case conversion.
-#
-unicodetest is
-
-  chck(b bool, msg String) =>
-    s := if b
-           "PASSED: "
-         else
-           _ := set_exit_code 1
-           "FAILED: "
-    say (s + msg)
-
-
-  chck ("Hallo Welt".upper_case ≟ "HALLO WELT") "string to upper case"
-  chck ("Hallo Welt".lower_case ≟ "hallo welt") "string to lower case"
-
-  exit
+override NAME = reg_issue2691
+include ../simple.mk

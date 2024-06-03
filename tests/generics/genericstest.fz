@@ -27,11 +27,11 @@ genericstest is
 
   chck(b bool, msg String) =>
     s := if b
-      "PASSED: "
-    else
-      set_exit_code 1 ? unit =>
-                      | error =>
-      "FAILED: "
+           "PASSED: "
+         else
+           set_exit_code 1 ? unit =>
+                           | error =>
+           "FAILED: "
     say (s + msg)
 
   List(T type) is

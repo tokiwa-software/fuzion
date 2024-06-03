@@ -28,10 +28,10 @@ iftest_negative is
 
   chck(b bool, msg String) is
     s := if b
-      "PASSED: "
-    else
-      _ := set_exit_code 1
-      "FAILED: "
+           "PASSED: "
+         else
+           _ := set_exit_code 1
+           "FAILED: "
     say (s + msg)
 
   testIfNonBoolean1 is

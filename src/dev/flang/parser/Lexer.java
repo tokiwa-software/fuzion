@@ -600,6 +600,12 @@ public class Lexer extends SourceFile
 
 
   /**
+   * The previous token that was not ignored.
+   */
+  private Token _lastToken = Token.t_undefined;
+
+
+  /**
    * Position of the previous token, -1 if none
    */
   private int _lastTokenPos = -1;
@@ -691,6 +697,7 @@ public class Lexer extends SourceFile
     _curToken = original._curToken;
     _curLiteral = original._curLiteral;
     _tokenPos = original._tokenPos;
+    _lastToken = original._lastToken;
     _lastTokenPos = original._lastTokenPos;
     _lastTokenEndPos = original._lastTokenEndPos;
     _minIndent = original._minIndent;
@@ -1032,6 +1039,7 @@ public class Lexer extends SourceFile
    */
   public void next()
   {
+    _lastToken = _curToken;
     _lastTokenPos = _tokenPos;
     _lastTokenEndPos = tokenEndPos();
     _ignoredTokenBefore = false;
@@ -1128,6 +1136,15 @@ public class Lexer extends SourceFile
   public int tokenPos()
   {
     return _tokenPos;
+  }
+
+
+  /**
+   * The previous non-skip token in the source file.
+   */
+  Token lastToken()
+  {
+    return _lastToken;
   }
 
 
