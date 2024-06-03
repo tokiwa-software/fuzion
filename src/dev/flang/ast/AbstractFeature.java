@@ -377,7 +377,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   private String qualifiedName0()
   {
-    var n = featureName().baseName();
+    var n = featureName().baseNameHuman();
     return
       !state().atLeast(State.FINDING_DECLARATIONS) ||
       isUniverse()                                         ||
@@ -1799,7 +1799,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return visibility() + " " +
       FuzionConstants.modifierToString(modifiers()) +
       (isTypeFeature() ? "type." : "") +
-      featureName().baseName() +
+      featureName().baseNameHuman() +
       (arguments().isEmpty() ? "" : "("+arguments()+")") + " " +
       (state().atLeast(State.RESOLVED_TYPES) ? resultType() : "***not yet known***") + " " +
       (inherits().isEmpty() ? "" : ": " + inherits() + " ") +

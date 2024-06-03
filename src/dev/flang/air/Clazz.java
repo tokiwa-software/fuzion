@@ -1361,7 +1361,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
             ? "ref "
             : ""
             )
-         + feature().featureName().baseName()
+         + feature().featureName().baseNameHuman()
          + this._type.generics()
          .toString(" ", " ", "", t -> t.asStringWrapped())
          );

@@ -1098,7 +1098,7 @@ public class Call extends AbstractCall
             ? ""
             : _target.toString() + ".")
       + (_name          != null ? _name :
-         _calledFeature != null ? _calledFeature.featureName().baseName()
+         _calledFeature != null ? _calledFeature.featureName().baseNameHuman()
                                 : "--ANONYMOUS--" )
       + _generics.toString(" ", " ", "", t -> t.toStringWrapped())
       + _actuals .toString(" ", " ", "", e -> e.toStringWrapped())

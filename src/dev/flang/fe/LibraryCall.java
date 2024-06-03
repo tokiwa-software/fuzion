@@ -192,7 +192,7 @@ public abstract class LibraryCall extends AbstractCall
              //t instanceof Universe
             ? ""
             : t.toString() + ".")
-      + calledFeature().featureName().baseName()
+      + calledFeature().featureName().baseNameHuman()
       + actualTypeParameters().toString(" ", " ", "", at -> at.toStringWrapped())
       + actuals().toString(" ", " ", "", e -> e.toStringWrapped())
       //+ (select() < 0        ? "" : " ." + select())
