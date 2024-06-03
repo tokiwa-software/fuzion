@@ -33,20 +33,29 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
   pipe_buffer_size := 4096
 
 
+  # predefined read provider for reading from
+  # standard out of the process
+  std_out_read_provider => read_provider std_out
+
+  # predefined read provider for reading from
+  # standard err of the process
+  std_err_read_provider => read_provider std_err
+
+
   # read bytes from standard out
   #
-  read_bytes choice (array u8) io.end_of_file error
-  =>
-    arr := array u8 pipe_buffer_size i->0
-    res := fuzion.sys.pipe.read std_out arr.internal_array.data arr.count
-    if res = -1
-      error "error reading from stdout."
-    else if res = 0
-      io.end_of_file
-    else
-      arr
-        .slice 0 res
-        .as_array
+  read_provider(desc i64) : io.Read_Provider is
+    read(count i32) choice (array u8) io.end_of_file error =>
+      arr := array u8 pipe_buffer_size i->0
+      res := fuzion.sys.pipe.read desc arr.internal_array.data arr.count
+      if res = -1
+        error "error reading from stdout."
+      else if res = 0
+        io.end_of_file
+      else
+        arr
+          .slice 0 res
+          .as_array
 
 
   # write bytes to stdin of child process
@@ -77,23 +86,18 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
       )
 
 
-  # read up to n bytes of stdout to string
-  #
-  public read_string(n i32) outcome String =>
-
-    rp :=
-      ref : io.Read_Provider
-        read(count i32) choice (array u8) io.end_of_file error =>
-          read_bytes
-
-    (io.buffered.reader rp pipe_buffer_size [])
-      .with (()->io.buffered.read_string n)
+  # install buffered reader for reading from stdout of process
+  # and run `f`.
+  public with_out(T type, f ()-> T) outcome T =>
+    (io.buffered.reader (std_out_read_provider) pipe_buffer_size [])
+      .with f
 
 
-  # read string, up to 1MB from stdout
-  #
-  public read_string outcome String =>
-    read_string 1E9
+  # install buffered reader for reading from stdout of process
+  # and run `f`.
+  public with_err(T type, f ()-> T) outcome T =>
+    (io.buffered.reader (std_err_read_provider) pipe_buffer_size [])
+      .with f
 
 
   # write string to stdin of child process
@@ -154,7 +158,7 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
       # thread to pipe from one process to other
       _ := concur.thread.spawn ()->
         _ :=
-          for p1rb := read_bytes
+          for p1rb := std_out_read_provider.read pipe_buffer_size
           while
             match p1rb
               s array u8 => (write_bytes std_in s).ok
