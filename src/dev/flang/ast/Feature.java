@@ -1849,6 +1849,7 @@ public class Feature extends AbstractFeature
             public Expr         action(InlineArray    i, AbstractFeature outer) { i.checkTypes();      return i; }
             public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints();   }
             public void         action(Cond           c, AbstractFeature outer) { c.checkTypes();                }
+            public void         actionBefore(Block    b, AbstractFeature outer) { b.checkTypes();                }
           });
         checkTypes(res);
 

@@ -2144,6 +2144,13 @@ public class AstErrors extends ANY
           "Found expression "+e.pos().show()+" where a simple qualifier " +  code("a.b.c") + " was expected");
   }
 
+  public static void unusedResult(Expr e)
+  {
+    error(e.pos(), "Expression produces result of type " + s(e.type()) +  " but result is not used.",
+       "To solve this, use the result, explicitly ignore the result " + st("_ := <expression>") + " or change " + s(e.type().feature())
+              + " from constructor to routine by replacing" + skw("is") + " by " + skw("=>") + ".");
+  }
+
 
 }
 
