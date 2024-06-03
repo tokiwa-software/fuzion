@@ -1702,7 +1702,6 @@ public class Feature extends AbstractFeature
           {
             o.typeInference(res);
           }
-        choiceTypeCheckAndInternalFields(res);
 
         _resultType = resultTypeIfPresent(res);
         if (_resultType == null)
@@ -1833,6 +1832,8 @@ public class Feature extends AbstractFeature
     _state =
       (_state == State.BOXED          ) ? State.CHECKING_TYPES1 :
       (_state == State.RESOLVED_SUGAR2) ? State.CHECKING_TYPES2 : _state;
+
+    choiceTypeCheckAndInternalFields(res);
 
     if ((_state == State.CHECKING_TYPES1) ||
         (_state == State.CHECKING_TYPES2)    )
