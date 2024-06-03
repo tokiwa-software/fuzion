@@ -1,0 +1,44 @@
+
+$MODULE/option.fz:134:11: error 1: Precondition does not hold
+    safety: (option.this??)
+----------^
+For call to (option error).get#0
+Call stack:
+((try unit).on#2 void).#fun84.call#0: $MODULE/try.fz:44:47:
+    run (outcome R) (()->outcome f()) ()->err.get
+----------------------------------------------^^^
+(try unit).abort#0: $MODULE/effect.fz:100:14:
+      nil => def()
+-------------^^^
+(try unit).raise#1: $MODULE/try.fz:50:5:
+    abort
+----^^^^^
+reg_issue1698.#fun0.call#0: --CURDIR--/reg_issue1698.fz:27:7:
+    t.raise (error "a")
+------^^^^^
+(try#3 unit void).#fun4.call#0: $MODULE/try.fz:57:14:
+  (try T).on f
+-------------^
+((try unit).on#2 void).#fun83.call#0: $MODULE/try.fz:44:34:
+    run (outcome R) (()->outcome f()) ()->err.get
+---------------------------------^
+((try unit).run#3 (outcome void)).#fun1.call#0: $MODULE/effect.fz:97:23:
+    cf := Effect_Call f
+----------------------^
+((try unit).Effect_Call (outcome void)).call#0: $MODULE/effect.fz:153:18:
+      set res := f()
+-----------------^
+(try unit).run#3 (outcome void): <source position not available>:
+
+(try unit).on#2 void: $MODULE/try.fz:44:5:
+    run (outcome R) (()->outcome f()) ()->err.get
+----^^^
+try#3 unit void: $MODULE/try.fz:57:11:
+  (try T).on f
+----------^^
+reg_issue1698: --CURDIR--/reg_issue1698.fz:25:8:
+  x := try unit void ()->
+-------^^^
+
+*** fatal errors encountered, stopping.
+one error.
