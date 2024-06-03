@@ -1983,7 +1983,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public void check()
   {
-    if (isInstantiated() && _abstractCalled != null)
+    if (isCalled() && _abstractCalled != null)
       {
         AirErrors.abstractFeatureNotImplemented(feature(), _abstractCalled, _instantiationPos);
       }
