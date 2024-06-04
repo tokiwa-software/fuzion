@@ -37,5 +37,4 @@ bugOptionFalse is
       else
         b l+1
 
-  (x unit).b 0
-  unit
+  _ := (x unit).b 0

@@ -30,7 +30,7 @@
 # NYI: the compiler should check that features inheriting from this are
 # actually immutable.
 #
-public partially_orderable : property.equatable
+public partially_orderable : equatable
 
 /* NYI: quantor intrinsics not supported yet:
 

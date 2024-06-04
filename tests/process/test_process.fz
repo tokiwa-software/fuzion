@@ -44,34 +44,39 @@ test_process =>
     (process.spawn ["cat"]).bind unit p->
       _ := p.write_string "Hello from the other side."
       say p.wait
-      say p.read_string
+      _ := p.with_out ()->
+        say (io.buffered.read_string 1E9)
 
 
 
   test "read stdout of process" ()->
     (process.spawn ["echo", "eecchhoo"]).bind unit p->
-      say p.read_string
+      _ := p.with_out ()->
+        say (io.buffered.read_string 1E9)
 
 
 
   test "pass environment variable" ()->
     (process.env_vars (container.map_of [("MYENVVAR", "content")])).go ()->
       (process.spawn ["printenv", "MYENVVAR"]).bind unit p->
-        say p.read_string
+        _ := p.with_out ()->
+          say (io.buffered.read_string 1E9)
 
 
 
   test "feed output of process 1 to process 2" ()->
     (process.spawn ["echo", "'feed me to cat'"]).bind unit p->
       (p | ["cat"]).bind unit p2->
-        say p2.read_string
+        _ := p2.with_out ()->
+          say (io.buffered.read_string 1E9)
 
 
 
   test "1kb argument, piped to another process" ()->
     (process.spawn ["echo", "-n", (get_str 1E3)]).bind unit p->
       (p | ["cat"]).bind unit p2->
-        say p2.read_string.val.byte_length
+        _ := p2.with_out ()->
+          say (io.buffered.read_string 1E9).byte_length
         say p2.wait
 
 

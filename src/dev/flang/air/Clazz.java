@@ -358,7 +358,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (PRECONDITIONS) require
       (!Clazzes.closed,
-       Errors.any() || !actualType.dependsOnGenerics(),
+       Errors.any() || !actualType.dependsOnGenericsExceptTHIS_TYPE(),
        Errors.any() || actualType.feature().outer() == null || outer.feature().inheritsFrom(actualType.feature().outer()),
        Errors.any() || actualType.feature().outer() != null || outer == null,
        Errors.any() || (actualType != Types.t_ERROR     &&
@@ -1361,7 +1361,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
             ? "ref "
             : ""
             )
-         + feature().featureName().baseName()
+         + feature().featureName().baseNameHuman()
          + this._type.generics()
          .toString(" ", " ", "", t -> t.asStringWrapped())
          );
@@ -1803,13 +1803,12 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (feature().isIntrinsic(),
        isCalled());
 
-    // value instances returned from intrinsics are automatically
-    // recorded to be instantiated, refs only if intrinsic is marked as
-    // 'intrinsic_constructor'.
+    // instances returned from intrinsics are automatically
+    // recorded to be instantiated.
     var rc = resultClazz();
     if (rc.isChoice())
       {
-        if (feature().isIntrinsicConstructor())
+        if (feature().isIntrinsic())
           {
             for (var cg : rc.choiceGenerics())
               {
@@ -1819,7 +1818,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
             rc.instantiated(at);
           }
       }
-    else if (!rc.isRef() || feature().isIntrinsicConstructor())
+    else if (!rc.isRef() || feature().isIntrinsic())
       {
         rc.instantiated(at);
       }
@@ -1983,7 +1982,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public void check()
   {
-    if (isInstantiated() && _abstractCalled != null)
+    if (isCalled() && _abstractCalled != null)
       {
         AirErrors.abstractFeatureNotImplemented(feature(), _abstractCalled, _instantiationPos);
       }

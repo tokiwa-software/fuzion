@@ -830,7 +830,7 @@ Feature
 [options="header",cols="1,1,2,5"]
 |====
    |cond.     | repeat | type          | what
-.6+| true  .6+| 1      | short         | 0000REvvvFCYkkkk  k = kind, Y = has Type feature (i.e., 'f.type'), C = is intrinsic constructor, F = has 'fixed' modifier, v = visibility, R/E = has pre-/post-condition feature
+.6+| true  .6+| 1      | short         | 0000REvvvFCYkkkk  k = kind, Y = has Type feature (i.e., 'f.type'), C = unused, F = has 'fixed' modifier, v = visibility, R/E = has pre-/post-condition feature
                        | Name          | name
                        | int           | arg count
                        | int           | name id
@@ -861,7 +861,7 @@ Feature
    *   | true   | 1      | short         | 0000REvvvFCYkkkk                              |
    *   |        |        |               |           k = kind                            |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
-   *   |        |        |               |           C = is intrinsic constructor        |
+   *   |        |        |               |           C = unused                          |
    *   |        |        |               |           F = has 'fixed' modifier            |
    *   |        |        |               |           v = visibility                      |
    *   |        |        |               |           R = has precondition feature        |
@@ -946,10 +946,6 @@ Feature
   {
     var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
     return k == FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF;
-  }
-  boolean featureIsIntrinsicConstructor(int at)
-  {
-    return ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR) != 0);
   }
   boolean featureHasTypeFeature(int at)
   {

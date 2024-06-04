@@ -397,6 +397,12 @@ public class C extends ANY
           var bb = ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN);
           var elCount = bb.getInt();
 
+          // empty initializer is only allowed since C23
+          if (elCount == 0 && !_fuir.clazzIsUnitType(elementType))
+            {
+              sb.append("0");
+            }
+
           for (int idx = 0; idx < elCount; idx++)
             {
               var b = _fuir.deseralizeConst(elementType, bb);

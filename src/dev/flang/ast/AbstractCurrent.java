@@ -56,7 +56,7 @@ public abstract class AbstractCurrent extends Expr
   public AbstractCurrent(AbstractType t)
   {
     if (PRECONDITIONS) require
-      (t != null && !t.isVoid());
+      (t != null && (Types.resolved == null || !t.isVoid()));
 
     this._type = t;
   }
@@ -102,7 +102,7 @@ public abstract class AbstractCurrent extends Expr
    */
   public String toString()
   {
-    return _type.feature().featureName().baseName() + ".this";
+    return _type.feature().featureName().baseNameHuman() + ".this";
   }
 
 }

@@ -825,16 +825,6 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * Is this an intrinsic feature that creates an instance of its result ref
-   * type?
-   */
-  public boolean isIntrinsicConstructor()
-  {
-    return _impl == Impl.INTRINSIC_CONSTRUCTOR;
-  }
-
-
-  /**
    * get the code of this feature.
    */
   public Expr code()
@@ -1702,7 +1692,6 @@ public class Feature extends AbstractFeature
           {
             o.typeInference(res);
           }
-        choiceTypeCheckAndInternalFields(res);
 
         _resultType = resultTypeIfPresent(res);
         if (_resultType == null)
@@ -1834,6 +1823,8 @@ public class Feature extends AbstractFeature
       (_state == State.BOXED          ) ? State.CHECKING_TYPES1 :
       (_state == State.RESOLVED_SUGAR2) ? State.CHECKING_TYPES2 : _state;
 
+    choiceTypeCheckAndInternalFields(res);
+
     if ((_state == State.CHECKING_TYPES1) ||
         (_state == State.CHECKING_TYPES2)    )
       {
@@ -1848,6 +1839,7 @@ public class Feature extends AbstractFeature
             public Expr         action(InlineArray    i, AbstractFeature outer) { i.checkTypes();      return i; }
             public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints();   }
             public void         action(Cond           c, AbstractFeature outer) { c.checkTypes();                }
+            public void         actionBefore(Block    b, AbstractFeature outer) { b.checkTypes();                }
           });
         checkTypes(res);
 

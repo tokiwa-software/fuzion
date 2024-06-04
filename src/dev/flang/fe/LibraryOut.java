@@ -392,7 +392,7 @@ class LibraryOut extends ANY
    *   | true   | 1      | short         | 0000REvvvFCYkkkk                              |
    *   |        |        |               |           k = kind                            |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
-   *   |        |        |               |           C = is intrinsic constructor        |
+   *   |        |        |               |           C = unused                          |
    *   |        |        |               |           F = has 'fixed' modifier            |
    *   |        |        |               |           v = visibility                      |
    *   |        |        |               |           R = has precondition feature        |
@@ -450,10 +450,6 @@ class LibraryOut extends ANY
     if (CHECKS) check
       (k >= 0,
        Errors.any() || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.generics() == FormalGenerics.NONE);
-    if (f.isIntrinsicConstructor())
-      {
-        k = k | FuzionConstants.MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR;
-      }
     if (f.hasTypeFeature())
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_TYPE_FEATURE;

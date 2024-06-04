@@ -55,8 +55,6 @@ public class Impl extends ANY
 
   public static final Impl INTRINSIC = new Impl(Kind.Intrinsic);
 
-  public static final Impl INTRINSIC_CONSTRUCTOR = new Impl(Kind.Intrinsic);
-
   public static final Impl NATIVE = new Impl(Kind.Native);
 
   /**

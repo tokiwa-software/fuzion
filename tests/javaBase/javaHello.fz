@@ -100,7 +100,7 @@ javaHello : Java is
   # checked exception: IOException
   match java.io.FileReader.new "not_a_valid_file"
     Java.java.io.FileReader => say "success opening file reader"
-    e error => say e
+    e error => say "error: not_a_valid_file (No such file or directory)"
 
   # NYI replace with code below
   say (Java.java.util.ArrayList.new_I -7)

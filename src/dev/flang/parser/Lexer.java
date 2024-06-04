@@ -182,7 +182,6 @@ public class Lexer extends SourceFile
     t_is("is"),
     t_abstract("abstract"),
     t_intrinsic("intrinsic"),
-    t_intrinsic_constructor("intrinsic_constructor"),
     t_native("native"),
     t_for("for"),
     t_in("in"),

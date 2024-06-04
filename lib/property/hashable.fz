@@ -26,7 +26,7 @@
 # NYI: the compiler should check that features inheriting from this are
 # actually immutable.
 #
-public hashable : property.equatable is
+public hashable : equatable is
 
 
   # create hash code for this instance

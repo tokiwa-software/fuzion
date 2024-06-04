@@ -642,6 +642,25 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * Does this type (or its outer type) depend on generics except the implicit
+   * THIS_TYPE used for type features?
+   *
+   * NYI: HACK: This is a workaround for #3160 that is used in the air package
+   * instead of dependsOnGenerics() temporarily until we have a proper fix.
+   */
+  public boolean dependsOnGenericsExceptTHIS_TYPE()
+  {
+    var res =
+      dependsOnGenerics()  &&
+      (    isGenericArgument() && !isThisTypeInTypeFeature()
+       || !isGenericArgument() && (generics().stream().anyMatch(t -> t.dependsOnGenericsExceptTHIS_TYPE()) ||
+                                   outer() != null && outer().dependsOnGenericsExceptTHIS_TYPE()));
+    if (res) System.out.println("TRUE for "+this);
+    return res;
+  }
+
+
+  /**
    * Replace generic types used by this type by the actual types given in
    * target.
    *
@@ -1723,8 +1742,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     return
       isThisType() ||
-      !isGenericArgument() && generics().stream().anyMatch(g -> g.containsThisType()) ||
-      outer() != null && outer().containsThisType();
+      !isGenericArgument() && (generics().stream().anyMatch(g -> g.containsThisType()) ||
+                               outer() != null && outer().containsThisType());
   }
 
 

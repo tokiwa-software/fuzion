@@ -222,6 +222,7 @@ public class FUIR extends IR
     _siteClazzes = new IntArray();
     _siteIsPrecondition = new BoolArray();
     Clazzes.findAllClasses(main());
+    addClasses();
   }
 
 
@@ -317,19 +318,16 @@ public class FUIR extends IR
 
   public int firstClazz()
   {
-    addClasses();
     return CLAZZ_BASE;
   }
 
   public int lastClazz()
   {
-    addClasses();
     return CLAZZ_BASE + _clazzIds.size() - 1;
   }
 
   public int mainClazzId()
   {
-    addClasses();
     return id(_main);
   }
 
@@ -1387,7 +1385,6 @@ hw25 is
    */
   public int clazz(SpecialClazzes c)
   {
-    addClasses();
     var cc = c.getIfCreated();
     return cc == null ? -1 : id(cc);
   }
@@ -2336,7 +2333,6 @@ hw25 is
    */
   public void dumpCode()
   {
-    addClasses();
     _clazzIds.ints().forEach(cl ->
       {
         switch (clazzKind(cl))

@@ -288,8 +288,8 @@ test_postcondition is
     =>
       32168
 
-  inh_module1.f
-  inh_module2.f
+  _ := inh_module1.f
+  _ := inh_module2.f
 
   exit
 

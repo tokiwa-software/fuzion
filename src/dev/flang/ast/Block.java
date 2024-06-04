@@ -382,6 +382,28 @@ public class Block extends AbstractBlock
   }
 
 
+  /**
+   * check that each expression in this block
+   * results in either unit or void.
+   */
+  public void checkTypes()
+  {
+    _expressions
+      .stream()
+      .limit(_expressions.isEmpty() ? 0 : _expressions.size() - 1)
+      .forEach(e -> {
+        if (e.producesResult() &&
+            e.typeForInferencing().compareTo(Types.resolved.t_unit) != 0 &&
+            !e.typeForInferencing().isVoid() &&
+            e.typeForInferencing() != Types.t_ERROR)
+          {
+            AstErrors.unusedResult(e);
+          }
+      });
+
+  }
+
+
 }
 
 /* end of file */
