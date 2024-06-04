@@ -2,11 +2,11 @@
 --CURDIR--/bugOptionFalse.fz:36:9: error 1: Incompatible types in assignment
         false  # SHOULD FLAG AN ERROR!
 --------^^^^^
-assignment to field : 'bugOptionFalse.x.b.#exprResult0'
+assignment to field : 'bugOptionFalse.x.b.result'
 expected formal type: 'option bugOptionFalse.x.V'
 actual type found   : 'bool'
 assignable to       : 'bool'
 for value assigned  : 'false'
-To solve this, you could change the type of the target 'bugOptionFalse.x.b.#exprResult0' to 'bool' or convert the type of the assigned value to 'option bugOptionFalse.x.V'.
+To solve this, you could change the type of the target 'bugOptionFalse.x.b.result' to 'bool' or convert the type of the assigned value to 'option bugOptionFalse.x.V'.
 
 one error.

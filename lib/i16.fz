@@ -156,12 +156,12 @@ public i16(public val i16) : num.wrap_around, has_interval is
 
   # equality
   #
-  fixed type.equality(a, b i16) bool => intrinsic_constructor
+  fixed type.equality(a, b i16) bool => intrinsic
 
 
   # total order
   #
-  fixed type.lteq(a, b i16) bool => intrinsic_constructor
+  fixed type.lteq(a, b i16) bool => intrinsic
 
 
   # returns the number in whose bit representation all bits are ones

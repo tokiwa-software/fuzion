@@ -1,0 +1,136 @@
+body of xa.f
+a.f.post 1
+a.f.post 2
+xa.f.post 1
+xa.f.post 2
+PASS: pa pxa
+body of xb.f
+b.f.post 1
+b.f.post 2
+xb.f.post 1
+xb.f.post 2
+PASS: pb pxb
+body of xc.f
+c.f.post 1
+c.f.post 2
+xc.f.post 1
+xc.f.post 2
+PASS: pc pxc
+body of xab.f
+a.f.post 1
+a.f.post 2
+b.f.post 1
+b.f.post 2
+xab.f.post 1
+xab.f.post 2
+PASS: pa pb pxab
+body of xba.f
+b.f.post 1
+b.f.post 2
+a.f.post 1
+a.f.post 2
+xba.f.post 1
+xba.f.post 2
+PASS: pb pa pxba
+body of cac.f
+a.f.post 1
+a.f.post 2
+c.f.post 1
+c.f.post 2
+xac.f.post 1
+xac.f.post 2
+PASS: pa pc pxac
+body of xbc.f
+b.f.post 1
+b.f.post 2
+c.f.post 1
+c.f.post 2
+xbc.f.post 1
+xbc.f.post 2
+PASS: pb pc pxbc
+body of xca.f
+c.f.post 1
+c.f.post 2
+a.f.post 1
+a.f.post 2
+xca.f.post 1
+xca.f.post 2
+PASS: pc pa pxca
+body of xcb.f
+c.f.post 1
+c.f.post 2
+b.f.post 1
+b.f.post 2
+xcb.f.post 1
+xcb.f.post 2
+PASS: pc pb pxcb
+body of xabc.f
+a.f.post 1
+a.f.post 2
+b.f.post 1
+b.f.post 2
+c.f.post 1
+c.f.post 2
+xabc.f.post 1
+xabc.f.post 2
+PASS: pa pb pc pxabc
+body of xcba.f
+c.f.post 1
+c.f.post 2
+b.f.post 1
+b.f.post 2
+a.f.post 1
+a.f.post 2
+xcba.f.post 1
+xcba.f.post 2
+PASS: pc pb pa pxcba
+original 42
+hi
+original 4711
+hi
+redef 4711
+hi
+redef g 69
+ho
+original 4716
+hi
+redef 4716
+hi
+redef2 4716
+hi
+redef g 42069
+ho
+redef g 42069
+he
+original 32168
+hi
+original 112
+hi
+original 42 333 666
+hi
+original 4711 333 666
+hi
+redef 4711
+hi
+redef g 69
+ho
+original 4716 333 666
+hi
+redef 4716
+hi
+redef2 4716
+hi
+redef g 42069
+ho
+redef g 42069
+he
+original 32168 333 666
+hi
+original 112 333 666
+hi
+original 32168 333 666
+hi
+redef 32168
+original 32168 64 128
+hi
+redef 32168

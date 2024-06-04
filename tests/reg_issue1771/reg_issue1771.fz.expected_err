@@ -1,0 +1,8 @@
+
+--CURDIR--/reg_issue1771.fz:24:28: error 1: Incompatible type parameter
+f(_ type : String) => { }; f i32
+---------------------------^
+formal type parameter '_' with constraint 'String'
+actual type parameter 'i32'
+
+one error.

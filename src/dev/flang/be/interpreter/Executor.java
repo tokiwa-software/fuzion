@@ -194,8 +194,7 @@ public class Executor extends ProcessExpression<Value, Object>
   {
     if (!(_fuir.clazzIsOuterRef(f) && _fuir.clazzIsUnitType(rt)))
       {
-        var staticClazz = tc;
-        Interpreter.setField(f, staticClazz, tvalue, val);
+        Interpreter.setField(f, tc, tvalue, val);
       }
     return null;
   }
@@ -213,8 +212,7 @@ public class Executor extends ProcessExpression<Value, Object>
         var ttcc = ttcc(s, tvalue);
         var tt = ttcc.v0();
         var cc = ttcc.v1();
-        var fc = cc;
-        Interpreter.setField(fc, tt, tvalue, avalue);
+        Interpreter.setField(cc, tt, tvalue, avalue);
       }
     return null;
   }

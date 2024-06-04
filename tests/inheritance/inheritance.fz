@@ -26,10 +26,11 @@
 inheritance is
 
 
-  curid i32 := 0
+  curid := mut 0
   id i32 =>
-    set result := curid
-    set curid := result + 1
+    res := curid.get
+    curid <- res + 1
+    res
 
   A ref is
     ident i32 := id
@@ -82,7 +83,7 @@ inheritance is
 
 
   // mixing value and ref types along the inheritance chain:
-  mixValAndRef is
+  mixValAndRef =>
     // simple test: value type inheriting form ref type:
     AA ref is
       x := 3
@@ -173,7 +174,7 @@ inheritance is
   strm.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.print
   strm ref is
     u ref : strm is
-    print is
+    print =>
       say "strm.print"
 
   // This works even though strm1 is a value type, but the inner feature u that inherits from strm1 is a ref
@@ -183,7 +184,7 @@ inheritance is
   strm1.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.print
   strm1 is
     u ref : strm1 is
-    print is
+    print =>
       say "strm1.print"
 
   // this should work since it uses ref types
@@ -191,7 +192,7 @@ inheritance is
   strm5.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.print
   strm5 ref is
     u ref : strm5Z is
-    print is
+    print =>
       say "strm5.print"
   strm5X ref : strm5  is
   strm5Y ref : strm5X is
@@ -199,7 +200,7 @@ inheritance is
 
   /* simple inheritance of outer feature example: */
   cnt := 0
-  Z
+  _ := Z
   Z ref is
     BB ref : Z is
     if cnt < 10
@@ -207,9 +208,9 @@ inheritance is
       _ := BB
 
   /* more complex inheritcane of outer feateature, with one more level of nesting: */
-  tricky_Inheritance is
+  tricky_Inheritance =>
     cnt := 0
-    ZZ
+    _ := ZZ
     ZZ ref is
         say "tricky_Inheritance.ZZ: $cnt"
         BB ref is
@@ -222,7 +223,7 @@ inheritance is
   tricky_Inheritance
 
   /* calling inherited feature y from arguments to parent class D(y), feature y is inherited from value feature A */
-  call_inherited_from_parent_args is
+  call_inherited_from_parent_args =>
     chck (b bool, msg String) unit =>
       if b
         say "PASSED: $msg"
@@ -250,13 +251,13 @@ inheritance is
 
       BB ref : x, CC, DD BB.this.y is
 
-    AA.BB
+    _ := AA.BB
     chck cnt_A_y=1 "inherits calls to x must be performed in outer feature A"
     chck cnt_C_y=1 "C.y must be called exactly once as argument to parent D(y)"
   call_inherited_from_parent_args
 
   /* calling inherited feature y from arguments to parent class D(y), feature y is inherited from ref feature A */
-  call_inherited_from_parent_args2 is
+  call_inherited_from_parent_args2 =>
     chck (b bool, msg String) unit =>
       if b
         say "PASSED: $msg"
@@ -284,25 +285,24 @@ inheritance is
 
       BB ref : x, CC, DD BB.this.y is
 
-    AA.BB
+    _ := AA.BB
     chck cnt_A_y=1 "inherits calls to x must be performed in outer feature A"
     chck cnt_C_y=1 "C.y must be called exactly once as argument to parent D(y)"
   call_inherited_from_parent_args2
 
   /* check dynamic binding on call to A.x if ref feature B inherits from value feature A */
-  check_dyn_binding_when_inheriting_value is
+  check_dyn_binding_when_inheriting_value =>
     AA is
       a => x
       x => say "A.x: FAILED."; _ := set_exit_code 1
     BB ref : AA is
       a
       redef x unit => say "B.x: PASSED."
-    BB
-    unit
+    _ := BB
   check_dyn_binding_when_inheriting_value
 
   /* calling inherited feature x from arguments to parent class D(x), feature x is inherited from value feature A and calls A.y which is redefined in C */
-  call_inherited_from_parent_args3 is
+  call_inherited_from_parent_args3 =>
     chck (b bool, msg String) unit =>
       if b
         say "PASSED: $msg"
@@ -330,12 +330,12 @@ inheritance is
 
       BB ref : x, CC, DD BB.this.y is
 
-    AA.BB
+    _ := AA.BB
     chck cnt_A_y=1 "inherits calls to x must be performed in outer feature A"
     chck cnt_C_y=1 "C.y must be called exactly once via x as argument to parent D(x)"
   call_inherited_from_parent_args3
 
-  inheritOuter is
+  inheritOuter =>
     Acnt := 0
     Bcnt := 0
     Ccnt := 0
@@ -373,18 +373,18 @@ inheritance is
     D2 ref : C2.DD.D3 is
     E2 ref : D2.EE.E3 is
     F2 ref : E2.FF.F3 is
-    A1
-    B1
-    C1
-    D1
-    E1
-    F1
-    A2
-    B2
-    C2
-    D2
-    E2
-    F2
+    _ := A1
+    _ := B1
+    _ := C1
+    _ := D1
+    _ := E1
+    _ := F1
+    _ := A2
+    _ := B2
+    _ := C2
+    _ := D2
+    _ := E2
+    _ := F2
     chck "test Acnt" Acnt 18
     chck "test Bcnt" Bcnt 15
     chck "test Ccnt" Ccnt 12

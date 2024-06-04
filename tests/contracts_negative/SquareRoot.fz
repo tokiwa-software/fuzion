@@ -31,14 +31,13 @@ SquareRoot is
     post
       (result * result ≤ a) && ((result+1) * (result+1) > a)
   =>
-    set result := 1
-    for it in 0..99 do
-      n := a / result
-      set result := (result + n) / 2
-    until (( result    * result     ≤ a) &&
-           ((result+1) * (result+1) >  a)    )
+    for res := 1, (res + a / res) / 2
+        it in 0..99
+    until (( res    *  res    ≤ a) &&
+           ((res+1) * (res+1) > a)    )
+      res
     else
-      say "*** error, sqrt diverges"
+      panic "*** error, sqrt diverges"
 
   say "sqrt(16) = {sqrt(16)}"
   say "sqrt(81) = {sqrt(81)}"

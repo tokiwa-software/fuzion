@@ -288,12 +288,13 @@ field       : returnType
   {
     var name = n.get(i);
     var p2 = (i+1 < n.size()) ? fork() : null;
+    var forkAtFormArgs = isEmptyFormArgs() ? null : fork();
     var a = formArgsOpt();
     var r = returnType();
     var eff = effects();
     var hasType = r instanceof FunctionReturnType;
     var inh = inherits();
-    Contract c = contract(true);
+    Contract c = contract(forkAtFormArgs);
     Impl p =
       a  .isEmpty()    &&
       eff == UnresolvedType.NONE &&
@@ -708,7 +709,7 @@ name        : IDENT                            // all parts of name must be in s
                 }
               break;
             }
-          default: throw new Error();
+          default: throw new Error(current(mayBeAtMinIndent).toString());
           }
         sameLine(oldLine);
       }
@@ -914,7 +915,6 @@ argument    : visibility
               modifiers
               argNames
               argType
-              contract
             ;
 argType     : type
             | typeType
@@ -950,10 +950,9 @@ argType     : type
                                         i = null; // alloc one instance of Impl for each arg since they contain state
                                         t = null;
                                       }
-                                    Contract c = contract();
                                     for (var s : n)
                                       {
-                                        result.add(new Feature(s._pos, v, m, t, s._name, c,
+                                        result.add(new Feature(s._pos, v, m, t, s._name, Contract.EMPTY_CONTRACT,
                                                                i == null ? new Impl(s._pos, null, Impl.Kind.FieldActual)
                                                                          : i));
                                       }
@@ -1013,10 +1012,6 @@ typeType    : "type"
                       {
                         result = skipType();
                       }
-                  }
-                if (result)
-                  {
-                    contract();
                   }
               }
             while (result && skipComma());
@@ -2718,10 +2713,10 @@ indexVars   : "for" indexVar (semi indexVars)
 indexVar    : visibility
               modifiers
               name
-              ( type contract implFldInit nextValue
-              |      contract implFldInit nextValue
-              | type contract implFldIter
-              |      contract implFldIter
+              ( type implFldInit nextValue
+              |      implFldInit nextValue
+              | type implFldIter
+              |      implFldIter
               )
             ;
 implFldIter : "in" exprInLine
@@ -2744,8 +2739,6 @@ nextValue   : COMMA exprInLine
     boolean hasType = isType();
     ReturnType r1 = hasType ? new FunctionReturnType(       type()) : NoType.INSTANCE;
     ReturnType r2 = hasType ? new FunctionReturnType(forked.type()) : NoType.INSTANCE;
-    Contract   c1 =        contract();
-    Contract   c2 = forked.contract();
     Impl p1, p2;
     if (       skip(Token.t_in) &&
         forked.skip(Token.t_in)    )
@@ -2766,8 +2759,8 @@ nextValue   : COMMA exprInLine
             p2 = new Impl(tokenSourcePos(), exprInLine(), p2._kind);
           }
       }
-    Feature f1 = new Feature(v1,m1,r1,new List<>(n1),new List<>(),new List<>(),c1,p1);
-    Feature f2 = new Feature(v2,m2,r2,new List<>(n2),new List<>(),new List<>(),c2,p2);
+    Feature f1 = new Feature(v1,m1,r1,new List<>(n1),new List<>(),new List<>(),Contract.EMPTY_CONTRACT,p1);
+    Feature f2 = new Feature(v2,m2,r2,new List<>(n2),new List<>(),new List<>(),Contract.EMPTY_CONTRACT,p2);
     indexVars.add(f1);
     nextValues.add(f2);
   }
@@ -2804,14 +2797,12 @@ ifexpr      : "if" exprInLine thenPart elseBlock
         match(Token.t_if, "ifexpr");
         Expr e = exprInLine();
         Block b = thenPart(false);
-        If result = new If(pos, e, b);
         var els = elseBlock();
-        if (els != null && els._expressions.size() > 0)
-          { // do no set empty blocks as else blocks since the source position
-            // of those block might be somewhere unexpected.
-            result.setElse(els);
-          }
-        return result;
+        return new If(pos, e, b,
+          // do no use empty blocks as else blocks since the source position
+          // of those block might be somewhere unexpected.
+          els != null && els._expressions.size() > 0 ? els : null
+        );
       });
   }
 
@@ -2938,13 +2929,10 @@ assign      : "set" name ":=" exprInLine
    *
 destructure : destructr
             | destructrDcl
-            | destructrSet
             ;
 destructr   : "(" argNames ")"       ":=" exprInLine
             ;
 destructrDcl: formArgs               ":=" exprInLine
-            ;
-destructrSet: "set" "(" argNames ")" ":=" exprInLine
             ;
    */
   Expr destructure()
@@ -2954,21 +2942,16 @@ destructrSet: "set" "(" argNames ")" ":=" exprInLine
         var a = formArgs();
         var pos = tokenSourcePos();
         matchOperator(":=", "destructure");
-        return Destructure.create(pos, a, null, false, exprInLine());
+        return Destructure.create(pos, a, null, exprInLine());
       }
     else
       {
-        var hasSet = skip(Token.t_set);
-        if (hasSet && !ENABLE_SET_KEYWORD)
-          {
-            AstErrors.illegalUseOfSetKeyword(tokenSourcePos());
-          }
         match(Token.t_lparen, "destructure");
         var names = argNames();
         match(Token.t_rparen, "destructure");
         var pos = tokenSourcePos();
         matchOperator(":=", "destructure");
-        return Destructure.create(pos, null, names, !hasSet, exprInLine());
+        return Destructure.create(pos, null, names, exprInLine());
       }
   }
 
@@ -3029,8 +3012,8 @@ destructrSet: "set" "(" argNames ")" ":=" exprInLine
    *
 callOrFeatOrThis  : anonymous
                   | plainLambda
-                  | call
                   | universeCall
+                  | call
                   ;
    */
   Expr callOrFeatOrThis()
@@ -3038,9 +3021,26 @@ callOrFeatOrThis  : anonymous
     return
       isAnonymousPrefix()           ? anonymous()      : // starts with value/ref/:/fun/name
       isPlainLambdaPrefix()         ? plainLambda()    : // x,y,z post result = x*y*z -> x*y*z
-      isNamePrefix()                ? call(null)       : // starts with name
-      current() == Token.t_universe ? universeCall()
+      current() == Token.t_universe ? universeCall()   :
+      isNamePrefix()                ? call(null)         // starts with name
                                     : null;
+  }
+
+
+  /**
+   * Parse universe
+   *
+   * Note that we do not allow `universe` which is not followed by `.`, i.e., it
+   * is not possible to get the value of the `universe`.
+   *
+universe          : "universe"
+                  ;
+   */
+  private Expr universe()
+  {
+    var pos = tokenSourcePos();
+    match(Token.t_universe, "universe");
+    return new Universe(pos);
   }
 
 
@@ -3050,15 +3050,14 @@ callOrFeatOrThis  : anonymous
    * Note that we do not allow `universe` which is not followed by `.`, i.e., it
    * is not possible to get the value of the `universe`.
    *
-universeCall      : "universe" dot call
+universeCall      : universe dot call
                   ;
    */
   Expr universeCall()
   {
-    var pos = tokenSourcePos();
-    match(Token.t_universe, "universeCall");
+    var universe = universe();
     matchOperator(".",      "universeCall");
-    return call(new Universe(pos));
+    return call(universe);
   }
 
 
@@ -3067,7 +3066,6 @@ universeCall      : "universe" dot call
    *
 anonymous   : "ref"
               inherit
-              contract
               block
             ;
    */
@@ -3079,18 +3077,11 @@ anonymous   : "ref"
       (current() == Token.t_ref);
     ReturnType r = returnType();  // only `ref` return type allowed.
     var        i = inherit();
-    Contract   c = contract();
     Block      b = block();
-    var f = Feature.anonymous(pos, r, i, c, b);
+    var f = Feature.anonymous(pos, r, i, Contract.EMPTY_CONTRACT, b);
     var ca = new Call(pos, f);
     sameLine(sl);
-    return ca;
-    // NYI: This would simplify the code (in Feature.findFieldDefInScope that
-    // has special handling for c.calledFeature().isAnonymousInnerFeature()) but
-    // does not work yet, probably because of too much that is done explicitly
-    // for anonymous features.
-    //
-    // return new Block(b.closingBracePos_, new List<>(f, ca));
+    return new Block(new List<>(f, ca));
   }
 
 
@@ -3123,28 +3114,23 @@ dotTypeSuffx: dot "type"
 
   /**
    * Parse contract
-   */
-  Contract contract()
-  {
-    return contract(false);
-  }
-
-
-  /**
-   * Parse contract
+   *
+   * @param forkAtFormArgs in case the feature this contract belongs to has a
+   * non-empty `formArgsOpt`, this must give a fork of the parser position
+   * before the `formArgsOpt`. Otherwise, this can be null.
    *
 contract    : require ensure
             ;
-require     : "pre"        block
-            | "pre" "else" block
+require     : "pre"        block    // may start at min indent
+            | "pre" "else" block    // may start at min indent
             |
             ;
-ensure      : "post"        block
-            | "post" "then" block
+ensure      : "post"        block   // may start at min indent
+            | "post" "then" block   // may start at min indent
             |
             ;
    */
-  Contract contract(boolean atMinIndent)
+  Contract contract(Parser forkAtFormArgs)
   {
     SourceRange prePos = null;
     SourceRange postPos = null;
@@ -3152,24 +3138,28 @@ ensure      : "post"        block
     SourceRange hasThen = null;
     List<Cond> pre = null;
     List<Cond> post = null;
-    if (skip(atMinIndent, Token.t_pre))
+    if (skip(true, Token.t_pre))
       {
         var p = lastTokenPos();
         hasElse = skip(Token.t_else) ? lastTokenSourceRange() : null;
         pre = Cond.from(block());
         prePos = sourceRange(p);
       }
-    if (skip(atMinIndent, Token.t_post))
+    if (skip(true, Token.t_post))
       {
         var p = lastTokenPos();
         hasThen = skip(Token.t_then) ? lastTokenSourceRange() : null;
         post = Cond.from(block());
         postPos = sourceRange(p);
       }
-    return pre == null && post == null
+    var preArgs  = pre  == null ? null : forkAtFormArgs == null ? new List<AbstractFeature>() : forkAtFormArgs.fork().formArgsOpt();
+    var postArgs = forkAtFormArgs == null ? new List<AbstractFeature>() : forkAtFormArgs.formArgsOpt();
+    return pre == null && post == null && postArgs == null
       ? Contract.EMPTY_CONTRACT
       : new Contract(pre,  prePos,  hasElse,
-                     post, postPos, hasThen);
+                     post, postPos, hasThen,
+                     preArgs,
+                     postArgs);
   }
 
 
@@ -3215,8 +3205,6 @@ implRout    : "is" "abstract"
             | ARROW "abstract"
             | "is" "intrinsic"
             | ARROW "intrinsic"
-            | "is" "intrinsic_constructor"
-            | ARROW "intrinsic_constructor"
             | "is" "native"
             | ARROW "native"
             | "is" block
@@ -3237,7 +3225,6 @@ implRout    : "is" "abstract"
       }
     if      (has_is || has_arrow   ) { result = skip(Token.t_abstract             ) ? Impl.ABSTRACT              :
                                                 skip(Token.t_intrinsic            ) ? Impl.INTRINSIC             :
-                                                skip(Token.t_intrinsic_constructor) ? Impl.INTRINSIC_CONSTRUCTOR :
                                                 skip(Token.t_native               ) ? Impl.NATIVE                :
                                                 new Impl(pos, block()    , has_is  ? Impl.Kind.Routine :
                                                                            hasType ? Impl.Kind.Routine
@@ -3256,8 +3243,8 @@ implRout    : "is" "abstract"
   /**
    * Parse implFldOrRout
    *
-implFldOrRout   : implRout
-                | implFldInit
+implFldOrRout   : implRout           // may start at min indent
+                | implFldInit        // may start at min indent
                 |
                 ;
    */
@@ -3286,13 +3273,13 @@ implFldOrRout   : implRout
   /**
    * Parse implFldInit
    *
-implFldInit : ":=" exprInLine
+implFldInit : ":=" exprInLine      // may start at min indent
             ;
    */
   Impl implFldInit(boolean hasType)
   {
     SourcePosition pos = tokenSourcePos();
-    if (!skip(":="))
+    if (!skip(true, ":="))
       {
         syntaxError(tokenPos(), "':='", "implFldInit");
       }
@@ -3377,6 +3364,7 @@ boundType   : onetype ( PIPE onetype ) *
     switch (current())
       {
       case t_lparen: return true;
+      case t_universe: return true;
       default: return isNamePrefix();
       }
   }
@@ -3562,9 +3550,16 @@ simpletype  : name typePars typeTail
    */
   UnresolvedType simpletype(UnresolvedType lhs)
   {
-    var n = name();
-    var a = typePars();
-    lhs = new ParsedType(n._pos, n._name, a, lhs);
+    if (lhs == null && current() == Token.t_universe)
+      {
+        lhs = universe().asParsedType();
+      }
+    else
+      {
+        var n = name();
+        var a = typePars();
+        lhs = new ParsedType(n._pos, n._name, a, lhs);
+      }
     return typeTail(lhs);
   }
 
@@ -3577,9 +3572,7 @@ simpletype  : name typePars typeTail
    */
   boolean skipSimpletype()
   {
-    return
-      skipName() &&
-      skipTypePars() &&
+    return (skip(Token.t_universe) || skipName() && skipTypePars()) &&
       skipTypeTail();
   }
 

@@ -307,7 +307,6 @@ deduplicate
 defaultBehaviour
 defaultToken
 defawlt
-definedInOwnFile
 denormalized
 deP
 dependsOnGenerics
@@ -319,7 +318,6 @@ dereferencing
 dest
 destructr
 destructrDcl
-destructrSet
 destructure
 Destructure
 destructured
@@ -1031,7 +1029,6 @@ secNextPos
 semiOrFlatLF
 semiSepElmts
 sep
-setDefinedInOwnFile
 setElse
 setenv
 setField

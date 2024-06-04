@@ -98,7 +98,14 @@ public class Case extends AbstractCase
               String n,
               Block c)
   {
-    this(pos, new Feature(pos, Visi.PRIV, t, n), null, c);
+    this(pos,
+         new Feature(pos, Visi.PRIV, t, n)
+         {
+           @Override
+           public boolean isCaseField() { return true; }
+         },
+         null,
+         c);
   }
 
 
@@ -350,7 +357,7 @@ public class Case extends AbstractCase
     var sb = new StringBuilder();
     if (_field != null)
       {
-        sb.append(_field.featureName().baseName() + " " + _field.returnType());
+        sb.append(_field.featureName().baseNameHuman() + " " + _field.returnType());
       }
     else if (_types == null)
       {

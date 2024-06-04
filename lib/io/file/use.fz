@@ -59,7 +59,7 @@ public use(T, R type, file_name String, m mode.val, code ()-> outcome R) outcome
       r := open T fd file_name
         .go code
       # close file
-      fuzion.sys.fileio.close fd
+      _ := fuzion.sys.fileio.close fd
       # return result
       r
     e error =>

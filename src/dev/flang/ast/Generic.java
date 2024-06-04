@@ -270,7 +270,7 @@ public class Generic extends ANY implements Comparable<Generic>
    */
   public String toString()
   {
-    return _typeParameter.featureName().baseName();
+    return _typeParameter.featureName().baseNameHuman();
   }
 
 

@@ -54,6 +54,13 @@ public class Errors extends ANY
 
 
   /**
+   * Flag used to supress any further error output by other threads when we are
+   * shutting down.
+   */
+  private static boolean _shutting_down_ = false;
+
+
+  /**
    * Set of errors that have been shown so far. This is used to avoid presenting
    * error repeatedly.
    */
@@ -396,18 +403,21 @@ public class Errors extends ANY
     if (PRECONDITIONS) require
       (msg != null);
 
-    Error e = new Error(pos == null ? SourcePosition.builtIn : pos, msg, detail);
-    if (!_errors_.contains(e) && (pos == null || !_syntaxErrorPositions_.contains(pos)))
+    if (!_shutting_down_)
       {
-        _errors_.add(e);
-        print(pos, errorMessage(msg), detail);
-        if (count() >= MAX_ERROR_MESSAGES && MAX_ERROR_MESSAGES != -1)
+        Error e = new Error(pos == null ? SourcePosition.builtIn : pos, msg, detail);
+        if (!_errors_.contains(e) && (pos == null || !_syntaxErrorPositions_.contains(pos)))
           {
-            warning(SourcePosition.builtIn,
-                    "Maximum error count reached, terminating.",
-                    "Maximum error count is " + MAX_ERROR_MESSAGES + ".\n" +
-                    "Change this via property '" + MAX_ERROR_MESSAGES_PROPERTY + "' or command line option '" + MAX_ERROR_MESSAGES_OPTION + "'.");
-            showAndExit();
+            _errors_.add(e);
+            print(pos, errorMessage(msg), detail);
+            if (count() >= MAX_ERROR_MESSAGES && MAX_ERROR_MESSAGES != -1)
+              {
+                warning(SourcePosition.builtIn,
+                        "Maximum error count reached, terminating.",
+                        "Maximum error count is " + MAX_ERROR_MESSAGES + ".\n" +
+                        "Change this via property '" + MAX_ERROR_MESSAGES_PROPERTY + "' or command line option '" + MAX_ERROR_MESSAGES_OPTION + "'.");
+                showAndExit();
+              }
           }
       }
   }
@@ -494,9 +504,7 @@ public class Errors extends ANY
    */
   public static synchronized void fatal(String s, String detail)
   {
-    error(s, detail);
-    say_err("*** fatal errors encountered, stopping.");
-    exit(1);
+    fatal(null, s, detail);
   }
 
 
@@ -520,17 +528,9 @@ public class Errors extends ANY
   }
 
 
-  /**
-   * Throw runtime error FatalError containing exit status code.
-   */
-  private static void exit(int status)
-  {
-    throw new FatalError(status);
-  }
-
 
   /**
-   * Record the given error found during compilation and exit immediately with
+   * Record the given error during compilation and exit immediately with
    * exit code 1.
    *
    * @param pos source code position where this error occurred, may be null
@@ -543,12 +543,12 @@ public class Errors extends ANY
   {
     error(pos, s, detail);
     say_err("*** fatal errors encountered, stopping.");
-    exit(1);
+    showAndExit();
   }
 
 
   /**
-   * Record the given runtime error found and exit immediately with exit code 1.
+   * Record the given runtime error and exit immediately with exit code 1.
    *
    * @param s the error message, should not contain any LF or any case specific details
    */
@@ -559,7 +559,7 @@ public class Errors extends ANY
 
 
   /**
-   * Record the given runtime error found and exit immediately with exit code 1.
+   * Record the given runtime error and exit immediately with exit code 1.
    *
    * @param s the error message, should not contain any LF or any case specific details
    *
@@ -567,12 +567,36 @@ public class Errors extends ANY
    */
   public static void runTime(String s, String detail)
   {
-    runTime(null, s, detail);
+    runTime((SourcePosition) null, s, detail);
   }
 
 
   /**
-   * Record the given runtime error found and exit immediately with exit code 1.
+   * Record the given runtime error and exit immediately with exit code 1.
+   *
+   * @param k the kind of error we encountered, currently "postcondition" is the
+   * only supported kind that is treated specially.
+   *
+   * @param msg a message to be shown
+   *
+   * @param stackTrace a stack trace of the location of the problem.
+   */
+  public static void runTime(String kind, String msg, String stackTrace)
+  {
+    if (kind.equals("postcondition"))
+      {
+        msg = "Postcondition `" + msg + "` does not hold after call";
+      }
+    else
+      {
+        msg = "FATAL FAULT `" + kind + "`: " + msg;
+      }
+    runTime((SourcePosition) null, msg, stackTrace);
+  }
+
+
+  /**
+   * Record the given runtime error and exit immediately with exit code 1.
    *
    * @param pos source code position where this error occurred, may be null
    *
@@ -582,9 +606,7 @@ public class Errors extends ANY
    */
   public static synchronized void runTime(SourcePosition pos, String s, String detail)
   {
-    error(pos, s, detail);
-    say_err("*** fatal errors encountered, stopping.");
-    exit(1);
+    fatal(pos, s, detail);
   }
 
 
@@ -605,7 +627,13 @@ public class Errors extends ANY
                 (warningCount() > 0 ? " and " + singularOrPlural(warningCount(), "warning")
                                     : "") +
                 ".");
-        exit(1);
+
+        // See #3142: clear all errors and warnings to ensure that any other
+        // thread that might call `showAndExit` while we are terminating the
+        // current thread will not print anything.
+        _shutting_down_ = true;
+
+        throw new FatalError(1);
       }
     else if (warningStatistics && warningCount() > 0)
       {
@@ -720,7 +748,8 @@ public class Errors extends ANY
     if (PRECONDITIONS) require
       (msg != null);
 
-    if (warningCount() < MAX_WARNING_MESSAGES || MAX_WARNING_MESSAGES == -1)
+    if (!_shutting_down_ &&
+        (warningCount() < MAX_WARNING_MESSAGES || MAX_WARNING_MESSAGES == -1))
       {
         if (warningCount()+1 == MAX_WARNING_MESSAGES)
           {

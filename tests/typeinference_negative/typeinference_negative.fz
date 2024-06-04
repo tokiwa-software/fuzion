@@ -191,7 +191,7 @@ typeinference_negative is
   mix6 is // the types here are ok, but this has an access to an uninitialized field
     x := 3
     f => x
-    g => y // 44. m6.z should flag an error, y accessed before it is initilized
+    g => y // 44. m6.z NYI: UNDER DEVELOPMENT: flag an error, y accessed before it is initialized
     z := g
     y := f
 

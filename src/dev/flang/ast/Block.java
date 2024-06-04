@@ -160,7 +160,9 @@ public class Block extends AbstractBlock
     return b == null ? new Block(new List<>()) : b;
   }
 
+
   /*-----------------------------  methods  -----------------------------*/
+
 
   @Override
   public UnresolvedType asParsedType()
@@ -377,6 +379,28 @@ public class Block extends AbstractBlock
   {
     var expr = resultExpression();
     return expr != null && expr.producesResult();
+  }
+
+
+  /**
+   * check that each expression in this block
+   * results in either unit or void.
+   */
+  public void checkTypes()
+  {
+    _expressions
+      .stream()
+      .limit(_expressions.isEmpty() ? 0 : _expressions.size() - 1)
+      .forEach(e -> {
+        if (e.producesResult() &&
+            e.typeForInferencing().compareTo(Types.resolved.t_unit) != 0 &&
+            !e.typeForInferencing().isVoid() &&
+            e.typeForInferencing() != Types.t_ERROR)
+          {
+            AstErrors.unusedResult(e);
+          }
+      });
+
   }
 
 

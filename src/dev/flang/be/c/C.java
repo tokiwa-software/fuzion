@@ -397,6 +397,12 @@ public class C extends ANY
           var bb = ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN);
           var elCount = bb.getInt();
 
+          // empty initializer is only allowed since C23
+          if (elCount == 0 && !_fuir.clazzIsUnitType(elementType))
+            {
+              sb.append("0");
+            }
+
           for (int idx = 0; idx < elCount; idx++)
             {
               var b = _fuir.deseralizeConst(elementType, bb);
@@ -744,10 +750,23 @@ public class C extends ANY
     var cCompiler = _options._cCompiler != null ? _options._cCompiler : "clang";
     var cTarget = _options._cTarget != null ? Optional.of(_options._cTarget) : getClangDefaultTarget();
     var command = new List<String>(cCompiler);
+
     if (cTarget.isPresent())
       {
         command.add("--target=" + cTarget.get());
       }
+
+    /*
+     * "Generate code to catch integer overflow errors.
+     *  Signed integer overflow is undefined in C. With this flag,
+     *  extra code is generated to detect this and abort when it happens."
+     * source: man clang
+     */
+    command.add("-ftrapv");
+
+    // NYI: UNDER DEVELOPMENT: enable this once we have gotten rid of implicit conversions
+    // command.add("-Wconversion");
+
     if(_options._cFlags != null)
       {
         command.addAll(_options._cFlags.split(" "));
@@ -757,6 +776,23 @@ public class C extends ANY
         command.addAll(
           "-Wall",
           "-Werror",
+          // some suggestions taken from: https://github.com/mcinglis/c-style
+          "-Wextra",
+          "-Wpedantic",
+          "-Wformat=2",
+          "-Wno-unused-parameter",
+          "-Wshadow",
+          "-Wwrite-strings",
+          "-Wold-style-definition",
+          "-Wredundant-decls",
+          "-Wnested-externs",
+          "-Wmissing-include-dirs",
+          // NYI: UNDER DEVELOPEMENT:
+          "-Wno-strict-prototypes",
+          // NYI: UNDER DEVELOPEMENT:
+          "-Wno-gnu-empty-initializer",
+          // NYI: UNDER DEVELOPEMENT:
+          "-Wno-zero-length-array",
           "-Wno-trigraphs",
           "-Wno-gnu-empty-struct",
           "-Wno-unused-variable",
@@ -774,14 +810,17 @@ public class C extends ANY
 
         command.addAll("-O3");
       }
+
     if(_options._useBoehmGC)
       {
         command.addAll("-lgc", "-DGC_THREADS", "-DGC_PTHREADS", "-DPTW32_STATIC_LIB", "-DGC_WIN32_PTHREADS");
       }
+
     if (linkJVM())
       {
         command.addAll("-DFUZION_LINK_JVM");
       }
+
     if (usesThreads())
       {
         command.addAll("-DFUZION_ENABLE_THREADS");
@@ -821,6 +860,7 @@ public class C extends ANY
       {
         command.addAll(_options.pathOf("include/posix.c"));
       }
+
     command.addAll(cf.fileName());
 
     if (linkJVM())
@@ -1863,7 +1903,7 @@ public class C extends ANY
       }
     var allocCurrent = switch (_fuir.lifeTime(cl, pre))
       {
-      case Call      -> CStmnt.seq(CStmnt.lineComment("cur does not escape, alloc on stack"), CStmnt.decl(_names.struct(cl), CNames.CURRENT));
+      case Call      -> CStmnt.seq(CStmnt.lineComment("cur does not escape, alloc on stack"), CStmnt.decl(_names.struct(cl), CNames.CURRENT, CExpr.compoundLiteral(_names.struct(cl), "")));
       case Unknown   -> CStmnt.seq(CStmnt.lineComment("cur may escape, so use malloc"      ), declareAllocAndInitClazzId(cl, CNames.CURRENT));
       case Undefined -> CExpr.dummy("undefined life time");
       };

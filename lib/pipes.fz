@@ -46,14 +46,14 @@ public infix |> (A, R type, a A, f A->R) =>
 #
 #   f(a,b i32) => a+b
 #   l1 := [1,2,3,4]
-#   l2 := [4,3,2,1}
+#   l2 := [4,3,2,1]
 #   l := l1.pairs l2
 #          .map p->{(p1,p2) := p; f p1 p2}
 #
 # you can write
 #
 #   l1 := [1,2,3,4]
-#   l2 := [4,3,2,1}
+#   l2 := [4,3,2,1]
 #   l := l1.pairs l2
 #          .map (p -> p ||> f)
 #
@@ -169,14 +169,14 @@ public infix <| (A, R type, f A->R, a A) =>
 #
 #   f(a,b i32) => a+b
 #   l1 := [1,2,3,4]
-#   l2 := [4,3,2,1}
+#   l2 := [4,3,2,1]
 #   l := l1.pairs l2
 #          .map p->{(p1,p2) := p; f p1 p2}
 #
 # you can write
 #
 #   l1 := [1,2,3,4]
-#   l2 := [4,3,2,1}
+#   l2 := [4,3,2,1]
 #   l := l1.pairs l2
 #          .map (p -> f <|| p)
 #

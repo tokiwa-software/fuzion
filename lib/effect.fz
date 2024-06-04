@@ -93,7 +93,7 @@ is
 
   # execute the code of 'f' in the context of this effect
   #
-  module run(R type, f () -> R, def ()->R) R =>
+  public run(R type, f () -> R, def ()->R) R =>
     cf := Effect_Call f
     abortable cf
     match cf.res
@@ -112,7 +112,7 @@ is
 
 
   # has an effect of the given type been installed?
-  public type.is_installed(E type) bool => intrinsic_constructor
+  public type.is_installed(E type) bool => intrinsic
 
   # has an effect of the given type been installed?
   public type.get_if_installed option effect.this =>

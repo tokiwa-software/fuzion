@@ -46,27 +46,23 @@ public class If extends ExprWithPos
 
 
   /**
-   *
+   * the condition (must result in bool)
    */
   public Expr cond;
 
   /**
-   *
+   * the if-block
    */
   public Block block;
 
   /**
-   *
+   * the else-block (may be null)
    */
   public Block elseBlock;
 
-  /**
-   *
-   */
-  public If elseIf;
-  public Expr elseIfDesugared;
-
   public AbstractType _type;
+
+  private boolean _assignedToField = false;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -75,22 +71,12 @@ public class If extends ExprWithPos
   /**
    * Constructor
    *
-   * @param c
+   * @param c the condition (must result in bool)
    *
-   * @param b
-   */
-  public If(SourcePosition pos, Expr c, Block b)
-  {
-    this(pos, c, b, null);
-  }
-
-
-  /**
-   * Constructor
+   * @param b the if-block
    *
-   * @param c
+   * @param elseB the else-block (may be null)
    *
-   * @param b
    */
   public If(SourcePosition pos, Expr c, Expr b, Expr elseB)
   {
@@ -103,39 +89,27 @@ public class If extends ExprWithPos
     this.cond = c;
     this.block = Block.fromExpr(b);
     this.block._newScope = true;
-    this.elseBlock = Block.fromExpr(elseB);
-    if (this.elseBlock != null)
+
+    var eb = Block.fromExpr(elseB);
+    if (eb != null)
       {
-        this.elseBlock._newScope = true;
+        eb._newScope = true;
+        elseBlock = eb;
+      }
+
+    /**
+     * If there is no else / elseif, create a default else
+     * branch returning unit.
+     */
+    if (elseBlock == null)
+      {
+        var unit = new Call(pos(), "unit");
+        elseBlock = new Block(new List<>(unit));
       }
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * setElse
-   *
-   * @param b
-   */
-  public void setElse(Block b)
-  {
-    if (PRECONDITIONS) require
-      (elseBlock == null,
-       elseIf == null);
-
-    if (b._expressions.size() == 1 && b._expressions.get(0) instanceof If i)
-      {
-        elseIf = i;
-      }
-    else
-      {
-        b._newScope = true;
-        elseBlock = b;
-      }
-  }
-
 
   /**
    * Create an Iterator over all branches in this if expression, including all
@@ -146,16 +120,22 @@ public class If extends ExprWithPos
     return new Iterator<Expr>()
     {
       If curIf = If.this;
-      boolean blockReturned = false;
+      Expr lastBlock = null;
       public boolean hasNext()
       {
-        return curIf != null;
+        return curIf != null || lastBlock != null;
       }
       public Expr next()
       {
-        Expr result   = !blockReturned ? curIf.block : curIf.elseBlock != null ? curIf.elseBlock : null;
-        blockReturned = !blockReturned && curIf.elseBlock != null;
-        curIf         = blockReturned ? curIf : curIf.elseIf;
+        var result = curIf == null
+          ? lastBlock
+          : curIf.block;
+
+        lastBlock = curIf != null ? curIf.elseBlock : null;
+        curIf = curIf != null && curIf.elseBlock._expressions.size() == 1 && curIf.elseBlock._expressions.get(0) instanceof If i
+          ? i
+          : null;
+
         return result;
       }
     };
@@ -188,9 +168,6 @@ public class If extends ExprWithPos
    */
   AbstractType typeForInferencing()
   {
-    if (PRECONDITIONS) require
-      (elseBlock != null || elseIf != null);
-
     if (_type == null)
       {
         _type = typeFromIfOrElse();
@@ -205,9 +182,6 @@ public class If extends ExprWithPos
    */
   public void checkTypes()
   {
-    if (PRECONDITIONS) require
-      (elseBlock != null || elseIf != null);
-
     var t = cond.type();
     if (!Types.resolved.t_bool.isDirectlyAssignableFrom(t))
       {
@@ -228,20 +202,11 @@ public class If extends ExprWithPos
    */
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
-    createDefaultElseIfMissing();
     cond = cond.visit(v, outer);
     block = block.visit(v, outer);
     if (elseBlock != null)
       {
         elseBlock = elseBlock.visit(v, outer);
-      }
-    if (elseIf != null)
-      {
-        elseIfDesugared = elseIf.visit(v, outer);
-        if (elseIfDesugared instanceof If i)
-          {
-            elseIf = i;
-          }
       }
     return v.action(this, outer);
   }
@@ -255,19 +220,12 @@ public class If extends ExprWithPos
    */
   public void visitExpressions(ExpressionVisitor v)
   {
-    if (PRECONDITIONS) require
-      (elseBlock != null || elseIf != null);
-
     super.visitExpressions(v);
     cond.visitExpressions(v);
     block.visitExpressions(v);
     if (elseBlock != null)
       {
         elseBlock.visitExpressions(v);
-      }
-    if (elseIf != null)
-      {
-        elseIf.visitExpressions(v);
       }
   }
 
@@ -290,18 +248,12 @@ public class If extends ExprWithPos
    */
   If assignToField(Resolution res, AbstractFeature outer, Feature r)
   {
-    if (PRECONDITIONS) require
-      (elseBlock != null || elseIf != null);
-
     block = block.assignToField(res, outer, r);
     if (elseBlock != null)
       {
         elseBlock = elseBlock.assignToField(res, outer, r);
       }
-    if (elseIf != null)
-      {
-        elseIf = elseIf.assignToField(res, outer, r);
-      }
+    _assignedToField = true;
     return this;
   }
 
@@ -320,9 +272,6 @@ public class If extends ExprWithPos
    */
   public void propagateExpectedType(Resolution res, AbstractFeature outer)
   {
-    if (PRECONDITIONS) require
-      (elseBlock != null || elseIf != null);
-
     if (cond != null)
       {
         cond = cond.propagateExpectedType(res, outer, Types.resolved.t_bool);
@@ -349,24 +298,7 @@ public class If extends ExprWithPos
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
-    if (PRECONDITIONS) require
-      (elseBlock != null || elseIf != null);
-
     return addFieldForResult(res, outer, t);
-  }
-
-
-  /**
-   * If there is no else / elseif, create a default else
-   * branch returning unit.
-   */
-  private void createDefaultElseIfMissing()
-  {
-    if (elseBlock == null && elseIf == null)
-      {
-        var unit = new Call(pos(), "unit");
-        elseBlock = new Block(new List<>(unit));
-      }
   }
 
 
@@ -382,9 +314,6 @@ public class If extends ExprWithPos
    */
   public Expr resolveSyntacticSugar2(Resolution res, AbstractFeature outer)
   {
-    if (PRECONDITIONS) require
-      ((elseBlock == null) != (elseIf == null));
-
     return Errors.any()
       ? this  // no need to possible produce more errors
       : new AbstractMatch() {
@@ -401,12 +330,22 @@ public class If extends ExprWithPos
           @Override
           public List<AbstractCase> cases()
           {
-            var el = elseBlock != null ? elseBlock : elseIfDesugared;
             return new List<AbstractCase>(
               new Case(block.pos(), new List<AbstractType>(Types.resolved.f_TRUE.selfType()), block),
-              new Case(el.pos(), new List<AbstractType>(Types.resolved.f_FALSE.selfType()), el));
+              new Case(elseBlock.pos(), new List<AbstractType>(Types.resolved.f_FALSE.selfType()), elseBlock));
           }
         };
+  }
+
+
+
+  /**
+   * Some Expressions do not produce a result, e.g., a Block that is empty or
+   * whose last expression is not an expression that produces a result.
+   */
+  public boolean producesResult()
+  {
+    return !_assignedToField;
   }
 
 
@@ -419,13 +358,7 @@ public class If extends ExprWithPos
   {
     return
       "if "+cond+"\n"+block.toString("  ")+
-      (elseIf != null
-       ? "else "+elseIf
-       : (elseBlock != null
-          ? "else\n"+elseBlock.toString("  ")
-          : ""
-          )
-       );
+      "else "+elseBlock.toString("  ");
   }
 
 

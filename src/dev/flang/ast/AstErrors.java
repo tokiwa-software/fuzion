@@ -106,11 +106,11 @@ public class AstErrors extends ANY
   static String sbnf(AbstractFeature f) // feature base name
   {
     return f == Types.f_ERROR ? err()
-                              : sbn(f.featureName().baseName());
+                              : sbn(f.featureName().baseNameHuman());
   }
   static String sbnf(FeatureName fn) // feature base name plus arg count and id string
   {
-    return sbn(fn.baseName()) + fn.argCountAndIdString();
+    return sbn(fn.baseNameHuman()) + fn.argCountAndIdString();
   }
   static String slbn(List<FeatureName> l)
   {
@@ -496,7 +496,7 @@ public class AstErrors extends ANY
                      "when passing argument in a call",
                      "Actual type for argument #" + (count+1) + (f == null ? "" : " " + sbnf(f)) + " does not match expected type.\n" +
                      "In call to          : " + s(calledFeature) + "\n",
-                     (f == null ? "argument #" + (count+1) : f.featureName().baseName()),
+                     (f == null ? "argument #" + (count+1) : f.featureName().baseNameHuman()),
                      frmlT,
                      value,
                      null);
@@ -940,7 +940,7 @@ public class AstErrors extends ANY
               "Duplicate feature declaration",
               "Feature that was declared repeatedly: " + s(of) + "\n" +
               "originally declared at " + existing.pos().show() + "\n" +
-              "To solve this, consider renaming one of these two features, e.g., as " + sbn(of.featureName().baseName() + "ʼ") +
+              "To solve this, consider renaming one of these two features, e.g., as " + sbn(of.featureName().baseNameHuman() + "ʼ") +
               " (using a unicode modifier letter apostrophe " + sbn("ʼ")+ " U+02BC) "+
               (f.isTypeFeature()
                ? ("or changing it into a routine by returning a " +
@@ -981,12 +981,51 @@ public class AstErrors extends ANY
           solution);
   }
 
-  public static void cannotRedefineChoice(AbstractFeature f, AbstractFeature existing)
+  static void cannotRedefineChoice(AbstractFeature f, AbstractFeature existing)
   {
     cannotRedefine(f.pos(), f, existing, "Cannot redefine choice feature",
                    "To solve this, re-think what you want to do.  Choice types are fairly static and not extensible. " +
                    "If you need an extensible type, an abstract "+code("ref")+" feature with children for each case " +
                    "might fit better. ");
+  }
+
+  public static void cannotRedefine(AbstractFeature f, AbstractFeature existing)
+  {
+    if (any() && f.isTypeFeature() || existing.isTypeFeature())
+      {
+        // suppress subsequent errors in auto-generated type features
+      }
+    else if (existing.isChoice())
+      {
+        cannotRedefineChoice(f, existing);
+      }
+    else if (f.isChoice())
+      {
+        cannotRedefine(f.pos(), f, existing,
+                       "Redefinition cannot be a choice",
+                       "To solve this, re-think what you want to do.  Maybe define a new choice type with a different name instead.");
+      }
+    else if (existing.isConstructor() || f.isConstructor())
+      {
+        cannotRedefine(f.pos(), f, existing,
+                       existing.isConstructor() ? "Cannot redefine constructor"
+                                                : "Redefinition cannot be a constructor",
+                       "To solve this, re-think what you want to do.  The result type of a constructor is defined " +
+                       "by the feature itself, so the result type of a redefinition would usually be incompatible. " +
+                       "If you do not intend to use the result value, just make this a routine with unit type result, "+
+                       "i.e., use " + code("=> unit") + " instead of " + code("is") + ".");
+      }
+    else if (existing.isTypeParameter() || f.isTypeParameter())
+      {
+        cannotRedefine(f.pos(), f, existing,
+                       existing.isTypeParameter() ? "Cannot redefine a type parameter"
+                                                  : "Redefinition cannot be a type parameter",
+                       "To solve this, re-think what you want to do.  Maybe introduce a type parameter with a new name.");
+      }
+    else
+      {
+        fatal("AstErrors.cannotRedefine called with existing: "+existing.kind()+" f: "+f.kind());
+      }
   }
 
   public static void redefineModifierMissing(SourcePosition pos, AbstractFeature f, AbstractFeature existing)
@@ -1072,10 +1111,10 @@ public class AstErrors extends ANY
         outerLevels.add(o);
         qualifiedCalls
           .append(qualifiedCalls.length() > 0 ? " or " : "")
-          .append(code(o.qualifiedName() + (o.isUniverse() ? "." : ".this.") + fn.baseName()));
+          .append(code(o.qualifiedName() + (o.isUniverse() ? "." : ".this.") + fn.baseNameHuman()));
       }
     error(pos,
-          "Ambiguous targets found for " + operation + " to " + sbn(fn.baseName()),
+          "Ambiguous targets found for " + operation + " to " + sbn(fn.baseNameHuman()),
           "Found several possible " + operation + " targets within the current feature at " +
           (outerLevels.size() == 1 ? "the same outer level " : "different levels of outer features:\n") +
           featuresAndOuterList(targets) +
@@ -1186,7 +1225,7 @@ public class AstErrors extends ANY
           : !candidatesArgCountMismatch.isEmpty()
           ? "Different count of arguments needed when calling feature"
           : "Could not find called feature";
-        var solution1 = solutionDeclareReturnTypeIfResult(calledName.baseName(),
+        var solution1 = solutionDeclareReturnTypeIfResult(calledName.baseNameHuman(),
                                                           calledName.argCount());
         var solution2 = solutionWrongArgumentNumber(candidatesArgCountMismatch);
         var solution3 = solutionAccidentalFreeType(target);
@@ -1279,9 +1318,9 @@ public class AstErrors extends ANY
       (f.isField());
 
     if (CHECKS) check
-      (any() || !f.featureName().baseName().equals(ERROR_STRING));
+      (any() || !f.featureName().baseNameHuman().equals(ERROR_STRING));
 
-    if (!f.featureName().baseName().equals(ERROR_STRING))
+    if (!f.featureName().baseNameHuman().equals(ERROR_STRING))
       {
         error(f.pos(),
               "Missing result type in field declaration with initialization",
@@ -1375,13 +1414,6 @@ public class AstErrors extends ANY
           "Type used: " + s(t) + "\n" +
           "Formal type parameter used " + s(generic) + "\n" +
           "Formal type parameter declared in " + generic.typeParameter().pos().show() + "\n");
-  }
-
-  static void refToChoice(SourcePosition pos)
-  {
-    error(pos,
-          "ref to a choice type is not allowed",
-          "a choice is always a value type");
   }
 
   static void genericsMustBeDisjoint(SourcePosition pos, AbstractType t1, AbstractType t2)
@@ -1561,6 +1593,17 @@ public class AstErrors extends ANY
     error(pos,
           "Choice feature must not be abstract",
           "A choice feature must be a normal feature with empty code section");
+  }
+
+  static void choiceMustNotHaveResultType(SourcePosition pos, ReturnType rt)
+  {
+    var rtPos = rt.posOrNull();
+    error(pos,
+          "Choice feature must not have a result type",
+          "A choice feature cannot be called, so it does not make sense to define a result type of a choice.\n" +
+          "Result type " + s(rt) + (rtPos != null
+                                    ? " at " + rtPos.show()
+                                    : ""));
   }
 
   static void choiceMustNotBeIntrinsic(SourcePosition pos)
@@ -1852,7 +1895,7 @@ public class AstErrors extends ANY
           + f.arguments()
             .stream()
             .map(a -> "Argument #" + (cnt[0]++) + ": " + sbnf(a) +
-                 (duplicateNames.contains(a.featureName().baseName()) ? " is duplicate "
+                 (duplicateNames.contains(a.featureName().baseNameHuman()) ? " is duplicate "
                                                                       : " is ok"        ) + "\n")
             .collect(Collectors.joining(""))
           + "To solve this, rename the arguments to have unique names."
@@ -1880,7 +1923,7 @@ public class AstErrors extends ANY
    */
   public static void routineCannotReturnItself(AbstractFeature f)
   {
-    String n = f.featureName().baseName();
+    String n = f.featureName().baseNameHuman();
     String args = f.arguments().size() > 0 ? "(..args..)" : "";
     String old_code =
       "\n" +
@@ -2092,6 +2135,13 @@ public class AstErrors extends ANY
   {
     error(pos, "Qualifier expected for "+code(".this")+" expression.",
           "Found expression "+e.pos().show()+" where a simple qualifier " +  code("a.b.c") + " was expected");
+  }
+
+  public static void unusedResult(Expr e)
+  {
+    error(e.pos(), "Expression produces result of type " + s(e.type()) +  " but result is not used.",
+       "To solve this, use the result, explicitly ignore the result " + st("_ := <expression>") + " or change " + s(e.type().feature())
+              + " from constructor to routine by replacing" + skw("is") + " by " + skw("=>") + ".");
   }
 
 

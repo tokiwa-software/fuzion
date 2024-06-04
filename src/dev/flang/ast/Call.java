@@ -342,7 +342,7 @@ public class Call extends AbstractCall
        Expr            target,
        AbstractFeature anonymous)
   {
-    this(pos, target, null, Expr.NO_EXPRS);
+    this(pos, target, anonymous.featureName().baseName(), Expr.NO_EXPRS);
     this._calledFeature = anonymous;
   }
 
@@ -405,7 +405,9 @@ public class Call extends AbstractCall
                AbstractType type)
   {
     if (PRECONDITIONS) require
-      (Errors.any() || generics.stream().allMatch(g -> !g.containsError()));
+      (Errors.any() || generics.stream().allMatch(g -> !g.containsError()),
+       name != FuzionConstants.UNIVERSE_NAME);
+
     this._pos = pos;
     this._name = name;
     this._select = select;
@@ -832,24 +834,22 @@ public class Call extends AbstractCall
   FeatureAndOuter partiallyApplicableAlternative(Resolution res, AbstractFeature outer, AbstractType expectedType)
   {
     if (PRECONDITIONS) require
-      (expectedType.isFunctionType());
+      (expectedType.isFunctionType(),
+       _name != null);
 
     FeatureAndOuter result = null;
-    if (_name != null)  // NYI: CLEANUP: _name is null for call to anonymous inner feature. Should better be the name of the called feature
-      {
-        var n = expectedType.arity() + (_wasImplicitImmediateCall ? _originalArgCount : _actuals.size());
-        var newName = newNameForPartial(expectedType);
-        var name = newName != null ? newName : _name;
+    var n = expectedType.arity() + (_wasImplicitImmediateCall ? _originalArgCount : _actuals.size());
+    var newName = newNameForPartial(expectedType);
+    var name = newName != null ? newName : _name;
 
-        // if loadCalledFeatureUnlessTargetVoid has found a suitable called
-        // feature in an outer feature, it will have replaced a null _target, so
-        // we check _originalTarget here to not check all outer features:
-        var traverseOuter = _originalTarget == null;
-        var targetFeature = traverseOuter ? outer : targetFeature(res, outer);
-        var fos = res._module.lookup(targetFeature, name, this, traverseOuter, false);
-        var calledName = FeatureName.get(name, n);
-        result = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> ff.valueArguments().size() == n);
-      }
+    // if loadCalledFeatureUnlessTargetVoid has found a suitable called
+    // feature in an outer feature, it will have replaced a null _target, so
+    // we check _originalTarget here to not check all outer features:
+    var traverseOuter = _originalTarget == null;
+    var targetFeature = traverseOuter ? outer : targetFeature(res, outer);
+    var fos = res._module.lookup(targetFeature, name, this, traverseOuter, false);
+    var calledName = FeatureName.get(name, n);
+    result = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> ff.valueArguments().size() == n);
     return result;
   }
 
@@ -1098,7 +1098,7 @@ public class Call extends AbstractCall
             ? ""
             : _target.toString() + ".")
       + (_name          != null ? _name :
-         _calledFeature != null ? _calledFeature.featureName().baseName()
+         _calledFeature != null ? _calledFeature.featureName().baseNameHuman()
                                 : "--ANONYMOUS--" )
       + _generics.toString(" ", " ", "", t -> t.toStringWrapped())
       + _actuals .toString(" ", " ", "", e -> e.toStringWrapped())

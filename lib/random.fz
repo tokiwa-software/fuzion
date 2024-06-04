@@ -97,7 +97,7 @@ is
 
   # install default instance of random
   #
-  type.install_default is
+  type.install_default =>
     if !effect.is_installed random
       _ := random simple_random_handler.default effect_mode.default
 

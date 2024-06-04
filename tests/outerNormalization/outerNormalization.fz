@@ -36,7 +36,7 @@ outerNormalization is
   # actual strings, would result in different, incompatible types
   #
   testCodepointsStream(s String) is
-      l := s.as_codepoints
+    l := s.as_codepoints
 
   say "testCodepointsStream of \$1234 is {(testCodepointsStream $1234).l}"
   say "testCodepointsStream of \$true is {(testCodepointsStream $true).l}"
@@ -46,7 +46,7 @@ outerNormalization is
   # is not specialized for sub-clazzes b and c.  If it was, the result would not
   # be assignemnt compatible to x
   #
-  testConstructor is
+  testConstructor =>
 
     a (i i32) ref is
       f is
@@ -68,7 +68,7 @@ outerNormalization is
 
   # similar problem may occur already with a single heir 'b':
   #
-  testConstructor2 is
+  testConstructor2 =>
 
     a (i i32) ref is
       f is
@@ -88,7 +88,7 @@ outerNormalization is
   # testNormalize maps the problem checked by testZero from i32/numeric to
   # simpler features j/n
   #
-  testNormalize is
+  testNormalize =>
     n(T type : n T) is
       a T => abstract
       b T => a
@@ -98,11 +98,10 @@ outerNormalization is
       a => j
       redef as_string => "a 'j'"
 
-    t(r rj) is
+    t(r rj) =>
       say "testNormalize: {r.b}"
 
     t j
-    unit
 
   testNormalize
 
@@ -110,7 +109,7 @@ outerNormalization is
   # testNormalize2 maps the problem checked by testZero from i32/numeric to
   # simpler features j/n that are not even generic
   #
-  testNormalize2 is
+  testNormalize2 =>
     n is
       a i32 => abstract
       b i32 => a
@@ -120,11 +119,10 @@ outerNormalization is
       a => 3
       redef as_string => "a 'j'"
 
-    t(r rj) is
+    t(r rj) =>
       say "testNormalize2: {r.b}"
 
     t j
-    unit
 
   testNormalize2
 
@@ -132,8 +130,8 @@ outerNormalization is
   # An (open) interval such as '0..' is of type '(has_interval i32).infix ..', but
   # that should be converted to 'i32.infix ..' in FUIR:
   #
-  testInterval is
-    for i in 0.. do
+  testInterval =>
+    _ := for i in 0.. do
       say $i
     until i > 3
 

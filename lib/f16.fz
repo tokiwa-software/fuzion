@@ -25,7 +25,8 @@
 
 # f16 -- 16 bit floating point values
 #
-public f16(public val f16) is
+# NYI: UNDER DEVELOPMENT:
+private f16(public val f16) is
   public infix + (other f16) f16 => panic "NYI: f16 is not supported"
   public infix - (other f16) f16 => panic "NYI: f16 is not supported"
   public infix * (other f16) f16 => panic "NYI: f16 is not supported"

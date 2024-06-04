@@ -36,13 +36,13 @@ import java.security.NoSuchAlgorithmException;
 
 import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
+import dev.flang.ast.AbstractCall;
+import dev.flang.ast.AbstractConstant;
 import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Box;
-import dev.flang.ast.Call;
-import dev.flang.ast.Constant;
 import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
@@ -389,12 +389,14 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | short         | 000000vvvFCYkkkk                              |
+   *   | true   | 1      | short         | 0000REvvvFCYkkkk                              |
    *   |        |        |               |           k = kind                            |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
-   *   |        |        |               |           C = is intrinsic constructor        |
+   *   |        |        |               |           C = unused                          |
    *   |        |        |               |           F = has 'fixed' modifier            |
    *   |        |        |               |           v = visibility                      |
+   *   |        |        |               |           R = has precondition feature        |
+   *   |        |        |               |           E = has postcondition feature       |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -420,10 +422,10 @@ class LibraryOut extends ANY
    *   | true   | 1      | int           | precondition count pre_n                      |
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | pre_n  | Code          | precondition code                             |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | int           | postcondition count post_n                    |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | post_n | Code          | postcondition code                            |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | R      | 1      | int           | feature offset of precondition feature        |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | E      | 1      | int           | feature offset of pistcondition feature       |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | redefines count r                             |
    *   |        +--------+---------------+-----------------------------------------------+
@@ -448,10 +450,6 @@ class LibraryOut extends ANY
     if (CHECKS) check
       (k >= 0,
        Errors.any() || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.generics() == FormalGenerics.NONE);
-    if (f.isIntrinsicConstructor())
-      {
-        k = k | FuzionConstants.MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR;
-      }
     if (f.hasTypeFeature())
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_TYPE_FEATURE;
@@ -459,6 +457,16 @@ class LibraryOut extends ANY
     if ((f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0)
       {
         k = k | FuzionConstants.MIR_FILE_KIND_IS_FIXED;
+      }
+    var preF = (AbstractFeature) null; // NYII f.contract()._preFeature;
+    if (preF != null)
+      {
+        k = k | FuzionConstants.MIR_FILE_KIND_HAS_PRE_CONDITION_FEATURE;
+      }
+    var postF = f.postFeature();
+    if (postF != null)
+      {
+        k = k | FuzionConstants.MIR_FILE_KIND_HAS_POST_CONDITION_FEATURE;
       }
     var n = f.featureName();
     _data.writeShort(k);
@@ -495,12 +503,9 @@ class LibraryOut extends ANY
       {
         code(c.cond, false);
       }
-    var post = f.contract().ens;
-    _data.writeInt(post.size());
-    for (var c : post)
-      {
-        code(c.cond, false);
-      }
+    if (preF  != null) { _data.writeOffset(preF ); }
+    if (postF != null) { _data.writeOffset(postF); }
+
     var redefines = f.redefines();
     _data.writeInt(redefines.size());
     for(var rf : redefines)
@@ -713,7 +718,7 @@ class LibraryOut extends ANY
             _data.writeByte(MirExprKind.Unit.ordinal());
           }
       }
-    else if (e instanceof Constant c)
+    else if (e instanceof AbstractConstant c)
       {
         lastPos = exprKindAndPos(MirExprKind.Const, lastPos, e.pos());
   /*
@@ -741,10 +746,10 @@ class LibraryOut extends ANY
             lastPos = exprKindAndPos(MirExprKind.Current, lastPos, e.pos());
           }
       }
-    else if (e instanceof Call c)
+    else if (e instanceof AbstractCall c)
       {
         lastPos = expressions(c.target(), lastPos);
-        for (var a : c._actuals)
+        for (var a : c.actuals())
           {
             lastPos = expressions(a, lastPos);
           }
@@ -782,22 +787,22 @@ class LibraryOut extends ANY
         var cf = c.calledFeature();
         if (cf.hasOpenGenericsArgList())
           {
-            _data.writeInt(c._actuals.size());
+            _data.writeInt(c.actuals().size());
           }
         if (cf.generics().isOpen())
           {
-            n = c._generics.size();
+            n = c.actualTypeParameters().size();
             _data.writeInt(n);
           }
         else
           {
             n = cf.generics().list.size();
             if (CHECKS) check
-              (c._generics.size() == n);
+              (c.actualTypeParameters().size() == n);
           }
         for (int i = 0; i < n; i++)
           {
-            type(c._generics.get(i));
+            type(c.actualTypeParameters().get(i));
           }
         if (CHECKS) check
           (cf.resultType().isOpenGeneric() == (c.select() >= 0));
@@ -936,7 +941,7 @@ class LibraryOut extends ANY
       }
     else
       {
-        say_err("Missing handling of "+e.getClass()+" in LibraryOut.expressions");
+        say_err("Missing handling of "+e.getClass()+" "+e.getClass().getSuperclass()+" in LibraryOut.expressions");
       }
     return lastPos;
   }

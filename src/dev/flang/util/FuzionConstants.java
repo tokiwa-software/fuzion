@@ -263,6 +263,9 @@ public class FuzionConstants extends ANY
   public static final String PARTIAL_FUNCTION_ARGUMENT_PREFIX = INTERNAL_NAME_PREFIX + "partialFunctionArg";
 
 
+  public static final String POSTCONDITION_FEATURE_PREFIX = INTERNAL_NAME_PREFIX + "POST";
+
+
   /**
    * Suffix added to module files.
    */
@@ -304,14 +307,21 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Flag OR'ed to kind for intrinsics that create an instance of their result ref type.
-   */
-  public static final int MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR = 0x20;
-
-  /**
    * Flag OR'ed to kind for features with modifier 'fixed'
    */
   public static final int MIR_FILE_KIND_IS_FIXED = 0x40;
+
+
+  /**
+   * Flag OR'ed to kind for features with precondition feature
+   */
+  public static final int MIR_FILE_KIND_HAS_PRE_CONDITION_FEATURE = 0x400;
+
+
+  /**
+   * Flag OR'ed to kind for features with postcondition feature
+   */
+  public static final int MIR_FILE_KIND_HAS_POST_CONDITION_FEATURE = 0x800;
 
 
   /**

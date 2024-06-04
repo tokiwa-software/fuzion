@@ -15,9 +15,9 @@ Target feature: 'i32'
 In call: '3.postfix*'
 
 
---CURDIR--/partial_application_negative.fz:60:8: error 3: Ambiguity between direct and partially applied call target
-  test ambig             // 6. should flag an error: Ambiguous call to `ambig (0 arguments)` or `ambig (1 arguments)`
--------^^^^^
+--CURDIR--/partial_application_negative.fz:60:13: error 3: Ambiguity between direct and partially applied call target
+  _ := test ambig             // 6. should flag an error: Ambiguous call to `ambig (0 arguments)` or `ambig (1 arguments)`
+------------^^^^^
 This call can be resolved in two ways, either as a direct call to 'partial_application_negative.ambig' declared at --CURDIR--/partial_application_negative.fz:53:3:
   ambig        Unary String i32 => x->"#$x#"
 --^^^^^
@@ -27,9 +27,9 @@ or by partially applying arguments to a call to 'partial_application_negative.am
 To solve this, rename one of the ambiguous features.
 
 
---CURDIR--/partial_application_negative.fz:61:9: error 4: Ambiguity between direct and partially applied call target
-  test (ambig 42   )     // 7. should flag an error: Ambiguous call to `ambig (1 arguments)` or `ambig (2 arguments)`
---------^^^^^
+--CURDIR--/partial_application_negative.fz:61:14: error 4: Ambiguity between direct and partially applied call target
+  _ := test (ambig 42   )     // 7. should flag an error: Ambiguous call to `ambig (1 arguments)` or `ambig (2 arguments)`
+-------------^^^^^
 This call can be resolved in two ways, either as a direct call to 'partial_application_negative.ambig' declared at --CURDIR--/partial_application_negative.fz:54:3:
   ambig(x i32) Unary String i32 => say "V1"; y->"#$y x:$x#"
 --^^^^^
@@ -39,9 +39,9 @@ or by partially applying arguments to a call to 'partial_application_negative.am
 To solve this, rename one of the ambiguous features.
 
 
---CURDIR--/partial_application_negative.fz:62:9: error 5: Ambiguity between direct and partially applied call target
-  test (ambig 47 11)     // 8. should flag an error: Ambiguous call to `ambig (2 arguments)` or `ambig (3 arguments)`
---------^^^^^
+--CURDIR--/partial_application_negative.fz:62:14: error 5: Ambiguity between direct and partially applied call target
+  _ := test (ambig 47 11)     // 8. should flag an error: Ambiguous call to `ambig (2 arguments)` or `ambig (3 arguments)`
+-------------^^^^^
 This call can be resolved in two ways, either as a direct call to 'partial_application_negative.ambig' declared at --CURDIR--/partial_application_negative.fz:55:3:
   ambig(x,y i32)     String     => "$x $y"
 --^^^^^
@@ -98,9 +98,9 @@ or by partially applying arguments to a call to 'partial_application_negative.am
 To solve this, rename one of the ambiguous features.
 
 
---CURDIR--/partial_application_negative.fz:74:21: error 11: Ambiguity between direct and partially applied call target
-  test2            (ambig2 4711)    // 10. should flag an error: ambiguous call to implicit `ambig2.call (1 argument)` or partially applied `ambig2 (2 arguments)`
---------------------^^^^^^
+--CURDIR--/partial_application_negative.fz:74:26: error 11: Ambiguity between direct and partially applied call target
+  _ := test2            (ambig2 4711)    // 10. should flag an error: ambiguous call to implicit `ambig2.call (1 argument)` or partially applied `ambig2 (2 arguments)`
+-------------------------^^^^^^
 This call can be resolved in two ways, either as a direct call to 'partial_application_negative.ambig2' declared at --CURDIR--/partial_application_negative.fz:66:3:
   ambig2 Unary String i32 => x->"#$x#"
 --^^^^^^

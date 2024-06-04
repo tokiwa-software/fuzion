@@ -182,7 +182,6 @@ public class Lexer extends SourceFile
     t_is("is"),
     t_abstract("abstract"),
     t_intrinsic("intrinsic"),
-    t_intrinsic_constructor("intrinsic_constructor"),
     t_native("native"),
     t_for("for"),
     t_in("in"),
@@ -690,6 +689,7 @@ public class Lexer extends SourceFile
     super(original);
 
     _curToken = original._curToken;
+    _curLiteral = original._curLiteral;
     _tokenPos = original._tokenPos;
     _lastTokenPos = original._lastTokenPos;
     _lastTokenEndPos = original._lastTokenEndPos;

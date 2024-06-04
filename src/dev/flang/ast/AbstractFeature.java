@@ -222,13 +222,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Is this an intrinsic feature that creates an instance of its result ref
-   * type?
-   */
-  public abstract boolean isIntrinsicConstructor();
-
-
-  /**
    * Is this a routine that returns the current instance as its result?
    */
   public abstract boolean isConstructor();
@@ -310,6 +303,16 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public abstract Contract contract();
 
 
+  /**
+   * If this feature has a post condition or redefines a feature from which it
+   * inherits a post condition, this gives the feature that implements the post
+   * condition check.  The postFeature has tha same outer feature as the
+   * original feature and the same arguments except for an additional `result`
+   * argument in case the feature has a non-unit result.
+   */
+  public abstract AbstractFeature postFeature();
+
+
 
   /*-----------------------------  methods  -----------------------------*/
 
@@ -367,7 +370,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   private String qualifiedName0()
   {
-    var n = featureName().baseName();
+    var n = featureName().baseNameHuman();
     return
       !state().atLeast(State.FINDING_DECLARATIONS) ||
       isUniverse()                                         ||
@@ -798,9 +801,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public AbstractFeature typeFeature(Resolution res)
   {
     if (PRECONDITIONS) require
-      (res.state(this).atLeast(State.FINDING_DECLARATIONS),
-       res != null,
+      (res != null,
        Errors.any() || !isUniverse(),
+       res.state(this).atLeast(State.FINDING_DECLARATIONS),
        !isTypeFeature());
 
     if (_typeFeature == null)
@@ -1799,7 +1802,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return visibility() + " " +
       FuzionConstants.modifierToString(modifiers()) +
       (isTypeFeature() ? "type." : "") +
-      featureName().baseName() +
+      featureName().baseNameHuman() +
       (arguments().isEmpty() ? "" : "("+arguments()+")") + " " +
       (state().atLeast(State.RESOLVED_TYPES) ? resultType() : "***not yet known***") + " " +
       (inherits().isEmpty() ? "" : ": " + inherits() + " ") +
