@@ -130,6 +130,6 @@ handle(ERROR type, F type : fallible ERROR, T type) is
 
   res_broken => state s T (s nil) ()->
     (F.new e->
-        state_put (s e)
+        _ := state_put (s e)
         F.env.return
     ).run try (()->catch (state_get s).val.get)
