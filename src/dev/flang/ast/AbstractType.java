@@ -1747,7 +1747,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * resolved.  Use toString() for creating strings early in the front end
    * phase.
    */
-  public String asString()
+  public String asString() { return asString(false); }
+  public String asString(boolean humanReadable)
   {
     if (PRECONDITIONS) require
       (checkedForGeneric());
@@ -1773,7 +1774,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         // for a feature that does not define a type itself, the name is not
         // unique due to overloading with different argument counts. So we add
         // the argument count to get a unique name.
-        var fname = fn.baseName() + (f.definesType() ? "" : FuzionConstants.INTERNAL_NAME_PREFIX + fn.argCount());
+        var fname = (humanReadable ? fn.baseNameHuman() : fn.baseName()) + (f.definesType() ? "" : FuzionConstants.INTERNAL_NAME_PREFIX + fn.argCount());
 
         // NYI: would be good if postFeatures could be identified not be string comparison, but with something like
         // `f.isPostFeature()`. Note that this would need to be saved in .fum file as well!
