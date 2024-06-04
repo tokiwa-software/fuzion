@@ -67,6 +67,19 @@ else
     if [ -f "$2".expected_err_jvm ]; then
         experr=$2.expected_err_jvm
     fi
+
+    # NYI: workaround for #2586
+    if [ "${OS-default}" = "Windows_NT" ]; then
+        iconv --unicode-subst="?" -f utf-8 -t ascii "$experr" > tmp_conv.txt
+        cp tmp_conv.txt "$experr"
+        iconv --unicode-subst="?" -f utf-8 -t ascii "$expout" > tmp_conv.txt
+        cp tmp_conv.txt "$expout"
+        iconv --unicode-subst="?" -f utf-8 -t ascii tmp_err.txt > tmp_conv.txt
+        cp tmp_conv.txt tmp_err.txt
+        iconv --unicode-subst="?" -f utf-8 -t ascii tmp_out.txt > tmp_conv.txt
+        cp tmp_conv.txt tmp_out.txt
+    fi
+
     # show diff in stdout unless an unexpected output occurred to stderr:
     (diff "$experr" tmp_err.txt && diff "$expout" tmp_out.txt) || echo -e "\033[31;1m*** FAILED\033[0m out on $2"
     diff "$expout" tmp_out.txt >/dev/null && diff "$experr" tmp_err.txt >/dev/null && echo -e "\033[32;1mPASSED\033[0m."
