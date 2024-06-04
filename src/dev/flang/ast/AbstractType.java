@@ -1723,8 +1723,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     return
       isThisType() ||
-      !isGenericArgument() && generics().stream().anyMatch(g -> g.containsThisType()) ||
-      outer() != null && outer().containsThisType();
+      !isGenericArgument() && (generics().stream().anyMatch(g -> g.containsThisType()) ||
+                               outer() != null && outer().containsThisType());
   }
 
 
