@@ -22,14 +22,14 @@
 # -----------------------------------------------------------------------
 
 module:public a is
-  hello is
+  hello =>
     say "hello from a"
 
-  module hello2 is
+  module hello2 =>
     say "hello2 from a"
 
   private:public aa is
-    public aaa is
+    public aaa =>
       say "aaa"
 
   public hello_a unit =>

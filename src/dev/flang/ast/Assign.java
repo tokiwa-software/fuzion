@@ -118,10 +118,11 @@ public class Assign extends AbstractAssign
 
     if (PRECONDITIONS) require
       (Errors.any() ||
-       res.state(outer) == State.RESOLVING_TYPES   ||
-       res.state(outer) == State.RESOLVED_TYPES    ||
-       res.state(outer) == State.TYPES_INFERENCING ||
-       res.state(outer) == State.RESOLVING_SUGAR1  ||
+       res.state(outer) == State.RESOLVED_DECLARATIONS ||
+       res.state(outer) == State.RESOLVING_TYPES       ||
+       res.state(outer) == State.RESOLVED_TYPES        ||
+       res.state(outer) == State.TYPES_INFERENCING     ||
+       res.state(outer) == State.RESOLVING_SUGAR1      ||
        res.state(outer) == State.RESOLVING_SUGAR2,
        f != null);
 
@@ -188,17 +189,6 @@ public class Assign extends AbstractAssign
     else if (!_indexVarAllowed       &&
              f instanceof Feature ff &&
              ff.isIndexVarUpdatedByLoop()) { AstErrors.assignmentToIndexVar    (this, f, outer); }
-    else if (f == f.outer().resultField())
-      {
-        if (f.outer() instanceof Feature fo)
-          {
-            fo.foundAssignmentToResult();
-          }
-        else
-          {
-            throw new Error("NYI: Assignment to result defined in library feature not handled well yet!");
-          }
-      }
   }
 
 

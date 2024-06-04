@@ -199,6 +199,13 @@ public class Feature extends AbstractFeature
   private final Contract _contract;
   public Contract contract() { return _contract; }
 
+  Feature _postFeature = null;
+  @Override
+  public AbstractFeature postFeature()
+  {
+    return _postFeature;
+  }
+
 
   /**
    * The implementation of this feature
@@ -227,12 +234,6 @@ public class Feature extends AbstractFeature
    * LOADING.
    */
   private Feature _resultField = null;
-
-  /**
-   * Flag set during resolveTypes if this feature's code has at least one
-   * assignment to the result field.
-   */
-  private boolean _hasAssignmentsToResult = false;
 
 
   /**
@@ -833,16 +834,6 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * Is this an intrinsic feature that creates an instance of its result ref
-   * type?
-   */
-  public boolean isIntrinsicConstructor()
-  {
-    return _impl == Impl.INTRINSIC_CONSTRUCTOR;
-  }
-
-
-  /**
    * get the code of this feature.
    */
   public Expr code()
@@ -911,8 +902,7 @@ public class Feature extends AbstractFeature
                                    _pos,
                                    Visi.PRIV,
                                    t,
-                                   resultInternal() ? FuzionConstants.INTERNAL_RESULT_NAME
-                                                    : FuzionConstants.RESULT_NAME,
+                                   FuzionConstants.INTERNAL_RESULT_NAME,
                                    this)
           {
             public boolean isResultField() { return true; }
@@ -927,20 +917,6 @@ public class Feature extends AbstractFeature
   public boolean isCaseField()
   {
     return false;
-  }
-
-
-  /**
-   * Check if the result variable should be internal, i.e., have a name that is
-   * not accessible by source code.  This is true for routines defined using
-   * '=>" (RoutineDef) that are internally generated, e.g. for loops.
-   * In these cases, the result variable of the enclosing outer feature can be
-   * accessed without qualification.
-   */
-  public boolean resultInternal()
-  {
-    return _impl._kind == Impl.Kind.RoutineDef &&
-      _featureName.isInternal();
   }
 
 
@@ -1434,6 +1410,7 @@ public class Feature extends AbstractFeature
       {
         _state = State.RESOLVING_SUGAR1;
 
+        _contract.addContractFeatures(this, res);
         if (definesType())
           {
             typeFeature(res);
@@ -1724,7 +1701,6 @@ public class Feature extends AbstractFeature
           {
             o.typeInference(res);
           }
-        choiceTypeCheckAndInternalFields(res);
 
         _resultType = resultTypeIfPresent(res);
         if (_resultType == null)
@@ -1856,6 +1832,8 @@ public class Feature extends AbstractFeature
       (_state == State.BOXED          ) ? State.CHECKING_TYPES1 :
       (_state == State.RESOLVED_SUGAR2) ? State.CHECKING_TYPES2 : _state;
 
+    choiceTypeCheckAndInternalFields(res);
+
     if ((_state == State.CHECKING_TYPES1) ||
         (_state == State.CHECKING_TYPES2)    )
       {
@@ -1870,6 +1848,7 @@ public class Feature extends AbstractFeature
             public Expr         action(InlineArray    i, AbstractFeature outer) { i.checkTypes();      return i; }
             public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints();   }
             public void         action(Cond           c, AbstractFeature outer) { c.checkTypes();                }
+            public void         actionBefore(Block    b, AbstractFeature outer) { b.checkTypes();                }
           });
         checkTypes(res);
 
@@ -1900,33 +1879,6 @@ public class Feature extends AbstractFeature
     if (POSTCONDITIONS) ensure
       (Errors.any() || hasResultField() == (result != null));
     return result;
-  }
-
-
-  /**
-   * During type resolution, record that we found an assignment to
-   * resultField().
-   */
-  void foundAssignmentToResult()
-  {
-    if (PRECONDITIONS) require
-      (_state == State.RESOLVING_TYPES ||
-       _state == State.RESOLVED_TYPES);
-
-    _hasAssignmentsToResult = true;
-  }
-
-
-  /**
-   * After type resolution, this checks if an assignment tot he result variable
-   * has been found.
-   */
-  public boolean hasAssignmentsToResult()
-  {
-    if (PRECONDITIONS) require
-      (_state.atLeast(State.RESOLVED_TYPES));
-
-    return _hasAssignmentsToResult;
   }
 
 

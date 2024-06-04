@@ -405,7 +405,9 @@ public class Call extends AbstractCall
                AbstractType type)
   {
     if (PRECONDITIONS) require
-      (Errors.any() || generics.stream().allMatch(g -> !g.containsError()));
+      (Errors.any() || generics.stream().allMatch(g -> !g.containsError()),
+       name != FuzionConstants.UNIVERSE_NAME);
+
     this._pos = pos;
     this._name = name;
     this._select = select;
@@ -418,49 +420,7 @@ public class Call extends AbstractCall
   }
 
 
-
-  /**
-   * Constructor used to clone a call for clonePostCondition.
-   *
-   * @param thiz the original call
-   *
-   * @param the redefined feature that inherits this call as part of its postcondition.
-   *
-   * @param from the original feature this was used in.
-   */
-  Call(Call thiz, AbstractFeature to, AbstractFeature from)
-  {
-    this._pos = thiz._pos;
-    this._name = thiz._name;
-    this._select = thiz._select;
-    this._generics = thiz._generics;
-    this._unresolvedGenerics = thiz._unresolvedGenerics;
-    this._actuals = thiz._actuals.map2(x->x.clonePostCondition(to, from));
-    this._target = thiz._target == null ? null : thiz._target.clonePostCondition(to, from);
-    check
-      (thiz._calledFeature == null);
-    var cf = thiz._calledFeature;
-    if (cf != null /*&& cf.isOuterRef()*/) System.out.println("ACCESSING "+cf.qualifiedName()+" at "+pos().show());
-    this._calledFeature = cf;
-    this._type = thiz._type;
-  }
-
-
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * When inheriting a post-condition during redefintion, this creates a clone
-   * of the inherited condition.
-   *
-   * @param to the redefining feature that inherits a contract
-   *
-   * @param from the redefined feature this contract should inherit from.
-   */
-  public Expr clonePostCondition(AbstractFeature to, AbstractFeature from)
-  {
-    return new Call(this, to, from);
-  }
 
 
   /**
@@ -1138,7 +1098,7 @@ public class Call extends AbstractCall
             ? ""
             : _target.toString() + ".")
       + (_name          != null ? _name :
-         _calledFeature != null ? _calledFeature.featureName().baseName()
+         _calledFeature != null ? _calledFeature.featureName().baseNameHuman()
                                 : "--ANONYMOUS--" )
       + _generics.toString(" ", " ", "", t -> t.toStringWrapped())
       + _actuals .toString(" ", " ", "", e -> e.toStringWrapped())

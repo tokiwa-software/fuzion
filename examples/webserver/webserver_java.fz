@@ -109,8 +109,8 @@ webserver_java is
                          send200 "<html>Hello Fuzion $n!</html>"
 
                        # close streams
-                       input.close
-                       output.close
+                       _ := input.close
+                       _ := output.close
 
                        # helper to read request
                        #

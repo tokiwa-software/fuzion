@@ -96,6 +96,23 @@ public class Universe extends ExprWithPos
 
 
   /**
+   * Return this expression as an unresolved type.
+   */
+  @Override
+  public UnresolvedType asParsedType()
+  {
+    return new UnresolvedType(SourcePosition.notAvailable, FuzionConstants.UNIVERSE_NAME, UnresolvedType.NONE, null)
+    {
+      @Override
+      AbstractType resolve(Resolution res, AbstractFeature outerfeat)
+      {
+        return typeForInferencing();
+      }
+    };
+  }
+
+
+  /**
    * toString
    *
    * @return

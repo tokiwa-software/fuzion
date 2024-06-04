@@ -93,7 +93,7 @@ public class Types extends ANY
 
 
   /**
-   * Names if internal types that are not backed by physical feature definitions.
+   * Names of internal types that are not backed by physical feature definitions.
    */
   static Set<String> INTERNAL_NAMES = Collections.<String>unmodifiableSet
     (new TreeSet<>(Arrays.asList(ADDRESS_NAME,

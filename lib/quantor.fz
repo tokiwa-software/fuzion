@@ -38,7 +38,7 @@ public quantor is
   #
   # NYI: If open generics could be passed as actual generic arguments, we no
   # longer need this code duplication here:
-  #   for_all(A..., f A -> bool) bool => intrinsic_constructor
+  #   for_all(A..., f A -> bool) bool => intrinsic
   #
   for_all  (A0                                     type, f (A0                                    ) -> bool) bool => fuzion.std.panic "quantors are for analysis only"
   for_all2 (A0, A1                                 type, f (A0, A1                                ) -> bool) bool => fuzion.std.panic "quantors are for analysis only"
@@ -61,7 +61,7 @@ public quantor is
   #
   # NYI: If open generics could be passed as actual generic arguments, we no
   # longer need this code duplication here:
-  #   exists(A..., f A -> bool) bool => intrinsic_constructor
+  #   exists(A..., f A -> bool) bool => intrinsic
   #
   exists  (A0                                     type, f (A0                                    ) -> bool) bool => fuzion.std.panic "quantors are for analysis only"
   exists2 (A0, A1                                 type, f (A0, A1                                ) -> bool) bool => fuzion.std.panic "quantors are for analysis only"

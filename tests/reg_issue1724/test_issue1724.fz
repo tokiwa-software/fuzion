@@ -36,8 +36,8 @@ test_issue1274 =>
   x3(a i32, b void) => b !!!!!         # non-existing postfix operator
   x4(a i32, b void) => ----- b         # non-existing prefix operator
   x5(a i32, b void) => b +++++ b       # non-existing infix operator
-  x6(a i32, b void) => 1235 + b        # use as i32
-  x7(b void) => ["hi", "there" ] ++ b  # use as Sequence String
+  x6(a i32, b void) => _ := 1235 + b        # use as i32
+  x7(b void) => _ := ["hi", "there" ] ++ b  # use as Sequence String
 
   for a in envir.args do
     if a = "x1" x1    (panic "hi 1")

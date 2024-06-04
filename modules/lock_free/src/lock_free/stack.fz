@@ -34,9 +34,10 @@ public stack(T type) : container.Stack T is
   # push an element to the stack
   #
   public push (e T) unit =>
-    for o := top.read
-        n := Node e o
-    while !top.compare_and_set o n
+    _ :=
+      for o := top.read
+          n := Node e o
+      while !top.compare_and_set o n
 
 
   # pop an element from the stack

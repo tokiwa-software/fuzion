@@ -103,26 +103,23 @@ public u16(public val u16) : num.wrap_around, has_interval is
   # this single bit set or 0 if this is 0.
   #
   public highest_one_bit u16 =>
-    // NYI: should be possible to reuse v, s names
-    (v0, s0) := (val, u16 0    )
-    (v1, s1) := if (v0 < (u16 0x100)) (v0, s0) else (v0 >>  8, s0 +  8)
-    (v2, s2) := if (v1 <  (u16 0x10)) (v1, s1) else (v1 >>  4, s1 +  4)
-    (v3, s3) := if (v2 <     (u16 4)) (v2, s2) else (v2 >>  2, s2 +  2)
-    (v4, s4) := if (v3 <     (u16 2)) (v3, s3) else (v3 >>  1, s3 +  1)
-    v4 << s4
+    (v, s) := (val, u16 0    )
+    (v, s) := if (v < (u16 0x100)) (v, s) else (v >>  8, s +  8)
+    (v, s) := if (v <  (u16 0x10)) (v, s) else (v >>  4, s +  4)
+    (v, s) := if (v <     (u16 4)) (v, s) else (v >>  2, s +  2)
+    (v, s) := if (v <     (u16 2)) (v, s) else (v >>  1, s +  1)
+    v << s
 
 
   # count the number of trailing zeros in this integer.
   #
   public trailing_zeros i32 =>
-    // NYI: should be possible to reuse v, s names
-    (v0, s0) := (val, 0)
-    (v1, s1) := if (v0 & 0xff) != u16 0 then (v0, s0) else (v0 >> 8, s0 + 8)
-    (v2, s2) := if (v1 &  0xf) != u16 0 then (v1, s1) else (v1 >> 4, s1 + 4)
-    (v3, s3) := if (v2 &    3) != u16 0 then (v2, s2) else (v2 >> 2, s2 + 2)
-    (v4, s4) := if (v3 &    1) != u16 0 then (v3, s3) else (v3 >> 1, s3 + 1)
-    s5       := if (v4 &    1) != u16 0 then      s4  else               16
-    s5
+    (v, s) := (val, 0)
+    (v, s) := if (v & 0xff) != u16 0 then (v, s) else (v >> 8, s + 8)
+    (v, s) := if (v &  0xf) != u16 0 then (v, s) else (v >> 4, s + 4)
+    (v, s) := if (v &    3) != u16 0 then (v, s) else (v >> 2, s + 2)
+    (v, s) := if (v &    1) != u16 0 then (v, s) else (v >> 1, s + 1)
+    if           (v &    1) != u16 0 then      s else              16
 
 
   # count the number of 1 bits in the binary representation of this
@@ -153,12 +150,12 @@ public u16(public val u16) : num.wrap_around, has_interval is
 
   # equality
   #
-  fixed type.equality(a, b u16) bool => intrinsic_constructor
+  fixed type.equality(a, b u16) bool => intrinsic
 
 
   # total order
   #
-  fixed type.lteq(a, b u16) bool => intrinsic_constructor
+  fixed type.lteq(a, b u16) bool => intrinsic
 
 
   # returns the number in whose bit representation all bits are ones

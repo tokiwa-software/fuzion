@@ -502,7 +502,7 @@ public class ResolvedNormalType extends ResolvedType
              _refOrVal == RefOrVal.Value &&  _feature != null &&  _feature.isThisRef()  ? "value "
                                                                                       : ""       )
           + (_feature == null ? Errors.ERROR_STRING
-                              : _feature.featureName().baseName());
+                              : _feature.featureName().baseNameHuman());
       }
     else
       {

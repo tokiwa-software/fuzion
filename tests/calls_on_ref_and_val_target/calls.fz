@@ -162,7 +162,7 @@ calls is
     yak "case1b: "; chck t.f "f#3 in on type calls.case1.on"
     yak "case1b: "; chck $t.cnt.get $3
 
-  case1
+  _ := case1
 
 
   case2 is
@@ -197,7 +197,7 @@ calls is
     yak "case2b: "; chck t.f "f#3 in oあ type calls.case2.oあ"
     yak "case2b: "; chck $t.cnt.get $3
 
-  case2
+  _ := case2
 
 
   case3 is
@@ -245,7 +245,7 @@ calls is
     yak "case3c: "; chck t.f "f#3 in oa type calls.case3.oa"
     yak "case3c: "; chck $t.cnt.get $3
 
-  case3
+  _ := case3
 
   case4 is
     #  * normal (non-inherits) call
@@ -279,7 +279,7 @@ calls is
     yak "case4b: "; chck t.f "f#3 in oあ type calls.case4.oあ"
     yak "case4b: "; chck $t.cnt.get $3
 
-  case4
+  _ := case4
 
   case5 is
     #  * normal (non-inherits) call
@@ -313,7 +313,7 @@ calls is
     yak "case5b: "; chck t.f "f#3 in oあ type calls.case5.oあ"
     yak "case5b: "; chck $t.cnt.get $3
 
-  case5
+  _ := case5
 
   case6 is
     #  * normal (non-inherits) call
@@ -350,7 +350,7 @@ calls is
     yak "case6b: "; chck t.f "f#3 in oあ type calls.case6.oあ"
     yak "case6b: "; chck $t.cnt.get $3
 
-  case6
+  _ := case6
 
   caseC1 is
     #    * constructor
@@ -380,7 +380,7 @@ calls is
     yak "caseC1b: "; chck t.f.s "f#3 in on type calls.caseC1.on"
     yak "caseC1b: "; chck $t.cnt.get $3
 
-  caseC1
+  _ := caseC1
 
   caseC2 is
     #    * constructor
@@ -413,7 +413,7 @@ calls is
     yak "caseC2b: "; chck t.f.s "f#3 in oあ type calls.caseC2.ref on"
     yak "caseC2b: "; chck $t.cnt.get $3
 
-  caseC2
+  _ := caseC2
 
 
   caseC3 is
@@ -448,7 +448,7 @@ calls is
     # yak "caseC3c: "; chck t.f.s "f#3 in oa type calls.caseC2.on"
     # yak "caseC3c: "; chck $t.cnt.get $3
 
-  caseC3
+  _ := caseC3
 
 /* NYI!
   caseC4 is
@@ -473,7 +473,7 @@ calls is
     yak "caseC4a: "; chck t.f.s "f#3 in oa type calls.caseC4.oa"
     yak "caseC4a: "; chck $t.cnt.get $3
 
-  caseC4
+  _ := caseC4
 */
 
   caseC5 is
@@ -507,7 +507,7 @@ calls is
     yak "caseC5b: "; chck t.f.s "f#3 in oあ type calls.caseC5.on"
     yak "caseC5b: "; chck $t.cnt.get $3
 
-  caseC5
+  _ := caseC5
 
   caseC6 is
     #    * constructor
@@ -543,7 +543,7 @@ calls is
     yak "caseC6b: "; chck t.f.s "f#3 in oあ type calls.caseC6.on"
     yak "caseC6b: "; chck $t.cnt.get $3
 
-  caseC6
+  _ := caseC6
 /*
     #  * inherits call
     #    * function -- not allowed

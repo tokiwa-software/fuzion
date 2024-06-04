@@ -151,7 +151,7 @@ public Sequence(public T type) ref is
   #
   public peek (f T -> unit) =>
     as_list ? nil    =>
-            | c Cons => f c.head; c.tail.peek f
+            | c Cons => f c.head; _ := c.tail.peek f
     as_list
 
 
@@ -561,7 +561,7 @@ public Sequence(public T type) ref is
 
   # check if argument is a valid index in this sequence.
   #
-  # Note that this may have has performance in O(i) unless this
+  # Note that this may have a performance in O(i) unless this
   # Sequence is_array_backed.
   #
   public is_valid_index(i i32) =>

@@ -357,7 +357,7 @@ public class Case extends AbstractCase
     var sb = new StringBuilder();
     if (_field != null)
       {
-        sb.append(_field.featureName().baseName() + " " + _field.returnType());
+        sb.append(_field.featureName().baseNameHuman() + " " + _field.returnType());
       }
     else if (_types == null)
       {

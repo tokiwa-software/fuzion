@@ -1165,7 +1165,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
   private List<FeatureAndOuter> lookup0(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden)
   {
     if (PRECONDITIONS) require
-      (outer.state().atLeast(State.RESOLVING_DECLARATIONS) || outer.isUniverse());
+      (outer.state().atLeast(State.RESOLVED_INHERITANCE) || outer.isUniverse());
 
     List<FeatureAndOuter> result = new List<>();
     var curOuter = outer;
@@ -1582,7 +1582,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
           {
             for (int i = 0; i < ta.length; i++)
               {
-                var t1 = ta[i];
+                var t1 = ta[i].applyTypePars(o, f.generics().asActuals());  /* replace o's type pars by f's */
                 var t2 = ra[i];
                 if (!isLegalCovariantThisType(o, f, t1, t2, fixed))
                   {
@@ -1602,7 +1602,8 @@ A post-condition of a feature that does not redefine an inherited feature must s
               }
           }
 
-        var t1 = o.handDownNonOpen(_res, o.resultType(), f.outer());
+        var t1 = o.handDownNonOpen(_res, o.resultType(), f.outer())
+                  .applyTypePars(o, f.generics().asActuals());    /* replace o's type pars by f's */
         var t2 = f.resultType();
         if (o.isTypeFeaturesThisType() && f.isTypeFeaturesThisType())
           { // NYI: CLEANUP: #706: allow redefinition of THIS_TYPE in type features for now, these are created internally.
@@ -1900,28 +1901,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
    * @parm f the feature whose contract should be checked.
    */
   private void checkContractAccesses(AbstractFeature f)
-  {
-    // NYI: check pre-condition accesses, not only post-condition
-    for (var c : f.contract()._declared_postconditions)
-      {
-        c.visitExpressions(e ->
-                           {
-                             if (!f.isConstructor() &&
-                                 e instanceof AbstractCall ca &&
-                                 ca.target() instanceof Current &&
-                                 !(ca.calledFeature() instanceof Feature cf && (cf.isResultField() ||
-                                                                                cf.isArgument() ||
-                                                                                cf.isOuterRef() ||
-                                                                                cf.isCaseField() ||
-
-                                                                                // NYI: there are some `#exprResultNNN` fields used, need to check why:
-                                                                                cf.isArtificialField()
-                                                                                )))
-                               {
-                                 AstErrors.postConditionMayNotAccessInnerFeature(f, ca);
-                               }
-                           });
-      }
+  { //NYI: CLEANUP:  remove, has no effect.
   }
 
 

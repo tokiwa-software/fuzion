@@ -436,6 +436,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     _argumentFields = isBoxed() ? NO_CLAZZES : determineArgumentFields();
     _actualGenerics = determineActualGenerics();
     _resultField    = isBoxed() ? null : determineResultField();
+    _asValue        = determineAsValue();
     /*
      * Calls may be compile time constants.
      * In this case we need the result clazz
@@ -447,7 +448,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
      */
     _resultClazz    = /* isBoxed() ? null : */ determineResultClazz();
     _outerRef       = isBoxed() ? null : determineOuterRef();
-    _asValue        = determineAsValue();
   }
 
 
@@ -1361,7 +1361,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
             ? "ref "
             : ""
             )
-         + feature().featureName().baseName()
+         + feature().featureName().baseNameHuman()
          + this._type.generics()
          .toString(" ", " ", "", t -> t.asStringWrapped())
          );
@@ -1491,8 +1491,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     var fc = new EV(inh, f);
     f.visitExpressions(fc);
-    f.contract().req                 .stream().forEach(c -> c.visitExpressions(fc));
-    f.contract().all_postconditions().stream().forEach(c -> c.visitExpressions(fc));
+    f.contract().req.stream().forEach(c -> c.visitExpressions(fc));
 
     for (var c: f.inherits())
       {
@@ -1804,13 +1803,12 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (feature().isIntrinsic(),
        isCalled());
 
-    // value instances returned from intrinsics are automatically
-    // recorded to be instantiated, refs only if intrinsic is marked as
-    // 'intrinsic_constructor'.
+    // instances returned from intrinsics are automatically
+    // recorded to be instantiated.
     var rc = resultClazz();
     if (rc.isChoice())
       {
-        if (feature().isIntrinsicConstructor())
+        if (feature().isIntrinsic())
           {
             for (var cg : rc.choiceGenerics())
               {
@@ -1820,7 +1818,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
             rc.instantiated(at);
           }
       }
-    else if (!rc.isRef() || feature().isIntrinsicConstructor())
+    else if (!rc.isRef() || feature().isIntrinsic())
       {
         rc.instantiated(at);
       }
@@ -1984,7 +1982,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public void check()
   {
-    if (isInstantiated() && _abstractCalled != null)
+    if (isCalled() && _abstractCalled != null)
       {
         AirErrors.abstractFeatureNotImplemented(feature(), _abstractCalled, _instantiationPos);
       }

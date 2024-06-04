@@ -222,6 +222,7 @@ public class FUIR extends IR
     _siteClazzes = new IntArray();
     _siteIsPrecondition = new BoolArray();
     Clazzes.findAllClasses(main());
+    addClasses();
   }
 
 
@@ -317,19 +318,16 @@ public class FUIR extends IR
 
   public int firstClazz()
   {
-    addClasses();
     return CLAZZ_BASE;
   }
 
   public int lastClazz()
   {
-    addClasses();
     return CLAZZ_BASE + _clazzIds.size() - 1;
   }
 
   public int mainClazzId()
   {
-    addClasses();
     return id(_main);
   }
 
@@ -1095,8 +1093,7 @@ hw25 is
     var cc = clazz(cl);
     var ff = cc.feature();
     var ccontract = ff.contract();
-    var cond = (ccontract != null && ck == ContractKind.Pre  ? ccontract.req :
-                ccontract != null && ck == ContractKind.Post ? ccontract.all_postconditions() : null);
+    var cond = (ccontract != null && ck == ContractKind.Pre  ? ccontract.req : null);
     // NYI: PERFORMANCE: Always iterating the conditions results in performance
     // quadratic in the number of conditions.  This could be improved by
     // filtering BoolConst.TRUE once and reusing the resulting cond.
@@ -1388,7 +1385,6 @@ hw25 is
    */
   public int clazz(SpecialClazzes c)
   {
-    addClasses();
     var cc = c.getIfCreated();
     return cc == null ? -1 : id(cc);
   }
@@ -2337,7 +2333,6 @@ hw25 is
    */
   public void dumpCode()
   {
-    addClasses();
     _clazzIds.ints().forEach(cl ->
       {
         switch (clazzKind(cl))

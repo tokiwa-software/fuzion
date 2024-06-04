@@ -34,8 +34,9 @@ illegal_assignment is
 
   curid i32 := 0
   id i32 =>
-    set result := curid
+    res := curid
     set curid := result + 1
+    res
 
   A ref is
     ident := id

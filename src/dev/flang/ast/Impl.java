@@ -29,6 +29,7 @@ package dev.flang.ast;
 import java.util.TreeMap;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -53,8 +54,6 @@ public class Impl extends ANY
   public static final Impl ABSTRACT = new Impl(Kind.Abstract);
 
   public static final Impl INTRINSIC = new Impl(Kind.Intrinsic);
-
-  public static final Impl INTRINSIC_CONSTRUCTOR = new Impl(Kind.Intrinsic);
 
   public static final Impl NATIVE = new Impl(Kind.Native);
 
@@ -363,9 +362,7 @@ public class Impl extends ANY
   private boolean needsImplicitAssignmentToResult(AbstractFeature outer)
   {
     return
-      (isRoutineLike()) &&
-      outer.hasResultField() &&
-      outer instanceof Feature fouter && !fouter.hasAssignmentsToResult();
+      isRoutineLike() && outer.hasResultField();
   }
 
 
@@ -438,6 +435,26 @@ public class Impl extends ANY
                                 outer);
         ass._value = this._expr.box(ass._assignedField.resultType());  // NYI: move to constructor of Assign?
         this._expr = ass;
+      }
+
+    // Add call to post condition feature:
+    var pF = outer.postFeature();
+    if (pF != null)
+      {
+        switch (outer.kind())
+          {
+          case Field             -> {} // Errors.fatal("NYI: UNDER DEVELOPMENT #3092 postcondition for field not supported yet");
+          case TypeParameter     ,
+               OpenTypeParameter -> { if (!Errors.any()) { Errors.fatal("postcondition for type parameter should not exist for " + outer.pos().show()); } }
+          case Routine           ->
+            {
+              var callPostCondition = Contract.callPostCondition(res, (Feature) outer);
+              this._expr = new Block(new List<>(this._expr, callPostCondition));
+            }
+          case Abstract          -> {} // ok, must be checked by redefinitions
+          case Intrinsic         -> {} // Errors.fatal("NYI: UNDER DEVELOPMENT #3105 postcondition for intrinsic");
+          case Native            -> {} // Errors.fatal("NYI: UNDER DEVELOPMENT #3105 postcondition for native");
+          }
       }
   }
 
@@ -587,7 +604,20 @@ public class Impl extends ANY
   {
     var result = switch (_kind)
       {
-      case RoutineDef, FieldDef -> _expr.typeForInferencing();
+      case RoutineDef -> _expr.typeForInferencing();
+      case FieldDef ->
+        {
+          var t = _expr.typeForInferencing();
+          // second try, the feature containing the field
+          // may not be resolved yet.
+          // see #348 for an example.
+          if (t == null && (f.outer().isUniverse() || !f.outer().state().atLeast(State.RESOLVING_TYPES)))
+            {
+              f.visit(res.resolveTypesFully, f.outer());
+              t  = _expr.typeForInferencing();
+            }
+          yield t;
+        }
       case FieldActual -> typeFromInitialValues(res, f, false);
       default -> null;
       };

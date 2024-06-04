@@ -106,11 +106,11 @@ public class AstErrors extends ANY
   static String sbnf(AbstractFeature f) // feature base name
   {
     return f == Types.f_ERROR ? err()
-                              : sbn(f.featureName().baseName());
+                              : sbn(f.featureName().baseNameHuman());
   }
   static String sbnf(FeatureName fn) // feature base name plus arg count and id string
   {
-    return sbn(fn.baseName()) + fn.argCountAndIdString();
+    return sbn(fn.baseNameHuman()) + fn.argCountAndIdString();
   }
   static String slbn(List<FeatureName> l)
   {
@@ -496,7 +496,7 @@ public class AstErrors extends ANY
                      "when passing argument in a call",
                      "Actual type for argument #" + (count+1) + (f == null ? "" : " " + sbnf(f)) + " does not match expected type.\n" +
                      "In call to          : " + s(calledFeature) + "\n",
-                     (f == null ? "argument #" + (count+1) : f.featureName().baseName()),
+                     (f == null ? "argument #" + (count+1) : f.featureName().baseNameHuman()),
                      frmlT,
                      value,
                      null);
@@ -940,7 +940,7 @@ public class AstErrors extends ANY
               "Duplicate feature declaration",
               "Feature that was declared repeatedly: " + s(of) + "\n" +
               "originally declared at " + existing.pos().show() + "\n" +
-              "To solve this, consider renaming one of these two features, e.g., as " + sbn(of.featureName().baseName() + "ʼ") +
+              "To solve this, consider renaming one of these two features, e.g., as " + sbn(of.featureName().baseNameHuman() + "ʼ") +
               " (using a unicode modifier letter apostrophe " + sbn("ʼ")+ " U+02BC) "+
               (f.isTypeFeature()
                ? ("or changing it into a routine by returning a " +
@@ -1024,8 +1024,7 @@ public class AstErrors extends ANY
       }
     else
       {
-        check
-          (false);
+        fatal("AstErrors.cannotRedefine called with existing: "+existing.kind()+" f: "+f.kind());
       }
   }
 
@@ -1096,19 +1095,6 @@ public class AstErrors extends ANY
     redefineContractMustUseElseOrThen(pos, f, PreOrPost.Post);
   }
 
-  public static void postConditionMayNotAccessInnerFeature(AbstractFeature f,
-                                                           AbstractCall access)
-  {
-    var cf = access.calledFeature();
-    error(access.pos(),
-          "Postcondition of feature that is not a constructor may not access any features except the result or argument or implicit outer reference fields.",
-          "Accessed feature: " + s(cf) + "\n" +
-          "The reason is that postconditions may be inherited by a redefinition of " + s(f) + " while that redefinition "+
-          "may not have access to " + s(cf) + ".\n" +
-          "To solve this, it might help to use a fully qualified call as in "+code("universe." + cf.qualifiedName()) + ".");
-  }
-
-
   static void ambiguousTargets(SourcePosition pos,
                                FeatureAndOuter.Operation operation,
                                FeatureName fn,
@@ -1125,10 +1111,10 @@ public class AstErrors extends ANY
         outerLevels.add(o);
         qualifiedCalls
           .append(qualifiedCalls.length() > 0 ? " or " : "")
-          .append(code(o.qualifiedName() + (o.isUniverse() ? "." : ".this.") + fn.baseName()));
+          .append(code(o.qualifiedName() + (o.isUniverse() ? "." : ".this.") + fn.baseNameHuman()));
       }
     error(pos,
-          "Ambiguous targets found for " + operation + " to " + sbn(fn.baseName()),
+          "Ambiguous targets found for " + operation + " to " + sbn(fn.baseNameHuman()),
           "Found several possible " + operation + " targets within the current feature at " +
           (outerLevels.size() == 1 ? "the same outer level " : "different levels of outer features:\n") +
           featuresAndOuterList(targets) +
@@ -1239,7 +1225,7 @@ public class AstErrors extends ANY
           : !candidatesArgCountMismatch.isEmpty()
           ? "Different count of arguments needed when calling feature"
           : "Could not find called feature";
-        var solution1 = solutionDeclareReturnTypeIfResult(calledName.baseName(),
+        var solution1 = solutionDeclareReturnTypeIfResult(calledName.baseNameHuman(),
                                                           calledName.argCount());
         var solution2 = solutionWrongArgumentNumber(candidatesArgCountMismatch);
         var solution3 = solutionAccidentalFreeType(target);
@@ -1332,9 +1318,9 @@ public class AstErrors extends ANY
       (f.isField());
 
     if (CHECKS) check
-      (any() || !f.featureName().baseName().equals(ERROR_STRING));
+      (any() || !f.featureName().baseNameHuman().equals(ERROR_STRING));
 
-    if (!f.featureName().baseName().equals(ERROR_STRING))
+    if (!f.featureName().baseNameHuman().equals(ERROR_STRING))
       {
         error(f.pos(),
               "Missing result type in field declaration with initialization",
@@ -1916,7 +1902,7 @@ public class AstErrors extends ANY
           + f.arguments()
             .stream()
             .map(a -> "Argument #" + (cnt[0]++) + ": " + sbnf(a) +
-                 (duplicateNames.contains(a.featureName().baseName()) ? " is duplicate "
+                 (duplicateNames.contains(a.featureName().baseNameHuman()) ? " is duplicate "
                                                                       : " is ok"        ) + "\n")
             .collect(Collectors.joining(""))
           + "To solve this, rename the arguments to have unique names."
@@ -1944,7 +1930,7 @@ public class AstErrors extends ANY
    */
   public static void routineCannotReturnItself(AbstractFeature f)
   {
-    String n = f.featureName().baseName();
+    String n = f.featureName().baseNameHuman();
     String args = f.arguments().size() > 0 ? "(..args..)" : "";
     String old_code =
       "\n" +
@@ -2156,6 +2142,13 @@ public class AstErrors extends ANY
   {
     error(pos, "Qualifier expected for "+code(".this")+" expression.",
           "Found expression "+e.pos().show()+" where a simple qualifier " +  code("a.b.c") + " was expected");
+  }
+
+  public static void unusedResult(Expr e)
+  {
+    error(e.pos(), "Expression produces result of type " + s(e.type()) +  " but result is not used.",
+       "To solve this, use the result, explicitly ignore the result " + st("_ := <expression>") + " or change " + s(e.type().feature())
+              + " from constructor to routine by replacing" + skw("is") + " by " + skw("=>") + ".");
   }
 
 

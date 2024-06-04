@@ -117,7 +117,7 @@ module fileio is
                  # the internal array data representing the file/dir path in bytes
                  path fuzion.sys.Pointer,
                  # dummy parameter to avoid duplicate feature name
-                 _ unit) bool => intrinsic_constructor
+                 _ unit) bool => intrinsic
 
 
   #  moves file/dir from an old path to a the new path
@@ -144,7 +144,7 @@ module fileio is
                # the internal array data representing the new file/dir path in bytes
                new_path fuzion.sys.Pointer,
                # dummy parameter for overloading
-               _ unit) bool => intrinsic_constructor
+               _ unit) bool => intrinsic
 
 
   # creates a directory using the specified path
@@ -165,7 +165,7 @@ module fileio is
                      # the internal array data representing the dir path in bytes
                      path fuzion.sys.Pointer,
                      # dummy parameter to enable overloading
-                     _ unit) bool => intrinsic_constructor
+                     _ unit) bool => intrinsic
 
 
   # intrinsic that fills an array with some metadata of the file/dir provided by the path
@@ -179,7 +179,7 @@ module fileio is
         # the internal array data representing the file/dir path in bytes
         path fuzion.sys.Pointer,
         # the internal array data representing the metadata fields [size in bytes, creation_time in seconds, regular file? 1 : 0, dir? 1 : 0]
-        meta_data fuzion.sys.Pointer) bool => intrinsic_constructor
+        meta_data fuzion.sys.Pointer) bool => intrinsic
 
   # intrinsic that fills an array with some metadata of the file/dir provided by the path
   # returns TRUE in case the operation was successful and FALSE in case of failure
@@ -305,7 +305,7 @@ module fileio is
   # note: offset+size must not exceed file size.
   # note: returning allocated memory - instead of error code - simplifies handling in DFA.
   #
-  module mmap(fd i64, offset, size i64, res fuzion.sys.Pointer) Pointer => intrinsic_constructor
+  module mmap(fd i64, offset, size i64, res fuzion.sys.Pointer) Pointer => intrinsic
 
 
   # close a memory mapped file
@@ -323,7 +323,7 @@ module fileio is
 
      # index of the byte
      i i64
-    ) u8 => intrinsic_constructor
+    ) u8 => intrinsic
 
 
   # set a byte of a given mapped buffer to a new value

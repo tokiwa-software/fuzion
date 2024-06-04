@@ -24,5 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = qualified_declaration
-FUZION_OPTIONS = -XenableSetKeyword
 include ../positive.mk

@@ -254,7 +254,24 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
 
   public String baseName()
   {
-    return _baseNameId < 0 ? "@"+(-_baseNameId) : _baseName;
+    return isNameless() ? "@"+(-_baseNameId) : _baseName;
+  }
+
+
+  public String baseNameHuman()
+  {
+    return baseName().startsWith(FuzionConstants.UNDERSCORE_PREFIX)
+      ? "_"
+      : baseName().startsWith(FuzionConstants.LAMBDA_PREFIX)
+      ? "fun"
+      : baseName().startsWith(FuzionConstants.ANONYMOUS_FEATURE_PREFIX)
+      ? "anonymous"
+      : baseName().startsWith(FuzionConstants.REC_LOOP_PREFIX)
+      ? "loop"
+      : baseName().startsWith(FuzionConstants.EXPRESSION_RESULT_PREFIX) ||
+        baseName().startsWith(FuzionConstants.INTERNAL_RESULT_NAME)
+      ? "result"
+      : baseName();
   }
 
 
@@ -272,7 +289,7 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
 
   public String toString()
   {
-    return _baseName + argCountAndIdString();
+    return baseNameHuman() + argCountAndIdString();
   }
 
 

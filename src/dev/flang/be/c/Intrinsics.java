@@ -468,6 +468,12 @@ public class Intrinsics extends ANY
 
     put("fuzion.sys.fileio.flush"      , (c,cl,outer,in) ->
       CExpr.call("fflush", new List<>(A0.castTo("FILE *"))).ret());
+
+    put("fuzion.sys.fatal_fault0"      , (c,cl,outer,in) ->
+        CStmnt.seq(CExpr.fprintfstderr("*** failed %s: `%s`\n", new CExpr[] {A0.castTo("char *"),
+                                                                             A1.castTo("char *")}),
+                   CExpr.exit(1)));
+
     put("fuzion.sys.stdin.stdin0"      , (c,cl,outer,in) ->
       new CIdent("stdin").castTo("fzT_1i64").ret());
     put("fuzion.sys.out.stdout"      , (c,cl,outer,in) ->
@@ -526,7 +532,14 @@ public class Intrinsics extends ANY
     put("i32.infix +°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '+', FUIR.SpecialClazzes.c_u32, FUIR.SpecialClazzes.c_i32).ret());
     put("i64.infix +°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '+', FUIR.SpecialClazzes.c_u64, FUIR.SpecialClazzes.c_i64).ret());
     put("i8.infix *°"          , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', FUIR.SpecialClazzes.c_u8 , FUIR.SpecialClazzes.c_i8 ).ret());
-    put("i16.infix *°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', FUIR.SpecialClazzes.c_u16, FUIR.SpecialClazzes.c_i16).ret());
+    /**
+     * This is intentionally cast to u32 and not u16.
+     * Read why here:
+     * https://stackoverflow.com/questions/24371868/why-must-a-short-be-converted-to-an-int-before-arithmetic-operations-in-c-and-c
+     * https://github.com/llvm/llvm-project/issues/25954
+     * https://stackoverflow.com/questions/23994293/inconsistent-behaviour-of-implicit-conversion-between-unsigned-and-bigger-signed
+     */
+    put("i16.infix *°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', FUIR.SpecialClazzes.c_u32, FUIR.SpecialClazzes.c_i16).ret());
     put("i32.infix *°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', FUIR.SpecialClazzes.c_u32, FUIR.SpecialClazzes.c_i32).ret());
     put("i64.infix *°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', FUIR.SpecialClazzes.c_u64, FUIR.SpecialClazzes.c_i64).ret());
     put("i8.div"               ,
@@ -580,9 +593,16 @@ public class Intrinsics extends ANY
         "u32.infix +°"         ,
         "u64.infix +°"         , (c,cl,outer,in) -> outer.add(A0).ret());
     put("u8.infix *°"          ,
-        "u16.infix *°"         ,
         "u32.infix *°"         ,
         "u64.infix *°"         , (c,cl,outer,in) -> outer.mul(A0).ret());
+    /**
+     * This is intentionally cast to u32 and not u16.
+     * Read why here:
+     * https://stackoverflow.com/questions/24371868/why-must-a-short-be-converted-to-an-int-before-arithmetic-operations-in-c-and-c
+     * https://github.com/llvm/llvm-project/issues/25954
+     * https://stackoverflow.com/questions/23994293/inconsistent-behaviour-of-implicit-conversion-between-unsigned-and-bigger-signed
+     */
+    put("u16.infix *°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', FUIR.SpecialClazzes.c_u32, FUIR.SpecialClazzes.c_i16).ret());
     put("u8.div"               ,
         "u16.div"              ,
         "u32.div"              ,

@@ -286,8 +286,7 @@ public class MiddleEnd extends ANY
           return i;
         }
       };
-    f.contract().req                 .stream().forEach(c -> c.visit(fv, f));
-    f.contract().all_postconditions().stream().forEach(c -> c.visit(fv, f));
+    f.contract().req.stream().forEach(c -> c.visit(fv, f));
     f.visitCode(fv);
   }
 

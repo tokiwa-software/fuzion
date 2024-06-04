@@ -275,7 +275,7 @@ public class Html extends ANY
    */
   private String htmlEncodedBasename(AbstractFeature af)
   {
-    var n = (af.outer() != null && af.outer().isTypeFeature() ? "type." : "") + af.featureName().baseName();
+    var n = (af.outer() != null && af.outer().isTypeFeature() ? "type." : "") + af.featureName().baseNameHuman();
 
     return htmlEncodeNbsp(n);
   }

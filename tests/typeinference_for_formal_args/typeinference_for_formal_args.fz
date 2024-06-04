@@ -61,9 +61,9 @@ typeinference_for_formal_args is
   scenario2 =>
 
     ping(x) =>
-      if (x > 0) pong x
+      if (x > 0) _:= pong x
       true
-    pong(y) => ping y-1; false
+    pong(y) => _ := ping y-1; false
 
     test "ping poing" ([1,2,3].filter x->(ping 3)) "[1, 2, 3]"
 
