@@ -57,11 +57,11 @@ public fallible(ERROR type, h ERROR->void) : effect effect_mode.plain is
   #   res := FALLIBLE_TYPE.try ()->
   #             code
   #          .catch s->
-  #             handle failure condition `s`
+  #             handle failure `s`
   #
   # or even
   #
-  #   res := FALLIBLE_TYPE.try code || (s->handle post condition failure `s`)
+  #   res := FALLIBLE_TYPE.try code || (s->handle fialure `s`)
   #
   # Note that the code is not executed unless `.catch` or `infix ||` is applied
   # to the result of the call to `try`.
