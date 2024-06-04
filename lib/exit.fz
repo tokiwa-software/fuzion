@@ -124,7 +124,7 @@ pre code ≤ 127
 # install given exit handler and run code with it.
 #
 public exit(handler Exit_Handler, code ()->unit) =>
-  exit handler (effect_mode.inst code) unit
+  _ := exit handler (effect_mode.inst code) unit
 
 
 # Exit_Handler -- abstract exit
