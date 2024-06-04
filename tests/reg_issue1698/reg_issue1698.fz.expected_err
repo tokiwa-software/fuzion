@@ -4,7 +4,7 @@ $MODULE/option.fz:134:11: error 1: Precondition does not hold
 ----------^
 For call to (option error).get#0
 Call stack:
-((try unit).on#2 void).#fun84.call#0: $MODULE/try.fz:44:47:
+((try unit).on#2 void).#fun85.call#0: $MODULE/try.fz:44:47:
     run (outcome R) (()->outcome f()) ()->err.get
 ----------------------------------------------^^^
 (try unit).abort#0: $MODULE/effect.fz:100:14:
@@ -19,7 +19,7 @@ reg_issue1698.#fun0.call#0: --CURDIR--/reg_issue1698.fz:27:7:
 (try#3 unit void).#fun4.call#0: $MODULE/try.fz:57:14:
   (try T).on f
 -------------^
-((try unit).on#2 void).#fun83.call#0: $MODULE/try.fz:44:34:
+((try unit).on#2 void).#fun84.call#0: $MODULE/try.fz:44:34:
     run (outcome R) (()->outcome f()) ()->err.get
 ---------------------------------^
 ((try unit).run#3 (outcome void)).#fun1.call#0: $MODULE/effect.fz:97:23:
