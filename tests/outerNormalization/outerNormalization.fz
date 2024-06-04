@@ -132,8 +132,8 @@ outerNormalization is
   #
   testInterval =>
     _ := for i in 0.. do
-      say $i
-    until i > 3
+           say $i
+         until i > 3
 
   testInterval
 

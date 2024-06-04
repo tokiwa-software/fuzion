@@ -80,20 +80,20 @@ is
   #
   public redef as_string String =>
     (f,u,_) := for
-      x := units.unit_names.first, n
-      n in units.unit_names.drop 1
-      nf := n.values.0
-  /* NYI this does not work yet, see #228:
-   *
-    while (!(nf = 0 || nanos / nf < 10)) else
-      x
-   *
-   * so use until .. then .. else instead, which works, but repeats 'x'
-   */
-    until nf = u64 0 || nanos / nf < u64 10 then
-      x
-    else
-      x
+                 x := units.unit_names.first, n
+                 n in units.unit_names.drop 1
+                 nf := n.values.0
+             /* NYI this does not work yet, see #228:
+              *
+               while (!(nf = 0 || nanos / nf < 10)) else
+                 x
+              *
+              * so use until .. then .. else instead, which works, but repeats 'x'
+              */
+               until nf = u64 0 || nanos / nf < u64 10 then
+                 x
+               else
+                 x
     n := $(nanos / f)
     " "*(max 0 4-n.byte_length) + n + u
 

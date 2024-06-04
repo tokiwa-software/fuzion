@@ -2664,6 +2664,7 @@ loopEpilog  : "until" exprInLine thenPart elseBlock
   Expr loop()
   {
     return relaxLineAndSpaceLimit(() -> {
+        var old = setMinIndent(tokenPos());
         SourcePosition pos = tokenSourcePos();
         List<Feature> indexVars  = new List<>();
         List<Feature> nextValues = new List<>();
@@ -2677,7 +2678,7 @@ loopEpilog  : "until" exprInLine thenPart elseBlock
                                                     var els1= fork().elseBlock();
                                                     var els2= fork().elseBlock();
                                                     var els =        elseBlock();
-
+        setMinIndent(old);
         if (!hasWhile && !hasDo && !hasUntil && els == null)
           {
             syntaxError(tokenPos(), "loopBody or loopEpilog: 'while', 'do', 'until' or 'else'", "loop");
