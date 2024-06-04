@@ -259,6 +259,7 @@ catch_postcondition is
     say "*** all failed ***"
 
   say ""
+
   # -------------------------------
 
   say "using fuzion API to catch fault"
