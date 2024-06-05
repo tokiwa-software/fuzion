@@ -48,7 +48,7 @@ public fallible(ERROR type, h ERROR->void) : effect effect_mode.plain is
 
   # try -- run code and handle fault of type `fallible.this`.
   #
-  # try is a type feature that can be called on any chilid of `fallible`
+  # try is a type feature that can be called on any child of `fallible`
   # to run the code given as an argument and handle an error using the
   # `Unary` provided to `catch`.
   #
