@@ -78,12 +78,9 @@ catch_postcondition is
 
   say "install our own fault handler that prints message and tries again:"
 
-  my_hdlr : fuzion.runtime.Post_Fault_Handler is
-    cause(msg String) =>
+  say ((rt.post_fault msg->
       say "postcondition failed: $msg"
-      rt.post_fault.abort
-
-  say ((rt.post_fault my_hdlr).run
+      rt.post_fault.abort).run
     (test i32)
     (test u64))
 
@@ -101,15 +98,14 @@ catch_postcondition is
     catch(msg String) T => abstract
 
     # use local mutate to store msg passed to `cause`
-    M : mutate.
+    lm : mutate.
 
-    res := M.go ()->
-        m := M.env.new (option String nil)
-        h : fuzion.runtime.Post_Fault_Handler is
-          cause(msg String) =>
+    res := lm.go ()->
+        m := lm.env.new (option String nil)
+        (rt.post_fault msg->
             m <- msg
             rt.post_fault.return
-        (rt.post_fault h).run try (()->catch m.get.get)
+        ).run try (()->catch m.get.get)
 
 
   # -------------------------------
@@ -237,6 +233,44 @@ catch_postcondition is
            option tries[c].call
          .catch s->
            say "*** failed: $s ***"
+           nil
+  until r??
+    say r
+  else
+    say "*** all failed ***"
+
+  say ""
+
+  # -------------------------------
+
+  say "using fuzion API to catch post condition failure"
+
+  for
+    c in tries.indices
+  do
+    r := fuzion.runtime.post_fault.try ()->
+           option tries[c].call
+         .catch s->
+           say "*** failed: $s ***"
+           nil
+  until r??
+    say r
+  else
+    say "*** all failed ***"
+
+  say ""
+
+  # -------------------------------
+
+  say "using fuzion API to catch fault"
+
+  for
+    c in tries.indices
+  do
+    r := fuzion.runtime.fault.try ()->
+           option tries[c].call
+         .catch s->
+           say "*** failed: {s.0} {s.1} ***"
            nil
   until r??
     say r

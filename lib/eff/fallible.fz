@@ -1,0 +1,135 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature eff.fallible
+#
+# -----------------------------------------------------------------------
+
+# fallible -- fallible is a generic type for effects that may signal a fault
+#
+# Any effect that may signal a fault should inherit from fallible to permit
+# its use within type parameteric features such as `eff.try`
+#
+public fallible(ERROR type, h ERROR->void) : effect effect_mode.plain is
+
+
+  # cause fault with the given error
+  #
+  public cause(e ERROR) void
+  => h e
+
+
+  # type feature that must be implemented by all children to create an
+  # instance of `fallible.this.type` with the given error handler.
+  #
+  public type.new(# the error handler, this will usually abort this effect or
+                  # abort using another effect (e.g., panic),
+                  #
+                  h ERROR->void
+                  ) fallible.this
+  => abstract
+
+
+  # try -- run code and handle fault of type `fallible.this`.
+  #
+  # try is a type feature that can be called on any child of `fallible`
+  # to run the code given as an argument and handle an error using the
+  # `Unary` provided to `catch`.
+  #
+  # This enables Java-like try-catch syntax as follows
+  #
+  #   res := FALLIBLE_TYPE.try ()->
+  #             code
+  #          .catch s->
+  #             handle failure `s`
+  #
+  # or even
+  #
+  #   res := FALLIBLE_TYPE.try code || (s->handle fialure `s`)
+  #
+  # Note that the code is not executed unless `.catch` or `infix ||` is applied
+  # to the result of the call to `try`.
+  #
+  public type.try(T type, code_try ()->T) is
+
+    # define code to execute in case of fault and run code_try.
+    #
+    public catch(code_catch ERROR->T) =>
+      (ref : eff.handle ERROR fallible.this T
+         try => code_try.call
+         catch(e ERROR) => code_catch e
+      ).res
+
+    # define code to execute in case of fault and run code_try.
+    #
+    # NYI: BUG: #3159 This is a variant of `catch` that uses inline code instead of `handle`. Using this
+    # variant currently causes errors in the back end (`AbstractMethodError` for JVM backend, `unhandled
+    # dynamic target` for C backend), need to analyse and fix this.
+    #
+    public catch_broken(code_catch ERROR->T) =>
+      # use local mutate to store msg passed to `cause`
+      lm : mutate.
+
+      lm.go ()->
+        m := lm.env.new (option ERROR nil)
+        (fallible.this.new e->
+          m <- e
+          fallible.this.env.return
+        ).run code_try (()->code_catch m.get.get)
+
+
+    # infix alias for catch
+    #
+    infix || (code_catch ERROR->T) => catch code_catch
+
+
+# helper for fallible.type.try.
+#
+# NYI: CLEANUP: remove when `try.catch`'s code is replaced by the code in `try.catch_broken`.
+#
+handle(ERROR type, F type : fallible ERROR, T type) is
+
+  # try and catch to be redefined by user
+  #
+  try            T => abstract
+  catch(e ERROR) T => abstract
+
+  # use local mutate to store msg passed to `cause`
+  lm : mutate.
+
+  res => lm.go ()->
+      m := lm.env.new (option ERROR nil)
+      (F.new e->
+          m <- e
+          F.env.return
+      ).run try (()->catch m.get.get)
+
+
+  # NYI: BUG: #3159 The following code is a variant using the state effect instead of mutate. This
+  # currently causes errors in the back end (`AbstractMethodError` for JVM backend, `unhandled dynamic
+  # target` for C backend), need to analyse and fix this.
+
+  # local type definition to get unique state effect
+  s(val option ERROR) is
+
+  res_broken => state s T (s nil) ()->
+    (F.new e->
+        _ := state_put (s e)
+        F.env.return
+    ).run try (()->catch (state_get s).val.get)

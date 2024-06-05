@@ -17,18 +17,35 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion standard library feature try
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-reg_issue2231 is
-  a := mut ()->i32 ()->0
-  ef : simple_effect is
-    inner := 7
-    a <- ()->inner
-    something =>
-      abort
+# try -- try to run code requiring fallible effect and handle failure
+#
+# This feature allows Java-like try-catch syntax for fallible
+#
+#   res := try ERROR_TYPE FALLIBLE_TYPE RESULT_TYPE ()->
+#             code
+#          .catch s->
+#             handle failure condition `s`
+#
+# or even
+#
+#   res := try ERROR_TYPE FALLIBLE_TYPE RESULT_TYPE code || (s->handle post condition failure `s`)
+#
+public try(ERROR type, F type : fallible ERROR, T type, code_try ()->T) is
 
-  ef.go ()->
-    reg_issue2231.ef.env.something
-  say a.get.call
+
+  # define code to execute in case of fault and run code
+  #
+  public catch(code_catch ERROR->T) =>
+    F.try   code_try
+     .catch code_catch
+
+
+  # infix alias for catch
+  #
+  infix || (code_catch ERROR->T) => catch code_catch

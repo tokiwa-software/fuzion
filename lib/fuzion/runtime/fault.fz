@@ -27,54 +27,28 @@
 #
 public fault (
   # the handler this effect uses to fail
-  p Fault_Handler
-  ) : simple_effect
+  p ((String, String))->void
+  ) : eff.fallible (String,String) /* NYI: BUG: this type parameter is required, type inference results in NullPointerException */ p
 is
 
 
   # cause check fault with the given message
   #
   cause_check(msg String) =>
-    cause "check" msg
-
-
-  # cause fault of given kind with the given message
-  #
-  public cause(# the kind of failure, e.g., "precondition", "check", etc.
-               #
-               kind,
-
-               # message describing what failed, e.g. "debug: a > 0"
-               #
-               msg String)
-  =>
-    p.fail kind msg
-    abort
+    cause ("check", msg)
 
 
   # install default fault handler
   type.install_default =>
-    (fuzion.runtime.fault default_fault_handler).default
-
-
-  # default fault handler using io.err and exit with return code 1
-  #
-  type.default_fault_handler : fuzion.runtime.Fault_Handler is
-
-    # fail with given kind and given message.
-    #
-    # This implementation will print "*** runtime failure: $kind $msg"
-    # and perform `exit 1`.
-    #
-    fail(# the kind of failure, e.g., "precondition", "check", etc.
-         #
-         kind,
-
-         # message describing what failed, e.g. "debug: a > 0"
-         #
-         msg String)
-    =>
+    (new kind_and_msg->
+      (kind, msg) := kind_and_msg
       fuzion.sys.fatal_fault kind msg
+    ).default
+
+
+  # create an instance of `fault` with the given error handler.
+  #
+  public fixed type.new(h ((String,String))->void) => fuzion.runtime.fault h
 
 
 # fault with no argument returns fault.env, the currently installed
@@ -89,20 +63,3 @@ public fault =>
 # use the current fault effect to fail with the given message.
 #
 public check_fault(msg String) => fault.cause_check msg
-
-
-# Fault_Handler -- abstract fault hadler
-#
-public Fault_Handler ref is
-
-  # fail with given kind and given message
-  #
-  public fail(kind, msg String) unit => abstract
-
-  # Install this fault handler using a new instance of fault and run
-  # `code` on it.  In case of an abort, return `def()` (NYI: def should be
-  # removed and the result of fail should be returned instead).
-  #
-  public use(R type, code, def ()->R) =>
-    p := fault Fault_Handler.this
-    p.run code def
