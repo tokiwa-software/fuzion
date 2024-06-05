@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.SourcePosition;
+
 
 /**
  * A BuiltInType is an unresolved type representing a built-in type that does
@@ -68,6 +70,17 @@ public class ArtificialBuiltInType extends ResolvedNormalType
     _name = name;
     _id = ids++;
   }
+
+
+  /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * The sourcecode position of the declaration point of this type, or, for
+   * unresolved types, the source code position of its use.
+   */
+  @Override
+  public SourcePosition declarationPos() { return SourcePosition.builtIn; }
 
 
   /**
