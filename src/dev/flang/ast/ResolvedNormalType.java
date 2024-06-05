@@ -50,7 +50,7 @@ public class ResolvedNormalType extends ResolvedType
    * The sourcecode position of the declaration point of this type, or, for
    * unresolved types, the source code position of its use.
    */
-  public SourcePosition declarationPos() { return _feature.pos(); }
+  public SourcePosition declarationPos() { return _feature == null ? SourcePosition.notAvailable : _feature.pos(); }
 
 
   /**
@@ -281,6 +281,7 @@ public class ResolvedNormalType extends ResolvedType
       (feature().generics().sizeMatches(generics()));
   }
 
+
   /**
    * Instantiate a new ResolvedNormalType and return its unique instance.
    */
@@ -507,10 +508,11 @@ public class ResolvedNormalType extends ResolvedType
     else
       {
         result =
-          (_refOrVal == RefOrVal.Boxed && (_feature == null || !_feature.isThisRef()) ? "ref " :
-           _refOrVal == RefOrVal.Value &&  _feature != null &&  _feature.isThisRef()  ? "value "
+          _feature == null ? "<null-feature>" :
+          ((_refOrVal == RefOrVal.Boxed && (_feature == null || !_feature.isThisRef()) ? "ref " :
+            _refOrVal == RefOrVal.Value &&  _feature != null &&  _feature.isThisRef()  ? "value "
                                                                                     : ""       )
-          + _feature.qualifiedName();
+           + _feature.qualifiedName());
       }
     if (isThisType())
       {
@@ -613,7 +615,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   AbstractType clone(AbstractFeature originalOuterFeature)
   {
-    return
+    return this == Types.t_UNDEFINED ? this :
       new ResolvedNormalType(this, originalOuterFeature)
       {
         AbstractFeature originalOuterFeature(AbstractFeature currentOuter)
