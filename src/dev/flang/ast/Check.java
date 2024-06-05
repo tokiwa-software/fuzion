@@ -96,7 +96,7 @@ public class Check extends ANY
         var p = c.cond.sourceRange();
         var f = new Call(p, "fuzion");
         var r = new Call(p, f, "runtime");
-        var e = new Call(p, r, "check_fault", new List<>(new StrConst(p, p.sourceText())));
+        var e = new Call(p, r, "checkcondition_fault", new List<>(new StrConst(p, p.sourceText())));
         l.add(new If(p, c.cond, new Block(), e));
       }
     return new Block(l);
