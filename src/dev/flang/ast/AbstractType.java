@@ -655,7 +655,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (    isGenericArgument() && !isThisTypeInTypeFeature()
        || !isGenericArgument() && (generics().stream().anyMatch(t -> t.dependsOnGenericsExceptTHIS_TYPE()) ||
                                    outer() != null && outer().dependsOnGenericsExceptTHIS_TYPE()));
-    if (res) System.out.println("TRUE for "+this);
     return res;
   }
 
