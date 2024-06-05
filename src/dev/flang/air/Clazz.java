@@ -358,7 +358,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (PRECONDITIONS) require
       (!Clazzes.closed,
-       Errors.any() || !actualType.dependsOnGenerics(),
+       Errors.any() || !actualType.dependsOnGenericsExceptTHIS_TYPE(),
        Errors.any() || actualType.feature().outer() == null || outer.feature().inheritsFrom(actualType.feature().outer()),
        Errors.any() || actualType.feature().outer() != null || outer == null,
        Errors.any() || (actualType != Types.t_ERROR     &&
