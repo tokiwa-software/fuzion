@@ -33,10 +33,13 @@ STRIP_ERR="$SCRIPTPATH"/_strip_err.sh
 
 set -euo pipefail
 
-tmp1="`mktemp`"
-tmp2="`mktemp`"
+tmp1="$(mktemp)"
+tmp2="$(mktemp)"
 
 cat "$1" | "$STRIP_ERR" >"$tmp1"
 cat "$2" | "$STRIP_ERR" >"$tmp2"
 
-diff "$tmp1" "$tmp2"
+diff "$tmp1" "$tmp2"; rc=$?
+
+rm "$tmp1" "$tmp2"
+exit $rc
