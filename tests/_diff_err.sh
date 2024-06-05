@@ -36,8 +36,8 @@ set -euo pipefail
 tmp1="$(mktemp)"
 tmp2="$(mktemp)"
 
-cat "$1" | "$STRIP_ERR" >"$tmp1"
-cat "$2" | "$STRIP_ERR" >"$tmp2"
+"$STRIP_ERR" <"$1" >"$tmp1"
+"$STRIP_ERR" <"$2" >"$tmp2"
 
 diff "$tmp1" "$tmp2"; rc=$?
 
