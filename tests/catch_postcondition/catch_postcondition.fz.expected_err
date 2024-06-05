@@ -1,13 +1,13 @@
 
 error 1: Postcondition `equals` does not hold after call
 Call stack:
-fuzion.type.runtime.type.fault.type.install_default#0.#fun179.call#1: $MODULE/fuzion/runtime/fault.fz:45:18:
+fuzion.type.runtime.type.fault.type.install_default#0.#fun265.call#1: $MODULE/fuzion/runtime/fault.fz:38:18:
       fuzion.sys.fatal_fault kind msg
 -----------------^^^^^^^^^^^
 fuzion.runtime.fault.cause#1: $MODULE/eff/fallible.fz:35:6:
   => h e
 -----^
-fuzion.type.runtime.type.post_fault.type.install_default#0.#fun264.call#1: $MODULE/fuzion/runtime/post_fault.fz:39:28:
+fuzion.type.runtime.type.post_fault.type.install_default#0.#fun266.call#1: $MODULE/fuzion/runtime/post_fault.fz:39:28:
       fuzion.runtime.fault.cause ("postcondition", msg)).default
 ---------------------------^^^^^
 fuzion.runtime.post_fault.cause#1: $MODULE/eff/fallible.fz:35:6:

@@ -28,7 +28,7 @@
 #
 public post_fault (
   # the handler this effect uses to fail
-  p String->void
+  p String -> void
   ) : eff.fallible (String) /* NYI: BUG: this type parameter is required, type inference results in NullPointerException */ p
 is
 
@@ -41,7 +41,7 @@ is
 
   # create an instance of `post_fault` with the given error handler.
   #
-  public fixed type.new(h String->void) => fuzion.runtime.post_fault h
+  public fixed type.new(h String -> void) => fuzion.runtime.post_fault h
 
 
 # post_fault with no argument returns post_fault.env, the currently installed

@@ -17,36 +17,42 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature fault
+#  Source code of Fuzion standard library feature check_fault
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# fault -- effect that terminates a computation due to a runtime fault
+# check_fault -- effect that terminates a computation due to a failed
+# condition in a check statement
 #
-public fault (
+public check_fault (
   # the handler this effect uses to fail
-  p ((String, String))->void
-  ) : eff.fallible (String,String) /* NYI: BUG: this type parameter is required, type inference results in NullPointerException */ p
+  p String -> void
+  ) : eff.fallible (String) /* NYI: BUG: this type parameter is required, type inference results in NullPointException */ p
 is
 
-  # install default fault handler
+
+  # install default check_fault handler
   type.install_default =>
-    (new kind_and_msg->
-      (kind, msg) := kind_and_msg
-      fuzion.sys.fatal_fault kind msg
-    ).default
+    (fuzion.runtime.check_fault msg->
+      fuzion.runtime.fault.cause ("check", msg)).default
 
 
-  # create an instance of `fault` with the given error handler.
+  # create an instance of `check_fault` with the given error handler.
   #
-  public fixed type.new(h ((String,String))->void) => fuzion.runtime.fault h
+  public fixed type.new(h String -> void) => fuzion.runtime.check_fault h
 
 
-# fault with no argument returns fault.env, the currently installed
-# runtime fault handler.
+# check_fault with no argument returns check_fault.env, the currently installed
+# runtime check_fault handler.
 #
-public fault =>
-  fault.install_default
-  fault.env
+public check_fault =>
+  check_fault.install_default
+  check_fault.env
+
+
+# cause a check fault with given msg argument, i.e., call check_fault.cause
+# msg, i.e., use the current check_fault effect to fail with the given message.
+#
+public checkcondition_fault(msg String) => check_fault.cause msg
