@@ -28,7 +28,7 @@
 public fault (
   # the handler this effect uses to fail
   p ((String, String))->void
-  ) : eff.fallible (String,String) /* NYI: BUG: this type parameter is require, type inference results in NullPointException */ p
+  ) : eff.fallible (String,String) /* NYI: BUG: this type parameter is required, type inference results in NullPointerException */ p
 is
 
 
