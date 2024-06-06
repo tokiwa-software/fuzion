@@ -1,0 +1,57 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test
+#
+# -----------------------------------------------------------------------
+
+ex_circular_buffer =>
+  m : mutate is
+
+  m.go ()->
+    b := (mutate.circular_buffer codepoint).new m 7 "0"
+    say (b.put "1")
+    say (b.enqueue ["2", "3"])
+    say (b.enqueue ["4", "5", "6", "7"])
+    say (b.enqueue ["8", "9"])
+    say (b.get)
+    say (b.get)
+    say (b.enqueue ["A", "B", "C"])
+    say (b.get)
+    say (b.enqueue ["D", "E", "F"])
+    say (b.get)
+    say (b.get)
+    say (b.get)
+    say (b.get)
+    say (b.get)
+    say (b.get)
+    say (b.get)
+    say (b.get)
+    say (b.get)
+    say (b.enqueue ["2", "3"])
+    say (b.enqueue ["4", "5", "6", "7"])
+    say (b.put "1")
+    say (b.put "B")
+    say b
+    say (b.get)
+    say (b.flush 2)
+    # say (b.flush 400)
+    say b
+    say (b.flush 4)
+    say b
