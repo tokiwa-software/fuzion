@@ -405,7 +405,7 @@ part of the (((inner features))) declarations of the corresponding
 
                     Files.list(d._dir)
                       .filter(p -> isValidSourceFile(p))
-                      .sorted()
+                      .sorted(Comparator.comparing(p -> p.toString()))
                       .forEach(p ->
                                {
                                  for (var inner : parseAndGetFeatures(p))
