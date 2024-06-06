@@ -34,7 +34,7 @@ public fuzion.java is
   public get_static_field(T type, clazz String, field String, signature String) =>
     c := string_to_java_object clazz
     f := string_to_java_object field
-    get_static_field0 T c f (sys.c_string signature)
+    get_static_field0 T c f signature.as_pointer
 
 
   # read a field of given name from given object instance thiz.  Wrap result into
@@ -42,7 +42,7 @@ public fuzion.java is
   #
   public get_field(T type, thiz Java_Object, field String, signature String) =>
     f := string_to_java_object field
-    get_field0 T thiz f (sys.c_string signature)
+    get_field0 T thiz f signature.as_pointer
 
 
   # intrinsic to read static field
@@ -76,7 +76,7 @@ public fuzion.java is
   is
     public length                  => array_length T Array.this
     public redef finite            => true
-    public redef index [ ] (i i32) => array_get    T Array.this i (sys.c_string signature)
+    public redef index [ ] (i i32) => array_get    T Array.this i signature.as_pointer
     public redef as_list => as_list 0
 
 

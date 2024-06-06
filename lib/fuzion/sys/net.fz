@@ -54,7 +54,7 @@ module net is
   #
   module bind    (family, socket_type, protocol i32, host String, port u16) outcome i64 =>
     arr := fuzion.sys.internal_array_init i64 1
-    r := bind0 family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string port.as_string) arr.data = 0
+    r := bind0 family socket_type protocol host.as_pointer port.as_string.as_pointer arr.data = 0
     if r
       arr[0]
     else
@@ -104,7 +104,7 @@ module net is
   #
   module connect(family, socket_type, protocol i32, host String, port u16) outcome i64 =>
     arr := fuzion.sys.internal_array_init i64 1
-    res := connect0 family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string port.as_string) arr.data = 0
+    res := connect0 family socket_type protocol host.as_pointer port.as_string.as_pointer arr.data = 0
     if res
       arr[0]
     else
