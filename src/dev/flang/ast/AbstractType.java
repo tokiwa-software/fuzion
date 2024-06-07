@@ -1865,12 +1865,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Check if this choice type is valid if it is a choice type and check if
-   * constraints on type parameters of this type are satisfied.
+   * Check if constraints on type parameters of this type are satisfied.
    *
-   * @return itself on success or t_ERROR if an error was produced
+   * @return itself on success or t_ERROR if constraints are not met and an
+   * error was produced
    */
-  public AbstractType checkChoiceAndConstraints()
+  public AbstractType checkConstraints()
   {
     var result = this;
     if (result != Types.t_ERROR && !isGenericArgument())

@@ -1837,7 +1837,7 @@ A ((Choice)) declaration must not contain a result type.
             public Call         action(Call           c, AbstractFeature outer) { c.checkTypes(res, outer); return c; }
             public Expr         action(If             i, AbstractFeature outer) { i.checkTypes();      return i; }
             public Expr         action(InlineArray    i, AbstractFeature outer) { i.checkTypes();      return i; }
-            public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkChoiceAndConstraints(); }
+            public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints();   }
             public void         action(Cond           c, AbstractFeature outer) { c.checkTypes();                }
             public void         actionBefore(Block    b, AbstractFeature outer) { b.checkTypes();                }
           });
