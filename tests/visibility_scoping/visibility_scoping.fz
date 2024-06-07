@@ -50,13 +50,14 @@ visibility_scoping is
 
 
 
-  test3 is
-    ref : Function unit
-    call =>
-      say ar  # should flag an error: feature not found
-
-    for ar := outcome unit
+  test3 =>
+    _ := for ar := outcome unit
     while false
+
+    ref : Function unit
+      call =>
+        say ar  # should flag an error: feature not found
+
 
 
 

@@ -30,7 +30,7 @@ reg_issue1396 is
 
   match create
     p target =>
-      p.my_call
+      _ := p.my_call
     error =>
 
   match create
