@@ -1563,6 +1563,11 @@ public class Feature extends AbstractFeature
           { // choice type must not have a result type
             if (!(Errors.any() && _returnType == RefType.INSTANCE))  // this was covered by AstErrors.choiceMustNotBeRef
               {
+                /*
+    // tag::fuzion_rule_CHOICE_RESULT[]
+A ((Choice)) declaration must not contain a result type.
+    // end::fuzion_rule_CHOICE_RESULT[]
+                */
                 AstErrors.choiceMustNotHaveResultType(_pos, _returnType);
               }
           }
@@ -1868,7 +1873,13 @@ public class Feature extends AbstractFeature
     Feature result = _resultField;
 
     if (POSTCONDITIONS) ensure
-      (Errors.any() || hasResultField() == (result != null));
+      (Errors.any() ||
+       hasResultField() == (result != null) ||
+
+       // the following will later be checked by checkChoiceAndAddInternalFields() and
+       // reported as an error (fuzion rule CHOICE_RESULT):
+       isChoice() && (result != null)
+       );
     return result;
   }
 
