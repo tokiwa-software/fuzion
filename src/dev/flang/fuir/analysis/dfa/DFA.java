@@ -309,7 +309,7 @@ public class DFA extends ANY
           var ignore = _call.showWhy(detail);
           Errors.error(_fuir.sitePos(s),
                        "NYI: in "+_fuir.siteAsString(s)+" no targets for "+_fuir.codeAtAsString(s)+" target "+tvalue,
-                       detail);
+                       detail.toString());
         }
       else if (res != null &&
                tvalue instanceof EmbeddedValue &&
