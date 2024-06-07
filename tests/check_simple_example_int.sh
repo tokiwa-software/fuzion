@@ -38,6 +38,7 @@ set -euo pipefail
 
 SCRIPTPATH="$(dirname "$(readlink -f "$0")")"
 CURDIR=$("$SCRIPTPATH"/_cur_dir.sh)
+DIFFERR="$SCRIPTPATH"/_diff_err.sh
 
 
 RC=0
@@ -81,8 +82,8 @@ else
     fi
 
     # show diff in stdout unless an unexpected output occurred to stderr:
-    (diff "$experr" tmp_err.txt && diff "$expout" tmp_out.txt) || echo -e "\033[31;1m*** FAILED\033[0m out on $2"
-    diff "$expout" tmp_out.txt >/dev/null && diff "$experr" tmp_err.txt >/dev/null && echo -e "\033[32;1mPASSED\033[0m."
+    ($DIFFERR "$experr" tmp_err.txt && diff "$expout" tmp_out.txt) || echo -e "\033[31;1m*** FAILED\033[0m out on $2"
+    diff "$expout" tmp_out.txt >/dev/null && $DIFFERR "$experr" tmp_err.txt >/dev/null && echo -e "\033[32;1mPASSED\033[0m."
     RC=$?
     rm tmp_out.txt tmp_err.txt
 fi
