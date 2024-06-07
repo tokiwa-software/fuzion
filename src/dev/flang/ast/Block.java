@@ -361,14 +361,15 @@ public class Block extends AbstractBlock
 
     // we must not remove result expression just yet.
     // we rely on it being present in SourceModule.inScope()
+    var idx = resultExpressionIndex();
     Expr resExpr = resultExpressionIndex() >= 0
-      ? _expressions.get(resultExpressionIndex())
+      ? _expressions.get(idx)
       : null;
 
     if (resExpr != null)
       {
         var x = resExpr.propagateExpectedType(res, outer, type);
-        removeResultExpression();
+        _expressions.remove(idx);
         _expressions.add(x);
       }
     else if (Types.resolved.t_unit.compareTo(type) != 0)
