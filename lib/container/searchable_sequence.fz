@@ -137,7 +137,7 @@ is
       debug: !s.is_empty
       debug: match limit
               nil => true
-              n u32 => n > (u32 0)
+              n u32 => n > 0
     =>
       match (find s)
         nil     => from : nil

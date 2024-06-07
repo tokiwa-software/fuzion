@@ -106,8 +106,8 @@ public u16(public val u16) : num.wrap_around, has_interval is
     (v, s) := (val, u16 0    )
     (v, s) := if (v < (u16 0x100)) (v, s) else (v >>  8, s +  8)
     (v, s) := if (v <  (u16 0x10)) (v, s) else (v >>  4, s +  4)
-    (v, s) := if (v <     (u16 4)) (v, s) else (v >>  2, s +  2)
-    (v, s) := if (v <     (u16 2)) (v, s) else (v >>  1, s +  1)
+    (v, s) := if (v <           4) (v, s) else (v >>  2, s +  2)
+    (v, s) := if (v <           2) (v, s) else (v >>  1, s +  1)
     v << s
 
 
