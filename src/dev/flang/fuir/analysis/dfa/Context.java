@@ -47,9 +47,10 @@ public interface Context
    */
   static class MainEntryPoint extends ANY implements Context
   {
-    public String showWhy()
+    public String showWhy(StringBuilder sb)
     {
-      say("program entry point");
+      sb.append("program entry point")
+        .append("\n");
       return "  ";
     }
     public String toString(boolean forEnv)
@@ -85,10 +86,12 @@ public interface Context
    * Show the context that caused the inclusion of this instance into the
    * analysis.
    *
+   * @param sb the context information will be appended to this StringBuilder.
+   *
    * @return a string providing the indentation level for the caller in case of
    * nested contexts.  "  " is to be added to the result on each recursive call.
    */
-  String showWhy();
+  String showWhy(StringBuilder sb);
 
 
   /**
