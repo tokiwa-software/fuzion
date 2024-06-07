@@ -1608,8 +1608,6 @@ A ((Choice)) declaration must not contain a result type.
           }
       }
 
-    selfType().checkChoice(_pos);
-
     checkNoClosureAccesses(res, _pos);
     for (var p : _inherits)
       {
@@ -1703,11 +1701,6 @@ A ((Choice)) declaration must not contain a result type.
           {
             AstErrors.failedToInferResultType(this);
             _resultType = Types.t_ERROR;
-          }
-
-        if (!isTypeParameter())
-          {
-            _resultType.checkChoice(_posOfReturnType);
           }
 
         if (_resultType.isThisType() && _resultType.feature() == this)
@@ -1838,13 +1831,13 @@ A ((Choice)) declaration must not contain a result type.
             /* if an error is reported in a call it might no longer make sense to check the actuals: */
             public boolean visitActualsLate() { return true; }
 
-            public void         action(AbstractAssign a, AbstractFeature outer) { a.checkTypes(res);             }
+            public void         action(AbstractAssign a, AbstractFeature outer) { a.checkTypes(res);                  }
             public Call         action(Call           c, AbstractFeature outer) { c.checkTypes(res, outer); return c; }
-            public Expr         action(If             i, AbstractFeature outer) { i.checkTypes();      return i; }
-            public Expr         action(InlineArray    i, AbstractFeature outer) { i.checkTypes();      return i; }
-            public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints();   }
-            public void         action(Cond           c, AbstractFeature outer) { c.checkTypes();                }
-            public void         actionBefore(Block    b, AbstractFeature outer) { b.checkTypes();                }
+            public Expr         action(If             i, AbstractFeature outer) { i.checkTypes();           return i; }
+            public Expr         action(InlineArray    i, AbstractFeature outer) { i.checkTypes();           return i; }
+            public AbstractType action(AbstractType   t, AbstractFeature outer) {                           return t.checkChoiceAndConstraints(); }
+            public void         action(Cond           c, AbstractFeature outer) { c.checkTypes();                     }
+            public void         actionBefore(Block    b, AbstractFeature outer) { b.checkTypes();                     }
           });
         checkTypes(res);
 
