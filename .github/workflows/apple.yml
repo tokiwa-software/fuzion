@@ -49,7 +49,7 @@ jobs:
       - name: install dependencies
         run: |
           brew install bdw-gc gnu-sed make
-          echo "/usr/local/opt/gnu-sed/libexec/gnubin:/usr/local/opt/gnu-make/libexec/gnubin:$PATH" >> $GITHUB_PATH
+          echo "/opt/homebrew/opt/gnu-sed/libexec/gnubin:/opt/homebrew/opt/make/libexec/gnubin:/usr/local/opt/gnu-sed/libexec/gnubin:/usr/local/opt/gnu-make/libexec/gnubin:$PATH" >> $GITHUB_PATH
 
       - name: sed version
         run: sed --version
