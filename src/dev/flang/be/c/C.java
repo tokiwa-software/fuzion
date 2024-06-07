@@ -1903,7 +1903,11 @@ public class C extends ANY
       }
     var allocCurrent = switch (_fuir.lifeTime(cl, pre))
       {
-      case Call      -> CStmnt.seq(CStmnt.lineComment("cur does not escape, alloc on stack"), CStmnt.decl(_names.struct(cl), CNames.CURRENT, CExpr.compoundLiteral(_names.struct(cl), "")));
+      case Call      -> CStmnt.seq(
+          CStmnt.lineComment("cur does not escape, alloc on stack"),
+          CStmnt.decl(_names.struct(cl), CNames.CURRENT),
+          // this fixes "variable 'fzCur' is uninitialized when used here" in e.g. reg_issue1188
+          CExpr.call("memset", new List<>(CNames.CURRENT.adrOf(), CExpr.int32const(0), CNames.CURRENT.sizeOfExpr())));
       case Unknown   -> CStmnt.seq(CStmnt.lineComment("cur may escape, so use malloc"      ), declareAllocAndInitClazzId(cl, CNames.CURRENT));
       case Undefined -> CExpr.dummy("undefined life time");
       };
