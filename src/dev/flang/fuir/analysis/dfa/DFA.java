@@ -301,16 +301,15 @@ public class DFA extends ANY
       var res = resf[0];
       if (!found[0])
         { // NYI: proper error reporting
-          var detail = "Considered targets: ";
+          var detail = new StringBuilder("Considered targets: ");
           for (var ccii = 0; ccii < ccs.length; ccii += 2)
             {
-              detail += _fuir.clazzAsStringNew(ccs[ccii]) + ", ";
+              detail.append(_fuir.clazzAsStringNew(ccs[ccii])).append(ccii+2 < ccs.length ? ", " : "\n");
             }
+          var ignore = _call.showWhy(detail);
           Errors.error(_fuir.sitePos(s),
                        "NYI: in "+_fuir.siteAsString(s)+" no targets for "+_fuir.codeAtAsString(s)+" target "+tvalue,
                        detail);
-
-          _call.showWhy();
         }
       else if (res != null &&
                tvalue instanceof EmbeddedValue &&
@@ -1154,7 +1153,10 @@ public class DFA extends ANY
                 say(("----------------"+c+
                                     "----------------------------------------------------------------------------------------------------")
                                    .substring(0,100));
-                c.showWhy();
+
+                var sb = new StringBuilder();
+                var ignore = c.showWhy(sb);
+                say(sb);
               }
             analyze(c);
           }
@@ -1218,12 +1220,14 @@ public class DFA extends ANY
         // NYI: Proper error handling.
         Errors.error("NYI: Support for intrinsic '" + name + "' missing");
 
-        // cl.showWhy() may try to print result values that depend on
+        // cl.showWhy(sb) may try to print result values that depend on
         // intrinsics, so we risk running into an endless recursion here:
         if (!_recursion_in_NYIintrinsicMissing)
           {
             _recursion_in_NYIintrinsicMissing = true;
-            cl.showWhy();
+            var sb = new StringBuilder();
+            var ignore = cl.showWhy(sb);
+            say_err(sb);
             _recursion_in_NYIintrinsicMissing = false;
           }
       }
