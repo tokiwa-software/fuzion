@@ -1812,13 +1812,16 @@ public class Clazz extends ANY implements Comparable<Clazz>
           {
             for (var cg : rc.choiceGenerics())
               {
-                cg.instantiated(at);
+                if (!cg.isRef())
+                  {
+                    cg.instantiated(at);
+                  }
               }
             // e.g. `java.call_c0` may return `outcome x`
             rc.instantiated(at);
           }
       }
-    else if (!rc.isRef() || feature().isIntrinsic())
+    else if (!rc.isRef())
       {
         rc.instantiated(at);
       }
@@ -1982,7 +1985,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public void check()
   {
-    if (isCalled() && _abstractCalled != null)
+    if (isInstantiated() && _abstractCalled != null)
       {
         AirErrors.abstractFeatureNotImplemented(feature(), _abstractCalled, _instantiationPos);
       }
