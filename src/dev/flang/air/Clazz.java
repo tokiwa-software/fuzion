@@ -89,6 +89,43 @@ public class Clazz extends ANY implements Comparable<Clazz>
   public static FeatureLookup _flu;
 
 
+  /**
+   * Set of intrinsics that implicitly create an instance of their reference
+   * result value.
+   */
+  static TreeSet<String> _intrinsicConstructors_ = new TreeSet<String>();
+  static
+  {
+    _intrinsicConstructors_.add("fuzion.java.get_static_field0"     );
+    _intrinsicConstructors_.add("fuzion.java.get_field0"            );
+    _intrinsicConstructors_.add("fuzion.java.call_v0"               );
+    _intrinsicConstructors_.add("fuzion.java.call_c0"               );
+    _intrinsicConstructors_.add("fuzion.java.call_s0"               );
+    _intrinsicConstructors_.add("fuzion.java.array_to_java_object0" );
+    _intrinsicConstructors_.add("fuzion.java.string_to_java_object0");
+    _intrinsicConstructors_.add("fuzion.java.i8_to_java_object"     );
+    _intrinsicConstructors_.add("fuzion.java.u16_to_java_object"    );
+    _intrinsicConstructors_.add("fuzion.java.i16_to_java_object"    );
+    _intrinsicConstructors_.add("fuzion.java.i32_to_java_object"    );
+    _intrinsicConstructors_.add("fuzion.java.i64_to_java_object"    );
+    _intrinsicConstructors_.add("fuzion.java.f32_to_java_object"    );
+    _intrinsicConstructors_.add("fuzion.java.f64_to_java_object"    );
+    _intrinsicConstructors_.add("fuzion.java.bool_to_java_object"   );
+  }
+
+
+  /*-------------------------  static methods  --------------------------*/
+
+
+  /**
+   * Get the names of all intrinsics supported by this backend.
+   */
+  public static Set<String> supportedIntrinsics()
+  {
+    return _intrinsicConstructors_;
+  }
+
+
   /*-----------------------------  classes  -----------------------------*/
 
 
@@ -1803,6 +1840,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (feature().isIntrinsic(),
        isCalled());
 
+    var name = feature().qualifiedName();
+    var implicitConstructor = _intrinsicConstructors_.contains(name);
+
     // instances returned from intrinsics are automatically
     // recorded to be instantiated.
     var rc = resultClazz();
@@ -1812,18 +1852,21 @@ public class Clazz extends ANY implements Comparable<Clazz>
           {
             for (var cg : rc.choiceGenerics())
               {
-                cg.instantiated(at);
+                if (!cg.isRef() || implicitConstructor)
+                  {
+                    cg.instantiated(at);
+                  }
               }
             // e.g. `java.call_c0` may return `outcome x`
             rc.instantiated(at);
           }
       }
-    else if (!rc.isRef() || feature().isIntrinsic())
+    else if (!rc.isRef() || implicitConstructor)
       {
         rc.instantiated(at);
       }
 
-    switch (feature().qualifiedName())
+    switch (name)
       {
       case "effect.abortable":
         argumentFields()[0].resultClazz().lookup(Types.resolved.f_Function_call, at);
@@ -1982,7 +2025,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public void check()
   {
-    if (isCalled() && _abstractCalled != null)
+    if (isInstantiated() && _abstractCalled != null)
       {
         AirErrors.abstractFeatureNotImplemented(feature(), _abstractCalled, _instantiationPos);
       }
