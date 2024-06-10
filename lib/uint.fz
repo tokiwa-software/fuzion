@@ -347,9 +347,9 @@ is
     (q, rem) := uint.this.divide_with_remainder mrd
 
     if q = uint.zero
-      (rem.data.first (u32 0)).as_string
+      (rem.data.first 0).as_string
     else
-      q.as_string0 + (rem.data.first (u32 0)).as_string.pad_codepoint_start 9 "0"
+      q.as_string0 + (rem.data.first 0).as_string.pad_codepoint_start 9 "0"
 
 
   public fixed redef as_string String =>

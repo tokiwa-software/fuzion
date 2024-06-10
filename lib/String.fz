@@ -514,7 +514,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public split_n(s String, n u32) list String
     pre
       debug: !s.is_empty
-      debug: n > (u32 0)
+      debug: n > 0
     =>
       split0 s n false
 
@@ -527,7 +527,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public split_after_n(s String, n u32) list String
     pre
       !s.is_empty
-      n > (u32 0)
+      n > 0
     =>
       split0 s n true
 
@@ -545,7 +545,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
       debug: !s.is_empty
       debug: match limit
                nil => true
-               n u32 => n > (u32 0)
+               n u32 => n > 0
     =>
       (container.searchable_sequence utf8).split0 s.utf8 limit split_after
           .map_to_list x->(String.from_bytes x)

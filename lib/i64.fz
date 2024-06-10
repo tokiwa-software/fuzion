@@ -109,7 +109,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
   # this i64 as an u16
   public as_u16 u16
      pre
-      val ≥ (i64 0)
+      val ≥ 0
       val ≤ u16.max.as_i64
 #    post
 #      analysis: result.as_u64 = val
@@ -131,7 +131,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
   # this i64 as an u64
   public as_u64 u64
     pre
-      val ≥ (i64 0)
+      val ≥ 0
 #    post
 #      analysis:  result.as_i64 = val
     =>
@@ -141,7 +141,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
   # this i64 as an u128
   public as_u128 u128
     pre
-      val ≥ (i64 0)
+      val ≥ 0
     post
       analysis:  result.as_i64 = val
     =>
