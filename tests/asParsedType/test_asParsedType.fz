@@ -26,10 +26,11 @@
 # converts them to a type using `Expr.asParsedType()`
 #
 
-# constructors for types `a` and `a.b` to be used in the test cases below.
+# constructors for types `a`, `a.b` and `A` to be used in the test cases below.
 #
 a is
   b is
+A ref is
 
 # feature with argument being a type paramter only to test expr.asParsedType
 #  when actual argument to `x` is first parsed as an expression.
@@ -97,25 +98,25 @@ x ((Sequence u64, a.b) ->
   String)
 say ""
 
-say "EXP: x Type of 'choice a.b i32 (Unary (choice i32 Any) String)'"
-x a.b|i32|String->i32|Any
+say "EXP: x Type of 'choice a.b i32 (Unary (choice i32 A) String)'"
+x a.b|i32|String->i32|A
 x a.b|i32|String->
-  i32|Any
-x a.b|i32|(String->i32|Any)
+  i32|A
+x a.b|i32|(String->i32|A)
 x a.b|i32|(String->
-  i32|Any)
+  i32|A)
 say ""
 
-say "EXP: x Type of 'Unary (choice i32 Any) (choice a.b i32 String)'"
-x (a.b|i32|String)->i32|Any
+say "EXP: x Type of 'Unary (choice i32 A) (choice a.b i32 String)'"
+x (a.b|i32|String)->i32|A
 x (a.b|i32|String)->
-  i32|Any
+  i32|A
 say ""
 
-say "EXP: x Type of 'choice (Unary i32 (choice a.b i32 String)) Any'"
-x ((a.b|i32|String)->i32)|Any
+say "EXP: x Type of 'choice (Unary i32 (choice a.b i32 String)) A'"
+x ((a.b|i32|String)->i32)|A
 x ((a.b|i32|String)->
-        i32)|Any
+        i32)|A
 say ""
 
 say "EXP: x Type of 'tuple'"

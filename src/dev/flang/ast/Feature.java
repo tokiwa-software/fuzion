@@ -1608,8 +1608,6 @@ A ((Choice)) declaration must not contain a result type.
           }
       }
 
-    selfType().checkChoice(_pos);
-
     checkNoClosureAccesses(res, _pos);
     for (var p : _inherits)
       {
@@ -1703,11 +1701,6 @@ A ((Choice)) declaration must not contain a result type.
           {
             AstErrors.failedToInferResultType(this);
             _resultType = Types.t_ERROR;
-          }
-
-        if (!isTypeParameter())
-          {
-            _resultType.checkChoice(_posOfReturnType);
           }
 
         if (_resultType.isThisType() && _resultType.feature() == this)
@@ -1833,6 +1826,8 @@ A ((Choice)) declaration must not contain a result type.
     if ((_state == State.CHECKING_TYPES1) ||
         (_state == State.CHECKING_TYPES2)    )
       {
+        _selfType   = selfType().checkChoice(_pos);
+        _resultType = _resultType.checkChoice(_posOfReturnType);
         visit(new FeatureVisitor() {
 
             /* if an error is reported in a call it might no longer make sense to check the actuals: */

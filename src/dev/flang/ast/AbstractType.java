@@ -1033,9 +1033,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * Check that in case this is a choice type, it is valid, i.e., it is a value
    * type and the generic arguments to the choice are different.  Create compile
    * time error in case this is not the case.
+   *
+   * @param pos source position to report as part of the error message
+   *
+   * @return this or Types.t_ERROR in case an error was reported.
    */
-  void checkChoice(SourcePosition pos)
+  AbstractType checkChoice(SourcePosition pos)
   {
+    var result = this;
     if (isChoice())
       {
         var g = choiceGenerics();
@@ -1055,6 +1060,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                          t2 != Types.t_ERROR)
                       {
                         AstErrors.genericsMustBeDisjoint(pos, t1, t2);
+                        result = Types.t_ERROR;
                       }
                   }
                 i2++;
@@ -1062,6 +1068,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             i1++;
           }
       }
+    return result;
   }
 
 
@@ -1858,14 +1865,15 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Check if constraints of this type are satisfied.
+   * Check if constraints on type parameters of this type are satisfied.
    *
-   * @return itself on success or t_ERROR if constraints are not met.
+   * @return itself on success or t_ERROR if constraints are not met and an
+   * error was produced
    */
   public AbstractType checkConstraints()
   {
     var result = this;
-    if (!isGenericArgument())
+    if (result != Types.t_ERROR && !isGenericArgument())
       {
         if (!checkActualTypePars(feature(), generics(), unresolvedGenerics(), null))
           {
@@ -1909,8 +1917,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         if (CHECKS) check
           (Errors.any() || f != null && a != null);
 
-        if (f != null && a != null &&
-            !c.isGenericArgument() && // See AstErrors.constraintMustNotBeGenericArgument,
+        var pos = u instanceof UnresolvedType ut ? ut.pos() :
+                  callPos != null                ? callPos
+                                                 : called.pos();
+
+        a.checkChoice(pos);
+        if (!c.isGenericArgument() && // See AstErrors.constraintMustNotBeGenericArgument,
                                       // will be checked in SourceModule.checkTypes(Feature)
             !c.constraintAssignableFrom(a))
           {
@@ -1922,11 +1934,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                   }
                 else
                   {
-                    AstErrors.incompatibleActualGeneric(u instanceof UnresolvedType ut ? ut.pos() :
-                                                        callPos != null                ? callPos
-                                                                                       : called.pos(),
-                                                        f,
-                                                        a);
+                    AstErrors.incompatibleActualGeneric(pos, f, a);
                   }
 
                 result = false;
