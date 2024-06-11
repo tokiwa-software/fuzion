@@ -358,9 +358,13 @@ public class C extends ANY
       var elCount = bb.getInt();
 
       var sb = new StringBuilder();
-      sb.append("." + data.code());
-      sb.append(" = ");
-      sb.append(arrayInit(d, elementType).code() + ",");
+      // empty initializer is only allowed since C23, e.g. reg_issue2478 fails without this
+      if (!_fuir.clazzIsUnitType(elementType))
+        {
+          sb.append("." + data.code());
+          sb.append(" = ");
+          sb.append(arrayInit(d, elementType).code() + ",");
+        }
       sb.append("." + length.code());
       sb.append(" = ");
       sb.append(CExpr.int32const(elCount).code());
