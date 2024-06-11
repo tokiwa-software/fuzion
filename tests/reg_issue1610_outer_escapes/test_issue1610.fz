@@ -119,7 +119,7 @@ test_issue1610 =>
 
     a(e u64) is
       g : r is
-        v => e
+        redef v => e
 
     say "case 1ref: {if $f.v = "1234567890" "PASS" else "FAIL"}"
 
@@ -142,7 +142,7 @@ test_issue1610 =>
 
     a(e u64) is
       g : r is
-        v => e
+        redef v => e
 
     say "case 2ref: {if $f.v = "1234567890" "PASS" else "FAIL"}"
 
@@ -167,7 +167,7 @@ test_issue1610 =>
 
     a(e u64) is
       g : r is
-        v => e
+        redef v => e
 
     say "case 3ref: {if $f.v = "1234567890" "PASS" else "FAIL"}"
 
@@ -193,7 +193,7 @@ test_issue1610 =>
 
     a(e u64) is
       g : r is
-        v => e
+        redef v => e
 
     say "case 4ref: {if $f.v = "1234567890" "PASS" else "FAIL"}"
 
@@ -313,7 +313,7 @@ test_issue1610 =>
 
     a(e u64) is
       g : r is
-        v => e
+        redef v => e
 
     f
     say "case 1mut_ref: {if $m.get.get.v = "1234567890" "PASS" else "FAIL"}"
@@ -339,7 +339,7 @@ test_issue1610 =>
 
     a(e u64) is
       g : r is
-        v => e
+        redef v => e
 
     f
     say "case 2mut_ref: {if $m.get.get.v = "1234567890" "PASS" else "FAIL"}"
@@ -367,7 +367,7 @@ test_issue1610 =>
 
     a(e u64) is
       g : r is
-        v => e
+        redef v => e
 
     f
     say "case 3mut_ref: {if $m.get.get.v = "1234567890" "PASS" else "FAIL"}"
@@ -396,7 +396,7 @@ test_issue1610 =>
 
     a(e u64) is
       g : r is
-        v => e
+        redef v => e
 
     f
     say "case 4mut_ref: {if $m.get.get.v = "1234567890" "PASS" else "FAIL"}"

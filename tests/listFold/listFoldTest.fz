@@ -97,8 +97,8 @@ listFoldTest is
 
   // product mod 11
   m : Monoid i32 is
-    infix ∙ (a, b i32) => a * b % 11
-    e => 1
+    redef infix ∙ (a, b i32) => a * b % 11
+    redef e => 1
 
   say "product mod 11 is {l1.fold m}"; chck ((l1.fold m) = 1) "l1.fold produc mod 11"
   say "product mod 11 is {l2.fold m}"; chck ((l2.fold m) = 9) "l2.fold produc mod 11"

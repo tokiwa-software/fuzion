@@ -212,8 +212,8 @@ calls is
       cnt mutate.new i32 => abstract
 
     on : ron is
-      cnt := mut 0
-      f String =>
+      redef cnt := mut 0
+      redef f String =>
         cnt <- cnt.get + 1
         "f#$cnt in $where type {on.this.type.name}"
       where => "on"

@@ -39,9 +39,9 @@ test_effect is
   use_b_err2 => _ := b.env       # 2. should flag an error: effect not installed
   use_c_err3 => _ := c.env       # 3. should flag an error: effect not installed
   use_d_err4 => _ := d.env       # 4. should flag an error: effect not installed
-  FA : Function unit is call => use_a
-  FB : Function unit is call => use_b
-  FC : Function unit is call => use_c
+  FA : Function unit is redef call => use_a
+  FB : Function unit is redef call => use_b
+  FC : Function unit is redef call => use_c
   fa Function unit := FA
   fb Function unit := FB
   fc Function unit := FC

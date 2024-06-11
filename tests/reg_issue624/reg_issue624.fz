@@ -28,4 +28,4 @@ _ := test_equals
 
 t is
   X : property.equatable is
-      type.equality(a,b X.this) => true
+      redef type.equality(a,b X.this) => true

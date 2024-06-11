@@ -57,7 +57,7 @@ test_atomic is
     test0 a b c d (v1,v2)->v1=v2
 
   p(x, y i64) : property.equatable is
-    fixed type.equality(a, b test_atomic.p) => a.x = b.x && a.y = b.y
+    fixed redef type.equality(a, b test_atomic.p) => a.x = b.x && a.y = b.y
     redef as_string => "$x,$y"
 
   test 1 2 3 4
