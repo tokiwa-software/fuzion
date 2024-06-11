@@ -1855,6 +1855,15 @@ public class Clazz extends ANY implements Comparable<Clazz>
                 if (!cg.isRef() || implicitConstructor)
                   {
                     cg.instantiated(at);
+                    if (implicitConstructor)
+                      {
+                        var o = cg._outer;
+                        while (o != null)
+                          {
+                            o.instantiated(at);
+                            o = o._outer;
+                          }
+                      }
                   }
               }
             // e.g. `java.call_c0` may return `outcome x`
@@ -1864,6 +1873,15 @@ public class Clazz extends ANY implements Comparable<Clazz>
     else if (!rc.isRef() || implicitConstructor)
       {
         rc.instantiated(at);
+        if (implicitConstructor)
+          {
+            var o = rc._outer;
+            while (o != null)
+              {
+                o.instantiated(at);
+                o = o._outer;
+              }
+          }
       }
 
     switch (name)
