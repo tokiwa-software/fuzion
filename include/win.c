@@ -46,9 +46,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 // NYI remove POSIX imports
 #include <fcntl.h>      // fcntl
 #include <sys/stat.h>   // mkdir
-#include <sys/types.h>  // mkdir
-#include <time.h>
-#include <unistd.h>     // close
 
 #include <winsock2.h>
 #include <windows.h>
