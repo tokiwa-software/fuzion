@@ -154,7 +154,7 @@ simple_random_handler(seed1 u64, seed2 u64) : Random_Handler is
 
   # get next instance by shuffling bits in seeds around
   #
-  next Random_Handler =>
+  redef next Random_Handler =>
     # NYI: This does not meet any requirements on a decent random number generator
     s1 := (seed1 *° 1717171717 +° 13113131313) ^ seed2
     s2 := (seed2 *° 9191919191 +° 37637373737) ^ seed1
@@ -165,7 +165,7 @@ simple_random_handler(seed1 u64, seed2 u64) : Random_Handler is
 
   # get current random number
   #
-  get u64 => seed1
+  redef get u64 => seed1
 
 
   # name of env var to provide default random seed.

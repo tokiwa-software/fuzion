@@ -33,39 +33,39 @@ public i8(public val i8) : num.wrap_around, has_interval is
   redef wrapped_on_neg => is_min
 
   # would addition + other cause an overflow or underflow?
-  public fixed overflow_on_add (other i8) => val > 0 && i8.max -° val < other
-  public fixed underflow_on_add(other i8) => val < 0 && i8.min -° val > other
+  public fixed redef overflow_on_add (other i8) => val > 0 && i8.max -° val < other
+  public fixed redef underflow_on_add(other i8) => val < 0 && i8.min -° val > other
 
   # would subtraction - other cause an overflow or underflow?
-  public fixed overflow_on_sub (other i8) => val > 0 && val -° i8.max > other
-  public fixed underflow_on_sub(other i8) => val < 0 && val -° i8.min < other
+  public fixed redef overflow_on_sub (other i8) => val > 0 && val -° i8.max > other
+  public fixed redef underflow_on_sub(other i8) => val < 0 && val -° i8.min < other
 
   # would multiplication * other cause an overflow or underflow?
-  public fixed overflow_on_mul (other i8) => as_i32 *° other.as_i32 > i8.max.as_i32
-  public fixed underflow_on_mul(other i8) => as_i32 *° other.as_i32 < i8.min.as_i32
+  public fixed redef overflow_on_mul (other i8) => as_i32 *° other.as_i32 > i8.max.as_i32
+  public fixed redef underflow_on_mul(other i8) => as_i32 *° other.as_i32 < i8.min.as_i32
 
   # neg, add, sub, mul with wrap-around semantics
-  public fixed prefix -° i8 => intrinsic
-  public fixed infix +° (other i8) i8 => intrinsic
-  public fixed infix -° (other i8) i8 => intrinsic
-  public fixed infix *° (other i8) i8 => intrinsic
+  public fixed redef prefix -° i8 => intrinsic
+  public fixed redef infix +° (other i8) i8 => intrinsic
+  public fixed redef infix -° (other i8) i8 => intrinsic
+  public fixed redef infix *° (other i8) i8 => intrinsic
 
   # division and remainder with check for div-by-zero
-  public fixed infix / (other i8) => div other
-  public fixed infix % (other i8) => mod other
+  public fixed redef infix / (other i8) => div other
+  public fixed redef infix % (other i8) => mod other
 
   # division and remainder with crash in case of div-by-zero
   div (other i8) i8 => intrinsic
   mod (other i8) i8 => intrinsic
 
   # bitwise and, or and xor operations
-  public fixed infix &  (other i8) i8 => intrinsic
-  public fixed infix |  (other i8) i8 => intrinsic
-  public fixed infix ^  (other i8) i8 => intrinsic
+  public fixed redef infix &  (other i8) i8 => intrinsic
+  public fixed redef infix |  (other i8) i8 => intrinsic
+  public fixed redef infix ^  (other i8) i8 => intrinsic
 
   # shift operations (signed)
-  public fixed infix >> (other i8) i8 => intrinsic
-  public fixed infix << (other i8) i8 => intrinsic
+  public fixed redef infix >> (other i8) i8 => intrinsic
+  public fixed redef infix << (other i8) i8 => intrinsic
 
   # conversion to u32, i64 and u64, with range check
   public as_i16  => as_i32.as_i16
@@ -77,7 +77,7 @@ public i8(public val i8) : num.wrap_around, has_interval is
   #
   public redef fixed fits_in_u8  => 0 ≤ val
 
-  public as_u8  u8  => cast_to_u8
+  public redef as_u8  u8  => cast_to_u8
   public as_u16 u16
     pre
       debug: val ≥ 0
@@ -110,7 +110,7 @@ public i8(public val i8) : num.wrap_around, has_interval is
 
 
   # create hash code from this number
-  public type.hash_code(a i8.this) u64 =>
+  public redef type.hash_code(a i8.this) u64 =>
     hash a.cast_to_u64
 
 
@@ -130,7 +130,7 @@ public i8(public val i8) : num.wrap_around, has_interval is
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  public ones_count i32 =>
+  public redef ones_count i32 =>
     val.cast_to_u8.ones_count
 
 
@@ -141,22 +141,22 @@ public i8(public val i8) : num.wrap_around, has_interval is
 
   # identity element for 'infix +'
   #
-  fixed type.zero i8  => 0
+  fixed redef type.zero i8  => 0
 
 
   # identity element for 'infix *'
   #
-  fixed type.one  i8  => 1
+  fixed redef type.one  i8  => 1
 
 
   # equality
   #
-  fixed type.equality(a, b i8) bool => intrinsic
+  fixed redef type.equality(a, b i8) bool => intrinsic
 
 
   # total order
   #
-  fixed type.lteq(a, b i8) bool => intrinsic
+  fixed redef type.lteq(a, b i8) bool => intrinsic
 
 
   # returns the number in whose bit representation all bits are ones
@@ -165,9 +165,9 @@ public i8(public val i8) : num.wrap_around, has_interval is
 
   # minimum
   #
-  public fixed type.min => i8 -0x80
+  public fixed redef type.min => i8 -0x80
 
 
   # maximum
   #
-  public fixed type.max => i8 0x7f
+  public fixed redef type.max => i8 0x7f

@@ -41,7 +41,7 @@ is
 
   # create an instance of `contract_fault` with the given error handler.
   #
-  public fixed type.new(h ((String,String)) -> void) => fuzion.runtime.contract_fault h
+  public fixed redef type.new(h ((String,String)) -> void) => fuzion.runtime.contract_fault h
 
 
 # contract_fault with no argument returns contract_fault.env, the currently installed

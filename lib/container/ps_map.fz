@@ -57,7 +57,7 @@ private:public ps_map
    data fuzion.sys.internal_array (tuple PK V),
 
    # the number of key and value pairs in this map.
-   public size i32,
+   public redef size i32,
 
    # the first index in data that is unused
    fill i32)
@@ -180,7 +180,7 @@ O(n log n).
 
   # find the value k is mapped to or nil if k is not part of this map
   #
-  public index [] (k PK) option V =>
+  public redef index [] (k PK) option V =>
 
     binary_search(l, r i32) option V =>
       m := (l + r) / 2
@@ -365,7 +365,7 @@ O(n log n).
   #
   # This feature creates an empty instance of ps_map.
   #
-  public fixed type.empty => container.ps_map (fuzion.sys.internal_array_init (tuple PK V) 0) 0 0
+  public fixed redef type.empty => container.ps_map (fuzion.sys.internal_array_init (tuple PK V) 0) 0 0
 
 
   # ps_map -- routine to initialize a partially sorted map from two Sequences

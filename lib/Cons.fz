@@ -38,4 +38,4 @@ public Cons(public A, B type) ref is
 #
 # A cons is a cell that contains a head and a tail
 #
-public cons(A, B type, head A, tail B) : Cons A B is
+public cons(A, B type, redef head A, redeftail B) : Cons A B is

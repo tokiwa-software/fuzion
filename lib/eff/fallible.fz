@@ -72,8 +72,8 @@ public fallible(ERROR type, h ERROR->void) : effect effect_mode.plain is
     #
     public catch(code_catch ERROR->T) =>
       (ref : eff.handle ERROR fallible.this T
-         try => code_try.call
-         catch(e ERROR) => code_catch e
+         redef try => code_try.call
+         redef catch(e ERROR) => code_catch e
       ).res
 
     # define code to execute in case of fault and run code_try.

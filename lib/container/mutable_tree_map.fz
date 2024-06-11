@@ -42,19 +42,19 @@ is
 
   # returns the size of the map, i.e. the number of elements it contains
   #
-  public size i32 =>
+  public redef size i32 =>
     fold i32 0 ((i, _) -> i + 1)
 
 
   # get the value k is mapped to, or nil if none.
   #
-  public index [] (k KEY) option VAL =>
+  public redef index [] (k KEY) option VAL =>
     get k
 
 
   # get a sequence of all key/value pairs in this map
   #
-  public items Sequence (tuple KEY VAL) =>
+  public redef items Sequence (tuple KEY VAL) =>
     match root.get
       e Entry => e.items
       nil => (list (tuple KEY VAL)).empty
@@ -333,7 +333,7 @@ is
 
   # returns an empty tree of elements of type A.
   #
-  public fixed type.empty container.mutable_tree_map LM KEY VAL =>
+  public fixed redef type.empty container.mutable_tree_map LM KEY VAL =>
     container.mutable_tree_map LM KEY VAL
 
 

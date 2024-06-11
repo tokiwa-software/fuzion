@@ -61,7 +61,7 @@ public nom is
     #
     public map_input(I2 type, map_fn I2 -> I) Parser I2 R O =>
       ref : Parser I2 R O
-        call(input I2) => Parser.this.call (map_fn input)
+        redef call(input I2) => Parser.this.call (map_fn input)
 
 
 
@@ -70,7 +70,7 @@ public nom is
   #
   public parser(I, R, O type, f I -> parse_result R O) =>
     ref : Parser I R O
-      call(i I) => f i
+      redef call(i I) => f i
 
 
 

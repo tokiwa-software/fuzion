@@ -96,8 +96,8 @@ public fuzion.java is
       pre
         debug: 0 ≤ i < length
     is
-      head => Array.this[i]
-      tail => as_list i+1
+      redef head => Array.this[i]
+      redef tail => as_list i+1
 
 
     # get the java signature for type T.
@@ -127,7 +127,7 @@ public fuzion.java is
   #
   public Java_String(redef Java_Ref fuzion.sys.Pointer) ref : String, Java_Object Java_Ref
   is
-    public utf8 => (java_string_to_string Java_String.this).utf8
+    public redef utf8 => (java_string_to_string Java_String.this).utf8
 
 
   # Call a virtual Java method class_name.name with given signature signature

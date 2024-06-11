@@ -28,7 +28,7 @@ module:public array (
        public T type,
 
        # length of the array to create
-       public length i64,
+       public redef length i64,
 
        # contents of the array
        module data fuzion.sys.internal_array T,
@@ -48,7 +48,7 @@ is
 
   # set element at given index i to given value o
   #
-  public set [ ] (i i64, o T) unit
+  public redef set [ ] (i i64, o T) unit
   =>
     check_and_replace
     data[i.as_i32] := o
@@ -56,7 +56,7 @@ is
 
   # add an element at the end of this array
   #
-  public add (o T) unit
+  public redef add (o T) unit
   =>
     check_and_replace
     d := if (data.length.as_i64 > length) data

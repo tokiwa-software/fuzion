@@ -71,7 +71,7 @@ public read(ro Read_Handler) : simple_effect is
   # the default file reading operation reading bytes from files via fuzion.sys.fileio.read
   #
   type.default_read_handler : io.file.Read_Handler is
-    read(fd i64, n u64) =>
+    redef read(fd i64, n u64) =>
       fuzion.sys.fileio.read fd n
 
 
