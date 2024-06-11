@@ -39,7 +39,7 @@ scenario1 =>
     type.zero T => abstract
 
   b : a bool is
-    type.zero => true
+    redef type.zero => true
 
   fs(F type : a F) =>
     _ := F.zero
@@ -65,11 +65,11 @@ scenario2 is
     type.zero T => abstract
 
     type.sum : scenario2.M T is
-      fixed e => zero
+      fixed redef e => zero
 
   b : a scenario2.b is
 
-    fixed type.zero scenario2.b => scenario2.b
+    fixed redef type.zero scenario2.b => scenario2.b
 
   fs(F type : a F) =>
     _ := F.z
@@ -322,11 +322,11 @@ scenario8 is
   intM2(is_zero bool) : num0 is
     fixed z => intM2 true
     fixed o => intM2 false
-    fixed type.zero => scenario8.intM2 true
-    fixed type.one => scenario8.intM2 false
-    fixed lessThan(other intM2) => is_zero && !other.is_zero
-    fixed plus_intrinsic(other intM2) => if is_zero then other else intM2 !other.is_zero
-    fixed minus_intrinsic(other intM2) => plus other
+    fixed redef type.zero => scenario8.intM2 true
+    fixed redef type.one => scenario8.intM2 false
+    fixed redef lessThan(other intM2) => is_zero && !other.is_zero
+    fixed redef plus_intrinsic(other intM2) => if is_zero then other else intM2 !other.is_zero
+    fixed redef minus_intrinsic(other intM2) => plus other
     redef valueString => if is_zero then "0 mod 2" else "1 mod 2"
 
 run_scenario8 =>

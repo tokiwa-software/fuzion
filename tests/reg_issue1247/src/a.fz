@@ -8,4 +8,4 @@ module a : property.equatable is
 
   module type.identity a.this => abstract
 
-  type.equality(a, b a.this) bool => true
+  redef type.equality(a, b a.this) bool => true

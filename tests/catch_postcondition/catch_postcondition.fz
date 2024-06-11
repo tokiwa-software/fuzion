@@ -113,8 +113,8 @@ catch_postcondition is
   say "using convenience feature with `try` and `catch`"
 
   y : handle_post String is
-    try             => test i32
-    catch(s String) => say "*** failed: $s ***"; test u64
+    redef try             => test i32
+    redef catch(s String) => say "*** failed: $s ***"; test u64
 
   say y.res
 
@@ -125,9 +125,9 @@ catch_postcondition is
   say "using anonymous instance of convenience feature with `try` and `catch`"
 
   say (ref : handle_post String
-    try =>
+    redef try =>
       test i32
-    catch(s String) =>
+    redef catch(s String) =>
       say "*** failed: $s ***"
       test u64
     ).res
@@ -143,8 +143,8 @@ catch_postcondition is
   c := mut 0
 
   z : handle_post (option String) is
-    try option String  => tries[c].call
-    catch(s String) option String => say "*** failed: $s ***"; c <- c.get + 1; if c.get < tries.count then z.res else nil
+    redef try option String  => tries[c].call
+    redef catch(s String) option String => say "*** failed: $s ***"; c <- c.get + 1; if c.get < tries.count then z.res else nil
 
   say z.res
 
@@ -185,16 +185,16 @@ catch_postcondition is
     #
     catch(code_catch String->T) =>
       h : handle_post T is
-        try             => code_try()
-        catch(s String) => code_catch s
+        redef try             => code_try()
+        redef catch(s String) => code_catch s
       h.res
 
     # alternative implementation of catch using anonymous feature
     #
     catch1(code_catch String->T) =>
       (ref : handle_post T
-        try             => code_try()
-        catch(s String) => code_catch s).res
+        redef try             => code_try()
+        redef catch(s String) => code_catch s).res
 
     # infix alias for catch
     #

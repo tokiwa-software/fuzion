@@ -40,7 +40,7 @@ unboxOuterRef is
     g (v y) =>
       vs := v.as_string
       say "in g: $vs $i"
-    fixed f unit =>
+    fixed redef f unit =>
       g y.this
       g (y i)
       unit
