@@ -1,13 +1,13 @@
 
 error 1: Postcondition `equals` does not hold after call
 Call stack:
-fuzion.type.runtime.type.fault.type.install_default#0.#fun265.call#1: $MODULE/fuzion/runtime/fault.fz:38:18:
+fuzion.type.runtime.type.fault.type.install_default#0.#fun266.call#1: $MODULE/fuzion/runtime/fault.fz:38:18:
       fuzion.sys.fatal_fault kind msg
 -----------------^^^^^^^^^^^
 fuzion.runtime.fault.cause#1: $MODULE/eff/fallible.fz:35:6:
   => h e
 -----^
-fuzion.type.runtime.type.post_fault.type.install_default#0.#fun266.call#1: $MODULE/fuzion/runtime/post_fault.fz:39:28:
+fuzion.type.runtime.type.post_fault.type.install_default#0.#fun267.call#1: $MODULE/fuzion/runtime/post_fault.fz:39:28:
       fuzion.runtime.fault.cause ("postcondition", msg)).default
 ---------------------------^^^^^
 fuzion.runtime.post_fault.cause#1: $MODULE/eff/fallible.fz:35:6:
@@ -52,10 +52,10 @@ catch_postcondition.#fun11.call#0: --CURDIR--/catch_postcondition.fz:141:56:
 catch_postcondition.#loop4#2.#fun4.call#0: --CURDIR--/catch_postcondition.fz:271:28:
            option tries[c].call
 ---------------------------^^^^
-(fuzion.type.runtime.type.fault.type.try (option String)).catch#1.#anonymous14.try#0: $MODULE/eff/fallible.fz:75:26:
-         try => code_try.call
--------------------------^^^^
-(fuzion.type.runtime.type.fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun53.call#0.#fun54.call#0: $MODULE/eff/fallible.fz:121:13:
+(fuzion.type.runtime.type.fault.type.try (option String)).catch#1.#anonymous14.try#0: $MODULE/eff/fallible.fz:75:32:
+         redef try => code_try.call
+-------------------------------^^^^
+(fuzion.type.runtime.type.fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun54.call#0.#fun55.call#0: $MODULE/eff/fallible.fz:121:13:
       ).run try (()->catch m.get.get)
 ------------^^^
 (fuzion.runtime.fault.run#3 (option String)).#fun1.call#0: $MODULE/effect.fz:97:23:
@@ -66,7 +66,7 @@ catch_postcondition.#loop4#2.#fun4.call#0: --CURDIR--/catch_postcondition.fz:271
 -----------------^
 fuzion.runtime.fault.run#3 (option String): <source position not available>:
 
-(fuzion.type.runtime.type.fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun53.call#0: $MODULE/eff/fallible.fz:121:9:
+(fuzion.type.runtime.type.fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun54.call#0: $MODULE/eff/fallible.fz:121:9:
       ).run try (()->catch m.get.get)
 --------^^^
 ((eff.ref handle (tuple String String) fuzion.runtime.fault (option String)).lm.go#2 (option String)).#fun3.call#0: $MODULE/effect.fz:207:23:
@@ -111,10 +111,10 @@ catch_postcondition.#fun10.call#0: --CURDIR--/catch_postcondition.fz:141:38:
 catch_postcondition.#loop4#2.#fun4.call#0: --CURDIR--/catch_postcondition.fz:271:28:
            option tries[c].call
 ---------------------------^^^^
-(fuzion.type.runtime.type.fault.type.try (option String)).catch#1.#anonymous14.try#0: $MODULE/eff/fallible.fz:75:26:
-         try => code_try.call
--------------------------^^^^
-(fuzion.type.runtime.type.fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun53.call#0.#fun54.call#0: $MODULE/eff/fallible.fz:121:13:
+(fuzion.type.runtime.type.fault.type.try (option String)).catch#1.#anonymous14.try#0: $MODULE/eff/fallible.fz:75:32:
+         redef try => code_try.call
+-------------------------------^^^^
+(fuzion.type.runtime.type.fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun54.call#0.#fun55.call#0: $MODULE/eff/fallible.fz:121:13:
       ).run try (()->catch m.get.get)
 ------------^^^
 (fuzion.runtime.fault.run#3 (option String)).#fun1.call#0: $MODULE/effect.fz:97:23:
@@ -125,7 +125,7 @@ catch_postcondition.#loop4#2.#fun4.call#0: --CURDIR--/catch_postcondition.fz:271
 -----------------^
 fuzion.runtime.fault.run#3 (option String): <source position not available>:
 
-(fuzion.type.runtime.type.fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun53.call#0: $MODULE/eff/fallible.fz:121:9:
+(fuzion.type.runtime.type.fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun54.call#0: $MODULE/eff/fallible.fz:121:9:
       ).run try (()->catch m.get.get)
 --------^^^
 ((eff.ref handle (tuple String String) fuzion.runtime.fault (option String)).lm.go#2 (option String)).#fun3.call#0: $MODULE/effect.fz:207:23:
@@ -162,10 +162,10 @@ catch_postcondition.#fun11.call#0: --CURDIR--/catch_postcondition.fz:141:56:
 catch_postcondition.#loop3#2.#fun3.call#0: --CURDIR--/catch_postcondition.fz:252:28:
            option tries[c].call
 ---------------------------^^^^
-(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.#anonymous14.try#0: $MODULE/eff/fallible.fz:75:26:
-         try => code_try.call
--------------------------^^^^
-(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun53.call#0.#fun54.call#0: $MODULE/eff/fallible.fz:121:13:
+(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.#anonymous14.try#0: $MODULE/eff/fallible.fz:75:32:
+         redef try => code_try.call
+-------------------------------^^^^
+(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun54.call#0.#fun55.call#0: $MODULE/eff/fallible.fz:121:13:
       ).run try (()->catch m.get.get)
 ------------^^^
 (fuzion.runtime.post_fault.run#3 (option String)).#fun1.call#0: $MODULE/effect.fz:97:23:
@@ -176,7 +176,7 @@ catch_postcondition.#loop3#2.#fun3.call#0: --CURDIR--/catch_postcondition.fz:252
 -----------------^
 fuzion.runtime.post_fault.run#3 (option String): <source position not available>:
 
-(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun53.call#0: $MODULE/eff/fallible.fz:121:9:
+(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun54.call#0: $MODULE/eff/fallible.fz:121:9:
       ).run try (()->catch m.get.get)
 --------^^^
 ((eff.ref handle String fuzion.runtime.post_fault (option String)).lm.go#2 (option String)).#fun3.call#0: $MODULE/effect.fz:207:23:
@@ -213,10 +213,10 @@ catch_postcondition.#fun10.call#0: --CURDIR--/catch_postcondition.fz:141:38:
 catch_postcondition.#loop3#2.#fun3.call#0: --CURDIR--/catch_postcondition.fz:252:28:
            option tries[c].call
 ---------------------------^^^^
-(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.#anonymous14.try#0: $MODULE/eff/fallible.fz:75:26:
-         try => code_try.call
--------------------------^^^^
-(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun53.call#0.#fun54.call#0: $MODULE/eff/fallible.fz:121:13:
+(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.#anonymous14.try#0: $MODULE/eff/fallible.fz:75:32:
+         redef try => code_try.call
+-------------------------------^^^^
+(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun54.call#0.#fun55.call#0: $MODULE/eff/fallible.fz:121:13:
       ).run try (()->catch m.get.get)
 ------------^^^
 (fuzion.runtime.post_fault.run#3 (option String)).#fun1.call#0: $MODULE/effect.fz:97:23:
@@ -227,7 +227,7 @@ catch_postcondition.#loop3#2.#fun3.call#0: --CURDIR--/catch_postcondition.fz:252
 -----------------^
 fuzion.runtime.post_fault.run#3 (option String): <source position not available>:
 
-(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun53.call#0: $MODULE/eff/fallible.fz:121:9:
+(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun54.call#0: $MODULE/eff/fallible.fz:121:9:
       ).run try (()->catch m.get.get)
 --------^^^
 ((eff.ref handle String fuzion.runtime.post_fault (option String)).lm.go#2 (option String)).#fun3.call#0: $MODULE/effect.fz:207:23:
@@ -264,9 +264,9 @@ catch_postcondition.#fun11.call#0: --CURDIR--/catch_postcondition.fz:141:56:
 catch_postcondition.#loop2#2.#fun2.call#0: --CURDIR--/catch_postcondition.fz:233:28:
            option tries[c].call
 ---------------------------^^^^
-(catch_postcondition.try_post (option String)).catch#1.h.try#0: --CURDIR--/catch_postcondition.fz:188:28:
-        try             => code_try()
----------------------------^^^^^^^^
+(catch_postcondition.try_post (option String)).catch#1.h.try#0: --CURDIR--/catch_postcondition.fz:188:34:
+        redef try             => code_try()
+---------------------------------^^^^^^^^
 (catch_postcondition.try_post (option String)).catch#1.h.#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:108:15:
         ).run try (()->catch m.get.get)
 --------------^^^
@@ -315,9 +315,9 @@ catch_postcondition.#fun10.call#0: --CURDIR--/catch_postcondition.fz:141:38:
 catch_postcondition.#loop2#2.#fun2.call#0: --CURDIR--/catch_postcondition.fz:233:28:
            option tries[c].call
 ---------------------------^^^^
-(catch_postcondition.try_post (option String)).catch#1.h.try#0: --CURDIR--/catch_postcondition.fz:188:28:
-        try             => code_try()
----------------------------^^^^^^^^
+(catch_postcondition.try_post (option String)).catch#1.h.try#0: --CURDIR--/catch_postcondition.fz:188:34:
+        redef try             => code_try()
+---------------------------------^^^^^^^^
 (catch_postcondition.try_post (option String)).catch#1.h.#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:108:15:
         ).run try (()->catch m.get.get)
 --------------^^^
@@ -363,9 +363,9 @@ catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
 catch_postcondition.res2#0.#fun7.call#0: --CURDIR--/catch_postcondition.fz:220:21:
   res2 => try_post (test i32) || (s->say "*** failed: $s ***"; test u64)
 --------------------^^^^
-(catch_postcondition.try_post String).catch#1.h.try#0: --CURDIR--/catch_postcondition.fz:188:28:
-        try             => code_try()
----------------------------^^^^^^^^
+(catch_postcondition.try_post String).catch#1.h.try#0: --CURDIR--/catch_postcondition.fz:188:34:
+        redef try             => code_try()
+---------------------------------^^^^^^^^
 (catch_postcondition.try_post String).catch#1.h.#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:108:15:
         ).run try (()->catch m.get.get)
 --------------^^^
@@ -414,9 +414,9 @@ catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
 catch_postcondition.res#0.#fun6.call#0: --CURDIR--/catch_postcondition.fz:208:12:
            test i32
 -----------^^^^
-(catch_postcondition.try_post String).catch#1.h.try#0: --CURDIR--/catch_postcondition.fz:188:28:
-        try             => code_try()
----------------------------^^^^^^^^
+(catch_postcondition.try_post String).catch#1.h.try#0: --CURDIR--/catch_postcondition.fz:188:34:
+        redef try             => code_try()
+---------------------------------^^^^^^^^
 (catch_postcondition.try_post String).catch#1.h.#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:108:15:
         ).run try (()->catch m.get.get)
 --------------^^^
@@ -555,9 +555,9 @@ catch_postcondition.test#1 i16: --CURDIR--/catch_postcondition.fz:43:5:
 catch_postcondition.#fun11.call#0: --CURDIR--/catch_postcondition.fz:141:56:
   tries array ()->String := [ (() -> test i32), (() -> test i16), (() -> test i64) ]
 -------------------------------------------------------^^^^
-catch_postcondition.z.try#0: --CURDIR--/catch_postcondition.fz:146:36:
-    try option String  => tries[c].call
------------------------------------^^^^
+catch_postcondition.z.try#0: --CURDIR--/catch_postcondition.fz:146:42:
+    redef try option String  => tries[c].call
+-----------------------------------------^^^^
 catch_postcondition.z.#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:108:15:
         ).run try (()->catch m.get.get)
 --------------^^^
@@ -583,9 +583,9 @@ catch_postcondition.z.lm.go#2 (option String): <source position not available>:
 catch_postcondition.z: --CURDIR--/catch_postcondition.fz:103:15:
     res := lm.go ()->
 --------------^^
-catch_postcondition.z.catch#1: --CURDIR--/catch_postcondition.fz:147:108:
-    catch(s String) option String => say "*** failed: $s ***"; c <- c.get + 1; if c.get < tries.count then z.res else nil
------------------------------------------------------------------------------------------------------------^
+catch_postcondition.z.catch#1: --CURDIR--/catch_postcondition.fz:147:114:
+    redef catch(s String) option String => say "*** failed: $s ***"; c <- c.get + 1; if c.get < tries.count then z.res else nil
+-----------------------------------------------------------------------------------------------------------------^
 catch_postcondition.z.#fun0.call#0.#fun14.call#0: --CURDIR--/catch_postcondition.fz:108:24:
         ).run try (()->catch m.get.get)
 -----------------------^^^^^
@@ -626,9 +626,9 @@ catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
 catch_postcondition.#fun10.call#0: --CURDIR--/catch_postcondition.fz:141:38:
   tries array ()->String := [ (() -> test i32), (() -> test i16), (() -> test i64) ]
 -------------------------------------^^^^
-catch_postcondition.z.try#0: --CURDIR--/catch_postcondition.fz:146:36:
-    try option String  => tries[c].call
------------------------------------^^^^
+catch_postcondition.z.try#0: --CURDIR--/catch_postcondition.fz:146:42:
+    redef try option String  => tries[c].call
+-----------------------------------------^^^^
 catch_postcondition.z.#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:108:15:
         ).run try (()->catch m.get.get)
 --------------^^^
@@ -710,9 +710,9 @@ catch_postcondition.#anonymous0: --CURDIR--/catch_postcondition.fz:103:15:
 catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
     for v := T.one, double v
 ----^
-catch_postcondition.y.try#0: --CURDIR--/catch_postcondition.fz:116:24:
-    try             => test i32
------------------------^^^^
+catch_postcondition.y.try#0: --CURDIR--/catch_postcondition.fz:116:30:
+    redef try             => test i32
+-----------------------------^^^^
 catch_postcondition.y.#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:108:15:
         ).run try (()->catch m.get.get)
 --------------^^^
