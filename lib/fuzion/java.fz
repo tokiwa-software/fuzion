@@ -27,6 +27,12 @@
 #
 public fuzion.java is
 
+  // NYI: UNDER DEVELOPMENT remove this, replace with effect
+  public create_jvm0(class_path String) =>
+    create_jvm (sys.c_string "-Djava.class.path=$class_path")
+
+  create_jvm(option_string fuzion.sys.Pointer) unit => intrinsic
+
 
   # read a static field of given name in class with given name.  Wrap result into
   # an instance of T.
