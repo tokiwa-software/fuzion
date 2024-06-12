@@ -214,9 +214,9 @@ test_local_mutate is
           say "$i: {e.data}"
 
         _ := for cur := r, cur.next
-        while cur.n.open do
-          cur.n.close
-          cur.p.close
+             while cur.n.open do
+               cur.n.close
+               cur.p.close
         r
 
       r := m.go ()->(ring3 from.as_list)
