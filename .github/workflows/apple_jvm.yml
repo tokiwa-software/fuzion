@@ -1,0 +1,65 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  GitHub Actions workflow to build and test Fuzion on MacOS.
+#
+# -----------------------------------------------------------------------
+
+name: run tests on macOS (jvm)
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+
+env:
+  PRECONDITIONS: true
+  POSTCONDITIONS: true
+  FUZION_REPRODUCIBLE_BUILD: true
+
+jobs:
+  run_tests:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+      - uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4.2.1
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: install dependencies
+        run: |
+          brew install bdw-gc gnu-sed make
+          echo "/opt/homebrew/opt/gnu-sed/libexec/gnubin:/opt/homebrew/opt/make/libexec/gnubin:/usr/local/opt/gnu-sed/libexec/gnubin:/usr/local/opt/gnu-make/libexec/gnubin:$PATH" >> $GITHUB_PATH
+
+      - name: sed version
+        run: sed --version
+
+      - name: make version
+        run: make --version
+
+      - name: build java code
+        run: make javac
+
+      - name: build (no java modules)
+        run: make no-java
+
+      - name: run tests
+        run: make run_tests_jvm
