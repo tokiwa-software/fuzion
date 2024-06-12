@@ -79,7 +79,7 @@ public m =>
   redef_test_0 : redef_test is
     module redef b unit => // should flag an error Redefinition must not have more restrictive visibility.
       unit
-    module e unit => // should flag an error Redefinition must not have more restrictive visibility.
+    module redef e unit => // should flag an error Redefinition must not have more restrictive visibility.
       unit
 
 
