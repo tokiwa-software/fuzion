@@ -27,7 +27,7 @@ dot_type_call_on_type_parameter is
     type.abstr i32 => abstract
 
   B : A is
-    type.abstr i32 => 7
+    redef type.abstr i32 => 7
 
   a(T type: A) =>
     say T.abstr

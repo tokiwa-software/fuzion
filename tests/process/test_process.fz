@@ -27,7 +27,7 @@ test_process =>
   # create string of given byte size
   get_str(byte_size i32) =>
     ref : String
-      utf8 Sequence u8 =>
+      redef utf8 Sequence u8 =>
         (1..byte_size)
           .map u8 (x -> codepoint.type.zero_char)
 

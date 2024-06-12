@@ -17,37 +17,41 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test testRedefine
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test
 #
 # -----------------------------------------------------------------------
 
-# Regression test for #19: https://github.com/tokiwa-software/fuzion/issues/19
-#
-# A simple negative test for redefining the result type of a feature.  This
-# should report errors for the redefinitions bad1.get and bad2.get.
-#
-# The test should be run and its output should be compared to the expected
-# output.
-#
-testRedefine is
+ex_circular_buffer =>
+  m : mutate is
 
-  getter (A type) ref is
-    get A => abstract
-
-  good : getter (String | i32 | nil) is
-    redef get String | i32 | nil => 42
-
-  bad1 : getter (String | i32 | nil) is
-    redef get i32 => 42
-
-  bad2 : getter (String | i32 | nil) is
-    redef get => 42
-
-  show(g getter (String | i32 | nil)) =>
-    say g.get
-
-  yak "good: "; show good
-  yak "bad1: "; show bad1
-  yak "bad2: "; show bad2
+  m.go ()->
+    b := (mutate.circular_buffer codepoint).new m 7 "0"
+    say (b.put "1")
+    say (b.enqueue ["2", "3"])
+    say (b.enqueue ["4", "5", "6", "7"])
+    say (b.enqueue ["8", "9"])
+    say (b.get)
+    say (b.get)
+    say (b.enqueue ["A", "B", "C"])
+    say (b.get)
+    say (b.enqueue ["D", "E", "F"])
+    say (b.get)
+    say (b.get)
+    say (b.get)
+    say (b.get)
+    say (b.get)
+    say (b.get)
+    say (b.get)
+    say (b.get)
+    say (b.get)
+    say (b.enqueue ["2", "3"])
+    say (b.enqueue ["4", "5", "6", "7"])
+    say (b.put "1")
+    say (b.put "B")
+    say b
+    say (b.get)
+    say (b.flush 2)
+    # say (b.flush 400)
+    say b
+    say (b.flush 4)
+    say b

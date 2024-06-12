@@ -46,9 +46,9 @@ inheritance_for_value_types is
     x, y, z (msg String, expected i32) unit => abstract
 
   a : ra is
-    x (msg String, expected i32) unit => chck msg expected=1
-    y (msg String, expected i32) unit => x msg expected
-    z (msg String, expected i32) =>      x msg expected
+    redef x (msg String, expected i32) unit => chck msg expected=1
+    redef y (msg String, expected i32) unit => x msg expected
+    redef z (msg String, expected i32) =>      x msg expected
     q (msg String, expected i32) is
       xx is z msg expected
 

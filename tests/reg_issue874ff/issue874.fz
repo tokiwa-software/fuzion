@@ -84,11 +84,11 @@ test_this3 is
     redef as_string => "num0.this {to_u32_loop} 'as_string'"
 
   intM5(v u8) : num0 is
-    fixed type.zero => test_this3.intM5 0
-    fixed type.one => test_this3.intM5 1
-    fixed lessThan(other intM5) => v < other.v
+    fixed redef type.zero => test_this3.intM5 0
+    fixed redef type.one => test_this3.intM5 1
+    fixed redef lessThan(other intM5) => v < other.v
     fixed plus(other intM5) => intM5 (v + other.v)%5
-    fixed minus(other intM5) => intM5 (v - other.v)%5
+    fixed redef minus(other intM5) => intM5 (v - other.v)%5
 
 y := test_this3.intM5 1
 say (y.plus y)
@@ -116,11 +116,11 @@ test_this4 is
 
 
   intM5(v u8) : num0 is
-    fixed type.zero => test_this4.intM5 0
-    fixed type.one => test_this4.intM5 1
-    fixed lessThan(other intM5) => v < other.v
+    fixed redef type.zero => test_this4.intM5 0
+    fixed redef type.one => test_this4.intM5 1
+    fixed redef lessThan(other intM5) => v < other.v
     fixed plus(other intM5) => intM5 (v + other.v)%5
-    fixed minus(other intM5) => intM5 (v - other.v)%5
+    fixed redef minus(other intM5) => intM5 (v - other.v)%5
 
 y := test_this4.intM5 1
 say (y.plus y)
@@ -142,7 +142,7 @@ test_cov is
     redef as_string => "{f}"
 
   i(is_zero bool) : n is
-    fixed p(other i) => other
+    fixed redef p(other i) => other
 
 say (test_cov.i false)
 
@@ -155,7 +155,7 @@ test_cov_DFA_pop =>
     r String => abstract
 
   n : rn is
-    r =>
+    redef r =>
       x := n.this
       x.as_string
 

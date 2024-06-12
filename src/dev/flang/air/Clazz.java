@@ -1389,7 +1389,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (this._type == Types.t_ERROR   ||
        this._type == Types.t_ADDRESS ||
        this._outer == null              )
-      ? this._type.asString() // error, address or universe
+      ? this._type.asString(true) // error, address or universe
       : (""
          + ((this._outer == Clazzes.universe.get())
             ? ""
@@ -2123,7 +2123,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (feature().isTypeFeature());
 
-    return _type.generics().get(0).asString();
+    return _type.generics().get(0).asString(true);
   }
 
 

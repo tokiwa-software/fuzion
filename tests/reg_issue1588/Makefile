@@ -17,37 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test testRedefine
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# Regression test for #19: https://github.com/tokiwa-software/fuzion/issues/19
-#
-# A simple negative test for redefining the result type of a feature.  This
-# should report errors for the redefinitions bad1.get and bad2.get.
-#
-# The test should be run and its output should be compared to the expected
-# output.
-#
-testRedefine is
-
-  getter (A type) ref is
-    get A => abstract
-
-  good : getter (String | i32 | nil) is
-    redef get String | i32 | nil => 42
-
-  bad1 : getter (String | i32 | nil) is
-    redef get i32 => 42
-
-  bad2 : getter (String | i32 | nil) is
-    redef get => 42
-
-  show(g getter (String | i32 | nil)) =>
-    say g.get
-
-  yak "good: "; show good
-  yak "bad1: "; show bad1
-  yak "bad2: "; show bad2
+override NAME = reg_issue1588
+include ../simple.mk

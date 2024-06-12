@@ -117,7 +117,7 @@ test_equals_types is
 
     # equality relation comparing the value produced by 'col'
     #
-    fixed type.equality(a, b test_equals_types.Has_color) =>
+    fixed redef type.equality(a, b test_equals_types.Has_color) =>
 
       # NYI: There is currently no easy way to compare choice types, so we do exhaustive
       # matches:
@@ -139,15 +139,15 @@ test_equals_types is
   colored_text(
 
     # the color
-    col color,
+    redef col color,
 
     # the string
-    utf8 Sequence u8)
+    redef utf8 Sequence u8)
 
    : Has_color, String, property.equatable is
 
     # equality relation comparing color and strings
     #
-    fixed type.equality(a, b test_equals_types.colored_text) =>
+    fixed redef type.equality(a, b test_equals_types.colored_text) =>
       (test_equals_types.eq_color a b &&
        String.equality       a b   )
