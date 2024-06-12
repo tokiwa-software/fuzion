@@ -393,6 +393,7 @@ public class Block extends AbstractBlock
       .limit(_expressions.isEmpty() ? 0 : _expressions.size() - 1)
       .forEach(e -> {
         if (e.producesResult() &&
+            e.typeForInferencing() != null &&
             e.typeForInferencing().compareTo(Types.resolved.t_unit) != 0 &&
             !e.typeForInferencing().isVoid() &&
             e.typeForInferencing() != Types.t_ERROR)
