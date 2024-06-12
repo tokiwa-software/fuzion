@@ -448,7 +448,7 @@ public class Intrinsics extends ANY
     put("fuzion.sys.fileio.open_dir", (c,cl,outer,in) -> CExpr.call("fzE_opendir", new List<CExpr>(
       A0.castTo("char *"),
       A1.castTo("int64_t *")
-    )).ret());
+    )));
     put("fuzion.sys.fileio.read_dir", (c,cl,outer,in) ->
       {
         var d_name = new CIdent("d_name");
