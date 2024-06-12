@@ -166,6 +166,3 @@ ctrie_threads is
   test2 true
   test3
   test4 # this tests fails almost reliably
-
-
-  unit

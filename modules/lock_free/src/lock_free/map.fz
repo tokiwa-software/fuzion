@@ -566,7 +566,6 @@ is
       r restart =>
         add k v
       ctrie_ok =>
-        unit
 
 
   # try adding an element to the ctrie

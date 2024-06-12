@@ -86,7 +86,6 @@ webserver_java is
                            + "\n"
                            + data)?
 
-       unit
 */
 
          accept outcome unit =>
@@ -140,4 +139,3 @@ webserver_java is
                          if ok!!
                            say "#### "+ok.err
 
-                       unit
