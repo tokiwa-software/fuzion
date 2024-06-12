@@ -89,7 +89,7 @@ valWithDynOuter is
 
   v (redef f String) : ref_v f is
     a => "v"
-    x => "$f-$a:v.x"
+    redef x => "$f-$a:v.x"
 
   w : v "w" is
     redef a => "w"

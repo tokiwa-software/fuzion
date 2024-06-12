@@ -843,7 +843,6 @@ part of the (((inner features))) declarations of the corresponding
             )
           {
             if ((f.modifiers() & FuzionConstants.MODIFIER_REDEFINE) == 0 &&
-                !existing.isAbstract() &&
                 /* previous duplicate feature declaration could result in this error for
                 * type features, so suppress them in this case. See fuzion-lang.dev's
                 * design/examples/typ_const2.fz as an example.
@@ -852,7 +851,7 @@ part of the (((inner features))) declarations of the corresponding
               {
                 /*
     // tag::fuzion_rule_PARS_REDEF[]
-A feature that redefines at least one inherited feature must use the `redef` modifier unless all redefined, inherited features are `abstract`.
+A feature that redefines at least one inherited feature must use the `redef` modifier.
     // end::fuzion_rule_PARS_REDEF[]
                 */
                 if (visibleFor(existing, f.outer()))

@@ -462,9 +462,9 @@ catch_postcondition.test#1 i16: --CURDIR--/catch_postcondition.fz:43:5:
 catch_postcondition.#fun11.call#0: --CURDIR--/catch_postcondition.fz:141:56:
   tries array ()->String := [ (() -> test i32), (() -> test i16), (() -> test i64) ]
 -------------------------------------------------------^^^^
-catch_postcondition.#loop1#2.h.try#0: --CURDIR--/catch_postcondition.fz:159:38:
-      try option String  => tries[c].call
--------------------------------------^^^^
+catch_postcondition.#loop1#2.h.try#0: --CURDIR--/catch_postcondition.fz:159:44:
+      redef try option String  => tries[c].call
+-------------------------------------------^^^^
 catch_postcondition.#loop1#2.h.#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:108:15:
         ).run try (()->catch m.get.get)
 --------------^^^
@@ -510,9 +510,9 @@ catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
 catch_postcondition.#fun10.call#0: --CURDIR--/catch_postcondition.fz:141:38:
   tries array ()->String := [ (() -> test i32), (() -> test i16), (() -> test i64) ]
 -------------------------------------^^^^
-catch_postcondition.#loop1#2.h.try#0: --CURDIR--/catch_postcondition.fz:159:38:
-      try option String  => tries[c].call
--------------------------------------^^^^
+catch_postcondition.#loop1#2.h.try#0: --CURDIR--/catch_postcondition.fz:159:44:
+      redef try option String  => tries[c].call
+-------------------------------------------^^^^
 catch_postcondition.#loop1#2.h.#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:108:15:
         ).run try (()->catch m.get.get)
 --------------^^^
