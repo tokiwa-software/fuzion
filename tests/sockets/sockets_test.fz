@@ -40,7 +40,7 @@ sockets_test is
 
       rh : net.Request_Handler unit is
 
-        handle_request unit =>
+        redef handle_request unit =>
 
           chan => net.channel.env
 
@@ -86,7 +86,7 @@ sockets_test is
 
     rh : net.Request_Handler String is
 
-      handle_request =>
+      redef handle_request =>
 
         chan => net.channel.env
 

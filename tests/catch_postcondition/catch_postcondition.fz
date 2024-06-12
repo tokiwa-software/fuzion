@@ -156,8 +156,8 @@ catch_postcondition is
 
   for c in tries.indices do
     h : handle_post (option String) is
-      try option String  => tries[c].call
-      catch(s String) option String => say "*** failed: $s ***"; nil
+      redef try option String  => tries[c].call
+      redef catch(s String) option String => say "*** failed: $s ***"; nil
     r := h.res
   until r??
     say r
