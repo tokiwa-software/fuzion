@@ -45,7 +45,7 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
   # read bytes from standard out
   #
   read_provider(desc i64) : io.Read_Provider is
-    read(count i32) choice (array u8) io.end_of_file error =>
+    redef read(count i32) choice (array u8) io.end_of_file error =>
       arr := array u8 pipe_buffer_size i->0
       res := fuzion.sys.pipe.read desc arr.internal_array.data arr.count
       if res = -1

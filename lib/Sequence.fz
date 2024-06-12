@@ -617,11 +617,11 @@ public Sequence(public T type) ref is
 
     # associative operation
     #
-    infix ∙ (a, b Sequence T) Sequence T => a.concat_sequences b
+    redef infix ∙ (a, b Sequence T) Sequence T => a.concat_sequences b
 
     # identity element
     #
-    e Sequence T =>
+    redef e Sequence T =>
       (list T).empty
 
 

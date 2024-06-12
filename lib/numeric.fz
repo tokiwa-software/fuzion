@@ -240,12 +240,12 @@ module:public numeric : property.hashable, property.orderable is
 
   # equality
   #
-  public type.equality(a, b numeric.this) bool => abstract
+  public redef type.equality(a, b numeric.this) bool => abstract
 
 
   # total order
   #
-  public type.lteq(a, b numeric.this) bool => abstract
+  public redef type.lteq(a, b numeric.this) bool => abstract
 
 
   # monoid of numeric with infix + operation.  Will create sum of all elements it

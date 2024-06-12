@@ -32,7 +32,7 @@ module thread is
   #
   module spawn(code ()->unit) =>
     Do_Call ref : Function unit is
-      call =>
+      redef call =>
         code()
 
     spawn0 Do_Call

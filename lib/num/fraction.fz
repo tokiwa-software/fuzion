@@ -77,21 +77,21 @@ is
 
   # identity element for 'infix +'
   #
-  public fixed type.zero => B.zero ⁄ B.one
+  public fixed redef type.zero => B.zero ⁄ B.one
 
 
   # identity element for 'infix *'
   #
-  public fixed type.one => B.one ⁄ B.one
+  public fixed redef type.one => B.one ⁄ B.one
 
 
   # equality
   #
-  public fixed type.equality(a, b num.fraction B) =>
+  public fixed redef type.equality(a, b num.fraction B) =>
     (a - b).numerator.is_zero
 
 
   # total order
   #
-  public fixed type.lteq(a, b num.fraction B) =>
+  public fixed redef type.lteq(a, b num.fraction B) =>
     (a - b).numerator.sign ≤ 0

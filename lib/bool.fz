@@ -73,7 +73,7 @@ public bool : choice FALSE TRUE, property.equatable is
 
   # equality check implementation for inherited property.equatable
   #
-  public fixed type.equality(a, b bool) =>
+  public fixed redef type.equality(a, b bool) =>
     if a
       b
     else

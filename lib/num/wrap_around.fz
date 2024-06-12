@@ -52,13 +52,13 @@ module:public wrap_around : integer is
 
   # preconditions used in 'numeric' for basic operations: true if the
   # operation is permitted for the given values
-  public prefix -! => !wrapped_on_neg
-  public infix +! (other wrap_around.this) => !(overflow_on_add other) && !(underflow_on_add other)
-  public infix -! (other wrap_around.this) => !(overflow_on_sub other) && !(underflow_on_sub other)
-  public infix *! (other wrap_around.this) => !(overflow_on_mul other) && !(underflow_on_mul other)
-  public infix /! (other wrap_around.this) => true  # other != zero is checked in separate condition
-  public infix %! (other wrap_around.this) => true  # other != zero is checked in separate condition
-  public infix **!(other wrap_around.this) => !(overflow_on_exp other)
+  public redef prefix -! => !wrapped_on_neg
+  public redef infix +! (other wrap_around.this) => !(overflow_on_add other) && !(underflow_on_add other)
+  public redef infix -! (other wrap_around.this) => !(overflow_on_sub other) && !(underflow_on_sub other)
+  public redef infix *! (other wrap_around.this) => !(overflow_on_mul other) && !(underflow_on_mul other)
+  public redef infix /! (other wrap_around.this) => true  # other != zero is checked in separate condition
+  public redef infix %! (other wrap_around.this) => true  # other != zero is checked in separate condition
+  public redef infix **!(other wrap_around.this) => !(overflow_on_exp other)
 
   # neg, add, sub, mul with wrap-around semantics
   public prefix -° wrap_around.this => abstract
@@ -122,7 +122,7 @@ module:public wrap_around : integer is
   #
   # 'zero ** zero' is permitted and results in 'one'.
   #
-  public infix ** (other wrap_around.this) wrap_around.this
+  public redef infix ** (other wrap_around.this) wrap_around.this
     pre else
       // NYI: #3051 precondition inheritance does not work yet
       debug: (!overflow_on_exp other)
@@ -152,7 +152,7 @@ module:public wrap_around : integer is
   #
   # 'zero **? zero' is permitted and results in 'one'.
   #
-  public infix **? (other wrap_around.this) num_option wrap_around.this
+  public redef infix **? (other wrap_around.this) num_option wrap_around.this
   =>
     if      (other = wrap_around.this.zero) wrap_around.this.one
     else if (other = wrap_around.this.one ) wrap_around.this
@@ -173,7 +173,7 @@ module:public wrap_around : integer is
   #
   # 'zero **^ zero' is permitted and results in 'one'.
   #
-  public infix **^ (other wrap_around.this) wrap_around.this
+  public redef infix **^ (other wrap_around.this) wrap_around.this
   =>
     if overflow_on_exp other
       if (wrap_around.this ≥ wrap_around.this.zero) || (other %% wrap_around.this.two)

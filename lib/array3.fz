@@ -137,8 +137,8 @@ is
       debug: 0 ≤ j < length1
       debug: 0 ≤ k < length2
   is
-    head => (i, j, k, index[] i j k)
-    tail list (tuple i32 i32 i32 T) =>
+    redef head => (i, j, k, index[] i j k)
+    redef tail list (tuple i32 i32 i32 T) =>
       if      k < length2-1 then enumerate_cons i   j   k+1
       else if j < length1-1 then enumerate_cons i   j+1 0
       else if i < length0-1 then enumerate_cons i+1 0   0

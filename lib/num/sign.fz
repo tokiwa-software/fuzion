@@ -34,7 +34,7 @@ public sign : choice num.plus num.minus, property.equatable is
 
   # equality: are these signs equal?
   #
-  public fixed type.equality(a, b num.sign) bool =>
+  public fixed redef type.equality(a, b num.sign) bool =>
     match a
       num.plus =>
         match b

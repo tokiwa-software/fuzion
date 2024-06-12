@@ -183,14 +183,14 @@ is
 
   # unwrap this outcome
   #
-  unwrap ! (try (outcome T)) =>
+  redef unwrap ! (try (outcome T)) =>
     outcome.this ? v T     => v
                  | e error => (try (outcome T)).env.raise e
 
 
   # return function
   #
-  public fixed type.return (a T) => outcome a
+  public fixed redef type.return (a T) => outcome a
 
 
 # outcome with 1 argument provides an short-hand to wrap a value into a
