@@ -1,0 +1,6 @@
+unit
+--error: an error occurred while creating the following directory: "test_path"--
+test_path
+file2
+file1
+--error: no more directory entries--
