@@ -458,14 +458,7 @@ public class Errors extends ANY
    */
   private static void print(SourcePosition pos, String msg, String detail)
   {
-    if (true)  // true: a blank line before errors, false: separation line between errors
-      {
-        say_err();
-      }
-    else
-      {
-        say_err("------------");
-      }
+    say_err();
     if (pos == null)
       {
         println(msg);
