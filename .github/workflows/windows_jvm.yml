@@ -21,15 +21,13 @@
 #
 # -----------------------------------------------------------------------
 
-name: run tests on windows
+name: run tests on windows (jvm)
 
 permissions:
   contents: read
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * 0' # every sunday
 
 jobs:
   run_tests:
@@ -66,15 +64,15 @@ jobs:
           javac --version
           whereis jvm.dll
 
-      - name: build libgc
-        run: |
-          export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21"
-          export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
-          ./bin/windows_install_boehm_gc.sh
+      # - name: build libgc
+      #   run: |
+      #     export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21"
+      #     export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
+      #     ./bin/windows_install_boehm_gc.sh
 
       - name: run tests
         run: |
           export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21"
           export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
           export FUZION_CLANG_INSTALLED_DIR="D:/a/_temp/msys64/ucrt64/bin"
-          make run_tests
+          make run_tests_jvm
