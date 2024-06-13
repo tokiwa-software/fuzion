@@ -62,4 +62,7 @@ jobs:
         run: make no-java
 
       - name: run tests
-        run: make run_tests_c
+        run: |
+          export CPATH=/opt/homebrew/include
+          export LIBRARY_PATH=/opt/homebrew/lib
+          make run_tests_c
