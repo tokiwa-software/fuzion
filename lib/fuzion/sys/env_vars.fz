@@ -71,9 +71,7 @@ module env_vars is
     k := c_string name
     v := c_string val
 
-    if set0 k v
-      unit
-    else
+    if !(set0 k v)
       error "failed to set env var"
 
   # unset the env var with the given name
@@ -81,7 +79,5 @@ module env_vars is
   module unset(name String) outcome unit =>
     k := c_string name
 
-    if unset0 k
-      unit
-    else
+    if !(unset0 k)
       error "failed to unset env var"

@@ -82,4 +82,3 @@ forwardref_negative is
     y := x
     z := 1
   cyclic2
-  unit

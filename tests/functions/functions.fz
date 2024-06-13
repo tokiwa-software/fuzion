@@ -100,4 +100,3 @@ functions is
     x0 ((o, i)->f1 o i)
     say "here x (fun f1)---------------"
     x ((o, i)->f1 o i)
-    unit

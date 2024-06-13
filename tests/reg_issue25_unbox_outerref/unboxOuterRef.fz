@@ -43,10 +43,8 @@ unboxOuterRef is
     fixed redef f unit =>
       g y.this
       g (y i)
-      unit
 
   v := y 42
   v.f
   r ry := v
   r.f
-  unit
