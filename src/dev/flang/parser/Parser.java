@@ -3692,8 +3692,7 @@ typeInParens: "(" typeInParens ")"
           }
         else
           {
-            syntaxError(pos, "exactly one type", "typeInParens");
-            result = Types.t_ERROR;
+            result = new ParsedType(sourcePos(pos), "tuple", l, null);
           }
         endAtSpace(eas);
       }

@@ -121,7 +121,7 @@ is
 
   # get a list of tuples indices and elements in this array
   #
-  public enumerate3 list (tuple i32 i32 i32 T) =>
+  public enumerate3 list (i32, i32, i32, T) =>
     if length = 0
       nil
     else
