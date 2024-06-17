@@ -413,7 +413,7 @@ public Sequence(public T type) ref is
   #
   public foldf (B type, f (B,T)->B, e B) B
   =>
-    as_list.foldf_list f e
+    as_list.foldf f e
 
 
   # map this Sequence to a list that contains the result of folding

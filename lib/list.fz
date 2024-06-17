@@ -234,10 +234,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   # e.g., to find the product of a list of i32, use `s.foldf (*) 1`
   #
-  # NYI: #2319: rename as `foldf` as soon as redefinition of feature with
-  # type parameters works
-  #
-  public foldf_list (B type, f (B,A)->B, e B) B
+  public redef foldf (B type, f (B,A)->B, e B) B
   =>  (list.this ? nil    => e
                  | c Cons => c.tail.foldf f (f e c.head))
 
