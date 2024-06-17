@@ -163,7 +163,7 @@ test_redef_using_fixed =>
 
   say "expecting 'a': {a.me1}"
   say "expecting 'a': {a.me2}"
-#  say "expecting 'b with 1': {b1.me1}"   # NYI: should return b.this, currently returns a.this
+  say "expecting 'b with 1': {b1.me1}"
   say "expecting 'b with 2': {b2.me2}"
 
   c1 := c

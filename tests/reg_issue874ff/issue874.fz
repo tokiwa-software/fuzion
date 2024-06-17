@@ -397,5 +397,5 @@ test_generic_this_type is
   ha.call_f
   hb.call_f
 
-  # a.f b      // NYI: b is currently incompatible to g.this
-  # ha.f hb    // NYI: hb is currently incompatible to h.this
+  a.f b
+  ha.f hb
