@@ -1,7 +1,14 @@
 
-error 1: CONTRACT FAILED: pre-condition on call to 'SquareRoot.sqrt'
+error 1: FATAL FAULT `precondition`: ≥
 Call stack:
-precondition of SquareRoot__1sqrt
+fuzion__sys__2fatal_fault
+fuzion_INT__t__install_default__INTERN_fun264__1call
+fuzion__runtime__1fault__1cause
+fuzion_INT__t__install_default__INTERN_fun266__1call
+fuzion__runtime__1pre_fault__1cause
+fuzion__runtime__1precondition_fault
+SquareRoot__1INTERN_PREsqrt_1
+SquareRoot__1INTERN_PRE_AND_CALL_NYIsqrt_2
 SquareRoot
 
 *** fatal errors encountered, stopping.

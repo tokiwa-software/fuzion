@@ -1,8 +1,15 @@
 
-error 1: CONTRACT FAILED: pre-condition on call to '(option error).get'
+error 1: FATAL FAULT `precondition`: :
 Call stack:
-precondition of option_error__get
-try_unit__1on_void__INTERN_fun88__call
+fuzion__sys__2fatal_fault
+fuzion_INT__t__install_default__INTERN_fun264__1call
+fuzion__runtime__1fault__1cause
+fuzion_INT__t__install_default__INTERN_fun266__1call
+fuzion__runtime__1pre_fault__1cause
+fuzion__runtime__1precondition_fault
+option_error__INTERN_PREget_59
+option_error__INTERN_PRE_AND_CALL_NYIget_60
+try_unit__1on_void__INTERN_fun89__call
 try_unit__2run__outcome_void
 try_unit__1on_void
 1try_unit_void

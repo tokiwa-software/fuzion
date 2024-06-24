@@ -19,7 +19,7 @@ To solve this, you might change the visibility of the feature 'mod_pub' (no argu
 ----------------^^^^^^^
 
 
---CURDIR--/main.fz:98:14: error 3: Feature defined in inner block must not have visibility modifier.
+--CURDIR--/main.fz:97:14: error 3: Feature defined in inner block must not have visibility modifier.
       module my_feat is // should flag an error visibility modifier used in inner block
 -------------^^^^^^^
 To solve this, remove the visibility modifier 'module' from feature 'm.my_feat' or move the feature to the main block of the containing feature.
@@ -28,18 +28,21 @@ To solve this, remove the visibility modifier 'module' from feature 'm.my_feat' 
 --CURDIR--/main.fz:28:18: error 4: Feature specifying type visibility does not define a type.
   private:module not_a_constructor  => false // should flag an error feature does not define type
 -----------------^^^^^^^^^^^^^^^^^
+Feature affected: 'm.not_a_constructor'
 To solve this, remove the type visibility: 'module'.
 
 
 --CURDIR--/main.fz:29:18: error 5: Feature specifying type visibility does not define a type.
   private:public not_a_constructor2 => false // should flag an error feature does not define type
 -----------------^^^^^^^^^^^^^^^^^^
+Feature affected: 'm.not_a_constructor2'
 To solve this, remove the type visibility: 'public'.
 
 
 --CURDIR--/main.fz:30:18: error 6: Feature specifying type visibility does not define a type.
   module:public  not_a_constructor3 => false // should flag an error feature does not define type
 -----------------^^^^^^^^^^^^^^^^^^
+Feature affected: 'm.not_a_constructor3'
 To solve this, remove the type visibility: 'public'.
 
 
@@ -97,7 +100,7 @@ To solve this, increase the visibility of 'm.my_false' or do not use this featur
 To solve this, increase the visibility of 'm.redef_test_0.b' to at least 'public'
 
 
---CURDIR--/main.fz:82:12: error 16: Redefinition must not have more restrictive visibility.
+--CURDIR--/main.fz:82:18: error 16: Redefinition must not have more restrictive visibility.
     module redef e unit => // should flag an error Redefinition must not have more restrictive visibility.
 -----------------^
 To solve this, increase the visibility of 'm.redef_test_0.e' to at least 'public'
