@@ -199,6 +199,25 @@ public class Feature extends AbstractFeature
   private final Contract _contract;
   public Contract contract() { return _contract; }
 
+  Feature _preFeature = null;
+  @Override
+  public AbstractFeature preFeature()
+  {
+    return _preFeature;
+  }
+  Feature _preBoolFeature = null;
+  @Override
+  public AbstractFeature preBoolFeature()
+  {
+    return _preBoolFeature;
+  }
+  Feature _preAndCallFeature = null;
+  @Override
+  public AbstractFeature preAndCallFeature()
+  {
+    return _preAndCallFeature;
+  }
+
   Feature _postFeature = null;
   @Override
   public AbstractFeature postFeature()
@@ -1032,7 +1051,6 @@ public class Feature extends AbstractFeature
       }
     _impl.visit(v, this);
     _returnType.visit(v, this);
-    _contract.visit(v, this);
   }
 
 
@@ -1952,6 +1970,10 @@ A ((Choice)) declaration must not contain a result type.
    */
   public Expr resolveTypes(Resolution res, AbstractFeature outer)
   {
+    if (PRECONDITIONS) require
+      (res != null,
+       isUniverse() || outer != null || Errors.any());
+
     Expr result = this;
 
     if (CHECKS) check
@@ -2130,7 +2152,6 @@ A ((Choice)) declaration must not contain a result type.
         }
       };
 
-    _contract.visit(fv, this);
     for (var p: _inherits)
       {
         p.visit(fv, this);

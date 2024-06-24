@@ -632,7 +632,7 @@ public class ParsedCall extends Call
           {
             // replace Function call `c.123` by `c.f.123`:
             result = pushCall(res, outer, f.featureName().baseName());
-            setActualResultType(res, t); // setActualResultType will be done again by resolveTypes, but we need it now.
+            setActualResultType(res, outer, t); // setActualResultType will be done again by resolveTypes, but we need it now.
             result = result.resolveTypes(res, outer);
           }
       }

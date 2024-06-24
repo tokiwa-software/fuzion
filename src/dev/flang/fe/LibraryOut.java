@@ -419,13 +419,15 @@ class LibraryOut extends ANY
    *   | d? !isI| i      | Code          | inherits calls                                |
    *   | ntrinsc|        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | int           | precondition count pre_n                      |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | pre_n  | Code          | precondition code                             |
-   *   +--------+--------+---------------+-----------------------------------------------+
    *   | R      | 1      | int           | feature offset of precondition feature        |
+   *   |        |        +---------------+-----------------------------------------------+
+   *   |        |        | int           | feature offset of pre bool feature            |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | E      | 1      | int           | feature offset of pistcondition feature       |
+   *   | R &&   | 1      | int           | feature offset of pre and call feature        |
+   *   | isConst|        |               |                                               |
+   *   | ructor |        |               |                                               |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | E      | 1      | int           | feature offset of postcondition feature       |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | redefines count r                             |
    *   |        +--------+---------------+-----------------------------------------------+
@@ -458,7 +460,13 @@ class LibraryOut extends ANY
       {
         k = k | FuzionConstants.MIR_FILE_KIND_IS_FIXED;
       }
-    var preF = (AbstractFeature) null; // NYII f.contract()._preFeature;
+    var preF   = f.preFeature();
+    var preBF  = f.preBoolFeature();
+    var preACF = f.preAndCallFeature();
+    if (CHECKS) check
+      ((preF == null) == (preBF == null),
+        f.isConstructor() || (preF == null) == (preACF == null),
+       !f.isConstructor() ||                    preACF == null );
     if (preF != null)
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_PRE_CONDITION_FEATURE;
@@ -498,13 +506,10 @@ class LibraryOut extends ANY
       {
         code(p, false);
       }
-    _data.writeInt(f.contract().req.size());
-    for (var c : f.contract().req)
-      {
-        code(c.cond, false);
-      }
-    if (preF  != null) { _data.writeOffset(preF ); }
-    if (postF != null) { _data.writeOffset(postF); }
+    if (preF   != null) { _data.writeOffset(preF  ); }
+    if (preBF  != null) { _data.writeOffset(preBF ); }
+    if (preACF != null) { _data.writeOffset(preACF); }
+    if (postF  != null) { _data.writeOffset(postF ); }
 
     var redefines = f.redefines();
     _data.writeInt(redefines.size());

@@ -1011,7 +1011,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
   private void addToHeirs(AbstractFeature outer, FeatureName fn, Feature f)
   {
     var d = data(outer);
-    if (d != null)
+    if (d != null && !f.isFixed())
       {
         for (var h : d._heirs)
           {
@@ -1597,7 +1597,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
   {
     f
       .contract()
-      .req
+      ._declared_preconditions
       .forEach(r -> r.visit(new FeatureVisitor() {
         @Override
         public void action(AbstractCall c)

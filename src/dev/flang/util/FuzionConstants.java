@@ -263,6 +263,7 @@ public class FuzionConstants extends ANY
   public static final String PARTIAL_FUNCTION_ARGUMENT_PREFIX = INTERNAL_NAME_PREFIX + "partialFunctionArg";
 
 
+  public static final String PRECONDITION_FEATURE_PREFIX  = INTERNAL_NAME_PREFIX + "PRE";
   public static final String POSTCONDITION_FEATURE_PREFIX = INTERNAL_NAME_PREFIX + "POST";
 
 

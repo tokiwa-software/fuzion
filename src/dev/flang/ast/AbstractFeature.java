@@ -304,6 +304,17 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
+   * If this feature has a pre condition or redefines a feature from which it
+   * inherits a pre condition, this gives the feature that implements the pre
+   * condition check.  The preFeature has tha same outer feature as the
+   * original feature and the same arguments.
+   */
+  public abstract AbstractFeature preFeature();
+  public abstract AbstractFeature preBoolFeature();
+  public abstract AbstractFeature preAndCallFeature();
+
+
+  /**
    * If this feature has a post condition or redefines a feature from which it
    * inherits a post condition, this gives the feature that implements the post
    * condition check.  The postFeature has tha same outer feature as the
@@ -472,7 +483,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public List<AbstractType> choiceGenerics()
   {
     if (PRECONDITIONS) require
-      (state().atLeast(State.RESOLVING_TYPES));
+      (state().atLeast(State.RESOLVED_DECLARATIONS));
 
     List<AbstractType> result;
 
@@ -1509,7 +1520,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
         if (CHECKS) check
           (c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
       }
-    contract().visit(fv, this);
     if (isRoutine())
       {
         code().visit(fv, this);
@@ -1528,7 +1538,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       {
         c.visitExpressions(v);
       }
-    contract().visitExpressions(v);
     if (isRoutine())
       {
         code().visitExpressions(v);

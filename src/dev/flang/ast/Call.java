@@ -514,8 +514,9 @@ public class Call extends AbstractCall
    *
    * @return the type of the target.
    */
-  private AbstractType targetType(Resolution res)
+  private AbstractType targetType(Resolution res, AbstractFeature outer)
   {
+    _target = res.resolveType(_target, outer);
     return
       // NYI: CLEANUP: For a type parameter, the feature result type is abused
       // and holds the type parameter constraint.  As a consequence, we have to
@@ -1398,7 +1399,7 @@ public class Call extends AbstractCall
    *
    * @param frmlT the result type of the called feature, might be open generic.
    */
-  protected void setActualResultType(Resolution res, AbstractType frmlT)
+  protected void setActualResultType(Resolution res, AbstractFeature outer, AbstractType frmlT)
   {
     var tt =
       targetIsTypeParameter() && frmlT.isThisTypeInTypeFeature()
@@ -1407,7 +1408,7 @@ public class Call extends AbstractCall
         // selfType:
         // NYI: CLEANUP: remove this special handling!
         _target.typeForCallTarget().feature().selfType()
-      : targetType(res);
+      : targetType(res, outer);
 
     var t1 = resolveSelect(frmlT, tt);
     var t2 = t1.applyTypePars(tt);
@@ -2002,6 +2003,10 @@ public class Call extends AbstractCall
           {
             for (var p: aft.inherits())
               {
+                if (p instanceof Call pc)
+                  {
+                    pc.resolveTypes(res, outer);
+                  }
                 var pt = p.type();
                 if (pt != Types.t_ERROR)
                   {
@@ -2297,7 +2302,7 @@ public class Call extends AbstractCall
             else if (t != null)
               {
                 result = resolveImplicitSelect(res, outer, t);
-                setActualResultType(res, t);
+                setActualResultType(res, outer, t);
                 // Convert a call "f.g a b" into "f.g.call a b" in case f.g takes no
                 // arguments and returns a Function or Routine
                 result = result.resolveImmediateFunctionCall(res, outer); // NYI: Separate pass? This currently does not work if type was inferred
@@ -2305,7 +2310,7 @@ public class Call extends AbstractCall
             if (t == null || isTailRecursive(outer))
               {
                 cf.whenResolvedTypes
-                  (() -> setActualResultType(res, cf.resultTypeForTypeInference(pos(), res, _generics)));
+                  (() -> setActualResultType(res, outer, cf.resultTypeForTypeInference(pos(), res, _generics)));
               }
           }
         else
@@ -2535,7 +2540,7 @@ public class Call extends AbstractCall
     reportPendingError();
 
     if (CHECKS) check
-      (res._options.isLanguageServer() || _type != null);
+      (res._options.isLanguageServer() || Errors.any() || _type != null);
 
     if (_type != null && _type != Types.t_ERROR)
       {
@@ -2646,9 +2651,24 @@ public class Call extends AbstractCall
         else if (cf == Types.resolved.t_u64.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_u64); }
         else if (cf == Types.resolved.t_f32.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_f32); }
         else if (cf == Types.resolved.t_f64.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_f64); }
-
+        else if (cf != null && cf.preAndCallFeature() != null && !preChecked())
+          {
+            _calledFeature = cf.preAndCallFeature();
+          }
       }
     return result;
+  }
+
+
+  /**
+   * This is true if the precondition does not need to be checked before this
+   * call is done. This returns true for a call to a feature `f` inf
+   * `f.preAndCallFeature()` to avoid replacing that call by a call to
+   * `f.preAndCallFeature()`.
+   */
+  boolean preChecked()
+  {
+    return false;
   }
 
 

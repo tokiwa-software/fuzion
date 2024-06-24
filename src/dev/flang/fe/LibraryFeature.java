@@ -765,7 +765,7 @@ public class LibraryFeature extends AbstractFeature
   {
     if (_contract == null)
       {
-        var pre_n  = _libModule.featurePreCondCount(_index);
+        var pre_n  = 0;
         var post_n = 0;
         if (pre_n == 0 && post_n == 0 && postFeature() == null)
           {
@@ -773,11 +773,27 @@ public class LibraryFeature extends AbstractFeature
           }
         else
           {
-            _contract = new Contract(condList(pre_n , _libModule.featurePreCondPos (_index)),
+            _contract = new Contract(new List<>(),  // NYI: REMOVE!
                                      new List<>());
           }
       }
     return _contract;
+  }
+
+  @Override
+  public AbstractFeature preFeature()
+  {
+    return _libModule.featurePreFeature(_index);
+  }
+  @Override
+  public AbstractFeature preBoolFeature()
+  {
+    return _libModule.featurePreBoolFeature(_index);
+  }
+  @Override
+  public AbstractFeature preAndCallFeature()
+  {
+    return _libModule.featurePreAndCallFeature(_index);
   }
 
   @Override

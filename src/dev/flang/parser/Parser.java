@@ -289,7 +289,7 @@ field       : returnType
     var name = n.get(i);
     var p2 = (i+1 < n.size()) ? fork() : null;
     var forkAtFormArgs = isEmptyFormArgs() ? null : fork();
-    var a = formArgsOpt();
+    var a = formArgsOpt(false);
     var r = returnType();
     var eff = effects();
     var hasType = r instanceof FunctionReturnType;
@@ -876,10 +876,10 @@ formArgsOpt : formArgs
             |
             ;
    */
-  List<AbstractFeature> formArgsOpt()
+  List<AbstractFeature> formArgsOpt(boolean forPreOrPostCondition)
   {
     return isEmptyFormArgs() ? new List<AbstractFeature>()
-                             : formArgs();
+                             : formArgs(forPreOrPostCondition);
   }
 
 
@@ -922,7 +922,7 @@ argType     : type
             |
             ;
    */
-  List<AbstractFeature> formArgs()
+  List<AbstractFeature> formArgs(boolean forPreOrPostCondition)
   {
     return bracketTermWithNLs(PARENS, "formArgs",
                               () -> {
@@ -931,6 +931,10 @@ argType     : type
                                   {
                                     Visi v = visibility();
                                     int m = modifiers();
+                                    if (forPreOrPostCondition)
+                                      {
+                                        m = m & ~FuzionConstants.MODIFIER_REDEFINE;
+                                      }
                                     var n = argNames();
                                     AbstractType t;
                                     Impl i;
@@ -2940,7 +2944,7 @@ destructrDcl: formArgs               ":=" exprInLine
   {
     if (fork().skipFormArgs())
       {
-        var a = formArgs();
+        var a = formArgs(false);
         var pos = tokenSourcePos();
         matchOperator(":=", "destructure");
         return Destructure.create(pos, a, null, exprInLine());
@@ -3137,10 +3141,15 @@ ensure      : "post"        block   // may start at min indent
     SourceRange postPos = null;
     SourceRange hasElse = null;
     SourceRange hasThen = null;
+    List<Cond> pre0 = null;
     List<Cond> pre = null;
     List<Cond> post = null;
     if (skip(true, Token.t_pre))
       {
+        var f = fork();              // NYI: REMOVE!
+        f.skip(Token.t_else);        // NYI: REMOVE!
+        pre0 = Cond.from(f.block()); // NYI: REMOVE!
+
         var p = lastTokenPos();
         hasElse = skip(Token.t_else) ? lastTokenSourceRange() : null;
         pre = Cond.from(block());
@@ -3153,13 +3162,18 @@ ensure      : "post"        block   // may start at min indent
         post = Cond.from(block());
         postPos = sourceRange(p);
       }
-    var preArgs  = pre  == null ? null : forkAtFormArgs == null ? new List<AbstractFeature>() : forkAtFormArgs.fork().formArgsOpt();
-    var postArgs = forkAtFormArgs == null ? new List<AbstractFeature>() : forkAtFormArgs.formArgsOpt();
+    var preArgs  = pre == null ? null : forkAtFormArgs == null ? new List<AbstractFeature>() : forkAtFormArgs.fork().formArgsOpt(true);
+    var preArgs1 = pre == null ? null : forkAtFormArgs == null ? new List<AbstractFeature>() : forkAtFormArgs.fork().formArgsOpt(true);
+    var preArgs2 = pre == null ? null : forkAtFormArgs == null ? new List<AbstractFeature>() : forkAtFormArgs.fork().formArgsOpt(true);
+    var postArgs =                      forkAtFormArgs == null ? new List<AbstractFeature>() : forkAtFormArgs       .formArgsOpt(true);
     return pre == null && post == null && postArgs == null
       ? Contract.EMPTY_CONTRACT
-      : new Contract(pre,  prePos,  hasElse,
+      : new Contract(pre0,
+                     pre,  prePos,  hasElse,
                      post, postPos, hasThen,
                      preArgs,
+                     preArgs1,
+                     preArgs2,
                      postArgs);
   }
 

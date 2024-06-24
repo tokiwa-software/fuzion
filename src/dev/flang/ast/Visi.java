@@ -150,6 +150,18 @@ public enum Visi
     return this == Visi.PRIVMOD || this == Visi.PRIVPUB || this == Visi.MODPUB;
   }
 
+
+  Visi eraseTypeVisibility()
+  {
+    return switch (this)
+      {
+      case UNSPECIFIED, PRIV, MOD, PUB -> this;
+      case PRIVMOD, PRIVPUB            -> PRIV;
+      case MODPUB                      -> MOD;
+      default                          -> throw new Error("unhandled case in Visi.eraseTypeVisibility");
+      };
+  }
+
 }
 
 /* end of file */
