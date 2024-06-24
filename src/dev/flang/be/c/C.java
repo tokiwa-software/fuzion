@@ -1007,7 +1007,8 @@ public class C extends ANY
         _fuir.isIntrinsicUsed("fuzion.java.i64_to_java_object") ||
         _fuir.isIntrinsicUsed("fuzion.java.u16_to_java_object") ||
         _fuir.isIntrinsicUsed("fuzion.java.java_string_to_string") ||
-        _fuir.isIntrinsicUsed("fuzion.java.string_to_java_object0"));
+        _fuir.isIntrinsicUsed("fuzion.java.string_to_java_object0") ||
+        _fuir.isIntrinsicUsed("fuzion.java.fuzion.java.create_jvm"));
   }
 
 
@@ -1171,11 +1172,6 @@ public class C extends ANY
     cf.println("int main(int argc, char **argv) { ");
 
     cf.println("fzE_init();");
-
-    if (linkJVM())
-      {
-        cf.println("fzE_init_jvm();");
-      }
 
     cf.print(initializeEffectsEnvironment());
 

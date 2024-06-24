@@ -1888,6 +1888,7 @@ public class DFA extends ANY
           cl._dfa._readFields.add(jref);
           return cl._dfa.newConstString(null, cl);
         });
+    put("fuzion.java.create_jvm", cl -> Value.UNIT);
     put("fuzion.java.string_to_java_object0", cl ->
       {
         var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
