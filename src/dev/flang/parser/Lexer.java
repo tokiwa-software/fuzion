@@ -1790,8 +1790,16 @@ PLUSMINUS   : "+"
             yield new Literal();
           }
       }
-      default -> new Literal(m);
-      };
+      default ->
+      {
+        if (kind(p) == K_LETTER)
+        {
+          Errors.error(sourcePos(),
+                       "Broken numeric literal, expected anything but a letter following a numeric literal.",
+                       null);
+        }
+        yield new Literal(m);
+      }};
   }
 
 
