@@ -28,7 +28,7 @@
 = Fuzion Reference Manual [DRAFT]
 The Fuzion Team <info@tokiwa.software>
 include::../../version.txt[]
-:title-logo-image: image:../../assets/logo.png[top=5%,align=center,pdfwidth=1.5cm]
+:title-logo-image: image:../../assets/logo.svg[top=5%,align=center,pdfwidth=1.5cm]
 :doctype: book
 :description: Fuzion Language Reference Manual
 :sectanchors:
