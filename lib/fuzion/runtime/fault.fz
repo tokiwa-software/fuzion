@@ -41,7 +41,7 @@ is
 
   # create an instance of `fault` with the given error handler.
   #
-  public fixed type.new(h ((String,String))->void) => fuzion.runtime.fault h
+  public fixed redef type.new(h ((String,String))->void) => fuzion.runtime.fault h
 
 
 # fault with no argument returns fault.env, the currently installed

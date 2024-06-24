@@ -209,8 +209,8 @@ module:public array(
     pre
       debug: 0 ≤ i < to ≤ length
   is
-    head => array.this[i]
-    tail => (slice i+1 to).as_list
+    redef head => array.this[i]
+    redef tail => (slice i+1 to).as_list
 
 
   # map the array to a new array applying function f to all elements
@@ -275,8 +275,8 @@ module:public array(
       debug: 0 ≤ i
       debug: i < length
   is
-    head => (i, index[] i)
-    tail list (tuple i32 T) =>
+    redef head => (i, index[] i)
+    redef tail list (tuple i32 T) =>
       if i < length-1 then enumerate_cons i+1
       else                 nil
 

@@ -22,4 +22,5 @@
 # -----------------------------------------------------------------------
 
 reg_issue2740 =>
+  fuzion.java.create_jvm0 ""
   Java.java.nio.file.Path.__k__of "not a valid file" []

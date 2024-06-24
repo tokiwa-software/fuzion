@@ -43,7 +43,6 @@ scenario1 =>
 
   fs(F type : a F) =>
     _ := F.zero
-    unit
 
 scenario1
 
@@ -74,7 +73,6 @@ scenario2 is
   fs(F type : a F) =>
     _ := F.z
     _ := F.sum.e
-    unit
 
 run_scenario2 =>
   _ := scenario2.fs scenario2.b

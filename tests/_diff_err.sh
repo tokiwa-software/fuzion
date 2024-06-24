@@ -39,7 +39,7 @@ tmp2="$(mktemp)"
 "$STRIP_ERR" <"$1" >"$tmp1"
 "$STRIP_ERR" <"$2" >"$tmp2"
 
-diff "$tmp1" "$tmp2"; rc=$?
+diff --strip-trailing-cr "$tmp1" "$tmp2"; rc=$?
 
 rm "$tmp1" "$tmp2"
 exit $rc

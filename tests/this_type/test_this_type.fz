@@ -77,7 +77,7 @@ simple_test_for_this_type_value =>
       b4 rq := b1
       b5 rq := b2
 
-    print => yak "q"
+    redef print => yak "q"
 
   r : q is
     redef print => yak "r"
@@ -133,12 +133,12 @@ test_redef_using_fixed =>
 
     # redefine abstract feature with co-variant argument and result
     #
-    op_abstract(v b.this) b.this => abstract
+    redef op_abstract(v b.this) b.this => abstract
 
     # redefine abstract with concrete type, must be fixed since this is
     # not a legal redefinition in a sub-type
     #
-    fixed op(v b) b => if debug then b "debug" /* b.this */ else b "non-debug"
+    fixed redef op(v b) b => if debug then b "debug" /* b.this */ else b "non-debug"
 
     # An implemented feature that will be redefined only by b, not by c
     #
@@ -151,11 +151,11 @@ test_redef_using_fixed =>
 
     # redefine abstract feature with co-variant argument and result
     #
-    op_abstract(v c.this) c.this => abstract
+    redef op_abstract(v c.this) c.this => abstract
 
     # redefine abstract that was implemented as fixed by parent b:
     #
-    fixed op(v c) c => if debug then c.this else c
+    fixed redef op(v c) c => if debug then c.this else c
 
   b1 := b "1"
   b2 := b "2"
@@ -163,7 +163,7 @@ test_redef_using_fixed =>
 
   say "expecting 'a': {a.me1}"
   say "expecting 'a': {a.me2}"
-#  say "expecting 'b with 1': {b1.me1}"   # NYI: should return b.this, currently returns a.this
+  say "expecting 'b with 1': {b1.me1}"
   say "expecting 'b with 2': {b2.me2}"
 
   c1 := c

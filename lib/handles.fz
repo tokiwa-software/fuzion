@@ -167,7 +167,7 @@ is
     _ := handles T X v (ar.put x (f ar[x])) mode
 
 
-  public infix >>= (f X -> handles T X) => bind X f
+  public redef infix >>= (f X -> handles T X) => bind X f
 
   public bind(B type, f X -> handles T B) handles T B =>
     handles T B (f v).v ar effect_mode.plain

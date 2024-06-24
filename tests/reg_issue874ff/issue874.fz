@@ -183,7 +183,7 @@ test_cov2 is
     redef as_string => "{f}"
 
   i(is_zero bool) : n is
-    fixed p(other i) => other
+    fixed redef p(other i) => other
 
 s := (test_cov2.i false).as_string
 say s
@@ -202,7 +202,7 @@ test_cov2a0 is
       y := x.p n.this
 
   i(is_zero bool) : n is
-    fixed p(other i) => other
+    fixed redef p(other i) => other
 
 _ := (test_cov2a0.i false).f
 
@@ -397,5 +397,5 @@ test_generic_this_type is
   ha.call_f
   hb.call_f
 
-  # a.f b      // NYI: b is currently incompatible to g.this
-  # ha.f hb    // NYI: hb is currently incompatible to h.this
+  a.f b
+  ha.f hb

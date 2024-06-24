@@ -127,11 +127,11 @@ is
   #
   # result is true iff the codepoints have the same value
   #
-  fixed type.equality(a, b codepoint) => a.val = b.val
+  fixed redef type.equality(a, b codepoint) => a.val = b.val
 
 
   # compare two codepoints
   #
   # This defines a total order over strings that is unrelated to alphabetic order.
   #
-  fixed type.lteq(a, b codepoint) => a.val <= b.val
+  fixed redef type.lteq(a, b codepoint) => a.val <= b.val

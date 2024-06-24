@@ -103,7 +103,7 @@ is
 
   # does this set contain the given value?
   #
-  public contains (e K) bool => has e
+  public redef contains (e K) bool => has e
 
 /*
 has     -- NYI: 'has' keyword not supported yet, so the following require an instance to be called on
@@ -119,4 +119,4 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
   #
   # This feature creates a pre-initialized instance of ps_set.
   #
-  public fixed type.new(vs Sequence K) => (container.ps_set K).empty.add_all vs
+  public fixed redef type.new(vs Sequence K) => (container.ps_set K).empty.add_all vs

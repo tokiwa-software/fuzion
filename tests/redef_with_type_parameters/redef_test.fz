@@ -73,8 +73,6 @@ one error.
 
   */
 
-  /* NYI: #22: redefinition using types that use other type parameters does not work yet:
-
   # third case, redefining feature x.q whose type parameter has a
   # constraint depending on the same feature's type parameter.
   #
@@ -90,10 +88,6 @@ one error.
 
   case3
 
-  */
-
-
-  /* NYI: #22: redefinition using types that use type parameters does not work yet:
 
   # fourth case, redefining feature x.q whose type parameter is
   # used in the formal type of a value parameter
@@ -110,4 +104,4 @@ one error.
 
   case4
 
-  */
+

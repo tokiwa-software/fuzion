@@ -40,7 +40,7 @@ public read(ro Read_Handler) : simple_effect is
   # the default directory reading operation reading the next entry via fuzion.sys.fileio.read_dir
   #
   type.default_read_handler : io.dir.Read_Handler is
-    read(fd i64) outcome String =>
+    redef read(fd i64) outcome String =>
       if fuzion.sys.fileio.read_dir_has_next fd
         fuzion.sys.fileio.read_dir fd
       else

@@ -79,7 +79,7 @@ public m =>
   redef_test_0 : redef_test is
     module redef b unit => // should flag an error Redefinition must not have more restrictive visibility.
       unit
-    module e unit => // should flag an error Redefinition must not have more restrictive visibility.
+    module redef e unit => // should flag an error Redefinition must not have more restrictive visibility.
       unit
 
 
@@ -88,7 +88,6 @@ public m =>
   public outer is
     inner_abstract i32 => abstract // should flag an error Abstract features visibility must not be more restrictive than outer features visibility.
 
-  unit
 
 
   # checkLegalVisibility

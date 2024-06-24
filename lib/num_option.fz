@@ -154,7 +154,7 @@ is
 
   # return function
   #
-  public fixed type.return (a T) => num_option a
+  public fixed redef type.return (a T) => num_option a
 
 
 # num_option with 1 argument provides an short-hand to wrap a value into a

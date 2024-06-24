@@ -219,7 +219,6 @@ inheritance is
         if cnt < 10
           set cnt := cnt + 1
           _ := BB.q
-    unit
   tricky_Inheritance
 
   /* calling inherited feature y from arguments to parent class D(y), feature y is inherited from value feature A */

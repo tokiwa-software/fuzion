@@ -136,7 +136,7 @@ is
     handles2 T X v last_opt mode
 
 
-  public infix >>= (f X -> handles2 T X) => bind X f
+  public redef infix >>= (f X -> handles2 T X) => bind X f
 
   public bind(B type, f X -> handles2 T B) handles2 T B =>
     handles2 T B (f v).v last_opt effect_mode.plain
