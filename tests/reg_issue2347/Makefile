@@ -17,15 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# used to give error "Ambiguous targets found for call to 'c'"
-# due to to scoping not being implemented properly.
-reg_issue3128 is
-  f(a ()->i32) => a.call
-  for c in 0..9
-      x := f ()->c
-  do
-    say x
+override NAME = reg_issue2347
+include ../simple.mk

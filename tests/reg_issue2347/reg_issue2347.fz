@@ -21,11 +21,9 @@
 #
 # -----------------------------------------------------------------------
 
-# used to give error "Ambiguous targets found for call to 'c'"
+# used to give error "Ambiguous targets found for call to 'd'"
 # due to to scoping not being implemented properly.
-reg_issue3128 is
-  f(a ()->i32) => a.call
-  for c in 0..9
-      x := f ()->c
-  do
-    say x
+
+for s := [1] : nil, s.filter x->d.bla
+    d in [1]
+do

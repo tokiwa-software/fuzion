@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue764.fz:31:7: error 1: Could not find called feature
+--CURDIR--/reg_issue764.fz:35:7: error 1: Could not find called feature
       res
 ------^^^
 Feature not found: 'res' (no arguments)
@@ -7,7 +7,7 @@ Target feature: 'reg_issue764.add_ints.loop'
 In call: 'res'
 
 
---CURDIR--/reg_issue764.fz:38:7: error 2: Could not find called feature
+--CURDIR--/reg_issue764.fz:42:7: error 2: Could not find called feature
       res
 ------^^^
 Feature not found: 'res' (no arguments)

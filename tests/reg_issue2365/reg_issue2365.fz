@@ -21,6 +21,8 @@
 #
 # -----------------------------------------------------------------------
 
+# used to give error "Ambiguous targets found for call to 'j'"
+# due to to scoping not being implemented properly.
 reg_issue2365 is
 
   for _ := for j in 0.. else _ := j

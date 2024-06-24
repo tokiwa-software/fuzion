@@ -21,6 +21,8 @@
 #
 # -----------------------------------------------------------------------
 
+# check that field declared in if/else is not accesible outside of if/else
+#
 reg_issue90 is
 
   if false

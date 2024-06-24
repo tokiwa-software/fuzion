@@ -21,6 +21,8 @@
 #
 # -----------------------------------------------------------------------
 
+# used to give error "Ambiguous targets found for call to 'p'"
+# due to to scoping not being implemented properly.
 reg_issue1396 is
 
   target is

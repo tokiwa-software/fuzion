@@ -1227,7 +1227,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
               {
                 if ((use == null || (hidden != featureVisible(use.pos()._sourceFile, v))) &&
                     (!v.isField() || !foundFieldInScope) &&
-                    (use == null || /* NYI: can we restrict this evaluation for outers? */ inScope(use, v)))
+                    (use == null || /* NYI: do we have to evaluate inScope for all possible outers? */ inScope(use, v)))
                   {
                     result.add(new FeatureAndOuter(v, curOuter, inner));
                     foundFieldInScope = foundFieldInScope || v.isField() && foundFieldInThisScope;

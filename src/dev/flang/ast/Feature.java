@@ -315,6 +315,23 @@ public class Feature extends AbstractFeature
    * declared in a block with
    * _newscope=true (e.g. if/else, loop)
    * or in a case-block
+   *
+   * example:
+   * ```
+   * f0 =>
+   *   if cc1 then
+   *      f1 =>
+   *        f2 =>
+   *        if cc2 then
+   *          f3 =>
+   *      {
+   *        f4 =>
+   *      }
+   * ```
+   * f1, f3 and f4 are _scoped in this example.
+   * f2 is not _scoped, i.e. does not need to be checked if in scope.
+   * This is because if f1 is accessible then f2 is also always accessible.
+   *
    */
   public boolean _scoped = false;
 

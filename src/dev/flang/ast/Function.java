@@ -215,6 +215,8 @@ public class Function extends AbstractLambda
         }
       },
       _feature);
+    // since `_expr` is used/visited by `SourceModule.inScope`
+    // ensure that it is not being modified.
     if (CHECKS) check
       (e == _expr);
   }

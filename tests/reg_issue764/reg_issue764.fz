@@ -21,6 +21,10 @@
 #
 # -----------------------------------------------------------------------
 
+# previously:
+# a possibly uninitialized loop variables `res`
+# could be accessed without causing an error
+#
 reg_issue764 is
 
   add_ints(elems Sequence i32) i32 =>
