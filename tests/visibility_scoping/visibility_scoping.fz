@@ -52,10 +52,10 @@ visibility_scoping is
 
   test3 =>
     _ := for ar := outcome unit
-    while false
+         while false
 
     ref : Function unit
-      call =>
+      redef call =>
         say ar  # should flag an error: feature not found
 
 
