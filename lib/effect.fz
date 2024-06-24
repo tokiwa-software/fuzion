@@ -149,7 +149,7 @@ is
     ref : Function unit
   is
     res option R := nil
-    call =>
+    redef call =>
       set res := f()
 
 

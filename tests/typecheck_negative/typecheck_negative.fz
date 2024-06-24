@@ -63,5 +63,3 @@ typecheck_negative is
     set x := w // 14. should flag an error, illegal assignment
     set y := x
   assign
-
-  unit

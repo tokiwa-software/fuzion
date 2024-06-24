@@ -413,7 +413,7 @@ public Sequence(public T type) ref is
   #
   public foldf (B type, f (B,T)->B, e B) B
   =>
-    as_list.foldf_list f e
+    as_list.foldf f e
 
 
   # map this Sequence to a list that contains the result of folding
@@ -617,11 +617,11 @@ public Sequence(public T type) ref is
 
     # associative operation
     #
-    infix ∙ (a, b Sequence T) Sequence T => a.concat_sequences b
+    redef infix ∙ (a, b Sequence T) Sequence T => a.concat_sequences b
 
     # identity element
     #
-    e Sequence T =>
+    redef e Sequence T =>
       (list T).empty
 
 

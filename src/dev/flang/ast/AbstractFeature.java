@@ -891,7 +891,16 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                     for (var atp : pc.actualTypeParameters())
                       {
                         tp.set(i+1, atp);
-                        ((Call)inh.get(iif))._generics.set(i+1, atp);
+                        var g = ((Call)inh.get(iif))._generics;
+                        if (g.isFrozen())
+                          {
+                            if (CHECKS) check
+                              (Errors.any());
+                          }
+                        else
+                          {
+                            g.set(i+1, atp);
+                          }
                         i++;
                       }
                   });

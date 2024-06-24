@@ -367,6 +367,11 @@ include::rule.adoc[]
 :RULE_ID: PARS_CONTR_POST_THEN
 include::rule.adoc[]
 
+==== Choice features
+
+:RULE_SRC: src/dev/flang/ast/Feature.java
+:RULE_ID: CHOICE_RESULT
+include::rule.adoc[]
 
 == Semantics
 

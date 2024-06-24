@@ -70,7 +70,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # result is true iff the strings have the same number of utf8 bytes and those
   # bytes are equal.
   #
-  public fixed type.equality(a, b String) =>
+  public fixed redef type.equality(a, b String) =>
     ((a.utf8.zip b.utf8 aa,bb->aa=bb) ∀ x->x)
       & a.utf8.count = b.utf8.count
 
@@ -79,7 +79,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   # This defines a total order over strings that is unrelated to alphabetic order.
   #
-  fixed type.lteq(a, b String) =>
+  fixed redef type.lteq(a, b String) =>
     a.utf8
       .zip b.utf8 (c,d)->(c,d)
       .filter (x ->
@@ -94,7 +94,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # create hash code from a string
   #
-  public type.hash_code(a String.this) u64 =>
+  public redef type.hash_code(a String.this) u64 =>
     sh_l := u64 13
     sh_r := u64 51
     for
@@ -288,8 +288,8 @@ public String ref : property.equatable, property.hashable, property.orderable is
         # return list of c and rest
         ret(c outcome codepoint, rest list u8) list (outcome codepoint) =>
           ref : Cons (outcome codepoint) (list (outcome codepoint))
-            head => c
-            tail => codepoints_and_errors rest
+            redef head => c
+            redef tail => codepoints_and_errors rest
 
         p := codepoint.type
         e(msg String) => error "Bad UTF8 encoding found: cannot decode $msg"
@@ -483,8 +483,8 @@ public String ref : property.equatable, property.hashable, property.orderable is
       h :=  String.from_bytes (l.take_while (c -> !c.is_ascii_white_space)).as_array
       t := (String.from_bytes (l.drop_while (c -> !c.is_ascii_white_space))).split
       ref : Cons String (list String)
-        head => h
-        tail => t
+        redef head => h
+        redef tail => t
 
 
   # split string at s
@@ -514,7 +514,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public split_n(s String, n u32) list String
     pre
       debug: !s.is_empty
-      debug: n > (u32 0)
+      debug: n > 0
     =>
       split0 s n false
 
@@ -527,7 +527,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public split_after_n(s String, n u32) list String
     pre
       !s.is_empty
-      n > (u32 0)
+      n > 0
     =>
       split0 s n true
 
@@ -545,7 +545,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
       debug: !s.is_empty
       debug: match limit
                nil => true
-               n u32 => n > (u32 0)
+               n u32 => n > 0
     =>
       (container.searchable_sequence utf8).split0 s.utf8 limit split_after
           .map_to_list x->(String.from_bytes x)
@@ -771,7 +771,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   public type.concat(a, b String) String =>
     ref : String
-      utf8 Sequence u8 => a.utf8 ++ b.utf8
+      redef utf8 Sequence u8 => a.utf8 ++ b.utf8
 
 
   # Takes a sequence of strings and concatenates its elements, while adding the separator
@@ -824,7 +824,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   public type.from_codepoints(codepoints Sequence codepoint) String =>
     ref : String
-      utf8 Sequence u8 =>
+      redef utf8 Sequence u8 =>
         codepoints
           .flat_map u8 x->x.utf8
           .as_array_backed

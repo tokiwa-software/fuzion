@@ -33,5 +33,15 @@ trying Type of 'i32'... *** failed: equals ***
 trying Type of 'i16'... *** failed: equals ***
 trying Type of 'i64'... 2251799813685248
 
+using fuzion API to catch post condition failure
+trying Type of 'i32'... *** failed: equals ***
+trying Type of 'i16'... *** failed: equals ***
+trying Type of 'i64'... 2251799813685248
+
+using fuzion API to catch fault
+trying Type of 'i32'... *** failed: postcondition equals ***
+trying Type of 'i16'... *** failed: postcondition equals ***
+trying Type of 'i64'... 2251799813685248
+
 using default post handler, will crash:
 trying Type of 'i32'... 

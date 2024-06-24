@@ -98,8 +98,8 @@ To solve this, increase the visibility of 'm.redef_test_0.b' to at least 'public
 
 
 --CURDIR--/main.fz:82:12: error 16: Redefinition must not have more restrictive visibility.
-    module e unit => // should flag an error Redefinition must not have more restrictive visibility.
------------^
+    module redef e unit => // should flag an error Redefinition must not have more restrictive visibility.
+-----------------^
 To solve this, increase the visibility of 'm.redef_test_0.e' to at least 'public'
 
 

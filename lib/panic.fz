@@ -49,7 +49,7 @@ is
 
     # panic with the given message and exit with return code 1
     #
-    do_panic(msg String) =>
+    redef do_panic(msg String) =>
       io.err.println "*** panic: $msg"
       exit 1
 

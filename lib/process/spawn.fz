@@ -45,7 +45,7 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
   # read bytes from standard out
   #
   read_provider(desc i64) : io.Read_Provider is
-    read(count i32) choice (array u8) io.end_of_file error =>
+    redef read(count i32) choice (array u8) io.end_of_file error =>
       arr := array u8 pipe_buffer_size i->0
       res := fuzion.sys.pipe.read desc arr.internal_array.data arr.count
       if res = -1
@@ -194,6 +194,7 @@ pre
 spawn0(process_and_args array String) outcome (tuple i64 i64 i64 i64)
 pre process_and_args.length > 0
 # NYI allow utf-8?
+# NYI what about quotes(") ?
     process_and_args ∀ (x -> x.as_codepoints ∀ (y -> y.is_ascii))
 =>
 
@@ -214,7 +215,7 @@ pre process_and_args.length > 0
   env_data := array fuzion.sys.Pointer env_var_strings.count+1 (i -> if i<env_var_strings.count then sys.c_string env_var_strings[i] else NULL)
 
   # args as string for windows to avoid malloc in backend
-  args_str := sys.c_string (String.type.join process_and_args " ")
+  args_str := sys.c_string (String.type.join (process_and_args.map (x -> "\"" + x + "\"")) " ")
 
   # environment variables for windows to avoid malloc in backend
   # NULL terminates each environment variable

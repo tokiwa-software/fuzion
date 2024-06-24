@@ -175,7 +175,6 @@ visibility_negative is
           use f7   // 71. NYI: UNDER DEVELOPMENT: flag an error: feature not found / not visible
           use f8   // 72. NYI: UNDER DEVELOPMENT: flag an error: feature not found / not visible
           use f9   // 73. should flag an error: feature not found / not visible
-          unit
         chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
         chck (f2 = 33 || f2 = 99) "can access f2"
         use f3   // 74. should flag an error: feature not found / not visible
@@ -216,7 +215,6 @@ visibility_negative is
           use f7   // 96. NYI: UNDER DEVELOPMENT: flag an error: feature not found / not visible
           use f8   // 97. NYI: UNDER DEVELOPMENT: flag an error: feature not found / not visible
           use f9   // 98. should flag an error: feature not found / not visible
-          unit
         chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
         chck (f2 = 33 || f2 = 99) "can access f2"
         use f3   // 99. should flag an error: feature not found / not visible
@@ -236,7 +234,6 @@ visibility_negative is
         chck (f7 = 44 || f7 = 110) "can access f7"
         use f8   // 110. NYI: UNDER DEVELOPMENT: flag an error: feature not found / not visible
         use f9   // 111. should flag an error: feature not found / not visible
-        unit
       chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
       use f2   // 112. should flag an error: feature not found / not visible
       use f3   // 113. should flag an error: feature not found / not visible
@@ -286,7 +283,6 @@ visibility_negative is
       use f7   // 145. should flag an error: feature not found / not visible
       chck (f8 = 22 || f8 = 88 || f8 = 154) "can access f8"
       use f9   // 146. should flag an error: feature not found / not visible
-      unit
     a1.b1.c1
     a1.b1.c2
     a1.b2

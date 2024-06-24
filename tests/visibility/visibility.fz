@@ -141,7 +141,6 @@ visibility is
     a1.b1.c1
     a1.b1.c2
     a1.b2
-    unit
   visi2
 
 
@@ -207,7 +206,6 @@ visibility is
     a1.b1.c1
     a1.b1.c2
     a1.b2
-    unit
   visi3
 
   visi4 =>
@@ -228,7 +226,6 @@ visibility is
           chck (b.this.x = "Inner!") "b.this.x"
           chck (c.this.x = "Inner Inner!") "c.this.x"
     a.b.c
-    unit
   visi4
 
   visi5 =>
@@ -254,7 +251,6 @@ visibility is
           chck (b.this.x = "Inner!") "b.this.x"
           chck (c.this.x = "Inner Inner!") "c.this.x"
     a.b.c
-    unit
   visi5
 
   visi6 =>

@@ -358,17 +358,20 @@ public class Call extends ANY implements Comparable<Call>, Context
 
   /**
    * Show the context that caused the inclusion of this call into the analysis.
+   *
+   * @param sb the context information will be appended to this StringBuilder.
+   *
+   * @return a string providing the indentation level for the caller in case of
+   * nested contexts.  "  " is to be added to the result on each recursive call.
    */
-  public String showWhy()
+  public String showWhy(StringBuilder sb)
   {
-    var indent = _context.showWhy();
-    say(indent + "  |");
-    say(indent + "  +- performs call " + this);
+    var indent = _context.showWhy(sb);
     var pos = callSitePos();
-    if (pos != null)
-      {
-        say(pos.pos().show());
-      }
+    sb.append(indent).append("  |\n")
+      .append(indent).append("  +- performs call ").append(this).append("\n")
+      .append(pos != null ? pos.pos().show() + "\n"
+                          : "");
     return indent + "  ";
   }
 

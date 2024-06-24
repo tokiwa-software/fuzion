@@ -183,8 +183,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
       c Cons =>
         ref : Cons B (list B)
         // Cons B (list B) with    # NYI: better syntax for anonymous feature
-          head => f c.head
-          tail => c.tail.map_to_list f
+          redef head => f c.head
+          redef tail => c.tail.map_to_list f
 
 
   # map the list to a new list applying function f to all elements
@@ -202,8 +202,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
           c2 Cons =>
             ref : Cons B (list B)
             // Cons B (list B) with    # NYI: better syntax for anonymous feature
-              head => c2.head
-              tail => c2.tail ++ c.tail.flat_map_to_list B f
+              redef head => c2.head
+              redef tail => c2.tail ++ c.tail.flat_map_to_list B f
 
 
   # fold the elements of this list using the given monoid.
@@ -234,10 +234,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   # e.g., to find the product of a list of i32, use `s.foldf (*) 1`
   #
-  # NYI: #2319: rename as `foldf` as soon as redefinition of feature with
-  # type parameters works
-  #
-  public foldf_list (B type, f (B,A)->B, e B) B
+  public redef foldf (B type, f (B,A)->B, e B) B
   =>  (list.this ? nil    => e
                  | c Cons => c.tail.foldf f (f e c.head))
 
@@ -438,8 +435,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
       nil    => nil
       c Cons =>
         cycle_cons (h Cons A (list A)) : Cons A (list A) is
-          head => h.head
-          tail list A =>
+          redef head => h.head
+          redef tail list A =>
             cycle_cons (h.tail ? nil    => c
                                | d Cons => d)
         cycle_cons c
@@ -450,9 +447,9 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   public redef tails list (list A) =>
     ref : Cons (list A) (list (list A))
-      head => list.this
-      tail => (list.this ? nil    => nil
-                         | c Cons => c.tail.tails)
+      redef head => list.this
+      redef tail => (list.this ? nil    => nil
+                               | c Cons => c.tail.tails)
 
 
   # create a new list from the result of applying 'f' to the
@@ -461,8 +458,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   public zip0(U, V type, b list U, f (A,U)->V) list V =>
     list.this ? c1 Cons => (b ? c2 Cons =>
                                   zip_cons : Cons V (list V) is
-                                    head => f c1.head c2.head
-                                    tail => c1.tail.zip0 U V c2.tail f
+                                    redef head => f c1.head c2.head
+                                    redef tail => c1.tail.zip0 U V c2.tail f
                                   zip_cons
                               | nil    => nil)
               | nil    => nil
@@ -509,11 +506,11 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
     # associative operation
     #
-    infix ∙ (a, b list A) list A => a.concat b
+    redef infix ∙ (a, b list A) list A => a.concat b
 
     # identity element
     #
-    e list A =>
+    redef e list A =>
       nil
 
 
@@ -521,8 +518,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 #
 public list(T type, h T, t Lazy (list T)) list T =>
   ref : Cons T (list T)
-    head => h
-    tail => t
+    redef head => h
+    redef tail => t
 
 
 # infix operator to create a list from head h and lazy tail t.

@@ -33,39 +33,39 @@ public i64(public val i64) : num.wrap_around, has_interval is
   redef wrapped_on_neg => is_min
 
   # would addition + other cause an overflow or underflow?
-  public fixed overflow_on_add (other i64) => val > i64 0 && i64.max -° val < other
-  public fixed underflow_on_add(other i64) => val < i64 0 && i64.min -° val > other
+  public fixed redef overflow_on_add (other i64) => val > i64 0 && i64.max -° val < other
+  public fixed redef underflow_on_add(other i64) => val < i64 0 && i64.min -° val > other
 
   # would subtraction - other cause an overflow or underflow?
-  public fixed overflow_on_sub (other i64) => val > i64 0 && val -° i64.max > other
-  public fixed underflow_on_sub(other i64) => val < i64 0 && val -° i64.min < other
+  public fixed redef overflow_on_sub (other i64) => val > i64 0 && val -° i64.max > other
+  public fixed redef underflow_on_sub(other i64) => val < i64 0 && val -° i64.min < other
 
   # would multiplication * other cause an overflow or underflow?
-  public fixed overflow_on_mul (other i64) => if sign *° other.sign ≤ 0 false else (val *° other / other) != val
-  public fixed underflow_on_mul(other i64) => if sign *° other.sign ≥ 0 false else (val *° other / other) != val
+  public fixed redef overflow_on_mul (other i64) => if sign *° other.sign ≤ 0 false else (val *° other / other) != val
+  public fixed redef underflow_on_mul(other i64) => if sign *° other.sign ≥ 0 false else (val *° other / other) != val
 
   # neg, add, sub, mul with wrap-around semantics
-  public fixed prefix -° i64 => intrinsic
-  public fixed infix +° (other i64) i64 => intrinsic
-  public fixed infix -° (other i64) i64 => intrinsic
-  public fixed infix *° (other i64) i64 => intrinsic
+  public fixed redef prefix -° i64 => intrinsic
+  public fixed redef infix +° (other i64) i64 => intrinsic
+  public fixed redef infix -° (other i64) i64 => intrinsic
+  public fixed redef infix *° (other i64) i64 => intrinsic
 
   # division and remainder with check for div-by-zero
-  public fixed infix / (other i64) => div other
-  public fixed infix % (other i64) => mod other
+  public fixed redef infix / (other i64) => div other
+  public fixed redef infix % (other i64) => mod other
 
   # division and remainder with crash in case of div-by-zero
   div (other i64) i64 => intrinsic
   mod (other i64) i64 => intrinsic
 
   # bitwise and, or and xor operations
-  public fixed infix &  (other i64) i64 => intrinsic
-  public fixed infix |  (other i64) i64 => intrinsic
-  public fixed infix ^  (other i64) i64 => intrinsic
+  public fixed redef infix &  (other i64) i64 => intrinsic
+  public fixed redef infix |  (other i64) i64 => intrinsic
+  public fixed redef infix ^  (other i64) i64 => intrinsic
 
   # shift operations (signed)
-  public fixed infix >> (other i64) i64 => intrinsic
-  public fixed infix << (other i64) i64 => intrinsic
+  public fixed redef infix >> (other i64) i64 => intrinsic
+  public fixed redef infix << (other i64) i64 => intrinsic
 
   # this i64 as an i8
   public as_i8 i8
@@ -99,7 +99,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
 
 
   # this i64 as an u8
-  public as_u8 u8
+  public redef as_u8 u8
 #    post
 #      analysis: result.as_u64 = val
     =>
@@ -109,8 +109,8 @@ public i64(public val i64) : num.wrap_around, has_interval is
   # this i64 as an u16
   public as_u16 u16
      pre
-      val ≥ (i64 0)
-#      val ≤ u16.max.as_i64
+      val ≥ 0
+      val ≤ u16.max.as_i64
 #    post
 #      analysis: result.as_u64 = val
     =>
@@ -119,6 +119,9 @@ public i64(public val i64) : num.wrap_around, has_interval is
 
   # this i64 as an u32
   public as_u32 u32
+    pre
+      val ≥ (i64 0)
+      val ≤ u32.max.as_i64
 #    post then
 #      analysis:  result.as_i64 = val
     =>
@@ -128,7 +131,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
   # this i64 as an u64
   public as_u64 u64
     pre
-      val ≥ (i64 0)
+      val ≥ 0
 #    post
 #      analysis:  result.as_i64 = val
     =>
@@ -138,7 +141,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
   # this i64 as an u128
   public as_u128 u128
     pre
-      val ≥ (i64 0)
+      val ≥ 0
     post
       analysis:  result.as_i64 = val
     =>
@@ -158,7 +161,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
 
 
   # casting bit representation to unsigned
-  public low8bits   u8  => cast_to_u64.low8bits
+  public redef low8bits   u8  => cast_to_u64.low8bits
   public low16bits  u16 => cast_to_u64.low16bits
   public low32bits  u32 => cast_to_u64.low32bits
   public cast_to_u64 u64 => intrinsic
@@ -169,7 +172,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
 
 
   # create hash code from this number
-  public type.hash_code(a i64.this) u64 =>
+  public redef type.hash_code(a i64.this) u64 =>
     hash a.cast_to_u64
 
 
@@ -189,7 +192,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  public ones_count i32 =>
+  public redef ones_count i32 =>
     val.cast_to_u64.ones_count
 
 
@@ -200,22 +203,22 @@ public i64(public val i64) : num.wrap_around, has_interval is
 
   # identity element for 'infix +'
   #
-  fixed type.zero i64 => 0
+  fixed redef type.zero i64 => 0
 
 
   # identity element for 'infix *'
   #
-  fixed type.one  i64 => 1
+  fixed redef type.one  i64 => 1
 
 
   # equality
   #
-  fixed type.equality(a, b i64) bool => intrinsic
+  fixed redef type.equality(a, b i64) bool => intrinsic
 
 
   # total order
   #
-  fixed type.lteq(a, b i64) bool => intrinsic
+  fixed redef type.lteq(a, b i64) bool => intrinsic
 
 
   # returns the number in whose bit representation all bits are ones
@@ -224,9 +227,9 @@ public i64(public val i64) : num.wrap_around, has_interval is
 
   # minimum
   #
-  public fixed type.min => i64 -0x_8000_0000_0000_0000
+  public fixed redef type.min => i64 -0x_8000_0000_0000_0000
 
 
   # maximum
   #
-  public fixed type.max => i64 0x_7fff_ffff_ffff_ffff
+  public fixed redef type.max => i64 0x_7fff_ffff_ffff_ffff

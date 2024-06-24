@@ -1572,6 +1572,11 @@ public class Feature extends AbstractFeature
           { // choice type must not have a result type
             if (!(Errors.any() && _returnType == RefType.INSTANCE))  // this was covered by AstErrors.choiceMustNotBeRef
               {
+                /*
+    // tag::fuzion_rule_CHOICE_RESULT[]
+A ((Choice)) declaration must not contain a result type.
+    // end::fuzion_rule_CHOICE_RESULT[]
+                */
                 AstErrors.choiceMustNotHaveResultType(_pos, _returnType);
               }
           }
@@ -1611,8 +1616,6 @@ public class Feature extends AbstractFeature
               }
           }
       }
-
-    selfType().checkChoice(_pos);
 
     checkNoClosureAccesses(res, _pos);
     for (var p : _inherits)
@@ -1707,11 +1710,6 @@ public class Feature extends AbstractFeature
           {
             AstErrors.failedToInferResultType(this);
             _resultType = Types.t_ERROR;
-          }
-
-        if (!isTypeParameter())
-          {
-            _resultType.checkChoice(_posOfReturnType);
           }
 
         if (_resultType.isThisType() && _resultType.feature() == this)
@@ -1837,6 +1835,8 @@ public class Feature extends AbstractFeature
     if ((_state == State.CHECKING_TYPES1) ||
         (_state == State.CHECKING_TYPES2)    )
       {
+        _selfType   = selfType().checkChoice(_pos);
+        _resultType = _resultType.checkChoice(_posOfReturnType);
         visit(new FeatureVisitor() {
 
             /* if an error is reported in a call it might no longer make sense to check the actuals: */
@@ -1877,7 +1877,13 @@ public class Feature extends AbstractFeature
     Feature result = _resultField;
 
     if (POSTCONDITIONS) ensure
-      (Errors.any() || hasResultField() == (result != null));
+      (Errors.any() ||
+       hasResultField() == (result != null) ||
+
+       // the following will later be checked by checkChoiceAndAddInternalFields() and
+       // reported as an error (fuzion rule CHOICE_RESULT):
+       isChoice() && (result != null)
+       );
     return result;
   }
 

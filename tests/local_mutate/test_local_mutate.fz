@@ -84,7 +84,7 @@ test_local_mutate is
       # handler for negative tests that cause panic:
       #
       my_panic : Panic_Handler is
-        do_panic(msg String) =>
+        redef do_panic(msg String) =>
           say "*** got '$msg' ***"
 
       neg_test3 =>
@@ -214,9 +214,9 @@ test_local_mutate is
           say "$i: {e.data}"
 
         _ := for cur := r, cur.next
-        while cur.n.open do
-          cur.n.close
-          cur.p.close
+             while cur.n.open do
+               cur.n.close
+               cur.p.close
         r
 
       r := m.go ()->(ring3 from.as_list)
@@ -266,7 +266,7 @@ test_local_mutate is
              T type,
 
              # the data stored in this cell.
-             data T) ref : Ring T is
+             redef data T) ref : Ring T is
 
 
       # mutable references to next and previous. Initializes to refer to
@@ -278,8 +278,8 @@ test_local_mutate is
 
       # short-hand features to get the mutable references from `n` and `p`
       #
-      next => n.get
-      prev => p.get
+      redef next => n.get
+      redef prev => p.get
 
 
       # add a cell containing `data` to this ring.

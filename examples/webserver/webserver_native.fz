@@ -24,7 +24,7 @@
 # webserver is a minimalistic webserver example using the networking
 # facilities provided by Fuzion itself.
 #
-# To start this webserver in the interpreter, use:
+# To start this webserver, use:
 #
 #   fz webserver_native.fz
 #

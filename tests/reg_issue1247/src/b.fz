@@ -6,4 +6,4 @@ module b : a is
     else
       "positive"
 
-  fixed type.identity b => b
+  fixed redef type.identity b => b

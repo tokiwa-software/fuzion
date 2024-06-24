@@ -1,0 +1,10 @@
+
+--CURDIR--/reg_issue2371.fz:30:3: error 1: Inconsistent indentation
+  say "hey!"
+--^
+Indentation reference point is --CURDIR--/reg_issue2371.fz:24:1:
+_ := for i := 0, i+1
+^
+While parsing: exprs, parse stack: exprs, block, unit
+
+one error.

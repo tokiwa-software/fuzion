@@ -38,7 +38,7 @@ is
 
   # number of entries in this map
   #
-  size => ks.length
+  redef size => ks.length
 
 
   # size of allocated contents array, allows for some empty slots
@@ -96,7 +96,7 @@ is
 
   # get the value k is mapped to
   #
-  public index [] (k HK) option V =>
+  public redef index [] (k HK) option V =>
 
     retrieve (at i32) option V =>
       match contents[at]
@@ -113,7 +113,7 @@ is
 
   # get a list of all key/value pairs in this map
   #
-  public items Sequence (tuple HK V) =>
+  public redef items Sequence (tuple HK V) =>
     contents
       .filter      (o -> o??)
       .map (o -> match o
@@ -132,4 +132,4 @@ is
 
   # empty -- convenience routine to create an empty instance of hash_map
   #
-  public fixed type.empty => container.hash_map HK V [] []
+  public fixed redef type.empty => container.hash_map HK V [] []

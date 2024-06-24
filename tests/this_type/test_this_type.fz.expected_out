@@ -17,6 +17,7 @@ r.x.b3.print: (expecting rr) rr
 instance of Type of 'test_redef_using_fixed#0.b' with debug
 expecting 'a': instance of 'a'
 expecting 'a': instance of 'a'
+expecting 'b with 1': instance of Type of 'test_redef_using_fixed#0.b' with 1
 expecting 'b with 2': instance of Type of 'test_redef_using_fixed#0.b' with 2
 instance of Type of 'test_redef_using_fixed#0.c'
 expecting 'a.op_implemented: a.op_implemented

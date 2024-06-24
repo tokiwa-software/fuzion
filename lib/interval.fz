@@ -99,7 +99,7 @@ is
 
   # does this interval contain the given value?
   #
-  public contains(e T) =>
+  public redef contains(e T) =>
     if      step.sign > 0 then from <= e <= through.or_else e && (e %  step = from %  step)
     else if step.sign < 0 then from >= e >= through.or_else e && (e % -step = from % -step)
     else                       from =  e
@@ -119,7 +119,7 @@ is
   # "(Errors.any() || !thiz.dependsOnGenerics(),
   #   outerClazz != null || thiz.feature().outer() == null, Errors.any()
   #     || thiz == Types.t_ERROR || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.feature().outer()));"
-  public fixed type.new (s Sequence T) interval.this => panic "not applicable"
+  public fixed redef type.new (s Sequence T) interval.this => panic "not applicable"
 
 
 # has_interval -- feature for integers that can define an interval

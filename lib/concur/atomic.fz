@@ -142,4 +142,4 @@ is
 
   # unwrap this atomic value
   #
-  public unwrap ! atomic_access => read
+  public redef unwrap ! atomic_access => read

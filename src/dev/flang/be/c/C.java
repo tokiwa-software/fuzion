@@ -358,9 +358,13 @@ public class C extends ANY
       var elCount = bb.getInt();
 
       var sb = new StringBuilder();
-      sb.append("." + data.code());
-      sb.append(" = ");
-      sb.append(arrayInit(d, elementType).code() + ",");
+      // empty initializer is only allowed since C23, e.g. reg_issue2478 fails without this
+      if (!_fuir.clazzIsUnitType(elementType))
+        {
+          sb.append("." + data.code());
+          sb.append(" = ");
+          sb.append(arrayInit(d, elementType).code() + ",");
+        }
       sb.append("." + length.code());
       sb.append(" = ");
       sb.append(CExpr.int32const(elCount).code());
@@ -1003,7 +1007,8 @@ public class C extends ANY
         _fuir.isIntrinsicUsed("fuzion.java.i64_to_java_object") ||
         _fuir.isIntrinsicUsed("fuzion.java.u16_to_java_object") ||
         _fuir.isIntrinsicUsed("fuzion.java.java_string_to_string") ||
-        _fuir.isIntrinsicUsed("fuzion.java.string_to_java_object0"));
+        _fuir.isIntrinsicUsed("fuzion.java.string_to_java_object0") ||
+        _fuir.isIntrinsicUsed("fuzion.java.fuzion.java.create_jvm"));
   }
 
 
@@ -1167,11 +1172,6 @@ public class C extends ANY
     cf.println("int main(int argc, char **argv) { ");
 
     cf.println("fzE_init();");
-
-    if (linkJVM())
-      {
-        cf.println("fzE_init_jvm();");
-      }
 
     cf.print(initializeEffectsEnvironment());
 
@@ -1903,7 +1903,11 @@ public class C extends ANY
       }
     var allocCurrent = switch (_fuir.lifeTime(cl, pre))
       {
-      case Call      -> CStmnt.seq(CStmnt.lineComment("cur does not escape, alloc on stack"), CStmnt.decl(_names.struct(cl), CNames.CURRENT, CExpr.compoundLiteral(_names.struct(cl), "")));
+      case Call      -> CStmnt.seq(
+          CStmnt.lineComment("cur does not escape, alloc on stack"),
+          CStmnt.decl(_names.struct(cl), CNames.CURRENT),
+          // this fixes "variable 'fzCur' is uninitialized when used here" in e.g. reg_issue1188
+          CExpr.call("memset", new List<>(CNames.CURRENT.adrOf(), CExpr.int32const(0), CNames.CURRENT.sizeOfExpr())));
       case Unknown   -> CStmnt.seq(CStmnt.lineComment("cur may escape, so use malloc"      ), declareAllocAndInitClazzId(cl, CNames.CURRENT));
       case Undefined -> CExpr.dummy("undefined life time");
       };
