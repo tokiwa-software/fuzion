@@ -705,7 +705,14 @@ name        : IDENT                            // all parts of name must be in s
                 }
               else if (!ignoreError)
                 {
-                  syntaxError(pos, "'[ ]' or identifier after 'set'", "name");
+                  if (ENABLE_SET_KEYWORD)
+                    {
+                      syntaxError(pos, "'[ ]' or identifier after 'set'", "name");
+                    }
+                  else
+                    {
+                      syntaxError(pos, "'[ ]' after 'set'", "name");
+                    }
                 }
               break;
             }

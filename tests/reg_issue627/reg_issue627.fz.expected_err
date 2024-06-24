@@ -1,0 +1,19 @@
+
+--CURDIR--/reg_issue627.fz:25:3: error 1: Syntax error: expected '[ ]' after 'set', found left parenthesis '('
+  set(a string) unit is
+--^
+While parsing: name, parse stack: name (2 times), call (2 times), callOrFeatOrThis, term, opTail, opExpr, operatorExpr, expr, exprs, block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, unit
+
+
+--CURDIR--/reg_issue627.fz:25:17: error 2: Syntax error: expected semicolon ';', found identifier 'unit'
+  set(a string) unit is
+----------------^
+While parsing: semicolon or flat line break, parse stack: semiOrFlatLF, exprs, block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, unit
+
+
+<built-in>: error 3: Could not find called feature
+Feature not found: '**error**' (one argument)
+Target feature: 'reg_issue627'
+In call: 'set(a string)'
+
+3 errors.
