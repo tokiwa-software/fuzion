@@ -57,6 +57,12 @@ public class Interpreter extends FUIRContext
         {
           return super.matchCaseTags(s, cix);
         };
+        // NYI: BUG: fuir should be thread safe #2760
+        @Override
+        public synchronized int[] accessedClazzes(int s)
+        {
+          return super.accessedClazzes(s);
+        }
       };
     FUIRContext.set_fuir(fuir);
     var processor = new Executor(_fuir, _options_);
