@@ -651,6 +651,8 @@ public class Intrinsics extends ANY
           try
             {
               var i = Files.walk(Paths.get(utf8ByteArrayDataToString(args.get(1))), 1).iterator();
+              // skip path itself
+              i.next();
               interface CloseableIterator<T> extends Iterator<T>, AutoCloseable {};
               open_results[0] = _openStreams_.add(new CloseableIterator<Path>() {
                 public void close() throws IOException
