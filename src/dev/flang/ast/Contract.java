@@ -172,6 +172,10 @@ public class Contract extends ANY
   {
     var c = from.contract();
 
+    if (!to.isUniverse())
+      {
+        _inheritedPre.add(from);
+      }
     if (hasPostConditionsFeature(from))
       {
         _inheritedPost.add(from);
@@ -579,16 +583,18 @@ public class Contract extends ANY
                                 .filter(inh -> !hasPreConditionsFeature(inh))
                                 .findFirst();
     var name = preBool ? preBoolConditionsFeatureName(f) : preConditionsFeatureName(f);
-    var args = new List<AbstractFeature>(preBool ? fc._declared_preconditions_as_feature_args
-                                                 : fc._declared_preconditions_as_feature_args1);
+    var args = preBool ? fc._declared_preconditions_as_feature_args
+                       : fc._declared_preconditions_as_feature_args1;
     var pos = fc._hasPre != null ? fc._hasPre : f.pos();
     var l = new List<Expr>();
     Expr cc = null;
     if (inheritingTrue.isPresent() && !dc.isEmpty())
       {
+        /*
         var inh = inheritingTrue.get();
         System.err.println("WARNING: For "+f.qualifiedName()+" there are declared preconditions "+dc.getFirst().cond.pos().show()+"\n"+
                            "but these are ignored since we inherit precondition `true` from "+inh+" at "+inh.pos().show());
+        */
       }
     else
       {
@@ -599,7 +605,7 @@ public class Contract extends ANY
               {
                 cc = cc == null
                   ? c.cond
-                  : new ParsedCall(cc, new ParsedName(pos, "infix ||"), new List<>(c.cond));
+                  : new ParsedCall(cc, new ParsedName(pos, "infix &&"), new List<>(c.cond));
               }
             else
               {
@@ -635,10 +641,8 @@ public class Contract extends ANY
                          args,
                          new List<>(), // inheritance
                          Contract.EMPTY_CONTRACT,
-                         new Impl(pos, code, Impl.Kind.RoutineDef));
+                         new Impl(pos, code, Impl.Kind.Routine));
     res._module.findDeclarations(pF, f.outer());
-    res.resolveDeclarations(pF);
-    res.resolveTypes(pF);
     if (preBool)
       {
         f._preBoolFeature = pF;
@@ -661,7 +665,7 @@ public class Contract extends ANY
         //
         // if (pre_bool_inh1 || pre_bool_inh2 || ... || pre_bool_inh<n>) then
         // else  check declared
-        for (var i = 0; i < inhpres.size() && !hasPreConditionsFeature(inhpres.get(i)); i++)
+        for (var i = 0; i < inhpres.size() && hasPreConditionsFeature(inhpres.get(i)); i++)
           {
             var call = callPreBool(res, inhpres.get(i), pF);
             cc = cc == null
@@ -697,7 +701,6 @@ public class Contract extends ANY
       }
     else if (preBool)
       {
-        System.out.println("STRANGE: pre-bool is empty, i.e,, true for "+f.qualifiedName());
         new_code = new List<>(pc(pos, "true"));
       }
     else if (cc != null)
@@ -708,6 +711,8 @@ public class Contract extends ANY
                                      new Block(new_code)));
       }
     code._expressions = new_code;
+    res.resolveDeclarations(pF);
+    res.resolveTypes(pF);
   }
 
 
@@ -726,6 +731,7 @@ public class Contract extends ANY
     var fc = f.contract();
 
     // add precondition feature
+    if (fc._declared_preconditions_as_feature_args != null)
     if (fc.requiresPreConditionsFeature() && f._preFeature == null)
       {
 
@@ -1002,7 +1008,7 @@ all of their redefinition to `true`. +
           {
         var pos = fc._hasPre != null ? fc._hasPre : f.pos();
         var name2 = preConditionsAndCallFeatureName(f);
-        var args2 = new List<AbstractFeature>(fc._declared_preconditions_as_feature_args2);
+        var args2 = fc._declared_preconditions_as_feature_args2;
         var l2 = new List<Expr>();
         var code2 = new Block(l2);
         var pF2 = new Feature(pos,
@@ -1032,7 +1038,7 @@ all of their redefinition to `true`. +
     if (fc.requiresPostConditionsFeature() && f._postFeature == null)
       {
         var name = postConditionsFeatureName(f);
-        var args = new List<AbstractFeature>(fc._declared_postconditions_as_feature_args);
+        var args = fc._declared_postconditions_as_feature_args;
         var pos = fc._hasPost != null ? fc._hasPost : f.pos();
         var resultField = new Feature(pos,
                                       Visi.PRIV,

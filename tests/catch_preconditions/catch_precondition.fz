@@ -1,0 +1,1139 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test catch_precondition
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# simple test for catching failed pre conditions and also precondition inheritance
+#
+catch_precondition is
+
+
+  # test feature will cause precondition failure if called with values resulting in
+  # overflow
+  #
+  test(T type : integer) =>
+
+    # duplicate x
+    #
+    double(x T)
+      pre
+        x +! x
+    =>
+      x +^ x
+
+    yak "trying $T... "
+    for v := T.one, double v
+        i in 0..50
+    else
+      $v
+
+
+  # -------------------------------
+
+  say "install our own fault handler that prints message and tries again:"
+
+  v := (fuzion.runtime.pre_fault
+    .try ()->
+      (test i32)
+    .catch s->
+      (test i64))
+
+  say "done: $v"
+
+
+  # -------------------------------
+
+  # catching a simple precondition
+  test_precondition(x, y i32)
+  pre x > y
+  => x - y
+
+  fuzion.runtime.pre_fault
+    .try unit ()->
+
+      a := test_precondition 3 1
+      say "a is $a"
+
+      yak "*** This should fail: "
+      b := test_precondition 1 3
+      say "b is $b"
+      panic "**** did not fail as expected ****"
+
+    .catch s->
+      say "FAILED: $s"
+
+  c := test_precondition 5 4
+  say "c is $c"
+
+  if false
+    d := test_precondition 4 5
+    say "d is $d"
+
+
+  # -------------------------------
+
+  # precondition inheritance
+
+  p is
+    f(x i32)
+      pre x > 0
+    => x
+
+  q : p is
+    redef f(x i32)
+      pre else x = 0
+    => if x<0 0 else x
+
+  fuzion.runtime.pre_fault
+    .try unit ()->
+      say "p.f  3 {p.f  3}"
+      say "q.f  3 {q.f  3}"
+      say "q.f  0 {q.f  0}"
+
+      yak "*** This should fail: "
+      say "q.f -1 {q.f -1}"
+      panic "**** did not fail as expected ****"
+
+    .catch s->
+      say "FAILED: $s"
+
+  r := q.f 3
+
+
+  // we consider sven different preconditions:
+  //
+  //   1. none
+  //   2. x > 0
+  //   3. empty `pre`
+  //   4. true
+  //   5. false
+  //   6. x > 0; true
+  //   7. x > 0; false
+  //
+  // and then we define 7 parents p1..p7 that each define f1..f7 with these preconditions,
+  // but in rotating order:
+  //
+  p1 is
+    f1(x i32)
+    => x
+
+    f2(x i32)
+    pre
+      x > 0
+    => x
+
+    f3(x i32)
+    pre
+    => x
+
+    f4(x i32)
+    pre
+      true
+    => x
+
+    f5(x i32)
+    pre
+      false
+    => x
+
+    f6(x i32)
+    pre
+      x > 0
+      true
+    => x
+
+    f7(x i32)
+    pre
+      x > 0
+      false
+    => x
+
+  p2 is
+    f1(x i32)
+    pre
+      x > 0
+    => x
+
+    f2(x i32)
+    pre
+    => x
+
+    f3(x i32)
+    pre
+      true
+    => x
+
+    f4(x i32)
+    pre
+      false
+    => x
+
+    f5(x i32)
+    pre
+      x > 0
+      true
+    => x
+
+    f6(x i32)
+    pre
+      x > 0
+      false
+    => x
+
+    f7(x i32)
+    => x
+
+  p3 is
+    f1(x i32)
+    pre
+    => x
+
+    f2(x i32)
+    pre
+      true
+    => x
+
+    f3(x i32)
+    pre
+      false
+    => x
+
+    f4(x i32)
+    pre
+      x > 0
+      true
+    => x
+
+    f5(x i32)
+    pre
+      x > 0
+      false
+    => x
+
+    f6(x i32)
+    => x
+
+    f7(x i32)
+    pre
+      x > 0
+    => x
+
+  p4 is
+    f1(x i32)
+    pre
+      true
+    => x
+
+    f2(x i32)
+    pre
+      false
+    => x
+
+    f3(x i32)
+    pre
+      x > 0
+      true
+    => x
+
+    f4(x i32)
+    pre
+      x > 0
+      false
+    => x
+
+    f5(x i32)
+    => x
+
+    f6(x i32)
+    pre
+      x > 0
+    => x
+
+    f7(x i32)
+    pre
+    => x
+
+  p5 is
+    f1(x i32)
+    pre
+      false
+    => x
+
+    f2(x i32)
+    pre
+      x > 0
+      true
+    => x
+
+    f3(x i32)
+    pre
+      x > 0
+      false
+    => x
+
+    f4(x i32)
+    => x
+
+    f5(x i32)
+    pre
+      x > 0
+    => x
+
+    f6(x i32)
+    pre
+    => x
+
+    f7(x i32)
+    pre
+      true
+    => x
+
+  p6 is
+    f1(x i32)
+    pre
+      x > 0
+      true
+    => x
+
+    f2(x i32)
+    pre
+      x > 0
+      false
+    => x
+
+    f3(x i32)
+    => x
+
+    f4(x i32)
+    pre
+      x > 0
+    => x
+
+    f5(x i32)
+    pre
+    => x
+
+    f6(x i32)
+    pre
+      true
+    => x
+
+    f7(x i32)
+    pre
+      false
+    => x
+
+  p7 is
+    f1(x i32)
+    pre
+      x > 0
+      false
+    => x
+
+    f2(x i32)
+    => x
+
+    f3(x i32)
+    pre
+      x > 0
+    => x
+
+    f4(x i32)
+    pre
+    => x
+
+    f5(x i32)
+    pre
+      true
+    => x
+
+    f6(x i32)
+    pre
+      false
+    => x
+
+    f7(x i32)
+    pre
+      x > 0
+      true
+    => x
+
+  // now we inherit from all combinations
+  c11 : p1, p1 is
+    redef f1(x i32)
+      pre else false
+    => x
+    redef f2(x i32)
+      pre else false
+    => x
+    redef f3(x i32)
+      pre else false
+    => x
+    redef f4(x i32)
+      pre else false
+    => x
+    redef f5(x i32)
+      pre else false
+    => x
+    redef f6(x i32)
+      pre else false
+    => x
+    redef f7(x i32)
+      pre else false
+    => x
+
+  c12 : p1, p2 is
+    redef f1(x i32)
+      pre else false
+    => x
+    redef f2(x i32)
+      pre else false
+    => x
+    redef f3(x i32)
+      pre else false
+    => x
+    redef f4(x i32)
+      pre else false
+    => x
+    redef f5(x i32)
+      pre else false
+    => x
+    redef f6(x i32)
+      pre else false
+    => x
+    redef f7(x i32)
+      pre else false
+    => x
+
+  c13 : p1, p3 is
+    redef f1(x i32)
+      pre else false
+    => x
+    redef f2(x i32)
+      pre else false
+    => x
+    redef f3(x i32)
+      pre else false
+    => x
+    redef f4(x i32)
+      pre else false
+    => x
+    redef f5(x i32)
+      pre else false
+    => x
+    redef f6(x i32)
+      pre else false
+    => x
+    redef f7(x i32)
+      pre else false
+    => x
+
+  c14 : p1, p4 is
+    redef f1(x i32)
+      pre else false
+    => x
+    redef f2(x i32)
+      pre else false
+    => x
+    redef f3(x i32)
+      pre else false
+    => x
+    redef f4(x i32)
+      pre else false
+    => x
+    redef f5(x i32)
+      pre else false
+    => x
+    redef f6(x i32)
+      pre else false
+    => x
+    redef f7(x i32)
+      pre else false
+    => x
+
+  c15 : p1, p5 is
+    redef f1(x i32)
+      pre else false
+    => x
+    redef f2(x i32)
+      pre else false
+    => x
+    redef f3(x i32)
+      pre else false
+    => x
+    redef f4(x i32)
+      pre else false
+    => x
+    redef f5(x i32)
+      pre else false
+    => x
+    redef f6(x i32)
+      pre else false
+    => x
+    redef f7(x i32)
+      pre else false
+    => x
+
+  c16 : p1, p6 is
+    redef f1(x i32)
+      pre else false
+    => x
+    redef f2(x i32)
+      pre else false
+    => x
+    redef f3(x i32)
+      pre else false
+    => x
+    redef f4(x i32)
+      pre else false
+    => x
+    redef f5(x i32)
+      pre else false
+    => x
+    redef f6(x i32)
+      pre else false
+    => x
+    redef f7(x i32)
+      pre else false
+    => x
+
+  c17 : p1, p7 is
+    redef f1(x i32)
+      pre else false
+    => x
+    redef f2(x i32)
+      pre else false
+    => x
+    redef f3(x i32)
+      pre else false
+    => x
+    redef f4(x i32)
+      pre else false
+    => x
+    redef f5(x i32)
+      pre else false
+    => x
+    redef f6(x i32)
+      pre else false
+    => x
+    redef f7(x i32)
+      pre else false
+    => x
+
+  c21 : p1, p1 is
+    redef f1(x i32)
+    => x
+    redef f2(x i32)
+    => x
+    redef f3(x i32)
+    => x
+    redef f4(x i32)
+    => x
+    redef f5(x i32)
+    => x
+    redef f6(x i32)
+    => x
+    redef f7(x i32)
+    => x
+
+  c22 : p1, p2 is
+    redef f1(x i32)
+    => x
+    redef f2(x i32)
+    => x
+    redef f3(x i32)
+    => x
+    redef f4(x i32)
+    => x
+    redef f5(x i32)
+    => x
+    redef f6(x i32)
+    => x
+    redef f7(x i32)
+    => x
+
+  c23 : p1, p3 is
+    redef f1(x i32)
+    => x
+    redef f2(x i32)
+    => x
+    redef f3(x i32)
+    => x
+    redef f4(x i32)
+    => x
+    redef f5(x i32)
+    => x
+    redef f6(x i32)
+    => x
+    redef f7(x i32)
+    => x
+
+  c24 : p1, p4 is
+    redef f1(x i32)
+    => x
+    redef f2(x i32)
+    => x
+    redef f3(x i32)
+    => x
+    redef f4(x i32)
+    => x
+    redef f5(x i32)
+    => x
+    redef f6(x i32)
+    => x
+    redef f7(x i32)
+    => x
+
+  c25 : p1, p5 is
+    redef f1(x i32)
+    => x
+    redef f2(x i32)
+    => x
+    redef f3(x i32)
+    => x
+    redef f4(x i32)
+    => x
+    redef f5(x i32)
+    => x
+    redef f6(x i32)
+    => x
+    redef f7(x i32)
+    => x
+
+  c26 : p1, p6 is
+    redef f1(x i32)
+    => x
+    redef f2(x i32)
+    => x
+    redef f3(x i32)
+    => x
+    redef f4(x i32)
+    => x
+    redef f5(x i32)
+    => x
+    redef f6(x i32)
+    => x
+    redef f7(x i32)
+    => x
+
+  c27 : p1, p7 is
+    redef f1(x i32)
+    => x
+    redef f2(x i32)
+    => x
+    redef f3(x i32)
+    => x
+    redef f4(x i32)
+    => x
+    redef f5(x i32)
+    => x
+    redef f6(x i32)
+    => x
+    redef f7(x i32)
+    => x
+
+  c31 : p1, p1 is
+    redef f1(x i32)
+      pre else x > 0
+    => x
+    redef f2(x i32)
+      pre else x > 0
+    => x
+    redef f3(x i32)
+      pre else x > 0
+    => x
+    redef f4(x i32)
+      pre else x > 0
+    => x
+    redef f5(x i32)
+      pre else x > 0
+    => x
+    redef f6(x i32)
+      pre else x > 0
+    => x
+    redef f7(x i32)
+      pre else x > 0
+    => x
+
+  c32 : p1, p2 is
+    redef f1(x i32)
+      pre else x > 0
+    => x
+    redef f2(x i32)
+      pre else x > 0
+    => x
+    redef f3(x i32)
+      pre else x > 0
+    => x
+    redef f4(x i32)
+      pre else x > 0
+    => x
+    redef f5(x i32)
+      pre else x > 0
+    => x
+    redef f6(x i32)
+      pre else x > 0
+    => x
+    redef f7(x i32)
+      pre else x > 0
+    => x
+
+  c33 : p1, p3 is
+    redef f1(x i32)
+      pre else x > 0
+    => x
+    redef f2(x i32)
+      pre else x > 0
+    => x
+    redef f3(x i32)
+      pre else x > 0
+    => x
+    redef f4(x i32)
+      pre else x > 0
+    => x
+    redef f5(x i32)
+      pre else x > 0
+    => x
+    redef f6(x i32)
+      pre else x > 0
+    => x
+    redef f7(x i32)
+      pre else x > 0
+    => x
+
+  c34 : p1, p4 is
+    redef f1(x i32)
+      pre else x > 0
+    => x
+    redef f2(x i32)
+      pre else x > 0
+    => x
+    redef f3(x i32)
+      pre else x > 0
+    => x
+    redef f4(x i32)
+      pre else x > 0
+    => x
+    redef f5(x i32)
+      pre else x > 0
+    => x
+    redef f6(x i32)
+      pre else x > 0
+    => x
+    redef f7(x i32)
+      pre else x > 0
+    => x
+
+  c35 : p1, p5 is
+    redef f1(x i32)
+      pre else x > 0
+    => x
+    redef f2(x i32)
+      pre else x > 0
+    => x
+    redef f3(x i32)
+      pre else x > 0
+    => x
+    redef f4(x i32)
+      pre else x > 0
+    => x
+    redef f5(x i32)
+      pre else x > 0
+    => x
+    redef f6(x i32)
+      pre else x > 0
+    => x
+    redef f7(x i32)
+      pre else x > 0
+    => x
+
+  c36 : p1, p6 is
+    redef f1(x i32)
+      pre else x > 0
+    => x
+    redef f2(x i32)
+      pre else x > 0
+    => x
+    redef f3(x i32)
+      pre else x > 0
+    => x
+    redef f4(x i32)
+      pre else x > 0
+    => x
+    redef f5(x i32)
+      pre else x > 0
+    => x
+    redef f6(x i32)
+      pre else x > 0
+    => x
+    redef f7(x i32)
+      pre else x > 0
+    => x
+
+  c37 : p1, p7 is
+    redef f1(x i32)
+      pre else x > 0
+    => x
+    redef f2(x i32)
+      pre else x > 0
+    => x
+    redef f3(x i32)
+      pre else x > 0
+    => x
+    redef f4(x i32)
+      pre else x > 0
+    => x
+    redef f5(x i32)
+      pre else x > 0
+    => x
+    redef f6(x i32)
+      pre else x > 0
+    => x
+    redef f7(x i32)
+      pre else x > 0
+    => x
+
+
+
+  tst(f ()->i32) =>
+    fuzion.runtime.pre_fault
+      .try   ()->(say " OK {f.call}")
+      .catch s->(say " FAILED $s")
+
+                                                        #  inherted 1    inherited 2   pre else
+  yak "c11.f1 1: should be ok "; tst (()->(c11.f1 1))   #  none          none          false
+  yak "c11.f1 0: should be ok "; tst (()->(c11.f1 0))   #  none          none          false
+  yak "c11.f2 1: should be ok "; tst (()->(c11.f2 1))   #  x > 0         x > 0         false
+  yak "c11.f2 0: should fail  "; tst (()->(c11.f2 0))   #  x > 0         x > 0         false
+  yak "c11.f3 1: should be ok "; tst (()->(c11.f3 1))   #  pre           pre           false
+  yak "c11.f3 0: should be ok "; tst (()->(c11.f3 0))   #  pre           pre           false
+  yak "c11.f4 1: should be ok "; tst (()->(c11.f4 1))   #  pre true      pre true      false
+  yak "c11.f4 0: should be ok "; tst (()->(c11.f4 0))   #  pre true      pre true      false
+  yak "c11.f5 1: should fail  "; tst (()->(c11.f5 1))   #  pre false     pre false     false
+  yak "c11.f5 0: should fail  "; tst (()->(c11.f5 0))   #  pre false     pre false     false
+  yak "c11.f6 1: should be ok "; tst (()->(c11.f6 1))   #  x > 0; true   x > 0; true   false
+  yak "c11.f6 0: should fail  "; tst (()->(c11.f6 0))   #  x > 0; true   x > 0; true   false
+  yak "c11.f7 1: should fail  "; tst (()->(c11.f7 1))   #  x > 0; false  x > 0; false  false
+  yak "c11.f7 0: should fail  "; tst (()->(c11.f7 0))   #  x > 0; false  x > 0; false  false
+
+  yak "c12.f1 1: should be ok "; tst (()->(c12.f1 1))   #  none          x > 0         false
+  yak "c12.f1 0: should be ok "; tst (()->(c12.f1 0))   #  none          x > 0         false
+  yak "c12.f2 1: should be ok "; tst (()->(c12.f2 1))   #  x > 0         pre           false
+  yak "c12.f2 0: should be ok "; tst (()->(c12.f2 0))   #  x > 0         pre           false
+  yak "c12.f3 1: should be ok "; tst (()->(c12.f3 1))   #  pre           pre true      false
+  yak "c12.f3 0: should be ok "; tst (()->(c12.f3 0))   #  pre           pre true      false
+  yak "c12.f4 1: should be ok "; tst (()->(c12.f4 1))   #  pre true      pre false     false
+  yak "c12.f4 0: should be ok "; tst (()->(c12.f4 0))   #  pre true      pre false     false
+  yak "c12.f5 1: should be ok "; tst (()->(c12.f5 1))   #  pre false     x > 0; true   false
+  yak "c12.f5 0: should fail  "; tst (()->(c12.f5 0))   #  pre false     x > 0; true   false
+  yak "c12.f6 1: should be ok "; tst (()->(c12.f6 1))   #  x > 0; true   x > 0; false  false
+  yak "c12.f6 0: should fail  "; tst (()->(c12.f6 0))   #  x > 0; true   x > 0; false  false
+  yak "c12.f7 1: should be ok "; tst (()->(c12.f7 1))   #  x > 0; false  none          false
+  yak "c12.f7 0: should be ok "; tst (()->(c12.f7 0))   #  x > 0; false  none          false
+
+  yak "c13.f1 1: should be ok "; tst (()->(c13.f1 1))   #  none          pre           false
+  yak "c13.f1 0: should be ok "; tst (()->(c13.f1 0))   #  none          pre           false
+  yak "c13.f2 1: should be ok "; tst (()->(c13.f2 1))   #  x > 0         pre true      false
+  yak "c13.f2 0: should be ok "; tst (()->(c13.f2 0))   #  x > 0         pre true      false
+  yak "c13.f3 1: should be ok "; tst (()->(c13.f3 1))   #  pre           pre false     false
+  yak "c13.f3 0: should be ok "; tst (()->(c13.f3 0))   #  pre           pre false     false
+  yak "c13.f4 1: should be ok "; tst (()->(c13.f4 1))   #  pre true      x > 0; true   false
+  yak "c13.f4 0: should be ok "; tst (()->(c13.f4 0))   #  pre true      x > 0; true   false
+  yak "c13.f5 1: should fail  "; tst (()->(c13.f5 1))   #  pre false     x > 0; false  false
+  yak "c13.f5 0: should fail  "; tst (()->(c13.f5 0))   #  pre false     x > 0; false  false
+  yak "c13.f6 1: should be ok "; tst (()->(c13.f6 1))   #  x > 0; true   none          false
+  yak "c13.f6 0: should be ok "; tst (()->(c13.f6 0))   #  x > 0; true   none          false
+  yak "c13.f7 1: should be ok "; tst (()->(c13.f7 1))   #  x > 0; false  x > 0         false
+  yak "c13.f7 0: should fail  "; tst (()->(c13.f7 0))   #  x > 0; false  x > 0         false
+
+  yak "c14.f1 1: should be ok "; tst (()->(c14.f1 1))   #  none          pre true      false
+  yak "c14.f1 0: should be ok "; tst (()->(c14.f1 0))   #  none          pre true      false
+  yak "c14.f2 1: should be ok "; tst (()->(c14.f2 1))   #  x > 0         pre false     false
+  yak "c14.f2 0: should fail  "; tst (()->(c14.f2 0))   #  x > 0         pre false     false
+  yak "c14.f3 1: should be ok "; tst (()->(c14.f3 1))   #  pre           x > 0; true   false
+  yak "c14.f3 0: should be ok "; tst (()->(c14.f3 0))   #  pre           x > 0; true   false
+  yak "c14.f4 1: should be ok "; tst (()->(c14.f4 1))   #  pre true      x > 0; false  false
+  yak "c14.f4 0: should be ok "; tst (()->(c14.f4 0))   #  pre true      x > 0; false  false
+  yak "c14.f5 1: should be ok "; tst (()->(c14.f5 1))   #  pre false     none          false
+  yak "c14.f5 0: should be ok "; tst (()->(c14.f5 0))   #  pre false     none          false
+  yak "c14.f6 1: should be ok "; tst (()->(c14.f6 1))   #  x > 0; true   x > 0         false
+  yak "c14.f6 0: should fail  "; tst (()->(c14.f6 0))   #  x > 0; true   x > 0         false
+  yak "c14.f7 1: should be ok "; tst (()->(c14.f7 1))   #  x > 0; false  pre           false
+  yak "c14.f7 0: should be ok "; tst (()->(c14.f7 0))   #  x > 0; false  pre           false
+
+  yak "c15.f1 1: should be ok "; tst (()->(c15.f1 1))   #  none          pre false     false
+  yak "c15.f1 0: should be ok "; tst (()->(c15.f1 0))   #  none          pre false     false
+  yak "c15.f2 1: should be ok "; tst (()->(c15.f2 1))   #  x > 0         x > 0; true   false
+  yak "c15.f2 0: should fail  "; tst (()->(c15.f2 0))   #  x > 0         x > 0; true   false
+  yak "c15.f3 1: should be ok "; tst (()->(c15.f3 1))   #  pre           x > 0; false  false
+  yak "c15.f3 0: should be ok "; tst (()->(c15.f3 0))   #  pre           x > 0; false  false
+  yak "c15.f4 1: should be ok "; tst (()->(c15.f4 1))   #  pre true      none          false
+  yak "c15.f4 0: should be ok "; tst (()->(c15.f4 0))   #  pre true      none          false
+  yak "c15.f5 1: should be ok "; tst (()->(c15.f5 1))   #  pre false     x > 0         false
+  yak "c15.f5 0: should fail  "; tst (()->(c15.f5 0))   #  pre false     x > 0         false
+  yak "c15.f6 1: should be ok "; tst (()->(c15.f6 1))   #  x > 0; true   pre           false
+  yak "c15.f6 0: should be ok "; tst (()->(c15.f6 0))   #  x > 0; true   pre           false
+  yak "c15.f7 1: should be ok "; tst (()->(c15.f7 1))   #  x > 0; false  pre true      false
+  yak "c15.f7 0: should be ok "; tst (()->(c15.f7 0))   #  x > 0; false  pre true      false
+
+  yak "c16.f1 1: should be ok "; tst (()->(c16.f1 1))   #  none          x > 0; true   false
+  yak "c16.f1 0: should be ok "; tst (()->(c16.f1 0))   #  none          x > 0; true   false
+  yak "c16.f2 1: should be ok "; tst (()->(c16.f2 1))   #  x > 0         x > 0; false  false
+  yak "c16.f2 0: should fail  "; tst (()->(c16.f2 0))   #  x > 0         x > 0; false  false
+  yak "c16.f3 1: should be ok "; tst (()->(c16.f3 1))   #  pre           none          false
+  yak "c16.f3 0: should be ok "; tst (()->(c16.f3 0))   #  pre           none          false
+  yak "c16.f4 1: should be ok "; tst (()->(c16.f4 1))   #  pre true      x > 0         false
+  yak "c16.f4 0: should be ok "; tst (()->(c16.f4 0))   #  pre true      x > 0         false
+  yak "c16.f5 1: should be ok "; tst (()->(c16.f5 1))   #  pre false     pre           false
+  yak "c16.f5 0: should be ok "; tst (()->(c16.f5 0))   #  pre false     pre           false
+  yak "c16.f6 1: should be ok "; tst (()->(c16.f6 1))   #  x > 0; true   pre true      false
+  yak "c16.f6 0: should be ok "; tst (()->(c16.f6 0))   #  x > 0; true   pre true      false
+  yak "c16.f7 1: should fail  "; tst (()->(c16.f7 1))   #  x > 0; false  pre false     false
+  yak "c16.f7 0: should fail  "; tst (()->(c16.f7 0))   #  x > 0; false  pre false     false
+
+  yak "c17.f1 1: should be ok "; tst (()->(c17.f1 1))   #  none          x > 0; false  false
+  yak "c17.f1 0: should be ok "; tst (()->(c17.f1 0))   #  none          x > 0; false  false
+  yak "c17.f2 1: should be ok "; tst (()->(c17.f2 1))   #  x > 0         none          false
+  yak "c17.f2 0: should be ok "; tst (()->(c17.f2 0))   #  x > 0         none          false
+  yak "c17.f3 1: should be ok "; tst (()->(c17.f3 1))   #  pre           x > 0         false
+  yak "c17.f3 0: should be ok "; tst (()->(c17.f3 0))   #  pre           x > 0         false
+  yak "c17.f4 1: should be ok "; tst (()->(c17.f4 1))   #  pre true      pre           false
+  yak "c17.f4 0: should be ok "; tst (()->(c17.f4 0))   #  pre true      pre           false
+  yak "c17.f5 1: should be ok "; tst (()->(c17.f5 1))   #  pre false     pre true      false
+  yak "c17.f5 0: should be ok "; tst (()->(c17.f5 0))   #  pre false     pre true      false
+  yak "c17.f6 1: should be ok "; tst (()->(c17.f6 1))   #  x > 0; true   pre false     false
+  yak "c17.f6 0: should fail  "; tst (()->(c17.f6 0))   #  x > 0; true   pre false     false
+  yak "c17.f7 1: should be ok "; tst (()->(c17.f7 1))   #  x > 0; false  x > 0; true   false
+  yak "c17.f7 0: should fail  "; tst (()->(c17.f7 0))   #  x > 0; false  x > 0; true   false
+
+                                                        #  inherted 1    inherited 2   pre else
+  yak "c21.f1 1: should be ok "; tst (()->(c21.f1 1))   #  none          none          none
+  yak "c21.f1 0: should be ok "; tst (()->(c21.f1 0))   #  none          none          none
+  yak "c21.f2 1: should be ok "; tst (()->(c21.f2 1))   #  x > 0         x > 0         none
+  yak "c21.f2 0: should be ok "; tst (()->(c21.f2 0))   #  x > 0         x > 0         none
+  yak "c21.f3 1: should be ok "; tst (()->(c21.f3 1))   #  pre           pre           none
+  yak "c21.f3 0: should be ok "; tst (()->(c21.f3 0))   #  pre           pre           none
+  yak "c21.f4 1: should be ok "; tst (()->(c21.f4 1))   #  pre true      pre true      none
+  yak "c21.f4 0: should be ok "; tst (()->(c21.f4 0))   #  pre true      pre true      none
+  yak "c21.f5 1: should be ok "; tst (()->(c21.f5 1))   #  pre false     pre false     none
+  yak "c21.f5 0: should be ok "; tst (()->(c21.f5 0))   #  pre false     pre false     none
+  yak "c21.f6 1: should be ok "; tst (()->(c21.f6 1))   #  x > 0; true   x > 0; true   none
+  yak "c21.f6 0: should be ok "; tst (()->(c21.f6 0))   #  x > 0; true   x > 0; true   none
+  yak "c21.f7 1: should be ok "; tst (()->(c21.f7 1))   #  x > 0; false  x > 0; false  none
+  yak "c21.f7 0: should be ok "; tst (()->(c21.f7 0))   #  x > 0; false  x > 0; false  none
+
+  yak "c22.f1 1: should be ok "; tst (()->(c22.f1 1))   #  none          x > 0         none
+  yak "c22.f1 0: should be ok "; tst (()->(c22.f1 0))   #  none          x > 0         none
+  yak "c22.f2 1: should be ok "; tst (()->(c22.f2 1))   #  x > 0         pre           none
+  yak "c22.f2 0: should be ok "; tst (()->(c22.f2 0))   #  x > 0         pre           none
+  yak "c22.f3 1: should be ok "; tst (()->(c22.f3 1))   #  pre           pre true      none
+  yak "c22.f3 0: should be ok "; tst (()->(c22.f3 0))   #  pre           pre true      none
+  yak "c22.f4 1: should be ok "; tst (()->(c22.f4 1))   #  pre true      pre false     none
+  yak "c22.f4 0: should be ok "; tst (()->(c22.f4 0))   #  pre true      pre false     none
+  yak "c22.f5 1: should be ok "; tst (()->(c22.f5 1))   #  pre false     x > 0; true   none
+  yak "c22.f5 0: should be ok "; tst (()->(c22.f5 0))   #  pre false     x > 0; true   none
+  yak "c22.f6 1: should be ok "; tst (()->(c22.f6 1))   #  x > 0; true   x > 0; false  none
+  yak "c22.f6 0: should be ok "; tst (()->(c22.f6 0))   #  x > 0; true   x > 0; false  none
+  yak "c22.f7 1: should be ok "; tst (()->(c22.f7 1))   #  x > 0; false  none          none
+  yak "c22.f7 0: should be ok "; tst (()->(c22.f7 0))   #  x > 0; false  none          none
+
+  yak "c23.f1 1: should be ok "; tst (()->(c23.f1 1))   #  none          pre           none
+  yak "c23.f1 0: should be ok "; tst (()->(c23.f1 0))   #  none          pre           none
+  yak "c23.f2 1: should be ok "; tst (()->(c23.f2 1))   #  x > 0         pre true      none
+  yak "c23.f2 0: should be ok "; tst (()->(c23.f2 0))   #  x > 0         pre true      none
+  yak "c23.f3 1: should be ok "; tst (()->(c23.f3 1))   #  pre           pre false     none
+  yak "c23.f3 0: should be ok "; tst (()->(c23.f3 0))   #  pre           pre false     none
+  yak "c23.f4 1: should be ok "; tst (()->(c23.f4 1))   #  pre true      x > 0; true   none
+  yak "c23.f4 0: should be ok "; tst (()->(c23.f4 0))   #  pre true      x > 0; true   none
+  yak "c23.f5 1: should be ok "; tst (()->(c23.f5 1))   #  pre false     x > 0; false  none
+  yak "c23.f5 0: should be ok "; tst (()->(c23.f5 0))   #  pre false     x > 0; false  none
+  yak "c23.f6 1: should be ok "; tst (()->(c23.f6 1))   #  x > 0; true   none          none
+  yak "c23.f6 0: should be ok "; tst (()->(c23.f6 0))   #  x > 0; true   none          none
+  yak "c23.f7 1: should be ok "; tst (()->(c23.f7 1))   #  x > 0; false  x > 0         none
+  yak "c23.f7 0: should be ok "; tst (()->(c23.f7 0))   #  x > 0; false  x > 0         none
+
+  yak "c24.f1 1: should be ok "; tst (()->(c24.f1 1))   #  none          pre true      none
+  yak "c24.f1 0: should be ok "; tst (()->(c24.f1 0))   #  none          pre true      none
+  yak "c24.f2 1: should be ok "; tst (()->(c24.f2 1))   #  x > 0         pre false     none
+  yak "c24.f2 0: should be ok "; tst (()->(c24.f2 0))   #  x > 0         pre false     none
+  yak "c24.f3 1: should be ok "; tst (()->(c24.f3 1))   #  pre           x > 0; true   none
+  yak "c24.f3 0: should be ok "; tst (()->(c24.f3 0))   #  pre           x > 0; true   none
+  yak "c24.f4 1: should be ok "; tst (()->(c24.f4 1))   #  pre true      x > 0; false  none
+  yak "c24.f4 0: should be ok "; tst (()->(c24.f4 0))   #  pre true      x > 0; false  none
+  yak "c24.f5 1: should be ok "; tst (()->(c24.f5 1))   #  pre false     none          none
+  yak "c24.f5 0: should be ok "; tst (()->(c24.f5 0))   #  pre false     none          none
+  yak "c24.f6 1: should be ok "; tst (()->(c24.f6 1))   #  x > 0; true   x > 0         none
+  yak "c24.f6 0: should be ok "; tst (()->(c24.f6 0))   #  x > 0; true   x > 0         none
+  yak "c24.f7 1: should be ok "; tst (()->(c24.f7 1))   #  x > 0; false  pre           none
+  yak "c24.f7 0: should be ok "; tst (()->(c24.f7 0))   #  x > 0; false  pre           none
+
+  yak "c25.f1 1: should be ok "; tst (()->(c25.f1 1))   #  none          pre false     none
+  yak "c25.f1 0: should be ok "; tst (()->(c25.f1 0))   #  none          pre false     none
+  yak "c25.f2 1: should be ok "; tst (()->(c25.f2 1))   #  x > 0         x > 0; true   none
+  yak "c25.f2 0: should be ok "; tst (()->(c25.f2 0))   #  x > 0         x > 0; true   none
+  yak "c25.f3 1: should be ok "; tst (()->(c25.f3 1))   #  pre           x > 0; false  none
+  yak "c25.f3 0: should be ok "; tst (()->(c25.f3 0))   #  pre           x > 0; false  none
+  yak "c25.f4 1: should be ok "; tst (()->(c25.f4 1))   #  pre true      none          none
+  yak "c25.f4 0: should be ok "; tst (()->(c25.f4 0))   #  pre true      none          none
+  yak "c25.f5 1: should be ok "; tst (()->(c25.f5 1))   #  pre false     x > 0         none
+  yak "c25.f5 0: should be ok "; tst (()->(c25.f5 0))   #  pre false     x > 0         none
+  yak "c25.f6 1: should be ok "; tst (()->(c25.f6 1))   #  x > 0; true   pre           none
+  yak "c25.f6 0: should be ok "; tst (()->(c25.f6 0))   #  x > 0; true   pre           none
+  yak "c25.f7 1: should be ok "; tst (()->(c25.f7 1))   #  x > 0; false  pre true      none
+  yak "c25.f7 0: should be ok "; tst (()->(c25.f7 0))   #  x > 0; false  pre true      none
+
+  yak "c26.f1 1: should be ok "; tst (()->(c26.f1 1))   #  none          x > 0; true   none
+  yak "c26.f1 0: should be ok "; tst (()->(c26.f1 0))   #  none          x > 0; true   none
+  yak "c26.f2 1: should be ok "; tst (()->(c26.f2 1))   #  x > 0         x > 0; false  none
+  yak "c26.f2 0: should be ok "; tst (()->(c26.f2 0))   #  x > 0         x > 0; false  none
+  yak "c26.f3 1: should be ok "; tst (()->(c26.f3 1))   #  pre           none          none
+  yak "c26.f3 0: should be ok "; tst (()->(c26.f3 0))   #  pre           none          none
+  yak "c26.f4 1: should be ok "; tst (()->(c26.f4 1))   #  pre true      x > 0         none
+  yak "c26.f4 0: should be ok "; tst (()->(c26.f4 0))   #  pre true      x > 0         none
+  yak "c26.f5 1: should be ok "; tst (()->(c26.f5 1))   #  pre false     pre           none
+  yak "c26.f5 0: should be ok "; tst (()->(c26.f5 0))   #  pre false     pre           none
+  yak "c26.f6 1: should be ok "; tst (()->(c26.f6 1))   #  x > 0; true   pre true      none
+  yak "c26.f6 0: should be ok "; tst (()->(c26.f6 0))   #  x > 0; true   pre true      none
+  yak "c26.f7 1: should be ok "; tst (()->(c26.f7 1))   #  x > 0; false  pre false     none
+  yak "c26.f7 0: should be ok "; tst (()->(c26.f7 0))   #  x > 0; false  pre false     none
+
+  yak "c27.f1 1: should be ok "; tst (()->(c27.f1 1))   #  none          x > 0; false  none
+  yak "c27.f1 0: should be ok "; tst (()->(c27.f1 0))   #  none          x > 0; false  none
+  yak "c27.f2 1: should be ok "; tst (()->(c27.f2 1))   #  x > 0         none          none
+  yak "c27.f2 0: should be ok "; tst (()->(c27.f2 0))   #  x > 0         none          none
+  yak "c27.f3 1: should be ok "; tst (()->(c27.f3 1))   #  pre           x > 0         none
+  yak "c27.f3 0: should be ok "; tst (()->(c27.f3 0))   #  pre           x > 0         none
+  yak "c27.f4 1: should be ok "; tst (()->(c27.f4 1))   #  pre true      pre           none
+  yak "c27.f4 0: should be ok "; tst (()->(c27.f4 0))   #  pre true      pre           none
+  yak "c27.f5 1: should be ok "; tst (()->(c27.f5 1))   #  pre false     pre true      none
+  yak "c27.f5 0: should be ok "; tst (()->(c27.f5 0))   #  pre false     pre true      none
+  yak "c27.f6 1: should be ok "; tst (()->(c27.f6 1))   #  x > 0; true   pre false     none
+  yak "c27.f6 0: should be ok "; tst (()->(c27.f6 0))   #  x > 0; true   pre false     none
+  yak "c27.f7 1: should be ok "; tst (()->(c27.f7 1))   #  x > 0; false  x > 0; true   none
+  yak "c27.f7 0: should be ok "; tst (()->(c27.f7 0))   #  x > 0; false  x > 0; true   none
+
+                                                        #  inherted 1    inherited 2   pre else
+  yak "c31.f1 1: should be ok "; tst (()->(c31.f1 1))   #  none          none          x > 0
+  yak "c31.f1 0: should be ok "; tst (()->(c31.f1 0))   #  none          none          x > 0
+  yak "c31.f2 1: should be ok "; tst (()->(c31.f2 1))   #  x > 0         x > 0         x > 0
+  yak "c31.f2 0: should fail  "; tst (()->(c31.f2 0))   #  x > 0         x > 0         x > 0
+  yak "c31.f3 1: should be ok "; tst (()->(c31.f3 1))   #  pre           pre           x > 0
+  yak "c31.f3 0: should be ok "; tst (()->(c31.f3 0))   #  pre           pre           x > 0
+  yak "c31.f4 1: should be ok "; tst (()->(c31.f4 1))   #  pre true      pre true      x > 0
+  yak "c31.f4 0: should be ok "; tst (()->(c31.f4 0))   #  pre true      pre true      x > 0
+  yak "c31.f5 1: should be ok "; tst (()->(c31.f5 1))   #  pre false     pre false     x > 0
+  yak "c31.f5 0: should fail  "; tst (()->(c31.f5 0))   #  pre false     pre false     x > 0
+  yak "c31.f6 1: should be ok "; tst (()->(c31.f6 1))   #  x > 0; true   x > 0; true   x > 0
+  yak "c31.f6 0: should fail  "; tst (()->(c31.f6 0))   #  x > 0; true   x > 0; true   x > 0
+  yak "c31.f7 1: should be ok "; tst (()->(c31.f7 1))   #  x > 0; false  x > 0; false  x > 0
+  yak "c31.f7 0: should fail  "; tst (()->(c31.f7 0))   #  x > 0; false  x > 0; false  x > 0
+
+  yak "c32.f1 1: should be ok "; tst (()->(c32.f1 1))   #  none          x > 0         x > 0
+  yak "c32.f1 0: should be ok "; tst (()->(c32.f1 0))   #  none          x > 0         x > 0
+  yak "c32.f2 1: should be ok "; tst (()->(c32.f2 1))   #  x > 0         pre           x > 0
+  yak "c32.f2 0: should be ok "; tst (()->(c32.f2 0))   #  x > 0         pre           x > 0
+  yak "c32.f3 1: should be ok "; tst (()->(c32.f3 1))   #  pre           pre true      x > 0
+  yak "c32.f3 0: should be ok "; tst (()->(c32.f3 0))   #  pre           pre true      x > 0
+  yak "c32.f4 1: should be ok "; tst (()->(c32.f4 1))   #  pre true      pre false     x > 0
+  yak "c32.f4 0: should be ok "; tst (()->(c32.f4 0))   #  pre true      pre false     x > 0
+  yak "c32.f5 1: should be ok "; tst (()->(c32.f5 1))   #  pre false     x > 0; true   x > 0
+  yak "c32.f5 0: should fail  "; tst (()->(c32.f5 0))   #  pre false     x > 0; true   x > 0
+  yak "c32.f6 1: should be ok "; tst (()->(c32.f6 1))   #  x > 0; true   x > 0; false  x > 0
+  yak "c32.f6 0: should fail  "; tst (()->(c32.f6 0))   #  x > 0; true   x > 0; false  x > 0
+  yak "c32.f7 1: should be ok "; tst (()->(c32.f7 1))   #  x > 0; false  none          x > 0
+  yak "c32.f7 0: should be ok "; tst (()->(c32.f7 0))   #  x > 0; false  none          x > 0
+
+  yak "c33.f1 1: should be ok "; tst (()->(c33.f1 1))   #  none          pre           x > 0
+  yak "c33.f1 0: should be ok "; tst (()->(c33.f1 0))   #  none          pre           x > 0
+  yak "c33.f2 1: should be ok "; tst (()->(c33.f2 1))   #  x > 0         pre true      x > 0
+  yak "c33.f2 0: should be ok "; tst (()->(c33.f2 0))   #  x > 0         pre true      x > 0
+  yak "c33.f3 1: should be ok "; tst (()->(c33.f3 1))   #  pre           pre false     x > 0
+  yak "c33.f3 0: should be ok "; tst (()->(c33.f3 0))   #  pre           pre false     x > 0
+  yak "c33.f4 1: should be ok "; tst (()->(c33.f4 1))   #  pre true      x > 0; true   x > 0
+  yak "c33.f4 0: should be ok "; tst (()->(c33.f4 0))   #  pre true      x > 0; true   x > 0
+  yak "c33.f5 1: should be ok "; tst (()->(c33.f5 1))   #  pre false     x > 0; false  x > 0
+  yak "c33.f5 0: should fail  "; tst (()->(c33.f5 0))   #  pre false     x > 0; false  x > 0
+  yak "c33.f6 1: should be ok "; tst (()->(c33.f6 1))   #  x > 0; true   none          x > 0
+  yak "c33.f6 0: should be ok "; tst (()->(c33.f6 0))   #  x > 0; true   none          x > 0
+  yak "c33.f7 1: should be ok "; tst (()->(c33.f7 1))   #  x > 0; false  x > 0         x > 0
+  yak "c33.f7 0: should fail  "; tst (()->(c33.f7 0))   #  x > 0; false  x > 0         x > 0
+
+  yak "c34.f1 1: should be ok "; tst (()->(c34.f1 1))   #  none          pre true      x > 0
+  yak "c34.f1 0: should be ok "; tst (()->(c34.f1 0))   #  none          pre true      x > 0
+  yak "c34.f2 1: should be ok "; tst (()->(c34.f2 1))   #  x > 0         pre false     x > 0
+  yak "c34.f2 0: should fail  "; tst (()->(c34.f2 0))   #  x > 0         pre false     x > 0
+  yak "c34.f3 1: should be ok "; tst (()->(c34.f3 1))   #  pre           x > 0; true   x > 0
+  yak "c34.f3 0: should be ok "; tst (()->(c34.f3 0))   #  pre           x > 0; true   x > 0
+  yak "c34.f4 1: should be ok "; tst (()->(c34.f4 1))   #  pre true      x > 0; false  x > 0
+  yak "c34.f4 0: should be ok "; tst (()->(c34.f4 0))   #  pre true      x > 0; false  x > 0
+  yak "c34.f5 1: should be ok "; tst (()->(c34.f5 1))   #  pre false     none          x > 0
+  yak "c34.f5 0: should be ok "; tst (()->(c34.f5 0))   #  pre false     none          x > 0
+  yak "c34.f6 1: should be ok "; tst (()->(c34.f6 1))   #  x > 0; true   x > 0         x > 0
+  yak "c34.f6 0: should fail  "; tst (()->(c34.f6 0))   #  x > 0; true   x > 0         x > 0
+  yak "c34.f7 1: should be ok "; tst (()->(c34.f7 1))   #  x > 0; false  pre           x > 0
+  yak "c34.f7 0: should be ok "; tst (()->(c34.f7 0))   #  x > 0; false  pre           x > 0
+
+  yak "c35.f1 1: should be ok "; tst (()->(c35.f1 1))   #  none          pre false     x > 0
+  yak "c35.f1 0: should be ok "; tst (()->(c35.f1 0))   #  none          pre false     x > 0
+  yak "c35.f2 1: should be ok "; tst (()->(c35.f2 1))   #  x > 0         x > 0; true   x > 0
+  yak "c35.f2 0: should fail  "; tst (()->(c35.f2 0))   #  x > 0         x > 0; true   x > 0
+  yak "c35.f3 1: should be ok "; tst (()->(c35.f3 1))   #  pre           x > 0; false  x > 0
+  yak "c35.f3 0: should be ok "; tst (()->(c35.f3 0))   #  pre           x > 0; false  x > 0
+  yak "c35.f4 1: should be ok "; tst (()->(c35.f4 1))   #  pre true      none          x > 0
+  yak "c35.f4 0: should be ok "; tst (()->(c35.f4 0))   #  pre true      none          x > 0
+  yak "c35.f5 1: should be ok "; tst (()->(c35.f5 1))   #  pre false     x > 0         x > 0
+  yak "c35.f5 0: should fail  "; tst (()->(c35.f5 0))   #  pre false     x > 0         x > 0
+  yak "c35.f6 1: should be ok "; tst (()->(c35.f6 1))   #  x > 0; true   pre           x > 0
+  yak "c35.f6 0: should be ok "; tst (()->(c35.f6 0))   #  x > 0; true   pre           x > 0
+  yak "c35.f7 1: should be ok "; tst (()->(c35.f7 1))   #  x > 0; false  pre true      x > 0
+  yak "c35.f7 0: should be ok "; tst (()->(c35.f7 0))   #  x > 0; false  pre true      x > 0
+
+  yak "c36.f1 1: should be ok "; tst (()->(c36.f1 1))   #  none          x > 0; true   x > 0
+  yak "c36.f1 0: should be ok "; tst (()->(c36.f1 0))   #  none          x > 0; true   x > 0
+  yak "c36.f2 1: should be ok "; tst (()->(c36.f2 1))   #  x > 0         x > 0; false  x > 0
+  yak "c36.f2 0: should fail  "; tst (()->(c36.f2 0))   #  x > 0         x > 0; false  x > 0
+  yak "c36.f3 1: should be ok "; tst (()->(c36.f3 1))   #  pre           none          x > 0
+  yak "c36.f3 0: should be ok "; tst (()->(c36.f3 0))   #  pre           none          x > 0
+  yak "c36.f4 1: should be ok "; tst (()->(c36.f4 1))   #  pre true      x > 0         x > 0
+  yak "c36.f4 0: should be ok "; tst (()->(c36.f4 0))   #  pre true      x > 0         x > 0
+  yak "c36.f5 1: should be ok "; tst (()->(c36.f5 1))   #  pre false     pre           x > 0
+  yak "c36.f5 0: should be ok "; tst (()->(c36.f5 0))   #  pre false     pre           x > 0
+  yak "c36.f6 1: should be ok "; tst (()->(c36.f6 1))   #  x > 0; true   pre true      x > 0
+  yak "c36.f6 0: should be ok "; tst (()->(c36.f6 0))   #  x > 0; true   pre true      x > 0
+  yak "c36.f7 1: should be ok "; tst (()->(c36.f7 1))   #  x > 0; false  pre false     x > 0
+  yak "c36.f7 0: should fail  "; tst (()->(c36.f7 0))   #  x > 0; false  pre false     x > 0
+
+  yak "c37.f1 1: should be ok "; tst (()->(c37.f1 1))   #  none          x > 0; false  x > 0
+  yak "c37.f1 0: should be ok "; tst (()->(c37.f1 0))   #  none          x > 0; false  x > 0
+  yak "c37.f2 1: should be ok "; tst (()->(c37.f2 1))   #  x > 0         none          x > 0
+  yak "c37.f2 0: should be ok "; tst (()->(c37.f2 0))   #  x > 0         none          x > 0
+  yak "c37.f3 1: should be ok "; tst (()->(c37.f3 1))   #  pre           x > 0         x > 0
+  yak "c37.f3 0: should be ok "; tst (()->(c37.f3 0))   #  pre           x > 0         x > 0
+  yak "c37.f4 1: should be ok "; tst (()->(c37.f4 1))   #  pre true      pre           x > 0
+  yak "c37.f4 0: should be ok "; tst (()->(c37.f4 0))   #  pre true      pre           x > 0
+  yak "c37.f5 1: should be ok "; tst (()->(c37.f5 1))   #  pre false     pre true      x > 0
+  yak "c37.f5 0: should be ok "; tst (()->(c37.f5 0))   #  pre false     pre true      x > 0
+  yak "c37.f6 1: should be ok "; tst (()->(c37.f6 1))   #  x > 0; true   pre false     x > 0
+  yak "c37.f6 0: should fail  "; tst (()->(c37.f6 0))   #  x > 0; true   pre false     x > 0
+  yak "c37.f7 1: should be ok "; tst (()->(c37.f7 1))   #  x > 0; false  x > 0; true   x > 0
+  yak "c37.f7 0: should fail  "; tst (()->(c37.f7 0))   #  x > 0; false  x > 0; true   x > 0
