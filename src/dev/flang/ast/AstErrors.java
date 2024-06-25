@@ -1447,7 +1447,7 @@ public class AstErrors extends ANY
   {
     error(pos,
           "Numeric literal used for integer type is not a whole number",
-          "Type propagation results in an integer type that cannot whole a value that is not integer.\n" +
+          "Type propagation results in an integer type that cannot hold a value that is not integer.\n" +
           "Numeric literal: " + ss(constant) + "\n" +
           "Assigned to type: " + s(t) + "\n");
   }
