@@ -10,10 +10,4 @@ While parsing: name, parse stack: name (2 times), call (2 times), callOrFeatOrTh
 ----------------^
 While parsing: semicolon or flat line break, parse stack: semiOrFlatLF, exprs, block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, unit
 
-
-<built-in>: error 3: Could not find called feature
-Feature not found: '**error**' (one argument)
-Target feature: 'reg_issue627'
-In call: 'set(a string)'
-
-3 errors.
+2 errors.
