@@ -31,7 +31,8 @@ lib_io_dir =>
   _ := io.file.use unit "test_path/file1" io.file.mode.write (()->io.file.open.write [])
   _ := io.file.use unit "test_path/file2" io.file.mode.write (()->io.file.open.write [])
 
-  io.dir.use unit "test_path" ()->
-    say io.dir.open.read
-    say io.dir.open.read
-    say io.dir.open.read
+  res := io.dir.use (Sequence String) "test_path" ()->
+    array 3 _->io.dir.open.read.as_string
+
+  (container.sorted_array_of res.val).for_each say
+
