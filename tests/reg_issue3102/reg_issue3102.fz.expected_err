@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue3102.fz:26:3: error 1: Choice feature must not be defined as a routine
+  a : choice u8 String =>
+--^
+To solve this, replace '=>' by 'is'
+
+one error.
