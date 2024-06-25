@@ -1584,8 +1584,8 @@ public class AstErrors extends ANY
   static void choiceMustNotBeRoutine(SourcePosition pos)
   {
     error(pos,
-          "Choice feature must not be defined as a routine with a result",
-          "A choice feature must be a normal feature with empty code section");
+          "Choice feature must not be defined as a routine",
+          "To solve this, replace " + skw("=>") + " by " + skw("is"));
   }
 
   static void choiceMustNotContainCode(SourcePosition pos)
