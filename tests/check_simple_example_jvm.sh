@@ -57,7 +57,14 @@ else
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=2( .*|)$" && export OPT=-Dfuzion.debugLevel=2
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=1( .*|)$" && export OPT=-Dfuzion.debugLevel=1
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=0( .*|)$" && export OPT=-Dfuzion.debugLevel=0
-    (FUZION_DISABLE_ANSI_ESCAPES=true FUZION_JAVA_OPTIONS="${FUZION_JAVA_OPTIONS="-Xss${FUZION_JAVA_STACK_SIZE=5m}"} ${OPT:-}" $1 -jvm "$2" >tmp_out.txt 2>tmp_err.txt) || true
+
+    EXIT_CODE=$(FUZION_DISABLE_ANSI_ESCAPES=true FUZION_JAVA_OPTIONS="${FUZION_JAVA_OPTIONS="-Xss${FUZION_JAVA_STACK_SIZE=5m}"} ${OPT:-}" $1 -jvm "$2" >tmp_out.txt 2>tmp_err.txt; echo $?)
+
+    if [ "$EXIT_CODE" -ne 0 ] && [ "$EXIT_CODE" -ne 1 ]; then
+        echo "unexpected exit code"
+        exit "$EXIT_CODE"
+    fi
+
     sed -i "s|${CURDIR//\\//}/|--CURDIR--/|g" tmp_err.txt
     expout=$2.expected_out
     experr=$2.expected_err
