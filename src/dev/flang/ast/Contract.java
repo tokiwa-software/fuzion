@@ -643,6 +643,8 @@ public class Contract extends ANY
                          Contract.EMPTY_CONTRACT,
                          new Impl(pos, code, Impl.Kind.Routine));
     res._module.findDeclarations(pF, f.outer());
+    res.resolveDeclarations(pF);
+    res.resolveTypes(pF);
     if (preBool)
       {
         f._preBoolFeature = pF;
@@ -711,8 +713,7 @@ public class Contract extends ANY
                                      new Block(new_code)));
       }
     code._expressions = new_code;
-    res.resolveDeclarations(pF);
-    res.resolveTypes(pF);
+    var e = res.resolveType(code, pF);
   }
 
 

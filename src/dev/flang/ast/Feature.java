@@ -2306,7 +2306,7 @@ A ((Choice)) declaration must not contain a result type.
       {
         result = _returnType.functionReturnType();
       }
-    if (isOuterRef())
+    if (isOuterRef() && !outer().isFixed())
       {
         result = result.asThis();
       }

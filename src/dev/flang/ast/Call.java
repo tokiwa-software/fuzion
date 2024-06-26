@@ -1567,7 +1567,10 @@ public class Call extends AbstractCall
       {
         var o = t.feature().outer();
         t = o == null || o.isUniverse() ? t : ResolvedNormalType.newType(t, o.thisType());
-        t = t.asThis();
+        if (!_calledFeature.outer().isFixed())
+          {
+            //            t = t.asThis();
+          }
       }
     else if (_calledFeature.isConstructor())
       {  /* specialize t for the target type here */
