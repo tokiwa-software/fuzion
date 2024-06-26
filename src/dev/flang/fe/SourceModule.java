@@ -1316,10 +1316,6 @@ A post-condition of a feature that does not redefine an inherited feature must s
           }
         };
         f.outer().code().visit(visitor, null);
-        if (usage.isEmpty() || definition.isEmpty())
-          {
-            f.outer().contract().visit(visitor, null);
-          }
 
         // NYI: check(usage.size() == 1, definition.size() == 1);
 
