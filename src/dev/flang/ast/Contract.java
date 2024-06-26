@@ -164,8 +164,7 @@ public class Contract extends ANY
   public void addInheritedContract(Feature to, AbstractFeature from)
   {
     if (PRECONDITIONS) require
-      (this == to.contract(),
-       this != EMPTY_CONTRACT);
+      (this == to.contract());
 
     if (!to.isUniverse())
       {
