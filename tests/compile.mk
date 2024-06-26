@@ -17,9 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test Makefile to be included for dfa tests
+#  Source code of Fuzion test Makefile to be included for compile only tests
 #  This is used e.g. for tests that result in infinite recursion
-#  but we still want to test DFA.
+#  but we still want to test that compilation succeeds.
 #
 # -----------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ int:
 	$(FUZION) -no-backend $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
 
 jvm:
-	$(FUZION) -no-backend $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
+	$(FUZION) -classes $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
 
 c:
-	$(FUZION) -no-backend $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
+	$(FUZION) -c $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
