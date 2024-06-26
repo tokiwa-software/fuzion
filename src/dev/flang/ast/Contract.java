@@ -57,9 +57,6 @@ public class Contract extends ANY
    */
   public static final Contract EMPTY_CONTRACT = new Contract(NO_COND, NO_COND, null, null,
                                                              NO_COND, null, null,
-                                                             null,
-                                                             null,
-                                                             null,
                                                              null);
 
 
@@ -106,10 +103,7 @@ public class Contract extends ANY
    * Clone of parsed arguments of the feature this contract belongs to.  To be
    * used to create arguments for precondition and postcondition features.
    */
-  public List<AbstractFeature> _declared_preconditions_as_feature_args;
-  public List<AbstractFeature> _declared_preconditions_as_feature_args1;
-  public List<AbstractFeature> _declared_preconditions_as_feature_args2;
-  public List<AbstractFeature> _declared_postconditions_as_feature_args;
+  java.util.function.Supplier<List<AbstractFeature>> _argsSupplier;
 
   /**
    * Did the parser find `pre` / `post` or even `pre else` / `post then` ? These
@@ -123,27 +117,36 @@ public class Contract extends ANY
 
 
   /**
-   * Constructor
+   * Constructor for a contract
+   *
+   * @param r1, r2 the preconditions, parsed twice since we will need them twice. null if not present.
+   *
+   * @param hasPre if `pre` was found, this gives its position, otherwise it is null.
+   *
+   * @param hasElse if `else` after `pre` was found, this gives its prosition,
+   * otherwise it is null.
+   *
+   * @param e the postcondition or null if not present.
+   *
+   * @param hasPost if `post` was found, this gives its position, otherwise it is null
+   *
+   * @param hasThen if `then` after `post` was found, this gives its prosition,
+   * otherwise it is null.
+   *
+   * @param preArgs, preArgs1, preArgs2, postArgs List or parsed feature arguments.
    */
-  public Contract(List<Cond> r,
-                  List<Cond> r2, SourceRange hasPre,  SourceRange hasElse,
-                  List<Cond> e, SourceRange hasPost, SourceRange hasThen,
-                  List<AbstractFeature> preArgs,
-                  List<AbstractFeature> preArgs1,
-                  List<AbstractFeature> preArgs2,
-                  List<AbstractFeature> postArgs)
+  public Contract(List<Cond> r1, List<Cond> r2, SourceRange hasPre,  SourceRange hasElse,
+                  List<Cond> e,                 SourceRange hasPost, SourceRange hasThen,
+                  java.util.function.Supplier<List<AbstractFeature>> args)
   {
     _hasPre  = hasPre;
     _hasPost = hasPost;
     _hasPreElse  = hasElse;
     _hasPostThen = hasThen;
-    _declared_preconditions   = r  == null || r .isEmpty() ? NO_COND : r;
+    _declared_preconditions   = r1 == null || r1.isEmpty() ? NO_COND : r1;
     _declared_preconditions2  = r2 == null || r2.isEmpty() ? NO_COND : r2;
     _declared_postconditions = e == null || e.isEmpty() ? NO_COND : e;
-    _declared_preconditions_as_feature_args  = preArgs;
-    _declared_preconditions_as_feature_args1  = preArgs1;
-    _declared_preconditions_as_feature_args2  = preArgs2;
-    _declared_postconditions_as_feature_args = postArgs;
+    _argsSupplier = args;
   }
 
 
@@ -152,7 +155,7 @@ public class Contract extends ANY
    */
   public Contract(List<Cond> r, List<Cond> e)
   {
-    this(r, r, null, null, e, null, null, null, null, null, null);
+    this(r, r, null, null, e, null, null, null);
   }
 
 
@@ -189,7 +192,8 @@ public class Contract extends ANY
    */
   boolean requiresPreConditionsFeature()
   {
-    return !_declared_preconditions.isEmpty() || !_inheritedPre.isEmpty();
+    return _hasPre != null &&
+      (!_declared_preconditions.isEmpty() || !_inheritedPre.isEmpty());
   }
 
 
@@ -583,8 +587,7 @@ public class Contract extends ANY
                                 .filter(inh -> !hasPreConditionsFeature(inh))
                                 .findFirst();
     var name = preBool ? preBoolConditionsFeatureName(f) : preConditionsFeatureName(f);
-    var args = preBool ? fc._declared_preconditions_as_feature_args
-                       : fc._declared_preconditions_as_feature_args1;
+    var args = fc._argsSupplier == null ? null : fc._argsSupplier.get();
     var pos = fc._hasPre != null ? fc._hasPre : f.pos();
     var l = new List<Expr>();
     Expr cc = null;
@@ -740,8 +743,8 @@ public class Contract extends ANY
     var fc = f.contract();
 
     // add precondition feature
-    if (fc._declared_preconditions_as_feature_args != null)
-    if (fc.requiresPreConditionsFeature() && f._preFeature == null)
+    if (fc.requiresPreConditionsFeature() &&
+        f._preFeature == null)
       {
 
         /*
@@ -970,7 +973,7 @@ all of their redefinition to `true`. +
           {
             var pos = fc._hasPre != null ? fc._hasPre : f.pos();
             var name2 = preConditionsAndCallFeatureName(f);
-            var args2 = fc._declared_preconditions_as_feature_args2;
+            var args2 = fc._argsSupplier.get();
             var l2 = new List<Expr>();
             var code2 = new Block(l2);
             var pF2 = new Feature(pos,
@@ -998,7 +1001,7 @@ all of their redefinition to `true`. +
     if (fc.requiresPostConditionsFeature() && f._postFeature == null)
       {
         var name = postConditionsFeatureName(f);
-        var args = fc._declared_postconditions_as_feature_args;
+        var args = fc._argsSupplier.get();
         var pos = fc._hasPost != null ? fc._hasPost : f.pos();
         var resultField = new Feature(pos,
                                       Visi.PRIV,
