@@ -28,10 +28,10 @@ typeinference is
 
   chck(b bool, msg String) =>
     s := if b
-      "PASSED: "
-    else
-      _ := set_exit_code 1
-      "FAILED: "
+           "PASSED: "
+         else
+           _ := set_exit_code 1
+           "FAILED: "
     say (s + msg)
 
   typeInferencingFromIf1(b bool) is

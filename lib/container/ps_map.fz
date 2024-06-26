@@ -267,7 +267,8 @@ O(n log n).
         at0 := (at
                 + (if (size & sz0) != 0 nt else 0)
                 + (if (size & sz ) != 0 sz else 0))
-        m0 := if (size & sz) != 0
+        m0 :=
+          if (size & sz) != 0
             min0 m at at+sz-1
           else
             m
@@ -297,7 +298,8 @@ O(n log n).
         at0 := (at
                 + (if (size & sz0) != 0 nt else 0)
                 + (if (size & sz ) != 0 sz else 0))
-        m0 := if (size & sz) != 0
+        m0 :=
+          if (size & sz) != 0
             max0 m at at+sz-1
           else
             m
@@ -342,7 +344,8 @@ O(n log n).
         at0 := (at
                 + (if (size & sz0) != 0 nt else 0)
                 + (if (size & sz ) != 0 sz else 0))
-        a0 := if (size & sz) != 0
+        a0 :=
+          if (size & sz) != 0
             add_all a at at+sz-1
           else
             a

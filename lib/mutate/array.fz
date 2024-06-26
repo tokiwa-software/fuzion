@@ -60,11 +60,11 @@ is
   =>
     check_and_replace
     d := if (data.length.as_i64 > length) data
-      else
-        new_data := fuzion.sys.internal_array_init T (max 8 data.length*2)
-        for i in indices do
-          new_data[i.as_i32] := data[i.as_i32]
-        new_data
+         else
+           new_data := fuzion.sys.internal_array_init T (max 8 data.length*2)
+           for i in indices do
+             new_data[i.as_i32] := data[i.as_i32]
+           new_data
     d[length.as_i32] := o
     set data := d
     set length := length+1
