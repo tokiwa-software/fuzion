@@ -335,10 +335,7 @@ public class Loop extends ANY
                                formalArguments,
                                Function.NO_CALLS,
                                Contract.EMPTY_CONTRACT,
-                               new Impl(p, block, Impl.Kind.RoutineDef))
-      {
-        public boolean resultInternal() { return true; }
-      };
+                               new Impl(p, block, Impl.Kind.RoutineDef));
     _prologSuccessBlock.add(loop);
     _prologSuccessBlock.add(initialCall);
   }
@@ -479,10 +476,7 @@ public class Loop extends ANY
                                     new List<>(),
                                     Function.NO_CALLS,
                                     Contract.EMPTY_CONTRACT,
-                                    new Impl(_elsePos, ei == 0 ? _elseBlock0 : (ei == 1 ? _elseBlock1 : _elseBlock2), Impl.Kind.RoutineDef))
-          {
-            public boolean resultInternal() { return true; }
-          };
+                                    new Impl(_elsePos, ei == 0 ? _elseBlock0 : (ei == 1 ? _elseBlock1 : _elseBlock2), Impl.Kind.RoutineDef));
       }
   }
 
