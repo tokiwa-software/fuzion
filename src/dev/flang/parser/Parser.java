@@ -3174,6 +3174,8 @@ ensure      : "post"        block   // may start at min indent
         postPos = sourceRange(p);
       }
     return pre0 == null && post == null
+      && false // NYI: We cannot use EMPTY_CONTRACT since we might need the last
+               // argument, formArgs supplier, in case we inherit a contract:
       ? Contract.EMPTY_CONTRACT
       : new Contract(pre0, pre1, prePos,  hasElse,
                      post,       postPos, hasThen,
