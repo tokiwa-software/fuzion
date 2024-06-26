@@ -21,27 +21,9 @@
 #
 # -----------------------------------------------------------------------
 
-# previously:
-# a possibly uninitialized loop variables `res`
-# could be accessed without causing an error
-#
-reg_issue764 is
+# used to give error "Ambiguous targets found for call to 'd'"
+# due to to scoping not being implemented properly.
 
-  add_ints(elems Sequence i32) i32 =>
-    for
-      elem in elems
-      res := elem, res + elem
-    else
-      res
-
-  add_strings(elems Sequence String) String =>
-    for
-      elem in elems
-      res := elem, res + elem
-    else
-      res
-
-  say (add_ints [1, 2, 3, 4, 5])
-  say (add_ints (array 0 i->i))
-  say (add_strings ["hello", "world"])
-  say (add_strings (array 0 (i -> $" ")))
+for s := [1] : nil, s.filter x->d.bla
+    d in [1]
+do

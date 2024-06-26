@@ -34,6 +34,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.SortedMap;
 import java.util.Stack;
@@ -54,6 +55,7 @@ import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.FeatureAndOuter;
 import dev.flang.ast.FeatureVisitor;
+import dev.flang.ast.Function;
 import dev.flang.ast.Impl;
 import dev.flang.ast.Resolution;
 import dev.flang.ast.SrcModule;
@@ -614,6 +616,31 @@ part of the (((inner features))) declarations of the corresponding
 
     inner.visit(new FeatureVisitor()
       {
+        private Stack<Expr> _scope = new Stack<>();
+        @Override
+        public void actionBefore(AbstractCase c)
+        {
+          _scope.push(c.code());
+          super.actionBefore(c);
+        }
+        @Override
+        public void actionAfter(AbstractCase c)
+        {
+          _scope.pop();
+          super.actionAfter(c);
+        }
+        @Override
+        public void actionBefore(Block b, AbstractFeature outer)
+        {
+          if (b._newScope) { _scope.push(b); }
+          super.actionBefore(b, outer);
+        }
+        @Override
+        public void actionAfter(Block b, AbstractFeature outer)
+        {
+          if (b._newScope) { _scope.pop(); }
+          super.actionAfter(b, outer);
+        }
         public Call      action(Call      c, AbstractFeature outer) {
           if (c.name() == null)
             { /* this is an anonymous feature declaration */
@@ -629,7 +656,11 @@ part of the (((inner features))) declarations of the corresponding
             }
           return c;
         }
-        public Feature   action(Feature   f, AbstractFeature outer) { findDeclarations(f, outer); return f; }
+        public Feature   action(Feature   f, AbstractFeature outer)
+        {
+          f._scoped = !_scope.isEmpty();
+          findDeclarations(f, outer); return f;
+        }
       });
 
     if (inner.impl().hasInitialValue() &&
@@ -1195,7 +1226,8 @@ A post-condition of a feature that does not redefine an inherited feature must s
             for (var v : e.getValue())
               {
                 if ((use == null || (hidden != featureVisible(use.pos()._sourceFile, v))) &&
-                    (!v.isField() || !foundFieldInScope))
+                    (!v.isField() || !foundFieldInScope) &&
+                    (use == null || /* NYI: do we have to evaluate inScope for all possible outers? */ inScope(use, v)))
                   {
                     result.add(new FeatureAndOuter(v, curOuter, inner));
                     foundFieldInScope = foundFieldInScope || v.isField() && foundFieldInThisScope;
@@ -1208,6 +1240,114 @@ A post-condition of a feature that does not redefine an inherited feature must s
       }
     while (traverseOuter && curOuter != null);
     return result;
+  }
+
+
+  /**
+   * true if `use` is happening in same or some
+   * inner scope of where definition of `v` is.
+   *
+   * see also: tests/visibility_scoping
+   * see also: tests/visibility_negative
+   *
+   * @param use
+   * @param v
+   * @return
+   */
+  private boolean inScope(Expr use, AbstractFeature v)
+  {
+    if (v instanceof Feature f && f._scoped)
+      {
+        var usage = new ArrayList<Stack<Expr>>();
+        var definition = new ArrayList<Stack<Expr>>();
+        var stacks = new ArrayList<Stack<Expr>>();
+        stacks.add(new Stack<>());
+        var visitor = new FeatureVisitor() {
+          public void action(AbstractCall c) {
+            if (use == c)
+              {
+                usage.add((Stack)stacks.get(0).clone());
+              }
+          };
+          public Expr action(Function lambda, AbstractFeature outer) {
+            if (usage.isEmpty() || definition.isEmpty())
+              {
+                stacks.get(0).push(lambda._expr);
+                lambda._expr.visit(this, outer);
+                stacks.get(0).pop();
+              }
+            return lambda;
+          };
+          public Expr action(Feature f2, AbstractFeature outer) {
+            if (f == f2)
+              {
+                definition.add((Stack)stacks.get(0).clone());
+              }
+            // fields are visited by their outers
+            if (usage.isEmpty() && f2.isRoutine())
+              {
+                stacks.get(0).push(f2);
+                f2.impl().visit(this, outer);
+                stacks.get(0).pop();
+              }
+            return f2;
+          };
+          public void actionBefore(Block b, AbstractFeature outer)
+          {
+            if (b._newScope)
+              {
+                stacks.get(0).push(b);
+              }
+          }
+          public void  actionAfter(Block b, AbstractFeature outer)
+          {
+            if (b._newScope)
+              {
+                stacks.get(0).pop();
+              }
+          }
+          public void actionBefore(AbstractCase c)
+          {
+            stacks.get(0).push(c.code());
+          }
+          public void  actionAfter(AbstractCase c)
+          {
+            stacks.get(0).pop();
+          }
+        };
+        f.outer().code().visit(visitor, null);
+        if (usage.isEmpty() || definition.isEmpty())
+          {
+            f.outer().contract().visit(visitor, null);
+          }
+
+        // NYI: check(usage.size() == 1, definition.size() == 1);
+
+        var u = new ArrayList<>(usage.get(0));
+        var d = new ArrayList<>(definition.get(0));
+
+        if (d.size() > u.size())
+          {
+            return false;
+          }
+        else
+          {
+            for (int i = 0; i < d.size(); i++)
+              {
+                if (d.get(i) != u.get(i))
+                  {
+                    return false;
+                  }
+              }
+          }
+        return true;
+      }
+    // definition is not in an inner scope,
+    // no need to do anything
+    else
+      {
+        return true;
+      }
   }
 
 

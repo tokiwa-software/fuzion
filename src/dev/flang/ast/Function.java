@@ -106,7 +106,7 @@ public class Function extends AbstractLambda
   /**
    * the right hand side of the '->'
    */
-  Expr _expr;
+  public final Expr _expr;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -207,7 +207,7 @@ public class Function extends AbstractLambda
    */
   void updateTarget(Resolution res)
   {
-    _expr = _expr.visit(new FeatureVisitor()
+    var e = _expr.visit(new FeatureVisitor()
       {
         public Expr action(Call c, AbstractFeature outer)
         {
@@ -215,6 +215,10 @@ public class Function extends AbstractLambda
         }
       },
       _feature);
+    // since `_expr` is used/visited by `SourceModule.inScope`
+    // ensure that it is not being modified.
+    if (CHECKS) check
+      (e == _expr);
   }
 
 
