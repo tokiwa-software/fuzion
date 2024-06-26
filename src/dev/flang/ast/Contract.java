@@ -961,9 +961,6 @@ all of their redefinition to `true`. +
              z := c.f x y
              z := d.f x y
              z := e.f x y
-
-
-
          */
 
         addPreFeature(f, res, true);
