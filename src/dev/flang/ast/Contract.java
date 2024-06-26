@@ -969,77 +969,31 @@ all of their redefinition to `true`. +
         addPreFeature(f, res, true);
         addPreFeature(f, res, false);
 
-        /*
-
-        var foundInheritedTrue = false;
-        AbstractFeature lastInh = null;
-        for (var inh : fc._inheritedPre)
-          {
-            if (!foundInheritedTrue)
-              {
-                if (hasPreConditionsFeature(inh))
-                  {
-                    if (lastInh != Null)
-                      {
-                        inhPre = callPreBool
-                    List<Expr> args2 = new List<>();
-                    for (var a : args)
-                      {
-                        var ca = new Call(pos,
-                                          new Current(pos, pF),
-                                          a,
-                                          -1);
-                        ca = ca.resolveTypes(res, pF);
-                        args2.add(ca);
-                      }
-                    var inhpre = callPreCondition(res, inh, pF, args2);
-                    inhpre = inhpre.resolveTypes(res, pF);
-                    if (li == null)
-                      {
-                        li = new List<>();
-                      }
-                    li.add(inhpre);
-                  }
-                else
-                  {
-                    foundInheritedTrue = true;
-                  }
-              }
-          }
-        if (li != null)
-          {
-            li.addAll(code._expressions);
-            code._expressions = li;
-          }
-        */
-
         if (!f.isConstructor())
           {
-        var pos = fc._hasPre != null ? fc._hasPre : f.pos();
-        var name2 = preConditionsAndCallFeatureName(f);
-        var args2 = fc._declared_preconditions_as_feature_args2;
-        var l2 = new List<Expr>();
-        var code2 = new Block(l2);
-        var pF2 = new Feature(pos,
-                              f.visibility().eraseTypeVisibility(),
-                              // 0, // NYI: why not this:
-                              f.modifiers() & FuzionConstants.MODIFIER_FIXED, // modifiers
-                              NoType.INSTANCE,
-                              new List<>(name2),
-                              args2,
-                              new List<>(), // inheritance
-                              Contract.EMPTY_CONTRACT,
-                              new Impl(pos, code2, Impl.Kind.RoutineDef));
-        res._module.findDeclarations(pF2, f.outer());
-        f._preAndCallFeature = pF2;
+            var pos = fc._hasPre != null ? fc._hasPre : f.pos();
+            var name2 = preConditionsAndCallFeatureName(f);
+            var args2 = fc._declared_preconditions_as_feature_args2;
+            var l2 = new List<Expr>();
+            var code2 = new Block(l2);
+            var pF2 = new Feature(pos,
+                                  f.visibility().eraseTypeVisibility(),
+                                  // 0, // NYI: why not this:
+                                  f.modifiers() & FuzionConstants.MODIFIER_FIXED, // modifiers
+                                  NoType.INSTANCE,
+                                  new List<>(name2),
+                                  args2,
+                                  new List<>(), // inheritance
+                                  Contract.EMPTY_CONTRACT,
+                                  new Impl(pos, code2, Impl.Kind.RoutineDef));
+            res._module.findDeclarations(pF2, f.outer());
+            f._preAndCallFeature = pF2;
 
-        res.resolveDeclarations(pF2);
-        l2.add(callPreConditionX(res, f));
-        l2.add(callReal(res, f));
-        res.resolveTypes(pF2);
+            res.resolveDeclarations(pF2);
+            l2.add(callPreConditionX(res, f));
+            l2.add(callReal(res, f));
+            res.resolveTypes(pF2);
           }
-
-
 
       }
 
