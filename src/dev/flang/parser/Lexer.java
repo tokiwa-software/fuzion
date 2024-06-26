@@ -590,7 +590,7 @@ public class Lexer extends SourceFile
   /**
    * For _curToken == Token.t_numliteral, this gives the details:
    */
-  private Literal _curNumLiteral = null;
+  private Literal _curLiteral = null;
 
 
   /**
@@ -689,7 +689,7 @@ public class Lexer extends SourceFile
     super(original);
 
     _curToken = original._curToken;
-    _curNumLiteral = original._curNumLiteral;
+    _curLiteral = original._curLiteral;
     _tokenPos = original._tokenPos;
     _lastTokenPos = original._lastTokenPos;
     _lastTokenEndPos = original._lastTokenEndPos;
@@ -1503,10 +1503,13 @@ SEMI        : ';'
               token = Token.t_semicolon;
               break;
             }
-          /* NUM_LITERAL: */
+          /**
+NUM_LITERAL : [0-9]+
+            ;
+          */
           case K_DIGIT   :    // '0'..'9'
             {
-              _curNumLiteral = numLiteral(p);
+              _curLiteral = literal(p);
               token = Token.t_numliteral;
               break;
             }
@@ -1742,7 +1745,7 @@ A xref:fuzion_keyword[Fuzion keyword] cannot be used as a Fuzion identifier.
   /**
    * skip a numeric literal.
    *
-NUM_LITERAL : DIGITS_W_DOT EXPONENT
+LITERAL     : DIGITS_W_DOT EXPONENT
             ;
 fragment
 EXPONENT    : "E" PLUSMINUS DIGITS
@@ -1757,7 +1760,7 @@ PLUSMINUS   : "+"
    *
    * @return the corresponding Token, currently always Token.t_numliteral.
    */
-  Literal numLiteral(int firstDigit)
+  Literal literal(int firstDigit)
   {
     var m = new Digits(firstDigit, true, false);
     var p = curCodePoint();
@@ -2678,12 +2681,12 @@ PIPE        : "|"
   /**
    * Return an object with the details of the current t_numliteral token.
    */
-  Literal curNumLiteral()
+  Literal curLiteral()
   {
     if (PRECONDITIONS) require
       (current() == Token.t_numliteral);
 
-    return _curNumLiteral;
+    return _curLiteral;
   }
 
 
@@ -3539,7 +3542,7 @@ QUESTION    : "?"
     if (PRECONDITIONS) require
       (current() == Token.t_numliteral);
 
-    var result = curNumLiteral();
+    var result = curLiteral();
     next();
     return result;
   }
