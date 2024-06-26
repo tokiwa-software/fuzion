@@ -588,6 +588,43 @@ public class Contract extends ANY
     var pos = fc._hasPre != null ? fc._hasPre : f.pos();
     var l = new List<Expr>();
     Expr cc = null;
+
+    for (var c : dc)
+      {
+        var p = c.cond.pos();
+        if (preBool)
+          {
+            cc = cc == null
+              ? c.cond
+              : new ParsedCall(cc, new ParsedName(pos, "infix &&"), new List<>(c.cond));
+          }
+        else
+          {
+            var cond = c.cond;
+            if (inheritingTrue.isPresent())
+              { // one of the inherited preconditions is `true`, so we do not
+                // need to check the conditions defined locally at all.
+                // However, we want to check the condition code for errors etc.,
+                // so we wrap it into `(true || <cond>)`
+                cond = new ParsedCall(pc(pos, "true"),
+                                      new ParsedName(pos, "infix ||"), new List<>(cond));
+              }
+            l.add(new If(p,
+                         cond,
+                         new Block(),
+                         pc(p, fuzion_runtime_precondition_fault, new List<>(new StrConst(p, p.sourceText())))
+                         )
+              {
+                @Override boolean fromContract() { return true; }
+              }
+                  );
+          }
+      }
+    if (preBool && cc != null)
+      {
+        l.add(cc);
+      }
+
     if (inheritingTrue.isPresent() && !dc.isEmpty())
       {
         /*
@@ -595,35 +632,6 @@ public class Contract extends ANY
         System.err.println("WARNING: For "+f.qualifiedName()+" there are declared preconditions "+dc.getFirst().cond.pos().show()+"\n"+
                            "but these are ignored since we inherit precondition `true` from "+inh+" at "+inh.pos().show());
         */
-      }
-    else
-      {
-        for (var c : dc)
-          {
-            var p = c.cond.pos();
-            if (preBool)
-              {
-                cc = cc == null
-                  ? c.cond
-                  : new ParsedCall(cc, new ParsedName(pos, "infix &&"), new List<>(c.cond));
-              }
-            else
-              {
-                l.add(new If(p,
-                             c.cond,
-                             new Block(),
-                             pc(p, fuzion_runtime_precondition_fault, new List<>(new StrConst(p, p.sourceText())))
-                             )
-                  {
-                    @Override boolean fromContract() { return true; }
-                  }
-                      );
-              }
-          }
-        if (preBool && cc != null)
-          {
-            l.add(cc);
-          }
       }
     var code = new Block(l);
     AbstractType universe_type = null; //new ParsedType(pos, "universe", UnresolvedType.NONE, null);
