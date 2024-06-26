@@ -1,0 +1,9 @@
+
+--CURDIR--/reg_issue2860.fz:33:5: error 1: Could not find called feature
+    i
+----^
+Feature not found: 'i' (no arguments)
+Target feature: 'reg_issue2860.loop_else'
+In call: 'i'
+
+one error.
