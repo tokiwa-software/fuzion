@@ -326,7 +326,7 @@ public class Block extends AbstractBlock
       {
         _expressions.add(resExpr.assignToField(res, outer, r));
       }
-    else if (r.resultType().compareTo(Types.resolved.t_unit) != 0)
+    else if (!r.resultType().isAssignableFrom(Types.resolved.t_unit))
       {
         AstErrors.blockMustEndWithExpression(pos(), r.resultType());
       }
