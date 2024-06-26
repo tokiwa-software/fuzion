@@ -911,7 +911,10 @@ A post-condition of a feature that redefines one or several inherited features m
             if (visibleFor(existing, f.outer()))
               {
                 f.redefines().add(existing);
-                c.addInheritedContract(f, existing);
+                if (f instanceof Feature ff)
+                  {
+                    c.addInheritedContract(ff, existing);
+                  }
               }
           }
       }

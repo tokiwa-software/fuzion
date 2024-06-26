@@ -199,6 +199,17 @@ public class Feature extends AbstractFeature
   private final Contract _contract;
   public Contract contract() { return _contract; }
 
+
+  /**
+   * Lists of features we redefine and hence from which we inherit pre or post
+   * conditions.  Used during front end only to create calls to redefined
+   * features post conditions when generating post condition feature for this
+   * contract.
+   */
+  List<AbstractFeature> _inheritedPre  = new List<>();
+  List<AbstractFeature> _inheritedPost = new List<>();
+
+
   Feature _preFeature = null;
   @Override
   public AbstractFeature preFeature()

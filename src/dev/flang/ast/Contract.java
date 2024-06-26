@@ -82,16 +82,6 @@ public class Contract extends ANY
 
 
   /**
-   * Lists of features we redefine and hence from which we inherit pre or post
-   * conditions.  Used during front end only to create calls to redefined
-   * features post conditions when generating post condition feature for this
-   * contract.
-   */
-  private List<AbstractFeature> _inheritedPre  = new List<>();
-  private List<AbstractFeature> _inheritedPost = new List<>();
-
-
-  /**
    *
    */
   public List<Cond>            _declared_preconditions;
@@ -171,7 +161,7 @@ public class Contract extends ANY
    *
    * @param from the redefined feature this contract should inherit from.
    */
-  public void addInheritedContract(AbstractFeature to, AbstractFeature from)
+  public void addInheritedContract(Feature to, AbstractFeature from)
   {
     if (PRECONDITIONS) require
       (this == to.contract(),
@@ -179,11 +169,11 @@ public class Contract extends ANY
 
     if (!to.isUniverse())
       {
-        _inheritedPre.add(from);
+        to._inheritedPre.add(from);
       }
     if (hasPostConditionsFeature(from))
       {
-        _inheritedPost.add(from);
+        to._inheritedPost.add(from);
       }
   }
 
@@ -192,10 +182,10 @@ public class Contract extends ANY
    * Does this contract require a pre condition feature due to inherited or declared post
    * conditions?
    */
-  boolean requiresPreConditionsFeature()
+  boolean requiresPreConditionsFeature(Feature f)
   {
     return _hasPre != null &&
-      (!_declared_preconditions.isEmpty() || !_inheritedPre.isEmpty());
+      (!_declared_preconditions.isEmpty() || !f._inheritedPre.isEmpty());
   }
 
 
@@ -203,9 +193,9 @@ public class Contract extends ANY
    * Does this contract require a post condition feature due to inherited or declared post
    * conditions?
    */
-  boolean requiresPostConditionsFeature()
+  boolean requiresPostConditionsFeature(Feature f)
   {
-    return !_declared_postconditions.isEmpty() || !_inheritedPost.isEmpty();
+    return !_declared_postconditions.isEmpty() || !f._inheritedPost.isEmpty();
 
   }
 
@@ -219,7 +209,7 @@ public class Contract extends ANY
    */
   static boolean hasPreConditionsFeature(AbstractFeature f)
   {
-    return f.preFeature() != null || f.contract().requiresPreConditionsFeature();
+    return f.preFeature() != null || f instanceof Feature ff && ff.contract().requiresPreConditionsFeature(ff);
   }
 
 
@@ -232,12 +222,12 @@ public class Contract extends ANY
    */
   static boolean hasPostConditionsFeature(AbstractFeature f)
   {
-    return f.postFeature() != null || f.contract().requiresPostConditionsFeature();
+    return f.postFeature() != null || f instanceof Feature ff && ff.contract().requiresPostConditionsFeature(ff);
   }
 
 
   private String _preConditionFeatureName = null;
-  static String preConditionsFeatureName(AbstractFeature f)
+  static String preConditionsFeatureName(Feature f)
   {
     if (PRECONDITIONS) require
       (hasPreConditionsFeature(f));
@@ -584,7 +574,7 @@ public class Contract extends ANY
     var fc = f.contract();
     var dc = preBool ? fc._declared_preconditions2
                      : fc._declared_preconditions;
-    var inhpres = fc._inheritedPre;
+    var inhpres = f._inheritedPre;
     var inheritingTrue = inhpres.stream()
                                 .filter(inh -> !hasPreConditionsFeature(inh))
                                 .findFirst();
@@ -745,7 +735,7 @@ public class Contract extends ANY
     var fc = f.contract();
 
     // add precondition feature
-    if (fc.requiresPreConditionsFeature() &&
+    if (fc.requiresPreConditionsFeature(f) &&
         f._preFeature == null)
       {
 
@@ -1000,7 +990,7 @@ all of their redefinition to `true`. +
       }
 
     // add postcondition feature
-    if (fc.requiresPostConditionsFeature() && f._postFeature == null)
+    if (fc.requiresPostConditionsFeature(f) && f._postFeature == null)
       {
         var name = postConditionsFeatureName(f);
         var args = fc._argsSupplier.get();
@@ -1055,7 +1045,7 @@ The conditions of a post-condition are checked at run-time in sequential source-
         // We add calls to postconditions of redefined features after creating pF since
         // this enables us to access pF directly:
         List<Expr> l2 = null;
-        for (var inh : fc._inheritedPost)
+        for (var inh : f._inheritedPost)
           {
             if (hasPostConditionsFeature(inh))
               {
