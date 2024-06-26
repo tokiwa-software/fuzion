@@ -3171,6 +3171,7 @@ ensure      : "post"        block   // may start at min indent
       : new Contract(pre0,
                      pre,  prePos,  hasElse,
                      post, postPos, hasThen,
+                     //                     ()->forkAtFormArgs.fork().formArgsOpt(true),
                      preArgs,
                      preArgs1,
                      preArgs2,
