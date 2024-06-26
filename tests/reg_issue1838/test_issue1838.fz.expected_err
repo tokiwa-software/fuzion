@@ -5,4 +5,15 @@
 Expression type is 'Any.type'
 To solve this, change the expression to return a value of type 'bool'.
 
-one error.
+
+--CURDIR--/test_issue1838.fz:27:7: error 2: Incompatible types in assignment
+  pre c
+------^
+assignment to field : 'test_pre.#PREBoolx_0.result'
+expected formal type: 'bool'
+actual type found   : 'Any.type'
+assignable to       : 'Any.type'
+for value assigned  : 'c'
+To solve this, you could change the type of the target 'test_pre.#PREBoolx_0.result' to 'Any.type' or convert the type of the assigned value to 'bool'.
+
+2 errors.
