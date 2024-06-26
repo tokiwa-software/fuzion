@@ -3173,12 +3173,10 @@ ensure      : "post"        block   // may start at min indent
         post = Cond.from(block());
         postPos = sourceRange(p);
       }
-    return pre0 == null && post == null //&& postArgs == null
-      ? Contract.EMPTY_CONTRACT
-      : new Contract(pre0, pre1, prePos,  hasElse,
-                     post,       postPos, hasThen,
-                     () -> forkAtFormArgs == null ? new List<AbstractFeature>()
-                                                  : forkAtFormArgs.fork().formArgsOpt(true));
+    return new Contract(pre0, pre1, prePos,  hasElse,
+                        post,       postPos, hasThen,
+                        () -> forkAtFormArgs == null ? new List<AbstractFeature>()
+                                                     : forkAtFormArgs.fork().formArgsOpt(true));
   }
 
 
