@@ -206,11 +206,15 @@ JNIEnv * getJNIEnv()
 
 // initialize the JVM
 // executed once at the start of the application
-void fzE_init_jvm() {
+void fzE_create_jvm(char * option_string) {
   JavaVMInitArgs vm_args;
 
+  JavaVMOption options[1];
+  options[0].optionString = option_string;
+
   vm_args.version = JNI_VERSION_10;
-  vm_args.nOptions = 0;
+  vm_args.options = options;
+  vm_args.nOptions = 1;
   if (JNI_CreateJavaVM(&fzE_jvm, (void **)&fzE_jni_env, &vm_args) != JNI_OK) {
     printf("Failed to start Java VM");
     exit(EXIT_FAILURE);

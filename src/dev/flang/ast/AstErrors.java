@@ -1447,7 +1447,7 @@ public class AstErrors extends ANY
   {
     error(pos,
           "Numeric literal used for integer type is not a whole number",
-          "Type propagation results in an integer type that cannot whole a value that is not integer.\n" +
+          "Type propagation results in an integer type that cannot hold a value that is not integer.\n" +
           "Numeric literal: " + ss(constant) + "\n" +
           "Assigned to type: " + s(t) + "\n");
   }
@@ -1584,8 +1584,8 @@ public class AstErrors extends ANY
   static void choiceMustNotBeRoutine(SourcePosition pos)
   {
     error(pos,
-          "Choice feature must not be defined as a routine with a result",
-          "A choice feature must be a normal feature with empty code section");
+          "Choice feature must not be defined as a routine",
+          "To solve this, replace " + skw("=>") + " by " + skw("is"));
   }
 
   static void choiceMustNotContainCode(SourcePosition pos)

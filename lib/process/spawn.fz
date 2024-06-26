@@ -89,14 +89,14 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
   # install buffered reader for reading from stdout of process
   # and run `f`.
   public with_out(T type, f ()-> T) outcome T =>
-    (io.buffered.reader (std_out_read_provider) pipe_buffer_size [])
+    (io.buffered.reader (std_out_read_provider) pipe_buffer_size)
       .with f
 
 
   # install buffered reader for reading from stdout of process
   # and run `f`.
   public with_err(T type, f ()-> T) outcome T =>
-    (io.buffered.reader (std_err_read_provider) pipe_buffer_size [])
+    (io.buffered.reader (std_err_read_provider) pipe_buffer_size)
       .with f
 
 

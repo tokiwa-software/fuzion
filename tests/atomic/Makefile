@@ -24,5 +24,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = test_atomic
-export FUZION_JAVA_STACK_SIZE = 16m # This seems necessary for interpreter on MacOS
+export FUZION_JAVA_STACK_SIZE = 64m # This seems necessary for interpreter on MacOS and windows
 include ../simple.mk

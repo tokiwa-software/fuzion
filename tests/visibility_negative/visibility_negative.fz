@@ -34,7 +34,7 @@ visibility_negative is
       _ := set_exit_code 1
 
   chck (a,b i32, msg String) unit =>
-    if a == b
+    if a = b
       say "PASSED: $msg"
     else
       say "FAILED: expected $b got $a"
@@ -43,7 +43,7 @@ visibility_negative is
   visi1 =>
     a1 is
       b1 is
-        c1(b bool) i32 is
+        c1(b bool) i32 =>
           if b { a1; a2; b1; b2; c1 false; c2 false }
           c3 //  1. should flag an error: feature not found / not visible
           c4 //  2. should flag an error: feature not found / not visible
@@ -52,7 +52,7 @@ visibility_negative is
           c6 //  5. should flag an error: feature not found / not visible
           11
 
-        c2(b bool) i32 is
+        c2(b bool) i32 =>
           if b { a1; a2; b1; b2; c1 false; c2 false }
           c3 //  6. should flag an error: feature not found / not visible
           c4 //  7. should flag an error: feature not found / not visible
@@ -62,7 +62,7 @@ visibility_negative is
           22
 
       b2 is
-        c3(b bool) i32 is
+        c3(b bool) i32 =>
           if b { a1; a2; b1; b2; c3 false; c4 false }
           c1 // 11. should flag an error: feature not found / not visible
           c2 // 12. should flag an error: feature not found / not visible
@@ -71,7 +71,7 @@ visibility_negative is
           c6 // 15. should flag an error: feature not found / not visible
           33
 
-        c4(b bool) i32 is
+        c4(b bool) i32 =>
           if b { a1; a2; b1; b2; c3 false; c4 false }
           c1 // 16. should flag an error: feature not found / not visible
           c2 // 17. should flag an error: feature not found / not visible
@@ -82,7 +82,7 @@ visibility_negative is
 
     a2 is
       b3 is
-        c5(b bool) i32 is
+        c5(b bool) i32 =>
           if b { a1; a2; b3; c5 false; c6 false }
           c1 // 21. should flag an error: feature not found / not visible
           c2 // 22. should flag an error: feature not found / not visible
@@ -92,7 +92,7 @@ visibility_negative is
           b2 // 26. should flag an error: feature not found / not visible
           55
 
-        c6(b bool) i32 is
+        c6(b bool) i32 =>
           if b { a1; a2; b3; c5 false; c6 false }
           c1 // 27. should flag an error: feature not found / not visible
           c2 // 28. should flag an error: feature not found / not visible
@@ -101,12 +101,12 @@ visibility_negative is
           b1 // 31. should flag an error: feature not found / not visible
           b2 // 32. should flag an error: feature not found / not visible
           66
-    chck (a1.b1.c1 true == 11) "call a1.b1.c1"
-    chck (a1.b1.c2 true == 22) "call a1.b1.c2"
-    chck (a1.b2.c3 true == 33) "call a1.b2.c3"
-    chck (a1.b2.c4 true == 44) "call a1.b2.c4"
-    chck (a2.b3.c5 true == 55) "call a2.b3.c5"
-    chck (a2.b3.c6 true == 66) "call a2.b3.c6"
+    chck (a1.b1.c1 true = 11) "call a1.b1.c1"
+    chck (a1.b1.c2 true = 22) "call a1.b1.c2"
+    chck (a1.b2.c3 true = 33) "call a1.b2.c3"
+    chck (a1.b2.c4 true = 44) "call a1.b2.c4"
+    chck (a2.b3.c5 true = 55) "call a2.b3.c5"
+    chck (a2.b3.c6 true = 66) "call a2.b3.c6"
   visi1
 
   visi2 =>
@@ -116,7 +116,7 @@ visibility_negative is
 
     a1 is
       f1 := expr
-      chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+      chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
       use f2   // 33. should flag an error: feature not found / not visible
       use f3   // 34. should flag an error: feature not found / not visible
       use f4   // 35. should flag an error: feature not found / not visible
@@ -126,115 +126,115 @@ visibility_negative is
       use f8   // 39. should flag an error: feature not found / not visible
       use f9   // 40. should flag an error: feature not found / not visible
       b1 is
-        chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+        chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
         use f2   // 41. should flag an error: feature not found / not visible
         use f3   // 42. should flag an error: feature not found / not visible
         use f4   // 43. should flag an error: feature not found / not visible
         use f5   // 44. should flag an error: feature not found / not visible
         use f6   // 45. should flag an error: feature not found / not visible
         use f7   // 46. should flag an error: feature not found / not visible
-        use f8   // 47. should flag an error: feature not found / not visible
+        use f8   // 47. NYI: UNDER DEVELOPMENT: flag an error: feature not found / not visible
         use f9   // 48. should flag an error: feature not found / not visible
         f2 := expr
-        chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
-        chck (f2 == 33 || f2 == 99) "can access f2"
+        chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
+        chck (f2 = 33 || f2 = 99) "can access f2"
         use f3   // 49. should flag an error: feature not found / not visible
         use f4   // 50. should flag an error: feature not found / not visible
         use f5   // 51. should flag an error: feature not found / not visible
         use f6   // 52. should flag an error: feature not found / not visible
         use f7   // 53. should flag an error: feature not found / not visible
-        use f8   // 54. should flag an error: feature not found / not visible
+        use f8   // 54. NYI: UNDER DEVELOPMENT: flag an error: feature not found / not visible
         use f9   // 55. should flag an error: feature not found / not visible
         c1 is
-          chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
-          chck (f2 == 33 || f2 == 99) "can access f2"
+          chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
+          chck (f2 = 33 || f2 = 99) "can access f2"
           use f3   // 56. should flag an error: feature not found / not visible
           use f4   // 57. should flag an error: feature not found / not visible
           use f5   // 58. should flag an error: feature not found / not visible
           use f6   // 59. should flag an error: feature not found / not visible
-          use f7   // 60. should flag an error: feature not found / not visible
-          use f8   // 61. should flag an error: feature not found / not visible
+          use f7   // 60. NYI: UNDER DEVELOPMENT: flag an error: feature not found / not visible
+          use f8   // 61. NYI: UNDER DEVELOPMENT: flag an error: feature not found / not visible
           use f9   // 62. should flag an error: feature not found / not visible
           f3 := expr
-          chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
-          chck (f2 == 33 || f2 == 99) "can access f2"
+          chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
+          chck (f2 = 33 || f2 = 99) "can access f2"
           chck f3 55 "can access f3"
           use f4   // 63. should flag an error: feature not found / not visible
           use f5   // 64. should flag an error: feature not found / not visible
           use f6   // 65. should flag an error: feature not found / not visible
-          use f7   // 66. should flag an error: feature not found / not visible
-          use f8   // 67. should flag an error: feature not found / not visible
+          use f7   // 66. NYI: UNDER DEVELOPMENT: flag an error: feature not found / not visible
+          use f8   // 67. NYI: UNDER DEVELOPMENT: flag an error: feature not found / not visible
           use f9   // 68. should flag an error: feature not found / not visible
           f4 := expr
-          chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
-          chck (f2 == 33 || f2 == 99) "can access f2"
+          chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
+          chck (f2 = 33 || f2 = 99) "can access f2"
           chck f3 55 "can access f3"
           chck f4 66 "can access f4"
           use f5   // 69. should flag an error: feature not found / not visible
           use f6   // 70. should flag an error: feature not found / not visible
-          use f7   // 71. should flag an error: feature not found / not visible
-          use f8   // 72. should flag an error: feature not found / not visible
+          use f7   // 71. NYI: UNDER DEVELOPMENT: flag an error: feature not found / not visible
+          use f8   // 72. NYI: UNDER DEVELOPMENT: flag an error: feature not found / not visible
           use f9   // 73. should flag an error: feature not found / not visible
-        chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
-        chck (f2 == 33 || f2 == 99) "can access f2"
+        chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
+        chck (f2 = 33 || f2 = 99) "can access f2"
         use f3   // 74. should flag an error: feature not found / not visible
         use f4   // 75. should flag an error: feature not found / not visible
         use f5   // 76. should flag an error: feature not found / not visible
         use f6   // 77. should flag an error: feature not found / not visible
         use f7   // 78. should flag an error: feature not found / not visible
-        use f8   // 79. should flag an error: feature not found / not visible
+        use f8   // 79. NYI: UNDER DEVELOPMENT: flag an error: feature not found / not visible
         use f9   // 80. should flag an error: feature not found / not visible
 
         c2 is
-          chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
-          chck (f2 == 33 || f2 == 99) "can access f2"
+          chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
+          chck (f2 = 33 || f2 = 99) "can access f2"
           use f3   // 81. should flag an error: feature not found / not visible
           use f4   // 82. should flag an error: feature not found / not visible
           use f5   // 83. should flag an error: feature not found / not visible
           use f6   // 84. should flag an error: feature not found / not visible
-          use f7   // 85. should flag an error: feature not found / not visible
-          use f8   // 86. should flag an error: feature not found / not visible
+          use f7   // 85. NYI: UNDER DEVELOPMENT: flag an error: feature not found / not visible
+          use f8   // 86. NYI: UNDER DEVELOPMENT: flag an error: feature not found / not visible
           use f9   // 87. should flag an error: feature not found / not visible
           f5 := expr
-          chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
-          chck (f2 == 33 || f2 == 99) "can access f2"
+          chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
+          chck (f2 = 33 || f2 = 99) "can access f2"
           use f3   // 88. should flag an error: feature not found / not visible
           use f4   // 89. should flag an error: feature not found / not visible
-          chck (f5 == 55 || f5 == 121) "can access f5"
+          chck (f5 = 55 || f5 = 121) "can access f5"
           use f6   // 90. should flag an error: feature not found / not visible
-          use f7   // 91. should flag an error: feature not found / not visible
-          use f8   // 92. should flag an error: feature not found / not visible
+          use f7   // 91. NYI: UNDER DEVELOPMENT: flag an error: feature not found / not visible
+          use f8   // 92. NYI: UNDER DEVELOPMENT: flag an error: feature not found / not visible
           use f9   // 93. should flag an error: feature not found / not visible
           f6 := expr
-          chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
-          chck (f2 == 33 || f2 == 99) "can access f2"
+          chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
+          chck (f2 = 33 || f2 = 99) "can access f2"
           use f3   // 94. should flag an error: feature not found / not visible
           use f4   // 95. should flag an error: feature not found / not visible
-          chck (f5 == 55 || f5 == 121) "can access f5"
-          chck (f6 == 66 || f6 == 132) "can access f6"
-          use f7   // 96. should flag an error: feature not found / not visible
-          use f8   // 97. should flag an error: feature not found / not visible
+          chck (f5 = 55 || f5 = 121) "can access f5"
+          chck (f6 = 66 || f6 = 132) "can access f6"
+          use f7   // 96. NYI: UNDER DEVELOPMENT: flag an error: feature not found / not visible
+          use f8   // 97. NYI: UNDER DEVELOPMENT: flag an error: feature not found / not visible
           use f9   // 98. should flag an error: feature not found / not visible
-        chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
-        chck (f2 == 33 || f2 == 99) "can access f2"
+        chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
+        chck (f2 = 33 || f2 = 99) "can access f2"
         use f3   // 99. should flag an error: feature not found / not visible
         use f4   // 100. should flag an error: feature not found / not visible
         use f5   // 101. should flag an error: feature not found / not visible
         use f6   // 102. should flag an error: feature not found / not visible
         use f7   // 103. should flag an error: feature not found / not visible
-        use f8   // 104. should flag an error: feature not found / not visible
+        use f8   // 104. NYI: UNDER DEVELOPMENT: flag an error: feature not found / not visible
         use f9   // 105. should flag an error: feature not found / not visible
         f7 := expr
-        chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
-        chck (f2 == 33 || f2 == 99) "can access f2"
+        chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
+        chck (f2 = 33 || f2 = 99) "can access f2"
         use f3   // 106. should flag an error: feature not found / not visible
         use f4   // 107. should flag an error: feature not found / not visible
         use f5   // 108. should flag an error: feature not found / not visible
         use f6   // 109. should flag an error: feature not found / not visible
-        chck (f7 == 44 || f7 == 110) "can access f7"
-        use f8   // 110. should flag an error: feature not found / not visible
+        chck (f7 = 44 || f7 = 110) "can access f7"
+        use f8   // 110. NYI: UNDER DEVELOPMENT: flag an error: feature not found / not visible
         use f9   // 111. should flag an error: feature not found / not visible
-      chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+      chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
       use f2   // 112. should flag an error: feature not found / not visible
       use f3   // 113. should flag an error: feature not found / not visible
       use f4   // 114. should flag an error: feature not found / not visible
@@ -244,44 +244,44 @@ visibility_negative is
       use f8   // 118. should flag an error: feature not found / not visible
       use f9   // 119. should flag an error: feature not found / not visible
       f8 := expr
-      chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+      chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
       use f2   // 120. should flag an error: feature not found / not visible
       use f3   // 121. should flag an error: feature not found / not visible
       use f4   // 122. should flag an error: feature not found / not visible
       use f5   // 123. should flag an error: feature not found / not visible
       use f6   // 124. should flag an error: feature not found / not visible
       use f7   // 125. should flag an error: feature not found / not visible
-      chck (f8 == 22 || f8 == 88 || f8 == 154) "can access f8"
+      chck (f8 = 22 || f8 = 88 || f8 = 154) "can access f8"
       use f9   // 126. should flag an error: feature not found / not visible
 
       b2 is
-        chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+        chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
         use f2   // 127. should flag an error: feature not found / not visible
         use f3   // 128. should flag an error: feature not found / not visible
         use f4   // 129. should flag an error: feature not found / not visible
         use f5   // 130. should flag an error: feature not found / not visible
         use f6   // 131. should flag an error: feature not found / not visible
         use f7   // 132. should flag an error: feature not found / not visible
-        chck (f8 == 22 || f8 == 88 || f8 == 154) "can access f8"
+        chck (f8 = 22 || f8 = 88 || f8 = 154) "can access f8"
         use f9   // 133. should flag an error: feature not found / not visible
         f9 := expr
-        chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+        chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
         use f2   // 134. should flag an error: feature not found / not visible
         use f3   // 135. should flag an error: feature not found / not visible
         use f4   // 136. should flag an error: feature not found / not visible
         use f5   // 137. should flag an error: feature not found / not visible
         use f6   // 138. should flag an error: feature not found / not visible
         use f7   // 139. should flag an error: feature not found / not visible
-        chck (f8 == 22 || f8 == 88 || f8 == 154) "can access f8"
-        chck (f9 == 99 || f9 == 165) "can access f9"
-      chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
+        chck (f8 = 22 || f8 = 88 || f8 = 154) "can access f8"
+        chck (f9 = 99 || f9 = 165) "can access f9"
+      chck (f1 = 11 || f1 = 77 || f1 = 143) "can access f1"
       use f2   // 140. should flag an error: feature not found / not visible
       use f3   // 141. should flag an error: feature not found / not visible
       use f4   // 142. should flag an error: feature not found / not visible
       use f5   // 143. should flag an error: feature not found / not visible
       use f6   // 144. should flag an error: feature not found / not visible
       use f7   // 145. should flag an error: feature not found / not visible
-      chck (f8 == 22 || f8 == 88 || f8 == 154) "can access f8"
+      chck (f8 = 22 || f8 = 88 || f8 = 154) "can access f8"
       use f9   // 146. should flag an error: feature not found / not visible
     a1.b1.c1
     a1.b1.c2
@@ -294,7 +294,7 @@ visibility_negative is
 
     a1 is
       f1 := expr
-      set f1 := 111; chck (f1 == 111) "can assign f1"
+      set f1 := 111; chck (f1 = 111) "can assign f1"
       set f2 := 222 // 147. should flag an error: feature not visible for assignment
       set f3 := 333 // 148. should flag an error: feature not visible for assignment
       set f4 := 444 // 149. should flag an error: feature not visible for assignment
@@ -304,115 +304,115 @@ visibility_negative is
       set f8 := 888 // 153. should flag an error: feature not visible for assignment
       set f9 := 999 // 154. should flag an error: feature not visible for assignment
       b1 is
-        set f1 := 111; chck (f1 == 111) "can assign f1"
+        set f1 := 111; chck (f1 = 111) "can assign f1"
         set f2 := 222 // 155. should flag an error: feature not visible for assignment
         set f3 := 333 // 156. should flag an error: feature not visible for assignment
         set f4 := 444 // 157. should flag an error: feature not visible for assignment
         set f5 := 555 // 158. should flag an error: feature not visible for assignment
         set f6 := 666 // 159. should flag an error: feature not visible for assignment
         set f7 := 777 // 160. should flag an error: feature not visible for assignment
-        set f8 := 888 // 161. should flag an error: feature not visible for assignment
+        set f8 := 888 // 161. NYI: UNDER DEVELOPMENT: flag an error: feature not visible for assignment
         set f9 := 999 // 162. should flag an error: feature not visible for assignment
         f2 := expr
-        set f1 := 111; chck (f1 == 111) "can assign f1"
-        set f2 := 222; chck (f2 == 222) "can assign f2"
+        set f1 := 111; chck (f1 = 111) "can assign f1"
+        set f2 := 222; chck (f2 = 222) "can assign f2"
         set f3 := 333 // 163. should flag an error: feature not visible for assignment
         set f4 := 444 // 164. should flag an error: feature not visible for assignment
         set f5 := 555 // 165. should flag an error: feature not visible for assignment
         set f6 := 666 // 166. should flag an error: feature not visible for assignment
         set f7 := 777 // 167. should flag an error: feature not visible for assignment
-        set f8 := 888 // 168. should flag an error: feature not visible for assignment
+        set f8 := 888 // 168. NYI: UNDER DEVELOPMENT: flag an error: feature not visible for assignment
         set f9 := 999 // 169. should flag an error: feature not visible for assignment
         c1 is
-          set f1 := 111; chck (f1 == 111) "can assign f1"
-          set f2 := 222; chck (f2 == 222) "can assign f2"
+          set f1 := 111; chck (f1 = 111) "can assign f1"
+          set f2 := 222; chck (f2 = 222) "can assign f2"
           set f3 := 333 // 170. should flag an error: feature not visible for assignment
           set f4 := 444 // 171. should flag an error: feature not visible for assignment
           set f5 := 555 // 172. should flag an error: feature not visible for assignment
           set f6 := 666 // 173. should flag an error: feature not visible for assignment
-          set f7 := 777 // 174. should flag an error: feature not visible for assignment
-          set f8 := 888 // 175. should flag an error: feature not visible for assignment
+          set f7 := 777 // 174. NYI: UNDER DEVELOPMENT: flag an error: feature not visible for assignment
+          set f8 := 888 // 175. NYI: UNDER DEVELOPMENT: flag an error: feature not visible for assignment
           set f9 := 999 // 176. should flag an error: feature not visible for assignment
           f3 := expr
-          set f1 := 111; chck (f1 == 111) "can assign f1"
-          set f2 := 222; chck (f2 == 222) "can assign f2"
-          set f3 := 333; chck (f3 == 333) "can assign f3"
+          set f1 := 111; chck (f1 = 111) "can assign f1"
+          set f2 := 222; chck (f2 = 222) "can assign f2"
+          set f3 := 333; chck (f3 = 333) "can assign f3"
           set f4 := 444 // 177. should flag an error: feature not visible for assignment
           set f5 := 555 // 178. should flag an error: feature not visible for assignment
           set f6 := 666 // 179. should flag an error: feature not visible for assignment
-          set f7 := 777 // 180. should flag an error: feature not visible for assignment
-          set f8 := 888 // 181. should flag an error: feature not visible for assignment
+          set f7 := 777 // 180. NYI: UNDER DEVELOPMENT: flag an error: feature not visible for assignment
+          set f8 := 888 // 181. NYI: UNDER DEVELOPMENT: flag an error: feature not visible for assignment
           set f9 := 999 // 182. should flag an error: feature not visible for assignment
           f4 := expr
-          set f1 := 111; chck (f1 == 111) "can assign f1"
-          set f2 := 222; chck (f2 == 222) "can assign f2"
-          set f3 := 333; chck (f3 == 333) "can assign f3"
-          set f4 := 444; chck (f4 == 444) "can assign f4"
+          set f1 := 111; chck (f1 = 111) "can assign f1"
+          set f2 := 222; chck (f2 = 222) "can assign f2"
+          set f3 := 333; chck (f3 = 333) "can assign f3"
+          set f4 := 444; chck (f4 = 444) "can assign f4"
           set f5 := 555 // 183. should flag an error: feature not visible for assignment
           set f6 := 666 // 184. should flag an error: feature not visible for assignment
-          set f7 := 777 // 185. should flag an error: feature not visible for assignment
-          set f8 := 888 // 186. should flag an error: feature not visible for assignment
+          set f7 := 777 // 185. NYI: UNDER DEVELOPMENT: flag an error: feature not visible for assignment
+          set f8 := 888 // 186. NYI: UNDER DEVELOPMENT: flag an error: feature not visible for assignment
           set f9 := 999 // 187. should flag an error: feature not visible for assignment
-        set f1 := 111; chck (f1 == 111) "can assign f1"
-        set f2 := 222; chck (f2 == 222) "can assign f2"
+        set f1 := 111; chck (f1 = 111) "can assign f1"
+        set f2 := 222; chck (f2 = 222) "can assign f2"
         set f3 := 333 // 188. should flag an error: feature not visible for assignment
         set f4 := 444 // 189. should flag an error: feature not visible for assignment
         set f5 := 555 // 190. should flag an error: feature not visible for assignment
         set f6 := 666 // 191. should flag an error: feature not visible for assignment
         set f7 := 777 // 192. should flag an error: feature not visible for assignment
-        set f8 := 888 // 193. should flag an error: feature not visible for assignment
+        set f8 := 888 // 193. NYI: UNDER DEVELOPMENT: flag an error: feature not visible for assignment
         set f9 := 999 // 194. should flag an error: feature not visible for assignment
 
         c2 is
-          set f1 := 111; chck (f1 == 111) "can assign f1"
-          set f2 := 222; chck (f2 == 222) "can assign f2"
+          set f1 := 111; chck (f1 = 111) "can assign f1"
+          set f2 := 222; chck (f2 = 222) "can assign f2"
           set f3 := 333 // 195. should flag an error: feature not visible for assignment
           set f4 := 444 // 196. should flag an error: feature not visible for assignment
           set f5 := 555 // 197. should flag an error: feature not visible for assignment
           set f6 := 666 // 198. should flag an error: feature not visible for assignment
-          set f7 := 777 // 199. should flag an error: feature not visible for assignment
-          set f8 := 888 // 200. should flag an error: feature not visible for assignment
+          set f7 := 777 // 199. NYI: UNDER DEVELOPMENT: flag an error: feature not visible for assignment
+          set f8 := 888 // 200. NYI: UNDER DEVELOPMENT: flag an error: feature not visible for assignment
           set f9 := 999 // 201. should flag an error: feature not visible for assignment
           f5 := expr
-          set f1 := 111; chck (f1 == 111) "can assign f1"
-          set f2 := 222; chck (f2 == 222) "can assign f2"
+          set f1 := 111; chck (f1 = 111) "can assign f1"
+          set f2 := 222; chck (f2 = 222) "can assign f2"
           set f3 := 333 // 202. should flag an error: feature not visible for assignment
           set f4 := 444 // 203. should flag an error: feature not visible for assignment
-          set f5 := 555; chck (f5 == 555) "can assign f5"
+          set f5 := 555; chck (f5 = 555) "can assign f5"
           set f6 := 666 // 204. should flag an error: feature not visible for assignment
-          set f7 := 777 // 205. should flag an error: feature not visible for assignment
-          set f8 := 888 // 206. should flag an error: feature not visible for assignment
+          set f7 := 777 // 205. NYI: UNDER DEVELOPMENT: flag an error: feature not visible for assignment
+          set f8 := 888 // 206. NYI: UNDER DEVELOPMENT: flag an error: feature not visible for assignment
           set f9 := 999 // 207. should flag an error: feature not visible for assignment
           f6 := expr
-          set f1 := 111; chck (f1 == 111) "can assign f1"
-          set f2 := 222; chck (f2 == 222) "can assign f2"
+          set f1 := 111; chck (f1 = 111) "can assign f1"
+          set f2 := 222; chck (f2 = 222) "can assign f2"
           set f3 := 333 // 208. should flag an error: feature not visible for assignment
           set f4 := 444 // 209. should flag an error: feature not visible for assignment
-          set f5 := 555; chck (f5 == 555) "can assign f5"
-          set f6 := 666; chck (f6 == 666) "can assign f6"
-          set f7 := 777 // 210. should flag an error: feature not visible for assignment
-          set f8 := 888 // 211. should flag an error: feature not visible for assignment
+          set f5 := 555; chck (f5 = 555) "can assign f5"
+          set f6 := 666; chck (f6 = 666) "can assign f6"
+          set f7 := 777 // 210. NYI: UNDER DEVELOPMENT: flag an error: feature not visible for assignment
+          set f8 := 888 // 211. NYI: UNDER DEVELOPMENT: flag an error: feature not visible for assignment
           set f9 := 999 // 212. should flag an error: feature not visible for assignment
-        set f1 := 111; chck (f1 == 111) "can assign f1"
-        set f2 := 222; chck (f2 == 222) "can assign f2"
+        set f1 := 111; chck (f1 = 111) "can assign f1"
+        set f2 := 222; chck (f2 = 222) "can assign f2"
         set f3 := 333 // 213. should flag an error: feature not visible for assignment
         set f4 := 444 // 214. should flag an error: feature not visible for assignment
         set f5 := 555 // 215. should flag an error: feature not visible for assignment
         set f6 := 666 // 216. should flag an error: feature not visible for assignment
         set f7 := 777 // 217. should flag an error: feature not visible for assignment
-        set f8 := 888 // 218. should flag an error: feature not visible for assignment
+        set f8 := 888 // 218. NYI: UNDER DEVELOPMENT: flag an error: feature not visible for assignment
         set f9 := 999 // 219. should flag an error: feature not visible for assignment
         f7 := expr
-        set f1 := 111; chck (f1 == 111) "can assign f1"
-        set f2 := 222; chck (f2 == 222) "can assign f2"
+        set f1 := 111; chck (f1 = 111) "can assign f1"
+        set f2 := 222; chck (f2 = 222) "can assign f2"
         set f3 := 333 // 220. should flag an error: feature not visible for assignment
         set f4 := 444 // 221. should flag an error: feature not visible for assignment
         set f5 := 555 // 222. should flag an error: feature not visible for assignment
         set f6 := 666 // 223. should flag an error: feature not visible for assignment
-        set f7 := 777; chck (f7 == 777) "can assign f7"
-        set f8 := 888 // 224. should flag an error: feature not visible for assignment
+        set f7 := 777; chck (f7 = 777) "can assign f7"
+        set f8 := 888 // 224. NYI: UNDER DEVELOPMENT: flag an error: feature not visible for assignment
         set f9 := 999 // 225. should flag an error: feature not visible for assignment
-      set f1 := 111; chck (f1 == 111) "can assign f1"
+      set f1 := 111; chck (f1 = 111) "can assign f1"
       set f2 := 222 // 226. should flag an error: feature not visible for assignment
       set f3 := 333 // 227. should flag an error: feature not visible for assignment
       set f4 := 444 // 228. should flag an error: feature not visible for assignment
@@ -422,44 +422,44 @@ visibility_negative is
       set f8 := 888 // 232. should flag an error: feature not visible for assignment
       set f9 := 999 // 233. should flag an error: feature not visible for assignment
       f8 := expr
-      set f1 := 111; chck (f1 == 111) "can assign f1"
+      set f1 := 111; chck (f1 = 111) "can assign f1"
       set f2 := 222 // 234. should flag an error: feature not visible for assignment
       set f3 := 333 // 235. should flag an error: feature not visible for assignment
       set f4 := 444 // 236. should flag an error: feature not visible for assignment
       set f5 := 555 // 237. should flag an error: feature not visible for assignment
       set f6 := 666 // 238. should flag an error: feature not visible for assignment
       set f7 := 777 // 239. should flag an error: feature not visible for assignment
-      set f8 := 888; chck (f8 == 888) "can assign f8"
+      set f8 := 888; chck (f8 = 888) "can assign f8"
       set f9 := 999 // 240. should flag an error: feature not visible for assignment
 
       b2 is
-        set f1 := 111; chck (f1 == 111) "can assign f1"
+        set f1 := 111; chck (f1 = 111) "can assign f1"
         set f2 := 222 // 241. should flag an error: feature not visible for assignment
         set f3 := 333 // 242. should flag an error: feature not visible for assignment
         set f4 := 444 // 243. should flag an error: feature not visible for assignment
         set f5 := 555 // 244. should flag an error: feature not visible for assignment
         set f6 := 666 // 245. should flag an error: feature not visible for assignment
         set f7 := 777 // 246. should flag an error: feature not visible for assignment
-        set f8 := 888; chck (f8 == 888) "can assign f8"
+        set f8 := 888; chck (f8 = 888) "can assign f8"
         set f9 := 999 // 247. should flag an error: feature not visible for assignment
         f9 := expr
-        set f1 := 111; chck (f1 == 111) "can assign f1"
+        set f1 := 111; chck (f1 = 111) "can assign f1"
         set f2 := 222 // 248. should flag an error: feature not visible for assignment
         set f3 := 333 // 249. should flag an error: feature not visible for assignment
         set f4 := 444 // 250. should flag an error: feature not visible for assignment
         set f5 := 555 // 251. should flag an error: feature not visible for assignment
         set f6 := 666 // 252. should flag an error: feature not visible for assignment
         set f7 := 777 // 253. should flag an error: feature not visible for assignment
-        set f8 := 888; chck (f8 == 888) "can assign f8"
-        set f9 := 999; chck (f9 == 999) "can assign f9"
-      set f1 := 111; chck (f1 == 111) "can assign f1"
+        set f8 := 888; chck (f8 = 888) "can assign f8"
+        set f9 := 999; chck (f9 = 999) "can assign f9"
+      set f1 := 111; chck (f1 = 111) "can assign f1"
       set f2 := 222 // 254. should flag an error: feature not visible for assignment
       set f3 := 333 // 255. should flag an error: feature not visible for assignment
       set f4 := 444 // 256. should flag an error: feature not visible for assignment
       set f5 := 555 // 257. should flag an error: feature not visible for assignment
       set f6 := 666 // 258. should flag an error: feature not visible for assignment
       set f7 := 777 // 259. should flag an error: feature not visible for assignment
-      set f8 := 888; chck (f8 == 888) "can assign f8"
+      set f8 := 888; chck (f8 = 888) "can assign f8"
       set f9 := 999 // 260. should flag an error: feature not visible for assignment
     a1.b1.c1
     a1.b1.c2
@@ -468,36 +468,36 @@ visibility_negative is
 
   visi5 =>
     a is
-      chck (x == "Outer!") "outer x"               // 261. should flag an error: field used before it is declared
-      chck (a.this.x == "Outer!") "a.this.x"       // 262. should flag an error: field used before it is declared
-      chck (b.this.x == "Inner!") "b.this.x"       // 263. should flag an error: feature not visible
-      chck (c.this.x == "Inner Inner!") "c.this.x" // 264. should flag an error: feature not visible
+      chck (x = "Outer!") "outer x"               // 261. should flag an error: field used before it is declared
+      chck (a.this.x = "Outer!") "a.this.x"       // 262. NYI: UNDER DEVELOPMENT: flag an error: field used before it is declared
+      chck (b.this.x = "Inner!") "b.this.x"       // 263. should flag an error: feature not visible
+      chck (c.this.x = "Inner Inner!") "c.this.x" // 264. should flag an error: feature not visible
       x := "Outer!"
-      chck (x == "Outer!") "outer x"
-      chck (a.this.x == "Outer!") "a.this.x"
-      chck (b.this.x == "Inner!") "b.this.x"       // 265. should flag an error: feature not visible
-      chck (c.this.x == "Inner Inner!") "c.this.x" // 266. should flag an error: feature not visible
+      chck (x = "Outer!") "outer x"
+      chck (a.this.x = "Outer!") "a.this.x"
+      chck (b.this.x = "Inner!") "b.this.x"       // 265. should flag an error: feature not visible
+      chck (c.this.x = "Inner Inner!") "c.this.x" // 266. should flag an error: feature not visible
       b is
-        chck (x == "Outer!") "outer x"
-        chck (a.this.x == "Outer!") "a.this.x"
-        chck (b.this.x == "Inner!") "b.this.x"       // 267. should flag an error: feature used before it is declared
-        chck (c.this.x == "Inner Inner!") "c.this.x" // 268. should flag an error: feature not visible
+        chck (x = "Outer!") "outer x"
+        chck (a.this.x = "Outer!") "a.this.x"
+        chck (b.this.x = "Inner!") "b.this.x"       // 267. NYI: UNDER DEVELOPMENT: flag an error: feature used before it is declared
+        chck (c.this.x = "Inner Inner!") "c.this.x" // 268. should flag an error: feature not visible
         x := "Inner!"
-        chck (x == "Inner!") "inner x"
-        chck (a.this.x == "Outer!") "a.this.x"
-        chck (b.this.x == "Inner!") "b.this.x"
-        chck (c.this.x == "Inner Inner!") "c.this.x" // 269. should flag an error: feature not visible
+        chck (x = "Inner!") "inner x"
+        chck (a.this.x = "Outer!") "a.this.x"
+        chck (b.this.x = "Inner!") "b.this.x"
+        chck (c.this.x = "Inner Inner!") "c.this.x" // 269. should flag an error: feature not visible
 
         c is
-          chck (x == "Inner!") "inner x"
-          chck (a.this.x == "Outer!") "a.this.x"
-          chck (b.this.x == "Inner!") "b.this.x"
-          chck (c.this.x == "Inner Inner!") "c.this.x" // 270. should flag an error: feature used before it is declared
+          chck (x = "Inner!") "inner x"
+          chck (a.this.x = "Outer!") "a.this.x"
+          chck (b.this.x = "Inner!") "b.this.x"
+          chck (c.this.x = "Inner Inner!") "c.this.x" // 270. NYI: UNDER DEVELOPMENT: flag an error: feature used before it is declared
           x := "Inner Inner!"
-          chck (x == "Inner Inner!") "inner inner x"
-          chck (a.this.x == "Outer!") "a.this.x"
-          chck (b.this.x == "Inner!") "b.this.x"
-          chck (c.this.x == "Inner Inner!") "c.this.x"
+          chck (x = "Inner Inner!") "inner inner x"
+          chck (a.this.x = "Outer!") "a.this.x"
+          chck (b.this.x = "Inner!") "b.this.x"
+          chck (c.this.x = "Inner Inner!") "c.this.x"
     a.b.c
   visi5
 
@@ -515,10 +515,10 @@ visibility_negative is
     x := x*x*x*x;    g := ()->"x is "+x+""
     x := x.as_string; h := ()->"x is "+x+""
     x := x * 5;      i := ()->"x is "+x+""
-    chck (f.call == "x is 2") "x is 2"
-    chck (g.call == "x is 16") "x is 16"
-    chck (h.call == "x is 16") "x is 16"
-    chck (i.call == "x is 1616161616") "x is 1616161616"
+    chck (f.call = "x is 2") "x is 2"
+    chck (g.call = "x is 16") "x is 16"
+    chck (h.call = "x is 16") "x is 16"
+    chck (i.call = "x is 1616161616") "x is 1616161616"
   visi7
 
   visi8(cond bool) =>
@@ -544,7 +544,7 @@ visibility_negative is
   visi8 false
 
   visi9 =>
-    a i32 is 3
+    a i32 => 3
     for
       ixtest1  := ix1     // 281. should flag an error: feature not visible
       ixtest2a := 0, ix1  // ok
@@ -558,26 +558,26 @@ visibility_negative is
       it2 in it1..2*it1                  // can make unqualified call to a, ix1, ix2, it1 ..
       ix3 := a + ix1 + ix2 + it1 + it2   // can make unqualified call to a, ix1, ix2, it1, it2 ..
     while (a + ix1 + ix2 + it1 + it2 + ix3 < 10000 &&
-           b == 3 && // 285. should flag an error: feature not visible
-           q == 3 && // 286. should flag an error: feature not visible
-           r == 3 && // 287. should flag an error: feature not visible
-           s == 3  ) // 288. should flag an error: feature not visible
+           b = 3 && // 285. should flag an error: feature not visible
+           q = 3 && // 286. NYI: UNDER DEVELOPMENT: flag an error: feature not visible
+           r = 3 && // 287. NYI: UNDER DEVELOPMENT: flag an error: feature not visible
+           s = 3  ) // 288. should flag an error: feature not visible
         b => 6
         t0:= q     // 289. should flag an error: feature not visible
         q := a + ix1 + ix2 + it1 + it2 + ix3 + b
         t1 := r    // 290. should flag an error: feature not visible
         t2 := s    // 291. should flag an error: feature not visible
     until (a * (ix1 + ix2 + it1 + it2 + ix3 + b + q) > 1000000 &&
-           r == 3 &&  // 292. should flag an error: feature not visible
-           s == 3 )   // 293. should flag an error: feature not visible
+           r = 3 &&  // 292. should flag an error: feature not visible
+           s = 3 )   // 293. should flag an error: feature not visible
         t3 := r    // 294. should flag an error: feature not visible
         t4 := s    // 295. should flag an error: feature not visible
         r := a + ix1 + ix2 + it1 + it2 + ix3 + b + q
         t5 := s    // 296. should flag an error: feature not visible
     else
-        t6 := it1 // 297. should flag an error: feature not visible
-        t7 := it2 // 298. should flag an error: feature not visible
-        t8 := ix3 // 299. should flag an error: feature not visible
+        t6 := it1 // 297. NYI: UNDER DEVELOPMENT: flag an error: feature not visible
+        t7 := it2 // 298. NYI: UNDER DEVELOPMENT: flag an error: feature not visible
+        t8 := ix3 // 299. NYI: UNDER DEVELOPMENT: flag an error: feature not visible
         t9 := b   // 300. should flag an error: feature not visible
         t10 := q  // 301. should flag an error: feature not visible
         t11 := r  // 302. should flag an error: feature not visible
@@ -597,13 +597,53 @@ visibility_negative is
     t := a
   visi9
 
+
+  visi10 =>
+    for
+      it1 in 0..10
+      it2 in it1..2*it1
+      ix3 := it1 + it2
+    while (r = 3 &&     // 315. should flag an error: feature not visible
+           q = 4)       // does not flag an error, since r is not found and call not further evaluated
+        q := 5
+    until true
+        r := 4
+    else
+        t6 := it1 // 316. should flag an error: feature not visible
+        t7 := it2 // 317. should flag an error: feature not visible
+        t8 := ix3 // 318. should flag an error: feature not visible
+        t9 := q   // 319. should flag an error: feature not visible
+        t10 := r  // 320. should flag an error: feature not visible
+  visi10
+
+
+  # same as visi10 except q and r in while-condition are switched
+  visi11 =>
+    for
+      it1 in 0..10
+      it2 in it1..2*it1
+      ix3 := it1 + it2
+    while (q = 3 &&     // 321. should flag an error: feature not visible
+           r = 4)       // does not flag an error, since q is not found and call not further evaluated
+        q := 5
+    until true
+        r := 4
+    else
+        t6 := it1 // 322. should flag an error: feature not visible
+        t7 := it2 // 323. should flag an error: feature not visible
+        t8 := ix3 // 324. should flag an error: feature not visible
+        t9 := q   // 325. should flag an error: feature not visible
+        t10 := r  // 326. should flag an error: feature not visible
+  visi11
+
+
   visiA =>
-   if 3 == 4
+   if 3 = 4
       b => "strange"
    else
       c => "normal"
-   say b  // 315. should flag an error: feature not visible
-   say c  // 316. should flag an error: feature not visible
+   say b  // 327. should flag an error: feature not visible
+   say c  // 328. should flag an error: feature not visible
   visiA
 
   exit

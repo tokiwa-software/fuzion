@@ -1207,6 +1207,12 @@ public class Intrinsics extends ANY
           )), false)
        );
 
+
+    put("fuzion.java.create_jvm", (c,cl,outer,in) -> {
+      return CExpr.call("fzE_create_jvm", new List<>(A0.castTo("char *")));
+    });
+    // NYI: UNDER DEVELOPMENT: put("fuzion.java.destroy_jvm", (c,cl,outer,in) -> {});
+
   }
 
 

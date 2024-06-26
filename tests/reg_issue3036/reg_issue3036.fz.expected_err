@@ -1,0 +1,13 @@
+
+--CURDIR--/reg_issue3036.fz:24:13: error 1: Incompatible types found during type inference for type parameters
+say (8 %% 5 = 3)
+------------^
+Types inferred for first type parameter 'T':
+'bool' found at --CURDIR--/reg_issue3036.fz:24:8:
+say (8 %% 5 = 3)
+-------^^
+'i32' found at --CURDIR--/reg_issue3036.fz:24:15:
+say (8 %% 5 = 3)
+--------------^
+
+one error.

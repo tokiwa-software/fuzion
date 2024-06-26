@@ -23,5 +23,9 @@
 
 override NAME = fz_cmd
 export LD_LIBRARY_PATH ?= $(JAVA_HOME)/lib/server
+# on windows jvm.dll is in /bin/server
+export PATH := $(PATH):$(JAVA_HOME)/bin/server
+# fix libjvm.dylib not found: see also https://stackoverflow.com/a/3172515
+export DYLD_FALLBACK_LIBRARY_PATH ?= $(JAVA_HOME)/lib/server
 FUZION_OPTIONS = -modules=java.base,fz_cmd
 include ../simple.mk

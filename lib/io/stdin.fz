@@ -50,4 +50,4 @@ public stdin io.buffered.reader =>
         arr.as_array
 
 
-  io.buffered.reader read_provider 1024 []
+  io.buffered.reader read_provider 1024
