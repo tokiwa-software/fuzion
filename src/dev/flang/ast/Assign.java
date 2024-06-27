@@ -128,7 +128,7 @@ public class Assign extends AbstractAssign
 
     this._name = null;
     this._pos = pos;
-    if (outer != null && res.state(outer).atLeast(State.TYPES_INFERENCING))
+    if (res.state(outer).atLeast(State.TYPES_INFERENCING))
       {
         propagateExpectedType(res, outer);
       }
