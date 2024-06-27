@@ -636,7 +636,7 @@ catch_postcondition.z.#fun0.call#0.#fun14.call#0: --CURDIR--/catch_postcondition
 fuzion.runtime.post_fault.abort#0: $MODULE/effect.fz:100:14:
       nil => def()
 -------------^^^
-fuzion.runtime.post_fault.#PRE_AND_CALL_NYIabort_54#0: $MODULE/effect.fz:66:3:
+fuzion.runtime.post_fault.#PRE_AND_CALL_NYIabort_60#0: $MODULE/effect.fz:66:3:
   pre
 --^^^
     safety: abortable
@@ -644,7 +644,7 @@ fuzion.runtime.post_fault.#PRE_AND_CALL_NYIabort_54#0: $MODULE/effect.fz:66:3:
 fuzion.runtime.post_fault.return#0: $MODULE/effect.fz:111:5:
     abort
 ----^^^^^
-fuzion.runtime.post_fault.#PRE_AND_CALL_NYIreturn_244#0: $MODULE/effect.fz:108:3:
+fuzion.runtime.post_fault.#PRE_AND_CALL_NYIreturn_250#0: $MODULE/effect.fz:108:3:
   pre
 --^^^
     safety: abortable
@@ -808,7 +808,7 @@ catch_postcondition.y.lm.go#2 String: <source position not available>:
 catch_postcondition.y: --CURDIR--/catch_postcondition.fz:103:15:
     res := lm.go ()->
 --------------^^
-fuzion.runtime.post_fault.#PRE_AND_CALL_NYIabort_54#0: --CURDIR--/catch_postcondition.fz:119:7:
+fuzion.runtime.post_fault.#PRE_AND_CALL_NYIabort_60#0: --CURDIR--/catch_postcondition.fz:119:7:
   say y.res
 ------^
 catch_postcondition.#fun8.call#1: --CURDIR--/catch_postcondition.fz:83:21:
