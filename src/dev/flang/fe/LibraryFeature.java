@@ -102,12 +102,6 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * cached result of contract()
-   */
-  Contract _contract;
-
-
-  /**
    * cached result of innerFeatures()
    */
   List<AbstractFeature> _innerFeatures;
@@ -763,21 +757,7 @@ public class LibraryFeature extends AbstractFeature
 
   public Contract contract()
   {
-    if (_contract == null)
-      {
-        var pre_n  = 0;
-        var post_n = 0;
-        if (pre_n == 0 && post_n == 0 && postFeature() == null)
-          {
-            _contract = Contract.EMPTY_CONTRACT;
-          }
-        else
-          {
-            _contract = new Contract(new List<>(),  // NYI: REMOVE!
-                                     new List<>());
-          }
-      }
-    return _contract;
+    return Contract.EMPTY_CONTRACT;
   }
 
   @Override
