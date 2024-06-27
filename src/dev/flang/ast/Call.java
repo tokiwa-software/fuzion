@@ -2660,10 +2660,12 @@ public class Call extends AbstractCall
 
 
   /**
-   * This is true if the precondition does not need to be checked before this
-   * call is done. This returns true for a call to a feature `f` inf
-   * `f.preAndCallFeature()` to avoid replacing that call by a call to
-   * `f.preAndCallFeature()`.
+   * This is `true` if the precondition does not need to be checked before this
+   * call is done.
+   *
+   * @return `true` for a call to a feature `f` in `f.preAndCallFeature()` since
+   * this call does not require precondition checking and replacing it by a call
+   * to `f.preAndCallFeature()` would result in endless recursion.
    */
   boolean preChecked()
   {
