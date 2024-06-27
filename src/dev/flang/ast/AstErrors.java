@@ -2061,8 +2061,7 @@ public class AstErrors extends ANY
   public static void illegalTypeVisibilityModifier(Feature f)
   {
     error(f.pos(), "Feature specifying type visibility does not define a type.",
-          "Feature affected: " + s(f) + "\n"+
-          "To solve this, remove the type visibility: " + s(f.visibility().typeVisibility()) + "."
+      "To solve this, remove the type visibility: " + s(f.visibility().typeVisibility()) + "."
     );
   }
 

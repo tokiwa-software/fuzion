@@ -28,21 +28,18 @@ To solve this, remove the visibility modifier 'module' from feature 'm.my_feat' 
 --CURDIR--/main.fz:28:18: error 4: Feature specifying type visibility does not define a type.
   private:module not_a_constructor  => false // should flag an error feature does not define type
 -----------------^^^^^^^^^^^^^^^^^
-Feature affected: 'm.not_a_constructor'
 To solve this, remove the type visibility: 'module'.
 
 
 --CURDIR--/main.fz:29:18: error 5: Feature specifying type visibility does not define a type.
   private:public not_a_constructor2 => false // should flag an error feature does not define type
 -----------------^^^^^^^^^^^^^^^^^^
-Feature affected: 'm.not_a_constructor2'
 To solve this, remove the type visibility: 'public'.
 
 
 --CURDIR--/main.fz:30:18: error 6: Feature specifying type visibility does not define a type.
   module:public  not_a_constructor3 => false // should flag an error feature does not define type
 -----------------^^^^^^^^^^^^^^^^^^
-Feature affected: 'm.not_a_constructor3'
 To solve this, remove the type visibility: 'public'.
 
 
