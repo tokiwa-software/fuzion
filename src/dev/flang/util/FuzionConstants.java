@@ -273,6 +273,14 @@ public class FuzionConstants extends ANY
 
 
   /**
+   * The qualified names of features fuzion.runtime.precondition_fault and
+   * fuzion.runtime.postcondition_fault.
+   */
+  public static String[] FUZION_RUNTIME_PRECONDITION_FAULT  = "fuzion.runtime.precondition_fault" .split("\\.");
+  public static String[] FUZION_RUNTIME_POSTCONDITION_FAULT = "fuzion.runtime.postcondition_fault".split("\\.");
+
+
+  /**
    * Suffix added to module files.
    */
   public static final String MODULE_FILE_SUFFIX = ".fum";
