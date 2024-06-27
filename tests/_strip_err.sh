@@ -30,6 +30,10 @@
 
 set -euo pipefail
 
-sed <&0 -E "s \.fz:[0-9]+:[0-9]+: \.fz:n:n: g" |                                                # line numbers \
-    sed -E "s #fun[0-9]+ fun g"                | sed -E "s INTERN_fun[0-9]+ fun g "         |   # lambdas      \
-    sed -E "s #loop[0-9]+ loop g"              | sed -E "s INTERN_loop[0-9]+ loop g "           # loops
+sed <&0 -E "s \.fz:[0-9]+:[0-9]+: \.fz:n:n: g" |                                                    # line numbers  \
+    sed -E "s #fun[0-9]+ fun g"                | sed -E "s INTERN_fun[0-9]+ fun g "               | # lambdas       \
+    sed -E "s #loop[0-9]+ loop g"              | sed -E "s INTERN_loop[0-9]+ loop g "             | # loops         \
+    sed -E "s #pre[0-9]+ pre g"                | sed -E "s INTERN_pre[0-9]+ pre g "               | # preconditions \
+    sed -E "s #prebool[0-9]+ prebool g"        | sed -E "s INTERN_prebool[0-9]+ prebool g "       | # pre bools     \
+    sed -E "s #preandcall[0-9]+ preandcall g"  | sed -E "s INTERN_preandcall[0-9]+ preandcall g " | # pre bools     \
+    sed -E "s #post[0-9]+ post g"              | sed -E "s INTERN_post[0-9]+ post g "               # postconditions

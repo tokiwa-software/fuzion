@@ -16,10 +16,10 @@ fuzion.runtime.pre_fault.cause#1: $MODULE/eff/fallible.fz:35:6:
 fuzion.runtime.precondition_fault#1: $MODULE/fuzion/runtime/pre_fault.fz:58:52:
 public precondition_fault(msg String) => pre_fault.cause msg
 ---------------------------------------------------^^^^^
-(option error).#PREget_62#0: $MODULE/option.fz:134:11:
+(option error).#pre62_get#0: $MODULE/option.fz:134:11:
     safety: (option.this??)
 ----------^
-(option error).#PRE_AND_CALL_NYIget_63#0: $MODULE/option.fz:133:3:
+(option error).#preandcall63_get#0: $MODULE/option.fz:133:3:
   pre
 --^^^
     safety: (option.this??)
@@ -30,7 +30,7 @@ public precondition_fault(msg String) => pre_fault.cause msg
 (try unit).abort#0: $MODULE/effect.fz:100:14:
       nil => def()
 -------------^^^
-(try unit).#PRE_AND_CALL_NYIabort_60#0: $MODULE/effect.fz:66:3:
+(try unit).#preandcall60_abort#0: $MODULE/effect.fz:66:3:
   pre
 --^^^
     safety: abortable

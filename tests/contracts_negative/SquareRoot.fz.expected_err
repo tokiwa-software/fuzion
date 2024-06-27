@@ -16,10 +16,10 @@ fuzion.runtime.pre_fault.cause#1: $MODULE/eff/fallible.fz:35:6:
 fuzion.runtime.precondition_fault#1: $MODULE/fuzion/runtime/pre_fault.fz:58:52:
 public precondition_fault(msg String) => pre_fault.cause msg
 ---------------------------------------------------^^^^^
-SquareRoot.#PREsqrt_1#1: --CURDIR--/SquareRoot.fz:30:9:
+SquareRoot.#pre1_sqrt#1: --CURDIR--/SquareRoot.fz:30:9:
       a ≥ 0
 --------^^^
-SquareRoot.#PRE_AND_CALL_NYIsqrt_2#1: --CURDIR--/SquareRoot.fz:29:5:
+SquareRoot.#preandcall2_sqrt#1: --CURDIR--/SquareRoot.fz:29:5:
     pre
 ----^^^
       a ≥ 0

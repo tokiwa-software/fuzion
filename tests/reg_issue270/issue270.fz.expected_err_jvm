@@ -7,8 +7,8 @@ fuzion__runtime__1fault__1cause
 fuzion_INT__t__install_default__INTERN_fun266__1call
 fuzion__runtime__1pre_fault__1cause
 fuzion__runtime__1precondition_fault
-INTERN_PREissue270_1
-INTERN_PRE_AND_CALL_NYIissue270_2
+INTERN_pre1_issue270
+INTERN_preandcall2_issue270
 
 *** fatal errors encountered, stopping.
 one error.

@@ -16,10 +16,10 @@ fuzion.runtime.pre_fault.cause#1: $MODULE/eff/fallible.fz:35:6:
 fuzion.runtime.precondition_fault#1: $MODULE/fuzion/runtime/pre_fault.fz:58:52:
 public precondition_fault(msg String) => pre_fault.cause msg
 ---------------------------------------------------^^^^^
-#PREissue270_1#0: --CURDIR--/issue270.fz:25:7:
+#pre1_issue270#0: --CURDIR--/issue270.fz:25:7:
   pre false # 1. should flag an error: Precondition does not hold
 ------^^^^^
-#PRE_AND_CALL_NYIissue270_2#0: --CURDIR--/issue270.fz:25:3:
+#preandcall2_issue270#0: --CURDIR--/issue270.fz:25:3:
   pre false # 1. should flag an error: Precondition does not hold
 --^^^^^^^^^
 

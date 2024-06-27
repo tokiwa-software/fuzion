@@ -16,7 +16,7 @@ fuzion.runtime.post_fault.cause#1: $MODULE/eff/fallible.fz:35:6:
 fuzion.runtime.postcondition_fault#1: $MODULE/fuzion/runtime/post_fault.fz:58:54:
 public postcondition_fault(msg String) => post_fault.cause msg
 -----------------------------------------------------^^^^^
-(catch_postcondition.test#1 i32).double.postcondition: --CURDIR--/catch_postcondition.fz:38:9:
+(catch_postcondition.test#1 i32).0.postcondition: --CURDIR--/catch_postcondition.fz:38:9:
         equals result-x x
 --------^^^^^^
 (catch_postcondition.test#1 i32).double#1: --CURDIR--/catch_postcondition.fz:37:7:
@@ -35,7 +35,7 @@ public postcondition_fault(msg String) => post_fault.cause msg
 catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
     for v := T.one, double v
 ----^
-(catch_postcondition.test#1 i16).double.postcondition: --CURDIR--/catch_postcondition.fz:286:8:
+(catch_postcondition.test#1 i16).0.postcondition: --CURDIR--/catch_postcondition.fz:286:8:
   say (test i32)
 -------^^^^
 (catch_postcondition.test#1 i16).double#1: --CURDIR--/catch_postcondition.fz:37:7:
@@ -100,7 +100,7 @@ fuzion.runtime.post_fault.cause#1: --CURDIR--/catch_postcondition.fz:267:3:
 fuzion.runtime.postcondition_fault#1: $MODULE/fuzion/runtime/post_fault.fz:58:54:
 public postcondition_fault(msg String) => post_fault.cause msg
 -----------------------------------------------------^^^^^
-(catch_postcondition.test#1 i32).double.postcondition: --CURDIR--/catch_postcondition.fz:38:9:
+(catch_postcondition.test#1 i32).0.postcondition: --CURDIR--/catch_postcondition.fz:38:9:
         equals result-x x
 --------^^^^^^
 (catch_postcondition.test#1 i32).double#1: --CURDIR--/catch_postcondition.fz:37:7:
@@ -210,7 +210,7 @@ fuzion.runtime.post_fault.run#3 (option String): <source position not available>
 catch_postcondition.#loop3#2: --CURDIR--/catch_postcondition.fz:253:11:
          .catch s->
 ----------^^^^^
-(catch_postcondition.test#1 i32).double.postcondition: --CURDIR--/catch_postcondition.fz:248:3:
+(catch_postcondition.test#1 i32).0.postcondition: --CURDIR--/catch_postcondition.fz:248:3:
   for
 --^
 (catch_postcondition.test#1 i32).double#1: --CURDIR--/catch_postcondition.fz:37:7:
@@ -320,7 +320,7 @@ fuzion.runtime.post_fault.run#3 (option String): <source position not available>
 catch_postcondition.#loop2#2: --CURDIR--/catch_postcondition.fz:234:11:
          .catch s->
 ----------^^^^^
-(catch_postcondition.test#1 i32).double.postcondition: --CURDIR--/catch_postcondition.fz:229:3:
+(catch_postcondition.test#1 i32).0.postcondition: --CURDIR--/catch_postcondition.fz:229:3:
   for
 --^
 (catch_postcondition.test#1 i32).double#1: --CURDIR--/catch_postcondition.fz:37:7:
@@ -532,7 +532,7 @@ catch_postcondition.#loop1#2: --CURDIR--/catch_postcondition.fz:161:10:
 fuzion.runtime.postcondition_fault#1: --CURDIR--/catch_postcondition.fz:157:3:
   for c in tries.indices do
 --^
-(catch_postcondition.test#1 i32).double.postcondition: --CURDIR--/catch_postcondition.fz:38:9:
+(catch_postcondition.test#1 i32).0.postcondition: --CURDIR--/catch_postcondition.fz:38:9:
         equals result-x x
 --------^^^^^^
 (catch_postcondition.test#1 i32).double#1: --CURDIR--/catch_postcondition.fz:37:7:
@@ -636,7 +636,7 @@ catch_postcondition.z.#fun0.call#0.#fun14.call#0: --CURDIR--/catch_postcondition
 fuzion.runtime.post_fault.abort#0: $MODULE/effect.fz:100:14:
       nil => def()
 -------------^^^
-fuzion.runtime.post_fault.#PRE_AND_CALL_NYIabort_60#0: $MODULE/effect.fz:66:3:
+fuzion.runtime.post_fault.#preandcall60_abort#0: $MODULE/effect.fz:66:3:
   pre
 --^^^
     safety: abortable
@@ -644,7 +644,7 @@ fuzion.runtime.post_fault.#PRE_AND_CALL_NYIabort_60#0: $MODULE/effect.fz:66:3:
 fuzion.runtime.post_fault.return#0: $MODULE/effect.fz:111:5:
     abort
 ----^^^^^
-fuzion.runtime.post_fault.#PRE_AND_CALL_NYIreturn_250#0: $MODULE/effect.fz:108:3:
+fuzion.runtime.post_fault.#preandcall250_return#0: $MODULE/effect.fz:108:3:
   pre
 --^^^
     safety: abortable
@@ -658,7 +658,7 @@ fuzion.runtime.post_fault.cause#1: $MODULE/eff/fallible.fz:35:6:
 fuzion.runtime.postcondition_fault#1: $MODULE/fuzion/runtime/post_fault.fz:58:54:
 public postcondition_fault(msg String) => post_fault.cause msg
 -----------------------------------------------------^^^^^
-(catch_postcondition.test#1 i32).double.postcondition: --CURDIR--/catch_postcondition.fz:38:9:
+(catch_postcondition.test#1 i32).0.postcondition: --CURDIR--/catch_postcondition.fz:38:9:
         equals result-x x
 --------^^^^^^
 (catch_postcondition.test#1 i32).double#1: --CURDIR--/catch_postcondition.fz:37:7:
@@ -711,7 +711,7 @@ catch_postcondition.z: --CURDIR--/catch_postcondition.fz:103:15:
 fuzion.runtime.postcondition_fault#1: --CURDIR--/catch_postcondition.fz:149:7:
   say z.res
 ------^
-(catch_postcondition.test#1 i32).double.postcondition: --CURDIR--/catch_postcondition.fz:38:9:
+(catch_postcondition.test#1 i32).0.postcondition: --CURDIR--/catch_postcondition.fz:38:9:
         equals result-x x
 --------^^^^^^
 (catch_postcondition.test#1 i32).double#1: --CURDIR--/catch_postcondition.fz:37:7:
@@ -761,7 +761,7 @@ catch_postcondition.#anonymous0: --CURDIR--/catch_postcondition.fz:103:15:
 fuzion.runtime.postcondition_fault#1: --CURDIR--/catch_postcondition.fz:127:8:
   say (ref : handle_post String
 -------^
-(catch_postcondition.test#1 i32).double.postcondition: --CURDIR--/catch_postcondition.fz:38:9:
+(catch_postcondition.test#1 i32).0.postcondition: --CURDIR--/catch_postcondition.fz:38:9:
         equals result-x x
 --------^^^^^^
 (catch_postcondition.test#1 i32).double#1: --CURDIR--/catch_postcondition.fz:37:7:
@@ -808,7 +808,7 @@ catch_postcondition.y.lm.go#2 String: <source position not available>:
 catch_postcondition.y: --CURDIR--/catch_postcondition.fz:103:15:
     res := lm.go ()->
 --------------^^
-fuzion.runtime.post_fault.#PRE_AND_CALL_NYIabort_60#0: --CURDIR--/catch_postcondition.fz:119:7:
+fuzion.runtime.post_fault.#preandcall60_abort#0: --CURDIR--/catch_postcondition.fz:119:7:
   say y.res
 ------^
 catch_postcondition.#fun8.call#1: --CURDIR--/catch_postcondition.fz:83:21:
@@ -820,7 +820,7 @@ fuzion.runtime.post_fault.cause#1: $MODULE/eff/fallible.fz:35:6:
 fuzion.runtime.postcondition_fault#1: $MODULE/fuzion/runtime/post_fault.fz:58:54:
 public postcondition_fault(msg String) => post_fault.cause msg
 -----------------------------------------------------^^^^^
-(catch_postcondition.test#1 i32).double.postcondition: --CURDIR--/catch_postcondition.fz:38:9:
+(catch_postcondition.test#1 i32).0.postcondition: --CURDIR--/catch_postcondition.fz:38:9:
         equals result-x x
 --------^^^^^^
 (catch_postcondition.test#1 i32).double#1: --CURDIR--/catch_postcondition.fz:37:7:
