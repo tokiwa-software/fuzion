@@ -393,7 +393,7 @@ public class Contract extends ANY
                                        : new Universe();
     if (f instanceof Feature ff)  // if f is currently being compiled, make sure its contract features are created first
       {
-        addContractFeatures(ff, res);
+        addContractFeatures(res, ff);
       }
     return new Call(p,
                     t,
@@ -436,7 +436,7 @@ public class Contract extends ANY
                                        : new Universe();
     if (f instanceof Feature ff)  // if f is currently being compiled, make sure its post feature is added first
       {
-        addContractFeatures(ff, res);
+        addContractFeatures(res, ff);
       }
     return new Call(p,
                     t,
@@ -552,7 +552,7 @@ public class Contract extends ANY
                                     : new Universe();
     if (outer instanceof Feature of)  // if outer is currently being compiled, make sure its post feature is added first
       {
-        addContractFeatures(of, res);
+        addContractFeatures(res, of);
       }
     var callPostCondition = new Call(p,
                                      t,
@@ -595,33 +595,48 @@ public class Contract extends ANY
   }
 
 
-  private static void addPreFeature(Feature f, Resolution res, boolean preBool)
+  /**
+   * For a feature f that requires a pre feature and a pre bool feature, create
+   * that pre feature's code and add it to the AST.
+   *
+   * @param res Resolution instance
+   *
+   * @param f the feature that requires a pre or pre bool feature
+   *
+   * @param preBool true to create pre bool feature, false for pre feature.
+   */
+  private static void addPreFeature(Resolution res, Feature f, boolean preBool)
   {
     var fc = f.contract();
-    var dc = preBool ? fc._declared_preconditions2
-                     : fc._declared_preconditions;
+    var name = preBool ? preBoolConditionsFeatureName(f)
+                       : preConditionsFeatureName(f);
+    var dc   = preBool ? fc._declared_preconditions2
+                       : fc._declared_preconditions;
+
     var inhpres = f._inheritedPre;
+    // check if any inherited precondition is missing, i.e., it is always. In
+    // this case, we do not need to check the declared preconditions at all:
     var inheritingTrue = inhpres.stream()
                                 .filter(inh -> !hasPreConditionsFeature(inh))
                                 .findFirst();
-    var name = preBool ? preBoolConditionsFeatureName(f) : preConditionsFeatureName(f);
+
     var args = fc._argsSupplier == null ? null : fc._argsSupplier.get();
     var pos = fc._hasPre != null ? fc._hasPre : f.pos();
-    var l = new List<Expr>();
-    Expr cc = null;
+
+    var l = new List<Expr>();  // code for preconditions we are collecting (for !preBool)
+    Expr cc = null;            // code for boolean condition we are collecting (for preBool)
 
     for (var c : dc)
       {
-        var p = c.cond.pos();
+        var cond = c.cond;
+        var p = cond.pos();
         if (preBool)
           {
-            cc = cc == null
-              ? c.cond
-              : new ParsedCall(cc, new ParsedName(pos, "infix &&"), new List<>(c.cond));
+            cc = cc == null ? cond
+                            : new ParsedCall(cc, new ParsedName(p, "infix &&"), new List<>(cond));
           }
         else
           {
-            var cond = c.cond;
             if (inheritingTrue.isPresent())
               { // one of the inherited preconditions is `true`, so we do not
                 // need to check the conditions defined locally at all.
@@ -641,30 +656,20 @@ public class Contract extends ANY
                   );
           }
       }
-    if (preBool && cc != null)
+    if (cc != null)
       {
         l.add(cc);
       }
 
-    if (inheritingTrue.isPresent() && !dc.isEmpty())
-      {
-        /*
-        var inh = inheritingTrue.get();
-        System.err.println("WARNING: For "+f.qualifiedName()+" there are declared preconditions "+dc.getFirst().cond.pos().show()+"\n"+
-                           "but these are ignored since we inherit precondition `true` from "+inh+" at "+inh.pos().show());
-        */
-      }
     var code = new Block(l);
-    AbstractType universe_type = null; //new ParsedType(pos, "universe", UnresolvedType.NONE, null);
     var result_type     = new ParsedType(pos,
                                          preBool ? "bool"
                                                  : "unit",
                                          UnresolvedType.NONE,
-                                         universe_type);
+                                         null);
     var pF = new Feature(pos,
                          f.visibility().eraseTypeVisibility(),
-                         // 0, // NYI: why not this:
-                         f.modifiers() & FuzionConstants.MODIFIER_FIXED, // modifiers
+                         f.modifiers() & FuzionConstants.MODIFIER_FIXED,
                          new FunctionReturnType(result_type),
                          new List<>(name),
                          args,
@@ -686,16 +691,12 @@ public class Contract extends ANY
     // We add calls to preconditions of redefined features after creating pF since
     // this enables us to access pF directly:
 
-    // List<Expr> li = null;
-    // var s = inhpres.stream()
-    //  .takeWhile(inh -> hasPreconditionsFeature(inh));
-    //var c = s.count();
     var new_code = code._expressions;
     if (inheritingTrue.isPresent() || !dc.isEmpty() || preBool)
       { // all inherited are added using
         //
-        // if (pre_bool_inh1 || pre_bool_inh2 || ... || pre_bool_inh<n>) then
-        // else  check declared
+        //   if (pre_bool_inh1 || pre_bool_inh2 || ... || pre_bool_inh<n>) then
+        //   else check declared
         for (var i = 0; i < inhpres.size() && hasPreConditionsFeature(inhpres.get(i)); i++)
           {
             var call = callPreBool(res, inhpres.get(i), pF);
@@ -707,8 +708,8 @@ public class Contract extends ANY
     else
       { // The last inherited precondition may cause a fault and is checked using
         //
-        // if (pre_bool_inh1 || pre_bool_inh2 || ... || pre_bool_inh<n-1>) then
-        // else pre_inh<n>
+        //   if (pre_bool_inh1 || pre_bool_inh2 || ... || pre_bool_inh<n-1>) then
+        //   else pre_inh<n>
         for (var i = 0; i < inhpres.size()-1; i++)
           {
             var call = callPreBool(res, inhpres.get(i), pF);
@@ -716,23 +717,19 @@ public class Contract extends ANY
               ? call
               : new ParsedCall(cc, new ParsedName(pos, "infix ||"), new List<>(call));
           }
-        if (inhpres.size() == 0)
-          {
-            System.err.println("NYI: no inherited and no declared preconditions, we should not end up here");
-          }
-        else
-          { // code is empty anyway, replace it by call to pre_inh<n>:
-            new_code = new List<>(callPreCondition(res, inhpres.getLast(), pF));
-          }
+
+        // we can be here only if there are inherited preconditions:
+        if (CHECKS) check
+          (inhpres.size() != 0);
+
+        // code is empty anyway, replace it by call to pre_inh<n>:
+        new_code = new List<>(callPreCondition(res, inhpres.getLast(), pF));
       }
 
-    if (preBool && cc != null)
+    if (preBool)
       {
-        new_code = new List<>(cc);
-      }
-    else if (preBool)
-      {
-        new_code = new List<>(pc(pos, "true"));
+        new_code = new List<>(cc != null ? cc
+                                         : pc(pos, "true"));
       }
     else if (cc != null)
       {
@@ -746,11 +743,17 @@ public class Contract extends ANY
   }
 
 
+
   /**
-   * Part of the syntax sugar phase: For all contracts, create artificial
-   * features that check that contract.
+   * Part of the syntax sugar phase: For f's contract, create artificial
+   * features that check that contract: pre feature, pre bool feature, pre and
+   * call feature and post feature as needed.
+   *
+   * @param res Resolution instance
+   *
+   * @param f the feature that requires a pre or pre bool feature
    */
-  static void addContractFeatures(Feature f, Resolution res)
+  static void addContractFeatures(Resolution res, Feature f)
   {
     if (PRECONDITIONS) require
       (f != null,
@@ -793,14 +796,14 @@ all of their redefinition to `true`. +
                            If there are no own pre-conditions, the last inherited precondition is checked
                            by pre_<name> instead of pre_bool_<name>.
 
-           pre_bool_<name> is a feature that check the precondition and results in true iff all preconditions hold.
+           prebool_<name>  is a feature that check the precondition and results in true iff all preconditions hold.
 
                            First, inherited preconditions are checked via cals to their pre_bool_<name> and
                            precondition checking is stopped with success if those return true.
 
                            Finally, the own pre-condition is checked
 
-           pre_and_call_<name>
+           preandcall_<name>
                            This calls pre_<name> followed by <name>, just for convenience to avoid
                            duplicate calls in the code
 
@@ -983,8 +986,8 @@ all of their redefinition to `true`. +
              z := e.f x y
          */
 
-        addPreFeature(f, res, true);
-        addPreFeature(f, res, false);
+        addPreFeature(res, f, true);
+        addPreFeature(res, f, false);
 
         if (!f.isConstructor())
           {

@@ -879,6 +879,9 @@ featNames   : qual (COMMA featNames
   /**
    * Parse optional formal argument list. Result is empty List in case no formArgs is found.
    *
+   * @param forPreOrPostCondition if true, the redefine modifier will be removed
+   * since pre or post features are not redefined.
+   *
 formArgsOpt : formArgs
             |
             ;

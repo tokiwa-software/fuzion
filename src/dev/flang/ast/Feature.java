@@ -210,18 +210,29 @@ public class Feature extends AbstractFeature
   List<AbstractFeature> _inheritedPost = new List<>();
 
 
+  /**
+   * precondition feature, added during syntax sugar phase.
+   */
   Feature _preFeature = null;
   @Override
   public AbstractFeature preFeature()
   {
     return _preFeature;
   }
+
+  /**
+   * pre bool feature, added during syntax sugar phase.
+   */
   Feature _preBoolFeature = null;
   @Override
   public AbstractFeature preBoolFeature()
   {
     return _preBoolFeature;
   }
+
+  /**
+   * pre and call feature, added during syntax sugar phase.
+   */
   Feature _preAndCallFeature = null;
   @Override
   public AbstractFeature preAndCallFeature()
@@ -229,6 +240,9 @@ public class Feature extends AbstractFeature
     return _preAndCallFeature;
   }
 
+  /**
+   * post feature, added during syntax sugar phase.
+   */
   Feature _postFeature = null;
   @Override
   public AbstractFeature postFeature()
@@ -1456,7 +1470,7 @@ public class Feature extends AbstractFeature
       {
         _state = State.RESOLVING_SUGAR1;
 
-        _contract.addContractFeatures(this, res);
+        _contract.addContractFeatures(res, this);
         if (definesType())
           {
             typeFeature(res);

@@ -151,6 +151,13 @@ public enum Visi
   }
 
 
+  /**
+   * Create a new Visi instance without type visibility. This is used for the
+   * visibility of pre / pre bool / pre and call / post features to avoid
+   * errors due to type visibility.
+   *
+   + @return UNSPECIFIED, PRIV, MOD or PUB.
+   */
   Visi eraseTypeVisibility()
   {
     return switch (this)
