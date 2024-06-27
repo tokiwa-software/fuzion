@@ -108,20 +108,24 @@ public enum Visi
     return values()[ordinal];
   }
 
+
   /**
-   * @return The visibility for features/calls encoded in this.
+   * Return corresponding Visi instance for features, i.e., without type
+   * visibility and with UNSPECIFIED replaced by PRIV.
+   *
+   * This is used for the visibility of pre / pre bool / pre and call / post
+   * features to avoid errors due to type visibility.
+   *
+   * @return The visibility for features/calls encoded in this: PRIV, MOD or PUB.
    */
-  public Visi featureVisibility()
+  public Visi eraseTypeVisibility()
   {
-    if (this.ordinal() <= PRIVPUB.ordinal())
+    return switch (this)
       {
-        return PRIV;
-      }
-    else if (this.ordinal() <= MODPUB.ordinal())
-      {
-        return MOD;
-      }
-    return PUB;
+      case UNSPECIFIED, PRIV, PRIVMOD, PRIVPUB -> PRIV;
+      case MODPUB, MOD                         -> MOD;
+      case PUB                                 -> PUB;
+      };
   }
 
 
@@ -150,24 +154,6 @@ public enum Visi
     return this == Visi.PRIVMOD || this == Visi.PRIVPUB || this == Visi.MODPUB;
   }
 
-
-  /**
-   * Create a new Visi instance without type visibility. This is used for the
-   * visibility of pre / pre bool / pre and call / post features to avoid
-   * errors due to type visibility.
-   *
-   + @return UNSPECIFIED, PRIV, MOD or PUB.
-   */
-  Visi eraseTypeVisibility()
-  {
-    return switch (this)
-      {
-      case UNSPECIFIED, PRIV, MOD, PUB -> this;
-      case PRIVMOD, PRIVPUB            -> PRIV;
-      case MODPUB                      -> MOD;
-      default                          -> throw new Error("unhandled case in Visi.eraseTypeVisibility");
-      };
-  }
 
 }
 

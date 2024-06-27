@@ -2127,7 +2127,7 @@ public class AstErrors extends ANY
   public static void abstractFeaturesVisibilityMoreRestrictiveThanOuter(Feature f)
   {
     error(f.pos(), "Abstract features visibility must not be more restrictive than outer features visibility.",
-      "To solve this, increase the visibility of " + s(f) + " to at least " + s(f.outer().visibility().featureVisibility()));
+      "To solve this, increase the visibility of " + s(f) + " to at least " + s(f.outer().visibility().eraseTypeVisibility()));
   }
 
   public static void ambiguousCall(Call c, AbstractFeature f, AbstractFeature tf)

@@ -1699,7 +1699,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
    */
   private void checkAbstractVisibility(Feature f) {
     if(f.isAbstract() &&
-       f.visibility().featureVisibility().ordinal() < f.outer().visibility().featureVisibility().ordinal())
+       f.visibility().eraseTypeVisibility().ordinal() < f.outer().visibility().eraseTypeVisibility().ordinal())
       {
         AstErrors.abstractFeaturesVisibilityMoreRestrictiveThanOuter(f);
       }
@@ -1750,7 +1750,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
               // type param is known by caller
               && !c.calledFeature().isTypeParameter()
               // the called feature must be at least as visible as the feature.
-              && c.calledFeature().visibility().featureVisibility().ordinal() < f.visibility().featureVisibility().ordinal())
+              && c.calledFeature().visibility().eraseTypeVisibility().ordinal() < f.visibility().eraseTypeVisibility().ordinal())
             {
               AstErrors.calledFeatureInPreconditionHasMoreRestrictiveVisibilityThanFeature(f, c);
             }
@@ -1819,7 +1819,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
    */
   private Visi effectiveFeatureVisibility(Feature f)
   {
-    var result = f.visibility().featureVisibility();
+    var result = f.visibility().eraseTypeVisibility();
     var o = f.outer();
     while (o != null)
       {
