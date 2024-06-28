@@ -662,7 +662,7 @@ is
   public snapshot(read_only bool) map CTK CTV =>
     root := read_root
     expmain := gcas_read root
-    new_gen := unique_id
+    new_gen => unique_id
     descriptor := Rdcss_Descriptor root expmain (copy_to_gen root new_gen)
     if rdcss_root descriptor
       # new ctrie by changing generation of root

@@ -155,7 +155,7 @@ ctrie_threads is
             nil => panic "$kt not found"
             i32 =>
           if ctrie[kt].exists
-            say "removed key $kt still present"
+            panic "removed key $kt still present"
           if k%5=0 && s2[kt].is_nil
             panic "removed key $kt from snapshot"
 
