@@ -158,12 +158,8 @@ public class CFG extends ANY
         var ck = _fuir.clazzKind(cl);
         switch (ck)
           {
-          case Routine  : createCallGraphForRoutine(cl, false); break;
+          case Routine  : createCallGraphForRoutine(cl); break;
           case Intrinsic: createCallGraphForIntrinsic(cl); break;
-          }
-        if (_fuir.hasPrecondition(cl))
-          {
-            createCallGraphForRoutine(cl, true);
           }
       }
   }
@@ -173,23 +169,13 @@ public class CFG extends ANY
    * Create call graph for given routine cl
    *
    * @param cl id of clazz to create call graph for
-   *
-   * @param pre true to creating call graph for cl's precondition, false for cl
-   * itself.
    */
-  void createCallGraphForRoutine(int cl, boolean pre)
+  void createCallGraphForRoutine(int cl)
   {
     if (PRECONDITIONS) require
-      (_fuir.clazzKind(cl) == FUIR.FeatureKind.Routine || pre);
+      (_fuir.clazzKind(cl) == FUIR.FeatureKind.Routine);
 
-    if (pre)
-      {
-        // NYI: preOrPostCondition(cl, FUIR.ContractKind.Pre);
-      }
-    else
-      {
-        createCallGraphForBlock(cl, _fuir.clazzCode(cl));
-      }
+    createCallGraphForBlock(cl, _fuir.clazzCode(cl));
   }
 
 
@@ -514,7 +500,7 @@ public class CFG extends ANY
           var call = cfg._fuir.lookupCall(oc);
           if (cfg._fuir.clazzNeedsCode(call))
             {
-              cfg.addToCallGraph(cl, call, false);
+              cfg.addToCallGraph(cl, call);
             }
         });
     put("effect.abort0"                     , (cfg, cl) -> { } );
@@ -576,15 +562,7 @@ public class CFG extends ANY
       case Box   : break;
       case Call:
         {
-          var cc0 = _fuir.accessedClazz(s);
-          if (_fuir.hasPrecondition(cc0))
-            {
-              call(cl, cc0, true);
-            }
-          if (!_fuir.callPreconditionOnly(s))
-            {
-              access(cl, s);
-            }
+          access(cl, s);
           break;
         }
       case Comment: break;
@@ -632,12 +610,12 @@ public class CFG extends ANY
           {
             var tt = ccs[cci  ];
             var cc = ccs[cci+1];
-            call(cl, cc, false);
+            call(cl, cc);
           }
       }
     else if (_fuir.clazzNeedsCode(cc0))
       {
-        call(cl, cc0, false);
+        call(cl, cc0);
       }
   }
 
@@ -648,14 +626,12 @@ public class CFG extends ANY
    * @param cl clazz id of the call
    *
    * @param cc clazz that is called
-   *
-   * @param pre true to call the precondition of cl instead of cl.
    */
-  void call(int cl, int cc, boolean pre)
+  void call(int cl, int cc)
   {
     if (_fuir.clazzNeedsCode(cc))
       {
-        addToCallGraph(cl, cc, pre);
+        addToCallGraph(cl, cc);
       }
   }
 
@@ -666,26 +642,17 @@ public class CFG extends ANY
    * @param cl the caller clazz
    *
    * @param cc the callee clazz
-   *
-   * @param pre true iff cc's precondition is called, not cc itself.
    */
-  void addToCallGraph(int cl, int cc, boolean pre)
+  void addToCallGraph(int cl, int cc)
   {
-    if (pre)
+    if (!_callGraph.contains(cl, cc))
       {
-        // NYI:
-      }
-    else
-      {
-        if (!_callGraph.contains(cl, cc))
-          {
-            _callGraph.put(cl, cc);
+        _callGraph.put(cl, cc);
 
-            if (!_calledClazzes.contains(cc))
-              {
-                _calledClazzes.add(cc);
-                _newCalledClazzesToBeProcessed.add(cc);
-              }
+        if (!_calledClazzes.contains(cc))
+          {
+            _calledClazzes.add(cc);
+            _newCalledClazzesToBeProcessed.add(cc);
           }
       }
   }

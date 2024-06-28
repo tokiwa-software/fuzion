@@ -174,14 +174,8 @@ public class C extends ANY
     @Override
     public Pair<CExpr, CStmnt> call(int s, CExpr tvalue, List<CExpr> args)
     {
-      var ccP = _fuir.accessedPreconditionClazz(s);
       var cc0 = _fuir.accessedClazz            (s);
       var ol = new List<CStmnt>();
-      if (ccP != -1)
-        {
-          var callpair = C.this.call(s, tvalue, args, ccP, true);
-          ol.add(callpair.v1());
-        }
       var res = CExpr.UNIT;
       if (!_fuir.callPreconditionOnly(s))
         {
@@ -478,7 +472,7 @@ public class C extends ANY
                                                     : CExpr.UNIT;
               sl.add(C.this.assign(f, entry, fclazz));
             }
-          sl.add(ai.process(_fuir.matchCaseCode(s, mc)).v1());
+          sl.add(ai.processCode(_fuir.matchCaseCode(s, mc)).v1());
           sl.add(CStmnt.BREAK);
           var cazecode = CStmnt.seq(sl);
           tcases.add(CStmnt.caze(ctags, cazecode));  // tricky: this a NOP if ctags.isEmpty
@@ -548,21 +542,6 @@ public class C extends ANY
                                                         CExpr.string(_fuir.clazzAsString(ecl))),
                                     CExpr.exit(1)));
       return new Pair<>(res, o);
-    }
-
-
-    /**
-     * Process a contract of kind ck of clazz cl that results in bool value cc
-     * (i.e., the contract fails if !cc).
-     */
-    @Override
-    public CStmnt contract(int s, FUIR.ContractKind ck, CExpr cc)
-    {
-      var cl = _fuir.clazzAt(s);
-      return CStmnt.iff(cc.field(CNames.TAG_NAME).not(),
-                        CStmnt.seq(CExpr.fprintfstderr("*** failed " + ck + " on call to '%s'\n",
-                                                       CExpr.string(_fuir.clazzAsString(cl))),
-                                   CExpr.exit(1)));
     }
 
   }
@@ -1179,8 +1158,7 @@ public class C extends ANY
 
     cf.print(CStmnt.seq(CNames.GLOBAL_ARGC.assign(new CIdent("argc")),
                         CNames.GLOBAL_ARGV.assign(new CIdent("argv")),
-                        _fuir.hasPrecondition(cl) ? CExpr.call(_names.function(cl, true), new List<>()) : CStmnt.EMPTY,
-                        CExpr.call(_names.function(cl, false), new List<>())
+                        CExpr.call(_names.function(cl), new List<>())
                         ));
 
     if (linkJVM())
@@ -1329,7 +1307,7 @@ public class C extends ANY
               }
             if (isCall)
               {
-                var calpair = call(s, tv, args, cc, false);
+                var calpair = call(s, tv, args, cc);
                 var rv  = calpair.v0();
                 acc = calpair.v1();
                 if (ccs.length == 2)
@@ -1607,17 +1585,15 @@ public class C extends ANY
    *
    * @param cc clazz that is called
    *
-   * @param preCalled true to call the precondition of cl instead of cl.
-   *
    * @return the code to perform the call
    */
-  Pair<CExpr, CStmnt> call(int s, CExpr tvalue, List<CExpr> args, int cc, boolean preCalled)
+  Pair<CExpr, CStmnt> call(int s, CExpr tvalue, List<CExpr> args, int cc)
   {
     var tc = _fuir.clazzOuterClazz(cc);
     CStmnt result = CStmnt.EMPTY;
     var resultValue = CExpr.UNIT;
     var rt = _fuir.clazzResultClazz(cc);
-    switch (preCalled ? FUIR.FeatureKind.Routine : _fuir.clazzKind(cc))
+    switch (_fuir.clazzKind(cc))
       {
       case Abstract :
         Errors.error("Call to abstract feature encountered.",
@@ -1630,23 +1606,18 @@ public class C extends ANY
           if (_fuir.clazzNeedsCode(cc))
             {
               var cl = _fuir.clazzAt(s);
-              var pre = _fuir.isPreconditionAt(s);
               if (FUZION_DEBUG_TAIL_CALL                                 &&
-                  !pre                                                   &&  // not within precondition
-                  !preCalled                                             &&  // not calling pre-condition
                   cc == cl                                               &&  // calling myself
                   _tailCall.callIsTailCall(cl, s)                        &&  // as a tail call
-                  !_fuir.lifeTime(cl, pre).maySurviveCall()                  // and current instance did not escape
+                  !_fuir.lifeTime(cl).maySurviveCall()                       // and current instance did not escape
                 )
                 {
-                  say("Escapes, no tail call opt possible: " + _fuir.clazzAsStringNew(cl) + ", lifetime: " + _fuir.lifeTime(cl, pre).name());
+                  say("Escapes, no tail call opt possible: " + _fuir.clazzAsStringNew(cl) + ", lifetime: " + _fuir.lifeTime(cl).name());
                 }
 
-              if (!pre                                                   &&  // not within precondition
-                  !preCalled                                             &&  // not calling pre-condition
-                  cc == cl                                               &&  // calling myself
+              if (cc == cl                                               &&  // calling myself
                   _tailCall.callIsTailCall(cl, s)                        &&  // as a tail call
-                  !_fuir.lifeTime(cl, pre).maySurviveCall()                  // and current instance did not escape
+                  !_fuir.lifeTime(cl).maySurviveCall()                       // and current instance did not escape
                 )
                 { // then we can do tail recursion optimization!
                   result = tailRecursion(cl, s, tc, a);
@@ -1654,29 +1625,26 @@ public class C extends ANY
                 }
               else
                 {
-                  var call = CExpr.call(_names.function(cc, preCalled), a);
+                  var call = CExpr.call(_names.function(cc), a);
                   result = call;
-                  if (!preCalled)
+                  CExpr res = _fuir.clazzIsVoidType(rt) ? null : CExpr.UNIT;
+                  if (_fuir.hasData(rt))
                     {
-                      CExpr res = _fuir.clazzIsVoidType(rt) ? null : CExpr.UNIT;
-                      if (_fuir.hasData(rt))
+                      var tmp = _names.newTemp();
+                      res = tmp;
+                      var heapClone = CStmnt.EMPTY;
+                      if (_fuir.doesResultEscape(s))
                         {
-                          var tmp = _names.newTemp();
-                          res = tmp;
-                          var heapClone = CStmnt.EMPTY;
-                          if (_fuir.doesResultEscape(s))
-                            {
-                              var tmp2 = _names.newTemp();
-                              heapClone = CStmnt.seq(CStmnt.decl(_types.clazz(rt)+"*", tmp2),
-                                                     tmp2.assign(CExpr.call(CNames.HEAP_CLONE._name, new List<>(res.adrOf(), res.sizeOfExpr())).castTo(_types.clazz(rt)+"*")));
-                              res = tmp2.deref();
-                            }
-                          result = CStmnt.seq(CStmnt.decl(_types.clazz(rt), tmp),
-                                              tmp.assign(call),
-                                              heapClone);
+                          var tmp2 = _names.newTemp();
+                          heapClone = CStmnt.seq(CStmnt.decl(_types.clazz(rt)+"*", tmp2),
+                                                 tmp2.assign(CExpr.call(CNames.HEAP_CLONE._name, new List<>(res.adrOf(), res.sizeOfExpr())).castTo(_types.clazz(rt)+"*")));
+                          res = tmp2.deref();
                         }
-                      resultValue = res;
+                      result = CStmnt.seq(CStmnt.decl(_types.clazz(rt), tmp),
+                                          tmp.assign(call),
+                                          heapClone);
                     }
+                  resultValue = res;
                 }
             }
           break;
@@ -1780,16 +1748,14 @@ public class C extends ANY
    *
    * @param cl id of clazz to compile
    *
-   * @param pre true to create the precondition function, not the function itself.
-   *
    * @param body the code of the function, or null for a forward declaration.
    *
    * @return the C code
    */
-  private CStmnt cFunctionDecl(int cl, boolean pre, CStmnt body)
+  private CStmnt cFunctionDecl(int cl, CStmnt body)
   {
     var res = _fuir.clazzResultClazz(cl);
-    var resultType = pre || !_fuir.hasData(res)
+    var resultType = !_fuir.hasData(res)
       ? "void"
       : _types.clazz(res);
     var argts = new List<String>();
@@ -1810,7 +1776,7 @@ public class C extends ANY
             argns.add(CIdent.arg(i));
           }
       }
-    return CStmnt.functionDecl(resultType, new CIdent(_names.function(cl, pre)), argts, argns, body);
+    return CStmnt.functionDecl(resultType, new CIdent(_names.function(cl)), argts, argns, body);
   }
 
 
@@ -1830,11 +1796,7 @@ public class C extends ANY
           {
           case Routine  :
           case Intrinsic:
-          case Native   : l.add(cFunctionDecl(cl, false, null));
-          }
-        if (_fuir.hasPrecondition(cl))
-          {
-            l.add(cFunctionDecl(cl, true, null));
+          case Native   : l.add(cFunctionDecl(cl, null));
           }
       }
     return CStmnt.seq(l);
@@ -1861,16 +1823,11 @@ public class C extends ANY
           case Native:
             {
               l.add(CStmnt.lineComment("code for clazz#"+_names.clazzId(cl).code()+" "+_fuir.clazzAsString(cl)+":"));
-              var o = ck == FUIR.FeatureKind.Routine ? codeForRoutine(cl, false) :
+              var o = ck == FUIR.FeatureKind.Routine ? codeForRoutine(cl) :
                       ck == FUIR.FeatureKind.Native  ? codeForNative(cl)
                                                      : _intrinsics.code(this, cl);
-              l.add(cFunctionDecl(cl, false, o));
+              l.add(cFunctionDecl(cl, o));
             }
-          }
-        if (_fuir.hasPrecondition(cl))
-          {
-            l.add(CStmnt.lineComment("code for clazz#"+_names.clazzId(cl).code()+" precondition of "+_fuir.clazzAsString(cl)+":"));
-            l.add(cFunctionDecl(cl, true, codeForRoutine(cl, true)));
           }
       }
     return CStmnt.seq(l);
@@ -1881,27 +1838,24 @@ public class C extends ANY
    * Create code for given clazz cl.
    *
    * @param cl id of clazz to generate code for
-   *
-   * @param pre true to create code for cl's precondition, false to create code
-   * for cl itself.
    */
-  CStmnt codeForRoutine(int cl, boolean pre)
+  CStmnt codeForRoutine(int cl)
   {
     if (PRECONDITIONS) require
-      (_fuir.clazzKind(cl) == FUIR.FeatureKind.Routine || pre);
+      (_fuir.clazzKind(cl) == FUIR.FeatureKind.Routine);
 
     _names._tempVarId = 0;  // reset counter for unique temp variables for function results
     var l = new List<CStmnt>();
-    l.add(_ai.process(cl, pre).v1());
+    l.add(_ai.processClazz(cl).v1());
     var res = _fuir.clazzResultClazz(cl);
-    if (!pre && _fuir.hasData(res))
+    if (_fuir.hasData(res))
       {
         var rf = _fuir.clazzResultField(cl);
         l.add(rf != -1 ? current(_fuir.clazzCode(cl)).field(_names.fieldName(rf)).ret()  // a routine, return result field
                        : current(_fuir.clazzCode(cl)).ret()                              // a constructor, return current instance
               );
       }
-    var allocCurrent = switch (_fuir.lifeTime(cl, pre))
+    var allocCurrent = switch (_fuir.lifeTime(cl))
       {
       case Call      -> CStmnt.seq(
           CStmnt.lineComment("cur does not escape, alloc on stack"),
@@ -1976,16 +1930,13 @@ public class C extends ANY
    * otherwise.
    *
    * @param cl id of clazz we are generating code for
-   *
-   * @param pre true iff generating code for cl's precondition, false for cl itself.
    */
   CExpr current(int s)
   {
     var cl = _fuir.clazzAt(s);
-    var pre = _fuir.isPreconditionAt(s);
     var res1 = CNames.CURRENT;
     var res2 = _fuir.clazzIsRef(cl) ? res1 : res1.deref();
-    var res3 =  _fuir.lifeTime(cl, pre).maySurviveCall() ? res2 : res2.adrOf();
+    var res3 =  _fuir.lifeTime(cl).maySurviveCall() ? res2 : res2.adrOf();
     return !_fuir.hasData(cl) ? CExpr.UNIT : res3;
   }
 

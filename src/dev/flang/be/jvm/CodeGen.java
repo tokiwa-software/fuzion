@@ -307,84 +307,7 @@ class CodeGen
   @Override
   public Pair<Expr, Expr> call(int si, Expr tvalue, List<Expr> args)
   {
-    var p = combinePreconditionAndCall(si, tvalue, args);
-    if (p == null)
-      {
-        var ccP = _fuir.accessedPreconditionClazz(si);
-        var s = Expr.UNIT;
-        var res = Expr.UNIT;
-        if (ccP != -1)   // call precondition:
-          {
-            // evaluate target and args and copy to local vars to avoid evaluating them twice.
-            var pt = storeInLocal(si, tvalue);
-            tvalue = pt.v0();
-            s = s.andThen(pt.v1());
-            var nargs = new List<Expr>();
-            for (var a : args)
-              {
-                var pa = storeInLocal(si, a);
-                s = s.andThen(pa.v1());
-                nargs.add(pa.v0());
-              }
-            args = nargs;
-            s = s.andThen(staticCall(si, tvalue, args, ccP, true));
-          }
-        if (!_fuir.callPreconditionOnly(si))
-          {
-            var r = access(si, tvalue, args);
-            s = s.andThen(r.v1());
-            res = r.v0();
-          }
-        p = new Pair<>(res, s);
-      }
-    return p;
-  }
-
-
-  /**
-   * Optimization for call for the common case that a precondition is checked
-   * followed by a call to a statically bound routine of the same class. This
-   * call is then replaced by a call to a combined method that checks the
-   * precondition and then calls the routine.
-   *
-   * @param s site of call
-   *
-   * @param tvalue the target of this call, CExpr.UNIT if none.
-   *
-   * @param args the arguments of this call.
-   *
-   * @return Result value and code generated for this combined call, null if
-   * combined call is not possible.
-   */
-  Pair<Expr, Expr> combinePreconditionAndCall(int s, Expr tvalue, List<Expr> args)
-  {
-    Pair<Expr, Expr> res = null;
-    var ccP = _fuir.accessedPreconditionClazz(s);
-    var ccs = _fuir.accessedClazzes(s);
-    if (ccs.length == 2)
-      {
-        var tt = ccs[0];                   // target clazz we match against
-        var cc = ccs[1];                   // called clazz in case of match
-        if (cc == ccP &&
-            _fuir.clazzKind(ccP) == FUIR.FeatureKind.Routine &&
-            !_fuir.clazzIsBoxed(tt) &&
-            cc != _fuir.clazzAt(s) /* not a call to current clazz that might need tail-call optimization */ &&
-            _types.clazzNeedsCode(cc)
-            )
-          {
-            var tc = _fuir.accessTargetClazz(s);
-            if (tc != tt || _types.hasInterfaceFile(tc))
-              {
-                tvalue = tvalue.andThen(Expr.checkcast(_types.javaType(tc)));
-              }
-            var call = args(false, tvalue, args, cc, _fuir.clazzArgCount(cc))
-              .andThen(_types.invokeStaticCombindedPreAndCall(cc, _fuir.sitePos(s).line()));
-
-            var rt = _fuir.clazzResultClazz(cc);
-            res = makePair(call, rt);
-          }
-      }
-    return res;
+    return access(si, tvalue, args);
   }
 
 
@@ -517,8 +440,8 @@ class CodeGen
     var intfc = _types.interfaceFile(_fuir.clazzOuterClazz(cc0));
     var rc = _fuir.clazzResultClazz(cc0);
     var dn = _names.dynamicFunction(cc0);
-    var ds = isCall ? _types.dynDescriptor(cc0, false) : "(" + _types.javaType(rc).argDescriptor() + ")V";
-    var dr = isCall ? _types.resultType(rc)            : PrimitiveType.type_void;
+    var ds = isCall ? _types.dynDescriptor(cc0) : "(" + _types.javaType(rc).argDescriptor() + ")V";
+    var dr = isCall ? _types.resultType(rc)     : PrimitiveType.type_void;
     if (!intfc.hasMethod(dn))
       {
         intfc.method(ACC_PUBLIC | ACC_ABSTRACT, dn, ds, new List<>());
@@ -641,7 +564,7 @@ class CodeGen
                                      _types.javaType(cco)));
       }
 
-    return isCall ? staticCall(si, tv, args, cc, false)
+    return isCall ? staticCall(si, tv, args, cc)
                   : new Pair<>(Expr.UNIT,
                                _jvm.assignField(si, tv, cc, args.get(0), _fuir.clazzResultClazz(cc)));
   }
@@ -658,19 +581,17 @@ class CodeGen
    *
    * @param cc clazz that is called
    *
-   * @param preCalled true to call the precondition of cc instead of cc.
-   *
    * @return the code to perform the call
    *
    * @param si site of the call
    */
-  Pair<Expr, Expr> staticCall(int si, Expr tvalue, List<Expr> args, int cc, boolean preCalled)
+  Pair<Expr, Expr> staticCall(int si, Expr tvalue, List<Expr> args, int cc)
   {
     Pair<Expr, Expr> res;
     var oc = _fuir.clazzOuterClazz(cc);
-    var rt = preCalled ? _fuir.clazz(FUIR.SpecialClazzes.c_unit) : _fuir.clazzResultClazz(cc);
+    var rt = _fuir.clazzResultClazz(cc);
 
-    switch (preCalled ? FUIR.FeatureKind.Routine : _fuir.clazzKind(cc))
+    switch (_fuir.clazzKind(cc))
       {
       case Abstract :
         Errors.error("Call to abstract feature encountered.",
@@ -681,7 +602,7 @@ class CodeGen
             {
               return new Pair<>(Expr.UNIT, tvalue.drop());
             }
-          else if (!(preCalled || Intrinsix.inRuntime(_jvm, cc)))
+          else if (!Intrinsix.inRuntime(_jvm, cc))
             {
               return Intrinsix.inlineCode(_jvm, si, cc, tvalue, args);
             }
@@ -693,12 +614,9 @@ class CodeGen
           if (_types.clazzNeedsCode(cc))
             {
               var cl = si == NO_SITE ? -1 :_fuir.clazzAt(si);
-              var pre = si != NO_SITE && _fuir.isPreconditionAt(si);
-              if (!pre                                                  // not within precondition
-                  && !preCalled                                         // not calling pre-condition
-                  && cc == cl                                           // calling myself
+              if (   cc == cl                                           // calling myself
                   && _jvm._tailCall.callIsTailCall(cl, si)              // as a tail call
-                  && !_fuir.lifeTime(cl, pre).maySurviveCall()
+                  && !_fuir.lifeTime(cl).maySurviveCall()
                   )
                 { // then we can do tail recursion optimization!
 
@@ -726,7 +644,7 @@ class CodeGen
                       tvalue = tvalue.andThen(Expr.checkcast(_types.resultType(oc)));
                     }
                   var call = args(false, tvalue, args, cc, _fuir.clazzArgCount(cc))
-                    .andThen(_types.invokeStatic(cc, preCalled, _fuir.sitePos(si).line()));
+                    .andThen(_types.invokeStatic(cc, _fuir.sitePos(si).line()));
 
                   res = makePair(call, rt);
                 }
@@ -1005,7 +923,7 @@ class CodeGen
                     .andThen(c.v0());
                 }
               result = result
-                .andThen(_types.invokeStaticCombindedPreAndCall(constCl, _fuir.sitePos(si).line()));
+                .andThen(_types.invokeStatic(constCl, _fuir.sitePos(si).line()));
 
               yield new Pair<>(result, Expr.UNIT);
             }
@@ -1075,23 +993,6 @@ class CodeGen
                                  Names.ANY_TYPE))
       .andThen(Expr.checkcast(_types.javaType(ecl)));
     return new Pair<>(res, Expr.UNIT);
-  }
-
-
-  /**
-   * Process a contract of kind ck of clazz cl that results in bool value cc
-   * (i.e., the contract fails if !cc).
-   */
-  @Override
-  public Expr contract(int s, FUIR.ContractKind ck, Expr cc)
-  {
-    var cl = _fuir.clazzAt(s);
-    return cc.andThen(Expr.branch(O_ifeq,
-                                  Expr.stringconst("" + ck + " on call to '" + _fuir.clazzAsString(cl) + "'")
-                                  .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                                             Names.RUNTIME_CONTRACT_FAIL,
-                                                             Names.RUNTIME_CONTRACT_FAIL_SIG,
-                                                             ClassFileConstants.PrimitiveType.type_void))));
   }
 
 

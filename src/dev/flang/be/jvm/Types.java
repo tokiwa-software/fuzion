@@ -181,8 +181,7 @@ public class Types extends ANY implements ClassFileConstants
             var maincl = _fuir.mainClazzId();
             var bc_run =
               Expr.UNIT
-              .andThen(_fuir.hasPrecondition(maincl) ? invokeStatic(maincl, true, -1) : Expr.UNIT)
-              .andThen(invokeStatic(maincl, false, -1)).drop()
+              .andThen(invokeStatic(maincl, -1)).drop()
               .andThen(Expr.RETURN);
             var code_run = cf.codeAttribute(Names.MAIN_RUN + " in " + _fuir.clazzAsString(cl), bc_run, new List<>(), new List<>(), ClassFile.StackMapTable.empty(cf, new List<>(VerificationType.UninitializedThis), bc_run));
             cf.method(ACC_PUBLIC, Names.MAIN_RUN, "()V", new List<>(code_run));
@@ -221,32 +220,19 @@ public class Types extends ANY implements ClassFileConstants
   }
 
 
-  Expr invokeStatic(int cc, boolean preCalled, int line)
+  Expr invokeStatic(int cc, int line)
   {
-    var callingIntrinsic = !preCalled && _fuir.clazzKind(cc) == FUIR.FeatureKind.Intrinsic;
+    var callingIntrinsic = _fuir.clazzKind(cc) == FUIR.FeatureKind.Intrinsic;
     var cls   = callingIntrinsic ? Names.RUNTIME_INTRINSICS_CLASS
                                  : _names.javaClass(cc);
-    var fname = callingIntrinsic ? _names.function(cc, preCalled) :
-                preCalled        ? Names.PRECONDITION_NAME
+    var fname = callingIntrinsic ? _names.function(cc)
                                  : Names.ROUTINE_NAME;
     return Expr.invokeStatic(cls,
                              fname,
-                             descriptor(cc, preCalled),
-                             resultType(cc, preCalled),
+                             descriptor(cc),
+                             resultType(cc),
                              line);
   }
-  Expr invokeStaticCombindedPreAndCall(int cc, int line)
-  {
-    var cls   = _names.javaClass(cc);
-    var fname = _fuir.clazzContract(cc, FUIR.ContractKind.Pre, 0) != NO_SITE ? Names.COMBINED_NAME
-                                                                             : Names.ROUTINE_NAME;
-    return Expr.invokeStatic(cls,
-                             fname,
-                             descriptor(cc, false),
-                             resultType(cc, false),
-                             line);
-  }
-
 
 
   boolean hasClassFile(int cl)
@@ -254,7 +240,7 @@ public class Types extends ANY implements ClassFileConstants
     return _fuir.clazzIsBoxed(cl) ||
       switch (_fuir.clazzKind(cl))
       {
-      case Abstract -> _fuir.hasPrecondition(cl);
+      case Abstract  -> false;
       case Choice    ->
           switch (_choices.kind(cl))
             {
@@ -262,7 +248,7 @@ public class Types extends ANY implements ClassFileConstants
             case refsAndUnits, general                           -> true;
             };
       case Routine   -> true; // NYI: UNDER DEVELOPMENT: clazzNeedsCode(cl);
-      case Intrinsic -> true; // NYI: UNDER DEVELOPMENT: _fuir.hasPrecondition(cl);
+      case Intrinsic -> true;
       default        -> false;
       };
   }
@@ -503,14 +489,11 @@ public class Types extends ANY implements ClassFileConstants
    * Get the result type of a call to clazz cl or its precondition
    *
    * @param cl the called clazz
-   *
-   * @param pre true iff we call the precondition.
    */
-  JavaType resultType(int cl, boolean pre)
+  JavaType resultType2(int cl)
   {
     var rt = _fuir.clazzResultClazz(cl);
-    return pre ? PrimitiveType.type_void
-               : resultType(rt);
+    return resultType(rt);
 
   }
 
@@ -522,10 +505,8 @@ public class Types extends ANY implements ClassFileConstants
    * dynamic binding) even if the called clazz does not need it.
    *
    * @param cl the called clazz
-   *
-   * @param pre true iff we call the precondition.
    */
-  String descriptor(boolean explicitOuter, int cl, boolean pre)
+  String descriptor(boolean explicitOuter, int cl)
   {
     var as = new StringBuilder();
     as.append("(");
@@ -549,7 +530,7 @@ public class Types extends ANY implements ClassFileConstants
           }
       }
     as.append(")")
-      .append(resultType(cl, pre).descriptor());
+      .append(resultType(cl).descriptor());
 
     return as.toString();
   }
@@ -559,17 +540,15 @@ public class Types extends ANY implements ClassFileConstants
    * Get the signature descriptor string for calling cl or its precondition
    *
    * @param cl the called clazz
-   *
-   * @param pre true iff we call the precondition.
    */
-  String descriptor(int cl, boolean pre)
+  String descriptor(int cl)
   {
-    return descriptor(true /* NYI: CLEANUP: this seems the wrong way around */, cl, pre);
+    return descriptor(true /* NYI: CLEANUP: this seems the wrong way around */, cl);
   }
 
-  String dynDescriptor(int cl, boolean pre)
+  String dynDescriptor(int cl)
   {
-    return descriptor(false /* NYI: CLEANUP: this seems the wrong way around */, cl, pre);
+    return descriptor(false /* NYI: CLEANUP: this seems the wrong way around */, cl);
   }
 
 

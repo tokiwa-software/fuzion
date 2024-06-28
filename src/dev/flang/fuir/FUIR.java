@@ -77,26 +77,6 @@ public class FUIR extends IR
   /*----------------------------  constants  ----------------------------*/
 
 
-  public enum ContractKind
-  {
-    Pre,
-    Post;
-
-    /**
-     * String representation for debugging.
-     */
-    public String toString()
-    {
-      switch (this)
-        {
-        case Pre : return "pre-condition";
-        case Post: return "post-condition";
-        default: throw new Error("unhandled switch case");
-        }
-    }
-  }
-
-
   /**
    * Map used by getSpecialId() to quickly find the SpecialClazz corresponding
    * to a Clazz.
@@ -149,13 +129,6 @@ public class FUIR extends IR
   private final IntArray _siteClazzes;
 
 
-  /**
-   * For each site, this holds the information if the code that site belongs to
-   * a precondition or to a feature code.
-   */
-  private final BoolArray _siteIsPrecondition;
-
-
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -177,14 +150,6 @@ public class FUIR extends IR
    * ids.
    */
   private final TreeMap<Integer, Integer> _clazzCode;
-
-
-  /**
-   * Cached results for clazzContract(), required to ensure that code indices are
-   * unique, i.e., comparing the code index is equivalent to comparing the clazz
-   * ids.
-   */
-  private final TreeMap<Long, Integer> _clazzContract;
 
 
   /**
@@ -218,9 +183,7 @@ public class FUIR extends IR
     _main = main;
     _clazzIds = new MapComparable2Int<>(CLAZZ_BASE);
     _clazzCode = new TreeMap<>();
-    _clazzContract = new TreeMap<>();
     _siteClazzes = new IntArray();
-    _siteIsPrecondition = new BoolArray();
     Clazzes.findAllClasses(main());
     addClasses();
   }
@@ -238,9 +201,7 @@ public class FUIR extends IR
     _main = original._main;
     _clazzIds = original._clazzIds;
     _clazzCode = original._clazzCode;
-    _clazzContract = original._clazzContract;
     _siteClazzes = original._siteClazzes;
-    _siteIsPrecondition = original._siteIsPrecondition;
   }
 
 
@@ -1015,7 +976,7 @@ hw25 is
    *
    * @param pre true iff the new code was part of a precondition.
    */
-  private void recordClazzAndPreForSitesOfRecentlyAddedCode(int cl, boolean pre)
+  private void recordClazzAndPreForSitesOfRecentlyAddedCode(int cl)
   {
     if (PRECONDITIONS) require
       (_siteClazzes.size() < _allCode.size());
@@ -1023,7 +984,6 @@ hw25 is
     while (_siteClazzes.size() < _allCode.size())
       {
         _siteClazzes       .add(cl);
-        _siteIsPrecondition.add(pre);
       }
   }
 
@@ -1058,31 +1018,10 @@ hw25 is
             addCode(cc, code, ff);
           }
         res = addCode(code);
-        recordClazzAndPreForSitesOfRecentlyAddedCode(cl, false);
+        recordClazzAndPreForSitesOfRecentlyAddedCode(cl);
         _clazzCode.put(cl, res);
       }
     return res;
-  }
-
-
-  /**
-   * Get access to the code of the contract of a clazz of kind Routine,
-   * Intrinsic, Abstract or Field.
-   *
-   * @param cl a clazz id
-   *
-   * @param ck the part of the contract to be accessed, ContractKind.Pre or
-   * ContractKind.Post for pre- and post-conditions, respectively.
-   *
-   * @param ix the index of the pre- or post-condition, 0 for the first
-   * condition
-   *
-   * @return a site referring to cl's pre- or post-condition, NO_SITE if cl does
-   * not have a pre- or post-condition with the given index
-   */
-  public int clazzContract(int cl, ContractKind ck, int ix) // NYI: remove!
-  {
-    return NO_SITE;
   }
 
 
@@ -1110,7 +1049,7 @@ hw25 is
         var cc = clazz(cl);
         var result = switch (clazzKind(cc))
           {
-          case Abstract -> hasPrecondition(cl);
+          case Abstract -> false;
           case Choice -> false;
           case Intrinsic, Routine, Field, Native ->
             (cc.isInstantiated() || cc.feature().isOuterRef())
@@ -1171,37 +1110,23 @@ hw25 is
    *
    * @param cl a clazz id of any kind
    *
-   * @param pre true to analyse the instance created for cl's precondition,
-   * false to analyse the instance created for a call to cl
-   *
    * @return A conservative estimate of the lifespan of cl's instance.
    * Undefined if a call to cl does not create an instance, Call if it is
    * guaranteed that the instance is inaccessible after the call returned.
    */
-  public LifeTime lifeTime(int cl, boolean pre)
+  public LifeTime lifeTime(int cl)
   {
-    var result =
-      pre ? (switch (clazzKind(cl))
-               {
-               case Abstract  -> LifeTime.Unknown;
-               case Choice    -> LifeTime.Undefined;
-               case Intrinsic -> LifeTime.Unknown;
-               case Field     -> LifeTime.Unknown;
-               case Routine   -> LifeTime.Unknown;
-               case Native    -> LifeTime.Unknown;
-               })
-          : (switch (clazzKind(cl))
-               {
-               case Abstract  -> LifeTime.Undefined;
-               case Choice    -> LifeTime.Undefined;
-               case Intrinsic -> LifeTime.Undefined;
-               case Field     -> LifeTime.Call;
-               case Routine   -> LifeTime.Unknown;
-               case Native    -> LifeTime.Undefined;
-               });
-
-      return result;
+    return switch (clazzKind(cl))
+      {
+      case Abstract  -> LifeTime.Undefined;
+      case Choice    -> LifeTime.Undefined;
+      case Intrinsic -> LifeTime.Undefined;
+      case Field     -> LifeTime.Call;
+      case Routine   -> LifeTime.Unknown;
+      case Native    -> LifeTime.Undefined;
+      };
   }
+
 
   /**
    * Is the given field clazz a reference to an outer feature?
@@ -1357,23 +1282,6 @@ hw25 is
 
 
   /**
-   * Is the the given site part of a precondition?
-   *
-   * @param s a site, may be !withinCode(s), i.e., this may be used on
-   * `clazzCode(cl)` if the code is empty.
-   *
-   * @return true iff code at site s belongs to a precondition.
-   */
-  public boolean isPreconditionAt(int s)
-  {
-    if (PRECONDITIONS) require
-      (s >= SITE_BASE);
-
-    return _siteIsPrecondition.get(s - SITE_BASE);
-  }
-
-
-  /**
    * Create a String representation of a site for debugging purposes:
    *
    * @param s a site or NO_SITE
@@ -1390,9 +1298,7 @@ hw25 is
     else if (s >= SITE_BASE && (s - SITE_BASE < _allCode.size()))
       {
         var cl = clazzAt(s);
-        var pre = isPreconditionAt(s);
-        res = (pre ? "PRECONDITION OF " : "") +
-          clazzAsString(cl) + "(" + clazzArgCount(cl) + " args) at " + s;
+        res = clazzAsString(cl) + "(" + clazzArgCount(cl) + " args) at " + s;
       }
     else
       {
@@ -1521,47 +1427,6 @@ hw25 is
        codeAt(s) == ExprKind.Comment);
 
     return (String) getExpr(s);
-  }
-
-
-  /**
-   * Get the inner clazz of the precondition of a call, -1 if no precondition.
-   *
-   * The precondition clazz may be different to the accessedClazz in case of
-   * `ref` types: in the following code
-   *
-   *    x is
-   *      f t
-   *      pre condition
-   *      is expr
-   *    r ref x := x
-   *    r.f
-   *
-   * the precondition clazz for the call `r.f` is `(ref x).f`, while the
-   * accessedClazz may be `x.f` (NYI: check!).
-   *
-   * @param s site of the access
-   *
-   * @return the clazz whose precondition has to be checked or -1 if there is no
-   * precondition to be checked.
-   */
-  public int accessedPreconditionClazz(int s)
-  {
-    if (PRECONDITIONS) require
-      (s >= SITE_BASE,
-       withinCode(s),
-       codeAt(s) == ExprKind.Call   ||
-       codeAt(s) == ExprKind.Assign    );
-
-    var cl = clazzAt(s);
-    var outerClazz = clazz(cl);
-    var e = getExpr(s);
-    Clazz innerClazz =
-      (e instanceof AbstractCall   call) ? outerClazz.actualClazzes(call, null)[2] :
-      (Clazz) (Object) new Object() { { if (true) throw new Error("accessedClazz found unexpected Expr " + (e == null ? e : e.getClass()) + "."); } } /* Java is ugly... */;
-
-    var res = innerClazz == null ? -1 : id(innerClazz);
-    return res != -1 && hasPrecondition(res) ? res : -1;
   }
 
 
@@ -2486,15 +2351,6 @@ hw25 is
       !clazzIsUnitType(cl) &&
       !clazzIsVoidType(cl) &&
       cl != clazzUniverse();
-  }
-
-
-  /**
-   * Does this clazzes contract include any preconditions?
-   */
-  public boolean hasPrecondition(int cl)
-  {
-    return clazzContract(cl, FUIR.ContractKind.Pre, 0) != NO_SITE;
   }
 
 

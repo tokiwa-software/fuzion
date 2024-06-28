@@ -463,7 +463,7 @@ public class Choices extends ANY implements ClassFileConstants
                     {
                       if (CHECKS) check
                         (code == null);  // if there are several non-voids, we would have at least boollike kind
-                      code = Expr.UNIT.andThen(ai.process(_fuir.matchCaseCode(s, mc)));
+                      code = Expr.UNIT.andThen(ai.processCode(_fuir.matchCaseCode(s, mc)));
                     }
                 }
             }
@@ -484,8 +484,8 @@ public class Choices extends ANY implements ClassFileConstants
                   var t = intValueForTagNum(subjClazz, tagNum);
                   switch (t)
                     {
-                    case 0: neg = Expr.UNIT.andThen(ai.process(_fuir.matchCaseCode(s, mc))); break;
-                    case 1: pos = Expr.UNIT.andThen(ai.process(_fuir.matchCaseCode(s, mc))); break;
+                    case 0: neg = Expr.UNIT.andThen(ai.processCode(_fuir.matchCaseCode(s, mc))); break;
+                    case 1: pos = Expr.UNIT.andThen(ai.processCode(_fuir.matchCaseCode(s, mc))); break;
                     case -1: break; //  void type
                     default: throw new Error("JVM backend match found unexpected tag number " + t + " when compiling " + _fuir.siteAsString(s));
                   }
@@ -516,7 +516,7 @@ public class Choices extends ANY implements ClassFileConstants
                         .andThen(Expr.iconst(tagNum))                               //          tag, tag, tagNum
                         .andThen(Expr.branch(ClassFileConstants.O_if_icmpeq,        //          tag
                                              Expr.POP                               //          -
-                                               .andThen(ai.process(_fuir.matchCaseCode(s, mc)))
+                                               .andThen(ai.processCode(_fuir.matchCaseCode(s, mc)))
                                                .andThen(Expr.gotoLabel(lEnd))));
                     }
                 }
@@ -553,12 +553,12 @@ public class Choices extends ANY implements ClassFileConstants
                         {                                                       //          sub
                           pos = Expr.POP;                                       //          -
                         }
-                      pos = pos.andThen(ai.process(_fuir.matchCaseCode(s, mc)));
+                      pos = pos.andThen(ai.processCode(_fuir.matchCaseCode(s, mc)));
                     }
                   else if (_fuir.clazzIsUnitType(tc))
                     {
                       neg = Expr.POP                                            //          -
-                        .andThen(ai.process(_fuir.matchCaseCode(s, mc)));
+                        .andThen(ai.processCode(_fuir.matchCaseCode(s, mc)));
                     }
                 }
             }
@@ -610,7 +610,7 @@ public class Choices extends ANY implements ClassFileConstants
                             .andThen(Expr.POP)                                  //          sub
                             .andThen(Expr.POP);                                 //          -
                         }
-                      pos = pos.andThen(ai.process(_fuir.matchCaseCode(s, mc)))
+                      pos = pos.andThen(ai.processCode(_fuir.matchCaseCode(s, mc)))
                         .andThen(Expr.gotoLabel(lEnd));
                       code = code.andThen(Expr.DUP)                             //          sub, tag, tag
                         .andThen(Expr.iconst(tagNum))                           //          sub, tag, tag, tagNum
@@ -668,7 +668,7 @@ public class Choices extends ANY implements ClassFileConstants
                             .andThen(Expr.POP);                                     //          -
                         }
                       pos = pos
-                        .andThen(ai.process(_fuir.matchCaseCode(s, mc)))
+                        .andThen(ai.processCode(_fuir.matchCaseCode(s, mc)))
                         .andThen(Expr.gotoLabel(lEnd));
                       code = code.andThen(Expr.DUP)                                 //          sub, tag, tag
                         .andThen(Expr.iconst(tagNum))                               //          sub, tag, tag, tagNum
