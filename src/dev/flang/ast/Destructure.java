@@ -64,15 +64,13 @@ public class Destructure extends ExprWithPos
 
 
   /**
-   * The field names of the fields we are destructuring into. May not be empty.
-   * null if _fields != null.
+   * The field names of the fields we are destructuring into.
    */
   final List<ParsedName> _names;
 
 
   /**
-   * The fields created by this destructuring.  May be empty. null if _names !=
-   * null.
+   * The fields created by this destructuring.
    */
   final List<AbstractFeature> _fields;
 
@@ -91,13 +89,9 @@ public class Destructure extends ExprWithPos
    *
    * @param pos the sourcecode position, used for error messages.
    *
-   * @param n The field names of the fields we are destructuring into. May not be empty.
-   * null if _fields != null.
+   * @param n The field names of the fields we are destructuring into.
    *
-   * @param fs The fields created by this destructuring.  May be empty. null if _names !=
-   * null.
-   *
-   * @param def true if destructuring using :=
+   * @param fs The fields created by this destructuring.
    *
    * @param v The value that will be destructured
    */
