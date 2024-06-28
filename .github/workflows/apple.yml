@@ -27,9 +27,10 @@ permissions:
   contents: read
 
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * 0' # every sunday
+  push:
+    branches:
+      - 'main'
+  pull_request: {}
 
 env:
   PRECONDITIONS: true
