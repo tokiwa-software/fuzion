@@ -911,7 +911,10 @@ A post-condition of a feature that redefines one or several inherited features m
             if (visibleFor(existing, f.outer()))
               {
                 f.redefines().add(existing);
-                c.addInheritedContract(f, existing);
+                if (f instanceof Feature ff)
+                  {
+                    c.addInheritedContract(ff, existing);
+                  }
               }
           }
       }
@@ -1042,7 +1045,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
   private void addToHeirs(AbstractFeature outer, FeatureName fn, Feature f)
   {
     var d = data(outer);
-    if (d != null)
+    if (d != null && !f.isFixed())
       {
         for (var h : d._heirs)
           {
@@ -1316,10 +1319,6 @@ A post-condition of a feature that does not redefine an inherited feature must s
           }
         };
         f.outer().code().visit(visitor, null);
-        if (usage.isEmpty() || definition.isEmpty())
-          {
-            f.outer().contract().visit(visitor, null);
-          }
 
         // NYI: check(usage.size() == 1, definition.size() == 1);
 
@@ -1700,7 +1699,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
    */
   private void checkAbstractVisibility(Feature f) {
     if(f.isAbstract() &&
-       f.visibility().featureVisibility().ordinal() < f.outer().visibility().featureVisibility().ordinal())
+       f.visibility().eraseTypeVisibility().ordinal() < f.outer().visibility().eraseTypeVisibility().ordinal())
       {
         AstErrors.abstractFeaturesVisibilityMoreRestrictiveThanOuter(f);
       }
@@ -1737,7 +1736,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
   {
     f
       .contract()
-      .req
+      ._declared_preconditions
       .forEach(r -> r.visit(new FeatureVisitor() {
         @Override
         public void action(AbstractCall c)
@@ -1751,7 +1750,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
               // type param is known by caller
               && !c.calledFeature().isTypeParameter()
               // the called feature must be at least as visible as the feature.
-              && c.calledFeature().visibility().featureVisibility().ordinal() < f.visibility().featureVisibility().ordinal())
+              && c.calledFeature().visibility().eraseTypeVisibility().ordinal() < f.visibility().eraseTypeVisibility().ordinal())
             {
               AstErrors.calledFeatureInPreconditionHasMoreRestrictiveVisibilityThanFeature(f, c);
             }
@@ -1820,7 +1819,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
    */
   private Visi effectiveFeatureVisibility(Feature f)
   {
-    var result = f.visibility().featureVisibility();
+    var result = f.visibility().eraseTypeVisibility();
     var o = f.outer();
     while (o != null)
       {

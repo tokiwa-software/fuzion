@@ -79,6 +79,15 @@ public abstract class IR extends ANY
 
 
   /**
+   * Special clazz index value for not-existing clazz.
+   *
+   * NYI: CLEANUP: This should better be `CLAZZ_BASE-1` and it should be used
+   * instead of `-1` in FUIR.java.
+   */
+  public static final int NO_CLAZZ = -1;
+
+
+  /**
    * For Features represented by integers, this gives the base added to the
    * integers to detect wrong values quickly.
    */

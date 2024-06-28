@@ -1,7 +1,14 @@
 
-error 1: CONTRACT FAILED: pre-condition on call to 'issue270'
+error 1: FATAL FAULT `precondition`: false
 Call stack:
-precondition of issue270
+fuzion__sys__2fatal_fault
+fuzion_INT__t__install_default__INTERN_fun264__1call
+fuzion__runtime__1fault__1cause
+fuzion_INT__t__install_default__INTERN_fun266__1call
+fuzion__runtime__1pre_fault__1cause
+fuzion__runtime__1precondition_fault
+INTERN_pre1_issue270
+INTERN_preandcall2_issue270
 
 *** fatal errors encountered, stopping.
 one error.

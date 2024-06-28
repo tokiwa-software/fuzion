@@ -378,6 +378,10 @@ include::rule.adoc[]
 CAUTION: *NYI*: Text Missing
 
 :RULE_SRC: src/dev/flang/ast/Contract.java
+:RULE_ID: SEMANTIC_CONTRACT_PRE_ORDER
+include::rule.adoc[]
+
+:RULE_SRC: src/dev/flang/ast/Contract.java
 :RULE_ID: SEMANTIC_CONTRACT_POST_ORDER
 include::rule.adoc[]
 

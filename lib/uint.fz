@@ -269,7 +269,7 @@ is
   public fixed redef infix -! (other uint) bool => uint.this ≥ other
   public fixed redef infix *! (other uint) bool => true
   public fixed redef infix /! (other uint) bool => other != uint.zero
-  public fixed redef infix %! (other uint) bool => true
+  public fixed redef infix %! (other uint) bool => other != uint.zero
   public fixed redef infix **!(other uint) bool => true
 
   # exponentation always works, even though it might be

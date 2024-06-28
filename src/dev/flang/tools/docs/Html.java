@@ -495,14 +495,14 @@ public class Html extends ANY
   {
     if (f.arguments()
          .stream()
-         .filter(a -> a.isTypeParameter() || f.visibility().featureVisibility() == Visi.PUB)
+         .filter(a -> a.isTypeParameter() || f.visibility().eraseTypeVisibility() == Visi.PUB)
          .count() == 0)
       {
         return "";
       }
     return "(" + f.arguments()
       .stream()
-      .filter(a -> a.isTypeParameter() || f.visibility().featureVisibility() == Visi.PUB)
+      .filter(a -> a.isTypeParameter() || f.visibility().eraseTypeVisibility() == Visi.PUB)
       .map(a ->
         htmlEncodedBasename(a) + "&nbsp;"
         + (a.isTypeParameter() ? typeArgAsString(a): anchor(a.resultType())))

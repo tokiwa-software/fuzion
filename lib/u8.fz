@@ -67,6 +67,10 @@ public u8(public val u8) : num.wrap_around, has_interval is
   public fixed redef infix >> (other u8) u8 => intrinsic
   public fixed redef infix << (other u8) u8 => intrinsic
 
+  # does this u8 fit into an u8?
+  #
+  public redef fixed fits_in_u8  => true
+
   public as_i8 i8
     pre
       debug: val ≤ i8.max.as_u8

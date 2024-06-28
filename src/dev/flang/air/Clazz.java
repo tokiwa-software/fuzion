@@ -1528,7 +1528,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     var fc = new EV(inh, f);
     f.visitExpressions(fc);
-    f.contract().req.stream().forEach(c -> c.visitExpressions(fc));
 
     for (var c: f.inherits())
       {

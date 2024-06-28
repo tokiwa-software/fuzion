@@ -74,7 +74,8 @@ public class MIR extends IR
   public MIR(AbstractFeature universe, AbstractFeature main, MirModule module)
   {
     _universe = universe;
-    _main = main;
+    var pac = main.preAndCallFeature();
+    _main = pac != null ? pac : main;
     _module = module;
   }
 

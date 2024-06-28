@@ -199,6 +199,50 @@ public class Feature extends AbstractFeature
   private final Contract _contract;
   public Contract contract() { return _contract; }
 
+
+  /**
+   * Lists of features we redefine and hence from which we inherit pre or post
+   * conditions.  Used during front end only to create calls to redefined
+   * features post conditions when generating post condition feature for this
+   * contract.
+   */
+  List<AbstractFeature> _inheritedPre  = new List<>();
+  List<AbstractFeature> _inheritedPost = new List<>();
+
+
+  /**
+   * precondition feature, added during syntax sugar phase.
+   */
+  Feature _preFeature = null;
+  @Override
+  public AbstractFeature preFeature()
+  {
+    return _preFeature;
+  }
+
+  /**
+   * pre bool feature, added during syntax sugar phase.
+   */
+  Feature _preBoolFeature = null;
+  @Override
+  public AbstractFeature preBoolFeature()
+  {
+    return _preBoolFeature;
+  }
+
+  /**
+   * pre and call feature, added during syntax sugar phase.
+   */
+  Feature _preAndCallFeature = null;
+  @Override
+  public AbstractFeature preAndCallFeature()
+  {
+    return _preAndCallFeature;
+  }
+
+  /**
+   * post feature, added during syntax sugar phase.
+   */
   Feature _postFeature = null;
   @Override
   public AbstractFeature postFeature()
@@ -1058,7 +1102,6 @@ public class Feature extends AbstractFeature
       }
     _impl.visit(v, this);
     _returnType.visit(v, this);
-    _contract.visit(v, this);
   }
 
 
@@ -1427,7 +1470,7 @@ public class Feature extends AbstractFeature
       {
         _state = State.RESOLVING_SUGAR1;
 
-        _contract.addContractFeatures(this, res);
+        _contract.addContractFeatures(res, this);
         if (definesType())
           {
             typeFeature(res);
@@ -1978,6 +2021,10 @@ A ((Choice)) declaration must not contain a result type.
    */
   public Expr resolveTypes(Resolution res, AbstractFeature outer)
   {
+    if (PRECONDITIONS) require
+      (res != null,
+       isUniverse() || outer != null || Errors.any());
+
     Expr result = this;
 
     if (CHECKS) check
@@ -2156,7 +2203,6 @@ A ((Choice)) declaration must not contain a result type.
         }
       };
 
-    _contract.visit(fv, this);
     for (var p: _inherits)
       {
         p.visit(fv, this);
@@ -2311,7 +2357,7 @@ A ((Choice)) declaration must not contain a result type.
       {
         result = _returnType.functionReturnType();
       }
-    if (isOuterRef())
+    if (isOuterRef() && !outer().isFixed())
       {
         result = result.asThis();
       }

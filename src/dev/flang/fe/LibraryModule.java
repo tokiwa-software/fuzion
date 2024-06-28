@@ -841,9 +841,9 @@ Feature
 .2+| true NYI! !isField? !isIntrinsc
               | 1      | int           | inherits count i
               | i      | Code          | inherits calls
-.4+| true     | 1      | int           | precondition count pre_n
-              | pre_n  | Code          | precondition code
-   | R        | 1      | int           | feature offset of precondition feature
+.2+| R        | 1      | int           | feature offset of precondition feature
+              | 1      | int           | feature offset of precondition bool feature
+   | R && isConstructor | 1      | int           | feature offset of precondition and call feature
    | E        | 1      | int           | feature offset of postcondition feature
 .2+| true     | 1      | int           | redefines count r
               | r      | int           | feature offset of redefined feature
@@ -888,13 +888,15 @@ Feature
    *   | d? !isI| i      | Code          | inherits calls                                |
    *   | ntrinsc|        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | int           | precondition count pre_n                      |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | pre_n  | Code          | precondition code                             |
-   *   +--------+--------+---------------+-----------------------------------------------+
    *   | R      | 1      | int           | feature offset of precondition feature        |
+   *   |        |        +---------------+-----------------------------------------------+
+   *   |        |        | int           | feature offset of pre bool feature            |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | E      | 1      | int           | feature offset of pistcondition feature       |
+   *   | R &&   | 1      | int           | feature offset of pre and call feature        |
+   *   | isConst|        |               |                                               |
+   *   | ructor |        |               |                                               |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | E      | 1      | int           | feature offset of postcondition feature       |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | redefines count r                             |
    *   |        +--------+---------------+-----------------------------------------------+
@@ -1074,30 +1076,10 @@ Feature
     return featureInheritsCountPos(at) + 4;
   }
 
-  int featurePreCondCountPos(int at)
+  int featurePreFeaturePos(int at)
   {
     var i = featureInheritsPos(at);
     var ic = featureInheritsCount(at);
-    while (ic > 0)
-      {
-        i = codeNextPos(i);
-        ic--;
-      }
-    return i;
-  }
-  int featurePreCondCount(int at)
-  {
-    return data().getInt(featurePreCondCountPos(at));
-  }
-  int featurePreCondPos(int at)
-  {
-    return featurePreCondCountPos(at) + 4;
-  }
-
-  int featurePreFeaturePos(int at)
-  {
-    var i = featurePreCondPos(at);
-    var ic = featurePreCondCount(at);
     while (ic > 0)
       {
         i = codeNextPos(i);
@@ -1117,11 +1099,38 @@ Feature
     return result;
   }
 
+  AbstractFeature featurePreBoolFeature(int at)
+  {
+    AbstractFeature result = null;
+    var k = featureKind(at);
+    if ((k & FuzionConstants.MIR_FILE_KIND_HAS_PRE_CONDITION_FEATURE ) != 0)
+      {
+        result = feature(data().getInt(featurePreFeaturePos(at)+4));
+      }
+    return result;
+  }
+
+  AbstractFeature featurePreAndCallFeature(int at)
+  {
+    AbstractFeature result = null;
+    var k = featureKind(at);
+    if ((k & FuzionConstants.MIR_FILE_KIND_HAS_PRE_CONDITION_FEATURE ) != 0 &&
+        !featureIsConstructor(at))
+      {
+        result = feature(data().getInt(featurePreFeaturePos(at)+8));
+      }
+    return result;
+  }
+
   int featurePostFeaturePos(int at)
   {
     var i = featurePreFeaturePos(at);
     var k = featureKind(at);
-    i = i + ((k & FuzionConstants.MIR_FILE_KIND_HAS_PRE_CONDITION_FEATURE ) != 0 ? 4 : 0);
+    var sz =
+      (k & FuzionConstants.MIR_FILE_KIND_HAS_PRE_CONDITION_FEATURE ) == 0 ? 0 :
+      featureIsConstructor(at)                                            ? 8
+                                                                          : 12;
+    i = i + ((k & FuzionConstants.MIR_FILE_KIND_HAS_PRE_CONDITION_FEATURE ) != 0 ? sz : 0);
     return i;
   }
 
