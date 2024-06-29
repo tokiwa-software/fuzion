@@ -230,7 +230,7 @@ public class Types extends ANY implements ClassFileConstants
     return Expr.invokeStatic(cls,
                              fname,
                              descriptor(cc),
-                             resultType(cc),
+                             resultType(_fuir.clazzResultClazz(cc)),
                              line);
   }
 
@@ -486,19 +486,6 @@ public class Types extends ANY implements ClassFileConstants
 
 
   /**
-   * Get the result type of a call to clazz cl or its precondition
-   *
-   * @param cl the called clazz
-   */
-  JavaType resultType2(int cl)
-  {
-    var rt = _fuir.clazzResultClazz(cl);
-    return resultType(rt);
-
-  }
-
-
-  /**
    * Get the signature descriptor string for calling cl or its precondition
    *
    * @param explicitOuter true if the target instance is required (for Java
@@ -530,7 +517,7 @@ public class Types extends ANY implements ClassFileConstants
           }
       }
     as.append(")")
-      .append(resultType(cl).descriptor());
+      .append(resultType(_fuir.clazzResultClazz(cl)).descriptor());
 
     return as.toString();
   }
