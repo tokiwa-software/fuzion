@@ -486,7 +486,7 @@ public class Types extends ANY implements ClassFileConstants
 
 
   /**
-   * Get the signature descriptor string for calling cl or its precondition
+   * Get the signature descriptor string for calling cl
    *
    * @param explicitOuter true if the target instance is required (for Java
    * dynamic binding) even if the called clazz does not need it.
@@ -524,7 +524,7 @@ public class Types extends ANY implements ClassFileConstants
 
 
   /**
-   * Get the signature descriptor string for calling cl or its precondition
+   * Get the signature descriptor string for calling cl
    *
    * @param cl the called clazz
    */

@@ -177,12 +177,9 @@ public class C extends ANY
       var cc0 = _fuir.accessedClazz            (s);
       var ol = new List<CStmnt>();
       var res = CExpr.UNIT;
-      if (!_fuir.callPreconditionOnly(s))
-        {
-          var r = access(s, tvalue, args);
-          ol.add(r.v1());
-          res = r.v0();
-        }
+      var r = access(s, tvalue, args);
+      ol.add(r.v1());
+      res = r.v0();
       return new Pair<>(res, CStmnt.seq(ol));
     }
 

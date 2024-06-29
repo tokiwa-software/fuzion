@@ -261,36 +261,6 @@ class CodeGen
 
 
   /**
-   * If e might have some side effect, evaluate e and store the result in a new
-   * local variable.
-   *
-   * This is used in case e's value is needed repeatedly as in passing it to a
-   * precondition check before it is passed to the actual call.
-   *
-   * @param si site of the expr requiring this
-   *
-   * @param e expression to evaluation and store in a local, null for void value
-   *
-   * @return a pair of a new expression that loads the value of e and an
-   * expression that evaluates e and stores it in a local variable.
-   */
-  Pair<Expr,Expr> storeInLocal(int si, Expr e)
-  {
-    if (e == null)
-      {
-        return new Pair<>(null, Expr.UNIT);
-      }
-    else
-      {
-        var t = e.type();
-        var l = _jvm.allocLocal(si, t.stackSlots());
-        return new Pair<>(t.load(l),
-                          e.andThen(t.store(l)));
-      }
-  }
-
-
-  /**
    * Perform a call of a feature with target instance tvalue with given
    * arguments.  The type of tvalue might be dynamic (a reference). See
    * FUIR.access*().

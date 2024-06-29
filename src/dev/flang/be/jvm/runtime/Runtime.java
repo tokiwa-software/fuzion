@@ -660,17 +660,6 @@ public class Runtime extends ANY
 
 
   /**
-   * Called after a precondition/postcondition check failed
-   *
-   * @param msg a detail message explaining what failed
-   */
-  public static void contract_fail(String msg)
-  {
-    Errors.fatal("CONTRACT FAILED: " + msg, stackTrace());
-  }
-
-
-  /**
    * Get the message of last exception thrown in the current thread.
    */
   public static String getException()

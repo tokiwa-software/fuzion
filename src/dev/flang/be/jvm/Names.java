@@ -130,13 +130,6 @@ public class Names extends ANY implements ClassFileConstants
 
 
   /**
-   * Name and signature of Runtime.precondition_fail()
-   */
-  static final String RUNTIME_CONTRACT_FAIL     = "contract_fail";
-  static final String RUNTIME_CONTRACT_FAIL_SIG = "(Ljava/lang/String;)V";
-
-
-  /**
    * Name of Runtime.LOCK_FOR_ATOMIC
    */
   static final String RUNTIME_LOCK_FOR_ATOMIC   = "LOCK_FOR_ATOMIC";
@@ -150,7 +143,6 @@ public class Names extends ANY implements ClassFileConstants
   private static final String DYNAMIC_FUNCTION_PREFIX = "fzD_";
 
   static final String ROUTINE_NAME      = "fzRoutine";                // method with code for the routine
-  static final String COMBINED_NAME     = "fzPreconditionAndRoutine"; // method that calls precondition followed by routine, to reduce code size
   static final String NAME_ID           = "_L";
   static
   {

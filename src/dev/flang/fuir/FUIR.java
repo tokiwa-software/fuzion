@@ -1638,32 +1638,6 @@ hw25 is
 
 
   /**
-   * Is this call only to check preconditions.
-   *
-   * This is a bit of a hack for calls to parent features in inherits clauses:
-   * These calls are inlined, so the backend does not need to take care.  Only
-   * the precondition must be executed explicitly, so there remains a call to
-   * the parent feature with callPreconditionOnly() returning true.
-   *
-   * The result of a the call in this case is unit.
-   *
-   * @param s site of the call
-   *
-   * @return true if only the precondition should be executed.
-   */
-  public boolean callPreconditionOnly(int s)
-  {
-    if (PRECONDITIONS) require
-      (s >= SITE_BASE,
-       withinCode(s),
-       codeAt(s) == ExprKind.Call);
-
-    var call = (AbstractCall) getExpr(s);
-    return call.isInheritanceCall();
-  }
-
-
-  /**
    * Get the target (outer) clazz of a feature access
    *
    * @param cl index of clazz containing the access

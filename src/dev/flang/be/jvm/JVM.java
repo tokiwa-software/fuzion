@@ -974,9 +974,9 @@ should be avoided as much as possible.
 
 
   /**
-   * Create prolog for code of given routine or precondition.  The prolog
-   * creates a new instance of cl and stores a reference to that instance into
-   * local var at slot current_index().
+   * Create prolog for code of given routine.  The prolog creates a new instance
+   * of cl and stores a reference to that instance into local var at slot
+   * current_index().
    *
    * @param cl is of clazz to compile
    *
@@ -1155,7 +1155,7 @@ should be avoided as much as possible.
 
 
   /**
-   * Set the number of local var slots for the given routine or precondition.
+   * Set the number of local var slots for the given routine.
    *
    * @param cl id of clazz to generate code for
    *
@@ -1168,9 +1168,11 @@ should be avoided as much as possible.
 
 
   /**
-   * Set the number of local var slots for the given routine or precondition.
+   * Create and get the label at the beginning of the code for routine cl.
    *
    * @param cl id of clazz
+   *
+   * @return the existing or newly created label.
    */
   Label startLabel(int cl)
   {
@@ -1186,7 +1188,7 @@ should be avoided as much as possible.
 
 
   /**
-   * Alloc local var slots for the given routine or precondition.
+   * Alloc local var slots for the given routine.
    *
    * @param cl id of clazz to generate code for
    *
