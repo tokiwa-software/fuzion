@@ -929,8 +929,7 @@ public class DFA extends ANY
 
 
         /**
-         * For a call to cl (or cl's precondition), does the instance of cl
-         * escape the call?
+         * For a call to cl, does the instance of cl escape the call?
          *
          * @param cl a call's inner clazz
          *
@@ -1197,9 +1196,8 @@ public class DFA extends ANY
 
 
   /**
-   * Record that the given clazz (or its precondition) escape the call to the
-   * routine (or precondition).  If it escapes. the instance cannot be allocated
-   * on the stack.
+   * Record that the given clazz escape the call to the routine.  If it
+   * does escape, the instance cannot be allocated on the stack.
    *
    * @param cc the clazz to check
    */
@@ -2089,8 +2087,8 @@ public class DFA extends ANY
    * @param context for debugging: Reason that causes this call to be part of
    * the analysis.
    *
-   * @return cl a new or existing call to cl (or its precondition) with the
-   * given target, args and environment.
+   * @return cl a new or existing call to cl with the given target, args and
+   * environment.
    */
   Call newCall(int cl, int site, Value tvalue, List<Val> args, Env env, Context context)
   {

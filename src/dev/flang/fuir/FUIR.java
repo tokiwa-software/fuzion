@@ -916,29 +916,6 @@ public class FUIR extends IR
   {
     for (var p: ff.inherits())
       {
-        /*
-NYI: Any side-effects in p.target() or p.actuals() will be executed twice, once for
-     the precondition and once for the inlined call! See this example:
-
-hw25 is
-  A (a i32)
-    pre
-      a < 100
-  is
-    say "in A: $a"
-
-  B : A x is
-
-  count := 0
-
-  x =>
-    set count := count + 1
-    count
-
-  B; B; B
-  if (count == 3) say "PASS" else say "FAIL"
-        */
-
         var pf = p.calledFeature();
         var of = pf.outerRef();
         var or = (of == null) ? null : (Clazz) cc._inner.get(new FeatureAndActuals(of, new List<>(), false));  // NYI: ugly cast
@@ -969,21 +946,18 @@ hw25 is
 
   /**
    * This has to be called after `super.addCode(List)` was called to record the
-   * clazz and whether the code belongs to a precondition for all sites of the
-   * newly added code.
+   * clazz for all sites of the newly added code.
    *
    * @param cl the clazz id of the clazz that contains the new code
-   *
-   * @param pre true iff the new code was part of a precondition.
    */
-  private void recordClazzAndPreForSitesOfRecentlyAddedCode(int cl)
+  private void recordClazzForSitesOfRecentlyAddedCode(int cl)
   {
     if (PRECONDITIONS) require
       (_siteClazzes.size() < _allCode.size());
 
     while (_siteClazzes.size() < _allCode.size())
       {
-        _siteClazzes       .add(cl);
+        _siteClazzes.add(cl);
       }
   }
 
@@ -1018,7 +992,7 @@ hw25 is
             addCode(cc, code, ff);
           }
         res = addCode(code);
-        recordClazzAndPreForSitesOfRecentlyAddedCode(cl);
+        recordClazzForSitesOfRecentlyAddedCode(cl);
         _clazzCode.put(cl, res);
       }
     return res;
