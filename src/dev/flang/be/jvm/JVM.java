@@ -740,7 +740,7 @@ should be avoided as much as possible.
    * For each routine with clazz id cl, this holds the number
    * of local var slots for the created method at index _fuir.clazzId2num(cl).
    */
-  final int[] _numLocalsForCode;
+  final int[] _numLocals;
 
 
   /**
@@ -782,8 +782,8 @@ should be avoided as much as possible.
     _tailCall = new TailCall(fuir);
     _ai = new AbstractInterpreter<>(fuir, new CodeGen(this));
     var cnt = _fuir.clazzId2num(_fuir.lastClazz())+1;
-    _numLocalsForCode         = new int[cnt];
-    _startLabels              = new Label[cnt];
+    _numLocals   = new int[cnt];
+    _startLabels = new Label[cnt];
 
     Errors.showAndExit();
   }
@@ -1150,7 +1150,7 @@ should be avoided as much as possible.
    */
   int numLocals(int cl)
   {
-    return _numLocalsForCode[_fuir.clazzId2num(cl)];
+    return _numLocals[_fuir.clazzId2num(cl)];
   }
 
 
@@ -1163,7 +1163,7 @@ should be avoided as much as possible.
    */
   void setNumLocals(int cl, int n)
   {
-    _numLocalsForCode[_fuir.clazzId2num(cl)] = n;
+    _numLocals[_fuir.clazzId2num(cl)] = n;
   }
 
 

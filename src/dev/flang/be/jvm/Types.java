@@ -254,26 +254,6 @@ public class Types extends ANY implements ClassFileConstants
   }
 
 
-  int numUnitTypesInChoiceOfOnlyRefs(int cl)
-  {
-    if (PRECONDITIONS) require
-      (_fuir.clazzIsChoiceOfOnlyRefs(cl));
-
-    int numUnitTypes = 0;
-    for (var i = 0; i < _fuir.clazzNumChoices(cl); i++)
-      {
-        var tc = _fuir.clazzChoice(cl, i);
-        if (!_fuir.clazzIsVoidType(tc) && !_fuir.clazzIsRef(tc))
-          {
-            if (CHECKS) check
-              (_fuir.clazzIsUnitType(tc));
-            numUnitTypes++;
-          }
-      }
-    return numUnitTypes;
-  }
-
-
   boolean clazzNeedsCode(int cl)
   {
     return _fuir.clazzNeedsCode(cl) ||
@@ -284,25 +264,6 @@ public class Types extends ANY implements ClassFileConstants
       cl == _fuir.clazz_fuzionSysArray_u8_length() ||
       cl == _fuir.clazz_fuzionJavaObject() ||
       cl == _fuir.clazz_fuzionJavaObject_Ref();
-  }
-
-
-  boolean isChoiceOfOneRefAndOneUnitType(int cl)
-  {
-    var result = false;
-    if (_fuir.clazzIsChoice(cl))
-      {
-        if (_fuir.clazzIsChoiceOfOnlyRefs(cl))
-          {
-            var nc = _fuir.clazzNumChoices(cl);
-            var nu = numUnitTypesInChoiceOfOnlyRefs(cl);
-            var nr = nc - nu; // num refs
-            if (CHECKS) check
-              (nr > 0);
-            result = nu == 1 && nr == 1;
-          }
-      }
-    return result;
   }
 
 

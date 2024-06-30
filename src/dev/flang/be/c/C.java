@@ -1752,9 +1752,8 @@ public class C extends ANY
   private CStmnt cFunctionDecl(int cl, CStmnt body)
   {
     var res = _fuir.clazzResultClazz(cl);
-    var resultType = !_fuir.hasData(res)
-      ? "void"
-      : _types.clazz(res);
+    var resultType = _fuir.hasData(res) ? _types.clazz(res)
+                                        : "void";
     var argts = new List<String>();
     var argns = new List<CIdent>();
     var or = _fuir.clazzOuterRef(cl);
