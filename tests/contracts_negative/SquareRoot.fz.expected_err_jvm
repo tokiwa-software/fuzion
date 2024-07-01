@@ -1,5 +1,5 @@
 
-error 1: FATAL FAULT `precondition`: ≥
+error 1: FATAL FAULT `precondition`: a ≥ 0
 Call stack:
 fuzion__sys__2fatal_fault
 fuzion_INT__t__install_default__INTERN_fun264__1call
