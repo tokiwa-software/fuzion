@@ -1525,13 +1525,6 @@ public class AstErrors extends ANY
           "Previous inheritance from choice at " + lastP);
   }
 
-  static void cannotInheritFromChoice(SourcePosition pos)
-  {
-    error(pos,
-          "Cannot inherit from choice feature",
-          "Choice must be leaf.");
-  }
-
   static void parentMustBeConstructor(SourcePosition pos, Feature heir, AbstractFeature parent)
   {
     error(pos,
