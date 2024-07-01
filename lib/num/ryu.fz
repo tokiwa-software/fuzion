@@ -924,8 +924,8 @@ public ryū(public T type : float) is
     exponent := e10 + vplength - 1;
 
     if (dm_is_trailing_zeros || dv_is_trailing_zeros)
-      for last_removed_digit := i64 0, dv % 10
-          dm_is_trailing_zeros0 := dm_is_trailing_zeros, dm_is_trailing_zeros0 & (dm % 10 = 0)
+      for last_removed_digit := i64 0, dv0 % 10
+          dm_is_trailing_zeros0 := dm_is_trailing_zeros, dm_is_trailing_zeros0 & (dm0 % 10 = 0)
           dv_is_trailing_zeros0 := dv_is_trailing_zeros, dv_is_trailing_zeros0 & (last_removed_digit = 0)
           dp0 := dp, dp0 / 10
           dv0 := dv, dv0 / 10
@@ -941,7 +941,7 @@ public ryū(public T type : float) is
             dv1 := dv0, dv1 / 10
             dm1 := dm0, dm1 / 10
             removed0 := removed, removed0+1
-        while t && (dm % 10 = 0) && require_more_digits dp1
+        while t && (dm0 % 10 = 0) && require_more_digits dp1
         else
 
           outside_bounds => dv1 = dm1 && !(dm_is_trailing_zeros0 && rounding_mode.accept_lower_bound even)
@@ -956,7 +956,7 @@ public ryū(public T type : float) is
            exponent)
 
     else
-      for last_removed_digit := i64 0, dv % 10
+      for last_removed_digit := i64 0, dv0 % 10
           dp0 := dp, dp0 / 10
           dv0 := dv, dv0 / 10
           dm0 := dm, dm0 / 10

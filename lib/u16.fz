@@ -108,7 +108,7 @@ public u16(public val u16) : num.wrap_around, has_interval is
     (v2, s2) := if (v1 <  (u16 0x10)) (v1, s1) else (v1 >>  4, s1 +  4)
     (v3, s3) := if (v2 <           4) (v2, s2) else (v2 >>  2, s2 +  2)
     (v4, s4) := if (v3 <           2) (v3, s3) else (v3 >>  1, s3 +  1)
-    v3 << s4
+    v4 << s4
 
 
   # count the number of trailing zeros in this integer.
