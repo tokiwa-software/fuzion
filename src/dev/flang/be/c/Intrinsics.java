@@ -833,7 +833,7 @@ public class Intrinsics extends ANY
 
                                 arg.assign(CExpr.call(c.malloc(), new List<>(CExpr.sizeOfType("struct " + CNames.fzThreadStartRoutineArg.code())))),
 
-                                arg.deref().field(CNames.fzThreadStartRoutineArgFun).assign(CExpr.ident(c._names.function(call, false)).adrOf().castTo("void *")),
+                                arg.deref().field(CNames.fzThreadStartRoutineArgFun).assign(CExpr.ident(c._names.function(call)).adrOf().castTo("void *")),
                                 arg.deref().field(CNames.fzThreadStartRoutineArgArg).assign(A0.castTo("void *")),
 
                                 CExpr.call("fzE_thread_create", new List<>(CNames.fzThreadStartRoutine.adrOf(), arg)).ret());
@@ -962,7 +962,7 @@ public class Intrinsics extends ANY
                                        evi.assign(CIdent.TRUE ),
                                        evj.assign(jmpbuf.adrOf()),
                                        CStmnt.iff(CExpr.call("setjmp",new List<>(jmpbuf)).eq(CExpr.int32const(0)),
-                                                  CExpr.call(c._names.function(call, false), new List<>(A0))),
+                                                  CExpr.call(c._names.function(call), new List<>(A0))),
                                        /* NYI: this is a bit radical: we copy back the value from env to the outer instance, i.e.,
                                         * the outer instance is no longer immutable and we might run into difficulties if
                                         * the outer instance is used otherwise.

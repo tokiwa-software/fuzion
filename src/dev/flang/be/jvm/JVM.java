@@ -737,10 +737,10 @@ should be avoided as much as possible.
 
 
   /**
-   * For each routine and precondition with clazz id cl, this holds the number
+   * For each routine with clazz id cl, this holds the number
    * of local var slots for the created method at index _fuir.clazzId2num(cl).
    */
-  final int[] _numLocalsForCode, _numLocalsForPrecondition;
+  final int[] _numLocals;
 
 
   /**
@@ -782,9 +782,8 @@ should be avoided as much as possible.
     _tailCall = new TailCall(fuir);
     _ai = new AbstractInterpreter<>(fuir, new CodeGen(this));
     var cnt = _fuir.clazzId2num(_fuir.lastClazz())+1;
-    _numLocalsForCode         = new int[cnt];
-    _numLocalsForPrecondition = new int[cnt];
-    _startLabels              = new Label[cnt];
+    _numLocals   = new int[cnt];
+    _startLabels = new Label[cnt];
 
     Errors.showAndExit();
   }
@@ -940,12 +939,8 @@ should be avoided as much as possible.
           case Routine:
           case Intrinsic:
             {
-              codeForRoutine(cl, false);
+              codeForRoutine(cl);
             }
-          }
-        if (_fuir.hasPrecondition(cl))
-          {
-            codeForRoutine(cl, true);
           }
       }
   }
@@ -979,18 +974,15 @@ should be avoided as much as possible.
 
 
   /**
-   * Create prolog for code of given routine or precondition.  The prolog
-   * creates a new instance of cl and stores a reference to that instance into
-   * local var at slot current_index().
+   * Create prolog for code of given routine.  The prolog creates a new instance
+   * of cl and stores a reference to that instance into local var at slot
+   * current_index().
    *
    * @param cl is of clazz to compile
    *
-   * @param pre true to create code for cl's precondition, false to create code
-   * for cl itself.
-   *
    * @return the prolog code.
    */
-  Expr prolog(int cl, boolean pre)
+  Expr prolog(int cl)
   {
     var result = Expr.UNIT;
     if (!_types.isScalar(cl))  // not calls like `u8 0x20` or `f32 3.14`.
@@ -1042,11 +1034,11 @@ should be avoided as much as possible.
         return Expr.UNIT;
       }
   }
-  Expr traceReturn(int cl, boolean pre)
+  Expr traceReturn(int cl)
   {
     if (TRACE_RETURN)
       {
-        var msg = "return from "+_fuir.clazzAsString(cl)+(pre ? " PRECONDITION" : "");
+        var msg = "return from " + _fuir.clazzAsString(cl);
         return callRuntimeTrace(msg);
       }
     else
@@ -1056,28 +1048,28 @@ should be avoided as much as possible.
   }
 
 
-  Expr epilog(int cl, boolean pre)
+  Expr epilog(int cl)
   {
     var cf = _types.classFile(cl);
     var r = _fuir.clazzResultField(cl);
     var t = _fuir.clazzResultClazz(cl);
-    if (pre || !_fuir.clazzIsRef(t) /* NYI: UNDER DEVELOPMENT: needed? */ && _fuir.clazzIsUnitType(t))
+    if (!_fuir.clazzIsRef(t) /* NYI: UNDER DEVELOPMENT: needed? */ && _fuir.clazzIsUnitType(t))
       {
-        return traceReturn(cl, pre)
+        return traceReturn(cl)
           .andThen(Expr.RETURN);
       }
     else if (r == -1)   // a constructor
       {
         var jt = _types.javaType(t);
         return
-          traceReturn(cl, pre)
+          traceReturn(cl)
           .andThen(jt.load(current_index(cl)))
           .andThen(jt.return0());
       }
     else
       {
         var ft = _types.resultType(t);
-        var tr =  traceReturn(cl, pre);
+        var tr =  traceReturn(cl);
 
         return fieldExists(r)
           ? tr
@@ -1150,43 +1142,37 @@ should be avoided as much as possible.
 
 
   /**
-   * Get the number of local var slots for the given routine or precondition.
+   * Get the number of local var slots for the given routine
    *
    * @param cl id of clazz to generate code for
-   *
-   * @param pre true to create code for cl's precondition, false to create code
-   * for cl itself.
    *
    * @return the number of slotes used for local vars
    */
-  int numLocals(int cl, boolean pre)
+  int numLocals(int cl)
   {
-    return (pre ? _numLocalsForPrecondition
-                : _numLocalsForCode        )[_fuir.clazzId2num(cl)];
+    return _numLocals[_fuir.clazzId2num(cl)];
   }
 
 
   /**
-   * Set the number of local var slots for the given routine or precondition.
+   * Set the number of local var slots for the given routine.
    *
    * @param cl id of clazz to generate code for
    *
-   * @param pre true to create code for cl's precondition, false to create code
-   * for cl itself.
-   *
    * @param n the number of slots needed for local vars
    */
-  void setNumLocals(int cl, boolean pre, int n)
+  void setNumLocals(int cl, int n)
   {
-    (pre ? _numLocalsForPrecondition
-         : _numLocalsForCode        )[_fuir.clazzId2num(cl)] = n;
+    _numLocals[_fuir.clazzId2num(cl)] = n;
   }
 
 
   /**
-   * Set the number of local var slots for the given routine or precondition.
+   * Create and get the label at the beginning of the code for routine cl.
    *
    * @param cl id of clazz
+   *
+   * @return the existing or newly created label.
    */
   Label startLabel(int cl)
   {
@@ -1202,12 +1188,9 @@ should be avoided as much as possible.
 
 
   /**
-   * Alloc local var slots for the given routine or precondition.
+   * Alloc local var slots for the given routine.
    *
    * @param cl id of clazz to generate code for
-   *
-   * @param pre true to create code for cl's precondition, false to create code
-   * for cl itself.
    *
    * @param numSlots the number of slots to be alloced
    *
@@ -1216,9 +1199,8 @@ should be avoided as much as possible.
   int allocLocal(int si, int numSlots)
   {
     var cl = _fuir.clazzAt(si);
-    var pre = _fuir.isPreconditionAt(si);
-    var res = numLocals(cl, pre);
-    setNumLocals(cl, pre, res + numSlots);
+    var res = numLocals(cl);
+    setNumLocals(cl, res + numSlots);
     return res;
   }
 
@@ -1226,34 +1208,30 @@ should be avoided as much as possible.
    * Create code for given clazz cl.
    *
    * @param cl id of clazz to generate code for
-   *
-   * @param pre true to create code for cl's precondition, false to create code
-   * for cl itself.
    */
-  void codeForRoutine(int cl, boolean pre)
+  void codeForRoutine(int cl)
   {
     if (PRECONDITIONS) require
       (_fuir.clazzKind(cl) == FUIR.FeatureKind.Routine ||
-       _fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic || pre);
+       _fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic);
 
     var cf = _types.classFile(cl);
     if (cf == null) return;
     var prolog = Expr.UNIT;
     var epilog = Expr.UNIT;
     Expr code;
-    var name = _names.function(cl, pre);
+    var name = _names.function(cl);
 
     // for an intrinsic that is not type type parameter, we do not generate code:
-    if (pre ||
-        _fuir.clazzKind(cl) == FUIR.FeatureKind.Routine ||
+    if (_fuir.clazzKind(cl) == FUIR.FeatureKind.Routine ||
         _fuir.clazzTypeParameterActualType(cl) >= 0)
       {
-        if (pre || _fuir.clazzKind(cl) == FUIR.FeatureKind.Routine)
+        if (_fuir.clazzKind(cl) == FUIR.FeatureKind.Routine)
           {
-            setNumLocals(cl, pre, current_index(cl) + Math.max(1, _types.javaType(cl).stackSlots()));
-            prolog = prolog(cl, pre);
-            code = _ai.process(cl, pre).v1();
-            epilog = epilog(cl, pre);
+            setNumLocals(cl, current_index(cl) + Math.max(1, _types.javaType(cl).stackSlots()));
+            prolog = prolog(cl);
+            code = _ai.processClazz(cl).v1();
+            epilog = epilog(cl);
           }
         else // intrinsic is a type parameter, type instances are unit types, so nothing to be done:
           {
@@ -1264,7 +1242,7 @@ should be avoided as much as possible.
         check
           (cf != null);
 
-        var sl = pre ? null : _startLabels[_fuir.clazzId2num(cl)];
+        var sl = _startLabels[_fuir.clazzId2num(cl)];
         var bc_cl = prolog
           .andThen(sl != null ? sl : Expr.UNIT)
           .andThen(code)
@@ -1272,49 +1250,12 @@ should be avoided as much as possible.
 
         var locals = initialLocals(cl);
 
-        var code_cl = cf.codeAttribute((pre ? "precondition of " : "") + _fuir.clazzAsString(cl),
+        var code_cl = cf.codeAttribute(_fuir.clazzAsString(cl),
                                        bc_cl,
                                        new List<>(), new List<>(), ClassFile.StackMapTable.fromCode(cf, locals, bc_cl));
 
-        cf.method(ClassFileConstants.ACC_STATIC | ClassFileConstants.ACC_PUBLIC, name, _types.descriptor(cl, pre), new List<>(code_cl));
+        cf.method(ClassFileConstants.ACC_STATIC | ClassFileConstants.ACC_PUBLIC, name, _types.descriptor(cl), new List<>(code_cl));
 
-        // If both precondition and routine exists, create a helper that calls both combined
-        if (!pre && _fuir.hasPrecondition(cl))
-          {
-            var bc_combined = Expr.UNIT;
-            var jt = _types.resultType(_fuir.clazzResultClazz(cl));
-
-            // In a loop, generate two calls, one for the precondition (preCond
-            // == true), then for the actual routine (preCond == false):
-            var preCond = true;
-            do
-              {
-                bc_combined = bc_combined
-                  .andThen(javaTypeOfTarget(cl).load(0));
-                for(var i = 0; i<_fuir.clazzArgCount(cl); i++)
-                  {
-                    var at = _fuir.clazzArgClazz(cl, i);
-                    var jti = _types.resultType(at);
-                    bc_combined = bc_combined
-                      .andThen(jti.load(argSlot(cl, i)));
-                  }
-                bc_combined = bc_combined
-                  .andThen(Expr.invokeStatic(_names.javaClass(cl),
-                                             _names.function(cl, preCond),
-                                             _types.descriptor(cl, preCond),
-                                             preCond ? PrimitiveType.type_void : jt));
-                preCond = !preCond;
-              }
-            while (!preCond);
-
-            bc_combined = bc_combined
-              .andThen(jt.return0());
-
-            var code_comb = cf.codeAttribute("combined precondition and code of " + _fuir.clazzAsString(cl),
-                                             bc_combined,
-                                             new List<>(), new List<>(), ClassFile.StackMapTable.fromCode(cf, locals, bc_combined));
-            cf.method(ClassFileConstants.ACC_STATIC | ClassFileConstants.ACC_PUBLIC, Names.COMBINED_NAME, _types.descriptor(cl, false), new List<>(code_comb));
-          }
       }
   }
 

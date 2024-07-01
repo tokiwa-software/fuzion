@@ -52,12 +52,6 @@ public class CNames extends ANY
 
 
   /**
-   * Prefix for C functions created for Fuzion preconditions
-   */
-  private static final String C_PRECONDITION_PREFIX = "fzP_";
-
-
-  /**
    * Prefix for types declared for clazz instances
    */
   private static final String TYPE_PREFIX = "fzT_";
@@ -238,12 +232,6 @@ public class CNames extends ANY
    * Mapping from clazz ids to C function names
    */
   private final CClazzNames _functionNames = new CClazzNames(C_FUNCTION_PREFIX);
-
-
-  /**
-   * Mapping from clazz ids to C function names
-   */
-  private final CClazzNames _preConditionNames = new CClazzNames(C_PRECONDITION_PREFIX);
 
 
   /**
@@ -471,15 +459,10 @@ public class CNames extends ANY
    * Name of the C function of the given clazz.
    *
    * @param cl clazz id
-   *
-   * @param pre true iff we want to get the precondition, not the function
-   * itself.
    */
-  String function(int cl, boolean pre)
+  String function(int cl)
   {
-    return (pre
-            ? _preConditionNames
-            : _functionNames    ).get(cl);
+    return _functionNames.get(cl);
   }
 
 

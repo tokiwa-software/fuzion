@@ -130,13 +130,6 @@ public class Names extends ANY implements ClassFileConstants
 
 
   /**
-   * Name and signature of Runtime.precondition_fail()
-   */
-  static final String RUNTIME_CONTRACT_FAIL     = "contract_fail";
-  static final String RUNTIME_CONTRACT_FAIL_SIG = "(Ljava/lang/String;)V";
-
-
-  /**
    * Name of Runtime.LOCK_FOR_ATOMIC
    */
   static final String RUNTIME_LOCK_FOR_ATOMIC   = "LOCK_FOR_ATOMIC";
@@ -149,15 +142,12 @@ public class Names extends ANY implements ClassFileConstants
   private static final String INTERFACE_PREFIX = "fzI_";
   private static final String DYNAMIC_FUNCTION_PREFIX = "fzD_";
 
-  static final String PRECONDITION_NAME = "fzPrecondition";           // method with code for the precondition
   static final String ROUTINE_NAME      = "fzRoutine";                // method with code for the routine
-  static final String COMBINED_NAME     = "fzPreconditionAndRoutine"; // method that calls precondition followed by routine, to reduce code size
   static final String NAME_ID           = "_L";
   static
   {
     if (CHECKS) check
-      (PRECONDITION_NAME.equals(Runtime.PRECONDITION_NAME),
-       ROUTINE_NAME.equals(Runtime.ROUTINE_NAME),
+      (ROUTINE_NAME.equals(Runtime.ROUTINE_NAME),
        CLASS_PREFIX.equals(Runtime.CLASS_PREFIX),
        (CLASS_PREFIX + NAME_ID).equals(Runtime.CLASS_PREFIX_WITH_ID));
   }
@@ -553,13 +543,11 @@ public class Names extends ANY implements ClassFileConstants
    *
    * @param cl clazz id
    *
-   * @param pre true iff we want to get the precondition, not the function
-   * itself.
+   * @return the Java name
    */
-  String function(int cl, boolean pre)
+  String function(int cl)
   {
-    return pre                                               ? PRECONDITION_NAME :
-           _fuir.clazzKind(cl) != FUIR.FeatureKind.Intrinsic ? ROUTINE_NAME
+    return _fuir.clazzKind(cl) != FUIR.FeatureKind.Intrinsic ? ROUTINE_NAME
                                                              : mangle(_fuir.clazzOriginalName(cl));
   }
 
