@@ -33,7 +33,7 @@ public err (p Print_Handler) : print_effect p is
 
 
   type.default_print_handler : io.Print_Handler is
-    print(s Any) => fuzion.sys.err.print s
+    redef print(s Any) => fuzion.sys.err.print s
 
 
 # short-hand for accessing err effect in current environment

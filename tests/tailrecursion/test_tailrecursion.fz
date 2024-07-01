@@ -55,7 +55,7 @@ test_tailrecursion =>
       fixed hehe =>
         m <- trick
         trick : Trick is
-          get_a => a
+          redef get_a => a
 
       if a %  11 = 3 then hehe
       if a < 200     then f a+1
@@ -80,7 +80,7 @@ test_tailrecursion =>
       get_a i32 => abstract
 
     trick(a) : Trick is
-      get_a => a
+      redef get_a => a
 
     f(a i32) =>
 

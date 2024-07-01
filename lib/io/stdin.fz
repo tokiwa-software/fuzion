@@ -37,7 +37,7 @@ public stdin io.buffered.reader =>
 
 
   read_provider : io.Read_Provider is
-    read(count i32) choice (array u8) io.end_of_file error =>
+    redef read(count i32) choice (array u8) io.end_of_file error =>
       arr := fuzion.sys.internal_array_init u8 count
       v := fuzion.sys.fileio.read fuzion.sys.stdin.stdin0 arr.data count
       if v < -1
@@ -50,4 +50,4 @@ public stdin io.buffered.reader =>
         arr.as_array
 
 
-  io.buffered.reader read_provider 1024 []
+  io.buffered.reader read_provider 1024

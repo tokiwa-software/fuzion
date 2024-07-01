@@ -1,0 +1,202 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature mutate.circular_buffer
+#
+# -----------------------------------------------------------------------
+
+# create a circular buffer.
+#
+# buffer to which elements can be enqueued and retrieved with a FIFO
+# logic.
+#
+# backed by a fixed length array.
+#
+module:public circular_buffer (
+       # element type
+       public T type,
+
+       # length of the buffer
+       public redef length i64,
+
+       # contents of the buffer
+       module data fuzion.sys.internal_array T
+
+      ) : container.Circular_Buffer T mutate.this, mutable_element
+pre
+  safety: (length ≥ 0) && (length ≤ data.length.as_i64)
+is
+
+  # where to start reading from this buffer
+  #
+  start := mutate.this.env.new i64 0
+
+
+  # where to write to this buffer
+  #
+  end := mutate.this.env.new i64 0
+
+
+  # modulo operator whose result is always positive
+  #
+  modded_mod(a, c i64) i64
+  =>
+    b := c + 1
+    m := a % b
+
+    if m < 0
+      m + b
+    else
+      m
+
+
+  # buffer is full?
+  #
+  is_full bool
+  =>
+    (modded_mod (end.get + 1) length) = (modded_mod start.get length)
+
+
+  # buffer is empty?
+  #
+  is_empty bool
+  =>
+    (modded_mod start.get length) = (modded_mod end.get length)
+
+
+  # amount of elements free for writing
+  #
+  public redef available i64
+  =>
+    if is_full
+      0
+    else if is_empty
+      length
+    else
+      modded_mod (start.get - end.get - 1) length
+
+
+  # amount of elements available for reading
+  #
+  public redef buffered i64
+  =>
+    if is_full
+      length
+    else if is_empty
+      0
+    else
+      modded_mod (end.get - start.get) length
+
+
+  # enqueue a single element into the buffer
+  #
+  # returns an error if the new element does not fit into the
+  # buffer
+  #
+  public redef put (e T) outcome unit
+  =>
+    check_and_replace
+
+    if is_full
+      error "circular buffer is full"
+    else
+      data[end.get.as_i32] := e
+      end <- modded_mod (end.get + 1) length
+
+
+  # read a single element from the buffer
+  #
+  public redef get option T
+  =>
+    check_and_replace
+
+    if is_empty
+      nil
+    else
+      v := data[start.get.as_i32]
+      start <- modded_mod (start.get + 1) length
+      v
+
+
+  # enqueue data into the buffer
+  #
+  # returns an error if the given sequence is too long to fit into
+  # the buffer entirely
+  #
+  public redef enqueue (s Sequence T) outcome unit
+  =>
+    check_and_replace
+
+    # NYI hack because using array as argument does not work
+    d := s.as_array
+
+    if d.length.as_i64 > available
+      error "circular buffer is full"
+    else
+      for i in d.indices
+      do
+        data[(modded_mod (end.get + i.as_i64) length).as_i32] := d[i]
+
+      end <- modded_mod (end.get + d.length.as_i64) length
+
+
+  # read the elements from the buffer
+  #
+  public redef flush (n i64) =>
+    check_and_replace
+
+    x := array T n.as_i32 (i -> data[(modded_mod (start.get + i.as_i64) length).as_i32])
+    start <- modded_mod (start.get + n) length
+    x
+
+
+  # create immutable array from this
+  #
+  public redef as_array =>
+    array T buffered.as_i32 (i -> data[(modded_mod (start.get + i.as_i64) length).as_i32])
+
+
+  # create a list from this array
+  #
+  public redef as_list =>
+    as_array.as_list
+
+
+  # initialize circular buffer
+  #
+  public type.new
+   (LM type : mutate,
+
+    # length of the buffer
+    length i64,
+
+    init T
+
+   ) container.Circular_Buffer T LM
+  =>
+    # length + 1 for sentinel element
+    #
+    # https://embedjournal.com/implementing-circular-buffer-embedded-c/
+    #
+    data := fuzion.sys.internal_array_init T (length + 1).as_i32
+
+    for x in data.indices do
+      data[x] := init
+
+    LM.env.circular_buffer T length data

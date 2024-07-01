@@ -37,13 +37,13 @@ testRedefine is
     get A => abstract
 
   good : getter (String | i32 | nil) is
-    get String | i32 | nil => 42
+    redef get String | i32 | nil => 42
 
   bad1 : getter (String | i32 | nil) is
-    get i32 => 42
+    redef get i32 => 42
 
   bad2 : getter (String | i32 | nil) is
-    get => 42
+    redef get => 42
 
   show(g getter (String | i32 | nil)) =>
     say g.get

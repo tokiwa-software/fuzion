@@ -326,7 +326,7 @@ public class Block extends AbstractBlock
       {
         _expressions.add(resExpr.assignToField(res, outer, r));
       }
-    else if (r.resultType().compareTo(Types.resolved.t_unit) != 0)
+    else if (!r.resultType().isAssignableFrom(Types.resolved.t_unit))
       {
         AstErrors.blockMustEndWithExpression(pos(), r.resultType());
       }
@@ -358,10 +358,17 @@ public class Block extends AbstractBlock
         // something else:
         _expressions.add(new Block(new List<>()));
       }
-    Expr resExpr = removeResultExpression();
+
+    // we must not remove result expression just yet.
+    // we rely on it being present in SourceModule.inScope()
+    var idx = resultExpressionIndex();
+    Expr resExpr = resultExpression();
+
     if (resExpr != null)
       {
-        _expressions.add(resExpr.propagateExpectedType(res, outer, type));
+        var x = resExpr.propagateExpectedType(res, outer, type);
+        _expressions.remove(idx);
+        _expressions.add(x);
       }
     else if (Types.resolved.t_unit.compareTo(type) != 0)
       {
@@ -393,6 +400,7 @@ public class Block extends AbstractBlock
       .limit(_expressions.isEmpty() ? 0 : _expressions.size() - 1)
       .forEach(e -> {
         if (e.producesResult() &&
+            e.typeForInferencing() != null &&
             e.typeForInferencing().compareTo(Types.resolved.t_unit) != 0 &&
             !e.typeForInferencing().isVoid() &&
             e.typeForInferencing() != Types.t_ERROR)

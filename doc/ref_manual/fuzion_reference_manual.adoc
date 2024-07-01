@@ -28,7 +28,7 @@
 = Fuzion Reference Manual [DRAFT]
 The Fuzion Team <info@tokiwa.software>
 include::../../version.txt[]
-:title-logo-image: image:../../assets/logo.png[top=5%,align=center,pdfwidth=1.5cm]
+:title-logo-image: image:../../assets/logo.svg[top=5%,align=center,pdfwidth=1.5cm]
 :doctype: book
 :description: Fuzion Language Reference Manual
 :sectanchors:
@@ -367,10 +367,19 @@ include::rule.adoc[]
 :RULE_ID: PARS_CONTR_POST_THEN
 include::rule.adoc[]
 
+==== Choice features
+
+:RULE_SRC: src/dev/flang/ast/Feature.java
+:RULE_ID: CHOICE_RESULT
+include::rule.adoc[]
 
 == Semantics
 
 CAUTION: *NYI*: Text Missing
+
+:RULE_SRC: src/dev/flang/ast/Contract.java
+:RULE_ID: SEMANTIC_CONTRACT_PRE_ORDER
+include::rule.adoc[]
 
 :RULE_SRC: src/dev/flang/ast/Contract.java
 :RULE_ID: SEMANTIC_CONTRACT_POST_ORDER

@@ -149,7 +149,7 @@ Main_Node(CTK type : property.hashable, CTV type, data choice (container_node CT
 
   id := unique_id
 
-  fixed type.equality(a, b Main_Node.this) bool =>
+  fixed redef type.equality(a, b Main_Node.this) bool =>
     a.id = b.id
 
   # compare and update `prev`
@@ -194,7 +194,7 @@ Indirection_Node(CTK type : property.hashable, CTV type, data concur.atomic (Mai
 
   id := unique_id
 
-  fixed type.equality(a, b Indirection_Node.this) bool =>
+  fixed redef type.equality(a, b Indirection_Node.this) bool =>
     a.id = b.id
 
   # compare and update
@@ -560,13 +560,12 @@ is
 
   # add key value
   # if key is already present value is updated
-  public add(k CTK, v CTV) unit =>
+  public redef add(k CTK, v CTV) unit =>
     r := read_root
     match add r k v 0 nil r.gen
       r restart =>
         add k v
       ctrie_ok =>
-        unit
 
 
   # try adding an element to the ctrie
@@ -603,7 +602,7 @@ is
 
 
   # remove key from ctrie
-  public remove(k CTK) option CTV =>
+  public redef remove(k CTK) option CTV =>
     r := read_root
     match remove r k 0 nil r.gen
       r restart => remove k
@@ -663,7 +662,7 @@ is
   public snapshot(read_only bool) map CTK CTV =>
     root := read_root
     expmain := gcas_read root
-    new_gen := unique_id
+    new_gen => unique_id
     descriptor := Rdcss_Descriptor root expmain (copy_to_gen root new_gen)
     if rdcss_root descriptor
       # new ctrie by changing generation of root
@@ -687,17 +686,17 @@ is
   as_persistent_map container.Persistent_Map CTK CTV =>
     s := snapshot false
     ref : container.Persistent_Map CTK CTV
-      public size i32 => s.size
-      public index [] (k CTK) option CTV => s[k]
-      public items Sequence (tuple CTK CTV) => s.items
-      public put(k CTK, v CTV) container.Persistent_Map CTK CTV =>
+      public redef size i32 => s.size
+      public redef index [] (k CTK) option CTV => s[k]
+      public redef items Sequence (tuple CTK CTV) => s.items
+      public redef put(k CTK, v CTV) container.Persistent_Map CTK CTV =>
         sp := s.snapshot false
         sp.add k v
         sp.as_persistent_map
 
 
   # initialize a new ctrie
-  public fixed type.empty =>
+  public fixed redef type.empty =>
 
     initial_gen := unique_id
 
@@ -738,7 +737,7 @@ public container.set_of_hashable(K type : property.hashable, vs (lock_free.map K
 
     # does this set contain the given value?
     #
-    public contains (k K) bool =>
+    public redef contains (k K) bool =>
       map[k].exists
 
 

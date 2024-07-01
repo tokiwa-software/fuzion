@@ -27,12 +27,12 @@ hasTypeArg is
   type.showTypeArgs String => abstract
 
 ex(T, U type) : hasTypeArg, property.equatable is
-  type.showTypeArgs => "T:$T U:$U"
-  fixed type.equality(a, b ex T U) bool => false
+  redef type.showTypeArgs => "T:$T U:$U"
+  fixed redef type.equality(a, b ex T U) bool => false
 
 ex2(T, U type: property.equatable, a, b T, c U) : hasTypeArg, property.equatable is
-  type.showTypeArgs => "T:$T U:$U"
-  fixed type.equality(a, b ex2 T U) bool =>
+  redef type.showTypeArgs => "T:$T U:$U"
+  fixed redef type.equality(a, b ex2 T U) bool =>
     (a.a = b.a &&
      a.b = b.b &&
      a.c = b.c   )

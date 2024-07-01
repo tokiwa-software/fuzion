@@ -1,0 +1,9 @@
+
+--CURDIR--/reg_issue2347.fz:27:35: error 1: Could not find called feature
+for s := [1] : nil, s.filter x->d.bla
+----------------------------------^^^
+Feature not found: 'bla' (no arguments)
+Target feature: 'i32'
+In call: 'd.bla'
+
+one error.

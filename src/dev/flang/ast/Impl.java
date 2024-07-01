@@ -425,6 +425,12 @@ public class Impl extends ANY
    */
   public void resolveSyntacticSugar2(Resolution res, AbstractFeature outer)
   {
+    if (outer.isConstructor() && outer.preFeature() != null)
+      { // For constuctors, the constructor itself checks the precondition (while
+        // for functions, this is done by the caller):
+        var c = outer.contract().callPreCondition(res, outer, (Feature) outer);
+        _expr = new Block(new List<>(c, _expr));
+      }
     if (needsImplicitAssignmentToResult(outer))
       {
         var resultField = outer.resultField();

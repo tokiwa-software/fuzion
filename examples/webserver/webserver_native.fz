@@ -24,7 +24,7 @@
 # webserver is a minimalistic webserver example using the networking
 # facilities provided by Fuzion itself.
 #
-# To start this webserver in the interpreter, use:
+# To start this webserver, use:
 #
 #   fz webserver_native.fz
 #
@@ -49,7 +49,7 @@ webserver_native is
   #
   rh(n i32) : net.Request_Handler unit is
 
-    handle_request unit =>
+    redef handle_request unit =>
       say "accepted connection:"
 
       match io.buffered.read_line

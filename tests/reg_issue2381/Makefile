@@ -22,4 +22,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = reg_issue2381
-include ../dfa.mk
+include ../compile.mk # input for stdin missing, so compiling only

@@ -1,28 +1,53 @@
 
-$MODULE/option.fz:134:11: error 1: Precondition does not hold
+error 1: FATAL FAULT `precondition`: :
+Call stack:
+fuzion.type.runtime.type.fault.type.install_default#0.#fun264.call#1: $MODULE/fuzion/runtime/fault.fz:38:18:
+      fuzion.sys.fatal_fault kind msg
+-----------------^^^^^^^^^^^
+fuzion.runtime.fault.cause#1: $MODULE/eff/fallible.fz:35:6:
+  => h e
+-----^
+fuzion.type.runtime.type.pre_fault.type.install_default#0.#fun266.call#1: $MODULE/fuzion/runtime/pre_fault.fz:39:28:
+      fuzion.runtime.fault.cause ("precondition", msg)).default
+---------------------------^^^^^
+fuzion.runtime.pre_fault.cause#1: $MODULE/eff/fallible.fz:35:6:
+  => h e
+-----^
+fuzion.runtime.precondition_fault#1: $MODULE/fuzion/runtime/pre_fault.fz:58:52:
+public precondition_fault(msg String) => pre_fault.cause msg
+---------------------------------------------------^^^^^
+(option error).#pre62_get#0: $MODULE/option.fz:134:11:
     safety: (option.this??)
 ----------^
-For call to (option error).get#0
-Call stack:
-((try unit).on#2 void).#fun85.call#0: $MODULE/try.fz:44:47:
+(option error).#preandcall63_get#0: $MODULE/option.fz:133:3:
+  pre
+--^^^
+    safety: (option.this??)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+((try unit).on#2 void).#fun89.call#0: $MODULE/try.fz:44:47:
     run (outcome R) (()->outcome f()) ()->err.get
 ----------------------------------------------^^^
 (try unit).abort#0: $MODULE/effect.fz:100:14:
       nil => def()
 -------------^^^
+(try unit).#preandcall60_abort#0: $MODULE/effect.fz:66:3:
+  pre
+--^^^
+    safety: abortable
+^^^^^^^^^^^^^^^^^^^^^
 (try unit).raise#1: $MODULE/try.fz:50:5:
     abort
 ----^^^^^
 reg_issue1698.#fun0.call#0: --CURDIR--/reg_issue1698.fz:27:7:
     t.raise (error "a")
 ------^^^^^
-(try#3 unit void).#fun4.call#0: $MODULE/try.fz:57:14:
+(try#3 unit void).#fun3.call#0: $MODULE/try.fz:57:14:
   (try T).on f
 -------------^
-((try unit).on#2 void).#fun84.call#0: $MODULE/try.fz:44:34:
+((try unit).on#2 void).#fun88.call#0: $MODULE/try.fz:44:34:
     run (outcome R) (()->outcome f()) ()->err.get
 ---------------------------------^
-((try unit).run#3 (outcome void)).#fun1.call#0: $MODULE/effect.fz:97:23:
+((try unit).run#3 (outcome void)).#fun0.call#0: $MODULE/effect.fz:97:23:
     cf := Effect_Call f
 ----------------------^
 ((try unit).Effect_Call (outcome void)).call#0: $MODULE/effect.fz:153:18:

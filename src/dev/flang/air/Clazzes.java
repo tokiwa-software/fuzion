@@ -270,7 +270,7 @@ public class Clazzes extends ANY
   public static Clazz create(AbstractType actualType, int select, Clazz outer)
   {
     if (PRECONDITIONS) require
-      (Errors.any() || !actualType.dependsOnGenerics(),
+      (Errors.any() || !actualType.dependsOnGenericsExceptTHIS_TYPE(),
        Errors.any() || !actualType.containsThisType());
 
     Clazz o = outer;
@@ -1063,8 +1063,9 @@ public class Clazzes extends ANY
   public static Clazz clazzWithSpecificOuter(AbstractType thiz, int select, Clazz outerClazz)
   {
     if (PRECONDITIONS) require
-      (Errors.any() || !thiz.dependsOnGenerics(),
+      (Errors.any() || !thiz.dependsOnGenericsExceptTHIS_TYPE(),
        outerClazz != null || thiz.feature().outer() == null,
+       (outerClazz.feature().isTypeFeature() /* NYI: REMOVE: workaround for #3160 */) ||
        Errors.any() || thiz == Types.t_ERROR || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.feature().outer()));
 
     var result = create(thiz, select, outerClazz);

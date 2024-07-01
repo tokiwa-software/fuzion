@@ -310,15 +310,23 @@ public class ParsedCall extends Call
 
 
   /**
-   * Does this call a non-generic infix operator?
+   * Is this a call to an operator that may be
+   * considered valid in a chained boolean?
+   * I.e.: <,>,≤,≥,=,<=,>=,!=
    */
-  private boolean isInfixOperator()
+  private boolean isValidOperatorInChainedBoolean()
   {
     return
-      _name.startsWith("infix ") &&
-      (_actuals.size() == 1 /* normal infix operator 'a.infix + b' */                ||
-       _actuals.size() == 2 /* infix on different target 'X.Y.Z.this.infix + a b' */    ) &&
-      true; /* no check for _generics.size(), we allow infix operator to infer arbitrary number of type parameters */
+      _name.equals("infix <") ||
+      _name.equals("infix >") ||
+      _name.equals("infix ≤") ||
+      _name.equals("infix ≥") ||
+      _name.equals("infix <=") ||
+      _name.equals("infix >=") ||
+      _name.equals("infix =") ||
+      _name.equals("infix !=") ||
+      // && is used to chain the calls togehter.
+      _name.equals("infix &&");
   }
 
 
@@ -343,9 +351,9 @@ public class ParsedCall extends Call
     Call result = null;
     if (Types.resolved != null &&
         targetFeature(res, thiz) == Types.resolved.f_bool &&
-        isInfixOperator() &&
+        isValidOperatorInChainedBoolean() &&
         target() instanceof ParsedCall pc &&
-        pc.isInfixOperator() &&
+        pc.isValidOperatorInChainedBoolean() &&
         pc.isOperatorCall(false))
       {
         result = (pc._actuals.get(0) instanceof ParsedCall acc && acc.isChainedBoolRHS())
@@ -632,7 +640,7 @@ public class ParsedCall extends Call
           {
             // replace Function call `c.123` by `c.f.123`:
             result = pushCall(res, outer, f.featureName().baseName());
-            setActualResultType(res, t); // setActualResultType will be done again by resolveTypes, but we need it now.
+            setActualResultType(res, outer, t); // setActualResultType will be done again by resolveTypes, but we need it now.
             result = result.resolveTypes(res, outer);
           }
       }

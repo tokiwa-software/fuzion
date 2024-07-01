@@ -263,7 +263,21 @@ public class FuzionConstants extends ANY
   public static final String PARTIAL_FUNCTION_ARGUMENT_PREFIX = INTERNAL_NAME_PREFIX + "partialFunctionArg";
 
 
-  public static final String POSTCONDITION_FEATURE_PREFIX = INTERNAL_NAME_PREFIX + "POST";
+  /**
+   * Prefixes of pre, pre bool, pre and call and post features.
+   */
+  public static final String PRECONDITION_FEATURE_PREFIX        = INTERNAL_NAME_PREFIX + "pre";
+  public static final String PREBOOLCONDITION_FEATURE_PREFIX    = INTERNAL_NAME_PREFIX + "prebool";
+  public static final String PREANDCALLCONDITION_FEATURE_PREFIX = INTERNAL_NAME_PREFIX + "preandcall";
+  public static final String POSTCONDITION_FEATURE_PREFIX       = INTERNAL_NAME_PREFIX + "post";
+
+
+  /**
+   * The qualified names of features fuzion.runtime.precondition_fault and
+   * fuzion.runtime.postcondition_fault.
+   */
+  public static String[] FUZION_RUNTIME_PRECONDITION_FAULT  = "fuzion.runtime.precondition_fault" .split("\\.");
+  public static String[] FUZION_RUNTIME_POSTCONDITION_FAULT = "fuzion.runtime.postcondition_fault".split("\\.");
 
 
   /**

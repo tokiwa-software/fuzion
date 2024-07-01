@@ -293,7 +293,7 @@ public float : numeric is
   # The equivalence relation is provided by the usual comparision
   # of floating-point numbers, with the definition of NaN = NaN.
   #
-  public type.equality(a, b float.this) bool =>
+  public redef type.equality(a, b float.this) bool =>
     a.infix = b || (is_NaN a && is_NaN b)
 
 
@@ -307,5 +307,5 @@ public float : numeric is
   # floating-point numbers, with the definition that NaN <= x,
   # for any x (including x = NaN).
   #
-  public type.lteq(a, b float.this) bool =>
+  public redef type.lteq(a, b float.this) bool =>
     a.infix <= b || is_NaN a

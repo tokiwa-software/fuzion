@@ -448,7 +448,7 @@ public class Intrinsics extends ANY
     put("fuzion.sys.fileio.open_dir", (c,cl,outer,in) -> CExpr.call("fzE_opendir", new List<CExpr>(
       A0.castTo("char *"),
       A1.castTo("int64_t *")
-    )).ret());
+    )));
     put("fuzion.sys.fileio.read_dir", (c,cl,outer,in) ->
       {
         var d_name = new CIdent("d_name");
@@ -1206,6 +1206,12 @@ public class Intrinsics extends ANY
             A0.field(c._names.fieldName(c._fuir.clazz_fuzionSysArray_u8_length()))
           )), false)
        );
+
+
+    put("fuzion.java.create_jvm", (c,cl,outer,in) -> {
+      return CExpr.call("fzE_create_jvm", new List<>(A0.castTo("char *")));
+    });
+    // NYI: UNDER DEVELOPMENT: put("fuzion.java.destroy_jvm", (c,cl,outer,in) -> {});
 
   }
 

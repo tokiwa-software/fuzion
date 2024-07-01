@@ -19,7 +19,7 @@ To solve this, you might change the visibility of the feature 'mod_pub' (no argu
 ----------------^^^^^^^
 
 
---CURDIR--/main.fz:98:14: error 3: Feature defined in inner block must not have visibility modifier.
+--CURDIR--/main.fz:97:14: error 3: Feature defined in inner block must not have visibility modifier.
       module my_feat is // should flag an error visibility modifier used in inner block
 -------------^^^^^^^
 To solve this, remove the visibility modifier 'module' from feature 'm.my_feat' or move the feature to the main block of the containing feature.
@@ -97,9 +97,9 @@ To solve this, increase the visibility of 'm.my_false' or do not use this featur
 To solve this, increase the visibility of 'm.redef_test_0.b' to at least 'public'
 
 
---CURDIR--/main.fz:82:12: error 16: Redefinition must not have more restrictive visibility.
-    module e unit => // should flag an error Redefinition must not have more restrictive visibility.
------------^
+--CURDIR--/main.fz:82:18: error 16: Redefinition must not have more restrictive visibility.
+    module redef e unit => // should flag an error Redefinition must not have more restrictive visibility.
+-----------------^
 To solve this, increase the visibility of 'm.redef_test_0.e' to at least 'public'
 
 

@@ -200,6 +200,50 @@ public class Feature extends AbstractFeature
   private final Contract _contract;
   public Contract contract() { return _contract; }
 
+
+  /**
+   * Lists of features we redefine and hence from which we inherit pre or post
+   * conditions.  Used during front end only to create calls to redefined
+   * features post conditions when generating post condition feature for this
+   * contract.
+   */
+  List<AbstractFeature> _inheritedPre  = new List<>();
+  List<AbstractFeature> _inheritedPost = new List<>();
+
+
+  /**
+   * precondition feature, added during syntax sugar phase.
+   */
+  Feature _preFeature = null;
+  @Override
+  public AbstractFeature preFeature()
+  {
+    return _preFeature;
+  }
+
+  /**
+   * pre bool feature, added during syntax sugar phase.
+   */
+  Feature _preBoolFeature = null;
+  @Override
+  public AbstractFeature preBoolFeature()
+  {
+    return _preBoolFeature;
+  }
+
+  /**
+   * pre and call feature, added during syntax sugar phase.
+   */
+  Feature _preAndCallFeature = null;
+  @Override
+  public AbstractFeature preAndCallFeature()
+  {
+    return _preAndCallFeature;
+  }
+
+  /**
+   * post feature, added during syntax sugar phase.
+   */
   Feature _postFeature = null;
   @Override
   public AbstractFeature postFeature()
@@ -309,6 +353,32 @@ public class Feature extends AbstractFeature
    * This is a fix for #978 but it might need to be removed when fixing #932.
    */
   public boolean _addedLate = false;
+
+
+  /*
+   * true if this feature is found to be
+   * declared in a block with
+   * _newscope=true (e.g. if/else, loop)
+   * or in a case-block
+   *
+   * example:
+   * ```
+   * f0 =>
+   *   if cc1 then
+   *      f1 =>
+   *        f2 =>
+   *        if cc2 then
+   *          f3 =>
+   *      {
+   *        f4 =>
+   *      }
+   * ```
+   * f1, f3 and f4 are _scoped in this example.
+   * f2 is not _scoped, i.e. does not need to be checked if in scope.
+   * This is because if f1 is accessible then f2 is also always accessible.
+   *
+   */
+  public boolean _scoped = false;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -1046,7 +1116,6 @@ public class Feature extends AbstractFeature
       }
     _impl.visit(v, this);
     _returnType.visit(v, this);
-    _contract.visit(v, this);
   }
 
 
@@ -1415,7 +1484,7 @@ public class Feature extends AbstractFeature
       {
         _state = State.RESOLVING_SUGAR1;
 
-        _contract.addContractFeatures(this, res);
+        _contract.addContractFeatures(res, this);
         if (definesType())
           {
             typeFeature(res);
@@ -1577,6 +1646,11 @@ public class Feature extends AbstractFeature
           { // choice type must not have a result type
             if (!(Errors.any() && _returnType == RefType.INSTANCE))  // this was covered by AstErrors.choiceMustNotBeRef
               {
+                /*
+    // tag::fuzion_rule_CHOICE_RESULT[]
+A ((Choice)) declaration must not contain a result type.
+    // end::fuzion_rule_CHOICE_RESULT[]
+                */
                 AstErrors.choiceMustNotHaveResultType(_pos, _returnType);
               }
           }
@@ -1616,8 +1690,6 @@ public class Feature extends AbstractFeature
               }
           }
       }
-
-    selfType().checkChoice(_pos);
 
     checkNoClosureAccesses(res, _pos);
     for (var p : _inherits)
@@ -1700,11 +1772,6 @@ public class Feature extends AbstractFeature
           {
             AstErrors.failedToInferResultType(this);
             _resultType = Types.t_ERROR;
-          }
-
-        if (!isTypeParameter())
-          {
-            _resultType.checkChoice(_posOfReturnType);
           }
 
         if (_resultType.isThisType() && _resultType.feature() == this)
@@ -1830,6 +1897,8 @@ public class Feature extends AbstractFeature
     if ((_state == State.CHECKING_TYPES1) ||
         (_state == State.CHECKING_TYPES2)    )
       {
+        _selfType   = selfType().checkChoice(_pos);
+        _resultType = _resultType.checkChoice(_posOfReturnType);
         visit(new FeatureVisitor() {
 
             /* if an error is reported in a call it might no longer make sense to check the actuals: */
@@ -1870,7 +1939,13 @@ public class Feature extends AbstractFeature
     Feature result = _resultField;
 
     if (POSTCONDITIONS) ensure
-      (Errors.any() || hasResultField() == (result != null));
+      (Errors.any() ||
+       hasResultField() == (result != null) ||
+
+       // the following will later be checked by checkChoiceAndAddInternalFields() and
+       // reported as an error (fuzion rule CHOICE_RESULT):
+       isChoice() && (result != null)
+       );
     return result;
   }
 
@@ -1930,7 +2005,7 @@ public class Feature extends AbstractFeature
     if (_impl.hasInitialValue() &&
         /* initial value has been replaced by explicit assignment during
          * RESOLVING_TYPES phase: */
-        !outer.state().atLeast(State.RESOLVING_SUGAR1))
+        (outer == null || !outer.state().atLeast(State.RESOLVING_SUGAR1)))
       {
         _impl.visitExpr(v, outer);
       }
@@ -1948,6 +2023,10 @@ public class Feature extends AbstractFeature
    */
   public Expr resolveTypes(Resolution res, AbstractFeature outer)
   {
+    if (PRECONDITIONS) require
+      (res != null,
+       isUniverse() || outer != null || Errors.any());
+
     Expr result = this;
 
     if (CHECKS) check
@@ -2126,7 +2205,6 @@ public class Feature extends AbstractFeature
         }
       };
 
-    _contract.visit(fv, this);
     for (var p: _inherits)
       {
         p.visit(fv, this);
@@ -2281,7 +2359,7 @@ public class Feature extends AbstractFeature
       {
         result = _returnType.functionReturnType();
       }
-    if (isOuterRef())
+    if (isOuterRef() && !outer().isFixed())
       {
         result = result.asThis();
       }

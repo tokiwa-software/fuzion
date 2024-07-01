@@ -47,7 +47,7 @@ public client(T type, rh Request_Handler T, f net.family.val, p net.protocol.val
       # NYI install custom thread spawn effect
       # NYI: BUG: (try net.request_handler).on ()->
 
-      res := (io.buffered.reader (read_provider desc) 1024 []).with ()->
+      res := (io.buffered.reader (read_provider desc) 1024).with ()->
         (net.channel desc).go ()->
           rh.handle_request
 

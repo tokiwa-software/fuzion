@@ -36,10 +36,10 @@ ex_tree is
 
     private smart (datum A, left, right tree A) tree A =>
       ref : Node A (tree A) (tree A)
-        datum A => smart.this.datum
-        count i32 => (1 + smart.this.left.size + smart.this.right.size)
-        left tree A => smart.this.left
-        right tree A => smart.this.right
+        redef datum A => smart.this.datum
+        redef count i32 => (1 + smart.this.left.size + smart.this.right.size)
+        redef left tree A => smart.this.left
+        redef right tree A => smart.this.right
 
   trees is
     empty(A type : property.orderable) tree A =>

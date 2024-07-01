@@ -43,8 +43,8 @@ ex_lazy is
 
   lst(T type, h T, t Lazy (list T)) list T =>
     ref : Cons T (list T)
-      head => h
-      tail => t
+      redef head => h
+      redef tail => t
 
   stars => say "eval stars!"; lst "*" stars
 

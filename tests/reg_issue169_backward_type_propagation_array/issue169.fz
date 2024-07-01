@@ -28,12 +28,11 @@ issue169 =>
   c Sequence u8 := []
   d Sequence f32 := [0,1,2]
   e Sequence (Sequence i16) := [[0,1],[2]]
-  # NYI does not work yet
-  # f := [u8 4, 3, 3]
+  f := [u8 4, 3, 3]
 
   say (type_of a)
   say (type_of b)
   say (type_of c)
   say (type_of d)
   say (type_of e)
-  # say (type_of f)
+  say (type_of f)

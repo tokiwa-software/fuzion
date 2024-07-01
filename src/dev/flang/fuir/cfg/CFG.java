@@ -537,6 +537,7 @@ public class CFG extends ANY
     put("fuzion.java.i8_to_java_object"     , (cfg, cl) -> { } );
     put("fuzion.java.java_string_to_string" , (cfg, cl) -> { } );
     put("fuzion.java.string_to_java_object0", (cfg, cl) -> { } );
+    put("fuzion.java.create_jvm"            , (cfg, cl) -> { } );
     put("fuzion.java.u16_to_java_object"    , (cfg, cl) -> { } );
   }
 

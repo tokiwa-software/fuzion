@@ -33,39 +33,43 @@ public u64(public val u64) : num.wrap_around, has_interval is
   redef wrapped_on_neg => !is_zero
 
   # would addition + other cause an overflow or underflow?
-  public fixed overflow_on_add (other u64) => u64.max -° val < other
-  public fixed underflow_on_add(other u64) => false
+  public fixed redef overflow_on_add (other u64) => u64.max -° val < other
+  public fixed redef underflow_on_add(other u64) => false
 
   # would subtraction - other cause an overflow or underflow?
-  public fixed overflow_on_sub (other u64) => false
-  public fixed underflow_on_sub(other u64) => val < other
+  public fixed redef overflow_on_sub (other u64) => false
+  public fixed redef underflow_on_sub(other u64) => val < other
 
   # would multiplication * other cause an overflow or underflow?
-  public fixed overflow_on_mul (other u64) => if other = (u64 0) false else (val *° other / other) != val
-  public fixed underflow_on_mul(other u64) => false
+  public fixed redef overflow_on_mul (other u64) => if other = (u64 0) false else (val *° other / other) != val
+  public fixed redef underflow_on_mul(other u64) => false
 
   # neg, add, sub, mul with wrap-around semantics
-  public fixed prefix -° u64 => intrinsic
-  public fixed infix +° (other u64) u64 => intrinsic
-  public fixed infix -° (other u64) u64 => intrinsic
-  public fixed infix *° (other u64) u64 => intrinsic
+  public fixed redef prefix -° u64 => intrinsic
+  public fixed redef infix +° (other u64) u64 => intrinsic
+  public fixed redef infix -° (other u64) u64 => intrinsic
+  public fixed redef infix *° (other u64) u64 => intrinsic
 
   # division and remainder with check for div-by-zero
-  public fixed infix / (other u64) => div other
-  public fixed infix % (other u64) => mod other
+  public fixed redef infix / (other u64) => div other
+  public fixed redef infix % (other u64) => mod other
 
   # division and remainder with crash in case of div-by-zero
   div (other u64) u64 => intrinsic
   mod (other u64) u64 => intrinsic
 
   # bitwise and, or and xor operations
-  public fixed infix &  (other u64) u64 => intrinsic
-  public fixed infix |  (other u64) u64 => intrinsic
-  public fixed infix ^  (other u64) u64 => intrinsic
+  public fixed redef infix &  (other u64) u64 => intrinsic
+  public fixed redef infix |  (other u64) u64 => intrinsic
+  public fixed redef infix ^  (other u64) u64 => intrinsic
 
   # shift operations (unsigned)
-  public fixed infix >> (other u64) u64 => intrinsic
-  public fixed infix << (other u64) u64 => intrinsic
+  public fixed redef infix >> (other u64) u64 => intrinsic
+  public fixed redef infix << (other u64) u64 => intrinsic
+
+  # does this u64 fit into an u8?
+  #
+  public redef fixed fits_in_u8  => val ≤ u8.max.as_u64
 
   # this u64 as an i8
   public as_i8 i8
@@ -103,7 +107,7 @@ public u64(public val u64) : num.wrap_around, has_interval is
 
 
   # this u64 as an u8
-  public as_u8 u8
+  public redef as_u8 u8
 #    pre
 #      val ≤ u8.max.as_i64
 #    post
@@ -150,7 +154,7 @@ public u64(public val u64) : num.wrap_around, has_interval is
     uint val
 
 
-  public low8bits   u8  => intrinsic
+  public redef low8bits   u8  => intrinsic
   public low16bits  u16 => intrinsic
   public low32bits  u32 => intrinsic
   public cast_to_i64 i64 => intrinsic
@@ -162,7 +166,7 @@ public u64(public val u64) : num.wrap_around, has_interval is
 
 
   # create hash code from this number
-  public type.hash_code(a u64.this) u64 =>
+  public redef type.hash_code(a u64.this) u64 =>
     a.val
 
 
@@ -196,7 +200,7 @@ public u64(public val u64) : num.wrap_around, has_interval is
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  public ones_count i32 =>
+  public redef ones_count i32 =>
     v := val;
     m := v & 0x_aaaaaaaa_aaaaaaaa; v := v - m + (m >> 1)
     m := v & 0x_cccccccc_cccccccc; v := v - m + (m >> 2)
@@ -211,22 +215,22 @@ public u64(public val u64) : num.wrap_around, has_interval is
 
   # identity element for 'infix +'
   #
-  fixed type.zero u64 => 0
+  fixed redef type.zero u64 => 0
 
 
   # identity element for 'infix *'
   #
-  fixed type.one  u64 => 1
+  fixed redef type.one  u64 => 1
 
 
   # equality
   #
-  fixed type.equality(a, b u64) bool => intrinsic
+  fixed redef type.equality(a, b u64) bool => intrinsic
 
 
   # total order
   #
-  fixed type.lteq(a, b u64) bool => intrinsic
+  fixed redef type.lteq(a, b u64) bool => intrinsic
 
 
   # returns the number in whose bit representation all bits are ones
@@ -235,9 +239,9 @@ public u64(public val u64) : num.wrap_around, has_interval is
 
   # minimum
   #
-  public fixed type.min => u64 0
+  public fixed redef type.min => u64 0
 
 
   # maximum
   #
-  public fixed type.max => u64 0x_ffff_ffff_ffff_ffff
+  public fixed redef type.max => u64 0x_ffff_ffff_ffff_ffff

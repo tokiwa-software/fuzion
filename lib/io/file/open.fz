@@ -111,21 +111,21 @@ module:public open(public T type,
      memory fuzion.sys.Pointer,
 
      # the length of this buffer
-     public length i64
+     public redef length i64
     )
     : container.Buffer u8 (io.file.open T) is
 
 
     # get byte at given index i
     #
-    public index [ ] (i i64) u8 ! open T
+    public redef index [ ] (i i64) u8 ! open T
     =>
       mapped_buffer_get memory i
 
 
     # set byte at given index i to given value o
     #
-    public set [ ] (i i64, o u8) unit ! io.file.open T
+    public redef set [ ] (i i64, o u8) unit ! io.file.open T
     =>
       mapped_buffer_set memory i o
 

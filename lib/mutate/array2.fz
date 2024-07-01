@@ -28,8 +28,8 @@ module:public array2 (
        public T type,
 
        # length of the array to create
-       public length0 i64,
-       public length1 i64,
+       public redef length0 i64,
+       public redef length1 i64,
 
        # contents of the array
        module data fuzion.sys.internal_array T,

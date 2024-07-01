@@ -27,9 +27,10 @@ permissions:
   contents: read
 
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * 0' # every sunday
+  push:
+    branches:
+      - 'main'
+  pull_request: {}
 
 env:
   PRECONDITIONS: true
@@ -38,7 +39,7 @@ env:
 
 jobs:
   run_tests:
-    runs-on: macos-12
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
       - uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4.2.1
@@ -49,7 +50,7 @@ jobs:
       - name: install dependencies
         run: |
           brew install bdw-gc gnu-sed make
-          echo "/usr/local/opt/gnu-sed/libexec/gnubin:/usr/local/opt/gnu-make/libexec/gnubin:$PATH" >> $GITHUB_PATH
+          echo "/opt/homebrew/opt/gnu-sed/libexec/gnubin:/opt/homebrew/opt/make/libexec/gnubin:/usr/local/opt/gnu-sed/libexec/gnubin:/usr/local/opt/gnu-make/libexec/gnubin:$PATH" >> $GITHUB_PATH
 
       - name: sed version
         run: sed --version
@@ -64,4 +65,7 @@ jobs:
         run: make no-java
 
       - name: run tests
-        run: make run_tests
+        run: |
+          export CPATH=/opt/homebrew/include
+          export LIBRARY_PATH=/opt/homebrew/lib
+          make run_tests

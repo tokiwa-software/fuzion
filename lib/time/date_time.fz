@@ -116,7 +116,7 @@ is
 
   # defines equality for date time
   # this is normally used via infix operator =
-  public type.equality(a, b date_time.this) bool =>
+  public redef type.equality(a, b date_time.this) bool =>
     a.nano_second = b.nano_second &
      a.year = b.year &
      a.day_in_year = b.day_in_year &
@@ -128,7 +128,7 @@ is
 
   # defines partial order for date time
   # this is normally used via infix operators <, >, <= etc.
-  public type.lteq(a, b date_time.this) bool =>
+  public redef type.lteq(a, b date_time.this) bool =>
     [(a.year, b.year),
      (a.day_in_year, b.day_in_year),
      (a.hour, b.hour),

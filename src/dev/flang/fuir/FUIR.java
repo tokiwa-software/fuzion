@@ -1080,63 +1080,9 @@ hw25 is
    * @return a site referring to cl's pre- or post-condition, NO_SITE if cl does
    * not have a pre- or post-condition with the given index
    */
-  public int clazzContract(int cl, ContractKind ck, int ix)
+  public int clazzContract(int cl, ContractKind ck, int ix) // NYI: remove!
   {
-    if (PRECONDITIONS) require
-      (clazzKind(cl) == FeatureKind.Routine   ||
-       clazzKind(cl) == FeatureKind.Field     ||
-       clazzKind(cl) == FeatureKind.Intrinsic ||
-       clazzKind(cl) == FeatureKind.Abstract  ||
-       clazzKind(cl) == FeatureKind.Native       ,
-       ix >= 0);
-
-    var cc = clazz(cl);
-    var ff = cc.feature();
-    var ccontract = ff.contract();
-    var cond = (ccontract != null && ck == ContractKind.Pre  ? ccontract.req : null);
-    // NYI: PERFORMANCE: Always iterating the conditions results in performance
-    // quadratic in the number of conditions.  This could be improved by
-    // filtering BoolConst.TRUE once and reusing the resulting cond.
-    var i = 0;
-    while (cond != null && i < cond.size() &&
-           (cond.get(i).cond == BoolConst.TRUE || ix > 0))
-      {
-        if (cond.get(i).cond != BoolConst.TRUE)
-          {
-            ix--;
-          }
-        i++;
-      }
-    var res = NO_SITE;
-    if (cond != null && i < cond.size())
-      {
-        // create 64-bit key from cl, ck and ix as follows:
-        //
-        //  key = cl (32 bits) : -ix    for ck == Pre
-        //  key = cl (32 bits) : +ix    for ck == Post
-        //
-        var key = ((long) cl << 32) | ((ck.ordinal()*2-1) * (i+1)) & 0xffffffffL;
-
-        // lets verify we did not lose any information, i.e, we can extract cl, ix and ck:
-        if (CHECKS) check
-          (cl == key >> 32,
-           ck == ((key << 32 < 0) ? ContractKind.Pre : ContractKind.Post),
-           i == (int) (key & 0xffffffff) * ((ck.ordinal()*2-1))-1);
-
-        var resBoxed = _clazzContract.get(key);
-        if (resBoxed == null)
-          {
-            var codeStart = _allCode.size();
-            var fi = i;
-            var code = new List<Object>();
-            toStack(code, cond.get(fi).cond);
-            resBoxed = addCode(code);
-            recordClazzAndPreForSitesOfRecentlyAddedCode(cl, ck == ContractKind.Pre);
-            _clazzContract.put(key, resBoxed);
-          }
-        res = resBoxed;
-      }
-    return res;
+    return NO_SITE;
   }
 
 

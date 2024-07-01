@@ -59,7 +59,7 @@ is
 # for a given descriptor
 #
 module read_provider(desc i64) : io.Read_Provider is
-  read(count i32) choice (array u8) io.end_of_file error =>
+  redef read(count i32) choice (array u8) io.end_of_file error =>
     match fuzion.sys.net.read desc count
       a array => a
       e error => e

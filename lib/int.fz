@@ -34,10 +34,10 @@ is
   name String =>
     "int"
 
-  public fixed type.zero int =>
+  public fixed redef type.zero int =>
     int num.plus uint.zero
 
-  public fixed type.one int =>
+  public fixed redef type.one int =>
     int num.plus uint.one
 
 
@@ -48,7 +48,7 @@ is
 
 
   # add this int to other
-  public fixed infix +  (other int) int =>
+  public fixed redef infix +  (other int) int =>
     if ns = other.ns
       int ns n+other.n
     else
@@ -58,7 +58,7 @@ is
 
 
   # subtract other from this int
-  public fixed infix - (other int) int =>
+  public fixed redef infix - (other int) int =>
     match other.ns
       num.plus =>
         match ns
@@ -79,12 +79,12 @@ is
 
 
   # multiply this int by other
-  public fixed infix *  (other int) int =>
+  public fixed redef infix *  (other int) int =>
     int (result_sign_mul_div other) n*other.n
 
 
   # divide this int by other
-  public fixed infix /  (other int) int
+  public fixed redef infix /  (other int) int
   =>
     s num.sign := result_sign_mul_div other
     int s n/other.n
@@ -92,13 +92,13 @@ is
 
   # modulo, returns the remainder of the
   # division of this int by other
-  public fixed infix %  (other int) int =>
+  public fixed redef infix %  (other int) int =>
     int ns n%other.n
 
 
   # exponentation operator:
   # this int to the power of other
-  public fixed infix ** (other int) int
+  public fixed redef infix ** (other int) int
   =>
     match s
       num.plus => int num.plus (n ** other.n)
@@ -111,35 +111,34 @@ is
   # except for division where we need to
   # check for division by zero
 
-  public fixed prefix -! bool => true
-  public fixed infix +! (other int) bool => true
-  public fixed infix -! (other int) bool => true
-  public fixed infix *! (other int) bool => true
-  public fixed infix /! (other int) bool =>
-    other != int.zero
-  public fixed infix %! (other int) bool => true
+  public fixed redef prefix -! bool => true
+  public fixed redef infix +! (other int) bool => true
+  public fixed redef infix -! (other int) bool => true
+  public fixed redef infix *! (other int) bool => true
+  public fixed redef infix /! (other int) bool => other != int.zero
+  public fixed redef infix %! (other int) bool => other != int.zero
 
-  public fixed infix **!(other int) bool =>
+  public fixed redef infix **!(other int) bool =>
     other ≥ int.zero  # 0 and 1 ** -other would be okay but we disallow nonetheless
 
-  public fixed infix **?(other int) num_option int =>
+  public fixed redef infix **?(other int) num_option int =>
     match other.ns
       num.plus => int.this ** other
       num.minus => nil # 0 and 1 ** -other would be okay but we disallow nonetheless
 
-  public fixed infix **^(other int) int =>
+  public fixed redef infix **^(other int) int =>
     match other.ns
       num.plus => int.this ** other
       num.minus => panic "negativ exponent is not allowed." # 0 or 1 ** -other would be okay but we disallow nonetheless
 
   # equality: are these two ints equal?
   #
-  fixed type.equality(a, b int) bool =>
+  fixed redef type.equality(a, b int) bool =>
     (a.ns = b.ns) & (a.n = b.n)
 
   # total order
   #
-  fixed type.lteq(a, b int) bool =>
+  fixed redef type.lteq(a, b int) bool =>
     match a.ns
       num.plus =>
         match b.ns
@@ -165,7 +164,7 @@ is
 
 
   # this int as an u8
-  public as_u8 u8
+  public redef as_u8 u8
   # NYI pre int.this >= 0
   =>
       n.as_u8
@@ -194,10 +193,10 @@ is
 
   # helper feature to init int via an i64
   type.from_i64(val i64) int =>
-    s num.sign := if val < (i64 0) then num.minus else num.plus
+    s num.sign := if val < 0 then num.minus else num.plus
     n u64 := if val = i64.min
                i64.max.as_u64 + 1
-             else if val < (i64 0)
+             else if val < 0
                (-val).as_u64
              else val.as_u64
     int s (uint n)

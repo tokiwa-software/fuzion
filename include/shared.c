@@ -206,11 +206,15 @@ JNIEnv * getJNIEnv()
 
 // initialize the JVM
 // executed once at the start of the application
-void fzE_init_jvm() {
+void fzE_create_jvm(char * option_string) {
   JavaVMInitArgs vm_args;
 
+  JavaVMOption options[1];
+  options[0].optionString = option_string;
+
   vm_args.version = JNI_VERSION_10;
-  vm_args.nOptions = 0;
+  vm_args.options = options;
+  vm_args.nOptions = 1;
   if (JNI_CreateJavaVM(&fzE_jvm, (void **)&fzE_jni_env, &vm_args) != JNI_OK) {
     printf("Failed to start Java VM");
     exit(EXIT_FAILURE);
@@ -392,6 +396,32 @@ jvalue *fzE_convert_args(const char *sig, jvalue *args) {
 }
 
 
+// convert jstring to error result
+fzE_jvm_result fzE_jvm_not_found(jstring jstr)
+{
+  return (fzE_jvm_result){ .fzTag = 1, .fzChoice = { .v1 = jstr /* NYI: should be: "Not found" + jv */ } };
+}
+
+
+// convert a 0-terminated utf8-bytes array to a jstring.
+jvalue fzE_string_to_java_object(const void * utf8_bytes, int byte_length)
+{
+  // NYI we don't really need 4*byte_length, see modifiedUtf8LengthOfUtf8:
+  // https://github.com/openjdk/jdk/blob/eb9e754b3a439cc3ce36c2c9393bc8b250343844/src/java.instrument/share/native/libinstrument/EncodingSupport.c#L98
+  char outstr[4*byte_length];
+  utf8_to_mod_utf8(utf8_bytes, outstr);
+  jvalue result = (jvalue){ .l = (*getJNIEnv())->NewStringUTF(getJNIEnv(), outstr) };
+  return result;
+}
+
+// convert c-string to error result
+fzE_jvm_result fzE_jvm_error(const char * str)
+{
+  jvalue jstr = fzE_string_to_java_object(str, strlen(str));
+  return (fzE_jvm_result){ .fzTag = 1, .fzChoice = { .v1 = jstr.l } };
+}
+
+
 // return result, check for exception
 // return exception if there is any
 fzE_jvm_result fzE_return_result(jvalue jv)
@@ -420,9 +450,9 @@ fzE_jvm_result fzE_call_c0(jstring class_name, jstring signature, jvalue *args)
 {
   const char * sig = fzE_java_string_to_modified_utf8(signature);
   jclass cl  = (*getJNIEnv())->FindClass(getJNIEnv(), fzE_replace_char(fzE_java_string_to_modified_utf8(class_name), '.', '/'));
-  assert( cl != NULL );
+  if (cl == NULL) { return fzE_jvm_not_found(class_name); }
   jmethodID mid = (*getJNIEnv())->GetMethodID(getJNIEnv(), cl, "<init>", sig);
-  assert( mid != NULL );
+  if (mid == NULL) { return fzE_jvm_not_found(class_name); }
   jvalue result = { .l = (*getJNIEnv())->NewObjectA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args)) };
 
   return fzE_return_result(result);
@@ -434,30 +464,41 @@ fzE_jvm_result fzE_call_s0(jstring class_name, jstring name, jstring signature, 
 {
   const char * sig = fzE_java_string_to_modified_utf8(signature);
   jclass cl  = (*getJNIEnv())->FindClass(getJNIEnv(), fzE_replace_char(fzE_java_string_to_modified_utf8(class_name), '.', '/'));
-  assert( cl != NULL );
+  if (cl == NULL) { return fzE_jvm_not_found(class_name); }
   jmethodID mid = (*getJNIEnv())->GetStaticMethodID(getJNIEnv(), cl, fzE_java_string_to_modified_utf8(name), sig);
-  assert( mid != NULL );
+  if (mid == NULL) { return fzE_jvm_not_found(name); }
+  const char * sig2 = sig;
+  while (*sig2 != ')') {
+    if (*sig2 == '\0') { return fzE_jvm_error("unexpected signature format"); }
+    sig2++;
+  }
   jvalue result;
-  switch (sig[strlen(sig)-1])
+  switch (sig2[1])
     {
       case 'B':
-        result.b = (*getJNIEnv())->CallStaticByteMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args));
+        result.b = (*getJNIEnv())->CallStaticByteMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args)); break;
       case 'C':
-        result.c = (*getJNIEnv())->CallStaticCharMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args));
+        result.c = (*getJNIEnv())->CallStaticCharMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args)); break;
       case 'S':
-        result.s = (*getJNIEnv())->CallStaticShortMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args));
+        result.s = (*getJNIEnv())->CallStaticShortMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args)); break;
       case 'I':
-        result.i = (*getJNIEnv())->CallStaticIntMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args));
+        result.i = (*getJNIEnv())->CallStaticIntMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args)); break;
       case 'J':
-        result.j = (*getJNIEnv())->CallStaticLongMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args));
+        result.j = (*getJNIEnv())->CallStaticLongMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args)); break;
       case 'F':
-        result.f = (*getJNIEnv())->CallStaticFloatMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args));
+        result.f = (*getJNIEnv())->CallStaticFloatMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args)); break;
       case 'D':
-        result.d = (*getJNIEnv())->CallStaticDoubleMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args));
+        result.d = (*getJNIEnv())->CallStaticDoubleMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args)); break;
       case 'Z':
-        result.z = (*getJNIEnv())->CallStaticBooleanMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args));
+        result.z = (*getJNIEnv())->CallStaticBooleanMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args)); break;
+      case 'V' :
+        result.l = NULL;
+        (*getJNIEnv())->CallStaticObjectMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args)); break;
+      case 'L' :
+      case '[' :
+        result.l = (*getJNIEnv())->CallStaticObjectMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args)); break;
       default:
-        result.l = (*getJNIEnv())->CallStaticObjectMethodA(getJNIEnv(), cl, mid, fzE_convert_args(sig, args));
+        assert(false);
     }
 
   return fzE_return_result(result);
@@ -469,50 +510,46 @@ fzE_jvm_result fzE_call_v0(jstring class_name, jstring name, jstring signature, 
 {
   const char * sig = fzE_java_string_to_modified_utf8(signature);
   jclass cl  = (*getJNIEnv())->FindClass(getJNIEnv(), fzE_replace_char(fzE_java_string_to_modified_utf8(class_name), '.', '/'));
-  assert( cl != NULL );
+  if (cl == NULL) { return fzE_jvm_not_found(class_name); }
   jmethodID mid = (*getJNIEnv())->GetMethodID(getJNIEnv(), cl, fzE_java_string_to_modified_utf8(name), sig);
-  assert( mid != NULL );
+  if (mid == NULL) { return fzE_jvm_not_found(name); }
   const char * sig2 = sig;
   while (*sig2 != ')') {
+    if (*sig2 == '\0') { return fzE_jvm_error("unexpected signature format"); }
     sig2++;
   }
   jvalue result;
   switch (sig2[1])
     {
       case 'B':
-        result = (jvalue){ .b = (*getJNIEnv())->CallByteMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args)) };
+        result = (jvalue){ .b = (*getJNIEnv())->CallByteMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args)) }; break;
       case 'C':
-        result = (jvalue){ .c = (*getJNIEnv())->CallCharMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args)) };
+        result = (jvalue){ .c = (*getJNIEnv())->CallCharMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args)) }; break;
       case 'S':
-        result = (jvalue){ .s = (*getJNIEnv())->CallShortMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args)) };
+        result = (jvalue){ .s = (*getJNIEnv())->CallShortMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args)) }; break;
       case 'I':
-        result = (jvalue){ .i = (*getJNIEnv())->CallIntMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args)) };
+        result = (jvalue){ .i = (*getJNIEnv())->CallIntMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args)) }; break;
       case 'J':
-        result = (jvalue){ .j = (*getJNIEnv())->CallLongMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args)) };
+        result = (jvalue){ .j = (*getJNIEnv())->CallLongMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args)) }; break;
       case 'F':
-        result = (jvalue){ .f = (*getJNIEnv())->CallFloatMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args)) };
+        result = (jvalue){ .f = (*getJNIEnv())->CallFloatMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args)) }; break;
       case 'D':
-        result = (jvalue){ .d = (*getJNIEnv())->CallDoubleMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args)) };
+        result = (jvalue){ .d = (*getJNIEnv())->CallDoubleMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args)) }; break;
       case 'Z':
-        result = (jvalue){ .z = (*getJNIEnv())->CallBooleanMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args)) };
+        result = (jvalue){ .z = (*getJNIEnv())->CallBooleanMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args)) }; break;
+      case 'V':
+        result.l = NULL;
+        (*getJNIEnv())->CallObjectMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args)); break;
+      case 'L' :
+      case '[' :
+        result = (jvalue){ .l = (*getJNIEnv())->CallObjectMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args)) }; break;
       default:
-        result = (jvalue){ .l = (*getJNIEnv())->CallObjectMethodA(getJNIEnv(), thiz, mid, fzE_convert_args(sig, args)) };
+        assert(false);
     }
 
   return fzE_return_result(result);
 }
 
-
-// convert a 0-terminated utf8-bytes array to a jstring.
-jvalue fzE_string_to_java_object(const void * utf8_bytes, int byte_length)
-{
-  // NYI we don't really need 4*byte_length, see modifiedUtf8LengthOfUtf8:
-  // https://github.com/openjdk/jdk/blob/eb9e754b3a439cc3ce36c2c9393bc8b250343844/src/java.instrument/share/native/libinstrument/EncodingSupport.c#L98
-  char outstr[4*byte_length];
-  utf8_to_mod_utf8(utf8_bytes, outstr);
-  jvalue result = (jvalue){ .l = (*getJNIEnv())->NewStringUTF(getJNIEnv(), outstr) };
-  return result;
-}
 
 
 // test if jobj is null

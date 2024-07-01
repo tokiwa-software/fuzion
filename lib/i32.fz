@@ -33,44 +33,44 @@ public i32(public val i32) : num.wrap_around, has_interval is
   redef wrapped_on_neg => is_min
 
   # would addition + other cause an overflow or underflow?
-  public fixed overflow_on_add (other i32) => val > 0 && i32.max -° val < other
-  public fixed underflow_on_add(other i32) => val < 0 && i32.min -° val > other
+  public fixed redef overflow_on_add (other i32) => val > 0 && i32.max -° val < other
+  public fixed redef underflow_on_add(other i32) => val < 0 && i32.min -° val > other
 
   # would subtraction - other cause an overflow or underflow?
-  public fixed overflow_on_sub (other i32) => val > 0 && val -° i32.max > other
-  public fixed underflow_on_sub(other i32) => val < 0 && val -° i32.min < other
+  public fixed redef overflow_on_sub (other i32) => val > 0 && val -° i32.max > other
+  public fixed redef underflow_on_sub(other i32) => val < 0 && val -° i32.min < other
 
   # would multiplication * other cause an overflow or underflow?
-  public fixed overflow_on_mul (other i32) => as_i64 *° other.as_i64 > i32.max.as_i64
-  public fixed underflow_on_mul(other i32) => as_i64 *° other.as_i64 < i32.min.as_i64
+  public fixed redef overflow_on_mul (other i32) => as_i64 *° other.as_i64 > i32.max.as_i64
+  public fixed redef underflow_on_mul(other i32) => as_i64 *° other.as_i64 < i32.min.as_i64
 
   # neg, add, sub, mul with wrap-around semantics
-  public fixed prefix -° i32 => intrinsic
-  public fixed infix +° (other i32) i32 => intrinsic
-  public fixed infix -° (other i32) i32 => intrinsic
-  public fixed infix *° (other i32) i32 => intrinsic
+  public fixed redef prefix -° i32 => intrinsic
+  public fixed redef infix +° (other i32) i32 => intrinsic
+  public fixed redef infix -° (other i32) i32 => intrinsic
+  public fixed redef infix *° (other i32) i32 => intrinsic
 
   # division and remainder with check for div-by-zero
-  public fixed infix / (other i32)
+  public fixed redef infix / (other i32)
     pre else
       // NYI: #3051 precondition inheritance does not work yet
       // remove this redundant precondition once #3051 is fixed
       safety: other != 0
   => div other
-  public fixed infix % (other i32) => mod other
+  public fixed redef infix % (other i32) => mod other
 
   # division and remainder with crash in case of div-by-zero
   div (other i32) i32 => intrinsic
   mod (other i32) i32 => intrinsic
 
   # bitwise and, or and xor operations
-  public fixed infix &  (other i32) i32 => intrinsic
-  public fixed infix |  (other i32) i32 => intrinsic
-  public fixed infix ^  (other i32) i32 => intrinsic
+  public fixed redef infix &  (other i32) i32 => intrinsic
+  public fixed redef infix |  (other i32) i32 => intrinsic
+  public fixed redef infix ^  (other i32) i32 => intrinsic
 
   # shift operations (signed)
-  public fixed infix >> (other i32) i32 => intrinsic
-  public fixed infix << (other i32) i32 => intrinsic
+  public fixed redef infix >> (other i32) i32 => intrinsic
+  public fixed redef infix << (other i32) i32 => intrinsic
 
   # does this i32 fit into an u8?
   #
@@ -91,7 +91,7 @@ public i32(public val i32) : num.wrap_around, has_interval is
       low16bits.cast_to_i16
   public as_i64 i64 => intrinsic
 # as_i128 NYI
-  public as_u8  u8  => low8bits
+  public redef as_u8  u8  => low8bits
   public as_u16 u16
     pre
       val ≥ u16.min.as_i32
@@ -118,7 +118,7 @@ public i32(public val i32) : num.wrap_around, has_interval is
 
 
   # casting bit representation to unsigned
-  public low8bits    u8   => cast_to_u32.low8bits    # 0x1234_5678 ->        0x78, -0x1234_5678 -> 0x88
+  public redef low8bits    u8   => cast_to_u32.low8bits    # 0x1234_5678 ->        0x78, -0x1234_5678 -> 0x88
   public low16bits   u16  => cast_to_u32.low16bits   # 0x1234_5678 ->      0x5678, -0x1234_5678 -> 0xa988
   public cast_to_u32  u32  => intrinsic              # 0x1234_5678 -> 0x1234_5678, -0x1234_5678 -> 0xedcb_a988
   public cast_to_u64  u64  => cast_to_u32.as_u64     # 0x1234_5678 -> 0x1234_5678, -0x1234_5678 -> 0x0000_0000_edcb_a988
@@ -130,7 +130,7 @@ public i32(public val i32) : num.wrap_around, has_interval is
 
 
   # create hash code from this number
-  public type.hash_code(a i32.this) u64 =>
+  public redef type.hash_code(a i32.this) u64 =>
     hash a.cast_to_u64
 
 
@@ -150,7 +150,7 @@ public i32(public val i32) : num.wrap_around, has_interval is
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  public ones_count i32 =>
+  public redef ones_count i32 =>
     val.cast_to_u32.ones_count
 
 
@@ -161,22 +161,22 @@ public i32(public val i32) : num.wrap_around, has_interval is
 
   # identity element for 'infix +'
   #
-  fixed type.zero i32 => 0
+  fixed redef type.zero i32 => 0
 
 
   # identity element for 'infix *'
   #
-  fixed type.one  i32 => 1
+  fixed redef type.one  i32 => 1
 
 
   # equality
   #
-  fixed type.equality(a, b i32) bool => intrinsic
+  fixed redef type.equality(a, b i32) bool => intrinsic
 
 
   # total order
   #
-  fixed type.lteq(a, b i32) bool => intrinsic
+  fixed redef type.lteq(a, b i32) bool => intrinsic
 
 
   # returns the number in whose bit representation all bits are ones
@@ -185,9 +185,9 @@ public i32(public val i32) : num.wrap_around, has_interval is
 
   # minimum
   #
-  public fixed type.min => i32 -0x_8000_0000
+  public fixed redef type.min => i32 -0x_8000_0000
 
 
   # maximum
   #
-  public fixed type.max => i32 0x_7fff_ffff
+  public fixed redef type.max => i32 0x_7fff_ffff

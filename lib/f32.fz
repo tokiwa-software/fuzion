@@ -34,21 +34,28 @@ public f32(public val f32) : float is
 
   # basic operations: 'prefix -' (negation)
   public fixed redef prefix - f32 => intrinsic
-  public fixed infix + (other f32) f32 => intrinsic
-  public fixed infix - (other f32) f32 => intrinsic
-  public fixed infix * (other f32) f32 => intrinsic
-  public fixed infix / (other f32) f32 => intrinsic
-  public fixed infix % (other f32) f32 => intrinsic
-  public fixed infix ** (other f32) f32 => intrinsic
+  public fixed redef infix + (other f32) f32 => intrinsic
+  public fixed redef infix - (other f32) f32 => intrinsic
+  public fixed redef infix * (other f32) f32 => intrinsic
+  public fixed redef infix / (other f32) f32 => intrinsic
+  public fixed redef infix % (other f32) f32 => intrinsic
+  public fixed redef infix ** (other f32) f32 => intrinsic
 
 
   # comparision
   #
-  fixed infix = (other f32) bool => intrinsic
-  fixed infix <= (other f32) bool => intrinsic
-  fixed infix >= (other f32) bool => intrinsic
-  fixed infix < (other f32) bool => intrinsic
-  fixed infix > (other f32) bool => intrinsic
+  fixed redef infix = (other f32) bool => intrinsic
+  fixed redef infix <= (other f32) bool => intrinsic
+  fixed redef infix >= (other f32) bool => intrinsic
+  fixed redef infix < (other f32) bool => intrinsic
+  fixed redef infix > (other f32) bool => intrinsic
+
+
+  # does this `f32` value fit into an `i64`?  Used in inherited
+  # precondition of `as_i64`.
+  #
+  public redef fits_in_i64 =>
+    i64.min.as_f32 ≤ val ≤ i64.max.as_f32
 
 
   # conversion
@@ -72,7 +79,7 @@ public f32(public val f32) : float is
   # the IEEE standard), so the hash of any NaN is the hash of
   # the "canonical" NaN.
   #
-  public type.hash_code(a f32.this) u64 =>
+  public redef type.hash_code(a f32.this) u64 =>
     if is_NaN a.val
       hash NaN.cast_to_u32
     else if a = zero
@@ -83,19 +90,19 @@ public f32(public val f32) : float is
 
 
   # is the sign bit set?
-  public is_sign_bit_set bool =>
+  public redef is_sign_bit_set bool =>
     cast_to_u32 >= 1P31
 
 
   # number of bits used for mantissa,
   # including leading '1' that is not actually stored
   #
-  public type.significand_bits => 24
+  public redef type.significand_bits => 24
 
 
   # number of bits used for exponent
   #
-  public type.exponent_bits => 8
+  public redef type.exponent_bits => 8
 
 
   # mask for the the bits that encode the mantissa
@@ -112,11 +119,11 @@ public f32(public val f32) : float is
 
 
   # the biased exponent
-  public exponent_biased => ((cast_to_u32 >> f32.mantissa_bits.as_u32) & f32.exponent_mask).as_i32
+  public redef exponent_biased => ((cast_to_u32 >> f32.mantissa_bits.as_u32) & f32.exponent_mask).as_i32
 
 
   # the normalized exponent
-  public exponent =>
+  public redef exponent =>
     if exponent_biased = 0
       1 - f32.exponent_bias
     else
@@ -124,7 +131,7 @@ public f32(public val f32) : float is
 
 
   # the normalized mantissa
-  public mantissa =>
+  public redef mantissa =>
     m := cast_to_u32 & f32.mantissa_mask
     if exponent_biased = 0
       m.as_u64
@@ -154,7 +161,7 @@ public f32(public val f32) : float is
   # is smaller than 0.001
   # or greater than 9_999_999
   #
-  public use_scientific_notation bool =>
+  public redef use_scientific_notation bool =>
     abs<1E-3 || abs>=1E7
 
 
@@ -171,54 +178,54 @@ public f32(public val f32) : float is
 
   # identity element for 'infix +'
   #
-  public fixed type.zero f32 => 0
+  public fixed redef type.zero f32 => 0
 
 
   # identity element for 'infix *'
   #
-  public fixed type.one  f32 => 1
+  public fixed redef type.one  f32 => 1
 
 
-  public fixed type.bytes => 4
+  public fixed redef type.bytes => 4
 
 
-  public fixed type.ℇ => f32 2.7182818284590452354
+  public fixed redef type.ℇ => f32 2.7182818284590452354
 
 
-  public fixed type.π => f32 3.14159265358979323846
+  public fixed redef type.π => f32 3.14159265358979323846
 
 
-  public fixed type.from_i64(val i64) f32 =>
+  public fixed redef type.from_i64(val i64) f32 =>
     val.as_f32
 
 
-  public fixed type.is_NaN(val f32) bool => intrinsic
+  public fixed redef type.is_NaN(val f32) bool => intrinsic
 
 
-  public fixed type.min_exp i32 => intrinsic
-  public fixed type.max_exp i32 => intrinsic
-  public fixed type.min_positive f32 => intrinsic
-  public fixed type.max f32 => intrinsic
-  public fixed type.epsilon f32 => intrinsic
+  public fixed redef type.min_exp i32 => intrinsic
+  public fixed redef type.max_exp i32 => intrinsic
+  public fixed redef type.min_positive f32 => intrinsic
+  public fixed redef type.max f32 => intrinsic
+  public fixed redef type.epsilon f32 => intrinsic
 
 
-  public fixed type.square_root(val f32) f32 => intrinsic
+  public fixed redef type.square_root(val f32) f32 => intrinsic
 
-  public fixed type.exp(val f32) f32 => intrinsic
-  public fixed type.log(val f32) f32 => intrinsic
+  public fixed redef type.exp(val f32) f32 => intrinsic
+  public fixed redef type.log(val f32) f32 => intrinsic
 
 
-  public fixed type.sin(val f32) f32 => intrinsic
-  public fixed type.cos(val f32) f32 => intrinsic
-  public fixed type.tan(val f32) f32 => intrinsic
-  public fixed type.asin(val f32) f32 => intrinsic
-  public fixed type.acos(val f32) f32 => intrinsic
-  public fixed type.atan(val f32) f32 => intrinsic
+  public fixed redef type.sin(val f32) f32 => intrinsic
+  public fixed redef type.cos(val f32) f32 => intrinsic
+  public fixed redef type.tan(val f32) f32 => intrinsic
+  public fixed redef type.asin(val f32) f32 => intrinsic
+  public fixed redef type.acos(val f32) f32 => intrinsic
+  public fixed redef type.atan(val f32) f32 => intrinsic
 
   # atan(y/x) with a few special cases
   # see also: https://go.dev/src/math/atan2.go
   #
-  public fixed type.atan2(y, x f32) f32 =>
+  public fixed redef type.atan2(y, x f32) f32 =>
     if is_NaN y || is_NaN x
       f32.NaN
     else if y = 0
@@ -256,6 +263,6 @@ public f32(public val f32) : float is
         q
 
 
-  public fixed type.sinh (val f32) f32 => intrinsic
-  public fixed type.cosh (val f32) f32 => intrinsic
-  public fixed type.tanh (val f32) f32 => intrinsic
+  public fixed redef type.sinh (val f32) f32 => intrinsic
+  public fixed redef type.cosh (val f32) f32 => intrinsic
+  public fixed redef type.tanh (val f32) f32 => intrinsic

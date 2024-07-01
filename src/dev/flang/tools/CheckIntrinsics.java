@@ -59,15 +59,17 @@ class CheckIntrinsics extends ANY
     getAll(all, fe, fe._universe);
 
     var i = dev.flang.be.interpreter.Intrinsics.supportedIntrinsics();
-    checkIntrinsics(all, i, "Interpreter backend", x->x);
+    checkIntrinsics(all, true, i, "Interpreter backend", x->x);
     var c = dev.flang.be.c.Intrinsics.supportedIntrinsics();
-    checkIntrinsics(all, c, "C backend", x->x);
+    checkIntrinsics(all, true, c, "C backend", x->x);
     var jvm = dev.flang.be.jvm.Intrinsix.supportedIntrinsics();
-    checkIntrinsics(all, jvm, "JVM backend", x->dev.flang.be.jvm.Intrinsix.backendName(x));
+    checkIntrinsics(all, true, jvm, "JVM backend", x->dev.flang.be.jvm.Intrinsix.backendName(x));
     var dfa = dev.flang.fuir.analysis.dfa.DFA.supportedIntrinsics();
-    checkIntrinsics(all, dfa, "DFA", x->x);
+    checkIntrinsics(all, true, dfa, "DFA", x->x);
     var cfg = dev.flang.fuir.cfg.CFG.supportedIntrinsics();
-    checkIntrinsics(all, cfg, "CFG", x->x);
+    checkIntrinsics(all, true, cfg, "CFG", x->x);
+    var air = dev.flang.air.Clazz.supportedIntrinsics();
+    checkIntrinsics(all, false, air, "AIR", x->x);
   }
 
 
@@ -93,11 +95,18 @@ class CheckIntrinsics extends ANY
    *
    * @param all set of names of required intrinsics
    *
+   * @param complete true if `implemented` should cover all intrinsics, false if
+   * some might be missing.
+   *
    * @param implemented set of names of implemented intrinsics
    *
    * @param where module that provides implemented intrinsics, e.g., "C backend".
    */
-  void checkIntrinsics(Set<String> all, Set<String> implemented, String where, Mangle m)
+  void checkIntrinsics(Set<String> all,
+                       boolean complete,
+                       Set<String> implemented,
+                       String where,
+                       Mangle m)
   {
     var used = new TreeSet<String>();
     for (var a : all)
@@ -105,7 +114,10 @@ class CheckIntrinsics extends ANY
         var ma = m.doit(a);
         if (!implemented.contains(ma))
           {
-            Errors.warning(where + " does not implement intrinsic '" + a + "'.");
+            if (complete)
+              {
+                Errors.warning(where + " does not implement intrinsic '" + a + "'.");
+              }
           }
         else
           {

@@ -189,7 +189,7 @@ public mutate : simple_effect is
 
     # unwrap this mutable value
     #
-    public unwrap ! mutate => get
+    public redef unwrap ! mutate => get
 
 
     # returns `as_string` of the current value

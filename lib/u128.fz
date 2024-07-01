@@ -33,22 +33,22 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
   redef wrapped_on_neg => !is_zero
 
   # would addition + other cause an overflow or underflow?
-  public fixed overflow_on_add (other u128) => u128.max -° u128.this < other
-  public fixed underflow_on_add(other u128) => false
+  public fixed redef overflow_on_add (other u128) => u128.max -° u128.this < other
+  public fixed redef underflow_on_add(other u128) => false
 
   # would subtraction - other cause an overflow or underflow?
-  public fixed overflow_on_sub (other u128) => false
-  public fixed underflow_on_sub(other u128) => u128.this < other
+  public fixed redef overflow_on_sub (other u128) => false
+  public fixed redef underflow_on_sub(other u128) => u128.this < other
 
   # would multiplication * other cause an overflow or underflow?
-  public fixed overflow_on_mul (other u128) => if (other = u128.zero) false else (u128.this *° other / other) != u128.this
-  public fixed underflow_on_mul(other u128) => false
+  public fixed redef overflow_on_mul (other u128) => if (other = u128.zero) false else (u128.this *° other / other) != u128.this
+  public fixed redef underflow_on_mul(other u128) => false
 
   # neg, add, sub, mul with wrap-around semantics
-  public fixed prefix -°             u128 => carry u64 := { if (lo > u64 0         ) 1 else 0 }; u128 (u64 0 -° hi -° carry) (u64 0 -° lo)
-  public fixed infix +° (other u128) u128 => carry u64 := { if (lo +° other.lo < lo) 1 else 0 }; u128 (hi +° other.hi +° carry) (lo +° other.lo)
-  public fixed infix -° (other u128) u128 => carry u64 := { if (lo < other.lo      ) 1 else 0 }; u128 (hi -° other.hi -° carry) (lo -° other.lo)
-  public fixed infix *° (other u128) u128 =>
+  public fixed redef prefix -°             u128 => carry u64 := { if (lo > u64 0         ) 1 else 0 }; u128 (u64 0 -° hi -° carry) (u64 0 -° lo)
+  public fixed redef infix +° (other u128) u128 => carry u64 := { if (lo +° other.lo < lo) 1 else 0 }; u128 (hi +° other.hi +° carry) (lo +° other.lo)
+  public fixed redef infix -° (other u128) u128 => carry u64 := { if (lo < other.lo      ) 1 else 0 }; u128 (hi -° other.hi -° carry) (lo -° other.lo)
+  public fixed redef infix *° (other u128) u128 =>
     a0 := lo & 0x_ffff_ffff
     a1 := lo >> 32
     a2 := hi & 0x_ffff_ffff
@@ -79,8 +79,8 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
      u128 p03<<32 0         )
 
   # division and remainder with check for div-by-zero
-  public fixed infix / (other u128) => div other
-  public fixed infix % (other u128) => mod other
+  public fixed redef infix / (other u128) => div other
+  public fixed redef infix % (other u128) => mod other
 
   # division and remainder with crash in case of div-by-zero
   fixed div (other u128) u128 =>
@@ -104,12 +104,12 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
     u128.this - (div other) *° other
 
   # bitwise and, or and xor operations
-  public fixed infix &  (other u128) u128 => u128 (hi & other.hi) (lo & other.lo)
-  public fixed infix |  (other u128) u128 => u128 (hi | other.hi) (lo | other.lo)
-  public fixed infix ^  (other u128) u128 => u128 (hi ^ other.hi) (lo ^ other.lo)
+  public fixed redef infix &  (other u128) u128 => u128 (hi & other.hi) (lo & other.lo)
+  public fixed redef infix |  (other u128) u128 => u128 (hi | other.hi) (lo | other.lo)
+  public fixed redef infix ^  (other u128) u128 => u128 (hi ^ other.hi) (lo ^ other.lo)
 
   # shift operations (unsigned)
-  public fixed infix >> (other u128) u128 =>
+  public fixed redef infix >> (other u128) u128 =>
     n := other.as_u64  # NYI: other should be of type u32
     if n ≥ u64 128
       u128 0 0
@@ -120,7 +120,7 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
     else
       u128.this
 
-  public fixed infix << (other u128) u128 =>
+  public fixed redef infix << (other u128) u128 =>
     n := other.as_u64  # NYI: other should be of type u32
     if n ≥ u64 128
       u128 0 0
@@ -133,12 +133,12 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
 
   # equality
   #
-  fixed type.equality(a, b u128) =>
+  fixed redef type.equality(a, b u128) =>
     a.hi = b.hi && a.lo = b.lo
 
   # total order
   #
-  fixed type.lteq(a, b u128) =>
+  fixed redef type.lteq(a, b u128) =>
     a.hi < b.hi || (a.hi = b.hi) && (a.lo ≤ b.lo)
 
   # does this u128 fit into an u8?
@@ -167,7 +167,7 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
       analysis: result.as_u128 = u128.this
     =>
       lo.as_i64
-  public fixed as_u8 u8
+  public fixed redef as_u8 u8
     post then
       analysis: result.as_u128 = u128.this
     =>
@@ -194,14 +194,14 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
     =>
       lo
 
-  public low8bits  u8  => lo.low8bits
+  public redef low8bits  u8  => lo.low8bits
   public low16bits u16 => lo.low16bits
   public low32bits u32 => lo.low32bits
   public low64bits u64 => lo
 
 
   # create hash code from this number
-  public type.hash_code(a u128.this) u64 =>
+  public redef type.hash_code(a u128.this) u64 =>
     a.hi ^ a.lo
 
 
@@ -227,7 +227,7 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  public ones_count i32 =>
+  public redef ones_count i32 =>
     hi.ones_count + lo.ones_count
 
 
@@ -237,19 +237,19 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
 
   # minimum
   #
-  public fixed type.min => u128 0 0
+  public fixed redef type.min => u128 0 0
 
 
   # maximum
   #
-  public fixed type.max => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
+  public fixed redef type.max => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
 
 
   # identity element for 'infix +'
   #
-  public fixed type.zero => u128 0 0
+  public fixed redef type.zero => u128 0 0
 
 
   # identity element for 'infix *'
   #
-  public fixed type.one => u128 0 1
+  public fixed redef type.one => u128 0 1

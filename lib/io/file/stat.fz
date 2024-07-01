@@ -75,10 +75,10 @@ public stat(ps Stat_Handler) : simple_effect is
   # the default file stat provided
   #
   type.default_stat_handler : io.file.Stat_Handler is
-    stats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) =>
+    redef stats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) =>
       fuzion.sys.fileio.stats path meta_data_arr
 
-    lstats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) =>
+    redef lstats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) =>
       fuzion.sys.fileio.lstats path meta_data_arr
 
 

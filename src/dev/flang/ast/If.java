@@ -111,6 +111,20 @@ public class If extends ExprWithPos
 
   /*-----------------------------  methods  -----------------------------*/
 
+
+  /**
+   * Is this a normal if (`false`) or one created to implement a contract such
+   * as pre- or postconditions (`true`)?
+   *
+   * @return true iff this is an artificially generated if that originates in a
+   * condition of a contract.
+   */
+  boolean fromContract()
+  {
+    return false;
+  }
+
+
   /**
    * Create an Iterator over all branches in this if expression, including all
    * else-if branches.
@@ -185,7 +199,14 @@ public class If extends ExprWithPos
     var t = cond.type();
     if (!Types.resolved.t_bool.isDirectlyAssignableFrom(t))
       {
-        AstErrors.ifConditionMustBeBool(cond.pos(), t);
+        if (fromContract())
+          {
+            AstErrors.contractExpressionMustResultInBool(cond);
+          }
+        else
+          {
+            AstErrors.ifConditionMustBeBool(cond.pos(), t);
+          }
       }
   }
 

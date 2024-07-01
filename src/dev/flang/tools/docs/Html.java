@@ -100,7 +100,8 @@ public class Html extends ANY
       .<String>map(c -> {
         var f = c.calledFeature();
         return "<a class='fd-feature fd-inherited' href='$1'>".replace("$1", featureAbsoluteURL(f))
-          + htmlEncodedBasename(f) + "&nbsp;"
+          + htmlEncodedBasename(f)
+          + (c.actualTypeParameters().size() > 0 ? "&nbsp;" : "")
           + c.actualTypeParameters().stream().map(at -> htmlEncodeNbsp(at.asString())).collect(Collectors.joining(", ")) + "</a>";
       })
       .collect(Collectors.joining("<span class='mr-2 fd-keyword'>,</span>"));
@@ -151,14 +152,14 @@ public class Html extends ANY
    */
   private String summary(AbstractFeature af)
   {
-    var arguments = arguments(af);
     return "<div class='d-grid' style='grid-template-columns: 1fr min-content;'>"
       + "<div class='d-flex flex-wrap word-break-break-word'>"
       + "<a class='fd-anchor-sign mr-2' href='#" + htmlID(af) + "'>§</a>"
       + anchor(af)
-      + arguments + "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>"
-      + anchor(af.resultType())
+      + arguments(af)
       + inherited(af)
+      + (Util.Kind.classify(af) == Util.Kind.Other ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchor(af.resultType()) : "")
+      + (Util.Kind.classify(af) == Util.Kind.Other ? "" : "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>")
       // fills remaining space and set cursor pointer
       // to indicate that this area expands revealing a summary
       + "<div class='cursor-pointer flex-grow-1'></div>"
@@ -494,14 +495,14 @@ public class Html extends ANY
   {
     if (f.arguments()
          .stream()
-         .filter(a -> a.isTypeParameter() || f.visibility().featureVisibility() == Visi.PUB)
+         .filter(a -> a.isTypeParameter() || f.visibility().eraseTypeVisibility() == Visi.PUB)
          .count() == 0)
       {
         return "";
       }
     return "(" + f.arguments()
       .stream()
-      .filter(a -> a.isTypeParameter() || f.visibility().featureVisibility() == Visi.PUB)
+      .filter(a -> a.isTypeParameter() || f.visibility().eraseTypeVisibility() == Visi.PUB)
       .map(a ->
         htmlEncodedBasename(a) + "&nbsp;"
         + (a.isTypeParameter() ? typeArgAsString(a): anchor(a.resultType())))
