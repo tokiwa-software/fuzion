@@ -685,7 +685,7 @@ class LibraryOut extends ANY
       {
         lastPos = expressions(a._value, lastPos);
         lastPos = expressions(a._target, lastPos);
-        lastPos = exprKindAndPos(MirExprKind.Assign, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.Assign, lastPos, e.sourceRange());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Assign                                                                          |
@@ -700,7 +700,7 @@ class LibraryOut extends ANY
     else if (e instanceof Box b)
       {
         lastPos = expressions(b._value, lastPos);
-        lastPos = exprKindAndPos(MirExprKind.Box, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.Box, lastPos, e.sourceRange());
       }
     else if (e instanceof AbstractBlock b)
       {
@@ -725,7 +725,7 @@ class LibraryOut extends ANY
       }
     else if (e instanceof AbstractConstant c)
       {
-        lastPos = exprKindAndPos(MirExprKind.Const, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.Const, lastPos, e.sourceRange());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Constant                                                                        |
@@ -748,7 +748,7 @@ class LibraryOut extends ANY
       {
         if (!ac.type().feature().isUniverse())
           {
-            lastPos = exprKindAndPos(MirExprKind.Current, lastPos, e.pos());
+            lastPos = exprKindAndPos(MirExprKind.Current, lastPos, e.sourceRange());
           }
       }
     else if (e instanceof AbstractCall c)
@@ -758,7 +758,7 @@ class LibraryOut extends ANY
           {
             lastPos = expressions(a, lastPos);
           }
-        lastPos = exprKindAndPos(MirExprKind.Call, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.Call, lastPos, e.sourceRange());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Call                                                                            |
@@ -823,7 +823,7 @@ class LibraryOut extends ANY
     else if (e instanceof AbstractMatch m)
       {
         lastPos = expressions(m.subject(), lastPos);
-        lastPos = exprKindAndPos(MirExprKind.Match, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.Match, lastPos, e.sourceRange());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Match                                                                           |
@@ -877,7 +877,7 @@ class LibraryOut extends ANY
     else if (e instanceof Tag t)
       {
         lastPos = expressions(t._value, lastPos);
-        lastPos = exprKindAndPos(MirExprKind.Tag, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.Tag, lastPos, e.sourceRange());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Tag                                                                             |
@@ -891,7 +891,7 @@ class LibraryOut extends ANY
       }
     else if (e instanceof Env)
       {
-        lastPos = exprKindAndPos(MirExprKind.Env, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.Env, lastPos, e.sourceRange());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Env                                                                             |
@@ -915,7 +915,7 @@ class LibraryOut extends ANY
       }
     else if (e instanceof InlineArray ia)
       {
-        lastPos = exprKindAndPos(MirExprKind.InlineArray, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.InlineArray, lastPos, e.sourceRange());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | InlineArray                                                                     |
