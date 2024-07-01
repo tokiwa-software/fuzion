@@ -925,46 +925,46 @@ public ryū(public T type : float) is
 
     if (dm_is_trailing_zeros || dv_is_trailing_zeros)
       for last_removed_digit := i64 0, dv % 10
-          dm_is_trailing_zeros := dm_is_trailing_zeros, dm_is_trailing_zeros & (dm % 10 = 0)
-          dv_is_trailing_zeros := dv_is_trailing_zeros, dv_is_trailing_zeros & (last_removed_digit = 0)
-          dp := dp, dp / 10
-          dv := dv, dv / 10
-          dm := dm, dm / 10
+          dm_is_trailing_zeros0 := dm_is_trailing_zeros, dm_is_trailing_zeros0 & (dm % 10 = 0)
+          dv_is_trailing_zeros0 := dv_is_trailing_zeros, dv_is_trailing_zeros0 & (last_removed_digit = 0)
+          dp0 := dp, dp0 / 10
+          dv0 := dv, dv0 / 10
+          dm0 := dm, dm0 / 10
           removed := i64 0, removed+1
-      while ((dp / 10 > dm / 10) && require_more_digits dp)
+      while ((dp0 / 10 > dm0 / 10) && require_more_digits dp0)
       else
-        t := dm_is_trailing_zeros && rounding_mode.accept_lower_bound even
+        t := dm_is_trailing_zeros0 && rounding_mode.accept_lower_bound even
 
-        for dv_is_trailing_zeros := dv_is_trailing_zeros, dv_is_trailing_zeros & last_removed_digit = 0
-            last_removed_digit := last_removed_digit, dv % 10
-            dp := dp, dp / 10
-            dv := dv, dv / 10
-            dm := dm, dm / 10
-            removed := removed, removed+1
-        while t && (dm % 10 = 0) && require_more_digits dp
+        for dv_is_trailing_zeros1 := dv_is_trailing_zeros0, dv_is_trailing_zeros1 & last_removed_digit0 = 0
+            last_removed_digit0 := last_removed_digit, dv1 % 10
+            dp1 := dp0, dp1 / 10
+            dv1 := dv0, dv1 / 10
+            dm1 := dm0, dm1 / 10
+            removed0 := removed, removed0+1
+        while t && (dm % 10 = 0) && require_more_digits dp1
         else
 
-          outside_bounds => dv = dm && !(dm_is_trailing_zeros && rounding_mode.accept_lower_bound even)
+          outside_bounds => dv1 = dm1 && !(dm_is_trailing_zeros0 && rounding_mode.accept_lower_bound even)
 
-          is_not_point_five_exactly := !(dv_is_trailing_zeros && last_removed_digit = 5 && dv % 2 = 0)
-          must_round_up => (is_not_point_five_exactly && last_removed_digit >= 5)
+          is_not_point_five_exactly := !(dv_is_trailing_zeros1 && last_removed_digit0 = 5 && dv1 % 2 = 0)
+          must_round_up => (is_not_point_five_exactly && last_removed_digit0 >= 5)
 
           # output
-          (dv + (if outside_bounds || must_round_up then 1 else 0),
+          (dv1 + (if outside_bounds || must_round_up then 1 else 0),
           # output length
-           vplength - removed,
+           vplength - removed0,
            exponent)
 
     else
       for last_removed_digit := i64 0, dv % 10
-          dp := dp, dp / 10
-          dv := dv, dv / 10
-          dm := dm, dm / 10
+          dp0 := dp, dp0 / 10
+          dv0 := dv, dv0 / 10
+          dm0 := dm, dm0 / 10
           removed := i64 0, removed+1
-      while ((dp / 10 > dm / 10) && require_more_digits dp)
+      while ((dp0 / 10 > dm0 / 10) && require_more_digits dp0)
       else
         # output
-        (dv + (if dv = dm || (last_removed_digit >= 5) then 1 else 0),
+        (dv0 + (if dv0 = dm0 || (last_removed_digit >= 5) then 1 else 0),
         # output length
          vplength - removed,
          exponent)
@@ -979,9 +979,9 @@ public ryū(public T type : float) is
 
     # convert output to string
     output_as_string(output i64, output_length i64) String =>
-      for o := output, o / 10
+      for o := output_as_string.this.output, o / 10
           s := "{o % 10}", "{o % 10}$s"
-          _ in (i64 1)..(output_length-1 )
+          _ in (i64 1)..(output_as_string.this.output_length-1 )
       do
       else
         s
@@ -990,8 +990,8 @@ public ryū(public T type : float) is
     scientific =>
       for str0 := "** internal error **", str
           idx in i64 1 .. output_length
-          output := output, output / 10
-          str := "{output % 10}", "{output % 10}" + (if idx = output_length then "." else "") + str
+          output0 := output, output0 / 10
+          str := "{output0 % 10}", "{output0 % 10}" + (if idx = output_length then "." else "") + str
       else
         "{str0}E{exponent}"
 
@@ -1005,8 +1005,8 @@ public ryū(public T type : float) is
         for str0 := "** internal error **", str
             idx in i64 0 .. output_length
             is_dot_pos := false, output_length - idx - 1 = exponent
-            output := output, if is_dot_pos then output else output / 10
-            str := "{output % 10}", (if is_dot_pos then "." else "{output % 10}") + str
+            output0 := output, if is_dot_pos then output0 else output0 / 10
+            str := "{output0 % 10}", (if is_dot_pos then "." else "{output0 % 10}") + str
         else
           str0
 

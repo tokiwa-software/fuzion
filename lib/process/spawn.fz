@@ -147,10 +147,10 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
     !process_and_args[0].contains_whitespace
   =>
     (spawn0 process_and_args.as_array).bind Process tup->
-      (pid, std_in, std_out, std_err) := tup
+      (pid, in0, out, err) := tup
 
       # NYI make sure std_out, std_err are not used anymore
-      p := Process pid nil std_out std_err
+      p := Process pid nil out err
 
       # NYI should wire pipe directly to process
       # NYI this works only when pipes buffer is large enough for
@@ -161,11 +161,11 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
           for p1rb := std_out_read_provider.read pipe_buffer_size
           while
             match p1rb
-              s array u8 => (write_bytes std_in s).ok
+              s array u8 => (write_bytes in0 s).ok
               * => false
 
         # NYI error handling
-        _ := fuzion.sys.pipe.close std_in
+        _ := fuzion.sys.pipe.close in0
         _ := fuzion.sys.pipe.close Process.this.std_out
         _ := fuzion.sys.pipe.close Process.this.std_err
 
