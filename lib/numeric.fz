@@ -33,50 +33,50 @@ module:public numeric : property.hashable, property.orderable is
   # basic operations: 'prefix +' (identity)
   public prefix + numeric.this
     pre
-      safety: +!numeric.this
+      debug: +!numeric.this
   => numeric.this
 
   # basic operations: 'prefix -' (negation)
   public prefix - numeric.this
     pre
-      safety: -!numeric.this
+      debug: -!numeric.this
   => numeric.this.zero - numeric.this
 
   # basic operations: 'infix +' (addition)
   public infix +  (other numeric.this) numeric.this
     pre
-      safety: (numeric.this +! other)
+      debug: (numeric.this +! other)
   => abstract
 
   # basic operations: 'infix -' (subtraction)
   public infix -  (other numeric.this) numeric.this
     pre
-      safety: (numeric.this -! other)
+      debug: (numeric.this -! other)
   => abstract
 
   # basic operations: 'infix *' (multiplication)
   public infix *  (other numeric.this) numeric.this
     pre
-      safety: (numeric.this *! other)
+      debug: (numeric.this *! other)
   => abstract
 
   # basic operations: 'infix /' (division)
   public infix /  (other numeric.this) numeric.this
     pre
-      safety: (numeric.this /! other)
+      debug: (numeric.this /! other)
   => abstract
 
   # basic operations: 'infix %' (division remainder)
   public infix %  (other numeric.this) numeric.this
     pre
-      safety: (numeric.this %! other)
+      debug: (numeric.this %! other)
   => abstract
 
   # basic operations: 'infix **' (exponentiation)
   public infix ** (other numeric.this) numeric.this
     pre
-      safety: (numeric.this **! other)
-      safety: (other ≥ numeric.this.zero)
+      debug: (numeric.this **! other)
+      debug: (other ≥ numeric.this.zero)
   => abstract
 
 
@@ -105,7 +105,7 @@ module:public numeric : property.hashable, property.orderable is
   public infix *? (other numeric.this) num_option numeric.this => numeric.this * other
   public infix **?(other numeric.this) num_option numeric.this
     pre
-      safety: (other ≥ numeric.this.zero)
+      debug: (other ≥ numeric.this.zero)
   => abstract
 
   # saturating  operations
@@ -115,7 +115,7 @@ module:public numeric : property.hashable, property.orderable is
   public infix *^ (other numeric.this) numeric.this => numeric.this * other
   public infix **^(other numeric.this) numeric.this
     pre
-      safety: (other ≥ numeric.this.zero)
+      debug: (other ≥ numeric.this.zero)
   => abstract
 
 
