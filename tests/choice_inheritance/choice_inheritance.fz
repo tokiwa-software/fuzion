@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 # This file is part of the Fuzion language implementation.
 #
 # The Fuzion language implementation is free software: you can redistribute it
@@ -19,32 +17,16 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of record_simple_example_c.sh script, records expected output of
-#  simple test using C backend
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test
 #
 # -----------------------------------------------------------------------
 
-set -euo pipefail
+choice_inheritance is
 
-# Run the fuzion example given as an argument $2 using the C backend and store
-# the stdout/stderr output to $2.expected_out_c and $2.expected_err_c.
-#
-# The fz command is given as argument $1
-#
-# In case file $2.skip exists, do not run the example
-#
+  str_opt : option String is
 
-SCRIPTPATH="$(dirname "$(readlink -f "$0")")"
-CURDIR=$("$SCRIPTPATH"/_cur_dir.sh)
+  a str_opt := "Hello"
+  b str_opt := nil
 
-
-if [ -f "$2".skip ]; then
-    echo "SKIPPED $2"
-else
-    ( (FUZION_DISABLE_ANSI_ESCAPES=true $1 -c "$2" -o=testbin && ./testbin) 2>"$2".expected_err_c | head -n 10000) >"$2".expected_out_c || true # tail may result in 141
-    sed -i "s|${CURDIR//\\//}/|--CURDIR--/|g" "$2".expected_err_c
-    rm -rf testbin
-    echo "RECORDED $2"
-fi
+  say a
+  say b

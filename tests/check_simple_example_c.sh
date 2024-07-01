@@ -61,15 +61,18 @@ else
 
     rm -f testbin
 
-    EXIT_CODE=$( ( (FUZION_DISABLE_ANSI_ESCAPES=true FUZION_JAVA_OPTIONS="${FUZION_JAVA_OPTIONS="-Xss${FUZION_JAVA_STACK_SIZE=5m}"} ${OPT:-}" $1 -c "$2" -o=testbin                && ./testbin) 2>tmp_err.txt | head -n 100) > tmp_out.txt; echo $?)
+    EXIT_CODE=$( ( (FUZION_DISABLE_ANSI_ESCAPES=true FUZION_JAVA_OPTIONS="${FUZION_JAVA_OPTIONS="-Xss${FUZION_JAVA_STACK_SIZE=5m}"} ${OPT:-}" $1 -c "$2" -o=testbin                && ./testbin) 2>tmp_err.txt | head -n 10000) > tmp_out.txt; echo $?)
 
-    if [ "$EXIT_CODE" -ne 0 ] && [ "$EXIT_CODE" -ne 1 ]; then
-        echo "unexpected exit code"
+    # pipe to head may result in exit code 141 -- broken pipe.
+    if [ "$EXIT_CODE" -ne 0   ] &&
+       [ "$EXIT_CODE" -ne 1   ] &&
+       [ "$EXIT_CODE" -ne 141 ]; then
+        echo "unexpected exit code $EXIT_CODE"
         exit "$EXIT_CODE"
     fi
 
     # This version dumps stderr output if fz was successful, which essentially ignores C compiler warnings:
-    # (($1 -c $2 -o=testbin 2>tmp_err0.txt && ./testbin  2>tmp_err0.txt | head -n 100) >tmp_out.txt || true # tail my result in 141
+    # (($1 -c $2 -o=testbin 2>tmp_err0.txt && ./testbin  2>tmp_err0.txt | head -n 10000) >tmp_out.txt || true # tail may result in 141
 
     sed -i "s|${CURDIR//\\//}/|--CURDIR--/|g" tmp_err.txt
 
@@ -81,7 +84,7 @@ else
     if [ -f "$2".expected_err_c ]; then
         experr=$2.expected_err_c
     fi
-    head -n 100 "$expout" >tmp_exp_out.txt
+    head -n 10000 "$expout" >tmp_exp_out.txt
     expout=tmp_exp_out.txt
 
     # NYI: workaround for #2586

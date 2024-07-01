@@ -81,19 +81,21 @@ module:public numeric : property.hashable, property.orderable is
 
 
   # preconditions for basic operations: true if the operation's result is
-  # representable for the given values
+  # representable and defined for the given values
   #
-  # This does not check if the operation is defined (i.e, it
-  # returns true for '3/!0' or '0**!0'.)
+  # default implementations all return `true` such that children have to
+  # redefine these only for partial operations such as those resulting in
+  # an overflow or that are undefined like a division by zero for most
+  # types.
   #
   public prefix +! bool => true
-  public prefix -! bool => abstract
-  public infix +! (other numeric.this) bool => abstract
-  public infix -! (other numeric.this) bool => abstract
-  public infix *! (other numeric.this) bool => abstract
-  public infix /! (other numeric.this) bool => abstract
-  public infix %! (other numeric.this) bool => abstract
-  public infix **!(other numeric.this) bool => abstract
+  public prefix -! bool => true
+  public infix +! (other numeric.this) bool => true
+  public infix -! (other numeric.this) bool => true
+  public infix *! (other numeric.this) bool => true
+  public infix /! (other numeric.this) bool => true
+  public infix %! (other numeric.this) bool => true
+  public infix **!(other numeric.this) bool => true
 
 
   # overflow checking operations

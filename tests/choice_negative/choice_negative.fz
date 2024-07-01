@@ -98,60 +98,56 @@ choice_negative is
     B : A(3) is
     C : choice i32 String bool, B is // 18. should flag an error: choice type must not have any fields
 
-  leaf1 is
-    A : choice f32 f64 is
-    B : A is // 19. should flag an error: choice type must be leaf
-
   args1 is
-    A : choice i32 i32 is // 20. should flag an error: generic args to choice must be different
+    A : choice i32 i32 is // 19. should flag an error: generic args to choice must be different
 
   args2 is
-    x choice i32 i32 := any // 21. should flag an error: generic args to choice must be different
+    x choice i32 i32 := any // 20. should flag an error: generic args to choice must be different
 
   args3 is
-    x i32 | i32 := any  // 22. should flag an error: generic args to choice must be different
+    x i32 | i32 := any  // 21. should flag an error: generic args to choice must be different
 
   args4 is
     S ref is
     R ref : S is
-    A : choice R S is // 23. should flag an error: generic args to choice must be different
+    A : choice R S is // 22. should flag an error: generic args to choice must be different
 
   args5 is
     S ref is
     R ref : S is
-    x choice R S := any  // 24. should flag an error: generic args to choice must be different
+    x choice R S := any  // 23. should flag an error: generic args to choice must be different
 
   args6 is
     S ref is
     R ref : S is
-    x R | S := any  // 25. should flag an error: generic args to choice must be different
+    x R | S := any  // 24. should flag an error: generic args to choice must be different
 
   outer1(x i32) is
     A : choice i64 f32 is
       f is
-        y := x // 26. should flag an error: access to closure not permitted in choice
+        y := x // 25. should flag an error: access to closure not permitted in choice
 
   outer2(x i32) is
     A is
       f is
-        y := x // 27. should flag an error: access to closure not permitted in choice
+        y := x // 26. should flag an error: access to closure not permitted in choice
     B : A, choice i64 f32 is
 
   impl1 is
-    x bool : choice i64 bool := true  // 28. should flag an error, choice feature must not be field
+    x bool : choice i64 bool := true  // 27. should flag an error, choice feature must not be field
 
   impl2 is
-    x : choice i64 bool := true  // 29. should flag an error, choice feature must not be field
+    x : choice i64 bool := true  // 28. should flag an error, choice feature must not be field
   impl3 is
-    x bool : choice i64 bool := any  // 30. should flag an error, choice feature must not be field
+    x bool : choice i64 bool := any  // 29. should flag an error, choice feature must not be field
   impl4 is
-    x : choice i64 bool => 3  // 31. should flag an error, choice feature must not contain code
+    x : choice i64 bool => 3  // 30. should flag an error, choice feature must not contain code
   impl5 is
-    x : choice i64 bool is say "Hello" // 32. should flag an error, choice feature must not contain code
+    x : choice i64 bool is say "Hello" // 31. should flag an error, choice feature must not contain code
   impl6 is
-    x : choice i64 bool is abstract  // 33. should flag an error, choice feature must not be abstract
+    x : choice i64 bool is abstract  // 32. should flag an error, choice feature must not be abstract
   impl7 is
-     x : choice i64 bool is intrinsic  // 34. should flag an error, choice feature must not be intrinsic
+     x : choice i64 bool is intrinsic  // 33. should flag an error, choice feature must not be intrinsic
   impl8 is
     x : choice i64 bool is  // ok
   impl9 is
@@ -159,11 +155,11 @@ choice_negative is
 
   issue23 is
 
-    match 42   // 35. should flag an error, match subject must be choice
+    match 42   // 34. should flag an error, match subject must be choice
       TRUE => say "T"
       FALSE => say "F"
 
-    j := 42 ? TRUE => true   // 36. should flag an error, match subject must be choice
+    j := 42 ? TRUE => true   // 35. should flag an error, match subject must be choice
             | FALSE => false
 
 
@@ -171,5 +167,5 @@ choice_negative is
     A ref is
     B ref is
     C ref : B, A is
-    t1 choice A B := C  // 37. should flag an error, Ambiguous assignment to ...
-    t2 choice A B => C  // 38. should flag an error, Ambiguous assignment to ...
+    t1 choice A B := C  // 36. should flag an error, Ambiguous assignment to ...
+    t2 choice A B => C  // 37. should flag an error, Ambiguous assignment to ...

@@ -103,7 +103,6 @@ public class Runtime extends ANY
    * that package.  We do not want to bundle the backend classes with a
    * stand-alone application that needs the runtime classes, so this is copied.
    */
-  public static final String PRECONDITION_NAME = "fzPrecondition";
   public static final String ROUTINE_NAME      = "fzRoutine";
   public static final String CLASS_PREFIX      = "fzC_";
   public static final String CLASS_PREFIX_WITH_ID = "fzC__L";
@@ -661,17 +660,6 @@ public class Runtime extends ANY
 
 
   /**
-   * Called after a precondition/postcondition check failed
-   *
-   * @param msg a detail message explaining what failed
-   */
-  public static void contract_fail(String msg)
-  {
-    Errors.fatal("CONTRACT FAILED: " + msg, stackTrace());
-  }
-
-
-  /**
    * Get the message of last exception thrown in the current thread.
    */
   public static String getException()
@@ -711,15 +699,14 @@ public class Runtime extends ANY
     for (var s : t.getStackTrace())
       {
         var m = s.getMethodName();
-        var r = switch (m)
+        var show = switch (m)
           {
           case "main",
-               ROUTINE_NAME      -> "";
-          case PRECONDITION_NAME -> "precondition of ";
-          default -> null;
+               ROUTINE_NAME -> true;
+          default           -> false;
           };
         var cl = s.getClassName();
-        if (r != null && cl.startsWith(CLASS_PREFIX))
+        if (show && cl.startsWith(CLASS_PREFIX))
           {
             int start;
             if (cl.startsWith(CLASS_PREFIX_WITH_ID))
@@ -731,8 +718,7 @@ public class Runtime extends ANY
               {
                 start = CLASS_PREFIX.length();
               }
-            cl = cl.substring(start);
-            var str = r + cl;
+            var str = cl.substring(start);
             if (str.equals(last))
               {
                 count++;
