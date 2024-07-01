@@ -941,7 +941,7 @@ public ryū(public T type : float) is
             dv1 := dv0, dv1 / 10
             dm1 := dm0, dm1 / 10
             removed0 := removed, removed0+1
-        while t && (dm0 % 10 = 0) && require_more_digits dp1
+        while t && (dm1 % 10 = 0) && require_more_digits dp1
         else
 
           outside_bounds => dv1 = dm1 && !(dm_is_trailing_zeros0 && rounding_mode.accept_lower_bound even)
