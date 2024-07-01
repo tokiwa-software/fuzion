@@ -1,12 +1,12 @@
 install our own fault handler that prints message and tries again:
 trying Type of 'i32'... trying Type of 'i64'... done: 2251799813685248
 a is 2
-*** This should fail: FAILED: >
+*** This should fail: FAILED: x > y
 c is 1
 p.f  3 3
 q.f  3 3
 q.f  0 0
-*** This should fail: FAILED: =
+*** This should fail: FAILED: x = 0
 c111.f1 1: should be ok  OK 1
 c111.f1 0: should be ok  OK 0
 c111.f2 1: should be ok  OK 1
@@ -108,17 +108,17 @@ c171.f7 0: should be ok  OK 0
 c112.f1 1: should be ok  OK 1
 c112.f1 0: should be ok  OK 0
 c112.f2 1: should be ok  OK 1
-c112.f2 0: should fail   FAILED >
+c112.f2 0: should fail   FAILED x > 0
 c112.f3 1: should be ok  OK 1
 c112.f3 0: should be ok  OK 0
 c112.f4 1: should be ok  OK 1
 c112.f4 0: should be ok  OK 0
 c112.f5 1: should be ok  OK 1
-c112.f5 0: should fail   FAILED >
+c112.f5 0: should fail   FAILED x > 0
 c112.f6 1: should be ok  OK 1
-c112.f6 0: should fail   FAILED >
+c112.f6 0: should fail   FAILED x > 0
 c112.f7 1: should be ok  OK 1
-c112.f7 0: should fail   FAILED >
+c112.f7 0: should fail   FAILED x > 0
 c122.f1 1: should be ok  OK 1
 c122.f1 0: should be ok  OK 0
 c122.f2 1: should be ok  OK 1
@@ -128,9 +128,9 @@ c122.f3 0: should be ok  OK 0
 c122.f4 1: should be ok  OK 1
 c122.f4 0: should be ok  OK 0
 c122.f5 1: should be ok  OK 1
-c122.f5 0: should fail   FAILED >
+c122.f5 0: should fail   FAILED x > 0
 c122.f6 1: should be ok  OK 1
-c122.f6 0: should fail   FAILED >
+c122.f6 0: should fail   FAILED x > 0
 c122.f7 1: should be ok  OK 1
 c122.f7 0: should be ok  OK 0
 c132.f1 1: should be ok  OK 1
@@ -142,15 +142,15 @@ c132.f3 0: should be ok  OK 0
 c132.f4 1: should be ok  OK 1
 c132.f4 0: should be ok  OK 0
 c132.f5 1: should be ok  OK 1
-c132.f5 0: should fail   FAILED >
+c132.f5 0: should fail   FAILED x > 0
 c132.f6 1: should be ok  OK 1
 c132.f6 0: should be ok  OK 0
 c132.f7 1: should be ok  OK 1
-c132.f7 0: should fail   FAILED >
+c132.f7 0: should fail   FAILED x > 0
 c142.f1 1: should be ok  OK 1
 c142.f1 0: should be ok  OK 0
 c142.f2 1: should be ok  OK 1
-c142.f2 0: should fail   FAILED >
+c142.f2 0: should fail   FAILED x > 0
 c142.f3 1: should be ok  OK 1
 c142.f3 0: should be ok  OK 0
 c142.f4 1: should be ok  OK 1
@@ -158,19 +158,19 @@ c142.f4 0: should be ok  OK 0
 c142.f5 1: should be ok  OK 1
 c142.f5 0: should be ok  OK 0
 c142.f6 1: should be ok  OK 1
-c142.f6 0: should fail   FAILED >
+c142.f6 0: should fail   FAILED x > 0
 c142.f7 1: should be ok  OK 1
 c142.f7 0: should be ok  OK 0
 c152.f1 1: should be ok  OK 1
 c152.f1 0: should be ok  OK 0
 c152.f2 1: should be ok  OK 1
-c152.f2 0: should fail   FAILED >
+c152.f2 0: should fail   FAILED x > 0
 c152.f3 1: should be ok  OK 1
 c152.f3 0: should be ok  OK 0
 c152.f4 1: should be ok  OK 1
 c152.f4 0: should be ok  OK 0
 c152.f5 1: should be ok  OK 1
-c152.f5 0: should fail   FAILED >
+c152.f5 0: should fail   FAILED x > 0
 c152.f6 1: should be ok  OK 1
 c152.f6 0: should be ok  OK 0
 c152.f7 1: should be ok  OK 1
@@ -178,7 +178,7 @@ c152.f7 0: should be ok  OK 0
 c162.f1 1: should be ok  OK 1
 c162.f1 0: should be ok  OK 0
 c162.f2 1: should be ok  OK 1
-c162.f2 0: should fail   FAILED >
+c162.f2 0: should fail   FAILED x > 0
 c162.f3 1: should be ok  OK 1
 c162.f3 0: should be ok  OK 0
 c162.f4 1: should be ok  OK 1
@@ -188,7 +188,7 @@ c162.f5 0: should be ok  OK 0
 c162.f6 1: should be ok  OK 1
 c162.f6 0: should be ok  OK 0
 c162.f7 1: should be ok  OK 1
-c162.f7 0: should fail   FAILED >
+c162.f7 0: should fail   FAILED x > 0
 c172.f1 1: should be ok  OK 1
 c172.f1 0: should be ok  OK 0
 c172.f2 1: should be ok  OK 1
@@ -200,9 +200,9 @@ c172.f4 0: should be ok  OK 0
 c172.f5 1: should be ok  OK 1
 c172.f5 0: should be ok  OK 0
 c172.f6 1: should be ok  OK 1
-c172.f6 0: should fail   FAILED >
+c172.f6 0: should fail   FAILED x > 0
 c172.f7 1: should be ok  OK 1
-c172.f7 0: should fail   FAILED >
+c172.f7 0: should fail   FAILED x > 0
 c115.f1 1: should be ok  OK 1
 c115.f1 0: should be ok  OK 0
 c115.f2 1: should be ok  OK 1

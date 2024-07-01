@@ -1,46 +1,46 @@
 install our own fault handler that prints message and tries again:
-trying Type of 'i32'... postcondition failed: equals
+trying Type of 'i32'... postcondition failed: equals result-x x
 trying Type of 'u64'... 2251799813685248
 
 using convenience feature with `try` and `catch`
-trying Type of 'i32'... *** failed: equals ***
+trying Type of 'i32'... *** failed: equals result-x x ***
 trying Type of 'u64'... 2251799813685248
 
 using anonymous instance of convenience feature with `try` and `catch`
-trying Type of 'i32'... *** failed: equals ***
+trying Type of 'i32'... *** failed: equals result-x x ***
 trying Type of 'u64'... 2251799813685248
 
 using convenience feature for repeated `try` and `catch` using mutable var and recursion
-trying Type of 'i32'... *** failed: equals ***
-trying Type of 'i16'... *** failed: equals ***
+trying Type of 'i32'... *** failed: equals result-x x ***
+trying Type of 'i16'... *** failed: equals result-x x ***
 trying Type of 'i64'... 2251799813685248
 
 using convenience feature for repeated `try` and `catch` using loop
-trying Type of 'i32'... *** failed: equals ***
-trying Type of 'i16'... *** failed: equals ***
+trying Type of 'i32'... *** failed: equals result-x x ***
+trying Type of 'i16'... *** failed: equals result-x x ***
 trying Type of 'i64'... 2251799813685248
 
 using try_post code .catch code
-trying Type of 'i32'... *** failed: equals ***
+trying Type of 'i32'... *** failed: equals result-x x ***
 trying Type of 'u64'... 2251799813685248
 
 using try_post code || code
-trying Type of 'i32'... *** failed: equals ***
+trying Type of 'i32'... *** failed: equals result-x x ***
 trying Type of 'u64'... 2251799813685248
 
 using try_post for repeated `try` and `catch` using loop
-trying Type of 'i32'... *** failed: equals ***
-trying Type of 'i16'... *** failed: equals ***
+trying Type of 'i32'... *** failed: equals result-x x ***
+trying Type of 'i16'... *** failed: equals result-x x ***
 trying Type of 'i64'... 2251799813685248
 
 using fuzion API to catch post condition failure
-trying Type of 'i32'... *** failed: equals ***
-trying Type of 'i16'... *** failed: equals ***
+trying Type of 'i32'... *** failed: equals result-x x ***
+trying Type of 'i16'... *** failed: equals result-x x ***
 trying Type of 'i64'... 2251799813685248
 
 using fuzion API to catch fault
-trying Type of 'i32'... *** failed: postcondition equals ***
-trying Type of 'i16'... *** failed: postcondition equals ***
+trying Type of 'i32'... *** failed: postcondition equals result-x x ***
+trying Type of 'i16'... *** failed: postcondition equals result-x x ***
 trying Type of 'i64'... 2251799813685248
 
 using default post handler, will crash:
