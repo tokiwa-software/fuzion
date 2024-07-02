@@ -1,6 +1,10 @@
 ===  Test: write to stdin of process  ===
 0
 Hello from the other side.
+===  Test: write to stdin of process (new)  ===
+0
+Hello, World!
+
 ===  Test: read stdout of process  ===
 eecchhoo
 
