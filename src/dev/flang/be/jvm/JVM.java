@@ -475,7 +475,7 @@ should be avoided as much as possible.
       void prepare(JVM jvm)
       {
         Errors.showAndExit();
-        jvm._runner = new Runner();
+        jvm._runner = new Runner(()->jvm._names.methodNameToFuzionClazzNames());
         if (!jvm._options.enableUnsafeIntrinsics())
           {
             Runtime.disableUnsafeIntrinsics();
@@ -553,8 +553,22 @@ should be avoided as much as possible.
       }
       void finish(JVM jvm)
       {
+        var rsrc_name = Runtime.CLASS_NAME_TO_FUZION_CLAZZ_NAME;
+        var dir = jvm.classesDir();
+        try
+          {
+            var fp = dir.resolve(rsrc_name);
+            jvm._options.verbosePrintln(2, " + " + fp);
+            Files.write(fp, jvm._names.methodNameToFuzionClazzNames().getBytes(StandardCharsets.UTF_8));
+          }
+        catch (IOException io)
+          {
+            Errors.error("JVM backend I/O error",
+                         "While creating resource '" + rsrc_name + "' in '" + dir + "', received I/O error '" + io + "'");
+          }
+
         jvm.createJavaExecutable(String.format("-cp \"%s\" %s",
-                                               jvm.classesDir().toString() + File.pathSeparator +
+                                               dir.toString() + File.pathSeparator +
                                                jvm._options.fuzionHome().resolve("classes").normalize(),
                                                "fzC_universe"));
       }
@@ -623,6 +637,8 @@ should be avoided as much as possible.
                                                               .normalize()
                                                               .toAbsolutePath()));
               }
+            jvm._jos.putNextEntry(new JarEntry(Runtime.CLASS_NAME_TO_FUZION_CLAZZ_NAME));
+            jvm._jos.write(jvm._names.methodNameToFuzionClazzNames().getBytes(StandardCharsets.UTF_8));
           }
         catch (IOException io)
           {
