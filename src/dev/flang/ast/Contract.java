@@ -629,7 +629,7 @@ public class Contract extends ANY
     for (var c : dc)
       {
         var cond = c.cond;
-        var p = cond.pos();
+        var p = cond.sourceRange();
         if (preBool)
           {
             cc = cc == null ? cond
@@ -1035,7 +1035,7 @@ all of their redefinition to `true`. +
         var l = new List<Expr>();
         for (var c : fc._declared_postconditions)
           {
-            var p = c.cond.pos();
+            var p = c.cond.sourceRange();
             l.add(new If(p,
                          c.cond,
                          new Block(),
