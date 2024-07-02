@@ -487,7 +487,11 @@ public class LibraryFeature extends AbstractFeature
   }
 
 
-  // following used in MIR or later
+  /**
+   * The implementation of this feature.
+   *
+   * requires isRoutine() == true
+   */
   public Expr code()
   {
     if (PRECONDITIONS) require
