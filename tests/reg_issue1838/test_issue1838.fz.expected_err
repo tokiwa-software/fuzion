@@ -9,11 +9,11 @@ To solve this, change the expression to return a value of type 'bool'.
 --CURDIR--/test_issue1838.fz:27:7: error 2: Incompatible types in assignment
   pre c
 ------^
-assignment to field : 'test_pre.#prebool0_x.result'
+assignment to field : 'test_pre.pre x.result'
 expected formal type: 'bool'
 actual type found   : 'Any.type'
 assignable to       : 'Any.type'
 for value assigned  : 'c'
-To solve this, you could change the type of the target 'test_pre.#prebool0_x.result' to 'Any.type' or convert the type of the assigned value to 'bool'.
+To solve this, you could change the type of the target 'test_pre.pre x.result' to 'Any.type' or convert the type of the assigned value to 'bool'.
 
 2 errors.
