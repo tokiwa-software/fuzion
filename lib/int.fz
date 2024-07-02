@@ -86,9 +86,8 @@ is
   # divide this int by other
   public fixed redef infix /  (other int) int
   =>
-    # NYI: infix /.this.s not working
-    s0 := result_sign_mul_div other
-    int s0 n/other.n
+    s := result_sign_mul_div other
+    int (infix /).this.s n/other.n
 
 
   # modulo, returns the remainder of the
