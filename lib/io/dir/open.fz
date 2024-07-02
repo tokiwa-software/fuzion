@@ -34,6 +34,8 @@ module:public open(public T type,
   # returns the name of the next entry, or an error if the operation fails
   # for some reason (including that there are no more entries).
   #
+  # NOTES: current directory `.` and parent directory `..` are omitted.
+  #
   public read outcome String ! io.dir.read =>
     io.dir.read.read fd
 

@@ -88,17 +88,23 @@ void fzE_opendir(const char *pathname, int64_t * result) {
 char * fzE_readdir(intptr_t * dir) {
   struct dirent * d = readdir((DIR *)dir);
 
-  return (d == NULL) ? NULL : &(*d->d_name);
+  return (d == NULL) ? NULL : d->d_name;
 }
 
 
 int fzE_read_dir_has_next(intptr_t * dir) {
   DIR * dir1 = (DIR *)dir;
-  long pos = telldir(dir1);
-  struct dirent * dir2 = readdir(dir1);
+  struct dirent * entry = NULL;
+  long pos = -1;
+  do {
+    pos = telldir(dir1);
+  }
+  while ((entry = readdir(dir1)) != NULL &&
+         // skip dot and dot-dot paths.
+         (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0));
   seekdir(dir1, pos);
 
-  return dir2 == NULL ? 1 : 0;
+  return entry == NULL ? 1 : 0;
 }
 
 
