@@ -111,10 +111,6 @@ is
   # except for division where we need to
   # check for division by zero
 
-  public fixed redef prefix -! bool => true
-  public fixed redef infix +! (other int) bool => true
-  public fixed redef infix -! (other int) bool => true
-  public fixed redef infix *! (other int) bool => true
   public fixed redef infix /! (other int) bool => other != int.zero
   public fixed redef infix %! (other int) bool => other != int.zero
 
