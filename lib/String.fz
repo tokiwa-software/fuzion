@@ -229,7 +229,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
         parse_error "invalid integer digit for base $base"
       else
         hi0 := hi *? base;
-        # NYI: can not qualify call in lambda
+        # NYI: #3298 can not qualify call in lambda
         v := if (neg) hi0 -? t
               else     hi0 +? t
         match s
