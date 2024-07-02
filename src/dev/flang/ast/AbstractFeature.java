@@ -294,12 +294,17 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public abstract AbstractFeature outerRef();
 
 
-  // following used in MIR or later,
-  // requires isRoutine() == true
+  /**
+   * The implementation of this feature.
+   *
+   * requires isRoutine() == true
+   */
   public abstract Expr code();
 
 
-  // in FUIR or later
+  /**
+   * The contract of this feature.
+   */
   public abstract Contract contract();
 
 
