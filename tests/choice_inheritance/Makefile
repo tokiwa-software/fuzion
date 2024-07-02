@@ -13,19 +13,13 @@
 # Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 
-# nom.branch -- choice combinators
+# -----------------------------------------------------------------------
 #
-module branch is
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test Makefile
+#
+# -----------------------------------------------------------------------
 
-  # return result of first succeeding parser
-  public alt(I, R, O type, parser Sequence (Parser I R O)) Parser I R O =>
-    parser I R O (input ->
-      parser
-        .map (p -> p.call input)
-        .filter (r -> match r
-                        success => true
-                        error => false)
-        .first (error "alt: no parser successful")
-    )
-
-
+override NAME = choice_inheritance
+include ../simple.mk

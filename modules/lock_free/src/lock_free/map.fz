@@ -149,15 +149,15 @@ Main_Node(CTK type : property.hashable, CTV type, data choice (container_node CT
 
   id := unique_id
 
+  # a previous node that gets set during a generational aware compare and set
+  prev := concur.atomic (prev_node CTK CTV) p
+
   fixed redef type.equality(a, b Main_Node.this) bool =>
     a.id = b.id
 
   # compare and update `prev`
   cas_prev(o,n prev_node CTK CTV) =>
     prev.compare_and_set o n
-
-  # a previous node that gets set during a generational aware compare and set
-  prev := concur.atomic (prev_node CTK CTV) p
 
   redef as_string =>
     s := match data
@@ -271,7 +271,7 @@ root_node(CTK type : property.hashable, CTV type) : choice (Indirection_Node CTK
 private:public map(public CTK type : property.hashable,
                      public CTV type,
                      root concur.atomic (root_node CTK CTV),
-                     read_only bool) : container.Mutable_Map CTK CTV
+                     public read_only bool) : container.Mutable_Map CTK CTV
 is
 
   # the data structure as human readable string
@@ -526,7 +526,7 @@ is
     r := read_root
     res := lookup r k 0 nil r.gen
     match res
-      r restart =>
+      restart =>
         map.this[k]
       not_found =>
         nil
@@ -563,7 +563,7 @@ is
   public redef add(k CTK, v CTV) unit =>
     r := read_root
     match add r k v 0 nil r.gen
-      r restart =>
+      restart =>
         add k v
       ctrie_ok =>
 
@@ -605,7 +605,7 @@ is
   public redef remove(k CTK) option CTV =>
     r := read_root
     match remove r k 0 nil r.gen
-      r restart => remove k
+      restart => remove k
       n not_found => nil
       v CTV => v
 
@@ -660,15 +660,15 @@ is
 
   # take a snapshot of the ctrie
   public snapshot(read_only bool) map CTK CTV =>
-    root := read_root
-    expmain := gcas_read root
+    r := read_root
+    expmain := gcas_read r
     new_gen => unique_id
-    descriptor := Rdcss_Descriptor root expmain (copy_to_gen root new_gen)
+    descriptor := Rdcss_Descriptor r expmain (copy_to_gen r new_gen)
     if rdcss_root descriptor
-      # new ctrie by changing generation of root
-      map CTK CTV (concur.atomic (root_node CTK CTV) (copy_to_gen root new_gen)) read_only
+      # new ctrie by changing generation of r
+      map CTK CTV (concur.atomic (root_node CTK CTV) (copy_to_gen r new_gen)) snapshot.this.read_only
     else
-      snapshot read_only
+      snapshot snapshot.this.read_only
 
 
   # a snapshot of the ctrie as sequence auf key-value tuples

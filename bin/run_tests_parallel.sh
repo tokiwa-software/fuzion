@@ -55,6 +55,19 @@ run_with_lock(){
     )&
 }
 
+# source: https://stackoverflow.com/questions/45181115/portable-way-to-find-the-number-of-processors-cpus-in-a-shell-script
+portable_nproc() {
+    OS="$(uname -s)"
+    if [ "$OS" = "Linux" ]; then
+        NPROCS="$(nproc --all)"
+    elif [ "$OS" = "Darwin" ] || \
+         [ "$(echo "$OS" | grep -q BSD)" = "BSD" ]; then
+        NPROCS="$(sysctl -n hw.ncpu)"
+    else
+        NPROCS="$(getconf _NPROCESSORS_ONLN || echo 4)"  # glibc/coreutils fallback
+    fi
+    echo "$NPROCS"
+}
 
 # get nanoseconds, with workaround for macOS
 nanosec () {
@@ -80,7 +93,7 @@ rm -rf "$BUILD_DIR"/run_tests.failures
 # print collected results up until interruption
 trap "echo """"; cat ""$BUILD_DIR""/run_tests.results ""$BUILD_DIR""/run_tests.failures; exit 130;" INT
 
-N=$(($(nproc --all || echo 1)>6 ? 6 : $(nproc --all || echo 1)))
+N=$(($(portable_nproc) > 6 ? 6 : $(portable_nproc)))
 
 echo "$(echo "$TESTS" | wc -l) tests, running $N tests in parallel."
 

@@ -32,18 +32,9 @@
 public float : numeric is
 
 
-  # preconditions for basic operations: true if the operation's result is
-  # representable for the given values.  For IEEE_754, all operations are
-  # defined for all values.
+  # For IEEE_754, all operations are defined for all values.
+  # Hence there is no need to redefine any <op>! features.
   #
-  public redef prefix +! bool => true
-  public redef prefix -! bool => true
-  public redef infix +! (other float.this) bool => true
-  public redef infix -! (other float.this) bool => true
-  public redef infix *! (other float.this) bool => true
-  public redef infix /! (other float.this) bool => true
-  public redef infix %! (other float.this) bool => true
-  public redef infix **!(other float.this) bool => true
 
 
   # comparision

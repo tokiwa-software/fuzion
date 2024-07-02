@@ -294,12 +294,17 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public abstract AbstractFeature outerRef();
 
 
-  // following used in MIR or later,
-  // requires isRoutine() == true
+  /**
+   * The implementation of this feature.
+   *
+   * requires isRoutine() == true
+   */
   public abstract Expr code();
 
 
-  // in FUIR or later
+  /**
+   * The contract of this feature.
+   */
   public abstract Contract contract();
 
 
@@ -527,7 +532,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       {
         result = null;
       }
-    else if (this.compareTo(Types.resolved.f_choice) == 0)
+    else if (isBaseChoice())
       {
         result = generics().asActuals();
       }
@@ -540,14 +545,24 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             if (CHECKS) check
               (Errors.any() || p.calledFeature() != null);
 
-            if (p.calledFeature().isBaseChoice())
+            if (p.calledFeature().isChoice())
               {
                 if (lastP != null)
                   {
                     AstErrors.repeatedInheritanceOfChoice(p.pos(), lastP.pos());
                   }
                 lastP = p;
-                result = p.actualTypeParameters();
+                result = p.calledFeature().isBaseChoice()
+                  ? p.actualTypeParameters()
+                  : p.calledFeature().choiceGenerics();
+                // we need to do a hand down to get the actual choice generics
+                if (!p.calledFeature().isBaseChoice())
+                  {
+                    var arr = new AbstractType[result.size()];
+                    result.toArray(arr);
+                    var inh = this.findInheritanceChain(p.calledFeature());
+                    result = new List<>(AbstractFeature.handDownInheritance(null, inh, arr, this));
+                  }
               }
           }
       }
