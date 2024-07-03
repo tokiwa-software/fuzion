@@ -142,7 +142,7 @@ public class Call extends AbstractCall
    * and the partial application of another feature,
    * see @partiallyApplicableAlternative).
    */
-  private Expr _originalTarget = _target;
+  private final Expr _originalTarget;
 
 
   /**
@@ -415,6 +415,7 @@ public class Call extends AbstractCall
     this._unresolvedGenerics = generics;
     this._actuals = actuals;
     this._target = target;
+    this._originalTarget = _target;
     this._calledFeature = calledFeature;
     this._type = type;
   }
@@ -564,6 +565,7 @@ public class Call extends AbstractCall
     else if (_target != null)
       {
         _target.loadCalledFeature(res, thiz);
+        _target = res.resolveType(_target, thiz);
         result = targetTypeOrConstraint(res).feature();
       }
     else
