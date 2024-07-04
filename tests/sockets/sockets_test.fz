@@ -83,40 +83,44 @@ sockets_test is
   # client
   #
   client(family net.family.val, protocol net.protocol.val, host String, port u16, num i32) =>
+    lm : mutate is
+    lm.go ()->
+      rh : net.Request_Handler String is
 
-    rh : net.Request_Handler String is
+        redef handle_request =>
 
-      redef handle_request =>
+          chan => net.channel.env
 
-        chan => net.channel.env
+          req := ("GET / HTTP\n"
+            + "Host: $host\n"
+            + "Client: {sockets_test.client.this.num}\n\n")
 
-        req := ("GET / HTTP\n"
-          + "Host: $host\n"
-          + "Client: {sockets_test.client.this.num}\n\n")
+          w =>
+            _ := (io.buffered.writer lm).write req.utf8.as_array
+            _ := (io.buffered.writer lm).flush
 
-        res := "$protocol/$family-client {sockets_test.client.this.num}, write to $host:$port => {chan.write req.utf8}"
+          res := "$protocol/$family-client {sockets_test.client.this.num}, write to $host:$port => {w}"
 
-        match protocol
-          net.protocol.tcp =>
+          match protocol
+            net.protocol.tcp =>
 
-            rr := io.buffered.read_line_while (s -> !s.is_empty)
+              rr := io.buffered.read_line_while (s -> !s.is_empty)
 
-            res + "\n" + "$protocol/$family-client {sockets_test.client.this.num}, read lines from  $host:$port: >{rr}<"
+              res + "\n" + "$protocol/$family-client {sockets_test.client.this.num}, read lines from  $host:$port: >{rr}<"
 
-          # for UDP reading would block indefinitely
-          net.protocol.udp =>
-            # rest of udp datagram was discarded
-            res
+            # for UDP reading would block indefinitely
+            net.protocol.udp =>
+              # rest of udp datagram was discarded
+              res
 
-          * =>  panic "NI"
+            * =>  panic "NI"
 
 
-
-    match net.client rh family protocol host port
-      err error =>
-        say "$protocol/$family-client {sockets_test.client.this.num}, $host:$port: error establishing connection"
-      str String =>
-        say str
+      match net.client String lm rh family protocol host port
+        err error =>
+          say "$protocol/$family-client {sockets_test.client.this.num}, $host:$port: error establishing connection"
+        str String =>
+          say str
 
 
   # a number for protocol p to be used for
