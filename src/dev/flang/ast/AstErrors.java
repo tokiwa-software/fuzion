@@ -1096,7 +1096,7 @@ public class AstErrors extends ANY
   }
 
   static void ambiguousTargets(SourcePosition pos,
-                               FeatureAndOuter.Operation operation,
+                               String operation,
                                FeatureName fn,
                                List<FeatureAndOuter> targets)
   {

@@ -155,23 +155,6 @@ public class FeatureAndOuter extends ANY
   }
 
 
-  public static enum Operation {
-      CALL("call"), ASSIGNMENT("assignment");
-
-      final String opString;
-
-      private Operation(final String opString)
-      {
-        this.opString = opString;
-      }
-
-      public String toString()
-      {
-        return this.opString;
-      }
-  }
-
-
   /**
    * Filter the features in given list to find an exact match for name or
    * a candidate.
@@ -257,7 +240,7 @@ public class FeatureAndOuter extends ANY
    */
   static FeatureAndOuter filter(List<FeatureAndOuter> l,
                                 SourcePosition pos,
-                                Operation operation,
+                                String operation,
                                 FeatureName name,
                                 Predicate<AbstractFeature> isCandidate)
   {

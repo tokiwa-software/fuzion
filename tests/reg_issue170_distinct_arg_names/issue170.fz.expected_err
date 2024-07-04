@@ -21,4 +21,44 @@ Argument #2: 'e' is duplicate
 Argument #3: 'e' is duplicate 
 To solve this, rename the arguments to have unique names.
 
-2 errors.
+
+--CURDIR--/issue170.fz:24:20: error 3: Duplicate feature declaration
+say (a 3 4 5); a(b,b,b i32) => b+b+b
+-------------------^
+Feature that was declared repeatedly: 'a.b'
+originally declared at --CURDIR--/issue170.fz:24:18:
+say (a 3 4 5); a(b,b,b i32) => b+b+b
+-----------------^
+To solve this, consider renaming one of these two features, e.g., as 'bʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
+
+
+--CURDIR--/issue170.fz:24:22: error 4: Duplicate feature declaration
+say (a 3 4 5); a(b,b,b i32) => b+b+b
+---------------------^
+Feature that was declared repeatedly: 'a.b'
+originally declared at --CURDIR--/issue170.fz:24:20:
+say (a 3 4 5); a(b,b,b i32) => b+b+b
+-------------------^
+To solve this, consider renaming one of these two features, e.g., as 'bʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
+
+
+--CURDIR--/issue170.fz:25:22: error 5: Duplicate feature declaration
+say (c 3 4 5 6); c(d,d,e,e i32) => d+d+e+e
+---------------------^
+Feature that was declared repeatedly: 'c.d'
+originally declared at --CURDIR--/issue170.fz:25:20:
+say (c 3 4 5 6); c(d,d,e,e i32) => d+d+e+e
+-------------------^
+To solve this, consider renaming one of these two features, e.g., as 'dʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
+
+
+--CURDIR--/issue170.fz:25:26: error 6: Duplicate feature declaration
+say (c 3 4 5 6); c(d,d,e,e i32) => d+d+e+e
+-------------------------^
+Feature that was declared repeatedly: 'c.e'
+originally declared at --CURDIR--/issue170.fz:25:24:
+say (c 3 4 5 6); c(d,d,e,e i32) => d+d+e+e
+-----------------------^
+To solve this, consider renaming one of these two features, e.g., as 'eʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
+
+6 errors.

@@ -768,12 +768,12 @@ public class Call extends AbstractCall
             ff.resolveArgumentTypes(res);
           }
       }
-    var fo = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName,
+    var fo = FeatureAndOuter.filter(fos, pos(), "call", calledName,
       ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res));
     if (fo == null)
       { // handle implicit calls `f()` that expand to `f.call()`:
         fo =
-          FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> isSpecialWrtArgs(ff));
+          FeatureAndOuter.filter(fos, pos(), "call", calledName, ff -> isSpecialWrtArgs(ff));
       }
     return new Pair<>(fos, fo);
   }
@@ -850,7 +850,7 @@ public class Call extends AbstractCall
     var targetFeature = traverseOuter ? outer : targetFeature(res, outer);
     var fos = res._module.lookup(targetFeature, name, this, traverseOuter, false);
     var calledName = FeatureName.get(name, n);
-    result = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> ff.valueArguments().size() == n);
+    result = FeatureAndOuter.filter(fos, pos(), "call", calledName, ff -> ff.valueArguments().size() == n);
     return result;
   }
 
@@ -975,7 +975,7 @@ public class Call extends AbstractCall
       {
         var calledName = FeatureName.get(_name, _actuals.size()+1);
         var fo = res._module.lookup(thiz, _name, this, true, false);
-        var foa = FeatureAndOuter.filter(fo, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> mayMatchArgList(ff, true));
+        var foa = FeatureAndOuter.filter(fo, pos(), "call", calledName, ff -> mayMatchArgList(ff, true));
         if (foa != null)
           {
             _calledFeature = foa._feature;

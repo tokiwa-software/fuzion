@@ -96,17 +96,6 @@ public abstract class FeatureVisitor extends ANY
    */
   public boolean visitActualsLate() { return false; }
 
-  /**
-   * This can be redefined to suppress visiting Assigns that were created for
-   * assigning the initial values to fields. This is useful to avoid visiting the
-   * initial value of the field twice as long as the field declaration is still
-   * in the code.
-   *
-   * @return true iff Assigns creates for initial values of fields should be
-   * visited.  The default implementation always returns true.
-   */
-  boolean visitAssignFromFieldImpl() { return true; }
-
 }
 
 /* end of file */

@@ -32,7 +32,6 @@ import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Stack;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -2039,182 +2038,12 @@ A ((Choice)) declaration must not contain a result type.
     if (_impl.hasInitialValue())
       {
         /* add assignment of initial value: */
-        result = new Block
-          (new List<>
-           (this,
-            new Assign(res, _pos, this, _impl.expr(), outer)
-            {
-              public AbstractAssign visit(FeatureVisitor v, AbstractFeature outer)
-              {
-                /* During findFieldDefInScope, we check field uses in impl, but
-                 * we have to avoid doing this again in this assignment since a declaration
-                 *
-                 *   x := 3
-                 *   x := x + 1
-                 *
-                 * is converted into
-                 *
-                 *   Feature x with impl kind FieldDef, initialvalue 3
-                 *   x := 3
-                 *   Feature x with impl kind FieldDef, initialvalue x + 1
-                 *   x := x + 1
-                 *
-                 * so the second assignment would find the second x, which is
-                 * wrong.
-                 *
-                 * Alternatively, we could add this assignment in a later phase.
-                 */
-                return v.visitAssignFromFieldImpl()
-                  ? super.visit(v, outer)
-                  : this;
-              }
-            }
-            ));
+        result =
+          new Block
+            (new List<>(this,
+                        new Assign(res, _pos, this, _impl.expr(), outer)));
       }
     return result;
-  }
-
-
-  /**
-   * Find the field whose scope includes the given call or assignment.
-   *
-   * @param name the name of the feature
-   *
-   * @param use the call, assign or destructure we are trying to resolve
-   *
-   * @param inner the inner feature that contains call or assign, null if
-   * call/assign is part of current feature's code.
-   *
-   * @return in case we found a feature visible in the call's or assign's scope,
-   * this is the feature.
-   */
-  public Feature findFieldDefInScope(String name, Expr use, AbstractFeature inner)
-  {
-    if (PRECONDITIONS) require
-      (name != null,
-       use instanceof Call ||
-       use instanceof AbstractAssign ||
-       use instanceof Destructure,
-       inner == null || inner.outer() == this);
-
-    // curres[0]: currently visible field with name name
-    // curres[1]: result: will be set to currently visible field when call is found
-    var curres = new Feature[2];
-    var stack = new Stack<Feature>();
-
-    // start by making the arguments visible:
-    for (var f : _arguments)
-      {
-        if (f.featureName().baseName().equals(name))
-          {
-            curres[0] = (Feature) f;
-          }
-      }
-
-    var fv = new FeatureVisitor()
-      {
-
-        /* we do not want to check assignments of initial values, see above in
-         * resolveTypes() */
-        boolean visitAssignFromFieldImpl() { return false; }
-
-        void found()
-        {
-          if (PRECONDITIONS) require
-            (curres[1] == null || curres[1] == Types.f_ERROR);
-
-          curres[1] = curres[0];
-        }
-
-        public Call action(Call c, AbstractFeature outer)
-        {
-          if (c == use)
-            { // Found the call, so we got the result!
-              found();
-            }
-          else if (c == Call.ERROR && curres[1] == null)
-            {
-              curres[1] = Types.f_ERROR;
-            }
-          return c;
-        }
-        public void action(AbstractAssign a, AbstractFeature outer)
-        {
-          if (a == use)
-            { // Found the assign, so we got the result!
-              found();
-            }
-        }
-        public Expr action(Destructure d, AbstractFeature outer)
-        {
-          if (d == use)
-            { // Found the assign, so we got the result!
-              found();
-            }
-          return d;
-        }
-        public void actionBefore(Block b, AbstractFeature outer)
-        {
-          if (b._newScope)
-            {
-              stack.push(curres[0]);
-            }
-        }
-        public void  actionAfter(Block b, AbstractFeature outer)
-        {
-          if (b._newScope)
-            {
-              curres[0] = stack.pop();
-            }
-        }
-        public void actionBefore(AbstractCase c)
-        {
-          stack.push(curres[0]);
-        }
-        public void  actionAfter(AbstractCase c)
-        {
-          curres[0] = stack.pop();
-        }
-        public Expr action(Feature f, AbstractFeature outer)
-        {
-          if (f == inner)
-            {
-              found();
-            }
-          else
-            {
-              if (f._impl.hasInitialValue() &&
-                  outer.state().atLeast(State.RESOLVING_SUGAR1) /* iv otherwise already visited by Feature.visit(fv,outer) */)
-                {
-                  f._impl.visitExpr(this, f);
-                }
-            }
-          if (f.isField() && f.featureName().baseName().equals(name))
-            {
-              curres[0] = f;
-            }
-          return f;
-        }
-        public Expr action(Function  f, AbstractFeature outer)
-        {
-          if (inner != null && f._wrapper == inner)
-            {
-              found();
-            }
-          return f;
-        }
-      };
-
-    for (var p: _inherits)
-      {
-        p.visit(fv, this);
-      }
-
-    // then iterate the expressions making fields visible as they are declared
-    // and checking which one is visible when we reach call:
-    _impl.visit(fv, this);
-
-    return curres[1];
   }
 
 
@@ -2290,29 +2119,6 @@ A ((Choice)) declaration must not contain a result type.
    */
   boolean isFreeType()
   {
-    return false;
-  }
-
-  /**
-   * Is this feature declared in the main block of its outer feature?  Features
-   * declared in inner blocks are not visible to the outside.
-   */
-  public boolean isDeclaredInMainBlock()
-  {
-    if (_outer != null)
-      {
-        var b = _outer.code();
-        if (b instanceof Block)
-          {
-            for (var e : ((Block)b)._expressions)
-              {
-                if (e == this)
-                  {
-                    return true;
-                  }
-              }
-          }
-      }
     return false;
   }
 

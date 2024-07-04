@@ -236,6 +236,12 @@ public class FuzionConstants extends ANY
 
 
   /**
+   * Fields introduced by Loop.java
+   */
+  public static final String ITER_ARG_PREFIX = INTERNAL_NAME_PREFIX + "iter_arg_";
+
+
+  /**
    * Field introduced in, e.g.,
    *
    *   _ = f a
