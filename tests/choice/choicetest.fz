@@ -79,23 +79,32 @@ choicetest is
   )
 
 
-  yak "summing array using loop: "
-  sum := { for i := -1, i+1
-               s := 0, s + value_in_cents a[i]
-           until i ≥ a.length-1
-         }
-  say sum
+  sum_loop =>
+    yak "summing array using loop: "
+    sum := { for i := -1, i+1
+                 s := 0, s + value_in_cents a[i]
+             until i ≥ a.length-1
+           }
+    say sum
 
-  yak "summing array using iterator: "
-  sum := 0;
-  a.for_each (c -> set sum := sum + value_in_cents c)
-  say sum
+  sum_iter =>
+    yak "summing array using iterator: "
+    sum := 0;
+    a.for_each (c -> set sum := sum + value_in_cents c)
+    say sum
 
-  yak "summing array using iterator and inner feature: "
-  sum := 0;
-  a.for_each (c -> set sum := sum + c.value_in_cents)
-  say sum
+  sum_iter_inner =>
+    yak "summing array using iterator and inner feature: "
+    sum := 0;
+    a.for_each (c -> set sum := sum + c.value_in_cents)
+    say sum
 
-  say "summing array using monoid: {a.map c->c.value_in_cents
-                                     .fold i32.sum
-                                   }"
+  sum_monoid =>
+    say "summing array using monoid: {a.map c->c.value_in_cents
+                                      .fold i32.sum
+                                    }"
+
+  sum_loop
+  sum_iter
+  sum_iter_inner
+  sum_monoid

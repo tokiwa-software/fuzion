@@ -64,7 +64,7 @@ factors is
     say("factors of $m: " +
         (1..m & x -> m %% x))
 
-  factors(n i32) => (1..n).filter x->n%%x
+  factors(n0 i32) => (1..n0).filter x->n0%%x
   say factors(42)
 
   # add factors to stdlib's i32
