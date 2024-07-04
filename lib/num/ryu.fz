@@ -981,7 +981,7 @@ public ryū(public T type : float) is
     output_as_string(output i64, output_length i64) String =>
       for o := output_as_string.this.output, o / 10
           s := "{o % 10}", "{o % 10}$s"
-          _ in (i64 1)..(output_as_string.this.output_length-1 )
+          _ in (i64 1)..(output_as_string.this.output_length-1)
       do
       else
         s
