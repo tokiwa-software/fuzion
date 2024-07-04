@@ -80,8 +80,10 @@ add_simple_test is
           exit 1
 
         _ := io.dir.make "tests/$test"
-        _ := io.file.use unit "tests/$test/$test.fz" io.file.mode.write (()->io.file.open.write ((header false)+(test_body test)).utf8)
-        _ := io.file.use unit "tests/$test/Makefile" io.file.mode.write (()->io.file.open.write ((header true)+(makefile_body test)).utf8)
+        _ := io.file.use unit "tests/$test/$test.fz" io.file.mode.write ()->
+               io.file.open.write ((header false)+(test_body test)).utf8
+        _ := io.file.use unit "tests/$test/Makefile" io.file.mode.write ()->
+               io.file.open.write ((header true)+(makefile_body test)).utf8
 
       io.end_of_file => exit 1
 
