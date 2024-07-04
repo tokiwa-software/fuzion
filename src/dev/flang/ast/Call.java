@@ -2004,7 +2004,7 @@ public class Call extends AbstractCall
               {
                 if (p instanceof Call pc)
                   {
-                    pc.resolveTypes(res, outer);
+                    pc.resolveTypes(res, aft);
                   }
                 var pt = p.type();
                 if (pt != Types.t_ERROR)
