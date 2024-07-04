@@ -1851,7 +1851,7 @@ public class Call extends AbstractCall
       {
         if (frml instanceof Feature f)
           {
-            f.impl().addInitialCall(this, outer);
+            f.impl().addInitialCall(this);
           }
       }
   }
@@ -2168,6 +2168,20 @@ public class Call extends AbstractCall
 
 
   /**
+   * Has this call been resolved and if so, for which outer feature?
+   *
+   * @return the outer feature this has been resolved for or null if this has
+   * not been resolved yet.  Note that the result may change due to repeated
+   * resolution when this is moved to a different feature as a result of partial
+   * application, lazy evaluation or is part of a lamba expression.
+   */
+  public AbstractFeature resolvedFor()
+  {
+    return _resolvedFor;
+  }
+
+
+  /**
    * try resolving this call as dot-type-call
    *
    * On success _calledFeature and _target will be set.
@@ -2273,7 +2287,6 @@ public class Call extends AbstractCall
       {
         _generics = FormalGenerics.resolve(res, _generics, outer);
         _generics = _generics.map(g -> g.resolve(res, _calledFeature.outer()));
-
 
         propagateForPartial(res, outer);
         if (needsToInferTypeParametersFromArgs())
