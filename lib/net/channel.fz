@@ -63,3 +63,12 @@ module read_provider(desc i64) : io.Read_Provider is
     match fuzion.sys.net.read desc count
       a array => a
       e error => e
+
+
+
+# helper feature to create a read provider
+# for a given descriptor
+#
+module write_provider(desc i64) : io.Write_Provider is
+  redef write(data array u8) outcome unit =>
+    fuzion.sys.net.write desc data
