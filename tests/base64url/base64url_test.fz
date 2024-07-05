@@ -1,0 +1,124 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test
+#
+# -----------------------------------------------------------------------
+
+base64url_test is
+
+  # RFC 4618 test vectors
+  base64_test_vectors array (tuple String String) :=
+    [($"", ""),
+      ($"f", "Zg=="),
+      ("fo", "Zm8="),
+      ("foo", "Zm9v"),
+      ("foob", "Zm9vYg=="),
+      ("fooba", "Zm9vYmE="),
+      ("foobar", "Zm9vYmFy")]
+
+
+  # ENCODING
+
+  say """
+      Testing base64url encoding...
+      """
+
+
+  enc_test =>
+    for tup in base64_test_vectors do
+      (plain, code_expected) := tup
+      code_actual := encodings.base64url.encode plain.utf8
+      out :=
+        if code_actual = code_expected
+          outcome "ok"
+        else
+          error "encode '$plain' produced '$code_actual' but should have been $code_expected"
+          until !out.ok
+          out.err.as_string
+          else
+            "RFC 4648 test vectors are encoded correctly"
+  say enc_test
+  say ""
+
+  # testing for - and _ in output
+  say (encodings.base64url.encode [(u8 95), 31, 190, 251, 236, 87])
+  say (encodings.base64url.encode [(u8 95), 31, 255, 255, 252, 87])
+
+
+  # DECODING
+
+  say """
+      \n
+      Testing base64url decoding...
+      """
+  dec_test =>
+    for tup in base64_test_vectors do
+      (plain_expected, code) := tup
+      out :=
+        match encodings.base64url.decode code.utf8.as_array
+          arr list u8 =>
+            plain_actual := String.type.from_bytes arr
+            if plain_actual != plain_expected
+              error "decoding $code produced '$plain_actual' but should have been '$plain_expected'"
+            else
+              outcome "ok"
+          e error => error "error in test data"
+    until !out.ok
+      out.err.as_string
+    else
+      "RFC 4648 test vectors are decoded correctly"
+  say dec_test
+  say ""
+
+  broken_enc := ["Zm9🌏️Yg==",
+                 """
+                 Zm9v
+                 Yg==""",
+                 "Z=m9=vYg==",
+                 "Zm9vYg=",
+                 "Zm9vY==",
+                 "Zm9vY===",
+                 "Zm9v Yg==",
+                 "++++",
+                 "////",
+                 "Zm9v;Yg=="]
+
+  for t in broken_enc do
+    yak "$t: "
+    say (match encodings.base64url.decode_str t
+        arr list u8 => String.type.from_bytes arr
+        e error => e.as_string)
+  say ""
+
+  valid_enc := ["MTIzODkwQUJDWFlaYWJjeHl6Xzo7Pn48JSYkwqch",
+                "",
+                "----",
+                "____",
+                """
+                TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNldGV0dXIgc2FkaXBzY2luZyBlbGl0ciwg\
+                c2VkIGRpYW0gbm9udW15IGVpcm1vZCB0ZW1wb3IgaW52aWR1bnQgdXQgbGFib3JlIGV0IGRvbG9y\
+                ZSBtYWduYSBhbGlxdXlhbSBlcmF0LCBzZWQgZGlhIHZvbHVwdHVhLiBBdCB2ZXJvIGVvcyBldCBh\
+                Y2N1c2FtIGV0IGp1c3RvIGR1byBkb2xvcmVzIGV0IGVhIHJlYnVtLgoKU3RldCBjbGl0YSBrYXNk\
+                IGd1YmVyZ3Jlbiwgbm8gc2VhIHRha2ltYXRhIHNhbmN0dXMgZXN0IExvcmVtIGlwc3VtIGRvbG9y\
+                IHNpdCBhbWV0Lg=="""]
+  for t in valid_enc do
+    say (match encodings.base64url.decode_str t
+        arr list u8 => String.type.from_bytes arr
+        e error => e.as_string)

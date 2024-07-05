@@ -1,0 +1,8 @@
+# Base64url encoding and decoding as defined in RFC 4648
+# modification of base64 which is safer for URLs and file names
+# code alphabet uses '-' and '_' in addition to the alphanumeric characters
+public base64url : base64 is
+  redef get_alphabet => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_".as_codepoints.as_array
+  redef get_char_62 u8 => 45 # -
+  redef get_char_63 u8 => 95 # _
+  redef get_encoding_name => "base64url"

@@ -1,0 +1,155 @@
+# Base64 encoding and decoding as defined in RFC 4648
+public base64 is
+
+  # allows redefinition for base64url
+  module get_alphabet => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".as_codepoints.as_array
+  module get_char_62 u8 => 43 # +
+  module get_char_63 u8 => 47 # /
+  module get_encoding_name => "base64"
+
+  # NYI: compiler does currently not optimize features without arguments to treat them like fields
+  char_62_ascii := get_char_62
+  char_63_ascii := get_char_63
+  alphabet := get_alphabet
+  encoding_name := get_encoding_name
+
+  # Encodes a given byte sequence in base64, output length is padded to multiple of 4
+  public encode (data Sequence u8) String =>
+
+    # 0 -> 0; 1 -> 2; 2 -> 1
+    pad_size := (3 - data.count%3)%3     # length of the padding: number of padded zero bytes in input as well as number of '=' in output
+    in_len := data.count + pad_size      # length of zero padded input data
+
+    # this guarantees that input length is always multiple of 3
+    input := array u8 in_len i->if i < data.count then data[i] else 0
+
+    for b0 := 0, b0 + 3
+        b1 := 1, b1 + 3
+        b2 := 2, b2 + 3
+        res := "", res + block # the encoded input data
+    while b2 < in_len
+      # get 3 bytes (24 bits) and convert them into a number with 24 bits
+      n u32 := (input[b0].as_u32 << 16) + (input[b1].as_u32 << 8) + input[b2].as_u32
+
+      # extract four sextets from 24 bit number
+      n0 => ((n >> 18) & 63).as_i32
+      n1 => ((n >> 12) & 63).as_i32
+      n2 => ((n >> 6) & 63).as_i32
+      n3 => (n & 63).as_i32
+
+      # encode sextets
+      block := alphabet[n0] + alphabet[n1] + alphabet[n2] + alphabet[n3] # NYI: OPTIMIZATION: lots of string concatenation
+    else
+      res.substring 0 (res.byte_length - pad_size) + "=" * pad_size
+
+  # decodes a base64 string, decoding is strict as required by RFC 4648
+  # non alphabet characters, line breaks, missing padding cause errors
+  public decode_str(data String) =>
+    if data.byte_length != data.codepoint_length
+      # check for multi byte unicode chars
+      for c in data.as_codepoints
+          i in 0..
+          res :=
+            if (c.byte_length > 1)
+              error "character '$c' at position $i is not in $encoding_name alphabet"
+            else outcome true
+      until !res.ok
+        res.err
+      else error "this should never happen"
+
+    else
+      decode data.utf8.as_array
+
+
+  # decodes a sequence of ASCII characters, decoding is strict as required by RFC 4648
+  # non alphabet characters, line breaks, missing padding cause errors
+  public decode(data array u8) =>
+
+    # determine padding length '=' is 61 in ASCII
+    pad_size :=
+      if data.count > 1 && data[data.count - 1] = 61
+        if data[data.count - 2] = 61 then 2
+        else                              1
+      else                                0
+
+    alphabet_check :=
+      for b in data
+          i:=0, i+1
+      do
+        check_char :=
+          # base64 alphabet character
+          if (b >= 65 && b <= 90) || (b >= 97 && b <= 122) || (b >= 48 && b <= 57) || (b = char_62_ascii) || (b = get_char_63)
+            outcome true
+
+          # padding character =
+          else if b = 61
+            if i < data.length - pad_size
+              error """
+                    padding character '=' not allowed within the input data, \
+                    only at the very end, as required by RFC464"""
+            else outcome true
+
+          # linebreak
+          else if b = 10 || b = 13
+              error """
+                    line breaks are not allowed within encoded data, as required by RFC464, found \
+                    {if b=10 then "LF" else "CR"} at position $i"""
+          # other non alphabet character
+          else
+            error "byte $i in input data, representing '{codepoint b.as_u32}' in ASCII, is not in $encoding_name alphabet"
+
+      until !check_char.ok
+        check_char.err
+      else outcome true
+
+    if !alphabet_check.ok       # check for non base64 characters
+      alphabet_check.err
+
+    else if !(data.length %% 4) # check input length
+      error "length of input data is not multiple of four, as required by RFC4648"
+
+    else                        # do decoding
+
+      # replace padding with zeros (character 'A' / 65 is decoded to zero)
+      input := ((data.take(data.count - pad_size)) ++ ([(u8 65)].cycle.take pad_size)).as_array
+
+      _dec_sextet(input, pos) =>
+        n := input[pos]
+
+        if n >= 65 && n <= 90       # case A-Z
+          n.as_u32 - 65
+
+        else if n >= 97 && n <= 122 # case a-z
+          n.as_u32 - 71
+
+        else if n >= 48 && n <= 57  # case 0-9
+          n.as_u32 + 4
+
+        else if n = char_62_ascii   # case +
+          u32 62
+
+        else #if n = get_char_63    # case /
+          u32 63
+
+      for
+        res list u8 := nil, res.concat_sequences [b0, b1, b2] # result: contains the decoded data at the end
+        nxt0 := 0, nxt0 + 4
+        nxt1 := 1, nxt1 + 4
+        nxt2 := 2, nxt2 + 4
+        nxt3 := 3, nxt3 + 4
+      while nxt3 < input.length
+      do
+        # convert ascii value into sextets
+        sxt0 := _dec_sextet input nxt0
+        sxt1 := _dec_sextet input nxt1
+        sxt2 := _dec_sextet input nxt2
+        sxt3 := _dec_sextet input nxt3
+
+        # convert sextets in 24 bit number, break up in three bytes
+        block := sxt0 << 18 | sxt1 << 12 | sxt2 << 6 | sxt3
+        b0 := (block >> 16).low8bits
+        b1 := (block >> 8).low8bits
+        b2 := block.low8bits
+      else
+        # remove zero bytes caused by padding
+        outcome res.take(res.count - pad_size)
