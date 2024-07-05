@@ -930,7 +930,6 @@ public class FUIR extends IR
         for (var i = 0; i < p.actuals().size(); i++)
           {
             var a = p.actuals().get(i);
-            var f = pf.arguments().get(i);
             toStack(code, a);
             code.add(ExprKind.Current);
             // Field clazz means assign value to that field
@@ -981,7 +980,6 @@ public class FUIR extends IR
     var res = _clazzCode.get(cl);
     if (res == null)
       {
-        var codeStart = _allCode.size();
         var cc = clazz(cl);
         var ff = cc.feature();
         var code = new List<Object>();
@@ -1967,7 +1965,6 @@ public class FUIR extends IR
    */
   public String codeAtAsString(int s)
   {
-    var cl = clazzAt(s);
     return switch (codeAt(s))
       {
       case Assign  -> "Assign to " + clazzAsString(accessedClazz(s));

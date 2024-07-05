@@ -174,7 +174,6 @@ public class C extends ANY
     @Override
     public Pair<CExpr, CStmnt> call(int s, CExpr tvalue, List<CExpr> args)
     {
-      var cc0 = _fuir.accessedClazz            (s);
       var ol = new List<CStmnt>();
       var res = CExpr.UNIT;
       var r = access(s, tvalue, args);
