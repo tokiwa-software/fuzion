@@ -114,8 +114,8 @@ nested_choice =>
         redef as_string =>
           match choice_mixed.this
             n i32 => $n
-            c choice String u64 =>
-              match c
+            c1 choice String u64 =>
+              match c1
                 str String => $str
                 u u64 => $u
 

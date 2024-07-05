@@ -156,11 +156,11 @@ calls is
     yak "case1a: "; chck t.f "f#3 in oa type calls.case1.oa"
     yak "case1a: "; chck $t.cnt.get $3
 
-    t := on
-    yak "case1b: "; chck t.f "f#1 in on type calls.case1.on"
-    yak "case1b: "; chck t.f "f#2 in on type calls.case1.on"
-    yak "case1b: "; chck t.f "f#3 in on type calls.case1.on"
-    yak "case1b: "; chck $t.cnt.get $3
+    t1 := on
+    yak "case1b: "; chck t1.f "f#1 in on type calls.case1.on"
+    yak "case1b: "; chck t1.f "f#2 in on type calls.case1.on"
+    yak "case1b: "; chck t1.f "f#3 in on type calls.case1.on"
+    yak "case1b: "; chck $t1.cnt.get $3
 
   _ := case1
 
@@ -191,11 +191,11 @@ calls is
     yak "case2a: "; chck t.f "f#3 in oa type calls.case2.oa"
     yak "case2a: "; chck $t.cnt.get $3
 
-    t := oあ
-    yak "case2b: "; chck t.f "f#1 in oあ type calls.case2.oあ"
-    yak "case2b: "; chck t.f "f#2 in oあ type calls.case2.oあ"
-    yak "case2b: "; chck t.f "f#3 in oあ type calls.case2.oあ"
-    yak "case2b: "; chck $t.cnt.get $3
+    t1 := oあ
+    yak "case2b: "; chck t1.f "f#1 in oあ type calls.case2.oあ"
+    yak "case2b: "; chck t1.f "f#2 in oあ type calls.case2.oあ"
+    yak "case2b: "; chck t1.f "f#3 in oあ type calls.case2.oあ"
+    yak "case2b: "; chck $t1.cnt.get $3
 
   _ := case2
 
@@ -233,17 +233,17 @@ calls is
     yak "case3a: "; chck t.f "f#3 in on type calls.case3.on"
     yak "case3a: "; chck $t.cnt.get $3
 
-    t := oa2
-    yak "case3b: "; chck t.f "f#1 in oa type calls.case3.oa"
-    yak "case3b: "; chck t.f "f#2 in oa type calls.case3.oa"
-    yak "case3b: "; chck t.f "f#3 in oa type calls.case3.oa"
-    yak "case3b: "; chck $t.cnt.get $3
+    t1 := oa2
+    yak "case3b: "; chck t1.f "f#1 in oa type calls.case3.oa"
+    yak "case3b: "; chck t1.f "f#2 in oa type calls.case3.oa"
+    yak "case3b: "; chck t1.f "f#3 in oa type calls.case3.oa"
+    yak "case3b: "; chck $t1.cnt.get $3
 
-    t := oa3
-    yak "case3c: "; chck t.f "f#1 in oa type calls.case3.oa"
-    yak "case3c: "; chck t.f "f#2 in oa type calls.case3.oa"
-    yak "case3c: "; chck t.f "f#3 in oa type calls.case3.oa"
-    yak "case3c: "; chck $t.cnt.get $3
+    t2 := oa3
+    yak "case3c: "; chck t2.f "f#1 in oa type calls.case3.oa"
+    yak "case3c: "; chck t2.f "f#2 in oa type calls.case3.oa"
+    yak "case3c: "; chck t2.f "f#3 in oa type calls.case3.oa"
+    yak "case3c: "; chck $t2.cnt.get $3
 
   _ := case3
 
@@ -273,11 +273,11 @@ calls is
     yak "case4a: "; chck t.f "f#3 in oa type calls.case4.oa"
     yak "case4a: "; chck $t.cnt.get $3
 
-    t := oあ
-    yak "case4b: "; chck t.f "f#1 in oあ type calls.case4.oあ"
-    yak "case4b: "; chck t.f "f#2 in oあ type calls.case4.oあ"
-    yak "case4b: "; chck t.f "f#3 in oあ type calls.case4.oあ"
-    yak "case4b: "; chck $t.cnt.get $3
+    t1 := oあ
+    yak "case4b: "; chck t1.f "f#1 in oあ type calls.case4.oあ"
+    yak "case4b: "; chck t1.f "f#2 in oあ type calls.case4.oあ"
+    yak "case4b: "; chck t1.f "f#3 in oあ type calls.case4.oあ"
+    yak "case4b: "; chck $t1.cnt.get $3
 
   _ := case4
 
@@ -307,11 +307,11 @@ calls is
     yak "case5a: "; chck t.f "f#3 in oa type calls.case5.oa"
     yak "case5a: "; chck $t.cnt.get $3
 
-    t := oあ
-    yak "case5b: "; chck t.f "f#1 in oあ type calls.case5.oあ"
-    yak "case5b: "; chck t.f "f#2 in oあ type calls.case5.oあ"
-    yak "case5b: "; chck t.f "f#3 in oあ type calls.case5.oあ"
-    yak "case5b: "; chck $t.cnt.get $3
+    t1 := oあ
+    yak "case5b: "; chck t1.f "f#1 in oあ type calls.case5.oあ"
+    yak "case5b: "; chck t1.f "f#2 in oあ type calls.case5.oあ"
+    yak "case5b: "; chck t1.f "f#3 in oあ type calls.case5.oあ"
+    yak "case5b: "; chck $t1.cnt.get $3
 
   _ := case5
 
@@ -344,11 +344,11 @@ calls is
     yak "case6a: "; chck t.f "f#3 in oa type calls.case6.oa"
     yak "case6a: "; chck $t.cnt.get $3
 
-    t := oあ
-    yak "case6b: "; chck t.f "f#1 in oあ type calls.case6.oあ"
-    yak "case6b: "; chck t.f "f#2 in oあ type calls.case6.oあ"
-    yak "case6b: "; chck t.f "f#3 in oあ type calls.case6.oあ"
-    yak "case6b: "; chck $t.cnt.get $3
+    t1 := oあ
+    yak "case6b: "; chck t1.f "f#1 in oあ type calls.case6.oあ"
+    yak "case6b: "; chck t1.f "f#2 in oあ type calls.case6.oあ"
+    yak "case6b: "; chck t1.f "f#3 in oあ type calls.case6.oあ"
+    yak "case6b: "; chck $t1.cnt.get $3
 
   _ := case6
 
@@ -374,11 +374,11 @@ calls is
     yak "caseC1a: "; chck t.f.s "f#3 in oa type calls.caseC1.oa"
     yak "caseC1a: "; chck $t.cnt.get $3
 
-    t := on
-    yak "caseC1b: "; chck t.f.s "f#1 in on type calls.caseC1.on"
-    yak "caseC1b: "; chck t.f.s "f#2 in on type calls.caseC1.on"
-    yak "caseC1b: "; chck t.f.s "f#3 in on type calls.caseC1.on"
-    yak "caseC1b: "; chck $t.cnt.get $3
+    t1 := on
+    yak "caseC1b: "; chck t1.f.s "f#1 in on type calls.caseC1.on"
+    yak "caseC1b: "; chck t1.f.s "f#2 in on type calls.caseC1.on"
+    yak "caseC1b: "; chck t1.f.s "f#3 in on type calls.caseC1.on"
+    yak "caseC1b: "; chck $t1.cnt.get $3
 
   _ := caseC1
 
@@ -407,11 +407,11 @@ calls is
     yak "caseC2a: "; chck t.f.s "f#3 in oa type calls.caseC2.ref on"
     yak "caseC2a: "; chck $t.cnt.get $3
 
-    t := oあ
-    yak "caseC2b: "; chck t.f.s "f#1 in oあ type calls.caseC2.ref on"
-    yak "caseC2b: "; chck t.f.s "f#2 in oあ type calls.caseC2.ref on"
-    yak "caseC2b: "; chck t.f.s "f#3 in oあ type calls.caseC2.ref on"
-    yak "caseC2b: "; chck $t.cnt.get $3
+    t1 := oあ
+    yak "caseC2b: "; chck t1.f.s "f#1 in oあ type calls.caseC2.ref on"
+    yak "caseC2b: "; chck t1.f.s "f#2 in oあ type calls.caseC2.ref on"
+    yak "caseC2b: "; chck t1.f.s "f#3 in oあ type calls.caseC2.ref on"
+    yak "caseC2b: "; chck $t1.cnt.get $3
 
   _ := caseC2
 
@@ -501,11 +501,11 @@ calls is
     yak "caseC5a: "; chck t.f.s "f#3 in oa type calls.caseC5.on"
     yak "caseC5a: "; chck $t.cnt.get $3
 
-    t := oあ
-    yak "caseC5b: "; chck t.f.s "f#1 in oあ type calls.caseC5.on"
-    yak "caseC5b: "; chck t.f.s "f#2 in oあ type calls.caseC5.on"
-    yak "caseC5b: "; chck t.f.s "f#3 in oあ type calls.caseC5.on"
-    yak "caseC5b: "; chck $t.cnt.get $3
+    t1 := oあ
+    yak "caseC5b: "; chck t1.f.s "f#1 in oあ type calls.caseC5.on"
+    yak "caseC5b: "; chck t1.f.s "f#2 in oあ type calls.caseC5.on"
+    yak "caseC5b: "; chck t1.f.s "f#3 in oあ type calls.caseC5.on"
+    yak "caseC5b: "; chck $t1.cnt.get $3
 
   _ := caseC5
 
@@ -537,11 +537,11 @@ calls is
     yak "caseC6a: "; chck t.f.s "f#3 in oa type calls.caseC6.on"
     yak "caseC6a: "; chck $t.cnt.get $3
 
-    t := oa2
-    yak "caseC6b: "; chck t.f.s "f#1 in oあ type calls.caseC6.on"
-    yak "caseC6b: "; chck t.f.s "f#2 in oあ type calls.caseC6.on"
-    yak "caseC6b: "; chck t.f.s "f#3 in oあ type calls.caseC6.on"
-    yak "caseC6b: "; chck $t.cnt.get $3
+    t1 := oa2
+    yak "caseC6b: "; chck t1.f.s "f#1 in oあ type calls.caseC6.on"
+    yak "caseC6b: "; chck t1.f.s "f#2 in oあ type calls.caseC6.on"
+    yak "caseC6b: "; chck t1.f.s "f#3 in oあ type calls.caseC6.on"
+    yak "caseC6b: "; chck $t1.cnt.get $3
 
   _ := caseC6
 /*

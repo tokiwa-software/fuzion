@@ -55,6 +55,6 @@ reg_issue122 is
   a := 3
   b := 44
   x(v i32) => 100+v
-  (a,b) := ((x a),(x b))
-  say "a is $a"  # should print '103'
-  say "b is $b"  # should print '144'
+  (c,d) := ((x a),(x b))
+  say "c is $c"  # should print '103'
+  say "d is $d"  # should print '144'
