@@ -17,13 +17,36 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test issue459
+#  Source code of Fuzion test test_process
 #
 # -----------------------------------------------------------------------
 
-issue459 =>
-  t1 is
-  t2 is
-  say (try t1 unit (()->))
-  say (try t1 unit ()->
-    say (try t2 unit (()->)))
+test_process =>
+
+
+  # create string of given byte size
+  get_str(byte_size i32) =>
+    ref : String
+      redef utf8 Sequence u8 =>
+        (1..byte_size)
+          .map u8 (x -> codepoint.type.zero_char)
+
+
+  test(str String, f () -> outcome unit) =>
+    say "===  Test: $str  ==="
+    match f()
+      e error => say e
+      * =>
+
+
+
+  test "write to stdin of process (new)" ()->
+    (process.spawn ["cat"]).bind unit p->
+      lm : mutate is
+      _ := lm.go ()->
+        _ := p.with_in unit lm ()->
+          _ := (io.buffered.writer lm).write "Hello, World!\n".utf8.as_array
+          _ := (io.buffered.writer lm).flush
+      say p.wait
+      _ := p.with_out ()->
+        say (io.buffered.read_string 1E9)

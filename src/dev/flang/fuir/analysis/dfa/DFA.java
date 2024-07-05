@@ -241,7 +241,6 @@ public class DFA extends ANY
     @Override
     public Pair<Val, Unit> call(int s, Val tvalue, List<Val> args)
     {
-      var cc0 = _fuir.accessedClazz(s);
       var res = access(s, tvalue, args);
       DFA.this.site(s).recordResult(res == null);
       return new Pair<>(res, _unit_);

@@ -176,7 +176,8 @@ public ryū(public T type : float) is
     ***************/
 
     pow5_split_cache_key(val array (array i64)) is
-    pow5_split array (array i64) := (cache pow5_split_cache_key (()->pow5_split_cache_key [
+    pow5_split array (array i64) := (cache pow5_split_cache_key ()->
+      pow5_split_cache_key [
         [134217728,0,0,0],
         [167772160,0,0,0],
         [209715200,0,0,0],
@@ -503,10 +504,11 @@ public ryū(public T type : float) is
         [265249473,1869726050,152685176,129711535],
         [165780921,363272413,632299147,81069709],
         [207226151,990961428,1327244845,1711949873]
-      ])).val
+      ]).val
 
     pow5_inv_split_cache_key(val array (array i64)) is
-    pow5_inv_split array (array i64) := (cache pow5_inv_split_cache_key (()->pow5_inv_split_cache_key [
+    pow5_inv_split array (array i64) := (cache pow5_inv_split_cache_key ()->
+      pow5_inv_split_cache_key [
         [536870912,0,0,1],
         [429496729,1288490188,1717986918,858993460],
         [343597383,1460288880,1374389534,1546188227],
@@ -798,7 +800,7 @@ public ryū(public T type : float) is
         [326998476,674671703,980884287,1695296433],
         [523197562,220481266,710421401,564990645],
         [418558049,1464875201,1856827309,1740482705]
-      ])).val
+      ]).val
 
 
     actual_shift(j i64) =>
@@ -981,7 +983,7 @@ public ryū(public T type : float) is
     output_as_string(output i64, output_length i64) String =>
       for o := output_as_string.this.output, o / 10
           s := "{o % 10}", "{o % 10}$s"
-          _ in (i64 1)..(output_as_string.this.output_length-1 )
+          _ in (i64 1)..(output_as_string.this.output_length-1)
       do
       else
         s
