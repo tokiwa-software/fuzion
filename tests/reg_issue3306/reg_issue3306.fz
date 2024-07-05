@@ -1,0 +1,56 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test
+#
+# -----------------------------------------------------------------------
+
+# Test for disambiguation of partial calls using explicit targets
+#
+reg_issue3306 is
+
+  case_0 is
+    f(x ()->unit) => x.call
+    a is
+      q => say "a.q"
+
+      /*  -- commented out, see tests/reg_issues3306_negative --
+
+      f q          # This will cause an error, `q` is ambiguous
+
+      */
+
+  case_A is
+    f(x ()->unit) => x.call
+    a is
+      say (f universe.q)
+
+  case_B is
+    f(x ()->unit) => _ := x.call
+    a is
+      q => say "a.q"
+      say (f a.this.q)
+
+  _ := case_0.a
+  _ := case_A.a
+  _ := case_B.a
+
+_ := reg_issue3306
+
+q => say "universe.q"
