@@ -17,13 +17,32 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test issue459
+#  Source code of Fuzion test
 #
 # -----------------------------------------------------------------------
 
-issue459 =>
-  t1 is
-  t2 is
-  say (try t1 unit (()->))
-  say (try t1 unit ()->
-    say (try t2 unit (()->)))
+# Test partial application that refers to `a.this`
+#
+reg_issue3308 is
+
+  f(x ()->unit) =>
+
+  t is
+    a is
+
+      # first, a.this is part of the target of the partial call
+      q =>
+      say (f a.this.q)
+
+      # second, a.this is part of the arguments of the partial call
+      r(x _) =>
+      say (f (r a.this))
+
+      # third, a.this is part of the arguments of the partial call and
+      # boxed to Any
+      s(x Any) =>
+      # NYI: this still crashes `fz`:
+      #
+      # say (f (s a.this))
+
+  _ := t.a

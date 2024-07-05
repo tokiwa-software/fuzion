@@ -63,7 +63,7 @@ choicetest is
 
   say "creating array:"
   mi : mutate is
-  a := mi.go (()->
+  a := mi.go ()->
     a := (mutate.array Coin).new mi 10 Penny
     a[0] := Penny
     a[1] := Penny
@@ -76,7 +76,6 @@ choicetest is
     a[8] := Quarter
     a[9] := Quarter
     a.as_array
-  )
 
 
   sum_loop =>

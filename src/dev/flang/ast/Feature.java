@@ -1370,19 +1370,20 @@ public class Feature extends AbstractFeature
       {
         res = r;
       }
-    public void         action      (AbstractAssign a, AbstractFeature outer) {        a.resolveTypes   (res,   outer); }
-    public void         actionBefore(Call           c, AbstractFeature outer) {        c.tryResolveTypeCall(res,   outer); }
-    public Call         action      (Call           c, AbstractFeature outer) { return c.resolveTypes   (res,   outer); }
-    public Expr         action      (DotType        d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
-    public Expr         action      (Destructure    d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
-    public Expr         action      (Feature        f, AbstractFeature outer) { /* use f.outer() since qualified feature name may result in different outer! */
-                                                                                return f.resolveTypes   (res, f.outer() ); }
-    public Function     action      (Function       f, AbstractFeature outer) {        f.resolveTypes   (res,   outer); return f; }
-    public void         action      (Match          m, AbstractFeature outer) {        m.resolveTypes   (res,   outer); }
-    public Expr         action      (This           t, AbstractFeature outer) { return t.resolveTypes   (res,   outer); }
-    public AbstractType action      (AbstractType   t, AbstractFeature outer) { return t.resolve        (res,   outer); }
+    @Override public void         action      (AbstractAssign  a, AbstractFeature outer) {        a.resolveTypes   (res,   outer); }
+    @Override public void         actionBefore(Call            c, AbstractFeature outer) {        c.tryResolveTypeCall(res,   outer); }
+    @Override public Call         action      (Call            c, AbstractFeature outer) { return c.resolveTypes   (res,   outer); }
+    @Override public Expr         action      (DotType         d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
+    @Override public Expr         action      (Destructure     d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
+    @Override public Expr         action      (Feature         f, AbstractFeature outer) { /* use f.outer() since qualified feature name may result in different outer! */
+                                                                                           return f.resolveTypes   (res, f.outer() ); }
+    @Override public Function     action      (Function        f, AbstractFeature outer) {        f.resolveTypes   (res,   outer); return f; }
+    @Override public void         action      (Match           m, AbstractFeature outer) {        m.resolveTypes   (res,   outer); }
+    @Override public Expr         action      (This            t, AbstractFeature outer) { return t.resolveTypes   (res,   outer); }
+    @Override public AbstractType action      (AbstractType    t, AbstractFeature outer) { return t.resolve        (res,   outer); }
+    @Override public Expr         action      (AbstractCurrent c, AbstractFeature outer) { return c.resolveTypes(res, outer); }
 
-    public boolean doVisitActuals() { return false; }
+    @Override public boolean doVisitActuals() { return false; }
   }
 
 

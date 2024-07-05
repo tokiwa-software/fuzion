@@ -17,13 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test issue459
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-issue459 =>
-  t1 is
-  t2 is
-  say (try t1 unit (()->))
-  say (try t1 unit ()->
-    say (try t2 unit (()->)))
+override NAME = reg_issue3308
+include ../simple.mk

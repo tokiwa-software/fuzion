@@ -68,7 +68,6 @@ test_local_mutate_neg is
         say "inside m.go: s.get = {s.get}"
         say "inside m.go: count = {count}"
 
-
       say "using m.go and count: {m.go ()->count}"
 
       count2 =>

@@ -28,7 +28,6 @@ package dev.flang.be.jvm;
 
 import dev.flang.fuir.FUIR;
 
-import static dev.flang.ir.IR.NO_SITE;
 
 import dev.flang.be.jvm.classfile.ClassFile;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
