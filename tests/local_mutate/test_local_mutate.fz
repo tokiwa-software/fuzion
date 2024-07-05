@@ -34,7 +34,7 @@ test_local_mutate is
 
     # our sequence to count:
     #
-    l := [0,8,15,47,11]
+    l0 := [0,8,15,47,11]
 
     sum(l Sequence i32) =>
 
@@ -59,7 +59,7 @@ test_local_mutate is
 
       # run code within an instance of m
       #
-      m.go (()->
+      m.go ()->
         s := m.env.new 0
 
         for e in l do
@@ -67,7 +67,6 @@ test_local_mutate is
 
         say "inside m.go: s.get = {s.get}"
         say "inside m.go: count = {count}"
-        )
 
       say "using m.go and count: {m.go ()->count}"
 
@@ -114,7 +113,7 @@ test_local_mutate is
           "** failed, did not panic **"
         q
 
-    sum l
+    sum l0
 
   test_sum
 
@@ -131,7 +130,10 @@ test_local_mutate is
         m : mutate is
 
         # execute code with mutate effect `m`:
-        m.go (()->
+        m.go ()->
+
+          arr := (mutate.array T).new m c.as_i64 data[0]
+
           swap(i,j i32) =>
             t := arr[i.as_i64]
             arr[i.as_i64] := arr[j.as_i64]
@@ -157,12 +159,11 @@ test_local_mutate is
               qs l pi-1
               qs pi+1 r
 
-          arr := (mutate.array T).new m c.as_i64 data[0]
           for i in arr.indices do
             arr[i] := data[i.as_i32]
 
           qs 0 c-1
-          arr.as_array)
+          arr.as_array
 
 
     say (quicksort [0, 8, 15, 47, 11])
@@ -187,9 +188,9 @@ test_local_mutate is
       next => n.get
       prev => p.get
 
-    ring(T type, from Sequence T)
+    ring(T type, from0 Sequence T)
     pre
-      !from.is_empty
+      !from0.is_empty
     =>
       m : mutate is
 
@@ -219,7 +220,7 @@ test_local_mutate is
                cur.p.close
         r
 
-      r := m.go ()->(ring3 from.as_list)
+      r := m.go ()->(ring3 from0.as_list)
       say "left mutate environment m"
       for
         i in 1..10
@@ -297,8 +298,8 @@ test_local_mutate is
       #  |                               |
       #  +-------------------------------+
       #
-      insert(data T) =>
-        r2 := Mut_Ring LM T data
+      insert(data0 T) =>
+        r2 := Mut_Ring LM T data0
         merge r2
 
 
@@ -322,14 +323,14 @@ test_local_mutate is
       #  |                                                 |
       #  +-------------------------------------------------+
       #
-      merge(n Mut_Ring LM T) =>
+      merge(n0 Mut_Ring LM T) =>
         a := Mut_Ring.this
         m := a.p.get
-        z := n.n.get
+        z := n0.n.get
         a.p <- z
         z.n <- a
-        m.n <- n
-        n.p <- m
+        m.n <- n0
+        n0.p <- m
 
       # freeze this ring, i.e., turn all references into immutable values
       #
@@ -341,9 +342,9 @@ test_local_mutate is
 
     # create a ring from the elements of a sequence
     #
-    create_ring(T type, from Sequence T)
+    create_ring(T type, from0 Sequence T)
     pre
-      !from.is_empty
+      !from0.is_empty
     =>
       # define mutate context to be used
       m : mutate is
@@ -356,7 +357,7 @@ test_local_mutate is
         c.freeze
         c
 
-      r := m.go ()->(create_ring2 from.as_list)
+      r := m.go ()->(create_ring2 from0.as_list)
       say "left mutate environment m"
       say r
       for

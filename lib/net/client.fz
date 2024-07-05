@@ -39,7 +39,7 @@
 # Blocks until connection is establised.
 # NYI blocking / none blocking
 #
-public client(T type, rh Request_Handler T, f net.family.val, p net.protocol.val, host String, port u16) outcome T
+public client(T type, LM type : mutate, rh Request_Handler T, f net.family.val, p net.protocol.val, host String, port u16) outcome T
 =>
   s := net.socket_type.by_protocol p
   fuzion.sys.net.connect f.as_num s.as_num p.as_num host port
@@ -47,13 +47,17 @@ public client(T type, rh Request_Handler T, f net.family.val, p net.protocol.val
       # NYI install custom thread spawn effect
       # NYI: BUG: (try net.request_handler).on ()->
 
-      res := (io.buffered.reader (read_provider desc) 1024 []).with ()->
-        (net.channel desc).go ()->
-          rh.handle_request
+      res := (io.buffered.reader (read_provider desc) 1024).with ()->
+        (io.buffered.writer LM (write_provider desc) 1024).with ()->
+          (net.channel desc).go ()->
+            rh.handle_request
 
       _ := fuzion.sys.net.close desc
 
-      res
+      res.bind T x->
+        match x
+          v T => v
+          e error => e
 
 
 # NYI: ENHANCEMENT: short-hands: client(host String) etc.

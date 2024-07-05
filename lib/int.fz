@@ -86,8 +86,8 @@ is
   # divide this int by other
   public fixed redef infix /  (other int) int
   =>
-    s num.sign := result_sign_mul_div other
-    int s n/other.n
+    s := result_sign_mul_div other
+    int (infix /).this.s n/other.n
 
 
   # modulo, returns the remainder of the
@@ -103,21 +103,16 @@ is
     match s
       num.plus => int num.plus (n ** other.n)
       num.minus =>
-        s num.sign := if other %% (int 2) then num.plus else num.minus
-        int s (n ** other.n)
+        s0 num.sign := if other %% (int 2) then num.plus else num.minus
+        int s0 (n ** other.n)
 
 
   # all operations are allowed for all ints
   # except for division where we need to
   # check for division by zero
 
-  public fixed redef prefix -! bool => true
-  public fixed redef infix +! (other int) bool => true
-  public fixed redef infix -! (other int) bool => true
-  public fixed redef infix *! (other int) bool => true
-  public fixed redef infix /! (other int) bool =>
-    other != int.zero
-  public fixed redef infix %! (other int) bool => true
+  public fixed redef infix /! (other int) bool => other != int.zero
+  public fixed redef infix %! (other int) bool => other != int.zero
 
   public fixed redef infix **!(other int) bool =>
     other ≥ int.zero  # 0 and 1 ** -other would be okay but we disallow nonetheless

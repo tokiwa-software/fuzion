@@ -1,9 +1,29 @@
 
---CURDIR--/SquareRoot.fz:30:9: error 1: Precondition does not hold
-      a ≥ 0
---------^^^
-For call to SquareRoot.sqrt#1
+error 1: FATAL FAULT `precondition`: a ≥ 0
 Call stack:
+fuzion.type.runtime.type.fault.type.install_default#0.#fun264.call#1: $MODULE/fuzion/runtime/fault.fz:38:7:
+      fuzion.sys.fatal_fault kind msg
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.fault.cause#1: $MODULE/eff/fallible.fz:35:6:
+  => h e
+-----^
+fuzion.type.runtime.type.pre_fault.type.install_default#0.#fun266.call#1: $MODULE/fuzion/runtime/pre_fault.fz:39:7:
+      fuzion.runtime.fault.cause ("precondition", msg)).default
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.pre_fault.cause#1: $MODULE/eff/fallible.fz:35:6:
+  => h e
+-----^
+fuzion.runtime.precondition_fault#1: $MODULE/fuzion/runtime/pre_fault.fz:58:42:
+public precondition_fault(msg String) => pre_fault.cause msg
+-----------------------------------------^^^^^^^^^^^^^^^^^^^
+SquareRoot.#pre1_sqrt#1: --CURDIR--/SquareRoot.fz:30:7:
+      a ≥ 0
+------^^^^^^^
+SquareRoot.#preandcall2_sqrt#1: --CURDIR--/SquareRoot.fz:29:5:
+    pre
+----^^^
+      a ≥ 0
+^^^^^^^^^^^^^
 SquareRoot: --CURDIR--/SquareRoot.fz:44:21:
   say "sqrt(-16) = {sqrt(-16)}" // 1. should flag an error, precondition failed
 --------------------^^^^

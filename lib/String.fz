@@ -228,12 +228,13 @@ public String ref : property.equatable, property.hashable, property.orderable is
       if t ≥ base
         parse_error "invalid integer digit for base $base"
       else
-        hi := hi *? base;
-        v := if (neg) hi -? t
-              else     hi +? t
+        hi0 := hi *? base;
+        # NYI: #3298 can not qualify call in lambda
+        v := if (neg) hi0 -? t
+              else     hi0 +? t
         match s
-          c Cons =>
-            parse_integer T base neg v c.head c.tail
+          con Cons =>
+            parse_integer T base neg v con.head con.tail
           nil =>
             v ? nil => parse_error "numerical overflow"
               | u T => u

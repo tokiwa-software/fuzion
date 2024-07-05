@@ -30,7 +30,6 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.stream.Stream;
 
 import dev.flang.air.AIR;
 
@@ -286,7 +285,6 @@ public class MiddleEnd extends ANY
           return i;
         }
       };
-    f.contract().req.stream().forEach(c -> c.visit(fv, f));
     f.visitCode(fv);
   }
 

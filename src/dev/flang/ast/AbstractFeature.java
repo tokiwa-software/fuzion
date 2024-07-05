@@ -294,13 +294,65 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public abstract AbstractFeature outerRef();
 
 
-  // following used in MIR or later,
-  // requires isRoutine() == true
+  /**
+   * The implementation of this feature.
+   *
+   * requires isRoutine() == true
+   */
   public abstract Expr code();
 
 
-  // in FUIR or later
+  /**
+   * The contract of this feature.
+   */
   public abstract Contract contract();
+
+
+  /**
+   * If this feature has a pre condition or redefines a feature from which it
+   * inherits a pre condition, this gives the feature that implements the pre
+   * condition check.
+   *
+   * The preFeature has the same outer feature as the original feature and the
+   * same arguments.
+   *
+   * @return this feature's precondition feature or null if none is needed.
+   */
+  public abstract AbstractFeature preFeature();
+
+
+  /**
+   * If this feature has a pre condition or redefines a feature from which it
+   * inherits a pre condition, this gives the feature that implements the pre
+   * condition check resulting in a boolean instead of a fault.
+   *
+   * The preBoolFeature has the same outer feature as the original feature and
+   * the same arguments.
+   *
+   * @return this feature's precondition bool feature or null if none is needed.
+   */
+  public abstract AbstractFeature preBoolFeature();
+
+
+  /**
+   * If this feature has a pre condition or redefines a feature from which it
+   * inherits a pre condition, this gives the feature that combines a call to
+   * preFeature() and a call to this feature.  This is used at call sites as a
+   * replacement to a call to this to implement precondition checking.
+   *
+   * Note that dynamic binding is done by the preAndCallFeature, i.e., on a call
+   * `a.f` where `a` is of a ref type `A` containing a reference to an instance
+   * of `B`, calling the preAndCallFeature of `a.f` results in checking the
+   * precondition of `A.f` and then calling `B.f`, i.e., the precondition that
+   * is checked is that of the static type, not the (possibly relaxed)
+   * precondition of the dynamic actual type.
+   *
+   * The preBoolFeature has the same outer feature as the original feature and
+   * the same arguments.
+   *
+   * @return this feature's precondition bool feature or null if none is needed.
+   */
+  public abstract AbstractFeature preAndCallFeature();
 
 
   /**
@@ -472,7 +524,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public List<AbstractType> choiceGenerics()
   {
     if (PRECONDITIONS) require
-      (state().atLeast(State.RESOLVING_TYPES));
+      (state().atLeast(State.RESOLVED_DECLARATIONS));
 
     List<AbstractType> result;
 
@@ -480,7 +532,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       {
         result = null;
       }
-    else if (this.compareTo(Types.resolved.f_choice) == 0)
+    else if (isBaseChoice())
       {
         result = generics().asActuals();
       }
@@ -493,14 +545,24 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             if (CHECKS) check
               (Errors.any() || p.calledFeature() != null);
 
-            if (p.calledFeature().isBaseChoice())
+            if (p.calledFeature().isChoice())
               {
                 if (lastP != null)
                   {
                     AstErrors.repeatedInheritanceOfChoice(p.pos(), lastP.pos());
                   }
                 lastP = p;
-                result = p.actualTypeParameters();
+                result = p.calledFeature().isBaseChoice()
+                  ? p.actualTypeParameters()
+                  : p.calledFeature().choiceGenerics();
+                // we need to do a hand down to get the actual choice generics
+                if (!p.calledFeature().isBaseChoice())
+                  {
+                    var arr = new AbstractType[result.size()];
+                    result.toArray(arr);
+                    var inh = this.findInheritanceChain(p.calledFeature());
+                    result = new List<>(AbstractFeature.handDownInheritance(null, inh, arr, this));
+                  }
               }
           }
       }
@@ -1509,7 +1571,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
         if (CHECKS) check
           (c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
       }
-    contract().visit(fv, this);
     if (isRoutine())
       {
         code().visit(fv, this);
@@ -1528,7 +1589,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       {
         c.visitExpressions(v);
       }
-    contract().visitExpressions(v);
     if (isRoutine())
       {
         code().visitExpressions(v);

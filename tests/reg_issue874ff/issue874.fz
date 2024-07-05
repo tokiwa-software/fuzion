@@ -90,8 +90,8 @@ test_this3 is
     fixed plus(other intM5) => intM5 (v + other.v)%5
     fixed redef minus(other intM5) => intM5 (v - other.v)%5
 
-y := test_this3.intM5 1
-say (y.plus y)
+y0 := test_this3.intM5 1
+say (y0.plus y0)
 
 # fourth example from #874 and #886
 #
@@ -122,8 +122,8 @@ test_this4 is
     fixed plus(other intM5) => intM5 (v + other.v)%5
     fixed redef minus(other intM5) => intM5 (v - other.v)%5
 
-y := test_this4.intM5 1
-say (y.plus y)
+y1 := test_this4.intM5 1
+say (y1.plus y1)
 
 
 

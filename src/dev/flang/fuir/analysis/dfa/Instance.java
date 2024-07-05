@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fuir.analysis.dfa;
 
 import java.util.TreeMap;
+import dev.flang.ir.IR;
 
 
 /**
@@ -138,13 +139,43 @@ public class Instance extends Value implements Comparable<Instance>
     var c2 = i2._clazz;
     var s1 = i1._site;
     var s2 = i2._site;
+
+    // Instead of comparing the site, we use only the clazz at the site to avoid
+    // state explosion for, e.g., `String.upper_case` such that instances of,
+    // e.g., `codepoint` created in `character_encodings.unicode.data` do not
+    // result in explosion of number of values.
+    //
+    // This might result in inaccuracy, e.g., the code
+    //
+    //   a(p bool) is
+    //   i1 := a false
+    //   i2 := a true
+    //   v := i1.p
+    //   if v
+    //     panic "unreachable"
+    //
+    // will require the panic effect, while the code
+    //
+    //   a(p bool) is
+    //   i1 => a false
+    //   i2 := a true
+    //   v := i1.p
+    //   if v
+    //     panic "unreachable"
+    //
+    // will not since the two instance of `a` are created in different clazzes
+    // `i1` and `universe`, while the previous example creates both within
+    // `universe`.
+    var sc1 = s1 == IR.NO_SITE ? IR.NO_CLAZZ : _dfa._fuir.clazzAt(s1);
+    var sc2 = s2 == IR.NO_SITE ? IR.NO_CLAZZ : _dfa._fuir.clazzAt(s2);
+
     var e1 = i1.env();
     var e2 = i2.env();
     return
       c1 < c2    ? -1 :
       c1 > c2    ? +1 :
-      s1 < s2    ? -1 :
-      s1 > s2    ? +1 :
+      sc1 < sc2  ? -1 :
+      sc1 > sc2  ? +1 :
       e1 == e2   ?  0 :
       e1 == null ? -1 :
       e2 == null ? +1

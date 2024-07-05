@@ -254,7 +254,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public List<AbstractType> choiceGenerics()
   {
     if (PRECONDITIONS) require
-      (!(this instanceof UnresolvedType tt),
+      (!(this instanceof UnresolvedType),
        isChoice());
 
     var g = feature().choiceGenerics();
@@ -1378,12 +1378,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *   say (type_of a.l)    # should print `list a`
    *   say (type_of b.l)    # should print `list b`
    *
-   * @param tt the type feature we are calling (`equatable.type` in the example)
+   * @param tt the type feature we are calling (`list a.this.type` in the example)
    * above).
    *
    * @param foundRef a consumer that will be called for all the this-types found
    * together with the ref type they are replaced with.  May be null.  This will
    * be used to check for AstErrors.illegalOuterRefTypeInCall.
+   *
+   * @return the actual type, i.e.`list a` or `list b` in the example above.
    */
   public AbstractType replace_this_type_by_actual_outer(AbstractType tt,
                                                         BiConsumer<AbstractType, AbstractType> foundRef)

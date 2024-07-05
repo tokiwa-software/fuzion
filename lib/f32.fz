@@ -51,6 +51,13 @@ public f32(public val f32) : float is
   fixed redef infix > (other f32) bool => intrinsic
 
 
+  # does this `f32` value fit into an `i64`?  Used in inherited
+  # precondition of `as_i64`.
+  #
+  public redef fits_in_i64 =>
+    i64.min.as_f32 ≤ val ≤ i64.max.as_f32
+
+
   # conversion
   redef as_i64 => as_f64.as_i64
 

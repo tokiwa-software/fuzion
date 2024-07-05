@@ -1447,7 +1447,7 @@ public class AstErrors extends ANY
   {
     error(pos,
           "Numeric literal used for integer type is not a whole number",
-          "Type propagation results in an integer type that cannot whole a value that is not integer.\n" +
+          "Type propagation results in an integer type that cannot hold a value that is not integer.\n" +
           "Numeric literal: " + ss(constant) + "\n" +
           "Assigned to type: " + s(t) + "\n");
   }
@@ -1525,13 +1525,6 @@ public class AstErrors extends ANY
           "Previous inheritance from choice at " + lastP);
   }
 
-  static void cannotInheritFromChoice(SourcePosition pos)
-  {
-    error(pos,
-          "Cannot inherit from choice feature",
-          "Choice must be leaf.");
-  }
-
   static void parentMustBeConstructor(SourcePosition pos, Feature heir, AbstractFeature parent)
   {
     error(pos,
@@ -1584,8 +1577,8 @@ public class AstErrors extends ANY
   static void choiceMustNotBeRoutine(SourcePosition pos)
   {
     error(pos,
-          "Choice feature must not be defined as a routine with a result",
-          "A choice feature must be a normal feature with empty code section");
+          "Choice feature must not be defined as a routine",
+          "To solve this, replace " + skw("=>") + " by " + skw("is"));
   }
 
   static void choiceMustNotContainCode(SourcePosition pos)
@@ -2061,7 +2054,7 @@ public class AstErrors extends ANY
   public static void illegalTypeVisibilityModifier(Feature f)
   {
     error(f.pos(), "Feature specifying type visibility does not define a type.",
-     "To solve this, remove the type visibility: " + s(f.visibility().typeVisibility()) + "."
+      "To solve this, remove the type visibility: " + s(f.visibility().typeVisibility()) + "."
     );
   }
 
@@ -2127,7 +2120,7 @@ public class AstErrors extends ANY
   public static void abstractFeaturesVisibilityMoreRestrictiveThanOuter(Feature f)
   {
     error(f.pos(), "Abstract features visibility must not be more restrictive than outer features visibility.",
-      "To solve this, increase the visibility of " + s(f) + " to at least " + s(f.outer().visibility().featureVisibility()));
+      "To solve this, increase the visibility of " + s(f) + " to at least " + s(f.outer().visibility().eraseTypeVisibility()));
   }
 
   public static void ambiguousCall(Call c, AbstractFeature f, AbstractFeature tf)

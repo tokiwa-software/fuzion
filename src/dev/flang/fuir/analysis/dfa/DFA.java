@@ -171,8 +171,6 @@ public class DFA extends ANY
      *
      * @param s site of the expression causing this assignment
      *
-     * @param pre true iff interpreting cl's precondition, false for cl itself.
-     *
      * @param tc clazz id of the target instance
      *
      * @param f clazz id of the assigned field
@@ -243,17 +241,7 @@ public class DFA extends ANY
     @Override
     public Pair<Val, Unit> call(int s, Val tvalue, List<Val> args)
     {
-      var ccP = _fuir.accessedPreconditionClazz(s);
-      var cc0 = _fuir.accessedClazz            (s);
-      Val res = Value.UNIT;
-      if (ccP != -1)
-        {
-          res = call0(s, tvalue, args, ccP, true, tvalue);
-        }
-      if (res != null && !_fuir.callPreconditionOnly(s))
-        {
-          res = access(s, tvalue, args);
-        }
+      var res = access(s, tvalue, args);
       DFA.this.site(s).recordResult(res == null);
       return new Pair<>(res, _unit_);
     }
@@ -335,7 +323,7 @@ public class DFA extends ANY
       Val r;
       if (isCall)
         {
-          r = call0(s, tvalue, args, cc, false, original_tvalue);
+          r = call0(s, tvalue, args, cc, original_tvalue);
         }
       else
         {
@@ -357,7 +345,7 @@ public class DFA extends ANY
 
 
     /**
-     * Helper for call to handle non-dynamic call to cc (or cc's precondition)
+     * Helper for call to handle non-dynamic call to cc
      *
      * @param s site of call
      *
@@ -367,16 +355,14 @@ public class DFA extends ANY
      *
      * @param cc clazz that is called
      *
-     * @param preCalled true to call the precondition of cl instead of cl.
-     *
      * @return result values of the call
      */
-    Val call0(int s, Val tvalue, List<Val> args, int cc, boolean preCalled, Val original_tvalue)
+    Val call0(int s, Val tvalue, List<Val> args, int cc, Val original_tvalue)
     {
       // in case we access the value in a boxed target, unbox it first:
       tvalue = unboxTarget(tvalue, _fuir.accessTargetClazz(s), cc);
       Val res = null;
-      switch (preCalled ? FUIR.FeatureKind.Routine : _fuir.clazzKind(cc))
+      switch (_fuir.clazzKind(cc))
         {
         case Abstract :
           Errors.error("Call to abstract feature encountered.",
@@ -387,7 +373,7 @@ public class DFA extends ANY
           {
             if (_fuir.clazzNeedsCode(cc))
               {
-                var ca = newCall(cc, preCalled, s, tvalue.value(), args, _call._env, _call);
+                var ca = newCall(cc, s, tvalue.value(), args, _call._env, _call);
                 res = ca.result();
                 if (res != null && res != Value.UNIT && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)))
                   {
@@ -396,10 +382,9 @@ public class DFA extends ANY
                 // check if target value of new call ca causes current _call's instance to escape.
                 var or = _fuir.clazzOuterRef(cc);
                 if (original_tvalue instanceof EmbeddedValue ev && ev._instance == _call._instance &&
-                    (ca._pre ? _escapesPre : _escapes).contains(ca._cc) &&
+                    _escapes.contains(ca._cc) &&
                     (or != -1) &&
-                    _fuir.clazzFieldIsAdrOfValue(or) &&   // outer ref is adr, otherwise target is passed by value (primitive type like u32)
-                    !_fuir.isPreconditionAt(s)            // NYI: BUG: #2695: precondition instance should never escape
+                    _fuir.clazzFieldIsAdrOfValue(or)    // outer ref is adr, otherwise target is passed by value (primitive type like u32)
                     )
                   {
                     _call.escapes();
@@ -539,11 +524,7 @@ public class DFA extends ANY
 
       // register calls for constant creation even though
       // not every backend actually performs these calls.
-      if (_fuir.hasPrecondition(constCl))
-        {
-          newCall(constCl, true, NO_SITE, _universe, args, null /* new environment */, context);
-        }
-      newCall(constCl, false, NO_SITE, _universe, args, null /* new environment */, context);
+      newCall(constCl, NO_SITE, _universe, args, null /* new environment */, context);
 
       return result;
     }
@@ -638,7 +619,7 @@ public class DFA extends ANY
 
           if (taken)
             {
-              var resv = ai.process(_fuir.matchCaseCode(s, mc));
+              var resv = ai.processCode(_fuir.matchCaseCode(s, mc));
               if (resv.v0() != null)
                 { // if at least one case returns (i.e., result is not null), this match returns.
                   r = Value.UNIT;
@@ -668,23 +649,6 @@ public class DFA extends ANY
     public Pair<Val, Unit> env(int s, int ecl)
     {
       return new Pair<>(_call.getEffectForce(s, ecl), _unit_);
-    }
-
-
-    /**
-     * Process a contract of kind ck of clazz cl that results in bool value cc
-     * (i.e., the contract fails if !cc).
-     */
-    @Override
-    public Unit contract(int s, FUIR.ContractKind ck, Val cc)
-    {
-      return _unit_;
-      /*
-      return Unit.iff(cc.field(_names.TAG_NAME).not(),
-                        Unit.seq(Value.fprintfstderr("*** failed " + ck + " on call to '%s'\n",
-                                                       Value.string(_fuir.clazzAsString(cl))),
-                                   Value.exit(1)));
-      */
     }
 
   }
@@ -949,37 +913,31 @@ public class DFA extends ANY
          *
          * @param cl a clazz id of any kind
          *
-         * @param pre true to analyse the instance created for cl's precondition,
-         * false to analyse the instance created for a call to cl
-         *
          * @return A conservative estimate of the lifespan of cl's instance.
          * Undefined if a call to cl does not create an instance, Call if it is
          * guaranteed that the instance is inaccessible after the call returned.
          */
-        public LifeTime lifeTime(int cl, boolean pre)
+        public LifeTime lifeTime(int cl)
         {
           return
-            pre || (clazzKind(cl) != FeatureKind.Routine)
-                ? super.lifeTime(cl, pre)
-                : currentEscapes(cl, pre) ? LifeTime.Unknown :
-                                            LifeTime.Call;
+            (clazzKind(cl) != FeatureKind.Routine)
+                ? super.lifeTime(cl)
+                : currentEscapes(cl) ? LifeTime.Unknown :
+                                       LifeTime.Call;
         }
 
 
         /**
-         * For a call to cl (or cl's precondition), does the instance of cl
-         * escape the call?
+         * For a call to cl, does the instance of cl escape the call?
          *
          * @param cl a call's inner clazz
-         *
-         * @param pre true iff precondition is called.
          *
          * @return true iff the instance of the call must be allocated on the
          * heap.
          */
-        private boolean currentEscapes(int cl, boolean pre)
+        private boolean currentEscapes(int cl)
         {
-          return (pre ? _escapesPre : _escapes).contains(cl);
+          return _escapes.contains(cl);
         }
 
 
@@ -1053,19 +1011,7 @@ public class DFA extends ANY
   {
     var cl = _fuir.mainClazzId();
 
-    if (_fuir.hasPrecondition(cl))
-      {
-        newCall(cl,
-                true,
-                NO_SITE,
-                Value.UNIT,
-                new List<>(),
-                null /* env */,
-                Context._MAIN_ENTRY_POINT_);
-      }
-
     newCall(cl,
-            false,
             NO_SITE,
             Value.UNIT,
             new List<>(),
@@ -1173,7 +1119,7 @@ public class DFA extends ANY
    */
   void analyze(Call c)
   {
-    if (_fuir.clazzKind(c._cc) == FUIR.FeatureKind.Routine || c._pre)
+    if (_fuir.clazzKind(c._cc) == FUIR.FeatureKind.Routine)
       {
         var i = c._instance;
         check
@@ -1193,7 +1139,7 @@ public class DFA extends ANY
           }
 
         var ai = new AbstractInterpreter<Val,Unit>(_fuir, new Analyze(c));
-        var r = ai.process(c._cc, c._pre);
+        var r = ai.processClazz(c._cc);
         if (r.v0() != null)
           {
             c.returns();
@@ -1240,11 +1186,6 @@ public class DFA extends ANY
    */
   TreeSet<Integer> _escapes = new TreeSet<>();
 
-  /**
-   * Set of clazzes whose instance may escape the call to the clazz's
-   * precondition.
-   */
-  TreeSet<Integer> _escapesPre = new TreeSet<>();
 
   /**
    * Set of sites of calls whose result value may escape the caller's
@@ -1254,21 +1195,17 @@ public class DFA extends ANY
 
 
   /**
-   * Record that the given clazz (or its precondition) escape the call to the
-   * routine (or precondition).  If it escapes. the instance cannot be allocated
-   * on the stack.
+   * Record that the given clazz escape the call to the routine.  If it
+   * does escape, the instance cannot be allocated on the stack.
    *
    * @param cc the clazz to check
-   *
-   * @param pre true iff we need info on the precondition and not the routine
-   * cc.
    */
-  void escapes(int cc, boolean pre)
+  void escapes(int cc)
   {
-    var escapeSet = pre ? _escapesPre : _escapes;
+    var escapeSet = _escapes;
     if (escapeSet.add(cc))
       {
-        wasChanged(() -> "Escapes: " + (pre ? "precondition of " : "") + _fuir.clazzAsString(cc));
+        wasChanged(() -> "Escapes: " + _fuir.clazzAsString(cc));
       }
   }
 
@@ -1742,7 +1679,7 @@ public class DFA extends ANY
 
           // NYI: spawn0 needs to set up an environment representing the new
           // thread and perform thread-related checks (race-detection. etc.)!
-          var ncl = cl._dfa.newCall(call, false, NO_SITE, cl._args.get(0).value(), new List<>(), null /* new environment */, cl);
+          var ncl = cl._dfa.newCall(call, NO_SITE, cl._args.get(0).value(), new List<>(), null /* new environment */, cl);
           return new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc));
         });
     put("fuzion.sys.thread.join0"        , cl -> Value.UNIT);
@@ -1831,7 +1768,7 @@ public class DFA extends ANY
 
           var env = cl._env;
           var newEnv = cl._dfa.newEnv(cl, env, ecl, cl._target);
-          var ncl = cl._dfa.newCall(call, false, NO_SITE, cl._args.get(0).value(), new List<>(), newEnv, cl);
+          var ncl = cl._dfa.newCall(call, NO_SITE, cl._args.get(0).value(), new List<>(), newEnv, cl);
           // NYI: result must be null if result of ncl is null (ncl does not return) and effect.abort is not called
           return Value.UNIT;
         });
@@ -2137,8 +2074,6 @@ public class DFA extends ANY
    *
    * @param cl the called clazz
    *
-   * @param pre true iff precondition is called
-   *
    * @param site the call site, -1 if unknown (from intrinsic or program entry
    * point)
    *
@@ -2151,12 +2086,12 @@ public class DFA extends ANY
    * @param context for debugging: Reason that causes this call to be part of
    * the analysis.
    *
-   * @return cl a new or existing call to cl (or its precondition) with the
-   * given target, args and environment.
+   * @return cl a new or existing call to cl with the given target, args and
+   * environment.
    */
-  Call newCall(int cl, boolean pre, int site, Value tvalue, List<Val> args, Env env, Context context)
+  Call newCall(int cl, int site, Value tvalue, List<Val> args, Env env, Context context)
   {
-    var r = new Call(this, cl, pre, site, tvalue, args, env, context);
+    var r = new Call(this, cl, site, tvalue, args, env, context);
     var e = _calls.get(r);
     if (e == null)
       {

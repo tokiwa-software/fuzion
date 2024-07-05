@@ -104,22 +104,22 @@ public u16(public val u16) : num.wrap_around, has_interval is
   #
   public highest_one_bit u16 =>
     (v, s) := (val, u16 0    )
-    (v, s) := if (v < (u16 0x100)) (v, s) else (v >>  8, s +  8)
-    (v, s) := if (v <  (u16 0x10)) (v, s) else (v >>  4, s +  4)
-    (v, s) := if (v <           4) (v, s) else (v >>  2, s +  2)
-    (v, s) := if (v <           2) (v, s) else (v >>  1, s +  1)
-    v << s
+    (v1, s1) := if (v  < (u16 0x100)) (v , s ) else (v  >>  8, s  +  8)
+    (v2, s2) := if (v1 <  (u16 0x10)) (v1, s1) else (v1 >>  4, s1 +  4)
+    (v3, s3) := if (v2 <           4) (v2, s2) else (v2 >>  2, s2 +  2)
+    (v4, s4) := if (v3 <           2) (v3, s3) else (v3 >>  1, s3 +  1)
+    v4 << s4
 
 
   # count the number of trailing zeros in this integer.
   #
   public trailing_zeros i32 =>
     (v, s) := (val, 0)
-    (v, s) := if (v & 0xff) != u16 0 then (v, s) else (v >> 8, s + 8)
-    (v, s) := if (v &  0xf) != u16 0 then (v, s) else (v >> 4, s + 4)
-    (v, s) := if (v &    3) != u16 0 then (v, s) else (v >> 2, s + 2)
-    (v, s) := if (v &    1) != u16 0 then (v, s) else (v >> 1, s + 1)
-    if           (v &    1) != u16 0 then      s else              16
+    (v1, s1) := if (v  & 0xff) != u16 0 then (v , s ) else (v  >> 8, s  + 8)
+    (v2, s2) := if (v1 &  0xf) != u16 0 then (v1, s1) else (v1 >> 4, s1 + 4)
+    (v3, s3) := if (v2 &    3) != u16 0 then (v2, s2) else (v2 >> 2, s2 + 2)
+    (v4, s4) := if (v3 &    1) != u16 0 then (v3, s3) else (v3 >> 1, s3 + 1)
+    if             (v4 &    1) != u16 0 then      s4  else           16
 
 
   # count the number of 1 bits in the binary representation of this
@@ -127,10 +127,10 @@ public u16(public val u16) : num.wrap_around, has_interval is
   #
   public redef ones_count i32 =>
     v := val.as_i32
-    m := v & 0xaaaa; v := v - m + (m >> 1)
-    m := v & 0xcccc; v := v - m + (m >> 2)
-    m := v & 0xf0f0; v := v - m + (m >> 4)
-    (v + (v >> 8)) & 0x1f
+    m  := v  & 0xaaaa; v1 := v  - m  + (m  >> 1)
+    m1 := v1 & 0xcccc; v2 := v1 - m1 + (m1 >> 2)
+    m2 := v2 & 0xf0f0; v3 := v2 - m2 + (m2 >> 4)
+    (v3 + (v3 >> 8)) & 0x1f
 
 
   # -----------------------------------------------------------------------

@@ -205,12 +205,7 @@ public class FeatureAndOuter extends ANY
       {
         var f = fo._feature;
         var fn = f.featureName();
-        if (f.isChoice() && !f.isBaseChoice())
-          {
-            /* suppress call to choice type (e.g. bool : choice TRUE FALSE),
-               except for (inheritance) calls to 'choice' */
-          }
-        else if (isExact.test(fn))  /* an exact match, so use it: */
+        if (isExact.test(fn))  /* an exact match, so use it: */
           {
             if (CHECKS) check
               (Errors.any() ||

@@ -80,9 +80,10 @@ is
   #
   public redef as_string String =>
     (f,u,_) := for
-                 x := units.unit_names.first, n
-                 n in units.unit_names.drop 1
-                 nf := n.values.0
+                 x := units.unit_names.first, n0
+                 # NYI : name n leads to duplicate feature declaration
+                 n0 in units.unit_names.drop 1
+                 nf := n0.values.0
                while (!(nf = 0 || nanos / nf < 10)) else
                  x
     n := $(nanos / f)

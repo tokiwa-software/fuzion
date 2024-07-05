@@ -107,41 +107,45 @@ run_test_covariance =>
     say (y.plus y)
     z := y.plus y
     say z
-    z := z.plus z
+    z1 := z.plus z
+    say z1
+    z2 := z1.plus z1
+    say z2
+
+  test1 =>
+    x := test_covariance.intM2 true
+    y := test_covariance.intM2 false
+    say x
+    say y
+    say (x.plus y)
+    say (x.plus x)
+    say (y.plus y)
+    z := y.plus y
     say z
-    z := z.plus z
+    z1 := z.plus z
+    say z1
+    z2 := z1.plus z1
+    say z2
+    test x y
+
+  test2 =>
+    x := test_covariance.intM5 0
+    y := test_covariance.intM5 1
+    say x
+    say y
+    say (x.plus y)
+    say (x.plus x)
+    say (y.plus y)
+    z := y.plus y
     say z
+    z1 := z.plus z
+    say z1
+    z2 := z1.plus z1
+    say z2
+    test x y
 
-  x := test_covariance.intM2 true
-  y := test_covariance.intM2 false
-  say x
-  say y
-  say (x.plus y)
-  say (x.plus x)
-  say (y.plus y)
-  z := y.plus y
-  say z
-  z := z.plus z
-  say z
-  z := z.plus z
-  say z
-  test x y
-
-
-  x := test_covariance.intM5 0
-  y := test_covariance.intM5 1
-  say x
-  say y
-  say (x.plus y)
-  say (x.plus x)
-  say (y.plus y)
-  z := y.plus y
-  say z
-  z := z.plus z
-  say z
-  z := z.plus z
-  say z
-  test x y
+  test1
+  test2
 
 
 # This test creates nested features with accesses to the outer features' this.type

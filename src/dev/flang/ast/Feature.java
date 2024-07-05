@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.ListIterator;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
@@ -199,6 +200,50 @@ public class Feature extends AbstractFeature
   private final Contract _contract;
   public Contract contract() { return _contract; }
 
+
+  /**
+   * Lists of features we redefine and hence from which we inherit pre or post
+   * conditions.  Used during front end only to create calls to redefined
+   * features post conditions when generating post condition feature for this
+   * contract.
+   */
+  List<AbstractFeature> _inheritedPre  = new List<>();
+  List<AbstractFeature> _inheritedPost = new List<>();
+
+
+  /**
+   * precondition feature, added during syntax sugar phase.
+   */
+  Feature _preFeature = null;
+  @Override
+  public AbstractFeature preFeature()
+  {
+    return _preFeature;
+  }
+
+  /**
+   * pre bool feature, added during syntax sugar phase.
+   */
+  Feature _preBoolFeature = null;
+  @Override
+  public AbstractFeature preBoolFeature()
+  {
+    return _preBoolFeature;
+  }
+
+  /**
+   * pre and call feature, added during syntax sugar phase.
+   */
+  Feature _preAndCallFeature = null;
+  @Override
+  public AbstractFeature preAndCallFeature()
+  {
+    return _preAndCallFeature;
+  }
+
+  /**
+   * post feature, added during syntax sugar phase.
+   */
   Feature _postFeature = null;
   @Override
   public AbstractFeature postFeature()
@@ -308,6 +353,32 @@ public class Feature extends AbstractFeature
    * This is a fix for #978 but it might need to be removed when fixing #932.
    */
   public boolean _addedLate = false;
+
+
+  /*
+   * true if this feature is found to be
+   * declared in a block with
+   * _newscope=true (e.g. if/else, loop)
+   * or in a case-block
+   *
+   * example:
+   * ```
+   * f0 =>
+   *   if cc1 then
+   *      f1 =>
+   *        f2 =>
+   *        if cc2 then
+   *          f3 =>
+   *      {
+   *        f4 =>
+   *      }
+   * ```
+   * f1, f3 and f4 are _scoped in this example.
+   * f2 is not _scoped, i.e. does not need to be checked if in scope.
+   * This is because if f1 is accessible then f2 is also always accessible.
+   *
+   */
+  public boolean _scoped = false;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -793,6 +864,8 @@ public class Feature extends AbstractFeature
   }
 
 
+  // this caching reduces build time of base.fum by ~50%
+  private Optional<Kind> _kind = Optional.empty();
   /**
    * What is this Feature's kind?
    *
@@ -800,18 +873,29 @@ public class Feature extends AbstractFeature
    */
   public Kind kind()
   {
-    return state().atLeast(State.RESOLVING_TYPES) && Types.resolved != null && isChoiceAfterTypesResolved() ||
-                                                                               isChoiceBeforeTypesResolved()
-      ? Kind.Choice
-      : switch (implKind()) {
-          case FieldInit, FieldDef, FieldActual, FieldIter, Field -> Kind.Field;
-          case TypeParameter                                      -> Kind.TypeParameter;
-          case TypeParameterOpen                                  -> Kind.OpenTypeParameter;
-          case Routine, RoutineDef, Of                            -> Kind.Routine;
-          case Abstract                                           -> Kind.Abstract;
-          case Intrinsic                                          -> Kind.Intrinsic;
-          case Native                                             -> Kind.Native;
-        };
+    var result = _kind;
+    if (result.isEmpty())
+      {
+        var kind = state().atLeast(State.RESOLVING_TYPES) && Types.resolved != null && isChoiceAfterTypesResolved()
+                     || isChoiceBeforeTypesResolved()
+          ? Kind.Choice
+          : switch (implKind()) {
+              case FieldInit, FieldDef, FieldActual, FieldIter, Field -> Kind.Field;
+              case TypeParameter                                      -> Kind.TypeParameter;
+              case TypeParameterOpen                                  -> Kind.OpenTypeParameter;
+              case Routine, RoutineDef, Of                            -> Kind.Routine;
+              case Abstract                                           -> Kind.Abstract;
+              case Intrinsic                                          -> Kind.Intrinsic;
+              case Native                                             -> Kind.Native;
+            };
+        // cache only when we have resolved types.
+        if (state().atLeast(State.RESOLVING_TYPES) && Types.resolved != null)
+          {
+            _kind = Optional.of(kind);
+          }
+         result = Optional.of(kind);
+      }
+    return result.get();
   }
 
 
@@ -975,7 +1059,7 @@ public class Feature extends AbstractFeature
                   (Errors.any() || p.calledFeature() != null);
 
                 var pf = p.calledFeature();
-                if (pf != null && pf.isBaseChoice())
+                if (pf != null && pf.isChoice())
                   {
                     return true;
                   }
@@ -1032,7 +1116,6 @@ public class Feature extends AbstractFeature
       }
     _impl.visit(v, this);
     _returnType.visit(v, this);
-    _contract.visit(v, this);
   }
 
 
@@ -1287,19 +1370,20 @@ public class Feature extends AbstractFeature
       {
         res = r;
       }
-    public void         action      (AbstractAssign a, AbstractFeature outer) {        a.resolveTypes   (res,   outer); }
-    public void         actionBefore(Call           c, AbstractFeature outer) {        c.tryResolveTypeCall(res,   outer); }
-    public Call         action      (Call           c, AbstractFeature outer) { return c.resolveTypes   (res,   outer); }
-    public Expr         action      (DotType        d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
-    public Expr         action      (Destructure    d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
-    public Expr         action      (Feature        f, AbstractFeature outer) { /* use f.outer() since qualified feature name may result in different outer! */
-                                                                                return f.resolveTypes   (res, f.outer() ); }
-    public Function     action      (Function       f, AbstractFeature outer) {        f.resolveTypes   (res,   outer); return f; }
-    public void         action      (Match          m, AbstractFeature outer) {        m.resolveTypes   (res,   outer); }
-    public Expr         action      (This           t, AbstractFeature outer) { return t.resolveTypes   (res,   outer); }
-    public AbstractType action      (AbstractType   t, AbstractFeature outer) { return t.resolve        (res,   outer); }
+    @Override public void         action      (AbstractAssign  a, AbstractFeature outer) {        a.resolveTypes   (res,   outer); }
+    @Override public void         actionBefore(Call            c, AbstractFeature outer) {        c.tryResolveTypeCall(res,   outer); }
+    @Override public Call         action      (Call            c, AbstractFeature outer) { return c.resolveTypes   (res,   outer); }
+    @Override public Expr         action      (DotType         d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
+    @Override public Expr         action      (Destructure     d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
+    @Override public Expr         action      (Feature         f, AbstractFeature outer) { /* use f.outer() since qualified feature name may result in different outer! */
+                                                                                           return f.resolveTypes   (res, f.outer() ); }
+    @Override public Function     action      (Function        f, AbstractFeature outer) {        f.resolveTypes   (res,   outer); return f; }
+    @Override public void         action      (Match           m, AbstractFeature outer) {        m.resolveTypes   (res,   outer); }
+    @Override public Expr         action      (This            t, AbstractFeature outer) { return t.resolveTypes   (res,   outer); }
+    @Override public AbstractType action      (AbstractType    t, AbstractFeature outer) { return t.resolve        (res,   outer); }
+    @Override public Expr         action      (AbstractCurrent c, AbstractFeature outer) { return c.resolveTypes(res, outer); }
 
-    public boolean doVisitActuals() { return false; }
+    @Override public boolean doVisitActuals() { return false; }
   }
 
 
@@ -1401,7 +1485,7 @@ public class Feature extends AbstractFeature
       {
         _state = State.RESOLVING_SUGAR1;
 
-        _contract.addContractFeatures(this, res);
+        _contract.addContractFeatures(res, this);
         if (definesType())
           {
             typeFeature(res);
@@ -1628,18 +1712,6 @@ A ((Choice)) declaration must not contain a result type.
    */
   void choiceTypeCheckAndInternalFields(Resolution res)
   {
-    for (var p : _inherits)
-      {
-        // choice type is leaf
-        var cf = p.calledFeature();
-        if (CHECKS) check
-          (Errors.any() || cf != null);
-
-        if (cf != null && cf.isChoice() && !cf.isBaseChoice())
-          {
-            AstErrors.cannotInheritFromChoice(p.pos());
-          }
-      }
     if (isChoice())
       {
         checkChoiceAndAddInternalFields(res);
@@ -1934,7 +2006,7 @@ A ((Choice)) declaration must not contain a result type.
     if (_impl.hasInitialValue() &&
         /* initial value has been replaced by explicit assignment during
          * RESOLVING_TYPES phase: */
-        !outer.state().atLeast(State.RESOLVING_SUGAR1))
+        (outer == null || !outer.state().atLeast(State.RESOLVING_SUGAR1)))
       {
         _impl.visitExpr(v, outer);
       }
@@ -1952,6 +2024,10 @@ A ((Choice)) declaration must not contain a result type.
    */
   public Expr resolveTypes(Resolution res, AbstractFeature outer)
   {
+    if (PRECONDITIONS) require
+      (res != null,
+       isUniverse() || outer != null || Errors.any());
+
     Expr result = this;
 
     if (CHECKS) check
@@ -2130,7 +2206,6 @@ A ((Choice)) declaration must not contain a result type.
         }
       };
 
-    _contract.visit(fv, this);
     for (var p: _inherits)
       {
         p.visit(fv, this);
@@ -2285,7 +2360,7 @@ A ((Choice)) declaration must not contain a result type.
       {
         result = _returnType.functionReturnType();
       }
-    if (isOuterRef())
+    if (isOuterRef() && !outer().isFixed())
       {
         result = result.asThis();
       }

@@ -289,7 +289,7 @@ field       : returnType
     var name = n.get(i);
     var p2 = (i+1 < n.size()) ? fork() : null;
     var forkAtFormArgs = isEmptyFormArgs() ? null : fork();
-    var a = formArgsOpt();
+    var a = formArgsOpt(false);
     var r = returnType();
     var eff = effects();
     var hasType = r instanceof FunctionReturnType;
@@ -705,7 +705,14 @@ name        : IDENT                            // all parts of name must be in s
                 }
               else if (!ignoreError)
                 {
-                  syntaxError(pos, "'[ ]' or identifier after 'set'", "name");
+                  if (ENABLE_SET_KEYWORD)
+                    {
+                      syntaxError(pos, "'[ ]' or identifier after 'set'", "name");
+                    }
+                  else
+                    {
+                      syntaxError(pos, "'[ ]' after 'set'", "name");
+                    }
                 }
               break;
             }
@@ -872,14 +879,17 @@ featNames   : qual (COMMA featNames
   /**
    * Parse optional formal argument list. Result is empty List in case no formArgs is found.
    *
+   * @param forPreOrPostCondition if true, the redefine modifier will be removed
+   * since pre or post features are not redefined.
+   *
 formArgsOpt : formArgs
             |
             ;
    */
-  List<AbstractFeature> formArgsOpt()
+  List<AbstractFeature> formArgsOpt(boolean forPreOrPostCondition)
   {
     return isEmptyFormArgs() ? new List<AbstractFeature>()
-                             : formArgs();
+                             : formArgs(forPreOrPostCondition);
   }
 
 
@@ -922,7 +932,7 @@ argType     : type
             |
             ;
    */
-  List<AbstractFeature> formArgs()
+  List<AbstractFeature> formArgs(boolean forPreOrPostCondition)
   {
     return bracketTermWithNLs(PARENS, "formArgs",
                               () -> {
@@ -931,6 +941,10 @@ argType     : type
                                   {
                                     Visi v = visibility();
                                     int m = modifiers();
+                                    if (forPreOrPostCondition)
+                                      {
+                                        m = m & ~FuzionConstants.MODIFIER_REDEFINE;
+                                      }
                                     var n = argNames();
                                     AbstractType t;
                                     Impl i;
@@ -1417,6 +1431,10 @@ actuals     : actualArgs
         var l = actualArgs();
         result = new ParsedCall(target, n, l);
       }
+
+    // replace calls with erroneous name by ParsedCall.ERROR.
+    result = n == ParsedName.ERROR_NAME ? ParsedCall.ERROR : result;
+
     return pure ? pureCallTail(skippedDot, result)
                 : callTail(    skippedDot, result);
   }
@@ -2940,7 +2958,7 @@ destructrDcl: formArgs               ":=" exprInLine
   {
     if (fork().skipFormArgs())
       {
-        var a = formArgs();
+        var a = formArgs(false);
         var pos = tokenSourcePos();
         matchOperator(":=", "destructure");
         return Destructure.create(pos, a, null, exprInLine());
@@ -3137,13 +3155,18 @@ ensure      : "post"        block   // may start at min indent
     SourceRange postPos = null;
     SourceRange hasElse = null;
     SourceRange hasThen = null;
-    List<Cond> pre = null;
+    List<Cond> pre0 = null;
+    List<Cond> pre1 = null;
     List<Cond> post = null;
     if (skip(true, Token.t_pre))
       {
+        var f = fork();              // NYI: REMOVE!
+        f.skip(Token.t_else);        // NYI: REMOVE!
+        pre1 = Cond.from(f.block()); // NYI: REMOVE!
+
         var p = lastTokenPos();
         hasElse = skip(Token.t_else) ? lastTokenSourceRange() : null;
-        pre = Cond.from(block());
+        pre0 = Cond.from(block());
         prePos = sourceRange(p);
       }
     if (skip(true, Token.t_post))
@@ -3153,14 +3176,14 @@ ensure      : "post"        block   // may start at min indent
         post = Cond.from(block());
         postPos = sourceRange(p);
       }
-    var preArgs  = pre  == null ? null : forkAtFormArgs == null ? new List<AbstractFeature>() : forkAtFormArgs.fork().formArgsOpt();
-    var postArgs = forkAtFormArgs == null ? new List<AbstractFeature>() : forkAtFormArgs.formArgsOpt();
-    return pre == null && post == null && postArgs == null
+    return pre0 == null && post == null
+      && false // NYI: We cannot use EMPTY_CONTRACT since we might need the last
+               // argument, formArgs supplier, in case we inherit a contract:
       ? Contract.EMPTY_CONTRACT
-      : new Contract(pre,  prePos,  hasElse,
-                     post, postPos, hasThen,
-                     preArgs,
-                     postArgs);
+      : new Contract(pre0, pre1, prePos,  hasElse,
+                     post,       postPos, hasThen,
+                     () -> forkAtFormArgs == null ? new List<AbstractFeature>()
+                                                  : forkAtFormArgs.fork().formArgsOpt(true));
   }
 
 

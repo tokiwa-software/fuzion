@@ -142,7 +142,7 @@ public class Call extends AbstractCall
    * and the partial application of another feature,
    * see @partiallyApplicableAlternative).
    */
-  private Expr _originalTarget = _target;
+  private final Expr _originalTarget;
 
 
   /**
@@ -415,6 +415,7 @@ public class Call extends AbstractCall
     this._unresolvedGenerics = generics;
     this._actuals = actuals;
     this._target = target;
+    this._originalTarget = _target;
     this._calledFeature = calledFeature;
     this._type = type;
   }
@@ -514,8 +515,9 @@ public class Call extends AbstractCall
    *
    * @return the type of the target.
    */
-  private AbstractType targetType(Resolution res)
+  private AbstractType targetType(Resolution res, AbstractFeature outer)
   {
+    _target = res.resolveType(_target, outer);
     return
       // NYI: CLEANUP: For a type parameter, the feature result type is abused
       // and holds the type parameter constraint.  As a consequence, we have to
@@ -563,6 +565,7 @@ public class Call extends AbstractCall
     else if (_target != null)
       {
         _target.loadCalledFeature(res, thiz);
+        _target = res.resolveType(_target, thiz);
         result = targetTypeOrConstraint(res).feature();
       }
     else
@@ -1398,7 +1401,7 @@ public class Call extends AbstractCall
    *
    * @param frmlT the result type of the called feature, might be open generic.
    */
-  protected void setActualResultType(Resolution res, AbstractType frmlT)
+  protected void setActualResultType(Resolution res, AbstractFeature outer, AbstractType frmlT)
   {
     var tt =
       targetIsTypeParameter() && frmlT.isThisTypeInTypeFeature()
@@ -1407,7 +1410,7 @@ public class Call extends AbstractCall
         // selfType:
         // NYI: CLEANUP: remove this special handling!
         _target.typeForCallTarget().feature().selfType()
-      : targetType(res);
+      : targetType(res, outer);
 
     var t1 = resolveSelect(frmlT, tt);
     var t2 = t1.applyTypePars(tt);
@@ -1566,7 +1569,6 @@ public class Call extends AbstractCall
       {
         var o = t.feature().outer();
         t = o == null || o.isUniverse() ? t : ResolvedNormalType.newType(t, o.thisType());
-        t = t.asThis();
       }
     else if (_calledFeature.isConstructor())
       {  /* specialize t for the target type here */
@@ -1851,7 +1853,7 @@ public class Call extends AbstractCall
       {
         if (frml instanceof Feature f)
           {
-            f.impl().addInitialCall(this, outer);
+            f.impl().addInitialCall(this);
           }
       }
   }
@@ -2002,6 +2004,10 @@ public class Call extends AbstractCall
           {
             for (var p: aft.inherits())
               {
+                if (p instanceof Call pc)
+                  {
+                    pc.resolveTypes(res, aft);
+                  }
                 var pt = p.type();
                 if (pt != Types.t_ERROR)
                   {
@@ -2164,6 +2170,20 @@ public class Call extends AbstractCall
 
 
   /**
+   * Has this call been resolved and if so, for which outer feature?
+   *
+   * @return the outer feature this has been resolved for or null if this has
+   * not been resolved yet.  Note that the result may change due to repeated
+   * resolution when this is moved to a different feature as a result of partial
+   * application, lazy evaluation or is part of a lamba expression.
+   */
+  public AbstractFeature resolvedFor()
+  {
+    return _resolvedFor;
+  }
+
+
+  /**
    * try resolving this call as dot-type-call
    *
    * On success _calledFeature and _target will be set.
@@ -2270,7 +2290,6 @@ public class Call extends AbstractCall
         _generics = FormalGenerics.resolve(res, _generics, outer);
         _generics = _generics.map(g -> g.resolve(res, _calledFeature.outer()));
 
-
         propagateForPartial(res, outer);
         if (needsToInferTypeParametersFromArgs())
           {
@@ -2297,7 +2316,7 @@ public class Call extends AbstractCall
             else if (t != null)
               {
                 result = resolveImplicitSelect(res, outer, t);
-                setActualResultType(res, t);
+                setActualResultType(res, outer, t);
                 // Convert a call "f.g a b" into "f.g.call a b" in case f.g takes no
                 // arguments and returns a Function or Routine
                 result = result.resolveImmediateFunctionCall(res, outer); // NYI: Separate pass? This currently does not work if type was inferred
@@ -2305,7 +2324,7 @@ public class Call extends AbstractCall
             if (t == null || isTailRecursive(outer))
               {
                 cf.whenResolvedTypes
-                  (() -> setActualResultType(res, cf.resultTypeForTypeInference(pos(), res, _generics)));
+                  (() -> setActualResultType(res, outer, cf.resultTypeForTypeInference(pos(), res, _generics)));
               }
           }
         else
@@ -2535,7 +2554,7 @@ public class Call extends AbstractCall
     reportPendingError();
 
     if (CHECKS) check
-      (res._options.isLanguageServer() || _type != null);
+      (res._options.isLanguageServer() || Errors.any() || _type != null);
 
     if (_type != null && _type != Types.t_ERROR)
       {
@@ -2646,9 +2665,26 @@ public class Call extends AbstractCall
         else if (cf == Types.resolved.t_u64.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_u64); }
         else if (cf == Types.resolved.t_f32.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_f32); }
         else if (cf == Types.resolved.t_f64.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_f64); }
-
+        else if (cf != null && cf.preAndCallFeature() != null && !preChecked())
+          {
+            _calledFeature = cf.preAndCallFeature();
+          }
       }
     return result;
+  }
+
+
+  /**
+   * This is `true` if the precondition does not need to be checked before this
+   * call is done.
+   *
+   * @return `true` for a call to a feature `f` in `f.preAndCallFeature()` since
+   * this call does not require precondition checking and replacing it by a call
+   * to `f.preAndCallFeature()` would result in endless recursion.
+   */
+  boolean preChecked()
+  {
+    return false;
   }
 
 

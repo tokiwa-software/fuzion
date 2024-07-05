@@ -419,13 +419,15 @@ class LibraryOut extends ANY
    *   | d? !isI| i      | Code          | inherits calls                                |
    *   | ntrinsc|        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | int           | precondition count pre_n                      |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | pre_n  | Code          | precondition code                             |
-   *   +--------+--------+---------------+-----------------------------------------------+
    *   | R      | 1      | int           | feature offset of precondition feature        |
+   *   |        |        +---------------+-----------------------------------------------+
+   *   |        |        | int           | feature offset of pre bool feature            |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | E      | 1      | int           | feature offset of pistcondition feature       |
+   *   | R &&   | 1      | int           | feature offset of pre and call feature        |
+   *   | isConst|        |               |                                               |
+   *   | ructor |        |               |                                               |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | E      | 1      | int           | feature offset of postcondition feature       |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | redefines count r                             |
    *   |        +--------+---------------+-----------------------------------------------+
@@ -458,7 +460,13 @@ class LibraryOut extends ANY
       {
         k = k | FuzionConstants.MIR_FILE_KIND_IS_FIXED;
       }
-    var preF = (AbstractFeature) null; // NYII f.contract()._preFeature;
+    var preF   = f.preFeature();
+    var preBF  = f.preBoolFeature();
+    var preACF = f.preAndCallFeature();
+    if (CHECKS) check
+      ((preF == null) == (preBF == null),
+        f.isConstructor() || (preF == null) == (preACF == null),
+       !f.isConstructor() ||                    preACF == null );
     if (preF != null)
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_PRE_CONDITION_FEATURE;
@@ -498,13 +506,10 @@ class LibraryOut extends ANY
       {
         code(p, false);
       }
-    _data.writeInt(f.contract().req.size());
-    for (var c : f.contract().req)
-      {
-        code(c.cond, false);
-      }
-    if (preF  != null) { _data.writeOffset(preF ); }
-    if (postF != null) { _data.writeOffset(postF); }
+    if (preF   != null) { _data.writeOffset(preF  ); }
+    if (preBF  != null) { _data.writeOffset(preBF ); }
+    if (preACF != null) { _data.writeOffset(preACF); }
+    if (postF  != null) { _data.writeOffset(postF ); }
 
     var redefines = f.redefines();
     _data.writeInt(redefines.size());
@@ -680,7 +685,7 @@ class LibraryOut extends ANY
       {
         lastPos = expressions(a._value, lastPos);
         lastPos = expressions(a._target, lastPos);
-        lastPos = exprKindAndPos(MirExprKind.Assign, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.Assign, lastPos, e.sourceRange());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Assign                                                                          |
@@ -695,7 +700,7 @@ class LibraryOut extends ANY
     else if (e instanceof Box b)
       {
         lastPos = expressions(b._value, lastPos);
-        lastPos = exprKindAndPos(MirExprKind.Box, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.Box, lastPos, e.sourceRange());
       }
     else if (e instanceof AbstractBlock b)
       {
@@ -720,7 +725,7 @@ class LibraryOut extends ANY
       }
     else if (e instanceof AbstractConstant c)
       {
-        lastPos = exprKindAndPos(MirExprKind.Const, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.Const, lastPos, e.sourceRange());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Constant                                                                        |
@@ -743,7 +748,7 @@ class LibraryOut extends ANY
       {
         if (!ac.type().feature().isUniverse())
           {
-            lastPos = exprKindAndPos(MirExprKind.Current, lastPos, e.pos());
+            lastPos = exprKindAndPos(MirExprKind.Current, lastPos, e.sourceRange());
           }
       }
     else if (e instanceof AbstractCall c)
@@ -753,7 +758,7 @@ class LibraryOut extends ANY
           {
             lastPos = expressions(a, lastPos);
           }
-        lastPos = exprKindAndPos(MirExprKind.Call, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.Call, lastPos, e.sourceRange());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Call                                                                            |
@@ -818,7 +823,7 @@ class LibraryOut extends ANY
     else if (e instanceof AbstractMatch m)
       {
         lastPos = expressions(m.subject(), lastPos);
-        lastPos = exprKindAndPos(MirExprKind.Match, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.Match, lastPos, e.sourceRange());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Match                                                                           |
@@ -872,7 +877,7 @@ class LibraryOut extends ANY
     else if (e instanceof Tag t)
       {
         lastPos = expressions(t._value, lastPos);
-        lastPos = exprKindAndPos(MirExprKind.Tag, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.Tag, lastPos, e.sourceRange());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Tag                                                                             |
@@ -886,7 +891,7 @@ class LibraryOut extends ANY
       }
     else if (e instanceof Env)
       {
-        lastPos = exprKindAndPos(MirExprKind.Env, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.Env, lastPos, e.sourceRange());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Env                                                                             |
@@ -910,7 +915,7 @@ class LibraryOut extends ANY
       }
     else if (e instanceof InlineArray ia)
       {
-        lastPos = exprKindAndPos(MirExprKind.InlineArray, lastPos, e.pos());
+        lastPos = exprKindAndPos(MirExprKind.InlineArray, lastPos, e.sourceRange());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | InlineArray                                                                     |

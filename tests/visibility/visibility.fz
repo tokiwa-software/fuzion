@@ -237,16 +237,16 @@ visibility is
         chck (x = "Outer!") "outer x"
         chck (a.this.x = "Outer!") "a.this.x"
         x := "Inner!"
-        chck (x = "Inner!") "inner x"
+        chck (b.this.x = "Inner!") "inner x"
         chck (a.this.x = "Outer!") "a.this.x"
         chck (b.this.x = "Inner!") "b.this.x"
 
         c =>
-          chck (x = "Inner!") "inner x"
+          chck (b.this.x = "Inner!") "inner x"
           chck (a.this.x = "Outer!") "a.this.x"
           chck (b.this.x = "Inner!") "b.this.x"
           x := "Inner Inner!"
-          chck (x = "Inner Inner!") "inner inner x"
+          chck (c.this.x = "Inner Inner!") "inner inner x"
           chck (a.this.x = "Outer!") "a.this.x"
           chck (b.this.x = "Inner!") "b.this.x"
           chck (c.this.x = "Inner Inner!") "c.this.x"
@@ -254,25 +254,25 @@ visibility is
   visi5
 
   visi6 =>
-    x := 2;        chck $x="2"                                    "x := 2"
-    x := x.as_f64; chck ($x="2.0" || $x="2")                      "x := x.as_f64"
-    x := x * 3.14; chck ($x="6.28"|| $x="6.28000000000000024869") "x := x * 3.14"
-    x := x.as_i32; chck $x="6"                                    "x := x.as_i32"
+    x0 := 2;         chck $x0="2"                                     "x := 2"
+    x1 := x0.as_f64; chck ($x1="2.0" || $x1="2")                      "x := x.as_f64"
+    x2 := x1 * 3.14; chck ($x2="6.28"|| $x1="6.28000000000000024869") "x := x * 3.14"
+    x3 := x2.as_i32; chck $x3="6"                                     "x := x.as_i32"
   visi6
 
   visi7 =>
-    x := 2;          f () -> String := () -> "x is "+x+""
-    x := x*x*x*x;    g () -> String := () -> "x is "+x+""
-    x := x.as_string; h () -> String := () -> "x is "+x+""
-    x := x * 5;      i () -> String := () -> "x is "+x+""
+    x0 := 2;            f () -> String := () -> "x is "+x0+""
+    x1 := x0*x0*x0*x0;  g () -> String := () -> "x is "+x1+""
+    x2 := x1.as_string; h () -> String := () -> "x is "+x2+""
+    x3 := x2 * 5;       i () -> String := () -> "x is "+x3+""
     chck (f.call() = "x is 2") "x is 2"
     chck (g.call() = "x is 16") "x is 16"
     chck (h.call() = "x is 16") "x is 16"
     chck (i.call() = "x is 1616161616") "x is 1616161616"
-    x := 2;          f1 => r := "x is "+x+""; r
-    x := x*x*x*x;    g1 => r := "x is "+x+""; r
-    x := x.as_string; h1 => r := "x is "+x+""; r
-    x := x * 5;      i1 => r := "x is "+x+""; r
+    x4 := 2;            f1 => r := "x is "+x4+""; r
+    x5 := x4*x4*x4*x4;  g1 => r := "x is "+x5+""; r
+    x6 := x5.as_string; h1 => r := "x is "+x6+""; r
+    x7 := x6 * 5;       i1 => r := "x is "+x7+""; r
     chck (f1 = "x is 2") "x is 2"
     chck (g1 = "x is 16") "x is 16"
     chck (h1 = "x is 16") "x is 16"
@@ -326,9 +326,9 @@ visibility is
     magenta := cmyk 0 255 0 0
     grey    := rgba 255 255 255 127
 
-    r := red white  ; say "red white   is $r"
-    r := red grey   ; say "red grey    is $r"
-    r := red magenta; say "red magenta is $r"
+    r0 := red white  ; say "red white   is $r0"
+    r1 := red grey   ; say "red grey    is $r1"
+    r2 := red magenta; say "red magenta is $r2"
   visiB
 
   exit

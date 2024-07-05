@@ -31,8 +31,13 @@ import dev.flang.be.jvm.runtime.Runtime;
 
 import dev.flang.util.Errors;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+
 import java.util.ArrayList;
 import java.util.TreeMap;
+
+import java.util.function.Supplier;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -56,15 +61,25 @@ public class Runner extends ClassLoader
   private TreeMap<String, ClassFile> _classFiles = new TreeMap<>();
 
 
+  /**
+   * Lazy means to obtain resource Runtime.CLASS_NAME_TO_FUZION_CLAZZ_NAME.
+   */
+  private final Supplier<String> _nameToFuzionClazzName;
+
+
   /*---------------------------  constructors  ---------------------------*/
 
 
   /**
    * Constructor.  After call, requires classes to be added via Runner.add(),
    * then execution can start via Runner.runMain().
+   *
+   * @param nameToFuzionClazzName lazy means to obtain resource
+   * Runtime.CLASS_NAME_TO_FUZION_CLAZZ_NAME.
    */
-  Runner()
+  Runner(Supplier<String> nameToFuzionClazzName)
   {
+    _nameToFuzionClazzName = nameToFuzionClazzName;
   }
 
 
@@ -97,6 +112,29 @@ public class Runner extends ClassLoader
       }
     return result;
   }
+
+
+  /**
+   * Return a given JVM backend generated resources as an input stream.
+   *
+   * @param name the name of the resource.
+   *
+   * @return  Corresponding input stream or `null`.
+   *
+   */
+  public InputStream getResourceAsStream(String name)
+  {
+    if (name == Runtime.CLASS_NAME_TO_FUZION_CLAZZ_NAME)
+      {
+        var data = _nameToFuzionClazzName.get().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        return new ByteArrayInputStream(data);
+      }
+    else
+      {
+        return null;
+      }
+  }
+
 
 
   /**

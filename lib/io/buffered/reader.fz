@@ -27,7 +27,14 @@
 #
 # note: anything in the buffer when effect is uninstalled will be discarded.
 #
-public reader(rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file) : effect effect_mode.plain is
+public reader(rp Read_Provider, buf_size i32) : effect effect_mode.plain is
+
+
+  # NYI: UNDER DEVELOPMENT: custom local mutate should be passed in from outside probably?
+  m : mutate is
+  m.default
+  empty array u8 | io.end_of_file => []
+  buffer := m.env.new empty
 
 
   # install this effect and execute 'f'. Wrap the result of 'f' into an
@@ -59,7 +66,7 @@ public reader(rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file) 
   public read(max_n i32) array u8 | io.end_of_file
   post result ? io.end_of_file => true | a array => !a.is_empty
   =>
-    match buffer
+    match buffer.get
       b array =>
         if b.is_empty
           fill_buffer max_n
@@ -71,16 +78,16 @@ public reader(rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file) 
   # fill the currently empty buffer with up to max_n bytes
   #
   fill_buffer(max_n i32) unit
-  pre match buffer
+  pre match buffer.get
         a array => a.is_empty
         io.end_of_file => false
   =>
     match rp.read max_n
       a array =>
-        set buffer := a
+        buffer <- a
         replace
       eof io.end_of_file =>
-        set buffer := eof
+        buffer <- eof
         replace
       e error => raise e
 
@@ -91,9 +98,9 @@ public reader(rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file) 
   public discard(n i32) unit
   pre n >= 0
   =>
-    match buffer
+    match buffer.get
       b array =>
-        set buffer := (b.slice n b.length).as_array
+        buffer <- (b.slice n b.length).as_array
         replace
       io.end_of_file =>
 
@@ -104,9 +111,9 @@ public reader(rp Read_Provider, buf_size i32, buffer array u8 | io.end_of_file) 
   # NYI naming this feature discard leads to error: Duplicate feature declaration
   public discard_all unit
   =>
-    match buffer
+    match buffer.get
       b array =>
-        set buffer := []
+        buffer <- []
         replace
       io.end_of_file =>
 
@@ -209,12 +216,12 @@ public read_delimiter (delim u8, strip_cr bool) String|io.end_of_file ! reader =
           a array =>
 
             # trailing carriage returns are dropped
-            add_to_res(a Sequence u8) unit =>
-              if !a.is_empty
-                a1 := if strip_cr && a.last = character_encodings.ascii.cr
-                          (a.slice 0 a.count-1)
+            add_to_res(a0 Sequence u8) unit =>
+              if !a0.is_empty
+                a1 := if strip_cr && a0.last = character_encodings.ascii.cr
+                          (a0.slice 0 a0.count-1)
                         else
-                          a
+                          a0
                 for b in a1 do
                   res.add b
 
@@ -271,9 +278,9 @@ public read_lines array String ! reader =>
 # or end_of_file is reached.
 #
 public read_line_while(f String -> bool) ! reader =>
-  for s := "",  s+"\n"+match rl
-                        s String => s
-                        io.end_of_file => panic "unreachable code path"
+  for s := "",  s + "\n" + match rl
+                             s1 String => s1
+                             io.end_of_file => panic "unreachable code path"
       rl := io.buffered.read_line
   while match rl
           str String => f str
