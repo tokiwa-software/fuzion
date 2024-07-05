@@ -88,7 +88,7 @@ void fzE_opendir(const char *pathname, int64_t * result) {
 char * fzE_readdir(intptr_t * dir) {
   struct dirent * d = readdir((DIR *)dir);
 
-  return (d == NULL) ? NULL : d->d_name;
+  return (d == NULL) ? NULL : strdup(d->d_name);
 }
 
 
