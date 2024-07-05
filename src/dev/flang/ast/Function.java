@@ -321,10 +321,11 @@ public class Function extends AbstractLambda
                                    Contract.EMPTY_CONTRACT,
                                    new Impl(pos(), new Block(expressions), Impl.Kind.Routine));
             res._module.findDeclarations(_wrapper, outer);
+            res.resolveDeclarations(_wrapper);
+            res.resolveTypes(_feature);
+            var ignore = _feature.typeFeature(res);  // NYI: type feature is required for `tests/reg_issue3308`, check why this is the case
             if (inferResultType)
               {
-                res.resolveDeclarations(_wrapper);
-                res.resolveTypes(_feature);
                 result = _feature.resultType();
                 _inheritsCall._generics = gs.setOrClone(0, result);
               }

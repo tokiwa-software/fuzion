@@ -39,10 +39,12 @@ reg_issue3308 is
       say (f (r a.this))
 
       # third, a.this is part of the arguments of the partial call and
-      # boxed to Any
+      # boxed to Any, see #3315
       s(x Any) =>
-      # NYI: this still crashes `fz`:
-      #
-      # say (f (s a.this))
+      say (f (s a.this))
+
+      # fouth, an even simpler version of #3315
+      t(_ unit) =>
+      _ := f (t unit)
 
   _ := t.a
