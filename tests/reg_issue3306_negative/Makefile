@@ -17,16 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-reg_issue108 is
-  a i32 := 33
-  b i32 := 77
-  # This used to be:
-  # (a,b) := (b,a)
-  # say "a is $a b is $b"
-  # which is forbidden now anyway.
-  (c,d) := (b,a)
-  say "a is $c b is $d"
+override NAME = reg_issue3306_negative
+include ../simple.mk

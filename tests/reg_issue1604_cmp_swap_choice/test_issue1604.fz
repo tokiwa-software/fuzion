@@ -11,12 +11,11 @@ test_issue1604 is
     l := large 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC
     a := concur.atomic c s
 
-    o := a.compare_and_swap s l
-    match o
+    match a.compare_and_swap s l
       _ small => #  ok
       _ large => panic "***expected small***"
-    o := a.compare_and_swap l s
-    match o
+
+    match a.compare_and_swap l s
       _ small => panic "***expected large***"
       _ large => #  ok
 
@@ -42,12 +41,12 @@ test_issue1604 is
       if n > 0
         s1 := small 0x11
         l1 := large 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC
-        o := a.compare_and_swap s1 l1
-        match o
+
+        match a.compare_and_swap s1 l1
           _ small => #  ok
           _ large => panic "***expected small*** at $n"
-        o := a.compare_and_swap l1 s1
-        match o
+
+        match a.compare_and_swap l1 s1
           _ small => panic "***expected large*** at $n"
           _ large => #  ok
 

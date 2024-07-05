@@ -42,11 +42,11 @@ test_atomic is
     chck0 a1.read a eq
     a1.write b
     chck0 a1.read b eq
-    o := a1.compare_and_swap c d
+    _ := a1.compare_and_swap c d
     chck0 a1.read b eq
-    o := a1.compare_and_swap b c
+    _ := a1.compare_and_swap b c
     chck0 a1.read c eq
-    o := a1.compare_and_swap b d
+    _ := a1.compare_and_swap b d
     chck0 a1.read c eq
     if a1.racy_accesses_supported
       chck0 a1.racy_read c eq

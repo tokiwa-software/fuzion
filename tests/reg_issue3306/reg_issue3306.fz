@@ -21,12 +21,36 @@
 #
 # -----------------------------------------------------------------------
 
-reg_issue108 is
-  a i32 := 33
-  b i32 := 77
-  # This used to be:
-  # (a,b) := (b,a)
-  # say "a is $a b is $b"
-  # which is forbidden now anyway.
-  (c,d) := (b,a)
-  say "a is $c b is $d"
+# Test for disambiguation of partial calls using explicit targets
+#
+reg_issue3306 is
+
+  case_0 is
+    f(x ()->unit) => x.call
+    a is
+      q => say "a.q"
+
+      /*  -- commented out, see tests/reg_issues3306_negative --
+
+      f q          # This will cause an error, `q` is ambiguous
+
+      */
+
+  case_A is
+    f(x ()->unit) => x.call
+    a is
+      say (f universe.q)
+
+  case_B is
+    f(x ()->unit) => _ := x.call
+    a is
+      q => say "a.q"
+      say (f a.this.q)
+
+  _ := case_0.a
+  _ := case_A.a
+  _ := case_B.a
+
+_ := reg_issue3306
+
+q => say "universe.q"

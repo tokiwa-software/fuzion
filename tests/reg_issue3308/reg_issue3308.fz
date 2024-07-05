@@ -21,12 +21,28 @@
 #
 # -----------------------------------------------------------------------
 
-reg_issue108 is
-  a i32 := 33
-  b i32 := 77
-  # This used to be:
-  # (a,b) := (b,a)
-  # say "a is $a b is $b"
-  # which is forbidden now anyway.
-  (c,d) := (b,a)
-  say "a is $c b is $d"
+# Test partial application that refers to `a.this`
+#
+reg_issue3308 is
+
+  f(x ()->unit) =>
+
+  t is
+    a is
+
+      # first, a.this is part of the target of the partial call
+      q =>
+      say (f a.this.q)
+
+      # second, a.this is part of the arguments of the partial call
+      r(x _) =>
+      say (f (r a.this))
+
+      # third, a.this is part of the arguments of the partial call and
+      # boxed to Any
+      s(x Any) =>
+      # NYI: this still crashes `fz`:
+      #
+      # say (f (s a.this))
+
+  _ := t.a

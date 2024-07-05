@@ -38,10 +38,10 @@ test_fib2 =>
   fib(a,b) => list a (fib b a+b)
 
   # create an instance of this list starting with 1 1
-  fib := fib (u64 1) (u64 1)
+  fib0 := fib (u64 1) (u64 1)
 
   # create fibonacci as a Unary function
-  fib := fib[]
+  fib := fib0[]
 
   # use `fib`
   for i in 0..50 do
