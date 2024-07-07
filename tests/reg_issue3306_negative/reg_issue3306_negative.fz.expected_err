@@ -1,0 +1,14 @@
+
+--CURDIR--/reg_issue3306_negative.fz:32:9: error 1: Ambiguous targets found for call to 'q'
+      f q          # This will cause an error, `q` is ambiguous
+--------^
+Found several possible call targets within the current feature at different levels of outer features:
+in 'reg_issue3306.case_0.a' found 'reg_issue3306.case_0.a.q' defined at --CURDIR--/reg_issue3306_negative.fz:31:7:
+      q => say "a.q"
+------^
+and in 'universe' found 'q' defined at --CURDIR--/reg_issue3306_negative.fz:51:1:
+q => say "universe.q"
+^
+To solve this, you may qualify the feature using 'reg_issue3306.case_0.a.this.q' or 'universe.q'.
+
+one error.

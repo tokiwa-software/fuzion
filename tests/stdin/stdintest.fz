@@ -25,7 +25,7 @@
 
 stdintest =>
 
-  say (io.stdin.with (()->
+  say (io.stdin.with ()->
 
     read(n i32) => io.buffered.read_string n
     read_line => io.buffered.read_line ? str String => str | io.end_of_file => ""
@@ -61,4 +61,4 @@ stdintest =>
     say "nothing: '$read_line'."
     # this code should not run because reading from stdin now errors.
     say "nothing: '{read 1}'."
-  ))
+  )

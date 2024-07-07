@@ -36,20 +36,20 @@ transducertest is
   td1 := (transducer (Sequence i32) i32 human).type
 
   xf_filter := td1.filter (x -> x > 3)
-  r := (1..5).into xf_filter
-  chck ((container.searchable_sequence r) = (container.searchable_sequence [4, 5]))                            "filter transducer"
+  r0 := (1..5).into xf_filter
+  chck ((container.searchable_sequence r0) = (container.searchable_sequence [4, 5]))                            "filter transducer"
 
 
   td2 := (transducer (Sequence bool) bool i32).type
   xf_map := td2.map (x -> x > 3)
-  r := (1..5).into xf_map
-  chck ((container.searchable_sequence r) = (container.searchable_sequence [false, false, false, true, true])) "map transducer"
+  r1 := (1..5).into xf_map
+  chck ((container.searchable_sequence r1) = (container.searchable_sequence [false, false, false, true, true])) "map transducer"
 
 
   human(age i32) is
   ages := td1.map (x -> x.age)
   gt_ten := td1.filter (x -> x > 10)
-  r := [human 4, human 12, human 30].into (ages ∘ gt_ten)
-  chck ((container.searchable_sequence r) = (container.searchable_sequence [12, 30]))                          "compose transducers"
+  r2 := [human 4, human 12, human 30].into (ages ∘ gt_ten)
+  chck ((container.searchable_sequence r2) = (container.searchable_sequence [12, 30]))                          "compose transducers"
 
   exit

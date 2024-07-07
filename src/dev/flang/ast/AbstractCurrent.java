@@ -88,10 +88,33 @@ public abstract class AbstractCurrent extends Expr
    *
    * @return this.
    */
-  public AbstractCurrent visit(FeatureVisitor v, AbstractFeature outer)
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     _type = _type.visit(v, outer);
-    return this;
+    return v.action(this, outer);
+  }
+
+
+  /**
+   * In case this Current() was moved to a new feature, e.g., since it was used
+   * in a lambda, a lazy argument or a partial call, the types will be resolved
+   * again for a new outer feature that will be an artificial feature added as
+   * an inner feature to the original outer feature.
+   *
+   * @param res the resolution instance
+   *
+   * @param the outer feature this should be resolved for
+   *
+   * @return this in case outer is what it was when this was created, or a new
+   * Expr `Current.outer_ref. .. .outer_ref` to access the same current instance
+   * from within a new, nested outer feature.
+   */
+  public Expr resolveTypes(Resolution res, AbstractFeature outer)
+  {
+    var of = _type.feature();
+    return of == Types.f_ERROR || of == outer
+      ? this
+      : new This(pos(), outer, of).resolveTypes(res, outer);
   }
 
 

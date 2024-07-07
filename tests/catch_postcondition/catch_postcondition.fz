@@ -140,11 +140,11 @@ catch_postcondition is
 
   tries array ()->String := [ (() -> test i32), (() -> test i16), (() -> test i64) ]
 
-  c := mut 0
+  c0 := mut 0
 
   z : handle_post (option String) is
-    redef try option String  => tries[c].call
-    redef catch(s String) option String => say "*** failed: $s ***"; c <- c.get + 1; if c.get < tries.count then z.res else nil
+    redef try option String  => tries[c0].call
+    redef catch(s String) option String => say "*** failed: $s ***"; c0 <- c0.get + 1; if c0.get < tries.count then z.res else nil
 
   say z.res
 

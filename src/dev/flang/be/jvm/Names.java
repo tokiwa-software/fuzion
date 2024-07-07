@@ -241,6 +241,33 @@ public class Names extends ANY implements ClassFileConstants
 
 
   /**
+   * Get the data for the resource Runtime.CLASS_NAME_TO_FUZION_CLAZZ_NAME that
+   * holds a map from Java class names to human readable fuzion class names.
+   *
+   * The resource consists of lines separated by "\n" that consist of `java_name
+   * + "\" + fuzion_clazz_name`.
+   */
+  String methodNameToFuzionClazzNames()
+  {
+    StringBuilder result = new StringBuilder();
+    for (var n = 0; n < _classNames._cache.size(); n++)
+      {
+        var j = _classNames._cache.get(n);
+        if (j != null)
+          {
+            var cl = _fuir.firstClazz() + n;
+            result
+              .append(j)
+              .append("\t")
+              .append(_fuir.clazzAsString(cl))
+              .append("\n");
+          }
+      }
+    return result.toString();
+  }
+
+
+  /**
    * Generator and cache for Java names created from clazzes.
    */
   private class ClazzNames

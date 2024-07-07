@@ -142,7 +142,7 @@ public class Call extends AbstractCall
    * and the partial application of another feature,
    * see @partiallyApplicableAlternative).
    */
-  private Expr _originalTarget = _target;
+  private final Expr _originalTarget;
 
 
   /**
@@ -415,6 +415,7 @@ public class Call extends AbstractCall
     this._unresolvedGenerics = generics;
     this._actuals = actuals;
     this._target = target;
+    this._originalTarget = _target;
     this._calledFeature = calledFeature;
     this._type = type;
   }
@@ -564,6 +565,7 @@ public class Call extends AbstractCall
     else if (_target != null)
       {
         _target.loadCalledFeature(res, thiz);
+        _target = res.resolveType(_target, thiz);
         result = targetTypeOrConstraint(res).feature();
       }
     else
@@ -1851,7 +1853,7 @@ public class Call extends AbstractCall
       {
         if (frml instanceof Feature f)
           {
-            f.impl().addInitialCall(this, outer);
+            f.impl().addInitialCall(this);
           }
       }
   }
@@ -2004,7 +2006,7 @@ public class Call extends AbstractCall
               {
                 if (p instanceof Call pc)
                   {
-                    pc.resolveTypes(res, outer);
+                    pc.resolveTypes(res, aft);
                   }
                 var pt = p.type();
                 if (pt != Types.t_ERROR)
@@ -2168,6 +2170,20 @@ public class Call extends AbstractCall
 
 
   /**
+   * Has this call been resolved and if so, for which outer feature?
+   *
+   * @return the outer feature this has been resolved for or null if this has
+   * not been resolved yet.  Note that the result may change due to repeated
+   * resolution when this is moved to a different feature as a result of partial
+   * application, lazy evaluation or is part of a lamba expression.
+   */
+  public AbstractFeature resolvedFor()
+  {
+    return _resolvedFor;
+  }
+
+
+  /**
    * try resolving this call as dot-type-call
    *
    * On success _calledFeature and _target will be set.
@@ -2273,7 +2289,6 @@ public class Call extends AbstractCall
       {
         _generics = FormalGenerics.resolve(res, _generics, outer);
         _generics = _generics.map(g -> g.resolve(res, _calledFeature.outer()));
-
 
         propagateForPartial(res, outer);
         if (needsToInferTypeParametersFromArgs())

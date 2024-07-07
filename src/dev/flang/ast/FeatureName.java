@@ -260,18 +260,20 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
 
   public String baseNameHuman()
   {
-    return baseName().startsWith(FuzionConstants.UNDERSCORE_PREFIX)
-      ? "_"
-      : baseName().startsWith(FuzionConstants.LAMBDA_PREFIX)
-      ? "fun"
-      : baseName().startsWith(FuzionConstants.ANONYMOUS_FEATURE_PREFIX)
-      ? "anonymous"
-      : baseName().startsWith(FuzionConstants.REC_LOOP_PREFIX)
-      ? "loop"
-      : baseName().startsWith(FuzionConstants.EXPRESSION_RESULT_PREFIX) ||
-        baseName().startsWith(FuzionConstants.INTERNAL_RESULT_NAME)
-      ? "result"
-      : baseName();
+    var n = baseName();
+    return
+      n.startsWith(FuzionConstants.UNDERSCORE_PREFIX)                  ? "_"          :
+      n.startsWith(FuzionConstants.LAMBDA_PREFIX)                      ? "fun"        :
+      n.startsWith(FuzionConstants.ANONYMOUS_FEATURE_PREFIX)           ? "anonymous"  :
+      n.startsWith(FuzionConstants.REC_LOOP_PREFIX)                    ? "loop"       :
+      n.startsWith(FuzionConstants.EXPRESSION_RESULT_PREFIX) ||
+      n.startsWith(FuzionConstants.INTERNAL_RESULT_NAME)               ? "result"     :
+      n.startsWith(FuzionConstants.PREBOOLCONDITION_FEATURE_PREFIX   ) ? n.replaceFirst(FuzionConstants.PREBOOLCONDITION_FEATURE_PREFIX    + "[0-9]+_", "pre "    ) :
+      n.startsWith(FuzionConstants.PREANDCALLCONDITION_FEATURE_PREFIX) ? n.replaceFirst(FuzionConstants.PREANDCALLCONDITION_FEATURE_PREFIX + "[0-9]+_", "precall ") :
+      n.startsWith(FuzionConstants.PRECONDITION_FEATURE_PREFIX       ) ? n.replaceFirst(FuzionConstants.PRECONDITION_FEATURE_PREFIX        + "[0-9]+_", "pre "    ) :
+      n.startsWith(FuzionConstants.POSTCONDITION_FEATURE_PREFIX      ) ? n.replaceFirst(FuzionConstants.POSTCONDITION_FEATURE_PREFIX       + "[0-9]+_", "post "   ) :
+      n.endsWith(FuzionConstants.TYPE_NAME)                            ? n.replace(FuzionConstants.TYPE_NAME, "type") :
+      n;
   }
 
 

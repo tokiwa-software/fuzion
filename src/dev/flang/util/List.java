@@ -543,6 +543,25 @@ public class List<T>
   }
 
 
+
+  /**
+   * Create a new list without the first n elements
+   *
+   * @param n the number of elements to drop
+   *
+   * @return new list of the length max(0, this.length()-1), containing get(n) .. get(length()-1).
+   */
+  public List<T> drop(int n)
+  {
+    var result = new List<T>();
+    for (var i = n; i < size(); i++)
+      {
+        result.add(get(i));
+      }
+    return result;
+  }
+
+
   /**
    * Create a String by applying f to all elements and concatenating the result
    * in order.

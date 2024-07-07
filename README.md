@@ -120,8 +120,8 @@ generator_effect is
 
   # bind the yield operation dynamically
   #
-  (gen i32 (i -> say "yielded $i")).use (()->
-    [0,8,15].as_list.traverse)
+  (gen i32 (i -> say "yielded $i")).use ()->
+    [0,8,15].as_list.traverse
 ```
 
 Another major concept in Fuzion is that of the

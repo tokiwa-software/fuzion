@@ -39,9 +39,9 @@ Target feature: 'visibility_scoping.test6'
 In call: 'tt'
 
 
---CURDIR--/visibility_scoping.fz:97:10: error 6: Could not find called feature
-    f := t   # should flag an error: feature not found
----------^
+--CURDIR--/visibility_scoping.fz:97:11: error 6: Could not find called feature
+    f0 := t   # should flag an error: feature not found
+----------^
 Feature not found: 't' (no arguments)
 Target feature: 'visibility_scoping.test6'
 In call: 't'
