@@ -980,9 +980,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
     if (Clazzes.isCalledDynamically(f) &&
         isRef() &&
-        isInstantiated() &&
-        (/* on a routine, we can only call the outer ref: */
-         feature().isConstructor() || feature().isChoice() || f.isOuterRef()))
+        isInstantiated())
       {
         for (var ft : Clazzes.calledDynamicallyWithTypePars(f))
           {
