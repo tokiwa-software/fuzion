@@ -31,25 +31,3 @@
 #
 # `universe.this.say "hello"`
 #
-
-
-# is `e` contained in `Set` `s`?
-#
-# This should usually be called using type inference as in
-#
-#   my_set := set_of ["A","B","C"]
-#   say ("B" ∈ my_set)
-#   say ("D" ∈ my_set)
-#
-public infix ∈ (T type : property.equatable, e T, s container.Set T) => s.contains e
-
-
-# is `e` not contained in `Set` `s`?
-#
-# This should usually be called using type inference as in
-#
-#   my_set := set_of ["A","B","C"]
-#   say ("B" ∉ my_set)
-#   say ("D" ∉ my_set)
-#
-public infix ∉ (T type : property.equatable, e T, s container.Set T) => !(e ∈ s)
