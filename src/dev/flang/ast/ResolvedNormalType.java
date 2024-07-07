@@ -464,7 +464,7 @@ public class ResolvedNormalType extends ResolvedType
       {
       case Boxed                -> true;
       case Value                -> false;
-      case LikeUnderlyingFeature-> _feature.isThisRef();
+      case LikeUnderlyingFeature-> feature().isThisRef();
       case ThisType             -> false;
       };
   }
@@ -631,7 +631,7 @@ public class ResolvedNormalType extends ResolvedType
         {
           if (_resolved == null)
             {
-              _resolved = UnresolvedType.finishResolve(res, outerfeat, this, declarationPos(), _feature, _generics, unresolvedGenerics(), outer(), _refOrVal, false);
+              _resolved = UnresolvedType.finishResolve(res, outerfeat, this, declarationPos(), feature(), _generics, unresolvedGenerics(), outer(), _refOrVal, false);
             }
           return _resolved;
         }
