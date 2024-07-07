@@ -917,7 +917,7 @@ public class Call extends AbstractCall
    * change its outer feature and resolution of actuals will have to be
    * repeated.
    */
-  private AbstractFeature _actualsResolvedFor;
+  protected AbstractFeature _actualsResolvedFor;
 
 
   /**
