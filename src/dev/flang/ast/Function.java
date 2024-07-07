@@ -304,7 +304,7 @@ public class Function extends AbstractLambda
             var inheritsName =
               (t.feature() == Types.resolved.f_Unary && gs.size() == 2) ? Types.UNARY_NAME :
               (t.feature() == Types.resolved.f_Lazy  && gs.size() == 1) ? Types.LAZY_NAME
-                                                                              : Types.FUNCTION_NAME;
+                                                                        : Types.FUNCTION_NAME;
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             _inheritsCall = new Call(pos(), null, inheritsName);

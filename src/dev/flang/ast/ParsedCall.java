@@ -283,6 +283,7 @@ public class ParsedCall extends Call
                             new Block(new List<Expr>(as, t1)));
             _actuals = new List<Expr>(result);
             _calledFeature = Types.resolved.f_bool_AND;
+            _resolvedFormalArgumentTypes  = null;
             _pendingError = null;
             _name = _calledFeature.featureName().baseName();
           }
@@ -502,6 +503,8 @@ public class ParsedCall extends Call
           {
             _name = nn;
             _calledFeature = null;
+            _resolvedFormalArgumentTypes  = null;
+            _actualsResolvedFor = null;
             _pendingError = null;
           }
         var fn = new Function(pos(),

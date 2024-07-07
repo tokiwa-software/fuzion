@@ -650,11 +650,9 @@ public class Call extends AbstractCall
        : res.state(thiz)        .atLeast(State.RESOLVING_DECLARATIONS)));
 
     var targetVoid = false;
-    var actualsResolved = true;
     AbstractFeature targetFeature = null;
     if (_calledFeature == null)
       {
-        actualsResolved = false;
         targetFeature = targetFeature(res, thiz);
         if (CHECKS) check
           (Errors.any() || targetFeature != null && targetFeature != Types.f_ERROR);
@@ -719,7 +717,6 @@ public class Call extends AbstractCall
     if (_calledFeature == null)
       { // nothing found, try if we can build a chained bool: `a < b < c` => `(a < b) && (a < c)`
         resolveTypesOfActuals(res,thiz);
-        actualsResolved = true;
         findChainedBooleans(res, thiz);
       }
     // !isInheritanceCall: see issue #2153
@@ -731,10 +728,7 @@ public class Call extends AbstractCall
       {
         _actuals = new List<>();
       }
-    if (_calledFeature != null && !actualsResolved)
-      {
-        resolveTypesOfActuals(res,thiz);
-      }
+    resolveTypesOfActuals(res,thiz);
 
     if (POSTCONDITIONS) ensure
       (Errors.any() || !calledFeatureKnown() || calledFeature() != Types.f_ERROR || targetVoid,
@@ -917,27 +911,51 @@ public class Call extends AbstractCall
   }
 
 
+  /**
+   * Field used to detect and avoid repeated calls to resolveTypesOfActuals for
+   * the same outer feature.  Moving the call into a lambda or a lazy value will
+   * change its outer feature and resolution of actuals will have to be
+   * repeated.
+   */
+  private AbstractFeature _actualsResolvedFor;
+
+
+  /**
+   * Resolve types of actual arguments for given outer features.  This may be
+   * called repeatedly with different outer arguments as a result of this call
+   * being moved into a different feature (lambda, lazy, etc.).
+   *
+   * @param re the resolution instance
+   *
+   * @parem outer the outer feature we are resolving types against.
+   */
   private void resolveTypesOfActuals(Resolution res, AbstractFeature outer)
   {
-    // NYI: check why _actuals.listIterator cannot be done inside
-    // whenResolvedTypes. If it could, the 'if calledFeature != null / Error
-    // would not be needed.
-    ListIterator<Expr> i = _actuals.listIterator(); // _actuals can change during resolveTypes, so create iterator early
-    outer.whenResolvedTypes
-      (() ->
-       {
-         while (i.hasNext())
+    if (_actualsResolvedFor != outer)
+      {
+        _actualsResolvedFor = outer;
+
+        // NYI: check why _actuals.listIterator cannot be done inside
+        // whenResolvedTypes. If it could, the 'if calledFeature != null / Error
+        // would not be needed.
+        ListIterator<Expr> i = _actuals.listIterator(); // _actuals can change during resolveTypes, so create iterator early
+        outer.whenResolvedTypes
+          (() ->
            {
-             var a = i.next();
-             if (_calledFeature != null && _calledFeature != Types.f_ERROR)
+             while (_actualsResolvedFor == outer && // Abandon resolution of outer changed.
+                    i.hasNext())
                {
-                 var a1 = res.resolveType(a, outer);
-                 if (CHECKS) check
-                   (a1 != null);
-                 i.set(a1);
+                 var a = i.next();
+                 if (_calledFeature != null && _calledFeature != Types.f_ERROR)
+                   {
+                     var a1 = res.resolveType(a, outer);
+                     if (CHECKS) check
+                                   (a1 != null);
+                     i.set(a1);
+                   }
                }
-           }
-       });
+           });
+      }
   }
 
 
@@ -979,6 +997,8 @@ public class Call extends AbstractCall
         if (foa != null)
           {
             _calledFeature = foa._feature;
+            _resolvedFormalArgumentTypes = null;
+            _actualsResolvedFor = null;
             _pendingError = null;
             var newActuals = new List<>(_target);
             newActuals.addAll(_actuals);
@@ -1340,17 +1360,20 @@ public class Call extends AbstractCall
    */
   private void resolveFormalArgumentTypes(Resolution res)
   {
-    var fargs = _calledFeature.valueArguments();
-    _resolvedFormalArgumentTypes = fargs.size() == 0 ? UnresolvedType.NO_TYPES
-                                                     : new AbstractType[fargs.size()];
-    Arrays.fill(_resolvedFormalArgumentTypes, Types.t_UNDEFINED);
-    int count = 0;
-    for (var frml : fargs)
+    if (_resolvedFormalArgumentTypes == null)
       {
-        int argnum = count;  // effectively final copy of count
-        frml.whenResolvedTypes
-          (() -> resolveFormalArg(res, argnum, frml));
-        count++;
+        var fargs = _calledFeature.valueArguments();
+        _resolvedFormalArgumentTypes = fargs.size() == 0 ? UnresolvedType.NO_TYPES
+                                                         : new AbstractType[fargs.size()];
+        Arrays.fill(_resolvedFormalArgumentTypes, Types.t_UNDEFINED);
+        int count = 0;
+        for (var frml : fargs)
+          {
+            int argnum = count;  // effectively final copy of count
+            frml.whenResolvedTypes
+              (() -> resolveFormalArg(res, argnum, frml));
+            count++;
+          }
       }
     if (POSTCONDITIONS) ensure
       (_resolvedFormalArgumentTypes != null);
@@ -2228,6 +2251,8 @@ public class Call extends AbstractCall
                 {
                   // we found a feature that fits a dot-type-call.
                   _calledFeature = f;
+                  _resolvedFormalArgumentTypes = null;
+                  _actualsResolvedFor = null;
                   _target = new DotType(_pos, _target.asParsedType()).resolveTypes(res, thiz);
                 }
             }
@@ -2237,10 +2262,6 @@ public class Call extends AbstractCall
               !f.hasOpenGenericsArgList(res))
             {
               splitOffTypeArgs(res, f, thiz);
-            }
-          if (_calledFeature != null)
-            {
-              resolveTypesOfActuals(res,thiz);
             }
         }
     }
@@ -2363,6 +2384,8 @@ public class Call extends AbstractCall
                                       });
           }
       }
+
+    resolveTypesOfActuals(res, outer);
 
     if (POSTCONDITIONS) ensure
       (_pendingError != null || Errors.any() || result.typeForInferencing() != Types.t_ERROR);
@@ -2632,7 +2655,7 @@ public class Call extends AbstractCall
    *
    * @return a new Expr to replace this call or this if it remains unchanged.
    */
-  Expr resolveSyntacticSugar(Resolution res, AbstractFeature outer)
+  Expr resolveSyntacticSugar1(Resolution res, AbstractFeature outer)
   {
     Expr result = this;
     // must not be inheritance call since we do not want `: i32 2` turned into a numeric literal.
