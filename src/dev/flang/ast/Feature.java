@@ -2077,9 +2077,7 @@ A ((Choice)) declaration must not contain a result type.
                 }
               };
             ass = ass.visit(res._resolveSyntaxSugar1, outer);
-            result = new Block
-              (new List<>
-               (this, ass));
+            result = new Block(new List<>(this, ass));
           }
       }
     return result;

@@ -998,7 +998,6 @@ public class Call extends AbstractCall
           {
             _calledFeature = foa._feature;
             _resolvedFormalArgumentTypes = null;
-            _actualsResolvedFor = null;
             _pendingError = null;
             var newActuals = new List<>(_target);
             newActuals.addAll(_actuals);
@@ -2252,7 +2251,6 @@ public class Call extends AbstractCall
                   // we found a feature that fits a dot-type-call.
                   _calledFeature = f;
                   _resolvedFormalArgumentTypes = null;
-                  _actualsResolvedFor = null;
                   _target = new DotType(_pos, _target.asParsedType()).resolveTypes(res, thiz);
                 }
             }
