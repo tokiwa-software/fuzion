@@ -24,11 +24,11 @@
 ex_unary is
 
   g ref : Unary i32 i32 is
-    redef call (x i32) i32 => 2*x
+    redef call (xg i32) i32 => 2*xg
 
 
   f ref : Unary i32 i32 is
-    redef call (y i32) i32 => y+2
+    redef call (yf i32) i32 => yf+2
 
   x := (f ∘ g).call 3
   say x

@@ -993,7 +993,18 @@ A post-condition of a feature that does not redefine an inherited feature must s
           }
         else
           {
-            AstErrors.duplicateFeatureDeclaration(f.pos(), f, existing);
+            if (existing instanceof Feature ef && ef.isArgument() && f.isArgument())
+              {
+                // NYI: CLEANUP: there should not be two places where
+                // similar error is raised.
+                // An error should have been raised already in feature constructor:
+                // "Names of arguments used in this feature must be distinct"
+                check(Errors.any());
+              }
+            else
+              {
+                AstErrors.duplicateFeatureDeclaration(f.pos(), f, existing);
+              }
           }
       }
     df.put(fn, f);
@@ -1195,7 +1206,20 @@ A post-condition of a feature that does not redefine an inherited feature must s
     // - non argument fields
     if (v instanceof Feature f && (f._scoped || v.isField() && !f.isArgument()))
       {
+        /* cases like the following are forbidden:
+          * ```
+          * a := b
+          * b := 1
+          * ```
+          */
         var useIsBeforeDefinition = new Boolean[]{ false };
+         /* while cases like these are allowed:
+          * ```
+          * a => b
+          * b := 1
+          * ```
+          */
+        var visitingInnerFeature = new Boolean[]{ false };
         var usage = new ArrayList<Stack<Expr>>();
         var definition = new ArrayList<Stack<Expr>>();
         var stacks = new ArrayList<Stack<Expr>>();
@@ -1205,7 +1229,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
           {
             if (use == a)
               {
-                useIsBeforeDefinition[0] = definition.isEmpty();
+                useIsBeforeDefinition[0] = definition.isEmpty() && !visitingInnerFeature[0];
                 usage.add((Stack)stacks.get(0).clone());
               }
             super.action(a, outer);
@@ -1213,7 +1237,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
           public void action(AbstractCall c) {
             if (use == c)
               {
-                useIsBeforeDefinition[0] = definition.isEmpty();
+                useIsBeforeDefinition[0] = definition.isEmpty() && !visitingInnerFeature[0];
                 usage.add((Stack)stacks.get(0).clone());
               }
           };
@@ -1235,7 +1259,10 @@ A post-condition of a feature that does not redefine an inherited feature must s
             if (usage.isEmpty() && f2.isRoutine())
               {
                 stacks.get(0).push(f2);
+                var old = visitingInnerFeature[0];
+                visitingInnerFeature[0] = true;
                 f2.impl().visit(this, outer);
+                visitingInnerFeature[0] = old;
                 stacks.get(0).pop();
               }
             return f2;
@@ -1267,16 +1294,6 @@ A post-condition of a feature that does not redefine an inherited feature must s
 
         if (f.isField())
           {
-            /* cases like the following are forbidden:
-             * ```
-             * a := b
-             * b := 1
-             * ```
-             * ```
-             * a => b
-             * b := 1
-             * ```
-             */
             if (useIsBeforeDefinition[0])
               {
                 return false;
