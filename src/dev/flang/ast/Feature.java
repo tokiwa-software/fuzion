@@ -1374,8 +1374,6 @@ public class Feature extends AbstractFeature
     @Override public Call         action      (Call            c, AbstractFeature outer) { return c.resolveTypes   (res,   outer); }
     @Override public Expr         action      (DotType         d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
     @Override public Expr         action      (Destructure     d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
-    @Override public Expr         action      (Feature         f, AbstractFeature outer) { /* use f.outer() since qualified feature name may result in different outer! */
-                                                                                           return f.resolveTypes   (res, f.outer() ); }
     @Override public Function     action      (Function        f, AbstractFeature outer) {        f.resolveTypes   (res,   outer); return f; }
     @Override public void         action      (Match           m, AbstractFeature outer) {        m.resolveTypes   (res,   outer); }
     @Override public Expr         action      (This            t, AbstractFeature outer) { return t.resolveTypes   (res,   outer); }
@@ -1489,10 +1487,7 @@ public class Feature extends AbstractFeature
           {
             typeFeature(res);
           }
-        visit(new FeatureVisitor()
-          {
-            public Expr action(Call c, AbstractFeature outer) { return c.resolveSyntacticSugar(res, outer); }
-          });
+        visit(res._resolveSyntaxSugar1);
 
         _state = State.RESOLVED_SUGAR1;
         res.scheduleForTypeInference(this);
@@ -2014,35 +2009,49 @@ A ((Choice)) declaration must not contain a result type.
 
 
   /**
-   * determine the static type of all expressions and declared features in this feature
+   * resolve syntactic sugar of feature declaration, i.e., add assignment for the
+   * initial value of fields.
    *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
+   * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this expression.
+   * @param outer the root feature that contains this feature declaration.
    */
-  public Expr resolveTypes(Resolution res, AbstractFeature outer)
+  public Expr resolveSyntacticSugar1(Resolution res, AbstractFeature outer)
   {
     if (PRECONDITIONS) require
       (res != null,
+       outer.state() == State.RESOLVING_SUGAR1,
        isUniverse() || outer != null || Errors.any());
 
     Expr result = this;
 
     if (CHECKS) check
-      (this.outer() == outer,
-        Errors.any() ||
-        (_impl._kind != Impl.Kind.FieldDef    &&
-         _impl._kind != Impl.Kind.FieldActual)
-        || _returnType == NoType.INSTANCE);
+      (Errors.any() ||
+       (_impl._kind != Impl.Kind.FieldDef    &&
+        _impl._kind != Impl.Kind.FieldActual)
+       || _returnType == NoType.INSTANCE);
 
     if (_impl.hasInitialValue())
       {
-        /* add assignment of initial value: */
-        result =
-          new Block
-            (new List<>(this,
-                        new Assign(res, _pos, this, _impl.expr(), outer)));
+        // outer() != outer may be the case for fields declared in types
+        //
+        //   type.f := x
+        //
+        // or for qualified declarations
+        //
+        //   String.new_field := 3
+        //
+        // which should have caused errors already.
+        if (CHECKS) check
+          (Errors.any() || this.outer() == outer);
+
+        if (this.outer() == outer)
+          {
+            /* add assignment of initial value: */
+            AbstractAssign ass = new Assign(res, _pos, this, _impl.expr(), outer);
+            ass = ass.visit(res._resolveSyntaxSugar1, outer);
+            result = new Block(new List<>(this, ass));
+          }
       }
     return result;
   }

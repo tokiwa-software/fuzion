@@ -23,4 +23,7 @@
 
 override NAME = test_process
 FUZION_OPTIONS = -unsafeIntrinsics=on
+# interpreter needs a lot of stack due to
+# pipeing from stdout->stdin in background thread
+FUZION_JAVA_STACK_SIZE=25m
 include ../simple.mk

@@ -666,18 +666,6 @@ public String ref : property.equatable, property.hashable, property.orderable is
     p*l + String.this + p*r
 
 
-  # is this part of given set
-  #
-  element_of(s container.Set String) => s.contains String.this
-  public infix ∈ (s container.Set String) => String.this.element_of s
-
-
-  # is this not part of given set
-  #
-  not_element_of(s container.Set String) => !element_of s
-  public infix ∉ (s container.Set String) => String.this.not_element_of s
-
-
   # return string of at least length l by
   # padding codepoint s to start of string
   #

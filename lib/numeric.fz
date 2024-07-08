@@ -190,22 +190,6 @@ module:public numeric : property.hashable, property.orderable is
     while numeric.this / b ≥ bs
 
 
-  # is this part of given set
-  #
-  # NYI: infix operators currently always use dynamic binding on the lhs and pass
-  # the rhs as an argument.  If we would support an 'rinfix ∈' that would use the
-  # rhs for dynamic binding and the lhs as argument, we could define '∈' in Set T
-  # and it would work for all set types.
-  #
-  public element_of(s container.Set numeric.this) => s.contains numeric.this
-  public infix ∈ (s container.Set numeric.this) => numeric.this.element_of s
-
-  # is this not part of given set
-  #
-  public not_element_of(s container.Set numeric.this) => !element_of s
-  public infix ∉ (s container.Set numeric.this) => numeric.this.not_element_of s
-
-
   # -----------------------------------------------------------------------
   #
   # type features:

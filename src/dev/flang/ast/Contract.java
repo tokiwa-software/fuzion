@@ -740,6 +740,8 @@ public class Contract extends ANY
       }
     code._expressions = new_code;
     var e = res.resolveType(code, pF);
+    if (CHECKS) check
+      (code == e);
   }
 
 
