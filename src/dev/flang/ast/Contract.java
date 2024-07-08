@@ -739,7 +739,9 @@ public class Contract extends ANY
                                      new Block(new_code)));
       }
     code._expressions = new_code;
-    res.resolveType(code, pF);
+    var e = res.resolveType(code, pF);
+    if (CHECKS) check
+      (code == e);
   }
 
 
