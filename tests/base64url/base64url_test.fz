@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion test base64url
 #
 # -----------------------------------------------------------------------
 
@@ -44,7 +44,7 @@ base64url_test is
   enc_test =>
     for tup in base64_test_vectors do
       (plain, code_expected) := tup
-      code_actual := encodings.base64url.encode plain.utf8
+      code_actual := encodings.base64url.encode plain.utf8.as_array
       out :=
         if code_actual = code_expected
           outcome "ok"

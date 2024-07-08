@@ -1,35 +1,54 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature base64
+#
+# -----------------------------------------------------------------------
+
 # Base64 encoding and decoding as defined in RFC 4648
+#
 public base64 is
 
   # allows redefinition for base64url
   module get_alphabet => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".as_codepoints.as_array
-  module get_char_62 u8 => 43 # +
-  module get_char_63 u8 => 47 # /
-  module get_encoding_name => "base64"
+  module encoding_name => "base64"
 
   # NYI: compiler does currently not optimize features without arguments to treat them like fields
-  char_62_ascii := get_char_62
-  char_63_ascii := get_char_63
   alphabet := get_alphabet
-  encoding_name := get_encoding_name
+  char_62_ascii := alphabet[62].utf8.first
+  char_63_ascii := alphabet[63].utf8.first
 
   # Encodes a given byte sequence in base64, output length is padded to multiple of 4
   public encode (data Sequence u8) String =>
 
     # 0 -> 0; 1 -> 2; 2 -> 1
-    pad_size := (3 - data.count%3)%3     # length of the padding: number of padded zero bytes in input as well as number of '=' in output
+    pad_size := (3 - data.count%3)%3     # size of the padding: number of padded zero bytes in input as well as number of '=' in output
     in_len := data.count + pad_size      # length of zero padded input data
 
     # this guarantees that input length is always multiple of 3
     input := array u8 in_len i->if i < data.count then data[i] else 0
 
-    for b0 := 0, b0 + 3
-        b1 := 1, b1 + 3
-        b2 := 2, b2 + 3
-        res := "", res + block # the encoded input data
-    while b2 < in_len
+    for b := 0, b + 3
+        res := "", res + block          # the encoded input data
+    while b+2 < in_len
       # get 3 bytes (24 bits) and convert them into a number with 24 bits
-      n u32 := (input[b0].as_u32 << 16) + (input[b1].as_u32 << 8) + input[b2].as_u32
+      n u32 := (input[b].as_u32 << 16) + (input[b+1].as_u32 << 8) + input[b+2].as_u32
 
       # extract four sextets from 24 bit number
       n0 => ((n >> 18) & 63).as_i32
@@ -38,9 +57,9 @@ public base64 is
       n3 => (n & 63).as_i32
 
       # encode sextets
-      block := alphabet[n0] + alphabet[n1] + alphabet[n2] + alphabet[n3] # NYI: OPTIMIZATION: lots of string concatenation
+      block := alphabet[n0] + alphabet[n1] + alphabet[n2] + alphabet[n3]
     else
-      res.substring 0 (res.byte_length - pad_size) + "=" * pad_size
+      res.substring 0 (res.byte_length - pad_size) + "="*pad_size
 
   # decodes a base64 string, decoding is strict as required by RFC 4648
   # non alphabet characters, line breaks, missing padding cause errors
@@ -65,7 +84,7 @@ public base64 is
   # non alphabet characters, line breaks, missing padding cause errors
   public decode(data array u8) =>
 
-    # determine padding length '=' is 61 in ASCII
+    # determine size of padding, i.e. number of '=' (61 in ASCII) at the end
     pad_size :=
       if data.count > 1 && data[data.count - 1] = 61
         if data[data.count - 2] = 61 then 2
@@ -78,7 +97,7 @@ public base64 is
       do
         check_char :=
           # base64 alphabet character
-          if (b >= 65 && b <= 90) || (b >= 97 && b <= 122) || (b >= 48 && b <= 57) || (b = char_62_ascii) || (b = get_char_63)
+          if (b >= 65 && b <= 90) || (b >= 97 && b <= 122) || (b >= 48 && b <= 57) || (b = char_62_ascii) || (b = char_63_ascii)
             outcome true
 
           # padding character =
@@ -89,7 +108,7 @@ public base64 is
                     only at the very end, as required by RFC464"""
             else outcome true
 
-          # linebreak
+          # line break
           else if b = 10 || b = 13
               error """
                     line breaks are not allowed within encoded data, as required by RFC464, found \
@@ -111,9 +130,9 @@ public base64 is
     else                        # do decoding
 
       # replace padding with zeros (character 'A' / 65 is decoded to zero)
-      input := ((data.take(data.count - pad_size)) ++ ([(u8 65)].cycle.take pad_size)).as_array
+      input := (data.map (x -> if x=61 then 65 else x)).as_array
 
-      _dec_sextet(input, pos) =>
+      dec_sextet(input, pos) =>
         n := input[pos]
 
         if n >= 65 && n <= 90       # case A-Z
@@ -140,10 +159,10 @@ public base64 is
       while nxt3 < input.length
       do
         # convert ascii value into sextets
-        sxt0 := _dec_sextet input nxt0
-        sxt1 := _dec_sextet input nxt1
-        sxt2 := _dec_sextet input nxt2
-        sxt3 := _dec_sextet input nxt3
+        sxt0 := dec_sextet input nxt0
+        sxt1 := dec_sextet input nxt1
+        sxt2 := dec_sextet input nxt2
+        sxt3 := dec_sextet input nxt3
 
         # convert sextets in 24 bit number, break up in three bytes
         block := sxt0 << 18 | sxt1 << 12 | sxt2 << 6 | sxt3
