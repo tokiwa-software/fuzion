@@ -486,11 +486,9 @@ public class Names extends ANY implements ClassFileConstants
 
     d = 0;
     StringBuilder sb = new StringBuilder();
-    boolean alphaMode = true;
     for (int cp, off = 0; off < length; off += Character.charCount(cp))
       {
         cp = s.codePointAt(off);
-        var orig = cp;
 
         var ok =
           (off == 0 && Character.isJavaIdentifierStart(cp) && (cp != '_') ||

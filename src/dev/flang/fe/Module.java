@@ -308,8 +308,6 @@ public abstract class Module extends ANY implements FeatureLookup
         var existing = it.next();
         if (f != existing)
           {
-            var df = declaredFeatures(outer).get(fn);
-
             if (redefines(f, existing))
               {
                 it.remove();

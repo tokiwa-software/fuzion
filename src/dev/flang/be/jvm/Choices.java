@@ -439,7 +439,6 @@ public class Choices extends ANY implements ClassFileConstants
   public Expr match(JVM jvm, AbstractInterpreter<Expr, Expr> ai, int s, Expr sub)
   {
     var cl = _fuir.clazzAt(s);
-    var cf = _types.classFile(cl);
     var subjClazz = _fuir.matchStaticSubject(s);
     Expr code;
 
@@ -503,7 +502,6 @@ public class Choices extends ANY implements ClassFileConstants
           for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
             {
               // NYI: OPTIMIZATION: This currently uses a cascade of if..else if.., should better uses tableswitch.
-              var field = _fuir.matchCaseField(s, mc);
               var tags = _fuir.matchCaseTags(s, mc);
               for (var tagNum : tags)
                 {

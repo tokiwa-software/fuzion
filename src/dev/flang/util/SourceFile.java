@@ -776,7 +776,6 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
   {
     if (_FAST_LINE_NUM_)
       {
-        var l0 = l;
         if (_lineNumBase[pos / 128] == 0)
           {
             _lineNumBase[pos / 128] = l;
