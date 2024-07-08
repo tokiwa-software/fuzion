@@ -29,7 +29,7 @@ sockets_test is
   server(f net.family.val, p net.protocol.val) =>
 
     # server handles one connection at a time
-    start_server(family net.family.val, protocol net.protocol.val, port u16) =>
+    start_server(LM type : mutate, family net.family.val, protocol net.protocol.val, port u16) =>
 
       say_silent(s Any) => unit
 
@@ -57,7 +57,11 @@ sockets_test is
 
               res := "received: {rr.as_string}\n\n"
 
-              match chan.write res.utf8
+              w =>
+                _ := (io.buffered.writer lm).write res.utf8.as_array
+                (io.buffered.writer lm).flush
+
+              match w
                 e error => say_silent "$protocol/$family-server, write error $e"
                 * => say_silent "$protocol/$family-server, write succeeded"
 
@@ -69,14 +73,15 @@ sockets_test is
 
 
 
-      while net.server.is_active && match net.server.accept rh
+      while net.server.is_active && match net.server.accept unit LM rh
                                       e error => false
                                       * => true
       do
 
 
-
-    start_server f p (port f p)
+    lm : mutate is
+    lm.go ()->
+      start_server lm f p (port f p)
 
 
 
