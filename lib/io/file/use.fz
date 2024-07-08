@@ -40,12 +40,12 @@ public mode is
 # type parameter T is used to distinguish between several open files.
 #
 # usage example:
-# ```
-# use some_type file_name mode.read ()->
-#   match (open some_type).read
-#     e error => e
-#     a array => String.from_bytes a
-# ```
+#
+#     use some_type file_name mode.read ()->
+#       match (open some_type).read
+#         e error => e
+#         a array => String.from_bytes a
+#
 public use(T, R type, file_name String, m mode.val, code ()-> outcome R) outcome R =>
 
   mode_num := match m
@@ -71,11 +71,11 @@ public use(T, R type, file_name String, m mode.val, code ()-> outcome R) outcome
 # it is not necessary to distinguish between opens
 #
 # usage example:
-# ```
-# use file_name mode.read ()->
-#   match open.read
-#     e error => e
-#     a array => String.from_bytes a
-# ```
+#
+#     use file_name mode.read ()->
+#       match open.read
+#         e error => e
+#         a array => String.from_bytes a
+#
 public use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R =>
   use open_unique_type R file_name m code

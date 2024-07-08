@@ -28,10 +28,10 @@
 # allowing to read from stdin.
 #
 # usage example:
-# ```
-# line_or_error := io.stdin.with ()->
-#   io.buffered.read_line
-# ```
+#
+#     line_or_error := io.stdin.with ()->
+#       io.buffered.read_line
+#
 #
 public stdin io.buffered.reader =>
 

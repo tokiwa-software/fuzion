@@ -28,13 +28,13 @@
 # to process the request.
 #
 # Minimal example:
-# ```
-# rh : net.Request_Handler unit is
-#   handle_request unit =>
-#     say net.channel.env.get_peer_address
 #
-# net.client rh net.family.ipv4 net.protocol.tcp "tokiwa.software" (u16 80) # NYI: type inference
-# ```
+#     rh : net.Request_Handler unit is
+#       handle_request unit =>
+#         say net.channel.env.get_peer_address
+#
+#     net.client rh net.family.ipv4 net.protocol.tcp "tokiwa.software" (u16 80) # NYI: type inference
+#
 #
 # Blocks until connection is establised.
 # NYI blocking / none blocking
