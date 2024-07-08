@@ -87,8 +87,17 @@ void fzE_opendir(const char *pathname, int64_t * result) {
 
 char * fzE_readdir(intptr_t * dir) {
   struct dirent * d = readdir((DIR *)dir);
-
-  return (d == NULL) ? NULL : strdup(d->d_name);
+  if ( d == NULL )
+  {
+    return NULL;
+  }
+  else
+  {
+    size_t len = strlen(d->d_name);
+    char *dup = (char *) fzE_malloc_safe(len + 1);
+    strcpy(dup, d->d_name);
+    return dup;
+  }
 }
 
 
