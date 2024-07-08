@@ -35,31 +35,40 @@ public base64 is
   char_63_ascii := alphabet[63].utf8.first
 
   # Encodes a given byte sequence in base64, output length is padded to multiple of 4
-  public encode (data Sequence u8) String =>
-
-    # 0 -> 0; 1 -> 2; 2 -> 1
-    pad_size := (3 - data.count%3)%3     # size of the padding: number of padded zero bytes in input as well as number of '=' in output
-    in_len := data.count + pad_size      # length of zero padded input data
-
-    # this guarantees that input length is always multiple of 3
-    input := array u8 in_len i->if i < data.count then data[i] else 0
-
-    for b := 0, b + 3
-        res := "", res + block          # the encoded input data
-    while b+2 < in_len
-      # get 3 bytes (24 bits) and convert them into a number with 24 bits
-      n u32 := (input[b].as_u32 << 16) + (input[b+1].as_u32 << 8) + input[b+2].as_u32
-
-      # extract four sextets from 24 bit number
-      n0 => ((n >> 18) & 63).as_i32
-      n1 => ((n >> 12) & 63).as_i32
-      n2 => ((n >> 6) & 63).as_i32
-      n3 => (n & 63).as_i32
-
-      # encode sextets
-      block := alphabet[n0] + alphabet[n1] + alphabet[n2] + alphabet[n3]
+  public encode (data array u8) String =>
+    for
+      res := "", res + block # the encoded input data
+      i := 0, i+1
+      last_n u32 := 0, (i) %% 3 ?  0 : n
+    while i < data.length
+    do
+      b := data[i]
+      n := (last_n << 8) + b.as_u32
+      block := if i%3=2 then
+                  # extract four sextets from 24 bit number
+                  n0 => ((n >> 18) & 63).as_i32
+                  n1 => ((n >> 12) & 63).as_i32
+                  n2 => ((n >> 6) & 63).as_i32
+                  n3 => (n & 63).as_i32
+                  alphabet[n0] + alphabet[n1] + alphabet[n2] + alphabet[n3]
+                else
+                  ""
     else
-      res.substring 0 (res.byte_length - pad_size) + "="*pad_size
+      if !(data.length%%3)
+        case := data.length%3 # last input block of 1 or 2 characters
+        n := if case = 1 then last_n<<4 else last_n<<2
+
+        n2_0 => ((n >> 12) & 63).as_i32
+        n2_1 => ((n >> 6) & 63).as_i32
+        n2_2 => (n & 63).as_i32
+
+        opt_first => case = 1 ? "" : alphabet[n2_0]
+        pad   => case = 1 ? "==" : "="
+
+        res + opt_first + alphabet[n2_1] + alphabet[n2_2] + pad
+      else
+        res
+
 
   # decodes a base64 string, decoding is strict as required by RFC 4648
   # non alphabet characters, line breaks, missing padding cause errors
