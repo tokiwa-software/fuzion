@@ -25,10 +25,16 @@
 
 # try -- simple exception effect
 #
-# try provides an operation 'raise' that immediately stops execution and
+# try provides an operation 'cause' that immediately stops execution and
 # returns an 'error' wrapped in an 'outcome'.
 #
-public try (public T type) : effect effect_mode.plain
+public try (# type parameter used only to distinguish different instances of
+            # `try`, this is otherwise ignores. This permits using, e.g.,
+            # `try reader` and `try writer` and distingish the errors raisde
+            # by the reader from those raised by the writer.
+            #
+            public T type
+            ) : eff.fallible error (e -> set err := e; raise e)
 is
 
   # mutuable field to receive the error in case raise is called
@@ -50,18 +56,22 @@ is
     abort
 
 
-# convenience routine to create a new instance of 'try' and run 'f' in
+# convenience routine to create a new instance of 'try T' and run 'f' in
 # it.
 #
-public try(T, R type, f ()->R) =>
+public try(T type,
+           R type,
+           f ()->R) =>
   (try T).on f
 
 
-# convenience routine to create a new instance of 'try' and run 'f' in
+# convenience routine to create a new instance of 'try T' and run 'f' in
 # it. Return the result of 'f' directly or panic in case 'f' calls
 # 'try.env.raise'.
 #
-public try_or_panic(T, R type, f ()->R) outcome R =>
+public try_or_panic(T type,
+                    R type,
+                    f ()->R) outcome R =>
   match (try T).on f
     e error => panic $e
     r R => r

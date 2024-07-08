@@ -27,31 +27,13 @@
 #
 public panic (
   # the handler this effect uses to panic
-  p Panic_Handler,
+  p String->void,
   _ unit
-  ) : simple_effect
+  ) : eff.fallible (String) p
 is
 
-  # panic with the given message
-  #
-  panic(msg String) =>
-    p.do_panic msg
-    abort
-
-
   type.install_default =>
-    (panic default_panic_handler unit).default
-
-
-  # default panic handler using io.err and exit with return code 1
-  #
-  type.default_panic_handler : Panic_Handler is
-
-    # panic with the given message and exit with return code 1
-    #
-    redef do_panic(msg String) =>
-      io.err.println "*** panic: $msg"
-      exit 1
+    (panic (msg->fuzion.runtime.fault.cause ("*** panic ***", msg)) unit).default
 
 
 # panic with no argument returns panic.env, the currently installed
@@ -62,30 +44,7 @@ public panic =>
   panic.env
 
 
-# panic with a msg argument calls panic.panic msg, i.e., it uses the
+# panic with a msg argument calls panic.cause msg, i.e., it uses the
 # current panic effect to panic with the given message.
 #
-public panic(msg String) => panic.panic msg
-
-
-# Panic_Handler -- abstract panic
-#
-public Panic_Handler ref is
-
-  # panic with the given message
-  #
-  # NYI: The result of do_panic should be returned by `use`, but there is
-  # currently no way we could do this.  One way would be to add a local
-  # variable of type `Any` to `panic` and store the result there and then
-  # cast it to the correct type in `use` (see
-  # https://fuzion-lang.dev/design/type_casts_ref)
-  #
-  public do_panic(msg String) unit => abstract
-
-  # Install this panic handler using a new instance of panic and run
-  # `code` on it. In case of an abort, return `def()` (NYI: def should be
-  # removed and the result of do_panic should be returned instead).
-  #
-  public use(R type, code, def ()->R) =>
-    p := panic Panic_Handler.this unit
-    p.run code def
+public panic(msg String) => panic.cause msg
