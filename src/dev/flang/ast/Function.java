@@ -304,7 +304,7 @@ public class Function extends AbstractLambda
             var inheritsName =
               (t.feature() == Types.resolved.f_Unary && gs.size() == 2) ? Types.UNARY_NAME :
               (t.feature() == Types.resolved.f_Lazy  && gs.size() == 1) ? Types.LAZY_NAME
-                                                                              : Types.FUNCTION_NAME;
+                                                                        : Types.FUNCTION_NAME;
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             _inheritsCall = new Call(pos(), null, inheritsName);
@@ -321,10 +321,10 @@ public class Function extends AbstractLambda
                                    Contract.EMPTY_CONTRACT,
                                    new Impl(pos(), new Block(expressions), Impl.Kind.Routine));
             res._module.findDeclarations(_wrapper, outer);
+            res.resolveDeclarations(_wrapper);
+            res.resolveTypes(_feature);
             if (inferResultType)
               {
-                res.resolveDeclarations(_wrapper);
-                res.resolveTypes(_feature);
                 result = _feature.resultType();
                 _inheritsCall._generics = gs.setOrClone(0, result);
               }

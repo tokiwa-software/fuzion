@@ -152,6 +152,18 @@ public class Resolution extends ANY
   FeatureVisitor resolveTypesFully = new Feature.ResolveTypes(this);
 
 
+  /**
+   * FeatureVisitor to call resolveSyntacticSugar1() on Calls and Features.
+   *
+   * This is used during state RESOLVING_SUGAR1
+   */
+  FeatureVisitor _resolveSyntaxSugar1 = new FeatureVisitor()
+    {
+      public Expr action(Feature f, AbstractFeature outer) { return f.resolveSyntacticSugar1(Resolution.this, outer); }
+      public Expr action(Call    c, AbstractFeature outer) { return c.resolveSyntacticSugar1(Resolution.this, outer); }
+    };
+
+
   final FuzionOptions _options;
 
 
