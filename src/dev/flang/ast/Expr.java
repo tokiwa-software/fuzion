@@ -665,7 +665,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   private Expr tag(AbstractType frmlT, Expr value)
   {
     if(PRECONDITIONS) require
-      (frmlT.isChoice());
+      (frmlT.isChoice() || frmlT == Types.t_ERROR);
 
     // Case 1: types are equal, no tagging necessary
     if (frmlT.compareTo(value.type()) == 0)
@@ -721,7 +721,8 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
         if (CHECKS) check
           (Errors.any() || cgs.size() == 1);
 
-        return tag(frmlT, tag(cgs.get(0), value));
+        return cgs.size() == 1 ? tag(frmlT, tag(cgs.get(0), value))
+                               : Expr.ERROR_VALUE;
       }
   }
 
