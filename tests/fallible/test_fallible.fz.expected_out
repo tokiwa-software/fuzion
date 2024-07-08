@@ -1,0 +1,6 @@
+expecting ok,    got ok
+expecting error, got --error: r1 fail--
+expecting ok,    got ok
+expecting error, got --error: r3 fail--
+expetcing fault, got fault: expected failure expected failure
+expetcing pre_fault, got pre_fault: safety: effect.is_installed effect.this

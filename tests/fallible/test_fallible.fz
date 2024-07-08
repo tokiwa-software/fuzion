@@ -1,0 +1,89 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test test_fallible
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# Tests for fallible features such as `try`, `panic` and user-defined versions of `fallible`.
+#
+test_fallible is
+
+  a is
+
+  # success and failure using `try a`:
+
+  r0 := try a String (()->"ok")
+  r1 := try a String (()->(try a).env.raise (error "r1 fail"))
+  say "expecting ok,    got $r0"
+  say "expecting error, got $r1"
+
+
+  # success and failure using our own try feature `try_a`:
+
+  try_a : try a is
+  r2 := try_a.on (()->"ok")
+  r3 := try_a.on (()->(try_a).env.raise (error "r3 fail"))
+  say "expecting ok,    got $r2"
+  say "expecting error, got $r3"
+
+  # success and failure using our own try feature `try_a`:
+
+#  r4 := try_a.try String (()->"ok")                                .catch m->"*** fail $m ***"
+#  r5 := try_a.try String (()->(try_a).env.raise (error "r3 fail")) .catch m->"*** fail $m ***"
+#  say "expecting ok,    got $r4"
+#  say "expecting error, got $r5"
+
+  # success and failure using `try_or_panic a`:
+
+# NYI following code causes `NYI: ... no targets for call ...` error,
+#
+#  r5 := panic.try (()->try_or_panic a String (()->"ok"))                                .catch m->"*** panic $m ***"
+#  r6 := panic.try (()->try_or_panic a String (()->(try a).env.raise (error "r5 fail"))) .catch m->"*** panic $m ***"
+#  say "expecting ok,    got $r5"
+#  say "expecting error, got $r6"
+#
+#  r7 := panic.try ()->"ok" .catch m->"panic $m"
+#  r8 := panic.try ()->"ok" .catch m->"panic $m"
+#  say "expecting ok,    got $r7"
+#  say "expecting error, got $r8"
+
+#  panic
+#    .try unit ()->
+#      panic "expected failure"
+#    .catch m->
+#      say "expetcing fault, got fault: $m"
+
+  fuzion.runtime.fault
+    .try ()->
+      if 3 < 4 then panic "expected failure"
+    .catch m->
+      say "expetcing fault, got fault: {m.1} {m.1}"
+
+
+  # call `try_a.raise` without installing `try_a`:
+
+  fuzion.runtime.pre_fault
+    .try unit ()->
+      try_a.raise (error "r4 fail")
+      panic "*** expected pre_fault for effect not installed, did not happen ***"
+    .catch m->
+      say "expetcing pre_fault, got pre_fault: $m"
