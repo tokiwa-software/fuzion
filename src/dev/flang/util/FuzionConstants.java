@@ -151,6 +151,10 @@ public class FuzionConstants extends ANY
   public static final String UNARY_OPERATOR_PREFIX = "unary ";
 
 
+  public static final String OPERATION_CALL = "call";
+  public static final String OPERATION_ASSIGNMENT = "assignment";
+
+
   /**
    * Artificial name of implicitly declared result field in case the assignment
    * to result is implicitly from the last expression's value.
