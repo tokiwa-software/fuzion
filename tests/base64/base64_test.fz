@@ -44,7 +44,7 @@ base64_test is
   enc_test =>
     for tup in base64_test_vectors do
       (plain, code_expected) := tup
-      code_actual := encodings.base64.encode plain.utf8.as_array
+      code_actual := encodings.base64.encode_to_string plain.utf8.as_array
       out :=
         if code_actual = code_expected
           outcome "ok"
@@ -59,8 +59,8 @@ base64_test is
 
 
   # testing for + and / in output
-  say (encodings.base64.encode [(u8 251), 224])
-  say (encodings.base64.encode [(u8 255), 240])
+  say (encodings.base64.encode_to_string [(u8 251), 224])
+  say (encodings.base64.encode_to_string [(u8 255), 240])
 
 
 

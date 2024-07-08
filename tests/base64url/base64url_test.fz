@@ -44,7 +44,7 @@ base64url_test is
   enc_test =>
     for tup in base64_test_vectors do
       (plain, code_expected) := tup
-      code_actual := encodings.base64url.encode plain.utf8.as_array
+      code_actual := encodings.base64url.encode_to_string plain.utf8.as_array
       out :=
         if code_actual = code_expected
           outcome "ok"
@@ -58,8 +58,8 @@ base64url_test is
   say ""
 
   # testing for - and _ in output
-  say (encodings.base64url.encode [(u8 95), 31, 190, 251, 236, 87])
-  say (encodings.base64url.encode [(u8 95), 31, 255, 255, 252, 87])
+  say (encodings.base64url.encode_to_string [(u8 95), 31, 190, 251, 236, 87])
+  say (encodings.base64url.encode_to_string [(u8 95), 31, 255, 255, 252, 87])
 
 
   # DECODING

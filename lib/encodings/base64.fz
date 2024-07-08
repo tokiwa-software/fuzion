@@ -26,36 +26,43 @@
 public base64 is
 
   # allows redefinition for base64url
-  module get_alphabet => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".as_codepoints.as_array
+  module get_alphabet => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".utf8.as_array
   module encoding_name => "base64"
 
   # NYI: compiler does currently not optimize features without arguments to treat them like fields
   alphabet := get_alphabet
-  char_62_ascii := alphabet[62].utf8.first
-  char_63_ascii := alphabet[63].utf8.first
+  char_62_ascii := alphabet[62]
+  char_63_ascii := alphabet[63]
 
-  # Encodes a given byte sequence in base64, output length is padded to multiple of 4
- public encode (data array u8) String =>
-   enc24(n u32) => 
-                 # extract four sextets from 24 bit number
-                 n0 => ((n >> 18) & 63).as_i32
-                 n1 => ((n >> 12) & 63).as_i32
-                 n2 => ((n >>  6) & 63).as_i32
-                 n3 => ( n        & 63).as_i32
-                 alphabet[n0] + alphabet[n1] + alphabet[n2] + alphabet[n3]
+  # Encodes a given byte sequence in base64, output is padded to multiple of 4
+  # returns a sequence of ascii values
+  public encode (data array u8) =>
+    enc24(n u32) =>
+                  # extract four sextets from 24 bit number
+                  n0 => ((n >> 18) & 63).as_i32
+                  n1 => ((n >> 12) & 63).as_i32
+                  n2 => ((n >>  6) & 63).as_i32
+                  n3 => ( n        & 63).as_i32
+                  [alphabet[n0], alphabet[n1], alphabet[n2], alphabet[n3]]
     for
-      res := "", next # the encoded input data
-      i := data.indices
+      res Sequence u8 := [], next # the encoded input data
+      i := 0, i+1
       last_n u32 := 0, i %% 3 ?  0 : n
       b in data
       n := (last_n << 8) + b.as_u32
-      next := if i%3=2 then enc24 n
-              else          res
+      next := if i%3=2 then res ++ enc24 n
+              else           res
     else
         case := data.length%3 # last input block of 0, 1 or 2 characters
         if case = 0      then res
-        else if case = 1 then res + (enc24 last_n<<4).substring 1 + "=="
-        else                  res + (enc24 last_n<<2).substring 2 + "="
+        else if case = 1 then res ++ (enc24 last_n<<4).slice 2 4 ++ [(u8 61), 61] # "=="
+        else                  res ++ (enc24 last_n<<2).slice 1 4 ++ [(u8 61)]     # "="
+
+
+  # Encodes a given byte sequence in base64, output is padded to multiple of 4
+  # returns a string
+  public encode_to_string (data array u8) =>
+    String.type.from_bytes (encode data)
 
 
   # decodes a base64 string, decoding is strict as required by RFC 4648
