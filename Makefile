@@ -1342,3 +1342,20 @@ lint/javadoc:
 remove_unused_imports:
 	wget -O /tmp/google-java-format-1.21.0-all-deps.jar https://github.com/google/google-java-format/releases/download/v1.21.0/google-java-format-1.21.0-all-deps.jar
 	java -jar /tmp/google-java-format-1.21.0-all-deps.jar -r --fix-imports-only  --skip-sorting-imports `find src/`
+
+
+$(BUILD_DIR)/pmd.zip:
+	mkdir -p $(@D)
+	wget -O $@ https://github.com/pmd/pmd/releases/download/pmd_releases%2F7.3.0/pmd-dist-7.3.0-bin.zip
+
+$(BUILD_DIR)/pmd: $(BUILD_DIR)/pmd.zip
+	echo "7e56043b5db83b288804c97d48a46db37bba22861b63eadd8e69f72c74bfb0a8 $(BUILD_DIR)/pmd.zip" > $(BUILD_DIR)/pmd.zip.sha256
+	sha256sum -c $(BUILD_DIR)/pmd.zip.sha256
+	unzip $(BUILD_DIR)/pmd.zip -d $@
+
+# this gives a lot of output
+# use grep, e.g.: make lint/pmd | grep 'UnusedLocalVariable'
+#
+lint/pmd: $(BUILD_DIR)/pmd
+	$(BUILD_DIR)/pmd/pmd-bin-7.3.0/bin/pmd check -d src -R rulesets/java/quickstart.xml -f text
+
