@@ -67,7 +67,7 @@ public class Contract extends ANY
 
 
   /**
-   * Id used to generate unique names for pre- and postcondution features.
+   * Id used to generate unique names for pre- and postcondition features.
    */
   public static int _id_ = 0;
 
@@ -147,14 +147,14 @@ public class Contract extends ANY
    *
    * @param hasPre if `pre` was found, this gives its position, otherwise it is null.
    *
-   * @param hasElse if `else` after `pre` was found, this gives its prosition,
+   * @param hasElse if `else` after `pre` was found, this gives its proposition,
    * otherwise it is null.
    *
    * @param e the postcondition or null if not present.
    *
    * @param hasPost if `post` was found, this gives its position, otherwise it is null
    *
-   * @param hasThen if `then` after `post` was found, this gives its prosition,
+   * @param hasThen if `then` after `post` was found, this gives its proposition,
    * otherwise it is null.
    *
    * @param args supplier that forks of the parser to re-parse the formal
@@ -783,7 +783,7 @@ precondition checking continues with the preconditions of the next inherited
 contract, if that exists, or with the declared preconditions after `require else`
 in the redefining feature, unless there is no `require else` present.
 Redefined inherited features that neither declare nor inherit a precondition will
-have `true` as their imlicit precondition, effectively turning the precondition of
+have `true` as their implicit precondition, effectively turning the precondition of
 all of their redefinition to `true`. +
     // end::fuzion_rule_SEMANTIC_CONTRACT_PRE_ORDER[]
         */
