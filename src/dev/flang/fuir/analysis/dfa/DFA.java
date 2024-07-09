@@ -1742,7 +1742,6 @@ public class DFA extends ANY
     put("effect.default"                 , cl ->
         {
           var ecl = cl._dfa._fuir.effectType(cl._cc);
-          var oc = cl._dfa._fuir.clazzOuterClazz(cl._cc);
           var new_e = cl._target;
           var old_e = cl._dfa._defaultEffects.get(ecl);
           if (old_e != null)

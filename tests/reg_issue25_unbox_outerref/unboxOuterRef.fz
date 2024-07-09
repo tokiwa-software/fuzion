@@ -44,7 +44,7 @@ unboxOuterRef is
       g y.this
       g (y i)
 
-  v := y 42
-  v.f
-  r ry := v
+  v0 := y 42
+  v0.f
+  r ry := v0
   r.f

@@ -21,6 +21,14 @@
 #
 # -----------------------------------------------------------------------
 
-# Lazy
+# Lazy has special compiler support.
+# It can be used to require lazy evaluation of arguments.
+#
+# A good example is `or` in bool:
+#     infix || (other Lazy bool) bool =>
+#
+# In the following example the expression
+# `4+5>10` will never be executed:
+#     true || 4+5>10
 #
 public Lazy(public T type) ref : Function T is
