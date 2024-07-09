@@ -95,84 +95,73 @@ public base64 is
         else                              1
       else                                0
 
-    alphabet_check :=
-      for b in data
-          i:=0, i+1
-      do
-        check_char :=
-          # base64 alphabet character
-          if (b >= 65 && b <= 90) || (b >= 97 && b <= 122) || (b >= 48 && b <= 57) || (b = char_62_ascii) || (b = char_63_ascii)
-            outcome true
+    check_input (i i32) outcome u32 =>
 
-          # padding character =
-          else if b = 61
-            if i < data.length - pad_size
-              error """
-                    padding character '=' not allowed within the input data, \
-                    only at the very end, as required by RFC464"""
-            else outcome true
+      if i >= data.length
+        error "length of input data is not multiple of four, as required by RFC4648"
+      else
+        c := data[i]
+        # base64 alphabet character
+        if ((c >= 65 && c <= 90) || (c >= 97 && c <= 122) ||
+            (c >= 48 && c <= 57) || (c = char_62_ascii) || (c = char_63_ascii))
+          outcome (dec_sextet i)
 
-          # line break
-          else if b = 10 || b = 13
-              error """
-                    line breaks are not allowed within encoded data, as required by RFC464, found \
-                    {if b=10 then "LF" else "CR"} at position $i"""
-          # other non alphabet character
-          else
-            error "byte $i in input data, representing '{codepoint b.as_u32}' in ASCII, is not in $encoding_name alphabet"
+        # padding character =
+        else if c = 61
+          if i < data.length - pad_size
+            error """
+                  padding character '=' not allowed within the input data, \
+                  only at the very end, as required by RFC464"""
+          else outcome (u32 0)
 
-      until !check_char.ok
-        check_char.err
-      else outcome true
+        # line break
+        else if c = 10 || c = 13
+            error """
+                  line breaks are not allowed within encoded data, as required by RFC464, found \
+                  {if c=10 then "LF" else "CR"} at position $i"""
+        # other non alphabet character
+        else
+          error "byte $i in input data, representing '{codepoint c.as_u32}' in ASCII, is not in $encoding_name alphabet"
 
-    if !alphabet_check.ok       # check for non base64 characters
-      alphabet_check.err
+    # decode a valid base 64 characters to 6 bits
+    dec_sextet(pos) =>
+      n := data[pos]
 
-    else if !(data.length %% 4) # check input length
-      error "length of input data is not multiple of four, as required by RFC4648"
+      if n >= 65 && n <= 90       # case A-Z
+        n.as_u32 - 65
 
-    else                        # do decoding
+      else if n >= 97 && n <= 122 # case a-z
+        n.as_u32 - 71
 
-      # replace padding with zeros (character 'A' / 65 is decoded to zero)
-      input := (data.map (x -> if x=61 then 65 else x)).as_array
+      else if n >= 48 && n <= 57  # case 0-9
+        n.as_u32 + 4
 
-      dec_sextet(input, pos) =>
-        n := input[pos]
+      else if n = char_62_ascii   # case +
+        u32 62
 
-        if n >= 65 && n <= 90       # case A-Z
-          n.as_u32 - 65
+      else                        # case /
+        u32 63
 
-        else if n >= 97 && n <= 122 # case a-z
-          n.as_u32 - 71
+    for
+      res list u8 := nil, res.concat_sequences [b0, b1, b2] # result: contains the decoded data at the end
+      nxt := 0, nxt + 4
+      last_err := false, is_err
+      sxt_last array (outcome u32) := [], sextets
 
-        else if n >= 48 && n <= 57  # case 0-9
-          n.as_u32 + 4
+    while nxt < data.length && !last_err
+    do
+      sextets := [check_input nxt, check_input nxt+1, check_input nxt+2, check_input nxt+3]
+      is_err := (sextets ∃ el-> !el.ok)
 
-        else if n = char_62_ascii   # case +
-          u32 62
+      # convert sextets in 24 bit number, break up in three bytes
+      block := if is_err then 0 else sextets[0].val << 18 | sextets[1].val << 12 | sextets[2].val << 6 | sextets[3].val
+      b0 := (block >> 16).low8bits
+      b1 := (block >> 8).low8bits
+      b2 := block.low8bits
 
-        else #if n = get_char_63    # case /
-          u32 63
-
-      for
-        res list u8 := nil, res.concat_sequences [b0, b1, b2] # result: contains the decoded data at the end
-        nxt0 := 0, nxt0 + 4
-        nxt1 := 1, nxt1 + 4
-        nxt2 := 2, nxt2 + 4
-        nxt3 := 3, nxt3 + 4
-      while nxt3 < input.length
-      do
-        # convert ascii value into sextets
-        sxt0 := dec_sextet input nxt0
-        sxt1 := dec_sextet input nxt1
-        sxt2 := dec_sextet input nxt2
-        sxt3 := dec_sextet input nxt3
-
-        # convert sextets in 24 bit number, break up in three bytes
-        block := sxt0 << 18 | sxt1 << 12 | sxt2 << 6 | sxt3
-        b0 := (block >> 16).low8bits
-        b1 := (block >> 8).low8bits
-        b2 := block.low8bits
+    else
+      if last_err
+        (sxt_last.filter ((e)-> !e.ok)).first.err
       else
         # remove zero bytes caused by padding
         outcome res.take(res.count - pad_size)
