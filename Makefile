@@ -30,6 +30,7 @@ FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SRC = $(FZ_SRC)/src
 BUILD_DIR = ./build
 CLASSES_DIR = $(BUILD_DIR)/classes
+CLASSES_DIR_LOGO = $(BUILD_DIR)/classes_logo
 FUZION_BIN_SH = /bin/sh
 
 ifeq ($(FUZION_DEBUG_SYMBOLS),true)
@@ -89,7 +90,7 @@ CLASS_FILES_BE_JVM_RUNTIME    = $(CLASSES_DIR)/dev/flang/be/jvm/runtime/__marker
 CLASS_FILES_TOOLS             = $(CLASSES_DIR)/dev/flang/tools/__marker_for_make__
 CLASS_FILES_TOOLS_FZJAVA      = $(CLASSES_DIR)/dev/flang/tools/fzjava/__marker_for_make__
 CLASS_FILES_TOOLS_DOCS        = $(CLASSES_DIR)/dev/flang/tools/docs/__marker_for_make__
-CLASS_FILES_MISC_LOGO         = $(CLASSES_DIR)/dev/flang/misc/logo/__marker_for_make__
+CLASS_FILES_MISC_LOGO         = $(CLASSES_DIR_LOGO)/dev/flang/misc/logo/__marker_for_make__
 
 JFREE_SVG_URL = https://repo1.maven.org/maven2/org/jfree/org.jfree.svg/5.0.1/org.jfree.svg-5.0.1.jar
 JARS_JFREE_SVG_JAR = $(BUILD_DIR)/jars/org.jfree.svg-5.0.1.jar
@@ -574,20 +575,20 @@ $(JARS_JFREE_SVG_JAR):
 	mkdir -p $(@D)
 	curl $(JFREE_SVG_URL) --output $@
 
-$(CLASS_FILES_MISC_LOGO): $(JAVA_FILES_MISC_LOGO) $(JARS_JFREE_SVG_JAR)
-	mkdir -p $(CLASSES_DIR)
-	$(JAVAC) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) -d $(CLASSES_DIR) $(JAVA_FILES_MISC_LOGO)
+$(CLASS_FILES_MISC_LOGO): $(JAVA_FILES_MISC_LOGO) $(CLASS_FILES_UTIL_UNICODE) $(JARS_JFREE_SVG_JAR)
+	mkdir -p $(CLASSES_DIR_LOGO)
+	$(JAVAC) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) -d $(CLASSES_DIR_LOGO) $(JAVA_FILES_MISC_LOGO)
 	touch $@
 
 $(BUILD_DIR)/assets/logo.svg: $(CLASS_FILES_MISC_LOGO)
 	mkdir -p $(@D)
-	$(JAVA) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) dev.flang.misc.logo.FuzionLogo $@
+	$(JAVA) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR):$(CLASSES_DIR_LOGO) dev.flang.misc.logo.FuzionLogo $@
 	inkscape $@ -o $@.pdf
 	touch $@
 
 $(BUILD_DIR)/assets/logo_bleed.svg: $(CLASS_FILES_MISC_LOGO)
 	mkdir -p $(@D)
-	$(JAVA) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) dev.flang.misc.logo.FuzionLogo -b $@
+	$(JAVA) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR):$(CLASSES_DIR_LOGO) dev.flang.misc.logo.FuzionLogo -b $@
 	inkscape $@ -o $@.tmp.pdf
 	pdfjam --papersize '{46mm,46mm}' --outfile $@.pdf $@.tmp.pdf
 	rm -f $@.tmp.pdf
@@ -595,7 +596,7 @@ $(BUILD_DIR)/assets/logo_bleed.svg: $(CLASS_FILES_MISC_LOGO)
 
 $(BUILD_DIR)/assets/logo_bleed_cropmark.svg: $(CLASS_FILES_MISC_LOGO)
 	mkdir -p $(@D)
-	$(JAVA) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) dev.flang.misc.logo.FuzionLogo -c $@
+	$(JAVA) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR):$(CLASSES_DIR_LOGO) dev.flang.misc.logo.FuzionLogo -c $@
 	inkscape $@ -o $@.tmp.pdf
 	pdfjam --papersize '{46mm,46mm}' --outfile $@.pdf $@.tmp.pdf
 	rm -f $@.tmp.pdf
