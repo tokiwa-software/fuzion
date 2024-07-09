@@ -29,7 +29,7 @@
 #  FUZION -- the fz command
 
 FUZION_OPTIONS ?=
-FUZION = ../../bin/fz -XmaxErrors=-1 $(FUZION_OPTIONS)
+FUZION = FUZION_DISABLE_ANSI_ESCAPES=true ../../bin/fz -XmaxErrors=-1 $(FUZION_OPTIONS)
 EXPECTED_ERRORS = `cat *.fz | grep "should.flag.an.error"  | sed "s ^.*//  g"| sort -n | uniq | wc -l | tr -d ' '`
 
 all: jvm c int

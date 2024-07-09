@@ -59,7 +59,8 @@ public class Terminal extends ANY
    */
   public static final boolean ENABLED =
     !"true".equals(System.getProperty("FUZION_DISABLE_ANSI_ESCAPES")) &&
-    !"true".equals(System.getenv     ("FUZION_DISABLE_ANSI_ESCAPES"));
+    !"true".equals(System.getenv     ("FUZION_DISABLE_ANSI_ESCAPES")) &&
+    System.getenv().get("TERM") != null;
 
   public static final String RESET                     = ENABLED ? "\033[0m" : "";
   public static final String BOLD                      = ENABLED ? "\033[1m" : "";
@@ -67,6 +68,7 @@ public class Terminal extends ANY
   public static final String ITALICS                   = ENABLED ? "\033[3m" : "";
   public static final String ITALICS_OFF               = ENABLED ? "\033[23m" : "";
   public static final String UNDERLINE                 = ENABLED ? "\033[4m" : "";   // also called underscore
+  public static final String DOTTED_UNDERLINE          = ENABLED ? "\033[4:4m" : "";
   public static final String UNDERLINE_OFF             = ENABLED ? "\033[24m" : "";
   public static final String BLINK                     = ENABLED ? "\033[5m" : "";
   public static final String BLINK_OFF                 = ENABLED ? "\033[25m" : "";
@@ -150,6 +152,13 @@ public class Terminal extends ANY
   public static final String INTENSE_BACKGROUND_PURPLE = ENABLED ? "\033[0;105m" : "";
   public static final String INTENSE_BACKGROUND_CYAN   = ENABLED ? "\033[0;106m" : "";
   public static final String INTENSE_BACKGROUND_WHITE  = ENABLED ? "\033[0;107m" : "";
+
+  /**
+   * In contrast to the block of underline constants above, these constants only affect
+   * the color of the underline, whereas the constants above also affect the text color.
+   */
+  public static final String UNDERLINE_LINE_RED        = ENABLED ? "\033[58;5;1m" : "";
+  public static final String UNDERLINE_LINE_COLOR_OFF  = ENABLED ? "\033[59m" : "";
 
 }
 
