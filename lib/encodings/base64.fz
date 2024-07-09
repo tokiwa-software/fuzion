@@ -68,25 +68,12 @@ public base64 is
   # decodes a base64 string, decoding is strict as required by RFC 4648
   # non alphabet characters, line breaks, missing padding cause errors
   public decode_str(data String) =>
-    if data.byte_length != data.codepoint_length
-      # check for multi byte unicode chars
-      for c in data.as_codepoints
-          i in 0..
-          res :=
-            if (c.byte_length > 1)
-              error "character '$c' at position $i is not in $encoding_name alphabet"
-            else outcome true
-      until !res.ok
-        res.err
-      else error "this should never happen"
-
-    else
-      decode data.utf8.as_array
+    decode data.utf8.as_array
 
 
   # decodes a sequence of ASCII characters, decoding is strict as required by RFC 4648
   # non alphabet characters, line breaks, missing padding cause errors
-  public decode(data array u8) =>
+  public decode(data) =>
 
     # determine size of padding, i.e. number of '=' (61 in ASCII) at the end
     pad_size :=
@@ -95,7 +82,7 @@ public base64 is
         else                              1
       else                                0
 
-    check_input (i i32) outcome u32 =>
+    check_input(i) =>
 
       if i >= data.length
         error "length of input data is not multiple of four, as required by RFC4648"
@@ -112,16 +99,19 @@ public base64 is
             error """
                   padding character '=' not allowed within the input data, \
                   only at the very end, as required by RFC464"""
-          else outcome (u32 0)
+          else outcome (u32 0)  # replace padding with zero byte for decoding
 
         # line break
         else if c = 10 || c = 13
-            error """
-                  line breaks are not allowed within encoded data, as required by RFC464, found \
-                  {if c=10 then "LF" else "CR"} at position $i"""
+          error """
+                line breaks are not allowed within encoded data, as required by RFC464, found \
+                {if c=10 then "LF" else "CR"} at position $i"""
         # other non alphabet character
         else
-          error "byte $i in input data, representing '{codepoint c.as_u32}' in ASCII, is not in $encoding_name alphabet"
+          inv_char := String.type.from_bytes (data.slice i (i+4 > data.length ? data.length : i+4))
+                            .substring_codepoint 0 1
+
+          error "invalid $encoding_name input at byte position $i, decoding to unicode character '$inv_char'"
 
     # decode a valid base 64 characters to 6 bits
     dec_sextet(pos) =>
