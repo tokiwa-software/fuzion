@@ -52,13 +52,13 @@ catch_precondition is
 
   say "install our own fault handler that prints message and tries again:"
 
-  v := (fuzion.runtime.pre_fault
+  val := (fuzion.runtime.pre_fault
     .try ()->
       (test i32)
     .catch s->
       (test i64))
 
-  say "done: $v"
+  say "done: $val"
 
 
   # -------------------------------

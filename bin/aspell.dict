@@ -451,7 +451,6 @@ findClosingBracket
 findConstantType
 findDeclarations
 findDeclaredOrInheritedFeatures
-findFieldDefInScope
 findGenerics
 findInheritedFeatures
 findOpeningBracket

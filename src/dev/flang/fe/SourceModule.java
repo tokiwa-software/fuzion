@@ -41,6 +41,7 @@ import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractCase;
@@ -56,7 +57,6 @@ import dev.flang.ast.FeatureName;
 import dev.flang.ast.FeatureAndOuter;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Function;
-import dev.flang.ast.Impl;
 import dev.flang.ast.Resolution;
 import dev.flang.ast.SrcModule;
 import dev.flang.ast.State;
@@ -984,9 +984,8 @@ A post-condition of a feature that does not redefine an inherited feature must s
     var existing = df.get(fn);
     if (existing != null)
       {
-        if (existing instanceof Feature ef &&
-            f .implKind() == Impl.Kind.FieldDef &&
-            ef.implKind() == Impl.Kind.FieldDef    )
+        // NYI: need to check that the scopes are disjunct
+        if (existing instanceof Feature ef && ef._scoped && f._scoped)
           {
             var existingFields = FeatureName.getAll(df, fn.baseName(), 0);
             fn = FeatureName.get(fn.baseName(), 0, existingFields.size());
@@ -994,26 +993,15 @@ A post-condition of a feature that does not redefine an inherited feature must s
           }
         else
           {
-            boolean error = true;
-            if (f.isField() && existing.isField())
+            if (existing instanceof Feature ef && ef.isArgument() && f.isArgument())
               {
-                error = false;
-                var existingFields = FeatureName.getAll(df, fn.baseName(), 0);
-                for (var e : existingFields.values())
-                  {
-                    // NYI: set error if e.declaredInBlock() == f.declaredInBlock()
-                    if (((Feature)e).isDeclaredInMainBlock() && f.isDeclaredInMainBlock()) // NYI: Cast!
-                      {
-                        error = true;
-                      }
-                  }
-                if (!error)
-                  {
-                    fn = FeatureName.get(fn.baseName(), 0, existingFields.size());
-                    f.setFeatureName(fn);
-                  }
+                // NYI: CLEANUP: there should not be two places where
+                // similar error is raised.
+                // An error should have been raised already in feature constructor:
+                // "Names of arguments used in this feature must be distinct"
+                check(Errors.any());
               }
-            if (error)
+            else
               {
                 AstErrors.duplicateFeatureDeclaration(f.pos(), f, existing);
               }
@@ -1171,69 +1159,23 @@ A post-condition of a feature that does not redefine an inherited feature must s
     List<FeatureAndOuter> result = new List<>();
     var curOuter = outer;
     AbstractFeature inner = null;
-    var foundFieldInScope = false;
     do
       {
         if (!curOuter.state().atLeast(State.RESOLVING_DECLARATIONS))
           {
             _res.resolveDeclarations(curOuter);
           }
-        var foundFieldInThisScope = foundFieldInScope;
         var fs = FeatureName.getAll(declaredOrInheritedFeatures(curOuter), name);
-        if (fs.size() >= 1 && use != null && traverseOuter)
-          { // try to disambiguate fields as in
-            //
-            //  x := a
-            //  x := x + 1
-            //  x := 2 * x
-            List<FeatureName> fields = new List<>();
-            for (var e : fs.entrySet())
-              {
-                var fn = e.getKey();
-                for (var f : e.getValue())
-                  {
-                    if (f.isField() && (f.outer()==null || f.outer().resultField() != f))
-                      {
-                        fields.add(fn);
-                      }
-                  }
-              }
-            if (!fields.isEmpty())
-              {
-                var f = curOuter instanceof Feature of
-                  ? of.findFieldDefInScope(name, use, inner)
-                  : null;
-                fs = new TreeMap<>(fs);
-                // if we found f in scope, remove all other entries, otherwise remove all entries within this since they are not in scope.
-                for (var fn : fields)
-                  {
-                    for (var fi : get(fs, fn))
-                      {
-                        if (f != null || fi.outer() == outer && (!(fi instanceof Feature fif) || !fif.isArtificialField()))
-                          {
-                            fs.remove(fn);
-                          }
-                      }
-                  }
-                if (f != null)
-                  {
-                    add(fs, f.featureName(), f);
-                    foundFieldInThisScope = true;
-                  }
-              }
-          }
 
         for (var e : fs.entrySet())
           {
             for (var v : e.getValue())
               {
                 if ((use == null || (hidden != featureVisible(use.pos()._sourceFile, v))) &&
-                    (!v.isField() || !foundFieldInScope) &&
                     !(use instanceof Call c && !c._isInheritanceCall && v.isChoice()) &&
                     (use == null || /* NYI: do we have to evaluate inScope for all possible outers? */ inScope(use, v)))
                   {
                     result.add(new FeatureAndOuter(v, curOuter, inner));
-                    foundFieldInScope = foundFieldInScope || v.isField() && foundFieldInThisScope;
                   }
               }
           }
@@ -1259,16 +1201,43 @@ A post-condition of a feature that does not redefine an inherited feature must s
    */
   private boolean inScope(Expr use, AbstractFeature v)
   {
-    if (v instanceof Feature f && f._scoped)
+    // we only need to do this evaluation for:
+    // - scoped routines
+    // - non argument fields
+    if (v instanceof Feature f && (f._scoped || v.isField() && !f.isArgument()))
       {
+        /* cases like the following are forbidden:
+          * ```
+          * a := b
+          * b := 1
+          * ```
+          */
+        var useIsBeforeDefinition = new Boolean[]{ false };
+         /* while cases like these are allowed:
+          * ```
+          * a => b
+          * b := 1
+          * ```
+          */
+        var visitingInnerFeature = new Boolean[]{ false };
         var usage = new ArrayList<Stack<Expr>>();
         var definition = new ArrayList<Stack<Expr>>();
         var stacks = new ArrayList<Stack<Expr>>();
         stacks.add(new Stack<>());
         var visitor = new FeatureVisitor() {
+          public void action(AbstractAssign a, AbstractFeature outer)
+          {
+            if (use == a)
+              {
+                useIsBeforeDefinition[0] = definition.isEmpty() && !visitingInnerFeature[0];
+                usage.add((Stack)stacks.get(0).clone());
+              }
+            super.action(a, outer);
+          }
           public void action(AbstractCall c) {
             if (use == c)
               {
+                useIsBeforeDefinition[0] = definition.isEmpty() && !visitingInnerFeature[0];
                 usage.add((Stack)stacks.get(0).clone());
               }
           };
@@ -1290,7 +1259,10 @@ A post-condition of a feature that does not redefine an inherited feature must s
             if (usage.isEmpty() && f2.isRoutine())
               {
                 stacks.get(0).push(f2);
+                var old = visitingInnerFeature[0];
+                visitingInnerFeature[0] = true;
                 f2.impl().visit(this, outer);
+                visitingInnerFeature[0] = old;
                 stacks.get(0).pop();
               }
             return f2;
@@ -1320,7 +1292,18 @@ A post-condition of a feature that does not redefine an inherited feature must s
         };
         f.outer().code().visit(visitor, null);
 
-        // NYI: check(usage.size() == 1, definition.size() == 1);
+        if (f.isField())
+          {
+            if (useIsBeforeDefinition[0])
+              {
+                return false;
+              }
+            // the usage of this field is not in its containing features.
+            if (usage.isEmpty())
+              {
+                return !f._scoped;
+              }
+          }
 
         var u = new ArrayList<>(usage.get(0));
         var d = new ArrayList<>(definition.get(0));
@@ -1341,7 +1324,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
           }
         return true;
       }
-    // definition is not in an inner scope,
+    // definition is neither field nor in an inner scope,
     // no need to do anything
     else
       {

@@ -151,6 +151,10 @@ public class FuzionConstants extends ANY
   public static final String UNARY_OPERATOR_PREFIX = "unary ";
 
 
+  public static final String OPERATION_CALL = "call";
+  public static final String OPERATION_ASSIGNMENT = "assignment";
+
+
   /**
    * Artificial name of implicitly declared result field in case the assignment
    * to result is implicitly from the last expression's value.
@@ -233,6 +237,13 @@ public class FuzionConstants extends ANY
    *     say x
    */
   public static final String REC_LOOP_PREFIX = INTERNAL_NAME_PREFIX + "loop";
+
+
+  /**
+   * Fields introduced by Loop.java
+   */
+  public static final String ITER_ARG_PREFIX_INIT = INTERNAL_NAME_PREFIX + "iter_arg_init_";
+  public static final String ITER_ARG_PREFIX_NEXT = INTERNAL_NAME_PREFIX + "iter_arg_next_";
 
 
   /**
