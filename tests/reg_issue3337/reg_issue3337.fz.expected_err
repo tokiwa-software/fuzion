@@ -1,0 +1,145 @@
+
+--CURDIR--/reg_issue3337.fz:28:24: error 1: Ambiguous type
+  test1(String type, h String) is
+-----------------------^^^^^^
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'String'
+Possible features that match this type: 
+'reg_issue3337.test1.String' defined at --CURDIR--/reg_issue3337.fz:28:9:
+  test1(String type, h String) is
+--------^^^^^^
+and 'String' defined at $MODULE/String.fz:28:8:
+public String ref : property.equatable, property.hashable, property.orderable is
+-------^^^^^^
+
+To solve this, rename these features such that each one has a unique name.
+
+
+--CURDIR--/reg_issue3337.fz:29:24: error 2: Ambiguous type
+  test2(String type, h String) =>
+-----------------------^^^^^^
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'String'
+Possible features that match this type: 
+'reg_issue3337.test2.String' defined at --CURDIR--/reg_issue3337.fz:29:9:
+  test2(String type, h String) =>
+--------^^^^^^
+and 'String' defined at $MODULE/String.fz:28:8:
+public String ref : property.equatable, property.hashable, property.orderable is
+-------^^^^^^
+
+To solve this, rename these features such that each one has a unique name.
+
+
+--CURDIR--/reg_issue3337.fz:34:29: error 3: Ambiguous type
+  test7(String type) option String =>
+----------------------------^^^^^^
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'String'
+Possible features that match this type: 
+'reg_issue3337.test7.String' defined at --CURDIR--/reg_issue3337.fz:34:9:
+  test7(String type) option String =>
+--------^^^^^^
+and 'String' defined at $MODULE/String.fz:28:8:
+public String ref : property.equatable, property.hashable, property.orderable is
+-------^^^^^^
+
+To solve this, rename these features such that each one has a unique name.
+
+
+--CURDIR--/reg_issue3337.fz:30:36: error 4: Ambiguous type
+  test3(String type, h type : list String) is
+-----------------------------------^^^^^^
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'String'
+Possible features that match this type: 
+'reg_issue3337.test3.String' defined at --CURDIR--/reg_issue3337.fz:30:9:
+  test3(String type, h type : list String) is
+--------^^^^^^
+and 'String' defined at $MODULE/String.fz:28:8:
+public String ref : property.equatable, property.hashable, property.orderable is
+-------^^^^^^
+
+To solve this, rename these features such that each one has a unique name.
+
+
+--CURDIR--/reg_issue3337.fz:31:36: error 5: Ambiguous type
+  test4(String type, h type : list String) =>
+-----------------------------------^^^^^^
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'String'
+Possible features that match this type: 
+'reg_issue3337.test4.String' defined at --CURDIR--/reg_issue3337.fz:31:9:
+  test4(String type, h type : list String) =>
+--------^^^^^^
+and 'String' defined at $MODULE/String.fz:28:8:
+public String ref : property.equatable, property.hashable, property.orderable is
+-------^^^^^^
+
+To solve this, rename these features such that each one has a unique name.
+
+
+--CURDIR--/reg_issue3337.fz:32:23: error 6: Ambiguous type
+  test5(h type : list String, String type) is
+----------------------^^^^^^
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'String'
+Possible features that match this type: 
+'reg_issue3337.test5.String' defined at --CURDIR--/reg_issue3337.fz:32:31:
+  test5(h type : list String, String type) is
+------------------------------^^^^^^
+and 'String' defined at $MODULE/String.fz:28:8:
+public String ref : property.equatable, property.hashable, property.orderable is
+-------^^^^^^
+
+To solve this, rename these features such that each one has a unique name.
+
+
+--CURDIR--/reg_issue3337.fz:33:23: error 7: Ambiguous type
+  test6(h type : list String, String type) =>
+----------------------^^^^^^
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'String'
+Possible features that match this type: 
+'reg_issue3337.test6.String' defined at --CURDIR--/reg_issue3337.fz:33:31:
+  test6(h type : list String, String type) =>
+------------------------------^^^^^^
+and 'String' defined at $MODULE/String.fz:28:8:
+public String ref : property.equatable, property.hashable, property.orderable is
+-------^^^^^^
+
+To solve this, rename these features such that each one has a unique name.
+
+
+--CURDIR--/reg_issue3337.fz:35:37: error 8: Ambiguous type
+  test8(String type) is _ := option String nil
+------------------------------------^^^^^^
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'String'
+Possible features that match this type: 
+'reg_issue3337.test8.String' defined at --CURDIR--/reg_issue3337.fz:35:9:
+  test8(String type) is _ := option String nil
+--------^^^^^^
+and 'String' defined at $MODULE/String.fz:28:8:
+public String ref : property.equatable, property.hashable, property.orderable is
+-------^^^^^^
+
+To solve this, rename these features such that each one has a unique name.
+
+
+--CURDIR--/reg_issue3337.fz:36:37: error 9: Ambiguous type
+  test9(String type) => _ := option String nil
+------------------------------------^^^^^^
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'String'
+Possible features that match this type: 
+'reg_issue3337.test9.String' defined at --CURDIR--/reg_issue3337.fz:36:9:
+  test9(String type) => _ := option String nil
+--------^^^^^^
+and 'String' defined at $MODULE/String.fz:28:8:
+public String ref : property.equatable, property.hashable, property.orderable is
+-------^^^^^^
+
+To solve this, rename these features such that each one has a unique name.
+
+9 errors.

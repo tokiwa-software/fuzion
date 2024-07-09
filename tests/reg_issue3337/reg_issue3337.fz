@@ -1,0 +1,36 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test
+#
+# -----------------------------------------------------------------------
+
+# Test partial application that refers to `a.this`
+#
+reg_issue3337 is
+
+  test1(String type, h String) is
+  test2(String type, h String) =>
+  test3(String type, h type : list String) is
+  test4(String type, h type : list String) =>
+  test5(h type : list String, String type) is
+  test6(h type : list String, String type) =>
+  test7(String type) option String =>
+  test8(String type) is _ := option String nil
+  test9(String type) => _ := option String nil

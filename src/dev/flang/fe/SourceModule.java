@@ -1405,25 +1405,16 @@ A post-condition of a feature that does not redefine an inherited feature must s
           }
         if (type_fs.size() > 1)
           {
-            if (ignoreNotFound)
-              {
-                result = null;
-              }
-            else
-              {
-                AstErrors.ambiguousType(pos, name, type_fs);
-              }
+            AstErrors.ambiguousType(pos, name, type_fs);
+            result = FeatureAndOuter.ERROR;
+          }
+        else if (type_fs.size() < 1 && ignoreNotFound)
+          {
+            result = null;
           }
         else if (type_fs.size() < 1)
           {
-            if (ignoreNotFound)
-              {
-                result = null;
-              }
-            else
-              {
-                AstErrors.typeNotFound(pos, name, outer, nontype_fs);
-              }
+            AstErrors.typeNotFound(pos, name, outer, nontype_fs);
           }
       }
 
