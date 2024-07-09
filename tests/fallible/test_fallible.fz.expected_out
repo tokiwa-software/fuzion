@@ -1,6 +1,12 @@
-expecting ok,    got ok
-expecting error, got --error: r1 fail--
-expecting ok,    got ok
-expecting error, got --error: r3 fail--
-expetcing fault, got fault: expected failure expected failure
-expetcing pre_fault, got pre_fault: safety: effect.is_installed effect.this
+0: expecting ok,    got ok
+1: expecting error, got --error: r1 fail--
+2: expecting ok,    got ok
+3: expecting error, got --error: r3 fail--
+4: expecting ok,    got ok
+5: expecting error, got *** fail error: r5a fail ***
+6: expecting ok,    got ok
+7: expecting error, got *** panic error: r7 fail ***
+8: expecting ok,    got ok
+9: expecting error, got panic r9 fail
+10: expetcing fault, got fault: expected failure
+11: expetcing fault, got fault: *** panic *** expected failure

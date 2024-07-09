@@ -36,6 +36,12 @@ is
     (panic (msg->fuzion.runtime.fault.cause ("*** panic ***", msg)) unit).default
 
 
+  # type feature that to create an instance of `panic` with the given error handler.
+  #
+  public redef fixed type.new(h String->void)
+  => panic h unit
+
+
 # panic with no argument returns panic.env, the currently installed
 # panic handler.
 #

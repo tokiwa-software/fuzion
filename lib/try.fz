@@ -33,27 +33,33 @@ public try (# type parameter used only to distinguish different instances of
             # `try reader` and `try writer` and distingish the errors raisde
             # by the reader from those raised by the writer.
             #
-            public T type
-            ) : eff.fallible error (e -> set err := e; raise e)
+            public T type,
+
+            h error->void,
+            _, _ unit
+            ) : eff.fallible error h
 is
 
-  # mutuable field to receive the error in case raise is called
+  # type feature that to create an instance of `try` with the given error handler.
   #
-  err option error := nil
+  public redef fixed type.new(h error->void)
+  => universe.try T h unit unit
+
 
   # install this effect and execute 'f'. Wrap the result of 'f' into an
   # 'outcome' if 'f' returns normally, otherwise if 'f' is aborted early
   # via a call to 'raise' wrap the 'error' passed to 'raise' into the
   # resulting 'outcome'.
   #
-  public on(R type, f ()->R) outcome R =>
-    run (outcome R) (()->outcome f()) ()->err.get
+  public type.on(R type, f ()->R) outcome R =>
+    try.this.type.try (outcome R) ()->
+        f()
+      .catch e->
+        e
 
   # terminate immediately with the given error wrapped in 'option'.
   #
-  public raise(e error) =>
-    set err := e
-    abort
+  public raise(e error) => cause e
 
 
 # convenience routine to create a new instance of 'try T' and run 'f' in
