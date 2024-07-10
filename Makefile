@@ -449,11 +449,11 @@ $(JAVA_FILE_UTIL_VERSION): $(FZ_SRC)/version.txt $(JAVA_FILE_UTIL_VERSION_IN)
           | sed "s^@@VERSION@@^$(VERSION)^g" \
           | sed "s^@@JAVA_VERSION@@^$(JAVA_VERSION)^g" \
           | sed "s^@@REPO_PATH@@^$(dir $(abspath $(lastword $(MAKEFILE_LIST))))^g" \
-          | sed "s^@@GIT_HASH@@^`cd $(FZ_SRC); echo -n \`git rev-parse HEAD\` \`git diff-index --quiet HEAD -- || echo with local changes\``^g" >$@
+          | sed "s^@@GIT_HASH@@^`cd $(FZ_SRC); printf \`git rev-parse HEAD\` \`git diff-index --quiet HEAD -- || echo with local changes\``^g" >$@
 ifeq ($(FUZION_REPRODUCIBLE_BUILD),true)
 	sed -i "s^@@DATE@@^^g;s^@@BUILTBY@@^^g" $@
 else
-	sed -i "s^@@DATE@@^`date +%Y-%m-%d\ %H:%M:%S`^g;s^@@BUILTBY@@^`echo -n $(USER)@; hostname`^g" $@
+	sed -i "s^@@DATE@@^`date +%Y-%m-%d\ %H:%M:%S`^g;s^@@BUILTBY@@^`printf $(USER)@; hostname`^g" $@
 endif
 
 $(CLASS_FILES_UTIL): $(JAVA_FILES_UTIL)
@@ -1183,19 +1183,19 @@ run_tests: run_tests_jvm run_tests_c run_tests_int run_tests_jar
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int
 run_tests_int: $(FZ_INT) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
-	echo -n "testing interpreter: "
+	printf "testing interpreter: "
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) int
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c
 run_tests_c: $(FZ_C) $(FZ_MODULES) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
-	echo -n "testing C backend: "; \
+	printf "testing C backend: "; \
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) c
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_jvm
 run_tests_jvm: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
-	echo -n "testing JVM backend: "; \
+	printf "testing JVM backend: "; \
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) jvm
 
 # phony target to run Fuzion tests and report number of failures
@@ -1205,19 +1205,19 @@ run_tests_parallel: run_tests_jvm_parallel run_tests_c_parallel run_tests_int_pa
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int_parallel
 run_tests_int_parallel: $(FZ_INT) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
-	echo -n "testing interpreter: "
+	printf "testing interpreter: "
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) int
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c_parallel
 run_tests_c_parallel: $(FZ_C) $(FZ_MODULES) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
-	echo -n "testing C backend: "; \
+	printf "testing C backend: "; \
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) c
 
 # phony target to run Fuzion tests using jvm backend and report number of failures
 .PHONY .SILENT: run_tests_jvm_parallel
 run_tests_jvm_parallel: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
-	echo -n "testing JVM backend: "; \
+	printf "testing JVM backend: "; \
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) jvm
 
 .PHONY .SILENT: run_tests_jar

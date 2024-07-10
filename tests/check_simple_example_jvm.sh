@@ -44,7 +44,7 @@ RC=0
 if [ -f "$2".skip ]; then
     echo "SKIP $2"
 else
-    echo -n "RUN $2 "
+    printf "RUN $2 "
     unset OPT
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=.*$"     && export OPT=-Dfuzion.debugLevel=10
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=9( .*)$" && export OPT=-Dfuzion.debugLevel=9
