@@ -1354,7 +1354,8 @@ $(BUILD_DIR)/pmd: $(BUILD_DIR)/pmd.zip
 	sha256sum -c $(BUILD_DIR)/pmd.zip.sha256
 	unzip $(BUILD_DIR)/pmd.zip -d $@
 
-# this gives a lot of output
+# this linter detects different things than standard java linter
+# but gives a lot of suggestions.
 # use grep, e.g.: make lint/pmd | grep 'UnusedLocalVariable'
 #
 lint/pmd: $(BUILD_DIR)/pmd
