@@ -1,13 +1,13 @@
 
 error 1: Postcondition `equals result-x x` does not hold after call
 Call stack:
-fuzion.type.runtime.type.fault.type.install_default#0.#fun266.call#1: $MODULE/fuzion/runtime/fault.fz:38:7:
+fuzion.type.runtime.type.fault.type.install_default#0.#fun271.call#1: $MODULE/fuzion/runtime/fault.fz:38:7:
       fuzion.sys.fatal_fault kind msg
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fuzion.runtime.fault.cause#1: $MODULE/eff/fallible.fz:35:6:
   => h e
 -----^
-fuzion.type.runtime.type.post_fault.type.install_default#0.#fun267.call#1: $MODULE/fuzion/runtime/post_fault.fz:39:7:
+fuzion.type.runtime.type.post_fault.type.install_default#0.#fun272.call#1: $MODULE/fuzion/runtime/post_fault.fz:39:7:
       fuzion.runtime.fault.cause ("postcondition", msg)).default
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fuzion.runtime.post_fault.cause#1: $MODULE/eff/fallible.fz:35:6:
@@ -63,30 +63,30 @@ catch_postcondition.#loop4#2.#fun4.call#0: --CURDIR--/catch_postcondition.fz:271
 (fuzion.type.runtime.type.fault.type.try (option String)).catch#1.#anonymous14.try#0: $MODULE/eff/fallible.fz:75:23:
          redef try => code_try.call
 ----------------------^^^^^^^^^^^^^
-(fuzion.type.runtime.type.fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun52.call#0.#fun53.call#0: $MODULE/eff/fallible.fz:121:13:
-      ).run try (()->catch m.get.get)
-------------^^^
-(fuzion.runtime.fault.run#3 (option String)).#fun0.call#0: $MODULE/effect.fz:97:23:
+(fuzion.type.runtime.type.fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun5.call#0.#fun6.call#0: $MODULE/eff/fallible.fz:121:13:
+      ).run eff.handle.this.try (()->catch m.get.get)
+------------^^^^^^^^^^^^^^^^^^^
+(fuzion.runtime.fault.run#3 (option String)).#fun1.call#0: $MODULE/effect.fz:98:23:
     cf := Effect_Call f
 ----------------------^
-(fuzion.runtime.fault.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+(fuzion.runtime.fault.Effect_Call (option String)).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 fuzion.runtime.fault.run#3 (option String): <source position not available>:
 
-(fuzion.type.runtime.type.fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun52.call#0: $MODULE/eff/fallible.fz:118:7:
+(fuzion.type.runtime.type.fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun5.call#0: $MODULE/eff/fallible.fz:118:7:
       (F.new e->
 ------^^^^^^^^^^
           m <- e
 ^^^^^^^^^^^^^^^^
           F.env.return
 ^^^^^^^^^^^^^^^^^^^^^^
-      ).run try (()->catch m.get.get)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-((eff.ref handle (tuple String String) fuzion.runtime.fault (option String)).lm.go#2 (option String)).#fun2.call#0: $MODULE/effect.fz:207:23:
+      ).run eff.handle.this.try (()->catch m.get.get)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+((eff.ref handle (tuple String String) fuzion.runtime.fault (option String)).lm.go#2 (option String)).#fun3.call#0: $MODULE/effect.fz:208:23:
     cf := Effect_Call f
 ----------------------^
-((eff.ref handle (tuple String String) fuzion.runtime.fault (option String)).lm.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+((eff.ref handle (tuple String String) fuzion.runtime.fault (option String)).lm.Effect_Call (option String)).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 (eff.ref handle (tuple String String) fuzion.runtime.fault (option String)).lm.go#2 (option String): <source position not available>:
@@ -102,8 +102,8 @@ fuzion.runtime.fault.run#3 (option String): <source position not available>:
 ^^^^^^^^^^^^^^^^
           F.env.return
 ^^^^^^^^^^^^^^^^^^^^^^
-      ).run try (()->catch m.get.get)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      ).run eff.handle.this.try (()->catch m.get.get)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (fuzion.type.runtime.type.fault.type.try (option String)).catch#1: $MODULE/eff/fallible.fz:74:7:
       (ref : eff.handle ERROR fallible.this T
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -150,30 +150,30 @@ catch_postcondition.#loop4#2.#fun4.call#0: --CURDIR--/catch_postcondition.fz:271
 (fuzion.type.runtime.type.fault.type.try (option String)).catch#1.#anonymous14.try#0: $MODULE/eff/fallible.fz:75:23:
          redef try => code_try.call
 ----------------------^^^^^^^^^^^^^
-(fuzion.type.runtime.type.fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun52.call#0.#fun53.call#0: $MODULE/eff/fallible.fz:121:13:
-      ).run try (()->catch m.get.get)
-------------^^^
-(fuzion.runtime.fault.run#3 (option String)).#fun0.call#0: $MODULE/effect.fz:97:23:
+(fuzion.type.runtime.type.fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun5.call#0.#fun6.call#0: $MODULE/eff/fallible.fz:121:13:
+      ).run eff.handle.this.try (()->catch m.get.get)
+------------^^^^^^^^^^^^^^^^^^^
+(fuzion.runtime.fault.run#3 (option String)).#fun1.call#0: $MODULE/effect.fz:98:23:
     cf := Effect_Call f
 ----------------------^
-(fuzion.runtime.fault.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+(fuzion.runtime.fault.Effect_Call (option String)).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 fuzion.runtime.fault.run#3 (option String): <source position not available>:
 
-(fuzion.type.runtime.type.fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun52.call#0: $MODULE/eff/fallible.fz:118:7:
+(fuzion.type.runtime.type.fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun5.call#0: $MODULE/eff/fallible.fz:118:7:
       (F.new e->
 ------^^^^^^^^^^
           m <- e
 ^^^^^^^^^^^^^^^^
           F.env.return
 ^^^^^^^^^^^^^^^^^^^^^^
-      ).run try (()->catch m.get.get)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-((eff.ref handle (tuple String String) fuzion.runtime.fault (option String)).lm.go#2 (option String)).#fun2.call#0: $MODULE/effect.fz:207:23:
+      ).run eff.handle.this.try (()->catch m.get.get)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+((eff.ref handle (tuple String String) fuzion.runtime.fault (option String)).lm.go#2 (option String)).#fun3.call#0: $MODULE/effect.fz:208:23:
     cf := Effect_Call f
 ----------------------^
-((eff.ref handle (tuple String String) fuzion.runtime.fault (option String)).lm.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+((eff.ref handle (tuple String String) fuzion.runtime.fault (option String)).lm.Effect_Call (option String)).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 (eff.ref handle (tuple String String) fuzion.runtime.fault (option String)).lm.go#2 (option String): <source position not available>:
@@ -189,8 +189,8 @@ fuzion.runtime.fault.run#3 (option String): <source position not available>:
 ^^^^^^^^^^^^^^^^
           F.env.return
 ^^^^^^^^^^^^^^^^^^^^^^
-      ).run try (()->catch m.get.get)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      ).run eff.handle.this.try (()->catch m.get.get)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (fuzion.type.runtime.type.fault.type.try (option String)).catch#1: $MODULE/eff/fallible.fz:74:7:
       (ref : eff.handle ERROR fallible.this T
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -223,30 +223,30 @@ catch_postcondition.#loop3#2.#fun3.call#0: --CURDIR--/catch_postcondition.fz:252
 (fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.#anonymous14.try#0: $MODULE/eff/fallible.fz:75:23:
          redef try => code_try.call
 ----------------------^^^^^^^^^^^^^
-(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun52.call#0.#fun53.call#0: $MODULE/eff/fallible.fz:121:13:
-      ).run try (()->catch m.get.get)
-------------^^^
-(fuzion.runtime.post_fault.run#3 (option String)).#fun0.call#0: $MODULE/effect.fz:97:23:
+(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun5.call#0.#fun6.call#0: $MODULE/eff/fallible.fz:121:13:
+      ).run eff.handle.this.try (()->catch m.get.get)
+------------^^^^^^^^^^^^^^^^^^^
+(fuzion.runtime.post_fault.run#3 (option String)).#fun1.call#0: $MODULE/effect.fz:98:23:
     cf := Effect_Call f
 ----------------------^
-(fuzion.runtime.post_fault.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+(fuzion.runtime.post_fault.Effect_Call (option String)).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 fuzion.runtime.post_fault.run#3 (option String): <source position not available>:
 
-(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun52.call#0: $MODULE/eff/fallible.fz:118:7:
+(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun5.call#0: $MODULE/eff/fallible.fz:118:7:
       (F.new e->
 ------^^^^^^^^^^
           m <- e
 ^^^^^^^^^^^^^^^^
           F.env.return
 ^^^^^^^^^^^^^^^^^^^^^^
-      ).run try (()->catch m.get.get)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-((eff.ref handle String fuzion.runtime.post_fault (option String)).lm.go#2 (option String)).#fun2.call#0: $MODULE/effect.fz:207:23:
+      ).run eff.handle.this.try (()->catch m.get.get)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+((eff.ref handle String fuzion.runtime.post_fault (option String)).lm.go#2 (option String)).#fun3.call#0: $MODULE/effect.fz:208:23:
     cf := Effect_Call f
 ----------------------^
-((eff.ref handle String fuzion.runtime.post_fault (option String)).lm.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+((eff.ref handle String fuzion.runtime.post_fault (option String)).lm.Effect_Call (option String)).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 (eff.ref handle String fuzion.runtime.post_fault (option String)).lm.go#2 (option String): <source position not available>:
@@ -262,8 +262,8 @@ fuzion.runtime.post_fault.run#3 (option String): <source position not available>
 ^^^^^^^^^^^^^^^^
           F.env.return
 ^^^^^^^^^^^^^^^^^^^^^^
-      ).run try (()->catch m.get.get)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      ).run eff.handle.this.try (()->catch m.get.get)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1: $MODULE/eff/fallible.fz:74:7:
       (ref : eff.handle ERROR fallible.this T
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -304,30 +304,30 @@ catch_postcondition.#loop3#2.#fun3.call#0: --CURDIR--/catch_postcondition.fz:252
 (fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.#anonymous14.try#0: $MODULE/eff/fallible.fz:75:23:
          redef try => code_try.call
 ----------------------^^^^^^^^^^^^^
-(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun52.call#0.#fun53.call#0: $MODULE/eff/fallible.fz:121:13:
-      ).run try (()->catch m.get.get)
-------------^^^
-(fuzion.runtime.post_fault.run#3 (option String)).#fun0.call#0: $MODULE/effect.fz:97:23:
+(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun5.call#0.#fun6.call#0: $MODULE/eff/fallible.fz:121:13:
+      ).run eff.handle.this.try (()->catch m.get.get)
+------------^^^^^^^^^^^^^^^^^^^
+(fuzion.runtime.post_fault.run#3 (option String)).#fun1.call#0: $MODULE/effect.fz:98:23:
     cf := Effect_Call f
 ----------------------^
-(fuzion.runtime.post_fault.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+(fuzion.runtime.post_fault.Effect_Call (option String)).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 fuzion.runtime.post_fault.run#3 (option String): <source position not available>:
 
-(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun52.call#0: $MODULE/eff/fallible.fz:118:7:
+(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.#anonymous14.res#0.#fun5.call#0: $MODULE/eff/fallible.fz:118:7:
       (F.new e->
 ------^^^^^^^^^^
           m <- e
 ^^^^^^^^^^^^^^^^
           F.env.return
 ^^^^^^^^^^^^^^^^^^^^^^
-      ).run try (()->catch m.get.get)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-((eff.ref handle String fuzion.runtime.post_fault (option String)).lm.go#2 (option String)).#fun2.call#0: $MODULE/effect.fz:207:23:
+      ).run eff.handle.this.try (()->catch m.get.get)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+((eff.ref handle String fuzion.runtime.post_fault (option String)).lm.go#2 (option String)).#fun3.call#0: $MODULE/effect.fz:208:23:
     cf := Effect_Call f
 ----------------------^
-((eff.ref handle String fuzion.runtime.post_fault (option String)).lm.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+((eff.ref handle String fuzion.runtime.post_fault (option String)).lm.Effect_Call (option String)).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 (eff.ref handle String fuzion.runtime.post_fault (option String)).lm.go#2 (option String): <source position not available>:
@@ -343,8 +343,8 @@ fuzion.runtime.post_fault.run#3 (option String): <source position not available>
 ^^^^^^^^^^^^^^^^
           F.env.return
 ^^^^^^^^^^^^^^^^^^^^^^
-      ).run try (()->catch m.get.get)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      ).run eff.handle.this.try (()->catch m.get.get)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1: $MODULE/eff/fallible.fz:74:7:
       (ref : eff.handle ERROR fallible.this T
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -380,10 +380,10 @@ catch_postcondition.#loop2#2.#fun2.call#0: --CURDIR--/catch_postcondition.fz:233
 (catch_postcondition.try_post (option String)).catch#1.h.#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:108:15:
         ).run try (()->catch m.get.get)
 --------------^^^
-(fuzion.runtime.post_fault.run#3 (option String)).#fun0.call#0: $MODULE/effect.fz:97:23:
+(fuzion.runtime.post_fault.run#3 (option String)).#fun1.call#0: $MODULE/effect.fz:98:23:
     cf := Effect_Call f
 ----------------------^
-(fuzion.runtime.post_fault.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+(fuzion.runtime.post_fault.Effect_Call (option String)).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 fuzion.runtime.post_fault.run#3 (option String): <source position not available>:
@@ -391,10 +391,10 @@ fuzion.runtime.post_fault.run#3 (option String): <source position not available>
 (catch_postcondition.try_post (option String)).catch#1.h.#fun0.call#0: --CURDIR--/catch_postcondition.fz:108:11:
         ).run try (()->catch m.get.get)
 ----------^^^
-((catch_postcondition.try_post (option String)).catch#1.h.lm.go#2 (option String)).#fun2.call#0: $MODULE/effect.fz:207:23:
+((catch_postcondition.try_post (option String)).catch#1.h.lm.go#2 (option String)).#fun3.call#0: $MODULE/effect.fz:208:23:
     cf := Effect_Call f
 ----------------------^
-((catch_postcondition.try_post (option String)).catch#1.h.lm.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+((catch_postcondition.try_post (option String)).catch#1.h.lm.Effect_Call (option String)).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 (catch_postcondition.try_post (option String)).catch#1.h.lm.go#2 (option String): <source position not available>:
@@ -439,10 +439,10 @@ catch_postcondition.#loop2#2.#fun2.call#0: --CURDIR--/catch_postcondition.fz:233
 (catch_postcondition.try_post (option String)).catch#1.h.#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:108:15:
         ).run try (()->catch m.get.get)
 --------------^^^
-(fuzion.runtime.post_fault.run#3 (option String)).#fun0.call#0: $MODULE/effect.fz:97:23:
+(fuzion.runtime.post_fault.run#3 (option String)).#fun1.call#0: $MODULE/effect.fz:98:23:
     cf := Effect_Call f
 ----------------------^
-(fuzion.runtime.post_fault.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+(fuzion.runtime.post_fault.Effect_Call (option String)).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 fuzion.runtime.post_fault.run#3 (option String): <source position not available>:
@@ -450,10 +450,10 @@ fuzion.runtime.post_fault.run#3 (option String): <source position not available>
 (catch_postcondition.try_post (option String)).catch#1.h.#fun0.call#0: --CURDIR--/catch_postcondition.fz:108:11:
         ).run try (()->catch m.get.get)
 ----------^^^
-((catch_postcondition.try_post (option String)).catch#1.h.lm.go#2 (option String)).#fun2.call#0: $MODULE/effect.fz:207:23:
+((catch_postcondition.try_post (option String)).catch#1.h.lm.go#2 (option String)).#fun3.call#0: $MODULE/effect.fz:208:23:
     cf := Effect_Call f
 ----------------------^
-((catch_postcondition.try_post (option String)).catch#1.h.lm.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+((catch_postcondition.try_post (option String)).catch#1.h.lm.Effect_Call (option String)).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 (catch_postcondition.try_post (option String)).catch#1.h.lm.go#2 (option String): <source position not available>:
@@ -487,10 +487,10 @@ catch_postcondition.res2#0.#fun7.call#0: --CURDIR--/catch_postcondition.fz:220:2
 (catch_postcondition.try_post String).catch#1.h.#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:108:15:
         ).run try (()->catch m.get.get)
 --------------^^^
-(fuzion.runtime.post_fault.run#3 String).#fun0.call#0: $MODULE/effect.fz:97:23:
+(fuzion.runtime.post_fault.run#3 String).#fun1.call#0: $MODULE/effect.fz:98:23:
     cf := Effect_Call f
 ----------------------^
-(fuzion.runtime.post_fault.Effect_Call String).call#0: $MODULE/effect.fz:153:18:
+(fuzion.runtime.post_fault.Effect_Call String).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 fuzion.runtime.post_fault.run#3 String: <source position not available>:
@@ -498,10 +498,10 @@ fuzion.runtime.post_fault.run#3 String: <source position not available>:
 (catch_postcondition.try_post String).catch#1.h.#fun0.call#0: --CURDIR--/catch_postcondition.fz:108:11:
         ).run try (()->catch m.get.get)
 ----------^^^
-((catch_postcondition.try_post String).catch#1.h.lm.go#2 String).#fun2.call#0: $MODULE/effect.fz:207:23:
+((catch_postcondition.try_post String).catch#1.h.lm.go#2 String).#fun3.call#0: $MODULE/effect.fz:208:23:
     cf := Effect_Call f
 ----------------------^
-((catch_postcondition.try_post String).catch#1.h.lm.Effect_Call String).call#0: $MODULE/effect.fz:153:18:
+((catch_postcondition.try_post String).catch#1.h.lm.Effect_Call String).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 (catch_postcondition.try_post String).catch#1.h.lm.go#2 String: <source position not available>:
@@ -541,10 +541,10 @@ catch_postcondition.res#0.#fun6.call#0: --CURDIR--/catch_postcondition.fz:208:12
 (catch_postcondition.try_post String).catch#1.h.#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:108:15:
         ).run try (()->catch m.get.get)
 --------------^^^
-(fuzion.runtime.post_fault.run#3 String).#fun0.call#0: $MODULE/effect.fz:97:23:
+(fuzion.runtime.post_fault.run#3 String).#fun1.call#0: $MODULE/effect.fz:98:23:
     cf := Effect_Call f
 ----------------------^
-(fuzion.runtime.post_fault.Effect_Call String).call#0: $MODULE/effect.fz:153:18:
+(fuzion.runtime.post_fault.Effect_Call String).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 fuzion.runtime.post_fault.run#3 String: <source position not available>:
@@ -552,10 +552,10 @@ fuzion.runtime.post_fault.run#3 String: <source position not available>:
 (catch_postcondition.try_post String).catch#1.h.#fun0.call#0: --CURDIR--/catch_postcondition.fz:108:11:
         ).run try (()->catch m.get.get)
 ----------^^^
-((catch_postcondition.try_post String).catch#1.h.lm.go#2 String).#fun2.call#0: $MODULE/effect.fz:207:23:
+((catch_postcondition.try_post String).catch#1.h.lm.go#2 String).#fun3.call#0: $MODULE/effect.fz:208:23:
     cf := Effect_Call f
 ----------------------^
-((catch_postcondition.try_post String).catch#1.h.lm.Effect_Call String).call#0: $MODULE/effect.fz:153:18:
+((catch_postcondition.try_post String).catch#1.h.lm.Effect_Call String).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 (catch_postcondition.try_post String).catch#1.h.lm.go#2 String: <source position not available>:
@@ -592,10 +592,10 @@ catch_postcondition.#loop1#2.h.try#0: --CURDIR--/catch_postcondition.fz:159:44:
 catch_postcondition.#loop1#2.h.#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:108:15:
         ).run try (()->catch m.get.get)
 --------------^^^
-(fuzion.runtime.post_fault.run#3 (option String)).#fun0.call#0: $MODULE/effect.fz:97:23:
+(fuzion.runtime.post_fault.run#3 (option String)).#fun1.call#0: $MODULE/effect.fz:98:23:
     cf := Effect_Call f
 ----------------------^
-(fuzion.runtime.post_fault.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+(fuzion.runtime.post_fault.Effect_Call (option String)).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 fuzion.runtime.post_fault.run#3 (option String): <source position not available>:
@@ -603,10 +603,10 @@ fuzion.runtime.post_fault.run#3 (option String): <source position not available>
 catch_postcondition.#loop1#2.h.#fun0.call#0: --CURDIR--/catch_postcondition.fz:108:11:
         ).run try (()->catch m.get.get)
 ----------^^^
-(catch_postcondition.#loop1#2.h.lm.go#2 (option String)).#fun2.call#0: $MODULE/effect.fz:207:23:
+(catch_postcondition.#loop1#2.h.lm.go#2 (option String)).#fun3.call#0: $MODULE/effect.fz:208:23:
     cf := Effect_Call f
 ----------------------^
-(catch_postcondition.#loop1#2.h.lm.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+(catch_postcondition.#loop1#2.h.lm.Effect_Call (option String)).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 catch_postcondition.#loop1#2.h.lm.go#2 (option String): <source position not available>:
@@ -648,10 +648,10 @@ catch_postcondition.#loop1#2.h.try#0: --CURDIR--/catch_postcondition.fz:159:44:
 catch_postcondition.#loop1#2.h.#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:108:15:
         ).run try (()->catch m.get.get)
 --------------^^^
-(fuzion.runtime.post_fault.run#3 (option String)).#fun0.call#0: $MODULE/effect.fz:97:23:
+(fuzion.runtime.post_fault.run#3 (option String)).#fun1.call#0: $MODULE/effect.fz:98:23:
     cf := Effect_Call f
 ----------------------^
-(fuzion.runtime.post_fault.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+(fuzion.runtime.post_fault.Effect_Call (option String)).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 fuzion.runtime.post_fault.run#3 (option String): <source position not available>:
@@ -659,10 +659,10 @@ fuzion.runtime.post_fault.run#3 (option String): <source position not available>
 catch_postcondition.#loop1#2.h.#fun0.call#0: --CURDIR--/catch_postcondition.fz:108:11:
         ).run try (()->catch m.get.get)
 ----------^^^
-(catch_postcondition.#loop1#2.h.lm.go#2 (option String)).#fun2.call#0: $MODULE/effect.fz:207:23:
+(catch_postcondition.#loop1#2.h.lm.go#2 (option String)).#fun3.call#0: $MODULE/effect.fz:208:23:
     cf := Effect_Call f
 ----------------------^
-(catch_postcondition.#loop1#2.h.lm.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+(catch_postcondition.#loop1#2.h.lm.Effect_Call (option String)).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 catch_postcondition.#loop1#2.h.lm.go#2 (option String): <source position not available>:
@@ -693,10 +693,10 @@ catch_postcondition.z.try#0: --CURDIR--/catch_postcondition.fz:146:43:
 catch_postcondition.z.#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:108:15:
         ).run try (()->catch m.get.get)
 --------------^^^
-(fuzion.runtime.post_fault.run#3 (option String)).#fun0.call#0: $MODULE/effect.fz:97:23:
+(fuzion.runtime.post_fault.run#3 (option String)).#fun1.call#0: $MODULE/effect.fz:98:23:
     cf := Effect_Call f
 ----------------------^
-(fuzion.runtime.post_fault.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+(fuzion.runtime.post_fault.Effect_Call (option String)).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 fuzion.runtime.post_fault.run#3 (option String): <source position not available>:
@@ -704,10 +704,10 @@ fuzion.runtime.post_fault.run#3 (option String): <source position not available>
 catch_postcondition.z.#fun0.call#0: --CURDIR--/catch_postcondition.fz:108:11:
         ).run try (()->catch m.get.get)
 ----------^^^
-(catch_postcondition.z.lm.go#2 (option String)).#fun2.call#0: $MODULE/effect.fz:207:23:
+(catch_postcondition.z.lm.go#2 (option String)).#fun3.call#0: $MODULE/effect.fz:208:23:
     cf := Effect_Call f
 ----------------------^
-(catch_postcondition.z.lm.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+(catch_postcondition.z.lm.Effect_Call (option String)).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 catch_postcondition.z.lm.go#2 (option String): <source position not available>:
@@ -721,18 +721,20 @@ catch_postcondition.z.catch#1: --CURDIR--/catch_postcondition.fz:147:117:
 catch_postcondition.z.#fun0.call#0.#fun14.call#0: --CURDIR--/catch_postcondition.fz:108:24:
         ).run try (()->catch m.get.get)
 -----------------------^^^^^
-fuzion.runtime.post_fault.abort#0: $MODULE/effect.fz:100:14:
+fuzion.runtime.post_fault.abort#0: $MODULE/effect.fz:101:14:
       nil => def()
 -------------^^^
-fuzion.runtime.post_fault.#preandcall60_abort#0: $MODULE/effect.fz:66:3:
+fuzion.runtime.post_fault.#preandcall247_abort#0: $MODULE/effect.fz:66:3:
   pre
 --^^^
+    safety: effect.is_installed effect.this
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     safety: abortable
 ^^^^^^^^^^^^^^^^^^^^^
-fuzion.runtime.post_fault.return#0: $MODULE/effect.fz:111:5:
+fuzion.runtime.post_fault.return#0: $MODULE/effect.fz:112:5:
     abort
 ----^^^^^
-fuzion.runtime.post_fault.#preandcall250_return#0: $MODULE/effect.fz:108:3:
+fuzion.runtime.post_fault.#preandcall250_return#0: $MODULE/effect.fz:109:3:
   pre
 --^^^
     safety: abortable
@@ -774,10 +776,10 @@ catch_postcondition.z.try#0: --CURDIR--/catch_postcondition.fz:146:43:
 catch_postcondition.z.#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:108:15:
         ).run try (()->catch m.get.get)
 --------------^^^
-(fuzion.runtime.post_fault.run#3 (option String)).#fun0.call#0: $MODULE/effect.fz:97:23:
+(fuzion.runtime.post_fault.run#3 (option String)).#fun1.call#0: $MODULE/effect.fz:98:23:
     cf := Effect_Call f
 ----------------------^
-(fuzion.runtime.post_fault.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+(fuzion.runtime.post_fault.Effect_Call (option String)).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 fuzion.runtime.post_fault.run#3 (option String): <source position not available>:
@@ -785,10 +787,10 @@ fuzion.runtime.post_fault.run#3 (option String): <source position not available>
 catch_postcondition.z.#fun0.call#0: --CURDIR--/catch_postcondition.fz:108:11:
         ).run try (()->catch m.get.get)
 ----------^^^
-(catch_postcondition.z.lm.go#2 (option String)).#fun2.call#0: $MODULE/effect.fz:207:23:
+(catch_postcondition.z.lm.go#2 (option String)).#fun3.call#0: $MODULE/effect.fz:208:23:
     cf := Effect_Call f
 ----------------------^
-(catch_postcondition.z.lm.Effect_Call (option String)).call#0: $MODULE/effect.fz:153:18:
+(catch_postcondition.z.lm.Effect_Call (option String)).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 catch_postcondition.z.lm.go#2 (option String): <source position not available>:
@@ -824,10 +826,10 @@ catch_postcondition.#anonymous0.try#0: --CURDIR--/catch_postcondition.fz:129:7:
 (catch_postcondition.ref handle_post String).#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:108:15:
         ).run try (()->catch m.get.get)
 --------------^^^
-(fuzion.runtime.post_fault.run#3 String).#fun0.call#0: $MODULE/effect.fz:97:23:
+(fuzion.runtime.post_fault.run#3 String).#fun1.call#0: $MODULE/effect.fz:98:23:
     cf := Effect_Call f
 ----------------------^
-(fuzion.runtime.post_fault.Effect_Call String).call#0: $MODULE/effect.fz:153:18:
+(fuzion.runtime.post_fault.Effect_Call String).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 fuzion.runtime.post_fault.run#3 String: <source position not available>:
@@ -835,10 +837,10 @@ fuzion.runtime.post_fault.run#3 String: <source position not available>:
 (catch_postcondition.ref handle_post String).#fun0.call#0: --CURDIR--/catch_postcondition.fz:108:11:
         ).run try (()->catch m.get.get)
 ----------^^^
-((catch_postcondition.ref handle_post String).lm.go#2 String).#fun2.call#0: $MODULE/effect.fz:207:23:
+((catch_postcondition.ref handle_post String).lm.go#2 String).#fun3.call#0: $MODULE/effect.fz:208:23:
     cf := Effect_Call f
 ----------------------^
-((catch_postcondition.ref handle_post String).lm.Effect_Call String).call#0: $MODULE/effect.fz:153:18:
+((catch_postcondition.ref handle_post String).lm.Effect_Call String).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 (catch_postcondition.ref handle_post String).lm.go#2 String: <source position not available>:
@@ -874,10 +876,10 @@ catch_postcondition.y.try#0: --CURDIR--/catch_postcondition.fz:116:30:
 catch_postcondition.y.#fun0.call#0.#fun1.call#0: --CURDIR--/catch_postcondition.fz:108:15:
         ).run try (()->catch m.get.get)
 --------------^^^
-(fuzion.runtime.post_fault.run#3 String).#fun0.call#0: $MODULE/effect.fz:97:23:
+(fuzion.runtime.post_fault.run#3 String).#fun1.call#0: $MODULE/effect.fz:98:23:
     cf := Effect_Call f
 ----------------------^
-(fuzion.runtime.post_fault.Effect_Call String).call#0: $MODULE/effect.fz:153:18:
+(fuzion.runtime.post_fault.Effect_Call String).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 fuzion.runtime.post_fault.run#3 String: <source position not available>:
@@ -885,10 +887,10 @@ fuzion.runtime.post_fault.run#3 String: <source position not available>:
 catch_postcondition.y.#fun0.call#0: --CURDIR--/catch_postcondition.fz:108:11:
         ).run try (()->catch m.get.get)
 ----------^^^
-(catch_postcondition.y.lm.go#2 String).#fun2.call#0: $MODULE/effect.fz:207:23:
+(catch_postcondition.y.lm.go#2 String).#fun3.call#0: $MODULE/effect.fz:208:23:
     cf := Effect_Call f
 ----------------------^
-(catch_postcondition.y.lm.Effect_Call String).call#0: $MODULE/effect.fz:153:18:
+(catch_postcondition.y.lm.Effect_Call String).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 catch_postcondition.y.lm.go#2 String: <source position not available>:
@@ -896,7 +898,7 @@ catch_postcondition.y.lm.go#2 String: <source position not available>:
 catch_postcondition.y: --CURDIR--/catch_postcondition.fz:103:15:
     res := lm.go ()->
 --------------^^
-fuzion.runtime.post_fault.#preandcall60_abort#0: --CURDIR--/catch_postcondition.fz:119:7:
+fuzion.runtime.post_fault.#preandcall247_abort#0: --CURDIR--/catch_postcondition.fz:119:7:
   say y.res
 ------^
 catch_postcondition.#fun8.call#1: --CURDIR--/catch_postcondition.fz:83:21:
@@ -930,10 +932,10 @@ catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
 catch_postcondition.#fun5.call#0: --CURDIR--/catch_postcondition.fz:84:6:
     (test i32)
 -----^^^^
-(fuzion.runtime.post_fault.run#3 String).#fun0.call#0: $MODULE/effect.fz:97:23:
+(fuzion.runtime.post_fault.run#3 String).#fun1.call#0: $MODULE/effect.fz:98:23:
     cf := Effect_Call f
 ----------------------^
-(fuzion.runtime.post_fault.Effect_Call String).call#0: $MODULE/effect.fz:153:18:
+(fuzion.runtime.post_fault.Effect_Call String).call#0: $MODULE/effect.fz:154:18:
       set res := f()
 -----------------^
 fuzion.runtime.post_fault.run#3 String: <source position not available>:
