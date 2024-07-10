@@ -72,7 +72,12 @@ public interface SrcModule
   List<FeatureAndOuter> lookup(AbstractFeature thiz, String name, Expr use, boolean traverseOuter, boolean hidden);
   AbstractFeature lookupOpenTypeParameterResult(AbstractFeature outer, Expr use);
   void checkTypes(Feature f);
-  FeatureAndOuter lookupType(SourcePosition pos, AbstractFeature outer, String name, boolean traverseOuter, boolean ignoreNotFound);
+  FeatureAndOuter lookupType(SourcePosition pos,
+                             AbstractFeature outer,
+                             String name,
+                             boolean traverseOuter,
+                             boolean ignoreAmbiguous,
+                             boolean ignoreNotFound);
 
   void addTypeFeature(AbstractFeature outerType,
                       Feature         innerType);

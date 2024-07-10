@@ -591,7 +591,8 @@ public class AstErrors extends ANY
               "Wrong number of actual arguments in call",
               "Number of actual arguments is " + call._actuals.size() + ", while call expects " + argumentsString(fsz) + ".\n" +
               "Called feature: " + s(call.calledFeature())+ "\n"+
-              "Formal arguments: " + fstr + "");
+              "Formal arguments: " + fstr + "\n" +
+              "Declared at " + call.calledFeature().pos().show());
       }
   }
 
@@ -1096,7 +1097,7 @@ public class AstErrors extends ANY
   }
 
   static void ambiguousTargets(SourcePosition pos,
-                               FeatureAndOuter.Operation operation,
+                               String operation,
                                FeatureName fn,
                                List<FeatureAndOuter> targets)
   {

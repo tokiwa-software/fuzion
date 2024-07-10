@@ -54,7 +54,7 @@ public class Errors extends ANY
 
 
   /**
-   * Flag used to supress any further error output by other threads when we are
+   * Flag used to suppress any further error output by other threads when we are
    * shutting down.
    */
   private static boolean _shutting_down_ = false;

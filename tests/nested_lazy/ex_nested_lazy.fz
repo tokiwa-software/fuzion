@@ -24,13 +24,13 @@
 ex_nested_lazy is
   lazy_evaluator(T type, lv Lazy T) T => lv
 
-  f Function bool i32 := x -> x = 0
+  fun Function bool i32 := x -> x = 0
 
-  say (lazy_evaluator bool (f 42))
-  say (lazy_evaluator bool (f 0))
+  say (lazy_evaluator bool (fun 42))
+  say (lazy_evaluator bool (fun 0))
 
-  say (f (lazy_evaluator i32 42))
-  say (f (lazy_evaluator i32 0))
+  say (fun (lazy_evaluator i32 42))
+  say (fun (lazy_evaluator i32 0))
 
   lazy0(l Lazy (Function i32)) i32 =>
     l.call

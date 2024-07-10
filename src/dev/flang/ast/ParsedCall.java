@@ -283,6 +283,7 @@ public class ParsedCall extends Call
                             new Block(new List<Expr>(as, t1)));
             _actuals = new List<Expr>(result);
             _calledFeature = Types.resolved.f_bool_AND;
+            _resolvedFormalArgumentTypes  = null;  // _calledFeature changed, so formal arg types must be resolved again
             _pendingError = null;
             _name = _calledFeature.featureName().baseName();
           }
@@ -325,7 +326,7 @@ public class ParsedCall extends Call
       _name.equals("infix >=") ||
       _name.equals("infix =") ||
       _name.equals("infix !=") ||
-      // && is used to chain the calls togehter.
+      // && is used to chain the calls together.
       _name.equals("infix &&");
   }
 
@@ -502,8 +503,9 @@ public class ParsedCall extends Call
           {
             _name = nn;
             _calledFeature = null;
-            _pendingError = null;
           }
+        _resolvedFormalArgumentTypes  = null;
+        _pendingError = null;
         var fn = new Function(pos(),
                               pns,
                               this)

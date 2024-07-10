@@ -268,10 +268,7 @@ public class Destructure extends ExprWithPos
                                   FuzionConstants.DESTRUCTURE_PREFIX + id++,
                                   outer);
         tmp.scheduleForResolution(res);
-        exprs.add(tmp.resolveTypes(res, outer));
-        Assign atmp = new Assign(res, pos(), tmp, _value, outer);
-        atmp.resolveTypes(res, outer);
-        exprs.add(atmp);
+        exprs.add(new Assign(res, pos(), tmp, _value, outer));
         var names = _names.iterator();
         var fields = _fields.iterator();
         List<String> fieldNames = new List<>();

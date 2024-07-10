@@ -30,6 +30,7 @@ FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SRC = $(FZ_SRC)/src
 BUILD_DIR = ./build
 CLASSES_DIR = $(BUILD_DIR)/classes
+CLASSES_DIR_LOGO = $(BUILD_DIR)/classes_logo
 FUZION_BIN_SH = /bin/sh
 
 ifeq ($(FUZION_DEBUG_SYMBOLS),true)
@@ -89,7 +90,7 @@ CLASS_FILES_BE_JVM_RUNTIME    = $(CLASSES_DIR)/dev/flang/be/jvm/runtime/__marker
 CLASS_FILES_TOOLS             = $(CLASSES_DIR)/dev/flang/tools/__marker_for_make__
 CLASS_FILES_TOOLS_FZJAVA      = $(CLASSES_DIR)/dev/flang/tools/fzjava/__marker_for_make__
 CLASS_FILES_TOOLS_DOCS        = $(CLASSES_DIR)/dev/flang/tools/docs/__marker_for_make__
-CLASS_FILES_MISC_LOGO         = $(CLASSES_DIR)/dev/flang/misc/logo/__marker_for_make__
+CLASS_FILES_MISC_LOGO         = $(CLASSES_DIR_LOGO)/dev/flang/misc/logo/__marker_for_make__
 
 JFREE_SVG_URL = https://repo1.maven.org/maven2/org/jfree/org.jfree.svg/5.0.1/org.jfree.svg-5.0.1.jar
 JARS_JFREE_SVG_JAR = $(BUILD_DIR)/jars/org.jfree.svg-5.0.1.jar
@@ -574,20 +575,20 @@ $(JARS_JFREE_SVG_JAR):
 	mkdir -p $(@D)
 	curl $(JFREE_SVG_URL) --output $@
 
-$(CLASS_FILES_MISC_LOGO): $(JAVA_FILES_MISC_LOGO) $(JARS_JFREE_SVG_JAR)
-	mkdir -p $(CLASSES_DIR)
-	$(JAVAC) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) -d $(CLASSES_DIR) $(JAVA_FILES_MISC_LOGO)
+$(CLASS_FILES_MISC_LOGO): $(JAVA_FILES_MISC_LOGO) $(CLASS_FILES_UTIL_UNICODE) $(JARS_JFREE_SVG_JAR)
+	mkdir -p $(CLASSES_DIR_LOGO)
+	$(JAVAC) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) -d $(CLASSES_DIR_LOGO) $(JAVA_FILES_MISC_LOGO)
 	touch $@
 
 $(BUILD_DIR)/assets/logo.svg: $(CLASS_FILES_MISC_LOGO)
 	mkdir -p $(@D)
-	$(JAVA) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) dev.flang.misc.logo.FuzionLogo $@
+	$(JAVA) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR):$(CLASSES_DIR_LOGO) dev.flang.misc.logo.FuzionLogo $@
 	inkscape $@ -o $@.pdf
 	touch $@
 
 $(BUILD_DIR)/assets/logo_bleed.svg: $(CLASS_FILES_MISC_LOGO)
 	mkdir -p $(@D)
-	$(JAVA) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) dev.flang.misc.logo.FuzionLogo -b $@
+	$(JAVA) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR):$(CLASSES_DIR_LOGO) dev.flang.misc.logo.FuzionLogo -b $@
 	inkscape $@ -o $@.tmp.pdf
 	pdfjam --papersize '{46mm,46mm}' --outfile $@.pdf $@.tmp.pdf
 	rm -f $@.tmp.pdf
@@ -595,7 +596,7 @@ $(BUILD_DIR)/assets/logo_bleed.svg: $(CLASS_FILES_MISC_LOGO)
 
 $(BUILD_DIR)/assets/logo_bleed_cropmark.svg: $(CLASS_FILES_MISC_LOGO)
 	mkdir -p $(@D)
-	$(JAVA) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) dev.flang.misc.logo.FuzionLogo -c $@
+	$(JAVA) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR):$(CLASSES_DIR_LOGO) dev.flang.misc.logo.FuzionLogo -c $@
 	inkscape $@ -o $@.tmp.pdf
 	pdfjam --papersize '{46mm,46mm}' --outfile $@.pdf $@.tmp.pdf
 	rm -f $@.tmp.pdf
@@ -1342,3 +1343,62 @@ lint/javadoc:
 remove_unused_imports:
 	wget -O /tmp/google-java-format-1.21.0-all-deps.jar https://github.com/google/google-java-format/releases/download/v1.21.0/google-java-format-1.21.0-all-deps.jar
 	java -jar /tmp/google-java-format-1.21.0-all-deps.jar -r --fix-imports-only  --skip-sorting-imports `find src/`
+
+
+########
+# Begin : Fuzion Language Server
+########
+
+CLASSES_DIR_LSP = $(BUILD_DIR)/classes_lsp
+JAVA_FILES_LSP               = $(shell find $(SRC)/dev/flang/lsp -name '*.java' )
+CLASS_FILES_LSP               = $(CLASSES_DIR_LSP)/dev/flang/lsp/__marker_for_make__
+
+LSP_LSP4J_URL            = https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j/0.23.1/org.eclipse.lsp4j-0.23.1.jar
+LSP_LSP4J_GENERATOR_URL  = https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j.generator/0.23.1/org.eclipse.lsp4j.generator-0.23.1.jar
+LSP_LSP4J_JSONRPC_URL    = https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j.jsonrpc/0.23.1/org.eclipse.lsp4j.jsonrpc-0.23.1.jar
+LSP_GSON_URL             = https://repo1.maven.org/maven2/com/google/code/gson/gson/2.11.0/gson-2.11.0.jar
+JARS_LSP_LSP4J           = $(BUILD_DIR)/jars/org.eclipse.lsp4j-0.23.1.jar
+JARS_LSP_LSP4J_GENERATOR = $(BUILD_DIR)/jars/org.eclipse.lsp4j.generator-0.23.1.jar
+JARS_LSP_LSP4J_JSONRPC   = $(BUILD_DIR)/jars/org.eclipse.lsp4j.jsonrpc-0.23.1.jar
+JARS_LSP_GSON            = $(BUILD_DIR)/jars/gson-2.11.0.jar
+
+$(JARS_LSP_LSP4J):
+	mkdir -p $(@D)
+	curl $(LSP_LSP4J_URL) --output $@
+
+$(JARS_LSP_LSP4J_GENERATOR):
+	mkdir -p $(@D)
+	curl $(LSP_LSP4J_GENERATOR_URL) --output $@
+
+$(JARS_LSP_LSP4J_JSONRPC):
+	mkdir -p $(@D)
+	curl $(LSP_LSP4J_JSONRPC_URL) --output $@
+
+$(JARS_LSP_GSON):
+	mkdir -p $(@D)
+	curl $(LSP_GSON_URL) --output $@
+
+JARS_LSP: $(JARS_LSP_LSP4J) $(JARS_LSP_LSP4J_GENERATOR) $(JARS_LSP_LSP4J_JSONRPC) $(JARS_LSP_GSON)
+	echo "b16bbc6232a3946e03d537bb9be74e18489dbc6a8b8c5ab6cb7980854df8440f $(BUILD_DIR)/jars/org.eclipse.lsp4j-0.23.1.jar" > $(BUILD_DIR)/jars/lsp.sha256
+	echo "1adaeb34550ebec21636a45afe76ff8b60188a056966feb3c7e562450ba911be $(BUILD_DIR)/jars/org.eclipse.lsp4j.generator-0.23.1.jar" >> $(BUILD_DIR)/jars/lsp.sha256
+	echo "4e1aa77474de1791d96dc55932fb46efdf53233548f38f62ba7376f8b0bc6650 $(BUILD_DIR)/jars/org.eclipse.lsp4j.jsonrpc-0.23.1.jar" >> $(BUILD_DIR)/jars/lsp.sha256
+	echo "57928d6e5a6edeb2abd3770a8f95ba44dce45f3b23b7a9dc2b309c581552a78b $(BUILD_DIR)/jars/gson-2.11.0.jar" >> $(BUILD_DIR)/jars/lsp.sha256
+	sha256sum --status -c $(BUILD_DIR)/jars/lsp.sha256
+
+$(CLASS_FILES_LSP): JARS_LSP
+	mkdir -p $(CLASSES_DIR_LSP)
+	$(JAVAC) -cp $(CLASSES_DIR):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON) -d $(CLASSES_DIR_LSP) $(JAVA_FILES_LSP)
+	touch $@
+
+lsp/compile: $(FUZION_BASE) $(CLASS_FILES_LSP)
+
+LSP_FUZION_HOME = fuzion/build
+LSP_JAVA_STACKSIZE=16
+LSP_DEBUGGER_SUSPENDED = -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8000
+LSP_JAVA_ARGS = -Dfuzion.home=$(LSP_FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(LSP_JAVA_STACKSIZE)m
+lsp/debug/stdio: lsp/compile
+	java $(LSP_DEBUGGER_SUSPENDED) -cp  $(CLASSES_DIR):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON):$(CLASSES_DIR_LSP) $(LSP_JAVA_ARGS) dev.flang.lsp.server.Main -stdio
+
+########
+# End : Fuzion Language Server
+########

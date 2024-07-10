@@ -30,8 +30,11 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.io.File;
 import java.io.IOException;
+
 import org.jfree.svg.SVGGraphics2D;
 import org.jfree.svg.SVGUtils;
+
+import dev.flang.util.ANY;
 
 
 /**
@@ -41,7 +44,7 @@ import org.jfree.svg.SVGUtils;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class FuzionLogo
+public class FuzionLogo extends ANY
 {
 
   // file to generate

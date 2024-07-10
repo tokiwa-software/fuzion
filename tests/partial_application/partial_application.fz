@@ -93,7 +93,6 @@ partial_application is
   test "data.map as04          " (data.map as04) "[1, 10, 11, 100, 101, 110, 111, 1000, 1001, 1010]"
   test "data.map as05          " (data.map as05) "[1, 2, 10, 11, 12, 20, 21, 22, 100, 101]"
 
-  data := 1..10
   test "data.zip data x,y->x*y" (data.zip data x,y->x*y) "[1, 4, 9, 16, 25, 36, 49, 64, 81, 100]"
   test "data.zip data (+)" (data.zip data (+)) "[2, 4, 6, 8, 10, 12, 14, 16, 18, 20]"
   test "data.zip data (*)" (data.zip data (*)) "[1, 4, 9, 16, 25, 36, 49, 64, 81, 100]"
@@ -134,124 +133,128 @@ partial_application is
   test "easy *t" (easy *t) "84"
   test "easy %t" (easy %t) "0"
 
-  r := easy x->x*x
-  test "easy x->x*x   " r "1764"
-  r := easy 5.infix*
-  test "easy 5.infix* " r "210"
-  r := easy 7*
-  test "easy 7*       " r "294"
-  r := easy (7 *)
-  test "easy (7 *)    " r "294"
-  r := easy 17-
-  test "easy 17-      " r "-25"
-  r := easy (17 -)
-  test "easy (17 -)   " r "-25"
-  r := easy %17
-  test "easy %17      " r "8"
-  r := easy (% 17)
-  test "easy (% 17)   " r "8"
-  r := easy (-(17+0))
-  test "easy (-(17+0))" r "25"
-  r := easy -(17+0)
-  test "easy -(17+0)  " r "25"
-  r := easy -(17)
-  test "easy -(17)    " r "25"
-  r := easy (- 17)
-  test "easy (- 17)   " r "25"
-  r := easy -17
-  test "easy -17      " r "25"
-  r := easy -17
-  test "easy -17      " r "25"
-  r := easy (+(17+0))
-  test "easy (+(17+0))" r "59"
-  r := easy +(17+0)
-  test "easy +(17+0)  " r "59"
-  r := easy +(17+0)
-  test "easy +(17+0)  " r "59"
-  r := easy +(17)
-  test "easy +(17)    " r "59"
-  r := easy (+ 17)
-  test "easy (+ 17)   " r "59"
-  r := easy +17
-  test "easy +17      " r "59"
-  r := easy +o
-  test "easy +o" r "43"
-  r := easy -o
-  test "easy -o" r "41"
-  r := easy o+
-  test "easy o+" r "43"
-  r := easy o-
-  test "easy o-" r "-41"
-  r := easy *t
-  test "easy *t" r "84"
-  r := easy %t
-  test "easy %t" r "0"
+  part_app_field =>
+    r01 := easy x->x*x
+    test "easy x->x*x   " r01 "1764"
+    r02 := easy 5.infix*
+    test "easy 5.infix* " r02 "210"
+    r03 := easy 7*
+    test "easy 7*       " r03 "294"
+    r04 := easy (7 *)
+    test "easy (7 *)    " r04 "294"
+    r05 := easy 17-
+    test "easy 17-      " r05 "-25"
+    r06 := easy (17 -)
+    test "easy (17 -)   " r06 "-25"
+    r07 := easy %17
+    test "easy %17      " r07 "8"
+    r08 := easy (% 17)
+    test "easy (% 17)   " r08 "8"
+    r09 := easy (-(17+0))
+    test "easy (-(17+0))" r09 "25"
+    r10 := easy -(17+0)
+    test "easy -(17+0)  " r10 "25"
+    r11 := easy -(17)
+    test "easy -(17)    " r11 "25"
+    r12 := easy (- 17)
+    test "easy (- 17)   " r12 "25"
+    r13 := easy -17
+    test "easy -17      " r13 "25"
+    r14 := easy -17
+    test "easy -17      " r14 "25"
+    r15 := easy (+(17+0))
+    test "easy (+(17+0))" r15 "59"
+    r16 := easy +(17+0)
+    test "easy +(17+0)  " r16 "59"
+    r17 := easy +(17+0)
+    test "easy +(17+0)  " r17 "59"
+    r18 := easy +(17)
+    test "easy +(17)    " r18 "59"
+    r19 := easy (+ 17)
+    test "easy (+ 17)   " r19 "59"
+    r20 := easy +17
+    test "easy +17      " r20 "59"
+    r21 := easy +o
+    test "easy +o" r21 "43"
+    r22 := easy -o
+    test "easy -o" r22 "41"
+    r23 := easy o+
+    test "easy o+" r23 "43"
+    r24 := easy o-
+    test "easy o-" r24 "-41"
+    r25 := easy *t
+    test "easy *t" r25 "84"
+    r26 := easy %t
+    test "easy %t" r26 "0"
+  part_app_field
 
-  r01 i32->i32 := x->x*x
-  test "easy x->x*x   " (easy r01) "1764"
-  r02 i32->i32 := 5.infix*
-  test "easy 5.infix* " (easy r02) "210"
-  r03 i32->i32 := 7*
-  test "easy 7*       " (easy r03) "294"
-  r04 i32->i32 := (7 *)
-  test "easy (7 *)    " (easy r04) "294"
-  r05 i32->i32 := 17-
-  test "easy 17-      " (easy r05) "-25"
-  r06 i32->i32 := (17 -)
-  test "easy (17 -)   " (easy r06) "-25"
-  r07 i32->i32 := %17
-  test "easy %17      " (easy r07) "8"
-  r08 i32->i32 := (% 17)
-  test "easy (% 17)   " (easy r08) "8"
-  r09 i32->i32 := (-(17+0))
-  test "easy (-(17+0))" (easy r09) "25"
-  r10 i32->i32 := -(17+0)
-  test "easy -(17+0)  " (easy r10) "25"
-  r11 i32->i32 := -(17)
-  test "easy -(17)    " (easy r11) "25"
-  r12 i32->i32 := (- 17)
-  test "easy (- 17)   " (easy r12) "25"
-  r13 i32->i32 := -17
-  test "easy -17      " (easy r13) "25"
-  r14 i32->i32 := -17
-  test "easy -17      " (easy r14) "25"
-  r15 i32->i32 := (+(17+0))
-  test "easy (+(17+0))" (easy r15) "59"
-  r16 i32->i32 := +(17+0)
-  test "easy +(17+0)  " (easy r16) "59"
-  r17 i32->i32 := +(17+0)
-  test "easy +(17+0)  " (easy r17) "59"
-  r18 i32->i32 := +(17)
-  test "easy +(17)    " (easy r18) "59"
-  r19 i32->i32 := (+ 17)
-  test "easy (+ 17)   " (easy r19) "59"
-  r20 i32->i32 := +17
-  test "easy +17      " (easy r20) "59"
-  r21 i32->i32 := +o
-  test "easy +o" (easy r21) "43"
-  r22 i32->i32 := -o
-  test "easy -o" (easy r22) "41"
-  r23 i32->i32 := o+
-  test "easy o+" (easy r23) "43"
-  r24 i32->i32 := o-
-  test "easy o-" (easy r24) "-41"
-  r25 i32->i32 := *t
-  test "easy *t" (easy r25) "84"
-  r26 i32->i32 := %t
-  test "easy %t" (easy r26) "0"
+  part_app =>
+    r01 i32->i32 := x->x*x
+    test "easy x->x*x   " (easy r01) "1764"
+    r02 i32->i32 := 5.infix*
+    test "easy 5.infix* " (easy r02) "210"
+    r03 i32->i32 := 7*
+    test "easy 7*       " (easy r03) "294"
+    r04 i32->i32 := (7 *)
+    test "easy (7 *)    " (easy r04) "294"
+    r05 i32->i32 := 17-
+    test "easy 17-      " (easy r05) "-25"
+    r06 i32->i32 := (17 -)
+    test "easy (17 -)   " (easy r06) "-25"
+    r07 i32->i32 := %17
+    test "easy %17      " (easy r07) "8"
+    r08 i32->i32 := (% 17)
+    test "easy (% 17)   " (easy r08) "8"
+    r09 i32->i32 := (-(17+0))
+    test "easy (-(17+0))" (easy r09) "25"
+    r10 i32->i32 := -(17+0)
+    test "easy -(17+0)  " (easy r10) "25"
+    r11 i32->i32 := -(17)
+    test "easy -(17)    " (easy r11) "25"
+    r12 i32->i32 := (- 17)
+    test "easy (- 17)   " (easy r12) "25"
+    r13 i32->i32 := -17
+    test "easy -17      " (easy r13) "25"
+    r14 i32->i32 := -17
+    test "easy -17      " (easy r14) "25"
+    r15 i32->i32 := (+(17+0))
+    test "easy (+(17+0))" (easy r15) "59"
+    r16 i32->i32 := +(17+0)
+    test "easy +(17+0)  " (easy r16) "59"
+    r17 i32->i32 := +(17+0)
+    test "easy +(17+0)  " (easy r17) "59"
+    r18 i32->i32 := +(17)
+    test "easy +(17)    " (easy r18) "59"
+    r19 i32->i32 := (+ 17)
+    test "easy (+ 17)   " (easy r19) "59"
+    r20 i32->i32 := +17
+    test "easy +17      " (easy r20) "59"
+    r21 i32->i32 := +o
+    test "easy +o" (easy r21) "43"
+    r22 i32->i32 := -o
+    test "easy -o" (easy r22) "41"
+    r23 i32->i32 := o+
+    test "easy o+" (easy r23) "43"
+    r24 i32->i32 := o-
+    test "easy o-" (easy r24) "-41"
+    r25 i32->i32 := *t
+    test "easy *t" (easy r25) "84"
+    r26 i32->i32 := %t
+    test "easy %t" (easy r26) "0"
 
-  r27 i32->i32 := +
-  test "easy +        " (easy r27) "42"
-  r28 i32->i32 := -
-  test "easy -        " (easy r28) "-42"
-  r29 i32->i32 := (+)
-  test "easy (+)      " (easy r29) "42"
-  r30 i32->i32 := (-)
-  test "easy (-)      " (easy r30) "-42"
-  r31 i32->i32 := ((+))
-  test "easy ((+))    " (easy r31) "42"
-  r32 i32->i32 := ((-))
-  test "easy ((-))    " (easy r32) "-42"
+    r27 i32->i32 := +
+    test "easy +        " (easy r27) "42"
+    r28 i32->i32 := -
+    test "easy -        " (easy r28) "-42"
+    r29 i32->i32 := (+)
+    test "easy (+)      " (easy r29) "42"
+    r30 i32->i32 := (-)
+    test "easy (-)      " (easy r30) "-42"
+    r31 i32->i32 := ((+))
+    test "easy ((+))    " (easy r31) "42"
+    r32 i32->i32 := ((-))
+    test "easy ((-))    " (easy r32) "-42"
+  part_app
 
   x01 Unary i32 i32 := 5 *;   test "data.map x01" (data.map x01) "[5, 10, 15, 20, 25, 30, 35, 40, 45, 50]"
   x02 Unary i32 i32 := 5*;    test "data.map x02" (data.map x02) "[5, 10, 15, 20, 25, 30, 35, 40, 45, 50]"

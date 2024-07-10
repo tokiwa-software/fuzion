@@ -90,40 +90,40 @@ genericstest is
   // The parser uses some tricks to distinguish multiple ">" in a list of actual
   // generics from an operator consisting of multiple ">". So we check if such an
   // operator works here:
-  q(a i32) is
-    infix >    (b i32) bool => a      > b
-    infix >>   (b i32) bool => a/10   > b
-    infix >>>  (b i32) bool => a/100  > b
-    infix >>>> (b i32) bool => a/1000 > b
+  q(qa i32) is
+    infix >    (b i32) bool => qa      > b
+    infix >>   (b i32) bool => qa/10   > b
+    infix >>>  (b i32) bool => qa/100  > b
+    infix >>>> (b i32) bool => qa/1000 > b
 
-    prefix >    i32 => a+1      // >q is 1 larger than q
-    prefix >>   i32 => a+10     // >>q is 10 larger
-    prefix >>>  i32 => a+100    // >>q is 100 larger
-    prefix >>>> i32 => a+1000   // >>q is 1000 larger
+    prefix >    i32 => qa+1      // >q is 1 larger than q
+    prefix >>   i32 => qa+10     // >>q is 10 larger
+    prefix >>>  i32 => qa+100    // >>q is 100 larger
+    prefix >>>> i32 => qa+1000   // >>q is 1000 larger
 
-    postfix >    i32 => a-1     // q> is 1 smaller than q
-    postfix >>   i32 => a-10    // q>> is 10 smaller
-    postfix >>>  i32 => a-100   // q>>> is 100 smaller
-    postfix >>>> i32 => a-1000  // q>>>> is 1000 smaller
+    postfix >    i32 => qa-1     // q> is 1 smaller than q
+    postfix >>   i32 => qa-10    // q>> is 10 smaller
+    postfix >>>  i32 => qa-100   // q>>> is 100 smaller
+    postfix >>>> i32 => qa-1000  // q>>>> is 1000 smaller
 
   a q := q 1
-  set a := q     2; yak "a({a.a}, 10) infix > is {a > 10}, {a >> 10}, {a >>> 10}, {a >>>> 10}"
-  set a := q    20; yak "a({a.a}, 10) infix > is {a > 10}, {a >> 10}, {a >>> 10}, {a >>>> 10}"
-  set a := q   200; yak "a({a.a}, 10) infix > is {a > 10}, {a >> 10}, {a >>> 10}, {a >>>> 10}"
-  set a := q  2000; yak "a({a.a}, 10) infix > is {a > 10}, {a >> 10}, {a >>> 10}, {a >>>> 10}"
-  set a := q 20000; yak "a({a.a}, 10) infix > is {a > 10}, {a >> 10}, {a >>> 10}, {a >>>> 10}"
+  set a := q     2; yak "a({a.qa}, 10) infix > is {a > 10}, {a >> 10}, {a >>> 10}, {a >>>> 10}"
+  set a := q    20; yak "a({a.qa}, 10) infix > is {a > 10}, {a >> 10}, {a >>> 10}, {a >>>> 10}"
+  set a := q   200; yak "a({a.qa}, 10) infix > is {a > 10}, {a >> 10}, {a >>> 10}, {a >>>> 10}"
+  set a := q  2000; yak "a({a.qa}, 10) infix > is {a > 10}, {a >> 10}, {a >>> 10}, {a >>>> 10}"
+  set a := q 20000; yak "a({a.qa}, 10) infix > is {a > 10}, {a >> 10}, {a >>> 10}, {a >>>> 10}"
 
-  set a := q     2; yak "a({a.a}) prefix > is {>a}, {>>a}, {>>>a}, {>>>>a}"
-  set a := q    20; yak "a({a.a}) prefix > is {>a}, {>>a}, {>>>a}, {>>>>a}"
-  set a := q   200; yak "a({a.a}) prefix > is {>a}, {>>a}, {>>>a}, {>>>>a}"
-  set a := q  2000; yak "a({a.a}) prefix > is {>a}, {>>a}, {>>>a}, {>>>>a}"
-  set a := q 20000; yak "a({a.a}) prefix > is {>a}, {>>a}, {>>>a}, {>>>>a}"
+  set a := q     2; yak "a({a.qa}) prefix > is {>a}, {>>a}, {>>>a}, {>>>>a}"
+  set a := q    20; yak "a({a.qa}) prefix > is {>a}, {>>a}, {>>>a}, {>>>>a}"
+  set a := q   200; yak "a({a.qa}) prefix > is {>a}, {>>a}, {>>>a}, {>>>>a}"
+  set a := q  2000; yak "a({a.qa}) prefix > is {>a}, {>>a}, {>>>a}, {>>>>a}"
+  set a := q 20000; yak "a({a.qa}) prefix > is {>a}, {>>a}, {>>>a}, {>>>>a}"
 
-  set a := q     2; yak "a({a.a}) postfix > is {a>}, {a>>}, {a>>>}, {a>>>>}"
-  set a := q    20; yak "a({a.a}) postfix > is {a>}, {a>>}, {a>>>}, {a>>>>}"
-  set a := q   200; yak "a({a.a}) postfix > is {a>}, {a>>}, {a>>>}, {a>>>>}"
-  set a := q  2000; yak "a({a.a}) postfix > is {a>}, {a>>}, {a>>>}, {a>>>>}"
-  set a := q 20000; yak "a({a.a}) postfix > is {a>}, {a>>}, {a>>>}, {a>>>>}"
+  set a := q     2; yak "a({a.qa}) postfix > is {a>}, {a>>}, {a>>>}, {a>>>>}"
+  set a := q    20; yak "a({a.qa}) postfix > is {a>}, {a>>}, {a>>>}, {a>>>>}"
+  set a := q   200; yak "a({a.qa}) postfix > is {a>}, {a>>}, {a>>>}, {a>>>>}"
+  set a := q  2000; yak "a({a.qa}) postfix > is {a>}, {a>>}, {a>>>}, {a>>>>}"
+  set a := q 20000; yak "a({a.qa}) postfix > is {a>}, {a>>}, {a>>>}, {a>>>>}"
 
   lc1 := List Complex2
   lc1.add (Complex2 3 4)
@@ -190,11 +190,11 @@ genericstest is
     y(T type) : x (option T) is show_ty => $T
     z(T type) : y (list   T) is show_tz => $T
 
-    a := z u64
-    chck (a.show_tp = "Type of '" + "array (option (list u64))" + "'") "(z u64).show_tp should be 'array (option (list u64))'"
-    chck (a.show_tx = "Type of '" +        "option (list u64)"  + "'") "(z u64).show_tx should be 'option (list u64)'"
-    chck (a.show_ty = "Type of '" +                "list u64"   + "'") "(z u64).show_ty should be 'list u64'"
-    chck (a.show_tz = "Type of '" +                     "u64"   + "'") "(z u64).show_ty should be 'u64'"
+    a0 := z u64
+    chck (a0.show_tp = "Type of '" + "array (option (list u64))" + "'") "(z u64).show_tp should be 'array (option (list u64))'"
+    chck (a0.show_tx = "Type of '" +        "option (list u64)"  + "'") "(z u64).show_tx should be 'option (list u64)'"
+    chck (a0.show_ty = "Type of '" +                "list u64"   + "'") "(z u64).show_ty should be 'list u64'"
+    chck (a0.show_tz = "Type of '" +                     "u64"   + "'") "(z u64).show_ty should be 'u64'"
 
     b := z String
     chck (b.show_tp = "Type of '" + "array (option (list String))" + "'") "(z String).show_tp should be 'array (option (list String))'"
@@ -209,17 +209,17 @@ genericstest is
     y1(TY type) : x1 (option TY) is show_ty => $TY
     z1(TZ type) : y1 (list   TZ) is show_tz => $TZ  # note that TP, TX, TY are not visible here
 
-    a := z1 i8
-    chck (a.show_tp = "Type of '" + "array (option (list i8))" + "'") "(z i8).show_tp should be 'array (option (list i8))'"
-    chck (a.show_tx = "Type of '" +        "option (list i8)"  + "'") "(z i8).show_tx should be 'option (list i8)'"
-    chck (a.show_ty = "Type of '" +                "list i8"   + "'") "(z i8).show_ty should be 'list i8'"
-    chck (a.show_tz = "Type of '" +                     "i8"   + "'") "(z i8).show_ty should be 'i8'"
+    a1 := z1 i8
+    chck (a1.show_tp = "Type of '" + "array (option (list i8))" + "'") "(z i8).show_tp should be 'array (option (list i8))'"
+    chck (a1.show_tx = "Type of '" +        "option (list i8)"  + "'") "(z i8).show_tx should be 'option (list i8)'"
+    chck (a1.show_ty = "Type of '" +                "list i8"   + "'") "(z i8).show_ty should be 'list i8'"
+    chck (a1.show_tz = "Type of '" +                     "i8"   + "'") "(z i8).show_ty should be 'i8'"
 
-    b := z1 codepoint
-    chck (b.show_tp = "Type of '" + "array (option (list codepoint))" + "'") "(z codepoint).show_tp should be 'array (option (list codepoint))'"
-    chck (b.show_tx = "Type of '" +        "option (list codepoint)"  + "'") "(z codepoint).show_tx should be 'option (list codepoint)'"
-    chck (b.show_ty = "Type of '" +                "list codepoint"   + "'") "(z codepoint).show_ty should be 'list codepoint'"
-    chck (b.show_tz = "Type of '" +                     "codepoint"   + "'") "(z codepoint).show_ty should be 'codepoint'"
+    b1 := z1 codepoint
+    chck (b1.show_tp = "Type of '" + "array (option (list codepoint))" + "'") "(z codepoint).show_tp should be 'array (option (list codepoint))'"
+    chck (b1.show_tx = "Type of '" +        "option (list codepoint)"  + "'") "(z codepoint).show_tx should be 'option (list codepoint)'"
+    chck (b1.show_ty = "Type of '" +                "list codepoint"   + "'") "(z codepoint).show_ty should be 'list codepoint'"
+    chck (b1.show_tz = "Type of '" +                     "codepoint"   + "'") "(z codepoint).show_ty should be 'codepoint'"
 
 
     # check that type parameter if used in child's arg list is not used, but a free type:

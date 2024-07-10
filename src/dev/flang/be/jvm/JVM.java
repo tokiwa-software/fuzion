@@ -1003,7 +1003,6 @@ should be avoided as much as possible.
     var result = Expr.UNIT;
     if (!_types.isScalar(cl))  // not calls like `u8 0x20` or `f32 3.14`.
       {
-        var cf = _types.classFile(cl);
         var vti = _types.resultType(cl).vti();
         result = result.andThen(new0(cl))
           .andThen(cl == _fuir.clazzUniverse()
@@ -1066,7 +1065,6 @@ should be avoided as much as possible.
 
   Expr epilog(int cl)
   {
-    var cf = _types.classFile(cl);
     var r = _fuir.clazzResultField(cl);
     var t = _fuir.clazzResultClazz(cl);
     if (!_fuir.clazzIsRef(t) /* NYI: UNDER DEVELOPMENT: needed? */ && _fuir.clazzIsUnitType(t))
@@ -1803,8 +1801,6 @@ should be avoided as much as possible.
    */
   Expr cloneValue(int s, Expr value, int rt, int f)
   {
-    var cl = _fuir.clazzAt(s);
-    var cf = _types.classFile(cl);
     if (!_fuir.clazzIsRef(rt) &&
         (f == -1 || !_fuir.clazzFieldIsAdrOfValue(f)) && // an outer ref field must not be cloned
         !_types.isScalar(rt) &&
@@ -1953,8 +1949,6 @@ should be avoided as much as possible.
     Expr cast = Expr.UNIT;
     Expr cmp  = Expr.UNIT;
     var jt = _types.resultType(rt);
-    var jt2 = jt;
-    var cf = _types.classFile(_fuir.clazzAt(s));
 
     if (jt == ClassFileConstants.PrimitiveType.type_void)
       { // unit-type values are always equal:
@@ -1975,7 +1969,6 @@ should be avoided as much as possible.
           {
             cast = Expr.invokeStatic("java/lang/Float", "floatToIntBits", "(F)I", ClassFileConstants.PrimitiveType.type_int);
             ifcc = O_if_icmpeq;
-            jt2 = ClassFileConstants.PrimitiveType.type_int;
           }
         else if (jt == ClassFileConstants.PrimitiveType.type_long)
           {
@@ -1987,7 +1980,6 @@ should be avoided as much as possible.
             cast = Expr.invokeStatic("java/lang/Double", "doubleToLongBits", "(D)J", ClassFileConstants.PrimitiveType.type_long);
             cmp = Expr.LCMP;
             ifcc = O_ifeq;
-            jt2 = ClassFileConstants.PrimitiveType.type_long;
           }
         else if (_fuir.clazzIsRef(rt))
           {

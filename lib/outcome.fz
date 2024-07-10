@@ -68,7 +68,7 @@ is
 
   # Does this outcome contain an error
   #
-  is_error => !ok
+  public is_error => !ok
 
 
   # short-hand postfix operator for 'is_error'

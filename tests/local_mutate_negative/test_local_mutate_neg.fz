@@ -34,7 +34,7 @@ test_local_mutate_neg is
 
     # our sequence to count:
     #
-    l := [0,8,15,47,11]
+    l0 := [0,8,15,47,11]
 
     sum(l Sequence i32) =>
 
@@ -111,6 +111,6 @@ test_local_mutate_neg is
           "** failed, did not panic **"
         q
 
-    sum l
+    sum l0
 
   test_sum

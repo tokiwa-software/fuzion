@@ -27,6 +27,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
@@ -516,8 +518,8 @@ public class Loop extends ANY
           (f.impl()._kind != Impl.Kind.FieldIter);
 
         var p = f.pos();
-        var ia = new Call(p, f.featureName().baseName());
-        var na = new Call(p, f.featureName().baseName());
+        var ia = new Call(p, FuzionConstants.ITER_ARG_PREFIX_INIT + f.featureName().baseName());
+        var na = new Call(p, FuzionConstants.ITER_ARG_PREFIX_NEXT + f.featureName().baseName());
         var type = (f.impl()._kind == Impl.Kind.FieldDef)
           ? null        // index var with type inference from initial actual
           : _indexVars.get(i).returnType().functionReturnType();
@@ -528,9 +530,13 @@ public class Loop extends ANY
                               type != null ? Impl.FIELD
                                            : new Impl(Impl.Kind.FieldActual));
         arg._isIndexVarUpdatedByLoop = true;
-        formalArguments.add(arg);
-        initialActuals .add(ia);
-        nextActuals    .add(na);
+        // no need to add for features named just underscore: _
+        if (!f.featureName().isInternal())
+          {
+            formalArguments.add(arg);
+            initialActuals .add(ia);
+            nextActuals    .add(na);
+          }
         if (f._isLoopIterator)
           {
             var argList = new Feature(SourcePosition.notAvailable,
@@ -547,6 +553,33 @@ public class Loop extends ANY
   }
 
 
+  /*
+   * Get a FeatureVisitor that prefixes calls that are contained
+   * in set names with the given prefix.
+   */
+  private FeatureVisitor prefixVisitor(Set<String> names, String prefix)
+  {
+    return new FeatureVisitor() {
+      @Override
+      public Expr action(Call c, AbstractFeature outer)
+      {
+        if (names.contains(c._name))
+          {
+            c._name = prefix + c._name;
+          }
+        return super.action(c, outer);
+      }
+
+      @Override
+      public Expr action(Function f, AbstractFeature outer)
+      {
+        f._expr.visit(this, outer);
+        return super.action(f, outer);
+      }
+    };
+  }
+
+
   /**
    * Helper routine to add code to prologBlock and nextItBlock for index vars,
    * and return the corresponding success blocks.
@@ -557,10 +590,17 @@ public class Loop extends ANY
     int iteratorCount = 0;
     var ivi = _indexVars .iterator();
     var nvi = _nextValues.iterator();
+
+    var names = new TreeSet<String>();
+
     while (ivi.hasNext())
       {
         Feature f = ivi.next();
         Feature n = nvi.next();
+
+        f.impl().expr().visit(prefixVisitor(names, FuzionConstants.ITER_ARG_PREFIX_INIT), null);
+        n.impl().expr().visit(prefixVisitor(names, FuzionConstants.ITER_ARG_PREFIX_NEXT), null);
+
         if (f.impl()._kind == Impl.Kind.FieldIter)
           {
             if (mustDeclareLoopElse)
@@ -607,12 +647,43 @@ public class Loop extends ANY
             n._isLoopIterator = true;
             n._loopIteratorListName = listName;
           }
-        prologBlock.add(f);
-        nextItBlock.add(n);
+
         f._isIndexVarUpdatedByLoop = true;
         n._isIndexVarUpdatedByLoop = true;
+
+        names.add(f.featureName().baseName());
+        prologBlock.add(createInternalIterArgFeature(f, FuzionConstants.ITER_ARG_PREFIX_INIT));
+        nextItBlock.add(createInternalIterArgFeature(n, FuzionConstants.ITER_ARG_PREFIX_NEXT));
       }
+
+    // replace names in else clause
+    if (_loopElse != null)
+      {
+        _loopElse[0].code().visit(prefixVisitor(names, FuzionConstants.ITER_ARG_PREFIX_INIT), _loopElse[0]);
+        _loopElse[2].code().visit(prefixVisitor(names, FuzionConstants.ITER_ARG_PREFIX_NEXT), _loopElse[2]);
+      }
+
     return new Pair<>(prologBlock, nextItBlock);
+  }
+
+
+  /*
+   * This copies the given feature and prefixes
+   * the name with prefix.
+   *
+   * This is done to avoid name clashes with the formal arguments
+   * of the tail recursive loop feature.
+   */
+  private Feature createInternalIterArgFeature(Feature f, String prefix)
+  {
+    var f1 = new Feature(f.visibility(), f.modifiers(), f.returnType(),
+      new List<>(new ParsedName(f.pos(), prefix + f.featureName().baseName())),
+      new List<>(), new List<>(),
+      Contract.EMPTY_CONTRACT, f.impl());
+    f1._isLoopIterator = f._isLoopIterator;
+    f1._loopIteratorListName = f._loopIteratorListName;
+    f1._isIndexVarUpdatedByLoop = f._isIndexVarUpdatedByLoop;
+    return f1;
   }
 
 }

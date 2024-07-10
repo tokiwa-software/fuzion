@@ -94,7 +94,7 @@ visibility_scoping is
     c => t   # should flag an error: feature not found
     d := ttt # should flag an error: feature not found
     e := tt   # should flag an error: feature not found
-    f := t   # should flag an error: feature not found
+    f0 := t   # should flag an error: feature not found
 
 
 

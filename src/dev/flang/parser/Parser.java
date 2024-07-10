@@ -3534,7 +3534,6 @@ typeOpt     : type
     var f = fork();
     if (f.skipBracketTermWithNLs(PARENS, () -> f.current() == Token.t_rparen || f.skipTypeList()))
       {
-        var f2 = fork();
         result = skipBracketTermWithNLs(PARENS, () -> current() == Token.t_rparen || skipTypeList());
         var p = tokenPos();
         var l = line();

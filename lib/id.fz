@@ -31,7 +31,7 @@
 public id(T type, x T) T => x
 
 
-# identitiy -- feature returing the unary identity function
+# identity -- feature returing the unary identity function
 #
 # When called, this feature returns a unary function that implements the
 # identity for the given type.

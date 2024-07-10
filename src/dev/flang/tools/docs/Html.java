@@ -303,7 +303,7 @@ public class Html extends ANY
    */
   static String processComment(String name, String s)
   {
-    var codeNo = new ArrayList<Integer>();
+    var codeNo = new Integer[]{0};
     var codeLines = new ArrayList<String>();
     var resultLines = new ArrayList<String>();
 
@@ -314,7 +314,7 @@ public class Html extends ANY
             /* code comment */
             codeLines.add(l);
           }
-        else if (l.length() == 0)
+        else if (l.isBlank())
           {
             /* avoid adding lots of line breaks after code comments */
             if (codeLines.isEmpty())
@@ -324,18 +324,7 @@ public class Html extends ANY
           }
         else
           {
-            if (!codeLines.isEmpty())
-              {
-                /* dump codeLines into a fuzion-lang.dev runcode box */
-                var id = "fzdocs." + name + codeNo.size();
-                var code = codeLines
-                  .stream()
-                  .map(cl -> { return cl.replaceAll("^    ", ""); })
-                  .collect(Collectors.joining(System.lineSeparator()));
-                resultLines.add(RUNCODE_BOX_HTML.replace("##ID##", id).replace("##CODE##", code));
-                codeLines.clear();
-                codeNo.add(1);
-              }
+            addCodeLines(name, codeNo, codeLines, resultLines);
 
             /* treat as normal line */
             var replacedLine = htmlEncode(l, false);
@@ -344,7 +333,30 @@ public class Html extends ANY
           }
       });
 
+    addCodeLines(name, codeNo, codeLines, resultLines);
+
     return resultLines.stream().collect(Collectors.joining("<br />"));
+  }
+
+
+  /*
+   * add codeLines to resultLines if there are any.
+   */
+  private static void addCodeLines(String name, Integer[] codeNo, ArrayList<String> codeLines,
+    ArrayList<String> resultLines)
+  {
+    if (!codeLines.isEmpty())
+      {
+        /* dump codeLines into a fuzion-lang.dev runcode box */
+        var id = "fzdocs." + name + codeNo[0];
+        var code = codeLines
+          .stream()
+          .map(cl -> { return cl.replaceAll("^    ", ""); })
+          .collect(Collectors.joining(System.lineSeparator()));
+        resultLines.add(RUNCODE_BOX_HTML.replace("##ID##", id).replace("##CODE##", code));
+        codeLines.clear();
+        codeNo[0]++;
+      }
   }
 
 
