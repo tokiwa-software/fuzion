@@ -1,0 +1,15 @@
+I was printed via java.
+
+error 1: FATAL FAULT `*** panic ***`: Illegal Capacity: -7
+Call stack:
+fuzion.sys.fatal_fault
+fuzion.type.runtime.type.fault.type.install_default.fun.call
+fuzion.runtime.fault.cause
+panic.type.install_default.fun.call
+panic.cause
+panic
+Java.java.util.ArrayList_static.new_I
+javaHello
+
+*** fatal errors encountered, stopping.
+one error.

@@ -1,1 +1,24 @@
-*** panic: test
+
+error 1: FATAL FAULT `*** panic ***`: test
+Call stack:
+fuzion.type.runtime.type.fault.type.install_default#0.#fun271.call#1: $MODULE/fuzion/runtime/fault.fz:38:7:
+      fuzion.sys.fatal_fault kind msg
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.fault.cause#1: $MODULE/eff/fallible.fz:35:6:
+  => h e
+-----^
+panic.type.install_default#0.#fun83.call#1: $MODULE/panic.fz:36:18:
+    (panic (msg->fuzion.runtime.fault.cause ("*** panic ***", msg)) unit).default
+-----------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+panic.cause#1: $MODULE/eff/fallible.fz:35:6:
+  => h e
+-----^
+panic#1: $MODULE/panic.fz:56:29:
+public panic(msg String) => panic.cause msg
+----------------------------^^^^^^^^^^^^^^^
+test_option_void: --CURDIR--/issue1886.fz:44:11:
+  f void (panic "test")
+----------^^^^^
+
+*** fatal errors encountered, stopping.
+one error.
