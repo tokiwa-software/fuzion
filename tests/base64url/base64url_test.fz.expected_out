@@ -10,17 +10,17 @@ Testing base64url decoding...
 
 RFC 4648 test vectors are decoded correctly
 
-Zm9🌏️Yg==: error: character '🌏' at position 3 is not in base64url alphabet
+Zm9🌏️Yg==: error: invalid base64url input at byte position 3, decoding to unicode character '🌏'
 Zm9v
 Yg==: error: line breaks are not allowed within encoded data, as required by RFC464, found LF at position 4
 Z=m9=vYg==: error: padding character '=' not allowed within the input data, only at the very end, as required by RFC464
 Zm9vYg=: error: length of input data is not multiple of four, as required by RFC4648
 Zm9vY==: error: length of input data is not multiple of four, as required by RFC4648
 Zm9vY===: error: padding character '=' not allowed within the input data, only at the very end, as required by RFC464
-Zm9v Yg==: error: byte 4 in input data, representing ' ' in ASCII, is not in base64url alphabet
-++++: error: byte 0 in input data, representing '+' in ASCII, is not in base64url alphabet
-////: error: byte 0 in input data, representing '/' in ASCII, is not in base64url alphabet
-Zm9v;Yg==: error: byte 4 in input data, representing ';' in ASCII, is not in base64url alphabet
+Zm9v Yg==: error: invalid base64url input at byte position 4, decoding to unicode character ' '
+++++: error: invalid base64url input at byte position 0, decoding to unicode character '+'
+////: error: invalid base64url input at byte position 0, decoding to unicode character '/'
+Zm9v;Yg==: error: invalid base64url input at byte position 4, decoding to unicode character ';'
 
 123890ABCXYZabcxyz_:;>~<%&$§!
 

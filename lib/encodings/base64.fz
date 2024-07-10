@@ -36,7 +36,7 @@ public base64 is
 
   # Encodes a given byte sequence in base64, output is padded to multiple of 4
   # returns a sequence of ascii values
-  public encode (data array u8) =>
+  public encode(data array u8) =>
     enc24(n u32) =>
                   # extract four sextets from 24 bit number
                   n0 => ((n >> 18) & 63).as_i32
@@ -61,7 +61,7 @@ public base64 is
 
   # Encodes a given byte sequence in base64, output is padded to multiple of 4
   # returns a string
-  public encode_to_string (data array u8) =>
+  public encode_to_string(data array u8) =>
     String.type.from_bytes (encode data)
 
 
