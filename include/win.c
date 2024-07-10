@@ -81,29 +81,66 @@ int fzE_unsetenv(const char *name){
 }
 
 
-// NYI
+
+typedef struct {
+    HANDLE handle;
+    WIN32_FIND_DATA findData;
+} fzE_dir_struct;
+
 void fzE_opendir(const char *pathname, int64_t * result) {
-  result[0] = 0;
-  result[1] = -1;
+  fzE_dir_struct *dir = (fzE_dir_struct *)fzE_malloc_safe(sizeof(fzE_dir_struct));
+
+  /* NYI: UNDER DEVELOPMENT:
+  int len = strlen(pathname) + strlen("\\\\?\\\\*") + 1;
+  char searchPath[len];
+  // By default, the name is limited to MAX_PATH characters.
+  // To extend this limit to 32,767 wide characters, prepend "\\?\" to the path.
+  // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-findfirstfilea
+  snprintf(searchPath, len, "\\\\?\\%s\\*", pathname);
+ */
+
+  char searchPath[MAX_PATH];
+  snprintf(searchPath, MAX_PATH, "%s\\*", pathname);
+
+  dir->handle = FindFirstFile(searchPath, &dir->findData);
+  if (dir->handle == INVALID_HANDLE_VALUE) {
+    // NYI: BUG: free(dir);
+    result[0] = 0;
+    result[1] = GetLastError();
+  } else {
+    result[0] = (uintptr_t)dir;
+    result[1] = 0;
+  }
 }
 
-
-// NYI
 char * fzE_readdir(intptr_t * dir) {
-  return NULL;
+  fzE_dir_struct *d = (fzE_dir_struct *)dir;
+  size_t len = strlen(d->findData.cFileName);
+  char *dup = (char *) fzE_malloc_safe(len + 1);
+  strcpy(dup, d->findData.cFileName);
+  return dup;
 }
 
-
-// NYI
 int fzE_read_dir_has_next(intptr_t * dir) {
-  return 1;
+  fzE_dir_struct *d = (fzE_dir_struct *)dir;
+  BOOL res = FALSE;
+  while ((res = FindNextFile(d->handle, &d->findData)) &&
+        // skip dot and dot-dot paths.
+        (strcmp(d->findData.cFileName, ".") == 0 || strcmp(d->findData.cFileName, "..") == 0));
+  return res
+    ? 0 : 1;
 }
 
-
-// NYI
 int fzE_closedir(intptr_t * dir) {
-  return -1;
+  fzE_dir_struct *d = (fzE_dir_struct *)dir;
+  BOOL res = FindClose(d->handle);
+  // NYI: BUG: free(dir);
+
+  return res
+    ? 0
+    : -1;
 }
+
 
 
 // 0 = blocking
