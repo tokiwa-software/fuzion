@@ -51,12 +51,12 @@ public base64 is
       b in data
       n := (last_n << 8) + b.as_u32
       next := if i%3=2 then res ++ enc24 n
-              else           res
+              else          res
     else
-        case := data.length%3 # last input block of 0, 1 or 2 characters
-        if case = 0      then res
-        else if case = 1 then res ++ (enc24 last_n<<4).slice 2 4 ++ [(u8 61), 61] # "=="
-        else                  res ++ (enc24 last_n<<2).slice 1 4 ++ [(u8 61)]     # "="
+      case := data.length%3 # last input block of 0, 1 or 2 characters
+      if case = 0      then res
+      else if case = 1 then res ++ (enc24 last_n<<4).slice 2 4 ++ [(u8 61), 61] # "=="
+      else                  res ++ (enc24 last_n<<2).slice 1 4 ++ [(u8 61)]     # "="
 
 
   # Encodes a given byte sequence in base64, output is padded to multiple of 4
