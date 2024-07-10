@@ -326,7 +326,7 @@ public class ParsedCall extends Call
       _name.equals("infix >=") ||
       _name.equals("infix =") ||
       _name.equals("infix !=") ||
-      // && is used to chain the calls togehter.
+      // && is used to chain the calls together.
       _name.equals("infix &&");
   }
 

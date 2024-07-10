@@ -256,7 +256,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
         new Types.Resolved(this,
                            (name) ->
                              {
-                               return lookupType(SourcePosition.builtIn, _universe, name, false, false)
+                               return lookupType(SourcePosition.builtIn, _universe, name,
+                                                 false /* traverse outer   */,
+                                                 false /* ignore ambiguous */,
+                                                 false /* ignore not found */)
                                 ._feature
                                 .selfType();
                              },
@@ -528,7 +531,9 @@ part of the (((inner features))) declarations of the corresponding
          var q = inner._qname;
          var n = q.get(at);
          var o =
-           n != FuzionConstants.TYPE_NAME ? lookupType(inner.pos(), outer, n, at == 0, false)._feature
+           n != FuzionConstants.TYPE_NAME ? lookupType(inner.pos(), outer, n, at == 0,
+                                                       false /* ignore ambiguous */,
+                                                       false /* ignore not found */)._feature
                                           : outer.typeFeature(_res);
          if (at < q.size()-2)
            {
@@ -1353,7 +1358,11 @@ A post-condition of a feature that does not redefine an inherited feature must s
    * outer's outer (i.e., use is unqualified), false to search in outer only
    * (i.e., use is qualified with outer).
    *
-   * @param ignoreNotFound If true, no errors are produced but null might be returned
+   * @param ignoreAmbiguous If true, no errors are produced but null might be
+   * returned if type is ambiguous.
+   *
+   * @param ignoreNotFound If true, no errors are produced but null might be
+   * returned in case type was not found.
    *
    * @return FeatureAndOuter tuple of the found type's declaring feature,
    * FeatureAndOuter.ERROR in case of an error, null in case no type was found
@@ -1363,6 +1372,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
                                     AbstractFeature outer,
                                     String name,
                                     boolean traverseOuter,
+                                    boolean ignoreAmbiguous,
                                     boolean ignoreNotFound)
   {
     if (PRECONDITIONS) require
@@ -1403,27 +1413,18 @@ A post-condition of a feature that does not redefine an inherited feature must s
                   }
               }
           }
-        if (type_fs.size() > 1)
+        if (type_fs.size() > 1 && !ignoreAmbiguous)
           {
-            if (ignoreNotFound)
-              {
-                result = null;
-              }
-            else
-              {
-                AstErrors.ambiguousType(pos, name, type_fs);
-              }
+            AstErrors.ambiguousType(pos, name, type_fs);
+            result = FeatureAndOuter.ERROR;
           }
-        else if (type_fs.size() < 1)
+        else if (type_fs.size() < 1 && !ignoreNotFound)
           {
-            if (ignoreNotFound)
-              {
-                result = null;
-              }
-            else
-              {
-                AstErrors.typeNotFound(pos, name, outer, nontype_fs);
-              }
+            AstErrors.typeNotFound(pos, name, outer, nontype_fs);
+          }
+        else if (type_fs.size() != 1)
+          {
+            result = null;
           }
       }
 
