@@ -1345,6 +1345,24 @@ remove_unused_imports:
 	java -jar /tmp/google-java-format-1.21.0-all-deps.jar -r --fix-imports-only  --skip-sorting-imports `find src/`
 
 
+$(BUILD_DIR)/pmd.zip:
+	mkdir -p $(@D)
+	wget -O $@ https://github.com/pmd/pmd/releases/download/pmd_releases%2F7.3.0/pmd-dist-7.3.0-bin.zip
+
+$(BUILD_DIR)/pmd: $(BUILD_DIR)/pmd.zip
+	echo "7e56043b5db83b288804c97d48a46db37bba22861b63eadd8e69f72c74bfb0a8 $(BUILD_DIR)/pmd.zip" > $(BUILD_DIR)/pmd.zip.sha256
+	sha256sum -c $(BUILD_DIR)/pmd.zip.sha256
+	unzip $(BUILD_DIR)/pmd.zip -d $@
+
+# this linter detects different things than standard java linter
+# but gives a lot of suggestions.
+# use grep, e.g.: make lint/pmd | grep 'UnusedLocalVariable'
+#
+lint/pmd: $(BUILD_DIR)/pmd
+	$(BUILD_DIR)/pmd/pmd-bin-7.3.0/bin/pmd check -d src -R rulesets/java/quickstart.xml -f text
+
+
+
 ########
 # Begin : Fuzion Language Server
 ########
