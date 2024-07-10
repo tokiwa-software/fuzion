@@ -1,1 +1,48 @@
-*** panic: *** unexpected abort in Type of 'reg_issue2231.ef'
+
+error 1: FATAL FAULT `*** panic ***`: *** unexpected abort in Type of 'reg_issue2231.ef'
+Call stack:
+fuzion.type.runtime.type.fault.type.install_default#0.#fun271.call#1: $MODULE/fuzion/runtime/fault.fz:38:7:
+      fuzion.sys.fatal_fault kind msg
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.fault.cause#1: $MODULE/eff/fallible.fz:35:6:
+  => h e
+-----^
+panic.type.install_default#0.#fun83.call#1: $MODULE/panic.fz:36:18:
+    (panic (msg->fuzion.runtime.fault.cause ("*** panic ***", msg)) unit).default
+-----------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+panic.cause#1: $MODULE/eff/fallible.fz:35:6:
+  => h e
+-----^
+panic#1: $MODULE/panic.fz:56:29:
+public panic(msg String) => panic.cause msg
+----------------------------^^^^^^^^^^^^^^^
+reg_issue2231.ef.abort#0: $MODULE/effect.fz:213:16:
+               panic msg
+---------------^^^^^^^^^
+reg_issue2231.ef.#preandcall247_abort#0: $MODULE/effect.fz:66:3:
+  pre
+--^^^
+    safety: effect.is_installed effect.this
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    safety: abortable
+^^^^^^^^^^^^^^^^^^^^^
+reg_issue2231.ef.something#0: --CURDIR--/reg_issue2231.fz:30:7:
+      abort
+------^^^^^
+reg_issue2231.#fun0.call#0: --CURDIR--/reg_issue2231.fz:33:26:
+    reg_issue2231.ef.env.something
+-------------------------^^^^^^^^^
+(reg_issue2231.ef.go#2 void).#fun3.call#0: $MODULE/effect.fz:208:23:
+    cf := Effect_Call f
+----------------------^
+(reg_issue2231.ef.Effect_Call void).call#0: $MODULE/effect.fz:154:18:
+      set res := f()
+-----------------^
+reg_issue2231.ef.go#2 void: <source position not available>:
+
+reg_issue2231: --CURDIR--/reg_issue2231.fz:32:6:
+  ef.go ()->
+-----^^
+
+*** fatal errors encountered, stopping.
+one error.
