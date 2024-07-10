@@ -2197,7 +2197,7 @@ public class Call extends AbstractCall
    * @return the outer feature this has been resolved for or null if this has
    * not been resolved yet.  Note that the result may change due to repeated
    * resolution when this is moved to a different feature as a result of partial
-   * application, lazy evaluation or is part of a lamba expression.
+   * application, lazy evaluation or is part of a lambda expression.
    */
   public AbstractFeature resolvedFor()
   {
