@@ -684,7 +684,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
         var traverseOuter = ot == null && _name != FuzionConstants.TYPE_FEATURE_THIS_TYPE;
         var fo = res._module.lookupType(pos(), of, _name, traverseOuter,
-                                        true /* ignore ambigous */ ,
+                                        true /* ignore ambiguous */ ,
                                         true /* ignore not found */);
         if (fo == null || !fo._feature.isTypeParameter() && inTypeFeature)
           { // if we are in a type feature, type lookup happens in the
@@ -692,7 +692,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
             // checked in the type feature (of).
             of = originalOuterFeature(of);
             fo = res._module.lookupType(pos(), of, _name, traverseOuter,
-                                        true /* ignore ambigous */ ,
+                                        true /* ignore ambiguous */ ,
                                         true /* ignore not found */);
           }
 
