@@ -77,8 +77,8 @@ public base64 is
 
     # determine size of padding, i.e. number of '=' (61 in ASCII) at the end
     pad_size :=
-      if data.count > 1 && data[data.count - 1] = 61
-        if data[data.count - 2] = 61 then 2
+      if data.length > 1 && data[data.length - 1] = 61
+        if data[data.length - 2] = 61 then 2
         else                              1
       else                                0
 
@@ -133,7 +133,7 @@ public base64 is
         u32 63
 
     for
-      res list u8 := nil, res.concat_sequences [b0, b1, b2] # result: contains the decoded data at the end
+      res list u8 := nil, res ++ [b0, b1, b2] # result: contains the decoded data at the end
       nxt := 0, nxt + 4
       last_err := false, is_err
       sxt_last array (outcome u32) := [], sextets
@@ -154,4 +154,4 @@ public base64 is
         (sxt_last.filter (e -> !e.ok)).first.err
       else
         # remove zero bytes caused by padding
-        outcome (res.take res.count-pad_size)
+        outcome (res.take res.count-pad_size).as_array

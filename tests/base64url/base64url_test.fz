@@ -73,7 +73,7 @@ base64url_test is
       (plain_expected, code) := tup
       out :=
         match encodings.base64url.decode code.utf8.as_array
-          arr list u8 =>
+          arr array u8 =>
             plain_actual := String.type.from_bytes arr
             if plain_actual != plain_expected
               error "decoding $code produced '$plain_actual' but should have been '$plain_expected'"
@@ -103,7 +103,7 @@ base64url_test is
   for t in broken_enc do
     yak "$t: "
     say (match encodings.base64url.decode_str t
-        arr list u8 => String.type.from_bytes arr
+        arr array u8 => String.type.from_bytes arr
         e error => e.as_string)
   say ""
 
@@ -120,5 +120,5 @@ base64url_test is
                 IHNpdCBhbWV0Lg=="""]
   for t in valid_enc do
     say (match encodings.base64url.decode_str t
-        arr list u8 => String.type.from_bytes arr
+        arr array u8 => String.type.from_bytes arr
         e error => e.as_string)
