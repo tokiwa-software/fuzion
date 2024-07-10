@@ -35,18 +35,18 @@ test_issue1604 is
 
     s := small 0x11
     l := large 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC
-    a := concur.atomic c s
+    a0 := concur.atomic c s
 
     test(n i32) unit =>
       if n > 0
         s1 := small 0x11
         l1 := large 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC
 
-        match a.compare_and_swap s1 l1
+        match a0.compare_and_swap s1 l1
           _ small => #  ok
           _ large => panic "***expected small*** at $n"
 
-        match a.compare_and_swap l1 s1
+        match a0.compare_and_swap l1 s1
           _ small => panic "***expected large*** at $n"
           _ large => #  ok
 

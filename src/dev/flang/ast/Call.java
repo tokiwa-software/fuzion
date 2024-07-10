@@ -764,12 +764,12 @@ public class Call extends AbstractCall
             ff.resolveArgumentTypes(res);
           }
       }
-    var fo = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName,
+    var fo = FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName,
       ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res));
     if (fo == null)
       { // handle implicit calls `f()` that expand to `f.call()`:
         fo =
-          FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> isSpecialWrtArgs(ff));
+          FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> isSpecialWrtArgs(ff));
       }
     return new Pair<>(fos, fo);
   }
@@ -846,7 +846,7 @@ public class Call extends AbstractCall
     var targetFeature = traverseOuter ? outer : targetFeature(res, outer);
     var fos = res._module.lookup(targetFeature, name, this, traverseOuter, false);
     var calledName = FeatureName.get(name, n);
-    result = FeatureAndOuter.filter(fos, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> ff.valueArguments().size() == n);
+    result = FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> ff.valueArguments().size() == n);
     return result;
   }
 
@@ -995,7 +995,7 @@ public class Call extends AbstractCall
       {
         var calledName = FeatureName.get(_name, _actuals.size()+1);
         var fo = res._module.lookup(thiz, _name, this, true, false);
-        var foa = FeatureAndOuter.filter(fo, pos(), FeatureAndOuter.Operation.CALL, calledName, ff -> mayMatchArgList(ff, true));
+        var foa = FeatureAndOuter.filter(fo, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> mayMatchArgList(ff, true));
         if (foa != null)
           {
             _calledFeature = foa._feature;
@@ -2197,7 +2197,7 @@ public class Call extends AbstractCall
    * @return the outer feature this has been resolved for or null if this has
    * not been resolved yet.  Note that the result may change due to repeated
    * resolution when this is moved to a different feature as a result of partial
-   * application, lazy evaluation or is part of a lamba expression.
+   * application, lazy evaluation or is part of a lambda expression.
    */
   public AbstractFeature resolvedFor()
   {
@@ -2321,7 +2321,7 @@ public class Call extends AbstractCall
         inferFormalArgTypesFromActualArgs(outer);
         if (_calledFeature.generics().errorIfSizeDoesNotMatch(_generics,
                                                               pos(),
-                                                              "call",
+                                                              FuzionConstants.OPERATION_CALL,
                                                               "Called feature: "+_calledFeature.qualifiedName()+"\n"))
           {
             var cf = _calledFeature;

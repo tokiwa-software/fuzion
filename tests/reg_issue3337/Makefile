@@ -17,16 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-reg_issue465 is
-  (i0,_) := (
-    for i:=0, i+1
-    while i<10
-    do
-    else
-      (i,i)
-    )
-  say i0
+override NAME = reg_issue3337
+include ../simple_and_negative.mk

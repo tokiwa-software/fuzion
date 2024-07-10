@@ -21,12 +21,18 @@
 #
 # -----------------------------------------------------------------------
 
-reg_issue465 is
-  (i0,_) := (
-    for i:=0, i+1
-    while i<10
-    do
-    else
-      (i,i)
-    )
-  say i0
+lib_io_dir =>
+
+  _ := io.file.delete "test_path/file1"
+  _ := io.file.delete "test_path/file2"
+  _ := io.file.delete "test_path"
+  say (io.dir.make "test_path")
+  say (io.dir.make "test_path")
+  _ := io.file.use unit "test_path/file1" io.file.mode.write (()->io.file.open.write [])
+  _ := io.file.use unit "test_path/file2" io.file.mode.write (()->io.file.open.write [])
+
+  res := io.dir.use (Sequence String) "test_path" ()->
+    array 3 _->io.dir.open.read.as_string
+
+  (container.sorted_array_of res.val).for_each say
+

@@ -220,16 +220,16 @@ test_local_mutate is
                cur.p.close
         r
 
-      r := m.go ()->(ring3 from0.as_list)
+      r0 := m.go ()->(ring3 from0.as_list)
       say "left mutate environment m"
       for
         i in 1..10
-        e := r, e.next
+        e := r0, e.next
       do
         say "$i: {e.data}"
-      r
+      r0
 
-    r := ring [0,1,2,3]
+    _ := ring [0,1,2,3]
 
   test_ring1
 
@@ -368,6 +368,6 @@ test_local_mutate is
         say "$i: {e.data} {b.data}"
       r
 
-    r := create_ring [0,1,2,3]
+    _ := create_ring [0,1,2,3]
 
   test_ring2

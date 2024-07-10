@@ -1,0 +1,37 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test
+#
+# -----------------------------------------------------------------------
+
+# Test ambiguous types conflicting with type parameter in a signature
+#
+reg_issue3337 is
+
+  test1(String type, h String) is                #  1. should flag an error: `h String` ambiguous
+  test2(String type, h String) =>                #  2. should flag an error: `h String` ambiguous
+  test3(String type, h type : list String) is    #  3. should flag an error: `list  String` ambiguous
+  test4(String type, h type : list String) =>    #  4. should flag an error: `list String` ambiguous
+  test5(h type : list String, String type) is    #  5. should flag an error: `list String` ambiguous
+  test6(h type : list String, String type) =>    #  6. should flag an error: `list String` ambiguous
+  test7(String type) String =>                   #  7. should flag an error: `String` ambiguous
+  test8(String type) option String =>            #  8. should flag an error: `option String` ambiguous
+  test9(String type) is _ := option String nil   #  9. should flag an error: `option String` ambiguous
+  test10(String type) => _ := option String nil  # 10. should flag an error: `option String` ambiguous

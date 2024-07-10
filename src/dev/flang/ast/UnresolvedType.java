@@ -573,13 +573,17 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         if (_resolved == null)
           {
             var traverseOuter = ot == null && _name != FuzionConstants.TYPE_FEATURE_THIS_TYPE;
-            var fo = res._module.lookupType(pos(), of, _name, traverseOuter, mayBeFreeType || inTypeFeature);
+            var fo = res._module.lookupType(pos(), of, _name, traverseOuter,
+                                            false                           /* ignore ambiguos */,
+                                            mayBeFreeType || inTypeFeature  /* ignore not found */);
             if (_resolved == null && (fo == null || !fo._feature.isTypeParameter() && inTypeFeature))
               { // if we are in a type feature, type lookup happens in the
                 // original feature, except for type parameters that we just
                 // checked in the type feature (of).
                 of = originalOuterFeature(of);
-                fo = res._module.lookupType(pos(), of, _name, traverseOuter, mayBeFreeType);
+                fo = res._module.lookupType(pos(), of, _name, traverseOuter,
+                                            false          /* ignore ambiguos */,
+                                            mayBeFreeType  /* ignore not found */);
               }
             if (_resolved == null)
               {
@@ -682,13 +686,17 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         if (_resolved == null)
           {
             var traverseOuter = ot == null && _name != FuzionConstants.TYPE_FEATURE_THIS_TYPE;
-            var fo = res._module.lookupType(pos(), of, _name, traverseOuter, true);
+            var fo = res._module.lookupType(pos(), of, _name, traverseOuter,
+                                            true /* ignore ambigous */ ,
+                                            true /* ignore not found */);
             if (_resolved == null && (fo == null || !fo._feature.isTypeParameter() && inTypeFeature))
               { // if we are in a type feature, type lookup happens in the
                 // original feature, except for type parameters that we just
                 // checked in the type feature (of).
                 of = originalOuterFeature(of);
-                fo = res._module.lookupType(pos(), of, _name, traverseOuter, true);
+                fo = res._module.lookupType(pos(), of, _name, traverseOuter,
+                                            true /* ignore ambigous */ ,
+                                            true /* ignore not found */);
               }
             if (_resolved == null)
               {

@@ -39,11 +39,6 @@ module:public channel(desc i64) : simple_effect
 is
 
 
-  # write data to channel
-  public write(data Sequence u8) outcome unit =>
-    fuzion.sys.net.write desc data.as_array
-
-
   # get the peer's ip address (tcp)
   public get_peer_address outcome (list u8) =>
     fuzion.sys.net.get_peer_address desc

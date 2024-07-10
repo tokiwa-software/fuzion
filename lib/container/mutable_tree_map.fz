@@ -141,9 +141,9 @@ is
             (option new_node, option old_val)
 
 
-    (new_root, old_val) := put_recursively root.get
+    (new_root, old) := put_recursively root.get
     root <- new_root
-    old_val
+    old
 
 
   # remove the mapping from k to some value from this map
@@ -214,9 +214,9 @@ is
                     (option new_node, option old_val0)
 
 
-    (new_root, old_val) := remove_recursively key root.get
+    (new_root, old) := remove_recursively key root.get
     root <- new_root
-    old_val
+    old
 
 
   # rebalances a tree whose AVL invariants might be violated

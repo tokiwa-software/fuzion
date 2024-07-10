@@ -154,52 +154,56 @@ test_atomic is
     a?? = b?? && (a!! || a.get = b.get)
 
 
-  a := concur.atomic i64 0x0000000080000000
-  c1 := concur.atomic i64 0
-  s1 := concur.atomic i64 -1
-  c2 := concur.atomic i64 0
-  s2 := concur.atomic i64 -1
+  test =>
 
-  thrd1 := concur.thread.spawn (()->
-    end := time.nano.read + (time.durations.seconds 5).nanos
-    for
-      s := i64 0, o=v ? s+1 : s
-      c := i64 0, c+1
-    while time.nano.read < end do
-      v := a.read
-      n := v + 1
-      o := a.compare_and_swap v n
-    else
-      c1.write c
-      s1.write s
-    )
+    a1 := concur.atomic i64 0x0000000080000000
+    c1 := concur.atomic i64 0
+    s1 := concur.atomic i64 -1
+    c2 := concur.atomic i64 0
+    s2 := concur.atomic i64 -1
 
-  thrd2 := concur.thread.spawn (()->
-    end := time.nano.read + (time.durations.seconds 5).nanos
-    for
-      s := i64 0, o=v ? s+1 : s
-      c := i64 0, c+1
-    while time.nano.read < end do
-      v := a.read
-      n := v + 0x1_0000_0000
-      o := a.compare_and_swap v n
-    else
-      c2.write c
-      s2.write s
-    )
+    thrd1 := concur.thread.spawn (()->
+      end := time.nano.read + (time.durations.seconds 5).nanos
+      for
+        s := i64 0, o=v ? s+1 : s
+        c := i64 0, c+1
+      while time.nano.read < end do
+        v := a1.read
+        n := v + 1
+        o := a1.compare_and_swap v n
+      else
+        c1.write c
+        s1.write s
+      )
 
-  thrd1.join
-  thrd2.join
+    thrd2 := concur.thread.spawn (()->
+      end := time.nano.read + (time.durations.seconds 5).nanos
+      for
+        s := i64 0, o=v ? s+1 : s
+        c := i64 0, c+1
+      while time.nano.read < end do
+        v := a1.read
+        n := v + 0x1_0000_0000
+        o := a1.compare_and_swap v n
+      else
+        c2.write c
+        s2.write s
+      )
 
-  chck s1.read>=0 true
-  chck s1.read=(a.read & 0x7fff_ffff) true
-  chck s2.read>=0 true
-  chck s2.read=(a.read >> 32 & 0x7fff_ffff) true
-  chck (c1.read+c2.read>0 : s1.read+s2.read>0) true
+    thrd1.join
+    thrd2.join
 
-  # use `-debug` argument to show CAS success / failure statistics:
-  #
-  if ((envir.args.nth 1).or_else "")="-debug"
-    say "thread 1: CAS successful: "+s1.read+" failed "+(c1.read-s1.read)+" total "+c1.read
-    say "thread 2: CAS successful: "+s2.read+" failed "+(c2.read-s2.read)+" total "+c2.read
-    say "a is "+a.read.hex
+    chck s1.read>=0 true
+    chck s1.read=(a1.read & 0x7fff_ffff) true
+    chck s2.read>=0 true
+    chck s2.read=(a1.read >> 32 & 0x7fff_ffff) true
+    chck (c1.read+c2.read>0 : s1.read+s2.read>0) true
+
+    # use `-debug` argument to show CAS success / failure statistics:
+    #
+    if ((envir.args.nth 1).or_else "")="-debug"
+      say "thread 1: CAS successful: "+s1.read+" failed "+(c1.read-s1.read)+" total "+c1.read
+      say "thread 2: CAS successful: "+s2.read+" failed "+(c2.read-s2.read)+" total "+c2.read
+      say "a is "+a1.read.hex
+
+  test
