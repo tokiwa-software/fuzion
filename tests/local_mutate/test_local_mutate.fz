@@ -80,20 +80,19 @@ test_local_mutate is
       #
       # say count    # *** will cause compile-time an error, requires m to be installed
 
-      # handler for negative tests that cause panic:
-      #
-      my_panic : Panic_Handler is
-        redef do_panic(msg String) =>
-          say "*** got '$msg' ***"
-
       neg_test3 =>
         s := m.go ()->count2
         say s             # *** will cause an error, requires m to be installed
         "** failed, did not panic **"
 
-      # say (my_panic.use ()->neg_test3 ()->"ok")   -- NYI: UNDER DEVELOPMENT: this currently fails for the C backend, need to check why
+      caught_msg(msg) => "*** got '$msg' ***\nok"
 
-      say (my_panic.use ()->neg_test4 ()->"ok")
+      if false       # NYI: BUG #3352: this does not work for the C backend
+        say (panic.try   neg_test3
+                  .catch caught_msg)
+
+      say (panic.try   neg_test4
+                .catch caught_msg)
 
       neg_test4 =>
         s := m.go ()->count2
@@ -102,7 +101,8 @@ test_local_mutate is
           say s
         "** failed, did not panic **"
 
-      say (my_panic.use ()->neg_test5 ()->"ok")
+      say (panic.try   neg_test5
+                .catch caught_msg)
 
       neg_test5 =>
         q =>
