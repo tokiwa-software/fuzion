@@ -63,7 +63,8 @@ is
 
 
 # convenience routine to create a new instance of 'try T' and run 'f' in
-# it.
+# it.  The result will be an `outcome R` that, in case of success, contains
+# the result of `f`, or, in case of `(try T).env.raise`, contains the error.
 #
 public try(T type,
            R type,
@@ -73,11 +74,11 @@ public try(T type,
 
 # convenience routine to create a new instance of 'try T' and run 'f' in
 # it. Return the result of 'f' directly or panic in case 'f' calls
-# 'try.env.raise'.
+# '(try T).env.raise'.
 #
 public try_or_panic(T type,
                     R type,
-                    f ()->R) outcome R =>
+                    f ()->R) R =>
   match (try T).on f
     e error => panic $e
     r R => r
