@@ -52,7 +52,7 @@
 public outcome(public T type) :
   choice T error, /* ...  NYI: this should be open generic! */
   monad T (outcome T),
-  auto_unwrap T (try (outcome T)) /* NYI: BUG #3355: auto_unwrap T (try option.this) */
+  auto_unwrap T (try (outcome T)) /* NYI: BUG #3355: auto_unwrap T (try outcome.this) */
 is
 
   # Does this outcome contain a value of type T?
