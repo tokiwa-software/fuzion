@@ -530,7 +530,7 @@ int64_t fzE_thread_create(void *(*code)(void *),
     fprintf(stderr,"*** pthread_create failed with return code %d\012",res);
     exit(EXIT_FAILURE);
   }
-  // NYI free pt
+  // NYI: BUG: free pt
   return (int64_t)pt;
 #else
   printf("You discovered a severe bug. (fzE_thread_join)");
