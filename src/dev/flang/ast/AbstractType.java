@@ -1790,7 +1790,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     else
       {
         var o = outer();
-        String outer = o != null && !o.feature().isUniverse() ? o.asStringWrapped() + "." : "";
+        String outer = o != null && !o.feature().isUniverse() ? o.asStringWrapped(humanReadable) + "." : "";
         var f = feature();
         var typeType = f.isTypeFeature();
         if (typeType)
@@ -1801,7 +1801,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         // for a feature that does not define a type itself, the name is not
         // unique due to overloading with different argument counts. So we add
         // the argument count to get a unique name.
-        var fname = (humanReadable ? fn.baseNameHuman() : fn.baseName()) + (f.definesType() ? "" : FuzionConstants.INTERNAL_NAME_PREFIX + fn.argCount());
+        var fname = (humanReadable ? fn.baseNameHuman() : fn.baseName())
+          +  (f.definesType() || fn.argCount() == 0 || fn.isInternal()
+                ? ""
+                : FuzionConstants.INTERNAL_NAME_PREFIX + fn.argCount());
 
         // NYI: would be good if postFeatures could be identified not be string comparison, but with something like
         // `f.isPostFeature()`. Note that this would need to be saved in .fum file as well!
@@ -1829,7 +1832,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             if (!skip) // skip first generic 'THIS#TYPE' for types of type features.
               {
-                result = result + " " + g.asStringWrapped();
+                result = result + " " + g.asStringWrapped(humanReadable);
               }
             skip = false;
           }
@@ -1861,9 +1864,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * wrap the result of asString in parentheses if necessary
    */
-  public String asStringWrapped()
+  public String asStringWrapped(boolean humanReadable)
   {
-    return StringHelpers.wrapInParentheses(asString());
+    return StringHelpers.wrapInParentheses(asString(humanReadable));
   }
 
 

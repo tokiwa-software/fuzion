@@ -1,16 +1,16 @@
 
 error 1: Postcondition `equals result-x x` does not hold after call
 Call stack:
-fuzion.sys.fatal_fault
-fuzion.type.runtime.type.fault.type.install_default.fun.call
-fuzion.runtime.fault.cause
-fuzion.type.runtime.type.post_fault.type.install_default.fun.call
-fuzion.runtime.post_fault.cause
-fuzion.runtime.postcondition_fault
-(catch_postcondition.test i32).post double
-(catch_postcondition.test i32).double
-(catch_postcondition.test i32).loop
-catch_postcondition.test i32
+fuzion.sys.fatal_fault#2
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1
+fuzion.runtime.fault.cause#1
+fuzion.type.runtime.type.post_fault.type.install_default.λ.call#1
+fuzion.runtime.post_fault.cause#1
+fuzion.runtime.postcondition_fault#1
+(catch_postcondition.test#1 i32).post double
+(catch_postcondition.test#1 i32).double#1
+(catch_postcondition.test#1 i32).loop
+catch_postcondition.test#1 i32
 catch_postcondition
 
 *** fatal errors encountered, stopping.

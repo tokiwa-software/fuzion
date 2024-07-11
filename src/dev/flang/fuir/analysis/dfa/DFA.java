@@ -292,7 +292,7 @@ public class DFA extends ANY
           var detail = new StringBuilder("Considered targets: ");
           for (var ccii = 0; ccii < ccs.length; ccii += 2)
             {
-              detail.append(_fuir.clazzAsStringNew(ccs[ccii])).append(ccii+2 < ccs.length ? ", " : "\n");
+              detail.append(_fuir.clazzAsString(ccs[ccii])).append(ccii+2 < ccs.length ? ", " : "\n");
             }
           var ignore = _call.showWhy(detail);
           Errors.error(_fuir.sitePos(s),

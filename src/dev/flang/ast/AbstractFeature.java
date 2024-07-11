@@ -1267,7 +1267,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   {
     return (isConstructor() || isChoice())
       && !isUniverse()
-      && !this.isTypeFeature();
+      && !isTypeFeature();
   }
 
 

@@ -265,7 +265,7 @@ public class Boxed extends ValueWithClazz
    */
   public String toString()
   {
-    return "boxed[" + fuir().clazzAsStringNew(_clazz) + "]" + this.hashCode();
+    return "boxed[" + fuir().clazzAsStringHuman(_clazz) + "]" + this.hashCode();
   }
 
 }
