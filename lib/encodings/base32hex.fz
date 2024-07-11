@@ -29,9 +29,6 @@ public base32hex : base32 is
   redef get_alphabet => "0123456789ABCDEFGHIJKLMNOPQRSTUV".utf8.as_array
   redef encoding_name => "base32hex"
 
-  # NYI: This causes a java exception
-  alphabet := get_alphabet
-
   # decode a valid base32hex characters to 5 bits
   redef quintet_bits(n u8) =>
     if n >= 65 && n <= 86        # case A-V
