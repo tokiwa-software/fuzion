@@ -1,0 +1,45 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature base32hex
+#
+# -----------------------------------------------------------------------
+
+# Base32hex encoding and decoding as defined in RFC 4648
+#
+public base32hex : base32 is
+
+  # allows redefinition e.g. for base32hexhex
+  redef get_alphabet => "0123456789ABCDEFGHIJKLMNOPQRSTUV".utf8.as_array
+  redef encoding_name => "base32hex"
+
+  # NYI: This causes a java exception
+  alphabet := get_alphabet
+
+  # decode a valid base32hex characters to 5 bits
+  redef quintet_bits(n u8) =>
+    if n >= 65 && n <= 86        # case A-V
+      n.as_u64 - 55
+
+    else #if n >= 48 && n <= 57  # case 0-9
+      n.as_u64 - 48
+
+  # checks if a character is valid in the encoding
+  redef is_valid(c u8) =>
+    (c >= 65 && c <= 86) || (c >= 48 && c <= 57)
