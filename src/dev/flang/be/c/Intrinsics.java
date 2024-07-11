@@ -995,7 +995,10 @@ public class Intrinsics extends ANY
         {
           var ecl = c._fuir.clazzActualGeneric(cl, 0);
           var evi = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));
-          return CStmnt.seq(CStmnt.iff(evi, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret());
+          // NYI: UNDER DEVELOPMENT: can this logic be moved to abstract interpreter?
+          return c._fuir.clazzNeedsCode(ecl)
+            ? CStmnt.seq(CStmnt.iff(evi, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret())
+            : c._names.FZ_FALSE.ret();
         });
 
     var noJava = CStmnt.seq(
