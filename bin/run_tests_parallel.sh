@@ -103,10 +103,10 @@ START_TIME_TOTAL="$(nanosec)"
 for test in $TESTS; do
   task(){
     if test -n "$VERBOSE"; then
-      echo -en "\nrun $test: "
+      printf "\nrun $test: "
     fi
     if test -e "$test"/skip -o -e "$test"/skip_"$TARGET"; then
-      echo -n "_"
+      printf "_"
       echo "$test: skipped" >>"$BUILD_DIR"/run_tests.results
     else
       START_TIME="$(nanosec)"
@@ -117,10 +117,10 @@ for test in $TESTS; do
       fi
       END_TIME="$(nanosec)"
       if $TEST_RESULT; then
-        echo -n "."
+        printf "."
         echo "$test in $((END_TIME-START_TIME))ms: ok"     >>"$BUILD_DIR"/run_tests.results
       else
-        echo -n "#"
+        printf "#"
         echo "$test in $((END_TIME-START_TIME))ms: failed" >>"$BUILD_DIR"/run_tests.results
         cat "$test"/out.txt "$test"/stderr.txt >>"$BUILD_DIR"/run_tests.failures
       fi
@@ -135,10 +135,10 @@ OK=$(     grep --count ok$      "$BUILD_DIR"/run_tests.results || true)
 SKIPPED=$(grep --count skipped$ "$BUILD_DIR"/run_tests.results || true)
 FAILED=$( grep --count failed$  "$BUILD_DIR"/run_tests.results || true)
 
-echo -n " $OK/$(echo "$TESTS" | wc -w) tests passed,"
-echo -n " $SKIPPED skipped,"
+printf " $OK/$(echo "$TESTS" | wc -w) tests passed,"
+printf " $SKIPPED skipped,"
 echo    " $FAILED failed in $((END_TIME_TOTAL-START_TIME_TOTAL))ms."
-grep failed$ "$BUILD_DIR"/run_tests.results || echo -n
+grep failed$ "$BUILD_DIR"/run_tests.results || true
 
 if [ "$FAILED" -ge 1 ]; then
   cat "$BUILD_DIR"/run_tests.failures
