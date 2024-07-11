@@ -89,7 +89,7 @@ FAILED=$( grep --count failed$  "$BUILD_DIR"/run_tests.results || true)
 printf " $OK/$(echo "$TESTS" | wc -w) tests passed,"
 printf " $SKIPPED skipped,"
 echo    " $FAILED failed in $((END_TIME_TOTAL-START_TIME_TOTAL))ms."
-grep failed$ "$BUILD_DIR"/run_tests.results || printf
+grep failed$ "$BUILD_DIR"/run_tests.results || true
 
 if [ "$FAILED" -ge 1 ]; then
   cat "$BUILD_DIR"/run_tests.failures
