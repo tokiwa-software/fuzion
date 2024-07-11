@@ -69,6 +69,7 @@ public class Terminal extends ANY
   public static final String ITALICS_OFF               = ENABLED ? "\033[23m" : "";
   public static final String UNDERLINE                 = ENABLED ? "\033[4m" : "";   // also called underscore
   public static final String DOTTED_UNDERLINE          = ENABLED ? "\033[4:4m" : "";
+  public static final String DOUBLE_UNDERLINE          = ENABLED ? "\033[21m" : "";
   public static final String UNDERLINE_OFF             = ENABLED ? "\033[24m" : "";
   public static final String BLINK                     = ENABLED ? "\033[5m" : "";
   public static final String BLINK_OFF                 = ENABLED ? "\033[25m" : "";

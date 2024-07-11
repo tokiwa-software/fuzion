@@ -193,7 +193,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
               /* not a SourceRange! */
               {
                 sb.append(_sourceFile.asString(_sourceFile.lineStartPos(l), p))
-                  .append(Terminal.DOTTED_UNDERLINE)
+                  .append(Terminal.DOUBLE_UNDERLINE)
                   .append(Terminal.UNDERLINE_LINE_RED)
                   .append(_sourceFile.asString(p, p + 1))
                   .append(Terminal.UNDERLINE_OFF)
@@ -207,7 +207,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
                 var leadingWhiteSpace = countLeadingWhiteSpace(str);
                 sb.append(_sourceFile.asString(_sourceFile.lineStartPos(l), p))
                   .append(str.subSequence(0, leadingWhiteSpace))
-                  .append(Terminal.DOTTED_UNDERLINE)
+                  .append(Terminal.DOUBLE_UNDERLINE)
                   .append(Terminal.UNDERLINE_LINE_RED)
                   .append(str.subSequence(leadingWhiteSpace, str.length()))
                   .append(Terminal.UNDERLINE_OFF)
