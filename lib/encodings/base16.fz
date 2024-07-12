@@ -90,8 +90,8 @@ public base16 is
       nxt := 0, nxt + 2
     while nxt < data.length
     do
-      bits_0_3 := dec_char_at(nxt)
-      bits_4_7 := dec_char_at(nxt+1)
+      bits_0_3 := dec_char_at nxt
+      bits_4_7 := dec_char_at nxt+1
 
       byte := if bits_0_3.ok && bits_4_7.ok
                 [(bits_0_3.val << 4) | bits_4_7.val]
