@@ -22,6 +22,7 @@
 # -----------------------------------------------------------------------
 
 # Base32hex encoding and decoding as defined in RFC 4648
+# https://datatracker.ietf.org/doc/html/rfc4648#section-7
 #
 public base32hex : base32 is
 
@@ -29,7 +30,7 @@ public base32hex : base32 is
   redef get_alphabet => "0123456789ABCDEFGHIJKLMNOPQRSTUV".utf8.as_array
   redef encoding_name => "base32hex"
 
-  # decode a valid base32hex characters to 5 bits
+  # decode a valid base32hex character to 5 bits
   redef quintet_bits(n u8) =>
     if n >= 65 && n <= 86        # case A-V
       n.as_u64 - 55
