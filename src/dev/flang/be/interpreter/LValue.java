@@ -333,7 +333,7 @@ public class LValue extends ValueWithClazz
    */
   public String toString()
   {
-    return "lvalue[" + container + "@" + offset + "(" + fuir().clazzAsStringNew(_clazz) + ")]" +
+    return "lvalue[" + container + "@" + offset + "(" + fuir().clazzAsString(_clazz) + ")]" +
       (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_i8  ) ? " (" + i8Value()   + ")" :
        _clazz == fuir().clazz(FUIR.SpecialClazzes.c_u8  ) ? " (" + u8Value()   + ")" :
        _clazz == fuir().clazz(FUIR.SpecialClazzes.c_i16 ) ? " (" + i16Value()  + ")" :

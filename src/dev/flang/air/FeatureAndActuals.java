@@ -198,7 +198,7 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
     return
       (_preconditionClazz ? "pre " : "") +
       (_f == null ? "--" : _f.qualifiedName()) +
-      (_tp != null ? _tp.toString(t -> " " + t.asStringWrapped())
+      (_tp != null ? _tp.toString(t -> " " + t.asStringWrapped(true))
                    : (_max ? " MAX" : " MIN"));
   }
 

@@ -330,12 +330,12 @@ public class Call extends ANY implements Comparable<Call>, Context
     return
       (forEnv
        ? (on.equals(EFFECT_ABORTABLE_NAME)
-          ? "install effect " + Errors.effe(_dfa._fuir.clazzAsString(_dfa._fuir.effectType(_cc))) + ", old environment was "
+          ? "install effect " + Errors.effe(_dfa._fuir.clazzAsStringHuman(_dfa._fuir.effectType(_cc))) + ", old environment was "
           : "effect environment ") +
          Errors.effe(Env.envAsString(_env)) +
          " for call to "
        : "call ")+
-      Errors.sqn(_dfa._fuir.clazzAsString(_cc)) +
+      Errors.sqn(_dfa._fuir.clazzAsStringHuman(_cc)) +
       (pos != null ? " at " + pos.pos().show() : "");
   }
 

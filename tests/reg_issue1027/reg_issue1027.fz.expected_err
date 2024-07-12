@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue1027.fz:26:15: error 1: reading uninitialized field 'x' from instance of 'universe#0'
+--CURDIR--/reg_issue1027.fz:26:15: error 1: reading uninitialized field 'x' from instance of 'universe'
 show_x => say x
 --------------^
 Callchain that lead to this point:
@@ -7,7 +7,7 @@ Callchain that lead to this point:
 call 'show_x' at --CURDIR--/reg_issue1027.fz:24:1:
 show_x
 ^^^^^^
-call 'universe#0'
+call 'universe'
 program entry point
 
 one error.

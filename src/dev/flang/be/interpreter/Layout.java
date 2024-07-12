@@ -250,7 +250,7 @@ class Layout extends FUIRContext
   @Override
   public String toString()
   {
-    return fuir().clazzAsStringNew(_clazz);
+    return fuir().clazzAsString(_clazz);
   }
 
 }

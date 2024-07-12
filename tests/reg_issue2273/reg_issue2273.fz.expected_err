@@ -4,10 +4,10 @@ $MODULE/mutate/array.fz:106:5: error 1: Failed to verify that effect 'mutate' is
 ----^^^^^^
 Callchain that lead to this point:
 
-effect environment '--empty--' for call to '(mutate.type.array.type door).new mutate' at --CURDIR--/reg_issue2273.fz:33:26:
+effect environment '--empty--' for call to '(mutate.type.array.type door).new#3 mutate' at --CURDIR--/reg_issue2273.fz:33:26:
 d := (mutate.array door).new mutate 100 closed
 -------------------------^^^
-effect environment '--empty--' for call to 'universe#0'
+effect environment '--empty--' for call to 'universe'
 effect environment '--empty--' at program entry
 
 one error.

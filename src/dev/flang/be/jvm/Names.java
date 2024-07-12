@@ -259,7 +259,7 @@ public class Names extends ANY implements ClassFileConstants
             result
               .append(j)
               .append("\t")
-              .append(_fuir.clazzAsString(cl))
+              .append(_fuir.clazzAsStringHuman(cl))
               .append("\n");
           }
       }

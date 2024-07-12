@@ -1404,7 +1404,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
             : ""
             )
          + feature().featureName().baseNameHuman()
-         + g.toString(" ", " ", "", t -> t.asStringWrapped())
+         + g.toString(" ", " ", "", t -> t.asStringWrapped(true))
          );
   }
 
