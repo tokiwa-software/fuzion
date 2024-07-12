@@ -32,12 +32,12 @@ public base32hex : base32 is
 
   # decode a valid base32hex character to 5 bits
   redef quintet_bits(n u8) =>
-    if n >= 65 && n <= 86        # case A-V
+    if 65 <= n <= 86        # case A-V
       n.as_u64 - 55
 
-    else #if n >= 48 && n <= 57  # case 0-9
+    else #if 48 <= n <= 57  # case 0-9
       n.as_u64 - 48
 
   # checks if a character is valid in the encoding
   redef is_valid(c u8) =>
-    (c >= 65 && c <= 86) || (c >= 48 && c <= 57)
+    (65 <= c <= 86) || (48 <= c <= 57)

@@ -35,15 +35,15 @@ public base32 is
 
   # decode a valid base32 character to 5 bits
   module quintet_bits(n u8) =>
-    if n >= 65 && n <= 90        # case A-Z
+    if 65 <= n <= 90        # case A-Z
       n.as_u64 - 65
 
-    else #if n >= 50 && n <= 55  # case 2-7
+    else #if 50 <= n <= 55  # case 2-7
       n.as_u64 - 24
 
   # checks if a character is valid in the encoding
   module is_valid(c u8) =>
-    (c >= 65 && c <= 90) || (c >= 50 && c <= 55)
+    (65 <= c <= 90) || (50 <= c <= 55)
 
   # Encodes a given byte sequence in base32, output is padded to multiple of 8
   # returns a sequence of ascii values
