@@ -1,0 +1,104 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature base16
+#
+# -----------------------------------------------------------------------
+
+# base16 encoding and decoding as defined in RFC 4648
+# https://datatracker.ietf.org/doc/html/rfc4648#section-8
+#
+public base16 is
+
+  alphabet array u8:= [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70] #0123456789ABCDEF
+  encoding_name => "base16"
+
+  # decode a valid base16 character to 4 bits
+  four_bits(n u8) =>
+    if n >= 48 && n <= 57        # case 0-9
+      n.as_u8 - 48
+    else #if n >= 65 && n <= 70  # case A-F
+      n.as_u8 - 55
+
+  # checks if a character is valid in the encoding
+  is_valid(c u8) =>
+    (c >= 48 && c <= 57) || (c >= 65 && c <= 70)
+
+  # Encodes a given byte sequence in base16
+  # returns a sequence of ascii values
+  public encode(data array u8) =>
+    data.flat_map u8 (b->[alphabet[(b>>(u8 4)).as_i32], alphabet[(b&(u8 15)).as_i32]])
+
+  # Encodes a given byte sequence in base16
+  # returns a string
+  public encode_to_string(data array u8) =>
+    String.type.from_bytes (encode data)
+
+
+  # decodes a base16 string, decoding is strict as required by RFC 4648
+  # lowercase letters, non alphabet characters, line breaks, uneven length cause errors
+  public decode_str(data String) =>
+    decode data.utf8.as_array
+
+
+  # decodes a sequence of ASCII characters, decoding is strict as required by RFC 4648
+  # lowercase letters, non alphabet characters, line breaks, uneven length cause errors
+  public decode(data array u8) =>
+
+    dec_char_at(i) =>
+
+      if i >= data.length
+        error "unexpected end of input, i.e. not of even length"
+      else
+        c := data[i]
+
+        # base16 alphabet character
+        if (is_valid c)
+          outcome (four_bits c)
+
+        # line break
+        else if c = 10 || c = 13
+          error """
+                line breaks are not allowed within encoded data, as required by RFC464, found \
+                {if c=10 then "LF" else "CR"} at position $i"""
+
+        # other non alphabet character
+        else
+          inv_char := String.type.from_bytes (data.slice i (i+4 > data.length ? data.length : i+4))
+                            .substring_codepoint 0 1
+
+          error "invalid $encoding_name input at byte position $i, decoding to unicode character '$inv_char'"
+
+    for
+      res list u8 := nil, res ++ byte  # contains the decoded data at the end
+      nxt := 0, nxt + 2
+    while nxt < data.length
+    do
+      bits_0_3 := dec_char_at(nxt)
+      bits_4_7 := dec_char_at(nxt+1)
+
+      byte := if bits_0_3.ok && bits_4_7.ok
+                [(bits_0_3.val << 4) | bits_4_7.val]
+              else [(u8 0)]            # decoding result not used in error case
+
+    until bits_0_3.is_error || bits_4_7.is_error
+      if bits_0_3.is_error then bits_0_3.err
+      else                  bits_4_7.err
+    else
+      outcome (res.as_array)
