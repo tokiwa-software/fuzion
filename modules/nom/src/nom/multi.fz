@@ -32,7 +32,7 @@ module multi is
 
   # apply parser at least once, return results as sequence
   public many1 (I, O type, p Parser I I O) Parser I I (Sequence O) =>
-    parser I I (Sequence O) (input)->
+    parser I I (Sequence O) input->
       match p.call input
         s1 success I O => (many0 p).call input
         e error => e
@@ -43,20 +43,21 @@ module multi is
   pre m<=n
       n>0
   =>
-    parser I I (Sequence O) (input ->
-      (rest, acc) := (1..n)
-        .reduce (input, (list O).type.empty) (r, t ->
-          (rest, acc) := r
-          match p.call rest
+    parser I I (Sequence O) input->
+
+      (rest0, acc0) := (1..n)
+        .reduce (input, (list O).type.empty) r,t->
+          (rest1, acc1) := r
+          match p.call rest1
             s success =>
-              (s.rest, acc ++ [s.out])
+              (s.rest, acc1 ++ [s.out])
             error =>
-              abort (rest, acc)
-        )
-      if acc.count < m
-        error "matched only {acc.count} times"
+              abort (rest1, acc1)
+
+      if acc0.count < m
+        error "matched only {acc0.count} times"
       else
-        success rest acc.as_seq)
+        success rest0 acc0.as_seq
 
 
   # parse a separated list of values, zero or more values

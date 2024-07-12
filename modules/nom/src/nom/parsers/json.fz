@@ -50,9 +50,9 @@ public json =>
 
     parser_hex_unicode =>
       preceded (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (tag "\\") (take_while_m_n codepoint 4 4 (c -> is_hex_digit c))
-        .map (Sequence codepoint) (d ->
-          (c,_) := d.reduce (u32 0, u32 4) (r, c -> (val, exp) := r; (c.parse_u32_hex.val * 10**exp, exp-1))
-          [(codepoint c)])
+        .map (Sequence codepoint) d->
+          t := d.reduce (u32 0, u32 4) (r, c -> (val, exp) := r; (c.parse_u32_hex.val * 10**exp, exp-1))
+          [(codepoint t.0)]
 
     parse_and_map(t, r String) Parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) =>
       (tag t).map (Sequence codepoint) (_ -> r.as_codepoints)

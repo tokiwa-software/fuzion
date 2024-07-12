@@ -88,8 +88,8 @@ is
       (l,carry_over) := data
         .reverse
         .reduce ((list u32).empty, u32 0) (r,t ->
-          (res, carry_over) := r
-          next := t<<shift | carry_over
+          (res, co) := r
+          next := t<<shift | co
           ([next] ++ res, t >> ((u32 32)-shift))
         )
       uint ([carry_over] ++ l) unit
@@ -165,18 +165,18 @@ is
   =>
     two_pow_32 := ((u64 1)<<32)
     (b1, b2) := equalize other
-    (r, _) := b1
+    b3 := b1
       .zip b2 (x, y -> (x,y))
       .reverse_list
-      .reduce ((list u32).empty, u64 0) (r,t ->
+      .reduce ((list u32).empty, u64 0) r,t->
         (minuend, subtrahend) := t
         (res, carry_over) := r
 
         difference := two_pow_32 + minuend.as_u64 - subtrahend.as_u64 - carry_over
 
         ([difference.low32bits] ++ res, if difference ≥ two_pow_32 then u64 0 else u64 1)
-      )
-    uint r unit
+      .values.0
+    uint b3 unit
 
 
   # return an array of length n
@@ -191,18 +191,16 @@ is
     data
       .reverse_list
       .indexed
-      .map ((x) ->
+      .map x->
         (i, v) := x
         other
           .data
           .reverse
           .indexed
-          .map (ox ->
+          .map ox->
             (oi,ov) := ox
             tmp := v.as_u64 * ov.as_u64
             uint ([(tmp>>32).low32bits , tmp.low32bits] ++ zeros i+oi) unit
-          )
-        )
       .flat_map uint (x -> x)
       .fold uint.sum
 
