@@ -48,7 +48,7 @@ sockets_test is
           say_silent chan.get_peer_address
           say_silent chan.get_peer_port
 
-          rr := io.buffered.read_line_while (s -> !s.is_empty)
+          rr := io.buffered.read_line_while LM (s -> !s.is_empty)
 
           say_silent "$protocol/$family-server, read lines: >{rr}<"
 
@@ -112,7 +112,7 @@ sockets_test is
           match protocol
             net.protocol.tcp =>
 
-              rr := io.buffered.read_line_while (s -> !s.is_empty)
+              rr := io.buffered.read_line_while lm (s -> !s.is_empty)
 
               res + "\n" + "$protocol/$family-client {sockets_test.client.this.num}, read lines from  $host:$port: >{rr}<"
 

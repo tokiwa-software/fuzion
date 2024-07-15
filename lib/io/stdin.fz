@@ -33,7 +33,7 @@
 #       io.buffered.read_line
 #
 #
-public stdin io.buffered.reader =>
+public stdin (LM type : mutate) io.buffered.reader LM =>
 
 
   read_provider : io.Read_Provider is
@@ -50,4 +50,4 @@ public stdin io.buffered.reader =>
         arr.as_array
 
 
-  io.buffered.reader read_provider 1024
+  io.buffered.reader LM read_provider 1024
