@@ -58,10 +58,10 @@ sockets_test is
               res := "received: {rr.as_string}\n\n"
 
               w =>
-                x := ((io.buffered.writer lm).write res.utf8.as_array).error
+                x := ((io.buffered.writer LM).write res.utf8.as_array).error
 
                 match x
-                  unit => (io.buffered.writer lm).flush
+                  unit => (io.buffered.writer LM).flush
                   error => x
 
               match w
