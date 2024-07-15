@@ -57,7 +57,7 @@ nanosec () {
 START_TIME_TOTAL="$(nanosec)"
 for test in $TESTS; do
   if test -n "$VERBOSE"; then
-    printf "\nrun $test: "
+    printf '\nrun %s: ' "$test"
   fi
   if test -e "$test"/skip -o -e "$test"/skip_"$TARGET"; then
     printf "_"
@@ -86,8 +86,9 @@ OK=$(     grep --count ok$      "$BUILD_DIR"/run_tests.results || true)
 SKIPPED=$(grep --count skipped$ "$BUILD_DIR"/run_tests.results || true)
 FAILED=$( grep --count failed$  "$BUILD_DIR"/run_tests.results || true)
 
-printf " $OK/$(echo "$TESTS" | wc -w) tests passed,"
-printf " $SKIPPED skipped,"
+RESULT=" $OK/$(echo "$TESTS" | wc -w) tests passed,"
+printf '%s' "$RESULT"
+printf ' %s skipped,' "$SKIPPED"
 echo    " $FAILED failed in $((END_TIME_TOTAL-START_TIME_TOTAL))ms."
 grep failed$ "$BUILD_DIR"/run_tests.results || true
 
