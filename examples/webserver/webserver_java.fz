@@ -92,12 +92,12 @@ webserver_java is
            # accept and handle connection
            match ss.accept
              e error => e
-             s Java.java.net.Socket =>
-               match s.getInputStream
+             sock Java.java.net.Socket =>
+               match sock.getInputStream
                  e error => e
                  i Java.java.io.InputStream =>
                    input  := jio.BufferedReader.new (jio.InputStreamReader.new i)
-                   match s.getOutputStream
+                   match sock.getOutputStream
                      e error => e
                      o Java.java.io.OutputStream =>
                        # helper to read request

@@ -52,13 +52,13 @@ is
   SIZE := 512.0
 
   // main radius
-  r := SIZE / 2
+  radius := SIZE / 2
 
   // width of black lines
-  b := r * BLACK_LINE_WIDTH
+  blw := radius * BLACK_LINE_WIDTH
 
   // outer radius of three main wedges
-  r1 := r - b
+  r1 := radius - blw
 
   // side length of triangle of the centers of the three main circles with radius r2:
   //
@@ -81,7 +81,7 @@ is
   //     = (r - (b * (1 + 1/sqrt(3)))) / (1 + 2 / sqrt(3))
   //
   // radius of three main circles:
-  r2 := (r - b * (1.0 + (f64.sqrt 1.0/3))) / (1.0 + 2.0*(f64.sqrt 1.0/3))
+  r2 := (radius - blw * (1.0 + (f64.sqrt 1.0/3))) / (1.0 + 2.0*(f64.sqrt 1.0/3))
 
   // radius of three small circles
   r3 := r2 * SMALL_CIRCLE_PERCENTAGE
@@ -94,9 +94,9 @@ is
   C3 := java.awt.Color.new_III 130 106 175
 
 
-  G2D (g Java.java.awt.Graphics, tx, ty, rot f64) ref is  # NYI: #167: 'ref' due to lack of 'like this'
+  G2D (g0 Java.java.awt.Graphics, tx, ty, rot f64) ref is  # NYI: #167: 'ref' due to lack of 'like this'
 
-    rotate (d f64) => G2D g tx ty rot+d
+    rotate (d f64) => G2D g0 tx ty rot+d
 
     three_times(draw (G2D, Java.java.awt.Color) -> T) =>
       _ := draw  G2D.this                      C1
@@ -107,10 +107,10 @@ is
     # start and extending of len degrees.
     #
     arc(c Java.java.awt.Color, x, y, r f64, start, len i32) =>
-      g.setColor c
+      g0.setColor c
       rx := x * (f64.cos rot) - y * (f64.sin rot)
       ry := x * (f64.sin rot) + y * (f64.cos rot)
-      g.fillArc (tx+rx-r).as_i32 (ty+ry-r).as_i32 (2.0*r).as_i32 (2.0*r).as_i32 (start-(rot*360/(2.0*f64.π)).as_i32)%360 len
+      g0.fillArc (tx+rx-r).as_i32 (ty+ry-r).as_i32 (2.0*r).as_i32 (2.0*r).as_i32 (start-(rot*360/(2.0*f64.π)).as_i32)%360 len
 
 
     # Draw a filled circle of color c, center at (x,y), radius r
@@ -122,22 +122,22 @@ is
     #
     draw_logo is
       // black background circle
-      cir BACKGROUND 0 0 r
+      cir BACKGROUND 0 0 radius
 
       // three arcs
       three_times (g, c -> g.arc c 0 0 r1 -30 120)
 
       // black circle in the center, radius to touch the sides of the inner triangle
-      cir BACKGROUND 0 0 (r-r2-b)/2
+      cir BACKGROUND 0 0 (radius-r2-blw)/2
 
       // black arcs around inner circles
-      three_times (g, c -> g.arc BACKGROUND 0 -r+r2+b r2+b 90 210)
+      three_times (g, c -> g.arc BACKGROUND 0 -radius+r2+blw r2+blw 90 210)
 
       // inner circles
-      three_times (g, c -> g.cir c 0 -r+b+r2 r2)
+      three_times (g, c -> g.cir c 0 -radius+blw+r2 r2)
 
       // small circles
-      _ := (rotate -2.0*f64.π/3).three_times (g, c -> g.cir c 0 -r+b+r2 r3)
+      _ := (rotate -2.0*f64.π/3).three_times (g, c -> g.cir c 0 -radius+blw+r2 r3)
 
 
   gfx =>
@@ -151,9 +151,9 @@ is
         if !b.is_null && b = "TRUE"  # show a button
           match java.awt.Button.new "If you like Fuzion, click here!"
             e error => say "error: $e"
-            b Java.java.awt.Button =>
-              b.setBounds 50 50 50 50
-              _ := f.add_Ljava_7_awt_7_Component_s_ b
+            btn Java.java.awt.Button =>
+              btn.setBounds 50 50 50 50
+              _ := f.add_Ljava_7_awt_7_Component_s_ btn
               f.setVisible true
               g := f.getGraphics
               say "g is "+g.getClass.toString
