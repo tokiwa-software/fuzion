@@ -1,0 +1,65 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test
+#
+# -----------------------------------------------------------------------
+
+# Test choice type used as actual type parameter without matching the contstraing
+#
+reg_issue3362 is
+
+
+  # original example form issue #3362
+  #
+  base32_test is
+  my_c : choice String (array u8) is
+  mk_choice(x my_c) => x
+
+  # RFC 4618 test vectors
+  base32_test_vectors array (tuple my_c String) :=
+    [(mk_choice "fo", "MZXQ===="),
+     (mk_choice "foo", "MZXW6===")]
+
+  dummy_decode(arr array u8) outcome (array u8) => [0,0,0]
+
+  dec_test =>
+    for tup in base32_test_vectors do
+      (plain_expected, code) := tup
+      out :=
+        match dummy_decode code.utf8.as_array
+          arr array u8 =>
+            plain_actual := String.type.from_bytes arr
+            if plain_actual != plain_expected     # 1. should flag an error: `choice String (array u8)` is not assignable to property.equatable
+              error "decoding $code produced '$plain_actual' but should have been '$plain_expected'"
+            else
+              outcome "ok"
+          e error => error "error in test data"
+    until !out.ok
+      out.err.as_string
+    else
+      "RFC 4648 test vectors are decoded correctly"
+  say dec_test
+
+
+  # minimalistic-example
+  #
+  c : choice i32 unit is
+  a c := 0
+  _ := 0 = a   # 2. should flag an error: `choice i32 unit` is not assignable to property.equatable

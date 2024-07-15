@@ -1,0 +1,15 @@
+
+--CURDIR--/reg_issue3362.fz:65:10: error 1: Incompatible type parameter
+  _ := 0 = a   # 2. should flag an error: `choice i32 unit` is not assignable to property.equatable
+---------^
+formal type parameter 'T' with constraint 'property.equatable'
+actual type parameter 'reg_issue3362.this.c'
+
+
+--CURDIR--/reg_issue3362.fz:49:29: error 2: Incompatible type parameter
+            if plain_actual != plain_expected     # 1. should flag an error: `choice String (array u8)` is not assignable to property.equatable
+----------------------------^^
+formal type parameter 'T' with constraint 'property.equatable'
+actual type parameter 'reg_issue3362.this.my_c'
+
+2 errors.
