@@ -74,8 +74,9 @@ public writer(LM type : mutate, wp Write_Provider, buf_size i32) : effect effect
 
   # buffered writing of the given array
   #
-  public write (p array u8) write_result =>
-    n := p.count
+  public write (data Sequence u8) write_result =>
+    p := data.as_array
+    n := p.length
     for n_written := 0, n_written + r
         e outcome unit := unit, e0
     while n_written < n
