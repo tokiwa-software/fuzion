@@ -1,0 +1,31 @@
+Testing base64url encoding...
+
+RFC 4648 test vectors are encoded correctly
+
+Xx----xX
+Xx____xX
+
+
+Testing base64url decoding...
+
+RFC 4648 test vectors are decoded correctly
+
+Zm9ðŸŒï¸Yg==: error: invalid base64url input at byte position 3, decoding to unicode character 'ðŸŒ'
+Zm9v
+Yg==: error: line breaks are not allowed within encoded data, as required by RFC464, found LF at position 4
+Z=m9=vYg==: error: padding character '=' not allowed within the input data, only at the very end, as required by RFC464
+Zm9vYg=: error: length of input data is not multiple of four, as required by RFC4648
+Zm9vY==: error: length of input data is not multiple of four, as required by RFC4648
+Zm9vY===: error: padding character '=' not allowed within the input data, only at the very end, as required by RFC464
+Zm9v Yg==: error: invalid base64url input at byte position 4, decoding to unicode character ' '
+++++: error: invalid base64url input at byte position 0, decoding to unicode character '+'
+////: error: invalid base64url input at byte position 0, decoding to unicode character '/'
+Zm9v;Yg==: error: invalid base64url input at byte position 4, decoding to unicode character ';'
+
+123890ABCXYZabcxyz_:;>~<%&$Â§!
+
+ûï¾
+ÿÿÿ
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed dia voluptua. At vero eos et accusam et justo duo dolores et ea rebum.
+
+Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
