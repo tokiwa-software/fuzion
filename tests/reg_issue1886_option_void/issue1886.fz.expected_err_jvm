@@ -1,12 +1,12 @@
 
 error 1: FATAL FAULT `*** panic ***`: test
 Call stack:
-fuzion.sys.fatal_fault
-fuzion.type.runtime.type.fault.type.install_default.fun.call
-fuzion.runtime.fault.cause
-panic.type.install_default.fun.call
-panic.cause
-panic
+fuzion.sys.fatal_fault#2
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1
+fuzion.runtime.fault.cause#1
+panic.type.install_default.λ.call#1
+panic.cause#1
+panic#1
 test_option_void
 
 *** fatal errors encountered, stopping.

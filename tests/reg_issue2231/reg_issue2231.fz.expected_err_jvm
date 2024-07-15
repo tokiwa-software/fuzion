@@ -1,13 +1,13 @@
 
 error 1: FATAL FAULT `*** panic ***`: *** unexpected abort in Type of 'reg_issue2231.ef'
 Call stack:
-fuzion.sys.fatal_fault
-fuzion.type.runtime.type.fault.type.install_default.fun.call
-fuzion.runtime.fault.cause
-panic.type.install_default.fun.call
-panic.cause
-panic
-reg_issue2231.ef.go void
+fuzion.sys.fatal_fault#2
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1
+fuzion.runtime.fault.cause#1
+panic.type.install_default.λ.call#1
+panic.cause#1
+panic#1
+reg_issue2231.ef.go#2 void
 reg_issue2231
 
 *** fatal errors encountered, stopping.
