@@ -236,7 +236,7 @@ public class Env extends ANY implements Comparable<Env>
     for (var et : _types)
       {
         sb.append(sep)
-          .append(_dfa._fuir.clazzAsString(et));
+          .append(_dfa._fuir.clazzAsStringHuman(et));
         sep = ", ";
       }
     return sb.toString();

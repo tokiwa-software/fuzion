@@ -100,9 +100,9 @@ public u8(public val u8) : num.wrap_around, has_interval is
   #
   public highest_one_bit u8 =>
     (v , s)  := (val, u8 0)
-    (v1, s1) := if (v  < u8 0x10) (v , s ) else (v  >> 4, s  + 4)
-    (v2, s2) := if (v1 <    u8 4) (v1, s1) else (v1 >> 2, s1 + 2)
-    (v3, s3) := if (v2 <    u8 2) (v2, s2) else (v2 >> 1, s2 + 1)
+    (v1, s1) := if (v  < 0x10) (v , s ) else (v  >> 4, s  + 4)
+    (v2, s2) := if (v1 < 4   ) (v1, s1) else (v1 >> 2, s1 + 2)
+    (v3, s3) := if (v2 < 2   ) (v2, s2) else (v2 >> 1, s2 + 1)
     v3 << s3
 
 
@@ -110,10 +110,10 @@ public u8(public val u8) : num.wrap_around, has_interval is
   #
   public trailing_zeros i32 =>
     (v , s)  := (val, 0)
-    (v1, s1) := if (v  & 0xf) != u8 0 then (v , s ) else (v  >> 4, s  + 4)
-    (v2, s2) := if (v1 &   3) != u8 0 then (v1, s1) else (v1 >> 2, s1 + 2)
-    (v3, s3) := if (v2 &   1) != u8 0 then (v2, s2) else (v2 >> 1, s2 + 1)
-    if             (v3 &   1) != u8 0 then      s3  else           8
+    (v1, s1) := if (v  & 0xf) != 0 then (v , s ) else (v  >> 4, s  + 4)
+    (v2, s2) := if (v1 &   3) != 0 then (v1, s1) else (v1 >> 2, s1 + 2)
+    (v3, s3) := if (v2 &   1) != 0 then (v2, s2) else (v2 >> 1, s2 + 1)
+    if             (v3 &   1) != 0 then      s3  else           8
 
 
   # count the number of 1 bits in the binary representation of this
@@ -135,12 +135,12 @@ public u8(public val u8) : num.wrap_around, has_interval is
   # is this u8 an ASCII white-space character?
   #
   public is_ascii_white_space =>
-    (val = (u8  9) ||  // HT
-     val = (u8 10) ||  // LF
-     val = (u8 11) ||  // VT
-     val = (u8 12) ||  // FF
-     val = (u8 13) ||  // CR
-     val = (u8 32)     // SPACE
+    (val = 9  ||  // HT
+     val = 10 ||  // LF
+     val = 11 ||  // VT
+     val = 12 ||  // FF
+     val = 13 ||  // CR
+     val = 32     // SPACE
     )
 
 

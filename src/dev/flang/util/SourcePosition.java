@@ -188,19 +188,46 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
         while (_sourceFile.numLines() >= l+1 && _sourceFile.lineStartPos(l+1) <= p)
           {
             l = l + 1;
-            sb.append(Terminal.BLUE)
-              .append(_sourceFile.line(l));
+            sb.append(Terminal.BLUE);
+            if (bytePos() == byteEndPos())
+              /* not a SourceRange! */
+              {
+                sb.append(_sourceFile.asString(_sourceFile.lineStartPos(l), p))
+                  .append(Terminal.CURLY_UNDERLINE)
+                  .append(Terminal.UNDERLINE_LINE_RED)
+                  .append(_sourceFile.asString(p, p + 1))
+                  .append(Terminal.UNDERLINE_OFF)
+                  .append(Terminal.UNDERLINE_LINE_COLOR_OFF)
+                  .append(_sourceFile.asString(p + 1, _sourceFile.lineEndPos(l)));
+              }
+            else
+              {
+                var endPos = byteEndPos() > _sourceFile.lineEndPos(l) ? _sourceFile.lineEndPos(l) : byteEndPos();
+                var str = _sourceFile.asString(p, endPos);
+                var leadingWhiteSpace = countLeadingWhiteSpace(str);
+                sb.append(_sourceFile.asString(_sourceFile.lineStartPos(l), p))
+                  .append(str.subSequence(0, leadingWhiteSpace))
+                  .append(Terminal.CURLY_UNDERLINE)
+                  .append(Terminal.UNDERLINE_LINE_RED)
+                  .append(str.subSequence(leadingWhiteSpace, str.length()))
+                  .append(Terminal.UNDERLINE_OFF)
+                  .append(Terminal.UNDERLINE_LINE_COLOR_OFF)
+                  .append(_sourceFile.asString(endPos, _sourceFile.lineEndPos(l)));
+              }
             if (sb.length() != 0 && sb.charAt(sb.length()-1) != '\n')
               { // add LF in case this is the last line of a file that does not end in a line break
                 sb.append("\n");
               }
-            sb.append(Terminal.YELLOW);
-            for (int j=0; l == line() && j < column()-1; j++)
+            if (!Terminal.ENABLED)
               {
-                sb.append('-');
+                sb.append(Terminal.YELLOW);
+                for (int j=0; l == line() && j < column()-1; j++)
+                {
+                  sb.append('-');
+                }
               }
           }
-        if (p < _sourceFile.lineEndPos(l) || p == _bytePos || p == byteEndPos()-1) // suppress '^' at LFs except for LF at end position
+        if (!Terminal.ENABLED && (p < _sourceFile.lineEndPos(l) || p == _bytePos || p == byteEndPos()-1)) // suppress '^' at LFs except for LF at end position
           {
             sb.append('^');
             if (p+1 < byteEndPos() && p+1 == _sourceFile.lineEndPos(l))
@@ -211,6 +238,28 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
       }
     sb.append(Terminal.RESET);
     return sb.toString();
+  }
+
+
+  /**
+   * @return the number of leading whitespaces in
+   * the given string.
+   */
+  private int countLeadingWhiteSpace(String str)
+  {
+    if (str.length() == 0)
+      {
+        return 0;
+      }
+
+    for (int i = 0; i < str.length(); i++)
+      {
+        if (!Character.isWhitespace(str.charAt(i)))
+          {
+            return i;
+          }
+      }
+    return str.length()-1;
   }
 
 

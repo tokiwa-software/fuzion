@@ -1,0 +1,161 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test base32
+#
+# -----------------------------------------------------------------------
+
+base32_test is
+
+  my_c : choice String (array u8) is
+  mk_choice(x my_c) => x
+
+  # RFC 4618 test vectors
+  base32_test_vectors array (tuple my_c String) :=
+    [(mk_choice $"", ""),
+     (mk_choice $"f", "MY======"),
+     (mk_choice "fo", "MZXQ===="),
+     (mk_choice "foo", "MZXW6==="),
+     (mk_choice "foob", "MZXW6YQ="),
+     (mk_choice "fooba", "MZXW6YTB"),
+     (mk_choice "foobar", "MZXW6YTBOI======")]
+
+  # Additional test vectors
+  own_test_vectors array (tuple my_c String) :=
+    [(mk_choice [(u8 0), 0, 0, 0],    "AAAAAAA="),
+     (mk_choice [(u8 255), 255, 255], "77776==="),
+     (mk_choice (array u8 5 _->255), "77777777"),
+     (mk_choice "123890ABCXYZabcxyz_:;>~<%&\$§!", "GEZDGOBZGBAUEQ2YLFNGCYTDPB4XUXZ2HM7H4PBFEYSMFJZB"),
+     (mk_choice """
+     Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidun\
+     t ut labore et dolore magna aliquyam erat, sed dia voluptua. At vero eos et accusam et justo d\
+     uo dolores et ea rebum.
+
+     Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.""",
+     """
+     JRXXEZLNEBUXA43VNUQGI33MN5ZCA43JOQQGC3LFOQWCAY3PNZZWK5DFOR2XEIDTMFSGS4DTMNUW4ZZAMVWGS5DSFQQHGZ\
+     LEEBSGSYLNEBXG63TVNV4SAZLJOJWW6ZBAORSW24DPOIQGS3TWNFSHK3TUEB2XIIDMMFRG64TFEBSXIIDEN5WG64TFEBWW\
+     CZ3OMEQGC3DJOF2XSYLNEBSXEYLUFQQHGZLEEBSGSYJAOZXWY5LQOR2WCLRAIF2CA5TFOJXSAZLPOMQGK5BAMFRWG5LTMF\
+     WSAZLUEBVHK43UN4QGI5LPEBSG63DPOJSXGIDFOQQGKYJAOJSWE5LNFYFAUU3UMV2CAY3MNF2GCIDLMFZWIIDHOVRGK4TH\
+     OJSW4LBANZXSA43FMEQHIYLLNFWWC5DBEBZWC3TDOR2XGIDFON2CATDPOJSW2IDJOBZXK3JAMRXWY33SEBZWS5BAMFWWK5BO""")]
+
+
+
+  # ENCODING
+
+  say """
+      Testing base32 encoding..."""
+
+  enc_test(test_vectors array (tuple my_c String), name String) =>
+    for results list (outcome String) := nil, results.concat (out:nil)
+        tup in test_vectors
+    do
+      (plain, code_expected) := tup
+      code_actual := match plain
+                        str String   => encodings.base32.encode_to_string str.utf8.as_array
+                        arr array u8 => encodings.base32.encode_to_string arr
+      out :=
+        if code_actual = code_expected
+          outcome "ok"
+        else
+          plain_str := match plain
+                         str String   => str
+                         arr array u8 => $arr
+          error "encode '$plain_str' produced '$code_actual' but should have been '$code_expected'"
+    else
+      if results ∀ (.ok)
+        say "$name test vectors are encoded correctly"
+      else
+        say "Failed encoding $name test vectors:"
+        results.filter (.is_error)
+              .map (.err.as_string)
+              .map ("  "+)
+              .for_each say
+        say ""
+  enc_test base32_test_vectors "RFC 4648"
+  enc_test own_test_vectors "Additional"
+
+
+
+  # DECODING
+
+  say """
+      \n
+      Testing base32 decoding..."""
+  dec_test(test_vectors array (tuple my_c String), name String) =>
+    for results list (outcome String) := nil, results.concat (out:nil)
+        tup in test_vectors
+    do
+      (plain_exp, code) := tup
+      out :=
+        match encodings.base32.decode code.utf8.as_array
+          actual array u8 =>
+            match plain_exp
+              str String   =>
+                if str = String.from_bytes actual
+                  outcome "ok"
+                else
+                  error "decoding $code produced '{String.from_bytes actual}' but should have been '$str'"
+              arr array u8 =>
+                if arr.length=actual.length && ((arr.zip actual (a,b->a=b)) ∀ x->x)
+                  outcome "ok"
+                else
+                  error "decoding $code produced '$actual' but should have been '$arr'"
+          e error => error "decoding failed when it should not have: {e.msg}"
+    else
+      if results ∀ (.ok)
+        say "$name test vectors are decoded correctly"
+      else
+        say "Failed decoding $name test vectors:"
+        results.filter (.is_error)
+              .map (.err.as_string)
+              .map ("  "+)
+              .for_each say
+        say ""
+  dec_test base32_test_vectors "RFC 4648"
+  dec_test own_test_vectors "Additional"
+
+
+
+  # ERROR MESSAGES
+
+  say """
+      \n
+      Test error messages when decoding broken base32...
+      """
+
+  broken_enc := ["""
+                 MZXW
+                 6===""",         # line break
+                 "MZXW6==",       # padding to short
+                 "MZX=====",      # invalid padding length / encoding length with valid overall length
+                 "11111111",      # non alphabet character
+                 "88888888",      # non alphabet character
+                 "MZ=XW6==",      # pad char within encoding
+                 "MZXW6====",     # padding to long
+                 "MZX W6===",     # space
+                 "MZXW;6===",     # non alphabet ascii character
+                 "MZX🌍6==="]     # non alphabet multi byte unicode character
+
+  for t in broken_enc do
+    yak "$t: "
+    say (match encodings.base32.decode_str t
+        arr array u8 => String.type.from_bytes arr
+        e error => e.as_string)
+  say ""

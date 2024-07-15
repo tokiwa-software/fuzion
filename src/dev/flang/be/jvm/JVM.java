@@ -1101,7 +1101,7 @@ should be avoided as much as possible.
                *
                */
             tr
-             .andThen(reportErrorInCode("Can not return result field that does not exist: " + _fuir.clazzAsStringNew(cl)))
+             .andThen(reportErrorInCode("Can not return result field that does not exist: " + _fuir.clazzAsString(cl)))
           // field does not exist and signature is void and real type is also fuzions void
           : _fuir.clazzIsVoidType(t)
           ?
@@ -1120,7 +1120,7 @@ should be avoided as much as possible.
 
               */
             tr
-              .andThen(reportErrorInCode("Can not return result field that does not exist: " + _fuir.clazzAsStringNew(cl)))
+              .andThen(reportErrorInCode("Can not return result field that does not exist: " + _fuir.clazzAsString(cl)))
           // field does not exist and signature is void and real type is not fuzions void
           :
               /**

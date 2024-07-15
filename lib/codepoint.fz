@@ -37,14 +37,14 @@ is
   public redef utf8 Sequence u8 =>
     if      codepoint.utf8_encoded_in_one_byte   .contains val then [ val.low8bits ]
     else if codepoint.utf8_encoded_in_two_bytes  .contains val then [ (u32 0xc0 | (val >>  6) & 0x1f).low8bits,
-                                                                           (u32 0x80 |  val        & 0x3f).low8bits ]
+                                                                      (u32 0x80 |  val        & 0x3f).low8bits ]
     else if codepoint.utf8_encoded_in_three_bytes.contains val then [ (u32 0xe0 | (val >> 12) & 0x1f).low8bits,
-                                                                           (u32 0x80 | (val >>  6) & 0x3f).low8bits,
-                                                                           (u32 0x80 |  val        & 0x3f).low8bits ]
+                                                                      (u32 0x80 | (val >>  6) & 0x3f).low8bits,
+                                                                      (u32 0x80 |  val        & 0x3f).low8bits ]
     else if codepoint.utf8_encoded_in_four_bytes .contains val then [ (u32 0xf0 | (val >> 18) & 0x07).low8bits,
-                                                                           (u32 0x80 | (val >> 12) & 0x3f).low8bits,
-                                                                           (u32 0x80 | (val >>  6) & 0x3f).low8bits,
-                                                                           (u32 0x80 |  val        & 0x3f).low8bits ]
+                                                                      (u32 0x80 | (val >> 12) & 0x3f).low8bits,
+                                                                      (u32 0x80 | (val >>  6) & 0x3f).low8bits,
+                                                                      (u32 0x80 |  val        & 0x3f).low8bits ]
     else
       fuzion.std.panic "failed to encode code point {codepoint.this}"
 

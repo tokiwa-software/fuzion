@@ -51,4 +51,4 @@ public bench(f ()->unit, nano_seconds u64, warm_up_nano_seconds u64) f64 ! time.
 # returns: iterations per second
 #
 public bench(f ()->unit, milli_seconds i32) f64 =>
-  bench f (milli_seconds.as_u64 * 1E6) (u64 1E9)
+  bench f (milli_seconds.as_u64 * 1E6) 1E9

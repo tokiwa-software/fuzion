@@ -151,7 +151,7 @@ is
               match limit
                 nil => srest.split0 s nil split_after
                 n u32 =>
-                  if n > u32 1
+                  if n > 1
                     srest.split0 s (n - 1) split_after
                   else
                     res Sequence A := rest;

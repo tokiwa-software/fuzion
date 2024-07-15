@@ -517,7 +517,7 @@ public class Executor extends ProcessExpression<Value, Object>
     var result = FuzionThread.current()._effects.get(ecl);
     if (result == null)
       {
-        Errors.fatal("No effect installed: " + _fuir.clazzAsStringNew(ecl));
+        Errors.fatal("No effect installed: " + _fuir.clazzAsStringHuman(ecl));
       }
 
     if (POSTCONDITIONS) ensure
@@ -569,7 +569,7 @@ public class Executor extends ProcessExpression<Value, Object>
   {
     if (frame != -1)
       {
-        sb.append(_fuir.clazzAsStringNew(frame)).append(": ");
+        sb.append(_fuir.clazzAsStringHuman(frame)).append(": ");
       }
     sb.append(_fuir.sitePos(callSite).show()).append("\n");
   }

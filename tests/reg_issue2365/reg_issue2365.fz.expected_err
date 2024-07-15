@@ -3,7 +3,7 @@
   for _ := for j in 0.. else _ := j
 ----------------------------------^
 Feature not found: 'j' (no arguments)
-Target feature: 'reg_issue2365.loop.loop'
+Target feature: 'reg_issue2365.loop.else'
 In call: 'j'
 
 one error.

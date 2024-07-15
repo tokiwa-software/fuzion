@@ -1,12 +1,12 @@
 
 error 1: FATAL FAULT `precondition`: false
 Call stack:
-fuzion.sys.fatal_fault
-fuzion.type.runtime.type.fault.type.install_default.fun.call
-fuzion.runtime.fault.cause
-fuzion.type.runtime.type.pre_fault.type.install_default.fun.call
-fuzion.runtime.pre_fault.cause
-fuzion.runtime.precondition_fault
+fuzion.sys.fatal_fault#2
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1
+fuzion.runtime.fault.cause#1
+fuzion.type.runtime.type.pre_fault.type.install_default.λ.call#1
+fuzion.runtime.pre_fault.cause#1
+fuzion.runtime.precondition_fault#1
 pre issue270
 precall issue270
 

@@ -1,16 +1,16 @@
 
---CURDIR--/test_local_mutate_neg.fz:50:14: error 1: Failed to verify that effect 'test_local_mutate_neg.test_sum.sum.m' is installed in current environment.
+--CURDIR--/test_local_mutate_neg.fz:50:14: error 1: Failed to verify that effect 'test_local_mutate_neg.test_sum.sum#1.m' is installed in current environment.
         s := m.env.new 0
 -------------^^^^^
 Callchain that lead to this point:
 
-effect environment '--empty--' for call to 'test_local_mutate_neg.test_sum.sum.count' at --CURDIR--/test_local_mutate_neg.fz:80:11:
+effect environment '--empty--' for call to 'test_local_mutate_neg.test_sum.sum#1.count' at --CURDIR--/test_local_mutate_neg.fz:79:11:
       say count    # *** will cause compile-time an error, requires m to be installed
 ----------^^^^^
-effect environment '--empty--' for call to 'test_local_mutate_neg.test_sum.sum' at --CURDIR--/test_local_mutate_neg.fz:115:5:
+effect environment '--empty--' for call to 'test_local_mutate_neg.test_sum.sum#1' at --CURDIR--/test_local_mutate_neg.fz:114:5:
     sum l0
 ----^^^
-effect environment '--empty--' for call to 'test_local_mutate_neg.test_sum' at --CURDIR--/test_local_mutate_neg.fz:117:3:
+effect environment '--empty--' for call to 'test_local_mutate_neg.test_sum' at --CURDIR--/test_local_mutate_neg.fz:116:3:
   test_sum
 --^^^^^^^^
 effect environment '--empty--' for call to 'test_local_mutate_neg'
