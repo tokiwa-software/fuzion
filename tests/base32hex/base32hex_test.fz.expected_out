@@ -1,0 +1,24 @@
+Testing base32hex encoding...
+RFC 4648 test vectors are encoded correctly
+Additional test vectors are encoded correctly
+
+
+Testing base32hex decoding...
+RFC 4648 test vectors are decoded correctly
+Additional test vectors are decoded correctly
+
+
+Test error messages when decoding broken base32hex...
+
+CPN
+MU===: error: line breaks are not allowed within encoded data, as required by RFC464, found LF at position 3
+CPNMU==: error: length of input data is not multiple of 8, as required by RFC4648
+WWWWWWWW: error: invalid base32hex input at byte position 0, decoding to unicode character 'W'
+ZZZZZZZZ: error: invalid base32hex input at byte position 0, decoding to unicode character 'Z'
+CPN=====: error: padding character '=' not allowed within the input data, only at the very end, as required by RFC464 (padding length of 2 or 5 can never occur)
+CPN=MU==: error: padding character '=' not allowed within the input data, only at the very end, as required by RFC464 (padding length of 2 or 5 can never occur)
+CPNMU====: error: length of input data is not multiple of 8, as required by RFC4648
+CPNM U===: error: invalid base32hex input at byte position 4, decoding to unicode character ' '
+CP;NMU===: error: invalid base32hex input at byte position 2, decoding to unicode character ';'
+CPNM🌍U==: error: invalid base32hex input at byte position 4, decoding to unicode character '🌍'
+
