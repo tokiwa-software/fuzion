@@ -127,10 +127,10 @@ public base64 is
         n.as_u32 + 4
 
       else if n = char_62_ascii   # case +
-        u32 62
+        62
 
       else                        # case /
-        u32 63
+        63
 
     for
       res list u8 := nil, res ++ [b0, b1, b2] # result: contains the decoded data at the end
