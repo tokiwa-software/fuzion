@@ -83,7 +83,7 @@ public fallible(ERROR type, h ERROR->void) : effect effect_mode.plain is
     # dynamic target` for C backend), need to analyse and fix this.
     #
     public catch_broken(code_catch ERROR->T) =>
-      # use local mutate to store msg passed to `cause`
+      # use local mutate to store error passed to `cause`
       lm : mutate.
 
       lm.go ()->
@@ -118,7 +118,7 @@ handle(ERROR type, F type : fallible ERROR, T type) is
       (F.new e->
           m <- e
           F.env.return
-      ).run try (()->catch m.get.get)
+      ).run eff.handle.this.try (()->catch m.get.get)
 
 
   # NYI: BUG: #3159 The following code is a variant using the state effect instead of mutate. This

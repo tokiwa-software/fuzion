@@ -1,0 +1,86 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test test_fallible
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# Tests for fallible features such as `try`, `panic` and user-defined versions of `fallible`.
+#
+test_fallible =>
+
+  a is
+
+  # success and failure using `try a`:
+
+  r0 := try a String (()->"ok")
+  r1 := try a String (()->(try a).env.raise (error "r1 fail"))
+  say "0: expecting ok,    got $r0"
+  say "1: expecting error, got $r1"
+
+  # success and failure using our own try feature `try_unit`:
+
+  r2 := try_unit.on (()->"ok")
+  r3 := try_unit.on (()->(try_unit).env.raise (error "r3 fail"))
+  say "2: expecting ok,    got $r2"
+  say "3: expecting error, got $r3"
+
+  # success and failure using our own try feature `try_unit`:
+
+  r4 := try_unit.try String (()->"ok")                                    .catch m->"*** fail $m ***"
+  r5 := try_unit.try String (()->(try_unit).env.raise (error "r5a fail")) .catch m->"*** fail $m ***"
+  say "4: expecting ok,    got $r4"
+  say "5: expecting error, got $r5"
+
+  # success and failure using `try_or_panic a`:
+
+  r6 := panic.try (()->try_or_panic a String (()->"ok"))                                .catch m->"*** panic $m ***"
+  r7 := panic.try (()->try_or_panic a String (()->(try a).env.raise (error "r7 fail"))) .catch m->"*** panic $m ***"
+  say "6: expecting ok,    got $r6"
+  say "7: expecting error, got $r7"
+
+  r8 := panic.try String  ()->"ok"             .catch m->"panic $m"
+  r9 := panic.try String (()->panic "r9 fail") .catch m->"panic $m"
+  say "8: expecting ok,    got $r8"
+  say "9: expecting error, got $r9"
+
+  panic
+    .try unit ()->
+      panic "expected failure"
+    .catch m->
+      say "10: expetcing fault, got fault: $m"
+
+  fuzion.runtime.fault
+    .try ()->
+      if 3 < 4 then panic "expected failure"
+    .catch m->
+      say "11: expetcing fault, got fault: {m.0} {m.1}"
+
+# run the tests:
+test_fallible
+
+# our own child for `try` effect.
+#
+# Note that we have to declare this outside of `test_fallible` since creating an
+# instance via `test_fallible.try_unit h` would result in an endless recursion.
+#
+try_unit(h error->void) : try unit h unit unit is
+  public redef fixed type.new(h error->void) => try_unit h

@@ -17,40 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature panic
+#  Source code of Fuzion test Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# panic -- effect that terminates a computation in panic
-#
-public panic (
-  # the handler this effect uses to panic
-  p String->void,
-  _ unit
-  ) : eff.fallible (String) p
-is
-
-  type.install_default =>
-    (panic (msg->fuzion.runtime.fault.cause ("*** panic ***", msg)) unit).default
-
-
-  # type feature that to create an instance of `panic` with the given error handler.
-  #
-  public redef fixed type.new(h String->void)
-  => panic h unit
-
-
-# panic with no argument returns panic.env, the currently installed
-# panic handler.
-#
-public panic =>
-  panic.install_default
-  panic.env
-
-
-# panic with a msg argument calls panic.cause msg, i.e., it uses the
-# current panic effect to panic with the given message.
-#
-public panic(msg String) => panic.cause msg
+override NAME = test_fallible
+include ../simple.mk
