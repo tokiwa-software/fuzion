@@ -21,12 +21,12 @@
 #
 # -----------------------------------------------------------------------
 
-# Test choice type used as actual type parameter without matching the contstraing
+# Test choice type used as actual type parameter without matching the contstraint
 #
 reg_issue3362 is
 
 
-  # original example form issue #3362
+  # original example from issue #3362
   #
   base32_test is
   my_c : choice String (array u8) is
@@ -46,7 +46,7 @@ reg_issue3362 is
         match dummy_decode code.utf8.as_array
           arr array u8 =>
             plain_actual := String.type.from_bytes arr
-            if plain_actual != plain_expected     # 1. should flag an error: `choice String (array u8)` is not assignable to property.equatable
+            if plain_actual != plain_expected     # 1. should flag an error: `choice String (array u8)` is not assignable to `property.equatable`
               error "decoding $code produced '$plain_actual' but should have been '$plain_expected'"
             else
               outcome "ok"
@@ -62,4 +62,4 @@ reg_issue3362 is
   #
   c : choice i32 unit is
   a c := 0
-  _ := 0 = a   # 2. should flag an error: `choice i32 unit` is not assignable to property.equatable
+  _ := 0 = a   # 2. should flag an error: `choice i32 unit` is not assignable to `property.equatable`
