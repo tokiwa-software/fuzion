@@ -52,7 +52,7 @@ is
   # return next random number of type i64 in the range 0..max-1
   #
   public next_i64(max i64)
-  pre max ≥ i64 0
+  pre max ≥ 0
   => (next.get max.as_u64).as_i64
 
 

@@ -129,7 +129,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public parse_u32_octal  => parse_u32 8
   public parse_u32_hex    => parse_u32 16
   public parse_u32 (base u32) outcome u32
-    pre u32 1 < base ≤ (u32 36)
+    pre u32 1 < base ≤ 36
   =>
     parse_integer u32 base
 
@@ -141,7 +141,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public parse_i64_octal  => parse_i64 8
   public parse_i64_hex    => parse_i64 16
   public parse_i64 (base i64) outcome i64
-    pre i64 1 < base ≤ (i64 36)
+    pre i64 1 < base ≤ 36
   =>
     parse_integer i64 base
 
@@ -153,7 +153,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public parse_u64_octal  => parse_u64 8
   public parse_u64_hex    => parse_u64 16
   public parse_u64 (base u64) outcome u64
-    pre u64 1 < base ≤ (u64 36)
+    pre u64 1 < base ≤ 36
   =>
     parse_integer u64 base
 
@@ -349,7 +349,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
                                     ((b4.as_u32 & 0x3f)      )   )
                             if res ∉ p.utf8_encoded_in_four_bytes
                               e4 "codepoint $res uses overlong 4-byte encoding."
-                            else if res > (u32 0x10ffff)
+                            else if res > 0x10ffff
                               e4 "codepoint $res is outside of the allowed range for codepoints 0x000000..0x10ffff."
                             else
                               ret (codepoint res) c4.tail
