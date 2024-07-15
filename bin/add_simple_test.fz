@@ -65,7 +65,7 @@ add_simple_test is
 
         test_body(name String) =>
           """
-          {name} is
+          {name} =>
 
           """
 
