@@ -288,16 +288,13 @@ public class DFA extends ANY
         }
       var res = resf[0];
       if (!found[0])
-        { // NYI: proper error reporting
-          var detail = new StringBuilder("Considered targets: ");
-          for (var ccii = 0; ccii < ccs.length; ccii += 2)
-            {
-              detail.append(_fuir.clazzAsStringNew(ccs[ccii])).append(ccii+2 < ccs.length ? ", " : "\n");
-            }
-          var ignore = _call.showWhy(detail);
-          Errors.error(_fuir.sitePos(s),
-                       "NYI: in "+_fuir.siteAsString(s)+" no targets for "+_fuir.codeAtAsString(s)+" target "+tvalue,
-                       detail.toString());
+        {
+          var instantiatedAt = _calls.keySet().stream()
+            .filter(c -> c._cc == tc && c._site != NO_SITE)
+            .map(c -> c._site)
+            .findAny()
+            .orElse(NO_SITE);
+          _fuir.recordAbstractMissing(tc, cc0, instantiatedAt);
         }
       else if (res != null &&
                tvalue instanceof EmbeddedValue &&
@@ -1019,6 +1016,7 @@ public class DFA extends ANY
             Context._MAIN_ENTRY_POINT_);
 
     findFixPoint();
+    _fuir.reportAbstractMissing();
     Errors.showAndExit();
   }
 

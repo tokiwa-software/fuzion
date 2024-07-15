@@ -1,0 +1,112 @@
+
+--CURDIR--/reg_issue3359.fz:76:3: error 1: Used abstract features 'reg_issue3359.i.q', 'reg_issue3359.i.r' are not implemented by 'reg_issue3359.i'
+  i is
+--^
+Feature 'reg_issue3359.i' instantiated at --CURDIR--/reg_issue3359.fz:103:5:
+  u i
+----^
+inherits or declares abstract feature 'reg_issue3359.i.q' declared at --CURDIR--/reg_issue3359.fz:77:5:
+    q unit => abstract
+----^
+which is called at --CURDIR--/reg_issue3359.fz:96:41:
+    if      envir.args.count = 0 then v.q
+----------------------------------------^
+and abstract feature 'reg_issue3359.i.r' declared at --CURDIR--/reg_issue3359.fz:78:5:
+    r unit => abstract
+----^
+which is called at --CURDIR--/reg_issue3359.fz:97:41:
+    else if envir.args.count = 1 then v.r
+----------------------------------------^
+without providing an implementation
+
+
+--CURDIR--/reg_issue3359.fz:84:3: error 2: Used abstract features 'reg_issue3359.i.q', 'reg_issue3359.i.r' are not implemented by 'reg_issue3359.j'
+  j : i is
+--^
+Feature 'reg_issue3359.j' instantiated at --CURDIR--/reg_issue3359.fz:106:5:
+  u j
+----^
+inherits or declares abstract feature 'reg_issue3359.i.q' declared at --CURDIR--/reg_issue3359.fz:77:5:
+    q unit => abstract
+----^
+which is called at --CURDIR--/reg_issue3359.fz:96:41:
+    if      envir.args.count = 0 then v.q
+----------------------------------------^
+and abstract feature 'reg_issue3359.i.r' declared at --CURDIR--/reg_issue3359.fz:78:5:
+    r unit => abstract
+----^
+which is called at --CURDIR--/reg_issue3359.fz:97:41:
+    else if envir.args.count = 1 then v.r
+----------------------------------------^
+without providing an implementation
+
+
+--CURDIR--/reg_issue3359.fz:89:3: error 3: Used abstract feature 'reg_issue3359.i.r' is not implemented by 'reg_issue3359.k'
+  k : j is
+--^
+Feature 'reg_issue3359.k' instantiated at --CURDIR--/reg_issue3359.fz:109:5:
+  u k
+----^
+inherits or declares abstract feature 'reg_issue3359.i.r' declared at --CURDIR--/reg_issue3359.fz:78:5:
+    r unit => abstract
+----^
+which is called at --CURDIR--/reg_issue3359.fz:97:41:
+    else if envir.args.count = 1 then v.r
+----------------------------------------^
+without providing an implementation
+
+
+--CURDIR--/reg_issue3359.fz:34:3: error 4: Used abstract features 'reg_issue3359.f.type.n', 'reg_issue3359.f.type.o' are not implemented by 'reg_issue3359.f.type'
+  f is
+--^
+Feature 'reg_issue3359.f.type' instantiated at <source position not available>:
+
+inherits or declares abstract feature 'reg_issue3359.f.type.n' declared at --CURDIR--/reg_issue3359.fz:35:10:
+    type.n unit => abstract
+---------^
+which is called at --CURDIR--/reg_issue3359.fz:54:41:
+    if      envir.args.count = 0 then T.n
+----------------------------------------^
+and abstract feature 'reg_issue3359.f.type.o' declared at --CURDIR--/reg_issue3359.fz:36:10:
+    type.o unit => abstract
+---------^
+which is called at --CURDIR--/reg_issue3359.fz:55:41:
+    else if envir.args.count = 1 then T.o
+----------------------------------------^
+without providing an implementation
+
+
+--CURDIR--/reg_issue3359.fz:42:3: error 5: Used abstract features 'reg_issue3359.f.type.n', 'reg_issue3359.f.type.o' are not implemented by 'reg_issue3359.g.type'
+  g : f is
+--^
+Feature 'reg_issue3359.g.type' instantiated at <source position not available>:
+
+inherits or declares abstract feature 'reg_issue3359.f.type.n' declared at --CURDIR--/reg_issue3359.fz:35:10:
+    type.n unit => abstract
+---------^
+which is called at --CURDIR--/reg_issue3359.fz:54:41:
+    if      envir.args.count = 0 then T.n
+----------------------------------------^
+and abstract feature 'reg_issue3359.f.type.o' declared at --CURDIR--/reg_issue3359.fz:36:10:
+    type.o unit => abstract
+---------^
+which is called at --CURDIR--/reg_issue3359.fz:55:41:
+    else if envir.args.count = 1 then T.o
+----------------------------------------^
+without providing an implementation
+
+
+--CURDIR--/reg_issue3359.fz:47:3: error 6: Used abstract feature 'reg_issue3359.f.type.o' is not implemented by 'reg_issue3359.h.type'
+  h : g is
+--^
+Feature 'reg_issue3359.h.type' instantiated at <source position not available>:
+
+inherits or declares abstract feature 'reg_issue3359.f.type.o' declared at --CURDIR--/reg_issue3359.fz:36:10:
+    type.o unit => abstract
+---------^
+which is called at --CURDIR--/reg_issue3359.fz:55:41:
+    else if envir.args.count = 1 then T.o
+----------------------------------------^
+without providing an implementation
+
+6 errors.
