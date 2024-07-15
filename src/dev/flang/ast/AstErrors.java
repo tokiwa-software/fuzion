@@ -2144,6 +2144,12 @@ public class AstErrors extends ANY
        "To solve this, use the result, explicitly ignore the result " + st("_ := <expression>") + " or change " + s(e.type().feature())
               + " from constructor to routine by replacing" + skw("is") + " by " + skw("=>") + ".");
   }
+  public static void redefiningFieldsIsForbidden(AbstractFeature existing, AbstractFeature f)
+  {
+    error(f.pos(),
+          "Redefinition of non-argument fields is forbidden.",
+          "To solve this, you may want to consider converting the redefined field into a routine by replacing" + skw(":=") + " by " + skw("=>") + ".");
+  }
 
 
 }

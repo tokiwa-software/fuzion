@@ -915,6 +915,10 @@ A post-condition of a feature that redefines one or several inherited features m
               }
             if (visibleFor(existing, f.outer()))
               {
+                if (existing.isNonArgumentField())
+                  {
+                    AstErrors.redefiningFieldsIsForbidden(existing, f);
+                  }
                 f.redefines().add(existing);
                 if (f instanceof Feature ff)
                   {

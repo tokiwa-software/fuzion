@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue3108.fz:34:11: error 1: Redefinition of non-argument fields is forbidden.
+    redef y := 4 # should flag an error: redefining field forbidden
+----------^
+To solve this, you may want to consider converting the redefined field into a routine by replacing':=' by '=>'.
+
+one error.
