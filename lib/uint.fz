@@ -31,7 +31,7 @@ is
   # the actually relevant data of this uint.
   # irrelevant zeros at start are dropped.
   # zero is represented by the empty list.
-  data := b.drop_while (x -> x = u32 0)
+  data := b.drop_while x->x=0
 
   # bitwise operations
 
