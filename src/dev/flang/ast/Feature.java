@@ -2058,25 +2058,6 @@ A ((Choice)) declaration must not contain a result type.
 
 
   /**
-   * Is this feature an argument of its outer feature?
-   */
-  public boolean isArgument()
-  {
-    if (_outer != null)
-      {
-        for (var a : _outer.arguments())
-          {
-            if (this == a)
-              {
-                return true;
-              }
-          }
-      }
-    return false;
-  }
-
-
-  /**
    * During type resolution, add a type parameter created for a free type like
    * `T` in `f(x T) is ...`.
    *

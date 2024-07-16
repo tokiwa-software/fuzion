@@ -1854,6 +1854,34 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
+   * Is this feature an argument of its outer feature?
+   */
+  public boolean isArgument()
+  {
+    if (outer() != null)
+      {
+        for (var a : outer().arguments())
+          {
+            if (this == a)
+              {
+                return true;
+              }
+          }
+      }
+    return false;
+  }
+
+
+  /**
+   * Is this feature a field that is not an argument?
+   */
+  public boolean isNonArgumentField()
+  {
+    return isField() && !isArgument();
+  }
+
+
+  /**
    * this feature as a human readable string
    */
   public String toString()

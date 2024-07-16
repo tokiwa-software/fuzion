@@ -915,6 +915,14 @@ A post-condition of a feature that redefines one or several inherited features m
               }
             if (visibleFor(existing, f.outer()))
               {
+                if (existing.isNonArgumentField() ||
+                    // @fridis writes: "If we redefine an argument field by a field that is not an argument field,
+                    //                  we run into strange situations where the same field is initialized twice,
+                    //                  once via existing in the inheritance call and once va f by the field declaration."
+                    existing.isArgument() && !f.isArgument())
+                  {
+                    AstErrors.redefiningFieldsIsForbidden(existing, f);
+                  }
                 f.redefines().add(existing);
                 if (f instanceof Feature ff)
                   {
