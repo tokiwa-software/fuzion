@@ -66,13 +66,13 @@ test_fallible =>
     .try unit ()->
       panic "expected failure"
     .catch m->
-      say "10: expetcing fault, got fault: $m"
+      say "10: expecting fault, got fault: $m"
 
   fuzion.runtime.fault
     .try ()->
       if 3 < 4 then panic "expected failure"
     .catch m->
-      say "11: expetcing fault, got fault: {m.0} {m.1}"
+      say "11: expecting fault, got fault: {m.0} {m.1}"
 
 # run the tests:
 test_fallible

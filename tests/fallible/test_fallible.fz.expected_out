@@ -8,5 +8,5 @@
 7: expecting error, got *** panic error: r7 fail ***
 8: expecting ok,    got ok
 9: expecting error, got panic r9 fail
-10: expetcing fault, got fault: expected failure
-11: expetcing fault, got fault: *** panic *** expected failure
+10: expecting fault, got fault: expected failure
+11: expecting fault, got fault: *** panic *** expected failure
