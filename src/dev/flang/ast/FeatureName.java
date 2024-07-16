@@ -263,9 +263,9 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
     var n = baseName();
     return
       n.startsWith(FuzionConstants.UNDERSCORE_PREFIX)                  ? "_"          :
-      n.startsWith(FuzionConstants.LAMBDA_PREFIX)                      ? "fun"        :
+      n.startsWith(FuzionConstants.LAMBDA_PREFIX)                      ? "λ"        :
       n.startsWith(FuzionConstants.ANONYMOUS_FEATURE_PREFIX)           ? "anonymous"  :
-      n.startsWith(FuzionConstants.REC_LOOP_PREFIX)                    ? "loop"       :
+      n.startsWith(FuzionConstants.REC_LOOP_PREFIX)                    ? (n.contains("else") ? "else" : "loop") :
       n.startsWith(FuzionConstants.EXPRESSION_RESULT_PREFIX) ||
       n.startsWith(FuzionConstants.INTERNAL_RESULT_NAME)               ? "result"     :
       n.startsWith(FuzionConstants.PREBOOLCONDITION_FEATURE_PREFIX   ) ? n.replaceFirst(FuzionConstants.PREBOOLCONDITION_FEATURE_PREFIX    + "[0-9]+_", "pre "    ) :

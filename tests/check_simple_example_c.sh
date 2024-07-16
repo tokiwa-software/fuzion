@@ -45,7 +45,7 @@ RC=0
 if [ -f "$2".skip ]; then
     echo "SKIP $2"
 else
-    echo -n "RUN $2 "
+    printf 'RUN %s ' "$2"
     unset OPT
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=.*$"     && export OPT=-Dfuzion.debugLevel=10
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=9( .*)$" && export OPT=-Dfuzion.debugLevel=9
@@ -89,14 +89,10 @@ else
 
     # NYI: workaround for #2586
     if [ "${OS-default}" = "Windows_NT" ]; then
-        iconv --unicode-subst="?" -f utf-8 -t ascii "$experr" > tmp_conv.txt
-        cp tmp_conv.txt "$experr"
-        iconv --unicode-subst="?" -f utf-8 -t ascii "$expout" > tmp_conv.txt
-        cp tmp_conv.txt "$expout"
-        iconv --unicode-subst="?" -f utf-8 -t ascii tmp_err.txt > tmp_conv.txt
-        cp tmp_conv.txt tmp_err.txt
-        iconv --unicode-subst="?" -f utf-8 -t ascii tmp_out.txt > tmp_conv.txt
-        cp tmp_conv.txt tmp_out.txt
+        iconv --unicode-subst="?" -f utf-8 -t ascii "$experr" > tmp_conv.txt || false && cp tmp_conv.txt "$experr"
+        iconv --unicode-subst="?" -f utf-8 -t ascii "$expout" > tmp_conv.txt || false && cp tmp_conv.txt "$expout"
+        iconv --unicode-subst="?" -f utf-8 -t ascii tmp_err.txt > tmp_conv.txt || false && cp tmp_conv.txt tmp_err.txt
+        iconv --unicode-subst="?" -f utf-8 -t ascii tmp_out.txt > tmp_conv.txt || false && cp tmp_conv.txt tmp_out.txt
     fi
 
     # show diff in stdout unless an unexpected output occurred to stderr

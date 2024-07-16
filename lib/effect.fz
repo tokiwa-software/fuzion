@@ -64,6 +64,7 @@ is
   # replace effect in the current context by this and abort current execution
   public abort void
   pre
+    safety: effect.is_installed effect.this
     safety: abortable
   =>
     abort0

@@ -528,7 +528,7 @@ public class FUIR extends IR
     var cc = clazz(cl);
     var res = cc.feature().featureName().baseName();
     res = res + cc._type.generics()
-      .toString(" ", " ", "", t -> t.asStringWrapped());
+      .toString(" ", " ", "", t -> t.asStringWrapped(false));
     return res;
   }
 
@@ -786,10 +786,8 @@ public class FUIR extends IR
     return cc == c.getIfCreated();
   }
 
-
   /**
-   * String representation of clazz, for debugging only since String might be
-   * ambiguous.
+   * String representation of clazz, for creation of unique type names.
    *
    * @param cl a clazz id.
    */
@@ -797,22 +795,19 @@ public class FUIR extends IR
   {
     return cl == -1
       ? "-- no clazz --"
-      : clazz(cl).toString();
+      : clazz(cl)._type.asString();
   }
 
-
   /**
-   * String representation of clazz, for debugging and creation of unique type names
-   *
-   * NYI: This should eventually replace clazzAsString.
+   * human readable String representation of clazz, for stack traces and debugging.
    *
    * @param cl a clazz id.
    */
-  public String clazzAsStringNew(int cl)
+  public String clazzAsStringHuman(int cl)
   {
     return cl == -1
       ? "-- no clazz --"
-      : clazz(cl)._type.asString();
+      : clazz(cl)._type.asString(true);
   }
 
 

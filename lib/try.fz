@@ -25,43 +25,60 @@
 
 # try -- simple exception effect
 #
-# try provides an operation 'raise' that immediately stops execution and
+# try provides an operation 'cause' that immediately stops execution and
 # returns an 'error' wrapped in an 'outcome'.
 #
-public try (public T type) : effect effect_mode.plain
+public try (# type parameter used only to distinguish different instances of
+            # `try`, this is otherwise ignores. This permits using, e.g.,
+            # `try reader` and `try writer` and distingish the errors raisde
+            # by the reader from those raised by the writer.
+            #
+            public T type,
+
+            h error->void,
+            _, _ unit
+            ) : eff.fallible error h
 is
 
-  # mutuable field to receive the error in case raise is called
+  # type feature that to create an instance of `try` with the given error handler.
   #
-  err option error := nil
+  public redef fixed type.new(h error->void)
+  => universe.try T h unit unit
+
 
   # install this effect and execute 'f'. Wrap the result of 'f' into an
   # 'outcome' if 'f' returns normally, otherwise if 'f' is aborted early
   # via a call to 'raise' wrap the 'error' passed to 'raise' into the
   # resulting 'outcome'.
   #
-  public on(R type, f ()->R) outcome R =>
-    run (outcome R) (()->outcome f()) ()->err.get
+  public type.on(R type, f ()->R) outcome R =>
+    try.this.type.try (outcome R) ()->
+        f()
+      .catch e->
+        e
 
   # terminate immediately with the given error wrapped in 'option'.
   #
-  public raise(e error) =>
-    set err := e
-    abort
+  public raise(e error) => cause e
 
 
-# convenience routine to create a new instance of 'try' and run 'f' in
-# it.
+# convenience routine to create a new instance of 'try T' and run 'f' in
+# it.  The result will be an `outcome R` that, in case of success, contains
+# the result of `f`, or, in case of `(try T).env.raise`, contains the error.
 #
-public try(T, R type, f ()->R) =>
+public try(T type,
+           R type,
+           f ()->R) =>
   (try T).on f
 
 
-# convenience routine to create a new instance of 'try' and run 'f' in
+# convenience routine to create a new instance of 'try T' and run 'f' in
 # it. Return the result of 'f' directly or panic in case 'f' calls
-# 'try.env.raise'.
+# '(try T).env.raise'.
 #
-public try_or_panic(T, R type, f ()->R) outcome R =>
+public try_or_panic(T type,
+                    R type,
+                    f ()->R) R =>
   match (try T).on f
     e error => panic $e
     r R => r

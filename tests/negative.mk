@@ -29,23 +29,23 @@
 #  FUZION -- the fz command
 
 FUZION_OPTIONS ?=
-FUZION = ../../bin/fz -XmaxErrors=-1 $(FUZION_OPTIONS)
+FUZION = FUZION_DISABLE_ANSI_ESCAPES=true ../../bin/fz -XmaxErrors=-1 $(FUZION_OPTIONS)
 EXPECTED_ERRORS = `cat *.fz | grep "should.flag.an.error"  | sed "s ^.*//  g"| sort -n | uniq | wc -l | tr -d ' '`
 
 all: jvm c int
 
 int:
-	$(FUZION) -interpreter $(NAME) 2>err.txt || echo -n
+	$(FUZION) -interpreter $(NAME) 2>err.txt || true
 	cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g"| sort -n | uniq | wc -l | tr -d ' ' | grep ^$(EXPECTED_ERRORS)$$ && echo "test passed." || exit 1
 
 jvm:
-	$(FUZION) -jvm $(NAME) 2>err.txt || echo -n
+	$(FUZION) -jvm $(NAME) 2>err.txt || true
 	cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g"| sort -n | uniq | wc -l | tr -d ' ' | grep ^$(EXPECTED_ERRORS)$$ && echo "test passed." || exit 1
 
 c:
-	($(FUZION) -c -o=testbin $(NAME) && ./testbin) 2>err.txt || echo -n
+	($(FUZION) -c -o=testbin $(NAME) && ./testbin) 2>err.txt || true
 	cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g"| sort -n | uniq | wc -l | tr -d ' ' | grep ^$(EXPECTED_ERRORS)$$ && echo "test passed." || exit 1
 
 show:
-	echo -n "Expected $(EXPECTED_ERRORS) errors, found " && cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g"| sort -n | uniq | wc -l | tr -d ' '
+	printf "Expected $(EXPECTED_ERRORS) errors, found " && cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g"| sort -n | uniq | wc -l | tr -d ' '
 	cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g"| sort -n | uniq

@@ -45,7 +45,7 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
   public fixed redef underflow_on_mul(other u128) => false
 
   # neg, add, sub, mul with wrap-around semantics
-  public fixed redef prefix -°             u128 => carry u64 := { if (lo > u64 0         ) 1 else 0 }; u128 (u64 0 -° hi -° carry) (u64 0 -° lo)
+  public fixed redef prefix -°             u128 => carry u64 := { if (lo > 0             ) 1 else 0 }; u128 (u64 0 -° hi -° carry) (u64 0 -° lo)
   public fixed redef infix +° (other u128) u128 => carry u64 := { if (lo +° other.lo < lo) 1 else 0 }; u128 (hi +° other.hi +° carry) (lo +° other.lo)
   public fixed redef infix -° (other u128) u128 => carry u64 := { if (lo < other.lo      ) 1 else 0 }; u128 (hi -° other.hi -° carry) (lo -° other.lo)
   public fixed redef infix *° (other u128) u128 =>

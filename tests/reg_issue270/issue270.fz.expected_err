@@ -1,13 +1,13 @@
 
 error 1: FATAL FAULT `precondition`: false
 Call stack:
-fuzion.type.runtime.type.fault.type.install_default#0.#fun264.call#1: $MODULE/fuzion/runtime/fault.fz:38:7:
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1: $MODULE/fuzion/runtime/fault.fz:38:7:
       fuzion.sys.fatal_fault kind msg
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fuzion.runtime.fault.cause#1: $MODULE/eff/fallible.fz:35:6:
   => h e
 -----^
-fuzion.type.runtime.type.pre_fault.type.install_default#0.#fun266.call#1: $MODULE/fuzion/runtime/pre_fault.fz:39:7:
+fuzion.type.runtime.type.pre_fault.type.install_default.λ.call#1: $MODULE/fuzion/runtime/pre_fault.fz:39:7:
       fuzion.runtime.fault.cause ("precondition", msg)).default
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fuzion.runtime.pre_fault.cause#1: $MODULE/eff/fallible.fz:35:6:
@@ -16,10 +16,10 @@ fuzion.runtime.pre_fault.cause#1: $MODULE/eff/fallible.fz:35:6:
 fuzion.runtime.precondition_fault#1: $MODULE/fuzion/runtime/pre_fault.fz:58:42:
 public precondition_fault(msg String) => pre_fault.cause msg
 -----------------------------------------^^^^^^^^^^^^^^^^^^^
-#pre1_issue270#0: --CURDIR--/issue270.fz:25:7:
+pre issue270: --CURDIR--/issue270.fz:25:7:
   pre false # 1. should flag an error: Precondition does not hold
 ------^^^^^
-#preandcall2_issue270#0: --CURDIR--/issue270.fz:25:3:
+precall issue270: --CURDIR--/issue270.fz:25:3:
   pre false # 1. should flag an error: Precondition does not hold
 --^^^^^^^^^
 

@@ -475,7 +475,7 @@ is
       match m.data
         cn container_node =>
           (flag, pos) := flagpos hash lev cn.bmp
-          if (cn.bmp & flag) != u32 0
+          if (cn.bmp & flag) != 0
             sub := cn[pos.as_i32]
             match sub
               inode Indirection_Node =>

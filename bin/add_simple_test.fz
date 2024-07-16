@@ -57,15 +57,15 @@ add_simple_test is
 
         """
 
-        makefile_body(test String) =>
+        makefile_body(name String) =>
           """
-          override NAME = {test}
+          override NAME = {name}
           include ../simple.mk
           """
 
-        test_body(test String) =>
+        test_body(name String) =>
           """
-          {test} is
+          {name} =>
 
           """
 

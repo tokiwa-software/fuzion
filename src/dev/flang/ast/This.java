@@ -242,7 +242,7 @@ public class This extends ExprWithPos
          */
         var cur = _cur == null ? outer : _cur;
         getOuter = new Current(pos(), cur);
-        while (f != Types.f_ERROR && cur != f)
+        while (f != Types.f_ERROR && cur != f && !cur.isUniverse())
           {
             var or = cur.outerRef();
             if (CHECKS) check

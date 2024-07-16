@@ -33,12 +33,12 @@ public i64(public val i64) : num.wrap_around, has_interval is
   redef wrapped_on_neg => is_min
 
   # would addition + other cause an overflow or underflow?
-  public fixed redef overflow_on_add (other i64) => val > i64 0 && i64.max -° val < other
-  public fixed redef underflow_on_add(other i64) => val < i64 0 && i64.min -° val > other
+  public fixed redef overflow_on_add (other i64) => val > 0 && i64.max -° val < other
+  public fixed redef underflow_on_add(other i64) => val < 0 && i64.min -° val > other
 
   # would subtraction - other cause an overflow or underflow?
-  public fixed redef overflow_on_sub (other i64) => val > i64 0 && val -° i64.max > other
-  public fixed redef underflow_on_sub(other i64) => val < i64 0 && val -° i64.min < other
+  public fixed redef overflow_on_sub (other i64) => val > 0 && val -° i64.max > other
+  public fixed redef underflow_on_sub(other i64) => val < 0 && val -° i64.min < other
 
   # would multiplication * other cause an overflow or underflow?
   public fixed redef overflow_on_mul (other i64) => if sign *° other.sign ≤ 0 false else (val *° other / other) != val

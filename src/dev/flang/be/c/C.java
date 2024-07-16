@@ -531,6 +531,11 @@ public class C extends ANY
      */
     public Pair<CExpr, CStmnt> env(int s, int ecl)
     {
+      // NYI: UNDER DEVELOPMENT: can this logic be moved to abstract interpreter?
+      if (!_fuir.clazzNeedsCode(ecl))
+        {
+          return new Pair<>(CExpr.UNIT, CStmnt.EMPTY);
+        }
       var res = CNames.fzThreadEffectsEnvironment.deref().field(_names.env(ecl));
       var evi = CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl));
       var o = CStmnt.iff(evi.not(),
@@ -1608,7 +1613,7 @@ public class C extends ANY
                   !_fuir.lifeTime(cl).maySurviveCall()                       // and current instance did not escape
                 )
                 {
-                  say("Escapes, no tail call opt possible: " + _fuir.clazzAsStringNew(cl) + ", lifetime: " + _fuir.lifeTime(cl).name());
+                  say("Escapes, no tail call opt possible: " + _fuir.clazzAsString(cl) + ", lifetime: " + _fuir.lifeTime(cl).name());
                 }
 
               if (cc == cl                                               &&  // calling myself
@@ -2080,7 +2085,7 @@ public class C extends ANY
       case c_u64 :
       case c_u8 :
       default:
-        throw new Error("misuse of Java intrinsic?" + _fuir.clazzAsStringNew(cl));
+        throw new Error("misuse of Java intrinsic?" + _fuir.clazzAsString(cl));
       }
   }
 
