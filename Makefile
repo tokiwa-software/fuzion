@@ -1102,7 +1102,7 @@ REF_MANUAL_ATTRIBUTES = \
 
 $(BUILD_DIR)/generated/doc/unicode_version.adoc:
 	mkdir -p $(@D)
-	cd $(FZ_SRC) && git log lib/character_encodings/unicode/data.fz  | grep -E "^Date:" | head | sed "s-Date:   -:UNICODE_VERSION: -g" | head -n1 > $(realpath $(@D))/unicode_version.adoc
+	cd $(FZ_SRC) && git log lib/encodings/unicode/data.fz  | grep -E "^Date:" | head | sed "s-Date:   -:UNICODE_VERSION: -g" | head -n1 > $(realpath $(@D))/unicode_version.adoc
 
 $(BUILD_DIR)/generated/doc/codepoints_white_space.adoc: $(CLASS_FILES_PARSER)
 	mkdir -p $(@D)
@@ -1164,7 +1164,7 @@ debug_api_docs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS)
 .phony: unicode
 unicode: $(BUILD_DIR)/UnicodeData.java $(BUILD_DIR)/unicode_data.fz
 	cp $(BUILD_DIR)/UnicodeData.java $(SRC)/dev/flang/util/UnicodeData.java
-	cp $(BUILD_DIR)/unicode_data.fz $(FZ_SRC_LIB)/character_encodings/unicode/data.fz
+	cp $(BUILD_DIR)/unicode_data.fz $(FZ_SRC_LIB)/encodings/unicode/data.fz
 
 # generate $(BUILD_DIR)/unicode_data.fz using the latest UnicodeData.txt.
 $(BUILD_DIR)/unicode_data.fz: $(CLASS_FILES_UTIL_UNICODE) $(BUILD_DIR)/UnicodeData.txt

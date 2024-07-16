@@ -99,7 +99,7 @@ module:public integer : numeric is
   # convert this to a number using the given base.  If negative, add "-" as
   # the first character.
   #
-  public as_string(base u32) String : character_encodings
+  public as_string(base u32) String : encodings
     pre
       debug: 1 < base ≤ 36
   =>

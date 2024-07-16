@@ -93,7 +93,7 @@ is
   # representations of its contents, separated by ',' and enclosed in '['
   # and ']'.  Arrays in inner dimensions are grouped using '[' and ']'.
   #
-  public redef as_string : character_encodings =>
+  public redef as_string : encodings =>
     ("["
       + ascii.lf_str
       + indices0
