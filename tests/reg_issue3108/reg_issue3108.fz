@@ -28,11 +28,13 @@ reg_issue3108 =>
     x => 1
     y := 2
 
-  b : A =>
+    field := 3
+    routine => 4
+
+  b(redef field i32,           # should flag an error: redefining field forbidden
+    redef routine i32) : A =>
 
     redef x := 3
-    redef y := 4 # should flag an error: redefining field forbidden
+    redef y := 4               # should flag an error: redefining field forbidden
 
-    say x
-    say y
 

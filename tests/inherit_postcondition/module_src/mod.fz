@@ -31,12 +31,13 @@ public mod is
   ok(s String) => say s; true
 
   public post_accessing_result is
-    public n => 333
+    public n := 333
+    public m => 333
     public r => 666
     public f
       post
-        n * 2 = r
-        ok "original $result $n $r"
+        m * 2 = r
+        ok "original $result $m $r"
         { io.out.env.println "hi"; true }
         { v := post_accessing_result.this; true }
         { [1,result,2].fold i32.sum > 3 }

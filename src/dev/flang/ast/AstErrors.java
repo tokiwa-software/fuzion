@@ -2148,6 +2148,7 @@ public class AstErrors extends ANY
   {
     error(f.pos(),
           "Redefinition of non-argument fields is forbidden.",
+          "The field being redefined: " + existing.pos().show() + System.lineSeparator() +
           "To solve this, you may want to consider converting the redefined field into a routine by replacing" + skw(":=") + " by " + skw("=>") + ".");
   }
 
