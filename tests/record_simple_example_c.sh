@@ -43,7 +43,7 @@ CURDIR=$("$SCRIPTPATH"/_cur_dir.sh)
 if [ -f "$2".skip ]; then
     echo "SKIPPED $2"
 else
-    ( (FUZION_DISABLE_ANSI_ESCAPES=true $1 -c "$2" -o=testbin && ./testbin) 2>"$2".expected_err_c | head -n 10000) >"$2".expected_out_c || true # tail may result in 141
+    ( (FUZION_DISABLE_ANSI_ESCAPES=true $1 -XmaxErrors=-1 -c "$2" -o=testbin && ./testbin) 2>"$2".expected_err_c | head -n 10000) >"$2".expected_out_c || true # tail may result in 141
     sed -i "s|${CURDIR//\\//}/|--CURDIR--/|g" "$2".expected_err_c
     rm -rf testbin
     echo "RECORDED $2"
