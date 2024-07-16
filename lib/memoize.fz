@@ -32,16 +32,16 @@
 # https://en.wikipedia.org/wiki/Memoization
 #
 # example:
-# ```
-# mem := memoize (lock_free.map i32 String) i32 String x->
-#   say "computing $x"
-#   x.as_string
-
-# say (mem 1)
-# say (mem 2)
-# say (mem 1)
-# say (mem 3)
-# ```
+#
+#     mem := memoize (lock_free.map i32 String) i32 String x->
+#       say "computing $x"
+#       x.as_string
+#
+#     say (mem 1)
+#     say (mem 2)
+#     say (mem 1)
+#     say (mem 3)
+#
 #
 public memoize(MM type : container.Mutable_Map T R, T type : property.equatable, R type, f T->R) T->R =>
   ref : Unary R T
@@ -51,7 +51,7 @@ public memoize(MM type : container.Mutable_Map T R, T type : property.equatable,
 
     # implementation of abstract feature Unary.call
     #
-    call(a T) R =>
+    redef call(a T) R =>
       # compute if not yet computed
       if store[a].is_nil
         store.add a (f a)

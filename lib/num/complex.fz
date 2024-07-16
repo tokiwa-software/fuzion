@@ -49,7 +49,7 @@ is
 
   # equality
   #
-  public fixed type.equality(a, b num.complex C) bool =>
+  public fixed redef type.equality(a, b num.complex C) bool =>
     a.real = b.real && a.imag = b.imag
 
 
@@ -57,7 +57,7 @@ is
   #
   # NYI: Does this make sense mathematically?
   #
-  public fixed type.lteq(a, b num.complex C) bool =>
+  public fixed redef type.lteq(a, b num.complex C) bool =>
     a.real ≤ b.real
 
 
@@ -77,13 +77,13 @@ is
 
   # identity element for 'infix +'
   #
-  public fixed type.zero num.complex C =>
+  public fixed redef type.zero num.complex C =>
     num.complex C.zero C.zero
 
 
   # identity element for 'infix *'
   #
-  public fixed type.one num.complex C =>
+  public fixed redef type.one num.complex C =>
     num.complex C.one C.zero
 
 

@@ -573,13 +573,17 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         if (_resolved == null)
           {
             var traverseOuter = ot == null && _name != FuzionConstants.TYPE_FEATURE_THIS_TYPE;
-            var fo = res._module.lookupType(pos(), of, _name, traverseOuter, mayBeFreeType || inTypeFeature);
+            var fo = res._module.lookupType(pos(), of, _name, traverseOuter,
+                                            false                           /* ignore ambiguos */,
+                                            mayBeFreeType || inTypeFeature  /* ignore not found */);
             if (_resolved == null && (fo == null || !fo._feature.isTypeParameter() && inTypeFeature))
               { // if we are in a type feature, type lookup happens in the
                 // original feature, except for type parameters that we just
                 // checked in the type feature (of).
                 of = originalOuterFeature(of);
-                fo = res._module.lookupType(pos(), of, _name, traverseOuter, mayBeFreeType);
+                fo = res._module.lookupType(pos(), of, _name, traverseOuter,
+                                            false          /* ignore ambiguos */,
+                                            mayBeFreeType  /* ignore not found */);
               }
             if (_resolved == null)
               {
@@ -678,56 +682,49 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
             return null;
           }
 
+        var traverseOuter = ot == null && _name != FuzionConstants.TYPE_FEATURE_THIS_TYPE;
+        var fo = res._module.lookupType(pos(), of, _name, traverseOuter,
+                                        true /* ignore ambiguous */ ,
+                                        true /* ignore not found */);
+        if (fo == null || !fo._feature.isTypeParameter() && inTypeFeature)
+          { // if we are in a type feature, type lookup happens in the
+            // original feature, except for type parameters that we just
+            // checked in the type feature (of).
+            of = originalOuterFeature(of);
+            fo = res._module.lookupType(pos(), of, _name, traverseOuter,
+                                        true /* ignore ambiguous */ ,
+                                        true /* ignore not found */);
+          }
 
-        if (_resolved == null)
+        if (CHECKS) check
+          (fo != FeatureAndOuter.ERROR);
+
+        if (fo != null)
           {
-            var traverseOuter = ot == null && _name != FuzionConstants.TYPE_FEATURE_THIS_TYPE;
-            var fo = res._module.lookupType(pos(), of, _name, traverseOuter, true);
-            if (_resolved == null && (fo == null || !fo._feature.isTypeParameter() && inTypeFeature))
-              { // if we are in a type feature, type lookup happens in the
-                // original feature, except for type parameters that we just
-                // checked in the type feature (of).
-                of = originalOuterFeature(of);
-                fo = res._module.lookupType(pos(), of, _name, traverseOuter, true);
-              }
-            if (_resolved == null)
+            var f = fo._feature;
+            var generics = generics();
+            if (o == null && f.isTypeParameter())
               {
-                if (fo == FeatureAndOuter.ERROR)
+                if (generics.isEmpty())
                   {
-                    _resolved = Types.t_ERROR;
-                  }
-                else if(fo != null)
-                  {
-                    var f = fo._feature;
-                    var generics = generics();
-                    if (o == null && f.isTypeParameter())
+                    var gt = f.asGenericType();
+                    if (!gt.isOpenGeneric() || (outerfeat instanceof Feature off && off.isLastArgType(this)))
                       {
-                        if (!generics.isEmpty())
-                          {
-                            return null;
-                          }
-                        var gt = f.asGenericType();
-                        if (gt.isOpenGeneric() && !(outerfeat instanceof Feature off && off.isLastArgType(this)))
-                          {
-                            return null;
-                          }
-                        else
-                          {
-                            _resolved = gt;
-                          }
-                      }
-                    else
-                      {
-                        if (o == null && !fo._outer.isUniverse())
-                          {
-                            o = fo._outer.thisType(fo.isNextInnerFixed());
-                          }
-                        _resolved = finishTryResolve(res, outerfeat, this, this, f, generics, o, _refOrVal, _ignoreActualTypePars);
+                        _resolved = gt;
                       }
                   }
+              }
+            else
+              {
+                if (o == null && !fo._outer.isUniverse())
+                  {
+                    o = fo._outer.thisType(fo.isNextInnerFixed());
+                  }
+                _resolved = finishTryResolve(res, outerfeat, this, this, f, generics, o, _refOrVal, _ignoreActualTypePars);
               }
           }
       }
+
     return _resolved;
   }
 

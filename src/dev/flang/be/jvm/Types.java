@@ -28,7 +28,6 @@ package dev.flang.be.jvm;
 
 import dev.flang.fuir.FUIR;
 
-import static dev.flang.ir.IR.NO_SITE;
 
 import dev.flang.be.jvm.classfile.ClassFile;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
@@ -181,8 +180,7 @@ public class Types extends ANY implements ClassFileConstants
             var maincl = _fuir.mainClazzId();
             var bc_run =
               Expr.UNIT
-              .andThen(_fuir.hasPrecondition(maincl) ? invokeStatic(maincl, true, -1) : Expr.UNIT)
-              .andThen(invokeStatic(maincl, false, -1)).drop()
+              .andThen(invokeStatic(maincl, -1)).drop()
               .andThen(Expr.RETURN);
             var code_run = cf.codeAttribute(Names.MAIN_RUN + " in " + _fuir.clazzAsString(cl), bc_run, new List<>(), new List<>(), ClassFile.StackMapTable.empty(cf, new List<>(VerificationType.UninitializedThis), bc_run));
             cf.method(ACC_PUBLIC, Names.MAIN_RUN, "()V", new List<>(code_run));
@@ -221,32 +219,19 @@ public class Types extends ANY implements ClassFileConstants
   }
 
 
-  Expr invokeStatic(int cc, boolean preCalled, int line)
+  Expr invokeStatic(int cc, int line)
   {
-    var callingIntrinsic = !preCalled && _fuir.clazzKind(cc) == FUIR.FeatureKind.Intrinsic;
+    var callingIntrinsic = _fuir.clazzKind(cc) == FUIR.FeatureKind.Intrinsic;
     var cls   = callingIntrinsic ? Names.RUNTIME_INTRINSICS_CLASS
                                  : _names.javaClass(cc);
-    var fname = callingIntrinsic ? _names.function(cc, preCalled) :
-                preCalled        ? Names.PRECONDITION_NAME
+    var fname = callingIntrinsic ? _names.function(cc)
                                  : Names.ROUTINE_NAME;
     return Expr.invokeStatic(cls,
                              fname,
-                             descriptor(cc, preCalled),
-                             resultType(cc, preCalled),
+                             descriptor(cc),
+                             resultType(_fuir.clazzResultClazz(cc)),
                              line);
   }
-  Expr invokeStaticCombindedPreAndCall(int cc, int line)
-  {
-    var cls   = _names.javaClass(cc);
-    var fname = _fuir.clazzContract(cc, FUIR.ContractKind.Pre, 0) != NO_SITE ? Names.COMBINED_NAME
-                                                                             : Names.ROUTINE_NAME;
-    return Expr.invokeStatic(cls,
-                             fname,
-                             descriptor(cc, false),
-                             resultType(cc, false),
-                             line);
-  }
-
 
 
   boolean hasClassFile(int cl)
@@ -254,7 +239,7 @@ public class Types extends ANY implements ClassFileConstants
     return _fuir.clazzIsBoxed(cl) ||
       switch (_fuir.clazzKind(cl))
       {
-      case Abstract -> _fuir.hasPrecondition(cl);
+      case Abstract  -> false;
       case Choice    ->
           switch (_choices.kind(cl))
             {
@@ -262,29 +247,9 @@ public class Types extends ANY implements ClassFileConstants
             case refsAndUnits, general                           -> true;
             };
       case Routine   -> true; // NYI: UNDER DEVELOPMENT: clazzNeedsCode(cl);
-      case Intrinsic -> true; // NYI: UNDER DEVELOPMENT: _fuir.hasPrecondition(cl);
+      case Intrinsic -> true;
       default        -> false;
       };
-  }
-
-
-  int numUnitTypesInChoiceOfOnlyRefs(int cl)
-  {
-    if (PRECONDITIONS) require
-      (_fuir.clazzIsChoiceOfOnlyRefs(cl));
-
-    int numUnitTypes = 0;
-    for (var i = 0; i < _fuir.clazzNumChoices(cl); i++)
-      {
-        var tc = _fuir.clazzChoice(cl, i);
-        if (!_fuir.clazzIsVoidType(tc) && !_fuir.clazzIsRef(tc))
-          {
-            if (CHECKS) check
-              (_fuir.clazzIsUnitType(tc));
-            numUnitTypes++;
-          }
-      }
-    return numUnitTypes;
   }
 
 
@@ -298,25 +263,6 @@ public class Types extends ANY implements ClassFileConstants
       cl == _fuir.clazz_fuzionSysArray_u8_length() ||
       cl == _fuir.clazz_fuzionJavaObject() ||
       cl == _fuir.clazz_fuzionJavaObject_Ref();
-  }
-
-
-  boolean isChoiceOfOneRefAndOneUnitType(int cl)
-  {
-    var result = false;
-    if (_fuir.clazzIsChoice(cl))
-      {
-        if (_fuir.clazzIsChoiceOfOnlyRefs(cl))
-          {
-            var nc = _fuir.clazzNumChoices(cl);
-            var nu = numUnitTypesInChoiceOfOnlyRefs(cl);
-            var nr = nc - nu; // num refs
-            if (CHECKS) check
-              (nr > 0);
-            result = nu == 1 && nr == 1;
-          }
-      }
-    return result;
   }
 
 
@@ -500,32 +446,14 @@ public class Types extends ANY implements ClassFileConstants
 
 
   /**
-   * Get the result type of a call to clazz cl or its precondition
-   *
-   * @param cl the called clazz
-   *
-   * @param pre true iff we call the precondition.
-   */
-  JavaType resultType(int cl, boolean pre)
-  {
-    var rt = _fuir.clazzResultClazz(cl);
-    return pre ? PrimitiveType.type_void
-               : resultType(rt);
-
-  }
-
-
-  /**
-   * Get the signature descriptor string for calling cl or its precondition
+   * Get the signature descriptor string for calling cl
    *
    * @param explicitOuter true if the target instance is required (for Java
    * dynamic binding) even if the called clazz does not need it.
    *
    * @param cl the called clazz
-   *
-   * @param pre true iff we call the precondition.
    */
-  String descriptor(boolean explicitOuter, int cl, boolean pre)
+  String descriptor(boolean explicitOuter, int cl)
   {
     var as = new StringBuilder();
     as.append("(");
@@ -549,27 +477,25 @@ public class Types extends ANY implements ClassFileConstants
           }
       }
     as.append(")")
-      .append(resultType(cl, pre).descriptor());
+      .append(resultType(_fuir.clazzResultClazz(cl)).descriptor());
 
     return as.toString();
   }
 
 
   /**
-   * Get the signature descriptor string for calling cl or its precondition
+   * Get the signature descriptor string for calling cl
    *
    * @param cl the called clazz
-   *
-   * @param pre true iff we call the precondition.
    */
-  String descriptor(int cl, boolean pre)
+  String descriptor(int cl)
   {
-    return descriptor(true /* NYI: CLEANUP: this seems the wrong way around */, cl, pre);
+    return descriptor(true /* NYI: CLEANUP: this seems the wrong way around */, cl);
   }
 
-  String dynDescriptor(int cl, boolean pre)
+  String dynDescriptor(int cl)
   {
-    return descriptor(false /* NYI: CLEANUP: this seems the wrong way around */, cl, pre);
+    return descriptor(false /* NYI: CLEANUP: this seems the wrong way around */, cl);
   }
 
 

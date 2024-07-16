@@ -98,8 +98,8 @@ public class This extends ExprWithPos
     super(pos);
 
     if (PRECONDITIONS) require
-      (cur != null,
-       f != null);
+      (cur != null || Errors.any(),
+       f != null || Errors.any());
 
     this._qual = null;
     this._cur = cur;
@@ -141,6 +141,10 @@ public class This extends ExprWithPos
    */
   public static Expr thiz(Resolution res, SourcePosition pos, AbstractFeature cur, AbstractFeature f)
   {
+    if (PRECONDITIONS) require
+      (cur != null || Errors.any(),
+       f != null || Errors.any());
+
     return new This(pos, cur, f).resolveTypes(res, cur);
   }
 
@@ -199,6 +203,9 @@ public class This extends ExprWithPos
    */
   public Expr resolveTypes(Resolution res, AbstractFeature outer)
   {
+    if (PRECONDITIONS) require
+      (res != null || Errors.any(),
+       outer != null || Errors.any());
     if (_qual != null)
       {
         this._feature = getThisFeature(pos(), this, _qual, outer);
@@ -213,6 +220,12 @@ public class This extends ExprWithPos
 
     Expr getOuter;
     var f = this._feature;
+    if (f == null)
+      {
+        if (CHECKS) check
+          (Errors.any());
+        f = Types.f_ERROR;
+      }
     if (f == Types.f_ERROR)
       {
         getOuter = Expr.ERROR_VALUE;
@@ -229,7 +242,7 @@ public class This extends ExprWithPos
          */
         var cur = _cur == null ? outer : _cur;
         getOuter = new Current(pos(), cur);
-        while (f != Types.f_ERROR && cur != f)
+        while (f != Types.f_ERROR && cur != f && !cur.isUniverse())
           {
             var or = cur.outerRef();
             if (CHECKS) check

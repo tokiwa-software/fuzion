@@ -86,32 +86,20 @@ webserver_java is
                            + "\n"
                            + data)?
 
-       unit
 */
 
          accept outcome unit =>
            # accept and handle connection
            match ss.accept
              e error => e
-             s Java.java.net.Socket =>
-               match s.getInputStream
+             sock Java.java.net.Socket =>
+               match sock.getInputStream
                  e error => e
                  i Java.java.io.InputStream =>
                    input  := jio.BufferedReader.new (jio.InputStreamReader.new i)
-                   match s.getOutputStream
+                   match sock.getOutputStream
                      e error => e
                      o Java.java.io.OutputStream =>
-                       output := jio.DataOutputStream.new o
-
-                       req := read
-                       say "got request ({req.byte_length} bytes): $req"
-                       if req.starts_with "GET "
-                         send200 "<html>Hello Fuzion $n!</html>"
-
-                       # close streams
-                       _ := input.close
-                       _ := output.close
-
                        # helper to read request
                        #
                        read String =>
@@ -140,4 +128,17 @@ webserver_java is
                          if ok!!
                            say "#### "+ok.err
 
+
+                       output := jio.DataOutputStream.new o
+
+                       req := read
+                       say "got request ({req.byte_length} bytes): $req"
+                       if req.starts_with "GET "
+                         send200 "<html>Hello Fuzion $n!</html>"
+
+                       # close streams
+                       _ := input.close
+                       _ := output.close
+
+                       # NYI: BUG: #3253 explicit unit` should not be necessary.
                        unit

@@ -40,3 +40,35 @@ public equatable is
   # as 'b'.
   #
   public type.equality(a, b equatable.this) bool => abstract
+
+
+  # is this part of given set
+  #
+  element_of(s container.Set equatable.this) => s.contains equatable.this
+
+
+  # is this not part of given set
+  #
+  not_element_of(s container.Set equatable.this) => !(equatable.this.element_of s)
+
+
+  # is `this` contained in `Set` `s`?
+  #
+  # This should usually be called using type inference as in
+  #
+  #   my_set := set_of ["A","B","C"]
+  #   say ("B" ∈ my_set)
+  #   say ("D" ∈ my_set)
+  #
+  public infix ∈ (s container.Set equatable.this) => element_of s
+
+
+  # is `this` not contained in `Set` `s`?
+  #
+  # This should usually be called using type inference as in
+  #
+  #   my_set := set_of ["A","B","C"]
+  #   say ("B" ∉ my_set)
+  #   say ("D" ∉ my_set)
+  #
+  public infix ∉ (s container.Set  equatable.this) => not_element_of s

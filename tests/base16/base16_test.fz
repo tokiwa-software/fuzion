@@ -1,0 +1,155 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test base16
+#
+# -----------------------------------------------------------------------
+
+base16_test is
+
+  my_c : choice String (array u8) is
+  mk_choice(x my_c) => x
+
+  # RFC 4618 test vectors
+  base16_test_vectors array (tuple my_c String) :=
+    [(mk_choice $"", ""),
+     (mk_choice $"f", "66"),
+     (mk_choice "fo", "666F"),
+     (mk_choice "foo", "666F6F"),
+     (mk_choice "foob", "666F6F62"),
+     (mk_choice "fooba", "666F6F6261"),
+     (mk_choice "foobar", "666F6F626172")]
+
+  # Additional test vectors
+  own_test_vectors array (tuple my_c String) :=
+    [(mk_choice [(u8 15), 170, 85, 255, 0],    "0FAA55FF00"),
+     (mk_choice "123890ABCXYZabcxyz_:;>~<%&\$§!", "31323338393041424358595A61626378797A5F3A3B3E7E3C252624C2A721"),
+     (mk_choice
+     """
+     Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidun\
+     t ut labore et dolore magna aliquyam erat, sed dia voluptua.
+
+     At vero eos et accusam et justo duo dolores et ea rebum.""",
+     """
+     4C6F72656D20697073756D20646F6C6F722073697420616D65742C20636F6E73657465747572207361646970736369\
+     6E6720656C6974722C20736564206469616D206E6F6E756D79206569726D6F642074656D706F7220696E766964756E\
+     74207574206C61626F726520657420646F6C6F7265206D61676E6120616C69717579616D20657261742C2073656420\
+     64696120766F6C75707475612E0A0A4174207665726F20656F73206574206163637573616D206574206A7573746F20\
+     64756F20646F6C6F72657320657420656120726562756D2E""")]
+
+
+
+  # ENCODING
+
+  say """
+      Testing base16 encoding..."""
+
+  enc_test(test_vectors array (tuple my_c String), name String) =>
+    for results list (outcome String) := nil, results.concat (out:nil)
+        tup in test_vectors
+    do
+      (plain, code_expected) := tup
+      code_actual := match plain
+                        str String   => encodings.base16.encode_to_string str.utf8.as_array
+                        arr array u8 => encodings.base16.encode_to_string arr
+      out :=
+        if code_actual = code_expected
+          outcome "ok"
+        else
+          plain_str := match plain
+                         str String   => str
+                         arr array u8 => $arr
+          error "encode '$plain_str' produced '$code_actual' but should have been '$code_expected'"
+    else
+      if results ∀ (.ok)
+        say "$name test vectors are encoded correctly"
+      else
+        say "Failed encoding $name test vectors:"
+        results.filter (.is_error)
+              .map (.err.as_string)
+              .map ("  "+)
+              .for_each say
+        say ""
+  enc_test base16_test_vectors "RFC 4648"
+  enc_test own_test_vectors "Additional"
+
+
+
+  # DECODING
+
+  say """
+      \n
+      Testing base16 decoding..."""
+  dec_test(test_vectors array (tuple my_c String), name String) =>
+    for results list (outcome String) := nil, results.concat (out:nil)
+        tup in test_vectors
+    do
+      (plain_exp, code) := tup
+      out :=
+        match encodings.base16.decode code.utf8.as_array
+          actual array u8 =>
+            match plain_exp
+              str String   =>
+                if str = String.from_bytes actual
+                  outcome "ok"
+                else
+                  error "decoding $code produced '{String.from_bytes actual}' but should have been '$str'"
+              arr array u8 =>
+                if arr.length=actual.length && ((arr.zip actual (a,b->a=b)) ∀ x->x)
+                  outcome "ok"
+                else
+                  error "decoding $code produced '$actual' but should have been '$arr'"
+          e error => error "decoding failed when it should not have: {e.msg}"
+    else
+      if results ∀ (.ok)
+        say "$name test vectors are decoded correctly"
+      else
+        say "Failed decoding $name test vectors:"
+        results.filter (.is_error)
+              .map (.err.as_string)
+              .map ("  "+)
+              .for_each say
+        say ""
+  dec_test base16_test_vectors "RFC 4648"
+  dec_test own_test_vectors "Additional"
+
+
+
+  # ERROR MESSAGES
+
+  say """
+      \n
+      Test error messages when decoding broken base16...
+      """
+
+  broken_enc := ["66\r6F6F",   # carriage return
+                 "6\n66F6F",   # line break
+                 "666F6",      # invalid length
+                 "GHIJK",      # non alphabet character
+                 "abcde",      # non alphabet character
+                 "666F 6F",    # space
+                 "66;6F6F",    # non alphabet ascii character
+                 "666🌍F6"]    # non alphabet multi byte unicode character
+
+  for t in broken_enc do
+    yak "$t: "
+    say (match encodings.base16.decode_str t
+        arr array u8 => String.type.from_bytes arr
+        e error => e.as_string)
+  say ""

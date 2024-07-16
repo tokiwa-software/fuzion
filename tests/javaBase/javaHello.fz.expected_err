@@ -1,2 +1,28 @@
 I was printed via java.
-*** panic: Illegal Capacity: -7
+
+error 1: FATAL FAULT `*** panic ***`: Illegal Capacity: -7
+Call stack:
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1: $MODULE/fuzion/runtime/fault.fz:38:7:
+      fuzion.sys.fatal_fault kind msg
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.fault.cause#1: $MODULE/eff/fallible.fz:35:6:
+  => h e
+-----^
+panic.type.install_default.λ.call#1: $MODULE/panic.fz:36:18:
+    (panic (msg->fuzion.runtime.fault.cause ("*** panic ***", msg)) unit).default
+-----------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+panic.cause#1: $MODULE/eff/fallible.fz:35:6:
+  => h e
+-----^
+panic#1: $MODULE/panic.fz:56:29:
+public panic(msg String) => panic.cause msg
+----------------------------^^^^^^^^^^^^^^^
+Java.java.util.ArrayList_static.new_I#1: $MODULE/Java/java/util/ArrayList_static.fz:30:18:
+      e error => panic e.msg
+-----------------^^^^^^^^^^^
+javaHello: --CURDIR--/javaHello.fz:108:33:
+  say (Java.java.util.ArrayList.new_I -7)
+--------------------------------^^^^^
+
+*** fatal errors encountered, stopping.
+one error.

@@ -281,6 +281,9 @@ public class Intrinsix extends ANY implements ClassFileConstants
             });
       }
 
+    put("fuzion.java.create_jvm",
+        (jvm, si, cc, tvalue, args) -> new Pair<>(Expr.UNIT, Expr.UNIT));
+
     put("fuzion.java.string_to_java_object0",
         (jvm, si, cc, tvalue, args) ->
         {
@@ -843,7 +846,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
       },
         (jvm, si, cc, tvalue, args) ->
         {
-          var name = jvm._names.function(cc, false);
+          var name = jvm._names.function(cc);
           var in = jvm._fuir.clazzOriginalName(cc);
           var msg = "missing implementation of JVM backend intrinsic '" +
             in + "', need '" + Intrinsics.class.getName() + "." + name + "' or inline code in " +
@@ -943,7 +946,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
   static Pair<Expr, Expr> inlineCode(JVM jvm, int si, int cc, Expr tvalue, List<Expr> args)
   {
     Pair<Expr, Expr> result = null;
-    var name = jvm._names.function(cc, false);
+    var name = jvm._names.function(cc);
     if (!_availableIntrinsics.contains(name))
       {
         var in = jvm._fuir.clazzOriginalName(cc);
@@ -975,7 +978,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
    */
   static boolean inRuntime(JVM jvm, int cc)
   {
-    return _availableIntrinsics.contains( jvm._names.function(cc, false));
+    return _availableIntrinsics.contains( jvm._names.function(cc));
   }
 
 

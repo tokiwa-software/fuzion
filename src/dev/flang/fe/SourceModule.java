@@ -34,12 +34,14 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.SortedMap;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractCase;
@@ -54,7 +56,7 @@ import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.FeatureAndOuter;
 import dev.flang.ast.FeatureVisitor;
-import dev.flang.ast.Impl;
+import dev.flang.ast.Function;
 import dev.flang.ast.Resolution;
 import dev.flang.ast.SrcModule;
 import dev.flang.ast.State;
@@ -254,7 +256,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
         new Types.Resolved(this,
                            (name) ->
                              {
-                               return lookupType(SourcePosition.builtIn, _universe, name, false, false)
+                               return lookupType(SourcePosition.builtIn, _universe, name,
+                                                 false /* traverse outer   */,
+                                                 false /* ignore ambiguous */,
+                                                 false /* ignore not found */)
                                 ._feature
                                 .selfType();
                              },
@@ -526,7 +531,9 @@ part of the (((inner features))) declarations of the corresponding
          var q = inner._qname;
          var n = q.get(at);
          var o =
-           n != FuzionConstants.TYPE_NAME ? lookupType(inner.pos(), outer, n, at == 0, false)._feature
+           n != FuzionConstants.TYPE_NAME ? lookupType(inner.pos(), outer, n, at == 0,
+                                                       false /* ignore ambiguous */,
+                                                       false /* ignore not found */)._feature
                                           : outer.typeFeature(_res);
          if (at < q.size()-2)
            {
@@ -614,6 +621,31 @@ part of the (((inner features))) declarations of the corresponding
 
     inner.visit(new FeatureVisitor()
       {
+        private Stack<Expr> _scope = new Stack<>();
+        @Override
+        public void actionBefore(AbstractCase c)
+        {
+          _scope.push(c.code());
+          super.actionBefore(c);
+        }
+        @Override
+        public void actionAfter(AbstractCase c)
+        {
+          _scope.pop();
+          super.actionAfter(c);
+        }
+        @Override
+        public void actionBefore(Block b, AbstractFeature outer)
+        {
+          if (b._newScope) { _scope.push(b); }
+          super.actionBefore(b, outer);
+        }
+        @Override
+        public void actionAfter(Block b, AbstractFeature outer)
+        {
+          if (b._newScope) { _scope.pop(); }
+          super.actionAfter(b, outer);
+        }
         public Call      action(Call      c, AbstractFeature outer) {
           if (c.name() == null)
             { /* this is an anonymous feature declaration */
@@ -629,7 +661,11 @@ part of the (((inner features))) declarations of the corresponding
             }
           return c;
         }
-        public Feature   action(Feature   f, AbstractFeature outer) { findDeclarations(f, outer); return f; }
+        public Feature   action(Feature   f, AbstractFeature outer)
+        {
+          f._scoped = !_scope.isEmpty();
+          findDeclarations(f, outer); return f;
+        }
       });
 
     if (inner.impl().hasInitialValue() &&
@@ -843,7 +879,6 @@ part of the (((inner features))) declarations of the corresponding
             )
           {
             if ((f.modifiers() & FuzionConstants.MODIFIER_REDEFINE) == 0 &&
-                !existing.isAbstract() &&
                 /* previous duplicate feature declaration could result in this error for
                 * type features, so suppress them in this case. See fuzion-lang.dev's
                 * design/examples/typ_const2.fz as an example.
@@ -852,7 +887,7 @@ part of the (((inner features))) declarations of the corresponding
               {
                 /*
     // tag::fuzion_rule_PARS_REDEF[]
-A feature that redefines at least one inherited feature must use the `redef` modifier unless all redefined, inherited features are `abstract`.
+A feature that redefines at least one inherited feature must use the `redef` modifier.
     // end::fuzion_rule_PARS_REDEF[]
                 */
                 if (visibleFor(existing, f.outer()))
@@ -881,7 +916,10 @@ A post-condition of a feature that redefines one or several inherited features m
             if (visibleFor(existing, f.outer()))
               {
                 f.redefines().add(existing);
-                c.addInheritedContract(f, existing);
+                if (f instanceof Feature ff)
+                  {
+                    c.addInheritedContract(ff, existing);
+                  }
               }
           }
       }
@@ -951,9 +989,8 @@ A post-condition of a feature that does not redefine an inherited feature must s
     var existing = df.get(fn);
     if (existing != null)
       {
-        if (existing instanceof Feature ef &&
-            f .implKind() == Impl.Kind.FieldDef &&
-            ef.implKind() == Impl.Kind.FieldDef    )
+        // NYI: need to check that the scopes are disjunct
+        if (existing instanceof Feature ef && ef._scoped && f._scoped)
           {
             var existingFields = FeatureName.getAll(df, fn.baseName(), 0);
             fn = FeatureName.get(fn.baseName(), 0, existingFields.size());
@@ -961,26 +998,15 @@ A post-condition of a feature that does not redefine an inherited feature must s
           }
         else
           {
-            boolean error = true;
-            if (f.isField() && existing.isField())
+            if (existing instanceof Feature ef && ef.isArgument() && f.isArgument())
               {
-                error = false;
-                var existingFields = FeatureName.getAll(df, fn.baseName(), 0);
-                for (var e : existingFields.values())
-                  {
-                    // NYI: set error if e.declaredInBlock() == f.declaredInBlock()
-                    if (((Feature)e).isDeclaredInMainBlock() && f.isDeclaredInMainBlock()) // NYI: Cast!
-                      {
-                        error = true;
-                      }
-                  }
-                if (!error)
-                  {
-                    fn = FeatureName.get(fn.baseName(), 0, existingFields.size());
-                    f.setFeatureName(fn);
-                  }
+                // NYI: CLEANUP: there should not be two places where
+                // similar error is raised.
+                // An error should have been raised already in feature constructor:
+                // "Names of arguments used in this feature must be distinct"
+                check(Errors.any());
               }
-            if (error)
+            else
               {
                 AstErrors.duplicateFeatureDeclaration(f.pos(), f, existing);
               }
@@ -1012,11 +1038,10 @@ A post-condition of a feature that does not redefine an inherited feature must s
   private void addToHeirs(AbstractFeature outer, FeatureName fn, Feature f)
   {
     var d = data(outer);
-    if (d != null)
+    if (d != null && !f.isFixed())
       {
         for (var h : d._heirs)
           {
-            var pos = SourcePosition.builtIn; // NYI: Would be nicer to use Call.pos for the inheritance call in h.inherits
             addDeclaredOrInherited(data(outer)._declaredOrInheritedFeatures, h, fn, f);
             addToHeirs(h, fn, f);
           }
@@ -1139,67 +1164,23 @@ A post-condition of a feature that does not redefine an inherited feature must s
     List<FeatureAndOuter> result = new List<>();
     var curOuter = outer;
     AbstractFeature inner = null;
-    var foundFieldInScope = false;
     do
       {
         if (!curOuter.state().atLeast(State.RESOLVING_DECLARATIONS))
           {
             _res.resolveDeclarations(curOuter);
           }
-        var foundFieldInThisScope = foundFieldInScope;
         var fs = FeatureName.getAll(declaredOrInheritedFeatures(curOuter), name);
-        if (fs.size() >= 1 && use != null && traverseOuter)
-          { // try to disambiguate fields as in
-            //
-            //  x := a
-            //  x := x + 1
-            //  x := 2 * x
-            List<FeatureName> fields = new List<>();
-            for (var e : fs.entrySet())
-              {
-                var fn = e.getKey();
-                for (var f : e.getValue())
-                  {
-                    if (f.isField() && (f.outer()==null || f.outer().resultField() != f))
-                      {
-                        fields.add(fn);
-                      }
-                  }
-              }
-            if (!fields.isEmpty())
-              {
-                var f = curOuter instanceof Feature of
-                  ? of.findFieldDefInScope(name, use, inner)
-                  : null;
-                fs = new TreeMap<>(fs);
-                // if we found f in scope, remove all other entries, otherwise remove all entries within this since they are not in scope.
-                for (var fn : fields)
-                  {
-                    for (var fi : get(fs, fn))
-                      {
-                        if (f != null || fi.outer() == outer && (!(fi instanceof Feature fif) || !fif.isArtificialField()))
-                          {
-                            fs.remove(fn);
-                          }
-                      }
-                  }
-                if (f != null)
-                  {
-                    add(fs, f.featureName(), f);
-                    foundFieldInThisScope = true;
-                  }
-              }
-          }
 
         for (var e : fs.entrySet())
           {
             for (var v : e.getValue())
               {
                 if ((use == null || (hidden != featureVisible(use.pos()._sourceFile, v))) &&
-                    (!v.isField() || !foundFieldInScope))
+                    !(use instanceof Call c && !c._isInheritanceCall && v.isChoice()) &&
+                    (use == null || /* NYI: do we have to evaluate inScope for all possible outers? */ inScope(use, v)))
                   {
                     result.add(new FeatureAndOuter(v, curOuter, inner));
-                    foundFieldInScope = foundFieldInScope || v.isField() && foundFieldInThisScope;
                   }
               }
           }
@@ -1209,6 +1190,151 @@ A post-condition of a feature that does not redefine an inherited feature must s
       }
     while (traverseOuter && curOuter != null);
     return result;
+  }
+
+
+  /**
+   * true if `use` is happening in same or some
+   * inner scope of where definition of `v` is.
+   *
+   * see also: tests/visibility_scoping
+   * see also: tests/visibility_negative
+   *
+   * @param use
+   * @param v
+   * @return
+   */
+  private boolean inScope(Expr use, AbstractFeature v)
+  {
+    // we only need to do this evaluation for:
+    // - scoped routines
+    // - non argument fields
+    if (v instanceof Feature f && (f._scoped || v.isField() && !f.isArgument()))
+      {
+        /* cases like the following are forbidden:
+          * ```
+          * a := b
+          * b := 1
+          * ```
+          */
+        var useIsBeforeDefinition = new Boolean[]{ false };
+         /* while cases like these are allowed:
+          * ```
+          * a => b
+          * b := 1
+          * ```
+          */
+        var visitingInnerFeature = new Boolean[]{ false };
+        var usage = new ArrayList<Stack<Expr>>();
+        var definition = new ArrayList<Stack<Expr>>();
+        var stacks = new ArrayList<Stack<Expr>>();
+        stacks.add(new Stack<>());
+        var visitor = new FeatureVisitor() {
+          public void action(AbstractAssign a, AbstractFeature outer)
+          {
+            if (use == a)
+              {
+                useIsBeforeDefinition[0] = definition.isEmpty() && !visitingInnerFeature[0];
+                usage.add((Stack)stacks.get(0).clone());
+              }
+            super.action(a, outer);
+          }
+          public void action(AbstractCall c) {
+            if (use == c)
+              {
+                useIsBeforeDefinition[0] = definition.isEmpty() && !visitingInnerFeature[0];
+                usage.add((Stack)stacks.get(0).clone());
+              }
+          };
+          public Expr action(Function lambda, AbstractFeature outer) {
+            if (usage.isEmpty() || definition.isEmpty())
+              {
+                stacks.get(0).push(lambda._expr);
+                lambda._expr.visit(this, outer);
+                stacks.get(0).pop();
+              }
+            return lambda;
+          };
+          public Expr action(Feature f2, AbstractFeature outer) {
+            if (f == f2)
+              {
+                definition.add((Stack)stacks.get(0).clone());
+              }
+            // fields are visited by their outers
+            if (usage.isEmpty() && f2.isRoutine())
+              {
+                stacks.get(0).push(f2);
+                var old = visitingInnerFeature[0];
+                visitingInnerFeature[0] = true;
+                f2.impl().visit(this, outer);
+                visitingInnerFeature[0] = old;
+                stacks.get(0).pop();
+              }
+            return f2;
+          };
+          public void actionBefore(Block b, AbstractFeature outer)
+          {
+            if (b._newScope)
+              {
+                stacks.get(0).push(b);
+              }
+          }
+          public void  actionAfter(Block b, AbstractFeature outer)
+          {
+            if (b._newScope)
+              {
+                stacks.get(0).pop();
+              }
+          }
+          public void actionBefore(AbstractCase c)
+          {
+            stacks.get(0).push(c.code());
+          }
+          public void  actionAfter(AbstractCase c)
+          {
+            stacks.get(0).pop();
+          }
+        };
+        f.outer().code().visit(visitor, null);
+
+        if (f.isField())
+          {
+            if (useIsBeforeDefinition[0])
+              {
+                return false;
+              }
+            // the usage of this field is not in its containing features.
+            if (usage.isEmpty())
+              {
+                return !f._scoped;
+              }
+          }
+
+        var u = new ArrayList<>(usage.get(0));
+        var d = new ArrayList<>(definition.get(0));
+
+        if (d.size() > u.size())
+          {
+            return false;
+          }
+        else
+          {
+            for (int i = 0; i < d.size(); i++)
+              {
+                if (d.get(i) != u.get(i))
+                  {
+                    return false;
+                  }
+              }
+          }
+        return true;
+      }
+    // definition is neither field nor in an inner scope,
+    // no need to do anything
+    else
+      {
+        return true;
+      }
   }
 
 
@@ -1232,7 +1358,11 @@ A post-condition of a feature that does not redefine an inherited feature must s
    * outer's outer (i.e., use is unqualified), false to search in outer only
    * (i.e., use is qualified with outer).
    *
-   * @param ignoreNotFound If true, no errors are produced but null might be returned
+   * @param ignoreAmbiguous If true, no errors are produced but null might be
+   * returned if type is ambiguous.
+   *
+   * @param ignoreNotFound If true, no errors are produced but null might be
+   * returned in case type was not found.
    *
    * @return FeatureAndOuter tuple of the found type's declaring feature,
    * FeatureAndOuter.ERROR in case of an error, null in case no type was found
@@ -1242,6 +1372,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
                                     AbstractFeature outer,
                                     String name,
                                     boolean traverseOuter,
+                                    boolean ignoreAmbiguous,
                                     boolean ignoreNotFound)
   {
     if (PRECONDITIONS) require
@@ -1282,27 +1413,18 @@ A post-condition of a feature that does not redefine an inherited feature must s
                   }
               }
           }
-        if (type_fs.size() > 1)
+        if (type_fs.size() > 1 && !ignoreAmbiguous)
           {
-            if (ignoreNotFound)
-              {
-                result = null;
-              }
-            else
-              {
-                AstErrors.ambiguousType(pos, name, type_fs);
-              }
+            AstErrors.ambiguousType(pos, name, type_fs);
+            result = FeatureAndOuter.ERROR;
           }
-        else if (type_fs.size() < 1)
+        else if (type_fs.size() < 1 && !ignoreNotFound)
           {
-            if (ignoreNotFound)
-              {
-                result = null;
-              }
-            else
-              {
-                AstErrors.typeNotFound(pos, name, outer, nontype_fs);
-              }
+            AstErrors.typeNotFound(pos, name, outer, nontype_fs);
+          }
+        else if (type_fs.size() != 1)
+          {
+            result = null;
           }
       }
 
@@ -1561,7 +1683,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
    */
   private void checkAbstractVisibility(Feature f) {
     if(f.isAbstract() &&
-       f.visibility().featureVisibility().ordinal() < f.outer().visibility().featureVisibility().ordinal())
+       f.visibility().eraseTypeVisibility().ordinal() < f.outer().visibility().eraseTypeVisibility().ordinal())
       {
         AstErrors.abstractFeaturesVisibilityMoreRestrictiveThanOuter(f);
       }
@@ -1598,7 +1720,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
   {
     f
       .contract()
-      .req
+      ._declared_preconditions
       .forEach(r -> r.visit(new FeatureVisitor() {
         @Override
         public void action(AbstractCall c)
@@ -1612,7 +1734,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
               // type param is known by caller
               && !c.calledFeature().isTypeParameter()
               // the called feature must be at least as visible as the feature.
-              && c.calledFeature().visibility().featureVisibility().ordinal() < f.visibility().featureVisibility().ordinal())
+              && c.calledFeature().visibility().eraseTypeVisibility().ordinal() < f.visibility().eraseTypeVisibility().ordinal())
             {
               AstErrors.calledFeatureInPreconditionHasMoreRestrictiveVisibilityThanFeature(f, c);
             }
@@ -1681,7 +1803,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
    */
   private Visi effectiveFeatureVisibility(Feature f)
   {
-    var result = f.visibility().featureVisibility();
+    var result = f.visibility().eraseTypeVisibility();
     var o = f.outer();
     while (o != null)
       {

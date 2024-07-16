@@ -1,0 +1,78 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  GitHub Actions workflow to build and test Fuzion on Windows.
+#
+# -----------------------------------------------------------------------
+
+name: run tests on windows (int)
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run_tests:
+    name: windows run tests
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: msys2/setup-msys2@5beef6d11f48bba68b9eb503e3adc60b23c0cc36 # v2
+        with:
+          update: true
+          path-type: minimal
+          # "If you are unsure, go with UCRT64." https://www.msys2.org/docs/environments/
+          msystem: UCRT64
+# git is used in Makefile: JAVA_FILE_TOOLS_VERSION
+          install: >-
+            make
+            git
+            mingw-w64-ucrt-x86_64-clang
+            diffutils
+
+      - name: install choco packages
+        shell: powershell
+        run: choco install openjdk --version 21.0.2
+
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v2.6.0
+
+      - name: echo versions
+        run: |
+          export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21.0.2"
+          export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
+          clang --version
+          javac --version
+          whereis jvm.dll
+
+      # - name: build libgc
+      #   run: |
+      #     export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21.0.2"
+      #     export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
+      #     ./bin/windows_install_boehm_gc.sh
+
+      - name: run tests
+        run: |
+          export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21.0.2"
+          export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
+          export FUZION_CLANG_INSTALLED_DIR="D:/a/_temp/msys64/ucrt64/bin"
+          make run_tests_int

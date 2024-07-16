@@ -52,7 +52,7 @@
 public outcome(public T type) :
   choice T error, /* ...  NYI: this should be open generic! */
   monad T (outcome T),
-  auto_unwrap T (try (outcome T)) /* NYI: BUG: auto_unwrap T (try outcome.this) */
+  auto_unwrap T (try (outcome T)) /* NYI: BUG #3355: auto_unwrap T (try outcome.this) */
 is
 
   # Does this outcome contain a value of type T?
@@ -68,7 +68,7 @@ is
 
   # Does this outcome contain an error
   #
-  is_error => !ok
+  public is_error => !ok
 
 
   # short-hand postfix operator for 'is_error'
@@ -183,14 +183,14 @@ is
 
   # unwrap this outcome
   #
-  unwrap ! (try (outcome T)) =>
+  redef unwrap ! try outcome.this =>
     outcome.this ? v T     => v
-                 | e error => (try (outcome T)).env.raise e
+                 | e error => (try outcome.this).env.raise e
 
 
   # return function
   #
-  public fixed type.return (a T) => outcome a
+  public fixed redef type.return (a T) => outcome a
 
 
 # outcome with 1 argument provides an short-hand to wrap a value into a

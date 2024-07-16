@@ -1,0 +1,44 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test
+#
+# -----------------------------------------------------------------------
+
+reg_issue3168_parsing_tuples is
+
+    # Tuple used as actual type parameter requires double parentheses
+    # https://github.com/tokiwa-software/fuzion/issues/1382
+    s1 Sequence (i32, bool) := [(3,true),(4,false)]; say s1
+    s2 Sequence ((i32, bool)) := [(3,true),(4,false)]; say s2
+    
+    
+    # AoC issue: Tuple type syntax sugar does not work well as actual type parameter
+    # https://github.com/tokiwa-software/fuzion/issues/2377
+    a := array (Sequence (tuple i32 String)) 0 i->[]
+    b := array (Sequence (i32, String)) 0 i->[]
+    lm : mutate is
+      lm.go unit ()->
+      c := (lm.array (Sequence (tuple i32 String i32))).type.new lm 0 []
+      d := (lm.array (Sequence (i32, i32))).type.new lm 0 []
+    
+    
+    # tuple type requires double parentheses option ((i32,i32))
+    # https://github.com/tokiwa-software/fuzion/issues/3149
+    f(x option (i32,i32)) => { say x.val.values.0 }; f (47,11)

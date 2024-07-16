@@ -79,7 +79,7 @@ is
 
   # equality
   #
-  public fixed type.equality(a, b bitset) bool =>
+  public fixed redef type.equality(a, b bitset) bool =>
      h := a.highest >>= i -> b.highest >>= j -> max i j
      match h
        _ nil => a.highest!! && b.highest!!

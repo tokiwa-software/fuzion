@@ -72,19 +72,19 @@ is
 
     # exit with the given code
     #
-    exit(code u8) =>
+    redef exit(code u8) =>
       fuzion.std.exit code.as_i32
 
 
     # exit with the stored code
     #
-    exit =>
+    redef exit =>
       fuzion.std.exit exit_code.as_i32
 
 
     # set the stored exit code
     #
-    set_exit_code(code u8) outcome unit
+    redef set_exit_code(code u8) outcome unit
       post then
         exit_code = code
       =>

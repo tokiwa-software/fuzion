@@ -1,0 +1,16 @@
+PASSED: .v1-v:v.x.
+PASSED: .w-w:w.x.
+PASSED: .v1-v:v.x.
+PASSED: .w-w:w.x.
+PASSED: .v2-v:v.x.
+PASSED: .w-w:w.x.
+PASSED: .s-s:s.x.
+PASSED: v1
+PASSED: .v1v1-v:v.x.
+PASSED: v1v1
+PASSED: w
+PASSED: .ww-w:w.x.
+PASSED: ww
+PASSED: v2
+PASSED: w
+PASSED: s

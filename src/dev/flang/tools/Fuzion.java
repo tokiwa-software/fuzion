@@ -675,7 +675,6 @@ public class Fuzion extends Tool
           {
             var b = ab.getValue();
             var ba = b._arg;
-            var bu = b.usage();
             if (!ba.startsWith("-X") || xtra)
               {
                 aba.append(aba.length() == 0 ? "" : "|").append(ba);

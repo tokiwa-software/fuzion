@@ -89,7 +89,7 @@ valWithDynOuter is
 
   v (redef f String) : ref_v f is
     a => "v"
-    x => "$f-$a:v.x"
+    redef x => "$f-$a:v.x"
 
   w : v "w" is
     redef a => "w"
@@ -98,16 +98,6 @@ valWithDynOuter is
   t : v "t" is
     redef a => "t"
     redef x => "$f-$a:t.x"
-
-/* NYI: this does not compile yet
-
-  u : v "u" is
-    redef a => "u"
-    redef e v.e is
-      y => "-$x-"
-      tt ref v := t
-      tt.e
-*/
 
   s ref : v "s" is
     redef a => "s"
@@ -134,14 +124,14 @@ valWithDynOuter is
   q2 w.e => w.g
   testw q2 ".w-w:w.x."
   q3 ref_v.e =>
-    rv ref_v := v "v2"
-    rv.e
-#    rv.g
+    rv0 ref_v := v "v2"
+    rv0.e
+#    rv0.g
   testrv q3 ".v2-v:v.x."
   q4 ref_v.e =>
-    rw ref_v := w
-    rw.e
-#    rw.g
+    rw0 ref_v := w
+    rw0.e
+#    rw0.g
   testrv q4 ".w-w:w.x."
 #  q5 s.e is s.g
   q5 s.e => s.e
@@ -156,26 +146,26 @@ valWithDynOuter is
   test_mut o.e ".v1v1-v:v.x."
   chck o.f "v1v1"
 
-  o := w
-  chck o.f "w"
-  testw_mut o.g ".ww-w:w.x."
-  chck o.f "ww"
+  o1 := w
+  chck o1.f "w"
+  testw_mut o1.g ".ww-w:w.x."
+  chck o1.f "ww"
 
   rv2 ref_v := v "v2"
-  o := rv2
-  chck o.f "v2"
+  o2 := rv2
+  chck o2.f "v2"
 #  testrv_mut rv2.g ".v2v2-v:v.x."
-#  chck o.f "v2v2"
+#  chck o2.f "v2v2"
 
   rw2 ref_v := w
-  o := rw2
-  chck o.f "w"
+  o3 := rw2
+  chck o3.f "w"
 #  testrv_mut rw2.g ".ww-w:w.x."
-#  chck o.f "ww"
+#  chck o3.f "ww"
 
-  o := s
-  chck o.f "s"
-#  tests_mut o.g ".ss-s:s.x."
-#  chck o.f "ss"
+  o4 := s
+  chck o4.f "s"
+#  tests_mut o4.g ".ss-s:s.x."
+#  chck o4.f "ss"
 
   exit

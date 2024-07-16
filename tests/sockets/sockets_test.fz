@@ -29,7 +29,7 @@ sockets_test is
   server(f net.family.val, p net.protocol.val) =>
 
     # server handles one connection at a time
-    start_server(family net.family.val, protocol net.protocol.val, port u16) =>
+    start_server(LM type : mutate, family net.family.val, protocol net.protocol.val, port u16) =>
 
       say_silent(s Any) => unit
 
@@ -40,7 +40,7 @@ sockets_test is
 
       rh : net.Request_Handler unit is
 
-        handle_request unit =>
+        redef handle_request unit =>
 
           chan => net.channel.env
 
@@ -48,7 +48,7 @@ sockets_test is
           say_silent chan.get_peer_address
           say_silent chan.get_peer_port
 
-          rr := io.buffered.read_line_while (s -> !s.is_empty)
+          rr := io.buffered.read_line_while LM (s -> !s.is_empty)
 
           say_silent "$protocol/$family-server, read lines: >{rr}<"
 
@@ -57,7 +57,14 @@ sockets_test is
 
               res := "received: {rr.as_string}\n\n"
 
-              match chan.write res.utf8
+              w =>
+                x := ((io.buffered.writer LM).write res.utf8.as_array).error
+
+                match x
+                  unit => (io.buffered.writer LM).flush
+                  error => x
+
+              match w
                 e error => say_silent "$protocol/$family-server, write error $e"
                 * => say_silent "$protocol/$family-server, write succeeded"
 
@@ -69,54 +76,59 @@ sockets_test is
 
 
 
-      while net.server.is_active && match net.server.accept rh
+      while net.server.is_active && match net.server.accept unit LM rh
                                       e error => false
                                       * => true
       do
 
 
-
-    start_server f p (port f p)
+    lm : mutate is
+    lm.go ()->
+      start_server lm f p (port f p)
 
 
 
   # client
   #
   client(family net.family.val, protocol net.protocol.val, host String, port u16, num i32) =>
+    lm : mutate is
+    lm.go ()->
+      rh : net.Request_Handler String is
 
-    rh : net.Request_Handler String is
+        redef handle_request =>
 
-      handle_request =>
+          chan => net.channel.env
 
-        chan => net.channel.env
+          req := ("GET / HTTP\n"
+            + "Host: $host\n"
+            + "Client: {sockets_test.client.this.num}\n\n")
 
-        req := ("GET / HTTP\n"
-          + "Host: $host\n"
-          + "Client: {sockets_test.client.this.num}\n\n")
+          w =>
+            _ := (io.buffered.writer lm).write req.utf8.as_array
+            _ := (io.buffered.writer lm).flush
 
-        res := "$protocol/$family-client {sockets_test.client.this.num}, write to $host:$port => {chan.write req.utf8}"
+          res := "$protocol/$family-client {sockets_test.client.this.num}, write to $host:$port => {w}"
 
-        match protocol
-          net.protocol.tcp =>
+          match protocol
+            net.protocol.tcp =>
 
-            rr := io.buffered.read_line_while (s -> !s.is_empty)
+              rr := io.buffered.read_line_while lm (s -> !s.is_empty)
 
-            res + "\n" + "$protocol/$family-client {sockets_test.client.this.num}, read lines from  $host:$port: >{rr}<"
+              res + "\n" + "$protocol/$family-client {sockets_test.client.this.num}, read lines from  $host:$port: >{rr}<"
 
-          # for UDP reading would block indefinitely
-          net.protocol.udp =>
-            # rest of udp datagram was discarded
-            res
+            # for UDP reading would block indefinitely
+            net.protocol.udp =>
+              # rest of udp datagram was discarded
+              res
 
-          * =>  panic "NI"
+            * =>  panic "NI"
 
 
-
-    match net.client rh family protocol host port
-      err error =>
-        say "$protocol/$family-client {sockets_test.client.this.num}, $host:$port: error establishing connection"
-      str String =>
-        say str
+      match net.client String lm rh family protocol host port
+        err error =>
+          say "$protocol/$family-client {sockets_test.client.this.num}, $host:$port: error establishing connection"
+        str String =>
+          say str
 
 
   # a number for protocol p to be used for

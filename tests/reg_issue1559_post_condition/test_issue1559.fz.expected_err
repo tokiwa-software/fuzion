@@ -1,8 +1,8 @@
 
---CURDIR--/test_issue1559.fz:27:7: error 1: Wrong result type in redefined feature
-      utf8 => (list u8).empty
-------^^^^
-In 'a.fun.call.anonymous.utf8' that redefines 'String.utf8'
+--CURDIR--/test_issue1559.fz:27:13: error 1: Wrong result type in redefined feature
+      redef utf8 => (list u8).empty
+------------^^^^
+In 'a.λ.call.anonymous.utf8' that redefines 'String.utf8'
 result type is       : 'list u8'
 result type should be: 'Sequence u8'
 

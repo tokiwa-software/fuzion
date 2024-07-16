@@ -157,7 +157,7 @@ public class Util
         af.outer().isTypeFeature()
         ? Kind.TypeFeature
         : af.definesType()
-          ? !af.isChoice() && af.visibility().featureVisibility() == Visi.PUB
+          ? !af.isChoice() && af.visibility().eraseTypeVisibility() == Visi.PUB
               ? Kind.Constructor
               : Kind.Type
           : Kind.Other;

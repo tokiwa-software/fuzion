@@ -199,13 +199,15 @@ inheritance is
   strm5Z ref : strm5Y is
 
   /* simple inheritance of outer feature example: */
-  cnt := 0
-  _ := Z
-  Z ref is
-    BB ref : Z is
-    if cnt < 10
-      set cnt := cnt + 1
-      _ := BB
+  simple_inheritance =>
+    cnt := 0
+    _ := Z
+    Z ref is
+      BB ref : Z is
+      if cnt < 10
+        set cnt := cnt + 1
+        _ := BB
+  simple_inheritance
 
   /* more complex inheritcane of outer feateature, with one more level of nesting: */
   tricky_Inheritance =>
@@ -219,7 +221,6 @@ inheritance is
         if cnt < 10
           set cnt := cnt + 1
           _ := BB.q
-    unit
   tricky_Inheritance
 
   /* calling inherited feature y from arguments to parent class D(y), feature y is inherited from value feature A */

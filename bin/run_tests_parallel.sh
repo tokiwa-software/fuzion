@@ -55,6 +55,19 @@ run_with_lock(){
     )&
 }
 
+# source: https://stackoverflow.com/questions/45181115/portable-way-to-find-the-number-of-processors-cpus-in-a-shell-script
+portable_nproc() {
+    OS="$(uname -s)"
+    if [ "$OS" = "Linux" ]; then
+        NPROCS="$(nproc --all)"
+    elif [ "$OS" = "Darwin" ] || \
+         [ "$(echo "$OS" | grep -q BSD)" = "BSD" ]; then
+        NPROCS="$(sysctl -n hw.ncpu)"
+    else
+        NPROCS="$(getconf _NPROCESSORS_ONLN || echo 4)"  # glibc/coreutils fallback
+    fi
+    echo "$NPROCS"
+}
 
 # get nanoseconds, with workaround for macOS
 nanosec () {
@@ -80,7 +93,7 @@ rm -rf "$BUILD_DIR"/run_tests.failures
 # print collected results up until interruption
 trap "echo """"; cat ""$BUILD_DIR""/run_tests.results ""$BUILD_DIR""/run_tests.failures; exit 130;" INT
 
-N=$(($(nproc --all || echo 1)>6 ? 6 : $(nproc --all || echo 1)))
+N=$(($(portable_nproc) > 6 ? 6 : $(portable_nproc)))
 
 echo "$(echo "$TESTS" | wc -l) tests, running $N tests in parallel."
 
@@ -90,10 +103,10 @@ START_TIME_TOTAL="$(nanosec)"
 for test in $TESTS; do
   task(){
     if test -n "$VERBOSE"; then
-      echo -en "\nrun $test: "
+      printf '\nrun %s: ' "$test"
     fi
     if test -e "$test"/skip -o -e "$test"/skip_"$TARGET"; then
-      echo -n "_"
+      printf "_"
       echo "$test: skipped" >>"$BUILD_DIR"/run_tests.results
     else
       START_TIME="$(nanosec)"
@@ -104,10 +117,10 @@ for test in $TESTS; do
       fi
       END_TIME="$(nanosec)"
       if $TEST_RESULT; then
-        echo -n "."
+        printf "."
         echo "$test in $((END_TIME-START_TIME))ms: ok"     >>"$BUILD_DIR"/run_tests.results
       else
-        echo -n "#"
+        printf "#"
         echo "$test in $((END_TIME-START_TIME))ms: failed" >>"$BUILD_DIR"/run_tests.results
         cat "$test"/out.txt "$test"/stderr.txt >>"$BUILD_DIR"/run_tests.failures
       fi
@@ -122,10 +135,11 @@ OK=$(     grep --count ok$      "$BUILD_DIR"/run_tests.results || true)
 SKIPPED=$(grep --count skipped$ "$BUILD_DIR"/run_tests.results || true)
 FAILED=$( grep --count failed$  "$BUILD_DIR"/run_tests.results || true)
 
-echo -n " $OK/$(echo "$TESTS" | wc -w) tests passed,"
-echo -n " $SKIPPED skipped,"
+RESULT=" $OK/$(echo "$TESTS" | wc -w) tests passed,"
+printf '%s' "$RESULT"
+printf ' %s skipped,' "$SKIPPED"
 echo    " $FAILED failed in $((END_TIME_TOTAL-START_TIME_TOTAL))ms."
-grep failed$ "$BUILD_DIR"/run_tests.results || echo -n
+grep failed$ "$BUILD_DIR"/run_tests.results || true
 
 if [ "$FAILED" -ge 1 ]; then
   cat "$BUILD_DIR"/run_tests.failures

@@ -57,7 +57,7 @@ choice_mix is
     yak "show_v "
     match a
       i i32    => say "i32:    $i"
-      b bool   => say "bool:   $b"
+      b1 bool  => say "bool:   $b1"
       s String => say "string: $s"
       n Nil    => say "Nil:    $n"
       m MyRef  => say "MyRef:  $m"
@@ -128,7 +128,7 @@ choice_mix is
     yak "show   "
     match v
       i i32    => say "i32:    $i"
-      b bool   => say "bool:   $b"
+      b1 bool  => say "bool:   $b1"
       s String => say "string: $s"
       n Nil    => say "Nil:    $n"
       m MyRef  => say "MyRef:  $m"
@@ -152,22 +152,22 @@ choice_mix is
   yak "e: "; show0 e
 
   _ := for
-    i := 0, i + 1
-  while i < 6
-    if i > 0 say "-------------"
-    yak "show_a : "; show_a
-    yak "show_v : "; show_v
-    yak "show_i : "; show_i
-    yak "show a: "; show a
-    yak "show b: "; show b
-    yak "show c: "; show c
-    yak "show d: "; show d
-    x Mix := a
-    set a := b
-    set b := c
-    set c := d
-    set d := e
-    set e := x
+         i := 0, i + 1
+       while i < 6
+         if i > 0 say "-------------"
+         yak "show_a : "; show_a
+         yak "show_v : "; show_v
+         yak "show_i : "; show_i
+         yak "show a: "; show a
+         yak "show b: "; show b
+         yak "show c: "; show c
+         yak "show d: "; show d
+         x Mix := a
+         set a := b
+         set b := c
+         set c := d
+         set d := e
+         set e := x
 
   colors1 unit =>  // using choice over features inheriting from abstract feature
     color is rgb u32 => abstract
@@ -192,7 +192,7 @@ choice_mix is
                          white
                          transparent := red
 
-    print(c choice red
+    print(c1 choice red
                    green
                    blue
                    yellow
@@ -201,15 +201,15 @@ choice_mix is
                    white
                    transparent) unit
     =>
-      match c
-        r red         => say "red {r.rgb}"
-        g green       => say "grn {g.rgb}"
-        b blue        => say "blu {b.rgb}"
-        y yellow      => say "yel {y.rgb}"
-        m magenta     => say "mag {m.rgb}"
-        k black       => say "blk {k.rgb}"
-        w white       => say "wht {w.rgb}"
-        t transparent => say "trp {t.rgb}"
+      match c1
+        re red         => say "red {re.rgb}"
+        g green        => say "grn {g.rgb}"
+        bl blue        => say "blu {bl.rgb}"
+        y yellow       => say "yel {y.rgb}"
+        m magenta      => say "mag {m.rgb}"
+        k black        => say "blk {k.rgb}"
+        w white        => say "wht {w.rgb}"
+        tr transparent => say "trp {tr.rgb}"
 
     set p := red
     set q := green
@@ -246,7 +246,7 @@ choice_mix is
                 | white
                 | transparent := red
 
-    print(c red
+    print(c1 red
           | green
           | blue
           | yellow
@@ -255,15 +255,15 @@ choice_mix is
           | white
           | transparent) unit
     =>
-      match c
-        r red         => say "red{r.rgb}"
-        g green       => say "grn{g.rgb}"
-        b blue        => say "blu{b.rgb}"
-        y yellow      => say "yel{y.rgb}"
-        m magenta     => say "mag{m.rgb}"
-        k black       => say "blk{k.rgb}"
-        w white       => say "wht{w.rgb}"
-        t transparent => say "trp{t.rgb}"
+      match c1
+        re red         => say "red{re.rgb}"
+        g green        => say "grn{g.rgb}"
+        bl blue        => say "blu{bl.rgb}"
+        y yellow       => say "yel{y.rgb}"
+        m magenta      => say "mag{m.rgb}"
+        k black        => say "blk{k.rgb}"
+        w white        => say "wht{w.rgb}"
+        tr transparent => say "trp{tr.rgb}"
     set p := red
     set q := green
     set r := black
@@ -282,14 +282,14 @@ choice_mix is
       else if i < 20 { i > 15 }
       else { "Large" }
     _ := for
-      i := 0, i + 1
-    while i < 25
-      yak "$i ==> "
-      match f(i)
-        x i32 => yak x
-        b bool => { if b { yak  "true" } else { yak "false" } }
-        s String => yak s
-      say ""
+           i := 0, i + 1
+         while i < 25
+           yak "$i ==> "
+           match f(i)
+             x i32    => yak x
+             b1 bool  => { if b1 { yak  "true" } else { yak "false" } }
+             s String => yak s
+           say ""
 
     // check that pipe also works as operator:
     (1..10) ! yak
@@ -303,7 +303,7 @@ choice_mix is
     test(p i32 | bool | String | Nil2 | MyRef2) unit =>
       match p
         i i32    => say "i32:    $i"
-        b bool   => say "bool:   $b"
+        b1 bool  => say "bool:   $b1"
         s String => say "string: $s"
         n Nil2   => say "Nil:    $n"
         m MyRef2 => say "MyRef:  $m"

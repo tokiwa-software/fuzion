@@ -1,0 +1,82 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test
+#
+# -----------------------------------------------------------------------
+
+# Test partial application that refers to `a.this`
+#
+reg_issue3308 is
+
+  f(x ()->unit) =>
+  g(x ()->unit) => _ := x.call
+
+  t is
+    a is
+
+      # first, a.this is part of the target of the partial call
+      q =>
+      say (f a.this.q)
+
+      # second, a.this is part of the arguments of the partial call
+      r(x _) =>
+      say (f (r a.this))
+
+      # third, a.this is part of the arguments of the partial call and
+      # boxed to Any, see #3315
+      s(x Any) =>
+      say (f (s a.this))
+
+      # fouth, an even simpler version of #3315
+      t(_ unit) =>
+      _ := f (t unit)
+
+      # fifth: access outer ref in partial application and call `as_string`
+      redef as_string => "--a--"
+      u(x Any) => say x
+      say (g (u a.this))
+
+    # same thing using a function `b` instead of a constructor `a`:
+    b =>
+
+      # first, b.this is part of the target of the partial call
+      q =>
+      say (f b.this.q)
+
+      # second, b.this is part of the arguments of the partial call
+      r(x _) =>
+      say (f (r b.this))
+
+      # third, b.this is part of the arguments of the partial call and
+      # boxed to Any, see #3315
+      s(x Any) =>
+      say (f (s b.this))
+
+      # fouth, an even simpler version of #3315
+      t(_ unit) =>
+      _ := f (t unit)
+
+      # fifth: access outer ref in partial application and call `as_string`
+      redef as_string => "--b--"
+      u(x Any) => say x
+      # say (g (u b.this))       -- NYI: BUG #3324: does not work yet!
+
+  _ := t.a
+  _ := t.b

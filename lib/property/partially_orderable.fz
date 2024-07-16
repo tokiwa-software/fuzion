@@ -49,5 +49,5 @@ is
 
   # equality check for immutable values
   #
-  public fixed type.equality(a, b partially_orderable.this) bool =>
+  public fixed redef type.equality(a, b partially_orderable.this) bool =>
     (a ≤ b) && (b ≤ a)

@@ -246,12 +246,6 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      */
     public abstract Pair<VALUE, RESULT> env(int s, int ecl);
 
-    /**
-     * Process a contract of kind ck of clazz cl that results in bool value cc
-     * (i.e., the contract fails if !cc).
-     */
-    public abstract RESULT contract(int s, FUIR.ContractKind ck, VALUE cc);
-
   }
 
 
@@ -471,24 +465,19 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    *
    * @param cl clazz id
    *
-   * @param pre true to process cl's precondition, false to process cl's code
-   * followed by its postcondition.
-   *
    * @return A Pair consisting of a VALUE that is either
    * _processor().unitValue() or null (in case cl diverges) and the result of
    * the abstract interpretation, e.g., the generated code.
    */
-  public Pair<VALUE,RESULT> process(int cl, boolean pre)
+  public Pair<VALUE,RESULT> processClazz(int cl)
   {
     var l = new List<RESULT>();
-    var s = pre ? _fuir.clazzContract(cl, FUIR.ContractKind.Pre, 0)
-                : _fuir.clazzCode(cl);
+    var s = _fuir.clazzCode(cl);
     if (s != NO_SITE)
       {
         assignOuterAndArgFields(l, s);
       }
-    var p = pre ? processContract(cl, FUIR.ContractKind.Pre)
-                : process(s);
+    var p = processCode(s);
     l.add(p.v1());
     var res = p.v0();
     return new Pair<>(res, _processor.sequence(l));
@@ -504,7 +493,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    * _processor().unitValue() or null (in case cl diverges) and the result of
    * the abstract interpretation, e.g., the generated code.
    */
-  public Pair<VALUE,RESULT> process(int s0)
+  public Pair<VALUE,RESULT> processCode(int s0)
   {
     var stack = new Stack<VALUE>();
     var l = new List<RESULT>();
@@ -534,40 +523,6 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
       }
 
     return new Pair<>(v, _processor.sequence(l));
-  }
-
-
-  /**
-   * Perform abstract interpretation on given code
-   *
-   * @param cl clazz id
-   *
-   * @param ck the contracts kind
-   *
-   * @return the result of the abstract interpretation, e.g., the generated
-   * code.
-   */
-  Pair<VALUE,RESULT> processContract(int cl, FUIR.ContractKind ck)
-  {
-    var l = new List<RESULT>();
-    for (var ci = 0;
-         _fuir.clazzContract(cl, ck, ci) != NO_SITE;
-         ci++)
-      {
-        var s = _fuir.clazzContract(cl, ck, ci);
-        var stack = new Stack<VALUE>();
-        for (var si = s; !containsVoid(stack) && _fuir.withinCode(si); si = si + _fuir.codeSizeAt(si))
-          {
-            s = si; // when exiting this loop, s will be the site of the last expression, while si will not be within the code
-            l.add(_processor.expressionHeader(s));
-            l.add(process(s, stack));
-          }
-        if (!containsVoid(stack))
-          {
-            l.add(_processor.contract(s, ck, stack.pop()));
-          }
-      }
-    return new Pair<>(_processor.unitValue(), _processor.sequence(l));
   }
 
 

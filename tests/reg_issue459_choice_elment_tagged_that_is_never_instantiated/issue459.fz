@@ -25,4 +25,5 @@ issue459 =>
   t1 is
   t2 is
   say (try t1 unit (()->))
-  say (try t1 unit (()-> (say (try t2 unit (()->)))))
+  say (try t1 unit ()->
+    say (try t2 unit (()->)))

@@ -35,17 +35,25 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
 
   # predefined read provider for reading from
   # standard out of the process
+  #
   std_out_read_provider => read_provider std_out
 
   # predefined read provider for reading from
   # standard err of the process
+  #
   std_err_read_provider => read_provider std_err
+
+
+  # predefined write provider for writing to
+  # standard in of the process
+  #
+  std_in_write_provider => write_provider std_in
 
 
   # read bytes from standard out
   #
   read_provider(desc i64) : io.Read_Provider is
-    read(count i32) choice (array u8) io.end_of_file error =>
+    redef read(count i32) choice (array u8) io.end_of_file error =>
       arr := array u8 pipe_buffer_size i->0
       res := fuzion.sys.pipe.read desc arr.internal_array.data arr.count
       if res = -1
@@ -56,6 +64,16 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
         arr
           .slice 0 res
           .as_array
+
+
+  # write bytes to standard in
+  #
+  write_provider (desc i64) : io.Write_Provider is
+    redef write (bytes array u8) outcome unit =>
+      if (fuzion.sys.pipe.write desc bytes.internal_array.data bytes.count) = -1
+        error "error while writing"
+      else
+        unit
 
 
   # write bytes to stdin of child process
@@ -88,15 +106,20 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
 
   # install buffered reader for reading from stdout of process
   # and run `f`.
-  public with_out(T type, f ()-> T) outcome T =>
-    (io.buffered.reader (std_out_read_provider) pipe_buffer_size [])
+  public with_out(T type, LM type : mutate, f ()-> T) outcome T =>
+    (io.buffered.reader LM (std_out_read_provider) pipe_buffer_size)
       .with f
 
 
   # install buffered reader for reading from stdout of process
   # and run `f`.
-  public with_err(T type, f ()-> T) outcome T =>
-    (io.buffered.reader (std_err_read_provider) pipe_buffer_size [])
+  public with_err(T type, LM type : mutate, f ()-> T) outcome T =>
+    (io.buffered.reader LM (std_err_read_provider) pipe_buffer_size)
+      .with f
+
+
+  public with_in(T type, LM type : mutate, f ()->T) outcome T =>
+    (io.buffered.writer LM (std_in_write_provider) pipe_buffer_size)
       .with f
 
 
@@ -147,10 +170,10 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
     !process_and_args[0].contains_whitespace
   =>
     (spawn0 process_and_args.as_array).bind Process tup->
-      (pid, std_in, std_out, std_err) := tup
+      (pid, in0, out, err) := tup
 
       # NYI make sure std_out, std_err are not used anymore
-      p := Process pid nil std_out std_err
+      p := Process pid nil out err
 
       # NYI should wire pipe directly to process
       # NYI this works only when pipes buffer is large enough for
@@ -161,11 +184,11 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
           for p1rb := std_out_read_provider.read pipe_buffer_size
           while
             match p1rb
-              s array u8 => (write_bytes std_in s).ok
+              s array u8 => (write_bytes in0 s).ok
               * => false
 
         # NYI error handling
-        _ := fuzion.sys.pipe.close std_in
+        _ := fuzion.sys.pipe.close in0
         _ := fuzion.sys.pipe.close Process.this.std_out
         _ := fuzion.sys.pipe.close Process.this.std_err
 

@@ -33,69 +33,69 @@ module:public numeric : property.hashable, property.orderable is
   # basic operations: 'prefix +' (identity)
   public prefix + numeric.this
     pre
-      safety: +!numeric.this
+      debug: +!numeric.this
   => numeric.this
 
   # basic operations: 'prefix -' (negation)
   public prefix - numeric.this
     pre
-      safety: -!numeric.this
+      debug: -!numeric.this
   => numeric.this.zero - numeric.this
 
   # basic operations: 'infix +' (addition)
   public infix +  (other numeric.this) numeric.this
     pre
-      safety: (numeric.this +! other)
+      debug: (numeric.this +! other)
   => abstract
 
   # basic operations: 'infix -' (subtraction)
   public infix -  (other numeric.this) numeric.this
     pre
-      safety: (numeric.this -! other)
+      debug: (numeric.this -! other)
   => abstract
 
   # basic operations: 'infix *' (multiplication)
   public infix *  (other numeric.this) numeric.this
     pre
-      safety: (numeric.this *! other)
+      debug: (numeric.this *! other)
   => abstract
 
   # basic operations: 'infix /' (division)
   public infix /  (other numeric.this) numeric.this
     pre
-      safety: (numeric.this /! other)
-      safety: (other != numeric.this.zero)
+      debug: (numeric.this /! other)
   => abstract
 
   # basic operations: 'infix %' (division remainder)
   public infix %  (other numeric.this) numeric.this
     pre
-      safety: (numeric.this %! other)
-      safety: (other != numeric.this.zero)
+      debug: (numeric.this %! other)
   => abstract
 
   # basic operations: 'infix **' (exponentiation)
   public infix ** (other numeric.this) numeric.this
     pre
-      safety: (numeric.this **! other)
-      safety: (other ≥ numeric.this.zero)
+      debug: (numeric.this **! other)
+      debug: (other ≥ numeric.this.zero)
   => abstract
 
 
   # preconditions for basic operations: true if the operation's result is
-  # representable for the given values
+  # representable and defined for the given values
   #
-  # This does not check if the operation is defined (i.e, it
-  # returns true for '3/!0' or '0**!0'.)
+  # default implementations all return `true` such that children have to
+  # redefine these only for partial operations such as those resulting in
+  # an overflow or that are undefined like a division by zero for most
+  # types.
   #
   public prefix +! bool => true
-  public prefix -! bool => abstract
-  public infix +! (other numeric.this) bool => abstract
-  public infix -! (other numeric.this) bool => abstract
-  public infix *! (other numeric.this) bool => abstract
-  public infix /! (other numeric.this) bool => abstract
-  public infix %! (other numeric.this) bool => abstract
-  public infix **!(other numeric.this) bool => abstract
+  public prefix -! bool => true
+  public infix +! (other numeric.this) bool => true
+  public infix -! (other numeric.this) bool => true
+  public infix *! (other numeric.this) bool => true
+  public infix /! (other numeric.this) bool => true
+  public infix %! (other numeric.this) bool => true
+  public infix **!(other numeric.this) bool => true
 
 
   # overflow checking operations
@@ -105,7 +105,7 @@ module:public numeric : property.hashable, property.orderable is
   public infix *? (other numeric.this) num_option numeric.this => numeric.this * other
   public infix **?(other numeric.this) num_option numeric.this
     pre
-      safety: (other ≥ numeric.this.zero)
+      debug: (other ≥ numeric.this.zero)
   => abstract
 
   # saturating  operations
@@ -115,7 +115,7 @@ module:public numeric : property.hashable, property.orderable is
   public infix *^ (other numeric.this) numeric.this => numeric.this * other
   public infix **^(other numeric.this) numeric.this
     pre
-      safety: (other ≥ numeric.this.zero)
+      debug: (other ≥ numeric.this.zero)
   => abstract
 
 
@@ -190,22 +190,6 @@ module:public numeric : property.hashable, property.orderable is
     while numeric.this / b ≥ bs
 
 
-  # is this part of given set
-  #
-  # NYI: infix operators currently always use dynamic binding on the lhs and pass
-  # the rhs as an argument.  If we would support an 'rinfix ∈' that would use the
-  # rhs for dynamic binding and the lhs as argument, we could define '∈' in Set T
-  # and it would work for all set types.
-  #
-  public element_of(s container.Set numeric.this) => s.contains numeric.this
-  public infix ∈ (s container.Set numeric.this) => numeric.this.element_of s
-
-  # is this not part of given set
-  #
-  public not_element_of(s container.Set numeric.this) => !element_of s
-  public infix ∉ (s container.Set numeric.this) => numeric.this.not_element_of s
-
-
   # -----------------------------------------------------------------------
   #
   # type features:
@@ -240,12 +224,12 @@ module:public numeric : property.hashable, property.orderable is
 
   # equality
   #
-  public type.equality(a, b numeric.this) bool => abstract
+  public redef type.equality(a, b numeric.this) bool => abstract
 
 
   # total order
   #
-  public type.lteq(a, b numeric.this) bool => abstract
+  public redef type.lteq(a, b numeric.this) bool => abstract
 
 
   # monoid of numeric with infix + operation.  Will create sum of all elements it

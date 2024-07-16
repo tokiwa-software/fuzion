@@ -30,6 +30,8 @@
 #
 javaHello : Java is
 
+  fuzion.java.create_jvm0 ""
+
   # we can call code in Java package directly using fully
   # qualified class names
   #

@@ -30,6 +30,6 @@ n is
     q := y.z
 
 i : n is
-  fixed type.z => i
+  fixed redef type.z => i
 
 i.u

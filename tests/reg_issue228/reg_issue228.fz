@@ -24,20 +24,20 @@
 reg_issue228 is
   s =>
     (_,u) := for
-      x := (1, "q")
-      n in 1..1
-    while false else
-      x
+               x := (1, "q")
+               n in 1..1
+             while false else
+               x
     $u
 
   say s
 
   s2 =>
     (_,u) := for
-      x := (1, "q"), (1, "u")
-      n in 1..1
-    while true else
-      x
+               x := (1, "q"), (1, "u")
+               n in 1..1
+             while true else
+               x
     $u
 
   say s2

@@ -1,1 +1,45 @@
-*** panic: bah
+
+error 1: FATAL FAULT `*** panic ***`: bah
+Call stack:
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1: $MODULE/fuzion/runtime/fault.fz:38:7:
+      fuzion.sys.fatal_fault kind msg
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.fault.cause#1: $MODULE/eff/fallible.fz:35:6:
+  => h e
+-----^
+panic.type.install_default.λ.call#1: $MODULE/panic.fz:36:18:
+    (panic (msg->fuzion.runtime.fault.cause ("*** panic ***", msg)) unit).default
+-----------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+panic.cause#1: $MODULE/eff/fallible.fz:35:6:
+  => h e
+-----^
+panic#1: $MODULE/panic.fz:56:29:
+public panic(msg String) => panic.cause msg
+----------------------------^^^^^^^^^^^^^^^
+p: --CURDIR--/reg_issue2304.fz:24:6:
+p => panic "bah"
+-----^^^^^
+λ.call#1: --CURDIR--/reg_issue2304.fz:25:20:
+_ := [1].filter x->p
+-------------------^
+(list i32).filter0#1.λ.call#1: $MODULE/list.fz:423:30:
+    match drop_while (a -> !(p a))
+-----------------------------^
+(list i32).drop_while#1: $MODULE/list.fz:407:12:
+        if p c.head
+-----------^
+(list i32).filter0#1: $MODULE/list.fz:423:11:
+    match drop_while (a -> !(p a))
+----------^^^^^^^^^^^^^^^^^^^^^^^^
+(list i32).filter#1: $MODULE/list.fz:419:5:
+    filter0 p
+----^^^^^^^^^
+(array i32).filter#1: $MODULE/Sequence.fz:185:43:
+  public filter   (f T -> bool) list T => as_list.filter f
+------------------------------------------^^^^^^^^^^^^^^^^
+universe: --CURDIR--/reg_issue2304.fz:25:10:
+_ := [1].filter x->p
+---------^^^^^^
+
+*** fatal errors encountered, stopping.
+one error.

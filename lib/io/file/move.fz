@@ -44,7 +44,7 @@ public move(mop Move_Handler) : simple_effect is
   # the default file/dir move operation via fuzion.sys.fileio.move
   #
   type.default_move_handler : io.file.Move_Handler is
-    move(old_path String, new_path String) =>
+    redef move(old_path String, new_path String) =>
       fuzion.sys.fileio.move old_path new_path
 
 

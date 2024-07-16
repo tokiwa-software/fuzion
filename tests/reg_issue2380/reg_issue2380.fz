@@ -23,8 +23,10 @@
 
 reg_issue2380 is
 
-  input := (io.stdin.with ()->io.buffered.read_lines).val.filter !=""
-                                                      .map (.as_codepoints)
+  mi : mutate is
+  input := mi.go ()->
+      ((io.stdin mi).with ()->(io.buffered.read_lines mi)).val.filter !=""
+                                                          .map (.as_codepoints)
   area := array2 String input.count input[0].count i,j->input[i][j]
 
   part1 =>

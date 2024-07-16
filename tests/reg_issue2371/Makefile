@@ -21,5 +21,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = reg_issue2371.fz
-include ../dfa.mk
+override NAME = reg_issue2371
+include ../simple.mk

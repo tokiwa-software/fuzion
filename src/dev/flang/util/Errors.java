@@ -54,7 +54,7 @@ public class Errors extends ANY
 
 
   /**
-   * Flag used to supress any further error output by other threads when we are
+   * Flag used to suppress any further error output by other threads when we are
    * shutting down.
    */
   private static boolean _shutting_down_ = false;
@@ -458,14 +458,7 @@ public class Errors extends ANY
    */
   private static void print(SourcePosition pos, String msg, String detail)
   {
-    if (true)  // true: a blank line before errors, false: separation line between errors
-      {
-        say_err();
-      }
-    else
-      {
-        say_err("------------");
-      }
+    say_err();
     if (pos == null)
       {
         println(msg);

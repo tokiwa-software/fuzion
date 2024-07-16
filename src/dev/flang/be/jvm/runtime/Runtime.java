@@ -31,6 +31,9 @@ import dev.flang.util.Errors;
 import dev.flang.util.JavaInterface;
 import dev.flang.util.Pair;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringWriter;
 
 import java.lang.reflect.Field;
@@ -44,6 +47,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.TreeMap;
 import java.util.WeakHashMap;
 
 
@@ -103,7 +107,6 @@ public class Runtime extends ANY
    * that package.  We do not want to bundle the backend classes with a
    * stand-alone application that needs the runtime classes, so this is copied.
    */
-  public static final String PRECONDITION_NAME = "fzPrecondition";
   public static final String ROUTINE_NAME      = "fzRoutine";
   public static final String CLASS_PREFIX      = "fzC_";
   public static final String CLASS_PREFIX_WITH_ID = "fzC__L";
@@ -114,6 +117,9 @@ public class Runtime extends ANY
    * exception was thrown by that code.
    */
   public static final JavaError _JAVA_ERROR_ = new JavaError();
+
+
+  public static final String CLASS_NAME_TO_FUZION_CLAZZ_NAME = "CLASS_NAME_TO_FUZION_CLAZZ_NAME.txt";
 
 
   /*--------------------------  static fields  --------------------------*/
@@ -661,17 +667,6 @@ public class Runtime extends ANY
 
 
   /**
-   * Called after a precondition/postcondition check failed
-   *
-   * @param msg a detail message explaining what failed
-   */
-  public static void contract_fail(String msg)
-  {
-    Errors.fatal("CONTRACT FAILED: " + msg, stackTrace());
-  }
-
-
-  /**
    * Get the message of last exception thrown in the current thread.
    */
   public static String getException()
@@ -688,6 +683,57 @@ public class Runtime extends ANY
   public static String stackTrace()
   {
     return stackTrace(new Throwable());
+  }
+
+
+
+  /**
+   * cached results of `classNameToFeatureName`.
+   */
+  static WeakHashMap<ClassLoader, Map<String, String>> _classNameToFeatureName = new WeakHashMap<>();
+
+
+  /**
+   * Obtain the contents of the resource CLASS_NAME_TO_FUZION_CLAZZ_NAME that
+   * provides a mapping from Java class names to corresponding human readable
+   * Fuzion feature names.
+   */
+  public static synchronized Map<String,String> classNameToFeatureName()
+  {
+    Map<String,String> result = null;
+    var l = Thread.currentThread() instanceof FuzionThread ft ? ft._loader : null;
+    if (l != null)
+      {
+        result = _classNameToFeatureName.get(l);
+        if (result == null)
+          {
+            result = new TreeMap<>();
+            var mcl = l.getResourceAsStream(CLASS_NAME_TO_FUZION_CLAZZ_NAME);
+            if (mcl != null)
+              {
+                var reader = new BufferedReader(new InputStreamReader(mcl));
+                try
+                  {
+                    var ln = reader.readLine();
+                    while (ln != null)
+                      {
+                        var e = ln.split("\t");
+                        if (e.length == 2)
+                          {
+                            result.put(e[0], e[1]);
+                          }
+                        ln = reader.readLine();
+                      }
+                  }
+                catch (IOException x)
+                  {
+                    System.err.println("Failed to read resource `"+"`: " + x);
+                  }
+              }
+            _classNameToFeatureName.put(l, result);
+          }
+      }
+    return result;
   }
 
 
@@ -711,28 +757,31 @@ public class Runtime extends ANY
     for (var s : t.getStackTrace())
       {
         var m = s.getMethodName();
-        var r = switch (m)
+        var show = switch (m)
           {
           case "main",
-               ROUTINE_NAME      -> "";
-          case PRECONDITION_NAME -> "precondition of ";
-          default -> null;
+               ROUTINE_NAME -> true;
+          default           -> false;
           };
         var cl = s.getClassName();
-        if (r != null && cl.startsWith(CLASS_PREFIX))
+        if (show && cl.startsWith(CLASS_PREFIX))
           {
-            int start;
-            if (cl.startsWith(CLASS_PREFIX_WITH_ID))
+            var mp = classNameToFeatureName();
+            String str = mp != null ? mp.get(cl) : null;
+            if (str == null)
               {
-                var pre = CLASS_PREFIX_WITH_ID.length();
-                start = Math.max(cl.indexOf("_", pre)+1, pre);
+                int start;
+                if (cl.startsWith(CLASS_PREFIX_WITH_ID))
+                  {
+                    var pre = CLASS_PREFIX_WITH_ID.length();
+                    start = Math.max(cl.indexOf("_", pre)+1, pre);
+                  }
+                else
+                  {
+                    start = CLASS_PREFIX.length();
+                  }
+                str = cl.substring(start);
               }
-            else
-              {
-                start = CLASS_PREFIX.length();
-              }
-            cl = cl.substring(start);
-            var str = r + cl;
             if (str.equals(last))
               {
                 count++;

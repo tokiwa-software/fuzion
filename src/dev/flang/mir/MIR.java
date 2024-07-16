@@ -74,7 +74,8 @@ public class MIR extends IR
   public MIR(AbstractFeature universe, AbstractFeature main, MirModule module)
   {
     _universe = universe;
-    _main = main;
+    var pac = main.preAndCallFeature();
+    _main = pac != null ? pac : main;
     _module = module;
   }
 
@@ -201,7 +202,6 @@ hw25 is
         for (var i = 0; i < p.actuals().size(); i++)
           {
             var a = p.actuals().get(i);
-            var f = pf.arguments().get(i);
             toStack(code, a);
             code.add(ExprKind.Current);
             // Field clazz means assign value to that field
@@ -289,7 +289,6 @@ hw25 is
        exprKind(getExpr(s)) == ExprKind.Call   ||
        exprKind(getExpr(s)) == ExprKind.Assign    );
 
-    var ff = _featureIds.get(f);
     var e = getExpr(s);
     var af =
       (e instanceof AbstractCall   call) ? call.calledFeature() :

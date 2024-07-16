@@ -70,12 +70,6 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
-   * Is this a call to _cc's precondition?
-   */
-  final boolean _pre;
-
-
-  /**
    * If available, _site gives the call site of this Call as used in the IR.
    * Calls with different call sites are analysed separately, even if the
    * context and environment of the call is the same.
@@ -139,8 +133,6 @@ public class Call extends ANY implements Comparable<Call>, Context
    *
    * @param cc called clazz
    *
-   * @param pre true if calling precondition
-   *
    * @param site the call site, -1 if unknown (from intrinsic or program entry
    * point)
    *
@@ -151,11 +143,10 @@ public class Call extends ANY implements Comparable<Call>, Context
    * @param context for debugging: Reason that causes this call to be part of
    * the analysis.
    */
-  public Call(DFA dfa, int cc, boolean pre, int site, Value target, List<Val> args, Env env, Context context)
+  public Call(DFA dfa, int cc, int site, Value target, List<Val> args, Env env, Context context)
   {
     _dfa = dfa;
     _cc = cc;
-    _pre = pre;
     _site = site;
     _target = target;
     _args = args;
@@ -163,15 +154,15 @@ public class Call extends ANY implements Comparable<Call>, Context
     _context = context;
     _instance = dfa.newInstance(cc, site, this);
 
-    if (!pre && dfa._fuir.clazzResultField(cc)==-1) /* <==> _fuir.isConstructor(cl) */
+    if (dfa._fuir.clazzResultField(cc)==-1) /* <==> _fuir.isConstructor(cl) */
       {
         /* a constructor call returns current as result, so it always escapes together with all outer references! */
-        dfa.escapes(cc, pre);
+        dfa.escapes(cc);
         var or = dfa._fuir.clazzOuterRef(cc);
         while (or != -1)
           {
             var orr = dfa._fuir.clazzResultClazz(or);
-            dfa.escapes(orr,false);
+            dfa.escapes(orr);
             or = dfa._fuir.clazzOuterRef(orr);
           }
       }
@@ -191,9 +182,7 @@ public class Call extends ANY implements Comparable<Call>, Context
       _cc   <   other._cc  ? -1 :
       _cc   >   other._cc  ? +1 :
       _site <   other._site? -1 :
-      _site >   other._site? +1 :
-      _pre  && !other._pre ? -1 :
-      !_pre &&  other._pre ? +1 : Value.compare(_target, other._target);
+      _site >   other._site? +1 : Value.compare(_target, other._target);
     for (var i = 0; r == 0 && i < _args.size(); i++)
       {
         r = Value.compare(      _args.get(i).value(),
@@ -281,11 +270,7 @@ public class Call extends ANY implements Comparable<Call>, Context
     else if (_returns)
       {
         var rf = _dfa._fuir.clazzResultField(_cc);
-        if (_pre)
-          {
-            result = Value.UNIT;
-          }
-        else if (rf == -1)
+        if (rf == -1)
           {
             result = _instance;
           }
@@ -312,8 +297,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   public String toString()
   {
     var sb = new StringBuilder();
-    sb.append(_pre ? "precondition of " : "")
-      .append(_dfa._fuir.clazzAsString(_cc));
+    sb.append(_dfa._fuir.clazzAsString(_cc));
     if (_target != Value.UNIT)
       {
         sb.append(" target=")
@@ -346,12 +330,12 @@ public class Call extends ANY implements Comparable<Call>, Context
     return
       (forEnv
        ? (on.equals(EFFECT_ABORTABLE_NAME)
-          ? "install effect " + Errors.effe(_dfa._fuir.clazzAsString(_dfa._fuir.effectType(_cc))) + ", old environment was "
+          ? "install effect " + Errors.effe(_dfa._fuir.clazzAsStringHuman(_dfa._fuir.effectType(_cc))) + ", old environment was "
           : "effect environment ") +
          Errors.effe(Env.envAsString(_env)) +
          " for call to "
        : "call ")+
-      Errors.sqn((_pre ? "precondition of " : "") + _dfa._fuir.clazzAsString(_cc)) +
+      Errors.sqn(_dfa._fuir.clazzAsStringHuman(_cc)) +
       (pos != null ? " at " + pos.pos().show() : "");
   }
 
@@ -476,11 +460,11 @@ public class Call extends ANY implements Comparable<Call>, Context
     if (!_escapes)
       {
         _escapes = true;
-        // we currently store for _cc/_pre, so we accumulate different call
+        // we currently store for _cc, so we accumulate different call
         // contexts to the same clazz. We might make this more detailed and
         // record this local to the call or use part of the call's context like
         // the target value to be more accurate.
-        _dfa.escapes(_cc, _pre);
+        _dfa.escapes(_cc);
       }
   }
 

@@ -83,7 +83,7 @@ is
 
   # equality check implementation for inherited property.equatable
   #
-  public fixed type.equality(a, b container.numeric_sequence N) bool =>
+  public fixed redef type.equality(a, b container.numeric_sequence N) bool =>
     aa := a.as_array
     ba := b.as_array
     aa.count = ba.count

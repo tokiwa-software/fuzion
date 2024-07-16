@@ -39,11 +39,10 @@ scenario1 =>
     type.zero T => abstract
 
   b : a bool is
-    type.zero => true
+    redef type.zero => true
 
   fs(F type : a F) =>
     _ := F.zero
-    unit
 
 scenario1
 
@@ -65,16 +64,15 @@ scenario2 is
     type.zero T => abstract
 
     type.sum : scenario2.M T is
-      fixed e => zero
+      fixed redef e => zero
 
   b : a scenario2.b is
 
-    fixed type.zero scenario2.b => scenario2.b
+    fixed redef type.zero scenario2.b => scenario2.b
 
   fs(F type : a F) =>
     _ := F.z
     _ := F.sum.e
-    unit
 
 run_scenario2 =>
   _ := scenario2.fs scenario2.b
@@ -118,28 +116,37 @@ ex202 =>
   a := [0, 8, 15, 47, 11]
 
   # using sum and map
-  sum := sum (a.map x->x*x)
-  say "sum is $sum"
-
-  # using map and fold
-  sum := a.map x->x*x
-          .fold i32.sum
-  say "sum is $sum"
-
-  # using a loop
-  for
-    sum := 0, sum + q
-    v in a
-    q := v*v
-  else
+  sum_map =>
+    sum := sum (a.map x->x*x)
     say "sum is $sum"
 
-  # using a tail-recursive function
-  sum_of_squares (sum i32, s list i32) i32 =>
-    s ? nil    => sum
-      | c Cons => sum_of_squares (sum + c.head**2) c.tail
+  sum_map_fold =>
+    # using map and fold
+    sum := a.map x->x*x
+            .fold i32.sum
+    say "sum is $sum"
 
-  say "sum is {sum_of_squares 0 a.as_list}"
+  sum_loop =>
+    # using a loop
+    for
+      sum := 0, sum + q
+      v in a
+      q := v*v
+    else
+      say "sum is $sum"
+
+  sum_tail_rec =>
+    # using a tail-recursive function
+    sum_of_squares (sum i32, s list i32) i32 =>
+      s ? nil    => sum
+        | c Cons => sum_of_squares (sum + c.head**2) c.tail
+
+    say "sum is {sum_of_squares 0 a.as_list}"
+
+  sum_map
+  sum_map_fold
+  sum_loop
+  sum_tail_rec
 
 ex202
 
@@ -149,8 +156,8 @@ ex202
 # the example for idiom204 caused the problem from the next scenario:
 #
 ex204 =>
-  frexp (f f64) tuple f64 i32 =>
-    bits := f.cast_to_u64
+  frexp (x f64) tuple f64 i32 =>
+    bits := x.cast_to_u64
     # bits is f in the following representation
     # seeeeeeeeeeeffffffffffffffffffffffffffffffffffffffffffffffffffff
     # where s = sign, e = exponent, f = fraction
@@ -167,7 +174,7 @@ ex204 =>
     # 0000000000000000000000000000000000000000000000000000seeeeeeeeeee
     # AND this with mask
     # 00000000000000000000000000000000000000000000000000000eeeeeeeeeee
-    e := ((bits >> fract_bits) & mask).as_i32 - bias.as_i32 + 1
+    exp := ((bits >> fract_bits) & mask).as_i32 - bias.as_i32 + 1
     # mask << fract_bits is
     # 0111111111110000000000000000000000000000000000000000000000000000
     # NOT this to get
@@ -182,9 +189,9 @@ ex204 =>
     # s01111111110ffffffffffffffffffffffffffffffffffffffffffffffffffff
     # the last step is to "normalize" the exponent of the fraction
     if ((bits >> fract_bits) & mask) = 0 then
-      (bits3.cast_to_f64, e - 51)
+      (bits3.cast_to_f64, exp - 51)
     else
-      (bits3.cast_to_f64, e)
+      (bits3.cast_to_f64, exp)
 
   a f64 := 3.14
   (b, c) := frexp a
@@ -246,14 +253,14 @@ run_scenario7 =>
   # Finally, we create instances from all the examples and call `a`, which calls `abs` for
   # all of them:
   #
-  x := scenario7.q .a; say (type_of x)   # Type of 'q'
-  x := scenario7.r .a; say (type_of x)   # Type of 'q'
-  x := scenario7.s .a; say (type_of x)   # Type of 'q'
-  x := scenario7.t .a; say (type_of x)   # Type of 'q'
-  x := scenario7.v1.a; say (type_of x)   # Type of 'q3'  (inherited through p.W -> u1.A -> q2)
-  x := scenario7.v2.a; say (type_of x)   # Type of 'q3'  (inherited through p.W -> u1.A -> q3)
-  x := scenario7.w1.a; say (type_of x)   # Type of 'q2'  (inherited through p.W -> u2.B -> q3)
-  x := scenario7.w2.a; say (type_of x)   # Type of 'q2'  (inherited through p.W -> u2.B -> q2)
+  x1 := scenario7.q .a; say (type_of x1)   # Type of 'q'
+  x2 := scenario7.r .a; say (type_of x2)   # Type of 'q'
+  x3 := scenario7.s .a; say (type_of x3)   # Type of 'q'
+  x4 := scenario7.t .a; say (type_of x4)   # Type of 'q'
+  x5 := scenario7.v1.a; say (type_of x5)   # Type of 'q3'  (inherited through p.W -> u1.A -> q2)
+  x6 := scenario7.v2.a; say (type_of x6)   # Type of 'q3'  (inherited through p.W -> u1.A -> q3)
+  x7 := scenario7.w1.a; say (type_of x7)   # Type of 'q2'  (inherited through p.W -> u2.B -> q3)
+  x8 := scenario7.w2.a; say (type_of x8)   # Type of 'q2'  (inherited through p.W -> u2.B -> q2)
 
 run_scenario7
 
@@ -322,11 +329,11 @@ scenario8 is
   intM2(is_zero bool) : num0 is
     fixed z => intM2 true
     fixed o => intM2 false
-    fixed type.zero => scenario8.intM2 true
-    fixed type.one => scenario8.intM2 false
-    fixed lessThan(other intM2) => is_zero && !other.is_zero
-    fixed plus_intrinsic(other intM2) => if is_zero then other else intM2 !other.is_zero
-    fixed minus_intrinsic(other intM2) => plus other
+    fixed redef type.zero => scenario8.intM2 true
+    fixed redef type.one => scenario8.intM2 false
+    fixed redef lessThan(other intM2) => is_zero && !other.is_zero
+    fixed redef plus_intrinsic(other intM2) => if is_zero then other else intM2 !other.is_zero
+    fixed redef minus_intrinsic(other intM2) => plus other
     redef valueString => if is_zero then "0 mod 2" else "1 mod 2"
 
 run_scenario8 =>

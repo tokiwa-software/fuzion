@@ -95,7 +95,7 @@ outerNormalization is
 
     rj ref : n j is
     j : rj is
-      a => j
+      redef a => j
       redef as_string => "a 'j'"
 
     t(r rj) =>
@@ -116,7 +116,7 @@ outerNormalization is
 
     rj ref : n is
     j : rj is
-      a => 3
+      redef a => 3
       redef as_string => "a 'j'"
 
     t(r rj) =>
@@ -132,9 +132,7 @@ outerNormalization is
   #
   testInterval =>
     _ := for i in 0.. do
-      say $i
-    until i > 3
+           say $i
+         until i > 3
 
   testInterval
-
-  unit

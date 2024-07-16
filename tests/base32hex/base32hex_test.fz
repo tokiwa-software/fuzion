@@ -1,0 +1,161 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test base32hex
+#
+# -----------------------------------------------------------------------
+
+base32hex_test is
+
+  my_c : choice String (array u8) is
+  mk_choice(x my_c) => x
+
+  # RFC 4618 test vectors
+  base32hex_test_vectors array (tuple my_c String) :=
+    [(mk_choice $"", ""),
+     (mk_choice "f", "CO======"),
+     (mk_choice "fo", "CPNG===="),
+     (mk_choice "foo", "CPNMU==="),
+     (mk_choice "foob", "CPNMUOG="),
+     (mk_choice "fooba", "CPNMUOJ1"),
+     (mk_choice "foobar", "CPNMUOJ1E8======")]
+
+  # Additional test vectors
+  own_test_vectors array (tuple my_c String) :=
+    [(mk_choice [(u8 0), 0, 0, 0],    "0000000="),
+     (mk_choice [(u8 255), 255, 255], "VVVVU==="),
+     (mk_choice (array u8 5 _->255), "VVVVVVVV"),
+     (mk_choice "123890ABCXYZabcxyz_:;>~<%&\$§!", "64P36E1P610K4GQOB5D62OJ3F1SNKNPQ7CV7SF154OIC59P1"),
+     (mk_choice """
+     Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidun\
+     t ut labore et dolore magna aliquyam erat, sed dia voluptua. At vero eos et accusam et justo d\
+     uo dolores et ea rebum.
+
+     Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.""",
+     """
+     9HNN4PBD41KN0SRLDKG68RRCDTP20SR9EGG62RB5EGM20ORFDPPMAT35EHQN483JC5I6IS3JCDKMSPP0CLM6IT3I5GG76P\
+     B441I6IOBD41N6URJLDLSI0PB9E9MMUP10EHIMQS3FE8G6IRJMD5I7ARJK41QN883CC5H6USJ541IN8834DTM6USJ541MM\
+     2PREC4G62R39E5QNIOBD41IN4OBK5GG76PB441I6IO90EPNMOTBGEHQM2BH085Q20TJ5E9NI0PBFECG6AT10C5HM6TBJC5\
+     MI0PBK41L7ASRKDSG68TBF41I6UR3FE9IN6835EGG6AO90E9IM4TBD5O50KKRKCLQ20ORCD5Q6283BC5PM8837ELH6ASJ7\
+     E9IMSB10DPNI0SR5C4G78OBBD5MM2T3141PM2RJ3EHQN6835EDQ20J3FE9IMQ839E1PNAR90CHNMORRI41PMIT10C5MMAT1E""")]
+
+
+
+  # ENCODING
+
+  say """
+      Testing base32hex encoding..."""
+
+  enc_test(test_vectors array (tuple my_c String), name String) =>
+    for results list (outcome String) := nil, results.concat (out:nil)
+        tup in test_vectors
+    do
+      (plain, code_expected) := tup
+      code_actual := match plain
+                        str String   => encodings.base32hex.encode_to_string str.utf8.as_array
+                        arr array u8 => encodings.base32hex.encode_to_string arr
+      out :=
+        if code_actual = code_expected
+          outcome "ok"
+        else
+          plain_str := match plain
+                         str String   => str
+                         arr array u8 => $arr
+          error "encode '$plain_str' produced '$code_actual' but should have been '$code_expected'"
+    else
+      if results ∀ (.ok)
+        say "$name test vectors are encoded correctly"
+      else
+        say "Failed encoding $name test vectors:"
+        results.filter (.is_error)
+              .map (.err.as_string)
+              .map ("  "+)
+              .for_each say
+        say ""
+  enc_test base32hex_test_vectors "RFC 4648"
+  enc_test own_test_vectors "Additional"
+
+
+
+  # DECODING
+
+  say """
+      \n
+      Testing base32hex decoding..."""
+  dec_test(test_vectors array (tuple my_c String), name String) =>
+    for results list (outcome String) := nil, results.concat (out:nil)
+        tup in test_vectors
+    do
+      (plain_exp, code) := tup
+      out :=
+        match encodings.base32hex.decode code.utf8.as_array
+          actual array u8 =>
+            match plain_exp
+              str String   =>
+                if str = String.from_bytes actual
+                  outcome "ok"
+                else
+                  error "decoding $code produced '{String.from_bytes actual}' but should have been '$str'"
+              arr array u8 =>
+                if arr.length=actual.length && ((arr.zip actual (a,b->a=b)) ∀ x->x)
+                  outcome "ok"
+                else
+                  error "decoding $code produced '$actual' but should have been '$arr'"
+          e error => error "decoding failed when it should not have: {e.msg}"
+    else
+      if results ∀ (.ok)
+        say "$name test vectors are decoded correctly"
+      else
+        say "Failed decoding $name test vectors:"
+        results.filter (.is_error)
+              .map (.err.as_string)
+              .map ("  "+)
+              .for_each say
+        say ""
+  dec_test base32hex_test_vectors "RFC 4648"
+  dec_test own_test_vectors "Additional"
+
+
+
+  # ERROR MESSAGES
+
+  say """
+      \n
+      Test error messages when decoding broken base32hex...
+      """
+
+  broken_enc := ["""
+                 CPN
+                 MU===""",        # line break
+                 "CPNMU==",       # padding to short
+                 "WWWWWWWW",      # non alphabet character
+                 "ZZZZZZZZ",      # non alphabet character
+                 "CPN=====",      # invalid padding length / encoding length with valid overall length
+                 "CPN=MU==",      # pad char within encoding
+                 "CPNMU====",     # padding to long
+                 "CPNM U===",     # space
+                 "CP;NMU===",     # non alphabet ascii character
+                 "CPNM🌍U=="]    # non alphabet multi byte unicode character
+
+  for t in broken_enc do
+    yak "$t: "
+    say (match encodings.base32hex.decode_str t
+        arr array u8 => String.type.from_bytes arr
+        e error => e.as_string)
+  say ""

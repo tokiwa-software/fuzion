@@ -80,9 +80,7 @@ module fileio is
   module write(fd i64, content array u8) outcome unit =>
     res := write fd content.internal_array.data content.length
 
-    if res = 0
-      unit
-    else
+    if res != 0
       error "write error: {res}"
 
   # intrinsic to write bytes (internal array data) in a file using the file descriptor
@@ -105,9 +103,7 @@ module fileio is
                 # the (relative or absolute) file name, using platform specific path separators
                 path String) outcome unit =>
     arr := fuzion.sys.c_string path
-    if delete arr unit
-      unit
-    else
+    if !(delete arr unit)
       error "an error occurred while performing the delete operation on the following file/dir: \"$path\""
 
   # intrinsic that deletes the file/dir represented by the path returning TRUE in case of success
@@ -131,9 +127,7 @@ module fileio is
               new_path String) outcome unit =>
     arr0 := fuzion.sys.c_string old_path
     arr1 := fuzion.sys.c_string new_path
-    if move arr0 arr1 unit
-      unit
-    else
+    if !(move arr0 arr1 unit)
       error "an error occurred while performing the following move operation: \"$old_path\" --> \"$new_path\""
 
   # intrinsic that returns TRUE in case the move was successful and FALSE in case not
@@ -154,9 +148,7 @@ module fileio is
                     # the (relative or absolute) dir name, using platform specific path separators
                     path String) outcome unit =>
     arr := fuzion.sys.c_string path
-    if create_dir arr unit
-      unit
-    else
+    if !(create_dir arr unit)
       error "an error occurred while creating the following directory: \"$path\""
 
   # intrinsic that returns TRUE in case of success or FALSE in case of failure during dir creation
@@ -202,7 +194,7 @@ module fileio is
               flag i8) outcome i64 =>
     open_results := fuzion.sys.internal_array_init i64 2  # [file descriptor, error number]
     open (fuzion.sys.c_string path) open_results.data flag
-    if open_results[1] = i64 0
+    if open_results[1] = 0
       open_results[0]
     else
       error "error number: {open_results[1]}"
@@ -226,9 +218,7 @@ module fileio is
                # file descriptor
                fd i64) outcome unit =>
     closing_result := close fd unit
-    if closing_result = i8 0
-      unit
-    else
+    if closing_result != 0
       error "error number: $closing_result"
 
   # intrinsic that takes an i64 value that represents the file descriptor and closes the stream
@@ -253,7 +243,7 @@ module fileio is
               offset i64) outcome i64 =>
     arr := fuzion.sys.internal_array_init i64 2
     seek fd offset arr.data
-    if arr[1] = i64 0
+    if arr[1] = 0
       arr[0]
     else
       error "error number: {arr[1]}"
@@ -281,7 +271,7 @@ module fileio is
                        fd i64) outcome i64 =>
     arr := fuzion.sys.internal_array_init i64 2
     file_position fd arr.data
-    if arr[1] = i64 0
+    if arr[1] = 0
       arr[0]
     else
       error "error number: {arr[1]}"
@@ -367,7 +357,7 @@ module fileio is
   module open_dir(path String) outcome i64 =>
     open_results := fuzion.sys.internal_array_init i64 2  # [file descriptor, error number]
     open_dir (fuzion.sys.c_string path) open_results.data
-    if open_results[1] = i64 0
+    if open_results[1] = 0
       open_results[0]
     else
       error "error number: {open_results[1]}"

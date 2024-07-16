@@ -31,22 +31,22 @@ is
   # the actually relevant data of this uint.
   # irrelevant zeros at start are dropped.
   # zero is represented by the empty list.
-  data := b.drop_while (x -> x = u32 0)
+  data := b.drop_while x->x=0
 
   # bitwise operations
 
   # bitwise and
-  public fixed infix & (other uint) uint =>
+  public fixed redef infix & (other uint) uint =>
     (b1, b2) := equalize other
     uint (b1.zip b2 (x,y)->x&y) unit
 
   # bitwise or
-  public fixed infix | (other uint) uint =>
+  public fixed redef infix | (other uint) uint =>
     (b1, b2) := equalize other
     uint (b1.zip b2 (x,y)->x|y) unit
 
   # bitwise xor
-  public fixed infix ^ (other uint) uint =>
+  public fixed redef infix ^ (other uint) uint =>
     (b1, b2) := equalize other
     uint (b1.zip b2 (x,y)->x^y) unit
 
@@ -54,7 +54,7 @@ is
   # shift operations
 
   # shift right
-  public fixed infix >> (other uint) uint
+  public fixed redef infix >> (other uint) uint
   =>
     check
       other ≤ uint i32.max.as_u64
@@ -75,7 +75,7 @@ is
 
 
   # shift left
-  public fixed infix << (other uint) uint
+  public fixed redef infix << (other uint) uint
   =>
     check
       other ≤ uint i32.max.as_u64
@@ -144,7 +144,7 @@ is
 
 
   # add two unsigned ints
-  public fixed infix +  (other uint) uint =>
+  public fixed redef infix +  (other uint) uint =>
     (b1, b2) := equalize other
     (d, _, _) := ([u32 0] ++ b1)
       .reverse_list
@@ -161,7 +161,7 @@ is
 
 
   # subtract other from this unsigned int
-  public fixed infix - (other uint) uint
+  public fixed redef infix - (other uint) uint
   =>
     two_pow_32 := ((u64 1)<<32)
     (b1, b2) := equalize other
@@ -187,7 +187,7 @@ is
 
   # NYI make faster: https://en.wikipedia.org/wiki/Multiplication_algorithm#Computational_complexity_of_multiplication
   # multiply these unsigned ints
-  public fixed infix *  (other uint) uint =>
+  public fixed redef infix *  (other uint) uint =>
     data
       .reverse_list
       .indexed
@@ -208,7 +208,7 @@ is
 
 
   # divide these unsigned ints
-  public fixed infix /  (other uint) uint
+  public fixed redef infix /  (other uint) uint
   =>
     (quotient,_) := (divide_with_remainder other)
     quotient
@@ -216,7 +216,7 @@ is
 
   # modulo
   # returns the remainder of the division
-  public fixed infix %  (other uint) uint
+  public fixed redef infix %  (other uint) uint
   =>
     (_,remainder) := (divide_with_remainder other)
     remainder
@@ -224,7 +224,7 @@ is
 
   # exponentation operator:
   # this uint to the power of other
-  public fixed infix ** (other uint) uint
+  public fixed redef infix ** (other uint) uint
   =>
     if other = uint.zero
       uint.one
@@ -240,14 +240,14 @@ is
 
   # equality: are these unsigned integers equal?
   #
-  fixed type.equality(a, b uint) bool =>
+  fixed redef type.equality(a, b uint) bool =>
     a.data.count = b.data.count &&
       ((a.data.zip b.data (c,d -> c = d)) ∀ (x->x))
 
 
   # total order
   #
-  fixed type.lteq(a, b uint) =>
+  fixed redef type.lteq(a, b uint) =>
     if a.data.count = b.data.count
       a.data
         # zip the two equally long lists of digits
@@ -264,24 +264,21 @@ is
 
   # checks if operations are allowed
 
-  public fixed prefix -! bool => uint.this = uint.zero
-  public fixed infix +! (other uint) bool => true
-  public fixed infix -! (other uint) bool => uint.this ≥ other
-  public fixed infix *! (other uint) bool => true
-  public fixed infix /! (other uint) bool => other != uint.zero
-  public fixed infix %! (other uint) bool => true
-  public fixed infix **!(other uint) bool => true
+  public fixed redef prefix -! bool => uint.this = uint.zero
+  public fixed redef infix -! (other uint) bool => uint.this ≥ other
+  public fixed redef infix /! (other uint) bool => other != uint.zero
+  public fixed redef infix %! (other uint) bool => other != uint.zero
 
   # exponentation always works, even though it might be
   # slow for large numbers
 
-  public fixed infix **?(other uint) num_option uint => uint.this ** other
-  public fixed infix **^(other uint) uint => uint.this ** other
+  public fixed redef infix **?(other uint) num_option uint => uint.this ** other
+  public fixed redef infix **^(other uint) uint => uint.this ** other
 
-  public fixed type.zero uint =>
+  public fixed redef type.zero uint =>
     uint [u32 0] unit
 
-  public fixed type.one uint =>
+  public fixed redef type.one uint =>
     uint [u32 1] unit
 
 
@@ -299,7 +296,7 @@ is
 
 
   # this uint as an u8
-  public as_u8 u8
+  public redef as_u8 u8
   =>
     as_u32.as_u8
 

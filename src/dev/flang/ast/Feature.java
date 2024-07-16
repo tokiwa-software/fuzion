@@ -30,8 +30,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.ListIterator;
+import java.util.Optional;
 import java.util.Set;
-import java.util.Stack;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -199,6 +199,50 @@ public class Feature extends AbstractFeature
   private final Contract _contract;
   public Contract contract() { return _contract; }
 
+
+  /**
+   * Lists of features we redefine and hence from which we inherit pre or post
+   * conditions.  Used during front end only to create calls to redefined
+   * features post conditions when generating post condition feature for this
+   * contract.
+   */
+  List<AbstractFeature> _inheritedPre  = new List<>();
+  List<AbstractFeature> _inheritedPost = new List<>();
+
+
+  /**
+   * precondition feature, added during syntax sugar phase.
+   */
+  Feature _preFeature = null;
+  @Override
+  public AbstractFeature preFeature()
+  {
+    return _preFeature;
+  }
+
+  /**
+   * pre bool feature, added during syntax sugar phase.
+   */
+  Feature _preBoolFeature = null;
+  @Override
+  public AbstractFeature preBoolFeature()
+  {
+    return _preBoolFeature;
+  }
+
+  /**
+   * pre and call feature, added during syntax sugar phase.
+   */
+  Feature _preAndCallFeature = null;
+  @Override
+  public AbstractFeature preAndCallFeature()
+  {
+    return _preAndCallFeature;
+  }
+
+  /**
+   * post feature, added during syntax sugar phase.
+   */
   Feature _postFeature = null;
   @Override
   public AbstractFeature postFeature()
@@ -308,6 +352,32 @@ public class Feature extends AbstractFeature
    * This is a fix for #978 but it might need to be removed when fixing #932.
    */
   public boolean _addedLate = false;
+
+
+  /*
+   * true if this feature is found to be
+   * declared in a block with
+   * _newscope=true (e.g. if/else, loop)
+   * or in a case-block
+   *
+   * example:
+   * ```
+   * f0 =>
+   *   if cc1 then
+   *      f1 =>
+   *        f2 =>
+   *        if cc2 then
+   *          f3 =>
+   *      {
+   *        f4 =>
+   *      }
+   * ```
+   * f1, f3 and f4 are _scoped in this example.
+   * f2 is not _scoped, i.e. does not need to be checked if in scope.
+   * This is because if f1 is accessible then f2 is also always accessible.
+   *
+   */
+  public boolean _scoped = false;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -793,6 +863,8 @@ public class Feature extends AbstractFeature
   }
 
 
+  // this caching reduces build time of base.fum by ~50%
+  private Optional<Kind> _kind = Optional.empty();
   /**
    * What is this Feature's kind?
    *
@@ -800,18 +872,29 @@ public class Feature extends AbstractFeature
    */
   public Kind kind()
   {
-    return state().atLeast(State.RESOLVING_TYPES) && Types.resolved != null && isChoiceAfterTypesResolved() ||
-                                                                               isChoiceBeforeTypesResolved()
-      ? Kind.Choice
-      : switch (implKind()) {
-          case FieldInit, FieldDef, FieldActual, FieldIter, Field -> Kind.Field;
-          case TypeParameter                                      -> Kind.TypeParameter;
-          case TypeParameterOpen                                  -> Kind.OpenTypeParameter;
-          case Routine, RoutineDef, Of                            -> Kind.Routine;
-          case Abstract                                           -> Kind.Abstract;
-          case Intrinsic                                          -> Kind.Intrinsic;
-          case Native                                             -> Kind.Native;
-        };
+    var result = _kind;
+    if (result.isEmpty())
+      {
+        var kind = state().atLeast(State.RESOLVING_TYPES) && Types.resolved != null && isChoiceAfterTypesResolved()
+                     || isChoiceBeforeTypesResolved()
+          ? Kind.Choice
+          : switch (implKind()) {
+              case FieldInit, FieldDef, FieldActual, FieldIter, Field -> Kind.Field;
+              case TypeParameter                                      -> Kind.TypeParameter;
+              case TypeParameterOpen                                  -> Kind.OpenTypeParameter;
+              case Routine, RoutineDef, Of                            -> Kind.Routine;
+              case Abstract                                           -> Kind.Abstract;
+              case Intrinsic                                          -> Kind.Intrinsic;
+              case Native                                             -> Kind.Native;
+            };
+        // cache only when we have resolved types.
+        if (state().atLeast(State.RESOLVING_TYPES) && Types.resolved != null)
+          {
+            _kind = Optional.of(kind);
+          }
+         result = Optional.of(kind);
+      }
+    return result.get();
   }
 
 
@@ -975,7 +1058,7 @@ public class Feature extends AbstractFeature
                   (Errors.any() || p.calledFeature() != null);
 
                 var pf = p.calledFeature();
-                if (pf != null && pf.isBaseChoice())
+                if (pf != null && pf.isChoice())
                   {
                     return true;
                   }
@@ -1032,7 +1115,6 @@ public class Feature extends AbstractFeature
       }
     _impl.visit(v, this);
     _returnType.visit(v, this);
-    _contract.visit(v, this);
   }
 
 
@@ -1287,19 +1369,18 @@ public class Feature extends AbstractFeature
       {
         res = r;
       }
-    public void         action      (AbstractAssign a, AbstractFeature outer) {        a.resolveTypes   (res,   outer); }
-    public void         actionBefore(Call           c, AbstractFeature outer) {        c.tryResolveTypeCall(res,   outer); }
-    public Call         action      (Call           c, AbstractFeature outer) { return c.resolveTypes   (res,   outer); }
-    public Expr         action      (DotType        d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
-    public Expr         action      (Destructure    d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
-    public Expr         action      (Feature        f, AbstractFeature outer) { /* use f.outer() since qualified feature name may result in different outer! */
-                                                                                return f.resolveTypes   (res, f.outer() ); }
-    public Function     action      (Function       f, AbstractFeature outer) {        f.resolveTypes   (res,   outer); return f; }
-    public void         action      (Match          m, AbstractFeature outer) {        m.resolveTypes   (res,   outer); }
-    public Expr         action      (This           t, AbstractFeature outer) { return t.resolveTypes   (res,   outer); }
-    public AbstractType action      (AbstractType   t, AbstractFeature outer) { return t.resolve        (res,   outer); }
+    @Override public void         action      (AbstractAssign  a, AbstractFeature outer) {        a.resolveTypes   (res,   outer); }
+    @Override public void         actionBefore(Call            c, AbstractFeature outer) {        c.tryResolveTypeCall(res,   outer); }
+    @Override public Call         action      (Call            c, AbstractFeature outer) { return c.resolveTypes   (res,   outer); }
+    @Override public Expr         action      (DotType         d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
+    @Override public Expr         action      (Destructure     d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
+    @Override public Function     action      (Function        f, AbstractFeature outer) {        f.resolveTypes   (res,   outer); return f; }
+    @Override public void         action      (Match           m, AbstractFeature outer) {        m.resolveTypes   (res,   outer); }
+    @Override public Expr         action      (This            t, AbstractFeature outer) { return t.resolveTypes   (res,   outer); }
+    @Override public AbstractType action      (AbstractType    t, AbstractFeature outer) { return t.resolve        (res,   outer); }
+    @Override public Expr         action      (AbstractCurrent c, AbstractFeature outer) { return c.resolveTypes(res, outer); }
 
-    public boolean doVisitActuals() { return false; }
+    @Override public boolean doVisitActuals() { return false; }
   }
 
 
@@ -1401,15 +1482,12 @@ public class Feature extends AbstractFeature
       {
         _state = State.RESOLVING_SUGAR1;
 
-        _contract.addContractFeatures(this, res);
+        _contract.addContractFeatures(res, this);
         if (definesType())
           {
             typeFeature(res);
           }
-        visit(new FeatureVisitor()
-          {
-            public Expr action(Call c, AbstractFeature outer) { return c.resolveSyntacticSugar(res, outer); }
-          });
+        visit(res._resolveSyntaxSugar1);
 
         _state = State.RESOLVED_SUGAR1;
         res.scheduleForTypeInference(this);
@@ -1628,18 +1706,6 @@ A ((Choice)) declaration must not contain a result type.
    */
   void choiceTypeCheckAndInternalFields(Resolution res)
   {
-    for (var p : _inherits)
-      {
-        // choice type is leaf
-        var cf = p.calledFeature();
-        if (CHECKS) check
-          (Errors.any() || cf != null);
-
-        if (cf != null && cf.isChoice() && !cf.isBaseChoice())
-          {
-            AstErrors.cannotInheritFromChoice(p.pos());
-          }
-      }
     if (isChoice())
       {
         checkChoiceAndAddInternalFields(res);
@@ -1934,7 +2000,7 @@ A ((Choice)) declaration must not contain a result type.
     if (_impl.hasInitialValue() &&
         /* initial value has been replaced by explicit assignment during
          * RESOLVING_TYPES phase: */
-        !outer.state().atLeast(State.RESOLVING_SUGAR1))
+        (outer == null || !outer.state().atLeast(State.RESOLVING_SUGAR1)))
       {
         _impl.visitExpr(v, outer);
       }
@@ -1943,204 +2009,51 @@ A ((Choice)) declaration must not contain a result type.
 
 
   /**
-   * determine the static type of all expressions and declared features in this feature
+   * resolve syntactic sugar of feature declaration, i.e., add assignment for the
+   * initial value of fields.
    *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
+   * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this expression.
+   * @param outer the root feature that contains this feature declaration.
    */
-  public Expr resolveTypes(Resolution res, AbstractFeature outer)
+  public Expr resolveSyntacticSugar1(Resolution res, AbstractFeature outer)
   {
+    if (PRECONDITIONS) require
+      (res != null,
+       outer.state() == State.RESOLVING_SUGAR1,
+       isUniverse() || outer != null || Errors.any());
+
     Expr result = this;
 
     if (CHECKS) check
-      (this.outer() == outer,
-        Errors.any() ||
-        (_impl._kind != Impl.Kind.FieldDef    &&
-         _impl._kind != Impl.Kind.FieldActual)
-        || _returnType == NoType.INSTANCE);
+      (Errors.any() ||
+       (_impl._kind != Impl.Kind.FieldDef    &&
+        _impl._kind != Impl.Kind.FieldActual)
+       || _returnType == NoType.INSTANCE);
 
     if (_impl.hasInitialValue())
       {
-        /* add assignment of initial value: */
-        result = new Block
-          (new List<>
-           (this,
-            new Assign(res, _pos, this, _impl.expr(), outer)
-            {
-              public AbstractAssign visit(FeatureVisitor v, AbstractFeature outer)
-              {
-                /* During findFieldDefInScope, we check field uses in impl, but
-                 * we have to avoid doing this again in this assignment since a declaration
-                 *
-                 *   x := 3
-                 *   x := x + 1
-                 *
-                 * is converted into
-                 *
-                 *   Feature x with impl kind FieldDef, initialvalue 3
-                 *   x := 3
-                 *   Feature x with impl kind FieldDef, initialvalue x + 1
-                 *   x := x + 1
-                 *
-                 * so the second assignment would find the second x, which is
-                 * wrong.
-                 *
-                 * Alternatively, we could add this assignment in a later phase.
-                 */
-                return v.visitAssignFromFieldImpl()
-                  ? super.visit(v, outer)
-                  : this;
-              }
-            }
-            ));
-      }
-    return result;
-  }
+        // outer() != outer may be the case for fields declared in types
+        //
+        //   type.f := x
+        //
+        // or for qualified declarations
+        //
+        //   String.new_field := 3
+        //
+        // which should have caused errors already.
+        if (CHECKS) check
+          (Errors.any() || this.outer() == outer);
 
-
-  /**
-   * Find the field whose scope includes the given call or assignment.
-   *
-   * @param name the name of the feature
-   *
-   * @param use the call, assign or destructure we are trying to resolve
-   *
-   * @param inner the inner feature that contains call or assign, null if
-   * call/assign is part of current feature's code.
-   *
-   * @return in case we found a feature visible in the call's or assign's scope,
-   * this is the feature.
-   */
-  public Feature findFieldDefInScope(String name, Expr use, AbstractFeature inner)
-  {
-    if (PRECONDITIONS) require
-      (name != null,
-       use instanceof Call ||
-       use instanceof AbstractAssign ||
-       use instanceof Destructure,
-       inner == null || inner.outer() == this);
-
-    // curres[0]: currently visible field with name name
-    // curres[1]: result: will be set to currently visible field when call is found
-    var curres = new Feature[2];
-    var stack = new Stack<Feature>();
-
-    // start by making the arguments visible:
-    for (var f : _arguments)
-      {
-        if (f.featureName().baseName().equals(name))
+        if (this.outer() == outer)
           {
-            curres[0] = (Feature) f;
+            /* add assignment of initial value: */
+            AbstractAssign ass = new Assign(res, _pos, this, _impl.expr(), outer);
+            ass = ass.visit(res._resolveSyntaxSugar1, outer);
+            result = new Block(new List<>(this, ass));
           }
       }
-
-    var fv = new FeatureVisitor()
-      {
-
-        /* we do not want to check assignments of initial values, see above in
-         * resolveTypes() */
-        boolean visitAssignFromFieldImpl() { return false; }
-
-        void found()
-        {
-          if (PRECONDITIONS) require
-            (curres[1] == null || curres[1] == Types.f_ERROR);
-
-          curres[1] = curres[0];
-        }
-
-        public Call action(Call c, AbstractFeature outer)
-        {
-          if (c == use)
-            { // Found the call, so we got the result!
-              found();
-            }
-          else if (c == Call.ERROR && curres[1] == null)
-            {
-              curres[1] = Types.f_ERROR;
-            }
-          return c;
-        }
-        public void action(AbstractAssign a, AbstractFeature outer)
-        {
-          if (a == use)
-            { // Found the assign, so we got the result!
-              found();
-            }
-        }
-        public Expr action(Destructure d, AbstractFeature outer)
-        {
-          if (d == use)
-            { // Found the assign, so we got the result!
-              found();
-            }
-          return d;
-        }
-        public void actionBefore(Block b, AbstractFeature outer)
-        {
-          if (b._newScope)
-            {
-              stack.push(curres[0]);
-            }
-        }
-        public void  actionAfter(Block b, AbstractFeature outer)
-        {
-          if (b._newScope)
-            {
-              curres[0] = stack.pop();
-            }
-        }
-        public void actionBefore(AbstractCase c)
-        {
-          stack.push(curres[0]);
-        }
-        public void  actionAfter(AbstractCase c)
-        {
-          curres[0] = stack.pop();
-        }
-        public Expr action(Feature f, AbstractFeature outer)
-        {
-          if (f == inner)
-            {
-              found();
-            }
-          else
-            {
-              if (f._impl.hasInitialValue() &&
-                  outer.state().atLeast(State.RESOLVING_SUGAR1) /* iv otherwise already visited by Feature.visit(fv,outer) */)
-                {
-                  f._impl.visitExpr(this, f);
-                }
-            }
-          if (f.isField() && f.featureName().baseName().equals(name))
-            {
-              curres[0] = f;
-            }
-          return f;
-        }
-        public Expr action(Function  f, AbstractFeature outer)
-        {
-          if (inner != null && f._wrapper == inner)
-            {
-              found();
-            }
-          return f;
-        }
-      };
-
-    _contract.visit(fv, this);
-    for (var p: _inherits)
-      {
-        p.visit(fv, this);
-      }
-
-    // then iterate the expressions making fields visible as they are declared
-    // and checking which one is visible when we reach call:
-    _impl.visit(fv, this);
-
-    return curres[1];
+    return result;
   }
 
 
@@ -2219,29 +2132,6 @@ A ((Choice)) declaration must not contain a result type.
     return false;
   }
 
-  /**
-   * Is this feature declared in the main block of its outer feature?  Features
-   * declared in inner blocks are not visible to the outside.
-   */
-  public boolean isDeclaredInMainBlock()
-  {
-    if (_outer != null)
-      {
-        var b = _outer.code();
-        if (b instanceof Block)
-          {
-            for (var e : ((Block)b)._expressions)
-              {
-                if (e == this)
-                  {
-                    return true;
-                  }
-              }
-          }
-      }
-    return false;
-  }
-
 
   /**
    * resultTypeIfPresent returns the result type of this feature using the
@@ -2285,7 +2175,7 @@ A ((Choice)) declaration must not contain a result type.
       {
         result = _returnType.functionReturnType();
       }
-    if (isOuterRef())
+    if (isOuterRef() && !outer().isFixed())
       {
         result = result.asThis();
       }

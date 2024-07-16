@@ -1,4 +1,27 @@
-name: run c tests on windows
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  GitHub Actions workflow to build and test Fuzion on Windows.
+#
+# -----------------------------------------------------------------------
+
+name: run tests on windows (c)
 
 permissions:
   contents: read
@@ -7,8 +30,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  run_tests_c:
-    name: windows run c tests
+  run_tests:
+    name: windows run tests
     runs-on: windows-latest
     defaults:
       run:
@@ -18,6 +41,7 @@ jobs:
         with:
           update: true
           path-type: minimal
+          # "If you are unsure, go with UCRT64." https://www.msys2.org/docs/environments/
           msystem: UCRT64
 # git is used in Makefile: JAVA_FILE_TOOLS_VERSION
           install: >-
@@ -28,32 +52,27 @@ jobs:
 
       - name: install choco packages
         shell: powershell
-        run: choco install openjdk --version 21.0.0
+        run: choco install openjdk --version 21.0.2
 
-      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v2.6.0
-
-      # NYI this does not work :-( but why?
-      # - name: set PATH
-      #   run: echo "/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-21/bin:$PATH" >> $GITHUB_PATH
-
-      - name: echo PATH
-        run: echo "$PATH"
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v2.6.0
 
       - name: echo versions
         run: |
-          export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-21/bin:$JAVA_HOME/bin/server:$PATH"
+          export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21.0.2"
+          export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
           clang --version
           javac --version
+          whereis jvm.dll
 
       - name: build libgc
         run: |
-          export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-21/bin:$JAVA_HOME/bin/server:$PATH"
+          export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21.0.2"
+          export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
           ./bin/windows_install_boehm_gc.sh
 
       - name: run tests
-        run:  |
-          export PATH="/ucrt64/bin/:/c/Program Files/OpenJDK/jdk-21/bin:$JAVA_HOME/bin/server:$PATH"
+        run: |
+          export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21.0.2"
+          export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
           export FUZION_CLANG_INSTALLED_DIR="D:/a/_temp/msys64/ucrt64/bin"
-          # change default codepage to utf-8 and run tests
-          # if we don't change codepage emoji world in tests/javaBase will not work
-          chcp.com 65001 && make run_tests_c
+          make run_tests_c

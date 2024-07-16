@@ -1,0 +1,123 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test
+#
+# -----------------------------------------------------------------------
+
+visibility_scoping is
+
+  test1 is
+    b is
+    c is
+    d is
+
+    a : choice b c d is
+    e a := b
+
+    # reuse names in match cases
+    match e
+      x b => say x
+      x c => say x
+      x d => say x
+
+    say x     # should flag an error: feature not found
+
+
+
+  # NYI: BUG:
+  # test2 is
+
+  #   A(b i32) ref is
+  #   c(b i32) is
+  #     d : A b is  # should NOT flag an error
+
+
+
+  test3 =>
+    _ := for ar := outcome unit
+         while false
+
+    ref : Function unit
+      redef call =>
+        say ar  # should flag an error: feature not found
+
+
+
+
+  test4 is
+    if true
+      x := 1
+    else
+      x := 2
+      panic "P"
+    say ((0..1).map y->x)  # should flag an error: feature not found
+
+
+
+  test5 is
+
+    for q := 3, 4
+        a in [1,2,3]
+    do
+    else
+      say "in else     : q is $q"
+    say "outside else: q is $q"   # should flag an error: feature not found
+
+
+
+  test6 is
+    match true
+      f FALSE =>
+      t TRUE =>
+        tt := t
+        ttt => t
+
+    a => ttt # should flag an error: feature not found
+    b => tt   # should flag an error: feature not found
+    c => t   # should flag an error: feature not found
+    d := ttt # should flag an error: feature not found
+    e := tt   # should flag an error: feature not found
+    f0 := t   # should flag an error: feature not found
+
+
+
+  # NYI: BUG:
+  # test7 is
+  #   x i32 := (3..5).reduce -5 (a,b)->x # should flag an error: feature not found
+  #   say x
+
+
+
+  # NYI: BUG: accessing (non-field) feature (with same outer as field) from field initializer should be forbidden?
+  # test8 is
+  #   n => m
+
+  #   a := n # should raise error: feature not found
+  #   m := 7
+
+  #   say a
+
+
+
+  test9 is
+    if true
+      if true
+        say x
+      x := 3

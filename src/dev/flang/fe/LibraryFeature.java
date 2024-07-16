@@ -102,12 +102,6 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * cached result of contract()
-   */
-  Contract _contract;
-
-
-  /**
    * cached result of innerFeatures()
    */
   List<AbstractFeature> _innerFeatures;
@@ -493,7 +487,11 @@ public class LibraryFeature extends AbstractFeature
   }
 
 
-  // following used in MIR or later
+  /**
+   * The implementation of this feature.
+   *
+   * requires isRoutine() == true
+   */
   public Expr code()
   {
     if (PRECONDITIONS) require
@@ -763,21 +761,23 @@ public class LibraryFeature extends AbstractFeature
 
   public Contract contract()
   {
-    if (_contract == null)
-      {
-        var pre_n  = _libModule.featurePreCondCount(_index);
-        var post_n = 0;
-        if (pre_n == 0 && post_n == 0 && postFeature() == null)
-          {
-            _contract = Contract.EMPTY_CONTRACT;
-          }
-        else
-          {
-            _contract = new Contract(condList(pre_n , _libModule.featurePreCondPos (_index)),
-                                     new List<>());
-          }
-      }
-    return _contract;
+    return Contract.EMPTY_CONTRACT;
+  }
+
+  @Override
+  public AbstractFeature preFeature()
+  {
+    return _libModule.featurePreFeature(_index);
+  }
+  @Override
+  public AbstractFeature preBoolFeature()
+  {
+    return _libModule.featurePreBoolFeature(_index);
+  }
+  @Override
+  public AbstractFeature preAndCallFeature()
+  {
+    return _libModule.featurePreAndCallFeature(_index);
   }
 
   @Override

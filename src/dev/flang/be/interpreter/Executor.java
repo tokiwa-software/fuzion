@@ -32,7 +32,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import dev.flang.fuir.FUIR;
-import dev.flang.fuir.FUIR.ContractKind;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.AbstractInterpreter.ProcessExpression;
 
@@ -240,8 +239,7 @@ public class Executor extends ProcessExpression<Value, Object>
         // NYI change call to pass in ai as in match expression?
         var cur = new Instance(cc);
 
-        callOnInstance(s, cc, cur, tvalue, args, true);
-        callOnInstance(s, cc, cur, tvalue, args, false);
+        callOnInstance(s, cc, cur, tvalue, args);
 
         Value rres = cur;
         var resf = _fuir.clazzResultField(cc);
@@ -459,7 +457,7 @@ public class Executor extends ProcessExpression<Value, Object>
             _cur,
             tagAndChoiceElement.v1());
       }
-    return ai.process(_fuir.matchCaseCode(s, cix));
+    return ai.processCode(_fuir.matchCaseCode(s, cix));
   }
 
 
@@ -519,26 +517,13 @@ public class Executor extends ProcessExpression<Value, Object>
     var result = FuzionThread.current()._effects.get(ecl);
     if (result == null)
       {
-        Errors.fatal("No effect installed: " + _fuir.clazzAsStringNew(ecl));
+        Errors.fatal("No effect installed: " + _fuir.clazzAsStringHuman(ecl));
       }
 
     if (POSTCONDITIONS) ensure
       (result != unitValue());
 
     return pair(result);
-  }
-
-  @Override
-  public Object contract(int s, ContractKind ck, Value cc)
-  {
-    if (!cc.boolValue())
-      {
-        var cl = _fuir.clazzAt(s);
-        Errors.runTime(_fuir.sitePos(s),
-                       (ck == ContractKind.Pre ? "Precondition" : "Postcondition") + " does not hold",
-                       (ck == ContractKind.Pre ? "For" : "After") + " call to " + _fuir.clazzAsStringNew(cl) + "\n" + callStack(fuir()));
-      }
-    return null;
   }
 
 
@@ -556,17 +541,15 @@ public class Executor extends ProcessExpression<Value, Object>
    *
    * @param args the arguments to be passed to this call.
    *
-   * @param pre
-   *
    * @return
    */
-  Value callOnInstance(int s, int cc, Instance cur, Value outer, List<Value> args, boolean pre)
+  Value callOnInstance(int s, int cc, Instance cur, Value outer, List<Value> args)
   {
     FuzionThread.current()._callStackFrames.push(cc);
     FuzionThread.current()._callStack.push(s);
 
     new AbstractInterpreter<>(_fuir, new Executor(cur, outer, args))
-      .process(cc, pre);
+      .processClazz(cc);
 
     FuzionThread.current()._callStack.pop();
     FuzionThread.current()._callStackFrames.pop();
@@ -586,7 +569,7 @@ public class Executor extends ProcessExpression<Value, Object>
   {
     if (frame != -1)
       {
-        sb.append(_fuir.clazzAsStringNew(frame)).append(": ");
+        sb.append(_fuir.clazzAsStringHuman(frame)).append(": ");
       }
     sb.append(_fuir.sitePos(callSite).show()).append("\n");
   }

@@ -52,6 +52,6 @@ test_outer_as_type_parameter is
   mm.use ()->
     {
       cnt := mm.env.new 100
-      cnt := count mm i32 cnt [1,2,3]
-      say cnt
+      cnt1 := count mm i32 cnt [1,2,3]
+      say cnt1
     }

@@ -24,10 +24,13 @@
 test_process =>
 
 
+  lm : mutate is
+
+
   # create string of given byte size
   get_str(byte_size i32) =>
     ref : String
-      utf8 Sequence u8 =>
+      redef utf8 Sequence u8 =>
         (1..byte_size)
           .map u8 (x -> codepoint.type.zero_char)
 
@@ -44,40 +47,45 @@ test_process =>
     (process.spawn ["cat"]).bind unit p->
       _ := p.write_string "Hello from the other side."
       say p.wait
-      _ := p.with_out ()->
-        say (io.buffered.read_string 1E9)
+      _ := lm.go ()->
+        _ := p.with_out unit lm ()->
+          say (io.buffered.read_string lm 1E9)
 
 
 
   test "read stdout of process" ()->
     (process.spawn ["echo", "eecchhoo"]).bind unit p->
-      _ := p.with_out ()->
-        say (io.buffered.read_string 1E9)
+      _ := lm.go ()->
+        _ := p.with_out unit lm ()->
+          say (io.buffered.read_string lm 1E9)
 
 
 
   test "pass environment variable" ()->
     (process.env_vars (container.map_of [("MYENVVAR", "content")])).go ()->
       (process.spawn ["printenv", "MYENVVAR"]).bind unit p->
-        _ := p.with_out ()->
-          say (io.buffered.read_string 1E9)
+        _ := lm.go ()->
+          _ := p.with_out unit lm ()->
+            say (io.buffered.read_string lm 1E9)
 
 
 
   test "feed output of process 1 to process 2" ()->
     (process.spawn ["echo", "'feed me to cat'"]).bind unit p->
       (p | ["cat"]).bind unit p2->
-        _ := p2.with_out ()->
-          say (io.buffered.read_string 1E9)
+        _ := lm.go ()->
+          _ := p2.with_out unit lm ()->
+            say (io.buffered.read_string lm 1E9)
 
 
 
   test "1kb argument, piped to another process" ()->
     (process.spawn ["echo", "-n", (get_str 1E3)]).bind unit p->
       (p | ["cat"]).bind unit p2->
-        _ := p2.with_out ()->
-          say (io.buffered.read_string 1E9).byte_length
-        say p2.wait
+        _ := lm.go ()->
+          _ := p2.with_out unit lm ()->
+            say (io.buffered.read_string lm 1E9).byte_length
+          say p2.wait
 
 
 /* NYI Too slow

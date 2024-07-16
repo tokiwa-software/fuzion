@@ -27,10 +27,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
+import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
 
 
@@ -152,7 +155,7 @@ public class Loop extends ANY
   static private final boolean FUZION_DEBUG_LOOPS = "true".equals(System.getenv("FUZION_DEBUG_LOOPS"));
 
 
-  /*----------------------------  variables  ----------------------------*/
+  /*----------------------------  constants  ----------------------------*/
 
 
   /**
@@ -169,19 +172,24 @@ public class Loop extends ANY
 
 
   /**
-   * Loop prolog: Code block that initializes the index variables with their
-   * initial values. May be null if none.
+   * The block containing the implementation of the loop.
    */
-  private final Block _prolog;
-  private List<Expr> _prologSuccessBlock;
+  private final Block _impl;
 
 
   /**
-   * Code to be executed to update index variables after _untilCond was checked
-   * to be false.
+   * The name of this loop's tail recursive routine, used as prefix for internal names
    */
-  private Expr _nextIteration = null;
-  private List<Expr> _nextItSuccessBlock = null;
+  private final String _rawLoopName;
+
+
+  /**
+   * Position of the "else" keyword if present, or something close to it if not
+   */
+  private final SourcePosition _elsePos;
+
+
+  /*----------------------------  variables  ----------------------------*/
 
 
   /**
@@ -199,21 +207,10 @@ public class Loop extends ANY
 
 
   /**
-   * Position of the "else" keyword if present, or something close to it if not
-   */
-  private SourcePosition _elsePos;
-
-  /**
    * In case the else-clause has to be put into a routine, these are two
    * routines, the first for the prolog, the other for the rest of the loop.
    */
   private Feature[] _loopElse;
-
-
-  /**
-   * The name of this loop's tail recursive routine, used as prefix for internal names
-   */
-  private final String _rawLoopName;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -289,39 +286,29 @@ public class Loop extends ANY
         _elseBlock0 = new Block(new List<>(_loopElse[1], callLoopElse(1)));
       }
 
-    _prologSuccessBlock = new List<>();
-    _prolog             = new Block(_prologSuccessBlock, hasImplicitResult);
-    _prolog._newScope = true;
-    if (!_indexVars.isEmpty())
-      {
-        _nextItSuccessBlock = new List<>();
-        _nextIteration = new Block(_nextItSuccessBlock, hasImplicitResult);
-        addIterators();
-      }
+    var prologBlock = new List<Expr>();
+    var nextItBlock = new List<Expr>();
+
+    var r = addIterators(prologBlock, nextItBlock);
+    var prologSuccessBlock = r.v0();
+    var nextItSuccessBlock = r.v1();
 
     var formalArguments = new List<AbstractFeature>();
     var initialActuals = new List<Expr>();
     var nextActuals = new List<Expr>();
     initialArguments(formalArguments, initialActuals, nextActuals);
-    var initialCall       = new Call(pos, null, loopName, initialActuals);
-    var tailRecursiveCall = new Call(pos, null, loopName, nextActuals   );
-    if (_nextIteration == null)
-      {
-        _nextIteration = tailRecursiveCall;
-      }
-    else
-      {
-        _nextItSuccessBlock.add(tailRecursiveCall);
-      }
 
-    if (untilCond != null)
-      {
-        _nextIteration = new If(untilCond.pos(),
-                                untilCond,
-                                Block.newIfNull(_successBlock),
-                                _nextIteration);
-      }
-    block._expressions.add(_nextIteration);
+    var tailRecursiveCall = new Call(pos, null, loopName, nextActuals);
+    nextItSuccessBlock.add(tailRecursiveCall);
+
+    Expr nextIteration = untilCond == null
+      ? new Block(nextItBlock, hasImplicitResult)
+      : new If(untilCond.pos(),
+               untilCond,
+               Block.newIfNull(_successBlock),
+               new Block(nextItBlock, hasImplicitResult));
+
+    block._expressions.add(nextIteration);
     if (whileCond != null)
       {
         block = Block.fromExpr(new If(whileCond.pos(), whileCond, block, _elseBlock0));
@@ -335,12 +322,13 @@ public class Loop extends ANY
                                formalArguments,
                                Function.NO_CALLS,
                                Contract.EMPTY_CONTRACT,
-                               new Impl(p, block, Impl.Kind.RoutineDef))
-      {
-        public boolean resultInternal() { return true; }
-      };
-    _prologSuccessBlock.add(loop);
-    _prologSuccessBlock.add(initialCall);
+                               new Impl(p, block, Impl.Kind.RoutineDef));
+
+    var initialCall = new Call(pos, null, loopName, initialActuals);
+    prologSuccessBlock.add(initialCall);
+
+    _impl           = new Block(new List<>(loop, prologBlock), hasImplicitResult);
+    _impl._newScope = true;
   }
 
 
@@ -354,9 +342,9 @@ public class Loop extends ANY
   {
     if (FUZION_DEBUG_LOOPS)
       {
-        say(_prolog);
+        say(_impl);
       }
-    return _prolog;
+    return _impl;
   }
 
 
@@ -479,10 +467,7 @@ public class Loop extends ANY
                                     new List<>(),
                                     Function.NO_CALLS,
                                     Contract.EMPTY_CONTRACT,
-                                    new Impl(_elsePos, ei == 0 ? _elseBlock0 : (ei == 1 ? _elseBlock1 : _elseBlock2), Impl.Kind.RoutineDef))
-          {
-            public boolean resultInternal() { return true; }
-          };
+                                    new Impl(_elsePos, ei == 0 ? _elseBlock0 : (ei == 1 ? _elseBlock1 : _elseBlock2), Impl.Kind.RoutineDef));
       }
   }
 
@@ -533,8 +518,8 @@ public class Loop extends ANY
           (f.impl()._kind != Impl.Kind.FieldIter);
 
         var p = f.pos();
-        var ia = new Call(p, f.featureName().baseName());
-        var na = new Call(p, f.featureName().baseName());
+        var ia = new Call(p, FuzionConstants.ITER_ARG_PREFIX_INIT + f.featureName().baseName());
+        var na = new Call(p, FuzionConstants.ITER_ARG_PREFIX_NEXT + f.featureName().baseName());
         var type = (f.impl()._kind == Impl.Kind.FieldDef)
           ? null        // index var with type inference from initial actual
           : _indexVars.get(i).returnType().functionReturnType();
@@ -545,9 +530,13 @@ public class Loop extends ANY
                               type != null ? Impl.FIELD
                                            : new Impl(Impl.Kind.FieldActual));
         arg._isIndexVarUpdatedByLoop = true;
-        formalArguments.add(arg);
-        initialActuals .add(ia);
-        nextActuals    .add(na);
+        // no need to add for features named just underscore: _
+        if (!f.featureName().isInternal())
+          {
+            formalArguments.add(arg);
+            initialActuals .add(ia);
+            nextActuals    .add(na);
+          }
         if (f._isLoopIterator)
           {
             var argList = new Feature(SourcePosition.notAvailable,
@@ -564,27 +553,61 @@ public class Loop extends ANY
   }
 
 
-  /**
-   * Helper routine to add code to _prologSuccessBlock and _nextItSuccessBlock
-   * for index vars.
+  /*
+   * Get a FeatureVisitor that prefixes calls that are contained
+   * in set names with the given prefix.
    */
-  private void addIterators()
+  private FeatureVisitor prefixVisitor(Set<String> names, String prefix)
+  {
+    return new FeatureVisitor() {
+      @Override
+      public Expr action(Call c, AbstractFeature outer)
+      {
+        if (c._target == null && names.contains(c._name))
+          {
+            c._name = prefix + c._name;
+          }
+        return super.action(c, outer);
+      }
+
+      @Override
+      public Expr action(Function f, AbstractFeature outer)
+      {
+        f._expr.visit(this, outer);
+        return super.action(f, outer);
+      }
+    };
+  }
+
+
+  /**
+   * Helper routine to add code to prologBlock and nextItBlock for index vars,
+   * and return the corresponding success blocks.
+   */
+  private Pair<List<Expr>,List<Expr>> addIterators(List<Expr> prologBlock, List<Expr> nextItBlock)
   {
     boolean mustDeclareLoopElse = _loopElse != null;
     int iteratorCount = 0;
     var ivi = _indexVars .iterator();
     var nvi = _nextValues.iterator();
+
+    var names = new TreeSet<String>();
+
     while (ivi.hasNext())
       {
         Feature f = ivi.next();
         Feature n = nvi.next();
+
+        f.impl().expr().visit(prefixVisitor(names, FuzionConstants.ITER_ARG_PREFIX_INIT), null);
+        n.impl().expr().visit(prefixVisitor(names, FuzionConstants.ITER_ARG_PREFIX_NEXT), null);
+
         if (f.impl()._kind == Impl.Kind.FieldIter)
           {
             if (mustDeclareLoopElse)
               { // we declare loopElse function after all non-iterating index
                 // vars such that the else clause can access these vars.
-                _prologSuccessBlock.add(_loopElse[0]);
-                _nextItSuccessBlock.add(_loopElse[2]);
+                prologBlock.add(_loopElse[0]);
+                nextItBlock.add(_loopElse[2]);
                 mustDeclareLoopElse = false;
               }
             var listName = _rawLoopName + "list" + (iteratorCount++);
@@ -600,7 +623,7 @@ public class Loop extends ANY
                                          /* contract */    null,
                                          /* impl */        new Impl(p, asList, Impl.Kind.FieldDef));
             list._isIndexVarUpdatedByLoop = true;  // hack to prevent error AstErrors.initialValueNotAllowed(this)
-            _prologSuccessBlock.add(list);
+            prologBlock.add(list);
             ParsedType nilType = new ParsedType(p, "nil", new List<>(), null);
             ParsedType consType = new ParsedType(p, "Cons", new List<>(), null);
             Call next1    = new Call(p, new Call(p, listName + "cons"), "head");
@@ -613,10 +636,10 @@ public class Loop extends ANY
             Case match2c = new Case(p, consType, listName + "cons", new Block(nextIt2));
             Case match2n = new Case(p, nilType, listName + "nil", (_loopElse != null) ? Block.fromExpr(callLoopElse(2)) : Block.newIfNull(null));
             Match match2 = new Match(p, new Call(p, listName + "arg"), new List<AbstractCase>(match2c, match2n));
-            _prologSuccessBlock.add(match1);
-            _nextItSuccessBlock.add(match2);
-            _prologSuccessBlock = prolog2;
-            _nextItSuccessBlock = nextIt2;
+            prologBlock.add(match1);
+            nextItBlock.add(match2);
+            prologBlock = prolog2;
+            nextItBlock = nextIt2;
             f.setImpl(new Impl(f.impl().pos, next1, Impl.Kind.FieldDef));
             n.setImpl(new Impl(n.impl().pos, next2, Impl.Kind.FieldDef));
             f._isLoopIterator = true;
@@ -624,11 +647,43 @@ public class Loop extends ANY
             n._isLoopIterator = true;
             n._loopIteratorListName = listName;
           }
-        _prologSuccessBlock.add(f);
-        _nextItSuccessBlock.add(n);
+
         f._isIndexVarUpdatedByLoop = true;
         n._isIndexVarUpdatedByLoop = true;
+
+        names.add(f.featureName().baseName());
+        prologBlock.add(createInternalIterArgFeature(f, FuzionConstants.ITER_ARG_PREFIX_INIT));
+        nextItBlock.add(createInternalIterArgFeature(n, FuzionConstants.ITER_ARG_PREFIX_NEXT));
       }
+
+    // replace names in else clause
+    if (_loopElse != null)
+      {
+        _loopElse[0].code().visit(prefixVisitor(names, FuzionConstants.ITER_ARG_PREFIX_INIT), _loopElse[0]);
+        _loopElse[2].code().visit(prefixVisitor(names, FuzionConstants.ITER_ARG_PREFIX_NEXT), _loopElse[2]);
+      }
+
+    return new Pair<>(prologBlock, nextItBlock);
+  }
+
+
+  /*
+   * This copies the given feature and prefixes
+   * the name with prefix.
+   *
+   * This is done to avoid name clashes with the formal arguments
+   * of the tail recursive loop feature.
+   */
+  private Feature createInternalIterArgFeature(Feature f, String prefix)
+  {
+    var f1 = new Feature(f.visibility(), f.modifiers(), f.returnType(),
+      new List<>(new ParsedName(f.pos(), prefix + f.featureName().baseName())),
+      new List<>(), new List<>(),
+      Contract.EMPTY_CONTRACT, f.impl());
+    f1._isLoopIterator = f._isLoopIterator;
+    f1._loopIteratorListName = f._loopIteratorListName;
+    f1._isIndexVarUpdatedByLoop = f._isIndexVarUpdatedByLoop;
+    return f1;
   }
 
 }

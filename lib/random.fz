@@ -52,7 +52,7 @@ is
   # return next random number of type i64 in the range 0..max-1
   #
   public next_i64(max i64)
-  pre max ≥ i64 0
+  pre max ≥ 0
   => (next.get max.as_u64).as_i64
 
 
@@ -127,14 +127,14 @@ public time_seeded_random(rr ()->unit) =>
 # must be used to create a new instance of 'Random_Handler' before 'get' can be
 # used to obtain the new random number.
 #
-private:public Random_Handler ref is
+public Random_Handler ref is
 
   # create a new instance of Random_Handler containing a new state. Depending
   # on the qualifity of this random number generator, this might be a simple
   # function of the original Random_Handler or it might use an external source
   # of entropy to create a new instance.
   #
-  next Random_Handler => abstract
+  public next Random_Handler => abstract
 
   # Return the random number stored in this instance of Random_Handler, in the
   # range 0..u64.max
@@ -142,7 +142,7 @@ private:public Random_Handler ref is
   # NOTE: this feature is pure, i.e., repeated calls on the same target result
   # in equal results.  Use 'next' to get different results.
   #
-  get u64 => abstract
+  public get u64 => abstract
 
 
 
@@ -154,7 +154,7 @@ simple_random_handler(seed1 u64, seed2 u64) : Random_Handler is
 
   # get next instance by shuffling bits in seeds around
   #
-  next Random_Handler =>
+  redef next Random_Handler =>
     # NYI: This does not meet any requirements on a decent random number generator
     s1 := (seed1 *° 1717171717 +° 13113131313) ^ seed2
     s2 := (seed2 *° 9191919191 +° 37637373737) ^ seed1
@@ -165,7 +165,7 @@ simple_random_handler(seed1 u64, seed2 u64) : Random_Handler is
 
   # get current random number
   #
-  get u64 => seed1
+  redef get u64 => seed1
 
 
   # name of env var to provide default random seed.

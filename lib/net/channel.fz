@@ -39,11 +39,6 @@ module:public channel(desc i64) : simple_effect
 is
 
 
-  # write data to channel
-  public write(data Sequence u8) outcome unit =>
-    fuzion.sys.net.write desc data.as_array
-
-
   # get the peer's ip address (tcp)
   public get_peer_address outcome (list u8) =>
     fuzion.sys.net.get_peer_address desc
@@ -59,7 +54,16 @@ is
 # for a given descriptor
 #
 module read_provider(desc i64) : io.Read_Provider is
-  read(count i32) choice (array u8) io.end_of_file error =>
+  redef read(count i32) choice (array u8) io.end_of_file error =>
     match fuzion.sys.net.read desc count
       a array => a
       e error => e
+
+
+
+# helper feature to create a read provider
+# for a given descriptor
+#
+module write_provider(desc i64) : io.Write_Provider is
+  redef write(data array u8) outcome unit =>
+    fuzion.sys.net.write desc data

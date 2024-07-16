@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourcePosition;
 
 
@@ -167,7 +168,7 @@ public class Assign extends AbstractAssign
                                                            destructure == null ? this : destructure,
                                                            true,
                                                            false),
-                                        pos(), FeatureAndOuter.Operation.ASSIGNMENT, FeatureName.get(_name, 0), __ -> false);
+                                        pos(), FuzionConstants.OPERATION_ASSIGNMENT, FeatureName.get(_name, 0), __ -> false);
         if (fo != null)
           {
             _target = fo.target(pos(), res, outer);

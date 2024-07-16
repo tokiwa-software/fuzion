@@ -92,13 +92,6 @@ public class Impl extends ANY
   final List<Call> _initialCalls;
 
 
-  /**
-   * For FieldActual: The outer features for all the actual calls that were
-   * found for this argument field.
-   */
-  private final List<AbstractFeature> _outerOfInitialCalls;
-
-
   public enum Kind
   {
     FieldInit,    // a field with initialization syntactic sugar
@@ -165,8 +158,7 @@ public class Impl extends ANY
     this._expr = e;
     this.pos = pos;
     this._kind = kind;
-    this._initialCalls         = kind == Kind.FieldActual ? new List<>() : null;
-    this._outerOfInitialCalls  = kind == Kind.FieldActual ? new List<>() : null;
+    this._initialCalls = kind == Kind.FieldActual ? new List<>() : null;
   }
 
 
@@ -425,6 +417,12 @@ public class Impl extends ANY
    */
   public void resolveSyntacticSugar2(Resolution res, AbstractFeature outer)
   {
+    if (outer.isConstructor() && outer.preFeature() != null)
+      { // For constructors, the constructor itself checks the precondition (while
+        // for functions, this is done by the caller):
+        var c = outer.contract().callPreCondition(res, outer, (Feature) outer);
+        _expr = new Block(new List<>(c, _expr));
+      }
     if (needsImplicitAssignmentToResult(outer))
       {
         var resultField = outer.resultField();
@@ -461,18 +459,22 @@ public class Impl extends ANY
 
   /**
    * For an actual value passed to an argument field with this Impl, record the
-   * actual and its outer feature for type inference
+   * actual call for type inference for argument types. This is used for code like
+   *
+   *   f(a,b) => a+b
+   *
+   *   x := f 3 4
+   *
+   * where the argument types for `a` and `b` are inferred from the actual
+   * arguments `3` and `4`.
    *
    * @param call an actual argument expression
-   *
-   * @param outer the feature containing the actl expression
    */
-  void addInitialCall(Call call, AbstractFeature outer)
+  void addInitialCall(Call call)
   {
     if (_kind == Impl.Kind.FieldActual)
       {
         _initialCalls.add(call);
-        _outerOfInitialCalls.add(outer);
       }
   }
 
@@ -490,8 +492,7 @@ public class Impl extends ANY
   private Expr initialValueFromCall(int i, Resolution res)
   {
     Expr result = null;
-    var ic = _initialCalls       .get(i);
-    var io = _outerOfInitialCalls.get(i);
+    var ic = _initialCalls.get(i);
     var aargs = ic._actuals.listIterator();
     for (var frml : ic.calledFeature().valueArguments())
       {
@@ -503,7 +504,7 @@ public class Impl extends ANY
                 if (res != null && !_infiniteRecursionInResolveTypes)
                   {
                     _infiniteRecursionInResolveTypes = true;
-                    actl = actl.visit(res.resolveTypesFully, io);
+                    actl = actl.visit(res.resolveTypesFully, ic.resolvedFor());
                     aargs.set(actl);
                     _infiniteRecursionInResolveTypes = false;
                   }
@@ -560,7 +561,6 @@ public class Impl extends ANY
             for (var i = 0; i < _initialCalls.size(); i++)
               {
                 var iv = initialValueFromCall(i, null);
-                var io = _outerOfInitialCalls.get(i);
                 var t = iv.typeForInferencing();
                 if (t != null)
                   {

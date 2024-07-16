@@ -78,11 +78,11 @@ test_covariance is
   intM2(is_zero bool) : num0 is
     fixed z => intM2 true
     fixed o => intM2 false
-    fixed type.zero => test_covariance.intM2 true
-    fixed type.one => test_covariance.intM2 false
-    fixed lessThan(other intM2) => is_zero && !other.is_zero
-    fixed plus(other intM2) => if is_zero then other else intM2 !other.is_zero
-    fixed minus(other intM2) => plus other
+    fixed redef type.zero => test_covariance.intM2 true
+    fixed redef type.one => test_covariance.intM2 false
+    fixed redef lessThan(other intM2) => is_zero && !other.is_zero
+    fixed redef plus(other intM2) => if is_zero then other else intM2 !other.is_zero
+    fixed redef minus(other intM2) => plus other
     redef valueString => if is_zero then "0 mod 2" else "1 mod 2"
 
   # integer mod 5 implementation of num0
@@ -90,11 +90,11 @@ test_covariance is
   intM5(v u8) : num0 is
     fixed z => intM5 0
     fixed o => intM5 1
-    fixed type.zero => test_covariance.intM5 0
-    fixed type.one => test_covariance.intM5 1
-    fixed lessThan(other intM5) => v < other.v
-    fixed plus(other intM5) => intM5 (v + other.v)%5
-    fixed minus(other intM5) => intM5 (v - other.v)%5
+    fixed redef type.zero => test_covariance.intM5 0
+    fixed redef type.one => test_covariance.intM5 1
+    fixed redef lessThan(other intM5) => v < other.v
+    fixed redef plus(other intM5) => intM5 (v + other.v)%5
+    fixed redef minus(other intM5) => intM5 (v - other.v)%5
     redef valueString => "$v mod 5"
 
 run_test_covariance =>
@@ -107,41 +107,45 @@ run_test_covariance =>
     say (y.plus y)
     z := y.plus y
     say z
-    z := z.plus z
+    z1 := z.plus z
+    say z1
+    z2 := z1.plus z1
+    say z2
+
+  test1 =>
+    x := test_covariance.intM2 true
+    y := test_covariance.intM2 false
+    say x
+    say y
+    say (x.plus y)
+    say (x.plus x)
+    say (y.plus y)
+    z := y.plus y
     say z
-    z := z.plus z
+    z1 := z.plus z
+    say z1
+    z2 := z1.plus z1
+    say z2
+    test x y
+
+  test2 =>
+    x := test_covariance.intM5 0
+    y := test_covariance.intM5 1
+    say x
+    say y
+    say (x.plus y)
+    say (x.plus x)
+    say (y.plus y)
+    z := y.plus y
     say z
+    z1 := z.plus z
+    say z1
+    z2 := z1.plus z1
+    say z2
+    test x y
 
-  x := test_covariance.intM2 true
-  y := test_covariance.intM2 false
-  say x
-  say y
-  say (x.plus y)
-  say (x.plus x)
-  say (y.plus y)
-  z := y.plus y
-  say z
-  z := z.plus z
-  say z
-  z := z.plus z
-  say z
-  test x y
-
-
-  x := test_covariance.intM5 0
-  y := test_covariance.intM5 1
-  say x
-  say y
-  say (x.plus y)
-  say (x.plus x)
-  say (y.plus y)
-  z := y.plus y
-  say z
-  z := z.plus z
-  say z
-  z := z.plus z
-  say z
-  test x y
+  test1
+  test2
 
 
 # This test creates nested features with accesses to the outer features' this.type

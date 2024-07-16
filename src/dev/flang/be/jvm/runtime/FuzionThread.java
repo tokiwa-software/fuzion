@@ -58,6 +58,12 @@ public class FuzionThread extends Thread
   public Throwable _thrownException = null;
 
 
+  /**
+   * Class loader used to load resources related to compiled fuzion code.
+   */
+  final ClassLoader _loader;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -85,7 +91,8 @@ public class FuzionThread extends Thread
              {
                Runtime.handleInvocationTargetException(e);
              }
-         });
+         },
+         r.getDeclaringClass().getClassLoader());
   }
 
 
@@ -94,16 +101,20 @@ public class FuzionThread extends Thread
    */
   FuzionThread(Main main)
   {
-    this((Runnable) ()->main.fz_run());
+    this((Runnable) ()->main.fz_run(), main.getClass().getClassLoader());
   }
 
 
   /**
    * Create a main FuzionThread and run code.
+   *
+   * @oaran loader class loader used to load resources related to compiled
+   * fuzion code.
    */
-  private FuzionThread(Runnable r)
+  private FuzionThread(Runnable r, ClassLoader l)
   {
     super(()->Errors.runAndExit(r), "Fuzion thread");
+    _loader = l;
     start();
   }
 

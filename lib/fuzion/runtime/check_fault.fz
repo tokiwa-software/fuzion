@@ -41,7 +41,7 @@ is
 
   # create an instance of `check_fault` with the given error handler.
   #
-  public fixed type.new(h String -> void) => fuzion.runtime.check_fault h
+  public fixed redef type.new(h String -> void) => fuzion.runtime.check_fault h
 
 
 # check_fault with no argument returns check_fault.env, the currently installed

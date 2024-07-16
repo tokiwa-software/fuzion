@@ -1389,11 +1389,16 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public String toString()
   {
+    var g = this._type.generics();
+    if (feature().isTypeFeature())
+      {
+        g = g.drop(1);    // remove implicit first type parameter THIS_TYPE
+      }
     return
       (this._type == Types.t_ERROR   ||
        this._type == Types.t_ADDRESS ||
        this._outer == null              )
-      ? this._type.asString() // error, address or universe
+      ? this._type.asString(true) // error, address or universe
       : (""
          + ((this._outer == Clazzes.universe.get())
             ? ""
@@ -1403,8 +1408,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
             : ""
             )
          + feature().featureName().baseNameHuman()
-         + this._type.generics()
-         .toString(" ", " ", "", t -> t.asStringWrapped())
+         + g.toString(" ", " ", "", t -> t.asStringWrapped(true))
          );
   }
 
@@ -1532,7 +1536,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     var fc = new EV(inh, f);
     f.visitExpressions(fc);
-    f.contract().req.stream().forEach(c -> c.visitExpressions(fc));
 
     for (var c: f.inherits())
       {
@@ -2127,7 +2130,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (feature().isTypeFeature());
 
-    return _type.generics().get(0).asString();
+    return _type.generics().get(0).asString(true);
   }
 
 

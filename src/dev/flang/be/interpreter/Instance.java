@@ -472,7 +472,7 @@ public class Instance extends ValueWithClazz
    */
   public String toString()
   {
-    var result = "instance[" + fuir().clazzAsStringNew(_clazz) + "]" + this.hashCode() +
+    var result = "instance[" + fuir().clazzAsString(_clazz) + "]" + this.hashCode() +
       (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_i32)  ? " (" + i32Value() + ")" :
        _clazz == fuir().clazz(FUIR.SpecialClazzes.c_u32)  ? " (" + u32Value() + ")" :
        _clazz == fuir().clazz(FUIR.SpecialClazzes.c_u8)   ? " (" + u8Value() + ")" :

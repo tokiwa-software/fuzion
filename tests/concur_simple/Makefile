@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = concur_simple
-include ../dfa.mk # Not running this, test is too flaky.
+include ../compile.mk # Not running this, test is too flaky.

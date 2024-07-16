@@ -448,7 +448,7 @@ public class Intrinsics extends ANY
     put("fuzion.sys.fileio.open_dir", (c,cl,outer,in) -> CExpr.call("fzE_opendir", new List<CExpr>(
       A0.castTo("char *"),
       A1.castTo("int64_t *")
-    )).ret());
+    )));
     put("fuzion.sys.fileio.read_dir", (c,cl,outer,in) ->
       {
         var d_name = new CIdent("d_name");
@@ -833,7 +833,7 @@ public class Intrinsics extends ANY
 
                                 arg.assign(CExpr.call(c.malloc(), new List<>(CExpr.sizeOfType("struct " + CNames.fzThreadStartRoutineArg.code())))),
 
-                                arg.deref().field(CNames.fzThreadStartRoutineArgFun).assign(CExpr.ident(c._names.function(call, false)).adrOf().castTo("void *")),
+                                arg.deref().field(CNames.fzThreadStartRoutineArgFun).assign(CExpr.ident(c._names.function(call)).adrOf().castTo("void *")),
                                 arg.deref().field(CNames.fzThreadStartRoutineArgArg).assign(A0.castTo("void *")),
 
                                 CExpr.call("fzE_thread_create", new List<>(CNames.fzThreadStartRoutine.adrOf(), arg)).ret());
@@ -962,7 +962,7 @@ public class Intrinsics extends ANY
                                        evi.assign(CIdent.TRUE ),
                                        evj.assign(jmpbuf.adrOf()),
                                        CStmnt.iff(CExpr.call("setjmp",new List<>(jmpbuf)).eq(CExpr.int32const(0)),
-                                                  CExpr.call(c._names.function(call, false), new List<>(A0))),
+                                                  CExpr.call(c._names.function(call), new List<>(A0))),
                                        /* NYI: this is a bit radical: we copy back the value from env to the outer instance, i.e.,
                                         * the outer instance is no longer immutable and we might run into difficulties if
                                         * the outer instance is used otherwise.
@@ -995,7 +995,10 @@ public class Intrinsics extends ANY
         {
           var ecl = c._fuir.clazzActualGeneric(cl, 0);
           var evi = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));
-          return CStmnt.seq(CStmnt.iff(evi, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret());
+          // NYI: UNDER DEVELOPMENT: can this logic be moved to abstract interpreter?
+          return c._fuir.clazzNeedsCode(ecl)
+            ? CStmnt.seq(CStmnt.iff(evi, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret())
+            : c._names.FZ_FALSE.ret();
         });
 
     var noJava = CStmnt.seq(
@@ -1206,6 +1209,14 @@ public class Intrinsics extends ANY
             A0.field(c._names.fieldName(c._fuir.clazz_fuzionSysArray_u8_length()))
           )), false)
        );
+
+
+    put("fuzion.java.create_jvm", (c,cl,outer,in) -> {
+      return  C.JAVA_HOME == null
+        ? noJava
+        : CExpr.call("fzE_create_jvm", new List<>(A0.castTo("char *")));
+    });
+    // NYI: UNDER DEVELOPMENT: put("fuzion.java.destroy_jvm", (c,cl,outer,in) -> {});
 
   }
 

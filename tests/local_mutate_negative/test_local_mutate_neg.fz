@@ -34,7 +34,7 @@ test_local_mutate_neg is
 
     # our sequence to count:
     #
-    l := [0,8,15,47,11]
+    l0 := [0,8,15,47,11]
 
     sum(l Sequence i32) =>
 
@@ -59,7 +59,7 @@ test_local_mutate_neg is
 
       # run code within an instance of m
       #
-      m.go (()->
+      m.go ()->
         s := m.env.new 0
 
         for e in l do
@@ -67,7 +67,6 @@ test_local_mutate_neg is
 
         say "inside m.go: s.get = {s.get}"
         say "inside m.go: count = {count}"
-        )
 
       say "using m.go and count: {m.go ()->count}"
 
@@ -79,20 +78,19 @@ test_local_mutate_neg is
 
       say count    # *** will cause compile-time an error, requires m to be installed
 
-      # handler for negative tests that cause panic:
-      #
-      my_panic : Panic_Handler is
-        do_panic(msg String) =>
-          say "*** got '$msg' ***"
-
       neg_test3 =>
         s := m.go ()->count2
         say s             # *** will cause an error, requires m to be installed
         "** failed, did not panic **"
 
-      say (my_panic.use ()->neg_test3 ()->"ok")
+      caught_msg(msg) => "*** got '$msg' ***\nok"
 
-      say (my_panic.use ()->neg_test4 ()->"ok")
+      if false       # NYI: BUG #3352: this does not work for the C backend
+        say (panic.try   neg_test3
+                  .catch caught_msg)
+
+      say (panic.try   neg_test4
+                .catch caught_msg)
 
       neg_test4 =>
         s := m.go ()->count2
@@ -101,7 +99,8 @@ test_local_mutate_neg is
           say s
         "** failed, did not panic **"
 
-      say (my_panic.use ()->neg_test5 ()->"ok")
+      say (panic.try   neg_test5
+                .catch caught_msg)
 
       neg_test5 =>
         q =>
@@ -112,6 +111,6 @@ test_local_mutate_neg is
           "** failed, did not panic **"
         q
 
-    sum l
+    sum l0
 
   test_sum

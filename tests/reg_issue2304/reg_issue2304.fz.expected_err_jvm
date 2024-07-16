@@ -1,0 +1,20 @@
+
+error 1: FATAL FAULT `*** panic ***`: bah
+Call stack:
+fuzion.sys.fatal_fault#2
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1
+fuzion.runtime.fault.cause#1
+panic.type.install_default.λ.call#1
+panic.cause#1
+panic#1
+p
+λ.call#1
+(list i32).filter0#1.λ.call#1
+(list i32).drop_while#1
+(list i32).filter0#1
+(list i32).filter#1
+(array i32).filter#1
+universe
+
+*** fatal errors encountered, stopping.
+one error.

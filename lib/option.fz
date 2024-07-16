@@ -31,7 +31,7 @@ public option(public T type)
   : choice T nil,
     monad T (option T),
     Sequence T,
-    auto_unwrap T (try (option T)) /* NYI: BUG: auto_unwrap T (try option.this) */
+    auto_unwrap T (try (option T)) /* NYI: BUG #3355: auto_unwrap T (try option.this) */
 is
 
   # Does this option contain a value of type T?
@@ -156,14 +156,14 @@ is
 
   # unwrap this option
   #
-  public unwrap ! try (option T) =>
+  public redef unwrap ! try option.this =>
     option.this ? v T => v
-                | nil => (try (option T)).env.raise (error "error unwrapping option: {option.this}")
+                | nil => (try option.this).env.raise (error "error unwrapping option: {option.this}")
 
 
   # return function
   #
-  public fixed type.return (a T) => option a
+  public fixed redef type.return (a T) => option a
 
 
 

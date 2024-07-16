@@ -87,18 +87,33 @@ void fzE_opendir(const char *pathname, int64_t * result) {
 
 char * fzE_readdir(intptr_t * dir) {
   struct dirent * d = readdir((DIR *)dir);
-
-  return (d == NULL) ? NULL : &(*d->d_name);
+  if ( d == NULL )
+  {
+    return NULL;
+  }
+  else
+  {
+    size_t len = strlen(d->d_name);
+    char *dup = (char *) fzE_malloc_safe(len + 1);
+    strcpy(dup, d->d_name);
+    return dup;
+  }
 }
 
 
 int fzE_read_dir_has_next(intptr_t * dir) {
   DIR * dir1 = (DIR *)dir;
-  long pos = telldir(dir1);
-  struct dirent * dir2 = readdir(dir1);
+  struct dirent * entry = NULL;
+  long pos = -1;
+  do {
+    pos = telldir(dir1);
+  }
+  while ((entry = readdir(dir1)) != NULL &&
+         // skip dot and dot-dot paths.
+         (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0));
   seekdir(dir1, pos);
 
-  return dir2 == NULL ? 1 : 0;
+  return entry == NULL ? 1 : 0;
 }
 
 
@@ -283,17 +298,19 @@ int fzE_connect(int family, int socktype, int protocol, char * host, char * port
 // result is the length of the ip address written to buf
 // might return useless information when called on udp socket
 int fzE_get_peer_address(int sockfd, void * buf) {
+  // sockaddr_storage: A structure at least as large
+  // as any other sockaddr_* address structures.
   struct sockaddr_storage peeraddr;
+  memset(&peeraddr, 0, sizeof(peeraddr));
   socklen_t peeraddrlen = sizeof(peeraddr);
-  int res = getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen);
-  if (peeraddr.ss_family == AF_INET) {
-    memcpy(buf, &(((struct sockaddr_in *)&peeraddr)->sin_addr.s_addr), 4);
-    return 4;
-  } else if (peeraddr.ss_family == AF_INET6) {
-    memcpy(buf, &(((struct sockaddr_in6 *)&peeraddr)->sin6_addr.s6_addr), 16);
-    return 16;
-  } else {
-    return -1;
+  if (getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen) == 0) {
+    if (peeraddr.ss_family == AF_INET) {
+      memcpy(buf, &(((struct sockaddr_in *)&peeraddr)->sin_addr.s_addr), 4);
+      return 4;
+    } else if (peeraddr.ss_family == AF_INET6) {
+      memcpy(buf, &(((struct sockaddr_in6 *)&peeraddr)->sin6_addr.s6_addr), 16);
+      return 16;
+    }
   }
   return -1;
 }
@@ -303,16 +320,19 @@ int fzE_get_peer_address(int sockfd, void * buf) {
 // result is the port number
 // might return useless infomrmation when called on udp socket
 unsigned short fzE_get_peer_port(int sockfd) {
+  // sockaddr_storage: A structure at least as large
+  // as any other sockaddr_* address structures.
   struct sockaddr_storage peeraddr;
+  memset(&peeraddr, 0, sizeof(peeraddr));
   socklen_t peeraddrlen = sizeof(peeraddr);
-  int res = getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen);
-  if (peeraddr.ss_family == AF_INET) {
-    return ntohs(((struct sockaddr_in *)&peeraddr)->sin_port);
-  } else if (peeraddr.ss_family == AF_INET6) {
-    return ntohs(((struct sockaddr_in6 *)&peeraddr)->sin6_port);
-  } else {
-    return 0;
+  if (getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen) == 0) {
+    if (peeraddr.ss_family == AF_INET) {
+      return ntohs(((struct sockaddr_in *)&peeraddr)->sin_port);
+    } else if (peeraddr.ss_family == AF_INET6) {
+      return ntohs(((struct sockaddr_in6 *)&peeraddr)->sin6_port);
+    }
   }
+  return 0;
 }
 
 
@@ -515,7 +535,7 @@ int64_t fzE_thread_create(void *(*code)(void *),
     fprintf(stderr,"*** pthread_create failed with return code %d\012",res);
     exit(EXIT_FAILURE);
   }
-  // NYI free pt
+  // NYI: BUG: free pt
   return (int64_t)pt;
 #else
   printf("You discovered a severe bug. (fzE_thread_join)");

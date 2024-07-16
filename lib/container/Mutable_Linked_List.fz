@@ -34,7 +34,7 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
                     T type,
 
                     # the data stored in this element.
-                    data T) ref : Linked_List T is
+                    redef data T) ref : Linked_List T is
 
 
   # mutable references to next. Initializes to refer to nil to form
@@ -45,7 +45,7 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
 
   # short-hand features to get the mutable references from `n`
   #
-  public next option (Linked_List T) =>
+  public redef next option (Linked_List T) =>
     match n.get
       ll Mutable_Linked_List => ll
       nil => nil
@@ -55,8 +55,8 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
   #
   public append(data T) =>
     match n.get
-      nil => n <- Mutable_Linked_List LM T data
-      ll Mutable_Linked_List => ll.append data
+      nil => n <- Mutable_Linked_List LM T append.this.data
+      ll Mutable_Linked_List => ll.append append.this.data
 
 
   # append an entire list to this linked list

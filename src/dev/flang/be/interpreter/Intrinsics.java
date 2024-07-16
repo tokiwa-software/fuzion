@@ -651,6 +651,8 @@ public class Intrinsics extends ANY
           try
             {
               var i = Files.walk(Paths.get(utf8ByteArrayDataToString(args.get(1))), 1).iterator();
+              // skip path itself
+              i.next();
               interface CloseableIterator<T> extends Iterator<T>, AutoCloseable {};
               open_results[0] = _openStreams_.add(new CloseableIterator<Path>() {
                 public void close() throws IOException
@@ -793,6 +795,7 @@ public class Intrinsics extends ANY
           var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return JavaInterface.javaObjectToInstance(res, resultClazz);
         });
+    putUnsafe("fuzion.java.create_jvm", (executor, innerClazz) -> args -> Value.EMPTY_VALUE);
     putUnsafe("fuzion.java.string_to_java_object0", (executor, innerClazz) -> args ->
         {
           var argz = args.get(1);
@@ -910,7 +913,7 @@ public class Intrinsics extends ANY
         {
           var oc   = executor.fuir().clazzArgClazz(innerClazz, 0);
           var call = executor.fuir().lookupCall(oc);
-          var t = new Thread(() -> executor.callOnInstance(NO_SITE, call, new Instance(call), args.get(1), new List<>(), false));
+          var t = new Thread(() -> executor.callOnInstance(NO_SITE, call, new Instance(call), args.get(1), new List<>()));
           t.setDaemon(true);
           t.start();
           return new i64Value(_startedThreads_.add(t));
@@ -1523,7 +1526,7 @@ public class Intrinsics extends ANY
               var oc   = executor.fuir().clazzActualGeneric(innerClazz, 0);
               var call = executor.fuir().lookupCall(oc);
               try {
-                var ignore = executor.callOnInstance(NO_SITE, call, new Instance(call), args.get(1), new List<>(), false);
+                var ignore = executor.callOnInstance(NO_SITE, call, new Instance(call), args.get(1), new List<>());
                 return new boolValue(true);
               } catch (Abort a) {
                 if (a._effect == cl)

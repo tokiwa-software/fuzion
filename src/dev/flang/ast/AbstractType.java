@@ -254,7 +254,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public List<AbstractType> choiceGenerics()
   {
     if (PRECONDITIONS) require
-      (!(this instanceof UnresolvedType tt),
+      (!(this instanceof UnresolvedType),
        isChoice());
 
     var g = feature().choiceGenerics();
@@ -469,6 +469,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var result = containsError()                   ||
       actual.containsError()                       ||
       this  .compareTo(actual               ) == 0 ||
+      this  .compareTo(Types.resolved.t_Any ) == 0 ||
       actual.isVoid();
     if (!result && !isGenericArgument())
       {
@@ -482,23 +483,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               (actual.feature() != null || Errors.any());
             if (actual.feature() != null)
               {
-                if (actual.feature() == feature())
+                result = actual.feature() == feature() &&
+                         genericsAssignable(actual); // NYI: Check: What about open generics?
+                for (var p: actual.feature().inherits())
                   {
-                    if (genericsAssignable(actual)) // NYI: Check: What about open generics?
-                      {
-                        result = true;
-                      }
-                  }
-                if (!result)
-                  {
-                    for (var p: actual.feature().inherits())
-                      {
-                        var pt = p.type().applyTypePars(actual);
-                        if (constraintAssignableFrom(pt))
-                          {
-                            result = true;
-                          }
-                      }
+                    result |= !p.calledFeature().isChoice() &&
+                      constraintAssignableFrom(p.type().applyTypePars(actual));
                   }
               }
           }
@@ -1378,12 +1368,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *   say (type_of a.l)    # should print `list a`
    *   say (type_of b.l)    # should print `list b`
    *
-   * @param tt the type feature we are calling (`equatable.type` in the example)
+   * @param tt the type feature we are calling (`list a.this.type` in the example)
    * above).
    *
    * @param foundRef a consumer that will be called for all the this-types found
    * together with the ref type they are replaced with.  May be null.  This will
    * be used to check for AstErrors.illegalOuterRefTypeInCall.
+   *
+   * @return the actual type, i.e.`list a` or `list b` in the example above.
    */
   public AbstractType replace_this_type_by_actual_outer(AbstractType tt,
                                                         BiConsumer<AbstractType, AbstractType> foundRef)
@@ -1772,7 +1764,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * resolved.  Use toString() for creating strings early in the front end
    * phase.
    */
-  public String asString()
+  public String asString() { return asString(false); }
+  public String asString(boolean humanReadable)
   {
     if (PRECONDITIONS) require
       (checkedForGeneric());
@@ -1787,7 +1780,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     else
       {
         var o = outer();
-        String outer = o != null && !o.feature().isUniverse() ? o.asStringWrapped() + "." : "";
+        String outer = o != null && !o.feature().isUniverse() ? o.asStringWrapped(humanReadable) + "." : "";
         var f = feature();
         var typeType = f.isTypeFeature();
         if (typeType)
@@ -1798,7 +1791,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         // for a feature that does not define a type itself, the name is not
         // unique due to overloading with different argument counts. So we add
         // the argument count to get a unique name.
-        var fname = fn.baseName() + (f.definesType() ? "" : FuzionConstants.INTERNAL_NAME_PREFIX + fn.argCount());
+        var fname = (humanReadable ? fn.baseNameHuman() : fn.baseName())
+          +  (f.definesType() || fn.argCount() == 0 || fn.isInternal()
+                ? ""
+                : FuzionConstants.INTERNAL_NAME_PREFIX + fn.argCount());
 
         // NYI: would be good if postFeatures could be identified not be string comparison, but with something like
         // `f.isPostFeature()`. Note that this would need to be saved in .fum file as well!
@@ -1826,7 +1822,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             if (!skip) // skip first generic 'THIS#TYPE' for types of type features.
               {
-                result = result + " " + g.asStringWrapped();
+                result = result + " " + g.asStringWrapped(humanReadable);
               }
             skip = false;
           }
@@ -1858,9 +1854,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * wrap the result of asString in parentheses if necessary
    */
-  public String asStringWrapped()
+  public String asStringWrapped(boolean humanReadable)
   {
-    return StringHelpers.wrapInParentheses(asString());
+    return StringHelpers.wrapInParentheses(asString(humanReadable));
   }
 
 

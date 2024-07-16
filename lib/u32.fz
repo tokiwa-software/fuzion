@@ -33,39 +33,39 @@ public u32(public val u32) : num.wrap_around, has_interval is
   redef wrapped_on_neg => !is_zero
 
   # would addition + other cause an overflow or underflow?
-  public fixed overflow_on_add (other u32) => u32.max -° val < other
-  public fixed underflow_on_add(other u32) => false
+  public fixed redef overflow_on_add (other u32) => u32.max -° val < other
+  public fixed redef underflow_on_add(other u32) => false
 
   # would subtraction - other cause an overflow or underflow?
-  public fixed overflow_on_sub (other u32) => false
-  public fixed underflow_on_sub(other u32) => val < other
+  public fixed redef overflow_on_sub (other u32) => false
+  public fixed redef underflow_on_sub(other u32) => val < other
 
   # would multiplication * other cause an overflow or underflow?
-  public fixed overflow_on_mul (other u32) => as_i64 *° other.as_i64 > u32.max.as_i64
-  public fixed underflow_on_mul(other u32) => false
+  public fixed redef overflow_on_mul (other u32) => as_i64 *° other.as_i64 > u32.max.as_i64
+  public fixed redef underflow_on_mul(other u32) => false
 
   # neg, add, sub, mul with wrap-around semantics
-  public fixed prefix -° u32 => intrinsic
-  public fixed infix +° (other u32) u32 => intrinsic
-  public fixed infix -° (other u32) u32 => intrinsic
-  public fixed infix *° (other u32) u32 => intrinsic
+  public fixed redef prefix -° u32 => intrinsic
+  public fixed redef infix +° (other u32) u32 => intrinsic
+  public fixed redef infix -° (other u32) u32 => intrinsic
+  public fixed redef infix *° (other u32) u32 => intrinsic
 
   # division and remainder with check for div-by-zero
-  public fixed infix / (other u32) => div other
-  public fixed infix % (other u32) => mod other
+  public fixed redef infix / (other u32) => div other
+  public fixed redef infix % (other u32) => mod other
 
   # division and remainder with crash in case of div-by-zero
   div (other u32) u32 => intrinsic
   mod (other u32) u32 => intrinsic
 
   # bitwise and, or and xor operations
-  public fixed infix &  (other u32) u32 => intrinsic
-  public fixed infix |  (other u32) u32 => intrinsic
-  public fixed infix ^  (other u32) u32 => intrinsic
+  public fixed redef infix &  (other u32) u32 => intrinsic
+  public fixed redef infix |  (other u32) u32 => intrinsic
+  public fixed redef infix ^  (other u32) u32 => intrinsic
 
   # shift operations (unsigned)
-  public fixed infix >> (other u32) u32 => intrinsic
-  public fixed infix << (other u32) u32 => intrinsic
+  public fixed redef infix >> (other u32) u32 => intrinsic
+  public fixed redef infix << (other u32) u32 => intrinsic
 
   # does this u32 fit into an u8?
   #
@@ -107,7 +107,7 @@ public u32(public val u32) : num.wrap_around, has_interval is
 
 
   # this u32 as an u8
-  public as_u8 => cast_to_i32.as_u8
+  public redef as_u8 => cast_to_i32.as_u8
 
 
   # this u32 as an u16
@@ -138,7 +138,7 @@ public u32(public val u32) : num.wrap_around, has_interval is
   public as_uint  => uint as_u64
 
 
-  public low8bits  u8  => intrinsic
+  public redef low8bits  u8  => intrinsic
   public low16bits u16 => intrinsic
   public cast_to_i32 i32 => intrinsic
   public cast_to_f32 f32 => intrinsic
@@ -149,7 +149,7 @@ public u32(public val u32) : num.wrap_around, has_interval is
 
 
   # create hash code from this number
-  public type.hash_code(a u32.this) u64 =>
+  public redef type.hash_code(a u32.this) u64 =>
     hash a.as_u64
 
 
@@ -157,13 +157,13 @@ public u32(public val u32) : num.wrap_around, has_interval is
   # this single bit set or 0 if this is 0.
   #
   public highest_one_bit u32 =>
-    (v, s) := (val, u32 0)
-    (v, s) := if ((v ≥ u32 0) && (v < u32 0x10000)) (v, s) else (v >> 16, s + 16)
-    (v, s) := if (                 v <   u32 0x100 ) (v, s) else (v >>  8, s +  8)
-    (v, s) := if (                 v <    u32 0x10 ) (v, s) else (v >>  4, s +  4)
-    (v, s) := if (                 v <       u32 4 ) (v, s) else (v >>  2, s +  2)
-    (v, s) := if (                 v <       u32 2 ) (v, s) else (v >>  1, s +  1)
-    v << s
+    (v, s)   := (val, u32 0)
+    (v1, s1) := if ((v ≥ 0) && (v  < 0x10000)) (v , s)  else (v  >> 16, s  + 16)
+    (v2, s2) := if (            v1 < 0x100 )   (v1, s1) else (v1 >>  8, s1 +  8)
+    (v3, s3) := if (            v2 < 0x10 )    (v2, s2) else (v2 >>  4, s2 +  4)
+    (v4, s4) := if (            v3 < 4 )       (v3, s3) else (v3 >>  2, s3 +  2)
+    (v5, s5) := if (            v4 < 2 )       (v4, s4) else (v4 >>  1, s4 +  1)
+    v5 << s5
 
 
   # the highest 1 bit in this integer
@@ -172,36 +172,36 @@ public u32(public val u32) : num.wrap_around, has_interval is
     if val = u32.zero
       0
     else
-      (v, s) := (val, u32 0)
-      (v, s) := if ((v ≥ u32 0) && (v < u32 0x10000)) (v, s) else (v >> 16, s + 16)
-      (v, s) := if (                v <   u32 0x100 ) (v, s) else (v >>  8, s +  8)
-      (v, s) := if (                v <    u32 0x10 ) (v, s) else (v >>  4, s +  4)
-      (v, s) := if (                v <       u32 4 ) (v, s) else (v >>  2, s +  2)
-      (v, s) := if (                v <       u32 2 ) (v, s) else (v >>  1, s +  1)
-      s + 1
+      (v, s)   := (val, u32 0)
+      (v1, s1) := if ((v ≥ 0) &&     (v  < 0x10000 )) (v , s ) else (v  >> 16, s  + 16)
+      (v2, s2) := if (                v1 < 0x100   )  (v1, s1) else (v1 >>  8, s1 +  8)
+      (v3, s3) := if (                v2 < 0x10    )  (v2, s2) else (v2 >>  4, s2 +  4)
+      (v4, s4) := if (                v3 < 4       )  (v3, s3) else (v3 >>  2, s3 +  2)
+      (v5, s5) := if (                v4 < 2       )  (v4, s4) else (v4 >>  1, s4 +  1)
+      s5 + 1
 
 
   # count the number of trailing zeros in this integer.
   #
   public trailing_zeros i32 =>
     (v, s) := (val, 0)
-    (v, s) := if ((v &     0xffff) != u32 0) (v, s) else (v >> 16, s + 16)
-    (v, s) := if ((v &       0xff) != u32 0) (v, s) else (v >>  8, s +  8)
-    (v, s) := if ((v &        0xf) != u32 0) (v, s) else (v >>  4, s +  4)
-    (v, s) := if ((v &          3) != u32 0) (v, s) else (v >>  2, s +  2)
-    (v, s) := if ((v &          1) != u32 0) (v, s) else (v >>  1, s +  1)
-    if           ((v &          1) != u32 0)      s else                32
+    (v1, s1) := if ((v  &     0xffff) != 0) (v , s ) else (v  >> 16, s  + 16)
+    (v2, s2) := if ((v1 &       0xff) != 0) (v1, s1) else (v1 >>  8, s1 +  8)
+    (v3, s3) := if ((v2 &        0xf) != 0) (v2, s2) else (v2 >>  4, s2 +  4)
+    (v4, s4) := if ((v3 &          3) != 0) (v3, s3) else (v3 >>  2, s3 +  2)
+    (v5, s5) := if ((v4 &          1) != 0) (v4, s4) else (v4 >>  1, s4 +  1)
+    if             ((v5 &          1) != 0)      s5  else                32
 
 
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  public ones_count i32 =>
+  public redef ones_count i32 =>
     v := val;
-    m := v & 0xaaaaaaaa; v := v - m + (m >> 1)
-    m := v & 0xcccccccc; v := v - m + (m >> 2)
-    m := v & 0xf0f0f0f0; v := v - m + (m >> 4)
-    (v *° 0x01010101 >> 24).as_i32
+    m  := v  & 0xaaaaaaaa; v1 := v  - m  + (m  >> 1)
+    m1 := v1 & 0xcccccccc; v2 := v1 - m1 + (m1 >> 2)
+    m2 := v2 & 0xf0f0f0f0; v3 := v2 - m2 + (m2 >> 4)
+    (v3 *° 0x01010101 >> 24).as_i32
 
 
   # -----------------------------------------------------------------------
@@ -211,22 +211,22 @@ public u32(public val u32) : num.wrap_around, has_interval is
 
   # identity element for 'infix +'
   #
-  fixed type.zero u32 => 0
+  fixed redef type.zero u32 => 0
 
 
   # identity element for 'infix *'
   #
-  fixed type.one  u32 => 1
+  fixed redef type.one  u32 => 1
 
 
   # equality
   #
-  fixed type.equality(a, b u32) bool => intrinsic
+  fixed redef type.equality(a, b u32) bool => intrinsic
 
 
   # total order
   #
-  fixed type.lteq(a, b u32) bool => intrinsic
+  fixed redef type.lteq(a, b u32) bool => intrinsic
 
 
   # returns the number in whose bit representation all bits are ones
@@ -235,9 +235,9 @@ public u32(public val u32) : num.wrap_around, has_interval is
 
   # minimum
   #
-  public fixed type.min => u32 0
+  public fixed redef type.min => u32 0
 
 
   # maximum
   #
-  public fixed type.max => u32 0x_ffff_ffff
+  public fixed redef type.max => u32 0x_ffff_ffff

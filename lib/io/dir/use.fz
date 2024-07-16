@@ -29,12 +29,12 @@
 # directories.
 #
 # usage example:
-# ```
-# use some_type path ()->
-#   match (open some_type).read
-#     e error => e
-#     s String => say s
-# ```
+#
+#     use some_type path ()->
+#       match (open some_type).read
+#         e error => e
+#         s String => say s
+#
 public use(T, R type, path String, code ()-> outcome R) outcome R =>
   match fuzion.sys.fileio.open_dir path
     fd i64 =>
@@ -53,11 +53,11 @@ public use(T, R type, path String, code ()-> outcome R) outcome R =>
 # it is not necessary to distinguish between opens
 #
 # usage example:
-# ```
-# use path ()->
-#   match open.read
-#     e error => e
-#     s String => say s
-# ```
+#
+#     use path ()->
+#       match open.read
+#         e error => e
+#         s String => say s
+#
 public use(R type, path String, code ()-> outcome R) outcome R =>
   use open_unique_type R path code

@@ -1,1 +1,1 @@
-*** failed pre-condition on call to 'SquareRoot.sqrt'
+*** failed precondition: `a ≥ 0`

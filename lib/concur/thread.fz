@@ -63,7 +63,7 @@ is
 
     # spawn a new thread using given code
     #
-    spawn(code ()->unit) => concur.thread.spawned (fuzion.sys.thread.spawn code)
+    redef spawn(code ()->unit) => concur.thread.spawned (fuzion.sys.thread.spawn code)
 
 
 # thread with no argument returns thread.env, i.e., the currently installed
