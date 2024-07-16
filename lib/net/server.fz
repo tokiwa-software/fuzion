@@ -80,7 +80,7 @@ is
             #   _ := request_handler.env.handle_request (channel desc)
             #   fuzion.sys.net.close desc
 
-            res := (io.buffered.reader (read_provider desc) 1024).with ()->
+            res := (io.buffered.reader LM (read_provider desc) 1024).with ()->
               (io.buffered.writer LM (write_provider desc) 1024).with ()->
                 (net.channel desc).go ()->
                   rh.handle_request

@@ -27,13 +27,14 @@ reg_issue2280 is
   codepoint_type_ascii_digit => u32 0x30 .. 0x39
   # NYI: this should be public in codepoint, had to copy it over!
 
-  _ := io.stdin.with ()->
+  lm : mutate is
+  _ := lm.go ()->((io.stdin lm).with ()->
     for
 
       t := u32 0, s
       # NYI: would be nice if `u32` would be inferred and not needed explicitly here
 
-      l := io.buffered.read_line ? str String => str | io.end_of_file => ""
+      l := io.buffered.read_line lm ? str String => str | io.end_of_file => ""
       # NYI: read_line should return a choice of String | end_of_file or similar
 
       l2 := l.as_codepoints
@@ -51,4 +52,4 @@ reg_issue2280 is
 
       s := t + first + last
     while l != "" do
-      say s
+      say s)
