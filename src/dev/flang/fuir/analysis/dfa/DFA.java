@@ -264,42 +264,43 @@ public class DFA extends ANY
       var tc = _fuir.accessTargetClazz(s);
       var cc0 = _fuir.accessedClazz  (s);
       var ccs = _fuir.accessedClazzes(s);
-      var found = new boolean[] { false };
       var resf = new Val[] { null };
-      for (var cci = 0; cci < ccs.length; cci += 2)
+      tvalue.value().forAll(t ->
         {
-          var tt = ccs[cci  ];
-          var cc = ccs[cci+1];
-          tvalue.value().forAll(t -> {
-              check
-                (t != Value.UNIT || AbstractInterpreter.clazzHasUnitValue(_fuir, tt));
-              if (t == Value.UNIT ||
-                  t._clazz == tt ||
+          if (CHECKS) check
+            (t != Value.UNIT || AbstractInterpreter.clazzHasUnitValue(_fuir, tc));
+          var t_cl = t == Value.UNIT ? tc : t._clazz;
+          var found = false;
+          for (var cci = 0; cci < ccs.length; cci += 2)
+            {
+              var tt = ccs[cci  ];
+              var cc = ccs[cci+1];
+              if (t_cl == tt ||
                   t != Value.UNDEFINED && _fuir.clazzAsValue(t._clazz) == tt)
                 {
-                  found[0] = true;
+                  found = true;
                   var r = access0(s, t, args, cc, tvalue);
                   if (r != null)
                     {
                       resf[0] = resf[0] == null ? r : resf[0].joinVal(DFA.this, r);
                     }
                 }
-            });
-        }
+            }
+          if (!found)
+            {
+              var instantiatedAt = _calls.keySet().stream()
+                .filter(c -> c._cc == t_cl && c._site != NO_SITE)
+                .map(c -> c._site)
+                .findAny()
+                .orElse(NO_SITE);
+              _fuir.recordAbstractMissing(t_cl, cc0, instantiatedAt);
+            }
+        });
       var res = resf[0];
-      if (!found[0])
-        {
-          var instantiatedAt = _calls.keySet().stream()
-            .filter(c -> c._cc == tc && c._site != NO_SITE)
-            .map(c -> c._site)
-            .findAny()
-            .orElse(NO_SITE);
-          _fuir.recordAbstractMissing(tc, cc0, instantiatedAt);
-        }
-      else if (res != null &&
-               tvalue instanceof EmbeddedValue &&
-               !_fuir.clazzIsRef(tc) &&
-               _fuir.clazzKind(cc0) == FUIR.FeatureKind.Field)
+      if (res != null &&
+          tvalue instanceof EmbeddedValue &&
+          !_fuir.clazzIsRef(tc) &&
+          _fuir.clazzKind(cc0) == FUIR.FeatureKind.Field)
         { // an embedded field in a value instance, so keep tvalue's
           // embedding. For chained embedded fields in value instances like
           // `t.f.g.h`, the embedding remains `t` for `f`, `g` and `h`.
