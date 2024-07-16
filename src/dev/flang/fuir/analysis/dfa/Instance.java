@@ -142,7 +142,7 @@ public class Instance extends Value implements Comparable<Instance>
 
     // Instead of comparing the site, we use only the clazz at the site to avoid
     // state explosion for, e.g., `String.upper_case` such that instances of,
-    // e.g., `codepoint` created in `character_encodings.unicode.data` do not
+    // e.g., `codepoint` created in `encodings.unicode.data` do not
     // result in explosion of number of values.
     //
     // This might result in inaccuracy, e.g., the code

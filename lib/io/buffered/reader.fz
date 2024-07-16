@@ -209,7 +209,7 @@ public read_delimiter (LM type : mutate, delim u8, strip_cr bool) String|io.end_
           # trailing carriage returns are dropped
           add_to_res(a0 Sequence u8) unit =>
             if !a0.is_empty
-              a1 := if strip_cr && a0.last = character_encodings.ascii.cr
+              a1 := if strip_cr && a0.last = encodings.ascii.cr
                         (a0.slice 0 a0.count-1)
                       else
                         a0
@@ -235,7 +235,7 @@ public read_delimiter (LM type : mutate, delim u8, strip_cr bool) String|io.end_
 # returns the line
 #
 public read_line (LM type : mutate) String|io.end_of_file ! (reader LM) =>
-  read_delimiter LM character_encodings.ascii.lf true
+  read_delimiter LM encodings.ascii.lf true
 
 
 # Read input fully into an array of bytes until end_of_file is reached
