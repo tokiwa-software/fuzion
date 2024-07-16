@@ -563,7 +563,7 @@ public class Loop extends ANY
       @Override
       public Expr action(Call c, AbstractFeature outer)
       {
-        if (names.contains(c._name))
+        if (c._target == null && names.contains(c._name))
           {
             c._name = prefix + c._name;
           }
