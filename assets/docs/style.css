@@ -181,3 +181,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   font-weight: 600;
   font-size: x-small;
 }
+
+a.fd-type:hover,
+a.fd-inherited:hover{
+  text-decoration: underline;
+}
