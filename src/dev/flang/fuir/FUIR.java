@@ -35,6 +35,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 
+import dev.flang.air.AirErrors;
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
 import dev.flang.air.FeatureAndActuals;
@@ -2591,6 +2592,72 @@ public class FUIR extends IR
   public SourcePosition declarationPos(int cl)
   {
     return clazz(cl)._type.declarationPos();
+  }
+
+
+  /*---------------------------------------------------------------------
+   *
+   * handling of abstract missing errors.
+   *
+   * NYI: This still uses AirErrors.abstractFeatureNotImplemented, which should
+   * eventually be moved to DFA or somewhere else when DFA is joined with AIR
+   * phase.
+   */
+
+
+  /**
+   * tuple of clazz, called abstrct features and location where the clazz was
+   * instantiated.
+   */
+  record AbsMissing(Clazz clazz,
+                    TreeSet<AbstractFeature> called,
+                    SourcePosition instantiationPos)
+  {
+  };
+
+
+  /**
+   * Set of missing implementations of abstract features
+   */
+  TreeMap<Clazz, AbsMissing> _abstractMissing = new TreeMap<>();
+
+
+  /**
+   * If a called to an abstract feature was found, the DFA will use this to
+   * record the missing implementation of an abstract features.
+   *
+   * Later, this will be reported as an error via `reportAbstractMissing()`.
+   *
+   * @param cl clazz is of the clazz that is missing an implementation of an
+   * abstract features.
+   *
+   * @param f the inner clazz that is called and that is missing an implementation
+   *
+   * @param instantiationPos if known, the site where `cl` was instantiated,
+   * `NO_SITE` if unknown.
+   */
+  public void recordAbstractMissing(int cl, int f, int instantiationSite)
+  {
+    var cc = clazz(cl);
+    var cf = clazz(f);
+    var r = _abstractMissing.computeIfAbsent(cc, ccc -> new AbsMissing(ccc, new TreeSet<>(), sitePos(instantiationSite)));
+    r.called.add(cf.feature());
+  }
+
+
+  /**
+   * In case any errors were recorded via `recordAbstractMissing` this will
+   * create the corresponding error messages.  The errors reported will be
+   * cumulative, i.e., if a clazz is missing several implementations of abstract
+   * features, there will be only one error for that clazz.
+   */
+  public void reportAbstractMissing()
+  {
+    _abstractMissing.values()
+      .stream()
+      .forEach(r -> AirErrors.abstractFeatureNotImplemented(r.clazz.feature(),
+                                                            r.called,
+                                                            r.instantiationPos));
   }
 
 

@@ -252,20 +252,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * If instances of this class are created, this gives a source code position
-   * that does create such an instance.  To be used in error messages.
-   */
-  HasSourcePosition _instantiationPos = null;
-
-
-  /**
-   * In case abstract methods are called on this, this lists the abstract
-   * methods that have been found to do so.
-   */
-  TreeSet<AbstractFeature> _abstractCalled = null;
-
-
-  /**
    * Set of all heirs of this clazz.
    */
   TreeSet<Clazz> _heirs = null;
@@ -1215,20 +1201,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
             if (f != Types.f_ERROR && (af != null || !isEffectivelyAbstract(f)))
               {
                 var aaf = af != null ? af : f;
-                if (isEffectivelyAbstract(aaf)
-                    /* NYI: WORKAROUND!
-                    tests/lib_container_set fails without this:
-                    "Used abstract feature 'container.Set.type.new' is not implemented by 'container.Set.type'"
-                    */
-                   && !_type.feature().isTypeFeature() )
-                  {
-                    if (_abstractCalled == null)
-                      {
-                        _abstractCalled = new TreeSet<>();
-                      }
-                    _abstractCalled.add(aaf);
-                  }
-
                 t = aaf.selfType().applyTypePars(aaf, fa._tp);
               }
           }
@@ -1913,7 +1885,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (!_isInstantiated && !isVoidType())
       {
         _isInstantiated = true;
-        _instantiationPos = at;
       }
   }
 
@@ -2036,20 +2007,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
   private boolean allOutersInstantiated2()
   {
     return (isInstantiated() || isRef() && hasInstantiatedHeirs()) && (_outer == null || _outer.allOutersInstantiated2());
-  }
-
-
-  /**
-   * Perform checks on classes such as that an instantiated clazz is not the
-   * target of any calls to abstract methods that are not implemented by this
-   * clazz.
-   */
-  public void check()
-  {
-    if (isInstantiated() && _abstractCalled != null)
-      {
-        AirErrors.abstractFeatureNotImplemented(feature(), _abstractCalled, _instantiationPos);
-      }
   }
 
 

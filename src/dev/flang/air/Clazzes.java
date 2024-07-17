@@ -429,10 +429,6 @@ public class Clazzes extends ANY
     if (CHECKS) check
       (clazzesToBeVisited.size() == 0);
     closed = true;
-    for (var cl : clazzes.keySet())
-      {
-        cl.check();
-      }
   }
 
 
