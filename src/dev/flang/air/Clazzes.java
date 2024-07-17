@@ -345,9 +345,9 @@ public class Clazzes extends ANY
             clazzesToBeVisited.add(result);
           }
         result.registerAsHeir();
-        if (_options_.verbose(3))
+        if (_options_.verbose(5))
           {
-            _options_.verbosePrintln(3, "GLOBAL CLAZZ: " + result);
+            _options_.verbosePrintln(5, "GLOBAL CLAZZ: " + result);
             if (_options_.verbose(10))
               {
                 Thread.dumpStack();
