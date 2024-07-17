@@ -1166,7 +1166,12 @@ public class Clazzes extends ANY
    */
   public static HasSourcePosition isUsedAt(AbstractFeature thiz)
   {
-    return thiz._usedAt;
+    return thiz._usedAt != null
+      ? thiz._usedAt
+      /* NYI: BUG: tests/covariance: outerref (test_this_type.q.r.#^test_this_type.a.b) not detected to be used. */
+      : thiz.isOuterRef()
+      ? SourcePosition.notAvailable
+      : null;
   }
 
 
