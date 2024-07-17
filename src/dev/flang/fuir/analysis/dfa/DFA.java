@@ -744,6 +744,12 @@ public class DFA extends ANY
   final Value _universe;
 
 
+  private int _iterationCount;
+  //  private int _microIterationCount;
+  private Call _currentCall;
+  Call currentCall() { return _currentCall; }
+
+
   /**
    * Instances created during DFA analysis.
    */
@@ -767,7 +773,7 @@ public class DFA extends ANY
    * be analyzed at the end of the current iteration since they most likely add
    * new information.
    */
-  TreeSet<Call> _newCalls = new TreeSet<>();
+  TreeSet<Call> _hotCalls = new TreeSet<>();
 
 
   /**
@@ -1028,14 +1034,15 @@ public class DFA extends ANY
    */
   void findFixPoint()
   {
-    int cnt = 0;
+    _iterationCount = 0;
+    //    _microIterationCount = 0;
     do
       {
-        cnt++;
+        _iterationCount++;
         if (_options.verbose(2))
           {
             _options.verbosePrintln(2,
-                                    "DFA iteration #"+cnt+": --------------------------------------------------" +
+                                    "DFA iteration #" + _iterationCount + ": --------------------------------------------------" +
                                     (_options.verbose(3) ? "calls:"+_calls.size() + ",instances:" + _instances.size() + ",envs:" + _envs.size() + "; " + _changedSetBy.get()
                                                          : ""                                                                  ));
           }
@@ -1043,7 +1050,7 @@ public class DFA extends ANY
         _changedSetBy = () -> "*** change not set ***";
         iteration();
       }
-    while (_changed && (true || cnt < 100) || false && (cnt < 50));
+    while (_changed && (true || _iterationCount < 100));
     if (_options.verbose(4))
       {
         _options.verbosePrintln(4, "DFA done:");
@@ -1091,7 +1098,11 @@ public class DFA extends ANY
     do
       {
         var s = vs.toArray(new Call[vs.size()]);
-        _newCalls = new TreeSet<>();
+        _hotCalls = new TreeSet<>();
+        for (var c : s)
+          {
+            c._scheduledForAnalysis = true;
+          }
         for (var c : s)
           {
             if (_reportResults && _options.verbose(4))
@@ -1105,12 +1116,22 @@ public class DFA extends ANY
                 say(sb);
               }
             analyze(c);
+            c._scheduledForAnalysis = false;
           }
-        vs = _newCalls;
+        vs = _hotCalls;
       }
     while (!vs.isEmpty());
   }
 
+
+  void hot(Call c)
+  {
+    if (!c._scheduledForAnalysis)
+      {
+        _hotCalls.add(c);
+        c._scheduledForAnalysis = true;
+      }
+  }
 
   /**
    * Analyze code for given call
@@ -1121,6 +1142,9 @@ public class DFA extends ANY
   {
     if (_fuir.clazzKind(c._cc) == FUIR.FeatureKind.Routine)
       {
+        var oldcur = _currentCall;
+        _currentCall = c;
+
         var i = c._instance;
         check
           (c._args.size() == _fuir.clazzArgCount(c._cc));
@@ -1144,6 +1168,8 @@ public class DFA extends ANY
           {
             c.returns();
           }
+
+        _currentCall = oldcur;
       }
   }
 
@@ -1768,6 +1794,7 @@ public class DFA extends ANY
           var env = cl._env;
           var newEnv = cl._dfa.newEnv(cl, env, ecl, cl._target);
           var ncl = cl._dfa.newCall(call, NO_SITE, cl._args.get(0).value(), new List<>(), newEnv, cl);
+          ncl._calledByAbortableForEffect = ecl;
           // NYI: result must be null if result of ncl is null (ncl does not return) and effect.abort is not called
           return Value.UNIT;
         });
@@ -2094,11 +2121,18 @@ public class DFA extends ANY
     var e = _calls.get(r);
     if (e == null)
       {
-        _newCalls.add(r);
+        //        hot(r);
         _calls.put(r,r);
         e = r;
         wasChanged(() -> "DFA.newCall to " + r);
         analyzeNewCall(r);
+      }
+    else
+      {
+      }
+    if (_currentCall != null)
+      {
+        e.calledBy(_currentCall);
       }
     return e;
   }
@@ -2125,20 +2159,26 @@ public class DFA extends ANY
   private void analyzeNewCall(Call e)
   {
     var cnt = _newCallRecursiveAnalyzeCalls;
+    var rec = true;
     if (cnt < _newCallRecursiveAnalyzeClazzes.length)
       {
-        var rec = false;
+        rec = false;
         for (var i = 0; i<cnt; i++)
           {
             rec = rec || _newCallRecursiveAnalyzeClazzes[i] == e._cc;
           }
-        if (!rec)
-          {
-            _newCallRecursiveAnalyzeClazzes[cnt] = e._cc;
-            _newCallRecursiveAnalyzeCalls = cnt + 1;
-            analyze(e);
-            _newCallRecursiveAnalyzeCalls = cnt ;
-          }
+      }
+    if (!rec)
+      {
+        _newCallRecursiveAnalyzeClazzes[cnt] = e._cc;
+        _newCallRecursiveAnalyzeCalls = cnt + 1;
+        analyze(e);
+        _newCallRecursiveAnalyzeCalls = cnt ;
+        hot(e);
+      }
+    else
+      {
+        hot(e);
       }
   }
 

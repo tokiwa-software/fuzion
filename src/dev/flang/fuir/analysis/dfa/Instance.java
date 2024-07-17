@@ -124,6 +124,7 @@ public class Instance extends Value implements Comparable<Instance>
    */
   Env env()
   {
+    if (true) return null;
     return _context instanceof Call ca1 ? ca1._env : null;
   }
 

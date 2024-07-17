@@ -123,6 +123,14 @@ public class Call extends ANY implements Comparable<Call>, Context
   boolean _escapes = false;
 
 
+  boolean _scheduledForAnalysis = false;
+
+
+  java.util.TreeSet<Integer> _requiredEffects = null;
+
+  int _calledByAbortableForEffect = -1;
+
+
   /*---------------------------  constructors  ---------------------------*/
 
 
@@ -181,6 +189,7 @@ public class Call extends ANY implements Comparable<Call>, Context
     var r =
       _cc   <   other._cc  ? -1 :
       _cc   >   other._cc  ? +1 :
+      _dfa._fuir.clazzIsUnitType(_cc) ?  0 :
       _site <   other._site? -1 :
       _site >   other._site? +1 : Value.compare(_target, other._target);
     for (var i = 0; r == 0 && i < _args.size(); i++)
@@ -190,7 +199,37 @@ public class Call extends ANY implements Comparable<Call>, Context
       }
     if (r == 0)
       {
-        r = Env.compare(_env, other._env);
+        r = _requiredEffects == null && other._requiredEffects == null ?  0 : Env.compare(_env, other._env);
+        /*
+            _requiredEffects != null && other._requiredEffects == null ? -1 :
+            _requiredEffects == null && other._requiredEffects != null ? +1 : Env.compare(_env, other._env);
+        */
+      }
+    return r;
+  }
+  public String compareToWhy(Call other)
+  {
+    var r =
+      _cc   <   other._cc  ? "cc-1" :
+      _cc   >   other._cc  ? "cc+1" :
+      _dfa._fuir.clazzIsUnitType(_cc) ?  "unit" :
+      _site <   other._site? "ste-1" :
+      _site >   other._site? "ste+1" : null;
+    if (r == null && Value.compare(_target, other._target) != 0)
+      {
+        r = "Value.compare";
+      }
+
+    for (var i = 0; r == null && i < _args.size(); i++)
+      {
+        var r0 = Value.compare(      _args.get(i).value(),
+                           other._args.get(i).value());
+        r = r0 == 0 ? null : "arg#"+i;
+      }
+    if (r == null)
+      {
+        var r0 = Env.compare(_env, other._env);
+        r = "ENV";
       }
     return r;
   }
@@ -382,6 +421,34 @@ public class Call extends ANY implements Comparable<Call>, Context
   }
 
 
+  java.util.TreeSet<Call> _calledByX = new java.util.TreeSet<>();
+  void addRequiredEffect(int ecl)
+  {
+    if (_requiredEffects == null)
+      {
+        _requiredEffects = new java.util.TreeSet<>();
+      }
+    if (_requiredEffects.add(ecl))
+      {
+        if (_calledByAbortableForEffect == ecl)
+          {
+            // this is called by effect.abortable which installs effect 'ecl', so `ecl` is not propagated further
+          }
+        else
+          {
+            _calledByX.stream().forEach(c -> c.addRequiredEffect(ecl));
+          }
+      }
+  }
+  void calledBy(Call c)
+  {
+    if (_calledByX.add(c) && _requiredEffects != null)
+      {
+        _requiredEffects.stream().forEach(e -> c.addRequiredEffect(e));
+      }
+  }
+
+
   /**
    * Get effect of given type in this call's environment or the default if none
    * found or null if no effect in environment and also no default available.
@@ -392,6 +459,7 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   Value getEffectCheck(int ecl)
   {
+    addRequiredEffect(ecl);
     return
       _env != null ? _env.getActualEffectValues(ecl)
                    : _dfa._defaultEffects.get(ecl);
@@ -414,6 +482,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   Value getEffectForce(int s, int ecl)
   {
     var result = getEffectCheck(ecl);
+    if (false) // NYI: this currently falsely reports errors!
     if (result == null && _dfa._reportResults && !_dfa._fuir.clazzOriginalName(_cc).equals("effect.type.unsafe_get"))
       {
         DfaErrors.usedEffectNeverInstantiated(_dfa._fuir.sitePos(s),
@@ -437,6 +506,7 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   void replaceEffect(int ecl, Value e)
   {
+    addRequiredEffect(ecl);
     if (_env != null)
       {
         _env.replaceEffect(ecl, e);

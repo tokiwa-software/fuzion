@@ -67,7 +67,7 @@ public class Env extends ANY implements Comparable<Env>
 
   /**
    * Sorted array of types that are present in this environment. This is
-   * currently used to uniquely identify and Env instance, i.e., environments
+   * currently used to uniquely identify Env instance, i.e., environments
    * that define the same effect types are joined into one environment.
    */
   int[] _types;
