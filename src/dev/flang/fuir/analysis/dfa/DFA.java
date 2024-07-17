@@ -889,6 +889,7 @@ public class DFA extends ANY
       {
         called.add(c._cc);
       }
+    _options.timer("dfa");
     return new FUIR(_fuir)
       {
         public boolean clazzNeedsCode(int cl)

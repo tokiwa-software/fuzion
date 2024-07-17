@@ -29,6 +29,8 @@ package dev.flang.fe;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import java.util.function.Consumer;
+
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
@@ -119,6 +121,9 @@ public class FrontEndOptions extends FuzionOptions
 
   /**
    * Constructor initializing fields as given.
+   *
+   * @param timer can be called with a phase name to measure the time spent in
+   * this phase, printed if `-verbose` level is sufficiently high.
    */
   public FrontEndOptions(int verbose,
                          Path fuzionHome,
@@ -134,13 +139,15 @@ public class FrontEndOptions extends FuzionOptions
                          boolean readStdin,
                          byte[] executeCode,
                          String main,
-                         boolean loadSources)
+                         boolean loadSources,
+                         Consumer<String> timer)
   {
     super(verbose,
           fuzionDebugLevel,
           fuzionSafety,
           enableUnsafeIntrinsics,
-          fuzionHome);
+          fuzionHome,
+          timer);
 
     if (PRECONDITIONS) require
       (verbose >= 0,
