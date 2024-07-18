@@ -1610,7 +1610,7 @@ public class C extends ANY
               if (FUZION_DEBUG_TAIL_CALL                                 &&
                   cc == cl                                               &&  // calling myself
                   _tailCall.callIsTailCall(cl, s)                        &&  // as a tail call
-                  !_fuir.lifeTime(cl).maySurviveCall()                       // and current instance did not escape
+                  _fuir.lifeTime(cl).maySurviveCall()                        // and current instance did not escape
                 )
                 {
                   say("Escapes, no tail call opt possible: " + _fuir.clazzAsString(cl) + ", lifetime: " + _fuir.lifeTime(cl).name());
