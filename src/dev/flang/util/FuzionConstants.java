@@ -149,6 +149,7 @@ public class FuzionConstants extends ANY
    * result in `prefix -` or `postfix -`.
    */
   public static final String UNARY_OPERATOR_PREFIX = "unary ";
+  public static final String TERNARY_OPERATOR_PREFIX = "ternary ";
 
 
   public static final String OPERATION_CALL = "call";
