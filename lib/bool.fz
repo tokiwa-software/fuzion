@@ -91,6 +91,8 @@ public bool : choice FALSE TRUE, property.equatable is
       true
 
   # ternary ? : -- NYI: This will be replaced by a more powerful match syntax
+  # NYI: #1726, #2301: a and b should be marked Lazy here
+  #
   public ternary ? : (T type, a, b T) => if bool.this a else b
 
 
