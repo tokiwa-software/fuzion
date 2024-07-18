@@ -1019,7 +1019,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * For a type feature, this specifies the base feature the type feature was
    * created for.
    */
-  AbstractFeature typeFeatureOrigin()
+  public AbstractFeature typeFeatureOrigin()
   {
     if (CHECKS) check
       (isTypeFeature());
