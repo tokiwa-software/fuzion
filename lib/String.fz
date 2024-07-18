@@ -704,6 +704,11 @@ public String ref : property.equatable, property.hashable, property.orderable is
       FALSE => last_state.l ++ [(substring_codepoint last_state.start_pos)]
 
 
+  # helper type for the result of the cut feature
+  #
+  private:public cut_result (public before String, public after String, public found bool).
+
+
   # Cuts out the first appearance of the string sep from this string, in other words,
   # returns a tuple of two strings and a bool, the first string is the substring before
   # the first appreance of sep, the second string is the substring after the first
@@ -712,16 +717,16 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # If sep does not appear in this string at all, return this string as the first string,
   # the empty string as the second, and false as the bool.
   #
-  public cut(sep String) tuple String String bool =>
+  public cut(sep String) cut_result =>
     match find sep
-      nil => (String.this.as_string, "", false)
+      nil => cut_result String.this.as_string "" false
       i i32 =>
         l := byte_length
         sepl := sep.byte_length
 
         before := String.from_bytes (utf8.slice 0 i)
         after := String.from_bytes (utf8.slice (i + sepl) l)
-        (before, after, true)
+        cut_result before after true
 
 
   # convert this string to upper case
