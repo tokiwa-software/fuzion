@@ -122,7 +122,7 @@ public class Docs extends ANY
 
 
   /**
-   * do a breath first traversel of declared features,
+   * do a breath first traversal of declared features,
    * passing found features to consumer c.
    * @param c
    * @param start
@@ -256,11 +256,12 @@ public class Docs extends ANY
       {
         return "";
       }
-    String path = (featurePath(f.outer()) + f.featureName().toString());
+
+    String path = f.isTypeFeature() ? (featurePath(f.typeFeatureOrigin()) + "/" + "type.")
+                                    : (featurePath(f.outer()) + f.featureName().toString()) + "/";
 
     return path
-      .replace(" ", "+")
-      + "/";
+      .replace(" ", "+");
   }
 
 
