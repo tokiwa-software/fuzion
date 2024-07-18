@@ -213,6 +213,12 @@ public class TailCall extends ANY
           yield false;
         }
 
+      case Box ->
+        {
+          // true if isTailCall=true for what we are boxing
+          yield isTailCall(cl, _fuir.codeIndex(cls, -1), s, mustAssignTo);
+        }
+
       // any other code results in failure to detect a tail call:
       default -> false;
       };
