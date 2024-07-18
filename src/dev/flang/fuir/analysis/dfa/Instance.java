@@ -124,8 +124,8 @@ public class Instance extends Value implements Comparable<Instance>
    */
   Env env()
   {
-    if (true) return null;
-    return _context instanceof Call ca1 ? ca1._env : null;
+    //  if (true) return null;
+    return _context instanceof Call ca1 ? ca1.effectiveEnv() : null;
   }
 
 
@@ -182,6 +182,7 @@ public class Instance extends Value implements Comparable<Instance>
       e2 == null ? +1
                  : e1.compareTo(e2);
   }
+
 
   /**
    * Compare this to another instance, used to compare effect instances in

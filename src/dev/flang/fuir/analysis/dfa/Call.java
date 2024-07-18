@@ -38,6 +38,7 @@ import static dev.flang.util.FuzionConstants.EFFECT_ABORTABLE_NAME;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 
+import java.util.TreeSet;
 
 /**
  * Call represents a call
@@ -78,6 +79,10 @@ public class Call extends ANY implements Comparable<Call>, Context
    * intrinsic call or the main entry point.
    */
   final int _site;
+  int siteIndex()
+  {
+    return _site == FUIR.NO_SITE ? 0 : _site - FUIR.SITE_BASE + 1;
+  }
 
 
   /**
@@ -108,7 +113,9 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * The environment, i.e., the effects installed when this call is made.
    */
-  final Env _env;
+  final Env _originalEnv;
+
+  Env _effectiveEnvCache;
 
 
   /**
@@ -158,7 +165,10 @@ public class Call extends ANY implements Comparable<Call>, Context
     _site = site;
     _target = target;
     _args = args;
-    _env = env;
+    _originalEnv = env;
+    var re = dfa._requiredEffects.getIfExists(siteIndex());
+    _requiredEffects = re;
+    _effectiveEnvCache = env == null || re == null ? null : env.filter(_requiredEffects);
     _context = context;
     _instance = dfa.newInstance(cc, site, this);
 
@@ -189,9 +199,12 @@ public class Call extends ANY implements Comparable<Call>, Context
     var r =
       _cc   <   other._cc  ? -1 :
       _cc   >   other._cc  ? +1 :
-      _dfa._fuir.clazzIsUnitType(_cc) ?  0 :
+      //      _dfa._fuir.clazzIsUnitType(_cc) ? 0 :
+      //      (_dfa._fuir.clazzIsUnitType(_cc) || (_target == Value.UNIT && _dfa._fuir.clazzArgCount(_cc) == 0)) && _requiredEffects == null ? 0 :
       _site <   other._site? -1 :
-      _site >   other._site? +1 : Value.compare(_target, other._target);
+      _site >   other._site? +1 :
+      Value.compare(_target, other._target);
+    if (false)
     for (var i = 0; r == 0 && i < _args.size(); i++)
       {
         r = Value.compare(      _args.get(i).value(),
@@ -199,11 +212,7 @@ public class Call extends ANY implements Comparable<Call>, Context
       }
     if (r == 0)
       {
-        r = _requiredEffects == null && other._requiredEffects == null ?  0 : Env.compare(_env, other._env);
-        /*
-            _requiredEffects != null && other._requiredEffects == null ? -1 :
-            _requiredEffects == null && other._requiredEffects != null ? +1 : Env.compare(_env, other._env);
-        */
+        r = Env.compare(effectiveEnv(), other.effectiveEnv());
       }
     return r;
   }
@@ -212,7 +221,8 @@ public class Call extends ANY implements Comparable<Call>, Context
     var r =
       _cc   <   other._cc  ? "cc-1" :
       _cc   >   other._cc  ? "cc+1" :
-      _dfa._fuir.clazzIsUnitType(_cc) ?  "unit" :
+      _dfa._fuir.clazzIsUnitType(_cc) ? "unit" :
+      (_dfa._fuir.clazzIsUnitType(_cc) || (_target == Value.UNIT && _dfa._fuir.clazzArgCount(_cc) == 0)) && _requiredEffects == null ?  "unit" :
       _site <   other._site? "ste-1" :
       _site >   other._site? "ste+1" : null;
     if (r == null && Value.compare(_target, other._target) != 0)
@@ -228,10 +238,20 @@ public class Call extends ANY implements Comparable<Call>, Context
       }
     if (r == null)
       {
-        var r0 = Env.compare(_env, other._env);
+        var r0 = Env.compare(_originalEnv, other._originalEnv);
         r = "ENV";
       }
     return r;
+  }
+  void mergeWith(Call other)
+  {
+    for (var i = 0; i < _args.size(); i++)
+      {
+        var a0 =       _args.get(i);
+        var a1 = other._args.get(i);
+        _args.set(i, a0.joinVal(_dfa, a1));
+      }
+    //_target = _target.join(other._target);
   }
 
 
@@ -354,7 +374,7 @@ public class Call extends ANY implements Comparable<Call>, Context
     sb.append(" => ")
       .append(r == null ? "*** VOID ***" : r)
       .append(" ENV: ")
-      .append(Errors.effe(_env != null ? _env.toString() : "NO ENV"));
+      .append(Errors.effe(Env.envAsString(effectiveEnv())));
     return sb.toString();
   }
 
@@ -371,7 +391,7 @@ public class Call extends ANY implements Comparable<Call>, Context
        ? (on.equals(EFFECT_ABORTABLE_NAME)
           ? "install effect " + Errors.effe(_dfa._fuir.clazzAsStringHuman(_dfa._fuir.effectType(_cc))) + ", old environment was "
           : "effect environment ") +
-         Errors.effe(Env.envAsString(_env)) +
+         Errors.effe(Env.envAsString(effectiveEnv())) +
          " for call to "
        : "call ")+
       Errors.sqn(_dfa._fuir.clazzAsStringHuman(_cc)) +
@@ -421,30 +441,46 @@ public class Call extends ANY implements Comparable<Call>, Context
   }
 
 
+  Env effectiveEnv()
+  {
+    return _effectiveEnvCache;
+  }
+
   java.util.TreeSet<Call> _calledByX = new java.util.TreeSet<>();
   void addRequiredEffect(int ecl)
   {
+    var si = siteIndex();
+    var re = _dfa._requiredEffects.getIfExists(si);
+    if (re == null)
+      {
+        re = new java.util.TreeSet<>();
+        _dfa._requiredEffects.force(si, re);
+      }
+    re.add(ecl);
     if (_requiredEffects == null)
       {
-        _requiredEffects = new java.util.TreeSet<>();
+        _requiredEffects = new TreeSet<>();
       }
     if (_requiredEffects.add(ecl))
       {
-        if (_calledByAbortableForEffect == ecl)
+        var e = _originalEnv;
+        var ee = e == null ? null : e.filter(_requiredEffects);
+        if (_effectiveEnvCache != ee)
           {
-            // this is called by effect.abortable which installs effect 'ecl', so `ecl` is not propagated further
-          }
-        else
-          {
+            _effectiveEnvCache = ee;
             _calledByX.stream().forEach(c -> c.addRequiredEffect(ecl));
           }
       }
   }
   void calledBy(Call c)
   {
-    if (_calledByX.add(c) && _requiredEffects != null)
+    if (_calledByX.add(c))
       {
-        _requiredEffects.stream().forEach(e -> c.addRequiredEffect(e));
+        var re = _dfa._requiredEffects.getIfExists(siteIndex());
+        if (re != null)
+          {
+            re.stream().forEach(e -> c.addRequiredEffect(e));
+          }
       }
   }
 
@@ -461,8 +497,8 @@ public class Call extends ANY implements Comparable<Call>, Context
   {
     addRequiredEffect(ecl);
     return
-      _env != null ? _env.getActualEffectValues(ecl)
-                   : _dfa._defaultEffects.get(ecl);
+      _originalEnv != null ? _originalEnv.getActualEffectValues(ecl)
+                           : _dfa._defaultEffects.get(ecl);
   }
 
 
@@ -482,7 +518,6 @@ public class Call extends ANY implements Comparable<Call>, Context
   Value getEffectForce(int s, int ecl)
   {
     var result = getEffectCheck(ecl);
-    if (false) // NYI: this currently falsely reports errors!
     if (result == null && _dfa._reportResults && !_dfa._fuir.clazzOriginalName(_cc).equals("effect.type.unsafe_get"))
       {
         DfaErrors.usedEffectNeverInstantiated(_dfa._fuir.sitePos(s),
@@ -507,9 +542,10 @@ public class Call extends ANY implements Comparable<Call>, Context
   void replaceEffect(int ecl, Value e)
   {
     addRequiredEffect(ecl);
-    if (_env != null)
+    if (_originalEnv != null)
       {
-        _env.replaceEffect(ecl, e);
+        _originalEnv.replaceEffect(ecl, e);
+        _effectiveEnvCache = _requiredEffects == null ? null : _originalEnv.filter(_requiredEffects);
       }
     else
       {

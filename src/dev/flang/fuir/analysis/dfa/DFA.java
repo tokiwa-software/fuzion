@@ -371,7 +371,7 @@ public class DFA extends ANY
           {
             if (_fuir.clazzNeedsCode(cc))
               {
-                var ca = newCall(cc, s, tvalue.value(), args, _call._env, _call);
+                var ca = newCall(cc, s, tvalue.value(), args, _call._originalEnv, _call);
                 res = ca.result();
                 if (res != null && res != Value.UNIT && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)))
                   {
@@ -845,6 +845,10 @@ public class DFA extends ANY
   TreeSet<Integer> _missingEffects = new TreeSet<>();
 
 
+  //TreeMap<Integer, TreeSet<Integer>> _requiredEffects = new TreeMap<>();
+  List<TreeSet<Integer>> _requiredEffects = new List<>();
+
+
   /**
    * Flag to control output of errors.  This is set to true after a fix point
    * has been reached to report errors that should disappear when fix point is
@@ -1063,6 +1067,79 @@ public class DFA extends ANY
       }
     _reportResults = true;
     iteration();
+    if (false) {
+      var counts = new TreeMap<Integer,Integer>();
+      for (var c : _calls.values())
+        {
+          var i = counts.computeIfAbsent(c._cc, ignore -> 0);
+          counts.put(c._cc, i+1);
+        }
+      var cl = new TreeSet<Integer>((a,b)->
+                                    { var ca = counts.get(a);
+                                      var cb = counts.get(b);
+                                      return ca != cb ? Integer.compare(counts.get(a), counts.get(b))
+                                        : Integer.compare(a, b);
+                                    });
+      for (var c : counts.keySet())
+        {
+          cl.add(c);
+        }
+      cl.stream().forEach(c ->
+                          {
+                            System.out.println("Count "+counts.get(c)+" for "+_fuir.clazzAsString(c)+" "+(_fuir.clazzIsUnitType(c)?"UNIT":""));
+                            if (_fuir.clazzAsString(c).equals("false"))
+                              {
+                                var i = 0;
+                                Call prev = null;
+                                for (var cc : _calls.values())
+                                  {
+                                    if (cc._cc == c)
+                                      {
+                                        System.out.println(""+i+": "+cc);
+                                        if (prev != null && cc.toString().equals(prev.toString()))
+                                          {
+                                            System.out.println("########## EQ, but compare results in "+prev.compareToWhy(cc));
+                                          }
+                                        i++;
+                                      }
+                                    prev = cc;
+                                  }
+                              }
+                          });
+    }
+    if (false) {
+      var counts = new TreeMap<Integer,Integer>();
+      var cnt_i = 0;
+      var cnt_v = 0;
+      for (var in : _instances.values())
+        {
+          if (in instanceof Instance iin)
+            {
+              var i = counts.computeIfAbsent(iin._site, ignore -> 0);
+              counts.put(iin._site, i+1);
+              cnt_i++;
+            }
+          else
+            {
+              var i = counts.computeIfAbsent(NO_SITE, ignore -> 0);
+              counts.put(NO_SITE, i+1);
+              cnt_v++;
+            }
+        }
+      var s = counts.values().stream().mapToInt(x -> x.intValue()).sum();
+      System.out.println("I: "+cnt_i+" V: "+cnt_v+" total: "+s);
+      var cl = new TreeSet<Integer>((a,b)->
+                                    { var ca = counts.get(a);
+                                      var cb = counts.get(b);
+                                      return ca != cb ? Integer.compare(counts.get(a), counts.get(b))
+                                        : Integer.compare(a, b);
+                                    });
+      for (var c : counts.keySet())
+        {
+          cl.add(c);
+        }
+      cl.stream().forEach(c -> System.out.println("Count "+counts.get(c)+" "+(100.0*counts.get(c)/_instances.size())+"% for "+_fuir.sitePos(c).show()));
+    }
   }
 
 
@@ -1791,7 +1868,7 @@ public class DFA extends ANY
           if (CHECKS) check
             (cl._dfa._fuir.clazzNeedsCode(call));
 
-          var env = cl._env;
+          var env = cl._originalEnv;
           var newEnv = cl._dfa.newEnv(cl, env, ecl, cl._target);
           var ncl = cl._dfa.newCall(call, NO_SITE, cl._args.get(0).value(), new List<>(), newEnv, cl);
           ncl._calledByAbortableForEffect = ecl;
@@ -2129,6 +2206,7 @@ public class DFA extends ANY
       }
     else
       {
+        e.mergeWith(r);
       }
     if (_currentCall != null)
       {

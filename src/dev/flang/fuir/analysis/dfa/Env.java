@@ -186,8 +186,7 @@ public class Env extends ANY implements Comparable<Env>
    */
   public int compareTo(Env other)
   {
-    // this is a little strict in the sense that the order of effects is
-    // relevant. Might need to relax this if this results in a state explosion.
+    // The _types are ordered
     var ta = this ._types;
     var oa = other._types;
     var res =
@@ -301,6 +300,17 @@ public class Env extends ANY implements Comparable<Env>
       {
         _dfa.replaceDefaultEffect(ecl, e);
       }
+  }
+
+
+  Env filter(java.util.Set<Integer> required)
+  {
+    var res = _outer == null ? null : _outer.filter(required);
+    if (required.contains(_effectType))
+      {
+        res = _dfa.newEnv(_call, res, _effectType, _initialEffectValue);
+      }
+    return res;
   }
 
 
