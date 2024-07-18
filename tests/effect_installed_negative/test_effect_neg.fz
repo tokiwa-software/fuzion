@@ -28,6 +28,8 @@
 #
 test_effect_neg is
 
+  maybe => envir.args.count > 3
+
   a : mutate.
   b : mutate.
   c : mutate.
@@ -71,12 +73,15 @@ test_effect_neg is
   # the following ones are a little tricky since use_a/b/c are also used in
   # positive cases above, so the call traces might get mixed up.
   #
-  a.go ()->
+  if maybe
+    a.go ()->
+      b.go ()->
+        use_c      # 5. should flag an error: effect not installedx
+  if maybe
+    a.go ()->
+      c.go ()->
+        use_b      # 6. should flag an error: effect not installed
+  if maybe
     b.go ()->
-      use_c      # 5. should flag an error: effect not installed
-  a.go ()->
-    c.go ()->
-      use_b      # 6. should flag an error: effect not installed
-  b.go ()->
-    c.go ()->
-      use_a      # 7. should flag an error: effect not installed
+      c.go ()->
+        use_a      # 7. should flag an error: effect not installed
