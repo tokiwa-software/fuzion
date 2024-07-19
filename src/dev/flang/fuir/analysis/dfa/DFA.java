@@ -2155,8 +2155,6 @@ public class DFA extends ANY
             if (r == null)
               {
                 var ni = new Instance(this, cl, site, context);
-                ni._debugInfo = "FOR sci "+sci+" k "+Long.toHexString(k);
-                clazzm.put(k, ni);
                 r = ni;
                 if (true)
                   {
@@ -2166,6 +2164,7 @@ public class DFA extends ANY
                   {
                     makeUnique(r);
                   }
+                clazzm.put(k, (Instance) r);
                 if (false)
                   if (r != ni)
                   {
@@ -2225,7 +2224,7 @@ public class DFA extends ANY
 
   void makeUnique(Value v)
   {
-    // v._id = _uniqueValueId++;
+    v._id = _uniqueValueId++;
     wasChanged(() -> "DFA: new value " + v);
   }
 
@@ -2293,7 +2292,6 @@ public class DFA extends ANY
        value != null,
        value._clazz == -1 || !instance._dfa._fuir.clazzIsRef(value._clazz));
 
-    if (false)
     if (CHECKS) check
       (instance._id >= 0);
 
