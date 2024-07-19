@@ -416,15 +416,11 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # is true.
   #
   public redef filter (p A -> bool) list A =>
-    filter0 p
-
-
-  filter0 (p A -> bool) list A =>
     match drop_while (a -> !(p a))
       _ nil  => nil
       c Cons => ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
                   redef head => c.head
-                  redef tail => c.tail.filter0 p
+                  redef tail => c.tail.filter p
 
 
   # create a list that repeats the current list indefinitely.  In case 'list.this'

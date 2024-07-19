@@ -22,18 +22,15 @@ p => panic "bah"
 λ.call#1: --CURDIR--/reg_issue2304.fz:25:20:
 _ := [1].filter x->p
 -------------------^
-(list i32).filter0#1.λ.call#1: $MODULE/list.fz:423:30:
+(list i32).filter#1.λ.call#1: $MODULE/list.fz:419:30:
     match drop_while (a -> !(p a))
 -----------------------------^
 (list i32).drop_while#1: $MODULE/list.fz:407:12:
         if p c.head
 -----------^
-(list i32).filter0#1: $MODULE/list.fz:423:11:
+(list i32).filter#1: $MODULE/list.fz:419:11:
     match drop_while (a -> !(p a))
 ----------^^^^^^^^^^^^^^^^^^^^^^^^
-(list i32).filter#1: $MODULE/list.fz:419:5:
-    filter0 p
-----^^^^^^^^^
 (array i32).filter#1: $MODULE/Sequence.fz:185:43:
   public filter   (f T -> bool) list T => as_list.filter f
 ------------------------------------------^^^^^^^^^^^^^^^^
