@@ -1212,6 +1212,9 @@ A post-condition of a feature that does not redefine an inherited feature must s
    * @param v
    * @return
    */
+  @SuppressWarnings({
+    "rawtypes", "unchecked"
+  })
   private boolean inScope(Expr use, AbstractFeature v)
   {
     // we only need to do this evaluation for:
@@ -1307,7 +1310,12 @@ A post-condition of a feature that does not redefine an inherited feature must s
 
         if (f.isField())
           {
-            if (useIsBeforeDefinition[0])
+            /**
+              * cases like this are okay:
+              *   ring(r ring) is
+              *      last ring := r.last
+              */
+            if (useIsBeforeDefinition[0] && !(use instanceof AbstractCall ac && ac.target() instanceof AbstractCall))
               {
                 return false;
               }
