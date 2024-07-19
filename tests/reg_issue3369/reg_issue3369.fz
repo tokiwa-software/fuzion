@@ -17,26 +17,10 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion test reg_issue3369
 #
 # -----------------------------------------------------------------------
 
-m =>
-  say "calling b.hello"
-  b.hello
+reg_issue3369 =>
 
-  say "calling b.hello3"
-  b.hello3
-
-  say "calling b.ret_a.hello_a"
-  b.ret_a.hello_a
-
-  say "calling b.ret_b.hello_a"
-  b.ret_b.hello_a
-
-  say "calling b.get_aa.aaa"
-  b.get_aa.aaa
-
-  say b.get_any.as_string // indirectly calling private feature
-
-  say b.get_field
+  say child.introduce

@@ -28,6 +28,8 @@ package dev.flang.ast;
 
 import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -1878,6 +1880,19 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public boolean isNonArgumentField()
   {
     return isField() && !isArgument();
+  }
+
+
+  /**
+   * In constrast to redefines() this does not just contain direct redefines()
+   * but also redefinitions of redefinitions of arbitrary depth.
+   */
+  public Set<AbstractFeature> redefinesFull()
+  {
+    return redefines()
+      .stream()
+      .flatMap(x -> Stream.concat(Stream.of(x), x.redefinesFull().stream()))
+      .collect(Collectors.toSet());
   }
 
 
