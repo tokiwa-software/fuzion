@@ -525,32 +525,35 @@ part of the (((inner features))) declarations of the corresponding
    */
   private void setOuterAndAddInnerForQualifiedRec(Feature inner, int at, AbstractFeature outer)
   {
-    outer.whenResolvedDeclarations
-      (() ->
-       {
-         var q = inner._qname;
-         var n = q.get(at);
-         var o =
-           n != FuzionConstants.TYPE_NAME ? lookupType(inner.pos(), outer, n, at == 0,
-                                                       false /* ignore ambiguous */,
-                                                       false /* ignore not found */)._feature
-                                          : outer.typeFeature(_res);
-         if (at < q.size()-2)
-           {
-             setOuterAndAddInnerForQualifiedRec(inner, at+1, o);
-           }
-         else if (o != Types.f_ERROR)
-           {
-             setOuterAndAddInner(inner, o);
-             _res.resolveDeclarations(o);
-             inner.scheduleForResolution(_res);
-           }
-          else
-           {
-             if (CHECKS) check
-               (Errors.any());
-           }
-       });
+    outer.whenResolvedDeclarations( ()->
+      {
+        var q = inner._qname;
+        var n = q.get(at);
+        if (n == FuzionConstants.TYPE_NAME && outer.isUniverse())
+          {
+            AstErrors.mustNotDefineTypeFeatureInUniverse(inner);
+          }
+        var o =
+          n != FuzionConstants.TYPE_NAME ? lookupType(inner.pos(), outer, n, at == 0,
+                                                      false /* ignore ambiguous */,
+                                                      false /* ignore not found */)._feature
+                                        : outer.typeFeature(_res);
+        if (at < q.size()-2)
+          {
+            setOuterAndAddInnerForQualifiedRec(inner, at+1, o);
+          }
+        else if (o != Types.f_ERROR)
+          {
+            setOuterAndAddInner(inner, o);
+            _res.resolveDeclarations(o);
+            inner.scheduleForResolution(_res);
+          }
+        else
+          {
+            if (CHECKS) check
+              (Errors.any());
+          }
+      });
   }
 
 
