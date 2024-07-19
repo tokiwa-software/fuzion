@@ -131,16 +131,6 @@ public class RefValue extends Value
 
 
   /**
-   * Create the union of the values 'this' and 'v'. This is called by join()
-   * after common cases (same instance, UNDEFINED) have been handled.
-   */
-  public Value joinInstances(Value v)
-  {
-    return new ValueSet(this, v);
-  }
-
-
-  /**
    * Unbox this value.
    */
   Value unbox(int vc)

@@ -126,16 +126,6 @@ public class EmbeddedValue extends Val
 
 
   /**
-   * Create the union of the values 'this' and 'v'. This is called by join()
-   * after common cases (same instance, UNDEFINED) have been handled.
-   */
-  public Value joinInstances(Value v)
-  {
-    return _value.joinInstances(v);
-  }
-
-
-  /**
    * In case this value is wrapped in an instance that contains additional
    * information unrelated to the actual value (e.g. EmbeddedValue), get the
    * actual value.

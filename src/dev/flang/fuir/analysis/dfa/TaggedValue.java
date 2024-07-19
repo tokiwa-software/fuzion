@@ -108,22 +108,15 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
    * Create the union of the values 'this' and 'v'. This is called by join()
    * after common cases (same instance, UNDEFINED) have been handled.
    */
-  public Value joinInstances(Value v)
+  public Value joinInstances(DFA dfa, Value v)
   {
-    if (v instanceof TaggedValue tv)
+    if (v instanceof TaggedValue tv &&_tag == tv._tag)
       {
-        if (_tag == tv._tag)
-          {
-            return new TaggedValue(_dfa, _clazz, _original.join(tv._original), _tag);
-          }
-        else
-          {
-            return new ValueSet(this, v);
-          }
+        return new TaggedValue(_dfa, _clazz, _original.join(dfa, tv._original), _tag);
       }
     else
       {
-        return new ValueSet(this, v);
+        return super.joinInstances(dfa, v);
       }
   }
 

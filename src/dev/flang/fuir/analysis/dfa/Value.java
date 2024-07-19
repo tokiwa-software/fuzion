@@ -308,7 +308,7 @@ public class Value extends Val
   /**
    * Create the union of the values 'this' and 'v'.
    */
-  public Value join(Value v)
+  public Value join(DFA dfa, Value v)
   {
     if (this == v || compare(this, v) == 0)
       {
@@ -324,7 +324,7 @@ public class Value extends Val
       }
     else
       {
-        return joinInstances(v);
+        return joinInstances(dfa, v);
       }
   }
 
@@ -333,9 +333,9 @@ public class Value extends Val
    * Create the union of the values 'this' and 'v'. This is called by join()
    * after common cases (same instance, UNDEFINED) have been handled.
    */
-  public Value joinInstances(Value v)
+  public Value joinInstances(DFA dfa, Value v)
   {
-    throw new Error("Value.joinInstances not possible for " + this + " and " + v);
+    return dfa.newValueSet(this, v);
   }
 
 

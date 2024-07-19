@@ -149,7 +149,7 @@ public class SysArray extends Value implements Comparable<SysArray>
       }
     else
       {
-        ne = _elements.join(el);
+        ne = _elements.join(_dfa, el);
       }
     if (_elements == null || Value.compare(_elements, ne) != 0)
       {
@@ -206,18 +206,18 @@ public class SysArray extends Value implements Comparable<SysArray>
    * Create the union of the values 'this' and 'v'. This is called by join()
    * after common cases (same instance, UNDEFINED) have been handled.
    */
-  public Value joinInstances(Value v)
+  public Value joinInstances(DFA dfa, Value v)
   {
     if (v instanceof SysArray sv)
       {
         Value ne =
           _elements == null ? sv._elements :
-          sv._elements == null ? _elements : _elements.join(sv._elements);
+          sv._elements == null ? _elements : _elements.join(dfa, sv._elements);
         return new SysArray(_dfa, ne);
       }
     else
       {
-        return new ValueSet(this, v);
+        return super.joinInstances(dfa, v);
       }
   }
 

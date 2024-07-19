@@ -182,16 +182,6 @@ public class ValueSet extends Value
 
 
   /**
-   * Create the union of the values 'this' and 'v'. This is called by join()
-   * after common cases (same instance, UNDEFINED) have been handled.
-   */
-  public Value joinInstances(Value v)
-  {
-    return new ValueSet(this, v);
-  }
-
-
-  /**
    * Box this value. This works both for Instances as well as for value types
    * such as i32, bool, etc.
    */

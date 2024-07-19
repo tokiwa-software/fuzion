@@ -564,7 +564,7 @@ public class DFA extends ANY
           var b = _fuir.deseralizeConst(elementClazz, d);
           elements = elements == null
             ? constData(s, elementClazz, b).v0().value()
-            : elements.join(constData(s, elementClazz, b).v0().value());
+            : elements.join(DFA.this, constData(s, elementClazz, b).v0().value());
         }
       SysArray sysArray = elCount == 0 ? new SysArray(DFA.this, new byte[0], elementClazz) :  new SysArray(DFA.this, elements);
 
@@ -890,7 +890,7 @@ public class DFA extends ANY
     var bool = fuir.clazz(FUIR.SpecialClazzes.c_bool);
     _true  = new TaggedValue(this, bool, Value.UNIT, 1);
     _false = new TaggedValue(this, bool, Value.UNIT, 0);
-    _bool  = _true.join(_false);
+    _bool  = _true.join(this, _false);
     _universe = newInstance(_fuir.clazzUniverse(), NO_SITE, null);
     Errors.showAndExit();
   }
@@ -1864,7 +1864,7 @@ public class DFA extends ANY
           var old_e = cl._dfa._defaultEffects.get(ecl);
           if (old_e != null)
             {
-              new_e = old_e.join(new_e);
+              new_e = old_e.join(cl._dfa, new_e);
             }
           if (old_e == null || Value.compare(old_e, new_e) != 0)
             {
@@ -1986,7 +1986,7 @@ public class DFA extends ANY
         var msg = cl._dfa._fuir.lookup_error_msg(error_cl);
         error.setField(cl._dfa, msg, cl._dfa.newConstString(null, cl));
         var err = new TaggedValue(cl._dfa, rc, error, 1);
-        return okay.join(err);
+        return okay.join(cl._dfa, err);
       }
     return switch (cl._dfa._fuir.getSpecialClazz(rc))
       {
@@ -2063,7 +2063,7 @@ public class DFA extends ANY
   void replaceDefaultEffect(int ecl, Value e)
   {
     var old_e = _defaultEffects.get(ecl);
-    var new_e = old_e == null ? e : old_e.join(e);
+    var new_e = old_e == null ? e : old_e.join(this, e);
     if (old_e == null || Value.compare(old_e, new_e) != 0)
       {
         _defaultEffects.put(ecl, new_e);
@@ -2229,6 +2229,12 @@ public class DFA extends ANY
     wasChanged(() -> "DFA: new value " + v);
   }
 
+
+
+  Value newValueSet(Value v, Value w)
+  {
+    return new ValueSet(v, w);
+  }
 
 
   /**

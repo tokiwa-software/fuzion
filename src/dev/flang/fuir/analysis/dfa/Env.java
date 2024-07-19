@@ -289,7 +289,7 @@ public class Env extends ANY implements Comparable<Env>
     if (_effectType == ecl)
       {
         var oe = _actualEffectValues;
-        var ne = e.join(oe);
+        var ne = e.join(_dfa, oe);
         if (Value.compare(oe, ne) != 0)
           {
             _actualEffectValues = ne;

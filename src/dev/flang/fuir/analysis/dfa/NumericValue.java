@@ -222,7 +222,7 @@ public class NumericValue extends Value implements Comparable<NumericValue>
    * Create the union of the values 'this' and 'v'. This is called by join()
    * after common cases (same instance, UNDEFINED) have been handled.
    */
-  public Value joinInstances(Value v)
+  public Value joinInstances(DFA dfa, Value v)
   {
     if (v instanceof NumericValue nv)
       {
@@ -255,16 +255,16 @@ public class NumericValue extends Value implements Comparable<NumericValue>
           }
         else
           {
-            return super.joinInstances(v);
+            return super.joinInstances(dfa, v);
           }
       }
     else if (v instanceof ValueSet)
       {
-        return v.join(this);
+        return v.join(dfa, this);
       }
     else
       {
-        return super.joinInstances(v);
+        return super.joinInstances(dfa, v);
       }
   }
 

@@ -268,7 +268,7 @@ public class Instance extends Value implements Comparable<Instance>
     var oldv = _fields.get(field);
     if (oldv != null)
       {
-        v = oldv.join(v);
+        v = oldv.join(dfa, v);
       }
     if (oldv == null || Value.COMPARATOR.compare(oldv, v) != 0)
       {
@@ -307,16 +307,6 @@ public class Instance extends Value implements Comparable<Instance>
       }
 
     return res;
-  }
-
-
-  /**
-   * Create the union of the values 'this' and 'v'. This is called by join()
-   * after common cases (same instance, UNDEFINED) have been handled.
-   */
-  public Value joinInstances(Value v)
-  {
-    return new ValueSet(this, v);
   }
 
 
