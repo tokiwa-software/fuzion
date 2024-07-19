@@ -115,12 +115,12 @@ test_free_type is
 
   # Use free type in result type of function type
   #
-  Sequence.my_zip0(b Sequence U, f (T,U)->W) => as_list.zip0 b.as_list f
+  Sequence.my_zip0(b Sequence U, f (T,U)->W) => as_list.zip b.as_list f
   say (["eins", "zwei", "drei"].my_zip0 [1,2,3] a,b->"$a = $b")
 
   # Use anonymous free type in result type of function type
   #
-  Sequence.my_zip1(b Sequence U, f (T,U)->_) => as_list.zip0 b.as_list f
+  Sequence.my_zip1(b Sequence U, f (T,U)->_) => as_list.zip b.as_list f
   say (["一", "二", "三", "四" ].my_zip1 [1.0,2.0,3.0,4.0] a,b->"$a = $b")
 
   # Use free type in function type

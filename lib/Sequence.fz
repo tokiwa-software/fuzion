@@ -473,7 +473,7 @@ public Sequence(public T type) ref is
   # create a new list from the result of applying 'f' to the
   # elements of this Sequence and 'b' in order.
   #
-  public zip(U,V type, b Sequence U, f (T,U)->V) => as_list.zip0 b.as_list f
+  public zip(U,V type, b Sequence U, f (T,U)->V) => as_list.zip b.as_list f
 
 
   # create a new Sequence from the result of applying 'f' to the
