@@ -65,7 +65,7 @@ test_type_of is
   chck_cmp $(type_of2 (type_of2 (option 42))) "Type of 'Type'"
   chck_cmp $(type_of2 (option i32).type     ) "Type of 'Type'"
 
-  type_of3 3140000000             "Type of 'i64' 3140000000"
+  type_of3 (i64 3140000000)       "Type of 'i64' 3140000000"
   type_of3 (option 42)            "Type of 'option i32' 42"
   type_of3 (type_of2 (option 42)) "Type of 'Type' Type of 'option i32'"
   type_of3 (option i32).type      "Type of 'Type' Type of 'option i32'"
