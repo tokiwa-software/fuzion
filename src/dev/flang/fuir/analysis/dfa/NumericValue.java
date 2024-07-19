@@ -95,20 +95,22 @@ public class NumericValue extends Value implements Comparable<NumericValue>
         values = new TreeMap<>();
         dfa._numericValues.force(clazz_id, values);
       }
+    NumericValue res;
     if (false) // NYI: check if this is faster or slower:
       {
-        return values.computeIfAbsent(vLong, v->new NumericValue(dfa, clazz, v));
+        res = values.computeIfAbsent(vLong, v->new NumericValue(dfa, clazz, v));
       }
     else
       {
-        var res = values.get(vLong);
+        res = values.get(vLong);
         if (res == null)
           {
             res = new NumericValue(dfa, clazz, vLong);
             values.put(vLong, res);
           }
-        return res;
       }
+    //  dfa.makeUnique(res);
+    return res;
   }
 
 

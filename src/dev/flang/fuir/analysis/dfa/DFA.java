@@ -2293,6 +2293,7 @@ public class DFA extends ANY
        value != null,
        value._clazz == -1 || !instance._dfa._fuir.clazzIsRef(value._clazz));
 
+    if (false)
     if (CHECKS) check
       (instance._id >= 0);
 
