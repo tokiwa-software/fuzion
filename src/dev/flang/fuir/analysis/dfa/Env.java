@@ -53,6 +53,8 @@ public class Env extends ANY implements Comparable<Env>
   /*----------------------------  variables  ----------------------------*/
 
 
+  int _id = -1;
+
   /**
    * The call environment used to identify this environment.
    */
@@ -184,8 +186,10 @@ public class Env extends ANY implements Comparable<Env>
   /**
    * Compare this env to another Env.
    */
+  //  static long _cnt;
   public int compareTo(Env other)
   {
+    //    _cnt++; if ((_cnt&(_cnt-1))==0) { System.out.println("COMPARE "+this+" TO "+other); Thread.dumpStack(); }
     // The _types are ordered
     var ta = this ._types;
     var oa = other._types;

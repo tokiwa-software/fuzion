@@ -29,6 +29,7 @@ package dev.flang.fuir.analysis.dfa;
 import static dev.flang.ir.IR.NO_SITE;
 
 import java.util.Comparator;
+import java.util.TreeMap;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -201,6 +202,15 @@ public class Value extends Val
    * Cached result of a call to box().
    */
   Value _boxed;
+
+
+  /**
+   * Unique id for this value, set by DFA.makeUnique(Value).
+   */
+  int _id = -1;
+
+
+  TreeMap<Integer, EmbeddedValue> _embeddedAt = null;
 
 
   /*---------------------------  constructors  ---------------------------*/

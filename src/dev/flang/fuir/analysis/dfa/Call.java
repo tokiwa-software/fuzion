@@ -58,6 +58,8 @@ public class Call extends ANY implements Comparable<Call>, Context
   /*----------------------------  variables  ----------------------------*/
 
 
+  int _id = -1;
+
   /**
    * The DFA instance we are working with.
    */
@@ -170,7 +172,7 @@ public class Call extends ANY implements Comparable<Call>, Context
     _requiredEffects = re;
     _effectiveEnvCache = env == null || re == null ? null : env.filter(_requiredEffects);
     _context = context;
-    _instance = dfa.newInstance(cc, site, this);
+    //    _instance = dfa.newInstance(cc, site, this);
 
     if (dfa._fuir.clazzResultField(cc)==-1) /* <==> _fuir.isConstructor(cl) */
       {
@@ -302,7 +304,7 @@ public class Call extends ANY implements Comparable<Call>, Context
                   {
                   case c_i8, c_i16, c_i32, c_i64,
                        c_u8, c_u16, c_u32, c_u64,
-                       c_f32, c_f64              -> new NumericValue(_dfa, rc);
+                       c_f32, c_f64              -> NumericValue.create(_dfa, rc);
                   case c_bool                    -> _dfa._bool;
                   case c_TRUE, c_FALSE           -> Value.UNIT;
                   case c_Const_String, c_String  -> _dfa.newConstString(null, this);
@@ -320,7 +322,7 @@ public class Call extends ANY implements Comparable<Call>, Context
           {
             case c_i8, c_i16, c_i32, c_i64,
                  c_u8, c_u16, c_u32, c_u64,
-                 c_f32, c_f64              -> new NumericValue(_dfa, rc);
+                 c_f32, c_f64              -> NumericValue.create(_dfa, rc);
             case c_Const_String, c_String  -> _dfa.newConstString(null, this);
             default                        -> { Errors.warning("DFA: cannot handle native feature " + _dfa._fuir.clazzOriginalName(_cc));
                                                 yield null; }

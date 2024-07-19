@@ -98,7 +98,7 @@ public class SysArray extends Value implements Comparable<SysArray>
                 c_i32  , c_i64  ,
                 c_u8   , c_u16  ,
                 c_u32  , c_u64  ,
-                c_f32  , c_f64  -> new NumericValue(dfa, elementClazz); // NYI: any value, even if we could know the exact values from data
+                c_f32  , c_f64  -> NumericValue.create(dfa, elementClazz); // NYI: any value, even if we could know the exact values from data
               default           -> {
                                      Errors.fatal("Constant array of element type "+dfa._fuir.clazzAsString(elementClazz)+" not supported yet");
                                      yield null;
@@ -112,7 +112,7 @@ public class SysArray extends Value implements Comparable<SysArray>
         // for u8 and probably does not work:
         for (var i = 0; i < data.length; i++)
           {
-            setel(null, new NumericValue(dfa, dfa._fuir.clazz(SpecialClazzes.c_u8), data[i] & 0xff));
+            setel(null, NumericValue.create(dfa, dfa._fuir.clazz(SpecialClazzes.c_u8), data[i] & 0xff));
           }
       }
   }
