@@ -51,11 +51,11 @@ is
   # the new handle can be accessed by 'result.last'
   #
   public new (
-    # initial value refered to by the new handle
+    # initial value referred to by the new handle
     w T
     ) handles2 T X
   post
-    result.has_last
+    debug: result.has_last
   =>
     handles2 T X v (handle2_0 w) mode
 
@@ -69,7 +69,7 @@ is
   #
   public last
     pre
-      has_last
+      debug: has_last
   =>
     last_opt.get
 
@@ -79,14 +79,14 @@ is
   #
   /* env */
   public create (
-    # initial value refered to by the new handle
+    # initial value referred to by the new handle
     w T
     )
   =>
     (new w).last
 
 
-  # get the value refered to by a given handle
+  # get the value referred to by a given handle
   #
   public get (
     # a handle created by 'new'
@@ -96,7 +96,7 @@ is
     h.get
 
 
-  # create a new instance with new value refered to by a given handle
+  # create a new instance with new value referred to by a given handle
   #
   public put (
     # a handle created by 'new'
@@ -105,32 +105,32 @@ is
     # the new value to be stored with 'h'
     w T)
   pre
-    match mode
-      effect_mode.plain   => false  # must be used as oneway_monad only
-      effect_mode.default => false
-      effect_mode.new     => false
-      effect_mode.inst, effect_mode.repl => true
+    debug: match mode
+             effect_mode.plain   => false  # must be used as oneway_monad only
+             effect_mode.default => false
+             effect_mode.new     => false
+             effect_mode.inst, effect_mode.repl => true
   =>
     h.put w
     handles2 T X v last_opt mode
 
 
-  # create a new instance with the value refered to by a given handle read and
+  # create a new instance with the value referred to by a given handle read and
   # updated.
   #
   public update (
     # a handle created by 'new'
     h handle2_0 T,
 
-    # function calculcating the new value from the old value
+    # function calculating the new value from the old value
     f T->T
     )
   pre
-    match mode
-      effect_mode.plain   => false  # must be used as oneway_monad only
-      effect_mode.default => false
-      effect_mode.new     => false
-      effect_mode.inst, effect_mode.repl => true
+    debug: match mode
+            effect_mode.plain   => false  # must be used as oneway_monad only
+            effect_mode.default => false
+            effect_mode.new     => false
+            effect_mode.inst, effect_mode.repl => true
   =>
     h.put (f h.get)
     handles2 T X v last_opt mode

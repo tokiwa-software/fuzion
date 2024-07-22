@@ -127,8 +127,8 @@ public Set(public E type : property.equatable) ref : Sequence E is
   # equality
   #
   public fixed type.equality(a, b container.Set E) bool
-  pre a.finite
-      b.finite
+  pre safety: a.finite
+      safety: b.finite
   =>
     # NYI: a bit expensive
     (a ∪ b).size_option.val = a.size_option.val

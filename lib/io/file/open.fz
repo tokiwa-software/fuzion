@@ -73,7 +73,7 @@ module:public open(public T type,
   #     io.file.open.mmap[99] := 42
   #
   public mmap(R type, offset i64, size i64, code mapped_buffer->R) outcome R
-  pre offset % 4096 = 0 # NYI get real page size instead of 4096.
+  pre safety: offset % 4096 = 0 # NYI get real page size instead of 4096.
   =>
 
     res := fuzion.sys.internal_array_init i32 1
