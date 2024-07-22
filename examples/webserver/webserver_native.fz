@@ -58,7 +58,7 @@ webserver_native is
       redef handle_request unit =>
         say "accepted connection:"
 
-        match io.buffered.read_line
+        match io.buffered.read_line lm
           str String => say str
           * =>
 
