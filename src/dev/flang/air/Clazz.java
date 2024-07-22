@@ -1009,6 +1009,12 @@ public class Clazz extends ANY implements Comparable<Clazz>
     // first look in the feature itself
     AbstractFeature result = _flu.lookupFeature(feature(), fn, f);
 
+    if (!result.redefinesFull().contains(f) && result != f)
+      {
+        // feature with same name, but not a redefinition
+        result = null;
+      }
+
     // the inherited feature might not be
     // visible to the inheriting feature
     var chain = tf.findInheritanceChain(f.outer());
@@ -1017,6 +1023,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
         for (var p: chain)
           {
             result = _flu.lookupFeature(p.calledFeature(), fn, f);
+            if (!result.redefinesFull().contains(f) && result != f)
+              {
+                // feature with same name, but not a redefinition
+                result = null;
+              }
             if (result != null)
               {
                 break;
