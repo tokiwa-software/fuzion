@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue3405.fz:24:6: error 1: Must not define type feature with no parent feature.
+type.a => 3
+-----^
+To solve this, use a regular feature by removing the 'type.' or move the feature definition inside of a feature.
+
+one error.

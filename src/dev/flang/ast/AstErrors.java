@@ -2152,6 +2152,13 @@ public class AstErrors extends ANY
           "To solve this, you may want to consider converting the redefined field into a routine by replacing" + skw(":=") + " by " + skw("=>") + ".");
   }
 
+  public static void mustNotDefineTypeFeatureInUniverse(AbstractFeature f)
+  {
+    error(f.pos(),
+          "Must not define type feature with no parent feature.",
+          "To solve this, use a regular feature by removing the " + skw("type.") + " or move the feature definition inside of a feature.");
+  }
+
 
 }
 
