@@ -80,7 +80,8 @@ public class Docs extends ANY
     /* readStdin               */ true,
     /* executeCode             */ null,
     /* main                    */ null,
-    /* loadSources             */ true);
+    /* loadSources             */ true,
+    /* timer                   */ s->{});
 
   private final FrontEnd fe = new FrontEnd(frontEndOptions);
 
