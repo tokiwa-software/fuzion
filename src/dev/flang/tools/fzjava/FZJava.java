@@ -221,7 +221,7 @@ public class FZJava extends Tool
     if (createDestDir())
       {
         List<String> emptyList = new List<>();
-        var feOptions = new FrontEndOptions(/* verbose */ 0,
+        var feOptions = new FrontEndOptions(/* verbose */ _verbose,
                                             /* fuzionHome */ (new FuzionHome())._fuzionHome,
                                             /* loadBaseLib */ true,
                                             /* eraseInternalNamesInLib */ true,
@@ -235,7 +235,8 @@ public class FZJava extends Tool
                                             /* readStdin */ false,
                                             /* executeCode */ null,
                                             /* main */ null,
-                                            /* loadSources */ true);
+                                            /* loadSources */ true,
+                                            /* timer */ s -> timer(s));
         _fe = new FrontEnd(feOptions);
 
         for (var m : _options._modules)
@@ -250,6 +251,8 @@ public class FZJava extends Tool
                 addAsJavaObjectHelper();
               }
           }
+        timer("all");
+        feOptions.verbosePrintln(1, "Elapsed time for phases: " + _times);
       }
   }
 

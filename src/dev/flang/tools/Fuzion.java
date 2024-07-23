@@ -1075,31 +1075,6 @@ public class Fuzion extends Tool
   }
 
 
-  /**
-   * To be called whenever a major task was completed. Will record the time
-   * since last call to timer together with name to be printed when verbose
-   * output is activated.
-   */
-  void timer(String name)
-  {
-    var t = System.currentTimeMillis();
-    var delta = t - _timer;
-    _timer = t;
-    _times.append(_times.length() == 0 ? "" : ", ").append(name).append(" ").append(delta).append("ms");
-  }
-
-  /**
-   * Time required for phases recorded by timer().
-   */
-  StringBuilder _times = new StringBuilder();
-
-
-  /**
-   * Last time timer() was called, in System.currentTimeMillis();
-   */
-  long _timer = java.lang.management.ManagementFactory.getRuntimeMXBean().getStartTime();
-
-
 }
 
 /* end of file */
