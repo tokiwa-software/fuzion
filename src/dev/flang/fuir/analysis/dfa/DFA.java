@@ -1860,13 +1860,7 @@ public class DFA extends ANY
               yield jobj;
             }
           };
-        var okay = new TaggedValue(cl._dfa, rc, res, 0);
-        var error_cl = cl._dfa._fuir.clazzChoice(rc, 1);
-        var error = cl._dfa.newInstance(error_cl, NO_SITE, null);
-        var msg = cl._dfa._fuir.lookup_error_msg(error_cl);
-        error.setField(cl._dfa, msg, cl._dfa.newConstString(null, cl));
-        var err = new TaggedValue(cl._dfa, rc, error, 1);
-        return okay.join(err);
+        return outcome(cl, rc, res);
       }
     return switch (cl._dfa._fuir.getSpecialClazz(rc))
       {
@@ -1882,6 +1876,27 @@ public class DFA extends ANY
         }
       };
   }
+
+
+  /**
+   * Create a fuzion outcome of type `rc` with the value res.
+   *
+   * @param cl The call in which we are creating this outcome
+   * @param rc the resulting outcome clazz.
+   * @param res the success value
+   */
+  private static Value outcome(Call cl, int rc, Value res)
+  {
+    var okay = new TaggedValue(cl._dfa, rc, res, 0);
+    var error_cl = cl._dfa._fuir.clazzChoice(rc, 1);
+    var error = cl._dfa.newInstance(error_cl, NO_SITE, null);
+    var msg = cl._dfa._fuir.lookup_error_msg(error_cl);
+    error.setField(cl._dfa, msg, cl._dfa.newConstString(null, cl));
+    var err = new TaggedValue(cl._dfa, rc, error, 1);
+    return okay.join(err);
+  }
+
+
   static {
     put("fuzion.java.call_c0"               , cl ->
       {
@@ -1934,6 +1949,17 @@ public class DFA extends ANY
         return jobj;
       });
     put("fuzion.java.u16_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, null) );
+
+    put("concur.sync.mtx_init"              , cl -> outcome(cl, cl._dfa._fuir.clazzResultClazz(cl._cc), new SysArray(cl._dfa, Value.UNIT) /* NYI: should be opaque type */));
+    put("concur.sync.mtx_lock"              , cl -> cl._dfa._bool);
+    put("concur.sync.mtx_trylock"           , cl -> cl._dfa._bool);
+    put("concur.sync.mtx_unlock"            , cl -> cl._dfa._bool);
+    put("concur.sync.mtx_destroy"           , cl -> Value.UNIT);
+    put("concur.sync.cnd_init"              , cl -> outcome(cl, cl._dfa._fuir.clazzResultClazz(cl._cc), new SysArray(cl._dfa, Value.UNIT) /* NYI: should be opaque type */));
+    put("concur.sync.cnd_signal"            , cl -> cl._dfa._bool);
+    put("concur.sync.cnd_broadcast"         , cl -> cl._dfa._bool);
+    put("concur.sync.cnd_wait"              , cl -> cl._dfa._bool);
+    put("concur.sync.cnd_destroy"           , cl -> Value.UNIT);
   }
 
 

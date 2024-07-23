@@ -728,3 +728,79 @@ jvalue fzE_get_static_field0(jstring class_name, jstring name, const char *sig)
 }
 
 #endif
+
+/*
+
+C11 support is still limited on e.g. macOS etc.
+
+void * fzE_mtx_init()
+{
+  mtx_t * mtx = fzE_malloc_safe(sizeof(mtx_t));
+  return mtx_init(mtx, mtx_plain) == thrd_success
+    ? (void *)mtx
+    : NULL;
+}
+
+int32_t fzE_mtx_lock(void * mtx)
+{
+  return mtx_lock((mtx_t *) mtx) == thrd_success
+    ? 0
+    : -1;
+}
+
+int32_t fzE_mtx_trylock(void * mtx)
+{
+  return mtx_trylock((mtx_t *) mtx) == thrd_success
+    ? 0
+    : -1;
+}
+
+int32_t fzE_mtx_unlock(void * mtx)
+{
+  return mtx_unlock((mtx_t *) mtx) == thrd_success
+    ? 0
+    : -1;
+}
+
+void fzE_mtx_destroy(void * mtx)
+{
+  mtx_destroy((mtx_t *) mtx);
+  // NYI: free(mtx)
+}
+
+void * fzE_cnd_init()
+{
+  cnd_t * cnd = fzE_malloc_safe(sizeof(cnd));
+  return cnd_init(cnd) == thrd_success
+    ? (void *)cnd
+    : NULL;
+}
+
+int32_t fzE_cnd_signal(void * cnd)
+{
+  return cnd_signal((cnd_t *) cnd) == thrd_success
+    ? 0
+    : -1;
+}
+
+int32_t fzE_cnd_broadcast(void * cnd)
+{
+  return cnd_broadcast((cnd_t *) cnd) == thrd_success
+    ? 0
+    : -1;
+}
+
+int32_t fzE_cnd_wait(void * cnd, void * mtx)
+{
+  return cnd_wait((cnd_t *) cnd, (mtx_t *) mtx) == thrd_success
+    ? 0
+    : -1;
+}
+
+void fzE_cnd_destroy(void * cnd)
+{
+  cnd_destroy((cnd_t *) cnd);
+  // NYI: free(cnd)
+}
+
+*/

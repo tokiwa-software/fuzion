@@ -327,4 +327,55 @@ jvalue fzE_get_static_field0(jstring class_name, jstring name, const char *sig);
 
 #endif
 
+
+/**
+ * initialize a mutex
+ * @return NULL on error or pointer to mutex
+ */
+void *  fzE_mtx_init     ();
+/**
+ * lock a mutex, undefined behaviour if mutex already locked by current thread
+ * @return -1 on error, 0 on success
+ */
+int32_t fzE_mtx_lock     (void * mtx);
+/**
+ * lock a mutex, success if mutex already locked
+ * @return -1 on error, 0 on success
+ */
+int32_t fzE_mtx_trylock  (void * mtx);
+/**
+ * unlock a mutex, undefined behaviour if mutex not locked by current thread
+ * @return -1 on error, 0 on success
+ */
+int32_t fzE_mtx_unlock   (void * mtx);
+/**
+ * destroys the mutex
+ */
+void    fzE_mtx_destroy  (void * mtx);
+/**
+ * initialize a condition
+ * @return NULL on error or pointer to condition
+ */
+void *  fzE_cnd_init     ();
+/**
+ * unblocks one thread waiting on this condition
+ * @return -1 on error, 0 on success
+ */
+int32_t fzE_cnd_signal   (void * cnd);
+/**
+ * unblocks all threads waiting on this condition
+ * @return -1 on error, 0 on success
+ */
+int32_t fzE_cnd_broadcast(void * cnd);
+/**
+ * blocks thread until signal, broadcast or spurious wakeup
+ * @return -1 on error, 0 on success
+ */
+int32_t fzE_cnd_wait     (void * cnd, void * mtx);
+/**
+ * destroys the condition
+ */
+void    fzE_cnd_destroy  (void * cnd);
+
+
 #endif /* fz.h  */

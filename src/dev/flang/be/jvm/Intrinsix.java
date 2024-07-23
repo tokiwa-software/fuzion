@@ -840,6 +840,19 @@ public class Intrinsix extends ANY implements ClassFileConstants
             }
         });
 
+    /* ReentrantLock */
+    put("concur.sync.mtx_init",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
+    put("concur.sync.mtx_lock",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
+    put("concur.sync.mtx_trylock",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
+    put("concur.sync.mtx_unlock",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
+    put("concur.sync.mtx_destroy",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
+    /* Condition */
+    put("concur.sync.cnd_init",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
+    put("concur.sync.cnd_signal",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
+    put("concur.sync.cnd_broadcast",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
+    put("concur.sync.cnd_wait",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
+    put("concur.sync.cnd_destroy",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
+
     put(new String[]
       {
         // the names of intrinsics that are not implemented in the JVM backend should go here
