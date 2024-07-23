@@ -2160,6 +2160,14 @@ public class AstErrors extends ANY
           "To solve this, use a regular feature by removing the " + skw("type.") + " or move the feature definition inside of a feature.");
   }
 
+  public static void illegalTypeVisibility(Feature f)
+  {
+    error(f.pos(),
+          "Visibility of outer features type is more restrictive than features type.",
+          "Parent feature is here: " + f.outer().pos().show() + System.lineSeparator() +
+          "To solve this, either decrease the type visibility of this feature or increase the visibility of the type of the outer feature.");
+  }
+
 
 }
 
