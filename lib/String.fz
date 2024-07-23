@@ -129,7 +129,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public parse_u32_octal  => parse_u32 8
   public parse_u32_hex    => parse_u32 16
   public parse_u32 (base u32) outcome u32
-    pre safety: u32 1 < base ≤ 36
+    pre debug: u32 1 < base ≤ 36
   =>
     parse_integer u32 base
 

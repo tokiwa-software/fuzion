@@ -90,7 +90,7 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
   # helper function
   #
   write_bytes (desc i64, bytes Sequence u8) outcome i32
-  pre safety: bytes.count > 0
+  pre debug: bytes.count > 0
   =>
     bytes
       .chunk pipe_buffer_size
