@@ -58,7 +58,7 @@ public class Env extends ANY implements Comparable<Env>
   /**
    * The call environment used to identify this environment.
    */
-  Call _call;
+  //  Call _call;
 
 
   /**
@@ -73,6 +73,7 @@ public class Env extends ANY implements Comparable<Env>
    * that define the same effect types are joined into one environment.
    */
   int[] _types;
+  Value[] _initialEffectValues;
 
 
   /**
@@ -108,38 +109,44 @@ public class Env extends ANY implements Comparable<Env>
    * Create Env from given outer adding mapping from effect type et to effect
    * value ev.
    *
-   * @param call a call environment used to distinguish this environment from
-   * others.
-   *
    * @param outer the surrounding effect environment, null if none.
    *
    * @param et the effect type to add to outer
    *
    * @param ev the effect value to add to outer.
    */
-  public Env(Call call, Env outer, int et, Value ev)
+  public Env(DFA dfa, Env outer, int et, Value ev)
   {
-    _call = call;
-    _dfa = call._dfa;
+    //    _call = call;
+    _dfa = dfa;
 
     if (outer == null)
       {
         _types = new int[] { et };
+        _initialEffectValues = new Value[] { ev };
       }
     else if (outer.hasEffect(et))
       {
         _types = outer._types;
+        _initialEffectValues = new Value[_types.length];
+        for (int i = 0; i < _types.length; i++)
+          {
+            _initialEffectValues[i] = _types[i] == et ? ev : outer._initialEffectValues[i];
+          }
       }
     else
       {
         var ot = outer._types;
+        var oi = outer._initialEffectValues;
         var ol = ot.length;
         _types = new int[ol + 1];
+        _initialEffectValues = new Value[ol + 1];
         var left = true;
         for (int i = 0, j = 0; i < _types.length; i++)
           {
             var insert = j == ol || left && ot[j] > et;
-            _types[i] = insert ? et : ot[j];
+            _types              [i] = insert ? et : ot[j];
+            _initialEffectValues[i] = insert ? ev : oi[j];
             j = j + (insert ? 0 : 1);
             left = insert && left;
           }
@@ -179,7 +186,9 @@ public class Env extends ANY implements Comparable<Env>
     return
       a == b    ?  0 :
       a == null ? -1 :
-      b == null ? +1 : a.compareTo(b);
+      b == null ? +1 :
+      // a.compareTo(b);
+      Integer.compare(a._id, b._id);
   }
 
 
@@ -193,6 +202,8 @@ public class Env extends ANY implements Comparable<Env>
     // The _types are ordered
     var ta = this ._types;
     var oa = other._types;
+    var tv = this ._initialEffectValues;
+    var ov = other._initialEffectValues;
     var res =
       ta.length < oa.length ? -1 :
       ta.length > oa.length ? +1 : 0;
@@ -200,11 +211,15 @@ public class Env extends ANY implements Comparable<Env>
       {
         var tt = ta[i];
         var ot = oa[i];
-        var ti = this ._initialEffectValue;
-        var oi = other._initialEffectValue;
         res =
           tt < ot ? -1 :
-          tt > ot ? +1 : Value.envCompare(ti, oi);
+          tt > ot ? +1 : 0;
+      }
+    for (var i=0; res == 0 && i < ta.length; i++)
+      {
+        var ti = tv[i];
+        var oi = ov[i];
+        res = Value.envCompare(ti, oi);
       }
     return res;
   }
@@ -312,7 +327,7 @@ public class Env extends ANY implements Comparable<Env>
     var res = _outer == null ? null : _outer.filter(required);
     if (required.contains(_effectType))
       {
-        res = _dfa.newEnv(_call, res, _effectType, _initialEffectValue);
+        res = _dfa.newEnv(res, _effectType, _initialEffectValue);
       }
     return res;
   }

@@ -225,7 +225,7 @@ public class DFA extends ANY
     private Val unboxTarget(Val tvalue, int tt, int cc)
     {
       var cco = _fuir.clazzOuterClazz(cc);
-      return _fuir.clazzIsRef(tt) && !_fuir.clazzIsRef(cco) ? tvalue.value().unbox(cco)
+      return _fuir.clazzIsRef(tt) && !_fuir.clazzIsRef(cco) ? tvalue.value().unbox(DFA.this, cco)
                                                             : tvalue;
     }
 
@@ -264,12 +264,35 @@ public class DFA extends ANY
       var tc = _fuir.accessTargetClazz(s);
       var cc0 = _fuir.accessedClazz  (s);
       var ccs = _fuir.accessedClazzes(s);
-      var resf = new Val[] { null };
-      tvalue.value().forAll(t ->
+      Val res = null;
+      if (tvalue.value() instanceof ValueSet tvalues)
         {
-          if (CHECKS) check
-            (t != Value.UNIT || AbstractInterpreter.clazzHasUnitValue(_fuir, tc));
-          var t_cl = t == Value.UNIT ? tc : t._clazz;
+          for(var t : tvalues._componentsArray)
+            {
+              res = access(t,          s, tvalue, tc, cc0, ccs, args, res);
+            }
+        }
+      else
+        {
+          res = access(tvalue.value(), s, tvalue, tc, cc0, ccs, args, res);
+        }
+      if (res != null &&
+          tvalue instanceof EmbeddedValue &&
+          !_fuir.clazzIsRef(tc) &&
+          _fuir.clazzKind(cc0) == FUIR.FeatureKind.Field)
+        { // an embedded field in a value instance, so keep tvalue's
+          // embedding. For chained embedded fields in value instances like
+          // `t.f.g.h`, the embedding remains `t` for `f`, `g` and `h`.
+          var resf = res;
+          res = tvalue.rewrap(DFA.this, x -> resf.value());
+        }
+      return res;
+    }
+    Val access(Value t, int s, Val tvalue, int tc, int cc0, int[] ccs, List<Val> args, Val res)
+    {
+      if (CHECKS) check
+       (t != Value.UNIT || AbstractInterpreter.clazzHasUnitValue(_fuir, tc));
+      var t_cl = t == Value.UNIT ? tc : t._clazz;
           var found = false;
           for (var cci = 0; cci < ccs.length; cci += 2)
             {
@@ -284,7 +307,7 @@ public class DFA extends ANY
                   var r = access0(s, t, args, cc, tvalue);
                   if (r != null)
                     {
-                      resf[0] = resf[0] == null ? r : resf[0].joinVal(DFA.this, r);
+                      res = res == null ? r : res.joinVal(DFA.this, r);
                     }
                 }
             }
@@ -297,18 +320,7 @@ public class DFA extends ANY
                 .orElse(NO_SITE);
               _fuir.recordAbstractMissing(t_cl, cc0, instantiatedAt);
             }
-        });
-      var res = resf[0];
-      if (res != null &&
-          tvalue instanceof EmbeddedValue &&
-          !_fuir.clazzIsRef(tc) &&
-          _fuir.clazzKind(cc0) == FUIR.FeatureKind.Field)
-        { // an embedded field in a value instance, so keep tvalue's
-          // embedding. For chained embedded fields in value instances like
-          // `t.f.g.h`, the embedding remains `t` for `f`, `g` and `h`.
-          res = tvalue.rewrap(DFA.this, x -> resf[0].value());
-        }
-      return res;
+          return res;
     }
 
 
@@ -566,7 +578,7 @@ public class DFA extends ANY
             ? constData(s, elementClazz, b).v0().value()
             : elements.join(DFA.this, constData(s, elementClazz, b).v0().value());
         }
-      SysArray sysArray = elCount == 0 ? new SysArray(DFA.this, new byte[0], elementClazz) :  new SysArray(DFA.this, elements);
+      SysArray sysArray = elCount == 0 ? newSysArray(SysArray.EMPTY_BYTE_ARRAY, elementClazz) :  newSysArray(elements);
 
       sa0.setField(DFA.this, data, sysArray);
       sa0.setField(DFA.this, lengthField, NumericValue.create(DFA.this, _fuir.clazzResultClazz(lengthField), elCount));
@@ -585,32 +597,22 @@ public class DFA extends ANY
       for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
         {
           // array to permit modification in lambda
-          var takenA    = new boolean[] { false };
+          var taken = false;
           var field = _fuir.matchCaseField(s, mc);
           for (var t : _fuir.matchCaseTags(s, mc))
             {
-              subv.value().forAll(v -> {
-                  if (v.value() instanceof TaggedValue tv)
+              if (subv.value() instanceof ValueSet vs)
+                {
+                  for (var v : vs._componentsArray)
                     {
-                      if (tv._tag == t)
-                        {
-                          var untagged = tv._original;
-                          takenA[0] = true;
-                          if (field != -1)
-                            {
-                              _call._instance.setField(DFA.this, field, untagged);
-                            }
-                        }
+                      taken = match(s, v, field, t) || taken;
                     }
-                  else
-                    {
-                      throw new Error("DFA encountered Unexpected value in match: " + v.getClass() + " '" + v + "' " +
-                                      " for match of type " + _fuir.clazzAsString(_fuir.matchStaticSubject(s)));
-                    }
-                });
-
+                }
+              else
+                {
+                  taken = match(s, subv, field, t) || taken;
+                }
             }
-          var taken = takenA[0];
           if (_reportResults && _options.verbose(9))
             {
               say("DFA for " + _fuir.siteAsString(s) + ": "+_fuir.codeAtAsString(s)+": "+subv+" case "+mc+": "+
@@ -630,6 +632,28 @@ public class DFA extends ANY
       return new Pair<>(r, _unit_);
     }
 
+    boolean match(int s, Val v, int field, int t)
+    {
+      var res = false;
+                  if (v.value() instanceof TaggedValue tv)
+                    {
+                      if (tv._tag == t)
+                        {
+                          var untagged = tv._original;
+                          res = true;
+                          if (field != -1)
+                            {
+                              _call._instance.setField(DFA.this, field, untagged);
+                            }
+                        }
+                    }
+                  else
+                    {
+                      throw new Error("DFA encountered Unexpected value in match: " + v.getClass() + " '" + v + "' " +
+                                      " for match of type " + _fuir.clazzAsString(_fuir.matchStaticSubject(s)));
+                    }
+                  return res;
+    }
 
     /**
      * Create a tagged value of type newcl from an untagged value.
@@ -796,6 +820,8 @@ public class DFA extends ANY
    * Envs created during DFA analysis.
    */
   TreeMap<Env, Env> _envs = new TreeMap<>();
+  TreeMap<Long, Env> _envs2 = new TreeMap<>();
+
 
 
   /**
@@ -888,9 +914,18 @@ public class DFA extends ANY
     _options = options;
     _fuir = fuir;
     var bool = fuir.clazz(FUIR.SpecialClazzes.c_bool);
-    _true  = new TaggedValue(this, bool, Value.UNIT, 1);
-    _false = new TaggedValue(this, bool, Value.UNIT, 0);
-    _bool  = _true.join(this, _false);
+    if (bool != FUIR.NO_CLAZZ)
+      {
+        _true  = newTaggedValue(bool, Value.UNIT, 1);
+        _false = newTaggedValue(bool, Value.UNIT, 0);
+        _bool  = _true.join(this, _false);
+      }
+    else
+      {
+        _true  = Value.UNIT;
+        _false = Value.UNIT;
+        _bool  = Value.UNIT;
+      }
     _universe = newInstance(_fuir.clazzUniverse(), NO_SITE, null);
     Errors.showAndExit();
   }
@@ -1095,37 +1130,43 @@ public class DFA extends ANY
                                       return ca != cb ? Integer.compare(counts.get(a), counts.get(b))
                                         : Integer.compare(a, b);
                                     });
+      var total = 0;
       for (var c : counts.keySet())
         {
           cl.add(c);
+          total = total + counts.get(c);
         }
-      cl.stream().forEach(c ->
-                          {
-                            System.out.println("Count "+counts.get(c)+" for "+_fuir.clazzAsString(c)+" "+(_fuir.clazzIsUnitType(c)?"UNIT":""));
-                            if (_fuir.clazzAsString(c).equals("false"))
-                              {
-                                var i = 0;
-                                Call prev = null;
-                                for (var cc : _calls.values())
-                                  {
-                                    if (cc._cc == c)
-                                      {
-                                        System.out.println(""+i+": "+cc);
-                                        if (prev != null && cc.toString().equals(prev.toString()))
-                                          {
-                                            System.out.println("########## EQ, but compare results in "+prev.compareToWhy(cc));
-                                          }
-                                        i++;
-                                      }
-                                    prev = cc;
-                                  }
-                              }
-                          });
+      var totalf = total;
+      cl.stream()
+        .filter(c -> counts.get(c) > totalf / 500)
+        .forEach(c ->
+                 {
+                   System.out.println("Call count "+counts.get(c)+"/"+totalf+" for "+_fuir.clazzAsString(c)+" "+(_fuir.clazzIsUnitType(c)?"UNIT":""));
+                   if (_fuir.clazzAsString(c).equals("false"))
+                     {
+                       var i = 0;
+                       Call prev = null;
+                       for (var cc : _calls.values())
+                         {
+                           if (cc._cc == c)
+                             {
+                               System.out.println(""+i+": "+cc);
+                               if (prev != null && cc.toString().equals(prev.toString()))
+                                 {
+                                   System.out.println("########## EQ, but compare results in "+prev.compareToWhy(cc));
+                                 }
+                               i++;
+                             }
+                           prev = cc;
+                         }
+                     }
+                 });
     }
     if (false) {
       var counts = new TreeMap<Integer,Integer>();
       var cnt_i = 0;
       var cnt_v = 0;
+      var total = 0;
       for (var in : _instances.values())
         {
           if (in instanceof Instance iin)
@@ -1140,6 +1181,7 @@ public class DFA extends ANY
               counts.put(NO_SITE, i+1);
               cnt_v++;
             }
+          total++;
         }
       var s = counts.values().stream().mapToInt(x -> x.intValue()).sum();
       System.out.println("I: "+cnt_i+" V: "+cnt_v+" total: "+s);
@@ -1153,7 +1195,10 @@ public class DFA extends ANY
         {
           cl.add(c);
         }
-      cl.stream().forEach(c -> System.out.println("Count "+counts.get(c)+" "+(100.0*counts.get(c)/_instances.size())+"% for "+_fuir.sitePos(c).show()));
+      var totalf = total;
+      cl.stream()
+        .filter(c -> counts.get(c) > totalf / 100)
+        .forEach(c -> System.out.println("Value Count "+counts.get(c)+" "+(100.0*counts.get(c)/_instances.size())+"% for "+_fuir.sitePos(c).show()));
     }
   }
 
@@ -1505,7 +1550,7 @@ public class DFA extends ANY
     put("fuzion.sys.fileio.mmap"         , cl ->
         {
           setArrayI32ElementsToAnything(cl, 3, "fuzion.sys.fileio.mmap");
-          return new SysArray(cl._dfa, NumericValue.create(cl._dfa, cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_u8))); // NYI: length wrong, get from arg
+          return cl._dfa.newSysArray(NumericValue.create(cl._dfa, cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_u8))); // NYI: length wrong, get from arg
         });
     put("fuzion.sys.fileio.munmap"       , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.fileio.mapped_buffer_get", cl ->
@@ -1749,7 +1794,7 @@ public class DFA extends ANY
     put("f32.type.tanh"                  , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.type.tanh"                  , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
 
-    put("fuzion.sys.internal_array_init.alloc", cl -> new SysArray(cl._dfa, new byte[0], -1)); // NYI: get length from args
+    put("fuzion.sys.internal_array_init.alloc", cl -> cl._dfa.newSysArray(SysArray.EMPTY_BYTE_ARRAY, -1)); // NYI: get length from args
     put("fuzion.sys.internal_array.setel", cl ->
         {
           var array = cl._args.get(0).value();
@@ -1884,7 +1929,7 @@ public class DFA extends ANY
             (cl._dfa._fuir.clazzNeedsCode(call));
 
           var env = cl._originalEnv;
-          var newEnv = cl._dfa.newEnv(cl, env, ecl, cl._target);
+          var newEnv = cl._dfa.newEnv(env, ecl, cl._target);
           var ncl = cl._dfa.newCall(call, NO_SITE, cl._args.get(0).value(), new List<>(), newEnv, cl);
           ncl._calledByAbortableForEffect = ecl;
           // NYI: result must be null if result of ncl is null (ncl does not return) and effect.abort is not called
@@ -1980,12 +2025,12 @@ public class DFA extends ANY
               yield jobj;
             }
           };
-        var okay = new TaggedValue(cl._dfa, rc, res, 0);
+        var okay = cl._dfa.newTaggedValue(rc, res, 0);
         var error_cl = cl._dfa._fuir.clazzChoice(rc, 1);
         var error = cl._dfa.newInstance(error_cl, NO_SITE, null);
         var msg = cl._dfa._fuir.lookup_error_msg(error_cl);
         error.setField(cl._dfa, msg, cl._dfa.newConstString(null, cl));
-        var err = new TaggedValue(cl._dfa, rc, error, 1);
+        var err = cl._dfa.newTaggedValue(rc, error, 1);
         return okay.join(cl._dfa, err);
       }
     return switch (cl._dfa._fuir.getSpecialClazz(rc))
@@ -2132,7 +2177,7 @@ public class DFA extends ANY
           {
             var vc = _fuir.clazzAsValue(cl);
             r = newInstance(vc, site, context).box(this, vc, cl, context);
-            r = cache(r);
+            //r = cache(r);
           }
         else if (context instanceof Call cc)
           {
@@ -2227,12 +2272,169 @@ public class DFA extends ANY
     v._id = _uniqueValueId++;
     wasChanged(() -> "DFA: new value " + v);
   }
+  { makeUnique(Value.UNIT); }
+
+
+
+  /**
+   * Create Tagged Value
+   *
+   * @param nc the new clazz of this value after a tagging.
+   *
+   * @param original the untagged value
+   *
+   * @param tag the tag value.  Unlike some C backends, the tag is never left
+   * out during analysis.
+   */
+  TaggedValue newTaggedValue(int nc, Value original, int tag)
+  {
+    TaggedValue r;
+    if (nc == FUIR.NO_CLAZZ)
+      {
+        r = null;
+      }
+    else
+      {
+        var cid = _fuir.clazzId2num(nc);
+        var vid = original._id;
+        if (cid >= 0 && cid <= 0xFFFffff &&
+            vid >= 0 && vid <= 0xFFFffff &&
+            tag >= 0 && tag <= 0xff)
+          {
+            var k =
+              (long) cid << 36 |
+              (long) vid <<  8 |
+              (long) tag;
+            r = _tagged.get(k);
+            if (r == null)
+              {
+                r = new TaggedValue(this, nc, original, tag);
+                r = (TaggedValue) cache(r);
+                _tagged.put(k, r);
+              }
+          }
+        else
+          {
+            System.out.println("for "+_fuir.clazzAsString(nc)+" "+cid+" "+vid+" "+tag+" "+original.getClass()+" "+original);
+            r = new TaggedValue(this, nc, original, tag);
+          }
+      }
+    return r;
+  }
+
+
+  TreeMap<Long,TaggedValue> _tagged = new TreeMap<>();
 
 
 
   Value newValueSet(Value v, Value w)
   {
-    return new ValueSet(v, w);
+    if (false)
+      {
+        if (v._id >= 0 && w._id >= 0) _ok++;
+        _c++;
+        if ((_c&(_c-1))==0) System.out.println("OK "+_ok+"/"+_c+" "+(100*_ok/_c)+"%");
+      }
+
+    Value res = null;
+    var vi = v._id;
+    var wi = w._id;
+    if (vi >= 0 && wi >= 0)
+      {
+        if (vi == wi)
+          {
+            res = v;
+          }
+        else
+          {
+            Long k = vi < wi ? (long) vi << 32 | wi & 0x7FFFFFFF
+                             : (long) wi << 32 | vi & 0x7FFFFFFF;
+            res = _joined.get(k);
+            if (res == null)
+              {
+                if (v instanceof ValueSet vv && vv.contains(w))
+                  {
+                    res = v;
+                  }
+                else if (w instanceof ValueSet vw && vw.contains(v))
+                  {
+                    res = w;
+                  }
+                else
+                  {
+                    var vs = new ValueSet(v, w);
+                    if (vs._componentsArray.length <= 2)
+                      {
+                        var orig = vs;
+                        res = cache(vs);  // NYI: check why caching is still needed here!
+                        /*
+                        if (orig != res) System.out.println("Caching needed for "+orig);
+                        if (orig != res) System.out.println("Caching result is  "+res);
+                        if (orig != res) System.out.println("Caching v is "+v);
+                        if (orig != res) System.out.println("Caching w is "+w);
+                        if (orig != res) System.out.println("Caching v is "+v._id);
+                        if (orig != res) System.out.println("Caching w is "+w._id);
+                        */
+                      }
+                    else
+                      {
+                        res = vs;
+                        makeUnique(res);
+                      }
+                  }
+                _joined.put(k, res);
+              }
+          }
+      }
+    else
+      {
+        if (v._id < 0) System.out.println(v.getClass());
+        if (w._id < 0) System.out.println(w.getClass());
+        res = new ValueSet(v, w);
+        res = cache(res);
+      }
+    return res;
+    //    return cache(res);
+  }
+  int _ok, _c;
+
+  TreeMap<Long, Value> _joined = new TreeMap<>();
+
+  SysArray _emptySysArray = null;
+
+
+
+  SysArray newSysArray(byte[] ba, int ec)
+  {
+    SysArray res;
+
+    if (PRECONDITIONS) check
+      (ba == SysArray.EMPTY_BYTE_ARRAY || ec != -1);
+
+    if (ec == -1)
+      {
+        res = _emptySysArray;
+        if (res == null)
+          {
+            res = new SysArray(this, SysArray.EMPTY_BYTE_ARRAY, -1);
+            // _emptySysArray = res;
+          }
+      }
+    else
+      {
+        res = new SysArray(this, ba, ec);
+      }
+    return res;
+  }
+  SysArray newSysArray(Value ne)
+  {
+    var res = ne._sysArrayOf;
+    if (res == null)
+      {
+        res = new SysArray(this, ne);
+        ne._sysArrayOf = res;
+      }
+    return res;
   }
 
 
@@ -2243,6 +2445,7 @@ public class DFA extends ANY
    *
    * @param value the value of the embedded field
    */
+  static boolean needsEmbedded = false;
   public Val newEmbeddedValue(int site,
                               Value value)
   {
@@ -2251,7 +2454,8 @@ public class DFA extends ANY
        value != null);
 
     Val r;
-    if (value instanceof NumericValue)
+    if (!needsEmbedded ||
+        value instanceof NumericValue)
       {
         r = value;
       }
@@ -2296,7 +2500,8 @@ public class DFA extends ANY
       (instance._id >= 0);
 
     Val r;
-    if (value instanceof NumericValue)
+    if (!needsEmbedded ||
+        value instanceof NumericValue)
       {
         r = value;
       }
@@ -2336,8 +2541,8 @@ public class DFA extends ANY
     var data          = _fuir.clazz_fuzionSysArray_u8_data();
     var length        = _fuir.clazz_fuzionSysArray_u8_length();
     var sysArray      = _fuir.clazzResultClazz(internalArray);
-    var adata = utf8Bytes != null ? new SysArray(this, utf8Bytes, _fuir.clazz(FUIR.SpecialClazzes.c_u8))
-                                  : new SysArray(this, NumericValue.create(this, _fuir.clazz(FUIR.SpecialClazzes.c_u8)));
+    var adata = utf8Bytes != null ? newSysArray(utf8Bytes, _fuir.clazz(FUIR.SpecialClazzes.c_u8))
+                                  : newSysArray(NumericValue.create(this, _fuir.clazz(FUIR.SpecialClazzes.c_u8)));
     var r = newInstance(cs, NO_SITE, context);
     var a = newInstance(sysArray, NO_SITE, context);
     a.setField(this,
@@ -2475,8 +2680,6 @@ public class DFA extends ANY
   /**
    * Create new Env for given existing env and effect type  and value pair.
    *
-   * @param cl the current clazz that installs a new effect
-   *
    * @param env the previous environment.
    *
    * @param ecl the effect types
@@ -2485,19 +2688,77 @@ public class DFA extends ANY
    *
    * @return new or existing Env instance created from env by adding ecl/ev.
    */
-  Env newEnv(Call cl, Env env, int ecl, Value ev)
+  Env newEnv(Env env, int ecl, Value ev)
   {
-    var newEnv = new Env(cl, env, ecl, cl._target);
-    var e = _envs.get(newEnv);
-    if (e == null)
+    Env e;
+    var eid = env == null ? 0 : env._id;
+    var vid = ev._envId;
+    if (vid < 0)
       {
-        _envs.put(newEnv, newEnv);
-        e = newEnv;
-        e._id = _envs.size();
-        wasChanged(() -> "DFA.newEnv for " + newEnv);
+        var v = _envValues.get(ev);
+        if (v == null)
+          {
+            _envValues.put(ev, ev);
+            ev._envId = _envValues.size();
+          }
+        else
+          {
+            ev._envId = v._envId;
+          }
+        vid = ev._envId;
+      }
+    var cid = _fuir.clazzId2num(ecl);
+    if (CHECKS) check
+      (// eid>=0,    NYI, not for all values yet
+       vid >= 0,
+       cid >= 0,
+       eid <= 0x1fFFFF,
+       vid <= 0x3fFFFF,
+       cid <= 0x1fFFFF);
+    if (eid >= 0 &&
+        vid >= 0 &&
+        cid >= 0 &&
+        eid <= 0x1fFFFF &&
+        vid <= 0x3fFFFF &&
+        cid <= 0x1fFFFF &&
+        !false)
+      {
+        var k =
+          (long) eid << (26+25) |
+          (long) vid << (   25) |
+          (long) cid;
+        e = _envs2.get(k);
+        if (e == null)
+          {
+            e = newEnv2(env, ecl, ev);
+            _envs2.put(k, e);
+          }
+      }
+    else
+      {
+        e = newEnv2(env, ecl, ev);
       }
     return e;
   }
+  Env newEnv2(Env env, int ecl, Value ev)
+  {
+    Env e;
+      { // NYI: remove if all env are stored in _envs2:
+        var newEnv = new Env(this, env, ecl, ev);
+        e = _envs.get(newEnv);
+        if (e == null)
+          {
+            _envs.put(newEnv, newEnv);
+            e = newEnv;
+            e._id = _envs.size();
+            wasChanged(() -> "DFA.newEnv for " + newEnv);
+          }
+      }
+    return e;
+  }
+
+  TreeMap<Value, Value> _envValues = new TreeMap<>(Value.ENV_COMPARATOR);
+
 
 }
 

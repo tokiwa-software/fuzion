@@ -44,6 +44,7 @@ public class SysArray extends Value implements Comparable<SysArray>
 
   /*----------------------------  constants  ----------------------------*/
 
+  static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -129,7 +130,7 @@ public class SysArray extends Value implements Comparable<SysArray>
     super(dfa._fuir.clazzAny());
 
     _dfa = dfa;
-    _data = new byte[0];
+    _data = EMPTY_BYTE_ARRAY;
     _elements = el;
   }
 
@@ -213,11 +214,12 @@ public class SysArray extends Value implements Comparable<SysArray>
         Value ne =
           _elements == null ? sv._elements :
           sv._elements == null ? _elements : _elements.join(dfa, sv._elements);
-        return new SysArray(_dfa, ne);
+        return _dfa.newSysArray(ne);
       }
     else
       {
-        return super.joinInstances(dfa, v);
+        check(false);
+        return null;
       }
   }
 

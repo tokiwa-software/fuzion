@@ -110,12 +110,31 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
    */
   public Value joinInstances(DFA dfa, Value v)
   {
-    if (v instanceof TaggedValue tv &&_tag == tv._tag)
+    if (v instanceof TaggedValue tv && _tag == tv._tag)
       {
-        return new TaggedValue(_dfa, _clazz, _original.join(dfa, tv._original), _tag);
+        return _dfa.newTaggedValue(_clazz, _original.join(dfa, tv._original), _tag);
       }
     else
       {
+        if (v instanceof ValueSet vs)
+          {
+            for (var vv : vs._componentsArray)
+              {
+                if (vv instanceof TaggedValue tvv && _tag == tvv._tag)
+                  {
+                    if (tvv._original instanceof ValueSet tvvs && tvvs.contains(_original))
+                      {
+                        //System.out.println("YEAH: join "+this);
+                        //System.out.println("YEAH: with "+vv);
+                        return v;
+                      }
+                    else
+                      {
+                        // NYI: new valueset with tvv replaced by tvv U this.
+                      }
+                  }
+              }
+          }
         return super.joinInstances(dfa, v);
       }
   }

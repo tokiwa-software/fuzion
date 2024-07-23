@@ -268,7 +268,12 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    */
   static final String DEBUG;
   static {
-    var debug = System.getProperty("dev.flang.fuir.analysis.AbstractInterpreter.DEBUG");
+    var prop = "dev.flang.fuir.analysis.AbstractInterpreter.DEBUG";
+    var debug = System.getProperty(prop);
+    if (debug == null)
+      {
+        debug = System.getenv(prop.replace(".","_"));
+      }
     DEBUG =
       debug == null ||
       debug.equals("false") ? null :

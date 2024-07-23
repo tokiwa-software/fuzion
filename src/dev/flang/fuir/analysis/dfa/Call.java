@@ -37,6 +37,7 @@ import dev.flang.util.Errors;
 import static dev.flang.util.FuzionConstants.EFFECT_ABORTABLE_NAME;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
+import dev.flang.util.Terminal;
 
 import java.util.TreeSet;
 
@@ -164,6 +165,11 @@ public class Call extends ANY implements Comparable<Call>, Context
   {
     _dfa = dfa;
     _cc = cc;
+    if (false &&
+        dfa._fuir.clazzIsUnitType(cc))
+      {
+        site = IR.NO_SITE;
+      }
     _site = site;
     _target = target;
     _args = args;
@@ -193,6 +199,20 @@ public class Call extends ANY implements Comparable<Call>, Context
   /*-----------------------------  methods  -----------------------------*/
 
 
+  boolean compareSite(Call other)
+  {
+    return
+      (_requiredEffects != null
+       || _args.size() != 0
+       // || _dfa._fuir.clazzResultClazz(_cc) == _cc                                                             // works, total 33247 calls, 15.02
+       // || !_dfa._fuir.clazzIsUnitType(_dfa._fuir.clazzResultClazz(_cc)) && !_dfa._fuir.clazzIsUnitType(_cc)   // works, total 27907 calls
+       // || !_dfa._fuir.clazzIsUnitType(_dfa._fuir.clazzResultClazz(_cc))                                       // works, total 28024 calls
+       // || !_dfa._fuir.clazzIsUnitType(_cc)                                                                    // works, total 27880 calls 8.92s
+       || true                                                                                                // works, total 28712 calls, 8.98s
+       ) &&
+      _site != other._site;
+  }
+
   /**
    * Compare this to another Call.
    */
@@ -201,11 +221,12 @@ public class Call extends ANY implements Comparable<Call>, Context
     var r =
       _cc   <   other._cc  ? -1 :
       _cc   >   other._cc  ? +1 :
+      _target._id != other._target._id ? Integer.compare(_target._id, other._target._id) :
       //      _dfa._fuir.clazzIsUnitType(_cc) ? 0 :
       //      (_dfa._fuir.clazzIsUnitType(_cc) || (_target == Value.UNIT && _dfa._fuir.clazzArgCount(_cc) == 0)) && _requiredEffects == null ? 0 :
-      _site <   other._site? -1 :
-      _site >   other._site? +1 :
-      Value.compare(_target, other._target);
+      compareSite(other) ? Integer.compare(_site, other._site) : 0;
+      //      Value.compare(_target, other._target);
+    // Integer.compare(_target._id, other._target._id);
     if (false)
     for (var i = 0; r == 0 && i < _args.size(); i++)
       {
@@ -346,38 +367,59 @@ public class Call extends ANY implements Comparable<Call>, Context
               (!_dfa._fuir.clazzIsVoidType(_dfa._fuir.clazzResultClazz(_cc)));
 
             result = _instance.readField(_dfa, rf, -1, this);
+            if (false) if (_dfa._fuir.clazzAsString(_cc).startsWith("i#1") && !_rec)
+              {
+                _rec = true;
+                System.out.println("CALL result of "+this);
+                System.out.println(Terminal.INTENSE_BOLD_GREEN + result + Terminal.RESET);
+                _rec = false;
+              }
           }
       }
     return result;
   }
+  boolean _rec;
 
 
   /**
    * Create human-readable string from this call.
    */
+  boolean _call_toString_recursion = false;
   public String toString()
   {
-    var sb = new StringBuilder();
-    sb.append(_dfa._fuir.clazzAsString(_cc));
-    if (_target != Value.UNIT)
+    var result = "--?recurive Call.toString?--";
+    if (!_call_toString_recursion)
       {
-        sb.append(" target=")
-          .append(_target);
+        _call_toString_recursion = true;
+        var sb = new StringBuilder();
+        sb.append(_dfa._fuir.clazzAsString(_cc));
+        if (_target != Value.UNIT)
+          {
+            sb.append(" target=")
+              .append(_target);
+          }
+        for (var i = 0; i < _args.size(); i++)
+          {
+            var a = _args.get(i);
+            sb.append(" a")
+              .append(i)
+              .append("=")
+              .append(a);
+          }
+        var r = result();
+        sb.append(" => ")
+          .append(r == null ? "*** VOID ***" : r)
+          .append(" ENV0: ")
+          .append(Errors.effe(Env.envAsString(_originalEnv)))
+          .append(" ENV: ")
+          .append(Errors.effe(Env.envAsString(effectiveEnv())))
+          .append(" REQ: ")
+          .append(_requiredEffects == null ? "--" : _requiredEffects.stream().map(i -> _dfa._fuir.clazzAsString(i))
+                  .collect(java.util.stream.Collectors.joining(", ")));
+        result = sb.toString();
+        _call_toString_recursion = false;
       }
-    for (var i = 0; i < _args.size(); i++)
-      {
-        var a = _args.get(i);
-        sb.append(" a")
-          .append(i)
-          .append("=")
-          .append(a);
-      }
-    var r = result();
-    sb.append(" => ")
-      .append(r == null ? "*** VOID ***" : r)
-      .append(" ENV: ")
-      .append(Errors.effe(Env.envAsString(effectiveEnv())));
-    return sb.toString();
+    return result;
   }
 
 
@@ -470,8 +512,8 @@ public class Call extends ANY implements Comparable<Call>, Context
         if (_effectiveEnvCache != ee)
           {
             _effectiveEnvCache = ee;
-            _calledByX.stream().forEach(c -> c.addRequiredEffect(ecl));
           }
+        _calledByX.stream().forEach(c -> c.addRequiredEffect(ecl));
       }
   }
   void calledBy(Call c)

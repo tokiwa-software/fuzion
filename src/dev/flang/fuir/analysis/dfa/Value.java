@@ -53,18 +53,38 @@ public class Value extends Val
   }
 
 
-  /*----------------------------  constants  ----------------------------*/
+  //  static int _cnt;
 
+  /**
+   * Comparator instance to compare two Values according to their unique ids
+   */
+  static class ValueIdComparator implements Comparator<Value> {
+      public int compare(Value a, Value b)
+      {
+        var i = a._id;
+        var j = b._id;
+        if (i >= 0 && j >= 0)
+          {
+            return Integer.compare(i,j);
+          }
+        else
+          {
+            return COMPARATOR.compare(a,b);  // NYI: remove this case once all values have _id set!
+          }
+      }
+  };
 
   /**
    * Comparator instance to compare two Values of arbitrary types.
    */
-  static Comparator<Value> COMPARATOR = new Comparator<>() {
+  static class ValueComparator implements Comparator<Value> {
       /**
        * compare two values.
        */
       public int compare(Value a, Value b)
       {
+        //        _cnt++;
+        //        if ((_cnt&(_cnt-1))==0) Thread.dumpStack();
         if      (a == b)                                                       { return 0;                    }
         else if (a == UNIT                    || b == UNIT                   ) { return a == UNIT  ? +1 : -1; }
         else if (a instanceof Instance     ai && b instanceof Instance     bi) { return ai.compareTo(bi);     }
@@ -84,14 +104,14 @@ public class Value extends Val
             throw new Error(getClass().toString()+"compareTo requires support for "+a.getClass()+" and "+b.getClass());
           }
       }
-    };
+  }
 
 
   /**
    * Comparator instance to compare two Values of effect instances that are used in
    * Env[ironmnents].
    */
-  static Comparator<Value> ENV_COMPARATOR = new Comparator<>() {
+  static class ValueEnvComparator implements Comparator<Value> {
       /**
        * compare two values.
        */
@@ -116,8 +136,29 @@ public class Value extends Val
             throw new Error(getClass().toString() + "envCompareTo requires support for " + a.getClass() + " and " + b.getClass());
           }
       }
-    };
+  }
 
+
+  /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * Comparator instance to compare two Values of arbitrary types.
+   */
+  static Comparator<Value> COMPARATOR = new ValueComparator();
+
+
+  /**
+   * Comparator instance to compare two Values of effect instances that are used in
+   * Env[ironmnents].
+   */
+  static Comparator<Value> ENV_COMPARATOR = new ValueEnvComparator();
+
+
+  /**
+   * Comparator instance to compare two Values according to their unique ids
+   */
+  static Comparator<Value> ID_COMPARATOR = new ValueIdComparator();
 
 
   /**
@@ -209,8 +250,12 @@ public class Value extends Val
    */
   int _id = -1;
 
+  int _envId = -1;
+
 
   TreeMap<Integer, EmbeddedValue> _embeddedAt = null;
+
+  SysArray _sysArrayOf = null;
 
 
   /*---------------------------  constructors  ---------------------------*/
@@ -352,11 +397,13 @@ public class Value extends Val
       }
     else
       {
-        if (_boxed == null)
-          {
-            _boxed = dfa.cache(new RefValue(dfa, this, vc, rc));
-          }
         result = _boxed;
+        if (result == null)
+          {
+            result = new RefValue(dfa, this, vc, rc);
+            dfa.makeUnique(result);
+            _boxed = result;
+          }
       }
     return result;
   }
@@ -365,7 +412,7 @@ public class Value extends Val
   /**
    * Unbox this value.
    */
-  Value unbox(int vc)
+  Value unbox(DFA dfa, int vc)
   {
     return this;
   }
@@ -383,7 +430,7 @@ public class Value extends Val
    */
   Value tag(DFA dfa, int cl, int tagNum)
   {
-    return new TaggedValue(dfa, cl, this, tagNum);
+    return dfa.newTaggedValue(cl, this, tagNum);
   }
 
 

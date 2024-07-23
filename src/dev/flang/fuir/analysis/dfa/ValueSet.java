@@ -73,11 +73,50 @@ public class ValueSet extends Value
   {
     super(-1);
 
-    _components = new TreeMap<>(Value.COMPARATOR);
-    v1.forAll(x -> _components.put(x,x));
-    v2.forAll(x -> _components.put(x,x));
+    _components = new TreeMap<>(Value.ID_COMPARATOR);
+    if (v1 instanceof ValueSet v1s)
+      {
+        for (var c : v1s._componentsArray)
+          {
+            _components.put(c,c);
+          }
+      }
+    else
+      {
+        _components.put(v1,v1);
+      }
+    if (v2 instanceof ValueSet v2s)
+      {
+        for (var c : v2s._componentsArray)
+          {
+            _components.put(c,c);
+          }
+      }
+    else
+      {
+        _components.put(v2,v2);
+      }
+    //    v1.forAll(x -> _components.put(x,x));
+    //    v2.forAll(x -> _components.put(x,x));
     _componentsArray = _components.values().toArray(new Value[_components.size()]);
+    /*
+    _sizes[Math.min(_sizes.length-1, _components.size())]++;
+    _total += 1;
+    _cnt++;
+    if ((_cnt&(_cnt-1))==0)
+      {
+        int sub = 0;
+        for (int i = 0 ; i<_sizes.length; i++)
+          {
+            sub += _sizes[i];
+            if (_sizes[i] != 0)
+              System.out.println("ValueSet size "+i+" count "+_sizes[i]+" "+(sub*100/_total)+"%");
+          }
+          }*/
   }
+
+  static int _cnt, _total;
+  static int[] _sizes = new int[100];
 
 
   /*-----------------------------  methods  -----------------------------*/
@@ -117,6 +156,28 @@ public class ValueSet extends Value
       {
         return +1;
       }
+  }
+
+  boolean contains(Value other)
+  {
+    boolean result;
+    if (other instanceof ValueSet os)
+      {
+        result = true;
+        for (var oc : os._componentsArray)
+          {
+            result = result && contains(oc);
+          }
+      }
+    else
+      {
+        result = false;
+        for (var tc : _componentsArray)
+          {
+            result = result || tc == other;
+          }
+      }
+    return result;
   }
 
 
@@ -177,7 +238,17 @@ public class ValueSet extends Value
    */
   public void forAll(ValueConsumer c)
   {
-    _components.values().forEach(c);
+    if (!true)
+      {
+        _components.values().forEach(c);
+      }
+    else
+      {
+        for (var v : _componentsArray)
+          {
+            c.accept(v);
+          }
+      }
   }
 
 
@@ -192,7 +263,7 @@ public class ValueSet extends Value
     for (var v : _components.values())
       {
         var u = v.box(dfa, vc, rc, context);
-        result = result == null ? u : new ValueSet(result, u);
+        result = result == null ? u : dfa.newValueSet(result, u);
       }
     return result;
   }
@@ -201,14 +272,14 @@ public class ValueSet extends Value
   /**
    * Unbox this value.
    */
-  Value unbox(int vc)
+  Value unbox(DFA dfa, int vc)
   {
     Value result = null;
     // NYI: performance in O(_components.size()²)
     for (var v : _components.values())
       {
-        var u = v.unbox(vc);
-        result = result == null ? u : new ValueSet(result, u);
+        var u = v.unbox(dfa, vc);
+        result = result == null ? u : dfa.newValueSet(result, u);
       }
     return result;
   }
