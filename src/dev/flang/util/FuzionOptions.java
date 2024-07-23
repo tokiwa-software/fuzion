@@ -27,7 +27,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.util;
 
 import java.nio.file.Path;
+
 import java.util.ArrayList;
+
+import java.util.function.Consumer;
 
 
 /**
@@ -82,13 +85,24 @@ public class FuzionOptions extends ANY
   public ArrayList<String> getBackendArgs() { return _backendArgs; }
 
 
+  /**
+   * `_timer.accept("phase")` can be called with a phase name to measure the
+   * time spent in this "phase", printed if `-verbose` level is sufficiently
+   * high.
+   */
+  final Consumer<String> _timer;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
    * Constructor initializing fields as given.
+   *
+   * @param timer can be called with a phase name to measure the time spent in
+   * this phase, printed if `-verbose` level is sufficiently high.
    */
-  public FuzionOptions(int verbose, int fuzionDebugLevel, boolean fuzionSafety, boolean enableUnsafeIntrinsics, Path fuzionHome)
+  public FuzionOptions(int verbose, int fuzionDebugLevel, boolean fuzionSafety, boolean enableUnsafeIntrinsics, Path fuzionHome, Consumer<String> timer)
   {
     if (PRECONDITIONS) require
       (verbose >= 0,
@@ -99,6 +113,7 @@ public class FuzionOptions extends ANY
     _fuzionSafety = fuzionSafety;
     _enableUnsafeIntrinsics = enableUnsafeIntrinsics;
     _fuzionHome = fuzionHome;
+    _timer = timer;
   }
 
 
@@ -111,7 +126,8 @@ public class FuzionOptions extends ANY
          fo.fuzionDebugLevel(),
          fo.fuzionSafety(),
          fo.enableUnsafeIntrinsics(),
-         fo.fuzionHome());
+         fo.fuzionHome(),
+         fo._timer);
   }
 
 
@@ -191,6 +207,16 @@ public class FuzionOptions extends ANY
   public boolean isLanguageServer()
   {
     return false;
+  }
+
+
+  /**
+   * Measure the time spent in this phase `name`, the result is printed at the
+   * end if `-verbose` level is sufficiently high.
+   */
+  public void timer(String name)
+  {
+    _timer.accept(name);
   }
 
 

@@ -1061,7 +1061,8 @@ public class Fuzion extends Tool
                                           _readStdin,
                                           _executeCode,
                                           _main,
-                                          _backend.needsSources());
+                                          _backend.needsSources(),
+                                          s -> timer(s));
         options.setBackendArgs(applicationArgs);
         timer("prep");
         var fe = new FrontEnd(options);
