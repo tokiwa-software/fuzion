@@ -146,7 +146,8 @@ public class Util
 
 
   static enum Kind {
-    Constructor,
+    RefConstructor,
+    ValConstructor,
     Type,
     TypeFeature,
     Other;
@@ -158,7 +159,9 @@ public class Util
         ? Kind.TypeFeature
         : af.definesType()
           ? !af.isChoice() && af.visibility().eraseTypeVisibility() == Visi.PUB
-              ? Kind.Constructor
+              ? af.isThisRef()
+                ? Kind.RefConstructor
+                : Kind.ValConstructor
               : Kind.Type
           : Kind.Other;
     }
