@@ -162,9 +162,9 @@ public class StringHelpers extends ANY
   public static String times(int count)
   {
     return
-      count == 0 ? "never"  :
-      count == 1 ? "once "  :
-      count == 2 ? "twice " : "" + count + " times";
+      count == 0 ? "never" :
+      count == 1 ? "once"  :
+      count == 2 ? "twice" : "" + count + " times";
   }
 
 
