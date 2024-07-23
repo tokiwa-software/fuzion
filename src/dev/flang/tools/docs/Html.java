@@ -222,7 +222,8 @@ public class Html extends ANY
    */
   private String mainSection(Map<Kind, TreeSet<AbstractFeature>> map)
   {
-    return (map.get(Kind.Constructor) == null ? "" :  "<h4>Constructors</h4>" + mainSection0(map.get(Kind.Constructor)))
+    return (map.get(Kind.RefConstructor) == null ? "" :  "<h4>Reference Constructors</h4>" + mainSection0(map.get(Kind.RefConstructor)))
+    + (map.get(Kind.ValConstructor) == null ? "" :  "<h4>Value Constructors</h4>" + mainSection0(map.get(Kind.ValConstructor)))
     + (map.get(Kind.Other) == null ? "" : "<h4>Functions</h4>" + mainSection0(map.get(Kind.Other)))
     + (map.get(Kind.Type) == null ? "" : "<h4>Types</h4>" + mainSection0(map.get(Kind.Type)))
     + (map.get(Kind.TypeFeature) == null ? "" : "<h4>Type Features</h4>" + mainSection0(map.get(Kind.TypeFeature)));
@@ -561,12 +562,12 @@ public class Html extends ANY
         </li>
       </ul>"""
         .replace("$1",
-            (declaredFeatures.get(Kind.Constructor) == null
+            (declaredFeatures.get(Kind.ValConstructor) == null
               ? ""
-              : "<div>" + f + "<small class=\"fd-feat-kind\"> Constructors</small></div>" + declaredFeatures.get(Kind.Constructor).stream()
+              : "<div>" + f + "<small class=\"fd-feat-kind\"> Constructors</small></div>" + declaredFeatures.get(Kind.ValConstructor).stream()
                 .map(af -> navigation(af, depth + 1))
                 .collect(Collectors.joining(System.lineSeparator())))
-            + (declaredFeatures.get(Kind.Constructor) == null && declaredFeatures.get(Kind.Type) == null
+            + (declaredFeatures.get(Kind.ValConstructor) == null && declaredFeatures.get(Kind.Type) == null
               ? "<div>" + f + "</div>"
               : "")
             + (declaredFeatures.get(Kind.Type) == null
