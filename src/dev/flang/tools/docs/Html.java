@@ -157,6 +157,7 @@ public class Html extends ANY
       + "<a class='fd-anchor-sign mr-2' href='#" + htmlID(af) + "'>§</a>"
       + anchor(af)
       + arguments(af)
+      + (af.isThisRef() ? "<div class='fd-keyword'>&nbsp;ref</div>" : "")
       + inherited(af)
       + (Util.Kind.classify(af) == Util.Kind.Other ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchor(af.resultType()) : "")
       + (Util.Kind.classify(af) == Util.Kind.Other ? "" : "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>")
@@ -172,7 +173,7 @@ public class Html extends ANY
   private String anchor(AbstractFeature af) {
     return "<a class='fd-feature font-weight-600' href='" + featureAbsoluteURL(af) + "'>"
             + htmlEncodedBasename(af)
-          + "</a>";
+            + "</a>";
   }
 
 
