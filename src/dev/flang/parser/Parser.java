@@ -36,6 +36,7 @@ import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.SourceRange;
+import dev.flang.util.StringHelpers;
 
 
 /**
@@ -154,7 +155,7 @@ public class Parser extends Lexer
               {
                 sb.append(sb.length() == 0 ? "" : ", ")
                   .append(lastMethod)
-                  .append(count > 1 ? " (" + Errors.times(count) + ")" : "");
+                  .append(count > 1 ? " (" + StringHelpers.times(count) + ")" : "");
                 count = 0;
               }
             if (!m.equals("parseStack") &&

@@ -36,6 +36,7 @@ import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.StringHelpers;
 
 
 /**
@@ -1686,7 +1687,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       { // NYI: This might happen if the user adds additional features
         // with different argCounts. name should contain argCount to
         // avoid this
-        AstErrors.internallyReferencedFeatureNotUnique(pos(), name + (argcount >= 0 ? " (" + Errors.argumentsString(argcount) : ""), set);
+        AstErrors.internallyReferencedFeatureNotUnique(pos(), name + (argcount >= 0 ? " (" + StringHelpers.argumentsString(argcount) : ""), set);
       }
     return result;
   }

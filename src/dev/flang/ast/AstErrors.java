@@ -39,6 +39,7 @@ import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.StringHelpers;
 
 
 /**
@@ -589,7 +590,7 @@ public class AstErrors extends ANY
       {
         error(call.pos(),
               "Wrong number of actual arguments in call",
-              "Number of actual arguments is " + call._actuals.size() + ", while call expects " + argumentsString(fsz) + ".\n" +
+              "Number of actual arguments is " + call._actuals.size() + ", while call expects " + StringHelpers.argumentsString(fsz) + ".\n" +
               "Called feature: " + s(call.calledFeature())+ "\n"+
               "Formal arguments: " + fstr + "\n" +
               "Declared at " + call.calledFeature().pos().show());
@@ -1222,7 +1223,7 @@ public class AstErrors extends ANY
     if (!any() || !errorInOuterFeatures(targetFeature))
       {
         var msg = !candidatesHidden.isEmpty()
-          ? plural(candidatesHidden.size(), "Feature") + " not visible at call site"
+          ? StringHelpers.plural(candidatesHidden.size(), "Feature") + " not visible at call site"
           : !candidatesArgCountMismatch.isEmpty()
           ? "Different count of arguments needed when calling feature"
           : "Could not find called feature";
@@ -1293,7 +1294,7 @@ public class AstErrors extends ANY
           "Type that was not found: " + st(t) + "\n" +
           "in feature: " + s(outer) + "\n" +
           (n == 0 ? "" :
-           "However, " + singularOrPlural(n, "feature") + " " +
+           "However, " + StringHelpers.singularOrPlural(n, "feature") + " " +
            (n == 1 ? "has been found that matches the type name but that does not define a type:\n"
                    : "have been found that match the type name but that do not define a type:\n") +
            featureList(nontypes_found) + "\n") +
@@ -1480,14 +1481,14 @@ public class AstErrors extends ANY
     var ns = spn(names);
     error(pos,
           "Wrong number of arguments in lambda expression",
-          "Lambda expression has " + singularOrPlural(names.size(), "argument") + " while the target type expects " +
-          singularOrPlural(funType.generics().size()-1, "argument") + ".\n" +
+          "Lambda expression has " + StringHelpers.singularOrPlural(names.size(), "argument") + " while the target type expects " +
+          StringHelpers.singularOrPlural(funType.generics().size()-1, "argument") + ".\n" +
           "Arguments of lambda expression: " + ns + "\n" +
           "Expected function type: " + funType + "\n" +
           "To solve this, " +
           (req == 0 ? "replace the list " + ns + " by " + ss("()") + "."
-                    : (delta < 0 ? "add "    + singularOrPlural(-delta, "argument") + " to the list "   + ns
-                                 : "remove " + singularOrPlural( delta, "argument") + " from the list " + ns) +
+                    : (delta < 0 ? "add "    + StringHelpers.singularOrPlural(-delta, "argument") + " to the list "   + ns
+                                 : "remove " + StringHelpers.singularOrPlural( delta, "argument") + " from the list " + ns) +
                       " before the " + ss("->") + " of the lambda expression.")
           );
   }
@@ -1686,7 +1687,7 @@ public class AstErrors extends ANY
   {
     error(pos,
           "Failed to infer open type parameter type from actual argument.",
-          "Type of " + ordinal(count) + " actual argument could not be inferred at " + actual.pos().show());
+          "Type of " + StringHelpers.ordinal(count) + " actual argument could not be inferred at " + actual.pos().show());
   }
 
   static void incompatibleTypesDuringTypeInference(SourcePosition pos, Generic g, List<Pair<SourcePosition, AbstractType>> foundAt)
@@ -1695,7 +1696,7 @@ public class AstErrors extends ANY
       {
         error(pos,
               "Incompatible types found during type inference for type parameters",
-              "Types inferred for " + ordinal(g.index()+1) + " type parameter " + s(g) + ":\n" +
+              "Types inferred for " + StringHelpers.ordinal(g.index()+1) + " type parameter " + s(g) + ":\n" +
               foundAt.stream()
                  .map(p -> s(p.v1()) + " found at " + p.v0().show() + "\n")
                  .collect(Collectors.joining()));
@@ -1708,7 +1709,7 @@ public class AstErrors extends ANY
           "Failed to infer actual type parameters",
           "In call to " + s(cf) + ", no actual type parameters are given and inference of the type parameters failed.\n" +
           "Expected type parameters: " + s(cf.generics()) + "\n"+
-          "Type inference failed for " + singularOrPlural(missing.size(), "type parameter") + " " + slg(missing) + "\n");
+          "Type inference failed for " + StringHelpers.singularOrPlural(missing.size(), "type parameter") + " " + slg(missing) + "\n");
   }
 
   static void cannotCallChoice(SourcePosition pos, AbstractFeature cf)
@@ -1743,7 +1744,7 @@ public class AstErrors extends ANY
   {
     error(pos,
           "Repeated entry in destructuring",
-          "Variable " + ss(n) + " appears " + times(count) + ".");
+          "Variable " + ss(n) + " appears " + StringHelpers.times(count) + ".");
   }
 
 

@@ -31,8 +31,8 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import dev.flang.util.ANY;
-import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.StringHelpers;
 
 
 /**
@@ -287,7 +287,7 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
 
   public String argCountAndIdString()
   {
-    return " (" + Errors.argumentsString(_argCount) + (_id > 0 ? "," + _id : "") + ")";
+    return " (" + StringHelpers.argumentsString(_argCount) + (_id > 0 ? "," + _id : "") + ")";
   }
 
 

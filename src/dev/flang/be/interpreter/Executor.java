@@ -39,6 +39,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
+import dev.flang.util.StringHelpers;
 
 
 /**
@@ -592,7 +593,7 @@ public class Executor extends ProcessExpression<Value, Object>
   {
     if (repeat > 1)
       {
-        sb.append(Errors.repeated(repeat)).append("\n\n");
+        sb.append(StringHelpers.repeated(repeat)).append("\n\n");
       }
     else if (repeat > 0)
       {

@@ -30,6 +30,7 @@ import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.JavaInterface;
 import dev.flang.util.Pair;
+import dev.flang.util.StringHelpers;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -790,7 +791,7 @@ public class Runtime extends ANY
               {
                 if (count > 1)
                   {
-                    stacktrace.write("\n  " + Errors.repeated(count));
+                    stacktrace.write("\n  " + StringHelpers.repeated(count));
                   }
                 else if (count > 0)
                   {
@@ -804,7 +805,7 @@ public class Runtime extends ANY
       }
     if (count > 1)
       {
-        stacktrace.write("\n  " + Errors.repeated(count));
+        stacktrace.write("\n  " + StringHelpers.repeated(count));
       }
 
     return stacktrace.toString();
