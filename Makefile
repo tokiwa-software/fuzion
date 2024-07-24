@@ -418,7 +418,7 @@ FZ_MODULES = \
 			$(MOD_NOM)
 
 .PHONY: all
-all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD)
+all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD) $(FUZION_EBNF)
 
 # everything but rarely used java modules
 .PHONY: min-java
@@ -439,9 +439,9 @@ javac: $(CLASS_FILES_TOOLS) $(CLASS_FILES_TOOLS_FZJAVA) $(CLASS_FILES_TOOLS_DOCS
 $(BUILD_DIR)/%.md: $(FZ_SRC)/%.md
 	cp $^ $@
 
-$(FUZION_EBNF): $(SRC)/dev/flang/parser/Parser.java
+$(FUZION_EBNF): $(FUZION_BASE)
 	mkdir -p $(@D)
-	$(FZ_SRC)/bin/ebnf.sh > $@
+	$(BUILD_DIR)/bin/fz bin/ebnf.fz > $@
 
 $(JAVA_FILE_UTIL_VERSION): $(FZ_SRC)/version.txt $(JAVA_FILE_UTIL_VERSION_IN)
 	mkdir -p $(@D)
@@ -471,7 +471,7 @@ $(CLASS_FILES_AST): $(JAVA_FILES_AST) $(CLASS_FILES_UTIL)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_AST)
 	touch $@
 
-$(CLASS_FILES_PARSER): $(JAVA_FILES_PARSER) $(CLASS_FILES_AST) $(FUZION_EBNF)
+$(CLASS_FILES_PARSER): $(JAVA_FILES_PARSER) $(CLASS_FILES_AST)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_PARSER)
 	touch $@
