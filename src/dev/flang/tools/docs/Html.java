@@ -140,8 +140,19 @@ public class Html extends ANY
         return Stream.empty();
       }
     return Stream.concat(anchorTags0(f.outer()),
-      Stream.of("<a class='fd-feature font-weight-600' href='$2'>$1</a>".replace("$1", htmlEncodedBasename(f))
+      Stream.of(typePrfx(f) + "<a class='fd-feature font-weight-600' href='$2'>$1</a>".replace("$1", htmlEncodedBasename(f))
         .replace("$2", featureAbsoluteURL(f))));
+  }
+
+
+  /**
+   * Return "type." prefix if af is a type feature.
+   * @param af the feature to be checked
+   * @return html for "type." prefix if type feature, empty string otherwise
+   */
+  private String typePrfx(AbstractFeature af)
+  {
+    return af.outer() != null && af.outer().isTypeFeature() && !af.isTypeFeature() ? "<span class=\"fd-keyword\">type</span>." : "";
   }
 
 
@@ -182,9 +193,10 @@ public class Html extends ANY
 
 
   private String anchor(AbstractFeature af) {
-    return "<a class='fd-feature font-weight-600' href='" + featureAbsoluteURL(af) + "'>"
+    return "<span class='font-weight-600'>" + typePrfx(af)
+            + "<a class='fd-feature' href='" + featureAbsoluteURL(af) + "'>"
             + htmlEncodedBasename(af)
-            + "</a>";
+            + "</a></span>";
   }
 
 
@@ -310,9 +322,7 @@ public class Html extends ANY
    */
   private String htmlEncodedBasename(AbstractFeature af)
   {
-    var n = (af.outer() != null && af.outer().isTypeFeature() ? "type." : "") + af.featureName().baseNameHuman();
-
-    return htmlEncodeNbsp(n);
+    return htmlEncodeNbsp(af.featureName().baseNameHuman());
   }
 
 
