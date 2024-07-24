@@ -152,11 +152,22 @@ public class Html extends ANY
    */
   private String summary(AbstractFeature af)
   {
+    return summary(af, true);
+  }
+
+  /**
+   * summary for feature af
+   * @param af
+   * @param printArgs whether or not arguments of the feature should be included in output
+   * @return
+   */
+  private String summary(AbstractFeature af, boolean printArgs)
+  {
     return "<div class='d-grid' style='grid-template-columns: 1fr min-content;'>"
       + "<div class='d-flex flex-wrap word-break-break-word'>"
       + "<a class='fd-anchor-sign mr-2' href='#" + htmlID(af) + "'>§</a>"
       + anchor(af)
-      + arguments(af)
+      + arguments(af, printArgs)
       + (af.isThisRef() ? "<div class='fd-keyword'>&nbsp;ref</div>" : "")
       + inherited(af)
       + (Util.Kind.classify(af) == Util.Kind.Other ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchor(af.resultType()) : "")
@@ -222,20 +233,40 @@ public class Html extends ANY
    */
   private String mainSection(Map<Kind, TreeSet<AbstractFeature>> map)
   {
+    TreeSet<AbstractFeature> refTypes = map.get(Kind.Type) == null ? new TreeSet<AbstractFeature>() : new TreeSet<>(map.get(Kind.Type));
+    refTypes.removeIf(f->!f.isThisRef());
+    refTypes.addAll(map.get(Kind.RefConstructor) == null ? new TreeSet<AbstractFeature>() : map.get(Kind.RefConstructor));
+
+    TreeSet<AbstractFeature> valTypes = map.get(Kind.Type) == null ? new TreeSet<AbstractFeature>() : new TreeSet<>(map.get(Kind.Type));
+    valTypes.removeIf(f->f.isThisRef());
+    valTypes.addAll(map.get(Kind.ValConstructor) == null ? new TreeSet<AbstractFeature>() : map.get(Kind.ValConstructor));
+
     return (map.get(Kind.RefConstructor) == null ? "" :  "<h4>Reference Constructors</h4>" + mainSection0(map.get(Kind.RefConstructor)))
     + (map.get(Kind.ValConstructor) == null ? "" :  "<h4>Value Constructors</h4>" + mainSection0(map.get(Kind.ValConstructor)))
     + (map.get(Kind.Other) == null ? "" : "<h4>Functions</h4>" + mainSection0(map.get(Kind.Other)))
-    + (map.get(Kind.Type) == null ? "" : "<h4>Types</h4>" + mainSection0(map.get(Kind.Type)))
+    + (refTypes.isEmpty() ? "" : "<h4>Reference Types</h4>" + mainSection0(refTypes, false))
+    + (valTypes.isEmpty() ? "" : "<h4>Value Types</h4>" + mainSection0(valTypes, false))
     + (map.get(Kind.TypeFeature) == null ? "" : "<h4>Type Features</h4>" + mainSection0(map.get(Kind.TypeFeature)));
   }
 
 
   /**
-   * the summaries and the comments of the features
+   * The summaries and the comments of the features
    * @param set
    * @return
    */
   private String mainSection0(TreeSet<AbstractFeature> set)
+  {
+    return mainSection0(set, true);
+  }
+
+  /**
+   * The summaries and the comments of the features
+   * @param set
+   * @param printArgs whether or not arguments of the feature should be included in output
+   * @return
+   */
+  private String mainSection0(TreeSet<AbstractFeature> set, boolean printArgs)
   {
     return set
       .stream()
@@ -247,7 +278,7 @@ public class Html extends ANY
             // NYI rename fd-private?
             .replace("$0", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private' hidden" : "")
             .replace("$1",
-              summary(af))
+              summary(af, printArgs))
             .replace("$2", Util.commentOf(af))
             .replace("$3", redefines(af));
       })
@@ -506,24 +537,23 @@ public class Html extends ANY
     }
   }
 
-
   /**
    * arguments of this feature
    * @param f
    * @return
    */
-  private String arguments(AbstractFeature f)
+  private String arguments(AbstractFeature f, boolean printArgs)
   {
     if (f.arguments()
          .stream()
-         .filter(a -> a.isTypeParameter() || f.visibility().eraseTypeVisibility() == Visi.PUB)
+         .filter(a -> a.isTypeParameter() || (printArgs && f.visibility().eraseTypeVisibility() == Visi.PUB))
          .count() == 0)
       {
         return "";
       }
     return "(" + f.arguments()
       .stream()
-      .filter(a -> a.isTypeParameter() || f.visibility().eraseTypeVisibility() == Visi.PUB)
+      .filter(a -> a.isTypeParameter() || (printArgs && f.visibility().eraseTypeVisibility() == Visi.PUB))
       .map(a ->
         htmlEncodedBasename(a) + "&nbsp;"
         + (a.isTypeParameter() ? typeArgAsString(a): anchor(a.resultType())))
