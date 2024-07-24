@@ -578,7 +578,7 @@ public class DFA extends ANY
             ? constData(s, elementClazz, b).v0().value()
             : elements.join(DFA.this, constData(s, elementClazz, b).v0().value());
         }
-      SysArray sysArray = elCount == 0 ? newSysArray(SysArray.EMPTY_BYTE_ARRAY, elementClazz) :  newSysArray(elements);
+      SysArray sysArray = newSysArray(elements, elementClazz);
 
       sa0.setField(DFA.this, data, sysArray);
       sa0.setField(DFA.this, lengthField, NumericValue.create(DFA.this, _fuir.clazzResultClazz(lengthField), elCount));
@@ -1550,7 +1550,8 @@ public class DFA extends ANY
     put("fuzion.sys.fileio.mmap"         , cl ->
         {
           setArrayI32ElementsToAnything(cl, 3, "fuzion.sys.fileio.mmap");
-          return cl._dfa.newSysArray(NumericValue.create(cl._dfa, cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_u8))); // NYI: length wrong, get from arg
+          var c_u8 = cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_u8);
+          return cl._dfa.newSysArray(NumericValue.create(cl._dfa, c_u8), c_u8); // NYI: length wrong, get from arg
         });
     put("fuzion.sys.fileio.munmap"       , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.fileio.mapped_buffer_get", cl ->
@@ -1794,7 +1795,12 @@ public class DFA extends ANY
     put("f32.type.tanh"                  , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.type.tanh"                  , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
 
-    put("fuzion.sys.internal_array_init.alloc", cl -> cl._dfa.newSysArray(SysArray.EMPTY_BYTE_ARRAY, -1)); // NYI: get length from args
+    put("fuzion.sys.internal_array_init.alloc", cl ->
+        {
+          var oc = cl._dfa._fuir.clazzOuterClazz(cl._cc);
+          var ec = cl._dfa._fuir.clazzActualGeneric(oc, 0);
+          return cl._dfa.newSysArray(null, ec); // NYI: get length from args
+        });
     put("fuzion.sys.internal_array.setel", cl ->
         {
           var array = cl._args.get(0).value();
@@ -2400,39 +2406,53 @@ public class DFA extends ANY
 
   TreeMap<Long, Value> _joined = new TreeMap<>();
 
-  SysArray _emptySysArray = null;
+  /**
+   * For different element types, pre-allocated SysArrays for uninitialized
+   * arrays.
+   */
+  TreeMap<Integer, SysArray> _uninitializedSysArray = new TreeMap<>();
 
 
-
-  SysArray newSysArray(byte[] ba, int ec)
+  /**
+   * Create new SysArray instance of the given element values and element clazz.
+   *
+   * NYI: We currently do not distinguish SysArrays by the array instance that
+   * contains.  We problably should do this to make sure that, e.g.,
+   *
+   *   a3 := array 10 i->3
+   *   a4 := array 10 i->4
+   *
+   *   if (ar[3] != 3)
+   *     panic "strange"
+   *
+   * will never panic.
+   *
+   * @param ne the element values, null if not initialized
+   *
+   * @param ec the element clazz.
+   *
+   * @return a new or existing instance of SysArray.
+   */
+  SysArray newSysArray(Value ne, int ec)
   {
     SysArray res;
-
-    if (PRECONDITIONS) check
-      (ba == SysArray.EMPTY_BYTE_ARRAY || ec != -1);
-
-    if (ec == -1)
+    if (ne == null)
       {
-        res = _emptySysArray;
+        res = _uninitializedSysArray.get(ec);
         if (res == null)
           {
-            res = new SysArray(this, SysArray.EMPTY_BYTE_ARRAY, -1);
-            // _emptySysArray = res;
+            res = new SysArray(this, ne, ec);
+            _uninitializedSysArray.put(ec, res);
           }
       }
     else
       {
-        res = new SysArray(this, ba, ec);
-      }
-    return res;
-  }
-  SysArray newSysArray(Value ne)
-  {
-    var res = ne._sysArrayOf;
-    if (res == null)
-      {
-        res = new SysArray(this, ne);
-        ne._sysArrayOf = res;
+        res = ne._sysArrayOf;
+        if (res == null)
+          {
+            res = new SysArray(this, ne, ec);
+            ne._sysArrayOf = res;
+          }
       }
     return res;
   }
@@ -2541,8 +2561,8 @@ public class DFA extends ANY
     var data          = _fuir.clazz_fuzionSysArray_u8_data();
     var length        = _fuir.clazz_fuzionSysArray_u8_length();
     var sysArray      = _fuir.clazzResultClazz(internalArray);
-    var adata = utf8Bytes != null ? newSysArray(utf8Bytes, _fuir.clazz(FUIR.SpecialClazzes.c_u8))
-                                  : newSysArray(NumericValue.create(this, _fuir.clazz(FUIR.SpecialClazzes.c_u8)));
+    var c_u8          = _fuir.clazz(FUIR.SpecialClazzes.c_u8);
+    var adata         = newSysArray(NumericValue.create(this, c_u8), c_u8);
     var r = newInstance(cs, NO_SITE, context);
     var a = newInstance(sysArray, NO_SITE, context);
     a.setField(this,
