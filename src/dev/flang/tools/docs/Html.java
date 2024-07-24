@@ -239,6 +239,7 @@ public class Html extends ANY
   {
     return set
       .stream()
+      .sorted((af1, af2) -> af1.featureName().baseName().compareToIgnoreCase(af2.featureName().baseName()))
       .map(af -> {
         // NYI summary tag must not contain div
         return "<details id='" + htmlID(af)
