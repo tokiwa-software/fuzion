@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue3151.fz:24:1: error 1: Illegal target in '.env' expression.
+XYZ.type.env
+^^^^^^^^
+To solve this, adjust the target expression.
+
+one error.

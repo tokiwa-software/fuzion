@@ -61,6 +61,10 @@ public class DotType extends ExprWithPos
   public DotType(SourcePosition pos, AbstractType lhs)
   {
     super(pos);
+
+    if (CHECKS) check
+      (lhs != null);
+
     _lhs = lhs;
   }
 

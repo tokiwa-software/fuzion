@@ -2168,6 +2168,13 @@ public class AstErrors extends ANY
           "To solve this, either decrease the type visibility of this feature or increase the visibility of the type of the outer feature.");
   }
 
+  public static void noValidTargetInExpresssion(Expr expr, String type)
+  {
+    error(expr.pos(),
+      "Illegal target in " + skw(type) + " expression.",
+      "To solve this, adjust the target expression.");
+  }
+
 
 }
 
