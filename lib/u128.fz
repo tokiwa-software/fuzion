@@ -147,22 +147,22 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
 
   public fixed as_i8 i8
     pre
-      u128.this ≤ i8.max.as_u128
+      debug: u128.this ≤ i8.max.as_u128
     =>
       lo.as_i8
   public fixed as_i16 i16
     pre
-      u128.this ≤ i16.max.as_u128
+      debug: u128.this ≤ i16.max.as_u128
     =>
       lo.as_i16
   public fixed as_i32 i32
     pre
-      u128.this ≤ i32.max.as_u128
+      debug: u128.this ≤ i32.max.as_u128
     =>
       lo.as_i32
   public fixed as_i64 i64
     pre
-      u128.this ≤ i64.max.as_u128
+      debug: u128.this ≤ i64.max.as_u128
     post
       analysis: result.as_u128 = u128.this
     =>
@@ -174,21 +174,21 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
       lo.as_u8
   public fixed as_u16 u16
     pre
-      u128.this ≤ u16.max.as_u128
+      debug: u128.this ≤ u16.max.as_u128
     post
       analysis: result.as_u128 = u128.this
     =>
       lo.as_u16
   public fixed as_u32 u32
     pre
-      u128.this ≤ u32.max.as_u128
+      debug: u128.this ≤ u32.max.as_u128
     post
       analysis: result.as_u128 = u128.this
     =>
       lo.as_u32
   public fixed as_u64 u64
     pre
-      u128.this ≤ u64.max.as_u128
+      debug: u128.this ≤ u64.max.as_u128
     post
       analysis: result.as_u128 = u128.this
     =>

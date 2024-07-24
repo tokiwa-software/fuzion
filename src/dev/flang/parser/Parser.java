@@ -1289,6 +1289,9 @@ inherits    : inherit
    */
   boolean skipInherits()
   {
+    // NOTE: this uses skipCallList instead of skipPureCallList
+    // that the parser does not throw syntax errors when testing for isFeaturePrefix
+    // for `debug` in expressions like: `pre debug: u128.this ≤ i8.max.as_u128`
     return !skipColon() || skipCallList();
   }
 
@@ -1296,13 +1299,13 @@ inherits    : inherit
   /**
    * Parse inherit clause
    *
-inherit     : COLON callList
+inherit     : COLON pureCallList
             ;
    */
   List<AbstractCall> inherit()
   {
     matchOperator(":", "inherit");
-    return callList();
+    return pureCallList();
   }
 
 
@@ -1319,14 +1322,14 @@ inherit     : COLON callList
 
 
   /**
-   * Parse callList
+   * Parse pureCallList
    *
-callList    : call ( COMMA callList
-                   |
-                   )
-            ;
+pureCallList    : pureCall ( COMMA pureCallList
+                           |
+                           )
+                ;
    */
-  List<AbstractCall> callList()
+  List<AbstractCall> pureCallList()
   {
     var result = new List<AbstractCall>(pureCall(null));
     while (skipComma())
@@ -1338,14 +1341,26 @@ callList    : call ( COMMA callList
 
 
   /**
-   * Check if the current position is a callList.  If so, skip it.
+   * Parse callList
    *
-   * Since a call may contain code that is arbitrarily complex (actual args may
-   * contain lambdas that declare arbitrary inner features etc.), this will just
-   * parse the call list and, as a side effect, produce errors in case this
-   * parsing fails.  This should be OK since this is used in `skipInherits` if a
-   * colon was found.  If this turns out not to be an inherits clause, the colon
-   * is an infix operator followed by a call, that needs to be parsed anyway.
+callList    : call ( COMMA callList
+                   |
+                   )
+            ;
+   */
+  List<Expr> callList()
+  {
+    var result = new List<Expr>(call(null));
+    while (skipComma())
+      {
+        result.add(call(null));
+      }
+    return result;
+  }
+
+
+  /**
+   * Check if the current position is a callList. If so, skip it.
    *
    * @return true iff the next token(s) are a callList.
    */
