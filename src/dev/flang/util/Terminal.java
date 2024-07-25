@@ -58,8 +58,7 @@ public class Terminal extends ANY
    * does not work, this remains set if stdout/stderr is piped into a file.
    */
   public static final boolean ENABLED =
-    !"true".equals(System.getProperty("FUZION_DISABLE_ANSI_ESCAPES")) &&
-    !"true".equals(System.getenv     ("FUZION_DISABLE_ANSI_ESCAPES")) &&
+    FuzionOptions.boolPropertyOrEnv("FUZION_DISABLE_ANSI_ESCAPES") &&
     System.getenv().get("TERM") != null;
 
   public static final String RESET                     = ENABLED ? "\033[0m" : "";

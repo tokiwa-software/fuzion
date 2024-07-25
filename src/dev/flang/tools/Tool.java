@@ -35,6 +35,7 @@ import dev.flang.parser.Parser;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.Profiler;
 import dev.flang.util.Version;
@@ -105,7 +106,7 @@ public abstract class Tool extends ANY
   protected Tool(String name, String[] args)
   {
     _rawCmd = name;
-    _cmd = System.getProperty(FUZION_COMMAND_PROPERTY, name);
+    _cmd = FuzionOptions.propertyOrEnv(FUZION_COMMAND_PROPERTY, name);
     _args = args;
   }
 
