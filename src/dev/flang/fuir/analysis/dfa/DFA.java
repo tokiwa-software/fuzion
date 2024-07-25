@@ -786,6 +786,7 @@ public class DFA extends ANY
    * Calls created during DFA analysis.
    */
   TreeMap<Call, Call> _calls = new TreeMap<>();
+  TreeMap<Long, Call> _calls2 = new TreeMap<>();
 
 
   /**
@@ -2597,21 +2598,49 @@ public class DFA extends ANY
    */
   Call newCall(int cl, int site, Value tvalue, List<Val> args, Env env, Context context)
   {
-    var r = new Call(this, cl, site, tvalue, args, env, context);
-    var e = _calls.get(r);
+    var k1 = _fuir.clazzId2num(cl);
+    var k2 = tvalue._id;
+    var k3 = siteIndex(site);
+    var k4 = env == null ? -1 : env._id;
+    Call e, r;
+    if (k1 <= 0x3FFFF &&
+        k2 <= 0x3FFFF &&
+        k3 <= 0x3FFFF &&
+        k4 <= 0xFFFF)
+      {
+        var k = ((k1 * 0x40000L + k2) * 0x40000L + k3) * 0x1000L + k4;
+        if (CHECKS) check
+                      (((k >> (18*2+16)) & 0x3FFFF) == k1,
+                       ((k >> (18  +16)) & 0x3FFFF) == k2,
+                       ((k >> (     16)) & 0x3FFFF) == k3,
+                       ((k               & 0x0FFFF) == k4));
+        r = _calls2.get(k);
+        e = r;
+        if (r == null)
+          {
+            r = new Call(this, cl, site, tvalue, args, env, context);
+            _calls2.put(k, r);
+          }
+      }
+    else
+      {
+        r = new Call(this, cl, site, tvalue, args, env, context);
+        e = _calls.get(r);
+      }
     if (e == null)
       {
+        _calls.put(r, r);
         //        hot(r);
-        _calls.put(r,r);
         r._id = _callIds++;
         r._instance = newInstance(cl, site, r);
         e = r;
-        wasChanged(() -> "DFA.newCall to " + r);
+        var rf = r;
+        wasChanged(() -> "DFA.newCall to " + rf);
         analyzeNewCall(r);
       }
     else
       {
-        e.mergeWith(r);
+        e.mergeWith(args);
       }
     return e;
   }

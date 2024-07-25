@@ -265,12 +265,12 @@ public class Call extends ANY implements Comparable<Call>, Context
       }
     return r;
   }
-  void mergeWith(Call other)
+  void mergeWith(List<Val> nargs)
   {
     for (var i = 0; i < _args.size(); i++)
       {
-        var a0 =       _args.get(i);
-        var a1 = other._args.get(i);
+        var a0 = _args.get(i);
+        var a1 = nargs.get(i);
         _args.set(i, a0.joinVal(_dfa, a1));
       }
     //_target = _target.join(_dfa, other._target);
