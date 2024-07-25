@@ -1532,7 +1532,7 @@ callTail    : indexCall  callTail
             AbstractType t = result.asParsedType();
             if (t == null)
               {
-                AstErrors.noValidTargetInExpresssion(result, ".env");
+                AstErrors.noValidLHSInExpresssion(result, ".env");
                 t = Types.t_ERROR;
               }
             result = callTail(false, new Env    (sourceRange(target.pos()), t));
@@ -1542,7 +1542,7 @@ callTail    : indexCall  callTail
             AbstractType t = result.asParsedType();
             if (t == null)
               {
-                AstErrors.noValidTargetInExpresssion(result, ".type");
+                AstErrors.noValidLHSInExpresssion(result, ".type");
                 t = Types.t_ERROR;
               }
             result = callTail(false, new DotType(sourceRange(target.pos()), t));
