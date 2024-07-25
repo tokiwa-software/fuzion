@@ -271,7 +271,12 @@ public class Call extends ANY implements Comparable<Call>, Context
       {
         var a0 = _args.get(i);
         var a1 = nargs.get(i);
-        _args.set(i, a0.joinVal(_dfa, a1));
+        var an = a0.joinVal(_dfa, a1);
+        _args.set(i, an);
+        if (an.value() != a0.value())
+          {
+            _dfa.hot(this);
+          }
       }
     //_target = _target.join(_dfa, other._target);
   }
