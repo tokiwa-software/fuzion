@@ -28,8 +28,7 @@ package dev.flang.fuir.analysis.dfa;
 
 import java.nio.ByteBuffer;
 
-import java.util.TreeMap;
-
+import dev.flang.util.LongMap;
 
 /**
  * NumericValue represents a numeric value i8..i64, u8..u64, f32..f64.
@@ -92,13 +91,13 @@ public class NumericValue extends Value implements Comparable<NumericValue>
     var values = dfa._numericValues.getIfExists(clazz_id);
     if (values == null)
       {
-        values = new TreeMap<>();
+        values = new LongMap<>();
         dfa._numericValues.force(clazz_id, values);
       }
     NumericValue res;
     if (false) // NYI: check if this is faster or slower:
       {
-        res = values.computeIfAbsent(vLong, v->new NumericValue(dfa, clazz, v));
+        //        res = values.computeIfAbsent(vLong, v->new NumericValue(dfa, clazz, v));
       }
     else
       {

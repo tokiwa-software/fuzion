@@ -48,6 +48,8 @@ import dev.flang.util.Errors;
 import static dev.flang.util.FuzionConstants.EFFECT_ABORTABLE_NAME;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
+import dev.flang.util.IntMap;
+import dev.flang.util.LongMap;
 import dev.flang.util.Pair;
 
 
@@ -807,7 +809,7 @@ public class DFA extends ANY
    * Calls created during DFA analysis.
    */
   TreeMap<Call, Call> _calls = new TreeMap<>();
-  TreeMap<Long, Call> _calls2 = new TreeMap<>();
+  LongMap<Call> _calls2 = new LongMap<>();
 
 
   /**
@@ -842,7 +844,7 @@ public class DFA extends ANY
    * Envs created during DFA analysis.
    */
   TreeMap<Env, Env> _envs = new TreeMap<>();
-  TreeMap<Long, Env> _envs2 = new TreeMap<>();
+  LongMap<Env> _envs2 = new LongMap<>();
 
 
 
@@ -865,7 +867,7 @@ public class DFA extends ANY
    *
    * NYI: this might need to be thread-local and not global!
    */
-  public final TreeMap<Integer, Value> _defaultEffects = new TreeMap<>();
+  public final IntMap<Value> _defaultEffects = new IntMap<>();
 
 
   /**
@@ -873,7 +875,7 @@ public class DFA extends ANY
    *
    * NYI: this might need to be thread-local and not global!
    */
-  public final TreeMap<Integer, Call> _defaultEffectContexts = new TreeMap<>();
+  public final IntMap<Call> _defaultEffectContexts = new IntMap<>();
 
 
   /**
@@ -892,17 +894,17 @@ public class DFA extends ANY
   /**
    * Set of effects that are missing, excluding default effects.
    */
-  TreeSet<Integer> _missingEffects = new TreeSet<>();
+  //  IntMap<Integer> _missingEffects = new TreeSet<>();
 
 
   //TreeMap<Integer, TreeSet<Integer>> _requiredEffects = new TreeMap<>();
-  List<TreeSet<Integer>> _requiredEffects = new List<>();
+  // List<TreeSet<Integer>> _requiredEffects = new List<>();
 
 
   /**
    * List of numeric values to avoid duplicates, values that are known
    */
-  List<TreeMap<Long, NumericValue>> _numericValues = new List<>();
+  List<LongMap<NumericValue>> _numericValues = new List<>();
 
 
   /**
@@ -2216,7 +2218,7 @@ public class DFA extends ANY
             var clazzm = _instancesForSite.getIfExists(sci);
             if (clazzm == null)
               {
-                clazzm = new TreeMap<>();
+                clazzm = new LongMap<>();
                 _instancesForSite.force(sci, clazzm);
               }
             if (cc._id < 0) { System.out.println("id is "+cc._id+" for "+cc); throw new Error(); }
@@ -2273,7 +2275,7 @@ public class DFA extends ANY
   }
 
   // site -> (long) clazz << 32 | call id -> Instance
-  List<TreeMap<Long, Instance>> _instancesForSite = new List<>();
+  List<LongMap<Instance>> _instancesForSite = new List<>();
 
 
   /**
@@ -2351,7 +2353,7 @@ public class DFA extends ANY
   }
 
 
-  TreeMap<Long,TaggedValue> _tagged = new TreeMap<>();
+  LongMap<TaggedValue> _tagged = new LongMap<>();
 
 
 
@@ -2426,7 +2428,7 @@ public class DFA extends ANY
   }
   int _ok, _c;
 
-  TreeMap<Long, Value> _joined = new TreeMap<>();
+  LongMap<Value> _joined = new LongMap<>();
 
   /**
    * For different element types, pre-allocated SysArrays for uninitialized
