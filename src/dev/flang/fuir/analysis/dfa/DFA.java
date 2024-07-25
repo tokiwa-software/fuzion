@@ -2627,14 +2627,14 @@ public class DFA extends ANY
     if (k1 <= 0x3FFFF &&
         k2 <= 0x3FFFF &&
         k3 <= 0x3FFFF &&
-        k4 <= 0x0FFF)
+        k4 <= 0x03FF)
       {
-        var k = ((k1 * 0x40000L + k2) * 0x40000L + k3) * 0x1000L + k4;
+        var k = ((k1 * 0x40000L + k2) * 0x40000L + k3) * 0x400L + k4;
         if (CHECKS) check
-          (((k >> (18*2+12)) & 0x3FFFF) == k1,
-           ((k >> (18  +12)) & 0x3FFFF) == k2,
-           ((k >> (     12)) & 0x3FFFF) == k3,
-           ((k               & 0x00FFF) == k4));
+          (((k >> (18*2+10)) & 0x3FFFF) == k1,
+           ((k >> (18  +10)) & 0x3FFFF) == k2,
+           ((k >> (     10)) & 0x3FFFF) == k3,
+           ((k               & 0x003FF) == k4));
         r = _calls2.get(k);
         e = r;
         if (r == null)
