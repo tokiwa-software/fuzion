@@ -57,7 +57,7 @@ floating_point_numbers is
     chck ("{one / two}" = "0.5")                                           "{T.name}: 0.5 serializes to string"
     chck ("{one / three}".starts_with "0.3333333")                         "{T.name}: 1/3 serializes to string"
 
-    # comparision operators
+    # comparison operators
     chck (
       (zero = zero) &&
       (zero != one) &&
