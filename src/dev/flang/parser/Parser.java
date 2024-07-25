@@ -1544,11 +1544,23 @@ callTail    : indexCall  callTail
       {
         if (skip(Token.t_env))
           {
-            result = callTail(false, new Env    (sourceRange(target.pos()), result.asParsedType()));
+            AbstractType t = result.asParsedType();
+            if (t == null)
+              {
+                AstErrors.noValidLHSInExpresssion(result, ".env");
+                t = Types.t_ERROR;
+              }
+            result = callTail(false, new Env    (sourceRange(target.pos()), t));
           }
         else if (skip(Token.t_type))
           {
-            result = callTail(false, new DotType(sourceRange(target.pos()), result.asParsedType()));
+            AbstractType t = result.asParsedType();
+            if (t == null)
+              {
+                AstErrors.noValidLHSInExpresssion(result, ".type");
+                t = Types.t_ERROR;
+              }
+            result = callTail(false, new DotType(sourceRange(target.pos()), t));
           }
         else if (skip(Token.t_this))
           {
