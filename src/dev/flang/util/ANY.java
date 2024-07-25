@@ -812,10 +812,10 @@ public class ANY
     java.lang.Runtime.getRuntime().addShutdownHook
       (new Thread(() ->
        {
-         for (var e : _counts_.entrySet())
-           {
-             say("ALLOCS: "+e.getValue()+"\t: "+e.getKey());
-           }
+         _counts_.entrySet()
+           .stream()
+           .sorted((a,b)->Integer.compare(a.getValue(), b.getValue()))
+           .forEach(e -> say("ALLOCS: "+e.getValue()+"\t: "+e.getKey()));
        }
                   ));
   }
