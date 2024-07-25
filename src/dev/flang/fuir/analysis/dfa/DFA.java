@@ -2465,7 +2465,7 @@ public class DFA extends ANY
    *
    * @param value the value of the embedded field
    */
-  static boolean needsEmbedded = false;
+  static boolean needsEmbedded = !false;
   public Val newEmbeddedValue(int site,
                               Value value)
   {
