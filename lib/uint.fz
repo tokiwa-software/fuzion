@@ -242,7 +242,7 @@ is
   #
   fixed redef type.equality(a, b uint) bool =>
     a.data.count = b.data.count &&
-      ((a.data.zip b.data (c,d -> c = d)) ∀ (x->x))
+      ((a.data.zip b.data (c,d -> c = d)) ∀ id)
 
 
   # total order
