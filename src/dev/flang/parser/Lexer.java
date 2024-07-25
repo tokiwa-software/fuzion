@@ -43,6 +43,7 @@ import dev.flang.util.Pair;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.SourceRange;
+import dev.flang.util.StringHelpers;
 import dev.flang.util.UnicodeData;
 
 
@@ -500,7 +501,7 @@ public class Lexer extends SourceFile
       }
     if (!got.isEmpty())
       {
-        say("* Unicode " + Errors.plural(got.size(), "category") + " " +
+        say("* Unicode " + StringHelpers.plural(got.size(), "category") + " " +
                            got.stream().map(x -> "`" + x + "`").collect(Collectors.joining (", ")));
       }
   }
