@@ -715,8 +715,28 @@ public class DFA extends ANY
   /**
    * Maximum recursive analysis of newly created Calls, see `analyzeNewCall` for
    * details.
+   *
+   * This was optimized using
+   *
+   *   > time ./build/bin/fz build/tests/catch_postcondition/catch_postcondition.fz
+   *
+   * which gave
+   *
+   *  time/sec   MAX_RECURSION
+   *   9.434 for 160
+   *   9.33  for  80
+   *   9.38  for  50
+   *   9.601 for  44
+   *   9.135 for  40
+   *   9.71  for  36
+   *   9.4   for  30
+   *   9.299 for  25
+   *  10.693 for  20
+   *  14.68  for  10
+   *
+   * So it seems as if the results are good starting at 25.
    */
-  private static int MAX_NEW_CALL_RECURSION = 10;
+  private static int MAX_NEW_CALL_RECURSION = 40;
 
 
   /*-------------------------  static methods  --------------------------*/
@@ -2631,7 +2651,6 @@ public class DFA extends ANY
     if (e == null)
       {
         _calls.put(r, r);
-        //        hot(r);
         r._id = _callIds++;
         r._instance = newInstance(cl, site, r);
         e = r;
@@ -2685,12 +2704,8 @@ public class DFA extends ANY
         _newCallRecursiveAnalyzeCalls = cnt + 1;
         analyze(e);
         _newCallRecursiveAnalyzeCalls = cnt ;
-        hot(e);
       }
-    else
-      {
-        hot(e);
-      }
+    hot(e);
   }
 
 
