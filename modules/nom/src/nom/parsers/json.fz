@@ -160,7 +160,7 @@ public json =>
       separated_list1 (Sequence codepoint) json_value (Sequence codepoint) (tag ",") ()->parser_json_value_delimited
 
     tmp Parser (Sequence codepoint) (Sequence codepoint) (Sequence json_value) :=  delimited (tag "[") (alt [parser_comma_sep_value, parser_no_values]) (tag "]")
-    tmp.map json_value (x->x)
+    tmp.map json_value id
 
 
   # parser for json object
@@ -181,7 +181,7 @@ public json =>
   # parser for a json_value: true, false, [], {}, numbers, strings etc.
   parser_json_value =>
     alt (Sequence codepoint) (Sequence codepoint) json_value [
-      parser_string.map json_value (x->x),
+      parser_string.map json_value id,
       parser_number,
       parser_object,
       parser_array,
