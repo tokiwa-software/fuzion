@@ -28,8 +28,9 @@ package dev.flang.fuir.analysis.dfa;
 
 import static dev.flang.ir.IR.NO_SITE;
 
+import dev.flang.util.IntMap;
+
 import java.util.Comparator;
-import java.util.TreeMap;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -253,7 +254,7 @@ public class Value extends Val
   int _envId = -1;
 
 
-  TreeMap<Integer, EmbeddedValue> _embeddedAt = null;
+  IntMap<EmbeddedValue> _embeddedAt = null;
 
   SysArray _sysArrayOf = null;
 

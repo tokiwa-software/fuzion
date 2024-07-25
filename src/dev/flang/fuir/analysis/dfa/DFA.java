@@ -2434,7 +2434,7 @@ public class DFA extends ANY
    * For different element types, pre-allocated SysArrays for uninitialized
    * arrays.
    */
-  TreeMap<Integer, SysArray> _uninitializedSysArray = new TreeMap<>();
+  IntMap<SysArray> _uninitializedSysArray = new IntMap<>();
 
 
   /**
@@ -2508,7 +2508,7 @@ public class DFA extends ANY
         var e = value._embeddedAt;
         if (e == null)
           {
-            e = new TreeMap<>();
+            e = new IntMap<>();
             value._embeddedAt = e;
           }
         var i = site;
@@ -2554,7 +2554,7 @@ public class DFA extends ANY
         var e = value._embeddedAt;
         if (e == null)
           {
-            e = new TreeMap<>();
+            e = new IntMap<>();
             value._embeddedAt = e;
           }
         var i = FUIR.SITE_BASE - 1 - instance._id;
