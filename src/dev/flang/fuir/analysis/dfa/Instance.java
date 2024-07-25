@@ -275,7 +275,7 @@ public class Instance extends Value implements Comparable<Instance>
         var fv = v;
         _dfa.wasChanged(() -> "setField: new values " + fv + " (was " + oldv + ") for " + this);
       }
-    dfa._writtenFields.add(field);
+    dfa._writtenFields.set(field);
     _fields.put(field, v);
   }
 
@@ -288,7 +288,7 @@ public class Instance extends Value implements Comparable<Instance>
     if (PRECONDITIONS) require
       (_clazz == dfa._fuir.clazzAsValue(dfa._fuir.clazzOuterClazz(field)));
 
-    dfa._readFields.add(field);
+    dfa._readFields.set(field);
     var v = _fields.get(field);
     Val res = v;
     if (v == null)
