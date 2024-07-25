@@ -172,9 +172,8 @@ public class Html extends ANY
       + inherited(af)
       + (Util.Kind.classify(af) == Util.Kind.Other ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchor(af.resultType()) : "")
       + (Util.Kind.classify(af) == Util.Kind.Other ? "" : "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>")
-      // fills remaining space and set cursor pointer
-      // to indicate that this area expands revealing a summary
-      + "<div class='cursor-pointer flex-grow-1'></div>"
+      // fills remaining space
+      + "<div class='flex-grow-1'></div>"
       + "</div>"
       + source(af)
       + "</div>";
@@ -276,7 +275,7 @@ public class Html extends ANY
         return "<details id='" + htmlID(af)
           + "'$0><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
             // NYI rename fd-private?
-            .replace("$0", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private' hidden" : "")
+            .replace("$0", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
             .replace("$1",
               summary(af, printArgs))
             .replace("$2", Util.commentOf(af))
