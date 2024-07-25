@@ -2613,10 +2613,6 @@ public class DFA extends ANY
       {
         e.mergeWith(r);
       }
-    if (_currentCall != null)
-      {
-        e.calledBy(_currentCall);
-      }
     return e;
   }
 
