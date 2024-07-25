@@ -2622,19 +2622,19 @@ public class DFA extends ANY
     var k1 = _fuir.clazzId2num(cl);
     var k2 = tvalue._id;
     var k3 = siteIndex(site);
-    var k4 = env == null ? -1 : env._id;
+    var k4 = env == null ? 0 : env._id + 1;
     Call e, r;
     if (k1 <= 0x3FFFF &&
         k2 <= 0x3FFFF &&
         k3 <= 0x3FFFF &&
-        k4 <= 0xFFFF)
+        k4 <= 0x0FFF)
       {
         var k = ((k1 * 0x40000L + k2) * 0x40000L + k3) * 0x1000L + k4;
         if (CHECKS) check
-                      (((k >> (18*2+16)) & 0x3FFFF) == k1,
-                       ((k >> (18  +16)) & 0x3FFFF) == k2,
-                       ((k >> (     16)) & 0x3FFFF) == k3,
-                       ((k               & 0x0FFFF) == k4));
+          (((k >> (18*2+12)) & 0x3FFFF) == k1,
+           ((k >> (18  +12)) & 0x3FFFF) == k2,
+           ((k >> (     12)) & 0x3FFFF) == k3,
+           ((k               & 0x00FFF) == k4));
         r = _calls2.get(k);
         e = r;
         if (r == null)
