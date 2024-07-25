@@ -23,7 +23,7 @@ public postcondition_fault(msg String) => post_fault.cause msg
       post
 ------^^^^
         equals result-x x
-^^^^^^^^^^^^^^^^^^^^^^^^^
+--------^^^^^^^^^^^^^^^^^
 (catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:43:21:
     for v := T.one, double v
 --------------------^^^^^^
@@ -42,7 +42,7 @@ catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
       post
 ------^^^^
         equals result-x x
-^^^^^^^^^^^^^^^^^^^^^^^^^
+--------^^^^^^^^^^^^^^^^^
 (catch_postcondition.test#1 i16).loop: --CURDIR--/catch_postcondition.fz:43:21:
     for v := T.one, double v
 --------------------^^^^^^
@@ -78,11 +78,11 @@ fuzion.runtime.fault.run#3 (option String): <source position not available>:
       (F.new e->
 ------^^^^^^^^^^
           m <- e
-^^^^^^^^^^^^^^^^
+----------^^^^^^
           F.env.return
-^^^^^^^^^^^^^^^^^^^^^^
+----------^^^^^^^^^^^^
       ).run eff.handle.this.try (()->catch m.get.get)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ((eff.ref handle (tuple String String) fuzion.runtime.fault (option String)).lm.go#2 (option String)).λ.call: $MODULE/effect.fz:208:23:
     cf := Effect_Call f
 ----------------------^
@@ -95,24 +95,24 @@ fuzion.runtime.fault.run#3 (option String): <source position not available>:
   res => lm.go ()->
 ---------^^^^^^^^^^
       m := lm.env.new (option ERROR nil)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       (F.new e->
-^^^^^^^^^^^^^^^^
+------^^^^^^^^^^
           m <- e
-^^^^^^^^^^^^^^^^
+----------^^^^^^
           F.env.return
-^^^^^^^^^^^^^^^^^^^^^^
+----------^^^^^^^^^^^^
       ).run eff.handle.this.try (()->catch m.get.get)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (fuzion.type.runtime.type.fault.type.try (option String)).catch#1: $MODULE/eff/fallible.fz:74:7:
       (ref : eff.handle ERROR fallible.this T
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
          redef try => code_try.call
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------^^^^^^^^^^^^^^^^^^^^^^^^^^
          redef catch(e ERROR) => code_catch e
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       ).res
-^^^^^^^^^^^
+------^^^^^
 catch_postcondition.loop: --CURDIR--/catch_postcondition.fz:272:11:
          .catch s->
 ----------^^^^^
@@ -129,7 +129,7 @@ public postcondition_fault(msg String) => post_fault.cause msg
       post
 ------^^^^
         equals result-x x
-^^^^^^^^^^^^^^^^^^^^^^^^^
+--------^^^^^^^^^^^^^^^^^
 (catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:43:21:
     for v := T.one, double v
 --------------------^^^^^^
@@ -165,11 +165,11 @@ fuzion.runtime.fault.run#3 (option String): <source position not available>:
       (F.new e->
 ------^^^^^^^^^^
           m <- e
-^^^^^^^^^^^^^^^^
+----------^^^^^^
           F.env.return
-^^^^^^^^^^^^^^^^^^^^^^
+----------^^^^^^^^^^^^
       ).run eff.handle.this.try (()->catch m.get.get)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ((eff.ref handle (tuple String String) fuzion.runtime.fault (option String)).lm.go#2 (option String)).λ.call: $MODULE/effect.fz:208:23:
     cf := Effect_Call f
 ----------------------^
@@ -182,24 +182,24 @@ fuzion.runtime.fault.run#3 (option String): <source position not available>:
   res => lm.go ()->
 ---------^^^^^^^^^^
       m := lm.env.new (option ERROR nil)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       (F.new e->
-^^^^^^^^^^^^^^^^
+------^^^^^^^^^^
           m <- e
-^^^^^^^^^^^^^^^^
+----------^^^^^^
           F.env.return
-^^^^^^^^^^^^^^^^^^^^^^
+----------^^^^^^^^^^^^
       ).run eff.handle.this.try (()->catch m.get.get)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (fuzion.type.runtime.type.fault.type.try (option String)).catch#1: $MODULE/eff/fallible.fz:74:7:
       (ref : eff.handle ERROR fallible.this T
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
          redef try => code_try.call
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------^^^^^^^^^^^^^^^^^^^^^^^^^^
          redef catch(e ERROR) => code_catch e
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       ).res
-^^^^^^^^^^^
+------^^^^^
 catch_postcondition.loop: --CURDIR--/catch_postcondition.fz:272:11:
          .catch s->
 ----------^^^^^
@@ -238,11 +238,11 @@ fuzion.runtime.post_fault.run#3 (option String): <source position not available>
       (F.new e->
 ------^^^^^^^^^^
           m <- e
-^^^^^^^^^^^^^^^^
+----------^^^^^^
           F.env.return
-^^^^^^^^^^^^^^^^^^^^^^
+----------^^^^^^^^^^^^
       ).run eff.handle.this.try (()->catch m.get.get)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ((eff.ref handle String fuzion.runtime.post_fault (option String)).lm.go#2 (option String)).λ.call: $MODULE/effect.fz:208:23:
     cf := Effect_Call f
 ----------------------^
@@ -255,24 +255,24 @@ fuzion.runtime.post_fault.run#3 (option String): <source position not available>
   res => lm.go ()->
 ---------^^^^^^^^^^
       m := lm.env.new (option ERROR nil)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       (F.new e->
-^^^^^^^^^^^^^^^^
+------^^^^^^^^^^
           m <- e
-^^^^^^^^^^^^^^^^
+----------^^^^^^
           F.env.return
-^^^^^^^^^^^^^^^^^^^^^^
+----------^^^^^^^^^^^^
       ).run eff.handle.this.try (()->catch m.get.get)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1: $MODULE/eff/fallible.fz:74:7:
       (ref : eff.handle ERROR fallible.this T
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
          redef try => code_try.call
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------^^^^^^^^^^^^^^^^^^^^^^^^^^
          redef catch(e ERROR) => code_catch e
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       ).res
-^^^^^^^^^^^
+------^^^^^
 catch_postcondition.loop: --CURDIR--/catch_postcondition.fz:253:11:
          .catch s->
 ----------^^^^^
@@ -283,7 +283,7 @@ catch_postcondition.loop: --CURDIR--/catch_postcondition.fz:253:11:
       post
 ------^^^^
         equals result-x x
-^^^^^^^^^^^^^^^^^^^^^^^^^
+--------^^^^^^^^^^^^^^^^^
 (catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:43:21:
     for v := T.one, double v
 --------------------^^^^^^
@@ -319,11 +319,11 @@ fuzion.runtime.post_fault.run#3 (option String): <source position not available>
       (F.new e->
 ------^^^^^^^^^^
           m <- e
-^^^^^^^^^^^^^^^^
+----------^^^^^^
           F.env.return
-^^^^^^^^^^^^^^^^^^^^^^
+----------^^^^^^^^^^^^
       ).run eff.handle.this.try (()->catch m.get.get)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ((eff.ref handle String fuzion.runtime.post_fault (option String)).lm.go#2 (option String)).λ.call: $MODULE/effect.fz:208:23:
     cf := Effect_Call f
 ----------------------^
@@ -336,24 +336,24 @@ fuzion.runtime.post_fault.run#3 (option String): <source position not available>
   res => lm.go ()->
 ---------^^^^^^^^^^
       m := lm.env.new (option ERROR nil)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       (F.new e->
-^^^^^^^^^^^^^^^^
+------^^^^^^^^^^
           m <- e
-^^^^^^^^^^^^^^^^
+----------^^^^^^
           F.env.return
-^^^^^^^^^^^^^^^^^^^^^^
+----------^^^^^^^^^^^^
       ).run eff.handle.this.try (()->catch m.get.get)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1: $MODULE/eff/fallible.fz:74:7:
       (ref : eff.handle ERROR fallible.this T
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
          redef try => code_try.call
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------^^^^^^^^^^^^^^^^^^^^^^^^^^
          redef catch(e ERROR) => code_catch e
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       ).res
-^^^^^^^^^^^
+------^^^^^
 catch_postcondition.loop: --CURDIR--/catch_postcondition.fz:253:11:
          .catch s->
 ----------^^^^^
@@ -415,7 +415,7 @@ catch_postcondition.loop: --CURDIR--/catch_postcondition.fz:234:11:
       post
 ------^^^^
         equals result-x x
-^^^^^^^^^^^^^^^^^^^^^^^^^
+--------^^^^^^^^^^^^^^^^^
 (catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:43:21:
     for v := T.one, double v
 --------------------^^^^^^
@@ -627,7 +627,7 @@ fuzion.runtime.postcondition_fault#1: --CURDIR--/catch_postcondition.fz:157:3:
       post
 ------^^^^
         equals result-x x
-^^^^^^^^^^^^^^^^^^^^^^^^^
+--------^^^^^^^^^^^^^^^^^
 (catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:43:21:
     for v := T.one, double v
 --------------------^^^^^^
@@ -728,9 +728,9 @@ fuzion.runtime.post_fault.precall abort: $MODULE/effect.fz:66:3:
   pre
 --^^^
     safety: effect.is_installed effect.this
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     safety: abortable
-^^^^^^^^^^^^^^^^^^^^^
+----^^^^^^^^^^^^^^^^^
 fuzion.runtime.post_fault.return: $MODULE/effect.fz:112:5:
     abort
 ----^^^^^
@@ -738,7 +738,7 @@ fuzion.runtime.post_fault.precall return: $MODULE/effect.fz:109:3:
   pre
 --^^^
     safety: abortable
-^^^^^^^^^^^^^^^^^^^^^
+----^^^^^^^^^^^^^^^^^
 catch_postcondition.z.λ.call.λ.call#1: --CURDIR--/catch_postcondition.fz:107:27:
             rt.post_fault.return
 --------------------------^^^^^^
@@ -755,7 +755,7 @@ public postcondition_fault(msg String) => post_fault.cause msg
       post
 ------^^^^
         equals result-x x
-^^^^^^^^^^^^^^^^^^^^^^^^^
+--------^^^^^^^^^^^^^^^^^
 (catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:43:21:
     for v := T.one, double v
 --------------------^^^^^^
@@ -808,7 +808,7 @@ fuzion.runtime.postcondition_fault#1: --CURDIR--/catch_postcondition.fz:149:7:
       post
 ------^^^^
         equals result-x x
-^^^^^^^^^^^^^^^^^^^^^^^^^
+--------^^^^^^^^^^^^^^^^^
 (catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:43:21:
     for v := T.one, double v
 --------------------^^^^^^
@@ -858,7 +858,7 @@ fuzion.runtime.postcondition_fault#1: --CURDIR--/catch_postcondition.fz:127:8:
       post
 ------^^^^
         equals result-x x
-^^^^^^^^^^^^^^^^^^^^^^^^^
+--------^^^^^^^^^^^^^^^^^
 (catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:43:21:
     for v := T.one, double v
 --------------------^^^^^^
@@ -917,7 +917,7 @@ public postcondition_fault(msg String) => post_fault.cause msg
       post
 ------^^^^
         equals result-x x
-^^^^^^^^^^^^^^^^^^^^^^^^^
+--------^^^^^^^^^^^^^^^^^
 (catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:43:21:
     for v := T.one, double v
 --------------------^^^^^^
