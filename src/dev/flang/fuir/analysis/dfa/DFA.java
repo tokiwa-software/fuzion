@@ -915,10 +915,18 @@ public class DFA extends ANY
 
 
   /**
-   * Envs created during DFA analysis.
+   * Envs created during DFA analysis.  The envs are compared insensitive to the
+   * order in which they are installed.
    */
   TreeMap<Env, Env> _envs = new TreeMap<>();
-  LongMap<Env> _envs2 = new LongMap<>();
+
+
+  /**
+   * Quick lookup for envs using a long key. This may contains several keys for
+   * the same Env that differ only in the order the effects are installed.
+   */
+  LongMap<Env> _envsQuick = new LongMap<>();
+
 
   /**
    * Set of effect values used in Env-ironmnents. These values have their own
@@ -2840,7 +2848,7 @@ public class DFA extends ANY
       }
     var cid = _fuir.clazzId2num(ecl);
     if (CHECKS) check
-      (// eid>=0,    NYI, not for all values yet
+      (eid >= 0,
        vid >= 0,
        cid >= 0,
        eid <= 0x1fFFFF,
@@ -2851,18 +2859,17 @@ public class DFA extends ANY
         cid >= 0 &&
         eid <= 0x1fFFFF &&
         vid <= 0x3fFFFF &&
-        cid <= 0x1fFFFF &&
-        !false)
+        cid <= 0x1fFFFF)
       {
         var k =
           (long) eid << (26+25) |
           (long) vid << (   25) |
           (long) cid;
-        e = _envs2.get(k);
+        e = _envsQuick.get(k);
         if (e == null)
           {
             e = newEnv2(env, ecl, ev);
-            _envs2.put(k, e);
+            _envsQuick.put(k, e);
           }
       }
     else
@@ -2871,19 +2878,29 @@ public class DFA extends ANY
       }
     return e;
   }
+
+
+  /**
+   * Helper for newEnv without quick caching.
+   *
+   * @param env the previous environment.
+   *
+   * @param ecl the effect types
+   *
+   * @param ev the effect value
+   *
+   * @return new or existing Env instance created from env by adding ecl/ev.
+   */
   Env newEnv2(Env env, int ecl, Value ev)
   {
-    Env e;
-      { // NYI: remove if all env are stored in _envs2:
-        var newEnv = new Env(this, env, ecl, ev);
-        e = _envs.get(newEnv);
-        if (e == null)
-          {
-            _envs.put(newEnv, newEnv);
-            e = newEnv;
-            e._id = _envs.size();
-            wasChanged(() -> "DFA.newEnv for " + newEnv);
-          }
+    var newEnv = new Env(this, env, ecl, ev);
+    var e = _envs.get(newEnv);
+    if (e == null)
+      {
+        _envs.put(newEnv, newEnv);
+        e = newEnv;
+        e._id = _envs.size()+1;
+        wasChanged(() -> "DFA.newEnv for " + newEnv);
       }
     return e;
   }
