@@ -53,18 +53,39 @@ public class IntMap<T>
   /*-----------------------------  methods  -----------------------------*/
 
 
+  /**
+   * @see java.util.Map.get
+   */
   public T get(int i)
   {
     return _m.get(Integer.valueOf(i));
   }
 
 
+  /**
+   * @see java.util.Map.getOrDefault
+   */
+  public T getOrDefault(int i, T def)
+  {
+    return _m.getOrDefault(Integer.valueOf(i), def);
+  }
+
+
+  /**
+   * @see java.util.Map.put
+   */
   public T put(int i, T v)
   {
     return _m.put(Integer.valueOf(i), v);
   }
 
 
+  /**
+   * All keys in this map.  This is sorted by the integer values to ensure
+   * repeatable behaviour when iterating.
+   *
+   * @see java.util.Map.keySet
+   */
   public Set<Integer> keySet()
   {
     var ts = new TreeSet<Integer>();

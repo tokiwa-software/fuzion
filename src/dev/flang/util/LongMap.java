@@ -27,7 +27,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.util;
 
 import java.util.HashMap;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 
 /**
@@ -51,15 +53,44 @@ public class LongMap<T>
   /*-----------------------------  methods  -----------------------------*/
 
 
-  public T get(long l)
+  /**
+   * @see java.util.Map.get
+   */
+  public T get(long i)
   {
-    return _m.get(Long.valueOf(l));
+    return _m.get(Long.valueOf(i));
   }
 
 
-  public T put(long l, T v)
+  /**
+   * @see java.util.Map.getOrDefault
+   */
+  public T getOrDefault(long i, T def)
   {
-    return _m.put(Long.valueOf(l), v);
+    return _m.getOrDefault(Long.valueOf(i), def);
+  }
+
+
+  /**
+   * @see java.util.Map.put
+   */
+  public T put(long i, T v)
+  {
+    return _m.put(Long.valueOf(i), v);
+  }
+
+
+  /**
+   * All keys in this map.  This is sorted by the long values to ensure
+   * repeatable behaviour when iterating.
+   *
+   * @see java.util.Map.keySet
+   */
+  public Set<Long> keySet()
+  {
+    var ts = new TreeSet<Long>();
+    ts.addAll(_m.keySet());
+    return ts;
   }
 
 
