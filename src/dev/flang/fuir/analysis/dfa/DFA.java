@@ -270,12 +270,12 @@ public class DFA extends ANY
         {
           for(var t : tvalues._componentsArray)
             {
-              res = accessSingleTarget(s, t, args, res);
+              res = accessSingleTarget(s, t, args, res, tvalue);
             }
         }
       else
         {
-          res = accessSingleTarget(s, tvalue, args, res);
+          res = accessSingleTarget(s, tvalue.value(), args, res, tvalue);
         }
       if (res != null &&
           tvalue instanceof EmbeddedValue &&
@@ -297,7 +297,7 @@ public class DFA extends ANY
      *
      * @param s site of access, must be ExprKind.Assign or ExprKind.Call
      *
-     * @param t the target of this call, Value.UNIT if none.  Must not be ValueSet.
+     * @param tvalue the target of this call, Value.UNIT if none.  Must not be ValueSet.
      *
      * @param args the arguments of this call, or, in case of an assignment, a
      * list of one element containing value to be assigned.
@@ -305,15 +305,19 @@ public class DFA extends ANY
      * @param res in case an access is performed for multiple targets, this is
      * the result of the already processed targets, null otherwise.
      *
+     * @param original_tvalue the original target of this call. This must be
+     * unchanged, it is used for escape analysis to figure out if the call
+     * causes an instance this is embedded in to escape.
+     *
      * @return result value of the access joined with res in case res != null.
      */
-    Val accessSingleTarget(int s, Val t, List<Val> args, Val res)
+    Val accessSingleTarget(int s, Value tvalue, List<Val> args, Val res, Val original_tvalue)
     {
       if (PRECONDITIONS) require
-        (t != Value.UNIT || AbstractInterpreter.clazzHasUnitValue(_fuir, _fuir.accessTargetClazz(s)),
+        (tvalue != Value.UNIT || AbstractInterpreter.clazzHasUnitValue(_fuir, _fuir.accessTargetClazz(s)),
 
-         !(t instanceof ValueSet));
-      var t_cl = t == Value.UNIT ? _fuir.accessTargetClazz(s) : t.value()._clazz;
+         !(tvalue instanceof ValueSet));
+      var t_cl = tvalue == Value.UNIT ? _fuir.accessTargetClazz(s) : tvalue._clazz;
       var found = false;
       var ccs = _fuir.accessedClazzes(s);
       for (var cci = 0; cci < ccs.length; cci += 2)
@@ -321,12 +325,12 @@ public class DFA extends ANY
           var tt = ccs[cci  ];
           var cc = ccs[cci+1];
           if (CHECKS) check
-            (t != Value.UNIT || AbstractInterpreter.clazzHasUnitValue(_fuir, tt));
+            (tvalue != Value.UNIT || AbstractInterpreter.clazzHasUnitValue(_fuir, tt));
           if (t_cl == tt ||
-              t != Value.UNDEFINED && _fuir.clazzAsValue(t_cl) == tt)
+              tvalue != Value.UNDEFINED && _fuir.clazzAsValue(tvalue._clazz) == tt)
             {
               found = true;
-              var r = access0(s, t, args, cc, t);
+              var r = access0(s, tvalue, args, cc, original_tvalue);
               if (r != null)
                 {
                   res = res == null ? r : res.joinVal(DFA.this, r);
