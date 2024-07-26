@@ -839,7 +839,7 @@ public class DFA extends ANY
    * be analyzed at the end of the current iteration since they most likely add
    * new information.
    */
-  TreeSet<Call> _hotCalls = new TreeSet<>();
+  List<Call> _hotCalls = new List<>();
 
 
   /**
@@ -1280,32 +1280,31 @@ public class DFA extends ANY
   void iteration()
   {
     var vs = _calls.values();
-    do
+    var s = vs.toArray(new Call[vs.size()]);
+    for (var c : s)
       {
-        var s = vs.toArray(new Call[vs.size()]);
-        _hotCalls = new TreeSet<>();
+        c._scheduledForAnalysis = true;
+      }
+    while (s.length > 0)
+      {
         for (var c : s)
           {
-            c._scheduledForAnalysis = true;
-          }
-        for (var c : s)
-          {
+            c._scheduledForAnalysis = false;
             if (_reportResults && _options.verbose(4))
               {
                 say(("----------------"+c+
-                                    "----------------------------------------------------------------------------------------------------")
-                                   .substring(0,100));
+                     "----------------------------------------------------------------------------------------------------")
+                    .substring(0,100));
 
                 var sb = new StringBuilder();
                 var ignore = c.showWhy(sb);
                 say(sb);
               }
             analyze(c);
-            c._scheduledForAnalysis = false;
           }
-        vs = _hotCalls;
+        s = _hotCalls.toArray(new Call[_hotCalls.size()]);
+        _hotCalls = new List<>();
       }
-    while (!vs.isEmpty());
   }
 
 
@@ -1317,6 +1316,7 @@ public class DFA extends ANY
         c._scheduledForAnalysis = true;
       }
   }
+
 
   /**
    * Analyze code for given call
@@ -2047,7 +2047,7 @@ public class DFA extends ANY
       {
         var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
         var jref = cl._dfa._fuir.lookupJavaRef(rc);
-        var jobj = cl._dfa.newInstance(rc, NO_SITE, null);
+        var jobj = cl._dfa.newInstance(rc, NO_SITE, cl._context);
         jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
         return jobj;
       });
@@ -2074,14 +2074,14 @@ public class DFA extends ANY
             }
             default -> {
               var jref = cl._dfa._fuir.lookupJavaRef(oc);
-              var jobj = cl._dfa.newInstance(oc, NO_SITE, null);
+              var jobj = cl._dfa.newInstance(oc, NO_SITE, cl._context);
               jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
               yield jobj;
             }
           };
         var okay = cl._dfa.newTaggedValue(rc, res, 0);
         var error_cl = cl._dfa._fuir.clazzChoice(rc, 1);
-        var error = cl._dfa.newInstance(error_cl, NO_SITE, null);
+        var error = cl._dfa.newInstance(error_cl, NO_SITE, cl._context);
         var msg = cl._dfa._fuir.lookup_error_msg(error_cl);
         error.setField(cl._dfa, msg, cl._dfa.newConstString(null, cl));
         var err = cl._dfa.newTaggedValue(rc, error, 1);
@@ -2095,7 +2095,7 @@ public class DFA extends ANY
         case c_unit -> Value.UNIT;
         default -> {
           var jref = cl._dfa._fuir.lookupJavaRef(rc);
-          var jobj = cl._dfa.newInstance(rc, NO_SITE, null);
+          var jobj = cl._dfa.newInstance(rc, NO_SITE, cl._context);
           jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
           yield jobj;
         }
@@ -2148,11 +2148,11 @@ public class DFA extends ANY
       {
         var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
         var jref = cl._dfa._fuir.lookupJavaRef(rc);
-        var jobj = cl._dfa.newInstance(rc, NO_SITE, null);
+        var jobj = cl._dfa.newInstance(rc, NO_SITE, cl._context);
         jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
         return jobj;
       });
-    put("fuzion.java.u16_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, null) );
+    put("fuzion.java.u16_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
   }
 
 
