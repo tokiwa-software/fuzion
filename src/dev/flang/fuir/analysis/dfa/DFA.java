@@ -275,7 +275,7 @@ public class DFA extends ANY
         }
       else
         {
-          res = accessSingleTarget(s, tv, args, res);
+          res = accessSingleTarget(s, tvalue, args, res);
         }
       if (res != null &&
           tvalue instanceof EmbeddedValue &&
@@ -307,13 +307,13 @@ public class DFA extends ANY
      *
      * @return result value of the access joined with res in case res != null.
      */
-    Val accessSingleTarget(int s, Value t, List<Val> args, Val res)
+    Val accessSingleTarget(int s, Val t, List<Val> args, Val res)
     {
       if (PRECONDITIONS) require
         (t != Value.UNIT || AbstractInterpreter.clazzHasUnitValue(_fuir, _fuir.accessTargetClazz(s)),
 
          !(t instanceof ValueSet));
-      var t_cl = t == Value.UNIT ? _fuir.accessTargetClazz(s) : t._clazz;
+      var t_cl = t == Value.UNIT ? _fuir.accessTargetClazz(s) : t.value()._clazz;
       var found = false;
       var ccs = _fuir.accessedClazzes(s);
       for (var cci = 0; cci < ccs.length; cci += 2)
@@ -323,7 +323,7 @@ public class DFA extends ANY
           if (CHECKS) check
             (t != Value.UNIT || AbstractInterpreter.clazzHasUnitValue(_fuir, tt));
           if (t_cl == tt ||
-              t != Value.UNDEFINED && _fuir.clazzAsValue(t._clazz) == tt)
+              t != Value.UNDEFINED && _fuir.clazzAsValue(t_cl) == tt)
             {
               found = true;
               var r = access0(s, t, args, cc, t);
@@ -349,7 +349,7 @@ public class DFA extends ANY
     /**
      * Helper routine for access (above) to perform a static access (cal or write).
      */
-    Val access0(int s, Value tvalue, List<Val> args, int cc, Val original_tvalue /* NYI: ugly */)
+    Val access0(int s, Val tvalue, List<Val> args, int cc, Val original_tvalue /* NYI: ugly */)
     {
       var cs = DFA.this.site(s);
       cs._accesses.add(cc);
@@ -369,7 +369,7 @@ public class DFA extends ANY
                                      tvalue + ".set("+_fuir.clazzAsString(cc)+") := " + args.get(0));
                 }
               var v = args.get(0);
-              tvalue.setField(DFA.this, cc, v.value());
+              tvalue.value().setField(DFA.this, cc, v.value());
               tempEscapes(s, v, cc);
             }
           r = Value.UNIT;
