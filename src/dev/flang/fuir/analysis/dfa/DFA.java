@@ -870,7 +870,13 @@ public class DFA extends ANY
    * Calls created during DFA analysis.
    */
   TreeMap<Call, Call> _calls = new TreeMap<>();
-  LongMap<Call> _calls2 = new LongMap<>();
+
+
+  /**
+   * For those Calls whose key can be mapped to a long value, this gives a quick
+   * way to lookup that key.
+   */
+  LongMap<Call> _callsQuick = new LongMap<>();
 
 
   /**
@@ -914,6 +920,12 @@ public class DFA extends ANY
   TreeMap<Env, Env> _envs = new TreeMap<>();
   LongMap<Env> _envs2 = new LongMap<>();
 
+  /**
+   * Set of effect values used in Env-ironmnents. These values have their own
+   * id, Value._envId, and they are compared differently using
+   * Value.ENV_COMPARATOR to avoid env value explosion.
+   */
+  TreeMap<Value, Value> _envValues = new TreeMap<>(Value.ENV_COMPARATOR);
 
 
   /**
@@ -2687,12 +2699,12 @@ public class DFA extends ANY
            ((k >> (18  +10)) & 0x3FFFF) == k2,
            ((k >> (     10)) & 0x3FFFF) == k3,
            ((k               & 0x003FF) == k4));
-        r = _calls2.get(k);
+        r = _callsQuick.get(k);
         e = r;
         if (r == null)
           {
             r = new Call(this, cl, site, tvalue, args, env, context);
-            _calls2.put(k, r);
+            _callsQuick.put(k, r);
           }
       }
     else
@@ -2875,9 +2887,6 @@ public class DFA extends ANY
       }
     return e;
   }
-
-  TreeMap<Value, Value> _envValues = new TreeMap<>(Value.ENV_COMPARATOR);
-
 
 }
 
