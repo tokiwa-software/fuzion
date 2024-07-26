@@ -93,7 +93,7 @@ public class ResolvedNormalType extends ResolvedType
 
   /**
    * Cached result of isRef(). Even though this function looks harmless, it is
-   * suprisinging performance critical.
+   * surprisingly performance critical.
    */
   Boolean _isRef;
 
