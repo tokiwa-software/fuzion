@@ -264,25 +264,23 @@ public class DFA extends ANY
      */
     Val access(int s, Val tvalue, List<Val> args)
     {
-      var tc = _fuir.accessTargetClazz(s);
-      var cc0 = _fuir.accessedClazz  (s);
-      var ccs = _fuir.accessedClazzes(s);
       Val res = null;
-      if (tvalue.value() instanceof ValueSet tvalues)
+      var tv = tvalue.value();
+      if (tv instanceof ValueSet tvalues)
         {
           for(var t : tvalues._componentsArray)
             {
-              res = access(t,          s, tvalue, tc, cc0, ccs, args, res);
+              res = accessSingleTarget(s, t, args, res);
             }
         }
       else
         {
-          res = access(tvalue.value(), s, tvalue, tc, cc0, ccs, args, res);
+          res = accessSingleTarget(s, tv, args, res);
         }
       if (res != null &&
           tvalue instanceof EmbeddedValue &&
-          !_fuir.clazzIsRef(tc) &&
-          _fuir.clazzKind(cc0) == FUIR.FeatureKind.Field)
+          !_fuir.clazzIsRef(_fuir.accessTargetClazz(s)) &&
+          _fuir.clazzKind(_fuir.accessedClazz(s)) == FUIR.FeatureKind.Field)
         { // an embedded field in a value instance, so keep tvalue's
           // embedding. For chained embedded fields in value instances like
           // `t.f.g.h`, the embedding remains `t` for `f`, `g` and `h`.
@@ -291,46 +289,67 @@ public class DFA extends ANY
         }
       return res;
     }
-    Val access(Value t, int s, Val tvalue, int tc, int cc0, int[] ccs, List<Val> args, Val res)
+
+
+    /**
+     * Analyze an access (call or write) of a feature for a target value that is
+     * not a ValueSet.
+     *
+     * @param s site of access, must be ExprKind.Assign or ExprKind.Call
+     *
+     * @param t the target of this call, Value.UNIT if none.  Must not be ValueSet.
+     *
+     * @param args the arguments of this call, or, in case of an assignment, a
+     * list of one element containing value to be assigned.
+     *
+     * @param res in case an access is performed for multiple targets, this is
+     * the result of the already processed targets, null otherwise.
+     *
+     * @return result value of the access joined with res in case res != null.
+     */
+    Val accessSingleTarget(int s, Value t, List<Val> args, Val res)
     {
-      if (CHECKS) check
-       (t != Value.UNIT || AbstractInterpreter.clazzHasUnitValue(_fuir, tc));
-      var t_cl = t == Value.UNIT ? tc : t._clazz;
-          var found = false;
-          for (var cci = 0; cci < ccs.length; cci += 2)
+      if (PRECONDITIONS) require
+        (t != Value.UNIT || AbstractInterpreter.clazzHasUnitValue(_fuir, _fuir.accessTargetClazz(s)),
+
+         !(t instanceof ValueSet));
+      var t_cl = t == Value.UNIT ? _fuir.accessTargetClazz(s) : t._clazz;
+      var found = false;
+      var ccs = _fuir.accessedClazzes(s);
+      for (var cci = 0; cci < ccs.length; cci += 2)
+        {
+          var tt = ccs[cci  ];
+          var cc = ccs[cci+1];
+          if (CHECKS) check
+            (t != Value.UNIT || AbstractInterpreter.clazzHasUnitValue(_fuir, tt));
+          if (t_cl == tt ||
+              t != Value.UNDEFINED && _fuir.clazzAsValue(t._clazz) == tt)
             {
-              var tt = ccs[cci  ];
-              var cc = ccs[cci+1];
-              if (CHECKS) check
-                (t != Value.UNIT || AbstractInterpreter.clazzHasUnitValue(_fuir, tt));
-              if (t_cl == tt ||
-                  t != Value.UNDEFINED && _fuir.clazzAsValue(t._clazz) == tt)
+              found = true;
+              var r = access0(s, t, args, cc, t);
+              if (r != null)
                 {
-                  found = true;
-                  var r = access0(s, t, args, cc, tvalue);
-                  if (r != null)
-                    {
-                      res = res == null ? r : res.joinVal(DFA.this, r);
-                    }
+                  res = res == null ? r : res.joinVal(DFA.this, r);
                 }
             }
-          if (!found)
-            {
-              var instantiatedAt = _calls.keySet().stream()
-                .filter(c -> c._cc == t_cl && c._site != NO_SITE)
-                .map(c -> c._site)
-                .findAny()
-                .orElse(NO_SITE);
-              _fuir.recordAbstractMissing(t_cl, cc0, instantiatedAt);
-            }
-          return res;
+        }
+      if (!found)
+        {
+          var instantiatedAt = _calls.keySet().stream()
+            .filter(c -> c._cc == t_cl && c._site != NO_SITE)
+            .map(c -> c._site)
+            .findAny()
+            .orElse(NO_SITE);
+          _fuir.recordAbstractMissing(t_cl, _fuir.accessedClazz(s), instantiatedAt);
+        }
+      return res;
     }
 
 
     /**
      * Helper routine for access (above) to perform a static access (cal or write).
      */
-    Val access0(int s, Val tvalue, List<Val> args, int cc, Val original_tvalue /* NYI: ugly */)
+    Val access0(int s, Value tvalue, List<Val> args, int cc, Val original_tvalue /* NYI: ugly */)
     {
       var cs = DFA.this.site(s);
       cs._accesses.add(cc);
@@ -350,7 +369,7 @@ public class DFA extends ANY
                                      tvalue + ".set("+_fuir.clazzAsString(cc)+") := " + args.get(0));
                 }
               var v = args.get(0);
-              tvalue.value().setField(DFA.this, cc, v.value());
+              tvalue.setField(DFA.this, cc, v.value());
               tempEscapes(s, v, cc);
             }
           r = Value.UNIT;
