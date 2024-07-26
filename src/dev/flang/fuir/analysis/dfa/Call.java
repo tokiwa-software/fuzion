@@ -132,12 +132,12 @@ public class Call extends ANY implements Comparable<Call>, Context
   boolean _escapes = false;
 
 
+  /**
+   * Is this call scheduled to be analysed during the current DFA iteration?
+   * This is used to re-schedule hot calls (those that are likely to change the
+   * DFA state) if are not already scheduled to be analyzed.
+   */
   boolean _scheduledForAnalysis = false;
-
-
-  //  java.util.TreeSet<Integer> _requiredEffects = null;
-
-  int _calledByAbortableForEffect = -1;
 
 
   /*---------------------------  constructors  ---------------------------*/
@@ -164,11 +164,6 @@ public class Call extends ANY implements Comparable<Call>, Context
   {
     _dfa = dfa;
     _cc = cc;
-    if (false &&
-        dfa._fuir.clazzIsUnitType(cc))
-      {
-        site = IR.NO_SITE;
-      }
     _site = site;
     _target = target;
     _args = args;
@@ -204,86 +199,53 @@ public class Call extends ANY implements Comparable<Call>, Context
   }
 
 
-  boolean compareSite(Call other)
-  {
-    return
-      (_args.size() != 0
-       // || _dfa._fuir.clazzResultClazz(_cc) == _cc                                                             // works, total 33247 calls, 15.02
-       // || !_dfa._fuir.clazzIsUnitType(_dfa._fuir.clazzResultClazz(_cc)) && !_dfa._fuir.clazzIsUnitType(_cc)   // works, total 27907 calls
-       // || !_dfa._fuir.clazzIsUnitType(_dfa._fuir.clazzResultClazz(_cc))                                       // works, total 28024 calls
-       // || !_dfa._fuir.clazzIsUnitType(_cc)                                                                    // works, total 27880 calls 8.92s
-       || true                                                                                                // works, total 28712 calls, 8.98s
-       ) &&
-      _site != other._site;
-  }
-
   /**
    * Compare this to another Call.
    */
   public int compareTo(Call other)
   {
-    var r =
-      _cc   <   other._cc  ? -1 :
-      _cc   >   other._cc  ? +1 :
+    return
+      _cc         != other._cc         ? Integer.compare(_cc        , other._cc        ) :
       _target._id != other._target._id ? Integer.compare(_target._id, other._target._id) :
-      //      _dfa._fuir.clazzIsUnitType(_cc) ? 0 :
-      //      (_dfa._fuir.clazzIsUnitType(_cc) || (_target == Value.UNIT && _dfa._fuir.clazzArgCount(_cc) == 0)) && _requiredEffects == null ? 0 :
-      compareSite(other) ? Integer.compare(_site, other._site) : 0;
-      //      Value.compare(_target, other._target);
-    // Integer.compare(_target._id, other._target._id);
-    if (false)
-    for (var i = 0; r == 0 && i < _args.size(); i++)
-      {
-        r = Value.compare(      _args.get(i).value(),
-                          other._args.get(i).value());
-      }
-    if (r == 0)
-      {
-        r = Env.compare(env(), other.env());
-      }
-    return r;
+      _site       != other._site       ? Integer.compare(_site      , other._site      ) :
+      Env.compare(env(), other.env());
   }
-  public String compareToWhy(Call other)
-  {
-    var r =
-      _cc   <   other._cc  ? "cc-1" :
-      _cc   >   other._cc  ? "cc+1" :
-      _dfa._fuir.clazzIsUnitType(_cc) ? "unit" :
-      (_dfa._fuir.clazzIsUnitType(_cc) || (_target == Value.UNIT && _dfa._fuir.clazzArgCount(_cc) == 0)) ?  "unit" :
-      _site <   other._site? "ste-1" :
-      _site >   other._site? "ste+1" : null;
-    if (r == null && Value.compare(_target, other._target) != 0)
-      {
-        r = "Value.compare";
-      }
 
-    for (var i = 0; r == null && i < _args.size(); i++)
-      {
-        var r0 = Value.compare(      _args.get(i).value(),
-                           other._args.get(i).value());
-        r = r0 == 0 ? null : "arg#"+i;
-      }
-    if (r == null)
-      {
-        var r0 = Env.compare(_env, other._env);
-        r = "ENV";
-      }
-    return r;
+
+  /**
+   * For debugging: Why did `compareTo(other)` return a value != 0?
+   */
+  String compareToWhy(Call other)
+  {
+    return
+      _cc         != other._cc            ? "cc different" :
+      _target._id != other._target._id    ? "target different" :
+      _site       != other._site          ? "site different" :
+      Env.compare(env(), other.env())== 0 ? "env different" : "not different";
   }
-  void mergeWith(List<Val> nargs)
+
+
+  /**
+   * Merge argument values args into this call's argument values.
+   *
+   * In case this resulted in any chanbe, mart this as hot to make sure it will
+   * be (re-) analyzed in the current iteration.
+   *
+   * @param args the values to be merged into this Call's arguments
+   */
+  void mergeWith(List<Val> args)
   {
     for (var i = 0; i < _args.size(); i++)
       {
         var a0 = _args.get(i);
-        var a1 = nargs.get(i);
+        var a1 =  args.get(i);
         var an = a0.joinVal(_dfa, a1);
-        _args.set(i, an);
         if (an.value() != a0.value())
           {
+            _args.set(i, an);
             _dfa.hot(this);
           }
       }
-    //_target = _target.join(_dfa, other._target);
   }
 
 
@@ -376,54 +338,38 @@ public class Call extends ANY implements Comparable<Call>, Context
               (!_dfa._fuir.clazzIsVoidType(_dfa._fuir.clazzResultClazz(_cc)));
 
             result = _instance.readField(_dfa, rf, -1, this);
-            if (false) if (_dfa._fuir.clazzAsString(_cc).startsWith("i#1") && !_rec)
-              {
-                _rec = true;
-                System.out.println("CALL result of "+this);
-                System.out.println(Terminal.INTENSE_BOLD_GREEN + result + Terminal.RESET);
-                _rec = false;
-              }
           }
       }
     return result;
   }
-  boolean _rec;
 
 
   /**
    * Create human-readable string from this call.
    */
-  boolean _call_toString_recursion = false;
   public String toString()
   {
-    var result = "--?recurive Call.toString?--";
-    if (!_call_toString_recursion)
+    var sb = new StringBuilder();
+    sb.append(_dfa._fuir.clazzAsString(_cc));
+    if (_target != Value.UNIT)
       {
-        _call_toString_recursion = true;
-        var sb = new StringBuilder();
-        sb.append(_dfa._fuir.clazzAsString(_cc));
-        if (_target != Value.UNIT)
-          {
-            sb.append(" target=")
-              .append(_target);
-          }
-        for (var i = 0; i < _args.size(); i++)
-          {
-            var a = _args.get(i);
-            sb.append(" a")
-              .append(i)
-              .append("=")
-              .append(a);
-          }
-        var r = result();
-        sb.append(" => ")
-          .append(r == null ? "*** VOID ***" : r)
-          .append(" ENV: ")
-          .append(Errors.effe(Env.envAsString(env())));
-        result = sb.toString();
-        _call_toString_recursion = false;
+        sb.append(" target=")
+          .append(_target);
       }
-    return result;
+    for (var i = 0; i < _args.size(); i++)
+      {
+        var a = _args.get(i);
+        sb.append(" a")
+          .append(i)
+          .append("=")
+          .append(a);
+      }
+    var r = result();
+    sb.append(" => ")
+      .append(r == null ? "*** VOID ***" : r)
+      .append(" ENV: ")
+      .append(Errors.effe(Env.envAsString(env())));
+    return sb.toString();
   }
 
 
@@ -536,7 +482,7 @@ public class Call extends ANY implements Comparable<Call>, Context
         DfaErrors.usedEffectNotInstalled(_dfa._fuir.sitePos(s),
                                          _dfa._fuir.clazzAsString(ecl),
                                          this);
-        // _dfa._missingEffects.add(ecl);
+        _dfa._missingEffects.put(ecl, ecl);
       }
     return result;
   }

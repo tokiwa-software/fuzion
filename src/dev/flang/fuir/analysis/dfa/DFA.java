@@ -910,7 +910,7 @@ public class DFA extends ANY
   /**
    * Set of effects that are missing, excluding default effects.
    */
-  //  IntMap<Integer> _missingEffects = new TreeSet<>();
+  IntMap<Integer> _missingEffects = new IntMap<>();
 
 
   //TreeMap<Integer, TreeSet<Integer>> _requiredEffects = new TreeMap<>();
@@ -1998,7 +1998,6 @@ public class DFA extends ANY
           var env = cl._env;
           var newEnv = cl._dfa.newEnv(env, ecl, cl._target);
           var ncl = cl._dfa.newCall(call, NO_SITE, cl._args.get(0).value(), new List<>(), newEnv, cl);
-          ncl._calledByAbortableForEffect = ecl;
           // NYI: result must be null if result of ncl is null (ncl does not return) and effect.abort is not called
           return Value.UNIT;
         });
