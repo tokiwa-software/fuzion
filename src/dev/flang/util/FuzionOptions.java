@@ -42,6 +42,67 @@ public class FuzionOptions extends ANY
 {
 
 
+  /*-------------------------  static methods  --------------------------*/
+
+
+  /**
+   * Get the value of a Java property (set via -D<name>=...)  or env variable.
+   *
+   * @param name property or env variable name.  Should usually be a fully
+   * qualified class name such as "dev.flang.optimizer.Warp.enable".  Since `.`
+   * is not permitted in env var, `.` will be replaced by `_` when checking env
+   * variables.
+   *
+   * @return the value of the property, if found. Otherwise, the value of the
+   * env var if found. null otherwise.
+   */
+  public static String propertyOrEnv(String name)
+  {
+    return propertyOrEnv(name, null);
+  }
+
+
+  /**
+   * Get the value of a Java property (set via -D<name>=...)  or env variable.
+   *
+   * @param name property or env variable name.  Should usually be a fully
+   * qualified class name such as "dev.flang.optimizer.Warp.enable".  Since `.`
+   * is not permitted in env var, `.` will be replaced by `_` when checking env
+   * variables.
+   *
+   * @param defawlt value to return in case propery / env var is not set.
+   *
+   * @return the value of the property, if found. Otherwise, the value of the
+   * env var if found. defawlt otherwise.
+   */
+  public static String propertyOrEnv(String name, String defawlt)
+  {
+    var result = System.getProperty(name);
+    if (result == null)
+      {
+        result = System.getenv(name.replace(".","_"));
+      }
+    return result != null ? result : defawlt;
+  }
+
+
+  /**
+   * Get the value of boolean a Java property (set via -D<name>=...)  or env
+   * variable.
+   *
+   * @param name property or env variable name.  Should usually be a fully
+   * qualified class name such as "dev.flang.optimizer.Warp.enable".  Since `.`
+   * is not permitted in env var, `.` will be replaced by `_` when checking env
+   * variables.
+   *
+   * @return true iff the property is set and equals to "true", false otherwise.
+   */
+  public static boolean boolPropertyOrEnv(String name)
+  {
+    return propertyOrEnv(name, "false").equals("true");
+  }
+
+
   /*----------------------------  variables  ----------------------------*/
 
 

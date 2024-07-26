@@ -697,6 +697,22 @@ public class DFA extends ANY
 
 
   /**
+   * Set this tho show statistics on the clazzes that caused the most Calls that
+   * need to be analysed.
+   *
+   * To enable, use fz with
+   *
+   *   dev_flang_fuir_analysis_dfa_DFA_SHOW_CALLS=
+   *
+   * To show more details for feature `io.out.replace`
+   *
+   *   dev_flang_fuir_analysis_dfa_DFA_SHOW_CALLS=io.out.replace
+   *
+   */
+  static final String SHOW_CALLS = FuzionOptions.propertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.SHOW_CALLS");
+
+
+  /**
    * singleton instance of Unit.
    */
   static Unit _unit_ = new Unit();
@@ -1141,51 +1157,59 @@ public class DFA extends ANY
       }
     _reportResults = true;
     iteration();
-    if (false) {
-      var counts = new TreeMap<Integer,Integer>();
-      for (var c : _calls.values())
-        {
-          var i = counts.computeIfAbsent(c._cc, ignore -> 0);
-          counts.put(c._cc, i+1);
-        }
-      var cl = new TreeSet<Integer>((a,b)->
-                                    { var ca = counts.get(a);
-                                      var cb = counts.get(b);
-                                      return ca != cb ? Integer.compare(counts.get(a), counts.get(b))
-                                        : Integer.compare(a, b);
-                                    });
-      var total = 0;
-      for (var c : counts.keySet())
-        {
-          cl.add(c);
-          total = total + counts.get(c);
-        }
-      var totalf = total;
-      cl.stream()
-        .filter(c -> counts.get(c) > totalf / 500)
-        .forEach(c ->
-                 {
-                   System.out.println("Call count "+counts.get(c)+"/"+totalf+" for "+_fuir.clazzAsString(c)+" "+(_fuir.clazzIsUnitType(c)?"UNIT":""));
-                   if (_fuir.clazzAsString(c).equals("false"))
-                     {
-                       var i = 0;
-                       Call prev = null;
-                       for (var cc : _calls.values())
-                         {
-                           if (cc._cc == c)
-                             {
-                               System.out.println(""+i+": "+cc);
-                               if (prev != null && cc.toString().equals(prev.toString()))
-                                 {
-                                   System.out.println("########## EQ, but compare results in "+prev.compareToWhy(cc));
-                                 }
-                               i++;
-                             }
-                           prev = cc;
-                         }
-                     }
-                 });
-    }
+
+    showCallStatistics();
+  }
+
+
+  /**
+   * If call statistics are enabled (@see #SHOW_CALLS), show statistics on the
+   * clazzes that caused the most Calls that need to be analysed.
+   */
+  void showCallStatistics()
+  {
+    if (SHOW_CALLS != null)
+      {
+        var total = _calls.size();
+        var counts = new IntMap<Integer>();
+        for (var c : _calls.values())
+          {
+            var i = counts.getOrDefault(c._cc, 0);
+            counts.put(c._cc, i+1);
+          }
+        counts
+          .keySet()
+          .stream()
+          .sorted((a,b)->
+                  { var ca = counts.get(a);
+                    var cb = counts.get(b);
+                    return ca != cb ? Integer.compare(counts.get(a), counts.get(b))
+                      : Integer.compare(a, b);
+                  })
+          .filter(c -> counts.get(c) > total / 500)
+          .forEach(c ->
+                   {
+                     System.out.println("Call count "+counts.get(c)+"/"+total+" for "+_fuir.clazzAsString(c)+" "+(_fuir.clazzIsUnitType(c)?"UNIT":""));
+                     if (_fuir.clazzAsString(c).equals(SHOW_CALLS))
+                       {
+                         var i = 0;
+                         Call prev = null;
+                         for (var cc : _calls.values())
+                           {
+                             if (cc._cc == c)
+                               {
+                                 System.out.println(""+i+": "+cc);
+                                 if (prev != null && cc.toString().equals(prev.toString()))
+                                   {
+                                     System.out.println("########## EQ, but compare results in "+prev.compareToWhy(cc));
+                                   }
+                                 i++;
+                               }
+                             prev = cc;
+                           }
+                       }
+                   });
+      }
     if (false) {
       var counts = new TreeMap<Integer,Integer>();
       var cnt_i = 0;

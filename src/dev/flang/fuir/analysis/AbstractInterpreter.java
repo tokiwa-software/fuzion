@@ -34,6 +34,7 @@ import static dev.flang.ir.IR.NO_SITE;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 
@@ -255,31 +256,27 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
 
   /**
-   * property-controlled flag to enable debug output.
+   * property- or env-var-controlled flag to enable debug output.
    *
    * To enable debugging, use fz with
    *
-   *   FUZION_JAVA_OPTIONS=-Ddev.flang.fuir.analysis.AbstractInterpreter.DEBUG=true
+   *   dev_flang_fuir_analysis_AbstractInterpreter_DEBUG=true
    *
    * or
    *
-   *   FUZION_JAVA_OPTIONS=-Ddev.flang.fuir.analysis.AbstractInterpreter.DEBUG=".*install_default"
-   *
+   *   dev_flang_fuir_analysis_AbstractInterpreter_DEBUG=".*install_default"
    */
   static final String DEBUG;
   static {
     var prop = "dev.flang.fuir.analysis.AbstractInterpreter.DEBUG";
-    var debug = System.getProperty(prop);
-    if (debug == null)
-      {
-        debug = System.getenv(prop.replace(".","_"));
-      }
+    var debug = FuzionOptions.propertyOrEnv(prop);
     DEBUG =
       debug == null ||
       debug.equals("false") ? null :
       debug.equals("true" ) ? ".*"
                             : debug;
   }
+
 
   /*-------------------------  static methods  --------------------------*/
 
