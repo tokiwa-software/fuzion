@@ -620,19 +620,19 @@ public class DFA extends ANY
         {
           // array to permit modification in lambda
           var taken = false;
-          var field = _fuir.matchCaseField(s, mc);
           for (var t : _fuir.matchCaseTags(s, mc))
             {
-              if (subv.value() instanceof ValueSet vs)
+              var sv = subv.value();
+              if (sv instanceof ValueSet vs)
                 {
                   for (var v : vs._componentsArray)
                     {
-                      taken = match(s, v, field, t) || taken;
+                      taken = matchSingleSubject(s, v, mc, t) || taken;
                     }
                 }
               else
                 {
-                  taken = match(s, subv, field, t) || taken;
+                  taken = matchSingleSubject(s, sv, mc, t) || taken;
                 }
             }
           if (_reportResults && _options.verbose(9))
@@ -654,28 +654,44 @@ public class DFA extends ANY
       return new Pair<>(r, _unit_);
     }
 
-    boolean match(int s, Val v, int field, int t)
+
+    /**
+     * Helper for match that matches only a single subject value.
+     *
+     * @param s site of the match
+     *
+     * @param v subject value of this match that is being tested.
+     *
+     * @param mc the match case to process
+     *
+     * @param t the tag the case matches
+     *
+     * @return true if this match case was taken by v
+     */
+    boolean matchSingleSubject(int s, Value v, int mc, int t)
     {
       var res = false;
-                  if (v.value() instanceof TaggedValue tv)
-                    {
-                      if (tv._tag == t)
-                        {
-                          var untagged = tv._original;
-                          res = true;
-                          if (field != -1)
-                            {
-                              _call._instance.setField(DFA.this, field, untagged);
-                            }
-                        }
-                    }
-                  else
-                    {
-                      throw new Error("DFA encountered Unexpected value in match: " + v.getClass() + " '" + v + "' " +
-                                      " for match of type " + _fuir.clazzAsString(_fuir.matchStaticSubject(s)));
-                    }
-                  return res;
+      if (v instanceof TaggedValue tv)
+        {
+          if (tv._tag == t)
+            {
+              var field = _fuir.matchCaseField(s, mc);
+              if (field != -1)
+                {
+                  var untagged = tv._original;
+                  _call._instance.setField(DFA.this, field, untagged);
+                }
+              res = true;
+            }
+        }
+      else
+        {
+          throw new Error("DFA encountered Unexpected value in match: " + v.getClass() + " '" + v + "' " +
+                          " for match of type " + _fuir.clazzAsString(_fuir.matchStaticSubject(s)));
+        }
+      return res;
     }
+
 
     /**
      * Create a tagged value of type newcl from an untagged value.
@@ -729,6 +745,22 @@ public class DFA extends ANY
    *
    */
   static final String SHOW_CALLS = FuzionOptions.propertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.SHOW_CALLS");
+
+
+  /**
+   * Should the DFA analysis be call-site-sensitive? If set, this treats two
+   * equals calls `t.f args` if they occur at different sites, i.e., location in
+   * the source code.
+   *
+   * To disable, use fz with
+   *
+   *   dev_flang_fuir_analysis_dfa_DFA_SITE_SENSITIVE=false
+   *
+   * NYI: OPTIMIZATION: For most tests, site sensitivity adds significant
+   * overhead. However, some tests like fuzion/tests/transducers require this to
+   * work properly.
+   */
+  static final boolean SITE_SENSITIVE = FuzionOptions.boolPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.SITE_SENSITIVE", true);
 
 
   /**
@@ -828,12 +860,6 @@ public class DFA extends ANY
   final Value _universe;
 
 
-  private int _iterationCount;
-  //  private int _microIterationCount;
-  private Call _currentCall;
-  Call currentCall() { return _currentCall; }
-
-
   /**
    * Instances created during DFA analysis.
    */
@@ -845,6 +871,13 @@ public class DFA extends ANY
    */
   TreeMap<Call, Call> _calls = new TreeMap<>();
   LongMap<Call> _calls2 = new LongMap<>();
+
+
+  /**
+   * All calls will receive a unique identitifier.  This is the next unique
+   * identitifier to be used for the next new call.
+   */
+  int _callIds = 0;
 
 
   /**
@@ -1147,15 +1180,14 @@ public class DFA extends ANY
    */
   void findFixPoint()
   {
-    _iterationCount = 0;
-    //    _microIterationCount = 0;
+    var cnt = 0;
     do
       {
-        _iterationCount++;
+        cnt++;
         if (_options.verbose(2))
           {
             _options.verbosePrintln(2,
-                                    "DFA iteration #" + _iterationCount + ": --------------------------------------------------" +
+                                    "DFA iteration #" + cnt + ": --------------------------------------------------" +
                                     (_options.verbose(3) ? "calls:"+_calls.size() + ",instances:" + _instances.size() + ",envs:" + _envs.size() + "; " + _changedSetBy.get()
                                                          : ""                                                                  ));
           }
@@ -1163,7 +1195,7 @@ public class DFA extends ANY
         _changedSetBy = () -> "*** change not set ***";
         iteration();
       }
-    while (_changed && (true || _iterationCount < 100));
+    while (_changed && (true || cnt < 100));
     if (_options.verbose(4))
       {
         _options.verbosePrintln(4, "DFA done:");
@@ -1341,9 +1373,6 @@ public class DFA extends ANY
   {
     if (_fuir.clazzKind(c._cc) == FUIR.FeatureKind.Routine)
       {
-        var oldcur = _currentCall;
-        _currentCall = c;
-
         var i = c._instance;
         check
           (c._args.size() == _fuir.clazzArgCount(c._cc));
@@ -1367,8 +1396,6 @@ public class DFA extends ANY
           {
             c.returns();
           }
-
-        _currentCall = oldcur;
       }
   }
 
@@ -2639,11 +2666,16 @@ public class DFA extends ANY
    */
   Call newCall(int cl, int site, Value tvalue, List<Val> args, Env env, Context context)
   {
+    if (!SITE_SENSITIVE)
+      {
+        site = FUIR.NO_SITE;
+      }
     var k1 = _fuir.clazzId2num(cl);
     var k2 = tvalue._id;
     var k3 = siteIndex(site);
     var k4 = env == null ? 0 : env._id + 1;
     Call e, r;
+    // We use a LongMap in case we manage to fiddle k1..k4 into a long:
     if (k1 <= 0x3FFFF &&
         k2 <= 0x3FFFF &&
         k3 <= 0x3FFFF &&
@@ -2665,6 +2697,10 @@ public class DFA extends ANY
       }
     else
       {
+        // TreeMap fallback in case we failed to pack the key into a long.
+        //
+        // NYI: OPTIMIZATION: We might find a more efficient way for this case,
+        // maybe two nested LongMaps?
         r = new Call(this, cl, site, tvalue, args, env, context);
         e = _calls.get(r);
       }
@@ -2688,8 +2724,6 @@ public class DFA extends ANY
       }
     return e;
   }
-
-  int _callIds = 0;
 
 
   /**

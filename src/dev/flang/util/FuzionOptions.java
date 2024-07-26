@@ -103,6 +103,26 @@ public class FuzionOptions extends ANY
   }
 
 
+  /**
+   * Get the value of boolean a Java property (set via -D<name>=...)  or env
+   * variable.
+   *
+   * @param name property or env variable name.  Should usually be a fully
+   * qualified class name such as "dev.flang.optimizer.Warp.enable".  Since `.`
+   * is not permitted in env var, `.` will be replaced by `_` when checking env
+   * variables.
+   *
+   * @param defawlt give the default value to be used if property / env var is
+   * not present.
+   *
+   * @return true iff the property is set and equals to "true", false otherwise.
+   */
+  public static boolean boolPropertyOrEnv(String name, boolean defawlt)
+  {
+    return propertyOrEnv(name, defawlt ? "true" : "false").equals("true");
+  }
+
+
   /*----------------------------  variables  ----------------------------*/
 
 

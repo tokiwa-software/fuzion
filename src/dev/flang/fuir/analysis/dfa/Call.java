@@ -205,9 +205,9 @@ public class Call extends ANY implements Comparable<Call>, Context
   public int compareTo(Call other)
   {
     return
-      _cc         != other._cc         ? Integer.compare(_cc        , other._cc        ) :
-      _target._id != other._target._id ? Integer.compare(_target._id, other._target._id) :
-      _site       != other._site       ? Integer.compare(_site      , other._site      ) :
+      _cc         != other._cc                    ? Integer.compare(_cc        , other._cc        ) :
+      _target._id != other._target._id            ? Integer.compare(_target._id, other._target._id) :
+      DFA.SITE_SENSITIVE && _site  != other._site ? Integer.compare(_site      , other._site      ) :
       Env.compare(env(), other.env());
   }
 
