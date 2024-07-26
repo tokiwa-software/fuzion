@@ -59,7 +59,12 @@ public class Call extends ANY implements Comparable<Call>, Context
   /*----------------------------  variables  ----------------------------*/
 
 
-  int _id = -1;
+  /**
+   * Unique id to identify this Call. This is used to avoid expensive comparison
+   * for calls.
+   */
+  int _uniqueCallId = -1;
+
 
   /**
    * The DFA instance we are working with.
@@ -82,10 +87,6 @@ public class Call extends ANY implements Comparable<Call>, Context
    * intrinsic call or the main entry point.
    */
   final int _site;
-  int siteIndex()
-  {
-    return _site == FUIR.NO_SITE ? 0 : _site - FUIR.SITE_BASE + 1;
-  }
 
 
   /**
@@ -116,9 +117,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * The environment, i.e., the effects installed when this call is made.
    */
-  final Env _originalEnv;
-
-  // Env _effectiveEnvCache;
+  final Env _env;
 
 
   /**
@@ -173,12 +172,8 @@ public class Call extends ANY implements Comparable<Call>, Context
     _site = site;
     _target = target;
     _args = args;
-    _originalEnv = env;
-    //    var re = dfa._requiredEffects.getIfExists(siteIndex());
-    //    _requiredEffects = re;
-    //    _effectiveEnvCache = env == null || re == null ? null : env.filter(_requiredEffects);
+    _env = env;
     _context = context;
-    //    _instance = dfa.newInstance(cc, site, this);
 
     if (dfa._fuir.clazzResultField(cc)==-1) /* <==> _fuir.isConstructor(cl) */
       {
@@ -197,6 +192,16 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Return a unique id for the call or main entry point context.
+   */
+  @Override
+  public int uniqueCallId()
+  {
+    return _uniqueCallId;
+  }
 
 
   boolean compareSite(Call other)
@@ -234,7 +239,7 @@ public class Call extends ANY implements Comparable<Call>, Context
       }
     if (r == 0)
       {
-        r = Env.compare(effectiveEnv(), other.effectiveEnv());
+        r = Env.compare(env(), other.env());
       }
     return r;
   }
@@ -260,7 +265,7 @@ public class Call extends ANY implements Comparable<Call>, Context
       }
     if (r == null)
       {
-        var r0 = Env.compare(_originalEnv, other._originalEnv);
+        var r0 = Env.compare(_env, other._env);
         r = "ENV";
       }
     return r;
@@ -413,10 +418,8 @@ public class Call extends ANY implements Comparable<Call>, Context
         var r = result();
         sb.append(" => ")
           .append(r == null ? "*** VOID ***" : r)
-          .append(" ENV0: ")
-          .append(Errors.effe(Env.envAsString(_originalEnv)))
           .append(" ENV: ")
-          .append(Errors.effe(Env.envAsString(effectiveEnv())));
+          .append(Errors.effe(Env.envAsString(env())));
         result = sb.toString();
         _call_toString_recursion = false;
       }
@@ -436,7 +439,7 @@ public class Call extends ANY implements Comparable<Call>, Context
        ? (on.equals(EFFECT_ABORTABLE_NAME)
           ? "install effect " + Errors.effe(_dfa._fuir.clazzAsStringHuman(_dfa._fuir.effectType(_cc))) + ", old environment was "
           : "effect environment ") +
-         Errors.effe(Env.envAsString(effectiveEnv())) +
+         Errors.effe(Env.envAsString(env())) +
          " for call to "
        : "call ")+
       Errors.sqn(_dfa._fuir.clazzAsStringHuman(_cc)) +
@@ -486,9 +489,13 @@ public class Call extends ANY implements Comparable<Call>, Context
   }
 
 
-  Env effectiveEnv()
+  /**
+   * Effect-environment in this call, null if none.
+   */
+  @Override
+  public Env env()
   {
-    return _originalEnv;
+    return _env;
   }
 
 
@@ -503,8 +510,8 @@ public class Call extends ANY implements Comparable<Call>, Context
   Value getEffectCheck(int ecl)
   {
     return
-      _originalEnv != null ? _originalEnv.getActualEffectValues(ecl)
-                           : _dfa._defaultEffects.get(ecl);
+      _env != null ? _env.getActualEffectValues(ecl)
+                   : _dfa._defaultEffects.get(ecl);
   }
 
 
@@ -547,9 +554,9 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   void replaceEffect(int ecl, Value e)
   {
-    if (_originalEnv != null)
+    if (_env != null)
       {
-        _originalEnv.replaceEffect(ecl, e);
+        _env.replaceEffect(ecl, e);
       }
     else
       {

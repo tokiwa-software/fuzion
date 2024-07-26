@@ -388,7 +388,7 @@ public class DFA extends ANY
           {
             if (_fuir.clazzNeedsCode(cc))
               {
-                var ca = newCall(cc, s, tvalue.value(), args, _call._originalEnv, _call);
+                var ca = newCall(cc, s, tvalue.value(), args, _call._env, _call);
                 res = ca.result();
                 if (res != null && res != Value.UNIT && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)))
                   {
@@ -559,7 +559,7 @@ public class DFA extends ANY
      *
      * @return an instance of `constCl` with fields initialized using the data from `d`.
      */
-    private Value newArrayConst(int s, int constCl, Call context, ByteBuffer d)
+    private Value newArrayConst(int s, int constCl, Context context, ByteBuffer d)
     {
       var result = newInstance(constCl, NO_SITE, context);
       var sa = _fuir.clazzField(constCl, 0);
@@ -966,7 +966,7 @@ public class DFA extends ANY
         _false = Value.UNIT;
         _bool  = Value.UNIT;
       }
-    _universe = newInstance(_fuir.clazzUniverse(), NO_SITE, null);
+    _universe = newInstance(_fuir.clazzUniverse(), NO_SITE, Context._MAIN_ENTRY_POINT_);
     Errors.showAndExit();
   }
 
@@ -1982,7 +1982,7 @@ public class DFA extends ANY
           if (CHECKS) check
             (cl._dfa._fuir.clazzNeedsCode(call));
 
-          var env = cl._originalEnv;
+          var env = cl._env;
           var newEnv = cl._dfa.newEnv(env, ecl, cl._target);
           var ncl = cl._dfa.newCall(call, NO_SITE, cl._args.get(0).value(), new List<>(), newEnv, cl);
           ncl._calledByAbortableForEffect = ecl;
@@ -2218,12 +2218,10 @@ public class DFA extends ANY
     if (isBuiltInNumeric(cl))
       {
         r = NumericValue.create(DFA.this, cl);
-        // r = cache(r);
       }
     else if(_fuir.clazzIs(cl, SpecialClazzes.c_bool))
       {
         r = _bool;
-        //  r = cache(r);
       }
     else
       {
@@ -2231,11 +2229,9 @@ public class DFA extends ANY
           {
             var vc = _fuir.clazzAsValue(cl);
             r = newInstance(vc, site, context).box(this, vc, cl, context);
-            //r = cache(r);
           }
-        else if (context instanceof Call cc)
+        else
           {
-            // var i = siteIndex(site);
             var sc = site == FUIR.NO_SITE ? FUIR.NO_CLAZZ : _fuir.clazzAt(site);
             var sci = sc == FUIR.NO_CLAZZ ? 0 : 1 + _fuir.clazzId2num(sc);
 
@@ -2245,11 +2241,7 @@ public class DFA extends ANY
                 clazzm = new LongMap<>();
                 _instancesForSite.force(sci, clazzm);
               }
-            if (cc._id < 0) { System.out.println("id is "+cc._id+" for "+cc); throw new Error(); }
-            var e = cc.effectiveEnv();
-            var eid = e == null ? -1 : e._id;
-            //var k = (long) cl << 32 | eid & 0x7fffffff;
-            var k = (long) cl << 32 | cc._id & 0x7fffffff;
+            var k = (long) cl << 32 | context.uniqueCallId() & 0xffffFFFFL;
             r = clazzm.get(k);
             if (r == null)
               {
@@ -2257,44 +2249,16 @@ public class DFA extends ANY
                 r = ni;
                 if (true)
                   {
-                    r = cache(r); // caching still needed since compareTo() does not compare calls, but effective environments
+                    r = cache(r);
                   }
                 else
                   {
                     makeUnique(r);
                   }
                 clazzm.put(k, (Instance) r);
-                if (false)
-                  if (r != ni)
-                  {
-                    var ri = (Instance) r;
-                    System.out.println("SITES: new: "+ni._site+"#"+System.identityHashCode(ni)+" old "+ri._site+" arg "+site);
-                    System.out.println("SITEX: new: "+siteIndex(ni._site)+" old "+siteIndex(ri._site)+" arg "+siteIndex(site)+" Cmp: "+ni.compareToWhy(ri)+" "+ri.getClass());
-                    System.out.println("CACHING NEEDED FOR NEW "+ni._clazz+" "+ni._site+" "+System.identityHashCode(ni._context)+" "+ni);
-                    System.out.println("CACHING NEEDED FOR OLD "+ri._clazz+" "+ri._site+" "+System.identityHashCode(ri._context)+" "+r);
-                    System.out.println("NEW: "+ni._debugInfo);
-                    System.out.println("OLD: "+ri._debugInfo);
-                    if (siteIndex(ni._site)!=0) throw new Error();
-                  }
               }
-            else if (false)
-              {
-                var nr = new Instance(this, cl, site, context);
-                if (nr.compareTo((Instance) r) != 0)
-                  {
-                    System.out.println("Instance mismatch: OLD "+r);
-                    System.out.println("Instance mismatch: NEW "+nr);
-                  }
-                r = nr;
-              }
-          }
-        else
-          {
-            r = new Instance(this, cl, site, context);
-            r = cache(r);
           }
       }
-    //        r = cache(r);
     return r;
   }
 
@@ -2448,7 +2412,6 @@ public class DFA extends ANY
         res = cache(res);
       }
     return res;
-    //    return cache(res);
   }
   int _ok, _c;
 
@@ -2676,8 +2639,12 @@ public class DFA extends ANY
       }
     if (e == null)
       {
+        r._uniqueCallId = _callIds++;
+        if (_callIds < 0)
+          {
+            DfaErrors.fatal("DFA: Exceeded maximum number of calls " + Integer.MAX_VALUE);
+          }
         _calls.put(r, r);
-        r._id = _callIds++;
         r._instance = newInstance(cl, site, r);
         e = r;
         var rf = r;

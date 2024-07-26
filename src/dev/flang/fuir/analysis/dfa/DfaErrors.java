@@ -59,6 +59,11 @@ public class DfaErrors extends ANY
                  "Callchain that lead to this point:\n\n" + why.contextString());
   }
 
+  public static void fatal(String msg)
+  {
+    Errors.fatal(msg);
+  }
+
 }
 
 /* end of file */
