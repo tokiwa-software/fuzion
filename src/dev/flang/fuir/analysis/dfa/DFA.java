@@ -1168,6 +1168,11 @@ public class DFA extends ANY
    */
   void showCallStatistics()
   {
+    for (var c : _calls.values())
+      {
+        analyzeShowDetails(c);
+      }
+
     if (SHOW_CALLS != null)
       {
         var total = _calls.size();
@@ -1279,30 +1284,20 @@ public class DFA extends ANY
    */
   void iteration()
   {
-    var vs = _calls.values();
-    var s = vs.toArray(new Call[vs.size()]);
+    var s = new List<Call>();
+    s.addAll(_calls.values());
     for (var c : s)
       {
         c._scheduledForAnalysis = true;
       }
-    while (s.length > 0)
+    while (!s.isEmpty())
       {
         for (var c : s)
           {
             c._scheduledForAnalysis = false;
-            if (_reportResults && _options.verbose(4))
-              {
-                say(("----------------"+c+
-                     "----------------------------------------------------------------------------------------------------")
-                    .substring(0,100));
-
-                var sb = new StringBuilder();
-                var ignore = c.showWhy(sb);
-                say(sb);
-              }
             analyze(c);
           }
-        s = _hotCalls.toArray(new Call[_hotCalls.size()]);
+        s = _hotCalls;
         _hotCalls = new List<>();
       }
   }
@@ -1355,6 +1350,24 @@ public class DFA extends ANY
           }
 
         _currentCall = oldcur;
+      }
+  }
+
+
+  /**
+   * Print out details on the analysis of call `c`
+   */
+  void analyzeShowDetails(Call c)
+  {
+    if (_reportResults && _options.verbose(4))
+      {
+        say(("----------------"+c+
+             "----------------------------------------------------------------------------------------------------")
+            .substring(0,100));
+
+        var sb = new StringBuilder();
+        var ignore = c.showWhy(sb);
+        say(sb);
       }
   }
 
