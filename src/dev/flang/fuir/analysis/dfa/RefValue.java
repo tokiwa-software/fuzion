@@ -86,18 +86,9 @@ public class RefValue extends Value
   /**
    * Compare this to another RefValue.
    */
-  //  static int _cnt;
   public int compareTo(RefValue other)
   {
-    //    _cnt++;
-    //    if ((_cnt&(_cnt-1))==0) Thread.dumpStack();
-    return
-      Integer.compare(_id, other._id);
-    /*
-      _clazz < other._clazz ? -1 :
-      _clazz > other._clazz ? +1 :
-      Value.COMPARATOR.compare(_original, other._original);
-    */
+    return Integer.compare(_id, other._id);
   }
 
 

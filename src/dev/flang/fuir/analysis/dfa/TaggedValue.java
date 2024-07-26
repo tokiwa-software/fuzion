@@ -124,13 +124,11 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
                   {
                     if (tvv._original instanceof ValueSet tvvs && tvvs.contains(_original))
                       {
-                        //System.out.println("YEAH: join "+this);
-                        //System.out.println("YEAH: with "+vv);
                         return v;
                       }
                     else
                       {
-                        // NYI: new valueset with tvv replaced by tvv U this.
+                        // NYI: OPTIMIZATION: Create new valueset with tvv replaced by tvv joined with this.
                       }
                   }
               }

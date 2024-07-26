@@ -95,20 +95,12 @@ public class NumericValue extends Value implements Comparable<NumericValue>
         dfa._numericValues.force(clazz_id, values);
       }
     NumericValue res;
-    if (false) // NYI: check if this is faster or slower:
+    res = values.get(vLong);
+    if (res == null)
       {
-        //        res = values.computeIfAbsent(vLong, v->new NumericValue(dfa, clazz, v));
+        res = new NumericValue(dfa, clazz, vLong);
+        values.put(vLong, res);
       }
-    else
-      {
-        res = values.get(vLong);
-        if (res == null)
-          {
-            res = new NumericValue(dfa, clazz, vLong);
-            values.put(vLong, res);
-          }
-      }
-    //  dfa.makeUnique(res);
     return res;
   }
 

@@ -181,7 +181,10 @@ public class Instance extends Value implements Comparable<Instance>
       e2 == null ? +1 : Integer.compare(e1._id, e2._id);
   }
 
-  String _debugInfo;
+
+  /**
+   * For debugging, explain why compareTo returned what it did.
+   */
   public String compareToWhy(Instance other)
   {
     var i1 = this;

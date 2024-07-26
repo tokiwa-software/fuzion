@@ -98,10 +98,7 @@ public class EmbeddedValue extends Val
     this._instance = instance;
     this._site = site;
     this._value = value;
-    //    _cnt++;
-    //    if ((_cnt&(_cnt-1))==0) System.out.println(""+_cnt+" "+this);
   }
-  //  static long _cnt;
 
 
   /*-----------------------------  methods  -----------------------------*/

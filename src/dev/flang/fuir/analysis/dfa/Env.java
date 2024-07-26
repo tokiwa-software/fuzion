@@ -53,12 +53,10 @@ public class Env extends ANY implements Comparable<Env>
   /*----------------------------  variables  ----------------------------*/
 
 
-  int _id = -1;
-
   /**
-   * The call environment used to identify this environment.
+   * Unique id to identify this Environment.
    */
-  //  Call _call;
+  int _id = -1;
 
 
   /**
@@ -73,6 +71,11 @@ public class Env extends ANY implements Comparable<Env>
    * that define the same effect types are joined into one environment.
    */
   int[] _types;
+
+
+  /**
+   * Initial values for the effect instnaces in this environment.
+   */
   Value[] _initialEffectValues;
 
 
@@ -117,7 +120,6 @@ public class Env extends ANY implements Comparable<Env>
    */
   public Env(DFA dfa, Env outer, int et, Value ev)
   {
-    //    _call = call;
     _dfa = dfa;
 
     if (outer == null)
@@ -195,10 +197,8 @@ public class Env extends ANY implements Comparable<Env>
   /**
    * Compare this env to another Env.
    */
-  //  static long _cnt;
   public int compareTo(Env other)
   {
-    //    _cnt++; if ((_cnt&(_cnt-1))==0) { System.out.println("COMPARE "+this+" TO "+other); Thread.dumpStack(); }
     // The _types are ordered
     var ta = this ._types;
     var oa = other._types;
@@ -319,17 +319,6 @@ public class Env extends ANY implements Comparable<Env>
       {
         _dfa.replaceDefaultEffect(ecl, e);
       }
-  }
-
-
-  Env filter(java.util.Set<Integer> required)
-  {
-    var res = _outer == null ? null : _outer.filter(required);
-    if (required.contains(_effectType))
-      {
-        res = _dfa.newEnv(res, _effectType, _initialEffectValue);
-      }
-    return res;
   }
 
 

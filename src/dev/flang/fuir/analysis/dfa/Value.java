@@ -54,8 +54,6 @@ public class Value extends Val
   }
 
 
-  //  static int _cnt;
-
   /**
    * Comparator instance to compare two Values according to their unique ids
    */
@@ -84,8 +82,6 @@ public class Value extends Val
        */
       public int compare(Value a, Value b)
       {
-        //        _cnt++;
-        //        if ((_cnt&(_cnt-1))==0) Thread.dumpStack();
         if      (a == b)                                                       { return 0;                    }
         else if (a == UNIT                    || b == UNIT                   ) { return a == UNIT  ? +1 : -1; }
         else if (a instanceof Instance     ai && b instanceof Instance     bi) { return ai.compareTo(bi);     }
@@ -251,11 +247,22 @@ public class Value extends Val
    */
   int _id = -1;
 
+
+  /**
+   * Uniquew id for this value when used as an effect instance in an environment.
+   */
   int _envId = -1;
 
 
+  /**
+   * If this was embedded, this gives a map from the site to the embedded value.
+   */
   IntMap<EmbeddedValue> _embeddedAt = null;
 
+
+  /**
+   * If a SysArray of this was created, this is the SysArray value.
+   */
   SysArray _sysArrayOf = null;
 
 

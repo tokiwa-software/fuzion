@@ -768,6 +768,19 @@ public class DFA extends ANY
 
 
   /**
+   * Should the DFA analysis use embedded values?  This is required for proper
+   * escape analysis of instances that contain value types.  Disabling this is
+   * onyl for experimental purposes and will break the C backend since it relies
+   * on escape enalysis of embedded references.
+   *
+   * To disable, use fz with
+   *
+   *   dev_flang_fuir_analysis_dfa_DFA_USE_EMBEDDED_VALUES=false
+   */
+  static final boolean USE_EMBEDDED_VALUES = FuzionOptions.boolPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.USE_EMBEDDED_VALUES", true);
+
+
+  /**
    * singleton instance of Unit.
    */
   static Unit _unit_ = new Unit();
@@ -865,9 +878,47 @@ public class DFA extends ANY
 
 
   /**
-   * Instances created during DFA analysis.
+   * Values created during DFA analysis that are cached via cache(Value).
    */
-  TreeMap<Value, Value> _instances = new TreeMap<>(Value.COMPARATOR);
+  TreeMap<Value, Value> _cachedValues = new TreeMap<>(Value.COMPARATOR);
+
+
+  /**
+   * Number of unique values that have been created.
+   */
+  int _numUniqueValues = 0;
+
+
+  /**
+   * Cache for results of newInstance.
+   *
+   * site -> (long) clazz << 32 | call id -> Instance
+   */
+  List<LongMap<Instance>> _instancesForSite = new List<>();
+
+
+  /**
+   * Cached results of newTaggedValue.
+   *
+   * Map key build from from clazz id, original value id and tag number to
+   * TaggedValue instances.
+   */
+  LongMap<TaggedValue> _tagged = new LongMap<>();
+
+
+  /**
+   * Stored results of newValueSet.
+   *
+   * Map from key made from v._id and w._id to resutling value set.
+   */
+  LongMap<Value> _joined = new LongMap<>();
+
+
+  /**
+   * For different element types, pre-allocated SysArrays for uninitialized
+   * arrays.  Used to store results of `newSysArray`.
+   */
+  IntMap<SysArray> _uninitializedSysArray = new IntMap<>();
 
 
   /**
@@ -1212,7 +1263,7 @@ public class DFA extends ANY
           {
             _options.verbosePrintln(2,
                                     "DFA iteration #" + cnt + ": --------------------------------------------------" +
-                                    (_options.verbose(3) ? "calls:"+_calls.size() + ",instances:" + _instances.size() + ",envs:" + _envs.size() + "; " + _changedSetBy.get()
+                                    (_options.verbose(3) ? "calls:"+_calls.size() + ",values:" + _numUniqueValues + ",envs:" + _envs.size() + "; " + _changedSetBy.get()
                                                          : ""                                                                  ));
           }
         _changed = false;
@@ -1223,7 +1274,7 @@ public class DFA extends ANY
     if (_options.verbose(4))
       {
         _options.verbosePrintln(4, "DFA done:");
-        _options.verbosePrintln(4, "Instances: " + _instances.values());
+        _options.verbosePrintln(4, "Values: " + _numUniqueValues);
         _options.verbosePrintln(4, "Calls: ");
         for (var c : _calls.values())
           {
@@ -1295,7 +1346,7 @@ public class DFA extends ANY
       var cnt_i = 0;
       var cnt_v = 0;
       var total = 0;
-      for (var in : _instances.values())
+      for (var in : _cachedValues.values())
         {
           if (in instanceof Instance iin)
             {
@@ -1326,7 +1377,7 @@ public class DFA extends ANY
       var totalf = total;
       cl.stream()
         .filter(c -> counts.get(c) > totalf / 100)
-        .forEach(c -> System.out.println("Value Count "+counts.get(c)+" "+(100.0*counts.get(c)/_instances.size())+"% for "+_fuir.sitePos(c).show()));
+        .forEach(c -> System.out.println("Value Count "+counts.get(c)+" "+(100.0*counts.get(c)/_cachedValues.size())+"% for "+_fuir.sitePos(c).show()));
     }
   }
 
@@ -2328,15 +2379,7 @@ public class DFA extends ANY
             if (r == null)
               {
                 var ni = new Instance(this, cl, site, context);
-                r = ni;
-                if (true)
-                  {
-                    r = cache(r);
-                  }
-                else
-                  {
-                    makeUnique(r);
-                  }
+                r = cache(ni);
                 clazzm.put(k, (Instance) r);
               }
           }
@@ -2344,32 +2387,37 @@ public class DFA extends ANY
     return r;
   }
 
-  // site -> (long) clazz << 32 | call id -> Instance
-  List<LongMap<Instance>> _instancesForSite = new List<>();
-
 
   /**
    * Check if value 'r' exists already. If so, return the existing
    * one. Otherwise, add 'r' to the set of existing values, set _changed since
    * the state has changed and return r.
+   *
+   * NYI: CLEANUP: The goal is to eventually remove this cache and instead use
+   * maps like _instancesForSite instead.
    */
   Value cache(Value r)
   {
-    var e = _instances.get(r);
+    var e = _cachedValues.get(r);
     if (e == null)
       {
-        _instances.put(r, r);
+        _cachedValues.put(r, r);
         e = r;
         makeUnique(e);
       }
     return e;
   }
 
-  int _uniqueValueId = 0;
 
+  /**
+   * Set unique id for a newly created value.
+   */
   void makeUnique(Value v)
   {
-    v._id = _uniqueValueId++;
+    if (PRECONDITIONS) require
+      (v._id < 0);
+
+    v._id = _numUniqueValues++;
     wasChanged(() -> "DFA: new value " + v);
   }
   { makeUnique(Value.UNIT); }
@@ -2415,95 +2463,40 @@ public class DFA extends ANY
           }
         else
           {
-            System.out.println("for "+_fuir.clazzAsString(nc)+" "+cid+" "+vid+" "+tag+" "+original.getClass()+" "+original);
             r = new TaggedValue(this, nc, original, tag);
+            r = (TaggedValue) cache(r);
           }
       }
     return r;
   }
 
 
-  LongMap<TaggedValue> _tagged = new LongMap<>();
-
-
-
+  /**
+   * Create a new or retrieve an existing value of the joined values v and w.
+   */
   Value newValueSet(Value v, Value w)
   {
-    if (false)
-      {
-        if (v._id >= 0 && w._id >= 0) _ok++;
-        _c++;
-        if ((_c&(_c-1))==0) System.out.println("OK "+_ok+"/"+_c+" "+(100*_ok/_c)+"%");
-      }
-
     Value res = null;
     var vi = v._id;
     var wi = w._id;
-    if (vi >= 0 && wi >= 0)
+    if (v == w)
       {
-        if (vi == wi)
-          {
-            res = v;
-          }
-        else
-          {
-            Long k = vi < wi ? (long) vi << 32 | wi & 0x7FFFFFFF
-                             : (long) wi << 32 | vi & 0x7FFFFFFF;
-            res = _joined.get(k);
-            if (res == null)
-              {
-                if (v instanceof ValueSet vv && vv.contains(w))
-                  {
-                    res = v;
-                  }
-                else if (w instanceof ValueSet vw && vw.contains(v))
-                  {
-                    res = w;
-                  }
-                else
-                  {
-                    var vs = new ValueSet(v, w);
-                    if (vs._componentsArray.length <= 2)
-                      {
-                        var orig = vs;
-                        res = cache(vs);  // NYI: check why caching is still needed here!
-                        /*
-                        if (orig != res) System.out.println("Caching needed for "+orig);
-                        if (orig != res) System.out.println("Caching result is  "+res);
-                        if (orig != res) System.out.println("Caching v is "+v);
-                        if (orig != res) System.out.println("Caching w is "+w);
-                        if (orig != res) System.out.println("Caching v is "+v._id);
-                        if (orig != res) System.out.println("Caching w is "+w._id);
-                        */
-                      }
-                    else
-                      {
-                        res = vs;
-                        makeUnique(res);
-                      }
-                  }
-                _joined.put(k, res);
-              }
-          }
+        res = v;
       }
     else
       {
-        if (v._id < 0) System.out.println(v.getClass());
-        if (w._id < 0) System.out.println(w.getClass());
-        res = new ValueSet(v, w);
-        res = cache(res);
+        Long k = vi < wi ? (long) vi << 32 | wi & 0x7FFFFFFF
+                         : (long) wi << 32 | vi & 0x7FFFFFFF;
+        res = _joined.get(k);
+        if (res == null)
+          {
+            res = v instanceof ValueSet vv && vv.contains(w) ? v :
+                  w instanceof ValueSet vw && vw.contains(v) ? w : cache(new ValueSet(v, w));
+            _joined.put(k, res);
+          }
       }
     return res;
   }
-  int _ok, _c;
-
-  LongMap<Value> _joined = new LongMap<>();
-
-  /**
-   * For different element types, pre-allocated SysArrays for uninitialized
-   * arrays.
-   */
-  IntMap<SysArray> _uninitializedSysArray = new IntMap<>();
 
 
   /**
@@ -2558,7 +2551,6 @@ public class DFA extends ANY
    *
    * @param value the value of the embedded field
    */
-  static boolean needsEmbedded = !false;
   public Val newEmbeddedValue(int site,
                               Value value)
   {
@@ -2567,8 +2559,7 @@ public class DFA extends ANY
        value != null);
 
     Val r;
-    if (!needsEmbedded ||
-        value instanceof NumericValue)
+    if (!USE_EMBEDDED_VALUES || value instanceof NumericValue)
       {
         r = value;
       }
@@ -2613,8 +2604,7 @@ public class DFA extends ANY
       (instance._id >= 0);
 
     Val r;
-    if (!needsEmbedded ||
-        value instanceof NumericValue)
+    if (!USE_EMBEDDED_VALUES || value instanceof NumericValue)
       {
         r = value;
       }
@@ -2791,6 +2781,13 @@ public class DFA extends ANY
   }
 
 
+  /**
+   * Turn a site id into an index value >= 0.
+   *
+   * @param s a site id or FUIR.NO_SITE
+   *
+   * @return a value >= 0 that tends to be relatively small.
+   */
   static int siteIndex(int s)
   {
     if (PRECONDITIONS) require
@@ -2895,7 +2892,7 @@ public class DFA extends ANY
    *
    * @return new or existing Env instance created from env by adding ecl/ev.
    */
-  Env newEnv2(Env env, int ecl, Value ev)
+  private Env newEnv2(Env env, int ecl, Value ev)
   {
     var newEnv = new Env(this, env, ecl, ev);
     var e = _envs.get(newEnv);

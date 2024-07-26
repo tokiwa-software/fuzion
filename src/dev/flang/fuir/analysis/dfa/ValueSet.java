@@ -96,27 +96,8 @@ public class ValueSet extends Value
       {
         _components.put(v2,v2);
       }
-    //    v1.forAll(x -> _components.put(x,x));
-    //    v2.forAll(x -> _components.put(x,x));
     _componentsArray = _components.values().toArray(new Value[_components.size()]);
-    /*
-    _sizes[Math.min(_sizes.length-1, _components.size())]++;
-    _total += 1;
-    _cnt++;
-    if ((_cnt&(_cnt-1))==0)
-      {
-        int sub = 0;
-        for (int i = 0 ; i<_sizes.length; i++)
-          {
-            sub += _sizes[i];
-            if (_sizes[i] != 0)
-              System.out.println("ValueSet size "+i+" count "+_sizes[i]+" "+(sub*100/_total)+"%");
-          }
-          }*/
   }
-
-  static int _cnt, _total;
-  static int[] _sizes = new int[100];
 
 
   /*-----------------------------  methods  -----------------------------*/
@@ -158,6 +139,9 @@ public class ValueSet extends Value
       }
   }
 
+  /**
+   * Is this ValueSet a superset of other?
+   */
   boolean contains(Value other)
   {
     boolean result;
@@ -238,7 +222,7 @@ public class ValueSet extends Value
    */
   public void forAll(ValueConsumer c)
   {
-    if (!true)
+    if (!true)  // NYI: OPTIMIZATION: I have the impression the for loop is faster, need to check.
       {
         _components.values().forEach(c);
       }
