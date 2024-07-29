@@ -200,15 +200,16 @@ public class Html extends ANY
   private String annotateInherited(AbstractFeature af, AbstractFeature outer)
   {
     if (isDeclared(af, outer))
-    {
-      return ""; // not inherited, nothing to display
-    } else
-    {
-      String anchorParent = "<a class='' href='" + featureAbsoluteURL(af.outer()) + "'>"
-                            + htmlEncodedBasename(af.outer()) + "</a>";
-      return "&nbsp;<div class='fd-parent'>[Inherited from&nbsp; $0]</div>"
-             .replace("$0", anchorParent);
-    }
+      {
+        return ""; // not inherited, nothing to display
+      }
+    else
+      {
+        String anchorParent = "<a class='' href='" + featureAbsoluteURL(af.outer()) + "'>"
+                              + htmlEncodedBasename(af.outer()) + "</a>";
+        return "&nbsp;<div class='fd-parent'>[Inherited from&nbsp; $0]</div>"
+              .replace("$0", anchorParent);
+      }
   }
 
   /**

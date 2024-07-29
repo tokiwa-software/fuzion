@@ -129,8 +129,9 @@ public class Docs extends ANY
    */
   private Stream<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f)
   {
-    return fe.module()
-      .allInnerAndInheritedFeatures(f)
+    var result = new List<AbstractFeature>();
+    fe.module().forEachDeclaredOrInheritedFeature(f, af -> result.add(af));
+    return result
       .stream();
   }
 
