@@ -186,11 +186,8 @@ public class Env extends ANY implements Comparable<Env>
   static int compare(Env a, Env b)
   {
     return
-      a == b    ?  0 :
       a == null ? -1 :
-      b == null ? +1 :
-      // a.compareTo(b);
-      Integer.compare(a._id, b._id);
+      b == null ? +1 : Integer.compare(a._id, b._id);
   }
 
 
