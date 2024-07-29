@@ -38,18 +38,18 @@ public base32 is
     if 65 <= n <= 90        # case A-Z
       n.as_u64 - 65
 
-    else #if 50 <= n <= 55  # case 2-7
+    else # 50 <= n <= 55      case 2-7
       n.as_u64 - 24
 
   # checks if a character is valid in the encoding
   module is_valid(c u8) =>
-    (65 <= c <= 90) || (50 <= c <= 55)
+    (65 <= c <= 90) || (50 <= c <= 55) // A-Z or 2-7
 
   # Encodes a given byte sequence in base32, output is padded to multiple of 8
   # returns a sequence of ascii values
   public encode(data array u8) =>
 
-    # extract 8 quintets from 40 bit (of an 64 bit integer)
+    # extract 8 quintets from 40 bits (of an u64)
     enc40(n u64) =>
       array u8 8 i->
         idx := ((n >> (35-i*5).as_u64) & 31).as_i32

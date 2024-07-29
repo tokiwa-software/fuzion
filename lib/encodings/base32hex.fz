@@ -26,7 +26,6 @@
 #
 public base32hex : base32 is
 
-  # allows redefinition e.g. for base32hexhex
   redef get_alphabet => "0123456789ABCDEFGHIJKLMNOPQRSTUV".utf8.as_array
   redef encoding_name => "base32hex"
 
@@ -35,7 +34,7 @@ public base32hex : base32 is
     if 65 <= n <= 86        # case A-V
       n.as_u64 - 55
 
-    else #if 48 <= n <= 57  # case 0-9
+    else                    # case 0-9
       n.as_u64 - 48
 
   # checks if a character is valid in the encoding
