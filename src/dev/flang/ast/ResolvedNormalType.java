@@ -91,6 +91,13 @@ public class ResolvedNormalType extends ResolvedType
   AbstractFeature _feature;
 
 
+  /**
+   * Cached result of isRef(). Even though this function looks harmless, it is
+   * surprisingly performance critical.
+   */
+  Boolean _isRef;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -460,13 +467,19 @@ public class ResolvedNormalType extends ResolvedType
    */
   public boolean isRef()
   {
-    return switch (this._refOrVal)
+    var r = _isRef;
+    if (r == null)
       {
-      case Boxed                -> true;
-      case Value                -> false;
-      case LikeUnderlyingFeature-> feature().isThisRef();
-      case ThisType             -> false;
-      };
+        r = switch (this._refOrVal)
+          {
+          case Boxed                -> true;
+          case Value                -> false;
+          case LikeUnderlyingFeature-> feature().isThisRef();
+          case ThisType             -> false;
+          };
+        this._isRef = r;
+      }
+    return r;
   }
 
 
