@@ -85,20 +85,21 @@ public base16 is
 
           error "invalid $encoding_name input at byte position $i, decoding to unicode character '$inv_char'"
 
-    for
-      res list u8 := nil, res ++ byte  # contains the decoded data at the end
-      nxt := 0, nxt + 2
-    while nxt < data.length
-    do
-      bits_0_3 := dec_char_at nxt
-      bits_4_7 := dec_char_at nxt+1
+    loop_allow_escape.go ()->
+      for
+        res list u8 := nil, res ++ byte  # contains the decoded data at the end
+        nxt := 0, nxt + 2
+      while nxt < data.length
+      do
+        bits_0_3 := dec_char_at nxt
+        bits_4_7 := dec_char_at nxt+1
 
-      byte := if bits_0_3.ok && bits_4_7.ok
-                [(bits_0_3.val << 4) | bits_4_7.val]
-              else [u8 0]              # decoding result not used in error case
+        byte := if bits_0_3.ok && bits_4_7.ok
+                  [(bits_0_3.val << 4) | bits_4_7.val]
+                else [u8 0]              # decoding result not used in error case
 
-    until bits_0_3.is_error || bits_4_7.is_error
-      if bits_0_3.is_error then bits_0_3.err
-      else                  bits_4_7.err
-    else
-      outcome (res.as_array)
+      until bits_0_3.is_error || bits_4_7.is_error
+        if bits_0_3.is_error then bits_0_3.err
+        else                  bits_4_7.err
+      else
+        outcome (res.as_array)

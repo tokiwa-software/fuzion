@@ -80,6 +80,12 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
       {
         return "<built-in>";
       }
+
+      @Override
+      public String showInSource()
+      {
+        return "";
+      }
     };
 
 
@@ -97,6 +103,12 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
       String rawFileNameWithPosition()
       {
         return "<source position not available>";
+      }
+
+      @Override
+      public String showInSource()
+      {
+        return "";
       }
     };
 

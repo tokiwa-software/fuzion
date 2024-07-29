@@ -44,10 +44,13 @@ import static dev.flang.ir.IR.NO_SITE;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
+
 import static dev.flang.util.FuzionConstants.EFFECT_ABORTABLE_NAME;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
+import dev.flang.util.SourcePosition;
 
 
 /**
@@ -380,12 +383,12 @@ public class DFA extends ANY
                 // check if target value of new call ca causes current _call's instance to escape.
                 var or = _fuir.clazzOuterRef(cc);
                 if (original_tvalue instanceof EmbeddedValue ev && ev._instance == _call._instance &&
-                    _escapes.contains(ca._cc) &&
+                    _escapes.containsKey(ca._cc) &&
                     (or != -1) &&
                     _fuir.clazzFieldIsAdrOfValue(or)    // outer ref is adr, otherwise target is passed by value (primitive type like u32)
                     )
                   {
-                    _call.escapes();
+                    _call.escapes(s);
                   }
                 tempEscapes(s, original_tvalue, _fuir.clazzOuterRef(cc));
                 if (_reportResults && _options.verbose(9))
@@ -936,7 +939,7 @@ public class DFA extends ANY
          */
         private boolean currentEscapes(int cl)
         {
-          return _escapes.contains(cl);
+          return _escapes.containsKey(cl);
         }
 
 
@@ -1182,9 +1185,12 @@ public class DFA extends ANY
 
 
   /**
-   * Set of clazzes whose instance may escape the call to the clazz's routine.
+   * Map of clazzes whose instance may escape the call to the clazz's routine.
+   *
+   * key = clazz
+   * value = site where clazz was found to escape
    */
-  TreeSet<Integer> _escapes = new TreeSet<>();
+  TreeMap<Integer, Integer> _escapes = new TreeMap<>();
 
 
   /**
@@ -1199,13 +1205,45 @@ public class DFA extends ANY
    * does escape, the instance cannot be allocated on the stack.
    *
    * @param cc the clazz to check
+   *
+   * @param s
+   *
+   * @param call
    */
-  void escapes(int cc)
+  void escapes(int cc, int s, Call call)
   {
-    if (_escapes.add(cc))
+    if (s != -1 && _fuir.clazzAsString(cc).matches(".*#loop[0-9]+") /* NYI: REALLY BAD HACK: do not use RegEx */
+        && (_fuir.clazzLoopAllowEscape() == -1 || call.getEffectCheck(_fuir.clazzLoopAllowEscape()) == null)
+       )
       {
+        DfaErrors.loopInstanceEscapes(_fuir.declarationPos(cc),  _fuir.sitePos(s), escapeRoute(s));
+      }
+    if (!_escapes.containsKey(cc))
+      {
+        _escapes.put(cc, s);
         wasChanged(() -> "Escapes: " + _fuir.clazzAsString(cc));
       }
+  }
+
+
+  /*
+   * The recorded escape route of s.
+   * To be used by the error message.
+   */
+  private List<String> escapeRoute(int s)
+  {
+    var ac = _fuir.accessedClazz(s);
+    SourcePosition pos = _fuir.sitePos(s);
+    // NYI: UNDER DEVELOPMENT: skip pre_and_call
+    return _escapes.get(ac) == -1
+      ? new List<>(
+          pos + System.lineSeparator() + pos.showInSource(),
+          _fuir.declarationPos(ac) + System.lineSeparator() + _fuir.declarationPos(ac).showInSource()
+        )
+      : new List<>(
+          pos + System.lineSeparator() + pos.showInSource(),
+          escapeRoute(_escapes.get(ac))
+        );
   }
 
 

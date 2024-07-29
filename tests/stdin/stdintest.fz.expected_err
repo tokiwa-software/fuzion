@@ -1,0 +1,120 @@
+
+$MODULE/io/buffered/reader.fz:173:3: warning 1: Loop instance escapes.
+  for
+--^^^
+    is_eof                 := (reader LM).read ? io.end_of_file => true | a array => false
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    next_bytes Sequence u8 := ((reader LM).read ? io.end_of_file => []   | a array => a), rest ++ ((reader LM).read ? io.end_of_file => [] | a array => a)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    next_codepoints        := take_valid_codepoints next_bytes n, take_valid_codepoints next_bytes n-codepoint_count
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    # if we did not use any bytes and `next_bytes` contains not enough bytes for a codepoint potentially,
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    # we trigger a `discard_all` and remember what we read so far via `rest`.
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    # this is necesarry e.g. for stdin where we read one byte at a time.
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    rest Sequence u8       := if n>0 && next_codepoints.is_empty && next_bytes.count < 4 then (reader LM).discard_all; next_bytes else []
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    codepoint_count        := next_codepoints.count, codepoint_count+next_codepoints.count
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    res Sequence String    := next_codepoints, res ++ next_codepoints
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  while !is_eof && codepoint_count < n
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  else
+^^^^^^
+    if is_eof && res.is_empty
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      (reader LM).raise (error "-- end of file --"); ""
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    else
+^^^^^^^^
+      String.join res
+^^^^^^^^^^^^^^^^^^^^^
+Call that triggers the escape: 
+$MODULE/io/buffered/reader.fz:176:67:
+    next_codepoints        := take_valid_codepoints next_bytes n, take_valid_codepoints next_bytes n-codepoint_count
+------------------------------------------------------------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The found escape route: 
+$MODULE/io/buffered/reader.fz:176:67:
+    next_codepoints        := take_valid_codepoints next_bytes n, take_valid_codepoints next_bytes n-codepoint_count
+------------------------------------------------------------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^$MODULE/io/buffered/reader.fz:169:20:
+    bytes_used := (v.map c->c.as_string.byte_length).fold i32.sum
+-------------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^$MODULE/Sequence.fz:341:5:
+    as_list.map_to_list f
+----^^^^^^^$MODULE/array.fz:131:27:
+  public redef as_list => as_list 0
+--------------------------^^^^^^^^^$MODULE/array.fz:137:5:
+    pre
+----^^^
+      debug: i ≥ 0
+^^^^^^^^^^^^^^^^^^^^$MODULE/array.fz:140:6:
+    (slice i length).as_list
+-----^^^^^^^^^^^^^^$MODULE/array.fz:150:16:
+  public redef slice(from, to i32) Sequence T
+---------------^^^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+
+$MODULE/io/buffered/reader.fz:203:5: warning 2: Loop instance escapes.
+    while
+----^^^^^
+      match (reader LM).read
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        io.end_of_file =>
+^^^^^^^^^^^^^^^^^^^^^^^^^
+          false
+^^^^^^^^^^^^^^^
+        a array =>
+^^^^^^^^^^^^^^^^^^
+          # trailing carriage returns are dropped
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          add_to_res(a0 Sequence u8) unit =>
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            if !a0.is_empty
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              a1 := if strip_cr && a0.last = encodings.ascii.cr
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        (a0.slice 0 a0.count-1)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                      else
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        a0
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+              for b in a1 do
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                res.add b
+^^^^^^^^^^^^^^^^^^^^^^^^^
+          match (container.searchable_sequence a).index_of delim
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            idx i32 =>
+^^^^^^^^^^^^^^^^^^^^^^
+              add_to_res (a.slice 0 idx)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              (reader LM).discard idx+1
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              false
+^^^^^^^^^^^^^^^^^^^
+            nil =>
+^^^^^^^^^^^^^^^^^^
+              add_to_res a
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+              (reader LM).discard_all
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              true
+^^^^^^^^^^^^^^^^^^
+^
+Call that triggers the escape: 
+$MODULE/io/buffered/reader.fz:221:26:
+              add_to_res (a.slice 0 idx)
+-------------------------^^^^^^^^^^^^^^^
+The found escape route: 
+$MODULE/io/buffered/reader.fz:221:26:
+              add_to_res (a.slice 0 idx)
+-------------------------^^^^^^^^^^^^^^^$MODULE/array.fz:150:16:
+  public redef slice(from, to i32) Sequence T
+---------------^^^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+2 warnings.

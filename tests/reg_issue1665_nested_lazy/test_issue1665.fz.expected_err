@@ -1,0 +1,25 @@
+
+--CURDIR--/test_issue1665.fz:57:3: warning 1: Loop instance escapes.
+  for i in 0..3 do
+--^^^^^^^^^^^^^^^^
+    say "case $i:"
+^^^^^^^^^^^^^^^^^^
+    _ := f i ({say "using x"; g ({say "using y"; h ({say "using z"; create_z})})})
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Call that triggers the escape: 
+--CURDIR--/test_issue1665.fz:57:3:
+  for i in 0..3 do
+--^
+The found escape route: 
+--CURDIR--/test_issue1665.fz:57:3:
+  for i in 0..3 do
+--^--CURDIR--/test_issue1665.fz:57:3:
+  for i in 0..3 do
+--^^^^^^^^^^^^^^^^
+    say "case $i:"
+^^^^^^^^^^^^^^^^^^
+    _ := f i ({say "using x"; g ({say "using y"; h ({say "using z"; create_z})})})
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+one warning.

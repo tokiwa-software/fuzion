@@ -1,0 +1,65 @@
+
+--CURDIR--/test_local_mutate.fz:65:9: warning 1: Loop instance escapes.
+        for e in l do
+--------^^^^^^^^^^^^^
+          s.update a->a+e
+^^^^^^^^^^^^^^^^^^^^^^^^^
+Call that triggers the escape: 
+--CURDIR--/test_local_mutate.fz:65:9:
+        for e in l do
+--------^
+The found escape route: 
+--CURDIR--/test_local_mutate.fz:65:9:
+        for e in l do
+--------^--CURDIR--/test_local_mutate.fz:65:9:
+        for e in l do
+--------^^^^^^^^^^^^^
+          s.update a->a+e
+^^^^^^^^^^^^^^^^^^^^^^^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+
+--CURDIR--/test_local_mutate.fz:52:9: warning 2: Loop instance escapes.
+        for e in l do
+--------^^^^^^^^^^^^^
+          # add e to s
+^^^^^^^^^^^^^^^^^^^^^^
+          s.update a->a+e
+^^^^^^^^^^^^^^^^^^^^^^^^^
+Call that triggers the escape: 
+--CURDIR--/test_local_mutate.fz:52:9:
+        for e in l do
+--------^
+The found escape route: 
+--CURDIR--/test_local_mutate.fz:52:9:
+        for e in l do
+--------^--CURDIR--/test_local_mutate.fz:52:9:
+        for e in l do
+--------^^^^^^^^^^^^^
+          # add e to s
+^^^^^^^^^^^^^^^^^^^^^^
+          s.update a->a+e
+^^^^^^^^^^^^^^^^^^^^^^^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+
+--CURDIR--/test_local_mutate.fz:75:9: warning 3: Loop instance escapes.
+        for e in l do
+--------^^^^^^^^^^^^^
+          s.update a->a+e
+^^^^^^^^^^^^^^^^^^^^^^^^^
+Call that triggers the escape: 
+--CURDIR--/test_local_mutate.fz:75:9:
+        for e in l do
+--------^
+The found escape route: 
+--CURDIR--/test_local_mutate.fz:75:9:
+        for e in l do
+--------^--CURDIR--/test_local_mutate.fz:75:9:
+        for e in l do
+--------^^^^^^^^^^^^^
+          s.update a->a+e
+^^^^^^^^^^^^^^^^^^^^^^^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+3 warnings.

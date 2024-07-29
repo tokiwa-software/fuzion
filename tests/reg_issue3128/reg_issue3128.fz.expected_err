@@ -1,0 +1,29 @@
+
+--CURDIR--/reg_issue3128.fz:28:3: warning 1: Loop instance escapes.
+  for c in 0..9
+--^^^^^^^^^^^^^
+      x := f ()->c
+^^^^^^^^^^^^^^^^^^
+  do
+^^^^
+    say x
+^^^^^^^^^
+Call that triggers the escape: 
+--CURDIR--/reg_issue3128.fz:28:3:
+  for c in 0..9
+--^
+The found escape route: 
+--CURDIR--/reg_issue3128.fz:28:3:
+  for c in 0..9
+--^--CURDIR--/reg_issue3128.fz:28:3:
+  for c in 0..9
+--^^^^^^^^^^^^^
+      x := f ()->c
+^^^^^^^^^^^^^^^^^^
+  do
+^^^^
+    say x
+^^^^^^^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+one warning.

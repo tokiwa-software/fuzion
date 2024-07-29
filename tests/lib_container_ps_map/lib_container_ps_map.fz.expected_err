@@ -1,0 +1,29 @@
+
+$MODULE/container/ps_map.fz:381:5: warning 1: Loop instance escapes.
+    for
+----^^^
+      r := (container.ps_map PK V).empty, r.add k v
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      k in ks
+^^^^^^^^^^^^^
+      v in vs
+^^^^^^^^^^^^^
+    else
+^^^^^^^^
+      r
+^^^^^^^
+Call that triggers the escape: 
+$MODULE/container/ps_map.fz:382:43:
+      r := (container.ps_map PK V).empty, r.add k v
+------------------------------------------^^^^^^^^^
+The found escape route: 
+$MODULE/container/ps_map.fz:382:43:
+      r := (container.ps_map PK V).empty, r.add k v
+------------------------------------------^^^^^^^^^$MODULE/container/ps_map.fz:138:7:
+      add (k,v)
+------^^^^^^^^^$MODULE/container/ps_map.fz:146:10:
+  public add (kv (tuple PK V)) ps_map PK V =>
+---------^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+one warning.

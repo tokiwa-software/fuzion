@@ -1,0 +1,25 @@
+
+--CURDIR--/test_interval.fz:31:9: warning 1: Loop instance escapes.
+        for
+--------^^^
+          s := "", s+" "+(if x.contains i then "$i" else " "*($i).byte_length)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          i in -4.. +4
+^^^^^^^^^^^^^^^^^^^^^^
+        else
+^^^^^^^^^^^^
+          s
+^^^^^^^^^^^
+Call that triggers the escape: 
+--CURDIR--/test_interval.fz:32:32:
+          s := "", s+" "+(if x.contains i then "$i" else " "*($i).byte_length)
+-------------------------------^^^^^^^^
+The found escape route: 
+--CURDIR--/test_interval.fz:32:32:
+          s := "", s+" "+(if x.contains i then "$i" else " "*($i).byte_length)
+-------------------------------^^^^^^^^$MODULE/interval.fz:102:16:
+  public redef contains(e T) =>
+---------------^^^^^^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+one warning.

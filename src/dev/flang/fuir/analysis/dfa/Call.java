@@ -158,12 +158,12 @@ public class Call extends ANY implements Comparable<Call>, Context
     if (dfa._fuir.clazzResultField(cc)==-1 && _dfa._fuir.clazzKind(cc) != FeatureKind.Intrinsic) /* <==> _fuir.isConstructor(cl) */
       {
         /* a constructor call returns current as result, so it always escapes together with all outer references! */
-        dfa.escapes(cc);
+        dfa.escapes(cc, -1, null);
         var or = dfa._fuir.clazzOuterRef(cc);
         while (or != -1)
           {
             var orr = dfa._fuir.clazzResultClazz(or);
-            dfa.escapes(orr);
+            dfa.escapes(orr, -1, null);
             or = dfa._fuir.clazzOuterRef(orr);
           }
       }
@@ -452,8 +452,10 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * Record that the instance of this call escapes, i.e., it might be accessed
    * after the call returned and cannot be allocated on the stack.
+   *
+   * @param s the site where the call is found to escapes
    */
-  void escapes()
+  void escapes(int s)
   {
     if (PRECONDITIONS) require
       (_dfa._fuir.clazzKind(_cc) == FUIR.FeatureKind.Routine);
@@ -465,7 +467,7 @@ public class Call extends ANY implements Comparable<Call>, Context
         // contexts to the same clazz. We might make this more detailed and
         // record this local to the call or use part of the call's context like
         // the target value to be more accurate.
-        _dfa.escapes(_cc);
+        _dfa.escapes(_cc, s, this);
       }
   }
 

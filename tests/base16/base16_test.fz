@@ -61,31 +61,32 @@ base16_test is
       Testing base16 encoding..."""
 
   enc_test(test_vectors array (tuple my_c String), name String) =>
-    for results list (outcome String) := nil, results.concat (out:nil)
-        tup in test_vectors
-    do
-      (plain, code_expected) := tup
-      code_actual := match plain
-                        str String   => encodings.base16.encode_to_string str.utf8.as_array
-                        arr array u8 => encodings.base16.encode_to_string arr
-      out :=
-        if code_actual = code_expected
-          outcome "ok"
-        else
-          plain_str := match plain
-                         str String   => str
-                         arr array u8 => $arr
-          error "encode '$plain_str' produced '$code_actual' but should have been '$code_expected'"
-    else
-      if results ∀ (.ok)
-        say "$name test vectors are encoded correctly"
+    loop_allow_escape.go ()->
+      for results list (outcome String) := nil, results.concat (out:nil)
+          tup in test_vectors
+      do
+        (plain, code_expected) := tup
+        code_actual := match plain
+                          str String   => encodings.base16.encode_to_string str.utf8.as_array
+                          arr array u8 => encodings.base16.encode_to_string arr
+        out :=
+          if code_actual = code_expected
+            outcome "ok"
+          else
+            plain_str := match plain
+                           str String   => str
+                           arr array u8 => $arr
+            error "encode '$plain_str' produced '$code_actual' but should have been '$code_expected'"
       else
-        say "Failed encoding $name test vectors:"
-        results.filter (.is_error)
-              .map (.err.as_string)
-              .map ("  "+)
-              .for_each say
-        say ""
+        if results ∀ (.ok)
+          say "$name test vectors are encoded correctly"
+        else
+          say "Failed encoding $name test vectors:"
+          results.filter (.is_error)
+                .map (.err.as_string)
+                .map ("  "+)
+                .for_each say
+          say ""
   enc_test base16_test_vectors "RFC 4648"
   enc_test own_test_vectors "Additional"
 
@@ -97,35 +98,36 @@ base16_test is
       \n
       Testing base16 decoding..."""
   dec_test(test_vectors array (tuple my_c String), name String) =>
-    for results list (outcome String) := nil, results.concat (out:nil)
-        tup in test_vectors
-    do
-      (plain_exp, code) := tup
-      out :=
-        match encodings.base16.decode code.utf8.as_array
-          actual array u8 =>
-            match plain_exp
-              str String   =>
-                if str = String.from_bytes actual
-                  outcome "ok"
-                else
-                  error "decoding $code produced '{String.from_bytes actual}' but should have been '$str'"
-              arr array u8 =>
-                if arr.length=actual.length && ((arr.zip actual (a,b->a=b)) ∀ x->x)
-                  outcome "ok"
-                else
-                  error "decoding $code produced '$actual' but should have been '$arr'"
-          e error => error "decoding failed when it should not have: {e.msg}"
-    else
-      if results ∀ (.ok)
-        say "$name test vectors are decoded correctly"
+    loop_allow_escape.go ()->
+      for results list (outcome String) := nil, results.concat (out:nil)
+          tup in test_vectors
+      do
+        (plain_exp, code) := tup
+        out :=
+          match encodings.base16.decode code.utf8.as_array
+            actual array u8 =>
+              match plain_exp
+                str String   =>
+                  if str = String.from_bytes actual
+                    outcome "ok"
+                  else
+                    error "decoding $code produced '{String.from_bytes actual}' but should have been '$str'"
+                arr array u8 =>
+                  if arr.length=actual.length && ((arr.zip actual (a,b->a=b)) ∀ x->x)
+                    outcome "ok"
+                  else
+                    error "decoding $code produced '$actual' but should have been '$arr'"
+            e error => error "decoding failed when it should not have: {e.msg}"
       else
-        say "Failed decoding $name test vectors:"
-        results.filter (.is_error)
-              .map (.err.as_string)
-              .map ("  "+)
-              .for_each say
-        say ""
+        if results ∀ (.ok)
+          say "$name test vectors are decoded correctly"
+        else
+          say "Failed decoding $name test vectors:"
+          results.filter (.is_error)
+                .map (.err.as_string)
+                .map ("  "+)
+                .for_each say
+          say ""
   dec_test base16_test_vectors "RFC 4648"
   dec_test own_test_vectors "Additional"
 

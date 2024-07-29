@@ -1,0 +1,81 @@
+
+--CURDIR--/ctrie_test.fz:38:3: warning 1: Loop instance escapes.
+  for k in all do
+--^^^^^^^^^^^^^^^
+    ctrie.add k "v$k"
+^^^^^^^^^^^^^^^^^^^^^
+Call that triggers the escape: 
+--CURDIR--/ctrie_test.fz:39:11:
+    ctrie.add k "v$k"
+----------^^^
+The found escape route: 
+--CURDIR--/ctrie_test.fz:39:11:
+    ctrie.add k "v$k"
+----------^^^$MODULE/lock_free/map.fz:565:11:
+    match add r k v 0 nil r.gen
+----------^^^^^^^^^^^^^^^^^^^^^$MODULE/lock_free/map.fz:580:50:
+          ncn := (if cn.gen = i.gen then cn else renew cn i.gen).add (singleton_node k v) pos flag i.gen
+-------------------------------------------------^^^^^^^^^^^^^^$MODULE/lock_free/map.fz:299:3:
+  renew(cn container_node CTK CTV, new_gen u64) container_node CTK CTV
+--^^^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+
+--CURDIR--/ctrie_test.fz:48:3: warning 2: Loop instance escapes.
+  for k in readded do
+--^^^^^^^^^^^^^^^^^^^
+    ctrie.add k "v$k"
+^^^^^^^^^^^^^^^^^^^^^
+Call that triggers the escape: 
+--CURDIR--/ctrie_test.fz:49:11:
+    ctrie.add k "v$k"
+----------^^^
+The found escape route: 
+--CURDIR--/ctrie_test.fz:49:11:
+    ctrie.add k "v$k"
+----------^^^$MODULE/lock_free/map.fz:565:11:
+    match add r k v 0 nil r.gen
+----------^^^^^^^^^^^^^^^^^^^^^$MODULE/lock_free/map.fz:580:50:
+          ncn := (if cn.gen = i.gen then cn else renew cn i.gen).add (singleton_node k v) pos flag i.gen
+-------------------------------------------------^^^^^^^^^^^^^^$MODULE/lock_free/map.fz:299:3:
+  renew(cn container_node CTK CTV, new_gen u64) container_node CTK CTV
+--^^^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+
+--CURDIR--/ctrie_test.fz:43:3: warning 3: Loop instance escapes.
+  for k in removed do
+--^^^^^^^^^^^^^^^^^^^
+    _ := ctrie.remove k
+^^^^^^^^^^^^^^^^^^^^^^^
+Call that triggers the escape: 
+--CURDIR--/ctrie_test.fz:44:16:
+    _ := ctrie.remove k
+---------------^^^^^^
+The found escape route: 
+--CURDIR--/ctrie_test.fz:44:16:
+    _ := ctrie.remove k
+---------------^^^^^^$MODULE/lock_free/map.fz:607:11:
+    match remove r k 0 nil r.gen
+----------^^^^^^^^^^^^^^^^^^^^^^$MODULE/lock_free/map.fz:636:42:
+                match gcas i m (contract (cn.remove pos flag i.gen) lev)
+-----------------------------------------^^^^^^^^^^^^^^^^^^^^^^^^^^$MODULE/lock_free/map.fz:106:3:
+  pre debug: pos < array.length.as_u32
+--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^$MODULE/lock_free/map.fz:110:12:
+    tmp := array.take pos.as_i32 ++ array.drop (pos + 1).as_i32
+-----------^^^^^^^^^^^^^^^^^^^^^$MODULE/Sequence.fz:215:26:
+  public take (n i32) => as_list.take n
+-------------------------^^^^^^^$MODULE/array.fz:131:27:
+  public redef as_list => as_list 0
+--------------------------^^^^^^^^^$MODULE/array.fz:137:5:
+    pre
+----^^^
+      debug: i ≥ 0
+^^^^^^^^^^^^^^^^^^^^$MODULE/array.fz:140:6:
+    (slice i length).as_list
+-----^^^^^^^^^^^^^^$MODULE/array.fz:150:16:
+  public redef slice(from, to i32) Sequence T
+---------------^^^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+3 warnings.

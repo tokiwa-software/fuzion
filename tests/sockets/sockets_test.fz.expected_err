@@ -1,0 +1,175 @@
+
+--CURDIR--/sockets_test.fz:160:3: warning 1: Loop instance escapes.
+  for f in families do
+--^^^^^^^^^^^^^^^^^^^^
+    for p in protocols do
+^^^^^^^^^^^^^^^^^^^^^^^^^
+      time.nano.sleep (time.durations.s 1)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      _ := concur.thread.spawn ()->
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        _ := server f p
+^^^^^^^^^^^^^^^^^^^^^^^
+Call that triggers the escape: 
+<source position not available>:
+
+The found escape route: 
+<source position not available>:
+$MODULE/array.fz:131:27:
+  public redef as_list => as_list 0
+--------------------------^^^^^^^^^$MODULE/array.fz:137:5:
+    pre
+----^^^
+      debug: i ≥ 0
+^^^^^^^^^^^^^^^^^^^^$MODULE/array.fz:140:6:
+    (slice i length).as_list
+-----^^^^^^^^^^^^^^$MODULE/array.fz:150:16:
+  public redef slice(from, to i32) Sequence T
+---------------^^^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+
+--CURDIR--/sockets_test.fz:161:5: warning 2: Loop instance escapes.
+    for p in protocols do
+----^^^^^^^^^^^^^^^^^^^^^
+      time.nano.sleep (time.durations.s 1)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      _ := concur.thread.spawn ()->
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        _ := server f p
+^^^^^^^^^^^^^^^^^^^^^^^
+Call that triggers the escape: 
+--CURDIR--/sockets_test.fz:161:5:
+    for p in protocols do
+----^
+The found escape route: 
+--CURDIR--/sockets_test.fz:161:5:
+    for p in protocols do
+----^--CURDIR--/sockets_test.fz:161:5:
+    for p in protocols do
+----^^^^^^^^^^^^^^^^^^^^^
+      time.nano.sleep (time.durations.s 1)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      _ := concur.thread.spawn ()->
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        _ := server f p
+^^^^^^^^^^^^^^^^^^^^^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+
+--CURDIR--/sockets_test.fz:168:3: warning 3: Loop instance escapes.
+  for f in families do
+--^^^^^^^^^^^^^^^^^^^^
+    for p in protocols do
+^^^^^^^^^^^^^^^^^^^^^^^^^
+      say "### $p/$f-Tests ###"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      # write request to server and read response
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      for i in 1..2 do
+^^^^^^^^^^^^^^^^^^^^^^
+        client f p (net.family.localhost f) (port f p) i
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Call that triggers the escape: 
+<source position not available>:
+
+The found escape route: 
+<source position not available>:
+$MODULE/array.fz:131:27:
+  public redef as_list => as_list 0
+--------------------------^^^^^^^^^$MODULE/array.fz:137:5:
+    pre
+----^^^
+      debug: i ≥ 0
+^^^^^^^^^^^^^^^^^^^^$MODULE/array.fz:140:6:
+    (slice i length).as_list
+-----^^^^^^^^^^^^^^$MODULE/array.fz:150:16:
+  public redef slice(from, to i32) Sequence T
+---------------^^^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+
+--CURDIR--/sockets_test.fz:79:7: warning 4: Loop instance escapes.
+      while net.server.is_active && match net.server.accept unit LM rh
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                      e error => false
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                      * => true
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      do
+^^^^^^^^
+^
+Call that triggers the escape: 
+--CURDIR--/sockets_test.fz:79:69:
+      while net.server.is_active && match net.server.accept unit LM rh
+--------------------------------------------------------------------^^
+The found escape route: 
+--CURDIR--/sockets_test.fz:79:69:
+      while net.server.is_active && match net.server.accept unit LM rh
+--------------------------------------------------------------------^^--CURDIR--/sockets_test.fz:41:7:
+      rh : net.Request_Handler unit is
+------^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+
+$MODULE/io/buffered/reader.fz:203:5: warning 5: Loop instance escapes.
+    while
+----^^^^^
+      match (reader LM).read
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        io.end_of_file =>
+^^^^^^^^^^^^^^^^^^^^^^^^^
+          false
+^^^^^^^^^^^^^^^
+        a array =>
+^^^^^^^^^^^^^^^^^^
+          # trailing carriage returns are dropped
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          add_to_res(a0 Sequence u8) unit =>
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            if !a0.is_empty
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              a1 := if strip_cr && a0.last = encodings.ascii.cr
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        (a0.slice 0 a0.count-1)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                      else
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        a0
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+              for b in a1 do
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                res.add b
+^^^^^^^^^^^^^^^^^^^^^^^^^
+          match (container.searchable_sequence a).index_of delim
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            idx i32 =>
+^^^^^^^^^^^^^^^^^^^^^^
+              add_to_res (a.slice 0 idx)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              (reader LM).discard idx+1
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              false
+^^^^^^^^^^^^^^^^^^^
+            nil =>
+^^^^^^^^^^^^^^^^^^
+              add_to_res a
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+              (reader LM).discard_all
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              true
+^^^^^^^^^^^^^^^^^^
+^
+Call that triggers the escape: 
+$MODULE/io/buffered/reader.fz:221:26:
+              add_to_res (a.slice 0 idx)
+-------------------------^^^^^^^^^^^^^^^
+The found escape route: 
+$MODULE/io/buffered/reader.fz:221:26:
+              add_to_res (a.slice 0 idx)
+-------------------------^^^^^^^^^^^^^^^$MODULE/array.fz:150:16:
+  public redef slice(from, to i32) Sequence T
+---------------^^^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+5 warnings.

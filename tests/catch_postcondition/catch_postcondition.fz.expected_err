@@ -1,4 +1,210 @@
 
+--CURDIR--/catch_postcondition.fz:157:3: warning 1: Loop instance escapes.
+  for c in tries.indices do
+--^^^^^^^^^^^^^^^^^^^^^^^^^
+    h : handle_post (option String) is
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      redef try option String  => tries[c].call
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      redef catch(s String) option String => say "*** failed: $s ***"; nil
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    r := h.res
+^^^^^^^^^^^^^^
+  until r??
+^^^^^^^^^^^
+    say r
+^^^^^^^^^
+  else
+^^^^^^
+    say "*** all failed ***"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Call that triggers the escape: 
+--CURDIR--/catch_postcondition.fz:157:3:
+  for c in tries.indices do
+--^
+The found escape route: 
+--CURDIR--/catch_postcondition.fz:157:3:
+  for c in tries.indices do
+--^--CURDIR--/catch_postcondition.fz:157:3:
+  for c in tries.indices do
+--^^^^^^^^^^^^^^^^^^^^^^^^^
+    h : handle_post (option String) is
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      redef try option String  => tries[c].call
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      redef catch(s String) option String => say "*** failed: $s ***"; nil
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    r := h.res
+^^^^^^^^^^^^^^
+  until r??
+^^^^^^^^^^^
+    say r
+^^^^^^^^^
+  else
+^^^^^^
+    say "*** all failed ***"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+
+--CURDIR--/catch_postcondition.fz:229:3: warning 2: Loop instance escapes.
+  for
+--^^^
+    c in tries.indices
+^^^^^^^^^^^^^^^^^^^^^^
+  do
+^^^^
+    r := try_post ()->
+^^^^^^^^^^^^^^^^^^^^^^
+           option tries[c].call
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+         .catch s->
+^^^^^^^^^^^^^^^^^^^
+           say "*** failed: $s ***"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           nil
+^^^^^^^^^^^^^^
+  until r??
+^^^^^^^^^^^
+    say r
+^^^^^^^^^
+  else
+^^^^^^
+    say "*** all failed ***"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Call that triggers the escape: 
+--CURDIR--/catch_postcondition.fz:232:10:
+    r := try_post ()->
+---------^^^^^^^^
+The found escape route: 
+--CURDIR--/catch_postcondition.fz:232:10:
+    r := try_post ()->
+---------^^^^^^^^--CURDIR--/catch_postcondition.fz:182:3:
+  try_post(T type, code_try ()->T) is
+--^^^^^^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+
+--CURDIR--/catch_postcondition.fz:267:3: warning 3: Loop instance escapes.
+  for
+--^^^
+    c in tries.indices
+^^^^^^^^^^^^^^^^^^^^^^
+  do
+^^^^
+    r := fuzion.runtime.fault.try ()->
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           option tries[c].call
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+         .catch s->
+^^^^^^^^^^^^^^^^^^^
+           say "*** failed: {s.0} {s.1} ***"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           nil
+^^^^^^^^^^^^^^
+  until r??
+^^^^^^^^^^^
+    say r
+^^^^^^^^^
+  else
+^^^^^^
+    say "*** all failed ***"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Call that triggers the escape: 
+--CURDIR--/catch_postcondition.fz:267:3:
+  for
+--^
+The found escape route: 
+--CURDIR--/catch_postcondition.fz:267:3:
+  for
+--^--CURDIR--/catch_postcondition.fz:267:3:
+  for
+--^^^
+    c in tries.indices
+^^^^^^^^^^^^^^^^^^^^^^
+  do
+^^^^
+    r := fuzion.runtime.fault.try ()->
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           option tries[c].call
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+         .catch s->
+^^^^^^^^^^^^^^^^^^^
+           say "*** failed: {s.0} {s.1} ***"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           nil
+^^^^^^^^^^^^^^
+  until r??
+^^^^^^^^^^^
+    say r
+^^^^^^^^^
+  else
+^^^^^^
+    say "*** all failed ***"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+
+--CURDIR--/catch_postcondition.fz:248:3: warning 4: Loop instance escapes.
+  for
+--^^^
+    c in tries.indices
+^^^^^^^^^^^^^^^^^^^^^^
+  do
+^^^^
+    r := fuzion.runtime.post_fault.try ()->
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           option tries[c].call
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+         .catch s->
+^^^^^^^^^^^^^^^^^^^
+           say "*** failed: $s ***"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           nil
+^^^^^^^^^^^^^^
+  until r??
+^^^^^^^^^^^
+    say r
+^^^^^^^^^
+  else
+^^^^^^
+    say "*** all failed ***"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Call that triggers the escape: 
+--CURDIR--/catch_postcondition.fz:248:3:
+  for
+--^
+The found escape route: 
+--CURDIR--/catch_postcondition.fz:248:3:
+  for
+--^--CURDIR--/catch_postcondition.fz:248:3:
+  for
+--^^^
+    c in tries.indices
+^^^^^^^^^^^^^^^^^^^^^^
+  do
+^^^^
+    r := fuzion.runtime.post_fault.try ()->
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           option tries[c].call
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+         .catch s->
+^^^^^^^^^^^^^^^^^^^
+           say "*** failed: $s ***"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           nil
+^^^^^^^^^^^^^^
+  until r??
+^^^^^^^^^^^
+    say r
+^^^^^^^^^
+  else
+^^^^^^
+    say "*** all failed ***"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+
 error 1: Postcondition `equals result-x x` does not hold after call
 Call stack:
 fuzion.type.runtime.type.fault.type.install_default.λ.call#1: $MODULE/fuzion/runtime/fault.fz:38:7:
@@ -945,4 +1151,4 @@ catch_postcondition: --CURDIR--/catch_postcondition.fz:83:28:
 ---------------------------^^^
 
 *** fatal errors encountered, stopping.
-one error.
+one error and 4 warnings.

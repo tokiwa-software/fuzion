@@ -1,0 +1,65 @@
+
+$MODULE/encodings/base64.fz:135:5: warning 1: Loop instance escapes.
+    for
+----^^^
+      res list u8 := nil, res ++ [b0, b1, b2] # result: contains the decoded data at the end
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      nxt := 0, nxt + 4
+^^^^^^^^^^^^^^^^^^^^^^^
+      last_err := false, is_err
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      sxt_last array (outcome u32) := [], sextets
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    while nxt < data.length && !last_err
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    do
+^^^^^^
+      sextets := [check_input nxt, check_input nxt+1, check_input nxt+2, check_input nxt+3]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      is_err := (sextets ∃ el -> el.is_error)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      # convert sextets in 24 bit number, break up in three bytes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      block := if is_err then 0 else sextets[0].val << 18 | sextets[1].val << 12 | sextets[2].val << 6 | sextets[3].val
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      b0 := (block >> 16).low8bits
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      b1 := (block >> 8).low8bits
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      b2 := block.low8bits
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+    else
+^^^^^^^^
+      if last_err
+^^^^^^^^^^^^^^^^^
+        (sxt_last.filter (e -> e.is_error)).first.err
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      else
+^^^^^^^^^^
+        # remove zero bytes caused by padding
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        outcome (res.take res.count-pad_size).as_array
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Call that triggers the escape: 
+$MODULE/encodings/base64.fz:144:17:
+      is_err := (sextets ∃ el -> el.is_error)
+----------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The found escape route: 
+$MODULE/encodings/base64.fz:144:17:
+      is_err := (sextets ∃ el -> el.is_error)
+----------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^$MODULE/Sequence.fz:209:40:
+  public infix ∃ (f T -> bool) bool => as_list ∃ f
+---------------------------------------^^^^^^^$MODULE/array.fz:131:27:
+  public redef as_list => as_list 0
+--------------------------^^^^^^^^^$MODULE/array.fz:137:5:
+    pre
+----^^^
+      debug: i ≥ 0
+^^^^^^^^^^^^^^^^^^^^$MODULE/array.fz:140:6:
+    (slice i length).as_list
+-----^^^^^^^^^^^^^^$MODULE/array.fz:150:16:
+  public redef slice(from, to i32) Sequence T
+---------------^^^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+one warning.

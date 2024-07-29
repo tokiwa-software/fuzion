@@ -1,0 +1,263 @@
+
+--CURDIR--/base32_test.fz:66:5: warning 1: Loop instance escapes.
+    for results list (outcome String) := nil, results.concat (out:nil)
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        tup in test_vectors
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    do
+^^^^^^
+      (plain, code_expected) := tup
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      code_actual := match plain
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        str String   => encodings.base32.encode_to_string str.utf8.as_array
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        arr array u8 => encodings.base32.encode_to_string arr
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      out :=
+^^^^^^^^^^^^
+        if code_actual = code_expected
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          outcome "ok"
+^^^^^^^^^^^^^^^^^^^^^^
+        else
+^^^^^^^^^^^^
+          plain_str := match plain
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                         str String   => str
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                         arr array u8 => $arr
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          error "encode '$plain_str' produced '$code_actual' but should have been '$code_expected'"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    else
+^^^^^^^^
+      if results ∀ (.ok)
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+        say "$name test vectors are encoded correctly"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      else
+^^^^^^^^^^
+        say "Failed encoding $name test vectors:"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        results.filter (.is_error)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              .map (.err.as_string)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              .map ("  "+)
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+              .for_each say
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        say ""
+^^^^^^^^^^^^^^
+Call that triggers the escape: 
+--CURDIR--/base32_test.fz:79:42:
+                         arr array u8 => $arr
+-----------------------------------------^
+The found escape route: 
+--CURDIR--/base32_test.fz:79:42:
+                         arr array u8 => $arr
+-----------------------------------------^$MODULE/Any.fz:43:22:
+  public prefix $ => Any.this.as_string
+---------------------^^^^^^^^^^^^^^^^^^$MODULE/Sequence.fz:304:7:
+      as_string_all
+------^^^^^^^^^^^^^$MODULE/Sequence.fz:318:30:
+  public as_string_all => "[{as_string ", "}]"
+-----------------------------^^^^^^^^^^^^^^$MODULE/Sequence.fz:327:36:
+  public as_string (sep String) => as_list.as_string sep
+-----------------------------------^^^^^^^$MODULE/array.fz:131:27:
+  public redef as_list => as_list 0
+--------------------------^^^^^^^^^$MODULE/array.fz:137:5:
+    pre
+----^^^
+      debug: i ≥ 0
+^^^^^^^^^^^^^^^^^^^^$MODULE/array.fz:140:6:
+    (slice i length).as_list
+-----^^^^^^^^^^^^^^$MODULE/array.fz:150:16:
+  public redef slice(from, to i32) Sequence T
+---------------^^^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+
+--CURDIR--/base32_test.fz:102:5: warning 2: Loop instance escapes.
+    for results list (outcome String) := nil, results.concat (out:nil)
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        tup in test_vectors
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    do
+^^^^^^
+      (plain_exp, code) := tup
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      out :=
+^^^^^^^^^^^^
+        match encodings.base32.decode code.utf8.as_array
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          actual array u8 =>
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            match plain_exp
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              str String   =>
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                if str = String.from_bytes actual
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                  outcome "ok"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                else
+^^^^^^^^^^^^^^^^^^^^
+                  error "decoding $code produced '{String.from_bytes actual}' but should have been '$str'"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              arr array u8 =>
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                if arr.length=actual.length && ((arr.zip actual (a,b->a=b)) ∀ x->x)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                  outcome "ok"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                else
+^^^^^^^^^^^^^^^^^^^^
+                  error "decoding $code produced '$actual' but should have been '$arr'"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          e error => error "decoding failed when it should not have: {e.msg}"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    else
+^^^^^^^^
+      if results ∀ (.ok)
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+        say "$name test vectors are decoded correctly"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      else
+^^^^^^^^^^
+        say "Failed decoding $name test vectors:"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        results.filter (.is_error)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              .map (.err.as_string)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              .map ("  "+)
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+              .for_each say
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        say ""
+^^^^^^^^^^^^^^
+Call that triggers the escape: 
+--CURDIR--/base32_test.fz:116:54:
+                if arr.length=actual.length && ((arr.zip actual (a,b->a=b)) ∀ x->x)
+-----------------------------------------------------^^^
+The found escape route: 
+--CURDIR--/base32_test.fz:116:54:
+                if arr.length=actual.length && ((arr.zip actual (a,b->a=b)) ∀ x->x)
+-----------------------------------------------------^^^$MODULE/Sequence.fz:476:53:
+  public zip(U,V type, b Sequence U, f (T,U)->V) => as_list.zip b.as_list f
+----------------------------------------------------^^^^^^^$MODULE/array.fz:131:27:
+  public redef as_list => as_list 0
+--------------------------^^^^^^^^^$MODULE/array.fz:137:5:
+    pre
+----^^^
+      debug: i ≥ 0
+^^^^^^^^^^^^^^^^^^^^$MODULE/array.fz:140:6:
+    (slice i length).as_list
+-----^^^^^^^^^^^^^^$MODULE/array.fz:150:16:
+  public redef slice(from, to i32) Sequence T
+---------------^^^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+
+$MODULE/encodings/base32.fz:58:5: warning 3: Loop instance escapes.
+    for
+----^^^
+      res Sequence u8 := [], next        # the encoded data
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      i := 0, i+1
+^^^^^^^^^^^^^^^^^
+      last_n u64 := 0, i %% 5 ?  0 : n
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      b in data
+^^^^^^^^^^^^^^^
+      n := (last_n << 8) + b.as_u64
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      next := if i%5=4 then res ++ enc40 n
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              else          res
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    else
+^^^^^^^^
+      bit_len := data.length%5 * 8       # number of bits in last input block
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      if bit_len = 0
+^^^^^^^^^^^^^^^^^^^^
+        res
+^^^^^^^^^^^
+      else
+^^^^^^^^^^
+        block_len := bit_len/5 + (bit_len%%5 ? 0 : 1)  # number ob characters in last block
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        res ++ (enc40 (last_n<<((u64 40)-bit_len.as_u64))).slice 0 block_len ++ (array u8 (8-block_len) _->61)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Call that triggers the escape: 
+$MODULE/encodings/base32.fz:64:36:
+      next := if i%5=4 then res ++ enc40 n
+-----------------------------------^^^^^^^
+The found escape route: 
+$MODULE/encodings/base32.fz:64:36:
+      next := if i%5=4 then res ++ enc40 n
+-----------------------------------^^^^^^^$MODULE/encodings/base32.fz:53:5:
+    enc40(n u64) =>
+----^^^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+
+$MODULE/encodings/base32.fz:146:5: warning 4: Loop instance escapes.
+    for
+----^^^
+      res list u8 := nil, res ++ bytes  # contains the decoded data at the end
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      nxt := 0, nxt + 8
+^^^^^^^^^^^^^^^^^^^^^^^
+      last_err := false, is_err
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      qnt_last list (outcome u64) := nil, quintets
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    while nxt < data.length && !last_err
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    do
+^^^^^^
+      quintets := (nxt :: +1).map(i->dec_input i).take 8
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      is_err := (quintets ∃ el -> el.is_error)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      # convert quintets in 40 bit number, break up in three bytes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      bits := if is_err then 0
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              else quintets.map (.val)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                           .zip (((u64 35) :: -5).take 8) (<<)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                           .foldf (|) (u64 0)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      bytes := [(u64 32), 24, 16, 8, 0].map (i->(bits >> i).low8bits)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    else
+^^^^^^^^
+      if last_err
+^^^^^^^^^^^^^^^^^
+        (qnt_last.filter (e -> e.is_error)).first.err
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      else
+^^^^^^^^^^
+        dump_size := 5 - ((40 - (pad_size * 5)) / 8)    # number of decoded bytes caused by zeroed padding
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        outcome (res.take res.count-dump_size).as_array # remove zero bytes caused by padding
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Call that triggers the escape: 
+$MODULE/encodings/base32.fz:147:31:
+      res list u8 := nil, res ++ bytes  # contains the decoded data at the end
+------------------------------^^
+The found escape route: 
+$MODULE/encodings/base32.fz:147:31:
+      res list u8 := nil, res ++ bytes  # contains the decoded data at the end
+------------------------------^^$MODULE/list.fz:352:16:
+  public redef infix ++ (t Sequence A) => concat t.as_list
+---------------^^^^^^^^
+To solve this, either change the code where loop instance escapes or wrap loop in effect loop_allow_escape.
+
+4 warnings.

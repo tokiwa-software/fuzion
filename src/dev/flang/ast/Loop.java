@@ -261,6 +261,20 @@ public class Loop extends ANY
        sb == null || untilCond != null,
        eb0 == null || eb0 instanceof Block || eb0 instanceof If);
 
+       var loopEndPos = eb0 != null
+         ? eb0.pos().byteEndPos()
+         : sb != null
+         ? sb.pos().byteEndPos()
+         : untilCond != null
+         ? untilCond.pos().byteEndPos()
+         : block != null
+         ? block.pos().byteEndPos()
+         : whileCond != null
+         ? whileCond.pos().byteEndPos()
+         : nv.size() > 0
+         ? nv.get(nv.size()-1).impl().expr().pos().byteEndPos()
+         : pos.pos().byteEndPos();
+
     _elsePos   = pos;  // NYI: if present, use position of "else" keyword
     _indexVars = iv;
     _nextValues = nv;
@@ -313,8 +327,8 @@ public class Loop extends ANY
       {
         block = Block.fromExpr(new If(whileCond.pos(), whileCond, block, _elseBlock0));
       }
-    var p = block.pos();
-    Feature loop = new Feature(p,
+
+    Feature loop = new Feature(pos.rangeTo(loopEndPos),
                                Visi.PRIV,
                                0,
                                NoType.INSTANCE,
@@ -322,7 +336,7 @@ public class Loop extends ANY
                                formalArguments,
                                Function.NO_CALLS,
                                Contract.EMPTY_CONTRACT,
-                               new Impl(p, block, Impl.Kind.RoutineDef));
+                               new Impl(block.pos(), block, Impl.Kind.RoutineDef));
 
     var initialCall = new Call(pos, null, loopName, initialActuals);
     prologSuccessBlock.add(initialCall);

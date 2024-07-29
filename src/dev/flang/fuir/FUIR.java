@@ -532,6 +532,15 @@ public class FUIR extends IR
     return res;
   }
 
+  public String clazzBaseNameHuman(int cl)
+  {
+    var cc = clazz(cl);
+    var res = cc.feature().featureName().baseNameHuman();
+    res = res + cc._type.generics()
+      .toString(" ", " ", "", t -> t.asStringWrapped(true));
+    return res;
+  }
+
 
   /**
    * The original qualified name of the feature this clazz was
@@ -2658,6 +2667,14 @@ public class FUIR extends IR
       .forEach(r -> AirErrors.abstractFeatureNotImplemented(r.clazz.feature(),
                                                             r.called,
                                                             r.instantiationPos));
+  }
+
+
+  public int clazzLoopAllowEscape()
+  {
+    return Clazzes.isUsed(Types.resolved.f_loop_allow_escape)
+      ? lookup(clazzUniverse(), Types.resolved.f_loop_allow_escape)
+      : -1;
   }
 
 
