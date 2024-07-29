@@ -90,6 +90,11 @@ public class ResolvedNormalType extends ResolvedType
    */
   AbstractFeature _feature;
 
+
+  /**
+   * Cached result of isRef(). Even though this function looks harmless, it is
+   * surprisingly performance critical.
+   */
   Boolean _isRef;
 
 

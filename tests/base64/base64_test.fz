@@ -23,44 +23,77 @@
 
 base64_test is
 
+  my_c : choice String (array u8) is
+  mk_choice(x my_c) => x
+
   # RFC 4618 test vectors
-  base64_test_vectors array (tuple String String) :=
-    [($"", ""),
-      ($"f", "Zg=="),
-      ("fo", "Zm8="),
-      ("foo", "Zm9v"),
-      ("foob", "Zm9vYg=="),
-      ("fooba", "Zm9vYmE="),
-      ("foobar", "Zm9vYmFy")]
+  base64_test_vectors array (tuple my_c String)  :=
+    [(mk_choice $"",      ""),
+     (mk_choice $"f",     "Zg=="),
+     (mk_choice "fo",     "Zm8="),
+     (mk_choice "foo",    "Zm9v"),
+     (mk_choice "foob",   "Zm9vYg=="),
+     (mk_choice "fooba",  "Zm9vYmE="),
+     (mk_choice "foobar", "Zm9vYmFy")]
+
+  # Additional test vectors
+  own_test_vectors array (tuple my_c String) :=
+    [(mk_choice [(u8 251), 224],      "++A="),
+     (mk_choice [(u8 255), 240],      "//A="),
+     (mk_choice [],                   ""    ),
+     (mk_choice [(u8 251), 239, 190], "++++"),
+     (mk_choice (array u8 3 _->255),  "////"),
+     (mk_choice (array u8 3 _->0),    "AAAA"),
+     (mk_choice "123890ABCXYZabcxyz_:;>~<%&\$§!", "MTIzODkwQUJDWFlaYWJjeHl6Xzo7Pn48JSYkwqch"),
+     (mk_choice """
+     Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidun\
+     t ut labore et dolore magna aliquyam erat, sed dia voluptua. At vero eos et accusam et justo d\
+     uo dolores et ea rebum.
+
+     Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.""",
+     """
+     TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNldGV0dXIgc2FkaXBzY2luZyBlbGl0ciwgc2VkIGRpYW0gbm9udW1\
+     5IGVpcm1vZCB0ZW1wb3IgaW52aWR1bnQgdXQgbGFib3JlIGV0IGRvbG9yZSBtYWduYSBhbGlxdXlhbSBlcmF0LCBzZWQgZG\
+     lhIHZvbHVwdHVhLiBBdCB2ZXJvIGVvcyBldCBhY2N1c2FtIGV0IGp1c3RvIGR1byBkb2xvcmVzIGV0IGVhIHJlYnVtLgoKU\
+     3RldCBjbGl0YSBrYXNkIGd1YmVyZ3Jlbiwgbm8gc2VhIHRha2ltYXRhIHNhbmN0dXMgZXN0IExvcmVtIGlwc3VtIGRvbG9y\
+     IHNpdCBhbWV0Lg==""")]
+
 
 
   # ENCODING
 
   say """
-      Testing base64 encoding...
-      """
+      Testing base64 encoding..."""
 
 
-  enc_test =>
-    for tup in base64_test_vectors do
+  enc_test(test_vectors array (tuple my_c String), name String) =>
+    for results list (outcome String) := nil, results.concat (out:nil)
+        tup in test_vectors
+    do
       (plain, code_expected) := tup
-      code_actual := encodings.base64.encode_to_string plain.utf8.as_array
+      code_actual := match plain
+                        str String   => encodings.base64.encode_to_string str.utf8.as_array
+                        arr array u8 => encodings.base64.encode_to_string arr
       out :=
         if code_actual = code_expected
           outcome "ok"
         else
-          error "encode '$plain' produced '$code_actual' but should have been $code_expected"
-          until !out.ok
-          out.err.as_string
-          else
-            "RFC 4648 test vectors are encoded correctly"
-  say enc_test
-  say ""
-
-
-  # testing for + and / in output
-  say (encodings.base64.encode_to_string [(u8 251), 224])
-  say (encodings.base64.encode_to_string [(u8 255), 240])
+          plain_str := match plain
+                          str String   => str
+                          arr array u8 => $arr
+          error "encode '$plain_str' produced '$code_actual' but should have been '$code_expected'"
+    else
+      if results ∀ (.ok)
+        say "$name test vectors are encoded correctly"
+      else
+        say "Failed encoding $name test vectors:"
+        results.filter (.is_error)
+              .map (.err.as_string)
+              .map ("  "+)
+              .for_each say
+        say ""
+  enc_test base64_test_vectors "RFC 4648"
+  enc_test own_test_vectors "Additional"
 
 
 
@@ -68,37 +101,58 @@ base64_test is
 
   say """
       \n
-      Testing base64 decoding...
-      """
-  dec_test =>
-    for tup in base64_test_vectors do
-      (plain_expected, code) := tup
+      Testing base64 decoding..."""
+  dec_test(test_vectors array (tuple my_c String), name String) =>
+    for results list (outcome String) := nil, results.concat (out:nil)
+        tup in test_vectors
+    do
+      (plain_exp, code) := tup
       out :=
         match encodings.base64.decode code.utf8.as_array
-          arr array u8 =>
-            plain_actual := String.type.from_bytes arr
-            if plain_actual != plain_expected
-              error "decoding $code produced '$plain_actual' but should have been '$plain_expected'"
-            else
-              outcome "ok"
-          e error => error "error in test data"
-    until !out.ok
-      out.err.as_string
+          actual array u8 =>
+            match plain_exp
+              str String   =>
+                if str = String.from_bytes actual
+                  outcome "ok"
+                else
+                  error "decoding $code produced '{String.from_bytes actual}' but should have been '$str'"
+              arr array u8 =>
+                if arr.length=actual.length && ((arr.zip actual a,b->a=b) ∀ id)
+                  outcome "ok"
+                else
+                  error "decoding $code produced '$actual' but should have been '$arr'"
+          e error => error "decoding failed when it should not have: {e.msg}"
     else
-      "RFC 4648 test vectors are decoded correctly"
-  say dec_test
-  say ""
+      if results ∀ (.ok)
+        say "$name test vectors are decoded correctly"
+      else
+        say "Failed decoding $name test vectors:"
+        results.filter (.is_error)
+              .map (.err.as_string)
+              .map ("  "+)
+              .for_each say
+        say ""
+  dec_test base64_test_vectors "RFC 4648"
+  dec_test own_test_vectors "Additional"
 
-  broken_enc := ["Zm9🌏️Yg==",
-                    """
-                    Zm9v
-                    Yg==""",
-                    "Z=m9=vYg==",
-                    "Zm9vYg=",
-                    "Zm9vY==",
-                    "Zm9vY===",
-                    "Zm9v Yg==",
-                    "Zm9v;Yg=="]
+
+  # ERROR MESSAGES
+
+  say """
+      \n
+      Test error messages when decoding broken base32...
+      """
+
+  broken_enc := ["""
+                 Zm9v
+                 Yg==""",      # line break
+                 "Zm9vYg=",    # padding to short
+                 "Zm9vY==",    # invalid encoding length, invalid length
+                 "Zm9vY===",   # invalid padding length / encoding length with valid overall length
+                 "Zm9=vYg==",  # pad char within encoding
+                 "Zm9🌏️Yg==",  # non alphabet multi byte unicode character
+                 "Zm9v Yg==",  # space
+                 "Zm9v;Yg=="]  # non alphabet ascii character
 
   for t in broken_enc do
     yak "$t: "
@@ -106,20 +160,3 @@ base64_test is
         arr array u8 => String.type.from_bytes arr
         e error => e.as_string)
   say ""
-
-  test_encodings := ["MTIzODkwQUJDWFlaYWJjeHl6Xzo7Pn48JSYkwqch",
-                "",
-                "++++",
-                "////",
-                "AAAA",
-                """
-                TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNldGV0dXIgc2FkaXBzY2luZyBlbGl0ciwg\
-                c2VkIGRpYW0gbm9udW15IGVpcm1vZCB0ZW1wb3IgaW52aWR1bnQgdXQgbGFib3JlIGV0IGRvbG9y\
-                ZSBtYWduYSBhbGlxdXlhbSBlcmF0LCBzZWQgZGlhIHZvbHVwdHVhLiBBdCB2ZXJvIGVvcyBldCBh\
-                Y2N1c2FtIGV0IGp1c3RvIGR1byBkb2xvcmVzIGV0IGVhIHJlYnVtLgoKU3RldCBjbGl0YSBrYXNk\
-                IGd1YmVyZ3Jlbiwgbm8gc2VhIHRha2ltYXRhIHNhbmN0dXMgZXN0IExvcmVtIGlwc3VtIGRvbG9y\
-                IHNpdCBhbWV0Lg=="""]
-  for t in test_encodings do
-    say (match encodings.base64.decode_str t
-        arr array u8 => String.type.from_bytes arr
-        e error => e.as_string)

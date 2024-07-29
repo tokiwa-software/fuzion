@@ -42,7 +42,7 @@ public f32(public val f32) : float is
   public fixed redef infix ** (other f32) f32 => intrinsic
 
 
-  # comparision
+  # comparison
   #
   fixed redef infix = (other f32) bool => intrinsic
   fixed redef infix <= (other f32) bool => intrinsic

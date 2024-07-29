@@ -23,7 +23,7 @@
 
 # Base64url encoding and decoding as defined in RFC 4648
 # modification of base64 which is safer for URLs and file names
-# code alphabet uses '-' and '_' in addition to the alphanumeric characters
+# For the non-alphanumeric characters the alphabet uses "-" and "_" instead of "+" and "/".
 #
 public base64url : base64 is
   redef get_alphabet => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_".utf8.as_array

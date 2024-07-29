@@ -192,9 +192,9 @@ public class Html extends ANY
 
 
   private String anchor(AbstractFeature af) {
-    return "<div class='font-weight-600'>" + typePrfx(af)
+    return "<div class='font-weight-600'>"
             + "<a class='fd-feature' href='" + featureAbsoluteURL(af) + "'>"
-            + htmlEncodedBasename(af)
+            + typePrfx(af) + htmlEncodedBasename(af)
             + "</a></div>";
   }
 
