@@ -185,7 +185,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
         p == _bytePos || p < byteEndPos();
         p++)
       {
-        while (_sourceFile.numLines() >= l+1 && _sourceFile.lineStartPos(l+1) <= p)
+        if (_sourceFile.numLines() >= l+1 && _sourceFile.lineStartPos(l+1) <= p)
           {
             l = l + 1;
             sb.append(Terminal.BLUE);
@@ -220,7 +220,6 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
               }
             if (!Terminal.ENABLED)
               {
-                sb.append(Terminal.YELLOW);
                 for (int j=0; l == line() && j < column()-1; j++)
                 {
                   sb.append('-');
