@@ -585,9 +585,7 @@ class CodeGen
             {
               var cl = si == NO_SITE ? -1 :_fuir.clazzAt(si);
               if (   cc == cl                                           // calling myself
-                  && _jvm._tailCall.callIsTailCall(cl, si)              // as a tail call
-                  && !_fuir.lifeTime(cl).maySurviveCall()
-                  )
+                  && _jvm._tailCall.callIsTailCall(cl, si))
                 { // then we can do tail recursion optimization!
 
                   // if present, store target to local #0

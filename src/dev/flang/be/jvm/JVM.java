@@ -1255,8 +1255,8 @@ should be avoided as much as possible.
           (cf != null);
 
         var sl = _startLabels[_fuir.clazzId2num(cl)];
-        var bc_cl = prolog
-          .andThen(sl != null ? sl : Expr.UNIT)
+        var bc_cl = (sl != null ? sl : Expr.UNIT)
+          .andThen(prolog)
           .andThen(code)
           .andThen(epilog);
 
