@@ -43,6 +43,7 @@ import dev.flang.be.jvm.runtime.Runtime;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 import dev.flang.util.QuietThreadTermination;
@@ -377,11 +378,10 @@ should be avoided as much as possible.
    *
    * To enable tracing, use fz with
    *
-   *   FUZION_JAVA_OPTIONS=-Ddev.flang.be.jvm.JVM.TRACE=true
+   *   dev_flang_be_jvm_JVM_TRACE=true
    */
   static final boolean TRACE =
-    System.getProperty("dev.flang.be.jvm.JVM.TRACE",
-                       "false").equals("true");
+    FuzionOptions.boolPropertyOrEnv("dev.flang.be.jvm.JVM.TRACE");
 
 
   /**
@@ -390,11 +390,10 @@ should be avoided as much as possible.
    *
    * To enable tracing returns, use fz with
    *
-   *   FUZION_JAVA_OPTIONS=-Ddev.flang.be.jvm.JVM.TRACE_RETURN=true
+   *   dev_flang_be_jvm_JVM_TRACE_RETURN=true
    */
   static final boolean TRACE_RETURN =
-    System.getProperty("dev.flang.be.jvm.JVM.TRACE_RETURN",
-                       "false").equals("true");
+    FuzionOptions.boolPropertyOrEnv("dev.flang.be.jvm.JVM.TRACE_RETURN");
 
 
   /**
@@ -404,11 +403,10 @@ should be avoided as much as possible.
    *
    * To enable comments, use fz with
    *
-   *   FUZION_JAVA_OPTIONS=-Ddev.flang.be.jvm.JVM.CODE_COMMENTS=true
+   *   dev_flang_be_jvm_JVM_CODE_COMMENTS=true
    */
   static final boolean CODE_COMMENTS =
-    System.getProperty("dev.flang.be.jvm.JVM.CODE_COMMENTS",
-                       "false").equals("true");
+    FuzionOptions.boolPropertyOrEnv("dev.flang.be.jvm.JVM.CODE_COMMENTS");
   static
   {
     Expr.ENABLE_COMMENTS = CODE_COMMENTS;

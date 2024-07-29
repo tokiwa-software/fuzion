@@ -71,7 +71,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # bytes are equal.
   #
   public fixed redef type.equality(a, b String) =>
-    ((a.utf8.zip b.utf8 aa,bb->aa=bb) ∀ x->x)
+    ((a.utf8.zip b.utf8 aa,bb->aa=bb) ∀ id)
       & a.utf8.count = b.utf8.count
 
 

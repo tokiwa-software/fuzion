@@ -140,8 +140,19 @@ public class Html extends ANY
         return Stream.empty();
       }
     return Stream.concat(anchorTags0(f.outer()),
-      Stream.of("<a class='fd-feature font-weight-600' href='$2'>$1</a>".replace("$1", htmlEncodedBasename(f))
+      Stream.of(typePrfx(f) + "<a class='fd-feature font-weight-600' href='$2'>$1</a>".replace("$1", htmlEncodedBasename(f))
         .replace("$2", featureAbsoluteURL(f))));
+  }
+
+
+  /**
+   * Return "type." prefix if af is a type feature.
+   * @param af the feature to be checked
+   * @return html for "type." prefix if type feature, empty string otherwise
+   */
+  private String typePrfx(AbstractFeature af)
+  {
+    return af.outer() != null && af.outer().isTypeFeature() && !af.isTypeFeature() ? "<span class=\"fd-keyword\">type</span>." : "";
   }
 
 
@@ -172,9 +183,8 @@ public class Html extends ANY
       + inherited(af)
       + (Util.Kind.classify(af) == Util.Kind.Other ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchor(af.resultType()) : "")
       + (Util.Kind.classify(af) == Util.Kind.Other ? "" : "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>")
-      // fills remaining space and set cursor pointer
-      // to indicate that this area expands revealing a summary
-      + "<div class='cursor-pointer flex-grow-1'></div>"
+      // fills remaining space
+      + "<div class='flex-grow-1'></div>"
       + "</div>"
       + source(af)
       + "</div>";
@@ -182,9 +192,10 @@ public class Html extends ANY
 
 
   private String anchor(AbstractFeature af) {
-    return "<a class='fd-feature font-weight-600' href='" + featureAbsoluteURL(af) + "'>"
-            + htmlEncodedBasename(af)
-            + "</a>";
+    return "<div class='font-weight-600'>"
+            + "<a class='fd-feature' href='" + featureAbsoluteURL(af) + "'>"
+            + typePrfx(af) + htmlEncodedBasename(af)
+            + "</a></div>";
   }
 
 
@@ -276,7 +287,7 @@ public class Html extends ANY
         return "<details id='" + htmlID(af)
           + "'$0><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
             // NYI rename fd-private?
-            .replace("$0", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private' hidden" : "")
+            .replace("$0", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
             .replace("$1",
               summary(af, printArgs))
             .replace("$2", Util.commentOf(af))
@@ -310,9 +321,7 @@ public class Html extends ANY
    */
   private String htmlEncodedBasename(AbstractFeature af)
   {
-    var n = (af.outer() != null && af.outer().isTypeFeature() ? "type." : "") + af.featureName().baseNameHuman();
-
-    return htmlEncodeNbsp(n);
+    return htmlEncodeNbsp(af.featureName().baseNameHuman());
   }
 
 
