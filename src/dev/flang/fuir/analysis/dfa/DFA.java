@@ -732,7 +732,7 @@ public class DFA extends ANY
    *   FUZION_JAVA_OPTIONS=-Ddev.flang.fuir.analysis.dfa.DFA.SHOW_STACK_ON_CHANGE=true
    */
   static final boolean SHOW_STACK_ON_CHANGE =
-    Boolean.getBoolean("dev.flang.fuir.analysis.dfa.DFA.SHOW_STACK_ON_CHANGE");
+    FuzionOptions.boolPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.SHOW_STACK_ON_CHANGE");
 
 
   /**
@@ -822,7 +822,8 @@ public class DFA extends ANY
    *
    * So it seems as if the results are good starting at 25.
    */
-  private static int MAX_NEW_CALL_RECURSION = 40;
+  private static int MAX_NEW_CALL_RECURSION =
+    FuzionOptions.intPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.MAX_NEW_CALL_RECURSION", 40);
 
 
   /*-------------------------  static methods  --------------------------*/
@@ -1040,10 +1041,6 @@ public class DFA extends ANY
   IntMap<Integer> _missingEffects = new IntMap<>();
 
 
-  //TreeMap<Integer, TreeSet<Integer>> _requiredEffects = new TreeMap<>();
-  // List<TreeSet<Integer>> _requiredEffects = new List<>();
-
-
   /**
    * List of numeric values to avoid duplicates, values that are known
    */
@@ -1088,7 +1085,7 @@ public class DFA extends ANY
         _bool  = _true.join(this, _false);
       }
     else
-      {
+      { // we have a very small application that does not even use `bool`
         _true  = Value.UNIT;
         _false = Value.UNIT;
         _bool  = Value.UNIT;
@@ -1341,44 +1338,6 @@ public class DFA extends ANY
                        }
                    });
       }
-    if (false) {
-      var counts = new TreeMap<Integer,Integer>();
-      var cnt_i = 0;
-      var cnt_v = 0;
-      var total = 0;
-      for (var in : _cachedValues.values())
-        {
-          if (in instanceof Instance iin)
-            {
-              var i = counts.computeIfAbsent(iin._site, ignore -> 0);
-              counts.put(iin._site, i+1);
-              cnt_i++;
-            }
-          else
-            {
-              var i = counts.computeIfAbsent(NO_SITE, ignore -> 0);
-              counts.put(NO_SITE, i+1);
-              cnt_v++;
-            }
-          total++;
-        }
-      var s = counts.values().stream().mapToInt(x -> x.intValue()).sum();
-      System.out.println("I: "+cnt_i+" V: "+cnt_v+" total: "+s);
-      var cl = new TreeSet<Integer>((a,b)->
-                                    { var ca = counts.get(a);
-                                      var cb = counts.get(b);
-                                      return ca != cb ? Integer.compare(counts.get(a), counts.get(b))
-                                        : Integer.compare(a, b);
-                                    });
-      for (var c : counts.keySet())
-        {
-          cl.add(c);
-        }
-      var totalf = total;
-      cl.stream()
-        .filter(c -> counts.get(c) > totalf / 100)
-        .forEach(c -> System.out.println("Value Count "+counts.get(c)+" "+(100.0*counts.get(c)/_cachedValues.size())+"% for "+_fuir.sitePos(c).show()));
-    }
   }
 
 
@@ -1429,6 +1388,14 @@ public class DFA extends ANY
   }
 
 
+  /**
+   * During analysis, mark the given call as `hot`, i.e., unless it is already
+   * scheduled to be analyzed or re-analyzed in the current iteration, schedule
+   * it to be.
+   *
+   * @param c a call that depends on some values that have changed in the
+   * current iteration.
+   */
   void hot(Call c)
   {
     if (!c._scheduledForAnalysis)
@@ -2365,6 +2332,11 @@ public class DFA extends ANY
           }
         else
           {
+            // Instances are cached using two maps with keys
+            //
+            //  - clazzAt(site)           and then
+            //  - cl << 32 || env.id
+            //
             var sc = site == FUIR.NO_SITE ? FUIR.NO_CLAZZ : _fuir.clazzAt(site);
             var sci = sc == FUIR.NO_CLAZZ ? 0 : 1 + _fuir.clazzId2num(sc);
 
@@ -2374,13 +2346,17 @@ public class DFA extends ANY
                 clazzm = new LongMap<>();
                 _instancesForSite.force(sci, clazzm);
               }
-            var k = (long) cl << 32 | context.uniqueCallId() & 0xffffFFFFL;
+            var env = context.env();
+            var k1 = cl;
+            var k2 = env == null ? 0 : env._id + 1;
+            var k = (long) k1 << 32 | k2 & 0xffffFFFFL;
             r = clazzm.get(k);
             if (r == null)
               {
                 var ni = new Instance(this, cl, site, context);
-                r = cache(ni);
-                clazzm.put(k, (Instance) r);
+                clazzm.put(k, ni);
+                makeUnique(ni);
+                r = ni;
               }
           }
       }
@@ -2508,7 +2484,7 @@ public class DFA extends ANY
    *   a3 := array 10 i->3
    *   a4 := array 10 i->4
    *
-   *   if (ar[3] != 3)
+   *   if (a3[3] != 3)
    *     panic "strange"
    *
    * will never panic.

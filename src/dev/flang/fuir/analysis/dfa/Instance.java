@@ -37,7 +37,7 @@ import dev.flang.ir.IR;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Instance extends Value implements Comparable<Instance>
+public class Instance extends Value
 {
 
 
@@ -129,114 +129,6 @@ public class Instance extends Value implements Comparable<Instance>
 
 
   /**
-   * Compare this to another instance.
-   */
-  public int compareTo(Instance other)
-  {
-    var i1 = this;
-    var i2 = other;
-    var c1 = i1._clazz;
-    var c2 = i2._clazz;
-    var s1 = i1._site;
-    var s2 = i2._site;
-
-    // Instead of comparing the site, we use only the clazz at the site to avoid
-    // state explosion for, e.g., `String.upper_case` such that instances of,
-    // e.g., `codepoint` created in `encodings.unicode.data` do not
-    // result in explosion of number of values.
-    //
-    // This might result in inaccuracy, e.g., the code
-    //
-    //   a(p bool) is
-    //   i1 := a false
-    //   i2 := a true
-    //   v := i1.p
-    //   if v
-    //     panic "unreachable"
-    //
-    // will require the panic effect, while the code
-    //
-    //   a(p bool) is
-    //   i1 => a false
-    //   i2 := a true
-    //   v := i1.p
-    //   if v
-    //     panic "unreachable"
-    //
-    // will not since the two instance of `a` are created in different clazzes
-    // `i1` and `universe`, while the previous example creates both within
-    // `universe`.
-    var sc1 = s1 == IR.NO_SITE ? IR.NO_CLAZZ : _dfa._fuir.clazzAt(s1);
-    var sc2 = s2 == IR.NO_SITE ? IR.NO_CLAZZ : _dfa._fuir.clazzAt(s2);
-
-    var e1 = i1.env();
-    var e2 = i2.env();
-    return
-      c1 < c2    ? -1 :
-      c1 > c2    ? +1 :
-      sc1 < sc2  ? -1 :
-      sc1 > sc2  ? +1 :
-      e1 == e2   ?  0 :
-      e1 == null ? -1 :
-      e2 == null ? +1 : Integer.compare(e1._id, e2._id);
-  }
-
-
-  /**
-   * For debugging, explain why compareTo returned what it did.
-   */
-  public String compareToWhy(Instance other)
-  {
-    var i1 = this;
-    var i2 = other;
-    var c1 = i1._clazz;
-    var c2 = i2._clazz;
-    var s1 = i1._site;
-    var s2 = i2._site;
-
-    // Instead of comparing the site, we use only the clazz at the site to avoid
-    // state explosion for, e.g., `String.upper_case` such that instances of,
-    // e.g., `codepoint` created in `character_encodings.unicode.data` do not
-    // result in explosion of number of values.
-    //
-    // This might result in inaccuracy, e.g., the code
-    //
-    //   a(p bool) is
-    //   i1 := a false
-    //   i2 := a true
-    //   v := i1.p
-    //   if v
-    //     panic "unreachable"
-    //
-    // will require the panic effect, while the code
-    //
-    //   a(p bool) is
-    //   i1 => a false
-    //   i2 := a true
-    //   v := i1.p
-    //   if v
-    //     panic "unreachable"
-    //
-    // will not since the two instance of `a` are created in different clazzes
-    // `i1` and `universe`, while the previous example creates both within
-    // `universe`.
-    var sc1 = s1 == IR.NO_SITE ? IR.NO_CLAZZ : _dfa._fuir.clazzAt(s1);
-    var sc2 = s2 == IR.NO_SITE ? IR.NO_CLAZZ : _dfa._fuir.clazzAt(s2);
-
-    var e1 = i1.env();
-    var e2 = i2.env();
-    return
-      c1 < c2    ? "A -1" :
-      c1 > c2    ? "B +1" :
-      sc1 < sc2  ? "C -1" :
-      sc1 > sc2  ? "D +1" :
-      e1 == e2   ? "E  0 ("+sc1+","+sc2+")"+this._site+"#"+System.identityHashCode(this) :
-      e1 == null ? "F -1" :
-      e2 == null ? "G +1" : ""+e1._id+"??"+e2._id+" => "+Integer.compare(e1._id, e2._id);
-  }
-
-
-  /**
    * Compare this to another instance, used to compare effect instances in
    * Env[ironmnents].  The main different to `compareTo` is that the effect
    * environment is ignored since that would lead to an explosion of
@@ -272,7 +164,7 @@ public class Instance extends Value implements Comparable<Instance>
       {
         v = oldv.join(dfa, v);
       }
-    if (oldv == null || Value.COMPARATOR.compare(oldv, v) != 0)
+    if (oldv != v)
       {
         var fv = v;
         _dfa.wasChanged(() -> "setField: new values " + fv + " (was " + oldv + ") for " + this);

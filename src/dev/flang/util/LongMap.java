@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source code of class ANY
+ * Source code of class LongMap
  *
  *---------------------------------------------------------------------*/
 
@@ -35,6 +35,14 @@ import java.util.TreeSet;
 /**
  * LongMap implements a Map from long to any type T.
  *
+ * This permits exchanging the internal implementation easily without changing
+ * all the places that use this map. This intentionally does not inherit from
+ * `java.util.Map` to provide only the essential operations.
+ *
+ * Even though this might internally be use hashing, all operations should be
+ * implemented in a way that provides reproducible execution, i.e, iteration do
+ * not depend on memory layout, order of addition of entries, etc.
+ *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class LongMap<T>
@@ -46,11 +54,26 @@ public class LongMap<T>
 
   /**
    * Underlying implementation.
+   *
+   * This currently uses a @see java.util.HashMap.
+   *
+   * NYI: OPTIMIZATION: We might use our own sparse array implementation here to
+   * improve performance by avoiding boxing into Long, allocation of
+   * HashMap.Node elements, calling of Long.hashCode(), etc.
    */
   HashMap<Long, T> _m = new HashMap<>();
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * @see java.util.Map.size
+   */
+  public int size()
+  {
+    return _m.size();
+  }
 
 
   /**
@@ -92,7 +115,6 @@ public class LongMap<T>
     ts.addAll(_m.keySet());
     return ts;
   }
-
 
 
 }

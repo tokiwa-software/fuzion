@@ -84,15 +84,6 @@ public class RefValue extends Value
 
 
   /**
-   * Compare this to another RefValue.
-   */
-  public int compareTo(RefValue other)
-  {
-    return Integer.compare(_id, other._id);
-  }
-
-
-  /**
    * Compare this to another RefValue, used to compare effect instances in
    * Env[ironmnents].
    */

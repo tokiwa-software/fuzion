@@ -80,9 +80,19 @@ public class FuzionOptions extends ANY
     var result = System.getProperty(name);
     if (result == null)
       {
-        result = System.getenv(name.replace(".","_"));
+        result = System.getenv(envVarName(name));
       }
     return result != null ? result : defawlt;
+  }
+
+
+  /**
+   * Helper to convert property name to anv var name. Replaces `.` by `_` since
+   * `.` is not permitted in an env var.
+   */
+  private static String envVarName(String propertyName)
+  {
+    return propertyName.replace(".","_");
   }
 
 
@@ -104,7 +114,7 @@ public class FuzionOptions extends ANY
 
 
   /**
-   * Get the value of boolean a Java property (set via -D<name>=...)  or env
+   * Get the value of boolean a Java property (set via -D<name>=...) or env
    * variable.
    *
    * @param name property or env variable name.  Should usually be a fully
@@ -115,11 +125,50 @@ public class FuzionOptions extends ANY
    * @param defawlt give the default value to be used if property / env var is
    * not present.
    *
-   * @return true iff the property is set and equals to "true", false otherwise.
+   * @return true iff the property is set and equals to "true", false if it is
+   * set to something different and `defawlt` otherwise.
    */
   public static boolean boolPropertyOrEnv(String name, boolean defawlt)
   {
     return propertyOrEnv(name, defawlt ? "true" : "false").equals("true");
+  }
+
+
+  /**
+   * Get the value of int a Java property (set via -D<name>=...) or env
+   * variable.
+   *
+   * @param name property or env variable name.  Should usually be a fully
+   * qualified class name such as "dev.flang.optimizer.Warp.enable".  Since `.`
+   * is not permitted in env var, `.` will be replaced by `_` when checking env
+   * variables.
+   *
+   * @param defawlt give the default value to be used if property / env var is
+   * not present.
+   *
+   * @return if the property is set, its value parsed as an integer. Othewise,
+   * if the env var is set, its value parsed as an integer. Otherwise, defawlt.
+   */
+  public static int intPropertyOrEnv(String name, int defawlt)
+  {
+    var res = defawlt;
+    var p = propertyOrEnv(name);
+    if (p != null)
+      {
+        try
+          {
+            res = Integer.parseInt(p);
+          }
+        catch (NumberFormatException e)
+          {
+            var pe = System.getProperty(name) != null
+              ? "property `" + name + "`"
+              : "env var `" + envVarName(name) + "`";
+            Errors.fatal("Failed to parse value " + p + " of " + pe + ": "+e);
+            res = -1;
+          }
+      }
+    return res;
   }
 
 

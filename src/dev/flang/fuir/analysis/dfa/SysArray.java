@@ -35,7 +35,7 @@ import dev.flang.util.Errors;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class SysArray extends Value implements Comparable<SysArray>
+public class SysArray extends Value
 {
 
 
@@ -120,18 +120,6 @@ public class SysArray extends Value implements Comparable<SysArray>
   Value get(Value index)
   {
     return _elements;
-  }
-
-
-  /**
-   * Compare this to another instance.
-   */
-  public int compareTo(SysArray other)
-  {
-    var r = (_elements == null && other._elements == null) ?  0 :
-            (_elements == null && other._elements != null) ? -1 :
-            (_elements != null && other._elements == null) ? +1 : Value.compare(_elements, other._elements);
-    return r;
   }
 
 

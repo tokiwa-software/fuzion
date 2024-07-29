@@ -35,7 +35,7 @@ import dev.flang.util.LongMap;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class NumericValue extends Value implements Comparable<NumericValue>
+public class NumericValue extends Value
 {
 
 
@@ -166,22 +166,6 @@ public class NumericValue extends Value implements Comparable<NumericValue>
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * Compare this to another NumericValue.
-   */
-  public int compareTo(NumericValue other)
-  {
-    return
-      _clazz < other._clazz ? -1 :
-      _clazz > other._clazz ? +1 :
-      _value == null && other._value != null ? -1 :
-      _value != null && other._value == null ? +1 :
-      _value == null && other._value == null ?  0 :
-      _value < other._value ? -1 :
-      _value > other._value ? +1 : 0;
-  }
 
 
   /**

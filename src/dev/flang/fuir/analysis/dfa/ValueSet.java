@@ -26,7 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
-import java.util.TreeMap;
+import dev.flang.util.IntMap;
 
 
 /**
@@ -45,12 +45,6 @@ public class ValueSet extends Value
 
 
   /*----------------------------  variables  ----------------------------*/
-
-
-  /**
-   * the values this consists of
-   */
-  TreeMap<Value, Value> _components;
 
 
   /**
@@ -73,30 +67,35 @@ public class ValueSet extends Value
   {
     super(-1);
 
-    _components = new TreeMap<>(Value.ID_COMPARATOR);
+    IntMap<Value> components = new IntMap<>();
     if (v1 instanceof ValueSet v1s)
       {
         for (var c : v1s._componentsArray)
           {
-            _components.put(c,c);
+            components.put(c._id, c);
           }
       }
     else
       {
-        _components.put(v1,v1);
+        components.put(v1._id, v1);
       }
     if (v2 instanceof ValueSet v2s)
       {
         for (var c : v2s._componentsArray)
           {
-            _components.put(c,c);
+            components.put(c._id, c);
           }
       }
     else
       {
-        _components.put(v2,v2);
+        components.put(v2._id, v2);
       }
-    _componentsArray = _components.values().toArray(new Value[_components.size()]);
+    _componentsArray = new Value[components.size()];
+    var i = 0;
+    for (var c : components.keySet())
+      {
+        _componentsArray[i++] = components.get(c);
+      }
   }
 
 
@@ -113,8 +112,8 @@ public class ValueSet extends Value
    */
   public int compareTo(ValueSet other)
   {
-    var s1 = _components.size();
-    var s2 = other._components.size();
+    var s1 =       _componentsArray.length;
+    var s2 = other._componentsArray.length;
     if (s1 == s2)
       {
         for (int i = 0; i < _componentsArray.length; i++)
@@ -176,8 +175,8 @@ public class ValueSet extends Value
    */
   public int envCompareTo(ValueSet other)
   {
-    var s1 = _components.size();
-    var s2 = other._components.size();
+    var s1 =       _componentsArray.length;
+    var s2 = other._componentsArray.length;
     if (s1 == s2)
       {
         for (int i = 0; i < _componentsArray.length; i++)
@@ -222,16 +221,9 @@ public class ValueSet extends Value
    */
   public void forAll(ValueConsumer c)
   {
-    if (!true)  // NYI: OPTIMIZATION: I have the impression the for loop is faster, need to check.
+    for (var v : _componentsArray)
       {
-        _components.values().forEach(c);
-      }
-    else
-      {
-        for (var v : _componentsArray)
-          {
-            c.accept(v);
-          }
+        c.accept(v);
       }
   }
 
@@ -244,7 +236,7 @@ public class ValueSet extends Value
   {
     Value result = null;
     // NYI: performance in O(_components.size()²)
-    for (var v : _components.values())
+    for (var v : _componentsArray)
       {
         var u = v.box(dfa, vc, rc, context);
         result = result == null ? u : dfa.newValueSet(result, u);
@@ -260,7 +252,7 @@ public class ValueSet extends Value
   {
     Value result = null;
     // NYI: performance in O(_components.size()²)
-    for (var v : _components.values())
+    for (var v : _componentsArray)
       {
         var u = v.unbox(dfa, vc);
         result = result == null ? u : dfa.newValueSet(result, u);

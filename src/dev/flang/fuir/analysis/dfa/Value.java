@@ -55,25 +55,6 @@ public class Value extends Val
 
 
   /**
-   * Comparator instance to compare two Values according to their unique ids
-   */
-  static class ValueIdComparator implements Comparator<Value> {
-      public int compare(Value a, Value b)
-      {
-        var i = a._id;
-        var j = b._id;
-        if (i >= 0 && j >= 0)
-          {
-            return Integer.compare(i,j);
-          }
-        else
-          {
-            return COMPARATOR.compare(a,b);  // NYI: remove this case once all values have _id set!
-          }
-      }
-  };
-
-  /**
    * Comparator instance to compare two Values of arbitrary types.
    */
   static class ValueComparator implements Comparator<Value> {
@@ -82,20 +63,14 @@ public class Value extends Val
        */
       public int compare(Value a, Value b)
       {
+
         if      (a == b)                                                       { return 0;                    }
         else if (a == UNIT                    || b == UNIT                   ) { return a == UNIT  ? +1 : -1; }
-        else if (a instanceof Instance     ai && b instanceof Instance     bi) { return ai.compareTo(bi);     }
-        else if (a instanceof NumericValue an && b instanceof NumericValue bn) { return an.compareTo(bn);     }
-        else if (a instanceof RefValue     ab && b instanceof RefValue     bb) { return ab.compareTo(bb);     }
         else if (a instanceof TaggedValue  at && b instanceof TaggedValue  bt) { return at.compareTo(bt);     }
-        else if (a instanceof SysArray     aa && b instanceof SysArray     ba) { return aa.compareTo(ba);     }
         else if (a instanceof ValueSet     as && b instanceof ValueSet     bs) { return as.compareTo(bs);     }
-        else if (a instanceof Instance    ) { return +1; } else if (b instanceof Instance       ) { return -1; }
-        else if (a instanceof NumericValue) { return +1; } else if (b instanceof NumericValue   ) { return -1; }
-        else if (a instanceof RefValue    ) { return +1; } else if (b instanceof RefValue       ) { return -1; }
         else if (a instanceof TaggedValue ) { return +1; } else if (b instanceof TaggedValue    ) { return -1; }
-        else if (a instanceof SysArray    ) { return +1; } else if (b instanceof SysArray       ) { return -1; }
         else if (a instanceof ValueSet    ) { return +1; } else if (b instanceof ValueSet       ) { return -1; }
+        else if (a._id >= 0 && b._id >= 0) { return Integer.compare(a._id, b._id); }
         else
           {
             throw new Error(getClass().toString()+"compareTo requires support for "+a.getClass()+" and "+b.getClass());
@@ -150,12 +125,6 @@ public class Value extends Val
    * Env[ironmnents].
    */
   static Comparator<Value> ENV_COMPARATOR = new ValueEnvComparator();
-
-
-  /**
-   * Comparator instance to compare two Values according to their unique ids
-   */
-  static Comparator<Value> ID_COMPARATOR = new ValueIdComparator();
 
 
   /**
@@ -363,7 +332,7 @@ public class Value extends Val
    */
   public Value join(DFA dfa, Value v)
   {
-    if (this == v || compare(this, v) == 0)
+    if (this == v)
       {
         return this;
       }
