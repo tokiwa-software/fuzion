@@ -195,7 +195,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
                 sb.append(_sourceFile.asString(_sourceFile.lineStartPos(l), p))
                   .append(Terminal.CURLY_UNDERLINE)
                   .append(Terminal.UNDERLINE_LINE_RED)
-                  .append(_sourceFile.asString(p, p + 1))
+                  .append(_sourceFile.asString(p, Math.min(p+1, _sourceFile.byteLength()-1)))
                   .append(Terminal.UNDERLINE_OFF)
                   .append(Terminal.UNDERLINE_LINE_COLOR_OFF)
                   .append(_sourceFile.asString(p + 1, _sourceFile.lineEndPos(l)));
