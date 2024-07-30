@@ -431,6 +431,9 @@ execution of the constructor's code.
 by xref:dynamic_dispatch[dynamic dispatch] depending on the call target `t` and the xref:feature_name[feature name]
 given in the call.
 
+[#fuzion_cotype]
+((Cotype)):: A _cotype_ is an implicitly created feature that exists in parallel to a xref:fuzion_routine[routine] or a xref:fuzion_choice[choice] with one cotype for every xref:fuzion_orignalfeature[original feature].  _Cotypes_ form an inheritance hierachy that mirrors the xref:fuzion_orignalfeature[original features]' hierarchy.  Values of _cotypes_ are xref:unit_type[unit type] values returned by calls to xref:fuzion_typeparameter[type parameters] or type expressions followed by `.type`.  Inner features of _cotypes_ are xref:fuzion_typefeature[type features].
+
 [#direct_child]
 ((Direct Child)):: A _direct child_ of a xref:fuzion_feature[feature] `p` is any feature `c` that xref:direct_inheritance[inherits directly] from `p`.
 
@@ -536,6 +539,9 @@ xref:fuzion_native[native feature].
 ((Real Inheritance)):: An xref:fuzion_feature[feature] `f` is said to _inherit really_ from a xref:fuzion_feature[feature] `g` if
 `f` does not equal `g` and `f` xref:inheritance[inherits] from `g`.
 
+[#fuzion_orignalfeature]
+((Original Feature)):: An _original feature_ is a xref:fuzion_routine[routine] or a xref:fuzion_choice[choice] seen from their corresponing xref:fuzion_cotype[cotype].
+
 [#real_parent]
 ((Real Parent)):: A _real parent_ of a xref:fuzion_feature[feature] `c` is any feature `p` such that `c` xref:real_inheritance[inherits really] from `p`.
 
@@ -563,6 +569,9 @@ xref:fuzion_feature[feature] of type xref:fuzion_constructor[constructor] or
 xref:fuzion_choice[choice].  If that feature has xref:fuzion_typeparameter[type parameters], a type has
 corresponding xref:fuzion_actual_typeparameters[actual type parameters].  If the base has an xref:outer_feature[outer feature] that is
 not the xref:universe[universe], the type has an xref:fuzion_outer_type[outer type].
+
+[#fuzion_typefeature]
+((Type Feature)):: A _type feature_ is a xref:fuzion_feature[feature] whose outer feature is a xref:fuzion_cotype[cotype]. A _type feature_ `name` can be declared within the xref:fuzion_cotype[cotype]'s xref:fuzion_orignalfeature[original feature] using `type.name` as the feature name. A _Type feature_  cannot be called on an instance of the xref:fuzion_orignalfeature[original feature], but on an instance of the corresponding xref:fuzion_cotype[cotype].
 
 [#fuzion_typeparameter]
 ((Type Parameter)):: A _type parameter_ is an xref:fuzion_argument[argument] that can hold a xref:runtime_type[runtime type value].
