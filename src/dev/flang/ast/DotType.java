@@ -115,11 +115,9 @@ public class DotType extends ExprWithPos
    */
   public Call resolveTypes(Resolution res, AbstractFeature outer)
   {
-    var tc = new Call(pos(), new Universe(), "Types");
-    tc.resolveTypes(res, outer);
     return new Call(pos(),
-                    tc,
-                    "get",
+                    new Universe(),
+                    "type_as_value",
                     -1,
                     new List<>(_lhs),
                     new List<>(),

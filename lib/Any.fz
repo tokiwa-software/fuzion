@@ -44,7 +44,7 @@ public Any ref is
 
 
   # Get the dynamic type of this instance.  For value instances `x`, this is
-  # equal to `type_of x`, but for `x` with a  `ref` type `x.dynamic_type` gives
+  # equal to `type_of x`, but for `x` with a `ref` type `x.dynamic_type` gives
   # the actual runtime type, while `type_of x` results in the static
   # compile-time type.
   #
@@ -53,3 +53,14 @@ public Any ref is
   # to just return Type.type.
   #
   public dynamic_type => Any.this.type
+
+
+  # Get a type as a value.
+  #
+  # This is a feature with the effect equivalent to Fuzion's `expr.type` call tail.
+  # It is recommended to use `expr.type` and not `expr.type_value`.
+  #
+  # `type_value` is here to show how this can be implemented and to illustrate the
+  # difference to `dynamic_type`.
+  #
+  public type.type_value => Any.this.type

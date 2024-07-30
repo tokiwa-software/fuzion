@@ -27,8 +27,8 @@ public a is
   # make sure a.fum references type features derived from types from base.fum
   #
   q =>
-    say (Types.get fuzion.java)
-    say (Types.get fuzion.java.Java_Object)
-    say (Types.get fuzion.java.Java_String)
-    say (Types.get (fuzion.java.Array bool))
-    say (Types.get (fuzion.java.Array i32))
+    say fuzion.java.type
+    say fuzion.java.Java_Object.type
+    say fuzion.java.Java_String.type
+    say (fuzion.java.Array bool).type
+    say (fuzion.java.Array i32).type

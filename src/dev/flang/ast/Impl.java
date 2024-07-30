@@ -624,7 +624,7 @@ public class Impl extends ANY
 
     return result != null &&
            result.isTypeType() &&
-           !(_expr instanceof Call c && c.calledFeature() == Types.resolved.f_Types_get)
+           !(_expr instanceof Call c && c.calledFeature() == Types.resolved.f_type_as_value)
       ? Types.resolved.f_Type.selfType()
       : result;
   }

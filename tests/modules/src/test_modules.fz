@@ -41,8 +41,8 @@ test_modules is
 
   # test type features for types from base.fum that are used in a.fum
   #
-  say (Types.get fuzion.java)
-  say (Types.get fuzion.java.Java_Object)
-  say (Types.get fuzion.java.Java_String)
-  say (Types.get (fuzion.java.Array bool))
-  say (Types.get (fuzion.java.Array u8))
+  say fuzion.java.type
+  say fuzion.java.Java_Object.type
+  say fuzion.java.Java_String.type
+  say (fuzion.java.Array bool).type
+  say (fuzion.java.Array u8).type
