@@ -3145,21 +3145,6 @@ anonymous   : "ref"
 
 
   /**
-   * Parse dotTypeSuffx
-   *
-dotTypeSuffx: dot "type"
-            ;
-   */
-  Expr dotTypeSuffx(AbstractType t)
-  {
-    var p = tokenSourcePos();
-    matchOperator(".", "dotTypeSuffx");
-    match(Token.t_type, "dotTypeSuffx");
-    return new DotType(p, t);
-  }
-
-
-  /**
    * Parse contract
    *
    * @param forkAtFormArgs in case the feature this contract belongs to has a
