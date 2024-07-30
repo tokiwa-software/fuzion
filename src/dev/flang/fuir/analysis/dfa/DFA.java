@@ -2421,14 +2421,25 @@ public class DFA extends ANY
       {
         var cid = _fuir.clazzId2num(nc);
         var vid = original._id;
+        // try to fit clazz id, original value id and tag into one long as follows:
+        //
+        // Bit 6666555555555544444444443333333333222222222211111111110000000000
+        //     3210987654321098765432109876543210987654321098765432109876543210
+        //     <-------clazz id-----------><---original value id------><--tag->
+        //     |          28 bits         ||          28 bits         ||8 bits|
+        //
         if (cid >= 0 && cid <= 0xFFFffff &&
             vid >= 0 && vid <= 0xFFFffff &&
             tag >= 0 && tag <= 0xff)
           {
             var k =
-              (long) cid << 36 |
-              (long) vid <<  8 |
+              (long) cid << (28+8) |
+              (long) vid <<     8  |
               (long) tag;
+            if (CHECKS) check
+              ((k >> (28+8)) & 0xFFFffff == cid,
+               (k >>     8 ) & 0xFFFffff == vid,
+               (k          ) &      0xff == tag);
             r = _tagged.get(k);
             if (r == null)
               {
@@ -2665,7 +2676,15 @@ public class DFA extends ANY
     var k3 = siteIndex(site);
     var k4 = env == null ? 0 : env._id + 1;
     Call e, r;
-    // We use a LongMap in case we manage to fiddle k1..k4 into a long:
+    // We use a LongMap in case we manage to fiddle k1..k4 into a long
+    //
+    // try to fit clazz id, tvalue id, siteIndex and env id into long as follows
+    //
+    // Bit 6666555555555544444444443333333333222222222211111111110000000000
+    //     3210987654321098765432109876543210987654321098765432109876543210
+    //     <----clazz id----><---tvalue id----><---siteIndex----><-env-id->
+    //     |     18 bits    ||     18 bits    ||     18 bits    ||10 bits |
+    //
     if (k1 <= 0x3FFFF &&
         k2 <= 0x3FFFF &&
         k3 <= 0x3FFFF &&
