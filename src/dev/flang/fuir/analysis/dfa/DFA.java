@@ -2437,9 +2437,9 @@ public class DFA extends ANY
               (long) vid <<     8  |
               (long) tag;
             if (CHECKS) check
-              ((k >> (28+8)) & 0xFFFffff == cid,
-               (k >>     8 ) & 0xFFFffff == vid,
-               (k          ) &      0xff == tag);
+              (((k >> (28+8)) & 0xFFFffff) == cid,
+               ((k >>     8 ) & 0xFFFffff) == vid,
+               ((k          ) &      0xff) == tag);
             r = _tagged.get(k);
             if (r == null)
               {
