@@ -155,7 +155,7 @@ public class Interpreter extends FUIRContext
        );
 
     int  fclazz = clazzForField(thiz);
-    LValue slot   = fieldSlot(thiz, staticClazz, fclazz, curValue);
+    LValue slot = fieldSlot(thiz, staticClazz, fclazz, curValue);
     setFieldSlot(thiz, fclazz, slot, v);
   }
 
@@ -429,7 +429,6 @@ public class Interpreter extends FUIRContext
    */
   private static LValue fieldSlot(int thiz, int staticClazz, int fclazz, Value curValue)
   {
-    int off;
     var clazz = staticClazz;
     if (fuir().clazzIsRef(staticClazz))
       {
@@ -442,7 +441,7 @@ public class Interpreter extends FUIRContext
         clazz = ((Boxed)curValue)._valueClazz;
         curValue = ((Boxed)curValue)._contents;
       }
-    off = Layout.get(clazz).offset(thiz);
+    int off = Layout.get(clazz).offset(thiz);
 
     // NYI: check if this is a can be enabled or removed:
     //
