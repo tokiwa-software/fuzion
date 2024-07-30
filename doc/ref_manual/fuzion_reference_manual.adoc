@@ -509,6 +509,9 @@ either by a xref:fuzion_call[call] or by xref:fuzion_tagging[tagging].
 ((Native Feature)):: A _native feature_ is a xref:fuzion_feature[feature] declared using `=> native`.
 CAUTION: *NYI*: Need more detail on native feature
 
+[#fuzion_orignalfeature]
+((Original Feature)):: An _original feature_ is a xref:fuzion_routine[routine] or a xref:fuzion_choice[choice] seen from their corresponing xref:fuzion_cotype[cotype].
+
 [#outer_instance]
 ((Outer Instance)):: With the exception of the xref:universe_instance[universe instance], every instance is linked to a corresponding _outer instance_.
 For the instance of a xref:fuzion_routine[routine], the outer instance is the value of the xref:fuzion_target[target] of the call that created the
@@ -538,9 +541,6 @@ xref:fuzion_native[native feature].
 [#real_inheritance]
 ((Real Inheritance)):: An xref:fuzion_feature[feature] `f` is said to _inherit really_ from a xref:fuzion_feature[feature] `g` if
 `f` does not equal `g` and `f` xref:inheritance[inherits] from `g`.
-
-[#fuzion_orignalfeature]
-((Original Feature)):: An _original feature_ is a xref:fuzion_routine[routine] or a xref:fuzion_choice[choice] seen from their corresponing xref:fuzion_cotype[cotype].
 
 [#real_parent]
 ((Real Parent)):: A _real parent_ of a xref:fuzion_feature[feature] `c` is any feature `p` such that `c` xref:real_inheritance[inherits really] from `p`.
