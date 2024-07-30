@@ -15,7 +15,7 @@ To solve this, please specify a result type explicitly.
   c := a ->
 -------^^^^
     a.x
-^^^^^^^
+----^^^
 A lambda expression can only be used if assigned to a field or argument of type 'Function'
 with argument count of the lambda expression equal to the number of type parameters of the type.  The type of the
 assigned field must be given explicitly.
