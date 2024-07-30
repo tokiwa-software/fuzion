@@ -2243,10 +2243,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         result = typeParameterActualType().typeClazz();
       }
-    else if (f  == Types.resolved.f_Types_get                          ||
-             of == Types.resolved.f_Types_get && f == of.resultField()   )
+    else if (f  == Types.resolved.f_type_as_value                     ||
+             of == Types.resolved.f_type_as_value && f == of.resultField()   )
       {
-        var ag = (f == Types.resolved.f_Types_get ? this : _outer).actualGenerics();
+        var ag = (f == Types.resolved.f_type_as_value ? this : _outer).actualGenerics();
         result = ag[0].typeClazz();
       }
     else
@@ -2342,13 +2342,13 @@ public class Clazz extends ANY implements Comparable<Clazz>
             var gi = gs.get(i);
             if (gi.isThisType())
               {
-                // Only calls to Types.get may have generic parameters gi with
-                // gi.isThisType().  Calls to Types.get will essentially become
+                // Only calls to type_as_value may have generic parameters gi with
+                // gi.isThisType().  Calls to type_as_value will essentially become
                 // NOPs anyway. Here we replace the this.types by their
                 // underlying type to avoid problems creating clazzes form
                 // this.types.
                 if (CHECKS) check
-                  (Errors.any() || feature() == Types.resolved.f_Types_get);
+                  (Errors.any() || feature() == Types.resolved.f_type_as_value);
 
                 gi = gi.feature().isThisRef() ? gi.asRef() : gi.asValue();
               }

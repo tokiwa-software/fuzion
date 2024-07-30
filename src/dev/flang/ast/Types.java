@@ -174,8 +174,7 @@ public class Types extends ANY
     public final AbstractFeature f_concur_atomic;
     public final AbstractFeature f_concur_atomic_v;
     public final AbstractFeature f_Type;
-    public final AbstractFeature f_Types;
-    public final AbstractFeature f_Types_get;
+    public final AbstractFeature f_type_as_value;
     public final AbstractFeature f_Lazy;
     public final AbstractFeature f_Unary;
     public final AbstractFeature f_auto_unwrap;
@@ -237,8 +236,7 @@ public class Types extends ANY
       f_concur_atomic              = f_concur.get(mod, "atomic");
       f_concur_atomic_v            = f_concur_atomic.get(mod, "v");
       f_Type                       = universe.get(mod, "Type");
-      f_Types                      = universe.get(mod, "Types");
-      f_Types_get                  = f_Types.get(mod, "get");
+      f_type_as_value              = universe.get(mod, "type_as_value");
       f_Lazy                       = universe.get(mod, LAZY_NAME);
       f_Unary                      = universe.get(mod, UNARY_NAME);
       f_auto_unwrap                = universe.get(mod, "auto_unwrap");
