@@ -2479,7 +2479,7 @@ public class DFA extends ANY
    * Create new SysArray instance of the given element values and element clazz.
    *
    * NYI: We currently do not distinguish SysArrays by the array instance that
-   * contains.  We problably should do this to make sure that, e.g.,
+   * contains it.  We probably should do this to make sure that, e.g.,
    *
    *   a3 := array 10 i->3
    *   a4 := array 10 i->4
