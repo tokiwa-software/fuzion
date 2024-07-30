@@ -76,7 +76,7 @@ public reader(LM type : mutate, rp Read_Provider, buf_size i32) : effect effect_
   # fill the currently empty buffer with up to max_n bytes
   #
   fill_buffer(max_n i32) unit
-  pre safety: match buffer.get
+  pre debug: match buffer.get
                 a array => a.is_empty
                 io.end_of_file => false
   =>
@@ -94,7 +94,7 @@ public reader(LM type : mutate, rp Read_Provider, buf_size i32) : effect effect_
   # discard n items from buffer
   #
   public discard(n i32) unit
-  pre safety: n >= 0
+  pre debug: n >= 0
   =>
     match buffer.get
       b array =>
@@ -149,7 +149,7 @@ public read_bytes(LM type : mutate, n i32) Sequence u8 ! reader =>
 # requires `buffered.reader` effect to be installed.
 #
 public read_string(LM type : mutate, n i32) String ! reader
-pre safety: n >= 0
+pre debug: n >= 0
 =>
 
   take_valid_codepoints(a Sequence u8, max i32) =>
