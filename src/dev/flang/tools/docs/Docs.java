@@ -109,15 +109,29 @@ public class Docs extends ANY
 
 
   /**
-   * get the declared features of f as stream
-   * @param f
-   * @return
+   * Get the declared features of f as stream
+   * @param f the feature for which the declared features are to be returned
+   * @return a stream of the declared features of f
    */
   private Stream<AbstractFeature> declaredFeatures(AbstractFeature f)
   {
     return fe.module()
       .declaredFeatures(f)
       .values()
+      .stream();
+  }
+
+
+  /**
+   * Get all features that can be called on f (declared and inherited) as stream
+   * @param f the feature for which the callable features are to be returned
+   * @return a stream of the callable (declared and inherited) features of f
+   */
+  private Stream<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f)
+  {
+    var result = new List<AbstractFeature>();
+    fe.module().forEachDeclaredOrInheritedFeature(f, af -> result.add(af));
+    return result
       .stream();
   }
 
@@ -276,14 +290,14 @@ public class Docs extends ANY
         {
           return;
         }
-      var s = declaredFeatures(feature)
+      var s = allInnerAndInheritedFeatures(feature)
         .filter(af -> !ignoreFeature(af, config.ignoreVisibility()));
 
       Stream<AbstractFeature> st = Stream.empty();
       if (feature.hasTypeFeature())
         {
           var tf = feature.typeFeature();
-          st = declaredFeatures(tf)
+          st = allInnerAndInheritedFeatures(tf)
             .filter(af -> !ignoreFeature(af, config.ignoreVisibility()));
         }
 

@@ -544,6 +544,8 @@ public abstract class Module extends ANY implements FeatureLookup
   /**
    * allInnerAndInheritedFeatures returns a complete set of inner features, used
    * by Clazz.layout and Clazz.hasState.
+   *
+   * NYI: UNDER DEVELOPMENT: result includes features that are redefined and thus not relevant.
    */
   public Collection<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f)
   {
