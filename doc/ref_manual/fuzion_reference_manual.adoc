@@ -405,6 +405,12 @@ xref:fuzion_typeparameter[type parameter] of the feature a type is based on.
 ((Argument)):: An _argument_ is a xref:fuzion_typeparameter[type parameter] or a xref:fuzion_field[field]
 that is declared in the `formArgs` section of a xref:fuzion_routine[routine].
 
+[#braces]
+((Braces)):: In this manual, _braces_ are curly brackets `{` and `}`, in contrast to xref:parentheses[parentheses] and xref:brackets[brackets].
+
+[#brackets]
+((Brackets)):: In this manual, _brackets_ are square brackets `[` and `]`, in contrast to xref:parentheses[parentheses] and xref:braces[braces].
+
 [#child_feature]
 ((Child)):: A _child_ of a xref:fuzion_feature[feature] `f` is any feature `g` that xref:inheritance[inherits] from `f`.
 A _child_ is hence used synonymously to an _heir_.
@@ -523,6 +529,9 @@ there is a corresponding _outer type_ based on a xref:child_feature[child] of `o
 [#parent_feature]
 ((Parent)):: A _parent_ of a xref:fuzion_feature[feature] `f` is any feature `g` such that `f` xref:inheritance[inherits] from `g`.
 A _parent_ is hence used synonymously to an _ancestor_.
+
+[#parentheses]
+((Parentheses)):: In this manual, _parentheses_ are round brackets `(` and `)`, in contrast to xref:brackets[brackets] and xref:braces[braces].
 
 [#fuzion_routine]
 ((Routine)):: A _routine_ is a xref:fuzion_feature[Feature] declared using `is` or `=>` that is neither
