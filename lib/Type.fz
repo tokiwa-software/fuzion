@@ -72,36 +72,14 @@ public Types is
 # This is to be called without an actual type passed to `T`, but `T` should be
 # inferred from the actual value argument `_`.
 #
-# The value arugment is evaluated and ignored.
+# The lazy value argument is ignored.
 #
 # The result is the type of the value argument boxed into a ref value and returned
 # as a value of type `Type`.
 #
 # examples:
 #
-#   `type_of "bla"` is `String`
-#   `type_of (panic "***")` will terminate
+#   `type_of "bla"`         is `String`
+#   `type_of (panic "***")` is `void`.
 #
-public type_of(T type, _ T) => T
-
-
-# universe feature to determine the compile-time type of an expression.
-#
-# This is to be called without an actual type passed to `T`, but `T` should be
-# inferred from the result type of the actual value argument `_`.
-#
-# The function passed as value arugment is ignored, it is not called.
-#
-# The result is the result type of the value argument boxed into a ref value and
-# returned as a value of type `Type`.
-#
-# examples:
-#
-#   `type_of_lazy ()->"bla"` is Type of `String`
-#   `type_of_lazy ()->(panic "***")` is Type of `void`.
-#
-# NYI: Fuzion should have better syntax sugar for lazy value arguments such that
-# we do not need the `()->` prefix to create a lambda.  Then, `type_of` could
-# have a lazy argument and `type_of_lazy` could be removed.
-#
-public type_of_lazy(T type, _ ()->T) => T
+public type_of(T type, _ Lazy T) => T

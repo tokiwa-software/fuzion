@@ -84,16 +84,12 @@ test_type_of is
   # additional tests using base lib's `type_of`:
   chck_cmp $(type_of 3.14                  ) "Type of 'f64'"
   chck_cmp $(type_of (option 42)           ) "Type of 'option i32'"
-  chck_cmp $(type_of (type_of (option 42))) "Type of 'Type'"
+  chck_cmp $(type_of (type_of (option 42)) ) "Type of 'Type'"
   chck_cmp $(type_of (option i32).type     ) "Type of 'Type'"
   chck_cmp $(type_of "bal"                 ) "Type of 'String'"
-
-  # additional tests using base lib's `type_of` with lazy argument:
-  chck_cmp $(type_of_lazy ()->3.14                          ) "Type of 'f64'"
-  chck_cmp $(type_of_lazy ()->(option 42)                   ) "Type of 'option i32'"
-  chck_cmp $(type_of_lazy ()->(type_of_lazy ()->(option 42))) "Type of 'Type'"
-  chck_cmp $(type_of_lazy ()->((option i32).type)           ) "Type of 'Type'"
-  chck_cmp $(type_of_lazy ()->"bal"                         ) "Type of 'String'"
-  chck_cmp $(type_of_lazy ()->(panic "***")                 ) "Type of 'void'"
+  chck_cmp $(type_of (panic "***")         ) "Type of 'void'"
+  x(a Lazy (f64, bool)) =>
+    chck_cmp $(type_of a         ) "Type of 'Tuple f64 bool'"
+  x ({say "***FAIL***"; 3.14}, {say "***FAIL***"; false})
 
   exit
