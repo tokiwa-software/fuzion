@@ -432,7 +432,7 @@ by xref:dynamic_dispatch[dynamic dispatch] depending on the call target `t` and 
 given in the call.
 
 [#fuzion_cotype]
-((Cotype)):: A _cotype_ is an implicitly created feature that exists in parallel to a xref:fuzion_routine[routine] or a xref:fuzion_choice[choice] with one cotype for every xref:fuzion_orignalfeature[original feature].  _Cotypes_ form an inheritance hierachy that mirrors the xref:fuzion_orignalfeature[original features]' hierarchy.  Values of _cotypes_ are xref:unit_type[unit type] values returned by calls to xref:fuzion_typeparameter[type parameters] or type expressions followed by `.type`.  Inner features of _cotypes_ are xref:fuzion_typefeature[type features].
+((Cotype)):: A _cotype_ is an implicitly created feature that exists in parallel to a xref:fuzion_routine[routine] or a xref:fuzion_choice[choice] with one _cotype_ for every xref:fuzion_orignalfeature[original feature].  _Cotypes_ form an inheritance hierachy that mirrors the xref:fuzion_orignalfeature[original features]' hierarchy.  Values of _cotypes_ are xref:unit_type[unit type] values returned by calls to xref:fuzion_typeparameter[type parameters] or type expressions followed by `.type`.  Inner features of _cotypes_ are xref:fuzion_typefeature[type features].
 
 [#direct_child]
 ((Direct Child)):: A _direct child_ of a xref:fuzion_feature[feature] `p` is any feature `c` that xref:direct_inheritance[inherits directly] from `p`.
