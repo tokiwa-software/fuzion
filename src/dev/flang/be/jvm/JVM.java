@@ -760,8 +760,12 @@ should be avoided as much as possible.
   /**
    * For each tail recursive routine, this will be the label of the tail
    * recursive call turned into goto.
+   *
+   * _startLabels : labels before prolog
+   * _startLabels2: labels after  prolog
    */
   final Label[] _startLabels;
+  final Label[] _startLabels2;
 
 
   Runner _runner;
@@ -798,6 +802,7 @@ should be avoided as much as possible.
     var cnt = _fuir.clazzId2num(_fuir.lastClazz())+1;
     _numLocals   = new int[cnt];
     _startLabels = new Label[cnt];
+    _startLabels2 = new Label[cnt];
 
     Errors.showAndExit();
   }
@@ -1184,16 +1189,19 @@ should be avoided as much as possible.
    *
    * @param cl id of clazz
    *
+   * @param beforeProlog true label before the prolog, false label after prolog
+   *
    * @return the existing or newly created label.
    */
-  Label startLabel(int cl)
+  Label startLabel(int cl, boolean beforeProlog)
   {
     int ix = _fuir.clazzId2num(cl);
-    var res = _startLabels[ix];
+    var labels = beforeProlog ? _startLabels : _startLabels2;
+    var res = labels[ix];
     if (res == null)
       {
         res = new Label();
-        _startLabels[ix] = res;
+        labels[ix] = res;
       }
     return res;
   }
@@ -1255,8 +1263,10 @@ should be avoided as much as possible.
           (cf != null);
 
         var sl = _startLabels[_fuir.clazzId2num(cl)];
+        var sl2 = _startLabels2[_fuir.clazzId2num(cl)];
         var bc_cl = (sl != null ? sl : Expr.UNIT)
           .andThen(prolog)
+          .andThen(sl2 != null ? sl2 : Expr.UNIT)
           .andThen(code)
           .andThen(epilog);
 
