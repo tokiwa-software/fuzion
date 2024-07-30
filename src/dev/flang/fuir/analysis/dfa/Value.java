@@ -28,6 +28,8 @@ package dev.flang.fuir.analysis.dfa;
 
 import static dev.flang.ir.IR.NO_SITE;
 
+import dev.flang.util.IntMap;
+
 import java.util.Comparator;
 
 import java.util.function.Consumer;
@@ -52,45 +54,36 @@ public class Value extends Val
   }
 
 
-  /*----------------------------  constants  ----------------------------*/
-
-
   /**
    * Comparator instance to compare two Values of arbitrary types.
    */
-  static Comparator<Value> COMPARATOR = new Comparator<>() {
+  static class ValueComparator implements Comparator<Value> {
       /**
        * compare two values.
        */
       public int compare(Value a, Value b)
       {
+
         if      (a == b)                                                       { return 0;                    }
         else if (a == UNIT                    || b == UNIT                   ) { return a == UNIT  ? +1 : -1; }
-        else if (a instanceof Instance     ai && b instanceof Instance     bi) { return ai.compareTo(bi);     }
-        else if (a instanceof NumericValue an && b instanceof NumericValue bn) { return an.compareTo(bn);     }
-        else if (a instanceof RefValue     ab && b instanceof RefValue     bb) { return ab.compareTo(bb);     }
         else if (a instanceof TaggedValue  at && b instanceof TaggedValue  bt) { return at.compareTo(bt);     }
-        else if (a instanceof SysArray     aa && b instanceof SysArray     ba) { return aa.compareTo(ba);     }
         else if (a instanceof ValueSet     as && b instanceof ValueSet     bs) { return as.compareTo(bs);     }
-        else if (a instanceof Instance    ) { return +1; } else if (b instanceof Instance       ) { return -1; }
-        else if (a instanceof NumericValue) { return +1; } else if (b instanceof NumericValue   ) { return -1; }
-        else if (a instanceof RefValue    ) { return +1; } else if (b instanceof RefValue       ) { return -1; }
         else if (a instanceof TaggedValue ) { return +1; } else if (b instanceof TaggedValue    ) { return -1; }
-        else if (a instanceof SysArray    ) { return +1; } else if (b instanceof SysArray       ) { return -1; }
         else if (a instanceof ValueSet    ) { return +1; } else if (b instanceof ValueSet       ) { return -1; }
+        else if (a._id >= 0 && b._id >= 0) { return Integer.compare(a._id, b._id); }
         else
           {
             throw new Error(getClass().toString()+"compareTo requires support for "+a.getClass()+" and "+b.getClass());
           }
       }
-    };
+  }
 
 
   /**
    * Comparator instance to compare two Values of effect instances that are used in
    * Env[ironmnents].
    */
-  static Comparator<Value> ENV_COMPARATOR = new Comparator<>() {
+  static class ValueEnvComparator implements Comparator<Value> {
       /**
        * compare two values.
        */
@@ -115,8 +108,23 @@ public class Value extends Val
             throw new Error(getClass().toString() + "envCompareTo requires support for " + a.getClass() + " and " + b.getClass());
           }
       }
-    };
+  }
 
+
+  /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * Comparator instance to compare two Values of arbitrary types.
+   */
+  static Comparator<Value> COMPARATOR = new ValueComparator();
+
+
+  /**
+   * Comparator instance to compare two Values of effect instances that are used in
+   * Env[ironmnents].
+   */
+  static Comparator<Value> ENV_COMPARATOR = new ValueEnvComparator();
 
 
   /**
@@ -201,6 +209,30 @@ public class Value extends Val
    * Cached result of a call to box().
    */
   Value _boxed;
+
+
+  /**
+   * Unique id for this value, set by DFA.makeUnique(Value).
+   */
+  int _id = -1;
+
+
+  /**
+   * Uniquew id for this value when used as an effect instance in an environment.
+   */
+  int _envId = -1;
+
+
+  /**
+   * If this was embedded, this gives a map from the site to the embedded value.
+   */
+  IntMap<EmbeddedValue> _embeddedAt = null;
+
+
+  /**
+   * If a SysArray of this was created, this is the SysArray value.
+   */
+  SysArray _sysArrayOf = null;
 
 
   /*---------------------------  constructors  ---------------------------*/
@@ -298,9 +330,9 @@ public class Value extends Val
   /**
    * Create the union of the values 'this' and 'v'.
    */
-  public Value join(Value v)
+  public Value join(DFA dfa, Value v)
   {
-    if (this == v || compare(this, v) == 0)
+    if (this == v)
       {
         return this;
       }
@@ -314,7 +346,7 @@ public class Value extends Val
       }
     else
       {
-        return joinInstances(v);
+        return joinInstances(dfa, v);
       }
   }
 
@@ -323,9 +355,9 @@ public class Value extends Val
    * Create the union of the values 'this' and 'v'. This is called by join()
    * after common cases (same instance, UNDEFINED) have been handled.
    */
-  public Value joinInstances(Value v)
+  public Value joinInstances(DFA dfa, Value v)
   {
-    throw new Error("Value.joinInstances not possible for " + this + " and " + v);
+    return dfa.newValueSet(this, v);
   }
 
 
@@ -342,11 +374,13 @@ public class Value extends Val
       }
     else
       {
-        if (_boxed == null)
-          {
-            _boxed = dfa.cache(new RefValue(dfa, this, vc, rc));
-          }
         result = _boxed;
+        if (result == null)
+          {
+            result = new RefValue(dfa, this, vc, rc);
+            dfa.makeUnique(result);
+            _boxed = result;
+          }
       }
     return result;
   }
@@ -355,7 +389,7 @@ public class Value extends Val
   /**
    * Unbox this value.
    */
-  Value unbox(int vc)
+  Value unbox(DFA dfa, int vc)
   {
     return this;
   }
@@ -373,7 +407,7 @@ public class Value extends Val
    */
   Value tag(DFA dfa, int cl, int tagNum)
   {
-    return new TaggedValue(dfa, cl, this, tagNum);
+    return dfa.newTaggedValue(cl, this, tagNum);
   }
 
 

@@ -84,18 +84,6 @@ public class RefValue extends Value
 
 
   /**
-   * Compare this to another RefValue.
-   */
-  public int compareTo(RefValue other)
-  {
-    return
-      _clazz < other._clazz ? -1 :
-      _clazz > other._clazz ? +1 :
-      Value.COMPARATOR.compare(_original, other._original);
-  }
-
-
-  /**
    * Compare this to another RefValue, used to compare effect instances in
    * Env[ironmnents].
    */
@@ -131,19 +119,9 @@ public class RefValue extends Value
 
 
   /**
-   * Create the union of the values 'this' and 'v'. This is called by join()
-   * after common cases (same instance, UNDEFINED) have been handled.
-   */
-  public Value joinInstances(Value v)
-  {
-    return new ValueSet(this, v);
-  }
-
-
-  /**
    * Unbox this value.
    */
-  Value unbox(int vc)
+  Value unbox(DFA dfa, int vc)
   {
     return _original;
   }

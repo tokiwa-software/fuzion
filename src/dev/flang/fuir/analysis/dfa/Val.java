@@ -85,7 +85,7 @@ public abstract class Val extends ANY
   Val joinVal(DFA dfa, Val v)
   {
     return rewrap(dfa, a ->
-         v.rewrap(dfa, b -> a.join(b)));
+         v.rewrap(dfa, b -> a.join(dfa, b)));
   }
 
 }

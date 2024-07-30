@@ -68,7 +68,7 @@ public abstract class IR extends ANY
    * For FUIR code represented by integers, this gives the base added to the
    * integers to detect wrong values quickly.
    */
-  protected static final int SITE_BASE    = 0x30000000;
+  public static final int SITE_BASE    = 0x30000000;
 
 
   /**
