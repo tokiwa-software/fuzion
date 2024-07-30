@@ -770,7 +770,7 @@ public class DFA extends ANY
   /**
    * Should the DFA analysis use embedded values?  This is required for proper
    * escape analysis of instances that contain value types.  Disabling this is
-   * onyl for experimental purposes and will break the C backend since it relies
+   * only for experimental purposes and will break the C backend since it relies
    * on escape enalysis of embedded references.
    *
    * To disable, use fz with
