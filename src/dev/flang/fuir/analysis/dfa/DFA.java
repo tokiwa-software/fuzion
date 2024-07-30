@@ -736,7 +736,7 @@ public class DFA extends ANY
 
 
   /**
-   * Set this tho show statistics on the clazzes that caused the most Calls that
+   * Set this to show statistics on the clazzes that caused the most Calls that
    * need to be analysed.
    *
    * To enable, use fz with
