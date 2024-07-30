@@ -101,4 +101,4 @@ public base16 is
       if bits_0_3.is_error then bits_0_3.err
       else                  bits_4_7.err
     else
-      outcome (res.as_array)
+      outcome res.as_array
