@@ -1192,7 +1192,18 @@ public class C extends ANY
     return CStmnt.seq(
       CStmnt.decl("struct " + CNames.fzThreadEffectsEnvironment.code(), tmp),
       CExpr.call("memset", new List<>(tmp.adrOf(), CExpr.int32const(0), CExpr.sizeOfType("struct " + CNames.fzThreadEffectsEnvironment.code()))),
-      CNames.fzThreadEffectsEnvironment.assign(tmp.adrOf())
+      CNames.fzThreadEffectsEnvironment.assign(tmp.adrOf()),
+      CStmnt.seq(
+        new List<CStmnt>(
+          _types.inOrder()
+            .stream()
+            .filter(cl -> _fuir.clazzNeedsCode(cl) &&
+                          _fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic &&
+                          _fuir.isEffect(cl))
+            .mapToInt(cl -> _fuir.effectType(cl))
+            .distinct()
+            .<CStmnt>mapToObj(ecl -> CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl)).assign(new CIdent("false")))
+            .iterator()))
     );
   }
 
