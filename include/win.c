@@ -417,7 +417,7 @@ long fzE_get_file_size(FILE* file) {
  *   - error   :  result[0]=-1 and NULL
  *   - success :  result[0]=0  and an address where the file was mapped to
  */
-void * fzE_mmap(FILE * file, off_t offset, size_t size, int * result) {
+void * fzE_mmap(FILE * file, uint64_t offset, size_t size, int * result) {
 
   if ((unsigned long)fzE_get_file_size(file) < (offset + size)){
     result[0] = -1;
