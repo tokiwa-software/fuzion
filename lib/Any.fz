@@ -43,6 +43,32 @@ public Any ref is
   public prefix $ => Any.this.as_string
 
 
+  # Strengthen the constraint on `Any.this`' type to `T`.
+  #
+  # This is a compile-time identity function that can be used to assign a
+  # stronger type to a value.  If used on a value of a runtime type that
+  # is not assignable to T, this will cause a compile-time error.
+  #
+  # In case `T` is a ref type and `Any.this.type` is a value type, the
+  # result will be a boxed copy of `Any.this`.
+  #
+  # This is useful in type polymorphic features if a special handling for a
+  # particular type is required, e.g.,
+  #
+  #    is_equal_if_equatable(a, b T) option bool =>
+  #      if T : property.equatable
+  #        aeq := a.as property.equatable
+  #        beq := b.as property.equatable
+  #        aeq = beq
+  #      else
+  #        nil
+  #
+  public as(T type) T
+    pre
+      safety: (Any.this.type : T)
+  => intrinsic
+
+
   # Get the dynamic type of this instance.  For value instances `x`, this is
   # equal to `type_of x`, but for `x` with a `ref` type `x.dynamic_type` gives
   # the actual runtime type, while `type_of x` results in the static

@@ -59,6 +59,14 @@ public class DfaErrors extends ANY
                  "Callchain that lead to this point:\n\n" + why.contextString());
   }
 
+  public static void anyAsUsedWithIncompatibleType(HasSourcePosition pos, String origType, String newType)
+  {
+    Errors.error(pos.pos(),
+                 "Any.as is called with incompatible types",
+                 "Original type: " + origType + "\n" +
+                 "New type     : " + newType);
+  }
+
   public static void fatal(String msg)
   {
     Errors.fatal(msg);

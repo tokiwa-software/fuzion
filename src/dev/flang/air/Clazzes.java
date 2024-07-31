@@ -131,6 +131,8 @@ public class Clazzes extends ANY
   public static final OnDemandClazz bool        = new OnDemandClazz(() -> Types.resolved.t_bool             );
   public static final OnDemandClazz c_TRUE      = new OnDemandClazz(() -> Types.resolved.f_TRUE .selfType() );
   public static final OnDemandClazz c_FALSE     = new OnDemandClazz(() -> Types.resolved.f_FALSE.selfType() );
+  public static final OnDemandClazz c_true      = new OnDemandClazz(() -> Types.resolved.f_true .selfType() );
+  public static final OnDemandClazz c_false     = new OnDemandClazz(() -> Types.resolved.f_false.selfType() );
   public static final OnDemandClazz i8          = new OnDemandClazz(() -> Types.resolved.t_i8               );
   public static final OnDemandClazz i16         = new OnDemandClazz(() -> Types.resolved.t_i16              );
   public static final OnDemandClazz i32         = new OnDemandClazz(() -> Types.resolved.t_i32              );
@@ -759,6 +761,14 @@ public class Clazzes extends ANY
           }
         else
           {
+            if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
+              {
+                var T = innerClazz.actualGenerics()[0];
+                cf = T._type.constraintAssignableFrom(tclazz._type.generics().get(0))
+                  ? Types.resolved.f_Type_infix_colon_true
+                  : Types.resolved.f_Type_infix_colon_false;
+                innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars, false), -1, c, c.isInheritanceCall());
+              }
             outerClazz.saveActualClazzes(c, outer, new Clazz[] {innerClazz, tclazz});
           }
 

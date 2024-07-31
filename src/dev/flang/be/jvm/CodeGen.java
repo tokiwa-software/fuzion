@@ -674,13 +674,7 @@ class CodeGen
     var res = val;
     if (!_fuir.clazzIsRef(vc) && _fuir.clazzIsRef(rc))  // NYI: CLEANUP: would be good if the AbstractInterpreter would not call box() in this case
       {
-        var n = _names.javaClass(rc);
-        res = Expr.comment("box from "+_fuir.clazzAsString(vc)+" to "+_fuir.clazzAsString(rc))
-          .andThen(val)
-          .andThen(Expr.invokeStatic(n, Names.BOX_METHOD_NAME,
-                                     _types.boxSignature(rc),
-                                     _types.javaType(rc))
-                   );
+        res = _jvm.box(val, vc, rc);
       }
     return new Pair<>(res, Expr.UNIT);
   }

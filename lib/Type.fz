@@ -53,6 +53,41 @@ module:public Type ref is
   public redef dynamic_type => Type.type
 
 
+  # Is this type assignable to a type parameter with constraint `T`?
+  #
+  # The result of this is a compile-time constant that can be used to specialize
+  # code for a particular type.
+  #
+  #   is_of_integer_type(n T : numeric) => T : integer
+  #   say (is_of_integer_type 1234)    # true
+  #   say (is_of_integer_type 3.14)    # false
+  #
+  # it is most useful in conjunction with `Any.as` as in
+  #
+  #   is_of_integer_type(n T : numeric) => T : integer
+  #   say (is_of_integer_type 1234)    # true
+  #   say (is_of_integer_type 3.14)    # false
+  #
+  public infix : (T type) =>
+
+    # Fuzion's middle end will replace calls to `Type.infix :` by calls to either
+    # `Type.infix_colon_true` or `Type.infix_colon_false` depending on the result.
+    #
+    # The code for `Type.infix :` is dummy code that ensures that the front end will
+    # know that infix_colon_true and infix_colon_false are required and will not be
+    # removed.
+    #
+    infix_colon_true T && infix_colon_false T
+
+  # actual feature called instead of `infix :` in case the result is `true`
+  #
+  private infix_colon_true  (T type) bool => true
+
+  # actual feature called instead of `infix :` in case the result is `false`
+  #
+  private infix_colon_false (T type) bool => false
+
+
 # Get the Type instance corresponding to a given type
 #
 # The result of `type_as_value x` is the same as `x.type`.

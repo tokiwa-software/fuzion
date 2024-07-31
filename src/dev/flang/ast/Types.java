@@ -142,11 +142,15 @@ public class Types extends ANY
      */
     public final AbstractType t_void;
     public final AbstractType t_codepoint;
+    public final AbstractFeature f_Any;
+    public final AbstractFeature f_Any_as;
     public final AbstractFeature f_id;
     public final AbstractFeature f_void;
     public final AbstractFeature f_choice;
     public final AbstractFeature f_TRUE;
     public final AbstractFeature f_FALSE;
+    public final AbstractFeature f_true;
+    public final AbstractFeature f_false;
     public final AbstractFeature f_bool;
     public final AbstractFeature f_bool_NOT;
     public final AbstractFeature f_bool_AND;
@@ -174,6 +178,9 @@ public class Types extends ANY
     public final AbstractFeature f_concur_atomic;
     public final AbstractFeature f_concur_atomic_v;
     public final AbstractFeature f_Type;
+    public final AbstractFeature f_Type_infix_colon;
+    public final AbstractFeature f_Type_infix_colon_true;
+    public final AbstractFeature f_Type_infix_colon_false;
     public final AbstractFeature f_type_as_value;
     public final AbstractFeature f_Lazy;
     public final AbstractFeature f_Unary;
@@ -204,11 +211,15 @@ public class Types extends ANY
       t_unit          = ct.type(FuzionConstants.UNIT_NAME);
       t_void          = ct.type("void");
       t_codepoint     = ct.type("codepoint");
+      f_Any           = universe.get(mod, "Any");
+      f_Any_as        = f_Any.get(mod, "as");
       f_id            = universe.get(mod, "id", 2);
       f_void          = universe.get(mod, "void");
       f_choice        = universe.get(mod, "choice");
       f_TRUE          = universe.get(mod, "TRUE");
       f_FALSE         = universe.get(mod, "FALSE");
+      f_true          = universe.get(mod, "true");
+      f_false         = universe.get(mod, "false");
       f_bool          = universe.get(mod, "bool");
       f_bool_NOT      = f_bool.get(mod, FuzionConstants.PREFIX_OPERATOR_PREFIX + "!");
       f_bool_AND      = f_bool.get(mod, FuzionConstants.INFIX_OPERATOR_PREFIX + "&&");
@@ -236,6 +247,9 @@ public class Types extends ANY
       f_concur_atomic              = f_concur.get(mod, "atomic");
       f_concur_atomic_v            = f_concur_atomic.get(mod, "v");
       f_Type                       = universe.get(mod, "Type");
+      f_Type_infix_colon           = f_Type.get(mod, "infix :");
+      f_Type_infix_colon_true      = f_Type.get(mod, "infix_colon_true");
+      f_Type_infix_colon_false     = f_Type.get(mod, "infix_colon_false");
       f_type_as_value              = universe.get(mod, "type_as_value");
       f_Lazy                       = universe.get(mod, LAZY_NAME);
       f_Unary                      = universe.get(mod, UNARY_NAME);

@@ -1594,6 +1594,26 @@ public class DFA extends ANY
 
   static
   {
+    put("Any.as"                         , cl ->
+        {
+          var ic = cl._cc;
+          var oc = cl._dfa._fuir.clazzOuterClazz(cl._cc);
+          var val = cl._target;
+          var rc = cl._dfa._fuir.clazzActualGeneric(ic, 0);
+          if (!cl._dfa._fuir.constraintAssignableFrom(rc, oc))
+            {
+              DfaErrors.anyAsUsedWithIncompatibleType(cl._dfa._fuir.sitePos(cl._site),
+                                                      cl._dfa._fuir.clazzAsString(oc),
+                                                      cl._dfa._fuir.clazzAsString(rc));
+            }
+          else if ( cl._dfa._fuir.clazzIsRef(rc) &&
+                   !cl._dfa._fuir.clazzIsRef(oc))
+            {
+              val = val.value().box(cl._dfa, oc, cl._dfa._fuir.clazzAsRef(oc), cl);
+            }
+          return val;
+        });
+
     put("Type.name"                      , cl -> cl._dfa.newConstString(cl._dfa._fuir.clazzTypeName(cl._dfa._fuir.clazzOuterClazz(cl._cc)), cl) );
 
     put("concur.atomic.compare_and_swap0",  cl ->

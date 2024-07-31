@@ -2576,6 +2576,10 @@ public class FUIR extends IR
     return clazz(cl0)._type.isAssignableFrom(clazz(cl1)._type);
   }
 
+  public boolean constraintAssignableFrom(int cl0, int cl1)
+  {
+    return clazz(cl0)._type.constraintAssignableFrom(clazz(cl1)._type);
+  }
 
   /* NYI remove? only used in interpreter */
   @Deprecated
