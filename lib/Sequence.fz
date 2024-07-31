@@ -124,7 +124,7 @@ public Sequence(public T type) ref is
   #
   public as_array_backed Sequence T
   post
-    result.is_array_backed
+    debug: result.is_array_backed
   =>
     if is_array_backed
       Sequence.this
@@ -603,7 +603,7 @@ public Sequence(public T type) ref is
   # the last chunk may be smaller than `chunk_size`.
   #
   public chunk(chunk_size i32) list (list T)
-  pre chunk_size > 0
+  pre debug: chunk_size > 0
   =>
     if is_empty
       nil

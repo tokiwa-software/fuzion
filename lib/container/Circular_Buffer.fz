@@ -82,7 +82,7 @@ is
   #
   public flush (n i64) array T
   pre
-    n ≤ buffered
+    debug: n ≤ buffered
   => abstract
 
 
