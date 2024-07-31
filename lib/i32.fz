@@ -79,14 +79,14 @@ public i32(public val i32) : num.wrap_around, has_interval is
   # conversion to u32, i64 and u64, with range check
   public as_i8 i8
     pre
-      val ≥ i8.min.as_i32
-      val ≤ i8.max.as_i32
+      debug: val ≥ i8.min.as_i32
+      debug: val ≤ i8.max.as_i32
     =>
       low8bits.cast_to_i8
   public as_i16 i16
     pre
-      val ≥ i16.min.as_i32
-      val ≤ i16.max.as_i32
+      debug: val ≥ i16.min.as_i32
+      debug: val ≤ i16.max.as_i32
     =>
       low16bits.cast_to_i16
   public as_i64 i64 => intrinsic
@@ -94,8 +94,8 @@ public i32(public val i32) : num.wrap_around, has_interval is
   public redef as_u8  u8  => low8bits
   public as_u16 u16
     pre
-      val ≥ u16.min.as_i32
-      val ≤ u16.max.as_i32
+      debug: val ≥ u16.min.as_i32
+      debug: val ≤ u16.max.as_i32
     =>
       low16bits
   public as_u32 u32

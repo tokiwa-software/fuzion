@@ -26,7 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
-import java.util.TreeMap;
+import dev.flang.util.IntMap;
 
 
 /**
@@ -45,12 +45,6 @@ public class ValueSet extends Value
 
 
   /*----------------------------  variables  ----------------------------*/
-
-
-  /**
-   * the values this consists of
-   */
-  TreeMap<Value, Value> _components;
 
 
   /**
@@ -73,10 +67,35 @@ public class ValueSet extends Value
   {
     super(-1);
 
-    _components = new TreeMap<>(Value.COMPARATOR);
-    v1.forAll(x -> _components.put(x,x));
-    v2.forAll(x -> _components.put(x,x));
-    _componentsArray = _components.values().toArray(new Value[_components.size()]);
+    IntMap<Value> components = new IntMap<>();
+    if (v1 instanceof ValueSet v1s)
+      {
+        for (var c : v1s._componentsArray)
+          {
+            components.put(c._id, c);
+          }
+      }
+    else
+      {
+        components.put(v1._id, v1);
+      }
+    if (v2 instanceof ValueSet v2s)
+      {
+        for (var c : v2s._componentsArray)
+          {
+            components.put(c._id, c);
+          }
+      }
+    else
+      {
+        components.put(v2._id, v2);
+      }
+    _componentsArray = new Value[components.size()];
+    var i = 0;
+    for (var c : components.keySet())
+      {
+        _componentsArray[i++] = components.get(c);
+      }
   }
 
 
@@ -93,8 +112,8 @@ public class ValueSet extends Value
    */
   public int compareTo(ValueSet other)
   {
-    var s1 = _components.size();
-    var s2 = other._components.size();
+    var s1 =       _componentsArray.length;
+    var s2 = other._componentsArray.length;
     if (s1 == s2)
       {
         for (int i = 0; i < _componentsArray.length; i++)
@@ -119,6 +138,31 @@ public class ValueSet extends Value
       }
   }
 
+  /**
+   * Is this ValueSet a superset of other?
+   */
+  boolean contains(Value other)
+  {
+    boolean result;
+    if (other instanceof ValueSet os)
+      {
+        result = true;
+        for (var oc : os._componentsArray)
+          {
+            result = result && contains(oc);
+          }
+      }
+    else
+      {
+        result = false;
+        for (var tc : _componentsArray)
+          {
+            result = result || tc == other;
+          }
+      }
+    return result;
+  }
+
 
   /**
    * Compare this to another ValueSet, both sets containing effect instances
@@ -131,8 +175,8 @@ public class ValueSet extends Value
    */
   public int envCompareTo(ValueSet other)
   {
-    var s1 = _components.size();
-    var s2 = other._components.size();
+    var s1 =       _componentsArray.length;
+    var s2 = other._componentsArray.length;
     if (s1 == s2)
       {
         for (int i = 0; i < _componentsArray.length; i++)
@@ -177,17 +221,10 @@ public class ValueSet extends Value
    */
   public void forAll(ValueConsumer c)
   {
-    _components.values().forEach(c);
-  }
-
-
-  /**
-   * Create the union of the values 'this' and 'v'. This is called by join()
-   * after common cases (same instance, UNDEFINED) have been handled.
-   */
-  public Value joinInstances(Value v)
-  {
-    return new ValueSet(this, v);
+    for (var v : _componentsArray)
+      {
+        c.accept(v);
+      }
   }
 
 
@@ -199,10 +236,10 @@ public class ValueSet extends Value
   {
     Value result = null;
     // NYI: performance in O(_components.size()²)
-    for (var v : _components.values())
+    for (var v : _componentsArray)
       {
         var u = v.box(dfa, vc, rc, context);
-        result = result == null ? u : new ValueSet(result, u);
+        result = result == null ? u : dfa.newValueSet(result, u);
       }
     return result;
   }
@@ -211,14 +248,14 @@ public class ValueSet extends Value
   /**
    * Unbox this value.
    */
-  Value unbox(int vc)
+  Value unbox(DFA dfa, int vc)
   {
     Value result = null;
     // NYI: performance in O(_components.size()²)
-    for (var v : _components.values())
+    for (var v : _componentsArray)
       {
-        var u = v.unbox(vc);
-        result = result == null ? u : new ValueSet(result, u);
+        var u = v.unbox(dfa, vc);
+        result = result == null ? u : dfa.newValueSet(result, u);
       }
     return result;
   }

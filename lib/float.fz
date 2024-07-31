@@ -239,7 +239,7 @@ public float : numeric is
   # logarithm with base `base`
   #
   public type.log (base, val float.this) float.this
-  pre base > zero
+  pre safety: base > zero
   =>
     (float.this.log val) / (float.this.log base)
 

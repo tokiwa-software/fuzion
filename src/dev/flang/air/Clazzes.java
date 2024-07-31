@@ -471,7 +471,7 @@ public class Clazzes extends ANY
                                                 * in types differently.
                                                 */);
 
-    var ft = new FeatureAndActuals(f, tp, false);
+    var ft = new FeatureAndActuals(f, tp);
     var added = _calledDynamically_.add(ft);
     if (added)
       {
@@ -751,8 +751,7 @@ public class Clazzes extends ANY
             calledDynamically(cf, typePars);
           }
 
-        var innerClazz        = tclazz.lookup(new FeatureAndActuals(cf, typePars, false), c.select(), c, c.isInheritanceCall());
-        var preconditionClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars, true ), c.select(), c, c.isInheritanceCall());
+        var innerClazz        = tclazz.lookup(new FeatureAndActuals(cf, typePars), c.select(), c, c.isInheritanceCall());
         if (outerClazz.hasActualClazzes(c, outer))
           {
             // NYI: #2412: Check why this is done repeatedly and avoid redundant work!
@@ -760,7 +759,7 @@ public class Clazzes extends ANY
           }
         else
           {
-            outerClazz.saveActualClazzes(c, outer, new Clazz[] {innerClazz, tclazz, preconditionClazz});
+            outerClazz.saveActualClazzes(c, outer, new Clazz[] {innerClazz, tclazz});
           }
 
         var afs = innerClazz.argumentFields();
@@ -946,8 +945,7 @@ public class Clazzes extends ANY
           {
             var at = outerClazz.handDownThroughInheritsCalls(c.actualTypeParameters(), inh);
             var inner = tclazz.lookup(new FeatureAndActuals(c.calledFeature(),
-                                                            outerClazz.actualGenerics(at),
-                                                            false),
+                                                            outerClazz.actualGenerics(at)),
                                       c.select(),
                                       c,
                                       false);

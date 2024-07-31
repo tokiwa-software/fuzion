@@ -70,8 +70,8 @@ public i64(public val i64) : num.wrap_around, has_interval is
   # this i64 as an i8
   public as_i8 i8
     pre
-      val ≥ i8.min.as_i64
-      val ≤ i8.max.as_i64
+      debug: val ≥ i8.min.as_i64
+      debug: val ≤ i8.max.as_i64
     =>
       low8bits.as_i8
 
@@ -79,8 +79,8 @@ public i64(public val i64) : num.wrap_around, has_interval is
   # this i64 as an i16
   public as_i16 i16
     pre
-      val ≥ i16.min.as_i64
-      val ≤ i16.max.as_i64
+      debug: val ≥ i16.min.as_i64
+      debug: val ≤ i16.max.as_i64
     =>
       low16bits.as_i16
 
@@ -88,8 +88,8 @@ public i64(public val i64) : num.wrap_around, has_interval is
   # this i64 as an i32
   public as_i32 i32
     pre
-      val ≥ i32.min.as_i64
-      val ≤ i32.max.as_i64
+      debug: val ≥ i32.min.as_i64
+      debug: val ≤ i32.max.as_i64
     =>
       low32bits.cast_to_i32
 
@@ -109,8 +109,8 @@ public i64(public val i64) : num.wrap_around, has_interval is
   # this i64 as an u16
   public as_u16 u16
      pre
-      val ≥ 0
-      val ≤ u16.max.as_i64
+      debug: val ≥ 0
+      debug: val ≤ u16.max.as_i64
 #    post
 #      analysis: result.as_u64 = val
     =>
@@ -120,8 +120,8 @@ public i64(public val i64) : num.wrap_around, has_interval is
   # this i64 as an u32
   public as_u32 u32
     pre
-      val ≥ (i64 0)
-      val ≤ u32.max.as_i64
+      debug: val ≥ (i64 0)
+      debug: val ≤ u32.max.as_i64
 #    post then
 #      analysis:  result.as_i64 = val
     =>
@@ -131,7 +131,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
   # this i64 as an u64
   public as_u64 u64
     pre
-      val ≥ 0
+      debug: val ≥ 0
 #    post
 #      analysis:  result.as_i64 = val
     =>
@@ -141,7 +141,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
   # this i64 as an u128
   public as_u128 u128
     pre
-      val ≥ 0
+      debug: val ≥ 0
     post
       analysis:  result.as_i64 = val
     =>
@@ -155,7 +155,7 @@ public i64(public val i64) : num.wrap_around, has_interval is
 
   # this i64 as an uint
   public as_uint uint
-  pre val ≥ 0
+  pre debug: val ≥ 0
   =>
     uint val.as_u64
 

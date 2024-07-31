@@ -912,7 +912,7 @@ public class FUIR extends IR
       {
         var pf = p.calledFeature();
         var of = pf.outerRef();
-        var or = (of == null) ? null : (Clazz) cc._inner.get(new FeatureAndActuals(of, new List<>(), false));  // NYI: ugly cast
+        var or = (of == null) ? null : (Clazz) cc._inner.get(new FeatureAndActuals(of, new List<>()));  // NYI: ugly cast
         var needsOuterRef = (or != null && !or.resultClazz().isUnitType());
         toStack(code, p.target(), !needsOuterRef /* dump result if not needed */);
         if (needsOuterRef)
@@ -1507,7 +1507,7 @@ public class FUIR extends IR
           }
         var found = new TreeSet<Integer>();
         var result = new List<Integer>();
-        var fa = new FeatureAndActuals(f, typePars, false);
+        var fa = new FeatureAndActuals(f, typePars);
         for (var clz : tclazz.heirs())
           {
             if (CHECKS) check

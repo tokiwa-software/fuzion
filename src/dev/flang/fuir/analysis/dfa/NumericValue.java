@@ -28,17 +28,101 @@ package dev.flang.fuir.analysis.dfa;
 
 import java.nio.ByteBuffer;
 
+import dev.flang.util.LongMap;
 
 /**
  * NumericValue represents a numeric value i8..i64, u8..u64, f32..f64.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class NumericValue extends Value implements Comparable<NumericValue>
+public class NumericValue extends Value
 {
 
 
   /*-----------------------------  classes  -----------------------------*/
+
+
+  /*-------------------------  static methods  --------------------------*/
+
+
+  /**
+   * Create Instance of constant numeric value
+   *
+   * @param dfa the DFA analysis
+   *
+   * @param clazz the clazz this is an instance of.
+   *
+   * @param data serialized value
+   */
+  public static NumericValue create(DFA dfa, int clazz, ByteBuffer data)
+  {
+    var v = switch (dfa._fuir.getSpecialClazz(clazz))
+      {
+      case c_i8   -> (long) data.get      ();
+      case c_i16  -> (long) data.getShort ();
+      case c_i32  -> (long) data.getInt   ();
+      case c_i64  -> (long) data.getLong  ();
+      case c_u8   -> (long) data.get      () & 0xff;
+      case c_u16  -> (long) data.getChar  ();
+      case c_u32  -> (long) data.getInt   ();
+      case c_u64  ->        data.getLong  ();
+      case c_f32  -> (long) Float .floatToIntBits  (data.getFloat ());
+      case c_f64  ->        Double.doubleToLongBits(data.getDouble());
+      default     -> { check(false); yield null; }
+      };
+
+    return create(dfa, clazz, v);
+  }
+
+
+  /**
+   * Create Instance of constant numeric value
+   *
+   * @param dfa the DFA analysis
+   *
+   * @param clazz the clazz this is an instance of.
+   *
+   * @param vlong the value, cast to long.
+   */
+  public static NumericValue create(DFA dfa, int clazz, long vlong)
+  {
+    Long vLong = vlong;
+    var clazz_id = dfa._fuir.getSpecialClazz(clazz).ordinal();
+    var values = dfa._numericValues.getIfExists(clazz_id);
+    if (values == null)
+      {
+        values = new LongMap<>();
+        dfa._numericValues.force(clazz_id, values);
+      }
+    NumericValue res;
+    res = values.get(vLong);
+    if (res == null)
+      {
+        res = new NumericValue(dfa, clazz, vLong);
+        values.put(vLong, res);
+      }
+    return res;
+  }
+
+
+  /**
+   * Create Instance of unknown numeric value
+   *
+   * @param dfa the DFA analysis
+   *
+   * @param clazz the clazz this is an instance of.
+   */
+  public static NumericValue create(DFA dfa, int clazz)
+  {
+    var clazz_id = dfa._fuir.getSpecialClazz(clazz).ordinal();
+    var res = dfa._numericValuesAny.getIfExists(clazz_id);
+    if (res == null)
+      {
+        res = new NumericValue(dfa, clazz, null);
+        dfa._numericValuesAny.force(clazz_id, res);
+      }
+    return res;
+  }
 
 
   /*----------------------------  constants  ----------------------------*/
@@ -54,44 +138,12 @@ public class NumericValue extends Value implements Comparable<NumericValue>
 
 
   /**
-   * The value cast to long
+   * The value cast to long, null if not known.
    */
   Long _value;
 
 
   /*---------------------------  constructors  ---------------------------*/
-
-
-  /**
-   * Create Instance of constant numeric value
-   *
-   * @param dfa the DFA analysis
-   *
-   * @param clazz the clazz this is an instance of.
-   *
-   * @param data serialized value
-   */
-  public NumericValue(DFA dfa, int clazz, ByteBuffer data)
-  {
-    super(clazz);
-
-    _dfa = dfa;
-
-    _value = switch (_dfa._fuir.getSpecialClazz(_clazz))
-      {
-      case c_i8   -> (long) data.get      ();
-      case c_i16  -> (long) data.getShort ();
-      case c_i32  -> (long) data.getInt   ();
-      case c_i64  -> (long) data.getLong  ();
-      case c_u8   -> (long) data.get      () & 0xff;
-      case c_u16  -> (long) data.getChar  ();
-      case c_u32  -> (long) data.getInt   ();
-      case c_u64  ->        data.getLong  ();
-      case c_f32  -> (long) Float .floatToIntBits  (data.getFloat ());
-      case c_f64  ->        Double.doubleToLongBits(data.getDouble());
-      default     -> { check(false); yield null; }
-      };
-  }
 
 
   /**
@@ -101,50 +153,19 @@ public class NumericValue extends Value implements Comparable<NumericValue>
    *
    * @param clazz the clazz this is an instance of.
    *
-   * @param v the value, cast to long.
+   * @param v the value, wrapped in Long or null if unknown.
    */
-  public NumericValue(DFA dfa, int clazz, long v)
+  private NumericValue(DFA dfa, int clazz, Long v)
   {
     super(clazz);
 
     _dfa = dfa;
     _value = v;
-  }
-
-
-  /**
-   * Create Instance of unknown numeric value
-   *
-   * @param dfa the DFA analysis
-   *
-   * @param clazz the clazz this is an instance of.
-   */
-  public NumericValue(DFA dfa, int clazz)
-  {
-    super(clazz);
-
-    _dfa = dfa;
-    _value = null;
+    dfa.makeUnique(this);
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * Compare this to another NumericValue.
-   */
-  public int compareTo(NumericValue other)
-  {
-    return
-      _clazz < other._clazz ? -1 :
-      _clazz > other._clazz ? +1 :
-      _value == null && other._value != null ? -1 :
-      _value != null && other._value == null ? +1 :
-      _value == null && other._value == null ?  0 :
-      _value < other._value ? -1 :
-      _value > other._value ? +1 : 0;
-  }
 
 
   /**
@@ -178,7 +199,7 @@ public class NumericValue extends Value implements Comparable<NumericValue>
    * Create the union of the values 'this' and 'v'. This is called by join()
    * after common cases (same instance, UNDEFINED) have been handled.
    */
-  public Value joinInstances(Value v)
+  public Value joinInstances(DFA dfa, Value v)
   {
     if (v instanceof NumericValue nv)
       {
@@ -207,20 +228,20 @@ public class NumericValue extends Value implements Comparable<NumericValue>
           }
         else if (_clazz == nv._clazz)
           {
-            return new NumericValue(_dfa, _clazz);
+            return create(_dfa, _clazz);
           }
         else
           {
-            return super.joinInstances(v);
+            return super.joinInstances(dfa, v);
           }
       }
     else if (v instanceof ValueSet)
       {
-        return v.join(this);
+        return v.join(dfa, this);
       }
     else
       {
-        return super.joinInstances(v);
+        return super.joinInstances(dfa, v);
       }
   }
 

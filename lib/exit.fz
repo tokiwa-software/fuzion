@@ -49,7 +49,7 @@ is
   # set the stored exit code, which, by default, is zero
   #
   set_exit_code(code u8)
-  pre code ≤ 127
+  pre debug: code ≤ 127
   => p.set_exit_code code
 
 
@@ -86,7 +86,7 @@ is
     #
     redef set_exit_code(code u8) outcome unit
       post then
-        exit_code = code
+        debug: exit_code = code
       =>
         if exit_code = 0
           set exit_code := code
@@ -117,7 +117,7 @@ public exit => exit0.exit
 # change the currently stored exit code
 #
 public set_exit_code(code u8)
-pre code ≤ 127
+pre debug: code ≤ 127
   => exit0.set_exit_code code
 
 
@@ -144,5 +144,5 @@ public Exit_Handler ref is
   # set the stored exit code, which, by default, is zero
   #
   public set_exit_code(code u8) outcome unit
-  pre code ≤ 127
+  pre debug: code ≤ 127
     => abstract
