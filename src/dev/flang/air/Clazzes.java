@@ -503,7 +503,7 @@ public class Clazzes extends ANY
    */
   static Set<FeatureAndActuals> calledDynamicallyWithTypePars(AbstractFeature f)
   {
-    var fmin = new FeatureAndActuals(f);
+    var fmin = new FeatureAndActuals(f, false);
     var fmax = new FeatureAndActuals(f, true);
     return _calledDynamically_.subSet(fmin, fmax);
   }
