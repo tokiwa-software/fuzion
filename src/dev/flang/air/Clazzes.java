@@ -767,7 +767,7 @@ public class Clazzes extends ANY
                 cf = T._type.constraintAssignableFrom(tclazz._type.generics().get(0))
                   ? Types.resolved.f_Type_infix_colon_true
                   : Types.resolved.f_Type_infix_colon_false;
-                innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars, false), -1, c, c.isInheritanceCall());
+                innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), -1, c, c.isInheritanceCall());
               }
             outerClazz.saveActualClazzes(c, outer, new Clazz[] {innerClazz, tclazz});
           }
