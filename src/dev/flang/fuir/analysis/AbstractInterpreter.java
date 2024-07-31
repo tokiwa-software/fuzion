@@ -509,6 +509,16 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     var v = containsVoid(stack) ? null
                                 : _processor.unitValue();
 
+    if (last_s > 0 &&_fuir.alwaysResultsInVoid(last_s))
+      {
+        l.add(_processor.comment(_fuir.codeAtAsString(last_s) + " always results in void, stopping here."));
+
+        for (var s = last_s + _fuir.codeSizeAt(last_s); _fuir.withinCode(s); s = s + _fuir.codeSizeAt(s))
+          {
+            l.add(_processor.comment(_fuir.codeAtAsString(s) + " eliminated."));
+          }
+      }
+
     if (!containsVoid(stack) && stack.size() > 0)
       { // NYI: #1875: Manual stack cleanup.  This should not be needed since the
         // FUIR has the (so far undocumented) invariant that the stack must be
