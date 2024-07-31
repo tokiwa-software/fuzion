@@ -1087,7 +1087,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (f != null,
        !this.isVoidType());
 
-    return lookup(new FeatureAndActuals(f, AbstractCall.NO_GENERICS, false), -1, p, false);
+    return lookup(new FeatureAndActuals(f, AbstractCall.NO_GENERICS), -1, p, false);
   }
 
 
@@ -1316,7 +1316,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
  */
 
-            var outerUnboxed = isBoxed() && !f.isConstructor() && !fa._preconditionClazz ? asValue() : this;
+            var outerUnboxed = isBoxed() && !f.isConstructor() ? asValue() : this;
             innerClazz = Clazzes.clazzWithSpecificOuter(t, select, outerUnboxed);
             if (select < 0)
               {
