@@ -334,24 +334,9 @@ class CodeGen
     var cc0 = _fuir.accessedClazz  (si);
     var ccs = _fuir.accessedClazzes(si);
     var rt = isCall ? _fuir.clazzResultClazz(cc0) : _fuir.clazz(FUIR.SpecialClazzes.c_unit);
-    if (ccs.length == 0)
-      {
-        s = s.andThen(tvalue.drop());
-        for (var a : args)
-          {
-            s = s.andThen(a.drop());
-          }
-        if (isCall && (_fuir.hasData(rt) || _fuir.clazzIsVoidType(rt)))  // we need a non-unit result and do not know what to do with this call, so flag an error
-          {
-            s = s.andThen(_jvm.reportErrorInCode("no targets for access of " + _fuir.clazzAsString(cc0) + " within " + _fuir.siteAsString(si)));
-            res = null;
-          }
-        else  // an assignment to an unused field or unit-type call, that is fine to remove, just add a comment
-          {
-            s = s.andThen(Expr.comment("access to " + _fuir.codeAtAsString(si) + " eliminated"));
-          }
-      }
-    else if (ccs.length > 2)
+    if (CHECKS) check
+      (ccs.length != 0);
+    if (ccs.length > 2)
       {
         if (CHECKS) check
           (_fuir.hasData(_fuir.accessTargetClazz(si)),  // would be strange if target is unit type
@@ -966,6 +951,18 @@ class CodeGen
     return new Pair<>(res, Expr.UNIT);
   }
 
+  /**
+   * Generate code to terminate the execution immediately.
+   *
+   * @param msg a message explaining the illegal state
+   */
+  // NYI: BUG: reportErrorInCode may currently not be called repeatedly
+  //           triggers error: Expecting a stack map frame
+  // @Override
+  // public Expr reportErrorInCode(String msg)
+  // {
+  //   return this._jvm.reportErrorInCode(msg);
+  // }
 
 }
 

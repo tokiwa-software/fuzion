@@ -246,6 +246,13 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      */
     public abstract Pair<VALUE, RESULT> env(int s, int ecl);
 
+    /**
+     * Generate code to terminate the execution immediately.
+     *
+     * @param msg a message explaining the illegal state
+     */
+    public RESULT reportErrorInCode(String msg) { return comment(msg); }
+
   }
 
 
@@ -406,16 +413,16 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    *
    * @param argCount the number of arguments.
    *
-   * @return list of arguments to be passed to the call
+   * @return list of arguments+clazz to be passed to the call
    */
-  List<VALUE> args(int cc, Stack<VALUE> stack, int argCount)
+  List<Pair<VALUE, Integer>> args(int cc, Stack<VALUE> stack, int argCount)
   {
     if (argCount > 0)
       {
         var ac = _fuir.clazzArgClazz(cc, argCount-1);
         var a = pop(stack, ac);
         var result = args(cc, stack, argCount-1);
-        result.add(a);
+        result.add(new Pair<>(a, ac));
         return result;
       }
     return new List<>();
@@ -509,6 +516,12 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     var v = containsVoid(stack) ? null
                                 : _processor.unitValue();
 
+
+    if (last_s > 0 && _fuir.alwaysResultsInVoid(last_s))
+      {
+        l.add(_processor.reportErrorInCode("Severe compiler bug! This code should be unreachable."));
+      }
+
     if (!containsVoid(stack) && stack.size() > 0)
       { // NYI: #1875: Manual stack cleanup.  This should not be needed since the
         // FUIR has the (so far undocumented) invariant that the stack must be
@@ -562,14 +575,15 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           var tvalue = pop(stack, tc);
           var avalue = pop(stack, ft);
           var f = _fuir.accessedClazz(s);
-          if (f != -1)  // field we are assigning to may be unused, i.e., -1
+          if (f != -1 && _fuir.accessedClazzes(s).length != 0)  // field we are assigning to may be unused, i.e., -1
             {
               return _processor.assign(s, tvalue, avalue);
             }
           else
             {
               return _processor.sequence(new List<>(_processor.drop(tvalue, tc),
-                                                    _processor.drop(avalue, ft)));
+                                                    _processor.drop(avalue, ft),
+                                                    _processor.comment("access to " + _fuir.codeAtAsString(s) + " eliminated.")));
             }
         }
       case Box:
@@ -595,14 +609,28 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           var args = args(cc0, stack, _fuir.clazzArgCount(cc0));
           var tc = _fuir.accessTargetClazz(s);
           var tvalue = pop(stack, tc);
-          var r = _processor.call(s, tvalue, args);
+          var ccs = _fuir.accessedClazzes(s);
+          var rt = _fuir.clazzResultClazz(cc0);
+
+          var r = ccs.length == 0
+            ? _fuir.hasData(rt) || _fuir.clazzIsVoidType(rt)
+            // case one: no targets for access
+            ? new Pair<VALUE, RESULT>(null, _processor.reportErrorInCode("no targets for access of " +  _fuir.clazzAsString(cc0) + " within " + _fuir.siteAsString(s)))
+            // case two: produce unit value, drop target and args.
+            : new Pair<VALUE, RESULT>(
+                _processor.unitValue(),
+                _processor.sequence(new List<>(
+                  _processor.drop(tvalue, tc),
+                  args.map2(a -> _processor.drop(a.v0(), a.v1())))))
+            // case three: do the actual call
+            : _processor.call(s, tvalue, args.map2(x -> x.v0()));
+
           if (r.v0() == null)  // this may happen even if rt is not void (e.g., in case of tail recursion or error)
             {
               stack.push(null);
             }
           else
             {
-              var rt = _fuir.clazzResultClazz(cc0);
               push(stack, rt, r.v0());
             }
           return r.v1();

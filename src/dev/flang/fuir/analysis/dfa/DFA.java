@@ -717,6 +717,20 @@ public class DFA extends ANY
       return new Pair<>(_call.getEffectForce(s, ecl), _unit_);
     }
 
+
+    /**
+     * Generate code to terminate the execution immediately.
+     *
+     * @param msg a message explaining the illegal state
+     */
+    @Override
+    public Unit reportErrorInCode(String msg)
+    {
+      say_err(msg);
+      System.exit(1);
+      return null;
+    }
+
   }
 
 
