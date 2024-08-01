@@ -126,9 +126,9 @@ public class MiddleEnd extends ANY
         findUsedFeatures(f);
       }
 
-    Clazzes.init(_options);
+    Clazzes.instance.init(_options);
 
-    Clazz cl = main != null ? Clazzes.clazz(main.selfType()) : null;
+    Clazz cl = main != null ? Clazzes.instance.clazz(main.selfType()) : null;
     return cl;
   }
 
@@ -199,9 +199,9 @@ public class MiddleEnd extends ANY
    */
   void markUsed(AbstractFeature f, boolean dynamically, HasSourcePosition usedAt)
   {
-    if (!Clazzes.isUsed(f))
+    if (!Clazzes.instance.isUsed(f))
       {
-        Clazzes.addUsedFeature(f, usedAt);
+        Clazzes.instance.addUsedFeature(f, usedAt);
         if (f.state() == State.RESOLVED)
           {
             scheduleForFindUsedFeatures(f);
@@ -232,7 +232,7 @@ public class MiddleEnd extends ANY
           {
             for (AbstractFeature of : df.redefines())
               {
-                if (Clazzes.isUsed(of))
+                if (Clazzes.instance.isUsed(of))
                   {
                     markUsed(df, usedAt);
                   }
