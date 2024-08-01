@@ -2273,7 +2273,7 @@ public class DFA extends ANY
         jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
         return jobj;
       });
-    put("fuzion.java.u16_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, null) );
+    put("fuzion.java.u16_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
 
     put("concur.sync.mtx_init"              , cl -> outcome(cl,
                                                             cl._dfa._fuir.clazzResultClazz(cl._cc),
@@ -2289,7 +2289,6 @@ public class DFA extends ANY
     put("concur.sync.cnd_broadcast"         , cl -> cl._dfa._bool);
     put("concur.sync.cnd_wait"              , cl -> cl._dfa._bool);
     put("concur.sync.cnd_destroy"           , cl -> Value.UNIT);
-    put("fuzion.java.u16_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
   }
 
 
