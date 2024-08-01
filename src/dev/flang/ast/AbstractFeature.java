@@ -310,6 +310,11 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public abstract Contract contract();
 
+  public AbstractType additionalConstraint(AbstractFeature typeParameter)
+  {
+    return null;
+  }
+
 
   /**
    * If this feature has a pre condition or redefines a feature from which it
@@ -1903,6 +1908,12 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       .stream()
       .flatMap(x -> Stream.concat(Stream.of(x), x.redefinesFull().stream()))
       .collect(Collectors.toSet());
+  }
+
+
+  public AbstractType constraintFor(AbstractFeature typeParameter)
+  {
+    return null;
   }
 
 

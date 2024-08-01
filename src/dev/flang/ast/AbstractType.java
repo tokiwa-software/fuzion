@@ -396,7 +396,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         if (actual_type.isGenericArgument())
           {
-            result = isAssignableFrom(actual_type.genericArgument().constraint().asRef());
+            result = isAssignableFrom(actual_type.genericArgument().constraint1(null /* NYI: outer */).asRef());
           }
         else
           {
@@ -459,7 +459,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param actual the actual type.
    */
-  public boolean constraintAssignableFrom(AbstractType actual)
+  public boolean constraintAssignableFrom(AbstractFeature outer, AbstractType actual)
   {
     if (PRECONDITIONS) require
       (this  .isGenericArgument() || this  .feature() != null || Errors.any(),
@@ -475,7 +475,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         if (actual.isGenericArgument())
           {
-            result = constraintAssignableFrom(actual.genericArgument().constraint());
+            result = constraintAssignableFrom(outer, actual.genericArgument().constraint1(outer));
           }
         else
           {
@@ -488,7 +488,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                 for (var p: actual.feature().inherits())
                   {
                     result |= !p.calledFeature().isChoice() &&
-                      constraintAssignableFrom(p.type().applyTypePars(actual));
+                      constraintAssignableFrom(outer, p.type().applyTypePars(actual));
                   }
               }
           }
@@ -524,8 +524,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           // this  = monad monad.A monad.MA
           // other = monad option.T (option option.T)
           // for now just prevent infinite recursion
-          !(g.isGenericArgument() && (g.genericArgument().constraint() == this ||
-                                      g.genericArgument().constraint().constraintAssignableFrom(og))))
+            !(g.isGenericArgument() && (g.genericArgument().constraint1(null /* outer */) == this ||
+                                        g.genericArgument().constraint1(null /* outer */).constraintAssignableFrom(null, og))))
           // NYI what if g is not a generic argument?
           {
             return false;
@@ -707,7 +707,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         if (target.isGenericArgument())
           {
-            result = result.applyTypePars(target.genericArgument().constraint());
+            result = result.applyTypePars(target.genericArgument().constraint1(null /* outer */));
           }
         else
           {
@@ -1416,7 +1416,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   private AbstractType replace_this_type_by_actual_outer2(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef)
   {
     var result = this;
-    var att = (tt.isGenericArgument() ? tt.genericArgument().constraint() : tt);
+    var att = (tt.isGenericArgument() ? tt.genericArgument().constraint1(null /* outer */) : tt);
     if (isThisTypeInTypeFeature() && tt.isGenericArgument()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
         ||
         isThisType() && att.feature().inheritsFrom(feature())  // we have abc.this.type with att inheriting from abc, so use tt
@@ -1866,12 +1866,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @return itself on success or t_ERROR if constraints are not met and an
    * error was produced
    */
-  public AbstractType checkConstraints()
+  public AbstractType checkConstraints(AbstractFeature outer)
   {
     var result = this;
     if (result != Types.t_ERROR && !isGenericArgument())
       {
-        if (!checkActualTypePars(feature(), generics(), unresolvedGenerics(), null))
+        if (!checkActualTypePars(outer, feature(), generics(), unresolvedGenerics(), null))
           {
             result = Types.t_ERROR;
           }
@@ -1897,7 +1897,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @return true iff check was ok, false iff an error was found and reported
    */
-  static boolean checkActualTypePars(AbstractFeature called, List<AbstractType> actuals, List<AbstractType> unresolvedActuals, SourcePosition callPos)
+  static boolean checkActualTypePars(AbstractFeature outer, AbstractFeature called, List<AbstractType> actuals, List<AbstractType> unresolvedActuals, SourcePosition callPos)
   {
     var result = true;
     var fi = called.generics().list.iterator();
@@ -1909,7 +1909,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var f = fi.next();
         var a = ai.next();
         var u = ui.hasNext() ? ui.next() : null;
-        var c = f.constraint();
+        var c = f.constraint1(outer);
         if (CHECKS) check
           (Errors.any() || f != null && a != null);
 
@@ -1920,17 +1920,18 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         a.checkChoice(pos);
         if (!c.isGenericArgument() && // See AstErrors.constraintMustNotBeGenericArgument,
                                       // will be checked in SourceModule.checkTypes(Feature)
-            !c.constraintAssignableFrom(a))
+            !c.constraintAssignableFrom(outer, a))
           {
             if (!f.typeParameter().isTypeFeaturesThisType())  // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
               {
-                if (f.constraint().isChoice())
+                var ct = f.constraint1(null /* no context, we are setting this */);
+                if (ct.isChoice())
                   {
-                    AstErrors.constraintMustNotBeChoice(f);
+                    AstErrors.constraintMustNotBeChoice(f, ct);
                   }
                 else
                   {
-                    AstErrors.incompatibleActualGeneric(pos, f, a);
+                    AstErrors.incompatibleActualGeneric(pos, f, ct, a);
                   }
 
                 result = false;

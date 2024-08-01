@@ -439,7 +439,7 @@ public class Call extends AbstractCall
    *
    * @return the type of the target.
    */
-  private AbstractType targetTypeOrConstraint(Resolution res)
+  private AbstractType targetTypeOrConstraint(Resolution res, AbstractFeature outer)
   {
     if (PRECONDITIONS) require
       (_target != null);
@@ -453,7 +453,7 @@ public class Call extends AbstractCall
 
     if (result.isGenericArgument())
       {
-        result = result.genericArgument().constraint(res);
+        result = result.genericArgument().constraint0(res, outer);
       }
 
     if (POSTCONDITIONS) ensure
@@ -476,13 +476,13 @@ public class Call extends AbstractCall
    * target of this call and actual type parameters given in this call. Result
    * is interned.
    */
-  private AbstractType actualArgType(Resolution res, AbstractType frmlT)
+  private AbstractType actualArgType(Resolution res, AbstractType frmlT, AbstractFeature outer)
   {
     if (PRECONDITIONS) require
       (!frmlT.isOpenGeneric());
 
     var result = adjustThisTypeForTarget(frmlT);
-    result = targetTypeOrConstraint(res)
+    result = targetTypeOrConstraint(res, outer)
       .actualType(result)
       .applyTypePars(_calledFeature, _generics);
 
@@ -527,7 +527,7 @@ public class Call extends AbstractCall
       _target instanceof Call tc &&
       targetIsTypeParameter()          ? tc.calledFeature().asGenericType() :
       calledFeature().isConstructor()  ? _target.typeForCallTarget()
-                                       : targetTypeOrConstraint(res);
+                                       : targetTypeOrConstraint(res, outer);
   }
 
 
@@ -566,7 +566,7 @@ public class Call extends AbstractCall
       {
         _target.loadCalledFeature(res, thiz);
         _target = res.resolveType(_target, thiz);
-        result = targetTypeOrConstraint(res).feature();
+        result = targetTypeOrConstraint(res, thiz).feature();
       }
     else
       { // search for feature in thiz
@@ -1250,7 +1250,7 @@ public class Call extends AbstractCall
    *
    * @param frml the formal argument
    */
-  private void resolveFormalArg(Resolution res, int argnum, AbstractFeature frml)
+  private void resolveFormalArg(Resolution res, int argnum, AbstractFeature frml, AbstractFeature outer)
   {
     int cnt = 1;
     var frmlT = frml.resultTypeIfPresent(res);
@@ -1304,7 +1304,7 @@ public class Call extends AbstractCall
               }
             else
               {
-                _resolvedFormalArgumentTypes[argnum + i] = actualArgType(res, frmlT);
+                _resolvedFormalArgumentTypes[argnum + i] = actualArgType(res, frmlT, outer);
               }
           }
       }
@@ -1359,7 +1359,7 @@ public class Call extends AbstractCall
    * arguments in this call. Results will be stored in
    * _resolvedFormalArgumentTypes array.
    */
-  private void resolveFormalArgumentTypes(Resolution res)
+  private void resolveFormalArgumentTypes(Resolution res, AbstractFeature outer)
   {
     if (_resolvedFormalArgumentTypes == null)
       {
@@ -1372,7 +1372,7 @@ public class Call extends AbstractCall
           {
             int argnum = count;  // effectively final copy of count
             frml.whenResolvedTypes
-              (() -> resolveFormalArg(res, argnum, frml));
+              (() -> resolveFormalArg(res, argnum, frml, outer));
             count++;
           }
       }
@@ -2077,7 +2077,7 @@ public class Call extends AbstractCall
         var ri = rg.index();
         if (rg.feature() == _calledFeature && foundAt.get(ri) == null)
           {
-            var at = actualArgType(res, formalType);
+            var at = actualArgType(res, formalType, outer);
             if (!at.containsUndefined(true))
               {
                 var rt = al.inferLambdaResultType(res, outer, at);
@@ -2226,7 +2226,7 @@ public class Call extends AbstractCall
           // check if this might be a
           // left hand side of dot-type-call
           tt = ut.tryResolve(res, thiz);
-          tt = tt != null && tt != Types.t_ERROR && tt.isGenericArgument() ? tt.genericArgument().constraint(res) : tt;
+          tt = tt != null && tt != Types.t_ERROR && tt.isGenericArgument() ? tt.genericArgument().constraint0(res, thiz) : tt;
         }
       if (tt != null && tt != Types.t_ERROR)
         {
@@ -2350,7 +2350,7 @@ public class Call extends AbstractCall
           {
             _type = Types.t_ERROR;
           }
-        resolveFormalArgumentTypes(res);
+        resolveFormalArgumentTypes(res, outer);
       }
     if (_type != null &&
         // exclude call to create type instance, it requires origin's type parameters:
@@ -2625,7 +2625,7 @@ public class Call extends AbstractCall
           }
 
         // Check that generics match formal generic constraints
-        AbstractType.checkActualTypePars(_calledFeature, _generics, _unresolvedGenerics, pos());
+        AbstractType.checkActualTypePars(outer, _calledFeature, _generics, _unresolvedGenerics, pos());
       }
   }
 

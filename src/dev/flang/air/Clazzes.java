@@ -771,7 +771,7 @@ public class Clazzes extends ANY
             if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
               {
                 var T = innerClazz.actualGenerics()[0];
-                cf = T._type.constraintAssignableFrom(tclazz._type.generics().get(0))
+                cf = T._type.constraintAssignableFrom(null /* outer */, tclazz._type.generics().get(0))
                   ? Types.resolved.f_Type_infix_colon_true
                   : Types.resolved.f_Type_infix_colon_false;
                 innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), -1, c, c.isInheritanceCall());

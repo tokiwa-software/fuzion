@@ -200,6 +200,36 @@ public class Feature extends AbstractFeature
   public Contract contract() { return _contract; }
 
 
+  public AbstractType constraintFor(AbstractFeature typeParameter)
+  {
+    for (var c : contract()._declared_preconditions)
+      {
+        if (c.cond instanceof Call cc &&
+            cc.calledFeatureKnown() &&
+            cc.calledFeature() == Types.resolved.f_Type_infix_colon &&
+            cc.target() instanceof Call tc &&
+            tc.calledFeature() == typeParameter)
+          {
+            return cc.actualTypeParameters().get(0);
+            /*
+            System.out.println("Extra constraint on "+cc.target()+" : "+cc.actualTypeParameters()+" "+
+                               (cc.target() instanceof Call tc)+
+                               (cc.target() instanceof Call tc && tc.calledFeature() == typeParameter)+
+                               cc.target().type() +
+                               cc.target().type().isGenericArgument() +
+                               (cc.target().type().isGenericArgument() ?
+                                cc.target().type().genericArgument().typeParameter() == typeParameter : "")
+
+                               //+(cc.target().calledFeature().originalFeature()==typeParameter)
+                               );
+            */
+          }
+      }
+    return isUniverse() ? null
+                        : outer().additionalConstraint(typeParameter);
+  }
+
+
   /**
    * Lists of features we redefine and hence from which we inherit pre or post
    * conditions.  Used during front end only to create calls to redefined
@@ -1903,7 +1933,7 @@ A ((Choice)) declaration must not contain a result type.
             public Call         action(Call           c, AbstractFeature outer) { c.checkTypes(res, outer); return c; }
             public Expr         action(If             i, AbstractFeature outer) { i.checkTypes();      return i; }
             public Expr         action(InlineArray    i, AbstractFeature outer) { i.checkTypes();      return i; }
-            public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints();   }
+            public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints(outer);   }
             public void         action(Cond           c, AbstractFeature outer) { c.checkTypes();                }
             public void         actionBefore(Block    b, AbstractFeature outer) { b.checkTypes();                }
           });

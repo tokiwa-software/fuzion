@@ -2669,7 +2669,7 @@ public class FUIR extends IR
 
   public boolean constraintAssignableFrom(int cl0, int cl1)
   {
-    return clazz(cl0)._type.constraintAssignableFrom(clazz(cl1)._type);
+    return clazz(cl0)._type.constraintAssignableFrom(null /* outer */, clazz(cl1)._type);
   }
 
   /* NYI remove? only used in interpreter */
@@ -2706,7 +2706,8 @@ public class FUIR extends IR
    */
   record AbsMissing(Clazz clazz,
                     TreeSet<AbstractFeature> called,
-                    SourcePosition instantiationPos)
+                    SourcePosition instantiationPos,
+                    String context)
   {
   };
 
@@ -2731,11 +2732,11 @@ public class FUIR extends IR
    * @param instantiationPos if known, the site where `cl` was instantiated,
    * `NO_SITE` if unknown.
    */
-  public void recordAbstractMissing(int cl, int f, int instantiationSite)
+  public void recordAbstractMissing(int cl, int f, int instantiationSite, String context)
   {
     var cc = clazz(cl);
     var cf = clazz(f);
-    var r = _abstractMissing.computeIfAbsent(cc, ccc -> new AbsMissing(ccc, new TreeSet<>(), sitePos(instantiationSite)));
+    var r = _abstractMissing.computeIfAbsent(cc, ccc -> new AbsMissing(ccc, new TreeSet<>(), sitePos(instantiationSite), context));
     r.called.add(cf.feature());
   }
 
@@ -2752,7 +2753,8 @@ public class FUIR extends IR
       .stream()
       .forEach(r -> AirErrors.abstractFeatureNotImplemented(r.clazz.feature(),
                                                             r.called,
-                                                            r.instantiationPos));
+                                                            r.instantiationPos,
+                                                            r.context));
   }
 
 

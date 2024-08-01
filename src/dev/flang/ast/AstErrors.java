@@ -1380,12 +1380,12 @@ public class AstErrors extends ANY
           "To solve this, change the type provided, e.g. to the unconstrained " + st("type") + ".\n");
   }
 
-  static void constraintMustNotBeChoice(Generic g)
+  static void constraintMustNotBeChoice(Generic g, AbstractType constraint)
   {
     error(g.typeParameter().pos(),
           "Constraint for type parameter must not be a choice type",
           "Affected type parameter: " + s(g) + "\n" +
-          "constraint: " + s(g.constraint()) + "\n");
+          "constraint: " + s(constraint) + "\n");
   }
 
   static void loopElseBlockRequiresWhileOrIterator(SourcePosition pos, Expr elseBlock)
@@ -1721,13 +1721,13 @@ public class AstErrors extends ANY
           "Declared at " + cf.pos().show());
   }
 
-  static void incompatibleActualGeneric(SourcePosition pos, Generic f, AbstractType g)
+  static void incompatibleActualGeneric(SourcePosition pos, Generic f, AbstractType constraint, AbstractType g)
   {
     if (g != Types.t_UNDEFINED || !any())
       {
         error(pos,
               "Incompatible type parameter",
-              "formal type parameter " + s(f) + " with constraint " + s(f.constraint()) + "\n"+
+              "formal type parameter " + s(f) + " with constraint " + s(constraint) + "\n"+
               "actual type parameter " + s(g) + "\n");
       }
   }
