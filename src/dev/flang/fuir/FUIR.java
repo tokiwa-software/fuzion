@@ -43,7 +43,7 @@ import dev.flang.air.FeatureAndActuals;
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency
 import dev.flang.ast.AbstractBlock; // NYI: remove dependency
 import dev.flang.ast.AbstractCall; // NYI: remove dependency
-import dev.flang.ast.AbstractConstant; // NYI: remove dependency
+import dev.flang.ast.Constant; // NYI: remove dependency
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
@@ -1658,9 +1658,9 @@ public class FUIR extends IR
 
     var cl = clazzAt(s);
     var cc = clazz(cl);
-    var ac = (AbstractConstant) getExpr(s);
+    var ac = (Constant) getExpr(s);
     var acl = cc.actualClazzes(ac.origin(), null);
-    // origin might be AbstractConstant, AbstractCall or InlineArray.  In all
+    // origin might be Constant, AbstractCall or InlineArray.  In all
     // cases, the clazz of the result is the first actual clazz:
     var clazz = acl[0];
     return id(clazz);
@@ -1679,7 +1679,7 @@ public class FUIR extends IR
        codeAt(s) == ExprKind.Const);
 
     var ic = getExpr(s);
-    return ((AbstractConstant) ic).data();
+    return ((Constant) ic).data();
   }
 
 
@@ -2334,7 +2334,7 @@ public class FUIR extends IR
       (o instanceof Expr || o instanceof ExprKind);
 
     return o instanceof InlineArray iai && isConst(iai)
-        || o instanceof AbstractConstant
+        || o instanceof Constant
         || o instanceof AbstractCall ac && isConst(ac)
         || o instanceof AbstractBlock ab && ab._expressions.size() == 1 && isConst(ab.resultExpression());
   }
