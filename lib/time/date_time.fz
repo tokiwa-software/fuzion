@@ -48,7 +48,7 @@ is
 
   # the month of the year
   public month
-  post result ≥ 1 & result ≤ 12
+  post debug: result ≥ 1 & result ≤ 12
   =>
     # Increase the month and add the days in month to
     # the accumulated days. We found our month once
@@ -64,7 +64,7 @@ is
 
   # the day of the month
   public day_of_month
-  post result ≥ 1 & result ≤ 31
+  post debug: result ≥ 1 & result ≤ 31
   =>
     days_in_months
       .reduce day_in_year (d, md -> if d-md ≤ 0 then abort d else d-md)
@@ -73,7 +73,7 @@ is
 
   # the millisecond of this datetime.
   public milli_second
-  post result ≥ 0 & result ≤ 999
+  post debug: result ≥ 0 & result ≤ 999
   =>
     nano_second / 1E3
 

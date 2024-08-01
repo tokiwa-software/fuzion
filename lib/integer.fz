@@ -26,7 +26,7 @@
 # integer -- abstract ancestor of integer numbers
 #
 # integer is the abstract ancestor of integer numbers that provides operations
-# from numeric plus a devision remainder operation %, bitwise logical operations,
+# from numeric plus a division remainder operation %, bitwise logical operations,
 # shift operations and gcd. Also, integers can be used to build fractions.
 #
 module:public integer : numeric is
@@ -46,7 +46,7 @@ module:public integer : numeric is
   # bitwise NOT
   public prefix ~ integer.this
     pre
-      is_bounded
+      debug: is_bounded
   => abstract
 
   # bitwise NOT (Unicode alias)
@@ -107,7 +107,7 @@ module:public integer : numeric is
 
     # this digit as an UTF-8 byte
     digit_as_utf8_byte(d u8) u8
-    pre d ≤ 35 # 35 would be a Z
+    pre debug: d ≤ 35 # 35 would be a Z
     =>
       if d < 10 then String.zero_char + d else String.a_char + d - 10
 

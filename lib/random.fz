@@ -45,14 +45,14 @@ is
   # return next random number of type i32 in the range 0..max-1
   #
   public next_i32(max i32)
-  pre max ≥ 0
+  pre debug: max ≥ 0
   => (next.get max.as_u64).as_i32
 
 
   # return next random number of type i64 in the range 0..max-1
   #
   public next_i64(max i64)
-  pre max ≥ 0
+  pre debug: max ≥ 0
   => (next.get max.as_u64).as_i64
 
 

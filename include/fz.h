@@ -126,7 +126,7 @@ long fzE_get_file_size(FILE* file);
  *   - error   :  result[0]=-1 and NULL
  *   - success :  result[0]=0  and an address where the file was mapped to
  */
-void * fzE_mmap(FILE * file, off_t offset, size_t size, int * result);
+void * fzE_mmap(FILE * file, uint64_t offset, size_t size, int * result);
 
 // unmap an address that was previously mapped by fzE_mmap
 // -1 error, 0 success

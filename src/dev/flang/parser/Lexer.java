@@ -43,6 +43,7 @@ import dev.flang.util.Pair;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.SourceRange;
+import dev.flang.util.StringHelpers;
 import dev.flang.util.UnicodeData;
 
 
@@ -499,7 +500,7 @@ public class Lexer extends SourceFile
       }
     if (!got.isEmpty())
       {
-        say("* Unicode " + Errors.plural(got.size(), "category") + " " +
+        say("* Unicode " + StringHelpers.plural(got.size(), "category") + " " +
                            got.stream().map(x -> "`" + x + "`").collect(Collectors.joining (", ")));
       }
   }
@@ -1205,15 +1206,15 @@ public class Lexer extends SourceFile
    * Obtain the given range pos..lastTokenEndPos() as a SourceRange object.
    *
    * @param pos a byte position within this file, must be smaller than
-   * lastTokenEndPos().
+   * lastTokenEndPos(), unless there were previous errors
    */
   public SourceRange sourceRange(int pos)
   {
     if (PRECONDITIONS) require
       (0 <= pos,
        Errors.any() || pos < lastTokenEndPos());
-
-    var endPos = Math.max(pos+1, lastTokenEndPos());
+    // in error case lastTokenEnd() < pos is possible
+    var endPos = Math.max(Math.min(pos+1, byteLength()), lastTokenEndPos());
     return sourceRange(pos, endPos);
   }
 

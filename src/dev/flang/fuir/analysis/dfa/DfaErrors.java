@@ -44,7 +44,7 @@ public class DfaErrors extends ANY
   /*-----------------------------  methods  -----------------------------*/
 
 
-  public static void usedEffectNeverInstantiated(HasSourcePosition pos, String e, Context why)
+  public static void usedEffectNotInstalled(HasSourcePosition pos, String e, Context why)
   {
     Errors.error(pos.pos(),
                  "Failed to verify that effect " + st(e) + " is installed in current environment.",
@@ -57,6 +57,11 @@ public class DfaErrors extends ANY
     Errors.error(pos.pos(),
                  "reading uninitialized field " + sqn(field) + " from instance of " + code(clazz),
                  "Callchain that lead to this point:\n\n" + why.contextString());
+  }
+
+  public static void fatal(String msg)
+  {
+    Errors.fatal(msg);
   }
 
 }

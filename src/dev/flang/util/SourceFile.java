@@ -1024,6 +1024,7 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
   {
     if (PRECONDITIONS) require
       (0 <= pos,
+       pos <= endPos,
        endPos <= byteLength());
 
     return new SourceRange(this, pos, endPos);

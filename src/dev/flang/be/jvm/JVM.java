@@ -43,6 +43,7 @@ import dev.flang.be.jvm.runtime.Runtime;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 import dev.flang.util.QuietThreadTermination;
@@ -377,11 +378,10 @@ should be avoided as much as possible.
    *
    * To enable tracing, use fz with
    *
-   *   FUZION_JAVA_OPTIONS=-Ddev.flang.be.jvm.JVM.TRACE=true
+   *   dev_flang_be_jvm_JVM_TRACE=true
    */
   static final boolean TRACE =
-    System.getProperty("dev.flang.be.jvm.JVM.TRACE",
-                       "false").equals("true");
+    FuzionOptions.boolPropertyOrEnv("dev.flang.be.jvm.JVM.TRACE");
 
 
   /**
@@ -390,11 +390,10 @@ should be avoided as much as possible.
    *
    * To enable tracing returns, use fz with
    *
-   *   FUZION_JAVA_OPTIONS=-Ddev.flang.be.jvm.JVM.TRACE_RETURN=true
+   *   dev_flang_be_jvm_JVM_TRACE_RETURN=true
    */
   static final boolean TRACE_RETURN =
-    System.getProperty("dev.flang.be.jvm.JVM.TRACE_RETURN",
-                       "false").equals("true");
+    FuzionOptions.boolPropertyOrEnv("dev.flang.be.jvm.JVM.TRACE_RETURN");
 
 
   /**
@@ -404,11 +403,10 @@ should be avoided as much as possible.
    *
    * To enable comments, use fz with
    *
-   *   FUZION_JAVA_OPTIONS=-Ddev.flang.be.jvm.JVM.CODE_COMMENTS=true
+   *   dev_flang_be_jvm_JVM_CODE_COMMENTS=true
    */
   static final boolean CODE_COMMENTS =
-    System.getProperty("dev.flang.be.jvm.JVM.CODE_COMMENTS",
-                       "false").equals("true");
+    FuzionOptions.boolPropertyOrEnv("dev.flang.be.jvm.JVM.CODE_COMMENTS");
   static
   {
     Expr.ENABLE_COMMENTS = CODE_COMMENTS;
@@ -762,8 +760,12 @@ should be avoided as much as possible.
   /**
    * For each tail recursive routine, this will be the label of the tail
    * recursive call turned into goto.
+   *
+   * _startLabels : labels before prolog
+   * _startLabels2: labels after  prolog
    */
   final Label[] _startLabels;
+  final Label[] _startLabels2;
 
 
   Runner _runner;
@@ -800,6 +802,7 @@ should be avoided as much as possible.
     var cnt = _fuir.clazzId2num(_fuir.lastClazz())+1;
     _numLocals   = new int[cnt];
     _startLabels = new Label[cnt];
+    _startLabels2 = new Label[cnt];
 
     Errors.showAndExit();
   }
@@ -1186,16 +1189,19 @@ should be avoided as much as possible.
    *
    * @param cl id of clazz
    *
+   * @param beforeProlog true label before the prolog, false label after prolog
+   *
    * @return the existing or newly created label.
    */
-  Label startLabel(int cl)
+  Label startLabel(int cl, boolean beforeProlog)
   {
     int ix = _fuir.clazzId2num(cl);
-    var res = _startLabels[ix];
+    var labels = beforeProlog ? _startLabels : _startLabels2;
+    var res = labels[ix];
     if (res == null)
       {
         res = new Label();
-        _startLabels[ix] = res;
+        labels[ix] = res;
       }
     return res;
   }
@@ -1257,8 +1263,10 @@ should be avoided as much as possible.
           (cf != null);
 
         var sl = _startLabels[_fuir.clazzId2num(cl)];
-        var bc_cl = prolog
-          .andThen(sl != null ? sl : Expr.UNIT)
+        var sl2 = _startLabels2[_fuir.clazzId2num(cl)];
+        var bc_cl = (sl != null ? sl : Expr.UNIT)
+          .andThen(prolog)
+          .andThen(sl2 != null ? sl2 : Expr.UNIT)
           .andThen(code)
           .andThen(epilog);
 

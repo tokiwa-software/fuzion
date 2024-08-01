@@ -182,7 +182,20 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   font-size: x-small;
 }
 
-a.fd-type:hover,
-a.fd-inherited:hover{
+.fd a:hover{
   text-decoration: underline;
+}
+
+.fd-parent{
+  color: grey;
+  font-size: 0.7em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.fd-parent a{
+  color: unset;
+}
+.fd-parent a:hover{
+  color: #795e26;
 }

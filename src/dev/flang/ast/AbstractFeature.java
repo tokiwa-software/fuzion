@@ -36,6 +36,7 @@ import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.StringHelpers;
 
 
 /**
@@ -914,7 +915,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
               {
                 inh.add(new Call(pos(), "Type"));
               }
-            _typeFeature = existingOrNewTypeFeature(res, name, typeArgs, inh);
+            existingOrNewTypeFeature(res, name, typeArgs, inh);
           }
       }
     return _typeFeature;
@@ -987,33 +988,42 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * Helper method for typeFeature to create a new feature with given name and
    * inherits clause iff no such feature exists in outer().typeFeature().
    *
+   * The new type feature will be stored in _typeFeature.
+   *
    * @param res Resolution instance used to resolve this for types.
    *
    * @param name the name of the type feature to be created
    *
+   * @param typeArgs arguments of the type feature.
+   * NYI: OPTIMIZATION: typeArgs should be determined within this method and
+   * only when needed.
+   *
    * @param inh the inheritance clause of the new type feature.
    */
-  private AbstractFeature existingOrNewTypeFeature(Resolution res, String name, List<AbstractFeature> typeArgs, List<AbstractCall> inh)
+  private void existingOrNewTypeFeature(Resolution res, String name, List<AbstractFeature> typeArgs, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (!isUniverse());
     var outerType = outer().isUniverse()    ? universe() :
                     outer().isTypeFeature() ? outer()
                                             : outer().typeFeature(res);
-    var result = res._module.declaredOrInheritedFeatures(outerType,
-                                                         FeatureName.get(name, 0)).getFirstOrNull();
-    if (result == null)
+    _typeFeature = res._module.declaredOrInheritedFeatures(outerType,
+                                                           FeatureName.get(name, 0)).getFirstOrNull();
+    if (_typeFeature == null)
       {
         var p = pos();
         var typeFeature = new Feature(p, visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), typeArgs,
                                       inh,
                                       Contract.EMPTY_CONTRACT,
                                       new Impl(p, new Block(new List<>()), Impl.Kind.Routine));
+
+        // we need to set _TypeFeature early to avoid endless recursion during
+        // res._module.addTypeFeature for `Any.type`:
+        _typeFeature = typeFeature;
+
         typeFeature._typeFeatureOrigin = this;
         res._module.addTypeFeature(outerType, typeFeature);
-        result = typeFeature;
       }
-    return result;
   }
 
 
@@ -1686,7 +1696,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       { // NYI: This might happen if the user adds additional features
         // with different argCounts. name should contain argCount to
         // avoid this
-        AstErrors.internallyReferencedFeatureNotUnique(pos(), name + (argcount >= 0 ? " (" + Errors.argumentsString(argcount) : ""), set);
+        AstErrors.internallyReferencedFeatureNotUnique(pos(), name + (argcount >= 0 ? " (" + StringHelpers.argumentsString(argcount) : ""), set);
       }
     return result;
   }

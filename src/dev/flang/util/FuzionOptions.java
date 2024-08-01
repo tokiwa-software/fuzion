@@ -27,7 +27,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.util;
 
 import java.nio.file.Path;
+
 import java.util.ArrayList;
+
+import java.util.function.Consumer;
 
 
 /**
@@ -37,6 +40,136 @@ import java.util.ArrayList;
  */
 public class FuzionOptions extends ANY
 {
+
+
+  /*-------------------------  static methods  --------------------------*/
+
+
+  /**
+   * Get the value of a Java property (set via -D<name>=...)  or env variable.
+   *
+   * @param name property or env variable name.  Should usually be a fully
+   * qualified class name such as "dev.flang.optimizer.Warp.enable".  Since `.`
+   * is not permitted in env var, `.` will be replaced by `_` when checking env
+   * variables.
+   *
+   * @return the value of the property, if found. Otherwise, the value of the
+   * env var if found. null otherwise.
+   */
+  public static String propertyOrEnv(String name)
+  {
+    return propertyOrEnv(name, null);
+  }
+
+
+  /**
+   * Get the value of a Java property (set via -D<name>=...)  or env variable.
+   *
+   * @param name property or env variable name.  Should usually be a fully
+   * qualified class name such as "dev.flang.optimizer.Warp.enable".  Since `.`
+   * is not permitted in env var, `.` will be replaced by `_` when checking env
+   * variables.
+   *
+   * @param defawlt value to return in case propery / env var is not set.
+   *
+   * @return the value of the property, if found. Otherwise, the value of the
+   * env var if found. defawlt otherwise.
+   */
+  public static String propertyOrEnv(String name, String defawlt)
+  {
+    var result = System.getProperty(name);
+    if (result == null)
+      {
+        result = System.getenv(envVarName(name));
+      }
+    return result != null ? result : defawlt;
+  }
+
+
+  /**
+   * Helper to convert property name to anv var name. Replaces `.` by `_` since
+   * `.` is not permitted in an env var.
+   */
+  private static String envVarName(String propertyName)
+  {
+    return propertyName.replace(".","_");
+  }
+
+
+  /**
+   * Get the value of boolean a Java property (set via -D<name>=...)  or env
+   * variable.
+   *
+   * @param name property or env variable name.  Should usually be a fully
+   * qualified class name such as "dev.flang.optimizer.Warp.enable".  Since `.`
+   * is not permitted in env var, `.` will be replaced by `_` when checking env
+   * variables.
+   *
+   * @return true iff the property is set and equals to "true", false otherwise.
+   */
+  public static boolean boolPropertyOrEnv(String name)
+  {
+    return propertyOrEnv(name, "false").equals("true");
+  }
+
+
+  /**
+   * Get the value of boolean a Java property (set via -D<name>=...) or env
+   * variable.
+   *
+   * @param name property or env variable name.  Should usually be a fully
+   * qualified class name such as "dev.flang.optimizer.Warp.enable".  Since `.`
+   * is not permitted in env var, `.` will be replaced by `_` when checking env
+   * variables.
+   *
+   * @param defawlt give the default value to be used if property / env var is
+   * not present.
+   *
+   * @return true iff the property is set and equals to "true", false if it is
+   * set to something different and `defawlt` otherwise.
+   */
+  public static boolean boolPropertyOrEnv(String name, boolean defawlt)
+  {
+    return propertyOrEnv(name, defawlt ? "true" : "false").equals("true");
+  }
+
+
+  /**
+   * Get the value of int a Java property (set via -D<name>=...) or env
+   * variable.
+   *
+   * @param name property or env variable name.  Should usually be a fully
+   * qualified class name such as "dev.flang.optimizer.Warp.enable".  Since `.`
+   * is not permitted in env var, `.` will be replaced by `_` when checking env
+   * variables.
+   *
+   * @param defawlt give the default value to be used if property / env var is
+   * not present.
+   *
+   * @return if the property is set, its value parsed as an integer. Othewise,
+   * if the env var is set, its value parsed as an integer. Otherwise, defawlt.
+   */
+  public static int intPropertyOrEnv(String name, int defawlt)
+  {
+    var res = defawlt;
+    var p = propertyOrEnv(name);
+    if (p != null)
+      {
+        try
+          {
+            res = Integer.parseInt(p);
+          }
+        catch (NumberFormatException e)
+          {
+            var pe = System.getProperty(name) != null
+              ? "property `" + name + "`"
+              : "env var `" + envVarName(name) + "`";
+            Errors.fatal("Failed to parse value " + p + " of " + pe + ": "+e);
+            res = -1;
+          }
+      }
+    return res;
+  }
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -82,13 +215,24 @@ public class FuzionOptions extends ANY
   public ArrayList<String> getBackendArgs() { return _backendArgs; }
 
 
+  /**
+   * `_timer.accept("phase")` can be called with a phase name to measure the
+   * time spent in this "phase", printed if `-verbose` level is sufficiently
+   * high.
+   */
+  final Consumer<String> _timer;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
    * Constructor initializing fields as given.
+   *
+   * @param timer can be called with a phase name to measure the time spent in
+   * this phase, printed if `-verbose` level is sufficiently high.
    */
-  public FuzionOptions(int verbose, int fuzionDebugLevel, boolean fuzionSafety, boolean enableUnsafeIntrinsics, Path fuzionHome)
+  public FuzionOptions(int verbose, int fuzionDebugLevel, boolean fuzionSafety, boolean enableUnsafeIntrinsics, Path fuzionHome, Consumer<String> timer)
   {
     if (PRECONDITIONS) require
       (verbose >= 0,
@@ -99,6 +243,7 @@ public class FuzionOptions extends ANY
     _fuzionSafety = fuzionSafety;
     _enableUnsafeIntrinsics = enableUnsafeIntrinsics;
     _fuzionHome = fuzionHome;
+    _timer = timer;
   }
 
 
@@ -111,7 +256,8 @@ public class FuzionOptions extends ANY
          fo.fuzionDebugLevel(),
          fo.fuzionSafety(),
          fo.enableUnsafeIntrinsics(),
-         fo.fuzionHome());
+         fo.fuzionHome(),
+         fo._timer);
   }
 
 
@@ -191,6 +337,16 @@ public class FuzionOptions extends ANY
   public boolean isLanguageServer()
   {
     return false;
+  }
+
+
+  /**
+   * Measure the time spent in this phase `name`, the result is printed at the
+   * end if `-verbose` level is sufficiently high.
+   */
+  public void timer(String name)
+  {
+    _timer.accept(name);
   }
 
 

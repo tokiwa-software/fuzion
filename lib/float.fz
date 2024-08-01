@@ -37,9 +37,9 @@ public float : numeric is
   #
 
 
-  # comparision
+  # comparison
   #
-  # This provides comparision operators using IEEE semantics.
+  # This provides comparison operators using IEEE semantics.
   #
   # type.equality and type.lteq should be used for equivalence relations
   # and total ordering in the mathematical sense.
@@ -239,7 +239,7 @@ public float : numeric is
   # logarithm with base `base`
   #
   public type.log (base, val float.this) float.this
-  pre base > zero
+  pre safety: base > zero
   =>
     (float.this.log val) / (float.this.log base)
 
@@ -281,7 +281,7 @@ public float : numeric is
   # sense and therefore breaks the IEEE semantics. infix = should
   # be used for IEEE semantics.
   #
-  # The equivalence relation is provided by the usual comparision
+  # The equivalence relation is provided by the usual comparison
   # of floating-point numbers, with the definition of NaN = NaN.
   #
   public redef type.equality(a, b float.this) bool =>
@@ -294,7 +294,7 @@ public float : numeric is
   # therefore breaks the IEEE semantics. infix <= should be
   # used for IEEE semantics.
   #
-  # The total order is provided by the usual comparision of
+  # The total order is provided by the usual comparison of
   # floating-point numbers, with the definition that NaN <= x,
   # for any x (including x = NaN).
   #

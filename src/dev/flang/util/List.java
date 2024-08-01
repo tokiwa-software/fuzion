@@ -441,6 +441,21 @@ public class List<T>
 
 
   /**
+   * Get an element form given index in this list if that List is long enough.
+   *
+   * @param i index of element to set
+   *
+   * @return the element at index i or null if size() <= i.
+   *
+   * @throws IndexOutOfBoundsException if i < 0.
+   */
+  public T getIfExists(int i)
+  {
+    return size() > i ? get(i) : null;
+  }
+
+
+  /**
    * Set an element of this list, but check that the element is either the same
    * as before or this list is not frozen.
    *
@@ -456,6 +471,31 @@ public class List<T>
       (!isFrozen() || get(i) == x);
 
     return super.set(i, x);
+  }
+
+
+
+  /**
+   * Set an element of this list using `set(i,x)`, but first make sure the
+   * list's capacity is sufficient.
+   *
+   * @param i index of element to set
+   *
+   * @param x the new value for the element
+   *
+   * @return the previous value of the element
+   */
+  public T force(int i, T x)
+  {
+    if (ANY.PRECONDITIONS) ANY.require
+      (!isFrozen() || get(i) == x);
+
+    ensureCapacity(i+1);
+    while (size() <= i)
+      {
+        add(null);
+      }
+    return set(i, x);
   }
 
 

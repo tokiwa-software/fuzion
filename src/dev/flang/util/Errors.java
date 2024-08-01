@@ -616,8 +616,8 @@ public class Errors extends ANY
   {
     if (any())
       {
-        println(singularOrPlural(count(), "error") +
-                (warningCount() > 0 ? " and " + singularOrPlural(warningCount(), "warning")
+        println(StringHelpers.singularOrPlural(count(), "error") +
+                (warningCount() > 0 ? " and " + StringHelpers.singularOrPlural(warningCount(), "warning")
                                     : "") +
                 ".");
 
@@ -630,7 +630,7 @@ public class Errors extends ANY
       }
     else if (warningStatistics && warningCount() > 0)
       {
-        println(singularOrPlural(warningCount(), "warning") + ".");
+        println(StringHelpers.singularOrPlural(warningCount(), "warning") + ".");
         _warnings_.clear();  // there might be repeated calls to `showAndExit`, so do not repeat the warnings statistics
       }
   }
@@ -645,78 +645,6 @@ public class Errors extends ANY
     showAndExit(false);
   }
 
-  public static String argumentsString(int count)
-  {
-    return singularOrPlural(count, "argument");
-  }
-
-  public static String singularOrPlural(int count, String what)
-  {
-    return
-      count == 0 ? "no " + plural(what) :
-      count == 1 ? "one " + what
-                 : "" + count + " " + plural(what);
-  }
-
-
-  /**
-   * Build plural of a noun iff count is not 1.
-   *
-   * @param count a counter
-   *
-   * @param what a noun like "car", "baby", etc.
-   *
-   * @return what iff count==1, otherwise the plural form "cars", "babies", etc.
-   */
-  public static String plural(int count, String what)
-  {
-    if (PRECONDITIONS) require
-      (count >= 0);
-
-    return count == 1 ? what : plural(what);
-  }
-
-
-  /**
-   * Build plural of a noun
-   *
-   * @param what a noun like "car", "baby", etc.
-   *
-   * @return the plural form "cars", "babies", etc.
-   */
-  public static String plural(String what)
-  {
-    return what.endsWith("y") ? what.substring(0, what.length()-1) + "ies"
-                              : what + "s";
-  }
-
-
-  /**
-   * Create a string like "never", "once", "twice", "3 times, "4 times", "-1 times".
-   *
-   * @param count the number of times something happened.
-   */
-  public static String times(int count)
-  {
-    return
-      count == 0 ? "never"  :
-      count == 1 ? "once "  :
-      count == 1 ? "twice " : "" + count + " times";
-  }
-
-
-  /**
-   * Create a string like "... repeated 4 times ...", "... repeated twice ..."
-   *
-   * @param count the number of times something was repeated
-   */
-  public static String repeated(int count)
-  {
-    if (PRECONDITIONS) require
-      (count > 0);
-
-    return "... repeated " + Errors.times(count) + " ...";
-  }
 
   /**
    * Record the given error found during compilation.
@@ -758,26 +686,6 @@ public class Errors extends ANY
             print(pos, warningMessage(msg), detail);
           }
       }
-  }
-
-
-  /**
-   * Convert a positive integer to an ordinal number "first", "4th", "12th",
-   * "51st", etc.
-   */
-  public static String ordinal(int i)
-  {
-    if (PRECONDITIONS) require
-      (i > 0);
-
-    return
-      i == 1 ? "first"  :
-      i == 2 ? "second" :
-      i == 3 ? "third"  :
-      i % 10 == 1 && i % 100 != 11 ? "" + i + "st" :
-      i % 10 == 2 && i % 100 != 12 ? "" + i + "nd" :
-      i % 10 == 3 && i % 100 != 13 ? "" + i + "rd" :
-      i + "th";
   }
 
 

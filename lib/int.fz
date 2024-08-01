@@ -161,28 +161,28 @@ is
 
   # this int as an u8
   public redef as_u8 u8
-  # NYI pre int.this >= 0
+  # NYI pre debug: int.this >= 0
   =>
       n.as_u8
 
 
   # this int as an u32
   public as_u32 u32
-  # NYI pre int.this >= 0
+  # NYI pre debug: int.this >= 0
   =>
       n.as_u32
 
 
   # this int as an u64
   public as_u64 u64
-  # NYI pre int.this >= 0
+  # NYI pre debug: int.this >= 0
   =>
     n.as_u64
 
 
   # this int as an uint
   public as_uint uint
-  # NYI pre int.this >= 0
+  # NYI pre debug: int.this >= 0
   =>
     n
 

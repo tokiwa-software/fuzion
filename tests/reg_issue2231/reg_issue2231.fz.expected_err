@@ -23,9 +23,9 @@ reg_issue2231.ef.precall abort: $MODULE/effect.fz:66:3:
   pre
 --^^^
     safety: effect.is_installed effect.this
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     safety: abortable
-^^^^^^^^^^^^^^^^^^^^^
+----^^^^^^^^^^^^^^^^^
 reg_issue2231.ef.something: --CURDIR--/reg_issue2231.fz:30:7:
       abort
 ------^^^^^

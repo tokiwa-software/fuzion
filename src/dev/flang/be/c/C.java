@@ -552,12 +552,6 @@ public class C extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
-  /**
-   * env var to enable debug output for tail call optimization:
-   */
-  static private final boolean FUZION_DEBUG_TAIL_CALL = "true".equals(System.getenv("FUZION_DEBUG_TAIL_CALL"));
-
-
   /*
    * If you want the c-backend to link the JVM,
    * set this environment variable to e.g.:
@@ -1070,8 +1064,6 @@ public class C extends ANY
        "#include <time.h>\n"+
        "#include <setjmp.h>\n"+
        "#include <errno.h>\n"+
-       // defines _O_BINARY
-       "#include <fcntl.h>\n"+
        "#include <stdatomic.h>\n");
     if (linkJVM())
       {
@@ -1619,18 +1611,9 @@ public class C extends ANY
           if (_fuir.clazzNeedsCode(cc))
             {
               var cl = _fuir.clazzAt(s);
-              if (FUZION_DEBUG_TAIL_CALL                                 &&
-                  cc == cl                                               &&  // calling myself
-                  _tailCall.callIsTailCall(cl, s)                        &&  // as a tail call
-                  _fuir.lifeTime(cl).maySurviveCall()                        // and current instance did not escape
-                )
-                {
-                  say("Escapes, no tail call opt possible: " + _fuir.clazzAsString(cl) + ", lifetime: " + _fuir.lifeTime(cl).name());
-                }
 
               if (cc == cl                                               &&  // calling myself
-                  _tailCall.callIsTailCall(cl, s)                        &&  // as a tail call
-                  !_fuir.lifeTime(cl).maySurviveCall()                       // and current instance did not escape
+                  _tailCall.callIsTailCall(cl, s)
                 )
                 { // then we can do tail recursion optimization!
                   result = tailRecursion(cl, s, tc, a);
@@ -1878,7 +1861,7 @@ public class C extends ANY
       case Undefined -> CExpr.dummy("undefined life time");
       };
     return CStmnt.seq(allocCurrent,
-                      CStmnt.seq(l).label("start"));
+                      CStmnt.seq(l)).label("start");
   }
 
 

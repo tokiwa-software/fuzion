@@ -85,7 +85,7 @@ public i8(public val i8) : num.wrap_around, has_interval is
       cast_to_u16
   public as_u32 u32
     pre
-      val ≥ 0
+      debug: val ≥ 0
     =>
       cast_to_u32
   public as_u64 u64

@@ -35,7 +35,7 @@ import dev.flang.util.Errors;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class SysArray extends Value implements Comparable<SysArray>
+public class SysArray extends Value
 {
 
 
@@ -44,6 +44,7 @@ public class SysArray extends Value implements Comparable<SysArray>
 
   /*----------------------------  constants  ----------------------------*/
 
+  static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -55,9 +56,9 @@ public class SysArray extends Value implements Comparable<SysArray>
 
 
   /**
-   * The data stored in the array (in case this is a compile time constant).
+   * The type of the array elements
    */
-  byte[] _data;
+  int _elementClazz;
 
 
   /**
@@ -74,63 +75,17 @@ public class SysArray extends Value implements Comparable<SysArray>
    *
    * @param dfa the DFA analysis
    *
-   * @param data the data stored in this array (in case this is a compile time constant).
+   * @param el the element values, null if not initialized
    *
-   * @param elementClazz clazz of the array elements, may be -1 if data[] is empty
+   * @param ec the type of the array elements
    */
-  public SysArray(DFA dfa, byte[] data, int elementClazz)
-  {
-    super(dfa._fuir.clazzAny());
-
-    if (PRECONDITIONS) require
-      (data != null);
-
-    _dfa = dfa;
-    _data = data;
-    if (true)
-      {
-        if (data.length > 0)
-          {
-            _elements = switch (dfa._fuir.getSpecialClazz(elementClazz))
-              {
-              case
-                c_i8   , c_i16  ,
-                c_i32  , c_i64  ,
-                c_u8   , c_u16  ,
-                c_u32  , c_u64  ,
-                c_f32  , c_f64  -> new NumericValue(dfa, elementClazz); // NYI: any value, even if we could know the exact values from data
-              default           -> {
-                                     Errors.fatal("Constant array of element type "+dfa._fuir.clazzAsString(elementClazz)+" not supported yet");
-                                     yield null;
-                                   }
-              };
-          }
-      }
-    else
-      { // NYI: accurate sys array element tracking does not work yet.  This
-        // needs to be specialized for elementClazz, the following code is just
-        // for u8 and probably does not work:
-        for (var i = 0; i < data.length; i++)
-          {
-            setel(null, new NumericValue(dfa, dfa._fuir.clazz(SpecialClazzes.c_u8), data[i] & 0xff));
-          }
-      }
-  }
-
-  /**
-   * Create SysArray instance
-   *
-   * @param dfa the DFA analysis
-   *
-   * @param el the element values.
-   */
-  public SysArray(DFA dfa, Value el)
+  public SysArray(DFA dfa, Value el, int ec)
   {
     super(dfa._fuir.clazzAny());
 
     _dfa = dfa;
-    _data = new byte[0];
     _elements = el;
+    _elementClazz = ec;
   }
 
 
@@ -149,7 +104,7 @@ public class SysArray extends Value implements Comparable<SysArray>
       }
     else
       {
-        ne = _elements.join(el);
+        ne = _elements.join(_dfa, el);
       }
     if (_elements == null || Value.compare(_elements, ne) != 0)
       {
@@ -169,36 +124,11 @@ public class SysArray extends Value implements Comparable<SysArray>
 
 
   /**
-   * Compare this to another instance.
-   */
-  public int compareTo(SysArray other)
-  {
-    var r =
-      _data.length < other._data.length ? -1 :
-      _data.length > other._data.length ? +1 : 0;
-    for (var i = 0; r == 0 && i < _data.length; i++)
-      {
-        r =
-          _data[i] < other._data[i] ? -1 :
-          _data[i] > other._data[i] ? +1 : 0;
-      }
-    if (r == 0)
-      {
-        r = (_elements == null && other._elements == null) ?  0 :
-            (_elements == null && other._elements != null) ? -1 :
-            (_elements != null && other._elements == null) ? +1
-                                                           : Value.compare(_elements, other._elements);
-      }
-    return r;
-  }
-
-
-  /**
    * Create human-readable string from this instance.
    */
   public String toString()
   {
-    return "--sys array of length " + _data.length + "--";
+    return "--sys array of type " + _dfa._fuir.clazzAsString(_elementClazz) + "--";
   }
 
 
@@ -206,18 +136,18 @@ public class SysArray extends Value implements Comparable<SysArray>
    * Create the union of the values 'this' and 'v'. This is called by join()
    * after common cases (same instance, UNDEFINED) have been handled.
    */
-  public Value joinInstances(Value v)
+  public Value joinInstances(DFA dfa, Value v)
   {
     if (v instanceof SysArray sv)
       {
         Value ne =
           _elements == null ? sv._elements :
-          sv._elements == null ? _elements : _elements.join(sv._elements);
-        return new SysArray(_dfa, ne);
+          sv._elements == null ? _elements : _elements.join(dfa, sv._elements);
+        return _dfa.newSysArray(ne, _elementClazz);
       }
     else
       {
-        return new ValueSet(this, v);
+        throw new Error("DFA: trying to join SysArray with " + v.getClass());
       }
   }
 

@@ -37,7 +37,7 @@ import dev.flang.ir.IR;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Instance extends Value implements Comparable<Instance>
+public class Instance extends Value
 {
 
 
@@ -124,63 +124,9 @@ public class Instance extends Value implements Comparable<Instance>
    */
   Env env()
   {
-    return _context instanceof Call ca1 ? ca1._env : null;
+    return _context.env();
   }
 
-
-  /**
-   * Compare this to another instance.
-   */
-  public int compareTo(Instance other)
-  {
-    var i1 = this;
-    var i2 = other;
-    var c1 = i1._clazz;
-    var c2 = i2._clazz;
-    var s1 = i1._site;
-    var s2 = i2._site;
-
-    // Instead of comparing the site, we use only the clazz at the site to avoid
-    // state explosion for, e.g., `String.upper_case` such that instances of,
-    // e.g., `codepoint` created in `encodings.unicode.data` do not
-    // result in explosion of number of values.
-    //
-    // This might result in inaccuracy, e.g., the code
-    //
-    //   a(p bool) is
-    //   i1 := a false
-    //   i2 := a true
-    //   v := i1.p
-    //   if v
-    //     panic "unreachable"
-    //
-    // will require the panic effect, while the code
-    //
-    //   a(p bool) is
-    //   i1 => a false
-    //   i2 := a true
-    //   v := i1.p
-    //   if v
-    //     panic "unreachable"
-    //
-    // will not since the two instance of `a` are created in different clazzes
-    // `i1` and `universe`, while the previous example creates both within
-    // `universe`.
-    var sc1 = s1 == IR.NO_SITE ? IR.NO_CLAZZ : _dfa._fuir.clazzAt(s1);
-    var sc2 = s2 == IR.NO_SITE ? IR.NO_CLAZZ : _dfa._fuir.clazzAt(s2);
-
-    var e1 = i1.env();
-    var e2 = i2.env();
-    return
-      c1 < c2    ? -1 :
-      c1 > c2    ? +1 :
-      sc1 < sc2  ? -1 :
-      sc1 > sc2  ? +1 :
-      e1 == e2   ?  0 :
-      e1 == null ? -1 :
-      e2 == null ? +1
-                 : e1.compareTo(e2);
-  }
 
   /**
    * Compare this to another instance, used to compare effect instances in
@@ -216,14 +162,14 @@ public class Instance extends Value implements Comparable<Instance>
     var oldv = _fields.get(field);
     if (oldv != null)
       {
-        v = oldv.join(v);
+        v = oldv.join(dfa, v);
       }
-    if (oldv == null || Value.COMPARATOR.compare(oldv, v) != 0)
+    if (oldv != v)
       {
         var fv = v;
         _dfa.wasChanged(() -> "setField: new values " + fv + " (was " + oldv + ") for " + this);
       }
-    dfa._writtenFields.add(field);
+    dfa._writtenFields.set(field);
     _fields.put(field, v);
   }
 
@@ -236,7 +182,7 @@ public class Instance extends Value implements Comparable<Instance>
     if (PRECONDITIONS) require
       (_clazz == dfa._fuir.clazzAsValue(dfa._fuir.clazzOuterClazz(field)));
 
-    dfa._readFields.add(field);
+    dfa._readFields.set(field);
     var v = _fields.get(field);
     Val res = v;
     if (v == null)
@@ -251,20 +197,10 @@ public class Instance extends Value implements Comparable<Instance>
       }
     else if (!dfa._fuir.clazzIsRef(dfa._fuir.clazzResultClazz(field)))
       {
-        res = new EmbeddedValue(this, v);
+        res = dfa.newEmbeddedValue(this, v);
       }
 
     return res;
-  }
-
-
-  /**
-   * Create the union of the values 'this' and 'v'. This is called by join()
-   * after common cases (same instance, UNDEFINED) have been handled.
-   */
-  public Value joinInstances(Value v)
-  {
-    return new ValueSet(this, v);
   }
 
 

@@ -1765,6 +1765,10 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
       {
         AstErrors.illegalTypeVisibilityModifier(f);
       }
+    else if(f.definesType() && f.outer() != null && f.outer().visibility().typeVisibility().ordinal() < f.visibility().typeVisibility().ordinal())
+      {
+        AstErrors.illegalTypeVisibility(f);
+      }
   }
 
 

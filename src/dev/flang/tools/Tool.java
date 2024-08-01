@@ -35,6 +35,7 @@ import dev.flang.parser.Parser;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.Profiler;
 import dev.flang.util.Version;
@@ -105,7 +106,7 @@ public abstract class Tool extends ANY
   protected Tool(String name, String[] args)
   {
     _rawCmd = name;
-    _cmd = System.getProperty(FUZION_COMMAND_PROPERTY, name);
+    _cmd = FuzionOptions.propertyOrEnv(FUZION_COMMAND_PROPERTY, name);
     _args = args;
   }
 
@@ -424,6 +425,32 @@ public abstract class Tool extends ANY
       }
     return result;
   }
+
+
+  /**
+   * To be called whenever a major task was completed. Will record the time
+   * since last call to timer together with name to be printed when verbose
+   * output is activated.
+   */
+  public void timer(String name)
+  {
+    var t = System.currentTimeMillis();
+    var delta = t - _timer;
+    _timer = t;
+    _times.append(_times.length() == 0 ? "" : ", ").append(name).append(" ").append(delta).append("ms");
+  }
+
+
+  /**
+   * Last time timer() was called, in System.currentTimeMillis();
+   */
+  long _timer = java.lang.management.ManagementFactory.getRuntimeMXBean().getStartTime();
+
+
+  /**
+   * Time required for phases recorded by timer().
+   */
+  public final StringBuilder _times = new StringBuilder();
 
 
 }

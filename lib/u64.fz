@@ -74,7 +74,7 @@ public u64(public val u64) : num.wrap_around, has_interval is
   # this u64 as an i8
   public as_i8 i8
     pre
-      val ≤ i8.max.as_u64
+      debug: val ≤ i8.max.as_u64
     =>
       low8bits.as_i8
 
@@ -82,7 +82,7 @@ public u64(public val u64) : num.wrap_around, has_interval is
   # this u64 as an i16
   public as_i16 i16
     pre
-      val ≤ i16.max.as_u64
+      debug: val ≤ i16.max.as_u64
     =>
       low16bits.as_i16
 
@@ -90,7 +90,7 @@ public u64(public val u64) : num.wrap_around, has_interval is
   # this u64 as an i32
   public as_i32 i32
     pre
-      val ≤ i32.max.as_u64
+      debug: val ≤ i32.max.as_u64
     =>
       low32bits.as_i32
 
@@ -98,7 +98,7 @@ public u64(public val u64) : num.wrap_around, has_interval is
   # this u64 as an i64
   public as_i64 i64
     pre
-      val ≤ i64.max.as_u64
+      debug: val ≤ i64.max.as_u64
 #    post
 #      analysis:  result.as_u64 == val
     =>
@@ -109,7 +109,7 @@ public u64(public val u64) : num.wrap_around, has_interval is
   # this u64 as an u8
   public redef as_u8 u8
 #    pre
-#      val ≤ u8.max.as_i64
+#      debug: val ≤ u8.max.as_i64
 #    post
 #      analysis: result.as_u64 == val
     =>
@@ -119,7 +119,7 @@ public u64(public val u64) : num.wrap_around, has_interval is
   # this u64 as an u16
   public as_u16 u16
 #    pre
-#      val ≤ u16.max.as_i64
+#      debug: val ≤ u16.max.as_i64
 #    post
 #      analysis: result.as_u64 == val
     =>
@@ -129,7 +129,7 @@ public u64(public val u64) : num.wrap_around, has_interval is
   # this u64 as an u32
   public as_u32 u32
 #    pre
-#      val ≤ u32.max.as_i64
+#      debug: val ≤ u32.max.as_i64
 #    post
 #      analysis: result.as_u64 == val
     =>

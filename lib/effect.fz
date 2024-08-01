@@ -118,16 +118,16 @@ is
   # has an effect of the given type been installed?
   public type.get_if_installed option effect.this =>
     if is_installed effect.this
-      unsafe_get effect.this
+      unsafe_get
     else
       nil
 
   # internal helper to perform `E.env` without producing an error
-  # in case static analysis fails to verify that effect `E` is
+  # in case static analysis fails to verify that `effect.this` is
   # actually installed.
   #
-  type.unsafe_get(E type) =>
-    E.env
+  type.unsafe_get =>
+    effect.this.env
 
 
   # helper instance for effect.abortable to wrap call to f() into a ()->unit

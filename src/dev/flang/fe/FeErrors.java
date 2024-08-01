@@ -36,6 +36,7 @@ import dev.flang.mir.MIR;
 
 import static dev.flang.util.Errors.*;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.StringHelpers;
 
 
 /**
@@ -54,7 +55,7 @@ public class FeErrors extends AstErrors
     var a = m.valueArguments();
     error(m.pos(),
           "Main feature must not have arguments",
-          "Main feature has " + argumentsString(a.size()) + " (" + sfn(a) + "), but should have no arguments to be used as main feature in an application\n" +
+          "Main feature has " + StringHelpers.argumentsString(a.size()) + " (" + sfn(a) + "), but should have no arguments to be used as main feature in an application\n" +
           "To solve this, remove the arguments from feature " + s(m) + "\n");
   }
 
@@ -63,7 +64,7 @@ public class FeErrors extends AstErrors
     var g = m.generics().list;
     error(m.pos(),
           "Main feature must not have type arguments",
-          "Main feature has " + singularOrPlural(g.size(),"type argument") + " " + g + ", but should have no arguments to be used as main feature in an application\n" +
+          "Main feature has " + StringHelpers.singularOrPlural(g.size(),"type argument") + " " + g + ", but should have no arguments to be used as main feature in an application\n" +
           "To solve this, remove the arguments from feature " + s(m) + "\n");
   }
 
