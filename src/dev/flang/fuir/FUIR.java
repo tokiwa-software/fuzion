@@ -49,6 +49,7 @@ import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
 import dev.flang.ast.Env; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
+import dev.flang.ast.FeatureVisitor; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
 import dev.flang.ast.Tag; // NYI: remove dependency
@@ -71,6 +72,27 @@ import dev.flang.util.SourcePosition;
  */
 public class FUIR extends IR
 {
+
+
+  /*-----------------------------  classes  -----------------------------*/
+
+
+  static class AnyAs extends Expr
+  {
+    AbstractCall _ac;
+    public AnyAs(AbstractCall ac)
+    {
+      _ac = ac;
+    }
+    public SourcePosition pos()
+    {
+      return _ac.pos();
+    }
+    public AnyAs visit(FeatureVisitor v, AbstractFeature outer)
+    {
+      return this;
+    }
+  }
 
 
   /*----------------------------  constants  ----------------------------*/
@@ -1291,6 +1313,10 @@ public class FUIR extends IR
       {
         result = ExprKind.Assign;
       }
+    else if (e instanceof AnyAs)
+      {
+        result = ExprKind.Box;
+      }
     else
       {
         result = exprKind(e);
@@ -1298,7 +1324,7 @@ public class FUIR extends IR
     if (result == null)
       {
         Errors.fatal(sitePos(s),
-                     "Expr not supported in FUIR.codeAt", "Expression class: " + e.getClass());
+                     "Expr `" + e.getClass() + "` not supported in FUIR.codeAt", "Expression class: " + e.getClass());
         result = ExprKind.Current; // keep javac from complaining.
       }
     return result;
@@ -1360,8 +1386,20 @@ public class FUIR extends IR
 
     var cl = clazzAt(s);
     var outerClazz = clazz(cl);
-    var b = (Box) getExpr(s);
-    Clazz vc = outerClazz.actualClazzes(b, null)[0];
+    var b = (Expr) getExpr(s);
+    Clazz vc;
+    if (b instanceof AnyAs aa)
+      {
+        var cc = outerClazz.actualClazzes(aa._ac, null)[0];
+        vc = cc._outer;
+      }
+    else
+      {
+        if (CHECKS) check
+          (b instanceof Box);
+
+        vc = outerClazz.actualClazzes(b, null)[0];
+      }
     return id(vc);
   }
 
@@ -1374,9 +1412,55 @@ public class FUIR extends IR
 
     var cl = clazzAt(s);
     var outerClazz = clazz(cl);
-    var b = (Box) getExpr(s);
-    Clazz rc = outerClazz.actualClazzes(b, null)[1];
+    var b = (Expr) getExpr(s);
+    Clazz rc;
+    if (b instanceof AnyAs aa)
+      {
+        var cc = outerClazz.actualClazzes(aa._ac, null)[0];
+        var vc = cc._outer;
+        var T = cc.actualGenerics()[0];
+        rc = !vc.isRef() && T.isRef()
+          ? vc.asRef()
+          : vc;
+      }
+    else
+      {
+        if (CHECKS) check
+          (b instanceof Box);
+
+        rc = outerClazz.actualClazzes(b, null)[1];
+      }
     return id(rc);
+  }
+
+  /**
+   * For a box expression that was created for a call to `x.as T`, this gives
+   * the type paramater value `T`.  This is required during DFA to check at
+   * compile time that all calls to `Any.as` are valid.
+   *
+   * @param s site of a box expression
+   *
+   * @return if that box expression at `s` was created for a call to `Any.as`,
+   * this gives the type parameter passed to that call. Otherwise, -1 will be
+   * returned.
+   */
+  public int boxTargetClazz(int s)
+  {
+    if (PRECONDITIONS) require
+      (s >= SITE_BASE,
+       withinCode(s),
+       codeAt(s) == ExprKind.Box);
+
+    var cl = clazzAt(s);
+    var outerClazz = clazz(cl);
+    var b = (Expr) getExpr(s);
+    Clazz tc = null;
+    if (b instanceof AnyAs aa)
+      {
+        var cc = outerClazz.actualClazzes(aa._ac, null)[0];
+        tc = cc.actualGenerics()[0];
+      }
+    return tc != null ? id(tc) : -1;
   }
 
 
@@ -2317,6 +2401,13 @@ public class FUIR extends IR
     else
       {
         super.toStack(l, e, dumpResult);
+        if (e instanceof AbstractCall ac && ac.calledFeature() == Types.resolved.f_Any_as)
+          {
+            if (CHECKS) check
+              (l.get(l.size()-1) == ac);
+
+            l.set(l.size()-1, new AnyAs(ac));
+          }
       }
   }
 

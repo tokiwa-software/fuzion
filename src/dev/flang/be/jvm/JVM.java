@@ -1782,25 +1782,6 @@ should be avoided as much as possible.
   }
 
 
-  Expr box(Expr val, int vc, int rc)
-  {
-    if (PRECONDITIONS) require
-      (!_fuir.clazzIsRef(vc),
-        _fuir.clazzIsRef(rc));
-
-    if (CHECKS)
-      check(rc == _fuir.clazzAsRef(vc));  // NYI: CLEANUP: Remove `rc` argument if this is always the case
-
-    var n = _names.javaClass(rc);
-    return Expr.comment("box from "+_fuir.clazzAsString(vc)+" to "+_fuir.clazzAsString(rc))
-      .andThen(val)
-      .andThen(Expr.invokeStatic(n, Names.BOX_METHOD_NAME,
-                                 _types.boxSignature(rc),
-                                 _types.javaType(rc))
-               );
-  }
-
-
   /**
    * Clone a value if it is of value type. This is required since value types in
    * the JVM backend are currently implemented as reference values to instances

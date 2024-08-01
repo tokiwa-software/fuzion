@@ -672,6 +672,7 @@ class CodeGen
   public Pair<Expr, Expr> box(int s, Expr val, int vc, int rc)
   {
     var res = val;
+    check(!_fuir.clazzIsRef(vc) && _fuir.clazzIsRef(rc));  // NYI: CLEANUP: would be good if the AbstractInterpreter would not call box() in this case
     if (!_fuir.clazzIsRef(vc) && _fuir.clazzIsRef(rc))  // NYI: CLEANUP: would be good if the AbstractInterpreter would not call box() in this case
       {
         var n = _names.javaClass(rc);
@@ -681,9 +682,6 @@ class CodeGen
                                      _types.boxSignature(rc),
                                      _types.javaType(rc))
                    );
-        // new, does not work yet:
-        //
-        // res = _jvm.box(val, vc, rc);
       }
     return new Pair<>(res, Expr.UNIT);
   }

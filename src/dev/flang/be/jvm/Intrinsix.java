@@ -115,20 +115,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
   static final TreeMap<String, IntrinsicCode> _compiled_ = new TreeMap<>();
   static
   {
-    put("Any.as",
-        (jvm, si, cc, tvalue, args) ->
-        {
-          var fuir = jvm._fuir;
-          var thiz = fuir.clazzOuterClazz(cc);
-          var T = fuir.clazzActualGeneric(cc, 0);
-          var res = tvalue;
-          if (!fuir.clazzIsRef(thiz) && fuir.clazzIsRef(T))
-            {
-              res = jvm.box(res, thiz, fuir.clazzAsRef(thiz));
-            }
-          return new Pair<>(res, Expr.UNIT);
-        });
-
     put("Type.name",
         (jvm, si, cc, tvalue, args) ->
         {
