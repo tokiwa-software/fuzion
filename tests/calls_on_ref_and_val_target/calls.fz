@@ -442,15 +442,14 @@ calls is
 
 
     t := oa3
-    # NYI: BUG: currently failing
-    # yak "caseC3c: "; chck t.f.s "f#1 in oa type calls.caseC2.on"
-    # yak "caseC3c: "; chck t.f.s "f#2 in oa type calls.caseC2.on"
-    # yak "caseC3c: "; chck t.f.s "f#3 in oa type calls.caseC2.on"
-    # yak "caseC3c: "; chck $t.cnt.get $3
+    yak "caseC3c: "; chck t.f.s "f#1 in oa type calls.caseC3.ref on"
+    yak "caseC3c: "; chck t.f.s "f#2 in oa type calls.caseC3.ref on"
+    yak "caseC3c: "; chck t.f.s "f#3 in oa type calls.caseC3.ref on"
+    yak "caseC3c: "; chck $t.cnt.get $3
 
   _ := caseC3
 
-/* NYI!
+
   caseC4 is
     #    * constructor
     #      * declared for ref
@@ -474,7 +473,7 @@ calls is
     yak "caseC4a: "; chck $t.cnt.get $3
 
   _ := caseC4
-*/
+
 
   caseC5 is
     #    * constructor
