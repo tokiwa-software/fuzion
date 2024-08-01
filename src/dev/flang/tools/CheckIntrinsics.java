@@ -114,7 +114,8 @@ class CheckIntrinsics extends ANY
         var ma = m.doit(a);
         if (!implemented.contains(ma))
           {
-            if (complete)
+            if (complete &&
+                (where.equals("DFA") || !a.equals("Any.as")))
               {
                 Errors.warning(where + " does not implement intrinsic '" + a + "'.");
               }
