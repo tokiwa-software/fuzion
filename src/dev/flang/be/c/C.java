@@ -30,6 +30,7 @@ import java.io.IOException;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -1486,6 +1487,17 @@ public class C extends ANY
 
 
   /**
+   * returns a CExpr that creates a Const_String from a java string.
+   *
+   * @param str the string.
+   */
+  CExpr constString(String str)
+  {
+    return constString(str.getBytes(StandardCharsets.UTF_8));
+  }
+
+
+  /**
    * Create CExpr to create a constant string.
    *
    * @param str CExpr the creates a c string.
@@ -2147,6 +2159,19 @@ public class C extends ANY
   private CExpr jStringToError(CExpr field)
   {
     var constString = constString(CExpr.call("fzE_java_string_to_utf8_bytes", new List<>(field)), CExpr.call("strlen", new List<>(CExpr.call("fzE_java_string_to_utf8_bytes", new List<>(field)))));
+    return error(constString);
+  }
+
+
+  /**
+   * create code for instantiating a
+   * fuzion error from a constString
+   *
+   * @param constString
+   * @return
+   */
+  public CExpr error(CExpr constString)
+  {
     return CExpr.compoundLiteral(
       _names.struct(_fuir.clazz_error()),
       "." + _names.fieldName(_fuir.clazzArg(_fuir.clazz_error(), 0)).code() + " = " +
