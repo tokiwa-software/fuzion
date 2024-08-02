@@ -114,6 +114,20 @@ public abstract class AbstractCall extends Expr
 
 
   /**
+   * typeForInferencing returns the type of this expression or null if the type is
+   * still unknown, i.e., before or during type resolution.  This is redefined
+   * by sub-classes of Expr to provide type information.
+   *
+   * @return this Expr's type or null if not known.
+   */
+  @Override
+  AbstractType typeForInferencing()
+  {
+    return type();
+  }
+
+
+  /**
    * This call serialized as a constant.
    */
   public AbstractConstant asCompileTimeConstant()
