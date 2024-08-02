@@ -791,7 +791,7 @@ public class C extends ANY
 
     if(_options._useBoehmGC)
       {
-        command.addAll("-lgc", "-DGC_THREADS", "-DGC_PTHREADS", "-DPTW32_STATIC_LIB", "-DGC_WIN32_PTHREADS");
+        command.addAll("-DGC_THREADS", "-DGC_PTHREADS", "-DPTW32_STATIC_LIB", "-DGC_WIN32_PTHREADS");
       }
 
     if (linkJVM())
@@ -874,6 +874,12 @@ public class C extends ANY
             command.addAll(JAVA_HOME + "\\bin\\server\\jvm.dll");
           }
       }
+
+    if(_options._useBoehmGC)
+      {
+        command.addAll("-lgc");
+      }
+
     return command;
   }
 
