@@ -527,6 +527,19 @@ public class Executor extends ProcessExpression<Value, Object>
     return pair(result);
   }
 
+  /**
+   * Generate code to terminate the execution immediately.
+   *
+   * @param msg a message explaining the illegal state
+   */
+  @Override
+  public Object reportErrorInCode(String msg)
+  {
+    say_err(msg);
+    System.exit(1);
+    return null;
+  }
+
 
   /**
    * callOnInstance assigns the arguments to the argument fields of a newly

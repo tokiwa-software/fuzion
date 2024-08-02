@@ -481,7 +481,7 @@ public class C extends ANY
       if (rcases.size() >= 2)
         { // more than two reference cases: we have to create separate switch of clazzIds for refs
           var id = refEntry.deref().field(CNames.CLAZZ_ID);
-          var notFound = reportErrorInCode("unexpected reference type %d found in match", id);
+          var notFound = reportErrorInCode0("unexpected reference type %d found in match", id);
           tdefault = CStmnt.suitch(id, rcases, notFound);
         }
       return new Pair<>(CExpr.UNIT, CStmnt.seq(getRef, CStmnt.suitch(tag, tcases, tdefault)));
@@ -543,6 +543,17 @@ public class C extends ANY
                                                         CExpr.string(_fuir.clazzAsString(ecl))),
                                     CExpr.exit(1)));
       return new Pair<>(res, o);
+    }
+
+    /**
+     * Generate code to terminate the execution immediately.
+     *
+     * @param msg a message explaining the illegal state
+     */
+    @Override
+    public CStmnt reportErrorInCode(String msg)
+    {
+      return reportErrorInCode0("%s", CExpr.string(msg));
     }
 
   }
@@ -1207,7 +1218,7 @@ public class C extends ANY
    *
    * @return the C statement to report the error and exit(1).
    */
-  CStmnt reportErrorInCode(String msg, CExpr... args)
+  CStmnt reportErrorInCode0(String msg, CExpr... args)
   {
     var msg2 = "*** %s:%d: " + msg + "\n";
     var args2 = new List<CExpr>(CIdent.FILE, CIdent.LINE);
@@ -1242,105 +1253,90 @@ public class C extends ANY
     var rt = _fuir.clazzResultClazz(cc0); // only needed if isCall
     var ol = new List<CStmnt>();
     var ccs = _fuir.accessedClazzes(s);
-    if (ccs.length == 0)
+    if (CHECKS) check
+      (ccs.length != 0);
+    if (_fuir.hasData(tc) && _fuir.accessIsDynamic(s) && ccs.length > 2)
       {
-        if (isCall && (_fuir.hasData(rt) || _fuir.clazzIsVoidType(rt)))
+        ol.add(CStmnt.lineComment("Dynamic access of " + _fuir.clazzAsString(cc0)));
+        var tvar = _names.newTemp();
+        var tt0 = _types.clazz(tc);
+        ol.add(CStmnt.decl(tt0, tvar, tvalue));
+        tvalue = tvar;
+      }
+
+    // see: #1835 why we need this. Without this the calls result
+    // is correctly detected to escape, heap cloned but then dereferenced
+    // and put onto the stack which defeats the purpose of the heap clone.
+    var callsResultEscapes = isCall
+      && _fuir.hasData(rt)
+      && ccs.length > 2
+      && (_fuir.doesResultEscape(s) && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc0))
+        // see: #2072 why we need this. Without this we would copy the field.
+        // But we just want a reference to the field.
+        || _fuir.clazzKind(cc0) == FeatureKind.Field && !_fuir.clazzFieldIsAdrOfValue(cc0)
+        );
+
+    if (isCall && _fuir.hasData(rt) && ccs.length > 2)
+      {
+        var resvar = _names.newTemp();
+        res = resvar;
+        ol.add(CStmnt.decl(_types.clazzField(cc0) + (callsResultEscapes ? "*" : ""), resvar));
+      }
+    var cazes = new List<CStmnt>();
+    CStmnt acc = CStmnt.EMPTY;
+    for (var cci = 0; cci < ccs.length; cci += 2)
+      {
+        var tt = ccs[cci  ];                   // target clazz we match against
+        var cc = ccs[cci+1];                   // called clazz in case of match
+        var cco = _fuir.clazzOuterClazz(cc);   // outer clazz of called clazz, usually equal to tt unless tt is boxed value type
+        var rti = _fuir.clazzResultClazz(cc);
+        var tv = tt != tc ? tvalue.castTo(_types.clazz(tt)) : tvalue;
+        if (_fuir.clazzIsBoxed(tt) && !_fuir.clazzIsRef(cco))
+          { // in case we access the value in a boxed target, unbox it first:
+            tv = fields(tv, tt);
+          }
+        if (isCall)
           {
-            ol.add(reportErrorInCode("no targets for access of %s within %s",
-                                     CExpr.string(_fuir.clazzAsString(cc0)),
-                                     CExpr.string(_fuir.siteAsString(s))));
-            res = null;
+            var calpair = call(s, tv, args, cc);
+            var rv  = calpair.v0();
+            acc = calpair.v1();
+            if (ccs.length == 2)
+              {
+                res = rv;
+              }
+            else if (_fuir.hasData(rt) && rv != null)
+              {
+                if (rt != rti && _fuir.clazzIsRef(rt)) // NYI: Check why result can be different
+                  {
+                    rv = rv.castTo(_types.clazz(rt));
+                  }
+                acc = CStmnt.seq(CStmnt.lineComment("Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":"),
+                                  acc,
+                                  assign(res, callsResultEscapes ? rv.adrOf() : rv, rt));
+              }
           }
         else
           {
-            ol.add(CStmnt.lineComment("access to " + _fuir.codeAtAsString(s) + " eliminated"));
+            acc = assignField(tv, tc, cco, cc, args.get(0), rti);
           }
+        cazes.add(CStmnt.caze(new List<>(_names.clazzId(tt)),
+                              CStmnt.seq(acc, CStmnt.BREAK)));
       }
-    else
+    if (ccs.length > 2)
       {
-        if (_fuir.hasData(tc) && _fuir.accessIsDynamic(s) && ccs.length > 2)
-          {
-            ol.add(CStmnt.lineComment("Dynamic access of " + _fuir.clazzAsString(cc0)));
-            var tvar = _names.newTemp();
-            var tt0 = _types.clazz(tc);
-            ol.add(CStmnt.decl(tt0, tvar, tvalue));
-            tvalue = tvar;
-          }
-
-        // see: #1835 why we need this. Without this the calls result
-        // is correctly detected to escape, heap cloned but then dereferenced
-        // and put onto the stack which defeats the purpose of the heap clone.
-        var callsResultEscapes = isCall
-          && _fuir.hasData(rt)
-          && ccs.length > 2
-          && (_fuir.doesResultEscape(s) && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc0))
-            // see: #2072 why we need this. Without this we would copy the field.
-            // But we just want a reference to the field.
-            || _fuir.clazzKind(cc0) == FeatureKind.Field && !_fuir.clazzFieldIsAdrOfValue(cc0)
-            );
-
-        if (isCall && _fuir.hasData(rt) && ccs.length > 2)
-          {
-            var resvar = _names.newTemp();
-            res = resvar;
-            ol.add(CStmnt.decl(_types.clazzField(cc0) + (callsResultEscapes ? "*" : ""), resvar));
-          }
-        var cazes = new List<CStmnt>();
-        CStmnt acc = CStmnt.EMPTY;
-        for (var cci = 0; cci < ccs.length; cci += 2)
-          {
-            var tt = ccs[cci  ];                   // target clazz we match against
-            var cc = ccs[cci+1];                   // called clazz in case of match
-            var cco = _fuir.clazzOuterClazz(cc);   // outer clazz of called clazz, usually equal to tt unless tt is boxed value type
-            var rti = _fuir.clazzResultClazz(cc);
-            var tv = tt != tc ? tvalue.castTo(_types.clazz(tt)) : tvalue;
-            if (_fuir.clazzIsBoxed(tt) && !_fuir.clazzIsRef(cco))
-              { // in case we access the value in a boxed target, unbox it first:
-                tv = fields(tv, tt);
-              }
-            if (isCall)
-              {
-                var calpair = call(s, tv, args, cc);
-                var rv  = calpair.v0();
-                acc = calpair.v1();
-                if (ccs.length == 2)
-                  {
-                    res = rv;
-                  }
-                else if (_fuir.hasData(rt) && rv != null)
-                  {
-                    if (rt != rti && _fuir.clazzIsRef(rt)) // NYI: Check why result can be different
-                      {
-                        rv = rv.castTo(_types.clazz(rt));
-                      }
-                    acc = CStmnt.seq(CStmnt.lineComment("Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":"),
-                                     acc,
-                                     assign(res, callsResultEscapes ? rv.adrOf() : rv, rt));
-                  }
-              }
-            else
-              {
-                acc = assignField(tv, tc, cco, cc, args.get(0), rti);
-              }
-            cazes.add(CStmnt.caze(new List<>(_names.clazzId(tt)),
-                                  CStmnt.seq(acc, CStmnt.BREAK)));
-          }
-        if (ccs.length > 2)
-          {
-            var id = tvalue.deref().field(CNames.CLAZZ_ID);
-            acc = CStmnt.suitch(id, cazes,
-                                reportErrorInCode("unhandled dynamic target %d in access of %s within %s",
-                                                  id,
-                                                  CExpr.string(_fuir.clazzAsString(cc0)),
-                                                  CExpr.string(_fuir.siteAsString(s))));
-          }
-        ol.add(acc);
-        res = _fuir.clazzIsVoidType(rt)
-          ? null
-          : callsResultEscapes || isCall && _fuir.hasData(rt) && _fuir.clazzFieldIsAdrOfValue(cc0)  // NYI: deref an outer ref to value type. Would be nice to have a separate expression for this
-            ? res.deref()
-            : res;
+        var id = tvalue.deref().field(CNames.CLAZZ_ID);
+        acc = CStmnt.suitch(id, cazes,
+                            reportErrorInCode0("unhandled dynamic target %d in access of %s within %s",
+                                              id,
+                                              CExpr.string(_fuir.clazzAsString(cc0)),
+                                              CExpr.string(_fuir.siteAsString(s))));
       }
+    ol.add(acc);
+    res = _fuir.clazzIsVoidType(rt)
+      ? null
+      : callsResultEscapes || isCall && _fuir.hasData(rt) && _fuir.clazzFieldIsAdrOfValue(cc0)  // NYI: deref an outer ref to value type. Would be nice to have a separate expression for this
+        ? res.deref()
+        : res;
 
     return new Pair<>(res, CStmnt.seq(ol));
   }
