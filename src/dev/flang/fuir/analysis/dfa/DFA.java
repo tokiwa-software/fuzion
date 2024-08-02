@@ -2212,12 +2212,12 @@ public class DFA extends ANY
    */
   private static Value outcome(DFA dfa, Call cl, int rc, Value res)
   {
-    var okay = new TaggedValue(cl._dfa, rc, res, 0);
-    var error_cl = cl._dfa._fuir.clazzChoice(rc, 1);
-    var error = cl._dfa.newInstance(error_cl, NO_SITE, null);
-    var msg = cl._dfa._fuir.lookup_error_msg(error_cl);
-    error.setField(cl._dfa, msg, cl._dfa.newConstString(null, cl));
-    var err = new TaggedValue(cl._dfa, rc, error, 1);
+    var okay = dfa.newTaggedValue(rc, Value.UNIT, 0);
+    var error_cl = dfa._fuir.clazzChoice(rc, 1);
+    var error = dfa.newInstance(error_cl, NO_SITE, cl._context);
+    var msg = dfa._fuir.lookup_error_msg(error_cl);
+    error.setField(dfa, msg, dfa.newConstString(null, cl));
+    var err = dfa.newTaggedValue(rc, error, 1);
     return okay.join(dfa, err);
   }
 
@@ -2278,7 +2278,7 @@ public class DFA extends ANY
     put("concur.sync.mtx_init"              , cl -> outcome(cl._dfa,
                                                             cl,
                                                             cl._dfa._fuir.clazzResultClazz(cl._cc),
-                                                            cl._dfa.newSysArray(Value.UNIT, cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_unit)) /* NYI: should be opaque type */));
+                                                            cl._dfa.newInstance(cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_sys_ptr), NO_SITE, cl._context)));
     put("concur.sync.mtx_lock"              , cl -> cl._dfa._bool);
     put("concur.sync.mtx_trylock"           , cl -> cl._dfa._bool);
     put("concur.sync.mtx_unlock"            , cl -> cl._dfa._bool);
@@ -2286,7 +2286,7 @@ public class DFA extends ANY
     put("concur.sync.cnd_init"              , cl -> outcome(cl._dfa,
                                                             cl,
                                                             cl._dfa._fuir.clazzResultClazz(cl._cc),
-                                                            cl._dfa.newSysArray(Value.UNIT, cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_unit)) /* NYI: should be opaque type */));
+                                                            cl._dfa.newInstance(cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_sys_ptr), NO_SITE, cl._context)));
     put("concur.sync.cnd_signal"            , cl -> cl._dfa._bool);
     put("concur.sync.cnd_broadcast"         , cl -> cl._dfa._bool);
     put("concur.sync.cnd_wait"              , cl -> cl._dfa._bool);
