@@ -31,6 +31,7 @@ import dev.flang.fuir.FUIR;
 
 
 import dev.flang.ir.IR;
+import dev.flang.ir.IR.FeatureKind;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -170,7 +171,7 @@ public class Call extends ANY implements Comparable<Call>, Context
     _env = env;
     _context = context;
 
-    if (dfa._fuir.clazzResultField(cc)==-1) /* <==> _fuir.isConstructor(cl) */
+    if (dfa._fuir.clazzResultField(cc)==-1 && _dfa._fuir.clazzKind(cc) != FeatureKind.Intrinsic) /* <==> _fuir.isConstructor(cl) */
       {
         /* a constructor call returns current as result, so it always escapes together with all outer references! */
         dfa.escapes(cc);

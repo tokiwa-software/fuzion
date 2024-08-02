@@ -1514,8 +1514,7 @@ public class DFA extends ANY
    */
   void escapes(int cc)
   {
-    var escapeSet = _escapes;
-    if (escapeSet.add(cc))
+    if (_escapes.add(cc))
       {
         wasChanged(() -> "Escapes: " + _fuir.clazzAsString(cc));
       }
