@@ -94,6 +94,16 @@ void * fzE_malloc_safe(size_t size) {
   return p;
 }
 
+void fzE_memset(void *dest, int ch, size_t sz){
+  // NYI: UNDER DEVELOPMENT: use bounds checked version, e.g. memset_s
+  memset(dest, ch, sz);
+}
+
+void fzE_memcpy(void *restrict dest, const void *restrict src, size_t sz){
+  // NYI: UNDER DEVELOPMENT: use bounds checked version, e.g. memcpy_s
+  memcpy(dest, src, sz);
+}
+
 
 #ifdef FUZION_LINK_JVM
 
@@ -256,8 +266,9 @@ void fzE_destroy_jvm()
 // helper function to replace char `find`
 // by `replace` in string `str`.
 char* fzE_replace_char(const char* str, char find, char replace){
-    char * result = fzE_malloc_safe(strlen(str));
-    strcpy(result, str);
+    size_t len = strlen(str)
+    char * result = fzE_malloc_safe(len+1);
+    fzE_memcpy(result, str, len+1);
     char *pos = strchr(result,find);
     while (pos) {
         *pos = replace;
@@ -279,7 +290,7 @@ const char * fzE_java_string_to_utf8_bytes(jstring jstr)
   jbyte * bytes = (*getJNIEnv())->GetByteArrayElements(getJNIEnv(), arr, NULL);
   const jsize length = (*getJNIEnv())->GetArrayLength(getJNIEnv(), arr);
   char * result = fzE_malloc_safe(length);
-  memcpy(result, bytes, length);
+  fzE_memcpy(result, bytes, length);
 
   (*getJNIEnv())->ReleaseByteArrayElements(getJNIEnv(), arr, bytes, JNI_ABORT);
   (*getJNIEnv())->DeleteLocalRef(getJNIEnv(), arr);
@@ -294,7 +305,7 @@ const char * fzE_java_string_to_modified_utf8(jstring jstr)
   const char * str = (*getJNIEnv())->GetStringUTFChars(getJNIEnv(), jstr, JNI_FALSE);
   jsize sz = (*getJNIEnv())->GetStringUTFLength(getJNIEnv(), jstr);
   char * result = fzE_malloc_safe(sz);
-  memcpy(result, str, sz+1);
+  fzE_memcpy(result, str, sz+1);
   (*getJNIEnv())->ReleaseStringUTFChars(getJNIEnv(), jstr, str);
   return result;
 }
