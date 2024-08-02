@@ -1449,6 +1449,11 @@ public class Feature extends AbstractFeature
       {
         _state = State.RESOLVING_TYPES;
 
+        if (Contract.requiresPreConditionsFeature(this) && preFeature() == null)
+          {
+            Contract.addPreFeature(res, this, false);
+          }
+
         resolveArgumentTypes(res);
         visit(res.resolveTypesFully);
 

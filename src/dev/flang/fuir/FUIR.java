@@ -1416,12 +1416,7 @@ public class FUIR extends IR
     Clazz rc;
     if (b instanceof AnyAs aa)
       {
-        var cc = outerClazz.actualClazzes(aa._ac, null)[0];
-        var vc = cc._outer;
-        var T = cc.actualGenerics()[0];
-        rc = !vc.isRef() && T.isRef()
-          ? vc.asRef()
-          : vc;
+        rc = outerClazz.actualClazzes(aa._ac, null)[2];
       }
     else
       {

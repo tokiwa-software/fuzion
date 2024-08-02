@@ -478,7 +478,7 @@ public class Contract extends ANY
                     preAndCallOuter.generics().asActuals(),
                     args,
                     f,
-                    f.resultType())
+                    null)
       {
         @Override
         boolean preChecked() { return true; }
@@ -605,7 +605,7 @@ public class Contract extends ANY
    *
    * @param preBool true to create pre bool feature, false for pre feature.
    */
-  private static void addPreFeature(Resolution res, Feature f, boolean preBool)
+  static void addPreFeature(Resolution res, Feature f, boolean preBool)
   {
     var fc = f.contract();
     var name = preBool ? preBoolConditionsFeatureName(f)
@@ -766,7 +766,7 @@ public class Contract extends ANY
     var fc = f.contract();
 
     // add precondition feature
-    if (requiresPreConditionsFeature(f) && f._preFeature == null)
+    if (requiresPreConditionsFeature(f) && f._preBoolFeature == null)
       {
 
         /*
@@ -988,8 +988,14 @@ all of their redefinition to `true`. +
              z := e.f x y
          */
 
-        addPreFeature(res, f, true);
-        addPreFeature(res, f, false);
+        if (f._preBoolFeature == null)
+          {
+            addPreFeature(res, f, true);
+          }
+        if (f._preFeature == null)
+          {
+            addPreFeature(res, f, false);
+          }
 
         if (!f.isConstructor())
           {

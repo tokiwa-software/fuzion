@@ -776,7 +776,21 @@ public class Clazzes extends ANY
                   : Types.resolved.f_Type_infix_colon_false;
                 innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), -1, c, c.isInheritanceCall());
               }
-            outerClazz.saveActualClazzes(c, outer, new Clazz[] {innerClazz, tclazz});
+            if (c.calledFeature() == Types.resolved.f_Any_as)
+              {
+                var cc = innerClazz;
+                var vc = cc._outer;
+                var T = cc.actualGenerics()[0];
+                var rc = !vc.isRef() && T.isRef()
+                  ? vc.asRef()
+                  : vc;
+                tclazz = rc;
+                outerClazz.saveActualClazzes(c, outer, new Clazz[] {innerClazz, tclazz, rc});
+              }
+            else
+              {
+                outerClazz.saveActualClazzes(c, outer, new Clazz[] {innerClazz, tclazz});
+              }
           }
 
         var afs = innerClazz.argumentFields();

@@ -1,0 +1,95 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test compile_time_type_casts
+#
+# -----------------------------------------------------------------------
+
+compile_time_type_casts =>
+
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [3,4,5])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [6,7,8])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [1,2,3])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [1,2])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [1])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [2,3,4])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [2,3])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [2])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [8,9,10])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [9,10])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [10])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [5,4,3])  # will fail
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [4,3])    # will fail
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [3])
+
+  t := ["avenidas y flores",
+        "flores",
+        "flores y mujeres",
+        "avenidas",
+        "avenidas y mujeres",
+        "avenidas y flores y mujeres y",
+        "un admirador"]
+
+  say (t.find_first ["avenidas", "avenidas y mujeres"])
+  say (t.find_first ["avenidas", "avenidas y flores"])  # will fail
+  say (t.find_first ["un admirador"])
+
+  a is
+  b is
+  c is
+
+  x(v T) =>
+
+    for_String
+      pre T : String
+    =>
+      say "String '$v' type $T len {v.byte_length}"
+
+    if envir.args.count = 3
+      # make sure that for the compiler, this may always return as a non-void call
+    else if T : String
+      say "String '$v' type $T"
+      say "String '$v' type $T len {(v.as String)}"
+      say "String '$v' type $T len {(v.as String).byte_length}"
+      for_String
+    else if T : bool
+      say "bool $v {! v.as bool}"
+    else if T : a
+      say "got a: {v.as a}"
+    else if T : b
+      say "got b: {v.as b}"
+    else if T : unit
+#      _ := v.as void         # -- would cause an error!
+    else if T : c
+#      say "got c: {v.as b}"  # -- would cause an error!
+    else
+      say "other type $v type $T"
+
+
+  x "Fuzion!"
+  x "F"
+# NYI: following do not work yet:
+#  x true
+#  x nil
+#  x a
+#  x b
+#  x c
+#  x unit
