@@ -266,7 +266,7 @@ void fzE_destroy_jvm()
 // helper function to replace char `find`
 // by `replace` in string `str`.
 char* fzE_replace_char(const char* str, char find, char replace){
-    size_t len = strlen(str)
+    size_t len = strlen(str);
     char * result = fzE_malloc_safe(len+1);
     fzE_memcpy(result, str, len+1);
     char *pos = strchr(result,find);
