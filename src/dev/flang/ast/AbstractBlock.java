@@ -184,7 +184,7 @@ public abstract class AbstractBlock extends Expr
    * This expression as a compile time constant.
    */
   @Override
-  public AbstractConstant asCompileTimeConstant()
+  public Constant asCompileTimeConstant()
   {
     return resultExpression().asCompileTimeConstant();
   }
