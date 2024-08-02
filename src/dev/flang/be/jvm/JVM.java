@@ -1744,7 +1744,8 @@ should be avoided as much as possible.
   Expr assignField(int s, Expr tvalue, int f, Expr value, int rt)
   {
     if (CHECKS) check
-      (tvalue != null || !_fuir.hasData(rt) || _fuir.clazzOuterClazz(f) == _fuir.clazzUniverse());
+      (tvalue != null || !_fuir.hasData(rt) || _fuir.clazzOuterClazz(f) == _fuir.clazzUniverse(),
+       value != Expr.UNIT || _fuir.clazzIsVoidType(rt) || !fieldExists(f));
 
     var occ   = _fuir.clazzOuterClazz(f);
     Expr res;
