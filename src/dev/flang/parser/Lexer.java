@@ -220,6 +220,7 @@ public class Lexer extends SourceFile
     t_lineLimit,         // token is in next line while sameLine() parsing is enabled
     t_spaceLimit,        // token follows white space while endAtSpace is enabled
     t_colonLimit,        // token is operator ":" while endAtColon is enabled
+    t_semicolonLimit,    // token is separator ";" while endAtSemicolon is enabled
     t_barLimit,          // token is operator "|" while endAtBar is enabled
     t_undefined;         // current token before first call to next()
 
@@ -650,6 +651,12 @@ public class Lexer extends SourceFile
    */
   private boolean _endAtColon = false;
 
+  /**
+   * ';' separator restriction for current()/currentAtMinIndent(): if set,
+   * separator ";" will be replaced by t_semicolonLimit.
+   */
+  private boolean _endAtSemicolon = false;
+
 
   /**
    * '|' operator restriction for current()/currentAtMinIndent(): if set,
@@ -699,6 +706,7 @@ public class Lexer extends SourceFile
     _sameLine = original._sameLine;
     _endAtSpace = original._endAtSpace;
     _endAtColon = original._endAtColon;
+    _endAtSemicolon = original._endAtSemicolon;
     _endAtBar = original._endAtBar;
     _ignoredTokenBefore = original._ignoredTokenBefore;
     _stringLexer = original._stringLexer == null ? null : new StringLexer(original._stringLexer);
@@ -888,6 +896,21 @@ public class Lexer extends SourceFile
     return result;
   }
 
+  /**
+   * Restrict parsing until the next occurrence of separator ";".  Separator ";"
+   * will be replaced by t_semicolonLimit.
+   *
+   * @param endAtSemicolon true to enable, false to disable
+   *
+   * @return the previous endAtSemicolon-restriction.
+   */
+  boolean endAtSemicolon(boolean endAtSemicolon)
+  {
+    var result = _endAtSemicolon;
+    _endAtSemicolon = endAtSemicolon;
+
+    return result;
+  }
 
   /**
    * Restrict parsing until the next occurrence of operator "|".  Operator "|"
@@ -920,11 +943,13 @@ public class Lexer extends SourceFile
     int oldLine = sameLine(-1);
     int oldEAS = endAtSpace(Integer.MAX_VALUE);
     var oldEAC = endAtColon(false);
+    var oldEASC = endAtSemicolon(false);
     var oldEAB = endAtBar(false);
     V result = c.call();
     sameLine(oldLine);
     endAtSpace(oldEAS);
     endAtColon(oldEAC);
+    endAtSemicolon(oldEASC);
     endAtBar(oldEAB);
     return result;
   }
@@ -1062,7 +1087,7 @@ public class Lexer extends SourceFile
    *
    * @param endAtBar true to replace operator "|" by t_barLimit.
    */
-  Token current(int minIndent, int sameLine, int endAtSpace, boolean endAtColon, boolean endAtBar)
+  Token current(int minIndent, int sameLine, int endAtSpace, boolean endAtColon, boolean endAtSemicolon, boolean endAtBar)
   {
     var t = _curToken;
     int l = line();
@@ -1076,6 +1101,7 @@ public class Lexer extends SourceFile
       endAtColon                  &&
       _curToken == Token.t_op     &&
       tokenAsString().equals(":")                            ? Token.t_colonLimit       :
+      endAtSemicolon && _curToken == Token.t_semicolon       ? Token.t_semicolonLimit   :
       endAtBar                    &&
       _curToken == Token.t_op     &&
       tokenAsString().equals("|")                            ? Token.t_barLimit
@@ -1089,7 +1115,7 @@ public class Lexer extends SourceFile
    */
   public Token current()
   {
-    return current(_minIndent, _sameLine, _endAtSpace, _endAtColon, _endAtBar);
+    return current(_minIndent, _sameLine, _endAtSpace, _endAtColon, _endAtSemicolon, _endAtBar);
   }
 
 
@@ -1099,7 +1125,7 @@ public class Lexer extends SourceFile
    */
   Token currentAtMinIndent()
   {
-    return current(_minIndent - 1, _sameLine, _endAtSpace, _endAtColon, _endAtBar);
+    return current(_minIndent - 1, _sameLine, _endAtSpace, _endAtColon, _endAtSemicolon, _endAtBar);
   }
 
 
