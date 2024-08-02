@@ -28,7 +28,7 @@
 #
 test_tailrecursion =>
 
-  # a tailrecursion that is optimized
+  # a tail recursion that is optimized
   # but the instances of `f` need to be heap allocated
   # since it escapes
   #
