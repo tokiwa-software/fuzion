@@ -114,7 +114,11 @@ public class Generic extends ANY implements Comparable<Generic>
    *
    * @return the constraint.
    */
-  public AbstractType constraint1(AbstractFeature outer)
+  public AbstractType constraintNoContext()
+  {
+    return constraint1(null, null);
+  }
+  public AbstractType constraint1(AbstractFeature outer, List<AbstractCall> infix_colons)
   {
     if (PRECONDITIONS) require
       (_typeParameter.state().atLeast(State.RESOLVED_TYPES));
@@ -145,13 +149,13 @@ public class Generic extends ANY implements Comparable<Generic>
    *
    * @return the resolved constraint.
    */
-  public AbstractType constraint0(Resolution res, AbstractFeature outer)
+  public AbstractType constraint0(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons)
   {
     if (PRECONDITIONS) require
       (res.state(feature()).atLeast(State.RESOLVING_DECLARATIONS));
 
     res.resolveTypes(_typeParameter);
-    return constraint1(outer);
+    return constraint1(outer, infix_colons);
   }
 
 

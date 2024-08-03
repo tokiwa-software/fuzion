@@ -164,7 +164,8 @@ public class InlineArray extends ExprWithPos
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
+  @Override
+  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, AbstractType t)
   {
     if (_type == null)
       {
@@ -177,7 +178,7 @@ public class InlineArray extends ExprWithPos
           {
             for (var e : _elements)
               {
-                var e2 = e.propagateExpectedType(res, outer, elementType);
+                var e2 = e.propagateExpectedType(res, outer, infix_colons, elementType);
                 if (CHECKS) check
                   (e == e2);
               }

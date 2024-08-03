@@ -1276,7 +1276,7 @@ public class Feature extends AbstractFeature
               {
                 cp._isInheritanceCall = true;
               }
-            p.loadCalledFeature(res, this);
+            p.loadCalledFeature(res, this, null);
             var parent = p.calledFeature();
             if (CHECKS) check
               (Errors.any() || parent != null);
@@ -1400,7 +1400,7 @@ public class Feature extends AbstractFeature
         res = r;
       }
     @Override public void         action      (AbstractAssign  a, AbstractFeature outer) {        a.resolveTypes   (res,   outer); }
-    @Override public void         actionBefore(Call            c, AbstractFeature outer) {        c.tryResolveTypeCall(res,   outer); }
+    @Override public void         actionBefore(Call            c, AbstractFeature outer) {        c.tryResolveTypeCall(res,   outer, null /* NYI: infix_colons */); }
     @Override public Call         action      (Call            c, AbstractFeature outer) { return c.resolveTypes   (res,   outer); }
     @Override public Expr         action      (DotType         d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
     @Override public Expr         action      (Destructure     d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
@@ -1827,11 +1827,11 @@ A ((Choice)) declaration must not contain a result type.
          * that i32 will be the type for "a".
          */
         visit(new FeatureVisitor() {
-            public void  action(AbstractAssign a, AbstractFeature outer) { a.propagateExpectedType(res, outer); }
-            public Call  action(Call           c, AbstractFeature outer) { c.propagateExpectedType(res, outer); return c; }
-            public void  action(Cond           c, AbstractFeature outer) { c.propagateExpectedType(res, outer); }
-            public void  action(Impl           i, AbstractFeature outer) { i.propagateExpectedType(res, outer); }
-            public Expr  action(If             i, AbstractFeature outer) { i.propagateExpectedType(res, outer); return i; }
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.propagateExpectedType(res, outer, (List<AbstractCall>)  null /*infix_colons*/); }
+            public Call  action(Call           c, AbstractFeature outer) { c.propagateExpectedType(res, outer, (List<AbstractCall>)  null /*infix_colons*/); return c; }
+            public void  action(Cond           c, AbstractFeature outer) { c.propagateExpectedType(res, outer, (List<AbstractCall>)  null /*infix_colons*/); }
+            public void  action(Impl           i, AbstractFeature outer) { i.propagateExpectedType(res, outer, (List<AbstractCall>)  null /*infix_colons*/); }
+            public Expr  action(If             i, AbstractFeature outer) { i.propagateExpectedType(res, outer, (List<AbstractCall>)  null /*infix_colons*/); return i; }
           });
 
         /*
@@ -1849,7 +1849,7 @@ A ((Choice)) declaration must not contain a result type.
 
         if (isConstructor())
           {
-            _impl.propagateExpectedType(res, this, Types.resolved.t_unit);
+            _impl.propagateExpectedType(res, this, (List<AbstractCall>)  null /*infix_colons*/, Types.resolved.t_unit);
           }
 
         _state = State.TYPES_INFERENCED;

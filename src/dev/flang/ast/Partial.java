@@ -155,14 +155,15 @@ public class Partial extends AbstractLambda
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
+  @Override
+  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, AbstractType t)
   {
     Expr result = this;
     t = t.functionTypeFromChoice();
     var type = propagateTypeAndInferResult(res, outer, t, false);
     if (_function != null)
       {
-        result = _function.propagateExpectedType(res, outer, type);
+        result = _function.propagateExpectedType(res, outer, infix_colons, type);
       }
     return result;
   }

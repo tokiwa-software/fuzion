@@ -533,7 +533,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * @param outerfeat the outer feature this type is declared in. Lookup of
    * unqualified types will happen in this feature.
    */
-  AbstractType resolve(Resolution res, AbstractFeature outerfeat)
+  @Override
+  AbstractType resolve(Resolution res, AbstractFeature outerfeat, List<AbstractCall> infix_colons)
   {
     if (PRECONDITIONS) require
       (res != null,
@@ -553,7 +554,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         if (o != null && !o.isThisType())
           {
             o = o.resolve(res, of);
-            var ot2 = o.isGenericArgument() ? o.genericArgument().constraint0(res, outerfeat) // see tests/reg_issue1943 for examples
+            var ot2 = o.isGenericArgument() ? o.genericArgument().constraint0(res, outerfeat, infix_colons) // see tests/reg_issue1943 for examples
                                             : o;
             of = ot2.feature();
           }
@@ -647,7 +648,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * @param outerfeat the outer feature this type is declared in. Lookup of
    * unqualified types will happen in this feature.
    */
-  AbstractType tryResolve(Resolution res, AbstractFeature outerfeat)
+  AbstractType tryResolve(Resolution res, AbstractFeature outerfeat, List<AbstractCall> infix_colons)
   {
     if (PRECONDITIONS) require
       (res != null,
@@ -662,12 +663,12 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         var inTypeFeature = false;
         if (o instanceof UnresolvedType ut)
           {
-            o = ut.tryResolve(res, of);
+            o = ut.tryResolve(res, of, infix_colons);
             if (o == null || o == Types.t_ERROR)
               {
                 return null;
               }
-            var ot2 = o.isGenericArgument() ? o.genericArgument().constraint0(res, outerfeat) // see tests/reg_issue1943 for examples
+            var ot2 = o.isGenericArgument() ? o.genericArgument().constraint0(res, outerfeat, infix_colons) // see tests/reg_issue1943 for examples
                                             : o;
             of = ot2.feature();
           }
@@ -720,7 +721,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                   {
                     o = fo._outer.thisType(fo.isNextInnerFixed());
                   }
-                _resolved = finishTryResolve(res, outerfeat, this, this, f, generics, o, _refOrVal, _ignoreActualTypePars);
+                _resolved = finishTryResolve(res, outerfeat, infix_colons, this, this, f, generics, o, _refOrVal, _ignoreActualTypePars);
               }
           }
       }
@@ -843,6 +844,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    */
   static ResolvedType finishTryResolve(Resolution res,
                                     AbstractFeature outerfeat,
+                                    List<AbstractCall> infix_colons,
                                     AbstractType thiz,
                                     HasSourcePosition pos,
                                     AbstractFeature f,
@@ -861,7 +863,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
           {
             if (!(generics instanceof FormalGenerics.AsActuals))
               {
-                generics = generics.map(t -> t instanceof UnresolvedType ut ? ut.tryResolve(res, outerfeat) : t);
+                generics = generics.map(t -> t instanceof UnresolvedType ut ? ut.tryResolve(res, outerfeat, infix_colons) : t);
               }
             if (!f.generics().sizeMatches(generics) || generics.contains(null))
               {

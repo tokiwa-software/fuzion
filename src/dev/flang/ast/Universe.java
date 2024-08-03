@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
 
@@ -104,7 +105,7 @@ public class Universe extends ExprWithPos
     return new UnresolvedType(SourcePosition.notAvailable, FuzionConstants.UNIVERSE_NAME, UnresolvedType.NONE, null)
     {
       @Override
-      AbstractType resolve(Resolution res, AbstractFeature outerfeat)
+      AbstractType resolve(Resolution res, AbstractFeature outerfeat, List<AbstractCall> infix_colons)
       {
         return typeForInferencing();
       }

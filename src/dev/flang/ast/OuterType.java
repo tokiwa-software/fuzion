@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
 
@@ -64,7 +65,8 @@ public class OuterType extends UnresolvedType
    * @param outerfeat the outer feature this type is declared in, used
    * for resolution of generic parameters etc.
    */
-  AbstractType resolve(Resolution res, AbstractFeature outerfeat)
+  @Override
+  AbstractType resolve(Resolution res, AbstractFeature outerfeat, List<AbstractCall> infix_colons)
   {
     if (PRECONDITIONS) require
       (outerfeat != null,

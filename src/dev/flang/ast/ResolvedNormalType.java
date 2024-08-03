@@ -640,7 +640,8 @@ public class ResolvedNormalType extends ResolvedType
         /**
          * This is a bit ugly, even though this type is a ResolvedType, the generics are not.
          */
-        AbstractType resolve(Resolution res, AbstractFeature outerfeat)
+        @Override
+        AbstractType resolve(Resolution res, AbstractFeature outerfeat, List<AbstractCall> infix_colons)
         {
           if (_resolved == null)
             {

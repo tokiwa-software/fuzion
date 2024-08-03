@@ -185,7 +185,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param outerfeat the outer feature this type is declared in, used for
    * resolution of generic parameters etc.
    */
-  AbstractType resolve(Resolution res, AbstractFeature outerfeat)
+  final AbstractType resolve(Resolution res, AbstractFeature outerfeat)
+  {
+    return resolve(res, outerfeat, null);
+  }
+  AbstractType resolve(Resolution res, AbstractFeature outerfeat, List<AbstractCall> infix_colons)
   {
     return this;
   }
@@ -396,7 +400,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         if (actual_type.isGenericArgument())
           {
-            result = isAssignableFrom(actual_type.genericArgument().constraint1(null /* NYI: outer */).asRef());
+            result = isAssignableFrom(actual_type.genericArgument().constraintNoContext().asRef());
           }
         else
           {
@@ -459,7 +463,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param actual the actual type.
    */
-  public boolean constraintAssignableFrom(AbstractFeature outer, AbstractType actual)
+  public boolean constraintAssignableFrom(AbstractFeature outer, List<AbstractCall> infix_colons, AbstractType actual)
   {
     if (PRECONDITIONS) require
       (this  .isGenericArgument() || this  .feature() != null || Errors.any(),
@@ -475,7 +479,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         if (actual.isGenericArgument())
           {
-            result = constraintAssignableFrom(outer, actual.genericArgument().constraint1(outer));
+            result = constraintAssignableFrom(outer, infix_colons, actual.genericArgument().constraint1(outer, infix_colons));
           }
         else
           {
@@ -488,7 +492,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                 for (var p: actual.feature().inherits())
                   {
                     result |= !p.calledFeature().isChoice() &&
-                      constraintAssignableFrom(outer, p.type().applyTypePars(actual));
+                      constraintAssignableFrom(outer, infix_colons, p.type().applyTypePars(actual));
                   }
               }
           }
@@ -524,8 +528,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           // this  = monad monad.A monad.MA
           // other = monad option.T (option option.T)
           // for now just prevent infinite recursion
-            !(g.isGenericArgument() && (g.genericArgument().constraint1(null /* outer */) == this ||
-                                        g.genericArgument().constraint1(null /* outer */).constraintAssignableFrom(null, og))))
+            !(g.isGenericArgument() && (g.genericArgument().constraintNoContext() == this ||
+                                        g.genericArgument().constraintNoContext().constraintAssignableFrom(null, null, og))))
           // NYI what if g is not a generic argument?
           {
             return false;
@@ -707,7 +711,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         if (target.isGenericArgument())
           {
-            result = result.applyTypePars(target.genericArgument().constraint1(null /* outer */));
+            result = result.applyTypePars(target.genericArgument().constraintNoContext());
           }
         else
           {
@@ -1416,7 +1420,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   private AbstractType replace_this_type_by_actual_outer2(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef)
   {
     var result = this;
-    var att = (tt.isGenericArgument() ? tt.genericArgument().constraint1(null /* outer */) : tt);
+    var att = (tt.isGenericArgument() ? tt.genericArgument().constraintNoContext() : tt);
     if (isThisTypeInTypeFeature() && tt.isGenericArgument()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
         ||
         isThisType() && att.feature().inheritsFrom(feature())  // we have abc.this.type with att inheriting from abc, so use tt
@@ -1909,7 +1913,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var f = fi.next();
         var a = ai.next();
         var u = ui.hasNext() ? ui.next() : null;
-        var c = f.constraint1(outer);
+        var c = f.constraint1(outer, null);
         if (CHECKS) check
           (Errors.any() || f != null && a != null);
 
@@ -1920,11 +1924,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         a.checkChoice(pos);
         if (!c.isGenericArgument() && // See AstErrors.constraintMustNotBeGenericArgument,
                                       // will be checked in SourceModule.checkTypes(Feature)
-            !c.constraintAssignableFrom(outer, a))
+            !c.constraintAssignableFrom(outer, null, a))
           {
             if (!f.typeParameter().isTypeFeaturesThisType())  // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
               {
-                var ct = f.constraint1(null /* no context, we are setting this */);
+                var ct = f.constraintNoContext(); /* no context, we are setting this */
                 if (ct.isChoice())
                   {
                     AstErrors.constraintMustNotBeChoice(f, ct);

@@ -811,7 +811,7 @@ public class NumLiteral extends Constant
    * @param t the expected type.
    */
   @Override
-  Expr propagateExpectedTypeForPartial(Resolution res, AbstractFeature outer, AbstractType t)
+  Expr propagateExpectedTypeForPartial(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, AbstractType t)
   {
     Expr result = this;
     if (t.isFunctionType() && t.arity() == 1 && explicitSign() != null)
@@ -849,12 +849,12 @@ public class NumLiteral extends Constant
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
+  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, AbstractType t)
   {
-    var result = propagateExpectedTypeForPartial(res, outer, t);
+    var result = propagateExpectedTypeForPartial(res, outer, infix_colons, t);
     if (result != this)
       {
-        result = result.propagateExpectedType(res, outer, t);
+        result = result.propagateExpectedType(res, outer, infix_colons, t);
       }
     else
       {

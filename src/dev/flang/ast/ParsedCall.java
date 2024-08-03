@@ -253,9 +253,9 @@ public class ParsedCall extends Call
    *   a < {tmp := b; tmp} && tmp <= c
    */
   @Override
-  protected void findChainedBooleans(Resolution res, AbstractFeature thiz)
+  protected void findChainedBooleans(Resolution res, AbstractFeature thiz, List<AbstractCall> infix_colons)
   {
-    var cb = chainedBoolTarget(res, thiz);
+    var cb = chainedBoolTarget(res, thiz, infix_colons);
     if (cb != null && _actuals.size() == 1)
       {
         var b = res.resolveType(cb._actuals.getLast(), thiz);
@@ -347,11 +347,11 @@ public class ParsedCall extends Call
    * @return the term whose RHS would have to be stored in a temp variable for a
    * chained boolean call.
    */
-  private Call chainedBoolTarget(Resolution res, AbstractFeature thiz)
+  private Call chainedBoolTarget(Resolution res, AbstractFeature thiz, List<AbstractCall> infix_colons)
   {
     Call result = null;
     if (Types.resolved != null &&
-        targetFeature(res, thiz) == Types.resolved.f_bool &&
+        targetFeature(res, thiz, infix_colons) == Types.resolved.f_bool &&
         isValidOperatorInChainedBoolean() &&
         target() instanceof ParsedCall pc &&
         pc.isValidOperatorInChainedBoolean() &&
@@ -383,14 +383,14 @@ public class ParsedCall extends Call
    * @param expectedType the expected type.
    */
   @Override
-  Expr propagateExpectedTypeForPartial(Resolution res, AbstractFeature outer, AbstractType expectedType)
+  Expr propagateExpectedTypeForPartial(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, AbstractType expectedType)
   {
     if (PRECONDITIONS) require
       (expectedType.isFunctionType());
 
     // NYI: CLEANUP: The logic in this method seems overly complex, there might be potential to simplify!
     Expr l = this;
-    if (partiallyApplicableAlternative(res, outer, expectedType) != null)
+    if (partiallyApplicableAlternative(res, outer, infix_colons, expectedType) != null)
       {
         if (_calledFeature != null)
           {
@@ -398,7 +398,7 @@ public class ParsedCall extends Call
             var rt = _calledFeature.resultTypeIfPresent(res);
             if (rt != null && (!rt.isAnyFunctionType() || rt.arity() != expectedType.arity()))
               {
-                l = applyPartially(res, outer, expectedType);
+                l = applyPartially(res, outer, infix_colons, expectedType);
               }
           }
         else
@@ -409,14 +409,14 @@ public class ParsedCall extends Call
               }
             if (l == this)
               {
-                l = applyPartially(res, outer, expectedType);
+                l = applyPartially(res, outer, infix_colons, expectedType);
               }
           }
       }
     else if (_pendingError != null                   || /* nothing found */
              newNameForPartial(expectedType) != null    /* search for a different name */)
       {
-        l = applyPartially(res, outer, expectedType);
+        l = applyPartially(res, outer, infix_colons, expectedType);
       }
     return l;
   }
@@ -440,11 +440,11 @@ public class ParsedCall extends Call
    *
    * @param expectedType the expected type.
    */
-  void checkPartialAmbiguity(Resolution res, AbstractFeature outer, AbstractType expectedType)
+  void checkPartialAmbiguity(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, AbstractType expectedType)
   {
     if (_calledFeature != null && _calledFeature != Types.f_ERROR && this instanceof ParsedCall)
       {
-        var fo = partiallyApplicableAlternative(res, outer, expectedType);
+        var fo = partiallyApplicableAlternative(res, outer, infix_colons, expectedType);
         if (fo != null &&
             fo._feature != _calledFeature &&
             newNameForPartial(expectedType) == null)
@@ -468,9 +468,9 @@ public class ParsedCall extends Call
    *
    * @param t the type this expression is assigned to.
    */
-  public Expr applyPartially(Resolution res, AbstractFeature outer, AbstractType t)
+  public Expr applyPartially(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, AbstractType t)
   {
-    checkPartialAmbiguity(res, outer, t);
+    checkPartialAmbiguity(res, outer, infix_colons, t);
     Expr result;
     var n = t.arity();
     if (mustNotContainDeclarations("a partially applied function call", outer))
@@ -613,13 +613,13 @@ public class ParsedCall extends Call
           return wasLazy ? ParsedCall.this : super.originalLazyValue();
         }
         @Override
-        public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType expectedType)
+        public Expr propagateExpectedType(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, AbstractType expectedType)
         {
           if (expectedType.isFunctionType())
             { // produce an error if the original call is ambiguous with partial application
-              ParsedCall.this.checkPartialAmbiguity(res, outer, expectedType);
+              ParsedCall.this.checkPartialAmbiguity(res, outer, infix_colons, expectedType);
             }
-          return super.propagateExpectedType(res, outer, expectedType);
+          return super.propagateExpectedType(res, outer, infix_colons, expectedType);
         }
       };
     _movedTo = result;
@@ -632,7 +632,7 @@ public class ParsedCall extends Call
 
 
   @Override
-  Call resolveImplicitSelect(Resolution res, AbstractFeature outer, AbstractType t)
+  Call resolveImplicitSelect(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, AbstractType t)
   {
     Call result = this;
     if (_select >= 0 && !t.isGenericArgument())
@@ -642,7 +642,7 @@ public class ParsedCall extends Call
           {
             // replace Function call `c.123` by `c.f.123`:
             result = pushCall(res, outer, f.featureName().baseName());
-            setActualResultType(res, outer, t); // setActualResultType will be done again by resolveTypes, but we need it now.
+            setActualResultType(res, outer, infix_colons, t); // setActualResultType will be done again by resolveTypes, but we need it now.
             result = result.resolveTypes(res, outer);
           }
       }

@@ -291,11 +291,11 @@ public class If extends ExprWithPos
    * @param outer the feature that contains this expression
    *
    */
-  public void propagateExpectedType(Resolution res, AbstractFeature outer)
+  public void propagateExpectedType(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons)
   {
     if (cond != null)
       {
-        cond = cond.propagateExpectedType(res, outer, Types.resolved.t_bool);
+        cond = cond.propagateExpectedType(res, outer, infix_colons, Types.resolved.t_bool);
       }
   }
 
@@ -317,7 +317,8 @@ public class If extends ExprWithPos
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
+  @Override
+  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, AbstractType t)
   {
     return addFieldForResult(res, outer, t);
   }

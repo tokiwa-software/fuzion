@@ -308,7 +308,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    *
    * @param outer the class that contains this expression.
    */
-  void loadCalledFeature(Resolution res, AbstractFeature outer)
+  void loadCalledFeature(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons)
   {
   }
 
@@ -501,7 +501,11 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
+  public final Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
+  {
+    return propagateExpectedType(res, outer, null, t); // NYI: remove!
+  }
+  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, AbstractType t)
   {
     return this;
   }
@@ -530,7 +534,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    *
    * @param expectedType the expected type.
    */
-  Expr propagateExpectedTypeForPartial(Resolution res, AbstractFeature outer, AbstractType expectedType)
+  Expr propagateExpectedTypeForPartial(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, AbstractType expectedType)
   {
     return this;
   }

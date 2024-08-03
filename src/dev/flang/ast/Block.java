@@ -223,12 +223,13 @@ public class Block extends AbstractBlock
    *
    * @param outer the class that contains this expression.
    */
-  void loadCalledFeature(Resolution res, AbstractFeature outer)
+  @Override
+  void loadCalledFeature(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons)
   {
     Expr resExpr = resultExpression();
     if (resExpr != null)
       {
-        resExpr.loadCalledFeature(res, outer);
+        resExpr.loadCalledFeature(res, outer, infix_colons);
       }
   }
 
@@ -351,7 +352,7 @@ public class Block extends AbstractBlock
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType type)
+  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, AbstractType type)
   {
     if (type.compareTo(Types.resolved.t_unit) == 0 && hasImplicitResult())
       { // return unit if this is expected even if we would implicitly return
@@ -366,7 +367,7 @@ public class Block extends AbstractBlock
 
     if (resExpr != null)
       {
-        var x = resExpr.propagateExpectedType(res, outer, type);
+        var x = resExpr.propagateExpectedType(res, outer, infix_colons, type);
         _expressions.remove(idx);
         _expressions.add(x);
       }

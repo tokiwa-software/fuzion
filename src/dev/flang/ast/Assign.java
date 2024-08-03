@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
 
@@ -131,7 +132,7 @@ public class Assign extends AbstractAssign
     this._pos = pos;
     if (res.state(outer).atLeast(State.TYPES_INFERENCING))
       {
-        propagateExpectedType(res, outer);
+        propagateExpectedType(res, outer, (List<AbstractCall>) null /* infix_colons */);
       }
   }
 

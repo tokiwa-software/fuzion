@@ -370,11 +370,11 @@ public class Impl extends ANY
    * @param outer the feature that contains this implementation.
    *
    */
-  public void propagateExpectedType(Resolution res, AbstractFeature outer)
+  public void propagateExpectedType(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons)
   {
     if (needsImplicitAssignmentToResult(outer))
       {
-        _expr = _expr.propagateExpectedType(res, outer, outer.resultType());
+        _expr = _expr.propagateExpectedType(res, outer, infix_colons, outer.resultType());
       }
   }
 
@@ -389,9 +389,9 @@ public class Impl extends ANY
    *
    * @param t the expected type.
    */
-  public void propagateExpectedType(Resolution res, Feature outer, AbstractType t)
+  public void propagateExpectedType(Resolution res, Feature outer, List<AbstractCall> infix_colons, AbstractType t)
   {
-    _expr = _expr.propagateExpectedType(res, outer, t);
+    _expr = _expr.propagateExpectedType(res, outer, infix_colons, t);
   }
 
 

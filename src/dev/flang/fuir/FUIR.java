@@ -2664,7 +2664,7 @@ public class FUIR extends IR
 
   public boolean constraintAssignableFrom(int cl0, int cl1)
   {
-    return clazz(cl0)._type.constraintAssignableFrom(null /* outer */, clazz(cl1)._type);
+    return clazz(cl0)._type.constraintAssignableFrom(null /* outer */, null, clazz(cl1)._type);
   }
 
   /* NYI remove? only used in interpreter */
