@@ -40,7 +40,8 @@ compile_time_type_casts =>
   say ([1,2,3,4,5,6,7,8,9,10].find_first [4,3])    # will fail
   say ([1,2,3,4,5,6,7,8,9,10].find_first [3])
 
-  t := ["avenidas y flores",
+  t := ["avenidas",
+        "avenidas y flores",
         "flores",
         "flores y mujeres",
         "avenidas",
@@ -49,7 +50,7 @@ compile_time_type_casts =>
         "un admirador"]
 
   say (t.find_first ["avenidas", "avenidas y mujeres"])
-  say (t.find_first ["avenidas", "avenidas y flores"])  # will fail
+  say (t.find_first ["avenidas", "flores y mujeres"])  # will fail
   say (t.find_first ["un admirador"])
 
   a is
