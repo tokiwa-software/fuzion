@@ -198,7 +198,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    */
   AbstractType typeForInferencing()
   {
-    return type();
+    return null;
   }
 
 
@@ -806,7 +806,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   /**
    * This expression as a compile time constant.
    */
-  public AbstractConstant asCompileTimeConstant()
+  public Constant asCompileTimeConstant()
   {
     throw new Error("This expr is not a compile time constant: " + this.getClass());
   }

@@ -1532,8 +1532,7 @@ public class DFA extends ANY
    */
   void escapes(int cc)
   {
-    var escapeSet = _escapes;
-    if (escapeSet.add(cc))
+    if (_escapes.add(cc))
       {
         wasChanged(() -> "Escapes: " + _fuir.clazzAsString(cc));
       }
@@ -2240,6 +2239,27 @@ public class DFA extends ANY
         }
       };
   }
+
+
+  /**
+   * Create a fuzion outcome of type `rc` with the value res.
+   *
+   * @param cl The call in which we are creating this outcome
+   * @param rc the resulting outcome clazz.
+   * @param res the success value
+   */
+  private static Value outcome(DFA dfa, Call cl, int rc, Value res)
+  {
+    var okay = dfa.newTaggedValue(rc, Value.UNIT, 0);
+    var error_cl = dfa._fuir.clazzChoice(rc, 1);
+    var error = dfa.newInstance(error_cl, NO_SITE, cl._context);
+    var msg = dfa._fuir.lookup_error_msg(error_cl);
+    error.setField(dfa, msg, dfa.newConstString(null, cl));
+    var err = dfa.newTaggedValue(rc, error, 1);
+    return okay.join(dfa, err);
+  }
+
+
   static {
     put("fuzion.java.call_c0"               , cl ->
       {
@@ -2292,6 +2312,23 @@ public class DFA extends ANY
         return jobj;
       });
     put("fuzion.java.u16_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
+
+    put("concur.sync.mtx_init"              , cl -> outcome(cl._dfa,
+                                                            cl,
+                                                            cl._dfa._fuir.clazzResultClazz(cl._cc),
+                                                            cl._dfa.newInstance(cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_sys_ptr), NO_SITE, cl._context)));
+    put("concur.sync.mtx_lock"              , cl -> cl._dfa._bool);
+    put("concur.sync.mtx_trylock"           , cl -> cl._dfa._bool);
+    put("concur.sync.mtx_unlock"            , cl -> cl._dfa._bool);
+    put("concur.sync.mtx_destroy"           , cl -> Value.UNIT);
+    put("concur.sync.cnd_init"              , cl -> outcome(cl._dfa,
+                                                            cl,
+                                                            cl._dfa._fuir.clazzResultClazz(cl._cc),
+                                                            cl._dfa.newInstance(cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_sys_ptr), NO_SITE, cl._context)));
+    put("concur.sync.cnd_signal"            , cl -> cl._dfa._bool);
+    put("concur.sync.cnd_broadcast"         , cl -> cl._dfa._bool);
+    put("concur.sync.cnd_wait"              , cl -> cl._dfa._bool);
+    put("concur.sync.cnd_destroy"           , cl -> Value.UNIT);
   }
 
 

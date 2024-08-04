@@ -525,6 +525,17 @@ public class CFG extends ANY
     put("fuzion.java.string_to_java_object0", (cfg, cl) -> { } );
     put("fuzion.java.create_jvm"            , (cfg, cl) -> { } );
     put("fuzion.java.u16_to_java_object"    , (cfg, cl) -> { } );
+
+    put("concur.sync.mtx_init"              , (cfg, cl) -> { } );
+    put("concur.sync.mtx_lock"              , (cfg, cl) -> { } );
+    put("concur.sync.mtx_trylock"           , (cfg, cl) -> { } );
+    put("concur.sync.mtx_unlock"            , (cfg, cl) -> { } );
+    put("concur.sync.mtx_destroy"           , (cfg, cl) -> { } );
+    put("concur.sync.cnd_init"              , (cfg, cl) -> { } );
+    put("concur.sync.cnd_signal"            , (cfg, cl) -> { } );
+    put("concur.sync.cnd_broadcast"         , (cfg, cl) -> { } );
+    put("concur.sync.cnd_wait"              , (cfg, cl) -> { } );
+    put("concur.sync.cnd_destroy"           , (cfg, cl) -> { } );
   }
 
 

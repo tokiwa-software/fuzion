@@ -1487,6 +1487,17 @@ public class Intrinsics extends ANY
         ? new i32Value(0)
         : new i32Value(-1);
     });
+
+    put("concur.sync.mtx_init",  (executor, innerClazz) -> args -> { throw new Error("NYI"); });
+    put("concur.sync.mtx_lock",  (executor, innerClazz) -> args -> { throw new Error("NYI"); });
+    put("concur.sync.mtx_trylock",  (executor, innerClazz) -> args -> { throw new Error("NYI"); });
+    put("concur.sync.mtx_unlock",  (executor, innerClazz) -> args -> { throw new Error("NYI"); });
+    put("concur.sync.mtx_destroy",  (executor, innerClazz) -> args -> { throw new Error("NYI"); });
+    put("concur.sync.cnd_init",  (executor, innerClazz) -> args -> { throw new Error("NYI"); });
+    put("concur.sync.cnd_signal",  (executor, innerClazz) -> args -> { throw new Error("NYI"); });
+    put("concur.sync.cnd_broadcast",  (executor, innerClazz) -> args -> { throw new Error("NYI"); });
+    put("concur.sync.cnd_wait",  (executor, innerClazz) -> args -> { throw new Error("NYI"); });
+    put("concur.sync.cnd_destroy",  (executor, innerClazz) -> args -> { throw new Error("NYI"); });
   }
 
 

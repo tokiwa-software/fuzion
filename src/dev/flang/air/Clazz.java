@@ -38,7 +38,7 @@ import java.util.stream.Stream;
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency!
 import dev.flang.ast.AbstractCall; // NYI: remove dependency!
 import dev.flang.ast.AbstractCase; // NYI: remove dependency!
-import dev.flang.ast.AbstractConstant; // NYI: remove dependency!
+import dev.flang.ast.Constant; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
@@ -168,7 +168,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     {
       if      (e instanceof AbstractAssign   a) { Clazzes.instance.findClazzes(a, _originalFeature, Clazz.this, _inh); }
       else if (e instanceof AbstractCall     c) { Clazzes.instance.findClazzes(c, _originalFeature, Clazz.this, _inh); }
-      else if (e instanceof AbstractConstant c) { Clazzes.instance.findClazzes(c, _originalFeature, Clazz.this, _inh); }
+      else if (e instanceof Constant         c) { Clazzes.instance.findClazzes(c, _originalFeature, Clazz.this, _inh); }
       else if (e instanceof InlineArray      i) { Clazzes.instance.findClazzes(i, _originalFeature, Clazz.this, _inh); }
       else if (e instanceof Env              b) { Clazzes.instance.findClazzes(b, _originalFeature, Clazz.this, _inh); }
       else if (e instanceof AbstractMatch    m) { Clazzes.instance.findClazzes(m, _originalFeature, Clazz.this, _inh); }

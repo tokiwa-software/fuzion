@@ -29,7 +29,7 @@ package dev.flang.ir;
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency
 import dev.flang.ast.AbstractBlock; // NYI: remove dependency
 import dev.flang.ast.AbstractCall; // NYI: remove dependency
-import dev.flang.ast.AbstractConstant; // NYI: remove dependency
+import dev.flang.ast.Constant; // NYI: remove dependency
 import dev.flang.ast.AbstractCurrent; // NYI: remove dependency
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
@@ -260,7 +260,7 @@ public abstract class IR extends ANY
             toStack(l, expr, dumpResult || i < b._expressions.size()-1);
           }
       }
-    else if (e instanceof AbstractConstant)
+    else if (e instanceof Constant)
       {
         if (!dumpResult)
           {
@@ -430,7 +430,7 @@ public abstract class IR extends ANY
       {
         result = ExprKind.Env;
       }
-    else if (e instanceof AbstractConstant)
+    else if (e instanceof Constant)
       {
         result = ExprKind.Const;
       }

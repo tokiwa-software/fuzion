@@ -35,7 +35,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class Constant extends AbstractConstant
+public abstract class Constant extends Expr
 {
 
 
@@ -49,6 +49,16 @@ public abstract class Constant extends AbstractConstant
 
 
   /*--------------------------  constructors  ---------------------------*/
+
+
+  /**
+   * Constructor for a Constant loaded from library
+   * with source position loaded on demand only.
+   */
+  public Constant()
+  {
+    _pos = SourcePosition.notAvailable;
+  }
 
 
   /**
@@ -69,11 +79,72 @@ public abstract class Constant extends AbstractConstant
 
 
   /**
+   * Serialized form of the data of this constant.
+   */
+  public abstract byte[] data();
+
+
+  /**
    * The sourcecode position of this expression, used for error messages.
    */
   public SourcePosition pos()
   {
-    return this._pos;
+    return _pos;
+  }
+
+
+  /**
+   * The type of the constant.  This may be different to the the user-visible
+   * `type()` of this constant, in particular, for a constant string, `type()`
+   * returns `String`, while `typeOfConstant` is the actual child of `String`
+   * used for constants: `Const_String`.
+   *
+   * @return the type to be used to create the constant value. Is assignment
+   * compatible to `type()`.
+   */
+  public AbstractType typeOfConstant()
+  {
+    return type();
+  }
+
+
+  /**
+   * visit all the expressions within this feature.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited objects.
+   *
+   * @param outer the feature surrounding this expression.
+   *
+   * @return this or an alternative Expr if the action performed during the
+   * visit replaces this by the alternative.
+   */
+  @Override
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  {
+    v.action(this);
+    return this;
+  }
+
+
+  /**
+   * This expression as a compile time constant.
+   */
+  @Override
+  public Constant asCompileTimeConstant()
+  {
+    return this;
+  }
+
+
+  /**
+   * Origin of this constant. This is either this constant itself for a
+   * BoolConst, NumLiteral or StrConst, or the instance of AbstractCall or
+   * InlineArray this was created from.
+   */
+  public Expr origin()
+  {
+    return this;
   }
 
 }

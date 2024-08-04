@@ -58,6 +58,16 @@ class CodeGen
 {
 
 
+  /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * env var to enable debug output for tail call optimization:
+   */
+  static private final boolean FUZION_DEBUG_TAIL_CALL = "true".equals(System.getenv("FUZION_DEBUG_TAIL_CALL"));
+
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -584,6 +594,16 @@ class CodeGen
           if (_types.clazzNeedsCode(cc))
             {
               var cl = si == NO_SITE ? -1 :_fuir.clazzAt(si);
+
+              if (FUZION_DEBUG_TAIL_CALL                                 &&
+                  cc == cl                                               &&  // calling myself
+                  _jvm._tailCall.callIsTailCall(cl, si)                  &&  // as a tail call
+                  _fuir.lifeTime(cl).maySurviveCall()                        // and current instance did not escape
+                )
+                {
+                  say("Escapes, no tail call opt possible: " + _fuir.clazzAsString(cl) + ", lifetime: " + _fuir.lifeTime(cl).name());
+                }
+
               if (   cc == cl                                           // calling myself
                   && _jvm._tailCall.callIsTailCall(cl, si))
                 { // then we can do tail recursion optimization!

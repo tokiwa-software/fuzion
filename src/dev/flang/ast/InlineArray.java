@@ -322,15 +322,9 @@ public class InlineArray extends ExprWithPos
    * This expression as a compile time constant.
    */
   @Override
-  public AbstractConstant asCompileTimeConstant()
+  public Constant asCompileTimeConstant()
   {
-    var result = new AbstractConstant() {
-
-      @Override
-      public SourcePosition pos()
-      {
-        return InlineArray.this.pos();
-      }
+    var result = new Constant(InlineArray.this.pos()) {
 
       /**
        * first four bytes are the elementCount

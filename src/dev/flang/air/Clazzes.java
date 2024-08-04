@@ -36,7 +36,7 @@ import dev.flang.ast.AbstractAssign; // NYI: remove dependency!
 import dev.flang.ast.AbstractBlock; // NYI: remove dependency!
 import dev.flang.ast.AbstractCall; // NYI: remove dependency!
 import dev.flang.ast.AbstractCase; // NYI: remove dependency!
-import dev.flang.ast.AbstractConstant; // NYI: remove dependency!
+import dev.flang.ast.Constant; // NYI: remove dependency!
 import dev.flang.ast.AbstractCurrent; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
@@ -830,7 +830,7 @@ public class Clazzes extends ANY
    *
    * @param outerClazz the surrounding clazz
    */
-  public void findClazzes(AbstractConstant c, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
+  public void findClazzes(Constant c, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (c != null, outerClazz != null);
@@ -1002,7 +1002,7 @@ public class Clazzes extends ANY
         result = universe.get();
       }
 
-    else if (e instanceof AbstractConstant c)
+    else if (e instanceof Constant c)
       {
         result = outerClazz.handDown(c.typeOfConstant(), inh, e);
       }
