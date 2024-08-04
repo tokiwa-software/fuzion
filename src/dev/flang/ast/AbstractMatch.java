@@ -117,7 +117,7 @@ public abstract class AbstractMatch extends Expr
     var c = cases();
     for (int i = 0; i < c.size(); i++)
       {
-        c.get(i).visitExpressions(v);
+        c.get(i).visitExpressions(this, v);
       }
   }
 

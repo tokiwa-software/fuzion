@@ -25,3 +25,7 @@ String 'F' type Type of 'codepoint'
 String 'F' type Type of 'codepoint' len F
 String 'F' type Type of 'codepoint' len 1
 String 'F' type Type of 'codepoint' len 1
+bool true false
+other type --nil-- type Type of 'nil'
+got a: instance[compile_time_type_casts.a]
+got b: instance[compile_time_type_casts.b]

@@ -1915,8 +1915,39 @@ public class FUIR extends IR
        codeAt(s) == ExprKind.Match,
        0 <= cix && cix <= matchCaseCount(s));
 
+    var me = getExpr(s);
     var e = getExpr(s + 1 + cix);
+
+    if (me instanceof AbstractMatch m &&
+        m.subject() instanceof AbstractCall sc)
+      {
+        var c = m.cases().get(cix);
+        if (sc.calledFeature() == Types.resolved.f_Type_infix_colon_true  && !c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0) ||
+            sc.calledFeature() == Types.resolved.f_Type_infix_colon_false && !c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_FALSE.selfType())==0)    )
+          {
+            return NO_SITE;
+          }
+        else if (sc.calledFeature() == Types.resolved.f_Type_infix_colon)
+          {
+            var innerClazz = clazz(clazzAt(s)).actualClazzes(sc, null)[0];
+            var tclazz = innerClazz._outer;
+            var T = innerClazz.actualGenerics()[0];
+            var pos = T._type.constraintAssignableFrom(null /* outer */, null, tclazz._type.generics().get(0));
+            if (pos  && !c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0) ||
+                !pos && !c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_FALSE.selfType())==0)    )
+              {
+                return NO_SITE;
+              }
+          }
+      }
+
     return ((NumLiteral) e).intValue().intValueExact();
+  }
+
+  @Override
+  public boolean withinCode(int s)
+  {
+    return (s != NO_SITE) && super.withinCode(s);
   }
 
 

@@ -163,6 +163,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         _originalFeature = f;
       }
 
+    @Override
     public void action (Expr e)
     {
       if      (e instanceof AbstractAssign   a) { Clazzes.instance.findClazzes(a, _originalFeature, Clazz.this, _inh); }
@@ -174,9 +175,36 @@ public class Clazz extends ANY implements Comparable<Clazz>
       else if (e instanceof Tag              t) { Clazzes.instance.findClazzes(t, _originalFeature, Clazz.this, _inh); }
     }
 
-    public void action(AbstractCase c)
+    @Override
+    public boolean action(AbstractMatch m, AbstractCase c)
     {
-      Clazzes.instance.findClazzes(c, _originalFeature, Clazz.this, _inh);
+      var result = true;
+      if (m.subject() instanceof AbstractCall sc)
+        {
+          if (sc.calledFeature() == Types.resolved.f_Type_infix_colon_true  && !c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0) ||
+              sc.calledFeature() == Types.resolved.f_Type_infix_colon_false && !c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_FALSE.selfType())==0)    )
+            {
+              result = false;
+            }
+          else if (sc.calledFeature() == Types.resolved.f_Type_infix_colon)
+            {
+              var ac = actualClazzes(sc, null) ;
+              var innerClazz = ac[0];
+              var T = innerClazz.actualGenerics()[0];
+              var cf = innerClazz.feature();
+              if (cf == Types.resolved.f_Type_infix_colon_true)
+                result = c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0);
+              else if (cf == Types.resolved.f_Type_infix_colon_false)
+                result = c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_FALSE .selfType())==0);
+              else
+                throw new Error("Häh?");
+            }
+        }
+      if (result)
+        {
+          Clazzes.instance.findClazzes(c, _originalFeature, Clazz.this, _inh);
+        }
+      return result;
     }
 
   }

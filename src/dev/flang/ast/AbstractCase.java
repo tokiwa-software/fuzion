@@ -140,10 +140,12 @@ public abstract class AbstractCase extends HasGlobalIndex implements HasSourcePo
    * @param v the visitor instance that defines an action to be performed on
    * visited expressions
    */
-  public void visitExpressions(ExpressionVisitor v)
+  public void visitExpressions(AbstractMatch m, ExpressionVisitor v)
   {
-    code().visitExpressions(v);
-    v.action(this);
+    if (v.action(m, this))
+      {
+        code().visitExpressions(v);
+      }
   }
 
 }

@@ -78,19 +78,18 @@ compile_time_type_casts =>
     else if T : b
       say "got b: {v.as b}"
     else if T : unit
-#      _ := v.as void         # -- would cause an error!
+      _ := v.as void
     else if T : c
-#      say "got c: {v.as b}"  # -- would cause an error!
+      say "got c: {v.as b}"
     else
       say "other type $v type $T"
 
 
   x "Fuzion!"
   x "F"
-# NYI: following do not work yet:
-#  x true
-#  x nil
-#  x a
-#  x b
-#  x c
-#  x unit
+  x true
+  x nil
+  x a
+  x b
+#  x c            # -- would cause an error!
+#  x unit         # -- would cause an error!
