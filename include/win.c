@@ -117,7 +117,7 @@ char * fzE_readdir(intptr_t * dir) {
   fzE_dir_struct *d = (fzE_dir_struct *)dir;
   size_t len = strlen(d->findData.cFileName);
   char *dup = (char *) fzE_malloc_safe(len + 1);
-  strcpy(dup, d->findData.cFileName);
+  fzE_memcpy(dup, d->findData.cFileName, len + 1);
   return dup;
 }
 
@@ -320,10 +320,10 @@ int fzE_get_peer_address(int sockfd, void * buf) {
   socklen_t peeraddrlen = sizeof(peeraddr);
   int res = getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen);
   if (peeraddr.ss_family == AF_INET) {
-    memcpy(buf, &(((struct sockaddr_in *)&peeraddr)->sin_addr.s_addr), 4);
+    fzE_memcpy(buf, &(((struct sockaddr_in *)&peeraddr)->sin_addr.s_addr), 4);
     return 4;
   } else if (peeraddr.ss_family == AF_INET6) {
-    memcpy(buf, &(((struct sockaddr_in6 *)&peeraddr)->sin6_addr.s6_addr), 16);
+    fzE_memcpy(buf, &(((struct sockaddr_in6 *)&peeraddr)->sin6_addr.s6_addr), 16);
     return 16;
   } else {
     return -1;
@@ -556,7 +556,7 @@ void fzE_init()
 
 #ifdef FUZION_ENABLE_THREADS
   pthread_mutexattr_t attr;
-  memset(&fzE_global_mutex, 0, sizeof(fzE_global_mutex));
+  fzE_memset(&fzE_global_mutex, 0, sizeof(fzE_global_mutex));
   bool res = pthread_mutexattr_init(&attr) == 0 &&
             // NYI #1646 setprotocol returns EINVAL on windows.
             // pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT) == 0 &&

@@ -1095,7 +1095,7 @@ public class C extends ANY
                            new List<>("void *", "size_t"),
                            new List<>(o, s),
                            CStmnt.seq(new List<>(CStmnt.decl(null, "void *", r, CExpr.call(malloc(), new List<>(s))),
-                                                 CExpr.call("memcpy", new List<>(r, o, s)),
+                                                 CExpr.call("fzE_memcpy", new List<>(r, o, s)),
                                                  r.ret()))));
     var ordered = _types.inOrder();
 
@@ -1198,7 +1198,7 @@ public class C extends ANY
     var tmp = new CIdent("tmp0");
     return CStmnt.seq(
       CStmnt.decl("struct " + CNames.fzThreadEffectsEnvironment.code(), tmp),
-      CExpr.call("memset", new List<>(tmp.adrOf(), CExpr.int32const(0), CExpr.sizeOfType("struct " + CNames.fzThreadEffectsEnvironment.code()))),
+      CExpr.call("fzE_memset", new List<>(tmp.adrOf(), CExpr.int32const(0), CExpr.sizeOfType("struct " + CNames.fzThreadEffectsEnvironment.code()))),
       CNames.fzThreadEffectsEnvironment.assign(tmp.adrOf()),
       CStmnt.seq(
         new List<CStmnt>(
@@ -1873,7 +1873,7 @@ public class C extends ANY
           CStmnt.lineComment("cur does not escape, alloc on stack"),
           CStmnt.decl(_names.struct(cl), CNames.CURRENT),
           // this fixes "variable 'fzCur' is uninitialized when used here" in e.g. reg_issue1188
-          CExpr.call("memset", new List<>(CNames.CURRENT.adrOf(), CExpr.int32const(0), CNames.CURRENT.sizeOfExpr())));
+          CExpr.call("fzE_memset", new List<>(CNames.CURRENT.adrOf(), CExpr.int32const(0), CNames.CURRENT.sizeOfExpr())));
       case Unknown   -> CStmnt.seq(CStmnt.lineComment("cur may escape, so use malloc"      ), declareAllocAndInitClazzId(cl, CNames.CURRENT));
       case Undefined -> CExpr.dummy("undefined life time");
       };

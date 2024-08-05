@@ -34,6 +34,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 void * fzE_malloc_safe(size_t size);
 
+void fzE_memset(void *dest, int ch, size_t sz);
+
+void fzE_memcpy(void *restrict dest, const void *restrict src, size_t sz);
+
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname);
 
