@@ -2500,6 +2500,7 @@ brblock     : BRACEL exprs BRACER
         t_rparen,
         t_rcrochet,
         t_until,
+        t_then,
         t_else,
         t_eof -> true;
       default -> isContinuedString(currentNoLimit());
