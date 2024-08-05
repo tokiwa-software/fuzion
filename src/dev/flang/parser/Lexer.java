@@ -218,7 +218,7 @@ public class Lexer extends SourceFile
     t_eof,               // end of file
     t_indentationLimit,  // token's indentation is not sufficient
     t_lineLimit,         // token is in next line while sameLine() parsing is enabled
-    t_spaceLimit,        // token follows white space while endAtSpace is enabled
+    t_spaceOrSemiLimit,  // token follows white space or semicolon while endAtSpace is enabled
     t_colonLimit,        // token is operator ":" while endAtColon is enabled
     t_barLimit,          // token is operator "|" while endAtBar is enabled
     t_undefined;         // current token before first call to next()
@@ -621,7 +621,7 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Token at this pos will be returned by current() even if its indentaion is
+   * Token at this pos will be returned by current() even if its indentation is
    * at <= _minIndent. If set to the first token of a expression that sets
    * _minIndent, this ensures that we can still parse the first token of this
    * expression.
@@ -637,8 +637,8 @@ public class Lexer extends SourceFile
 
 
   /**
-   * White space restriction for current()/currentAtMinIndent(): Symbols after
-   * this position that are preceded by white space will be replaced by
+   * White space and semicolon restriction for current()/currentAtMinIndent(): Symbols after
+   * this position that are preceded by white space or semicolon will be replaced by
    * t_spaceLimit.
    */
   private int _endAtSpace = Integer.MAX_VALUE;
@@ -852,15 +852,15 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Restrict parsing until the next occurrence of white space.  Symbols after
-   * fromPos that are preceded by white space will be replaced by t_spaceLimit.
+   * Restrict parsing until the next occurrence of white space or semicolon.  Symbols after
+   * fromPos that are preceded by white space or semicolon will be replaced by t_spaceLimit.
    *
    * @param fromPos the position of the last token that is permitted to be
    * preceded by white space.
    *
    * @return the previous endAtSpace-restriction, Integer.MAX_VALUE if none.
    */
-  int endAtSpace(int fromPos)
+  int endAtSpaceOrSemi(int fromPos)
   {
     if (PRECONDITIONS) require
       (fromPos >= 0);
@@ -918,12 +918,12 @@ public class Lexer extends SourceFile
   <V> V relaxLineAndSpaceLimit(Callable<V> c)
   {
     int oldLine = sameLine(-1);
-    int oldEAS = endAtSpace(Integer.MAX_VALUE);
+    int oldEAS = endAtSpaceOrSemi(Integer.MAX_VALUE);
     var oldEAC = endAtColon(false);
     var oldEAB = endAtBar(false);
     V result = c.call();
     sameLine(oldLine);
-    endAtSpace(oldEAS);
+    endAtSpaceOrSemi(oldEAS);
     endAtColon(oldEAC);
     endAtBar(oldEAB);
     return result;
@@ -1055,28 +1055,28 @@ public class Lexer extends SourceFile
    * @param sameLine the line number (-1 if any line) for the next token, return
    * t_lineLimit if next token is in a different line.
    *
-   * @param endAtSpace the white space restriction (Integer.MAX_VALUE if none):
+   * @param endAtSpaceOrSemi the white space and semicolon restriction (Integer.MAX_VALUE if none):
    * Any token after this position will be replaced by t_spaceLimit.
    *
    * @param endAtColon true to replace operator ":" by t_colonLimit.
    *
    * @param endAtBar true to replace operator "|" by t_barLimit.
    */
-  Token current(int minIndent, int sameLine, int endAtSpace, boolean endAtColon, boolean endAtBar)
+  Token current(int minIndent, int sameLine, int endAtSpaceOrSemi, boolean endAtColon, boolean endAtBar)
   {
     var t = _curToken;
     int l = line();
     int p = _tokenPos;
     return
-      t == Token.t_eof                                       ? t                        :
-      sameLine  >= 0 && l != sameLine                        ? Token.t_lineLimit        :
-      p > endAtSpace && ignoredTokenBefore()                 ? Token.t_spaceLimit       :
-      p > endAtSpace && _curToken == Token.t_semicolon       ? Token.t_spaceLimit       :
-      p == _minIndentStartPos                                ? t                        :
-      minIndent >= 0 && codePointIndentation(p) <= minIndent ? Token.t_indentationLimit :
+      t == Token.t_eof                                       ? t                              :
+      sameLine  >= 0 && l != sameLine                        ? Token.t_lineLimit              :
+      p > endAtSpaceOrSemi && ignoredTokenBefore()                 ? Token.t_spaceOrSemiLimit :
+      p > endAtSpaceOrSemi && _curToken == Token.t_semicolon       ? Token.t_spaceOrSemiLimit :
+      p == _minIndentStartPos                                ? t                              :
+      minIndent >= 0 && codePointIndentation(p) <= minIndent ? Token.t_indentationLimit       :
       endAtColon                  &&
       _curToken == Token.t_op     &&
-      tokenAsString().equals(":")                            ? Token.t_colonLimit       :
+      tokenAsString().equals(":")                            ? Token.t_colonLimit             :
       endAtBar                    &&
       _curToken == Token.t_op     &&
       tokenAsString().equals("|")                            ? Token.t_barLimit
@@ -2373,7 +2373,7 @@ Fuzion xref:input_source[input sources] must match the Fuzion grammar defined in
                                                                       sourcePos(_minIndentStartPos),
                                                                       detail);
       case t_lineLimit        -> Errors.lineBreakNotAllowedHere (sourcePos(lineEndPos(_sameLine)), detail);
-      case t_spaceLimit       -> Errors.whiteSpaceNotAllowedHere(sourcePos(tokenPos()), detail);
+      case t_spaceOrSemiLimit -> Errors.whiteSpaceNotAllowedHere(sourcePos(tokenPos()), detail);
       case t_colonLimit       -> Errors.colonPartOfTernary      (sourcePos(tokenPos()), detail);
       case t_barLimit         -> Errors.barPartOfCase           (sourcePos(tokenPos()), detail);
       default                 -> Errors.syntax(sourcePos(pos), expected, currentAsString(), detail);
