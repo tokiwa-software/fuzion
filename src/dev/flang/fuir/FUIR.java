@@ -2417,6 +2417,19 @@ public class FUIR extends IR
     return result;
   }
 
+  /**
+   * Check if the given clazz is a constructor.
+   *
+   * @param clazz a clazz id
+   *
+   * @return true if the clazz is a constructor, false otherwise
+   */
+  public boolean isConstructor(int clazz)
+  {
+    // Intrinsic functions are not constructors even though they have no result field.
+    return clazzResultField(clazz) == -1 && clazzKind(clazz) != FeatureKind.Intrinsic;
+  }
+
 
   /**
    * Is `constCl` an array?
