@@ -1677,7 +1677,6 @@ actualArgs  : actualSpaces
            t_lineLimit       ,
            t_spaceLimit      ,
            t_colonLimit      ,
-           t_semicolonLimit  ,
            t_barLimit        ,
            t_eof             -> true;
 
@@ -1802,9 +1801,7 @@ actualSpace :  operatorExpr         // no white space except enclosed in { }, [ 
   Expr actualSpace()
   {
     var eas = endAtSpace(tokenPos());
-    var easc = (current() == Token.t_lparen) ? endAtSemicolon(false) : endAtSemicolon(true);
     var result = operatorExpr();
-    endAtSemicolon(easc);
     endAtSpace(eas);
     return result;
   }
@@ -2077,14 +2074,14 @@ addSemiElmts: SEMI semiSepElmts
                          var s = sep;
                          var p1 = tokenPos();
                          boolean reportedMixed = false;
-                         while ((s == Token.t_comma || s == Token.t_semicolon || s == Token.t_semicolonLimit) && skip(s))
+                         while ((s == Token.t_comma || s == Token.t_semicolon) && skip(s))
                            {
                              if (current() != Token.t_rcrochet)
                                {
                                  elements.add(operatorExpr());
                                }
                              s = current();
-                             if ((s == Token.t_comma || s == Token.t_semicolon || s == Token.t_semicolonLimit) && s != sep && !reportedMixed)
+                             if ((s == Token.t_comma || s == Token.t_semicolon) && s != sep && !reportedMixed)
                                {
                                  AstErrors.arrayInitCommaAndSemiMixed(pos, sourcePos(p1), tokenSourcePos());
                                  reportedMixed = true;
@@ -2498,7 +2495,6 @@ brblock     : BRACEL exprs BRACER
         t_lineLimit,
         t_spaceLimit,
         t_colonLimit,
-        t_semicolonLimit,
         t_barLimit,
         t_rbrace,
         t_rparen,
