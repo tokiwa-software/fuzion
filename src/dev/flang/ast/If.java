@@ -225,12 +225,16 @@ public class If extends ExprWithPos
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     cond = cond.visit(v, outer);
+    v.actionBeforeIfThen(this);
     block = block.visit(v, outer);
+    v.actionBeforeIfElse(this);
     if (elseBlock != null)
       {
         elseBlock = elseBlock.visit(v, outer);
       }
-    return v.action(this, outer);
+    var res = v.action(this, outer);
+    v.actionAfterIf(this);
+    return res;
   }
 
 

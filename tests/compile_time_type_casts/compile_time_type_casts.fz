@@ -54,8 +54,11 @@ compile_time_type_casts =>
   say (t.find_first ["un admirador"])
 
   a is
+    do_a_thing => say "a!"
   b is
+    do_b_thing => say "b!"
   c is
+    do_c_thing => say "c!"
 
   x(v T) =>
 
@@ -68,19 +71,26 @@ compile_time_type_casts =>
       # make sure that for the compiler, this may always return as a non-void call
     else if T : String
       say "String '$v' type $T"
-      say "String '$v' type $T len {(v.as String)}"
-      say "String '$v' type $T len {(v.as String).byte_length}"
+      say "String '$v' type $T len {v.byte_length}"
       for_String
     else if T : bool
-      say "bool $v {! v.as bool}"
+      # note that `T` is not of type `bool` but of any type that inherits from `bool`. This is why built-in
+      # operation like `prefix !`, `infix &&` and `infix ||` that are compiled into `if-then-else` expressions
+      # that require the subject to be `bool`will cause an error.
+      #
+      # NYI: IMPROVEMENT: We might improve this by better error messages or by treating choice type constraints
+      # as exact constraints.
+      #
+      vb := v ^ false
+      say "bool $v {type_of(v)} {! vb}"
     else if T : a
-      say "got a: {v.as a}"
+      v.do_a_thing
     else if T : b
-      say "got b: {v.as b}"
-    else if T : unit
-      _ := v.as void
+      v.do_b_thing
     else if T : c
-      say "got c: {v.as b}"
+      v.do_c_thing
+    else if T : unit
+      _ := v
     else
       say "other type $v type $T"
 
@@ -94,5 +104,5 @@ compile_time_type_casts =>
   x nil
   x a
   x b
-#  x c            # -- would cause an error!
-#  x unit         # -- would cause an error!
+  x c
+  x unit

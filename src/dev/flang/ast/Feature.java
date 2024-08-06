@@ -1455,6 +1455,39 @@ public class Feature extends AbstractFeature
         }
     }
 
+    @Override public void actionBeforeIfThen(If i)
+    {
+      if (i.cond instanceof AbstractCall sc &&
+          sc.calledFeature() == Types.resolved.f_Type_infix_colon)
+        {
+          _context = new Context(_context)
+            {
+              public AbstractType constraintFor(AbstractFeature typeParameter)
+              {
+                if (sc.target() instanceof AbstractCall sct && sct.calledFeature()==typeParameter)
+                  {
+                    return sc.actualTypeParameters().get(0);
+                  }
+                return super.constraintFor(typeParameter);
+              }
+            };
+        }
+
+    }
+    @Override public void actionBeforeIfElse(If i)
+    {
+      if (i.cond instanceof AbstractCall sc &&
+          sc.calledFeature() == Types.resolved.f_Type_infix_colon)
+        {
+          _context = _context.outer();
+        }
+      // NYI: We might add support for `if !(T : x) then else ...treat T as x...`
+    }
+    @Override public void actionAfterIf     (If i)
+    {
+    }
+
+
     @Override public boolean doVisitActuals() { return false; }
   }
 
