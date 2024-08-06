@@ -62,11 +62,27 @@ module:public Type ref is
   #   say (is_of_integer_type 1234)    # true
   #   say (is_of_integer_type 3.14)    # false
   #
-  # it is most useful in conjunction with `Any.as` as in
+  # it is most useful in conjunction preconditions or `if` statements as in
   #
-  #   is_of_integer_type(n T : numeric) => T : integer
-  #   say (is_of_integer_type 1234)    # true
-  #   say (is_of_integer_type 3.14)    # false
+  #   pair(a,b T) is
+  #     same
+  #       pre T : propery.equatable
+  #   =>
+  #     a = b
+  #
+  # or
+  #
+  #   val(n T) is
+  #
+  #     # check if T is numeric, if so
+  #     # return true if n > zero,
+  #     # return nil if T is not numeric
+  #     #
+  #     more_than_zero option bool =>
+  #       if T : numeric then
+  #         n > T.zero
+  #       else
+  #         nil
   #
   public infix : (T type) =>
 

@@ -452,24 +452,6 @@ public class DFA extends ANY
 
 
     /**
-     * For a given value v of value type vc check a cast done via `Any.as`.
-     */
-    @Override
-    public boolean anyAs(int s, int vc, int rc, int tc)
-    {
-      var ok =_fuir.constraintAssignableFrom(tc, vc);
-      if (!ok)
-        {
-          DfaErrors.anyAsUsedWithIncompatibleType(_fuir.sitePos(s),
-                                                  _fuir.clazzAsString(vc),
-                                                  _fuir.clazzAsString(tc),
-                                                  _call);
-        }
-      return ok;
-    }
-
-
-    /**
      * For a given value v of value type vc create a boxed ref value of type rc.
      */
     @Override
@@ -1611,27 +1593,6 @@ public class DFA extends ANY
 
   static
   {
-    put("Any.as"                         , cl ->
-        {
-          var ic = cl._cc;
-          var oc = cl._dfa._fuir.clazzOuterClazz(cl._cc);
-          var val = cl._target;
-          var rc = cl._dfa._fuir.clazzActualGeneric(ic, 0);
-          if (!cl._dfa._fuir.constraintAssignableFrom(rc, oc))
-            {
-              DfaErrors.anyAsUsedWithIncompatibleType(cl._dfa._fuir.sitePos(cl._site),
-                                                      cl._dfa._fuir.clazzAsString(oc),
-                                                      cl._dfa._fuir.clazzAsString(rc),
-                                                      cl);
-            }
-          else if ( cl._dfa._fuir.clazzIsRef(rc) &&
-                   !cl._dfa._fuir.clazzIsRef(oc))
-            {
-              val = val.value().box(cl._dfa, oc, cl._dfa._fuir.clazzAsRef(oc), cl);
-            }
-          return val;
-        });
-
     put("Type.name"                      , cl -> cl._dfa.newConstString(cl._dfa._fuir.clazzTypeName(cl._dfa._fuir.clazzOuterClazz(cl._cc)), cl) );
 
     put("concur.atomic.compare_and_swap0",  cl ->

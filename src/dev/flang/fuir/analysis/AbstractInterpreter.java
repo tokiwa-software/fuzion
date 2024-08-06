@@ -168,29 +168,6 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     public abstract Pair<VALUE, RESULT> call(int s, VALUE tvalue, List<VALUE> args);
 
     /**
-     * For a given value v of value type vc check a cast done via `Any.as`.
-     *
-     * For backends, it is usually suficient to ignore this and just implement
-     * `box(s, v, vc, rc)`.  This is, however, required for DFA analysis to check
-     * that an `Any.as` call is valid.
-     *
-     * @param s site of the box expression
-     *
-     * @param vc the clazz id of the type of the unboxed value, e.g., for `x := unit.as Any` this is `unit`.
-     *
-     * @param rc the clazz id of the type of the boxed value, e.g., for `x := unit.as Any` this is `ref unit`.
-     *
-     * @param tc the clazz id of the type the boxed value is assigned to, e.g., for `x := unit.as Any` this is `Any`.
-     *
-     * @return true iff no error occured and the abstract interpreter should
-     * continue, false in case of an error and the interpreter should stop.
-     */
-    public boolean anyAs(int s, int vc, int rc, int tc)
-    {
-      return true;
-    }
-
-    /**
      * For a given value v of value type vc create a boxed ref value of type rc.
      *
      * @param s site of the box expression
@@ -599,17 +576,6 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
         {
           var vc = _fuir.boxValueClazz(s);
           var rc = _fuir.boxResultClazz(s);
-          var tc = _fuir.boxTargetClazz(s);
-          if (tc != -1)
-            {
-              var val = pop(stack, vc);
-              push(stack, vc, val);
-              if (!_processor.anyAs(s, vc, rc, tc))
-                {
-                  stack.push(null);
-                  return null;
-                }
-            }
           if (_fuir.clazzIsRef(vc) || !_fuir.clazzIsRef(rc))
             { // vc's type is a generic argument whose actual type does not need
               // boxing
