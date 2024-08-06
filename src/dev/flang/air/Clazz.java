@@ -578,7 +578,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
     else
       {
-        var t = this._type.actualType(f.selfType(), null /* outer */, null /* infix_colons */).asRef();
+        var t = this._type.actualType(f.selfType(), null /* outer */, null /* Context */).asRef();
         return normalize2(t);
       }
   }
@@ -653,7 +653,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         var pt = p.type();
         var t1 = isRef() && !pt.isVoid() ? pt.asRef() : pt.asValue();
-        var t2 = _type.actualType(t1, null /* outer */, null /* infix_colons */);
+        var t2 = _type.actualType(t1, null /* outer */, null /* Context */);
         var pc = Clazzes.instance.clazz(t2);
         if (CHECKS) check
           (Errors.any() || pc.isVoidType() || isRef() == pc.isRef());
@@ -739,7 +739,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           {
             var this_type = g.get(0);
             g = g.map(x -> x == this_type ? x   // leave first type parameter unchanged
-                                          : this_type.actualType(x, null /* outer */, null /* infix_colons */));
+                                          : this_type.actualType(x, null /* outer */, null /* Context */));
           }
         var o = t.outer();
         if (o != null)
@@ -1249,7 +1249,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           }
         else
           {
-            t = _type.actualType(t, null /* outer */, null /* infix_colons */);  // e.g., `(Types.get (array f64)).T` -> `array f64`
+            t = _type.actualType(t, null /* outer */, null /* Context */);  // e.g., `(Types.get (array f64)).T` -> `array f64`
 
 /*
   We have the following possibilities when calling a feature `f` declared in do `on`
@@ -1451,7 +1451,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public boolean isDirectlyAssignableFrom(Clazz other)
   {
-    return this._type.isDirectlyAssignableFrom(other._type, null /* outer */, null /* infix_colons */);
+    return this._type.isDirectlyAssignableFrom(other._type, null /* outer */, null /* Context */);
   }
 
 
@@ -1790,7 +1790,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     int index = 0;
     for (Clazz g : _choiceGenerics)
       {
-        if (g._type.isDirectlyAssignableFrom(staticTypeOfValue._type, null /* outer */, null /* infix_colons */))
+        if (g._type.isDirectlyAssignableFrom(staticTypeOfValue._type, null /* outer */, null /* Context */))
           {
             if (CHECKS) check
               (result < 0);
@@ -2568,7 +2568,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                 o = f;
               }
           }
-        t1 = t1.replace_this_type_by_actual_outer(oc._type, null /* outer */, null /* infix_colons */);
+        t1 = t1.replace_this_type_by_actual_outer(oc._type, null /* outer */, null /* Context */);
         oc = oc.getOuter(o, pos);
         o = o.outer();
       }

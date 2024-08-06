@@ -98,7 +98,7 @@ public abstract class AbstractMatch extends Expr
     v.action(this);
     for (var c: cases())
       {
-        c.visit(v, outer);
+        c.visit(v, this, outer);
       }
     return this;
   }
@@ -128,7 +128,7 @@ public abstract class AbstractMatch extends Expr
    */
   private AbstractType typeFromCases()
   {
-    var result = Expr.union(cases().map2(x -> x.code()), null /* outer */, null /* infix_colons */);
+    var result = Expr.union(cases().map2(x -> x.code()), null /* outer */, null /* Context */);
     if (result == Types.t_ERROR)
       {
         new IncompatibleResultsOnBranches(pos(),

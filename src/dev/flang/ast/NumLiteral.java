@@ -458,7 +458,7 @@ public class NumLiteral extends Constant
   private AbstractType extractNumericType(AbstractType t)
   {
     var result = t
-      .choices(null /* NYI: outer */, null /* NYI: infix_colons */)
+      .choices(null /* NYI: outer */, null /* Context */)
       .filter(x -> Types.resolved.numericTypes.contains(x))
       .collect(Collectors.toList());
 
@@ -812,7 +812,7 @@ public class NumLiteral extends Constant
    * @param t the expected type.
    */
   @Override
-  Expr propagateExpectedTypeForPartial(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, AbstractType t)
+  Expr propagateExpectedTypeForPartial(Resolution res, AbstractFeature outer, Context context, AbstractType t)
   {
     Expr result = this;
     if (t.isFunctionType() && t.arity() == 1 && explicitSign() != null)
@@ -850,19 +850,19 @@ public class NumLiteral extends Constant
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, AbstractType t)
+  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, Context context, AbstractType t)
   {
-    var result = propagateExpectedTypeForPartial(res, outer, infix_colons, t);
+    var result = propagateExpectedTypeForPartial(res, outer, context, t);
     if (result != this)
       {
-        result = result.propagateExpectedType(res, outer, infix_colons, t);
+        result = result.propagateExpectedType(res, outer, context, t);
       }
     else
       {
         // if expected type is choice, examine if there is exactly one numeric
         // constant type in choice generics, if so use that for further type
         // propagation.
-        t = t.findInChoice(cg -> !cg.isGenericArgument() && findConstantType(cg) != null, outer, infix_colons);
+        t = t.findInChoice(cg -> !cg.isGenericArgument() && findConstantType(cg) != null, outer, context);
         if (_type == null && findConstantType(t) != null)
           {
             _type = t;

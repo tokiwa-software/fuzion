@@ -370,11 +370,11 @@ public class Impl extends ANY
    * @param outer the feature that contains this implementation.
    *
    */
-  public void propagateExpectedType(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons)
+  public void propagateExpectedType(Resolution res, AbstractFeature outer, Context context)
   {
     if (needsImplicitAssignmentToResult(outer))
       {
-        _expr = _expr.propagateExpectedType(res, outer, infix_colons, outer.resultType());
+        _expr = _expr.propagateExpectedType(res, outer, context, outer.resultType());
       }
   }
 
@@ -389,9 +389,9 @@ public class Impl extends ANY
    *
    * @param t the expected type.
    */
-  public void propagateExpectedType(Resolution res, Feature outer, List<AbstractCall> infix_colons, AbstractType t)
+  public void propagateExpectedType(Resolution res, Feature outer, Context context, AbstractType t)
   {
-    _expr = _expr.propagateExpectedType(res, outer, infix_colons, t);
+    _expr = _expr.propagateExpectedType(res, outer, context, t);
   }
 
 
@@ -431,7 +431,7 @@ public class Impl extends ANY
                                 resultField,
                                 this._expr,
                                 outer);
-        ass._value = this._expr.box(ass._assignedField.resultType(), outer, null /* infix_colons */);  // NYI: move to constructor of Assign?
+        ass._value = this._expr.box(ass._assignedField.resultType(), outer, null /* Context */);  // NYI: move to constructor of Assign?
         this._expr = ass;
       }
 
@@ -544,7 +544,7 @@ public class Impl extends ANY
         var iv = initialValueFromCall(i, res);
         exprs.add(iv);
       }
-    var result = Expr.union(exprs, null /* outer */, null /* infix_colons */);
+    var result = Expr.union(exprs, null /* outer */, null /* Context */);
     // the following line is currently necessary
     // to enable cyclic type inference e.g. in reg_issue2182
     result = result == null ? Types.resolved.t_void : result;

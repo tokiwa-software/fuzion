@@ -641,7 +641,7 @@ public class ResolvedNormalType extends ResolvedType
          * This is a bit ugly, even though this type is a ResolvedType, the generics are not.
          */
         @Override
-        AbstractType resolve(Resolution res, AbstractFeature outerfeat, List<AbstractCall> infix_colons)
+        AbstractType resolve(Resolution res, AbstractFeature outerfeat, Context context)
         {
           if (_resolved == null)
             {
@@ -671,7 +671,7 @@ public class ResolvedNormalType extends ResolvedType
           }
         if (isChoice())
           {
-            for (var g : choiceGenerics(null /* outer */, null /* infix_colons */))
+            for (var g : choiceGenerics(null /* outer */, null /* Context */))
               {
                 g.usedFeatures(s);
               }

@@ -657,7 +657,7 @@ public class Clazzes extends ANY
               {
                 rc = vc.asRef();
                 if (CHECKS) check
-                  (Errors.any() || ec._type.isAssignableFrom(rc._type, null /* outer */, null /* infix_colons */));
+                  (Errors.any() || ec._type.isAssignableFrom(rc._type, null /* outer */, null /* Context */));
               }
             outerClazz.saveActualClazzes(b, outer, new Clazz[] {vc, rc});
             if (vc != rc)
@@ -699,7 +699,7 @@ public class Clazzes extends ANY
    */
   private boolean asRefDirectlyAssignable(Clazz ec, Clazz vc)
   {
-    return ec.isRef() && ec._type.isAssignableFrom(vc.asRef()._type, null /* outer */, null /* infix_colons */);
+    return ec.isRef() && ec._type.isAssignableFrom(vc.asRef()._type, null /* outer */, null /* Context */);
   }
 
 
@@ -709,8 +709,8 @@ public class Clazzes extends ANY
   private boolean asRefAssignableToChoice(Clazz ec, Clazz vc)
   {
     return ec._type.isChoice() &&
-      !ec._type.isAssignableFrom(vc._type, null /* outer */, null /* infix_colons */) &&
-      ec._type.isAssignableFrom(vc._type.asRef(), null /* outer */, null /* infix_colons */);
+      !ec._type.isAssignableFrom(vc._type, null /* outer */, null /* Context */) &&
+      ec._type.isAssignableFrom(vc._type.asRef(), null /* outer */, null /* Context */);
   }
 
 
@@ -877,7 +877,7 @@ public class Clazzes extends ANY
           {
             var fOrFc = isUsed(f)
               ? outerClazz.lookup(f)
-              : Clazzes.instance.clazz(outerClazz._type.actualType(f.resultType(), null /* outer */, null /* infix_colons */)); // NYI: better Clazzes.instance.c_void.get(), does not work in interpreter backend yet...
+              : Clazzes.instance.clazz(outerClazz._type.actualType(f.resultType(), null /* outer */, null /* Context */)); // NYI: better Clazzes.instance.c_void.get(), does not work in interpreter backend yet...
             acl = new Clazz[] {fOrFc};
           }
         else

@@ -382,7 +382,7 @@ public class AstErrors extends ANY
             assignableToSB
               .append("assignable to       : ")
               .append(st(actlT.asRef().toString()));
-            if (frmlT.isAssignableFromOrContainsError(actlT, null /* NYI: outer */, null /* NYI: infix_colons */))
+            if (frmlT.isAssignableFromOrContainsError(actlT, null /* NYI: outer */, null /* Context */))
               {
                 remedy = "To solve this, you could create a new value instance by calling the constructor of " + s(actlT) + ".\n";
               }
@@ -390,7 +390,7 @@ public class AstErrors extends ANY
         else
           {
             var assignableTo = new TreeSet<String>();
-            frmlT.isAssignableFrom(actlT, assignableTo, null /* NYI: outer */, null /* NYI: infix_colons */);
+            frmlT.isAssignableFrom(actlT, assignableTo, null /* NYI: outer */, null /* Context */);
             for (var ts : assignableTo)
               {
                 assignableToSB
@@ -400,7 +400,7 @@ public class AstErrors extends ANY
                   .append(st(ts));
               }
           }
-        if (remedy == null && !frmlT.isVoid() && frmlT.asRef().isAssignableFrom(actlT, null /* NYI: outer */, null /* NYI: infix_colons */))
+        if (remedy == null && !frmlT.isVoid() && frmlT.asRef().isAssignableFrom(actlT, null /* NYI: outer */, null /* Context */))
           {
             remedy = "To solve this, you could change the type of " + ss(target) + " to a " + st("ref")+ " type like " + s(frmlT.asRef()) + ".\n";
           }
@@ -1909,8 +1909,8 @@ public class AstErrors extends ANY
     if (!any() || frmlT != Types.t_ERROR && value.type() != Types.t_ERROR)
       {
         error(value.pos(),
-              "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceGenerics(null /* NYI: outer */, null /* NYI: infix_colons */).stream()
-              .filter(cg -> cg.isAssignableFrom(value.type(), null /* NYI: outer */, null /* NYI: infix_colons */))
+              "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceGenerics(null /* NYI: outer */, null /* Context */).stream()
+              .filter(cg -> cg.isAssignableFrom(value.type(), null /* NYI: outer */, null /* Context */))
               .map(cg -> s(cg))
               .collect(Collectors.joining(", "))
               );

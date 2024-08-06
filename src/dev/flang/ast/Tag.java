@@ -65,21 +65,21 @@ public class Tag extends ExprWithPos
    *
    * @param value the value instance
    */
-  public Tag(Expr value, AbstractType taggedType, AbstractFeature outer, List<AbstractCall> infix_colons)
+  public Tag(Expr value, AbstractType taggedType, AbstractFeature outer, Context context)
   {
     super(value.pos());
 
     // NYI: Move to check types phase
-    taggedType.checkChoice(value.pos(), outer, infix_colons);
+    taggedType.checkChoice(value.pos(), outer, context);
 
     if (PRECONDITIONS) require
       (value != null,
        taggedType.isChoice(),
        Errors.any()
         || taggedType
-            .choiceGenerics(outer, infix_colons)
+            .choiceGenerics(outer, context)
             .stream()
-            .filter(cg -> cg.isDirectlyAssignableFrom(value.type(), outer, infix_colons))
+            .filter(cg -> cg.isDirectlyAssignableFrom(value.type(), outer, context))
             .count() == 1
         // NYI why is value.type() sometimes unit
         // even though none of the choice elements is unit

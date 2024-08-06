@@ -160,9 +160,9 @@ public class If extends ExprWithPos
    * Helper routine for typeForInferencing to determine the
    * type of this if expression on demand, i.e., as late as possible.
    */
-  private AbstractType typeFromIfOrElse(AbstractFeature outer, List<AbstractCall> infix_colons)
+  private AbstractType typeFromIfOrElse(AbstractFeature outer, Context context)
   {
-    var result = Expr.union(new List<>(branches()), outer, infix_colons);
+    var result = Expr.union(new List<>(branches()), outer, context);
     if (result==Types.t_ERROR)
       {
         new IncompatibleResultsOnBranches(pos(),
@@ -185,7 +185,7 @@ public class If extends ExprWithPos
   {
     if (_type == null)
       {
-        _type = typeFromIfOrElse(null /* outer */, null /* infix_colons */);
+        _type = typeFromIfOrElse(null /* outer */, null /* Context */);
       }
     return _type;
   }
@@ -195,10 +195,10 @@ public class If extends ExprWithPos
    * check the types in this if, in particular, check that the condition is of
    * type bool.
    */
-  public void checkTypes(AbstractFeature outer, List<AbstractCall> infix_colons)
+  public void checkTypes(AbstractFeature outer, Context context)
   {
     var t = cond.type();
-    if (!Types.resolved.t_bool.isDirectlyAssignableFrom(t, outer, infix_colons))
+    if (!Types.resolved.t_bool.isDirectlyAssignableFrom(t, outer, context))
       {
         if (fromContract())
           {
@@ -269,12 +269,12 @@ public class If extends ExprWithPos
    * that performs the assignment to r.
    */
   @Override
-  If assignToField(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, Feature r)
+  If assignToField(Resolution res, AbstractFeature outer, Context context, Feature r)
   {
-    block = block.assignToField(res, outer, infix_colons, r);
+    block = block.assignToField(res, outer, context, r);
     if (elseBlock != null)
       {
-        elseBlock = elseBlock.assignToField(res, outer, infix_colons, r);
+        elseBlock = elseBlock.assignToField(res, outer, context, r);
       }
     _assignedToField = true;
     return this;
@@ -293,11 +293,11 @@ public class If extends ExprWithPos
    * @param outer the feature that contains this expression
    *
    */
-  public void propagateExpectedType(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons)
+  public void propagateExpectedType(Resolution res, AbstractFeature outer, Context context)
   {
     if (cond != null)
       {
-        cond = cond.propagateExpectedType(res, outer, infix_colons, Types.resolved.t_bool);
+        cond = cond.propagateExpectedType(res, outer, context, Types.resolved.t_bool);
       }
   }
 
@@ -320,7 +320,7 @@ public class If extends ExprWithPos
    * will be replaced by the expression that reads the field.
    */
   @Override
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, AbstractType t)
+  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, Context context, AbstractType t)
   {
     return addFieldForResult(res, outer, t);
   }

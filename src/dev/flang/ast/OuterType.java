@@ -66,7 +66,7 @@ public class OuterType extends UnresolvedType
    * for resolution of generic parameters etc.
    */
   @Override
-  AbstractType resolve(Resolution res, AbstractFeature outerfeat, List<AbstractCall> infix_colons)
+  AbstractType resolve(Resolution res, AbstractFeature outerfeat, Context context)
   {
     if (PRECONDITIONS) require
       (outerfeat != null,

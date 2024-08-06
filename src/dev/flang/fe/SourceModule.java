@@ -50,6 +50,7 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
 import dev.flang.ast.Block;
 import dev.flang.ast.Call;
+import dev.flang.ast.Context;
 import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
@@ -622,6 +623,8 @@ part of the (((inner features))) declarations of the corresponding
       }
     inner.addResultField(_res);
 
+    //ystem.out.println(">>>>>>>>>>>>>>>>>>>>> setOUterANdAddInnter for "+inner.qualifiedName());
+
     inner.visit(new FeatureVisitor()
       {
         private Stack<Expr> _scope = new Stack<>();
@@ -629,6 +632,11 @@ part of the (((inner features))) declarations of the corresponding
         public void actionBefore(AbstractCase c)
         {
           _scope.push(c.code());
+          if (false) if (c.pos().show().indexOf("as3.fz:15") >= 0 || true ||
+              c.pos().show().indexOf("as3.fz:16") >= 0)
+            {
+              System.out.println("########################################################### Action before for "+c.pos().show());
+            }
           super.actionBefore(c);
         }
         @Override
@@ -640,12 +648,20 @@ part of the (((inner features))) declarations of the corresponding
         @Override
         public void actionBefore(Block b, AbstractFeature outer)
         {
+          if (false) if (inner.qualifiedName().equals("x3.y"))
+            {
+              System.out.println("block before" + b.pos().show());
+            }
           if (b._newScope) { _scope.push(b); }
           super.actionBefore(b, outer);
         }
         @Override
         public void actionAfter(Block b, AbstractFeature outer)
         {
+          if (false) if (inner.qualifiedName().equals("x3.y"))
+            {
+              System.out.println("block after");
+            }
           if (b._newScope) { _scope.pop(); }
           super.actionAfter(b, outer);
         }
@@ -670,6 +686,7 @@ part of the (((inner features))) declarations of the corresponding
           findDeclarations(f, outer); return f;
         }
       });
+    //System.out.println("<<<<<<<<<<<<<<<<<<<<<<<< setOUterANdAddInnter for "+inner.qualifiedName());
 
     if (inner.impl().hasInitialValue() &&
         !outer.pos()._sourceFile.sameAs(inner.pos()._sourceFile) &&
@@ -1526,7 +1543,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
        * redefinition `h.maybe`.
        */
       fixed &&
-      redefinition.outer().thisType(true).actualType(to, null /* NYI: outer */, null /* NYI: infix_colons */).compareTo(tr) == 0       ||
+      redefinition.outer().thisType(true).actualType(to, null /* NYI: outer */, null /* Context */).compareTo(tr) == 0       ||
 
       /* original and redefinition are inner features of type features, `to` is
        * `this.type` and `tr` is the underlying non-type feature's selfType.
@@ -1561,7 +1578,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
    * NYI: Better perform the check the other way around: check that f matches
    * the types of all features that f redefines.
    */
-  public void checkTypes(Feature f, List<AbstractCall> infix_colons)
+  public void checkTypes(Feature f, Context context)
   {
     if (!f.isVisibilitySpecified() && !f.redefines().isEmpty())
       {
@@ -1637,7 +1654,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
             */
             AstErrors.cannotRedefine(f, o);
           }
-        else if (!t1.isDirectlyAssignableFrom(t2, f, infix_colons) &&  // we (currently) do not tag the result in a redefined feature, see testRedefine
+        else if (!t1.isDirectlyAssignableFrom(t2, f, context) &&  // we (currently) do not tag the result in a redefined feature, see testRedefine
                  !t2.isVoid() &&
                  !isLegalCovariantThisType(o, f, t1, t2, fixed))
           {
@@ -1649,7 +1666,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
       {
         var cod = f.code();
         var rt = cod.type();
-        if (!Types.resolved.t_unit.isAssignableFrom(rt, f, infix_colons))
+        if (!Types.resolved.t_unit.isAssignableFrom(rt, f, context))
           {
             AstErrors.constructorResultMustBeUnit(cod);
           }

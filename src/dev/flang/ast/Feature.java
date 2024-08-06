@@ -1394,21 +1394,66 @@ public class Feature extends AbstractFeature
 
   static class ResolveTypes extends FeatureVisitor
   {
+    Context _context = Context.NONE;
     Resolution res;
     ResolveTypes(Resolution r)
       {
         res = r;
       }
     @Override public void         action      (AbstractAssign  a, AbstractFeature outer) {        a.resolveTypes   (res,   outer); }
-    @Override public void         actionBefore(Call            c, AbstractFeature outer) {        c.tryResolveTypeCall(res,   outer, null /* NYI: infix_colons */); }
-    @Override public Call         action      (Call            c, AbstractFeature outer) { return c.resolveTypes   (res,   outer); }
+    @Override public void         actionBefore(Call            c, AbstractFeature outer) {        c.tryResolveTypeCall(res,   outer, _context); }
+    @Override public Call         action      (Call            c, AbstractFeature outer) { return c.resolveTypes      (res,   outer, _context); }
     @Override public Expr         action      (DotType         d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
     @Override public Expr         action      (Destructure     d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
     @Override public Function     action      (Function        f, AbstractFeature outer) {        f.resolveTypes   (res,   outer); return f; }
-    @Override public void         action      (Match           m, AbstractFeature outer) {        m.resolveTypes   (res,   outer, null /* NYI: infix_colons */); }
+    @Override public void         action      (Match           m, AbstractFeature outer) {        m.resolveTypes   (res,   outer, null /* Context */); }
+
     @Override public Expr         action      (This            t, AbstractFeature outer) { return t.resolveTypes   (res,   outer); }
     @Override public AbstractType action      (AbstractType    t, AbstractFeature outer) { return t.resolve        (res,   outer); }
     @Override public Expr         action      (AbstractCurrent c, AbstractFeature outer) { return c.resolveTypes(res, outer); }
+
+    @Override public void         actionBefore(AbstractCase     c, AbstractMatch m)
+    {
+      var s = m.subject();
+      if (s instanceof AbstractCall sc &&
+          sc.calledFeature() == Types.resolved.f_Type_infix_colon && c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0))
+        {
+          if (false) System.out.println("NEW CONTEXT "+c.pos().show());
+          _context = new Context(_context)
+            {
+              public AbstractType constraintFor(AbstractFeature typeParameter)
+              {
+                if (false) if (sc.target() instanceof AbstractCall sct)
+                  System.out.println("CHECK for "+typeParameter.qualifiedName()+" subj "+s+" "+s.getClass()+" "+sct.calledFeature().qualifiedName()+
+                                     (sct.calledFeature()==typeParameter ? "yeah" : "nee"));
+                if (sc.target() instanceof AbstractCall sct && sct.calledFeature()==typeParameter)
+                  {
+                    return sc.actualTypeParameters().get(0);
+                  }
+                return super.constraintFor(typeParameter);
+              }
+            };
+        }
+      else
+        {
+          if (false) System.out.println("NO NEW CONTEXT "+
+                             c.pos().show());
+        }
+    }
+    @Override public void         actionAfter (AbstractCase     c, AbstractMatch m)
+    {
+      var s = m.subject();
+      if (s instanceof AbstractCall sc &&
+          sc.calledFeature() == Types.resolved.f_Type_infix_colon && c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0))
+        {
+          _context = _context.outer();
+        }
+      if (false) if (s instanceof AbstractCall sc &&
+          sc.calledFeature() == Types.resolved.f_Type_infix_colon && c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0))
+        {
+          System.out.println("DONE CONTEXT "+c.pos().show());
+        }
+    }
 
     @Override public boolean doVisitActuals() { return false; }
   }
@@ -1827,11 +1872,11 @@ A ((Choice)) declaration must not contain a result type.
          * that i32 will be the type for "a".
          */
         visit(new FeatureVisitor() {
-            public void  action(AbstractAssign a, AbstractFeature outer) { a.propagateExpectedType(res, outer, (List<AbstractCall>)  null /*infix_colons*/); }
-            public Call  action(Call           c, AbstractFeature outer) { c.propagateExpectedType(res, outer, (List<AbstractCall>)  null /*infix_colons*/); return c; }
-            public void  action(Cond           c, AbstractFeature outer) { c.propagateExpectedType(res, outer, (List<AbstractCall>)  null /*infix_colons*/); }
-            public void  action(Impl           i, AbstractFeature outer) { i.propagateExpectedType(res, outer, (List<AbstractCall>)  null /*infix_colons*/); }
-            public Expr  action(If             i, AbstractFeature outer) { i.propagateExpectedType(res, outer, (List<AbstractCall>)  null /*infix_colons*/); return i; }
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.propagateExpectedType(res, outer, (Context) null); }
+            public Call  action(Call           c, AbstractFeature outer) { c.propagateExpectedType(res, outer, (Context) null); return c; }
+            public void  action(Cond           c, AbstractFeature outer) { c.propagateExpectedType(res, outer, (Context) null); }
+            public void  action(Impl           i, AbstractFeature outer) { i.propagateExpectedType(res, outer, (Context) null); }
+            public Expr  action(If             i, AbstractFeature outer) { i.propagateExpectedType(res, outer, (Context) null); return i; }
           });
 
         /*
@@ -1843,13 +1888,13 @@ A ((Choice)) declaration must not contain a result type.
             // get the corrected nesting of Lazy features created during this
             // phase
             public boolean visitActualsLate() { return true; }
-            public void  action(AbstractAssign a, AbstractFeature outer) { a.wrapValueInLazy  (res, outer); a.unwrapValue  (res, outer, (List<AbstractCall>)  null /*infix_colons*/); }
-            public Expr  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, outer); c.unwrapActuals(res, outer, (List<AbstractCall>)  null /*infix_colons*/); return c; }
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.wrapValueInLazy  (res, outer); a.unwrapValue  (res, outer, (Context) null); }
+            public Expr  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, outer); c.unwrapActuals(res, outer, (Context) null); return c; }
           });
 
         if (isConstructor())
           {
-            _impl.propagateExpectedType(res, this, (List<AbstractCall>)  null /*infix_colons*/, Types.resolved.t_unit);
+            _impl.propagateExpectedType(res, this, (Context) null, Types.resolved.t_unit);
           }
 
         _state = State.TYPES_INFERENCED;
@@ -1878,9 +1923,9 @@ A ((Choice)) declaration must not contain a result type.
         _state = State.BOXING;
 
         visit(new FeatureVisitor() {
-            public void  action(AbstractAssign a, AbstractFeature outer) { a.boxVal(outer, null /* infix_colons */);        }
-            public Call  action(Call        c, AbstractFeature outer) { c.boxArgs(outer, null /* infix_colons */); return c; }
-            public Expr  action(InlineArray i, AbstractFeature outer) { i.boxElements(outer, null /* infix_colons */); return i; }
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.boxVal(outer, null /* Context */);        }
+            public Call  action(Call        c, AbstractFeature outer) { c.boxArgs(outer, null /* Context */); return c; }
+            public Expr  action(InlineArray i, AbstractFeature outer) { i.boxElements(outer, null /* Context */); return i; }
           });
 
         _state = State.BOXED;
@@ -1897,12 +1942,12 @@ A ((Choice)) declaration must not contain a result type.
    * have the argument types.  Create compile time errors if this is not the
    * case.
    */
-  private void checkTypes(Resolution res, List<AbstractCall> infix_colons)
+  private void checkTypes(Resolution res, Context context)
   {
     if (PRECONDITIONS) require
       (_state.atLeast(State.CHECKING_TYPES1));
 
-    res._module.checkTypes(this, infix_colons);
+    res._module.checkTypes(this, context);
   }
 
 
@@ -1927,22 +1972,22 @@ A ((Choice)) declaration must not contain a result type.
     if ((_state == State.CHECKING_TYPES1) ||
         (_state == State.CHECKING_TYPES2)    )
       {
-        _selfType   = selfType().checkChoice(_pos, this, null /* infix_colons */);
-        _resultType = _resultType.checkChoice(_posOfReturnType, this, null /* infix_colons */);
+        _selfType   = selfType().checkChoice(_pos, this, null /* Context */);
+        _resultType = _resultType.checkChoice(_posOfReturnType, this, null /* Context */);
         visit(new FeatureVisitor() {
 
             /* if an error is reported in a call it might no longer make sense to check the actuals: */
             public boolean visitActualsLate() { return true; }
 
-            public void         action(AbstractAssign a, AbstractFeature outer) { a.checkTypes(res, outer, (List<AbstractCall>) null /* infix_colons */);           }
-            public Call         action(Call           c, AbstractFeature outer) { c.checkTypes(res, outer, (List<AbstractCall>) null /* infix_colons */); return c; }
-            public Expr         action(If             i, AbstractFeature outer) { i.checkTypes(     outer, (List<AbstractCall>) null /* infix_colons */); return i; }
-            public Expr         action(InlineArray    i, AbstractFeature outer) { i.checkTypes(     outer, (List<AbstractCall>) null /* infix_colons */); return i; }
-            public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints(outer, (List<AbstractCall>) null /* infix_colons */);   }
+            public void         action(AbstractAssign a, AbstractFeature outer) { a.checkTypes(res, outer, (Context) null);           }
+            public Call         action(Call           c, AbstractFeature outer) { c.checkTypes(res, outer, (Context) null); return c; }
+            public Expr         action(If             i, AbstractFeature outer) { i.checkTypes(     outer, (Context) null); return i; }
+            public Expr         action(InlineArray    i, AbstractFeature outer) { i.checkTypes(     outer, (Context) null); return i; }
+            public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints(outer, (Context) null);   }
             public void         action(Cond           c, AbstractFeature outer) { c.checkTypes();                }
             public void         actionBefore(Block    b, AbstractFeature outer) { b.checkTypes();                }
           });
-        checkTypes(res, (List<AbstractCall>) null /* infix_colons */);
+        checkTypes(res, (Context) null);
 
         switch (_state)
           {

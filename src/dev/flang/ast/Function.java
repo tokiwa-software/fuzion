@@ -182,9 +182,9 @@ public class Function extends AbstractLambda
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, AbstractType t)
+  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, Context context, AbstractType t)
   {
-    _type = propagateTypeAndInferResult(res, outer, t.functionTypeFromChoice(outer, infix_colons), false);
+    _type = propagateTypeAndInferResult(res, outer, t.functionTypeFromChoice(outer, context), false);
     return this;
   }
 

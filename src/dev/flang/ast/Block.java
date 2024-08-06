@@ -224,12 +224,12 @@ public class Block extends AbstractBlock
    * @param outer the class that contains this expression.
    */
   @Override
-  void loadCalledFeature(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons)
+  void loadCalledFeature(Resolution res, AbstractFeature outer, Context context)
   {
     Expr resExpr = resultExpression();
     if (resExpr != null)
       {
-        resExpr.loadCalledFeature(res, outer, infix_colons);
+        resExpr.loadCalledFeature(res, outer, context);
       }
   }
 
@@ -279,14 +279,14 @@ public class Block extends AbstractBlock
    * @return this or an instance of Box wrapping this.
    */
   @Override
-  Expr box(AbstractType frmlT, AbstractFeature outer, List<AbstractCall> infix_colons)
+  Expr box(AbstractType frmlT, AbstractFeature outer, Context context)
   {
     var r = removeResultExpression();
     if (CHECKS) check
       (r != null || Types.resolved.t_unit.compareTo(frmlT) == 0);
     if (r != null)
       {
-        _expressions.add(r.box(frmlT, outer, infix_colons));
+        _expressions.add(r.box(frmlT, outer, context));
       }
     return this;
   }
@@ -322,14 +322,14 @@ public class Block extends AbstractBlock
    * @param r the field this should be assigned to.
    */
   @Override
-  Block assignToField(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, Feature r)
+  Block assignToField(Resolution res, AbstractFeature outer, Context context, Feature r)
   {
     Expr resExpr = removeResultExpression();
     if (resExpr != null)
       {
-        _expressions.add(resExpr.assignToField(res, outer, infix_colons, r));
+        _expressions.add(resExpr.assignToField(res, outer, context, r));
       }
-    else if (!r.resultType().isAssignableFrom(Types.resolved.t_unit, outer, infix_colons))
+    else if (!r.resultType().isAssignableFrom(Types.resolved.t_unit, outer, context))
       {
         AstErrors.blockMustEndWithExpression(pos(), r.resultType());
       }
@@ -354,7 +354,7 @@ public class Block extends AbstractBlock
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, AbstractType type)
+  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, Context context, AbstractType type)
   {
     if (type.compareTo(Types.resolved.t_unit) == 0 && hasImplicitResult())
       { // return unit if this is expected even if we would implicitly return
@@ -369,7 +369,7 @@ public class Block extends AbstractBlock
 
     if (resExpr != null)
       {
-        var x = resExpr.propagateExpectedType(res, outer, infix_colons, type);
+        var x = resExpr.propagateExpectedType(res, outer, context, type);
         _expressions.remove(idx);
         _expressions.add(x);
       }

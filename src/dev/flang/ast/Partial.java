@@ -156,14 +156,14 @@ public class Partial extends AbstractLambda
    * will be replaced by the expression that reads the field.
    */
   @Override
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, AbstractType t)
+  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, Context context, AbstractType t)
   {
     Expr result = this;
-    t = t.functionTypeFromChoice(outer, infix_colons);
+    t = t.functionTypeFromChoice(outer, context);
     var type = propagateTypeAndInferResult(res, outer, t, false);
     if (_function != null)
       {
-        result = _function.propagateExpectedType(res, outer, infix_colons, type);
+        result = _function.propagateExpectedType(res, outer, context, type);
       }
     return result;
   }

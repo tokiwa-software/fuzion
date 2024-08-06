@@ -126,7 +126,7 @@ public class InlineArray extends ExprWithPos
   {
     if (_type == null && !_elements.isEmpty())
       {
-        var t = Expr.union(_elements, null /* outer */, null /* infix_colons */);
+        var t = Expr.union(_elements, null /* outer */, null /* Context */);
         if (t == Types.t_ERROR)
           {
             new IncompatibleResultsOnBranches(pos(),
@@ -166,20 +166,20 @@ public class InlineArray extends ExprWithPos
    * will be replaced by the expression that reads the field.
    */
   @Override
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, AbstractType t)
+  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, Context context, AbstractType t)
   {
     if (_type == null)
       {
         // if expected type is choice, examine if there is exactly one
         // array in choice generics, if so use this for further type propagation.
-        t = t.findInChoice(cg -> !cg.isGenericArgument() && cg.feature() == Types.resolved.f_array, outer, infix_colons);
+        t = t.findInChoice(cg -> !cg.isGenericArgument() && cg.feature() == Types.resolved.f_array, outer, context);
 
         var elementType = elementType(t);
         if (elementType != Types.t_ERROR)
           {
             for (var e : _elements)
               {
-                var e2 = e.propagateExpectedType(res, outer, infix_colons, elementType);
+                var e2 = e.propagateExpectedType(res, outer, context, elementType);
                 if (CHECKS) check
                   (e == e2);
               }
@@ -274,13 +274,13 @@ public class InlineArray extends ExprWithPos
    *
    * @param outer the feature that contains this expression
    */
-  public void boxElements(AbstractFeature outer, List<AbstractCall> infix_colons)
+  public void boxElements(AbstractFeature outer, Context context)
   {
     var li = _elements.listIterator();
     while (li.hasNext())
       {
         var e = li.next();
-        li.set(e.box(elementType(), outer, infix_colons));
+        li.set(e.box(elementType(), outer, context));
       }
   }
 
@@ -288,7 +288,7 @@ public class InlineArray extends ExprWithPos
   /**
    * check the types in this InlineArray
    */
-  public void checkTypes(AbstractFeature outer, List<AbstractCall> infix_colons)
+  public void checkTypes(AbstractFeature outer, Context context)
   {
     if (PRECONDITIONS) require
       (Errors.any() || _type != null);
@@ -300,7 +300,7 @@ public class InlineArray extends ExprWithPos
 
     for (var e : _elements)
       {
-        if (!elementType.isDirectlyAssignableFrom(e.type(), outer, infix_colons))
+        if (!elementType.isDirectlyAssignableFrom(e.type(), outer, context))
           {
             AstErrors.incompatibleTypeInArrayInitialization(e.pos(), _type, elementType, e);
           }

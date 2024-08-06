@@ -132,7 +132,7 @@ public class Assign extends AbstractAssign
     this._pos = pos;
     if (res.state(outer).atLeast(State.TYPES_INFERENCING))
       {
-        propagateExpectedType(res, outer, (List<AbstractCall>) null /* infix_colons */);
+        propagateExpectedType(res, outer, (Context) null);
       }
   }
 

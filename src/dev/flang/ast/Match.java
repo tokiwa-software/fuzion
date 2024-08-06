@@ -129,7 +129,7 @@ public class Match extends AbstractMatch
     v.action(this, outer);
     for (var c: cases())
       {
-        c.visit(v, outer);
+        c.visit(v, this, outer);
       }
     return this;
   }
@@ -142,7 +142,7 @@ public class Match extends AbstractMatch
    *
    * @param outer the root feature that contains this expression.
    */
-  public void resolveTypes(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons)
+  public void resolveTypes(Resolution res, AbstractFeature outer, Context context)
   {
     var st = _subject.type();
     if (CHECKS) check
@@ -165,7 +165,7 @@ public class Match extends AbstractMatch
       }
     if (st.isChoice())
       {
-        var cgs = st.choiceGenerics(outer, infix_colons);
+        var cgs = st.choiceGenerics(outer, context);
         for (var i = 0; i < cgs.size(); i++)
           {
             var n = cgs.get(i);
@@ -216,12 +216,12 @@ public class Match extends AbstractMatch
    * that performs the assignment to r.
    */
   @Override
-  Match assignToField(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, Feature r)
+  Match assignToField(Resolution res, AbstractFeature outer, Context context, Feature r)
   {
     for (var ac: cases())
       {
         var c = (Case) ac;
-        c._code = c._code.assignToField(res, outer, infix_colons, r);
+        c._code = c._code.assignToField(res, outer, context, r);
       }
     _assignedToField = true;
     return this;
@@ -246,7 +246,7 @@ public class Match extends AbstractMatch
    * will be replaced by the expression that reads the field.
    */
   @Override
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, AbstractType t)
+  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, Context context, AbstractType t)
   {
     return addFieldForResult(res, outer, t);
   }

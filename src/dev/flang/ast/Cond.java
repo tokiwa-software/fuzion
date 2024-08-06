@@ -129,9 +129,9 @@ public class Cond
    *
    * @param outer the feature that contains this expression
    */
-  public void propagateExpectedType(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons)
+  public void propagateExpectedType(Resolution res, AbstractFeature outer, Context context)
   {
-    cond = cond.propagateExpectedType(res, outer, infix_colons, Types.resolved.t_bool);
+    cond = cond.propagateExpectedType(res, outer, context, Types.resolved.t_bool);
   }
 
 
