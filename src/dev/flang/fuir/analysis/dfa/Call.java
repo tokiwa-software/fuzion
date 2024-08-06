@@ -324,7 +324,7 @@ public class Call extends ANY implements Comparable<Call>, Context
     else if (_returns)
       {
         var rf = _dfa._fuir.clazzResultField(_cc);
-        if (rf == -1)
+        if (_dfa._fuir.isConstructor(_cc))
           {
             result = _instance;
           }
