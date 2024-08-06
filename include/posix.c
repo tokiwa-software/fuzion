@@ -579,7 +579,7 @@ void fzE_lock()
 void fzE_unlock()
 {
 #ifdef FUZION_ENABLE_THREADS
-  pthread_mutex_unlock(&fzE_global_mutex);
+  assert(pthread_mutex_unlock(&fzE_global_mutex)==0);
 #else
   printf("You discovered a severe bug. (fzE_unlock)");
 #endif
