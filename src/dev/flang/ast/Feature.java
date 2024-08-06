@@ -1405,7 +1405,7 @@ public class Feature extends AbstractFeature
     @Override public Expr         action      (DotType         d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
     @Override public Expr         action      (Destructure     d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
     @Override public Function     action      (Function        f, AbstractFeature outer) {        f.resolveTypes   (res,   outer); return f; }
-    @Override public void         action      (Match           m, AbstractFeature outer) {        m.resolveTypes   (res,   outer); }
+    @Override public void         action      (Match           m, AbstractFeature outer) {        m.resolveTypes   (res,   outer, null /* NYI: infix_colons */); }
     @Override public Expr         action      (This            t, AbstractFeature outer) { return t.resolveTypes   (res,   outer); }
     @Override public AbstractType action      (AbstractType    t, AbstractFeature outer) { return t.resolve        (res,   outer); }
     @Override public Expr         action      (AbstractCurrent c, AbstractFeature outer) { return c.resolveTypes(res, outer); }
@@ -1843,8 +1843,8 @@ A ((Choice)) declaration must not contain a result type.
             // get the corrected nesting of Lazy features created during this
             // phase
             public boolean visitActualsLate() { return true; }
-            public void  action(AbstractAssign a, AbstractFeature outer) { a.wrapValueInLazy  (res, outer); a.unwrapValue(res, outer); }
-            public Expr  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, outer); c.unwrapActuals(res, outer); return c; }
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.wrapValueInLazy  (res, outer); a.unwrapValue  (res, outer, (List<AbstractCall>)  null /*infix_colons*/); }
+            public Expr  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, outer); c.unwrapActuals(res, outer, (List<AbstractCall>)  null /*infix_colons*/); return c; }
           });
 
         if (isConstructor())
@@ -1868,7 +1868,7 @@ A ((Choice)) declaration must not contain a result type.
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    */
-  void box(Resolution res)
+  void boxX(Resolution res)
   {
     if (PRECONDITIONS) require
       (_state.atLeast(State.TYPES_INFERENCED));
@@ -1878,9 +1878,9 @@ A ((Choice)) declaration must not contain a result type.
         _state = State.BOXING;
 
         visit(new FeatureVisitor() {
-            public void  action(AbstractAssign a, AbstractFeature outer) { a.box(outer);        }
-            public Call  action(Call        c, AbstractFeature outer) { c.box(outer); return c; }
-            public Expr  action(InlineArray i, AbstractFeature outer) { i.box(outer); return i; }
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.boxVal(outer, null /* infix_colons */);        }
+            public Call  action(Call        c, AbstractFeature outer) { c.boxArgs(outer, null /* infix_colons */); return c; }
+            public Expr  action(InlineArray i, AbstractFeature outer) { i.boxElements(outer, null /* infix_colons */); return i; }
           });
 
         _state = State.BOXED;
@@ -1897,12 +1897,12 @@ A ((Choice)) declaration must not contain a result type.
    * have the argument types.  Create compile time errors if this is not the
    * case.
    */
-  private void checkTypes(Resolution res)
+  private void checkTypes(Resolution res, List<AbstractCall> infix_colons)
   {
     if (PRECONDITIONS) require
       (_state.atLeast(State.CHECKING_TYPES1));
 
-    res._module.checkTypes(this);
+    res._module.checkTypes(this, infix_colons);
   }
 
 
@@ -1927,22 +1927,22 @@ A ((Choice)) declaration must not contain a result type.
     if ((_state == State.CHECKING_TYPES1) ||
         (_state == State.CHECKING_TYPES2)    )
       {
-        _selfType   = selfType().checkChoice(_pos);
-        _resultType = _resultType.checkChoice(_posOfReturnType);
+        _selfType   = selfType().checkChoice(_pos, this, null /* infix_colons */);
+        _resultType = _resultType.checkChoice(_posOfReturnType, this, null /* infix_colons */);
         visit(new FeatureVisitor() {
 
             /* if an error is reported in a call it might no longer make sense to check the actuals: */
             public boolean visitActualsLate() { return true; }
 
-            public void         action(AbstractAssign a, AbstractFeature outer) { a.checkTypes(res);             }
-            public Call         action(Call           c, AbstractFeature outer) { c.checkTypes(res, outer); return c; }
-            public Expr         action(If             i, AbstractFeature outer) { i.checkTypes();      return i; }
-            public Expr         action(InlineArray    i, AbstractFeature outer) { i.checkTypes();      return i; }
-            public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints(outer);   }
+            public void         action(AbstractAssign a, AbstractFeature outer) { a.checkTypes(res, outer, (List<AbstractCall>) null /* infix_colons */);           }
+            public Call         action(Call           c, AbstractFeature outer) { c.checkTypes(res, outer, (List<AbstractCall>) null /* infix_colons */); return c; }
+            public Expr         action(If             i, AbstractFeature outer) { i.checkTypes(     outer, (List<AbstractCall>) null /* infix_colons */); return i; }
+            public Expr         action(InlineArray    i, AbstractFeature outer) { i.checkTypes(     outer, (List<AbstractCall>) null /* infix_colons */); return i; }
+            public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints(outer, (List<AbstractCall>) null /* infix_colons */);   }
             public void         action(Cond           c, AbstractFeature outer) { c.checkTypes();                }
             public void         actionBefore(Block    b, AbstractFeature outer) { b.checkTypes();                }
           });
-        checkTypes(res);
+        checkTypes(res, (List<AbstractCall>) null /* infix_colons */);
 
         switch (_state)
           {

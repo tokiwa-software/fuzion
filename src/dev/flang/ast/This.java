@@ -167,6 +167,7 @@ public class This extends ExprWithPos
    *
    * @return this Expr's type or null if not known.
    */
+  @Override
   AbstractType typeForInferencing()
   {
     return null;  // After type resolution, This is no longer part of the code.

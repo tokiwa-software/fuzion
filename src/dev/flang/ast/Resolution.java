@@ -470,7 +470,7 @@ public class Resolution extends ANY
     else if (!forBoxing.isEmpty())
       {
         Feature f = forBoxing.removeFirst();
-        f.box(this);
+        f.boxX(this);
       }
     else if (!_waitingForCalls.isEmpty())
       {

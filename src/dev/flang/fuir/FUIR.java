@@ -1870,12 +1870,12 @@ public class FUIR extends IR
         int nt = f != null ? 1 : ts.size();
         var resultL = new List<Integer>();
         int tag = 0;
-        for (var cg : match.subject().type().choiceGenerics())
+        for (var cg : match.subject().type().choiceGenerics(null /* outer */, null /* infix_colons */))
           {
             for (int tix = 0; tix < nt; tix++)
               {
                 var t = f != null ? f.resultType() : ts.get(tix);
-                if (t.isDirectlyAssignableFrom(cg))
+                if (t.isDirectlyAssignableFrom(cg, null /* outer */, null /* infix_colons */))
                   {
                     resultL.add(tag);
                   }
@@ -2690,7 +2690,7 @@ public class FUIR extends IR
   @Deprecated
   public boolean isAssignableFrom(int cl0, int cl1)
   {
-    return clazz(cl0)._type.isAssignableFrom(clazz(cl1)._type);
+    return clazz(cl0)._type.isAssignableFrom(clazz(cl1)._type, null /* outer */, null /* infix_colons */);
   }
 
   public boolean constraintAssignableFrom(int cl0, int cl1)

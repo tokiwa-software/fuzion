@@ -413,6 +413,7 @@ public class NumLiteral extends Constant
    *
    * @return this Expr's type or null if not known.
    */
+  @Override
   AbstractType typeForInferencing()
   {
     if (_type == null)
@@ -457,7 +458,7 @@ public class NumLiteral extends Constant
   private AbstractType extractNumericType(AbstractType t)
   {
     var result = t
-      .choices()
+      .choices(null /* NYI: outer */, null /* NYI: infix_colons */)
       .filter(x -> Types.resolved.numericTypes.contains(x))
       .collect(Collectors.toList());
 
@@ -861,7 +862,7 @@ public class NumLiteral extends Constant
         // if expected type is choice, examine if there is exactly one numeric
         // constant type in choice generics, if so use that for further type
         // propagation.
-        t = t.findInChoice(cg -> !cg.isGenericArgument() && findConstantType(cg) != null);
+        t = t.findInChoice(cg -> !cg.isGenericArgument() && findConstantType(cg) != null, outer, infix_colons);
         if (_type == null && findConstantType(t) != null)
           {
             _type = t;

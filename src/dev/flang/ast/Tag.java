@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import dev.flang.util.Errors;
+import dev.flang.util.List;
 
 
 /**
@@ -64,20 +65,21 @@ public class Tag extends ExprWithPos
    *
    * @param value the value instance
    */
-  public Tag(Expr value, AbstractType taggedType)
+  public Tag(Expr value, AbstractType taggedType, AbstractFeature outer, List<AbstractCall> infix_colons)
   {
     super(value.pos());
 
-    taggedType.checkChoice(value.pos());
+    // NYI: Move to check types phase
+    taggedType.checkChoice(value.pos(), outer, infix_colons);
 
     if (PRECONDITIONS) require
       (value != null,
        taggedType.isChoice(),
        Errors.any()
         || taggedType
-            .choiceGenerics()
+            .choiceGenerics(outer, infix_colons)
             .stream()
-            .filter(cg -> cg.isDirectlyAssignableFrom(value.type()))
+            .filter(cg -> cg.isDirectlyAssignableFrom(value.type(), outer, infix_colons))
             .count() == 1
         // NYI why is value.type() sometimes unit
         // even though none of the choice elements is unit
@@ -98,6 +100,7 @@ public class Tag extends ExprWithPos
    *
    * @return this Expr's type or null if not known.
    */
+  @Override
   AbstractType typeForInferencing()
   {
     return _taggedType;

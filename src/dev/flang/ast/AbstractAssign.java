@@ -224,14 +224,14 @@ public abstract class AbstractAssign extends Expr
    *
    * @param outer the feature that contains this expression
    */
-  public void unwrapValue(Resolution res, AbstractFeature outer)
+  public void unwrapValue(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
 
     if (resultTypeKnown(res))
       {
-        _value = _value.unwrap(res, outer, _assignedField.resultType());
+        _value = _value.unwrap(res, outer, infix_colons, _assignedField.resultType());
       }
   }
 
@@ -253,14 +253,14 @@ public abstract class AbstractAssign extends Expr
    *
    * @param outer the feature that contains this expression
    */
-  public void box(AbstractFeature outer)
+  public void boxVal(AbstractFeature outer, List<AbstractCall> infix_colons)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
 
     if (_assignedField != Types.f_ERROR)
       {
-        _value = _value.box(_assignedField.resultType());
+        _value = _value.box(_assignedField.resultType(), outer, infix_colons);
       }
   }
 
@@ -270,7 +270,7 @@ public abstract class AbstractAssign extends Expr
    *
    * @param res the Resolution that performs this checkTypes
    */
-  public void checkTypes(Resolution res)
+  public void checkTypes(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
@@ -283,7 +283,7 @@ public abstract class AbstractAssign extends Expr
         if (CHECKS) check
           (Errors.any() || frmlT != Types.t_ERROR);
 
-        if (!frmlT.isAssignableFrom(_value.type()))
+        if (!frmlT.isAssignableFrom(_value.type(), outer, infix_colons))
           {
             AstErrors.incompatibleTypeInAssignment(pos(), f, frmlT, _value);
           }

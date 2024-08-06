@@ -666,7 +666,7 @@ public class LibraryFeature extends AbstractFeature
             {
               var val = s.pop();
               var taggedType = _libModule.tagType(iat);
-              x = new Tag(val, taggedType);
+              x = new Tag(val, taggedType, null /* NYI: outer */, null /* NYI: infix_colons */);
               break;
             }
           case Env:

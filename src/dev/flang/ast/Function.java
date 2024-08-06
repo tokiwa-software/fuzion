@@ -184,7 +184,7 @@ public class Function extends AbstractLambda
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, AbstractType t)
   {
-    _type = propagateTypeAndInferResult(res, outer, t.functionTypeFromChoice(), false);
+    _type = propagateTypeAndInferResult(res, outer, t.functionTypeFromChoice(outer, infix_colons), false);
     return this;
   }
 
@@ -433,6 +433,7 @@ public class Function extends AbstractLambda
    *
    * @return this Expr's type or null if not known.
    */
+  @Override
   AbstractType typeForInferencing()
   {
     // unlike type(), we do not produce an error but just return null here since

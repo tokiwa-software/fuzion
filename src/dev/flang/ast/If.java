@@ -160,9 +160,9 @@ public class If extends ExprWithPos
    * Helper routine for typeForInferencing to determine the
    * type of this if expression on demand, i.e., as late as possible.
    */
-  private AbstractType typeFromIfOrElse()
+  private AbstractType typeFromIfOrElse(AbstractFeature outer, List<AbstractCall> infix_colons)
   {
-    var result = Expr.union(new List<>(branches()));
+    var result = Expr.union(new List<>(branches()), outer, infix_colons);
     if (result==Types.t_ERROR)
       {
         new IncompatibleResultsOnBranches(pos(),
@@ -180,11 +180,12 @@ public class If extends ExprWithPos
    *
    * @return this Expr's type or null if not known.
    */
+  @Override
   AbstractType typeForInferencing()
   {
     if (_type == null)
       {
-        _type = typeFromIfOrElse();
+        _type = typeFromIfOrElse(null /* outer */, null /* infix_colons */);
       }
     return _type;
   }
@@ -194,10 +195,10 @@ public class If extends ExprWithPos
    * check the types in this if, in particular, check that the condition is of
    * type bool.
    */
-  public void checkTypes()
+  public void checkTypes(AbstractFeature outer, List<AbstractCall> infix_colons)
   {
     var t = cond.type();
-    if (!Types.resolved.t_bool.isDirectlyAssignableFrom(t))
+    if (!Types.resolved.t_bool.isDirectlyAssignableFrom(t, outer, infix_colons))
       {
         if (fromContract())
           {
@@ -267,12 +268,13 @@ public class If extends ExprWithPos
    * @return the Expr this Expr is to be replaced with, typically an Assign
    * that performs the assignment to r.
    */
-  If assignToField(Resolution res, AbstractFeature outer, Feature r)
+  @Override
+  If assignToField(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, Feature r)
   {
-    block = block.assignToField(res, outer, r);
+    block = block.assignToField(res, outer, infix_colons, r);
     if (elseBlock != null)
       {
-        elseBlock = elseBlock.assignToField(res, outer, r);
+        elseBlock = elseBlock.assignToField(res, outer, infix_colons, r);
       }
     _assignedToField = true;
     return this;

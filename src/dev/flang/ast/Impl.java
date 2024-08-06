@@ -431,7 +431,7 @@ public class Impl extends ANY
                                 resultField,
                                 this._expr,
                                 outer);
-        ass._value = this._expr.box(ass._assignedField.resultType());  // NYI: move to constructor of Assign?
+        ass._value = this._expr.box(ass._assignedField.resultType(), outer, null /* infix_colons */);  // NYI: move to constructor of Assign?
         this._expr = ass;
       }
 
@@ -544,7 +544,7 @@ public class Impl extends ANY
         var iv = initialValueFromCall(i, res);
         exprs.add(iv);
       }
-    var result = Expr.union(exprs);
+    var result = Expr.union(exprs, null /* outer */, null /* infix_colons */);
     // the following line is currently necessary
     // to enable cyclic type inference e.g. in reg_issue2182
     result = result == null ? Types.resolved.t_void : result;

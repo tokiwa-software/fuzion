@@ -671,7 +671,7 @@ public class ResolvedNormalType extends ResolvedType
           }
         if (isChoice())
           {
-            for (var g : choiceGenerics())
+            for (var g : choiceGenerics(null /* outer */, null /* infix_colons */))
               {
                 g.usedFeatures(s);
               }

@@ -142,7 +142,7 @@ public class Match extends AbstractMatch
    *
    * @param outer the root feature that contains this expression.
    */
-  public void resolveTypes(Resolution res, AbstractFeature outer)
+  public void resolveTypes(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons)
   {
     var st = _subject.type();
     if (CHECKS) check
@@ -165,7 +165,7 @@ public class Match extends AbstractMatch
       }
     if (st.isChoice())
       {
-        var cgs = st.choiceGenerics();
+        var cgs = st.choiceGenerics(outer, infix_colons);
         for (var i = 0; i < cgs.size(); i++)
           {
             var n = cgs.get(i);
@@ -215,12 +215,13 @@ public class Match extends AbstractMatch
    * @return the Expr this Expr is to be replaced with, typically an Assign
    * that performs the assignment to r.
    */
-  Match assignToField(Resolution res, AbstractFeature outer, Feature r)
+  @Override
+  Match assignToField(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, Feature r)
   {
     for (var ac: cases())
       {
         var c = (Case) ac;
-        c._code = c._code.assignToField(res, outer, r);
+        c._code = c._code.assignToField(res, outer, infix_colons, r);
       }
     _assignedToField = true;
     return this;

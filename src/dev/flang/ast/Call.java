@@ -481,10 +481,14 @@ public class Call extends AbstractCall
     if (PRECONDITIONS) require
       (!frmlT.isOpenGeneric());
 
-    var result = adjustThisTypeForTarget(frmlT);
+    var result = adjustThisTypeForTarget(frmlT, outer, infix_colons);
+    var r0 = result;
     result = targetTypeOrConstraint(res, outer, infix_colons)
-      .actualType(result)
+      .actualType(result, outer, infix_colons)
       .applyTypePars(_calledFeature, _generics);
+    var r1 = targetTypeOrConstraint(res, outer, infix_colons);
+    var r2 = r1.actualType(r0, outer, infix_colons);
+    var r3 = r2.applyTypePars(_calledFeature, _generics);
 
     if (POSTCONDITIONS) ensure
       (result != null && result != Types.resolved.t_Const_String);
@@ -1135,6 +1139,7 @@ public class Call extends AbstractCall
    *
    * @return this Expr's type or null if not known.
    */
+  @Override
   AbstractType typeForInferencing()
   {
     reportPendingError();
@@ -1437,8 +1442,8 @@ public class Call extends AbstractCall
     var t1 = resolveSelect(frmlT, tt);
     var t2 = t1.applyTypePars(tt);
     var t3 = tt.isGenericArgument() ? t2 : t2.resolve(res, tt.feature());
-    var t4 = adjustThisTypeForTarget(t3);
-    var t5 = resolveForCalledFeature(res, t4, tt);
+    var t4 = adjustThisTypeForTarget(t3, outer, infix_colons);
+    var t5 = resolveForCalledFeature(res, t4, tt, outer, infix_colons);
     // call may be resolved repeatedly. In case of recursive use of FieldActual
     // (see #2182), we may see `void` as the result type of calls to argument
     // fields during recursion.  We use only the non-recursive (i.e., non-void)
@@ -1505,7 +1510,7 @@ public class Call extends AbstractCall
    * @return a type derived from t where `this.type` is replaced by actual types
    * from the call's target where this is possible.
    */
-  private AbstractType adjustThisTypeForTarget(AbstractType t)
+  private AbstractType adjustThisTypeForTarget(AbstractType t, AbstractFeature outer, List<AbstractCall> infix_colons)
   {
     /**
      * For a call `T.f` on a type parameter whose result type contains
@@ -1539,8 +1544,8 @@ public class Call extends AbstractCall
                                           _target.typeForCallTarget());
         var t0 = t;
         t = t.replace_this_type_by_actual_outer(inner,
-                                                (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, t0, from, to)
-                                                );
+                                                (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, t0, from, to),
+                                                outer, infix_colons);
       }
     return t;
   }
@@ -1559,7 +1564,7 @@ public class Call extends AbstractCall
    *
    * @param tt target type or constraint.
    */
-  private AbstractType resolveForCalledFeature(Resolution res, AbstractType t, AbstractType tt)
+  private AbstractType resolveForCalledFeature(Resolution res, AbstractType t, AbstractType tt, AbstractFeature outer, List<AbstractCall> infix_colons)
   {
     if (_calledFeature.isTypeParameter())
       {
@@ -1842,7 +1847,7 @@ public class Call extends AbstractCall
                         var actualType = typeFromActual(actual, outer);
                         if (actualType != null)
                           {
-                            inferGeneric(res, outer, t, actualType, actual.pos(), conflict, foundAt);
+                            inferGeneric(res, outer, infix_colons, t, actualType, actual.pos(), conflict, foundAt);
                             checked[vai] = true;
                           }
                         else if (resultExpression(actual) instanceof AbstractLambda al)
@@ -1970,6 +1975,7 @@ public class Call extends AbstractCall
    */
   private void inferGeneric(Resolution res,
                             AbstractFeature outer,
+                            List<AbstractCall> infix_colons,
                             AbstractType formalType,
                             AbstractType actualType,
                             SourcePosition pos,
@@ -1987,7 +1993,7 @@ public class Call extends AbstractCall
             var i = g.index();
             var gt = _generics.get(i);
             var nt = gt == Types.t_UNDEFINED ? actualType
-                                             : gt.union(actualType);
+                                            : gt.union(actualType, outer, infix_colons);
             if (nt == Types.t_ERROR)
               {
                 conflict[i] = true;
@@ -2009,6 +2015,7 @@ public class Call extends AbstractCall
                   {
                     inferGeneric(res,
                                  outer,
+                                 infix_colons,
                                  formalType.generics().get(i),
                                  actualType.generics().get(i),
                                  pos, conflict, foundAt);
@@ -2017,9 +2024,9 @@ public class Call extends AbstractCall
           }
         else if (formalType.isChoice())
           {
-            for (var ct : formalType.choiceGenerics())
+            for (var ct : formalType.choiceGenerics(outer, infix_colons))
               {
-                inferGeneric(res, outer, ct, actualType, pos, conflict, foundAt);
+                inferGeneric(res, outer, infix_colons, ct, actualType, pos, conflict, foundAt);
               }
           }
         else if (aft != null)
@@ -2033,8 +2040,8 @@ public class Call extends AbstractCall
                 var pt = p.type();
                 if (pt != Types.t_ERROR)
                   {
-                    var apt = actualType.actualType(pt);
-                    inferGeneric(res, outer, formalType, apt, pos, conflict, foundAt);
+                    var apt = actualType.actualType(pt, outer, infix_colons);
+                    inferGeneric(res, outer, infix_colons, formalType, apt, pos, conflict, foundAt);
                   }
               }
           }
@@ -2494,9 +2501,9 @@ public class Call extends AbstractCall
    *
    * @param outer the feature that contains this expression
    */
-  public void unwrapActuals(Resolution res, AbstractFeature outer)
+  public void unwrapActuals(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons)
   {
-    applyToActualsAndFormalTypes((actual, formalType) -> actual.unwrap(res, outer, formalType));
+    applyToActualsAndFormalTypes((actual, formalType) -> actual.unwrap(res, outer, infix_colons, formalType));
   }
 
 
@@ -2537,7 +2544,7 @@ public class Call extends AbstractCall
    *
    * @param outer the feature that contains this expression
    */
-  public void box(AbstractFeature outer)
+  public void boxArgs(AbstractFeature outer, List<AbstractCall> infix_colons)
   {
     if (_type != Types.t_ERROR && _resolvedFormalArgumentTypes != null)
       {
@@ -2552,7 +2559,7 @@ public class Call extends AbstractCall
                 var rft = _resolvedFormalArgumentTypes[count];
                 if (actl != null && rft != Types.t_ERROR)
                   {
-                    var a = actl.box(rft);
+                    var a = actl.box(rft, outer, infix_colons);
                     if (CHECKS) check
                       (a != null);
                     i.set(a);
@@ -2572,7 +2579,7 @@ public class Call extends AbstractCall
    *
    * @param outer the root feature that contains this expression.
    */
-  public void checkTypes(Resolution res, AbstractFeature outer)
+  public void checkTypes(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons)
   {
     reportPendingError();
 
@@ -2603,7 +2610,7 @@ public class Call extends AbstractCall
             for (Expr actl : _actuals)
               {
                 var frmlT = _resolvedFormalArgumentTypes[count];
-                if (frmlT != Types.t_ERROR && !frmlT.isAssignableFrom(actl.type()))
+                if (frmlT != Types.t_ERROR && !frmlT.isAssignableFrom(actl.type(), outer, infix_colons))
                   {
                     AstErrors.incompatibleArgumentTypeInCall(_calledFeature, count, frmlT, actl);
                   }
@@ -2627,7 +2634,7 @@ public class Call extends AbstractCall
           }
 
         // Check that generics match formal generic constraints
-        AbstractType.checkActualTypePars(outer, _calledFeature, _generics, _unresolvedGenerics, pos());
+        AbstractType.checkActualTypePars(outer, infix_colons, _calledFeature, _generics, _unresolvedGenerics, pos());
       }
   }
 
@@ -2739,7 +2746,7 @@ public class Call extends AbstractCall
         _calledFeature = Types.f_ERROR;
       }
       @Override
-      Expr box(AbstractType frmlT)
+      Expr box(AbstractType frmlT, AbstractFeature outer, List<AbstractCall> infix_colons)
       {
         return this;
       }

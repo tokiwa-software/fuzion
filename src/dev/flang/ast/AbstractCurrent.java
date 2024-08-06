@@ -72,6 +72,7 @@ public abstract class AbstractCurrent extends Expr
    *
    * @return this Expr's type or null if not known.
    */
+  @Override
   AbstractType typeForInferencing()
   {
     return _type;

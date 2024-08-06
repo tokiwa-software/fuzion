@@ -96,6 +96,7 @@ public class DotType extends ExprWithPos
    *
    * @return this Expr's type or null if not known.
    */
+  @Override
   AbstractType typeForInferencing()
   {
     // could be _lhs.typeType(); but

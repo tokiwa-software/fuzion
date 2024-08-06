@@ -121,11 +121,12 @@ public class InlineArray extends ExprWithPos
    *
    * @return this Expr's type or null if not known.
    */
+  @Override
   AbstractType typeForInferencing()
   {
     if (_type == null && !_elements.isEmpty())
       {
-        var t = Expr.union(_elements);
+        var t = Expr.union(_elements, null /* outer */, null /* infix_colons */);
         if (t == Types.t_ERROR)
           {
             new IncompatibleResultsOnBranches(pos(),
@@ -171,7 +172,7 @@ public class InlineArray extends ExprWithPos
       {
         // if expected type is choice, examine if there is exactly one
         // array in choice generics, if so use this for further type propagation.
-        t = t.findInChoice(cg -> !cg.isGenericArgument() && cg.feature() == Types.resolved.f_array);
+        t = t.findInChoice(cg -> !cg.isGenericArgument() && cg.feature() == Types.resolved.f_array, outer, infix_colons);
 
         var elementType = elementType(t);
         if (elementType != Types.t_ERROR)
@@ -273,13 +274,13 @@ public class InlineArray extends ExprWithPos
    *
    * @param outer the feature that contains this expression
    */
-  public void box(AbstractFeature outer)
+  public void boxElements(AbstractFeature outer, List<AbstractCall> infix_colons)
   {
     var li = _elements.listIterator();
     while (li.hasNext())
       {
         var e = li.next();
-        li.set(e.box(elementType()));
+        li.set(e.box(elementType(), outer, infix_colons));
       }
   }
 
@@ -287,7 +288,7 @@ public class InlineArray extends ExprWithPos
   /**
    * check the types in this InlineArray
    */
-  public void checkTypes()
+  public void checkTypes(AbstractFeature outer, List<AbstractCall> infix_colons)
   {
     if (PRECONDITIONS) require
       (Errors.any() || _type != null);
@@ -299,7 +300,7 @@ public class InlineArray extends ExprWithPos
 
     for (var e : _elements)
       {
-        if (!elementType.isDirectlyAssignableFrom(e.type()))
+        if (!elementType.isDirectlyAssignableFrom(e.type(), outer, infix_colons))
           {
             AstErrors.incompatibleTypeInArrayInitialization(e.pos(), _type, elementType, e);
           }

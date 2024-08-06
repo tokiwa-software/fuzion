@@ -74,6 +74,7 @@ public class Universe extends ExprWithPos
    *
    * @return this Expr's type or null if not known.
    */
+  @Override
   AbstractType typeForInferencing()
   {
     return Types.resolved.universe.selfType();

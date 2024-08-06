@@ -128,7 +128,7 @@ public abstract class AbstractMatch extends Expr
    */
   private AbstractType typeFromCases()
   {
-    var result = Expr.union(cases().map2(x -> x.code()));
+    var result = Expr.union(cases().map2(x -> x.code()), null /* outer */, null /* infix_colons */);
     if (result == Types.t_ERROR)
       {
         new IncompatibleResultsOnBranches(pos(),
@@ -151,6 +151,7 @@ public abstract class AbstractMatch extends Expr
    *
    * @return this Expr's type or null if not known.
    */
+  @Override
   AbstractType typeForInferencing()
   {
     if (_type == null)

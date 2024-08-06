@@ -1526,7 +1526,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
        * redefinition `h.maybe`.
        */
       fixed &&
-      redefinition.outer().thisType(true).actualType(to).compareTo(tr) == 0       ||
+      redefinition.outer().thisType(true).actualType(to, null /* NYI: outer */, null /* NYI: infix_colons */).compareTo(tr) == 0       ||
 
       /* original and redefinition are inner features of type features, `to` is
        * `this.type` and `tr` is the underlying non-type feature's selfType.
@@ -1561,7 +1561,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
    * NYI: Better perform the check the other way around: check that f matches
    * the types of all features that f redefines.
    */
-  public void checkTypes(Feature f)
+  public void checkTypes(Feature f, List<AbstractCall> infix_colons)
   {
     if (!f.isVisibilitySpecified() && !f.redefines().isEmpty())
       {
@@ -1637,7 +1637,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
             */
             AstErrors.cannotRedefine(f, o);
           }
-        else if (!t1.isDirectlyAssignableFrom(t2) &&  // we (currently) do not tag the result in a redefined feature, see testRedefine
+        else if (!t1.isDirectlyAssignableFrom(t2, f, infix_colons) &&  // we (currently) do not tag the result in a redefined feature, see testRedefine
                  !t2.isVoid() &&
                  !isLegalCovariantThisType(o, f, t1, t2, fixed))
           {
@@ -1649,7 +1649,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
       {
         var cod = f.code();
         var rt = cod.type();
-        if (!Types.resolved.t_unit.isAssignableFrom(rt))
+        if (!Types.resolved.t_unit.isAssignableFrom(rt, f, infix_colons))
           {
             AstErrors.constructorResultMustBeUnit(cod);
           }

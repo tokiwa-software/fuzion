@@ -278,14 +278,15 @@ public class Block extends AbstractBlock
    *
    * @return this or an instance of Box wrapping this.
    */
-  Expr box(AbstractType frmlT)
+  @Override
+  Expr box(AbstractType frmlT, AbstractFeature outer, List<AbstractCall> infix_colons)
   {
     var r = removeResultExpression();
     if (CHECKS) check
       (r != null || Types.resolved.t_unit.compareTo(frmlT) == 0);
     if (r != null)
       {
-        _expressions.add(r.box(frmlT));
+        _expressions.add(r.box(frmlT, outer, infix_colons));
       }
     return this;
   }
@@ -320,14 +321,15 @@ public class Block extends AbstractBlock
    *
    * @param r the field this should be assigned to.
    */
-  Block assignToField(Resolution res, AbstractFeature outer, Feature r)
+  @Override
+  Block assignToField(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, Feature r)
   {
     Expr resExpr = removeResultExpression();
     if (resExpr != null)
       {
-        _expressions.add(resExpr.assignToField(res, outer, r));
+        _expressions.add(resExpr.assignToField(res, outer, infix_colons, r));
       }
-    else if (!r.resultType().isAssignableFrom(Types.resolved.t_unit))
+    else if (!r.resultType().isAssignableFrom(Types.resolved.t_unit, outer, infix_colons))
       {
         AstErrors.blockMustEndWithExpression(pos(), r.resultType());
       }

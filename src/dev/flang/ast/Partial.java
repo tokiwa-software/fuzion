@@ -159,7 +159,7 @@ public class Partial extends AbstractLambda
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, List<AbstractCall> infix_colons, AbstractType t)
   {
     Expr result = this;
-    t = t.functionTypeFromChoice();
+    t = t.functionTypeFromChoice(outer, infix_colons);
     var type = propagateTypeAndInferResult(res, outer, t, false);
     if (_function != null)
       {
@@ -255,6 +255,7 @@ public class Partial extends AbstractLambda
    *
    * @return this Expr's type or null if not known.
    */
+  @Override
   AbstractType typeForInferencing()
   {
     // unlike type(), we do not produce an error but just return null here since
