@@ -400,7 +400,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         if (actual_type.isGenericArgument())
           {
-            result = isAssignableFrom(actual_type.genericArgument().constraintNoContext().asRef(), outer, context);
+            result = isAssignableFrom(actual_type.genericArgument().constraint1(outer, context).asRef(), outer, context);
           }
         else
           {
@@ -488,7 +488,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             if (actual.feature() != null)
               {
                 result = actual.feature() == feature() &&
-                         genericsAssignable(actual); // NYI: Check: What about open generics?
+                  genericsAssignable(actual, outer, context); // NYI: Check: What about open generics?
                 for (var p: actual.feature().inherits())
                   {
                     result |= !p.calledFeature().isChoice() &&
@@ -506,7 +506,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * generics of type parameter with constraint `this`.
    *
    */
-  private boolean genericsAssignable(AbstractType actual)
+  private boolean genericsAssignable(AbstractType actual, AbstractFeature outer, Context context)
   {
     if (PRECONDITIONS) require
       (!this.isGenericArgument(),
@@ -528,8 +528,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           // this  = monad monad.A monad.MA
           // other = monad option.T (option option.T)
           // for now just prevent infinite recursion
-            !(g.isGenericArgument() && (g.genericArgument().constraintNoContext() == this ||
-                                        g.genericArgument().constraintNoContext().constraintAssignableFrom(null, null, og))))
+            !(g.isGenericArgument() && (g.genericArgument().constraint1(outer, context) == this ||
+                                        g.genericArgument().constraint1(outer, context).constraintAssignableFrom(null, null, og))))
           // NYI what if g is not a generic argument?
           {
             return false;
@@ -1913,7 +1913,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var f = fi.next();
         var a = ai.next();
         var u = ui.hasNext() ? ui.next() : null;
-        var c = f.constraint1(outer, null);
+        var c = f.constraintNoContext();
         if (CHECKS) check
           (Errors.any() || f != null && a != null);
 

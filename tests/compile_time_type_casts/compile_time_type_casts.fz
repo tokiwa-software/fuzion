@@ -90,11 +90,7 @@ compile_time_type_casts =>
       for_String
       uselambda ()->(say "lambda : codepoint len {v.codepoint_length}")
       uselambda     (say "partial: codepoint len {v.codepoint_length}")   # partial using constraint in args
-
-      # NYI: does not work yet:
-      #
-      # uselazy         v
-
+      uselazy         v
       uselazy_num i32 v.codepoint_length
     else if T : bool
       # note that `T` is not of type `bool` but of any type that inherits from `bool`. This is why built-in

@@ -1899,6 +1899,7 @@ A ((Choice)) declaration must not contain a result type.
          * that i32 will be the type for "a".
          */
         visit(new ContextVisitor() {
+            { _context = _sourceCodeContext; }
             public void  action(AbstractAssign a, AbstractFeature outer) { a.propagateExpectedType(res, outer, _context); }
             public Call  action(Call           c, AbstractFeature outer) { c.propagateExpectedType(res, outer, _context); return c; }
             public void  action(Cond           c, AbstractFeature outer) { c.propagateExpectedType(res, outer, _context); }
@@ -1911,6 +1912,7 @@ A ((Choice)) declaration must not contain a result type.
          * or unwrap values inheriting `unwrap`
          */
         visit(new ContextVisitor() {
+            { _context = _sourceCodeContext; }
             // we must do this from the outside of calls towards the inside to
             // get the corrected nesting of Lazy features created during this
             // phase
@@ -1949,10 +1951,11 @@ A ((Choice)) declaration must not contain a result type.
       {
         _state = State.BOXING;
 
-        visit(new FeatureVisitor() {
-            public void  action(AbstractAssign a, AbstractFeature outer) { a.boxVal(outer, null /* Context */);        }
-            public Call  action(Call        c, AbstractFeature outer) { c.boxArgs(outer, null /* Context */); return c; }
-            public Expr  action(InlineArray i, AbstractFeature outer) { i.boxElements(outer, null /* Context */); return i; }
+        visit(new ContextVisitor() {
+            { _context = _sourceCodeContext; }
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.boxVal     (outer, _context);           }
+            public Call  action(Call           c, AbstractFeature outer) { c.boxArgs    (outer, _context); return c; }
+            public Expr  action(InlineArray    i, AbstractFeature outer) { i.boxElements(outer, _context); return i; }
           });
 
         _state = State.BOXED;
@@ -2001,20 +2004,21 @@ A ((Choice)) declaration must not contain a result type.
       {
         _selfType   = selfType().checkChoice(_pos, this, null /* Context */);
         _resultType = _resultType.checkChoice(_posOfReturnType, this, null /* Context */);
-        visit(new FeatureVisitor() {
+        visit(new ContextVisitor() {
+            { _context = _sourceCodeContext; }
 
             /* if an error is reported in a call it might no longer make sense to check the actuals: */
             public boolean visitActualsLate() { return true; }
 
-            public void         action(AbstractAssign a, AbstractFeature outer) { a.checkTypes(res, outer, (Context) null);           }
-            public Call         action(Call           c, AbstractFeature outer) { c.checkTypes(res, outer, (Context) null); return c; }
-            public Expr         action(If             i, AbstractFeature outer) { i.checkTypes(     outer, (Context) null); return i; }
-            public Expr         action(InlineArray    i, AbstractFeature outer) { i.checkTypes(     outer, (Context) null); return i; }
-            public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints(outer, (Context) null);   }
-            public void         action(Cond           c, AbstractFeature outer) { c.checkTypes();                }
-            public void         actionBefore(Block    b, AbstractFeature outer) { b.checkTypes();                }
+            public void         action(AbstractAssign a, AbstractFeature outer) {        a.checkTypes(res,  outer, _context);           }
+            public Call         action(Call           c, AbstractFeature outer) {        c.checkTypes(res,  outer, _context); return c; }
+            public Expr         action(If             i, AbstractFeature outer) {        i.checkTypes(      outer, _context); return i; }
+            public Expr         action(InlineArray    i, AbstractFeature outer) {        i.checkTypes(      outer, _context); return i; }
+            public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints(outer, _context);           }
+            public void         action(Cond           c, AbstractFeature outer) {        c.checkTypes();                }
+            public void         actionBefore(Block    b, AbstractFeature outer) {        b.checkTypes();                }
           });
-        checkTypes(res, (Context) null);
+        checkTypes(res, _sourceCodeContext);
 
         switch (_state)
           {
