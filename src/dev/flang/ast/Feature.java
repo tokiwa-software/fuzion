@@ -1921,7 +1921,7 @@ A ((Choice)) declaration must not contain a result type.
 
         if (isConstructor())
           {
-            _impl.propagateExpectedType(res, this, (Context) null, Types.resolved.t_unit);
+            _impl.propagateExpectedType(res, this, _sourceCodeContext, Types.resolved.t_unit);
           }
 
         _state = State.TYPES_INFERENCED;
