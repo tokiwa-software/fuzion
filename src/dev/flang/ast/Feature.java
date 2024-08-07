@@ -1392,25 +1392,12 @@ public class Feature extends AbstractFeature
   }
 
 
-  static class ResolveTypes extends FeatureVisitor
+  static class ContextVisitor extends FeatureVisitor
   {
     Context _context = Context.NONE;
-    Resolution res;
-    ResolveTypes(Resolution r)
-      {
-        res = r;
-      }
-    @Override public void         action      (AbstractAssign  a, AbstractFeature outer) {        a.resolveTypes   (res,   outer); }
-    @Override public void         actionBefore(Call            c, AbstractFeature outer) {        c.tryResolveTypeCall(res,   outer, _context); }
-    @Override public Call         action      (Call            c, AbstractFeature outer) { return c.resolveTypes      (res,   outer, _context); }
-    @Override public Expr         action      (DotType         d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
-    @Override public Expr         action      (Destructure     d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
-    @Override public Function     action      (Function        f, AbstractFeature outer) {        f.resolveTypes   (res,   outer); return f; }
-    @Override public void         action      (Match           m, AbstractFeature outer) {        m.resolveTypes   (res,   outer, null /* Context */); }
-
-    @Override public Expr         action      (This            t, AbstractFeature outer) { return t.resolveTypes   (res,   outer); }
-    @Override public AbstractType action      (AbstractType    t, AbstractFeature outer) { return t.resolve        (res,   outer); }
-    @Override public Expr         action      (AbstractCurrent c, AbstractFeature outer) { return c.resolveTypes(res, outer); }
+    ContextVisitor()
+    {
+    }
 
     @Override public void         actionBefore(AbstractCase     c, AbstractMatch m)
     {
@@ -1418,21 +1405,7 @@ public class Feature extends AbstractFeature
       if (s instanceof AbstractCall sc &&
           sc.calledFeature() == Types.resolved.f_Type_infix_colon && c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0))
         {
-          if (false) System.out.println("NEW CONTEXT "+c.pos().show());
-          _context = new Context(_context)
-            {
-              public AbstractType constraintFor(AbstractFeature typeParameter)
-              {
-                if (false) if (sc.target() instanceof AbstractCall sct)
-                  System.out.println("CHECK for "+typeParameter.qualifiedName()+" subj "+s+" "+s.getClass()+" "+sct.calledFeature().qualifiedName()+
-                                     (sct.calledFeature()==typeParameter ? "yeah" : "nee"));
-                if (sc.target() instanceof AbstractCall sct && sct.calledFeature()==typeParameter)
-                  {
-                    return sc.actualTypeParameters().get(0);
-                  }
-                return super.constraintFor(typeParameter);
-              }
-            };
+          _context = _context.addTypeConstraint(sc);
         }
       else
         {
@@ -1460,19 +1433,8 @@ public class Feature extends AbstractFeature
       if (i.cond instanceof AbstractCall sc &&
           sc.calledFeature() == Types.resolved.f_Type_infix_colon)
         {
-          _context = new Context(_context)
-            {
-              public AbstractType constraintFor(AbstractFeature typeParameter)
-              {
-                if (sc.target() instanceof AbstractCall sct && sct.calledFeature()==typeParameter)
-                  {
-                    return sc.actualTypeParameters().get(0);
-                  }
-                return super.constraintFor(typeParameter);
-              }
-            };
+          _context = _context.addTypeConstraint(sc);
         }
-
     }
     @Override public void actionBeforeIfElse(If i)
     {
@@ -1487,6 +1449,25 @@ public class Feature extends AbstractFeature
     {
     }
 
+  }
+  static class ResolveTypes extends ContextVisitor
+  {
+    Resolution res;
+    ResolveTypes(Resolution r)
+    {
+      res = r;
+    }
+    @Override public void         action      (AbstractAssign  a, AbstractFeature outer) {        a.resolveTypes   (res,   outer); }
+    @Override public void         actionBefore(Call            c, AbstractFeature outer) {        c.tryResolveTypeCall(res,   outer, _context); }
+    @Override public Call         action      (Call            c, AbstractFeature outer) { return c.resolveTypes      (res,   outer, _context); }
+    @Override public Expr         action      (DotType         d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
+    @Override public Expr         action      (Destructure     d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
+    @Override public Function     action      (Function        f, AbstractFeature outer) {        f.resolveTypes   (res,   outer, _context); return f; }
+    @Override public void         action      (Match           m, AbstractFeature outer) {        m.resolveTypes   (res,   outer, null /* Context */); }
+
+    @Override public Expr         action      (This            t, AbstractFeature outer) { return t.resolveTypes   (res,   outer); }
+    @Override public AbstractType action      (AbstractType    t, AbstractFeature outer) { return t.resolve        (res,   outer); }
+    @Override public Expr         action      (AbstractCurrent c, AbstractFeature outer) { return c.resolveTypes(res, outer); }
 
     @Override public boolean doVisitActuals() { return false; }
   }
@@ -1516,6 +1497,7 @@ public class Feature extends AbstractFeature
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    */
+  Context _sourceCodeContext = Context.NONE;
   void internalResolveTypes(Resolution res)
   {
     if (PRECONDITIONS) require
@@ -1533,7 +1515,11 @@ public class Feature extends AbstractFeature
           }
 
         resolveArgumentTypes(res);
-        visit(res.resolveTypesFully);
+        var rtf = res.resolveTypesFully;
+        var old_context = rtf._context;
+        rtf._context = _sourceCodeContext;
+        visit(rtf);
+        rtf._context = old_context;
 
         if (hasThisType())
           {
@@ -1904,25 +1890,25 @@ A ((Choice)) declaration must not contain a result type.
          * myfun will be used as the type of "fun (a) => a*a", which implies
          * that i32 will be the type for "a".
          */
-        visit(new FeatureVisitor() {
-            public void  action(AbstractAssign a, AbstractFeature outer) { a.propagateExpectedType(res, outer, (Context) null); }
-            public Call  action(Call           c, AbstractFeature outer) { c.propagateExpectedType(res, outer, (Context) null); return c; }
-            public void  action(Cond           c, AbstractFeature outer) { c.propagateExpectedType(res, outer, (Context) null); }
-            public void  action(Impl           i, AbstractFeature outer) { i.propagateExpectedType(res, outer, (Context) null); }
-            public Expr  action(If             i, AbstractFeature outer) { i.propagateExpectedType(res, outer, (Context) null); return i; }
+        visit(new ContextVisitor() {
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.propagateExpectedType(res, outer, _context); }
+            public Call  action(Call           c, AbstractFeature outer) { c.propagateExpectedType(res, outer, _context); return c; }
+            public void  action(Cond           c, AbstractFeature outer) { c.propagateExpectedType(res, outer, _context); }
+            public void  action(Impl           i, AbstractFeature outer) { i.propagateExpectedType(res, outer, _context); }
+            public Expr  action(If             i, AbstractFeature outer) { i.propagateExpectedType(res, outer, _context); return i; }
           });
 
         /*
          * extra pass to automatically wrap values into 'Lazy'
          * or unwrap values inheriting `unwrap`
          */
-        visit(new FeatureVisitor() {
+        visit(new ContextVisitor() {
             // we must do this from the outside of calls towards the inside to
             // get the corrected nesting of Lazy features created during this
             // phase
             public boolean visitActualsLate() { return true; }
-            public void  action(AbstractAssign a, AbstractFeature outer) { a.wrapValueInLazy  (res, outer); a.unwrapValue  (res, outer, (Context) null); }
-            public Expr  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, outer); c.unwrapActuals(res, outer, (Context) null); return c; }
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.wrapValueInLazy  (res, outer, _context); a.unwrapValue  (res, outer, _context); }
+            public Expr  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, outer, _context); c.unwrapActuals(res, outer, _context); return c; }
           });
 
         if (isConstructor())

@@ -70,9 +70,9 @@ public abstract class AbstractLambda extends ExprWithPos
    * @return the result type inferred from this lambda or Types.t_UNDEFINED if
    * not result type available.
    */
-  public AbstractType inferLambdaResultType(Resolution res, AbstractFeature outer, AbstractType t)
+  public AbstractType inferLambdaResultType(Resolution res, AbstractFeature outer, Context context, AbstractType t)
   {
-    return propagateTypeAndInferResult(res, outer, t, true);
+    return propagateTypeAndInferResult(res, outer, context, t, true);
   }
 
 
@@ -96,6 +96,7 @@ public abstract class AbstractLambda extends ExprWithPos
    */
   protected abstract AbstractType propagateTypeAndInferResult(Resolution res,
                                                               AbstractFeature outer,
+                                                              Context context,
                                                               AbstractType t,
                                                               boolean inferResultType);
 

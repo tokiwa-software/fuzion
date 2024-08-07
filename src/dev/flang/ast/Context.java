@@ -54,6 +54,10 @@ public abstract class Context extends ANY
    */
   static final Context NONE = new Context(null)
     {
+      @Override public String toString()
+      {
+        return "NO CONTEXT";
+      }
     };
 
   /*----------------------------  variables  ----------------------------*/
@@ -68,6 +72,9 @@ public abstract class Context extends ANY
 
   public Context(Context outer)
   {
+    if (PRECONDITIONS) require
+      (outer != null || true /* NYI: REMOVE! */);
+
     this._outer = outer;
   }
 
@@ -81,6 +88,42 @@ public abstract class Context extends ANY
                           : null;
   }
 
+
+  /**
+   * Creeate a new context that adds the constraint imposed by a call `T : x` to
+   * this context.
+   */
+  public Context addTypeConstraint(AbstractCall infix_colon_call)
+  {
+    if (PRECONDITIONS) require
+      (infix_colon_call.calledFeature() == Types.resolved.f_Type_infix_colon);
+
+    var result = this;
+    if (infix_colon_call.target() instanceof AbstractCall t)
+      {
+        result =  new Context(this)
+          {
+            @Override
+            public AbstractType constraintFor(AbstractFeature typeParameter)
+            {
+              if (t.calledFeature() == typeParameter)
+                {
+                  return infix_colon_call.actualTypeParameters().get(0);
+                }
+              return super.constraintFor(typeParameter);
+            }
+
+            @Override
+            public String toString()
+            {
+              var o = "" + _outer;
+              o.replace("\n", "\n  ");
+              return "Type context at " + infix_colon_call.pos().show() + "\n  " + o;
+            }
+          };
+      }
+    return result;
+  }
 
 }
 

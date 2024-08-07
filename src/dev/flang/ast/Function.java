@@ -184,7 +184,7 @@ public class Function extends AbstractLambda
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, Context context, AbstractType t)
   {
-    _type = propagateTypeAndInferResult(res, outer, t.functionTypeFromChoice(outer, context), false);
+    _type = propagateTypeAndInferResult(res, outer, context, t.functionTypeFromChoice(outer, context), false);
     return this;
   }
 
@@ -240,7 +240,8 @@ public class Function extends AbstractLambda
    * Types.t_UNDEFINED if no result type available.  if !inferResultType, t. In
    * case of error, return Types.t_ERROR.
    */
-  public AbstractType propagateTypeAndInferResult(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)
+  @Override
+  public AbstractType propagateTypeAndInferResult(Resolution res, AbstractFeature outer, Context context, AbstractType t, boolean inferResultType)
   {
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_call == null)
@@ -292,7 +293,7 @@ public class Function extends AbstractLambda
           {
             var rt = inferResultType ? NoType.INSTANCE      : new FunctionReturnType(gs.get(0));
             var im = inferResultType ? Impl.Kind.RoutineDef : Impl.Kind.Routine;
-            _feature = new Feature(pos(), Visi.PRIV, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>("call"), a, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
+            var feature = new Feature(pos(), Visi.PRIV, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>("call"), a, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
               {
                 @Override
                 public boolean isLambdaCall()
@@ -300,6 +301,8 @@ public class Function extends AbstractLambda
                   return true;
                 }
               };
+            _feature = feature;
+            feature._sourceCodeContext = context;
 
             var inheritsName =
               (t.feature() == Types.resolved.f_Unary && gs.size() == 2) ? Types.UNARY_NAME :
@@ -309,7 +312,7 @@ public class Function extends AbstractLambda
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             _inheritsCall = new Call(pos(), null, inheritsName);
             _inheritsCall._generics = gs;
-            List<Expr> expressions = new List<Expr>(_feature);
+            List<Expr> expressions = new List<Expr>(feature);
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             _wrapper = new Feature(pos(),
                                    Visi.PRIV,
@@ -367,7 +370,7 @@ public class Function extends AbstractLambda
    *
    * @param outer the root feature that contains this expression.
    */
-  public void resolveTypes(Resolution res, AbstractFeature outer)
+  public void resolveTypes(Resolution res, AbstractFeature outer, Context context)
   {
     if (CHECKS) check
       (this._call == null || this._feature != null);
@@ -398,7 +401,7 @@ public class Function extends AbstractLambda
           }
 
         _inheritsCall._generics = generics;
-        Call inheritsCall2 = _inheritsCall.resolveTypes(res, outer);
+        Call inheritsCall2 = _inheritsCall.resolveTypes(res, outer, context);
         // Call.resolveType returns something different than this only for an
         // immediate function call, which is never the case in an inherits
         // clause.

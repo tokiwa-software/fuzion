@@ -458,7 +458,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    *
    * @param t the type this expression is assigned to.
    */
-  public Expr wrapInLazy(Resolution res, AbstractFeature outer, AbstractType t)
+  public Expr wrapInLazy(Resolution res, AbstractFeature outer, Context context, AbstractType t)
   {
     var result = this;
 
@@ -473,7 +473,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
                                   result);
 
             result = fn.propagateExpectedType(res, outer, t);
-            fn.resolveTypes(res, outer);
+            fn.resolveTypes(res, outer, context);
             fn.updateTarget(res);
           }
         else

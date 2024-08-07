@@ -20,15 +20,19 @@
 String 'Fuzion!' type Type of 'String'
 String 'Fuzion!' type Type of 'String' len 7
 String 'Fuzion!' type Type of 'String' len 7
+codepoint len 7
 matched String 'Fuzion!' type Type of 'String' len 7
 String 'Fuzion!' type Type of 'String' len 7
 String 'F' type Type of 'codepoint'
 String 'F' type Type of 'codepoint' len 1
 String 'F' type Type of 'codepoint' len 1
+codepoint len 1
 matched String 'F' type Type of 'codepoint' len 1
 String 'F' type Type of 'codepoint' len 1
 bool true Type of 'bool' false
 other type --nil-- type Type of 'nil'
 a!
 b!
+b -- from lambda!!
+b -- from lambda!!
 c!

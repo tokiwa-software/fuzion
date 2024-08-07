@@ -204,14 +204,14 @@ public abstract class AbstractAssign extends Expr
    *
    * @param outer the feature that contains this expression
    */
-  public void wrapValueInLazy(Resolution res, AbstractFeature outer)
+  public void wrapValueInLazy(Resolution res, AbstractFeature outer, Context context)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
 
     if (resultTypeKnown(res))
       {
-        _value = _value.wrapInLazy(res, outer, _assignedField.resultType());
+        _value = _value.wrapInLazy(res, outer, context, _assignedField.resultType());
       }
   }
 

@@ -57,8 +57,12 @@ compile_time_type_casts =>
     do_a_thing => say "a!"
   b is
     do_b_thing => say "b!"
+    do_b_thing_from_lambda => say "b -- from lambda!!"
   c is
     do_c_thing => say "c!"
+
+  uselambda(f ()->unit) =>
+    f()
 
   x(v T) =>
 
@@ -73,6 +77,12 @@ compile_time_type_casts =>
       say "String '$v' type $T"
       say "String '$v' type $T len {v.byte_length}"
       for_String
+      uselambda ()->
+        say "codepoint len {v.codepoint_length}"
+
+      # partial using constraing in args does not work yet:
+      #
+      # uselambda (say "codepoint len {v.codepoint_length}")
     else if T : bool
       # note that `T` is not of type `bool` but of any type that inherits from `bool`. This is why built-in
       # operation like `prefix !`, `infix &&` and `infix ||` that are compiled into `if-then-else` expressions
@@ -87,6 +97,11 @@ compile_time_type_casts =>
       v.do_a_thing
     else if T : b
       v.do_b_thing
+      uselambda ()->v.do_b_thing_from_lambda
+      uselambda v.do_b_thing_from_lambda
+      # partial using constraing in args does not work yet:
+      #
+      # uselambda (say v.do_b_thing_from_lambda)
     else if T : c
       v.do_c_thing
     else if T : unit

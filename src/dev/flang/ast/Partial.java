@@ -160,7 +160,7 @@ public class Partial extends AbstractLambda
   {
     Expr result = this;
     t = t.functionTypeFromChoice(outer, context);
-    var type = propagateTypeAndInferResult(res, outer, t, false);
+    var type = propagateTypeAndInferResult(res, outer, context, t, false);
     if (_function != null)
       {
         result = _function.propagateExpectedType(res, outer, context, type);
@@ -187,7 +187,8 @@ public class Partial extends AbstractLambda
    * Types.t_UNDEFINED if not result type available.  if !inferResultType, t. In
    * case of error, return Types.t_ERROR.
    */
-  public AbstractType propagateTypeAndInferResult(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)
+  @Override
+  public AbstractType propagateTypeAndInferResult(Resolution res, AbstractFeature outer, Context context, AbstractType t, boolean inferResultType)
   {
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_function == null && t.isFunctionType() && (t.arity() == 1 || t.arity() == 2))
@@ -211,7 +212,7 @@ public class Partial extends AbstractLambda
       }
     if (_function != null)
       {
-        result = _function.propagateTypeAndInferResult(res, outer, t, inferResultType);
+        result = _function.propagateTypeAndInferResult(res, outer, context, t, inferResultType);
       }
     return result;
   }

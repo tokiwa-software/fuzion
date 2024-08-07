@@ -510,15 +510,16 @@ public class ParsedCall extends Call
                               pns,
                               this)
           {
-            public AbstractType propagateTypeAndInferResult(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)
+            @Override
+            public AbstractType propagateTypeAndInferResult(Resolution res, AbstractFeature outer, Context context, AbstractType t, boolean inferResultType)
             {
-              var rs = super.propagateTypeAndInferResult(res, outer, t, inferResultType);
+              var rs = super.propagateTypeAndInferResult(res, outer, context, t, inferResultType);
               updateTarget(res);
               return rs;
             }
           };
         result = fn;
-        fn.resolveTypes(res, outer);
+        fn.resolveTypes(res, outer, context);
       }
     else
       {

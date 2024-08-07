@@ -2089,7 +2089,7 @@ public class Call extends AbstractCall
             var at = actualArgType(res, formalType, outer, context);
             if (!at.containsUndefined(true))
               {
-                var rt = al.inferLambdaResultType(res, outer, at);
+                var rt = al.inferLambdaResultType(res, outer, context, at);
                 if (rt != null)
                   {
                     _generics = _generics.setOrClone(ri, rt);
@@ -2419,7 +2419,7 @@ public class Call extends AbstractCall
    */
   public void propagateExpectedType(Resolution res, AbstractFeature outer, Context context)
   {
-    applyToActualsAndFormalTypes((actual, formalType) -> actual.propagateExpectedType(res, outer, formalType));
+    applyToActualsAndFormalTypes((actual, formalType) -> actual.propagateExpectedType(res, outer, context, formalType));
 
     if (_target != null)
       {
@@ -2488,9 +2488,9 @@ public class Call extends AbstractCall
    *
    * @param outer the feature that contains this expression
    */
-  public void wrapActualsInLazy(Resolution res, AbstractFeature outer)
+  public void wrapActualsInLazy(Resolution res, AbstractFeature outer, Context context)
   {
-    applyToActualsAndFormalTypes((actual, formalType) -> actual.wrapInLazy(res, outer, formalType));
+    applyToActualsAndFormalTypes((actual, formalType) -> actual.wrapInLazy(res, outer, context, formalType));
   }
 
 

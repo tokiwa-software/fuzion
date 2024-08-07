@@ -826,7 +826,7 @@ public class NumLiteral extends Constant
                                                             FuzionConstants.INFIX_OPERATOR_PREFIX +
                                                             explicitSign()),              // `infix +` or `infix -`
                                              new List<>(stripSign())));                   // constant w/o sign
-        fn.resolveTypes(res, outer);
+        fn.resolveTypes(res, outer, context);
         result = fn;
       }
     return result;
@@ -886,13 +886,13 @@ public class NumLiteral extends Constant
    * @param t the type this expression is assigned to.
    */
   @Override
-  public Expr wrapInLazy(Resolution res, AbstractFeature outer, AbstractType t)
+  public Expr wrapInLazy(Resolution res, AbstractFeature outer, Context context, AbstractType t)
   {
     if (t.isLazyType())
       {
         propagateExpectedType(res, outer, t.generics().get(0));
       }
-    return super.wrapInLazy(res, outer, t);
+    return super.wrapInLazy(res, outer, context, t);
   }
 
 
