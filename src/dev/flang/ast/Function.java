@@ -69,7 +69,7 @@ public class Function extends AbstractLambda
   /**
    * The implementation of `Function.call` that contains the code of this lambda.
    */
-  AbstractFeature _feature;
+  Feature _feature;
 
 
   /**
@@ -209,9 +209,10 @@ public class Function extends AbstractLambda
   {
     var e = _expr.visit(new FeatureVisitor()
       {
+        @Override
         public Expr action(Call c, AbstractFeature outer)
         {
-          return c.updateTarget(res, outer);
+          return c.updateTarget(res, outer, _feature._sourceCodeContext);
         }
       },
       _feature);
@@ -332,7 +333,7 @@ public class Function extends AbstractLambda
                 _inheritsCall._generics = gs.setOrClone(0, result);
               }
 
-            _call = new Call(pos(), new Current(pos(), outer), _wrapper).resolveTypes(res, outer);
+            _call = new Call(pos(), new Current(pos(), outer), _wrapper).resolveTypes(res, outer, context);
           }
       }
     return result;

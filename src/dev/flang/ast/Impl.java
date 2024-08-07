@@ -415,12 +415,12 @@ public class Impl extends ANY
    *
    * @param outer the feature that contains this implementation.
    */
-  public void resolveSyntacticSugar2(Resolution res, AbstractFeature outer)
+  public void resolveSyntacticSugar2(Resolution res, AbstractFeature outer, Context context)
   {
     if (outer.isConstructor() && outer.preFeature() != null)
       { // For constructors, the constructor itself checks the precondition (while
         // for functions, this is done by the caller):
-        var c = outer.contract().callPreCondition(res, outer, (Feature) outer);
+        var c = outer.contract().callPreCondition(res, outer, (Feature) outer, context);
         _expr = new Block(new List<>(c, _expr));
       }
     if (needsImplicitAssignmentToResult(outer))
@@ -430,7 +430,8 @@ public class Impl extends ANY
                                 this._expr.pos(),
                                 resultField,
                                 this._expr,
-                                outer);
+                                outer,
+                                context);
         ass._value = this._expr.box(ass._assignedField.resultType(), outer, null /* Context */);  // NYI: move to constructor of Assign?
         this._expr = ass;
       }
@@ -446,7 +447,7 @@ public class Impl extends ANY
                OpenTypeParameter -> { if (!Errors.any()) { Errors.fatal("postcondition for type parameter should not exist for " + outer.pos().show()); } }
           case Routine           ->
             {
-              var callPostCondition = Contract.callPostCondition(res, (Feature) outer);
+              var callPostCondition = Contract.callPostCondition(res, (Feature) outer, context);
               this._expr = new Block(new List<>(this._expr, callPostCondition));
             }
           case Abstract          -> {} // ok, must be checked by redefinitions

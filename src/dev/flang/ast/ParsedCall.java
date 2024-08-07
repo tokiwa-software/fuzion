@@ -275,7 +275,7 @@ public class ParsedCall extends Call
                 boolean isChainedBoolRHS() { return true; }
               };
             this._movedTo = movedTo;
-            Expr as = new Assign(res, pos(), tmp, b, thiz);
+            Expr as = new Assign(res, pos(), tmp, b, thiz, context);
             t1         = res.resolveType(t1     , thiz, context);
             as         = res.resolveType(as     , thiz, context);
             var result = res.resolveType(movedTo, thiz, context);
@@ -405,7 +405,7 @@ public class ParsedCall extends Call
           {
             if (_pendingError == null)
               {
-                l = resolveTypes(res, outer);  // this ensures _calledFeature is set such that possible ambiguity is reported
+                l = resolveTypes(res, outer, context);  // this ensures _calledFeature is set such that possible ambiguity is reported
               }
             if (l == this)
               {
@@ -644,7 +644,7 @@ public class ParsedCall extends Call
             // replace Function call `c.123` by `c.f.123`:
             result = pushCall(res, outer, f.featureName().baseName());
             setActualResultType(res, outer, context, t); // setActualResultType will be done again by resolveTypes, but we need it now.
-            result = result.resolveTypes(res, outer);
+            result = result.resolveTypes(res, outer, context);
           }
       }
     return result;
@@ -652,14 +652,14 @@ public class ParsedCall extends Call
 
 
   @Override
-  protected Call resolveImmediateFunctionCall(Resolution res, AbstractFeature outer)
+  protected Call resolveImmediateFunctionCall(Resolution res, AbstractFeature outer, Context context)
   {
     Call result = this;
 
     // replace Function or Lazy value `l` by `l.call`:
     if (isImmediateFunctionCall())
       {
-        result = pushCall(res, outer, "call").resolveTypes(res, outer);
+        result = pushCall(res, outer, "call").resolveTypes(res, outer, context);
       }
     return result;
   }

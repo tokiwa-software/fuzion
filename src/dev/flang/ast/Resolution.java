@@ -571,6 +571,8 @@ public class Resolution extends ANY
    */
   Expr resolveType(Expr e, AbstractFeature outer, Context context)
   {
+    if (PRECONDITIONS) require
+      (context != null);
     var old_context = resolveTypesFully._context;
     resolveTypesFully._context = context;
     var res = e.visit(resolveTypesFully, outer);

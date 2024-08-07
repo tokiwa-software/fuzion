@@ -110,12 +110,12 @@ public abstract class AbstractCurrent extends Expr
    * Expr `Current.outer_ref. .. .outer_ref` to access the same current instance
    * from within a new, nested outer feature.
    */
-  public Expr resolveTypes(Resolution res, AbstractFeature outer)
+  public Expr resolveTypes(Resolution res, AbstractFeature outer, Context context)
   {
     var of = _type.feature();
     return of == Types.f_ERROR || of == outer
       ? this
-      : new This(pos(), outer, of).resolveTypes(res, outer);
+      : new This(pos(), outer, of).resolveTypes(res, outer, context);
   }
 
 

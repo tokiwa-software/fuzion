@@ -114,7 +114,7 @@ public class DotType extends ExprWithPos
    *
    * @param outer the root feature that contains this expression.
    */
-  public Call resolveTypes(Resolution res, AbstractFeature outer)
+  public Call resolveTypes(Resolution res, AbstractFeature outer, Context context)
   {
     return new Call(pos(),
                     new Universe(),
@@ -123,7 +123,7 @@ public class DotType extends ExprWithPos
                     new List<>(_lhs),
                     new List<>(),
                     null,
-                    null).resolveTypes(res, outer);
+                    null).resolveTypes(res, outer, context);
   }
 
 

@@ -141,7 +141,7 @@ public class FeatureAndOuter extends ANY
    *
    * @param cur the feature that contains the access.
    */
-  Expr target(SourcePosition pos, Resolution res, AbstractFeature cur)
+  Expr target(SourcePosition pos, Resolution res, AbstractFeature cur, Context context)
   {
     var t = new This(pos, cur, _outer);
     Expr result = t;
@@ -149,7 +149,7 @@ public class FeatureAndOuter extends ANY
         res.state(cur) != State.RESOLVING)
       {
         var fcur = (Feature) cur; // NYI: cast to Feature!
-        result = t.resolveTypes(res, fcur);
+        result = t.resolveTypes(res, fcur, context);
       }
     return result;
   }

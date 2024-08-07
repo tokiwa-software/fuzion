@@ -326,7 +326,7 @@ public class If extends ExprWithPos
   @Override
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, Context context, AbstractType t)
   {
-    return addFieldForResult(res, outer, t);
+    return addFieldForResult(res, outer, context, t);
   }
 
 

@@ -358,7 +358,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    */
   Expr assignToField(Resolution res, AbstractFeature outer, Context context, Feature r)
   {
-    return new Assign(res, pos(), r, this, outer);
+    return new Assign(res, pos(), r, this, outer, context);
   }
 
 
@@ -472,7 +472,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
                                   new List<>(),
                                   result);
 
-            result = fn.propagateExpectedType(res, outer, t);
+            result = fn.propagateExpectedType(res, outer, context, t);
             fn.resolveTypes(res, outer, context);
             fn.updateTarget(res);
           }
@@ -502,10 +502,6 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public final Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
-  {
-    return propagateExpectedType(res, outer, null, t); // NYI: remove!
-  }
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, Context context, AbstractType t)
   {
     return this;
@@ -578,7 +574,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   }
 
 
-  protected Expr addFieldForResult(Resolution res, AbstractFeature outer, AbstractType t)
+  protected Expr addFieldForResult(Resolution res, AbstractFeature outer, Context context, AbstractType t)
   {
     var result = this;
     if (!t.isVoid())
@@ -593,7 +589,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
         r.scheduleForResolution(res);
         res.resolveTypes();
         result = new Block(new List<>(assignToField(res, outer, null /* Context */, r),
-                                      new Call(pos, new Current(pos, outer), r).resolveTypes(res, outer)));
+                                      new Call(pos, new Current(pos, outer), r).resolveTypes(res, outer, context)));
       }
     return result;
   }
@@ -799,7 +795,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
             c.calledFeature().equals(Types.resolved.f_auto_unwrap)
             && !c.actualTypeParameters().isEmpty()
                     && expectedType.isAssignableFrom(c.actualTypeParameters().get(0).applyTypePars(t), outer, context))
-      ? new ParsedCall(this, new ParsedName(pos(), "unwrap")).resolveTypes(res, outer)
+      ? new ParsedCall(this, new ParsedName(pos(), "unwrap")).resolveTypes(res, outer, context)
       : this;
   }
 

@@ -1276,7 +1276,7 @@ public class Feature extends AbstractFeature
               {
                 cp._isInheritanceCall = true;
               }
-            p.loadCalledFeature(res, this, null);
+            p.loadCalledFeature(res, this, _sourceCodeContext);
             var parent = p.calledFeature();
             if (CHECKS) check
               (Errors.any() || parent != null);
@@ -1406,6 +1406,7 @@ public class Feature extends AbstractFeature
           sc.calledFeature() == Types.resolved.f_Type_infix_colon && c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0))
         {
           _context = _context.addTypeConstraint(sc);
+          check(_context != null);
         }
       else
         {
@@ -1420,6 +1421,7 @@ public class Feature extends AbstractFeature
           sc.calledFeature() == Types.resolved.f_Type_infix_colon && c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0))
         {
           _context = _context.outer();
+          check(_context != null);
         }
       if (false) if (s instanceof AbstractCall sc &&
           sc.calledFeature() == Types.resolved.f_Type_infix_colon && c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0))
@@ -1434,6 +1436,7 @@ public class Feature extends AbstractFeature
           sc.calledFeature() == Types.resolved.f_Type_infix_colon)
         {
           _context = _context.addTypeConstraint(sc);
+          check(_context != null);
         }
     }
     @Override public void actionBeforeIfElse(If i)
@@ -1442,6 +1445,7 @@ public class Feature extends AbstractFeature
           sc.calledFeature() == Types.resolved.f_Type_infix_colon)
         {
           _context = _context.outer();
+          check(_context != null);
         }
       // NYI: We might add support for `if !(T : x) then else ...treat T as x...`
     }
@@ -1457,17 +1461,17 @@ public class Feature extends AbstractFeature
     {
       res = r;
     }
-    @Override public void         action      (AbstractAssign  a, AbstractFeature outer) {        a.resolveTypes   (res,   outer); }
+    @Override public void         action      (AbstractAssign  a, AbstractFeature outer) {        a.resolveTypes      (res,   outer); }
     @Override public void         actionBefore(Call            c, AbstractFeature outer) {        c.tryResolveTypeCall(res,   outer, _context); }
     @Override public Call         action      (Call            c, AbstractFeature outer) { return c.resolveTypes      (res,   outer, _context); }
-    @Override public Expr         action      (DotType         d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
-    @Override public Expr         action      (Destructure     d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
-    @Override public Function     action      (Function        f, AbstractFeature outer) {        f.resolveTypes   (res,   outer, _context); return f; }
-    @Override public void         action      (Match           m, AbstractFeature outer) {        m.resolveTypes   (res,   outer, null /* Context */); }
+    @Override public Expr         action      (DotType         d, AbstractFeature outer) { return d.resolveTypes      (res,   outer, _context); }
+    @Override public Expr         action      (Destructure     d, AbstractFeature outer) { return d.resolveTypes      (res,   outer, _context); }
+    @Override public Function     action      (Function        f, AbstractFeature outer) {        f.resolveTypes      (res,   outer, _context); return f; }
+    @Override public void         action      (Match           m, AbstractFeature outer) {        m.resolveTypes      (res,   outer, null /* Context */); }
 
-    @Override public Expr         action      (This            t, AbstractFeature outer) { return t.resolveTypes   (res,   outer); }
-    @Override public AbstractType action      (AbstractType    t, AbstractFeature outer) { return t.resolve        (res,   outer); }
-    @Override public Expr         action      (AbstractCurrent c, AbstractFeature outer) { return c.resolveTypes(res, outer); }
+    @Override public Expr         action      (This            t, AbstractFeature outer) { return t.resolveTypes      (res,   outer, _context); }
+    @Override public AbstractType action      (AbstractType    t, AbstractFeature outer) { return t.resolve           (res,   outer); }
+    @Override public Expr         action      (AbstractCurrent c, AbstractFeature outer) { return c.resolveTypes      (res,   outer, _context); }
 
     @Override public boolean doVisitActuals() { return false; }
   }
@@ -1511,15 +1515,19 @@ public class Feature extends AbstractFeature
 
         if (Contract.requiresPreConditionsFeature(this) && preFeature() == null)
           {
-            Contract.addPreFeature(res, this, false);
+            Contract.addPreFeature(res, this, _sourceCodeContext, false);
           }
 
         resolveArgumentTypes(res);
         var rtf = res.resolveTypesFully;
         var old_context = rtf._context;
+        check
+          (_sourceCodeContext != null);
         rtf._context = _sourceCodeContext;
+        check(rtf._context != null);
         visit(rtf);
         rtf._context = old_context;
+        check(rtf._context != null);
 
         if (hasThisType())
           {
@@ -1581,7 +1589,7 @@ public class Feature extends AbstractFeature
       {
         _state = State.RESOLVING_SUGAR1;
 
-        _contract.addContractFeatures(res, this);
+        _contract.addContractFeatures(res, this, _sourceCodeContext);
         if (definesType())
           {
             typeFeature(res);
@@ -2066,8 +2074,8 @@ A ((Choice)) declaration must not contain a result type.
         visit(new FeatureVisitor() {
             public Expr  action(Feature     f, AbstractFeature outer) { return new Nop(_pos);                        }
             public Expr  action(Function    f, AbstractFeature outer) { return f.resolveSyntacticSugar2(res, outer); }
-            public Expr  action(InlineArray i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, outer); }
-            public void  action(Impl        i, AbstractFeature outer) {        i.resolveSyntacticSugar2(res, outer); }
+            public Expr  action(InlineArray i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, outer, _sourceCodeContext); }
+            public void  action(Impl        i, AbstractFeature outer) {        i.resolveSyntacticSugar2(res, outer, _sourceCodeContext); }
             public Expr  action(If          i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, outer); }
           });
 
@@ -2147,7 +2155,7 @@ A ((Choice)) declaration must not contain a result type.
         if (this.outer() == outer)
           {
             /* add assignment of initial value: */
-            AbstractAssign ass = new Assign(res, _pos, this, _impl.expr(), outer);
+            AbstractAssign ass = new Assign(res, _pos, this, _impl.expr(), outer, _sourceCodeContext);
             ass = ass.visit(res._resolveSyntaxSugar1, outer);
             result = new Block(new List<>(this, ass));
           }

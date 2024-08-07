@@ -151,6 +151,8 @@ public class Call extends AbstractCall
    */
   public AbstractFeature _calledFeature;
 
+  public Context _context = Context.NONE;
+
 
   /**
    * After an unsuccessful attempt was made to find the called feature, this
@@ -624,6 +626,8 @@ public class Call extends AbstractCall
    */
   void loadCalledFeature(Resolution res, AbstractFeature thiz, Context context)
   {
+    if (PRECONDITIONS) require
+      (context != null);
     var ignore = loadCalledFeatureUnlessTargetVoid(res, thiz, context);
   }
 
@@ -686,9 +690,10 @@ public class Call extends AbstractCall
         if (fo != null)
           {
             _calledFeature = fo._feature;
+            _context = context;
             if (_target == null)
               {
-                _target = fo.target(pos(), res, thiz);
+                _target = fo.target(pos(), res, thiz, context);
                 _targetFrom = fo;
               }
           }
@@ -728,7 +733,7 @@ public class Call extends AbstractCall
     // !isInheritanceCall: see issue #2153
     if (_calledFeature == null && !isInheritanceCall())
       { // nothing found, try if we can build operator call: `a + b` => `x.y.z.this.infix + a b`
-        findOperatorOnOuter(res, thiz);
+        findOperatorOnOuter(res, thiz, context);
       }
     if (_calledFeature == Types.f_ERROR)
       {
@@ -737,7 +742,7 @@ public class Call extends AbstractCall
     resolveTypesOfActuals(res, thiz, context);
 
     if (POSTCONDITIONS) ensure
-      (Errors.any() || !calledFeatureKnown() || calledFeature() != Types.f_ERROR || targetVoid,
+      (Errors.any() || !calledFeatureKnown() || _calledFeature != Types.f_ERROR || targetVoid,
        Errors.any() || _target        != Expr.ERROR_VALUE,
        Errors.any() || _calledFeature != null || _pendingError != null,
        Errors.any() || _target        != null || _pendingError != null);
@@ -991,7 +996,7 @@ public class Call extends AbstractCall
    *
    * @param thiz the surrounding feature
    */
-  private void findOperatorOnOuter(Resolution res, AbstractFeature thiz)
+  private void findOperatorOnOuter(Resolution res, AbstractFeature thiz, Context context)
   {
     if (_name.startsWith(FuzionConstants.INFIX_OPERATOR_PREFIX  ) ||
         _name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX ) ||
@@ -1008,7 +1013,7 @@ public class Call extends AbstractCall
             var newActuals = new List<>(_target);
             newActuals.addAll(_actuals);
             _actuals = newActuals;
-            _target = foa.target(pos(), res, thiz);
+            _target = foa.target(pos(), res, thiz, context);
           }
       }
   }
@@ -1236,7 +1241,7 @@ public class Call extends AbstractCall
    * @return result this in case this was not an immediate call, otherwise the
    * resulting call to Function/Routine.call.
    */
-  protected Call resolveImmediateFunctionCall(Resolution res, AbstractFeature outer)
+  protected Call resolveImmediateFunctionCall(Resolution res, AbstractFeature outer, Context context)
   {
     return this;
   }
@@ -1646,7 +1651,7 @@ public class Call extends AbstractCall
                 var t = _generics.get(g.index());
                 if (t != Types.t_UNDEFINED)
                   {
-                    actual = actual.propagateExpectedType(res, outer, t);
+                    actual = actual.propagateExpectedType(res, outer, context, t);
                   }
               }
           }
@@ -2036,7 +2041,7 @@ public class Call extends AbstractCall
               {
                 if (p instanceof Call pc)
                   {
-                    pc.resolveTypes(res, aft);
+                    pc.resolveTypes(res, aft, context);
                   }
                 var pt = p.type();
                 if (pt != Types.t_ERROR)
@@ -2262,7 +2267,7 @@ public class Call extends AbstractCall
                   // we found a feature that fits a dot-type-call.
                   _calledFeature = f;
                   _resolvedFormalArgumentTypes = null;
-                  _target = new DotType(_pos, _target.asParsedType()).resolveTypes(res, thiz);
+                  _target = new DotType(_pos, _target.asParsedType()).resolveTypes(res, thiz, context);
                 }
             }
           if (_calledFeature != null &&
@@ -2284,7 +2289,6 @@ public class Call extends AbstractCall
    *
    * @param outer the root feature that contains this expression.
    */
-  public Call resolveTypes(Resolution res, AbstractFeature outer) { return resolveTypes(res, outer, null); }
   public Call resolveTypes(Resolution res, AbstractFeature outer, Context context)
   {
     Call result = this;
@@ -2304,7 +2308,7 @@ public class Call extends AbstractCall
                           new List<>(_target),
                           Types.resolved.f_id,
                           Types.resolved.t_void);
-        result.resolveTypes(res, outer);
+        result.resolveTypes(res, outer, context);
       }
 
     if (CHECKS) check
@@ -2348,7 +2352,7 @@ public class Call extends AbstractCall
                 setActualResultType(res, outer, context, t);
                 // Convert a call "f.g a b" into "f.g.call a b" in case f.g takes no
                 // arguments and returns a Function or Routine
-                result = result.resolveImmediateFunctionCall(res, outer); // NYI: Separate pass? This currently does not work if type was inferred
+                result = result.resolveImmediateFunctionCall(res, outer, context); // NYI: Separate pass? This currently does not work if type was inferred
               }
             if (t == null || isTailRecursive(outer))
               {
@@ -2436,7 +2440,7 @@ public class Call extends AbstractCall
         var t = _target.typeForInferencing();
         if (t != null)
           {
-            _target = _target.propagateExpectedType(res, outer, t);
+            _target = _target.propagateExpectedType(res, outer, context, t);
           }
       }
   }
@@ -2470,7 +2474,7 @@ public class Call extends AbstractCall
         r = propagateExpectedTypeForPartial(res, outer, context, t);
         if (r != this)
           {
-            var r2 = r.propagateExpectedType(res, outer, t);
+            var r2 = r.propagateExpectedType(res, outer, context, t);
             if (CHECKS) check
               (r == r2);
           }
@@ -2680,23 +2684,23 @@ public class Call extends AbstractCall
         var cf = _calledFeature;
         // need to do a propagateExpectedType since this might add a result field
         // example where this results in an issue: `_ := [false: true]`
-        if      (cf == Types.resolved.f_bool_AND    ) { result = newIf(_target, _actuals.get(0), BoolConst.FALSE).propagateExpectedType(res, outer, Types.resolved.t_bool); }
-        else if (cf == Types.resolved.f_bool_OR     ) { result = newIf(_target, BoolConst.TRUE , _actuals.get(0)).propagateExpectedType(res, outer, Types.resolved.t_bool); }
-        else if (cf == Types.resolved.f_bool_IMPLIES) { result = newIf(_target, _actuals.get(0), BoolConst.TRUE ).propagateExpectedType(res, outer, Types.resolved.t_bool); }
-        else if (cf == Types.resolved.f_bool_NOT    ) { result = newIf(_target, BoolConst.FALSE, BoolConst.TRUE ).propagateExpectedType(res, outer, Types.resolved.t_bool); }
-        else if (cf == Types.resolved.f_bool_TERNARY) { result = newIf(_target, _actuals.get(0), _actuals.get(1)).propagateExpectedType(res, outer, _generics.get(0)); }
+        if      (cf == Types.resolved.f_bool_AND    ) { result = newIf(_target, _actuals.get(0), BoolConst.FALSE).propagateExpectedType(res, outer, _context, Types.resolved.t_bool); }
+        else if (cf == Types.resolved.f_bool_OR     ) { result = newIf(_target, BoolConst.TRUE , _actuals.get(0)).propagateExpectedType(res, outer, _context, Types.resolved.t_bool); }
+        else if (cf == Types.resolved.f_bool_IMPLIES) { result = newIf(_target, _actuals.get(0), BoolConst.TRUE ).propagateExpectedType(res, outer, _context, Types.resolved.t_bool); }
+        else if (cf == Types.resolved.f_bool_NOT    ) { result = newIf(_target, BoolConst.FALSE, BoolConst.TRUE ).propagateExpectedType(res, outer, _context, Types.resolved.t_bool); }
+        else if (cf == Types.resolved.f_bool_TERNARY) { result = newIf(_target, _actuals.get(0), _actuals.get(1)).propagateExpectedType(res, outer, _context, _generics.get(0)); }
 
         // replace e.g. i16 7 by just the NumLiteral 7. This is necessary for syntaxSugar2 of InlineArray to work correctly.
-        else if (cf == Types.resolved.t_i8 .feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_i8 ); }
-        else if (cf == Types.resolved.t_i16.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_i16); }
-        else if (cf == Types.resolved.t_i32.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_i32); }
-        else if (cf == Types.resolved.t_i64.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_i64); }
-        else if (cf == Types.resolved.t_u8 .feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_u8 ); }
-        else if (cf == Types.resolved.t_u16.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_u16); }
-        else if (cf == Types.resolved.t_u32.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_u32); }
-        else if (cf == Types.resolved.t_u64.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_u64); }
-        else if (cf == Types.resolved.t_f32.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_f32); }
-        else if (cf == Types.resolved.t_f64.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, Types.resolved.t_f64); }
+        else if (cf == Types.resolved.t_i8 .feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, _context, Types.resolved.t_i8 ); }
+        else if (cf == Types.resolved.t_i16.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, _context, Types.resolved.t_i16); }
+        else if (cf == Types.resolved.t_i32.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, _context, Types.resolved.t_i32); }
+        else if (cf == Types.resolved.t_i64.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, _context, Types.resolved.t_i64); }
+        else if (cf == Types.resolved.t_u8 .feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, _context, Types.resolved.t_u8 ); }
+        else if (cf == Types.resolved.t_u16.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, _context, Types.resolved.t_u16); }
+        else if (cf == Types.resolved.t_u32.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, _context, Types.resolved.t_u32); }
+        else if (cf == Types.resolved.t_u64.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, _context, Types.resolved.t_u64); }
+        else if (cf == Types.resolved.t_f32.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, _context, Types.resolved.t_f32); }
+        else if (cf == Types.resolved.t_f64.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, _context, Types.resolved.t_f64); }
         else if (cf != null && cf.preAndCallFeature() != null && !preChecked())
           {
             _calledFeature = cf.preAndCallFeature();
@@ -2725,11 +2729,11 @@ public class Call extends AbstractCall
    * outer feature has changed. Otherwise, old information from previous results of
    * type resolution might remain there.
    */
-  public Call updateTarget(Resolution res, AbstractFeature outer)
+  public Call updateTarget(Resolution res, AbstractFeature outer, Context context)
   {
     if (_targetFrom != null)
       {
-        _target = _targetFrom.target(pos(), res, outer);
+        _target = _targetFrom.target(pos(), res, outer, context);
       }
     return this;
   }

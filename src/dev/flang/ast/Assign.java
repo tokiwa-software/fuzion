@@ -114,9 +114,9 @@ public class Assign extends AbstractAssign
    *
    * @param outer the root feature that contains this expression.
    */
-  public Assign(Resolution res, SourcePosition pos, AbstractFeature f, Expr v, AbstractFeature outer)
+  public Assign(Resolution res, SourcePosition pos, AbstractFeature f, Expr v, AbstractFeature outer, Context context)
   {
-    super(f, This.thiz(res, pos, outer, f.outer()), v);
+    super(f, This.thiz(res, pos, outer, context, f.outer()), v);
 
     if (PRECONDITIONS) require
       (Errors.any() ||
@@ -159,7 +159,7 @@ public class Assign extends AbstractAssign
    * @param destructure if this is called for an assignment that is created to
    * replace a Destructure, this refers to the Destructure expression.
    */
-  void resolveTypes(Resolution res, AbstractFeature outer, Destructure destructure)
+  void resolveTypes(Resolution res, AbstractFeature outer, Context context, Destructure destructure)
   {
     var f = _assignedField;
     if (f == null)
@@ -172,7 +172,7 @@ public class Assign extends AbstractAssign
                                         pos(), FuzionConstants.OPERATION_ASSIGNMENT, FeatureName.get(_name, 0), __ -> false);
         if (fo != null)
           {
-            _target = fo.target(pos(), res, outer);
+            _target = fo.target(pos(), res, outer, context);
             f = fo._feature;
           }
         else

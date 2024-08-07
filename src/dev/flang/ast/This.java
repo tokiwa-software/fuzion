@@ -139,13 +139,13 @@ public class This extends ExprWithPos
    *
    * @return the type resolved expression to access f.this.
    */
-  public static Expr thiz(Resolution res, SourcePosition pos, AbstractFeature cur, AbstractFeature f)
+  public static Expr thiz(Resolution res, SourcePosition pos, AbstractFeature cur, Context context, AbstractFeature f)
   {
     if (PRECONDITIONS) require
       (cur != null || Errors.any(),
        f != null || Errors.any());
 
-    return new This(pos, cur, f).resolveTypes(res, cur);
+    return new This(pos, cur, f).resolveTypes(res, cur, context);
   }
 
 
@@ -202,7 +202,7 @@ public class This extends ExprWithPos
    * @return a call to the outer references to access the value represented by
    * this.
    */
-  public Expr resolveTypes(Resolution res, AbstractFeature outer)
+  public Expr resolveTypes(Resolution res, AbstractFeature outer, Context context)
   {
     if (PRECONDITIONS) require
       (res != null || Errors.any(),
@@ -259,7 +259,7 @@ public class This extends ExprWithPos
                     {
                       return isAdr ? t : _type;
                     }
-                  }.resolveTypes(res, outer);
+                  }.resolveTypes(res, outer, context);
 
                 getOuter = c;
               }

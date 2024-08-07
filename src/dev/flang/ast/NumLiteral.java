@@ -890,7 +890,7 @@ public class NumLiteral extends Constant
   {
     if (t.isLazyType())
       {
-        propagateExpectedType(res, outer, t.generics().get(0));
+        propagateExpectedType(res, outer, context, t.generics().get(0));
       }
     return super.wrapInLazy(res, outer, context, t);
   }
