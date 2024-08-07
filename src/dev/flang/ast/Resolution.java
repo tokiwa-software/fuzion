@@ -149,7 +149,7 @@ public class Resolution extends ANY
    *
    * This is used during state RESOLVING_TYPES.
    */
-  FeatureVisitor resolveTypesFully = new Feature.ResolveTypes(this);
+  Feature.ResolveTypes resolveTypesFully = new Feature.ResolveTypes(this);
 
 
   /**
@@ -569,9 +569,13 @@ public class Resolution extends ANY
    *
    * @return s or a new expression that replaces s after type resolution.
    */
-  Expr resolveType(Expr e, AbstractFeature outer)
+  Expr resolveType(Expr e, AbstractFeature outer, Context context)
   {
-    return e.visit(resolveTypesFully, outer);
+    var old_context = resolveTypesFully._context;
+    resolveTypesFully._context = context;
+    var res = e.visit(resolveTypesFully, outer);
+    resolveTypesFully._context = old_context;
+    return res;
   }
 
 

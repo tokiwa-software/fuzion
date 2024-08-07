@@ -521,7 +521,7 @@ public class Call extends AbstractCall
    */
   private AbstractType targetType(Resolution res, AbstractFeature outer, Context context)
   {
-    _target = res.resolveType(_target, outer);
+    _target = res.resolveType(_target, outer, context);
     return
       // NYI: CLEANUP: For a type parameter, the feature result type is abused
       // and holds the type parameter constraint.  As a consequence, we have to
@@ -569,7 +569,7 @@ public class Call extends AbstractCall
     else if (_target != null)
       {
         _target.loadCalledFeature(res, thiz, context);
-        _target = res.resolveType(_target, thiz);
+        _target = res.resolveType(_target, thiz, context);
         result = targetTypeOrConstraint(res, thiz, context).feature();
       }
     else
@@ -722,7 +722,7 @@ public class Call extends AbstractCall
       }
     if (_calledFeature == null)
       { // nothing found, try if we can build a chained bool: `a < b < c` => `(a < b) && (a < c)`
-        resolveTypesOfActuals(res,thiz);
+        resolveTypesOfActuals(res, thiz, context);
         findChainedBooleans(res, thiz, context);
       }
     // !isInheritanceCall: see issue #2153
@@ -734,7 +734,7 @@ public class Call extends AbstractCall
       {
         _actuals = new List<>();
       }
-    resolveTypesOfActuals(res,thiz);
+    resolveTypesOfActuals(res, thiz, context);
 
     if (POSTCONDITIONS) ensure
       (Errors.any() || !calledFeatureKnown() || calledFeature() != Types.f_ERROR || targetVoid,
@@ -935,7 +935,7 @@ public class Call extends AbstractCall
    *
    * @parem outer the outer feature we are resolving types against.
    */
-  private void resolveTypesOfActuals(Resolution res, AbstractFeature outer)
+  private void resolveTypesOfActuals(Resolution res, AbstractFeature outer, Context context)
   {
     if (_actualsResolvedFor != outer)
       {
@@ -954,9 +954,9 @@ public class Call extends AbstractCall
                  var a = i.next();
                  if (_calledFeature != null && _calledFeature != Types.f_ERROR)
                    {
-                     var a1 = res.resolveType(a, outer);
+                     var a1 = res.resolveType(a, outer, context);
                      if (CHECKS) check
-                                   (a1 != null);
+                       (a1 != null);
                      i.set(a1);
                    }
                }
@@ -1631,7 +1631,8 @@ public class Call extends AbstractCall
   private Expr resolveTypeForNextActual(AbstractType formalTypeForPropagation,
                                         ListIterator<Expr> aargs,
                                         Resolution res,
-                                        AbstractFeature outer)
+                                        AbstractFeature outer,
+                                        Context context)
   {
     Expr actual = aargs.next();
     var actualWantsPropagation = actual instanceof NumLiteral;
@@ -1652,7 +1653,7 @@ public class Call extends AbstractCall
       }
     if ((formalTypeForPropagation != null) || !actualWantsPropagation)
       {
-        actual = res.resolveType(actual, outer);
+        actual = res.resolveType(actual, outer, context);
         if (CHECKS) check
           (actual != null);
         aargs.set(actual);
@@ -1820,7 +1821,7 @@ public class Call extends AbstractCall
                         while (aargs.hasNext())
                           {
                             count++;
-                            var actual = resolveTypeForNextActual(Types.t_UNDEFINED, aargs, res, outer);
+                            var actual = resolveTypeForNextActual(Types.t_UNDEFINED, aargs, res, outer, context);
                             var actualType = typeFromActual(actual, outer);
                             if (actualType == null)
                               {
@@ -1834,7 +1835,7 @@ public class Call extends AbstractCall
                 else if (aargs.hasNext())
                   {
                     count++;
-                    var actual = resolveTypeForNextActual(pass == 0 ? null : t, aargs, res, outer);
+                    var actual = resolveTypeForNextActual(pass == 0 ? null : t, aargs, res, outer, context);
                     /*
                       without this if, type inference in this example would not work:
                       ```
@@ -2394,7 +2395,7 @@ public class Call extends AbstractCall
           }
       }
 
-    resolveTypesOfActuals(res, outer);
+    resolveTypesOfActuals(res, outer, context);
 
     if (POSTCONDITIONS) ensure
       (_pendingError != null || Errors.any() || result.typeForInferencing() != Types.t_ERROR);

@@ -258,7 +258,7 @@ public class ParsedCall extends Call
     var cb = chainedBoolTarget(res, thiz, context);
     if (cb != null && _actuals.size() == 1)
       {
-        var b = res.resolveType(cb._actuals.getLast(), thiz);
+        var b = res.resolveType(cb._actuals.getLast(), thiz, context);
         if (b.typeForInferencing() != Types.t_ERROR)
           {
             String tmpName = FuzionConstants.CHAINED_BOOL_TMP_PREFIX + (_chainedBoolTempId_++);
@@ -276,9 +276,9 @@ public class ParsedCall extends Call
               };
             this._movedTo = movedTo;
             Expr as = new Assign(res, pos(), tmp, b, thiz);
-            t1 = res.resolveType(t1    , thiz);
-            as = res.resolveType(as    , thiz);
-            var result = res.resolveType(movedTo, thiz);
+            t1         = res.resolveType(t1     , thiz, context);
+            as         = res.resolveType(as     , thiz, context);
+            var result = res.resolveType(movedTo, thiz, context);
             cb._actuals.set(cb._actuals.size()-1,
                             new Block(new List<Expr>(as, t1)));
             _actuals = new List<Expr>(result);

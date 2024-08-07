@@ -739,7 +739,7 @@ public class Contract extends ANY
                                      new Block(new_code)));
       }
     code._expressions = new_code;
-    var e = res.resolveType(code, pF);
+    var e = res.resolveType(code, pF, Context.NONE /* NYI: what if we need a context in a precondition? */);
     if (CHECKS) check
       (code == e);
   }
