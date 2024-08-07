@@ -22,6 +22,8 @@ String 'Fuzion!' type Type of 'String' len 7
 String 'Fuzion!' type Type of 'String' len 7
 lambda : codepoint len 7
 partial: codepoint len 7
+before eval of lazy num
+lazy Type of 'i32' 7
 matched String 'Fuzion!' type Type of 'String' len 7
 String 'Fuzion!' type Type of 'String' len 7
 String 'F' type Type of 'codepoint'
@@ -29,6 +31,8 @@ String 'F' type Type of 'codepoint' len 1
 String 'F' type Type of 'codepoint' len 1
 lambda : codepoint len 1
 partial: codepoint len 1
+before eval of lazy num
+lazy Type of 'i32' 1
 matched String 'F' type Type of 'codepoint' len 1
 String 'F' type Type of 'codepoint' len 1
 bool true Type of 'bool' false
@@ -38,4 +42,10 @@ b!
 b -- from lambda!!
 b -- from partial1!!
 b -- from partial2!!
+before eval of lazy String
+eval b lazy 1
+lazy String b -- from lazy!!
+before eval of lazy num
+eval b lazy 2
+lazy Type of 'f64' 3.14
 c!

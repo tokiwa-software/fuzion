@@ -60,11 +60,20 @@ compile_time_type_casts =>
     do_b_thing_from_lambda   => say "b -- from lambda!!"
     do_b_thing_from_partial1 => say "b -- from partial1!!"
     do_b_thing_from_partial2 =>     "b -- from partial2!!"
+    do_b_thing_lazy1         => say "eval b lazy 1"; "b -- from lazy!!"
+    do_b_thing_lazy2         => say "eval b lazy 2"; 3.14
   c is
     do_c_thing => say "c!"
 
   uselambda(f ()->unit) =>
     f()
+
+  uselazy(f Lazy String) =>
+    say "before eval of lazy String"
+    say "lazy String $f"
+  uselazy_num(f Lazy (T : numeric)) =>
+    say "before eval of lazy num"
+    say "lazy $T $f"
 
   x(v T) =>
 
@@ -81,6 +90,12 @@ compile_time_type_casts =>
       for_String
       uselambda ()->(say "lambda : codepoint len {v.codepoint_length}")
       uselambda     (say "partial: codepoint len {v.codepoint_length}")   # partial using constraint in args
+
+      # NYI: does not work yet:
+      #
+      # uselazy         v
+
+      uselazy_num i32 v.codepoint_length
     else if T : bool
       # note that `T` is not of type `bool` but of any type that inherits from `bool`. This is why built-in
       # operation like `prefix !`, `infix &&` and `infix ||` that are compiled into `if-then-else` expressions
@@ -95,9 +110,12 @@ compile_time_type_casts =>
       v.do_a_thing
     else if T : b
       v.do_b_thing
-      uselambda ()->v.do_b_thing_from_lambda
-      uselambda      v.do_b_thing_from_partial1       # partial using constraint in target
-      uselambda (say v.do_b_thing_from_partial2)      # partial using constraint in args
+      uselambda   ()->v.do_b_thing_from_lambda
+      uselambda       v.do_b_thing_from_partial1       # partial using constraint in target
+      uselambda  (say v.do_b_thing_from_partial2)      # partial using constraint in args
+      uselazy         v.do_b_thing_lazy1
+      uselazy_num f64 v.do_b_thing_lazy2
+
     else if T : c
       v.do_c_thing
     else if T : unit
