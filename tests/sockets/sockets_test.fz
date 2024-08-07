@@ -38,9 +38,9 @@ sockets_test is
 
 
 
-      rh : net.Request_Handler unit is
+      ch : net.Connection_Handler unit is
 
-        redef handle_request unit =>
+        redef handle_connection unit =>
 
           chan => net.channel.env
 
@@ -76,7 +76,7 @@ sockets_test is
 
 
 
-      while net.server.is_active && match net.server.accept unit LM rh
+      while net.server.is_active && match net.server.accept unit LM ch
                                       e error => false
                                       * => true
       do
@@ -93,9 +93,9 @@ sockets_test is
   client(family net.family.val, protocol net.protocol.val, host String, port u16, num i32) =>
     lm : mutate is
     lm.go ()->
-      rh : net.Request_Handler String is
+      ch : net.Connection_Handler String is
 
-        redef handle_request =>
+        redef handle_connection =>
 
           chan => net.channel.env
 
@@ -124,7 +124,7 @@ sockets_test is
             * =>  panic "NI"
 
 
-      match net.client String lm rh family protocol host port
+      match net.client String lm ch family protocol host port
         err error =>
           say "$protocol/$family-client {sockets_test.client.this.num}, $host:$port: error establishing connection"
         str String =>

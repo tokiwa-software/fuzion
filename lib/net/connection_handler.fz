@@ -21,8 +21,9 @@
 #
 # -----------------------------------------------------------------------
 
-# definition of a request handler.
+# definition of a connection handler.
 #
-public Request_Handler(T type) ref is
+public Connection_Handler(T type) ref is
 
-  public handle_request T ! io.buffered.reader, net.channel => abstract
+  public handle_connection T ! io.buffered.reader, io.buffered.writer, net.channel
+  => abstract

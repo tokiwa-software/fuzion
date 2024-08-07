@@ -29,28 +29,28 @@
 #
 # Minimal example:
 #
-#     rh : net.Request_Handler unit is
-#       handle_request unit =>
+#     ch : net.Connection_Handler unit is
+#       handle_connection unit =>
 #         say net.channel.env.get_peer_address
 #
-#     net.client rh net.family.ipv4 net.protocol.tcp "tokiwa.software" (u16 80) # NYI: type inference
+#     net.client ch net.family.ipv4 net.protocol.tcp "tokiwa.software" (u16 80) # NYI: type inference
 #
 #
 # Blocks until connection is establised.
 # NYI blocking / none blocking
 #
-public client(T type, LM type : mutate, rh Request_Handler T, f net.family.val, p net.protocol.val, host String, port u16) outcome T
+public client(T type, LM type : mutate, ch Connection_Handler T, f net.family.val, p net.protocol.val, host String, port u16) outcome T
 =>
   s := net.socket_type.by_protocol p
   fuzion.sys.net.connect f.as_num s.as_num p.as_num host port
     .bind T (desc)->
       # NYI install custom thread spawn effect
-      # NYI: BUG: (try net.request_handler).on ()->
+      # NYI: BUG: (try net.connection_handler).on ()->
 
       res := (io.buffered.reader LM (read_provider desc) 1024).with ()->
         (io.buffered.writer LM (write_provider desc) 1024).with ()->
           (net.channel desc).go ()->
-            rh.handle_request
+            ch.handle_connection
 
       _ := fuzion.sys.net.close desc
 

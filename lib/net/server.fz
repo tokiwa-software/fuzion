@@ -64,7 +64,7 @@ is
   # does nothing for UDP etc.
   # blocks until connection is established
   # NYI we may want to close server on certain errors?
-  public accept(T type, LM type : mutate, rh Request_Handler T) outcome T =>
+  public accept(T type, LM type : mutate, ch Connection_Handler T) outcome T =>
     match state
       d i64 =>
         match fuzion.sys.net.accept d
@@ -77,13 +77,13 @@ is
             #   spawn(code ()->unit) concur.thread.spawned =>
             #     panic "may not spawn threads in request handler"
             # (concur.thread no_threads).go ()->
-            #   _ := request_handler.env.handle_request (channel desc)
+            #   _ := connection_handler.env.handle_connection (channel desc)
             #   fuzion.sys.net.close desc
 
             res := (io.buffered.reader LM (read_provider desc) 1024).with ()->
               (io.buffered.writer LM (write_provider desc) 1024).with ()->
                 (net.channel desc).go ()->
-                  rh.handle_request
+                  ch.handle_connection
 
             _ := fuzion.sys.net.close desc
 
