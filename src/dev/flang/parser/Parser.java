@@ -1675,7 +1675,7 @@ actualArgs  : actualSpaces
            t_question        ,
            t_indentationLimit,
            t_lineLimit       ,
-           t_spaceLimit      ,
+           t_spaceOrSemiLimit,
            t_colonLimit      ,
            t_barLimit        ,
            t_eof             -> true;
@@ -1792,17 +1792,17 @@ bracketTerm : brblock
 
 
   /**
-   * An actual that ends in white space unless enclosed in { }, [ ], or ( ).
+   * An actual that ends in white space or semicolon unless enclosed in { }, [ ], or ( ).
    *
-actualSpace :  operatorExpr         // no white space except enclosed in { }, [ ], or ( ).
+actualSpace :  operatorExpr         // no white space or semicolon except enclosed in { }, [ ], or ( ).
             ;
 
    */
   Expr actualSpace()
   {
-    var eas = endAtSpace(tokenPos());
+    var eas = endAtSpaceOrSemi(tokenPos());
     var result = operatorExpr();
-    endAtSpace(eas);
+    endAtSpaceOrSemi(eas);
     return result;
   }
 
@@ -2493,7 +2493,7 @@ brblock     : BRACEL exprs BRACER
       case
         t_indentationLimit,
         t_lineLimit,
-        t_spaceLimit,
+        t_spaceOrSemiLimit,
         t_colonLimit,
         t_barLimit,
         t_rbrace,
@@ -2603,7 +2603,7 @@ exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
     {
       sameLine(-1);
       firstIndent  = indent(firstPos);
-      oldEAS       = endAtSpace(Integer.MAX_VALUE);
+      oldEAS       = endAtSpaceOrSemi(Integer.MAX_VALUE);
       oldIndentPos = setMinIndent(tokenPos());
     }
 
@@ -2646,7 +2646,7 @@ exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
       sameLine(oldSameLine);
       if (firstIndent != -1)
         {
-          endAtSpace(oldEAS);
+          endAtSpaceOrSemi(oldEAS);
           setMinIndent(oldIndentPos);
         }
     }
@@ -3712,7 +3712,7 @@ typeInParens: "(" typeInParens ")"
         var l = bracketTermWithNLs(PARENS, "typeInParens",
                                    () -> typeList(),
                                    () -> new List<AbstractType>());
-        var eas = endAtSpace(tokenPos());
+        var eas = endAtSpaceOrSemi(tokenPos());
         if (!ignoredTokenBefore() && isOperator("->"))
           {
             matchOperator("->", "onetype");
@@ -3730,13 +3730,13 @@ typeInParens: "(" typeInParens ")"
           {
             result = new ParsedType(sourcePos(pos), "tuple", l, null);
           }
-        endAtSpace(eas);
+        endAtSpaceOrSemi(eas);
       }
     else
       {
-        var eas = endAtSpace(tokenPos());
+        var eas = endAtSpaceOrSemi(tokenPos());
         result = type();
-        endAtSpace(eas);
+        endAtSpaceOrSemi(eas);
       }
     return result;
   }
@@ -3780,12 +3780,12 @@ typeInParens: "(" typeInParens ")"
     if (isTypePrefix())
       {
         var f = fork();
-        f.endAtSpace(tokenPos());
+        f.endAtSpaceOrSemi(tokenPos());
         if (f.skipType())
           {
-            var eas = endAtSpace(tokenPos());
+            var eas = endAtSpaceOrSemi(tokenPos());
             skipType();
-            endAtSpace(eas);
+            endAtSpaceOrSemi(eas);
             return true;
           }
       }
