@@ -1461,13 +1461,13 @@ public class Feature extends AbstractFeature
     {
       res = r;
     }
-    @Override public void         action      (AbstractAssign  a, AbstractFeature outer) {        a.resolveTypes      (res,   outer); }
+    @Override public void         action      (AbstractAssign  a, AbstractFeature outer) {        a.resolveTypes      (res,   outer, _context); }
     @Override public void         actionBefore(Call            c, AbstractFeature outer) {        c.tryResolveTypeCall(res,   outer, _context); }
     @Override public Call         action      (Call            c, AbstractFeature outer) { return c.resolveTypes      (res,   outer, _context); }
     @Override public Expr         action      (DotType         d, AbstractFeature outer) { return d.resolveTypes      (res,   outer, _context); }
     @Override public Expr         action      (Destructure     d, AbstractFeature outer) { return d.resolveTypes      (res,   outer, _context); }
     @Override public Function     action      (Function        f, AbstractFeature outer) {        f.resolveTypes      (res,   outer, _context); return f; }
-    @Override public void         action      (Match           m, AbstractFeature outer) {        m.resolveTypes      (res,   outer, null /* Context */); }
+    @Override public void         action      (Match           m, AbstractFeature outer) {        m.resolveTypes      (res,   outer, _context); }
 
     @Override public Expr         action      (This            t, AbstractFeature outer) { return t.resolveTypes      (res,   outer, _context); }
     @Override public AbstractType action      (AbstractType    t, AbstractFeature outer) { return t.resolve           (res,   outer); }

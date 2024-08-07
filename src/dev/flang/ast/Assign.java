@@ -159,6 +159,7 @@ public class Assign extends AbstractAssign
    * @param destructure if this is called for an assignment that is created to
    * replace a Destructure, this refers to the Destructure expression.
    */
+  @Override
   void resolveTypes(Resolution res, AbstractFeature outer, Context context, Destructure destructure)
   {
     var f = _assignedField;

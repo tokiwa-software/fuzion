@@ -150,9 +150,9 @@ public abstract class AbstractAssign extends Expr
    *
    * @param outer the root feature that contains this expression.
    */
-  public void resolveTypes(Resolution res, AbstractFeature outer)
+  public void resolveTypes(Resolution res, AbstractFeature outer, Context context)
   {
-    resolveTypes(res, outer, null);
+    resolveTypes(res, outer, context, null);
   }
 
 
@@ -166,7 +166,7 @@ public abstract class AbstractAssign extends Expr
    * @param destructure if this is called for an assignment that is created to
    * replace a Destructure, this refers to the Destructure expression.
    */
-  void resolveTypes(Resolution res, AbstractFeature outer, Destructure destructure)
+  void resolveTypes(Resolution res, AbstractFeature outer, Context context, Destructure destructure)
   {
   }
 

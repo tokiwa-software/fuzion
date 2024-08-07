@@ -231,7 +231,7 @@ public class Destructure extends ExprWithPos
       }
     if (assign != null)
       {
-        assign.resolveTypes(res, outer, this);
+        assign.resolveTypes(res, outer, context, this);
         exprs.add(assign);
       }
   }
