@@ -131,3 +131,185 @@ compile_time_type_casts =>
   x b
   x c
   x unit
+
+
+
+  A ref is
+  B ref is
+  C ref is
+
+  ab  : A, B is
+  ac  : A, C is
+  bc  : B, C is
+  abc : A, B, C is
+
+  take_A(v A) => say "take_A: ok: {type_of v} dynamic {v.dynamic_type}"
+  take_B(v B) => say "take_B: ok: {type_of v} dynamic {v.dynamic_type}"
+  take_C(v C) => say "take_C: ok: {type_of v} dynamic {v.dynamic_type}"
+
+  say ""
+  say "------ simple calls passing A, B, C, ab, ac, bc, abc. no type pars ------"
+
+  take_A A
+  take_A ab
+  take_A ac
+  # take_A bc   # -- would fail, bc is not A
+  take_A abc
+  take_B B
+  take_B ab
+  # take_B ac   # -- would fail, ac is not B
+  take_B bc
+  take_B abc
+  take_C C
+  # take_C ab   # -- would fail, ab is not C
+  take_C ac
+  take_C bc
+  take_C abc
+
+  # lets try nesting
+
+  y1(v T : A) =>
+    say "y1 for {type_of v}"
+
+    take_A v
+    # take_B v   # -- would fail, v is of type : A
+    # take_C v   # -- would fail, v is of type : A
+
+    y2
+      pre T : B
+    =>
+      say "y2 for {type_of v}"
+
+      # take_A v   # -- would fail, v is of type : B
+      take_B v
+      # take_C v   # -- would fail, v is of type : B
+
+      y3 =>
+        say "y3 for {type_of v}"
+
+        # take_A v   # -- would fail, v is of type : B
+        take_B v
+        # take_C v   # -- would fail, v is of type : B
+
+        if T : C
+          say "y3 if for {type_of v}"
+
+          # take_A v   # -- would fail, v is of type : C
+          # take_B v   # -- would fail, v is of type : C
+          take_C v
+        else
+          say "y3 if not taken, T : C failed for $T"
+      y3
+    y2
+
+
+  say ""
+  say "------ ab passed to nested constraints A, pre T : B and if T : C ------"
+  y1 ab
+
+  say ""
+  say "------ abc passed to nested constraints A, pre T : B and if T : C ------"
+  y1 abc
+
+  # try the same thing from within a lambdas to make sure types get propagated into lambdas
+
+  z1(v T : A) =>
+
+    uselambda ()->
+      say "z1 for {type_of v}"
+
+      take_A v
+      # take_B v   # -- would fail, v is of type : A
+      # take_C v   # -- would fail, v is of type : A
+
+      z2
+        pre T : B
+      =>
+        uselambda ()->
+          say "z2 for {type_of v}"
+
+          # take_A v   # -- would fail, v is of type : B
+          take_B v
+          # take_C v   # -- would fail, v is of type : B
+
+          uselambda ()->
+            say "z3 for {type_of v}"
+
+            # take_A v   # -- would fail, v is of type : B
+            take_B v
+            # take_C v   # -- would fail, v is of type : B
+
+            if T : C
+              uselambda ()->
+                say "z3 if for {type_of v}"
+
+                # take_A v   # -- would fail, v is of type : C
+                # take_B v   # -- would fail, v is of type : C
+                take_C v
+            else
+              say "z3 if not taken, T : C failed for $T"
+      z2
+
+  say ""
+  say "------ ab passed to nested constraints A, pre T : B and if T : C using lambdas ------"
+  z1 ab
+
+  say ""
+  say "------ abc passed to nested constraints A, pre T : B and if T : C using lambdas ------"
+  z1 abc
+
+
+  # try the same thing from within a lambdas to make sure types get propagated into lambdas
+
+  q1(v1 T1 : A, v2 T2 : B, v3 T3 : C) =>
+
+    uselambda ()->
+      say "q1 for {type_of v1} {type_of v2} {type_of v3}"
+
+      take_A v1
+      take_B v2
+      take_C v3
+
+      q2
+        pre T1 : B
+      =>
+        uselambda ()->
+          say "q2 for {type_of v1} {type_of v2} {type_of v3}"
+
+          # take_A v1   # -- would fail, v1 is of type : B
+          take_B v1
+          take_B v2
+          take_C v3
+
+          uselambda ()->
+            say "q3 for {type_of v1} {type_of v2} {type_of v3}"
+
+            # take_A v1   # -- would fail, v1 is of type : B
+            take_B v1
+            take_B v2
+            take_C v3
+
+            if T2 : C
+              uselambda ()->
+                say "q3 if for {type_of v1} {type_of v2} {type_of v3}"
+
+                # take_A v1   # -- would fail, v1 is of type : B
+                take_B v1
+                # take_B v2   # -- would fail, v1 is of type : C
+                take_C v2
+                take_C v3
+            else
+              say "q3 if not taken, T2 : C failed for $T2"
+      q2
+
+  say ""
+  say "------ ab B C passed to nested constraint T1 : A, pre T1 : B and if T2 : C, using lambdas in between ------"
+  q1 ab B C
+
+  say ""
+  say "------ ab bc ac passed to nested constraint T1 : A, pre T1 : B and if T2 : C, using lambdas in between ------"
+  q1 ab bc ac
+
+  say ""
+  say "------ abc abc abc passed to nested constraint T1 : A, pre T1 : B and if T2 : C, using lambdas in between ------"
+  q1 abc abc abc
