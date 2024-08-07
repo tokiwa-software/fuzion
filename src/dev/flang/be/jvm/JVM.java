@@ -1075,7 +1075,7 @@ should be avoided as much as possible.
         return traceReturn(cl)
           .andThen(Expr.RETURN);
       }
-    else if (r == -1)   // a constructor
+    else if (_fuir.isConstructor(cl))   // a constructor
       {
         var jt = _types.javaType(t);
         return

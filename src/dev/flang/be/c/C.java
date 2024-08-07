@@ -1862,9 +1862,9 @@ public class C extends ANY
     var res = _fuir.clazzResultClazz(cl);
     if (_fuir.hasData(res))
       {
-        var rf = _fuir.clazzResultField(cl);
-        l.add(rf != -1 ? current(_fuir.clazzCode(cl)).field(_names.fieldName(rf)).ret()  // a routine, return result field
-                       : current(_fuir.clazzCode(cl)).ret()                              // a constructor, return current instance
+        l.add(_fuir.isConstructor(cl)
+                ? current(_fuir.clazzCode(cl)).ret()                                                      // a constructor, return current instance
+                : current(_fuir.clazzCode(cl)).field(_names.fieldName(_fuir.clazzResultField(cl))).ret()  // a routine, return result field
               );
       }
     var allocCurrent = switch (_fuir.lifeTime(cl))
