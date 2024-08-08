@@ -137,11 +137,6 @@ public class Generic extends ANY implements Comparable<Generic>
       {
         result = context.constraintFor(_typeParameter);
       }
-    while (outer != null && result == null)
-      {
-        result = outer.constraintFor(_typeParameter);
-        outer = outer.outer();
-      }
     if (result == null)
       {
         result = _typeParameter.resultType();

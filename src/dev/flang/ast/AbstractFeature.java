@@ -202,6 +202,18 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public Object _frontEndData;
 
 
+  Context _contextCache;
+  Context context()
+  {
+    var result = _contextCache;
+    if (result == null)
+      {
+        result = Context.forFeature(this);
+        _contextCache = result;
+      }
+    return result;
+  }
+
 
   /*----------------------------  abstract methods  ----------------------------*/
 
@@ -1908,12 +1920,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       .stream()
       .flatMap(x -> Stream.concat(Stream.of(x), x.redefinesFull().stream()))
       .collect(Collectors.toSet());
-  }
-
-
-  public AbstractType constraintFor(AbstractFeature typeParameter)
-  {
-    return null;
   }
 
 

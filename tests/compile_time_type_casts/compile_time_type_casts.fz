@@ -311,3 +311,70 @@ compile_time_type_casts =>
   say ""
   say "------ abc abc abc passed to nested constraint T1 : A, pre T1 : B and if T2 : C, using lambdas in between ------"
   q1 abc abc abc
+
+
+  # try a different nesting order for the same thing from within a lambdas to make sure types get propagated into lambdas
+
+  r1(v1 T1, v2 T2, v3 T3) =>
+
+    # NYI: &&, || and ! do not work yet
+    #
+    # if (T1 : A) && (T2 : B) && (T3 : C)
+   if T1 : A
+    if T2 : B
+     if T3 : C
+
+      take_A v1   # out
+      take_B v2   # out
+      take_C v3   # out
+
+      uselambda ()->
+        say "r1 for {type_of v1} {type_of v2} {type_of v3}"
+
+        take_A v1   # in
+        take_B v2   # in
+        take_C v3   # in
+
+        r2
+          pre T1 : B
+        =>
+          uselambda ()->
+            say "r2 for {type_of v1} {type_of v2} {type_of v3}"
+
+            # take_A v1   # -- would fail, v1 is of type : B
+            take_B v1   # in 2
+            take_B v2   # in 2
+            take_C v3   # in 2
+
+            uselambda ()->
+              say "r3 for {type_of v1} {type_of v2} {type_of v3}"
+
+              # take_A v1   # -- would fail, v1 is of type : B
+              take_B v1   # in 3
+              take_B v2   # in 3
+              take_C v3   # in 3
+
+              if T2 : C
+                uselambda ()->
+                  say "r3 if for {type_of v1} {type_of v2} {type_of v3}"
+
+                  # take_A v1   # -- would fail, v1 is of type : B
+                  take_B v1   # in 4
+                  # take_B v2   # -- would fail, v1 is of type : C
+                  take_C v2   # in 4
+                  take_C v3   # in 4
+              else
+                say "r3 if not taken, T2 : C failed for $T2"
+        r2
+
+  say ""
+  say "------ ab B C passed to nested constraint T1 : A, pre T1 : B and if T2 : C, using lambdas in between ------"
+  r1 ab B C
+
+  say ""
+  say "------ ab bc ac passed to nested constraint T1 : A, pre T1 : B and if T2 : C, using lambdas in between ------"
+  r1 ab bc ac
+
+  say ""
+  say "------ abc abc abc passed to nested constraint T1 : A, pre T1 : B and if T2 : C, using lambdas in between ------"
+  r1 abc abc abc

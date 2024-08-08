@@ -52,9 +52,13 @@ public abstract class Context extends ANY
   /**
    * Pre-allocated instance of no context.
    */
-  static final Context NONE = new Context(null)
+  static final Context NONE = new Context()
     {
-      @Override public String toString()
+      @Override Context exterior()
+      {
+        return null;
+      }
+      @Override String localToString()
       {
         return "NO CONTEXT";
       }
@@ -63,19 +67,48 @@ public abstract class Context extends ANY
   /*----------------------------  variables  ----------------------------*/
 
 
-  private final Context _outer;
-  Context outer() { return _outer; }
+  abstract Context exterior();
+
+
+  /*-------------------------  static methods  --------------------------*/
+
+
+  static Context forFeature(AbstractFeature f)
+  {
+    return new Context()
+      {
+        @Override
+        Context exterior() { return f instanceof Feature ff ? ff._sourceCodeContext : NONE; }
+        @Override String localToString() { return f.qualifiedName() + " at " + f.pos().show(); }
+
+        @Override
+        public AbstractType constraintFor(AbstractFeature typeParameter)
+        {
+          if (f instanceof Feature ff)
+            {
+              for (var c : ff.contract()._declared_preconditions)
+                {
+                  if (c.cond instanceof Call cc &&
+                      cc.calledFeatureKnown() &&
+                      cc.calledFeature() == Types.resolved.f_Type_infix_colon &&
+                      cc.target() instanceof Call tc &&
+                      tc.calledFeature() == typeParameter)
+                    {
+                      return cc.actualTypeParameters().get(0);
+                    }
+                }
+            }
+          return super.constraintFor(typeParameter);
+        }
+      };
+  }
 
 
   /*---------------------------  constructors  --------------------------*/
 
 
-  public Context(Context outer)
+  public Context()
   {
-    if (PRECONDITIONS) require
-      (outer != null || true /* NYI: REMOVE! */);
-
-    this._outer = outer;
   }
 
 
@@ -84,13 +117,14 @@ public abstract class Context extends ANY
 
   public AbstractType constraintFor(AbstractFeature typeParameter)
   {
-    return _outer != null ? _outer.constraintFor(typeParameter)
-                          : null;
+    var e = exterior();
+    return e != null ? e.constraintFor(typeParameter)
+                     : null;
   }
 
 
   /**
-   * Creeate a new context that adds the constraint imposed by a call `T : x` to
+   * Create a new context that adds the constraint imposed by a call `T : x` to
    * this context.
    */
   public Context addTypeConstraint(AbstractCall infix_colon_call)
@@ -101,8 +135,13 @@ public abstract class Context extends ANY
     var result = this;
     if (infix_colon_call.target() instanceof AbstractCall t)
       {
-        result =  new Context(this)
+        result = new Context()
           {
+            @Override Context exterior()
+            {
+              check(this != Context.this);
+              return Context.this;
+            }
             @Override
             public AbstractType constraintFor(AbstractFeature typeParameter)
             {
@@ -114,15 +153,42 @@ public abstract class Context extends ANY
             }
 
             @Override
-            public String toString()
+            String localToString()
             {
-              var o = "" + _outer;
-              o.replace("\n", "\n  ");
-              return "Type context at " + infix_colon_call.pos().show() + "\n  " + o;
+              return "Type context at " + infix_colon_call.pos().show();
             }
           };
       }
     return result;
+  }
+
+
+  /**
+   * Create a String describing this Context without the exterior(), for debugging.
+   */
+  abstract String localToString();
+
+
+  /**
+   * Create a String describing this Context with the exterior(), for debugging.
+   * Uses localToString().
+   */
+  @Override
+  public String toString()
+  {
+    return toString(localToString());
+  }
+
+
+  /**
+   * Create a String describing this Context with the exterior(), for debugging.
+   * Uses localToString().
+   */
+  private String toString(String inner)
+  {
+    var r = inner.replace("\n", "\n| ") + "\n" + localToString();
+    var e = exterior();
+    return e == null ? r : e.toString(r);
   }
 
 }

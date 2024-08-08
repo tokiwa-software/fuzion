@@ -187,7 +187,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   final AbstractType resolve(Resolution res, AbstractFeature outerfeat)
   {
-    return resolve(res, outerfeat, outerfeat instanceof Feature of ? of._sourceCodeContext : Context.NONE);
+    return resolve(res, outerfeat, outerfeat.context());
   }
   AbstractType resolve(Resolution res, AbstractFeature outerfeat, Context context)
   {
