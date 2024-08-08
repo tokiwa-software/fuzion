@@ -1,0 +1,9 @@
+
+--CURDIR--/reg_issue3506_a.fz:26:1: error 1: Could not find called feature
+bla
+^^^
+Feature not found: 'bla' (no arguments)
+Target feature: 'universe'
+In call: 'bla'
+
+one error.
