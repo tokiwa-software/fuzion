@@ -1924,7 +1924,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         a.checkChoice(pos, outer, context);
         if (!c.isGenericArgument() && // See AstErrors.constraintMustNotBeGenericArgument,
                                       // will be checked in SourceModule.checkTypes(Feature)
-            !c.constraintAssignableFrom(outer, null, a))
+            !c.constraintAssignableFrom(outer, context, a))
           {
             if (!f.typeParameter().isTypeFeaturesThisType())  // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
               {
