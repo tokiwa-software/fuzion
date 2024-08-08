@@ -1,0 +1,16 @@
+true
+false: this should appear after false only
+true
+this should always appear afterwards
+false
+this should always appear afterwards
+this is fine
+this is fine
+this is fine
+this is fine
+declared field a
+declared field b
+field f1 assigned
+feature f4 assigned
+'1' is a number
+'A' is a codepoint

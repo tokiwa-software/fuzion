@@ -26,4 +26,4 @@
 # In contrast to `say`, `log` returns its argument
 # which makes `log` compose better in same cases.
 #
-public log(s T) => say s; s
+public log(s T) => {say s; s}

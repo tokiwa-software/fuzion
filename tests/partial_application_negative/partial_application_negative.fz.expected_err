@@ -22,7 +22,7 @@ This call can be resolved in two ways, either as a direct call to 'partial_appli
   ambig        Unary String i32 => x->"#$x#"
 --^^^^^
 or by partially applying arguments to a call to 'partial_application_negative.ambig' declared at --CURDIR--/partial_application_negative.fz:54:3:
-  ambig(x i32) Unary String i32 => say "V1"; y->"#$y x:$x#"
+  ambig(x i32) Unary String i32 => {say "V1"; y->"#$y x:$x#"}
 --^^^^^.
 To solve this, rename one of the ambiguous features.
 
@@ -31,7 +31,7 @@ To solve this, rename one of the ambiguous features.
   _ := test (ambig 42   )     // 7. should flag an error: Ambiguous call to `ambig (1 arguments)` or `ambig (2 arguments)`
 -------------^^^^^
 This call can be resolved in two ways, either as a direct call to 'partial_application_negative.ambig' declared at --CURDIR--/partial_application_negative.fz:54:3:
-  ambig(x i32) Unary String i32 => say "V1"; y->"#$y x:$x#"
+  ambig(x i32) Unary String i32 => {say "V1"; y->"#$y x:$x#"}
 --^^^^^
 or by partially applying arguments to a call to 'partial_application_negative.ambig' declared at --CURDIR--/partial_application_negative.fz:55:3:
   ambig(x,y i32)     String     => "$x $y"

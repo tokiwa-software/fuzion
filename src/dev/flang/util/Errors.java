@@ -827,6 +827,16 @@ public class Errors extends ANY
                 "To solve this, remove this whitespace or replace it by escape codes.");
   }
 
+  public static void ambiguousSemicolon(SourcePosition sourcePos)
+  {
+    syntaxError(sourcePos,
+                "Ambiguous semicolon in nested blocks.",
+                "It is unclear whether this semicolon terminates the inner block or not. " +
+                "To solve this, add braces { } as follows\n\n" +
+                "  <line start>{<outer block>; <inner block>}<line end>\n\nor\n\n" +
+                "  <line start>{<first block>}; <second block><line end>");
+  }
+
 
   /*
    * get copy of current errors

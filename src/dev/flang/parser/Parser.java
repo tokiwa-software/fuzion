@@ -83,6 +83,8 @@ public class Parser extends Lexer
    */
   public static boolean ENABLE_SET_KEYWORD = false;
 
+  private boolean _nestedIf = false;
+  private int _lastIfLine = -1;
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -2561,6 +2563,7 @@ exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
     int oldEAS       = -1;  // original endAtSpace() to be restored by end(), -1 if indentation has not started (yet)
     int okLineNum    = -1;  // line number of last call to ok(), -1 at beginning
     int okPos        = -1;  // position    of last call to ok(), -1 at beginning
+    SemiState oldSemiSt = SemiState.CONTINUE; // the semicolon state, it is used to detect ambiguous semicolons
 
     Indentation()
     {
@@ -2605,6 +2608,7 @@ exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
       firstIndent  = indent(firstPos);
       oldEAS       = endAtSpaceOrSemi(Integer.MAX_VALUE);
       oldIndentPos = setMinIndent(tokenPos());
+      oldSemiSt = semiState(SemiState.CONTINUE);
     }
 
 
@@ -2648,6 +2652,7 @@ exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
         {
           endAtSpaceOrSemi(oldEAS);
           setMinIndent(oldIndentPos);
+          semiState(SemiState.CONTINUE);
         }
     }
   }
@@ -2674,6 +2679,7 @@ expr        : checkexpr
    */
   Expr expr()
   {
+    incrSemiState();
     var p0 = lastTokenEndPos();
     var p1 = tokenPos();
     var e =
@@ -2683,6 +2689,7 @@ expr        : checkexpr
       isFeaturePrefix()     ? feature()     : operatorExpr();
     var p2 = lastTokenEndPos();
     e.setSourceRange(sourceRange(p0, p1, p2));
+    decrSemiState();
     return e;
   }
 
@@ -2843,9 +2850,19 @@ ifexpr      : "if" exprInLine thenPart elseBlock
     return relaxLineAndSpaceLimit(() -> {
         SourcePosition pos = tokenSourcePos();
         match(Token.t_if, "ifexpr");
+
+        _nestedIf = _lastIfLine == line();
+        _lastIfLine = line();
         Expr e = exprInLine();
+
+        // semi error if in same line
+        if (_nestedIf && _lastIfLine == line()) {semiState(SemiState.ERROR);}
         Block b = thenPart(false);
+
+        // reset if new line
+        if (_nestedIf && _lastIfLine != line()) {semiState(SemiState.CONTINUE);}
         var els = elseBlock();
+
         return new If(pos, e, b,
           // do no use empty blocks as else blocks since the source position
           // of those block might be somewhere unexpected.
@@ -3174,6 +3191,7 @@ ensure      : "post"        block   // may start at min indent
     List<Cond> post = null;
     if (skip(true, Token.t_pre))
       {
+        var oldSemiSt = semiState(SemiState.CONTINUE);
         var f = fork();              // NYI: REMOVE!
         f.skip(Token.t_else);        // NYI: REMOVE!
         pre1 = Cond.from(f.block()); // NYI: REMOVE!
@@ -3182,13 +3200,16 @@ ensure      : "post"        block   // may start at min indent
         hasElse = skip(Token.t_else) ? lastTokenSourceRange() : null;
         pre0 = Cond.from(block());
         prePos = sourceRange(p);
+        semiState(oldSemiSt);
       }
     if (skip(true, Token.t_post))
       {
+        var oldSemiSt = semiState(SemiState.CONTINUE);
         var p = lastTokenPos();
         hasThen = skip(Token.t_then) ? lastTokenSourceRange() : null;
         post = Cond.from(block());
         postPos = sourceRange(p);
+        semiState(oldSemiSt);
       }
     return pre0 == null && post == null
       && false // NYI: We cannot use EMPTY_CONTRACT since we might need the last
@@ -3261,12 +3282,14 @@ implRout    : "is" "abstract"
       {
         AstErrors.constructorWithReturnType(pos);
       }
-    if      (has_is || has_arrow   ) { result = skip(Token.t_abstract             ) ? Impl.ABSTRACT              :
-                                                skip(Token.t_intrinsic            ) ? Impl.INTRINSIC             :
-                                                skip(Token.t_native               ) ? Impl.NATIVE                :
-                                                new Impl(pos, block()    , has_is  ? Impl.Kind.Routine :
+    if      (has_is || has_arrow   ) { SemiState oldSemiSt = semiState(SemiState.END);
+                                       result = skip(Token.t_abstract            ) ? Impl.ABSTRACT            :
+                                                skip(Token.t_intrinsic           ) ? Impl.INTRINSIC           :
+                                                skip(Token.t_native              ) ? Impl.NATIVE              :
+                                                new Impl(pos, block()    , has_is  ? Impl.Kind.Routine        :
                                                                            hasType ? Impl.Kind.Routine
-                                                                                   : Impl.Kind.RoutineDef); }
+                                                                                   : Impl.Kind.RoutineDef);
+                                        semiState(oldSemiSt);}
     else if (skip(true, Token.t_of)) { result = new Impl(pos, block()    , Impl.Kind.Of        ); }
     else if (skipFullStop()        ) { result = new Impl(pos, emptyBlock(),Impl.Kind.Routine   ); }
     else

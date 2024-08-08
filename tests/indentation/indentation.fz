@@ -49,8 +49,8 @@ indentation is
 
   # first line of code starts without LF and contains several exprs
   #
-  feature3 is say "3a"; say "3b"
-              say "3c"
+  feature3 is {say "3a"; say "3b"
+               say "3c"}
 
   _ := feature1
   _ := feature2
@@ -272,13 +272,13 @@ indentation is
 
   # helper feature for a call with zero/one/two arguments
   #
-  callWith0Args(a i32)   => panic "expected no arg!"; false
-  callWith0Args          => say "ok"; true
-  callWith1Arg (a i32)   => say "$a"; true
-  callWith1Arg           => panic "expected one arg!"; false
-  callWith2Args(a,b i32) => say "$a $b"; true
-  callWith2Args(a i32)   => panic "expected two args!"; false
-  callWith2Arg           => panic "expected two args!"; false
+  callWith0Args(a i32)   => {panic "expected no arg!"; false}
+  callWith0Args          => {say "ok"; true}
+  callWith1Arg (a i32)   => {say "$a"; true}
+  callWith1Arg           => {panic "expected one arg!"; false}
+  callWith2Args(a,b i32) => {say "$a $b"; true}
+  callWith2Args(a i32)   => {panic "expected two args!"; false}
+  callWith2Arg           => {panic "expected two args!"; false}
 
   # 'if' requires the condition to be in a single line: args in next line are ignored
   #

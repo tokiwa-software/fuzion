@@ -715,9 +715,9 @@ catch_postcondition.z.lm.go#2 (option String): <source position not available>:
 catch_postcondition.z: --CURDIR--/catch_postcondition.fz:103:15:
     res := lm.go ()->
 --------------^^
-catch_postcondition.z.catch#1: --CURDIR--/catch_postcondition.fz:147:117:
-    redef catch(s String) option String => say "*** failed: $s ***"; c0 <- c0.get + 1; if c0.get < tries.count then z.res else nil
---------------------------------------------------------------------------------------------------------------------^
+catch_postcondition.z.catch#1: --CURDIR--/catch_postcondition.fz:147:118:
+    redef catch(s String) option String => {say "*** failed: $s ***"; c0 <- c0.get + 1; if c0.get < tries.count then z.res else nil}
+---------------------------------------------------------------------------------------------------------------------^
 catch_postcondition.z.λ.call.λ.call: --CURDIR--/catch_postcondition.fz:108:24:
         ).run try (()->catch m.get.get)
 -----------------------^^^^^

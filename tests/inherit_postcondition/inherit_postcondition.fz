@@ -32,7 +32,7 @@ test_postcondition is
   # function that prints a string using `say` and returns `true`, used to create output
   # as a side-effect to verify execution of postconditions
   #
-  ok(s) => say s; true
+  ok(s) => {say s; true}
 
 
   # ------ recording and checking execution order ------
