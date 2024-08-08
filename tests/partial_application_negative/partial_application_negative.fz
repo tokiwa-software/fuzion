@@ -51,7 +51,7 @@ partial_application_negative is
   #  x3 := data.map 4.infix*   // NYI, should work!
 
   ambig        Unary String i32 => x->"#$x#"
-  ambig(x i32) Unary String i32 => say "V1"; y->"#$y x:$x#"
+  ambig(x i32) Unary String i32 => {say "V1"; y->"#$y x:$x#"}
   ambig(x,y i32)     String     => "$x $y"
   ambig(x,y,z i32)   String     => "$x $y $z"
 
