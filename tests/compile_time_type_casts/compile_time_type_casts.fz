@@ -82,9 +82,7 @@ compile_time_type_casts =>
     =>
       say "String '$v' type $T len {v.byte_length}"
 
-    if envir.args.count = 3
-      # make sure that for the compiler, this may always return as a non-void call
-    else if T : String
+    if T : String
       say "String '$v' type $T"
       say "String '$v' type $T len {v.byte_length}"
       for_String
