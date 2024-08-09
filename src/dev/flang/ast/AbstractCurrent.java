@@ -104,14 +104,19 @@ public abstract class AbstractCurrent extends Expr
    *
    * @param res the resolution instance
    *
-   * @param the outer feature this should be resolved for
+   * @param context the source code context where this Call is used
    *
    * @return this in case outer is what it was when this was created, or a new
    * Expr `Current.outer_ref. .. .outer_ref` to access the same current instance
    * from within a new, nested outer feature.
    */
+  public Expr resolveTypes(Resolution res, Context context)
+  {
+    return resolveTypes(res, context.outerFeature(), context);
+  }
   public Expr resolveTypes(Resolution res, AbstractFeature outer, Context context)
   {
+    if (PRECONDITIONS) require(outer == context.outerFeature());
     var of = _type.feature();
     return of == Types.f_ERROR || of == outer
       ? this

@@ -324,6 +324,7 @@ public class Block extends AbstractBlock
   @Override
   Block assignToField(Resolution res, AbstractFeature outer, Context context, Feature r)
   {
+    if (PRECONDITIONS) require(outer == context.outerFeature());
     Expr resExpr = removeResultExpression();
     if (resExpr != null)
       {

@@ -154,11 +154,16 @@ public class Assign extends AbstractAssign
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this expression.
+   * @param context the source code context where this Call is used
    *
    * @param destructure if this is called for an assignment that is created to
    * replace a Destructure, this refers to the Destructure expression.
    */
+  @Override
+  public void resolveTypes(Resolution res, Context context, Destructure destructure)
+  {
+    resolveTypes(res, context.outerFeature(), context, destructure);
+  }
   @Override
   void resolveTypes(Resolution res, AbstractFeature outer, Context context, Destructure destructure)
   {

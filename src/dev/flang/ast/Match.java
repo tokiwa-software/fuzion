@@ -140,10 +140,15 @@ public class Match extends AbstractMatch
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this expression.
+   * @param context the source code context where this Call is used
    */
+  public void resolveTypes(Resolution res, Context context)
+  {
+    resolveTypes(res, context.outerFeature(), context);
+  }
   public void resolveTypes(Resolution res, AbstractFeature outer, Context context)
   {
+    if (PRECONDITIONS) require(outer == context.outerFeature());
     var st = _subject.type();
     if (CHECKS) check
       (Errors.any() || st != Types.t_ERROR);

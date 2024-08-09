@@ -275,6 +275,7 @@ public class If extends ExprWithPos
   @Override
   If assignToField(Resolution res, AbstractFeature outer, Context context, Feature r)
   {
+    if (PRECONDITIONS) require(outer == context.outerFeature());
     block = block.assignToField(res, outer, context, r);
     if (elseBlock != null)
       {
@@ -326,7 +327,7 @@ public class If extends ExprWithPos
   @Override
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, Context context, AbstractType t)
   {
-    if (PRECONDITIONS) require(outer == context.outerFeature());
+    if (PRECONDITIONS) require(outer == context.outerFeature(), outer != null);
     return addFieldForResult(res, outer, context, t);
   }
 

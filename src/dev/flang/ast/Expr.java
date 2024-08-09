@@ -358,6 +358,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    */
   Expr assignToField(Resolution res, AbstractFeature outer, Context context, Feature r)
   {
+    if (PRECONDITIONS) require(outer == context.outerFeature());
     return new Assign(res, pos(), r, this, outer, context);
   }
 
@@ -588,8 +589,8 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
                                 outer);
         r.scheduleForResolution(res);
         res.resolveTypes();
-        result = new Block(new List<>(assignToField(res, outer, null /* Context */, r),
-                                      new Call(pos, new Current(pos, outer), r).resolveTypes(res, outer, context)));
+        result = new Block(new List<>(assignToField(res, outer, context, r),
+                                      new Call(pos, new Current(pos, outer), r).resolveTypes(res, context)));
       }
     return result;
   }
