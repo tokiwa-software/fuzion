@@ -242,10 +242,15 @@ public class Destructure extends ExprWithPos
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this expression.
+   * @param context the source code context where this Call is used
    */
+  public Expr resolveTypes(Resolution res, Context context)
+  {
+    return resolveTypes(res, context.outerFeature(), context);
+  }
   public Expr resolveTypes(Resolution res, AbstractFeature outer, Context context)
   {
+    if (PRECONDITIONS) require(outer == context.outerFeature());
     List<Expr> exprs = new List<>();
     // NYI: This might fail in conjunction with type inference.  We should maybe
     // create the decomposition code later, after resolveTypes is done.

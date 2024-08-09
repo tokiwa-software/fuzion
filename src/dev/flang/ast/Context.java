@@ -54,6 +54,10 @@ public abstract class Context extends ANY
    */
   static final Context NONE = new Context()
     {
+      @Override AbstractFeature outerFeature()
+      {
+        throw new Error("outerFeature missing in context!");
+      }
       @Override Context exterior()
       {
         return null;
@@ -77,6 +81,11 @@ public abstract class Context extends ANY
   {
     return new Context()
       {
+        @Override AbstractFeature outerFeature()
+        {
+          return f;
+        }
+
         @Override
         Context exterior() { return f instanceof Feature ff ? ff._sourceCodeContext : NONE; }
         @Override String localToString() { return f.qualifiedName() + " at " + f.pos().show(); }
@@ -168,6 +177,11 @@ public abstract class Context extends ANY
    */
   abstract String localToString();
 
+
+  AbstractFeature outerFeature()
+  {
+    return exterior().outerFeature();
+  }
 
   /**
    * Create a String describing this Context with the exterior(), for debugging.

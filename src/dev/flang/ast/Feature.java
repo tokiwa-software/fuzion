@@ -2053,6 +2053,7 @@ A ((Choice)) declaration must not contain a result type.
         _state = State.RESOLVING_SUGAR2;
 
         visit(new ContextVisitor() {
+            { this._context = Feature.this.context(); }
             public Expr  action(Feature     f, AbstractFeature outer) { return new Nop(_pos);                        }
             public Expr  action(Function    f, AbstractFeature outer) { return f.resolveSyntacticSugar2(res, outer); }
             public Expr  action(InlineArray i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, outer, _context); }
@@ -2136,7 +2137,7 @@ A ((Choice)) declaration must not contain a result type.
         if (this.outer() == outer)
           {
             /* add assignment of initial value: */
-            AbstractAssign ass = new Assign(res, _pos, this, _impl.expr(), outer, context());
+            AbstractAssign ass = new Assign(res, _pos, this, _impl.expr(), outer, outer.context());
             ass = ass.visit(res._resolveSyntaxSugar1, outer);
             result = new Block(new List<>(this, ass));
           }

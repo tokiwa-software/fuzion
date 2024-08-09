@@ -108,13 +108,18 @@ public class Env extends ExprWithPos
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
-   * @param outer the root feature that contains this expression.
+   * @param context the source code context where this Call is used
    *
    * @return a call to the outer references to access the value represented by
    * this.
    */
-  public Expr resolveTypes(Resolution res, AbstractFeature outer)
+  public Expr resolveTypes(Resolution res, Context context)
   {
+    return resolveTypes(res, context.outerFeature(), context);
+  }
+  public Expr resolveTypes(Resolution res, AbstractFeature outer, Context context)
+  {
+    if (PRECONDITIONS) require(outer == context.outerFeature());
     _type = _type.resolve(res, outer);
     return this;
   }

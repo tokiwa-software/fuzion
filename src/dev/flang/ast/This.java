@@ -204,6 +204,7 @@ public class This extends ExprWithPos
    */
   public Expr resolveTypes(Resolution res, AbstractFeature outer, Context context)
   {
+    //    if (PRECONDITIONS) require(outer == context.outerFeature());
     if (PRECONDITIONS) require
       (res != null || Errors.any(),
        outer != null || Errors.any());

@@ -112,10 +112,15 @@ public class DotType extends ExprWithPos
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this expression.
+   * @param context the source code context where this Call is used
    */
+  public Call resolveTypes(Resolution res, Context context)
+  {
+    return resolveTypes(res, context.outerFeature(), context);
+  }
   public Call resolveTypes(Resolution res, AbstractFeature outer, Context context)
   {
+    if (PRECONDITIONS) require(outer == context.outerFeature());
     return new Call(pos(),
                     new Universe(),
                     "type_as_value",

@@ -162,6 +162,7 @@ public class Assign extends AbstractAssign
   @Override
   void resolveTypes(Resolution res, AbstractFeature outer, Context context, Destructure destructure)
   {
+    if (PRECONDITIONS) require(outer == context.outerFeature());
     var f = _assignedField;
     if (f == null)
       {

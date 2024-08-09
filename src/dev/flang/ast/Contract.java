@@ -351,6 +351,7 @@ public class Contract extends ANY
    */
   static Call callPreCondition(Resolution res, AbstractFeature f, Feature outer, Context context)
   {
+    if (PRECONDITIONS) require(outer == context.outerFeature());
     var oc = f.contract();
     var p = oc._hasPre != null ? oc._hasPre : f.pos();
     List<Expr> args = new List<>();
@@ -420,6 +421,7 @@ public class Contract extends ANY
    */
   static Call callPreBool(Resolution res, AbstractFeature f, Feature outer, Context context)
   {
+    if (PRECONDITIONS) require(outer == context.outerFeature());
     var oc = f.contract();
     var p = oc._hasPre != null ? oc._hasPre : f.pos();
     List<Expr> args = new List<>();
@@ -470,11 +472,11 @@ public class Contract extends ANY
                           new Current(p, preAndCallOuter),
                           a,
                           -1);
-        ca = ca.resolveTypes(res, preAndCallOuter, context);
+        ca = ca.resolveTypes(res, preAndCallOuter, preAndCallOuter.context());
         args.add(ca);
       }
     var t = new This(p, preAndCallOuter, preAndCallOuter.outer())
-      .resolveTypes(res, preAndCallOuter, context);
+      .resolveTypes(res, preAndCallOuter, preAndCallOuter.context());
     return new Call(p,
                     t,
                     preAndCallOuter.generics().asActuals(),
@@ -546,11 +548,12 @@ public class Contract extends ANY
    */
   private static Call callPostCondition(Resolution res, AbstractFeature outer, Feature in, Context context, List<Expr> args)
   {
+    //    if (PRECONDITIONS) require(outer == context.outerFeature());
     var p = in.contract()._hasPost != null
           ? in.contract()._hasPost   // use `post` position if `in` is of the form `f post cc is ...`
           : in.pos();                // `in` does not have `post` clause, only inherits postconditions. So use the feature position instead
 
-    var t = (in.outerRef() != null) ? new This(p, in, in.outer()).resolveTypes(res, in, context)
+    var t = (in.outerRef() != null) ? new This(p, in, in.outer()).resolveTypes(res, in, in.context())
                                     : new Universe();
     if (outer instanceof Feature of)  // if outer is currently being compiled, make sure its post feature is added first
       {
@@ -562,7 +565,7 @@ public class Contract extends ANY
                                      args,
                                      outer.postFeature(),
                                      Types.resolved.t_unit);
-    callPostCondition = callPostCondition.resolveTypes(res, in, context);
+    callPostCondition = callPostCondition.resolveTypes(res, in, in.context());
     return callPostCondition;
   }
 
@@ -701,7 +704,7 @@ public class Contract extends ANY
         //   else check declared
         for (var i = 0; i < inhpres.size() && hasPreConditionsFeature(inhpres.get(i)); i++)
           {
-            var call = callPreBool(res, inhpres.get(i), pF, context);
+            var call = callPreBool(res, inhpres.get(i), pF, pF.context());
             cc = cc == null
               ? call
               : new ParsedCall(cc, new ParsedName(pos, "infix ||"), new List<>(call));
@@ -741,7 +744,7 @@ public class Contract extends ANY
                                      new Block(new_code)));
       }
     code._expressions = new_code;
-    var e = res.resolveType(code, pF, Context.NONE /* NYI: what if we need a context in a precondition? */);
+    var e = res.resolveType(code, pF, pF.context());
     if (CHECKS) check
       (code == e);
   }
@@ -1020,7 +1023,7 @@ all of their redefinition to `true`. +
             f._preAndCallFeature = pF2;
 
             res.resolveDeclarations(pF2);
-            l2.add(callPreCondition(res, f, (Feature) f.preAndCallFeature(), context));
+            l2.add(callPreCondition(res, f, (Feature) f.preAndCallFeature(), ((Feature) f.preAndCallFeature()).context()));
             l2.add(callOriginal(res, f, context));
             res.resolveTypes(pF2);
           }
@@ -1091,11 +1094,11 @@ The conditions of a post-condition are checked at run-time in sequential source-
                                       new Current(pos, pF),
                                       a,
                                       -1);
-                    ca = ca.resolveTypes(res, pF, context);
+                    ca = ca.resolveTypes(res, pF, pF.context());
                     args2.add(ca);
                   }
-                var inhpost = callPostCondition(res, inh, pF, context, args2);
-                inhpost = inhpost.resolveTypes(res, pF, context);
+                var inhpost = callPostCondition(res, inh, pF, pF.context(), args2);
+                inhpost = inhpost.resolveTypes(res, pF, pF.context());
                 if (l2 == null)
                   {
                     l2 = new List<>();

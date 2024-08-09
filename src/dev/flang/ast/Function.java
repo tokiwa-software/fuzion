@@ -371,10 +371,15 @@ public class Function extends AbstractLambda
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this expression.
+   * @param context the source code context where this Call is used
    */
+  public void resolveTypes(Resolution res, Context context)
+  {
+    resolveTypes(res, context.outerFeature(), context);
+  }
   public void resolveTypes(Resolution res, AbstractFeature outer, Context context)
   {
+    if (PRECONDITIONS) require(outer == context.outerFeature());
     if (CHECKS) check
       (this._call == null || this._feature != null);
 

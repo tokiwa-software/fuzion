@@ -417,6 +417,7 @@ public class Impl extends ANY
    */
   public void resolveSyntacticSugar2(Resolution res, AbstractFeature outer, Context context)
   {
+    if (PRECONDITIONS) require(outer == context.outerFeature());
     if (outer.isConstructor() && outer.preFeature() != null)
       { // For constructors, the constructor itself checks the precondition (while
         // for functions, this is done by the caller):
@@ -505,7 +506,9 @@ public class Impl extends ANY
                 if (res != null && !_infiniteRecursionInResolveTypes)
                   {
                     _infiniteRecursionInResolveTypes = true;
-                    actl = actl.visit(res.resolveTypesFully, ic.resolvedFor());
+                    // actl = actl.visit(res.resolveTypesFully, ic.resolvedFor());
+                    var irf = ic.resolvedFor();
+                    actl = res.resolveType(actl, irf, irf.context());
                     aargs.set(actl);
                     _infiniteRecursionInResolveTypes = false;
                   }

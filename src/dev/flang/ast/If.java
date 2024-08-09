@@ -326,6 +326,7 @@ public class If extends ExprWithPos
   @Override
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, Context context, AbstractType t)
   {
+    if (PRECONDITIONS) require(outer == context.outerFeature());
     return addFieldForResult(res, outer, context, t);
   }
 
