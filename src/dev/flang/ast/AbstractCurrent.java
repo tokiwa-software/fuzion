@@ -112,15 +112,10 @@ public abstract class AbstractCurrent extends Expr
    */
   public Expr resolveTypes(Resolution res, Context context)
   {
-    return resolveTypes(res, context.outerFeature(), context);
-  }
-  public Expr resolveTypes(Resolution res, AbstractFeature outer, Context context)
-  {
-    if (PRECONDITIONS) require(outer == context.outerFeature());
     var of = _type.feature();
-    return of == Types.f_ERROR || of == outer
+    return of == Types.f_ERROR || of == context.outerFeature()
       ? this
-      : new This(pos(), outer, of).resolveTypes(res, context);
+      : new This(pos(), context.outerFeature(), of).resolveTypes(res, context);
   }
 
 

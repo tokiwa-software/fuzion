@@ -2194,26 +2194,26 @@ public class Call extends AbstractCall
 
   /**
    * Field used to detect and avoid repeated calls to resolveTypes for the same
-   * outer feature.  resolveTypes may be called repeatedly when types are
-   * determined on demand for type inference for type parameters in a call. This
-   * field will record that resolveTypes was called for a given outer feature.
-   * This is used to not perform resolveTypes repeatedly.
+   * context.  resolveTypes may be called repeatedly when types are determined
+   * on demand for type inference for type parameters in a call. This field will
+   * record that resolveTypes was called for a given context.  This is used to
+   * not perform resolveTypes repeatedly.
    *
    * However, moving an expression into a lambda or a lazy value will change its
-   * outer feature and resolve will have to be repeated.
+   * context and resolve will have to be repeated.
    */
-  private AbstractFeature _resolvedFor;
+  private Context _resolvedFor;
 
 
   /**
-   * Has this call been resolved and if so, for which outer feature?
+   * Has this call been resolved and if so, for which context?
    *
-   * @return the outer feature this has been resolved for or null if this has
-   * not been resolved yet.  Note that the result may change due to repeated
-   * resolution when this is moved to a different feature as a result of partial
+   * @return the context this has been resolved for or null if this has not been
+   * resolved yet.  Note that the result may change due to repeated resolution
+   * when this is moved to a different feature as a result of partial
    * application, lazy evaluation or is part of a lambda expression.
    */
-  public AbstractFeature resolvedFor()
+  public Context resolvedFor()
   {
     return _resolvedFor;
   }
@@ -2293,23 +2293,13 @@ public class Call extends AbstractCall
    */
   public Call resolveTypes(Resolution res, Context context)
   {
-    return resolveTypes(res, context.outerFeature(), context);
-  }
-  public Call resolveTypes(Resolution res, AbstractFeature outer, Context context)
-  {
-    try {
-    if (PRECONDITIONS) require(outer == context.outerFeature());
-    } catch (Error e) {
-      System.out.println("context is "+context+" "+context.getClass());
-      throw e;
-    }
     Call result = this;
-    if (_resolvedFor == outer)
+    if (_resolvedFor == context)
       {
         return this;
       }
-    _resolvedFor = outer;
-    if (_calledFeature == null && !loadCalledFeatureUnlessTargetVoid(res, outer, context))
+    _resolvedFor = context;
+    if (_calledFeature == null && !loadCalledFeatureUnlessTargetVoid(res, context.outerFeature(), context))
       { // target of this call results in `void`, so we replace this call by the
         // target. However, we have to return a `Call` and `_target` is
         // `Expr`. Solution: we wrap `_target` into a call `universe.id void
@@ -2332,27 +2322,27 @@ public class Call extends AbstractCall
       }
     else if (_calledFeature != null)
       {
-        _generics = FormalGenerics.resolve(res, _generics, outer);
+        _generics = FormalGenerics.resolve(res, _generics, context.outerFeature());
         _generics = _generics.map(g -> g.resolve(res, _calledFeature.outer()));
 
-        propagateForPartial(res, outer, context);
+        propagateForPartial(res, context.outerFeature(), context);
         if (needsToInferTypeParametersFromArgs())
           {
-            inferGenericsFromArgs(res, outer, context);
+            inferGenericsFromArgs(res, context.outerFeature(), context);
             for (var r : _whenInferredTypeParameters)
               {
                 r.run();
               }
           }
-        inferFormalArgTypesFromActualArgs(outer);
+        inferFormalArgTypesFromActualArgs(context.outerFeature());
         if (_calledFeature.generics().errorIfSizeDoesNotMatch(_generics,
                                                               pos(),
                                                               FuzionConstants.OPERATION_CALL,
                                                               "Called feature: "+_calledFeature.qualifiedName()+"\n"))
           {
             var cf = _calledFeature;
-            var t = isTailRecursive(outer) ? Types.resolved.t_void // a tail recursive call will not return and execute further
-                                           : cf.resultTypeIfPresent(res, _generics);
+            var t = isTailRecursive(context.outerFeature()) ? Types.resolved.t_void // a tail recursive call will not return and execute further
+                                                            : cf.resultTypeIfPresent(res, _generics);
 
             if (t == Types.t_ERROR)
               {
@@ -2360,30 +2350,30 @@ public class Call extends AbstractCall
               }
             else if (t != null)
               {
-                result = resolveImplicitSelect(res, outer, context, t);
-                setActualResultType(res, outer, context, t);
+                result = resolveImplicitSelect(res, context.outerFeature(), context, t);
+                setActualResultType(res, context.outerFeature(), context, t);
                 // Convert a call "f.g a b" into "f.g.call a b" in case f.g takes no
                 // arguments and returns a Function or Routine
-                result = result.resolveImmediateFunctionCall(res, outer, context); // NYI: Separate pass? This currently does not work if type was inferred
+                result = result.resolveImmediateFunctionCall(res, context.outerFeature(), context); // NYI: Separate pass? This currently does not work if type was inferred
               }
-            if (t == null || isTailRecursive(outer))
+            if (t == null || isTailRecursive(context.outerFeature()))
               {
                 cf.whenResolvedTypes
-                  (() -> setActualResultType(res, outer, context, cf.resultTypeForTypeInference(pos(), res, _generics)));
+                  (() -> setActualResultType(res, context.outerFeature(), context, cf.resultTypeForTypeInference(pos(), res, _generics)));
               }
           }
         else
           {
             _type = Types.t_ERROR;
           }
-        resolveFormalArgumentTypes(res, outer, context);
+        resolveFormalArgumentTypes(res, context.outerFeature(), context);
       }
     if (_type != null &&
         // exclude call to create type instance, it requires origin's type parameters:
         !calledFeature().isTypeFeature()
         )
       {
-        _type = _type.replace_type_parameters_of_type_feature_origin(outer);
+        _type = _type.replace_type_parameters_of_type_feature_origin(context.outerFeature());
       }
 
     // make sure type features exist for all features used as actual type
@@ -2411,7 +2401,7 @@ public class Call extends AbstractCall
           }
       }
 
-    resolveTypesOfActuals(res, outer, context);
+    resolveTypesOfActuals(res, context.outerFeature(), context);
 
     if (POSTCONDITIONS) ensure
       (_pendingError != null || Errors.any() || result.typeForInferencing() != Types.t_ERROR);

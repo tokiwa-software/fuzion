@@ -162,16 +162,10 @@ public class Assign extends AbstractAssign
   @Override
   public void resolveTypes(Resolution res, Context context, Destructure destructure)
   {
-    resolveTypes(res, context.outerFeature(), context, destructure);
-  }
-  @Override
-  void resolveTypes(Resolution res, AbstractFeature outer, Context context, Destructure destructure)
-  {
-    if (PRECONDITIONS) require(outer == context.outerFeature());
     var f = _assignedField;
     if (f == null)
       {
-        var fo = FeatureAndOuter.filter(res._module.lookup(outer,
+        var fo = FeatureAndOuter.filter(res._module.lookup(context.outerFeature(),
                                                            _name,
                                                            destructure == null ? this : destructure,
                                                            true,
@@ -184,7 +178,7 @@ public class Assign extends AbstractAssign
           }
         else
           {
-            AstErrors.assignmentTargetNotFound(this, outer);
+            AstErrors.assignmentTargetNotFound(this, context.outerFeature());
             _target = AbstractCall.ERROR_VALUE;
             f = Types.f_ERROR;
           }
@@ -194,10 +188,10 @@ public class Assign extends AbstractAssign
                                                (Errors.any());
                                              /* ignore */
                                            }
-    else if (!f.isField()                ) { AstErrors.assignmentToNonField    (this, f, outer); }
+    else if (!f.isField()                ) { AstErrors.assignmentToNonField    (this, f, context.outerFeature()); }
     else if (!_indexVarAllowed       &&
              f instanceof Feature ff &&
-             ff.isIndexVarUpdatedByLoop()) { AstErrors.assignmentToIndexVar    (this, f, outer); }
+             ff.isIndexVarUpdatedByLoop()) { AstErrors.assignmentToIndexVar    (this, f, context.outerFeature()); }
   }
 
 

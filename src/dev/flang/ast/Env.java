@@ -115,12 +115,7 @@ public class Env extends ExprWithPos
    */
   public Expr resolveTypes(Resolution res, Context context)
   {
-    return resolveTypes(res, context.outerFeature(), context);
-  }
-  public Expr resolveTypes(Resolution res, AbstractFeature outer, Context context)
-  {
-    if (PRECONDITIONS) require(outer == context.outerFeature());
-    _type = _type.resolve(res, outer);
+    _type = _type.resolve(res, context.outerFeature());
     return this;
   }
 

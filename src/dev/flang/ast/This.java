@@ -139,13 +139,13 @@ public class This extends ExprWithPos
    *
    * @return the type resolved expression to access f.this.
    */
-  public static Expr thiz(Resolution res, SourcePosition pos, AbstractFeature cur, Context context, AbstractFeature f)
+  public static Expr thiz(Resolution res, SourcePosition pos, AbstractFeature outer, Context context, AbstractFeature f)
   {
     if (PRECONDITIONS) require
-      (cur != null || Errors.any(),
+      (outer != null || Errors.any(),
        f != null || Errors.any());
 
-    return new This(pos, cur, f).resolveTypes(res, cur, context);
+    return new This(pos, outer, f).resolveTypes(res, context);
   }
 
 
@@ -204,14 +204,11 @@ public class This extends ExprWithPos
    */
   public Expr resolveTypes(Resolution res, Context context)
   {
-    return resolveTypes(res, context.outerFeature(), context);
-  }
-  public Expr resolveTypes(Resolution res, AbstractFeature outer, Context context)
-  {
-    if (PRECONDITIONS) require(outer == context.outerFeature());
     if (PRECONDITIONS) require
       (res != null || Errors.any(),
-       outer != null || Errors.any());
+       context != null);
+
+    var outer = context.outerFeature();
     if (_qual != null)
       {
         this._feature = getThisFeature(pos(), this, _qual, outer);

@@ -116,11 +116,6 @@ public class DotType extends ExprWithPos
    */
   public Call resolveTypes(Resolution res, Context context)
   {
-    return resolveTypes(res, context.outerFeature(), context);
-  }
-  public Call resolveTypes(Resolution res, AbstractFeature outer, Context context)
-  {
-    if (PRECONDITIONS) require(outer == context.outerFeature());
     return new Call(pos(),
                     new Universe(),
                     "type_as_value",

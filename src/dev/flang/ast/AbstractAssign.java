@@ -152,11 +152,6 @@ public abstract class AbstractAssign extends Expr
    */
   public void resolveTypes(Resolution res, Context context)
   {
-    resolveTypes(res, context.outerFeature(), context);
-  }
-  public void resolveTypes(Resolution res, AbstractFeature outer, Context context)
-  {
-    if (PRECONDITIONS) require(outer == context.outerFeature());
     resolveTypes(res, context, null);
   }
 
@@ -173,11 +168,6 @@ public abstract class AbstractAssign extends Expr
    */
   public void resolveTypes(Resolution res, Context context, Destructure destructure)
   {
-    resolveTypes(res, context.outerFeature(), context, destructure);
-  }
-  void resolveTypes(Resolution res, AbstractFeature outer, Context context, Destructure destructure)
-  {
-    if (PRECONDITIONS) require(outer == context.outerFeature());
   }
 
 

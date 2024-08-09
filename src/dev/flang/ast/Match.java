@@ -144,11 +144,6 @@ public class Match extends AbstractMatch
    */
   public void resolveTypes(Resolution res, Context context)
   {
-    resolveTypes(res, context.outerFeature(), context);
-  }
-  public void resolveTypes(Resolution res, AbstractFeature outer, Context context)
-  {
-    if (PRECONDITIONS) require(outer == context.outerFeature());
     var st = _subject.type();
     if (CHECKS) check
       (Errors.any() || st != Types.t_ERROR);
@@ -170,7 +165,7 @@ public class Match extends AbstractMatch
       }
     if (st.isChoice())
       {
-        var cgs = st.choiceGenerics(outer, context);
+        var cgs = st.choiceGenerics(context.outerFeature(), context);
         for (var i = 0; i < cgs.size(); i++)
           {
             var n = cgs.get(i);
@@ -178,14 +173,14 @@ public class Match extends AbstractMatch
               (Errors.any() || n != null);
             if (n != null)
               {
-                cgs = cgs.setOrClone(i, n.resolve(res, outer));
+                cgs = cgs.setOrClone(i, n.resolve(res, context.outerFeature()));
               }
           }
         SourcePosition[] matched = new SourcePosition[cgs.size()];
         boolean ok = true;
         for (var c: cases())
           {
-            ok &= ((Case) c).resolveType(res, cgs, outer, matched);
+            ok &= ((Case) c).resolveType(res, cgs, context, matched);
           }
         var missingMatches = new List<AbstractType>();
         for (var ix = 0; ix < cgs.size(); ix++)

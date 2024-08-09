@@ -504,9 +504,7 @@ public class Impl extends ANY
                 if (res != null && !_infiniteRecursionInResolveTypes)
                   {
                     _infiniteRecursionInResolveTypes = true;
-                    // actl = actl.visit(res.resolveTypesFully, ic.resolvedFor());
-                    var irf = ic.resolvedFor();
-                    actl = res.resolveType(actl, irf, irf.context());
+                    actl = res.resolveType(actl, ic.resolvedFor());
                     aargs.set(actl);
                     _infiniteRecursionInResolveTypes = false;
                   }

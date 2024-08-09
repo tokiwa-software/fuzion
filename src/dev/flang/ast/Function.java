@@ -375,11 +375,6 @@ public class Function extends AbstractLambda
    */
   public void resolveTypes(Resolution res, Context context)
   {
-    resolveTypes(res, context.outerFeature(), context);
-  }
-  public void resolveTypes(Resolution res, AbstractFeature outer, Context context)
-  {
-    if (PRECONDITIONS) require(outer == context.outerFeature());
     if (CHECKS) check
       (this._call == null || this._feature != null);
 
