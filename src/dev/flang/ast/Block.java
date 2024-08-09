@@ -221,15 +221,15 @@ public class Block extends AbstractBlock
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
-   * @param outer the class that contains this expression.
+   * @param context the source code context where this Expr is used
    */
   @Override
-  void loadCalledFeature(Resolution res, AbstractFeature outer, Context context)
+  void loadCalledFeature(Resolution res, Context context)
   {
     Expr resExpr = resultExpression();
     if (resExpr != null)
       {
-        resExpr.loadCalledFeature(res, outer, context);
+        resExpr.loadCalledFeature(res, context);
       }
   }
 

@@ -251,25 +251,30 @@ public class ParsedCall extends Call
    * and convert it to
    *
    *   a < {tmp := b; tmp} && tmp <= c
+   *
+   * @param res Resolution instance
+   *
+   * @param context the source code context where this Call is used
    */
   @Override
-  protected void findChainedBooleans(Resolution res, AbstractFeature thiz, Context context)
+  protected void findChainedBooleans(Resolution res, Context context)
   {
-    var cb = chainedBoolTarget(res, thiz, context);
+    var cb = chainedBoolTarget(res, context);
     if (cb != null && _actuals.size() == 1)
       {
-        var b = res.resolveType(cb._actuals.getLast(), thiz, context);
+        var b = res.resolveType(cb._actuals.getLast(), context);
         if (b.typeForInferencing() != Types.t_ERROR)
           {
+            var outer = context.outerFeature();
             String tmpName = FuzionConstants.CHAINED_BOOL_TMP_PREFIX + (_chainedBoolTempId_++);
             var tmp = new Feature(res,
                                   pos(),
                                   Visi.PRIV,
                                   b.type(),
                                   tmpName,
-                                  thiz);
-            Expr t1 = new Call(pos(), new Current(pos(), thiz), tmp, -1);
-            Expr t2 = new Call(pos(), new Current(pos(), thiz), tmp, -1);
+                                  outer);
+            Expr t1 = new Call(pos(), new Current(pos(), outer), tmp, -1);
+            Expr t2 = new Call(pos(), new Current(pos(), outer), tmp, -1);
             var movedTo = new ParsedCall(t2, new ParsedName(pos(), name()), _actuals)
               {
                 boolean isChainedBoolRHS() { return true; }
@@ -344,14 +349,18 @@ public class ParsedCall extends Call
    * stored in a temp variable, 'c', as an argument, i.e., 'b <= c' or 't1 <=
    * c', resp.
    *
+   * @param res Resolution instance
+   *
+   * @param context the source code context where this Call is used
+   *
    * @return the term whose RHS would have to be stored in a temp variable for a
    * chained boolean call.
    */
-  private Call chainedBoolTarget(Resolution res, AbstractFeature thiz, Context context)
+  private Call chainedBoolTarget(Resolution res, Context context)
   {
     Call result = null;
     if (Types.resolved != null &&
-        targetFeature(res, thiz, context) == Types.resolved.f_bool &&
+        targetFeature(res, context) == Types.resolved.f_bool &&
         isValidOperatorInChainedBoolean() &&
         target() instanceof ParsedCall pc &&
         pc.isValidOperatorInChainedBoolean() &&

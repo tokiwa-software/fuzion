@@ -569,11 +569,6 @@ public class Resolution extends ANY
    *
    * @return e or a new expression that replaces e after type resolution.
    */
-  Expr resolveType(Expr e, AbstractFeature outer, Context context)
-  {
-    if (PRECONDITIONS) require(outer == context.outerFeature());
-    return resolveType(e, context);
-  }
   Expr resolveType(Expr e, Context context)
   {
     if (PRECONDITIONS) require

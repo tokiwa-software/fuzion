@@ -881,18 +881,18 @@ public class NumLiteral extends Constant
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param  outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the type this expression is assigned to.
    */
   @Override
-  public Expr wrapInLazy(Resolution res, AbstractFeature outer, Context context, AbstractType t)
+  public Expr wrapInLazy(Resolution res, Context context, AbstractType t)
   {
     if (t.isLazyType())
       {
         propagateExpectedType(res, context, t.generics().get(0));
       }
-    return super.wrapInLazy(res, outer, context, t);
+    return super.wrapInLazy(res, context, t);
   }
 
 

@@ -307,9 +307,9 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
-   * @param outer the class that contains this expression.
+   * @param context the source code context where this Expr is used
    */
-  void loadCalledFeature(Resolution res, AbstractFeature outer, Context context)
+  void loadCalledFeature(Resolution res, Context context)
   {
   }
 
@@ -454,11 +454,11 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param  outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the type this expression is assigned to.
    */
-  public Expr wrapInLazy(Resolution res, AbstractFeature outer, Context context, AbstractType t)
+  public Expr wrapInLazy(Resolution res, Context context, AbstractType t)
   {
     var result = this;
 
@@ -466,7 +466,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
 
     if (t.isLazyType() && !result.type().isLazyType())
       {
-        if (mustNotContainDeclarations("a lazy value", outer))
+        if (mustNotContainDeclarations("a lazy value", context.outerFeature()))
           {
             var fn = new Function(pos(),
                                   new List<>(),

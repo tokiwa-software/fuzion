@@ -441,7 +441,7 @@ public class Call extends AbstractCall
    *
    * @return the type of the target.
    */
-  private AbstractType targetTypeOrConstraint(Resolution res, AbstractFeature outer, Context context)
+  private AbstractType targetTypeOrConstraint(Resolution res, Context context)
   {
     if (PRECONDITIONS) require
       (_target != null);
@@ -485,10 +485,10 @@ public class Call extends AbstractCall
 
     var result = adjustThisTypeForTarget(frmlT, outer, context);
     var r0 = result;
-    result = targetTypeOrConstraint(res, outer, context)
+    result = targetTypeOrConstraint(res, context)
       .actualType(result, outer, context)
       .applyTypePars(_calledFeature, _generics);
-    var r1 = targetTypeOrConstraint(res, outer, context);
+    var r1 = targetTypeOrConstraint(res, context);
     var r2 = r1.actualType(r0, outer, context);
     var r3 = r2.applyTypePars(_calledFeature, _generics);
 
@@ -519,11 +519,13 @@ public class Call extends AbstractCall
    * then `X`'s type is the type `X`, while for a function `f` the type is `X`'s
    * constraint.
    *
+   * @param context the source code context where this Call is used
+   *
    * @return the type of the target.
    */
-  private AbstractType targetType(Resolution res, AbstractFeature outer, Context context)
+  private AbstractType targetType(Resolution res, Context context)
   {
-    _target = res.resolveType(_target, outer, context);
+    _target = res.resolveType(_target, context);
     return
       // NYI: CLEANUP: For a type parameter, the feature result type is abused
       // and holds the type parameter constraint.  As a consequence, we have to
@@ -533,7 +535,7 @@ public class Call extends AbstractCall
       _target instanceof Call tc &&
       targetIsTypeParameter()          ? tc.calledFeature().asGenericType() :
       calledFeature().isConstructor()  ? _target.typeForCallTarget()
-                                       : targetTypeOrConstraint(res, outer, context);
+                                       : targetTypeOrConstraint(res, context);
   }
 
 
@@ -543,40 +545,40 @@ public class Call extends AbstractCall
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
-   * @param thiz the surrounding feature. For a call c in an inherits clause
-   * ("f : c is"), thiz is the outer feature of f.  For an expression in the
-   * contracts or implementation of a feature f, thiz is f itself.
+   * @param context the source code context where this Call is used. For a call
+   * c in an inherits clause ("f : c { }"), context.outerFeature() is the outer
+   * feature of f.
    *
    * @return the feature of the target of this call.
    */
-  protected AbstractFeature targetFeature(Resolution res, AbstractFeature thiz, Context context)
+  protected AbstractFeature targetFeature(Resolution res, Context context)
   {
     AbstractFeature result;
 
-    // are we searching for features called via thiz' inheritance calls?
-    if (res.state(thiz) == State.RESOLVING_INHERITANCE)
+    // are we searching for features called via outer's inheritance calls?
+    if (res.state(context.outerFeature()) == State.RESOLVING_INHERITANCE)
       {
         if (_target instanceof Call tc)
           {
-            _target.loadCalledFeature(res, thiz, context);
+            _target.loadCalledFeature(res, context);
             tc.reportPendingError();
             result = tc.calledFeature();
           }
         else
           {
-            result = thiz.outer();   // For an inheritance call, we do not permit call to thiz' features,
-                                     // but only to the outer clazz' features:
+            result = context.outerFeature().outer();   // For an inheritance call, we do not permit call to outer' features,
+                                                       // but only to the outer clazz' features:
           }
       }
     else if (_target != null)
       {
-        _target.loadCalledFeature(res, thiz, context);
-        _target = res.resolveType(_target, thiz, context);
-        result = targetTypeOrConstraint(res, thiz, context).feature();
+        _target.loadCalledFeature(res, context);
+        _target = res.resolveType(_target, context);
+        result = targetTypeOrConstraint(res, context).feature();
       }
     else
-      { // search for feature in thiz
-        result = thiz;
+      { // search for feature in outer
+        result = context.outerFeature();
       }
 
     if (POSTCONDITIONS) ensure
@@ -600,8 +602,12 @@ public class Call extends AbstractCall
    * and convert it to
    *
    *   a < {tmp := b; tmp} && tmp <= c
+   *
+   * @param res Resolution instance
+   *
+   * @param context the source code context where this Call is used
    */
-  protected void findChainedBooleans(Resolution res, AbstractFeature thiz, Context context)
+  protected void findChainedBooleans(Resolution res, Context context)
   {
   }
 
@@ -617,18 +623,15 @@ public class Call extends AbstractCall
    * @param res the resolution instance.
    * instance.
    *
-   * @param thiz the surrounding feature. For a call c in an inherits clause ("f
-   * : c { }"), thiz is the outer feature of f.  For a expression in the
-   * contracts or implementation of a feature f, thiz is f itself.
-   *
-   * NYI: Check if it might make more sense for thiz to be the declared feature
-   * instead of the outer feature when processing an inherits clause.
+   * @param context the source code context where this Call is used. For a call
+   * c in an inherits clause ("f : c { }"), context.outerFeature() is the outer
+   * feature of f.
    */
-  void loadCalledFeature(Resolution res, AbstractFeature thiz, Context context)
+  void loadCalledFeature(Resolution res, Context context)
   {
     if (PRECONDITIONS) require
       (context != null);
-    var ignore = loadCalledFeatureUnlessTargetVoid(res, thiz, context);
+    var ignore = loadCalledFeatureUnlessTargetVoid(res, context);
   }
 
 
@@ -640,33 +643,31 @@ public class Call extends AbstractCall
    * @param res the resolution instance.
    * instance.
    *
-   * @param thiz the surrounding feature. For a call c in an inherits clause ("f
-   * : c { }"), thiz is the outer feature of f.  For a expression in the
-   * contracts or implementation of a feature f, thiz is f itself.
-   *
-   * NYI: Check if it might make more sense for thiz to be the declared feature
-   * instead of the outer feature when processing an inherits clause.
+   * @param context the source code context where this Call is used. For a call
+   * c in an inherits clause ("f : c { }"), context.outerFeature() is the outer
+   * feature of f.
    *
    * @return true if everything is fine, false in case the target results in
    * void and we hence can replace the call by _target.
    */
-  private boolean loadCalledFeatureUnlessTargetVoid(Resolution res, AbstractFeature thiz, Context context)
+  private boolean loadCalledFeatureUnlessTargetVoid(Resolution res, Context context)
   {
+    var outer = context.outerFeature();
     if (PRECONDITIONS) require
-      (thiz.isTypeParameter()   // NYI: type parameters apparently inherit ANY and are not resolved yet. Type parameters should not inherit anything and this special handling should go.
+      (outer.isTypeParameter()   // NYI: type parameters apparently inherit ANY and are not resolved yet. Type parameters should not inherit anything and this special handling should go.
        ||
-       (res.state(thiz) == State.RESOLVING_INHERITANCE
-       ? res.state(thiz.outer()).atLeast(State.RESOLVING_DECLARATIONS)
-       : res.state(thiz)        .atLeast(State.RESOLVING_DECLARATIONS)));
+       (res.state(outer) == State.RESOLVING_INHERITANCE
+       ? res.state(outer.outer()).atLeast(State.RESOLVING_DECLARATIONS)
+       : res.state(outer)        .atLeast(State.RESOLVING_DECLARATIONS)));
 
     var targetVoid = false;
     AbstractFeature targetFeature = null;
     if (_calledFeature == null)
       {
-        targetFeature = targetFeature(res, thiz, context);
+        targetFeature = targetFeature(res, context);
         if (CHECKS) check
           (Errors.any() || targetFeature != null && targetFeature != Types.f_ERROR);
-        targetVoid = Types.resolved != null && targetFeature == Types.resolved.f_void && targetFeature != thiz;
+        targetVoid = Types.resolved != null && targetFeature == Types.resolved.f_void && targetFeature != outer;
         if (targetVoid || targetFeature == Types.f_ERROR)
           {
             _calledFeature = Types.f_ERROR;
@@ -685,7 +686,7 @@ public class Call extends AbstractCall
             _actuals.size() != fo._feature.valueArguments().size() &&
             !fo._feature.hasOpenGenericsArgList(res))
           {
-            splitOffTypeArgs(res, fo._feature, thiz);
+            splitOffTypeArgs(res, fo._feature, outer);
           }
         if (fo != null)
           {
@@ -719,7 +720,7 @@ public class Call extends AbstractCall
                                                     FeatureAndOuter.findExactOrCandidate(fos,
                                                                                         (FeatureName fn) -> false,
                                                                                         (AbstractFeature f) -> f.featureName().equalsBaseName(calledName)),
-                                                    hiddenCandidates(res, thiz, tf, calledName));
+                                                    hiddenCandidates(res, tf, calledName));
                   }
               };
           }
@@ -727,19 +728,19 @@ public class Call extends AbstractCall
       }
     if (_calledFeature == null)
       { // nothing found, try if we can build a chained bool: `a < b < c` => `(a < b) && (a < c)`
-        resolveTypesOfActuals(res, thiz, context);
-        findChainedBooleans(res, thiz, context);
+        resolveTypesOfActuals(res, context);
+        findChainedBooleans(res, context);
       }
     // !isInheritanceCall: see issue #2153
     if (_calledFeature == null && !isInheritanceCall())
       { // nothing found, try if we can build operator call: `a + b` => `x.y.z.this.infix + a b`
-        findOperatorOnOuter(res, thiz, context);
+        findOperatorOnOuter(res, context);
       }
     if (_calledFeature == Types.f_ERROR)
       {
         _actuals = new List<>();
       }
-    resolveTypesOfActuals(res, thiz, context);
+    resolveTypesOfActuals(res, context);
 
     if (POSTCONDITIONS) ensure
       (Errors.any() || !calledFeatureKnown() || _calledFeature != Types.f_ERROR || targetVoid,
@@ -852,7 +853,7 @@ public class Call extends AbstractCall
     // feature in an outer feature, it will have replaced a null _target, so
     // we check _originalTarget here to not check all outer features:
     var traverseOuter = _originalTarget == null;
-    var targetFeature = traverseOuter ? outer : targetFeature(res, outer, context);
+    var targetFeature = traverseOuter ? outer : targetFeature(res, context);
     var fos = res._module.lookup(targetFeature, name, this, traverseOuter, false);
     var calledName = FeatureName.get(name, n);
     result = FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> ff.valueArguments().size() == n);
@@ -903,7 +904,7 @@ public class Call extends AbstractCall
   /**
    * @return list of features that would match called name and args but are not visible.
    */
-  private List<FeatureAndOuter> hiddenCandidates(Resolution res, AbstractFeature thiz, AbstractFeature targetFeature, FeatureName calledName)
+  private List<FeatureAndOuter> hiddenCandidates(Resolution res, AbstractFeature targetFeature, FeatureName calledName)
   {
     var fos = res._module.lookup(targetFeature, _name, this, _target == null, true);
     for (var fo : fos)
@@ -924,11 +925,10 @@ public class Call extends AbstractCall
 
   /**
    * Field used to detect and avoid repeated calls to resolveTypesOfActuals for
-   * the same outer feature.  Moving the call into a lambda or a lazy value will
-   * change its outer feature and resolution of actuals will have to be
-   * repeated.
+   * the same context.  Moving the call into a lambda or a lazy value will
+   * change its context and resolution of actuals will have to be repeated.
    */
-  protected AbstractFeature _actualsResolvedFor;
+  protected Context _actualsResolvedFor;
 
 
   /**
@@ -938,28 +938,28 @@ public class Call extends AbstractCall
    *
    * @param re the resolution instance
    *
-   * @parem outer the outer feature we are resolving types against.
+   * @param context the source code context where this Call is used
    */
-  private void resolveTypesOfActuals(Resolution res, AbstractFeature outer, Context context)
+  private void resolveTypesOfActuals(Resolution res, Context context)
   {
-    if (_actualsResolvedFor != outer)
+    if (_actualsResolvedFor != context)
       {
-        _actualsResolvedFor = outer;
+        _actualsResolvedFor = context;
 
         // NYI: check why _actuals.listIterator cannot be done inside
         // whenResolvedTypes. If it could, the 'if calledFeature != null / Error
         // would not be needed.
         ListIterator<Expr> i = _actuals.listIterator(); // _actuals can change during resolveTypes, so create iterator early
-        outer.whenResolvedTypes
+        context.outerFeature().whenResolvedTypes
           (() ->
            {
-             while (_actualsResolvedFor == outer && // Abandon resolution of outer changed.
+             while (_actualsResolvedFor == context && // Abandon resolution if context changed.
                     i.hasNext())
                {
                  var a = i.next();
                  if (_calledFeature != null && _calledFeature != Types.f_ERROR)
                    {
-                     var a1 = res.resolveType(a, outer, context);
+                     var a1 = res.resolveType(a, context);
                      if (CHECKS) check
                        (a1 != null);
                      i.set(a1);
@@ -991,19 +991,18 @@ public class Call extends AbstractCall
    * If successful, field _calledFeature will be set to the called feature and
    * fields _target and _actuals will be changed accordingly.
    *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
+   * @param res Resolution instance
    *
-   * @param thiz the surrounding feature
+   * @param context the source code context where this Call is used
    */
-  private void findOperatorOnOuter(Resolution res, AbstractFeature thiz, Context context)
+  private void findOperatorOnOuter(Resolution res, Context context)
   {
     if (_name.startsWith(FuzionConstants.INFIX_OPERATOR_PREFIX  ) ||
         _name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX ) ||
         _name.startsWith(FuzionConstants.POSTFIX_OPERATOR_PREFIX)    )
       {
         var calledName = FeatureName.get(_name, _actuals.size()+1);
-        var fo = res._module.lookup(thiz, _name, this, true, false);
+        var fo = res._module.lookup(context.outerFeature(), _name, this, true, false);
         var foa = FeatureAndOuter.filter(fo, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> mayMatchArgList(ff, true));
         if (foa != null)
           {
@@ -1442,7 +1441,7 @@ public class Call extends AbstractCall
         // selfType:
         // NYI: CLEANUP: remove this special handling!
         _target.typeForCallTarget().feature().selfType()
-      : targetType(res, outer, context);
+      : targetType(res, context);
 
     var t1 = resolveSelect(frmlT, tt);
     var t2 = t1.applyTypePars(tt);
@@ -1658,7 +1657,7 @@ public class Call extends AbstractCall
       }
     if ((formalTypeForPropagation != null) || !actualWantsPropagation)
       {
-        actual = res.resolveType(actual, outer, context);
+        actual = res.resolveType(actual, context);
         if (CHECKS) check
           (actual != null);
         aargs.set(actual);
@@ -2289,7 +2288,6 @@ public class Call extends AbstractCall
    * @param res the resolution instance.
    *
    * @param context the source code context where this Call is used
-   *
    */
   public Call resolveTypes(Resolution res, Context context)
   {
@@ -2299,7 +2297,7 @@ public class Call extends AbstractCall
         return this;
       }
     _resolvedFor = context;
-    if (_calledFeature == null && !loadCalledFeatureUnlessTargetVoid(res, context.outerFeature(), context))
+    if (_calledFeature == null && !loadCalledFeatureUnlessTargetVoid(res, context))
       { // target of this call results in `void`, so we replace this call by the
         // target. However, we have to return a `Call` and `_target` is
         // `Expr`. Solution: we wrap `_target` into a call `universe.id void
@@ -2401,7 +2399,7 @@ public class Call extends AbstractCall
           }
       }
 
-    resolveTypesOfActuals(res, context.outerFeature(), context);
+    resolveTypesOfActuals(res, context);
 
     if (POSTCONDITIONS) ensure
       (_pendingError != null || Errors.any() || result.typeForInferencing() != Types.t_ERROR);
@@ -2461,7 +2459,7 @@ public class Call extends AbstractCall
    *
    * @param t the expected type.
    *
-   * @return either this or a new Expr that replaces thiz and produces the
+   * @return either this or a new Expr that replaces this and produces the
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
@@ -2492,11 +2490,11 @@ public class Call extends AbstractCall
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Call is used
    */
-  public void wrapActualsInLazy(Resolution res, AbstractFeature outer, Context context)
+  public void wrapActualsInLazy(Resolution res, Context context)
   {
-    applyToActualsAndFormalTypes((actual, formalType) -> actual.wrapInLazy(res, outer, context, formalType));
+    applyToActualsAndFormalTypes((actual, formalType) -> actual.wrapInLazy(res, context, formalType));
   }
 
 

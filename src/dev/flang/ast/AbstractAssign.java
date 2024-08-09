@@ -201,16 +201,16 @@ public abstract class AbstractAssign extends Expr
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this assignment is used
    */
-  public void wrapValueInLazy(Resolution res, AbstractFeature outer, Context context)
+  public void wrapValueInLazy(Resolution res, Context context)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
 
     if (resultTypeKnown(res))
       {
-        _value = _value.wrapInLazy(res, outer, context, _assignedField.resultType());
+        _value = _value.wrapInLazy(res, context, _assignedField.resultType());
       }
   }
 
