@@ -157,7 +157,7 @@ public abstract class AbstractAssign extends Expr
   public void resolveTypes(Resolution res, AbstractFeature outer, Context context)
   {
     if (PRECONDITIONS) require(outer == context.outerFeature());
-    resolveTypes(res, outer, context, null);
+    resolveTypes(res, context, null);
   }
 
 

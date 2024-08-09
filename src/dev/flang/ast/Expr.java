@@ -474,7 +474,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
                                   result);
 
             result = fn.propagateExpectedType(res, outer, context, t);
-            fn.resolveTypes(res, outer, context);
+            fn.resolveTypes(res, context);
             fn.updateTarget(res);
           }
         else
@@ -796,7 +796,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
             c.calledFeature().equals(Types.resolved.f_auto_unwrap)
             && !c.actualTypeParameters().isEmpty()
                     && expectedType.isAssignableFrom(c.actualTypeParameters().get(0).applyTypePars(t), outer, context))
-      ? new ParsedCall(this, new ParsedName(pos(), "unwrap")).resolveTypes(res, outer, context)
+      ? new ParsedCall(this, new ParsedName(pos(), "unwrap")).resolveTypes(res, context)
       : this;
   }
 

@@ -157,8 +157,13 @@ public class Generic extends ANY implements Comparable<Generic>
    *
    * @return the resolved constraint.
    */
+  public AbstractType constraint0(Resolution res, Context context)
+  {
+    return constraint0(res, context.outerFeature(), context);
+  }
   public AbstractType constraint0(Resolution res, AbstractFeature outer, Context context)
   {
+    if (PRECONDITIONS) require(outer == context.outerFeature());
     if (PRECONDITIONS) require
       (res.state(feature()).atLeast(State.RESOLVING_DECLARATIONS));
 

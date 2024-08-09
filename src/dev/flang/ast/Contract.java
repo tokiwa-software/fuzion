@@ -349,6 +349,10 @@ public class Contract extends ANY
    *
    * @return a call to f.preFeature() to be added to code of outer.
    */
+  static Call callPreCondition(Resolution res, AbstractFeature f, Context context)
+  {
+    return callPreCondition(res, f, (Feature) context.outerFeature(), context);
+  }
   static Call callPreCondition(Resolution res, AbstractFeature f, Feature outer, Context context)
   {
     if (PRECONDITIONS) require(outer == context.outerFeature());
@@ -361,7 +365,7 @@ public class Contract extends ANY
                           new Current(p, outer),
                           a,
                           -1);
-        ca = ca.resolveTypes(res, outer, context);
+        ca = ca.resolveTypes(res, context);
         args.add(ca);
       }
     return callPreCondition(res, f, outer, context, args);
@@ -391,7 +395,7 @@ public class Contract extends ANY
           ? outer.contract()._hasPre    // use `pre` position if `outer` is of the form `f pre cc is ...`
           : outer.pos();                // `outer` does not have `pre` clause, only inherits preconditions. So use the feature position instead
 
-    var t = (outer.outerRef() != null) ? new This(p, outer, outer.outer()).resolveTypes(res, outer, context)
+    var t = (outer.outerRef() != null) ? new This(p, outer, outer.outer()).resolveTypes(res, context)
                                        : new Universe();
     if (f instanceof Feature ff)  // if f is currently being compiled, make sure its contract features are created first
       {
@@ -403,7 +407,7 @@ public class Contract extends ANY
                     args,
                     f.preFeature(),
                     Types.resolved.t_unit)
-      .resolveTypes(res, outer, context);
+      .resolveTypes(res, context);
   }
 
 
@@ -431,11 +435,11 @@ public class Contract extends ANY
                           new Current(p, outer),
                           a,
                           -1);
-        ca = ca.resolveTypes(res, outer, context);
+        ca = ca.resolveTypes(res, context);
         args.add(ca);
       }
 
-    var t = (outer.outerRef() != null) ? new This(p, outer, outer.outer()).resolveTypes(res, outer, context)
+    var t = (outer.outerRef() != null) ? new This(p, outer, outer.outer()).resolveTypes(res, context)
                                        : new Universe();
     if (f instanceof Feature ff)  // if f is currently being compiled, make sure its post feature is added first
       {
@@ -447,7 +451,7 @@ public class Contract extends ANY
                     args,
                     f.preBoolFeature(),
                     Types.resolved.t_bool)
-      .resolveTypes(res, outer, context);
+      .resolveTypes(res, context);
   }
 
 
@@ -472,11 +476,11 @@ public class Contract extends ANY
                           new Current(p, preAndCallOuter),
                           a,
                           -1);
-        ca = ca.resolveTypes(res, preAndCallOuter, preAndCallOuter.context());
+        ca = ca.resolveTypes(res, preAndCallOuter.context());
         args.add(ca);
       }
     var t = new This(p, preAndCallOuter, preAndCallOuter.outer())
-      .resolveTypes(res, preAndCallOuter, preAndCallOuter.context());
+      .resolveTypes(res, preAndCallOuter.context());
     return new Call(p,
                     t,
                     preAndCallOuter.generics().asActuals(),
@@ -495,39 +499,39 @@ public class Contract extends ANY
    *
    * @param res resolution instance
    *
-   * @param f a feature with a postcondition whose body the result will be
+   * @param outer a feature with a postcondition whose body the result will be
    * added to
    *
-   * @return a call to f.postFeature() to be added to code of f.
+   * @return a call to outer.postFeature() to be added to code of outer.
    */
-  static Call callPostCondition(Resolution res, Feature f, Context context)
+  static Call callPostCondition(Resolution res, Feature outer, Context context)
   {
-    var oc = f.contract();
-    var p = oc._hasPost != null ? oc._hasPost : f.pos();
+    var oc = outer.contract();
+    var p = oc._hasPost != null ? oc._hasPost : outer.pos();
     List<Expr> args = new List<>();
-    for (var a : f.valueArguments())
+    for (var a : outer.valueArguments())
       {
         var ca = new Call(p,
-                          new Current(p, f),
+                          new Current(p, outer),
                           a,
                           -1);
-        ca = ca.resolveTypes(res, f, context);
+        ca = ca.resolveTypes(res, context);
         args.add(ca);
       }
-    if (f.hasResultField())
+    if (outer.hasResultField())
       {
         var c2 = new Call(p,
-                          new Current(p, f),
-                          f.resultField(),
+                          new Current(p, outer),
+                          outer.resultField(),
                           -1);
-        c2 = c2.resolveTypes(res, f, context);
+        c2 = c2.resolveTypes(res, context);
         args.add(c2);
       }
-    else if (f.isConstructor())
+    else if (outer.isConstructor())
       {
-        args.add(new Current(p, f));
+        args.add(new Current(p, outer));
       }
-    return callPostCondition(res, f, f, context, args);
+    return callPostCondition(res, outer, outer, context, args);
   }
 
 
@@ -553,7 +557,7 @@ public class Contract extends ANY
           ? in.contract()._hasPost   // use `post` position if `in` is of the form `f post cc is ...`
           : in.pos();                // `in` does not have `post` clause, only inherits postconditions. So use the feature position instead
 
-    var t = (in.outerRef() != null) ? new This(p, in, in.outer()).resolveTypes(res, in, in.context())
+    var t = (in.outerRef() != null) ? new This(p, in, in.outer()).resolveTypes(res, in.context())
                                     : new Universe();
     if (outer instanceof Feature of)  // if outer is currently being compiled, make sure its post feature is added first
       {
@@ -565,7 +569,7 @@ public class Contract extends ANY
                                      args,
                                      outer.postFeature(),
                                      Types.resolved.t_unit);
-    callPostCondition = callPostCondition.resolveTypes(res, in, in.context());
+    callPostCondition = callPostCondition.resolveTypes(res, in.context());
     return callPostCondition;
   }
 
@@ -744,7 +748,7 @@ public class Contract extends ANY
                                      new Block(new_code)));
       }
     code._expressions = new_code;
-    var e = res.resolveType(code, pF, pF.context());
+    var e = res.resolveType(code, pF.context());
     if (CHECKS) check
       (code == e);
   }
@@ -1023,7 +1027,7 @@ all of their redefinition to `true`. +
             f._preAndCallFeature = pF2;
 
             res.resolveDeclarations(pF2);
-            l2.add(callPreCondition(res, f, (Feature) f.preAndCallFeature(), ((Feature) f.preAndCallFeature()).context()));
+            l2.add(callPreCondition(res, f, f.preAndCallFeature().context()));
             l2.add(callOriginal(res, f, context));
             res.resolveTypes(pF2);
           }
@@ -1094,11 +1098,11 @@ The conditions of a post-condition are checked at run-time in sequential source-
                                       new Current(pos, pF),
                                       a,
                                       -1);
-                    ca = ca.resolveTypes(res, pF, pF.context());
+                    ca = ca.resolveTypes(res, pF.context());
                     args2.add(ca);
                   }
                 var inhpost = callPostCondition(res, inh, pF, pF.context(), args2);
-                inhpost = inhpost.resolveTypes(res, pF, pF.context());
+                inhpost = inhpost.resolveTypes(res, pF.context());
                 if (l2 == null)
                   {
                     l2 = new List<>();

@@ -405,7 +405,7 @@ public class ParsedCall extends Call
           {
             if (_pendingError == null)
               {
-                l = resolveTypes(res, outer, context);  // this ensures _calledFeature is set such that possible ambiguity is reported
+                l = resolveTypes(res, context);  // this ensures _calledFeature is set such that possible ambiguity is reported
               }
             if (l == this)
               {
@@ -519,7 +519,7 @@ public class ParsedCall extends Call
             }
           };
         result = fn;
-        fn.resolveTypes(res, outer, context);
+        fn.resolveTypes(res, context);
       }
     else
       {
@@ -644,7 +644,7 @@ public class ParsedCall extends Call
             // replace Function call `c.123` by `c.f.123`:
             result = pushCall(res, outer, f.featureName().baseName());
             setActualResultType(res, outer, context, t); // setActualResultType will be done again by resolveTypes, but we need it now.
-            result = result.resolveTypes(res, outer, context);
+            result = result.resolveTypes(res, context);
           }
       }
     return result;
@@ -659,7 +659,7 @@ public class ParsedCall extends Call
     // replace Function or Lazy value `l` by `l.call`:
     if (isImmediateFunctionCall())
       {
-        result = pushCall(res, outer, "call").resolveTypes(res, outer, context);
+        result = pushCall(res, outer, "call").resolveTypes(res, context);
       }
     return result;
   }

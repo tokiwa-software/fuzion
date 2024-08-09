@@ -2041,7 +2041,7 @@ public class Call extends AbstractCall
               {
                 if (p instanceof Call pc)
                   {
-                    pc.resolveTypes(res, aft, aft.context());
+                    pc.resolveTypes(res, aft.context());
                   }
                 var pt = p.type();
                 if (pt != Types.t_ERROR)
@@ -2228,19 +2228,20 @@ public class Call extends AbstractCall
    *
    * @param res the resolution instance.
    *
-   * @param thiz the context in which to resolve.
+   * @param context the source code context where this Call is used
    */
-  public void tryResolveTypeCall(Resolution res, AbstractFeature thiz, Context context)
+  public void tryResolveTypeCall(Resolution res, Context context)
   {
-    if (_calledFeature == null && _target != null && thiz.state().atLeast(State.RESOLVED_INHERITANCE))
+    var outer = context.outerFeature();
+    if (_calledFeature == null && _target != null && outer.state().atLeast(State.RESOLVED_INHERITANCE))
     {
       AbstractType tt = _target.asParsedType();
       if (tt != null && tt instanceof UnresolvedType ut)
         {
           // check if this might be a
           // left hand side of dot-type-call
-          tt = ut.tryResolve(res, thiz, context);
-          tt = tt != null && tt != Types.t_ERROR && tt.isGenericArgument() ? tt.genericArgument().constraint0(res, thiz, context) : tt;
+          tt = ut.tryResolve(res, context);
+          tt = tt != null && tt != Types.t_ERROR && tt.isGenericArgument() ? tt.genericArgument().constraint0(res, context) : tt;
         }
       if (tt != null && tt != Types.t_ERROR)
         {
@@ -2267,7 +2268,7 @@ public class Call extends AbstractCall
                   // we found a feature that fits a dot-type-call.
                   _calledFeature = f;
                   _resolvedFormalArgumentTypes = null;
-                  _target = new DotType(_pos, _target.asParsedType()).resolveTypes(res, thiz, context);
+                  _target = new DotType(_pos, _target.asParsedType()).resolveTypes(res, context);
                 }
             }
           if (_calledFeature != null &&
@@ -2275,7 +2276,7 @@ public class Call extends AbstractCall
               _actuals.size() != f.valueArguments().size() &&
               !f.hasOpenGenericsArgList(res))
             {
-              splitOffTypeArgs(res, f, thiz);
+              splitOffTypeArgs(res, f, outer);
             }
         }
     }
@@ -2319,7 +2320,7 @@ public class Call extends AbstractCall
                           new List<>(_target),
                           Types.resolved.f_id,
                           Types.resolved.t_void);
-        result.resolveTypes(res, outer, context);
+        result.resolveTypes(res, context);
       }
 
     if (CHECKS) check

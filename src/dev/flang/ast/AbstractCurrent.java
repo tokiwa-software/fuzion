@@ -120,7 +120,7 @@ public abstract class AbstractCurrent extends Expr
     var of = _type.feature();
     return of == Types.f_ERROR || of == outer
       ? this
-      : new This(pos(), outer, of).resolveTypes(res, outer, context);
+      : new This(pos(), outer, of).resolveTypes(res, context);
   }
 
 

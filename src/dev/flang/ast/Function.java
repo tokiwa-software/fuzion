@@ -335,7 +335,7 @@ public class Function extends AbstractLambda
                 _inheritsCall._generics = gs.setOrClone(0, result);
               }
 
-            _call = new Call(pos(), new Current(pos(), outer), _wrapper).resolveTypes(res, outer, context);
+            _call = new Call(pos(), new Current(pos(), outer), _wrapper).resolveTypes(res, context);
           }
       }
     return result;
@@ -409,7 +409,7 @@ public class Function extends AbstractLambda
           }
 
         _inheritsCall._generics = generics;
-        Call inheritsCall2 = _inheritsCall.resolveTypes(res, outer, context);
+        Call inheritsCall2 = _inheritsCall.resolveTypes(res, context);
         // Call.resolveType returns something different than this only for an
         // immediate function call, which is never the case in an inherits
         // clause.

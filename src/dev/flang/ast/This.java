@@ -264,7 +264,7 @@ public class This extends ExprWithPos
                     {
                       return isAdr ? t : _type;
                     }
-                  }.resolveTypes(res, outer, context);
+                  }.resolveTypes(res, context);
 
                 getOuter = c;
               }

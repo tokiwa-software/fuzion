@@ -376,7 +376,7 @@ public class Block extends AbstractBlock
       }
     else if (Types.resolved.t_unit.compareTo(type) != 0)
       {
-        _expressions.add(new Call(pos(), "unit").resolveTypes(res, outer, context));
+        _expressions.add(new Call(pos(), "unit").resolveTypes(res, context));
       }
     return this;
   }

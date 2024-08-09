@@ -826,7 +826,7 @@ public class NumLiteral extends Constant
                                                             FuzionConstants.INFIX_OPERATOR_PREFIX +
                                                             explicitSign()),              // `infix +` or `infix -`
                                              new List<>(stripSign())));                   // constant w/o sign
-        fn.resolveTypes(res, outer, context);
+        fn.resolveTypes(res, context);
         result = fn;
       }
     return result;

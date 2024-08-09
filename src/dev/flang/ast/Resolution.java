@@ -565,18 +565,22 @@ public class Resolution extends ANY
    *
    * @param e an expression
    *
-   * @param outer the outer feature that contains s
+   * @param context the source code context where e is used
    *
-   * @return s or a new expression that replaces s after type resolution.
+   * @return e or a new expression that replaces e after type resolution.
    */
   Expr resolveType(Expr e, AbstractFeature outer, Context context)
   {
     if (PRECONDITIONS) require(outer == context.outerFeature());
+    return resolveType(e, context);
+  }
+  Expr resolveType(Expr e, Context context)
+  {
     if (PRECONDITIONS) require
       (context != null);
     var old_context = resolveTypesFully._context;
     resolveTypesFully._context = context;
-    var res = e.visit(resolveTypesFully, outer);
+    var res = e.visit(resolveTypesFully, context.outerFeature());
     resolveTypesFully._context = old_context;
     return res;
   }
