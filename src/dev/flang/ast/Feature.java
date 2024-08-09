@@ -1929,9 +1929,9 @@ A ((Choice)) declaration must not contain a result type.
 
         visit(new ContextVisitor() {
             { this._context = Feature.this.context(); }
-            public void  action(AbstractAssign a, AbstractFeature outer) { a.boxVal     (outer, _context);           }
-            public Call  action(Call           c, AbstractFeature outer) { c.boxArgs    (outer, _context); return c; }
-            public Expr  action(InlineArray    i, AbstractFeature outer) { i.boxElements(outer, _context); return i; }
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.boxVal     (_context);           }
+            public Call  action(Call           c, AbstractFeature outer) { c.boxArgs    (_context); return c; }
+            public Expr  action(InlineArray    i, AbstractFeature outer) { i.boxElements(_context); return i; }
           });
 
         _state = State.BOXED;
@@ -1978,9 +1978,8 @@ A ((Choice)) declaration must not contain a result type.
     if ((_state == State.CHECKING_TYPES1) ||
         (_state == State.CHECKING_TYPES2)    )
       {
-        _selfType   = selfType().checkChoice(_pos, this, null /* Context */);
-        _resultType = _resultType.checkChoice(_posOfReturnType, this, null /* Context */);
-        //System.out.println("CheckTypes for "+qualifiedName()+" context "+context());
+        _selfType   = selfType() .checkChoice(_pos,             context());
+        _resultType = _resultType.checkChoice(_posOfReturnType, context());
         visit(new ContextVisitor() {
             { this._context = Feature.this.context(); }
 

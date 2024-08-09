@@ -165,7 +165,7 @@ public class Match extends AbstractMatch
       }
     if (st.isChoice())
       {
-        var cgs = st.choiceGenerics(context.outerFeature(), context);
+        var cgs = st.choiceGenerics(context);
         for (var i = 0; i < cgs.size(); i++)
           {
             var n = cgs.get(i);

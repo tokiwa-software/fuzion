@@ -276,17 +276,19 @@ public class Block extends AbstractBlock
    *
    * @param frmlT the formal type this is assigned to.
    *
+   * @param context the source code context where this Expr is used
+   *
    * @return this or an instance of Box wrapping this.
    */
   @Override
-  Expr box(AbstractType frmlT, AbstractFeature outer, Context context)
+  Expr box(AbstractType frmlT, Context context)
   {
     var r = removeResultExpression();
     if (CHECKS) check
       (r != null || Types.resolved.t_unit.compareTo(frmlT) == 0);
     if (r != null)
       {
-        _expressions.add(r.box(frmlT, outer, context));
+        _expressions.add(r.box(frmlT, context));
       }
     return this;
   }
@@ -329,7 +331,7 @@ public class Block extends AbstractBlock
       {
         _expressions.add(resExpr.assignToField(res, context, r));
       }
-    else if (!r.resultType().isAssignableFrom(Types.resolved.t_unit, context.outerFeature(), context))
+    else if (!r.resultType().isAssignableFrom(Types.resolved.t_unit, context))
       {
         AstErrors.blockMustEndWithExpression(pos(), r.resultType());
       }

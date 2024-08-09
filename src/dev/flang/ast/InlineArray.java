@@ -126,7 +126,7 @@ public class InlineArray extends ExprWithPos
   {
     if (_type == null && !_elements.isEmpty())
       {
-        var t = Expr.union(_elements, null /* outer */, null /* Context */);
+        var t = Expr.union(_elements, Context.NONE);
         if (t == Types.t_ERROR)
           {
             new IncompatibleResultsOnBranches(pos(),
@@ -272,15 +272,15 @@ public class InlineArray extends ExprWithPos
    * Boxing for actual arguments: Find actual arguments of value type that are
    * assigned to formal argument types that are references and box them.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    */
-  public void boxElements(AbstractFeature outer, Context context)
+  public void boxElements(Context context)
   {
     var li = _elements.listIterator();
     while (li.hasNext())
       {
         var e = li.next();
-        li.set(e.box(elementType(), outer, context));
+        li.set(e.box(elementType(), context));
       }
   }
 

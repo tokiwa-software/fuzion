@@ -159,10 +159,12 @@ public class If extends ExprWithPos
   /**
    * Helper routine for typeForInferencing to determine the
    * type of this if expression on demand, i.e., as late as possible.
+   *
+   * @param context the source code context where this Expr is used
    */
-  private AbstractType typeFromIfOrElse(AbstractFeature outer, Context context)
+  private AbstractType typeFromIfOrElse(Context context)
   {
-    var result = Expr.union(new List<>(branches()), outer, context);
+    var result = Expr.union(new List<>(branches()), context);
     if (result==Types.t_ERROR)
       {
         new IncompatibleResultsOnBranches(pos(),
@@ -185,7 +187,7 @@ public class If extends ExprWithPos
   {
     if (_type == null)
       {
-        _type = typeFromIfOrElse(null /* outer */, null /* Context */);
+        _type = typeFromIfOrElse(Context.NONE);
       }
     return _type;
   }

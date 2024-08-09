@@ -250,16 +250,16 @@ public abstract class AbstractAssign extends Expr
    * Boxing for actual arguments: Find actual arguments of value type that are
    * assigned to formal argument types that are references and box them.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this assignment is used
    */
-  public void boxVal(AbstractFeature outer, Context context)
+  public void boxVal(Context context)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
 
     if (_assignedField != Types.f_ERROR)
       {
-        _value = _value.box(_assignedField.resultType(), outer, context);
+        _value = _value.box(_assignedField.resultType(), context);
       }
   }
 
@@ -282,7 +282,7 @@ public abstract class AbstractAssign extends Expr
         if (CHECKS) check
           (Errors.any() || frmlT != Types.t_ERROR);
 
-        if (!frmlT.isAssignableFrom(_value.type(), outer, context))
+        if (!frmlT.isAssignableFrom(_value.type(), context))
           {
             AstErrors.incompatibleTypeInAssignment(pos(), f, frmlT, _value);
           }

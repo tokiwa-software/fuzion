@@ -1998,7 +1998,7 @@ public class Call extends AbstractCall
             var i = g.index();
             var gt = _generics.get(i);
             var nt = gt == Types.t_UNDEFINED ? actualType
-                                            : gt.union(actualType, outer, context);
+                                            : gt.union(actualType, context);
             if (nt == Types.t_ERROR)
               {
                 conflict[i] = true;
@@ -2029,7 +2029,7 @@ public class Call extends AbstractCall
           }
         else if (formalType.isChoice())
           {
-            for (var ct : formalType.choiceGenerics(outer, context))
+            for (var ct : formalType.choiceGenerics(context))
               {
                 inferGeneric(res, outer, context, ct, actualType, pos, conflict, foundAt);
               }
@@ -2547,9 +2547,9 @@ public class Call extends AbstractCall
    * Boxing for actual arguments: Find actual arguments of value type that are
    * assigned to formal argument types that are references and box them.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Call is used
    */
-  public void boxArgs(AbstractFeature outer, Context context)
+  public void boxArgs(Context context)
   {
     if (_type != Types.t_ERROR && _resolvedFormalArgumentTypes != null)
       {
@@ -2564,7 +2564,7 @@ public class Call extends AbstractCall
                 var rft = _resolvedFormalArgumentTypes[count];
                 if (actl != null && rft != Types.t_ERROR)
                   {
-                    var a = actl.box(rft, outer, context);
+                    var a = actl.box(rft, context);
                     if (CHECKS) check
                       (a != null);
                     i.set(a);
@@ -2615,7 +2615,7 @@ public class Call extends AbstractCall
             for (Expr actl : _actuals)
               {
                 var frmlT = _resolvedFormalArgumentTypes[count];
-                if (frmlT != Types.t_ERROR && !frmlT.isAssignableFrom(actl.type(), outer, context))
+                if (frmlT != Types.t_ERROR && !frmlT.isAssignableFrom(actl.type(), context))
                   {
                     AstErrors.incompatibleArgumentTypeInCall(_calledFeature, count, frmlT, actl);
                   }
@@ -2755,7 +2755,7 @@ public class Call extends AbstractCall
         _calledFeature = Types.f_ERROR;
       }
       @Override
-      Expr box(AbstractType frmlT, AbstractFeature outer, Context context)
+      Expr box(AbstractType frmlT, Context context)
       {
         return this;
       }

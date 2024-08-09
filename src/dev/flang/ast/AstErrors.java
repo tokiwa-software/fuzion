@@ -390,7 +390,7 @@ public class AstErrors extends ANY
         else
           {
             var assignableTo = new TreeSet<String>();
-            frmlT.isAssignableFrom(actlT, assignableTo, null /* NYI: outer */, null /* Context */);
+            frmlT.isAssignableFrom(actlT, assignableTo, Context.NONE);
             for (var ts : assignableTo)
               {
                 assignableToSB
@@ -1909,8 +1909,8 @@ public class AstErrors extends ANY
     if (!any() || frmlT != Types.t_ERROR && value.type() != Types.t_ERROR)
       {
         error(value.pos(),
-              "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceGenerics(null /* NYI: outer */, null /* Context */).stream()
-              .filter(cg -> cg.isAssignableFrom(value.type(), null /* NYI: outer */, null /* Context */))
+              "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceGenerics(Context.NONE).stream()
+              .filter(cg -> cg.isAssignableFrom(value.type(), Context.NONE))
               .map(cg -> s(cg))
               .collect(Collectors.joining(", "))
               );

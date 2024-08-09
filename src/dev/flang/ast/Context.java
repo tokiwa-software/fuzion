@@ -52,7 +52,7 @@ public abstract class Context extends ANY
   /**
    * Pre-allocated instance of no context.
    */
-  static final Context NONE = new Context()
+  public static final Context NONE = new Context()
     {
       @Override AbstractFeature outerFeature()
       {

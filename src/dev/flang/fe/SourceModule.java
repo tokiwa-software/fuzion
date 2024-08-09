@@ -1543,7 +1543,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
        * redefinition `h.maybe`.
        */
       fixed &&
-      redefinition.outer().thisType(true).actualType(to, null /* NYI: outer */, null /* Context */).compareTo(tr) == 0       ||
+      redefinition.outer().thisType(true).actualType(to, Context.NONE).compareTo(tr) == 0       ||
 
       /* original and redefinition are inner features of type features, `to` is
        * `this.type` and `tr` is the underlying non-type feature's selfType.
@@ -1666,7 +1666,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
       {
         var cod = f.code();
         var rt = cod.type();
-        if (!Types.resolved.t_unit.isAssignableFrom(rt, f, context))
+        if (!Types.resolved.t_unit.isAssignableFrom(rt, context))
           {
             AstErrors.constructorResultMustBeUnit(cod);
           }
