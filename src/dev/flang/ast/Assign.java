@@ -179,7 +179,7 @@ public class Assign extends AbstractAssign
                                         pos(), FuzionConstants.OPERATION_ASSIGNMENT, FeatureName.get(_name, 0), __ -> false);
         if (fo != null)
           {
-            _target = fo.target(pos(), res, outer, context);
+            _target = fo.target(pos(), res, context);
             f = fo._feature;
           }
         else

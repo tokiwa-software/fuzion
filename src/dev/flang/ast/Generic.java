@@ -112,31 +112,17 @@ public class Generic extends ANY implements Comparable<Generic>
    * constraint returns the constraint type of this generic, ANY if no
    * constraint.
    *
+   * @param context the source code context where this Generic is used, may be
+   * Context.NONE to get the constraint declared for this generic.
+   *
    * @return the constraint.
    */
-  public AbstractType constraintNoContext()
-  {
-    return constraint1(null, null);
-  }
-  public AbstractType constraint1(AbstractFeature outer, Context context)
+  public AbstractType constraint(Context context)
   {
     if (PRECONDITIONS) require
       (_typeParameter.state().atLeast(State.RESOLVED_TYPES));
 
-    AbstractType result = null;
-    if (context == null || context == Context.NONE)
-      {
-        if (false)
-        if (_typeParameter.qualifiedName().endsWith("TTT"))
-          {
-            System.out.println("no context for "+_typeParameter.qualifiedName());
-            Thread.dumpStack();
-          }
-      }
-    else
-      {
-        result = context.constraintFor(_typeParameter);
-      }
+    var result = context.constraintFor(_typeParameter);
     if (result == null)
       {
         result = _typeParameter.resultType();
@@ -155,20 +141,17 @@ public class Generic extends ANY implements Comparable<Generic>
    *
    * @param res the resolution instance.
    *
-   * @return the resolved constraint.
+   * @param context the source code context where this Generic is used
+   *
+   * @return the resolved constraint(context).
    */
-  public AbstractType constraint0(Resolution res, Context context)
+  public AbstractType constraint(Resolution res, Context context)
   {
-    return constraint0(res, context.outerFeature(), context);
-  }
-  public AbstractType constraint0(Resolution res, AbstractFeature outer, Context context)
-  {
-    if (PRECONDITIONS) require(outer == context.outerFeature());
     if (PRECONDITIONS) require
       (res.state(feature()).atLeast(State.RESOLVING_DECLARATIONS));
 
     res.resolveTypes(_typeParameter);
-    return constraint1(outer, context);
+    return constraint(context);
   }
 
 

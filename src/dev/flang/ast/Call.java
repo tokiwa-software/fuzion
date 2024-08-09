@@ -455,7 +455,7 @@ public class Call extends AbstractCall
 
     if (result.isGenericArgument())
       {
-        result = result.genericArgument().constraint0(res, outer, context);
+        result = result.genericArgument().constraint(res, context);
       }
 
     if (POSTCONDITIONS) ensure
@@ -693,7 +693,7 @@ public class Call extends AbstractCall
             _context = context;
             if (_target == null)
               {
-                _target = fo.target(pos(), res, thiz, context);
+                _target = fo.target(pos(), res, context);
                 _targetFrom = fo;
               }
           }
@@ -1013,7 +1013,7 @@ public class Call extends AbstractCall
             var newActuals = new List<>(_target);
             newActuals.addAll(_actuals);
             _actuals = newActuals;
-            _target = foa.target(pos(), res, thiz, context);
+            _target = foa.target(pos(), res, context);
           }
       }
   }
@@ -2241,7 +2241,7 @@ public class Call extends AbstractCall
           // check if this might be a
           // left hand side of dot-type-call
           tt = ut.tryResolve(res, context);
-          tt = tt != null && tt != Types.t_ERROR && tt.isGenericArgument() ? tt.genericArgument().constraint0(res, context) : tt;
+          tt = tt != null && tt != Types.t_ERROR && tt.isGenericArgument() ? tt.genericArgument().constraint(res, context) : tt;
         }
       if (tt != null && tt != Types.t_ERROR)
         {
@@ -2745,7 +2745,7 @@ public class Call extends AbstractCall
   {
     if (_targetFrom != null)
       {
-        _target = _targetFrom.target(pos(), res, outer, context);
+        _target = _targetFrom.target(pos(), res, context);
       }
     return this;
   }

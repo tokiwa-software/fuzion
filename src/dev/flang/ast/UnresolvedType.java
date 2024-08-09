@@ -554,7 +554,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         if (o != null && !o.isThisType())
           {
             o = o.resolve(res, of);
-            var ot2 = o.isGenericArgument() ? o.genericArgument().constraint0(res, outerfeat, context) // see tests/reg_issue1943 for examples
+            var ot2 = o.isGenericArgument() ? o.genericArgument().constraint(res, context) // see tests/reg_issue1943 for examples
                                             : o;
             of = ot2.feature();
           }
@@ -672,7 +672,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
               {
                 return null;
               }
-            var ot2 = o.isGenericArgument() ? o.genericArgument().constraint0(res, outerfeat, context) // see tests/reg_issue1943 for examples
+            var ot2 = o.isGenericArgument() ? o.genericArgument().constraint(res, context) // see tests/reg_issue1943 for examples
                                             : o;
             of = ot2.feature();
           }

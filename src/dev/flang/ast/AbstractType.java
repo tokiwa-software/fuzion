@@ -400,7 +400,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         if (actual_type.isGenericArgument())
           {
-            result = isAssignableFrom(actual_type.genericArgument().constraint1(outer, context).asRef(), outer, context);
+            result = isAssignableFrom(actual_type.genericArgument().constraint(context).asRef(), outer, context);
           }
         else
           {
@@ -479,7 +479,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         if (actual.isGenericArgument())
           {
-            result = constraintAssignableFrom(outer, context, actual.genericArgument().constraint1(outer, context));
+            result = constraintAssignableFrom(outer, context, actual.genericArgument().constraint(context));
           }
         else
           {
@@ -528,8 +528,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           // this  = monad monad.A monad.MA
           // other = monad option.T (option option.T)
           // for now just prevent infinite recursion
-            !(g.isGenericArgument() && (g.genericArgument().constraint1(outer, context) == this ||
-                                        g.genericArgument().constraint1(outer, context).constraintAssignableFrom(null, null, og))))
+            !(g.isGenericArgument() && (g.genericArgument().constraint(context) == this ||
+                                        g.genericArgument().constraint(context).constraintAssignableFrom(outer, context, og))))
           // NYI what if g is not a generic argument?
           {
             return false;
@@ -711,7 +711,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         if (target.isGenericArgument())
           {
-            result = result.applyTypePars(target.genericArgument().constraintNoContext());
+            result = result.applyTypePars(target.genericArgument().constraint(Context.NONE));
           }
         else
           {
@@ -1420,7 +1420,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   private AbstractType replace_this_type_by_actual_outer2(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef, AbstractFeature outer, Context context)
   {
     var result = this;
-    var att = (tt.isGenericArgument() ? tt.genericArgument().constraint1(outer, context) : tt);
+    var att = (tt.isGenericArgument() ? tt.genericArgument().constraint(context) : tt);
     if (isThisTypeInTypeFeature() && tt.isGenericArgument()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
         ||
         isThisType() && att.feature().inheritsFrom(feature())  // we have abc.this.type with att inheriting from abc, so use tt
@@ -1913,7 +1913,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var f = fi.next();
         var a = ai.next();
         var u = ui.hasNext() ? ui.next() : null;
-        var c = f.constraintNoContext();
+        var c = f.constraint(Context.NONE);
         if (CHECKS) check
           (Errors.any() || f != null && a != null);
 
@@ -1928,14 +1928,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             if (!f.typeParameter().isTypeFeaturesThisType())  // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
               {
-                var ct = f.constraintNoContext(); /* no context, we are setting this */
-                if (ct.isChoice())
+                if (c.isChoice())
                   {
-                    AstErrors.constraintMustNotBeChoice(f, ct);
+                    AstErrors.constraintMustNotBeChoice(f, c);
                   }
                 else
                   {
-                    AstErrors.incompatibleActualGeneric(pos, f, ct, a);
+                    AstErrors.incompatibleActualGeneric(pos, f, c, a);
                   }
 
                 result = false;

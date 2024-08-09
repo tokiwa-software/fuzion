@@ -143,11 +143,7 @@ public class FeatureAndOuter extends ANY
    */
   Expr target(SourcePosition pos, Resolution res, Context context)
   {
-    return target(pos, res, context.outerFeature(), context);
-  }
-  Expr target(SourcePosition pos, Resolution res, AbstractFeature outer, Context context)
-  {
-    if (PRECONDITIONS) require(outer == context.outerFeature());
+    var outer = context.outerFeature();
     var t = new This(pos, outer, _outer);
     Expr result = t;
     if (res.state(outer) != State.RESOLVING_INHERITANCE &&
