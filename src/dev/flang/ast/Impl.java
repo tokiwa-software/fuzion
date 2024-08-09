@@ -617,7 +617,11 @@ public class Impl extends ANY
           // see #348 for an example.
           if (t == null && (f.outer().isUniverse() || !f.outer().state().atLeast(State.RESOLVING_TYPES)))
             {
-              f.visit(res.resolveTypesFully, f.outer());
+              var rtf = res.resolveTypesFully;
+              var old_context = rtf._context;
+              rtf._context = f.outer().context();
+              f.visit(rtf, f.outer());
+              rtf._context = old_context;
               t  = _expr.typeForInferencing();
             }
           yield t;
