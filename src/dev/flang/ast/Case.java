@@ -304,7 +304,7 @@ public class Case extends AbstractCase
     var original_t = t;
     List<AbstractType> matches = new List<>();
     int i = 0;
-    t = t.resolve(res, context.outerFeature());
+    t = t.resolve(res, context);
     var inferGenerics = !t.isGenericArgument() && t.generics().isEmpty() && t.feature().generics() != FormalGenerics.NONE;
     var hasErrors = t.containsError();
     check

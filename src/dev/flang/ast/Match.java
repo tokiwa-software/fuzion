@@ -173,7 +173,7 @@ public class Match extends AbstractMatch
               (Errors.any() || n != null);
             if (n != null)
               {
-                cgs = cgs.setOrClone(i, n.resolve(res, context.outerFeature()));
+                cgs = cgs.setOrClone(i, n.resolve(res, context));
               }
           }
         SourcePosition[] matched = new SourcePosition[cgs.size()];

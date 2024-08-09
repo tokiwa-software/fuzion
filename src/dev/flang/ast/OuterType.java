@@ -59,20 +59,19 @@ public class OuterType extends UnresolvedType
   /**
    * resolve this type
    *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
+   * @param res the resolution instance.
    *
-   * @param outerfeat the outer feature this type is declared in, used
-   * for resolution of generic parameters etc.
+   * @param context the source code context where this type is used, used for
+   * resolution of generic parameters etc.
    */
   @Override
-  AbstractType resolve(Resolution res, AbstractFeature outerfeat, Context context)
+  AbstractType resolve(Resolution res, Context context)
   {
     if (PRECONDITIONS) require
-      (outerfeat != null,
-       res.state(outerfeat).atLeast(State.RESOLVING_DECLARATIONS));
+      (context != null,
+       res.state(context.outerFeature()).atLeast(State.RESOLVING_DECLARATIONS));
 
-    return outerfeat.outer().thisType(false);
+    return context.outerFeature().outer().thisType(false);
   }
 
 }

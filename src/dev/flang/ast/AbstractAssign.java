@@ -148,7 +148,7 @@ public abstract class AbstractAssign extends Expr
    *
    * @param res the resolution instance.
    *
-   * @param context the source code context where this Call is used
+   * @param context the source code context where this assignment is used
    */
   public void resolveTypes(Resolution res, Context context)
   {
@@ -161,7 +161,7 @@ public abstract class AbstractAssign extends Expr
    *
    * @param res the resolution instance.
    *
-   * @param context the source code context where this Call is used
+   * @param context the source code context where this assignment is used
    *
    * @param destructure if this is called for an assignment that is created to
    * replace a Destructure, this refers to the Destructure expression.
@@ -247,8 +247,8 @@ public abstract class AbstractAssign extends Expr
 
 
   /**
-   * Boxing for actual arguments: Find actual arguments of value type that are
-   * assigned to formal argument types that are references and box them.
+   * Boxing for assigned value: Make sure a value type that is assigned to a ref
+   * type will be boxed.
    *
    * @param context the source code context where this assignment is used
    */

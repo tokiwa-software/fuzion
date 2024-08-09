@@ -641,11 +641,11 @@ public class ResolvedNormalType extends ResolvedType
          * This is a bit ugly, even though this type is a ResolvedType, the generics are not.
          */
         @Override
-        AbstractType resolve(Resolution res, AbstractFeature outerfeat, Context context)
+        AbstractType resolve(Resolution res, Context context)
         {
           if (_resolved == null)
             {
-              _resolved = UnresolvedType.finishResolve(res, outerfeat, this, declarationPos(), feature(), _generics, unresolvedGenerics(), outer(), _refOrVal, false);
+              _resolved = UnresolvedType.finishResolve(res, context, this, declarationPos(), feature(), _generics, unresolvedGenerics(), outer(), _refOrVal, false);
             }
           return _resolved;
         }

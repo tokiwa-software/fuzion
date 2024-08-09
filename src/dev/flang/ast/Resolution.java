@@ -137,9 +137,9 @@ public class Resolution extends ANY
    *
    * This is used during state RESOLVING_DECLARATIONS to find called features.
    */
-  FeatureVisitor resolveTypesOnly = new FeatureVisitor()
+  FeatureVisitor resolveTypesOnly = new FeatureVisitor() // NYI: should be ContextVisitor?
     {
-      public AbstractType action(AbstractType t, AbstractFeature outer) { return t.resolve(Resolution.this, outer); }
+      public AbstractType action(AbstractType t, AbstractFeature outer) { return t.resolve(Resolution.this, outer.context()); }
     };
 
 

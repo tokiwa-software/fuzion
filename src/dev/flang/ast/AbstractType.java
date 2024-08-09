@@ -179,17 +179,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * resolve this type. This is only needed for ast.Type, for fe.LibraryType
    * this is a NOP.
    *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
+   * @param res the resolution instance.
    *
-   * @param outerfeat the outer feature this type is declared in, used for
-   * resolution of generic parameters etc.
+   * @param context the source code context where this type is used
    */
-  final AbstractType resolve(Resolution res, AbstractFeature outerfeat)
-  {
-    return resolve(res, outerfeat, outerfeat.context());
-  }
-  AbstractType resolve(Resolution res, AbstractFeature outerfeat, Context context)
+  AbstractType resolve(Resolution res, Context context)
   {
     return this;
   }

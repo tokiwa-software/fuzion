@@ -1448,7 +1448,7 @@ public class Feature extends AbstractFeature
     @Override public void         action      (Match           m, AbstractFeature outer) {        m.resolveTypes      (res,   _context); }
 
     @Override public Expr         action      (This            t, AbstractFeature outer) { return t.resolveTypes      (res,   _context); }
-    @Override public AbstractType action      (AbstractType    t, AbstractFeature outer) { return t.resolve           (res,   outer); }
+    @Override public AbstractType action      (AbstractType    t, AbstractFeature outer) { return t.resolve           (res,   _context); }
     @Override public Expr         action      (AbstractCurrent c, AbstractFeature outer) { return c.resolveTypes      (res,   _context); }
 
     @Override public boolean doVisitActuals() { return false; }
@@ -1508,7 +1508,7 @@ public class Feature extends AbstractFeature
         if (hasThisType())
           {
             var tt = selfType();
-            _selfType = tt.resolve(res, this);
+            _selfType = tt.resolve(res, context());
           }
 
         _state = State.RESOLVED_TYPES;
@@ -2281,7 +2281,7 @@ A ((Choice)) declaration must not contain a result type.
             res.resolveTypes(this);
           }
         result = resultTypeIfPresent(res);
-        result = result == null ? null : result.resolve(res, outer());
+        result = result == null ? null : result.resolve(res, outer().context());
         result = result == null ? null : result.applyTypePars(this, generics);
         _resultTypeIfPresentRecursion = false;
       }

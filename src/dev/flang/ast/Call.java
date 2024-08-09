@@ -1461,7 +1461,7 @@ public class Call extends AbstractCall
 
     var t1 = resolveSelect(frmlT, tt);
     var t2 = t1.applyTypePars(tt);
-    var t3 = tt.isGenericArgument() ? t2 : t2.resolve(res, tt.feature());
+    var t3 = tt.isGenericArgument() ? t2 : t2.resolve(res, tt.feature().context());
     var t4 = adjustThisTypeForTarget(t3, context);
     var t5 = resolveForCalledFeature(res, t4, tt, context);
     // call may be resolved repeatedly. In case of recursive use of FieldActual
@@ -1614,7 +1614,7 @@ public class Call extends AbstractCall
           {
             t = t.typeType(res);
           }
-        t = t.resolve(res, tt.feature());
+        t = t.resolve(res, tt.feature().context());
       }
     else if (_calledFeature.isOuterRef())
       {
@@ -2339,7 +2339,7 @@ public class Call extends AbstractCall
     else if (_calledFeature != null)
       {
         _generics = FormalGenerics.resolve(res, _generics, context.outerFeature());
-        _generics = _generics.map(g -> g.resolve(res, _calledFeature.outer()));
+        _generics = _generics.map(g -> g.resolve(res, _calledFeature.outer().context()));
 
         propagateForPartial(res, context);
         if (needsToInferTypeParametersFromArgs())
