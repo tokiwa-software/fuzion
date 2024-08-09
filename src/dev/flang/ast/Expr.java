@@ -778,13 +778,13 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    *
    * @param res the resolution instance
    *
-   * @param outer the context where the unwrapping may take place
+   * @param context the source code context where this Expr is used
    *
    * @param expectedType the expected type
    *
    * @return the unwrapped expression
    */
-  public Expr unwrap(Resolution res, AbstractFeature outer, Context context, AbstractType expectedType)
+  public Expr unwrap(Resolution res, Context context, AbstractType expectedType)
   {
     var t = type();
     return  !expectedType.isAssignableFrom(t, context)

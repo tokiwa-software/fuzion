@@ -265,7 +265,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
     var g = feature().choiceGenerics();
     return replaceGenerics(g)
-      .map(t -> t.replace_this_type_by_actual_outer(this, context == Context.NONE ? null : context.outerFeature(), context));
+      .map(t -> t.replace_this_type_by_actual_outer(this, context));
   }
 
 
@@ -351,10 +351,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public boolean isDirectlyAssignableFrom(AbstractType actual, Context context)
   {
-    return isDirectlyAssignableFrom(actual, context.outerFeature(), context);
-  }
-  public boolean isDirectlyAssignableFrom(AbstractType actual, AbstractFeature outer, Context context)
-  {
     return (!isChoice() && isAssignableFrom(actual, context))
          || (isChoice() && compareTo(actual) == 0);
   }
@@ -373,7 +369,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param context the source code context where this Type is used
    */
-  public boolean isAssignableFromOrContainsError(AbstractType actual, AbstractFeature outer, Context context)
+  public boolean isAssignableFromOrContainsError(AbstractType actual, Context context)
   {
     return
       containsError() || actual.containsError() || isAssignableFrom(actual, context);
@@ -857,7 +853,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             var this_type = g2.get(0);
             g2 = g2.map(x -> x == this_type                ||     // leave first type parameter unchanged
                              this_type.isGenericArgument() ? x    // no actuals to apply in a generic arg
-                                                           : this_type.actualType(x, null /* outer */, null /* Context */));
+                                                           : this_type.actualType(x, Context.NONE));
           }
 
         if (g2 != result.generics() ||
@@ -980,7 +976,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             var this_type = g2.get(0);
             g2 = g2.map(x -> x == this_type                ||     // leave first type parameter unchanged
                              this_type.isGenericArgument() ? x    // no actuals to apply in a generic arg
-                                                           : this_type.actualType(x, null /* outer */ , null /* Context */));
+                                                           : this_type.actualType(x, Context.NONE));
           }
 
         if (g2 != result.generics() ||
@@ -1033,10 +1029,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * parameters in `this` and `this.type`s replaced by the corresponding actual
    * type in `this`.
    */
-  public AbstractType actualType(AbstractType t, AbstractFeature outer, Context context)
-  {
-    return actualType(t, context);
-  }
   public AbstractType actualType(AbstractType t, Context context)
   {
     if (PRECONDITIONS) require
@@ -1044,7 +1036,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        !t.isOpenGeneric());
 
     return t.applyTypePars(this)
-      .replace_this_type_by_actual_outer(this, context == Context.NONE ? null : context.outerFeature(), context);
+      .replace_this_type_by_actual_outer(this, context);
   }
 
 
@@ -1419,12 +1411,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @return the actual type, i.e.`list a` or `list b` in the example above.
    */
   public AbstractType replace_this_type_by_actual_outer(AbstractType tt,
-                                                        BiConsumer<AbstractType, AbstractType> foundRef, AbstractFeature outer, Context context)
+                                                        BiConsumer<AbstractType, AbstractType> foundRef, Context context)
   {
     var result = this;
     do
       {
-        result = result.replace_this_type_by_actual_outer2(tt, foundRef, outer, context);
+        result = result.replace_this_type_by_actual_outer2(tt, foundRef, context);
         tt = tt.isGenericArgument() ? null : tt.outer();
       }
     while (tt != null);
@@ -1441,9 +1433,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param context the source code context where this Type is used
    */
-  public AbstractType replace_this_type_by_actual_outer(AbstractType tt, AbstractFeature outer, Context context)
+  public AbstractType replace_this_type_by_actual_outer(AbstractType tt, Context context)
   {
-    return replace_this_type_by_actual_outer(tt, null, outer, context);
+    return replace_this_type_by_actual_outer(tt, null, context);
   }
 
 
@@ -1458,7 +1450,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param context the source code context where this Type is used
    */
-  private AbstractType replace_this_type_by_actual_outer2(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef, AbstractFeature outer, Context context)
+  private AbstractType replace_this_type_by_actual_outer2(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef, Context context)
   {
     var result = this;
     var att = (tt.isGenericArgument() ? tt.genericArgument().constraint(context) : tt);
@@ -1475,7 +1467,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     else
       {
-        result = applyToGenericsAndOuter(g -> g.replace_this_type_by_actual_outer2(tt, foundRef, outer, context));
+        result = applyToGenericsAndOuter(g -> g.replace_this_type_by_actual_outer2(tt, foundRef, context));
       }
     return result;
   }

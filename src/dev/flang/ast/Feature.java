@@ -1893,8 +1893,8 @@ A ((Choice)) declaration must not contain a result type.
             // get the corrected nesting of Lazy features created during this
             // phase
             public boolean visitActualsLate() { return true; }
-            public void  action(AbstractAssign a, AbstractFeature outer) { a.wrapValueInLazy  (res, _context); a.unwrapValue  (res, outer, _context); }
-            public Expr  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, _context); c.unwrapActuals(res, outer, _context); return c; }
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.wrapValueInLazy  (res, _context); a.unwrapValue  (res, _context); }
+            public Expr  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, _context); c.unwrapActuals(res, _context); return c; }
           });
 
         if (isConstructor())

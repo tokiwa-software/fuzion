@@ -1805,7 +1805,7 @@ public class FUIR extends IR
             for (int tix = 0; tix < nt; tix++)
               {
                 var t = f != null ? f.resultType() : ts.get(tix);
-                if (t.isDirectlyAssignableFrom(cg, null /* outer */, null /* Context */))
+                if (t.isDirectlyAssignableFrom(cg, Context.NONE))
                   {
                     resultL.add(tag);
                   }

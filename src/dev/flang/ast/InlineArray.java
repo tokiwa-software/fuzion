@@ -304,7 +304,7 @@ public class InlineArray extends ExprWithPos
       {
         if (!elementType.isDirectlyAssignableFrom(e.type(), context))
           {
-            AstErrors.incompatibleTypeInArrayInitialization(e.pos(), _type, elementType, e);
+            AstErrors.incompatibleTypeInArrayInitialization(e.pos(), _type, elementType, e, context);
           }
       }
   }

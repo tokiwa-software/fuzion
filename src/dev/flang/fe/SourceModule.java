@@ -1654,7 +1654,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
             */
             AstErrors.cannotRedefine(f, o);
           }
-        else if (!t1.isDirectlyAssignableFrom(t2, f, context) &&  // we (currently) do not tag the result in a redefined feature, see testRedefine
+        else if (!t1.isDirectlyAssignableFrom(t2, context) &&  // we (currently) do not tag the result in a redefined feature, see testRedefine
                  !t2.isVoid() &&
                  !isLegalCovariantThisType(o, f, t1, t2, fixed))
           {

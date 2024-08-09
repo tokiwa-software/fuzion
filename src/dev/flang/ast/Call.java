@@ -486,10 +486,10 @@ public class Call extends AbstractCall
     var result = adjustThisTypeForTarget(frmlT, outer, context);
     var r0 = result;
     result = targetTypeOrConstraint(res, context)
-      .actualType(result, outer, context)
+      .actualType(result, context)
       .applyTypePars(_calledFeature, _generics);
     var r1 = targetTypeOrConstraint(res, context);
-    var r2 = r1.actualType(r0, outer, context);
+    var r2 = r1.actualType(r0, context);
     var r3 = r2.applyTypePars(_calledFeature, _generics);
 
     if (POSTCONDITIONS) ensure
@@ -1549,7 +1549,7 @@ public class Call extends AbstractCall
         var t0 = t;
         t = t.replace_this_type_by_actual_outer(inner,
                                                 (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, t0, from, to),
-                                                outer, context);
+                                                context);
       }
     return t;
   }
@@ -2045,7 +2045,7 @@ public class Call extends AbstractCall
                 var pt = p.type();
                 if (pt != Types.t_ERROR)
                   {
-                    var apt = actualType.actualType(pt, outer, context);
+                    var apt = actualType.actualType(pt, context);
                     inferGeneric(res, outer, context, formalType, apt, pos, conflict, foundAt);
                   }
               }
@@ -2504,11 +2504,11 @@ public class Call extends AbstractCall
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Call is used
    */
-  public void unwrapActuals(Resolution res, AbstractFeature outer, Context context)
+  public void unwrapActuals(Resolution res, Context context)
   {
-    applyToActualsAndFormalTypes((actual, formalType) -> actual.unwrap(res, outer, context, formalType));
+    applyToActualsAndFormalTypes((actual, formalType) -> actual.unwrap(res, context, formalType));
   }
 
 
@@ -2617,7 +2617,7 @@ public class Call extends AbstractCall
                 var frmlT = _resolvedFormalArgumentTypes[count];
                 if (frmlT != Types.t_ERROR && !frmlT.isAssignableFrom(actl.type(), context))
                   {
-                    AstErrors.incompatibleArgumentTypeInCall(_calledFeature, count, frmlT, actl);
+                    AstErrors.incompatibleArgumentTypeInCall(_calledFeature, count, frmlT, actl, context);
                   }
                 count++;
               }
