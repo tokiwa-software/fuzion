@@ -174,7 +174,7 @@ public class Function extends AbstractLambda
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
    *
@@ -182,9 +182,9 @@ public class Function extends AbstractLambda
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, Context context, AbstractType t)
+  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
-    _type = propagateTypeAndInferResult(res, outer, context, t.functionTypeFromChoice(outer, context), false);
+    _type = propagateTypeAndInferResult(res, context, t.functionTypeFromChoice(context.outerFeature(), context), false);
     return this;
   }
 
@@ -232,7 +232,7 @@ public class Function extends AbstractLambda
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
    *
@@ -244,7 +244,7 @@ public class Function extends AbstractLambda
    * case of error, return Types.t_ERROR.
    */
   @Override
-  public AbstractType propagateTypeAndInferResult(Resolution res, AbstractFeature outer, Context context, AbstractType t, boolean inferResultType)
+  public AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
   {
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_call == null)
@@ -326,7 +326,7 @@ public class Function extends AbstractLambda
                                    new List<>(_inheritsCall),
                                    Contract.EMPTY_CONTRACT,
                                    new Impl(pos(), new Block(expressions), Impl.Kind.Routine));
-            res._module.findDeclarations(_wrapper, outer);
+            res._module.findDeclarations(_wrapper, context.outerFeature());
             res.resolveDeclarations(_wrapper);
             res.resolveTypes(_feature);
             if (inferResultType)
@@ -335,7 +335,7 @@ public class Function extends AbstractLambda
                 _inheritsCall._generics = gs.setOrClone(0, result);
               }
 
-            _call = new Call(pos(), new Current(pos(), outer), _wrapper).resolveTypes(res, context);
+            _call = new Call(pos(), new Current(pos(), context.outerFeature()), _wrapper).resolveTypes(res, context);
           }
       }
     return result;

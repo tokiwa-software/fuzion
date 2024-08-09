@@ -114,25 +114,25 @@ public class Assign extends AbstractAssign
    *
    * @param outer the root feature that contains this expression.
    */
-  public Assign(Resolution res, SourcePosition pos, AbstractFeature f, Expr v, AbstractFeature outer, Context context)
+  public Assign(Resolution res, SourcePosition pos, AbstractFeature f, Expr v, Context context)
   {
-    super(f, This.thiz(res, pos, outer, context, f.outer()), v);
+    super(f, This.thiz(res, pos, context.outerFeature(), context, f.outer()), v);
 
     if (PRECONDITIONS) require
       (Errors.any() ||
-       res.state(outer) == State.RESOLVED_DECLARATIONS ||
-       res.state(outer) == State.RESOLVING_TYPES       ||
-       res.state(outer) == State.RESOLVED_TYPES        ||
-       res.state(outer) == State.TYPES_INFERENCING     ||
-       res.state(outer) == State.RESOLVING_SUGAR1      ||
-       res.state(outer) == State.RESOLVING_SUGAR2,
+       res.state(context.outerFeature()) == State.RESOLVED_DECLARATIONS ||
+       res.state(context.outerFeature()) == State.RESOLVING_TYPES       ||
+       res.state(context.outerFeature()) == State.RESOLVED_TYPES        ||
+       res.state(context.outerFeature()) == State.TYPES_INFERENCING     ||
+       res.state(context.outerFeature()) == State.RESOLVING_SUGAR1      ||
+       res.state(context.outerFeature()) == State.RESOLVING_SUGAR2,
        f != null);
 
     this._name = null;
     this._pos = pos;
-    if (res.state(outer).atLeast(State.TYPES_INFERENCING))
+    if (res.state(context.outerFeature()).atLeast(State.TYPES_INFERENCING))
       {
-        propagateExpectedType(res, outer, context);
+        propagateExpectedType(res, context);
       }
   }
 

@@ -367,14 +367,13 @@ public class Impl extends ANY
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this implementation.
-   *
+   * @param context the source code context where this Expr is used
    */
-  public void propagateExpectedType(Resolution res, AbstractFeature outer, Context context)
+  public void propagateExpectedType(Resolution res, Context context)
   {
-    if (needsImplicitAssignmentToResult(outer))
+    if (needsImplicitAssignmentToResult(context.outerFeature()))
       {
-        _expr = _expr.propagateExpectedType(res, outer, context, outer.resultType());
+        _expr = _expr.propagateExpectedType(res, context, context.outerFeature().resultType());
       }
   }
 
@@ -385,13 +384,13 @@ public class Impl extends ANY
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
    */
-  public void propagateExpectedType(Resolution res, Feature outer, Context context, AbstractType t)
+  public void propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
-    _expr = _expr.propagateExpectedType(res, outer, context, t);
+    _expr = _expr.propagateExpectedType(res, context, t);
   }
 
 
@@ -424,14 +423,13 @@ public class Impl extends ANY
         var c = outer.contract().callPreCondition(res, outer, (Feature) outer, context);
         _expr = new Block(new List<>(c, _expr));
       }
-    if (needsImplicitAssignmentToResult(outer))
+    if (needsImplicitAssignmentToResult(context.outerFeature()))
       {
         var resultField = outer.resultField();
         Assign ass = new Assign(res,
                                 this._expr.pos(),
                                 resultField,
                                 this._expr,
-                                outer,
                                 context);
         ass._value = this._expr.box(ass._assignedField.resultType(), outer, outer.context());  // NYI: move to constructor of Assign?
         this._expr = ass;

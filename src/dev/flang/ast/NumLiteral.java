@@ -807,12 +807,12 @@ public class NumLiteral extends Constant
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
    */
   @Override
-  Expr propagateExpectedTypeForPartial(Resolution res, AbstractFeature outer, Context context, AbstractType t)
+  Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType t)
   {
     Expr result = this;
     if (t.isFunctionType() && t.arity() == 1 && explicitSign() != null)
@@ -842,7 +842,7 @@ public class NumLiteral extends Constant
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
    *
@@ -850,19 +850,19 @@ public class NumLiteral extends Constant
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, Context context, AbstractType t)
+  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
-    var result = propagateExpectedTypeForPartial(res, outer, context, t);
+    var result = propagateExpectedTypeForPartial(res, context, t);
     if (result != this)
       {
-        result = result.propagateExpectedType(res, outer, context, t);
+        result = result.propagateExpectedType(res, context, t);
       }
     else
       {
         // if expected type is choice, examine if there is exactly one numeric
         // constant type in choice generics, if so use that for further type
         // propagation.
-        t = t.findInChoice(cg -> !cg.isGenericArgument() && findConstantType(cg) != null, outer, context);
+        t = t.findInChoice(cg -> !cg.isGenericArgument() && findConstantType(cg) != null, context.outerFeature(), context);
         if (_type == null && findConstantType(t) != null)
           {
             _type = t;
@@ -890,7 +890,7 @@ public class NumLiteral extends Constant
   {
     if (t.isLazyType())
       {
-        propagateExpectedType(res, outer, context, t.generics().get(0));
+        propagateExpectedType(res, context, t.generics().get(0));
       }
     return super.wrapInLazy(res, outer, context, t);
   }

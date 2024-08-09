@@ -200,7 +200,6 @@ public class Destructure extends ExprWithPos
    + NYI: Document
    */
   private void addAssign(Resolution res,
-                         AbstractFeature outer,
                          Context context,
                          List<Expr> exprs,
                          Feature tmp,
@@ -210,6 +209,7 @@ public class Destructure extends ExprWithPos
                          Iterator<AbstractFeature> fields,
                          AbstractType t)
   {
+    var outer = context.outerFeature();
     Expr thiz     = This.thiz(res, pos(), outer, context, outer);
     Call thiz_tmp = new Call(pos(), thiz    , tmp, -1    ).resolveTypes(res, context);
     Call call_f   = new Call(pos(), thiz_tmp, f  , select).resolveTypes(res, context);
@@ -218,7 +218,7 @@ public class Destructure extends ExprWithPos
       {
         var newF = (Feature) fields.next();
         newF._returnType = new FunctionReturnType(t);
-        assign = new Assign(res, pos(), newF, call_f, outer, context);
+        assign = new Assign(res, pos(), newF, call_f, context);
       }
     else if (fields == null && names.hasNext())
       {
@@ -246,11 +246,6 @@ public class Destructure extends ExprWithPos
    */
   public Expr resolveTypes(Resolution res, Context context)
   {
-    return resolveTypes(res, context.outerFeature(), context);
-  }
-  public Expr resolveTypes(Resolution res, AbstractFeature outer, Context context)
-  {
-    if (PRECONDITIONS) require(outer == context.outerFeature());
     List<Expr> exprs = new List<>();
     // NYI: This might fail in conjunction with type inference.  We should maybe
     // create the decomposition code later, after resolveTypes is done.
@@ -272,9 +267,9 @@ public class Destructure extends ExprWithPos
                                   Visi.PRIV,
                                   t,
                                   FuzionConstants.DESTRUCTURE_PREFIX + id++,
-                                  outer);
+                                  context.outerFeature());
         tmp.scheduleForResolution(res);
-        exprs.add(new Assign(res, pos(), tmp, _value, outer, context));
+        exprs.add(new Assign(res, pos(), tmp, _value, context));
         var names = _names.iterator();
         var fields = _fields.iterator();
         List<String> fieldNames = new List<>();
@@ -289,14 +284,14 @@ public class Destructure extends ExprWithPos
                 for (var tfs : g.replaceOpen(t.generics()))
                   {
                     fieldNames.add(f.featureName().baseName() + "." + select);
-                    addAssign(res, outer, context, exprs, tmp, f, names, select, fields, tfs);
+                    addAssign(res, context, exprs, tmp, f, names, select, fields, tfs);
                     select++;
                   }
               }
             else
               {
                 fieldNames.add(f.featureName().baseName());
-                addAssign(res, outer, context, exprs, tmp, f, names, -1, fields, tf);
+                addAssign(res, context, exprs, tmp, f, names, -1, fields, tf);
               }
           }
         if (fieldNames.size() != _names.size())

@@ -349,17 +349,16 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param r the field this should be assigned to.
    *
    * @return the Expr this Expr is to be replaced with, typically an Assign
    * that performs the assignment to r.
    */
-  Expr assignToField(Resolution res, AbstractFeature outer, Context context, Feature r)
+  Expr assignToField(Resolution res, Context context, Feature r)
   {
-    if (PRECONDITIONS) require(outer == context.outerFeature());
-    return new Assign(res, pos(), r, this, outer, context);
+    return new Assign(res, pos(), r, this, context);
   }
 
 
@@ -473,7 +472,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
                                   new List<>(),
                                   result);
 
-            result = fn.propagateExpectedType(res, outer, context, t);
+            result = fn.propagateExpectedType(res, context, t);
             fn.resolveTypes(res, context);
             fn.updateTarget(res);
           }
@@ -495,7 +494,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
    *
@@ -503,7 +502,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, Context context, AbstractType t)
+  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
     return this;
   }
@@ -528,11 +527,11 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param expectedType the expected type.
    */
-  Expr propagateExpectedTypeForPartial(Resolution res, AbstractFeature outer, Context context, AbstractType expectedType)
+  Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
   {
     return this;
   }
@@ -589,7 +588,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
                                 outer);
         r.scheduleForResolution(res);
         res.resolveTypes();
-        result = new Block(new List<>(assignToField(res, outer, context, r),
+        result = new Block(new List<>(assignToField(res, context, r),
                                       new Call(pos, new Current(pos, outer), r).resolveTypes(res, context)));
       }
     return result;

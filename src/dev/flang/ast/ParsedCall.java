@@ -275,10 +275,10 @@ public class ParsedCall extends Call
                 boolean isChainedBoolRHS() { return true; }
               };
             this._movedTo = movedTo;
-            Expr as = new Assign(res, pos(), tmp, b, thiz, context);
-            t1         = res.resolveType(t1     , thiz, context);
-            as         = res.resolveType(as     , thiz, context);
-            var result = res.resolveType(movedTo, thiz, context);
+            Expr as = new Assign(res, pos(), tmp, b, context);
+            t1         = res.resolveType(t1     , context);
+            as         = res.resolveType(as     , context);
+            var result = res.resolveType(movedTo, context);
             cb._actuals.set(cb._actuals.size()-1,
                             new Block(new List<Expr>(as, t1)));
             _actuals = new List<Expr>(result);
@@ -378,19 +378,19 @@ public class ParsedCall extends Call
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param expectedType the expected type.
    */
   @Override
-  Expr propagateExpectedTypeForPartial(Resolution res, AbstractFeature outer, Context context, AbstractType expectedType)
+  Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
   {
     if (PRECONDITIONS) require
       (expectedType.isFunctionType());
 
     // NYI: CLEANUP: The logic in this method seems overly complex, there might be potential to simplify!
     Expr l = this;
-    if (partiallyApplicableAlternative(res, outer, context, expectedType) != null)
+    if (partiallyApplicableAlternative(res, context.outerFeature(), context, expectedType) != null)
       {
         if (_calledFeature != null)
           {
@@ -398,7 +398,7 @@ public class ParsedCall extends Call
             var rt = _calledFeature.resultTypeIfPresent(res);
             if (rt != null && (!rt.isAnyFunctionType() || rt.arity() != expectedType.arity()))
               {
-                l = applyPartially(res, outer, context, expectedType);
+                l = applyPartially(res, context.outerFeature(), context, expectedType);
               }
           }
         else
@@ -409,14 +409,14 @@ public class ParsedCall extends Call
               }
             if (l == this)
               {
-                l = applyPartially(res, outer, context, expectedType);
+                l = applyPartially(res, context.outerFeature(), context, expectedType);
               }
           }
       }
     else if (_pendingError != null                   || /* nothing found */
              newNameForPartial(expectedType) != null    /* search for a different name */)
       {
-        l = applyPartially(res, outer, context, expectedType);
+        l = applyPartially(res, context.outerFeature(), context, expectedType);
       }
     return l;
   }
@@ -511,9 +511,9 @@ public class ParsedCall extends Call
                               this)
           {
             @Override
-            public AbstractType propagateTypeAndInferResult(Resolution res, AbstractFeature outer, Context context, AbstractType t, boolean inferResultType)
+            public AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
             {
-              var rs = super.propagateTypeAndInferResult(res, outer, context, t, inferResultType);
+              var rs = super.propagateTypeAndInferResult(res, context, t, inferResultType);
               updateTarget(res);
               return rs;
             }
@@ -614,13 +614,13 @@ public class ParsedCall extends Call
           return wasLazy ? ParsedCall.this : super.originalLazyValue();
         }
         @Override
-        public Expr propagateExpectedType(Resolution res, AbstractFeature outer, Context context, AbstractType expectedType)
+        public Expr propagateExpectedType(Resolution res, Context context, AbstractType expectedType)
         {
           if (expectedType.isFunctionType())
             { // produce an error if the original call is ambiguous with partial application
               ParsedCall.this.checkPartialAmbiguity(res, outer, context, expectedType);
             }
-          return super.propagateExpectedType(res, outer, context, expectedType);
+          return super.propagateExpectedType(res, context, expectedType);
         }
       };
     _movedTo = result;

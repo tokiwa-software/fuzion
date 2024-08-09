@@ -62,7 +62,7 @@ public abstract class AbstractLambda extends ExprWithPos
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the expected type, this might be a Function type with some type
    * parameters, particularly the result type, still undefined.
@@ -70,9 +70,9 @@ public abstract class AbstractLambda extends ExprWithPos
    * @return the result type inferred from this lambda or Types.t_UNDEFINED if
    * not result type available.
    */
-  public AbstractType inferLambdaResultType(Resolution res, AbstractFeature outer, Context context, AbstractType t)
+  public AbstractType inferLambdaResultType(Resolution res, Context context, AbstractType t)
   {
-    return propagateTypeAndInferResult(res, outer, context, t, true);
+    return propagateTypeAndInferResult(res, context, t, true);
   }
 
 
@@ -83,7 +83,7 @@ public abstract class AbstractLambda extends ExprWithPos
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
    *
@@ -95,7 +95,6 @@ public abstract class AbstractLambda extends ExprWithPos
    * case of error, return Types.t_ERROR.
    */
   protected abstract AbstractType propagateTypeAndInferResult(Resolution res,
-                                                              AbstractFeature outer,
                                                               Context context,
                                                               AbstractType t,
                                                               boolean inferResultType);

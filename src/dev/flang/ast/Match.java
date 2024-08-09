@@ -213,7 +213,7 @@ public class Match extends AbstractMatch
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param r the field this should be assigned to.
    *
@@ -221,12 +221,12 @@ public class Match extends AbstractMatch
    * that performs the assignment to r.
    */
   @Override
-  Match assignToField(Resolution res, AbstractFeature outer, Context context, Feature r)
+  Match assignToField(Resolution res, Context context, Feature r)
   {
     for (var ac: cases())
       {
         var c = (Case) ac;
-        c._code = c._code.assignToField(res, outer, context, r);
+        c._code = c._code.assignToField(res, context, r);
       }
     _assignedToField = true;
     return this;
@@ -242,7 +242,7 @@ public class Match extends AbstractMatch
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
    *
@@ -251,9 +251,9 @@ public class Match extends AbstractMatch
    * will be replaced by the expression that reads the field.
    */
   @Override
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, Context context, AbstractType t)
+  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
-    return addFieldForResult(res, outer, context, t);
+    return addFieldForResult(res, context.outerFeature(), context, t);
   }
 
 

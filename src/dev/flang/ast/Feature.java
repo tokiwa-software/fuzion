@@ -1876,11 +1876,11 @@ A ((Choice)) declaration must not contain a result type.
          */
         visit(new ContextVisitor() {
             { this._context = Feature.this.context(); }
-            public void  action(AbstractAssign a, AbstractFeature outer) { a.propagateExpectedType(res, outer, _context); }
-            public Call  action(Call           c, AbstractFeature outer) { c.propagateExpectedType(res, outer, _context); return c; }
-            public void  action(Cond           c, AbstractFeature outer) { c.propagateExpectedType(res, outer, _context); }
-            public void  action(Impl           i, AbstractFeature outer) { i.propagateExpectedType(res, outer, _context); }
-            public Expr  action(If             i, AbstractFeature outer) { i.propagateExpectedType(res, outer, _context); return i; }
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.propagateExpectedType(res, _context); }
+            public Call  action(Call           c, AbstractFeature outer) { c.propagateExpectedType(res, _context); return c; }
+            public void  action(Cond           c, AbstractFeature outer) { c.propagateExpectedType(res, _context); }
+            public void  action(Impl           i, AbstractFeature outer) { i.propagateExpectedType(res, _context); }
+            public Expr  action(If             i, AbstractFeature outer) { i.propagateExpectedType(res, _context); return i; }
           });
 
         /*
@@ -1899,7 +1899,7 @@ A ((Choice)) declaration must not contain a result type.
 
         if (isConstructor())
           {
-            _impl.propagateExpectedType(res, this, context(), Types.resolved.t_unit);
+            _impl.propagateExpectedType(res, context(), Types.resolved.t_unit);
           }
 
         _state = State.TYPES_INFERENCED;
@@ -2137,7 +2137,7 @@ A ((Choice)) declaration must not contain a result type.
         if (this.outer() == outer)
           {
             /* add assignment of initial value: */
-            AbstractAssign ass = new Assign(res, _pos, this, _impl.expr(), outer, outer.context());
+            AbstractAssign ass = new Assign(res, _pos, this, _impl.expr(), outer.context());
             ass = ass.visit(res._resolveSyntaxSugar1, outer);
             result = new Block(new List<>(this, ass));
           }

@@ -265,7 +265,7 @@ public class If extends ExprWithPos
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param r the field this should be assigned to.
    *
@@ -273,13 +273,12 @@ public class If extends ExprWithPos
    * that performs the assignment to r.
    */
   @Override
-  If assignToField(Resolution res, AbstractFeature outer, Context context, Feature r)
+  If assignToField(Resolution res, Context context, Feature r)
   {
-    if (PRECONDITIONS) require(outer == context.outerFeature());
-    block = block.assignToField(res, outer, context, r);
+    block = block.assignToField(res, context, r);
     if (elseBlock != null)
       {
-        elseBlock = elseBlock.assignToField(res, outer, context, r);
+        elseBlock = elseBlock.assignToField(res, context, r);
       }
     _assignedToField = true;
     return this;
@@ -295,14 +294,13 @@ public class If extends ExprWithPos
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
-   *
+   * @param context the source code context where this Expr is used
    */
-  public void propagateExpectedType(Resolution res, AbstractFeature outer, Context context)
+  public void propagateExpectedType(Resolution res, Context context)
   {
     if (cond != null)
       {
-        cond = cond.propagateExpectedType(res, outer, context, Types.resolved.t_bool);
+        cond = cond.propagateExpectedType(res, context, Types.resolved.t_bool);
       }
   }
 
@@ -316,7 +314,7 @@ public class If extends ExprWithPos
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
    *
@@ -325,10 +323,9 @@ public class If extends ExprWithPos
    * will be replaced by the expression that reads the field.
    */
   @Override
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, Context context, AbstractType t)
+  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
-    if (PRECONDITIONS) require(outer == context.outerFeature(), outer != null);
-    return addFieldForResult(res, outer, context, t);
+    return addFieldForResult(res, context.outerFeature(), context, t);
   }
 
 

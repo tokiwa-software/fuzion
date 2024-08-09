@@ -317,20 +317,19 @@ public class Block extends AbstractBlock
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param r the field this should be assigned to.
    */
   @Override
-  Block assignToField(Resolution res, AbstractFeature outer, Context context, Feature r)
+  Block assignToField(Resolution res, Context context, Feature r)
   {
-    if (PRECONDITIONS) require(outer == context.outerFeature());
     Expr resExpr = removeResultExpression();
     if (resExpr != null)
       {
-        _expressions.add(resExpr.assignToField(res, outer, context, r));
+        _expressions.add(resExpr.assignToField(res, context, r));
       }
-    else if (!r.resultType().isAssignableFrom(Types.resolved.t_unit, outer, context))
+    else if (!r.resultType().isAssignableFrom(Types.resolved.t_unit, context.outerFeature(), context))
       {
         AstErrors.blockMustEndWithExpression(pos(), r.resultType());
       }
@@ -347,7 +346,7 @@ public class Block extends AbstractBlock
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param type the expected type.
    *
@@ -355,7 +354,7 @@ public class Block extends AbstractBlock
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, Context context, AbstractType type)
+  public Expr propagateExpectedType(Resolution res, Context context, AbstractType type)
   {
     if (type.compareTo(Types.resolved.t_unit) == 0 && hasImplicitResult())
       { // return unit if this is expected even if we would implicitly return
@@ -370,7 +369,7 @@ public class Block extends AbstractBlock
 
     if (resExpr != null)
       {
-        var x = resExpr.propagateExpectedType(res, outer, context, type);
+        var x = resExpr.propagateExpectedType(res, context, type);
         _expressions.remove(idx);
         _expressions.add(x);
       }

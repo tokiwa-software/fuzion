@@ -157,7 +157,7 @@ public class InlineArray extends ExprWithPos
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
    *
@@ -166,20 +166,20 @@ public class InlineArray extends ExprWithPos
    * will be replaced by the expression that reads the field.
    */
   @Override
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, Context context, AbstractType t)
+  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
     if (_type == null)
       {
         // if expected type is choice, examine if there is exactly one
         // array in choice generics, if so use this for further type propagation.
-        t = t.findInChoice(cg -> !cg.isGenericArgument() && cg.feature() == Types.resolved.f_array, outer, context);
+        t = t.findInChoice(cg -> !cg.isGenericArgument() && cg.feature() == Types.resolved.f_array, context.outerFeature(), context);
 
         var elementType = elementType(t);
         if (elementType != Types.t_ERROR)
           {
             for (var e : _elements)
               {
-                var e2 = e.propagateExpectedType(res, outer, context, elementType);
+                var e2 = e.propagateExpectedType(res, context, elementType);
                 if (CHECKS) check
                   (e == e2);
               }
@@ -407,7 +407,7 @@ public class InlineArray extends ExprWithPos
     res._module.findDeclarations(sysArrayVar, outer);
     res.resolveDeclarations(sysArrayVar);
     res.resolveTypes();
-    var sysArrayAssign = new Assign(res, SourcePosition.builtIn, sysArrayVar, sysArrayCall, outer, context);
+    var sysArrayAssign = new Assign(res, SourcePosition.builtIn, sysArrayVar, sysArrayCall, context);
     var exprs = new List<Expr>(sysArrayAssign);
     for (var i = 0; i < _elements.size(); i++)
       {

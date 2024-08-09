@@ -1651,7 +1651,7 @@ public class Call extends AbstractCall
                 var t = _generics.get(g.index());
                 if (t != Types.t_UNDEFINED)
                   {
-                    actual = actual.propagateExpectedType(res, outer, context, t);
+                    actual = actual.propagateExpectedType(res, context, t);
                   }
               }
           }
@@ -1766,7 +1766,7 @@ public class Call extends AbstractCall
             if (t != null && t.isFunctionType())
               {
                 var a = resultExpression(actual);
-                Expr l = a.propagateExpectedTypeForPartial(res, outer, context, t);
+                Expr l = a.propagateExpectedTypeForPartial(res, context, t);
                 if (l != a)
                   {
                     _actuals = _actuals.setOrClone(vai, l);
@@ -2094,7 +2094,7 @@ public class Call extends AbstractCall
             var at = actualArgType(res, formalType, outer, context);
             if (!at.containsUndefined(true))
               {
-                var rt = al.inferLambdaResultType(res, outer, context, at);
+                var rt = al.inferLambdaResultType(res, context, at);
                 if (rt != null)
                   {
                     _generics = _generics.setOrClone(ri, rt);
@@ -2431,11 +2431,11 @@ public class Call extends AbstractCall
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    */
-  public void propagateExpectedType(Resolution res, AbstractFeature outer, Context context)
+  public void propagateExpectedType(Resolution res, Context context)
   {
-    applyToActualsAndFormalTypes((actual, formalType) -> actual.propagateExpectedType(res, outer, context, formalType));
+    applyToActualsAndFormalTypes((actual, formalType) -> actual.propagateExpectedType(res, context, formalType));
 
     if (_target != null)
       {
@@ -2452,7 +2452,7 @@ public class Call extends AbstractCall
         var t = _target.typeForInferencing();
         if (t != null)
           {
-            _target = _target.propagateExpectedType(res, outer, context, t);
+            _target = _target.propagateExpectedType(res, context, t);
           }
       }
   }
@@ -2467,7 +2467,7 @@ public class Call extends AbstractCall
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
    *
@@ -2475,7 +2475,7 @@ public class Call extends AbstractCall
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, Context context, AbstractType t)
+  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
     Expr r = this;
     if (t.isFunctionType()         &&
@@ -2483,10 +2483,10 @@ public class Call extends AbstractCall
         _type != Types.t_ERROR     &&
         (_type == null || !_type.isAnyFunctionType()))
       {
-        r = propagateExpectedTypeForPartial(res, outer, context, t);
+        r = propagateExpectedTypeForPartial(res, context, t);
         if (r != this)
           {
-            var r2 = r.propagateExpectedType(res, outer, context, t);
+            var r2 = r.propagateExpectedType(res, context, t);
             if (CHECKS) check
               (r == r2);
           }
@@ -2679,9 +2679,13 @@ public class Call extends AbstractCall
    *  - simplify boolean algebra via K-Map and/or Quine–McCluskey // NYI
    *  - replace calls to intrinsics that return compile time constants
    *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Expr is used
+   *
    * @return a new Expr to replace this call or this if it remains unchanged.
    */
-  Expr resolveSyntacticSugar1(Resolution res, AbstractFeature outer)
+  Expr resolveSyntacticSugar1(Resolution res, Context context)
   {
     Expr result = this;
     // must not be inheritance call since we do not want `: i32 2` turned into a numeric literal.
@@ -2696,23 +2700,23 @@ public class Call extends AbstractCall
         var cf = _calledFeature;
         // need to do a propagateExpectedType since this might add a result field
         // example where this results in an issue: `_ := [false: true]`
-        if      (cf == Types.resolved.f_bool_AND    ) { result = newIf(_target, _actuals.get(0), BoolConst.FALSE).propagateExpectedType(res, outer, outer.context(), Types.resolved.t_bool); }
-        else if (cf == Types.resolved.f_bool_OR     ) { result = newIf(_target, BoolConst.TRUE , _actuals.get(0)).propagateExpectedType(res, outer, outer.context(), Types.resolved.t_bool); }
-        else if (cf == Types.resolved.f_bool_IMPLIES) { result = newIf(_target, _actuals.get(0), BoolConst.TRUE ).propagateExpectedType(res, outer, outer.context(), Types.resolved.t_bool); }
-        else if (cf == Types.resolved.f_bool_NOT    ) { result = newIf(_target, BoolConst.FALSE, BoolConst.TRUE ).propagateExpectedType(res, outer, outer.context(), Types.resolved.t_bool); }
-        else if (cf == Types.resolved.f_bool_TERNARY) { result = newIf(_target, _actuals.get(0), _actuals.get(1)).propagateExpectedType(res, outer, outer.context(), _generics.get(0)); }
+        if      (cf == Types.resolved.f_bool_AND    ) { result = newIf(_target, _actuals.get(0), BoolConst.FALSE).propagateExpectedType(res, context, Types.resolved.t_bool); }
+        else if (cf == Types.resolved.f_bool_OR     ) { result = newIf(_target, BoolConst.TRUE , _actuals.get(0)).propagateExpectedType(res, context, Types.resolved.t_bool); }
+        else if (cf == Types.resolved.f_bool_IMPLIES) { result = newIf(_target, _actuals.get(0), BoolConst.TRUE ).propagateExpectedType(res, context, Types.resolved.t_bool); }
+        else if (cf == Types.resolved.f_bool_NOT    ) { result = newIf(_target, BoolConst.FALSE, BoolConst.TRUE ).propagateExpectedType(res, context, Types.resolved.t_bool); }
+        else if (cf == Types.resolved.f_bool_TERNARY) { result = newIf(_target, _actuals.get(0), _actuals.get(1)).propagateExpectedType(res, context, _generics.get(0)); }
 
         // replace e.g. i16 7 by just the NumLiteral 7. This is necessary for syntaxSugar2 of InlineArray to work correctly.
-        else if (cf == Types.resolved.t_i8 .feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, outer.context(), Types.resolved.t_i8 ); }
-        else if (cf == Types.resolved.t_i16.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, outer.context(), Types.resolved.t_i16); }
-        else if (cf == Types.resolved.t_i32.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, outer.context(), Types.resolved.t_i32); }
-        else if (cf == Types.resolved.t_i64.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, outer.context(), Types.resolved.t_i64); }
-        else if (cf == Types.resolved.t_u8 .feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, outer.context(), Types.resolved.t_u8 ); }
-        else if (cf == Types.resolved.t_u16.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, outer.context(), Types.resolved.t_u16); }
-        else if (cf == Types.resolved.t_u32.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, outer.context(), Types.resolved.t_u32); }
-        else if (cf == Types.resolved.t_u64.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, outer.context(), Types.resolved.t_u64); }
-        else if (cf == Types.resolved.t_f32.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, outer.context(), Types.resolved.t_f32); }
-        else if (cf == Types.resolved.t_f64.feature()) { result = this._actuals.get(0).propagateExpectedType(res, outer, outer.context(), Types.resolved.t_f64); }
+        else if (cf == Types.resolved.t_i8 .feature()) { result = this._actuals.get(0).propagateExpectedType(res, context, Types.resolved.t_i8 ); }
+        else if (cf == Types.resolved.t_i16.feature()) { result = this._actuals.get(0).propagateExpectedType(res, context, Types.resolved.t_i16); }
+        else if (cf == Types.resolved.t_i32.feature()) { result = this._actuals.get(0).propagateExpectedType(res, context, Types.resolved.t_i32); }
+        else if (cf == Types.resolved.t_i64.feature()) { result = this._actuals.get(0).propagateExpectedType(res, context, Types.resolved.t_i64); }
+        else if (cf == Types.resolved.t_u8 .feature()) { result = this._actuals.get(0).propagateExpectedType(res, context, Types.resolved.t_u8 ); }
+        else if (cf == Types.resolved.t_u16.feature()) { result = this._actuals.get(0).propagateExpectedType(res, context, Types.resolved.t_u16); }
+        else if (cf == Types.resolved.t_u32.feature()) { result = this._actuals.get(0).propagateExpectedType(res, context, Types.resolved.t_u32); }
+        else if (cf == Types.resolved.t_u64.feature()) { result = this._actuals.get(0).propagateExpectedType(res, context, Types.resolved.t_u64); }
+        else if (cf == Types.resolved.t_f32.feature()) { result = this._actuals.get(0).propagateExpectedType(res, context, Types.resolved.t_f32); }
+        else if (cf == Types.resolved.t_f64.feature()) { result = this._actuals.get(0).propagateExpectedType(res, context, Types.resolved.t_f64); }
         else if (cf != null && cf.preAndCallFeature() != null && !preChecked())
           {
             _calledFeature = cf.preAndCallFeature();
