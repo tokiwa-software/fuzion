@@ -184,7 +184,7 @@ public class Function extends AbstractLambda
    */
   public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
-    _type = propagateTypeAndInferResult(res, context, t.functionTypeFromChoice(context.outerFeature(), context), false);
+    _type = propagateTypeAndInferResult(res, context, t.functionTypeFromChoice(context), false);
     return this;
   }
 
@@ -214,7 +214,7 @@ public class Function extends AbstractLambda
         {
           if (CHECKS)
             check(outer == _feature);
-          return c.updateTarget(res, outer, outer.context());
+          return c.updateTarget(res, _feature.context());
         }
       },
       _feature);
@@ -454,10 +454,8 @@ public class Function extends AbstractLambda
    * features to be searched for runtime types to be layouted.
    *
    * @param res the resolution instance.
-   *
-   * @param outer the root feature that contains this expression.
    */
-  public Expr resolveSyntacticSugar2(Resolution res, AbstractFeature outer)
+  public Expr resolveSyntacticSugar2(Resolution res)
   {
     Expr result = this;
     var ignore = type(); // just for the side-effect of producing an error if there was no type-propagation.

@@ -399,7 +399,7 @@ public class ParsedCall extends Call
 
     // NYI: CLEANUP: The logic in this method seems overly complex, there might be potential to simplify!
     Expr l = this;
-    if (partiallyApplicableAlternative(res, context.outerFeature(), context, expectedType) != null)
+    if (partiallyApplicableAlternative(res, context, expectedType) != null)
       {
         if (_calledFeature != null)
           {
@@ -407,7 +407,7 @@ public class ParsedCall extends Call
             var rt = _calledFeature.resultTypeIfPresent(res);
             if (rt != null && (!rt.isAnyFunctionType() || rt.arity() != expectedType.arity()))
               {
-                l = applyPartially(res, context.outerFeature(), context, expectedType);
+                l = applyPartially(res, context, expectedType);
               }
           }
         else
@@ -418,14 +418,14 @@ public class ParsedCall extends Call
               }
             if (l == this)
               {
-                l = applyPartially(res, context.outerFeature(), context, expectedType);
+                l = applyPartially(res, context, expectedType);
               }
           }
       }
     else if (_pendingError != null                   || /* nothing found */
              newNameForPartial(expectedType) != null    /* search for a different name */)
       {
-        l = applyPartially(res, context.outerFeature(), context, expectedType);
+        l = applyPartially(res, context, expectedType);
       }
     return l;
   }
@@ -445,15 +445,15 @@ public class ParsedCall extends Call
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param expectedType the expected type.
    */
-  void checkPartialAmbiguity(Resolution res, AbstractFeature outer, Context context, AbstractType expectedType)
+  void checkPartialAmbiguity(Resolution res, Context context, AbstractType expectedType)
   {
     if (_calledFeature != null && _calledFeature != Types.f_ERROR && this instanceof ParsedCall)
       {
-        var fo = partiallyApplicableAlternative(res, outer, context, expectedType);
+        var fo = partiallyApplicableAlternative(res, context, expectedType);
         if (fo != null &&
             fo._feature != _calledFeature &&
             newNameForPartial(expectedType) == null)
@@ -473,16 +473,16 @@ public class ParsedCall extends Call
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param  outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the type this expression is assigned to.
    */
-  public Expr applyPartially(Resolution res, AbstractFeature outer, Context context, AbstractType t)
+  public Expr applyPartially(Resolution res, Context context, AbstractType t)
   {
-    checkPartialAmbiguity(res, outer, context, t);
+    checkPartialAmbiguity(res, context, t);
     Expr result;
     var n = t.arity();
-    if (mustNotContainDeclarations("a partially applied function call", outer))
+    if (mustNotContainDeclarations("a partially applied function call", context.outerFeature()))
       {
         _pendingError = null;
         List<Expr> pns = new List<>();
@@ -599,13 +599,13 @@ public class ParsedCall extends Call
    *
    * @param res Resolution instance
    *
-   * @param outer the feature surrounding this call
+   * @param context the source code context where this Call is used
    *
    * @param name the name of the feature to be called.
    *
    * @return the newly created call
    */
-  Call pushCall(Resolution res, AbstractFeature outer, String name)
+  Call pushCall(Resolution res, Context context, String name)
   {
     var wasLazy = _type != null && _type.isLazyType();
     var result = new Call(pos(),   // NYI: ParsedCall?
@@ -627,7 +627,7 @@ public class ParsedCall extends Call
         {
           if (expectedType.isFunctionType())
             { // produce an error if the original call is ambiguous with partial application
-              ParsedCall.this.checkPartialAmbiguity(res, outer, context, expectedType);
+              ParsedCall.this.checkPartialAmbiguity(res, context, expectedType);
             }
           return super.propagateExpectedType(res, context, expectedType);
         }
@@ -642,7 +642,7 @@ public class ParsedCall extends Call
 
 
   @Override
-  Call resolveImplicitSelect(Resolution res, AbstractFeature outer, Context context, AbstractType t)
+  Call resolveImplicitSelect(Resolution res, Context context, AbstractType t)
   {
     Call result = this;
     if (_select >= 0 && !t.isGenericArgument())
@@ -651,8 +651,8 @@ public class ParsedCall extends Call
         if (f != null)
           {
             // replace Function call `c.123` by `c.f.123`:
-            result = pushCall(res, outer, f.featureName().baseName());
-            setActualResultType(res, outer, context, t); // setActualResultType will be done again by resolveTypes, but we need it now.
+            result = pushCall(res, context, f.featureName().baseName());
+            setActualResultType(res, context, t); // setActualResultType will be done again by resolveTypes, but we need it now.
             result = result.resolveTypes(res, context);
           }
       }
@@ -661,14 +661,14 @@ public class ParsedCall extends Call
 
 
   @Override
-  protected Call resolveImmediateFunctionCall(Resolution res, AbstractFeature outer, Context context)
+  protected Call resolveImmediateFunctionCall(Resolution res, Context context)
   {
     Call result = this;
 
     // replace Function or Lazy value `l` by `l.call`:
     if (isImmediateFunctionCall())
       {
-        result = pushCall(res, outer, "call").resolveTypes(res, context);
+        result = pushCall(res, context, "call").resolveTypes(res, context);
       }
     return result;
   }

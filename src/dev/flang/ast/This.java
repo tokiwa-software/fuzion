@@ -133,19 +133,21 @@ public class This extends ExprWithPos
    *
    * @param pos the sourcecode position, used for error messages.
    *
+   * @param context the source code context where this This is to be used
+   *
    * @param cur the current feature that contains this this expression
    *
    * @param f the outer feature whose instance we want to access.
    *
    * @return the type resolved expression to access f.this.
    */
-  public static Expr thiz(Resolution res, SourcePosition pos, AbstractFeature outer, Context context, AbstractFeature f)
+  public static Expr thiz(Resolution res, SourcePosition pos, Context context, AbstractFeature f)
   {
     if (PRECONDITIONS) require
-      (outer != null || Errors.any(),
-       f != null || Errors.any());
+      (context != null,
+       f != null);
 
-    return new This(pos, outer, f).resolveTypes(res, context);
+    return new This(pos, context.outerFeature(), f).resolveTypes(res, context);
   }
 
 

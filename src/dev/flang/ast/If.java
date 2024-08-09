@@ -329,7 +329,7 @@ public class If extends ExprWithPos
   @Override
   public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
-    return addFieldForResult(res, context.outerFeature(), context, t);
+    return addFieldForResult(res, context, t);
   }
 
 
@@ -340,10 +340,8 @@ public class If extends ExprWithPos
    *
    * @param res this is called during type resolution, res gives the resolution
    * instance.
-   *
-   * @param outer the feature that contains this implementation.
    */
-  public Expr resolveSyntacticSugar2(Resolution res, AbstractFeature outer)
+  public Expr resolveSyntacticSugar2(Resolution res)
   {
     return Errors.any()
       ? this  // no need to possible produce more errors

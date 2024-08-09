@@ -2054,10 +2054,10 @@ A ((Choice)) declaration must not contain a result type.
         visit(new ContextVisitor() {
             { this._context = Feature.this.context(); }
             public Expr  action(Feature     f, AbstractFeature outer) { return new Nop(_pos);                        }
-            public Expr  action(Function    f, AbstractFeature outer) { return f.resolveSyntacticSugar2(res, outer); }
-            public Expr  action(InlineArray i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, outer, _context); }
-            public void  action(Impl        i, AbstractFeature outer) {        i.resolveSyntacticSugar2(res, outer, _context); }
-            public Expr  action(If          i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, outer); }
+            public Expr  action(Function    f, AbstractFeature outer) { return f.resolveSyntacticSugar2(res); }
+            public Expr  action(InlineArray i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, _context); }
+            public void  action(Impl        i, AbstractFeature outer) {        i.resolveSyntacticSugar2(res, _context); }
+            public Expr  action(If          i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res); }
           });
 
         _state = State.RESOLVED_SUGAR2;

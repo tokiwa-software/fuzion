@@ -1118,9 +1118,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @return the single choice type for which p holds, this if this is not a
    * choice or the number of matches is not 1.
    */
-  AbstractType findInChoice(Predicate<AbstractType> p, AbstractFeature outer, Context context)
+  AbstractType findInChoice(Predicate<AbstractType> p, Context context)
   {
-    return choices(outer, context)
+    return choices(context)
       .filter(p)
       .collect(Collectors.reducing((a, b) -> null))  // get single element or null if multiple
       .orElse(this);
@@ -1167,9 +1167,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @return if this is a choice and there is exactly one choice for which
    * isFunctionType() holds, return that type, otherwise return this.
    */
-  AbstractType functionTypeFromChoice(AbstractFeature outer, Context context)
+  AbstractType functionTypeFromChoice(Context context)
   {
-    return findInChoice(cg -> cg.isFunctionType(), outer, context);
+    return findInChoice(cg -> cg.isFunctionType(), context);
   }
 
 
@@ -2030,12 +2030,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * else this returns a Stream of itself.
    */
-  public Stream<AbstractType> choices(AbstractFeature outer, Context context)
+  public Stream<AbstractType> choices(Context context)
   {
     return isChoice()
       ? choiceGenerics(context)
         .stream()
-        .flatMap(cg -> cg.choices(outer, context))
+        .flatMap(cg -> cg.choices(context))
       : Stream.of(this);
   }
 

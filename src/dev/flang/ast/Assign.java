@@ -116,7 +116,7 @@ public class Assign extends AbstractAssign
    */
   public Assign(Resolution res, SourcePosition pos, AbstractFeature f, Expr v, Context context)
   {
-    super(f, This.thiz(res, pos, context.outerFeature(), context, f.outer()), v);
+    super(f, This.thiz(res, pos, context, f.outer()), v);
 
     if (PRECONDITIONS) require
       (Errors.any() ||

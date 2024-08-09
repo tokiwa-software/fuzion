@@ -172,7 +172,7 @@ public class InlineArray extends ExprWithPos
       {
         // if expected type is choice, examine if there is exactly one
         // array in choice generics, if so use this for further type propagation.
-        t = t.findInChoice(cg -> !cg.isGenericArgument() && cg.feature() == Types.resolved.f_array, context.outerFeature(), context);
+        t = t.findInChoice(cg -> !cg.isGenericArgument() && cg.feature() == Types.resolved.f_array, context);
 
         var elementType = elementType(t);
         if (elementType != Types.t_ERROR)
@@ -389,9 +389,9 @@ public class InlineArray extends ExprWithPos
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this expression.
+   * @param context the source code context where this Expr is used
    */
-  public Expr resolveSyntacticSugar2(Resolution res, AbstractFeature outer, Context context)
+  public Expr resolveSyntacticSugar2(Resolution res, Context context)
   {
     var et = elementType();
     var eT           = new List<AbstractType>(et);
@@ -406,7 +406,7 @@ public class InlineArray extends ExprWithPos
     var sysArrayT    = new ParsedType(SourcePosition.builtIn, "internal_array", eT, sysT);
     var sysArrayName = FuzionConstants.INLINE_SYS_ARRAY_PREFIX + (_id_++);
     var sysArrayVar  = new Feature(SourcePosition.builtIn, Visi.PRIV, sysArrayT, sysArrayName, Impl.FIELD);
-    res._module.findDeclarations(sysArrayVar, outer);
+    res._module.findDeclarations(sysArrayVar, context.outerFeature());
     res.resolveDeclarations(sysArrayVar);
     res.resolveTypes();
     var sysArrayAssign = new Assign(res, SourcePosition.builtIn, sysArrayVar, sysArrayCall, context);

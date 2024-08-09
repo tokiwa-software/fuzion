@@ -210,7 +210,7 @@ public class Destructure extends ExprWithPos
                          AbstractType t)
   {
     var outer = context.outerFeature();
-    Expr thiz     = This.thiz(res, pos(), outer, context, outer);
+    Expr thiz     = This.thiz(res, pos(), context, outer);
     Call thiz_tmp = new Call(pos(), thiz    , tmp, -1    ).resolveTypes(res, context);
     Call call_f   = new Call(pos(), thiz_tmp, f  , select).resolveTypes(res, context);
     Assign assign = null;

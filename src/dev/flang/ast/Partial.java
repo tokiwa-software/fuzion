@@ -159,7 +159,7 @@ public class Partial extends AbstractLambda
   public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
     Expr result = this;
-    t = t.functionTypeFromChoice(context.outerFeature(), context);
+    t = t.functionTypeFromChoice(context);
     var type = propagateTypeAndInferResult(res, context, t, false);
     if (_function != null)
       {
@@ -275,10 +275,10 @@ public class Partial extends AbstractLambda
    *
    * @param outer the root feature that contains this expression.
    */
-  public Expr resolveSyntacticSugar2(Resolution res, AbstractFeature outer)
+  public Expr resolveSyntacticSugar2X(Resolution res)
   {
     return _function == null ? this
-                             : _function.resolveSyntacticSugar2(res, outer);
+                             : _function.resolveSyntacticSugar2(res);
   }
 
 

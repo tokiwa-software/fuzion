@@ -458,7 +458,7 @@ public class NumLiteral extends Constant
   private AbstractType extractNumericType(AbstractType t)
   {
     var result = t
-      .choices(null /* NYI: outer */, null /* Context */)
+      .choices(Context.NONE)
       .filter(x -> Types.resolved.numericTypes.contains(x))
       .collect(Collectors.toList());
 
@@ -862,7 +862,7 @@ public class NumLiteral extends Constant
         // if expected type is choice, examine if there is exactly one numeric
         // constant type in choice generics, if so use that for further type
         // propagation.
-        t = t.findInChoice(cg -> !cg.isGenericArgument() && findConstantType(cg) != null, context.outerFeature(), context);
+        t = t.findInChoice(cg -> !cg.isGenericArgument() && findConstantType(cg) != null, context);
         if (_type == null && findConstantType(t) != null)
           {
             _type = t;

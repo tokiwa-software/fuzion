@@ -414,9 +414,9 @@ public class Impl extends ANY
    *
    * @param outer the feature that contains this implementation.
    */
-  public void resolveSyntacticSugar2(Resolution res, AbstractFeature outer, Context context)
+  public void resolveSyntacticSugar2(Resolution res, Context context)
   {
-    if (PRECONDITIONS) require(outer == context.outerFeature());
+    var outer = context.outerFeature();
     if (outer.isConstructor() && outer.preFeature() != null)
       { // For constructors, the constructor itself checks the precondition (while
         // for functions, this is done by the caller):

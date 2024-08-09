@@ -248,7 +248,7 @@ public class Match extends AbstractMatch
   @Override
   public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
-    return addFieldForResult(res, context.outerFeature(), context, t);
+    return addFieldForResult(res, context, t);
   }
 
 

@@ -574,7 +574,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   }
 
 
-  protected Expr addFieldForResult(Resolution res, AbstractFeature outer, Context context, AbstractType t)
+  protected Expr addFieldForResult(Resolution res, Context context, AbstractType t)
   {
     var result = this;
     if (!t.isVoid())
@@ -585,11 +585,11 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
                                 Visi.PRIV,
                                 t,
                                 FuzionConstants.EXPRESSION_RESULT_PREFIX + (_id_++),
-                                outer);
+                                context.outerFeature());
         r.scheduleForResolution(res);
         res.resolveTypes();
         result = new Block(new List<>(assignToField(res, context, r),
-                                      new Call(pos, new Current(pos, outer), r).resolveTypes(res, context)));
+                                      new Call(pos, new Current(pos, context.outerFeature()), r).resolveTypes(res, context)));
       }
     return result;
   }
