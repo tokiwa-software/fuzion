@@ -268,8 +268,10 @@ public abstract class AbstractAssign extends Expr
    * check the types in this assignment
    *
    * @param res the Resolution that performs this checkTypes
+   *
+   * @param context the source code context where this assignment is used
    */
-  public void checkTypes(Resolution res, AbstractFeature outer, Context context)
+  public void checkTypes(Resolution res, Context context)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());

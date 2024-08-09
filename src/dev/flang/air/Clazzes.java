@@ -37,6 +37,7 @@ import dev.flang.ast.AbstractBlock; // NYI: remove dependency!
 import dev.flang.ast.AbstractCall; // NYI: remove dependency!
 import dev.flang.ast.AbstractCase; // NYI: remove dependency!
 import dev.flang.ast.Constant; // NYI: remove dependency!
+import dev.flang.ast.Context; // NYI: remove dependency!
 import dev.flang.ast.AbstractCurrent; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
@@ -771,7 +772,7 @@ public class Clazzes extends ANY
             if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
               {
                 var T = innerClazz.actualGenerics()[0];
-                cf = T._type.constraintAssignableFrom(null /* outer */, null, tclazz._type.generics().get(0))
+                cf = T._type.constraintAssignableFrom(Context.NONE, tclazz._type.generics().get(0))
                   ? Types.resolved.f_Type_infix_colon_true
                   : Types.resolved.f_Type_infix_colon_false;
                 innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), -1, c, c.isInheritanceCall());

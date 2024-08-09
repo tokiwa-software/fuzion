@@ -1986,13 +1986,13 @@ A ((Choice)) declaration must not contain a result type.
             /* if an error is reported in a call it might no longer make sense to check the actuals: */
             public boolean visitActualsLate() { return true; }
 
-            public void         action(AbstractAssign a, AbstractFeature outer) {        a.checkTypes(res,  outer, _context);           }
-            public Call         action(Call           c, AbstractFeature outer) {        c.checkTypes(res,  outer, _context); return c; }
-            public Expr         action(If             i, AbstractFeature outer) {        i.checkTypes(      outer, _context); return i; }
-            public Expr         action(InlineArray    i, AbstractFeature outer) {        i.checkTypes(      outer, _context); return i; }
-            public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints(outer, _context);           }
-            public void         action(Cond           c, AbstractFeature outer) {        c.checkTypes();                }
-            public void         actionBefore(Block    b, AbstractFeature outer) {        b.checkTypes();                }
+            public void         action(AbstractAssign a, AbstractFeature outer) {        a.checkTypes(res,  _context);           }
+            public Call         action(Call           c, AbstractFeature outer) {        c.checkTypes(res,  _context); return c; }
+            public Expr         action(If             i, AbstractFeature outer) {        i.checkTypes(      _context); return i; }
+            public Expr         action(InlineArray    i, AbstractFeature outer) {        i.checkTypes(      _context); return i; }
+            public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints(_context);           }
+            public void         action(Cond           c, AbstractFeature outer) {        c.checkTypes();                         }
+            public void         actionBefore(Block    b, AbstractFeature outer) {        b.checkTypes();                         }
           });
         checkTypes(res, context());
 

@@ -2582,9 +2582,9 @@ public class Call extends AbstractCall
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this expression.
+   * @param context the source code context where this Call is used
    */
-  public void checkTypes(Resolution res, AbstractFeature outer, Context context)
+  public void checkTypes(Resolution res, Context context)
   {
     reportPendingError();
 
@@ -2625,7 +2625,8 @@ public class Call extends AbstractCall
         if (_calledFeature.isChoice())
           {
             boolean ok = false;
-            if (outer != null && outer.isChoice())
+            var outer = context.outerFeature();
+            if (outer.isChoice())
               {
                 for (var p : outer.inherits())
                   {
@@ -2639,7 +2640,7 @@ public class Call extends AbstractCall
           }
 
         // Check that generics match formal generic constraints
-        AbstractType.checkActualTypePars(outer, context, _calledFeature, _generics, _unresolvedGenerics, pos());
+        AbstractType.checkActualTypePars(context, _calledFeature, _generics, _unresolvedGenerics, pos());
       }
   }
 

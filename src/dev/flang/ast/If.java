@@ -196,11 +196,13 @@ public class If extends ExprWithPos
   /**
    * check the types in this if, in particular, check that the condition is of
    * type bool.
+   *
+   * @param context the source code context where this If is used
    */
-  public void checkTypes(AbstractFeature outer, Context context)
+  public void checkTypes(Context context)
   {
     var t = cond.type();
-    if (!Types.resolved.t_bool.isDirectlyAssignableFrom(t, outer, context))
+    if (!Types.resolved.t_bool.isDirectlyAssignableFrom(t, context))
       {
         if (fromContract())
           {

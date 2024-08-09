@@ -481,7 +481,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param actual the actual type.
    */
-  public boolean constraintAssignableFrom(AbstractFeature outer, Context context, AbstractType actual)
+  public boolean constraintAssignableFrom(Context context, AbstractType actual)
   {
     if (PRECONDITIONS) require
       (this  .isGenericArgument() || this  .feature() != null || Errors.any(),
@@ -497,7 +497,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         if (actual.isGenericArgument())
           {
-            result = constraintAssignableFrom(outer, context, actual.genericArgument().constraint(context));
+            result = constraintAssignableFrom(context, actual.genericArgument().constraint(context));
           }
         else
           {
@@ -506,11 +506,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             if (actual.feature() != null)
               {
                 result = actual.feature() == feature() &&
-                  genericsAssignable(actual, outer, context); // NYI: Check: What about open generics?
+                  genericsAssignable(actual, context); // NYI: Check: What about open generics?
                 for (var p: actual.feature().inherits())
                   {
                     result |= !p.calledFeature().isChoice() &&
-                      constraintAssignableFrom(outer, context, p.type().applyTypePars(actual));
+                      constraintAssignableFrom(context, p.type().applyTypePars(actual));
                   }
               }
           }
@@ -524,9 +524,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * generics of type parameter with constraint `this`.
    *
    * @param context the source code context where this Type is used
-   *
    */
-  private boolean genericsAssignable(AbstractType actual, AbstractFeature outer, Context context)
+  private boolean genericsAssignable(AbstractType actual, Context context)
   {
     if (PRECONDITIONS) require
       (!this.isGenericArgument(),
@@ -549,7 +548,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           // other = monad option.T (option option.T)
           // for now just prevent infinite recursion
             !(g.isGenericArgument() && (g.genericArgument().constraint(context) == this ||
-                                        g.genericArgument().constraint(context).constraintAssignableFrom(outer, context, og))))
+                                        g.genericArgument().constraint(context).constraintAssignableFrom(context, og))))
           // NYI what if g is not a generic argument?
           {
             return false;
@@ -1914,12 +1913,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param context the source code context where this Type is used
    */
-  public AbstractType checkConstraints(AbstractFeature outer, Context context)
+  public AbstractType checkConstraints(Context context)
   {
     var result = this;
     if (result != Types.t_ERROR && !isGenericArgument())
       {
-        if (!checkActualTypePars(outer, context, feature(), generics(), unresolvedGenerics(), null))
+        if (!checkActualTypePars(context, feature(), generics(), unresolvedGenerics(), null))
           {
             result = Types.t_ERROR;
           }
@@ -1947,7 +1946,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @return true iff check was ok, false iff an error was found and reported
    */
-  static boolean checkActualTypePars(AbstractFeature outer, Context context, AbstractFeature called, List<AbstractType> actuals, List<AbstractType> unresolvedActuals, SourcePosition callPos)
+  static boolean checkActualTypePars(Context context, AbstractFeature called, List<AbstractType> actuals, List<AbstractType> unresolvedActuals, SourcePosition callPos)
   {
     var result = true;
     var fi = called.generics().list.iterator();
@@ -1970,7 +1969,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         a.checkChoice(pos, context);
         if (!c.isGenericArgument() && // See AstErrors.constraintMustNotBeGenericArgument,
                                       // will be checked in SourceModule.checkTypes(Feature)
-            !c.constraintAssignableFrom(outer, context, a))
+            !c.constraintAssignableFrom(context, a))
           {
             if (!f.typeParameter().isTypeFeaturesThisType())  // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
               {

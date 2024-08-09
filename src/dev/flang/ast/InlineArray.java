@@ -287,8 +287,10 @@ public class InlineArray extends ExprWithPos
 
   /**
    * check the types in this InlineArray
+   *
+   * @param context the source code context where this InlineArray is used
    */
-  public void checkTypes(AbstractFeature outer, Context context)
+  public void checkTypes(Context context)
   {
     if (PRECONDITIONS) require
       (Errors.any() || _type != null);
@@ -300,7 +302,7 @@ public class InlineArray extends ExprWithPos
 
     for (var e : _elements)
       {
-        if (!elementType.isDirectlyAssignableFrom(e.type(), outer, context))
+        if (!elementType.isDirectlyAssignableFrom(e.type(), context))
           {
             AstErrors.incompatibleTypeInArrayInitialization(e.pos(), _type, elementType, e);
           }
