@@ -112,14 +112,21 @@ public class Generic extends ANY implements Comparable<Generic>
    * constraint returns the constraint type of this generic, ANY if no
    * constraint.
    *
+   * @param context the source code context where this Generic is used, may be
+   * Context.NONE to get the constraint declared for this generic.
+   *
    * @return the constraint.
    */
-  public AbstractType constraint()
+  public AbstractType constraint(Context context)
   {
     if (PRECONDITIONS) require
       (_typeParameter.state().atLeast(State.RESOLVED_TYPES));
 
-    var result = _typeParameter.resultType();
+    var result = context.constraintFor(_typeParameter);
+    if (result == null)
+      {
+        result = _typeParameter.resultType();
+      }
 
     if (POSTCONDITIONS) ensure
       (result != null);
@@ -134,15 +141,17 @@ public class Generic extends ANY implements Comparable<Generic>
    *
    * @param res the resolution instance.
    *
-   * @return the resolved constraint.
+   * @param context the source code context where this Generic is used
+   *
+   * @return the resolved constraint(context).
    */
-  public AbstractType constraint(Resolution res)
+  public AbstractType constraint(Resolution res, Context context)
   {
     if (PRECONDITIONS) require
       (res.state(feature()).atLeast(State.RESOLVING_DECLARATIONS));
 
     res.resolveTypes(_typeParameter);
-    return constraint();
+    return constraint(context);
   }
 
 

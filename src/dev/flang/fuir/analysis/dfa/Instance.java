@@ -104,7 +104,8 @@ public class Instance extends Value
     super(clazz);
 
     if (PRECONDITIONS) require
-      (!dfa._fuir.clazzIsRef(clazz));
+      (!dfa._fuir.clazzIsRef(clazz),
+       site == IR.NO_SITE || site >= IR.SITE_BASE);
 
     _dfa = dfa;
     _site = site;
@@ -189,7 +190,8 @@ public class Instance extends Value
       {
         if (dfa._reportResults)
           {
-            DfaErrors.readingUninitializedField(dfa._fuir.sitePos(site),
+            DfaErrors.readingUninitializedField(site == -1 ? dev.flang.util.SourcePosition.notAvailable : // NYI: REMOVE
+                                                site == IR.NO_SITE ? null : dfa._fuir.sitePos(site),
                                                 dfa._fuir.clazzAsString(field),
                                                 dfa._fuir.clazzAsString(_clazz) + (_isBoxed ? " Boxed!" : ""),
                                                 why);

@@ -137,9 +137,9 @@ public class Resolution extends ANY
    *
    * This is used during state RESOLVING_DECLARATIONS to find called features.
    */
-  FeatureVisitor resolveTypesOnly = new FeatureVisitor()
+  FeatureVisitor resolveTypesOnly = new FeatureVisitor() // NYI: should be ContextVisitor?
     {
-      public AbstractType action(AbstractType t, AbstractFeature outer) { return t.resolve(Resolution.this, outer); }
+      public AbstractType action(AbstractType t, AbstractFeature outer) { return t.resolve(Resolution.this, outer.context()); }
     };
 
 
@@ -149,7 +149,7 @@ public class Resolution extends ANY
    *
    * This is used during state RESOLVING_TYPES.
    */
-  FeatureVisitor resolveTypesFully = new Feature.ResolveTypes(this);
+  Feature.ResolveTypes resolveTypesFully = new Feature.ResolveTypes(this);
 
 
   /**
@@ -157,10 +157,10 @@ public class Resolution extends ANY
    *
    * This is used during state RESOLVING_SUGAR1
    */
-  FeatureVisitor _resolveSyntaxSugar1 = new FeatureVisitor()
+  FeatureVisitor _resolveSyntaxSugar1 = new FeatureVisitor()  // NYI: use ContextVisitor?
     {
       public Expr action(Feature f, AbstractFeature outer) { return f.resolveSyntacticSugar1(Resolution.this, outer); }
-      public Expr action(Call    c, AbstractFeature outer) { return c.resolveSyntacticSugar1(Resolution.this, outer); }
+      public Expr action(Call    c, AbstractFeature outer) { return c.resolveSyntacticSugar1(Resolution.this, outer.context()); }
     };
 
 
@@ -470,7 +470,7 @@ public class Resolution extends ANY
     else if (!forBoxing.isEmpty())
       {
         Feature f = forBoxing.removeFirst();
-        f.box(this);
+        f.boxX(this);
       }
     else if (!_waitingForCalls.isEmpty())
       {
@@ -565,13 +565,19 @@ public class Resolution extends ANY
    *
    * @param e an expression
    *
-   * @param outer the outer feature that contains s
+   * @param context the source code context where e is used
    *
-   * @return s or a new expression that replaces s after type resolution.
+   * @return e or a new expression that replaces e after type resolution.
    */
-  Expr resolveType(Expr e, AbstractFeature outer)
+  Expr resolveType(Expr e, Context context)
   {
-    return e.visit(resolveTypesFully, outer);
+    if (PRECONDITIONS) require
+      (context != null);
+    var old_context = resolveTypesFully._context;
+    resolveTypesFully._context = context;
+    var res = e.visit(resolveTypesFully, context.outerFeature());
+    resolveTypesFully._context = old_context;
+    return res;
   }
 
 

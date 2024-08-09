@@ -127,11 +127,11 @@ public class Cond
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Cond is used
    */
-  public void propagateExpectedType(Resolution res, AbstractFeature outer)
+  public void propagateExpectedType(Resolution res, Context context)
   {
-    cond = cond.propagateExpectedType(res, outer, Types.resolved.t_bool);
+    cond = cond.propagateExpectedType(res, context, Types.resolved.t_bool);
   }
 
 

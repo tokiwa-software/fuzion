@@ -44,11 +44,14 @@ import dev.flang.ast.AbstractAssign; // NYI: remove dependency
 import dev.flang.ast.AbstractBlock; // NYI: remove dependency
 import dev.flang.ast.AbstractCall; // NYI: remove dependency
 import dev.flang.ast.Constant; // NYI: remove dependency
+import dev.flang.ast.Context; // NYI: remove dependency
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency
+import dev.flang.ast.Context; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
 import dev.flang.ast.Env; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
+import dev.flang.ast.FeatureVisitor; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
 import dev.flang.ast.Tag; // NYI: remove dependency
@@ -1298,7 +1301,7 @@ public class FUIR extends IR
     if (result == null)
       {
         Errors.fatal(sitePos(s),
-                     "Expr not supported in FUIR.codeAt", "Expression class: " + e.getClass());
+                     "Expr `" + e.getClass() + "` not supported in FUIR.codeAt", "Expression class: " + e.getClass());
         result = ExprKind.Current; // keep javac from complaining.
       }
     return result;
@@ -1360,8 +1363,11 @@ public class FUIR extends IR
 
     var cl = clazzAt(s);
     var outerClazz = clazz(cl);
-    var b = (Box) getExpr(s);
-    Clazz vc = outerClazz.actualClazzes(b, null)[0];
+    var b = (Expr) getExpr(s);
+    if (CHECKS) check
+      (b instanceof Box);
+
+    var vc = outerClazz.actualClazzes(b, null)[0];
     return id(vc);
   }
 
@@ -1374,8 +1380,11 @@ public class FUIR extends IR
 
     var cl = clazzAt(s);
     var outerClazz = clazz(cl);
-    var b = (Box) getExpr(s);
-    Clazz rc = outerClazz.actualClazzes(b, null)[1];
+    var b = (Expr) getExpr(s);
+    if (CHECKS) check
+      (b instanceof Box);
+
+    var rc = outerClazz.actualClazzes(b, null)[1];
     return id(rc);
   }
 
@@ -1791,12 +1800,12 @@ public class FUIR extends IR
         int nt = f != null ? 1 : ts.size();
         var resultL = new List<Integer>();
         int tag = 0;
-        for (var cg : match.subject().type().choiceGenerics())
+        for (var cg : match.subject().type().choiceGenerics(Context.NONE))
           {
             for (int tix = 0; tix < nt; tix++)
               {
                 var t = f != null ? f.resultType() : ts.get(tix);
-                if (t.isDirectlyAssignableFrom(cg))
+                if (t.isDirectlyAssignableFrom(cg, Context.NONE))
                   {
                     resultL.add(tag);
                   }
@@ -1836,8 +1845,39 @@ public class FUIR extends IR
        codeAt(s) == ExprKind.Match,
        0 <= cix && cix <= matchCaseCount(s));
 
+    var me = getExpr(s);
     var e = getExpr(s + 1 + cix);
+
+    if (me instanceof AbstractMatch m &&
+        m.subject() instanceof AbstractCall sc)
+      {
+        var c = m.cases().get(cix);
+        if (sc.calledFeature() == Types.resolved.f_Type_infix_colon_true  && !c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0) ||
+            sc.calledFeature() == Types.resolved.f_Type_infix_colon_false && !c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_FALSE.selfType())==0)    )
+          {
+            return NO_SITE;
+          }
+        else if (sc.calledFeature() == Types.resolved.f_Type_infix_colon)
+          {
+            var innerClazz = clazz(clazzAt(s)).actualClazzes(sc, null)[0];
+            var tclazz = innerClazz._outer;
+            var T = innerClazz.actualGenerics()[0];
+            var pos = T._type.constraintAssignableFrom(Context.NONE, tclazz._type.generics().get(0));
+            if (pos  && !c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0) ||
+                !pos && !c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_FALSE.selfType())==0)    )
+              {
+                return NO_SITE;
+              }
+          }
+      }
+
     return ((NumLiteral) e).intValue().intValueExact();
+  }
+
+  @Override
+  public boolean withinCode(int s)
+  {
+    return (s != NO_SITE) && super.withinCode(s);
   }
 
 
@@ -2586,9 +2626,13 @@ public class FUIR extends IR
   @Deprecated
   public boolean isAssignableFrom(int cl0, int cl1)
   {
-    return clazz(cl0)._type.isAssignableFrom(clazz(cl1)._type);
+    return clazz(cl0)._type.isAssignableFrom(clazz(cl1)._type, null /* outer */, null /* Context */);
   }
 
+  public boolean constraintAssignableFrom(int cl0, int cl1)
+  {
+    return clazz(cl0)._type.constraintAssignableFrom(Context.NONE, clazz(cl1)._type);
+  }
 
   /* NYI remove? only used in interpreter */
   @Deprecated
@@ -2624,7 +2668,8 @@ public class FUIR extends IR
    */
   record AbsMissing(Clazz clazz,
                     TreeSet<AbstractFeature> called,
-                    SourcePosition instantiationPos)
+                    SourcePosition instantiationPos,
+                    String context)
   {
   };
 
@@ -2649,11 +2694,11 @@ public class FUIR extends IR
    * @param instantiationPos if known, the site where `cl` was instantiated,
    * `NO_SITE` if unknown.
    */
-  public void recordAbstractMissing(int cl, int f, int instantiationSite)
+  public void recordAbstractMissing(int cl, int f, int instantiationSite, String context)
   {
     var cc = clazz(cl);
     var cf = clazz(f);
-    var r = _abstractMissing.computeIfAbsent(cc, ccc -> new AbsMissing(ccc, new TreeSet<>(), sitePos(instantiationSite)));
+    var r = _abstractMissing.computeIfAbsent(cc, ccc -> new AbsMissing(ccc, new TreeSet<>(), sitePos(instantiationSite), context));
     r.called.add(cf.feature());
   }
 
@@ -2670,7 +2715,8 @@ public class FUIR extends IR
       .stream()
       .forEach(r -> AirErrors.abstractFeatureNotImplemented(r.clazz.feature(),
                                                             r.called,
-                                                            r.instantiationPos));
+                                                            r.instantiationPos,
+                                                            r.context));
   }
 
 

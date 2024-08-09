@@ -59,7 +59,7 @@ is
   # head of the list, 1 if it comes directly after head, etc. nil if x is
   # not in the list.
   #
-  public index_of (x A) => find [x]
+  public redef index_of (x A) => find [x]
 
   # get the index of l within this list or nil if it does not exist
   #

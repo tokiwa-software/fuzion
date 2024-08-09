@@ -129,7 +129,7 @@ public class Match extends AbstractMatch
     v.action(this, outer);
     for (var c: cases())
       {
-        c.visit(v, outer);
+        c.visit(v, this, outer);
       }
     return this;
   }
@@ -140,9 +140,9 @@ public class Match extends AbstractMatch
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this expression.
+   * @param context the source code context where this Call is used
    */
-  public void resolveTypes(Resolution res, AbstractFeature outer)
+  public void resolveTypes(Resolution res, Context context)
   {
     var st = _subject.type();
     if (CHECKS) check
@@ -165,7 +165,7 @@ public class Match extends AbstractMatch
       }
     if (st.isChoice())
       {
-        var cgs = st.choiceGenerics();
+        var cgs = st.choiceGenerics(context);
         for (var i = 0; i < cgs.size(); i++)
           {
             var n = cgs.get(i);
@@ -173,14 +173,14 @@ public class Match extends AbstractMatch
               (Errors.any() || n != null);
             if (n != null)
               {
-                cgs = cgs.setOrClone(i, n.resolve(res, outer));
+                cgs = cgs.setOrClone(i, n.resolve(res, context));
               }
           }
         SourcePosition[] matched = new SourcePosition[cgs.size()];
         boolean ok = true;
         for (var c: cases())
           {
-            ok &= ((Case) c).resolveType(res, cgs, outer, matched);
+            ok &= ((Case) c).resolveType(res, cgs, context, matched);
           }
         var missingMatches = new List<AbstractType>();
         for (var ix = 0; ix < cgs.size(); ix++)
@@ -208,19 +208,20 @@ public class Match extends AbstractMatch
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param r the field this should be assigned to.
    *
    * @return the Expr this Expr is to be replaced with, typically an Assign
    * that performs the assignment to r.
    */
-  Match assignToField(Resolution res, AbstractFeature outer, Feature r)
+  @Override
+  Match assignToField(Resolution res, Context context, Feature r)
   {
     for (var ac: cases())
       {
         var c = (Case) ac;
-        c._code = c._code.assignToField(res, outer, r);
+        c._code = c._code.assignToField(res, context, r);
       }
     _assignedToField = true;
     return this;
@@ -236,7 +237,7 @@ public class Match extends AbstractMatch
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
    *
@@ -244,9 +245,10 @@ public class Match extends AbstractMatch
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
+  @Override
+  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
-    return addFieldForResult(res, outer, t);
+    return addFieldForResult(res, context, t);
   }
 
 

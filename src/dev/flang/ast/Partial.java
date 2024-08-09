@@ -147,7 +147,7 @@ public class Partial extends AbstractLambda
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
    *
@@ -155,14 +155,15 @@ public class Partial extends AbstractLambda
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
+  @Override
+  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
     Expr result = this;
-    t = t.functionTypeFromChoice();
-    var type = propagateTypeAndInferResult(res, outer, t, false);
+    t = t.functionTypeFromChoice(context);
+    var type = propagateTypeAndInferResult(res, context, t, false);
     if (_function != null)
       {
-        result = _function.propagateExpectedType(res, outer, type);
+        result = _function.propagateExpectedType(res, context, type);
       }
     return result;
   }
@@ -175,7 +176,7 @@ public class Partial extends AbstractLambda
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
    *
@@ -186,7 +187,8 @@ public class Partial extends AbstractLambda
    * Types.t_UNDEFINED if not result type available.  if !inferResultType, t. In
    * case of error, return Types.t_ERROR.
    */
-  public AbstractType propagateTypeAndInferResult(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)
+  @Override
+  public AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
   {
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_function == null && t.isFunctionType() && (t.arity() == 1 || t.arity() == 2))
@@ -210,7 +212,7 @@ public class Partial extends AbstractLambda
       }
     if (_function != null)
       {
-        result = _function.propagateTypeAndInferResult(res, outer, t, inferResultType);
+        result = _function.propagateTypeAndInferResult(res, context, t, inferResultType);
       }
     return result;
   }
@@ -254,6 +256,7 @@ public class Partial extends AbstractLambda
    *
    * @return this Expr's type or null if not known.
    */
+  @Override
   AbstractType typeForInferencing()
   {
     // unlike type(), we do not produce an error but just return null here since
@@ -272,10 +275,10 @@ public class Partial extends AbstractLambda
    *
    * @param outer the root feature that contains this expression.
    */
-  public Expr resolveSyntacticSugar2(Resolution res, AbstractFeature outer)
+  public Expr resolveSyntacticSugar2X(Resolution res)
   {
     return _function == null ? this
-                             : _function.resolveSyntacticSugar2(res, outer);
+                             : _function.resolveSyntacticSugar2(res);
   }
 
 

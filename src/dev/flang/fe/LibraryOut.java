@@ -556,6 +556,9 @@ class LibraryOut extends ANY
    */
   void type(AbstractType t)
   {
+    if (PRECONDITIONS) require
+      (t != null, t != Types.t_ERROR);
+
     var off = _data.offset(t);
     if (off >= 0)
       {

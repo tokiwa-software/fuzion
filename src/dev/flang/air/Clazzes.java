@@ -37,6 +37,7 @@ import dev.flang.ast.AbstractBlock; // NYI: remove dependency!
 import dev.flang.ast.AbstractCall; // NYI: remove dependency!
 import dev.flang.ast.AbstractCase; // NYI: remove dependency!
 import dev.flang.ast.Constant; // NYI: remove dependency!
+import dev.flang.ast.Context; // NYI: remove dependency!
 import dev.flang.ast.AbstractCurrent; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
@@ -134,6 +135,8 @@ public class Clazzes extends ANY
   public final OnDemandClazz bool        = new OnDemandClazz(() -> Types.resolved.t_bool             );
   public final OnDemandClazz c_TRUE      = new OnDemandClazz(() -> Types.resolved.f_TRUE .selfType() );
   public final OnDemandClazz c_FALSE     = new OnDemandClazz(() -> Types.resolved.f_FALSE.selfType() );
+  public final OnDemandClazz c_true      = new OnDemandClazz(() -> Types.resolved.f_true .selfType() );
+  public final OnDemandClazz c_false     = new OnDemandClazz(() -> Types.resolved.f_false.selfType() );
   public final OnDemandClazz i8          = new OnDemandClazz(() -> Types.resolved.t_i8               );
   public final OnDemandClazz i16         = new OnDemandClazz(() -> Types.resolved.t_i16              );
   public final OnDemandClazz i32         = new OnDemandClazz(() -> Types.resolved.t_i32              );
@@ -655,7 +658,7 @@ public class Clazzes extends ANY
               {
                 rc = vc.asRef();
                 if (CHECKS) check
-                  (Errors.any() || ec._type.isAssignableFrom(rc._type));
+                  (Errors.any() || ec._type.isAssignableFrom(rc._type, Context.NONE));
               }
             outerClazz.saveActualClazzes(b, outer, new Clazz[] {vc, rc});
             if (vc != rc)
@@ -697,7 +700,7 @@ public class Clazzes extends ANY
    */
   private boolean asRefDirectlyAssignable(Clazz ec, Clazz vc)
   {
-    return ec.isRef() && ec._type.isAssignableFrom(vc.asRef()._type);
+    return ec.isRef() && ec._type.isAssignableFrom(vc.asRef()._type, Context.NONE);
   }
 
 
@@ -707,8 +710,8 @@ public class Clazzes extends ANY
   private boolean asRefAssignableToChoice(Clazz ec, Clazz vc)
   {
     return ec._type.isChoice() &&
-      !ec._type.isAssignableFrom(vc._type) &&
-      ec._type.isAssignableFrom(vc._type.asRef());
+      !ec._type.isAssignableFrom(vc._type, Context.NONE) &&
+      ec._type.isAssignableFrom(vc._type.asRef(), Context.NONE);
   }
 
 
@@ -766,6 +769,14 @@ public class Clazzes extends ANY
           }
         else
           {
+            if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
+              {
+                var T = innerClazz.actualGenerics()[0];
+                cf = T._type.constraintAssignableFrom(Context.NONE, tclazz._type.generics().get(0))
+                  ? Types.resolved.f_Type_infix_colon_true
+                  : Types.resolved.f_Type_infix_colon_false;
+                innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), -1, c, c.isInheritanceCall());
+              }
             outerClazz.saveActualClazzes(c, outer, new Clazz[] {innerClazz, tclazz});
           }
 
@@ -853,7 +864,7 @@ public class Clazzes extends ANY
           {
             var fOrFc = isUsed(f)
               ? outerClazz.lookup(f)
-              : Clazzes.instance.clazz(outerClazz._type.actualType(f.resultType())); // NYI: better Clazzes.instance.c_void.get(), does not work in interpreter backend yet...
+              : Clazzes.instance.clazz(outerClazz._type.actualType(f.resultType(), Context.NONE)); // NYI: better Clazzes.instance.c_void.get(), does not work in interpreter backend yet...
             acl = new Clazz[] {fOrFc};
           }
         else

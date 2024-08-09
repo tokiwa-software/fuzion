@@ -159,10 +159,12 @@ public class If extends ExprWithPos
   /**
    * Helper routine for typeForInferencing to determine the
    * type of this if expression on demand, i.e., as late as possible.
+   *
+   * @param context the source code context where this Expr is used
    */
-  private AbstractType typeFromIfOrElse()
+  private AbstractType typeFromIfOrElse(Context context)
   {
-    var result = Expr.union(new List<>(branches()));
+    var result = Expr.union(new List<>(branches()), context);
     if (result==Types.t_ERROR)
       {
         new IncompatibleResultsOnBranches(pos(),
@@ -180,11 +182,12 @@ public class If extends ExprWithPos
    *
    * @return this Expr's type or null if not known.
    */
+  @Override
   AbstractType typeForInferencing()
   {
     if (_type == null)
       {
-        _type = typeFromIfOrElse();
+        _type = typeFromIfOrElse(Context.NONE);
       }
     return _type;
   }
@@ -193,11 +196,13 @@ public class If extends ExprWithPos
   /**
    * check the types in this if, in particular, check that the condition is of
    * type bool.
+   *
+   * @param context the source code context where this If is used
    */
-  public void checkTypes()
+  public void checkTypes(Context context)
   {
     var t = cond.type();
-    if (!Types.resolved.t_bool.isDirectlyAssignableFrom(t))
+    if (!Types.resolved.t_bool.isDirectlyAssignableFrom(t, context))
       {
         if (fromContract())
           {
@@ -224,12 +229,16 @@ public class If extends ExprWithPos
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     cond = cond.visit(v, outer);
+    v.actionBeforeIfThen(this);
     block = block.visit(v, outer);
+    v.actionBeforeIfElse(this);
     if (elseBlock != null)
       {
         elseBlock = elseBlock.visit(v, outer);
       }
-    return v.action(this, outer);
+    var res = v.action(this, outer);
+    v.actionAfterIf(this);
+    return res;
   }
 
 
@@ -260,19 +269,20 @@ public class If extends ExprWithPos
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param r the field this should be assigned to.
    *
    * @return the Expr this Expr is to be replaced with, typically an Assign
    * that performs the assignment to r.
    */
-  If assignToField(Resolution res, AbstractFeature outer, Feature r)
+  @Override
+  If assignToField(Resolution res, Context context, Feature r)
   {
-    block = block.assignToField(res, outer, r);
+    block = block.assignToField(res, context, r);
     if (elseBlock != null)
       {
-        elseBlock = elseBlock.assignToField(res, outer, r);
+        elseBlock = elseBlock.assignToField(res, context, r);
       }
     _assignedToField = true;
     return this;
@@ -288,14 +298,13 @@ public class If extends ExprWithPos
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
-   *
+   * @param context the source code context where this Expr is used
    */
-  public void propagateExpectedType(Resolution res, AbstractFeature outer)
+  public void propagateExpectedType(Resolution res, Context context)
   {
     if (cond != null)
       {
-        cond = cond.propagateExpectedType(res, outer, Types.resolved.t_bool);
+        cond = cond.propagateExpectedType(res, context, Types.resolved.t_bool);
       }
   }
 
@@ -309,7 +318,7 @@ public class If extends ExprWithPos
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
    *
@@ -317,9 +326,10 @@ public class If extends ExprWithPos
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
+  @Override
+  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
-    return addFieldForResult(res, outer, t);
+    return addFieldForResult(res, context, t);
   }
 
 
@@ -330,10 +340,8 @@ public class If extends ExprWithPos
    *
    * @param res this is called during type resolution, res gives the resolution
    * instance.
-   *
-   * @param outer the feature that contains this implementation.
    */
-  public Expr resolveSyntacticSugar2(Resolution res, AbstractFeature outer)
+  public Expr resolveSyntacticSugar2(Resolution res)
   {
     return Errors.any()
       ? this  // no need to possible produce more errors

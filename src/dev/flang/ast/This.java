@@ -133,19 +133,21 @@ public class This extends ExprWithPos
    *
    * @param pos the sourcecode position, used for error messages.
    *
+   * @param context the source code context where this This is to be used
+   *
    * @param cur the current feature that contains this this expression
    *
    * @param f the outer feature whose instance we want to access.
    *
    * @return the type resolved expression to access f.this.
    */
-  public static Expr thiz(Resolution res, SourcePosition pos, AbstractFeature cur, AbstractFeature f)
+  public static Expr thiz(Resolution res, SourcePosition pos, Context context, AbstractFeature f)
   {
     if (PRECONDITIONS) require
-      (cur != null || Errors.any(),
-       f != null || Errors.any());
+      (context != null,
+       f != null);
 
-    return new This(pos, cur, f).resolveTypes(res, cur);
+    return new This(pos, context.outerFeature(), f).resolveTypes(res, context);
   }
 
 
@@ -167,6 +169,7 @@ public class This extends ExprWithPos
    *
    * @return this Expr's type or null if not known.
    */
+  @Override
   AbstractType typeForInferencing()
   {
     return null;  // After type resolution, This is no longer part of the code.
@@ -196,16 +199,18 @@ public class This extends ExprWithPos
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
-   * @param outer the root feature that contains this expression.
+   * @param context the source code context where this Call is used
    *
    * @return a call to the outer references to access the value represented by
    * this.
    */
-  public Expr resolveTypes(Resolution res, AbstractFeature outer)
+  public Expr resolveTypes(Resolution res, Context context)
   {
     if (PRECONDITIONS) require
       (res != null || Errors.any(),
-       outer != null || Errors.any());
+       context != null);
+
+    var outer = context.outerFeature();
     if (_qual != null)
       {
         this._feature = getThisFeature(pos(), this, _qual, outer);
@@ -258,7 +263,7 @@ public class This extends ExprWithPos
                     {
                       return isAdr ? t : _type;
                     }
-                  }.resolveTypes(res, outer);
+                  }.resolveTypes(res, context);
 
                 getOuter = c;
               }

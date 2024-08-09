@@ -96,6 +96,7 @@ public class BoolConst extends Constant
    *
    * @return this Expr's type or null if not known.
    */
+  @Override
   AbstractType typeForInferencing()
   {
     return Types.resolved.t_bool;

@@ -221,14 +221,15 @@ public class Block extends AbstractBlock
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
-   * @param outer the class that contains this expression.
+   * @param context the source code context where this Expr is used
    */
-  void loadCalledFeature(Resolution res, AbstractFeature outer)
+  @Override
+  void loadCalledFeature(Resolution res, Context context)
   {
     Expr resExpr = resultExpression();
     if (resExpr != null)
       {
-        resExpr.loadCalledFeature(res, outer);
+        resExpr.loadCalledFeature(res, context);
       }
   }
 
@@ -275,16 +276,19 @@ public class Block extends AbstractBlock
    *
    * @param frmlT the formal type this is assigned to.
    *
+   * @param context the source code context where this Expr is used
+   *
    * @return this or an instance of Box wrapping this.
    */
-  Expr box(AbstractType frmlT)
+  @Override
+  Expr box(AbstractType frmlT, Context context)
   {
     var r = removeResultExpression();
     if (CHECKS) check
       (r != null || Types.resolved.t_unit.compareTo(frmlT) == 0);
     if (r != null)
       {
-        _expressions.add(r.box(frmlT));
+        _expressions.add(r.box(frmlT, context));
       }
     return this;
   }
@@ -315,18 +319,19 @@ public class Block extends AbstractBlock
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param r the field this should be assigned to.
    */
-  Block assignToField(Resolution res, AbstractFeature outer, Feature r)
+  @Override
+  Block assignToField(Resolution res, Context context, Feature r)
   {
     Expr resExpr = removeResultExpression();
     if (resExpr != null)
       {
-        _expressions.add(resExpr.assignToField(res, outer, r));
+        _expressions.add(resExpr.assignToField(res, context, r));
       }
-    else if (!r.resultType().isAssignableFrom(Types.resolved.t_unit))
+    else if (!r.resultType().isAssignableFrom(Types.resolved.t_unit, context))
       {
         AstErrors.blockMustEndWithExpression(pos(), r.resultType());
       }
@@ -343,7 +348,7 @@ public class Block extends AbstractBlock
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param type the expected type.
    *
@@ -351,7 +356,7 @@ public class Block extends AbstractBlock
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType type)
+  public Expr propagateExpectedType(Resolution res, Context context, AbstractType type)
   {
     if (type.compareTo(Types.resolved.t_unit) == 0 && hasImplicitResult())
       { // return unit if this is expected even if we would implicitly return
@@ -366,13 +371,13 @@ public class Block extends AbstractBlock
 
     if (resExpr != null)
       {
-        var x = resExpr.propagateExpectedType(res, outer, type);
+        var x = resExpr.propagateExpectedType(res, context, type);
         _expressions.remove(idx);
         _expressions.add(x);
       }
     else if (Types.resolved.t_unit.compareTo(type) != 0)
       {
-        _expressions.add(new Call(pos(), "unit").resolveTypes(res, outer));
+        _expressions.add(new Call(pos(), "unit").resolveTypes(res, context));
       }
     return this;
   }

@@ -150,7 +150,7 @@ public class FunctionReturnType extends ReturnType
        this == outer.returnType());
 
     res.resolveDeclarations(outer);
-    type = type.resolve(res, outer);
+    type = type.resolve(res, outer.context());
   }
 
 

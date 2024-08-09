@@ -202,6 +202,18 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public Object _frontEndData;
 
 
+  Context _contextCache;
+  Context context()
+  {
+    var result = _contextCache;
+    if (result == null)
+      {
+        result = Context.forFeature(this);
+        _contextCache = result;
+      }
+    return result;
+  }
+
 
   /*----------------------------  abstract methods  ----------------------------*/
 
@@ -309,6 +321,11 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * The contract of this feature.
    */
   public abstract Contract contract();
+
+  public AbstractType additionalConstraint(AbstractFeature typeParameter)
+  {
+    return null;
+  }
 
 
   /**

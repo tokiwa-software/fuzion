@@ -96,6 +96,7 @@ public class DotType extends ExprWithPos
    *
    * @return this Expr's type or null if not known.
    */
+  @Override
   AbstractType typeForInferencing()
   {
     // could be _lhs.typeType(); but
@@ -111,9 +112,9 @@ public class DotType extends ExprWithPos
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this expression.
+   * @param context the source code context where this Call is used
    */
-  public Call resolveTypes(Resolution res, AbstractFeature outer)
+  public Call resolveTypes(Resolution res, Context context)
   {
     return new Call(pos(),
                     new Universe(),
@@ -122,7 +123,7 @@ public class DotType extends ExprWithPos
                     new List<>(_lhs),
                     new List<>(),
                     null,
-                    null).resolveTypes(res, outer);
+                    null).resolveTypes(res, context);
   }
 
 
