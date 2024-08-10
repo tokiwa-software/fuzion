@@ -1325,7 +1325,7 @@ public class Feature extends AbstractFeature
              * this or any of this' outer classes.
              */
             resolveArgumentTypes(res);
-            visit(res.resolveTypesOnly);
+            visit(res.resolveTypesOnly(this));
           }
 
         _state = State.RESOLVED_DECLARATIONS;
@@ -1365,8 +1365,10 @@ public class Feature extends AbstractFeature
   static class ContextVisitor extends FeatureVisitor
   {
     Context _context = Context.NONE;
-    ContextVisitor()
+
+    ContextVisitor(Context initialConext)
     {
+      this._context = initialConext;
     }
 
     @Override public void         actionBefore(AbstractCase     c, AbstractMatch m)
@@ -1424,11 +1426,21 @@ public class Feature extends AbstractFeature
     }
 
   }
+
+  class MyContextVisitor extends ContextVisitor
+  {
+    MyContextVisitor()
+    {
+      super(context());
+    }
+  }
+
   static class ResolveTypes extends ContextVisitor
   {
     Resolution res;
-    ResolveTypes(Resolution r)
+    ResolveTypes(Resolution r, Context context)
     {
+      super(context);
       res = r;
     }
     @Override public void         action      (AbstractAssign  a, AbstractFeature outer) {        a.resolveTypes      (res,   _context); }
@@ -1497,13 +1509,7 @@ public class Feature extends AbstractFeature
           }
 
         resolveArgumentTypes(res);
-        var rtf = res.resolveTypesFully;
-        var old_context = rtf._context;
-        rtf._context = context();
-        check(rtf._context != null);
-        visit(rtf);
-        rtf._context = old_context;
-        check(rtf._context != null);
+        visit(res.resolveTypesFully(this));
 
         if (hasThisType())
           {
@@ -1874,8 +1880,7 @@ A ((Choice)) declaration must not contain a result type.
          * myfun will be used as the type of "fun (a) => a*a", which implies
          * that i32 will be the type for "a".
          */
-        visit(new ContextVisitor() {
-            { this._context = Feature.this.context(); }
+        visit(new MyContextVisitor() {
             public void  action(AbstractAssign a, AbstractFeature outer) { a.propagateExpectedType(res, _context); }
             public Call  action(Call           c, AbstractFeature outer) { c.propagateExpectedType(res, _context); return c; }
             public void  action(Cond           c, AbstractFeature outer) { c.propagateExpectedType(res, _context); }
@@ -1887,8 +1892,7 @@ A ((Choice)) declaration must not contain a result type.
          * extra pass to automatically wrap values into 'Lazy'
          * or unwrap values inheriting `unwrap`
          */
-        visit(new ContextVisitor() {
-            { this._context = Feature.this.context(); }
+        visit(new MyContextVisitor() {
             // we must do this from the outside of calls towards the inside to
             // get the corrected nesting of Lazy features created during this
             // phase
@@ -1927,8 +1931,7 @@ A ((Choice)) declaration must not contain a result type.
       {
         _state = State.BOXING;
 
-        visit(new ContextVisitor() {
-            { this._context = Feature.this.context(); }
+        visit(new MyContextVisitor() {
             public void  action(AbstractAssign a, AbstractFeature outer) { a.boxVal     (_context);           }
             public Call  action(Call           c, AbstractFeature outer) { c.boxArgs    (_context); return c; }
             public Expr  action(InlineArray    i, AbstractFeature outer) { i.boxElements(_context); return i; }
@@ -1980,9 +1983,7 @@ A ((Choice)) declaration must not contain a result type.
       {
         _selfType   = selfType() .checkChoice(_pos,             context());
         _resultType = _resultType.checkChoice(_posOfReturnType, context());
-        visit(new ContextVisitor() {
-            { this._context = Feature.this.context(); }
-
+        visit(new MyContextVisitor() {
             /* if an error is reported in a call it might no longer make sense to check the actuals: */
             public boolean visitActualsLate() { return true; }
 
@@ -2051,8 +2052,7 @@ A ((Choice)) declaration must not contain a result type.
       {
         _state = State.RESOLVING_SUGAR2;
 
-        visit(new ContextVisitor() {
-            { this._context = Feature.this.context(); }
+        visit(new MyContextVisitor() {
             public Expr  action(Feature     f, AbstractFeature outer) { return new Nop(_pos);                        }
             public Expr  action(Function    f, AbstractFeature outer) { return f.resolveSyntacticSugar2(res); }
             public Expr  action(InlineArray i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, _context); }

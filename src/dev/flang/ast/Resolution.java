@@ -137,19 +137,19 @@ public class Resolution extends ANY
    *
    * This is used during state RESOLVING_DECLARATIONS to find called features.
    */
-  FeatureVisitor resolveTypesOnly = new FeatureVisitor() // NYI: should be ContextVisitor?
-    {
-      public AbstractType action(AbstractType t, AbstractFeature outer) { return t.resolve(Resolution.this, outer.context()); }
-    };
+  FeatureVisitor resolveTypesOnly(AbstractFeature f)
+  {
+    var c = f.context();
+    return new FeatureVisitor()
+      {
+        public AbstractType action(AbstractType t, AbstractFeature outer) { return t.resolve(Resolution.this, c); }
+      };
+  }
 
-
-  /**
-   * FeatureVisitor to call resolveTypes() on Expressions and resolve() on all
-   * types.
-   *
-   * This is used during state RESOLVING_TYPES.
-   */
-  Feature.ResolveTypes resolveTypesFully = new Feature.ResolveTypes(this);
+  Feature.ResolveTypes resolveTypesFully(AbstractFeature f)
+  {
+    return new Feature.ResolveTypes(this, f.context());
+  }
 
 
   /**
@@ -573,11 +573,9 @@ public class Resolution extends ANY
   {
     if (PRECONDITIONS) require
       (context != null);
-    var old_context = resolveTypesFully._context;
-    resolveTypesFully._context = context;
-    var res = e.visit(resolveTypesFully, context.outerFeature());
-    resolveTypesFully._context = old_context;
-    return res;
+
+    return e.visit(new Feature.ResolveTypes(this, context),
+                   context.outerFeature());
   }
 
 

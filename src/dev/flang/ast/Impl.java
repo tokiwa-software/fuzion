@@ -611,13 +611,10 @@ public class Impl extends ANY
           // second try, the feature containing the field
           // may not be resolved yet.
           // see #348 for an example.
-          if (t == null && (f.outer().isUniverse() || !f.outer().state().atLeast(State.RESOLVING_TYPES)))
+          var fo = f.outer();
+          if (t == null && (fo.isUniverse() || !fo.state().atLeast(State.RESOLVING_TYPES)))
             {
-              var rtf = res.resolveTypesFully;
-              var old_context = rtf._context;
-              rtf._context = f.outer().context();
-              f.visit(rtf, f.outer());
-              rtf._context = old_context;
+              f.visit(res.resolveTypesFully(fo), fo);
               t  = _expr.typeForInferencing();
             }
           yield t;
