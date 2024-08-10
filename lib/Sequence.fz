@@ -614,7 +614,8 @@ public Sequence(public T type) ref is
   # does this sequence start with l?
   #
   public is_prefix_of(l Sequence T) bool
-    pre T : property.equatable
+    pre
+      T : property.equatable
   =>
     match as_list
       nil     => true
@@ -622,14 +623,7 @@ public Sequence(public T type) ref is
         match l.as_list
           nil     => false
           c2 Cons => c1.head = c2.head && c1.tail.is_prefix_of c2.tail # tail recursion
-                     //equals T (c1.head.as property.equatable) (c2.head.as property.equatable) && c1.tail.is_prefix_of c2.tail # tail recursion
-                     // c1.head.as property.equatable = c2.head.as property.equatable && c1.tail.is_prefix_of c2.tail # tail recursion
-/*
-          c2 Cons => h1 := c1.head.as property.equatable
-                     h2 := c2.head.as property.equatable
-                     h1 = h2 && c1.tail.is_prefix_of c2.tail # tail recursion
 
-*/
 
   # determine the index of element x within this list.  0 if x is at the
   # head of the list, 1 if it comes directly after head, etc. nil if x is
@@ -640,6 +634,7 @@ public Sequence(public T type) ref is
       T : property.equatable
   =>
     find_first [x]
+
 
   # get the index of l within this list or nil if it does not exist
   #
@@ -654,32 +649,42 @@ public Sequence(public T type) ref is
         nil    => nil
         c Cons => (c.tail.find_first l) >>= +1
 
-/*
+
   # replace all occurrences of old by new
   #
-  public replace (old, new Sequence T)
+  # NYI: Rename this as `replace` after changing `Const_String` to no longer inherit from `array`
+  #
+  public replace_all (old, new Sequence T)
     pre
       T : property.equatable
   =>
     nil_list list T := nil
-    replace old new nil_list from nil
+    replace old new nil_list Sequence.this nil
 
 
   # replace the first n occurrences of old by new
   #
-  public replace (old, new Sequence A, n u64) =>
-    nil_list list A := nil
-    replace old new nil_list from n
+  # NYI: Rename this as `replace` after changing `Const_String` to no longer inherit from `array`
+  #
+  public replace_n (old, new Sequence T, n u64)
+    pre
+      T : property.equatable
+  =>
+    nil_list list T := nil
+    replace old new nil_list Sequence.this n
 
 
   # tail recursive helper for the replace features
   #
   replace (old, new,
-                   already_replaced,          # the head part with old already replaced by new
-                   to_be_replaced Sequence A, # the tail that still needs to be searched for old
-                   limit option u64) list A
+           already_replaced,          # the head part with old already replaced by new
+           to_be_replaced Sequence T, # the tail that still needs to be searched for old
+           limit option u64
+          )
+    pre
+      T : property.equatable
   =>
-    match (searchable_sequence to_be_replaced).find old
+    match to_be_replaced.find_first old
       nil   => already_replaced ++ to_be_replaced
       n i32 =>
         # NYI: #637: perhaps make it possible to do
@@ -695,19 +700,25 @@ public Sequence(public T type) ref is
 
   # get the number of matches of l
   #
-  public count_matches_overlapping (l Sequence A) i32 =>
+  public count_matches_overlapping (l Sequence T) i32
+    pre
+      T : property.equatable
+  =>
     tails
-      .filter (t -> (searchable_sequence t).starts_with l)
+      .filter (t -> l.is_prefix_of t)
       .count
 
 
   # get the number of non-overlapping matches of l within this
   #
-  public count_matches (l Sequence A) i32 =>
-    match from.as_list
+  public count_matches (l Sequence T) i32
+    pre
+      T : property.equatable
+  =>
+    match as_list
       nil     => 0
-      c1 Cons => (if (starts_with l) 1 + (searchable_sequence (drop l.count)).count_matches l
-                  else                   (searchable_sequence c1.tail       ).count_matches l)
+      c1 Cons => (if (l.is_prefix_of Sequence.this) 1 + (drop l.count).count_matches l
+                  else                                  c1.tail       .count_matches l)
 
 
   # split sequence at s, if there is no limit, otherwise if limit is an integer n,
@@ -718,41 +729,31 @@ public Sequence(public T type) ref is
   #
   # helper feature which unifies the code of the different split features in one
   #
-  module split0(s Sequence A, limit option u32, split_after bool) list (Sequence A)
+  module split_(s Sequence T, limit option u32, split_after bool) list (Sequence T)
     pre
+      T : property.equatable
       debug: !s.is_empty
       debug: match limit
               nil => true
               n u32 => n > 0
     =>
-      match (find s)
-        nil     => from : nil
+      match (find_first s)
+        nil     => (id (Sequence T) Sequence.this) : nil  # NYI: With better type propagation, this could be `Sequence.this : nil` or `[Sequence.this].as_list`
         idx i32 =>
-          ref : Cons (Sequence A) (list (Sequence A))
-            redef head Sequence A := from.take (if split_after then idx + s.count else idx)
+          ref : Cons (Sequence T) (list (Sequence T))
+            redef head Sequence T := take (if split_after then idx + s.count else idx)
             redef tail =>
-              rest := from.drop (idx + s.count)
-              srest := searchable_sequence rest
+              rest := drop (idx + s.count)
 
               match limit
-                nil => srest.split0 s nil split_after
+                nil => rest.split_ s nil split_after
                 n u32 =>
                   if n > 1
-                    srest.split0 s (n - 1) split_after
+                    rest.split_ s (n - 1) split_after
                   else
-                    res Sequence A := rest;
+                    res Sequence T := rest;
                     res : nil
 
-
-  # equality check implementation for inherited property.equatable
-  #
-  public fixed redef type.equality(a, b container.searchable_sequence A) bool =>
-    aa := a.as_array
-    ba := b.as_array
-    aa.count = ba.count
-      && ((0..(a.count - 1)) ∀ (i -> aa[i] = ba[i]))
-
-*/
 
   # monoid of Sequences with infix concatentation operation.
   #
