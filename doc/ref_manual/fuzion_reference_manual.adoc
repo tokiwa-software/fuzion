@@ -405,6 +405,12 @@ xref:fuzion_typeparameter[type parameter] of the feature a type is based on.
 ((Argument)):: An _argument_ is a xref:fuzion_typeparameter[type parameter] or a xref:fuzion_field[field]
 that is declared in the `formArgs` section of a xref:fuzion_routine[routine].
 
+[#braces]
+((Braces)):: In this manual, _braces_ are curly brackets `{` and `}`, in contrast to xref:parentheses[parentheses] and xref:brackets[brackets].
+
+[#brackets]
+((Brackets)):: In this manual, _brackets_ are square brackets `[` and `]`, in contrast to xref:parentheses[parentheses] and xref:braces[braces].
+
 [#child_feature]
 ((Child)):: A _child_ of a xref:fuzion_feature[feature] `f` is any feature `g` that xref:inheritance[inherits] from `f`.
 A _child_ is hence used synonymously to an _heir_.
@@ -430,6 +436,9 @@ execution of the constructor's code.
 ((Call Destination)):: The _destination_ of a call `t.f a b` is the feature `f'` that was selected at runtime
 by xref:dynamic_dispatch[dynamic dispatch] depending on the call target `t` and the xref:feature_name[feature name]
 given in the call.
+
+[#fuzion_cotype]
+((Cotype)):: A _cotype_ is an implicitly created xref:fuzion_feature[feature] that exists for each xref:fuzion_routine[routine] and each xref:fuzion_choice[choice].  There is exactly one _cotype_ for every xref:fuzion_orignalfeature[original feature].  _Cotypes_ form an inheritance hierachy that mirrors the xref:fuzion_orignalfeature[original features]' hierarchy.  Values of _cotypes_ are xref:runtime_type[runtime types] which are xref:unit_type[unit type] values returned by calls to xref:fuzion_typeparameter[type parameters] or type expressions followed by `.type`.  Inner features of _cotypes_ are xref:fuzion_typefeature[type features].
 
 [#direct_child]
 ((Direct Child)):: A _direct child_ of a xref:fuzion_feature[feature] `p` is any feature `c` that xref:direct_inheritance[inherits directly] from `p`.
@@ -502,9 +511,15 @@ either by a xref:fuzion_call[call] or by xref:fuzion_tagging[tagging].
 [#fuzion_intrinsic]
 ((Intrinsic Feature)):: An _intrinsic feature_ is a xref:fuzion_feature[feature] declared using `=> intrinsic`.
 
+[#monomorphization]
+((Monomorphization)):: Fuzion uses  _monomorphization_ at compile time to remove xref:fuzion_typeparameter[type parameters] by creating specialized versions of xref:fuzion_feature[features] with xref:fuzion_typeparameter[type parameters] for all possible xref:runtime_type[runtime types] for all xref:fuzion_typeparameter[type parameters].
+
 [#fuzion_native]
 ((Native Feature)):: A _native feature_ is a xref:fuzion_feature[feature] declared using `=> native`.
 CAUTION: *NYI*: Need more detail on native feature
+
+[#fuzion_orignalfeature]
+((Original Feature)):: An _original feature_ is a xref:fuzion_routine[routine] or a xref:fuzion_choice[choice] seen from their corresponing xref:fuzion_cotype[cotype].
 
 [#outer_instance]
 ((Outer Instance)):: With the exception of the xref:universe_instance[universe instance], every instance is linked to a corresponding _outer instance_.
@@ -523,6 +538,9 @@ there is a corresponding _outer type_ based on a xref:child_feature[child] of `o
 [#parent_feature]
 ((Parent)):: A _parent_ of a xref:fuzion_feature[feature] `f` is any feature `g` such that `f` xref:inheritance[inherits] from `g`.
 A _parent_ is hence used synonymously to an _ancestor_.
+
+[#parentheses]
+((Parentheses)):: In this manual, _parentheses_ are round brackets `(` and `)`, in contrast to xref:brackets[brackets] and xref:braces[braces].
 
 [#fuzion_routine]
 ((Routine)):: A _routine_ is a xref:fuzion_feature[Feature] declared using `is` or `=>` that is neither
@@ -543,7 +561,7 @@ xref:fuzion_native[native feature].
 ((Result Type)):: A _result type_ is xref:static_type[static type] defined for a feature that may be xref:fuzion_call[called].
 
 [#runtime_type]
-((Runtime Type)):: A _runtime type_ is a xref:fuzion_type[type] that does not contain any xref:fuzion_typeparameter[type parameters].
+((Runtime Type)):: A _runtime type_ is a xref:fuzion_type[type] that does not contain any xref:fuzion_typeparameter[type parameters], i.e, all xref:fuzion_typeparameter[type parameters] have been replaced by concrete types.  _Runtime types_ are the values of xref:fuzion_cotype[cotypes] and are stored in xref:fuzion_typeparameter[type parameters].
 
 [#static_type]
 ((Static Type)):: The _static type_ is the xref:fuzion_type[type] of an expression or the xref:result_type[result type] of a routine or a
@@ -564,8 +582,11 @@ xref:fuzion_choice[choice].  If that feature has xref:fuzion_typeparameter[type 
 corresponding xref:fuzion_actual_typeparameters[actual type parameters].  If the base has an xref:outer_feature[outer feature] that is
 not the xref:universe[universe], the type has an xref:fuzion_outer_type[outer type].
 
+[#fuzion_typefeature]
+((Type Feature)):: A _type feature_ is a xref:fuzion_feature[feature] whose outer feature is a xref:fuzion_cotype[cotype]. A _type feature_ `name` can be declared within the xref:fuzion_cotype[cotype]'s xref:fuzion_orignalfeature[original feature] using `type.name` as the feature name. A _type feature_  cannot be called on an instance of the xref:fuzion_orignalfeature[original feature], but on an instance of the corresponding xref:fuzion_cotype[cotype].
+
 [#fuzion_typeparameter]
-((Type Parameter)):: A _type parameter_ is an xref:fuzion_argument[argument] that can hold a xref:runtime_type[runtime type value].
+((Type Parameter)):: A _type parameter_ is an xref:fuzion_argument[argument] that can hold a xref:runtime_type[runtime type value].  At compilation, code is specialized for each actual xref:runtime_type[runtime type value] a _type parameter_ may hold (xref:monomorphization[monomorphization]).
 
 [#unit_type]
 ((Unit type)):: A _unit type_ is a type that contains no direct xref:fuzion_field[inner fields] defined by a xref:fuzion_constructor[constructor]

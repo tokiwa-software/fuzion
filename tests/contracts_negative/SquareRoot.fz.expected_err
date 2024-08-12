@@ -18,12 +18,12 @@ public precondition_fault(msg String) => pre_fault.cause msg
 -----------------------------------------^^^^^^^^^^^^^^^^^^^
 SquareRoot.pre sqrt: --CURDIR--/SquareRoot.fz:30:7:
       a ≥ 0
-------^^^^^^^
+------^^^^^
 SquareRoot.precall sqrt: --CURDIR--/SquareRoot.fz:29:5:
     pre
 ----^^^
       a ≥ 0
-^^^^^^^^^^^^^
+------^^^^^
 SquareRoot: --CURDIR--/SquareRoot.fz:44:21:
   say "sqrt(-16) = {sqrt(-16)}" // 1. should flag an error, precondition failed
 --------------------^^^^

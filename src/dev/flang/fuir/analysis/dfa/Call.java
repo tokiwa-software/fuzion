@@ -31,13 +31,16 @@ import dev.flang.fuir.FUIR;
 
 
 import dev.flang.ir.IR;
+import dev.flang.ir.IR.FeatureKind;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import static dev.flang.util.FuzionConstants.EFFECT_ABORTABLE_NAME;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
+import dev.flang.util.Terminal;
 
+import java.util.TreeSet;
 
 /**
  * Call represents a call
@@ -55,6 +58,13 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /*----------------------------  variables  ----------------------------*/
+
+
+  /**
+   * Unique id to identify this Call. This is used to avoid expensive comparison
+   * for calls.
+   */
+  int _uniqueCallId = -1;
 
 
   /**
@@ -123,6 +133,14 @@ public class Call extends ANY implements Comparable<Call>, Context
   boolean _escapes = false;
 
 
+  /**
+   * Is this call scheduled to be analysed during the current DFA iteration?
+   * This is used to re-schedule hot calls (those that are likely to change the
+   * DFA state) if are not already scheduled to be analyzed.
+   */
+  boolean _scheduledForAnalysis = false;
+
+
   /*---------------------------  constructors  ---------------------------*/
 
 
@@ -152,9 +170,8 @@ public class Call extends ANY implements Comparable<Call>, Context
     _args = args;
     _env = env;
     _context = context;
-    _instance = dfa.newInstance(cc, site, this);
 
-    if (dfa._fuir.clazzResultField(cc)==-1) /* <==> _fuir.isConstructor(cl) */
+    if (dfa._fuir.isConstructor(cc))
       {
         /* a constructor call returns current as result, so it always escapes together with all outer references! */
         dfa.escapes(cc);
@@ -174,25 +191,62 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
+   * Return a unique id for the call or main entry point context.
+   */
+  @Override
+  public int uniqueCallId()
+  {
+    return _uniqueCallId;
+  }
+
+
+  /**
    * Compare this to another Call.
    */
   public int compareTo(Call other)
   {
-    var r =
-      _cc   <   other._cc  ? -1 :
-      _cc   >   other._cc  ? +1 :
-      _site <   other._site? -1 :
-      _site >   other._site? +1 : Value.compare(_target, other._target);
-    for (var i = 0; r == 0 && i < _args.size(); i++)
+    return
+      _cc         != other._cc                    ? Integer.compare(_cc        , other._cc        ) :
+      _target._id != other._target._id            ? Integer.compare(_target._id, other._target._id) :
+      DFA.SITE_SENSITIVE && _site  != other._site ? Integer.compare(_site      , other._site      ) :
+      Env.compare(env(), other.env());
+  }
+
+
+  /**
+   * For debugging: Why did `compareTo(other)` return a value != 0?
+   */
+  String compareToWhy(Call other)
+  {
+    return
+      _cc         != other._cc            ? "cc different" :
+      _target._id != other._target._id    ? "target different" :
+      _site       != other._site          ? "site different" :
+      Env.compare(env(), other.env())== 0 ? "env different" : "not different";
+  }
+
+
+  /**
+   * Merge argument values args into this call's argument values.
+   *
+   * In case this resulted in any chanbe, mart this as hot to make sure it will
+   * be (re-) analyzed in the current iteration.
+   *
+   * @param args the values to be merged into this Call's arguments
+   */
+  void mergeWith(List<Val> args)
+  {
+    for (var i = 0; i < _args.size(); i++)
       {
-        r = Value.compare(      _args.get(i).value(),
-                          other._args.get(i).value());
+        var a0 = _args.get(i);
+        var a1 =  args.get(i);
+        var an = a0.joinVal(_dfa, a1);
+        if (an.value() != a0.value())
+          {
+            _args.set(i, an);
+            _dfa.hot(this);
+          }
       }
-    if (r == 0)
-      {
-        r = Env.compare(_env, other._env);
-      }
-    return r;
   }
 
 
@@ -243,7 +297,7 @@ public class Call extends ANY implements Comparable<Call>, Context
                   {
                   case c_i8, c_i16, c_i32, c_i64,
                        c_u8, c_u16, c_u32, c_u64,
-                       c_f32, c_f64              -> new NumericValue(_dfa, rc);
+                       c_f32, c_f64              -> NumericValue.create(_dfa, rc);
                   case c_bool                    -> _dfa._bool;
                   case c_TRUE, c_FALSE           -> Value.UNIT;
                   case c_Const_String, c_String  -> _dfa.newConstString(null, this);
@@ -261,7 +315,7 @@ public class Call extends ANY implements Comparable<Call>, Context
           {
             case c_i8, c_i16, c_i32, c_i64,
                  c_u8, c_u16, c_u32, c_u64,
-                 c_f32, c_f64              -> new NumericValue(_dfa, rc);
+                 c_f32, c_f64              -> NumericValue.create(_dfa, rc);
             case c_Const_String, c_String  -> _dfa.newConstString(null, this);
             default                        -> { Errors.warning("DFA: cannot handle native feature " + _dfa._fuir.clazzOriginalName(_cc));
                                                 yield null; }
@@ -270,7 +324,7 @@ public class Call extends ANY implements Comparable<Call>, Context
     else if (_returns)
       {
         var rf = _dfa._fuir.clazzResultField(_cc);
-        if (rf == -1)
+        if (_dfa._fuir.isConstructor(_cc))
           {
             result = _instance;
           }
@@ -315,7 +369,7 @@ public class Call extends ANY implements Comparable<Call>, Context
     sb.append(" => ")
       .append(r == null ? "*** VOID ***" : r)
       .append(" ENV: ")
-      .append(Errors.effe(_env != null ? _env.toString() : "NO ENV"));
+      .append(Errors.effe(Env.envAsString(env())));
     return sb.toString();
   }
 
@@ -332,7 +386,7 @@ public class Call extends ANY implements Comparable<Call>, Context
        ? (on.equals(EFFECT_ABORTABLE_NAME)
           ? "install effect " + Errors.effe(_dfa._fuir.clazzAsStringHuman(_dfa._fuir.effectType(_cc))) + ", old environment was "
           : "effect environment ") +
-         Errors.effe(Env.envAsString(_env)) +
+         Errors.effe(Env.envAsString(env())) +
          " for call to "
        : "call ")+
       Errors.sqn(_dfa._fuir.clazzAsStringHuman(_cc)) +
@@ -383,6 +437,16 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
+   * Effect-environment in this call, null if none.
+   */
+  @Override
+  public Env env()
+  {
+    return _env;
+  }
+
+
+  /**
    * Get effect of given type in this call's environment or the default if none
    * found or null if no effect in environment and also no default available.
    *
@@ -416,10 +480,10 @@ public class Call extends ANY implements Comparable<Call>, Context
     var result = getEffectCheck(ecl);
     if (result == null && _dfa._reportResults && !_dfa._fuir.clazzOriginalName(_cc).equals("effect.type.unsafe_get"))
       {
-        DfaErrors.usedEffectNeverInstantiated(_dfa._fuir.sitePos(s),
-                                              _dfa._fuir.clazzAsString(ecl),
-                                              this);
-        _dfa._missingEffects.add(ecl);
+        DfaErrors.usedEffectNotInstalled(_dfa._fuir.sitePos(s),
+                                         _dfa._fuir.clazzAsString(ecl),
+                                         this);
+        _dfa._missingEffects.put(ecl, ecl);
       }
     return result;
   }

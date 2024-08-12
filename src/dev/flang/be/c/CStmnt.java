@@ -596,7 +596,7 @@ abstract class CStmnt extends ANY
       {
         void code(CString sb)
         {
-          sb.append("\n"+l+":\n{\n");
+          sb.append(l+":\n{\n");
           orig.codeSemi(sb.indent());
           sb.append("}\n");
         }

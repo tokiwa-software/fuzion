@@ -43,7 +43,7 @@ import dev.flang.air.FeatureAndActuals;
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency
 import dev.flang.ast.AbstractBlock; // NYI: remove dependency
 import dev.flang.ast.AbstractCall; // NYI: remove dependency
-import dev.flang.ast.AbstractConstant; // NYI: remove dependency
+import dev.flang.ast.Constant; // NYI: remove dependency
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
@@ -88,23 +88,23 @@ public class FUIR extends IR
    */
   public enum SpecialClazzes
   {
-    c_i8          { Clazz getIfCreated() { return Clazzes.i8         .getIfCreated(); } },
-    c_i16         { Clazz getIfCreated() { return Clazzes.i16        .getIfCreated(); } },
-    c_i32         { Clazz getIfCreated() { return Clazzes.i32        .getIfCreated(); } },
-    c_i64         { Clazz getIfCreated() { return Clazzes.i64        .getIfCreated(); } },
-    c_u8          { Clazz getIfCreated() { return Clazzes.u8         .getIfCreated(); } },
-    c_u16         { Clazz getIfCreated() { return Clazzes.u16        .getIfCreated(); } },
-    c_u32         { Clazz getIfCreated() { return Clazzes.u32        .getIfCreated(); } },
-    c_u64         { Clazz getIfCreated() { return Clazzes.u64        .getIfCreated(); } },
-    c_f32         { Clazz getIfCreated() { return Clazzes.f32        .getIfCreated(); } },
-    c_f64         { Clazz getIfCreated() { return Clazzes.f64        .getIfCreated(); } },
-    c_bool        { Clazz getIfCreated() { return Clazzes.bool       .getIfCreated(); } },
-    c_TRUE        { Clazz getIfCreated() { return Clazzes.c_TRUE     .getIfCreated(); } },
-    c_FALSE       { Clazz getIfCreated() { return Clazzes.c_FALSE    .getIfCreated(); } },
-    c_Const_String{ Clazz getIfCreated() { return Clazzes.Const_String.getIfCreated(); } },
-    c_String      { Clazz getIfCreated() { return Clazzes.String     .getIfCreated(); } },
-    c_sys_ptr     { Clazz getIfCreated() { return Clazzes.fuzionSysPtr;               } },
-    c_unit        { Clazz getIfCreated() { return Clazzes.c_unit     .getIfCreated(); } },
+    c_i8          { Clazz getIfCreated() { return Clazzes.instance.i8         .getIfCreated(); } },
+    c_i16         { Clazz getIfCreated() { return Clazzes.instance.i16        .getIfCreated(); } },
+    c_i32         { Clazz getIfCreated() { return Clazzes.instance.i32        .getIfCreated(); } },
+    c_i64         { Clazz getIfCreated() { return Clazzes.instance.i64        .getIfCreated(); } },
+    c_u8          { Clazz getIfCreated() { return Clazzes.instance.u8         .getIfCreated(); } },
+    c_u16         { Clazz getIfCreated() { return Clazzes.instance.u16        .getIfCreated(); } },
+    c_u32         { Clazz getIfCreated() { return Clazzes.instance.u32        .getIfCreated(); } },
+    c_u64         { Clazz getIfCreated() { return Clazzes.instance.u64        .getIfCreated(); } },
+    c_f32         { Clazz getIfCreated() { return Clazzes.instance.f32        .getIfCreated(); } },
+    c_f64         { Clazz getIfCreated() { return Clazzes.instance.f64        .getIfCreated(); } },
+    c_bool        { Clazz getIfCreated() { return Clazzes.instance.bool       .getIfCreated(); } },
+    c_TRUE        { Clazz getIfCreated() { return Clazzes.instance.c_TRUE     .getIfCreated(); } },
+    c_FALSE       { Clazz getIfCreated() { return Clazzes.instance.c_FALSE    .getIfCreated(); } },
+    c_Const_String{ Clazz getIfCreated() { return Clazzes.instance.Const_String.getIfCreated(); } },
+    c_String      { Clazz getIfCreated() { return Clazzes.instance.String     .getIfCreated(); } },
+    c_sys_ptr     { Clazz getIfCreated() { return Clazzes.instance.fuzionSysPtr;               } },
+    c_unit        { Clazz getIfCreated() { return Clazzes.instance.c_unit     .getIfCreated(); } },
 
     // dummy entry to report failure of getSpecialId()
     c_NOT_FOUND   { Clazz getIfCreated() { return null;                               } };
@@ -183,7 +183,7 @@ public class FUIR extends IR
     _clazzIds = new MapComparable2Int<>(CLAZZ_BASE);
     _clazzCode = new TreeMap<>();
     _siteClazzes = new IntArray();
-    Clazzes.findAllClasses(main());
+    Clazzes.instance.findAllClasses(main());
     addClasses();
   }
 
@@ -252,7 +252,7 @@ public class FUIR extends IR
   {
     if (_clazzIds.size() == 0)
       {
-        for (var cl : Clazzes.all())
+        for (var cl : Clazzes.instance.all())
           {
             if (CHECKS) check
               (Errors.any() || cl._type != Types.t_ERROR);
@@ -374,7 +374,7 @@ public class FUIR extends IR
     var cg = cc.choiceGenerics().get(i);
     var res = cg.isRef()          ||
               cg.isInstantiated()    ? cg
-                                     : Clazzes.c_void.get();
+                                     : Clazzes.instance.c_void.get();
     return id(res);
   }
 
@@ -739,7 +739,7 @@ public class FUIR extends IR
    */
   public int clazzAny()
   {
-    return id(Clazzes.Any.get());
+    return id(Clazzes.instance.Any.get());
   }
 
 
@@ -750,7 +750,7 @@ public class FUIR extends IR
    */
   public int clazzUniverse()
   {
-    return id(Clazzes.universe.get());
+    return id(Clazzes.instance.universe.get());
   }
 
 
@@ -912,7 +912,7 @@ public class FUIR extends IR
       {
         var pf = p.calledFeature();
         var of = pf.outerRef();
-        var or = (of == null) ? null : (Clazz) cc._inner.get(new FeatureAndActuals(of, new List<>(), false));  // NYI: ugly cast
+        var or = (of == null) ? null : (Clazz) cc._inner.get(new FeatureAndActuals(of, new List<>()));  // NYI: ugly cast
         var needsOuterRef = (or != null && !or.resultClazz().isUnitType());
         toStack(code, p.target(), !needsOuterRef /* dump result if not needed */);
         if (needsOuterRef)
@@ -1019,7 +1019,7 @@ public class FUIR extends IR
           case Choice -> false;
           case Intrinsic, Routine, Field, Native ->
             (cc.isInstantiated() || cc.feature().isOuterRef())
-            && cc != Clazzes.Const_String.getIfCreated()
+            && cc != Clazzes.instance.Const_String.getIfCreated()
             && !cc.isAbsurd()
             && !cc.isBoxed();
           };
@@ -1114,7 +1114,7 @@ public class FUIR extends IR
    */
   public int clazz_Const_String()
   {
-    var cc = Clazzes.Const_String.getIfCreated();
+    var cc = Clazzes.instance.Const_String.getIfCreated();
     return cc == null ? -1 : id(cc);
   }
 
@@ -1126,7 +1126,7 @@ public class FUIR extends IR
    */
   public int clazz_Const_String_internal_array()
   {
-    var cc = Clazzes.constStringInternalArray;
+    var cc = Clazzes.instance.constStringInternalArray;
     return cc == null ? -1 : id(cc);
   }
 
@@ -1138,7 +1138,7 @@ public class FUIR extends IR
    */
   public int clazz_fuzionSysArray_u8()
   {
-    var cc = Clazzes.fuzionSysArray_u8;
+    var cc = Clazzes.instance.fuzionSysArray_u8;
     return cc == null ? -1 : id(cc);
   }
 
@@ -1150,7 +1150,7 @@ public class FUIR extends IR
    */
   public int clazz_fuzionSysArray_u8_data()
   {
-    var cc = Clazzes.fuzionSysArray_u8_data;
+    var cc = Clazzes.instance.fuzionSysArray_u8_data;
     return cc == null ? -1 : id(cc);
   }
 
@@ -1162,7 +1162,7 @@ public class FUIR extends IR
    */
   public int clazz_fuzionSysArray_u8_length()
   {
-    var cc = Clazzes.fuzionSysArray_u8_length;
+    var cc = Clazzes.instance.fuzionSysArray_u8_length;
     return cc == null ? -1 : id(cc);
   }
 
@@ -1174,7 +1174,7 @@ public class FUIR extends IR
    */
   public int clazz_fuzionJavaObject()
   {
-    var cc = Clazzes.fuzionJavaObject;
+    var cc = Clazzes.instance.fuzionJavaObject;
     return cc == null ? -1 : id(cc);
   }
 
@@ -1186,7 +1186,7 @@ public class FUIR extends IR
    */
   public int clazz_fuzionJavaObject_Ref()
   {
-    var cc = Clazzes.fuzionJavaObject_Ref;
+    var cc = Clazzes.instance.fuzionJavaObject_Ref;
     return cc == null ? -1 : id(cc);
   }
 
@@ -1198,7 +1198,7 @@ public class FUIR extends IR
    */
   public int clazz_error()
   {
-    var cc = Clazzes.c_error;
+    var cc = Clazzes.instance.c_error;
     return cc == null ? -1 : id(cc);
   }
 
@@ -1507,7 +1507,7 @@ public class FUIR extends IR
           }
         var found = new TreeSet<Integer>();
         var result = new List<Integer>();
-        var fa = new FeatureAndActuals(f, typePars, false);
+        var fa = new FeatureAndActuals(f, typePars);
         for (var clz : tclazz.heirs())
           {
             if (CHECKS) check
@@ -1658,9 +1658,9 @@ public class FUIR extends IR
 
     var cl = clazzAt(s);
     var cc = clazz(cl);
-    var ac = (AbstractConstant) getExpr(s);
+    var ac = (Constant) getExpr(s);
     var acl = cc.actualClazzes(ac.origin(), null);
-    // origin might be AbstractConstant, AbstractCall or InlineArray.  In all
+    // origin might be Constant, AbstractCall or InlineArray.  In all
     // cases, the clazz of the result is the first actual clazz:
     var clazz = acl[0];
     return id(clazz);
@@ -1679,7 +1679,7 @@ public class FUIR extends IR
        codeAt(s) == ExprKind.Const);
 
     var ic = getExpr(s);
-    return ((AbstractConstant) ic).data();
+    return ((Constant) ic).data();
   }
 
 
@@ -1731,7 +1731,7 @@ public class FUIR extends IR
       {
         var mc = m.cases().get(cix);
         var f = mc.field();
-        var fc = f != null && Clazzes.isUsed(f) ? cc.actualClazzes(mc, null)[0] : null;
+        var fc = f != null && Clazzes.instance.isUsed(f) ? cc.actualClazzes(mc, null)[0] : null;
         result = fc != null ? id(fc) : -1;
       }
     return result;
@@ -2334,7 +2334,7 @@ public class FUIR extends IR
       (o instanceof Expr || o instanceof ExprKind);
 
     return o instanceof InlineArray iai && isConst(iai)
-        || o instanceof AbstractConstant
+        || o instanceof Constant
         || o instanceof AbstractCall ac && isConst(ac)
         || o instanceof AbstractBlock ab && ab._expressions.size() == 1 && isConst(ab.resultExpression());
   }
@@ -2409,12 +2409,25 @@ public class FUIR extends IR
     if (PRECONDITIONS) require
       (clazzIsArray(constCl));
 
-    var result = Clazzes.clazz(clazz(constCl)._type.generics().get(0))._idInFUIR;
+    var result = Clazzes.instance.clazz(clazz(constCl)._type.generics().get(0))._idInFUIR;
 
     if (POSTCONDITIONS) ensure
       (result >= 0);
 
     return result;
+  }
+
+  /**
+   * Check if the given clazz is a constructor.
+   *
+   * @param clazz a clazz id
+   *
+   * @return true if the clazz is a constructor, false otherwise
+   */
+  public boolean isConstructor(int clazz)
+  {
+    // Intrinsic functions are not constructors even though they have no result field.
+    return clazzResultField(clazz) == -1 && clazzKind(clazz) != FeatureKind.Intrinsic;
   }
 
 
@@ -2581,7 +2594,7 @@ public class FUIR extends IR
   @Deprecated
   public int clazzAddress()
   {
-    return Clazzes.c_address._idInFUIR;
+    return Clazzes.instance.c_address._idInFUIR;
   }
 
 

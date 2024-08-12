@@ -47,14 +47,14 @@ genericstest is
       set h := Node e h Nil
 
     print =>
-      // for   -- NYI: must update i in the loop prolog
-      i := h
-      while (i ? Node => { true } | Nil => false)  // NYI: This screams for recursion
+      print0(i OptNode) =>
         match i
           n Node =>
-              say "print el in loop: {n.el}"
-              set i := n.n
+            say "print el in loop: {n.el}"
+            print0 n.n
           Nil =>
+
+      print0 h
 
     size => size h
 

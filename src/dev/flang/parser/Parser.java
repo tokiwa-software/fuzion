@@ -1289,6 +1289,9 @@ inherits    : inherit
    */
   boolean skipInherits()
   {
+    // NOTE: this uses skipCallList instead of skipPureCallList
+    // that the parser does not throw syntax errors when testing for isFeaturePrefix
+    // for `debug` in expressions like: `pre debug: u128.this ≤ i8.max.as_u128`
     return !skipColon() || skipCallList();
   }
 
@@ -1296,13 +1299,13 @@ inherits    : inherit
   /**
    * Parse inherit clause
    *
-inherit     : COLON callList
+inherit     : COLON pureCallList
             ;
    */
   List<AbstractCall> inherit()
   {
     matchOperator(":", "inherit");
-    return callList();
+    return pureCallList();
   }
 
 
@@ -1319,14 +1322,14 @@ inherit     : COLON callList
 
 
   /**
-   * Parse callList
+   * Parse pureCallList
    *
-callList    : call ( COMMA callList
-                   |
-                   )
-            ;
+pureCallList    : pureCall ( COMMA pureCallList
+                           |
+                           )
+                ;
    */
-  List<AbstractCall> callList()
+  List<AbstractCall> pureCallList()
   {
     var result = new List<AbstractCall>(pureCall(null));
     while (skipComma())
@@ -1338,14 +1341,26 @@ callList    : call ( COMMA callList
 
 
   /**
-   * Check if the current position is a callList.  If so, skip it.
+   * Parse callList
    *
-   * Since a call may contain code that is arbitrarily complex (actual args may
-   * contain lambdas that declare arbitrary inner features etc.), this will just
-   * parse the call list and, as a side effect, produce errors in case this
-   * parsing fails.  This should be OK since this is used in `skipInherits` if a
-   * colon was found.  If this turns out not to be an inherits clause, the colon
-   * is an infix operator followed by a call, that needs to be parsed anyway.
+callList    : call ( COMMA callList
+                   |
+                   )
+            ;
+   */
+  List<Expr> callList()
+  {
+    var result = new List<Expr>(call(null));
+    while (skipComma())
+      {
+        result.add(call(null));
+      }
+    return result;
+  }
+
+
+  /**
+   * Check if the current position is a callList. If so, skip it.
    *
    * @return true iff the next token(s) are a callList.
    */
@@ -1529,11 +1544,23 @@ callTail    : indexCall  callTail
       {
         if (skip(Token.t_env))
           {
-            result = callTail(false, new Env    (sourceRange(target.pos()), result.asParsedType()));
+            AbstractType t = result.asParsedType();
+            if (t == null)
+              {
+                AstErrors.noValidLHSInExpresssion(result, ".env");
+                t = Types.t_ERROR;
+              }
+            result = callTail(false, new Env    (sourceRange(target.pos()), t));
           }
         else if (skip(Token.t_type))
           {
-            result = callTail(false, new DotType(sourceRange(target.pos()), result.asParsedType()));
+            AbstractType t = result.asParsedType();
+            if (t == null)
+              {
+                AstErrors.noValidLHSInExpresssion(result, ".type");
+                t = Types.t_ERROR;
+              }
+            result = callTail(false, new DotType(sourceRange(target.pos()), t));
           }
         else if (skip(Token.t_this))
           {
@@ -1648,7 +1675,7 @@ actualArgs  : actualSpaces
            t_question        ,
            t_indentationLimit,
            t_lineLimit       ,
-           t_spaceLimit      ,
+           t_spaceOrSemiLimit,
            t_colonLimit      ,
            t_barLimit        ,
            t_eof             -> true;
@@ -1765,17 +1792,17 @@ bracketTerm : brblock
 
 
   /**
-   * An actual that ends in white space unless enclosed in { }, [ ], or ( ).
+   * An actual that ends in white space or semicolon unless enclosed in { }, [ ], or ( ).
    *
-actualSpace :  operatorExpr         // no white space except enclosed in { }, [ ], or ( ).
+actualSpace :  operatorExpr         // no white space or semicolon except enclosed in { }, [ ], or ( ).
             ;
 
    */
   Expr actualSpace()
   {
-    var eas = endAtSpace(tokenPos());
+    var eas = endAtSpaceOrSemi(tokenPos());
     var result = operatorExpr();
-    endAtSpace(eas);
+    endAtSpaceOrSemi(eas);
     return result;
   }
 
@@ -2466,13 +2493,14 @@ brblock     : BRACEL exprs BRACER
       case
         t_indentationLimit,
         t_lineLimit,
-        t_spaceLimit,
+        t_spaceOrSemiLimit,
         t_colonLimit,
         t_barLimit,
         t_rbrace,
         t_rparen,
         t_rcrochet,
         t_until,
+        t_then,
         t_else,
         t_eof -> true;
       default -> isContinuedString(currentNoLimit());
@@ -2575,7 +2603,7 @@ exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
     {
       sameLine(-1);
       firstIndent  = indent(firstPos);
-      oldEAS       = endAtSpace(Integer.MAX_VALUE);
+      oldEAS       = endAtSpaceOrSemi(Integer.MAX_VALUE);
       oldIndentPos = setMinIndent(tokenPos());
     }
 
@@ -2618,7 +2646,7 @@ exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
       sameLine(oldSameLine);
       if (firstIndent != -1)
         {
-          endAtSpace(oldEAS);
+          endAtSpaceOrSemi(oldEAS);
           setMinIndent(oldIndentPos);
         }
     }
@@ -3114,21 +3142,6 @@ anonymous   : "ref"
   boolean isAnonymousPrefix()
   {
     return current() == Token.t_ref;
-  }
-
-
-  /**
-   * Parse dotTypeSuffx
-   *
-dotTypeSuffx: dot "type"
-            ;
-   */
-  Expr dotTypeSuffx(AbstractType t)
-  {
-    var p = tokenSourcePos();
-    matchOperator(".", "dotTypeSuffx");
-    match(Token.t_type, "dotTypeSuffx");
-    return new DotType(p, t);
   }
 
 
@@ -3699,7 +3712,7 @@ typeInParens: "(" typeInParens ")"
         var l = bracketTermWithNLs(PARENS, "typeInParens",
                                    () -> typeList(),
                                    () -> new List<AbstractType>());
-        var eas = endAtSpace(tokenPos());
+        var eas = endAtSpaceOrSemi(tokenPos());
         if (!ignoredTokenBefore() && isOperator("->"))
           {
             matchOperator("->", "onetype");
@@ -3717,13 +3730,13 @@ typeInParens: "(" typeInParens ")"
           {
             result = new ParsedType(sourcePos(pos), "tuple", l, null);
           }
-        endAtSpace(eas);
+        endAtSpaceOrSemi(eas);
       }
     else
       {
-        var eas = endAtSpace(tokenPos());
+        var eas = endAtSpaceOrSemi(tokenPos());
         result = type();
-        endAtSpace(eas);
+        endAtSpaceOrSemi(eas);
       }
     return result;
   }
@@ -3767,12 +3780,12 @@ typeInParens: "(" typeInParens ")"
     if (isTypePrefix())
       {
         var f = fork();
-        f.endAtSpace(tokenPos());
+        f.endAtSpaceOrSemi(tokenPos());
         if (f.skipType())
           {
-            var eas = endAtSpace(tokenPos());
+            var eas = endAtSpaceOrSemi(tokenPos());
             skipType();
-            endAtSpace(eas);
+            endAtSpaceOrSemi(eas);
             return true;
           }
       }

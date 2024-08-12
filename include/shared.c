@@ -94,6 +94,16 @@ void * fzE_malloc_safe(size_t size) {
   return p;
 }
 
+void fzE_memset(void *dest, int ch, size_t sz){
+  // NYI: UNDER DEVELOPMENT: use bounds checked version, e.g. memset_s
+  memset(dest, ch, sz);
+}
+
+void fzE_memcpy(void *restrict dest, const void *restrict src, size_t sz){
+  // NYI: UNDER DEVELOPMENT: use bounds checked version, e.g. memcpy_s
+  memcpy(dest, src, sz);
+}
+
 
 #ifdef FUZION_LINK_JVM
 
@@ -256,8 +266,9 @@ void fzE_destroy_jvm()
 // helper function to replace char `find`
 // by `replace` in string `str`.
 char* fzE_replace_char(const char* str, char find, char replace){
-    char * result = fzE_malloc_safe(strlen(str));
-    strcpy(result, str);
+    size_t len = strlen(str);
+    char * result = fzE_malloc_safe(len+1);
+    fzE_memcpy(result, str, len+1);
     char *pos = strchr(result,find);
     while (pos) {
         *pos = replace;
@@ -279,7 +290,7 @@ const char * fzE_java_string_to_utf8_bytes(jstring jstr)
   jbyte * bytes = (*getJNIEnv())->GetByteArrayElements(getJNIEnv(), arr, NULL);
   const jsize length = (*getJNIEnv())->GetArrayLength(getJNIEnv(), arr);
   char * result = fzE_malloc_safe(length);
-  memcpy(result, bytes, length);
+  fzE_memcpy(result, bytes, length);
 
   (*getJNIEnv())->ReleaseByteArrayElements(getJNIEnv(), arr, bytes, JNI_ABORT);
   (*getJNIEnv())->DeleteLocalRef(getJNIEnv(), arr);
@@ -294,7 +305,7 @@ const char * fzE_java_string_to_modified_utf8(jstring jstr)
   const char * str = (*getJNIEnv())->GetStringUTFChars(getJNIEnv(), jstr, JNI_FALSE);
   jsize sz = (*getJNIEnv())->GetStringUTFLength(getJNIEnv(), jstr);
   char * result = fzE_malloc_safe(sz);
-  memcpy(result, str, sz+1);
+  fzE_memcpy(result, str, sz+1);
   (*getJNIEnv())->ReleaseStringUTFChars(getJNIEnv(), jstr, str);
   return result;
 }
@@ -728,3 +739,79 @@ jvalue fzE_get_static_field0(jstring class_name, jstring name, const char *sig)
 }
 
 #endif
+
+/*
+
+C11 support is still limited on e.g. macOS etc.
+
+void * fzE_mtx_init()
+{
+  mtx_t * mtx = fzE_malloc_safe(sizeof(mtx_t));
+  return mtx_init(mtx, mtx_plain) == thrd_success
+    ? (void *)mtx
+    : NULL;
+}
+
+int32_t fzE_mtx_lock(void * mtx)
+{
+  return mtx_lock((mtx_t *) mtx) == thrd_success
+    ? 0
+    : -1;
+}
+
+int32_t fzE_mtx_trylock(void * mtx)
+{
+  return mtx_trylock((mtx_t *) mtx) == thrd_success
+    ? 0
+    : -1;
+}
+
+int32_t fzE_mtx_unlock(void * mtx)
+{
+  return mtx_unlock((mtx_t *) mtx) == thrd_success
+    ? 0
+    : -1;
+}
+
+void fzE_mtx_destroy(void * mtx)
+{
+  mtx_destroy((mtx_t *) mtx);
+  // NYI: free(mtx)
+}
+
+void * fzE_cnd_init()
+{
+  cnd_t * cnd = fzE_malloc_safe(sizeof(cnd));
+  return cnd_init(cnd) == thrd_success
+    ? (void *)cnd
+    : NULL;
+}
+
+int32_t fzE_cnd_signal(void * cnd)
+{
+  return cnd_signal((cnd_t *) cnd) == thrd_success
+    ? 0
+    : -1;
+}
+
+int32_t fzE_cnd_broadcast(void * cnd)
+{
+  return cnd_broadcast((cnd_t *) cnd) == thrd_success
+    ? 0
+    : -1;
+}
+
+int32_t fzE_cnd_wait(void * cnd, void * mtx)
+{
+  return cnd_wait((cnd_t *) cnd, (mtx_t *) mtx) == thrd_success
+    ? 0
+    : -1;
+}
+
+void fzE_cnd_destroy(void * cnd)
+{
+  cnd_destroy((cnd_t *) cnd);
+  // NYI: free(cnd)
+}
+
+*/

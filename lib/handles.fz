@@ -85,7 +85,7 @@ is
     w T
     ) handles T X
   post
-    result.has_last
+    debug: result.has_last
   =>
     na := array T count+1 (i -> if (i < count) ar[i] else w)
     handles T X v na mode
@@ -100,7 +100,7 @@ is
   #
   public last
     pre
-      has_last
+      debug: has_last
   =>
     handle0 T count-1
 

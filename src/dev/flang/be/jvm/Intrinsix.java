@@ -140,7 +140,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
             jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f32 ) ||
             jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_bool) ||
             jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit);
-          return new Pair<>(Expr.UNIT, Expr.iconst(r ? 1 : 0));
+          return new Pair<>(Expr.iconst(r ? 1 : 0), Expr.UNIT);
         });
 
     put("concur.util.loadFence",
@@ -228,13 +228,13 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("debug",
         (jvm, si, cc, tvalue, args) ->
         {
-          return new Pair<>(Expr.UNIT, Expr.iconst(jvm._options.fuzionDebug() ? 1 : 0));
+          return new Pair<>(Expr.iconst(jvm._options.fuzionDebug() ? 1 : 0), Expr.UNIT);
         });
 
     put("debug_level",
         (jvm, si, cc, tvalue, args) ->
         {
-          return new Pair<>(Expr.UNIT, Expr.iconst(jvm._options.fuzionDebugLevel()));
+          return new Pair<>(Expr.iconst(jvm._options.fuzionDebugLevel()), Expr.UNIT);
         });
 
     put("fuzion.java.Java_Object.is_null0",
@@ -839,6 +839,19 @@ public class Intrinsix extends ANY implements ClassFileConstants
               throw new Error("unexpected type " + call_t + " for " + jvm._fuir.clazzAsString(call));
             }
         });
+
+    /* ReentrantLock */
+    put("concur.sync.mtx_init",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
+    put("concur.sync.mtx_lock",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
+    put("concur.sync.mtx_trylock",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
+    put("concur.sync.mtx_unlock",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
+    put("concur.sync.mtx_destroy",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
+    /* Condition */
+    put("concur.sync.cnd_init",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
+    put("concur.sync.cnd_signal",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
+    put("concur.sync.cnd_broadcast",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
+    put("concur.sync.cnd_wait",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
+    put("concur.sync.cnd_destroy",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
 
     put(new String[]
       {

@@ -53,18 +53,15 @@ module:public Type ref is
   public redef dynamic_type => Type.type
 
 
-# Types -- features related to Type but not requiring an instance of Type
+# Get the Type instance corresponding to a given type
 #
-public Types is
-
-  # Get the Type instance corresponding to a given type
-  #
-  # The result of 'Types.get x' is the same as 'x.type'.
-  #
-  # Internally, Fuzion's front end implements 'x.type' using
-  # 'Types.get x'.
-  #
-  public get(T type) => T
+# The result of `type_as_value x` is the same as `x.type`.
+#
+# Internally, Fuzion's front end implements `x.type` using
+# `type_as_value x`. The middle end then replaces calls to
+# `type_as_value` by `T`'s type clazz.
+#
+public type_as_value(T type) => T
 
 
 # universe feature to determine the compile-time type of an expression.

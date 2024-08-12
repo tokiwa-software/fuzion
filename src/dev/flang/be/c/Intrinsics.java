@@ -435,7 +435,7 @@ public class Intrinsics extends ANY
 
     put("fuzion.sys.fileio.mmap"  , (c,cl,outer,in) -> CExpr.call("fzE_mmap", new List<CExpr>(
       A0.castTo("FILE * "),   // file
-      A1.castTo("off_t"),     // offset
+      A1.castTo("uint64_t"),  // offset
       A2.castTo("size_t"),    // size
       A3.castTo("int *")      // int[1] contains success=0 or error=-1
     )).ret());
@@ -456,7 +456,7 @@ public class Intrinsics extends ANY
         return CStmnt.seq(
           CStmnt.decl("char *", d_name, CExpr.call("fzE_readdir", new List<>(A0.castTo("intptr_t *")))),
           CStmnt.iff(d_name.eq(new CIdent("NULL")), CStmnt.seq(
-            c.heapClone(c.constString("error in read_dir encountered NULL pointer".getBytes(StandardCharsets.UTF_8)), rc).ret())),
+            c.heapClone(c.constString("error in read_dir encountered NULL pointer"), rc).ret())),
           c.heapClone(c.constString(d_name, CExpr.call("strlen", new List<>(d_name)).castTo("int")), rc).ret()
         );
       });
@@ -1218,6 +1218,40 @@ public class Intrinsics extends ANY
     });
     // NYI: UNDER DEVELOPMENT: put("fuzion.java.destroy_jvm", (c,cl,outer,in) -> {});
 
+    put("concur.sync.mtx_init",      (c,cl,outer,in) ->
+      {
+        var tmp = new CIdent("tmp");
+        var rc = c._fuir.clazzResultClazz(cl);
+        return CStmnt.seq(
+          CStmnt.decl("void *", tmp, CExpr.call("fzE_mtx_init", new List<>())),
+          CStmnt.iff(tmp.eq(CNames.NULL),
+            c.returnOutcome(c._fuir.clazz_error(), c.error(c.constString("An error occurred initializing the mutex.")), rc, 1),
+            c.returnOutcome(c._fuir.clazz(SpecialClazzes.c_sys_ptr), tmp, rc , 0)
+          )
+        );
+      }
+    );
+    put("concur.sync.mtx_lock",      (c,cl,outer,in) -> CStmnt.iff(CExpr.call("fzE_mtx_lock",      new List<>(A0)).eq(new CIdent("0")), c._names.FZ_TRUE.ret(), c._names.FZ_FALSE.ret()));
+    put("concur.sync.mtx_trylock",   (c,cl,outer,in) -> CStmnt.iff(CExpr.call("fzE_mtx_trylock",   new List<>(A0)).eq(new CIdent("0")), c._names.FZ_TRUE.ret(), c._names.FZ_FALSE.ret()));
+    put("concur.sync.mtx_unlock",    (c,cl,outer,in) -> CStmnt.iff(CExpr.call("fzE_mtx_unlock",    new List<>(A0)).eq(new CIdent("0")), c._names.FZ_TRUE.ret(), c._names.FZ_FALSE.ret()));
+    put("concur.sync.mtx_destroy",   (c,cl,outer,in) -> CExpr.call("fzE_mtx_destroy",   new List<>(A0)));
+    put("concur.sync.cnd_init",      (c,cl,outer,in) ->
+      {
+        var tmp = new CIdent("tmp");
+        var rc = c._fuir.clazzResultClazz(cl);
+        return CStmnt.seq(
+          CStmnt.decl("void *", tmp, CExpr.call("fzE_cnd_init",      new List<>())),
+          CStmnt.iff(tmp.eq(CNames.NULL),
+            c.returnOutcome(c._fuir.clazz_error(), c.error(c.constString("An error occurred initializing the condition variable.")), rc, 1),
+            c.returnOutcome(c._fuir.clazz(SpecialClazzes.c_sys_ptr), tmp, rc , 0)
+          )
+        );
+      }
+    );
+    put("concur.sync.cnd_signal",    (c,cl,outer,in) -> CStmnt.iff(CExpr.call("fzE_cnd_signal",    new List<>(A0)).eq(new CIdent("0")), c._names.FZ_TRUE.ret(), c._names.FZ_FALSE.ret()));
+    put("concur.sync.cnd_broadcast", (c,cl,outer,in) -> CStmnt.iff(CExpr.call("fzE_cnd_broadcast", new List<>(A0)).eq(new CIdent("0")), c._names.FZ_TRUE.ret(), c._names.FZ_FALSE.ret()));
+    put("concur.sync.cnd_wait",      (c,cl,outer,in) -> CStmnt.iff(CExpr.call("fzE_cnd_wait",      new List<>(A0, A1)).eq(new CIdent("0")), c._names.FZ_TRUE.ret(), c._names.FZ_FALSE.ret()));
+    put("concur.sync.cnd_destroy",   (c,cl,outer,in) -> CExpr.call("fzE_cnd_destroy",   new List<>(A0)));
   }
 
 

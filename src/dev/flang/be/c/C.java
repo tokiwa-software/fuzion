@@ -30,6 +30,7 @@ import java.io.IOException;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -551,12 +552,6 @@ public class C extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
-  /**
-   * env var to enable debug output for tail call optimization:
-   */
-  static private final boolean FUZION_DEBUG_TAIL_CALL = "true".equals(System.getenv("FUZION_DEBUG_TAIL_CALL"));
-
-
   /*
    * If you want the c-backend to link the JVM,
    * set this environment variable to e.g.:
@@ -797,7 +792,7 @@ public class C extends ANY
 
     if(_options._useBoehmGC)
       {
-        command.addAll("-lgc", "-DGC_THREADS", "-DGC_PTHREADS", "-DPTW32_STATIC_LIB", "-DGC_WIN32_PTHREADS");
+        command.addAll("-DGC_THREADS", "-DGC_PTHREADS", "-DPTW32_STATIC_LIB", "-DGC_WIN32_PTHREADS");
       }
 
     if (linkJVM())
@@ -880,6 +875,12 @@ public class C extends ANY
             command.addAll(JAVA_HOME + "\\bin\\server\\jvm.dll");
           }
       }
+
+    if(_options._useBoehmGC)
+      {
+        command.addAll("-lgc");
+      }
+
     return command;
   }
 
@@ -1069,8 +1070,6 @@ public class C extends ANY
        "#include <time.h>\n"+
        "#include <setjmp.h>\n"+
        "#include <errno.h>\n"+
-       // defines _O_BINARY
-       "#include <fcntl.h>\n"+
        "#include <stdatomic.h>\n");
     if (linkJVM())
       {
@@ -1096,7 +1095,7 @@ public class C extends ANY
                            new List<>("void *", "size_t"),
                            new List<>(o, s),
                            CStmnt.seq(new List<>(CStmnt.decl(null, "void *", r, CExpr.call(malloc(), new List<>(s))),
-                                                 CExpr.call("memcpy", new List<>(r, o, s)),
+                                                 CExpr.call("fzE_memcpy", new List<>(r, o, s)),
                                                  r.ret()))));
     var ordered = _types.inOrder();
 
@@ -1199,8 +1198,19 @@ public class C extends ANY
     var tmp = new CIdent("tmp0");
     return CStmnt.seq(
       CStmnt.decl("struct " + CNames.fzThreadEffectsEnvironment.code(), tmp),
-      CExpr.call("memset", new List<>(tmp.adrOf(), CExpr.int32const(0), CExpr.sizeOfType("struct " + CNames.fzThreadEffectsEnvironment.code()))),
-      CNames.fzThreadEffectsEnvironment.assign(tmp.adrOf())
+      CExpr.call("fzE_memset", new List<>(tmp.adrOf(), CExpr.int32const(0), CExpr.sizeOfType("struct " + CNames.fzThreadEffectsEnvironment.code()))),
+      CNames.fzThreadEffectsEnvironment.assign(tmp.adrOf()),
+      CStmnt.seq(
+        new List<CStmnt>(
+          _types.inOrder()
+            .stream()
+            .filter(cl -> _fuir.clazzNeedsCode(cl) &&
+                          _fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic &&
+                          _fuir.isEffect(cl))
+            .mapToInt(cl -> _fuir.effectType(cl))
+            .distinct()
+            .<CStmnt>mapToObj(ecl -> CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl)).assign(new CIdent("false")))
+            .iterator()))
     );
   }
 
@@ -1488,6 +1498,17 @@ public class C extends ANY
 
 
   /**
+   * returns a CExpr that creates a Const_String from a java string.
+   *
+   * @param str the string.
+   */
+  CExpr constString(String str)
+  {
+    return constString(str.getBytes(StandardCharsets.UTF_8));
+  }
+
+
+  /**
    * Create CExpr to create a constant string.
    *
    * @param str CExpr the creates a c string.
@@ -1607,18 +1628,9 @@ public class C extends ANY
           if (_fuir.clazzNeedsCode(cc))
             {
               var cl = _fuir.clazzAt(s);
-              if (FUZION_DEBUG_TAIL_CALL                                 &&
-                  cc == cl                                               &&  // calling myself
-                  _tailCall.callIsTailCall(cl, s)                        &&  // as a tail call
-                  _fuir.lifeTime(cl).maySurviveCall()                        // and current instance did not escape
-                )
-                {
-                  say("Escapes, no tail call opt possible: " + _fuir.clazzAsString(cl) + ", lifetime: " + _fuir.lifeTime(cl).name());
-                }
 
               if (cc == cl                                               &&  // calling myself
-                  _tailCall.callIsTailCall(cl, s)                        &&  // as a tail call
-                  !_fuir.lifeTime(cl).maySurviveCall()                       // and current instance did not escape
+                  _tailCall.callIsTailCall(cl, s)
                 )
                 { // then we can do tail recursion optimization!
                   result = tailRecursion(cl, s, tc, a);
@@ -1850,9 +1862,9 @@ public class C extends ANY
     var res = _fuir.clazzResultClazz(cl);
     if (_fuir.hasData(res))
       {
-        var rf = _fuir.clazzResultField(cl);
-        l.add(rf != -1 ? current(_fuir.clazzCode(cl)).field(_names.fieldName(rf)).ret()  // a routine, return result field
-                       : current(_fuir.clazzCode(cl)).ret()                              // a constructor, return current instance
+        l.add(_fuir.isConstructor(cl)
+                ? current(_fuir.clazzCode(cl)).ret()                                                      // a constructor, return current instance
+                : current(_fuir.clazzCode(cl)).field(_names.fieldName(_fuir.clazzResultField(cl))).ret()  // a routine, return result field
               );
       }
     var allocCurrent = switch (_fuir.lifeTime(cl))
@@ -1861,12 +1873,12 @@ public class C extends ANY
           CStmnt.lineComment("cur does not escape, alloc on stack"),
           CStmnt.decl(_names.struct(cl), CNames.CURRENT),
           // this fixes "variable 'fzCur' is uninitialized when used here" in e.g. reg_issue1188
-          CExpr.call("memset", new List<>(CNames.CURRENT.adrOf(), CExpr.int32const(0), CNames.CURRENT.sizeOfExpr())));
+          CExpr.call("fzE_memset", new List<>(CNames.CURRENT.adrOf(), CExpr.int32const(0), CNames.CURRENT.sizeOfExpr())));
       case Unknown   -> CStmnt.seq(CStmnt.lineComment("cur may escape, so use malloc"      ), declareAllocAndInitClazzId(cl, CNames.CURRENT));
       case Undefined -> CExpr.dummy("undefined life time");
       };
     return CStmnt.seq(allocCurrent,
-                      CStmnt.seq(l).label("start"));
+                      CStmnt.seq(l)).label("start");
   }
 
 
@@ -2158,6 +2170,19 @@ public class C extends ANY
   private CExpr jStringToError(CExpr field)
   {
     var constString = constString(CExpr.call("fzE_java_string_to_utf8_bytes", new List<>(field)), CExpr.call("strlen", new List<>(CExpr.call("fzE_java_string_to_utf8_bytes", new List<>(field)))));
+    return error(constString);
+  }
+
+
+  /**
+   * create code for instantiating a
+   * fuzion error from a constString
+   *
+   * @param constString
+   * @return
+   */
+  public CExpr error(CExpr constString)
+  {
     return CExpr.compoundLiteral(
       _names.struct(_fuir.clazz_error()),
       "." + _names.fieldName(_fuir.clazzArg(_fuir.clazz_error(), 0)).code() + " = " +

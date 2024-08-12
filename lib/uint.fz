@@ -98,7 +98,7 @@ is
   # return two sequences of equal length
   # by prepending zero(s) to the shorter sequence
   equalize(other uint)
-  post result.values.0.count = result.values.1.count
+  post debug: result.values.0.count = result.values.1.count
   =>
     if other.data.count < data.count
       (data.as_list, zeros data.count-other.data.count ++ other.data)
@@ -110,7 +110,7 @@ is
   # returns the quotient and the remainder
   # NYI performance: https://cs.opensource.google/go/go/+/refs/tags/go1.19:src/math/big/natdiv.go
   fixed divide_with_remainder (divisor uint) tuple uint uint
-  pre divisor > uint.zero
+  pre safety: divisor > uint.zero
   =>
     if uint.this = uint.zero
       (uint.zero, uint.zero)
@@ -242,7 +242,7 @@ is
   #
   fixed redef type.equality(a, b uint) bool =>
     a.data.count = b.data.count &&
-      ((a.data.zip b.data (c,d -> c = d)) ∀ (x->x))
+      ((a.data.zip b.data (c,d -> c = d)) ∀ id)
 
 
   # total order
@@ -284,7 +284,7 @@ is
 
   # this uint as an i32
   public as_i32 i32
-  pre as_u32 ≤ i32.max.as_u32
+  pre debug: as_u32 ≤ i32.max.as_u32
   =>
     as_u32.as_i32
 
@@ -323,7 +323,7 @@ is
 
   # this uint as an u64
   public as_u64 u64
-  pre fits_in_u64
+  pre debug: fits_in_u64
   =>
     if data.count = 2
       data[1].as_u64<<32 | data[0].as_u64

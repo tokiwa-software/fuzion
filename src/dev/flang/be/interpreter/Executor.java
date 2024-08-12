@@ -243,10 +243,9 @@ public class Executor extends ProcessExpression<Value, Object>
         callOnInstance(s, cc, cur, tvalue, args);
 
         Value rres = cur;
-        var resf = _fuir.clazzResultField(cc);
-        if (resf != -1)
+        if (!_fuir.isConstructor(cc))
           {
-            var rfc = resf;
+            var rfc = _fuir.clazzResultField(cc);
             if (!AbstractInterpreter.clazzHasUnitValue(_fuir, fuir().clazzResultClazz(rfc)))
               {
                 rres = Interpreter.getField(rfc, cc, cur, false);

@@ -477,10 +477,9 @@ public class NumLiteral extends Constant
   AbstractType typeForCallTarget()
   {
     var i = hasDot() ? null : intValue(ConstantType.ct_i32);
-    return
-      i == null                      ? Types.resolved.t_f64 :
-      ConstantType.ct_i32.canHold(i) ? Types.resolved.t_i32
-                                     : Types.resolved.t_i64;
+    return i == null
+      ? Types.resolved.t_f64
+      : Types.resolved.t_i32;
   }
 
 

@@ -76,43 +76,6 @@ public class EmbeddedValue extends Val
 
 
   /**
-   * Create EmbeddedValue for given instance and value.
-   *
-   * @param instance the instance containing this embedded value
-   *
-   * @param value the value of the embedded field
-   */
-  public EmbeddedValue(Instance instance,
-                       Value value)
-  {
-    this(instance, -1, value);
-
-    if (PRECONDITIONS) require
-      (instance != null,
-       value != null,
-       value._clazz == -1 || !instance._dfa._fuir.clazzIsRef(value._clazz));
-  }
-
-
-  /**
-   * Create EmbeddedValue for given call/code/index and value.
-   *
-   * @param site site of the call
-   *
-   * @param value the value of the embedded field
-   */
-  public EmbeddedValue(int site,
-                       Value value)
-  {
-    this(null, site, value);
-
-    if (PRECONDITIONS) require
-      (site != -1,
-       value != null);
-  }
-
-
-  /**
    * Create EmbeddedValue for given instance or code/index and value.
    *
    * @param instance the instance containing this embedded value
@@ -123,9 +86,9 @@ public class EmbeddedValue extends Val
    *
    * @param value the value of the embedded field
    */
-  private EmbeddedValue(Instance instance,
-                        int site,
-                        Value value)
+  EmbeddedValue(Instance instance,
+                int site,
+                Value value)
   {
     if (PRECONDITIONS) require
       ((instance != null) != (site != -1),
@@ -160,16 +123,6 @@ public class EmbeddedValue extends Val
 
 
   /**
-   * Create the union of the values 'this' and 'v'. This is called by join()
-   * after common cases (same instance, UNDEFINED) have been handled.
-   */
-  public Value joinInstances(Value v)
-  {
-    return _value.joinInstances(v);
-  }
-
-
-  /**
    * In case this value is wrapped in an instance that contains additional
    * information unrelated to the actual value (e.g. EmbeddedValue), get the
    * actual value.
@@ -186,8 +139,9 @@ public class EmbeddedValue extends Val
   public String toString()
   {
     return
-      (_instance != null ? _instance + " embedded in " + _instance.toString()
-       : "EMBEDDED in " + _site);
+      _value +
+      (_instance != null ? " embedded in " + _instance.toString()
+                         : " EMBEDDED in " + _site);
   }
 
 

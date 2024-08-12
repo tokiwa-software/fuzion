@@ -35,19 +35,12 @@ import dev.flang.util.List;
 
 
 /**
- * FeatureAndActuals represents a triplet consisting of an AbstractFeature
- * combined with a list of actual type parameters for that feature and a flag
- * selecting between the feature itself or the precondition of this feature.
+ * FeatureAndActuals represents a tuple consisting of an AbstractFeature
+ * combined with a list of actual type parameters for that feature.
  *
  * Instances of this are used as the key for the set of inner clazzes in a Clazz
  * since for this inner clazz to exist, there must be a call with actual type
- * parameters and this call may be either to the feature itself or to its
- * precondition.
- *
- * Note that a feature that is abstract may still see calls to its precondition.
- * Similarly, a call to a precondition may be performed on a boxed target
- * instance, while the actual inner clazz will end up calling the feature on the
- * unboxed value.
+ * parameters.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -74,11 +67,6 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
 
 
   /**
-   * The precondition flag of this triplet.
-   */
-  public final boolean _preconditionClazz;
-
-  /**
    * in case _tp is null, this selects if this instance should be less (false)
    * or more (true) than all instances of the same feature.
    * This is used to extract a subset - containing all FeatureAndActuals having
@@ -91,15 +79,13 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
 
 
   /**
-   * Create a tuple for given feature, type parameters and precondition flag.
+   * Create a tuple for given feature and type parameters.
    *
    * @param f the underlying feature, must not be null
    *
    * @param tp the actual type parameters, never null.
-   *
-   * @param preconditionClazz true iff precondition of f is to be called
    */
-  public FeatureAndActuals(AbstractFeature f, List<AbstractType> tp, boolean preconditionClazz)
+  public FeatureAndActuals(AbstractFeature f, List<AbstractType> tp)
   {
     if (PRECONDITIONS) require
       (f != null,
@@ -107,19 +93,18 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
 
     _f = f;
     _tp = tp;
-    _preconditionClazz = preconditionClazz;
     _max = false; /* unused */
   }
 
 
   /**
-   * Convenience constructor for empty type parameters and no precondition.
+   * Convenience constructor for empty type parameters.
    *
    * @param f the underlying feature, must not be null
    */
   public FeatureAndActuals(AbstractFeature f)
   {
-    this(f, AbstractCall.NO_GENERICS, false);
+    this(f, AbstractCall.NO_GENERICS);
   }
 
 
@@ -135,7 +120,6 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
   {
     _f = f;
     _tp = null;
-    _preconditionClazz = false; /* unused */
     _max = max;
   }
 
@@ -162,27 +146,21 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
       }
     else if (r == 0)
       {
-        r = _preconditionClazz == o._preconditionClazz ?  0 :
-            _preconditionClazz                         ? -1
-                                                       : +1;
-        if (r == 0)
+        var sz1 = _tp.size();
+        var sz2 = o._tp.size();
+        if (sz1 < sz2)
           {
-            var sz1 = _tp.size();
-            var sz2 = o._tp.size();
-            if (sz1 < sz2)
+            r = -1;
+          }
+        else if (sz1 > sz2)
+          {
+            r = +1;
+          }
+        else
+          {
+            for (int i = 0; r == 0 && i < sz1; i++)
               {
-                r = -1;
-              }
-            else if (sz1 > sz2)
-              {
-                r = +1;
-              }
-            else
-              {
-                for (int i = 0; r == 0 && i < sz1; i++)
-                  {
-                    r = _tp.get(i).compareTo(o._tp.get(i));
-                  }
+                r = _tp.get(i).compareTo(o._tp.get(i));
               }
           }
       }
@@ -196,7 +174,6 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
   public String toString()
   {
     return
-      (_preconditionClazz ? "pre " : "") +
       (_f == null ? "--" : _f.qualifiedName()) +
       (_tp != null ? _tp.toString(t -> " " + t.asStringWrapped(true))
                    : (_max ? " MAX" : " MIN"));

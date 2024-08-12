@@ -586,7 +586,7 @@ public class Fuzion extends Tool
   /**
    * Default result of safety:
    */
-  boolean _safety = Boolean.valueOf(System.getProperty(FuzionConstants.FUZION_SAFETY_PROPERTY, "true"));
+  boolean _safety = FuzionOptions.boolPropertyOrEnv(FuzionConstants.FUZION_SAFETY_PROPERTY);
 
 
   /**

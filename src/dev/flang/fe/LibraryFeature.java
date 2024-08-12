@@ -36,7 +36,7 @@ import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractCase;
-import dev.flang.ast.AbstractConstant;
+import dev.flang.ast.Constant;
 import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
@@ -592,13 +592,13 @@ public class LibraryFeature extends AbstractFeature
             {
               var t = _libModule.constType(iat);
               var d = _libModule.constData(iat);
-              x = new AbstractConstant()
+              x = new Constant()
                 {
-                  public AbstractType type() { return t; }
-                  public byte[] data() { return d; }
-                  public Expr visit(FeatureVisitor v, AbstractFeature af) { v.action(this); return this; };
-                  public String toString() { return "LibraryFeature.Constant of type "+type(); }
-                  public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); }
+                  @Override public AbstractType type() { return t; }
+                  @Override public byte[] data() { return d; }
+                  @Override public Expr visit(FeatureVisitor v, AbstractFeature af) { v.action(this); return this; };
+                  @Override public String toString() { return "LibraryFeature.Constant of type "+type(); }
+                  @Override public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); }
                 };
               break;
             }

@@ -113,7 +113,7 @@ base32_test is
                 else
                   error "decoding $code produced '{String.from_bytes actual}' but should have been '$str'"
               arr array u8 =>
-                if arr.length=actual.length && ((arr.zip actual (a,b->a=b)) ∀ x->x)
+                if arr.length=actual.length && ((arr.zip actual a,b->a=b) ∀ id)
                   outcome "ok"
                 else
                   error "decoding $code produced '$actual' but should have been '$arr'"

@@ -331,4 +331,10 @@ visibility is
     r2 := red magenta; say "red magenta is $r2"
   visiB
 
+
+  # accessing field of other instance
+  # in field initializer
+  ring(r ring) is
+    last ring := r.last
+
   exit

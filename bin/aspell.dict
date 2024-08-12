@@ -9,7 +9,6 @@ AbstractBlock
 AbstractCall
 AbstractCase
 AbstractCase's
-AbstractConstant
 AbstractCurrent
 AbstractFeature
 AbstractInterpreter

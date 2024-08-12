@@ -60,6 +60,9 @@ public class Env extends ExprWithPos
   {
     super(pos);
 
+    if (CHECKS) check
+      (t != null);
+
     this._type = t;
   }
 
