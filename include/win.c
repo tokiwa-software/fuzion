@@ -619,7 +619,8 @@ void fzE_thread_join(int64_t thrd)
 void fzE_lock()
 {
 #ifdef FUZION_ENABLE_THREADS
-  assert(pthread_mutex_lock(&fzE_global_mutex)==0);
+  int res = pthread_mutex_lock(&fzE_global_mutex);
+  assert( res == 0 );
 #else
   printf("You discovered a severe bug. (fzE_lock)");
 #endif
@@ -632,7 +633,8 @@ void fzE_lock()
 void fzE_unlock()
 {
 #ifdef FUZION_ENABLE_THREADS
-  pthread_mutex_unlock(&fzE_global_mutex);
+  int res = pthread_mutex_unlock(&fzE_global_mutex);
+  assert( res == 0 );
 #else
   printf("You discovered a severe bug. (fzE_unlock)");
 #endif
