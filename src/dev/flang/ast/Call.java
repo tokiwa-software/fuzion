@@ -485,14 +485,10 @@ public class Call extends AbstractCall
     if (PRECONDITIONS) require
       (!frmlT.isOpenGeneric());
 
-    var result = adjustThisTypeForTarget(frmlT, context);
-    var r0 = result;
+    AbstractType result = adjustThisTypeForTarget(frmlT, context);
     result = targetTypeOrConstraint(res, context)
       .actualType(result, context)
       .applyTypePars(_calledFeature, _generics);
-    var r1 = targetTypeOrConstraint(res, context);
-    var r2 = r1.actualType(r0, context);
-    var r3 = r2.applyTypePars(_calledFeature, _generics);
 
     if (POSTCONDITIONS) ensure
       (result != null && result != Types.resolved.t_Const_String);
