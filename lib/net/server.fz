@@ -29,7 +29,7 @@
 # 1) Initialize the server, e.g. like this:
 # `server family.ipv4 protocol.tcp 8080`
 # 2) accept a new connection:
-#      `server.accept Connection_Handler`
+#      `server.accept connection_handler`
 #
 module:public server(
   state outcome i64,
