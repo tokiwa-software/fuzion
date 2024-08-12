@@ -789,7 +789,7 @@ int32_t fzE_mtx_unlock(void *mtx) {
 
 void fzE_mtx_destroy(void *mtx) {
   pthread_mutex_destroy((pthread_mutex_t *)mtx);
-  // NYI: free(cnd);
+  // NYI: free(mtx);
 }
 
 void * fzE_cnd_init() {
