@@ -246,6 +246,13 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      */
     public abstract Pair<VALUE, RESULT> env(int s, int ecl);
 
+    /**
+     * Generate code to terminate the execution immediately.
+     *
+     * @param msg a message explaining the illegal state
+     */
+    public RESULT reportErrorInCode(String msg) { return comment(msg); }
+
   }
 
 
@@ -508,6 +515,11 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
     var v = containsVoid(stack) ? null
                                 : _processor.unitValue();
+
+    if (last_s > 0 && _fuir.alwaysResultsInVoid(last_s))
+      {
+        l.add(_processor.reportErrorInCode("Severe compiler bug! This code should be unreachable."));
+      }
 
     if (!containsVoid(stack) && stack.size() > 0)
       { // NYI: #1875: Manual stack cleanup.  This should not be needed since the
