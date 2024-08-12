@@ -322,11 +322,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public abstract Contract contract();
 
-  public AbstractType additionalConstraint(AbstractFeature typeParameter)
-  {
-    return null;
-  }
-
 
   /**
    * If this feature has a pre condition or redefines a feature from which it
