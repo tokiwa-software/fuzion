@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature net.Request_Handler
+#  Source code of Fuzion standard library feature net.Connection_Handler
 #
 # -----------------------------------------------------------------------
 

@@ -24,8 +24,8 @@
 
 
 # This tries establishing a connection to `host`
-# on success it uses the installed `request_handler`
-# to process the request.
+# on success the provided `Connection_Handler` is used
+# to process the connection.
 #
 # Minimal example:
 #

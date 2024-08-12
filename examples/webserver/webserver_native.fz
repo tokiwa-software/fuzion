@@ -51,11 +51,11 @@ webserver_native is
   lm.go ()->
 
 
-    # definition of a request handler
+    # definition of a connection handler
     #
-    rh(n i32) : net.Request_Handler unit is
+    rh(n i32) : net.Connection_Handler unit is
 
-      redef handle_request unit =>
+      redef handle_connection unit =>
         say "accepted connection:"
 
         match io.buffered.read_line lm
