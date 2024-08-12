@@ -1,0 +1,113 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test compile_time_type_casts
+#
+# -----------------------------------------------------------------------
+
+
+# negative tests for compile time type casts that will fail at compile time
+#
+compile_time_type_casts_negative =>
+
+  A ref is
+  B ref is
+  C ref is
+
+  ab  : A, B is
+  ac  : A, C is
+  bc  : B, C is
+  abc : A, B, C is
+
+  take_A(v A) => say "take_A: ok: {type_of v} dynamic {v.dynamic_type}"
+  take_B(v B) => say "take_B: ok: {type_of v} dynamic {v.dynamic_type}"
+  take_C(v C) => say "take_C: ok: {type_of v} dynamic {v.dynamic_type}"
+
+  say ""
+  say "------ simple calls passing A, B, C, ab, ac, bc, abc. no type pars ------"
+
+  take_A A
+  take_A ab
+  take_A ac
+  take_A bc          #  1. should flag an error -- bc is not A
+  take_A abc
+  take_B B
+  take_B ab
+  take_B ac          #  2. should flag an error -- ac is not B
+  take_B bc
+  take_B abc
+  take_C C
+  take_C ab          #  3. should flag an error -- ab is not C
+  take_C ac
+  take_C bc
+  take_C abc
+
+  # lets try nesting
+
+  y1(v T : A) =>
+    say "y1 for {type_of v}"
+
+    take_A v
+    take_B v         #  4. should flag an error -- v is of type : A
+    take_C v         #  5. should flag an error -- v is of type : A
+
+    y2
+      pre T : B
+    =>
+      say "y2 for {type_of v}"
+
+      take_A v       #  6. should flag an error -- v is of type : B
+      take_B v
+      take_C v       #  7. should flag an error -- v is of type : B
+
+      y3 =>
+        say "y3 for {type_of v}"
+
+        take_A v     #  8. should flag an error -- v is of type : B
+        take_B v
+        take_C v     #  9. should flag an error -- v is of type : B
+
+        if T : C
+          say "y3 if for {type_of v}"
+
+          take_A v   # 10. should flag an error -- v is of type : C
+          take_B v   # 11. should flag an error -- v is of type : C
+          take_C v
+        else
+          say "y3 if not taken, T : C failed for $T"
+      y3
+    y2
+
+
+  say ""
+  say "------ ab passed to nested constraints A, pre T : B and if T : C ------"
+  y1 ab
+
+  say ""
+  say "------ abc passed to nested constraints A, pre T : B and if T : C ------"
+  y1 abc
+
+
+  y1 b    # 12. should flag an error -- b is not of type A
+  y1 c    # 13. should flag an error -- c is not of type A
+  y1 bc   # 14. should flag an error -- bc is not of type A
+
+  call_y1(v U) => y1 v   # 15. should flag an error -- v is not of type A
+
+  call_y1 B
