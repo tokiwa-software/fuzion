@@ -180,26 +180,19 @@ public class Clazz extends ANY implements Comparable<Clazz>
     public boolean action(AbstractMatch m, AbstractCase c)
     {
       var result = true;
-      if (m.subject() instanceof AbstractCall sc)
+      if (m.subject() instanceof AbstractCall sc &&
+          sc.calledFeature() == Types.resolved.f_Type_infix_colon)
         {
-          if (sc.calledFeature() == Types.resolved.f_Type_infix_colon_true  && !c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0) ||
-              sc.calledFeature() == Types.resolved.f_Type_infix_colon_false && !c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_FALSE.selfType())==0)    )
-            {
-              result = false;
-            }
-          else if (sc.calledFeature() == Types.resolved.f_Type_infix_colon)
-            {
-              var ac = actualClazzes(sc, null) ;
-              var innerClazz = ac[0];
-              var T = innerClazz.actualGenerics()[0];
-              var cf = innerClazz.feature();
-              if (cf == Types.resolved.f_Type_infix_colon_true)
-                result = c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0);
-              else if (cf == Types.resolved.f_Type_infix_colon_false)
-                result = c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_FALSE .selfType())==0);
-              else
-                throw new Error("Häh?");
-            }
+          var ac = actualClazzes(sc, null);
+          var innerClazz = ac[0];
+          var T = innerClazz.actualGenerics()[0];
+          var cf = innerClazz.feature();
+          if (CHECKS) check
+            (cf == Types.resolved.f_Type_infix_colon_true ||
+             cf == Types.resolved.f_Type_infix_colon_false   );
+          var positive = cf == Types.resolved.f_Type_infix_colon_true ? Types.resolved.f_TRUE
+                                                                      : Types.resolved.f_FALSE;
+          result = c.types().stream().anyMatch(x->x.compareTo(positive.selfType())==0);
         }
       if (result)
         {
@@ -2201,10 +2194,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
         i = i.outer();
       }
 
-    if (false) if (!(Errors.any() || i == o || i != null && i.isThisRef() && i.inheritsFrom(o)))
-      {
-        System.out.println("Problem for "+this+" findOuter("+o.qualifiedName()+") at "+pos.pos().show());
-      }
     if (CHECKS) check
       (Errors.any() || i == o || i != null && i.isThisRef() && i.inheritsFrom(o));
 
@@ -2280,13 +2269,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     else
       {
         var ft = f.resultType();
-        try {
         result = handDown(ft, _select, new List<>(), feature());
-        } catch (Error | RuntimeException e)
-          {
-            System.out.println("Problem determining result clazz for "+this+" ft "+ft+" feature() "+feature().qualifiedName());
-            throw e;
-          }
         if (result.feature().isTypeFeature())
           {
             var ac = handDown(result._type.generics().get(0), new List<>(), feature());

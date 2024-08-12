@@ -364,29 +364,26 @@ public class Clazzes extends ANY
           {
             var e0 = ass._value;
             var e1 = e0 instanceof AbstractBlock ab ? ab._expressions.get(0) :
-                     e0 instanceof AbstractCall ac  ? ac.target() : e0;
-            var e2 = e1 instanceof AbstractBlock ab ? ab._expressions.get(0) : e1;
-            if (e2 instanceof AbstractMatch m &&
+                     e0 instanceof AbstractCall ac  ? ac.target() :
+                     e0;
+            if (e1 instanceof AbstractBlock ab &&
+                ab._expressions.get(0) instanceof AbstractMatch m &&
                 m.subject() instanceof AbstractCall sc &&
                 sc.calledFeature() == Types.resolved.f_Type_infix_colon)
               {
-                var T = sc.target();
-                if (T instanceof AbstractCall TC)
+                var pFc = outer.lookup(pF);
+                if (clazzesToBeVisited.contains(pFc))
                   {
-                    var pFc = outer.lookup(pF);
-                    if (clazzesToBeVisited.contains(pFc))
-                      {
-                        clazzesToBeVisited.remove(pFc);
-                        pFc.findAllClasses();
-                      }
-                    var args = pFc.actualClazzes(sc, null);
-                    if (CHECKS)
-                      check(args[0].feature() == Types.resolved.f_Type_infix_colon_true  ||
-                            args[0].feature() == Types.resolved.f_Type_infix_colon_false   );
-                    if (args[0].feature() == Types.resolved.f_Type_infix_colon_false)
-                      {
+                    clazzesToBeVisited.remove(pFc);
+                    pFc.findAllClasses();
+                  }
+                var args = pFc.actualClazzes(sc, null);
+                if (CHECKS)
+                  check(args[0].feature() == Types.resolved.f_Type_infix_colon_true  ||
+                        args[0].feature() == Types.resolved.f_Type_infix_colon_false   );
+                if (args[0].feature() == Types.resolved.f_Type_infix_colon_false)
+                  {
                         result = undefined.get();
-                      }
                   }
               }
           }
