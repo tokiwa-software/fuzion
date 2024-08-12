@@ -2613,7 +2613,7 @@ public class FUIR extends IR
   @Deprecated
   public boolean isAssignableFrom(int cl0, int cl1)
   {
-    return clazz(cl0)._type.isAssignableFrom(clazz(cl1)._type, null /* outer */, null /* Context */);
+    return clazz(cl0)._type.isAssignableFrom(clazz(cl1)._type, Context.NONE);
   }
 
   public boolean constraintAssignableFrom(int cl0, int cl1)
