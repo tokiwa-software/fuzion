@@ -413,15 +413,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
        Errors.any() || !actualType.dependsOnGenericsExceptTHIS_TYPE(),
        Errors.any() || actualType.feature().outer() == null || outer.feature().inheritsFrom(actualType.feature().outer()),
        Errors.any() || actualType.feature().outer() != null || outer == null,
-       Errors.any() || (actualType != Types.t_ERROR     &&
-                              actualType != Types.t_UNDEFINED   ),
+       Errors.any() || (actualType != Types.t_ERROR),
        outer == null || outer._type != Types.t_ADDRESS,
        !actualType.containsThisType());
-
-    if (actualType == Types.t_UNDEFINED)
-      {
-        actualType = Types.t_ERROR;
-      }
 
     if (CHECKS) check
       (Errors.any() || actualType != Types.t_ERROR);
@@ -1361,7 +1355,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
               }
           }
       }
-    if (p != null && !isInheritanceCall)
+    if (p != null && !isInheritanceCall && innerClazz._type != Types.t_UNDEFINED)
       {
         innerClazz.called(p);
         innerClazz.instantiated(p);

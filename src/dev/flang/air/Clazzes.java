@@ -160,6 +160,7 @@ public class Clazzes extends ANY
         return super.get();
       }
     };
+  public final OnDemandClazz undefined   = new OnDemandClazz(() -> Types.t_UNDEFINED                 );
   public Clazz constStringInternalArray;  // field Const_String.internal_array
   public Clazz fuzionJavaObject;          // clazz representing a Java Object in Fuzion
   public Clazz fuzionJavaObject_Ref;      // field fuzion.java.Java_Object.Java_Ref
@@ -275,7 +276,9 @@ public class Clazzes extends ANY
    * actualType.feature.
    *
    * @return the existing or newly created Clazz that represents actualType
-   * within outer.
+   * within outer. undefined.getIfCreated() in case the created clazz cannot
+   * exist (due to precondition `T : x` where type typerameter `T` is not
+   * constraintAssignableFrom `x`.
    */
   public Clazz create(AbstractType actualType, int select, Clazz outer)
   {
@@ -344,8 +347,61 @@ public class Clazzes extends ANY
     // e.g. treat clazzes of inherited features with a reference outer clazz
     // the same.
 
-    var newcl = new Clazz(actualType, select, outer);
-    var result = intern(newcl);
+    Clazz result = null, newcl = null;
+
+    // find preconditions `T : x` that prevent creation of instances of this clazz.
+    //
+    // NYI: This is very manual code to extract this info from the code created
+    // for the preFeature. This is done automatically by DFA, so this code will
+    // disappear once DFA and AIR phases are merged.
+    //
+    var pF = actualType.feature().preFeature();
+    if (pF != null)
+      {
+        var pFcode = pF.code();
+        var ass0 = pFcode instanceof AbstractBlock b ? b._expressions.get(0) : pFcode;
+        if (ass0 instanceof AbstractAssign ass)
+          {
+            var e0 = ass._value;
+            var e1 = e0 instanceof AbstractBlock ab ? ab._expressions.get(0) :
+                     e0 instanceof AbstractCall ac  ? ac.target() : e0;
+            var e2 = e1 instanceof AbstractBlock ab ? ab._expressions.get(0) : e1;
+            if (e2 instanceof AbstractMatch m &&
+                m.subject() instanceof AbstractCall sc &&
+                sc.calledFeature() == Types.resolved.f_Type_infix_colon)
+              {
+                var T = sc.target();
+                if (T instanceof AbstractCall TC)
+                  {
+                    var pFc = outer.lookup(pF);
+                    if (clazzesToBeVisited.contains(pFc))
+                      {
+                        clazzesToBeVisited.remove(pFc);
+                        pFc.findAllClasses();
+                      }
+                    var args = pFc.actualClazzes(sc, null);
+                    if (CHECKS)
+                      check(args[0].feature() == Types.resolved.f_Type_infix_colon_true  ||
+                            args[0].feature() == Types.resolved.f_Type_infix_colon_false   );
+                    if (args[0].feature() == Types.resolved.f_Type_infix_colon_false)
+                      {
+                        result = undefined.get();
+                      }
+                  }
+              }
+          }
+      }
+
+    if (result == null)
+      {
+        newcl = new Clazz(actualType, select, outer);
+        result = newcl;
+        if (actualType != Types.t_UNDEFINED)
+          {
+            result = intern(newcl);
+          }
+      }
+
     if (result == newcl)
       {
         if (CHECKS) check
@@ -780,18 +836,21 @@ public class Clazzes extends ANY
             outerClazz.saveActualClazzes(c, outer, new Clazz[] {innerClazz, tclazz});
           }
 
-        var afs = innerClazz.argumentFields();
-        var i = 0;
-        for (var a : c.actuals())
+        if (innerClazz._type != Types.t_UNDEFINED)
           {
-            if (CHECKS) check
-              (Errors.any() || i < afs.length);
-            if (i < afs.length) // actuals and formals may mismatch due to previous errors,
-                                // see tests/typeinference_for_formal_args_negative
+            var afs = innerClazz.argumentFields();
+            var i = 0;
+            for (var a : c.actuals())
               {
-                propagateExpectedClazz(a, afs[i].resultClazz(), outer, outerClazz, inh);
+                if (CHECKS) check
+                  (Errors.any() || i < afs.length);
+                if (i < afs.length) // actuals and formals may mismatch due to previous errors,
+                                    // see tests/typeinference_for_formal_args_negative
+                  {
+                    propagateExpectedClazz(a, afs[i].resultClazz(), outer, outerClazz, inh);
+                  }
+                i++;
               }
-            i++;
           }
 
         var f = innerClazz.feature();
