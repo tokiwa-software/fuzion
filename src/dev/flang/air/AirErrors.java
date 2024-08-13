@@ -74,7 +74,8 @@ public class AirErrors extends AstErrors
 
   public static void abstractFeatureNotImplemented(AbstractFeature featureThatDoesNotImplementAbstract,
                                                    Set<AbstractFeature> abstractFeature,
-                                                   HasSourcePosition instantiatedAt)
+                                                   HasSourcePosition instantiatedAt,
+                                                   String context)
   {
     var abs = new StringBuilder();
     var abstracts = new StringBuilder();
@@ -104,7 +105,8 @@ public class AirErrors extends AstErrors
           "Used " + kind + " " + (abstractFeature.size() > 1 ? "features " + abs + " are" : "feature " + abs + " is") + " not implemented by "+s(featureThatDoesNotImplementAbstract),
           "Feature " + s(featureThatDoesNotImplementAbstract) + " " +
           "instantiated at " + instantiatedAt.pos().show() + "\n" +
-          abstracts);
+          abstracts + "\n" +
+          "Callchain that lead to this point:\n\n" + context);
   }
 
 }
