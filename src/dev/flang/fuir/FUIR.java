@@ -43,10 +43,9 @@ import dev.flang.air.FeatureAndActuals;
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency
 import dev.flang.ast.AbstractBlock; // NYI: remove dependency
 import dev.flang.ast.AbstractCall; // NYI: remove dependency
-import dev.flang.ast.Constant; // NYI: remove dependency
-import dev.flang.ast.Context; // NYI: remove dependency
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency
+import dev.flang.ast.Constant; // NYI: remove dependency
 import dev.flang.ast.Context; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
 import dev.flang.ast.Env; // NYI: remove dependency
@@ -2655,8 +2654,7 @@ public class FUIR extends IR
    */
   record AbsMissing(Clazz clazz,
                     TreeSet<AbstractFeature> called,
-                    SourcePosition instantiationPos,
-                    String context)
+                    SourcePosition instantiationPos)
   {
   };
 
@@ -2681,11 +2679,11 @@ public class FUIR extends IR
    * @param instantiationPos if known, the site where `cl` was instantiated,
    * `NO_SITE` if unknown.
    */
-  public void recordAbstractMissing(int cl, int f, int instantiationSite, String context)
+  public void recordAbstractMissing(int cl, int f, int instantiationSite)
   {
     var cc = clazz(cl);
     var cf = clazz(f);
-    var r = _abstractMissing.computeIfAbsent(cc, ccc -> new AbsMissing(ccc, new TreeSet<>(), sitePos(instantiationSite), context));
+    var r = _abstractMissing.computeIfAbsent(cc, ccc -> new AbsMissing(ccc, new TreeSet<>(), sitePos(instantiationSite)));
     r.called.add(cf.feature());
   }
 
@@ -2702,8 +2700,7 @@ public class FUIR extends IR
       .stream()
       .forEach(r -> AirErrors.abstractFeatureNotImplemented(r.clazz.feature(),
                                                             r.called,
-                                                            r.instantiationPos,
-                                                            r.context));
+                                                            r.instantiationPos));
   }
 
 
