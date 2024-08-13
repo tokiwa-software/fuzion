@@ -1503,7 +1503,12 @@ public class Feature extends AbstractFeature
           {
             typeFeature(res);
           }
-        visit(res._resolveSyntaxSugar1);
+        visit(new ContextVisitor(context())
+          {
+            public Expr action(Feature f, AbstractFeature outer) { return f.resolveSyntacticSugar1(res, _context, this); }
+            public Expr action(Call    c, AbstractFeature outer) { return c.resolveSyntacticSugar1(res, _context      ); }
+          });
+
 
         _state = State.RESOLVED_SUGAR1;
         res.scheduleForTypeInference(this);
@@ -1849,7 +1854,7 @@ A ((Choice)) declaration must not contain a result type.
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    */
-  void boxX(Resolution res)
+  void box(Resolution res)
   {
     if (PRECONDITIONS) require
       (_state.atLeast(State.TYPES_INFERENCED));
@@ -2029,10 +2034,14 @@ A ((Choice)) declaration must not contain a result type.
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this feature declaration.
+   * @param context the source code context where this feature declaration is done
+   *
+   * @param rss1 the visitor to resolve syntax sugar 1, used to visit recursively.
    */
-  public Expr resolveSyntacticSugar1(Resolution res, AbstractFeature outer)
+  public Expr resolveSyntacticSugar1(Resolution res, Context context, ContextVisitor rss1)
   {
+    var outer = context.outerFeature();
+
     if (PRECONDITIONS) require
       (res != null,
        outer.state() == State.RESOLVING_SUGAR1,
@@ -2063,8 +2072,8 @@ A ((Choice)) declaration must not contain a result type.
         if (this.outer() == outer)
           {
             /* add assignment of initial value: */
-            AbstractAssign ass = new Assign(res, _pos, this, _impl.expr(), outer.context());
-            ass = ass.visit(res._resolveSyntaxSugar1, outer);
+            AbstractAssign ass = new Assign(res, _pos, this, _impl.expr(), context);
+            ass = ass.visit(rss1, outer);
             result = new Block(new List<>(this, ass));
           }
       }

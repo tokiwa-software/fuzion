@@ -50,7 +50,7 @@ public abstract class Context extends ANY
 
 
   /**
-   * Pre-allocated instance of no context.
+   * Pre-allocated instance for no context.
    */
   public static final Context NONE = new Context()
     {
@@ -79,7 +79,6 @@ public abstract class Context extends ANY
 
 
   /*-------------------------  static methods  --------------------------*/
-
 
 
   /**
@@ -140,7 +139,7 @@ public abstract class Context extends ANY
 
 
   /**
-   * Constructor, used to crate anonymous inner classes.
+   * Constructor, used to create anonymous inner classes.
    */
   private Context()
   {
@@ -148,6 +147,16 @@ public abstract class Context extends ANY
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * The outer feature in this context. This is typically the feature that
+   * visited code belongs to.
+   */
+  AbstractFeature outerFeature()
+  {
+    return exterior().outerFeature();
+  }
 
 
   /**
@@ -178,11 +187,13 @@ public abstract class Context extends ANY
       {
         result = new Context()
           {
+
             @Override Context exterior()
             {
               check(this != Context.this);
               return Context.this;
             }
+
             @Override
             public AbstractType constraintFor(AbstractFeature typeParameter)
             {
@@ -208,12 +219,6 @@ public abstract class Context extends ANY
    * Create a String describing this Context without the exterior(), for debugging.
    */
   abstract String localToString();
-
-
-  AbstractFeature outerFeature()
-  {
-    return exterior().outerFeature();
-  }
 
 
   /**

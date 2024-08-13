@@ -50,7 +50,6 @@ import dev.flang.ast.Context; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
 import dev.flang.ast.Env; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
-import dev.flang.ast.FeatureVisitor; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
 import dev.flang.ast.Tag; // NYI: remove dependency
@@ -1362,11 +1361,8 @@ public class FUIR extends IR
 
     var cl = clazzAt(s);
     var outerClazz = clazz(cl);
-    var b = (Expr) getExpr(s);
-    if (CHECKS) check
-      (b instanceof Box);
-
-    var vc = outerClazz.actualClazzes(b, null)[0];
+    var b = (Box) getExpr(s);
+    Clazz vc = outerClazz.actualClazzes(b, null)[0];
     return id(vc);
   }
 
@@ -1379,11 +1375,8 @@ public class FUIR extends IR
 
     var cl = clazzAt(s);
     var outerClazz = clazz(cl);
-    var b = (Expr) getExpr(s);
-    if (CHECKS) check
-      (b instanceof Box);
-
-    var rc = outerClazz.actualClazzes(b, null)[1];
+    var b = (Box) getExpr(s);
+    Clazz rc = outerClazz.actualClazzes(b, null)[1];
     return id(rc);
   }
 
@@ -1799,12 +1792,12 @@ public class FUIR extends IR
         int nt = f != null ? 1 : ts.size();
         var resultL = new List<Integer>();
         int tag = 0;
-        for (var cg : match.subject().type().choiceGenerics(Context.NONE))
+        for (var cg : match.subject().type().choiceGenerics(Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR */))
           {
             for (int tix = 0; tix < nt; tix++)
               {
                 var t = f != null ? f.resultType() : ts.get(tix);
-                if (t.isDirectlyAssignableFrom(cg, Context.NONE))
+                if (t.isDirectlyAssignableFrom(cg, Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR */))
                   {
                     resultL.add(tag);
                   }
@@ -1861,7 +1854,7 @@ public class FUIR extends IR
             var innerClazz = clazz(clazzAt(s)).actualClazzes(sc, null)[0];
             var tclazz = innerClazz._outer;
             var T = innerClazz.actualGenerics()[0];
-            var pos = T._type.constraintAssignableFrom(Context.NONE, tclazz._type.generics().get(0));
+            var pos = T._type.constraintAssignableFrom(Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR */, tclazz._type.generics().get(0));
             if (pos  && !c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0) ||
                 !pos && !c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_FALSE.selfType())==0)    )
               {
@@ -2612,12 +2605,12 @@ public class FUIR extends IR
   @Deprecated
   public boolean isAssignableFrom(int cl0, int cl1)
   {
-    return clazz(cl0)._type.isAssignableFrom(clazz(cl1)._type, Context.NONE);
+    return clazz(cl0)._type.isAssignableFrom(clazz(cl1)._type, Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR */);
   }
 
   public boolean constraintAssignableFrom(int cl0, int cl1)
   {
-    return clazz(cl0)._type.constraintAssignableFrom(Context.NONE, clazz(cl1)._type);
+    return clazz(cl0)._type.constraintAssignableFrom(Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR */, clazz(cl1)._type);
   }
 
   /* NYI remove? only used in interpreter */

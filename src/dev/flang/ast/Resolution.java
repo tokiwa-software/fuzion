@@ -152,18 +152,6 @@ public class Resolution extends ANY
   }
 
 
-  /**
-   * FeatureVisitor to call resolveSyntacticSugar1() on Calls and Features.
-   *
-   * This is used during state RESOLVING_SUGAR1
-   */
-  FeatureVisitor _resolveSyntaxSugar1 = new FeatureVisitor()  // NYI: use ContextVisitor?
-    {
-      public Expr action(Feature f, AbstractFeature outer) { return f.resolveSyntacticSugar1(Resolution.this, outer); }
-      public Expr action(Call    c, AbstractFeature outer) { return c.resolveSyntacticSugar1(Resolution.this, outer.context()); }
-    };
-
-
   final FuzionOptions _options;
 
 
@@ -470,7 +458,7 @@ public class Resolution extends ANY
     else if (!forBoxing.isEmpty())
       {
         Feature f = forBoxing.removeFirst();
-        f.boxX(this);
+        f.box(this);
       }
     else if (!_waitingForCalls.isEmpty())
       {

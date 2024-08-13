@@ -623,8 +623,6 @@ part of the (((inner features))) declarations of the corresponding
       }
     inner.addResultField(_res);
 
-    //ystem.out.println(">>>>>>>>>>>>>>>>>>>>> setOUterANdAddInnter for "+inner.qualifiedName());
-
     inner.visit(new FeatureVisitor()
       {
         private Stack<Expr> _scope = new Stack<>();
@@ -632,11 +630,6 @@ part of the (((inner features))) declarations of the corresponding
         public void actionBefore(AbstractCase c)
         {
           _scope.push(c.code());
-          if (false) if (c.pos().show().indexOf("as3.fz:15") >= 0 || true ||
-              c.pos().show().indexOf("as3.fz:16") >= 0)
-            {
-              System.out.println("########################################################### Action before for "+c.pos().show());
-            }
           super.actionBefore(c);
         }
         @Override
@@ -648,20 +641,12 @@ part of the (((inner features))) declarations of the corresponding
         @Override
         public void actionBefore(Block b, AbstractFeature outer)
         {
-          if (false) if (inner.qualifiedName().equals("x3.y"))
-            {
-              System.out.println("block before" + b.pos().show());
-            }
           if (b._newScope) { _scope.push(b); }
           super.actionBefore(b, outer);
         }
         @Override
         public void actionAfter(Block b, AbstractFeature outer)
         {
-          if (false) if (inner.qualifiedName().equals("x3.y"))
-            {
-              System.out.println("block after");
-            }
           if (b._newScope) { _scope.pop(); }
           super.actionAfter(b, outer);
         }
@@ -686,7 +671,6 @@ part of the (((inner features))) declarations of the corresponding
           findDeclarations(f, outer); return f;
         }
       });
-    //System.out.println("<<<<<<<<<<<<<<<<<<<<<<<< setOUterANdAddInnter for "+inner.qualifiedName());
 
     if (inner.impl().hasInitialValue() &&
         !outer.pos()._sourceFile.sameAs(inner.pos()._sourceFile) &&
@@ -1503,6 +1487,8 @@ A post-condition of a feature that does not redefine an inherited feature must s
    * when an error is reported, to suggest adding `fixed` if that would solve
    * the error.
    *
+   * @param context the source code context
+   *
    * @return true if `to` may be replaced with `tr` or if `to` or `tr` contain
    * an error.
    */
@@ -1510,7 +1496,8 @@ A post-condition of a feature that does not redefine an inherited feature must s
                                    Feature redefinition,
                                    AbstractType to,
                                    AbstractType tr,
-                                   boolean fixed)
+                                   boolean fixed,
+                                   Context context)
   {
     return
       /* to contains original    .this.type and
@@ -1577,6 +1564,8 @@ A post-condition of a feature that does not redefine an inherited feature must s
    *
    * NYI: Better perform the check the other way around: check that f matches
    * the types of all features that f redefines.
+   *
+   * @param context the source code context
    */
   public void checkTypes(Feature f, Context context)
   {
@@ -1602,7 +1591,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
               {
                 var t1 = ta[i].applyTypePars(o, f.generics().asActuals());  /* replace o's type pars by f's */
                 var t2 = ra[i];
-                if (!isLegalCovariantThisType(o, f, t1, t2, fixed))
+                if (!isLegalCovariantThisType(o, f, t1, t2, fixed, context))
                   {
                     // original arg list may be shorter if last arg is open generic:
                     if (CHECKS) check
@@ -1615,7 +1604,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
                     var actualArg   =   args       .get(ai);
                     AstErrors.argumentTypeMismatchInRedefinition(o, originalArg, t1,
                                                                  f, actualArg,
-                                                                 isLegalCovariantThisType(o, f, t1, t2, true));
+                                                                 isLegalCovariantThisType(o, f, t1, t2, true, context));
                   }
               }
           }
@@ -1656,9 +1645,9 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
           }
         else if (!t1.isDirectlyAssignableFrom(t2, context) &&  // we (currently) do not tag the result in a redefined feature, see testRedefine
                  !t2.isVoid() &&
-                 !isLegalCovariantThisType(o, f, t1, t2, fixed))
+                 !isLegalCovariantThisType(o, f, t1, t2, fixed, context))
           {
-            AstErrors.resultTypeMismatchInRedefinition(o, t1, f, isLegalCovariantThisType(o, f, t1, t2, true));
+            AstErrors.resultTypeMismatchInRedefinition(o, t1, f, isLegalCovariantThisType(o, f, t1, t2, true, context));
           }
       }
 

@@ -20,13 +20,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class FeatureVisitor
+ * Source of class ContextVisitor
  *
  *---------------------------------------------------------------------*/
 
 package dev.flang.ast;
 
-import dev.flang.util.ANY;
 
 /**
  * This is a FeatureVisitor that keeps track of the Context of the currently
