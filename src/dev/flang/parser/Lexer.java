@@ -220,7 +220,7 @@ public class Lexer extends SourceFile
     t_spaceOrSemiLimit,  // token follows white space or semicolon while endAtSpace is enabled
     t_colonLimit,        // token is operator ":" while endAtColon is enabled
     t_barLimit,          // token is operator "|" while endAtBar is enabled
-    t_ambiguousSemi,
+    t_ambiguousSemi,     // it is unclear whether the semicolon ends the inner or the outer block, will always cause a syntax error
     t_undefined;         // current token before first call to next()
 
     /**

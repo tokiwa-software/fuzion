@@ -2608,7 +2608,7 @@ exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
       firstIndent  = indent(firstPos);
       oldEAS       = endAtSpaceOrSemi(Integer.MAX_VALUE);
       oldIndentPos = setMinIndent(tokenPos());
-      oldSemiSt = semiState(SemiState.CONTINUE);
+      oldSemiSt    = semiState(SemiState.CONTINUE);
     }
 
 
