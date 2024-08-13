@@ -1,0 +1,13 @@
+
+--CURDIR--/reg_issue3502.fz:25:34: error 1: Incompatible types in assignment
+  incompatible_type(a i32) i32 =>
+---------------------------------^
+assignment to field : 'reg_issue3502.incompatible_type.result'
+expected formal type: 'i32'
+actual type found   : 'unit'
+assignable to       : 'unit'
+for value assigned  : 
+
+To solve this, you could change the type of the target 'reg_issue3502.incompatible_type.result' to 'unit' or convert the type of the assigned value to 'i32'.
+
+one error.
