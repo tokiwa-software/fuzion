@@ -832,9 +832,12 @@ public class Errors extends ANY
     syntaxError(sourcePos,
                 "Ambiguous semicolon in nested blocks.",
                 "It is unclear whether this semicolon terminates the inner block or not. " +
-                "To solve this, add braces { } as follows\n\n" +
-                "  <line start>{<outer block>; <inner block>}<line end>\n\nor\n\n" +
-                "  <line start>{<first block>}; <second block><line end>");
+                "To solve this, add braces { }.\n");
+
+                // NYI: give examples on how to resolve the ambiguity, like shown in the template below
+                // "To solve this, add braces { } as follows\n\n" +
+                // "  <line start>{<outer block>; <inner block>}<line end>\n\nor\n\n" +
+                // "  <line start>{<first block>}; <second block><line end>");
   }
 
 
