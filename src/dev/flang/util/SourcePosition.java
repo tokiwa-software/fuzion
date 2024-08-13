@@ -224,7 +224,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
                 {
                   sb.append('-');
                 }
-              if (bytePos() == byteEndPos())
+              if (bytePos() == endPos)
               {
                 sb.append('^');
               } else
