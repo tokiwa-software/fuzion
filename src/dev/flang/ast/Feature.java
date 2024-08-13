@@ -1362,79 +1362,6 @@ public class Feature extends AbstractFeature
   }
 
 
-  static class ContextVisitor extends FeatureVisitor
-  {
-    Context _context = Context.NONE;
-
-    ContextVisitor(Context initialConext)
-    {
-      this._context = initialConext;
-    }
-
-    @Override public void         actionBefore(AbstractCase     c, AbstractMatch m)
-    {
-      var s = m.subject();
-      if (s instanceof AbstractCall sc &&
-          sc.calledFeature() == Types.resolved.f_Type_infix_colon && c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0))
-        {
-          _context = _context.addTypeConstraint(sc);
-          check(_context != null);
-        }
-      else
-        {
-          if (false) System.out.println("NO NEW CONTEXT "+
-                             c.pos().show());
-        }
-    }
-    @Override public void         actionAfter (AbstractCase     c, AbstractMatch m)
-    {
-      var s = m.subject();
-      if (s instanceof AbstractCall sc &&
-          sc.calledFeature() == Types.resolved.f_Type_infix_colon && c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0))
-        {
-          _context = _context.exterior();
-          check(_context != null);
-        }
-      if (false) if (s instanceof AbstractCall sc &&
-          sc.calledFeature() == Types.resolved.f_Type_infix_colon && c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0))
-        {
-          System.out.println("DONE CONTEXT "+c.pos().show());
-        }
-    }
-
-    @Override public void actionBeforeIfThen(If i)
-    {
-      if (i.cond instanceof AbstractCall sc &&
-          sc.calledFeature() == Types.resolved.f_Type_infix_colon)
-        {
-          _context = _context.addTypeConstraint(sc);
-          check(_context != null);
-        }
-    }
-    @Override public void actionBeforeIfElse(If i)
-    {
-      if (i.cond instanceof AbstractCall sc &&
-          sc.calledFeature() == Types.resolved.f_Type_infix_colon)
-        {
-          _context = _context.exterior();
-          check(_context != null);
-        }
-      // NYI: We might add support for `if !(T : x) then else ...treat T as x...`
-    }
-    @Override public void actionAfterIf     (If i)
-    {
-    }
-
-  }
-
-  class MyContextVisitor extends ContextVisitor
-  {
-    MyContextVisitor()
-    {
-      super(context());
-    }
-  }
-
   static class ResolveTypes extends ContextVisitor
   {
     Resolution res;
@@ -1880,7 +1807,7 @@ A ((Choice)) declaration must not contain a result type.
          * myfun will be used as the type of "fun (a) => a*a", which implies
          * that i32 will be the type for "a".
          */
-        visit(new MyContextVisitor() {
+        visit(new ContextVisitor(context()) {
             public void  action(AbstractAssign a, AbstractFeature outer) { a.propagateExpectedType(res, _context); }
             public Call  action(Call           c, AbstractFeature outer) { c.propagateExpectedType(res, _context); return c; }
             public void  action(Cond           c, AbstractFeature outer) { c.propagateExpectedType(res, _context); }
@@ -1892,7 +1819,7 @@ A ((Choice)) declaration must not contain a result type.
          * extra pass to automatically wrap values into 'Lazy'
          * or unwrap values inheriting `unwrap`
          */
-        visit(new MyContextVisitor() {
+        visit(new ContextVisitor(context()) {
             // we must do this from the outside of calls towards the inside to
             // get the corrected nesting of Lazy features created during this
             // phase
@@ -1931,7 +1858,7 @@ A ((Choice)) declaration must not contain a result type.
       {
         _state = State.BOXING;
 
-        visit(new MyContextVisitor() {
+        visit(new ContextVisitor(context()) {
             public void  action(AbstractAssign a, AbstractFeature outer) { a.boxVal     (_context);           }
             public Call  action(Call           c, AbstractFeature outer) { c.boxArgs    (_context); return c; }
             public Expr  action(InlineArray    i, AbstractFeature outer) { i.boxElements(_context); return i; }
@@ -1983,7 +1910,7 @@ A ((Choice)) declaration must not contain a result type.
       {
         _selfType   = selfType() .checkChoice(_pos,             context());
         _resultType = _resultType.checkChoice(_posOfReturnType, context());
-        visit(new MyContextVisitor() {
+        visit(new ContextVisitor(context()) {
             /* if an error is reported in a call it might no longer make sense to check the actuals: */
             public boolean visitActualsLate() { return true; }
 
@@ -2052,7 +1979,7 @@ A ((Choice)) declaration must not contain a result type.
       {
         _state = State.RESOLVING_SUGAR2;
 
-        visit(new MyContextVisitor() {
+        visit(new ContextVisitor(context()) {
             public Expr  action(Feature     f, AbstractFeature outer) { return new Nop(_pos);                        }
             public Expr  action(Function    f, AbstractFeature outer) { return f.resolveSyntacticSugar2(res); }
             public Expr  action(InlineArray i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, _context); }

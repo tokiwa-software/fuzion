@@ -151,8 +151,6 @@ public class Call extends AbstractCall
    */
   public AbstractFeature _calledFeature;
 
-  public Context _context = Context.NONE;
-
 
   /**
    * After an unsuccessful attempt was made to find the called feature, this
@@ -689,7 +687,6 @@ public class Call extends AbstractCall
         if (fo != null)
           {
             _calledFeature = fo._feature;
-            _context = context;
             if (_target == null)
               {
                 _target = fo.target(pos(), res, context);

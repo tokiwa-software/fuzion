@@ -71,24 +71,47 @@ public abstract class Context extends ANY
   /*----------------------------  variables  ----------------------------*/
 
 
+  /**
+   * Contexts are nested. This method provides the surrounding context of null
+   * if this=NONE, i..e, there is no surrounding context.
+   */
   abstract Context exterior();
 
 
   /*-------------------------  static methods  --------------------------*/
 
 
+
+  /**
+   * Create the default context for the given feature f.
+   *
+   * The result is a context whose `outerFeature()` equals to `f` and whose
+   * `exterior()` context is the contains the source code context of the
+   * declaration of `f`.
+   *
+   * This means that any type constraints that are made outside of the
+   * declaration of `f` will be part of the constraints on the result.
+   */
   static Context forFeature(AbstractFeature f)
   {
     return new Context()
       {
+
         @Override AbstractFeature outerFeature()
         {
           return f;
         }
 
-        @Override
-        Context exterior() { return f instanceof Feature ff ? ff._sourceCodeContext : NONE; }
-        @Override String localToString() { return f.qualifiedName() + " at " + f.pos().show(); }
+        @Override Context exterior()
+        {
+          return f instanceof Feature ff ? ff._sourceCodeContext
+                                         : NONE;
+        }
+
+        @Override String localToString()
+        {
+          return f.qualifiedName() + " at " + f.pos().show();
+        }
 
         @Override
         public AbstractType constraintFor(AbstractFeature typeParameter)
@@ -116,7 +139,10 @@ public abstract class Context extends ANY
   /*---------------------------  constructors  --------------------------*/
 
 
-  public Context()
+  /**
+   * Constructor, used to crate anonymous inner classes.
+   */
+  private Context()
   {
   }
 
@@ -124,6 +150,12 @@ public abstract class Context extends ANY
   /*-----------------------------  methods  -----------------------------*/
 
 
+  /**
+   * Check if the current context defines any constraint for the given type
+   * parameter. If so, return that constraint. Otherwise, return null.
+   *
+   * @param typeParameter a type parameter feature.
+   */
   public AbstractType constraintFor(AbstractFeature typeParameter)
   {
     var e = exterior();
@@ -182,6 +214,7 @@ public abstract class Context extends ANY
   {
     return exterior().outerFeature();
   }
+
 
   /**
    * Create a String describing this Context with the exterior(), for debugging.

@@ -420,10 +420,10 @@ public class Impl extends ANY
     if (outer.isConstructor() && outer.preFeature() != null)
       { // For constructors, the constructor itself checks the precondition (while
         // for functions, this is done by the caller):
-        var c = outer.contract().callPreCondition(res, outer, (Feature) outer, context);
+        var c = outer.contract().callPreCondition(res, outer, context);
         _expr = new Block(new List<>(c, _expr));
       }
-    if (needsImplicitAssignmentToResult(context.outerFeature()))
+    if (needsImplicitAssignmentToResult(outer))
       {
         var resultField = outer.resultField();
         Assign ass = new Assign(res,
@@ -446,7 +446,7 @@ public class Impl extends ANY
                OpenTypeParameter -> { if (!Errors.any()) { Errors.fatal("postcondition for type parameter should not exist for " + outer.pos().show()); } }
           case Routine           ->
             {
-              var callPostCondition = Contract.callPostCondition(res, (Feature) outer, context);
+              var callPostCondition = Contract.callPostCondition(res, context);
               this._expr = new Block(new List<>(this._expr, callPostCondition));
             }
           case Abstract          -> {} // ok, must be checked by redefinitions

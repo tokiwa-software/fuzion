@@ -418,14 +418,13 @@ public class Contract extends ANY
    *
    * @param f a feature with a precondition that should be called.
    *
-   * @param outer The call to f's pre bool feature is to be added to outer's
-   * code.
+   * @param context The context of this call
    *
    * @return a call to f.preBoolFeature() to be added to code of outer.
    */
-  static Call callPreBool(Resolution res, AbstractFeature f, Feature outer, Context context)
+  static Call callPreBool(Resolution res, AbstractFeature f, Context context)
   {
-    if (PRECONDITIONS) require(outer == context.outerFeature());
+    var outer = context.outerFeature();
     var oc = f.contract();
     var p = oc._hasPre != null ? oc._hasPre : f.pos();
     List<Expr> args = new List<>();
@@ -504,8 +503,9 @@ public class Contract extends ANY
    *
    * @return a call to outer.postFeature() to be added to code of outer.
    */
-  static Call callPostCondition(Resolution res, Feature outer, Context context)
+  static Call callPostCondition(Resolution res, Context context)
   {
+    var outer = (Feature) context.outerFeature();
     var oc = outer.contract();
     var p = oc._hasPost != null ? oc._hasPost : outer.pos();
     List<Expr> args = new List<>();
@@ -531,7 +531,7 @@ public class Contract extends ANY
       {
         args.add(new Current(p, outer));
       }
-    return callPostCondition(res, outer, outer, context, args);
+    return callPostCondition(res, outer, context, args);
   }
 
 
@@ -540,26 +540,22 @@ public class Contract extends ANY
    *
    * @param res resolution instance
    *
-   * @param outer a feature with a postcondition
-   *
-   * @param in either equal to outer or the postcondition feature of a
-   * redefinition of outer. The call ot outer's postcondition is to be added to
-   * in's code.
+   * @param origouter a feature with a postcondition
    *
    * @param args actual arguments to be passed to the call
    *
    * @return a call to outer.postFeature() to be added to code of in.
    */
-  private static Call callPostCondition(Resolution res, AbstractFeature outer, Feature in, Context context, List<Expr> args)
+  private static Call callPostCondition(Resolution res, AbstractFeature origouter, Context context, List<Expr> args)
   {
-    //    if (PRECONDITIONS) require(outer == context.outerFeature());
+    var in = context.outerFeature();
     var p = in.contract()._hasPost != null
           ? in.contract()._hasPost   // use `post` position if `in` is of the form `f post cc is ...`
           : in.pos();                // `in` does not have `post` clause, only inherits postconditions. So use the feature position instead
 
     var t = (in.outerRef() != null) ? new This(p, in, in.outer()).resolveTypes(res, in.context())
                                     : new Universe();
-    if (outer instanceof Feature of)  // if outer is currently being compiled, make sure its post feature is added first
+    if (origouter instanceof Feature of)  // if origouter is currently being compiled, make sure its post feature is added first
       {
         addContractFeatures(res, of, context);
       }
@@ -567,7 +563,7 @@ public class Contract extends ANY
                                      t,
                                      in.generics().asActuals(),
                                      args,
-                                     outer.postFeature(),
+                                     origouter.postFeature(),
                                      Types.resolved.t_unit);
     callPostCondition = callPostCondition.resolveTypes(res, in.context());
     return callPostCondition;
@@ -708,7 +704,7 @@ public class Contract extends ANY
         //   else check declared
         for (var i = 0; i < inhpres.size() && hasPreConditionsFeature(inhpres.get(i)); i++)
           {
-            var call = callPreBool(res, inhpres.get(i), pF, pF.context());
+            var call = callPreBool(res, inhpres.get(i), pF.context());
             cc = cc == null
               ? call
               : new ParsedCall(cc, new ParsedName(pos, "infix ||"), new List<>(call));
@@ -721,7 +717,7 @@ public class Contract extends ANY
         //   else pre_inh<n>
         for (var i = 0; i < inhpres.size()-1; i++)
           {
-            var call = callPreBool(res, inhpres.get(i), pF, context);
+            var call = callPreBool(res, inhpres.get(i), pF.context());
             cc = cc == null
               ? call
               : new ParsedCall(cc, new ParsedName(pos, "infix ||"), new List<>(call));
@@ -732,7 +728,7 @@ public class Contract extends ANY
           (inhpres.size() != 0);
 
         // code is empty anyway, replace it by call to pre_inh<n>:
-        new_code = new List<>(callPreCondition(res, inhpres.getLast(), pF, context));
+        new_code = new List<>(callPreCondition(res, inhpres.getLast(), pF.context()));
       }
 
     if (preBool)
@@ -1101,7 +1097,7 @@ The conditions of a post-condition are checked at run-time in sequential source-
                     ca = ca.resolveTypes(res, pF.context());
                     args2.add(ca);
                   }
-                var inhpost = callPostCondition(res, inh, pF, pF.context(), args2);
+                var inhpost = callPostCondition(res, inh, pF.context(), args2);
                 inhpost = inhpost.resolveTypes(res, pF.context());
                 if (l2 == null)
                   {

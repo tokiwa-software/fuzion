@@ -391,7 +391,7 @@ public class AstErrors extends ANY
         else
           {
             var assignableTo = new TreeSet<String>();
-            frmlT.isAssignableFrom(actlT, assignableTo, Context.NONE);
+            frmlT.isAssignableFrom(actlT, assignableTo, context);
             for (var ts : assignableTo)
               {
                 assignableToSB
@@ -487,7 +487,7 @@ public class AstErrors extends ANY
                                              int count,
                                              AbstractType frmlT,
                                              Expr value,
-                                           Context context)
+                                             Context context)
   {
     var frmls = calledFeature.valueArguments().iterator();
     AbstractFeature frml = null;
