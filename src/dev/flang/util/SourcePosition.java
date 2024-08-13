@@ -195,21 +195,23 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
             if (bytePos() == byteEndPos())
               /* not a SourceRange! */
               {
+                var underlined = _sourceFile.asString(p, Math.min(p+1, _sourceFile.byteLength()-1));
                 sb.append(_sourceFile.asString(_sourceFile.lineStartPos(l), p))
                   .append(Terminal.CURLY_UNDERLINE)
                   .append(Terminal.UNDERLINE_LINE_RED)
-                  .append(_sourceFile.asString(p, Math.min(p+1, _sourceFile.byteLength()-1)))
+                  .append(underlined.length() == 0 && Terminal.ENABLED ? " " : underlined)
                   .append(Terminal.UNDERLINE_OFF)
                   .append(Terminal.UNDERLINE_LINE_COLOR_OFF)
                   .append(_sourceFile.asString(p + 1, _sourceFile.lineEndPos(l)));
               }
             else
               {
+                var underlined = str.subSequence(leadingWhiteSpace, str.length());
                 sb.append(_sourceFile.asString(_sourceFile.lineStartPos(l), p))
                   .append(str.subSequence(0, leadingWhiteSpace))
                   .append(Terminal.CURLY_UNDERLINE)
                   .append(Terminal.UNDERLINE_LINE_RED)
-                  .append(str.subSequence(leadingWhiteSpace, str.length()))
+                  .append(underlined.length() == 0 && Terminal.ENABLED ? " " : underlined)
                   .append(Terminal.UNDERLINE_OFF)
                   .append(Terminal.UNDERLINE_LINE_COLOR_OFF)
                   .append(_sourceFile.asString(endPos, _sourceFile.lineEndPos(l)));
