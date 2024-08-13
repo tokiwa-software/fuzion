@@ -21,7 +21,13 @@
 #
 # -----------------------------------------------------------------------
 
+# positive tests for compile-time type casts like preconditions `pre T : x` or
+# conditionals `if T : x then ... else if T : y then ...`.
+#
 compile_time_type_casts =>
+
+  # first, test base lib features on Sequence that are using type casts in
+  # preconditions:
 
   say ([1,2,3,4,5,6,7,8,9,10].find_first [3,4,5])
   say ([1,2,3,4,5,6,7,8,9,10].find_first [6,7,8])
@@ -52,6 +58,13 @@ compile_time_type_casts =>
   say (t.find_first ["avenidas", "avenidas y mujeres"])
   say (t.find_first ["avenidas", "flores y mujeres"])  # will fail
   say (t.find_first ["un admirador"])
+
+
+  # ----------------------------------------------------------------------
+
+
+  # next, test that if-statements propagate the type constraint correctly to
+  # code, lambda, partial calls and lazy values:
 
   a is
     do_a_thing => say "a!"
@@ -131,6 +144,10 @@ compile_time_type_casts =>
   x unit
 
 
+  # ----------------------------------------------------------------------
+
+  # test deeper nesting levels
+  #
 
   A ref is
   B ref is
