@@ -1,0 +1,21 @@
+PASSED: generic field real set correctly
+PASSED: generic field imag set correctly
+PASSED: non-generic field real set correctly
+PASSED: non-generic field imag set correctly
+PASSED: inherited generic field real set correctly
+PASSED: inherited generic field imag set correctly
+PASSED: non-generic field rr set correctly
+PASSED: non-generic field ii set correctly
+PASSED: redefined generic field real set correctly
+PASSED: redefined generic field imag set correctly
+PASSED: redefined generic field real accessed through super feature set correctly
+PASSED: redefined generic field imag accessed through super feature set correctly
+PASSED: double redefined generic field real set correctly
+PASSED: double redefined generic field imag set correctly
+PASSED: double redefined generic field real accessed through super-super feature set correctly
+PASSED: double redefined generic field imag accessed through super-super feature set correctly
+PASSED: double redefined generic field real accessed through super feature set correctly
+PASSED: double redefined generic field imag accessed through super feature set correctly
+PASSED: redefined field as in #165
+PASSED: redefined field as in #165
+PASSED: redefined field as in #165

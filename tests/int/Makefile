@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = int_test
-include ../positive.mk
+include ../simple.mk

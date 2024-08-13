@@ -21,5 +21,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = reg_issue1628.fz
-include ../positive.mk
+override NAME = reg_issue1628
+include ../simple.mk

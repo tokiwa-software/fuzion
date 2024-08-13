@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = stringstest
-include ../positive.mk
+include ../simple.mk

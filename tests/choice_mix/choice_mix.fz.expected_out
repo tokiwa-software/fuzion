@@ -1,0 +1,103 @@
+a: show_a i32:    
+b: show_b  bool:   
+c: show_c  string: 
+d: show_d  Nil:    
+e: show_e  MyRef:  
+a: show00 i32:    
+b: show00 bool:   
+c: show00 string: 
+d: show00 Nil:    
+e: show00 MyRef:  
+a: show0  i32:    
+b: show0  bool:   
+c: show0  string: 
+d: show0  Nil:    
+e: show0  MyRef:  
+show_a : show_a i32:    
+show_v : show_v i32:    3
+show_i : show_a has 'i'
+show a: show   i32:    3
+show b: show   bool:   true
+show c: show   string: string
+show d: show   Nil:    instance[choice_mix.Nil]
+-------------
+show_a : show_a bool:   
+show_v : show_v bool:   true
+show_i : show_a has no 'i'
+show a: show   bool:   true
+show b: show   string: string
+show c: show   Nil:    instance[choice_mix.Nil]
+show d: show   MyRef:  instance[choice_mix.MyRef]
+-------------
+show_a : show_a string: 
+show_v : show_v string: string
+show_i : show_a has 'i'
+show a: show   string: string
+show b: show   Nil:    instance[choice_mix.Nil]
+show c: show   MyRef:  instance[choice_mix.MyRef]
+show d: show   i32:    3
+-------------
+show_a : show_a Nil:    
+show_v : show_v Nil:    instance[choice_mix.Nil]
+show_i : show_a has 'i'
+show a: show   Nil:    instance[choice_mix.Nil]
+show b: show   MyRef:  instance[choice_mix.MyRef]
+show c: show   i32:    3
+show d: show   bool:   true
+-------------
+show_a : show_a MyRef:  
+show_v : show_v MyRef:  instance[choice_mix.MyRef]
+show_i : show_a has no 'i'
+show a: show   MyRef:  instance[choice_mix.MyRef]
+show b: show   i32:    3
+show c: show   bool:   true
+show d: show   string: string
+-------------
+show_a : show_a i32:    
+show_v : show_v i32:    3
+show_i : show_a has 'i'
+show a: show   i32:    3
+show b: show   bool:   true
+show c: show   string: string
+show d: show   Nil:    instance[choice_mix.Nil]
+red 16711680
+grn 65280
+blk 0
+trp 3355443200
+trp 1677721600
+red16711680
+grn65280
+blk0
+trp3355443200
+trp1677721600
+0 ==> 0
+1 ==> 1
+2 ==> 2
+3 ==> 3
+4 ==> 4
+5 ==> 5
+6 ==> 6
+7 ==> 7
+8 ==> 8
+9 ==> 9
+10 ==> false
+11 ==> false
+12 ==> false
+13 ==> false
+14 ==> false
+15 ==> false
+16 ==> true
+17 ==> true
+18 ==> true
+19 ==> true
+20 ==> Large
+21 ==> Large
+22 ==> Large
+23 ==> Large
+24 ==> Large
+12345678910
+i32:    3
+bool:   true
+string: string
+Nil:    instance[choice_mix.alternatives2.Nil2]
+MyRef:  instance[choice_mix.alternatives2.MyRef2]

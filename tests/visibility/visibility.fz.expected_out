@@ -1,0 +1,163 @@
+PASSED: call a1.b1.c1
+PASSED: call a1.b1.c2
+PASSED: call a1.b2.c3
+PASSED: call a1.b2.c4
+PASSED: call a2.b3.c5
+PASSED: call a2.b3.c6
+PASSED: can access f1
+PASSED: can access f1
+PASSED: can access f1
+PASSED: can access f8
+PASSED: can access f1
+PASSED: can access f8
+PASSED: can access f1
+PASSED: can access f1
+PASSED: can access f2
+PASSED: can access f1
+PASSED: can access f2
+PASSED: can access f1
+PASSED: can access f2
+PASSED: can access f1
+PASSED: can access f2
+PASSED: can access f7
+PASSED: can access f1
+PASSED: can access f2
+PASSED: can access f1
+PASSED: can access f2
+PASSED: can access f3
+PASSED: can access f1
+PASSED: can access f2
+PASSED: can access f3
+PASSED: can access f4
+PASSED: can access f1
+PASSED: can access f1
+PASSED: can access f1
+PASSED: can access f8
+PASSED: can access f1
+PASSED: can access f8
+PASSED: can access f1
+PASSED: can access f1
+PASSED: can access f2
+PASSED: can access f1
+PASSED: can access f2
+PASSED: can access f1
+PASSED: can access f2
+PASSED: can access f1
+PASSED: can access f2
+PASSED: can access f7
+PASSED: can access f1
+PASSED: can access f2
+PASSED: can access f1
+PASSED: can access f2
+PASSED: can access f5
+PASSED: can access f1
+PASSED: can access f2
+PASSED: can access f5
+PASSED: can access f6
+PASSED: can access f1
+PASSED: can access f1
+PASSED: can access f1
+PASSED: can access f8
+PASSED: can access f1
+PASSED: can access f8
+PASSED: can access f1
+PASSED: can access f8
+PASSED: can access f1
+PASSED: can access f8
+PASSED: can access f9
+PASSED: can assign f1
+PASSED: can assign f1
+PASSED: can assign f1
+PASSED: can assign f8
+PASSED: can assign f1
+PASSED: can assign f8
+PASSED: can assign f1
+PASSED: can assign f1
+PASSED: can assign f2
+PASSED: can assign f1
+PASSED: can assign f2
+PASSED: can assign f1
+PASSED: can assign f2
+PASSED: can assign f1
+PASSED: can assign f2
+PASSED: can assign f7
+PASSED: can assign f1
+PASSED: can assign f2
+PASSED: can assign f1
+PASSED: can assign f2
+PASSED: can assign f3
+PASSED: can assign f1
+PASSED: can assign f2
+PASSED: can assign f3
+PASSED: can assign f4
+PASSED: can assign f1
+PASSED: can assign f1
+PASSED: can assign f1
+PASSED: can assign f8
+PASSED: can assign f1
+PASSED: can assign f8
+PASSED: can assign f1
+PASSED: can assign f1
+PASSED: can assign f2
+PASSED: can assign f1
+PASSED: can assign f2
+PASSED: can assign f1
+PASSED: can assign f2
+PASSED: can assign f1
+PASSED: can assign f2
+PASSED: can assign f7
+PASSED: can assign f1
+PASSED: can assign f2
+PASSED: can assign f1
+PASSED: can assign f2
+PASSED: can assign f5
+PASSED: can assign f1
+PASSED: can assign f2
+PASSED: can assign f5
+PASSED: can assign f6
+PASSED: can assign f1
+PASSED: can assign f1
+PASSED: can assign f1
+PASSED: can assign f8
+PASSED: can assign f1
+PASSED: can assign f8
+PASSED: can assign f1
+PASSED: can assign f8
+PASSED: can assign f1
+PASSED: can assign f8
+PASSED: can assign f9
+PASSED: outer x
+PASSED: a.this.x
+PASSED: b.this.x
+PASSED: a.this.x
+PASSED: b.this.x
+PASSED: c.this.x
+PASSED: outer x
+PASSED: a.this.x
+PASSED: outer x
+PASSED: a.this.x
+PASSED: inner x
+PASSED: a.this.x
+PASSED: b.this.x
+PASSED: inner x
+PASSED: a.this.x
+PASSED: b.this.x
+PASSED: inner inner x
+PASSED: a.this.x
+PASSED: b.this.x
+PASSED: c.this.x
+PASSED: x := 2
+PASSED: x := x.as_f64
+PASSED: x := x * 3.14
+PASSED: x := x.as_i32
+PASSED: x is 2
+PASSED: x is 16
+PASSED: x is 16
+PASSED: x is 1616161616
+PASSED: x is 2
+PASSED: x is 16
+PASSED: x is 16
+PASSED: x is 1616161616
+red white   is 255
+red grey    is 127
+red magenta is 255

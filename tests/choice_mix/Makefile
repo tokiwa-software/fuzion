@@ -25,4 +25,4 @@
 
 override NAME = choice_mix
 FUZION_OPTIONS = -XenableSetKeyword
-include ../positive.mk
+include ../simple.mk

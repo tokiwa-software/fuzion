@@ -26,4 +26,4 @@
 export FUZION_JAVA_STACK_SIZE = 16m # required for manorboy(10)
 override NAME = man_or_boy
 FUZION_OPTIONS = -XenableSetKeyword
-include ../positive.mk
+include ../simple.mk

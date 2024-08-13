@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = transducertest
-include ../positive.mk
+include ../simple.mk

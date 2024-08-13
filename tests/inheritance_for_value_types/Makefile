@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = inheritance_for_value_types
-include ../positive.mk
+include ../simple.mk
