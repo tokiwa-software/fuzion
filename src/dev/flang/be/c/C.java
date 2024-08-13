@@ -1624,9 +1624,9 @@ public class C extends ANY
       case Intrinsic:
       case Native   :
         {
-          var a = args(tvalue, args, cc, _fuir.clazzArgCount(cc));
           if (_fuir.clazzNeedsCode(cc))
             {
+              var a = args(tvalue, args, cc, _fuir.clazzArgCount(cc));
               var cl = _fuir.clazzAt(s);
 
               if (cc == cl                                               &&  // calling myself
