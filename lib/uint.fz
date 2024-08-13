@@ -266,8 +266,6 @@ is
 
   public fixed redef prefix -! bool => uint.this = uint.zero
   public fixed redef infix -! (other uint) bool => uint.this ≥ other
-  public fixed redef infix /! (other uint) bool => other != uint.zero
-  public fixed redef infix %! (other uint) bool => other != uint.zero
 
   # exponentation always works, even though it might be
   # slow for large numbers

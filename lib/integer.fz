@@ -31,6 +31,13 @@
 #
 module:public integer : numeric is
 
+
+  # preconditions used in 'numeric' for basic operations: true if the
+  # operation is permitted for the given values
+  public redef infix /! (other integer.this) => other != integer.this.zero
+  public redef infix %! (other integer.this) => other != integer.this.zero
+
+
   # test divisibility by other
   public infix %% (other integer.this) bool
     pre
