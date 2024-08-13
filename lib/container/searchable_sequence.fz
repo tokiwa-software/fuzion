@@ -44,8 +44,19 @@ is
 
   # does this sequence start with l?
   #
-  public starts_with(l Sequence A) =>
-    l.is_prefix_of from
+  public starts_with(l Sequence A) bool =>
+    # NYI: BUG: This could be implemented as
+    #
+    #   l.is_prefix_of from
+    #
+    # but this currently causes a failure in tests/nom, need to check why.
+    #
+    match l.as_list
+      nil    => true
+      c2 Cons =>
+        match from.as_list
+          nil     => false
+          c1 Cons => c1.head = c2.head && (searchable_sequence c1.tail).starts_with c2.tail # tail recursion
 
 
   # get the index of l within this list or nil if it does not exist
