@@ -22,4 +22,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = ex_nested_options
-include ../positive.mk
+include ../simple.mk

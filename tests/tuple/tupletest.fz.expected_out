@@ -1,0 +1,94 @@
+PASSED: g1 A infer A==string
+PASSED: g1 A infer A==i32
+PASSED: g1a A infer A==string
+PASSED: g1a A infer A==i32
+PASSED: g1b AAAA infer AAAA==bool
+PASSED: g1b AAAA infer AAAA==string
+nothing1 is instance[tuple]
+nothing2 is instance[tuple]
+nothing3 is instance[tuple]
+nothing4 is instance[tuple]
+nothing5 is instance[tuple]
+nothing6 is instance[tuple]
+nothing7 is instance[tuple]
+nothing8 is instance[tuple]
+nothing9 is instance[tuple]
+nothing10 is ()
+nothing11 is ()
+nothing12 is ()
+one2 is 42
+one10 is 42
+one12 is 42
+PASSED: one2
+PASSED: one10
+two2 is 4, 2
+two3 is 4, 2
+two9 is 4, 2
+two11 is 4, 2
+two12 is 4, 2
+two14 is 4, 2
+two15 is 4, 2
+PASSED: two2
+PASSED: two3
+PASSED: two9
+PASSED: two11
+PASSED: two12
+PASSED: two14
+PASSED: two15
+PASSED: two17
+PASSED: two18
+tuple t10 is 3, false
+PASSED: t10.values.0
+PASSED: t10.values.1
+tuple t10a is 3, false
+PASSED: t10a.values.0
+PASSED: t10a.values.1
+tuple t10aa is 42, the answer
+PASSED: t10aa.values.0
+PASSED: t10aa.values.1
+tuple t10aaa is devil's number, 666
+PASSED: t10aaa.values.0
+PASSED: t10aaa.values.1
+tuple t10a1/2 is 3, false
+PASSED: t10a1
+PASSED: t10a2
+tuple t10b1/2 = ib is 42, false
+PASSED: t10b1
+PASSED: t10b2
+tuple t10b1/2 = t10 is 42, false
+PASSED: t10b1
+PASSED: t10b2
+tuple t10c1/2 is 3, false
+PASSED: t10c1
+PASSED: t10c2
+tuple t11a is 5, 25, 125
+PASSED: first must be 5
+PASSED: second must be 25
+PASSED: third must be 125
+PASSED: first must be 42
+PASSED: second must be 42
+PASSED: third must be 42
+PASSED: first must be 6
+PASSED: second must be 36
+PASSED: third must be 216
+PASSED: first must be 7
+PASSED: second must be 49
+PASSED: third must be 343
+PASSED: t12i3 must be 729
+PASSED: t12i2 must be 81
+PASSED: t12i1 must be 9
+PASSED: t12j3 must be 1000
+PASSED: t12j2 must be 100
+PASSED: t12j1 must be 10
+PASSED: t13b1 must be 01
+PASSED: t13b2 must be 12
+PASSED: t13b3 must be 23
+PASSED: t13d1 must be 01
+PASSED: t13d2 must be 12
+PASSED: t13d3 must be 23
+PASSED: t14c1 must be 01
+PASSED: t14c2 must be true
+PASSED: t14c3 must be 23
+PASSED: t14d1 must be 01
+PASSED: t14d2 must be true
+PASSED: t14d3 must be 23

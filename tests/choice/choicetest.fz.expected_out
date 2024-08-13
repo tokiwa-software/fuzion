@@ -1,0 +1,6 @@
+l1 is Red, l2 is Green
+creating array:
+summing array using loop: 104
+summing array using iterator: 104
+summing array using iterator and inner feature: 104
+summing array using monoid: 104

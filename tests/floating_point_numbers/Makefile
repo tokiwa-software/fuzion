@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = floating_point_numbers
-include ../positive.mk
+include ../simple.mk

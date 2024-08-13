@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = functions
-include ../positive.mk
+include ../simple.mk

@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = qualified_declaration
-include ../positive.mk
+include ../simple.mk

@@ -25,4 +25,4 @@
 
 override NAME = inheritance
 FUZION_OPTIONS = -XenableSetKeyword
-include ../positive.mk
+include ../simple.mk

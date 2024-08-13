@@ -22,4 +22,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = wrap_around_semantics_test
-include ../positive.mk
+include ../simple.mk

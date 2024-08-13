@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = unicode_15
-include ../positive.mk
+include ../simple.mk

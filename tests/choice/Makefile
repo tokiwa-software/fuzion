@@ -25,4 +25,4 @@
 
 override NAME = choicetest
 FUZION_OPTIONS = -XenableSetKeyword
-include ../positive.mk
+include ../simple.mk

@@ -1,0 +1,13 @@
+print el in recursion: 9
+print el in recursion: 8
+print el in recursion: 7
+print el in recursion: 6
+print el in recursion: 5
+print el in recursion: 4
+print el in recursion: 3
+size: 7
+print el in recursion: instance[testLists.Complex]
+print el in recursion: instance[testLists.Complex]
+print el in recursion: instance[testLists.Complex]
+print el in recursion: instance[testLists.Complex]
+size: 4

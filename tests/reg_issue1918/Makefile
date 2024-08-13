@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = test_issue1918
-include ../positive.mk
+include ../simple.mk

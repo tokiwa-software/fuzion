@@ -1,0 +1,110 @@
+Fold String list: The quick brown fox jumps over the lazy dog.
+PASSED: check String concat
+sum 1 is 0
+PASSED: sum l1
+sum 2 is 9
+PASSED: sum l2
+sum 3 is 89
+PASSED: sum l3
+sum 4 is 789
+PASSED: sum l4
+sum 5 is 6789
+PASSED: sum l5
+sum 6 is 56789
+PASSED: sum l6
+sum 7 is 456789
+PASSED: sum l7
+sum 8 is 3456789
+PASSED: sum l8
+sum 9 is 23456789
+PASSED: sum l9
+sum 10 is 123456789
+PASSED: sum lA
+sum 1 is 0
+PASSED: take(5).sum l1
+sum 2 is 9
+PASSED: take(5).sum l2
+sum 3 is 89
+PASSED: take(5).sum l3
+sum 4 is 789
+PASSED: take(5).sum l4
+sum 5 is 6789
+PASSED: take(5).sum l5
+sum 6 is 56789
+PASSED: take(5).sum l6
+sum 7 is 456780
+PASSED: take(5).sum l7
+sum 8 is 3456700
+PASSED: take(5).sum l8
+sum 9 is 23456000
+PASSED: take(5).sum l9
+sum 10 is 123450000
+PASSED: take(5).sum lA
+String list 1 is 
+PASSED: concat sl1
+String list 2 is dog.
+PASSED: concat sl2
+String list 3 is lazy dog.
+PASSED: concat sl3
+String list 4 is the lazy dog.
+PASSED: concat sl4
+String list 5 is over the lazy dog.
+PASSED: concat sl5
+String list 6 is jumps over the lazy dog.
+PASSED: concat sl6
+String list 7 is fox jumps over the lazy dog.
+PASSED: concat sl
+String list 8 is brown fox jumps over the lazy dog.
+PASSED: concat sl
+String list 9 is quick brown fox jumps over the lazy dog.
+PASSED: concat sl9
+String list 10 is The quick brown fox jumps over the lazy dog.
+PASSED: concat slA
+product mod 11 is 1
+PASSED: l1.fold produc mod 11
+product mod 11 is 9
+PASSED: l2.fold produc mod 11
+product mod 11 is 5
+PASSED: l3.fold produc mod 11
+product mod 11 is 2
+PASSED: l4.fold produc mod 11
+product mod 11 is 10
+PASSED: l5.fold produc mod 11
+product mod 11 is 6
+PASSED: l6.fold produc mod 11
+product mod 11 is 9
+PASSED: l7.fold produc mod 11
+product mod 11 is 5
+PASSED: l8.fold produc mod 11
+product mod 11 is 1
+PASSED: l9.fold produc mod 11
+product mod 11 is 1
+PASSED: lA.fold produc mod 11
+product_saturating 1 is 1
+PASSED: l1.fold i32.product_saturating
+product_saturating 2 is 9
+PASSED: l2.fold i32.product_saturating
+product_saturating 3 is 720
+PASSED: l3.fold i32.product_saturating
+product_saturating 4 is 504000
+PASSED: l4.fold i32.product_saturating
+product_saturating 5 is 2147483647
+PASSED: l5.fold i32.product_saturating
+product_saturating 6 is 2147483647
+PASSED: l6.fold i32.product_saturating
+product_saturating 7 is 2147483647
+PASSED: l7.fold i32.product_saturating
+product_saturating 8 is 2147483647
+PASSED: l8.fold i32.product_saturating
+product_saturating 9 is 2147483647
+PASSED: l9.fold i32.product_saturating
+product_saturating 10 is 2147483647
+PASSED: lA.fold i32.product_saturating
+product 1 is 1
+PASSED: l1.fold i32.product
+product 2 is 9
+PASSED: l2.fold i32.product
+product 3 is 720
+PASSED: l3.fold i32.product
+product 4 is 504000
+PASSED: l4.fold i32.product

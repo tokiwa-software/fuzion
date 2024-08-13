@@ -1,0 +1,80 @@
+testLoop0: plain while loop
+searching first smaller   -50: We found it at 46: -92
+searching first smaller  -100: We found it at 69: -138
+searching first larger     10: We found it at 4: 16
+searching first larger    100: We found it at 11: 121
+searching first larger   1000: We found it at 32: 1024
+searching first larger  10000: Not found! ix is 100
+searching first larger 100000: Not found! ix is 100
+testLoop1: plain while-until loop
+searching first smaller   -50: We found it at 47: -92
+searching first smaller  -100: We found it at 70: -138
+searching first larger     10: We found it at 5: 16
+searching first larger    100: We found it at 12: 121
+searching first larger   1000: We found it at 33: 1024
+searching first larger  10000: Not found! ix is 100
+searching first larger 100000: Not found! ix is 100
+testLoop2: loop with index variables
+searching first smaller   -50: We found it at 46: -92
+searching first smaller  -100: We found it at 69: -138
+searching first larger     10: We found it at 4: 16
+searching first larger    100: We found it at 11: 121
+searching first larger   1000: We found it at 32: 1024
+searching first larger  10000: Not found! ix is 100
+searching first larger 100000: Not found! ix is 100
+testLoop3: loop with index variables, variant and invariant
+searching first smaller   -50: We found it at 46: -92
+searching first smaller  -100: We found it at 69: -138
+searching first larger     10: We found it at 4: 16
+searching first larger    100: We found it at 11: 121
+searching first larger   1000: We found it at 32: 1024
+searching first larger  10000: Not found! ix is 100
+searching first larger 100000: Not found! ix is 100
+testLoop4: loop with index variables, empty body
+searching first smaller   -50: We found it at 46: -92
+searching first smaller  -100: We found it at 69: -138
+searching first larger     10: We found it at 4: 16
+searching first larger    100: We found it at 11: 121
+searching first larger   1000: We found it at 32: 1024
+searching first larger  10000: Not found! ix is 100
+searching first larger 100000: Not found! ix is 100
+testLoop5: loop with index variables, no while and empty body
+searching first smaller   -50: We found it at 46: -92
+searching first smaller  -100: We found it at 69: -138
+searching first larger     10: We found it at 4: 16
+searching first larger    100: We found it at 11: 121
+searching first larger   1000: We found it at 32: 1024
+searching first larger  10000: Not found! ix is 100
+searching first larger 100000: Not found! ix is 100
+testLoop6: loop which returns a String
+searching first smaller   -50: -92
+searching first smaller  -100: -138
+searching first larger     10: 16
+searching first larger    100: 121
+searching first larger   1000: 1024
+searching first larger  10000: -999999
+searching first larger 100000: -999999
+testLoop7: loop return 3333 on success and 4444 in else branch
+PASSED: testLoop7 returns 3333 in until branch
+PASSED: testLoop7 returns 4444 in else branch
+testLoop8: loop return success index as default and 4444 in else branch
+PASSED: testLoop8 returns   11 in index branch
+PASSED: testLoop8 returns 4444 in else branch
+testLoop9: loop return 3333 on success, index as default
+PASSED: testLoop9 returns 3333 in until branch
+PASSED: testLoop9 returns  100 in index branch
+testLoop10: loop return 4444 on else branch, no success possible
+PASSED: testLoop10 returns 4444 in else branch
+PASSED: testLoop10 returns 4444 in else branch
+testLoop11: loop returns last index
+PASSED: testLoop11 returns 100 in index branch
+PASSED: testLoop11 returns 100 in index branch
+testLoop12: loop returns found or not
+PASSED: testLoop12 returns true  in index branch
+PASSED: testLoop12 returns false in index branch
+testLoop13: sum up the elements
+PASSED: testLoop13 returns 312020 in index branch
+PASSED: testWriteToDeclaredVar returns (100, 10000)
+PASSED: testWriteToDeclaredVar returns (100, 10000)
+PASSED: testWriteToDeclaredVar returns (100, 10000)
+PASSED: testWriteToDeclaredVar returns (100, 10000)

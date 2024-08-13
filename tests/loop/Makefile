@@ -26,4 +26,4 @@
 export FUZION_JAVA_STACK_SIZE = 4m # required since tail recursion is not optimized yet
 override NAME = looptest
 FUZION_OPTIONS = -XenableSetKeyword
-include ../positive.mk
+include ../simple.mk

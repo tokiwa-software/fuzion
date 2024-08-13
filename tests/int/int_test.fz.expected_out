@@ -1,0 +1,360 @@
+PASSED: int: m -2  = n -2
+PASSED: int: m -2 <= n -2
+PASSED: int: m -2 + n -2
+PASSED: int: m -2 - n -2
+PASSED: int: m -2 * n -2
+PASSED: int: m -2 / n -2
+PASSED: int: m -2 % n -2
+PASSED: int: m -2  = n -1
+PASSED: int: m -2 <= n -1
+PASSED: int: m -2 + n -1
+PASSED: int: m -2 - n -1
+PASSED: int: m -2 * n -1
+PASSED: int: m -2 / n -1
+PASSED: int: m -2 % n -1
+PASSED: int: m -2  = n 0
+PASSED: int: m -2 <= n 0
+PASSED: int: m -2 + n 0
+PASSED: int: m -2 - n 0
+PASSED: int: m -2 * n 0
+PASSED: int: m -2 ** n 0
+PASSED: int: m -2  = n 1
+PASSED: int: m -2 <= n 1
+PASSED: int: m -2 + n 1
+PASSED: int: m -2 - n 1
+PASSED: int: m -2 * n 1
+PASSED: int: m -2 / n 1
+PASSED: int: m -2 % n 1
+PASSED: int: m -2 ** n 1
+PASSED: int: m -2  = n 2
+PASSED: int: m -2 <= n 2
+PASSED: int: m -2 + n 2
+PASSED: int: m -2 - n 2
+PASSED: int: m -2 * n 2
+PASSED: int: m -2 / n 2
+PASSED: int: m -2 % n 2
+PASSED: int: m -2 ** n 2
+PASSED: int:  -2 as string
+PASSED: int: m -1  = n -2
+PASSED: int: m -1 <= n -2
+PASSED: int: m -1 + n -2
+PASSED: int: m -1 - n -2
+PASSED: int: m -1 * n -2
+PASSED: int: m -1 / n -2
+PASSED: int: m -1 % n -2
+PASSED: int: m -1  = n -1
+PASSED: int: m -1 <= n -1
+PASSED: int: m -1 + n -1
+PASSED: int: m -1 - n -1
+PASSED: int: m -1 * n -1
+PASSED: int: m -1 / n -1
+PASSED: int: m -1 % n -1
+PASSED: int: m -1  = n 0
+PASSED: int: m -1 <= n 0
+PASSED: int: m -1 + n 0
+PASSED: int: m -1 - n 0
+PASSED: int: m -1 * n 0
+PASSED: int: m -1 ** n 0
+PASSED: int: m -1  = n 1
+PASSED: int: m -1 <= n 1
+PASSED: int: m -1 + n 1
+PASSED: int: m -1 - n 1
+PASSED: int: m -1 * n 1
+PASSED: int: m -1 / n 1
+PASSED: int: m -1 % n 1
+PASSED: int: m -1 ** n 1
+PASSED: int: m -1  = n 2
+PASSED: int: m -1 <= n 2
+PASSED: int: m -1 + n 2
+PASSED: int: m -1 - n 2
+PASSED: int: m -1 * n 2
+PASSED: int: m -1 / n 2
+PASSED: int: m -1 % n 2
+PASSED: int: m -1 ** n 2
+PASSED: int:  -1 as string
+PASSED: int: m 0  = n -2
+PASSED: int: m 0 <= n -2
+PASSED: int: m 0 + n -2
+PASSED: int: m 0 - n -2
+PASSED: int: m 0 * n -2
+PASSED: int: m 0 / n -2
+PASSED: int: m 0 % n -2
+PASSED: int: m 0  = n -1
+PASSED: int: m 0 <= n -1
+PASSED: int: m 0 + n -1
+PASSED: int: m 0 - n -1
+PASSED: int: m 0 * n -1
+PASSED: int: m 0 / n -1
+PASSED: int: m 0 % n -1
+PASSED: int: m 0  = n 0
+PASSED: int: m 0 <= n 0
+PASSED: int: m 0 + n 0
+PASSED: int: m 0 - n 0
+PASSED: int: m 0 * n 0
+PASSED: int: m 0 ** n 0
+PASSED: int: m 0  = n 1
+PASSED: int: m 0 <= n 1
+PASSED: int: m 0 + n 1
+PASSED: int: m 0 - n 1
+PASSED: int: m 0 * n 1
+PASSED: int: m 0 / n 1
+PASSED: int: m 0 % n 1
+PASSED: int: m 0 ** n 1
+PASSED: int: m 0  = n 2
+PASSED: int: m 0 <= n 2
+PASSED: int: m 0 + n 2
+PASSED: int: m 0 - n 2
+PASSED: int: m 0 * n 2
+PASSED: int: m 0 / n 2
+PASSED: int: m 0 % n 2
+PASSED: int: m 0 ** n 2
+PASSED: int:  0 as string
+PASSED: int: m 1  = n -2
+PASSED: int: m 1 <= n -2
+PASSED: int: m 1 + n -2
+PASSED: int: m 1 - n -2
+PASSED: int: m 1 * n -2
+PASSED: int: m 1 / n -2
+PASSED: int: m 1 % n -2
+PASSED: int: m 1  = n -1
+PASSED: int: m 1 <= n -1
+PASSED: int: m 1 + n -1
+PASSED: int: m 1 - n -1
+PASSED: int: m 1 * n -1
+PASSED: int: m 1 / n -1
+PASSED: int: m 1 % n -1
+PASSED: int: m 1  = n 0
+PASSED: int: m 1 <= n 0
+PASSED: int: m 1 + n 0
+PASSED: int: m 1 - n 0
+PASSED: int: m 1 * n 0
+PASSED: int: m 1 ** n 0
+PASSED: int: m 1  = n 1
+PASSED: int: m 1 <= n 1
+PASSED: int: m 1 + n 1
+PASSED: int: m 1 - n 1
+PASSED: int: m 1 * n 1
+PASSED: int: m 1 / n 1
+PASSED: int: m 1 % n 1
+PASSED: int: m 1 ** n 1
+PASSED: int: m 1  = n 2
+PASSED: int: m 1 <= n 2
+PASSED: int: m 1 + n 2
+PASSED: int: m 1 - n 2
+PASSED: int: m 1 * n 2
+PASSED: int: m 1 / n 2
+PASSED: int: m 1 % n 2
+PASSED: int: m 1 ** n 2
+PASSED: int:  1 as string
+PASSED: int: m 2  = n -2
+PASSED: int: m 2 <= n -2
+PASSED: int: m 2 + n -2
+PASSED: int: m 2 - n -2
+PASSED: int: m 2 * n -2
+PASSED: int: m 2 / n -2
+PASSED: int: m 2 % n -2
+PASSED: int: m 2  = n -1
+PASSED: int: m 2 <= n -1
+PASSED: int: m 2 + n -1
+PASSED: int: m 2 - n -1
+PASSED: int: m 2 * n -1
+PASSED: int: m 2 / n -1
+PASSED: int: m 2 % n -1
+PASSED: int: m 2  = n 0
+PASSED: int: m 2 <= n 0
+PASSED: int: m 2 + n 0
+PASSED: int: m 2 - n 0
+PASSED: int: m 2 * n 0
+PASSED: int: m 2 ** n 0
+PASSED: int: m 2  = n 1
+PASSED: int: m 2 <= n 1
+PASSED: int: m 2 + n 1
+PASSED: int: m 2 - n 1
+PASSED: int: m 2 * n 1
+PASSED: int: m 2 / n 1
+PASSED: int: m 2 % n 1
+PASSED: int: m 2 ** n 1
+PASSED: int: m 2  = n 2
+PASSED: int: m 2 <= n 2
+PASSED: int: m 2 + n 2
+PASSED: int: m 2 - n 2
+PASSED: int: m 2 * n 2
+PASSED: int: m 2 / n 2
+PASSED: int: m 2 % n 2
+PASSED: int: m 2 ** n 2
+PASSED: int:  2 as string
+PASSED: uint: 0  >> n 0
+PASSED: uint: 0  << n 0
+PASSED: uint: 0  = n 0
+PASSED: uint: 0 <= n 0
+PASSED: uint: 0 + n 0
+PASSED: uint: m 0 - n 0
+PASSED: uint: m 0 * n 0
+PASSED: uint: m 0 ** n 0
+PASSED: uint: 0  >> n 1
+PASSED: uint: 0  << n 1
+PASSED: uint: 0  = n 1
+PASSED: uint: 0 <= n 1
+PASSED: uint: 0 + n 1
+PASSED: uint: m 0 * n 1
+PASSED: uint: m 0 / n 1
+PASSED: uint: m 0 % n 1
+PASSED: uint: m 0 ** n 1
+PASSED: uint: 0  >> n 2
+PASSED: uint: 0  << n 2
+PASSED: uint: 0  = n 2
+PASSED: uint: 0 <= n 2
+PASSED: uint: 0 + n 2
+PASSED: uint: m 0 * n 2
+PASSED: uint: m 0 / n 2
+PASSED: uint: m 0 % n 2
+PASSED: uint: m 0 ** n 2
+PASSED: uint: 0 as string
+PASSED: uint: 1  >> n 0
+PASSED: uint: 1  << n 0
+PASSED: uint: 1  = n 0
+PASSED: uint: 1 <= n 0
+PASSED: uint: 1 + n 0
+PASSED: uint: m 1 - n 0
+PASSED: uint: m 1 * n 0
+PASSED: uint: m 1 ** n 0
+PASSED: uint: 1  >> n 1
+PASSED: uint: 1  << n 1
+PASSED: uint: 1  = n 1
+PASSED: uint: 1 <= n 1
+PASSED: uint: 1 + n 1
+PASSED: uint: m 1 - n 1
+PASSED: uint: m 1 * n 1
+PASSED: uint: m 1 / n 1
+PASSED: uint: m 1 % n 1
+PASSED: uint: m 1 ** n 1
+PASSED: uint: 1  >> n 2
+PASSED: uint: 1  << n 2
+PASSED: uint: 1  = n 2
+PASSED: uint: 1 <= n 2
+PASSED: uint: 1 + n 2
+PASSED: uint: m 1 * n 2
+PASSED: uint: m 1 / n 2
+PASSED: uint: m 1 % n 2
+PASSED: uint: m 1 ** n 2
+PASSED: uint: 1 as string
+PASSED: uint: 2  >> n 0
+PASSED: uint: 2  << n 0
+PASSED: uint: 2  = n 0
+PASSED: uint: 2 <= n 0
+PASSED: uint: 2 + n 0
+PASSED: uint: m 2 - n 0
+PASSED: uint: m 2 * n 0
+PASSED: uint: m 2 ** n 0
+PASSED: uint: 2  >> n 1
+PASSED: uint: 2  << n 1
+PASSED: uint: 2  = n 1
+PASSED: uint: 2 <= n 1
+PASSED: uint: 2 + n 1
+PASSED: uint: m 2 - n 1
+PASSED: uint: m 2 * n 1
+PASSED: uint: m 2 / n 1
+PASSED: uint: m 2 % n 1
+PASSED: uint: m 2 ** n 1
+PASSED: uint: 2  >> n 2
+PASSED: uint: 2  << n 2
+PASSED: uint: 2  = n 2
+PASSED: uint: 2 <= n 2
+PASSED: uint: 2 + n 2
+PASSED: uint: m 2 - n 2
+PASSED: uint: m 2 * n 2
+PASSED: uint: m 2 / n 2
+PASSED: uint: m 2 % n 2
+PASSED: uint: m 2 ** n 2
+PASSED: uint: 2 as string
+PASSED: int:  4294967292 as string
+PASSED: uint: 4294967292 as string
+PASSED: int:  4294967293 as string
+PASSED: uint: 4294967293 as string
+PASSED: int:  4294967294 as string
+PASSED: uint: 4294967294 as string
+PASSED: int:  4294967295 as string
+PASSED: uint: 4294967295 as string
+PASSED: int:  4294967296 as string
+PASSED: uint: 4294967296 as string
+PASSED: int:  4294967297 as string
+PASSED: uint: 4294967297 as string
+PASSED: int:  4294967298 as string
+PASSED: uint: 4294967298 as string
+PASSED: uint: 4294967295  = n 4294967295
+PASSED: uint: 4294967295 <= n 4294967295
+PASSED: uint: 4294967295 + n 4294967295
+PASSED: uint: m 4294967295 - n 4294967295
+PASSED: uint: m 4294967295 / n 4294967295
+PASSED: uint: m 4294967295 % n 4294967295
+PASSED: uint: 4294967295  = n 4294967296
+PASSED: uint: 4294967295 <= n 4294967296
+PASSED: uint: 4294967295 + n 4294967296
+PASSED: uint: m 4294967295 / n 4294967296
+PASSED: uint: m 4294967295 % n 4294967296
+PASSED: uint: 4294967295  = n 4294967297
+PASSED: uint: 4294967295 <= n 4294967297
+PASSED: uint: 4294967295 + n 4294967297
+PASSED: uint: m 4294967295 / n 4294967297
+PASSED: uint: m 4294967295 % n 4294967297
+PASSED: uint: 4294967296  = n 4294967295
+PASSED: uint: 4294967296 <= n 4294967295
+PASSED: uint: 4294967296 + n 4294967295
+PASSED: uint: m 4294967296 - n 4294967295
+PASSED: uint: m 4294967296 / n 4294967295
+PASSED: uint: m 4294967296 % n 4294967295
+PASSED: uint: 4294967296  = n 4294967296
+PASSED: uint: 4294967296 <= n 4294967296
+PASSED: uint: 4294967296 + n 4294967296
+PASSED: uint: m 4294967296 - n 4294967296
+PASSED: uint: m 4294967296 / n 4294967296
+PASSED: uint: m 4294967296 % n 4294967296
+PASSED: uint: 4294967296  = n 4294967297
+PASSED: uint: 4294967296 <= n 4294967297
+PASSED: uint: 4294967296 + n 4294967297
+PASSED: uint: m 4294967296 / n 4294967297
+PASSED: uint: m 4294967296 % n 4294967297
+PASSED: uint: 4294967297  = n 4294967295
+PASSED: uint: 4294967297 <= n 4294967295
+PASSED: uint: 4294967297 + n 4294967295
+PASSED: uint: m 4294967297 - n 4294967295
+PASSED: uint: m 4294967297 / n 4294967295
+PASSED: uint: m 4294967297 % n 4294967295
+PASSED: uint: 4294967297  = n 4294967296
+PASSED: uint: 4294967297 <= n 4294967296
+PASSED: uint: 4294967297 + n 4294967296
+PASSED: uint: m 4294967297 - n 4294967296
+PASSED: uint: m 4294967297 / n 4294967296
+PASSED: uint: m 4294967297 % n 4294967296
+PASSED: uint: 4294967297  = n 4294967297
+PASSED: uint: 4294967297 <= n 4294967297
+PASSED: uint: 4294967297 + n 4294967297
+PASSED: uint: m 4294967297 - n 4294967297
+PASSED: uint: m 4294967297 / n 4294967297
+PASSED: uint: m 4294967297 % n 4294967297
+PASSED: uint: m 4294967295 * n 0
+PASSED: uint: m 4294967295 * n 1
+PASSED: uint: m 4294967295 * n 2
+PASSED: uint: m 4294967295 * n 3
+PASSED: uint: m 4294967296 * n 0
+PASSED: uint: m 4294967296 * n 1
+PASSED: uint: m 4294967296 * n 2
+PASSED: uint: m 4294967296 * n 3
+PASSED: uint: m 4294967297 * n 0
+PASSED: uint: m 4294967297 * n 1
+PASSED: uint: m 4294967297 * n 2
+PASSED: uint: m 4294967297 * n 3
+PASSED: uint: m 4294967295 ** n 0
+PASSED: uint: m 4294967295 ** n 1
+PASSED: uint: m 4294967296 ** n 0
+PASSED: uint: m 4294967296 ** n 1
+PASSED: uint: m 4294967297 ** n 0
+PASSED: uint: m 4294967297 ** n 1
+PASSED: i8.as_int
+PASSED: i16.as_int
+PASSED: i32.as_int
+PASSED: i64.as_int
+PASSED: i8.as_int
+PASSED: i16.as_int
+PASSED: i32.as_int
+PASSED: i64.as_int

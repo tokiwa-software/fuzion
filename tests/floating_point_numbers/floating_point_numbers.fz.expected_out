@@ -1,0 +1,175 @@
+PASSED: f32: quiet nan serializes correctly
+PASSED: f32: neg inf serializes correctly
+PASSED: f32: pos inf serializes correctly
+PASSED: f32: 0 serializes to string
+PASSED: f32: -0 serializes to string
+PASSED: f32: 1 serializes to string
+PASSED: f32: 0.5 serializes to string
+PASSED: f32: 1/3 serializes to string
+PASSED: f32: comparison operators work as expected
+PASSED: f32: double negation is same number
+PASSED: f32: plus operator
+PASSED: f32: minus operator
+PASSED: f32: product operator
+PASSED: f32: division operator
+PASSED: f32: 3 modulo 2 equals 1
+PASSED: f32: 2 to the power 3 equals 8
+PASSED: f32: 3 to the power 2 equals 9
+PASSED: f32: is_NaN NaN
+PASSED: f32: is_NaN 0
+PASSED: f32: is_NaN π
+PASSED: f32: is_NaN infinity
+PASSED: f32: sqrt (2*2) = 2
+PASSED: f32: exp 0 = 1
+PASSED: f32: exp 1 ~= ℇ
+PASSED: f32: log 1 = 0
+PASSED: f32: sin 0  = 0
+PASSED: f32: sin π  ~= 0
+PASSED: f32: cos 0  = 1
+PASSED: f32: cos π  = -1
+PASSED: f32: tan 0  = 0
+PASSED: f32: asin 0 = 0
+PASSED: f32: acos 1 = 0
+PASSED: f32: atan 0 = 0
+PASSED: f32: atan2 NaN 1            = NaN        
+PASSED: f32: atan2 1 NaN            = NaN        
+PASSED: f32: atan2 +0 1             = +0         
+PASSED: f32: atan2 -0 1             = -0         
+PASSED: f32: atan2 +0 -1            = +π         
+PASSED: f32: atan2 -0 -1            = -π         
+PASSED: f32: atan2 1 0              = +π/two     
+PASSED: f32: atan2 -1 0             = -π/two     
+PASSED: f32: atan2 +infinity +infinity   = +π/4  
+PASSED: f32: atan2 -infinity +infinity   = -π/4  
+PASSED: f32: atan2 +infinity -infinity   = 3*π/4 
+PASSED: f32: atan2 -infinity -infinity   = -3*π/4
+PASSED: f32: atan2 1 +infinity         = 0       
+PASSED: f32: atan2 1 -infinity         = +π      
+PASSED: f32: atan2 -1 -infinity        = -π      
+PASSED: f32: atan2 +infinity 1         = +π/two  
+PASSED: f32: atan2 -infinity 1         = -π/two  
+PASSED: f32: sinh  0 = 0
+PASSED: f32: cosh  0 = 1
+PASSED: f32: tanh  0 = 0
+PASSED: f32: asinh 0 = 0
+PASSED: f32: acosh 1 = 0
+PASSED: f32: atanh 0 = 0
+PASSED: f32: round  1/2 =  1
+PASSED: f32: round -1/2 = -1
+PASSED: f32: round -3/2 = -2
+PASSED: f32: floor 0 = 0
+PASSED: f32: floor 1 = 1
+PASSED: f32: floor ℇ = 2
+PASSED: f32: ceil 0 = 0
+PASSED: f32: ceil 1 = 1
+PASSED: f32: ceil ℇ = 3
+PASSED: f64: quiet nan serializes correctly
+PASSED: f64: neg inf serializes correctly
+PASSED: f64: pos inf serializes correctly
+PASSED: f64: 0 serializes to string
+PASSED: f64: -0 serializes to string
+PASSED: f64: 1 serializes to string
+PASSED: f64: 0.5 serializes to string
+PASSED: f64: 1/3 serializes to string
+PASSED: f64: comparison operators work as expected
+PASSED: f64: double negation is same number
+PASSED: f64: plus operator
+PASSED: f64: minus operator
+PASSED: f64: product operator
+PASSED: f64: division operator
+PASSED: f64: 3 modulo 2 equals 1
+PASSED: f64: 2 to the power 3 equals 8
+PASSED: f64: 3 to the power 2 equals 9
+PASSED: f64: is_NaN NaN
+PASSED: f64: is_NaN 0
+PASSED: f64: is_NaN π
+PASSED: f64: is_NaN infinity
+PASSED: f64: sqrt (2*2) = 2
+PASSED: f64: exp 0 = 1
+PASSED: f64: exp 1 ~= ℇ
+PASSED: f64: log 1 = 0
+PASSED: f64: sin 0  = 0
+PASSED: f64: sin π  ~= 0
+PASSED: f64: cos 0  = 1
+PASSED: f64: cos π  = -1
+PASSED: f64: tan 0  = 0
+PASSED: f64: asin 0 = 0
+PASSED: f64: acos 1 = 0
+PASSED: f64: atan 0 = 0
+PASSED: f64: atan2 NaN 1            = NaN        
+PASSED: f64: atan2 1 NaN            = NaN        
+PASSED: f64: atan2 +0 1             = +0         
+PASSED: f64: atan2 -0 1             = -0         
+PASSED: f64: atan2 +0 -1            = +π         
+PASSED: f64: atan2 -0 -1            = -π         
+PASSED: f64: atan2 1 0              = +π/two     
+PASSED: f64: atan2 -1 0             = -π/two     
+PASSED: f64: atan2 +infinity +infinity   = +π/4  
+PASSED: f64: atan2 -infinity +infinity   = -π/4  
+PASSED: f64: atan2 +infinity -infinity   = 3*π/4 
+PASSED: f64: atan2 -infinity -infinity   = -3*π/4
+PASSED: f64: atan2 1 +infinity         = 0       
+PASSED: f64: atan2 1 -infinity         = +π      
+PASSED: f64: atan2 -1 -infinity        = -π      
+PASSED: f64: atan2 +infinity 1         = +π/two  
+PASSED: f64: atan2 -infinity 1         = -π/two  
+PASSED: f64: sinh  0 = 0
+PASSED: f64: cosh  0 = 1
+PASSED: f64: tanh  0 = 0
+PASSED: f64: asinh 0 = 0
+PASSED: f64: acosh 1 = 0
+PASSED: f64: atanh 0 = 0
+PASSED: f64: round  1/2 =  1
+PASSED: f64: round -1/2 = -1
+PASSED: f64: round -3/2 = -2
+PASSED: f64: floor 0 = 0
+PASSED: f64: floor 1 = 1
+PASSED: f64: floor ℇ = 2
+PASSED: f64: ceil 0 = 0
+PASSED: f64: ceil 1 = 1
+PASSED: f64: ceil ℇ = 3
+PASSED: cast_to_f32 works, bit representation for 0 is correct
+PASSED: cast_to_f32 works, bit representation for -∞ is correct
+PASSED: cast_to_f32 works, bit representation for ∞ is correct
+PASSED: cast_to_u32 works for -0
+PASSED: cast_to_u32 works for -∞
+PASSED: cast_to_u32 works for ∞
+PASSED: cast_to_f64 works, bit representation for 0 is correct
+PASSED: cast_to_f64 works, bit representation for -∞ is correct
+PASSED: cast_to_f64 works, bit representation for ∞ is correct
+PASSED: cast_to_u64 works for -0
+PASSED: cast_to_u64 works for -∞
+PASSED: cast_to_u64 works for ∞
+PASSED: f32: min_exp is correct
+PASSED: f32: max_exp is correct
+PASSED: f64: min_exp is correct
+PASSED: f64: max_exp is correct
+PASSED: f32: min_positive is correct
+PASSED: f32: max is correct
+PASSED: f64: min_positive is correct
+PASSED: f64: max is correct
+PASSED: f64: ∞    not representable by i64
+PASSED: f64: -∞   not representable by i64
+PASSED: f64: NaN  not representable by i64
+PASSED: f64: 0    is  representable by i64
+PASSED: f64:  π  as_i64        =  3
+PASSED: f64: -π  as_i64        = -3
+PASSED: f64:  ∞  as_i64_lax    = i64.max
+PASSED: f64: -∞  as_i64_lax    = i64.min
+PASSED: f64: NaN as_i64_lax    = 0
+PASSED: f32:  π  as_f64.as_f32 = f32.π
+PASSED: f32:  ∞  as_f64        = f64s.∞ 
+PASSED: f32: NaN as_f64 is_NaN 
+PASSED: f64:  π  as_f32        = f32.π 
+PASSED: f64:  ∞  as_f32        = f32s.∞ 
+PASSED: f64: NaN as_f32 is_NaN 
+PASSED: f32.fraction of  1.5 equals expected
+PASSED: f32.fraction of -0.5 equals expected
+PASSED: f32.fraction of  0.0 equals expected
+PASSED: f32.fraction of -0.0 equals expected
+PASSED: f32.fraction of  1.0 equals expected
+PASSED: f64.fraction of  1.5 equals expected
+PASSED: f64.fraction of -0.5 equals expected
+PASSED: f64.fraction of  0.0 equals expected
+PASSED: f64.fraction of -0.0 equals expected
+PASSED: f64.fraction of  1.0 equals expected

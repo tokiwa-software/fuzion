@@ -25,4 +25,4 @@
 
 export FUZION_JAVA_STACK_SIZE = 16m
 override NAME = unicodetest
-include ../positive.mk
+include ../simple.mk
