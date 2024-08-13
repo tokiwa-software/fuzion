@@ -770,7 +770,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("safety",
         (jvm, si, cc, tvalue, args) ->
         {
-          return new Pair<>(Expr.UNIT, Expr.iconst(jvm._options.fuzionSafety() ? 1 : 0));
+          return new Pair<>(Expr.iconst(jvm._options.fuzionSafety() ? 1 : 0), Expr.UNIT);
         });
 
     put("fuzion.sys.fileio.read_dir", (jvm, si, cc, tvalue, args) -> {
