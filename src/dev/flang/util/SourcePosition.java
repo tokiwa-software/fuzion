@@ -199,7 +199,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
                 sb.append(_sourceFile.asString(_sourceFile.lineStartPos(l), p))
                   .append(Terminal.CURLY_UNDERLINE)
                   .append(Terminal.UNDERLINE_LINE_RED)
-                  .append(underlined.length() == 0 && Terminal.ENABLED ? " " : underlined)
+                  .append(underlined.length() == 0 && Terminal.ENABLED ? Terminal.REGULAR_COLOR + "⏎" : underlined)
                   .append(Terminal.UNDERLINE_OFF)
                   .append(Terminal.UNDERLINE_LINE_COLOR_OFF)
                   .append(_sourceFile.asString(p + 1, _sourceFile.lineEndPos(l)));
@@ -211,7 +211,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
                   .append(str.subSequence(0, leadingWhiteSpace))
                   .append(Terminal.CURLY_UNDERLINE)
                   .append(Terminal.UNDERLINE_LINE_RED)
-                  .append(underlined.length() == 0 && Terminal.ENABLED ? " " : underlined)
+                  .append(underlined.length() == 0 && Terminal.ENABLED ? Terminal.REGULAR_COLOR + "⏎" : underlined)
                   .append(Terminal.UNDERLINE_OFF)
                   .append(Terminal.UNDERLINE_LINE_COLOR_OFF)
                   .append(_sourceFile.asString(endPos, _sourceFile.lineEndPos(l)));
