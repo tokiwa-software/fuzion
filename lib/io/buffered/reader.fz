@@ -30,9 +30,14 @@
 public reader(LM type : mutate, rp Read_Provider, buf_size i32) : effect effect_mode.plain is
 
 
-  # NYI: UNDER DEVELOPMENT: switch to mutate.array
-  empty array u8 | io.end_of_file => []
-  buffer := LM.env.new empty
+  # circular buffer backing this reader
+  #
+  buffer := (mutate.circular_buffer u8).new LM buf_size.as_i64 0
+
+
+  # has the end of file been reached?
+  #
+  eof := LM.env.new false
 
 
   # install this effect and execute 'f'. Wrap the result of 'f' into an
@@ -59,69 +64,75 @@ public reader(LM type : mutate, rp Read_Provider, buf_size i32) : effect effect_
 
   # read returns the current buffer or end of file.
   # in case the buffer is empty it fills the buffer
-  # with up to max_n bytes before returning it.
+  # with up to n bytes before returning it.
   #
-  public read(max_n i32) array u8 | io.end_of_file
-  post debug: (result ? io.end_of_file => true | a array => !a.is_empty)
+  public read(n i32) array u8 | io.end_of_file
+    post
+      debug: (result ? io.end_of_file => true | a array => !a.is_empty)
   =>
-    match buffer.get
-      b array =>
-        if b.is_empty
-          fill_buffer max_n
-        buffer
-      io.end_of_file => io.end_of_file
+    if eof.get
+      io.end_of_file
+    else
+      if buffer.buffered = 0
+        fill_buffer
+
+      # fill_buffer could set this to true
+      if eof.get
+        io.end_of_file
+      else
+        # NYI: remove double buffering implementation outside of the reader,
+        # just flush the buffer here.
+        # m := min n.as_i64 buffer.buffered
+        # buffer.flush m
+        m := min n buffer.buffered.as_i32
+        (buffer.as_array.slice 0 m).as_array
 
 
 
-  # fill the currently empty buffer with up to max_n bytes
+  # fill the currently empty buffer with up to buf_size bytes
   #
-  fill_buffer(max_n i32) unit
-  pre debug: match buffer.get
-                a array => a.is_empty
-                io.end_of_file => false
+  fill_buffer unit
+    pre
+      debug: !eof.get
+      debug: buffer.buffered = 0
+    post
+      debug: eof.get || buffer.buffered > 0
   =>
-    match rp.read max_n
-      a array =>
-        buffer <- a
-        replace
-      eof io.end_of_file =>
-        buffer <- eof
+    match rp.read buffer.available.as_i32
+      a array u8 =>
+        x := buffer.enqueue a
+        match x
+          unit =>
+          e error => raise e
+      io.end_of_file =>
+        eof <- true
         replace
       e error => raise e
-
 
 
   # discard n items from buffer
   #
   public discard(n i32) unit
-  pre debug: n >= 0
+    pre
+      debug: n >= 0
   =>
-    match buffer.get
-      b array =>
-        buffer <- (b.slice n b.length).as_array
-        replace
-      io.end_of_file =>
-
+    m := min n.as_i64 buffer.buffered
+    _ := buffer.flush m
 
 
   # discard complete buffer
   #
   # NYI naming this feature discard leads to error: Duplicate feature declaration
+  #
   public discard_all unit
   =>
-    match buffer.get
-      b array =>
-        buffer <- []
-        replace
-      io.end_of_file =>
-
+    discard buf_size
 
 
 # short hand for getting the currently installed `buffered.reader`
 #
 reader (LM type : mutate) =>
   (io.buffered.reader LM).env
-
 
 
 # read n bytes using the currently installed byte reader effect
