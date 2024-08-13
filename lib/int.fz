@@ -107,13 +107,6 @@ is
         int s0 (n ** other.n)
 
 
-  # all operations are allowed for all ints
-  # except for division where we need to
-  # check for division by zero
-
-  public fixed redef infix /! (other int) bool => other != int.zero
-  public fixed redef infix %! (other int) bool => other != int.zero
-
   public fixed redef infix **!(other int) bool =>
     other ≥ int.zero  # 0 and 1 ** -other would be okay but we disallow nonetheless
 

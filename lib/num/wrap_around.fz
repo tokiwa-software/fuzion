@@ -56,8 +56,6 @@ module:public wrap_around : integer is
   public redef infix +! (other wrap_around.this) => !(overflow_on_add other) && !(underflow_on_add other)
   public redef infix -! (other wrap_around.this) => !(overflow_on_sub other) && !(underflow_on_sub other)
   public redef infix *! (other wrap_around.this) => !(overflow_on_mul other) && !(underflow_on_mul other)
-  public redef infix /! (other wrap_around.this) => other != wrap_around.this.zero
-  public redef infix %! (other wrap_around.this) => other != wrap_around.this.zero
   public redef infix **!(other wrap_around.this) => !(overflow_on_exp other)
 
   # neg, add, sub, mul with wrap-around semantics
