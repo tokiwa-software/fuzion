@@ -103,7 +103,7 @@ public abstract class ContextVisitor extends FeatureVisitor
         _context = _context.exterior();
         check(_context != null);
       }
-    // NYI: We might add support for `if !(T : x) then else ...treat T as x...`
+    // NYI: UNDER DEVELOPMENT: We might add support for `if !(T : x) then else ...treat T as x...`
   }
 
   @Override public void actionAfterIf(If i)

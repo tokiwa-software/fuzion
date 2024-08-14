@@ -351,9 +351,9 @@ public class Clazzes extends ANY
 
     // find preconditions `T : x` that prevent creation of instances of this clazz.
     //
-    // NYI: This is very manual code to extract this info from the code created
-    // for the preFeature. This is done automatically by DFA, so this code will
-    // disappear once DFA and AIR phases are merged.
+    // NYI: UNDER DEVELOPMENT: This is very manual code to extract this info
+    // from the code created for the preFeature. This is done automatically by
+    // DFA, so this code will disappear once DFA and AIR phases are merged.
     //
     var pF = actualType.feature().preFeature();
     if (pF != null)
