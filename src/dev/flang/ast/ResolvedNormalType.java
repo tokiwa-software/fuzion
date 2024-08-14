@@ -644,7 +644,7 @@ public class ResolvedNormalType extends ResolvedType
         {
           if (_resolved == null)
             {
-              _resolved = UnresolvedType.finishResolve(res, outerfeat, this, declarationPos(), feature(), _generics, unresolvedGenerics(), outer(), _refOrVal, false);
+              _resolved = UnresolvedType.finishResolve(res, outerfeat, this, declarationPos(), feature(), _generics, unresolvedGenerics(), outer(), _refOrVal, false, false);
             }
           return _resolved;
         }
