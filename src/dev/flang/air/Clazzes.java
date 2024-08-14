@@ -284,7 +284,8 @@ public class Clazzes extends ANY
   {
     if (PRECONDITIONS) require
       (Errors.any() || !actualType.dependsOnGenericsExceptTHIS_TYPE(),
-       Errors.any() || !actualType.containsThisType());
+       Errors.any() || !actualType.containsThisType(),
+       Errors.any() || outer == null || outer._type != Types.t_UNDEFINED);
 
     Clazz o = outer;
     var ao = actualType.feature().outer();
@@ -383,7 +384,7 @@ public class Clazzes extends ANY
                         args[0].feature() == Types.resolved.f_Type_infix_colon_false   );
                 if (args[0].feature() == Types.resolved.f_Type_infix_colon_false)
                   {
-                        result = undefined.get();
+                    result = undefined.get();
                   }
               }
           }
@@ -807,7 +808,7 @@ public class Clazzes extends ANY
         tclazz._isCalledAsOuter = true;
       }
     var typePars = outerClazz.actualGenerics(c.actualTypeParameters());
-    if (tclazz != c_void.get())
+    if (!tclazz.isVoidOrUndefined())
       {
         if (dynamic)
           {
@@ -1015,7 +1016,7 @@ public class Clazzes extends ANY
     else if (e instanceof AbstractCall c)
       {
         var tclazz = clazz(c.target(), outerClazz, inh);
-        if (tclazz != c_void.get())
+        if (!tclazz.isVoidOrUndefined())
           {
             var at = outerClazz.handDownThroughInheritsCalls(c.actualTypeParameters(), inh);
             var inner = tclazz.lookup(new FeatureAndActuals(c.calledFeature(),

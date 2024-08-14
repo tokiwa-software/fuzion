@@ -844,6 +844,18 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * isVoidType checks if this is void (@see isVoidType) or undefined, which is
+   * used for clazzes that cannot be created due to failing type constraints in
+   * preconditions `pre T : x`.
+   */
+  public boolean isVoidOrUndefined()
+  {
+    return isVoidType() ||
+      this == Clazzes.instance.undefined.getIfCreated();
+  }
+
+
+  /**
    * Layout this clazz. In case a cyclic nesting of value fields is detected,
    * report an error.
    */
@@ -2135,7 +2147,25 @@ public class Clazz extends ANY implements Comparable<Clazz>
         var call = inh.get(0);
         if (CHECKS) check
           (call.calledFeature() == f.outer());
-        o = _outer.actualClazzes(call, null)[0];
+
+        // NYI: CLEANUP: Ugly special handling, might be good to remove this: if
+        // inherited by a ref type, actual clazzes are added to the ref
+        // type. This is required, e.g., to run `tests/nom`.
+        //
+        // Smallest known example to reproduce a crash if `_outer.asRef()` case
+        // is removed here:
+        //
+        //   _ := "A".starts_with "#"
+        //   a => _ option (Sequence codepoint) := nil
+        //        _ option (Sequence codepoint) := ["A"]
+        //   c => a
+        //   _ := c
+        //
+        var oc = _outer        .hasActualClazzes(call, null)
+             || !_outer.asRef().hasActualClazzes(call, null) ? _outer
+                                                             : _outer.asRef();
+
+        o = oc.actualClazzes(call, null)[0];
       }
     var ix = f.typeParameterIndex();
     var oag = o.actualGenerics();
@@ -2649,7 +2679,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     var fields = new List<Clazz>();
     for (var field: feats)
       {
-        if (!this.isVoidType() &&
+        if (!this.isVoidOrUndefined() &&
             field.isField() &&
             field == findRedefinition(field) && // NYI: proper field redefinition handling missing, see tests/redef_args/*
             Clazzes.instance.isUsed(field))
