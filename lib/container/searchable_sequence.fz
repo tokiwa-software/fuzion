@@ -44,6 +44,8 @@ is
 
   # does this sequence start with l?
   #
+  # NYI: CLEANUP: #3524 This should be defined in `Sequence`, but that would clash with `String.starts_with` in `Const_String`.
+  #
   public starts_with(l Sequence A) bool =>
     # NYI: BUG: This could be implemented as
     #
@@ -60,6 +62,8 @@ is
 
 
   # get the index of l within this list or nil if it does not exist
+  #
+  # NYI: CLEANUP: #3524 This should be defined in `Sequence`, but that would clash with `String.find` in `Const_String`.
   #
   public find(l Sequence A) option i32 =>
     if starts_with l
