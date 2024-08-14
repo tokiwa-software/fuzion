@@ -67,7 +67,7 @@ public class Parser extends Lexer
    */
   static Parens PARENS   = new Parens( Token.t_lparen  , Token.t_rparen   );
   static Parens BRACES   = new Parens( Token.t_lbrace  , Token.t_rbrace   );
-  static Parens CROCHETS = new Parens( Token.t_lcrochet, Token.t_rcrochet );
+  static Parens BRACKETS = new Parens( Token.t_lbracket, Token.t_rbracket );
   static Parens ANGLES   = new Parens( "<"             , ">"              );
 
 
@@ -672,13 +672,13 @@ name        : IDENT                            // all parts of name must be in s
           case t_index  :
             {
               next();
-              if (!ignoreError || current() == Token.t_lcrochet)
+              if (!ignoreError || current() == Token.t_lbracket)
                 {
-                  match(Token.t_lcrochet, "name: index");
+                  match(Token.t_lbracket, "name: index");
                   var dotdot = skip("..");
-                  if (!ignoreError || current() == Token.t_rcrochet)
+                  if (!ignoreError || current() == Token.t_rbracket)
                     {
-                      match(Token.t_rcrochet, "name: index");
+                      match(Token.t_rbracket, "name: index");
                       result = new ParsedName(sourceRange(pos),
                                               dotdot ? FuzionConstants.FEATURE_NAME_INDEX_DOTDOT
                                                      : FuzionConstants.FEATURE_NAME_INDEX);
@@ -689,12 +689,12 @@ name        : IDENT                            // all parts of name must be in s
           case t_set    :
             {
               next();
-              if (current() == Token.t_lcrochet)
+              if (current() == Token.t_lbracket)
                 {
-                  match(Token.t_lcrochet, "name: set");
-                  if (!ignoreError || current() == Token.t_rcrochet)
+                  match(Token.t_lbracket, "name: set");
+                  if (!ignoreError || current() == Token.t_rbracket)
                     {
-                      match(Token.t_rcrochet, "name: set");
+                      match(Token.t_rbracket, "name: set");
                       result = new ParsedName(sourceRange(pos), FuzionConstants.FEATURE_NAME_INDEX_ASSIGN);
                     }
                 }
@@ -1471,7 +1471,7 @@ indexTail   : ":=" exprInLine
     do
       {
         SourcePosition pos = tokenSourcePos();
-        var l = bracketTermWithNLs(CROCHETS, "indexCall", () -> actualCommas());
+        var l = bracketTermWithNLs(BRACKETS, "indexCall", () -> actualCommas());
         String n = FuzionConstants.FEATURE_NAME_INDEX;
         if (skip(":="))
           {
@@ -1486,7 +1486,7 @@ indexTail   : ":=" exprInLine
         result = new ParsedCall(target, new ParsedName(pos, n), l);
         target = result;
       }
-    while (!ignoredTokenBefore() && current() == Token.t_lcrochet);
+    while (!ignoredTokenBefore() && current() == Token.t_lbracket);
     return result;
   }
 
@@ -1506,7 +1506,7 @@ pureCallTail: indexCall pureCallTail
   Call pureCallTail(boolean skippedDot, Call target)
   {
     var result = target;
-    if (!skippedDot && !ignoredTokenBefore() && current() == Token.t_lcrochet)
+    if (!skippedDot && !ignoredTokenBefore() && current() == Token.t_lbracket)
       {
         result = pureCallTail(false, indexCall(result));
       }
@@ -1536,7 +1536,7 @@ callTail    : indexCall  callTail
   Expr callTail(boolean skippedDot, Expr target)
   {
     Expr result = target;
-    if (!skippedDot && !ignoredTokenBefore() && current() == Token.t_lcrochet)
+    if (!skippedDot && !ignoredTokenBefore() && current() == Token.t_lbracket)
       {
         result = callTail(false, indexCall(result));
       }
@@ -1654,7 +1654,7 @@ actualArgs  : actualSpaces
       case t_semicolon       ,
            t_comma           ,
            t_rparen          ,
-           t_rcrochet        ,
+           t_rbracket        ,
            t_lbrace          ,
            t_rbrace          ,
            t_is              ,
@@ -1728,7 +1728,7 @@ actualMore  : COMMA actualSome
   {
     var result = new List<Expr>();
     if (current() != Token.t_rparen   &&
-        current() != Token.t_rcrochet   )
+        current() != Token.t_rbracket   )
       {
         do
           {
@@ -1778,14 +1778,14 @@ bracketTerm : brblock
     if (PRECONDITIONS) require
       (current() == Token.t_lbrace   ||
        current() == Token.t_lparen   ||
-       current() == Token.t_lcrochet   );
+       current() == Token.t_lbracket   );
 
     var c = current();
     switch (c)
       {
       case t_lbrace  : return block();
       case t_lparen  : return klammer();
-      case t_lcrochet: return inlineArray();
+      case t_lbracket: return inlineArray();
       default: throw new Error("Unexpected case: "+c);
       }
   }
@@ -2067,7 +2067,7 @@ addSemiElmts: SEMI semiSepElmts
   {
     SourcePosition pos = tokenSourcePos();
     var elements = new List<Expr>();
-    bracketTermWithNLs(CROCHETS, "inlineArray",
+    bracketTermWithNLs(BRACKETS, "inlineArray",
                        () -> {
                          elements.add(operatorExpr());
                          var sep = current();
@@ -2076,7 +2076,7 @@ addSemiElmts: SEMI semiSepElmts
                          boolean reportedMixed = false;
                          while ((s == Token.t_comma || s == Token.t_semicolon) && skip(s))
                            {
-                             if (current() != Token.t_rcrochet)
+                             if (current() != Token.t_rbracket)
                                {
                                  elements.add(operatorExpr());
                                }
@@ -2113,7 +2113,7 @@ simpleterm  : bracketTerm
     int pos = tokenPos();
     var result = switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
       {
-      case t_lbrace, t_lparen, t_lcrochet ->  bracketTerm();
+      case t_lbrace, t_lparen, t_lbracket ->  bracketTerm();
       case t_numliteral -> {
                              var l = skipNumLiteral();
                              var m = l.mantissaValue();
@@ -2140,7 +2140,7 @@ simpleterm  : bracketTerm
                                 var res = callOrFeatOrThis();
                                 if (res == null)
                                   {
-                                    syntaxError(pos, "term (lbrace, lparen, lcrochet, fun, string, integer, old, match, or name)", "term");
+                                    syntaxError(pos, "term (lbrace, lparen, lbracket, fun, string, integer, old, match, or name)", "term");
                                     res = Expr.ERROR_VALUE;
                                   }
                                 yield res;
@@ -2225,7 +2225,7 @@ stringTermB : '}any chars&quot;'
     switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
       {
       case t_lparen    :
-      case t_lcrochet  :
+      case t_lbracket  :
       case t_lbrace    :
       case t_numliteral:
       case t_match     : return true;
@@ -2498,7 +2498,7 @@ brblock     : BRACEL exprs BRACER
         t_barLimit,
         t_rbrace,
         t_rparen,
-        t_rcrochet,
+        t_rbracket,
         t_until,
         t_then,
         t_else,

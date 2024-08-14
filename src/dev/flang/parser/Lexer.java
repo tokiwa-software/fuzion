@@ -142,8 +142,8 @@ public class Lexer extends SourceFile
     t_rparen,      // )
     t_lbrace,      // {
     t_rbrace,      // }
-    t_lcrochet,    // [
-    t_rcrochet,    // ]
+    t_lbracket,    // [
+    t_rbracket,    // ]
     t_semicolon,   // ;
     t_question,    // ?
     t_numliteral,  // 123
@@ -317,8 +317,8 @@ public class Lexer extends SourceFile
             case t_rparen            : result = "right parenthesis ')'"                      ; break;
             case t_lbrace            : result = "left curly brace '{'"                       ; break;
             case t_rbrace            : result = "right curly brace '}'"                      ; break;
-            case t_lcrochet          : result = "left crochet '['"                           ; break;
-            case t_rcrochet          : result = "right crochet ']'"                          ; break;
+            case t_lbracket          : result = "left bracket '['"                           ; break;
+            case t_rbracket          : result = "right bracket ']'"                          ; break;
             case t_semicolon         : result = "semicolon ';'"                              ; break;
             case t_question          : result = "question mark '?'"                          ; break;
             case t_numliteral        : result = "numeric literal"                            ; break;
@@ -354,8 +354,8 @@ public class Lexer extends SourceFile
   private static final byte K_RPAREN  =  7;  // ')'
   private static final byte K_LBRACE  =  8;  // '{'  curly brackets or braces
   private static final byte K_RBRACE  =  9;  // '}'
-  private static final byte K_LCROCH  = 10;  // '['  square brackets or crochets
-  private static final byte K_RCROCH  = 11;  // ']'
+  private static final byte K_LBRACK  = 10;  // '['  square brackets
+  private static final byte K_RBRACK  = 11;  // ']'
   private static final byte K_SEMI    = 12;  // ';'
   private static final byte K_DIGIT   = 13;  // '0'..'9'
   private static final byte K_LETTER  = 14;  // 'A'..'Z', 'a'..'z', mathematical letter
@@ -401,8 +401,8 @@ public class Lexer extends SourceFile
     // 5…
     K_LETTER  /* P   */, K_LETTER  /* Q   */, K_LETTER  /* R   */, K_LETTER  /* S   */,
     K_LETTER  /* T   */, K_LETTER  /* U   */, K_LETTER  /* V   */, K_LETTER  /* W   */,
-    K_LETTER  /* X   */, K_LETTER  /* Y   */, K_LETTER  /* Z   */, K_LCROCH  /* [   */,
-    K_BACKSL  /* \   */, K_RCROCH  /* ]   */, K_OP      /* ^   */, K_LETTER  /* _   */,
+    K_LETTER  /* X   */, K_LETTER  /* Y   */, K_LETTER  /* Z   */, K_LBRACK  /* [   */,
+    K_BACKSL  /* \   */, K_RBRACK  /* ]   */, K_OP      /* ^   */, K_LETTER  /* _   */,
     // 6…
     K_GRAVE   /* `   */, K_LETTER  /* a   */, K_LETTER  /* b   */, K_LETTER  /* c   */,
     K_LETTER  /* d   */, K_LETTER  /* e   */, K_LETTER  /* f   */, K_LETTER  /* g   */,
@@ -764,8 +764,8 @@ public class Lexer extends SourceFile
           case K_RPAREN  :
           case K_LBRACE  :
           case K_RBRACE  :
-          case K_LCROCH  :
-          case K_RCROCH  :
+          case K_LBRACK  :
+          case K_RBRACK  :
           case K_SEMI    :
           case K_DIGIT   :
           case K_LETTER  :
@@ -1481,18 +1481,18 @@ BRACER      : '}'
 LBRACKET    : '['
             ;
           */
-          case K_LCROCH  :    // '['  square brackets or crochets
+          case K_LBRACK  :    // '['  square brackets
             {
-              token = Token.t_lcrochet;
+              token = Token.t_lbracket;
               break;
             }
           /**
 RBRACKET    : ']'
             ;
           */
-          case K_RCROCH  :    // ']'
+          case K_RBRACK  :    // ']'
             {
-              token = Token.t_rcrochet;
+              token = Token.t_rbracket;
               break;
             }
           /**
