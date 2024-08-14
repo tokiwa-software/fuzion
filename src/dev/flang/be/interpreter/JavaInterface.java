@@ -338,6 +338,8 @@ public class JavaInterface extends FUIRContext
         return o instanceof Boolean z ? new boolValue(z): new boolValue(((Value) o).boolValue());
       }
     else if (resultClazz == fuir().clazz(FUIR.SpecialClazzes.c_unit) && o == null             ) { return new Instance(resultClazz); }
+    // NYI: UNDER DEVELOPMENT: remove this, abusing javaObjectToPlainInstance in mtx_*, cnd_* intrinsics
+    else if (resultClazz == fuir().clazz(FUIR.SpecialClazzes.c_sys_ptr)) { return new JavaRef(o); }
     else
       {
         var result = new Instance(resultClazz);
