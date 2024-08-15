@@ -50,6 +50,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
 import java.util.WeakHashMap;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -1185,6 +1187,91 @@ public class Runtime extends ANY
   {
     return stringToUtf8ByteArray(i == 0 ? _cmd_
                                         : _args_[i-1]);
+  }
+
+
+  public static Object mtx_init()
+  {
+    return new ReentrantLock();
+  }
+
+  public static boolean mtx_lock(Object rl)
+  {
+    ((ReentrantLock)rl).lock();
+    return true;
+  }
+
+  public static boolean mtx_trylock(Object rl)
+  {
+    return ((ReentrantLock)rl).tryLock();
+  }
+
+  public static boolean mtx_unlock(Object rl)
+  {
+    try
+      {
+        ((ReentrantLock)rl).unlock();
+        return true;
+      }
+    catch(IllegalMonitorStateException e)
+      {
+        return false;
+      }
+  }
+
+  public static void mtx_destroy(Object rl)
+  {
+
+  }
+
+
+  public static Object cnd_init(Object rl)
+  {
+    return ((ReentrantLock)rl).newCondition();
+  }
+
+  public static boolean cnd_signal(Object cnd)
+  {
+    try
+      {
+        ((Condition)cnd).signal();
+        return true;
+      }
+    catch(Exception e)
+      {
+        return false;
+      }
+  }
+
+  public static boolean cnd_broadcast(Object cnd)
+  {
+    try
+      {
+        ((Condition)cnd).signalAll();
+        return true;
+      }
+    catch(Exception e)
+      {
+        return false;
+      }
+  }
+
+  public static boolean cnd_wait(Object cnd)
+  {
+    try
+      {
+        ((Condition)cnd).await();
+        return true;
+      }
+    catch(Exception e)
+      {
+        return false;
+      }
+  }
+
+  public static void cnd_destroy(Object cnd)
+  {
+
   }
 
 

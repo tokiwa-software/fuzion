@@ -39,11 +39,11 @@ typeinference_for_formal_args is
   #
   scenario1 =>
     p is
-      in_p => test "called p.in_p" "" ""; true
+      in_p => {test "called p.in_p" "" ""; true}
     q is
-      in_q => test "called q.in_q" "" ""; true
+      in_q => {test "called q.in_q" "" ""; true}
     r is
-      in_r => test "called r.in_r" "" ""; true
+      in_r => {test "called r.in_r" "" ""; true}
 
     called_with_p(a) => a.in_p
     called_with_q(a) => a.in_q
@@ -63,7 +63,7 @@ typeinference_for_formal_args is
     ping(x) =>
       if (x > 0) _:= pong x
       true
-    pong(y) => _ := ping y-1; false
+    pong(y) => {_ := ping y-1; false}
 
     test "ping poing" ([1,2,3].filter x->(ping 3)) "[1, 2, 3]"
 

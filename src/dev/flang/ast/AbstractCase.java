@@ -112,9 +112,9 @@ public abstract class AbstractCase extends HasGlobalIndex implements HasSourcePo
    *
    * @param outer the feature surrounding this expression.
    */
-  public void visit(FeatureVisitor v, AbstractFeature outer)
+  public void visit(FeatureVisitor v, AbstractMatch m, AbstractFeature outer)
   {
-    v.actionBefore(this);
+    v.actionBefore(this, m);
     if (field() instanceof Feature f)
       {
         f.visit(v, outer);
@@ -140,10 +140,12 @@ public abstract class AbstractCase extends HasGlobalIndex implements HasSourcePo
    * @param v the visitor instance that defines an action to be performed on
    * visited expressions
    */
-  public void visitExpressions(ExpressionVisitor v)
+  public void visitExpressions(AbstractMatch m, ExpressionVisitor v)
   {
-    code().visitExpressions(v);
-    v.action(this);
+    if (v.action(m, this))
+      {
+        code().visitExpressions(v);
+      }
   }
 
 }

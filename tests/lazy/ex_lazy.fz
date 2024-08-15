@@ -39,14 +39,14 @@ ex_lazy is
   say "should eval mtrue"
   y0 := and true mtrue
 
-  mtrue => say "eval mtrue!"; true
+  mtrue => {say "eval mtrue!"; true}
 
   lst(T type, h T, t Lazy (list T)) list T =>
     ref : Cons T (list T)
       redef head => h
       redef tail => t
 
-  stars => say "eval stars!"; lst "*" stars
+  stars => {say "eval stars!"; lst "*" stars}
 
   say "x"
   say (stars.take 10)

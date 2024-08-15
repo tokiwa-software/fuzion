@@ -26,7 +26,7 @@
 public unique_id (p Unique_Id_Handler) : simple_effect
 is
 
-  public get => replace; p.get
+  public get => {replace; p.get}
 
   type.install_default =>
     (unique_id default_handler).default
@@ -54,5 +54,3 @@ public Unique_Id_Handler ref is
 public unique_id =>
   unique_id.install_default
   unique_id.env.get
-
-

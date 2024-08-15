@@ -505,6 +505,9 @@ public class Intrinsix extends ANY implements ClassFileConstants
             Expr.checkcast(new ClassType("java/lang/Boolean"))
               .andThen(Expr.invokeVirtual("java/lang/Boolean", "booleanValue", "()Z", PrimitiveType.type_boolean)));
       }
+      case c_sys_ptr -> {
+        yield Expr.aload(slot, JAVA_LANG_OBJECT);
+      }
       default -> {
         var rt = jvm._types.javaType(rc0);
         var jref = jvm._fuir.lookupJavaRef(rc0);
@@ -841,17 +844,80 @@ public class Intrinsix extends ANY implements ClassFileConstants
         });
 
     /* ReentrantLock */
-    put("concur.sync.mtx_init",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
-    put("concur.sync.mtx_lock",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
-    put("concur.sync.mtx_trylock",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
-    put("concur.sync.mtx_unlock",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
-    put("concur.sync.mtx_destroy",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
+    put("concur.sync.mtx_init",  (jvm, si, cc, tvalue, args) ->
+      returnResult(
+        jvm,
+        si,
+        jvm._fuir.clazzResultClazz(cc),
+        Expr.invokeStatic(Names.RUNTIME_CLASS,
+                          "mtx_init",
+                          "()Ljava/lang/Object;",
+                          JAVA_LANG_OBJECT)));
+    put("concur.sync.mtx_lock",  (jvm, si, cc, tvalue, args) ->
+      new Pair<>(args.get(0).andThen(
+        Expr.invokeStatic(Names.RUNTIME_CLASS,
+                          "mtx_lock",
+                          "(Ljava/lang/Object;)Z",
+                          ClassFileConstants.PrimitiveType.type_boolean)), Expr.UNIT)
+      );
+    put("concur.sync.mtx_trylock",  (jvm, si, cc, tvalue, args) ->
+      new Pair<>(args.get(0).andThen(
+        Expr.invokeStatic(Names.RUNTIME_CLASS,
+                          "mtx_trylock",
+                          "(Ljava/lang/Object;)Z",
+                          ClassFileConstants.PrimitiveType.type_boolean)), Expr.UNIT)
+      );
+    put("concur.sync.mtx_unlock",  (jvm, si, cc, tvalue, args) ->
+      new Pair<>(args.get(0).andThen(
+        Expr.invokeStatic(Names.RUNTIME_CLASS,
+                          "mtx_unlock",
+                          "(Ljava/lang/Object;)Z",
+                          ClassFileConstants.PrimitiveType.type_boolean)), Expr.UNIT)
+      );
+    put("concur.sync.mtx_destroy",  (jvm, si, cc, tvalue, args) ->
+      new Pair<>(args.get(0).andThen(
+        Expr.invokeStatic(Names.RUNTIME_CLASS,
+                          "mtx_destroy",
+                          "(Ljava/lang/Object;)V",
+                          ClassFileConstants.PrimitiveType.type_void)), Expr.UNIT)
+      );
+
     /* Condition */
-    put("concur.sync.cnd_init",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
-    put("concur.sync.cnd_signal",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
-    put("concur.sync.cnd_broadcast",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
-    put("concur.sync.cnd_wait",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
-    put("concur.sync.cnd_destroy",  (jvm, si, cc, tvalue, args) -> { throw new Error("NYI"); });
+    put("concur.sync.cnd_init",  (jvm, si, cc, tvalue, args) ->
+      returnResult(jvm, si, jvm._fuir.clazzResultClazz(cc),
+          args.get(0).andThen(Expr.invokeStatic(
+                          Names.RUNTIME_CLASS,
+                          "cnd_init",
+                          "(Ljava/lang/Object;)Ljava/lang/Object;",
+                          JAVA_LANG_OBJECT))));
+    put("concur.sync.cnd_signal",  (jvm, si, cc, tvalue, args) ->
+      new Pair<>(args.get(0).andThen(
+        Expr.invokeStatic(Names.RUNTIME_CLASS,
+                          "cnd_signal",
+                          "(Ljava/lang/Object;)Z",
+                          ClassFileConstants.PrimitiveType.type_boolean)), Expr.UNIT)
+      );
+    put("concur.sync.cnd_broadcast",  (jvm, si, cc, tvalue, args) ->
+      new Pair<>(args.get(0).andThen(
+        Expr.invokeStatic(Names.RUNTIME_CLASS,
+                          "cnd_broadcast",
+                          "(Ljava/lang/Object;)Z",
+                          ClassFileConstants.PrimitiveType.type_boolean)), Expr.UNIT)
+      );
+    put("concur.sync.cnd_wait",  (jvm, si, cc, tvalue, args) ->
+      new Pair<>(args.get(0).andThen(
+        Expr.invokeStatic(Names.RUNTIME_CLASS,
+                          "cnd_wait",
+                          "(Ljava/lang/Object;)Z",
+                          ClassFileConstants.PrimitiveType.type_boolean)), Expr.UNIT)
+      );
+    put("concur.sync.cnd_destroy",  (jvm, si, cc, tvalue, args) ->
+      new Pair<>(args.get(0).andThen(
+        Expr.invokeStatic(Names.RUNTIME_CLASS,
+                          "cnd_destroy",
+                          "(Ljava/lang/Object;)V",
+                          ClassFileConstants.PrimitiveType.type_void)), Expr.UNIT)
+      );
 
     put(new String[]
       {

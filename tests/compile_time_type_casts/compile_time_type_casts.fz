@@ -1,0 +1,397 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test compile_time_type_casts
+#
+# -----------------------------------------------------------------------
+
+# positive tests for compile-time type casts like preconditions `pre T : x` or
+# conditionals `if T : x then ... else if T : y then ...`.
+#
+compile_time_type_casts =>
+
+  # first, test base lib features on Sequence that are using type casts in
+  # preconditions:
+
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [3,4,5])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [6,7,8])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [1,2,3])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [1,2])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [1])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [2,3,4])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [2,3])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [2])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [8,9,10])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [9,10])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [10])
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [5,4,3])  # will fail
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [4,3])    # will fail
+  say ([1,2,3,4,5,6,7,8,9,10].find_first [3])
+
+  t := ["avenidas",
+        "avenidas y flores",
+        "flores",
+        "flores y mujeres",
+        "avenidas",
+        "avenidas y mujeres",
+        "avenidas y flores y mujeres y",
+        "un admirador"]
+
+  say (t.find_first ["avenidas", "avenidas y mujeres"])
+  say (t.find_first ["avenidas", "flores y mujeres"])  # will fail
+  say (t.find_first ["un admirador"])
+
+
+  # ----------------------------------------------------------------------
+
+
+  # next, test that if-statements propagate the type constraint correctly to
+  # code, lambda, partial calls and lazy values:
+
+  a is
+    do_a_thing => say "a!"
+  b is
+    do_b_thing => say "b!"
+    do_b_thing_from_lambda   => say "b -- from lambda!!"
+    do_b_thing_from_partial1 => say "b -- from partial1!!"
+    do_b_thing_from_partial2 =>     "b -- from partial2!!"
+    do_b_thing_lazy1         => { say "eval b lazy 1"; "b -- from lazy!!" }
+    do_b_thing_lazy2         => { say "eval b lazy 2"; 3.14 }
+  c is
+    do_c_thing => say "c!"
+
+  uselambda(f ()->unit) =>
+    f()
+
+  uselazy(f Lazy String) =>
+    say "before eval of lazy String"
+    say "lazy String $f"
+  uselazy_num(f Lazy (T : numeric)) =>
+    say "before eval of lazy num"
+    say "lazy $T $f"
+
+  x(v T) =>
+
+    for_String
+      pre T : String
+    =>
+      say "String '$v' type $T len {v.byte_length}"
+
+    if T : String
+      say "String '$v' type $T"
+      say "String '$v' type $T len {v.byte_length}"
+      for_String
+      uselambda ()->(say "lambda : codepoint len {v.codepoint_length}")
+      uselambda     (say "partial: codepoint len {v.codepoint_length}")   # partial using constraint in args
+      uselazy         v
+      uselazy_num i32 v.codepoint_length
+    else if T : bool
+      # note that `T` is not of type `bool` but of any type that inherits from `bool`. This is why built-in
+      # operation like `prefix !`, `infix &&` and `infix ||` that are compiled into `if-then-else` expressions
+      # that require the subject to be `bool`will cause an error.
+      #
+      # NYI: IMPROVEMENT: We might improve this by better error messages or by treating choice type constraints
+      # as exact constraints.
+      #
+      vb := v ^ false
+      say "bool $v {type_of(v)} {! vb}"
+    else if T : a
+      v.do_a_thing
+    else if T : b
+      v.do_b_thing
+      uselambda   ()->v.do_b_thing_from_lambda
+      uselambda       v.do_b_thing_from_partial1       # partial using constraint in target
+      uselambda  (say v.do_b_thing_from_partial2)      # partial using constraint in args
+      uselazy         v.do_b_thing_lazy1
+      uselazy_num f64 v.do_b_thing_lazy2
+
+    else if T : c
+      v.do_c_thing
+    else if T : unit
+      _ := v
+    else
+      say "other type $v type $T"
+
+    match T : String
+      TRUE  => say "matched String '$v' type $T len {v.byte_length}"; for_String
+      FALSE =>
+
+  x "Fuzion!"
+  x "F"
+  x true
+  x nil
+  x a
+  x b
+  x c
+  x unit
+
+
+  # ----------------------------------------------------------------------
+
+  # test deeper nesting levels
+  #
+
+  A ref is
+  B ref is
+  C ref is
+
+  ab  : A, B is
+  ac  : A, C is
+  bc  : B, C is
+  abc : A, B, C is
+
+  take_A(v A) => say "take_A: ok: {type_of v} dynamic {v.dynamic_type}"
+  take_B(v B) => say "take_B: ok: {type_of v} dynamic {v.dynamic_type}"
+  take_C(v C) => say "take_C: ok: {type_of v} dynamic {v.dynamic_type}"
+
+  say ""
+  say "------ simple calls passing A, B, C, ab, ac, bc, abc. no type pars ------"
+
+  take_A A
+  take_A ab
+  take_A ac
+  # take_A bc   # -- would fail, bc is not A
+  take_A abc
+  take_B B
+  take_B ab
+  # take_B ac   # -- would fail, ac is not B
+  take_B bc
+  take_B abc
+  take_C C
+  # take_C ab   # -- would fail, ab is not C
+  take_C ac
+  take_C bc
+  take_C abc
+
+  # lets try nesting
+
+  y1(v T : A) =>
+    say "y1 for {type_of v}"
+
+    take_A v
+    # take_B v   # -- would fail, v is of type : A
+    # take_C v   # -- would fail, v is of type : A
+
+    y2
+      pre T : B
+    =>
+      say "y2 for {type_of v}"
+
+      # take_A v   # -- would fail, v is of type : B
+      take_B v
+      # take_C v   # -- would fail, v is of type : B
+
+      y3 =>
+        say "y3 for {type_of v}"
+
+        # take_A v   # -- would fail, v is of type : B
+        take_B v
+        # take_C v   # -- would fail, v is of type : B
+
+        if T : C
+          say "y3 if for {type_of v}"
+
+          # take_A v   # -- would fail, v is of type : C
+          # take_B v   # -- would fail, v is of type : C
+          take_C v
+        else
+          say "y3 if not taken, T : C failed for $T"
+      y3
+    y2
+
+
+  say ""
+  say "------ ab passed to nested constraints A, pre T : B and if T : C ------"
+  y1 ab
+
+  say ""
+  say "------ abc passed to nested constraints A, pre T : B and if T : C ------"
+  y1 abc
+
+  # try the same thing from within a lambdas to make sure types get propagated into lambdas
+
+  z1(v T : A) =>
+
+    uselambda ()->
+      say "z1 for {type_of v}"
+
+      take_A v
+      # take_B v   # -- would fail, v is of type : A
+      # take_C v   # -- would fail, v is of type : A
+
+      z2
+        pre T : B
+      =>
+        uselambda ()->
+          say "z2 for {type_of v}"
+
+          # take_A v   # -- would fail, v is of type : B
+          take_B v
+          # take_C v   # -- would fail, v is of type : B
+
+          uselambda ()->
+            say "z3 for {type_of v}"
+
+            # take_A v   # -- would fail, v is of type : B
+            take_B v
+            # take_C v   # -- would fail, v is of type : B
+
+            if T : C
+              uselambda ()->
+                say "z3 if for {type_of v}"
+
+                # take_A v   # -- would fail, v is of type : C
+                # take_B v   # -- would fail, v is of type : C
+                take_C v
+            else
+              say "z3 if not taken, T : C failed for $T"
+      z2
+
+  say ""
+  say "------ ab passed to nested constraints A, pre T : B and if T : C using lambdas ------"
+  z1 ab
+
+  say ""
+  say "------ abc passed to nested constraints A, pre T : B and if T : C using lambdas ------"
+  z1 abc
+
+
+  # try the same thing from within a lambdas to make sure types get propagated into lambdas
+
+  q1(v1 T1 : A, v2 T2 : B, v3 T3 : C) =>
+
+    uselambda ()->
+      say "q1 for {type_of v1} {type_of v2} {type_of v3}"
+
+      take_A v1
+      take_B v2
+      take_C v3
+
+      q2
+        pre T1 : B
+      =>
+        uselambda ()->
+          say "q2 for {type_of v1} {type_of v2} {type_of v3}"
+
+          # take_A v1   # -- would fail, v1 is of type : B
+          take_B v1
+          take_B v2
+          take_C v3
+
+          uselambda ()->
+            say "q3 for {type_of v1} {type_of v2} {type_of v3}"
+
+            # take_A v1   # -- would fail, v1 is of type : B
+            take_B v1
+            take_B v2
+            take_C v3
+
+            if T2 : C
+              uselambda ()->
+                say "q3 if for {type_of v1} {type_of v2} {type_of v3}"
+
+                # take_A v1   # -- would fail, v1 is of type : B
+                take_B v1
+                # take_B v2   # -- would fail, v1 is of type : C
+                take_C v2
+                take_C v3
+            else
+              say "q3 if not taken, T2 : C failed for $T2"
+      q2
+
+  say ""
+  say "------ ab B C passed to nested constraint T1 : A, pre T1 : B and if T2 : C, using lambdas in between ------"
+  q1 ab B C
+
+  say ""
+  say "------ ab bc ac passed to nested constraint T1 : A, pre T1 : B and if T2 : C, using lambdas in between ------"
+  q1 ab bc ac
+
+  say ""
+  say "------ abc abc abc passed to nested constraint T1 : A, pre T1 : B and if T2 : C, using lambdas in between ------"
+  q1 abc abc abc
+
+
+  # try a different nesting order for the same thing from within a lambdas to make sure types get propagated into lambdas
+
+  r1(v1 T1, v2 T2, v3 T3) =>
+
+    # NYI: &&, || and ! do not work yet
+    #
+    # if (T1 : A) && (T2 : B) && (T3 : C)
+   if T1 : A
+    if T2 : B
+     if T3 : C
+
+      take_A v1   # out
+      take_B v2   # out
+      take_C v3   # out
+
+      uselambda ()->
+        say "r1 for {type_of v1} {type_of v2} {type_of v3}"
+
+        take_A v1   # in
+        take_B v2   # in
+        take_C v3   # in
+
+        r2
+          pre T1 : B
+        =>
+          uselambda ()->
+            say "r2 for {type_of v1} {type_of v2} {type_of v3}"
+
+            # take_A v1   # -- would fail, v1 is of type : B
+            take_B v1   # in 2
+            take_B v2   # in 2
+            take_C v3   # in 2
+
+            uselambda ()->
+              say "r3 for {type_of v1} {type_of v2} {type_of v3}"
+
+              # take_A v1   # -- would fail, v1 is of type : B
+              take_B v1   # in 3
+              take_B v2   # in 3
+              take_C v3   # in 3
+
+              if T2 : C
+                uselambda ()->
+                  say "r3 if for {type_of v1} {type_of v2} {type_of v3}"
+
+                  # take_A v1   # -- would fail, v1 is of type : B
+                  take_B v1   # in 4
+                  # take_B v2   # -- would fail, v1 is of type : C
+                  take_C v2   # in 4
+                  take_C v3   # in 4
+              else
+                say "r3 if not taken, T2 : C failed for $T2"
+        r2
+
+  say ""
+  say "------ ab B C passed to nested constraint T1 : A, pre T1 : B and if T2 : C, using lambdas in between ------"
+  r1 ab B C
+
+  say ""
+  say "------ ab bc ac passed to nested constraint T1 : A, pre T1 : B and if T2 : C, using lambdas in between ------"
+  r1 ab bc ac
+
+  say ""
+  say "------ abc abc abc passed to nested constraint T1 : A, pre T1 : B and if T2 : C, using lambdas in between ------"
+  r1 abc abc abc

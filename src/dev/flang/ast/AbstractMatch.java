@@ -98,7 +98,7 @@ public abstract class AbstractMatch extends Expr
     v.action(this);
     for (var c: cases())
       {
-        c.visit(v, outer);
+        c.visit(v, this, outer);
       }
     return this;
   }
@@ -117,7 +117,7 @@ public abstract class AbstractMatch extends Expr
     var c = cases();
     for (int i = 0; i < c.size(); i++)
       {
-        c.get(i).visitExpressions(v);
+        c.get(i).visitExpressions(this, v);
       }
   }
 
@@ -128,7 +128,7 @@ public abstract class AbstractMatch extends Expr
    */
   private AbstractType typeFromCases()
   {
-    var result = Expr.union(cases().map2(x -> x.code()));
+    var result = Expr.union(cases().map2(x -> x.code()), Context.NONE);
     if (result == Types.t_ERROR)
       {
         new IncompatibleResultsOnBranches(pos(),
@@ -151,6 +151,7 @@ public abstract class AbstractMatch extends Expr
    *
    * @return this Expr's type or null if not known.
    */
+  @Override
   AbstractType typeForInferencing()
   {
     if (_type == null)

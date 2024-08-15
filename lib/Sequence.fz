@@ -611,6 +611,156 @@ public Sequence(public T type) ref is
       (take chunk_size).as_list : ((drop chunk_size).chunk chunk_size)
 
 
+  # does this sequence start with l?
+  #
+  # NYI: CLEANUP: #3524 There is no `starts_with` due to clash with `String.starts_with` in `Const_String`.
+  #
+  public is_prefix_of(l Sequence T) bool
+    pre
+      T : property.equatable
+  =>
+    match as_list
+      nil     => true
+      c1 Cons =>
+        match l.as_list
+          nil     => false
+          c2 Cons => c1.head = c2.head && c1.tail.is_prefix_of c2.tail # tail recursion
+
+
+  # determine the index of element x within this list.  0 if x is at the
+  # head of the list, 1 if it comes directly after head, etc. nil if x is
+  # not in the list.
+  #
+  public index_of(x T)
+    pre
+      T : property.equatable
+  =>
+    find_first [x]
+
+
+  # get the index of l within this list or nil if it does not exist
+  #
+  # NYI: CLEANUP: #3524 This should be called `find`, but that would clash with `String.find` in `Const_String`.
+  #
+  public find_first(l Sequence T) option i32
+    pre
+      T : property.equatable
+  =>
+    if l.is_prefix_of Sequence.this
+      0
+    else
+      match as_list
+        nil    => nil
+        c Cons => (c.tail.find_first l) >>= +1
+
+
+  # replace all occurrences of old by new
+  #
+  # NYI: CLEANUP: #3524 This should be called `replace`, but that would clash with `String.replace` in `Const_String`.
+  #
+  public replace_all(old, new Sequence T)
+    pre
+      T : property.equatable
+  =>
+    nil_list list T := nil
+    replace old new nil_list Sequence.this nil
+
+
+  # replace the first n occurrences of old by new
+  #
+  # NYI: CLEANUP: #3524 This should be called `replace`, but that would clash with `String.replace` in `Const_String`.
+  #
+  public replace_n (old, new Sequence T, n u64)
+    pre
+      T : property.equatable
+  =>
+    nil_list list T := nil
+    replace old new nil_list Sequence.this n
+
+
+  # tail recursive helper for the replace features
+  #
+  replace(old, new,
+          already_replaced,          # the head part with old already replaced by new
+          to_be_replaced Sequence T, # the tail that still needs to be searched for old
+          limit option u64
+         )
+    pre
+      T : property.equatable
+  =>
+    match to_be_replaced.find_first old
+      nil   => already_replaced ++ to_be_replaced
+      n i32 =>
+        # NYI: #637: perhaps make it possible to do
+        #     if limit = option 0
+        # here.
+        if (limit.map_to_option (v -> v = (u64 0))).or_else false
+          already_replaced ++ to_be_replaced
+        else
+          a := already_replaced ++ (to_be_replaced.take n) ++ new
+          b := to_be_replaced.drop (n + old.count)
+          replace old new a b (limit >>= (l -> l - 1))
+
+
+  # get the number of matches of l
+  #
+  public count_matches_overlapping(l Sequence T) i32
+    pre
+      T : property.equatable
+  =>
+    tails
+      .filter (t -> l.is_prefix_of t)
+      .count
+
+
+  # get the number of non-overlapping matches of l within this
+  #
+  public count_matches(l Sequence T) i32
+    pre
+      T : property.equatable
+  =>
+    match as_list
+      nil     => 0
+      c1 Cons => (if (l.is_prefix_of Sequence.this) 1 + (drop l.count).count_matches l
+                  else                                  c1.tail       .count_matches l)
+
+
+  # split sequence at s, if there is no limit, otherwise if limit is an integer n,
+  # for at most n occurrences of s
+  #
+  # if split_after is true, all but the last element of the resulting list include
+  # the separator
+  #
+  # helper feature which unifies the code of the different split features in one
+  #
+  # NYI: CLEANUP: #3524 This should be called `split0`, but that would clash with `String.split0` in `Const_String`.
+  #
+  module split_(s Sequence T, limit option u32, split_after bool) list (Sequence T)
+    pre
+      T : property.equatable
+      debug: !s.is_empty
+      debug: match limit
+              nil => true
+              n u32 => n > 0
+    =>
+      match (find_first s)
+        nil     => (id (Sequence T) Sequence.this) : nil  # NYI: With better type propagation, this could be `Sequence.this : nil` or `[Sequence.this].as_list`
+        idx i32 =>
+          ref : Cons (Sequence T) (list (Sequence T))
+            redef head Sequence T := take (if split_after then idx + s.count else idx)
+            redef tail =>
+              rest := drop (idx + s.count)
+
+              match limit
+                nil => rest.split_ s nil split_after
+                n u32 =>
+                  if n > 1
+                    rest.split_ s (n - 1) split_after
+                  else
+                    res Sequence T := rest;
+                    res : nil
+
+
   # monoid of Sequences with infix concatentation operation.
   #
   public type.concat_monoid : Monoid (Sequence T) is

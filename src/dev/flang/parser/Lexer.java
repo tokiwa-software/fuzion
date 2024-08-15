@@ -220,6 +220,7 @@ public class Lexer extends SourceFile
     t_spaceOrSemiLimit,  // token follows white space or semicolon while endAtSpace is enabled
     t_colonLimit,        // token is operator ":" while endAtColon is enabled
     t_barLimit,          // token is operator "|" while endAtBar is enabled
+    t_ambiguousSemi,     // it is unclear whether the semicolon ends the inner or the outer block, will always cause a syntax error
     t_undefined;         // current token before first call to next()
 
     /**
@@ -338,6 +339,12 @@ public class Lexer extends SourceFile
         }
       return result;
     }
+  }
+
+  static enum SemiState {
+    CONTINUE, // continue parsing current rule at semicolon
+    END,      // end block at semicolon
+    ERROR     // ambiguous semicolon in nested blocks
   }
 
 
@@ -656,6 +663,8 @@ public class Lexer extends SourceFile
    */
   private boolean _endAtBar = false;
 
+  private SemiState _atSemicolon = SemiState.CONTINUE;
+
 
   /**
    * Has the raw token before current() been skipped because ignore(t) resulted
@@ -699,6 +708,7 @@ public class Lexer extends SourceFile
     _endAtSpace = original._endAtSpace;
     _endAtColon = original._endAtColon;
     _endAtBar = original._endAtBar;
+    _atSemicolon = original._atSemicolon;
     _ignoredTokenBefore = original._ignoredTokenBefore;
     _stringLexer = original._stringLexer == null ? null : new StringLexer(original._stringLexer);
   }
@@ -904,6 +914,41 @@ public class Lexer extends SourceFile
     return result;
   }
 
+  /**
+   * Increases the semicolon state, which is used to detect ambiguous semicolons
+   * e.g. when blocks are nested in one line.
+   */
+  void incrSemiState()
+  {
+    _atSemicolon = _atSemicolon == SemiState.CONTINUE ? SemiState.END
+                                                      : SemiState.ERROR;
+  }
+
+  /**
+   * Decreases the semicolon state, which is used to detect ambiguous semicolons
+   * e.g. when blocks are nested in one line.
+   */
+  void decrSemiState()
+  {
+    _atSemicolon = _atSemicolon == SemiState.ERROR ? SemiState.END
+                                                   : SemiState.CONTINUE;
+  }
+
+  /**
+   * Set a new semicolon state,  which is used to detect ambiguous semicolons
+   * e.g. when blocks are nested in one line.
+   *
+   * @param newVal the new semicolon state
+   * @return the previous semicolon state
+   */
+  SemiState semiState(SemiState newVal)
+  {
+    SemiState old = _atSemicolon;
+    _atSemicolon = newVal;
+    return old;
+  }
+
+
 
   /**
    * Convenience method to temporarily reset limits set via sameLine() or
@@ -920,11 +965,13 @@ public class Lexer extends SourceFile
     int oldEAS = endAtSpaceOrSemi(Integer.MAX_VALUE);
     var oldEAC = endAtColon(false);
     var oldEAB = endAtBar(false);
+    var oldSemiSt = semiState(SemiState.CONTINUE);
     V result = c.call();
     sameLine(oldLine);
     endAtSpaceOrSemi(oldEAS);
     endAtColon(oldEAC);
     endAtBar(oldEAB);
+    semiState(oldSemiSt);
     return result;
   }
 
@@ -972,6 +1019,7 @@ public class Lexer extends SourceFile
    */
   <V> V bracketTermWithNLs(Parens brackets, String rule, Callable<V> c, Callable<V> def)
   {
+    var oldSemiSt = semiState(SemiState.CONTINUE);
     var start = brackets._left;
     var end   = brackets._right;
     var ol = line();
@@ -989,6 +1037,7 @@ public class Lexer extends SourceFile
         sl = nl;
       }
     sameLine(sl);
+    semiState(oldSemiSt);
     return result;
   }
 
@@ -1078,8 +1127,24 @@ public class Lexer extends SourceFile
       tokenAsString().equals(":")                            ? Token.t_colonLimit             :
       endAtBar                    &&
       _curToken == Token.t_op     &&
-      tokenAsString().equals("|")                            ? Token.t_barLimit
+      tokenAsString().equals("|")                            ? Token.t_barLimit         :
+      ambiguousSemi()                                        ? Token.t_ambiguousSemi
                                                              : _curToken;
+  }
+
+  private boolean ambiguousSemi()
+  {
+    return _atSemicolon == SemiState.ERROR &&
+           _curToken == Token.t_semicolon && semiNotAtEnd();
+  }
+
+  private boolean semiNotAtEnd()
+  {
+    var lookAhead = new Lexer(this);
+    lookAhead.next();
+    int nextTokLine = lookAhead.line();
+    // semicolon does not end line if the next (non ignored) token is in the same line
+    return line() == nextTokLine;
   }
 
 
@@ -2375,6 +2440,7 @@ Fuzion xref:input_source[input sources] must match the Fuzion grammar defined in
       case t_spaceOrSemiLimit -> Errors.whiteSpaceNotAllowedHere(sourcePos(tokenPos()), detail);
       case t_colonLimit       -> Errors.colonPartOfTernary      (sourcePos(tokenPos()), detail);
       case t_barLimit         -> Errors.barPartOfCase           (sourcePos(tokenPos()), detail);
+      case t_ambiguousSemi    -> Errors.ambiguousSemicolon(sourcePos(pos));
       default                 -> Errors.syntax(sourcePos(pos), expected, currentAsString(), detail);
       }
   }

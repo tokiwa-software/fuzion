@@ -26,8 +26,8 @@
 # universe is the mother and father of all features.
 # As such it is the outermost feature.
 #
-# Universe can not be called but you can use in a
-# call as part of a full qualifier, e.g.:
+# Universe can not be called but you can use it
+# in a call as part of a full qualifier, e.g.:
 #
 # `universe.this.say "hello"`
 #
