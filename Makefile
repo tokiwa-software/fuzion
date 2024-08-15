@@ -1265,7 +1265,7 @@ syntaxcheck: min-java
 
 .PHONY: add_simple_test
 add_simple_test: no-java
-	$(BUILD_DIR)/bin/fz bin/add_simple_test.fz
+	(cd $(FZ_SRC); $(BUILD_DIR)/bin/fz $(FZ_SRC)/bin/add_simple_test.fz; cd -)
 
 .PHONY: rerecord_simple_tests
 rerecord_simple_tests:

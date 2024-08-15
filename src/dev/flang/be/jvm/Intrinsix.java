@@ -679,12 +679,15 @@ public class Intrinsix extends ANY implements ClassFileConstants
           if (CHECKS)
             {
               var data = jvm._fuir.lookup_fuzion_sys_internal_array_data(at);
-              code = tvalue
-                .andThen(jvm.getfield(data))
-                .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                           in.replace("fuzion.sys.internal_array.",""),
-                                           "(" + (JAVA_LANG_OBJECT.descriptor()) + ")V",
-                                           ClassFileConstants.PrimitiveType.type_void));
+              if (jvm.fieldExists(data))
+                {
+                  code = tvalue
+                    .andThen(jvm.getfield(data))
+                    .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                               in.replace("fuzion.sys.internal_array.",""),
+                                               "(" + (JAVA_LANG_OBJECT.descriptor()) + ")V",
+                                               ClassFileConstants.PrimitiveType.type_void));
+                }
             }
           return new Pair<>(val, code);
         });
