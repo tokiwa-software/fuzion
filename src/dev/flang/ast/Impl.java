@@ -108,7 +108,8 @@ public class Impl extends ANY
     Of,           // Syntactic sugar 'enum : choice of red, green, blue is', exists only during parsing
     Native;       // a native feature
 
-    public String toString(){
+    public String toString()
+    {
       return switch(this)
         {
           case FieldInit         : yield "field initialization";

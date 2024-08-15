@@ -574,13 +574,15 @@ public class Html extends ANY
       {
         return "";
       }
-    if (f.isTypeFeature()) {
-      return featureAbsoluteURL0(f.typeFeatureOrigin());
-    } else
-    {
-      String prefix = f.outer().isTypeFeature() ? "type." : "";
-      return featureAbsoluteURL0(f.outer()) + "/" + prefix + urlEncode(f.featureName().toString());
-    }
+    if (f.isTypeFeature())
+      {
+        return featureAbsoluteURL0(f.typeFeatureOrigin());
+      }
+    else
+      {
+        String prefix = f.outer().isTypeFeature() ? "type.": "";
+        return featureAbsoluteURL0(f.outer()) + "/" + prefix + urlEncode(f.featureName().toString());
+      }
   }
 
   /**

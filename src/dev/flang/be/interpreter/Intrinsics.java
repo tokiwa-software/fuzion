@@ -630,7 +630,8 @@ public class Intrinsics extends ANY
                   }
 
                   @Override
-                  int length(){
+                  int length()
+                  {
                     return (int)size;
                   }
                 };
