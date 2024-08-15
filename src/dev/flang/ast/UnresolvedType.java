@@ -546,13 +546,13 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
-   * @param outerfeat the outer feature this type is declared in. Lookup of
+   * @param context the outer feature this type is declared in. Lookup of
    * unqualified types will happen in this feature.
    *
    * @param tolerant behavior if resolution is not possible
    *                 if true return null, if false flag error
    */
-  AbstractType resolve(Resolution res, AbstractFeature outerfeat, boolean tolerant)
+  AbstractType resolve(Resolution res, Context context, boolean tolerant)
   {
     if (PRECONDITIONS) require
       (res != null,
@@ -579,12 +579,12 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
           }
         else if (tolerant && (o instanceof UnresolvedType ut))
           {
-            o = ut.resolve(res, of, true);
+            o = ut.resolve(res, context, true);
             if (o == null || o == Types.t_ERROR)
             {
               return null;
             }
-            var ot2 = o.isGenericArgument() ? o.genericArgument().constraint(res) // see tests/reg_issue1943 for examples
+            var ot2 = o.isGenericArgument() ? o.genericArgument().constraint(res, context) // see tests/reg_issue1943 for examples
                                             : o;
             of = ot2.feature();
           }
@@ -695,7 +695,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                       {
                         o = fo._outer.thisType(fo.isNextInnerFixed());
                       }
-                _resolved = finishTryResolve(res, context, this, this, f, generics, null, o, _refOrVal, _ignoreActualTypePars, tolerant);
+                _resolved = finishResolve(res, context, this, this, f, generics, null, o, _refOrVal, _ignoreActualTypePars, tolerant);
                   }
               }
           }
@@ -768,7 +768,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
               {
                 if (!(generics instanceof FormalGenerics.AsActuals))
                   {
-                    generics = generics.map(t -> t instanceof UnresolvedType ut ? ut.resolve(res, outerfeat, true) : t);
+                    generics = generics.map(t -> t instanceof UnresolvedType ut ? ut.resolve(res, context, true) : t);
                   }
                 if (!f.generics().sizeMatches(generics) || generics.contains(null))
                   {
@@ -777,7 +777,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
               }
             else
               {
-                generics = FormalGenerics.resolve(res, generics, outerfeat);
+                generics = FormalGenerics.resolve(res, generics, context.outerFeature());
                 if (!f.generics().errorIfSizeDoesNotMatch(generics,
                                                           pos.pos(),
                                                           "type",
