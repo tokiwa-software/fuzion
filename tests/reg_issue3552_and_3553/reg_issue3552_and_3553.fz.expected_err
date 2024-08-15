@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue3552_and_3553.fz:33:21: error 1: Failed to infer type of expression.
+  f ()->unit := ()->[]
+--------------------^^
+Expression with unknown type: '[]'
+
+one error.
