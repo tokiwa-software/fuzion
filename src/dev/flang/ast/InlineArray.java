@@ -293,7 +293,7 @@ public class InlineArray extends ExprWithPos
   public void checkTypes(Context context)
   {
     if (PRECONDITIONS) require
-      (Errors.any() || _type != null);
+      (Errors.any() || _type != null || _elements.isEmpty() /* no inferred type for empty array, see #3552 */ );
 
     var elementType = elementType();
 
