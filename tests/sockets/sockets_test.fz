@@ -29,7 +29,7 @@ sockets_test is
   server(f net.family.val, p net.protocol.val) =>
 
     # server handles one connection at a time
-    start_server(LM type : mutate, family net.family.val, protocol net.protocol.val, port u16) =>
+    start_server(family net.family.val, protocol net.protocol.val, port u16) =>
 
       say_silent(s Any) => unit
 
@@ -40,7 +40,7 @@ sockets_test is
 
       ch : net.Connection_Handler unit is
 
-        redef handle_connection unit =>
+        redef handle_connection (LM type : mutate) unit =>
 
           chan => net.channel.env
 
@@ -76,59 +76,55 @@ sockets_test is
 
 
 
-      while net.server.is_active && match net.server.accept unit LM ch
+      while net.server.is_active && match net.server.accept unit ch
                                       e error => false
                                       * => true
       do
 
 
-    lm : mutate is
-    lm.go ()->
-      start_server lm f p (port f p)
+    start_server f p (port f p)
 
 
 
   # client
   #
   client(family net.family.val, protocol net.protocol.val, host String, port u16, num i32) =>
-    lm : mutate is
-    lm.go ()->
-      ch : net.Connection_Handler String is
+    ch : net.Connection_Handler String is
 
-        redef handle_connection =>
+      redef handle_connection (LM type : mutate) =>
 
-          chan => net.channel.env
+        chan => net.channel.env
 
-          req := ("GET / HTTP\n"
-            + "Host: $host\n"
-            + "Client: {sockets_test.client.this.num}\n\n")
+        req := ("GET / HTTP\n"
+          + "Host: $host\n"
+          + "Client: {sockets_test.client.this.num}\n\n")
 
-          w =>
-            _ := (io.buffered.writer lm).write req.utf8.as_array
-            _ := (io.buffered.writer lm).flush
+        w =>
+          _ := (io.buffered.writer LM).write req.utf8.as_array
+          _ := (io.buffered.writer LM).flush
 
-          res := "$protocol/$family-client {sockets_test.client.this.num}, write to $host:$port => {w}"
+        res := "$protocol/$family-client {sockets_test.client.this.num}, write to $host:$port => {w}"
 
-          match protocol
-            net.protocol.tcp =>
+        match protocol
+          net.protocol.tcp =>
 
-              rr := io.buffered.read_line_while lm (s -> !s.is_empty)
+            rr := io.buffered.read_line_while LM (s -> !s.is_empty)
 
-              res + "\n" + "$protocol/$family-client {sockets_test.client.this.num}, read lines from  $host:$port: >{rr}<"
+            res + "\n" + "$protocol/$family-client {sockets_test.client.this.num}, read lines from  $host:$port: >{rr}<"
 
-            # for UDP reading would block indefinitely
-            net.protocol.udp =>
-              # rest of udp datagram was discarded
-              res
+          # for UDP reading would block indefinitely
+          net.protocol.udp =>
+            # rest of udp datagram was discarded
+            res
 
-            * =>  panic "NI"
+          * =>  panic "NI"
 
 
-      match net.client String lm ch family protocol host port
-        err error =>
-          say "$protocol/$family-client {sockets_test.client.this.num}, $host:$port: error establishing connection"
-        str String =>
-          say str
+    match net.client String ch family protocol host port
+      err error =>
+        say "$protocol/$family-client {sockets_test.client.this.num}, $host:$port: error establishing connection"
+      str String =>
+        say str
 
 
   # a number for protocol p to be used for
