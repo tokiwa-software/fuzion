@@ -1,0 +1,105 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test semicolon_parsing
+#
+# -----------------------------------------------------------------------
+
+# For changes to semicolon parsing see:
+# https://github.com/tokiwa-software/fuzion/issues/2702
+#
+semicolon_parsing =>
+
+  # TESTING CORRECT CODE
+
+  if_test_1 (cond bool) =>
+    if cond then say "true" else yak "false"; say ": this should appear after false only"
+
+  # print "true" only
+  if_test_1 true
+
+  # print "false: this should appear after false only"
+  if_test_1 false
+
+  if_test_2 (cond bool) =>
+    if cond then say "true" else {say "false"}; say "this should always appear afterwards"
+
+  # print "true
+  #        this should always appear afterwards"
+  if_test_2 true
+
+  # print "false
+  #        this should always appear afterwards"
+  if_test_2 false
+
+  # no output
+  if false then say "dead code"; say "This should never be printed";
+
+  # no output
+  if true then else say "dead code"; say "This should never be printed";
+
+  # "this is fine"
+  if true then if true then yak "this";
+                            say " is fine";
+
+  # "this is fine"
+  if true then if false then else yak "this";
+                                  say " is fine";
+
+  # "this is fine"
+  if true then yak "this"; if false then say "dead code";
+               say " is fine";
+
+  # "this is fine"
+  if true then yak "this"; yak " is"; if true then say " fine" else say "dead code"
+
+  # print "declared field a
+  #        declared field b"
+  a := 1; say "declared field a"; b := 2; say "declared field b"
+
+  # print "f1 assigned"
+  f1 ()->unit := say "I'm f1"; say "field f1 assigned"
+
+  # no output or error
+  f2 ()->unit := ()->say "hi";
+
+  # no output or error
+  f3 ()->unit := ()->say "hi";         # whitespace should not cause error either
+
+  # print "feature f4 assigned"
+  f4 => {say "I'm f4"}; say "feature f4 assigned"
+
+  # no output or error
+  f5 => {yak "I'm "; say "f5"}
+
+  # print "It is: a number
+  #        It is: an error"
+  match_test_1(val choice i32 codepoint) =>
+    match val
+      i i32       => yak "'$i'"; say " is a number"
+      c codepoint => yak "'$c'"; say " is a codepoint"
+  match_test_1 1
+  match_test_1 "A"
+
+  # no error
+  my_color is rgb u32 => abstract
+  my_transparent (alpha u32) : my_color
+    pre alpha ≥ u32 0; alpha ≤ u32 255
+  is
+    redef rgb => alpha * 256*256*256

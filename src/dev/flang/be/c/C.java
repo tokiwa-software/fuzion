@@ -482,7 +482,7 @@ public class C extends ANY
       if (rcases.size() >= 2)
         { // more than two reference cases: we have to create separate switch of clazzIds for refs
           var id = refEntry.deref().field(CNames.CLAZZ_ID);
-          var notFound = reportErrorInCode("unexpected reference type %d found in match", id);
+          var notFound = reportErrorInCode0("unexpected reference type %d found in match", id);
           tdefault = CStmnt.suitch(id, rcases, notFound);
         }
       return new Pair<>(CExpr.UNIT, CStmnt.seq(getRef, CStmnt.suitch(tag, tcases, tdefault)));
@@ -544,6 +544,17 @@ public class C extends ANY
                                                         CExpr.string(_fuir.clazzAsString(ecl))),
                                     CExpr.exit(1)));
       return new Pair<>(res, o);
+    }
+
+    /**
+     * Generate code to terminate the execution immediately.
+     *
+     * @param msg a message explaining the illegal state
+     */
+    @Override
+    public CStmnt reportErrorInCode(String msg)
+    {
+      return reportErrorInCode0("%s", CExpr.string(msg));
     }
 
   }
@@ -1225,7 +1236,7 @@ public class C extends ANY
    *
    * @return the C statement to report the error and exit(1).
    */
-  CStmnt reportErrorInCode(String msg, CExpr... args)
+  CStmnt reportErrorInCode0(String msg, CExpr... args)
   {
     var msg2 = "*** %s:%d: " + msg + "\n";
     var args2 = new List<CExpr>(CIdent.FILE, CIdent.LINE);
@@ -1264,9 +1275,9 @@ public class C extends ANY
       {
         if (isCall && (_fuir.hasData(rt) || _fuir.clazzIsVoidType(rt)))
           {
-            ol.add(reportErrorInCode("no targets for access of %s within %s",
-                                     CExpr.string(_fuir.clazzAsString(cc0)),
-                                     CExpr.string(_fuir.siteAsString(s))));
+            ol.add(reportErrorInCode0("no targets for access of %s within %s",
+                                      CExpr.string(_fuir.clazzAsString(cc0)),
+                                      CExpr.string(_fuir.siteAsString(s))));
             res = null;
           }
         else
@@ -1347,10 +1358,10 @@ public class C extends ANY
           {
             var id = tvalue.deref().field(CNames.CLAZZ_ID);
             acc = CStmnt.suitch(id, cazes,
-                                reportErrorInCode("unhandled dynamic target %d in access of %s within %s",
-                                                  id,
-                                                  CExpr.string(_fuir.clazzAsString(cc0)),
-                                                  CExpr.string(_fuir.siteAsString(s))));
+                                reportErrorInCode0("unhandled dynamic target %d in access of %s within %s",
+                                                   id,
+                                                   CExpr.string(_fuir.clazzAsString(cc0)),
+                                                   CExpr.string(_fuir.siteAsString(s))));
           }
         ol.add(acc);
         res = _fuir.clazzIsVoidType(rt)

@@ -73,6 +73,7 @@ public class Universe extends ExprWithPos
    *
    * @return this Expr's type or null if not known.
    */
+  @Override
   AbstractType typeForInferencing()
   {
     return Types.resolved.universe.selfType();
@@ -104,7 +105,7 @@ public class Universe extends ExprWithPos
     return new UnresolvedType(SourcePosition.notAvailable, FuzionConstants.UNIVERSE_NAME, UnresolvedType.NONE, null)
     {
       @Override
-      AbstractType resolve(Resolution res, AbstractFeature outerfeat)
+      AbstractType resolve(Resolution res, Context context)
       {
         return typeForInferencing();
       }

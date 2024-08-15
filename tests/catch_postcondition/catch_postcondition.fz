@@ -114,7 +114,7 @@ catch_postcondition is
 
   y : handle_post String is
     redef try             => test i32
-    redef catch(s String) => say "*** failed: $s ***"; test u64
+    redef catch(s String) => {say "*** failed: $s ***"; test u64}
 
   say y.res
 
@@ -144,7 +144,7 @@ catch_postcondition is
 
   z : handle_post (option String) is
     redef try option String  => tries[c0].call
-    redef catch(s String) option String => say "*** failed: $s ***"; c0 <- c0.get + 1; if c0.get < tries.count then z.res else nil
+    redef catch(s String) option String => {say "*** failed: $s ***"; c0 <- c0.get + 1; if c0.get < tries.count then z.res else nil}
 
   say z.res
 
@@ -157,7 +157,7 @@ catch_postcondition is
   for c in tries.indices do
     h : handle_post (option String) is
       redef try option String  => tries[c].call
-      redef catch(s String) option String => say "*** failed: $s ***"; nil
+      redef catch(s String) option String => {say "*** failed: $s ***"; nil}
     r := h.res
   until r??
     say r

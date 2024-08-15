@@ -1246,7 +1246,7 @@ public class Feature extends AbstractFeature
               {
                 cp._isInheritanceCall = true;
               }
-            p.loadCalledFeature(res, this);
+            p.loadCalledFeature(res, context());
             var parent = p.calledFeature();
             if (CHECKS) check
               (Errors.any() || parent != null);
@@ -1325,7 +1325,7 @@ public class Feature extends AbstractFeature
              * this or any of this' outer classes.
              */
             resolveArgumentTypes(res);
-            visit(res.resolveTypesOnly);
+            visit(res.resolveTypesOnly(this));
           }
 
         _state = State.RESOLVED_DECLARATIONS;
@@ -1362,23 +1362,33 @@ public class Feature extends AbstractFeature
   }
 
 
-  static class ResolveTypes extends FeatureVisitor
+  static class ResolveTypes extends ContextVisitor
   {
     Resolution res;
-    ResolveTypes(Resolution r)
-      {
-        res = r;
-      }
-    @Override public void         action      (AbstractAssign  a, AbstractFeature outer) {        a.resolveTypes   (res,   outer); }
-    @Override public void         actionBefore(Call            c, AbstractFeature outer) {        c.tryResolveTypeCall(res,   outer); }
-    @Override public Call         action      (Call            c, AbstractFeature outer) { return c.resolveTypes   (res,   outer); }
-    @Override public Expr         action      (DotType         d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
-    @Override public Expr         action      (Destructure     d, AbstractFeature outer) { return d.resolveTypes   (res,   outer); }
-    @Override public Function     action      (Function        f, AbstractFeature outer) {        f.resolveTypes   (res,   outer); return f; }
-    @Override public void         action      (Match           m, AbstractFeature outer) {        m.resolveTypes   (res,   outer); }
-    @Override public Expr         action      (This            t, AbstractFeature outer) { return t.resolveTypes   (res,   outer); }
-    @Override public AbstractType action      (AbstractType    t, AbstractFeature outer) { return t.resolve        (res,   outer); }
-    @Override public Expr         action      (AbstractCurrent c, AbstractFeature outer) { return c.resolveTypes(res, outer); }
+    ResolveTypes(Resolution r, Context context)
+    {
+      super(context);
+      res = r;
+    }
+    @Override public void         action      (AbstractAssign  a, AbstractFeature outer) {        a.resolveTypes      (res,   _context); }
+    @Override public void         actionBefore(Call            c, AbstractFeature outer) {        c.tryResolveTypeCall(res,   _context); }
+    @Override public Call         action      (Call            c, AbstractFeature outer) { return c.resolveTypes      (res,   _context); }
+    @Override public Expr         action      (DotType         d, AbstractFeature outer) { return d.resolveTypes      (res,   _context); }
+    @Override public Expr         action      (Destructure     d, AbstractFeature outer) { return d.resolveTypes      (res,   _context); }
+    @Override public Expr         action      (Feature         f, AbstractFeature outer)
+    {
+      if (f._sourceCodeContext == Context.NONE)  // for a lambda, this is already set.
+        {
+          f._sourceCodeContext = _context;
+        }
+      return f;
+    }
+    @Override public Function     action      (Function        f, AbstractFeature outer) {        f.resolveTypes      (res,   _context); return f; }
+    @Override public void         action      (Match           m, AbstractFeature outer) {        m.resolveTypes      (res,   _context); }
+
+    @Override public Expr         action      (This            t, AbstractFeature outer) { return t.resolveTypes      (res,   _context); }
+    @Override public AbstractType action      (AbstractType    t, AbstractFeature outer) { return t.resolve           (res,   _context); }
+    @Override public Expr         action      (AbstractCurrent c, AbstractFeature outer) { return c.resolveTypes      (res,   _context); }
 
     @Override public boolean doVisitActuals() { return false; }
   }
@@ -1408,6 +1418,7 @@ public class Feature extends AbstractFeature
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    */
+  Context _sourceCodeContext = Context.NONE;
   void internalResolveTypes(Resolution res)
   {
     if (PRECONDITIONS) require
@@ -1419,13 +1430,18 @@ public class Feature extends AbstractFeature
       {
         _state = State.RESOLVING_TYPES;
 
+        if (Contract.requiresPreConditionsFeature(this) && preFeature() == null)
+          {
+            Contract.addPreFeature(res, this, context(), false);
+          }
+
         resolveArgumentTypes(res);
-        visit(res.resolveTypesFully);
+        visit(res.resolveTypesFully(this));
 
         if (hasThisType())
           {
             var tt = selfType();
-            _selfType = tt.resolve(res, this);
+            _selfType = tt.resolve(res, context());
           }
 
         _state = State.RESOLVED_TYPES;
@@ -1482,12 +1498,17 @@ public class Feature extends AbstractFeature
       {
         _state = State.RESOLVING_SUGAR1;
 
-        _contract.addContractFeatures(res, this);
+        _contract.addContractFeatures(res, this, context());
         if (definesType())
           {
             typeFeature(res);
           }
-        visit(res._resolveSyntaxSugar1);
+        visit(new ContextVisitor(context())
+          {
+            public Expr action(Feature f, AbstractFeature outer) { return f.resolveSyntacticSugar1(res, _context, this); }
+            public Expr action(Call    c, AbstractFeature outer) { return c.resolveSyntacticSugar1(res, _context      ); }
+          });
+
 
         _state = State.RESOLVED_SUGAR1;
         res.scheduleForTypeInference(this);
@@ -1791,30 +1812,30 @@ A ((Choice)) declaration must not contain a result type.
          * myfun will be used as the type of "fun (a) => a*a", which implies
          * that i32 will be the type for "a".
          */
-        visit(new FeatureVisitor() {
-            public void  action(AbstractAssign a, AbstractFeature outer) { a.propagateExpectedType(res, outer); }
-            public Call  action(Call           c, AbstractFeature outer) { c.propagateExpectedType(res, outer); return c; }
-            public void  action(Cond           c, AbstractFeature outer) { c.propagateExpectedType(res, outer); }
-            public void  action(Impl           i, AbstractFeature outer) { i.propagateExpectedType(res, outer); }
-            public Expr  action(If             i, AbstractFeature outer) { i.propagateExpectedType(res, outer); return i; }
+        visit(new ContextVisitor(context()) {
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.propagateExpectedType(res, _context); }
+            public Call  action(Call           c, AbstractFeature outer) { c.propagateExpectedType(res, _context); return c; }
+            public void  action(Cond           c, AbstractFeature outer) { c.propagateExpectedType(res, _context); }
+            public void  action(Impl           i, AbstractFeature outer) { i.propagateExpectedType(res, _context); }
+            public Expr  action(If             i, AbstractFeature outer) { i.propagateExpectedType(res, _context); return i; }
           });
 
         /*
          * extra pass to automatically wrap values into 'Lazy'
          * or unwrap values inheriting `unwrap`
          */
-        visit(new FeatureVisitor() {
+        visit(new ContextVisitor(context()) {
             // we must do this from the outside of calls towards the inside to
             // get the corrected nesting of Lazy features created during this
             // phase
             public boolean visitActualsLate() { return true; }
-            public void  action(AbstractAssign a, AbstractFeature outer) { a.wrapValueInLazy  (res, outer); a.unwrapValue(res, outer); }
-            public Expr  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, outer); c.unwrapActuals(res, outer); return c; }
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.wrapValueInLazy  (res, _context); a.unwrapValue  (res, _context); }
+            public Expr  action(Call           c, AbstractFeature outer) { c.wrapActualsInLazy(res, _context); c.unwrapActuals(res, _context); return c; }
           });
 
         if (isConstructor())
           {
-            _impl.propagateExpectedType(res, this, Types.resolved.t_unit);
+            _impl.propagateExpectedType(res, context(), Types.resolved.t_unit);
           }
 
         _state = State.TYPES_INFERENCED;
@@ -1842,10 +1863,10 @@ A ((Choice)) declaration must not contain a result type.
       {
         _state = State.BOXING;
 
-        visit(new FeatureVisitor() {
-            public void  action(AbstractAssign a, AbstractFeature outer) { a.box(outer);        }
-            public Call  action(Call        c, AbstractFeature outer) { c.box(outer); return c; }
-            public Expr  action(InlineArray i, AbstractFeature outer) { i.box(outer); return i; }
+        visit(new ContextVisitor(context()) {
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.boxVal     (_context);           }
+            public Call  action(Call           c, AbstractFeature outer) { c.boxArgs    (_context); return c; }
+            public Expr  action(InlineArray    i, AbstractFeature outer) { i.boxElements(_context); return i; }
           });
 
         _state = State.BOXED;
@@ -1862,12 +1883,12 @@ A ((Choice)) declaration must not contain a result type.
    * have the argument types.  Create compile time errors if this is not the
    * case.
    */
-  private void checkTypes(Resolution res)
+  private void checkTypes(Resolution res, Context context)
   {
     if (PRECONDITIONS) require
       (_state.atLeast(State.CHECKING_TYPES1));
 
-    res._module.checkTypes(this);
+    res._module.checkTypes(this, context);
   }
 
 
@@ -1892,22 +1913,21 @@ A ((Choice)) declaration must not contain a result type.
     if ((_state == State.CHECKING_TYPES1) ||
         (_state == State.CHECKING_TYPES2)    )
       {
-        _selfType   = selfType().checkChoice(_pos);
-        _resultType = _resultType.checkChoice(_posOfReturnType);
-        visit(new FeatureVisitor() {
-
+        _selfType   = selfType() .checkChoice(_pos,             context());
+        _resultType = _resultType.checkChoice(_posOfReturnType, context());
+        visit(new ContextVisitor(context()) {
             /* if an error is reported in a call it might no longer make sense to check the actuals: */
             public boolean visitActualsLate() { return true; }
 
-            public void         action(AbstractAssign a, AbstractFeature outer) { a.checkTypes(res);             }
-            public Call         action(Call           c, AbstractFeature outer) { c.checkTypes(res, outer); return c; }
-            public Expr         action(If             i, AbstractFeature outer) { i.checkTypes();      return i; }
-            public Expr         action(InlineArray    i, AbstractFeature outer) { i.checkTypes();      return i; }
-            public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints();   }
-            public void         action(Cond           c, AbstractFeature outer) { c.checkTypes();                }
-            public void         actionBefore(Block    b, AbstractFeature outer) { b.checkTypes();                }
+            public void         action(AbstractAssign a, AbstractFeature outer) {        a.checkTypes(res,  _context);           }
+            public Call         action(Call           c, AbstractFeature outer) {        c.checkTypes(res,  _context); return c; }
+            public Expr         action(If             i, AbstractFeature outer) {        i.checkTypes(      _context); return i; }
+            public Expr         action(InlineArray    i, AbstractFeature outer) {        i.checkTypes(      _context); return i; }
+            public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints(_context);           }
+            public void         action(Cond           c, AbstractFeature outer) {        c.checkTypes();                         }
+            public void         actionBefore(Block    b, AbstractFeature outer) {        b.checkTypes();                         }
           });
-        checkTypes(res);
+        checkTypes(res, context());
 
         switch (_state)
           {
@@ -1964,12 +1984,12 @@ A ((Choice)) declaration must not contain a result type.
       {
         _state = State.RESOLVING_SUGAR2;
 
-        visit(new FeatureVisitor() {
+        visit(new ContextVisitor(context()) {
             public Expr  action(Feature     f, AbstractFeature outer) { return new Nop(_pos);                        }
-            public Expr  action(Function    f, AbstractFeature outer) { return f.resolveSyntacticSugar2(res, outer); }
-            public Expr  action(InlineArray i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, outer); }
-            public void  action(Impl        i, AbstractFeature outer) {        i.resolveSyntacticSugar2(res, outer); }
-            public Expr  action(If          i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, outer); }
+            public Expr  action(Function    f, AbstractFeature outer) { return f.resolveSyntacticSugar2(res); }
+            public Expr  action(InlineArray i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, _context); }
+            public void  action(Impl        i, AbstractFeature outer) {        i.resolveSyntacticSugar2(res, _context); }
+            public Expr  action(If          i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res); }
           });
 
         _state = State.RESOLVED_SUGAR2;
@@ -2014,10 +2034,14 @@ A ((Choice)) declaration must not contain a result type.
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this feature declaration.
+   * @param context the source code context where this feature declaration is done
+   *
+   * @param rss1 the visitor to resolve syntax sugar 1, used to visit recursively.
    */
-  public Expr resolveSyntacticSugar1(Resolution res, AbstractFeature outer)
+  public Expr resolveSyntacticSugar1(Resolution res, Context context, ContextVisitor rss1)
   {
+    var outer = context.outerFeature();
+
     if (PRECONDITIONS) require
       (res != null,
        outer.state() == State.RESOLVING_SUGAR1,
@@ -2048,8 +2072,8 @@ A ((Choice)) declaration must not contain a result type.
         if (this.outer() == outer)
           {
             /* add assignment of initial value: */
-            AbstractAssign ass = new Assign(res, _pos, this, _impl.expr(), outer);
-            ass = ass.visit(res._resolveSyntaxSugar1, outer);
+            AbstractAssign ass = new Assign(res, _pos, this, _impl.expr(), context);
+            ass = ass.visit(rss1, outer);
             result = new Block(new List<>(this, ass));
           }
       }
@@ -2193,7 +2217,7 @@ A ((Choice)) declaration must not contain a result type.
             res.resolveTypes(this);
           }
         result = resultTypeIfPresent(res);
-        result = result == null ? null : result.resolve(res, outer());
+        result = result == null ? null : result.resolve(res, outer().context());
         result = result == null ? null : result.applyTypePars(this, generics);
         _resultTypeIfPresentRecursion = false;
       }

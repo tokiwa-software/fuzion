@@ -202,6 +202,11 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public Object _frontEndData;
 
 
+  /**
+   * Cached result of context();
+   */
+  private Context _contextCache;
+
 
   /*----------------------------  abstract methods  ----------------------------*/
 
@@ -613,7 +618,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                       {
                         if (res != null)
                           {
-                            af.visit(res.resolveTypesOnly);
+                            af.visit(res.resolveTypesOnly(af));
                           }
                         t = af.returnType().functionReturnType();
                       }
@@ -1905,6 +1910,29 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       .collect(Collectors.toSet());
   }
 
+
+  /**
+   * The Context associated with this feature without any context from
+   * statements like `if T : x then`.  This provides a way to get this as an
+   * outer feature via `result.outerFeature()'.
+   *
+   * @return the context for this feature.
+   */
+  Context context()
+  {
+    var result = _contextCache;
+    if (result == null)
+      {
+        result = Context.forFeature(this);
+        _contextCache = result;
+      }
+
+    if (POSTCONDITIONS) ensure
+      (result != null,
+       result.outerFeature() == this);
+
+    return result;
+  }
 
   /**
    * this feature as a human readable string

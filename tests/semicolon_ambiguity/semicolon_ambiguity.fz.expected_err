@@ -1,0 +1,103 @@
+
+--CURDIR--/semicolon_ambiguity.fz:30:30: error 1: Ambiguous semicolon in nested blocks.
+  g1 ()->unit := ()->say "hi"; say "ho"
+-----------------------------^
+It is unclear whether this semicolon terminates the inner block or not. To solve this, add braces { }.
+
+
+--CURDIR--/semicolon_ambiguity.fz:31:21: error 2: Ambiguous semicolon in nested blocks.
+  g2 => say "I'm g2"; say "this is ambiguous"
+--------------------^
+It is unclear whether this semicolon terminates the inner block or not. To solve this, add braces { }.
+
+
+--CURDIR--/semicolon_ambiguity.fz:33:40: error 3: Ambiguous semicolon in nested blocks.
+  if true then if true then say "inner"; say "ambiguous"
+---------------------------------------^
+It is unclear whether this semicolon terminates the inner block or not. To solve this, add braces { }.
+
+
+--CURDIR--/semicolon_ambiguity.fz:35:45: error 4: Ambiguous semicolon in nested blocks.
+  if true then if true then else say "inner"; say "ambiguous"
+--------------------------------------------^
+It is unclear whether this semicolon terminates the inner block or not. To solve this, add braces { }.
+
+
+--CURDIR--/semicolon_ambiguity.fz:39:36: error 5: Ambiguous semicolon in nested blocks.
+      i i32       => ()->yak "'$i'"; say " is a number"
+-----------------------------------^
+It is unclear whether this semicolon terminates the inner block or not. To solve this, add braces { }.
+
+
+--CURDIR--/semicolon_ambiguity.fz:40:36: error 6: Ambiguous semicolon in nested blocks.
+      c codepoint => ()->yak "'$c'"; say " is a codepoint"
+-----------------------------------^
+It is unclear whether this semicolon terminates the inner block or not. To solve this, add braces { }.
+
+
+--CURDIR--/semicolon_ambiguity.fz:33:29: error 7: Different count of arguments needed when calling feature
+  if true then if true then say "inner"; say "ambiguous"
+----------------------------^^^
+Feature not found: 'say' (2 arguments)
+Target feature: 'semicolon_ambiguity'
+In call: 'say "inner"'
+To solve this, you might change the actual number of arguments to match the feature 'say' (one argument) at $MODULE/say.fz:31:8:
+public say(s Any) => io.out.println s
+-------^^^
+
+
+--CURDIR--/semicolon_ambiguity.fz:35:34: error 8: Different count of arguments needed when calling feature
+  if true then if true then else say "inner"; say "ambiguous"
+---------------------------------^^^
+Feature not found: 'say' (2 arguments)
+Target feature: 'semicolon_ambiguity'
+In call: 'say "inner"'
+To solve this, you might change the actual number of arguments to match the feature 'say' (one argument) at $MODULE/say.fz:31:8:
+public say(s Any) => io.out.println s
+-------^^^
+
+
+--CURDIR--/semicolon_ambiguity.fz:31:9: error 9: Different count of arguments needed when calling feature
+  g2 => say "I'm g2"; say "this is ambiguous"
+--------^^^
+Feature not found: 'say' (2 arguments)
+Target feature: 'semicolon_ambiguity.g2'
+In call: 'say "I'm g2"'
+To solve this, you might change the actual number of arguments to match the feature 'say' (one argument) at $MODULE/say.fz:31:8:
+public say(s Any) => io.out.println s
+-------^^^
+
+
+--CURDIR--/semicolon_ambiguity.fz:30:22: error 10: Different count of arguments needed when calling feature
+  g1 ()->unit := ()->say "hi"; say "ho"
+---------------------^^^
+Feature not found: 'say' (2 arguments)
+Target feature: 'semicolon_ambiguity.λ.call'
+In call: 'say "hi"'
+To solve this, you might change the actual number of arguments to match the feature 'say' (one argument) at $MODULE/say.fz:31:8:
+public say(s Any) => io.out.println s
+-------^^^
+
+
+--CURDIR--/semicolon_ambiguity.fz:39:26: error 11: Different count of arguments needed when calling feature
+      i i32       => ()->yak "'$i'"; say " is a number"
+-------------------------^^^
+Feature not found: 'yak' (2 arguments)
+Target feature: 'semicolon_ambiguity.match_test_2.λ.call'
+In call: 'yak "'$i'"'
+To solve this, you might change the actual number of arguments to match the feature 'yak' (one argument) at $MODULE/yak.fz:34:8:
+public yak(s Any) => io.out.print s
+-------^^^
+
+
+--CURDIR--/semicolon_ambiguity.fz:40:26: error 12: Different count of arguments needed when calling feature
+      c codepoint => ()->yak "'$c'"; say " is a codepoint"
+-------------------------^^^
+Feature not found: 'yak' (2 arguments)
+Target feature: 'semicolon_ambiguity.match_test_2.λ.call'
+In call: 'yak "'$c'"'
+To solve this, you might change the actual number of arguments to match the feature 'yak' (one argument) at $MODULE/yak.fz:34:8:
+public yak(s Any) => io.out.print s
+-------^^^
+
+12 errors.

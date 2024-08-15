@@ -137,31 +137,19 @@ public class Resolution extends ANY
    *
    * This is used during state RESOLVING_DECLARATIONS to find called features.
    */
-  FeatureVisitor resolveTypesOnly = new FeatureVisitor()
-    {
-      public AbstractType action(AbstractType t, AbstractFeature outer) { return t.resolve(Resolution.this, outer); }
-    };
+  FeatureVisitor resolveTypesOnly(AbstractFeature f)
+  {
+    var c = f.context();
+    return new FeatureVisitor()
+      {
+        public AbstractType action(AbstractType t, AbstractFeature outer) { return t.resolve(Resolution.this, c); }
+      };
+  }
 
-
-  /**
-   * FeatureVisitor to call resolveTypes() on Expressions and resolve() on all
-   * types.
-   *
-   * This is used during state RESOLVING_TYPES.
-   */
-  FeatureVisitor resolveTypesFully = new Feature.ResolveTypes(this);
-
-
-  /**
-   * FeatureVisitor to call resolveSyntacticSugar1() on Calls and Features.
-   *
-   * This is used during state RESOLVING_SUGAR1
-   */
-  FeatureVisitor _resolveSyntaxSugar1 = new FeatureVisitor()
-    {
-      public Expr action(Feature f, AbstractFeature outer) { return f.resolveSyntacticSugar1(Resolution.this, outer); }
-      public Expr action(Call    c, AbstractFeature outer) { return c.resolveSyntacticSugar1(Resolution.this, outer); }
-    };
+  Feature.ResolveTypes resolveTypesFully(AbstractFeature f)
+  {
+    return new Feature.ResolveTypes(this, f.context());
+  }
 
 
   final FuzionOptions _options;
@@ -565,13 +553,17 @@ public class Resolution extends ANY
    *
    * @param e an expression
    *
-   * @param outer the outer feature that contains s
+   * @param context the source code context where e is used
    *
-   * @return s or a new expression that replaces s after type resolution.
+   * @return e or a new expression that replaces e after type resolution.
    */
-  Expr resolveType(Expr e, AbstractFeature outer)
+  Expr resolveType(Expr e, Context context)
   {
-    return e.visit(resolveTypesFully, outer);
+    if (PRECONDITIONS) require
+      (context != null);
+
+    return e.visit(new Feature.ResolveTypes(this, context),
+                   context.outerFeature());
   }
 
 

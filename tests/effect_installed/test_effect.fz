@@ -32,9 +32,9 @@ test_effect is
   b : mutate.
   c : mutate.
   d : mutate.
-  use_a => v := a.env.new   42; v <- 1+v; say v
-  use_b => v := b.env.new 4711; v <- 1+v; say v
-  use_c => v := c.env.new 0815; v <- 1+v; say v
+  use_a => v := {a.env.new   42}; v <- 1+v; say v
+  use_b => v := {b.env.new 4711}; v <- 1+v; say v
+  use_c => v := {c.env.new 0815}; v <- 1+v; say v
   use_a_err1 => _ := a.env       # 1. should flag an error: effect not installed
   use_b_err2 => _ := b.env       # 2. should flag an error: effect not installed
   use_c_err3 => _ := c.env       # 3. should flag an error: effect not installed

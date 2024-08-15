@@ -113,25 +113,25 @@ public class Assign extends AbstractAssign
    *
    * @param outer the root feature that contains this expression.
    */
-  public Assign(Resolution res, SourcePosition pos, AbstractFeature f, Expr v, AbstractFeature outer)
+  public Assign(Resolution res, SourcePosition pos, AbstractFeature f, Expr v, Context context)
   {
-    super(f, This.thiz(res, pos, outer, f.outer()), v);
+    super(f, This.thiz(res, pos, context, f.outer()), v);
 
     if (PRECONDITIONS) require
       (Errors.any() ||
-       res.state(outer) == State.RESOLVED_DECLARATIONS ||
-       res.state(outer) == State.RESOLVING_TYPES       ||
-       res.state(outer) == State.RESOLVED_TYPES        ||
-       res.state(outer) == State.TYPES_INFERENCING     ||
-       res.state(outer) == State.RESOLVING_SUGAR1      ||
-       res.state(outer) == State.RESOLVING_SUGAR2,
+       res.state(context.outerFeature()) == State.RESOLVED_DECLARATIONS ||
+       res.state(context.outerFeature()) == State.RESOLVING_TYPES       ||
+       res.state(context.outerFeature()) == State.RESOLVED_TYPES        ||
+       res.state(context.outerFeature()) == State.TYPES_INFERENCING     ||
+       res.state(context.outerFeature()) == State.RESOLVING_SUGAR1      ||
+       res.state(context.outerFeature()) == State.RESOLVING_SUGAR2,
        f != null);
 
     this._name = null;
     this._pos = pos;
-    if (res.state(outer).atLeast(State.TYPES_INFERENCING))
+    if (res.state(context.outerFeature()).atLeast(State.TYPES_INFERENCING))
       {
-        propagateExpectedType(res, outer);
+        propagateExpectedType(res, context);
       }
   }
 
@@ -153,17 +153,18 @@ public class Assign extends AbstractAssign
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this expression.
+   * @param context the source code context where this Call is used
    *
    * @param destructure if this is called for an assignment that is created to
    * replace a Destructure, this refers to the Destructure expression.
    */
-  void resolveTypes(Resolution res, AbstractFeature outer, Destructure destructure)
+  @Override
+  public void resolveTypes(Resolution res, Context context, Destructure destructure)
   {
     var f = _assignedField;
     if (f == null)
       {
-        var fo = FeatureAndOuter.filter(res._module.lookup(outer,
+        var fo = FeatureAndOuter.filter(res._module.lookup(context.outerFeature(),
                                                            _name,
                                                            destructure == null ? this : destructure,
                                                            true,
@@ -171,12 +172,12 @@ public class Assign extends AbstractAssign
                                         pos(), FuzionConstants.OPERATION_ASSIGNMENT, FeatureName.get(_name, 0), __ -> false);
         if (fo != null)
           {
-            _target = fo.target(pos(), res, outer);
+            _target = fo.target(pos(), res, context);
             f = fo._feature;
           }
         else
           {
-            AstErrors.assignmentTargetNotFound(this, outer);
+            AstErrors.assignmentTargetNotFound(this, context.outerFeature());
             _target = AbstractCall.ERROR_VALUE;
             f = Types.f_ERROR;
           }
@@ -186,10 +187,10 @@ public class Assign extends AbstractAssign
                                                (Errors.any());
                                              /* ignore */
                                            }
-    else if (!f.isField()                ) { AstErrors.assignmentToNonField    (this, f, outer); }
+    else if (!f.isField()                ) { AstErrors.assignmentToNonField    (this, f, context.outerFeature()); }
     else if (!_indexVarAllowed       &&
              f instanceof Feature ff &&
-             ff.isIndexVarUpdatedByLoop()) { AstErrors.assignmentToIndexVar    (this, f, outer); }
+             ff.isIndexVarUpdatedByLoop()) { AstErrors.assignmentToIndexVar    (this, f, context.outerFeature()); }
   }
 
 

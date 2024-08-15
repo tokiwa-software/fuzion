@@ -363,7 +363,8 @@ public class AstErrors extends ANY
                                String target,
                                AbstractType frmlT,
                                Expr value,
-                               AbstractType typeValue)
+                               AbstractType typeValue,
+                               Context context)
   {
     String remedy = null;
     String actlFound;
@@ -382,7 +383,7 @@ public class AstErrors extends ANY
             assignableToSB
               .append("assignable to       : ")
               .append(st(actlT.asRef().toString()));
-            if (frmlT.isAssignableFromOrContainsError(actlT))
+            if (frmlT.isAssignableFromOrContainsError(actlT, context))
               {
                 remedy = "To solve this, you could create a new value instance by calling the constructor of " + s(actlT) + ".\n";
               }
@@ -390,7 +391,7 @@ public class AstErrors extends ANY
         else
           {
             var assignableTo = new TreeSet<String>();
-            frmlT.isAssignableFrom(actlT, assignableTo);
+            frmlT.isAssignableFrom(actlT, assignableTo, context);
             for (var ts : assignableTo)
               {
                 assignableToSB
@@ -400,7 +401,7 @@ public class AstErrors extends ANY
                   .append(st(ts));
               }
           }
-        if (remedy == null && !frmlT.isVoid() && frmlT.asRef().isAssignableFrom(actlT))
+        if (remedy == null && !frmlT.isVoid() && frmlT.asRef().isAssignableFrom(actlT, context))
           {
             remedy = "To solve this, you could change the type of " + ss(target) + " to a " + st("ref")+ " type like " + s(frmlT.asRef()) + ".\n";
           }
@@ -455,7 +456,8 @@ public class AstErrors extends ANY
   static void incompatibleTypeInAssignment(SourcePosition pos,
                                            AbstractFeature field,
                                            AbstractType frmlT,
-                                           Expr value)
+                                           Expr value,
+                                           Context context)
   {
     incompatibleType(pos,
                      "in assignment",
@@ -463,7 +465,8 @@ public class AstErrors extends ANY
                      field.qualifiedName(),
                      frmlT,
                      value,
-                     null);
+                     null,
+                     context);
   }
 
 
@@ -483,7 +486,8 @@ public class AstErrors extends ANY
   static void incompatibleArgumentTypeInCall(AbstractFeature calledFeature,
                                              int count,
                                              AbstractType frmlT,
-                                             Expr value)
+                                             Expr value,
+                                             Context context)
   {
     var frmls = calledFeature.valueArguments().iterator();
     AbstractFeature frml = null;
@@ -500,7 +504,8 @@ public class AstErrors extends ANY
                      (f == null ? "argument #" + (count+1) : f.featureName().baseNameHuman()),
                      frmlT,
                      value,
-                     null);
+                     null,
+                     context);
   }
 
 
@@ -519,7 +524,8 @@ public class AstErrors extends ANY
   static void incompatibleTypeInArrayInitialization(SourcePosition pos,
                                                     AbstractType arrayType,
                                                     AbstractType frmlT,
-                                                    Expr value)
+                                                    Expr value,
+                                                    Context context)
   {
     incompatibleType(pos,
                      "in array initialization",
@@ -527,7 +533,8 @@ public class AstErrors extends ANY
                      "array element",
                      frmlT,
                      value,
-                     null);
+                     null,
+                     context);
   }
 
   public static void arrayInitCommaAndSemiMixed(SourcePosition pos, SourcePosition p1, SourcePosition p2)
@@ -1380,12 +1387,12 @@ public class AstErrors extends ANY
           "To solve this, change the type provided, e.g. to the unconstrained " + st("type") + ".\n");
   }
 
-  static void constraintMustNotBeChoice(Generic g)
+  static void constraintMustNotBeChoice(Generic g, AbstractType constraint)
   {
     error(g.typeParameter().pos(),
           "Constraint for type parameter must not be a choice type",
           "Affected type parameter: " + s(g) + "\n" +
-          "constraint: " + s(g.constraint()) + "\n");
+          "constraint: " + s(constraint) + "\n");
   }
 
   static void loopElseBlockRequiresWhileOrIterator(SourcePosition pos, Expr elseBlock)
@@ -1721,13 +1728,13 @@ public class AstErrors extends ANY
           "Declared at " + cf.pos().show());
   }
 
-  static void incompatibleActualGeneric(SourcePosition pos, Generic f, AbstractType g)
+  static void incompatibleActualGeneric(SourcePosition pos, Generic f, AbstractType constraint, AbstractType g)
   {
     if (g != Types.t_UNDEFINED || !any())
       {
         error(pos,
               "Incompatible type parameter",
-              "formal type parameter " + s(f) + " with constraint " + s(f.constraint()) + "\n"+
+              "formal type parameter " + s(f) + " with constraint " + s(constraint) + "\n"+
               "actual type parameter " + s(g) + "\n");
       }
   }
@@ -1909,8 +1916,8 @@ public class AstErrors extends ANY
     if (!any() || frmlT != Types.t_ERROR && value.type() != Types.t_ERROR)
       {
         error(value.pos(),
-              "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceGenerics().stream()
-              .filter(cg -> cg.isAssignableFrom(value.type()))
+              "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceGenerics(Context.NONE).stream()
+              .filter(cg -> cg.isAssignableFrom(value.type(), Context.NONE))
               .map(cg -> s(cg))
               .collect(Collectors.joining(", "))
               );

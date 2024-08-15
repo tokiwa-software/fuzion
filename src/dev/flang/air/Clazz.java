@@ -39,6 +39,7 @@ import dev.flang.ast.AbstractAssign; // NYI: remove dependency!
 import dev.flang.ast.AbstractCall; // NYI: remove dependency!
 import dev.flang.ast.AbstractCase; // NYI: remove dependency!
 import dev.flang.ast.Constant; // NYI: remove dependency!
+import dev.flang.ast.Context; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
@@ -163,6 +164,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         _originalFeature = f;
       }
 
+    @Override
     public void action (Expr e)
     {
       if      (e instanceof AbstractAssign   a) { Clazzes.instance.findClazzes(a, _originalFeature, Clazz.this, _inh); }
@@ -174,9 +176,29 @@ public class Clazz extends ANY implements Comparable<Clazz>
       else if (e instanceof Tag              t) { Clazzes.instance.findClazzes(t, _originalFeature, Clazz.this, _inh); }
     }
 
-    public void action(AbstractCase c)
+    @Override
+    public boolean action(AbstractMatch m, AbstractCase c)
     {
-      Clazzes.instance.findClazzes(c, _originalFeature, Clazz.this, _inh);
+      var result = true;
+      if (m.subject() instanceof AbstractCall sc &&
+          sc.calledFeature() == Types.resolved.f_Type_infix_colon)
+        {
+          var ac = actualClazzes(sc, null);
+          var innerClazz = ac[0];
+          var T = innerClazz.actualGenerics()[0];
+          var cf = innerClazz.feature();
+          if (CHECKS) check
+            (cf == Types.resolved.f_Type_infix_colon_true ||
+             cf == Types.resolved.f_Type_infix_colon_false   );
+          var positive = cf == Types.resolved.f_Type_infix_colon_true ? Types.resolved.f_TRUE
+                                                                      : Types.resolved.f_FALSE;
+          result = c.types().stream().anyMatch(x->x.compareTo(positive.selfType())==0);
+        }
+      if (result)
+        {
+          Clazzes.instance.findClazzes(c, _originalFeature, Clazz.this, _inh);
+        }
+      return result;
     }
 
   }
@@ -384,15 +406,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
        Errors.any() || !actualType.dependsOnGenericsExceptTHIS_TYPE(),
        Errors.any() || actualType.feature().outer() == null || outer.feature().inheritsFrom(actualType.feature().outer()),
        Errors.any() || actualType.feature().outer() != null || outer == null,
-       Errors.any() || (actualType != Types.t_ERROR     &&
-                              actualType != Types.t_UNDEFINED   ),
+       Errors.any() || (actualType != Types.t_ERROR),
        outer == null || outer._type != Types.t_ADDRESS,
        !actualType.containsThisType());
-
-    if (actualType == Types.t_UNDEFINED)
-      {
-        actualType = Types.t_ERROR;
-      }
 
     if (CHECKS) check
       (Errors.any() || actualType != Types.t_ERROR);
@@ -550,7 +566,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
     else
       {
-        var t = this._type.actualType(f.selfType()).asRef();
+        var t = this._type.actualType(f.selfType(), Context.NONE).asRef();
         return normalize2(t);
       }
   }
@@ -625,7 +641,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         var pt = p.type();
         var t1 = isRef() && !pt.isVoid() ? pt.asRef() : pt.asValue();
-        var t2 = _type.actualType(t1);
+        var t2 = _type.actualType(t1, Context.NONE);
         var pc = Clazzes.instance.clazz(t2);
         if (CHECKS) check
           (Errors.any() || pc.isVoidType() || isRef() == pc.isRef());
@@ -711,7 +727,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           {
             var this_type = g.get(0);
             g = g.map(x -> x == this_type ? x   // leave first type parameter unchanged
-                                          : this_type.actualType(x));
+                                          : this_type.actualType(x, Context.NONE));
           }
         var o = t.outer();
         if (o != null)
@@ -824,6 +840,18 @@ public class Clazz extends ANY implements Comparable<Clazz>
   public boolean isVoidType()
   {
     return this == Clazzes.instance.c_void.get();
+  }
+
+
+  /**
+   * isVoidType checks if this is void (@see isVoidType) or undefined, which is
+   * used for clazzes that cannot be created due to failing type constraints in
+   * preconditions `pre T : x`.
+   */
+  public boolean isVoidOrUndefined()
+  {
+    return isVoidType() ||
+      this == Clazzes.instance.undefined.getIfCreated();
   }
 
 
@@ -1221,7 +1249,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           }
         else
           {
-            t = _type.actualType(t);  // e.g., `(Types.get (array f64)).T` -> `array f64`
+            t = _type.actualType(t, Context.NONE);  // e.g., `(Types.get (array f64)).T` -> `array f64`
 
 /*
   We have the following possibilities when calling a feature `f` declared in do `on`
@@ -1332,7 +1360,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
               }
           }
       }
-    if (p != null && !isInheritanceCall)
+    if (p != null && !isInheritanceCall && innerClazz._type != Types.t_UNDEFINED)
       {
         innerClazz.called(p);
         innerClazz.instantiated(p);
@@ -1423,7 +1451,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public boolean isDirectlyAssignableFrom(Clazz other)
   {
-    return this._type.isDirectlyAssignableFrom(other._type);
+    return this._type.isDirectlyAssignableFrom(other._type, Context.NONE);
   }
 
 
@@ -1762,7 +1790,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     int index = 0;
     for (Clazz g : _choiceGenerics)
       {
-        if (g._type.isDirectlyAssignableFrom(staticTypeOfValue._type))
+        if (g._type.isDirectlyAssignableFrom(staticTypeOfValue._type, Context.NONE))
           {
             if (CHECKS) check
               (result < 0);
@@ -2119,7 +2147,25 @@ public class Clazz extends ANY implements Comparable<Clazz>
         var call = inh.get(0);
         if (CHECKS) check
           (call.calledFeature() == f.outer());
-        o = _outer.actualClazzes(call, null)[0];
+
+        // NYI: CLEANUP: Ugly special handling, might be good to remove this: if
+        // inherited by a ref type, actual clazzes are added to the ref
+        // type. This is required, e.g., to run `tests/nom`.
+        //
+        // Smallest known example to reproduce a crash if `_outer.asRef()` case
+        // is removed here:
+        //
+        //   _ := "A".starts_with "#"
+        //   a => _ option (Sequence codepoint) := nil
+        //        _ option (Sequence codepoint) := ["A"]
+        //   c => a
+        //   _ := c
+        //
+        var oc = _outer        .hasActualClazzes(call, null)
+             || !_outer.asRef().hasActualClazzes(call, null) ? _outer
+                                                             : _outer.asRef();
+
+        o = oc.actualClazzes(call, null)[0];
       }
     var ix = f.typeParameterIndex();
     var oag = o.actualGenerics();
@@ -2530,7 +2576,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                 o = f;
               }
           }
-        t1 = t1.replace_this_type_by_actual_outer(oc._type);
+        t1 = t1.replace_this_type_by_actual_outer(oc._type, Context.NONE);
         oc = oc.getOuter(o, pos);
         o = o.outer();
       }
@@ -2633,7 +2679,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     var fields = new List<Clazz>();
     for (var field: feats)
       {
-        if (!this.isVoidType() &&
+        if (!this.isVoidOrUndefined() &&
             field.isField() &&
             field == findRedefinition(field) && // NYI: proper field redefinition handling missing, see tests/redef_args/*
             Clazzes.instance.isUsed(field))

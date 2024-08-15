@@ -32,7 +32,7 @@ public sync is
   mtx_unlock(mtx fuzion.sys.Pointer) bool => intrinsic
   mtx_destroy(mtx fuzion.sys.Pointer) unit => intrinsic
 
-  cnd_init outcome fuzion.sys.Pointer => intrinsic
+  cnd_init(mtx fuzion.sys.Pointer) outcome fuzion.sys.Pointer => intrinsic
   cnd_signal(cnd fuzion.sys.Pointer) bool => intrinsic
   cnd_broadcast(cnd fuzion.sys.Pointer) bool => intrinsic
   cnd_wait(cnd fuzion.sys.Pointer, mtx fuzion.sys.Pointer) bool => intrinsic
@@ -59,7 +59,7 @@ public sync is
       res
 
     public condition(T type, code ()->T) outcome T =>
-      match concur.sync.cnd_init
+      match concur.sync.cnd_init mtx
         e error => e
         cnd fuzion.sys.Pointer =>
           res := (concur.sync.condition cnd mtx).go code

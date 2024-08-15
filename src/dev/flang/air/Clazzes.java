@@ -37,6 +37,7 @@ import dev.flang.ast.AbstractBlock; // NYI: remove dependency!
 import dev.flang.ast.AbstractCall; // NYI: remove dependency!
 import dev.flang.ast.AbstractCase; // NYI: remove dependency!
 import dev.flang.ast.Constant; // NYI: remove dependency!
+import dev.flang.ast.Context; // NYI: remove dependency!
 import dev.flang.ast.AbstractCurrent; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
@@ -134,6 +135,8 @@ public class Clazzes extends ANY
   public final OnDemandClazz bool        = new OnDemandClazz(() -> Types.resolved.t_bool             );
   public final OnDemandClazz c_TRUE      = new OnDemandClazz(() -> Types.resolved.f_TRUE .selfType() );
   public final OnDemandClazz c_FALSE     = new OnDemandClazz(() -> Types.resolved.f_FALSE.selfType() );
+  public final OnDemandClazz c_true      = new OnDemandClazz(() -> Types.resolved.f_true .selfType() );
+  public final OnDemandClazz c_false     = new OnDemandClazz(() -> Types.resolved.f_false.selfType() );
   public final OnDemandClazz i8          = new OnDemandClazz(() -> Types.resolved.t_i8               );
   public final OnDemandClazz i16         = new OnDemandClazz(() -> Types.resolved.t_i16              );
   public final OnDemandClazz i32         = new OnDemandClazz(() -> Types.resolved.t_i32              );
@@ -158,7 +161,9 @@ public class Clazzes extends ANY
         return super.get();
       }
     };
+  public final OnDemandClazz undefined   = new OnDemandClazz(() -> Types.t_UNDEFINED                 );
   public Clazz Const_StringUtf8Data;      // field Const_String.utf8_data
+  public Clazz constStringInternalArray;  // field Const_String.internal_array
   public Clazz fuzionJavaObject;          // clazz representing a Java Object in Fuzion
   public Clazz fuzionJavaObject_Ref;      // field fuzion.java.Java_Object.Java_Ref
   public Clazz fuzionSysPtr;              // internal pointer type
@@ -273,13 +278,16 @@ public class Clazzes extends ANY
    * actualType.feature.
    *
    * @return the existing or newly created Clazz that represents actualType
-   * within outer.
+   * within outer. undefined.getIfCreated() in case the created clazz cannot
+   * exist (due to precondition `T : x` where type typerameter `T` is not
+   * constraintAssignableFrom `x`.
    */
   public Clazz create(AbstractType actualType, int select, Clazz outer)
   {
     if (PRECONDITIONS) require
       (Errors.any() || !actualType.dependsOnGenericsExceptTHIS_TYPE(),
-       Errors.any() || !actualType.containsThisType());
+       Errors.any() || !actualType.containsThisType(),
+       Errors.any() || outer == null || outer._type != Types.t_UNDEFINED);
 
     Clazz o = outer;
     var ao = actualType.feature().outer();
@@ -342,8 +350,58 @@ public class Clazzes extends ANY
     // e.g. treat clazzes of inherited features with a reference outer clazz
     // the same.
 
-    var newcl = new Clazz(actualType, select, outer);
-    var result = intern(newcl);
+    Clazz result = null, newcl = null;
+
+    // find preconditions `T : x` that prevent creation of instances of this clazz.
+    //
+    // NYI: UNDER DEVELOPMENT: This is very manual code to extract this info
+    // from the code created for the preFeature. This is done automatically by
+    // DFA, so this code will disappear once DFA and AIR phases are merged.
+    //
+    var pF = actualType.feature().preFeature();
+    if (pF != null)
+      {
+        var pFcode = pF.code();
+        var ass0 = pFcode instanceof AbstractBlock b ? b._expressions.get(0) : pFcode;
+        if (ass0 instanceof AbstractAssign ass)
+          {
+            var e0 = ass._value;
+            var e1 = e0 instanceof AbstractBlock ab ? ab._expressions.get(0) :
+                     e0 instanceof AbstractCall ac  ? ac.target() :
+                     e0;
+            if (e1 instanceof AbstractBlock ab &&
+                ab._expressions.get(0) instanceof AbstractMatch m &&
+                m.subject() instanceof AbstractCall sc &&
+                sc.calledFeature() == Types.resolved.f_Type_infix_colon)
+              {
+                var pFc = outer.lookup(pF);
+                if (clazzesToBeVisited.contains(pFc))
+                  {
+                    clazzesToBeVisited.remove(pFc);
+                    pFc.findAllClasses();
+                  }
+                var args = pFc.actualClazzes(sc, null);
+                if (CHECKS)
+                  check(args[0].feature() == Types.resolved.f_Type_infix_colon_true  ||
+                        args[0].feature() == Types.resolved.f_Type_infix_colon_false   );
+                if (args[0].feature() == Types.resolved.f_Type_infix_colon_false)
+                  {
+                    result = undefined.get();
+                  }
+              }
+          }
+      }
+
+    if (result == null)
+      {
+        newcl = new Clazz(actualType, select, outer);
+        result = newcl;
+        if (actualType != Types.t_UNDEFINED)
+          {
+            result = intern(newcl);
+          }
+      }
+
     if (result == newcl)
       {
         if (CHECKS) check
@@ -656,7 +714,7 @@ public class Clazzes extends ANY
               {
                 rc = vc.asRef();
                 if (CHECKS) check
-                  (Errors.any() || ec._type.isAssignableFrom(rc._type));
+                  (Errors.any() || ec._type.isAssignableFrom(rc._type, Context.NONE));
               }
             outerClazz.saveActualClazzes(b, outer, new Clazz[] {vc, rc});
             if (vc != rc)
@@ -698,7 +756,7 @@ public class Clazzes extends ANY
    */
   private boolean asRefDirectlyAssignable(Clazz ec, Clazz vc)
   {
-    return ec.isRef() && ec._type.isAssignableFrom(vc.asRef()._type);
+    return ec.isRef() && ec._type.isAssignableFrom(vc.asRef()._type, Context.NONE);
   }
 
 
@@ -708,8 +766,8 @@ public class Clazzes extends ANY
   private boolean asRefAssignableToChoice(Clazz ec, Clazz vc)
   {
     return ec._type.isChoice() &&
-      !ec._type.isAssignableFrom(vc._type) &&
-      ec._type.isAssignableFrom(vc._type.asRef());
+      !ec._type.isAssignableFrom(vc._type, Context.NONE) &&
+      ec._type.isAssignableFrom(vc._type.asRef(), Context.NONE);
   }
 
 
@@ -752,7 +810,7 @@ public class Clazzes extends ANY
         tclazz._isCalledAsOuter = true;
       }
     var typePars = outerClazz.actualGenerics(c.actualTypeParameters());
-    if (tclazz != c_void.get())
+    if (!tclazz.isVoidOrUndefined())
       {
         if (dynamic)
           {
@@ -767,21 +825,32 @@ public class Clazzes extends ANY
           }
         else
           {
+            if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
+              {
+                var T = innerClazz.actualGenerics()[0];
+                cf = T._type.constraintAssignableFrom(Context.NONE, tclazz._type.generics().get(0))
+                  ? Types.resolved.f_Type_infix_colon_true
+                  : Types.resolved.f_Type_infix_colon_false;
+                innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), -1, c, c.isInheritanceCall());
+              }
             outerClazz.saveActualClazzes(c, outer, new Clazz[] {innerClazz, tclazz});
           }
 
-        var afs = innerClazz.argumentFields();
-        var i = 0;
-        for (var a : c.actuals())
+        if (innerClazz._type != Types.t_UNDEFINED)
           {
-            if (CHECKS) check
-              (Errors.any() || i < afs.length);
-            if (i < afs.length) // actuals and formals may mismatch due to previous errors,
-                                // see tests/typeinference_for_formal_args_negative
+            var afs = innerClazz.argumentFields();
+            var i = 0;
+            for (var a : c.actuals())
               {
-                propagateExpectedClazz(a, afs[i].resultClazz(), outer, outerClazz, inh);
+                if (CHECKS) check
+                  (Errors.any() || i < afs.length);
+                if (i < afs.length) // actuals and formals may mismatch due to previous errors,
+                                    // see tests/typeinference_for_formal_args_negative
+                  {
+                    propagateExpectedClazz(a, afs[i].resultClazz(), outer, outerClazz, inh);
+                  }
+                i++;
               }
-            i++;
           }
 
         var f = innerClazz.feature();
@@ -854,7 +923,7 @@ public class Clazzes extends ANY
           {
             var fOrFc = isUsed(f)
               ? outerClazz.lookup(f)
-              : Clazzes.instance.clazz(outerClazz._type.actualType(f.resultType())); // NYI: better Clazzes.instance.c_void.get(), does not work in interpreter backend yet...
+              : Clazzes.instance.clazz(outerClazz._type.actualType(f.resultType(), Context.NONE)); // NYI: better Clazzes.instance.c_void.get(), does not work in interpreter backend yet...
             acl = new Clazz[] {fOrFc};
           }
         else
@@ -949,7 +1018,7 @@ public class Clazzes extends ANY
     else if (e instanceof AbstractCall c)
       {
         var tclazz = clazz(c.target(), outerClazz, inh);
-        if (tclazz != c_void.get())
+        if (!tclazz.isVoidOrUndefined())
           {
             var at = outerClazz.handDownThroughInheritsCalls(c.actualTypeParameters(), inh);
             var inner = tclazz.lookup(new FeatureAndActuals(c.calledFeature(),
