@@ -1915,6 +1915,20 @@ public abstract class Expr extends ByteCode
         {
           return true;
         }
+
+        @Override
+        public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
+        {
+          var positionNextByteCode = l._posFinal + 3;
+          if (!smt.stacks.containsKey(positionNextByteCode))
+            {
+              smt.stackMapFrames.add(new StackMapFullFrame(smt, positionNextByteCode));
+              smt.locals.add(new Pair<>(positionNextByteCode, locals.clone()));
+              smt.stacks.put(positionNextByteCode, (Stack)stack.clone());
+            }
+
+          super.buildStackMapTable(smt, stack, locals);
+        }
       };
   }
 
