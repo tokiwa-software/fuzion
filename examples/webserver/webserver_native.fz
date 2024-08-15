@@ -45,44 +45,39 @@ webserver_native is
       say "echo 'Hello' | curl 'http://[::1]:8080'"
 
 
-  # local mutate effect
-  # used for buffered reading/writing
-  lm : mutate is
-  lm.go ()->
+  # definition of a connection handler
+  #
+  rh(n i32) : net.Connection_Handler unit is
+
+    redef handle_connection (LM type : mutate) unit =>
+      say "accepted connection:"
+
+      match io.buffered.read_line LM
+        str String => say str
+        * =>
+
+      send200(data String) =>
+        _ := (io.buffered.writer LM)
+          .write """
+            HTTP/1.1 200 OK
+            Connection: close
+            Server: Fuzion demo WebServer v0.02
+            Content-Length: {data.byte_length}
+            Content-Type: text/html
+
+            {data}
+          """.utf8.as_array
+        (io.buffered.writer LM).flush
+
+      _ := send200 "<html>Hello Fuzion $n!</html>"
+
+      say "closed connection"
 
 
-    # definition of a connection handler
-    #
-    rh(n i32) : net.Connection_Handler unit is
-
-      redef handle_connection unit =>
-        say "accepted connection:"
-
-        match io.buffered.read_line lm
-          str String => say str
-          * =>
-
-        send200(data String) =>
-          (io.buffered.writer lm)
-            .write """
-              HTTP/1.1 200 OK
-              Connection: close
-              Server: Fuzion demo WebServer v0.02
-              Content-Length: {data.byte_length}
-              Content-Type: text/html
-
-              {data}
-            """.utf8.as_array
-
-        _ := send200 "<html>Hello Fuzion $n!</html>"
-
-        say "closed connection"
-
-
-    # accept connections while server is active
-    #
-    for n in 1..
-    while net.server.is_active
-      _ := net.server.accept unit lm (rh n)
+  # accept connections while server is active
+  #
+  for n in 1..
+  while net.server.is_active
+    _ := net.server.accept unit (rh n)
 
 

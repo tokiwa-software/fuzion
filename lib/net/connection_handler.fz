@@ -25,5 +25,5 @@
 #
 public Connection_Handler(T type) ref is
 
-  public handle_connection T ! io.buffered.reader, io.buffered.writer, net.channel
+  public handle_connection (LM type : mutate) T ! LM, io.buffered.reader, io.buffered.writer, net.channel
   => abstract
