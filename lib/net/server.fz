@@ -64,7 +64,7 @@ is
   # does nothing for UDP etc.
   # blocks until connection is established
   # NYI we may want to close server on certain errors?
-  public accept(T type, LM type : mutate, ch Connection_Handler T) outcome T =>
+  public accept(T type, ch Connection_Handler T) outcome T =>
     match state
       d i64 =>
         match fuzion.sys.net.accept d
@@ -80,10 +80,12 @@ is
             #   _ := connection_handler.env.handle_connection (channel desc)
             #   fuzion.sys.net.close desc
 
-            res := (io.buffered.reader LM (read_provider desc) 1024).with ()->
-              (io.buffered.writer LM (write_provider desc) 1024).with ()->
-                (net.channel desc).go ()->
-                  ch.handle_connection
+            lm : mutate is
+            res := lm.go ()->
+              (io.buffered.reader lm (read_provider desc) 1024).with ()->
+                (io.buffered.writer lm (write_provider desc) 1024).with ()->
+                  (net.channel desc).go ()->
+                    ch.handle_connection lm
 
             _ := fuzion.sys.net.close desc
 
