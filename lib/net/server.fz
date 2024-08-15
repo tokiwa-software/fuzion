@@ -102,6 +102,27 @@ is
         e
 
 
+  # accept a TCP connection that will be handled in a separate thread
+  #
+  public accept_threaded(ch Connection_Handler unit) outcome unit =>
+    match state
+      d i64 =>
+        match fuzion.sys.net.accept d
+          desc i64 =>
+            _ := concur.thread.spawn ()->
+              lm : mutate is
+              _ := lm.go ()->
+                (io.buffered.reader lm (read_provider desc) 1024).with ()->
+                  (io.buffered.writer lm (write_provider desc) 1024).with ()->
+                    (net.channel desc).go ()->
+                      ch.handle_connection lm
+            unit
+          e error =>
+            _ := server e nil effect_mode.repl unit unit
+            e
+      e error => e
+
+
 # open new server bound to the any address listening on port
 # closes currently installed server
 # NYI blocking / none blocking
