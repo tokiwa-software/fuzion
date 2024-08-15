@@ -62,22 +62,25 @@ public class Tag extends ExprWithPos
   /**
    * Constructor
    *
+   * @param context the source code context where this Tag is to be used
+   *
    * @param value the value instance
    */
-  public Tag(Expr value, AbstractType taggedType)
+  public Tag(Expr value, AbstractType taggedType, Context context)
   {
     super(value.pos());
 
-    taggedType.checkChoice(value.pos());
+    // NYI: Move to check types phase
+    taggedType.checkChoice(value.pos(), context);
 
     if (PRECONDITIONS) require
       (value != null,
        taggedType.isChoice(),
        Errors.any()
         || taggedType
-            .choiceGenerics()
+            .choiceGenerics(context)
             .stream()
-            .filter(cg -> cg.isDirectlyAssignableFrom(value.type()))
+            .filter(cg -> cg.isDirectlyAssignableFrom(value.type(), context))
             .count() == 1
         // NYI why is value.type() sometimes unit
         // even though none of the choice elements is unit
@@ -98,6 +101,7 @@ public class Tag extends ExprWithPos
    *
    * @return this Expr's type or null if not known.
    */
+  @Override
   AbstractType typeForInferencing()
   {
     return _taggedType;

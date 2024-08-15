@@ -1,0 +1,218 @@
+2
+5
+0
+0
+0
+0
+1
+1
+1
+0
+7
+8
+9
+--nil--
+--nil--
+2
+4
+--nil--
+7
+String 'Fuzion!' type Type of 'String'
+String 'Fuzion!' type Type of 'String' len 7
+String 'Fuzion!' type Type of 'String' len 7
+lambda : codepoint len 7
+partial: codepoint len 7
+before eval of lazy String
+lazy String Fuzion!
+before eval of lazy num
+lazy Type of 'i32' 7
+matched String 'Fuzion!' type Type of 'String' len 7
+String 'Fuzion!' type Type of 'String' len 7
+String 'F' type Type of 'codepoint'
+String 'F' type Type of 'codepoint' len 1
+String 'F' type Type of 'codepoint' len 1
+lambda : codepoint len 1
+partial: codepoint len 1
+before eval of lazy String
+lazy String F
+before eval of lazy num
+lazy Type of 'i32' 1
+matched String 'F' type Type of 'codepoint' len 1
+String 'F' type Type of 'codepoint' len 1
+bool true Type of 'bool' false
+other type --nil-- type Type of 'nil'
+a!
+b!
+b -- from lambda!!
+b -- from partial1!!
+b -- from partial2!!
+before eval of lazy String
+eval b lazy 1
+lazy String b -- from lazy!!
+before eval of lazy num
+eval b lazy 2
+lazy Type of 'f64' 3.14
+c!
+
+------ simple calls passing A, B, C, ab, ac, bc, abc. no type pars ------
+take_A: ok: Type of 'compile_time_type_casts.A' dynamic Type of 'compile_time_type_casts.A'
+take_A: ok: Type of 'compile_time_type_casts.A' dynamic Type of 'compile_time_type_casts.ab'
+take_A: ok: Type of 'compile_time_type_casts.A' dynamic Type of 'compile_time_type_casts.ac'
+take_A: ok: Type of 'compile_time_type_casts.A' dynamic Type of 'compile_time_type_casts.abc'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.B'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.ab'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.bc'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.abc'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.C'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.ac'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.bc'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.abc'
+
+------ ab passed to nested constraints A, pre T : B and if T : C ------
+y1 for Type of 'compile_time_type_casts.ab'
+take_A: ok: Type of 'compile_time_type_casts.A' dynamic Type of 'compile_time_type_casts.ab'
+y2 for Type of 'compile_time_type_casts.ab'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.ab'
+y3 for Type of 'compile_time_type_casts.ab'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.ab'
+y3 if not taken, T : C failed for Type of 'compile_time_type_casts.ab'
+
+------ abc passed to nested constraints A, pre T : B and if T : C ------
+y1 for Type of 'compile_time_type_casts.abc'
+take_A: ok: Type of 'compile_time_type_casts.A' dynamic Type of 'compile_time_type_casts.abc'
+y2 for Type of 'compile_time_type_casts.abc'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.abc'
+y3 for Type of 'compile_time_type_casts.abc'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.abc'
+y3 if for Type of 'compile_time_type_casts.abc'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.abc'
+
+------ ab passed to nested constraints A, pre T : B and if T : C using lambdas ------
+z1 for Type of 'compile_time_type_casts.ab'
+take_A: ok: Type of 'compile_time_type_casts.A' dynamic Type of 'compile_time_type_casts.ab'
+z2 for Type of 'compile_time_type_casts.ab'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.ab'
+z3 for Type of 'compile_time_type_casts.ab'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.ab'
+z3 if not taken, T : C failed for Type of 'compile_time_type_casts.ab'
+
+------ abc passed to nested constraints A, pre T : B and if T : C using lambdas ------
+z1 for Type of 'compile_time_type_casts.abc'
+take_A: ok: Type of 'compile_time_type_casts.A' dynamic Type of 'compile_time_type_casts.abc'
+z2 for Type of 'compile_time_type_casts.abc'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.abc'
+z3 for Type of 'compile_time_type_casts.abc'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.abc'
+z3 if for Type of 'compile_time_type_casts.abc'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.abc'
+
+------ ab B C passed to nested constraint T1 : A, pre T1 : B and if T2 : C, using lambdas in between ------
+q1 for Type of 'compile_time_type_casts.ab' Type of 'compile_time_type_casts.B' Type of 'compile_time_type_casts.C'
+take_A: ok: Type of 'compile_time_type_casts.A' dynamic Type of 'compile_time_type_casts.ab'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.B'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.C'
+q2 for Type of 'compile_time_type_casts.ab' Type of 'compile_time_type_casts.B' Type of 'compile_time_type_casts.C'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.ab'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.B'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.C'
+q3 for Type of 'compile_time_type_casts.ab' Type of 'compile_time_type_casts.B' Type of 'compile_time_type_casts.C'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.ab'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.B'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.C'
+q3 if not taken, T2 : C failed for Type of 'compile_time_type_casts.B'
+
+------ ab bc ac passed to nested constraint T1 : A, pre T1 : B and if T2 : C, using lambdas in between ------
+q1 for Type of 'compile_time_type_casts.ab' Type of 'compile_time_type_casts.bc' Type of 'compile_time_type_casts.ac'
+take_A: ok: Type of 'compile_time_type_casts.A' dynamic Type of 'compile_time_type_casts.ab'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.bc'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.ac'
+q2 for Type of 'compile_time_type_casts.ab' Type of 'compile_time_type_casts.bc' Type of 'compile_time_type_casts.ac'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.ab'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.bc'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.ac'
+q3 for Type of 'compile_time_type_casts.ab' Type of 'compile_time_type_casts.bc' Type of 'compile_time_type_casts.ac'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.ab'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.bc'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.ac'
+q3 if for Type of 'compile_time_type_casts.ab' Type of 'compile_time_type_casts.bc' Type of 'compile_time_type_casts.ac'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.ab'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.bc'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.ac'
+
+------ abc abc abc passed to nested constraint T1 : A, pre T1 : B and if T2 : C, using lambdas in between ------
+q1 for Type of 'compile_time_type_casts.abc' Type of 'compile_time_type_casts.abc' Type of 'compile_time_type_casts.abc'
+take_A: ok: Type of 'compile_time_type_casts.A' dynamic Type of 'compile_time_type_casts.abc'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.abc'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.abc'
+q2 for Type of 'compile_time_type_casts.abc' Type of 'compile_time_type_casts.abc' Type of 'compile_time_type_casts.abc'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.abc'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.abc'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.abc'
+q3 for Type of 'compile_time_type_casts.abc' Type of 'compile_time_type_casts.abc' Type of 'compile_time_type_casts.abc'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.abc'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.abc'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.abc'
+q3 if for Type of 'compile_time_type_casts.abc' Type of 'compile_time_type_casts.abc' Type of 'compile_time_type_casts.abc'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.abc'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.abc'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.abc'
+
+------ ab B C passed to nested constraint T1 : A, pre T1 : B and if T2 : C, using lambdas in between ------
+take_A: ok: Type of 'compile_time_type_casts.A' dynamic Type of 'compile_time_type_casts.ab'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.B'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.C'
+r1 for Type of 'compile_time_type_casts.ab' Type of 'compile_time_type_casts.B' Type of 'compile_time_type_casts.C'
+take_A: ok: Type of 'compile_time_type_casts.A' dynamic Type of 'compile_time_type_casts.ab'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.B'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.C'
+r2 for Type of 'compile_time_type_casts.ab' Type of 'compile_time_type_casts.B' Type of 'compile_time_type_casts.C'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.ab'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.B'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.C'
+r3 for Type of 'compile_time_type_casts.ab' Type of 'compile_time_type_casts.B' Type of 'compile_time_type_casts.C'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.ab'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.B'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.C'
+r3 if not taken, T2 : C failed for Type of 'compile_time_type_casts.B'
+
+------ ab bc ac passed to nested constraint T1 : A, pre T1 : B and if T2 : C, using lambdas in between ------
+take_A: ok: Type of 'compile_time_type_casts.A' dynamic Type of 'compile_time_type_casts.ab'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.bc'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.ac'
+r1 for Type of 'compile_time_type_casts.ab' Type of 'compile_time_type_casts.bc' Type of 'compile_time_type_casts.ac'
+take_A: ok: Type of 'compile_time_type_casts.A' dynamic Type of 'compile_time_type_casts.ab'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.bc'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.ac'
+r2 for Type of 'compile_time_type_casts.ab' Type of 'compile_time_type_casts.bc' Type of 'compile_time_type_casts.ac'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.ab'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.bc'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.ac'
+r3 for Type of 'compile_time_type_casts.ab' Type of 'compile_time_type_casts.bc' Type of 'compile_time_type_casts.ac'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.ab'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.bc'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.ac'
+r3 if for Type of 'compile_time_type_casts.ab' Type of 'compile_time_type_casts.bc' Type of 'compile_time_type_casts.ac'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.ab'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.bc'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.ac'
+
+------ abc abc abc passed to nested constraint T1 : A, pre T1 : B and if T2 : C, using lambdas in between ------
+take_A: ok: Type of 'compile_time_type_casts.A' dynamic Type of 'compile_time_type_casts.abc'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.abc'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.abc'
+r1 for Type of 'compile_time_type_casts.abc' Type of 'compile_time_type_casts.abc' Type of 'compile_time_type_casts.abc'
+take_A: ok: Type of 'compile_time_type_casts.A' dynamic Type of 'compile_time_type_casts.abc'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.abc'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.abc'
+r2 for Type of 'compile_time_type_casts.abc' Type of 'compile_time_type_casts.abc' Type of 'compile_time_type_casts.abc'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.abc'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.abc'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.abc'
+r3 for Type of 'compile_time_type_casts.abc' Type of 'compile_time_type_casts.abc' Type of 'compile_time_type_casts.abc'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.abc'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.abc'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.abc'
+r3 if for Type of 'compile_time_type_casts.abc' Type of 'compile_time_type_casts.abc' Type of 'compile_time_type_casts.abc'
+take_B: ok: Type of 'compile_time_type_casts.B' dynamic Type of 'compile_time_type_casts.abc'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.abc'
+take_C: ok: Type of 'compile_time_type_casts.C' dynamic Type of 'compile_time_type_casts.abc'
