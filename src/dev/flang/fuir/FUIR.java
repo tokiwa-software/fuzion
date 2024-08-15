@@ -1120,14 +1120,25 @@ public class FUIR extends IR
 
 
   /**
-   * Get the id of clazz Const_String.internal_array
+   * Get the id of clazz Const_String.utf8_data
    *
-   * @return the id of Const_String.internal_array or -1 if that clazz was not created.
+   * @return the id of Const_String.utf8_data or -1 if that clazz was not created.
    */
-  public int clazz_Const_String_internal_array()
+  public int clazz_Const_String_utf8_data()
   {
-    var cc = Clazzes.instance.constStringInternalArray;
+    var cc = Clazzes.instance.Const_String_utf8_data.getIfCreated();
     return cc == null ? -1 : id(cc);
+  }
+
+
+  /**
+   * Get the id of clazz Const_String.array
+   *
+   * @return the id of Const_String.array or -1 if that clazz was not created.
+   */
+  public int clazz_array_u8()
+  {
+    return clazzResultClazz(clazz_Const_String_utf8_data());
   }
 
 

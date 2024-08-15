@@ -155,6 +155,7 @@ public class Types extends ANY
     public final AbstractFeature f_bool_TERNARY;
     public final AbstractFeature f_debug;
     public final AbstractFeature f_debug_level;
+    public final AbstractFeature f_Const_String_utf8_data;
     public final AbstractFeature f_Function;
     public final AbstractFeature f_Function_call;
     public final AbstractFeature f_safety;
@@ -215,6 +216,7 @@ public class Types extends ANY
       f_bool_OR       = f_bool.get(mod, FuzionConstants.INFIX_OPERATOR_PREFIX + "||");
       f_bool_IMPLIES  = f_bool.get(mod, FuzionConstants.INFIX_OPERATOR_PREFIX + ":");
       f_bool_TERNARY  = f_bool.get(mod, FuzionConstants.TERNARY_OPERATOR_PREFIX + "? :");
+      f_Const_String_utf8_data = t_Const_String.feature().get(mod, "utf8_data");
       f_debug         = universe.get(mod, "debug", 0);
       f_debug_level   = universe.get(mod, "debug_level");
       f_Function      = universe.get(mod, FUNCTION_NAME);

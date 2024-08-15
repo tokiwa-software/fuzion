@@ -43,6 +43,7 @@ import dev.flang.ast.FeatureVisitor; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.State; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
+import dev.flang.ast.Types; // NYI: remove dependency!
 
 import dev.flang.fe.FeatureLookup;
 
@@ -145,7 +146,7 @@ public class MiddleEnd extends ANY
     var JavaRef    = flu.lookupFeature(JavaObject, FeatureName.get("Java_Ref",    0), null);
     markUsed(JavaObject                                                                       , SourcePosition.builtIn);
     markUsed(JavaRef                                                                          , SourcePosition.builtIn);
-    markUsed(flu.lookupFeature(universe, FeatureName.get("Const_String"           , 0), null) , SourcePosition.builtIn); // NYI this should be unnecessary?
+    markUsed(Types.resolved.f_Const_String_utf8_data , SourcePosition.builtIn); // NYI: UNDER DEVELOPMENT: this should be unnecessary?
     markUsed(flu.lookupFeature(universe, FeatureName.get(FuzionConstants.UNIT_NAME, 0), null) , SourcePosition.builtIn);
     markUsed(flu.lookupFeature(universe, FeatureName.get("void"                   , 0), null) , SourcePosition.builtIn);
   }

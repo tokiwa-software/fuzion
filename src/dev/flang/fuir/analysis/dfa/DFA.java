@@ -2664,20 +2664,24 @@ public class DFA extends ANY
   Value newConstString(byte[] utf8Bytes, Context context)
   {
     var cs            = _fuir.clazz_Const_String();
-    var internalArray = _fuir.clazz_Const_String_internal_array();
+    var utf_data      = _fuir.clazz_Const_String_utf8_data();
+    var ar            = _fuir.clazz_array_u8();
+    var internalArray = _fuir.lookup_array_internal_array(ar);
     var data          = _fuir.clazz_fuzionSysArray_u8_data();
     var length        = _fuir.clazz_fuzionSysArray_u8_length();
     var sysArray      = _fuir.clazzResultClazz(internalArray);
     var c_u8          = _fuir.clazz(FUIR.SpecialClazzes.c_u8);
     var adata         = newSysArray(NumericValue.create(this, c_u8), c_u8);
     var r = newInstance(cs, NO_SITE, context);
+    var arr = newInstance(ar, NO_SITE, context);
     var a = newInstance(sysArray, NO_SITE, context);
     a.setField(this,
                length,
                 utf8Bytes != null ? NumericValue.create(this, _fuir.clazzResultClazz(length), utf8Bytes.length)
                                   : NumericValue.create(this, _fuir.clazzResultClazz(length)));
     a.setField(this, data  , adata);
-    r.setField(this, internalArray, a);
+    arr.setField(this, internalArray, a);
+    r.setField(this, utf_data, arr);
     return r;
   }
 

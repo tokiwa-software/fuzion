@@ -1520,20 +1520,24 @@ public class C extends ANY
    */
   CExpr constString(CExpr str, CExpr len)
   {
-    var data          = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_data());
-    var length        = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_length());
+    var data           = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_data());
+    var length         = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_length());
+    var internal_array = _names.fieldName(_fuir.lookup_array_internal_array(_fuir.clazz_array_u8()));
+    var utf8_data      = _names.fieldName(_fuir.clazz_Const_String_utf8_data());
 
     var sysArray = CExpr.compoundLiteral(
-        _types.clazz(_fuir.clazzResultClazz(_fuir.clazz_Const_String_internal_array())),
+        _types.clazz(_fuir.clazzResultClazz(_fuir.clazz_fuzionSysArray_u8())),
         "." + data.code() + " = " + str.castTo("void *").code() +  "," +
           "." + length.code() + " = " + len.code());
 
-    var internal_array = _names.fieldName(_fuir.clazz_Const_String_internal_array());
+    var array = CExpr.compoundLiteral(
+        _types.clazz(_fuir.clazz_array_u8()),
+        "." + internal_array.code() + " = " + sysArray.code());
 
     var constStr = CExpr
       .compoundLiteral(
         _types.clazz(_fuir.clazzAsValue(_fuir.clazz_Const_String())),
-        "." + internal_array.code() + " = " + sysArray.code());
+        "." + utf8_data.code() + " = " + array.code());
 
     return CExpr
       .compoundLiteral(

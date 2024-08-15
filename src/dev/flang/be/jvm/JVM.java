@@ -1375,22 +1375,27 @@ should be avoided as much as possible.
   Pair<Expr, Expr> constString(Expr bytes)
   {
     var cs = _fuir.clazz_Const_String();
-    var internalArray = _fuir.clazz_Const_String_internal_array();
+    var cs_utf8_data = _fuir.clazz_Const_String_utf8_data();
+    var arr = _fuir.clazz_array_u8();
+    var internalArray = _fuir.lookup_array_internal_array(arr);
     var data = _fuir.clazz_fuzionSysArray_u8_data();
     var length = _fuir.clazz_fuzionSysArray_u8_length();
     var fuzionSysArray = _fuir.clazzOuterClazz(data);
     var res = new0(cs)                                // stack: cs
       .andThen(Expr.DUP)                              //        cs, cs
-      .andThen(new0(fuzionSysArray))                  //        cs, cs, fsa
-      .andThen(Expr.DUP)                              //        cs, cs, fsa, fsa
-      .andThen(bytes)                                 //        cs, cs, fsa, fsa, byt
-      .andThen(Expr.DUP_X2)                           //        cs, cs, byt, fsa, fsa, byt
-      .andThen(putfield(data))                        //        cs, cs, byt, fsa
-      .andThen(Expr.DUP_X1)                           //        cs, cs, fsa, byt, fsa
-      .andThen(Expr.SWAP)                             //        cs, cs, fsa, fsa, byt
-      .andThen(Expr.ARRAYLENGTH)                      //        cs, cs, fsa, fsa, len
-      .andThen(putfield(length))                      //        cs, cs, fsa
-      .andThen(putfield(internalArray))               //        cs
+      .andThen(new0(arr))                             //        cs, cs, arr
+      .andThen(Expr.DUP)                              //        cs, cs, arr, arr
+      .andThen(new0(fuzionSysArray))                  //        cs, cs, arr, arr, fsa
+      .andThen(Expr.DUP)                              //        cs, cs, arr, arr, fsa, fsa
+      .andThen(bytes)                                 //        cs, cs, arr, arr, fsa, fsa, byt
+      .andThen(Expr.DUP_X2)                           //        cs, cs, arr, arr, byt, fsa, fsa, byt
+      .andThen(putfield(data))                        //        cs, cs, arr, arr, byt, fsa
+      .andThen(Expr.DUP_X1)                           //        cs, cs, arr, arr, fsa, byt, fsa
+      .andThen(Expr.SWAP)                             //        cs, cs, arr, arr, fsa, fsa, byt
+      .andThen(Expr.ARRAYLENGTH)                      //        cs, cs, arr, arr, fsa, fsa, len
+      .andThen(putfield(length))                      //        cs, cs, arr, arr, fsa
+      .andThen(putfield(internalArray))               //        cs, cs, arr
+      .andThen(putfield(cs_utf8_data))                //        cs
       .is(_types.javaType(cs));                       //        -
     return new Pair<>(res, Expr.UNIT);
   }
