@@ -73,8 +73,8 @@ compile_time_type_casts =>
     do_b_thing_from_lambda   => say "b -- from lambda!!"
     do_b_thing_from_partial1 => say "b -- from partial1!!"
     do_b_thing_from_partial2 =>     "b -- from partial2!!"
-    do_b_thing_lazy1         => say "eval b lazy 1"; "b -- from lazy!!"
-    do_b_thing_lazy2         => say "eval b lazy 2"; 3.14
+    do_b_thing_lazy1         => { say "eval b lazy 1"; "b -- from lazy!!" }
+    do_b_thing_lazy2         => { say "eval b lazy 2"; 3.14 }
   c is
     do_c_thing => say "c!"
 
