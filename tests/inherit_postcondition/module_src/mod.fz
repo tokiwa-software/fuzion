@@ -28,7 +28,7 @@
 #
 public mod is
 
-  ok(s String) => say s; true
+  ok(s String) => {say s; true}
 
   public post_accessing_result is
     public n := 333
