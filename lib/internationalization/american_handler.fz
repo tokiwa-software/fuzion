@@ -1,2 +1,2 @@
-public american_handler : int_handler is 
-    redef date(d i32,m i32,y i32) => "{m}/{d}/{y}"  
+public american_handler : int_handler is
+    redef date(d i32,m i32,y i32) => "{m}/{d}/{y}"

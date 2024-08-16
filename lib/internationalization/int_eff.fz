@@ -1,3 +1,2 @@
 public int_eff(h int_handler) : simple_effect is
     public date(d i32,m i32,y i32) => h.date d m y
-    

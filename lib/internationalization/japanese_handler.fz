@@ -1,2 +1,2 @@
-public japanese_handler : int_handler is 
-    redef date(d i32,m i32,y i32) => "{y}年{m}月{d}日"   
+public japanese_handler : int_handler is
+    redef date(d i32,m i32,y i32) => "{y}年{m}月{d}日"
