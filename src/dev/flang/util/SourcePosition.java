@@ -222,28 +222,30 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
               }
             if (!Terminal.ENABLED)
               {
-                for (int j=0; l == line() && j < column()-1; j++)
-                {
-                  sb.append('-');
-                }
-              if (bytePos() == endPos)
-              {
-                sb.append('^');
-              } else
-              {
-                int len = str.length() - leadingWhiteSpace;
-                for (int i = 0; i < leadingWhiteSpace; i++)
-                {
-                  sb.append('-');
-                }
-                for (int i = 0; i < len; i++)
-                {
-                  sb.append('^');
-                }
+                for (int j = 0; l == line() && j < column() - 1; j++)
+                  {
+                    sb.append('-');
+                  }
+                if (bytePos() == endPos)
+                  {
+                    sb.append('^');
+                  }
+                else
+                  {
+                    int len = str.length() - leadingWhiteSpace;
+                    for (int i = 0; i < leadingWhiteSpace; i++)
+                      {
+                        sb.append('-');
+                      }
+                    for (int i = 0; i < len; i++)
+                      {
+                        sb.append('^');
+                      }
+                  }
               }
-            }
           }
-          if (!Terminal.ENABLED && (p < _sourceFile.lineEndPos(l) || p == _bytePos || p == byteEndPos()-1) && p+1 < byteEndPos() && p+1 == _sourceFile.lineEndPos(l))
+        if (!Terminal.ENABLED && (p < _sourceFile.lineEndPos(l) || p == _bytePos || p == byteEndPos() - 1)
+          && p + 1 < byteEndPos() && p + 1 == _sourceFile.lineEndPos(l))
           {
             sb.append("\n");
           }

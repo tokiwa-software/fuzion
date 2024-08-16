@@ -215,7 +215,8 @@ public class FormalGenerics extends ANY
     /**
      * Check if this are the formal generics of f used as actuals.
      */
-    boolean actualsOf(AbstractFeature f) {
+    boolean actualsOf(AbstractFeature f)
+    {
       return f.generics() == FormalGenerics.this;
     }
 

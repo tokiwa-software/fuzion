@@ -596,8 +596,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         var ot = outer();
         if (ot != null && ot.isGenericArgument())
           {
-            if (tolerant) {return null;}
-            else {AstErrors.formalGenericAsOuterType(pos(), this);}
+            if (tolerant) { return null; }
+            else { AstErrors.formalGenericAsOuterType(pos(), this); }
           }
 
         var mayBeFreeType = mayBeFreeType() && outer.isValueArgument();
@@ -755,7 +755,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                                     boolean ignoreActualTypePars,
                                     boolean tolerant)
   {
-    if (tolerant) {unresolvedGenerics = new List<>();}
+    if (tolerant) { unresolvedGenerics = new List<>(); }
+
     if (!ignoreActualTypePars)
       {
         if (refOrVal == RefOrVal.ThisType && generics.isEmpty())
