@@ -195,7 +195,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
             if (bytePos() == byteEndPos())
               /* not a SourceRange! */
               {
-                var underlined = _sourceFile.asString(p, Math.min(p, _sourceFile.byteLength()-1));
+                var underlined = _sourceFile.asString(p, Math.min(p+1, _sourceFile.lineEndPos(l)));
                 sb.append(_sourceFile.asString(_sourceFile.lineStartPos(l), p))
                   .append(Terminal.CURLY_UNDERLINE)
                   .append(Terminal.UNDERLINE_LINE_RED)
