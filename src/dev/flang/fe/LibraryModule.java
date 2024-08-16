@@ -48,7 +48,6 @@ import dev.flang.ast.Visi;
 import dev.flang.mir.MIR;
 
 import dev.flang.util.FuzionConstants;
-import dev.flang.util.FuzionConstants.MirExprKind;
 import dev.flang.util.FuzionOptions;
 
 import static dev.flang.util.FuzionConstants.MirExprKind;
