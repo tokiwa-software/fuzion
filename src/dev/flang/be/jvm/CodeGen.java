@@ -37,6 +37,7 @@ import dev.flang.be.jvm.classfile.ClassFile;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 
@@ -64,7 +65,7 @@ class CodeGen
   /**
    * env var to enable debug output for tail call optimization:
    */
-  static private final boolean FUZION_DEBUG_TAIL_CALL = "true".equals(System.getenv("FUZION_DEBUG_TAIL_CALL"));
+  static private final boolean FUZION_DEBUG_TAIL_CALL = FuzionOptions.boolPropertyOrEnv("FUZION_DEBUG_TAIL_CALL");
 
 
 
