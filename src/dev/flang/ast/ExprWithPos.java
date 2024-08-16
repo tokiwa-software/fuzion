@@ -70,7 +70,7 @@ abstract class ExprWithPos extends Expr
    */
   public SourcePosition pos()
   {
-    return _pos;
+    return _range != null ? _range : _pos;
   }
 
 }
