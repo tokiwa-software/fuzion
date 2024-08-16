@@ -67,10 +67,10 @@ is
   #
   public val T
     pre
-      safety: (option.this??) # NYI: REGRESSION: parantheses currently necessary, due to PR #2572
+      safety: option.this??
   =>
     option.this ? v T => v
-                | nil => fuzion.std.panic "option.val called on nil"
+                | nil => fuzion.std.panic "You either turned off safety or you discovered a severe compiler bug! This code should be unreachable."
 
 
   # monadic operator
@@ -131,10 +131,10 @@ is
   #
   public get
   pre
-    safety: (option.this??)
+    safety: option.this??
   =>
     option.this ? v T => v
-                | nil => fuzion.std.panic "option.get called on nil"
+                | nil => fuzion.std.panic "You either turned off safety or you discovered a severe compiler bug! This code should be unreachable."
 
 
   # unwraps an option if it exists, returns default value otherwise.

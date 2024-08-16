@@ -88,10 +88,10 @@ is
   #
   public val T
     pre
-      safety: (outcome.this??)
+      safety: outcome.this??
   =>
     outcome.this ? v T   => v
-                 | error => panic "outcome.val called on error"
+                 | error => panic "You either turned off safety or you discovered a severe compiler bug! This code should be unreachable."
 
 
   # value of an outcome or default if outcome contains err
@@ -109,9 +109,9 @@ is
   #
   public err error
     pre
-      safety: (outcome.this!!)
+      safety: outcome.this!!
   =>
-    outcome.this ? T       => panic "outcome.err called on successful outcome"
+    outcome.this ? T       => panic "You either turned off safety or you discovered a severe compiler bug! This code should be unreachable."
                  | e error => e
 
 
