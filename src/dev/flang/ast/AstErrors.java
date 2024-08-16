@@ -1913,7 +1913,9 @@ public class AstErrors extends ANY
 
   public static void ambiguousAssignmentToChoice(AbstractType frmlT, Expr value)
   {
-    if (!any() || frmlT != Types.t_ERROR && value.type() != Types.t_ERROR)
+    if (!any() || (frmlT        != Types.t_ERROR &&
+                   value.type() != Types.t_ERROR &&
+                   !frmlT.choiceGenerics(Context.NONE).stream().anyMatch(x -> x==Types.t_ERROR)))
       {
         error(value.pos(),
               "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceGenerics(Context.NONE).stream()
