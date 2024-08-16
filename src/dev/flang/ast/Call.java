@@ -2250,7 +2250,7 @@ public class Call extends AbstractCall
         {
           // check if this might be a
           // left hand side of dot-type-call
-          tt = ut.tryResolve(res, context);
+          tt = ut.resolve(res, context, true);
           tt = tt != null && tt != Types.t_ERROR && tt.isGenericArgument() ? tt.genericArgument().constraint(res, context) : tt;
         }
       if (tt != null && tt != Types.t_ERROR)
