@@ -104,6 +104,10 @@ public class AstErrors extends ANY
     return f == Types.f_ERROR ? err()
                               : sqn(f.qualifiedName());
   }
+  public static String s_feat_with_pos(AbstractFeature f)
+  {
+    return s(f) + " defined at " + f.pos().show();
+  }
   static String sbnf(AbstractFeature f) // feature base name
   {
     return f == Types.f_ERROR ? err()
@@ -215,8 +219,9 @@ public class AstErrors extends ANY
     StringBuilder sb = new StringBuilder();
     for (var f : fs)
       {
-        sb.append(sb.length() > 0 ? "and " : "");
-        sb.append("" + s(f) + " defined at " + f.pos().show() + "\n");
+        sb.append(sb.length() > 0 ? "and " : "")
+          .append(s_feat_with_pos(f))
+          .append("\n");
       }
     return sb.toString();
   }
@@ -235,7 +240,7 @@ public class AstErrors extends ANY
     for (var f : targets)
       {
         sb.append(sb.length() > 0 ? "and " : "");
-        sb.append("in " + s(f._outer) + " found " + s(f._feature) + " defined at " + f._feature.pos().show() + "\n");
+        sb.append("in " + s(f._outer) + " found " + s_feat_with_pos(f._feature) + "\n");
       }
     return sb.toString();
   }
@@ -901,7 +906,7 @@ public class AstErrors extends ANY
           {
             sb.append("\nand ");
           }
-        sb.append("" + s(f) + " defined at " + f.pos().show());
+        sb.append("" + s_feat_with_pos(f));
       }
     error(pos,
           "Internally referenced feature not unique",
@@ -929,9 +934,8 @@ public class AstErrors extends ANY
   {
     error(pos,
           "Repeated inheritance of conflicting features",
-          "Feature " + s(heir) + " inherits feature " + sbnf(fn) + " repeatedly: " +
-          "" + s(f1) + " defined at " + f1.pos().show() + "\n" + "and " +
-          "" + s(f2) + " defined at " + f2.pos().show() + "\n" +
+          "Feature " + s(heir) + " inherits feature " + sbnf(fn) + " repeatedly: " + s_feat_with_pos(f1) + "\n" +
+          "and " +s_feat_with_pos(f2) + "\n" +
           "To solve this, you could add a redefinition of " + sbnf(f1) + " to " + s(heir) + ".");
   }
 
@@ -2137,8 +2141,8 @@ public class AstErrors extends ANY
   public static void ambiguousCall(Call c, AbstractFeature f, AbstractFeature tf)
   {
     error(c.pos(), "This call is ambiguous.",
-      "Called feature could be: " + s(f)  + "\n" +
-      "or                     : " + s(tf) + "\n" +
+      "Called feature could be: " + s_feat_with_pos(f) + "\n" +
+      "or                     : " + s_feat_with_pos(tf) + "\n" +
       "To solve this, rename one of the called features.");
   }
 
