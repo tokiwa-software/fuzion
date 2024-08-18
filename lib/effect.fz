@@ -80,6 +80,19 @@ public effect is
   public type.default(e effect.this) => default0 e
 
 
+  # convenience version of `type.default` for effect values whose type is
+  # exactly the effect type (i.e., the value type does not inherit
+  # from the effect type).
+  #
+  # set default instance for effect type `effect.this` to value `effect.this`.
+  #
+  # NYI: UNDER DEVELOPMENT: See type.default
+  #
+  public default unit
+  =>
+    effect.this.type.default effect.this
+
+
   # --------------------  effect instation  --------------------
 
 
