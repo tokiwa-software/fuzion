@@ -1,6 +1,6 @@
 inside m.go: s.get = 81
 inside m.go: count = 81
-using m.go and count: 81
+using m.instate_self and count: 81
 *** got '*** invalid mutate for Type of 'test_local_mutate.test_sum.sum#1.m'' ***
 ok
 *** got '*** invalid mutate for Type of 'test_local_mutate.test_sum.sum#1.m'' ***

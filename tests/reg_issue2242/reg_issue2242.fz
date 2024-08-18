@@ -53,7 +53,7 @@ reg_issue2242 =>
       quick_sort arr (pi + 1) high
 
   mi : mutate is
-  mi.go ()->
+  mi.instate_self ()->
 
     a := (mutate.array f64).type.new mi 10 0.0
     for i in a.indices do

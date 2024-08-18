@@ -100,7 +100,7 @@ catch_postcondition is
     # use local mutate to store msg passed to `cause`
     lm : mutate.
 
-    res := lm.go ()->
+    res := lm.instate_self ()->
         m := lm.env.new (option String nil)
         (rt.post_fault msg->
             m <- msg

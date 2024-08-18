@@ -25,7 +25,7 @@
 # the environment variables in this map are used
 # when spawning a new process.
 #
-public env_vars(get container.Map String String) : simple_effect
+public env_vars(get container.Map String String) : effect
 pre
   get.keys ∀ (x -> x.as_codepoints ∀ (y -> y.is_ascii))
   get.values ∀ (x -> x.as_codepoints ∀ (y -> y.is_ascii))

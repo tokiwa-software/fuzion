@@ -982,7 +982,7 @@ class CodeGen
                                  Names.RUNTIME_EFFECT_GET,
                                  Names.RUNTIME_EFFECT_GET_SIG,
                                  Names.ANY_TYPE))
-      .andThen(Expr.checkcast(_types.javaType(ecl)));
+      .andThen(Expr.checkcast(_types.resultType(ecl)));
     return new Pair<>(res, Expr.UNIT);
   }
 

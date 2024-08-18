@@ -28,7 +28,7 @@
 public thread (
   # the handler this effect uses to spawn threads
   p Thread_Handler
-  ) : simple_effect
+  ) : effect
 is
 
   # type for a spawned thread

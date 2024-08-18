@@ -61,7 +61,7 @@ is
 
   # the contents
   #
-  contents := mi.go ()->
+  contents := mi.instate_self ()->
     for
       mcontents := (mutate.array (option (tuple HK V))).new mi allocated_size.as_i64 nil, mcontents
       k in ks
