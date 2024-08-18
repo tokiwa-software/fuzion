@@ -2186,7 +2186,7 @@ A ((Choice)) declaration must not contain a result type.
       }
 
     if (POSTCONDITIONS) ensure
-      (isTypeFeaturesThisType() || selfType() == Types.resolved.t_Const_String || result != Types.resolved.t_Const_String);
+      (isTypeFeaturesThisType() || Types.resolved == null || selfType() == Types.resolved.t_Const_String || result != Types.resolved.t_Const_String);
 
     return result;
   }
