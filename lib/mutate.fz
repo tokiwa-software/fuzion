@@ -108,13 +108,13 @@ public mutate : simple_effect is
 
     # is this element open, i.e., can it be mutated?
     #
-    public open => id != u64 0
+    public open => my_id != u64 0
 
 
     # stop any further mutations of this element
     #
     public close =>
-      set id := 0
+      set my_id := 0
 
 
   # create a new mutable value with the given initial value and update the
