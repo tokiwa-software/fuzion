@@ -25,7 +25,8 @@
 #
 public german_handler : int_handler is
 
-    #format date using the most common german formatting rules, see https://en.wikipedia.org/wiki/Date_and_time_notation_in_Europe#Germany
+    # format date using the most common German formatting rules, see 
+    # https://en.wikipedia.org/wiki/Date_and_time_notation_in_Europe#Germany
     #
     # ex.`date 2024 4 12` results in `12.4.2024`.
     #
