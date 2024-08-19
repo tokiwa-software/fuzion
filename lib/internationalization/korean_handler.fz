@@ -26,7 +26,7 @@
 public korean_handler : int_handler is
 
     # format date using the most common Korean formatting rules, see
-	    # https://en.wikipedia.org/wiki/Date_and_time_notation_in_South_Korea
+	# https://en.wikipedia.org/wiki/Date_and_time_notation_in_South_Korea
     #
     # ex.`date 2024 4 12` results in `2024년 12월 4일`.
     #
