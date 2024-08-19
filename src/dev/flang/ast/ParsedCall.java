@@ -571,7 +571,7 @@ public class ParsedCall extends Call
                 g.add(t);
               }
             ai.set(Expr.NO_VALUE);  // make sure visit() no longer visits this
-            if (ts.get(ti).kind() != AbstractFeature.Kind.OpenTypeParameter)
+            if (ti > ts.size() && ts.get(ti).kind() != AbstractFeature.Kind.OpenTypeParameter)
               {
                 ti++;
               }
