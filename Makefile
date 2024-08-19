@@ -1362,6 +1362,11 @@ lint/pmd: $(BUILD_DIR)/pmd
 	$(BUILD_DIR)/pmd/pmd-bin-7.3.0/bin/pmd check -d src -R rulesets/java/quickstart.xml -f text
 
 
+.PHONY: coverage
+coverage: $(FUZION_BASE)
+	$(BUILD_DIR)/bin/fz -coverage tests/hello/HelloWorld.fz
+
+
 
 ########
 # Begin : Fuzion Language Server

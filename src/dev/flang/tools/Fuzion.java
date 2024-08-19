@@ -36,9 +36,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
+import dev.flang.ast.AbstractCall;
+import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.FeatureVisitor;
+import dev.flang.ast.Visi;
 import dev.flang.be.c.C;
 import dev.flang.be.c.COptions;
 
@@ -51,6 +59,8 @@ import dev.flang.be.jvm.JVMOptions;
 
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
+import dev.flang.fe.LibraryModule;
+import dev.flang.fe.Module;
 
 import dev.flang.fuir.FUIR;
 
@@ -724,9 +734,129 @@ public class Fuzion extends Tool
       {
         return parseArgsAceMode(args);
       }
+    else if (args.length >= 1 && args[0].equals("-coverage"))
+      {
+        return coverage(args);
+      }
     else
       {
         return parseArgsForBackend(args);
+      }
+  }
+
+
+  /**
+   * Simple coverage reporting
+   * Usage example:
+   *
+   * `fz -coverage tests/hello/HelloWorld.fz tests/int/int_test.fz`
+   */
+  private Runnable coverage(String[] args)
+  {
+    return () -> {
+
+      var o0 = new FrontEndOptions(_verbose,
+                                        _fuzionHome,
+                                        _loadBaseLib,
+                                        _eraseInternalNamesInLib,
+                                        _modules,
+                                        _moduleDirs,
+                                        _dumpModules,
+                                        _debugLevel,
+                                        _safety,
+                                        _enableUnsafeIntrinsics,
+                                        _sourceDirs,
+                                        _readStdin,
+                                        _executeCode,
+                                        null,
+                                        true,
+                                              s -> {});
+      var fe = new FrontEnd(o0);
+      var modules = fe.getModules();
+      var pubFeatures = new TreeSet<AbstractFeature>();
+      for (LibraryModule mod : modules)
+        {
+          addChildsToPubFeatures(mod, pubFeatures, fe._universe);
+        }
+
+      var argsIter = Arrays.stream(args).iterator();
+      argsIter.next();
+      var files = new List<>(argsIter);
+      var coveredFeatures = new TreeSet<AbstractFeature>();
+      for (String file : files)
+        {
+          var o1 = new FrontEndOptions(_verbose,
+                                            _fuzionHome,
+                                            _loadBaseLib,
+                                            _eraseInternalNamesInLib,
+                                            _modules,
+                                            _moduleDirs,
+                                            _dumpModules,
+                                            _debugLevel,
+                                            _safety,
+                                            _enableUnsafeIntrinsics,
+                                            _sourceDirs,
+                                            _readStdin,
+                                            _executeCode,
+                                            file,
+                                            true,
+                                            s -> {});
+          o1.setBackendArgs(new List<>());
+          var fe1 = new FrontEnd(o1);
+          addToCalledFeatures(fe1.mainModule(), coveredFeatures, fe.createMIR().main());
+        }
+
+      say("Covered:");
+      say(coveredFeatures.stream().map(x -> x.qualifiedName()).collect(Collectors.joining(System.lineSeparator())));
+      say();
+
+      say("Not covered:");
+      say(pubFeatures
+        .stream()
+        // pubFeatures except coveredFeatures
+        .filter((((Predicate<AbstractFeature>)coveredFeatures::contains).negate()))
+        .map(x -> x.qualifiedName())
+        .collect(Collectors.joining(System.lineSeparator())));
+    };
+  }
+
+
+  /**
+   * Adds all features called in af or any of its inner features to set `s`.
+   */
+  private void addToCalledFeatures(Module mod, TreeSet<AbstractFeature> s, AbstractFeature af)
+  {
+    mod.declaredFeatures(af).values().stream().forEach(x -> addToCalledFeatures(mod, s, x));
+
+    af.visitCode(new FeatureVisitor() {
+      @Override
+      public void action (AbstractCall c) {
+        var cf = c.calledFeature();
+        if (cf.visibility().eraseTypeVisibility() == Visi.PUB)
+          {
+            s.add(cf);
+          }
+      }
+    });
+  }
+
+
+  /**
+   * Adds all public childs of `af` to set `s`
+   */
+  private void addChildsToPubFeatures(LibraryModule mod, TreeSet<AbstractFeature> s, AbstractFeature af)
+  {
+    var df = new ArrayList<>(mod.declaredFeatures(af).values());
+    for (var feat : df)
+      {
+        if (feat.visibility().typeVisibility() == Visi.PUB)
+          {
+            if (feat.visibility().eraseTypeVisibility() == Visi.PUB)
+              {
+                s.add(feat);
+              }
+            addChildsToPubFeatures(mod, s, feat);
+          }
       }
   }
 
