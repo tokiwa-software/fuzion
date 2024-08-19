@@ -25,7 +25,8 @@
 #
 public american_handler : int_handler is
 
-    #format date using the most common american formatting rules, see https://en.wikipedia.org/wiki/Date_and_time_notation_in_the_United_States
+    # format date using the most common American formatting rules, see
+    # https://en.wikipedia.org/wiki/Date_and_time_notation_in_the_United_States
     #
     # ex.`date 2024 4 12` results in `12/04/2024`.
     #
