@@ -33,10 +33,6 @@ public oneway_monad(
 
   A type,
 
-  OMA type : oneway_monad A OMA,
-
-  # action to be performed, may include code to run while this effect is installed.
-  #
-  r effect_mode.val
-  ) : monad A OMA, effect r
+  OMA type : oneway_monad A OMA
+  ) : monad A OMA, effect
 is

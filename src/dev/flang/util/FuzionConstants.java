@@ -104,9 +104,9 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Name of intrinsic `effect.abortable`.
+   * Name of intrinsic `effect.type.instate0`.
    */
-  public static final String EFFECT_ABORTABLE_NAME = "effect.abortable";
+  public static final String EFFECT_INSTATE_NAME = "effect.type.instate0";
 
 
   /**

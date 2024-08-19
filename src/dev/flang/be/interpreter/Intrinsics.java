@@ -191,6 +191,7 @@ public class Intrinsics extends ANY
   private static void putUnsafe(String n1, String n2, String n3, IntrinsicCode c) { putUnsafe(n1, c); putUnsafe(n2, c); putUnsafe(n3, c); }
   private static void put(String n1, String n2, String n3, String n4, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); }
   private static void putUnsafe(String n1, String n2, String n3, String n4, IntrinsicCode c) { putUnsafe(n1, c); putUnsafe(n2, c); putUnsafe(n3, c); putUnsafe(n4, c); }
+  private static void put(String n1, String n2, String n3, String n4, String n5, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); put(n5, c); }
 
 
   /**
@@ -1389,15 +1390,11 @@ public class Intrinsics extends ANY
         arg0[5] = calendar.get(Calendar.MILLISECOND) * 1000;
         return new Instance(executor.fuir().clazz(FUIR.SpecialClazzes.c_unit));
       });
-    put("effect.replace"  ,
-        "effect.default"  ,
-        "effect.abortable",
-        "effect.abort0"   , (executor, innerClazz) -> effect(executor, innerClazz));
-    put("effect.type.is_installed", (executor, innerClazz) -> args ->
-        {
-          int cl = executor.fuir().clazzActualGeneric(innerClazz, 0);
-          return new boolValue(FuzionThread.current()._effects.get(cl) != null /* NOTE not containsKey since cl may map to null! */ );
-        });
+    put("effect.type.abort0"      ,
+        "effect.type.default0"    ,
+        "effect.type.instate0"    ,
+        "effect.type.is_instated0",
+        "effect.type.replace0"    , (executor, innerClazz) -> effect(executor, innerClazz));
 
     putUnsafe("fuzion.sys.process.create"  , (executor, innerClazz) -> args -> {
       var process_and_args = Arrays
@@ -1525,35 +1522,43 @@ public class Intrinsics extends ANY
     return (args) ->
       {
         var m = args.get(0);
-        var cl = executor.fuir().clazzOuterClazz(innerClazz);
         String in = executor.fuir().clazzOriginalName(innerClazz);
+        int ecl = executor.fuir().effectTypeFromInstrinsic(innerClazz);
+        var ev = args.size() > 1 ? args.get(1) : null;
+        var effects = FuzionThread.current()._effects;
         switch (in)
           {
-          case "effect.replace": check(FuzionThread.current()._effects.get(cl) != null, m != Value.EMPTY_VALUE); FuzionThread.current()._effects.put(cl, m   );   break;
-          case "effect.default": if (FuzionThread.current()._effects.get(cl) == null) { check(m != Value.EMPTY_VALUE); FuzionThread.current()._effects.put(cl, m   ); } break;
-          case "effect.abortable" :
+          case "effect.type.abort0"    : throw new Abort(ecl);
+          case "effect.type.default0"  : if (effects.get(ecl) == null) { check(executor.fuir().clazzIsUnitType(ecl) || ev != Value.EMPTY_VALUE); effects.put(ecl, ev); } break;
+          case "effect.type.instate0"  :
             {
-              var prev = FuzionThread.current()._effects.get(cl);
-              FuzionThread.current()._effects.put(cl, m);
+              var prev = effects.get(ecl);
+              effects.put(ecl, ev);
               var oc   = executor.fuir().clazzActualGeneric(innerClazz, 0);
               var call = executor.fuir().lookupCall(oc);
-              try {
-                var ignore = executor.callOnInstance(NO_SITE, call, new Instance(call), args.get(1), new List<>());
-                return new boolValue(true);
-              } catch (Abort a) {
-                if (a._effect == cl)
-                  {
-                    return new boolValue(false);
-                  }
-                else
-                  {
-                    throw a;
-                  }
-              } finally {
-                FuzionThread.current()._effects.put(cl, prev);
-              }
+              try
+                {
+                  var ignore = executor.callOnInstance(NO_SITE, call, new Instance(call), args.get(2), new List<>());
+                  return new boolValue(true);
+                }
+              catch (Abort a)
+                {
+                  if (a._effect == ecl)
+                    {
+                      return new boolValue(false);
+                    }
+                  else
+                    {
+                      throw a;
+                    }
+                }
+              finally
+                {
+                  effects.put(ecl, prev);
+                }
             }
-          case "effect.abort0": throw new Abort(cl);
+          case "effect.type.is_instated0": return new boolValue(effects.get(ecl) != null /* NOTE not containsKey since ecl may map to null! */ );
+          case "effect.type.replace0"    : check(effects.get(ecl) != null, executor.fuir().clazzIsUnitType(ecl) || ev != Value.EMPTY_VALUE); effects.put(ecl, ev);   break;
           default: throw new Error("unexpected effect intrinsic '"+in+"'");
           }
         return Value.EMPTY_VALUE;

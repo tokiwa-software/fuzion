@@ -113,7 +113,7 @@ javaHello : Java is
     public do_panic(msg String) unit =>
       say "A panic was trigger with msg: $msg"
 
-  _ := (panic p unit).go ()->
+  _ := (panic p unit).instate_self ()->
     Java.java.util.ArrayList.new_I -7
   */
 

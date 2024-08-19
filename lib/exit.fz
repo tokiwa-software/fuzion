@@ -30,10 +30,8 @@ private:public exit (
   # the handler this effect uses to exit
   p Exit_Handler,
 
-  r effect_mode.val,
-
-  _ unit
-  ) : effect r
+  _, _ unit
+  ) : effect
 is
 
   # exit with the given code
@@ -56,8 +54,8 @@ is
   # install default instance of exit
   #
   type.install_default unit =>
-    if !effect.is_installed exit
-      _ := exit default_exit_handler effect_mode.default unit
+    if !exit.is_instated
+      (exit default_exit_handler unit unit).default
 
 
   # default exit handler
@@ -124,7 +122,7 @@ pre debug: code ≤ 127
 # install given exit handler and run code with it.
 #
 public exit(handler Exit_Handler, code ()->unit) =>
-  _ := exit handler (effect_mode.inst code) unit
+  exit.instate (exit handler unit unit) code
 
 
 # Exit_Handler -- abstract exit

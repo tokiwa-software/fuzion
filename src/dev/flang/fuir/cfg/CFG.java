@@ -492,19 +492,19 @@ public class CFG extends ANY
     put("fuzion.std.nano_time"           , (cfg, cl) -> { } );
     put("fuzion.std.date_time"           , (cfg, cl) -> { } );
 
-    put("effect.replace"                 , (cfg, cl) -> { } );
-    put("effect.default"                 , (cfg, cl) -> { } );
-    put("effect.abortable"               , (cfg, cl) ->
+    put("effect.type.default0"              , (cfg, cl) -> { } );
+    put("effect.type.instate0"              , (cfg, cl) ->
         {
-          var oc = cfg._fuir.clazzActualGeneric(cl, 0);
+          var oc  = cfg._fuir.clazzActualGeneric(cl, 1);
           var call = cfg._fuir.lookupCall(oc);
           if (cfg._fuir.clazzNeedsCode(call))
             {
               cfg.addToCallGraph(cl, call);
             }
         });
-    put("effect.abort0"                     , (cfg, cl) -> { } );
-    put("effect.type.is_installed"          , (cfg, cl) -> { } );
+    put("effect.type.replace0"              , (cfg, cl) -> { } );
+    put("effect.type.abort0"                , (cfg, cl) -> { } );
+    put("effect.type.is_instated0"          , (cfg, cl) -> { } );
     put("fuzion.java.Java_Object.is_null0"  , (cfg, cl) -> { } );
     put("fuzion.java.array_get"             , (cfg, cl) -> { } );
     put("fuzion.java.array_length"          , (cfg, cl) -> { } );

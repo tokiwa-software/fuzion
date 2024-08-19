@@ -59,7 +59,7 @@ test_local_mutate_neg is
 
       # run code within an instance of m
       #
-      m.go ()->
+      m.instate_self ()->
         s := m.env.new 0
 
         for e in l do
@@ -68,7 +68,7 @@ test_local_mutate_neg is
         say "inside m.go: s.get = {s.get}"
         say "inside m.go: count = {count}"
 
-      say "using m.go and count: {m.go ()->count}"
+      say "using m.instate_self and count: {m.instate_self ()->count}"
 
       count2 =>
         s := m.env.new 0
@@ -79,7 +79,7 @@ test_local_mutate_neg is
       say count    # *** will cause compile-time an error, requires m to be installed
 
       neg_test3 =>
-        s := m.go ()->count2
+        s := m.instate_self ()->count2
         say s             # *** will cause an error, requires m to be installed
         "** failed, did not panic **"
 
@@ -93,8 +93,8 @@ test_local_mutate_neg is
                 .catch caught_msg)
 
       neg_test4 =>
-        s := m.go ()->count2
-        m.go ()->
+        s := m.instate_self ()->count2
+        m.instate_self ()->
           s.get <- -12    # *** will cause an error, m has changed!
           say s
         "** failed, did not panic **"
@@ -104,8 +104,8 @@ test_local_mutate_neg is
 
       neg_test5 =>
         q =>
-          s1 := m.go ()->count2
-          m.go ()->
+          s1 := m.instate_self ()->count2
+          m.instate_self ()->
             s1.get <- -12    # *** will cause an error, m has changed!
             say s1
           "** failed, did not panic **"

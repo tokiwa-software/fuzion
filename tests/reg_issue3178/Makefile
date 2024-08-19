@@ -17,24 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature envir.args
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# envir.args -- effect providing access to command line args
-#
-public args (all array String) : container.searchable_sequence String all.as_list, effect is
-
-  # install default effect args using fuzion.sys.args
-  #
-  type.install_default =>
-    (envir.args fuzion.sys.args).default
-
-
-# short-hand for accessing envir.args effect in current environment
-#
-public args =>
-  args.install_default
-  envir.args.env
+override NAME = reg_issue3178
+include ../simple.mk

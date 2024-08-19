@@ -521,7 +521,7 @@ public class Executor extends ProcessExpression<Value, Object>
       }
 
     if (POSTCONDITIONS) ensure
-      (result != unitValue());
+      (fuir().clazzIsUnitType(ecl) || result != unitValue());
 
     return pair(result);
   }

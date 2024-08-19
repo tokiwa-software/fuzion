@@ -40,8 +40,8 @@ public state(
   # the current state
   get S,
 
-  r effect_mode.val
-  ) : oneway_monad T (state T S) r
+  _ unit
+  ) : oneway_monad T (state T S)
 is
 
   # monadic operator
@@ -59,23 +59,23 @@ is
 
   # return function
   #
-  public return (a T) => state a get mode
+  public return (a T) => state a get unit
 
 
   # map this using f
   #
   public map (B type, f T -> B) state B S =>
-    state (f val) get mode
+    state (f val) get unit
 
 
   # modify the state, leaving the contents unchanged
   #
-  public modify (f S -> S) => state val (f get) mode
+  public modify (f S -> S) => state val (f get) unit
 
 
   # set state to new, leaving the contents unchanged
   #
-  public put (new S) => state val new mode
+  public put (new S) => state val new unit
 
 
   # converts option to a string
@@ -90,7 +90,7 @@ is
 # state with 1 argument is short hand for a state containing unit and
 # initial_value
 #
-public state(S type, initial_value S) => state unit initial_value effect_mode.plain
+public state(S type, initial_value S) => state unit initial_value unit
 
 # install new state monad for type S and run r within that state monad
 #
@@ -98,7 +98,7 @@ public state(S type, initial_value S) => state unit initial_value effect_mode.pl
 #
 public state(S, R type, initial_value S, r ()->R) =>
   res option R := nil
-  _ := state unit S unit initial_value (effect_mode.inst (()->set res := r.call))
+  (state unit S).instate (state unit S unit initial_value unit) (()->set res := r.call)
   res.get
 
 

@@ -25,7 +25,7 @@
 
 # delete -- effect wrapping the file delete operation
 #
-public delete(dop Delete_Handler, _ unit) : simple_effect is
+public delete(dop Delete_Handler, _ unit) : effect is
 
   # deletes the file/dir found in the path
   # returns unit as outcome in case of successful deletion and error in case of failure

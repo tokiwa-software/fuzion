@@ -35,7 +35,7 @@ import dev.flang.ir.IR.FeatureKind;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import static dev.flang.util.FuzionConstants.EFFECT_ABORTABLE_NAME;
+import static dev.flang.util.FuzionConstants.EFFECT_INSTATE_NAME;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.Terminal;
@@ -383,8 +383,8 @@ public class Call extends ANY implements Comparable<Call>, Context
     var pos = callSitePos();
     return
       (forEnv
-       ? (on.equals(EFFECT_ABORTABLE_NAME)
-          ? "install effect " + Errors.effe(_dfa._fuir.clazzAsStringHuman(_dfa._fuir.effectType(_cc))) + ", old environment was "
+       ? (on.equals(EFFECT_INSTATE_NAME)
+          ? "install effect " + Errors.effe(_dfa._fuir.clazzAsStringHuman(_dfa._fuir.effectTypeFromInstrinsic(_cc))) + ", old environment was "
           : "effect environment ") +
          Errors.effe(Env.envAsString(env())) +
          " for call to "

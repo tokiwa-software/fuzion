@@ -48,10 +48,10 @@ public client(T type, ch Connection_Handler T, f net.family.val, p net.protocol.
       # NYI: BUG: (try net.connection_handler).on ()->
 
       lm : mutate is
-      res := lm.go ()->
+      res := lm.instate_self ()->
         (io.buffered.reader lm (read_provider desc) 1024).with ()->
           (io.buffered.writer lm (write_provider desc) 1024).with ()->
-            (net.channel desc).go ()->
+            (net.channel desc).instate_self ()->
               ch.handle_connection lm
 
       _ := fuzion.sys.net.close desc

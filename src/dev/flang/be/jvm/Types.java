@@ -257,7 +257,8 @@ public class Types extends ANY implements ClassFileConstants
   {
     return _fuir.clazzNeedsCode(cl) ||
       cl == _fuir.clazz_Const_String() ||
-      cl == _fuir.clazz_Const_String_internal_array() ||
+      cl == _fuir.clazz_Const_String_utf8_data() ||
+      cl == _fuir.clazz_array_u8() ||
       cl == _fuir.clazz_fuzionSysArray_u8() ||
       cl == _fuir.clazz_fuzionSysArray_u8_data() ||
       cl == _fuir.clazz_fuzionSysArray_u8_length() ||

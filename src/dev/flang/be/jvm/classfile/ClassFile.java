@@ -1174,7 +1174,12 @@ public class ClassFile extends ANY implements ClassFileConstants
     byte[] data()
     {
       var o = new Kaku();
-      o.writeU2(stackMapFrames.size());
+      // there may be a stackmapframe after bytecode
+      // which was added by endless_loop but this stackmapframe
+      // is only valid if there actually is bytecode after endless_loop.
+      var byteCodeSize = byteCodeSize();
+      var smfs = stackMapFrames.stream().filter(x -> x.byteCodePos < byteCodeSize).toList();
+      o.writeU2((int)smfs.size());
       // NYI optimization potential
       // currently we write full frames only
       // we could use the other frame types as well:
@@ -1184,11 +1189,23 @@ public class ClassFile extends ANY implements ClassFileConstants
       // - chop_frame
       // - same_frame_extended
       // - append_frame
-      for (var s : stackMapFrames)
+      for (var s : smfs)
         {
           s.write(o);
         }
       return o._b.toByteArray();
+    }
+
+
+    /**
+     * @return the size of the java bytecode
+     */
+    private int byteCodeSize()
+    {
+      var o = new ClassFile.Kaku();
+      var bcw = new ClassFile.ByteCodeWrite("", o);
+      _code.code(bcw, ClassFile.this);
+      return o._b.toByteArray().length;
     }
 
 

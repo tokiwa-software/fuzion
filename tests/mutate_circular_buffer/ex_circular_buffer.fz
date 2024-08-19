@@ -24,7 +24,7 @@
 ex_circular_buffer =>
   m : mutate is
 
-  m.go ()->
+  m.instate_self ()->
     b := (mutate.circular_buffer codepoint).new m 7 "0"
     say (b.put "1")
     say (b.enqueue ["2", "3"])
