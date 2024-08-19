@@ -1197,8 +1197,15 @@ public class Runtime extends ANY
 
   public static boolean mtx_lock(Object rl)
   {
-    ((ReentrantLock)rl).lock();
-    return true;
+    try
+      {
+        ((ReentrantLock)rl).lockInterruptibly();
+        return true;
+      }
+    catch(InterruptedException e)
+      {
+        return false;
+      }
   }
 
   public static boolean mtx_trylock(Object rl)
