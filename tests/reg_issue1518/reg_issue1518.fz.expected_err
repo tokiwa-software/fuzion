@@ -13,12 +13,4 @@ To solve this, change type of argument to 'Unary unit reg_issue1518.this.a' at -
       redef b (f a.this -> unit) unit =>
 ---------------^
 
-
---CURDIR--/reg_issue1518.fz:35:24: error 2: Could not find called feature
-      type.x a.this => a
------------------------^
-Feature not found: 'a' (no arguments)
-Target feature: 'reg_issue1518.a.type.x'
-In call: 'a'
-
-2 errors.
+one error.
