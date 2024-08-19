@@ -1118,8 +1118,8 @@ public class Lexer extends SourceFile
     return
       t == Token.t_eof                                       ? t                              :
       sameLine  >= 0 && l != sameLine                        ? Token.t_lineLimit              :
-      p > endAtSpaceOrSemi && ignoredTokenBefore()                 ? Token.t_spaceOrSemiLimit :
-      p > endAtSpaceOrSemi && _curToken == Token.t_semicolon       ? Token.t_spaceOrSemiLimit :
+      p > endAtSpaceOrSemi && ignoredTokenBefore()           ? Token.t_spaceOrSemiLimit       :
+      p > endAtSpaceOrSemi && _curToken == Token.t_semicolon ? Token.t_spaceOrSemiLimit       :
       p == _minIndentStartPos                                ? t                              :
       minIndent >= 0 && codePointIndentation(p) <= minIndent ? Token.t_indentationLimit       :
       endAtColon                  &&
@@ -1127,7 +1127,7 @@ public class Lexer extends SourceFile
       tokenAsString().equals(":")                            ? Token.t_colonLimit             :
       endAtBar                    &&
       _curToken == Token.t_op     &&
-      tokenAsString().equals("|")                            ? Token.t_barLimit         :
+      tokenAsString().equals("|")                            ? Token.t_barLimit               :
       ambiguousSemi()                                        ? Token.t_ambiguousSemi
                                                              : _curToken;
   }
