@@ -29,6 +29,6 @@ public ISO_handler : int_handler is
     #
     # ex.`date 2024 4 12` results in `2024-04-12`.
     #
-    redef date(d i32,m i32,y i32)
+    redef date(d i32, m i32, y i32)
     =>
         "{y}-{($m).pad_left("0", 2)}-{($d).pad_left("0", 2)}"
