@@ -149,6 +149,7 @@ public class Clazzes extends ANY
   public final OnDemandClazz f64         = new OnDemandClazz(() -> Types.resolved.t_f64              );
   public final OnDemandClazz Any         = new OnDemandClazz(() -> Types.resolved.t_Any              );
   public final OnDemandClazz Const_String= new OnDemandClazz(() -> Types.resolved.t_Const_String     );
+  public final OnDemandClazz Const_String_utf8_data= new OnDemandClazz(() -> Types.resolved.f_Const_String_utf8_data.selfType());
   public final OnDemandClazz String      = new OnDemandClazz(() -> Types.resolved.t_String           );
   public final OnDemandClazz c_unit      = new OnDemandClazz(() -> Types.resolved.t_unit             );
   public final OnDemandClazz error       = new OnDemandClazz(() -> Types.t_ERROR                     )
@@ -161,11 +162,12 @@ public class Clazzes extends ANY
       }
     };
   public final OnDemandClazz undefined   = new OnDemandClazz(() -> Types.t_UNDEFINED                 );
+  public Clazz Const_StringUtf8Data;      // field Const_String.utf8_data
   public Clazz constStringInternalArray;  // field Const_String.internal_array
   public Clazz fuzionJavaObject;          // clazz representing a Java Object in Fuzion
   public Clazz fuzionJavaObject_Ref;      // field fuzion.java.Java_Object.Java_Ref
   public Clazz fuzionSysPtr;              // internal pointer type
-  public Clazz fuzionSysArray_u8;         // result clazz of Const_String.internal_array
+  public Clazz fuzionSysArray_u8;         // result clazz of Const_String.array.internal_array
   public Clazz fuzionSysArray_u8_data;    // field fuzion.sys.array<u8>.data
   public Clazz fuzionSysArray_u8_length;  // field fuzion.sys.array<u8>.length
   public Clazz c_address;                 // clazz representing address type
@@ -454,16 +456,16 @@ public class Clazzes extends ANY
         main.called(SourcePosition.builtIn);
         main.instantiated(SourcePosition.builtIn);
       }
-    constStringInternalArray = Const_String.get().lookup(Types.resolved.f_array_internal_array, SourcePosition.builtIn);
-    fuzionSysArray_u8 = constStringInternalArray.resultClazz();
-    fuzionSysArray_u8_data   = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_data  , SourcePosition.builtIn);
-    fuzionSysArray_u8_length = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_length, SourcePosition.builtIn);
-    fuzionSysPtr = fuzionSysArray_u8_data.resultClazz();
-    var fuzion = universe.get().lookup(Types.resolved.f_fuzion, SourcePosition.builtIn);
-    var fuzionJava = fuzion.lookup(Types.resolved.f_fuzion_java, SourcePosition.builtIn);
-    fuzionJavaObject = fuzionJava.lookup(Types.resolved.f_fuzion_Java_Object, SourcePosition.builtIn);
-    fuzionJavaObject_Ref = fuzionJavaObject.lookup(Types.resolved.f_fuzion_Java_Object_Ref, SourcePosition.builtIn);
-    c_error = universe.get().lookup(Types.resolved.f_error, SourcePosition.builtIn);
+    Const_StringUtf8Data           = Const_String_utf8_data.get();
+    fuzionSysArray_u8              = Const_StringUtf8Data.resultClazz().fields()[0].resultClazz();
+    fuzionSysArray_u8_data         = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_data  , SourcePosition.builtIn);
+    fuzionSysArray_u8_length       = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_length, SourcePosition.builtIn);
+    fuzionSysPtr                   = fuzionSysArray_u8_data.resultClazz();
+    var fuzion                     = universe.get().lookup(Types.resolved.f_fuzion, SourcePosition.builtIn);
+    var fuzionJava                 = fuzion.lookup(Types.resolved.f_fuzion_java, SourcePosition.builtIn);
+    fuzionJavaObject               = fuzionJava.lookup(Types.resolved.f_fuzion_Java_Object, SourcePosition.builtIn);
+    fuzionJavaObject_Ref           = fuzionJavaObject.lookup(Types.resolved.f_fuzion_Java_Object_Ref, SourcePosition.builtIn);
+    c_error                        = universe.get().lookup(Types.resolved.f_error, SourcePosition.builtIn);
 
     while (!clazzesToBeVisited.isEmpty())
       {

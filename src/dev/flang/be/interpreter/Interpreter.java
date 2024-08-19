@@ -124,12 +124,15 @@ public class Interpreter extends FUIRContext
   {
     int cl = fuir().clazz_Const_String();
     Instance result = new Instance(cl);
+    var clArr = fuir().clazz_array_u8();
+    Instance arr = new Instance(clArr);
     var saCl = fuir().clazz_fuzionSysArray_u8();
     Instance sa = new Instance(saCl);
     setField(fuir().clazz_fuzionSysArray_u8_length(), saCl, sa, new i32Value(bytes.length));
     var arrayData = new ArrayData(bytes);
     setField(fuir().clazz_fuzionSysArray_u8_data(), saCl, sa, arrayData);
-    setField(fuir().clazz_Const_String_internal_array(), cl, result, sa);
+    setField(fuir().lookup_array_internal_array(clArr), cl, arr, sa);
+    setField(fuir().clazz_Const_String_utf8_data(), cl, result, arr);
 
     return result;
   }
