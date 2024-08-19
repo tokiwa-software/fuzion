@@ -31,16 +31,4 @@ public ISO_handler : int_handler is
     #
     redef date(d i32,m i32,y i32)
     =>
-        if m<10
-            if d<10
-                "{y}-0{m}-0{d}"
-            else
-                "{y}-0{m}-{d}"
-        else
-            if d<10
-                "{y}-{m}-0{d}"
-            else
-                "{y}-{m}-{d}"
-
-
-
+        "{y}-{($m).pad_left("0", 2)}-{($d).pad_left("0", 2)}"
