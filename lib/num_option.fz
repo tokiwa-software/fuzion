@@ -70,7 +70,7 @@ is
       safety: num_option.this??
   =>
     num_option.this ? v T => v
-                    | nil => fuzion.std.panic "You either turned off safety or you discovered a severe compiler bug! This code should be unreachable."
+                    | nil => fuzion.std.panic "num_option.val called on nil. You either turned off safety or you discovered a severe compiler bug! This code should be unreachable."
 
 
   # unwrap value or get default

@@ -70,7 +70,7 @@ is
       safety: option.this??
   =>
     option.this ? v T => v
-                | nil => fuzion.std.panic "You either turned off safety or you discovered a severe compiler bug! This code should be unreachable."
+                | nil => fuzion.std.panic "option.val called on nil. You either turned off safety or you discovered a severe compiler bug! This code should be unreachable."
 
 
   # monadic operator
@@ -134,7 +134,7 @@ is
     safety: option.this??
   =>
     option.this ? v T => v
-                | nil => fuzion.std.panic "You either turned off safety or you discovered a severe compiler bug! This code should be unreachable."
+                | nil => fuzion.std.panic "option.get called on nil. You either turned off safety or you discovered a severe compiler bug! This code should be unreachable."
 
 
   # unwraps an option if it exists, returns default value otherwise.
