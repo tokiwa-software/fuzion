@@ -25,7 +25,7 @@
 #
 public ISO_handler : int_handler is
 
-    #format date using ISO formatting rules, see https://en.wikipedia.org/wiki/ISO_8601
+    # format date using ISO formatting rules, see https://en.wikipedia.org/wiki/ISO_8601
     #
     # ex.`date 2024 4 12` results in `2024-04-12`.
     #

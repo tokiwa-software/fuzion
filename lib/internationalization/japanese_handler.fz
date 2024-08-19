@@ -25,7 +25,8 @@
 #
 public japanese_handler : int_handler is
 
-    #format date using the most common japanese formatting rules, see https://en.wikipedia.org/wiki/Date_and_time_notation_in_Japan
+    # format date using the most common Japanese formatting rules, see
+	    # https://en.wikipedia.org/wiki/Date_and_time_notation_in_Japan
     #
     # ex.`date 2024 4 12` results in `2024年 12月 4日`.
     #

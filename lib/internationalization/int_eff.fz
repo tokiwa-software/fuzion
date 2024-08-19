@@ -21,7 +21,9 @@
 #
 # -----------------------------------------------------------------------
 
-# int_eff -- effect that provides data for internationalization
+# int_eff -- effect that provides operations that are specific for a geographical, political,
+# or cultural region. Such operations include formatting of dates,  numbers, currencies,
+# etc.
 #
 public int_eff(h int_handler) : simple_effect is
     public date(d i32,m i32,y i32) => h.date d m y

@@ -21,6 +21,8 @@
 #
 # -----------------------------------------------------------------------
 
-# internationalization -- unit feature to group features that internationalize certain facts provided
+# internationalization -- unit feature to group features related to specific 
+# geographical, political, or cultural regions such formatting of dates, 
+# numbers, currencies, etc.
 #
 public internationalization is

@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-# int_handler -- provides abstract features for internationalization
+# int_handler -- abstract handler to be used by `int_eff`
 #
 public int_handler ref is
     public date(d i32,m i32,y i32) String => abstract
