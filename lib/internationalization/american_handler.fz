@@ -24,4 +24,24 @@
 # american_handler -- provides data for american format
 #
 public american_handler : int_handler is
-    redef date(d i32,m i32,y i32) => "{m}/{d}/{y}"
+
+    #format date using the most common american formatting rules, see https://en.wikipedia.org/wiki/Date_and_time_notation_in_the_United_States
+    #
+    # ex.`date 2024 4 12` results in `12/04/2024`.
+    #
+    redef date(d i32,m i32,y i32)
+    =>
+        if m<10
+            if d<10
+                "0{m}/0{d}/{y}"
+            else
+                "0{m}/{d}/{y}"
+        else
+            if d<10
+                "{m}/0{d}/{y}"
+            else
+                "{m}/{d}/{y}"
+
+
+
+

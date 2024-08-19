@@ -24,4 +24,11 @@
 # german_handler -- provides data for german format
 #
 public german_handler : int_handler is
-    redef date(d i32,m i32,y i32) => "{d}.{m}.{y}"
+
+    #format date using the most common german formatting rules, see https://en.wikipedia.org/wiki/Date_and_time_notation_in_Europe#Germany
+    #
+    # ex.`date 2024 4 12` results in `4.12.2024`.
+    #
+    redef date(d i32,m i32,y i32)
+    =>
+        "{d}.{m}.{y}"

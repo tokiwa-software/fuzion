@@ -24,4 +24,23 @@
 # ISO_handler -- provides data for ISO 8601 format
 #
 public ISO_handler : int_handler is
-    redef date(d i32,m i32,y i32) => "{y}-{m}-{d}"
+
+    #format date using ISO formatting rules, see https://en.wikipedia.org/wiki/ISO_8601
+    #
+    # ex.`date 2024 4 12` results in `2024-04-12`.
+    #
+    redef date(d i32,m i32,y i32)
+    =>
+        if m<10
+            if d<10
+                "{y}-0{m}-0{d}"
+            else
+                "{y}-0{m}-{d}"
+        else
+            if d<10
+                "{y}-{m}-0{d}"
+            else
+                "{y}-{m}-{d}"
+
+
+

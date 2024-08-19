@@ -24,4 +24,11 @@
 # japanese_handler -- provides data for japanese format
 #
 public japanese_handler : int_handler is
-    redef date(d i32,m i32,y i32) => "{y}年{m}月{d}日"
+
+    #format date using the most common japanese formatting rules, see https://en.wikipedia.org/wiki/Date_and_time_notation_in_Japan
+    #
+    # ex.`date 2024 4 12` results in `2024年 12月 4日`.
+    #
+    redef date(d i32,m i32,y i32)
+    =>
+        "{y}年 {m}月 {d}日"
