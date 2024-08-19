@@ -1227,7 +1227,7 @@ public class AstErrors extends ANY
                                     List<FeatureAndOuter> candidatesArgCountMismatch,
                                     List<FeatureAndOuter> candidatesHidden)
   {
-    if (!any() || !errorInOuterFeatures(targetFeature))
+    if (!any() && !errorInOuterFeatures(targetFeature))
       {
         var msg = !candidatesHidden.isEmpty()
           ? StringHelpers.plural(candidatesHidden.size(), "Feature") + " not visible at call site"
