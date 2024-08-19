@@ -424,7 +424,7 @@ public class AstErrors extends ANY
           }
         else
           {
-            remedy = !frmlT.isRef() && actlT.feature().inheritsFrom(frmlT.feature()) ?
+            remedy = !frmlT.isRef() && !actlT.isGenericArgument() && !frmlT.isGenericArgument() && actlT.feature().inheritsFrom(frmlT.feature()) ?
                         "To solve this you could:\n" + //
                             "  • make  " + s(frmlT) + " a reference by adding the " + st("ref")+ " keyword, so all its heirs can be used in place of it,\n" + //
                             "  • change the type of the target " + ss(target) + " to " + s(actlT) + ", or\n" + //
