@@ -692,11 +692,12 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(val, code);
         });
 
-    put("effect.abort0",
+    put("effect.type.abort0",
         (jvm, si, cc, tvalue, args) ->
         {
-          var ecl = jvm._fuir.effectType(cc);
+          var ecl = jvm._fuir.effectTypeFromInstrinsic(cc);
           var code = Expr.iconst(jvm._fuir.clazzId2num(ecl))
+            .andThen(args.get(0).drop())
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "effect_abort",
                                        "(I)V",
@@ -704,23 +705,23 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(Expr.UNIT, code);
         });
 
-    put("effect.abortable",
+    put("effect.type.instate0",
         (jvm, si, cc, tvalue, args) ->
         {
-          var ecl = jvm._fuir.effectType(cc);
-          var oc = jvm._fuir.clazzActualGeneric(cc, 0);
+          var ecl = jvm._fuir.effectTypeFromInstrinsic(cc);
+          var oc  = jvm._fuir.clazzActualGeneric(cc, 0);
           var call = jvm._fuir.lookupCall(oc);
           var call_t = jvm._types.javaType(call);
           if (call_t instanceof ClassType call_ct)
             {
               var result = Expr.iconst(jvm._fuir.clazzId2num(ecl))
-                .andThen(tvalue)
                 .andThen(args.get(0))
+                .andThen(args.get(1))
                 .andThen(Expr.classconst(call_ct))
                 .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                           "effect_abortable",
+                                           "effect_instate",
                                            "(" + ("I" +
-                                                  Names.ANY_DESCR +
+                                                  Names.ANYI_DESCR +
                                                   Names.ANY_DESCR +
                                                   JAVA_LANG_CLASS.descriptor()) +
                                            ")V",
@@ -733,26 +734,37 @@ public class Intrinsix extends ANY implements ClassFileConstants
             }
         });
 
-    put("effect.default",
+    put("effect.type.default0",
         (jvm, si, cc, tvalue, args) ->
         {
-          var ecl = jvm._fuir.effectType(cc);
+          var ecl = jvm._fuir.effectTypeFromInstrinsic(cc);
+          var arg = args.get(0);
+          if (arg == Expr.UNIT)
+            {
+              arg = Expr.ACONST_NULL;
+            }
           var result = Expr.iconst(jvm._fuir.clazzId2num(ecl))
-            .andThen(tvalue)
+            .andThen(arg)
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "effect_default",
                                        "(" + ("I" +
-                                              Names.ANY_DESCR) +
+                                              Names.ANYI_DESCR) +
                                        ")V",
                                        ClassFileConstants.PrimitiveType.type_void));
           return new Pair<>(Expr.UNIT, result);
         });
-    put("effect.replace",
+
+   put("effect.type.replace0",
         (jvm, si, cc, tvalue, args) ->
         {
-          var ecl = jvm._fuir.effectType(cc);
+          var ecl = jvm._fuir.effectTypeFromInstrinsic(cc);
+          var arg = args.get(0);
+          if (arg == Expr.UNIT)
+            {
+              arg = Expr.ACONST_NULL;
+            }
           var result = Expr.iconst(jvm._fuir.clazzId2num(ecl))
-            .andThen(tvalue)
+            .andThen(arg)
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "effect_replace",
                                        "(" + ("I" +
@@ -761,13 +773,14 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                        ClassFileConstants.PrimitiveType.type_void));
           return new Pair<>(Expr.UNIT, result);
         });
-    put("effect.type.is_installed",
+
+    put("effect.type.is_instated0",
         (jvm, si, cc, tvalue, args) ->
         {
-          var ecl = jvm._fuir.clazzActualGeneric(cc, 0);
+          var ecl = jvm._fuir.effectTypeFromInstrinsic(cc);
           var val = Expr.iconst(jvm._fuir.clazzId2num(ecl))
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                       "effect_is_installed",
+                                       "effect_is_instated",
                                        "(I)Z",
                                        ClassFileConstants.PrimitiveType.type_boolean));
           return new Pair<>(val, Expr.UNIT);

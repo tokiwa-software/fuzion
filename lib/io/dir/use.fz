@@ -40,7 +40,7 @@ public use(T, R type, path String, code ()-> outcome R) outcome R =>
     fd i64 =>
       # install effect `open T` and run `code`
       r := open T fd path
-        .go code
+        .instate_self code
       # close file
       _ := fuzion.sys.fileio.close_dir fd
       # return result

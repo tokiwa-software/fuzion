@@ -49,7 +49,7 @@ test_outer_as_type_parameter is
     n
 
   mm : mutate.
-  mm.use ()->
+  mm.instate_self ()->
     {
       cnt := mm.env.new 100
       cnt1 := count mm i32 cnt [1,2,3]

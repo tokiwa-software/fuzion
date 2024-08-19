@@ -2284,17 +2284,20 @@ public class FUIR extends IR
    *
    * @return true for effect.install and similar features.
    */
-  public boolean isEffect(int cl)
+  public boolean isEffectIntrinsic(int cl)
   {
     if (PRECONDITIONS) require
-      (clazzKind(cl) == FeatureKind.Intrinsic);
+      (cl != NO_CLAZZ);
 
-    return switch(clazzOriginalName(cl))
+    return
+      (clazzKind(cl) == FeatureKind.Intrinsic) &&
+      switch(clazzOriginalName(cl))
       {
-      case "effect.replace",
-           "effect.default",
-           "effect.abortable",
-           "effect.abort0" -> true;
+      case "effect.type.abort0"  ,
+           "effect.type.default0",
+           "effect.type.instate0",
+           "effect.type.is_instated0",
+           "effect.type.replace0" -> true;
       default -> false;
       };
   }
@@ -2310,13 +2313,12 @@ public class FUIR extends IR
    *
    * @return the type of the outer feature of cl
    */
-  public int effectType(int cl)
+  public int effectTypeFromInstrinsic(int cl)
   {
     if (PRECONDITIONS) require
-      (isEffect(cl));
+      (isEffectIntrinsic(cl));
 
-    var or = clazzOuterRef(cl);
-    return clazzResultClazz(or);
+    return clazzActualGeneric(clazzOuterClazz(cl), 0);
   }
 
 

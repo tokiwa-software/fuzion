@@ -23,12 +23,12 @@
 
 reg_issue2231 is
   a := mut ()->i32 ()->0
-  ef : simple_effect is
+  ef : effect is
     inner := 7
     a <- ()->inner
     something =>
       abort
 
-  ef.go ()->
+  ef.instate_self ()->
     reg_issue2231.ef.env.something
   say a.get.call

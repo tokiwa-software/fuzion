@@ -85,7 +85,7 @@ is
     if heap_size ≥ a.length
       a
     else
-      m.go ()->
+      m.instate_self ()->
 
         # h1 is the mutable index within the current first heap, this is updated
         # by the function passed to the array constructor.

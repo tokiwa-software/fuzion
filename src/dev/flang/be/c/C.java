@@ -36,6 +36,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import dev.flang.fuir.FUIR;
@@ -532,17 +533,16 @@ public class C extends ANY
      */
     public Pair<CExpr, CStmnt> env(int s, int ecl)
     {
-      // NYI: UNDER DEVELOPMENT: can this logic be moved to abstract interpreter?
-      if (!_fuir.clazzNeedsCode(ecl))
+      CExpr res = null;
+      var o = CStmnt.seq(CExpr.fprintfstderr("*** effect %s not present in current environment\n",
+                                             CExpr.string(_fuir.clazzAsString(ecl))),
+                         CExpr.exit(1));
+      if (Arrays.binarySearch(_effectClazzes, ecl) >= 0)
         {
-          return new Pair<>(CExpr.UNIT, CStmnt.EMPTY);
+          res = CNames.fzThreadEffectsEnvironment.deref().field(_names.env(ecl));
+          var evi = CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl));
+          o = CStmnt.iff(evi.not(), o);
         }
-      var res = CNames.fzThreadEffectsEnvironment.deref().field(_names.env(ecl));
-      var evi = CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl));
-      var o = CStmnt.iff(evi.not(),
-                         CStmnt.seq(CExpr.fprintfstderr("*** effect %s not present in current environment\n",
-                                                        CExpr.string(_fuir.clazzAsString(ecl))),
-                                    CExpr.exit(1)));
       return new Pair<>(res, o);
     }
 
@@ -638,6 +638,13 @@ public class C extends ANY
    * C intrinsics
    */
   final Intrinsics _intrinsics;
+
+
+  /**
+   * Sorted array of clazzes of all effects that are ever instated, replaced, or
+   * aborted. Will be created during CompilePhase.STRUCTS.
+   */
+  int[] _effectClazzes;
 
 
   /*---------------------------  constructors  ---------------------------*/
@@ -1119,7 +1126,6 @@ public class C extends ANY
     // declaration of the thread start routine
     cf.print(threadStartRoutine(false));
 
-
     Stream.of(CompilePhase.values()).forEachOrdered
       ((p) ->
        {
@@ -1132,17 +1138,18 @@ public class C extends ANY
          // thread local effect environments
          if (p == CompilePhase.STRUCTS)
            {
+             _effectClazzes = ordered
+               .stream()
+               .filter(_fuir::isEffectIntrinsic)
+               .mapToInt(cl -> _fuir.effectTypeFromInstrinsic(cl))
+               .sorted()
+               .distinct()
+               .toArray();
              cf.print(
                CStmnt.seq(
                  CStmnt.struct(CNames.fzThreadEffectsEnvironment.code(),
                    new List<CStmnt>(
-                     ordered
-                       .stream()
-                       .filter(cl -> _fuir.clazzNeedsCode(cl) &&
-                               _fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic &&
-                               _fuir.isEffect(cl))
-                       .mapToInt(cl -> _fuir.effectType(cl))
-                       .distinct()
+                     IntStream.of(_effectClazzes)
                        .mapToObj(cl -> Stream.of(
                                          CStmnt.decl(_types.clazz(cl), _names.env(cl)),
                                          CStmnt.decl("bool", _names.envInstalled(cl)),
@@ -1215,10 +1222,8 @@ public class C extends ANY
         new List<CStmnt>(
           _types.inOrder()
             .stream()
-            .filter(cl -> _fuir.clazzNeedsCode(cl) &&
-                          _fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic &&
-                          _fuir.isEffect(cl))
-            .mapToInt(cl -> _fuir.effectType(cl))
+            .filter(cl -> _fuir.clazzNeedsCode(cl) && _fuir.isEffectIntrinsic(cl))
+            .mapToInt(cl -> _fuir.effectTypeFromInstrinsic(cl))
             .distinct()
             .<CStmnt>mapToObj(ecl -> CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl)).assign(new CIdent("false")))
             .iterator()))

@@ -53,7 +53,7 @@
 #
 # is not supported yet.
 #
-public mutate : simple_effect is
+public mutate : effect is
 
 
   # does this effect support abort?
