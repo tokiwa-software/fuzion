@@ -121,8 +121,11 @@ pre debug: code ≤ 127
 
 # install given exit handler and run code with it.
 #
+# In case the handler aborts this effect, this feature will
+# return normally after a call to `exit.env.exit n`.
+#
 public exit(handler Exit_Handler, code ()->unit) =>
-  exit.instate (exit handler unit unit) code
+  exit.instate unit (exit handler unit unit) code unit
 
 
 # Exit_Handler -- abstract exit
