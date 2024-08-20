@@ -72,7 +72,7 @@ public cache(T type, f () -> T) T =>
   cache_item(val T) is
 
   if !(state unit cache_item).is_instated
-    (state unit cache_item unit (cache_item f()) unit).default
+    (state unit cache_item unit (cache_item f()) oneway_monad_mode.inst).default
 
   state_get cache_item
     .val

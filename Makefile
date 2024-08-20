@@ -418,7 +418,7 @@ FZ_MODULES = \
 			$(MOD_NOM)
 
 .PHONY: all
-all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD) $(DOCUMENTATION)
+all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD)
 
 # everything but rarely used java modules
 .PHONY: min-java
@@ -439,9 +439,9 @@ javac: $(CLASS_FILES_TOOLS) $(CLASS_FILES_TOOLS_FZJAVA) $(CLASS_FILES_TOOLS_DOCS
 $(BUILD_DIR)/%.md: $(FZ_SRC)/%.md
 	cp $^ $@
 
-$(FUZION_EBNF): $(FUZION_BASE)
+$(FUZION_EBNF): $(FUZION_BASE) $(FZ_SRC)/bin/ebnf.fz
 	mkdir -p $(@D)
-	$(BUILD_DIR)/bin/fz bin/ebnf.fz > $@
+	$(BUILD_DIR)/bin/fz $(FZ_SRC)/bin/ebnf.fz > $@
 
 $(JAVA_FILE_UTIL_VERSION): $(FZ_SRC)/version.txt $(JAVA_FILE_UTIL_VERSION_IN)
 	mkdir -p $(@D)
