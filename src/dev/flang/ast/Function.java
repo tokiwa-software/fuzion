@@ -133,6 +133,7 @@ public class Function extends AbstractLambda
 
     _namesAsExprs = names;
     _names = names.map2(n->n.asParsedName());
+    _names.removeIf(n -> n==null);
     _expr = e;
   }
 

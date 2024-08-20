@@ -1,0 +1,13 @@
+
+--CURDIR--/reg_issue3576.fz:24:22: error 1: Incompatible types in assignment
+f ()->i32 :=  (a b)->
+---------------------^
+assignment to field : 'λ.call.result'
+expected formal type: 'i32'
+actual type found   : 'unit'
+assignable to       : 'unit'
+for value assigned  : 
+
+To solve this, you could change the type of the target 'λ.call.result' to 'unit' or convert the type of the assigned value to 'i32'.
+
+one error.
