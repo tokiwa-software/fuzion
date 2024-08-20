@@ -23,7 +23,7 @@
 
 # ISO_handler -- provides data for ISO 8601 format
 #
-public ISO_handler : int_handler is
+public ISO : int_eff is
 
     # format date using ISO formatting rules, see https://en.wikipedia.org/wiki/ISO_8601
     #
@@ -32,3 +32,4 @@ public ISO_handler : int_handler is
     redef date(d i32, m i32, y i32)
     =>
         "{y}-{($m).pad_left("0", 2)}-{($d).pad_left("0", 2)}"
+

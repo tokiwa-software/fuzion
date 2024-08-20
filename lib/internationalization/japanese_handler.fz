@@ -23,7 +23,7 @@
 
 # japanese_handler -- provides data for japanese format
 #
-public japanese_handler : int_handler is
+public japanese : int_eff is
 
     # format date using the most common Japanese formatting rules, see
     # https://en.wikipedia.org/wiki/Date_and_time_notation_in_Japan
@@ -33,3 +33,4 @@ public japanese_handler : int_handler is
     redef date(d i32,m i32,y i32)
     =>
         "{y}年 {m}月 {d}日"
+
