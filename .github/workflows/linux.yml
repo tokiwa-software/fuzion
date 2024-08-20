@@ -48,7 +48,7 @@ jobs:
       - name: install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install libgc1 libgc-dev shellcheck
+          sudo apt-get install libgc1 libgc-dev shellcheck asciidoc asciidoctor
 
       - name: check shell scripts
         run: make shellcheck
