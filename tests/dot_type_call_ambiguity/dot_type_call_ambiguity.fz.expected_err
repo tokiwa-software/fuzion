@@ -2,8 +2,12 @@
 --CURDIR--/dot_type_call_ambiguity.fz:30:31: error 1: This call is ambiguous.
   say dot_type_call_ambiguity.a
 ------------------------------^
-Called feature could be: 'dot_type_call_ambiguity.a'
-or                     : 'dot_type_call_ambiguity.type.a'
+Called feature could be: 'dot_type_call_ambiguity.a' defined at --CURDIR--/dot_type_call_ambiguity.fz:26:3:
+  a => 3
+--^
+or                     : 'dot_type_call_ambiguity.type.a' defined at --CURDIR--/dot_type_call_ambiguity.fz:28:8:
+  type.a => 4
+-------^
 To solve this, rename one of the called features.
 
 one error.
