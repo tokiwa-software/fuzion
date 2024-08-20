@@ -29,22 +29,22 @@ compile_time_type_casts =>
   # first, test base lib features on Sequence that are using type casts in
   # preconditions:
 
-  say ([1,2,3,4,5,6,7,8,9,10].find_first [3,4,5])
-  say ([1,2,3,4,5,6,7,8,9,10].find_first [6,7,8])
-  say ([1,2,3,4,5,6,7,8,9,10].find_first [1,2,3])
-  say ([1,2,3,4,5,6,7,8,9,10].find_first [1,2])
-  say ([1,2,3,4,5,6,7,8,9,10].find_first [1])
-  say ([1,2,3,4,5,6,7,8,9,10].find_first [])
-  say ([1,2,3,4,5,6,7,8,9,10].find_first [2,3,4])
-  say ([1,2,3,4,5,6,7,8,9,10].find_first [2,3])
-  say ([1,2,3,4,5,6,7,8,9,10].find_first [2])
-  say ([1,2,3,4,5,6,7,8,9,10].find_first [])
-  say ([1,2,3,4,5,6,7,8,9,10].find_first [8,9,10])
-  say ([1,2,3,4,5,6,7,8,9,10].find_first [9,10])
-  say ([1,2,3,4,5,6,7,8,9,10].find_first [10])
-  say ([1,2,3,4,5,6,7,8,9,10].find_first [5,4,3])  # will fail
-  say ([1,2,3,4,5,6,7,8,9,10].find_first [4,3])    # will fail
-  say ([1,2,3,4,5,6,7,8,9,10].find_first [3])
+  say ([1,2,3,4,5,6,7,8,9,10].find [3,4,5])
+  say ([1,2,3,4,5,6,7,8,9,10].find [6,7,8])
+  say ([1,2,3,4,5,6,7,8,9,10].find [1,2,3])
+  say ([1,2,3,4,5,6,7,8,9,10].find [1,2])
+  say ([1,2,3,4,5,6,7,8,9,10].find [1])
+  say ([1,2,3,4,5,6,7,8,9,10].find [])
+  say ([1,2,3,4,5,6,7,8,9,10].find [2,3,4])
+  say ([1,2,3,4,5,6,7,8,9,10].find [2,3])
+  say ([1,2,3,4,5,6,7,8,9,10].find [2])
+  say ([1,2,3,4,5,6,7,8,9,10].find [])
+  say ([1,2,3,4,5,6,7,8,9,10].find [8,9,10])
+  say ([1,2,3,4,5,6,7,8,9,10].find [9,10])
+  say ([1,2,3,4,5,6,7,8,9,10].find [10])
+  say ([1,2,3,4,5,6,7,8,9,10].find [5,4,3])  # will fail
+  say ([1,2,3,4,5,6,7,8,9,10].find [4,3])    # will fail
+  say ([1,2,3,4,5,6,7,8,9,10].find [3])
 
   t := ["avenidas",
         "avenidas y flores",
@@ -55,9 +55,9 @@ compile_time_type_casts =>
         "avenidas y flores y mujeres y",
         "un admirador"]
 
-  say (t.find_first ["avenidas", "avenidas y mujeres"])
-  say (t.find_first ["avenidas", "flores y mujeres"])  # will fail
-  say (t.find_first ["un admirador"])
+  say (t.find ["avenidas", "avenidas y mujeres"])
+  say (t.find ["avenidas", "flores y mujeres"])  # will fail
+  say (t.find ["un admirador"])
 
 
   # ----------------------------------------------------------------------

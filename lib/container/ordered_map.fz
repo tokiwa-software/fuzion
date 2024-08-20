@@ -74,7 +74,7 @@ is
   #
   public redef index [] (k OK) option V =>
     sorted_entries
-      .find (e -> ks[e.i] ⋄ k)
+      .find_by_comparator (e -> ks[e.i] ⋄ k)
       .map_to_option i->sorted_entries[i].val
 
 
