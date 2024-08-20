@@ -65,8 +65,11 @@ private:public handles(
   # NYI: As soon as one-way monads are enforced, this array can be implemented
   # using marray, reducing the overhead of an update from O(count) to O(1)!
   #
-  ar array T
-  ) : oneway_monad X (handles T X)
+  ar array T,
+
+  # `plain` monad or effect to be `inst`alled or `repl`aced by new value?
+  mode oneway_monad_mode.val
+  ) : oneway_monad X (handles T X) mode
 is
 
   # number of handles created
@@ -85,7 +88,7 @@ is
     debug: result.has_last
   =>
     na := array T count+1 (i -> if (i < count) ar[i] else w)
-    handles T X v na
+    handles T X v na mode.next
 
 
   # has one element been created using 'new'?
@@ -133,7 +136,7 @@ is
     # the new value to be stored with 'h'
     w T)
   =>
-    handles T X v (ar.put h.x w)
+    handles T X v (ar.put h.x w) mode.next
 
 
   # create a new instance with the value refered to by a given handle read and
@@ -161,24 +164,24 @@ is
     f T->T
     )
   =>
-    _ := handles T X v (ar.put x (f ar[x]))
+    _ := handles T X v (ar.put x (f ar[x])) mode.next
 
 
   public redef infix >>= (f X -> handles T X) => bind X f
 
   public bind(B type, f X -> handles T B) handles T B =>
-    handles T B (f v).v ar
+    handles T B (f v).v ar oneway_monad_mode.plain
 
-  public return( B type, w B) => handles T B w ar
+  public return( B type, w B) => handles T B w ar oneway_monad_mode.plain
 
 # short-hand for creating and installing an empty set of handles of given type.
 #
 public handles(T type, rr ()->unit) =>
-  (handles T unit).instate (handles T unit unit (array T 0 x->do)) rr
+  (handles T unit unit (array T 0 x->do) oneway_monad_mode.inst).instate_self rr
 
 # short-hand for creating an empty set of handles of given type.
 #
-public handles_(T type) => handles T unit unit (array T 0 x->do)
+public handles_(T type) => handles T unit unit (array T 0 x->do) oneway_monad_mode.plain
 
 
 # short-hand for accessing handles monad for given type in current environment
@@ -222,7 +225,7 @@ handles_type(T type) is
   # install default instance of handles
   #
   install_default unit =>
-    (handles T unit unit (array T 0 x->do)).default
+    (handles T unit unit (array T 0 x->do) oneway_monad_mode.inst).default
 
 
 # initializes a new handle with the given initial value
