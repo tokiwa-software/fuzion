@@ -890,7 +890,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             var p = pos();
             var inh = typeFeatureInherits(res);
             var typeArg = new Feature(p,
-                                      visibility().typeVisibility(),
+                                      Visi.PRIV,
                                       0,
                                       selfType(),
                                       FuzionConstants.TYPE_FEATURE_THIS_TYPE,
