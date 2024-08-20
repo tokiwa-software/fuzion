@@ -418,7 +418,7 @@ FZ_MODULES = \
 			$(MOD_NOM)
 
 .PHONY: all
-all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD) $(FUZION_EBNF)
+all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD) $(DOCUMENTATION)
 
 # everything but rarely used java modules
 .PHONY: min-java

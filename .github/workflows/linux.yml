@@ -59,5 +59,8 @@ jobs:
       - name: build (no java modules)
         run: make no-java
 
+      - name: build docs
+        run: make doc
+
       - name: run tests
         run: make run_tests_parallel

@@ -64,6 +64,9 @@ jobs:
       - name: build (no java modules)
         run: make no-java
 
+      - name: build docs
+        run: make doc
+
       - name: run tests
         run: |
           export CPATH=/opt/homebrew/include
