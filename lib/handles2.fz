@@ -39,8 +39,11 @@ private:public handles2(
   # the inner value of this monad
   public v X,
 
-  last_opt option (handle2_0 T)
-  ) : oneway_monad X (handles2 T X)
+  last_opt option (handle2_0 T),
+
+  # `plain` monad or effect to be `inst`alled or `repl`aced by new value?
+  mode oneway_monad_mode.val
+  ) : oneway_monad X (handles2 T X) mode
 is
 
   # create a new instance with one additional handle
@@ -54,7 +57,7 @@ is
   post
     debug: result.has_last
   =>
-    handles2 T X v (handle2_0 w)
+    handles2 T X v (handle2_0 w) mode.next
 
 
   # has one element been created using 'new'?
@@ -103,7 +106,7 @@ is
     w T)
   =>
     h.put w
-    handles2 T X v last_opt
+    handles2 T X v last_opt mode.next
 
 
   # create a new instance with the value referred to by a given handle read and
@@ -118,24 +121,24 @@ is
     )
   =>
     h.put (f h.get)
-    handles2 T X v last_opt
+    handles2 T X v last_opt mode.next
 
 
   public redef infix >>= (f X -> handles2 T X) => bind X f
 
   public bind(B type, f X -> handles2 T B) handles2 T B =>
-    handles2 T B (f v).v last_opt
+    handles2 T B (f v).v last_opt oneway_monad_mode.plain
 
-  public return(B type, w B) => handles2 T B w last_opt
+  public return(B type, w B) => handles2 T B w last_opt oneway_monad_mode.plain
 
 # short-hand for creating and installing an empty set of handles2 of given type.
 #
 handles2(T type, rr ()->unit) =>
-  (handles2 T unit).instate (handles2 T unit unit nil) rr
+  (handles2 T unit unit nil oneway_monad_mode.inst).instate_self rr
 
 # short-hand for creating an empty set of handles2 of given type.
 #
-handles2_(T type) => handles2 T unit unit nil
+handles2_(T type) => handles2 T unit unit nil oneway_monad_mode.plain
 
 
 # short-hand for accessing handles monad for given type in current environment
@@ -176,7 +179,7 @@ handles2_type(T type) is
   # install default instance of handles2
   #
   install_default unit =>
-    (handles2 T unit unit nil).default
+    (handles2 T unit unit nil oneway_monad_mode.inst).default
 
 
 # create a new handle2 using the handles2 instance from the current environment
