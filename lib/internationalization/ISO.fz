@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-# ISO_handler -- provides data for ISO 8601 format
+# ISO -- provides data for ISO 8601 format
 #
 public ISO : int_eff is
 

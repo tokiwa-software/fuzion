@@ -17,20 +17,20 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature internationalization.japanese_handler
+#  Source code of Fuzion standard library feature internationalization.korean_handler
 #
 # -----------------------------------------------------------------------
 
-# japanese_handler -- provides data for japanese format
+# korean -- provides data for korean format
 #
-public japanese : int_eff is
+public korean : int_eff is
 
-    # format date using the most common Japanese formatting rules, see
-    # https://en.wikipedia.org/wiki/Date_and_time_notation_in_Japan
+    # format date using the most common Korean formatting rules, see
+    # https://en.wikipedia.org/wiki/Date_and_time_notation_in_South_Korea
     #
-    # ex.`date 2024 4 12` results in `2024年 12月 4日`.
+    # ex.`date 2024 4 12` results in `2024년 12월 4일`.
     #
     redef date(d i32,m i32,y i32)
     =>
-        "{y}年 {m}月 {d}日"
+        "{y}년 {m}월 {d}일"
 
