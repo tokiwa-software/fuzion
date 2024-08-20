@@ -34,7 +34,7 @@ main =>
   #
   Sequence.prefix ! String =>
     lm : mutate is
-    lm.go ()->
+    lm.instate_self ()->
       match process.spawn (map x->x.as_string).as_array
         e error => panic "failed executing {Sequence.this}, error is $e"
         p process.Process =>
@@ -48,7 +48,7 @@ main =>
   #
   String.infix | (seq Sequence String) String =>
     lm : mutate is
-    lm.go ()->
+    lm.instate_self ()->
       match process.spawn (seq.map x->x.as_string).as_array
         e error => panic "failed executing $seq, error is $e"
         p process.Process =>
