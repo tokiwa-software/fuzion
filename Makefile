@@ -1362,10 +1362,82 @@ lint/pmd: $(BUILD_DIR)/pmd
 	$(BUILD_DIR)/pmd/pmd-bin-7.3.0/bin/pmd check -d src -R rulesets/java/quickstart.xml -f text
 
 
-.PHONY: coverage
-coverage: $(FUZION_BASE)
-	$(BUILD_DIR)/bin/fz -coverage tests/hello/HelloWorld.fz
-
+.PHONY: coverage/lib
+coverage/lib: $(FUZION_BASE)
+	$(BUILD_DIR)/bin/fz -coverage \
+		tests/asParsedType/test_asParsedType.fz \
+		tests/assignments/assignments.fz \
+		tests/atomic/test_atomic.fz \
+		tests/base16/base16_test.fz \
+		tests/base32/base32_test.fz \
+		tests/base32hex/base32hex_test.fz \
+		tests/base64/base64_test.fz \
+		tests/base64url/base64url_test.fz \
+		tests/basicIntegers/basicIntegers.fz \
+		tests/buffered_writer/ex_buffered_writer.fz \
+		tests/calls_on_ref_and_val_target/calls.fz \
+		tests/catch_postcondition/catch_postcondition.fz \
+		tests/catch_preconditions/catch_precondition.fz \
+		tests/choice_inheritance/choice_inheritance.fz \
+		tests/choice/choicetest.fz \
+		tests/compile_time_constants/compile_time_constants.fz \
+		tests/compile_time_type_casts/compile_time_type_casts.fz \
+		tests/concur_simple/concur_simple.fz \
+		tests/covariance/test_covariance.fz \
+		tests/effect_installed/test_effect.fz \
+		tests/envir_vars/envir_vars.fz \
+		tests/equals/test_equals.fz \
+		tests/fallible/test_fallible.fz \
+		tests/fileio/fileiotests.fz \
+		tests/floating_point_numbers/floating_point_numbers.fz \
+		tests/functions/functions.fz \
+		tests/hash_map/test_hash_map.fz \
+		tests/hello/HelloWorld.fz \
+		tests/inheritance_for_value_types/inheritance_for_value_types.fz \
+		tests/int/int_test.fz \
+		tests/interval/test_interval.fz \
+		tests/lib_concur_sync/lib_concur_sync.fz \
+		tests/lib_container_ps_map/lib_container_ps_map.fz \
+		tests/lib_container_set/lib_container_set.fz \
+		tests/lib_container_sorted_array/lib_container_sorted_array.fz \
+		tests/lib_fileio_mmap/mmap_test.fz \
+		tests/lib_io_dir/lib_io_dir.fz \
+		tests/listFold/listFoldTest.fz \
+		tests/lists/testLists.fz \
+		tests/mix_inheritance_and_outer/mix_inheritance_and_outer.fz \
+		tests/mutable_linked_list/test_mutable_linked_list.fz \
+		tests/mutate_circular_buffer/ex_circular_buffer.fz \
+		tests/onesCount/testOnesCount.fz \
+		tests/pair/test_pair.fz \
+		tests/partial_application/partial_application.fz \
+		tests/process_buffered_writer/test_process.fz \
+		tests/process/test_process.fz \
+		tests/qualified_declaration/qualified_declaration.fz \
+		tests/redef_args/redef_args.fz \
+		tests/redef_with_type_parameters/redef_test.fz \
+		tests/rosettacode_factors_of_an_integer/factors.fz \
+		tests/rosettacode_primes/primes.fz \
+		tests/ryu/ryu_test.fz \
+		tests/semicolon_parsing/semicolon_parsing.fz \
+		tests/sockets/sockets_test.fz \
+		tests/stack/stack.fz \
+		tests/stdin/stdintest.fz \
+		tests/string_pad/string_pad.fz \
+		tests/strings_multiline/multiline_strings_test.fz \
+		tests/strings/stringstest.fz \
+		tests/tailrecursion/test_tailrecursion.fz \
+		tests/ternary/test_ternary.fz \
+		tests/this_type/test_this_type.fz \
+		tests/transducers/transducertest.fz \
+		tests/tuple/tupletest.fz \
+		tests/type_feature/test_type_feature.fz \
+		tests/typeinference_for_formal_args/typeinference_for_formal_args.fz \
+		tests/unary/ex_unary.fz \
+		tests/unicode_15/unicode_15.fz \
+		tests/unicode/unicodetest.fz \
+		tests/universe_dot_call/universe_dot_call.fz \
+		tests/valWithLongLife/valWithLongLife.fz \
+		tests/wrap_around_semantics/wrap_around_semantics_test.fz
 
 
 ########

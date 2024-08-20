@@ -832,7 +832,7 @@ public class Fuzion extends Tool
       @Override
       public void action (AbstractCall c) {
         var cf = c.calledFeature();
-        if (cf.visibility().eraseTypeVisibility() == Visi.PUB)
+        if (includeInCoverage(cf))
           {
             s.add(cf);
           }
@@ -851,13 +851,23 @@ public class Fuzion extends Tool
       {
         if (feat.visibility().typeVisibility() == Visi.PUB)
           {
-            if (feat.visibility().eraseTypeVisibility() == Visi.PUB)
+            if (includeInCoverage(feat))
               {
                 s.add(feat);
               }
             addChildsToPubFeatures(mod, s, feat);
           }
       }
+  }
+
+
+  private boolean includeInCoverage(AbstractFeature feat)
+  {
+    return feat.visibility().eraseTypeVisibility() == Visi.PUB
+      && feat.isRoutine()
+      && !feat.isTypeFeature()
+      // NYI: ugly should be flag or similar
+      && !feat.featureName().baseName().startsWith(FuzionConstants.INTERNAL_NAME_PREFIX);
   }
 
 
