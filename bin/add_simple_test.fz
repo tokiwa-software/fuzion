@@ -28,7 +28,7 @@ add_simple_test is
   say "Name of the new test: "
 
   lm : mutate is
-  lm.go ()->
+  lm.instate_self ()->
 
     _ := (io.stdin lm).with ()->
       match io.buffered.read_line lm
