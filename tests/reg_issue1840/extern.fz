@@ -1,0 +1,5 @@
+module extern is
+  private feat String =>
+    "Hello World"
+  module call_feat String =>
+    feat
