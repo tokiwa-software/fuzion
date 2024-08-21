@@ -53,7 +53,7 @@ Blocking_Queue(T type, mtx concur.sync.mutex, cnd concur.sync.condition) ref is
   # returns nil, if queue is closed and empty
   # otherwise returns the dequeued element
   #
-  dequeue_blocking() option T =>
+  dequeue option T =>
     o := data.read
     if o.is_empty
       if is_closed.read
@@ -65,14 +65,14 @@ Blocking_Queue(T type, mtx concur.sync.mutex, cnd concur.sync.condition) ref is
             # we should use TLA+ or similar to prove correctness
             # https://www.hillelwayne.com/post/list-of-tla-examples/
             check cnd.wait
-        dequeue_blocking
+        dequeue
     else
       res := o[0]
       n := array o.count-1 i->o[i+1]
       if data.compare_and_set o n
         res
       else
-        dequeue_blocking
+        dequeue
 
 
 
@@ -88,7 +88,7 @@ is
   threads := (1..size)
     .map _->
       concur.thread.spawn ()->
-        _ := for x := bq.dequeue_blocking
+        _ := for x := bq.dequeue
              while !x.is_empty
                x.val.call
     .as_array
