@@ -713,7 +713,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var call = jvm._fuir.lookupCall(oc);
           var call_t = jvm._types.javaType(call);
           var arg = args.get(0);
-          if (_types.resultType(ecl) == ClassFileConstants.PrimitiveType.type_void);
+          if (jvm._types.resultType(ecl) == ClassFileConstants.PrimitiveType.type_void);
             {
               arg = arg.drop().andThen(Expr.ACONST_NULL);
             }
@@ -744,7 +744,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         {
           var ecl = jvm._fuir.effectTypeFromInstrinsic(cc);
           var arg = args.get(0);
-          if (_types.resultType(ecl) == ClassFileConstants.PrimitiveType.type_void);
+          if (jvm._types.resultType(ecl) == ClassFileConstants.PrimitiveType.type_void);
             {
               arg = arg.drop().andThen(Expr.ACONST_NULL);
             }
@@ -764,7 +764,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         {
           var ecl = jvm._fuir.effectTypeFromInstrinsic(cc);
           var arg = args.get(0);
-          if (_types.resultType(ecl) == ClassFileConstants.PrimitiveType.type_void);
+          if (jvm._types.resultType(ecl) == ClassFileConstants.PrimitiveType.type_void);
             {
               arg = arg.drop().andThen(Expr.ACONST_NULL);
             }
