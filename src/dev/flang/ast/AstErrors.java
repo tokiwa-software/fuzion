@@ -1060,7 +1060,7 @@ public class AstErrors extends ANY
     error(f.pos(),
           "Feature declared using modifier " + skw("redef") + " does not redefine another feature",
           "Redefining feature: " + s(f) + "\n" +
-          "To solve this, check spelling and argument count against the feature you want to redefine or " +
+          "To solve this, check spelling and argument count against the feature you want to redefine and make sure the feature to be redefined is visible where it is redefined or " +
           "remove " + skw("redef") + " modifier in the declaration of " + s(f) + ".");
   }
 
