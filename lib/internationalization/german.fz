@@ -17,19 +17,19 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature internationalization.german_handler
+#  Source code of Fuzion standard library feature internationalization.german
 #
 # -----------------------------------------------------------------------
 
 # german-- provides data for german format
 #
-public german: int_eff is
+public german: provide is
 
     # format date using the most common German formatting rules, see
     # https://en.wikipedia.org/wiki/Date_and_time_notation_in_Europe#Germany
     #
     # ex.`date 2024 4 12` results in `12.4.2024`.
     #
-    redef date(d i32,m i32,y i32)
+    redef date(d i32, m i32, y i32)
     =>
         "{d}.{m}.{y}"
