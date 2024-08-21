@@ -30,5 +30,5 @@ lib_container_sorted_array is
   say (sa.find_key 7)
   say (sa.find_key 8)
 
-  say (sa.find x->x-7)
-  say (sa.find x->x-8)
+  say (sa.find_by_comparator (x->x-7))
+  say (sa.find_by_comparator (x->x-8))

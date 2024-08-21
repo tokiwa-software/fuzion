@@ -451,11 +451,11 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # replace all occurrences of old by new
   #
-  public replace (old, new String) => String.from_bytes (utf8.replace_all old.utf8 new.utf8)
+  public replace (old, new String) => String.from_bytes (utf8.replace old.utf8 new.utf8)
 
 
   # replace the first n occurrences of old by new
-  public replace(old, new String, n u64) => String.from_bytes (utf8.replace_n old.utf8 new.utf8 n)
+  public replace(old, new String, n u64) => String.from_bytes (utf8.replace old.utf8 new.utf8 n)
 
 
   # does this string contain the given 'substring'
@@ -548,7 +548,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
                nil => true
                n u32 => n > 0
     =>
-      utf8.split_ s.utf8 limit split_after
+      utf8.split0 s.utf8 limit split_after
           .map_to_list x->(String.from_bytes x)
 
 

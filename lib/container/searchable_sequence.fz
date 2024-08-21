@@ -42,28 +42,6 @@ is
   public redef finite => from.finite
 
 
-  # does this sequence start with l?
-  #
-  # NYI: CLEANUP: #3524 This should be defined in `Sequence`, but that would clash with `String.starts_with` in `Const_String`.
-  #
-  public starts_with(l Sequence A) bool
-  =>
-    l.is_prefix_of from
-
-
-  # get the index of l within this list or nil if it does not exist
-  #
-  # NYI: CLEANUP: #3524 This should be defined in `Sequence`, but that would clash with `String.find` in `Const_String`.
-  #
-  public find(l Sequence A) option i32 =>
-    if starts_with l
-      0
-    else
-      match from.as_list
-        nil     => nil
-        c1 Cons => ((searchable_sequence c1.tail).find l) >>= n -> n + 1
-
-
   # equality check implementation for inherited property.equatable
   #
   public fixed redef type.equality(a, b container.searchable_sequence A) bool =>
