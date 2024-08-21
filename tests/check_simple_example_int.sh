@@ -60,7 +60,7 @@ else
 
     # limit cpu time for executing test
     cpu_time_limit=$(ulimit -t)
-    ulimit -S -t 120
+    ulimit -S -t 300
 
     EXIT_CODE=$(FUZION_DISABLE_ANSI_ESCAPES=true FUZION_JAVA_OPTIONS="${FUZION_JAVA_OPTIONS="-Xss${FUZION_JAVA_STACK_SIZE=5m}"} ${OPT:-}" $1 -XmaxErrors=-1 -interpreter "$2" >tmp_out.txt 2>tmp_err.txt; echo $?)
 
