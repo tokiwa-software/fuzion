@@ -63,7 +63,7 @@ else
     # limit cpu time and stack size for executing test
     cpu_time_limit=$(ulimit -t)
     stack_limit=$(ulimit -s)
-    ulimit -S -t 120 -s 64
+    ulimit -S -t 120 -s 1024
 
     EXIT_CODE=$( ( (FUZION_DISABLE_ANSI_ESCAPES=true FUZION_JAVA_OPTIONS="${FUZION_JAVA_OPTIONS="-Xss${FUZION_JAVA_STACK_SIZE=5m}"} ${OPT:-}" $1 -XmaxErrors=-1 -c "$2" -o=testbin                && ./testbin) 2>tmp_err.txt | head -n 10000) > tmp_out.txt; echo $?)
 
