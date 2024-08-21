@@ -57,7 +57,15 @@ else
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=1( .*)$" && export OPT=-Dfuzion.debugLevel=1
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=0( .*)$" && export OPT=-Dfuzion.debugLevel=0
 
+    # limit cpu time and stack size for executing test
+    cpu_time_limit=$(ulimit -t)
+    stack_limit=$(ulimit -s)
+    ulimit -S -t 120 -s 64
+
     EXIT_CODE=$(FUZION_DISABLE_ANSI_ESCAPES=true FUZION_JAVA_OPTIONS="${FUZION_JAVA_OPTIONS="-Xss${FUZION_JAVA_STACK_SIZE=5m}"} ${OPT:-}" $1 -XmaxErrors=-1 -jvm "$2" >tmp_out.txt 2>tmp_err.txt; echo $?)
+
+    # restore original cpu time and stack size limits
+    ulimit -S -t $cpu_time_limit -s $stack_limit
 
     if [ "$EXIT_CODE" -ne 0 ] && [ "$EXIT_CODE" -ne 1 ]; then
         echo "unexpected exit code"
