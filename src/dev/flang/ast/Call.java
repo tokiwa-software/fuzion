@@ -483,7 +483,7 @@ public class Call extends AbstractCall
     if (PRECONDITIONS) require
       (!frmlT.isOpenGeneric());
 
-    AbstractType result = adjustThisTypeForTarget(frmlT, context);
+    AbstractType result = adjustThisTypeForTarget(frmlT, context, false);
     result = targetTypeOrConstraint(res, context)
       .actualType(result, context)
       .applyTypePars(_calledFeature, _generics);
@@ -1455,7 +1455,7 @@ public class Call extends AbstractCall
     var t1 = resolveSelect(frmlT, tt);
     var t2 = t1.applyTypePars(tt);
     var t3 = tt.isGenericArgument() ? t2 : t2.resolve(res, tt.feature().context());
-    var t4 = adjustThisTypeForTarget(t3, context);
+    var t4 = adjustThisTypeForTarget(t3, context, true);
     var t5 = resolveForCalledFeature(res, t4, tt, context);
     // call may be resolved repeatedly. In case of recursive use of FieldActual
     // (see #2182), we may see `void` as the result type of calls to argument
@@ -1522,10 +1522,15 @@ public class Call extends AbstractCall
    *
    * @param context the source code context where this Call is used
    *
+   * @param usedAsResultType true if this is used to determine a call's result
+   * type.  If this is the case, the result must not depend on an outer
+   * reference type. See `tests/call_with_ambiguous_result_type_negative` for an
+   * example.
+   *
    * @return a type derived from t where `this.type` is replaced by actual types
    * from the call's target where this is possible.
    */
-  private AbstractType adjustThisTypeForTarget(AbstractType t, Context context)
+  private AbstractType adjustThisTypeForTarget(AbstractType t, Context context, boolean usedAsResultType)
   {
     /**
      * For a call `T.f` on a type parameter whose result type contains
@@ -1559,7 +1564,8 @@ public class Call extends AbstractCall
                                           _target.typeForCallTarget());
         var t0 = t;
         t = t.replace_this_type_by_actual_outer(inner,
-                                                (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, t0, from, to),
+                                                usedAsResultType ? (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, t0, from, to)
+                                                                 : null,
                                                 context);
       }
     return t;
