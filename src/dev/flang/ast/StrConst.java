@@ -114,6 +114,18 @@ public class StrConst extends Constant
 
 
   /**
+   * type returns the type of this expression if used as a target of a
+   * call. Since this might eventually not be used as a target of a call, but as
+   * an actual argument, this type will not be fixed yet.
+   *
+   * @return this Expr's type or t_ERROR in case it is not known yet.
+   */
+  AbstractType typeForCallTarget()
+  {
+    return typeOfConstant();
+  }
+
+  /**
    * Serialized form of the data of this constant.
    */
   public byte[] data()
