@@ -1,0 +1,13 @@
+
+--CURDIR--/reg_issue3613.fz:26:13: error 1: Incompatible types when passing argument in a call
+  _ := "" ∈ s
+------------^
+Actual type for argument #1 's' does not match expected type.
+In call to          : 'property.equatable.infix ∈'
+expected formal type: 'container.Set Const_String'
+actual type found   : 'reg_issue3613.this.s'
+assignable to       : 'reg_issue3613.this.s'
+for value assigned  : 's'
+To solve this, you could change the type of the target 's' to 'reg_issue3613.this.s' or convert the type of the assigned value to 'container.Set Const_String'.
+
+one error.
