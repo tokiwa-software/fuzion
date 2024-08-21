@@ -713,8 +713,8 @@ public Sequence(public T type) ref is
   =>
     match as_list
       nil     => 0
-      c1 Cons => (if (starts_with l) 1 + (drop l.count).count_matches l
-                  else                                  c1.tail       .count_matches l)
+      c1 Cons => if starts_with l then 1 + (drop l.count).count_matches l
+                                  else            c1.tail.count_matches l
 
 
   # split sequence at s, if there is no limit, otherwise if limit is an integer n,
