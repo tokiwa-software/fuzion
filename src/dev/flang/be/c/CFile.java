@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -68,9 +69,9 @@ public class CFile extends ANY
 
 
   /**
-   * The temporary file to write the generated C-code to.
+   * The relative path of the file the generated C-code is written to.
    */
-  private File tempFile;
+  private Path _path;
 
 
   /*---------------------------  constructors  ---------------------------*/
@@ -80,14 +81,27 @@ public class CFile extends ANY
    * constructor to instantiate a CFile
    *
    * @param name the name of the binary
+   *
+   * @param keepGeneratedCode true to create a file `name + ".c"` in the current
+   * directory and keep it, false to create a temp file that will be deleted on
+   * exit.
    */
-  public CFile(String name)
+  public CFile(String name, boolean keepGeneratedCode)
   {
     try
       {
-        tempFile = File.createTempFile("fuzion_"+ name + "_", ".c");
-        tempFile.deleteOnExit();
-        _cout = new PrintWriter(Files.newBufferedWriter(tempFile.toPath(), StandardCharsets.UTF_8));
+        if (keepGeneratedCode)
+          {
+            _path = Path.of(System.getProperty("user.dir"), name + ".c");
+          }
+        else
+          {
+            var tempFile = File.createTempFile("fuzion_"+ name + "_", ".c");
+            tempFile.deleteOnExit();
+            _path = tempFile.toPath();
+          }
+
+        _cout = new PrintWriter(Files.newBufferedWriter(_path, StandardCharsets.UTF_8));
       }
     catch (IOException io)
       {
@@ -228,7 +242,7 @@ public class CFile extends ANY
    */
   public String fileName()
   {
-    return tempFile.getAbsolutePath();
+    return _path.toAbsolutePath().toString();
   }
 
 }

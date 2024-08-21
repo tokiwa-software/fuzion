@@ -683,7 +683,7 @@ public class C extends ANY
   {
     var cl = _fuir.mainClazzId();
     var name = _options._binaryName != null ? _options._binaryName : _fuir.clazzBaseName(cl);
-    var cf = new CFile(name);
+    var cf = new CFile(name, _options._keepGeneratedCode);
     _options.verbosePrintln(" + " + cf.fileName());
     try
       {
@@ -705,10 +705,6 @@ public class C extends ANY
     _options.verbosePrintln(" * " + command.toString("", " ", ""));
     try
       {
-        if (_options._keepGeneratedCode)
-          {
-            Files.copy(Path.of(cf.fileName()), Path.of(System.getProperty("user.dir"), name + ".c"), StandardCopyOption.REPLACE_EXISTING);
-          }
         var p = new ProcessBuilder().inheritIO().command(command).start();
         p.waitFor();
         if (p.exitValue() != 0)
