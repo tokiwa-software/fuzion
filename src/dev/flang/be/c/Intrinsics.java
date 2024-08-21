@@ -940,6 +940,7 @@ public class Intrinsics extends ANY
           var evj = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envJmpBuf(ecl));
           var o   = CNames.OUTER;
           var e   = A0;
+          var event_is_unit_type = c._fuir.clazzIsUnitType(ecl);
           return
             switch (in)
               {
@@ -948,7 +949,8 @@ public class Intrinsics extends ANY
                            CExpr.fprintfstderr("*** C backend support for %s missing\n",
                                                CExpr.string(c._fuir.clazzOriginalName(cl))),
                            CExpr.exit(1));
-              case "effect.type.default0"     -> CStmnt.iff(evi.not(), CStmnt.seq(c._fuir.clazzIsUnitType(ecl) ? CExpr.UNIT : ev.assign(e), evi.assign(CIdent.TRUE )));
+              case "effect.type.default0"     -> CStmnt.iff(evi.not(), CStmnt.seq(event_is_unit_type ? CExpr.UNIT : ev.assign(e),
+                                                                                  evi.assign(CIdent.TRUE )));
               case "effect.type.instate0"     ->
                 {
                   var oc = c._fuir.clazzActualGeneric(cl, 0);
@@ -959,25 +961,16 @@ public class Intrinsics extends ANY
                       var oldev  = new CIdent("old_ev");
                       var oldevi = new CIdent("old_evi");
                       var oldevj = new CIdent("old_evj");
-                      yield CStmnt.seq(CStmnt.decl(c._types.clazz(ecl), oldev , ev ),
+                      yield CStmnt.seq(event_is_unit_type ? CExpr.UNIT : CStmnt.decl(c._types.clazz(ecl), oldev , ev ),
                                        CStmnt.decl("bool"             , oldevi, evi),
                                        CStmnt.decl("jmp_buf*"         , oldevj, evj),
                                        CStmnt.decl("jmp_buf", jmpbuf),
-                                       c._fuir.clazzIsUnitType(ecl) ? CExpr.UNIT : ev.assign(e),
+                                       event_is_unit_type ? CExpr.UNIT : ev.assign(e),
                                        evi.assign(CIdent.TRUE ),
                                        evj.assign(jmpbuf.adrOf()),
                                        CStmnt.iff(CExpr.call("setjmp",new List<>(jmpbuf)).eq(CExpr.int32const(0)),
                                                   CExpr.call(c._names.function(call), new List<>(A1))),
-                                       /* NYI: this is a bit radical: we copy back the value from env to the outer instance, i.e.,
-                                        * the outer instance is no longer immutable and we might run into difficulties if
-                                        * the outer instance is used otherwise.
-                                        *
-                                        * It might be better to store the adr of a a value type effect in ev. Then we do not
-                                        * have to copy anything back, but we would have to copy the value in case of effect.replace
-                                        * and effect.default.
-                                        */
-                                       e.assign(ev),
-                                       ev .assign(oldev ),
+                                       event_is_unit_type ? CExpr.UNIT : ev .assign(oldev ),
                                        evi.assign(oldevi),
                                        evj.assign(oldevj));
                     }
