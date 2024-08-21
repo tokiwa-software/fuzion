@@ -17,14 +17,15 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature internationalization.int_eff
+#  Source code of Fuzion standard library feature internationalization.provide
 #
 # -----------------------------------------------------------------------
 
-# int_eff -- effect that provides operations that are specific for a geographical, political,
+# provide -- effect that provides operations that are specific for a geographical, political,
 # or cultural region. Such operations include formatting of dates,  numbers, currencies,
 # etc.
 #
-public int_eff ref : effect is
-    public date (d i32,m i32,y i32) String => abstract
+public provide ref : effect is
+
+    public date (d i32, m i32, y i32) String => abstract
 
