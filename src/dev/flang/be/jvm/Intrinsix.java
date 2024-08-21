@@ -712,10 +712,15 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var oc  = jvm._fuir.clazzActualGeneric(cc, 0);
           var call = jvm._fuir.lookupCall(oc);
           var call_t = jvm._types.javaType(call);
+          var arg = args.get(0);
+          if (_types.resultType(ecl) == ClassFileConstants.PrimitiveType.type_void);
+            {
+              arg = arg.drop().andThen(Expr.ACONST_NULL);
+            }
           if (call_t instanceof ClassType call_ct)
             {
               var result = Expr.iconst(jvm._fuir.clazzId2num(ecl))
-                .andThen(args.get(0))
+                .andThen(arg)
                 .andThen(args.get(1))
                 .andThen(Expr.classconst(call_ct))
                 .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
@@ -739,9 +744,9 @@ public class Intrinsix extends ANY implements ClassFileConstants
         {
           var ecl = jvm._fuir.effectTypeFromInstrinsic(cc);
           var arg = args.get(0);
-          if (arg == Expr.UNIT)
+          if (_types.resultType(ecl) == ClassFileConstants.PrimitiveType.type_void);
             {
-              arg = Expr.ACONST_NULL;
+              arg = arg.drop().andThen(Expr.ACONST_NULL);
             }
           var result = Expr.iconst(jvm._fuir.clazzId2num(ecl))
             .andThen(arg)
@@ -759,9 +764,9 @@ public class Intrinsix extends ANY implements ClassFileConstants
         {
           var ecl = jvm._fuir.effectTypeFromInstrinsic(cc);
           var arg = args.get(0);
-          if (arg == Expr.UNIT)
+          if (_types.resultType(ecl) == ClassFileConstants.PrimitiveType.type_void);
             {
-              arg = Expr.ACONST_NULL;
+              arg = arg.drop().andThen(Expr.ACONST_NULL);
             }
           var result = Expr.iconst(jvm._fuir.clazzId2num(ecl))
             .andThen(arg)
