@@ -44,12 +44,12 @@ public equatable is
 
   # is this part of given set
   #
-  element_of(s container.Set equatable.this) => s.contains equatable.this
+  public element_of(s container.Set equatable.this) => s.contains equatable.this
 
 
   # is this not part of given set
   #
-  not_element_of(s container.Set equatable.this) => !(equatable.this.element_of s)
+  public not_element_of(s container.Set equatable.this) => !(equatable.this.element_of s)
 
 
   # is `this` contained in `Set` `s`?
