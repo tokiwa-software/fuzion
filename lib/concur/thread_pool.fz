@@ -1,0 +1,123 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature concur.thread_pool
+#
+# -----------------------------------------------------------------------
+
+
+# NYI: replace by better queue implementation, e.g. https://arxiv.org/pdf/2305.07229
+Blocking_Queue(T type, mtx concur.sync.mutex, cnd concur.sync.condition) ref is
+
+  # is closed for taking any new elements?
+  #
+  is_closed := concur.atomic false
+
+  data := concur.atomic (array T) []
+
+
+  # enqueue an element
+  # if queue is already closed, returns false
+  # otherwise enqueues the element and returns true
+  #
+  enqueue(el T) bool =>
+    if is_closed.read
+      false
+    else
+      mtx.synchronized ()->
+        do
+          old := data.read
+          new := old.put old.length el
+        until data.compare_and_set old new
+        check cnd.broadcast
+      true
+
+
+  # dequeue an element
+  # returns nil, if queue is closed and empty
+  # otherwise returns the dequeued element
+  #
+  dequeue option T =>
+    o := data.read
+    if o.is_empty
+      if is_closed.read
+        nil
+      else
+        mtx.synchronized unit ()->
+          if !is_closed.read
+            # NYI: BUG: possible dead lock?
+            # we should use TLA+ or similar to prove correctness
+            # https://www.hillelwayne.com/post/list-of-tla-examples/
+            check cnd.wait
+        dequeue
+    else
+      res := o[0]
+      n := array o.count-1 i->o[i+1]
+      if data.compare_and_set o n
+        res
+      else
+        dequeue
+
+
+
+# simple, fixed size thread pool
+# NYI: UNDER DEVELOPMENT: mtx, cnd should not be passed from outside
+#
+public thread_pool(mtx concur.sync.mutex, cnd concur.sync.condition, size i32)
+pre debug: size > 0
+is
+
+  bq := Blocking_Queue ()->unit mtx cnd
+
+  threads := (1..size)
+    .map _->
+      concur.thread.spawn ()->
+        _ := for x := bq.dequeue
+             while !x.is_empty
+               x.val.call
+    .as_array
+
+
+  # submit a task to the thread pool
+  #
+  # returns false if the pool is already shutting down
+  #
+  public submit(task ()->unit) bool =>
+    bq.enqueue task
+
+
+  # initiate shutdown of thread pool
+  #
+  public shutdown unit =>
+    bq.is_closed.write true
+
+
+  # initiate shutdown, then wait for all added tasks to complete
+  #
+  public await =>
+
+    shutdown
+
+    # wake up all threads
+    mtx.synchronized unit ()->
+      _ := cnd.broadcast
+
+    # wait for all threads to finish
+    threads.for_each t->
+      t.join
