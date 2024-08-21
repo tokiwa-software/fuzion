@@ -139,6 +139,3 @@ webserver_java is
                        # close streams
                        _ := input.close
                        _ := output.close
-
-                       # NYI: BUG: #3253 explicit unit` should not be necessary.
-                       unit
