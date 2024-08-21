@@ -1777,35 +1777,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Determine the index of the generic argument of this choice type that
-   * matches the given static type.
-   */
-  public int getChoiceTag(Clazz staticTypeOfValue)
-  {
-    if (PRECONDITIONS) require
-      (isChoice(),
-       !staticTypeOfValue._type.dependsOnGenerics());
-
-    int result = -1;
-    int index = 0;
-    for (Clazz g : _choiceGenerics)
-      {
-        if (g._type.isDirectlyAssignableFrom(staticTypeOfValue._type, Context.NONE))
-          {
-            if (CHECKS) check
-              (result < 0);
-            result = index;
-          }
-        index++;
-      }
-    if (CHECKS) check
-      (result >= 0);
-
-    return result;
-  }
-
-
-  /**
    * Mark this as called at given source code position.
    *
    * @param at gives the position in the source code that causes this instantiation.  p can be

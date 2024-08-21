@@ -275,7 +275,7 @@ public class JavaInterface extends FUIRContext
         var valClazz = fuir().clazzChoice(resultClazz, ok ? 0 : 1);
         var res = ok ? javaObjectToPlainInstance(o, valClazz)
                      : javaThrowableToError     (e, valClazz);
-        result = Interpreter.tag(resultClazz, valClazz, res);
+        result = Interpreter.tag(resultClazz, valClazz, res, ok ? 0 : 1);
       }
     else if (ok)
       {
