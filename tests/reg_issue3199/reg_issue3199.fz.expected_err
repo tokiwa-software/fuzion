@@ -1,0 +1,20 @@
+
+--CURDIR--/reg_issue3199.fz:29:3: error 1: Used abstract feature 'reg_issue3199.X.f' is not implemented by 'reg_issue3199.y'
+  y : X is
+--^
+Feature 'reg_issue3199.y' instantiated at <source position not available>:
+
+inherits or declares abstract feature 'reg_issue3199.X.f' declared at --CURDIR--/reg_issue3199.fz:27:5:
+    f i32 => abstract
+----^
+which is called at --CURDIR--/reg_issue3199.fz:32:9:
+  say x.f
+--------^
+without providing an implementation
+
+Callchain that lead to this point:
+
+call 'reg_issue3199'
+program entry point
+
+one error.
