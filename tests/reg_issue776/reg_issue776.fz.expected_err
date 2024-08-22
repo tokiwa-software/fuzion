@@ -4,7 +4,7 @@
 ----^
 The result type of this call depends on the target type.  Since the target type is a 'ref' type that may represent a number of different actual dynamic types, the result type is not clearly defined.
 Called feature: 'String.mysubstring.anonymous'
-Raw result type: '(value String.this).mysubstring.anonymous'
+Original result type: '(value String.this).mysubstring.anonymous'
 Type depending on target: 'value String.this'
 Target type: '(value String.this).mysubstring.this.anonymous'
 To solve this, you could try to use a value type as the target type of the call, e,g., '(value String.this).mysubstring', or change the result type of 'String.mysubstring.anonymous' to no longer depend on 'value String.this'.
