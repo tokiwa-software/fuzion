@@ -118,6 +118,51 @@ is
     bq.enqueue task
 
 
+  public submit(T type, task ()->T) option (concur.Future T) =>
+
+
+    fut : concur.Future T is
+
+      uid := unique_id
+
+      compute_result := concur.atomic (option T) nil
+
+      fut_cnd := concur.atomic (option fuzion.sys.Pointer) nil
+
+      compute =>
+        compute_result.write task.call
+        mtx.synchronized ()->
+          _ := fut_cnd.read.map_to_option c->
+            check concur.sync.cnd_broadcast c
+            concur.sync.cnd_destroy c
+
+      redef is_done => compute_result.read.exists
+
+      redef get T =>
+        while !is_done
+          mtx.synchronized ()->
+            match concur.sync.cnd_init mtx.mtx
+              e error => panic e.msg
+              c fuzion.sys.Pointer =>
+                  a option fuzion.sys.Pointer := c
+                  # NYI: BUG: in c backend
+                  check a.exists
+                  fut_cnd.write a
+                  # NYI: BUG: in c backend
+                  check fut_cnd.read.exists
+                  if !is_done
+                    check concur.sync.cnd_wait c mtx.mtx
+
+        compute_result.read.val
+
+    res := fut
+
+    if bq.enqueue ()->res.compute
+      res
+    else
+      nil
+
+
   # initiate shutdown of thread pool
   #
   shutdown unit =>
