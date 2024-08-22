@@ -437,7 +437,7 @@ public class LibraryFeature extends AbstractFeature
    */
   public SourcePosition resultTypePos()
   {
-    return null; // NYI: UNDER DEVELOPMENT: resultTypePos missign for LibraryFeature
+    return null; // NYI: UNDER DEVELOPMENT: resultTypePos currently missing in module file
   }
 
 
