@@ -808,6 +808,16 @@ public class Feature extends AbstractFeature
 
 
   /**
+   * The sourcecode position of this feature declaration's result type, null if
+   * not available.
+   */
+  public SourcePosition resultTypePos()
+  {
+    return _returnType.posOrNull();
+  }
+
+
+  /**
    * Check for possible errors related to the feature name. Currently, this only
    * checks that no feature uses FuzionConstants.RESULT_NAME as its base name
    * since this is reserved for the implicit result field.

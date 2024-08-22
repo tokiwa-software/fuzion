@@ -287,6 +287,13 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
+   * The sourcecode position of this feature declaration's result type, null if
+   * not available.
+   */
+  public abstract SourcePosition resultTypePos();
+
+
+  /**
    * The result field declared automatically in case hasResultField().
    *
    * @return the result or null if this does not have a result field.
