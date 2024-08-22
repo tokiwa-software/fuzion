@@ -27,5 +27,28 @@
 #
 public provide ref : effect is
 
+    # date -- operation of the internationalization.provide effect and formats a date specific to the installed location
     public date (d i32, m i32, y i32) String => abstract
+    public current =>
+        internationalization.provide.install_default
+        internationalization.provide.env
+
+    public type.install_default =>
+
+        if !internationalization.provide.is_instated
+            l := envir.vars.get "LANG" ""
+
+            p internationalization.provide :=
+                if l.starts_with "de"
+                    internationalization.german
+                else if l.starts_with "jp"
+                    internationalization.japanese
+                else if l.starts_with "en"
+                    internationalization.american
+                else if l.starts_with "kr"
+                    internationalization.korean
+                else
+                    internationalization.ISO
+
+            internationalization.provide.type.default p
 
