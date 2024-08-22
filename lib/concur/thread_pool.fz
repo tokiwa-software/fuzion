@@ -75,11 +75,27 @@ Blocking_Queue(T type, mtx concur.sync.mutex, cnd concur.sync.condition) ref is
         dequeue
 
 
+# simple, fixed size thread pool
+#
+# use `concur.thread_pool.env.submit` to
+# submit a task to the thread_pool.
+#
+public thread_pool(R type, size i32, code ()->R) outcome R =>
+  (concur.sync.mutex.new ()->
+    mtx := concur.sync.mutex.env
+    mtx.condition ()->
+      cnd := concur.sync.condition.env
+      (thread_pool mtx cnd size unit).instate_self ()->
+        res := code.call
+        thread_pool.env.await
+        res)
+    .bind R x->x
+
+
 
 # simple, fixed size thread pool
-# NYI: UNDER DEVELOPMENT: mtx, cnd should not be passed from outside
 #
-public thread_pool(mtx concur.sync.mutex, cnd concur.sync.condition, size i32)
+private:public thread_pool(mtx concur.sync.mutex, cnd concur.sync.condition, size i32, _ unit) : effect
 pre debug: size > 0
 is
 
@@ -104,13 +120,13 @@ is
 
   # initiate shutdown of thread pool
   #
-  public shutdown unit =>
+  shutdown unit =>
     bq.is_closed.write true
 
 
   # initiate shutdown, then wait for all added tasks to complete
   #
-  public await =>
+  await =>
 
     shutdown
 

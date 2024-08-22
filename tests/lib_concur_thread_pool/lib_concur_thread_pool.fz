@@ -30,18 +30,15 @@ lib_concur_thread_pool =>
   test_1 =>
     sum := concur.atomic 0
 
-    concur.sync.mutex.new ()->
-      concur.sync.mutex.env.condition ()->
-        tp := concur.thread_pool concur.sync.mutex.env concur.sync.condition.env 3
+    _ := concur.thread_pool 3 ()->
 
-        for i in 1..49 do
-          check tp.submit ()->
-            do
-              c := sum.read
-            until sum.compare_and_set c c+i
+      for i in 1..49 do
+        check concur.thread_pool.env.submit ()->
+          do
+            c := sum.read
+          until sum.compare_and_set c c+i
 
-        tp.await
 
-        say sum.read
+    say sum.read
 
   test_1
