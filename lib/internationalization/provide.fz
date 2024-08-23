@@ -28,8 +28,14 @@
 public provide ref : effect is
 
     # date -- operation of the internationalization.provide effect and formats a date specific to the installed location
+    #
     public date(d i32, m i32, y i32) String => abstract
+
+    # currency -- operation of the internationalization.provide effect and formats the currency specific to the installed location
+    #
     public currency(c i32) String => abstract
+
+    #current -- opperation of the internationalization.provide effect to be able to install the default effect
     public current =>
         internationalization.provide.install_default
         internationalization.provide.env
