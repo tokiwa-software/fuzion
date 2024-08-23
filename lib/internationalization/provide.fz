@@ -36,7 +36,7 @@ public provide ref : effect is
     #
     public currency(c i32) String => abstract
 
-    #current -- opperation of the internationalization.provide effect to be able to install the default effect
+    # current -- operation of the internationalization.provide effect to be able to install the default effect
     public current =>
         internationalization.provide.install_default
         internationalization.provide.env
