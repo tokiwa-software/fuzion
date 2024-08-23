@@ -22,6 +22,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = i18n_default_test
-export LANG=de_DE.UTF-8
 include ../simple.mk
 
