@@ -33,5 +33,5 @@ i18n_default_test is
             say "{internationalization.provide.current.date 30 5 2024}"
             say "{internationalization.provide.current.currency 300000}"
         
-    main
+        main
 
