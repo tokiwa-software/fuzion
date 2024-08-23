@@ -31,7 +31,8 @@ public provide ref : effect is
     #
     public date(d i32, m i32, y i32) String => abstract
 
-    # currency -- operation of the internationalization.provide effect and formats the currency specific to the installed location
+    # currency -- operation of the internationalization.provide effect and 
+    # formats the currency specific to the installed location
     #
     public currency(c i32) String => abstract
 
