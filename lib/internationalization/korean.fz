@@ -34,7 +34,7 @@ public korean : provide is
     =>
         "{y}년 {m}월 {d}일"
 
-    # ex.`currency 300000` results in `300000₩`.
+    # example: `currency 300000` results in `300000₩`.
     #
     redef currency(c i32)
     =>
