@@ -1,0 +1,8 @@
+
+--CURDIR--/reg_issue1932.fz:25:8: error 1: Constraint for type parameter must not be a choice type
+  test(B type : option i32, a B) =>
+-------^
+Affected type parameter: 'reg_issue1932.test.B'
+constraint: 'option i32'
+
+one error.
