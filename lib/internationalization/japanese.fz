@@ -34,4 +34,8 @@ public japanese : provide is
     =>
         "{y}年 {m}月 {d}日"
 
+    redef currency(c i32)
+    =>
+        "{c}¥"
+
 

@@ -34,3 +34,8 @@ public korean : provide is
     =>
         "{y}년 {m}월 {d}일"
 
+    redef currency(c i32)
+    =>
+        "{c}₩"
+
+

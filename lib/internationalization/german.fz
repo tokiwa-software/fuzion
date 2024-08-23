@@ -33,3 +33,7 @@ public german: provide is
     redef date(d i32, m i32, y i32)
     =>
         "{d}.{m}.{y}"
+
+    redef currency (c i32)
+    =>
+        "{c}€"
