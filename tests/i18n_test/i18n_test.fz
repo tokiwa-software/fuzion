@@ -21,11 +21,11 @@
 #
 # -----------------------------------------------------------------------
 
-i18n_test2 is
+i18n_test is
 
     #formates given date after Japanese-format
     main ! internationalization.provide =>
-        say "{internationalization.provide.env.date (30) (5) (2024)}"
+        say "{internationalization.provide.env.date (30) (5) (2024)}"Z
 
     internationalization.provide.instate internationalization.japanese ()->{main}
 

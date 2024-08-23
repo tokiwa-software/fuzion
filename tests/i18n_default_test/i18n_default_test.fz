@@ -27,6 +27,5 @@ i18n_default_test is
     main ! internationalization.provide =>
         say "{internationalization.provide.current.date (30) (5) (2024)}"
 
-
     main
 
