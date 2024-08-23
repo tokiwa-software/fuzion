@@ -31,7 +31,7 @@ i18n_default_test is
     # formats given date and currency using default-setting, in this case German-format
         main ! internationalization.provide =>
             say "{internationalization.provide.current.date 30 5 2024}"
-        say "{internationalization.provide.current.currency 300000}"
+            say "{internationalization.provide.current.currency 300000}"
         
     main
 
