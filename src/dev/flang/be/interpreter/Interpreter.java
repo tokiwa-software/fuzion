@@ -186,9 +186,11 @@ public class Interpreter extends FUIRContext
    *
    * @param val the value
    *
+   * @param tagNum the number to be used for tagging the value
+   *
    * @return a new value of type choiceClazz containing val.
    */
-  static Value tag(int choiceClazz, int valueClazz, Value val)
+  static Value tag(int choiceClazz, int valueClazz, Value val, int tagNum)
   {
     if (PRECONDITIONS) require
       (fuir().clazzIsChoice(choiceClazz));
@@ -199,7 +201,8 @@ public class Interpreter extends FUIRContext
                    choiceClazz,
                    slot,
                    valueClazz,
-                   val);
+                   val,
+                   tagNum);
     return result;
   }
 
@@ -381,21 +384,21 @@ public class Interpreter extends FUIRContext
                                      int choiceClazz,
                                      LValue choice,
                                      int staticTypeOfValue,
-                                     Value v)
+                                     Value v,
+                                     int tagNum)
   {
     if (PRECONDITIONS) require
       (fuir().clazzIsChoice(choiceClazz),
        choiceClazz == thiz,
        choiceClazz != staticTypeOfValue);
 
-    int tag = fuir().clazzChoiceTag(choiceClazz, staticTypeOfValue);
-    int  vclazz  = fuir().clazzChoice(choiceClazz, tag);
-    LValue valSlot = choice.at(vclazz, Layout.get(choiceClazz).choiceValOffset(tag));
+    int  vclazz  = fuir().clazzChoice(choiceClazz, tagNum);
+    LValue valSlot = choice.at(vclazz, Layout.get(choiceClazz).choiceValOffset(tagNum));
     if (fuir().clazzIsChoiceOfOnlyRefs(choiceClazz))
       { // store reference only
         if (!fuir().clazzIsRef(staticTypeOfValue))
           { // the value is a stateless value type, so we store the tag as a reference.
-            v = ChoiceIdAsRef.get(choiceClazz, tag);
+            v = ChoiceIdAsRef.get(choiceClazz, tagNum);
             vclazz = fuir().clazzAny();
             staticTypeOfValue = vclazz;
             valSlot = choice.at(vclazz, Layout.get(choiceClazz).choiceRefValOffset());
@@ -404,7 +407,7 @@ public class Interpreter extends FUIRContext
     else
       { // store tag and value separately
         LValue slot   = choice.at(vclazz, 0);
-        (new i32Value(tag)).storeNonRef(slot, 1);
+        (new i32Value(tagNum)).storeNonRef(slot, 1);
       }
 
     setFieldSlot(thiz, vclazz, valSlot, v);

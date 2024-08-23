@@ -28,7 +28,6 @@ i18n_test is
         say "{internationalization.provide.env.date 30 5 2024}"
         say "{internationalization.provide.env.currency (300000)}"
 
-
     internationalization.provide.instate internationalization.japanese ()->{main}
 
 

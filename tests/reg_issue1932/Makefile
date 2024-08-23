@@ -21,6 +21,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = i18n_default_test
+override NAME = reg_issue1932
 include ../simple.mk
-

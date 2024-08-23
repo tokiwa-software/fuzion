@@ -53,7 +53,13 @@ public class Tag extends ExprWithPos
   /**
    * The desired tagged type, set during creation.
    */
-  public AbstractType _taggedType;
+  public final AbstractType _taggedType;
+
+
+  /**
+   * The number to be used for tagging this value.
+   */
+  private final int _tagNum;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -88,10 +94,23 @@ public class Tag extends ExprWithPos
        );
     this._value = value;
     this._taggedType = taggedType;
+    this._tagNum = (int)_taggedType
+      .choiceGenerics(context)
+      .stream()
+      .takeWhile(cg -> !cg.isDirectlyAssignableFrom(value.type(), context))
+      .count();
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+  /**
+   * The number to be used for tagging this value.
+   */
+  public int tagNum()
+  {
+    return _tagNum;
+  }
 
 
   /**
