@@ -508,7 +508,7 @@ public class Executor extends ProcessExpression<Value, Object>
 
     var tc = _fuir.clazzChoice(newcl, tagNum);
 
-    return pair(Interpreter.tag(newcl, tc, value));
+    return pair(Interpreter.tag(newcl, tc, value, tagNum));
   }
 
   @Override

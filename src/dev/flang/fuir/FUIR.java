@@ -658,27 +658,6 @@ public class FUIR extends IR
 
 
   /**
-   * Get the choice tag id for a given value clazz in a choice clazz
-   *
-   * @param cl a clazz id of a choice clazz
-   *
-   * @param valuecl a clazz id of a static clazz of a value that is stored in an
-   * instance of cl.
-   *
-   * @return id of the valuecl, corresponds to the value to be stored in the tag.
-   */
-  public int clazzChoiceTag(int cl, int valuecl)
-  {
-    if (PRECONDITIONS) require
-      (!clazzIsVoidType(valuecl));
-
-    var cc = clazz(cl);
-    var vc = clazz(valuecl);
-    return cc.getChoiceTag(vc);
-  }
-
-
-  /**
    * Get the outer clazz of the given clazz.
    *
    * @param cl a clazz id
@@ -1343,6 +1322,16 @@ public class FUIR extends IR
     var t = (Tag) getExpr(s);
     var ncl = outerClazz.actualClazzes(t, null)[1];
     return ncl == null ? -1 : id(ncl);
+  }
+
+  public int tagTagNum(int s)
+  {
+    if (PRECONDITIONS) require
+      (s >= SITE_BASE,
+      withinCode(s),
+      codeAt(s) == ExprKind.Tag);
+
+    return ((Tag) getExpr(s)).tagNum();
   }
 
   /**
