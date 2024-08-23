@@ -38,7 +38,7 @@ public american : provide is
     #
     redef currency(c i32)
     =>
-        "{c}\$"
+        "\${c}"
 
 
 
