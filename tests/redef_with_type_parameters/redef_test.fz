@@ -78,13 +78,13 @@ one error.
   #
   case3 =>
     x is
-      q(T type, U type: option T) => say "x: $T $U"
+      q(T type, U type: Sequence T) => say "x: $T $U"
 
     y : x is
-      redef q(T type, U type: option T) => say "y: $T $U"
+      redef q(T type, U type: Sequence T) => say "y: $T $U"
 
-    x.q i32 (option i32)
-    y.q f64 (option f64)
+    x.q i32 (Sequence i32)
+    y.q f64 (Sequence f64)
 
   case3
 

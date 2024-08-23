@@ -1401,12 +1401,12 @@ public class AstErrors extends ANY
           "To solve this, change the type provided, e.g. to the unconstrained " + st("type") + ".\n");
   }
 
-  static void constraintMustNotBeChoice(Generic g, AbstractType constraint)
+  public static void constraintMustNotBeChoice(AbstractFeature typeParameter)
   {
-    error(g.typeParameter().pos(),
+    error(typeParameter.pos(),
           "Constraint for type parameter must not be a choice type",
-          "Affected type parameter: " + s(g) + "\n" +
-          "constraint: " + s(constraint) + "\n");
+          "Affected type parameter: " + s(typeParameter) + "\n" +
+          "constraint: " + s(typeParameter.resultType()) + "\n");
   }
 
   static void loopElseBlockRequiresWhileOrIterator(SourcePosition pos, Expr elseBlock)

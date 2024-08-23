@@ -2,7 +2,7 @@ x: Type of 'i32'
 x: Type of 'String'
 y: Type of 'f64'
 y: Type of 'option bool'
-x: Type of 'i32' Type of 'option i32'
-y: Type of 'f64' Type of 'option f64'
+x: Type of 'i32' Type of 'Sequence i32'
+y: Type of 'f64' Type of 'Sequence f64'
 x: Type of 'i32' 43
 y: Type of 'f64' 3.14
