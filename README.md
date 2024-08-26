@@ -40,10 +40,10 @@ hello_world is
   lm : mutate is
 
   # calling `lm` installs our mutate effect,
-  # `go` is then used to run code in the context
+  # `instate_self` is then used to run code in the context
   # of the installed effect.
   #
-  lm.go ()->
+  lm.instate_self ()->
 
     # read someone's name from standard input
     #
