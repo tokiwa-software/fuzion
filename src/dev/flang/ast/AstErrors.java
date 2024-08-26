@@ -2005,20 +2005,35 @@ public class AstErrors extends ANY
    * The problem is that `v` may refer to `h1` or `h2` such that `v.g` will
    * result in either `h1.e` or `h2.e`.
    *
+   * @param c the call with this problem
+   *
+   * @param arg true if the problematic type is an argument type, false if the
+   * problem is in the result type
+   *
+   * @param t the original argument or result type
+   *
+   * @param from the target type t depends on
+   *
+   * @param to the target type
    */
-  public static void illegalOuterRefTypeInCall(Call c, AbstractType t, AbstractType from, AbstractType to)
+  public static void illegalOuterRefTypeInCall(Call c, boolean arg, AbstractFeature calledOrArg, AbstractType t, AbstractType from, AbstractType to)
   {
+    var art = arg ? "argument type" : "result type";
+    var tp = calledOrArg.resultTypePos();
     error(c.pos(),
-          "Call has an ambiguous result type since target of the call is a " + code("ref") + " type.",
-          "The result type of this call depends on the target type.  Since the target type is a " + code("ref") + " type that " +
-          "may represent a number of different actual dynamic types, the result type is not clearly defined.\n"+
+          "Call has an ambiguous " + art + " since target of the call is a " + code("ref") + " type.",
+          "The " + art + " of this call depends on the target type.  Since the target type is a " + code("ref") + " type that " +
+          "may represent a number of different actual dynamic types, the " + art + " is not clearly defined.\n"+
           "Called feature: " + s(c.calledFeature()) + "\n" +
-          "Raw result type: " + s(t) + "\n" +
+          "Original " + art + ": " + s(t) +
+          (tp != null
+           ? " declared at " + tp.show()
+           : "") + "\n" +
           "Type depending on target: " + s(from) + "\n" +
           "Target type: " + s(to) + "\n" +
           "To solve this, you could try to use a value type as the target type of the call" +
           (c.calledFeature().outer().isThisRef() ? " " : ", e,g., " + s(c.calledFeature().outer().selfType()) + ", ") +
-          "or change the result type of " + s(c.calledFeature()) + " to no longer depend on " + s(from) + ".");
+          "or change the " + art + " of " + s(c.calledFeature()) + " to no longer depend on " + s(from) + ".");
   }
 
 

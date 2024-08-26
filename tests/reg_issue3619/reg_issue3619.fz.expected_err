@@ -1,0 +1,25 @@
+
+--CURDIR--/reg_issue3619.fz:41:12: error 1: Call has an ambiguous argument type since target of the call is a 'ref' type.
+  x b := a.f (r A)
+-----------^
+The argument type of this call depends on the target type.  Since the target type is a 'ref' type that may represent a number of different actual dynamic types, the argument type is not clearly defined.
+Called feature: 'reg_issue3619.A.f'
+Original argument type: 'reg_issue3619.this.r reg_issue3619.this.A.this' declared at --CURDIR--/reg_issue3619.fz:35:9:
+    f(p r A.this) b => b
+--------^
+Type depending on target: 'reg_issue3619.this.A.this'
+Target type: 'reg_issue3619.this.A'
+To solve this, you could try to use a value type as the target type of the call or change the argument type of 'reg_issue3619.A.f' to no longer depend on 'reg_issue3619.this.A.this'.
+
+
+--CURDIR--/reg_issue3619.fz:64:11: error 2: Call has an ambiguous result type since target of the call is a 'ref' type.
+  x2 := v.g
+----------^
+The result type of this call depends on the target type.  Since the target type is a 'ref' type that may represent a number of different actual dynamic types, the result type is not clearly defined.
+Called feature: 'reg_issue3619.r2.g'
+Original result type: 'reg_issue3619.this.r2.this.e'
+Type depending on target: 'reg_issue3619.this.r2.this'
+Target type: 'reg_issue3619.this.r2'
+To solve this, you could try to use a value type as the target type of the call or change the result type of 'reg_issue3619.r2.g' to no longer depend on 'reg_issue3619.this.r2.this'.
+
+2 errors.
