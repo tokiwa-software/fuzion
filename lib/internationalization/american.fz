@@ -34,6 +34,12 @@ public american : provide is
     =>
         "{($m).pad_left "0" 2}/{($d).pad_left "0" 2}/{y}"
 
+    # ex.`currency 300000` results in `300000$`.
+    #
+    redef currency(c i32)
+    =>
+        "\${c}"
+
 
 
 

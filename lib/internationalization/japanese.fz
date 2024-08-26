@@ -34,4 +34,10 @@ public japanese : provide is
     =>
         "{y}年 {m}月 {d}日"
 
+    # ex.`currency 300000` results in `300000¥`.
+    #
+    redef currency(c i32)
+    =>
+        "{c}¥"
+
 
