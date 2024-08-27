@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = listFoldTest
-include ../positive.mk
+include ../simple.mk

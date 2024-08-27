@@ -1,0 +1,6 @@
+PASSED: $<ident>
+PASSED: $<number>
+PASSED: {a+b} and {a*b}
+PASSED: {if...}
+PASSED: {if...}
+PASSED: nested {}

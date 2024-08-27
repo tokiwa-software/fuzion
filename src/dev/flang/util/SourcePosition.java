@@ -185,31 +185,33 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
         p == _bytePos || p < byteEndPos();
         p++)
       {
-        while (_sourceFile.numLines() >= l+1 && _sourceFile.lineStartPos(l+1) <= p)
+        if (_sourceFile.numLines() >= l+1 && _sourceFile.lineStartPos(l+1) <= p)
           {
             l = l + 1;
             sb.append(Terminal.BLUE);
+            var endPos = byteEndPos() > _sourceFile.lineEndPos(l) ? _sourceFile.lineEndPos(l) : byteEndPos();
+            var str = _sourceFile.asString(p, endPos);
+            var leadingWhiteSpace = countLeadingWhiteSpace(str);
             if (bytePos() == byteEndPos())
               /* not a SourceRange! */
               {
+                var underlined = _sourceFile.asString(p, Math.min(p+1, _sourceFile.lineEndPos(l)));
                 sb.append(_sourceFile.asString(_sourceFile.lineStartPos(l), p))
                   .append(Terminal.CURLY_UNDERLINE)
                   .append(Terminal.UNDERLINE_LINE_RED)
-                  .append(_sourceFile.asString(p, p + 1))
+                  .append(underlined.length() == 0 && Terminal.ENABLED ? Terminal.REGULAR_COLOR + "⏎" : underlined)
                   .append(Terminal.UNDERLINE_OFF)
                   .append(Terminal.UNDERLINE_LINE_COLOR_OFF)
                   .append(_sourceFile.asString(p + 1, _sourceFile.lineEndPos(l)));
               }
             else
               {
-                var endPos = byteEndPos() > _sourceFile.lineEndPos(l) ? _sourceFile.lineEndPos(l) : byteEndPos();
-                var str = _sourceFile.asString(p, endPos);
-                var leadingWhiteSpace = countLeadingWhiteSpace(str);
+                var underlined = str.subSequence(leadingWhiteSpace, str.length());
                 sb.append(_sourceFile.asString(_sourceFile.lineStartPos(l), p))
                   .append(str.subSequence(0, leadingWhiteSpace))
                   .append(Terminal.CURLY_UNDERLINE)
                   .append(Terminal.UNDERLINE_LINE_RED)
-                  .append(str.subSequence(leadingWhiteSpace, str.length()))
+                  .append(underlined.length() == 0 && Terminal.ENABLED ? Terminal.REGULAR_COLOR + "⏎" : underlined)
                   .append(Terminal.UNDERLINE_OFF)
                   .append(Terminal.UNDERLINE_LINE_COLOR_OFF)
                   .append(_sourceFile.asString(endPos, _sourceFile.lineEndPos(l)));
@@ -220,21 +222,34 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
               }
             if (!Terminal.ENABLED)
               {
-                sb.append(Terminal.YELLOW);
-                for (int j=0; l == line() && j < column()-1; j++)
-                {
-                  sb.append('-');
-                }
+                for (int j = 0; l == line() && j < column() - 1; j++)
+                  {
+                    sb.append('-');
+                  }
+                if (bytePos() == endPos)
+                  {
+                    sb.append('^');
+                  }
+                else
+                  {
+                    int len = str.length() - leadingWhiteSpace;
+                    for (int i = 0; i < leadingWhiteSpace; i++)
+                      {
+                        sb.append('-');
+                      }
+                    for (int i = 0; i < len; i++)
+                      {
+                        sb.append('^');
+                      }
+                  }
               }
           }
-        if (!Terminal.ENABLED && (p < _sourceFile.lineEndPos(l) || p == _bytePos || p == byteEndPos()-1)) // suppress '^' at LFs except for LF at end position
+        if (!Terminal.ENABLED && (p < _sourceFile.lineEndPos(l) || p == _bytePos || p == byteEndPos() - 1)
+          && p + 1 < byteEndPos() && p + 1 == _sourceFile.lineEndPos(l))
           {
-            sb.append('^');
-            if (p+1 < byteEndPos() && p+1 == _sourceFile.lineEndPos(l))
-              {
-                sb.append("\n");
-              }
+            sb.append("\n");
           }
+
       }
     sb.append(Terminal.RESET);
     return sb.toString();

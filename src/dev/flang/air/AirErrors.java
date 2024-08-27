@@ -74,8 +74,12 @@ public class AirErrors extends AstErrors
 
   public static void abstractFeatureNotImplemented(AbstractFeature featureThatDoesNotImplementAbstract,
                                                    Set<AbstractFeature> abstractFeature,
-                                                   HasSourcePosition instantiatedAt)
+                                                   HasSourcePosition instantiatedAt,
+                                                   String context)
   {
+    if (PRECONDITIONS) require
+      (!abstractFeature.isEmpty());
+
     var abs = new StringBuilder();
     var abstracts = new StringBuilder();
     var foundAbstract = false;
@@ -97,14 +101,15 @@ public class AirErrors extends AstErrors
         var afKind = af.isAbstract() ? "abstract" : "fixed";
         abstracts.append((abstracts.length() == 0 ? "inherits or declares" : "and") + " " + afKind + " feature " +
                          s(af) + " declared at " + af.pos().show() + "\n" +
-                         "which is called at " + Clazzes.isUsedAt(af).pos().show() + "\n");
+                         "which is called at " + Clazzes.instance.isUsedAt(af).pos().show() + "\n");
       }
     abstracts.append("without providing an implementation\n");
     error(featureThatDoesNotImplementAbstract.pos(),
           "Used " + kind + " " + (abstractFeature.size() > 1 ? "features " + abs + " are" : "feature " + abs + " is") + " not implemented by "+s(featureThatDoesNotImplementAbstract),
           "Feature " + s(featureThatDoesNotImplementAbstract) + " " +
           "instantiated at " + instantiatedAt.pos().show() + "\n" +
-          abstracts);
+          abstracts + "\n" +
+          "Callchain that lead to this point:\n\n" + context);
   }
 
 }

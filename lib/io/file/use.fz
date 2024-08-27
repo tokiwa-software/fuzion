@@ -57,7 +57,7 @@ public use(T, R type, file_name String, m mode.val, code ()-> outcome R) outcome
     fd i64 =>
       # install effect `open T` and run `code`
       r := open T fd file_name
-        .go code
+        .instate_self code
       # close file
       _ := fuzion.sys.fileio.close fd
       # return result

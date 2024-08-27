@@ -66,6 +66,14 @@ caseC2b: PASSED: f#1 in oあ type calls.caseC2.ref on
 caseC2b: PASSED: f#2 in oあ type calls.caseC2.ref on
 caseC2b: PASSED: f#3 in oあ type calls.caseC2.ref on
 caseC2b: PASSED: 3
+caseC3c: PASSED: f#1 in oa type calls.caseC3.ref on
+caseC3c: PASSED: f#2 in oa type calls.caseC3.ref on
+caseC3c: PASSED: f#3 in oa type calls.caseC3.ref on
+caseC3c: PASSED: 3
+caseC4a: PASSED: f#1 in oa type calls.caseC4.oa
+caseC4a: PASSED: f#2 in oa type calls.caseC4.oa
+caseC4a: PASSED: f#3 in oa type calls.caseC4.oa
+caseC4a: PASSED: 3
 caseC5a: PASSED: f#1 in oa type calls.caseC5.on
 caseC5a: PASSED: f#2 in oa type calls.caseC5.on
 caseC5a: PASSED: f#3 in oa type calls.caseC5.on
@@ -82,4 +90,4 @@ caseC6b: PASSED: f#1 in oあ type calls.caseC6.on
 caseC6b: PASSED: f#2 in oあ type calls.caseC6.on
 caseC6b: PASSED: f#3 in oあ type calls.caseC6.on
 caseC6b: PASSED: 3
-0 failed 84 passed.
+0 failed 92 passed.

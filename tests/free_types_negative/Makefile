@@ -24,5 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = test_free_types_negative
-override FUZION_OPTIONS = -XmaxErrors=-1
 include ../simple.mk

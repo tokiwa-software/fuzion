@@ -47,9 +47,16 @@ public interface ExpressionVisitor
 
   /**
    * action is to be called an all AbstractCase's encountered.
+   *
+   * @param m a match
+   *
+   * @param c a case within the match that is visited
+   *
+   * @return true iff the expressions within this case should be visited as well.
    */
-  default void action(AbstractCase c)
+  default boolean action(AbstractMatch m, AbstractCase c)
   {
+    return true;
   }
 
 }

@@ -413,6 +413,7 @@ public class NumLiteral extends Constant
    *
    * @return this Expr's type or null if not known.
    */
+  @Override
   AbstractType typeForInferencing()
   {
     if (_type == null)
@@ -457,7 +458,7 @@ public class NumLiteral extends Constant
   private AbstractType extractNumericType(AbstractType t)
   {
     var result = t
-      .choices()
+      .choices(Context.NONE)
       .filter(x -> Types.resolved.numericTypes.contains(x))
       .collect(Collectors.toList());
 
@@ -477,10 +478,9 @@ public class NumLiteral extends Constant
   AbstractType typeForCallTarget()
   {
     var i = hasDot() ? null : intValue(ConstantType.ct_i32);
-    return
-      i == null                      ? Types.resolved.t_f64 :
-      ConstantType.ct_i32.canHold(i) ? Types.resolved.t_i32
-                                     : Types.resolved.t_i64;
+    return i == null
+      ? Types.resolved.t_f64
+      : Types.resolved.t_i32;
   }
 
 
@@ -807,12 +807,12 @@ public class NumLiteral extends Constant
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
    */
   @Override
-  Expr propagateExpectedTypeForPartial(Resolution res, AbstractFeature outer, AbstractType t)
+  Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType t)
   {
     Expr result = this;
     if (t.isFunctionType() && t.arity() == 1 && explicitSign() != null)
@@ -826,7 +826,7 @@ public class NumLiteral extends Constant
                                                             FuzionConstants.INFIX_OPERATOR_PREFIX +
                                                             explicitSign()),              // `infix +` or `infix -`
                                              new List<>(stripSign())));                   // constant w/o sign
-        fn.resolveTypes(res, outer);
+        fn.resolveTypes(res, context);
         result = fn;
       }
     return result;
@@ -842,7 +842,7 @@ public class NumLiteral extends Constant
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
    *
@@ -850,19 +850,19 @@ public class NumLiteral extends Constant
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
+  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
-    var result = propagateExpectedTypeForPartial(res, outer, t);
+    var result = propagateExpectedTypeForPartial(res, context, t);
     if (result != this)
       {
-        result = result.propagateExpectedType(res, outer, t);
+        result = result.propagateExpectedType(res, context, t);
       }
     else
       {
         // if expected type is choice, examine if there is exactly one numeric
         // constant type in choice generics, if so use that for further type
         // propagation.
-        t = t.findInChoice(cg -> !cg.isGenericArgument() && findConstantType(cg) != null);
+        t = t.findInChoice(cg -> !cg.isGenericArgument() && findConstantType(cg) != null, context);
         if (_type == null && findConstantType(t) != null)
           {
             _type = t;
@@ -881,18 +881,18 @@ public class NumLiteral extends Constant
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param  outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the type this expression is assigned to.
    */
   @Override
-  public Expr wrapInLazy(Resolution res, AbstractFeature outer, AbstractType t)
+  public Expr wrapInLazy(Resolution res, Context context, AbstractType t)
   {
     if (t.isLazyType())
       {
-        propagateExpectedType(res, outer, t.generics().get(0));
+        propagateExpectedType(res, context, t.generics().get(0));
       }
-    return super.wrapInLazy(res, outer, t);
+    return super.wrapInLazy(res, context, t);
   }
 
 

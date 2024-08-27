@@ -108,7 +108,8 @@ public class Impl extends ANY
     Of,           // Syntactic sugar 'enum : choice of red, green, blue is', exists only during parsing
     Native;       // a native feature
 
-    public String toString(){
+    public String toString()
+    {
       return switch(this)
         {
           case FieldInit         : yield "field initialization";
@@ -367,14 +368,13 @@ public class Impl extends ANY
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this implementation.
-   *
+   * @param context the source code context where this Expr is used
    */
-  public void propagateExpectedType(Resolution res, AbstractFeature outer)
+  public void propagateExpectedType(Resolution res, Context context)
   {
-    if (needsImplicitAssignmentToResult(outer))
+    if (needsImplicitAssignmentToResult(context.outerFeature()))
       {
-        _expr = _expr.propagateExpectedType(res, outer, outer.resultType());
+        _expr = _expr.propagateExpectedType(res, context, context.outerFeature().resultType());
       }
   }
 
@@ -385,13 +385,13 @@ public class Impl extends ANY
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
    */
-  public void propagateExpectedType(Resolution res, Feature outer, AbstractType t)
+  public void propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
-    _expr = _expr.propagateExpectedType(res, outer, t);
+    _expr = _expr.propagateExpectedType(res, context, t);
   }
 
 
@@ -415,12 +415,13 @@ public class Impl extends ANY
    *
    * @param outer the feature that contains this implementation.
    */
-  public void resolveSyntacticSugar2(Resolution res, AbstractFeature outer)
+  public void resolveSyntacticSugar2(Resolution res, Context context)
   {
+    var outer = context.outerFeature();
     if (outer.isConstructor() && outer.preFeature() != null)
       { // For constructors, the constructor itself checks the precondition (while
         // for functions, this is done by the caller):
-        var c = outer.contract().callPreCondition(res, outer, (Feature) outer);
+        var c = outer.contract().callPreCondition(res, outer, context);
         _expr = new Block(new List<>(c, _expr));
       }
     if (needsImplicitAssignmentToResult(outer))
@@ -430,8 +431,8 @@ public class Impl extends ANY
                                 this._expr.pos(),
                                 resultField,
                                 this._expr,
-                                outer);
-        ass._value = this._expr.box(ass._assignedField.resultType());  // NYI: move to constructor of Assign?
+                                context);
+        ass._value = this._expr.box(ass._assignedField.resultType(), context);  // NYI: move to constructor of Assign?
         this._expr = ass;
       }
 
@@ -446,7 +447,7 @@ public class Impl extends ANY
                OpenTypeParameter -> { if (!Errors.any()) { Errors.fatal("postcondition for type parameter should not exist for " + outer.pos().show()); } }
           case Routine           ->
             {
-              var callPostCondition = Contract.callPostCondition(res, (Feature) outer);
+              var callPostCondition = Contract.callPostCondition(res, context);
               this._expr = new Block(new List<>(this._expr, callPostCondition));
             }
           case Abstract          -> {} // ok, must be checked by redefinitions
@@ -504,7 +505,7 @@ public class Impl extends ANY
                 if (res != null && !_infiniteRecursionInResolveTypes)
                   {
                     _infiniteRecursionInResolveTypes = true;
-                    actl = actl.visit(res.resolveTypesFully, ic.resolvedFor());
+                    actl = res.resolveType(actl, ic.resolvedFor());
                     aargs.set(actl);
                     _infiniteRecursionInResolveTypes = false;
                   }
@@ -544,7 +545,7 @@ public class Impl extends ANY
         var iv = initialValueFromCall(i, res);
         exprs.add(iv);
       }
-    var result = Expr.union(exprs);
+    var result = Expr.union(exprs, Context.NONE);
     // the following line is currently necessary
     // to enable cyclic type inference e.g. in reg_issue2182
     result = result == null ? Types.resolved.t_void : result;
@@ -611,9 +612,10 @@ public class Impl extends ANY
           // second try, the feature containing the field
           // may not be resolved yet.
           // see #348 for an example.
-          if (t == null && (f.outer().isUniverse() || !f.outer().state().atLeast(State.RESOLVING_TYPES)))
+          var fo = f.outer();
+          if (t == null && (fo.isUniverse() || !fo.state().atLeast(State.RESOLVING_TYPES)))
             {
-              f.visit(res.resolveTypesFully, f.outer());
+              f.visit(res.resolveTypesFully(fo), fo);
               t  = _expr.typeForInferencing();
             }
           yield t;
@@ -624,7 +626,7 @@ public class Impl extends ANY
 
     return result != null &&
            result.isTypeType() &&
-           !(_expr instanceof Call c && c.calledFeature() == Types.resolved.f_Types_get)
+           !(_expr instanceof Call c && c.calledFeature() == Types.resolved.f_type_as_value)
       ? Types.resolved.f_Type.selfType()
       : result;
   }

@@ -32,9 +32,9 @@ test_effect is
   b : mutate.
   c : mutate.
   d : mutate.
-  use_a => v := a.env.new   42; v <- 1+v; say v
-  use_b => v := b.env.new 4711; v <- 1+v; say v
-  use_c => v := c.env.new 0815; v <- 1+v; say v
+  use_a => v := {a.env.new   42}; v <- 1+v; say v
+  use_b => v := {b.env.new 4711}; v <- 1+v; say v
+  use_c => v := {c.env.new 0815}; v <- 1+v; say v
   use_a_err1 => _ := a.env       # 1. should flag an error: effect not installed
   use_b_err2 => _ := b.env       # 2. should flag an error: effect not installed
   use_c_err3 => _ := c.env       # 3. should flag an error: effect not installed
@@ -45,24 +45,24 @@ test_effect is
   fa Function unit := FA
   fb Function unit := FB
   fc Function unit := FC
-  a.go unit fa
-  b.go unit fb
-  c.go unit fc
-  a.go ()->use_a
-  b.go ()->use_b
-  c.go ()->use_c
-  a.go ()->
-    b.go ()->
-      c.go ()->
+  a.instate_self unit fa
+  b.instate_self unit fb
+  c.instate_self unit fc
+  a.instate_self ()->use_a
+  b.instate_self ()->use_b
+  c.instate_self ()->use_c
+  a.instate_self ()->
+    b.instate_self ()->
+      c.instate_self ()->
         use_a
         use_b
         use_c
-#  a.go ()->use_b_err2
-#  b.go ()->use_c_err3
-#  c.go ()->use_a_err1
-  a.go ()->
-    b.go ()->
-      c.go ()->
+#  a.instate_self ()->use_b_err2
+#  b.instate_self ()->use_c_err3
+#  c.instate_self ()->use_a_err1
+  a.instate_self ()->
+    b.instate_self ()->
+      c.instate_self ()->
         use_a
         use_b
         use_c
@@ -71,12 +71,12 @@ test_effect is
   # the following ones are a little tricky since use_a/b/c are also used in
   # positive cases above, so the call traces might get mixed up.
   #
-  a.go ()->
-    b.go ()->
+  a.instate_self ()->
+    b.instate_self ()->
 #      use_c      # 5. should flag an error: effect not installed
-  a.go ()->
-    c.go ()->
+  a.instate_self ()->
+    c.instate_self ()->
 #      use_b      # 6. should flag an error: effect not installed
-  b.go ()->
-    c.go ()->
+  b.instate_self ()->
+    c.instate_self ()->
 #      use_a      # 7. should flag an error: effect not installed

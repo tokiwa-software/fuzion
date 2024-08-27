@@ -30,11 +30,13 @@ import java.io.IOException;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import dev.flang.fuir.FUIR;
@@ -481,7 +483,7 @@ public class C extends ANY
       if (rcases.size() >= 2)
         { // more than two reference cases: we have to create separate switch of clazzIds for refs
           var id = refEntry.deref().field(CNames.CLAZZ_ID);
-          var notFound = reportErrorInCode("unexpected reference type %d found in match", id);
+          var notFound = reportErrorInCode0("unexpected reference type %d found in match", id);
           tdefault = CStmnt.suitch(id, rcases, notFound);
         }
       return new Pair<>(CExpr.UNIT, CStmnt.seq(getRef, CStmnt.suitch(tag, tcases, tdefault)));
@@ -531,30 +533,34 @@ public class C extends ANY
      */
     public Pair<CExpr, CStmnt> env(int s, int ecl)
     {
-      // NYI: UNDER DEVELOPMENT: can this logic be moved to abstract interpreter?
-      if (!_fuir.clazzNeedsCode(ecl))
+      CExpr res = null;
+      var o = CStmnt.seq(CExpr.fprintfstderr("*** effect %s not present in current environment\n",
+                                             CExpr.string(_fuir.clazzAsString(ecl))),
+                         CExpr.exit(1));
+      if (Arrays.binarySearch(_effectClazzes, ecl) >= 0)
         {
-          return new Pair<>(CExpr.UNIT, CStmnt.EMPTY);
+          res = CNames.fzThreadEffectsEnvironment.deref().field(_names.env(ecl));
+          var evi = CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl));
+          o = CStmnt.iff(evi.not(), o);
         }
-      var res = CNames.fzThreadEffectsEnvironment.deref().field(_names.env(ecl));
-      var evi = CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl));
-      var o = CStmnt.iff(evi.not(),
-                         CStmnt.seq(CExpr.fprintfstderr("*** effect %s not present in current environment\n",
-                                                        CExpr.string(_fuir.clazzAsString(ecl))),
-                                    CExpr.exit(1)));
       return new Pair<>(res, o);
+    }
+
+    /**
+     * Generate code to terminate the execution immediately.
+     *
+     * @param msg a message explaining the illegal state
+     */
+    @Override
+    public CStmnt reportErrorInCode(String msg)
+    {
+      return reportErrorInCode0("%s", CExpr.string(msg));
     }
 
   }
 
 
   /*----------------------------  constants  ----------------------------*/
-
-
-  /**
-   * env var to enable debug output for tail call optimization:
-   */
-  static private final boolean FUZION_DEBUG_TAIL_CALL = "true".equals(System.getenv("FUZION_DEBUG_TAIL_CALL"));
 
 
   /*
@@ -634,6 +640,13 @@ public class C extends ANY
   final Intrinsics _intrinsics;
 
 
+  /**
+   * Sorted array of clazzes of all effects that are ever instated, replaced, or
+   * aborted. Will be created during CompilePhase.STRUCTS.
+   */
+  int[] _effectClazzes;
+
+
   /*---------------------------  constructors  ---------------------------*/
 
 
@@ -670,7 +683,7 @@ public class C extends ANY
   {
     var cl = _fuir.mainClazzId();
     var name = _options._binaryName != null ? _options._binaryName : _fuir.clazzBaseName(cl);
-    var cf = new CFile(name);
+    var cf = new CFile(name, _options._keepGeneratedCode);
     _options.verbosePrintln(" + " + cf.fileName());
     try
       {
@@ -692,10 +705,6 @@ public class C extends ANY
     _options.verbosePrintln(" * " + command.toString("", " ", ""));
     try
       {
-        if (_options._keepGeneratedCode)
-          {
-            Files.copy(Path.of(cf.fileName()), Path.of(System.getProperty("user.dir"), name + ".c"), StandardCopyOption.REPLACE_EXISTING);
-          }
         var p = new ProcessBuilder().inheritIO().command(command).start();
         p.waitFor();
         if (p.exitValue() != 0)
@@ -797,7 +806,7 @@ public class C extends ANY
 
     if(_options._useBoehmGC)
       {
-        command.addAll("-lgc", "-DGC_THREADS", "-DGC_PTHREADS", "-DPTW32_STATIC_LIB", "-DGC_WIN32_PTHREADS");
+        command.addAll("-DGC_THREADS", "-DGC_PTHREADS", "-DPTW32_STATIC_LIB", "-DGC_WIN32_PTHREADS");
       }
 
     if (linkJVM())
@@ -880,6 +889,12 @@ public class C extends ANY
             command.addAll(JAVA_HOME + "\\bin\\server\\jvm.dll");
           }
       }
+
+    if(_options._useBoehmGC)
+      {
+        command.addAll("-lgc");
+      }
+
     return command;
   }
 
@@ -1069,8 +1084,6 @@ public class C extends ANY
        "#include <time.h>\n"+
        "#include <setjmp.h>\n"+
        "#include <errno.h>\n"+
-       // defines _O_BINARY
-       "#include <fcntl.h>\n"+
        "#include <stdatomic.h>\n");
     if (linkJVM())
       {
@@ -1096,7 +1109,7 @@ public class C extends ANY
                            new List<>("void *", "size_t"),
                            new List<>(o, s),
                            CStmnt.seq(new List<>(CStmnt.decl(null, "void *", r, CExpr.call(malloc(), new List<>(s))),
-                                                 CExpr.call("memcpy", new List<>(r, o, s)),
+                                                 CExpr.call("fzE_memcpy", new List<>(r, o, s)),
                                                  r.ret()))));
     var ordered = _types.inOrder();
 
@@ -1108,7 +1121,6 @@ public class C extends ANY
     )));
     // declaration of the thread start routine
     cf.print(threadStartRoutine(false));
-
 
     Stream.of(CompilePhase.values()).forEachOrdered
       ((p) ->
@@ -1122,17 +1134,18 @@ public class C extends ANY
          // thread local effect environments
          if (p == CompilePhase.STRUCTS)
            {
+             _effectClazzes = ordered
+               .stream()
+               .filter(_fuir::isEffectIntrinsic)
+               .mapToInt(cl -> _fuir.effectTypeFromInstrinsic(cl))
+               .sorted()
+               .distinct()
+               .toArray();
              cf.print(
                CStmnt.seq(
                  CStmnt.struct(CNames.fzThreadEffectsEnvironment.code(),
                    new List<CStmnt>(
-                     ordered
-                       .stream()
-                       .filter(cl -> _fuir.clazzNeedsCode(cl) &&
-                               _fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic &&
-                               _fuir.isEffect(cl))
-                       .mapToInt(cl -> _fuir.effectType(cl))
-                       .distinct()
+                     IntStream.of(_effectClazzes)
                        .mapToObj(cl -> Stream.of(
                                          CStmnt.decl(_types.clazz(cl), _names.env(cl)),
                                          CStmnt.decl("bool", _names.envInstalled(cl)),
@@ -1199,8 +1212,17 @@ public class C extends ANY
     var tmp = new CIdent("tmp0");
     return CStmnt.seq(
       CStmnt.decl("struct " + CNames.fzThreadEffectsEnvironment.code(), tmp),
-      CExpr.call("memset", new List<>(tmp.adrOf(), CExpr.int32const(0), CExpr.sizeOfType("struct " + CNames.fzThreadEffectsEnvironment.code()))),
-      CNames.fzThreadEffectsEnvironment.assign(tmp.adrOf())
+      CExpr.call("fzE_memset", new List<>(tmp.adrOf(), CExpr.int32const(0), CExpr.sizeOfType("struct " + CNames.fzThreadEffectsEnvironment.code()))),
+      CNames.fzThreadEffectsEnvironment.assign(tmp.adrOf()),
+      CStmnt.seq(
+        new List<CStmnt>(
+          _types.inOrder()
+            .stream()
+            .filter(cl -> _fuir.clazzNeedsCode(cl) && _fuir.isEffectIntrinsic(cl))
+            .mapToInt(cl -> _fuir.effectTypeFromInstrinsic(cl))
+            .distinct()
+            .<CStmnt>mapToObj(ecl -> CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl)).assign(new CIdent("false")))
+            .iterator()))
     );
   }
 
@@ -1215,7 +1237,7 @@ public class C extends ANY
    *
    * @return the C statement to report the error and exit(1).
    */
-  CStmnt reportErrorInCode(String msg, CExpr... args)
+  CStmnt reportErrorInCode0(String msg, CExpr... args)
   {
     var msg2 = "*** %s:%d: " + msg + "\n";
     var args2 = new List<CExpr>(CIdent.FILE, CIdent.LINE);
@@ -1254,9 +1276,9 @@ public class C extends ANY
       {
         if (isCall && (_fuir.hasData(rt) || _fuir.clazzIsVoidType(rt)))
           {
-            ol.add(reportErrorInCode("no targets for access of %s within %s",
-                                     CExpr.string(_fuir.clazzAsString(cc0)),
-                                     CExpr.string(_fuir.siteAsString(s))));
+            ol.add(reportErrorInCode0("no targets for access of %s within %s",
+                                      CExpr.string(_fuir.clazzAsString(cc0)),
+                                      CExpr.string(_fuir.siteAsString(s))));
             res = null;
           }
         else
@@ -1337,10 +1359,10 @@ public class C extends ANY
           {
             var id = tvalue.deref().field(CNames.CLAZZ_ID);
             acc = CStmnt.suitch(id, cazes,
-                                reportErrorInCode("unhandled dynamic target %d in access of %s within %s",
-                                                  id,
-                                                  CExpr.string(_fuir.clazzAsString(cc0)),
-                                                  CExpr.string(_fuir.siteAsString(s))));
+                                reportErrorInCode0("unhandled dynamic target %d in access of %s within %s",
+                                                   id,
+                                                   CExpr.string(_fuir.clazzAsString(cc0)),
+                                                   CExpr.string(_fuir.siteAsString(s))));
           }
         ol.add(acc);
         res = _fuir.clazzIsVoidType(rt)
@@ -1488,6 +1510,17 @@ public class C extends ANY
 
 
   /**
+   * returns a CExpr that creates a Const_String from a java string.
+   *
+   * @param str the string.
+   */
+  CExpr constString(String str)
+  {
+    return constString(str.getBytes(StandardCharsets.UTF_8));
+  }
+
+
+  /**
    * Create CExpr to create a constant string.
    *
    * @param str CExpr the creates a c string.
@@ -1499,20 +1532,24 @@ public class C extends ANY
    */
   CExpr constString(CExpr str, CExpr len)
   {
-    var data          = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_data());
-    var length        = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_length());
+    var data           = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_data());
+    var length         = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_length());
+    var internal_array = _names.fieldName(_fuir.lookup_array_internal_array(_fuir.clazz_array_u8()));
+    var utf8_data      = _names.fieldName(_fuir.clazz_Const_String_utf8_data());
 
     var sysArray = CExpr.compoundLiteral(
-        _types.clazz(_fuir.clazzResultClazz(_fuir.clazz_Const_String_internal_array())),
+        _types.clazz(_fuir.clazzResultClazz(_fuir.clazz_fuzionSysArray_u8())),
         "." + data.code() + " = " + str.castTo("void *").code() +  "," +
           "." + length.code() + " = " + len.code());
 
-    var internal_array = _names.fieldName(_fuir.clazz_Const_String_internal_array());
+    var array = CExpr.compoundLiteral(
+        _types.clazz(_fuir.clazz_array_u8()),
+        "." + internal_array.code() + " = " + sysArray.code());
 
     var constStr = CExpr
       .compoundLiteral(
         _types.clazz(_fuir.clazzAsValue(_fuir.clazz_Const_String())),
-        "." + internal_array.code() + " = " + sysArray.code());
+        "." + utf8_data.code() + " = " + array.code());
 
     return CExpr
       .compoundLiteral(
@@ -1603,22 +1640,13 @@ public class C extends ANY
       case Intrinsic:
       case Native   :
         {
-          var a = args(tvalue, args, cc, _fuir.clazzArgCount(cc));
           if (_fuir.clazzNeedsCode(cc))
             {
+              var a = args(tvalue, args, cc, _fuir.clazzArgCount(cc));
               var cl = _fuir.clazzAt(s);
-              if (FUZION_DEBUG_TAIL_CALL                                 &&
-                  cc == cl                                               &&  // calling myself
-                  _tailCall.callIsTailCall(cl, s)                        &&  // as a tail call
-                  !_fuir.lifeTime(cl).maySurviveCall()                       // and current instance did not escape
-                )
-                {
-                  say("Escapes, no tail call opt possible: " + _fuir.clazzAsString(cl) + ", lifetime: " + _fuir.lifeTime(cl).name());
-                }
 
               if (cc == cl                                               &&  // calling myself
-                  _tailCall.callIsTailCall(cl, s)                        &&  // as a tail call
-                  !_fuir.lifeTime(cl).maySurviveCall()                       // and current instance did not escape
+                  _tailCall.callIsTailCall(cl, s)
                 )
                 { // then we can do tail recursion optimization!
                   result = tailRecursion(cl, s, tc, a);
@@ -1850,9 +1878,9 @@ public class C extends ANY
     var res = _fuir.clazzResultClazz(cl);
     if (_fuir.hasData(res))
       {
-        var rf = _fuir.clazzResultField(cl);
-        l.add(rf != -1 ? current(_fuir.clazzCode(cl)).field(_names.fieldName(rf)).ret()  // a routine, return result field
-                       : current(_fuir.clazzCode(cl)).ret()                              // a constructor, return current instance
+        l.add(_fuir.isConstructor(cl)
+                ? current(_fuir.clazzCode(cl)).ret()                                                      // a constructor, return current instance
+                : current(_fuir.clazzCode(cl)).field(_names.fieldName(_fuir.clazzResultField(cl))).ret()  // a routine, return result field
               );
       }
     var allocCurrent = switch (_fuir.lifeTime(cl))
@@ -1861,12 +1889,12 @@ public class C extends ANY
           CStmnt.lineComment("cur does not escape, alloc on stack"),
           CStmnt.decl(_names.struct(cl), CNames.CURRENT),
           // this fixes "variable 'fzCur' is uninitialized when used here" in e.g. reg_issue1188
-          CExpr.call("memset", new List<>(CNames.CURRENT.adrOf(), CExpr.int32const(0), CNames.CURRENT.sizeOfExpr())));
+          CExpr.call("fzE_memset", new List<>(CNames.CURRENT.adrOf(), CExpr.int32const(0), CNames.CURRENT.sizeOfExpr())));
       case Unknown   -> CStmnt.seq(CStmnt.lineComment("cur may escape, so use malloc"      ), declareAllocAndInitClazzId(cl, CNames.CURRENT));
       case Undefined -> CExpr.dummy("undefined life time");
       };
     return CStmnt.seq(allocCurrent,
-                      CStmnt.seq(l).label("start"));
+                      CStmnt.seq(l)).label("start");
   }
 
 
@@ -2158,6 +2186,19 @@ public class C extends ANY
   private CExpr jStringToError(CExpr field)
   {
     var constString = constString(CExpr.call("fzE_java_string_to_utf8_bytes", new List<>(field)), CExpr.call("strlen", new List<>(CExpr.call("fzE_java_string_to_utf8_bytes", new List<>(field)))));
+    return error(constString);
+  }
+
+
+  /**
+   * create code for instantiating a
+   * fuzion error from a constString
+   *
+   * @param constString
+   * @return
+   */
+  public CExpr error(CExpr constString)
+  {
     return CExpr.compoundLiteral(
       _names.struct(_fuir.clazz_error()),
       "." + _names.fieldName(_fuir.clazzArg(_fuir.clazz_error(), 0)).code() + " = " +

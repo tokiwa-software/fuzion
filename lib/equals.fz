@@ -44,6 +44,36 @@ public infix =(T type : property.equatable, a, b T) => equals T a b
 public infix !=(T type : property.equatable, a, b T) => !equals T a b
 
 
+# is `a` contained in `Set` `s`?
+#
+# This should usually be called using type inference as in
+#
+#   my_set := set_of ["A","B","C"]
+#   say ("B" ∈ my_set)
+#   say ("D" ∈ my_set)
+#
+public infix ∈ (T type : property.equatable,
+                a T,
+                s container.Set T)
+=>
+  s.contains a
+
+
+# is `a` not contained in `Set` `s`?
+#
+# This should usually be called using type inference as in
+#
+#   my_set := set_of ["A","B","C"]
+#   say ("B" ∉ my_set)
+#   say ("D" ∉ my_set)
+#
+public infix ∉ (T type : property.equatable,
+                a T,
+                s container.Set T)
+=>
+  !(s.contains a)
+
+
 # lteq -- feature that compares two values using the lteq relation
 # defined in their type
 #

@@ -1,0 +1,12 @@
+doing a-thing on Type of 'compile_time_type_casts_negative2.ab'
+doing a-thing
+doing b-thing on Type of 'compile_time_type_casts_negative2.ab'
+doing b-thing
+doing a-thing on Type of 'compile_time_type_casts_negative2.ab'
+doing a-thing
+doing b-thing on Type of 'compile_time_type_casts_negative2.ab'
+doing b-thing
+*** WILL FAIL: ***
+doing a-thing on Type of 'compile_time_type_casts_negative2.a'
+doing a-thing
+doing b-thing on Type of 'compile_time_type_casts_negative2.a'

@@ -1,0 +1,44 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test lib_concur_thread_pool
+#
+# -----------------------------------------------------------------------
+
+lib_concur_thread_pool =>
+
+  # create thread pool with 3 threads
+  # submit 49 tasks to the thread_pool
+  # that add `i` to sum. print result of sum.
+  #
+  test_1 =>
+    sum := concur.atomic 0
+
+    _ := concur.thread_pool 3 ()->
+
+      for i in 1..49 do
+        check concur.thread_pool.env.submit ()->
+          do
+            c := sum.read
+          until sum.compare_and_set c c+i
+
+
+    say sum.read
+
+  test_1

@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue3151.fz:24:1: error 1: Wrong syntax in '.env' expression.
+XYZ.type.env
+^^^^^^^^
+To solve this, make sure the expression to the left of '.env' denotes a type.
+
+one error.

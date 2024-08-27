@@ -41,7 +41,7 @@ public f64(public val f64) : float is
   public fixed redef infix ** (other f64) f64 => intrinsic
 
 
-  # comparision
+  # comparison
   #
   fixed redef infix = (other f64) bool => intrinsic
   fixed redef infix <= (other f64) bool => intrinsic

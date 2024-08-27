@@ -225,7 +225,7 @@ public class Case extends AbstractCase
    *
    * @param cgs the choiceGenerics of the match's subject's type
    *
-   * @param outer the outer feature that contains this match expression
+   * @param context the source code context where this Case is used
    *
    * @param matched map from index in cgs to source position for all matches
    * that have already been found.  This is updated and used to report an error
@@ -234,13 +234,13 @@ public class Case extends AbstractCase
    * @return true iff all types could be resolved, false if any type resolution
    * failed and the type was set to Types.t_ERROR.
    */
-  boolean resolveType(Resolution res, List<AbstractType> cgs, AbstractFeature outer, SourcePosition[] matched)
+  boolean resolveType(Resolution res, List<AbstractType> cgs, Context context, SourcePosition[] matched)
   {
     boolean result = true;
     if (_field != null)  // matching 'x type'
       {
         var t = _field.returnType().functionReturnType();
-        var rt = resolveType(res, t, cgs, outer, matched);
+        var rt = resolveType(res, t, cgs, context, matched);
         _field._returnType = new FunctionReturnType(rt);
         result &= rt != Types.t_ERROR;
       }
@@ -250,7 +250,7 @@ public class Case extends AbstractCase
         while (ti.hasNext())
           {
             var t = ti.next();
-            var rt = resolveType(res, t, cgs, outer, matched);
+            var rt = resolveType(res, t, cgs, context, matched);
             ti.set(rt);
             result &= rt != Types.t_ERROR;
           }
@@ -293,18 +293,18 @@ public class Case extends AbstractCase
    *
    * @param cgs the choiceGenerics of the match's subject's type
    *
-   * @param outer the outer feature that contains this match expression
+   * @param context the source code context where this Case is used
    *
    * @param matched map from index in cgs to source position for all matches
    * that have already been found.  This is updated and used to report an error
    * in case there are repeated matches.
    */
-  AbstractType resolveType(Resolution res, AbstractType t, List<AbstractType> cgs, AbstractFeature outer, SourcePosition[] matched)
+  AbstractType resolveType(Resolution res, AbstractType t, List<AbstractType> cgs, Context context, SourcePosition[] matched)
   {
     var original_t = t;
     List<AbstractType> matches = new List<>();
     int i = 0;
-    t = t.resolve(res, outer);
+    t = t.resolve(res, context);
     var inferGenerics = !t.isGenericArgument() && t.generics().isEmpty() && t.feature().generics() != FormalGenerics.NONE;
     var hasErrors = t.containsError();
     check

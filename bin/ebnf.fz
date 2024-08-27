@@ -1,0 +1,120 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  source code of script ebnf.fz
+#
+# -----------------------------------------------------------------------
+
+# echos ebnf grammar and tests the resulting grammar with antlr
+# 1) Extract ebnf grammar from Lexer/Parser.java
+# 2) Test if grammar can be parsed with antlr4
+
+main =>
+
+  ########### Extensions ###############
+
+  # execute this Sequence of process+args
+  # return what we read from stdout as the result
+  #
+  Sequence.prefix ! String =>
+    lm : mutate is
+    lm.instate_self ()->
+      match process.spawn (map x->x.as_string).as_array
+        e error => panic "failed executing {Sequence.this}, error is $e"
+        p process.Process =>
+          match p.with_out String lm (()->String.from_bytes (io.buffered.read_fully lm))
+            e error => panic "failed reading stdout from {Sequence.this}, error is: $e"
+            s String => s
+
+
+  # feed this string to a new process
+  # return what we read from stdout as the result
+  #
+  String.infix | (seq Sequence String) String =>
+    lm : mutate is
+    lm.instate_self ()->
+      match process.spawn (seq.map x->x.as_string).as_array
+        e error => panic "failed executing $seq, error is $e"
+        p process.Process =>
+          _ := p.with_in unit lm ()->
+            _ := (io.buffered.writer lm).write String.this.utf8
+            _ := (io.buffered.writer lm).flush
+            _ := p.wait # close stdin
+          match p.with_out String lm (()->String.from_bytes (io.buffered.read_fully lm))
+            e error => panic "failed reading stdout from $seq, error is: $e"
+            s String => s
+
+
+  # execute this string by splitting at all whitespaces
+  # return what we read from stdout as the result
+  #
+  String.prefix !! String =>
+    !split
+
+
+  ########### EBNF ###############
+
+
+  new_line := "\n"
+
+  # first, strip out asciidoc code that is enclosed as blocks of the form
+  #
+  #   // tag::bla_bla
+  #   ...
+  #   // end::bla_bla
+  #
+  asciidoc_matcher        := ["pcregrep", "-v", "-M", "// tag::(\\n|.)*?// end::"]
+  lexer_without_asciidoc  := !(asciidoc_matcher ++ ["./src/dev/flang/parser/Lexer.java"])
+  parser_without_asciidoc := !(asciidoc_matcher ++ ["./src/dev/flang/parser/Parser.java"])
+
+  # then, extract EBNF rules of the form
+  #
+  # bla_bla : rhs
+  #         | rhs
+  #         ;
+  #
+  # or
+  #
+  # fragment
+  # bla_bla : rhs
+  #         | rhs
+  #         ;
+  #
+  rule_matcher := ["pcregrep", "-M",  "^(fragment\\n)*[a-zA-Z0-9_]+[ ]*:(\\n|.)*?( ;)"]
+  ebnf_lexer   := lexer_without_asciidoc  | rule_matcher
+  ebnf_parser  := parser_without_asciidoc | rule_matcher
+
+
+  # header
+  ebnf_header := "grammar Fuzion;$new_line$new_line"
+  # combine parser and lexer
+  ebnf := "$ebnf_header$ebnf_parser$new_line$ebnf_lexer"
+  # replace " by '
+    .replace "\"" "'"
+
+  say ebnf
+
+  # test grammar with antlr4
+  tmp := !!"mktemp -d"
+  _ := !!"mkdir -p $tmp/fuzion_grammar"
+  _ := io.file.write "$tmp/fuzion_grammar/Fuzion.g4" ebnf
+  antlr := if (((process.spawn ["antlr4"]).bind u32 p->p.wait).val 1) = 0 then "antlr4" else "antlr"
+  # NYI add option -Werror
+  _ := !!"$antlr -long-messages -o $tmp/fuzion_grammar $tmp/fuzion_grammar/Fuzion.g4"
+  !!"rm -rf $tmp"

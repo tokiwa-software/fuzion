@@ -30,6 +30,7 @@ import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.JavaInterface;
 import dev.flang.util.Pair;
+import dev.flang.util.StringHelpers;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -49,6 +50,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
 import java.util.WeakHashMap;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -498,7 +501,7 @@ public class Runtime extends ANY
   }
 
 
-  public static void effect_default(int id, Any instance)
+  public static void effect_default(int id, AnyI instance)
   {
     var t = currentThread();
     t.ensure_effect_capacity(id);
@@ -516,7 +519,7 @@ public class Runtime extends ANY
    *
    * @return true iff an effect with that id was installed.
    */
-  public static boolean effect_is_installed(int id)
+  public static boolean effect_is_instated(int id)
   {
     var t = currentThread();
 
@@ -582,7 +585,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method to implement effect.abortable.  Install an instance of effect
+   * Helper method to implement effect.type.instante0.  Install an instance of effect
    * type specified by id and run f.call while it is installed.  Helper to
    * implement intrinsic effect.abort.
    *
@@ -594,7 +597,7 @@ public class Runtime extends ANY
    *
    * @param call the Java clazz of the Unary instance to be executed.
    */
-  public static void effect_abortable(int id, Any instance, Any code, Class call)
+  public static void effect_instate(int id, AnyI instance, Any code, Class call)
   {
     var t = currentThread();
 
@@ -610,7 +613,7 @@ public class Runtime extends ANY
       }
     if (r == null)
       {
-        Errors.fatal("in effect.abortable, missing `" + ROUTINE_NAME + "` in class `" + call + "`");
+        Errors.fatal("in effect.type.instate0, missing `" + ROUTINE_NAME + "` in class `" + call + "`");
       }
     else
       {
@@ -620,7 +623,7 @@ public class Runtime extends ANY
           }
         catch (IllegalAccessException e)
           {
-            Errors.fatal("effect.abortable call caused `" + e + "` when calling `" + call + "`");
+            Errors.fatal("effect.type.instate0 call caused `" + e + "` when calling `" + call + "`");
           }
         catch (InvocationTargetException e)
           {
@@ -653,7 +656,7 @@ public class Runtime extends ANY
    *
    * @throws Error in case no instance was installed.
    */
-  public static Any effect_get(int id)
+  public static AnyI effect_get(int id)
   {
     var t = currentThread();
 
@@ -790,7 +793,7 @@ public class Runtime extends ANY
               {
                 if (count > 1)
                   {
-                    stacktrace.write("\n  " + Errors.repeated(count));
+                    stacktrace.write("\n  " + StringHelpers.repeated(count));
                   }
                 else if (count > 0)
                   {
@@ -804,7 +807,7 @@ public class Runtime extends ANY
       }
     if (count > 1)
       {
-        stacktrace.write("\n  " + Errors.repeated(count));
+        stacktrace.write("\n  " + StringHelpers.repeated(count));
       }
 
     return stacktrace.toString();
@@ -1184,6 +1187,98 @@ public class Runtime extends ANY
   {
     return stringToUtf8ByteArray(i == 0 ? _cmd_
                                         : _args_[i-1]);
+  }
+
+
+  public static Object mtx_init()
+  {
+    return new ReentrantLock();
+  }
+
+  public static boolean mtx_lock(Object rl)
+  {
+    try
+      {
+        ((ReentrantLock)rl).lockInterruptibly();
+        return true;
+      }
+    catch(InterruptedException e)
+      {
+        return false;
+      }
+  }
+
+  public static boolean mtx_trylock(Object rl)
+  {
+    return ((ReentrantLock)rl).tryLock();
+  }
+
+  public static boolean mtx_unlock(Object rl)
+  {
+    try
+      {
+        ((ReentrantLock)rl).unlock();
+        return true;
+      }
+    catch(IllegalMonitorStateException e)
+      {
+        return false;
+      }
+  }
+
+  public static void mtx_destroy(Object rl)
+  {
+
+  }
+
+
+  public static Object cnd_init(Object rl)
+  {
+    return ((ReentrantLock)rl).newCondition();
+  }
+
+  public static boolean cnd_signal(Object cnd)
+  {
+    try
+      {
+        ((Condition)cnd).signal();
+        return true;
+      }
+    catch(Exception e)
+      {
+        return false;
+      }
+  }
+
+  public static boolean cnd_broadcast(Object cnd)
+  {
+    try
+      {
+        ((Condition)cnd).signalAll();
+        return true;
+      }
+    catch(Exception e)
+      {
+        return false;
+      }
+  }
+
+  public static boolean cnd_wait(Object cnd)
+  {
+    try
+      {
+        ((Condition)cnd).await();
+        return true;
+      }
+    catch(Exception e)
+      {
+        return false;
+      }
+  }
+
+  public static void cnd_destroy(Object cnd)
+  {
+
   }
 
 

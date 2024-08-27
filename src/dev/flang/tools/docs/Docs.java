@@ -80,7 +80,8 @@ public class Docs extends ANY
     /* readStdin               */ true,
     /* executeCode             */ null,
     /* main                    */ null,
-    /* loadSources             */ true);
+    /* loadSources             */ true,
+    /* timer                   */ s->{});
 
   private final FrontEnd fe = new FrontEnd(frontEndOptions);
 
@@ -108,9 +109,9 @@ public class Docs extends ANY
 
 
   /**
-   * get the declared features of f as stream
-   * @param f
-   * @return
+   * Get the declared features of f as stream
+   * @param f the feature for which the declared features are to be returned
+   * @return a stream of the declared features of f
    */
   private Stream<AbstractFeature> declaredFeatures(AbstractFeature f)
   {
@@ -122,7 +123,21 @@ public class Docs extends ANY
 
 
   /**
-   * do a breath first traversel of declared features,
+   * Get all features that can be called on f (declared and inherited) as stream
+   * @param f the feature for which the callable features are to be returned
+   * @return a stream of the callable (declared and inherited) features of f
+   */
+  private Stream<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f)
+  {
+    var result = new List<AbstractFeature>();
+    fe.module().forEachDeclaredOrInheritedFeature(f, af -> result.add(af));
+    return result
+      .stream();
+  }
+
+
+  /**
+   * do a breath first traversal of declared features,
    * passing found features to consumer c.
    * @param c
    * @param start
@@ -256,11 +271,12 @@ public class Docs extends ANY
       {
         return "";
       }
-    String path = (featurePath(f.outer()) + f.featureName().toString());
+
+    String path = f.isTypeFeature() ? (featurePath(f.typeFeatureOrigin()) + "/" + "type.")
+                                    : (featurePath(f.outer()) + f.featureName().toString()) + "/";
 
     return path
-      .replace(" ", "+")
-      + "/";
+      .replace(" ", "+");
   }
 
 
@@ -274,14 +290,14 @@ public class Docs extends ANY
         {
           return;
         }
-      var s = declaredFeatures(feature)
+      var s = allInnerAndInheritedFeatures(feature)
         .filter(af -> !ignoreFeature(af, config.ignoreVisibility()));
 
       Stream<AbstractFeature> st = Stream.empty();
       if (feature.hasTypeFeature())
         {
           var tf = feature.typeFeature();
-          st = declaredFeatures(tf)
+          st = allInnerAndInheritedFeatures(tf)
             .filter(af -> !ignoreFeature(af, config.ignoreVisibility()));
         }
 

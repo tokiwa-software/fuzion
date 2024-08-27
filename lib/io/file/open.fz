@@ -27,7 +27,7 @@
 #
 module:public open(public T type,
                    fd i64,
-                   public file_name String) : simple_effect is
+                   public file_name String) : effect is
 
   # writes the content of an array of bytes to a file opened as fd
   #
@@ -36,7 +36,7 @@ module:public open(public T type,
   public write(content Sequence u8) =>
     # NYI we should probably not override existing effect in all cases..
     # also write effect would not show up if used like this.
-    (io.file.write (io.file.write.default_write_handler fd)).go ()->
+    (io.file.write (io.file.write.default_write_handler fd)).instate_self ()->
       io.file.write.write content.as_array
 
 
@@ -73,7 +73,7 @@ module:public open(public T type,
   #     io.file.open.mmap[99] := 42
   #
   public mmap(R type, offset i64, size i64, code mapped_buffer->R) outcome R
-  pre offset % 4096 = 0 # NYI get real page size instead of 4096.
+  pre safety: offset % 4096 = 0 # NYI get real page size instead of 4096.
   =>
 
     res := fuzion.sys.internal_array_init i32 1

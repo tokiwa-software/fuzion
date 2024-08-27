@@ -970,7 +970,7 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
    */
   public int lineEndPos(int line)
   {
-    return line == numLines() ? _bytes.length - 1 : lineStartPos(line + 1) - 1;
+    return line == numLines() ? _bytes.length : lineStartPos(line + 1) - 1;
   }
 
 
@@ -1024,6 +1024,7 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
   {
     if (PRECONDITIONS) require
       (0 <= pos,
+       pos <= endPos,
        endPos <= byteLength());
 
     return new SourceRange(this, pos, endPos);

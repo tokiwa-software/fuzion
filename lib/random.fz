@@ -28,10 +28,8 @@
 public random (
 
   # the handler this effect uses to create random numbers
-  p Random_Handler,
-
-  r effect_mode.val
-  ) : effect r
+  p Random_Handler
+  ) : effect
 is
 
 
@@ -39,20 +37,23 @@ is
   # environment to the next random value.  The the contents of the current
   # instance are left unchanged, 'random.env' will provide the new instance.
   #
-  next => random p.next mode
+  next =>
+    res := random p.next
+    res.replace
+    res
 
 
   # return next random number of type i32 in the range 0..max-1
   #
   public next_i32(max i32)
-  pre max ≥ 0
+  pre debug: max ≥ 0
   => (next.get max.as_u64).as_i32
 
 
   # return next random number of type i64 in the range 0..max-1
   #
   public next_i64(max i64)
-  pre max ≥ 0
+  pre debug: max ≥ 0
   => (next.get max.as_u64).as_i64
 
 
@@ -98,8 +99,8 @@ is
   # install default instance of random
   #
   type.install_default =>
-    if !effect.is_installed random
-      _ := random simple_random_handler.default effect_mode.default
+    if !random.is_instated
+      (random simple_random_handler.default).default
 
 
 # random with no argument returns random.env, i.e., the currently installed
@@ -110,10 +111,10 @@ public random =>
   random.env
 
 public simple_random(seed u64, rr ()->unit) =>
-  _ := random (simple_random_handler seed seed) (effect_mode.inst rr)
+  random.instate (random (simple_random_handler seed seed)) rr
 
 public time_seeded_random(rr ()->unit) =>
-  _ := random simple_random_handler.time_seeded (effect_mode.inst rr)
+  random.instate (random simple_random_handler.time_seeded) rr
 
 
 # Random_Handler -- abstract source of random numbers
@@ -203,4 +204,4 @@ simple_random_handler(seed1 u64, seed2 u64) : Random_Handler is
   # random number generator.
   #
   type.time_seeded(rr ()->unit) =>
-    _ := random time_seeded (effect_mode.inst rr)
+    random.instate (random time_seeded) rr

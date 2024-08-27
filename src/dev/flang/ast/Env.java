@@ -60,6 +60,9 @@ public class Env extends ExprWithPos
   {
     super(pos);
 
+    if (CHECKS) check
+      (t != null);
+
     this._type = t;
   }
 
@@ -74,6 +77,7 @@ public class Env extends ExprWithPos
    *
    * @return this Expr's type or null if not known.
    */
+  @Override
   AbstractType typeForInferencing()
   {
     return _type;
@@ -104,14 +108,14 @@ public class Env extends ExprWithPos
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
-   * @param outer the root feature that contains this expression.
+   * @param context the source code context where this Call is used
    *
    * @return a call to the outer references to access the value represented by
    * this.
    */
-  public Expr resolveTypes(Resolution res, AbstractFeature outer)
+  public Expr resolveTypes(Resolution res, Context context)
   {
-    _type = _type.resolve(res, outer);
+    _type = _type.resolve(res, context);
     return this;
   }
 

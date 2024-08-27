@@ -1,0 +1,7 @@
+public parent is
+
+  module get_name => "PARENT"
+
+  name := get_name
+
+  public introduce => "I'm $name"

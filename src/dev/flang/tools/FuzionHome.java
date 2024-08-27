@@ -28,6 +28,7 @@ package dev.flang.tools;
 
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.FuzionOptions;
 
 import java.nio.file.Path;
 
@@ -50,7 +51,7 @@ public class FuzionHome extends ANY
    * Value of property with name FUZION_HOME_PROPERTY.  Used only to initialize
    * _fuzionHome.
    */
-  private String _fuzionHomeProperty = System.getProperty(FuzionConstants.FUZION_HOME_PROPERTY);
+  private String _fuzionHomeProperty = FuzionOptions.propertyOrEnv(FuzionConstants.FUZION_HOME_PROPERTY);
 
 
   /**

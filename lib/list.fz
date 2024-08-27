@@ -164,7 +164,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   public redef as_array array A =>
     lm : mutate is
       redef mpanic(msg String) => fuzion.std.panic msg
-    lm.go ()->
+    lm.instate_self ()->
       e := lm.env.new list.this
       array A count _->
         res := e.get.first
@@ -416,15 +416,11 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # is true.
   #
   public redef filter (p A -> bool) list A =>
-    filter0 p
-
-
-  filter0 (p A -> bool) list A =>
     match drop_while (a -> !(p a))
       _ nil  => nil
       c Cons => ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
                   redef head => c.head
-                  redef tail => c.tail.filter0 p
+                  redef tail => c.tail.filter p
 
 
   # create a list that repeats the current list indefinitely.  In case 'list.this'
@@ -455,14 +451,16 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # create a new list from the result of applying 'f' to the
   # elements of this list and 'b' in order.
   #
-  public zip0(U, V type, b list U, f (A,U)->V) list V =>
-    list.this ? c1 Cons => (b ? c2 Cons =>
-                                  zip_cons : Cons V (list V) is
-                                    redef head => f c1.head c2.head
-                                    redef tail => c1.tail.zip0 U V c2.tail f
-                                  zip_cons
-                              | nil    => nil)
-              | nil    => nil
+  public redef zip(U, V type, b Sequence U, f (A,U)->V) list V =>
+    match list.this
+      c1 Cons =>
+        b.as_list ? c2 Cons =>
+                      zip_cons : Cons V (list V) is
+                        redef head => f c1.head c2.head
+                        redef tail => c1.tail.zip U V c2.tail f
+                      zip_cons
+                  | nil    => nil
+      nil => nil
 
 
   # create a new list from the result of applying 'f' to the

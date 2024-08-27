@@ -435,7 +435,7 @@ public class Intrinsics extends ANY
 
     put("fuzion.sys.fileio.mmap"  , (c,cl,outer,in) -> CExpr.call("fzE_mmap", new List<CExpr>(
       A0.castTo("FILE * "),   // file
-      A1.castTo("off_t"),     // offset
+      A1.castTo("uint64_t"),  // offset
       A2.castTo("size_t"),    // size
       A3.castTo("int *")      // int[1] contains success=0 or error=-1
     )).ret());
@@ -456,7 +456,7 @@ public class Intrinsics extends ANY
         return CStmnt.seq(
           CStmnt.decl("char *", d_name, CExpr.call("fzE_readdir", new List<>(A0.castTo("intptr_t *")))),
           CStmnt.iff(d_name.eq(new CIdent("NULL")), CStmnt.seq(
-            c.heapClone(c.constString("error in read_dir encountered NULL pointer".getBytes(StandardCharsets.UTF_8)), rc).ret())),
+            c.heapClone(c.constString("error in read_dir encountered NULL pointer"), rc).ret())),
           c.heapClone(c.constString(d_name, CExpr.call("strlen", new List<>(d_name)).castTo("int")), rc).ret()
         );
       });
@@ -928,23 +928,30 @@ public class Intrinsics extends ANY
     )).ret());
 
 
-    put("effect.replace"       ,
-        "effect.default"       ,
-        "effect.abortable"     ,
-        "effect.abort0"        , (c,cl,outer,in) ->
+    put("effect.type.abort0"     ,
+        "effect.type.default0"   ,
+        "effect.type.instate0"   ,
+        "effect.type.is_instated0",
+        "effect.type.replace0"   , (c,cl,outer,in) ->
         {
-          var ecl = c._fuir.effectType(cl);
+          var ecl = c._fuir.effectTypeFromInstrinsic(cl);
           var ev  = CNames.fzThreadEffectsEnvironment.deref().field(c._names.env(ecl));
           var evi = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));
           var evj = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envJmpBuf(ecl));
           var o   = CNames.OUTER;
-          var e   = c._fuir.clazzIsRef(ecl) ? o : o.deref();
+          var e   = A0;
+          var event_is_unit_type = c._fuir.clazzIsUnitType(ecl);
           return
             switch (in)
               {
-              case "effect.replace"   ->                                  ev.assign(e)                            ;
-              case "effect.default"   -> CStmnt.iff(evi.not(), CStmnt.seq(ev.assign(e), evi.assign(CIdent.TRUE )));
-              case "effect.abortable" ->
+              case "effect.type.abort0"        ->
+                CStmnt.seq(CStmnt.iff(evi, CExpr.call("longjmp",new List<>(evj.deref(), CExpr.int32const(1)))),
+                           CExpr.fprintfstderr("*** C backend support for %s missing\n",
+                                               CExpr.string(c._fuir.clazzOriginalName(cl))),
+                           CExpr.exit(1));
+              case "effect.type.default0"     -> CStmnt.iff(evi.not(), CStmnt.seq(event_is_unit_type ? CExpr.UNIT : ev.assign(e),
+                                                                                  evi.assign(CIdent.TRUE )));
+              case "effect.type.instate0"     ->
                 {
                   var oc = c._fuir.clazzActualGeneric(cl, 0);
                   var call = c._fuir.lookupCall(oc);
@@ -954,25 +961,16 @@ public class Intrinsics extends ANY
                       var oldev  = new CIdent("old_ev");
                       var oldevi = new CIdent("old_evi");
                       var oldevj = new CIdent("old_evj");
-                      yield CStmnt.seq(CStmnt.decl(c._types.clazz(ecl), oldev , ev ),
+                      yield CStmnt.seq(event_is_unit_type ? CExpr.UNIT : CStmnt.decl(c._types.clazz(ecl), oldev , ev ),
                                        CStmnt.decl("bool"             , oldevi, evi),
                                        CStmnt.decl("jmp_buf*"         , oldevj, evj),
                                        CStmnt.decl("jmp_buf", jmpbuf),
-                                       ev.assign(e),
+                                       event_is_unit_type ? CExpr.UNIT : ev.assign(e),
                                        evi.assign(CIdent.TRUE ),
                                        evj.assign(jmpbuf.adrOf()),
                                        CStmnt.iff(CExpr.call("setjmp",new List<>(jmpbuf)).eq(CExpr.int32const(0)),
-                                                  CExpr.call(c._names.function(call), new List<>(A0))),
-                                       /* NYI: this is a bit radical: we copy back the value from env to the outer instance, i.e.,
-                                        * the outer instance is no longer immutable and we might run into difficulties if
-                                        * the outer instance is used otherwise.
-                                        *
-                                        * It might be better to store the adr of a a value type effect in ev. Then we do not
-                                        * have to copy anything back, but we would have to copy the value in case of effect.replace
-                                        * and effect.default.
-                                        */
-                                       e.assign(ev),
-                                       ev .assign(oldev ),
+                                                  CExpr.call(c._names.function(call), new List<>(A1))),
+                                       event_is_unit_type ? CExpr.UNIT : ev .assign(oldev ),
                                        evi.assign(oldevi),
                                        evj.assign(oldevj));
                     }
@@ -983,22 +981,10 @@ public class Intrinsics extends ANY
                                        CExpr.call("exit", new List<>(CExpr.int32const(1))));
                     }
                 }
-              case "effect.abort0"  ->
-                CStmnt.seq(CStmnt.iff(evi, CExpr.call("longjmp",new List<>(evj.deref(), CExpr.int32const(1)))),
-                           CExpr.fprintfstderr("*** C backend support for %s missing\n",
-                                               CExpr.string(c._fuir.clazzOriginalName(cl))),
-                           CExpr.exit(1));
+              case "effect.type.is_instated0" -> CStmnt.seq(CStmnt.iff(evi, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret());
+              case "effect.type.replace0"     -> c._fuir.clazzIsUnitType(ecl) ? CExpr.UNIT : ev.assign(e);
               default -> throw new Error("unexpected intrinsic '" + in + "'.");
               };
-        });
-    put("effect.type.is_installed"       , (c,cl,outer,in) ->
-        {
-          var ecl = c._fuir.clazzActualGeneric(cl, 0);
-          var evi = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));
-          // NYI: UNDER DEVELOPMENT: can this logic be moved to abstract interpreter?
-          return c._fuir.clazzNeedsCode(ecl)
-            ? CStmnt.seq(CStmnt.iff(evi, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret())
-            : c._names.FZ_FALSE.ret();
         });
 
     var noJava = CStmnt.seq(
@@ -1218,6 +1204,40 @@ public class Intrinsics extends ANY
     });
     // NYI: UNDER DEVELOPMENT: put("fuzion.java.destroy_jvm", (c,cl,outer,in) -> {});
 
+    put("concur.sync.mtx_init",      (c,cl,outer,in) ->
+      {
+        var tmp = new CIdent("tmp");
+        var rc = c._fuir.clazzResultClazz(cl);
+        return CStmnt.seq(
+          CStmnt.decl("void *", tmp, CExpr.call("fzE_mtx_init", new List<>())),
+          CStmnt.iff(tmp.eq(CNames.NULL),
+            c.returnOutcome(c._fuir.clazz_error(), c.error(c.constString("An error occurred initializing the mutex.")), rc, 1),
+            c.returnOutcome(c._fuir.clazz(SpecialClazzes.c_sys_ptr), tmp, rc , 0)
+          )
+        );
+      }
+    );
+    put("concur.sync.mtx_lock",      (c,cl,outer,in) -> CStmnt.iff(CExpr.call("fzE_mtx_lock",      new List<>(A0)).eq(new CIdent("0")), c._names.FZ_TRUE.ret(), c._names.FZ_FALSE.ret()));
+    put("concur.sync.mtx_trylock",   (c,cl,outer,in) -> CStmnt.iff(CExpr.call("fzE_mtx_trylock",   new List<>(A0)).eq(new CIdent("0")), c._names.FZ_TRUE.ret(), c._names.FZ_FALSE.ret()));
+    put("concur.sync.mtx_unlock",    (c,cl,outer,in) -> CStmnt.iff(CExpr.call("fzE_mtx_unlock",    new List<>(A0)).eq(new CIdent("0")), c._names.FZ_TRUE.ret(), c._names.FZ_FALSE.ret()));
+    put("concur.sync.mtx_destroy",   (c,cl,outer,in) -> CExpr.call("fzE_mtx_destroy",   new List<>(A0)));
+    put("concur.sync.cnd_init",      (c,cl,outer,in) ->
+      {
+        var tmp = new CIdent("tmp");
+        var rc = c._fuir.clazzResultClazz(cl);
+        return CStmnt.seq(
+          CStmnt.decl("void *", tmp, CExpr.call("fzE_cnd_init",      new List<>())),
+          CStmnt.iff(tmp.eq(CNames.NULL),
+            c.returnOutcome(c._fuir.clazz_error(), c.error(c.constString("An error occurred initializing the condition variable.")), rc, 1),
+            c.returnOutcome(c._fuir.clazz(SpecialClazzes.c_sys_ptr), tmp, rc , 0)
+          )
+        );
+      }
+    );
+    put("concur.sync.cnd_signal",    (c,cl,outer,in) -> CStmnt.iff(CExpr.call("fzE_cnd_signal",    new List<>(A0)).eq(new CIdent("0")), c._names.FZ_TRUE.ret(), c._names.FZ_FALSE.ret()));
+    put("concur.sync.cnd_broadcast", (c,cl,outer,in) -> CStmnt.iff(CExpr.call("fzE_cnd_broadcast", new List<>(A0)).eq(new CIdent("0")), c._names.FZ_TRUE.ret(), c._names.FZ_FALSE.ret()));
+    put("concur.sync.cnd_wait",      (c,cl,outer,in) -> CStmnt.iff(CExpr.call("fzE_cnd_wait",      new List<>(A0, A1)).eq(new CIdent("0")), c._names.FZ_TRUE.ret(), c._names.FZ_FALSE.ret()));
+    put("concur.sync.cnd_destroy",   (c,cl,outer,in) -> CExpr.call("fzE_cnd_destroy",   new List<>(A0)));
   }
 
 
@@ -1231,6 +1251,7 @@ public class Intrinsics extends ANY
   private static void put(String n1, String n2, IntrinsicCode c) { put(n1, c); put(n2, c); }
   private static void put(String n1, String n2, String n3, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); }
   private static void put(String n1, String n2, String n3, String n4, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); }
+  private static void put(String n1, String n2, String n3, String n4, String n5, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); put(n5, c); }
 
 
   /**
@@ -1438,7 +1459,7 @@ public class Intrinsics extends ANY
 
     if (c._fuir.clazzIsVoidType(rt))
       {
-        result = c.reportErrorInCode("Unexpected comparison of void values. This is a bug in the compiler.");
+        result = c.reportErrorInCode0("Unexpected comparison of void values. This is a bug in the compiler.");
       }
     else if (c._fuir.clazzIsUnitType(rt))
       { // unit-type values are always equal:

@@ -165,7 +165,7 @@ public class FormalGenerics extends ANY
   {
     if (!(generics instanceof FormalGenerics.AsActuals))
       {
-        generics = generics.map(t -> t.resolve(res, outer));
+        generics = generics.map(t -> t.resolve(res, outer.context()));
       }
     return generics;
   }
@@ -215,7 +215,8 @@ public class FormalGenerics extends ANY
     /**
      * Check if this are the formal generics of f used as actuals.
      */
-    boolean actualsOf(AbstractFeature f) {
+    boolean actualsOf(AbstractFeature f)
+    {
       return f.generics() == FormalGenerics.this;
     }
 

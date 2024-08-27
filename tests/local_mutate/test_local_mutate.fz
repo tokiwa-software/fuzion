@@ -59,7 +59,7 @@ test_local_mutate is
 
       # run code within an instance of m
       #
-      m.go ()->
+      m.instate_self ()->
         s := m.env.new 0
 
         for e in l do
@@ -68,7 +68,7 @@ test_local_mutate is
         say "inside m.go: s.get = {s.get}"
         say "inside m.go: count = {count}"
 
-      say "using m.go and count: {m.go ()->count}"
+      say "using m.instate_self and count: {m.instate_self ()->count}"
 
       count2 =>
         s := m.env.new 0
@@ -81,7 +81,7 @@ test_local_mutate is
       # say count    # *** will cause compile-time an error, requires m to be installed
 
       neg_test3 =>
-        s := m.go ()->count2
+        s := m.instate_self ()->count2
         say s             # *** will cause an error, requires m to be installed
         "** failed, did not panic **"
 
@@ -95,8 +95,8 @@ test_local_mutate is
                 .catch caught_msg)
 
       neg_test4 =>
-        s := m.go ()->count2
-        m.go ()->
+        s := m.instate_self ()->count2
+        m.instate_self ()->
           s.get <- -12    # *** will cause an error, m has changed!
           say s
         "** failed, did not panic **"
@@ -106,8 +106,8 @@ test_local_mutate is
 
       neg_test5 =>
         q =>
-          s1 := m.go ()->count2
-          m.go ()->
+          s1 := m.instate_self ()->count2
+          m.instate_self ()->
             s1.get <- -12    # *** will cause an error, m has changed!
             say s1
           "** failed, did not panic **"
@@ -130,7 +130,7 @@ test_local_mutate is
         m : mutate is
 
         # execute code with mutate effect `m`:
-        m.go ()->
+        m.instate_self ()->
 
           arr := (mutate.array T).new m c.as_i64 data[0]
 
@@ -220,7 +220,7 @@ test_local_mutate is
                cur.p.close
         r
 
-      r0 := m.go ()->(ring3 from0.as_list)
+      r0 := m.instate_self ()->(ring3 from0.as_list)
       say "left mutate environment m"
       for
         i in 1..10
@@ -357,7 +357,7 @@ test_local_mutate is
         c.freeze
         c
 
-      r := m.go ()->(create_ring2 from0.as_list)
+      r := m.instate_self ()->(create_ring2 from0.as_list)
       say "left mutate environment m"
       say r
       for

@@ -37,7 +37,7 @@ import java.security.NoSuchAlgorithmException;
 import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
-import dev.flang.ast.AbstractConstant;
+import dev.flang.ast.Constant;
 import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
@@ -556,6 +556,9 @@ class LibraryOut extends ANY
    */
   void type(AbstractType t)
   {
+    if (PRECONDITIONS) require
+      (t != null, t != Types.t_ERROR);
+
     var off = _data.offset(t);
     if (off >= 0)
       {
@@ -723,7 +726,7 @@ class LibraryOut extends ANY
             _data.writeByte(MirExprKind.Unit.ordinal());
           }
       }
-    else if (e instanceof AbstractConstant c)
+    else if (e instanceof Constant c)
       {
         lastPos = exprKindAndPos(MirExprKind.Const, lastPos, e.sourceRange());
   /*

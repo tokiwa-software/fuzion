@@ -67,7 +67,8 @@ public class ANY
   /**
    * `class:method:line` of the condition that failed
    */
-  private static String origin(){
+  private static String origin()
+  {
     var st = (new Throwable()).getStackTrace();
     if (st.length < 3)
       {
@@ -812,10 +813,10 @@ public class ANY
     java.lang.Runtime.getRuntime().addShutdownHook
       (new Thread(() ->
        {
-         for (var e : _counts_.entrySet())
-           {
-             say("ALLOCS: "+e.getValue()+"\t: "+e.getKey());
-           }
+         _counts_.entrySet()
+           .stream()
+           .sorted((a,b)->Integer.compare(a.getValue(), b.getValue()))
+           .forEach(e -> say("ALLOCS: "+e.getValue()+"\t: "+e.getKey()));
        }
                   ));
   }

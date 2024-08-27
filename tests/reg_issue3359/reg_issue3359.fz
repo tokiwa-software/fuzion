@@ -1,0 +1,109 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test
+#
+# -----------------------------------------------------------------------
+
+# Test errors reported for missing abstract (type) features
+#
+reg_issue3359 is
+
+  # ---------------------------------------------------------------------
+  #
+  # first, check errors for missing implementations of abstract type features
+
+  # f declares three abstract type features n, o, p
+  #
+  f is
+    type.n unit => abstract
+    type.o unit => abstract
+    type.p unit => abstract
+
+
+  # g does not implement any of the three inherited type features n, o, p
+  #
+  g : f is
+
+
+  # h implementes type feature n, but not o nor p
+  #
+  h : g is
+    redef type.n =>
+
+
+  # t will call T.n and T.o, but not T.p since this call is unreachable
+  #
+  t(T type : f) =>
+    if      envir.args.count = 0 then T.n
+    else if envir.args.count = 1 then T.o
+    else if true                 then
+                                 else T.p  # unreachable, will not be reported!
+
+
+  # f does not implement n nor o, so these two will be reported as not implemented abstract
+  t f
+
+  # g does not implement n nor o, so these two will be reported as not implemented abstract
+  t g
+
+  # h does not implement n, so this will be reported as not implemented abstract
+  t h
+
+
+  # ---------------------------------------------------------------------
+  #
+  # next, also check errors for missing implementations of abstract normal features
+
+  # i declares three abstract features q, r, s
+  #
+  i is
+    q unit => abstract
+    r unit => abstract
+    s unit => abstract
+
+
+  # j does not implement any of the three inherited features q, r, s
+  #
+  j : i is
+
+
+  # k implementes feature q, but not r nor s
+  #
+  k : j is
+    redef q =>
+
+
+  # u will call T.q and T.r, but not T.s since this call is unreachable
+  #
+  u(v T : i) =>
+    if      envir.args.count = 0 then v.q
+    else if envir.args.count = 1 then v.r
+    else if true                 then
+                                 else v.s  # unreachable, will not be reported!
+
+
+  # i does not implement q nor r, so these two will be reported as not implemented abstract
+  u i
+
+  # j does not implement q nor r, so these two will be reported as not implemented abstract
+  u j
+
+  # k does not implement q, so this will be reported as not implemented abstract
+  u k

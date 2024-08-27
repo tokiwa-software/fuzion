@@ -23,7 +23,7 @@
 
 # read -- effect providing reading operations in directories
 #
-public read(ro Read_Handler) : simple_effect is
+public read(ro Read_Handler) : effect is
 
 
   # reads the next entry of this directory

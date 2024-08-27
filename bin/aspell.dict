@@ -9,7 +9,6 @@ AbstractBlock
 AbstractCall
 AbstractCase
 AbstractCase's
-AbstractConstant
 AbstractCurrent
 AbstractFeature
 AbstractInterpreter
@@ -753,7 +752,7 @@ layouting
 lbrace
 LBRACE
 LBRACKET
-lcrochet
+lbracket
 len
 lexer's
 lexing

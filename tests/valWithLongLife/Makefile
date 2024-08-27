@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = valWithLongLife
-include ../positive.mk
+include ../simple.mk

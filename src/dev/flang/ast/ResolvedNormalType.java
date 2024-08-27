@@ -91,6 +91,13 @@ public class ResolvedNormalType extends ResolvedType
   AbstractFeature _feature;
 
 
+  /**
+   * Cached result of isRef(). Even though this function looks harmless, it is
+   * surprisingly performance critical.
+   */
+  Boolean _isRef;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -460,13 +467,19 @@ public class ResolvedNormalType extends ResolvedType
    */
   public boolean isRef()
   {
-    return switch (this._refOrVal)
+    var r = _isRef;
+    if (r == null)
       {
-      case Boxed                -> true;
-      case Value                -> false;
-      case LikeUnderlyingFeature-> feature().isThisRef();
-      case ThisType             -> false;
-      };
+        r = switch (this._refOrVal)
+          {
+          case Boxed                -> true;
+          case Value                -> false;
+          case LikeUnderlyingFeature-> feature().isThisRef();
+          case ThisType             -> false;
+          };
+        this._isRef = r;
+      }
+    return r;
   }
 
 
@@ -627,11 +640,12 @@ public class ResolvedNormalType extends ResolvedType
         /**
          * This is a bit ugly, even though this type is a ResolvedType, the generics are not.
          */
-        AbstractType resolve(Resolution res, AbstractFeature outerfeat)
+        @Override
+        AbstractType resolve(Resolution res, Context context)
         {
           if (_resolved == null)
             {
-              _resolved = UnresolvedType.finishResolve(res, outerfeat, this, declarationPos(), feature(), _generics, unresolvedGenerics(), outer(), _refOrVal, false);
+              _resolved = UnresolvedType.finishResolve(res, context, this, declarationPos(), feature(), _generics, unresolvedGenerics(), outer(), _refOrVal, false, false);
             }
           return _resolved;
         }
@@ -657,7 +671,7 @@ public class ResolvedNormalType extends ResolvedType
           }
         if (isChoice())
           {
-            for (var g : choiceGenerics())
+            for (var g : choiceGenerics(Context.NONE))
               {
                 g.usedFeatures(s);
               }

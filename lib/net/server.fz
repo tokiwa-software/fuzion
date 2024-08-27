@@ -29,15 +29,15 @@
 # 1) Initialize the server, e.g. like this:
 # `server family.ipv4 protocol.tcp 8080`
 # 2) accept a new connection:
-#      `server.accept request_handler`
+#      `server.accept connection_handler`
 #
 module:public server(
   state outcome i64,
   p protocol.val,
-  m effect_mode.val,
+  _ unit,  # NYI: CLEANUP: rename `server(f family.val, p protocol.val, addr String, port u16)` to avoid these 3xunit
   _ unit,
   _ unit
-) : effect m
+) : effect
 is
 
   # get the last error that occurred
@@ -52,11 +52,12 @@ is
   public close =>
     match state
       d i64 =>
-        _ := match fuzion.sys.net.close d
+        s := match fuzion.sys.net.close d
           unit =>
-            server (error "not initialized") nil effect_mode.repl unit unit
+            server (error "not initialized") nil unit unit unit
           error error =>
-            server error nil effect_mode.repl unit unit
+            server error nil unit unit unit
+        s.replace
       * =>
 
 
@@ -64,7 +65,7 @@ is
   # does nothing for UDP etc.
   # blocks until connection is established
   # NYI we may want to close server on certain errors?
-  public accept(T type, LM type : mutate, rh Request_Handler T) outcome T =>
+  public accept(T type, ch Connection_Handler T) outcome T =>
     match state
       d i64 =>
         match fuzion.sys.net.accept d
@@ -75,15 +76,17 @@ is
             #
             # no_threads : concur.Thread_Handler is
             #   spawn(code ()->unit) concur.thread.spawned =>
-            #     panic "may not spawn threads in request handler"
-            # (concur.thread no_threads).go ()->
-            #   _ := request_handler.env.handle_request (channel desc)
+            #     panic "may not spawn threads in connection handler"
+            # (concur.thread no_threads).instate_self ()->
+            #   _ := connection_handler.env.handle_connection (channel desc)
             #   fuzion.sys.net.close desc
 
-            res := (io.buffered.reader LM (read_provider desc) 1024).with ()->
-              (io.buffered.writer LM (write_provider desc) 1024).with ()->
-                (net.channel desc).go ()->
-                  rh.handle_request
+            lm : mutate is
+            res := lm.instate_self ()->
+              (io.buffered.reader lm (read_provider desc) 1024).with ()->
+                (io.buffered.writer lm (write_provider desc) 1024).with ()->
+                  (net.channel desc).instate_self ()->
+                    ch.handle_connection lm
 
             _ := fuzion.sys.net.close desc
 
@@ -94,10 +97,31 @@ is
 
           e error =>
             # NYI we may not need to close server on every error...
-            _ := server e nil effect_mode.repl unit unit
+            (server e nil unit unit unit).replace
             e
       e error =>
         e
+
+
+  # accept a TCP connection that will be handled in a separate thread
+  #
+  public accept_threaded(ch Connection_Handler unit) outcome unit =>
+    match state
+      d i64 =>
+        match fuzion.sys.net.accept d
+          desc i64 =>
+            _ := concur.thread.spawn ()->
+              lm : mutate is
+              _ := lm.instate_self ()->
+                (io.buffered.reader lm (read_provider desc) 1024).with ()->
+                  (io.buffered.writer lm (write_provider desc) 1024).with ()->
+                    (net.channel desc).instate_self ()->
+                      ch.handle_connection lm
+            unit
+          e error =>
+            (server e nil unit unit unit).replace
+            e
+      e error => e
 
 
 # open new server bound to the any address listening on port
@@ -122,7 +146,7 @@ public server(f family.val, p protocol.val, addr String, port u16) outcome unit 
 
   match init_ip_server f p addr port
     desc i64 =>
-      _ := server desc p effect_mode.repl unit unit
+      (server desc p unit unit unit).replace
       unit
     e error =>
       e
@@ -130,8 +154,8 @@ public server(f family.val, p protocol.val, addr String, port u16) outcome unit 
 
 # get currently installed server from env
 public server =>
-  if !effect.is_installed server
-    _ := server (error "not initialized") nil effect_mode.default unit unit
+  if !server.is_instated
+    (server (error "not initialized") nil unit unit unit).default
   server.env
 
 

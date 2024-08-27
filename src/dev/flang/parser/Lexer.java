@@ -43,6 +43,7 @@ import dev.flang.util.Pair;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.SourceRange;
+import dev.flang.util.StringHelpers;
 import dev.flang.util.UnicodeData;
 
 
@@ -141,8 +142,8 @@ public class Lexer extends SourceFile
     t_rparen,      // )
     t_lbrace,      // {
     t_rbrace,      // }
-    t_lcrochet,    // [
-    t_rcrochet,    // ]
+    t_lbracket,    // [
+    t_rbracket,    // ]
     t_semicolon,   // ;
     t_question,    // ?
     t_numliteral,  // 123
@@ -198,7 +199,6 @@ public class Lexer extends SourceFile
     t_match("match"),
     t_value("value"),
     t_ref("ref"),
-    t_synchronized("synchronized"),   // unused
     t_redef("redef"),
     t_const("const"),                 // unused
     t_leaf("leaf"),                   // unused
@@ -217,9 +217,10 @@ public class Lexer extends SourceFile
     t_eof,               // end of file
     t_indentationLimit,  // token's indentation is not sufficient
     t_lineLimit,         // token is in next line while sameLine() parsing is enabled
-    t_spaceLimit,        // token follows white space while endAtSpace is enabled
+    t_spaceOrSemiLimit,  // token follows white space or semicolon while endAtSpace is enabled
     t_colonLimit,        // token is operator ":" while endAtColon is enabled
     t_barLimit,          // token is operator "|" while endAtBar is enabled
+    t_ambiguousSemi,     // it is unclear whether the semicolon ends the inner or the outer block, will always cause a syntax error
     t_undefined;         // current token before first call to next()
 
     /**
@@ -317,8 +318,8 @@ public class Lexer extends SourceFile
             case t_rparen            : result = "right parenthesis ')'"                      ; break;
             case t_lbrace            : result = "left curly brace '{'"                       ; break;
             case t_rbrace            : result = "right curly brace '}'"                      ; break;
-            case t_lcrochet          : result = "left crochet '['"                           ; break;
-            case t_rcrochet          : result = "right crochet ']'"                          ; break;
+            case t_lbracket          : result = "left bracket '['"                           ; break;
+            case t_rbracket          : result = "right bracket ']'"                          ; break;
             case t_semicolon         : result = "semicolon ';'"                              ; break;
             case t_question          : result = "question mark '?'"                          ; break;
             case t_numliteral        : result = "numeric literal"                            ; break;
@@ -340,6 +341,12 @@ public class Lexer extends SourceFile
     }
   }
 
+  static enum SemiState {
+    CONTINUE, // continue parsing current rule at semicolon
+    END,      // end block at semicolon
+    ERROR     // ambiguous semicolon in nested blocks
+  }
+
 
   /**
    * Private code point classes
@@ -354,8 +361,8 @@ public class Lexer extends SourceFile
   private static final byte K_RPAREN  =  7;  // ')'
   private static final byte K_LBRACE  =  8;  // '{'  curly brackets or braces
   private static final byte K_RBRACE  =  9;  // '}'
-  private static final byte K_LCROCH  = 10;  // '['  square brackets or crochets
-  private static final byte K_RCROCH  = 11;  // ']'
+  private static final byte K_LBRACK  = 10;  // '['  square brackets
+  private static final byte K_RBRACK  = 11;  // ']'
   private static final byte K_SEMI    = 12;  // ';'
   private static final byte K_DIGIT   = 13;  // '0'..'9'
   private static final byte K_LETTER  = 14;  // 'A'..'Z', 'a'..'z', mathematical letter
@@ -401,8 +408,8 @@ public class Lexer extends SourceFile
     // 5…
     K_LETTER  /* P   */, K_LETTER  /* Q   */, K_LETTER  /* R   */, K_LETTER  /* S   */,
     K_LETTER  /* T   */, K_LETTER  /* U   */, K_LETTER  /* V   */, K_LETTER  /* W   */,
-    K_LETTER  /* X   */, K_LETTER  /* Y   */, K_LETTER  /* Z   */, K_LCROCH  /* [   */,
-    K_BACKSL  /* \   */, K_RCROCH  /* ]   */, K_OP      /* ^   */, K_LETTER  /* _   */,
+    K_LETTER  /* X   */, K_LETTER  /* Y   */, K_LETTER  /* Z   */, K_LBRACK  /* [   */,
+    K_BACKSL  /* \   */, K_RBRACK  /* ]   */, K_OP      /* ^   */, K_LETTER  /* _   */,
     // 6…
     K_GRAVE   /* `   */, K_LETTER  /* a   */, K_LETTER  /* b   */, K_LETTER  /* c   */,
     K_LETTER  /* d   */, K_LETTER  /* e   */, K_LETTER  /* f   */, K_LETTER  /* g   */,
@@ -500,7 +507,7 @@ public class Lexer extends SourceFile
       }
     if (!got.isEmpty())
       {
-        say("* Unicode " + Errors.plural(got.size(), "category") + " " +
+        say("* Unicode " + StringHelpers.plural(got.size(), "category") + " " +
                            got.stream().map(x -> "`" + x + "`").collect(Collectors.joining (", ")));
       }
   }
@@ -620,7 +627,7 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Token at this pos will be returned by current() even if its indentaion is
+   * Token at this pos will be returned by current() even if its indentation is
    * at <= _minIndent. If set to the first token of a expression that sets
    * _minIndent, this ensures that we can still parse the first token of this
    * expression.
@@ -636,8 +643,8 @@ public class Lexer extends SourceFile
 
 
   /**
-   * White space restriction for current()/currentAtMinIndent(): Symbols after
-   * this position that are preceded by white space will be replaced by
+   * White space and semicolon restriction for current()/currentAtMinIndent(): Symbols after
+   * this position that are preceded by white space or semicolon will be replaced by
    * t_spaceLimit.
    */
   private int _endAtSpace = Integer.MAX_VALUE;
@@ -655,6 +662,8 @@ public class Lexer extends SourceFile
    * operator "|" will be replaced by t_barLimit.
    */
   private boolean _endAtBar = false;
+
+  private SemiState _atSemicolon = SemiState.CONTINUE;
 
 
   /**
@@ -699,6 +708,7 @@ public class Lexer extends SourceFile
     _endAtSpace = original._endAtSpace;
     _endAtColon = original._endAtColon;
     _endAtBar = original._endAtBar;
+    _atSemicolon = original._atSemicolon;
     _ignoredTokenBefore = original._ignoredTokenBefore;
     _stringLexer = original._stringLexer == null ? null : new StringLexer(original._stringLexer);
   }
@@ -764,8 +774,8 @@ public class Lexer extends SourceFile
           case K_RPAREN  :
           case K_LBRACE  :
           case K_RBRACE  :
-          case K_LCROCH  :
-          case K_RCROCH  :
+          case K_LBRACK  :
+          case K_RBRACK  :
           case K_SEMI    :
           case K_DIGIT   :
           case K_LETTER  :
@@ -851,15 +861,15 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Restrict parsing until the next occurrence of white space.  Symbols after
-   * fromPos that are preceded by white space will be replaced by t_spaceLimit.
+   * Restrict parsing until the next occurrence of white space or semicolon.  Symbols after
+   * fromPos that are preceded by white space or semicolon will be replaced by t_spaceLimit.
    *
    * @param fromPos the position of the last token that is permitted to be
    * preceded by white space.
    *
    * @return the previous endAtSpace-restriction, Integer.MAX_VALUE if none.
    */
-  int endAtSpace(int fromPos)
+  int endAtSpaceOrSemi(int fromPos)
   {
     if (PRECONDITIONS) require
       (fromPos >= 0);
@@ -904,6 +914,41 @@ public class Lexer extends SourceFile
     return result;
   }
 
+  /**
+   * Increases the semicolon state, which is used to detect ambiguous semicolons
+   * e.g. when blocks are nested in one line.
+   */
+  void incrSemiState()
+  {
+    _atSemicolon = _atSemicolon == SemiState.CONTINUE ? SemiState.END
+                                                      : SemiState.ERROR;
+  }
+
+  /**
+   * Decreases the semicolon state, which is used to detect ambiguous semicolons
+   * e.g. when blocks are nested in one line.
+   */
+  void decrSemiState()
+  {
+    _atSemicolon = _atSemicolon == SemiState.ERROR ? SemiState.END
+                                                   : SemiState.CONTINUE;
+  }
+
+  /**
+   * Set a new semicolon state,  which is used to detect ambiguous semicolons
+   * e.g. when blocks are nested in one line.
+   *
+   * @param newVal the new semicolon state
+   * @return the previous semicolon state
+   */
+  SemiState semiState(SemiState newVal)
+  {
+    SemiState old = _atSemicolon;
+    _atSemicolon = newVal;
+    return old;
+  }
+
+
 
   /**
    * Convenience method to temporarily reset limits set via sameLine() or
@@ -917,14 +962,16 @@ public class Lexer extends SourceFile
   <V> V relaxLineAndSpaceLimit(Callable<V> c)
   {
     int oldLine = sameLine(-1);
-    int oldEAS = endAtSpace(Integer.MAX_VALUE);
+    int oldEAS = endAtSpaceOrSemi(Integer.MAX_VALUE);
     var oldEAC = endAtColon(false);
     var oldEAB = endAtBar(false);
+    var oldSemiSt = semiState(SemiState.CONTINUE);
     V result = c.call();
     sameLine(oldLine);
-    endAtSpace(oldEAS);
+    endAtSpaceOrSemi(oldEAS);
     endAtColon(oldEAC);
     endAtBar(oldEAB);
+    semiState(oldSemiSt);
     return result;
   }
 
@@ -972,6 +1019,7 @@ public class Lexer extends SourceFile
    */
   <V> V bracketTermWithNLs(Parens brackets, String rule, Callable<V> c, Callable<V> def)
   {
+    var oldSemiSt = semiState(SemiState.CONTINUE);
     var start = brackets._left;
     var end   = brackets._right;
     var ol = line();
@@ -989,6 +1037,7 @@ public class Lexer extends SourceFile
         sl = nl;
       }
     sameLine(sl);
+    semiState(oldSemiSt);
     return result;
   }
 
@@ -1054,31 +1103,48 @@ public class Lexer extends SourceFile
    * @param sameLine the line number (-1 if any line) for the next token, return
    * t_lineLimit if next token is in a different line.
    *
-   * @param endAtSpace the white space restriction (Integer.MAX_VALUE if none):
+   * @param endAtSpaceOrSemi the white space and semicolon restriction (Integer.MAX_VALUE if none):
    * Any token after this position will be replaced by t_spaceLimit.
    *
    * @param endAtColon true to replace operator ":" by t_colonLimit.
    *
    * @param endAtBar true to replace operator "|" by t_barLimit.
    */
-  Token current(int minIndent, int sameLine, int endAtSpace, boolean endAtColon, boolean endAtBar)
+  Token current(int minIndent, int sameLine, int endAtSpaceOrSemi, boolean endAtColon, boolean endAtBar)
   {
     var t = _curToken;
     int l = line();
     int p = _tokenPos;
     return
-      t == Token.t_eof                                       ? t                        :
-      sameLine  >= 0 && l != sameLine                        ? Token.t_lineLimit        :
-      p > endAtSpace && ignoredTokenBefore()                 ? Token.t_spaceLimit       :
-      p == _minIndentStartPos                                ? t                        :
-      minIndent >= 0 && codePointIndentation(p) <= minIndent ? Token.t_indentationLimit :
+      t == Token.t_eof                                       ? t                              :
+      sameLine  >= 0 && l != sameLine                        ? Token.t_lineLimit              :
+      p > endAtSpaceOrSemi && ignoredTokenBefore()                 ? Token.t_spaceOrSemiLimit :
+      p > endAtSpaceOrSemi && _curToken == Token.t_semicolon       ? Token.t_spaceOrSemiLimit :
+      p == _minIndentStartPos                                ? t                              :
+      minIndent >= 0 && codePointIndentation(p) <= minIndent ? Token.t_indentationLimit       :
       endAtColon                  &&
       _curToken == Token.t_op     &&
-      tokenAsString().equals(":")                            ? Token.t_colonLimit       :
+      tokenAsString().equals(":")                            ? Token.t_colonLimit             :
       endAtBar                    &&
       _curToken == Token.t_op     &&
-      tokenAsString().equals("|")                            ? Token.t_barLimit
+      tokenAsString().equals("|")                            ? Token.t_barLimit         :
+      ambiguousSemi()                                        ? Token.t_ambiguousSemi
                                                              : _curToken;
+  }
+
+  private boolean ambiguousSemi()
+  {
+    return _atSemicolon == SemiState.ERROR &&
+           _curToken == Token.t_semicolon && semiNotAtEnd();
+  }
+
+  private boolean semiNotAtEnd()
+  {
+    var lookAhead = new Lexer(this);
+    lookAhead.next();
+    int nextTokLine = lookAhead.line();
+    // semicolon does not end line if the next (non ignored) token is in the same line
+    return line() == nextTokLine;
   }
 
 
@@ -1206,15 +1272,15 @@ public class Lexer extends SourceFile
    * Obtain the given range pos..lastTokenEndPos() as a SourceRange object.
    *
    * @param pos a byte position within this file, must be smaller than
-   * lastTokenEndPos().
+   * lastTokenEndPos(), unless there were previous errors
    */
   public SourceRange sourceRange(int pos)
   {
     if (PRECONDITIONS) require
       (0 <= pos,
        Errors.any() || pos < lastTokenEndPos());
-
-    var endPos = Math.max(pos+1, lastTokenEndPos());
+    // in error case lastTokenEnd() < pos is possible
+    var endPos = Math.max(Math.min(pos+1, byteLength()), lastTokenEndPos());
     return sourceRange(pos, endPos);
   }
 
@@ -1480,18 +1546,18 @@ BRACER      : '}'
 LBRACKET    : '['
             ;
           */
-          case K_LCROCH  :    // '['  square brackets or crochets
+          case K_LBRACK  :    // '['  square brackets
             {
-              token = Token.t_lcrochet;
+              token = Token.t_lbracket;
               break;
             }
           /**
 RBRACKET    : ']'
             ;
           */
-          case K_RCROCH  :    // ']'
+          case K_RBRACK  :    // ']'
             {
-              token = Token.t_rcrochet;
+              token = Token.t_rbracket;
               break;
             }
           /**
@@ -2371,9 +2437,10 @@ Fuzion xref:input_source[input sources] must match the Fuzion grammar defined in
                                                                       sourcePos(_minIndentStartPos),
                                                                       detail);
       case t_lineLimit        -> Errors.lineBreakNotAllowedHere (sourcePos(lineEndPos(_sameLine)), detail);
-      case t_spaceLimit       -> Errors.whiteSpaceNotAllowedHere(sourcePos(tokenPos()), detail);
+      case t_spaceOrSemiLimit -> Errors.whiteSpaceNotAllowedHere(sourcePos(tokenPos()), detail);
       case t_colonLimit       -> Errors.colonPartOfTernary      (sourcePos(tokenPos()), detail);
       case t_barLimit         -> Errors.barPartOfCase           (sourcePos(tokenPos()), detail);
+      case t_ambiguousSemi    -> Errors.ambiguousSemicolon(sourcePos(pos));
       default                 -> Errors.syntax(sourcePos(pos), expected, currentAsString(), detail);
       }
   }

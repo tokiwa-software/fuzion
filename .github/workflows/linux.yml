@@ -48,7 +48,7 @@ jobs:
       - name: install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install libgc1 libgc-dev shellcheck
+          sudo apt-get install libgc1 libgc-dev shellcheck asciidoc asciidoctor ruby-asciidoctor-pdf pcregrep antlr4
 
       - name: check shell scripts
         run: make shellcheck
@@ -58,6 +58,9 @@ jobs:
 
       - name: build (no java modules)
         run: make no-java
+
+      - name: build docs
+        run: make doc
 
       - name: run tests
         run: make run_tests_parallel

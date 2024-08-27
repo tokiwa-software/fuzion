@@ -25,7 +25,7 @@
 #  FUZION -- the fz command
 #  FUZION_OPTIONS -- options to be passed to $(FUZION)
 override NAME = main
-FUZION_OPTIONS = -XmaxErrors=-1 -modules=mod -moduleDirs=modules
+FUZION_OPTIONS = -modules=mod -moduleDirs=modules
 FUZION ?= ../../bin/fz
 FUZION_RUN = $(FUZION) $(FUZION_OPTIONS)
 FILE = $(NAME).fz

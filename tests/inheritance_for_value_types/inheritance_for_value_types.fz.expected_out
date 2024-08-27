@@ -1,0 +1,16 @@
+PASSED: a.y
+PASSED: b.y
+PASSED: c.y
+PASSED: a.z
+PASSED: b.z
+PASSED: c.z
+PASSED: rx a
+PASSED: rx b
+PASSED: rx c
+PASSED: ry a
+PASSED: ry b
+PASSED: ry c
+PASSED: rz a
+PASSED: rz b
+PASSED: rz c
+PASSED: v a.q

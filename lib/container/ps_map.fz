@@ -147,7 +147,7 @@ O(n log n).
 
     m : mutate is
 
-    m.go ()->
+    m.instate_self ()->
 
       nsize := size + 1
       ndata := m.env.new data

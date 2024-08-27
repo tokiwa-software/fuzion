@@ -34,6 +34,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 void * fzE_malloc_safe(size_t size);
 
+void fzE_memset(void *dest, int ch, size_t sz);
+
+void fzE_memcpy(void *restrict dest, const void *restrict src, size_t sz);
+
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname);
 
@@ -126,7 +130,7 @@ long fzE_get_file_size(FILE* file);
  *   - error   :  result[0]=-1 and NULL
  *   - success :  result[0]=0  and an address where the file was mapped to
  */
-void * fzE_mmap(FILE * file, off_t offset, size_t size, int * result);
+void * fzE_mmap(FILE * file, uint64_t offset, size_t size, int * result);
 
 // unmap an address that was previously mapped by fzE_mmap
 // -1 error, 0 success
@@ -326,5 +330,56 @@ jvalue fzE_get_field0(jobject obj, jstring name, const char *sig);
 jvalue fzE_get_static_field0(jstring class_name, jstring name, const char *sig);
 
 #endif
+
+
+/**
+ * initialize a mutex
+ * @return NULL on error or pointer to mutex
+ */
+void *  fzE_mtx_init     ();
+/**
+ * lock a mutex, undefined behaviour if mutex already locked by current thread
+ * @return -1 on error, 0 on success
+ */
+int32_t fzE_mtx_lock     (void * mtx);
+/**
+ * lock a mutex, success if mutex already locked
+ * @return -1 on error, 0 on success
+ */
+int32_t fzE_mtx_trylock  (void * mtx);
+/**
+ * unlock a mutex, undefined behaviour if mutex not locked by current thread
+ * @return -1 on error, 0 on success
+ */
+int32_t fzE_mtx_unlock   (void * mtx);
+/**
+ * destroys the mutex
+ */
+void    fzE_mtx_destroy  (void * mtx);
+/**
+ * initialize a condition
+ * @return NULL on error or pointer to condition
+ */
+void *  fzE_cnd_init     ();
+/**
+ * unblocks one thread waiting on this condition
+ * @return -1 on error, 0 on success
+ */
+int32_t fzE_cnd_signal   (void * cnd);
+/**
+ * unblocks all threads waiting on this condition
+ * @return -1 on error, 0 on success
+ */
+int32_t fzE_cnd_broadcast(void * cnd);
+/**
+ * blocks thread until signal, broadcast or spurious wakeup
+ * @return -1 on error, 0 on success
+ */
+int32_t fzE_cnd_wait     (void * cnd, void * mtx);
+/**
+ * destroys the condition
+ */
+void    fzE_cnd_destroy  (void * cnd);
+
 
 #endif /* fz.h  */

@@ -55,7 +55,7 @@ is
   #
   public racy_read ! racy_access
   pre
-    racy_accesses_supported
+    debug: racy_accesses_supported
   =>
     racy_access_env.replace
     v
@@ -68,7 +68,7 @@ is
   #
   public racy_write(new_value T) ! racy_access
   pre
-    racy_accesses_supported
+    debug: racy_accesses_supported
   =>
     racy_access_env.replace
     set v := new_value

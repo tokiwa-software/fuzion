@@ -77,6 +77,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
       {
         return this;
       }
+      @Override
       AbstractType typeForInferencing()
       {
         return Types.t_ERROR;
@@ -198,7 +199,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    */
   AbstractType typeForInferencing()
   {
-    return type();
+    return null;
   }
 
 
@@ -223,7 +224,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * @return the union of exprs result type, defaulting to Types.resolved.t_void if
    * no expression can be inferred yet.
    */
-  public static AbstractType union(List<Expr> exprs)
+  public static AbstractType union(List<Expr> exprs, Context context)
   {
     AbstractType t = Types.resolved.t_void;
 
@@ -237,7 +238,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
         if (et != null)
           {
             foundType = true;
-            t = t.union(et);
+            t = t.union(et, context);
           }
       }
 
@@ -260,7 +261,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
         if (et != null)
           {
             foundType = true;
-            result = result.union(et);
+            result = result.union(et, context);
           }
       }
 
@@ -306,9 +307,9 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
-   * @param outer the class that contains this expression.
+   * @param context the source code context where this Expr is used
    */
-  void loadCalledFeature(Resolution res, AbstractFeature outer)
+  void loadCalledFeature(Resolution res, Context context)
   {
   }
 
@@ -348,16 +349,16 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param r the field this should be assigned to.
    *
    * @return the Expr this Expr is to be replaced with, typically an Assign
    * that performs the assignment to r.
    */
-  Expr assignToField(Resolution res, AbstractFeature outer, Feature r)
+  Expr assignToField(Resolution res, Context context, Feature r)
   {
-    return new Assign(res, pos(), r, this, outer);
+    return new Assign(res, pos(), r, this, context);
   }
 
 
@@ -453,11 +454,11 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param  outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the type this expression is assigned to.
    */
-  public Expr wrapInLazy(Resolution res, AbstractFeature outer, AbstractType t)
+  public Expr wrapInLazy(Resolution res, Context context, AbstractType t)
   {
     var result = this;
 
@@ -465,14 +466,14 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
 
     if (t.isLazyType() && !result.type().isLazyType())
       {
-        if (mustNotContainDeclarations("a lazy value", outer))
+        if (mustNotContainDeclarations("a lazy value", context.outerFeature()))
           {
             var fn = new Function(pos(),
                                   new List<>(),
                                   result);
 
-            result = fn.propagateExpectedType(res, outer, t);
-            fn.resolveTypes(res, outer);
+            result = fn.propagateExpectedType(res, context, t);
+            fn.resolveTypes(res, context);
             fn.updateTarget(res);
           }
         else
@@ -493,7 +494,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
    *
@@ -501,7 +502,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
+  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
     return this;
   }
@@ -526,11 +527,11 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param expectedType the expected type.
    */
-  Expr propagateExpectedTypeForPartial(Resolution res, AbstractFeature outer, AbstractType expectedType)
+  Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
   {
     return this;
   }
@@ -573,7 +574,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   }
 
 
-  protected Expr addFieldForResult(Resolution res, AbstractFeature outer, AbstractType t)
+  protected Expr addFieldForResult(Resolution res, Context context, AbstractType t)
   {
     var result = this;
     if (!t.isVoid())
@@ -584,11 +585,11 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
                                 Visi.PRIV,
                                 t,
                                 FuzionConstants.EXPRESSION_RESULT_PREFIX + (_id_++),
-                                outer);
+                                context.outerFeature());
         r.scheduleForResolution(res);
         res.resolveTypes();
-        result = new Block(new List<>(assignToField(res, outer, r),
-                                      new Call(pos, new Current(pos, outer), r).resolveTypes(res, outer)));
+        result = new Block(new List<>(assignToField(res, context, r),
+                                      new Call(pos, new Current(pos, context.outerFeature()), r).resolveTypes(res, context)));
       }
     return result;
   }
@@ -619,9 +620,11 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    *
    * @param frmlT the formal type this value is assigned to
    *
+   * @param context the source code context where this Expr is used
+   *
    * @return this or an instance of Box wrapping this.
    */
-  Expr box(AbstractType frmlT)
+  Expr box(AbstractType frmlT, Context context)
   {
     if (PRECONDITIONS) require
       (frmlT != null);
@@ -629,18 +632,18 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
     var result = this;
     var t = type();
 
-    if (!t.isVoid() && (frmlT.isAssignableFrom(t) || frmlT.isAssignableFrom(t.asRef())))
+    if (!t.isVoid() && (frmlT.isAssignableFrom(t, context) || frmlT.isAssignableFrom(t.asRef(), context)))
       {
-        if (needsBoxing(frmlT))
+        if (needsBoxing(frmlT, context))
           {
             result = new Box(result, frmlT);
             t = result.type();
           }
-        if (frmlT.isChoice() && frmlT.isAssignableFrom(t))
+        if (frmlT.isChoice() && frmlT.isAssignableFrom(t, context))
           {
-            result = tag(frmlT, result);
+            result = tag(frmlT, result, context);
             if (CHECKS) check
-              (!result.needsBoxing(frmlT));
+              (!result.needsBoxing(frmlT, context));
           }
       }
 
@@ -649,8 +652,8 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
         || t.isVoid()
         || frmlT.isGenericArgument()
         || frmlT.isThisType()
-        || !result.needsBoxing(frmlT)
-        || !(frmlT.isAssignableFrom(t) || frmlT.isAssignableFrom(t.asRef())));
+        || !result.needsBoxing(frmlT, context)
+        || !(frmlT.isAssignableFrom(t, context) || frmlT.isAssignableFrom(t.asRef(), context)));
 
     return result;
   }
@@ -662,7 +665,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * @param value
    * @return
    */
-  private Expr tag(AbstractType frmlT, Expr value)
+  private Expr tag(AbstractType frmlT, Expr value, Context context)
   {
     if(PRECONDITIONS) require
       (frmlT.isChoice() || frmlT == Types.t_ERROR);
@@ -682,9 +685,9 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
     //  t choice A B := C
     //
     else if (frmlT
-              .choiceGenerics()
+             .choiceGenerics(context)
               .stream()
-              .filter(cg -> cg.isDirectlyAssignableFrom(value.type()))
+             .filter(cg -> cg.isDirectlyAssignableFrom(value.type(), context))
               .count() > 1)
       {
         AstErrors.ambiguousAssignmentToChoice(frmlT, value);
@@ -694,11 +697,11 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
     // there is a choice generic in this choice
     // that this value is "directly" assignable to
     else if (frmlT
-              .choiceGenerics()
+              .choiceGenerics(context)
               .stream()
-              .anyMatch(cg -> cg.isDirectlyAssignableFrom(value.type())))
+             .anyMatch(cg -> cg.isDirectlyAssignableFrom(value.type(), context)))
       {
-        return new Tag(value, frmlT);
+        return new Tag(value, frmlT, context);
       }
     // Case 3: nested tagging necessary
     // value is only assignable to choice element
@@ -708,9 +711,9 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
         // we assign to the choice generic
         // that expr is assignable to
         var cgs = frmlT
-          .choiceGenerics()
+          .choiceGenerics(context)
           .stream()
-          .filter(cg -> cg.isChoice() && cg.isAssignableFrom(value.type()))
+          .filter(cg -> cg.isChoice() && cg.isAssignableFrom(value.type(), context))
           .collect(Collectors.toList());
 
         if (cgs.size() > 1)
@@ -721,7 +724,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
         if (CHECKS) check
           (Errors.any() || cgs.size() == 1);
 
-        return cgs.size() == 1 ? tag(frmlT, tag(cgs.get(0), value))
+        return cgs.size() == 1 ? tag(frmlT, tag(cgs.get(0), value, context), context)
                                : Expr.ERROR_VALUE;
       }
   }
@@ -745,7 +748,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * Is boxing needed when we assign to frmlT?
    * @param frmlT the formal type we are assigning to.
    */
-  private boolean needsBoxing(AbstractType frmlT)
+  private boolean needsBoxing(AbstractType frmlT, Context context)
   {
     var t = type();
     if (needsBoxingForGenericOrThis(frmlT))
@@ -763,8 +766,8 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
     else
       {
         return frmlT.isChoice() &&
-          !frmlT.isAssignableFrom(t) &&
-          frmlT.isAssignableFrom(t.asRef());
+          !frmlT.isAssignableFrom(t, context) &&
+          frmlT.isAssignableFrom(t.asRef(), context);
       }
   }
 
@@ -775,16 +778,16 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    *
    * @param res the resolution instance
    *
-   * @param outer the context where the unwrapping may take place
+   * @param context the source code context where this Expr is used
    *
    * @param expectedType the expected type
    *
    * @return the unwrapped expression
    */
-  public Expr unwrap(Resolution res, AbstractFeature outer, AbstractType expectedType)
+  public Expr unwrap(Resolution res, Context context, AbstractType expectedType)
   {
     var t = type();
-    return  !expectedType.isAssignableFrom(t)
+    return  !expectedType.isAssignableFrom(t, context)
       && expectedType.compareTo(Types.resolved.t_Any) != 0
       && !t.isGenericArgument()
       && t.feature()
@@ -793,8 +796,8 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
           .anyMatch(c ->
             c.calledFeature().equals(Types.resolved.f_auto_unwrap)
             && !c.actualTypeParameters().isEmpty()
-            && expectedType.isAssignableFrom(c.actualTypeParameters().get(0).applyTypePars(t)))
-      ? new ParsedCall(this, new ParsedName(pos(), "unwrap")).resolveTypes(res, outer)
+                    && expectedType.isAssignableFrom(c.actualTypeParameters().get(0).applyTypePars(t), context))
+      ? new ParsedCall(this, new ParsedName(pos(), "unwrap")).resolveTypes(res, context)
       : this;
   }
 
@@ -802,7 +805,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   /**
    * This expression as a compile time constant.
    */
-  public AbstractConstant asCompileTimeConstant()
+  public Constant asCompileTimeConstant()
   {
     throw new Error("This expr is not a compile time constant: " + this.getClass());
   }
@@ -827,7 +830,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
     {
       { _type = Types.t_ERROR; }
       @Override
-      Expr box(AbstractType frmlT)
+      Expr box(AbstractType frmlT, Context context)
       {
         return this;
       }

@@ -31,8 +31,8 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import dev.flang.util.ANY;
-import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.StringHelpers;
 
 
 /**
@@ -272,7 +272,7 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
       n.startsWith(FuzionConstants.PREANDCALLCONDITION_FEATURE_PREFIX) ? n.replaceFirst(FuzionConstants.PREANDCALLCONDITION_FEATURE_PREFIX + "[0-9]+_", "precall ") :
       n.startsWith(FuzionConstants.PRECONDITION_FEATURE_PREFIX       ) ? n.replaceFirst(FuzionConstants.PRECONDITION_FEATURE_PREFIX        + "[0-9]+_", "pre "    ) :
       n.startsWith(FuzionConstants.POSTCONDITION_FEATURE_PREFIX      ) ? n.replaceFirst(FuzionConstants.POSTCONDITION_FEATURE_PREFIX       + "[0-9]+_", "post "   ) :
-      n.endsWith(FuzionConstants.TYPE_NAME)                            ? n.replace(FuzionConstants.TYPE_NAME, "type") :
+      n.endsWith(FuzionConstants.TYPE_NAME)                            ? n.replace("." + FuzionConstants.TYPE_NAME, "") :
       n.startsWith(FuzionConstants.ITER_ARG_PREFIX_INIT)               ? n.replace(FuzionConstants.ITER_ARG_PREFIX_INIT, "") :
       n.startsWith(FuzionConstants.ITER_ARG_PREFIX_NEXT)               ? n.replace(FuzionConstants.ITER_ARG_PREFIX_NEXT, "") :
       n;
@@ -287,7 +287,7 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
 
   public String argCountAndIdString()
   {
-    return " (" + Errors.argumentsString(_argCount) + (_id > 0 ? "," + _id : "") + ")";
+    return " (" + StringHelpers.argumentsString(_argCount) + (_id > 0 ? "," + _id : "") + ")";
   }
 
 

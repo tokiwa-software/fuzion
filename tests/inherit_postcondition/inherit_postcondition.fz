@@ -32,7 +32,7 @@ test_postcondition is
   # function that prints a string using `say` and returns `true`, used to create output
   # as a side-effect to verify execution of postconditions
   #
-  ok(s) => say s; true
+  ok(s) => {say s; true}
 
 
   # ------ recording and checking execution order ------
@@ -280,7 +280,10 @@ test_postcondition is
       32168
 
   inh_module2 : mod.post_accessing_result is
-    redef n := 64
+    # redefining non-argument field is not allowed
+    # redef n := 64
+    # redefining a routine as a field is allowed
+    redef m := 64
     redef r => 128
     redef f
       post then

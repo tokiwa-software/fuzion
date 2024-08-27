@@ -72,6 +72,7 @@ public abstract class AbstractCurrent extends Expr
    *
    * @return this Expr's type or null if not known.
    */
+  @Override
   AbstractType typeForInferencing()
   {
     return _type;
@@ -103,18 +104,18 @@ public abstract class AbstractCurrent extends Expr
    *
    * @param res the resolution instance
    *
-   * @param the outer feature this should be resolved for
+   * @param context the source code context where this Call is used
    *
    * @return this in case outer is what it was when this was created, or a new
    * Expr `Current.outer_ref. .. .outer_ref` to access the same current instance
    * from within a new, nested outer feature.
    */
-  public Expr resolveTypes(Resolution res, AbstractFeature outer)
+  public Expr resolveTypes(Resolution res, Context context)
   {
     var of = _type.feature();
-    return of == Types.f_ERROR || of == outer
+    return of == Types.f_ERROR || of == context.outerFeature()
       ? this
-      : new This(pos(), outer, of).resolveTypes(res, outer);
+      : new This(pos(), context.outerFeature(), of).resolveTypes(res, context);
   }
 
 

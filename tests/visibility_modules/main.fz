@@ -39,5 +39,4 @@ m =>
 
   say b.get_any.as_string // indirectly calling private feature
 
-  # NYI this does not work yet
-  # say b.get_field
+  say b.get_field

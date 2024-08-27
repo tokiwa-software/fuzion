@@ -45,5 +45,5 @@ stringtest is
   say (String.from_codepoints "hell😀".as_codepoints)
 
   mi : mutate is
-  mi.go ()->
+  mi.instate_self ()->
     say (String.from_mutable_array mi ((mutate.array Any).new mi 1 nil))

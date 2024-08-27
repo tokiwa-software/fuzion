@@ -35,6 +35,7 @@ import static dev.flang.ir.IR.NO_SITE;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 
@@ -246,6 +247,13 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      */
     public abstract Pair<VALUE, RESULT> env(int s, int ecl);
 
+    /**
+     * Generate code to terminate the execution immediately.
+     *
+     * @param msg a message explaining the illegal state
+     */
+    public RESULT reportErrorInCode(String msg) { return comment(msg); }
+
   }
 
 
@@ -256,26 +264,27 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
 
   /**
-   * property-controlled flag to enable debug output.
+   * property- or env-var-controlled flag to enable debug output.
    *
    * To enable debugging, use fz with
    *
-   *   FUZION_JAVA_OPTIONS=-Ddev.flang.fuir.analysis.AbstractInterpreter.DEBUG=true
+   *   dev_flang_fuir_analysis_AbstractInterpreter_DEBUG=true
    *
    * or
    *
-   *   FUZION_JAVA_OPTIONS=-Ddev.flang.fuir.analysis.AbstractInterpreter.DEBUG=".*install_default"
-   *
+   *   dev_flang_fuir_analysis_AbstractInterpreter_DEBUG=".*install_default"
    */
   static final String DEBUG;
   static {
-    var debug = System.getProperty("dev.flang.fuir.analysis.AbstractInterpreter.DEBUG");
+    var prop = "dev.flang.fuir.analysis.AbstractInterpreter.DEBUG";
+    var debug = FuzionOptions.propertyOrEnv(prop);
     DEBUG =
       debug == null ||
       debug.equals("false") ? null :
       debug.equals("true" ) ? ".*"
                             : debug;
   }
+
 
   /*-------------------------  static methods  --------------------------*/
 
@@ -508,6 +517,11 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     var v = containsVoid(stack) ? null
                                 : _processor.unitValue();
 
+    if (last_s > 0 && _fuir.alwaysResultsInVoid(last_s))
+      {
+        l.add(_processor.reportErrorInCode("Severe compiler bug! This code should be unreachable."));
+      }
+
     // FUIR has the (so far undocumented) invariant that the stack must be
     // empty at the end of a basic block.
     if (POSTCONDITIONS) ensure
@@ -643,7 +657,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           var newcl   = _fuir.tagNewClazz  (s);  // static clazz of result
           if (CHECKS) check
             (!_fuir.clazzIsVoidType(valuecl));
-          int tagNum  = _fuir.clazzChoiceTag(newcl, valuecl);
+          int tagNum  = _fuir.tagTagNum(s);
           var r = _processor.tag(s, value, newcl, tagNum);
           push(stack, newcl, r.v0());
           return r.v1();

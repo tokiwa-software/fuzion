@@ -37,6 +37,7 @@ import dev.flang.be.jvm.classfile.ClassFile;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 
@@ -56,6 +57,16 @@ class CodeGen
   extends AbstractInterpreter.ProcessExpression<Expr, Expr>  // both, values and statements are implemented by Expr
   implements ClassFileConstants
 {
+
+
+  /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * env var to enable debug output for tail call optimization:
+   */
+  static private final boolean FUZION_DEBUG_TAIL_CALL = FuzionOptions.boolPropertyOrEnv("FUZION_DEBUG_TAIL_CALL");
+
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -584,10 +595,18 @@ class CodeGen
           if (_types.clazzNeedsCode(cc))
             {
               var cl = si == NO_SITE ? -1 :_fuir.clazzAt(si);
+
+              if (FUZION_DEBUG_TAIL_CALL                                 &&
+                  cc == cl                                               &&  // calling myself
+                  _jvm._tailCall.callIsTailCall(cl, si)                  &&  // as a tail call
+                  _fuir.lifeTime(cl).maySurviveCall()                        // and current instance did not escape
+                )
+                {
+                  say("Escapes, no tail call opt possible: " + _fuir.clazzAsString(cl) + ", lifetime: " + _fuir.lifeTime(cl).name());
+                }
+
               if (   cc == cl                                           // calling myself
-                  && _jvm._tailCall.callIsTailCall(cl, si)              // as a tail call
-                  && !_fuir.lifeTime(cl).maySurviveCall()
-                  )
+                  && _jvm._tailCall.callIsTailCall(cl, si))
                 { // then we can do tail recursion optimization!
 
                   // if present, store target to local #0
@@ -602,7 +621,10 @@ class CodeGen
                     }
 
                   // perform tail call by goto startLabel
-                  code = code.andThen(Expr.goBacktoLabel(_jvm.startLabel(cl)));
+                  code = code
+                    .andThen(_fuir.lifeTime(cl).maySurviveCall()
+                                ? Expr.goBacktoLabel(_jvm.startLabel(cl, true))
+                                : Expr.goBacktoLabel(_jvm.startLabel(cl, false)));
 
                   res = new Pair<>(null,  // result is void, we do not return from this path.
                                  code);
@@ -961,10 +983,22 @@ class CodeGen
                                  Names.RUNTIME_EFFECT_GET,
                                  Names.RUNTIME_EFFECT_GET_SIG,
                                  Names.ANY_TYPE))
-      .andThen(Expr.checkcast(_types.javaType(ecl)));
+      .andThen(Expr.checkcast(_types.resultType(ecl)));
     return new Pair<>(res, Expr.UNIT);
   }
 
+  /**
+   * Generate code to terminate the execution immediately.
+   *
+   * @param msg a message explaining the illegal state
+   */
+  // NYI: BUG: #3178 reportErrorInCode may currently not be called repeatedly
+  //           triggers error: Expecting a stack map frame
+  // @Override
+  // public Expr reportErrorInCode(String msg)
+  // {
+  //   return this._jvm.reportErrorInCode(msg);
+  // }
 
 }
 

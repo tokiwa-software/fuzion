@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue3406.fz:25:3: error 1: Syntax error: expected term (lbrace, lparen, lbracket, fun, string, integer, old, match, or name), found end-of-file
+(#
+--^
+While parsing: term, parse stack: term, opTail, opExpr, operatorExpr, klammer, bracketTerm, term, opTail, opExpr, operatorExpr, expr, exprs, block, unit
+
+one error.

@@ -22,5 +22,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = visibility_scoping
-override FUZION_OPTIONS = -XmaxErrors=-1
 include ../simple.mk

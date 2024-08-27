@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = test_type_of
-include ../positive.mk
+include ../simple.mk

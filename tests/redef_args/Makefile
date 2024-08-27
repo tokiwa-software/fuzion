@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = redef_args
-include ../positive.mk
+include ../simple.mk

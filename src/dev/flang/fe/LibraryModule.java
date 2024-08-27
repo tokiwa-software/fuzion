@@ -48,6 +48,8 @@ import dev.flang.ast.Visi;
 import dev.flang.mir.MIR;
 
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.FuzionOptions;
+
 import static dev.flang.util.FuzionConstants.MirExprKind;
 import dev.flang.util.HexDump;
 import dev.flang.util.List;
@@ -81,7 +83,7 @@ public class LibraryModule extends Module
    * NYI: Instead of using env var, create a new tool "fzdump" or similar to
    * dump intermediate files.
    */
-  static final boolean DUMP = "true".equals(System.getenv("FUZION_DUMP_MODULE_FILE"));
+  static final boolean DUMP = FuzionOptions.boolPropertyOrEnv("FUZION_DUMP_MODULE_FILE");
 
 
   /**

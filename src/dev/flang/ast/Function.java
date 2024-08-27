@@ -69,7 +69,7 @@ public class Function extends AbstractLambda
   /**
    * The implementation of `Function.call` that contains the code of this lambda.
    */
-  AbstractFeature _feature;
+  Feature _feature;
 
 
   /**
@@ -133,6 +133,7 @@ public class Function extends AbstractLambda
 
     _namesAsExprs = names;
     _names = names.map2(n->n.asParsedName());
+    _names.removeIf(n -> n==null);
     _expr = e;
   }
 
@@ -174,7 +175,7 @@ public class Function extends AbstractLambda
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
    *
@@ -182,9 +183,9 @@ public class Function extends AbstractLambda
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
+  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
-    _type = propagateTypeAndInferResult(res, outer, t.functionTypeFromChoice(), false);
+    _type = propagateTypeAndInferResult(res, context, t.functionTypeFromChoice(context), false);
     return this;
   }
 
@@ -209,9 +210,12 @@ public class Function extends AbstractLambda
   {
     var e = _expr.visit(new FeatureVisitor()
       {
+        @Override
         public Expr action(Call c, AbstractFeature outer)
         {
-          return c.updateTarget(res, outer);
+          if (CHECKS)
+            check(outer == _feature);
+          return c.updateTarget(res, _feature.context());
         }
       },
       _feature);
@@ -229,7 +233,7 @@ public class Function extends AbstractLambda
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
    *
@@ -240,7 +244,8 @@ public class Function extends AbstractLambda
    * Types.t_UNDEFINED if no result type available.  if !inferResultType, t. In
    * case of error, return Types.t_ERROR.
    */
-  public AbstractType propagateTypeAndInferResult(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)
+  @Override
+  public AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
   {
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_call == null)
@@ -292,7 +297,7 @@ public class Function extends AbstractLambda
           {
             var rt = inferResultType ? NoType.INSTANCE      : new FunctionReturnType(gs.get(0));
             var im = inferResultType ? Impl.Kind.RoutineDef : Impl.Kind.Routine;
-            _feature = new Feature(pos(), Visi.PRIV, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>("call"), a, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
+            var feature = new Feature(pos(), Visi.PRIV, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>("call"), a, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
               {
                 @Override
                 public boolean isLambdaCall()
@@ -300,6 +305,8 @@ public class Function extends AbstractLambda
                   return true;
                 }
               };
+            _feature = feature;
+            feature._sourceCodeContext = context;
 
             var inheritsName =
               (t.feature() == Types.resolved.f_Unary && gs.size() == 2) ? Types.UNARY_NAME :
@@ -309,7 +316,7 @@ public class Function extends AbstractLambda
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             _inheritsCall = new Call(pos(), null, inheritsName);
             _inheritsCall._generics = gs;
-            List<Expr> expressions = new List<Expr>(_feature);
+            List<Expr> expressions = new List<Expr>(feature);
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             _wrapper = new Feature(pos(),
                                    Visi.PRIV,
@@ -320,7 +327,7 @@ public class Function extends AbstractLambda
                                    new List<>(_inheritsCall),
                                    Contract.EMPTY_CONTRACT,
                                    new Impl(pos(), new Block(expressions), Impl.Kind.Routine));
-            res._module.findDeclarations(_wrapper, outer);
+            res._module.findDeclarations(_wrapper, context.outerFeature());
             res.resolveDeclarations(_wrapper);
             res.resolveTypes(_feature);
             if (inferResultType)
@@ -329,7 +336,7 @@ public class Function extends AbstractLambda
                 _inheritsCall._generics = gs.setOrClone(0, result);
               }
 
-            _call = new Call(pos(), new Current(pos(), outer), _wrapper).resolveTypes(res, outer);
+            _call = new Call(pos(), new Current(pos(), context.outerFeature()), _wrapper).resolveTypes(res, context);
           }
       }
     return result;
@@ -365,9 +372,9 @@ public class Function extends AbstractLambda
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this expression.
+   * @param context the source code context where this Call is used
    */
-  public void resolveTypes(Resolution res, AbstractFeature outer)
+  public void resolveTypes(Resolution res, Context context)
   {
     if (CHECKS) check
       (this._call == null || this._feature != null);
@@ -398,7 +405,7 @@ public class Function extends AbstractLambda
           }
 
         _inheritsCall._generics = generics;
-        Call inheritsCall2 = _inheritsCall.resolveTypes(res, outer);
+        Call inheritsCall2 = _inheritsCall.resolveTypes(res, context);
         // Call.resolveType returns something different than this only for an
         // immediate function call, which is never the case in an inherits
         // clause.
@@ -433,6 +440,7 @@ public class Function extends AbstractLambda
    *
    * @return this Expr's type or null if not known.
    */
+  @Override
   AbstractType typeForInferencing()
   {
     // unlike type(), we do not produce an error but just return null here since
@@ -447,10 +455,8 @@ public class Function extends AbstractLambda
    * features to be searched for runtime types to be layouted.
    *
    * @param res the resolution instance.
-   *
-   * @param outer the root feature that contains this expression.
    */
-  public Expr resolveSyntacticSugar2(Resolution res, AbstractFeature outer)
+  public Expr resolveSyntacticSugar2(Resolution res)
   {
     Expr result = this;
     var ignore = type(); // just for the side-effect of producing an error if there was no type-propagation.

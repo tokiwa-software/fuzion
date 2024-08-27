@@ -95,7 +95,7 @@ char * fzE_readdir(intptr_t * dir) {
   {
     size_t len = strlen(d->d_name);
     char *dup = (char *) fzE_malloc_safe(len + 1);
-    strcpy(dup, d->d_name);
+    fzE_memcpy(dup, d->d_name, len + 1);
     return dup;
   }
 }
@@ -205,7 +205,7 @@ int fzE_socket(int family, int type, int protocol){
 int fzE_getaddrinfo(int family, int socktype, int protocol, int flags, char * host, char * port, struct addrinfo ** result){
   struct addrinfo hints;
 
-  memset(&hints, 0, sizeof hints);
+  fzE_memset(&hints, 0, sizeof hints);
 
   hints.ai_family = get_family(family);
   hints.ai_socktype = get_socket_type(socktype);
@@ -301,14 +301,14 @@ int fzE_get_peer_address(int sockfd, void * buf) {
   // sockaddr_storage: A structure at least as large
   // as any other sockaddr_* address structures.
   struct sockaddr_storage peeraddr;
-  memset(&peeraddr, 0, sizeof(peeraddr));
+  fzE_memset(&peeraddr, 0, sizeof(peeraddr));
   socklen_t peeraddrlen = sizeof(peeraddr);
   if (getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen) == 0) {
     if (peeraddr.ss_family == AF_INET) {
-      memcpy(buf, &(((struct sockaddr_in *)&peeraddr)->sin_addr.s_addr), 4);
+      fzE_memcpy(buf, &(((struct sockaddr_in *)&peeraddr)->sin_addr.s_addr), 4);
       return 4;
     } else if (peeraddr.ss_family == AF_INET6) {
-      memcpy(buf, &(((struct sockaddr_in6 *)&peeraddr)->sin6_addr.s6_addr), 16);
+      fzE_memcpy(buf, &(((struct sockaddr_in6 *)&peeraddr)->sin6_addr.s6_addr), 16);
       return 16;
     }
   }
@@ -323,7 +323,7 @@ unsigned short fzE_get_peer_port(int sockfd) {
   // sockaddr_storage: A structure at least as large
   // as any other sockaddr_* address structures.
   struct sockaddr_storage peeraddr;
-  memset(&peeraddr, 0, sizeof(peeraddr));
+  fzE_memset(&peeraddr, 0, sizeof(peeraddr));
   socklen_t peeraddrlen = sizeof(peeraddr);
   if (getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen) == 0) {
     if (peeraddr.ss_family == AF_INET) {
@@ -381,7 +381,7 @@ long fzE_get_file_size(FILE* file) {
  *   - error   :  result[0]=-1 and NULL
  *   - success :  result[0]=0  and an address where the file was mapped to
  */
-void * fzE_mmap(FILE * file, off_t offset, size_t size, int * result) {
+void * fzE_mmap(FILE * file, uint64_t offset, size_t size, int * result) {
 
   if ((unsigned long)fzE_get_file_size(file) < (offset + size)){
     result[0] = -1;
@@ -504,7 +504,7 @@ void fzE_init()
 {
 #ifdef FUZION_ENABLE_THREADS
   pthread_mutexattr_t attr;
-  memset(&fzE_global_mutex, 0, sizeof(fzE_global_mutex));
+  fzE_memset(&fzE_global_mutex, 0, sizeof(fzE_global_mutex));
   bool res = pthread_mutexattr_init(&attr) == 0 &&
             pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT) == 0 &&
             pthread_mutex_init(&fzE_global_mutex, &attr) == 0;
@@ -566,7 +566,8 @@ void fzE_thread_join(int64_t thrd)
 void fzE_lock()
 {
 #ifdef FUZION_ENABLE_THREADS
-  assert(pthread_mutex_lock(&fzE_global_mutex)==0);
+  int res = pthread_mutex_lock(&fzE_global_mutex);
+  assert( res == 0 );
 #else
   printf("You discovered a severe bug. (fzE_lock)");
 #endif
@@ -579,7 +580,8 @@ void fzE_lock()
 void fzE_unlock()
 {
 #ifdef FUZION_ENABLE_THREADS
-  pthread_mutex_unlock(&fzE_global_mutex);
+  int res = pthread_mutex_unlock(&fzE_global_mutex);
+  assert( res == 0 );
 #else
   printf("You discovered a severe bug. (fzE_unlock)");
 #endif
@@ -764,4 +766,50 @@ void fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
       fcntl(fileno((FILE *)open_results[0]), F_SETFD, FD_CLOEXEC);
     }
   open_results[1] = (int64_t)errno;
+}
+
+
+
+void * fzE_mtx_init() {
+  pthread_mutex_t *mtx = (pthread_mutex_t *)fzE_malloc_safe(sizeof(pthread_mutex_t));
+  return pthread_mutex_init(mtx, NULL) == 0 ? (void *)mtx : NULL;
+}
+
+int32_t fzE_mtx_lock(void *mtx) {
+  return pthread_mutex_lock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
+}
+
+int32_t fzE_mtx_trylock(void *mtx) {
+  return pthread_mutex_trylock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
+}
+
+int32_t fzE_mtx_unlock(void *mtx) {
+  return pthread_mutex_unlock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
+}
+
+void fzE_mtx_destroy(void *mtx) {
+  pthread_mutex_destroy((pthread_mutex_t *)mtx);
+  // NYI: free(mtx);
+}
+
+void * fzE_cnd_init() {
+  pthread_cond_t *cnd = (pthread_cond_t *)fzE_malloc_safe(sizeof(pthread_cond_t));
+  return pthread_cond_init(cnd, NULL) == 0 ? (void *)cnd : NULL;
+}
+
+int32_t fzE_cnd_signal(void *cnd) {
+  return pthread_cond_signal((pthread_cond_t *)cnd) == 0 ? 0 : -1;
+}
+
+int32_t fzE_cnd_broadcast(void *cnd) {
+  return pthread_cond_broadcast((pthread_cond_t *)cnd) == 0 ? 0 : -1;
+}
+
+int32_t fzE_cnd_wait(void *cnd, void *mtx) {
+  return pthread_cond_wait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx) == 0 ? 0 : -1;
+}
+
+void fzE_cnd_destroy(void *cnd) {
+  pthread_cond_destroy((pthread_cond_t *)cnd);
+  // NYI: free(cnd);
 }

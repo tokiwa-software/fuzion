@@ -39,6 +39,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
+import dev.flang.util.StringHelpers;
 
 
 /**
@@ -242,10 +243,9 @@ public class Executor extends ProcessExpression<Value, Object>
         callOnInstance(s, cc, cur, tvalue, args);
 
         Value rres = cur;
-        var resf = _fuir.clazzResultField(cc);
-        if (resf != -1)
+        if (!_fuir.isConstructor(cc))
           {
-            var rfc = resf;
+            var rfc = _fuir.clazzResultField(cc);
             if (!AbstractInterpreter.clazzHasUnitValue(_fuir, fuir().clazzResultClazz(rfc)))
               {
                 rres = Interpreter.getField(rfc, cc, cur, false);
@@ -508,7 +508,7 @@ public class Executor extends ProcessExpression<Value, Object>
 
     var tc = _fuir.clazzChoice(newcl, tagNum);
 
-    return pair(Interpreter.tag(newcl, tc, value));
+    return pair(Interpreter.tag(newcl, tc, value, tagNum));
   }
 
   @Override
@@ -521,9 +521,23 @@ public class Executor extends ProcessExpression<Value, Object>
       }
 
     if (POSTCONDITIONS) ensure
-      (result != unitValue());
+      (fuir().clazzIsUnitType(ecl) || result != unitValue());
 
     return pair(result);
+  }
+
+
+  /**
+   * Generate code to terminate the execution immediately.
+   *
+   * @param msg a message explaining the illegal state
+   */
+  @Override
+  public Object reportErrorInCode(String msg)
+  {
+    say_err(msg);
+    System.exit(1);
+    return null;
   }
 
 
@@ -592,7 +606,7 @@ public class Executor extends ProcessExpression<Value, Object>
   {
     if (repeat > 1)
       {
-        sb.append(Errors.repeated(repeat)).append("\n\n");
+        sb.append(StringHelpers.repeated(repeat)).append("\n\n");
       }
     else if (repeat > 0)
       {

@@ -140,7 +140,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
             jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f32 ) ||
             jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_bool) ||
             jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit);
-          return new Pair<>(Expr.UNIT, Expr.iconst(r ? 1 : 0));
+          return new Pair<>(Expr.iconst(r ? 1 : 0), Expr.UNIT);
         });
 
     put("concur.util.loadFence",
@@ -228,13 +228,13 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("debug",
         (jvm, si, cc, tvalue, args) ->
         {
-          return new Pair<>(Expr.UNIT, Expr.iconst(jvm._options.fuzionDebug() ? 1 : 0));
+          return new Pair<>(Expr.iconst(jvm._options.fuzionDebug() ? 1 : 0), Expr.UNIT);
         });
 
     put("debug_level",
         (jvm, si, cc, tvalue, args) ->
         {
-          return new Pair<>(Expr.UNIT, Expr.iconst(jvm._options.fuzionDebugLevel()));
+          return new Pair<>(Expr.iconst(jvm._options.fuzionDebugLevel()), Expr.UNIT);
         });
 
     put("fuzion.java.Java_Object.is_null0",
@@ -505,6 +505,9 @@ public class Intrinsix extends ANY implements ClassFileConstants
             Expr.checkcast(new ClassType("java/lang/Boolean"))
               .andThen(Expr.invokeVirtual("java/lang/Boolean", "booleanValue", "()Z", PrimitiveType.type_boolean)));
       }
+      case c_sys_ptr -> {
+        yield Expr.aload(slot, JAVA_LANG_OBJECT);
+      }
       default -> {
         var rt = jvm._types.javaType(rc0);
         var jref = jvm._fuir.lookupJavaRef(rc0);
@@ -676,21 +679,25 @@ public class Intrinsix extends ANY implements ClassFileConstants
           if (CHECKS)
             {
               var data = jvm._fuir.lookup_fuzion_sys_internal_array_data(at);
-              code = tvalue
-                .andThen(jvm.getfield(data))
-                .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                           in.replace("fuzion.sys.internal_array.",""),
-                                           "(" + (JAVA_LANG_OBJECT.descriptor()) + ")V",
-                                           ClassFileConstants.PrimitiveType.type_void));
+              if (jvm.fieldExists(data))
+                {
+                  code = tvalue
+                    .andThen(jvm.getfield(data))
+                    .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                               in.replace("fuzion.sys.internal_array.",""),
+                                               "(" + (JAVA_LANG_OBJECT.descriptor()) + ")V",
+                                               ClassFileConstants.PrimitiveType.type_void));
+                }
             }
           return new Pair<>(val, code);
         });
 
-    put("effect.abort0",
+    put("effect.type.abort0",
         (jvm, si, cc, tvalue, args) ->
         {
-          var ecl = jvm._fuir.effectType(cc);
+          var ecl = jvm._fuir.effectTypeFromInstrinsic(cc);
           var code = Expr.iconst(jvm._fuir.clazzId2num(ecl))
+            .andThen(args.get(0).drop())
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "effect_abort",
                                        "(I)V",
@@ -698,23 +705,28 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(Expr.UNIT, code);
         });
 
-    put("effect.abortable",
+    put("effect.type.instate0",
         (jvm, si, cc, tvalue, args) ->
         {
-          var ecl = jvm._fuir.effectType(cc);
-          var oc = jvm._fuir.clazzActualGeneric(cc, 0);
+          var ecl = jvm._fuir.effectTypeFromInstrinsic(cc);
+          var oc  = jvm._fuir.clazzActualGeneric(cc, 0);
           var call = jvm._fuir.lookupCall(oc);
           var call_t = jvm._types.javaType(call);
+          var arg = args.get(0);
+          if (jvm._types.resultType(ecl) == ClassFileConstants.PrimitiveType.type_void)
+            {
+              arg = arg.drop().andThen(Expr.ACONST_NULL);
+            }
           if (call_t instanceof ClassType call_ct)
             {
               var result = Expr.iconst(jvm._fuir.clazzId2num(ecl))
-                .andThen(tvalue)
-                .andThen(args.get(0))
+                .andThen(arg)
+                .andThen(args.get(1))
                 .andThen(Expr.classconst(call_ct))
                 .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                           "effect_abortable",
+                                           "effect_instate",
                                            "(" + ("I" +
-                                                  Names.ANY_DESCR +
+                                                  Names.ANYI_DESCR +
                                                   Names.ANY_DESCR +
                                                   JAVA_LANG_CLASS.descriptor()) +
                                            ")V",
@@ -727,26 +739,37 @@ public class Intrinsix extends ANY implements ClassFileConstants
             }
         });
 
-    put("effect.default",
+    put("effect.type.default0",
         (jvm, si, cc, tvalue, args) ->
         {
-          var ecl = jvm._fuir.effectType(cc);
+          var ecl = jvm._fuir.effectTypeFromInstrinsic(cc);
+          var arg = args.get(0);
+          if (jvm._types.resultType(ecl) == ClassFileConstants.PrimitiveType.type_void)
+            {
+              arg = arg.drop().andThen(Expr.ACONST_NULL);
+            }
           var result = Expr.iconst(jvm._fuir.clazzId2num(ecl))
-            .andThen(tvalue)
+            .andThen(arg)
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "effect_default",
                                        "(" + ("I" +
-                                              Names.ANY_DESCR) +
+                                              Names.ANYI_DESCR) +
                                        ")V",
                                        ClassFileConstants.PrimitiveType.type_void));
           return new Pair<>(Expr.UNIT, result);
         });
-    put("effect.replace",
+
+   put("effect.type.replace0",
         (jvm, si, cc, tvalue, args) ->
         {
-          var ecl = jvm._fuir.effectType(cc);
+          var ecl = jvm._fuir.effectTypeFromInstrinsic(cc);
+          var arg = args.get(0);
+          if (jvm._types.resultType(ecl) == ClassFileConstants.PrimitiveType.type_void)
+            {
+              arg = arg.drop().andThen(Expr.ACONST_NULL);
+            }
           var result = Expr.iconst(jvm._fuir.clazzId2num(ecl))
-            .andThen(tvalue)
+            .andThen(arg)
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "effect_replace",
                                        "(" + ("I" +
@@ -755,13 +778,14 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                        ClassFileConstants.PrimitiveType.type_void));
           return new Pair<>(Expr.UNIT, result);
         });
-    put("effect.type.is_installed",
+
+    put("effect.type.is_instated0",
         (jvm, si, cc, tvalue, args) ->
         {
-          var ecl = jvm._fuir.clazzActualGeneric(cc, 0);
+          var ecl = jvm._fuir.effectTypeFromInstrinsic(cc);
           var val = Expr.iconst(jvm._fuir.clazzId2num(ecl))
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                       "effect_is_installed",
+                                       "effect_is_instated",
                                        "(I)Z",
                                        ClassFileConstants.PrimitiveType.type_boolean));
           return new Pair<>(val, Expr.UNIT);
@@ -770,7 +794,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("safety",
         (jvm, si, cc, tvalue, args) ->
         {
-          return new Pair<>(Expr.UNIT, Expr.iconst(jvm._options.fuzionSafety() ? 1 : 0));
+          return new Pair<>(Expr.iconst(jvm._options.fuzionSafety() ? 1 : 0), Expr.UNIT);
         });
 
     put("fuzion.sys.fileio.read_dir", (jvm, si, cc, tvalue, args) -> {
@@ -839,6 +863,82 @@ public class Intrinsix extends ANY implements ClassFileConstants
               throw new Error("unexpected type " + call_t + " for " + jvm._fuir.clazzAsString(call));
             }
         });
+
+    /* ReentrantLock */
+    put("concur.sync.mtx_init",  (jvm, si, cc, tvalue, args) ->
+      returnResult(
+        jvm,
+        si,
+        jvm._fuir.clazzResultClazz(cc),
+        Expr.invokeStatic(Names.RUNTIME_CLASS,
+                          "mtx_init",
+                          "()Ljava/lang/Object;",
+                          JAVA_LANG_OBJECT)));
+    put("concur.sync.mtx_lock",  (jvm, si, cc, tvalue, args) ->
+      new Pair<>(args.get(0).andThen(
+        Expr.invokeStatic(Names.RUNTIME_CLASS,
+                          "mtx_lock",
+                          "(Ljava/lang/Object;)Z",
+                          ClassFileConstants.PrimitiveType.type_boolean)), Expr.UNIT)
+      );
+    put("concur.sync.mtx_trylock",  (jvm, si, cc, tvalue, args) ->
+      new Pair<>(args.get(0).andThen(
+        Expr.invokeStatic(Names.RUNTIME_CLASS,
+                          "mtx_trylock",
+                          "(Ljava/lang/Object;)Z",
+                          ClassFileConstants.PrimitiveType.type_boolean)), Expr.UNIT)
+      );
+    put("concur.sync.mtx_unlock",  (jvm, si, cc, tvalue, args) ->
+      new Pair<>(args.get(0).andThen(
+        Expr.invokeStatic(Names.RUNTIME_CLASS,
+                          "mtx_unlock",
+                          "(Ljava/lang/Object;)Z",
+                          ClassFileConstants.PrimitiveType.type_boolean)), Expr.UNIT)
+      );
+    put("concur.sync.mtx_destroy",  (jvm, si, cc, tvalue, args) ->
+      new Pair<>(args.get(0).andThen(
+        Expr.invokeStatic(Names.RUNTIME_CLASS,
+                          "mtx_destroy",
+                          "(Ljava/lang/Object;)V",
+                          ClassFileConstants.PrimitiveType.type_void)), Expr.UNIT)
+      );
+
+    /* Condition */
+    put("concur.sync.cnd_init",  (jvm, si, cc, tvalue, args) ->
+      returnResult(jvm, si, jvm._fuir.clazzResultClazz(cc),
+          args.get(0).andThen(Expr.invokeStatic(
+                          Names.RUNTIME_CLASS,
+                          "cnd_init",
+                          "(Ljava/lang/Object;)Ljava/lang/Object;",
+                          JAVA_LANG_OBJECT))));
+    put("concur.sync.cnd_signal",  (jvm, si, cc, tvalue, args) ->
+      new Pair<>(args.get(0).andThen(
+        Expr.invokeStatic(Names.RUNTIME_CLASS,
+                          "cnd_signal",
+                          "(Ljava/lang/Object;)Z",
+                          ClassFileConstants.PrimitiveType.type_boolean)), Expr.UNIT)
+      );
+    put("concur.sync.cnd_broadcast",  (jvm, si, cc, tvalue, args) ->
+      new Pair<>(args.get(0).andThen(
+        Expr.invokeStatic(Names.RUNTIME_CLASS,
+                          "cnd_broadcast",
+                          "(Ljava/lang/Object;)Z",
+                          ClassFileConstants.PrimitiveType.type_boolean)), Expr.UNIT)
+      );
+    put("concur.sync.cnd_wait",  (jvm, si, cc, tvalue, args) ->
+      new Pair<>(args.get(0).andThen(
+        Expr.invokeStatic(Names.RUNTIME_CLASS,
+                          "cnd_wait",
+                          "(Ljava/lang/Object;)Z",
+                          ClassFileConstants.PrimitiveType.type_boolean)), Expr.UNIT)
+      );
+    put("concur.sync.cnd_destroy",  (jvm, si, cc, tvalue, args) ->
+      new Pair<>(args.get(0).andThen(
+        Expr.invokeStatic(Names.RUNTIME_CLASS,
+                          "cnd_destroy",
+                          "(Ljava/lang/Object;)V",
+                          ClassFileConstants.PrimitiveType.type_void)), Expr.UNIT)
+      );
 
     put(new String[]
       {

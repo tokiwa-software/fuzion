@@ -492,19 +492,19 @@ public class CFG extends ANY
     put("fuzion.std.nano_time"           , (cfg, cl) -> { } );
     put("fuzion.std.date_time"           , (cfg, cl) -> { } );
 
-    put("effect.replace"                 , (cfg, cl) -> { } );
-    put("effect.default"                 , (cfg, cl) -> { } );
-    put("effect.abortable"               , (cfg, cl) ->
+    put("effect.type.default0"              , (cfg, cl) -> { } );
+    put("effect.type.instate0"              , (cfg, cl) ->
         {
-          var oc = cfg._fuir.clazzActualGeneric(cl, 0);
+          var oc  = cfg._fuir.clazzActualGeneric(cl, 1);
           var call = cfg._fuir.lookupCall(oc);
           if (cfg._fuir.clazzNeedsCode(call))
             {
               cfg.addToCallGraph(cl, call);
             }
         });
-    put("effect.abort0"                     , (cfg, cl) -> { } );
-    put("effect.type.is_installed"          , (cfg, cl) -> { } );
+    put("effect.type.replace0"              , (cfg, cl) -> { } );
+    put("effect.type.abort0"                , (cfg, cl) -> { } );
+    put("effect.type.is_instated0"          , (cfg, cl) -> { } );
     put("fuzion.java.Java_Object.is_null0"  , (cfg, cl) -> { } );
     put("fuzion.java.array_get"             , (cfg, cl) -> { } );
     put("fuzion.java.array_length"          , (cfg, cl) -> { } );
@@ -525,6 +525,17 @@ public class CFG extends ANY
     put("fuzion.java.string_to_java_object0", (cfg, cl) -> { } );
     put("fuzion.java.create_jvm"            , (cfg, cl) -> { } );
     put("fuzion.java.u16_to_java_object"    , (cfg, cl) -> { } );
+
+    put("concur.sync.mtx_init"              , (cfg, cl) -> { } );
+    put("concur.sync.mtx_lock"              , (cfg, cl) -> { } );
+    put("concur.sync.mtx_trylock"           , (cfg, cl) -> { } );
+    put("concur.sync.mtx_unlock"            , (cfg, cl) -> { } );
+    put("concur.sync.mtx_destroy"           , (cfg, cl) -> { } );
+    put("concur.sync.cnd_init"              , (cfg, cl) -> { } );
+    put("concur.sync.cnd_signal"            , (cfg, cl) -> { } );
+    put("concur.sync.cnd_broadcast"         , (cfg, cl) -> { } );
+    put("concur.sync.cnd_wait"              , (cfg, cl) -> { } );
+    put("concur.sync.cnd_destroy"           , (cfg, cl) -> { } );
   }
 
 

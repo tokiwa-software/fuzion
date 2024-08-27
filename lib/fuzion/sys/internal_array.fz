@@ -70,6 +70,6 @@ module internal_array(T type, module data fuzion.sys.Pointer, module length i32)
     pre
       safety: 0 ≤ i < length
   # post   NYI
-    #array.this[i] == o
+    # debug: array.this[i] == o
   =>
     setel T data i o

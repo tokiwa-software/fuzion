@@ -25,25 +25,28 @@
 #
 public base64 is
 
-  # allows redefinition for base64url
+  # allows redefinition e.g. for base64url
   module get_alphabet => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".utf8.as_array
   module encoding_name => "base64"
 
   # NYI: compiler does currently not optimize features without arguments to treat them like fields
   alphabet := get_alphabet
-  char_62_ascii := alphabet[62]
-  char_63_ascii := alphabet[63]
+
+  # checks if a character is valid in the encoding
+  module is_valid(c u8) =>
+    ((65 <= c <= 90) || (97 <= c <= 122) || (48 <= c <= 57)  # A-Z or a-z or 0-1
+     || (c = alphabet[62]) || (c = alphabet[63]))            # or '+' or '/'
 
   # Encodes a given byte sequence in base64, output is padded to multiple of 4
   # returns a sequence of ascii values
-  public encode(data) =>
+  public encode(data array u8) =>
+
+    # extract four sextets from 24 bits (of an u32)
     enc24(n u32) =>
-                  # extract four sextets from 24 bit number
-                  n0 => ((n >> 18) & 63).as_i32
-                  n1 => ((n >> 12) & 63).as_i32
-                  n2 => ((n >>  6) & 63).as_i32
-                  n3 => ( n        & 63).as_i32
-                  [alphabet[n0], alphabet[n1], alphabet[n2], alphabet[n3]]
+      array u8 4 i->
+        idx := ((n >> (18-i*6).as_u32) & 63).as_i32
+        alphabet[idx]
+
     for
       res Sequence u8 := [], next # the encoded input data
       i := 0, i+1
@@ -67,20 +70,28 @@ public base64 is
 
   # decodes a base64 string, decoding is strict as required by RFC 4648
   # non alphabet characters, line breaks, missing padding cause errors
+  #
+  # NYI: decoding does currently not reject encodings where the padding bits have not been set to zero prior to encoding
+  #      therefore in some cases multiple encodings can be decoded to the same data
+  #      See RFC4648 section 3.5: https://datatracker.ietf.org/doc/html/rfc4648#section-3.5
   public decode_str(data String) =>
     decode data.utf8.as_array
 
 
   # decodes a sequence of ASCII characters, decoding is strict as required by RFC 4648
   # non alphabet characters, line breaks, missing padding cause errors
-  public decode(data) =>
+  #
+  # NYI: decoding does currently not reject encodings where the padding bits have not been set to zero prior to encoding
+  #      therefore in some cases multiple encodings can be decoded to the same data
+  #      See RFC4648 section 3.5: https://datatracker.ietf.org/doc/html/rfc4648#section-3.5
+  public decode(data array u8) =>
 
     # determine size of padding, i.e. number of '=' (61 in ASCII) at the end
     pad_size :=
       if data.length > 1 && data[data.length - 1] = 61
         if data[data.length - 2] = 61 then 2
-        else                              1
-      else                                0
+        else                               1
+      else                                 0
 
     check_input(i) =>
 
@@ -89,9 +100,8 @@ public base64 is
       else
         c := data[i]
         # base64 alphabet character
-        if ((c >= 65 && c <= 90) || (c >= 97 && c <= 122) ||
-            (c >= 48 && c <= 57) || (c = char_62_ascii) || (c = char_63_ascii))
-          outcome (dec_sextet i)
+        if (is_valid c)
+          outcome (dec_sextet c)
 
         # padding character =
         else if c = 61
@@ -114,26 +124,25 @@ public base64 is
           error "invalid $encoding_name input at byte position $i, decoding to unicode character '$inv_char'"
 
     # decode a valid base 64 characters to 6 bits
-    dec_sextet(pos) =>
-      n := data[pos]
+    dec_sextet(n u8) =>
 
-      if n >= 65 && n <= 90       # case A-Z
+      if 65 <= n <= 90           # case A-Z
         n.as_u32 - 65
 
-      else if n >= 97 && n <= 122 # case a-z
+      else if 97 <= n <= 122     # case a-z
         n.as_u32 - 71
 
-      else if n >= 48 && n <= 57  # case 0-9
+      else if 48 <= n <= 57      # case 0-9
         n.as_u32 + 4
 
-      else if n = char_62_ascii   # case +
+      else if n = alphabet[62]   # case +
         62
 
-      else                        # case /
+      else                       # case /
         63
 
     for
-      res list u8 := nil, res ++ [b0, b1, b2] # result: contains the decoded data at the end
+      res list u8 := nil, res ++ [b0, b1, b2] # contains the decoded data at the end
       nxt := 0, nxt + 4
       last_err := false, is_err
       sxt_last array (outcome u32) := [], sextets

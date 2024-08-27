@@ -1,0 +1,53 @@
+print el in loop: 9
+print el in loop: 8
+print el in loop: 7
+print el in loop: 6
+print el in loop: 5
+print el in loop: 4
+print el in loop: 3
+size: 7
+print el in loop: instance[genericstest.Complex1]
+print el in loop: instance[genericstest.Complex1]
+print el in loop: instance[genericstest.Complex1]
+print el in loop: instance[genericstest.Complex1]
+0: size: 4
+a(2, 10) infix > is false, false, false, falsea(20, 10) infix > is true, false, false, falsea(200, 10) infix > is true, true, false, falsea(2000, 10) infix > is true, true, true, falsea(20000, 10) infix > is true, true, true, truea(2) prefix > is 3, 12, 102, 1002a(20) prefix > is 21, 30, 120, 1020a(200) prefix > is 201, 210, 300, 1200a(2000) prefix > is 2001, 2010, 2100, 3000a(20000) prefix > is 20001, 20010, 20100, 21000a(2) postfix > is 1, -8, -98, -998a(20) postfix > is 19, 10, -80, -980a(200) postfix > is 199, 190, 100, -800a(2000) postfix > is 1999, 1990, 1900, 1000a(20000) postfix > is 19999, 19990, 19900, 19000print el in loop: instance[genericstest.Complex2]
+print el in loop: instance[genericstest.Complex2]
+print el in loop: instance[genericstest.Complex2]
+print el in loop: instance[genericstest.Complex2]
+1: size: 4
+print el in loop: instance[genericstest.Complex i32]
+print el in loop: instance[genericstest.Complex i32]
+print el in loop: instance[genericstest.Complex i32]
+print el in loop: instance[genericstest.Complex i32]
+2: size: 4print el in loop: instance[genericstest.Complex3]
+print el in loop: instance[genericstest.Complex3]
+print el in loop: instance[genericstest.Complex3]
+print el in loop: instance[genericstest.Complex3]
+3: size: 4y istrue
+PASSED: f only called with first and last element equal
+PASSED: f only called with a1 true
+PASSED: f only called with first and last element equal
+PASSED: f only called with a1 true
+PASSED: f only called with first and last element equal
+PASSED: f only called with a1 true
+PASSED: (z u64).show_tp should be 'array (option (list u64))'
+PASSED: (z u64).show_tx should be 'option (list u64)'
+PASSED: (z u64).show_ty should be 'list u64'
+PASSED: (z u64).show_ty should be 'u64'
+PASSED: (z String).show_tp should be 'array (option (list String))'
+PASSED: (z String).show_tx should be 'option (list String)'
+PASSED: (z String).show_ty should be 'list String'
+PASSED: (z String).show_ty should be 'String'
+PASSED: (z i8).show_tp should be 'array (option (list i8))'
+PASSED: (z i8).show_tx should be 'option (list i8)'
+PASSED: (z i8).show_ty should be 'list i8'
+PASSED: (z i8).show_ty should be 'i8'
+PASSED: (z codepoint).show_tp should be 'array (option (list codepoint))'
+PASSED: (z codepoint).show_tx should be 'option (list codepoint)'
+PASSED: (z codepoint).show_ty should be 'list codepoint'
+PASSED: (z codepoint).show_ty should be 'codepoint'
+PASSED: PARENT_TYPE_PARAMETER is not inherited, but a free type!
+PASSED: BLABLA is a free type
+PASSED: PARENT_TYPE_PARAMETER is not inherited, but a free type!
+PASSED: BLABLA is a free type

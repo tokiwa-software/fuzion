@@ -1,0 +1,84 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test lib_concur_sync
+#
+# -----------------------------------------------------------------------
+
+lib_concur_sync =>
+
+  # NYI: UNDER DEVELOPMENT: ugly, storing effect instances in fields...
+  # e.g.: mtx := concur.sync.mutex.env
+
+  test_signal =>
+
+    mtx_res := concur.sync.mutex.new ()->
+      mtx := concur.sync.mutex.env
+      cnd_res := mtx.condition ()->
+        cnd := concur.sync.condition.env
+
+        a := concur.thread.spawn ()->
+          mtx.synchronized ()->
+            check cnd.wait
+            say "Thread proceeding after signal"
+
+        b := concur.thread.spawn ()->
+          say "Thread sleeping"
+          time.nano.sleep (time.durations.ms 100)
+          mtx.synchronized ()->
+            say "Thread sending signal"
+            check cnd.signal
+
+        a.join
+        b.join
+
+      check cnd_res.ok
+    check mtx_res.ok
+
+
+
+  test_broadcast =>
+
+    mtx_res := concur.sync.mutex.new ()->
+      mtx := concur.sync.mutex.env
+      cnd_res := mtx.condition ()->
+        cnd := concur.sync.condition.env
+
+        a := concur.thread.spawn ()->
+          mtx.synchronized ()->
+            check cnd.wait
+            say "Thread proceeding after broadcast"
+
+        b := concur.thread.spawn ()->
+          say "Thread sleeping"
+          time.nano.sleep (time.durations.ms 100)
+          mtx.synchronized ()->
+            say "Thread sending broadcast"
+            check cnd.broadcast
+
+        a.join
+        b.join
+
+      check cnd_res.ok
+    check mtx_res.ok
+
+
+
+  test_signal
+  test_broadcast

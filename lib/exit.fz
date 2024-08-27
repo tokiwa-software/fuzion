@@ -30,10 +30,8 @@ private:public exit (
   # the handler this effect uses to exit
   p Exit_Handler,
 
-  r effect_mode.val,
-
-  _ unit
-  ) : effect r
+  _, _ unit
+  ) : effect
 is
 
   # exit with the given code
@@ -49,15 +47,15 @@ is
   # set the stored exit code, which, by default, is zero
   #
   set_exit_code(code u8)
-  pre code ≤ 127
+  pre debug: code ≤ 127
   => p.set_exit_code code
 
 
   # install default instance of exit
   #
   type.install_default unit =>
-    if !effect.is_installed exit
-      _ := exit default_exit_handler effect_mode.default unit
+    if !exit.is_instated
+      (exit default_exit_handler unit unit).default
 
 
   # default exit handler
@@ -86,7 +84,7 @@ is
     #
     redef set_exit_code(code u8) outcome unit
       post then
-        exit_code = code
+        debug: exit_code = code
       =>
         if exit_code = 0
           set exit_code := code
@@ -117,14 +115,17 @@ public exit => exit0.exit
 # change the currently stored exit code
 #
 public set_exit_code(code u8)
-pre code ≤ 127
+pre debug: code ≤ 127
   => exit0.set_exit_code code
 
 
 # install given exit handler and run code with it.
 #
+# In case the handler aborts this effect, this feature will
+# return normally after a call to `exit.env.exit n`.
+#
 public exit(handler Exit_Handler, code ()->unit) =>
-  _ := exit handler (effect_mode.inst code) unit
+  exit.instate unit (exit handler unit unit) code unit
 
 
 # Exit_Handler -- abstract exit
@@ -144,5 +145,5 @@ public Exit_Handler ref is
   # set the stored exit code, which, by default, is zero
   #
   public set_exit_code(code u8) outcome unit
-  pre code ≤ 127
+  pre debug: code ≤ 127
     => abstract

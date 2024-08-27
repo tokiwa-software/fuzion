@@ -34,7 +34,7 @@ import java.util.TreeSet;
 import dev.flang.air.AIR;
 
 import dev.flang.ast.AbstractCall; // NYI: remove dependency!
-import dev.flang.ast.AbstractConstant; // NYI: remove dependency!
+import dev.flang.ast.Constant; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
@@ -43,6 +43,7 @@ import dev.flang.ast.FeatureVisitor; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.State; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
+import dev.flang.ast.Types; // NYI: remove dependency!
 
 import dev.flang.fe.FeatureLookup;
 
@@ -126,9 +127,9 @@ public class MiddleEnd extends ANY
         findUsedFeatures(f);
       }
 
-    Clazzes.init(_options);
+    Clazzes.instance.init(_options);
 
-    Clazz cl = main != null ? Clazzes.clazz(main.selfType()) : null;
+    Clazz cl = main != null ? Clazzes.instance.clazz(main.selfType()) : null;
     return cl;
   }
 
@@ -145,7 +146,7 @@ public class MiddleEnd extends ANY
     var JavaRef    = flu.lookupFeature(JavaObject, FeatureName.get("Java_Ref",    0), null);
     markUsed(JavaObject                                                                       , SourcePosition.builtIn);
     markUsed(JavaRef                                                                          , SourcePosition.builtIn);
-    markUsed(flu.lookupFeature(universe, FeatureName.get("Const_String"           , 0), null) , SourcePosition.builtIn); // NYI this should be unnecessary?
+    markUsed(Types.resolved.f_Const_String_utf8_data , SourcePosition.builtIn); // NYI: UNDER DEVELOPMENT: this should be unnecessary?
     markUsed(flu.lookupFeature(universe, FeatureName.get(FuzionConstants.UNIT_NAME, 0), null) , SourcePosition.builtIn);
     markUsed(flu.lookupFeature(universe, FeatureName.get("void"                   , 0), null) , SourcePosition.builtIn);
   }
@@ -199,9 +200,9 @@ public class MiddleEnd extends ANY
    */
   void markUsed(AbstractFeature f, boolean dynamically, HasSourcePosition usedAt)
   {
-    if (!Clazzes.isUsed(f))
+    if (!Clazzes.instance.isUsed(f))
       {
-        Clazzes.addUsedFeature(f, usedAt);
+        Clazzes.instance.addUsedFeature(f, usedAt);
         if (f.state() == State.RESOLVED)
           {
             scheduleForFindUsedFeatures(f);
@@ -232,7 +233,7 @@ public class MiddleEnd extends ANY
           {
             for (AbstractFeature of : df.redefines())
               {
-                if (Clazzes.isUsed(of))
+                if (Clazzes.instance.isUsed(of))
                   {
                     markUsed(df, usedAt);
                   }
@@ -274,7 +275,7 @@ public class MiddleEnd extends ANY
         // it does not seem to be necessary to mark all features in types as used:
         // public Type  action(Type    t, AbstractFeature outer) { t.findUsedFeatures(res, pos); return t; }
         public void action(AbstractCall c               ) { findUsedFeatures(c); }
-        public void action(AbstractConstant c           ) { findUsedFeatures(c); }
+        public void action(Constant c           ) { findUsedFeatures(c); }
         //        public Expr action(Feature f, AbstractFeature outer) { markUsed(res, pos);      return f; } // NYI: this seems wrong ("f." missing) or unnecessary
         public void action(Tag     t, AbstractFeature outer) { findUsedFeatures(t._taggedType, t); }
         @Override
@@ -292,7 +293,7 @@ public class MiddleEnd extends ANY
   /**
    * Mark all features used for this abstract constant as used.
    */
-  void findUsedFeatures(AbstractConstant c)
+  void findUsedFeatures(Constant c)
   {
     findUsedFeatures(c.type(), c);
   }

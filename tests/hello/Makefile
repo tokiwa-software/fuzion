@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = HelloWorld
-include ../positive.mk
+include ../simple.mk

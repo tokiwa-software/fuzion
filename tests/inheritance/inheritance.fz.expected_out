@@ -1,0 +1,148 @@
+A's body0
+B's body0
+A's body1
+B.x
+C.x
+B.x
+C.x
+A's body2
+B's body2
+A's body3
+A's body4
+B's body4
+A's body5
+Calling non-redefed multiple
+D.x
+B.xb
+C.xc
+Calling redefed multiple
+E.x
+E.xb
+E.xc
+Calling redefed multiple from non-redefed static 
+E.x
+E.xb
+E.xc
+E.x
+E.xb
+E.x
+E.xc
+E.x
+3
+only refs:
+1001
+q1002
+r1003
+s1004
+only values:
+1005
+q1006
+r1007
+s1008
+mixed refs and values:
+1009
+q1010
+r1011
+s1012
+s1013
+r1014
+s1015
+s1016
+q1017
+r1018
+s1019
+s1020
+r1021
+s1022
+s1023
+1024
+q1025
+r1026
+s1027
+s1028
+r1029
+s1030
+s1031
+q1032
+r1033
+s1034
+s1035
+r1036
+s1037
+s1038
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+strm.print
+strm.print
+strm1.print
+strm1.print
+strm1.print
+strm1.print
+strm5.print
+strm5.print
+tricky_Inheritance.ZZ: 0
+tricky_Inheritance.ZZ: 1
+tricky_Inheritance.ZZ: 2
+tricky_Inheritance.ZZ: 3
+tricky_Inheritance.ZZ: 4
+tricky_Inheritance.ZZ: 5
+tricky_Inheritance.ZZ: 6
+tricky_Inheritance.ZZ: 7
+tricky_Inheritance.ZZ: 8
+tricky_Inheritance.ZZ: 9
+tricky_Inheritance.ZZ: 10
+tricky_Inheritance.ZZ.B.q: 10
+tricky_Inheritance.ZZ.B.q: 10
+tricky_Inheritance.ZZ.B.q: 10
+tricky_Inheritance.ZZ.B.q: 10
+tricky_Inheritance.ZZ.B.q: 10
+tricky_Inheritance.ZZ.B.q: 10
+tricky_Inheritance.ZZ.B.q: 10
+tricky_Inheritance.ZZ.B.q: 10
+tricky_Inheritance.ZZ.B.q: 10
+tricky_Inheritance.ZZ.B.q: 10
+inherit.A.y
+inherit.C.y
+1
+PASSED: call to y in arguments must be performed on heir instance
+PASSED: inherits calls to x must be performed in outer feature A
+PASSED: C.y must be called exactly once as argument to parent D(y)
+inherit.A.y
+inherit.C.y
+1
+PASSED: call to y in arguments must be performed on heir instance
+PASSED: inherits calls to x must be performed in outer feature A
+PASSED: C.y must be called exactly once as argument to parent D(y)
+B.x: PASSED.
+inherit.A.y
+inherit.C.y
+1
+PASSED: call to y in arguments must be performed on heir instance
+PASSED: inherits calls to x must be performed in outer feature A
+PASSED: C.y must be called exactly once via x as argument to parent D(x)
+test Acnt: PASSED.
+test Bcnt: PASSED.
+test Ccnt: PASSED.
+test Dcnt: PASSED.
+test Ecnt: PASSED.
+test Fcnt: PASSED.
+s.v.hi: PASSED.
+s.v.v.hi: PASSED.

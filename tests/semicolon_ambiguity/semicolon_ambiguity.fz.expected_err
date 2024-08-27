@@ -1,0 +1,37 @@
+
+--CURDIR--/semicolon_ambiguity.fz:30:30: error 1: Ambiguous semicolon in nested blocks.
+  g1 ()->unit := ()->say "hi"; say "ho"
+-----------------------------^
+It is unclear whether this semicolon terminates the inner block or not. To solve this, add braces { }.
+
+
+--CURDIR--/semicolon_ambiguity.fz:31:21: error 2: Ambiguous semicolon in nested blocks.
+  g2 => say "I'm g2"; say "this is ambiguous"
+--------------------^
+It is unclear whether this semicolon terminates the inner block or not. To solve this, add braces { }.
+
+
+--CURDIR--/semicolon_ambiguity.fz:33:40: error 3: Ambiguous semicolon in nested blocks.
+  if true then if true then say "inner"; say "ambiguous"
+---------------------------------------^
+It is unclear whether this semicolon terminates the inner block or not. To solve this, add braces { }.
+
+
+--CURDIR--/semicolon_ambiguity.fz:35:45: error 4: Ambiguous semicolon in nested blocks.
+  if true then if true then else say "inner"; say "ambiguous"
+--------------------------------------------^
+It is unclear whether this semicolon terminates the inner block or not. To solve this, add braces { }.
+
+
+--CURDIR--/semicolon_ambiguity.fz:39:36: error 5: Ambiguous semicolon in nested blocks.
+      i i32       => ()->yak "'$i'"; say " is a number"
+-----------------------------------^
+It is unclear whether this semicolon terminates the inner block or not. To solve this, add braces { }.
+
+
+--CURDIR--/semicolon_ambiguity.fz:40:36: error 6: Ambiguous semicolon in nested blocks.
+      c codepoint => ()->yak "'$c'"; say " is a codepoint"
+-----------------------------------^
+It is unclear whether this semicolon terminates the inner block or not. To solve this, add braces { }.
+
+6 errors.
