@@ -814,10 +814,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
     else
       {
-        if (resultField() != null)
-          {
-            return false;
-          }
         for (var f : fields())
           {
             var rc = f.resultClazz();
