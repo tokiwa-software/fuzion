@@ -287,7 +287,10 @@ public class Clazzes extends ANY
     if (PRECONDITIONS) require
       (Errors.any() || !actualType.dependsOnGenericsExceptTHIS_TYPE(),
        Errors.any() || !actualType.containsThisType(),
-       Errors.any() || outer == null || outer._type != Types.t_UNDEFINED);
+       Errors.any() || outer == null || outer._type != Types.t_UNDEFINED,
+       outer != null || actualType.feature().outer() == null,
+       Errors.any() || actualType == Types.t_ERROR || outer == null ||
+        outer.feature().inheritsFrom(actualType.feature().outer()) || (outer.feature().isTypeFeature() /* NYI: REMOVE: workaround for #3160 */));
 
     Clazz o = outer;
     var ao = actualType.feature().outer();
@@ -1112,34 +1115,6 @@ public class Clazzes extends ANY
 
     if (POSTCONDITIONS) ensure
       (Errors.any() || thiz.isRef() == result._type.isRef());
-
-    return result;
-  }
-
-
-  /**
-   * clazzWithSpecificOuter creates a clazz from this type with a specific outer
-   * clazz that is inserted as the outer clazz for the outermost type that was
-   * explicitly given in the source code.
-   *
-   * @param thiz the type of the clazz, must be free from generics
-   *
-   * @param select in case thiz is a field with open generic result, this
-   * chooses the actual field from outer's actual generics. -1 otherwise.
-   *
-   * @param outerClazz the outer clazz
-   *
-   * @return the corresponding Clazz.
-   */
-  public Clazz clazzWithSpecificOuter(AbstractType thiz, int select, Clazz outerClazz)
-  {
-    if (PRECONDITIONS) require
-      (Errors.any() || !thiz.dependsOnGenericsExceptTHIS_TYPE(),
-       outerClazz != null || thiz.feature().outer() == null,
-       (outerClazz.feature().isTypeFeature() /* NYI: REMOVE: workaround for #3160 */) ||
-       Errors.any() || thiz == Types.t_ERROR || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.feature().outer()));
-
-    var result = create(thiz, select, outerClazz);
 
     return result;
   }
