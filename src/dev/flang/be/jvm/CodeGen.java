@@ -206,7 +206,7 @@ class CodeGen
   {
     // Check consistency between v.type() and type:
     if (CHECKS) check
-      (v.type()                instanceof PrimitiveType pt /* NYI: BUG?: issue1294 fails && pt == _types.resultType(type) */ ||
+      (v.type()                instanceof PrimitiveType pt && pt == _types.resultType(type) ||
        v.type()                instanceof ClassType     jt &&
        _types.resultType(type) instanceof ClassType     ct &&
        (_fuir.clazzIsRef(type) /* we do not check exact reference assignability here */ ||
