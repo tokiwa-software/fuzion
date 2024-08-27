@@ -1840,20 +1840,28 @@ public class Clazz extends ANY implements Comparable<Clazz>
   }
 
 
+  /**
+   * Mark clazz cl and all its outers as instantiated.
+   * In case it is a choice, mark all its
+   * choice generics as instantiated as well.
+   *
+   * @param cl the clazz we want to mark as instantiated
+   *
+   * @param at where the instantiation is taking place
+   */
   private void markInstantiated(Clazz cl, HasSourcePosition at)
   {
+    cl.instantiated(at);
     if (cl.isChoice())
       {
+        // e.g. `java.call_c0` may return `outcome x`
         for (var cg : cl.choiceGenerics())
           {
             markInstantiated(cg, at);
           }
-        // e.g. `java.call_c0` may return `outcome x`
-        cl.instantiated(at);
       }
     else
       {
-        cl.instantiated(at);
         var o = cl._outer;
         while (o != null)
           {
