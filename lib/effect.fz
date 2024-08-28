@@ -260,8 +260,8 @@ public effect is
     abort0 e
 
 
-  # replace existing effect of type `effect.this` by the new effect value `effect.this`.
-  # and abort code execution to return to the point where the effect was instated.
+  # Abort code execution for the instated effect.this.env and return to the point
+  # where the effect was instated.
   #
   public type.abort void
   pre
