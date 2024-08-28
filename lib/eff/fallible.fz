@@ -61,7 +61,7 @@ public fallible(ERROR type, h ERROR->void) : effect is
   #
   # or even
   #
-  #   res := FALLIBLE_TYPE.try code || (s->handle fialure `s`)
+  #   res := FALLIBLE_TYPE.try code || (s->handle failure `s`)
   #
   # Note that the code is not executed unless `.catch` or `infix ||` is applied
   # to the result of the call to `try`.
@@ -71,18 +71,6 @@ public fallible(ERROR type, h ERROR->void) : effect is
     # define code to execute in case of fault and run code_try.
     #
     public catch(code_catch ERROR->T) =>
-      (ref : eff.handle ERROR fallible.this T
-         redef try => code_try.call
-         redef catch(e ERROR) => code_catch e
-      ).res
-
-    # define code to execute in case of fault and run code_try.
-    #
-    # NYI: BUG: #3159 This is a variant of `catch` that uses inline code instead of `handle`. Using this
-    # variant currently causes errors in the back end (`AbstractMethodError` for JVM backend, `unhandled
-    # dynamic target` for C backend), need to analyse and fix this.
-    #
-    public catch_broken(code_catch ERROR->T) =>
       # use local mutate to store error passed to `cause`
       lm : mutate.
 
@@ -96,39 +84,3 @@ public fallible(ERROR type, h ERROR->void) : effect is
     # infix alias for catch
     #
     infix || (code_catch ERROR->T) => catch code_catch
-
-
-# helper for fallible.type.try.
-#
-# NYI: CLEANUP: remove when `try.catch`'s code is replaced by the code in `try.catch_broken`.
-#
-handle(ERROR type, F type : fallible ERROR, T type) is
-
-  # try and catch to be redefined by user
-  #
-  try            T => abstract
-  catch(e ERROR) T => abstract
-
-  # use local mutate to store msg passed to `cause`
-  lm : mutate.
-
-  res => lm.instate_self ()->
-      m := lm.env.new (option ERROR nil)
-      v := F.new e->
-             m <- e
-             F.abort
-      F.instate T v try (()->catch m.get.get)
-
-
-  # NYI: BUG: #3159 The following code is a variant using the state effect instead of mutate. This
-  # currently causes errors in the back end (`AbstractMethodError` for JVM backend, `unhandled dynamic
-  # target` for C backend), need to analyse and fix this.
-
-  # local type definition to get unique state effect
-  s(val option ERROR) is
-
-  res_broken => state s T (s nil) ()->
-    v := F.new e->
-           _ := state_put (s e)
-           F.abort
-    F.instate T v try (()->catch (state_get s).val.get)
