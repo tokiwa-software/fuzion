@@ -2151,14 +2151,24 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   Clazz typeClazz()
   {
+    if (PRECONDITIONS)
+      require(Errors.any() || !_type.isGenericArgument());
+
     if (_typeClazz == null)
       {
-        var tt = _type.typeType();
-        var ty = Types.resolved.f_Type.selfType();
-        _typeClazz = _type.containsError()  ? Clazzes.instance.error.get() :
-                     feature().isUniverse() ? this                :
-                     tt.compareTo(ty) == 0  ? Clazzes.instance.create(ty, Clazzes.instance.universe.get())
-                                            : Clazzes.instance.create(tt, _outer.typeClazz()    );
+        if (_type.isGenericArgument())
+          {
+            _typeClazz = Clazzes.instance.c_error;
+          }
+        else
+          {
+            var tt = _type.typeType();
+            var ty = Types.resolved.f_Type.selfType();
+            _typeClazz = _type.containsError()  ? Clazzes.instance.error.get() :
+                         feature().isUniverse() ? this                :
+                         tt.compareTo(ty) == 0  ? Clazzes.instance.create(ty, Clazzes.instance.universe.get())
+                                                : Clazzes.instance.create(tt, _outer.typeClazz()    );
+          }
       }
     return _typeClazz;
   }

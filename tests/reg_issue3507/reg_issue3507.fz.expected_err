@@ -1,0 +1,15 @@
+
+--CURDIR--/reg_issue3507.fz:24:1: error 1: Main feature must not have arguments
+x(v T) => _ := T
+^
+Main feature has one argument ('x.v'), but should have no arguments to be used as main feature in an application
+To solve this, remove the arguments from feature 'x'
+
+
+--CURDIR--/reg_issue3507.fz:24:1: error 2: Main feature must not have type arguments
+x(v T) => _ := T
+^
+Main feature has one type argument T, but should have no arguments to be used as main feature in an application
+To solve this, remove the arguments from feature 'x'
+
+2 errors.
