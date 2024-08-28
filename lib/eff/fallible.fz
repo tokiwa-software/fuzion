@@ -71,11 +71,13 @@ public fallible(ERROR type, h ERROR->void) : effect is
     # define code to execute in case of fault and run code_try.
     #
     public catch(code_catch ERROR->T) =>
-      # use local mutate to store error passed to `cause`
-      lm : mutate.
 
-      lm.instate_self ()->
-        m := lm.env.new (option ERROR nil)
+      # NYI: BUG: defining local mutate inside of type feature
+      # use local mutate to store error passed to `cause`
+      # lm : mutate.
+
+      eff.lm.instate_self ()->
+        m := eff.lm.env.new (option ERROR nil)
         v := fallible.this.new e->
                m <- e
                fallible.this.type.abort
@@ -84,3 +86,6 @@ public fallible(ERROR type, h ERROR->void) : effect is
     # infix alias for catch
     #
     infix || (code_catch ERROR->T) => catch code_catch
+
+
+lm : mutate is
