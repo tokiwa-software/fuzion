@@ -1020,7 +1020,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                     outer().isTypeFeature() ? outer()
                                             : outer().typeFeature(res);
     _typeFeature = res._module.declaredOrInheritedFeatures(outerType,
-                                                           FeatureName.get(name, 0)).getFirstOrNull();
+                                                           FeatureName.get(name, 1)).getFirstOrNull();
     if (_typeFeature == null)
       {
         var p = pos();
