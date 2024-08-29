@@ -441,14 +441,18 @@ public class Call extends AbstractCall
    * Get the type of the target.  In case the target's type is a generic type
    * parameter, return its constraint.
    *
-   * @return the type of the target.
+   * @return the type of the target or Types.t_UNDEFINED if unknown.
    */
   private AbstractType targetTypeOrConstraint(Resolution res, Context context)
   {
     if (PRECONDITIONS) require
       (_target != null);
 
-    var result = _target.type();
+    var result = _target.typeForInferencing();
+    if (result == null)
+      {
+        result = Types.t_UNDEFINED;
+      }
 
     if (result.isGenericArgument())
       {
@@ -544,7 +548,8 @@ public class Call extends AbstractCall
    * c in an inherits clause ("f : c { }"), context.outerFeature() is the outer
    * feature of f.
    *
-   * @return the feature of the target of this call.
+   * @return the feature of the target of this call or null if lookup for the
+   * target feature failed.
    */
   protected AbstractFeature targetFeature(Resolution res, Context context)
   {
@@ -556,7 +561,6 @@ public class Call extends AbstractCall
         if (_target instanceof Call tc)
           {
             _target.loadCalledFeature(res, context);
-            tc.reportPendingError();
             result = tc.calledFeature();
           }
         else
@@ -569,15 +573,13 @@ public class Call extends AbstractCall
       {
         _target.loadCalledFeature(res, context);
         _target = res.resolveType(_target, context);
-        result = targetTypeOrConstraint(res, context).feature();
+        var tt = targetTypeOrConstraint(res, context);
+        result = tt == Types.t_UNDEFINED ? null : tt.feature();
       }
     else
       { // search for feature in outer
         result = context.outerFeature();
       }
-
-    if (POSTCONDITIONS) ensure
-      (result != null);
 
     return result;
   }
@@ -661,14 +663,14 @@ public class Call extends AbstractCall
       {
         targetFeature = targetFeature(res, context);
         if (CHECKS) check
-          (Errors.any() || targetFeature != null && targetFeature != Types.f_ERROR);
+          (Errors.any() || targetFeature != Types.f_ERROR);
         targetVoid = Types.resolved != null && targetFeature == Types.resolved.f_void && targetFeature != outer;
         if (targetVoid || targetFeature == Types.f_ERROR)
           {
             _calledFeature = Types.f_ERROR;
           }
       }
-    if (_calledFeature == null)
+    if (_calledFeature == null && targetFeature != null)
       {
         res.resolveDeclarations(targetFeature);
         var found = findOnTarget(res, targetFeature);
@@ -848,9 +850,12 @@ public class Call extends AbstractCall
     // we check _originalTarget here to not check all outer features:
     var traverseOuter = _originalTarget == null;
     var targetFeature = traverseOuter ? context.outerFeature() : targetFeature(res, context);
-    var fos = res._module.lookup(targetFeature, name, this, traverseOuter, false);
-    var calledName = FeatureName.get(name, n);
-    result = FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> ff.valueArguments().size() == n);
+    if (targetFeature != null)
+      {
+        var fos = res._module.lookup(targetFeature, name, this, traverseOuter, false);
+        var calledName = FeatureName.get(name, n);
+        result = FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> ff.valueArguments().size() == n);
+      }
     return result;
   }
 
@@ -1140,7 +1145,6 @@ public class Call extends AbstractCall
   @Override
   AbstractType typeForInferencing()
   {
-    reportPendingError();
     return (_calledFeature instanceof Feature f) && f.isAnonymousInnerFeature() && f.inherits().getFirst().typeForInferencing() != null && f.inherits().getFirst().typeForInferencing().isRef()
       ? f.inherits().getFirst().typeForInferencing()
       : _type;
