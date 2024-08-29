@@ -419,7 +419,6 @@ public class NumLiteral extends Constant
     if (_type == null)
       {
         _type = typeForCallTarget();
-        checkRange();
       }
     return _type;
   }
@@ -714,6 +713,7 @@ public class NumLiteral extends Constant
   /**
    * Check that this constant is in the range allowed for its type_.
    */
+  @Override
   void checkRange()
   {
     if (PRECONDITIONS) require
@@ -869,7 +869,6 @@ public class NumLiteral extends Constant
         if (_type == null && findConstantType(t) != null)
           {
             _type = t;
-            checkRange();
           }
       }
     return result;
