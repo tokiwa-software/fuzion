@@ -81,12 +81,12 @@ is
 
   # get the lowest element in this set
   #
-  public min => psm.min
+  public redef min => psm.min
 
 
   # get the highest element in this set
   #
-  public max => psm.max
+  public redef max => psm.max
 
 
   # add all elements of the given Sequence to this set
