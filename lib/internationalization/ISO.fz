@@ -33,3 +33,10 @@ public ISO : provide is
     =>
         "{y}-{($m).pad_left("0", 2)}-{($d).pad_left("0", 2)}"
 
+    # ex.`currency 300000` results in `300000?`.
+    #
+    redef currency(c i32)
+    =>
+        "{c}?"
+
+

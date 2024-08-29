@@ -4,7 +4,7 @@
 ---------^
 The result type of this call depends on the target type.  Since the target type is a 'ref' type that may represent a number of different actual dynamic types, the result type is not clearly defined.
 Called feature: 'call_with_ambiguous_result_type.r.g'
-Raw result type: 'call_with_ambiguous_result_type.this.r.this.e'
+Original result type: 'call_with_ambiguous_result_type.this.r.this.e'
 Type depending on target: 'call_with_ambiguous_result_type.this.r.this'
 Target type: 'call_with_ambiguous_result_type.this.r'
 To solve this, you could try to use a value type as the target type of the call or change the result type of 'call_with_ambiguous_result_type.r.g' to no longer depend on 'call_with_ambiguous_result_type.this.r.this'.

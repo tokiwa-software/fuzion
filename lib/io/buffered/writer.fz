@@ -41,7 +41,7 @@ public writer(LM type : mutate, wp Write_Provider, buf_size i32) : effect is
   # resulting 'outcome'.
   #
   public with (R type, f ()->R) outcome R =>
-    try (writer LM) R (() -> run f (() -> exit 1))
+    try (writer LM) R (() -> writer.this.instate R writer.this f (() -> exit 1))
 
 
   # terminate immediately with the given error wrapped in 'option'.

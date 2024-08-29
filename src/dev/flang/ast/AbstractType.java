@@ -1844,7 +1844,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             result = result + ".this";
           }
-        else if (typeType)
+        if (typeType)
           {
             result = result + ".type";
           }
@@ -1959,11 +1959,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             if (!f.typeParameter().isTypeFeaturesThisType())  // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
               {
-                if (c.isChoice())
-                  {
-                    AstErrors.constraintMustNotBeChoice(f, c);
-                  }
-                else
+                // In case of choice, error will be shown
+                // by SourceModule.checkTypes(): AstErrors.constraintMustNotBeChoice
+                if (!c.isChoice())
                   {
                     AstErrors.incompatibleActualGeneric(pos, f, c, a);
                   }

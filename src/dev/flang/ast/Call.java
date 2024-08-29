@@ -207,11 +207,11 @@ public class Call extends AbstractCall
 
 
   /**
-   * This field is set to the target of the call
-   * before calling typeForCallTarget().
+   * If this Call is the target of another call, this field will be set to that
+   * other Call when this is created.
    *
-   * Can then be used to produce errors that are target
-   * dependent.
+   * This will be used to produce suggestions to fix errors reported for this
+   * call.
    */
   public Call _targetOf_forErrorSolutions = null;
 
@@ -415,6 +415,10 @@ public class Call extends AbstractCall
     this._unresolvedGenerics = generics;
     this._actuals = actuals;
     this._target = target;
+    if (target instanceof Call tc)
+      {
+        tc._targetOf_forErrorSolutions = this;
+      }
     this._originalTarget = _target;
     this._calledFeature = calledFeature;
     this._type = type;
@@ -443,11 +447,6 @@ public class Call extends AbstractCall
   {
     if (PRECONDITIONS) require
       (_target != null);
-
-    if (_target instanceof Call tc)
-      {
-        tc._targetOf_forErrorSolutions = this;
-      }
 
     var result = _target.typeForCallTarget();
 
@@ -478,12 +477,12 @@ public class Call extends AbstractCall
    * target of this call and actual type parameters given in this call. Result
    * is interned.
    */
-  private AbstractType actualArgType(Resolution res, AbstractType frmlT, Context context)
+  private AbstractType actualArgType(Resolution res, AbstractType frmlT, AbstractFeature arg, Context context)
   {
     if (PRECONDITIONS) require
       (!frmlT.isOpenGeneric());
 
-    AbstractType result = adjustThisTypeForTarget(frmlT, context);
+    AbstractType result = adjustThisTypeForTarget(frmlT, true, arg, context);
     result = targetTypeOrConstraint(res, context)
       .actualType(result, context)
       .applyTypePars(_calledFeature, _generics);
@@ -1316,7 +1315,7 @@ public class Call extends AbstractCall
               }
             else
               {
-                _resolvedFormalArgumentTypes[argnum + i] = actualArgType(res, frmlT, context);
+                _resolvedFormalArgumentTypes[argnum + i] = actualArgType(res, frmlT, frml, context);
               }
           }
       }
@@ -1455,7 +1454,7 @@ public class Call extends AbstractCall
     var t1 = resolveSelect(frmlT, tt);
     var t2 = t1.applyTypePars(tt);
     var t3 = tt.isGenericArgument() ? t2 : t2.resolve(res, tt.feature().context());
-    var t4 = adjustThisTypeForTarget(t3, context);
+    var t4 = adjustThisTypeForTarget(t3, false, calledFeature(), context);
     var t5 = resolveForCalledFeature(res, t4, tt, context);
     // call may be resolved repeatedly. In case of recursive use of FieldActual
     // (see #2182), we may see `void` as the result type of calls to argument
@@ -1520,12 +1519,16 @@ public class Call extends AbstractCall
    *
    * @param t the formal type to be adjusted.
    *
+   * @param arg true if `t` is the type of an argument, false if `t` is the result type
+   *
+   * @param the declared argument (if arg == true) or the called feature (otherwise).
+   *
    * @param context the source code context where this Call is used
    *
    * @return a type derived from t where `this.type` is replaced by actual types
    * from the call's target where this is possible.
    */
-  private AbstractType adjustThisTypeForTarget(AbstractType t, Context context)
+  private AbstractType adjustThisTypeForTarget(AbstractType t, boolean arg, AbstractFeature calledOrArg, Context context)
   {
     /**
      * For a call `T.f` on a type parameter whose result type contains
@@ -1559,7 +1562,7 @@ public class Call extends AbstractCall
                                           _target.typeForCallTarget());
         var t0 = t;
         t = t.replace_this_type_by_actual_outer(inner,
-                                                (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, t0, from, to),
+                                                (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, arg, calledOrArg, t0, from, to),
                                                 context);
       }
     return t;
@@ -1869,7 +1872,7 @@ public class Call extends AbstractCall
                           }
                         else if (resultExpression(actual) instanceof AbstractLambda al)
                           {
-                            checked[vai] = inferGenericLambdaResult(res, context, t, al, actual.pos(), conflict, foundAt);
+                            checked[vai] = inferGenericLambdaResult(res, context, t, frml, al, actual.pos(), conflict, foundAt);
                           }
                       }
                   }
@@ -2087,6 +2090,7 @@ public class Call extends AbstractCall
   private boolean inferGenericLambdaResult(Resolution res,
                                            Context context,
                                            AbstractType formalType,
+                                           AbstractFeature frml,
                                            AbstractLambda al,
                                            SourcePosition pos,
                                            boolean[] conflict,
@@ -2101,7 +2105,7 @@ public class Call extends AbstractCall
         var ri = rg.index();
         if (rg.feature() == _calledFeature && foundAt.get(ri) == null)
           {
-            var at = actualArgType(res, formalType, context);
+            var at = actualArgType(res, formalType, frml, context);
             if (!at.containsUndefined(true))
               {
                 var rt = al.inferLambdaResultType(res, context, at);

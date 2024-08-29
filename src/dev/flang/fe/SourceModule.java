@@ -1667,6 +1667,11 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
           {
             AstErrors.constraintMustNotBeGenericArgument(f);
           }
+        if (  !f.isTypeFeaturesThisType() // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
+            && f.resultType().isChoice())
+          {
+            AstErrors.constraintMustNotBeChoice(f);
+          }
       }
     checkLegalVisibility(f);
     checkRedefVisibility(f);
