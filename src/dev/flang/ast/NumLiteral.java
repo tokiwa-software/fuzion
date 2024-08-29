@@ -439,8 +439,8 @@ public class NumLiteral extends Constant
   @Override
   AbstractType typeForUnion()
   {
-    // NYI: This seems to work even if we always return null here.  Need to
-    // check if we can just always return null for a union.
+    // NYI: UNDER DEVELOPMENT: This seems to work even if we always return null
+    // here.  Need to check if we can just always return null for a union.
     return _propagatedType;
   }
 
