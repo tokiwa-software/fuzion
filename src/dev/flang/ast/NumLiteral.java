@@ -719,27 +719,30 @@ public class NumLiteral extends Constant
     if (PRECONDITIONS) require
       (findConstantType(_type) != null);
 
-    ConstantType ct = findConstantType(_type);
-    if (ct._isFloat)
+    if (_type != null)
       {
-        floatBits();
-      }
-    else
-      {
-        var i = intValue(ct);
-        if (i == null)
+        ConstantType ct = findConstantType(_type);
+        if (ct._isFloat)
           {
-            AstErrors.nonWholeNumberUsedAsIntegerConstant(pos(),
-                                                         _originalString,
-                                                         _type);
+            floatBits();
           }
-        else if (!ct.canHold(i))
+        else
           {
-            AstErrors.integerConstantOutOfLegalRange(pos(),
-                                                    _originalString,
-                                                    _type,
-                                                    toString(ct._min),
-                                                    toString(ct._max));
+            var i = intValue(ct);
+            if (i == null)
+              {
+                AstErrors.nonWholeNumberUsedAsIntegerConstant(pos(),
+                                                              _originalString,
+                                                              _type);
+              }
+            else if (!ct.canHold(i))
+              {
+                AstErrors.integerConstantOutOfLegalRange(pos(),
+                                                         _originalString,
+                                                         _type,
+                                                         toString(ct._min),
+                                                         toString(ct._max));
+              }
           }
       }
   }
