@@ -2330,8 +2330,11 @@ public class Call extends AbstractCall
         result.resolveTypes(res, context);
       }
 
+    // Check that we either know _calledFeature, or there is an error pending
+    // either for this Call, or we have a problem with the target:
     if (CHECKS) check
-      (res._options.isLanguageServer() || _calledFeature != null || _pendingError != null);
+      (res._options.isLanguageServer() || _calledFeature != null || _pendingError != null ||
+       _target != null && targetTypeOrConstraint(res, context) == Types.t_UNDEFINED);
 
     if (_calledFeature == Types.f_ERROR)
       {
