@@ -303,9 +303,9 @@ public Sequence(public T type) ref is
     if finite
       as_string_all
     else
-      max := (Sequence T).AS_STRING_NON_FINITE_MAX_ELEMENTS
+      max0 := (Sequence T).AS_STRING_NON_FINITE_MAX_ELEMENTS
       (zip i32 String /* NYI: BUG #2527: type inference not powerful enough to infer `i32` here */
-           0..max (v,n -> if n < max then $v else "…")).as_string_all
+           0..max0 (v,n -> if n < max0 then $v else "…")).as_string_all
 
 
   # create a string representation of this Sequence including all the string
@@ -749,6 +749,92 @@ public Sequence(public T type) ref is
                   else
                     res Sequence T := rest;
                     res : nil
+
+
+  # the arithmetic mean of the sequence
+  # https://en.wikipedia.org/wiki/Arithmetic_mean
+  public average option T
+    pre
+      T : numeric
+  =>
+    if is_empty
+      nil
+    else
+      cnt := (map T (_ -> T.one)).fold T.sum
+      sum := fold T.sum
+      sum / cnt
+
+
+  # the variance of the sequence
+  # https://en.wikipedia.org/wiki/Variance
+  public variance option T
+    pre
+      T : numeric
+  =>
+    match average
+      nil => nil
+      avg T =>
+        cnt := (map T (_ -> T.one           )).fold T.sum
+        sum := (map T (x -> (x - avg)**T.two)).fold T.sum
+        sum / cnt
+
+
+  # minimum value in the sequence
+  public min option T
+    pre
+      T : numeric
+  =>
+    if is_empty
+      nil
+    else
+      reduce first ((r,t) -> if r ≤ t then r else t)
+
+
+  # maximum value in the sequence
+  public max option T
+    pre
+      T : numeric
+  =>
+    if is_empty
+      nil
+    else
+      reduce first ((r,t) -> if r ≤ t then t else r)
+
+
+  # the median of the sequence
+  # https://en.wikipedia.org/wiki/Median
+  public median option T
+    pre
+      T : numeric
+  =>
+    if is_empty
+      nil
+    else
+      arr := container.sorted_array_of Sequence.this
+      if arr.length % 2 = 1
+        arr[arr.length / 2]
+      else
+        (arr[(arr.length / 2) - 1] + arr[(arr.length / 2)]) / (T.two)
+
+
+
+  # the standard deviation of the sequence
+  # https://en.wikipedia.org/wiki/Standard_deviation
+  public std_dev
+    pre
+      T : float
+  =>
+    variance.map (x -> T.sqrt x)
+
+
+  # the euclidean norm of this sequence
+  # i.e. the square of the sum of squares of this sequence
+  #
+  public euclidean_norm
+    pre
+      T : float
+  =>
+    T.sqrt ((map (x)->x**T.two).fold T.sum)
 
 
   # monoid of Sequences with infix concatentation operation.
