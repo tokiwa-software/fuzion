@@ -50,6 +50,19 @@ public class Errors extends ANY
   public static final String ERROR_STRING = "**error**";
 
 
+  /**
+   * property- or env-var-controlled flag to enable stack trace printing whenever
+   * an error is reported.
+   *
+   * To enable debugging, use fz with
+   *
+   *   dev_flang_fuir_util_Errors_STACK_TRACE_ON_ERROR=true
+   *
+   */
+  static final boolean STACK_TRACE_ON_ERROR = FuzionOptions.boolPropertyOrEnv
+    ("dev.flang.fuir.util.Errors.STACK_TRACE_ON_ERROR", false);
+
+
   /*------------------------  static variables  -------------------------*/
 
 
@@ -417,6 +430,10 @@ public class Errors extends ANY
                         "Maximum error count is " + MAX_ERROR_MESSAGES + ".\n" +
                         "Change this via property '" + MAX_ERROR_MESSAGES_PROPERTY + "' or command line option '" + MAX_ERROR_MESSAGES_OPTION + "'.");
                 showAndExit();
+              }
+            if (STACK_TRACE_ON_ERROR)
+              {
+                Thread.dumpStack();
               }
           }
       }
