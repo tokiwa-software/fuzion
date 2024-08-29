@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.Errors;
 import dev.flang.util.SourcePosition;
 
 
@@ -103,20 +104,22 @@ public class Env extends ExprWithPos
 
 
   /**
-   * determine the static type of all expressions and declared features in this feature
-   *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Call is used
-   *
-   * @return a call to the outer references to access the value represented by
-   * this.
+   * check the type of this Env expression
    */
-  public Expr resolveTypes(Resolution res, Context context)
+  public void checkTypes()
   {
-    _type = _type.resolve(res, context);
-    return this;
+    var t = _type;
+    while (t != null && !t.isGenericArgument())
+      {
+        if (t.feature().isTypeFeature())
+          {
+            Errors.fatal("NYI: UNDER DEVELOPMENT: implementation restriction." + System.lineSeparator() +
+                          "env type contains type feature type." + System.lineSeparator() +
+                          pos() + System.lineSeparator() +
+                          type());
+          }
+        t = t.outer();
+      }
   }
 
 
