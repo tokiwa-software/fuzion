@@ -466,6 +466,16 @@ public class Call extends AbstractCall
 
 
   /**
+   * Helper to check if the target of this call is undefined, i.e., it might
+   * have a pending error.
+   */
+  private boolean targetTypeUndefined()
+  {
+    return _target != null && _target.typeForInferencing() == null;
+  }
+
+
+  /**
    * Convert a formal argument type in this call to the actual type defined by
    * the target of this call and the actual type parameters given in this call.
    *
@@ -741,7 +751,7 @@ public class Call extends AbstractCall
     if (POSTCONDITIONS) ensure
       (Errors.any() || !calledFeatureKnown() || _calledFeature != Types.f_ERROR || targetVoid,
        Errors.any() || _target        != Expr.ERROR_VALUE,
-       Errors.any() || _calledFeature != null || _pendingError != null,
+       Errors.any() || _calledFeature != null || _pendingError != null || targetTypeUndefined(),
        Errors.any() || _target        != null || _pendingError != null);
 
     return !targetVoid;
@@ -2333,8 +2343,7 @@ public class Call extends AbstractCall
     // Check that we either know _calledFeature, or there is an error pending
     // either for this Call, or we have a problem with the target:
     if (CHECKS) check
-      (res._options.isLanguageServer() || _calledFeature != null || _pendingError != null ||
-       _target != null && targetTypeOrConstraint(res, context) == Types.t_UNDEFINED);
+      (res._options.isLanguageServer() || _calledFeature != null || _pendingError != null || targetTypeUndefined());
 
     if (_calledFeature == Types.f_ERROR)
       {
@@ -2423,12 +2432,20 @@ public class Call extends AbstractCall
 
     resolveTypesOfActuals(res, context);
 
+    if (!res._options.isLanguageServer() &&
+        (targetTypeUndefined() || _pendingError == null && result.typeForInferencing() == Types.t_ERROR))
+      {
+        if (_target instanceof Call tc)
+          {
+            tc.reportPendingError();
+          }
+        result = Call.ERROR; // short circuit this call
+      }
+
     if (POSTCONDITIONS) ensure
       (_pendingError != null || Errors.any() || result.typeForInferencing() != Types.t_ERROR);
 
-    return _pendingError == null && result.typeForInferencing() == Types.t_ERROR && !res._options.isLanguageServer()
-      ? Call.ERROR // short circuit this call
-      : result;
+    return  result;
   }
 
 
