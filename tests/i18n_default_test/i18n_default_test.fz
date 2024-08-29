@@ -27,10 +27,11 @@ i18n_default_test is
       redef get(v String) option String => "de_DE.UTF-8"
 
     (envir.vars h).instate_self ()->
-
-        #formates given date after default-setting, in this case German-format
+    
+    # formats given date and currency using default-setting, in this case German-format
         main ! internationalization.provide =>
-            say "{internationalization.provide.current.date (30) (5) (2024)}"
-
+            say "{internationalization.provide.current.date 30 5 2024}"
+            say "{internationalization.provide.current.currency 300000}"
+        
         main
 
