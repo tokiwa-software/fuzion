@@ -208,10 +208,10 @@ public class NumLiteral extends Constant
   private final int _exponent5;
 
   /**
-   * The type of this constant.  This can be set by the user of this type
-   * depending on what this is assigned to.
+   * The expected type of this constant that was propagated into this Expr from
+   * what this is assigned to.
    */
-  private AbstractType _type;
+  private AbstractType _propagatedType;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -417,11 +417,15 @@ public class NumLiteral extends Constant
   @Override
   AbstractType typeForInferencing()
   {
-    if (_type == null)
+    var result = _propagatedType;
+    if (result == null)
       {
-        _type = typeForCallTarget();
+        var i = hasDot() ? null : intValue(ConstantType.ct_i32);
+        result = i == null
+          ? Types.resolved.t_f64
+          : Types.resolved.t_i32;
       }
-    return _type;
+    return result;
   }
 
 
@@ -435,7 +439,9 @@ public class NumLiteral extends Constant
   @Override
   AbstractType typeForUnion()
   {
-    return _type;
+    // NYI: UNDER DEVELOPMENT: This seems to work even if we always return null
+    // here.  Need to check if we can just always return null for a union.
+    return _propagatedType;
   }
 
 
@@ -449,9 +455,9 @@ public class NumLiteral extends Constant
   protected void propagateExpectedType(AbstractType t)
   {
     if (PRECONDITIONS) require
-      (_type == null || extractNumericType(t) == null || _type.compareTo(extractNumericType(t)) == 0);
+      (_propagatedType == null || extractNumericType(t) == null || _propagatedType.compareTo(extractNumericType(t)) == 0);
 
-    _type = extractNumericType(t);
+    _propagatedType = extractNumericType(t);
   }
 
 
@@ -465,22 +471,6 @@ public class NumLiteral extends Constant
     return result.size() == 1
       ? result.get(0)
       : null;
-  }
-
-
-  /**
-   * type returns the type of this expression if used as a target of a
-   * call. Since this might eventually not be used as a target of a call, but as
-   * an actual argument, this type will not be fixed yet.
-   *
-   * @return this Expr's type or t_ERROR in case it is not known yet.
-   */
-  AbstractType typeForCallTarget()
-  {
-    var i = hasDot() ? null : intValue(ConstantType.ct_i32);
-    return i == null
-      ? Types.resolved.t_f64
-      : Types.resolved.t_i32;
   }
 
 
@@ -541,7 +531,7 @@ public class NumLiteral extends Constant
    */
   private byte[] floatBits()
   {
-    ConstantType ct = findConstantType(_type);
+    ConstantType ct = findConstantType(type());
 
     if (CHECKS) check
       (ct._isFloat);
@@ -605,7 +595,7 @@ public class NumLiteral extends Constant
             var maxH = "0x1P" + (eBias + ct._mBits - 1);
             AstErrors.floatConstantTooLarge(pos(),
                                            _originalString,
-                                           _type,
+                                           type(),
                                            max, maxH);
             e2 = eSpecial; // +/- infinity
             m = B0;
@@ -625,7 +615,7 @@ public class NumLiteral extends Constant
                 var minH = "0x1P" + minE2;
                 AstErrors.floatConstantTooSmall(pos(),
                                                _originalString,
-                                               _type,
+                                               type(),
                                                min, minH);
               }
           }
@@ -677,7 +667,7 @@ public class NumLiteral extends Constant
         var result = v.add(roundingBit).shiftRight(-sh);
         if (_exponent5 == 0 && !result.shiftLeft(-sh).equals(v))
           {
-            AstErrors.lossOfPrecision(pos(), _originalString, _base, _type);
+            AstErrors.lossOfPrecision(pos(), _originalString, _base, type());
           }
         return result;
       }
@@ -718,32 +708,29 @@ public class NumLiteral extends Constant
   void checkRange()
   {
     if (PRECONDITIONS) require
-      (Errors.any() || findConstantType(_type) != null);
+      (findConstantType(type()) != null);
 
-    if (_type != null)
+    ConstantType ct = findConstantType(type());
+    if (ct._isFloat)
       {
-        ConstantType ct = findConstantType(_type);
-        if (ct._isFloat)
+        floatBits();
+      }
+    else
+      {
+        var i = intValue(ct);
+        if (i == null)
           {
-            floatBits();
-          }
-        else
-          {
-            var i = intValue(ct);
-            if (i == null)
-              {
-                AstErrors.nonWholeNumberUsedAsIntegerConstant(pos(),
-                                                              _originalString,
-                                                              _type);
-              }
-            else if (!ct.canHold(i))
-              {
-                AstErrors.integerConstantOutOfLegalRange(pos(),
+            AstErrors.nonWholeNumberUsedAsIntegerConstant(pos(),
                                                          _originalString,
-                                                         _type,
-                                                         toString(ct._min),
-                                                         toString(ct._max));
-              }
+                                                         type());
+          }
+        else if (!ct.canHold(i))
+          {
+            AstErrors.integerConstantOutOfLegalRange(pos(),
+                                                    _originalString,
+                                                    type(),
+                                                    toString(ct._min),
+                                                    toString(ct._max));
           }
       }
   }
@@ -867,9 +854,9 @@ public class NumLiteral extends Constant
         // constant type in choice generics, if so use that for further type
         // propagation.
         t = t.findInChoice(cg -> !cg.isGenericArgument() && findConstantType(cg) != null, context);
-        if (_type == null && findConstantType(t) != null)
+        if (_propagatedType == null && findConstantType(t) != null)
           {
-            _type = t;
+            _propagatedType = t;
           }
       }
     return result;
@@ -907,7 +894,7 @@ public class NumLiteral extends Constant
    */
   public byte[] data()
   {
-    var ct = findConstantType(_type);
+    var ct = findConstantType(type());
     byte[] result;
     if (ct._isFloat)
       {
