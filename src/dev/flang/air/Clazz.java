@@ -90,41 +90,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
   public static FeatureLookup _flu;
 
 
-  /**
-   * Set of intrinsics that implicitly create an instance of their reference
-   * result value.
-   */
-  static TreeSet<String> _intrinsicConstructors_ = new TreeSet<String>();
-  static
-  {
-    _intrinsicConstructors_.add("fuzion.java.get_static_field0"     );
-    _intrinsicConstructors_.add("fuzion.java.get_field0"            );
-    _intrinsicConstructors_.add("fuzion.java.call_v0"               );
-    _intrinsicConstructors_.add("fuzion.java.call_c0"               );
-    _intrinsicConstructors_.add("fuzion.java.call_s0"               );
-    _intrinsicConstructors_.add("fuzion.java.array_to_java_object0" );
-    _intrinsicConstructors_.add("fuzion.java.string_to_java_object0");
-    _intrinsicConstructors_.add("fuzion.java.i8_to_java_object"     );
-    _intrinsicConstructors_.add("fuzion.java.u16_to_java_object"    );
-    _intrinsicConstructors_.add("fuzion.java.i16_to_java_object"    );
-    _intrinsicConstructors_.add("fuzion.java.i32_to_java_object"    );
-    _intrinsicConstructors_.add("fuzion.java.i64_to_java_object"    );
-    _intrinsicConstructors_.add("fuzion.java.f32_to_java_object"    );
-    _intrinsicConstructors_.add("fuzion.java.f64_to_java_object"    );
-    _intrinsicConstructors_.add("fuzion.java.bool_to_java_object"   );
-  }
-
-
   /*-------------------------  static methods  --------------------------*/
 
-
-  /**
-   * Get the names of all intrinsics supported by this backend.
-   */
-  public static Set<String> supportedIntrinsics()
-  {
-    return _intrinsicConstructors_;
-  }
 
 
   /*-----------------------------  classes  -----------------------------*/
@@ -1826,50 +1793,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (feature().isIntrinsic(),
        isCalled());
 
-    var name = feature().qualifiedName();
-    var implicitConstructor = _intrinsicConstructors_.contains(name);
-
     // instances returned from intrinsics are automatically
     // recorded to be instantiated.
-    var rc = resultClazz();
-    if (rc.isChoice())
-      {
-        if (feature().isIntrinsic())
-          {
-            for (var cg : rc.choiceGenerics())
-              {
-                if (!cg.isRef() || implicitConstructor)
-                  {
-                    cg.instantiated(at);
-                    if (implicitConstructor)
-                      {
-                        var o = cg._outer;
-                        while (o != null)
-                          {
-                            o.instantiated(at);
-                            o = o._outer;
-                          }
-                      }
-                  }
-              }
-            // e.g. `java.call_c0` may return `outcome x`
-            rc.instantiated(at);
-          }
-      }
-    else if (!rc.isRef() || implicitConstructor)
-      {
-        rc.instantiated(at);
-        if (implicitConstructor)
-          {
-            var o = rc._outer;
-            while (o != null)
-              {
-                o.instantiated(at);
-                o = o._outer;
-              }
-          }
-      }
+    markInstantiated(resultClazz(), at);
 
+    var name = feature().qualifiedName();
     switch (name)
       {
       case "effect.abortable":
@@ -1879,6 +1807,38 @@ public class Clazz extends ANY implements Comparable<Clazz>
         argumentFields()[0].resultClazz().lookup(Types.resolved.f_Function_call, at);
         break;
       default: break;
+      }
+  }
+
+
+  /**
+   * Mark clazz cl and all its outers as instantiated.
+   * In case it is a choice, mark all its
+   * choice generics as instantiated as well.
+   *
+   * @param cl the clazz we want to mark as instantiated
+   *
+   * @param at where the instantiation is taking place
+   */
+  private void markInstantiated(Clazz cl, HasSourcePosition at)
+  {
+    cl.instantiated(at);
+    if (cl.isChoice())
+      {
+        // e.g. `java.call_c0` may return `outcome x`
+        for (var cg : cl.choiceGenerics())
+          {
+            markInstantiated(cg, at);
+          }
+      }
+    else
+      {
+        var o = cl._outer;
+        while (o != null)
+          {
+            o.instantiated(at);
+            o = o._outer;
+          }
       }
   }
 
