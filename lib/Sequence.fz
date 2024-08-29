@@ -782,7 +782,7 @@ public Sequence(public T type) ref is
   # minimum value in the sequence
   public min option T
     pre
-      T : numeric
+      T : property.orderable
   =>
     if is_empty
       nil
@@ -793,7 +793,7 @@ public Sequence(public T type) ref is
   # maximum value in the sequence
   public max option T
     pre
-      T : numeric
+      T : property.orderable
   =>
     if is_empty
       nil
