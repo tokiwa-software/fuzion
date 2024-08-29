@@ -256,7 +256,7 @@ public class CNames extends ANY
     /*
      * Set of used names
      */
-    private final TreeSet<String> _cacheSet = new TreeSet<String>();
+    private final TreeSet<String> _usedNames = new TreeSet<String>();
 
 
     /**
@@ -327,11 +327,15 @@ public class CNames extends ANY
           var p = _prefix;
           var sb = new StringBuilder(p);
           clazzMangledName(cl, sb);
-          // NYI: there might be name conflicts due to different generic instances, so
-          // we need to add the clazz id or the actual generics if this is the case:
-          //
-          //   sb.append("_").append(clazzId2num(cl)).append("_");
           res = sb.toString();
+
+          // see reg_issue1840 why the following is needed
+          // name clashes due to equal named features that are not visible but inherited
+          if (_usedNames.contains(res))
+          {
+            res = res + "_" + clazzId2num(cl);
+          }
+          _usedNames.add(res);
 
           if (res.length() > MAX_C99_IDENTIFIER_LENGTH)
             {
@@ -342,17 +346,6 @@ public class CNames extends ANY
               if (CHECKS) check
                 (res.length() == MAX_C99_IDENTIFIER_LENGTH);
             }
-          // see reg_issue1840 why the following is needed
-          var i = 0;
-          if (_cacheSet.contains(res))
-            {
-              while(_cacheSet.contains(res + i))
-                {
-                  i++;
-                }
-              res = res + i;
-            }
-          _cacheSet.add(res);
           _cache.set(num, res);
         }
 
