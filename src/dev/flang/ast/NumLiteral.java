@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -419,7 +420,6 @@ public class NumLiteral extends Constant
     if (_type == null)
       {
         _type = typeForCallTarget();
-        checkRange();
       }
     return _type;
   }
@@ -714,32 +714,36 @@ public class NumLiteral extends Constant
   /**
    * Check that this constant is in the range allowed for its type_.
    */
+  @Override
   void checkRange()
   {
     if (PRECONDITIONS) require
-      (findConstantType(_type) != null);
+      (Errors.any() || findConstantType(_type) != null);
 
-    ConstantType ct = findConstantType(_type);
-    if (ct._isFloat)
+    if (_type != null)
       {
-        floatBits();
-      }
-    else
-      {
-        var i = intValue(ct);
-        if (i == null)
+        ConstantType ct = findConstantType(_type);
+        if (ct._isFloat)
           {
-            AstErrors.nonWholeNumberUsedAsIntegerConstant(pos(),
-                                                         _originalString,
-                                                         _type);
+            floatBits();
           }
-        else if (!ct.canHold(i))
+        else
           {
-            AstErrors.integerConstantOutOfLegalRange(pos(),
-                                                    _originalString,
-                                                    _type,
-                                                    toString(ct._min),
-                                                    toString(ct._max));
+            var i = intValue(ct);
+            if (i == null)
+              {
+                AstErrors.nonWholeNumberUsedAsIntegerConstant(pos(),
+                                                              _originalString,
+                                                              _type);
+              }
+            else if (!ct.canHold(i))
+              {
+                AstErrors.integerConstantOutOfLegalRange(pos(),
+                                                         _originalString,
+                                                         _type,
+                                                         toString(ct._min),
+                                                         toString(ct._max));
+              }
           }
       }
   }
@@ -866,7 +870,6 @@ public class NumLiteral extends Constant
         if (_type == null && findConstantType(t) != null)
           {
             _type = t;
-            checkRange();
           }
       }
     return result;
