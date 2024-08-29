@@ -89,7 +89,8 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
   {
     if (PRECONDITIONS) require
       (f != null,
-       tp != null);
+       tp != null,
+       f.generics().sizeMatches(tp));
 
     _f = f;
     _tp = tp;

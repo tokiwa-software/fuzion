@@ -57,6 +57,8 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import dev.flang.fuir.FUIR;
@@ -1486,16 +1488,73 @@ public class Intrinsics extends ANY
         : new i32Value(-1);
     });
 
-    put("concur.sync.mtx_init",  (executor, innerClazz) -> args -> { throw new Error("NYI"); });
-    put("concur.sync.mtx_lock",  (executor, innerClazz) -> args -> { throw new Error("NYI"); });
-    put("concur.sync.mtx_trylock",  (executor, innerClazz) -> args -> { throw new Error("NYI"); });
-    put("concur.sync.mtx_unlock",  (executor, innerClazz) -> args -> { throw new Error("NYI"); });
-    put("concur.sync.mtx_destroy",  (executor, innerClazz) -> args -> { throw new Error("NYI"); });
-    put("concur.sync.cnd_init",  (executor, innerClazz) -> args -> { throw new Error("NYI"); });
-    put("concur.sync.cnd_signal",  (executor, innerClazz) -> args -> { throw new Error("NYI"); });
-    put("concur.sync.cnd_broadcast",  (executor, innerClazz) -> args -> { throw new Error("NYI"); });
-    put("concur.sync.cnd_wait",  (executor, innerClazz) -> args -> { throw new Error("NYI"); });
-    put("concur.sync.cnd_destroy",  (executor, innerClazz) -> args -> { throw new Error("NYI"); });
+    /* NYI: UNDER DEVELOPMENT: abusing javaObjectToPlainInstance in mtx_*, cnd_* intrinsics
+      replace by returnOutcome like in jvm backend.
+    */
+    /* ReentrantLock */
+    put("concur.sync.mtx_init", (executor, innerClazz) -> args -> {
+      var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
+      return JavaInterface.javaObjectToInstance(new ReentrantLock(), resultClazz);
+    });
+    put("concur.sync.mtx_lock", (executor, innerClazz) -> args -> {
+      ((ReentrantLock) ((JavaRef) args.get(1))._javaRef).lock();
+      return new boolValue(true);
+    });
+    put("concur.sync.mtx_trylock", (executor, innerClazz) -> args -> new boolValue(
+      ((ReentrantLock) ((JavaRef) args.get(1))._javaRef).tryLock()));
+    put("concur.sync.mtx_unlock", (executor, innerClazz) -> args -> {
+      try
+        {
+          ((ReentrantLock) ((JavaRef) args.get(1))._javaRef).unlock();
+          return new boolValue(true);
+        }
+      catch (IllegalMonitorStateException e)
+        {
+          return new boolValue(false);
+        }
+    });
+    put("concur.sync.mtx_destroy", (executor, innerClazz) -> args -> executor.unitValue());
+
+    /* Condition */
+    put("concur.sync.cnd_init", (executor, innerClazz) -> args -> {
+      var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
+      return JavaInterface.javaObjectToInstance(
+        ((ReentrantLock) ((JavaRef) args.get(1))._javaRef).newCondition(), resultClazz);
+    });
+    put("concur.sync.cnd_signal", (executor, innerClazz) -> args -> {
+      try
+        {
+          ((Condition) ((JavaRef) args.get(1))._javaRef).signal();
+          return new boolValue(true);
+        }
+      catch (Exception e)
+        {
+          return new boolValue(false);
+        }
+    });
+    put("concur.sync.cnd_broadcast", (executor, innerClazz) -> args -> {
+      try
+        {
+          ((Condition) ((JavaRef) args.get(1))._javaRef).signalAll();
+          return new boolValue(true);
+        }
+      catch (Exception e)
+        {
+          return new boolValue(false);
+        }
+    });
+    put("concur.sync.cnd_wait", (executor, innerClazz) -> args -> {
+      try
+        {
+          ((Condition) ((JavaRef) args.get(1))._javaRef).await();
+          return new boolValue(true);
+        }
+      catch (Exception e)
+        {
+          return new boolValue(false);
+        }
+    });
+    put("concur.sync.cnd_destroy", (executor, innerClazz) -> args -> executor.unitValue());
   }
 
 

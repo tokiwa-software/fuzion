@@ -772,12 +772,14 @@ public container.set_of_hashable(K type : property.hashable, vs (lock_free.map K
 # f determines the key of an element
 #
 public Sequence.group_by(K type : property.hashable, f T -> K) lock_free.map K (list T) =>
+
   # NYI It should be possible to choose the map implementation that is used.
   res := (lock_free.map K (list T)).empty
-  for_each (x ->
+
+  for_each x->
     key := f x
     match res[key]
       nil => res.add key [x].as_list
       s list T => res.add key (s ++ [x].as_list)
-    )
+
   res

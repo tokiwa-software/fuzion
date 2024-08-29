@@ -1345,7 +1345,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
  */
 
             var outerUnboxed = isBoxed() && !f.isConstructor() ? asValue() : this;
-            innerClazz = Clazzes.instance.clazzWithSpecificOuter(t, select, outerUnboxed);
+            innerClazz = Clazzes.instance.create(t, select, outerUnboxed);
             if (select < 0)
               {
                 _inner.put(fa, innerClazz);

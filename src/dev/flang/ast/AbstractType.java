@@ -1844,7 +1844,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             result = result + ".this";
           }
-        else if (typeType)
+        if (typeType)
           {
             result = result + ".type";
           }

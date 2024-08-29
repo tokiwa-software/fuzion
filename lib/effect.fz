@@ -210,14 +210,6 @@ public effect is
       set res := f()
 
 
-  # execute the code of 'f' in the context of this effect
-  #
-  # NYI: CLEANUP: REMOVE, use type.instate instead
-  #
-  public run(R type, f () -> R, def ()->R) R =>
-    effect.this.instate R effect.this f def.call
-
-
   # --------------------  replacing effect instances  --------------------
 
 
@@ -268,15 +260,15 @@ public effect is
     abort0 e
 
 
-  # replace existing effect of type `effect.this` by the new effect value `effect.this`.
-  # and abort code execution to return to the point where the effect was instated.
+  # Abort code execution for the instated effect.this.env and return to the point
+  # where the effect was instated.
   #
-  public abort void
+  public type.abort void
   pre
     safety: effect.this.is_instated
-    safety: abortable
+    safety: effect.this.env.abortable
   =>
-    effect.this.abort0 effect.this
+    effect.this.abort0 effect.this.env
 
 
   # does this effect support abort?
@@ -299,50 +291,9 @@ public effect is
   # jargon (and remove `return`) or to stick with it (and rename `abort` as
   # `return`).
   #
-  public return void
+  public type.return void
   pre
-    safety: abortable
+    safety: effect.this.is_instated
+    safety: effect.this.env.abortable
   =>
     abort
-
-# --------------------  effect helper features  --------------------
-
-
-# simple_effect provides a simple means to define and use an effect
-#
-# user-defined effects should inherit from this feature and add
-# operations as inner features or fields of function type.
-#
-# To install this effect to execute a function, simple_effect.use
-# can be called.
-#
-# NYI: CLEANUP: REMOVE, use effect instead
-#
-public simple_effect : effect
-is
-
-  # install this simple_effect and run code
-  #
-  # In case of an `abort`, `use` panics
-  #
-  # NYI: CLEANUP: REMOVE, use effect.instate instead
-  #
-  public use(code ()->unit) unit =>
-    simple_effect.this.instate simple_effect.this code
-
-
-  # install this effect and run code that produces a result of
-  # type T. panic in case abort is called.
-  #
-  # NYI: CLEANUP: REMOVE, use effect.instate instead
-  #
-  public go(T type, code ()->T) T =>
-    simple_effect.this.instate T simple_effect.this code ()->
-             msg := "*** unexpected abort in {simple_effect.this.type}"
-             if abortable
-               panic msg
-             else
-               # the user should not be able to produce this state: since the effect is
-               # not abortable cf can only return with a result. So we do a low-level
-               # panic that does not show up as a used effect:
-               fuzion.std.panic msg

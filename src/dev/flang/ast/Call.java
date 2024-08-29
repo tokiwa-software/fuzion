@@ -207,11 +207,11 @@ public class Call extends AbstractCall
 
 
   /**
-   * This field is set to the target of the call
-   * before calling typeForCallTarget().
+   * If this Call is the target of another call, this field will be set to that
+   * other Call when this is created.
    *
-   * Can then be used to produce errors that are target
-   * dependent.
+   * This will be used to produce suggestions to fix errors reported for this
+   * call.
    */
   public Call _targetOf_forErrorSolutions = null;
 
@@ -415,6 +415,10 @@ public class Call extends AbstractCall
     this._unresolvedGenerics = generics;
     this._actuals = actuals;
     this._target = target;
+    if (target instanceof Call tc)
+      {
+        tc._targetOf_forErrorSolutions = this;
+      }
     this._originalTarget = _target;
     this._calledFeature = calledFeature;
     this._type = type;
@@ -443,11 +447,6 @@ public class Call extends AbstractCall
   {
     if (PRECONDITIONS) require
       (_target != null);
-
-    if (_target instanceof Call tc)
-      {
-        tc._targetOf_forErrorSolutions = this;
-      }
 
     var result = _target.typeForCallTarget();
 
