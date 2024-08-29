@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.c;
 
 import java.util.ArrayList;
+import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
 
@@ -252,6 +253,12 @@ public class CNames extends ANY
     private final ArrayList<String> _cache = new ArrayList<>();
 
 
+    /*
+     * Set of used names
+     */
+    private final TreeSet<String> _cacheSet = new TreeSet<String>();
+
+
     /**
      * prefix to be used for given class of names.
      */
@@ -335,6 +342,17 @@ public class CNames extends ANY
               if (CHECKS) check
                 (res.length() == MAX_C99_IDENTIFIER_LENGTH);
             }
+          // see reg_issue1840 why the following is needed
+          var i = 0;
+          if (_cacheSet.contains(res))
+            {
+              while(_cacheSet.contains(res + i))
+                {
+                  i++;
+                }
+              res = res + i;
+            }
+          _cacheSet.add(res);
           _cache.set(num, res);
         }
 
