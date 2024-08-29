@@ -1995,7 +1995,7 @@ public class FUIR extends IR
   {
     return switch (codeAt(s))
       {
-      case Assign  -> "Assign to " + clazzAsString(accessedClazz(s));
+      case Assign  -> "Assign " + clazzAsString(assignedType(s)) + " to " + clazzAsString(accessedClazz(s));
       case Box     -> "Box "       + clazzAsString(boxValueClazz(s)) + " => " + clazzAsString(boxResultClazz  (s));
       case Call    -> {
                         var sb = new StringBuilder("Call ");

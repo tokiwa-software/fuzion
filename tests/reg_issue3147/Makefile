@@ -19,10 +19,7 @@
 #
 #  Source code of Fuzion test Makefile
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
-#
 # -----------------------------------------------------------------------
 
-override NAME = ctrie_threads
-FUZION_OPTIONS = -modules=lock_free
+override NAME = reg_issue3147
 include ../simple.mk
