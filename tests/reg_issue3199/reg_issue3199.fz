@@ -17,12 +17,16 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test Makefile
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test reg_issue3199
 #
 # -----------------------------------------------------------------------
 
-override NAME = ctrie_threads
-FUZION_OPTIONS = -modules=lock_free
-include ../simple.mk
+reg_issue3199 is
+
+  X ref is
+    f i32 => abstract
+
+  y : X is
+
+  x X := y
+  say x.f
