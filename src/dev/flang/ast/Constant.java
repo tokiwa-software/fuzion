@@ -128,6 +128,16 @@ public abstract class Constant extends Expr
 
 
   /**
+   * Check that this constant is in the range allowed for its type().
+   *
+   * This is redefined by NumLiteral to check the range of the constant.
+   */
+  void checkRange()
+  {
+  }
+
+
+  /**
    * This expression as a compile time constant.
    */
   @Override
