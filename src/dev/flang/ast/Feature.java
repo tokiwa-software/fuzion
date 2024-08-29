@@ -1927,16 +1927,16 @@ A ((Choice)) declaration must not contain a result type.
         _resultType = _resultType.checkChoice(_posOfReturnType, context());
         visit(new ContextVisitor(context()) {
             /* if an error is reported in a call it might no longer make sense to check the actuals: */
-            public boolean visitActualsLate() { return true; }
+            @Override public boolean visitActualsLate() { return true; }
 
-            public void         action(AbstractAssign a, AbstractFeature outer) {        a.checkTypes(res,  _context);           }
-            public Call         action(Call           c, AbstractFeature outer) {        c.checkTypes(res,  _context); return c; }
-            public Constant     action(Constant       c, AbstractFeature outer) {        c.checkRange();               return c; }
-            public Expr         action(If             i, AbstractFeature outer) {        i.checkTypes(      _context); return i; }
-            public Expr         action(InlineArray    i, AbstractFeature outer) {        i.checkTypes(      _context); return i; }
-            public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints(_context);           }
-            public void         action(Cond           c, AbstractFeature outer) {        c.checkTypes();                         }
-            public void         actionBefore(Block    b, AbstractFeature outer) {        b.checkTypes();                         }
+            @Override public void         action(AbstractAssign a, AbstractFeature outer) {        a.checkTypes(res,  _context);           }
+            @Override public Call         action(Call           c, AbstractFeature outer) {        c.checkTypes(res,  _context); return c; }
+            @Override public void         action(Constant       c                       ) {        c.checkRange();                         }
+            @Override public Expr         action(If             i, AbstractFeature outer) {        i.checkTypes(      _context); return i; }
+            @Override public Expr         action(InlineArray    i, AbstractFeature outer) {        i.checkTypes(      _context); return i; }
+            @Override public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints(_context);           }
+            @Override public void         action(Cond           c, AbstractFeature outer) {        c.checkTypes();                         }
+            @Override public void         actionBefore(Block    b, AbstractFeature outer) {        b.checkTypes();                         }
           });
         checkTypes(res, context());
 
