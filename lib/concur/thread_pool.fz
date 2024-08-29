@@ -121,7 +121,7 @@ is
   public submit(T type, task ()->T) option (concur.Future T) =>
 
 
-    fut : concur.Future T is
+    fut ref : concur.Future T is
 
       uid := unique_id
 
@@ -144,12 +144,7 @@ is
             match concur.sync.cnd_init mtx.mtx
               e error => panic e.msg
               c fuzion.sys.Pointer =>
-                  a option fuzion.sys.Pointer := c
-                  # NYI: BUG: in c backend
-                  check a.exists
-                  fut_cnd.write a
-                  # NYI: BUG: in c backend
-                  check fut_cnd.read.exists
+                  fut_cnd.write c
                   if !is_done
                     check concur.sync.cnd_wait c mtx.mtx
 
