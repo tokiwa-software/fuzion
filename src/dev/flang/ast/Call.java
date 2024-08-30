@@ -1158,6 +1158,22 @@ public class Call extends AbstractCall
 
 
   /**
+   * type returns the type of this expression or Types.t_ERROR if the type is
+   * still unknown, i.e., before or during type resolution.
+   *
+   * @return this Expr's type or t_ERROR in case it is not known yet.
+   */
+  @Override
+  public AbstractType type()
+  {
+    // type() will only be called when we really need the type, so we can report
+    // an error in case there is one pending.
+    reportPendingError();
+    return super.type();
+  }
+
+
+  /**
    * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
