@@ -29,6 +29,9 @@ public Stack(T type) ref is
   public pop option T => abstract
   public peek option T => abstract
 
+  public is_empty =>
+    peek.is_nil
+
 
 
 # A stack implementation using local mutation

@@ -77,7 +77,10 @@ public effect is
   # determine the required effects and create code to  instate them at the beginning
   # of an application.
   #
-  public type.default(e effect.this) => default0 e
+  public type.default(e effect.this)
+    pre !e.abortable
+  =>
+    default0 e
 
 
   # convenience version of `type.default` for effect values whose type is
@@ -117,10 +120,21 @@ public effect is
                       ) R
   =>
     cf := e.Effect_Call code
-    instate0 e cf
-    match cf.res
-      nil => def()
-      x R => x
+    lm : mutate is
+    if e.abortable
+      lm.instate_self ()->
+        (open_resources (container.stack lm ()->unit)).instate_self ()->
+          instate0 e cf
+          match cf.res
+            nil =>
+              open_resources.env.abort
+              def()
+            x R => x
+    else
+      instate0 e cf
+      match cf.res
+        nil => def()
+        x R => x
 
 
   # execute 'code' in a context where the effect instance `e` has been
