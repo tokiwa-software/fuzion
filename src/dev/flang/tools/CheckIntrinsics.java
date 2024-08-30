@@ -68,8 +68,6 @@ class CheckIntrinsics extends ANY
     checkIntrinsics(all, true, dfa, "DFA", x->x);
     var cfg = dev.flang.fuir.cfg.CFG.supportedIntrinsics();
     checkIntrinsics(all, true, cfg, "CFG", x->x);
-    var air = dev.flang.air.Clazz.supportedIntrinsics();
-    checkIntrinsics(all, false, air, "AIR", x->x);
   }
 
 

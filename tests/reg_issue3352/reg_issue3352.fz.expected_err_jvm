@@ -1,0 +1,16 @@
+
+error 1: FATAL FAULT `*** panic ***`: *** invalid mutate for Type of 'm'
+Call stack:
+fuzion.sys.fatal_fault#2
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1
+fuzion.runtime.fault.cause#1
+panic.type.install_default.λ.call#1
+panic.cause#1
+panic#1
+m.mpanic#1
+(m.new i32).check_and_replace
+(m.new i32).get
+universe
+
+*** fatal errors encountered, stopping.
+one error.

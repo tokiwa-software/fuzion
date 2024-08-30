@@ -207,11 +207,11 @@ public class Call extends AbstractCall
 
 
   /**
-   * This field is set to the target of the call
-   * before calling typeForCallTarget().
+   * If this Call is the target of another call, this field will be set to that
+   * other Call when this is created.
    *
-   * Can then be used to produce errors that are target
-   * dependent.
+   * This will be used to produce suggestions to fix errors reported for this
+   * call.
    */
   public Call _targetOf_forErrorSolutions = null;
 
@@ -415,6 +415,10 @@ public class Call extends AbstractCall
     this._unresolvedGenerics = generics;
     this._actuals = actuals;
     this._target = target;
+    if (target instanceof Call tc)
+      {
+        tc._targetOf_forErrorSolutions = this;
+      }
     this._originalTarget = _target;
     this._calledFeature = calledFeature;
     this._type = type;
@@ -444,12 +448,7 @@ public class Call extends AbstractCall
     if (PRECONDITIONS) require
       (_target != null);
 
-    if (_target instanceof Call tc)
-      {
-        tc._targetOf_forErrorSolutions = this;
-      }
-
-    var result = _target.typeForCallTarget();
+    var result = _target.type();
 
     if (result.isGenericArgument())
       {
@@ -530,7 +529,7 @@ public class Call extends AbstractCall
       // Would be better if AbstractFeature.resultType() would do this for us:
       _target instanceof Call tc &&
       targetIsTypeParameter()          ? tc.calledFeature().asGenericType() :
-      calledFeature().isConstructor()  ? _target.typeForCallTarget()
+      calledFeature().isConstructor()  ? _target.type()
                                        : targetTypeOrConstraint(res, context);
   }
 
@@ -1268,7 +1267,7 @@ public class Call extends AbstractCall
     var frmlT = frml.resultTypeIfPresent(res);
 
     var declF = _calledFeature.outer();
-    var heir = _target.typeForCallTarget();
+    var heir = _target.type();
     if (!heir.isGenericArgument() && declF != heir.feature())
       {
         var a = _calledFeature.handDown(res, new AbstractType[] { frmlT }, heir.feature());
@@ -1449,7 +1448,7 @@ public class Call extends AbstractCall
         // constraint of B, so we create the corresponding type feature's
         // selfType:
         // NYI: CLEANUP: remove this special handling!
-        _target.typeForCallTarget().feature().selfType()
+        _target.type().feature().selfType()
       : targetType(res, context);
 
     var t1 = resolveSelect(frmlT, tt);
@@ -1560,7 +1559,7 @@ public class Call extends AbstractCall
     if (!calledFeature().isOuterRef())
       {
         var inner = ResolvedNormalType.newType(calledFeature().selfType(),
-                                          _target.typeForCallTarget());
+                                          _target.type());
         var t0 = t;
         t = t.replace_this_type_by_actual_outer(inner,
                                                 (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, arg, calledOrArg, t0, from, to),
