@@ -511,8 +511,8 @@ public class ParsedCall extends Call
         if (nn != null)
           {
             _name = nn;
-            _calledFeature = null;
           }
+        _calledFeature = null;
         _resolvedFormalArgumentTypes  = null;
         _pendingError = null;
         var fn = new Function(pos(),
