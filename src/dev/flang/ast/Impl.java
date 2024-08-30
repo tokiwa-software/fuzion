@@ -605,7 +605,15 @@ public class Impl extends ANY
   {
     var result = switch (_kind)
       {
-      case RoutineDef -> _expr.typeForInferencing();
+      case RoutineDef ->
+        {
+          var t = _expr.typeForInferencing();  // NYI: UNDER DEVELOPMENT: Check if we can use _expr.type() directly
+          if (t == null)
+            {
+              t = _expr.type();
+            }
+          yield t;
+        }
       case FieldDef ->
         {
           var t = _expr.typeForInferencing();
@@ -617,6 +625,10 @@ public class Impl extends ANY
             {
               f.visit(res.resolveTypesFully(fo), fo);
               t  = _expr.typeForInferencing();
+            }
+          if (t == null)
+            {
+              t = _expr.type();  // NYI: UNDER DEVELOPMENT: Check if we can use _expr.type() directly
             }
           yield t;
         }
