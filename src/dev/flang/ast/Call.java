@@ -940,24 +940,20 @@ public class Call extends AbstractCall
       {
         _actualsResolvedFor = context;
 
-        // NYI: check why _actuals.listIterator cannot be done inside
-        // whenResolvedTypes. If it could, the 'if calledFeature != null / Error
-        // would not be needed.
-        ListIterator<Expr> i = _actuals.listIterator(); // _actuals can change during resolveTypes, so create iterator early
         context.outerFeature().whenResolvedTypes
           (() ->
            {
-             while (_actualsResolvedFor == context && // Abandon resolution if context changed.
-                    i.hasNext())
+             var i = _actuals.listIterator();
+             while (i.hasNext() &&
+                    _actualsResolvedFor == context  && // Abandon resolution if context changed.
+                    _calledFeature != null &&          // call itself is not resolved (due to partial application)
+                    _calledFeature != Types.f_ERROR)   // or call itself could not be resolved
                {
                  var a = i.next();
-                 if (_calledFeature != null && _calledFeature != Types.f_ERROR)
-                   {
-                     var a1 = res.resolveType(a, context);
-                     if (CHECKS) check
-                       (a1 != null);
-                     i.set(a1);
-                   }
+                 var a1 = res.resolveType(a, context);
+                 if (CHECKS) check
+                   (a1 != null);
+                 i.set(a1);
                }
            });
       }
