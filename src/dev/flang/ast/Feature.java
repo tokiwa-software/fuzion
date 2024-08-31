@@ -2230,7 +2230,7 @@ A ((Choice)) declaration must not contain a result type.
           {
             res.resolveTypes(this);
           }
-        result = resultTypeIfPresent(res);
+        result = resultTypeIfPresent(res, true);
         result = result == null ? null : result.resolve(res, outer().context());
         result = result == null ? null : result.applyTypePars(this, generics);
         _resultTypeIfPresentRecursion = false;
