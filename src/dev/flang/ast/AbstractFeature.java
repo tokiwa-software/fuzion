@@ -1177,7 +1177,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   AbstractType resultTypeForTypeInference(SourcePosition rpos, Resolution res, List<AbstractType> generics, boolean needed)
   {
     var result = resultTypeIfPresent(res, generics, needed);
-    if (result == null)
+    if (result == null || result == Types.t_UNDEFINED)
       {
         AstErrors.forwardTypeInference(rpos, this, pos());
         result = Types.t_ERROR;

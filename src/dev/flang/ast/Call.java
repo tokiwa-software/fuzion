@@ -1169,7 +1169,12 @@ public class Call extends AbstractCall
     // type() will only be called when we really need the type, so we can report
     // an error in case there is one pending.
     reportPendingError();
-    return super.type();
+    var result = typeForInferencing();
+    if (result == null)
+      {
+        result = Types.t_UNDEFINED;
+      }
+    return result;
   }
 
 
