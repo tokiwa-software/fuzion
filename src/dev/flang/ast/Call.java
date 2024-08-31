@@ -2451,11 +2451,15 @@ public class Call extends AbstractCall
           {
             tc.reportPendingError();
           }
+        else if (_target != null)
+          {
+            var ignore = _target.type();
+          }
         result = Call.ERROR; // short circuit this call
       }
 
     if (POSTCONDITIONS) ensure
-      (_pendingError != null || Errors.any() || result.typeForInferencing() != Types.t_ERROR);
+      (targetTypeUndefined() || _pendingError != null || Errors.any() || result.typeForInferencing() != Types.t_ERROR);
 
     return  result;
   }

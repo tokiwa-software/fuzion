@@ -601,16 +601,18 @@ public class Impl extends ANY
    *
    * @param f the feature this is the Impl of.
    */
-  AbstractType inferredType(Resolution res, AbstractFeature f)
+  AbstractType inferredType(Resolution res, AbstractFeature f, boolean needed)
   {
     var result = switch (_kind)
       {
       case RoutineDef ->
         {
           var t = _expr.typeForInferencing();  // NYI: UNDER DEVELOPMENT: Check if we can use _expr.type() directly
-          if (t == null)
+          //        System.out.println("impl.inferred result type of "+f.qualifiedName()+" routine 1 is "+t);
+          if (t == null && needed)
             {
               t = _expr.type();
+              //        System.out.println("impl.inferred result type of "+f.qualifiedName()+" routine 2 is "+t);
             }
           yield t;
         }
@@ -620,15 +622,18 @@ public class Impl extends ANY
           // second try, the feature containing the field
           // may not be resolved yet.
           // see #348 for an example.
+          //          System.out.println("impl.inferred result type of "+f.qualifiedName()+" field 1 is "+t+" from "+_expr+" "+_expr.getClass());
           var fo = f.outer();
           if (t == null && (fo.isUniverse() || !fo.state().atLeast(State.RESOLVING_TYPES)))
             {
               f.visit(res.resolveTypesFully(fo), fo);
               t  = _expr.typeForInferencing();
+              //        System.out.println("impl.inferred result type of "+f.qualifiedName()+" field 2 is "+t);
             }
-          if (t == null)
+          if (t == null && needed)
             {
               t = _expr.type();  // NYI: UNDER DEVELOPMENT: Check if we can use _expr.type() directly
+              //        System.out.println("impl.inferred result type of "+f.qualifiedName()+" field 3 is "+t);
             }
           yield t;
         }

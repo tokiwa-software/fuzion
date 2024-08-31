@@ -774,7 +774,8 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   public Expr unwrap(Resolution res, Context context, AbstractType expectedType)
   {
     var t = type();
-    return  !expectedType.isAssignableFrom(t, context)
+    return this != ERROR_VALUE && t != Types.t_ERROR
+      && !expectedType.isAssignableFrom(t, context)
       && expectedType.compareTo(Types.resolved.t_Any) != 0
       && !t.isGenericArgument()
       && t.feature()

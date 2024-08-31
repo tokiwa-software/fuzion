@@ -1793,7 +1793,8 @@ A ((Choice)) declaration must not contain a result type.
             o.typeInference(res);
           }
 
-        _resultType = resultTypeIfPresent(res);
+        _resultType = resultTypeIfPresent(res, true);
+        //        System.out.println("result type of "+qualifiedName()+" is "+_resultType);
         if (_resultType == null)
           {
             AstErrors.failedToInferResultType(this);
@@ -2158,7 +2159,8 @@ A ((Choice)) declaration must not contain a result type.
    * inference from a field declared later).
    */
   @Override
-  AbstractType resultTypeIfPresent(Resolution res)
+  AbstractType resultTypeIfPresent(Resolution res) { return resultTypeIfPresent(res, false); }
+  AbstractType resultTypeIfPresent(Resolution res, boolean needed)
   {
     AbstractType result;
 
@@ -2177,7 +2179,8 @@ A ((Choice)) declaration must not contain a result type.
       {
         if (CHECKS) check
           (!state().atLeast(State.TYPES_INFERENCED));
-        result = _impl.inferredType(res, this);
+        result = _impl.inferredType(res, this, needed);
+        //        System.out.println("impl.inferred result type of "+qualifiedName()+" is "+result);
       }
     else if (_returnType.isConstructorType())
       {
@@ -2249,7 +2252,7 @@ A ((Choice)) declaration must not contain a result type.
     if (PRECONDITIONS) require
       (Errors.any() || _state.atLeast(State.RESOLVED_TYPES));
 
-    var result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeIfPresent(null) : null;
+    var result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeIfPresent(null, true) : null;
     if (result == null)
       {
         if (CHECKS) check
