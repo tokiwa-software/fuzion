@@ -1151,7 +1151,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @return the result type, Types.resolved.t_void if none and null in case the
    * type must be inferenced and is not available yet.
    */
-  AbstractType resultTypeIfPresent(Resolution res, List<AbstractType> generics)
+  AbstractType resultTypeIfPresent(Resolution res, List<AbstractType> generics, boolean needed)
   {
     return resultType()
       .applyTypePars(this, generics);
@@ -1174,9 +1174,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * Types.t_ERROR in case the type could not be inferenced and error
    * was reported.
    */
-  AbstractType resultTypeForTypeInference(SourcePosition rpos, Resolution res, List<AbstractType> generics)
+  AbstractType resultTypeForTypeInference(SourcePosition rpos, Resolution res, List<AbstractType> generics, boolean needed)
   {
-    var result = resultTypeIfPresent(res, generics);
+    var result = resultTypeIfPresent(res, generics, needed);
     if (result == null)
       {
         AstErrors.forwardTypeInference(rpos, this, pos());

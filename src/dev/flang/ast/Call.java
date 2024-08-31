@@ -1802,7 +1802,7 @@ public class Call extends AbstractCall
         if (aargs.hasNext())
           {
             var actual = aargs.next();
-            var t = frml.resultTypeIfPresent(res, NO_GENERICS);
+            var t = frml.resultTypeIfPresent(res, NO_GENERICS, false);
             if (t != null && t.isFunctionType())
               {
                 var a = resultExpression(actual);
@@ -1855,7 +1855,7 @@ public class Call extends AbstractCall
 
             if (!checked[vai])
               {
-                var t = frml.resultTypeIfPresent(res, NO_GENERICS);
+                var t = frml.resultTypeIfPresent(res, NO_GENERICS, true);
                 var g = t.isGenericArgument() ? t.genericArgument() : null;
                 if (g != null && g.feature() == cf && g.isOpen())
                   {
@@ -2383,7 +2383,7 @@ public class Call extends AbstractCall
           {
             var cf = _calledFeature;
             var t = isTailRecursive(context.outerFeature()) ? Types.resolved.t_void // a tail recursive call will not return and execute further
-                                                            : cf.resultTypeIfPresent(res, _generics);
+                                                            : cf.resultTypeIfPresent(res, _generics, false);
 
             if (t == Types.t_ERROR)
               {
@@ -2400,7 +2400,7 @@ public class Call extends AbstractCall
             if (t == null || isTailRecursive(context.outerFeature()))
               {
                 cf.whenResolvedTypes
-                  (() -> setActualResultType(res, context, cf.resultTypeForTypeInference(pos(), res, _generics)));
+                  (() -> setActualResultType(res, context, cf.resultTypeForTypeInference(pos(), res, _generics, true)));
               }
           }
         else

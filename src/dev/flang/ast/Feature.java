@@ -2220,7 +2220,7 @@ A ((Choice)) declaration must not contain a result type.
    * type must be inferenced and is not available yet.
    */
   @Override
-  AbstractType resultTypeIfPresent(Resolution res, List<AbstractType> generics)
+  AbstractType resultTypeIfPresent(Resolution res, List<AbstractType> generics, boolean needed)
   {
     AbstractType result = Types.resolved == null ? null : Types.resolved.t_void;
     if (result != null && !_resultTypeIfPresentRecursion)
@@ -2230,7 +2230,7 @@ A ((Choice)) declaration must not contain a result type.
           {
             res.resolveTypes(this);
           }
-        result = resultTypeIfPresent(res, true);
+        result = resultTypeIfPresent(res, needed);
         result = result == null ? null : result.resolve(res, outer().context());
         result = result == null ? null : result.applyTypePars(this, generics);
         _resultTypeIfPresentRecursion = false;

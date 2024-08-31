@@ -276,7 +276,7 @@ public class Destructure extends ExprWithPos
         for (var f : t.feature().valueArguments())
           {
             // NYI: check if f is visible
-            var tf = f.resultTypeIfPresent(res, UnresolvedType.NONE);
+            var tf = f.resultTypeIfPresent(res, UnresolvedType.NONE, false);
             if (tf != null && tf.isOpenGeneric())
               {
                 Generic g = tf.genericArgument();
