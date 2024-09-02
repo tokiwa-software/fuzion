@@ -669,7 +669,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                       }
                   }
               }
-    var outerfeat = context.outerFeature();
+
+            var outerfeat = context.outerFeature();
 
             if (tolerant && CHECKS) check
               (fo != FeatureAndOuter.ERROR);
@@ -695,7 +696,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                       {
                         o = fo._outer.thisType(fo.isNextInnerFixed());
                       }
-                _resolved = finishResolve(res, context, this, this, f, generics, null, o, _refOrVal, _ignoreActualTypePars, tolerant);
+                    _resolved = finishResolve(res, context, this, this, f, generics, null, o, _refOrVal, _ignoreActualTypePars, tolerant);
                   }
               }
           }
