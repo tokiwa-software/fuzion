@@ -229,7 +229,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * Merge argument values args into this call's argument values.
    *
-   * In case this resulted in any chanbe, mart this as hot to make sure it will
+   * In case this resulted in any change, mark this as hot to make sure it will
    * be (re-) analyzed in the current iteration.
    *
    * @param args the values to be merged into this Call's arguments
