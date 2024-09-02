@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue3693.fz:24:4: error 1: Illegal '.this' type: 'a.this'
+A (b a.this) ref is
+---^
+No suitable surrounding feature was found that matches the type.
+
+one error.
