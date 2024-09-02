@@ -1793,8 +1793,7 @@ A ((Choice)) declaration must not contain a result type.
             o.typeInference(res);
           }
 
-        _resultType = resultTypeIfPresent(res, true);
-        //        System.out.println("result type of "+qualifiedName()+" is "+_resultType);
+        _resultType = resultTypeIfPresentUrgent(res, true);
         if (_resultType == null)
           {
             AstErrors.failedToInferResultType(this);
@@ -2151,21 +2150,24 @@ A ((Choice)) declaration must not contain a result type.
 
 
   /**
-   * resultTypeIfPresent returns the result type of this feature using the
+   * resultTypeIfPresent2 returns the result type of this feature using the
    * formal generic argument.
    *
-   * @return this feature's result type using the formal generics, null in
-   * case the type is currently unknown (in particular, in case of a type
-   * inference from a field declared later).
+   * @param urgent if true and the result type is inferred and inference would
+   * currently not succeed, then enforce it even if that would produce an error.
+   *
+   * @return this feature's result type, null in case the type is currently
+   * unknown since the type inference is incomplete.
    */
   @Override
-  AbstractType resultTypeIfPresent(Resolution res) { return resultTypeIfPresent(res, false); }
-  AbstractType resultTypeIfPresent(Resolution res, boolean needed)
+  AbstractType resultTypeIfPresentUrgent(Resolution res, boolean urgent)
   {
     AbstractType result;
 
-    if (CHECKS) check
-      (state().atLeast(State.RESOLVING_TYPES));
+    if (res != null && !res.state(this).atLeast(State.RESOLVING_TYPES))
+      {
+        res.resolveTypes(this);
+      }
 
     if (_resultType != null)
       {
@@ -2179,8 +2181,7 @@ A ((Choice)) declaration must not contain a result type.
       {
         if (CHECKS) check
           (!state().atLeast(State.TYPES_INFERENCED));
-        result = _impl.inferredType(res, this, needed);
-        //        System.out.println("impl.inferred result type of "+qualifiedName()+" is "+result);
+        result = _impl.inferredType(res, this, urgent);
       }
     else if (_returnType.isConstructorType())
       {
@@ -2198,6 +2199,10 @@ A ((Choice)) declaration must not contain a result type.
       {
         result = result.asThis();
       }
+    if (res != null && result != null && outer() != null)
+      {
+        result = result.resolve(res, outer().context());
+      }
 
     if (POSTCONDITIONS) ensure
       (isTypeFeaturesThisType() || Types.resolved == null || selfType() == Types.resolved.t_Const_String || result != Types.resolved.t_Const_String);
@@ -2207,44 +2212,12 @@ A ((Choice)) declaration must not contain a result type.
 
 
   /**
-   * In case this has not been resolved for types yet, do so. Next, try to
-   * determine the result type of this feature. If the type is not explicit, but
-   * needs to be inferenced, the result might still be null. Inferenced types
-   * become available once this is in state RESOLVED_TYPES.
-   *
-   * @param res Resolution instance use to resolve this for types.
-   *
-   * @param generics the generic arguments to be applied to resultType.
-   *
-   * @return the result type, Types.resolved.t_void if none and null in case the
-   * type must be inferenced and is not available yet.
-   */
-  @Override
-  AbstractType resultTypeIfPresent(Resolution res, List<AbstractType> generics, boolean needed)
-  {
-    AbstractType result = Types.resolved == null ? null : Types.resolved.t_void;
-    if (result != null && !_resultTypeIfPresentRecursion)
-      {
-        _resultTypeIfPresentRecursion = impl()._kind == Impl.Kind.FieldActual;
-        if (!res.state(this).atLeast(State.RESOLVING_TYPES))
-          {
-            res.resolveTypes(this);
-          }
-        result = resultTypeIfPresent(res, needed);
-        result = result == null ? null : result.resolve(res, outer().context());
-        result = result == null ? null : result.applyTypePars(this, generics);
-        _resultTypeIfPresentRecursion = false;
-      }
-    return result;
-  }
-  boolean _resultTypeIfPresentRecursion = false;
-
-
-  /**
    * After type resolution, resultType returns the result type of this
    * feature using the formal generic argument.
    *
-   * @return the result type, t_ERROR in case of an error. Never null.
+   * @return the result type, t_ERROR in case of an error.  Never
+   * null. Types.t_UNDEFINED in case type inference for this type is cyclic and
+   * hence impossible.
    */
   @Override
   public AbstractType resultType()
@@ -2252,7 +2225,7 @@ A ((Choice)) declaration must not contain a result type.
     if (PRECONDITIONS) require
       (Errors.any() || _state.atLeast(State.RESOLVED_TYPES));
 
-    var result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeIfPresent(null, true) : null;
+    var result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeIfPresentUrgent(null, true) : null;
     if (result == null)
       {
         if (CHECKS) check

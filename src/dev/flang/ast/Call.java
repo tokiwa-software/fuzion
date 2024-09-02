@@ -1162,6 +1162,8 @@ public class Call extends AbstractCall
    * still unknown, i.e., before or during type resolution.
    *
    * @return this Expr's type or t_ERROR in case it is not known yet.
+   * t_UNDEFINED in case Expr depends on the inferred result type of a feature
+   * that is not available yet (or never will due to circular inference).
    */
   @Override
   public AbstractType type()
@@ -1820,7 +1822,7 @@ public class Call extends AbstractCall
         if (aargs.hasNext())
           {
             var actual = aargs.next();
-            var t = frml.resultTypeIfPresent(res, NO_GENERICS, false);
+            var t = frml.resultTypeIfPresent(res);
             if (t != null && t.isFunctionType())
               {
                 var a = resultExpression(actual);
@@ -1874,7 +1876,7 @@ public class Call extends AbstractCall
 
             if (!checked[vai])
               {
-                var t = frml.resultTypeIfPresent(res, NO_GENERICS, true);
+                var t = frml.resultTypeIfPresent(res);
                 var g = t.isGenericArgument() ? t.genericArgument() : null;
                 if (g != null && g.feature() == cf && g.isOpen())
                   {
@@ -2359,6 +2361,7 @@ public class Call extends AbstractCall
    *
    * @param context the source code context where this Call is used
    */
+  private boolean _recursiveResolveType = false;
   public Call resolveTypes(Resolution res, Context context)
   {
     Call result = this;
@@ -2411,8 +2414,18 @@ public class Call extends AbstractCall
                                                               "Called feature: "+_calledFeature.qualifiedName()+"\n"))
           {
             var cf = _calledFeature;
-            var t = isTailRecursive(context.outerFeature()) ? Types.resolved.t_void // a tail recursive call will not return and execute further
-                                                            : cf.resultTypeIfPresent(res, _generics, false);
+            AbstractType t;
+            if (isTailRecursive(context.outerFeature()) || _recursiveResolveType)
+              {
+                t = Types.resolved.t_void; // a recursive call will not return and execute further
+              }
+            else
+              {
+                _recursiveResolveType = true;
+                t = cf.resultTypeIfPresent(res);
+                t = t == null ? null : t.applyTypePars(cf, _generics);
+                _recursiveResolveType = false;
+              }
 
             if (t == Types.t_ERROR)
               {
@@ -2429,7 +2442,25 @@ public class Call extends AbstractCall
             if (t == null || isTailRecursive(context.outerFeature()))
               {
                 cf.whenResolvedTypes
-                  (() -> setActualResultType(res, context, cf.resultTypeForTypeInference(pos(), res, _generics, true)));
+                  (() ->
+                   {
+                     var raw = cf.resultType();
+                     AbstractType rt;
+                     if (raw == Types.t_UNDEFINED)
+                       {
+                         // Handling of cyclic type inference. It migh tbe
+                         // better if this was done in `Feature.resultType`, but
+                         // there we do not have access to Call.this.pos(), so
+                         // we do it here.
+                         AstErrors.forwardTypeInference(pos(), cf, cf.pos());
+                         rt = Types.t_ERROR;
+                       }
+                     else
+                       {
+                         rt = raw.applyTypePars(cf, _generics);
+                       }
+                     setActualResultType(res, context, rt);
+                   });
               }
           }
         else

@@ -161,7 +161,10 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * type returns the type of this expression or Types.t_ERROR if the type is
    * still unknown, i.e., before or during type resolution.
    *
-   * @return this Expr's type or t_ERROR in case it is not known yet.
+   * @return this Expr's type or t_ERROR in case it is not known
+   * yet. t_UNDEFINED in case Expr depends on the inferred result type of a
+   * feature that is not available yet (or never will due to circular
+   * inference).
    */
   public AbstractType type()
   {

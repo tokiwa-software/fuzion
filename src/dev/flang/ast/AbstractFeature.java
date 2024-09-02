@@ -281,7 +281,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * resultType returns the result type of this feature using.
    *
-   * @return the result type. Never null.
+   * @return the result type, t_ERROR in case of an error.  Never
+   * null. Types.t_UNDEFINED in case type inference for this type is cyclic and
+   * hence impossible.
    */
   public abstract AbstractType resultType();
 
@@ -1128,61 +1130,28 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * resultTypeIfPresent returns the result type of this feature using the
    * formal generic argument.
    *
-   * @return this feature's result type using the formal generics, null in
-   * case the type is currently unknown (in particular, in case of a type
-   * inference from a field declared later).
+   * @return this feature's result type, null in case the type is currently
+   * unknown since the type inference is incomplete.
    */
   AbstractType resultTypeIfPresent(Resolution res)
   {
+    return resultTypeIfPresentUrgent(res, false);
+  }
+
+
+  /**
+   * resultTypeIfPresentUrgent returns the result type of this feature using the
+   * formal generic argument.
+   *
+   * @param urgent if true and the result type is inferred and inference would
+   * currently not succeed, then enforce it even if that would produce an error.
+   *
+   * @return this feature's result type, null in case the type is currently
+   * unknown since the type inference is incomplete.
+   */
+  AbstractType resultTypeIfPresentUrgent(Resolution res, boolean urgent)
+  {
     return resultType();
-  }
-
-
-  /**
-   * In case this has not been resolved for types yet, do so. Next, try to
-   * determine the result type of this feature. If the type is not explicit, but
-   * needs to be inferenced, the result might still be null. Inferenced types
-   * become available once this is in state RESOLVED_TYPES.
-   *
-   * @param res Resolution instance use to resolve this for types.
-   *
-   * @param generics the generic arguments to be applied to resultType.
-   *
-   * @return the result type, Types.resolved.t_void if none and null in case the
-   * type must be inferenced and is not available yet.
-   */
-  AbstractType resultTypeIfPresent(Resolution res, List<AbstractType> generics, boolean needed)
-  {
-    return resultType()
-      .applyTypePars(this, generics);
-  }
-
-
-  /**
-   * In case this has not been resolved for types yet, do so. Next, try to
-   * determine the result type of this feature. If the type is not explicit, but
-   * needs to be inferred, but it could not be inferred, cause a runtime
-   * error since we apparently have a cyclic dependencies for type inference.
-   *
-   * @param rpos the source code position to be used for error reporting
-   *
-   * @param res Resolution instance use to resolve this for types.
-   *
-   * @param generics the actual generic arguments to be applied to the type
-   *
-   * @return the result type, Types.resolved.t_unit if none and
-   * Types.t_ERROR in case the type could not be inferenced and error
-   * was reported.
-   */
-  AbstractType resultTypeForTypeInference(SourcePosition rpos, Resolution res, List<AbstractType> generics, boolean needed)
-  {
-    var result = resultTypeIfPresent(res, generics, needed);
-    if (result == null || result == Types.t_UNDEFINED)
-      {
-        AstErrors.forwardTypeInference(rpos, this, pos());
-        result = Types.t_ERROR;
-      }
-    return result;
   }
 
 
