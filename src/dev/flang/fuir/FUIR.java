@@ -2657,7 +2657,7 @@ public class FUIR extends IR
 
 
   /**
-   * tuple of clazz, called abstrct features and location where the clazz was
+   * tuple of clazz, called abstract features and location where the clazz was
    * instantiated.
    */
   record AbsMissing(Clazz clazz,

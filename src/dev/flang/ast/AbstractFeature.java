@@ -1906,7 +1906,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * In constrast to redefines() this does not just contain direct redefines()
+   * In contrast to redefines() this does not just contain direct redefines()
    * but also redefinitions of redefinitions of arbitrary depth.
    */
   public Set<AbstractFeature> redefinesFull()
