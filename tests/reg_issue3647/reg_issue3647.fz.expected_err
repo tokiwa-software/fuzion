@@ -1,0 +1,21 @@
+
+--CURDIR--/reg_issue3647.fz:28:23: error 1: Duplicate feature declaration
+  Node(T Type, a Node T) ref is
+----------------------^
+Feature that was declared repeatedly: 'reg_issue3647.Node.T'
+originally declared at --CURDIR--/reg_issue3647.fz:28:8:
+  Node(T Type, a Node T) ref is
+-------^
+To solve this, consider renaming one of these two features, e.g., as 'Tʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
+
+
+--CURDIR--/reg_issue3647.fz:28:8: error 2: Duplicate feature declaration
+  Node(T Type, a Node T) ref is
+-------^
+Feature that was declared repeatedly: 'reg_issue3647.Node.T'
+originally declared at --CURDIR--/reg_issue3647.fz:28:23:
+  Node(T Type, a Node T) ref is
+----------------------^
+To solve this, consider renaming one of these two features, e.g., as 'Tʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
+
+2 errors.

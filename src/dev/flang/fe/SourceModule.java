@@ -729,7 +729,7 @@ part of the (((inner features))) declarations of the corresponding
     if (doi != null)
       {
         if (CHECKS) check
-          (!doi.containsKey(fn) || doi.get(fn).size() == 1 && doi.get(fn).getFirst() == typeParameter);
+          (Errors.any() || !doi.containsKey(fn) || doi.get(fn).size() == 1 && doi.get(fn).getFirst() == typeParameter);
         add(doi, fn, typeParameter);
       }
   }
@@ -1010,7 +1010,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
           }
         else
           {
-            if (existing instanceof Feature ef && ef.isArgument() && f.isArgument())
+            if (existing instanceof Feature ef && ef.isArgument() && f.isArgument() && !f.isTypeParameter())
               {
                 // NYI: CLEANUP: there should not be two places where
                 // similar error is raised.
