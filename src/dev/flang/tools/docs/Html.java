@@ -188,6 +188,7 @@ public class Html extends ANY
       + (Util.Kind.classify(af) == Util.Kind.Other ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchor(af.resultType()) : "")
       + (Util.Kind.classify(af) == Util.Kind.Other ? "" : "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>")
       + annotateInherited(af, outer)
+      + annotateRedef(af, outer)
       + annotateAbstract(af)
       + annotateContainsAbstract(af)
       // fills remaining space
@@ -214,7 +215,7 @@ public class Html extends ANY
         String anchorParent = "<a class='' href='" + featureAbsoluteURL(af.outer()) + "'>"
                               + htmlEncodedBasename(af.outer()) + "</a>";
         return "&nbsp;<div class='fd-parent'>[Inherited from&nbsp; $0]</div>"
-              .replace("$0", anchorParent);
+          .replace("$0", anchorParent);
       }
   }
 
@@ -229,6 +230,31 @@ public class Html extends ANY
     return (af == null || outer == null || af.outer() == outer
                // type features have their own chain of parents internally, avoid annotation in this case
             || af.outer().featureName().baseNameHuman().equals(outer.featureName().baseNameHuman()));
+  }
+
+
+  /**
+   * Returns a html formatted annotation to indicate if a feature redefines another feature
+   * @param af the feature to for which to create the annotation for
+   * @return html to annotate a redefined feature
+   */
+  private String annotateRedef(AbstractFeature af, AbstractFeature outer)
+  {
+    // don't mark inherited redefinitions as redefinitions when they are not redefined in the current feature
+    if (!isDeclared(af, outer))
+      {
+        return "";
+      }
+
+    var redefs = af.redefines();
+
+    return redefs.isEmpty()
+            ? ""
+            : "&nbsp;<div class='fd-parent'>[Redefinition of&nbsp;$0]</div>"
+              .replace("$0", (redefs.stream()
+                                    .map(f->"<a class='' href='" + featureAbsoluteURL(f) + "'>" +
+                                              htmlEncodedQualifiedName(f) + "</a>")
+                                    .collect(Collectors.joining(",&nbsp;")) ));
   }
 
 
@@ -395,7 +421,7 @@ public class Html extends ANY
   }
 
   /**
-   * the html encoded basename of the feature
+   * the html encoded basename of the feature af
    * @param af
    * @return
    *
@@ -403,6 +429,18 @@ public class Html extends ANY
   private String htmlEncodedBasename(AbstractFeature af)
   {
     return htmlEncodeNbsp(af.featureName().baseNameHuman());
+  }
+
+
+  /**
+   * the html encoded qualified name of the feature af
+   * @param af
+   * @return
+   *
+   */
+  private String htmlEncodedQualifiedName(AbstractFeature af)
+  {
+    return htmlEncodeNbsp(af.qualifiedName());
   }
 
 
