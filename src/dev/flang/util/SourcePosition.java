@@ -201,8 +201,11 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
                   .append(Terminal.UNDERLINE_LINE_RED)
                   .append(underlined.length() == 0 && Terminal.ENABLED ? Terminal.REGULAR_COLOR + "⏎" : underlined)
                   .append(Terminal.UNDERLINE_OFF)
-                  .append(Terminal.UNDERLINE_LINE_COLOR_OFF)
-                  .append(_sourceFile.asString(p + 1, _sourceFile.lineEndPos(l)));
+                  .append(Terminal.UNDERLINE_LINE_COLOR_OFF);
+                if (p >= 0 && p < _sourceFile._bytes.length)
+                  {
+                    sb.append(_sourceFile.asString(p + _sourceFile.codePointSize(p), _sourceFile.lineEndPos(l)));
+                  }
               }
             else
               {
