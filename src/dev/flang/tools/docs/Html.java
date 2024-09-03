@@ -50,15 +50,17 @@ public class Html extends ANY
   final DocsOptions config;
   private final Map<AbstractFeature, Map<Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures;
   private final String navigation;
+  private final Docs docs;
 
   /**
    * the constructor taking the options
    */
-  public Html(DocsOptions config, Map<AbstractFeature, Map<Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe)
+  public Html(DocsOptions config, Map<AbstractFeature, Map<Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe, Docs docs)
   {
     this.config = config;
     this.mapOfDeclaredFeatures = mapOfDeclaredFeatures;
     this.navigation = navigation(universe, 0);
+    this.docs = docs;
   }
 
 
@@ -184,6 +186,8 @@ public class Html extends ANY
       + (Util.Kind.classify(af) == Util.Kind.Other ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchor(af.resultType()) : "")
       + (Util.Kind.classify(af) == Util.Kind.Other ? "" : "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>")
       + annotateInherited(af, outer)
+      + annotateAbstract(af)
+      + annotateContainsAbstract(af)
       // fills remaining space
       + "<div class='flex-grow-1'></div>"
       + "</div>"
@@ -195,7 +199,7 @@ public class Html extends ANY
    * Returns a html formatted annotation to indicate if a feature was declared or inherited
    * @param af the feature to for which to create the annotation for
    * @param outer the feature in whose context af is used
-   * @return html to annotate a feature
+   * @return html to annotate an inherited feature
    */
   private String annotateInherited(AbstractFeature af, AbstractFeature outer)
   {
@@ -225,6 +229,40 @@ public class Html extends ANY
             || af.outer().featureName().baseNameHuman().equals(outer.featureName().baseNameHuman()));
   }
 
+
+  /**
+   * Returns a html formatted annotation to indicate if a feature is abstract
+   * @param af the feature to for which to create the annotation for
+   * @return html to annotate an abstract feature
+   */
+  private String annotateAbstract(AbstractFeature af)
+  {
+    return af.isAbstract()
+             ? "&nbsp;<div class='fd-parent' title='An abstract feature is a feature declared using ⇒ abstract. " +
+               "To be able to call it, it needs to be implemented (redefined) in a heir.'>[Abstract feature]</div>"
+             : "";
+  }
+
+
+  /**
+   * Returns a html formatted annotation to indicate if a feature contains inner or inherited features which are abstract
+   * @param af the feature to for which to create the annotation for
+   * @return html to annotate a feature containing abstract features
+   */
+  private String annotateContainsAbstract(AbstractFeature af)
+  {
+    return docs.allInnerAndInheritedFeatures(af).filter(f->isVisible(f)).anyMatch(f->f.isAbstract())
+             ? "&nbsp;<div class='fd-parent' title='This feature contains inner or inherited features " +
+               "which are abstract.'>[Contains abstract features]</div>"
+             : "";
+  }
+
+  private boolean isVisible(AbstractFeature af)
+  {
+    var vis = af.visibility();
+    return vis == Visi.PUB || vis == Visi.PRIVPUB || vis == Visi.MODPUB;
+
+  }
 
   private String anchor(AbstractFeature af) {
     return "<div class='font-weight-600'>"
