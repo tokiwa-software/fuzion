@@ -40,9 +40,11 @@ import java.util.stream.Stream;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Visi;
+import dev.flang.fe.SourceModule;
 import dev.flang.tools.docs.Util.Kind;
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.List;
 
 
 public class Html extends ANY
@@ -50,17 +52,17 @@ public class Html extends ANY
   final DocsOptions config;
   private final Map<AbstractFeature, Map<Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures;
   private final String navigation;
-  private final Docs docs;
+  private final SourceModule sm;
 
   /**
    * the constructor taking the options
    */
-  public Html(DocsOptions config, Map<AbstractFeature, Map<Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe, Docs docs)
+  public Html(DocsOptions config, Map<AbstractFeature, Map<Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe, SourceModule sm)
   {
     this.config = config;
     this.mapOfDeclaredFeatures = mapOfDeclaredFeatures;
     this.navigation = navigation(universe, 0);
-    this.docs = docs;
+    this.sm = sm;
   }
 
 
@@ -251,7 +253,10 @@ public class Html extends ANY
    */
   private String annotateContainsAbstract(AbstractFeature af)
   {
-    return docs.allInnerAndInheritedFeatures(af).filter(f->isVisible(f)).anyMatch(f->f.isAbstract())
+    var allInner = new List<AbstractFeature>();
+    sm.forEachDeclaredOrInheritedFeature(af, f -> allInner.add(f));
+
+    return allInner.stream().filter(f->isVisible(f)).anyMatch(f->f.isAbstract())
              ? "&nbsp;<div class='fd-parent' title='This feature contains inner or inherited features " +
                "which are abstract.'>[Contains abstract features]</div>"
              : "";
@@ -260,9 +265,10 @@ public class Html extends ANY
   private boolean isVisible(AbstractFeature af)
   {
     var vis = af.visibility();
-    return vis == Visi.PUB || vis == Visi.PRIVPUB || vis == Visi.MODPUB;
+    return vis.typeVisibility() == Visi.PUB;
 
   }
+
 
   private String anchor(AbstractFeature af) {
     return "<div class='font-weight-600'>"
