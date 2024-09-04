@@ -1747,7 +1747,7 @@ public class Call extends AbstractCall
     do
       {
         last = next;
-        inferGenericsFromArgs(res, context, checked, conflict, foundAt, false);
+        inferGenericsFromArgs(res, context, checked, conflict, foundAt);
         next = 0;
         for (var b : foundAt)
           {
@@ -1756,12 +1756,27 @@ public class Call extends AbstractCall
       }
     while (last < next);
 
-    var missing = getMissing(conflict, foundAt, false);
-    if (!missing.isEmpty())
+
+    List<Generic> missing = new List<Generic>();
+    for (Generic g : _calledFeature.generics().list)
       {
-        inferGenericsFromArgs(res, context, checked, conflict, foundAt, true);
+        int i = g.index();
+        if (!g.isOpen() && _generics.get(i) == Types.t_UNDEFINED)
+          {
+            missing.add(g);
+          }
       }
-    missing = getMissing(conflict, foundAt, true);
+
+    if (!missing.isEmpty())
+      { // we failed inferring all type parameters, so report errors
+        for (var a : _actuals)
+          {
+            if (a instanceof Call ac)
+              {
+                var t = a.type();
+              }
+          }
+      }
 
     // report missing inferred types only if there were no errors trying to find
     // the types of the actuals:
@@ -1771,34 +1786,27 @@ public class Call extends AbstractCall
       {
         AstErrors.failedToInferActualGeneric(pos(),cf, missing);
       }
+
+    // replace any missing type parameters or conflicting ones with t_ERROR,
+    // report errors for conflicts
+    for (Generic g : _calledFeature.generics().list)
+      {
+        int i = g.index();
+        if (!g.isOpen() && _generics.get(i) == Types.t_UNDEFINED || conflict[i])
+          {
+            if (CHECKS) check
+              (Errors.any() || i < _generics.size());
+            if (conflict[i])
+              {
+                AstErrors.incompatibleTypesDuringTypeInference(pos(), g, foundAt.get(i));
+              }
+            if (i < _generics.size())
+              {
+                _generics = _generics.setOrClone(i, Types.t_ERROR);
+              }
+          }
+      }
   }
-
-  private List<Generic> getMissing(boolean[] conflict, List<List<Pair<SourcePosition, AbstractType>>> foundAt, boolean chck)
-    {
-      List<Generic> missing = new List<Generic>();
-      for (Generic g : _calledFeature.generics().list)
-        {
-          int i = g.index();
-          if (!g.isOpen() && _generics.get(i) == Types.t_UNDEFINED)
-            {
-              missing.add(g);
-              if (CHECKS) check
-                            (Errors.any() || g.isOpen() || i < _generics.size());
-              if (chck && i < _generics.size())
-                {
-                  _generics = _generics.setOrClone(i, Types.t_ERROR);
-                }
-            }
-          else if (chck && conflict[i])
-            {
-              AstErrors.incompatibleTypesDuringTypeInference(pos(), g, foundAt.get(i));
-              _generics = _generics.setOrClone(i, Types.t_ERROR);
-            }
-        }
-      return missing;
-    }
-
-
 
 
   /**
@@ -1857,12 +1865,16 @@ public class Call extends AbstractCall
    * @param foundAt the position of the expressions from which actual generics
    * were taken.
    */
-  private void inferGenericsFromArgs(Resolution res, Context context, boolean[] checked, boolean[] conflict, List<List<Pair<SourcePosition, AbstractType>>> foundAt, boolean desperate)
+  private void inferGenericsFromArgs(Resolution res,
+                                     Context context,
+                                     boolean[] checked,
+                                     boolean[] conflict,
+                                     List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
     var cf = _calledFeature;
     // run two passes: first, ignore numeric literals and open generics, do these in second pass
     var done = false;
-    for (var pass = 0; pass < 3 && !done; pass++)
+    for (var pass = 0; pass < 2 && !done; pass++)
       {
         int count = 1; // argument count, for error messages
 
@@ -1888,7 +1900,7 @@ public class Call extends AbstractCall
                           {
                             count++;
                             var actual = resolveTypeForNextActual(Types.t_UNDEFINED, aargs, res, context);
-                            var actualType = typeFromActual(actual, context, true);
+                            var actualType = typeFromActual(actual, context);
                             if (actualType == null)
                               {
                                 actualType = Types.t_ERROR;
@@ -1911,7 +1923,7 @@ public class Call extends AbstractCall
                     */
                     if (t.dependsOnGenerics())
                       {
-                        var actualType = typeFromActual(actual, context, desperate && pass == 2);
+                        var actualType = typeFromActual(actual, context);
                         if (actualType != null)
                           {
                             inferGeneric(res, context, t, actualType, actual.pos(), conflict, foundAt);
@@ -1990,14 +2002,9 @@ public class Call extends AbstractCall
    * @return the type of actual as seen within context, or null if not known.
    */
   AbstractType typeFromActual(Expr actual,
-                              Context context,
-                              boolean needed)
+                              Context context)
   {
     var actualType = actual == null ? null : actual.typeForInferencing();
-    if (actualType == null && actual != null && actual instanceof Call && needed)
-      {
-        actualType = actual.type();
-      }
     if (actualType != null)
       {
         actualType = actualType.replace_type_parameters_of_type_feature_origin(context.outerFeature());
