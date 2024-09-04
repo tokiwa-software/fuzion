@@ -239,7 +239,7 @@ public class Html extends ANY
   {
     return af.isAbstract()
              ? "&nbsp;<div class='fd-parent' title='An abstract feature is a feature declared using ⇒ abstract. " +
-               "To be able to call it, it needs to be implemented (redefined) in a heir.'>[Abstract feature]</div>"
+               "To be able to call it, it needs to be implemented (redefined) in an heir.'>[Abstract feature]</div>"
              : "";
   }
 
