@@ -127,7 +127,7 @@ public class Docs extends ANY
    * @param f the feature for which the callable features are to be returned
    * @return a stream of the callable (declared and inherited) features of f
    */
-  public Stream<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f)
+  private Stream<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f)
   {
     var result = new List<AbstractFeature>();
     fe.module().forEachDeclaredOrInheritedFeature(f, af -> result.add(af));
