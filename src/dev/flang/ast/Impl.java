@@ -614,7 +614,7 @@ public class Impl extends ANY
           var t = _expr.typeForInferencing();
           if (t == null && urgent)
             {
-              t = _expr.type();
+              t = _expr.type();  // produce _expr's error if we really need the type and can't get it
             }
           yield t;
         }
@@ -624,7 +624,6 @@ public class Impl extends ANY
           // second try, the feature containing the field
           // may not be resolved yet.
           // see #348 for an example.
-          //          System.out.println("impl.inferred result type of "+f.qualifiedName()+" field 1 is "+t+" from "+_expr+" "+_expr.getClass());
           var fo = f.outer();
           if (t == null && (fo.isUniverse() || !fo.state().atLeast(State.RESOLVING_TYPES)))
             {
@@ -633,7 +632,7 @@ public class Impl extends ANY
             }
           if (t == null && urgent)
             {
-              t = _expr.type();
+              t = _expr.type();  // produce _expr's error if we really need the type and can't get it
             }
           yield t;
         }

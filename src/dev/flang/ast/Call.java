@@ -1873,8 +1873,7 @@ public class Call extends AbstractCall
   {
     var cf = _calledFeature;
     // run two passes: first, ignore numeric literals and open generics, do these in second pass
-    var done = false;
-    for (var pass = 0; pass < 2 && !done; pass++)
+    for (var pass = 0; pass < 2; pass++)
       {
         int count = 1; // argument count, for error messages
 
@@ -1941,11 +1940,6 @@ public class Call extends AbstractCall
                 aargs.next();
               }
             vai++;
-          }
-        done = pass >= 2;
-        for (var g : _generics)
-          {
-            done = done & (g != Types.t_UNDEFINED);
           }
       }
   }
