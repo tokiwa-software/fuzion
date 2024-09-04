@@ -40,6 +40,7 @@ import java.util.SortedMap;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
@@ -945,7 +946,9 @@ A post-condition of a feature that redefines one or several inherited features m
 A feature that does not redefine an inherited feature must not use the `redef` modifier.
     // end::fuzion_rule_PARS_NO_REDEF[]
             */
-            AstErrors.redefineModifierDoesNotRedefine(f);
+            List<FeatureAndOuter> hiddenFeaturesSameSignature = lookup(outer, f.featureName().baseName(), null, true, true)
+              .stream().filter(fo->fo._feature.featureName().equals(f.featureName())).collect(List.collector());
+            AstErrors.redefineModifierDoesNotRedefine(f, hiddenFeaturesSameSignature);
           }
         else if (c._hasPreElse != null)
           {
