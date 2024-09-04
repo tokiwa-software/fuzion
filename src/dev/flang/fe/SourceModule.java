@@ -946,8 +946,8 @@ A post-condition of a feature that redefines one or several inherited features m
 A feature that does not redefine an inherited feature must not use the `redef` modifier.
     // end::fuzion_rule_PARS_NO_REDEF[]
             */
-            List<FeatureAndOuter> hiddenFeaturesSameSignature = lookup(outer, f.featureName().baseName(), null, true, true);
-            hiddenFeaturesSameSignature = hiddenFeaturesSameSignature.stream().filter(fan->fan._feature.featureName().equals(f.featureName())).collect(List.collector());
+            List<FeatureAndOuter> hiddenFeaturesSameSignature = lookup(outer, f.featureName().baseName(), null, true, true)
+              .stream().filter(fo->fo._feature.featureName().equals(f.featureName())).collect(List.collector());
             AstErrors.redefineModifierDoesNotRedefine(f, hiddenFeaturesSameSignature);
           }
         else if (c._hasPreElse != null)
