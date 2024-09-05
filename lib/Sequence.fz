@@ -660,9 +660,9 @@ public Sequence(public T type) ref is
           r.get.rest
         else
           r
-      Node t ()->n r_star
+      Node t (once (option (Node T)) ()->n) r_star
 
-    init => make pattern nil
+    init := make pattern nil
 
     step(acc option (Node T), x T) =>
       match acc
@@ -902,4 +902,4 @@ public Sequence(public T type) ref is
 
 # helper feature for knuth morris pratt algorithm
 #
-Node(T type, top Sequence T, next Lazy (option (Node T)), rest option (Node T)) ref is
+Node(T type, top Sequence T, next once (option (Node T)), rest option (Node T)) ref is
