@@ -39,6 +39,7 @@ import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
+import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 import dev.flang.fe.SourceModule;
 import dev.flang.tools.docs.Util.Kind;
@@ -156,7 +157,8 @@ public class Html extends ANY
    */
   private String typePrfx(AbstractFeature af)
   {
-    return af.outer() != null && af.outer().isTypeFeature() && !af.isTypeFeature() ? "<span class=\"fd-keyword\">type</span>." : "";
+    // NYI: does not treat features that `Type` inherits but does not redefine as type features, see #3716
+    return af.outer() != null && (af.outer().isTypeFeature()  || af.outer().compareTo(Types.resolved.f_Type) == 0) && !af.isTypeFeature() ? "<span class=\"fd-keyword\">type</span>." : "";
   }
 
 
