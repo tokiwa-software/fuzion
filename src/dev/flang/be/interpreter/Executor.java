@@ -35,6 +35,7 @@ import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.AbstractInterpreter.ProcessExpression;
 
+import dev.flang.fuir.analysis.TailCall;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
@@ -63,6 +64,12 @@ public class Executor extends ProcessExpression<Value, Object>
    * The fuir to be used for executing the code.
    */
   private static FUIR _fuir;
+
+
+  /**
+   * The tail call analysis.
+   */
+  private static TailCall _tailCall;
 
 
   /**
@@ -106,6 +113,7 @@ public class Executor extends ProcessExpression<Value, Object>
     _fuir = fuir;
     _options_ = opt;
     _universe = new Instance(_fuir.clazzUniverse());
+    _tailCall = new TailCall(fuir);
     this._cur = _fuir.mainClazzId() == _fuir.clazzUniverse() ? _universe : new Instance(_fuir.mainClazzId());
     this._outer = _universe;
     this._args = new List<>();
@@ -232,6 +240,13 @@ public class Executor extends ProcessExpression<Value, Object>
       {
         tt = ((Boxed)tvalue)._valueClazz;
         tvalue = ((Boxed)tvalue)._contents;
+      }
+
+    var cl = _fuir.clazzAt(s);
+    if (cc == cl // calling myself
+        && _tailCall.callIsTailCall(cl, s))
+      {
+        throw new TailCallException(tvalue, args);
       }
 
     var result = switch (_fuir.clazzKind(cc))
@@ -562,8 +577,24 @@ public class Executor extends ProcessExpression<Value, Object>
     FuzionThread.current()._callStackFrames.push(cc);
     FuzionThread.current()._callStack.push(s);
 
-    new AbstractInterpreter<>(_fuir, new Executor(cur, outer, args))
-      .processClazz(cc);
+    var o = outer;
+    var a = args;
+    while (o != null)
+      {
+        try
+          {
+            new AbstractInterpreter<>(_fuir, new Executor(cur, o, a))
+              .processClazz(cc);
+            o = null;
+          }
+        catch(TailCallException tce)
+          {
+            check(fuir().clazzAt(s) != cc);
+
+            o = tce.tvalue;
+            a = tce.args;
+          }
+      }
 
     FuzionThread.current()._callStack.pop();
     FuzionThread.current()._callStackFrames.pop();
