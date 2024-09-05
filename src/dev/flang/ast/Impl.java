@@ -600,12 +600,24 @@ public class Impl extends ANY
    * @param res the resolution instance.
    *
    * @param f the feature this is the Impl of.
+   *
+   * @param urgent if true and the result type is inferred and inference would
+   * currently not succeed, then enforce it even if that would produce an error.
+   *
    */
-  AbstractType inferredType(Resolution res, AbstractFeature f)
+  AbstractType inferredType(Resolution res, AbstractFeature f, boolean urgent)
   {
     var result = switch (_kind)
       {
-      case RoutineDef -> _expr.typeForInferencing();
+      case RoutineDef ->
+        {
+          var t = _expr.typeForInferencing();
+          if (t == null && urgent)
+            {
+              t = _expr.type();  // produce _expr's error if we really need the type and can't get it
+            }
+          yield t;
+        }
       case FieldDef ->
         {
           var t = _expr.typeForInferencing();
@@ -617,6 +629,10 @@ public class Impl extends ANY
             {
               f.visit(res.resolveTypesFully(fo), fo);
               t  = _expr.typeForInferencing();
+            }
+          if (t == null && urgent)
+            {
+              t = _expr.type();  // produce _expr's error if we really need the type and can't get it
             }
           yield t;
         }

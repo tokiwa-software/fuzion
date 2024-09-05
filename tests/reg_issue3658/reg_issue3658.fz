@@ -1,0 +1,49 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue3658
+#
+# -----------------------------------------------------------------------
+
+# Test for partial application on the left hand side of a call to an `infix <|`
+# operator.
+#
+# The difficulty here is the the left hand side is first considered as the
+# target of the call to the operator, but the target cannote be found.
+#
+reg_issue3658 =>
+
+  # piping strings forward and backward
+  "Hello World!" |> say
+  say <| "Hello World!"
+
+  # piping Sequences forward and backward
+  s1 := [1,2,3] |> sum; say s1
+  s2 := sum <| [1,2,3]; say s2
+
+  # piping and destructuring pairs forward and backward
+  add2(a, b X : numeric) => a + b
+  p1 := (47,11) ||> add2; say p1
+  p2 := add2 <|| (47,11); say p2
+
+
+  # piping and destructuring quintets forward and backward
+  add5(a, b, c, d, e X : numeric) => a + b + c + d + e
+  q1 := (47,11,32,16,8) |||||> add5; say q1
+  q2 := add5 <||||| (47,11,32,16,8); say q2

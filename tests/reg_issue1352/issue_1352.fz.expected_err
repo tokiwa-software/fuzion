@@ -1,17 +1,5 @@
 
---CURDIR--/issue_1352.fz:25:3: error 1: Failed to infer result type for feature 'issue_1352.c'.
-  c := a ->
---^
-To solve this, please specify a result type explicitly.
-
-
---CURDIR--/issue_1352.fz:27:3: error 2: Failed to infer result type for feature 'issue_1352.d'.
-  d => b ->
---^
-To solve this, please specify a result type explicitly.
-
-
---CURDIR--/issue_1352.fz:25:8: error 3: No type information can be inferred from a lambda expression
+--CURDIR--/issue_1352.fz:25:8: error 1: No type information can be inferred from a lambda expression
   c := a ->
 -------^^^^
     a.x
@@ -21,4 +9,15 @@ with argument count of the lambda expression equal to the number of type paramet
 assigned field must be given explicitly.
 To solve this, declare an explicit type for the target field, e.g., 'f (i32, i32) -> bool := x, y -> x > y'.
 
-3 errors.
+
+--CURDIR--/issue_1352.fz:27:8: error 2: No type information can be inferred from a lambda expression
+  d => b ->
+-------^^^^
+    b.x
+----^^^
+A lambda expression can only be used if assigned to a field or argument of type 'Function'
+with argument count of the lambda expression equal to the number of type parameters of the type.  The type of the
+assigned field must be given explicitly.
+To solve this, declare an explicit type for the target field, e.g., 'f (i32, i32) -> bool := x, y -> x > y'.
+
+2 errors.
