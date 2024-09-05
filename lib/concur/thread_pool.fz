@@ -75,65 +75,68 @@ Blocking_Queue(T type, mtx concur.sync.mutex, cnd concur.sync.condition) ref is
         dequeue
 
 
-# simple, fixed size thread pool
+
+# unit feature to group thread_pool related features
 #
-# use `concur.thread_pool.env.submit` to
-# submit a task to the thread_pool.
-#
-public thread_pool(R type, size i32, code ()->R) outcome R =>
-  (concur.sync.mutex.new ()->
-    mtx := concur.sync.mutex.env
-    mtx.condition ()->
-      cnd := concur.sync.condition.env
-      (thread_pool mtx cnd size unit).instate_self ()->
-        res := code.call
-        thread_pool.env.await
-        res)
-    .bind R x->x
+public thread_pool is
 
 
-
-# simple, fixed size thread pool
-#
-private:public thread_pool(mtx concur.sync.mutex, cnd concur.sync.condition, size i32, _ unit) : effect
-pre debug: size > 0
-is
-
-  bq := Blocking_Queue ()->unit mtx cnd
-
-  threads := (1..size)
-    .map _->
-      concur.thread.spawn ()->
-        _ := for x := bq.dequeue
-             while !x.is_empty
-               x.val.call
-    .as_array
-
-
-  # submit a task to the thread pool
+  # simple, fixed size thread pool
   #
-  # returns false if the pool is already shutting down
+  # use `concur.Thread_Pool.env.submit` to
+  # submit a task to the thread_pool.
   #
-  public submit(task ()->unit) bool =>
-    bq.enqueue task
+  public fixed_size(R type, size i32, code ()->R) outcome R
+  pre debug: size > 0
+  =>
+    (concur.sync.mutex.new ()->
+      mtx := concur.sync.mutex.env
+      mtx.condition ()->
+        cnd := concur.sync.condition.env
+
+        tp :=
+          ref : Thread_Pool
+            bq := Blocking_Queue ()->unit mtx cnd
+
+            threads := (1..size)
+              .map _->
+                concur.thread.spawn ()->
+                  _ := for x := bq.dequeue
+                       while !x.is_empty
+                         x.val.call
+              .as_array
 
 
-  # initiate shutdown of thread pool
-  #
-  shutdown unit =>
-    bq.is_closed.write true
+            # submit a task to the thread pool
+            #
+            # returns false if the pool is already shutting down
+            #
+            redef submit(task ()->unit) bool =>
+              bq.enqueue task
 
 
-  # initiate shutdown, then wait for all added tasks to complete
-  #
-  await =>
+            # initiate shutdown of thread pool
+            #
+            redef shutdown unit =>
+              bq.is_closed.write true
 
-    shutdown
 
-    # wake up all threads
-    mtx.synchronized unit ()->
-      _ := cnd.broadcast
+            # initiate shutdown, then wait for all added tasks to complete
+            #
+            redef await =>
 
-    # wait for all threads to finish
-    threads.for_each t->
-      t.join
+              shutdown
+
+              # wake up all threads
+              mtx.synchronized unit ()->
+                _ := cnd.broadcast
+
+              # wait for all threads to finish
+              threads.for_each t->
+                t.join
+
+        Thread_Pool.instate R tp ()->
+          res := code.call
+          Thread_Pool.env.await
+          res)
+      .bind R x->x
