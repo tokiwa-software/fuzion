@@ -784,7 +784,7 @@ public class DFA extends ANY
    * Should the DFA analysis use embedded values?  This is required for proper
    * escape analysis of instances that contain value types.  Disabling this is
    * only for experimental purposes and will break the C backend since it relies
-   * on escape enalysis of embedded references.
+   * on escape analysis of embedded references.
    *
    * To disable, use fz with
    *
@@ -923,7 +923,7 @@ public class DFA extends ANY
   /**
    * Stored results of newValueSet.
    *
-   * Map from key made from v._id and w._id to resutling value set.
+   * Map from key made from v._id and w._id to resulting value set.
    */
   LongMap<Value> _joined = new LongMap<>();
 

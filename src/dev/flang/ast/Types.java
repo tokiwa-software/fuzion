@@ -142,7 +142,6 @@ public class Types extends ANY
      */
     public final AbstractType t_void;
     public final AbstractType t_codepoint;
-    public final AbstractFeature f_Any;
     public final AbstractFeature f_id;
     public final AbstractFeature f_void;
     public final AbstractFeature f_choice;
@@ -211,7 +210,6 @@ public class Types extends ANY
       t_unit          = ct.type(FuzionConstants.UNIT_NAME);
       t_void          = ct.type("void");
       t_codepoint     = ct.type("codepoint");
-      f_Any           = universe.get(mod, "Any");
       f_id            = universe.get(mod, "id", 2);
       f_void          = universe.get(mod, "void");
       f_choice        = universe.get(mod, "choice");

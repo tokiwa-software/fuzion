@@ -279,7 +279,7 @@ public class Clazzes extends ANY
    *
    * @return the existing or newly created Clazz that represents actualType
    * within outer. undefined.getIfCreated() in case the created clazz cannot
-   * exist (due to precondition `T : x` where type typerameter `T` is not
+   * exist (due to precondition `T : x` where type parameter `T` is not
    * constraintAssignableFrom `x`.
    */
   public Clazz create(AbstractType actualType, int select, Clazz outer)

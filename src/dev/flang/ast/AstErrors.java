@@ -1055,7 +1055,7 @@ public class AstErrors extends ANY
                    "declaration of " + s(f) + ".");
   }
 
-  public static void redefineModifierDoesNotRedefine(AbstractFeature af)
+  public static void redefineModifierDoesNotRedefine(AbstractFeature af, List<FeatureAndOuter> hiddenFeaturesSameSignature)
   {
     if (any() && af instanceof Feature f && f.isLambdaCall())
       {
@@ -1068,8 +1068,20 @@ public class AstErrors extends ANY
               "Feature declared using modifier " + skw("redef") + " does not redefine another feature",
               "Redefining feature: " + s(af) + "\n" +
               "To solve this, check spelling and argument count against the feature you want to redefine or " +
-              "remove " + skw("redef") + " modifier in the declaration of " + s(af) + ".");
+              "remove " + skw("redef") + " modifier in the declaration of " + s(af) + "." +
+              redefOfPrivateFeature(af, hiddenFeaturesSameSignature));
       }
+  }
+
+  private static String redefOfPrivateFeature(AbstractFeature f, List<FeatureAndOuter> sameSignature)
+  {
+    AbstractFeature outer = f.outer();
+
+    return sameSignature.isEmpty()
+            ? ""
+            : "\nAlso make sure that the feature to be redefined is visible where it is redefined. " +
+              "There is the feature " + s(sameSignature.getFirst()._feature) +
+              " that could be made public to allow redefinition in " + s(outer) + ".";
   }
 
   static void notRedefinedContractMustNotUseElseOrThen(SourcePosition pos, AbstractFeature f, PreOrPost preOrPost)
