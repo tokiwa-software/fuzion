@@ -23,14 +23,51 @@
 
 lib_knuth_morris_pratt =>
 
-  say ("Helló World".as_codepoints.find "World".as_codepoints)
-  say ("Helló World".as_codepoints.find "Helló".as_codepoints)
-  say ("Helló World".as_codepoints.find "Internet".as_codepoints)
+  functionality =>
+    say ("Helló World".as_codepoints.find "World".as_codepoints)
+    say ("Helló World".as_codepoints.find "Helló".as_codepoints)
+    say ("Helló World".as_codepoints.find "Internet".as_codepoints)
 
-  say ("Helló World".utf8.find "World".utf8)
-  say ("Helló World".utf8.find "Helló".utf8)
-  say ("Helló World".utf8.find "Internet".utf8)
+    say ("Helló World".utf8.find "World".utf8)
+    say ("Helló World".utf8.find "Helló".utf8)
+    say ("Helló World".utf8.find "Internet".utf8)
 
-  say ("".utf8.find "".utf8)
-  say ("".utf8.find "word".utf8)
-  say ("Some text".utf8.find "".utf8)
+    say ("".utf8.find "".utf8)
+    say ("".utf8.find "word".utf8)
+    say ("Some text".utf8.find "".utf8)
+
+
+  performance =>
+    Sequence.find_brute_force(l Sequence T) option i32
+      pre
+        T : property.equatable
+    =>
+      if starts_with l
+        0
+      else
+        match as_list
+          nil    => nil
+          c Cons => (c.tail.find_brute_force l) >>= +1
+
+
+    test_brute_force(n i32) =>
+      ("a"*2*n).utf8.find_brute_force ("a"*n+"b").utf8
+
+    test_kmp(n i32) =>
+      ("a"*2*n).utf8.find ("a"*n+"b").utf8
+
+
+    len := 250
+
+
+    # for len=250 and interpreter takes ~70s on my machine
+    brute_force := time.stopwatch (()-> _:= test_brute_force len)
+    # for len=250 and interpreter takes ~1s on my machine
+    kmp := time.stopwatch (()-> _:= test_kmp len)
+
+    # check that kmp is at least four times faster
+    check (kmp*4 < brute_force)
+
+
+  functionality
+  performance
