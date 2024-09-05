@@ -255,7 +255,7 @@ public class Executor extends ProcessExpression<Value, Object>
         // NYI change call to pass in ai as in match expression?
         var cur = new Instance(cc);
 
-        callOnInstance(s, cc, cur, tvalue, args);
+        cur = callOnInstance(s, cc, cur, tvalue, args);
 
         Value rres = cur;
         if (!_fuir.isConstructor(cc))
@@ -570,20 +570,21 @@ public class Executor extends ProcessExpression<Value, Object>
    *
    * @param args the arguments to be passed to this call.
    *
-   * @return
+   * @return the (new) instance (might have been replaced due to tail call optimization).
    */
-  Value callOnInstance(int s, int cc, Instance cur, Value outer, List<Value> args)
+  Instance callOnInstance(int s, int cc, Instance cur, Value outer, List<Value> args)
   {
     FuzionThread.current()._callStackFrames.push(cc);
     FuzionThread.current()._callStack.push(s);
 
     var o = outer;
     var a = args;
+    var c = cur;
     while (o != null)
       {
         try
           {
-            new AbstractInterpreter<>(_fuir, new Executor(cur, o, a))
+            new AbstractInterpreter<>(_fuir, new Executor(c, o, a))
               .processClazz(cc);
             o = null;
           }
@@ -591,6 +592,7 @@ public class Executor extends ProcessExpression<Value, Object>
           {
             check(fuir().clazzAt(s) != cc);
 
+            c = new Instance(cc);
             o = tce.tvalue;
             a = tce.args;
           }
@@ -599,7 +601,7 @@ public class Executor extends ProcessExpression<Value, Object>
     FuzionThread.current()._callStack.pop();
     FuzionThread.current()._callStackFrames.pop();
 
-    return null;
+    return c;
   }
 
 
