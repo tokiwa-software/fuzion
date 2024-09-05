@@ -1645,7 +1645,7 @@ public class C extends ANY
               var a = args(tvalue, args, cc, _fuir.clazzArgCount(cc));
               var cl = _fuir.clazzAt(s);
 
-              if (cc == cl                                               &&  // calling myself
+              if (cc == cl &&  // calling myself
                   _tailCall.callIsTailCall(cl, s)
                 )
                 { // then we can do tail recursion optimization!
