@@ -125,6 +125,13 @@ public class Runtime extends ANY
   public static final String CLASS_NAME_TO_FUZION_CLAZZ_NAME = "CLASS_NAME_TO_FUZION_CLAZZ_NAME.txt";
 
 
+  /**
+   * Value used for `FuzionThread.effect_store` and `FuzionThread.effect_load`
+   * to distinguish a unit value effect from a not existing effect
+   */
+  public static final AnyI _UNIT_TYPE_EFFECT_ = new AnyI() { };
+
+
   /*--------------------------  static fields  --------------------------*/
 
 
@@ -591,7 +598,8 @@ public class Runtime extends ANY
    *
    * @param id the id of the effect that is installed
    *
-   * @param instance the effect instance that is installed
+   * @param instance the effect instance that is installed, NOTE: This is `_UNIT_TYPE_EFFECT_`
+   * for a unit type effect.
    *
    * @param code the Unary instance to be executed
    *
@@ -599,6 +607,9 @@ public class Runtime extends ANY
    */
   public static void effect_instate(int id, AnyI instance, Any code, Class call)
   {
+    if (PRECONDITIONS) require
+      (instance != null);
+
     var t = currentThread();
 
     var old = t.effect_load(id);
