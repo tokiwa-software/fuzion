@@ -253,9 +253,7 @@ public class Executor extends ProcessExpression<Value, Object>
       {
       case Routine :
         // NYI change call to pass in ai as in match expression?
-        var cur = new Instance(cc);
-
-        cur = callOnInstance(s, cc, cur, tvalue, args);
+        var cur = callOnNewInstance(s, cc, tvalue, args);
 
         Value rres = cur;
         if (!_fuir.isConstructor(cc))
@@ -560,11 +558,9 @@ public class Executor extends ProcessExpression<Value, Object>
    * callOnInstance assigns the arguments to the argument fields of a newly
    * created instance, calls the parents and then this feature.
    *
-   * @parm s site of the call or NO_SITE if unknown (e.g., form intrinsic)
+   * @param s site of the call or NO_SITE if unknown (e.g., form intrinsic)
    *
    * @param cc clazz id of the called clazz
-   *
-   * @param cur the newly created instance
    *
    * @param outer the target of the call
    *
@@ -572,27 +568,25 @@ public class Executor extends ProcessExpression<Value, Object>
    *
    * @return the (new) instance (might have been replaced due to tail call optimization).
    */
-  Instance callOnInstance(int s, int cc, Instance cur, Value outer, List<Value> args)
+  Instance callOnNewInstance(int s, int cc, Value outer, List<Value> args)
   {
     FuzionThread.current()._callStackFrames.push(cc);
     FuzionThread.current()._callStack.push(s);
 
     var o = outer;
     var a = args;
-    var c = cur;
+    var cur = new Instance(cc);
     while (o != null)
       {
         try
           {
-            new AbstractInterpreter<>(_fuir, new Executor(c, o, a))
+            new AbstractInterpreter<>(_fuir, new Executor(cur, o, a))
               .processClazz(cc);
             o = null;
           }
         catch(TailCallException tce)
           {
-            check(fuir().clazzAt(s) != cc);
-
-            c = new Instance(cc);
+            cur = new Instance(cc);
             o = tce.tvalue;
             a = tce.args;
           }
@@ -601,7 +595,7 @@ public class Executor extends ProcessExpression<Value, Object>
     FuzionThread.current()._callStack.pop();
     FuzionThread.current()._callStackFrames.pop();
 
-    return c;
+    return cur;
   }
 
 
