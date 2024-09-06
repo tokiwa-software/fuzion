@@ -39,21 +39,21 @@ int:
 # check if for every unique comment containing "should flag an error" an error is reported for a line with that comment
 	printf "RUN negative test $(NAME).fz using interpreter backend "; \
 	cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g" | sort -n | uniq | wc -l | tr -d ' ' | grep ^$(EXPECTED_ERRORS)$$ > /dev/null && \
-		echo -e "\033[32;1mPASSED\033[0m." || (echo -e "\033[31;1m*** FAILED ***\033[0m" && exit 1)
+		printf "\033[32;1mPASSED\033[0m.\n" || (printf "\033[31;1m*** FAILED ***\033[0m\n" && exit 1)
 
 jvm:
 	$(FUZION) -jvm $(NAME) 2>err.txt || true
 # check if for every unique comment containing "should flag an error" an error is reported for a line with that comment
 	printf "RUN negative test $(NAME).fz using jvm backend "; \
 	cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g" | sort -n | uniq | wc -l | tr -d ' ' | grep ^$(EXPECTED_ERRORS)$$ > /dev/null && \
-		echo -e "\033[32;1mPASSED\033[0m." || (echo -e "\033[31;1m*** FAILED ***\033[0m" && exit 1)
+		printf "\033[32;1mPASSED\033[0m.\n" || (printf "\033[31;1m*** FAILED ***\033[0m\n" && exit 1)
 
 c:
 	($(FUZION) -c -o=testbin $(NAME) && ./testbin) 2>err.txt || true
 # check if for every unique comment containing "should flag an error" an error is reported for a line with that comment
 	printf "RUN negative test $(NAME).fz using c backend "; \
 	cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g" | sort -n | uniq | wc -l | tr -d ' ' | grep ^$(EXPECTED_ERRORS)$$ > /dev/null && \
-		echo -e "\033[32;1mPASSED\033[0m." || (echo -e "\033[31;1m*** FAILED ***\033[0m" && exit 1)
+		printf "\033[32;1mPASSED\033[0m.\n" || (printf "\033[31;1m*** FAILED ***\033[0m\n" && exit 1)
 
 show:
 	printf "Expected $(EXPECTED_ERRORS) errors, found " && cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g"| sort -n | uniq | wc -l | tr -d ' '
