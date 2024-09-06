@@ -916,8 +916,8 @@ public class Intrinsics extends ANY
     put("fuzion.sys.thread.spawn0", (executor, innerClazz) -> args ->
         {
           var oc   = executor.fuir().clazzArgClazz(innerClazz, 0);
-          var call = executor.fuir().lookupCall(oc);
-          var t = new Thread(() -> executor.callOnInstance(NO_SITE, call, new Instance(call), args.get(1), new List<>()));
+          var cc = executor.fuir().lookupCall(oc);
+          var t = new Thread(() -> executor.callOnNewInstance(NO_SITE, cc, args.get(1), new List<>()));
           t.setDaemon(true);
           t.start();
           return new i64Value(_startedThreads_.add(t));
@@ -1594,10 +1594,10 @@ public class Intrinsics extends ANY
               var prev = effects.get(ecl);
               effects.put(ecl, ev);
               var oc   = executor.fuir().clazzActualGeneric(innerClazz, 0);
-              var call = executor.fuir().lookupCall(oc);
+              var cc = executor.fuir().lookupCall(oc);
               try
                 {
-                  var ignore = executor.callOnInstance(NO_SITE, call, new Instance(call), args.get(2), new List<>());
+                  var ignore = executor.callOnNewInstance(NO_SITE, cc, args.get(2), new List<>());
                   return new boolValue(true);
                 }
               catch (Abort a)

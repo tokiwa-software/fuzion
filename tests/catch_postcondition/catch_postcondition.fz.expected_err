@@ -27,28 +27,68 @@ public postcondition_fault(msg String) => post_fault.cause msg
 (catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:43:21:
     for v := T.one, double v
 --------------------^^^^^^
-(catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-... repeated 29 times ...
-
 catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
     for v := T.one, double v
 ----^
-(catch_postcondition.test#1 i16).loop: --CURDIR--/catch_postcondition.fz:291:8:
+catch_postcondition.λ.call: --CURDIR--/catch_postcondition.fz:291:8:
   say (test i32)
 -------^^^^
-(catch_postcondition.test#1 i16).loop: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-... repeated 10 times ...
+catch_postcondition.loop.λ.call: --CURDIR--/catch_postcondition.fz:276:28:
+           option tries[c].call
+---------------------------^^^^
+(fuzion.type.runtime.type.fault.type.try (option String)).catch#1.λ.call.λ.call: $MODULE/eff/fallible.fz:84:35:
+        fallible.this.instate T v code_try (()->code_catch m.get.get)
+----------------------------------^^^^^^^^
+(fuzion.type.runtime.type.fault.type.instate#4 (option String)).λ.call: $MODULE/effect.fz:119:25:
+    cf := e.Effect_Call code
+------------------------^^^^
+(fuzion.runtime.fault.Effect_Call (option String)).call: $MODULE/effect.fz:210:18:
+      set res := f()
+-----------------^
+fuzion.type.runtime.type.fault.type.instate#4 (option String): <source position not available>:
 
-catch_postcondition.test#1 i16: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-catch_postcondition.λ.call: --CURDIR--/catch_postcondition.fz:146:56:
+(fuzion.type.runtime.type.fault.type.try (option String)).catch#1.λ.call: $MODULE/eff/fallible.fz:84:9:
+        fallible.this.instate T v code_try (()->code_catch m.get.get)
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(eff.lm.instate_self#2 (option String)).λ.call: $MODULE/effect.fz:164:39:
+    effect.this.instate R effect.this code
+--------------------------------------^^^^
+(eff.type.lm.type.instate#3 (option String)).λ.call: $MODULE/effect.fz:143:17:
+    instate R e code (panic "unexpected abort in {effect.this.type}")
+----------------^^^^
+(eff.type.lm.type.instate#4 (option String)).λ.call: $MODULE/effect.fz:119:25:
+    cf := e.Effect_Call code
+------------------------^^^^
+(eff.lm.Effect_Call (option String)).call: $MODULE/effect.fz:210:18:
+      set res := f()
+-----------------^
+eff.type.lm.type.instate#4 (option String): <source position not available>:
+
+eff.type.lm.type.instate#3 (option String): $MODULE/effect.fz:143:5:
+    instate R e code (panic "unexpected abort in {effect.this.type}")
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+eff.lm.instate_self#2 (option String): $MODULE/effect.fz:164:5:
+    effect.this.instate R effect.this code
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(fuzion.type.runtime.type.fault.type.try (option String)).catch#1: $MODULE/eff/fallible.fz:79:7:
+      eff.lm.instate_self ()->
+------^^^^^^^^^^^^^^^^^^^^^^^^
+        m := eff.lm.env.new (option ERROR nil)
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        v := fallible.this.new e->
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^
+               m <- e
+---------------^^^^^^
+               fallible.this.type.abort
+---------------^^^^^^^^^^^^^^^^^^^^^^^^
+        fallible.this.instate T v code_try (()->code_catch m.get.get)
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:277:11:
+         .catch s->
+----------^^^^^
+catch_postcondition.λ.call: --CURDIR--/catch_postcondition.fz:146:38:
   tries array ()->String := [ (() -> test i32), (() -> test i16), (() -> test i64) ]
--------------------------------------------------------^^^^
+-------------------------------------^^^^
 catch_postcondition.loop.λ.call: --CURDIR--/catch_postcondition.fz:276:28:
            option tries[c].call
 ---------------------------^^^^
@@ -102,35 +142,18 @@ eff.lm.instate_self#2 (option String): $MODULE/effect.fz:164:5:
 catch_postcondition.loop: --CURDIR--/catch_postcondition.fz:277:11:
          .catch s->
 ----------^^^^^
-(catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:272:3:
+(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.λ.call.λ.call: --CURDIR--/catch_postcondition.fz:272:3:
   for
 --^
-(catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-... repeated 28 times ...
-
-catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-catch_postcondition.λ.call: --CURDIR--/catch_postcondition.fz:146:38:
-  tries array ()->String := [ (() -> test i32), (() -> test i16), (() -> test i64) ]
--------------------------------------^^^^
-catch_postcondition.loop.λ.call: --CURDIR--/catch_postcondition.fz:276:28:
-           option tries[c].call
----------------------------^^^^
-(fuzion.type.runtime.type.fault.type.try (option String)).catch#1.λ.call.λ.call: $MODULE/eff/fallible.fz:84:35:
-        fallible.this.instate T v code_try (()->code_catch m.get.get)
-----------------------------------^^^^^^^^
-(fuzion.type.runtime.type.fault.type.instate#4 (option String)).λ.call: $MODULE/effect.fz:119:25:
+(fuzion.type.runtime.type.post_fault.type.instate#4 (option String)).λ.call: $MODULE/effect.fz:119:25:
     cf := e.Effect_Call code
 ------------------------^^^^
-(fuzion.runtime.fault.Effect_Call (option String)).call: $MODULE/effect.fz:210:18:
+(fuzion.runtime.post_fault.Effect_Call (option String)).call: $MODULE/effect.fz:210:18:
       set res := f()
 -----------------^
-fuzion.type.runtime.type.fault.type.instate#4 (option String): <source position not available>:
+fuzion.type.runtime.type.post_fault.type.instate#4 (option String): <source position not available>:
 
-(fuzion.type.runtime.type.fault.type.try (option String)).catch#1.λ.call: $MODULE/eff/fallible.fz:84:9:
+(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.λ.call: $MODULE/eff/fallible.fz:84:9:
         fallible.this.instate T v code_try (()->code_catch m.get.get)
 --------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (eff.lm.instate_self#2 (option String)).λ.call: $MODULE/effect.fz:164:39:
@@ -153,7 +176,7 @@ eff.type.lm.type.instate#3 (option String): $MODULE/effect.fz:143:5:
 eff.lm.instate_self#2 (option String): $MODULE/effect.fz:164:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(fuzion.type.runtime.type.fault.type.try (option String)).catch#1: $MODULE/eff/fallible.fz:79:7:
+(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1: $MODULE/eff/fallible.fz:79:7:
       eff.lm.instate_self ()->
 ------^^^^^^^^^^^^^^^^^^^^^^^^
         m := eff.lm.env.new (option ERROR nil)
@@ -166,26 +189,9 @@ eff.lm.instate_self#2 (option String): $MODULE/effect.fz:164:5:
 ---------------^^^^^^^^^^^^^^^^^^^^^^^^
         fallible.this.instate T v code_try (()->code_catch m.get.get)
 --------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-catch_postcondition.loop: --CURDIR--/catch_postcondition.fz:277:11:
+catch_postcondition.loop.λ.call: --CURDIR--/catch_postcondition.fz:258:11:
          .catch s->
 ----------^^^^^
-(catch_postcondition.test#1 i16).loop: --CURDIR--/catch_postcondition.fz:272:3:
-  for
---^
-(catch_postcondition.test#1 i16).loop: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-... repeated 8 times ...
-
-catch_postcondition.test#1 i16: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-catch_postcondition.λ.call: --CURDIR--/catch_postcondition.fz:146:56:
-  tries array ()->String := [ (() -> test i32), (() -> test i16), (() -> test i64) ]
--------------------------------------------------------^^^^
-catch_postcondition.loop.λ.call: --CURDIR--/catch_postcondition.fz:257:28:
-           option tries[c].call
----------------------------^^^^
 (fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.λ.call.λ.call: $MODULE/eff/fallible.fz:84:35:
         fallible.this.instate T v code_try (()->code_catch m.get.get)
 ----------------------------------^^^^^^^^
@@ -236,26 +242,9 @@ eff.lm.instate_self#2 (option String): $MODULE/effect.fz:164:5:
 catch_postcondition.loop: --CURDIR--/catch_postcondition.fz:258:11:
          .catch s->
 ----------^^^^^
-(catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:253:3:
+(catch_postcondition.try_post (option String)).catch#1.h.λ.call.λ.call: --CURDIR--/catch_postcondition.fz:253:3:
   for
 --^
-(catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-... repeated 26 times ...
-
-catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-catch_postcondition.λ.call: --CURDIR--/catch_postcondition.fz:146:38:
-  tries array ()->String := [ (() -> test i32), (() -> test i16), (() -> test i64) ]
--------------------------------------^^^^
-catch_postcondition.loop.λ.call: --CURDIR--/catch_postcondition.fz:257:28:
-           option tries[c].call
----------------------------^^^^
-(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.λ.call.λ.call: $MODULE/eff/fallible.fz:84:35:
-        fallible.this.instate T v code_try (()->code_catch m.get.get)
-----------------------------------^^^^^^^^
 (fuzion.type.runtime.type.post_fault.type.instate#4 (option String)).λ.call: $MODULE/effect.fz:119:25:
     cf := e.Effect_Call code
 ------------------------^^^^
@@ -264,65 +253,38 @@ catch_postcondition.loop.λ.call: --CURDIR--/catch_postcondition.fz:257:28:
 -----------------^
 fuzion.type.runtime.type.post_fault.type.instate#4 (option String): <source position not available>:
 
-(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1.λ.call: $MODULE/eff/fallible.fz:84:9:
-        fallible.this.instate T v code_try (()->code_catch m.get.get)
---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(eff.lm.instate_self#2 (option String)).λ.call: $MODULE/effect.fz:164:39:
+(catch_postcondition.try_post (option String)).catch#1.h.λ.call: --CURDIR--/catch_postcondition.fz:107:36:
+        (fuzion.runtime.post_fault.instate
+-----------------------------------^^^^^^^
+((catch_postcondition.try_post (option String)).catch#1.h.lm.instate_self#2 (option String)).λ.call: $MODULE/effect.fz:164:39:
     effect.this.instate R effect.this code
 --------------------------------------^^^^
-(eff.type.lm.type.instate#3 (option String)).λ.call: $MODULE/effect.fz:143:17:
+((catch_postcondition.type.try_post.type (option String)).catch#1.type.h.type.lm.type.instate#3 (option String)).λ.call: $MODULE/effect.fz:143:17:
     instate R e code (panic "unexpected abort in {effect.this.type}")
 ----------------^^^^
-(eff.type.lm.type.instate#4 (option String)).λ.call: $MODULE/effect.fz:119:25:
+((catch_postcondition.type.try_post.type (option String)).catch#1.type.h.type.lm.type.instate#4 (option String)).λ.call: $MODULE/effect.fz:119:25:
     cf := e.Effect_Call code
 ------------------------^^^^
-(eff.lm.Effect_Call (option String)).call: $MODULE/effect.fz:210:18:
+((catch_postcondition.try_post (option String)).catch#1.h.lm.Effect_Call (option String)).call: $MODULE/effect.fz:210:18:
       set res := f()
 -----------------^
-eff.type.lm.type.instate#4 (option String): <source position not available>:
+(catch_postcondition.type.try_post.type (option String)).catch#1.type.h.type.lm.type.instate#4 (option String): <source position not available>:
 
-eff.type.lm.type.instate#3 (option String): $MODULE/effect.fz:143:5:
+(catch_postcondition.type.try_post.type (option String)).catch#1.type.h.type.lm.type.instate#3 (option String): $MODULE/effect.fz:143:5:
     instate R e code (panic "unexpected abort in {effect.this.type}")
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-eff.lm.instate_self#2 (option String): $MODULE/effect.fz:164:5:
+(catch_postcondition.try_post (option String)).catch#1.h.lm.instate_self#2 (option String): $MODULE/effect.fz:164:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(fuzion.type.runtime.type.post_fault.type.try (option String)).catch#1: $MODULE/eff/fallible.fz:79:7:
-      eff.lm.instate_self ()->
-------^^^^^^^^^^^^^^^^^^^^^^^^
-        m := eff.lm.env.new (option ERROR nil)
---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        v := fallible.this.new e->
---------^^^^^^^^^^^^^^^^^^^^^^^^^^
-               m <- e
----------------^^^^^^
-               fallible.this.type.abort
----------------^^^^^^^^^^^^^^^^^^^^^^^^
-        fallible.this.instate T v code_try (()->code_catch m.get.get)
---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-catch_postcondition.loop: --CURDIR--/catch_postcondition.fz:258:11:
+(catch_postcondition.try_post (option String)).catch#1.h: --CURDIR--/catch_postcondition.fz:105:15:
+    res := lm.instate_self ()->
+--------------^^^^^^^^^^^^
+(catch_postcondition.try_post (option String)).catch#1: --CURDIR--/catch_postcondition.fz:195:7:
+      h.res
+------^
+(catch_postcondition.try_post (option String)).catch#1.h.try: --CURDIR--/catch_postcondition.fz:239:11:
          .catch s->
 ----------^^^^^
-(catch_postcondition.test#1 i16).loop: --CURDIR--/catch_postcondition.fz:253:3:
-  for
---^
-(catch_postcondition.test#1 i16).loop: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-... repeated 7 times ...
-
-catch_postcondition.test#1 i16: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-catch_postcondition.λ.call: --CURDIR--/catch_postcondition.fz:146:56:
-  tries array ()->String := [ (() -> test i32), (() -> test i16), (() -> test i64) ]
--------------------------------------------------------^^^^
-catch_postcondition.loop.λ.call: --CURDIR--/catch_postcondition.fz:238:28:
-           option tries[c].call
----------------------------^^^^
-(catch_postcondition.try_post (option String)).catch#1.h.try: --CURDIR--/catch_postcondition.fz:193:34:
-        redef try             => code_try()
----------------------------------^^^^^^^^
 (catch_postcondition.try_post (option String)).catch#1.h.λ.call.λ.call: --CURDIR--/catch_postcondition.fz:112:11:
           try
 ----------^^^
@@ -366,95 +328,9 @@ fuzion.type.runtime.type.post_fault.type.instate#4 (option String): <source posi
 catch_postcondition.loop: --CURDIR--/catch_postcondition.fz:239:11:
          .catch s->
 ----------^^^^^
-(catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:234:3:
+(fuzion.runtime.post_fault.Effect_Call String).call: --CURDIR--/catch_postcondition.fz:234:3:
   for
 --^
-(catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-... repeated 25 times ...
-
-catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-catch_postcondition.λ.call: --CURDIR--/catch_postcondition.fz:146:38:
-  tries array ()->String := [ (() -> test i32), (() -> test i16), (() -> test i64) ]
--------------------------------------^^^^
-catch_postcondition.loop.λ.call: --CURDIR--/catch_postcondition.fz:238:28:
-           option tries[c].call
----------------------------^^^^
-(catch_postcondition.try_post (option String)).catch#1.h.try: --CURDIR--/catch_postcondition.fz:193:34:
-        redef try             => code_try()
----------------------------------^^^^^^^^
-(catch_postcondition.try_post (option String)).catch#1.h.λ.call.λ.call: --CURDIR--/catch_postcondition.fz:112:11:
-          try
-----------^^^
-(fuzion.type.runtime.type.post_fault.type.instate#4 (option String)).λ.call: $MODULE/effect.fz:119:25:
-    cf := e.Effect_Call code
-------------------------^^^^
-(fuzion.runtime.post_fault.Effect_Call (option String)).call: $MODULE/effect.fz:210:18:
-      set res := f()
------------------^
-fuzion.type.runtime.type.post_fault.type.instate#4 (option String): <source position not available>:
-
-(catch_postcondition.try_post (option String)).catch#1.h.λ.call: --CURDIR--/catch_postcondition.fz:107:36:
-        (fuzion.runtime.post_fault.instate
------------------------------------^^^^^^^
-((catch_postcondition.try_post (option String)).catch#1.h.lm.instate_self#2 (option String)).λ.call: $MODULE/effect.fz:164:39:
-    effect.this.instate R effect.this code
---------------------------------------^^^^
-((catch_postcondition.type.try_post.type (option String)).catch#1.type.h.type.lm.type.instate#3 (option String)).λ.call: $MODULE/effect.fz:143:17:
-    instate R e code (panic "unexpected abort in {effect.this.type}")
-----------------^^^^
-((catch_postcondition.type.try_post.type (option String)).catch#1.type.h.type.lm.type.instate#4 (option String)).λ.call: $MODULE/effect.fz:119:25:
-    cf := e.Effect_Call code
-------------------------^^^^
-((catch_postcondition.try_post (option String)).catch#1.h.lm.Effect_Call (option String)).call: $MODULE/effect.fz:210:18:
-      set res := f()
------------------^
-(catch_postcondition.type.try_post.type (option String)).catch#1.type.h.type.lm.type.instate#4 (option String): <source position not available>:
-
-(catch_postcondition.type.try_post.type (option String)).catch#1.type.h.type.lm.type.instate#3 (option String): $MODULE/effect.fz:143:5:
-    instate R e code (panic "unexpected abort in {effect.this.type}")
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(catch_postcondition.try_post (option String)).catch#1.h.lm.instate_self#2 (option String): $MODULE/effect.fz:164:5:
-    effect.this.instate R effect.this code
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(catch_postcondition.try_post (option String)).catch#1.h: --CURDIR--/catch_postcondition.fz:105:15:
-    res := lm.instate_self ()->
---------------^^^^^^^^^^^^
-(catch_postcondition.try_post (option String)).catch#1: --CURDIR--/catch_postcondition.fz:195:7:
-      h.res
-------^
-catch_postcondition.loop: --CURDIR--/catch_postcondition.fz:239:11:
-         .catch s->
-----------^^^^^
-(catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:234:3:
-  for
---^
-(catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-... repeated 23 times ...
-
-catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-catch_postcondition.res2.λ.call: --CURDIR--/catch_postcondition.fz:225:21:
-  res2 => try_post (test i32) || (s->say "*** failed: $s ***"; test u64)
---------------------^^^^
-(catch_postcondition.try_post String).catch#1.h.try: --CURDIR--/catch_postcondition.fz:193:34:
-        redef try             => code_try()
----------------------------------^^^^^^^^
-(catch_postcondition.try_post String).catch#1.h.λ.call.λ.call: --CURDIR--/catch_postcondition.fz:112:11:
-          try
-----------^^^
-(fuzion.type.runtime.type.post_fault.type.instate#4 String).λ.call: $MODULE/effect.fz:119:25:
-    cf := e.Effect_Call code
-------------------------^^^^
-(fuzion.runtime.post_fault.Effect_Call String).call: $MODULE/effect.fz:210:18:
-      set res := f()
------------------^
 fuzion.type.runtime.type.post_fault.type.instate#4 String: <source position not available>:
 
 (catch_postcondition.try_post String).catch#1.h.λ.call: --CURDIR--/catch_postcondition.fz:107:36:
@@ -492,29 +368,9 @@ fuzion.type.runtime.type.post_fault.type.instate#4 String: <source position not 
 catch_postcondition.res2: --CURDIR--/catch_postcondition.fz:225:31:
   res2 => try_post (test i32) || (s->say "*** failed: $s ***"; test u64)
 ------------------------------^^
-(catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:226:7:
+(fuzion.type.runtime.type.post_fault.type.instate#4 String).λ.call: --CURDIR--/catch_postcondition.fz:226:7:
   say res2
 ------^^^^
-(catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-... repeated 24 times ...
-
-catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-catch_postcondition.res.λ.call: --CURDIR--/catch_postcondition.fz:213:12:
-           test i32
------------^^^^
-(catch_postcondition.try_post String).catch#1.h.try: --CURDIR--/catch_postcondition.fz:193:34:
-        redef try             => code_try()
----------------------------------^^^^^^^^
-(catch_postcondition.try_post String).catch#1.h.λ.call.λ.call: --CURDIR--/catch_postcondition.fz:112:11:
-          try
-----------^^^
-(fuzion.type.runtime.type.post_fault.type.instate#4 String).λ.call: $MODULE/effect.fz:119:25:
-    cf := e.Effect_Call code
-------------------------^^^^
 (fuzion.runtime.post_fault.Effect_Call String).call: $MODULE/effect.fz:210:18:
       set res := f()
 -----------------^
@@ -552,23 +408,46 @@ fuzion.type.runtime.type.post_fault.type.instate#4 String: <source position not 
 catch_postcondition.res: --CURDIR--/catch_postcondition.fz:214:11:
          .catch s->
 ----------^^^^^
-(catch_postcondition.test#1 i16).loop: --CURDIR--/catch_postcondition.fz:217:7:
+catch_postcondition.loop.h.λ.call.λ.call: --CURDIR--/catch_postcondition.fz:217:7:
   say res
 ------^^^
-(catch_postcondition.test#1 i16).loop: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-... repeated 8 times ...
+(fuzion.type.runtime.type.post_fault.type.instate#4 (option String)).λ.call: $MODULE/effect.fz:119:25:
+    cf := e.Effect_Call code
+------------------------^^^^
+(fuzion.runtime.post_fault.Effect_Call (option String)).call: $MODULE/effect.fz:210:18:
+      set res := f()
+-----------------^
+fuzion.type.runtime.type.post_fault.type.instate#4 (option String): <source position not available>:
 
-catch_postcondition.test#1 i16: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-catch_postcondition.λ.call: --CURDIR--/catch_postcondition.fz:146:56:
-  tries array ()->String := [ (() -> test i32), (() -> test i16), (() -> test i64) ]
--------------------------------------------------------^^^^
-catch_postcondition.loop.h.try: --CURDIR--/catch_postcondition.fz:164:44:
-      redef try option String  => tries[c].call
--------------------------------------------^^^^
+catch_postcondition.loop.h.λ.call: --CURDIR--/catch_postcondition.fz:107:36:
+        (fuzion.runtime.post_fault.instate
+-----------------------------------^^^^^^^
+(catch_postcondition.loop.h.lm.instate_self#2 (option String)).λ.call: $MODULE/effect.fz:164:39:
+    effect.this.instate R effect.this code
+--------------------------------------^^^^
+(catch_postcondition.type.loop.type.h.type.lm.type.instate#3 (option String)).λ.call: $MODULE/effect.fz:143:17:
+    instate R e code (panic "unexpected abort in {effect.this.type}")
+----------------^^^^
+(catch_postcondition.type.loop.type.h.type.lm.type.instate#4 (option String)).λ.call: $MODULE/effect.fz:119:25:
+    cf := e.Effect_Call code
+------------------------^^^^
+(catch_postcondition.loop.h.lm.Effect_Call (option String)).call: $MODULE/effect.fz:210:18:
+      set res := f()
+-----------------^
+catch_postcondition.type.loop.type.h.type.lm.type.instate#4 (option String): <source position not available>:
+
+catch_postcondition.type.loop.type.h.type.lm.type.instate#3 (option String): $MODULE/effect.fz:143:5:
+    instate R e code (panic "unexpected abort in {effect.this.type}")
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+catch_postcondition.loop.h.lm.instate_self#2 (option String): $MODULE/effect.fz:164:5:
+    effect.this.instate R effect.this code
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+catch_postcondition.loop.h: --CURDIR--/catch_postcondition.fz:105:15:
+    res := lm.instate_self ()->
+--------------^^^^^^^^^^^^
+catch_postcondition.loop.h.try: --CURDIR--/catch_postcondition.fz:166:10:
+    r := h.res
+---------^
 catch_postcondition.loop.h.λ.call.λ.call: --CURDIR--/catch_postcondition.fz:112:11:
           try
 ----------^^^
@@ -609,106 +488,9 @@ catch_postcondition.loop.h: --CURDIR--/catch_postcondition.fz:105:15:
 catch_postcondition.loop: --CURDIR--/catch_postcondition.fz:166:10:
     r := h.res
 ---------^
-(catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:162:3:
+catch_postcondition.z.lm.instate_self#2 (option String): --CURDIR--/catch_postcondition.fz:162:3:
   for c in tries.indices do
 --^
-(catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-... repeated 26 times ...
-
-catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-catch_postcondition.λ.call: --CURDIR--/catch_postcondition.fz:146:38:
-  tries array ()->String := [ (() -> test i32), (() -> test i16), (() -> test i64) ]
--------------------------------------^^^^
-catch_postcondition.loop.h.try: --CURDIR--/catch_postcondition.fz:164:44:
-      redef try option String  => tries[c].call
--------------------------------------------^^^^
-catch_postcondition.loop.h.λ.call.λ.call: --CURDIR--/catch_postcondition.fz:112:11:
-          try
-----------^^^
-(fuzion.type.runtime.type.post_fault.type.instate#4 (option String)).λ.call: $MODULE/effect.fz:119:25:
-    cf := e.Effect_Call code
-------------------------^^^^
-(fuzion.runtime.post_fault.Effect_Call (option String)).call: $MODULE/effect.fz:210:18:
-      set res := f()
------------------^
-fuzion.type.runtime.type.post_fault.type.instate#4 (option String): <source position not available>:
-
-catch_postcondition.loop.h.λ.call: --CURDIR--/catch_postcondition.fz:107:36:
-        (fuzion.runtime.post_fault.instate
------------------------------------^^^^^^^
-(catch_postcondition.loop.h.lm.instate_self#2 (option String)).λ.call: $MODULE/effect.fz:164:39:
-    effect.this.instate R effect.this code
---------------------------------------^^^^
-(catch_postcondition.type.loop.type.h.type.lm.type.instate#3 (option String)).λ.call: $MODULE/effect.fz:143:17:
-    instate R e code (panic "unexpected abort in {effect.this.type}")
-----------------^^^^
-(catch_postcondition.type.loop.type.h.type.lm.type.instate#4 (option String)).λ.call: $MODULE/effect.fz:119:25:
-    cf := e.Effect_Call code
-------------------------^^^^
-(catch_postcondition.loop.h.lm.Effect_Call (option String)).call: $MODULE/effect.fz:210:18:
-      set res := f()
------------------^
-catch_postcondition.type.loop.type.h.type.lm.type.instate#4 (option String): <source position not available>:
-
-catch_postcondition.type.loop.type.h.type.lm.type.instate#3 (option String): $MODULE/effect.fz:143:5:
-    instate R e code (panic "unexpected abort in {effect.this.type}")
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-catch_postcondition.loop.h.lm.instate_self#2 (option String): $MODULE/effect.fz:164:5:
-    effect.this.instate R effect.this code
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-catch_postcondition.loop.h: --CURDIR--/catch_postcondition.fz:105:15:
-    res := lm.instate_self ()->
---------------^^^^^^^^^^^^
-catch_postcondition.loop: --CURDIR--/catch_postcondition.fz:166:10:
-    r := h.res
----------^
-catch_postcondition.test#1 i16: --CURDIR--/catch_postcondition.fz:162:3:
-  for c in tries.indices do
---^
-catch_postcondition.λ.call: --CURDIR--/catch_postcondition.fz:146:56:
-  tries array ()->String := [ (() -> test i32), (() -> test i16), (() -> test i64) ]
--------------------------------------------------------^^^^
-catch_postcondition.z.try: --CURDIR--/catch_postcondition.fz:151:43:
-    redef try option String  => tries[c0].call
-------------------------------------------^^^^
-catch_postcondition.z.λ.call.λ.call: --CURDIR--/catch_postcondition.fz:112:11:
-          try
-----------^^^
-(fuzion.type.runtime.type.post_fault.type.instate#4 (option String)).λ.call: $MODULE/effect.fz:119:25:
-    cf := e.Effect_Call code
-------------------------^^^^
-(fuzion.runtime.post_fault.Effect_Call (option String)).call: $MODULE/effect.fz:210:18:
-      set res := f()
------------------^
-fuzion.type.runtime.type.post_fault.type.instate#4 (option String): <source position not available>:
-
-catch_postcondition.z.λ.call: --CURDIR--/catch_postcondition.fz:107:36:
-        (fuzion.runtime.post_fault.instate
------------------------------------^^^^^^^
-(catch_postcondition.z.lm.instate_self#2 (option String)).λ.call: $MODULE/effect.fz:164:39:
-    effect.this.instate R effect.this code
---------------------------------------^^^^
-(catch_postcondition.type.z.type.lm.type.instate#3 (option String)).λ.call: $MODULE/effect.fz:143:17:
-    instate R e code (panic "unexpected abort in {effect.this.type}")
-----------------^^^^
-(catch_postcondition.type.z.type.lm.type.instate#4 (option String)).λ.call: $MODULE/effect.fz:119:25:
-    cf := e.Effect_Call code
-------------------------^^^^
-(catch_postcondition.z.lm.Effect_Call (option String)).call: $MODULE/effect.fz:210:18:
-      set res := f()
------------------^
-catch_postcondition.type.z.type.lm.type.instate#4 (option String): <source position not available>:
-
-catch_postcondition.type.z.type.lm.type.instate#3 (option String): $MODULE/effect.fz:143:5:
-    instate R e code (panic "unexpected abort in {effect.this.type}")
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-catch_postcondition.z.lm.instate_self#2 (option String): $MODULE/effect.fz:164:5:
-    effect.this.instate R effect.this code
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 catch_postcondition.z: --CURDIR--/catch_postcondition.fz:105:15:
     res := lm.instate_self ()->
 --------------^^^^^^^^^^^^
@@ -748,11 +530,6 @@ public postcondition_fault(msg String) => post_fault.cause msg
 (catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:43:21:
     for v := T.one, double v
 --------------------^^^^^^
-(catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-... repeated 29 times ...
-
 catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
     for v := T.one, double v
 ----^
@@ -799,23 +576,9 @@ catch_postcondition.z.lm.instate_self#2 (option String): $MODULE/effect.fz:164:5
 catch_postcondition.z: --CURDIR--/catch_postcondition.fz:105:15:
     res := lm.instate_self ()->
 --------------^^^^^^^^^^^^
-(catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:154:7:
+(catch_postcondition.ref handle_post String).λ.call.λ.call: --CURDIR--/catch_postcondition.fz:154:7:
   say z.res
 ------^
-(catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-... repeated 26 times ...
-
-catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-catch_postcondition.anonymous.try: --CURDIR--/catch_postcondition.fz:134:7:
-      test i32
-------^^^^
-(catch_postcondition.ref handle_post String).λ.call.λ.call: --CURDIR--/catch_postcondition.fz:112:11:
-          try
-----------^^^
 (fuzion.type.runtime.type.post_fault.type.instate#4 String).λ.call: $MODULE/effect.fz:119:25:
     cf := e.Effect_Call code
 ------------------------^^^^
@@ -850,23 +613,9 @@ fuzion.type.runtime.type.post_fault.type.instate#4 String: <source position not 
 catch_postcondition.anonymous: --CURDIR--/catch_postcondition.fz:105:15:
     res := lm.instate_self ()->
 --------------^^^^^^^^^^^^
-(catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:132:8:
+catch_postcondition.y.λ.call.λ.call: --CURDIR--/catch_postcondition.fz:132:8:
   say (ref : handle_post String
 -------^
-(catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-... repeated 26 times ...
-
-catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-catch_postcondition.y.try: --CURDIR--/catch_postcondition.fz:121:30:
-    redef try             => test i32
------------------------------^^^^
-catch_postcondition.y.λ.call.λ.call: --CURDIR--/catch_postcondition.fz:112:11:
-          try
-----------^^^
 (fuzion.type.runtime.type.post_fault.type.instate#4 String).λ.call: $MODULE/effect.fz:119:25:
     cf := e.Effect_Call code
 ------------------------^^^^
@@ -924,11 +673,6 @@ public postcondition_fault(msg String) => post_fault.cause msg
 (catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:43:21:
     for v := T.one, double v
 --------------------^^^^^^
-(catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:43:5:
-    for v := T.one, double v
-----^
-... repeated 29 times ...
-
 catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
     for v := T.one, double v
 ----^
