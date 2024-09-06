@@ -51,6 +51,7 @@ import dev.flang.mir.MIR;
 
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
+import dev.flang.air.IClazzes;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -94,6 +95,9 @@ public class MiddleEnd extends ANY
   private TreeMap<AbstractFeature, Set<AbstractFeature>> _redefinitions = new TreeMap<>();
 
 
+  private final Clazzes _clazzes;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -102,6 +106,7 @@ public class MiddleEnd extends ANY
     _options = options;
     _mir = mir;
     Clazz._flu = flu; // NYI: Bad hack!
+    _clazzes = new Clazzes(_options);
   }
 
 
@@ -127,9 +132,7 @@ public class MiddleEnd extends ANY
         findUsedFeatures(f);
       }
 
-    Clazzes.instance.init(_options);
-
-    Clazz cl = main != null ? Clazzes.instance.clazz(main.selfType()) : null;
+    Clazz cl = main != null ? _clazzes.clazz(main.selfType()) : null;
     return cl;
   }
 
@@ -200,9 +203,9 @@ public class MiddleEnd extends ANY
    */
   void markUsed(AbstractFeature f, boolean dynamically, HasSourcePosition usedAt)
   {
-    if (!Clazzes.instance.isUsed(f))
+    if (!_clazzes.isUsed(f))
       {
-        Clazzes.instance.addUsedFeature(f, usedAt);
+        _clazzes.addUsedFeature(f, usedAt);
         if (f.state() == State.RESOLVED)
           {
             scheduleForFindUsedFeatures(f);
@@ -233,7 +236,7 @@ public class MiddleEnd extends ANY
           {
             for (AbstractFeature of : df.redefines())
               {
-                if (Clazzes.instance.isUsed(of))
+                if (_clazzes.isUsed(of))
                   {
                     markUsed(df, usedAt);
                   }
@@ -343,6 +346,11 @@ public class MiddleEnd extends ANY
               }
           }
       }
+  }
+
+  public IClazzes clazzes()
+  {
+    return _clazzes;
   }
 
 }

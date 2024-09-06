@@ -64,7 +64,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Clazzes extends ANY
+public class Clazzes extends ANY implements IClazzes
 {
 
 
@@ -87,9 +87,6 @@ public class Clazzes extends ANY
   private final LinkedList<Clazz> clazzesToBeVisited = new LinkedList<>();
 
 
-  public static Clazzes instance = new Clazzes();
-
-
   interface TypF
   {
     AbstractType get();
@@ -103,7 +100,7 @@ public class Clazzes extends ANY
 
     /**
      * Get this clazz only if it was created, by a call to get() or by direct
-     * call to Clazzes.instance.create():
+     * call to Clazzes.create():
      */
     public Clazz getIfCreated()
     {
@@ -177,7 +174,7 @@ public class Clazzes extends ANY
   /**
    * NYI: This will eventually be part of a Fuzion IR Config class.
    */
-  public FuzionOptions _options_;
+  public final FuzionOptions _options_;
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -209,18 +206,13 @@ public class Clazzes extends ANY
   /*--------------------------  constructors  ---------------------------*/
 
 
+  public Clazzes(FuzionOptions opt)
+  {
+    _options_ = opt;
+  }
+
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * Initialize Clazzes with given Options.
-   */
-  public void init(FuzionOptions options)
-  {
-    _options_ = options;
-    universe.get();
-  }
 
 
   /**
@@ -397,7 +389,7 @@ public class Clazzes extends ANY
 
     if (result == null)
       {
-        newcl = new Clazz(actualType, select, outer);
+        newcl = new Clazz(actualType, select, outer, this);
         result = newcl;
         if (actualType != Types.t_UNDEFINED)
           {
@@ -633,7 +625,7 @@ public class Clazzes extends ANY
                   }
               }
           }
-        say("Found "+Clazzes.instance.num()+" clazzes (" +
+        say("Found "+num()+" clazzes (" +
                            clazzesForFields + " for " + fields+ " fields, " +
                            (clazzes.size()-clazzesForFields) + " for " + routines + " routines).");
       }
@@ -926,7 +918,7 @@ public class Clazzes extends ANY
           {
             var fOrFc = isUsed(f)
               ? outerClazz.lookup(f)
-              : Clazzes.instance.clazz(outerClazz._type.actualType(f.resultType(), Context.NONE)); // NYI: better Clazzes.instance.c_void.get(), does not work in interpreter backend yet...
+              : clazz(outerClazz._type.actualType(f.resultType(), Context.NONE)); // NYI: better Clazzes.instance.c_void.get(), does not work in interpreter backend yet...
             acl = new Clazz[] {fOrFc};
           }
         else
@@ -1201,15 +1193,6 @@ public class Clazzes extends ANY
   /**
    * Has this feature been found to be used?
    */
-  public boolean isUsed(AbstractFeature thiz)
-  {
-    return thiz._usedAt != null;
-  }
-
-
-  /**
-   * Has this feature been found to be used?
-   */
   public HasSourcePosition isUsedAt(AbstractFeature thiz)
   {
     return thiz._usedAt;
@@ -1225,13 +1208,35 @@ public class Clazzes extends ANY
     f._usedAt = at;
   }
 
-  /**
-   * reset the instance and set closed to false again
-   */
-  public void reset()
-  {
-    instance = new Clazzes();
-  }
+
+  @Override public Clazz i8() {  return  i8.getIfCreated(); }
+  @Override public Clazz i16() { return i16.getIfCreated(); }
+  @Override public Clazz i32() { return i32.getIfCreated(); }
+  @Override public Clazz i64() { return i64.getIfCreated(); }
+  @Override public Clazz u8() {  return  u8.getIfCreated(); }
+  @Override public Clazz u16() { return u16.getIfCreated(); }
+  @Override public Clazz u32() { return u32.getIfCreated(); }
+  @Override public Clazz u64() { return u64.getIfCreated(); }
+  @Override public Clazz f32() { return f32.getIfCreated(); }
+  @Override public Clazz f64() { return f64.getIfCreated(); }
+  @Override public Clazz c_TRUE() { return c_TRUE.getIfCreated(); }
+  @Override public Clazz c_FALSE() { return c_FALSE.getIfCreated(); }
+  @Override public Clazz Const_String() { return Const_String.getIfCreated(); }
+  @Override public Clazz String() { return String.getIfCreated(); }
+  @Override public Clazz c_unit() { return c_unit.getIfCreated(); }
+  @Override public Clazz c_void() { return c_void.getIfCreated(); }
+  @Override public Clazz universe() { return universe.getIfCreated(); }
+  @Override public Clazz Any() { return Any.getIfCreated(); }
+  @Override public Clazz Const_String_utf8_data() { return Const_String_utf8_data.getIfCreated(); }
+  @Override public Clazz bool() { return bool.getIfCreated(); }
+  @Override public Clazz c_address() { return c_address; }
+  @Override public Clazz fuzionSysPtr() { return fuzionSysPtr; }
+  @Override public Clazz fuzionSysArray_u8() { return fuzionSysArray_u8; }
+  @Override public Clazz fuzionSysArray_u8_data() { return fuzionSysArray_u8_data; }
+  @Override public Clazz fuzionSysArray_u8_length() { return fuzionSysArray_u8_length; }
+  @Override public Clazz fuzionJavaObject() { return fuzionJavaObject; }
+  @Override public Clazz fuzionJavaObject_Ref() { return fuzionJavaObject_Ref; }
+  @Override public Clazz c_error() { return c_error; }
 
 
 }
