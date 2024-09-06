@@ -241,6 +241,7 @@ public Sequence(public T type) ref is
     pre
       debug: from ≥ 0
       debug: to = 0 || is_valid_index to-1
+      debug: from <= to
   =>
     drop(from).take to-from
 
