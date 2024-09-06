@@ -1508,8 +1508,10 @@ public class Feature extends AbstractFeature
       {
         _state = State.RESOLVING_SUGAR1;
 
-        _contract.addContractFeatures(res, this, context());
-        if (definesType())
+        Contract.addContractFeatures(res, this, context());
+        if (!isUniverse() && !isTypeFeature()
+            && !isField() /* NYI: UNDER DEVELOPMENT: does not work yet for fields */
+            && !isTypeParameter())
           {
             typeFeature(res);
           }
