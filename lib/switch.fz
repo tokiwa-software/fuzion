@@ -1,0 +1,127 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature switch
+#
+# -----------------------------------------------------------------------
+
+# switch is the parent feature of all choices
+# that encode success and failure,
+# e.g.    option  (something/nil)
+#      or outcome (something/error)
+#
+public switch(A type, B type /* NYI: B should be open generic */) :
+  choice A B,
+  # monad A (switch A B) NYI: does not work,
+  auto_unwrap A (try (switch A B)), /* NYI: BUG #3355: auto_unwrap T (try switch.this) */
+  Sequence A
+is
+
+  # NYI: CLEANUP: decide name: exists/ok, get/val?
+
+  # Does this switch contain a value of type A?
+  #
+  public exists => (switch.this ? A => true
+                                | B => false)
+
+
+  # Does this switch contain a value of type A?
+  #
+  public ok => exists
+
+
+  # short-hand postfix operator for 'exists'
+  #
+  public postfix ?? => exists
+
+
+  # short-hand postfix operator for '!exists'
+  #
+  public postfix !! => !exists
+
+
+  # short-hand prefix operator for '!exists'
+  #
+  public prefix ! => !exists
+
+
+  # unwraps a switch that is known to contain a value
+  #
+  # this can only be called in cases where it is known for sure that this switch
+  # is not nil.  A runtime error will be created otherwise.
+  #
+  public get
+  pre
+    safety: (switch.this??) # NYI: REGRESSION: parantheses currently necessary, due to PR #2572
+  =>
+    switch.this ? a A => a
+                | B   => fuzion.std.panic "switch.get called on B"
+
+
+
+  # unwrap value or get default
+  #
+  public get (default Lazy A) =>
+    switch.this ? a A => a
+                | B => default
+
+
+  # value of a switch that is known to contain a value
+  #
+  # This can only be called in cases where it is known for sure that this
+  # switch is not a B.  A runtime error will be created otherwise.
+  #
+  public val A
+    pre
+      safety: (switch.this??) # NYI: REGRESSION: parantheses currently necessary, due to PR #2572
+  =>
+    switch.this ? a A => a
+                | B   => panic "switch.val called on B"
+
+
+  # value of a switch or default if switch contains B
+  #
+  public val(default A) A
+  =>
+    switch.this ? a A => a
+                | B   => default
+
+
+  # converts switch into a list of either a single element in case
+  # switch.this.exists or `nil`otherwise
+  #
+  public redef as_list list A
+  =>
+    switch.this ? a A => a : nil
+                | B => nil
+
+  # unwrap this switch
+  #
+  public redef unwrap ! try switch.this =>
+    match switch.this
+      a A => a
+      b B => (try switch.this).env.raise (error $b)
+
+
+  # converts switch to a string
+  #
+  public redef as_string =>
+    match switch.this
+      a A => a.as_string
+      b B => b.as_string

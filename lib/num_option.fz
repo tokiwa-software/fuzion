@@ -30,54 +30,9 @@
 # numeric result or false for a boolean result.
 #
 public num_option(public T type : numeric)
-  : choice T nil,
+  : switch T nil,
     monad T (num_option T)
 is
-
-  # Does this option contain a value of type T?
-  #
-  public exists => (num_option.this ? T   => true
-                                    | nil => false)
-
-
-  # short-hand postfix operator for 'exists'
-  #
-  public postfix ?? => exists
-
-
-  # Does this option contain no value of type T?
-  #
-  public is_nil => !exists
-
-
-  # short-hand postfix operator for 'is_nil'
-  #
-  public postfix !! => is_nil
-
-
-  # short-hand prefix operator for 'is_nil'
-  #
-  public prefix ! => is_nil
-
-
-  # value of an option that is known to contain a value
-  #
-  # this can only be called in cases where it is known for sure that this option
-  # is not nil.  A runtime error will be created otherwise.
-  #
-  public val T
-    pre
-      safety: (num_option.this??)
-  =>
-    num_option.this ? v T => v
-                    | nil => fuzion.std.panic "num_option.val called on nil"
-
-
-  # unwrap value or get default
-  #
-  public get (default Lazy T) =>
-    num_option.this ? v T => v
-                    | nil => default
 
 
   # monadic operator
@@ -136,15 +91,6 @@ is
 
   public abs num_option T =>
     num_option.this >>= v -> if v.sign ≥ 0 v else -?v
-
-
-  # converts num_option into a list of either a single element in case
-  # num_option.this.exists or `nil`otherwise
-  #
-  public as_list list T
-  =>
-    num_option.this ? v T => v : nil
-                    | nil => nil
 
 
   public redef as_string String =>

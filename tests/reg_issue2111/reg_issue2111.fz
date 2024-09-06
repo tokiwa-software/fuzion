@@ -26,6 +26,6 @@ test(T type : property.equatable, a T) =>
   _ := a1.read = a
 
   on, off.
-  switch : choice on off is
-    type.equality(a, b switch.this) => true
-  test switch on
+  my_switch : choice on off is
+    type.equality(a, b my_switch.this) => true
+  test my_switch on

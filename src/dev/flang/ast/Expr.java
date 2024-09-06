@@ -781,8 +781,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
       && !expectedType.isAssignableFrom(t, context)
       && expectedType.compareTo(Types.resolved.t_Any) != 0
       && !t.isGenericArgument()
-      && t.feature()
-          .inherits()
+      && allInherited(t.feature())
           .stream()
           .anyMatch(c ->
             c.calledFeature().equals(Types.resolved.f_auto_unwrap)
@@ -790,6 +789,17 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
                     && expectedType.isAssignableFrom(c.actualTypeParameters().get(0).applyTypePars(t), context))
       ? new ParsedCall(this, new ParsedName(pos(), "unwrap")).resolveTypes(res, context)
       : this;
+  }
+
+
+  /**
+   * @param f
+   *
+   * @return the whole tree of inherited features flattened to a list.
+   */
+  private List<AbstractCall> allInherited(AbstractFeature f)
+  {
+    return f.inherits().flatMap(x -> new List<>(x, allInherited(x.calledFeature())));
   }
 
 
