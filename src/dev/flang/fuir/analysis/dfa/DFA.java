@@ -2074,11 +2074,7 @@ public class DFA extends ANY
           var ecl = cl._dfa._fuir.effectTypeFromInstrinsic(cl._cc);
           var new_e = cl._args.get(0).value();
           var old_e = cl._dfa._defaultEffects.get(ecl);
-          if (old_e != null)
-            {
-              new_e = old_e.join(cl._dfa, new_e);
-            }
-          if (old_e == null || Value.compare(old_e, new_e) != 0)
+          if (old_e == null)
             {
               cl._dfa._defaultEffects.put(ecl, new_e);
               cl._dfa._defaultEffectContexts.put(ecl, cl);
