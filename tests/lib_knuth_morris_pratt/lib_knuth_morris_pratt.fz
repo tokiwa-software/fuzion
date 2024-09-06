@@ -56,17 +56,19 @@ lib_knuth_morris_pratt =>
     test_kmp(n i32) =>
       ("a"*2*n).utf8.find ("a"*n+"b").utf8
 
+    say (test_kmp 1000)
 
     len := 250
 
+    if (envir.args.index_of "-benchmark")??
 
-    # for len=250 and interpreter takes ~70s on my machine
-    brute_force := time.stopwatch (()-> _:= test_brute_force len)
-    # for len=250 and interpreter takes ~1s on my machine
-    kmp := time.stopwatch (()-> _:= test_kmp len)
+      # for len=250 and interpreter takes ~70s on my machine
+      brute_force := time.stopwatch (()-> _:= test_brute_force len)
+      # for len=250 and interpreter takes ~1s on my machine
+      kmp := time.stopwatch (()-> _:= test_kmp len)
 
-    # check that kmp is at least four times faster
-    check (kmp*4 < brute_force)
+      # check that kmp is at least four times faster
+      check (kmp*4 < brute_force)
 
 
   functionality
