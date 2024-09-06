@@ -88,6 +88,12 @@ public class DFA extends ANY
 
 
   /**
+   * Record match cases that were evaluated by the DFA.
+   */
+  public final Set<Long> _takenMatchCases = new TreeSet<>();
+
+
+  /**
    * Statement processor used with AbstractInterpreter to perform DFA analysis
    */
   class Analyze extends AbstractInterpreter.ProcessExpression<Val,Unit>
@@ -637,6 +643,10 @@ public class DFA extends ANY
               else
                 {
                   taken = matchSingleSubject(s, sv, mc, t) || taken;
+                }
+              if (taken)
+                {
+                  DFA.this._takenMatchCases.add(((long)s<<32)|((long)mc));
                 }
             }
           if (_reportResults && _options.verbose(9))
@@ -1235,6 +1245,14 @@ public class DFA extends ANY
               return (code == ExprKind.Call || code == ExprKind.Match) && site(s).alwaysResultsInVoid() || super.alwaysResultsInVoid(s);
             }
         }
+
+
+        @Override
+        public synchronized int[] matchCaseTags(int s, int cix)
+        {
+          var key = ((long)s<<32)|((long)cix);
+          return _takenMatchCases.contains(key) ? super.matchCaseTags(s, cix) : new int[0];
+        };
 
     };
   }
