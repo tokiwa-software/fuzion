@@ -2225,6 +2225,13 @@ public class AstErrors extends ANY
       "To solve this, make sure the expression to the left of " + skw(type) + " denotes a type.");
   }
 
+  public static void illegalResultTypeThisType(Feature f)
+  {
+    error(f.pos(),
+      "Illegal " + skw(".this") + " type: " + s(f.resultType()),
+      "No suitable surrounding feature was found that matches the type.");
+  }
+
 
 }
 

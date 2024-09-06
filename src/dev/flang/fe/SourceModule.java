@@ -1685,6 +1685,38 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     checkAbstractVisibility(f);
     checkDuplicateFeatures(f);
     checkContractAccesses(f);
+    checkLegalQualThisType(f);
+  }
+
+
+  /**
+   * check that all `.this` are legal,
+   * i.e. that f or any outer of f are
+   * what is supposed to be qualified
+   *
+   * @param f
+   */
+  private void checkLegalQualThisType(Feature f)
+  {
+    if (f.resultType().isThisType())
+      {
+        var subject = f.resultType().feature();
+        var found = false;
+        AbstractFeature o = f;
+        while(o != null)
+          {
+            if (subject == o)
+              {
+                found = true;
+                break;
+              }
+            o = o.outer();
+          }
+        if (!found)
+          {
+            AstErrors.illegalResultTypeThisType(f);
+          }
+      }
   }
 
 
