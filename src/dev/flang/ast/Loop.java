@@ -613,7 +613,7 @@ public class Loop extends ANY
               }
             var listName = _rawLoopName + "list" + (iteratorCount++);
             var p = SourcePosition.notAvailable;
-            Call asList = new Call(p, f.impl().expr(), "as_list");
+            Call asList = new Call(f.impl().expr().pos(), f.impl().expr(), "as_list");
             Feature list = new Feature(p,
                                          Visi.PRIV,
                                          /* modifiers */   0,
