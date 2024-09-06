@@ -71,16 +71,6 @@ is
         match fuzion.sys.net.accept d
           desc i64 =>
 
-            # NYI install custom thread spawn effect
-            # to close desc when all threads are finished
-            #
-            # no_threads : concur.Thread_Handler is
-            #   spawn(code ()->unit) concur.thread.spawned =>
-            #     panic "may not spawn threads in connection handler"
-            # (concur.thread no_threads).instate_self ()->
-            #   _ := connection_handler.env.handle_connection (channel desc)
-            #   fuzion.sys.net.close desc
-
             lm : mutate is
             res := lm.instate_self ()->
               (io.buffered.reader lm (read_provider desc) 1024).with ()->
@@ -103,22 +93,31 @@ is
         e
 
 
-  # accept a TCP connection that will be handled in a separate thread
+  # accept a network connection that will be processed
+  # in a task submitted to the given thread_pool
   #
-  public accept_threaded(ch Connection_Handler unit) outcome unit =>
+  public accept_threaded(TP type : concur.thread_pool, ch Connection_Handler unit) outcome unit ! TP =>
     match state
       d i64 =>
         match fuzion.sys.net.accept d
           desc i64 =>
-            _ := concur.thread.spawn ()->
+
+            submit_success => TP.env.submit ()->
+
               lm : mutate is
+
               _ := lm.instate_self ()->
                 (io.buffered.reader lm (read_provider desc) 1024).with ()->
                   (io.buffered.writer lm (write_provider desc) 1024).with ()->
                     (net.channel desc).instate_self ()->
                       ch.handle_connection lm
-            unit
+
+              _ := fuzion.sys.net.close desc
+
+            if submit_success then unit else error "error submitting task to thread pool"
+
           e error =>
+            # NYI we may not need to close server on every error...
             (server e nil unit unit unit).replace
             e
       e error => e
