@@ -112,7 +112,7 @@ visibility_negative is
   visi2 =>
     count := 0
     expr => set count := count + 11; count
-    use(i i32) is
+    use(i i32) =>
 
     a1 is
       f1 := expr
