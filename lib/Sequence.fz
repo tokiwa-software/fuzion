@@ -650,46 +650,48 @@ public Sequence(public T type) ref is
       T : property.equatable
   =>
 
-    make(t Sequence T, r option (Node T)) =>
-      n option (Node T) =>
-        if t.is_empty then nil else make (t.drop 1) (step r t[0])
-      r_star =>
-        if t.is_empty
-          r
-        else if is_match r t[0]
-          r.get.rest
+    find_lm.instate_self ()->
+
+      make(t Sequence T, r option (Node T)) =>
+        n option (Node T) =>
+          if t.is_empty then nil else make (t.drop 1) (step r t[0])
+        r_star =>
+          if t.is_empty
+            r
+          else if is_match r t[0]
+            r.get.rest
+          else
+            r
+        Node t (once find_lm (option (Node T)) ()->n) r_star
+
+      init := make pattern nil
+
+      step(acc option (Node T), x T) =>
+        match acc
+          nil => init
+          n Node => if is_match acc x then n.next.get else step n.rest x
+
+      is_done (option (Node T))->bool => (acc)->
+        match acc
+          nil => false
+          n Node => n.top.is_empty
+
+      is_match(acc option (Node T), x T) =>
+        match acc
+          nil => false
+          n Node => !n.top.is_empty && n.top[0] = x
+
+      fold_until(acc option (Node T), step (option (Node T), T)->option (Node T), data Sequence T) option i32 =>
+        if is_done acc
+          Sequence.this.count - data.count - pattern.count
+        else if data.is_empty
+          nil
         else
-          r
-      Node t (once (option (Node T)) ()->n) r_star
+          acc_star =>
+            fold_until.this.step acc data[0]
+          fold_until acc_star fold_until.this.step (data.drop 1)
 
-    init := make pattern nil
-
-    step(acc option (Node T), x T) =>
-      match acc
-        nil => init
-        n Node => if is_match acc x then n.next.get else step n.rest x
-
-    is_done (option (Node T))->bool => (acc)->
-      match acc
-        nil => false
-        n Node => n.top.is_empty
-
-    is_match(acc option (Node T), x T) =>
-      match acc
-        nil => false
-        n Node => !n.top.is_empty && n.top[0] = x
-
-    fold_until(acc option (Node T), step (option (Node T), T)->option (Node T), data Sequence T) option i32 =>
-      if is_done acc
-        Sequence.this.count - data.count - pattern.count
-      else if data.is_empty
-        nil
-      else
-        acc_star =>
-          fold_until.this.step acc data[0]
-        fold_until acc_star fold_until.this.step (data.drop 1)
-
-    fold_until init step Sequence.this
+      fold_until init step Sequence.this
 
 
 
@@ -900,6 +902,7 @@ public Sequence(public T type) ref is
   public type.AS_STRING_NON_FINITE_MAX_ELEMENTS => 10
 
 
-# helper feature for knuth morris pratt algorithm
+# helper features for knuth morris pratt algorithm
 #
-Node(T type, top Sequence T, next once (option (Node T)), rest option (Node T)) ref is
+find_lm : mutate is
+Node(T type, top Sequence T, next once find_lm (option (Node T)), rest option (Node T)) ref is

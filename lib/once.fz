@@ -24,9 +24,9 @@
 # executes `f` only the first time when
 # calling `get` caching its result.
 #
-public once(T type, f Lazy T) is
+public once(LM type : mutate, T type, f Lazy T) is
 
-  cache := mut (option T) nil
+  cache := LM.env.new (option T) nil
 
   # get the result of `f`
   #
