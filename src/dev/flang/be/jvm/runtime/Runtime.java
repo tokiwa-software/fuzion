@@ -520,11 +520,11 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method to implement intrinsic effect.type.is_installed.
+   * Helper method to implement intrinsic effect.type.is_instated.
    *
    * @param id an effect id.
    *
-   * @return true iff an effect with that id was installed.
+   * @return true iff an effect with that id was instated.
    */
   public static boolean effect_is_instated(int id)
   {
@@ -580,7 +580,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method to implement effect.abort.  Abort the currently installed
+   * Helper method to implement effect.abort.  Abort the currently instated
    * effect with given id.  Helper to implement intrinsic effect.abort.
    *
    * @param id the id of the effect type that is aborted.
@@ -592,13 +592,13 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method to implement effect.type.instante0.  Install an instance of effect
-   * type specified by id and run f.call while it is installed.  Helper to
+   * Helper method to implement effect.type.instante0.  Instate an instance of effect
+   * type specified by id and run f.call while it is instated.  Helper to
    * implement intrinsic effect.abort.
    *
-   * @param id the id of the effect that is installed
+   * @param id the id of the effect that is instated
    *
-   * @param instance the effect instance that is installed, NOTE: This is `_UNIT_TYPE_EFFECT_`
+   * @param instance the effect instance that is instated, NOTE: This is `_UNIT_TYPE_EFFECT_`
    * for a unit type effect.
    *
    * @param code the Unary instance to be executed
@@ -658,14 +658,14 @@ public class Runtime extends ANY
   }
 
   /**
-   * Helper method to implement `effect.env` expressions.  Returns the installed
+   * Helper method to implement `effect.env` expressions.  Returns the instated
    * effect with the given id.  Causes an error in case no such effect exists.
    *
    * @param id the id of the effect that should be loaded.
    *
-   * @return the instance that was installed for this id
+   * @return the instance that was instated for this id
    *
-   * @throws Error in case no instance was installed.
+   * @throws Error in case no instance was instated.
    */
   public static AnyI effect_get(int id)
   {
@@ -674,7 +674,7 @@ public class Runtime extends ANY
     var result = t.effect_load(id);
     if (result == null)
       {
-        throw new Error("No effect of "+id+" installed");
+        throw new Error("No effect of "+id+" instated");
       }
     return result;
   }
