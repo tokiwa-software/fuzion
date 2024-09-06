@@ -1055,14 +1055,22 @@ public class AstErrors extends ANY
                    "declaration of " + s(f) + ".");
   }
 
-  public static void redefineModifierDoesNotRedefine(AbstractFeature f, List<FeatureAndOuter> hiddenFeaturesSameSignature)
+  public static void redefineModifierDoesNotRedefine(AbstractFeature af, List<FeatureAndOuter> hiddenFeaturesSameSignature)
   {
-    error(f.pos(),
-          "Feature declared using modifier " + skw("redef") + " does not redefine another feature",
-          "Redefining feature: " + s(f) + "\n" +
-          "To solve this, check spelling and argument count against the feature you want to redefine or " +
-          "remove " + skw("redef") + " modifier in the declaration of " + s(f) + "." +
-          redefOfPrivateFeature(f, hiddenFeaturesSameSignature));
+    if (any() && af instanceof Feature f && f.isLambdaCall())
+      {
+        // suppress subsequent errors for λ.call
+        // see reg_issue3691
+      }
+    else
+      {
+        error(af.pos(),
+              "Feature declared using modifier " + skw("redef") + " does not redefine another feature",
+              "Redefining feature: " + s(af) + "\n" +
+              "To solve this, check spelling and argument count against the feature you want to redefine or " +
+              "remove " + skw("redef") + " modifier in the declaration of " + s(af) + "." +
+              redefOfPrivateFeature(af, hiddenFeaturesSameSignature));
+      }
   }
 
   private static String redefOfPrivateFeature(AbstractFeature f, List<FeatureAndOuter> sameSignature)

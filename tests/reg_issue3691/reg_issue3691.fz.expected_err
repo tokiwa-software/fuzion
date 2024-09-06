@@ -1,0 +1,10 @@
+
+--CURDIR--/reg_issue3691.fz:28:5: error 1: Wrong number of arguments in lambda expression
+  a (_ -> )
+----^^^^^^^
+Lambda expression has one argument while the target type expects no arguments.
+Arguments of lambda expression: '_'
+Expected function type: Function unit
+To solve this, replace the list '_' by '()'.
+
+one error.
