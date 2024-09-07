@@ -715,7 +715,9 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var arg = args.get(0);
           if (jvm._types.resultType(ecl) == ClassFileConstants.PrimitiveType.type_void)
             {
-              arg = arg.drop().andThen(Expr.ACONST_NULL);
+              arg = arg.drop().andThen(Expr.getstatic(Names.RUNTIME_CLASS,
+                                                      "_UNIT_TYPE_EFFECT_",
+                                                      Names.ANYI_TYPE));
             }
           if (call_t instanceof ClassType call_ct)
             {
