@@ -118,7 +118,12 @@ is
     bq.enqueue task
 
 
-  public submit(T type, task ()->T) option (concur.Future T) =>
+  # submit a task to the thread pool
+  #
+  # returns a future if successful or panics in case
+  # the thread pool has already shut down.
+  #
+  public submit(T type, task ()->T) concur.Future T =>
 
 
     fut ref : concur.Future T is
@@ -155,7 +160,7 @@ is
     if bq.enqueue ()->res.compute
       res
     else
-      nil
+      panic "Thread pool has already shut down."
 
 
   # initiate shutdown of thread pool

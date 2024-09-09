@@ -50,7 +50,7 @@ lib_concur_thread_pool =>
 
       (1..49)
         .map (i -> concur.thread_pool.env.submit i32 ()->i)
-        .map x->x.val.get
+        .map x->x.get
         .fold i32.sum
 
     say sum
@@ -63,7 +63,7 @@ lib_concur_thread_pool =>
 
       (1..49)
         .map (i -> concur.thread_pool.env.submit i32 (() -> time.nano.sleep (time.durations.ms 100); i))
-        .map x->x.val.get
+        .map x->x.get
         .fold i32.sum
 
     say sum
