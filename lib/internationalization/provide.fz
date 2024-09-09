@@ -1,0 +1,63 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature internationalization.provide
+#
+# -----------------------------------------------------------------------
+
+# provide -- effect that provides operations that are specific for a geographical, political,
+# or cultural region. Such operations include formatting of dates,  numbers, currencies,
+# etc.
+#
+public provide ref : effect is
+
+    # date -- operation of the internationalization.provide effect and formats a date specific to the installed location
+    #
+    public date(d i32, m i32, y i32) String => abstract
+
+    # currency -- operation of the internationalization.provide effect and 
+    # formats the currency specific to the installed location
+    #
+    public currency(c i32) String => abstract
+
+    # current -- operation of the internationalization.provide effect to be able to install the default effect
+    public current =>
+        internationalization.provide.install_default
+        internationalization.provide.env
+
+
+    public type.install_default =>
+
+        if !internationalization.provide.is_instated
+            l := envir.vars.get "LANG" ""
+
+            p internationalization.provide :=
+                if l.starts_with "de"
+                    internationalization.german
+                else if l.starts_with "jp"
+                    internationalization.japanese
+                else if l.starts_with "en"
+                    internationalization.american
+                else if l.starts_with "kr"
+                    internationalization.korean
+                else
+                    internationalization.ISO
+
+            internationalization.provide.type.default p
+

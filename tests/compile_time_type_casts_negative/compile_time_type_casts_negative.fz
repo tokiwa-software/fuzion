@@ -104,8 +104,8 @@ compile_time_type_casts_negative =>
   y1 abc
 
 
-  y1 b    # 12. should flag an error -- b is not of type A
-  y1 c    # 13. should flag an error -- c is not of type A
+  y1 B    # 12. should flag an error -- B is not of type A
+  y1 C    # 13. should flag an error -- C is not of type A
   y1 bc   # 14. should flag an error -- bc is not of type A
 
   call_y1(v U) => y1 v   # 15. should flag an error -- v is not of type A

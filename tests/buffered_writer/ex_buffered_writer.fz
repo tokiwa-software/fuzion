@@ -1,6 +1,6 @@
 ex_buffered_writer =>
   lm : mutate is
-  res := lm.go ()->((io.stdout lm).with ()->
+  res := lm.instate_self ()->((io.stdout lm).with ()->
     x := array u8 1023 i->0x61
     y := array u8 2049 i->0x62
     z := array u8 128 i->0x63

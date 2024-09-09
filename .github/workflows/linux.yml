@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-      - uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4.2.1
+      - uses: actions/setup-java@6a0805fcefea3d4657a47ac4c165951e33482018 # v4.2.2
         with:
           distribution: 'temurin'
           java-version: '21'
@@ -48,7 +48,7 @@ jobs:
       - name: install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install libgc1 libgc-dev shellcheck
+          sudo apt-get install libgc1 libgc-dev shellcheck asciidoc asciidoctor ruby-asciidoctor-pdf pcregrep antlr4
 
       - name: check shell scripts
         run: make shellcheck
@@ -58,6 +58,9 @@ jobs:
 
       - name: build (no java modules)
         run: make no-java
+
+      - name: build docs
+        run: make doc
 
       - name: run tests
         run: make run_tests_parallel

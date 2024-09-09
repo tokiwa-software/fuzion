@@ -35,7 +35,7 @@ import dev.flang.ir.IR.FeatureKind;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import static dev.flang.util.FuzionConstants.EFFECT_ABORTABLE_NAME;
+import static dev.flang.util.FuzionConstants.EFFECT_INSTATE_NAME;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.Terminal;
@@ -229,7 +229,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * Merge argument values args into this call's argument values.
    *
-   * In case this resulted in any chanbe, mart this as hot to make sure it will
+   * In case this resulted in any change, mark this as hot to make sure it will
    * be (re-) analyzed in the current iteration.
    *
    * @param args the values to be merged into this Call's arguments
@@ -383,8 +383,8 @@ public class Call extends ANY implements Comparable<Call>, Context
     var pos = callSitePos();
     return
       (forEnv
-       ? (on.equals(EFFECT_ABORTABLE_NAME)
-          ? "install effect " + Errors.effe(_dfa._fuir.clazzAsStringHuman(_dfa._fuir.effectType(_cc))) + ", old environment was "
+       ? (on.equals(EFFECT_INSTATE_NAME)
+          ? "install effect " + Errors.effe(_dfa._fuir.clazzAsStringHuman(_dfa._fuir.effectTypeFromInstrinsic(_cc))) + ", old environment was "
           : "effect environment ") +
          Errors.effe(Env.envAsString(env())) +
          " for call to "

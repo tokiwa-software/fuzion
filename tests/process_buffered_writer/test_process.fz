@@ -34,7 +34,7 @@ test_process =>
   test "write to stdin of process (new)" ()->
     (process.spawn ["cat"]).bind unit p->
       lm : mutate is
-      _ := lm.go ()->
+      _ := lm.instate_self ()->
         _ := p.with_in unit lm ()->
           _ := (io.buffered.writer lm).write "Hello, World!\n".utf8.as_array
           _ := (io.buffered.writer lm).flush

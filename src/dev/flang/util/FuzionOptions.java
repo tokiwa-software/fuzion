@@ -70,7 +70,7 @@ public class FuzionOptions extends ANY
    * is not permitted in env var, `.` will be replaced by `_` when checking env
    * variables.
    *
-   * @param defawlt value to return in case propery / env var is not set.
+   * @param defawlt value to return in case property / env var is not set.
    *
    * @return the value of the property, if found. Otherwise, the value of the
    * env var if found. defawlt otherwise.
@@ -146,7 +146,7 @@ public class FuzionOptions extends ANY
    * @param defawlt give the default value to be used if property / env var is
    * not present.
    *
-   * @return if the property is set, its value parsed as an integer. Othewise,
+   * @return if the property is set, its value parsed as an integer. Otherwise,
    * if the env var is set, its value parsed as an integer. Otherwise, defawlt.
    */
   public static int intPropertyOrEnv(String name, int defawlt)

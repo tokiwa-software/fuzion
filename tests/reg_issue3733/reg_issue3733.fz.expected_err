@@ -1,0 +1,9 @@
+
+--CURDIR--/reg_issue3733.fz:27:12: error 1: Could not find called feature
+  for a in asd do
+-----------^^^
+Feature not found: 'as_list' (no arguments)
+Target feature: 'String'
+In call: 'asd'
+
+one error.

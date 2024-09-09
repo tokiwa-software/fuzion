@@ -107,7 +107,7 @@ public class Runner extends ClassLoader
     var cf = _classFiles.get(name);
     if (cf != null)
       {
-        var b =_classFiles.get(name).bytes();
+        var b = _classFiles.get(name).bytes();
         result = defineClass(name, b, 0, b.length);
       }
     return result;

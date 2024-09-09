@@ -40,10 +40,10 @@ hello_world is
   lm : mutate is
 
   # calling `lm` installs our mutate effect,
-  # `go` is then used to run code in the context
+  # `instate_self` is then used to run code in the context
   # of the installed effect.
   #
-  lm.go ()->
+  lm.instate_self ()->
 
     # read someone's name from standard input
     #
@@ -121,7 +121,7 @@ generator_effect is
   #
   gen(T type,
       yield T->unit    # yield is called by code to yield values
-      ) : simple_effect is
+      ) : effect is
 
   # traverse a list and yield the elements
   #
@@ -132,7 +132,7 @@ generator_effect is
 
   # bind the yield operation dynamically
   #
-  (gen i32 (i -> say "yielded $i")).use ()->
+  (gen i32 (i -> say "yielded $i")).instate_self ()->
     [0,8,15].as_list.traverse
 ```
 

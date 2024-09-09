@@ -34,6 +34,7 @@ import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 
 import dev.flang.mir.MIR;
+import dev.flang.mir.MirModule;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -172,7 +173,7 @@ public abstract class Module extends ANY implements FeatureLookup
   /**
    * Create the module intermediate representation for this module.
    */
-  public abstract MIR createMIR();
+  public abstract MIR createMIR(String main);
 
 
   /**
@@ -601,6 +602,43 @@ public abstract class Module extends ANY implements FeatureLookup
     return result == null && original instanceof Feature of && of._addedLate ? original
                                                                              : result;
   }
+
+
+  /**
+   * Create MIR based on given main feature.
+   */
+  static MIR createMIR(MirModule mirMod, AbstractFeature universe, AbstractFeature main)
+  {
+    if (main != null && !Errors.any())
+      {
+        if (main.valueArguments().size() != 0)
+          {
+            FeErrors.mainFeatureMustNotHaveArguments(main);
+          }
+        switch (main.kind())
+          {
+          case Field    : FeErrors.mainFeatureMustNotBeField    (main); break;
+          case Abstract : FeErrors.mainFeatureMustNotBeAbstract (main); break;
+          case Intrinsic: FeErrors.mainFeatureMustNotBeIntrinsic(main); break;
+          case Choice   : FeErrors.mainFeatureMustNotBeChoice   (main); break;
+          case Routine  :
+            if (!main.generics().list.isEmpty())
+              {
+                FeErrors.mainFeatureMustNotHaveTypeArguments(main);
+              }
+            break;
+          default       : FeErrors.mainFeatureMustNot(main, "be of kind " + main.kind() + ".");
+          }
+      }
+    var result = new MIR(universe, main, mirMod);
+    if (!Errors.any())
+      {
+        new DFA(result).check();
+      }
+
+    return result;
+  }
+
 
 }
 

@@ -36,6 +36,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import dev.flang.fuir.FUIR;
@@ -457,27 +458,30 @@ public class C extends ANY
                     (hasTag || !_fuir.hasData(tc));
                 }
             }
-          var sl = new List<CStmnt>();
-          var field = _fuir.matchCaseField(s, mc);
-          if (field != -1)
-            {
-              var fclazz = _fuir.clazzResultClazz(field);     // static clazz of assigned field
-              var cl     = _fuir.clazzAt(s);
-              var f      = field(cl, C.this.current(s), field);
-              var entry  = _fuir.clazzIsRef(fclazz) ? ref.castTo(_types.clazz(fclazz)) :
-                           _fuir.hasData(fclazz)   ? uniyon.field(new CIdent(CNames.CHOICE_ENTRY_NAME + tags[0]))
-                                                    : CExpr.UNIT;
-              sl.add(C.this.assign(f, entry, fclazz));
-            }
-          sl.add(ai.processCode(_fuir.matchCaseCode(s, mc)).v1());
-          sl.add(CStmnt.BREAK);
-          var cazecode = CStmnt.seq(sl);
-          tcases.add(CStmnt.caze(ctags, cazecode));  // tricky: this a NOP if ctags.isEmpty
-          if (!rtags.isEmpty()) // we need default clause to handle refs without a tag
-            {
-              rcases.add(CStmnt.caze(rtags, cazecode));
-              tdefault = cazecode;
-            }
+          if (tags.length > 0)
+             {
+               var sl = new List<CStmnt>();
+               var field = _fuir.matchCaseField(s, mc);
+               if (field != -1)
+                 {
+                   var fclazz = _fuir.clazzResultClazz(field);     // static clazz of assigned field
+                   var cl     = _fuir.clazzAt(s);
+                   var f      = field(cl, C.this.current(s), field);
+                   var entry  = _fuir.clazzIsRef(fclazz) ? ref.castTo(_types.clazz(fclazz)) :
+                                _fuir.hasData(fclazz)   ? uniyon.field(new CIdent(CNames.CHOICE_ENTRY_NAME + tags[0]))
+                                                         : CExpr.UNIT;
+                   sl.add(C.this.assign(f, entry, fclazz));
+                 }
+               sl.add(ai.processCode(_fuir.matchCaseCode(s, mc)).v1());
+               sl.add(CStmnt.BREAK);
+               var cazecode = CStmnt.seq(sl);
+               tcases.add(CStmnt.caze(ctags, cazecode));  // tricky: this a NOP if ctags.isEmpty
+               if (!rtags.isEmpty()) // we need default clause to handle refs without a tag
+                 {
+                   rcases.add(CStmnt.caze(rtags, cazecode));
+                   tdefault = cazecode;
+                 }
+             }
         }
       if (rcases.size() >= 2)
         { // more than two reference cases: we have to create separate switch of clazzIds for refs
@@ -532,17 +536,16 @@ public class C extends ANY
      */
     public Pair<CExpr, CStmnt> env(int s, int ecl)
     {
-      // NYI: UNDER DEVELOPMENT: can this logic be moved to abstract interpreter?
-      if (!_fuir.clazzNeedsCode(ecl))
+      CExpr res = null;
+      var o = CStmnt.seq(CExpr.fprintfstderr("*** effect %s not present in current environment\n",
+                                             CExpr.string(_fuir.clazzAsString(ecl))),
+                         CExpr.exit(1));
+      if (Arrays.binarySearch(_effectClazzes, ecl) >= 0)
         {
-          return new Pair<>(CExpr.UNIT, CStmnt.EMPTY);
+          res = CNames.fzThreadEffectsEnvironment.deref().field(_names.env(ecl));
+          var evi = CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl));
+          o = CStmnt.iff(evi.not(), o);
         }
-      var res = CNames.fzThreadEffectsEnvironment.deref().field(_names.env(ecl));
-      var evi = CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl));
-      var o = CStmnt.iff(evi.not(),
-                         CStmnt.seq(CExpr.fprintfstderr("*** effect %s not present in current environment\n",
-                                                        CExpr.string(_fuir.clazzAsString(ecl))),
-                                    CExpr.exit(1)));
       return new Pair<>(res, o);
     }
 
@@ -640,6 +643,13 @@ public class C extends ANY
   final Intrinsics _intrinsics;
 
 
+  /**
+   * Sorted array of clazzes of all effects that are ever instated, replaced, or
+   * aborted. Will be created during CompilePhase.STRUCTS.
+   */
+  int[] _effectClazzes;
+
+
   /*---------------------------  constructors  ---------------------------*/
 
 
@@ -676,7 +686,7 @@ public class C extends ANY
   {
     var cl = _fuir.mainClazzId();
     var name = _options._binaryName != null ? _options._binaryName : _fuir.clazzBaseName(cl);
-    var cf = new CFile(name);
+    var cf = new CFile(name, _options._keepGeneratedCode);
     _options.verbosePrintln(" + " + cf.fileName());
     try
       {
@@ -698,10 +708,6 @@ public class C extends ANY
     _options.verbosePrintln(" * " + command.toString("", " ", ""));
     try
       {
-        if (_options._keepGeneratedCode)
-          {
-            Files.copy(Path.of(cf.fileName()), Path.of(System.getProperty("user.dir"), name + ".c"), StandardCopyOption.REPLACE_EXISTING);
-          }
         var p = new ProcessBuilder().inheritIO().command(command).start();
         p.waitFor();
         if (p.exitValue() != 0)
@@ -1119,7 +1125,6 @@ public class C extends ANY
     // declaration of the thread start routine
     cf.print(threadStartRoutine(false));
 
-
     Stream.of(CompilePhase.values()).forEachOrdered
       ((p) ->
        {
@@ -1132,17 +1137,18 @@ public class C extends ANY
          // thread local effect environments
          if (p == CompilePhase.STRUCTS)
            {
+             _effectClazzes = ordered
+               .stream()
+               .filter(_fuir::isEffectIntrinsic)
+               .mapToInt(cl -> _fuir.effectTypeFromInstrinsic(cl))
+               .sorted()
+               .distinct()
+               .toArray();
              cf.print(
                CStmnt.seq(
                  CStmnt.struct(CNames.fzThreadEffectsEnvironment.code(),
                    new List<CStmnt>(
-                     ordered
-                       .stream()
-                       .filter(cl -> _fuir.clazzNeedsCode(cl) &&
-                               _fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic &&
-                               _fuir.isEffect(cl))
-                       .mapToInt(cl -> _fuir.effectType(cl))
-                       .distinct()
+                     IntStream.of(_effectClazzes)
                        .mapToObj(cl -> Stream.of(
                                          CStmnt.decl(_types.clazz(cl), _names.env(cl)),
                                          CStmnt.decl("bool", _names.envInstalled(cl)),
@@ -1215,10 +1221,8 @@ public class C extends ANY
         new List<CStmnt>(
           _types.inOrder()
             .stream()
-            .filter(cl -> _fuir.clazzNeedsCode(cl) &&
-                          _fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic &&
-                          _fuir.isEffect(cl))
-            .mapToInt(cl -> _fuir.effectType(cl))
+            .filter(cl -> _fuir.clazzNeedsCode(cl) && _fuir.isEffectIntrinsic(cl))
+            .mapToInt(cl -> _fuir.effectTypeFromInstrinsic(cl))
             .distinct()
             .<CStmnt>mapToObj(ecl -> CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl)).assign(new CIdent("false")))
             .iterator()))
@@ -1531,20 +1535,24 @@ public class C extends ANY
    */
   CExpr constString(CExpr str, CExpr len)
   {
-    var data          = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_data());
-    var length        = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_length());
+    var data           = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_data());
+    var length         = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_length());
+    var internal_array = _names.fieldName(_fuir.lookup_array_internal_array(_fuir.clazz_array_u8()));
+    var utf8_data      = _names.fieldName(_fuir.clazz_Const_String_utf8_data());
 
     var sysArray = CExpr.compoundLiteral(
-        _types.clazz(_fuir.clazzResultClazz(_fuir.clazz_Const_String_internal_array())),
+        _types.clazz(_fuir.clazzResultClazz(_fuir.clazz_fuzionSysArray_u8())),
         "." + data.code() + " = " + str.castTo("void *").code() +  "," +
           "." + length.code() + " = " + len.code());
 
-    var internal_array = _names.fieldName(_fuir.clazz_Const_String_internal_array());
+    var array = CExpr.compoundLiteral(
+        _types.clazz(_fuir.clazz_array_u8()),
+        "." + internal_array.code() + " = " + sysArray.code());
 
     var constStr = CExpr
       .compoundLiteral(
         _types.clazz(_fuir.clazzAsValue(_fuir.clazz_Const_String())),
-        "." + internal_array.code() + " = " + sysArray.code());
+        "." + utf8_data.code() + " = " + array.code());
 
     return CExpr
       .compoundLiteral(
@@ -1640,7 +1648,7 @@ public class C extends ANY
               var a = args(tvalue, args, cc, _fuir.clazzArgCount(cc));
               var cl = _fuir.clazzAt(s);
 
-              if (cc == cl                                               &&  // calling myself
+              if (cc == cl &&  // calling myself
                   _tailCall.callIsTailCall(cl, s)
                 )
                 { // then we can do tail recursion optimization!

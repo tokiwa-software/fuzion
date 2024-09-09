@@ -658,27 +658,6 @@ public class FUIR extends IR
 
 
   /**
-   * Get the choice tag id for a given value clazz in a choice clazz
-   *
-   * @param cl a clazz id of a choice clazz
-   *
-   * @param valuecl a clazz id of a static clazz of a value that is stored in an
-   * instance of cl.
-   *
-   * @return id of the valuecl, corresponds to the value to be stored in the tag.
-   */
-  public int clazzChoiceTag(int cl, int valuecl)
-  {
-    if (PRECONDITIONS) require
-      (!clazzIsVoidType(valuecl));
-
-    var cc = clazz(cl);
-    var vc = clazz(valuecl);
-    return cc.getChoiceTag(vc);
-  }
-
-
-  /**
    * Get the outer clazz of the given clazz.
    *
    * @param cl a clazz id
@@ -1121,14 +1100,25 @@ public class FUIR extends IR
 
 
   /**
-   * Get the id of clazz Const_String.internal_array
+   * Get the id of clazz Const_String.utf8_data
    *
-   * @return the id of Const_String.internal_array or -1 if that clazz was not created.
+   * @return the id of Const_String.utf8_data or -1 if that clazz was not created.
    */
-  public int clazz_Const_String_internal_array()
+  public int clazz_Const_String_utf8_data()
   {
-    var cc = Clazzes.instance.constStringInternalArray;
+    var cc = Clazzes.instance.Const_String_utf8_data.getIfCreated();
     return cc == null ? -1 : id(cc);
+  }
+
+
+  /**
+   * Get the id of clazz Const_String.array
+   *
+   * @return the id of Const_String.array or -1 if that clazz was not created.
+   */
+  public int clazz_array_u8()
+  {
+    return clazzResultClazz(clazz_Const_String_utf8_data());
   }
 
 
@@ -1332,6 +1322,16 @@ public class FUIR extends IR
     var t = (Tag) getExpr(s);
     var ncl = outerClazz.actualClazzes(t, null)[1];
     return ncl == null ? -1 : id(ncl);
+  }
+
+  public int tagTagNum(int s)
+  {
+    if (PRECONDITIONS) require
+      (s >= SITE_BASE,
+      withinCode(s),
+      codeAt(s) == ExprKind.Tag);
+
+    return ((Tag) getExpr(s)).tagNum();
   }
 
   /**
@@ -1995,7 +1995,7 @@ public class FUIR extends IR
   {
     return switch (codeAt(s))
       {
-      case Assign  -> "Assign to " + clazzAsString(accessedClazz(s));
+      case Assign  -> "Assign " + clazzAsString(assignedType(s)) + " to " + clazzAsString(accessedClazz(s));
       case Box     -> "Box "       + clazzAsString(boxValueClazz(s)) + " => " + clazzAsString(boxResultClazz  (s));
       case Call    -> {
                         var sb = new StringBuilder("Call ");
@@ -2273,17 +2273,20 @@ public class FUIR extends IR
    *
    * @return true for effect.install and similar features.
    */
-  public boolean isEffect(int cl)
+  public boolean isEffectIntrinsic(int cl)
   {
     if (PRECONDITIONS) require
-      (clazzKind(cl) == FeatureKind.Intrinsic);
+      (cl != NO_CLAZZ);
 
-    return switch(clazzOriginalName(cl))
+    return
+      (clazzKind(cl) == FeatureKind.Intrinsic) &&
+      switch(clazzOriginalName(cl))
       {
-      case "effect.replace",
-           "effect.default",
-           "effect.abortable",
-           "effect.abort0" -> true;
+      case "effect.type.abort0"  ,
+           "effect.type.default0",
+           "effect.type.instate0",
+           "effect.type.is_instated0",
+           "effect.type.replace0" -> true;
       default -> false;
       };
   }
@@ -2299,13 +2302,12 @@ public class FUIR extends IR
    *
    * @return the type of the outer feature of cl
    */
-  public int effectType(int cl)
+  public int effectTypeFromInstrinsic(int cl)
   {
     if (PRECONDITIONS) require
-      (isEffect(cl));
+      (isEffectIntrinsic(cl));
 
-    var or = clazzOuterRef(cl);
-    return clazzResultClazz(or);
+    return clazzActualGeneric(clazzOuterClazz(cl), 0);
   }
 
 
@@ -2655,7 +2657,7 @@ public class FUIR extends IR
 
 
   /**
-   * tuple of clazz, called abstrct features and location where the clazz was
+   * tuple of clazz, called abstract features and location where the clazz was
    * instantiated.
    */
   record AbsMissing(Clazz clazz,

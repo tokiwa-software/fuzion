@@ -24,14 +24,14 @@
 reg_issue2381 is
 
   mi : mutate is
-  input := mi.go ()->
+  input := mi.instate_self ()->
     ((io.stdin mi).with ()->(io.buffered.read_lines mi)).val.filter !=""
                                                         .map (.as_codepoints)
   area := array2 String input.count input[0].count i,j->input[i][j]
 
   part1 =>
     lm : mutate.
-    lm.go ()->
+    lm.instate_self ()->
       visited := (lm.array i32).type.new lm area.length.as_i64 0
       r => 1
       l => 2

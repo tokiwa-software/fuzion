@@ -500,12 +500,7 @@ public abstract class IR extends ANY
        codeAt(s) == ExprKind.Match);
 
     var e = getExpr(s);
-    int result = 2; // two cases for If
-    if (e instanceof AbstractMatch m)
-      {
-        result = m.cases().size();
-      }
-    return result;
+    return ((AbstractMatch) e).cases().size();
   }
 
 

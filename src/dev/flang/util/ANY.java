@@ -67,7 +67,8 @@ public class ANY
   /**
    * `class:method:line` of the condition that failed
    */
-  private static String origin(){
+  private static String origin()
+  {
     var st = (new Throwable()).getStackTrace();
     if (st.length < 3)
       {

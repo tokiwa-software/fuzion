@@ -23,7 +23,7 @@
 
 # unique_id -- effect that generates a unique id
 #
-public unique_id (p Unique_Id_Handler) : simple_effect
+public unique_id (p Unique_Id_Handler) : effect
 is
 
   public get => {replace; p.get}

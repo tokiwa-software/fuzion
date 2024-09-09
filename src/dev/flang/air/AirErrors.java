@@ -77,6 +77,9 @@ public class AirErrors extends AstErrors
                                                    HasSourcePosition instantiatedAt,
                                                    String context)
   {
+    if (PRECONDITIONS) require
+      (!abstractFeature.isEmpty());
+
     var abs = new StringBuilder();
     var abstracts = new StringBuilder();
     var foundAbstract = false;

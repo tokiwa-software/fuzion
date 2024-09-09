@@ -1,0 +1,15 @@
+NYI: BUG: interpreter not thread safe:
+
+Exception in thread "Thread-2" java.lang.Error: require-condition1 failed: FUIR.java:372 "(i >= 0 && i < clazzNumChoices(cl));"
+> 	at dev.flang.util.ANY.require(ANY.java:101)
+> 	at dev.flang.fuir.FUIR.clazzChoice(FUIR.java:372)
+> 	at dev.flang.be.interpreter.ChoiceIdAsRef.tag(ChoiceIdAsRef.java:151)
+> 	at dev.flang.be.interpreter.Executor.tagAndVal(Executor.java:481)
+> 	at dev.flang.be.interpreter.Executor.match(Executor.java:447)
+> 	at dev.flang.be.interpreter.Executor.match(Executor.java:49)
+> 	at dev.flang.fuir.analysis.AbstractInterpreter.process(AbstractInterpreter.java:650)
+> 	at dev.flang.fuir.analysis.AbstractInterpreter.processCode(AbstractInterpreter.java:512)
+> 	at dev.flang.fuir.analysis.AbstractInterpreter.processClazz(AbstractInterpreter.java:488)
+> 	at dev.flang.be.interpreter.Executor.callOnInstance(Executor.java:566)
+> 	at dev.flang.be.interpreter.Executor.call(Executor.java:243)
+...

@@ -78,11 +78,13 @@ catch_postcondition is
 
   say "install our own fault handler that prints message and tries again:"
 
-  say ((rt.post_fault msg->
-      say "postcondition failed: $msg"
-      rt.post_fault.abort).run
-    (test i32)
-    (test u64))
+  say (fuzion.runtime.post_fault.instate
+        String
+        (rt.post_fault msg->
+          say "postcondition failed: $msg"
+          fuzion.runtime.post_fault.abort)
+        (test i32)
+        (test u64))
 
   say ""
 
@@ -100,12 +102,15 @@ catch_postcondition is
     # use local mutate to store msg passed to `cause`
     lm : mutate.
 
-    res := lm.go ()->
+    res := lm.instate_self ()->
         m := lm.env.new (option String nil)
-        (rt.post_fault msg->
+        (fuzion.runtime.post_fault.instate
+          T
+          (rt.post_fault msg->
             m <- msg
-            rt.post_fault.return
-        ).run try (()->catch m.get.get)
+            fuzion.runtime.post_fault.abort)
+          try
+          (() -> catch m.get.get))
 
 
   # -------------------------------

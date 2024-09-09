@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue3683.fz:25:1: error 1: Syntax error: expected end-of-file, found identifier 'ä'
+ä
+^
+While parsing: Unit, parse stack: unit
+
+one error.

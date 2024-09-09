@@ -104,6 +104,10 @@ public class AstErrors extends ANY
     return f == Types.f_ERROR ? err()
                               : sqn(f.qualifiedName());
   }
+  public static String s_feat_with_pos(AbstractFeature f)
+  {
+    return s(f) + " defined at " + f.pos().show();
+  }
   static String sbnf(AbstractFeature f) // feature base name
   {
     return f == Types.f_ERROR ? err()
@@ -215,8 +219,9 @@ public class AstErrors extends ANY
     StringBuilder sb = new StringBuilder();
     for (var f : fs)
       {
-        sb.append(sb.length() > 0 ? "and " : "");
-        sb.append("" + s(f) + " defined at " + f.pos().show() + "\n");
+        sb.append(sb.length() > 0 ? "and " : "")
+          .append(s_feat_with_pos(f))
+          .append("\n");
       }
     return sb.toString();
   }
@@ -235,7 +240,7 @@ public class AstErrors extends ANY
     for (var f : targets)
       {
         sb.append(sb.length() > 0 ? "and " : "");
-        sb.append("in " + s(f._outer) + " found " + s(f._feature) + " defined at " + f._feature.pos().show() + "\n");
+        sb.append("in " + s(f._outer) + " found " + s_feat_with_pos(f._feature) + "\n");
       }
     return sb.toString();
   }
@@ -424,7 +429,12 @@ public class AstErrors extends ANY
           }
         else
           {
-            remedy = "To solve this, you could change the type of the target " + ss(target) + " to " + s(actlT) + " or convert the type of the assigned value to " + s(frmlT) + ".\n";
+            remedy = !frmlT.isRef() && !actlT.isGenericArgument() && !frmlT.isGenericArgument() && actlT.feature().inheritsFrom(frmlT.feature()) ?
+                        "To solve this you could:\n" + //
+                            "  • make  " + s(frmlT) + " a reference by adding the " + st("ref")+ " keyword, so all its heirs can be used in place of it,\n" + //
+                            "  • change the type of the target " + ss(target) + " to " + s(actlT) + ", or\n" + //
+                            "  • convert the type of the assigned value to " + s(frmlT) + "."
+                        : "To solve this, you could change the type of the target " + ss(target) + " to " + s(actlT) + " or convert the type of the assigned value to " + s(frmlT) + ".\n";
           }
         actlFound   = "actual type found   : " + s(actlT);
         valAssigned = "for value assigned  : " + s(value) + "\n";
@@ -901,7 +911,7 @@ public class AstErrors extends ANY
           {
             sb.append("\nand ");
           }
-        sb.append("" + s(f) + " defined at " + f.pos().show());
+        sb.append("" + s_feat_with_pos(f));
       }
     error(pos,
           "Internally referenced feature not unique",
@@ -929,9 +939,8 @@ public class AstErrors extends ANY
   {
     error(pos,
           "Repeated inheritance of conflicting features",
-          "Feature " + s(heir) + " inherits feature " + sbnf(fn) + " repeatedly: " +
-          "" + s(f1) + " defined at " + f1.pos().show() + "\n" + "and " +
-          "" + s(f2) + " defined at " + f2.pos().show() + "\n" +
+          "Feature " + s(heir) + " inherits feature " + sbnf(fn) + " repeatedly: " + s_feat_with_pos(f1) + "\n" +
+          "and " +s_feat_with_pos(f2) + "\n" +
           "To solve this, you could add a redefinition of " + sbnf(f1) + " to " + s(heir) + ".");
   }
 
@@ -1046,13 +1055,33 @@ public class AstErrors extends ANY
                    "declaration of " + s(f) + ".");
   }
 
-  public static void redefineModifierDoesNotRedefine(AbstractFeature f)
+  public static void redefineModifierDoesNotRedefine(AbstractFeature af, List<FeatureAndOuter> hiddenFeaturesSameSignature)
   {
-    error(f.pos(),
-          "Feature declared using modifier " + skw("redef") + " does not redefine another feature",
-          "Redefining feature: " + s(f) + "\n" +
-          "To solve this, check spelling and argument count against the feature you want to redefine or " +
-          "remove " + skw("redef") + " modifier in the declaration of " + s(f) + ".");
+    if (any() && af instanceof Feature f && f.isLambdaCall())
+      {
+        // suppress subsequent errors for λ.call
+        // see reg_issue3691
+      }
+    else
+      {
+        error(af.pos(),
+              "Feature declared using modifier " + skw("redef") + " does not redefine another feature",
+              "Redefining feature: " + s(af) + "\n" +
+              "To solve this, check spelling and argument count against the feature you want to redefine or " +
+              "remove " + skw("redef") + " modifier in the declaration of " + s(af) + "." +
+              redefOfPrivateFeature(af, hiddenFeaturesSameSignature));
+      }
+  }
+
+  private static String redefOfPrivateFeature(AbstractFeature f, List<FeatureAndOuter> sameSignature)
+  {
+    AbstractFeature outer = f.outer();
+
+    return sameSignature.isEmpty()
+            ? ""
+            : "\nAlso make sure that the feature to be redefined is visible where it is redefined. " +
+              "There is the feature " + s(sameSignature.getFirst()._feature) +
+              " that could be made public to allow redefinition in " + s(outer) + ".";
   }
 
   static void notRedefinedContractMustNotUseElseOrThen(SourcePosition pos, AbstractFeature f, PreOrPost preOrPost)
@@ -1227,7 +1256,7 @@ public class AstErrors extends ANY
                                     List<FeatureAndOuter> candidatesArgCountMismatch,
                                     List<FeatureAndOuter> candidatesHidden)
   {
-    if (!any() || !errorInOuterFeatures(targetFeature))
+    if (!any() || !errorInOuterFeatures(targetFeature) && noErrorInArguments(call))
       {
         var msg = !candidatesHidden.isEmpty()
           ? StringHelpers.plural(candidatesHidden.size(), "Feature") + " not visible at call site"
@@ -1250,6 +1279,11 @@ public class AstErrors extends ANY
                solution4 != "" ? solution4 :
                solution5 != "" ? solution5 : ""));
       }
+  }
+
+  private static boolean noErrorInArguments(Call call)
+  {
+    return call.actuals().stream().allMatch(x -> x != Call.ERROR_VALUE);
   }
 
   private static String solutionLambda(Call call)
@@ -1387,12 +1421,12 @@ public class AstErrors extends ANY
           "To solve this, change the type provided, e.g. to the unconstrained " + st("type") + ".\n");
   }
 
-  static void constraintMustNotBeChoice(Generic g, AbstractType constraint)
+  public static void constraintMustNotBeChoice(AbstractFeature typeParameter)
   {
-    error(g.typeParameter().pos(),
+    error(typeParameter.pos(),
           "Constraint for type parameter must not be a choice type",
-          "Affected type parameter: " + s(g) + "\n" +
-          "constraint: " + s(constraint) + "\n");
+          "Affected type parameter: " + s(typeParameter) + "\n" +
+          "constraint: " + s(typeParameter.resultType()) + "\n");
   }
 
   static void loopElseBlockRequiresWhileOrIterator(SourcePosition pos, Expr elseBlock)
@@ -1913,7 +1947,9 @@ public class AstErrors extends ANY
 
   public static void ambiguousAssignmentToChoice(AbstractType frmlT, Expr value)
   {
-    if (!any() || frmlT != Types.t_ERROR && value.type() != Types.t_ERROR)
+    if (!any() || (frmlT        != Types.t_ERROR &&
+                   value.type() != Types.t_ERROR &&
+                   !frmlT.choiceGenerics(Context.NONE).stream().anyMatch(x -> x==Types.t_ERROR)))
       {
         error(value.pos(),
               "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceGenerics(Context.NONE).stream()
@@ -1989,20 +2025,35 @@ public class AstErrors extends ANY
    * The problem is that `v` may refer to `h1` or `h2` such that `v.g` will
    * result in either `h1.e` or `h2.e`.
    *
+   * @param c the call with this problem
+   *
+   * @param arg true if the problematic type is an argument type, false if the
+   * problem is in the result type
+   *
+   * @param t the original argument or result type
+   *
+   * @param from the target type t depends on
+   *
+   * @param to the target type
    */
-  public static void illegalOuterRefTypeInCall(Call c, AbstractType t, AbstractType from, AbstractType to)
+  public static void illegalOuterRefTypeInCall(Call c, boolean arg, AbstractFeature calledOrArg, AbstractType t, AbstractType from, AbstractType to)
   {
+    var art = arg ? "argument type" : "result type";
+    var tp = calledOrArg.resultTypePos();
     error(c.pos(),
-          "Call has an ambiguous result type since target of the call is a " + code("ref") + " type.",
-          "The result type of this call depends on the target type.  Since the target type is a " + code("ref") + " type that " +
-          "may represent a number of different actual dynamic types, the result type is not clearly defined.\n"+
+          "Call has an ambiguous " + art + " since target of the call is a " + code("ref") + " type.",
+          "The " + art + " of this call depends on the target type.  Since the target type is a " + code("ref") + " type that " +
+          "may represent a number of different actual dynamic types, the " + art + " is not clearly defined.\n"+
           "Called feature: " + s(c.calledFeature()) + "\n" +
-          "Raw result type: " + s(t) + "\n" +
+          "Original " + art + ": " + s(t) +
+          (tp != null
+           ? " declared at " + tp.show()
+           : "") + "\n" +
           "Type depending on target: " + s(from) + "\n" +
           "Target type: " + s(to) + "\n" +
           "To solve this, you could try to use a value type as the target type of the call" +
           (c.calledFeature().outer().isThisRef() ? " " : ", e,g., " + s(c.calledFeature().outer().selfType()) + ", ") +
-          "or change the result type of " + s(c.calledFeature()) + " to no longer depend on " + s(from) + ".");
+          "or change the " + art + " of " + s(c.calledFeature()) + " to no longer depend on " + s(from) + ".");
   }
 
 
@@ -2135,8 +2186,8 @@ public class AstErrors extends ANY
   public static void ambiguousCall(Call c, AbstractFeature f, AbstractFeature tf)
   {
     error(c.pos(), "This call is ambiguous.",
-      "Called feature could be: " + s(f)  + "\n" +
-      "or                     : " + s(tf) + "\n" +
+      "Called feature could be: " + s_feat_with_pos(f) + "\n" +
+      "or                     : " + s_feat_with_pos(tf) + "\n" +
       "To solve this, rename one of the called features.");
   }
 
@@ -2180,6 +2231,13 @@ public class AstErrors extends ANY
     error(expr.pos(),
       "Wrong syntax in " + skw(type) + " expression.",
       "To solve this, make sure the expression to the left of " + skw(type) + " denotes a type.");
+  }
+
+  public static void illegalResultTypeThisType(Feature f)
+  {
+    error(f.pos(),
+      "Illegal " + skw(".this") + " type: " + s(f.resultType()),
+      "No suitable surrounding feature was found that matches the type.");
   }
 
 

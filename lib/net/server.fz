@@ -34,10 +34,10 @@
 module:public server(
   state outcome i64,
   p protocol.val,
-  m effect_mode.val,
+  _ unit,  # NYI: CLEANUP: rename `server(f family.val, p protocol.val, addr String, port u16)` to avoid these 3xunit
   _ unit,
   _ unit
-) : effect m
+) : effect
 is
 
   # get the last error that occurred
@@ -52,11 +52,12 @@ is
   public close =>
     match state
       d i64 =>
-        _ := match fuzion.sys.net.close d
+        s := match fuzion.sys.net.close d
           unit =>
-            server (error "not initialized") nil effect_mode.repl unit unit
+            server (error "not initialized") nil unit unit unit
           error error =>
-            server error nil effect_mode.repl unit unit
+            server error nil unit unit unit
+        s.replace
       * =>
 
 
@@ -70,21 +71,11 @@ is
         match fuzion.sys.net.accept d
           desc i64 =>
 
-            # NYI install custom thread spawn effect
-            # to close desc when all threads are finished
-            #
-            # no_threads : concur.Thread_Handler is
-            #   spawn(code ()->unit) concur.thread.spawned =>
-            #     panic "may not spawn threads in connection handler"
-            # (concur.thread no_threads).go ()->
-            #   _ := connection_handler.env.handle_connection (channel desc)
-            #   fuzion.sys.net.close desc
-
             lm : mutate is
-            res := lm.go ()->
+            res := lm.instate_self ()->
               (io.buffered.reader lm (read_provider desc) 1024).with ()->
                 (io.buffered.writer lm (write_provider desc) 1024).with ()->
-                  (net.channel desc).go ()->
+                  (net.channel desc).instate_self ()->
                     ch.handle_connection lm
 
             _ := fuzion.sys.net.close desc
@@ -96,29 +87,38 @@ is
 
           e error =>
             # NYI we may not need to close server on every error...
-            _ := server e nil effect_mode.repl unit unit
+            (server e nil unit unit unit).replace
             e
       e error =>
         e
 
 
-  # accept a TCP connection that will be handled in a separate thread
+  # accept a network connection that will be processed
+  # in a task submitted to the given thread_pool
   #
-  public accept_threaded(ch Connection_Handler unit) outcome unit =>
+  public accept_threaded(TP type : concur.thread_pool, ch Connection_Handler unit) outcome unit ! TP =>
     match state
       d i64 =>
         match fuzion.sys.net.accept d
           desc i64 =>
-            _ := concur.thread.spawn ()->
+
+            submit_success => TP.env.submit ()->
+
               lm : mutate is
-              _ := lm.go ()->
+
+              _ := lm.instate_self ()->
                 (io.buffered.reader lm (read_provider desc) 1024).with ()->
                   (io.buffered.writer lm (write_provider desc) 1024).with ()->
-                    (net.channel desc).go ()->
+                    (net.channel desc).instate_self ()->
                       ch.handle_connection lm
-            unit
+
+              _ := fuzion.sys.net.close desc
+
+            if submit_success then unit else error "error submitting task to thread pool"
+
           e error =>
-            _ := server e nil effect_mode.repl unit unit
+            # NYI we may not need to close server on every error...
+            (server e nil unit unit unit).replace
             e
       e error => e
 
@@ -145,7 +145,7 @@ public server(f family.val, p protocol.val, addr String, port u16) outcome unit 
 
   match init_ip_server f p addr port
     desc i64 =>
-      _ := server desc p effect_mode.repl unit unit
+      (server desc p unit unit unit).replace
       unit
     e error =>
       e
@@ -153,8 +153,8 @@ public server(f family.val, p protocol.val, addr String, port u16) outcome unit 
 
 # get currently installed server from env
 public server =>
-  if !effect.is_installed server
-    _ := server (error "not initialized") nil effect_mode.default unit unit
+  if !server.is_instated
+    (server (error "not initialized") nil unit unit unit).default
   server.env
 
 

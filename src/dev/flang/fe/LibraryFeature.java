@@ -431,6 +431,16 @@ public class LibraryFeature extends AbstractFeature
   }
 
 
+  /**
+   * The sourcecode position of this feature declaration's result type, null if
+   * not available.
+   */
+  public SourcePosition resultTypePos()
+  {
+    return null; // NYI: UNDER DEVELOPMENT: resultTypePos currently missing in module file
+  }
+
+
   public FeatureName featureName()
   {
     var result = _featureName;

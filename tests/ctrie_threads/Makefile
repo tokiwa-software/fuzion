@@ -25,4 +25,4 @@
 
 override NAME = ctrie_threads
 FUZION_OPTIONS = -modules=lock_free
-include ../fe.mk  # NYI: BUG: #2967 + snapshots do not work yet
+include ../simple.mk

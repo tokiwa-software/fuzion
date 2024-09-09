@@ -195,14 +195,17 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
             if (bytePos() == byteEndPos())
               /* not a SourceRange! */
               {
-                var underlined = _sourceFile.asString(p, Math.min(p+1, _sourceFile.byteLength()-1));
+                var underlined = _sourceFile.asString(p, Math.min(p+1, _sourceFile.lineEndPos(l)));
                 sb.append(_sourceFile.asString(_sourceFile.lineStartPos(l), p))
                   .append(Terminal.CURLY_UNDERLINE)
                   .append(Terminal.UNDERLINE_LINE_RED)
                   .append(underlined.length() == 0 && Terminal.ENABLED ? Terminal.REGULAR_COLOR + "⏎" : underlined)
                   .append(Terminal.UNDERLINE_OFF)
-                  .append(Terminal.UNDERLINE_LINE_COLOR_OFF)
-                  .append(_sourceFile.asString(p + 1, _sourceFile.lineEndPos(l)));
+                  .append(Terminal.UNDERLINE_LINE_COLOR_OFF);
+                if (p >= 0 && p < _sourceFile._bytes.length)
+                  {
+                    sb.append(_sourceFile.asString(p + _sourceFile.codePointSize(p), _sourceFile.lineEndPos(l)));
+                  }
               }
             else
               {
@@ -222,28 +225,30 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
               }
             if (!Terminal.ENABLED)
               {
-                for (int j=0; l == line() && j < column()-1; j++)
-                {
-                  sb.append('-');
-                }
-              if (bytePos() == endPos)
-              {
-                sb.append('^');
-              } else
-              {
-                int len = str.length() - leadingWhiteSpace;
-                for (int i = 0; i < leadingWhiteSpace; i++)
-                {
-                  sb.append('-');
-                }
-                for (int i = 0; i < len; i++)
-                {
-                  sb.append('^');
-                }
+                for (int j = 0; l == line() && j < column() - 1; j++)
+                  {
+                    sb.append('-');
+                  }
+                if (bytePos() == endPos)
+                  {
+                    sb.append('^');
+                  }
+                else
+                  {
+                    int len = str.length() - leadingWhiteSpace;
+                    for (int i = 0; i < leadingWhiteSpace; i++)
+                      {
+                        sb.append('-');
+                      }
+                    for (int i = 0; i < len; i++)
+                      {
+                        sb.append('^');
+                      }
+                  }
               }
-            }
           }
-          if (!Terminal.ENABLED && (p < _sourceFile.lineEndPos(l) || p == _bytePos || p == byteEndPos()-1) && p+1 < byteEndPos() && p+1 == _sourceFile.lineEndPos(l))
+        if (!Terminal.ENABLED && (p < _sourceFile.lineEndPos(l) || p == _bytePos || p == byteEndPos() - 1)
+          && p + 1 < byteEndPos() && p + 1 == _sourceFile.lineEndPos(l))
           {
             sb.append("\n");
           }

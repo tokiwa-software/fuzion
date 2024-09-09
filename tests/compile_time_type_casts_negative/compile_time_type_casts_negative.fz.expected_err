@@ -1,21 +1,5 @@
 
---CURDIR--/compile_time_type_casts_negative.fz:107:6: error 1: Could not find called feature
-  y1 b    # 12. should flag an error -- b is not of type A
------^
-Feature not found: 'b' (no arguments)
-Target feature: 'compile_time_type_casts_negative'
-In call: 'b'
-
-
---CURDIR--/compile_time_type_casts_negative.fz:108:6: error 2: Could not find called feature
-  y1 c    # 13. should flag an error -- c is not of type A
------^
-Feature not found: 'c' (no arguments)
-Target feature: 'compile_time_type_casts_negative'
-In call: 'c'
-
-
---CURDIR--/compile_time_type_casts_negative.fz:48:10: error 3: Incompatible types when passing argument in a call
+--CURDIR--/compile_time_type_casts_negative.fz:48:10: error 1: Incompatible types when passing argument in a call
   take_A bc          #  1. should flag an error -- bc is not A
 ---------^^
 Actual type for argument #1 'v' does not match expected type.
@@ -27,7 +11,7 @@ for value assigned  : 'bc'
 To solve this, you could change the type of the target 'v' to 'compile_time_type_casts_negative.this.bc' or convert the type of the assigned value to 'compile_time_type_casts_negative.this.A'.
 
 
---CURDIR--/compile_time_type_casts_negative.fz:52:10: error 4: Incompatible types when passing argument in a call
+--CURDIR--/compile_time_type_casts_negative.fz:52:10: error 2: Incompatible types when passing argument in a call
   take_B ac          #  2. should flag an error -- ac is not B
 ---------^^
 Actual type for argument #1 'v' does not match expected type.
@@ -39,7 +23,7 @@ for value assigned  : 'ac'
 To solve this, you could change the type of the target 'v' to 'compile_time_type_casts_negative.this.ac' or convert the type of the assigned value to 'compile_time_type_casts_negative.this.B'.
 
 
---CURDIR--/compile_time_type_casts_negative.fz:56:10: error 5: Incompatible types when passing argument in a call
+--CURDIR--/compile_time_type_casts_negative.fz:56:10: error 3: Incompatible types when passing argument in a call
   take_C ab          #  3. should flag an error -- ab is not C
 ---------^^
 Actual type for argument #1 'v' does not match expected type.
@@ -49,6 +33,20 @@ actual type found   : 'compile_time_type_casts_negative.this.ab'
 assignable to       : 'compile_time_type_casts_negative.this.ab'
 for value assigned  : 'ab'
 To solve this, you could change the type of the target 'v' to 'compile_time_type_casts_negative.this.ab' or convert the type of the assigned value to 'compile_time_type_casts_negative.this.C'.
+
+
+--CURDIR--/compile_time_type_casts_negative.fz:107:3: error 4: Incompatible type parameter
+  y1 B    # 12. should flag an error -- B is not of type A
+--^^
+formal type parameter 'T' with constraint 'compile_time_type_casts_negative.this.A'
+actual type parameter 'compile_time_type_casts_negative.this.B'
+
+
+--CURDIR--/compile_time_type_casts_negative.fz:108:3: error 5: Incompatible type parameter
+  y1 C    # 13. should flag an error -- C is not of type A
+--^^
+formal type parameter 'T' with constraint 'compile_time_type_casts_negative.this.A'
+actual type parameter 'compile_time_type_casts_negative.this.C'
 
 
 --CURDIR--/compile_time_type_casts_negative.fz:109:3: error 6: Incompatible type parameter

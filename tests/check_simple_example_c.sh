@@ -41,7 +41,6 @@ CURDIR=$("$SCRIPTPATH"/_cur_dir.sh)
 DIFFERR="$SCRIPTPATH"/_diff_err.sh
 
 
-RC=0
 if [ -f "$2".skip ]; then
     echo "SKIP $2"
 else
@@ -60,6 +59,10 @@ else
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=0( .*)$" && export OPT=-Dfuzion.debugLevel=0
 
     rm -f testbin
+
+    # limit cpu time and stack size for executing test
+    ulimit -S -t 120  || echo "failed setting limit via ulimit"
+    ulimit -S -s 1024 || echo "failed setting limit via ulimit"
 
     EXIT_CODE=$( ( (FUZION_DISABLE_ANSI_ESCAPES=true FUZION_JAVA_OPTIONS="${FUZION_JAVA_OPTIONS="-Xss${FUZION_JAVA_STACK_SIZE=5m}"} ${OPT:-}" $1 -XmaxErrors=-1 -c "$2" -o=testbin                && ./testbin) 2>tmp_err.txt | head -n 10000) > tmp_out.txt; echo $?)
 
@@ -95,15 +98,16 @@ else
         iconv --unicode-subst="?" -f utf-8 -t ascii tmp_out.txt > tmp_conv.txt || false && cp tmp_conv.txt tmp_out.txt
     fi
 
-    # show diff in stdout unless an unexpected output occurred to stderr
-    ($DIFFERR "$experr" tmp_err.txt && diff --strip-trailing-cr "$expout" tmp_out.txt) || echo -e "\033[31;1m*** FAILED\033[0m out on $2"
-    diff --strip-trailing-cr "$expout" tmp_out.txt >/dev/null && $DIFFERR "$experr" tmp_err.txt >/dev/null && echo -e "\033[32;1mPASSED\033[0m."
-    RC=$?
-    if [ -f testbin ]; then
-        echo " (binary)"
-    else
-        echo " (no binary)"
+    FAILED="none" # "out" or "err" or "none"
+    $DIFFERR "$experr" tmp_err.txt || FAILED="err"; true
+    if [ "$FAILED" = "none" ]; then
+        diff --strip-trailing-cr "$expout" tmp_out.txt || FAILED="out"; true
     fi
     rm -f tmp_out.txt tmp_err.txt tmp_exp_out.txt testbin
+    if [ "$FAILED" = "none" ]; then
+        echo -e "\033[32;1mPASSED\033[0m."
+    else
+        echo -e "\033[31;1m*** FAILED\033[0m $FAILED on $2"
+        exit 1
+    fi
 fi
-exit $RC

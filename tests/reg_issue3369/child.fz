@@ -2,5 +2,5 @@ public child : parent is
 
   redef get_name => "CHILD"
 
-  # NYI: This caused a java exception
+  # This caused a java exception
   name := get_name

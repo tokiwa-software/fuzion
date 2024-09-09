@@ -126,7 +126,7 @@ public class Names extends ANY implements ClassFileConstants
    * Name and signature of Runtime.effect_get()
    */
   static final String RUNTIME_EFFECT_GET     = "effect_get";
-  static final String RUNTIME_EFFECT_GET_SIG = "(I)" + ANY_DESCR;
+  static final String RUNTIME_EFFECT_GET_SIG = "(I)" + ANYI_DESCR;
 
 
   /**

@@ -1,0 +1,41 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature internationalization.german
+#
+# -----------------------------------------------------------------------
+
+# german-- provides data for german format
+#
+public german: provide is
+
+    # format date using the most common German formatting rules, see
+    # https://en.wikipedia.org/wiki/Date_and_time_notation_in_Europe#Germany
+    #
+    # ex.`date 2024 4 12` results in `12.4.2024`.
+    #
+    redef date(d i32, m i32, y i32)
+    =>
+        "{d}.{m}.{y}"
+
+    # ex.`currency 300000` results in `300000€`.
+    #
+    redef currency (c i32)
+    =>
+        "{c}€"

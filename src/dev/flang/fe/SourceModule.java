@@ -40,6 +40,7 @@ import java.util.SortedMap;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
@@ -277,11 +278,11 @@ public class SourceModule extends Module implements SrcModule, MirModule
   /**
    * Create the module intermediate representation for this module.
    */
-  public MIR createMIR()
+  public MIR createMIR(String main)
   {
-    var d = _main == null
+    var d = main == null
       ? _universe
-      : _universe.get(this, _main);
+      : _universe.get(this, main);
 
     if (false)  // NYI: Eventually, we might want to stop here in case of errors. This is disabled just to check the robustness of the next steps
       {
@@ -289,44 +290,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
       }
 
     _closed = true;
-    return createMIR(d);
+    return createMIR(this, _universe, d);
   }
-
-
-
-  /**
-   * Create MIR based on given main feature.
-   */
-  MIR createMIR(AbstractFeature main)
-  {
-    if (main != null && !Errors.any())
-      {
-        if (main.valueArguments().size() != 0)
-          {
-            FeErrors.mainFeatureMustNotHaveArguments(main);
-          }
-        switch (main.kind())
-          {
-          case Field    : FeErrors.mainFeatureMustNotBeField    (main); break;
-          case Abstract : FeErrors.mainFeatureMustNotBeAbstract (main); break;
-          case Intrinsic: FeErrors.mainFeatureMustNotBeIntrinsic(main); break;
-          case Choice   : FeErrors.mainFeatureMustNotBeChoice   (main); break;
-          case Routine:
-            if (!main.generics().list.isEmpty())
-              {
-                FeErrors.mainFeatureMustNotHaveTypeArguments(main);
-              }
-          }
-      }
-    var result = new MIR(_universe, main, this);
-    if (!Errors.any())
-      {
-        new DFA(result).check();
-      }
-
-    return result;
-  }
-
 
 
   /**
@@ -945,7 +910,9 @@ A post-condition of a feature that redefines one or several inherited features m
 A feature that does not redefine an inherited feature must not use the `redef` modifier.
     // end::fuzion_rule_PARS_NO_REDEF[]
             */
-            AstErrors.redefineModifierDoesNotRedefine(f);
+            List<FeatureAndOuter> hiddenFeaturesSameSignature = lookup(outer, f.featureName().baseName(), null, true, true)
+              .stream().filter(fo->fo._feature.featureName().equals(f.featureName())).collect(List.collector());
+            AstErrors.redefineModifierDoesNotRedefine(f, hiddenFeaturesSameSignature);
           }
         else if (c._hasPreElse != null)
           {
@@ -1661,11 +1628,17 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
           }
       }
 
-    if (f.isTypeParameter())
+    if (f.isTypeParameter() &&
+        !f.outer().isTypeFeature()) // reg_issue1932 shows error twice without this)
       {
         if (f.resultType().isGenericArgument())
           {
             AstErrors.constraintMustNotBeGenericArgument(f);
+          }
+        if (  !f.isTypeFeaturesThisType() // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
+            && f.resultType().isChoice())
+          {
+            AstErrors.constraintMustNotBeChoice(f);
           }
       }
     checkLegalVisibility(f);
@@ -1677,6 +1650,38 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     checkAbstractVisibility(f);
     checkDuplicateFeatures(f);
     checkContractAccesses(f);
+    checkLegalQualThisType(f);
+  }
+
+
+  /**
+   * check that all `.this` are legal,
+   * i.e. that f or any outer of f are
+   * what is supposed to be qualified
+   *
+   * @param f
+   */
+  private void checkLegalQualThisType(Feature f)
+  {
+    if (f.resultType().isThisType())
+      {
+        var subject = f.resultType().feature();
+        var found = false;
+        AbstractFeature o = f;
+        while(o != null)
+          {
+            if (subject == o)
+              {
+                found = true;
+                break;
+              }
+            o = o.outer();
+          }
+        if (!found)
+          {
+            AstErrors.illegalResultTypeThisType(f);
+          }
+      }
   }
 
 

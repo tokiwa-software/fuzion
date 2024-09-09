@@ -663,7 +663,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           var newcl   = _fuir.tagNewClazz  (s);  // static clazz of result
           if (CHECKS) check
             (!_fuir.clazzIsVoidType(valuecl));
-          int tagNum  = _fuir.clazzChoiceTag(newcl, valuecl);
+          int tagNum  = _fuir.tagTagNum(s);
           var r = _processor.tag(s, value, newcl, tagNum);
           push(stack, newcl, r.v0());
           return r.v1();

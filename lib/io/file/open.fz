@@ -27,7 +27,7 @@
 #
 module:public open(public T type,
                    fd i64,
-                   public file_name String) : simple_effect is
+                   public file_name String) : effect is
 
   # writes the content of an array of bytes to a file opened as fd
   #
@@ -36,7 +36,7 @@ module:public open(public T type,
   public write(content Sequence u8) =>
     # NYI we should probably not override existing effect in all cases..
     # also write effect would not show up if used like this.
-    (io.file.write (io.file.write.default_write_handler fd)).go ()->
+    (io.file.write (io.file.write.default_write_handler fd)).instate_self ()->
       io.file.write.write content.as_array
 
 

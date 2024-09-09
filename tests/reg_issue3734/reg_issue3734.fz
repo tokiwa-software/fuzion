@@ -1,0 +1,58 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue3734
+#
+# -----------------------------------------------------------------------
+
+# This uses an effect without any state, i.e. a unit type value. This used to cause
+# problems with the JVM backend since the unit type value is optimized out and replaced by
+# `null` when calling `Runtime.effect_instate()`, while `null` is used to identify the lack
+# of an installed effect.
+#
+# The fix is to use a special value `Runtime._UUNIT_TYPE_EFFECT_`.
+#
+reg_issue3734 =>
+
+  # the original code from #3734
+  e : effect is
+    stop => e.type.abort e
+
+  codea1 => "hi"
+  codea2 => e.env.stop
+  defa => "ho"
+
+  codeb1 => 42
+  codeb2 => e.env.stop
+  defb => 666
+
+  say (e.instate String e codea1 defa)
+  say (e.instate String e codea2 defa)
+  say (e.instate i32 e codeb1 defb)
+  say (e.instate i32 e codeb2 defb)
+
+  # the simplified example from #3734
+  f : effect is
+
+  f.instate f ()->
+
+    # note that `(3%%4)^` is the identity operation for bool in disguise such that DFA
+    # no longer considers the result `e.is_instated` the constant `true`
+    #
+    say "codea1: "+((3%%4)^f.is_instated)

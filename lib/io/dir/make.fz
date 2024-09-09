@@ -23,7 +23,7 @@
 
 # make -- effect providing make directory
 #
-public make(fwh Make_Dir_Handler, _ unit) : simple_effect is
+public make(fwh Make_Dir_Handler, _ unit) : effect is
 
   # makes a directory using the specified path
   # parent directories in the path should exist otherwise, no creation will take place and an error will be the outcome
@@ -49,7 +49,7 @@ public make(fwh Make_Dir_Handler, _ unit) : simple_effect is
 # install the effect and perform the operation.
 #
 public make(path String) =>
-  if !(effect.is_installed io.dir.make)
+  if !io.dir.make.is_instated
     (io.dir.make make.default_handler unit).default
   make.env.make_dir path
 

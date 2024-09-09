@@ -45,7 +45,7 @@ import static dev.flang.ir.IR.NO_SITE;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import static dev.flang.util.FuzionConstants.EFFECT_ABORTABLE_NAME;
+import static dev.flang.util.FuzionConstants.EFFECT_INSTATE_NAME;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.IntMap;
@@ -85,6 +85,12 @@ public class DFA extends ANY
   static class Unit
   {
   }
+
+
+  /**
+   * Record match cases that were evaluated by the DFA.
+   */
+  public final Set<Long> _takenMatchCases = new TreeSet<>();
 
 
   /**
@@ -638,6 +644,10 @@ public class DFA extends ANY
                 {
                   taken = matchSingleSubject(s, sv, mc, t) || taken;
                 }
+              if (taken)
+                {
+                  DFA.this._takenMatchCases.add(((long)s<<32)|((long)mc));
+                }
             }
           if (_reportResults && _options.verbose(9))
             {
@@ -784,7 +794,7 @@ public class DFA extends ANY
    * Should the DFA analysis use embedded values?  This is required for proper
    * escape analysis of instances that contain value types.  Disabling this is
    * only for experimental purposes and will break the C backend since it relies
-   * on escape enalysis of embedded references.
+   * on escape analysis of embedded references.
    *
    * To disable, use fz with
    *
@@ -923,7 +933,7 @@ public class DFA extends ANY
   /**
    * Stored results of newValueSet.
    *
-   * Map from key made from v._id and w._id to resutling value set.
+   * Map from key made from v._id and w._id to resulting value set.
    */
   LongMap<Value> _joined = new LongMap<>();
 
@@ -1235,6 +1245,14 @@ public class DFA extends ANY
               return (code == ExprKind.Call || code == ExprKind.Match) && site(s).alwaysResultsInVoid() || super.alwaysResultsInVoid(s);
             }
         }
+
+
+        @Override
+        public synchronized int[] matchCaseTags(int s, int cix)
+        {
+          var key = ((long)s<<32)|((long)cix);
+          return _takenMatchCases.contains(key) ? super.matchCaseTags(s, cix) : new int[0];
+        };
 
     };
   }
@@ -2062,23 +2080,19 @@ public class DFA extends ANY
           return Value.UNIT;
         });
 
-    put("effect.replace"                 , cl ->
+    put("effect.type.replace0"              , cl ->
         {
-          var ecl = cl._dfa._fuir.effectType(cl._cc);
-          var new_e = cl._target;
+          var ecl = cl._dfa._fuir.effectTypeFromInstrinsic(cl._cc);
+          var new_e = cl._args.get(0).value();
           cl.replaceEffect(ecl, new_e);
           return Value.UNIT;
         });
-    put("effect.default"                 , cl ->
+    put("effect.type.default0"              , cl ->
         {
-          var ecl = cl._dfa._fuir.effectType(cl._cc);
-          var new_e = cl._target;
+          var ecl = cl._dfa._fuir.effectTypeFromInstrinsic(cl._cc);
+          var new_e = cl._args.get(0).value();
           var old_e = cl._dfa._defaultEffects.get(ecl);
-          if (old_e != null)
-            {
-              new_e = old_e.join(cl._dfa, new_e);
-            }
-          if (old_e == null || Value.compare(old_e, new_e) != 0)
+          if (old_e == null)
             {
               cl._dfa._defaultEffects.put(ecl, new_e);
               cl._dfa._defaultEffectContexts.put(ecl, cl);
@@ -2086,32 +2100,32 @@ public class DFA extends ANY
             }
           return Value.UNIT;
         });
-    put(EFFECT_ABORTABLE_NAME            , cl ->
+    put(EFFECT_INSTATE_NAME                 , cl ->
         {
-          var ecl = cl._dfa._fuir.effectType(cl._cc);
-          var oc = cl._dfa._fuir.clazzActualGeneric(cl._cc, 0);
+          var ecl = cl._dfa._fuir.effectTypeFromInstrinsic(cl._cc);
+          var oc  = cl._dfa._fuir.clazzActualGeneric(cl._cc, 0);
           var call = cl._dfa._fuir.lookupCall(oc);
 
           if (CHECKS) check
             (cl._dfa._fuir.clazzNeedsCode(call));
 
           var env = cl._env;
-          var newEnv = cl._dfa.newEnv(env, ecl, cl._target);
-          var ncl = cl._dfa.newCall(call, NO_SITE, cl._args.get(0).value(), new List<>(), newEnv, cl);
+          var newEnv = cl._dfa.newEnv(env, ecl, cl._args.get(0).value());
+          var ncl = cl._dfa.newCall(call, NO_SITE, cl._args.get(1).value(), new List<>(), newEnv, cl);
           // NYI: result must be null if result of ncl is null (ncl does not return) and effect.abort is not called
           return Value.UNIT;
         });
-    put("effect.abort0"                  , cl ->
+    put("effect.type.abort0"                , cl ->
         {
-          var ecl = cl._dfa._fuir.effectType(cl._cc);
-          var new_e = cl._target;
+          var ecl = cl._dfa._fuir.effectTypeFromInstrinsic(cl._cc);
+          var new_e = cl._args.get(0).value();
           cl.replaceEffect(ecl, new_e);
           // NYI: we might have to do cl.returns() for 'cl' being the
           // corresponding call to 'effect.abortable' and make sure new_e is
           // used to create the value produced by the effect.
           return null;
         });
-    put("effect.type.is_installed"       , cl -> cl.getEffectCheck(cl._dfa._fuir.clazzActualGeneric(cl._cc, 0)) != null
+    put("effect.type.is_instated0"          , cl -> cl.getEffectCheck(cl._dfa._fuir.effectTypeFromInstrinsic(cl._cc)) != null
         ? cl._dfa._true
         : cl._dfa._bool  /* NYI: currently, this is never FALSE since a default effect might get installed turning this into TRUE
                           * should reconsider if handling of default effects changes
@@ -2677,20 +2691,24 @@ public class DFA extends ANY
   Value newConstString(byte[] utf8Bytes, Context context)
   {
     var cs            = _fuir.clazz_Const_String();
-    var internalArray = _fuir.clazz_Const_String_internal_array();
+    var utf_data      = _fuir.clazz_Const_String_utf8_data();
+    var ar            = _fuir.clazz_array_u8();
+    var internalArray = _fuir.lookup_array_internal_array(ar);
     var data          = _fuir.clazz_fuzionSysArray_u8_data();
     var length        = _fuir.clazz_fuzionSysArray_u8_length();
     var sysArray      = _fuir.clazzResultClazz(internalArray);
     var c_u8          = _fuir.clazz(FUIR.SpecialClazzes.c_u8);
     var adata         = newSysArray(NumericValue.create(this, c_u8), c_u8);
     var r = newInstance(cs, NO_SITE, context);
+    var arr = newInstance(ar, NO_SITE, context);
     var a = newInstance(sysArray, NO_SITE, context);
     a.setField(this,
                length,
                 utf8Bytes != null ? NumericValue.create(this, _fuir.clazzResultClazz(length), utf8Bytes.length)
                                   : NumericValue.create(this, _fuir.clazzResultClazz(length)));
     a.setField(this, data  , adata);
-    r.setField(this, internalArray, a);
+    arr.setField(this, internalArray, a);
+    r.setField(this, utf_data, arr);
     return r;
   }
 

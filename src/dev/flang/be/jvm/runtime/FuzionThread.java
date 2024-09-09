@@ -48,7 +48,7 @@ public class FuzionThread extends Thread
   /**
    * Currently installed effects for this thread.
    */
-  List<Any> _installedEffects = new List<>();
+  List<AnyI> _installedEffects = new List<>();
 
 
   /**
@@ -141,7 +141,7 @@ public class FuzionThread extends Thread
    *
    * @param id an effect id.
    */
-  Any effect_load(int id)
+  AnyI effect_load(int id)
   {
     ensure_effect_capacity(id);
     return _installedEffects.get(id);
@@ -153,7 +153,7 @@ public class FuzionThread extends Thread
    *
    * @param id an effect id.
    */
-  void effect_store(int id, Any instance)
+  void effect_store(int id, AnyI instance)
   {
     ensure_effect_capacity(id);
     _installedEffects.set(id, instance);

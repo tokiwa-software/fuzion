@@ -32,6 +32,7 @@ import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
@@ -152,7 +153,7 @@ public class Loop extends ANY
   /**
    * env var to enable debug output for code generated for loops:
    */
-  static private final boolean FUZION_DEBUG_LOOPS = "true".equals(System.getenv("FUZION_DEBUG_LOOPS"));
+  static private final boolean FUZION_DEBUG_LOOPS = FuzionOptions.boolPropertyOrEnv("FUZION_DEBUG_LOOPS");
 
 
   /*----------------------------  constants  ----------------------------*/
@@ -612,7 +613,7 @@ public class Loop extends ANY
               }
             var listName = _rawLoopName + "list" + (iteratorCount++);
             var p = SourcePosition.notAvailable;
-            Call asList = new Call(p, f.impl().expr(), "as_list");
+            Call asList = new Call(f.impl().expr().pos(), f.impl().expr(), "as_list");
             Feature list = new Feature(p,
                                          Visi.PRIV,
                                          /* modifiers */   0,

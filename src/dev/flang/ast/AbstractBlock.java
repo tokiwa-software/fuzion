@@ -120,6 +120,24 @@ public abstract class AbstractBlock extends Expr
 
 
   /**
+   * type returns the type of this expression or Types.t_ERROR if the type is
+   * still unknown, i.e., before or during type resolution.
+   *
+   * @return this Expr's type or t_ERROR in case it is not known yet.
+   * t_UNDEFINED in case Expr depends on the inferred result type of a feature
+   * that is not available yet (or never will due to circular inference).
+   */
+  @Override
+  public AbstractType type()
+  {
+    Expr resExpr = resultExpression();
+    return resExpr == null
+      ? Types.resolved.t_unit
+      : resExpr.type();
+  }
+
+
+  /**
    * resultExpressionIndex returns the index of the last non-NOP expression of
    * this block if it is an expression, -1 if the block is empty or the last
    * non-NOP expression is not an Expr.

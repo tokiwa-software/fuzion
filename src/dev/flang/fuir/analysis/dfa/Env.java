@@ -74,7 +74,7 @@ public class Env extends ANY implements Comparable<Env>
 
 
   /**
-   * Initial values for the effect instnaces in this environment.
+   * Initial values for the effect instances in this environment.
    */
   Value[] _initialEffectValues;
 

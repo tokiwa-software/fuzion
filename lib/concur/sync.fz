@@ -42,13 +42,13 @@ public sync is
 
   # NYI: documentation missing, waiting for JVM backend impl
 
-  private:public mutex(mtx fuzion.sys.Pointer) : simple_effect is
+  private:public mutex(mtx fuzion.sys.Pointer) : effect is
 
     public type.new(T type, code ()->T) outcome T =>
       match concur.sync.mtx_init
         e error => e
         mtx fuzion.sys.Pointer =>
-          res := (concur.sync.mutex mtx).go code
+          res := (concur.sync.mutex mtx).instate_self code
           concur.sync.mtx_destroy mtx
           res
 
@@ -62,12 +62,12 @@ public sync is
       match concur.sync.cnd_init mtx
         e error => e
         cnd fuzion.sys.Pointer =>
-          res := (concur.sync.condition cnd mtx).go code
+          res := (concur.sync.condition cnd mtx).instate_self code
           concur.sync.cnd_destroy cnd
           res
 
 
-  private:public condition(cnd fuzion.sys.Pointer, mtx fuzion.sys.Pointer) : simple_effect is
+  private:public condition(cnd fuzion.sys.Pointer, mtx fuzion.sys.Pointer) : effect is
 
     public signal => cnd_signal cnd
     public broadcast => cnd_broadcast cnd

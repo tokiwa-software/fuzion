@@ -27,7 +27,7 @@
 #
 module:public open(public T type,
                    fd i64,
-                   public path String) : simple_effect is
+                   public path String) : effect is
 
   # reads the next entry of this directory
   #

@@ -41,9 +41,9 @@ private:public handles2(
 
   last_opt option (handle2_0 T),
 
-  # action to be taken: plain monad, install or replace?
-  r effect_mode.val
-  ) : oneway_monad X (handles2 T X) r
+  # `plain` monad or effect to be `inst`alled or `repl`aced by new value?
+  mode oneway_monad_mode.val
+  ) : oneway_monad X (handles2 T X) mode
 is
 
   # create a new instance with one additional handle
@@ -57,7 +57,7 @@ is
   post
     debug: result.has_last
   =>
-    handles2 T X v (handle2_0 w) mode
+    handles2 T X v (handle2_0 w) mode.next
 
 
   # has one element been created using 'new'?
@@ -104,15 +104,9 @@ is
 
     # the new value to be stored with 'h'
     w T)
-  pre
-    debug: match mode
-             effect_mode.plain   => false  # must be used as oneway_monad only
-             effect_mode.default => false
-             effect_mode.new     => false
-             effect_mode.inst, effect_mode.repl => true
   =>
     h.put w
-    handles2 T X v last_opt mode
+    handles2 T X v last_opt mode.next
 
 
   # create a new instance with the value referred to by a given handle read and
@@ -125,32 +119,26 @@ is
     # function calculating the new value from the old value
     f T->T
     )
-  pre
-    debug: match mode
-            effect_mode.plain   => false  # must be used as oneway_monad only
-            effect_mode.default => false
-            effect_mode.new     => false
-            effect_mode.inst, effect_mode.repl => true
   =>
     h.put (f h.get)
-    handles2 T X v last_opt mode
+    handles2 T X v last_opt mode.next
 
 
   public redef infix >>= (f X -> handles2 T X) => bind X f
 
   public bind(B type, f X -> handles2 T B) handles2 T B =>
-    handles2 T B (f v).v last_opt effect_mode.plain
+    handles2 T B (f v).v last_opt oneway_monad_mode.plain
 
-  public return(B type, w B) => handles2 T B w last_opt effect_mode.plain
+  public return(B type, w B) => handles2 T B w last_opt oneway_monad_mode.plain
 
 # short-hand for creating and installing an empty set of handles2 of given type.
 #
 handles2(T type, rr ()->unit) =>
-  _ := handles2 T unit unit nil (effect_mode.inst rr)
+  (handles2 T unit unit nil oneway_monad_mode.inst).instate_self rr
 
 # short-hand for creating an empty set of handles2 of given type.
 #
-handles2_(T type) => handles2 T unit unit nil effect_mode.plain
+handles2_(T type) => handles2 T unit unit nil oneway_monad_mode.plain
 
 
 # short-hand for accessing handles monad for given type in current environment
@@ -191,7 +179,7 @@ handles2_type(T type) is
   # install default instance of handles2
   #
   install_default unit =>
-    _ := handles2 T unit unit nil effect_mode.default
+    (handles2 T unit unit nil oneway_monad_mode.inst).default
 
 
 # create a new handle2 using the handles2 instance from the current environment

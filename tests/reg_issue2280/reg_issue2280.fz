@@ -28,7 +28,7 @@ reg_issue2280 is
   # NYI: this should be public in codepoint, had to copy it over!
 
   lm : mutate is
-  _ := lm.go ()->((io.stdin lm).with ()->
+  _ := lm.instate_self ()->((io.stdin lm).with ()->
     for
 
       t := u32 0, s

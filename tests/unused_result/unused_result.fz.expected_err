@@ -13,7 +13,7 @@ To solve this, use the result, explicitly ignore the result '_ := <expression>' 
 
 --CURDIR--/unused_result.fz:32:3: error 3: Expression produces result of type 'i32' but result is not used.
   if true then 42 else -1 # should flag an error
---^
+--^^^^^^^^^^^^^^^^^^^^^^^
 To solve this, use the result, explicitly ignore the result '_ := <expression>' or change 'i32' from constructor to routine by replacing'is' by '=>'.
 
 

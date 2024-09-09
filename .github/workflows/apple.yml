@@ -42,14 +42,14 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-      - uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4.2.1
+      - uses: actions/setup-java@6a0805fcefea3d4657a47ac4c165951e33482018 # v4.2.2
         with:
           distribution: 'temurin'
           java-version: '21'
 
       - name: install dependencies
         run: |
-          brew install bdw-gc gnu-sed make
+          brew install bdw-gc gnu-sed make asciidoc asciidoctor pcre antlr
           echo "/opt/homebrew/opt/gnu-sed/libexec/gnubin:/opt/homebrew/opt/make/libexec/gnubin:/usr/local/opt/gnu-sed/libexec/gnubin:/usr/local/opt/gnu-make/libexec/gnubin:$PATH" >> $GITHUB_PATH
 
       - name: sed version
@@ -63,6 +63,9 @@ jobs:
 
       - name: build (no java modules)
         run: make no-java
+
+      - name: build docs
+        run: make doc
 
       - name: run tests
         run: |

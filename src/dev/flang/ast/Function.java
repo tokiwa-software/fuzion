@@ -133,6 +133,7 @@ public class Function extends AbstractLambda
 
     _namesAsExprs = names;
     _names = names.map2(n->n.asParsedName());
+    _names.removeIf(n -> n==null);
     _expr = e;
   }
 
@@ -394,7 +395,7 @@ public class Function extends AbstractLambda
         if (f != null)
           {
             generics.add(f instanceof Feature ff && ff.hasResult()  // NYI: Cast!
-                         ? ff.resultTypeForTypeInference(pos(), res, UnresolvedType.NONE)
+                         ? ff.resultTypeIfPresent(res)
                          : new BuiltInType(FuzionConstants.UNIT_NAME));
             for (var a : f.arguments())
               {

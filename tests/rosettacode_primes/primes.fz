@@ -26,7 +26,7 @@
 primes is
 
   mi : mutate is
-  mi.go ()->
+  mi.instate_self ()->
 
     primes(n i64) => // sieve using loops
       _ :=

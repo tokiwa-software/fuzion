@@ -1,5 +1,5 @@
 issue_2213 =>
   mi : mutate is
-  mi.go ()->
+  mi.instate_self ()->
     ball is
     balls := (mutate.array ball).new mi 1 ball

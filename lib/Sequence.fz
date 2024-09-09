@@ -241,6 +241,7 @@ public Sequence(public T type) ref is
     pre
       debug: from ≥ 0
       debug: to = 0 || is_valid_index to-1
+      debug: from <= to
   =>
     drop(from).take to-from
 
@@ -303,9 +304,9 @@ public Sequence(public T type) ref is
     if finite
       as_string_all
     else
-      max := (Sequence T).AS_STRING_NON_FINITE_MAX_ELEMENTS
+      max0 := (Sequence T).AS_STRING_NON_FINITE_MAX_ELEMENTS
       (zip i32 String /* NYI: BUG #2527: type inference not powerful enough to infer `i32` here */
-           0..max (v,n -> if n < max then $v else "…")).as_string_all
+           0..max0 (v,n -> if n < max0 then $v else "…")).as_string_all
 
 
   # create a string representation of this Sequence including all the string
@@ -613,18 +614,16 @@ public Sequence(public T type) ref is
 
   # does this sequence start with l?
   #
-  # NYI: CLEANUP: #3524 There is no `starts_with` due to clash with `String.starts_with` in `Const_String`.
-  #
-  public is_prefix_of(l Sequence T) bool
+  public starts_with(l Sequence T) bool
     pre
       T : property.equatable
   =>
-    match as_list
+    match l.as_list
       nil     => true
       c1 Cons =>
-        match l.as_list
+        match as_list
           nil     => false
-          c2 Cons => c1.head = c2.head && c1.tail.is_prefix_of c2.tail # tail recursion
+          c2 Cons => c2.head = c1.head && c2.tail.starts_with c1.tail # tail recursion
 
 
   # determine the index of element x within this list.  0 if x is at the
@@ -635,30 +634,26 @@ public Sequence(public T type) ref is
     pre
       T : property.equatable
   =>
-    find_first [x]
+    find [x]
 
 
   # get the index of l within this list or nil if it does not exist
   #
-  # NYI: CLEANUP: #3524 This should be called `find`, but that would clash with `String.find` in `Const_String`.
-  #
-  public find_first(l Sequence T) option i32
+  public find(l Sequence T) option i32
     pre
       T : property.equatable
   =>
-    if l.is_prefix_of Sequence.this
+    if starts_with l
       0
     else
       match as_list
         nil    => nil
-        c Cons => (c.tail.find_first l) >>= +1
+        c Cons => (c.tail.find l) >>= +1
 
 
   # replace all occurrences of old by new
   #
-  # NYI: CLEANUP: #3524 This should be called `replace`, but that would clash with `String.replace` in `Const_String`.
-  #
-  public replace_all(old, new Sequence T)
+  public replace(old, new Sequence T)
     pre
       T : property.equatable
   =>
@@ -668,9 +663,7 @@ public Sequence(public T type) ref is
 
   # replace the first n occurrences of old by new
   #
-  # NYI: CLEANUP: #3524 This should be called `replace`, but that would clash with `String.replace` in `Const_String`.
-  #
-  public replace_n (old, new Sequence T, n u64)
+  public replace (old, new Sequence T, n u64)
     pre
       T : property.equatable
   =>
@@ -688,7 +681,7 @@ public Sequence(public T type) ref is
     pre
       T : property.equatable
   =>
-    match to_be_replaced.find_first old
+    match to_be_replaced.find old
       nil   => already_replaced ++ to_be_replaced
       n i32 =>
         # NYI: #637: perhaps make it possible to do
@@ -709,7 +702,7 @@ public Sequence(public T type) ref is
       T : property.equatable
   =>
     tails
-      .filter (t -> l.is_prefix_of t)
+      .filter (t -> t.starts_with l)
       .count
 
 
@@ -721,8 +714,8 @@ public Sequence(public T type) ref is
   =>
     match as_list
       nil     => 0
-      c1 Cons => (if (l.is_prefix_of Sequence.this) 1 + (drop l.count).count_matches l
-                  else                                  c1.tail       .count_matches l)
+      c1 Cons => if starts_with l then 1 + (drop l.count).count_matches l
+                                  else            c1.tail.count_matches l
 
 
   # split sequence at s, if there is no limit, otherwise if limit is an integer n,
@@ -733,9 +726,7 @@ public Sequence(public T type) ref is
   #
   # helper feature which unifies the code of the different split features in one
   #
-  # NYI: CLEANUP: #3524 This should be called `split0`, but that would clash with `String.split0` in `Const_String`.
-  #
-  module split_(s Sequence T, limit option u32, split_after bool) list (Sequence T)
+  module split0(s Sequence T, limit option u32, split_after bool) list (Sequence T)
     pre
       T : property.equatable
       debug: !s.is_empty
@@ -743,7 +734,7 @@ public Sequence(public T type) ref is
               nil => true
               n u32 => n > 0
     =>
-      match (find_first s)
+      match (find s)
         nil     => (id (Sequence T) Sequence.this) : nil  # NYI: With better type propagation, this could be `Sequence.this : nil` or `[Sequence.this].as_list`
         idx i32 =>
           ref : Cons (Sequence T) (list (Sequence T))
@@ -752,13 +743,99 @@ public Sequence(public T type) ref is
               rest := drop (idx + s.count)
 
               match limit
-                nil => rest.split_ s nil split_after
+                nil => rest.split0 s nil split_after
                 n u32 =>
                   if n > 1
-                    rest.split_ s (n - 1) split_after
+                    rest.split0 s (n - 1) split_after
                   else
                     res Sequence T := rest;
                     res : nil
+
+
+  # the arithmetic mean of the sequence
+  # https://en.wikipedia.org/wiki/Arithmetic_mean
+  public average option T
+    pre
+      T : numeric
+  =>
+    if is_empty
+      nil
+    else
+      cnt := (map T (_ -> T.one)).fold T.sum
+      sum := fold T.sum
+      sum / cnt
+
+
+  # the variance of the sequence
+  # https://en.wikipedia.org/wiki/Variance
+  public variance option T
+    pre
+      T : numeric
+  =>
+    match average
+      nil => nil
+      avg T =>
+        cnt := (map T (_ -> T.one           )).fold T.sum
+        sum := (map T (x -> (x - avg)**T.two)).fold T.sum
+        sum / cnt
+
+
+  # minimum value in the sequence
+  public min option T
+    pre
+      T : property.orderable
+  =>
+    if is_empty
+      nil
+    else
+      reduce first ((r,t) -> if r ≤ t then r else t)
+
+
+  # maximum value in the sequence
+  public max option T
+    pre
+      T : property.orderable
+  =>
+    if is_empty
+      nil
+    else
+      reduce first ((r,t) -> if r ≤ t then t else r)
+
+
+  # the median of the sequence
+  # https://en.wikipedia.org/wiki/Median
+  public median option T
+    pre
+      T : numeric
+  =>
+    if is_empty
+      nil
+    else
+      arr := container.sorted_array_of Sequence.this
+      if arr.length % 2 = 1
+        arr[arr.length / 2]
+      else
+        (arr[(arr.length / 2) - 1] + arr[(arr.length / 2)]) / (T.two)
+
+
+
+  # the standard deviation of the sequence
+  # https://en.wikipedia.org/wiki/Standard_deviation
+  public std_dev
+    pre
+      T : float
+  =>
+    variance.map (x -> T.sqrt x)
+
+
+  # the euclidean norm of this sequence
+  # i.e. the square of the sum of squares of this sequence
+  #
+  public euclidean_norm
+    pre
+      T : float
+  =>
+    T.sqrt ((map (x)->x**T.two).fold T.sum)
 
 
   # monoid of Sequences with infix concatentation operation.

@@ -25,7 +25,7 @@
 
 # envir.vars -- effect providing access to environment variables
 #
-public vars (p Vars_Handler) : simple_effect is
+public vars (p Vars_Handler) : effect is
 
   # If set, get the environment variable corresponding to v.
   #
@@ -84,21 +84,21 @@ public vars =>
 # Different heirs of this feature may provided different sources for environment
 # variables
 #
-private:public Vars_Handler ref is
+public Vars_Handler ref is
 
   # If set, get the environment variable corresponding to v
   #
-  get(v String) option String => abstract
+  public get(v String) option String => abstract
 
   # Set the environment variable corresponding to n to have the
   # value v.
   #
   # This will overwrite the value of the environment variable, if
   # it is set already.
-  set1(n String, v String) outcome unit => abstract
+  public set1(n String, v String) outcome unit => abstract
 
   # Unset the environment variable corresponding to n.
   #
   # This will also return success (unit) if the variable was not
   # set anyway.
-  unset(n String) outcome unit => abstract
+  public unset(n String) outcome unit => abstract

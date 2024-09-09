@@ -79,7 +79,8 @@ public abstract class LibraryType extends ResolvedType
    *
    * @param s the features that have already been found
    */
-  protected void usedFeatures(Set<AbstractFeature> s){
+  protected void usedFeatures(Set<AbstractFeature> s)
+  {
     // a library type has already been checked. nothing to be done.
   }
 

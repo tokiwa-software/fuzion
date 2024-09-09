@@ -1,0 +1,67 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue3619
+#
+# -----------------------------------------------------------------------
+
+reg_issue3619 =>
+
+
+  #  ---------- ---------- ---------- ---------- ---------- ----------
+
+
+  # here is the code from #3619
+
+  r(T type, v T) is
+
+  A ref is
+    f(p r A.this) b => b
+
+  b : A is
+    redef fixed f(p r b) => p.v
+
+  a A := b
+  x b := a.f (r A)
+
+  # `r` contains a value of type `T`, so `r A` contains a value of type `A`.
+  #
+  # `A.f(p r A.this)` returns a value of type `b`, which in `b` is implemented
+  # to return the value `v` stored in `p` which is of type `r b` in this case.
+  #
+  # Now we can call `a.f (r A)` where `a` is a `ref` to an instance of `b` that
+  # would extract a `b` from `r A`, which is impossible.
+
+
+  #  ---------- ---------- ---------- ---------- ---------- ----------
+
+  # here is a second example introduced as a comment added in PR #1426:
+
+  r2 ref is
+    e is
+    g => e
+
+  h1 : r2 is
+  h2 : r2 is
+
+  v r2 := if random.next_bool then h1 else h2
+  x2 := v.g
+
+  # The problem is that `v` may refer to `h1` or `h2` such that `v.g` will
+  # result in either `h1.e` or `h2.e`.

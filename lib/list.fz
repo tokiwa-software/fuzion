@@ -164,7 +164,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   public redef as_array array A =>
     lm : mutate is
       redef mpanic(msg String) => fuzion.std.panic msg
-    lm.go ()->
+    lm.instate_self ()->
       e := lm.env.new list.this
       array A count _->
         res := e.get.first
@@ -182,7 +182,6 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
       _ nil  => nil
       c Cons =>
         ref : Cons B (list B)
-        // Cons B (list B) with    # NYI: better syntax for anonymous feature
           redef head => f c.head
           redef tail => c.tail.map_to_list f
 
@@ -201,7 +200,6 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
           _ nil => c.tail.flat_map_to_list B f
           c2 Cons =>
             ref : Cons B (list B)
-            // Cons B (list B) with    # NYI: better syntax for anonymous feature
               redef head => c2.head
               redef tail => c2.tail ++ c.tail.flat_map_to_list B f
 
@@ -498,7 +496,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   # NYI: Name should be `concat_monoid`, we use `list_concat_monoid`
   # to avoid clash with inherited `Sequence.concat_monoid`. Maybe
-  # the inherited one should be renamed once renmaing is supported.
+  # the inherited one should be renamed once renaming is supported.
   #
   public type.list_concat_monoid : Monoid (list A) is
 

@@ -28,7 +28,7 @@
 # This takes an unsorted array and a compare function as an arguments and
 # returns a sorted one.
 #
-# Non-mutating heap sort is used internally. This gives guaranteed peformance in
+# Non-mutating heap sort is used internally. This gives guaranteed performance in
 # O(n log n) comparisons and assignments for an array of size n.
 #
 # This is a little wasteful on allocated memory, which is also O(n log n) since
@@ -40,7 +40,7 @@ public sorted_array
   # array element type
   T type,
 
-  # orginal, unsorted Sequence
+  # original, unsorted Sequence
   #
   from Sequence T,
 
@@ -85,7 +85,7 @@ is
     if heap_size ≥ a.length
       a
     else
-      m.go ()->
+      m.instate_self ()->
 
         # h1 is the mutable index within the current first heap, this is updated
         # by the function passed to the array constructor.
@@ -138,7 +138,7 @@ is
                  # use less_or_equal instead:
                  #
                  less_or_equal sorted_array.this[i] key && less_or_equal key sorted_array.this[i]
-        nil   => true # NYI: analyis: for all i=a.indices, sorted_array.this[i] != key
+        nil   => true # NYI: analysis: for all i=a.indices, sorted_array.this[i] != key
   =>
     binary_search(l, r i32) option i32 =>
       m := (l + r) / 2
@@ -159,7 +159,9 @@ is
   # the index of one matching key will be returned, but is not
   # specified which one.
   #
-  public find (
+  # NYI: CLEANUP: find better name
+  #
+  public find_by_comparator (
 
     # cmp must be < 0 (> 0) if key is less (larger) than desired key.
     #
@@ -172,7 +174,7 @@ is
     post
       match result
         i i32 => (cmp sorted_array.this[i]) = 0
-        nil   => true # NYI: analyis: for all i=a.indices, sorted_array.this[i] /= key
+        nil   => true # NYI: analysis: for all i=a.indices, sorted_array.this[i] /= key
   =>
     binary_search(l, r i32) option i32 =>
       m := (l + r) / 2
