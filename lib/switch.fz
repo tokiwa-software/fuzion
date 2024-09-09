@@ -68,7 +68,7 @@ is
   #
   public get
   pre
-    safety: (switch.this??) # NYI: REGRESSION: parantheses currently necessary, due to PR #2572
+    safety: switch.this??
   =>
     switch.this ? a A => a
                 | B   => fuzion.std.panic "switch.get called on B. Enable `safety` to obtain a precondition failure for debugging."
@@ -89,7 +89,7 @@ is
   #
   public val A
     pre
-      safety: (switch.this??) # NYI: REGRESSION: parantheses currently necessary, due to PR #2572
+      safety: switch.this??
   =>
     switch.this ? a A => a
                 | B   => panic "switch.val called on B. Enable `safety` to obtain a precondition failure for debugging."
