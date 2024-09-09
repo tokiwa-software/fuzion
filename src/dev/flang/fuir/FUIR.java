@@ -170,7 +170,16 @@ public class FUIR extends IR
   TreeMap<Integer,int[]> _accessedClazzesDynamicCache = new TreeMap<>();
 
 
+  /**
+   * the current instance of clazzes.
+   */
   private IClazzes _clazzes;
+
+
+  /**
+   * the current instance of clazzes.
+   * static, used in SpecialClazzes
+   */
   private static IClazzes _clazzesStatic;
 
 
@@ -184,6 +193,10 @@ public class FUIR extends IR
    */
   public FUIR(Clazz main, IClazzes clazzes)
   {
+    if (PRECONDITIONS) require
+      (main != null,
+       clazzes != null);
+
     _main = main;
     _clazzes = clazzes;
     _clazzesStatic = clazzes;

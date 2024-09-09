@@ -95,6 +95,9 @@ public class MiddleEnd extends ANY
   private TreeMap<AbstractFeature, Set<AbstractFeature>> _redefinitions = new TreeMap<>();
 
 
+  /**
+   * The Clazzes instance that is used in the middle end.
+   */
   private final Clazzes _clazzes;
 
 

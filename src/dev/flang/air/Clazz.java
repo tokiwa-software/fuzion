@@ -352,6 +352,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
   public TreeMap<Integer, Clazz[]> _parentCallArgFields = new TreeMap<Integer, Clazz[]>();
 
 
+  /**
+   * The Clazzes instance.
+   */
   private final Clazzes _clazzes;
 
 
