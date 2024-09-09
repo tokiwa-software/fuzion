@@ -89,15 +89,15 @@ test_atomic is
 
   # test bool-like choice
   on, off.
-  switch : choice on off is
-    ord => match switch.this
+  my_switch : choice on off is
+    ord => match my_switch.this
       on => 0
       off => 1
-    redef as_string => match switch.this
+    redef as_string => match my_switch.this
       on => "on"
       off => "off"
-    type.equality(a, b switch.this) => a.ord = b.ord
-  test0 switch on on off off ((a,b)-> a.ord=b.ord)
+    type.equality(a, b my_switch.this) => a.ord = b.ord
+  test0 my_switch on on off off ((a,b)-> a.ord=b.ord)
 
   # test int-like choice
   red, yellow, green.

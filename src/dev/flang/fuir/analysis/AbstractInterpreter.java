@@ -535,7 +535,10 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           case Call:
             var cc0 = _fuir.accessedClazz(last_s);
             var rt = _fuir.clazzResultClazz(cc0);
-            l.add(_processor.drop(stack.pop(), rt));
+            if (!clazzHasUnitValue(rt))
+              {
+                l.add(_processor.drop(stack.pop(), rt));
+              }
             break;
           default:
             break; // NYI: ignore this case for now, this occurs infrequently, one example is tests/reg_issue1294.
