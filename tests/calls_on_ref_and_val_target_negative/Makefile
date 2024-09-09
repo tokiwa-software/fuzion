@@ -25,4 +25,4 @@
 
 override NAME = calls
 
-include ../negative.mk
+include ../simple_and_negative.mk
