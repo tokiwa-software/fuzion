@@ -2244,16 +2244,25 @@ stringTermB : '}any chars&quot;'
   /**
    * Parse op
    *
-op          : OPERATOR
+op          : dot call
+            | OPERATOR
             ;
    */
-  Operator op()
+  Object op()
   {
     if (PRECONDITIONS) require
       (current() == Token.t_op);
 
-    Operator result = new Operator(tokenSourceRange(), operator(), ignoredTokenBefore(), ignoredTokenAfter());
-    match(Token.t_op, "op");
+    Object result; // Function or Operator
+    if (skipDot())
+      {
+        result = Partial.dotCall(tokenSourcePos(), a->pureCall(a));
+      }
+    else
+      {
+        result = new Operator(tokenSourceRange(), operator(), ignoredTokenBefore(), ignoredTokenAfter());
+        match(Token.t_op, "op");
+      }
     return result;
   }
 
