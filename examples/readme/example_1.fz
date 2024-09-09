@@ -5,9 +5,9 @@ hello_world is
   #
   lm : mutate is
 
-  # calling `lm` installs our mutate effect,
-  # `instate_self` is then used to run code in the context
-  # of the installed effect.
+  # calling `lm` creates an instance of our mutate effect,
+  # `instate_self` is then used to instate this instance and
+  # run code in the context of the instated effect.
   #
   lm.instate_self ()->
 
