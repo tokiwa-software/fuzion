@@ -944,23 +944,28 @@ public class AstErrors extends ANY
           "To solve this, you could add a redefinition of " + sbnf(f1) + " to " + s(heir) + ".");
   }
 
-  public static void duplicateFeatureDeclaration(SourcePosition pos, AbstractFeature f, AbstractFeature existing)
+  public static void duplicateFeatureDeclaration(AbstractFeature a, AbstractFeature b)
   {
     // suppress error message if errors were reported already and any feature
     // involved is f_ERROR
-    if (!any() || (f                != Types.f_ERROR &&
-                         f       .outer() != Types.f_ERROR &&
-                         existing         != Types.f_ERROR &&
-                         existing.outer() != Types.f_ERROR    ))
+    if (!any() || (a                != Types.f_ERROR &&
+                   a       .outer() != Types.f_ERROR &&
+                   b         != Types.f_ERROR &&
+                   b.outer() != Types.f_ERROR    ))
       {
-        var of = f.isTypeFeature() ? f.typeFeatureOrigin() : f;
-        error(pos,
+        // report in source code order to avoid symmetric error with exchanged roles of f and existing
+        var cmpRes = a.pos().show().compareTo(b.pos().show())>0;
+        var aa = cmpRes ? a : b;
+        var bb = cmpRes ? b : a;
+
+        var of = aa.isTypeFeature() ? aa.typeFeatureOrigin() : aa;
+        error(bb.pos(),
               "Duplicate feature declaration",
               "Feature that was declared repeatedly: " + s(of) + "\n" +
-              "originally declared at " + existing.pos().show() + "\n" +
+              "originally declared at " + aa.pos().show() + "\n" +
               "To solve this, consider renaming one of these two features, e.g., as " + sbn(of.featureName().baseNameHuman() + "ʼ") +
               " (using a unicode modifier letter apostrophe " + sbn("ʼ")+ " U+02BC) "+
-              (f.isTypeFeature()
+              (aa.isTypeFeature()
                ? ("or changing it into a routine by returning a " +
                   sbn("unit") + " result, i.e., adding " + sbn("unit") + " before " + code("is") + " or using " + code("=>") +
                   " instead of "+ code("is") + ".")

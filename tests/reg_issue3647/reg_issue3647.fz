@@ -21,8 +21,6 @@
 #
 # -----------------------------------------------------------------------
 
-# NYI: BUG: should not display error twice.
-
 reg_issue3647 =>
 
   Node(T Type, a Node T) ref is

@@ -1020,7 +1020,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
               }
             else
               {
-                AstErrors.duplicateFeatureDeclaration(f.pos(), f, existing);
+                AstErrors.duplicateFeatureDeclaration(f, existing);
               }
           }
       }
@@ -1901,7 +1901,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
                 else
                   {
                     // NYI: if (!isInherited && !sameModule(f, outer))
-                    AstErrors.duplicateFeatureDeclaration(f1.pos(), f1, f2);
+                    AstErrors.duplicateFeatureDeclaration(f1, f2);
                   }
               }
           }
