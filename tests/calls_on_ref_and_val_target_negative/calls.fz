@@ -64,19 +64,19 @@ calls is
     oa1 ron => on
     oa2 ron => oa
 
-    t := oa1
-    yak "caseC3a: "; chck t.f.s "f#1 in oa type calls.caseC2.oa"     // 01. should flag an error:
-    yak "caseC3a: "; chck t.f.s "f#2 in oa type calls.caseC2.oa"     // 02. should flag an error:
-    yak "caseC3a: "; chck t.f.s "f#3 in oa type calls.caseC2.oa"     // 03. should flag an error:
-    yak "caseC3a: "; chck $t.cnt.get $3                              // 04. should flag an error:
+    t1 := oa1
+    yak "caseC3a: "; chck t1.f.s "f#1 in oa type calls.caseC2.oa"     // 01. should flag an error:
+    yak "caseC3a: "; chck t1.f.s "f#2 in oa type calls.caseC2.oa"     // 02. should flag an error:
+    yak "caseC3a: "; chck t1.f.s "f#3 in oa type calls.caseC2.oa"     // 03. should flag an error:
+    yak "caseC3a: "; chck $t1.cnt.get $3                              // 04. should flag an error:
 
-    t := oa2
-    yak "caseC3b: "; chck t.f.s "f#1 in on type calls.caseC2.on"     // 05. should flag an error:
-    yak "caseC3b: "; chck t.f.s "f#2 in on type calls.caseC2.on"     // 06. should flag an error:
-    yak "caseC3b: "; chck t.f.s "f#3 in on type calls.caseC2.on"     // 07. should flag an error:
-    yak "caseC3b: "; chck $t.cnt.get $3                              // 08. should flag an error:
+    t2 := oa2
+    yak "caseC3b: "; chck t2.f.s "f#1 in on type calls.caseC2.on"     // 05. should flag an error:
+    yak "caseC3b: "; chck t2.f.s "f#2 in on type calls.caseC2.on"     // 06. should flag an error:
+    yak "caseC3b: "; chck t2.f.s "f#3 in on type calls.caseC2.on"     // 07. should flag an error:
+    yak "caseC3b: "; chck $t2.cnt.get $3                              // 08. should flag an error:
 
-  caseC3
+  _ := caseC3
 
 
   say "{failed.get} failed {passed.get} passed."
