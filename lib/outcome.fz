@@ -91,7 +91,7 @@ is
       safety: outcome.this??
   =>
     outcome.this ? v T   => v
-                 | error => panic "outcome.val called on nil. You either turned off safety or you discovered a severe compiler bug! This code should be unreachable."
+                 | error => panic "outcome.val called on nil. Enable `safety` to obtain a precondition failure for debugging."
 
 
   # value of an outcome or default if outcome contains err
@@ -111,7 +111,7 @@ is
     pre
       safety: outcome.this!!
   =>
-    outcome.this ? T       => panic "outcome.err called on successful outcome. You either turned off safety or you discovered a severe compiler bug! This code should be unreachable."
+    outcome.this ? T       => panic "outcome.err called on successful outcome. Enable `safety` to obtain a precondition failure for debugging."
                  | e error => e
 
 
