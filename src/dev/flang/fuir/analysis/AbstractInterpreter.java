@@ -533,7 +533,10 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           (_fuir.codeAt(last_s) == ExprKind.Call);
         var cc0 = _fuir.accessedClazz(last_s);
         var rt = _fuir.clazzResultClazz(cc0);
-        l.add(_processor.drop(stack.pop(), rt));
+        if (!clazzHasUnitValue(rt))
+          {
+            l.add(_processor.drop(stack.pop(), rt));
+          }
       }
 
     return new Pair<>(v, _processor.sequence(l));

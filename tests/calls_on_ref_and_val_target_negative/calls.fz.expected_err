@@ -1,0 +1,65 @@
+
+--CURDIR--/calls.fz:68:30: error 1: Could not find called feature
+    yak "caseC3a: "; chck t1.f.s "f#1 in oa type calls.caseC2.oa"     // 01. should flag an error:
+-----------------------------^
+Feature not found: 'f' (no arguments)
+Target feature: 'calls.caseC3.ron'
+In call: 'f'
+
+
+--CURDIR--/calls.fz:69:30: error 2: Could not find called feature
+    yak "caseC3a: "; chck t1.f.s "f#2 in oa type calls.caseC2.oa"     // 02. should flag an error:
+-----------------------------^
+Feature not found: 'f' (no arguments)
+Target feature: 'calls.caseC3.ron'
+In call: 'f'
+
+
+--CURDIR--/calls.fz:70:30: error 3: Could not find called feature
+    yak "caseC3a: "; chck t1.f.s "f#3 in oa type calls.caseC2.oa"     // 03. should flag an error:
+-----------------------------^
+Feature not found: 'f' (no arguments)
+Target feature: 'calls.caseC3.ron'
+In call: 'f'
+
+
+--CURDIR--/calls.fz:71:31: error 4: Could not find called feature
+    yak "caseC3a: "; chck $t1.cnt.get $3                              // 04. should flag an error:
+------------------------------^^^
+Feature not found: 'cnt' (no arguments)
+Target feature: 'calls.caseC3.ron'
+In call: 'cnt'
+
+
+--CURDIR--/calls.fz:74:30: error 5: Could not find called feature
+    yak "caseC3b: "; chck t2.f.s "f#1 in on type calls.caseC2.on"     // 05. should flag an error:
+-----------------------------^
+Feature not found: 'f' (no arguments)
+Target feature: 'calls.caseC3.ron'
+In call: 'f'
+
+
+--CURDIR--/calls.fz:75:30: error 6: Could not find called feature
+    yak "caseC3b: "; chck t2.f.s "f#2 in on type calls.caseC2.on"     // 06. should flag an error:
+-----------------------------^
+Feature not found: 'f' (no arguments)
+Target feature: 'calls.caseC3.ron'
+In call: 'f'
+
+
+--CURDIR--/calls.fz:76:30: error 7: Could not find called feature
+    yak "caseC3b: "; chck t2.f.s "f#3 in on type calls.caseC2.on"     // 07. should flag an error:
+-----------------------------^
+Feature not found: 'f' (no arguments)
+Target feature: 'calls.caseC3.ron'
+In call: 'f'
+
+
+--CURDIR--/calls.fz:77:31: error 8: Could not find called feature
+    yak "caseC3b: "; chck $t2.cnt.get $3                              // 08. should flag an error:
+------------------------------^^^
+Feature not found: 'cnt' (no arguments)
+Target feature: 'calls.caseC3.ron'
+In call: 'cnt'
+
+8 errors.

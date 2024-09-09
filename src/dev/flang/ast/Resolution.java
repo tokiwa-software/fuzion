@@ -544,7 +544,7 @@ public class Resolution extends ANY
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.any() || state(af).atLeast(State.RESOLVED_TYPES));
+      (Errors.any() || state(af).atLeast(State.RESOLVING_TYPES));
   }
 
 

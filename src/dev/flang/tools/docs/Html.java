@@ -39,10 +39,13 @@ import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
+import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
+import dev.flang.fe.SourceModule;
 import dev.flang.tools.docs.Util.Kind;
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.List;
 
 
 public class Html extends ANY
@@ -50,15 +53,17 @@ public class Html extends ANY
   final DocsOptions config;
   private final Map<AbstractFeature, Map<Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures;
   private final String navigation;
+  private final SourceModule sm;
 
   /**
    * the constructor taking the options
    */
-  public Html(DocsOptions config, Map<AbstractFeature, Map<Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe)
+  public Html(DocsOptions config, Map<AbstractFeature, Map<Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe, SourceModule sm)
   {
     this.config = config;
     this.mapOfDeclaredFeatures = mapOfDeclaredFeatures;
     this.navigation = navigation(universe, 0);
+    this.sm = sm;
   }
 
 
@@ -152,7 +157,8 @@ public class Html extends ANY
    */
   private String typePrfx(AbstractFeature af)
   {
-    return af.outer() != null && af.outer().isTypeFeature() && !af.isTypeFeature() ? "<span class=\"fd-keyword\">type</span>." : "";
+    // NYI: does not treat features that `Type` inherits but does not redefine as type features, see #3716
+    return af.outer() != null && (af.outer().isTypeFeature()  || af.outer().compareTo(Types.resolved.f_Type) == 0) && !af.isTypeFeature() ? "<span class=\"fd-keyword\">type</span>." : "";
   }
 
 
@@ -184,6 +190,9 @@ public class Html extends ANY
       + (Util.Kind.classify(af) == Util.Kind.Other ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchor(af.resultType()) : "")
       + (Util.Kind.classify(af) == Util.Kind.Other ? "" : "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>")
       + annotateInherited(af, outer)
+      + annotateRedef(af, outer)
+      + annotateAbstract(af)
+      + annotateContainsAbstract(af)
       // fills remaining space
       + "<div class='flex-grow-1'></div>"
       + "</div>"
@@ -195,7 +204,7 @@ public class Html extends ANY
    * Returns a html formatted annotation to indicate if a feature was declared or inherited
    * @param af the feature to for which to create the annotation for
    * @param outer the feature in whose context af is used
-   * @return html to annotate a feature
+   * @return html to annotate an inherited feature
    */
   private String annotateInherited(AbstractFeature af, AbstractFeature outer)
   {
@@ -208,7 +217,7 @@ public class Html extends ANY
         String anchorParent = "<a class='' href='" + featureAbsoluteURL(af.outer()) + "'>"
                               + htmlEncodedBasename(af.outer()) + "</a>";
         return "&nbsp;<div class='fd-parent'>[Inherited from&nbsp; $0]</div>"
-              .replace("$0", anchorParent);
+          .replace("$0", anchorParent);
       }
   }
 
@@ -223,6 +232,69 @@ public class Html extends ANY
     return (af == null || outer == null || af.outer() == outer
                // type features have their own chain of parents internally, avoid annotation in this case
             || af.outer().featureName().baseNameHuman().equals(outer.featureName().baseNameHuman()));
+  }
+
+
+  /**
+   * Returns a html formatted annotation to indicate if a feature redefines another feature
+   * @param af the feature to for which to create the annotation for
+   * @return html to annotate a redefined feature
+   */
+  private String annotateRedef(AbstractFeature af, AbstractFeature outer)
+  {
+    // don't mark inherited redefinitions as redefinitions when they are not redefined in the current feature
+    if (!isDeclared(af, outer))
+      {
+        return "";
+      }
+
+    var redefs = af.redefines();
+
+    return redefs.isEmpty()
+            ? ""
+            : "&nbsp;<div class='fd-parent'>[Redefinition of&nbsp;$0]</div>"
+              .replace("$0", (redefs.stream()
+                                    .map(f->"<a class='' href='" + featureAbsoluteURL(f) + "'>" +
+                                              htmlEncodedQualifiedName(f) + "</a>")
+                                    .collect(Collectors.joining(",&nbsp;")) ));
+  }
+
+
+  /**
+   * Returns a html formatted annotation to indicate if a feature is abstract
+   * @param af the feature to for which to create the annotation for
+   * @return html to annotate an abstract feature
+   */
+  private String annotateAbstract(AbstractFeature af)
+  {
+    return af.isAbstract()
+             ? "&nbsp;<div class='fd-parent' title='An abstract feature is a feature declared using ⇒ abstract. " +
+               "To be able to call it, it needs to be implemented (redefined) in an heir.'>[Abstract feature]</div>"
+             : "";
+  }
+
+
+  /**
+   * Returns a html formatted annotation to indicate if a feature contains inner or inherited features which are abstract
+   * @param af the feature to for which to create the annotation for
+   * @return html to annotate a feature containing abstract features
+   */
+  private String annotateContainsAbstract(AbstractFeature af)
+  {
+    var allInner = new List<AbstractFeature>();
+    sm.forEachDeclaredOrInheritedFeature(af, f -> allInner.add(f));
+
+    return allInner.stream().filter(f->isVisible(f)).anyMatch(f->f.isAbstract())
+             ? "&nbsp;<div class='fd-parent' title='This feature contains inner or inherited features " +
+               "which are abstract.'>[Contains abstract features]</div>"
+             : "";
+  }
+
+  private boolean isVisible(AbstractFeature af)
+  {
+    var vis = af.visibility();
+    return vis.typeVisibility() == Visi.PUB;
+
   }
 
 
@@ -351,7 +423,7 @@ public class Html extends ANY
   }
 
   /**
-   * the html encoded basename of the feature
+   * the html encoded basename of the feature af
    * @param af
    * @return
    *
@@ -359,6 +431,18 @@ public class Html extends ANY
   private String htmlEncodedBasename(AbstractFeature af)
   {
     return htmlEncodeNbsp(af.featureName().baseNameHuman());
+  }
+
+
+  /**
+   * the html encoded qualified name of the feature af
+   * @param af
+   * @return
+   *
+   */
+  private String htmlEncodedQualifiedName(AbstractFeature af)
+  {
+    return htmlEncodeNbsp(af.qualifiedName());
   }
 
 

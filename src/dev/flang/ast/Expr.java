@@ -161,7 +161,10 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * type returns the type of this expression or Types.t_ERROR if the type is
    * still unknown, i.e., before or during type resolution.
    *
-   * @return this Expr's type or t_ERROR in case it is not known yet.
+   * @return this Expr's type or t_ERROR in case it is not known
+   * yet. t_UNDEFINED in case Expr depends on the inferred result type of a
+   * feature that is not available yet (or never will due to circular
+   * inference).
    */
   public AbstractType type()
   {
@@ -174,19 +177,6 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
         AstErrors.failedToInferType(this);
       }
     return result;
-  }
-
-
-  /**
-   * type returns the type of this expression if used as a target of a
-   * call. Since this might eventually not be used as a target of a call, but as
-   * an actual argument, this type will not be fixed yet.
-   *
-   * @return this Expr's type or t_ERROR in case it is not known yet.
-   */
-  AbstractType typeForCallTarget()
-  {
-    return type();
   }
 
 
@@ -787,11 +777,11 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   public Expr unwrap(Resolution res, Context context, AbstractType expectedType)
   {
     var t = type();
-    return  !expectedType.isAssignableFrom(t, context)
+    return this != ERROR_VALUE && t != Types.t_ERROR
+      && !expectedType.isAssignableFrom(t, context)
       && expectedType.compareTo(Types.resolved.t_Any) != 0
       && !t.isGenericArgument()
-      && t.feature()
-          .inherits()
+      && allInherited(t.feature())
           .stream()
           .anyMatch(c ->
             c.calledFeature().equals(Types.resolved.f_auto_unwrap)
@@ -799,6 +789,17 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
                     && expectedType.isAssignableFrom(c.actualTypeParameters().get(0).applyTypePars(t), context))
       ? new ParsedCall(this, new ParsedName(pos(), "unwrap")).resolveTypes(res, context)
       : this;
+  }
+
+
+  /**
+   * @param f
+   *
+   * @return the whole tree of inherited features flattened to a list.
+   */
+  private List<AbstractCall> allInherited(AbstractFeature f)
+  {
+    return f.inherits().flatMap(x -> new List<>(x, allInherited(x.calledFeature())));
   }
 
 

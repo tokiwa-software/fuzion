@@ -121,7 +121,7 @@ generator_effect is
   #
   gen(T type,
       yield T->unit    # yield is called by code to yield values
-      ) : simple_effect is
+      ) : effect is
 
   # traverse a list and yield the elements
   #
@@ -132,7 +132,7 @@ generator_effect is
 
   # bind the yield operation dynamically
   #
-  (gen i32 (i -> say "yielded $i")).use ()->
+  (gen i32 (i -> say "yielded $i")).instate_self ()->
     [0,8,15].as_list.traverse
 ```
 

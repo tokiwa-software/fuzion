@@ -458,27 +458,30 @@ public class C extends ANY
                     (hasTag || !_fuir.hasData(tc));
                 }
             }
-          var sl = new List<CStmnt>();
-          var field = _fuir.matchCaseField(s, mc);
-          if (field != -1)
-            {
-              var fclazz = _fuir.clazzResultClazz(field);     // static clazz of assigned field
-              var cl     = _fuir.clazzAt(s);
-              var f      = field(cl, C.this.current(s), field);
-              var entry  = _fuir.clazzIsRef(fclazz) ? ref.castTo(_types.clazz(fclazz)) :
-                           _fuir.hasData(fclazz)   ? uniyon.field(new CIdent(CNames.CHOICE_ENTRY_NAME + tags[0]))
-                                                    : CExpr.UNIT;
-              sl.add(C.this.assign(f, entry, fclazz));
-            }
-          sl.add(ai.processCode(_fuir.matchCaseCode(s, mc)).v1());
-          sl.add(CStmnt.BREAK);
-          var cazecode = CStmnt.seq(sl);
-          tcases.add(CStmnt.caze(ctags, cazecode));  // tricky: this a NOP if ctags.isEmpty
-          if (!rtags.isEmpty()) // we need default clause to handle refs without a tag
-            {
-              rcases.add(CStmnt.caze(rtags, cazecode));
-              tdefault = cazecode;
-            }
+          if (tags.length > 0)
+             {
+               var sl = new List<CStmnt>();
+               var field = _fuir.matchCaseField(s, mc);
+               if (field != -1)
+                 {
+                   var fclazz = _fuir.clazzResultClazz(field);     // static clazz of assigned field
+                   var cl     = _fuir.clazzAt(s);
+                   var f      = field(cl, C.this.current(s), field);
+                   var entry  = _fuir.clazzIsRef(fclazz) ? ref.castTo(_types.clazz(fclazz)) :
+                                _fuir.hasData(fclazz)   ? uniyon.field(new CIdent(CNames.CHOICE_ENTRY_NAME + tags[0]))
+                                                         : CExpr.UNIT;
+                   sl.add(C.this.assign(f, entry, fclazz));
+                 }
+               sl.add(ai.processCode(_fuir.matchCaseCode(s, mc)).v1());
+               sl.add(CStmnt.BREAK);
+               var cazecode = CStmnt.seq(sl);
+               tcases.add(CStmnt.caze(ctags, cazecode));  // tricky: this a NOP if ctags.isEmpty
+               if (!rtags.isEmpty()) // we need default clause to handle refs without a tag
+                 {
+                   rcases.add(CStmnt.caze(rtags, cazecode));
+                   tdefault = cazecode;
+                 }
+             }
         }
       if (rcases.size() >= 2)
         { // more than two reference cases: we have to create separate switch of clazzIds for refs
@@ -1645,7 +1648,7 @@ public class C extends ANY
               var a = args(tvalue, args, cc, _fuir.clazzArgCount(cc));
               var cl = _fuir.clazzAt(s);
 
-              if (cc == cl                                               &&  // calling myself
+              if (cc == cl &&  // calling myself
                   _tailCall.callIsTailCall(cl, s)
                 )
                 { // then we can do tail recursion optimization!

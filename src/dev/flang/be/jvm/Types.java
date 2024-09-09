@@ -391,7 +391,6 @@ public class Types extends ANY implements ClassFileConstants
       case c_u64     -> PrimitiveType.type_long;
       case c_f32     -> PrimitiveType.type_float;
       case c_f64     -> PrimitiveType.type_double;
-      case c_unit    -> PrimitiveType.type_void;
       case c_sys_ptr -> JAVA_LANG_OBJECT;
       default        ->
         {

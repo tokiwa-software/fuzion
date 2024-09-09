@@ -183,7 +183,9 @@ public class InlineArray extends ExprWithPos
                 if (CHECKS) check
                   (e == e2);
               }
-            _type = Types.resolved.f_array.resultTypeIfPresent(res, new List<>(elementType));
+            var arr = Types.resolved.f_array;
+            _type = arr.resultType()
+                       .applyTypePars(arr, new List<>(elementType));
           }
       }
     return this;

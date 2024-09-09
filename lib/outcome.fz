@@ -49,57 +49,13 @@
 # compatible to  'outcome data IO_Error Permission_Error', so everything
 # is fine.
 #
-public outcome(public T type) :
-  choice T error, /* ...  NYI: this should be open generic! */
-  monad T (outcome T),
-  auto_unwrap T (try (outcome T)) /* NYI: BUG #3355: auto_unwrap T (try outcome.this) */
+public outcome(public T type) : switch T error,
+                                monad T (outcome T)
 is
-
-  # Does this outcome contain a value of type T?
-  #
-  public ok => (outcome.this ? T     => true
-                             | error => false)
-
-
-  # short-hand postfix operator for 'ok'
-  #
-  public postfix ?? => ok
-
 
   # Does this outcome contain an error
   #
   public is_error => !ok
-
-
-  # short-hand postfix operator for 'is_error'
-  #
-  public postfix !! => is_error
-
-
-  # short-hand prefix operator for 'is_error'
-  #
-  public prefix ! => is_error
-
-
-  # value of an outcome that is known to contain a value
-  #
-  # This can only be called in cases where it is known for sure that this
-  # outcomee is not an error.  A runtime error will be created otherwise.
-  #
-  public val T
-    pre
-      safety: (outcome.this??)
-  =>
-    outcome.this ? v T   => v
-                 | error => panic "outcome.val called on error"
-
-
-  # value of an outcome or default if outcome contains err
-  #
-  public val(default T) T
-  =>
-    outcome.this ? v T   => v
-                 | error => default
 
 
   # error of an outcome that is known to contain an error
@@ -179,13 +135,6 @@ is
   public bind(B type, f T -> outcome B) outcome B =>
     outcome.this ? v T => f v
                  | e error => e
-
-
-  # unwrap this outcome
-  #
-  redef unwrap ! try outcome.this =>
-    outcome.this ? v T     => v
-                 | e error => (try outcome.this).env.raise e
 
 
   # return function

@@ -35,6 +35,7 @@ import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.AbstractInterpreter.ProcessExpression;
 
+import dev.flang.fuir.analysis.TailCall;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
@@ -63,6 +64,12 @@ public class Executor extends ProcessExpression<Value, Object>
    * The fuir to be used for executing the code.
    */
   private static FUIR _fuir;
+
+
+  /**
+   * The tail call analysis.
+   */
+  private static TailCall _tailCall;
 
 
   /**
@@ -106,6 +113,7 @@ public class Executor extends ProcessExpression<Value, Object>
     _fuir = fuir;
     _options_ = opt;
     _universe = new Instance(_fuir.clazzUniverse());
+    _tailCall = new TailCall(fuir);
     this._cur = _fuir.mainClazzId() == _fuir.clazzUniverse() ? _universe : new Instance(_fuir.mainClazzId());
     this._outer = _universe;
     this._args = new List<>();
@@ -234,13 +242,18 @@ public class Executor extends ProcessExpression<Value, Object>
         tvalue = ((Boxed)tvalue)._contents;
       }
 
+    var cl = _fuir.clazzAt(s);
+    if (cc == cl // calling myself
+        && _tailCall.callIsTailCall(cl, s))
+      {
+        throw new TailCallException(tvalue, args);
+      }
+
     var result = switch (_fuir.clazzKind(cc))
       {
       case Routine :
         // NYI change call to pass in ai as in match expression?
-        var cur = new Instance(cc);
-
-        callOnInstance(s, cc, cur, tvalue, args);
+        var cur = callOnNewInstance(s, cc, tvalue, args);
 
         Value rres = cur;
         if (!_fuir.isConstructor(cc))
@@ -545,30 +558,44 @@ public class Executor extends ProcessExpression<Value, Object>
    * callOnInstance assigns the arguments to the argument fields of a newly
    * created instance, calls the parents and then this feature.
    *
-   * @parm s site of the call or NO_SITE if unknown (e.g., form intrinsic)
+   * @param s site of the call or NO_SITE if unknown (e.g., form intrinsic)
    *
    * @param cc clazz id of the called clazz
-   *
-   * @param cur the newly created instance
    *
    * @param outer the target of the call
    *
    * @param args the arguments to be passed to this call.
    *
-   * @return
+   * @return the (new) instance (might have been replaced due to tail call optimization).
    */
-  Value callOnInstance(int s, int cc, Instance cur, Value outer, List<Value> args)
+  Instance callOnNewInstance(int s, int cc, Value outer, List<Value> args)
   {
     FuzionThread.current()._callStackFrames.push(cc);
     FuzionThread.current()._callStack.push(s);
 
-    new AbstractInterpreter<>(_fuir, new Executor(cur, outer, args))
-      .processClazz(cc);
+    var o = outer;
+    var a = args;
+    var cur = new Instance(cc);
+    while (o != null)
+      {
+        try
+          {
+            new AbstractInterpreter<>(_fuir, new Executor(cur, o, a))
+              .processClazz(cc);
+            o = null;
+          }
+        catch(TailCallException tce)
+          {
+            cur = new Instance(cc);
+            o = tce.tvalue;
+            a = tce.args;
+          }
+      }
 
     FuzionThread.current()._callStack.pop();
     FuzionThread.current()._callStackFrames.pop();
 
-    return null;
+    return cur;
   }
 
 

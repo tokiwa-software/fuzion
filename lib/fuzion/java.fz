@@ -319,8 +319,5 @@ public fuzion.java is
   public f64   .as_java_object => fuzion.java.f64_to_java_object val
   public bool  .as_java_object => fuzion.java.bool_to_java_object bool.this
   public String.as_java_object => fuzion.java.string_to_java_object String.this
-  # NYI: UNDER DEVELOPMENT: Repeated inheritance of conflicting features
-  # public array .as_java_object => fuzion.java.array_to_java_object array.this
-  # NYI: BUG:Feature declared using modifier 'redef' does not redefine another feature
-  # public redef Const_String.as_java_object => fuzion.java.array_to_java_object Const_String.this
+  public array .as_java_object => fuzion.java.array_to_java_object array.this
 

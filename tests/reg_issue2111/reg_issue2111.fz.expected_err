@@ -1,8 +1,8 @@
 
 --CURDIR--/reg_issue2111.fz:31:3: error 1: Incompatible type parameter
-  test switch on
+  test my_switch on
 --^^^^
 formal type parameter 'T' with constraint 'property.equatable'
-actual type parameter '(test.this test.T).switch'
+actual type parameter '(test.this test.T).my_switch'
 
 one error.

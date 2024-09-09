@@ -217,7 +217,6 @@ clazzIsRef
 clazzNeedsCode
 clazzOuterRef
 clazzUniverse
-clazzWithSpecificOuter
 clc
 cleanName
 clearerr

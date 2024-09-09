@@ -269,9 +269,9 @@ root_node(CTK type : property.hashable, CTV type) : choice (Indirection_Node CTK
 
 # the ctrie
 private:public map(public CTK type : property.hashable,
-                     public CTV type,
-                     root concur.atomic (root_node CTK CTV),
-                     public read_only bool) : container.Mutable_Map CTK CTV
+                   public CTV type,
+                   root concur.atomic (root_node CTK CTV),
+                   public read_only bool) : container.Mutable_Map CTK CTV
 is
 
   # the data structure as human readable string
@@ -683,6 +683,7 @@ is
   # a snapshot is taken every time
   # the map is modified.
   #
+  # NYI: BUG: #3646 make public when snapshots work
   as_persistent_map container.Persistent_Map CTK CTV =>
     s := snapshot false
     ref : container.Persistent_Map CTK CTV
@@ -772,12 +773,14 @@ public container.set_of_hashable(K type : property.hashable, vs (lock_free.map K
 # f determines the key of an element
 #
 public Sequence.group_by(K type : property.hashable, f T -> K) lock_free.map K (list T) =>
+
   # NYI It should be possible to choose the map implementation that is used.
   res := (lock_free.map K (list T)).empty
-  for_each (x ->
+
+  for_each x->
     key := f x
     match res[key]
       nil => res.add key [x].as_list
       s list T => res.add key (s ++ [x].as_list)
-    )
+
   res

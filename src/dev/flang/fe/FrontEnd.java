@@ -137,7 +137,7 @@ public class FrontEnd extends ANY
   /**
    * The module we are compiling. null if !options._loadSources or Errors.count() != 0
    */
-  private final SourceModule _module;
+  private final SourceModule _sourceModule;
 
 
   /**
@@ -191,12 +191,12 @@ public class FrontEnd extends ANY
     var dependsOn = lms.toArray(LibraryModule[]::new);
     if (options._loadSources)
       {
-        _module = new SourceModule(options, sourceDirs, dependsOn, universe);
-        _module.createASTandResolve();
+        _sourceModule = new SourceModule(options, sourceDirs, dependsOn, universe);
+        _sourceModule.createASTandResolve();
       }
     else
       {
-        _module = null;
+        _sourceModule = null;
       }
   }
 
@@ -309,13 +309,13 @@ public class FrontEnd extends ANY
 
   public MIR createMIR()
   {
-    return _module.createMIR();
+    return _sourceModule.createMIR(_sourceModule._main);
   }
 
 
   public SourceModule module()
   {
-    return _module;
+    return _sourceModule;
   }
 
 
@@ -333,7 +333,7 @@ public class FrontEnd extends ANY
    */
   public Module mainModule()
   {
-    return libModule(_module.data("main"), _modules.values().toArray(new LibraryModule[_modules.size()]));
+    return libModule(_sourceModule.data("main"), _modules.values().toArray(new LibraryModule[_modules.size()]));
   }
 
 }

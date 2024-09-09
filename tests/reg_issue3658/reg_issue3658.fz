@@ -17,36 +17,33 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature float_sequence
-#
-#  Author: Michael Lill (michael.lill@tokiwa.software)
+#  Source code of Fuzion test reg_issue3658
 #
 # -----------------------------------------------------------------------
 
-# NYI
-# mode
-# Mean (geometric harmonic)
-# quartile
-# ...
-
-# float_sequence -- a Sequence whose elements inherit from float
+# Test for partial application on the left hand side of a call to an `infix <|`
+# operator.
 #
-public float_sequence(public F type : float,
-                      from Sequence F) : numeric_sequence F from is
+# The difficulty here is the the left hand side is first considered as the
+# target of the call to the operator, but the target cannote be found.
+#
+reg_issue3658 =>
 
-  # create a list from this Sequence.
-  #
-  public redef as_list => from.as_list
+  # piping strings forward and backward
+  "Hello World!" |> say
+  say <| "Hello World!"
+
+  # piping Sequences forward and backward
+  s1 := [1,2,3] |> sum; say s1
+  s2 := sum <| [1,2,3]; say s2
+
+  # piping and destructuring pairs forward and backward
+  add2(a, b X : numeric) => a + b
+  p1 := (47,11) ||> add2; say p1
+  p2 := add2 <|| (47,11); say p2
 
 
-  # the standard deviation of the sequence
-  # https://en.wikipedia.org/wiki/Standard_deviation
-  public std_dev =>
-    variance.map (x -> F.sqrt x)
-
-
-  # the euclidean norm of this sequence
-  # i.e. the square of the sum of squares of this sequence
-  #
-  public euclidean_norm F =>
-    F.sqrt ((map (x)->x**F.two).fold F.sum)
+  # piping and destructuring quintets forward and backward
+  add5(a, b, c, d, e X : numeric) => a + b + c + d + e
+  q1 := (47,11,32,16,8) |||||> add5; say q1
+  q2 := add5 <||||| (47,11,32,16,8); say q2

@@ -28,49 +28,15 @@
 # option represents an optional value of type T
 #
 public option(public T type)
-  : choice T nil,
-    monad T (option T),
-    Sequence T,
-    auto_unwrap T (try (option T)) /* NYI: BUG #3355: auto_unwrap T (try option.this) */
+  : switch T nil,
+    monad T (option T)
 is
 
-  # Does this option contain a value of type T?
-  #
-  public exists => (option.this ? T   => true
-                                | nil => false)
-
-
-  # short-hand postfix operator for 'exists'
-  #
-  public postfix ?? => exists
 
 
   # Does this option contain no value of type T?
   #
   public is_nil => !exists
-
-
-  # short-hand postfix operator for 'is_nil'
-  #
-  public postfix !! => is_nil
-
-
-  # short-hand prefix operator for 'is_nil'
-  #
-  public prefix ! => is_nil
-
-
-  # value of an option that is known to contain a value
-  #
-  # this can only be called in cases where it is known for sure that this option
-  # is not nil.  A runtime error will be created otherwise.
-  #
-  public val T
-    pre
-      safety: (option.this??) # NYI: REGRESSION: parantheses currently necessary, due to PR #2572
-  =>
-    option.this ? v T => v
-                | nil => fuzion.std.panic "option.val called on nil"
 
 
   # monadic operator
@@ -124,18 +90,6 @@ is
                 | nil => $nil
 
 
-  # unwraps an option that is known to contain a value
-  #
-  # this can only be called in cases where it is known for sure that this option
-  # is not nil.  A runtime error will be created otherwise.
-  #
-  public get
-  pre
-    safety: (option.this??)
-  =>
-    option.this ? v T => v
-                | nil => fuzion.std.panic "option.get called on nil"
-
 
   # unwraps an option if it exists, returns default value otherwise.
   #
@@ -145,20 +99,7 @@ is
                 | nil => default
 
 
-  # converts option into a list of either a single element in case
-  # option.this.exists or `nil`otherwise
-  #
-  public redef as_list list T
-  =>
-    option.this ? v T => v : nil
-                | nil => nil
 
-
-  # unwrap this option
-  #
-  public redef unwrap ! try option.this =>
-    option.this ? v T => v
-                | nil => (try option.this).env.raise (error "error unwrapping option: {option.this}")
 
 
   # return function

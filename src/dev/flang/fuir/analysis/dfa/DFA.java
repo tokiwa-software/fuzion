@@ -88,6 +88,12 @@ public class DFA extends ANY
 
 
   /**
+   * Record match cases that were evaluated by the DFA.
+   */
+  public final Set<Long> _takenMatchCases = new TreeSet<>();
+
+
+  /**
    * Statement processor used with AbstractInterpreter to perform DFA analysis
    */
   class Analyze extends AbstractInterpreter.ProcessExpression<Val,Unit>
@@ -638,6 +644,10 @@ public class DFA extends ANY
                 {
                   taken = matchSingleSubject(s, sv, mc, t) || taken;
                 }
+              if (taken)
+                {
+                  DFA.this._takenMatchCases.add(((long)s<<32)|((long)mc));
+                }
             }
           if (_reportResults && _options.verbose(9))
             {
@@ -784,7 +794,7 @@ public class DFA extends ANY
    * Should the DFA analysis use embedded values?  This is required for proper
    * escape analysis of instances that contain value types.  Disabling this is
    * only for experimental purposes and will break the C backend since it relies
-   * on escape enalysis of embedded references.
+   * on escape analysis of embedded references.
    *
    * To disable, use fz with
    *
@@ -923,7 +933,7 @@ public class DFA extends ANY
   /**
    * Stored results of newValueSet.
    *
-   * Map from key made from v._id and w._id to resutling value set.
+   * Map from key made from v._id and w._id to resulting value set.
    */
   LongMap<Value> _joined = new LongMap<>();
 
@@ -1235,6 +1245,14 @@ public class DFA extends ANY
               return (code == ExprKind.Call || code == ExprKind.Match) && site(s).alwaysResultsInVoid() || super.alwaysResultsInVoid(s);
             }
         }
+
+
+        @Override
+        public synchronized int[] matchCaseTags(int s, int cix)
+        {
+          var key = ((long)s<<32)|((long)cix);
+          return _takenMatchCases.contains(key) ? super.matchCaseTags(s, cix) : new int[0];
+        };
 
     };
   }
@@ -2074,11 +2092,7 @@ public class DFA extends ANY
           var ecl = cl._dfa._fuir.effectTypeFromInstrinsic(cl._cc);
           var new_e = cl._args.get(0).value();
           var old_e = cl._dfa._defaultEffects.get(ecl);
-          if (old_e != null)
-            {
-              new_e = old_e.join(cl._dfa, new_e);
-            }
-          if (old_e == null || Value.compare(old_e, new_e) != 0)
+          if (old_e == null)
             {
               cl._dfa._defaultEffects.put(ecl, new_e);
               cl._dfa._defaultEffectContexts.put(ecl, cl);

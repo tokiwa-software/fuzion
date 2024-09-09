@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.c;
 
 import java.util.ArrayList;
+import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
 
@@ -252,6 +253,12 @@ public class CNames extends ANY
     private final ArrayList<String> _cache = new ArrayList<>();
 
 
+    /*
+     * Set of used names
+     */
+    private final TreeSet<String> _usedNames = new TreeSet<String>();
+
+
     /**
      * prefix to be used for given class of names.
      */
@@ -320,11 +327,15 @@ public class CNames extends ANY
           var p = _prefix;
           var sb = new StringBuilder(p);
           clazzMangledName(cl, sb);
-          // NYI: there might be name conflicts due to different generic instances, so
-          // we need to add the clazz id or the actual generics if this is the case:
-          //
-          //   sb.append("_").append(clazzId2num(cl)).append("_");
           res = sb.toString();
+
+          // see reg_issue1840 why the following is needed
+          // name clashes due to equal named features that are not visible but inherited
+          if (_usedNames.contains(res))
+          {
+            res = res + "_" + clazzId2num(cl);
+          }
+          _usedNames.add(res);
 
           if (res.length() > MAX_C99_IDENTIFIER_LENGTH)
             {

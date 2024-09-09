@@ -1055,13 +1055,33 @@ public class AstErrors extends ANY
                    "declaration of " + s(f) + ".");
   }
 
-  public static void redefineModifierDoesNotRedefine(AbstractFeature f)
+  public static void redefineModifierDoesNotRedefine(AbstractFeature af, List<FeatureAndOuter> hiddenFeaturesSameSignature)
   {
-    error(f.pos(),
-          "Feature declared using modifier " + skw("redef") + " does not redefine another feature",
-          "Redefining feature: " + s(f) + "\n" +
-          "To solve this, check spelling and argument count against the feature you want to redefine or " +
-          "remove " + skw("redef") + " modifier in the declaration of " + s(f) + ".");
+    if (any() && af instanceof Feature f && f.isLambdaCall())
+      {
+        // suppress subsequent errors for λ.call
+        // see reg_issue3691
+      }
+    else
+      {
+        error(af.pos(),
+              "Feature declared using modifier " + skw("redef") + " does not redefine another feature",
+              "Redefining feature: " + s(af) + "\n" +
+              "To solve this, check spelling and argument count against the feature you want to redefine or " +
+              "remove " + skw("redef") + " modifier in the declaration of " + s(af) + "." +
+              redefOfPrivateFeature(af, hiddenFeaturesSameSignature));
+      }
+  }
+
+  private static String redefOfPrivateFeature(AbstractFeature f, List<FeatureAndOuter> sameSignature)
+  {
+    AbstractFeature outer = f.outer();
+
+    return sameSignature.isEmpty()
+            ? ""
+            : "\nAlso make sure that the feature to be redefined is visible where it is redefined. " +
+              "There is the feature " + s(sameSignature.getFirst()._feature) +
+              " that could be made public to allow redefinition in " + s(outer) + ".";
   }
 
   static void notRedefinedContractMustNotUseElseOrThen(SourcePosition pos, AbstractFeature f, PreOrPost preOrPost)
@@ -2211,6 +2231,13 @@ public class AstErrors extends ANY
     error(expr.pos(),
       "Wrong syntax in " + skw(type) + " expression.",
       "To solve this, make sure the expression to the left of " + skw(type) + " denotes a type.");
+  }
+
+  public static void illegalResultTypeThisType(Feature f)
+  {
+    error(f.pos(),
+      "Illegal " + skw(".this") + " type: " + s(f.resultType()),
+      "No suitable surrounding feature was found that matches the type.");
   }
 
 

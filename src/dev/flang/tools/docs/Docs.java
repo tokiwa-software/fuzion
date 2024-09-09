@@ -310,7 +310,7 @@ public class Docs extends ANY
 
     }, universe);
 
-    var htmlTool = new Html(config, mapOfDeclaredFeatures, universe);
+    var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, fe.module());
 
     mapOfDeclaredFeatures
       .keySet()

@@ -1508,8 +1508,10 @@ public class Feature extends AbstractFeature
       {
         _state = State.RESOLVING_SUGAR1;
 
-        _contract.addContractFeatures(res, this, context());
-        if (definesType())
+        Contract.addContractFeatures(res, this, context());
+        if (!isUniverse() && !isTypeFeature()
+            && !isField() /* NYI: UNDER DEVELOPMENT: does not work yet for fields */
+            && !isTypeParameter())
           {
             typeFeature(res);
           }
@@ -1793,7 +1795,7 @@ A ((Choice)) declaration must not contain a result type.
             o.typeInference(res);
           }
 
-        _resultType = resultTypeIfPresent(res);
+        _resultType = resultTypeIfPresentUrgent(res, true);
         if (_resultType == null)
           {
             AstErrors.failedToInferResultType(this);
@@ -1927,15 +1929,16 @@ A ((Choice)) declaration must not contain a result type.
         _resultType = _resultType.checkChoice(_posOfReturnType, context());
         visit(new ContextVisitor(context()) {
             /* if an error is reported in a call it might no longer make sense to check the actuals: */
-            public boolean visitActualsLate() { return true; }
+            @Override public boolean visitActualsLate() { return true; }
 
-            public void         action(AbstractAssign a, AbstractFeature outer) {        a.checkTypes(res,  _context);           }
-            public Call         action(Call           c, AbstractFeature outer) {        c.checkTypes(res,  _context); return c; }
-            public Expr         action(If             i, AbstractFeature outer) {        i.checkTypes(      _context); return i; }
-            public Expr         action(InlineArray    i, AbstractFeature outer) {        i.checkTypes(      _context); return i; }
-            public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints(_context);           }
-            public void         action(Cond           c, AbstractFeature outer) {        c.checkTypes();                         }
-            public void         actionBefore(Block    b, AbstractFeature outer) {        b.checkTypes();                         }
+            @Override public void         action(AbstractAssign a, AbstractFeature outer) {        a.checkTypes(res,  _context);           }
+            @Override public Call         action(Call           c, AbstractFeature outer) {        c.checkTypes(res,  _context); return c; }
+            @Override public void         action(Constant       c                       ) {        c.checkRange();                         }
+            @Override public Expr         action(If             i, AbstractFeature outer) {        i.checkTypes(      _context); return i; }
+            @Override public Expr         action(InlineArray    i, AbstractFeature outer) {        i.checkTypes(      _context); return i; }
+            @Override public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints(_context);           }
+            @Override public void         action(Cond           c, AbstractFeature outer) {        c.checkTypes();                         }
+            @Override public void         actionBefore(Block    b, AbstractFeature outer) {        b.checkTypes();                         }
           });
         checkTypes(res, context());
 
@@ -2149,20 +2152,24 @@ A ((Choice)) declaration must not contain a result type.
 
 
   /**
-   * resultTypeIfPresent returns the result type of this feature using the
+   * resultTypeIfPresent2 returns the result type of this feature using the
    * formal generic argument.
    *
-   * @return this feature's result type using the formal generics, null in
-   * case the type is currently unknown (in particular, in case of a type
-   * inference from a field declared later).
+   * @param urgent if true and the result type is inferred and inference would
+   * currently not succeed, then enforce it even if that would produce an error.
+   *
+   * @return this feature's result type, null in case the type is currently
+   * unknown since the type inference is incomplete.
    */
   @Override
-  AbstractType resultTypeIfPresent(Resolution res)
+  AbstractType resultTypeIfPresentUrgent(Resolution res, boolean urgent)
   {
     AbstractType result;
 
-    if (CHECKS) check
-      (state().atLeast(State.RESOLVING_TYPES));
+    if (res != null && !res.state(this).atLeast(State.RESOLVING_TYPES))
+      {
+        res.resolveTypes(this);
+      }
 
     if (_resultType != null)
       {
@@ -2176,7 +2183,7 @@ A ((Choice)) declaration must not contain a result type.
       {
         if (CHECKS) check
           (!state().atLeast(State.TYPES_INFERENCED));
-        result = _impl.inferredType(res, this);
+        result = _impl.inferredType(res, this, urgent);
       }
     else if (_returnType.isConstructorType())
       {
@@ -2194,6 +2201,10 @@ A ((Choice)) declaration must not contain a result type.
       {
         result = result.asThis();
       }
+    if (res != null && result != null && outer() != null)
+      {
+        result = result.resolve(res, outer().context());
+      }
 
     if (POSTCONDITIONS) ensure
       (isTypeFeaturesThisType() || Types.resolved == null || selfType() == Types.resolved.t_Const_String || result != Types.resolved.t_Const_String);
@@ -2203,44 +2214,12 @@ A ((Choice)) declaration must not contain a result type.
 
 
   /**
-   * In case this has not been resolved for types yet, do so. Next, try to
-   * determine the result type of this feature. If the type is not explicit, but
-   * needs to be inferenced, the result might still be null. Inferenced types
-   * become available once this is in state RESOLVED_TYPES.
-   *
-   * @param res Resolution instance use to resolve this for types.
-   *
-   * @param generics the generic arguments to be applied to resultType.
-   *
-   * @return the result type, Types.resolved.t_void if none and null in case the
-   * type must be inferenced and is not available yet.
-   */
-  @Override
-  AbstractType resultTypeIfPresent(Resolution res, List<AbstractType> generics)
-  {
-    AbstractType result = Types.resolved == null ? null : Types.resolved.t_void;
-    if (result != null && !_resultTypeIfPresentRecursion)
-      {
-        _resultTypeIfPresentRecursion = impl()._kind == Impl.Kind.FieldActual;
-        if (!res.state(this).atLeast(State.RESOLVING_TYPES))
-          {
-            res.resolveTypes(this);
-          }
-        result = resultTypeIfPresent(res);
-        result = result == null ? null : result.resolve(res, outer().context());
-        result = result == null ? null : result.applyTypePars(this, generics);
-        _resultTypeIfPresentRecursion = false;
-      }
-    return result;
-  }
-  boolean _resultTypeIfPresentRecursion = false;
-
-
-  /**
    * After type resolution, resultType returns the result type of this
    * feature using the formal generic argument.
    *
-   * @return the result type, t_ERROR in case of an error. Never null.
+   * @return the result type, t_ERROR in case of an error.  Never
+   * null. Types.t_UNDEFINED in case type inference for this type is cyclic and
+   * hence impossible.
    */
   @Override
   public AbstractType resultType()
@@ -2248,7 +2227,7 @@ A ((Choice)) declaration must not contain a result type.
     if (PRECONDITIONS) require
       (Errors.any() || _state.atLeast(State.RESOLVED_TYPES));
 
-    var result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeIfPresent(null) : null;
+    var result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeIfPresentUrgent(null, true) : null;
     if (result == null)
       {
         if (CHECKS) check

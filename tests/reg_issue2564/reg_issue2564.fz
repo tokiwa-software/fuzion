@@ -1,0 +1,42 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue2564
+#
+# -----------------------------------------------------------------------
+
+reg_issue2564 =>
+
+  o := (mutate.array Any).type.new mutate
+
+  do_it1(n i32) =>
+    redef as_string => "do_it1 $n"
+    o.add do_it1.this
+    if n < 3
+      do_it1 n+1
+
+  do_it2(n i32) is
+    redef as_string => "do_it2 $n"
+    o.add do_it2.this
+    if n < 3
+      _ := do_it2 n+1
+
+  do_it1 0
+  _ := do_it2 0
+  say o

@@ -28,10 +28,11 @@
 # try provides an operation 'cause' that immediately stops execution and
 # returns an 'error' wrapped in an 'outcome'.
 #
-public try (# type parameter used only to distinguish different instances of
-            # `try`, this is otherwise ignores. This permits using, e.g.,
-            # `try reader` and `try writer` and distingish the errors raisde
-            # by the reader from those raised by the writer.
+public try (# type parameter used only to distinguish different
+            # instances of `try`. This permits using, e.g.,
+            # `try reader` and `try writer` and distinguish the
+            # errors raised by the reader from those raised
+            # by the writer.
             #
             public T type,
 

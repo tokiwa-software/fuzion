@@ -27,7 +27,7 @@ reg_issue2231 is
     inner := 7
     a <- ()->inner
     something =>
-      abort
+      ef.abort
 
   ef.instate_self ()->
     reg_issue2231.ef.env.something
