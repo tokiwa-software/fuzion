@@ -673,6 +673,8 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
         }
       case Env:
         {
+          if (CHECKS) check
+            (!_fuir.alwaysResultsInVoid(s));
           var ecl = _fuir.envClazz(s);
           var r = _processor.env(s, ecl);
           push(stack, ecl, r.v0());
