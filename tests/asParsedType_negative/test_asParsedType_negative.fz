@@ -29,12 +29,12 @@
 a is
   b is
 
-# feature with argument being a type paramter only to test expr.asParsedType
+# feature with argument being a type parameter only to test expr.asParsedType
 #  when actual argument to `x` is first parsed as an expression.
 #
 x(T type) => say "GOT: x $T"
 
-# feature with arguments being a type paramter and a value of that type to check type
+# feature with arguments being a type parameter and a value of that type to check type
 # inference from an actual value
 #
 y(T type, v T) => say "GOT: y $T"
@@ -111,16 +111,16 @@ x (a.b|i32|String)->
 say ""
 
 say "EXP: x Type of 'choice (Unary i32 (choice a.b i32 String)) Any'"
-x ((a.b|i32|String)->i32)|Any
+x ((a.b|i32|String)->i32)|String
 x ((a.b|i32|String)->
-        i32)|Any
+        i32)|String
 say ""
 
 say "EXP: x Type of 'tuple'"
 x ()
 x (())
 x ((()))
-# x ( )   # NYI: currenlty does not work, no space allowed in empty tuple
+# x ( )   # NYI: currently does not work, no space allowed in empty tuple
 x (( ))
 x ((( )))
 x ( ( ) )
@@ -200,12 +200,12 @@ say "EXP: y Type of 'Type'"
 y (io.out.type)
 say ""
 
-t := (u8 3, f32 4, i64 5)
+t2 := (u8 3, f32 4, i64 5)
 
 say "EXP: y Type of 'u8'"
-y t.values.0
+y t2.values.0
 say ""
 
 say "EXP: y Type of 'i64'"
-y t.values.2
+y t2.values.2
 say ""

@@ -76,7 +76,7 @@ test_effect_neg is
   if maybe
     a.instate_self ()->
       b.instate_self ()->
-        use_c      # 5. should flag an error: effect not installedx
+        use_c      # 5. should flag an error: effect not installed
   if maybe
     a.instate_self ()->
       c.instate_self ()->

@@ -1,0 +1,183 @@
+
+--CURDIR--/typecheck_negative.fz:39:11: error 1: Incompatible types in assignment
+    set q := p // 1. should flag an error, illegal assignment
+----------^
+assignment to field : 'typecheck_negative.assign.q'
+expected formal type: '((typecheck_negative.this.assign.this.A i64).B u64).C bool'
+actual type found   : '((typecheck_negative.this.assign.this.A i32).B u64).C bool'
+assignable to       : '((typecheck_negative.this.assign.this.A i32).B u64).C bool'
+for value assigned  : 'p'
+To solve this you could:
+  • make  '((typecheck_negative.this.assign.this.A i64).B u64).C bool' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
+  • change the type of the target 'typecheck_negative.assign.q' to '((typecheck_negative.this.assign.this.A i32).B u64).C bool', or
+  • convert the type of the assigned value to '((typecheck_negative.this.assign.this.A i64).B u64).C bool'.
+
+
+--CURDIR--/typecheck_negative.fz:40:11: error 2: Incompatible types in assignment
+    set r := p // 2. should flag an error, illegal assignment
+----------^
+assignment to field : 'typecheck_negative.assign.r'
+expected formal type: '((typecheck_negative.this.assign.this.A i32).B bool).C bool'
+actual type found   : '((typecheck_negative.this.assign.this.A i32).B u64).C bool'
+assignable to       : '((typecheck_negative.this.assign.this.A i32).B u64).C bool'
+for value assigned  : 'p'
+To solve this you could:
+  • make  '((typecheck_negative.this.assign.this.A i32).B bool).C bool' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
+  • change the type of the target 'typecheck_negative.assign.r' to '((typecheck_negative.this.assign.this.A i32).B u64).C bool', or
+  • convert the type of the assigned value to '((typecheck_negative.this.assign.this.A i32).B bool).C bool'.
+
+
+--CURDIR--/typecheck_negative.fz:41:11: error 3: Incompatible types in assignment
+    set q := r // 3. should flag an error, illegal assignment
+----------^
+assignment to field : 'typecheck_negative.assign.q'
+expected formal type: '((typecheck_negative.this.assign.this.A i64).B u64).C bool'
+actual type found   : '((typecheck_negative.this.assign.this.A i32).B bool).C bool'
+assignable to       : '((typecheck_negative.this.assign.this.A i32).B bool).C bool'
+for value assigned  : 'r'
+To solve this you could:
+  • make  '((typecheck_negative.this.assign.this.A i64).B u64).C bool' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
+  • change the type of the target 'typecheck_negative.assign.q' to '((typecheck_negative.this.assign.this.A i32).B bool).C bool', or
+  • convert the type of the assigned value to '((typecheck_negative.this.assign.this.A i64).B u64).C bool'.
+
+
+--CURDIR--/typecheck_negative.fz:42:11: error 4: Incompatible types in assignment
+    set r := q // 4. should flag an error, illegal assignment
+----------^
+assignment to field : 'typecheck_negative.assign.r'
+expected formal type: '((typecheck_negative.this.assign.this.A i32).B bool).C bool'
+actual type found   : '((typecheck_negative.this.assign.this.A i64).B u64).C bool'
+assignable to       : '((typecheck_negative.this.assign.this.A i64).B u64).C bool'
+for value assigned  : 'q'
+To solve this you could:
+  • make  '((typecheck_negative.this.assign.this.A i32).B bool).C bool' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
+  • change the type of the target 'typecheck_negative.assign.r' to '((typecheck_negative.this.assign.this.A i64).B u64).C bool', or
+  • convert the type of the assigned value to '((typecheck_negative.this.assign.this.A i32).B bool).C bool'.
+
+
+--CURDIR--/typecheck_negative.fz:43:11: error 5: Incompatible types in assignment
+    set s := p // 5. should flag an error, illegal assignment
+----------^
+assignment to field : 'typecheck_negative.assign.s'
+expected formal type: '((typecheck_negative.this.assign.this.A i32).B u64).C u32'
+actual type found   : '((typecheck_negative.this.assign.this.A i32).B u64).C bool'
+assignable to       : '((typecheck_negative.this.assign.this.A i32).B u64).C bool'
+for value assigned  : 'p'
+To solve this you could:
+  • make  '((typecheck_negative.this.assign.this.A i32).B u64).C u32' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
+  • change the type of the target 'typecheck_negative.assign.s' to '((typecheck_negative.this.assign.this.A i32).B u64).C bool', or
+  • convert the type of the assigned value to '((typecheck_negative.this.assign.this.A i32).B u64).C u32'.
+
+
+--CURDIR--/typecheck_negative.fz:44:11: error 6: Incompatible types in assignment
+    set s := q // 6. should flag an error, illegal assignment
+----------^
+assignment to field : 'typecheck_negative.assign.s'
+expected formal type: '((typecheck_negative.this.assign.this.A i32).B u64).C u32'
+actual type found   : '((typecheck_negative.this.assign.this.A i64).B u64).C bool'
+assignable to       : '((typecheck_negative.this.assign.this.A i64).B u64).C bool'
+for value assigned  : 'q'
+To solve this you could:
+  • make  '((typecheck_negative.this.assign.this.A i32).B u64).C u32' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
+  • change the type of the target 'typecheck_negative.assign.s' to '((typecheck_negative.this.assign.this.A i64).B u64).C bool', or
+  • convert the type of the assigned value to '((typecheck_negative.this.assign.this.A i32).B u64).C u32'.
+
+
+--CURDIR--/typecheck_negative.fz:45:11: error 7: Incompatible types in assignment
+    set s := r // 7. should flag an error, illegal assignment
+----------^
+assignment to field : 'typecheck_negative.assign.s'
+expected formal type: '((typecheck_negative.this.assign.this.A i32).B u64).C u32'
+actual type found   : '((typecheck_negative.this.assign.this.A i32).B bool).C bool'
+assignable to       : '((typecheck_negative.this.assign.this.A i32).B bool).C bool'
+for value assigned  : 'r'
+To solve this you could:
+  • make  '((typecheck_negative.this.assign.this.A i32).B u64).C u32' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
+  • change the type of the target 'typecheck_negative.assign.s' to '((typecheck_negative.this.assign.this.A i32).B bool).C bool', or
+  • convert the type of the assigned value to '((typecheck_negative.this.assign.this.A i32).B u64).C u32'.
+
+
+--CURDIR--/typecheck_negative.fz:57:11: error 8: Incompatible types in assignment
+    set v := u // 8. should flag an error, illegal assignment
+----------^
+assignment to field : 'typecheck_negative.assign.v'
+expected formal type: '((typecheck_negative.this.assign.this.D i64).E u64).F bool'
+actual type found   : '((typecheck_negative.this.assign.this.D i32).E u64).F bool'
+assignable to       : '((typecheck_negative.this.assign.this.D i32).E u64).F bool',
+                      'Any'
+for value assigned  : 'u'
+To solve this, you could change the type of the target 'typecheck_negative.assign.v' to '((typecheck_negative.this.assign.this.D i32).E u64).F bool' or convert the type of the assigned value to '((typecheck_negative.this.assign.this.D i64).E u64).F bool'.
+
+
+--CURDIR--/typecheck_negative.fz:58:11: error 9: Incompatible types in assignment
+    set w := u // 9. should flag an error, illegal assignment
+----------^
+assignment to field : 'typecheck_negative.assign.w'
+expected formal type: '((typecheck_negative.this.assign.this.D i32).E bool).F bool'
+actual type found   : '((typecheck_negative.this.assign.this.D i32).E u64).F bool'
+assignable to       : '((typecheck_negative.this.assign.this.D i32).E u64).F bool',
+                      'Any'
+for value assigned  : 'u'
+To solve this, you could change the type of the target 'typecheck_negative.assign.w' to '((typecheck_negative.this.assign.this.D i32).E u64).F bool' or convert the type of the assigned value to '((typecheck_negative.this.assign.this.D i32).E bool).F bool'.
+
+
+--CURDIR--/typecheck_negative.fz:59:11: error 10: Incompatible types in assignment
+    set v := w // 10. should flag an error, illegal assignment
+----------^
+assignment to field : 'typecheck_negative.assign.v'
+expected formal type: '((typecheck_negative.this.assign.this.D i64).E u64).F bool'
+actual type found   : '((typecheck_negative.this.assign.this.D i32).E bool).F bool'
+assignable to       : '((typecheck_negative.this.assign.this.D i32).E bool).F bool',
+                      'Any'
+for value assigned  : 'w'
+To solve this, you could change the type of the target 'typecheck_negative.assign.v' to '((typecheck_negative.this.assign.this.D i32).E bool).F bool' or convert the type of the assigned value to '((typecheck_negative.this.assign.this.D i64).E u64).F bool'.
+
+
+--CURDIR--/typecheck_negative.fz:60:11: error 11: Incompatible types in assignment
+    set w := v // 11. should flag an error, illegal assignment
+----------^
+assignment to field : 'typecheck_negative.assign.w'
+expected formal type: '((typecheck_negative.this.assign.this.D i32).E bool).F bool'
+actual type found   : '((typecheck_negative.this.assign.this.D i64).E u64).F bool'
+assignable to       : '((typecheck_negative.this.assign.this.D i64).E u64).F bool',
+                      'Any'
+for value assigned  : 'v'
+To solve this, you could change the type of the target 'typecheck_negative.assign.w' to '((typecheck_negative.this.assign.this.D i64).E u64).F bool' or convert the type of the assigned value to '((typecheck_negative.this.assign.this.D i32).E bool).F bool'.
+
+
+--CURDIR--/typecheck_negative.fz:61:11: error 12: Incompatible types in assignment
+    set x := u // 12. should flag an error, illegal assignment
+----------^
+assignment to field : 'typecheck_negative.assign.x'
+expected formal type: '((typecheck_negative.this.assign.this.D i32).E u64).F u32'
+actual type found   : '((typecheck_negative.this.assign.this.D i32).E u64).F bool'
+assignable to       : '((typecheck_negative.this.assign.this.D i32).E u64).F bool',
+                      'Any'
+for value assigned  : 'u'
+To solve this, you could change the type of the target 'typecheck_negative.assign.x' to '((typecheck_negative.this.assign.this.D i32).E u64).F bool' or convert the type of the assigned value to '((typecheck_negative.this.assign.this.D i32).E u64).F u32'.
+
+
+--CURDIR--/typecheck_negative.fz:62:11: error 13: Incompatible types in assignment
+    set x := v // 13. should flag an error, illegal assignment
+----------^
+assignment to field : 'typecheck_negative.assign.x'
+expected formal type: '((typecheck_negative.this.assign.this.D i32).E u64).F u32'
+actual type found   : '((typecheck_negative.this.assign.this.D i64).E u64).F bool'
+assignable to       : '((typecheck_negative.this.assign.this.D i64).E u64).F bool',
+                      'Any'
+for value assigned  : 'v'
+To solve this, you could change the type of the target 'typecheck_negative.assign.x' to '((typecheck_negative.this.assign.this.D i64).E u64).F bool' or convert the type of the assigned value to '((typecheck_negative.this.assign.this.D i32).E u64).F u32'.
+
+
+--CURDIR--/typecheck_negative.fz:63:11: error 14: Incompatible types in assignment
+    set x := w // 14. should flag an error, illegal assignment
+----------^
+assignment to field : 'typecheck_negative.assign.x'
+expected formal type: '((typecheck_negative.this.assign.this.D i32).E u64).F u32'
+actual type found   : '((typecheck_negative.this.assign.this.D i32).E bool).F bool'
+assignable to       : '((typecheck_negative.this.assign.this.D i32).E bool).F bool',
+                      'Any'
+for value assigned  : 'w'
+To solve this, you could change the type of the target 'typecheck_negative.assign.x' to '((typecheck_negative.this.assign.this.D i32).E bool).F bool' or convert the type of the assigned value to '((typecheck_negative.this.assign.this.D i32).E u64).F u32'.
+
+14 errors.

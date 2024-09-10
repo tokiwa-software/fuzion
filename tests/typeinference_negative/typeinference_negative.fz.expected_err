@@ -1,0 +1,405 @@
+
+--CURDIR--/typeinference_negative.fz:32:11: error 1: Could not find called feature
+     x := y  // 2. c1.a should flag an error, field invisible
+----------^
+Feature not found: 'y' (no arguments)
+Target feature: 'typeinference_negative.cyclic1'
+In call: 'y'
+
+
+--CURDIR--/typeinference_negative.fz:36:11: error 2: Could not find called feature
+     x := y  // 4. c1a.a should flag an error, field invisible
+----------^
+Feature not found: 'y' (no arguments)
+Target feature: 'typeinference_negative.cyclic1a'
+In call: 'y'
+
+
+--CURDIR--/typeinference_negative.fz:44:20: error 3: Illegal forward or cyclic type inference
+     x := cyclic2a.x  // 8. c2.b should flag an error, cyclic type inference between cousins
+-------------------^
+The definition of a field using ':=', or of a feature or function
+using '=>' must not create cyclic type dependencies.
+Referenced feature: 'typeinference_negative.cyclic2a.x' at --CURDIR--/typeinference_negative.fz:41:6:
+     x := cyclic2b.x  // 7. c2.a should flag an error, cyclic type inference between cousins
+-----^
+
+
+--CURDIR--/typeinference_negative.fz:56:11: error 4: Could not find called feature
+     a := b  //  9. c4.a should flag an error, field invisible
+----------^
+Feature not found: 'b' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 'b'
+
+
+--CURDIR--/typeinference_negative.fz:178:10: error 5: Illegal forward or cyclic type inference
+    f => x // 41. m3.f should flag an error, cyclic type inference between field and feature result type
+---------^
+The definition of a field using ':=', or of a feature or function
+using '=>' must not create cyclic type dependencies.
+Referenced feature: 'typeinference_negative.mix3.x' at --CURDIR--/typeinference_negative.fz:177:5:
+    x := f // 40. m3.x should flag an error, cyclic type inference between field and feature result type
+----^
+
+
+--CURDIR--/typeinference_negative.fz:181:10: error 6: Illegal forward or cyclic type inference
+    f => x // 42. m4.f should flag an error, field invisible
+---------^
+The definition of a field using ':=', or of a feature or function
+using '=>' must not create cyclic type dependencies.
+Referenced feature: 'typeinference_negative.mix4.x' at --CURDIR--/typeinference_negative.fz:182:5:
+    x := f
+----^
+
+
+--CURDIR--/typeinference_negative.fz:194:10: error 7: Illegal forward or cyclic type inference
+    g => y // 44. m6.z should flag an error, y accessed before it is initialized
+---------^
+The definition of a field using ':=', or of a feature or function
+using '=>' must not create cyclic type dependencies.
+Referenced feature: 'typeinference_negative.mix6.y' at --CURDIR--/typeinference_negative.fz:196:5:
+    y := f
+----^
+
+
+--CURDIR--/typeinference_negative.fz:207:39: error 8: Illegal forward or cyclic type inference
+    x := h; f => {x}; g => {f}; h => {y}; y := g // 45. m8.y should flag an error, cyclic type inference between field and feature result type
+--------------------------------------^
+The definition of a field using ':=', or of a feature or function
+using '=>' must not create cyclic type dependencies.
+Referenced feature: 'typeinference_negative.mix8.y' at --CURDIR--/typeinference_negative.fz:207:43:
+    x := h; f => {x}; g => {f}; h => {y}; y := g // 45. m8.y should flag an error, cyclic type inference between field and feature result type
+------------------------------------------^
+
+
+--CURDIR--/typeinference_negative.fz:159:31: error 9: Illegal forward or cyclic type inference
+    x => {z}; y => {x}; z => {y} // 36. r3.z should flag an error, cyclic result type inference
+------------------------------^
+The definition of a field using ':=', or of a feature or function
+using '=>' must not create cyclic type dependencies.
+Referenced feature: 'typeinference_negative.result3.y' at --CURDIR--/typeinference_negative.fz:159:15:
+    x => {z}; y => {x}; z => {y} // 36. r3.z should flag an error, cyclic result type inference
+--------------^
+
+
+--CURDIR--/typeinference_negative.fz:165:10: error 10: Illegal forward or cyclic type inference
+    x => y // 38. r5.x should flag an error, cyclic result type inference
+---------^
+The definition of a field using ':=', or of a feature or function
+using '=>' must not create cyclic type dependencies.
+Referenced feature: 'typeinference_negative.result5.y' at --CURDIR--/typeinference_negative.fz:166:5:
+    y => x // 39. r5.y should flag an error, cyclic result type inference
+----^
+
+
+--CURDIR--/typeinference_negative.fz:211:5: error 11: Incompatible types in branches of if expression
+    if       b     { 3 }         // 46. should flag an error: incompatible types in branches of if expression
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    else if !b     { "String" }
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    else if b && b { x i32 := 3 }
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    else if b || b { }
+----^^^^^^^^^^^^^^^^^^
+    else           { false }
+----^^^^^^^^^^^^^^^^^^^^^^^^
+Incompatible result types in different branches:
+block returns value of type 'i32' at --CURDIR--/typeinference_negative.fz:211:22:
+    if       b     { 3 }         // 46. should flag an error: incompatible types in branches of if expression
+---------------------^
+block returns value of type 'String' at --CURDIR--/typeinference_negative.fz:212:22:
+    else if !b     { "String" }
+---------------------^^^^^^^^
+blocks return values of type 'unit' at --CURDIR--/typeinference_negative.fz:213:20:
+    else if b && b { x i32 := 3 }
+-------------------^^^^^^^^^^^^^^
+and at --CURDIR--/typeinference_negative.fz:214:20:
+    else if b || b { }
+-------------------^^^
+block returns value of type 'bool' at --CURDIR--/typeinference_negative.fz:215:22:
+    else           { false }
+---------------------^^^^^
+
+
+--CURDIR--/typeinference_negative.fz:29:11: error 12: Could not find called feature
+     x := x  // 1. c0.a should flag an error, cyclic type inference from oneself
+----------^
+Feature not found: 'x' (no arguments)
+Target feature: 'typeinference_negative.cyclic0'
+In call: 'x'
+
+
+--CURDIR--/typeinference_negative.fz:37:11: error 13: Could not find called feature
+     y := z  // 5. c1a.b should flag an error, field invisible
+----------^
+Feature not found: 'z' (no arguments)
+Target feature: 'typeinference_negative.cyclic1a'
+In call: 'z'
+
+
+--CURDIR--/typeinference_negative.fz:77:11: error 14: Could not find called feature
+     v := w  // 30. c4.v should flag an error, field invisible
+----------^
+Feature not found: 'w' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 'w'
+
+
+--CURDIR--/typeinference_negative.fz:79:11: error 15: Could not find called feature
+     x := y  // 32. c4.x should flag an error, field invisible
+----------^
+Feature not found: 'y' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 'y'
+
+
+--CURDIR--/typeinference_negative.fz:80:11: error 16: Could not find called feature
+     y := z  // 33. c4.y should flag an error, field invisible
+----------^
+Feature not found: 'z' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 'z'
+
+
+--CURDIR--/typeinference_negative.fz:57:11: error 17: Could not find called feature
+     b := c  // 10. c4.b should flag an error, field invisible
+----------^
+Feature not found: 'c' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 'c'
+
+
+--CURDIR--/typeinference_negative.fz:58:11: error 18: Could not find called feature
+     c := d  // 11. c4.c should flag an error, field invisible
+----------^
+Feature not found: 'd' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 'd'
+
+
+--CURDIR--/typeinference_negative.fz:59:11: error 19: Could not find called feature
+     d := e  // 12. c4.d should flag an error, field invisible
+----------^
+Feature not found: 'e' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 'e'
+
+
+--CURDIR--/typeinference_negative.fz:60:11: error 20: Could not find called feature
+     e := f  // 13. c4.e should flag an error, field invisible
+----------^
+Feature not found: 'f' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 'f'
+
+
+--CURDIR--/typeinference_negative.fz:61:11: error 21: Could not find called feature
+     f := g  // 14. c4.f should flag an error, field invisible
+----------^
+Feature not found: 'g' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 'g'
+
+
+--CURDIR--/typeinference_negative.fz:62:11: error 22: Could not find called feature
+     g := h  // 15. c4.g should flag an error, field invisible
+----------^
+Feature not found: 'h' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 'h'
+
+
+--CURDIR--/typeinference_negative.fz:63:11: error 23: Could not find called feature
+     h := i  // 16. c4.h should flag an error, field invisible
+----------^
+Feature not found: 'i' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 'i'
+
+
+--CURDIR--/typeinference_negative.fz:64:11: error 24: Could not find called feature
+     i := j  // 17. c4.i should flag an error, field invisible
+----------^
+Feature not found: 'j' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 'j'
+
+
+--CURDIR--/typeinference_negative.fz:65:11: error 25: Could not find called feature
+     j := k  // 18. c4.j should flag an error, field invisible
+----------^
+Feature not found: 'k' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 'k'
+
+
+--CURDIR--/typeinference_negative.fz:66:11: error 26: Could not find called feature
+     k := l  // 19. c4.k should flag an error, field invisible
+----------^
+Feature not found: 'l' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 'l'
+
+
+--CURDIR--/typeinference_negative.fz:67:11: error 27: Could not find called feature
+     l := m  // 20. c4.l should flag an error, field invisible
+----------^
+Feature not found: 'm' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 'm'
+
+
+--CURDIR--/typeinference_negative.fz:68:11: error 28: Could not find called feature
+     m := n  // 21. c4.m should flag an error, field invisible
+----------^
+Feature not found: 'n' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 'n'
+
+
+--CURDIR--/typeinference_negative.fz:69:11: error 29: Could not find called feature
+     n := o  // 22. c4.n should flag an error, field invisible
+----------^
+Feature not found: 'o' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 'o'
+
+
+--CURDIR--/typeinference_negative.fz:70:11: error 30: Could not find called feature
+     o := p  // 23. c4.o should flag an error, field invisible
+----------^
+Feature not found: 'p' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 'p'
+
+
+--CURDIR--/typeinference_negative.fz:71:11: error 31: Could not find called feature
+     p := q  // 24. c4.p should flag an error, field invisible
+----------^
+Feature not found: 'q' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 'q'
+
+
+--CURDIR--/typeinference_negative.fz:72:11: error 32: Could not find called feature
+     q := r  // 25. c4.q should flag an error, field invisible
+----------^
+Feature not found: 'r' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 'r'
+
+
+--CURDIR--/typeinference_negative.fz:73:11: error 33: Could not find called feature
+     r := s  // 26. c4.r should flag an error, field invisible
+----------^
+Feature not found: 's' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 's'
+
+
+--CURDIR--/typeinference_negative.fz:74:11: error 34: Could not find called feature
+     s := t  // 27. c4.s should flag an error, field invisible
+----------^
+Feature not found: 't' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 't'
+
+
+--CURDIR--/typeinference_negative.fz:75:11: error 35: Could not find called feature
+     t := u  // 28. c4.t should flag an error, field invisible
+----------^
+Feature not found: 'u' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 'u'
+
+
+--CURDIR--/typeinference_negative.fz:76:11: error 36: Could not find called feature
+     u := v  // 29. c4.u should flag an error, field invisible
+----------^
+Feature not found: 'v' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 'v'
+
+
+--CURDIR--/typeinference_negative.fz:78:11: error 37: Could not find called feature
+     w := x  // 31. c4.w should flag an error, field invisible
+----------^
+Feature not found: 'x' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 'x'
+
+
+--CURDIR--/typeinference_negative.fz:120:11: error 38: Could not find called feature
+     a := d  // 35. f2. should flag an error, illegal forward reference
+----------^
+Feature not found: 'd' (no arguments)
+Target feature: 'typeinference_negative.funct2'
+In call: 'd'
+
+
+--CURDIR--/typeinference_negative.fz:219:7: error 39: Incompatible types in branches of if expression
+      if       b     { 3 }         // 47. should flag an error: incompatible types in branches of if expression
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      else if !b     { "String" }
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      else if b && b { x i32 := 3 }
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      else if b || b { }
+------^^^^^^^^^^^^^^^^^^
+      else           { false }
+------^^^^^^^^^^^^^^^^^^^^^^^^
+Incompatible result types in different branches:
+block returns value of type 'i32' at --CURDIR--/typeinference_negative.fz:219:24:
+      if       b     { 3 }         // 47. should flag an error: incompatible types in branches of if expression
+-----------------------^
+block returns value of type 'String' at --CURDIR--/typeinference_negative.fz:220:24:
+      else if !b     { "String" }
+-----------------------^^^^^^^^
+blocks return values of type 'unit' at --CURDIR--/typeinference_negative.fz:221:22:
+      else if b && b { x i32 := 3 }
+---------------------^^^^^^^^^^^^^^
+and at --CURDIR--/typeinference_negative.fz:222:22:
+      else if b || b { }
+---------------------^^^
+block returns value of type 'bool' at --CURDIR--/typeinference_negative.fz:223:24:
+      else           { false }
+-----------------------^^^^^
+
+
+--CURDIR--/typeinference_negative.fz:250:7: error 40: Incompatible types in cases of match expression
+      match x          // 48. should flag an error: incompatible types in cases of match expression
+------^
+Incompatible result types in different branches:
+block returns value of type 'i32' at --CURDIR--/typeinference_negative.fz:251:16:
+        a A => 3
+---------------^
+block returns value of type 'String' at --CURDIR--/typeinference_negative.fz:252:16:
+        B,C => "String"
+---------------^^^^^^^^
+block returns value of type 'bool' at --CURDIR--/typeinference_negative.fz:253:16:
+        d D => false
+---------------^^^^^
+block returns value of type 'typeinference_negative.this.typeInferencingFromMatch1.this.E' at --CURDIR--/typeinference_negative.fz:254:16:
+        e E => e
+---------------^
+
+
+--CURDIR--/typeinference_negative.fz:266:9: error 41: Incompatible types in cases of match expression
+        match x          // 49. should flag an error: incompatible types in cases of match expression
+--------^
+Incompatible result types in different branches:
+block returns value of type 'i32' at --CURDIR--/typeinference_negative.fz:267:18:
+          a A => 3
+-----------------^
+block returns value of type 'String' at --CURDIR--/typeinference_negative.fz:268:18:
+          B,C => "String"
+-----------------^^^^^^^^
+block returns value of type 'bool' at --CURDIR--/typeinference_negative.fz:269:18:
+          d D => false
+-----------------^^^^^
+block returns value of type 'typeinference_negative.this.typeInferencingFromMatch2.this.E' at --CURDIR--/typeinference_negative.fz:270:18:
+          e E => e
+-----------------^
+
+41 errors.

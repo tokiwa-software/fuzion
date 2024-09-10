@@ -28,10 +28,10 @@ strings_multiline_negative is
   a := """"""    //  1. should flag an error: Expected multiline string to start in first line following fat quotation
   b := """ """   //  2. should flag an error: Expected multiline string to start in first line following fat quotation
 
-                 //  3. should NYI flag NYI an NYI error: (error in line 32) Expected multiline string to start in first line following fat quotation
+
   c := """
 
-  c
+  c              //  3. should flag an error: Expected multiline string to start in first line following fat quotation
   """
 
   d := """
@@ -40,9 +40,9 @@ strings_multiline_negative is
   """
 
   e := """
-  hello
+  5. should flag an error: (error in line 43) Illegal trailing whitespace in multiline string. 
   """
-  //   ^  5. should NYI flag NYI an NYI error: (error in line 43) Illegal trailing whitespace in multiline string.
+  //   ^  5. should flag an error: (error in line 43) Illegal trailing whitespace in multiline string.
 
 
   f := """

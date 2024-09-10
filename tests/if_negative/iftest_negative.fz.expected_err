@@ -1,0 +1,105 @@
+
+--CURDIR--/iftest_negative.fz:47:18: error 1: Syntax error: expected 'is', or '=>' in routine declaration, found left curly brace '{'
+  testIfBoolean1 { if false  { } else if false  { } }; testIfBoolean1 // ok
+-----------------^
+While parsing: implRout, parse stack: implRout, implFldOrRout, routOrField, feature, expr, exprs, block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, unit
+
+
+--CURDIR--/iftest_negative.fz:48:18: error 2: Syntax error: expected 'is', or '=>' in routine declaration, found left curly brace '{'
+  testIfBoolean2 { if true   { } else if true   { } }; testIfBoolean2 // ok
+-----------------^
+While parsing: implRout, parse stack: implRout, implFldOrRout, routOrField, feature, expr, exprs, block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, unit
+
+
+--CURDIR--/iftest_negative.fz:49:18: error 3: Syntax error: expected 'is', or '=>' in routine declaration, found left curly brace '{'
+  testIfBoolean5 { if !false { } else if !false { } }; testIfBoolean5 // ok
+-----------------^
+While parsing: implRout, parse stack: implRout, implFldOrRout, routOrField, feature, expr, exprs, block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, unit
+
+
+--CURDIR--/iftest_negative.fz:50:18: error 4: Syntax error: expected 'is', or '=>' in routine declaration, found left curly brace '{'
+  testIfBoolean6 { if !true  { } else if !true  { } }; testIfBoolean6 // ok
+-----------------^
+While parsing: implRout, parse stack: implRout, implFldOrRout, routOrField, feature, expr, exprs, block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, unit
+
+
+--CURDIR--/iftest_negative.fz:40:3: error 5: Expression produces result of type 'iftest_negative.this.testIfNonBoolean1' but result is not used.
+  testIfNonBoolean1
+--^^^^^^^^^^^^^^^^^
+To solve this, use the result, explicitly ignore the result '_ := <expression>' or change 'iftest_negative.testIfNonBoolean1' from constructor to routine by replacing'is' by '=>'.
+
+
+--CURDIR--/iftest_negative.fz:45:3: error 6: Expression produces result of type 'iftest_negative.this.testIfNonBoolean2' but result is not used.
+  testIfNonBoolean2
+--^^^^^^^^^^^^^^^^^
+To solve this, use the result, explicitly ignore the result '_ := <expression>' or change 'iftest_negative.testIfNonBoolean2' from constructor to routine by replacing'is' by '=>'.
+
+
+--CURDIR--/iftest_negative.fz:39:13: error 7: If condition must be assignable to type 'bool'
+    else if "string"  // 2. should flag an error: must be of type bool
+------------^^^^^^^^
+Actual type is 'String'
+
+
+--CURDIR--/iftest_negative.fz:38:8: error 8: If condition must be assignable to type 'bool'
+    if "string"       // 1. should flag an error: must be of type bool
+-------^^^^^^^^
+Actual type is 'String'
+
+
+--CURDIR--/iftest_negative.fz:44:13: error 9: If condition must be assignable to type 'bool'
+    else if 42        // 4. should flag an error: must be of type bool
+------------^^
+Actual type is 'i32'
+
+
+--CURDIR--/iftest_negative.fz:43:8: error 10: If condition must be assignable to type 'bool'
+    if 42             // 3. should flag an error: must be of type bool
+-------^^
+Actual type is 'i32'
+
+
+--CURDIR--/iftest_negative.fz:58:5: error 11: Incompatible types in assignment
+    if b // 5. should flag an error: Incompatible types in assignment
+----^
+assignment to field : 'iftest_negative.routine_negative.result'
+expected formal type: 'String'
+actual type found   : 'unit'
+assignable to       : 'unit'
+for value assigned  : ''
+To solve this, you could change the type of the target 'iftest_negative.routine_negative.result' to 'unit' or convert the type of the assigned value to 'String'.
+
+
+--CURDIR--/iftest_negative.fz:63:5: error 12: Incompatible types in assignment
+    if b // 6. should flag an error: Incompatible types in branches of if expression
+----^
+assignment to field : 'iftest_negative.function1.result'
+expected formal type: 'String'
+actual type found   : 'unit'
+assignable to       : 'unit'
+for value assigned  : ''
+To solve this, you could change the type of the target 'iftest_negative.function1.result' to 'unit' or convert the type of the assigned value to 'String'.
+
+
+--CURDIR--/iftest_negative.fz:68:7: error 13: Incompatible types in assignment
+      "Hello"
+------^^^^^^^
+assignment to field : 'iftest_negative.function2.result'
+expected formal type: 'unit'
+actual type found   : 'String'
+assignable to       : 'String'
+for value assigned  : '"Hello"'
+To solve this, you could explicitly ignore the result of the last expression by an assignment '_ := <expression>'.
+
+
+--CURDIR--/iftest_negative.fz:72:7: error 14: Incompatible types in assignment
+      "Hello"
+------^^^^^^^
+assignment to field : 'iftest_negative.constructor.result'
+expected formal type: 'unit'
+actual type found   : 'String'
+assignable to       : 'String'
+for value assigned  : '"Hello"'
+To solve this, you could explicitly ignore the result of the last expression by an assignment '_ := <expression>'.
+
+14 errors.
