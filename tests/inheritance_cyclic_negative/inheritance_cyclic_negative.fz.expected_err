@@ -1,0 +1,195 @@
+
+--CURDIR--/inheritance_cyclic_negative.fz:28:3: error 1: Recursive inheritance in feature 'inheritance_cyclic_negative.cyclic1'
+  cyclic1 : cyclic1 is // 1. should flag an error, cyclic inheritance
+--^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic1 at --CURDIR--/inheritance_cyclic_negative.fz:28:13:
+  cyclic1 : cyclic1 is // 1. should flag an error, cyclic inheritance
+------------^^^^^^^
+
+
+--CURDIR--/inheritance_cyclic_negative.fz:30:3: error 2: Recursive inheritance in feature 'inheritance_cyclic_negative.cyclic2a'
+  cyclic2a : cyclic2b is // 2. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic2b at --CURDIR--/inheritance_cyclic_negative.fz:30:14:
+  cyclic2a : cyclic2b is // 2. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+ 2: feature inheritance_cyclic_negative.cyclic2b at --CURDIR--/inheritance_cyclic_negative.fz:31:3:
+  cyclic2b : cyclic2a is // 2. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic2a at --CURDIR--/inheritance_cyclic_negative.fz:31:14:
+  cyclic2b : cyclic2a is // 2. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+
+
+--CURDIR--/inheritance_cyclic_negative.fz:33:3: error 3: Recursive inheritance in feature 'inheritance_cyclic_negative.cyclic3a'
+  cyclic3a : cyclic3b is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3b at --CURDIR--/inheritance_cyclic_negative.fz:33:14:
+  cyclic3a : cyclic3b is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+ 2: feature inheritance_cyclic_negative.cyclic3b at --CURDIR--/inheritance_cyclic_negative.fz:34:3:
+  cyclic3b : cyclic3c is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3c at --CURDIR--/inheritance_cyclic_negative.fz:34:14:
+  cyclic3b : cyclic3c is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+ 3: feature inheritance_cyclic_negative.cyclic3c at --CURDIR--/inheritance_cyclic_negative.fz:35:3:
+  cyclic3c : cyclic3d is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3d at --CURDIR--/inheritance_cyclic_negative.fz:35:14:
+  cyclic3c : cyclic3d is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+ 4: feature inheritance_cyclic_negative.cyclic3d at --CURDIR--/inheritance_cyclic_negative.fz:36:3:
+  cyclic3d : cyclic3e is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3e at --CURDIR--/inheritance_cyclic_negative.fz:36:14:
+  cyclic3d : cyclic3e is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+ 5: feature inheritance_cyclic_negative.cyclic3e at --CURDIR--/inheritance_cyclic_negative.fz:37:3:
+  cyclic3e : cyclic3f is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3f at --CURDIR--/inheritance_cyclic_negative.fz:37:14:
+  cyclic3e : cyclic3f is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+ 6: feature inheritance_cyclic_negative.cyclic3f at --CURDIR--/inheritance_cyclic_negative.fz:38:3:
+  cyclic3f : cyclic3g is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3g at --CURDIR--/inheritance_cyclic_negative.fz:38:14:
+  cyclic3f : cyclic3g is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+ 7: feature inheritance_cyclic_negative.cyclic3g at --CURDIR--/inheritance_cyclic_negative.fz:39:3:
+  cyclic3g : cyclic3h is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3h at --CURDIR--/inheritance_cyclic_negative.fz:39:14:
+  cyclic3g : cyclic3h is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+ 8: feature inheritance_cyclic_negative.cyclic3h at --CURDIR--/inheritance_cyclic_negative.fz:40:3:
+  cyclic3h : cyclic3i is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3i at --CURDIR--/inheritance_cyclic_negative.fz:40:14:
+  cyclic3h : cyclic3i is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+ 9: feature inheritance_cyclic_negative.cyclic3i at --CURDIR--/inheritance_cyclic_negative.fz:41:3:
+  cyclic3i : cyclic3j is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3j at --CURDIR--/inheritance_cyclic_negative.fz:41:14:
+  cyclic3i : cyclic3j is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+10: feature inheritance_cyclic_negative.cyclic3j at --CURDIR--/inheritance_cyclic_negative.fz:42:3:
+  cyclic3j : cyclic3k is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3k at --CURDIR--/inheritance_cyclic_negative.fz:42:14:
+  cyclic3j : cyclic3k is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+11: feature inheritance_cyclic_negative.cyclic3k at --CURDIR--/inheritance_cyclic_negative.fz:43:3:
+  cyclic3k : cyclic3l is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3l at --CURDIR--/inheritance_cyclic_negative.fz:43:14:
+  cyclic3k : cyclic3l is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+12: feature inheritance_cyclic_negative.cyclic3l at --CURDIR--/inheritance_cyclic_negative.fz:44:3:
+  cyclic3l : cyclic3m is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3m at --CURDIR--/inheritance_cyclic_negative.fz:44:14:
+  cyclic3l : cyclic3m is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+13: feature inheritance_cyclic_negative.cyclic3m at --CURDIR--/inheritance_cyclic_negative.fz:45:3:
+  cyclic3m : cyclic3n is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3n at --CURDIR--/inheritance_cyclic_negative.fz:45:14:
+  cyclic3m : cyclic3n is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+14: feature inheritance_cyclic_negative.cyclic3n at --CURDIR--/inheritance_cyclic_negative.fz:46:3:
+  cyclic3n : cyclic3o is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3o at --CURDIR--/inheritance_cyclic_negative.fz:46:14:
+  cyclic3n : cyclic3o is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+15: feature inheritance_cyclic_negative.cyclic3o at --CURDIR--/inheritance_cyclic_negative.fz:47:3:
+  cyclic3o : cyclic3p is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3p at --CURDIR--/inheritance_cyclic_negative.fz:47:14:
+  cyclic3o : cyclic3p is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+16: feature inheritance_cyclic_negative.cyclic3p at --CURDIR--/inheritance_cyclic_negative.fz:48:3:
+  cyclic3p : cyclic3q is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3q at --CURDIR--/inheritance_cyclic_negative.fz:48:14:
+  cyclic3p : cyclic3q is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+17: feature inheritance_cyclic_negative.cyclic3q at --CURDIR--/inheritance_cyclic_negative.fz:49:3:
+  cyclic3q : cyclic3r is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3r at --CURDIR--/inheritance_cyclic_negative.fz:49:14:
+  cyclic3q : cyclic3r is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+18: feature inheritance_cyclic_negative.cyclic3r at --CURDIR--/inheritance_cyclic_negative.fz:50:3:
+  cyclic3r : cyclic3s is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3s at --CURDIR--/inheritance_cyclic_negative.fz:50:14:
+  cyclic3r : cyclic3s is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+19: feature inheritance_cyclic_negative.cyclic3s at --CURDIR--/inheritance_cyclic_negative.fz:51:3:
+  cyclic3s : cyclic3t is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3t at --CURDIR--/inheritance_cyclic_negative.fz:51:14:
+  cyclic3s : cyclic3t is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+20: feature inheritance_cyclic_negative.cyclic3t at --CURDIR--/inheritance_cyclic_negative.fz:52:3:
+  cyclic3t : cyclic3u is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3u at --CURDIR--/inheritance_cyclic_negative.fz:52:14:
+  cyclic3t : cyclic3u is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+21: feature inheritance_cyclic_negative.cyclic3u at --CURDIR--/inheritance_cyclic_negative.fz:53:3:
+  cyclic3u : cyclic3v is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3v at --CURDIR--/inheritance_cyclic_negative.fz:53:14:
+  cyclic3u : cyclic3v is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+22: feature inheritance_cyclic_negative.cyclic3v at --CURDIR--/inheritance_cyclic_negative.fz:54:3:
+  cyclic3v : cyclic3w is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3w at --CURDIR--/inheritance_cyclic_negative.fz:54:14:
+  cyclic3v : cyclic3w is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+23: feature inheritance_cyclic_negative.cyclic3w at --CURDIR--/inheritance_cyclic_negative.fz:55:3:
+  cyclic3w : cyclic3x is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3x at --CURDIR--/inheritance_cyclic_negative.fz:55:14:
+  cyclic3w : cyclic3x is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+24: feature inheritance_cyclic_negative.cyclic3x at --CURDIR--/inheritance_cyclic_negative.fz:56:3:
+  cyclic3x : cyclic3y is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3y at --CURDIR--/inheritance_cyclic_negative.fz:56:14:
+  cyclic3x : cyclic3y is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+25: feature inheritance_cyclic_negative.cyclic3y at --CURDIR--/inheritance_cyclic_negative.fz:57:3:
+  cyclic3y : cyclic3z is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3z at --CURDIR--/inheritance_cyclic_negative.fz:57:14:
+  cyclic3y : cyclic3z is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+26: feature inheritance_cyclic_negative.cyclic3z at --CURDIR--/inheritance_cyclic_negative.fz:58:3:
+  cyclic3z : cyclic3a is // 3. should flag an error, cyclic inheritance
+--^^^^^^^^
+    inherits inheritance_cyclic_negative.cyclic3a at --CURDIR--/inheritance_cyclic_negative.fz:58:14:
+  cyclic3z : cyclic3a is // 3. should flag an error, cyclic inheritance
+-------------^^^^^^^^
+
+
+--CURDIR--/inheritance_cyclic_negative.fz:60:3: error 4: Recursive inheritance in feature 'inheritance_cyclic_negative.cycle4'
+  cycle4 : cycle4A, cycle4B, cycle4C, cycle4D.E.F, cycle4E is // 4. should flag an error, cyclic inheritance
+--^^^^^^
+    inherits inheritance_cyclic_negative.cycle4D.E.F at --CURDIR--/inheritance_cyclic_negative.fz:60:49:
+  cycle4 : cycle4A, cycle4B, cycle4C, cycle4D.E.F, cycle4E is // 4. should flag an error, cyclic inheritance
+------------------------------------------------^
+ 2: feature inheritance_cyclic_negative.cycle4D.E.F at --CURDIR--/inheritance_cyclic_negative.fz:66:7:
+      F : cycle4 is
+------^
+    inherits inheritance_cyclic_negative.cycle4 at --CURDIR--/inheritance_cyclic_negative.fz:66:11:
+      F : cycle4 is
+----------^^^^^^
+
+4 errors.

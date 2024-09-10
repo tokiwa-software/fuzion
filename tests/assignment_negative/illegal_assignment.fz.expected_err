@@ -1,0 +1,160 @@
+
+--CURDIR--/illegal_assignment.fz:38:5: error 1: Illegal use of the 'set' keyword.
+    set curid := res + 1
+----^
+This keyword may only be used by the standard library.
+To solve this, use the 'mutate' effect instead.
+
+
+--CURDIR--/illegal_assignment.fz:69:3: error 2: Illegal use of the 'set' keyword.
+  set aa := ci // 3. should flag an error: illegal assignment
+--^
+This keyword may only be used by the standard library.
+To solve this, use the 'mutate' effect instead.
+
+
+--CURDIR--/illegal_assignment.fz:82:3: error 3: Illegal use of the 'set' keyword.
+  set di := ei  // 6. should flag an error: illegal assignment
+--^
+This keyword may only be used by the standard library.
+To solve this, use the 'mutate' effect instead.
+
+
+--CURDIR--/illegal_assignment.fz:86:3: error 4: Illegal use of the 'set' keyword.
+  set bi := di  // 7. should flag an error: illegal assignment
+--^
+This keyword may only be used by the standard library.
+To solve this, use the 'mutate' effect instead.
+
+
+--CURDIR--/illegal_assignment.fz:87:3: error 5: Illegal use of the 'set' keyword.
+  set ci := di  // 8. should flag an error: illegal assignment
+--^
+This keyword may only be used by the standard library.
+To solve this, use the 'mutate' effect instead.
+
+
+--CURDIR--/illegal_assignment.fz:92:3: error 6: Illegal use of the 'set' keyword.
+  set aa := ei  // 9. should flag an error: illegal assignment
+--^
+This keyword may only be used by the standard library.
+To solve this, use the 'mutate' effect instead.
+
+
+--CURDIR--/illegal_assignment.fz:64:3: error 7: Incompatible types in assignment
+  ci Q.C := C  // 1. should flag an error: illegal assignment
+--^^
+assignment to field : 'illegal_assignment.ci'
+expected formal type: 'illegal_assignment.this.Q.C'
+actual type found   : 'illegal_assignment.this.C'
+assignable to       : 'Any',
+                      'illegal_assignment.this.A',
+                      'illegal_assignment.this.C'
+for value assigned  : 'C'
+To solve this, you could change the type of the target 'illegal_assignment.ci' to 'illegal_assignment.this.C' or convert the type of the assigned value to 'illegal_assignment.this.Q.C'.
+
+
+--CURDIR--/illegal_assignment.fz:65:3: error 8: Incompatible types in assignment
+  aa Q.A := bi // 2. should flag an error: illegal assignment
+--^^
+assignment to field : 'illegal_assignment.aa'
+expected formal type: 'illegal_assignment.this.Q.A'
+actual type found   : 'illegal_assignment.this.B'
+assignable to       : 'Any',
+                      'illegal_assignment.this.A',
+                      'illegal_assignment.this.B'
+for value assigned  : 'bi'
+To solve this, you could change the type of the target 'illegal_assignment.aa' to 'illegal_assignment.this.B' or convert the type of the assigned value to 'illegal_assignment.this.Q.A'.
+
+
+--CURDIR--/illegal_assignment.fz:69:10: error 9: Incompatible types in assignment
+  set aa := ci // 3. should flag an error: illegal assignment
+---------^
+assignment to field : 'illegal_assignment.aa'
+expected formal type: 'illegal_assignment.this.Q.A'
+actual type found   : 'illegal_assignment.this.Q.C'
+assignable to       : 'Any',
+                      'illegal_assignment.this.Q.C'
+for value assigned  : 'ci'
+To solve this, you could change the type of the target 'illegal_assignment.aa' to 'illegal_assignment.this.Q.C' or convert the type of the assigned value to 'illegal_assignment.this.Q.A'.
+
+
+--CURDIR--/illegal_assignment.fz:71:3: error 10: Incompatible types in assignment
+  di Q.D := D // 4. should flag an error: illegal assignment
+--^^
+assignment to field : 'illegal_assignment.di'
+expected formal type: 'illegal_assignment.this.Q.D'
+actual type found   : 'illegal_assignment.this.D'
+assignable to       : 'Any',
+                      'illegal_assignment.this.A',
+                      'illegal_assignment.this.B',
+                      'illegal_assignment.this.C',
+                      'illegal_assignment.this.D'
+for value assigned  : 'D'
+To solve this, you could change the type of the target 'illegal_assignment.di' to 'illegal_assignment.this.D' or convert the type of the assigned value to 'illegal_assignment.this.Q.D'.
+
+
+--CURDIR--/illegal_assignment.fz:72:3: error 11: Incompatible types in assignment
+  ei Q.E := E // 5. should flag an error: illegal assignment
+--^^
+assignment to field : 'illegal_assignment.ei'
+expected formal type: 'illegal_assignment.this.Q.E'
+actual type found   : 'illegal_assignment.this.E'
+assignable to       : 'Any',
+                      'illegal_assignment.this.A',
+                      'illegal_assignment.this.B',
+                      'illegal_assignment.this.C',
+                      'illegal_assignment.this.D',
+                      'illegal_assignment.this.E'
+for value assigned  : 'E'
+To solve this, you could change the type of the target 'illegal_assignment.ei' to 'illegal_assignment.this.E' or convert the type of the assigned value to 'illegal_assignment.this.Q.E'.
+
+
+--CURDIR--/illegal_assignment.fz:82:10: error 12: Incompatible types in assignment
+  set di := ei  // 6. should flag an error: illegal assignment
+---------^
+assignment to field : 'illegal_assignment.di'
+expected formal type: 'illegal_assignment.this.Q.D'
+actual type found   : 'illegal_assignment.this.Q.E'
+assignable to       : 'Any',
+                      'illegal_assignment.this.Q.E'
+for value assigned  : 'ei'
+To solve this, you could change the type of the target 'illegal_assignment.di' to 'illegal_assignment.this.Q.E' or convert the type of the assigned value to 'illegal_assignment.this.Q.D'.
+
+
+--CURDIR--/illegal_assignment.fz:86:10: error 13: Incompatible types in assignment
+  set bi := di  // 7. should flag an error: illegal assignment
+---------^
+assignment to field : 'illegal_assignment.bi'
+expected formal type: 'illegal_assignment.this.B'
+actual type found   : 'illegal_assignment.this.Q.D'
+assignable to       : 'Any',
+                      'illegal_assignment.this.Q.D'
+for value assigned  : 'di'
+To solve this, you could change the type of the target 'illegal_assignment.bi' to 'illegal_assignment.this.Q.D' or convert the type of the assigned value to 'illegal_assignment.this.B'.
+
+
+--CURDIR--/illegal_assignment.fz:87:10: error 14: Incompatible types in assignment
+  set ci := di  // 8. should flag an error: illegal assignment
+---------^
+assignment to field : 'illegal_assignment.ci'
+expected formal type: 'illegal_assignment.this.Q.C'
+actual type found   : 'illegal_assignment.this.Q.D'
+assignable to       : 'Any',
+                      'illegal_assignment.this.Q.D'
+for value assigned  : 'di'
+To solve this, you could change the type of the target 'illegal_assignment.ci' to 'illegal_assignment.this.Q.D' or convert the type of the assigned value to 'illegal_assignment.this.Q.C'.
+
+
+--CURDIR--/illegal_assignment.fz:92:10: error 15: Incompatible types in assignment
+  set aa := ei  // 9. should flag an error: illegal assignment
+---------^
+assignment to field : 'illegal_assignment.aa'
+expected formal type: 'illegal_assignment.this.Q.A'
+actual type found   : 'illegal_assignment.this.Q.E'
+assignable to       : 'Any',
+                      'illegal_assignment.this.Q.E'
+for value assigned  : 'ei'
+To solve this, you could change the type of the target 'illegal_assignment.aa' to 'illegal_assignment.this.Q.E' or convert the type of the assigned value to 'illegal_assignment.this.Q.A'.
+
+15 errors.
