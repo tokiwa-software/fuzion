@@ -42,8 +42,6 @@ strings_multiline_negative is
   e := """
   5. should flag an error: (error in line 43) Illegal trailing whitespace in multiline string. 
   """
-  //   ^  5. should flag an error: (error in line 43) Illegal trailing whitespace in multiline string.
-
 
   f := """
   A string 'ending' in four quotes, essentially ending the multiline
