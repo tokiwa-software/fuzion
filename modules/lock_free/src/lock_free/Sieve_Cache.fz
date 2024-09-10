@@ -40,7 +40,7 @@ Node(K type, V type, pair (K,V), visited concur.atomic bool, prev concur.atomic 
 #     say (cache0.access "D" ()->5)    # => 5
 #     say (cache0.access "C" ()->6)    # => 3
 #
-public Sieve_Cache(K type : property.hashable, V type, public capacity u64) ref is
+public Sieve_Cache(K type : property.hashable, V type, public capacity i32) ref is
 
   # NYI: map implementation agnostic
   cache := (lock_free.map K (lock_free.Node K V)).type.empty
@@ -50,7 +50,6 @@ public Sieve_Cache(K type : property.hashable, V type, public capacity u64) ref 
   head  := concur.atomic (option (lock_free.Node K V)) nil
   tail  := concur.atomic (option (lock_free.Node K V)) nil
   hand  := concur.atomic (option (lock_free.Node K V)) nil
-  size  := concur.atomic (u64 0)
 
   add_to_head(n lock_free.Node K V) =>
     n.next.write head.read
@@ -92,10 +91,6 @@ public Sieve_Cache(K type : property.hashable, V type, public capacity u64) ref 
           remove_node o
         nil => hand.write nil
 
-      _ :=
-        for sz := size.read
-        while !(size.compare_and_set sz sz-1)
-
 
   # access stored value for key,
   # if not in cache, compute and store in cache
@@ -105,14 +100,11 @@ public Sieve_Cache(K type : property.hashable, V type, public capacity u64) ref 
       # cache miss
       nil =>
         v := val()
-        if size.read = capacity
+        if cache.size >= capacity
           evict
         new_node := lock_free.Node (key, v) (concur.atomic false) (concur.atomic (option (lock_free.Node K V)) nil) (concur.atomic (option (lock_free.Node K V)) nil)
         add_to_head new_node
         cache.add key new_node
-        _ :=
-          for sz := size.read
-          while !(size.compare_and_set sz sz+1)
         new_node.visited.write false
         v
       # cache hit
@@ -123,6 +115,7 @@ public Sieve_Cache(K type : property.hashable, V type, public capacity u64) ref 
 
   public redef as_string =>
     for res := "", res + "{n.val} (Visited: {n.val.visited.read})" + (if n.val.next.read?? then " -> " else "")
+        # NYI: BUG: when removing type: ensure-condition failed
         n option (lock_free.Node K V) := head.read, n.val.next
     while n??
     else
