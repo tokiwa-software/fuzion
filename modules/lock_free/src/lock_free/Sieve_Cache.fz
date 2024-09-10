@@ -1,0 +1,129 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature lock_free.Sieve_Cache
+#
+# -----------------------------------------------------------------------
+
+
+Node(K type, V type, pair (K,V), visited concur.atomic bool, prev concur.atomic (option (lock_free.Node K V)), next concur.atomic (option (lock_free.Node K V))) ref is
+  redef as_string => "({pair.0},{pair.1})"
+
+
+# "SIEVE is a cache eviction algorithm that decides what to keep in the cache and what to discard.
+#  It achieves both simplicity and efficiency."
+# source: https://sievecache.com/
+# paper : https://junchengyang.com/publication/nsdi24-SIEVE.pdf
+#
+# example usage:
+#     cache0 := lock_free.Sieve_Cache String i32 3
+#     say (cache0.access "A" ()->1)    # => 1
+#     say (cache0.access "B" ()->2)    # => 2
+#     say (cache0.access "C" ()->3)    # => 3
+#     say (cache0.access "A" ()->4)    # => 1
+#     say (cache0.access "D" ()->5)    # => 5
+#     say (cache0.access "C" ()->6)    # => 3
+#
+public Sieve_Cache(K type : property.hashable, V type, public capacity u64) ref is
+
+  # NYI: map implementation agnostic
+  cache := (lock_free.map K (lock_free.Node K V)).type.empty
+
+  # Using atomic here to be able to read and write in a
+  # multi threaded environment.
+  head  := concur.atomic (option (lock_free.Node K V)) nil
+  tail  := concur.atomic (option (lock_free.Node K V)) nil
+  hand  := concur.atomic (option (lock_free.Node K V)) nil
+  size  := concur.atomic (u64 0)
+
+  add_to_head(n lock_free.Node K V) =>
+    n.next.write head.read
+    n.prev.write nil
+    match head.read
+      h lock_free.Node => h.prev.write n
+      * =>
+    head.write n
+    match tail.read
+      nil => tail.write n
+      * =>
+
+  remove_node(n lock_free.Node K V) =>
+    match n.prev.read
+      prev lock_free.Node => prev.next.write n.next
+      nil => head.write n.next
+
+    match n.next.read
+      nxt lock_free.Node => nxt.prev.write n.prev
+      nil => tail.write n.prev
+
+  evict =>
+    init_obj => match hand.read
+                  h lock_free.Node => h
+                  nil => tail.read
+    for obj := init_obj, match obj.val.prev.read
+                           p lock_free.Node => p
+                           nil => tail.read
+    while match obj
+            nil => false
+            o lock_free.Node => o.visited.read
+    do
+      obj.val.visited.write false
+    else
+      match obj
+        o lock_free.Node =>
+          hand.write o.prev
+          _ := cache.remove o.pair.0
+          remove_node o
+        nil => hand.write nil
+
+      _ :=
+        for sz := size.read
+        while !(size.compare_and_set sz sz-1)
+
+
+  # access stored value for key,
+  # if not in cache, compute and store in cache
+  #
+  public access(key K, val ()->V) =>
+    match cache[key]
+      # cache miss
+      nil =>
+        v := val()
+        if size.read = capacity
+          evict
+        new_node := lock_free.Node (key, v) (concur.atomic false) (concur.atomic (option (lock_free.Node K V)) nil) (concur.atomic (option (lock_free.Node K V)) nil)
+        add_to_head new_node
+        cache.add key new_node
+        _ :=
+          for sz := size.read
+          while !(size.compare_and_set sz sz+1)
+        new_node.visited.write false
+        v
+      # cache hit
+      n lock_free.Node =>
+        n.visited.write true
+        n.pair.1
+
+
+  public redef as_string =>
+    for res := "", res + "{n.val} (Visited: {n.val.visited.read})" + (if n.val.next.read?? then " -> " else "")
+        n option (lock_free.Node K V) := head.read, n.val.next
+    while n??
+    else
+      res
