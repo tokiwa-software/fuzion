@@ -1,0 +1,9 @@
+
+--CURDIR--/reg_issue3705.fz:25:6: error 1: Constraint for type parameter must not be a type parameter
+  fs(F type : F) =>
+-----^
+Affected type parameter: 'reg_issue3705.fs.F'
+constraint: 'reg_issue3705.fs.F'
+To solve this, change the type provided, e.g. to the unconstrained 'type'.
+
+one error.
