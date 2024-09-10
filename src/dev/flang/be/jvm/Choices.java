@@ -526,8 +526,8 @@ public class Choices extends ANY implements ClassFileConstants
         }
       case nullable:
         {
-          var pos = jvm.reportErrorInCode("As per data flow analysis this code should be unreachable.");
-          var neg = jvm.reportErrorInCode("As per data flow analysis this code should be unreachable.");
+          var pos = Expr.POP.andThen(jvm.reportErrorInCode("As per data flow analysis this code should be unreachable."));
+          var neg = Expr.POP.andThen(jvm.reportErrorInCode("As per data flow analysis this code should be unreachable."));
 
           for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
             {
