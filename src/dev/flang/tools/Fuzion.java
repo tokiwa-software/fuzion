@@ -501,9 +501,10 @@ public class Fuzion extends Tool
      */
     void processFrontEnd(Fuzion f, FrontEnd fe)
     {
-      var mir = fe.createMIR();                                                           f.timer("createMIR");
-      var air = new MiddleEnd(fe._options, mir, fe.mainModule() /* NYI: remove */).air(); f.timer("me");
-      var fuir = new Optimizer(fe._options, air).fuir();                                  f.timer("ir");
+      var mir  = fe.createMIR();                                                       f.timer("createMIR");
+      var me   = new MiddleEnd(fe._options, mir, fe.mainModule() /* NYI: remove */);
+      var air  = me.air();                                                             f.timer("me");
+      var fuir = new Optimizer(fe._options, air, me.clazzes()).fuir();                 f.timer("ir");
       process(fe._options, fuir);
     }
 
