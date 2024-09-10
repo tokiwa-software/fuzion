@@ -1417,7 +1417,7 @@ public class AstErrors extends ANY
     error(tp.pos(),
           "Constraint for type parameter must not be a type parameter",
           "Affected type parameter: " + s(tp) + "\n" +
-          "_constraint: " + s(tp.resultType()) + "\n" +
+          "constraint: " + s(tp.resultType()) + "\n" +
           "To solve this, change the type provided, e.g. to the unconstrained " + st("type") + ".\n");
   }
 

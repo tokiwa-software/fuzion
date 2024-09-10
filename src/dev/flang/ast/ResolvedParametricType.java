@@ -201,7 +201,15 @@ public class ResolvedParametricType extends ResolvedType
    */
   protected void usedFeatures(Set<AbstractFeature> s)
   {
-    if (!genericArgument().typeParameter().isTypeFeaturesThisType())
+    if (!genericArgument().typeParameter().isTypeFeaturesThisType() &&
+        /**
+         * Must not be recursive definition as in:
+         *
+         * scenario1 =>
+         *   fs(F type : F) =>
+         * scenario1
+         */
+        this != genericArgument().typeParameter().resultType())
       {
         genericArgument().typeParameter().resultType().usedFeatures(s);
       }
