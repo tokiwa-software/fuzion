@@ -155,6 +155,9 @@ is
 
         compute_result.read.val
 
+      redef and_then(T2 type, new_task T->T2) =>
+        submit T2 ()->(new_task get)
+
     res := fut
 
     if bq.enqueue ()->res.compute
