@@ -37,7 +37,6 @@ import dev.flang.be.jvm.classfile.ClassFile;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 
 import dev.flang.util.Errors;
-import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 
@@ -197,14 +196,8 @@ class CodeGen
   @Override
   public Expr drop(Expr v, int type)
   {
-    // Check consistency between v.type() and type:
     if (CHECKS) check
-      (v.type()                instanceof PrimitiveType pt && pt == _types.resultType(type) ||
-       v.type()                instanceof ClassType     jt &&
-       _types.resultType(type) instanceof ClassType     ct &&
-       (_fuir.clazzIsRef(type) /* we do not check exact reference assignability here */ ||
-        jt.sameAs(ct)          /* but value or choice types must be the same!        */ ||
-        jt == NULL_TYPE));
+      (primitiveTypeMatches(v.type(), type) || classTypeMatches(v.type(), type));
 
     return v.andThen(v.type().pop());
   }
@@ -970,6 +963,29 @@ class CodeGen
       .andThen(Expr.checkcast(_types.resultType(ecl)));
     return new Pair<>(res, Expr.UNIT);
   }
+
+
+  /**
+   * Are jt and resultType(type) a primitive type and do they match?
+   */
+  private boolean primitiveTypeMatches(JavaType jt, int type)
+  {
+    return jt instanceof PrimitiveType pt && pt == _types.resultType(type);
+  }
+
+  /**
+   * Are jt and resultType(type) a class type and do they match?
+   */
+  private boolean classTypeMatches(JavaType jt, int type)
+  {
+    return
+      jt                      instanceof ClassType et &&
+      _types.resultType(type) instanceof ClassType ct &&
+      ( et == NULL_TYPE                                                                 ||
+        _fuir.clazzIsRef(type) /* we do not check exact reference assignability here */ ||
+        et.sameAs(ct)          /* but value or choice types must be the same!        */ );
+  }
+
 
   /**
    * Generate code to terminate the execution immediately.

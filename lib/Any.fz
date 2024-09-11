@@ -49,7 +49,7 @@ public Any ref is
   # compile-time type.
   #
   # There is no dynamic type of a type instance since this would result in an
-  # endless hierachy of types.  So for Type values, dynamic_type is redefined
+  # endless hierarchy of types.  So for Type values, dynamic_type is redefined
   # to just return Type.type.
   #
   public dynamic_type => Any.this.type

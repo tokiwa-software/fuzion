@@ -47,7 +47,7 @@ module:public Type ref is
 
 
   # There is no dynamic type of a type instance since this would result in an
-  # endless hierachy of types, so dynamic_type is redefined to just return
+  # endless hierarchy of types, so dynamic_type is redefined to just return
   # Type.type here.
   #
   public redef dynamic_type => Type.type
@@ -66,7 +66,7 @@ module:public Type ref is
   #
   #   pair(a,b T) is
   #     same
-  #       pre T : propery.equatable
+  #       pre T : property.equatable
   #   =>
   #     a = b
   #
@@ -120,7 +120,7 @@ public type_as_value(T type) => T
 # This is to be called without an actual type passed to `T`, but `T` should be
 # inferred from the actual value argument `_`.
 #
-# The value arugment is evaluated and ignored.
+# The value argument is evaluated and ignored.
 #
 # The result is the type of the value argument boxed into a ref value and returned
 # as a value of type `Type`.
@@ -138,7 +138,7 @@ public type_of(T type, _ T) => T
 # This is to be called without an actual type passed to `T`, but `T` should be
 # inferred from the result type of the actual value argument `_`.
 #
-# The function passed as value arugment is ignored, it is not called.
+# The function passed as value argument is ignored, it is not called.
 #
 # The result is the result type of the value argument boxed into a ref value and
 # returned as a value of type `Type`.

@@ -31,16 +31,13 @@ import dev.flang.fuir.FUIR;
 
 
 import dev.flang.ir.IR;
-import dev.flang.ir.IR.FeatureKind;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import static dev.flang.util.FuzionConstants.EFFECT_INSTATE_NAME;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
-import dev.flang.util.Terminal;
 
-import java.util.TreeSet;
 
 /**
  * Call represents a call
