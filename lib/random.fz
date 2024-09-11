@@ -120,7 +120,7 @@ public time_seeded_random(rr ()->unit) =>
 # Random_Handler -- abstract source of random numbers
 #
 # This provides the random number input to be used by the 'random' effect.
-# Implementation may be dumb sequences of pseudo-random numbers or high-qualiity
+# Implementation may be dumb sequences of pseudo-random numbers or high-quality
 # cryptographic random number generators
 #
 # A Random_Handler contains an immutable state, repeated calls to 'get' result
@@ -131,7 +131,7 @@ public time_seeded_random(rr ()->unit) =>
 public Random_Handler ref is
 
   # create a new instance of Random_Handler containing a new state. Depending
-  # on the qualifity of this random number generator, this might be a simple
+  # on the quality of this random number generator, this might be a simple
   # function of the original Random_Handler or it might use an external source
   # of entropy to create a new instance.
   #

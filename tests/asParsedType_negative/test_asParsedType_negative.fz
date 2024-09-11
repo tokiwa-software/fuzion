@@ -120,7 +120,7 @@ say "EXP: x Type of 'tuple'"
 x ()
 x (())
 x ((()))
-# x ( )   # NYI: currenlty does not work, no space allowed in empty tuple
+# x ( )   # NYI: currently does not work, no space allowed in empty tuple
 x (( ))
 x ((( )))
 x ( ( ) )

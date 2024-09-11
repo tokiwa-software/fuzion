@@ -47,7 +47,7 @@ module internal_array(T type, module data fuzion.sys.Pointer, module length i32)
 
   # check that this internal array was not frozen, i.e., `freeze` was not called.
   # Cause a runtime error if this `freeze` was called.  Note that this is a NOP if
-  # the backend does not support these checks or intenal checks are disabled.
+  # the backend does not support these checks or internal checks are disabled.
   #
   module ensure_not_frozen unit => intrinsic
 
