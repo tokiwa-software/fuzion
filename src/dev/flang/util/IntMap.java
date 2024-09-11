@@ -28,7 +28,6 @@ package dev.flang.util;
 
 import java.util.HashMap;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 

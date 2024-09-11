@@ -26,8 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
-import dev.flang.fuir.FUIR.SpecialClazzes;
-import dev.flang.util.Errors;
 
 
 /**
