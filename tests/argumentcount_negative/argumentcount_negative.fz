@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-private:public argumentcount_negative is
+argumentcount_negative is
 
   opengenerics11 ref : Function i32 is
     redef call() i32 => 42
