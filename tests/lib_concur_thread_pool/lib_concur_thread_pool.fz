@@ -71,11 +71,12 @@ lib_concur_thread_pool =>
 
   # sum the squares of the numbers from 0 to 100
   test_4 =>
-    sum := concur.thread_pool 4 ()->
+    thread_count := 4
+    sum := concur.thread_pool thread_count ()->
       data := (u16 0)..100
 
       # split data
-      parts := data.chunk 4
+      parts := data.chunk (data.count.as_f64 / thread_count.as_f64).ceil.as_i32
 
       # distribute and calculate squares
       fut0 := concur.thread_pool.env.submit (Sequence u16) (() -> parts[0].map i->i*i)
