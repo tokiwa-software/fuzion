@@ -1676,7 +1676,9 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
               }
             o = o.outer();
           }
-        if (!found)
+        if (!found &&
+          // okay for post condition features result field
+          !(f.isResultField() && f.outer().featureName().baseName().startsWith(FuzionConstants.POSTCONDITION_FEATURE_PREFIX)))
           {
             AstErrors.illegalResultTypeThisType(f);
           }
