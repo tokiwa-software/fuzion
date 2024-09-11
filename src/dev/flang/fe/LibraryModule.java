@@ -417,7 +417,7 @@ public class LibraryModule extends Module implements MirModule
   /**
    * get the universe as persisted in this fum-file
    */
-  private LibraryFeature libraryUniverse()
+  public LibraryFeature libraryUniverse()
   {
     return (LibraryFeature)innerFeatures(declFeaturesInnerPos(moduleDeclFeaturesPos())).get(0);
   }
