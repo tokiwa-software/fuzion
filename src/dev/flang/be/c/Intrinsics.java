@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.c;
 
-import java.nio.charset.StandardCharsets;
 
 import java.util.TreeMap;
 import java.util.Set;

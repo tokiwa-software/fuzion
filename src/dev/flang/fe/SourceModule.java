@@ -40,7 +40,6 @@ import java.util.SortedMap;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
