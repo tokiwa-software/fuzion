@@ -368,6 +368,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public Clazz(AbstractType actualType, int select, Clazz outer)
   {
+    //    if (Clazzes.instance.closed) System.out.println("creating "+actualType+" outer "+outer);
     if (PRECONDITIONS) require
       (!Clazzes.instance.closed,
        Errors.any() || !actualType.dependsOnGenericsExceptTHIS_TYPE(),
@@ -1803,10 +1804,39 @@ public class Clazz extends ANY implements Comparable<Clazz>
       case "effect.abortable":
         argumentFields()[0].resultClazz().lookup(Types.resolved.f_Function_call, at);
         break;
+      case "effect.type.instate0":
+        actualGenerics()[0].lookup(Types.resolved.f_Function_call, at);
+        actualGenerics()[1].lookup(Types.resolved.f_Function_call, at);
+        argumentFields()[0].resultClazz().lookup(Types.resolved.f_effect_static_finally, at);
+        Clazzes.instance.addUsedFeature(Types.resolved.f_Function_call, at);
+        Clazzes.instance.addUsedFeature(Types.resolved.f_effect_static_finally, at);
+        /*
+        var ec2 = actualGenerics()[2];
+        var ec2c = _flu.lookupFeature(ec2.feature(), Types.resolved.f_Function_call.featureName(), null);
+        var ec2ce = ec2c.valueArguments().get(0);
+        System.out.println("GOT: "+ec2ce.qualifiedName());
+        Clazzes.instance.addUsedFeature(ec2ce, at);
+
+        var c = actualGenerics()[2].lookup(Types.resolved.f_Function_call, at);
+        System.out.println("mark used "+c.feature().valueArguments().get(0).qualifiedName());
+        Clazzes.instance.addUsedFeature(c.feature().valueArguments().get(0), at);
+        markInstantiated(c, at);
+        var ca = c.lookup(c.feature().valueArguments().get(0), at);
+        System.out.println("mark used "+c.feature().valueArguments().get(0).qualifiedName());
+        Clazzes.instance.addUsedFeature(c.feature().valueArguments().get(0), at);
+        markInstantiated(ca, at);
+        var afs = c.argumentFields();
+        System.out.println("afs is "+afs.length+" "+afs+" for "+c);
+        */
+        // Clazzes.instance.calledDynamically(Types.resolved.f_Function_call, new List<>());
+        //        argumentFields()[1].resultClazz().lookup(Types.resolved.f_Function_call, at);
+        //        argumentFields()[2].resultClazz().lookup(Types.resolved.f_Function_call, at);
+        break;
       case "fuzion.sys.thread.spawn0":
         argumentFields()[0].resultClazz().lookup(Types.resolved.f_Function_call, at);
         break;
-      default: break;
+      default:
+        break;
       }
   }
 
@@ -2618,8 +2648,20 @@ public class Clazz extends ANY implements Comparable<Clazz>
   Clazz[] actualFields(Collection<AbstractFeature> feats)
   {
     var fields = new List<Clazz>();
+    if (false) if (toString().equals("(Effect_Call2 unit e).call") ||
+        toString().endsWith(".call")) System.out.println(""+this+": actualsFields count "+feats.size());
     for (var field: feats)
       {
+        if (false) if (toString().equals("(Effect_Call2 unit e).call") ||
+            toString().equals("(Unary unit e).call")) System.out.println("actualsField  "+field.qualifiedName());
+        if (false) if (toString().equals("(Effect_Call2 unit e).call") ||
+            toString().equals("(Unary unit e).call")) System.out.println("test: "+
+                                                                                (!this.isVoidOrUndefined())+
+                                                                                field.isField()+
+                                                                                (field == findRedefinition(field))+
+                                                                                Clazzes.instance.isUsed(field));
+        if (false) if (toString().equals("(Effect_Call2 unit e).call") ||
+            toString().equals("(Uniary unit e).call")) Thread.dumpStack();
         if (!this.isVoidOrUndefined() &&
             field.isField() &&
             field == findRedefinition(field) && // NYI: proper field redefinition handling missing, see tests/redef_args/*

@@ -36,11 +36,11 @@ reg_issue3734 =>
 
   codea1 => "hi"
   codea2 => e.env.stop
-  defa => "ho"
+  defa(v e) => "ho"
 
   codeb1 => 42
   codeb2 => e.env.stop
-  defb => 666
+  defb(v e) => 666
 
   say (e.instate String e codea1 defa)
   say (e.instate String e codea2 defa)

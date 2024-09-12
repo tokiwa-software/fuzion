@@ -1,0 +1,134 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test resource_cleanunp
+#
+# -----------------------------------------------------------------------
+
+# test for resource cleanup using nested effects
+#
+resource_cleanunp =>
+
+  # effect that maintains a Sequence of opened resources and
+  # provides an operation to open a new resource and return
+  # the resouce count
+  #
+  e(opened Sequence String, state String) : effect is
+
+    open(s String) =>
+      say "open: $s"
+      (e ([s] ++ opened) state).replace
+
+    redef finally =>
+      for s in opened do
+        say "closing $s"
+
+    fixed stop => e.type.abort (e opened "stopped")
+
+    status => "$state: {opened.count} opened"
+
+  # create new empty `e`
+  #
+  e => e [] "running"
+
+  # default operation used to produce result in case of stop
+  def(v e) =>
+    say "run default"
+    "got interrupted! {v.status}"
+
+
+  # -----------------------------------------------------------------------
+
+  # first, a simple test opening three resources A, B, C
+
+  test1 =>
+    e.env.open "A"
+    e.env.open "B"
+    e.env.open "C"
+    "finished normally, {e.env.status}"
+
+  say "--------------------------- open / close / finish normal"
+  say <| e.instate String e test1 def
+
+
+  # -----------------------------------------------------------------------
+
+  # next, open four resources W, X, Y, Z and then stop abruptly
+
+  test2 =>
+    e.env.open "W"
+    e.env.open "X"
+    e.env.open "Y"
+    e.env.open "Z"
+    e.env.stop
+
+  say "--------------------------- open / close / interrupt"
+  say <| e.instate String e test2 def
+
+
+  # -----------------------------------------------------------------------
+
+  # now, open two resouces P, Q and then throw `exc`
+
+  # our exception
+  exc is
+
+  test3 =>
+    e.env.open "P"
+    e.env.open "Q"
+    say "throw!"
+    (try exc).env.cause (error "throw!")
+
+  say "--------------------------- open / throw / close / error"
+  say <| try exc unit ()->
+    r := e.instate String e test3 def
+    say "*** unreachable *** $r"
+
+
+  # -----------------------------------------------------------------------
+
+  # nesting of two resource handlers and normal finish
+
+  test4 =>
+    e.env.open "I"
+    e.env.open "J"
+    say (e.instate String e test1 def)
+    e.env.open "K"
+    "finished normally, {e.env.status}"
+
+  say "--------------------------- open I J / open A B C / close C B A / open K / close K J I / finish normal"
+  say <| e.instate String e test4 def
+
+
+  # -----------------------------------------------------------------------
+
+  # nesting of two resource handlers and throw from inner
+
+  test5 =>
+    e.env.open "L"
+    e.env.open "M"
+    say (e.instate String e test3 def)
+    e.env.open "N"
+    "finished normally, {e.env.status}"
+
+  say "--------------------------- open L M / open P Q / throw / close Q P / close M L / error"
+
+  say <| try exc unit ()->
+    r := e.instate String e test5 def
+    say "*** unreachable *** $r"

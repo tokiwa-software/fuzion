@@ -1880,11 +1880,26 @@ public class FUIR extends IR
    *
    * @param cl index of a clazz that is an heir of 'Function'.
    *
-   * @return the index of the requested `Function.call` method's clazz.
+   * @return the index of the requested `Function.call` feature's clazz.
    */
   public int lookupCall(int cl)
   {
     return lookup(cl, Types.resolved.f_Function_call);
+  }
+
+
+  /**
+   * For a clazz that is an heir of 'effect', find the corresponding inner
+   * clazz for 'finally'.  This is used for code generation of intrinsic
+   * 'instate0' that has to create code to call 'effect.finally'.
+   *
+   * @param cl index of a clazz that is an heir of 'effect'.
+   *
+   * @return the index of the requested `effect.finally` feature's clazz.
+   */
+  public int lookup_static_finally(int cl)
+  {
+    return lookup(cl, Types.resolved.f_effect_static_finally);
   }
 
 

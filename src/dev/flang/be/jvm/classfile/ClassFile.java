@@ -129,6 +129,10 @@ public class ClassFile extends ANY implements ClassFileConstants
      */
     abstract void setLabel(Label l);
 
+    void addExceptionTable(Expr.TryCatch et)
+    {
+    }
+
     /**
      * Determine the offset for a branch instruction at from to label at to.
      */
@@ -293,6 +297,11 @@ public class ClassFile extends ANY implements ClassFileConstants
      */
     private final int _initialSize;
 
+    static List<Expr.TryCatch> NO_EXC_TABLE = new List<Expr.TryCatch>();
+    static { NO_EXC_TABLE.freeze(); }
+
+    List<Expr.TryCatch> _exceptionTable = NO_EXC_TABLE;
+
 
     /**
      * Constructor
@@ -334,6 +343,11 @@ public class ClassFile extends ANY implements ClassFileConstants
         (l._posFinal == _kaku.size() - _initialSize);
     }
 
+    @Override
+    void addExceptionTable(Expr.TryCatch et)
+    {
+      _exceptionTable = _exceptionTable.addAfterUnfreeze(et);
+    }
 
     /**
      * Get the offset for a branch from from to label to using the final positions.
@@ -1372,22 +1386,21 @@ public class ClassFile extends ANY implements ClassFileConstants
   {
     final String _where;
     final ByteCode _code;
-    final List<ExceptionTableEntry> _exception_table;
     final List<Attribute> _attributes;
     int _size;
     private final StackMapTable _smt;
     private final LineNumberTableAttribute _lnta;
     CodeAttribute(String where,
                   ByteCode code,
-                  List<ExceptionTableEntry> exception_table,
+                  List<ExceptionTableEntry> exception_table_IGNORED,
                   List<Attribute> attributes,
                   StackMapTable smt,
                   LineNumberTableAttribute lnta)
     {
       super("Code");
+      check(exception_table_IGNORED == null || exception_table_IGNORED.isEmpty());
       this._where = where;
       this._code = code;
-      this._exception_table = exception_table;
       this._attributes = attributes;
       this._smt = smt;
       this._lnta = lnta;
@@ -1407,13 +1420,20 @@ public class ClassFile extends ANY implements ClassFileConstants
       o.writeU4(_size);
       var ba = new ByteCodeWrite(_where, o);
       _code.code(ba, ClassFile.this);
-      o.writeU2(_exception_table.size());
-      for (var e : _exception_table)
+      if (ba._exceptionTable == null)
         {
-          o.writeU2(e._start_pc);
-          o.writeU2(e._end_pc);
-          o.writeU2(e._handler_pc);
-          o.writeU2(e._catch_pc);
+          o.writeU2(0);
+        }
+      else
+        {
+          o.writeU2(ba._exceptionTable.size());
+          for (var e : ba._exceptionTable)
+            {
+              o.writeU2(e._posFinal);
+              o.writeU2(e._end._posFinal);
+              o.writeU2(e._handler._posFinal);
+              o.writeU2(cpClass(e._type)._index);
+            }
         }
       o.writeU2(_attributes.size());
       for (var a : _attributes)

@@ -41,13 +41,21 @@ public effect is
   type.default0(e effect.this) unit => intrinsic
 
 
-  # execute code provided in f.call while this effect is installed
-  # in the current environment. Return immediately in case abort is
-  # called.
-
-  # NYI: uses type parameter T only to simplify backends
+  # instate e for effect type effect.this in the current environment.
   #
-  type.instate0(T type : Function unit, e effect.this, f T) unit => intrinsic
+
+
+  # execute code provided in f.call while this effect is instated in the
+  # current environment and remove the instated effect after f.call returned.
+  #
+  # In case of an abort, run `def.call` on the latest value instated or replaced
+  # for `effect.this` after removing that instated effect value.
+  #
+  type.instate0(C type : Function unit,
+                D type : Function unit effect.this,
+                e effect.this,
+                c C,
+                d D) unit => intrinsic
 
 
   # replace existing effect of type `E` in the new effect value `e`
@@ -113,14 +121,21 @@ public effect is
                       code () -> R,
 
                       # the lazy default result to use if effect aborts
-                      def Lazy R
+                      def effect.this -> R
                       ) R
   =>
-    cf := e.Effect_Call code
-    instate0 e cf
-    match cf.res
-      nil => def()
-      x R => x
+    c := Effect_Call code
+    d := Effect_Call2 def
+    instate0 (Effect_Call R) (Effect_Call2 R effect.this) e c d
+    if (3%%4) e.static_finally
+    # NYI: cleanup
+    c.r.or_else d.r.get
+
+
+/* NYI: Causes fz to crash! **
+  type.Effect_Call(f () -> R) : Function R is
+    redef call => f()
+*/
 
 
   # execute 'code' in a context where the effect instance `e` has been
@@ -140,7 +155,7 @@ public effect is
                       code () -> R
                       ) R
   =>
-    instate R e code (panic "unexpected abort in {effect.this.type}")
+    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 
 
   # convenience version of `instate` for effect values whose type is
@@ -184,30 +199,6 @@ public effect is
   #
   type.unsafe_get =>
     effect.this.env
-
-
-  # helper instance for effect.instate to wrap call to f() into a ()->unit
-  #
-  # NOTE: Since all control flow to enter an environment goes through this it is
-  # essential that static analysis works well.  `Effect_Call` must be an inner
-  # feature of `effect` since otherwise instances will not be separated well and
-  # values for `f` for different effects will be mixed up resulting in errors
-  # during static analysis for effects.
-  #
-  # NYI: CLEANUP: #2728 Needed since abortable supports only unit result
-  #
-  Effect_Call(
-    # result type of the call
-    R type,
-
-    # the function to be called
-    f () -> R
-    )
-    ref : Function unit
-  is
-    res option R := nil
-    redef call =>
-      set res := f()
 
 
   # --------------------  replacing effect instances  --------------------
@@ -257,6 +248,7 @@ public effect is
     safety: effect.this.is_instated
     safety: effect.this.env.abortable
   =>
+    replace0 e  # NYI: UNDER DEVELOPMENT: Check if this is redundant with backend implementation of abort0!
     abort0 e
 
 
@@ -297,3 +289,39 @@ public effect is
     safety: effect.this.env.abortable
   =>
     abort
+
+
+  # --------------------  resource cleanup  --------------------
+
+
+  # feature that will be called on the instance of this effect when it
+  # will be de-instated.
+  #
+  public finally =>
+
+
+  # internal feature that will be called on the instance of this effect
+  # when it will be de-instated.
+  #
+  # This is just a trampoline for compiler convenience such that when
+  # generating code for the instate0 intrinsic the compiler does
+  # not need to care about dynamic binding if the current effect is a
+  # `ref`.
+  #
+  static_finally => finally
+
+
+
+
+  # --------------------  helper features  --------------------
+
+
+Effect_Call(f () -> R) : Function unit is
+  r := option R nil
+  redef call =>
+    set r := f()
+
+Effect_Call2(f E -> R) : Function unit E is
+  r := option R nil
+  redef call(e E) =>
+    set r := f e

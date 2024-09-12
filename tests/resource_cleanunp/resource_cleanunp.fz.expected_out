@@ -1,0 +1,52 @@
+--------------------------- open / close / finish normal
+open: A
+open: B
+open: C
+closing C
+closing B
+closing A
+finished normally, running: 3 opened
+--------------------------- open / close / interrupt
+open: W
+open: X
+open: Y
+open: Z
+closing Z
+closing Y
+closing X
+closing W
+run default
+got interrupted! stopped: 4 opened
+--------------------------- open / throw / close / error
+open: P
+open: Q
+throw!
+closing Q
+closing P
+--error: throw!--
+--------------------------- open I J / open A B C / close C B A / open K / close K J I / finish normal
+open: I
+open: J
+open: A
+open: B
+open: C
+closing C
+closing B
+closing A
+finished normally, running: 3 opened
+open: K
+closing K
+closing J
+closing I
+finished normally, running: 3 opened
+--------------------------- open L M / open P Q / throw / close Q P / close M L / error
+open: L
+open: M
+open: P
+open: Q
+throw!
+closing Q
+closing P
+closing M
+closing L
+--error: throw!--

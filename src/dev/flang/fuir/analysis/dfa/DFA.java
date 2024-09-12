@@ -443,6 +443,7 @@ public class DFA extends ANY
           }
         case Field:
           {
+            //            System.out.println("call0: tvalue is "+tvalue);
             res = tvalue.value().callField(DFA.this, cc, s, _call);
             if (_reportResults && _options.verbose(9))
               {
@@ -2103,8 +2104,62 @@ public class DFA extends ANY
     put(EFFECT_INSTATE_NAME                 , cl ->
         {
           var ecl = cl._dfa._fuir.effectTypeFromInstrinsic(cl._cc);
-          var oc  = cl._dfa._fuir.clazzActualGeneric(cl._cc, 0);
+          //          System.out.println("called clazz is "+cl._dfa._fuir.clazzAsString(cl._cc));
+          //          System.out.println("effect clazz is "+cl._dfa._fuir.clazzAsString(ecl));
+          // var oc0  = cl._dfa._fuir.clazzActualGeneric(cl._cc, 0);
+          //          System.out.println("oc0 is "+cl._dfa._fuir.clazzAsString(oc0));
+          //          for (var i = 0; i<cl._args.size(); i++)
+          //            {
+          //              var a = cl._args.get(i);
+          //              System.out.println("arg "+i+" is "+a);
+          //              var ac  = cl._dfa._fuir.clazzArgClazz(cl._cc,i);
+          //              var acr = cl._dfa._fuir.clazzResultClazz(ac);
+          //              System.out.println("CLAZZ "+i+" is "+cl._dfa._fuir.clazzAsString(acr));
+          //            }
+          Value[] result = { null };
+          var a = cl._args.get(1);
+          a.value().forAll(v ->
+                   {
+                     var a1 = v._clazz;
+                     var oc = cl._dfa._fuir.clazzResultClazz(a1);
+                     var call = cl._dfa._fuir.lookupCall(oc);
+                     //                     System.out.println("From arg: "+cl._dfa._fuir.clazzAsString(call)+" "+cl._dfa._fuir.clazzNeedsCode(call));
+                     var env = cl._env;
+                     var newEnv = cl._dfa.newEnv(env, ecl, cl._args.get(0).value());
+                     var ncl = cl._dfa.newCall(call, NO_SITE, cl._args.get(1).value(), new List<>(), newEnv, cl);
+                     var nr = ncl.result();
+                     var nrv = nr == null ? null : nr.value();
+                     result[0] = result[0] == null ? nrv : result[0].join(cl._dfa, nrv);
+
+                     // default result:
+                     // NYI: UNDER DEVELOPMENT: This should use env value at the point of 'abort'
+                     var d = cl._args.get(2);
+                     d.value().forAll(dv ->
+                       {
+                         var a2 = dv._clazz;
+                         var dc = cl._dfa._fuir.clazzResultClazz(a2);
+                         var dcall = cl._dfa._fuir.lookupCall(dc);
+                         var dcl = cl._dfa.newCall(dcall, NO_SITE, cl._args.get(2).value(), new List<>(newEnv.getActualEffectValues(ecl)), env, cl);
+                         var dr = dcl.result();
+                         var drv = dr == null ? null : dr.value();
+                         result[0] = result[0] == null ? drv : drv == null ? result[0] : result[0].join(cl._dfa, drv);
+                       });
+
+                     cl._dfa.newCall(cl._dfa._fuir.lookup_static_finally(ecl),
+                                     NO_SITE,
+                                     newEnv.getActualEffectValues(ecl), // NYI: UNDER DEVELOPMENT: This should use env value on return or at 'abort'
+                                     new List<>(),
+                                     env,
+                                     cl);
+                   });
+          /*
+          var a1  = cl._dfa._fuir.clazzArgClazz(cl._cc, 1);
+          var oc = cl._dfa._fuir.clazzResultClazz(a1);
           var call = cl._dfa._fuir.lookupCall(oc);
+          if (!(cl._dfa._fuir.clazzNeedsCode(call)))
+            {
+              System.out.println("no code needed for call to "+cl._dfa._fuir.clazzAsString(call)+" in "+cl._dfa._fuir.clazzAsString(cl._cc));
+            }
 
           if (CHECKS) check
             (cl._dfa._fuir.clazzNeedsCode(call));
@@ -2112,8 +2167,9 @@ public class DFA extends ANY
           var env = cl._env;
           var newEnv = cl._dfa.newEnv(env, ecl, cl._args.get(0).value());
           var ncl = cl._dfa.newCall(call, NO_SITE, cl._args.get(1).value(), new List<>(), newEnv, cl);
-          // NYI: result must be null if result of ncl is null (ncl does not return) and effect.abort is not called
-          return Value.UNIT;
+          return ncl.result();
+          */
+          return result[0];
         });
     put("effect.type.abort0"                , cl ->
         {

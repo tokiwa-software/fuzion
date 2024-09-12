@@ -28,6 +28,7 @@ package dev.flang.be.jvm;
 
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 import dev.flang.be.jvm.classfile.Expr;
+import dev.flang.be.jvm.classfile.Label;
 
 import dev.flang.be.jvm.runtime.Intrinsics;
 import dev.flang.be.jvm.runtime.Runtime;
@@ -709,36 +710,79 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, si, cc, tvalue, args) ->
         {
           var ecl = jvm._fuir.effectTypeFromInstrinsic(cc);
-          var oc  = jvm._fuir.clazzActualGeneric(cc, 0);
-          var call = jvm._fuir.lookupCall(oc);
-          var call_t = jvm._types.javaType(call);
+          var call     = jvm._fuir.lookupCall(jvm._fuir.clazzActualGeneric(cc, 0));
+          var call_def = jvm._fuir.lookupCall(jvm._fuir.clazzActualGeneric(cc, 1));
+          var finallie =  jvm._fuir.lookup_static_finally(ecl);
           var arg = args.get(0);
-          if (jvm._types.resultType(ecl) == ClassFileConstants.PrimitiveType.type_void)
+          var ejt = jvm._types.resultType(ecl);
+          var cast_e = Expr.checkcast(jvm._types.resultType(ecl));
+          var dup_e = Expr.DUP;
+          if (ejt == ClassFileConstants.PrimitiveType.type_void)
             {
               arg = arg.drop().andThen(Expr.getstatic(Names.RUNTIME_CLASS,
                                                       "_UNIT_TYPE_EFFECT_",
                                                       Names.ANYI_TYPE));
+              cast_e = Expr.POP;  // cast AnyI to void by dumping the value
+              dup_e  = Expr.UNIT; // dup void is a nop (= Expr.UNIT)
             }
-          if (call_t instanceof ClassType call_ct)
-            {
-              var result = Expr.iconst(jvm._fuir.clazzId2num(ecl))
-                .andThen(arg)
-                .andThen(args.get(1))
-                .andThen(Expr.classconst(call_ct))
-                .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                           "effect_instate",
-                                           "(" + ("I" +
-                                                  Names.ANYI_DESCR +
-                                                  Names.ANY_DESCR +
-                                                  JAVA_LANG_CLASS.descriptor()) +
-                                           ")V",
-                                           ClassFileConstants.PrimitiveType.type_void));
-              return new Pair<>(Expr.UNIT, result);
-            }
-          else
-            { // unreachable, call type cannot be primitive type
-              throw new Error("unexpected type " + call_t + " for " + jvm._fuir.clazzAsString(call));
-            }
+          var try_end   = new Label();
+          var try_catch = new Label();
+          var try_after = new Label();
+          var try_start = Expr.tryCatch(try_end,
+                                        try_catch,
+                                        "dev/flang/be/jvm/runtime/Runtime$Abort");
+          var result = Expr.iconst(jvm._fuir.clazzId2num(ecl))
+            .andThen(arg)
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "effect_push",
+                                       "(" + ("I" +
+                                              Names.ANYI_DESCR) +
+                                       ")V",
+                                       ClassFileConstants.PrimitiveType.type_void)
+                     )
+            .andThen(try_start)
+            .andThen(args.get(1))
+            .andThen(jvm._types.invokeStatic(call, jvm._fuir.sitePos(si).line()))
+            .andThen(try_end)
+            .andThen(Expr.iconst(jvm._fuir.clazzId2num(ecl)))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "effect_pop_and_get",
+                                       "(I)"+Names.ANYI_DESCR,
+                                       Names.ANYI_TYPE)
+                     )
+            .andThen(cast_e)
+            .andThen(jvm._types.invokeStatic(finallie, jvm._fuir.sitePos(si).line()))
+            .andThen(Expr.gotoLabel(try_after))
+            .andThen(try_catch)
+            .andThen(Expr.DUP)
+            .andThen(Expr.getfield("dev/flang/be/jvm/runtime/Runtime$Abort","_effect",PrimitiveType.type_int))
+            .andThen(Expr.iconst(jvm._fuir.clazzId2num(ecl)))
+            .andThen(Expr.branch(O_if_icmpne,
+                                 // not for us, so pop effect and re-throw
+                                 Expr.iconst(jvm._fuir.clazzId2num(ecl))
+                                 .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                                            "effect_pop_and_get",
+                                                            "(I)"+Names.ANYI_DESCR,
+                                                            Names.ANYI_TYPE)
+                                          )
+                                 .andThen(cast_e)
+                                 .andThen(jvm._types.invokeStatic(finallie, jvm._fuir.sitePos(si).line()))
+                                 .andThen(Expr.THROW),
+                                 // for us, so pop abort and call call_def on popped effect
+                                 Expr.POP
+                                 .andThen(args.get(2))
+                                 .andThen(Expr.iconst(jvm._fuir.clazzId2num(ecl)))
+                                 .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                                            "effect_pop_and_get",
+                                                            "(I)"+Names.ANYI_DESCR,
+                                                            Names.ANYI_TYPE)
+                                          )
+                                 .andThen(cast_e)
+                                 .andThen(dup_e)
+                                 .andThen(jvm._types.invokeStatic(finallie, jvm._fuir.sitePos(si).line()))
+                                 .andThen(jvm._types.invokeStatic(call_def, jvm._fuir.sitePos(si).line()))))
+            .andThen(try_after);
+          return new Pair<>(Expr.UNIT, result);
         });
 
     put("effect.type.default0",

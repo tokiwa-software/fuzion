@@ -81,6 +81,7 @@ public abstract class Expr extends ByteCode
 
       code(ba, O_goto, from, to);
     }
+    Throwable _t = new Throwable();
 
     @Override
     public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
@@ -107,6 +108,8 @@ public abstract class Expr extends ByteCode
 
       var positionNextByteCode = from._posFinal + 3;
 
+      if (!((isJumpBackwards() || smt.stacks.containsKey(positionNextByteCode))))
+        _t.printStackTrace();
       if (CHECKS) check
         (isJumpBackwards() || smt.stacks.containsKey(positionNextByteCode));
 
@@ -131,6 +134,68 @@ public abstract class Expr extends ByteCode
       idx[0] += 3;
     }
 
+  }
+
+
+  /*
+   * A try-catch block
+   */
+  static class TryCatch extends Label
+  {
+    final Label _end;
+    final Label _handler;
+    final String _type;
+
+    private TryCatch(Label try_end, Label try_handler, String type)
+    {
+      this._end = try_end;
+      this._handler = try_handler;
+      this._type = type;
+    }
+
+    public String toString()
+    {
+      return "try " + super.toString()+ " .. " + _end + " catch " + _handler + " for " + _type;
+    }
+
+    @Override
+    public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
+    {
+      super.code(ba, cf);
+      ba.addExceptionTable(this);
+    }
+
+    @Override
+    public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
+    {
+      // restore locals and stack to
+      // previously saved states.
+
+      // locals.clear();
+      // stack.clear();
+      smt.stackMapFrames.add(new StackMapFullFrame(smt, _handler._posFinal));
+      var s = new Stack<VerificationType>();
+      //      var s = clone(stack);
+      //      s.clear();
+      //s.push(PrimitiveType.type_char.vti());
+      //s.push(PrimitiveType.type_float.vti());
+      //stack.clear();
+      s.push(new VerificationType(_type, (cf)->cf.cpClass(_type).index()));
+      smt.stacks.put(_handler._posFinal, s);
+      /*
+      smt.stacks
+        .get(_handler._posFinal)
+        .forEach(vti -> s.add(vti));
+        */
+      var l = locals.clone();
+      smt.locals.add(new Pair<>(_handler._posFinal , l));
+      /*
+      smt
+        .unifiedLocals(_handler._posFinal)
+        .forEach(vti -> l.add(vti));
+      */
+      super.buildStackMapTable(smt, stack, locals);
+    }
   }
 
 
@@ -1823,6 +1888,9 @@ public abstract class Expr extends ByteCode
 
   public static Expr checkcast(JavaType type)
   {
+    if (PRECONDITIONS) require
+      (true || !type.isPrimitive());
+
     return new Expr()
       {
         // NYI checkcasts where isRedundant=true should
@@ -1958,6 +2026,17 @@ public abstract class Expr extends ByteCode
         return true;
       }
     });
+  }
+
+
+  /**
+   * A try / catch block
+   *
+   * @param to the place where to jump to.
+   */
+  public static Expr tryCatch(Label try_end, Label try_handler, String exc_type)
+  {
+    return new TryCatch(try_end, try_handler, exc_type);
   }
 
 

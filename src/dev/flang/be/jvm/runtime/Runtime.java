@@ -69,10 +69,10 @@ public class Runtime extends ANY
   /**
    * Exception that is thrown by effect.abort
    */
-  static class Abort extends Error
+  public static class Abort extends Error
   {
 
-    int _effect;
+    public final int _effect;
 
     /**
      * @param effect the id of the effect that is aborted.
@@ -605,6 +605,33 @@ public class Runtime extends ANY
    *
    * @param call the Java clazz of the Unary instance to be executed.
    */
+  public static void effect_push(int id, AnyI instance)
+  {
+    if (PRECONDITIONS) require
+      (instance != null);
+
+    var t = currentThread();
+
+    var old = t.effect_load(id);
+    t.effect_store(id, instance);
+    t._effectStack.add(old);
+  }
+  public static void effect_pop(int id)
+  {
+    var t = currentThread();
+
+    var instance = t._effectStack.removeLast();
+    t.effect_store(id, instance);
+  }
+  public static AnyI effect_pop_and_get(int id)
+  {
+    var t = currentThread();
+
+    var res = t.effect_load(id);
+    var instance = t._effectStack.removeLast();
+    t.effect_store(id, instance);
+    return res;
+  }
   public static void effect_instate(int id, AnyI instance, Any code, Class call)
   {
     if (PRECONDITIONS) require

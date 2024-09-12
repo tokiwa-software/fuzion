@@ -81,7 +81,7 @@ public fallible(ERROR type, h ERROR->void) : effect is
         v := fallible.this.new e->
                m <- e
                fallible.this.type.abort
-        fallible.this.instate T v code_try (()->code_catch m.get.get)
+        fallible.this.instate T v code_try (_ -> code_catch m.get.get)
 
     # infix alias for catch
     #

@@ -51,6 +51,9 @@ public class FuzionThread extends Thread
   List<AnyI> _installedEffects = new List<>();
 
 
+  List<AnyI> _effectStack = new List<>();
+
+
   /**
    * Field to store the exception in case a call into Java code resulted in
    * throwing an exception.
