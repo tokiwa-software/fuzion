@@ -97,7 +97,7 @@ import dev.flang.util.FuzionOptions;
  *     declaration of corresponding inner features. Add (f,<>) to the list of
  *     features to be searched for runtime types to be layouted.
  *
- * 11. If there are any features scheduled for inheritance, declaration. type,
+ * 11. If there are any features scheduled for inheritance, declaration, type,
  *     or syntactic sugar resolution, go to step 9. Otherwise, take the first
  *     entry (f,G) from the list of features with actual generics to be searched
  *     for runtime types to be layouted.

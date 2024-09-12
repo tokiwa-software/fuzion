@@ -174,7 +174,7 @@ public mutate : effect is
     # update mutable field using a function of the old value
     #
     public update (
-      # function calculcating the new value from the old value
+      # function calculating the new value from the old value
       f T->T
       )
     =>

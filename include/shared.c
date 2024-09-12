@@ -799,7 +799,7 @@ jvalue fzE_get_static_field0(jstring class_name, jstring name, const char *sig)
 
 
 // set a static field in class.
-void fzE_set_static_field0(jstring class_name, jstring name, jvalue value, const char *sig) // TODO:FIXME:
+void fzE_set_static_field0(jstring class_name, jstring name, jvalue value, const char *sig)
 {
   jclass cl  = (*getJNIEnv())->FindClass(getJNIEnv(), fzE_replace_char(fzE_java_string_to_modified_utf8(class_name), '.', '/'));
   assert( cl != NULL );

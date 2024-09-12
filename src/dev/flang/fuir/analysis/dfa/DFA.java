@@ -537,7 +537,7 @@ public class DFA extends ANY
         {
           var f = _fuir.clazzArg(constCl, index);
           var fr = _fuir.clazzArgClazz(constCl, index);
-          var bytes = _fuir.deseralizeConst(fr, b);
+          var bytes = _fuir.deserializeConst(fr, b);
           var arg = constData(s, fr, bytes).value();
           args.add(arg);
           result.setField(DFA.this, f, arg);
@@ -582,7 +582,7 @@ public class DFA extends ANY
       Value elements = null;
       for (int idx = 0; idx < elCount; idx++)
         {
-          var b = _fuir.deseralizeConst(elementClazz, d);
+          var b = _fuir.deserializeConst(elementClazz, d);
           elements = elements == null
             ? constData(s, elementClazz, b).value()
             : elements.join(DFA.this, constData(s, elementClazz, b).value(), elementClazz);
@@ -942,8 +942,8 @@ public class DFA extends ANY
 
 
   /**
-   * All calls will receive a unique identitifier.  This is the next unique
-   * identitifier to be used for the next new call.
+   * All calls will receive a unique identifier.  This is the next unique
+   * identifier to be used for the next new call.
    */
   int _callIds = 0;
 
@@ -1016,7 +1016,7 @@ public class DFA extends ANY
 
 
   /**
-   * All clazzes that containt fields that are ever read.
+   * All clazzes that contain fields that are ever read.
    */
   BitSet _hasFields = new BitSet();
 
@@ -1613,7 +1613,7 @@ public class DFA extends ANY
    * Record that a temporary value whose address is taken may live longer than
    * than the current call, so we cannot store it in the current stack frame.
    *
-   * @param s site of the call or assignment we are analysing
+   * @param s site of the call or assignment we are analyzing
    *
    * @param v value we are taking an address of
    *
@@ -1733,7 +1733,7 @@ public class DFA extends ANY
 
     put("concur.atomic.racy_accesses_supported",  cl ->
         {
-          // NYI: racy_accesses_supported could return true or false depending on the backend's behaviour.
+          // NYI: racy_accesses_supported could return true or false depending on the backend's behavior.
           return cl._dfa.bool();
         });
 

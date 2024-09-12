@@ -53,7 +53,7 @@ private:public ps_map
    # value type
    V type,
 
-   # the array containg the sorted arrays, see below for details
+   # the array containing the sorted arrays, see below for details
    data fuzion.sys.internal_array (tuple PK V),
 
    # the number of key and value pairs in this map.

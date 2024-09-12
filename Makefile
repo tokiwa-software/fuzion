@@ -441,7 +441,7 @@ base-only: $(FZ) $(MOD_BASE) $(FUZION_FILES)
 .PHONY: javac
 javac: $(CLASS_FILES_TOOLS) $(CLASS_FILES_TOOLS_FZJAVA) $(CLASS_FILES_TOOLS_DOCS)
 
-.PHONY: lint-c
+.PHONY: lint/c
 lint/c:
 	clang-tidy $(C_FILES) -- -std=c11
 

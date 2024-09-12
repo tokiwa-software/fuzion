@@ -1006,11 +1006,11 @@ public abstract class FUIR extends IR
    *
    * This is used to feed information back from static analysis tools like DFA
    * to the GeneratingFUIR such that the given target will be added to the
-   * targets / inner clazzes tuples returned by accesedClazzes.
+   * targets / inner clazzes tuples returned by accessedClazzes.
    *
    * @param s site of the access
    *
-   * @param tclazz the target clazz of the acces.
+   * @param tclazz the target clazz of the access.
    *
    * @return the accessed inner clazz or NO_CLAZZ in case that does not exist,
    * i.e., an abstract feature is missing.
@@ -1472,7 +1472,7 @@ public abstract class FUIR extends IR
    *           May be more than necessary for variable length constants
    *           like strings, arrays, etc.
    */
-  public abstract byte[] deseralizeConst(int cl, ByteBuffer bb);
+  public abstract byte[] deserializeConst(int cl, ByteBuffer bb);
 
 
   /*----------------------  accessing source code  ----------------------*/
