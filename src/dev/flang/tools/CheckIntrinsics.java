@@ -56,7 +56,7 @@ class CheckIntrinsics extends ANY
   CheckIntrinsics(FrontEnd fe)
   {
     var all = new TreeSet<String>();
-    getAll(all, fe, fe._universe);
+    getAll(all, fe, fe.baseModule().libraryUniverse());
 
     var i = dev.flang.be.interpreter.Intrinsics.supportedIntrinsics();
     checkIntrinsics(all, true, i, "Interpreter backend", x->x);
@@ -73,7 +73,7 @@ class CheckIntrinsics extends ANY
 
   void getAll(TreeSet<String> all, FrontEnd fe, AbstractFeature outer)
   {
-    var s = fe._baseModule.declaredFeatures(outer);
+    var s = fe.baseModule().declaredFeatures(outer);
     for (var f : s.values())
       {
         getAll(all, fe, f);

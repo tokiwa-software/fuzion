@@ -298,6 +298,99 @@ public class Types extends ANY
           res.resolveTypes(t.feature());
         }
     }
+    public static interface LookupFeature
+    {
+      AbstractFeature lookup(AbstractFeature target, FeatureName fn);
+    }
+    public Resolved(LookupFeature lf, AbstractFeature universe)
+    {
+      this.universe = universe;
+      t_i8            = lookup(lf, "i8", 1).selfType();
+      t_i16           = lookup(lf, "i16", 1).selfType();
+      t_i32           = lookup(lf, "i32", 1).selfType();
+      t_i64           = lookup(lf, "i64", 1).selfType();
+      t_u8            = lookup(lf, "u8", 1).selfType();
+      t_u16           = lookup(lf, "u16", 1).selfType();
+      t_u32           = lookup(lf, "u32", 1).selfType();
+      t_u64           = lookup(lf, "u64", 1).selfType();
+      t_f32           = lookup(lf, "f32", 1).selfType();
+      t_f64           = lookup(lf, "f64", 1).selfType();
+      t_bool          = lookup(lf, "bool", 0).selfType();
+      t_fuzion        = lookup(lf, "fuzion", 0).selfType();
+      t_String        = lookup(lf, FuzionConstants.STRING_NAME, 0).selfType();
+      t_Const_String  = lookup(lf, "Const_String", 0).selfType();
+      t_Any           = lookup(lf, FuzionConstants.ANY_NAME, 0).selfType();
+      t_unit          = lookup(lf, FuzionConstants.UNIT_NAME, 0).selfType();
+      t_void          = lookup(lf, "void", 0).selfType();
+      t_codepoint     = lookup(lf, "codepoint", 1).selfType();
+      f_id                         = lookup(lf, "id", 2);
+      f_void                       = lookup(lf, "void", 0);
+      f_choice                     = lookup(lf, "choice", 1);
+      f_TRUE                       = lookup(lf, "TRUE", 0);
+      f_FALSE                      = lookup(lf, "FALSE", 0);
+      f_true                       = lookup(lf, "true", 0);
+      f_false                      = lookup(lf, "false", 0);
+      f_bool                       = lookup(lf, "bool", 0);
+      f_bool_NOT                   = null;
+      f_bool_AND                   = null;
+      f_bool_OR                    = null;
+      f_bool_IMPLIES               = null;
+      f_bool_TERNARY               = null;
+      f_Const_String_utf8_data     = lookup(lf, lookup(lf, "Const_String", 0), "utf8_data", 0);
+      f_debug                      = lookup(lf, "debug", 0);
+      f_debug_level                = lookup(lf, "debug_level", 0);
+      f_Function                   = lookup(lf, FUNCTION_NAME, 2);
+      f_Function_call              = lookup(lf, f_Function, "call", 1);
+      f_safety                     = lookup(lf, "safety", 0);
+      f_array                      = lookup(lf, "array", 5);
+      f_array_internal_array       = lookup(lf, f_array, "internal_array", 0);
+      f_error                      = lookup(lf, "error", 1);
+      f_error_msg                  = lookup(lf, f_error, "msg", 0);
+      f_fuzion                     = lookup(lf, "fuzion", 0);
+      f_fuzion_java                = lookup(lf, f_fuzion, "java", 0);
+      f_fuzion_Java_Object         = lookup(lf, f_fuzion_java, "Java_Object", 1);
+      f_fuzion_Java_Object_Ref     = lookup(lf, f_fuzion_Java_Object, "Java_Ref", 0);
+      f_fuzion_sys                 = lookup(lf, f_fuzion, "sys", 0);
+      f_fuzion_sys_array           = lookup(lf, f_fuzion_sys, "internal_array", 3);
+      f_fuzion_sys_array_data      = lookup(lf, f_fuzion_sys_array, "data", 0);
+      f_fuzion_sys_array_length    = lookup(lf, f_fuzion_sys_array, "length", 0);
+      f_concur                     = lookup(lf, "concur", 0);
+      f_concur_atomic              = lookup(lf, f_concur, "atomic", 2);
+      f_concur_atomic_v            = lookup(lf, f_concur_atomic, "v", 0);
+      f_Type                       = lookup(lf, "Type", 0);
+      f_Type_infix_colon           = lookup(lf, f_Type, "infix :", 1);
+      f_Type_infix_colon_true      = lookup(lf, f_Type, "infix_colon_true", 1);
+      f_Type_infix_colon_false     = lookup(lf, f_Type, "infix_colon_false", 1);
+      f_type_as_value              = lookup(lf, "type_as_value", 1);
+      f_Lazy                       = lookup(lf, LAZY_NAME, 1);
+      f_Unary                      = lookup(lf, UNARY_NAME, 2);
+      f_auto_unwrap                = lookup(lf, "auto_unwrap", 2);
+      resolved = this;
+      numericTypes = new TreeSet<AbstractType>(new List<>(
+        t_i8,
+        t_i16,
+        t_i32,
+        t_i64,
+        t_u8,
+        t_u16,
+        t_u32,
+        t_u64,
+        t_f32,
+        t_f64));
+      ((ArtificialBuiltInType) t_ADDRESS  ).resolveArtificialType(lookup(lf, FuzionConstants.ANY_NAME, 0));
+      ((ArtificialBuiltInType) t_UNDEFINED).resolveArtificialType(universe);
+      ((ArtificialBuiltInType) t_ERROR    ).resolveArtificialType(f_ERROR);
+    }
+    private AbstractFeature lookup(LookupFeature lf, AbstractFeature target, String name, int argCount)
+    {
+      var result = lf.lookup(target, FeatureName.get(name,  argCount));
+      check(result != null);
+      return result;
+    }
+    private AbstractFeature lookup(LookupFeature lf, String name, int argCount)
+    {
+      return lookup(lf, universe, name, argCount);
+    }
   }
 
 

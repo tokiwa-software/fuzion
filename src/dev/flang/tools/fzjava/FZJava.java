@@ -536,7 +536,7 @@ public class FZJava extends Tool
    */
   void createOuter(String jfn)
   {
-    recurseDeclaredFeature(jfn.replace("/", "."), _fe._universe);
+    recurseDeclaredFeature(jfn.replace("/", "."), _fe.baseModule().libraryUniverse());
 
     var pkg = jfn.substring(0, jfn.lastIndexOf("/"));
     if (pkg.indexOf("/") >= 0)

@@ -42,12 +42,14 @@ import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourceFile;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 
 /**
@@ -168,12 +170,6 @@ public abstract class Module extends ANY implements FeatureLookup
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * Create the module intermediate representation for this module.
-   */
-  public abstract MIR createMIR(String main);
 
 
   /**
@@ -459,6 +455,14 @@ public abstract class Module extends ANY implements FeatureLookup
               }
           }
 
+        // This is need for "extension" features
+        // that are declared in different modules
+        // than the outer feature:
+        // e.g. `Any.dt => Any.this.type`
+        var selfAndModules = Stream
+          .concat(Arrays.stream(modules), Stream.of(this))
+          .toArray(Module[]::new);
+
         // first we search in additional modules
         for (Module libraryModule : modules)
           {
@@ -466,7 +470,7 @@ public abstract class Module extends ANY implements FeatureLookup
               {
                 addDeclaredOrInherited(s, outer, e.getKey(), e.getValue());
               }
-            libraryModule.findInheritedFeatures(s, outer, modules);
+            libraryModule.findInheritedFeatures(s, outer, selfAndModules);
           }
 
         // then we search in this module
@@ -494,6 +498,8 @@ public abstract class Module extends ANY implements FeatureLookup
    */
   SortedMap<FeatureName, List<AbstractFeature>> declaredOrInheritedFeatures(AbstractFeature outer)
   {
+    if (CHECKS) check
+      (_dependsOn != null);
     return this.declaredOrInheritedFeatures(outer, _dependsOn);
   }
 
@@ -599,8 +605,9 @@ public abstract class Module extends ANY implements FeatureLookup
      *
      * This is a fix for #978 but it might need to be removed when fixing #932.
      */
-    return result == null && original instanceof Feature of && of._addedLate ? original
-                                                                             : result;
+    return result == null
+      ? original
+      : result;
   }
 
 
@@ -609,27 +616,6 @@ public abstract class Module extends ANY implements FeatureLookup
    */
   static MIR createMIR(MirModule mirMod, AbstractFeature universe, AbstractFeature main)
   {
-    if (main != null && !Errors.any())
-      {
-        if (main.valueArguments().size() != 0)
-          {
-            FeErrors.mainFeatureMustNotHaveArguments(main);
-          }
-        switch (main.kind())
-          {
-          case Field    : FeErrors.mainFeatureMustNotBeField    (main); break;
-          case Abstract : FeErrors.mainFeatureMustNotBeAbstract (main); break;
-          case Intrinsic: FeErrors.mainFeatureMustNotBeIntrinsic(main); break;
-          case Choice   : FeErrors.mainFeatureMustNotBeChoice   (main); break;
-          case Routine  :
-            if (!main.generics().list.isEmpty())
-              {
-                FeErrors.mainFeatureMustNotHaveTypeArguments(main);
-              }
-            break;
-          default       : FeErrors.mainFeatureMustNot(main, "be of kind " + main.kind() + ".");
-          }
-      }
     var result = new MIR(universe, main, mirMod);
     if (!Errors.any())
       {

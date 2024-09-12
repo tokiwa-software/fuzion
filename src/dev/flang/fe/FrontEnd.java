@@ -55,7 +55,6 @@ import dev.flang.ast.Types;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
-import dev.flang.util.List;
 import dev.flang.util.SourceDir;
 
 
@@ -68,9 +67,6 @@ public class FrontEnd extends ANY
 {
 
   /*----------------------------  constants  ----------------------------*/
-
-
-  static final FeatureName UNIVERSE_NAME = FeatureName.get(FuzionConstants.UNIVERSE_NAME, 0);
 
 
   /**
@@ -94,6 +90,8 @@ public class FrontEnd extends ANY
    */
   class Universe extends Feature
   {
+    private final FeatureName _fn = FeatureName.get(FuzionConstants.UNIVERSE_NAME, 0);
+
     { setState(State.LOADING); }
     public boolean isUniverse()
     {
@@ -102,7 +100,7 @@ public class FrontEnd extends ANY
 
     public FeatureName featureName()
     {
-      return UNIVERSE_NAME;
+      return _fn;
     }
   }
 
@@ -116,18 +114,6 @@ public class FrontEnd extends ANY
 
 
   /**
-   * The universe.
-   */
-  public final AbstractFeature _universe;
-
-
-  /**
-   * The base module if it was loaded from base.fum, null otherwise.
-   */
-  public final LibraryModule _baseModule;
-
-
-  /**
    * The library modules loaded so far.  Maps the module name, e.g. "base" to
    * the corresponding LibraryModule instance.
    */
@@ -137,13 +123,19 @@ public class FrontEnd extends ANY
   /**
    * The module we are compiling. null if !options._loadSources or Errors.count() != 0
    */
-  private final SourceModule _sourceModule;
+  private SourceModule _sourceModule;
 
 
   /**
    * The total # of bytes loadeded for modules. Global indices are in this range.
    */
   private int _totalModuleData = 0;
+
+
+  /**
+   * The compiled main module.
+   */
+  private LibraryModule _mainModule;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -155,16 +147,8 @@ public class FrontEnd extends ANY
   public FrontEnd(FrontEndOptions options)
   {
     _options = options;
-    Types.reset(options);
-    FeatureAndOuter.reset();
-    Errors.reset();
-    FeatureName.reset();
-    Expr.reset();
-    Call.reset();
-    Contract.reset();
-    HasGlobalIndex.reset();
+    reset();
     var universe = new Universe();
-    _universe = universe;
 
     var sourcePaths = options.sourcePaths();
     var sourceDirs = new SourceDir[sourcePaths.length + options._modules.size()];
@@ -172,25 +156,12 @@ public class FrontEnd extends ANY
       {
         sourceDirs[i] = new SourceDir(sourcePaths[i]);
       }
-    var lms = new List<LibraryModule>();
-    if (options._loadBaseLib)
-      {
-        _baseModule = module(FuzionConstants.BASE_MODULE_NAME, modulePath(FuzionConstants.BASE_MODULE_NAME));
-        if (_baseModule != null)
-          {
-            lms.add(_baseModule);
-          }
-      }
-    else
-      {
-        _baseModule = null;
-      }
-    lms.addAll(options._modules.stream().map(mn -> loadModule(mn))
-                                        .filter(m -> m != null)
-                                        .toList());
-    var dependsOn = lms.toArray(LibraryModule[]::new);
+
+    loadModules(universe);
+
     if (options._loadSources)
       {
+        var dependsOn = _modules.values().toArray(LibraryModule[]::new);
         _sourceModule = new SourceModule(options, sourceDirs, dependsOn, universe);
         _sourceModule.createASTandResolve();
       }
@@ -198,6 +169,33 @@ public class FrontEnd extends ANY
       {
         _sourceModule = null;
       }
+  }
+
+
+  private void loadModules(Universe universe)
+  {
+    if (_options._loadBaseLib)
+      {
+        module(FuzionConstants.BASE_MODULE_NAME, modulePath(FuzionConstants.BASE_MODULE_NAME), universe);
+      }
+    _options._modules.stream().forEach(mn -> loadModule(mn, universe));
+  }
+
+
+  private void reset()
+  {
+    _totalModuleData = 0;
+    Types.reset(_options);
+    FeatureAndOuter.reset();
+    Errors.reset();
+    FeatureName.reset();
+    Expr.reset();
+    Call.reset();
+    Contract.reset();
+    HasGlobalIndex.reset();
+    _sourceModule = null;
+    _modules.clear();
+    _mainModule = null;
   }
 
 
@@ -236,13 +234,13 @@ public class FrontEnd extends ANY
   /**
    * Load module from given path.
    */
-  private LibraryModule module(String m, Path p)
+  private LibraryModule module(String m, Path p, AbstractFeature universe)
   {
     LibraryModule result = null;
     try (var ch = (FileChannel) Files.newByteChannel(p, EnumSet.of(StandardOpenOption.READ)))
       {
         var data = ch.map(FileChannel.MapMode.READ_ONLY, 0, ch.size());
-        result = libModule(data, new LibraryModule[0]);
+        result = libModule(data, universe);
         if (!m.equals(result.name()))
           {
             Errors.error("Module name mismatch for module file '" + p + "' expected name '" +
@@ -262,7 +260,7 @@ public class FrontEnd extends ANY
   /**
    * create a new LibraryModule from `data`
    */
-  private LibraryModule libModule(ByteBuffer data, LibraryModule[] dependsOn)
+  private LibraryModule libModule(ByteBuffer data, AbstractFeature universe)
   {
     LibraryModule result;
     var base = _totalModuleData;
@@ -270,8 +268,7 @@ public class FrontEnd extends ANY
     result = new LibraryModule(GLOBAL_INDEX_OFFSET + base,
                                this,
                                data,
-                               dependsOn,
-                               _universe);
+                               universe);
     return result;
   }
 
@@ -283,7 +280,7 @@ public class FrontEnd extends ANY
    *
    * @return the loaded module or null if it was not found or an error occurred.
    */
-  LibraryModule loadModule(String m)
+  LibraryModule loadModule(String m, AbstractFeature universe)
   {
     var result = _modules.get(m);
     if (result == null)
@@ -291,7 +288,7 @@ public class FrontEnd extends ANY
         var p = modulePath(m);
         if (p != null)
           {
-            result = module(m, p);
+            result = module(m, p, universe);
           }
         else
           {
@@ -309,7 +306,9 @@ public class FrontEnd extends ANY
 
   public MIR createMIR()
   {
-    return _sourceModule.createMIR(_sourceModule._main);
+    var main = _sourceModule._main;
+    var mm = mainModule();
+    return mm.createMIR(main);
   }
 
 
@@ -331,9 +330,25 @@ public class FrontEnd extends ANY
   /**
    * Get the compiled module main.
    */
-  public Module mainModule()
+  public LibraryModule mainModule()
   {
-    return libModule(_sourceModule.data("main"), _modules.values().toArray(new LibraryModule[_modules.size()]));
+    if (_mainModule == null)
+      {
+        _sourceModule.checkMain();
+        Errors.showAndExit();
+
+        var data = _sourceModule.data("main");
+        reset();
+        _mainModule = libModule(data, null /* use universe of module */);
+        var ignore = new Types.Resolved((target,fn) -> _mainModule.lookupFeature(target, fn, null), _mainModule.libraryUniverse());
+      }
+    return _mainModule;
+  }
+
+
+  public LibraryModule baseModule()
+  {
+    return _modules.get("base");
   }
 
 }

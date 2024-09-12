@@ -7,16 +7,16 @@ Feature 't.type' instantiated at <source position not available>:
 inherits or declares abstract feature 't.type.doit' declared at --CURDIR--/reg_issue3147.fz:25:8:
   type.doit unit => abstract
 -------^^^^
-which is called at --CURDIR--/reg_issue3147.fz:27:23:
+which is called at --CURDIR--/reg_issue3147.fz:27:21:
 test(X type : t) => X.doit
-----------------------^^^^
+--------------------^^^^^^
 without providing an implementation
 
 Callchain that lead to this point:
 
 call 'test#1 t' at --CURDIR--/reg_issue3147.fz:29:1:
 test t
-^^^^
+^^^^^^
 call 'universe'
 program entry point
 

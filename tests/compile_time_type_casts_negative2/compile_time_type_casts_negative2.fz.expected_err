@@ -7,9 +7,9 @@ fuzion.runtime.fault.cause#1
 fuzion.type.runtime.type.pre_fault.type.install_default.λ.call#1
 fuzion.runtime.pre_fault.cause#1
 fuzion.runtime.precondition_fault#1
-(compile_time_type_casts_negative2.use_x#3 compile_time_type_casts_negative2.a).pre do_b_thing
-(compile_time_type_casts_negative2.use_x#3 compile_time_type_casts_negative2.a).precall do_b_thing
-compile_time_type_casts_negative2.use_x#3 compile_time_type_casts_negative2.a
+(compile_time_type_casts_negative2.use_x#4 compile_time_type_casts_negative2.a).pre do_b_thing
+(compile_time_type_casts_negative2.use_x#4 compile_time_type_casts_negative2.a).precall do_b_thing
+compile_time_type_casts_negative2.use_x#4 compile_time_type_casts_negative2.a
 compile_time_type_casts_negative2
 
 *** fatal errors encountered, stopping.

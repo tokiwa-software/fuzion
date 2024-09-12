@@ -35,6 +35,8 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
@@ -50,6 +52,7 @@ import dev.flang.mir.MirModule;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.FuzionConstants.MirExprKind;
 import dev.flang.util.FuzionOptions;
 
 import static dev.flang.util.FuzionConstants.MirExprKind;
@@ -162,11 +165,6 @@ public class LibraryModule extends Module implements MirModule
   private final ModuleRef[] _modules;
 
 
-  /**
-   * The front end that loaded this module.
-   */
-  private final FrontEnd _fe;
-
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -174,15 +172,13 @@ public class LibraryModule extends Module implements MirModule
   /**
    * Create LibraryModule for given options and sourceDirs.
    */
-  LibraryModule(int globalBase, FrontEnd fe, ByteBuffer data, LibraryModule[] dependsOn, AbstractFeature universe)
+  LibraryModule(int globalBase, FrontEnd fe, ByteBuffer data, AbstractFeature universe)
   {
-    super(dependsOn);
+    super(null /* will be set later, need to load first */);
 
     _globalBase = globalBase;
-    _fe = fe;
     _mir = null;
     _data = data;
-    _universe = universe;
     _sourceFiles = new ArrayList<>(sourceFilesCount());
     var sfc = sourceFilesCount();
     for (int i = 0; i < sfc; i++)
@@ -193,11 +189,14 @@ public class LibraryModule extends Module implements MirModule
     _modules = new ModuleRef[mrc];
     var p = moduleRefsPos();
     int moduleOffset = _data.limit();
+    this._universe = universe == null ? libraryUniverse() : universe;
+    if (CHECKS) check
+      (_universe.isUniverse());
     for (int i = 0; i < mrc; i++)
       {
         var n = moduleRefName(p);
         var v = moduleRefVersion(p);
-        var m = fe.loadModule(n);
+        var m = fe.loadModule(n, universe());
         var mv = m.version();
         if (!Arrays.equals(v, mv))
           {
@@ -208,6 +207,10 @@ public class LibraryModule extends Module implements MirModule
         moduleOffset = moduleOffset + mr.size();
         p = moduleRefNextPos(p);
       }
+    _dependsOn = Arrays.stream(_modules)
+                       .map(mr -> mr._module)
+                       .collect(Collectors.toList())
+                       .toArray(new LibraryModule[_modules.length]);
 
     var dm = fe._options._dumpModules;
     if (DUMP ||
@@ -260,7 +263,7 @@ public class LibraryModule extends Module implements MirModule
    */
   private AbstractFeature universe()
   {
-    return _fe._universe;
+    return _universe;
   }
 
 

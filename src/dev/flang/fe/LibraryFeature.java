@@ -229,18 +229,29 @@ public class LibraryFeature extends AbstractFeature
   }
 
 
+  @Override
+  public boolean isUniverse()
+  {
+    return featureName().baseName().equals("universe");
+  }
+
+
   /**
    * Find the outer feature of this feature.
    */
   public AbstractFeature outer()
   {
-    var result = _outer;
-    if (result == null)
+    AbstractFeature result = null;
+    if (!isUniverse())
       {
-        result = _libModule.featureOuter(_index);
-        _outer = result;
-      }
+        result = _outer;
+        if (result == null)
+          {
+            result = _libModule.featureOuter(_index);
+            _outer = result;
+          }
 
+        }
     return result;
   }
 
