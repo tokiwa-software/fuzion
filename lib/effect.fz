@@ -127,8 +127,6 @@ public effect is
     c := Effect_Call code
     d := Effect_Call2 def
     instate0 (Effect_Call R) (Effect_Call2 R effect.this) e c d
-    if (3%%4) e.static_finally
-    # NYI: cleanup
     c.r.or_else d.r.get
 
 
@@ -309,8 +307,6 @@ public effect is
   # `ref`.
   #
   static_finally => finally
-
-
 
 
   # --------------------  helper features  --------------------
