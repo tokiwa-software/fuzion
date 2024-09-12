@@ -29,7 +29,6 @@ package dev.flang.ast;
 import java.io.ByteArrayOutputStream;
 
 import dev.flang.util.List;
-import dev.flang.util.SourcePosition;
 
 
 /**

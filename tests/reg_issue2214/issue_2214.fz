@@ -68,7 +68,7 @@ scenario3 =>
         s + (if (i < n) sieve i+1 ap else "")
       sieve 2 nil
 
-    say "Primes using bitset"; say "{primes6 100}"  # NYI: only 100 since this is currently very inefficent
+    say "Primes using bitset"; say "{primes6 100}"  # NYI: only 100 since this is currently very inefficient
 
   _ := primes
 

@@ -40,7 +40,6 @@ import java.util.SortedMap;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
@@ -1677,7 +1676,9 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
               }
             o = o.outer();
           }
-        if (!found)
+        if (!found &&
+          // okay for post condition features result field
+          !(f.isResultField() && f.outer().featureName().baseName().startsWith(FuzionConstants.POSTCONDITION_FEATURE_PREFIX)))
           {
             AstErrors.illegalResultTypeThisType(f);
           }
