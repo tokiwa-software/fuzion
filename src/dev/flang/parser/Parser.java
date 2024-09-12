@@ -1902,12 +1902,12 @@ opExpr      :     opTail
   /**
    * Parse ops
    *
-   * @param oe OpExpr instance the op()s should be added to
+   * @param oe OpExpr instance the dotCallOrOp()s should be added to
    *
-   * @return true iff ops was parsed and op()s were added to oe
+   * @return true iff ops was parsed and dotCallOrOp()s were added to oe
    *
-ops         : op ops
-            | op
+ops         : dotCallOrOp ops
+            | dotCallOrOp
             ;
    */
   boolean skipOps(OpExpr oe)
@@ -1915,7 +1915,7 @@ ops         : op ops
     var oldcount = oe.size();
     while (current() == Token.t_op)
       {
-        oe.add(op());
+        oe.add(dotCallOrOp());
       }
     return oldcount < oe.size();
   }
@@ -2242,18 +2242,27 @@ stringTermB : '}any chars&quot;'
 
 
   /**
-   * Parse op
+   * Parse dotCallOrOp
    *
-op          : OPERATOR
+dotCallOrOp : dot call
+            | OPERATOR
             ;
    */
-  Operator op()
+  Object dotCallOrOp()
   {
     if (PRECONDITIONS) require
       (current() == Token.t_op);
 
-    Operator result = new Operator(tokenSourceRange(), operator(), ignoredTokenBefore(), ignoredTokenAfter());
-    match(Token.t_op, "op");
+    Object result; // Function or Operator
+    if (skipDot())
+      {
+        result = Partial.dotCall(tokenSourcePos(), a->pureCall(a));
+      }
+    else
+      {
+        result = new Operator(tokenSourceRange(), operator(), ignoredTokenBefore(), ignoredTokenAfter());
+        match(Token.t_op, "op");
+      }
     return result;
   }
 
