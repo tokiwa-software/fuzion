@@ -524,7 +524,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
     // FUIR has the (so far undocumented) invariant that the stack must be
     // empty at the end of a basic block.
-    if (POSTCONDITIONS) ensure
+    if (CHECKS) check
       (containsVoid(stack) || stack.isEmpty() || _fuir.alwaysResultsInVoid(last_s));
 
     if (!containsVoid(stack) && !stack.isEmpty() && _fuir.alwaysResultsInVoid(last_s))
