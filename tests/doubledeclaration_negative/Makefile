@@ -24,4 +24,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = doubledeclaration_negative
-include ../negative.mk
+override FUZION_OPTIONS = -sourceDirs=. # NYI: currently required for this test wo work as expected, see #3777
+include ../simple_and_negative.mk
