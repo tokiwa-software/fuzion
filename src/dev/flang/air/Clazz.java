@@ -1815,27 +1815,27 @@ public class Clazz extends ANY implements Comparable<Clazz>
         actualGenerics()[0].lookup(Types.resolved.f_Function_call, at);
         actualGenerics()[1].lookup(Types.resolved.f_Function_call, at);
         argumentFields()[0].resultClazz().lookup(Types.resolved.f_effect_static_finally, at);
-        Clazzes.instance.addUsedFeature(Types.resolved.f_Function_call, at);
-        Clazzes.instance.addUsedFeature(Types.resolved.f_effect_static_finally, at);
+        _clazzes.addUsedFeature(Types.resolved.f_Function_call, at);
+        _clazzes.addUsedFeature(Types.resolved.f_effect_static_finally, at);
         /*
         var ec2 = actualGenerics()[2];
         var ec2c = _flu.lookupFeature(ec2.feature(), Types.resolved.f_Function_call.featureName(), null);
         var ec2ce = ec2c.valueArguments().get(0);
         System.out.println("GOT: "+ec2ce.qualifiedName());
-        Clazzes.instance.addUsedFeature(ec2ce, at);
+        _clazzes.addUsedFeature(ec2ce, at);
 
         var c = actualGenerics()[2].lookup(Types.resolved.f_Function_call, at);
         System.out.println("mark used "+c.feature().valueArguments().get(0).qualifiedName());
-        Clazzes.instance.addUsedFeature(c.feature().valueArguments().get(0), at);
+        _clazzes.addUsedFeature(c.feature().valueArguments().get(0), at);
         markInstantiated(c, at);
         var ca = c.lookup(c.feature().valueArguments().get(0), at);
         System.out.println("mark used "+c.feature().valueArguments().get(0).qualifiedName());
-        Clazzes.instance.addUsedFeature(c.feature().valueArguments().get(0), at);
+        _clazzes.addUsedFeature(c.feature().valueArguments().get(0), at);
         markInstantiated(ca, at);
         var afs = c.argumentFields();
         System.out.println("afs is "+afs.length+" "+afs+" for "+c);
         */
-        // Clazzes.instance.calledDynamically(Types.resolved.f_Function_call, new List<>());
+        // _clazzes.calledDynamically(Types.resolved.f_Function_call, new List<>());
         //        argumentFields()[1].resultClazz().lookup(Types.resolved.f_Function_call, at);
         //        argumentFields()[2].resultClazz().lookup(Types.resolved.f_Function_call, at);
         break;
@@ -2666,7 +2666,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                                                                                 (!this.isVoidOrUndefined())+
                                                                                 field.isField()+
                                                                                 (field == findRedefinition(field))+
-                                                                                Clazzes.instance.isUsed(field));
+                                                                                _clazzes.isUsed(field));
         if (false) if (toString().equals("(Effect_Call2 unit e).call") ||
             toString().equals("(Uniary unit e).call")) Thread.dumpStack();
         if (!this.isVoidOrUndefined() &&
