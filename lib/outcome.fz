@@ -65,9 +65,9 @@ is
   #
   public err error
     pre
-      safety: (outcome.this!!)
+      safety: outcome.this!!
   =>
-    outcome.this ? T       => panic "outcome.err called on successful outcome"
+    outcome.this ? T       => panic "outcome.err called on successful outcome. Enable `safety` to obtain a precondition failure for debugging."
                  | e error => e
 
 
