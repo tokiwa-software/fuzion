@@ -32,17 +32,17 @@ public sync is
   mtx_unlock(mtx fuzion.sys.Pointer) bool => intrinsic
   mtx_destroy(mtx fuzion.sys.Pointer) unit => intrinsic
 
-  cnd_init(mtx fuzion.sys.Pointer) outcome fuzion.sys.Pointer => intrinsic
-  cnd_signal(cnd fuzion.sys.Pointer) bool => intrinsic
-  cnd_broadcast(cnd fuzion.sys.Pointer) bool => intrinsic
-  cnd_wait(cnd fuzion.sys.Pointer, mtx fuzion.sys.Pointer) bool => intrinsic
+  module cnd_init(mtx fuzion.sys.Pointer) outcome fuzion.sys.Pointer => intrinsic
+  module cnd_signal(cnd fuzion.sys.Pointer) bool => intrinsic
+  module cnd_broadcast(cnd fuzion.sys.Pointer) bool => intrinsic
+  module cnd_wait(cnd fuzion.sys.Pointer, mtx fuzion.sys.Pointer) bool => intrinsic
   # NYI: cnd_timedwait
-  cnd_destroy(cnd fuzion.sys.Pointer) unit => intrinsic
+  module cnd_destroy(cnd fuzion.sys.Pointer) unit => intrinsic
 
 
   # NYI: documentation missing, waiting for JVM backend impl
 
-  private:public mutex(mtx fuzion.sys.Pointer) : effect is
+  private:public mutex(module mtx fuzion.sys.Pointer) : effect is
 
     public type.new(T type, code ()->T) outcome T =>
       match concur.sync.mtx_init

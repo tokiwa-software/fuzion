@@ -42,3 +42,29 @@ lib_concur_thread_pool =>
     say sum.read
 
   test_1
+
+
+  # sum using futures
+  test_2 =>
+    sum := concur.thread_pool 3 ()->
+
+      (1..49)
+        .map (i -> concur.thread_pool.env.submit i32 ()->i)
+        .map x->x.get
+        .fold i32.sum
+
+    say sum
+  test_2
+
+
+  # sum using futures, where computation takes some time
+  test_3 =>
+    sum := concur.thread_pool 3 ()->
+
+      (1..49)
+        .map (i -> concur.thread_pool.env.submit i32 (() -> time.nano.sleep (time.durations.ms 100); i))
+        .map x->x.get
+        .fold i32.sum
+
+    say sum
+  test_3

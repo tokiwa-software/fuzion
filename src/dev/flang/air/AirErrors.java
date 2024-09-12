@@ -75,7 +75,8 @@ public class AirErrors extends AstErrors
   public static void abstractFeatureNotImplemented(AbstractFeature featureThatDoesNotImplementAbstract,
                                                    Set<AbstractFeature> abstractFeature,
                                                    HasSourcePosition instantiatedAt,
-                                                   String context)
+                                                   String context,
+                                                   IClazzes clazzes)
   {
     if (PRECONDITIONS) require
       (!abstractFeature.isEmpty());
@@ -101,7 +102,7 @@ public class AirErrors extends AstErrors
         var afKind = af.isAbstract() ? "abstract" : "fixed";
         abstracts.append((abstracts.length() == 0 ? "inherits or declares" : "and") + " " + afKind + " feature " +
                          s(af) + " declared at " + af.pos().show() + "\n" +
-                         "which is called at " + Clazzes.instance.isUsedAt(af).pos().show() + "\n");
+                         "which is called at " + clazzes.isUsedAt(af).pos().show() + "\n");
       }
     abstracts.append("without providing an implementation\n");
     error(featureThatDoesNotImplementAbstract.pos(),

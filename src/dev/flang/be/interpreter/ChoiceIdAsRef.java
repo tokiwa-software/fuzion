@@ -148,7 +148,8 @@ public class ChoiceIdAsRef extends Value
     else
       {
         result = 0;
-        while (!fuir().isAssignableFrom(fuir().clazzChoice(clazz, result), ((ValueWithClazz)idAsRef)._clazz))
+        while (idAsRef instanceof ValueWithClazz && // NYI: BUG: idAsRef may be JavaRef
+           !fuir().isAssignableFrom(fuir().clazzChoice(clazz, result), ((ValueWithClazz)idAsRef)._clazz))
           {
             result++;
           }

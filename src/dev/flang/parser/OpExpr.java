@@ -73,20 +73,12 @@ public class OpExpr extends ANY
    *
    * @param o
    */
-  void add(Operator o)
+  void add(Object o)
   {
+    if (PRECONDITIONS) require
+      (o instanceof Expr || o instanceof Operator);
+
     _els.add(o);
-  }
-
-
-  /**
-   * add
-   *
-   * @param e
-   */
-  void add(Expr e)
-  {
-    _els.add(e);
   }
 
 
