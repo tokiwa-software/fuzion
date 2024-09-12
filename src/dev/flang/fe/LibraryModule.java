@@ -101,7 +101,7 @@ public class LibraryModule extends Module implements MirModule
    * The base index of this module. When converting local indices to global
    * indices, the _globalBase will be added.
    */
-  final int _globalBase;
+  private final int _globalBase;
 
 
   /**
@@ -113,19 +113,19 @@ public class LibraryModule extends Module implements MirModule
   /**
    * The module intermediate representation for this module.
    */
-  MIR _mir;
+  private MIR _mir;
 
 
   /**
    * Map from offset in _data to LibraryFeatures for features in this module.
    */
-  TreeMap<Integer, LibraryFeature> _libraryFeatures = new TreeMap<>();
+  private final TreeMap<Integer, LibraryFeature> _libraryFeatures = new TreeMap<>();
 
 
   /**
    * Map from offset in _data to LibraryType for types in this module.
    */
-  TreeMap<Integer, LibraryType> _libraryTypes = new TreeMap<>();
+  private final TreeMap<Integer, LibraryType> _libraryTypes = new TreeMap<>();
 
 
   /**
@@ -141,7 +141,7 @@ public class LibraryModule extends Module implements MirModule
   /**
    * Cache for innerFeatures created from given index
    */
-  Map<Integer, List<AbstractFeature>> _innerFeatures = new TreeMap<>();
+  private final Map<Integer, List<AbstractFeature>> _innerFeatures = new TreeMap<>();
 
 
   /**
@@ -153,13 +153,13 @@ public class LibraryModule extends Module implements MirModule
   /**
    * The universe
    */
-  final AbstractFeature _universe;
+  private final AbstractFeature _universe;
 
 
   /**
    * Modules referenced from this module
    */
-  final ModuleRef[] _modules;
+  private final ModuleRef[] _modules;
 
 
   /**
@@ -375,6 +375,9 @@ public class LibraryModule extends Module implements MirModule
    */
   AbstractFeature feature(int offset)
   {
+    if (PRECONDITIONS) require
+      (offset >= -1);
+
     return
       (offset == -1) ? null :
       (offset ==  0) ? universe()
