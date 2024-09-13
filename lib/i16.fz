@@ -107,11 +107,11 @@ public i16(public val i16) : num.wrap_around, has_interval is
     int as_i64
 
   # casting to unsigned, adding 1<<16 if negative
-  public redef low8bits    u8   => cast_to_u16.as_u8      # 0x1234 ->   0x34, -0x1234 -> 0xcc
-  public cast_to_u16  u16  => intrinsic             # 0x1234 -> 0x1234, -0x1234 -> 0xedcc
-  public cast_to_u32  u32  => cast_to_u16.as_u32    # 0x1234 -> 0x1234, -0x1234 -> 0x0000_edcc
-  public cast_to_u64  u64  => cast_to_u16.as_u64    # 0x1234 -> 0x1234, -0x1234 -> 0x0000_0000_0000_edcc
-  public cast_to_u128 u128 => cast_to_u16.as_u128   # 0x1234 -> 0x1234, -0x1234 -> 0x0000_0000_0000_0000_0000_0000_0000_edcc
+  public redef low8bits u8   => cast_to_u16.as_u8      # 0x1234 ->   0x34, -0x1234 -> 0xcc
+  public cast_to_u16    u16  => intrinsic             # 0x1234 -> 0x1234, -0x1234 -> 0xedcc
+  public cast_to_u32    u32  => cast_to_u16.as_u32    # 0x1234 -> 0x1234, -0x1234 -> 0x0000_edcc
+  public cast_to_u64    u64  => cast_to_u16.as_u64    # 0x1234 -> 0x1234, -0x1234 -> 0x0000_0000_0000_edcc
+  public cast_to_u128   u128 => cast_to_u16.as_u128   # 0x1234 -> 0x1234, -0x1234 -> 0x0000_0000_0000_0000_0000_0000_0000_edcc
 
 
   # create hash code from this number

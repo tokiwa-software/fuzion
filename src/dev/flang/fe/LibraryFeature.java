@@ -615,7 +615,7 @@ public class LibraryFeature extends AbstractFeature
             }
           case Current:
             {
-              x = new AbstractCurrent(selfType())
+              x = new AbstractCurrent(selfType().asThis())
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
               break;
             }

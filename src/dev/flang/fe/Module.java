@@ -52,7 +52,7 @@ import java.util.function.Consumer;
 
 /**
  * A Module represents a Fuzion module independently of whether this is loaded
- * from source code, library from a .mir file or downloaded from the web.
+ * from source code, library from a .fum file or downloaded from the web.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -159,7 +159,7 @@ public abstract class Module extends ANY implements FeatureLookup
 
 
   /**
-   * Create SourceModule for given options and sourceDirs.
+   * Create Module for given options and sourceDirs.
    */
   Module(LibraryModule[] dependsOn)
   {

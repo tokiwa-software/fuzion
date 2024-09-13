@@ -654,6 +654,26 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
+   * resolve this type. This is only needed for ast.Type, for fe.LibraryType
+   * this is a NOP.
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this type is used
+   */
+  @Override
+  AbstractType resolve(Resolution res, Context context)
+  {
+    // tricky: outers generics may not have been resolved yet.
+    if (_outer != null)
+      {
+        _outer = _outer.resolve(res, context);
+      }
+    return this;
+  }
+
+
+  /**
    * traverse a resolved type collecting all features this type uses.
    *
    * @param s the features that have already been found

@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class ValueType
+ * Source of class FunctionReturnType
  *
  *---------------------------------------------------------------------*/
 
