@@ -952,14 +952,16 @@ public class Intrinsics extends ANY
                                                                                   evi.assign(CIdent.TRUE )));
               case "effect.type.instate0"     ->
                 {
-                  var oc = c._fuir.clazzActualGeneric(cl, 0);
-                  var call = c._fuir.lookupCall(oc);
+                  var call     = c._fuir.lookupCall(c._fuir.clazzActualGeneric(cl, 0));
+                  var call_def = c._fuir.lookupCall(c._fuir.clazzActualGeneric(cl, 1));
+                  var finallie = c._fuir.lookup_static_finally(ecl);
                   if (c._fuir.clazzNeedsCode(call))
                     {
                       var jmpbuf = new CIdent("jmpbuf");
                       var oldev  = new CIdent("old_ev");
                       var oldevi = new CIdent("old_evi");
                       var oldevj = new CIdent("old_evj");
+                      var curev  = new CIdent("cur_ev");
                       yield CStmnt.seq(event_is_unit_type ? CExpr.UNIT : CStmnt.decl(c._types.clazz(ecl), oldev , ev ),
                                        CStmnt.decl("bool"             , oldevi, evi),
                                        CStmnt.decl("jmp_buf*"         , oldevj, evj),
@@ -968,10 +970,33 @@ public class Intrinsics extends ANY
                                        evi.assign(CIdent.TRUE ),
                                        evj.assign(jmpbuf.adrOf()),
                                        CStmnt.iff(CExpr.call("setjmp",new List<>(jmpbuf)).eq(CExpr.int32const(0)),
-                                                  CExpr.call(c._names.function(call), new List<>(A1))),
-                                       event_is_unit_type ? CExpr.UNIT : ev .assign(oldev ),
-                                       evi.assign(oldevi),
-                                       evj.assign(oldevj));
+                                                  CStmnt.seq(CExpr.call(c._names.function(call), new List<>(A1.adrOf())),
+                                                             event_is_unit_type ? CExpr.UNIT : CStmnt.decl(c._types.clazz(ecl), curev , ev ),
+                                                             event_is_unit_type ? CExpr.UNIT : ev .assign(oldev ),
+                                                             evi.assign(oldevi),
+                                                             evj.assign(oldevj),
+                                                             CExpr.call(c._names.function(finallie),
+                                                                        event_is_unit_type
+                                                                        ? new List<>()
+                                                                        : new List<>(curev.adrOf()))
+                                                             ),
+                                                  CStmnt.seq(//CExpr.fprintfstderr("***def call***\n"),
+                                                             event_is_unit_type ? CExpr.UNIT : CStmnt.decl(c._types.clazz(ecl), curev , ev ),
+                                                             event_is_unit_type ? CExpr.UNIT : ev .assign(oldev ),
+                                                             evi.assign(oldevi),
+                                                             evj.assign(oldevj),
+                                                             CExpr.call(c._names.function(finallie),
+                                                                        event_is_unit_type
+                                                                        ? new List<>()
+                                                                        : new List<>(curev.adrOf())),
+                                                             CExpr.call(c._names.function(call_def),
+                                                                        event_is_unit_type
+                                                                        ? new List<>(A2.adrOf())
+                                                                        : new List<>(A2.adrOf(), curev)
+                                                                        )
+                                                             )
+                                                  )
+                                       );
                     }
                   else
                     {
