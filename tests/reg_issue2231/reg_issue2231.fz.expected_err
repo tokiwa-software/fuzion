@@ -16,13 +16,15 @@ panic.cause#1: $MODULE/eff/fallible.fz:35:6:
 panic#1: $MODULE/panic.fz:56:29:
 public panic(msg String) => panic.cause msg
 ----------------------------^^^^^^^^^^^^^^^
-(reg_issue2231.type.ef.type.instate#3 void).λ.call: $MODULE/effect.fz:143:22:
-    instate R e code (panic "unexpected abort in {effect.this.type}")
----------------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-reg_issue2231.type.ef.type.abort: $MODULE/effect.fz:122:14:
-      nil => def()
--------------^^^
-reg_issue2231.type.ef.type.precall abort: $MODULE/effect.fz:267:3:
+(reg_issue2231.type.ef.type.instate#3 void).λ.call#1: $MODULE/effect.fz:175:28:
+    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
+---------------------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(reg_issue2231.type.ef.type.instate#4 void).call_def.call#1: $MODULE/effect.fz:152:20:
+        set res := def cur_e
+-------------------^^^
+reg_issue2231.type.ef.type.abort: <source position not available>:
+
+reg_issue2231.type.ef.type.precall abort: $MODULE/effect.fz:276:3:
   pre
 --^^^
     safety: effect.this.is_instated
@@ -35,24 +37,21 @@ reg_issue2231.ef.something: --CURDIR--/reg_issue2231.fz:30:10:
 reg_issue2231.λ.call: --CURDIR--/reg_issue2231.fz:33:26:
     reg_issue2231.ef.env.something
 -------------------------^^^^^^^^^
-(reg_issue2231.ef.instate_self#2 void).λ.call: $MODULE/effect.fz:164:39:
+(reg_issue2231.ef.instate_self#2 void).λ.call: $MODULE/effect.fz:196:39:
     effect.this.instate R effect.this code
 --------------------------------------^^^^
-(reg_issue2231.type.ef.type.instate#3 void).λ.call: $MODULE/effect.fz:143:17:
-    instate R e code (panic "unexpected abort in {effect.this.type}")
+(reg_issue2231.type.ef.type.instate#3 void).λ.call: $MODULE/effect.fz:175:17:
+    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----------------^^^^
-(reg_issue2231.type.ef.type.instate#4 void).λ.call: $MODULE/effect.fz:119:25:
-    cf := e.Effect_Call code
-------------------------^^^^
-(reg_issue2231.ef.Effect_Call void).call: $MODULE/effect.fz:210:18:
-      set res := f()
------------------^
+(reg_issue2231.type.ef.type.instate#4 void).call_code.call: $MODULE/effect.fz:147:20:
+        set res := code()
+-------------------^^^^
 reg_issue2231.type.ef.type.instate#4 void: <source position not available>:
 
-reg_issue2231.type.ef.type.instate#3 void: $MODULE/effect.fz:143:5:
-    instate R e code (panic "unexpected abort in {effect.this.type}")
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-reg_issue2231.ef.instate_self#2 void: $MODULE/effect.fz:164:5:
+reg_issue2231.type.ef.type.instate#3 void: $MODULE/effect.fz:175:5:
+    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+reg_issue2231.ef.instate_self#2 void: $MODULE/effect.fz:196:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 reg_issue2231: --CURDIR--/reg_issue2231.fz:32:6:
