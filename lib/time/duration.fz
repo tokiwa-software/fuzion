@@ -37,7 +37,7 @@ private:public duration (
   # the duration in nano seconds
   #
   public nanos u64
-  )
+  ) : property.orderable
 
 is
 
@@ -74,6 +74,11 @@ is
   public years => nanos / units.nanos_per_year
 
 
+  # this duration multiplied by n
+  #
+  public infix * (n u64) => (duration nanos*n)
+
+
   # create a string representation of this duration. The string
   # representation is not accurate, it consists of at least two
   # and at most 4 decimal digits followed by a time unit string.
@@ -88,6 +93,13 @@ is
                  x
     n := $(nanos / f)
     " "*(max 0 4-n.byte_length) + n + u
+
+
+  # total order
+  #
+  public fixed redef type.lteq(a, b time.duration) bool =>
+    u64.type.lteq a.nanos b.nanos
+
 
 # time.durations -- unit type defining features related to duration but not requiring
 # an instance

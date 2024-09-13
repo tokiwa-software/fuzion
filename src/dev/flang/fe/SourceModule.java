@@ -702,7 +702,7 @@ part of the (((inner features))) declarations of the corresponding
     if (doi != null)
       {
         if (CHECKS) check
-          (!doi.containsKey(fn) || doi.get(fn).size() == 1 && doi.get(fn).getFirst() == typeParameter);
+          (Errors.any() || !doi.containsKey(fn) || doi.get(fn).size() == 1 && doi.get(fn).getFirst() == typeParameter);
         add(doi, fn, typeParameter);
       }
   }
@@ -985,7 +985,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
           }
         else
           {
-            if (existing instanceof Feature ef && ef.isArgument() && f.isArgument())
+            if (existing instanceof Feature ef && ef.isArgument() && f.isArgument() && !f.isTypeParameter())
               {
                 // NYI: CLEANUP: there should not be two places where
                 // similar error is raised.
@@ -995,7 +995,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
               }
             else
               {
-                AstErrors.duplicateFeatureDeclaration(f.pos(), f, existing);
+                AstErrors.duplicateFeatureDeclaration(f, existing);
               }
           }
       }
@@ -1911,7 +1911,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
                 else
                   {
                     // NYI: if (!isInherited && !sameModule(f, outer))
-                    AstErrors.duplicateFeatureDeclaration(f1.pos(), f1, f2);
+                    AstErrors.duplicateFeatureDeclaration(f1, f2);
                   }
               }
           }
