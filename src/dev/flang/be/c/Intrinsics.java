@@ -939,7 +939,7 @@ public class Intrinsics extends ANY
           var evj = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envJmpBuf(ecl));
           var o   = CNames.OUTER;
           var e   = A0;
-          var event_is_unit_type = c._fuir.clazzIsUnitType(ecl);
+          var effect_is_unit_type = c._fuir.clazzIsUnitType(ecl);
           return
             switch (in)
               {
@@ -948,7 +948,7 @@ public class Intrinsics extends ANY
                            CExpr.fprintfstderr("*** C backend support for %s missing\n",
                                                CExpr.string(c._fuir.clazzOriginalName(cl))),
                            CExpr.exit(1));
-              case "effect.type.default0"     -> CStmnt.iff(evi.not(), CStmnt.seq(event_is_unit_type ? CExpr.UNIT : ev.assign(e),
+              case "effect.type.default0"     -> CStmnt.iff(evi.not(), CStmnt.seq(effect_is_unit_type ? CExpr.UNIT : ev.assign(e),
                                                                                   evi.assign(CIdent.TRUE )));
               case "effect.type.instate0"     ->
                 {
@@ -961,39 +961,39 @@ public class Intrinsics extends ANY
                       var oldev  = new CIdent("old_ev");
                       var oldevi = new CIdent("old_evi");
                       var oldevj = new CIdent("old_evj");
-                      var curev  = new CIdent("cur_ev");
-                      var curev_as_target = c._fuir.clazzIsRef(ecl) ? curev : curev.adrOf();
-                      yield CStmnt.seq(event_is_unit_type ? CExpr.UNIT : CStmnt.decl(c._types.clazz(ecl), oldev , ev ),
+                      var cureff  = new CIdent("cur_eff");
+                      var cureff_as_target = c._fuir.clazzIsRef(ecl) ? cureff : cureff.adrOf();
+                      yield CStmnt.seq(effect_is_unit_type ? CExpr.UNIT : CStmnt.decl(c._types.clazz(ecl), oldev , ev ),
                                        CStmnt.decl("bool"             , oldevi, evi),
                                        CStmnt.decl("jmp_buf*"         , oldevj, evj),
                                        CStmnt.decl("jmp_buf", jmpbuf),
-                                       event_is_unit_type ? CExpr.UNIT : ev.assign(e),
+                                       effect_is_unit_type ? CExpr.UNIT : ev.assign(e),
                                        evi.assign(CIdent.TRUE ),
                                        evj.assign(jmpbuf.adrOf()),
                                        CStmnt.iff(CExpr.call("setjmp",new List<>(jmpbuf)).eq(CExpr.int32const(0)),
                                                   CStmnt.seq(CExpr.call(c._names.function(call), new List<>(A1.adrOf())),
-                                                             event_is_unit_type ? CExpr.UNIT : CStmnt.decl(c._types.clazz(ecl), curev , ev ),
-                                                             event_is_unit_type ? CExpr.UNIT : ev .assign(oldev ),
+                                                             effect_is_unit_type ? CExpr.UNIT : CStmnt.decl(c._types.clazz(ecl), cureff , ev ),
+                                                             effect_is_unit_type ? CExpr.UNIT : ev .assign(oldev ),
                                                              evi.assign(oldevi),
                                                              evj.assign(oldevj),
                                                              CExpr.call(c._names.function(finallie),
-                                                                        event_is_unit_type
+                                                                        effect_is_unit_type
                                                                         ? new List<>()
-                                                                        : new List<>(curev_as_target))
+                                                                        : new List<>(cureff_as_target))
                                                              ),
                                                   CStmnt.seq(//CExpr.fprintfstderr("***def call***\n"),
-                                                             event_is_unit_type ? CExpr.UNIT : CStmnt.decl(c._types.clazz(ecl), curev , ev ),
-                                                             event_is_unit_type ? CExpr.UNIT : ev .assign(oldev ),
+                                                             effect_is_unit_type ? CExpr.UNIT : CStmnt.decl(c._types.clazz(ecl), cureff , ev ),
+                                                             effect_is_unit_type ? CExpr.UNIT : ev .assign(oldev ),
                                                              evi.assign(oldevi),
                                                              evj.assign(oldevj),
                                                              CExpr.call(c._names.function(finallie),
-                                                                        event_is_unit_type
+                                                                        effect_is_unit_type
                                                                         ? new List<>()
-                                                                        : new List<>(curev_as_target)),
+                                                                        : new List<>(cureff_as_target)),
                                                              CExpr.call(c._names.function(call_def),
-                                                                        event_is_unit_type
+                                                                        effect_is_unit_type
                                                                         ? new List<>(A2.adrOf())
-                                                                        : new List<>(A2.adrOf(), curev)
+                                                                        : new List<>(A2.adrOf(), cureff)
                                                                         )
                                                              )
                                                   )
