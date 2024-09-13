@@ -28,14 +28,14 @@ illegal_assignment is
   Q ref is
     A ref is { x is { say "*** should never be here ***" } }
     B ref is { x is { say "*** should never be here ***" } }
-    C ref is { x is { say "*** should never be here ***" }; xc {} }
-    D ref is { x is { say "*** should never be here ***" }; xb {}; xc {} }
-    E ref is { x is { say "*** should never be here ***" }; xb {}; xc {} }
+    C ref is { x is { say "*** should never be here ***" }; xc is {} }
+    D ref is { x is { say "*** should never be here ***" }; xb is {}; xc is {} }
+    E ref is { x is { say "*** should never be here ***" }; xb is {}; xc is {} }
 
   curid i32 := 0
   id i32 =>
     res := curid
-    set curid := result + 1
+    set curid := res + 1
     res
 
   A ref is
@@ -63,32 +63,32 @@ illegal_assignment is
   bi := B
   ci Q.C := C  // 1. should flag an error: illegal assignment
   aa Q.A := bi // 2. should flag an error: illegal assignment
-  bi.x
-  ci.x
-  aa.x
+  _ := bi.x
+  _ := ci.x
+  _ := aa.x
   set aa := ci // 3. should flag an error: illegal assignment
-  aa.x
+  _ := aa.x
   di Q.D := D // 4. should flag an error: illegal assignment
   ei Q.E := E // 5. should flag an error: illegal assignment
   say "Calling non-redefed multiple"
-  di.x
-  di.xb
-  di.xc
+  _ := di.x
+  _ := di.xb
+  _ := di.xc
   say "Calling redefed multiple"
-  ei.x
-  ei.xb
-  ei.xc
+  _ := ei.x
+  _ := ei.xb
+  _ := ei.xc
   say "Calling redefed multiple from non-redefed static "
   set di := ei  // 6. should flag an error: illegal assignment
-  di.x
-  di.xb
-  di.xc
+  _ := di.x
+  _ := di.xb
+  _ := di.xc
   set bi := di  // 7. should flag an error: illegal assignment
   set ci := di  // 8. should flag an error: illegal assignment
-  bi.x
-  bi.xb
-  ci.x
-  ci.xc
+  _ := bi.x
+  _ := bi.xb
+  _ := ci.x
+  _ := ci.xc
   set aa := ei  // 9. should flag an error: illegal assignment
-  aa.x
+  _ := aa.x
   unit

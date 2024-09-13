@@ -1,0 +1,118 @@
+
+--CURDIR--/overloading_negative.fz:45:8: error 1: Ambiguous type
+    a1 a := a            // 1. should flag an error: ambiguous types
+-------^
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'a'
+Possible features that match this type: 
+'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:37:5:
+    a is
+----^
+and 'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:38:5:
+    a(i i32) is
+----^
+and 'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:39:5:
+    a(i, j i32) is
+----^
+
+To solve this, rename these features such that each one has a unique name.
+
+
+--CURDIR--/overloading_negative.fz:46:8: error 2: Ambiguous type
+    a2 a := a 42         // 2. should flag an error: ambiguous types
+-------^
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'a'
+Possible features that match this type: 
+'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:37:5:
+    a is
+----^
+and 'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:38:5:
+    a(i i32) is
+----^
+and 'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:39:5:
+    a(i, j i32) is
+----^
+
+To solve this, rename these features such that each one has a unique name.
+
+
+--CURDIR--/overloading_negative.fz:47:8: error 3: Ambiguous type
+    a3 a := a 47 11      // 3. should flag an error: ambiguous types
+-------^
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'a'
+Possible features that match this type: 
+'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:37:5:
+    a is
+----^
+and 'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:38:5:
+    a(i i32) is
+----^
+and 'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:39:5:
+    a(i, j i32) is
+----^
+
+To solve this, rename these features such that each one has a unique name.
+
+
+--CURDIR--/overloading_negative.fz:62:8: error 4: Type not found
+    a1 a := a            // 4. should flag an error: type not found
+-------^
+Type 'a' was not found, no corresponding feature nor formal type parameter exists
+Type that was not found: 'a'
+in feature: 'overloading_negative.test2.a1'
+However, 3 features have been found that match the type name but that do not define a type:
+'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:54:5:
+    a() unit =>
+----^
+and 'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:55:5:
+    a(i i32) i32 => 13
+----^
+and 'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:56:5:
+    a(i, j i32) String => "foo"
+----^
+
+To solve this, remove the return type (or replace it by 'ref') of one of these features.
+
+
+--CURDIR--/overloading_negative.fz:63:8: error 5: Type not found
+    a2 a := a 42         // 5. should flag an error: type not found
+-------^
+Type 'a' was not found, no corresponding feature nor formal type parameter exists
+Type that was not found: 'a'
+in feature: 'overloading_negative.test2.a2'
+However, 3 features have been found that match the type name but that do not define a type:
+'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:54:5:
+    a() unit =>
+----^
+and 'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:55:5:
+    a(i i32) i32 => 13
+----^
+and 'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:56:5:
+    a(i, j i32) String => "foo"
+----^
+
+To solve this, remove the return type (or replace it by 'ref') of one of these features.
+
+
+--CURDIR--/overloading_negative.fz:64:8: error 6: Type not found
+    a3 a := a 47 11      // 6. should flag an error: type not found
+-------^
+Type 'a' was not found, no corresponding feature nor formal type parameter exists
+Type that was not found: 'a'
+in feature: 'overloading_negative.test2.a3'
+However, 3 features have been found that match the type name but that do not define a type:
+'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:54:5:
+    a() unit =>
+----^
+and 'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:55:5:
+    a(i i32) i32 => 13
+----^
+and 'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:56:5:
+    a(i, j i32) String => "foo"
+----^
+
+To solve this, remove the return type (or replace it by 'ref') of one of these features.
+
+6 errors.

@@ -35,3 +35,7 @@ public Future(T type) ref is
   public get T => abstract
 
 
+  # This takes a lambda from "result of future" to "new result" and returns a new future,
+  # scheduled on the same thread pool as the first future.
+  #
+  public and_then(T2 type, new_task T->T2) concur.Future T2 => abstract
