@@ -1,0 +1,22 @@
+
+--CURDIR--/equals_test_negative.fz:40:25: error 1: Incompatible type parameter
+  say "equals a1 a2 is {equals a1 a2}"      # 1. should flag an error: equals_test_a does not implement equality
+------------------------^^^^^^
+formal type parameter 'T' with constraint 'property.equatable'
+actual type parameter 'equals_test_a'
+
+
+--CURDIR--/equals_test_negative.fz:45:29: error 2: Incompatible type parameter
+  say "b1.infix = b2 is {b1.infix = b2}"    # 2. should flag an error: equals_test_b does not implement equality
+----------------------------^^^^^^^
+formal type parameter 'T' with constraint 'property.equatable'
+actual type parameter 'equals_test_b'
+
+
+--CURDIR--/equals_test_negative.fz:50:23: error 3: Incompatible type parameter
+  say "c1 = c2 is {c1 = c2}"                # 3. should flag an error: equals_test_c does not implement equality
+----------------------^
+formal type parameter 'T' with constraint 'property.equatable'
+actual type parameter 'equals_test_c'
+
+3 errors.
