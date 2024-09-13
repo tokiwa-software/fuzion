@@ -616,14 +616,7 @@ public class Runtime extends ANY
     t.effect_store(id, instance);
     t._effectStack.add(old);
   }
-  public static void effect_pop(int id)
-  {
-    var t = currentThread();
-
-    var instance = t._effectStack.removeLast();
-    t.effect_store(id, instance);
-  }
-  public static AnyI effect_pop_and_get(int id)
+  public static AnyI effect_pop(int id)
   {
     var t = currentThread();
 
@@ -632,57 +625,7 @@ public class Runtime extends ANY
     t.effect_store(id, instance);
     return res;
   }
-  public static void effect_instate(int id, AnyI instance, Any code, Class call)
-  {
-    if (PRECONDITIONS) require
-      (instance != null);
 
-    var t = currentThread();
-
-    var old = t.effect_load(id);
-    t.effect_store(id, instance);
-    Method r = null;
-    for (var m : call.getDeclaredMethods())
-      {
-        if (m.getName().equals(ROUTINE_NAME))
-          {
-            r = m;
-          }
-      }
-    if (r == null)
-      {
-        Errors.fatal("in effect.type.instate0, missing `" + ROUTINE_NAME + "` in class `" + call + "`");
-      }
-    else
-      {
-        try
-          {
-            r.invoke(null, code);
-          }
-        catch (IllegalAccessException e)
-          {
-            Errors.fatal("effect.type.instate0 call caused `" + e + "` when calling `" + call + "`");
-          }
-        catch (InvocationTargetException e)
-          {
-            if (e.getCause() instanceof Abort a)
-              {
-                if (a._effect != id)
-                  {
-                    throw a;
-                  }
-              }
-            else
-              {
-                handleInvocationTargetException(e);
-              }
-          }
-        finally
-          {
-            t.effect_store(id, old);
-          }
-      }
-  }
 
   /**
    * Helper method to implement `effect.env` expressions.  Returns the instated

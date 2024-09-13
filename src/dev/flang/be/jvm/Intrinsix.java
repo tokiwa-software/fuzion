@@ -746,7 +746,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
             .andThen(try_end)
             .andThen(Expr.iconst(jvm._fuir.clazzId2num(ecl)))
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                       "effect_pop_and_get",
+                                       "effect_pop",
                                        "(I)"+Names.ANYI_DESCR,
                                        Names.ANYI_TYPE)
                      )
@@ -761,7 +761,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                  // not for us, so pop effect and re-throw
                                  Expr.iconst(jvm._fuir.clazzId2num(ecl))
                                  .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                                            "effect_pop_and_get",
+                                                            "effect_pop",
                                                             "(I)"+Names.ANYI_DESCR,
                                                             Names.ANYI_TYPE)
                                           )
@@ -773,7 +773,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                  .andThen(args.get(2))
                                  .andThen(Expr.iconst(jvm._fuir.clazzId2num(ecl)))
                                  .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                                            "effect_pop_and_get",
+                                                            "effect_pop",
                                                             "(I)"+Names.ANYI_DESCR,
                                                             Names.ANYI_TYPE)
                                           )
