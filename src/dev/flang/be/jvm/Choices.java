@@ -792,7 +792,7 @@ public class Choices extends ANY implements ClassFileConstants
         }
       default: throw new Error("Unexpected choice kind in tag of JVM backend: " + kind(newcl));
       }
-    return res.is(_types.javaType(newcl));
+    return res.is(_types.resultType(newcl));
   }
 
 
@@ -836,7 +836,7 @@ public class Choices extends ANY implements ClassFileConstants
 
     var tc = _fuir.clazzChoice(cl, tagNum);
     var ft = _fuir.clazzIsRef(tc) ? Names.ANYI_TYPE
-                                  : _types.javaType(tc);
+                                  : _types.resultType(tc);
     return ft;
   }
 
