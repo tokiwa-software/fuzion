@@ -962,6 +962,7 @@ public class Intrinsics extends ANY
                       var oldevi = new CIdent("old_evi");
                       var oldevj = new CIdent("old_evj");
                       var curev  = new CIdent("cur_ev");
+                      var curev_as_target = c._fuir.clazzIsRef(ecl) ? curev : curev.adrOf();
                       yield CStmnt.seq(event_is_unit_type ? CExpr.UNIT : CStmnt.decl(c._types.clazz(ecl), oldev , ev ),
                                        CStmnt.decl("bool"             , oldevi, evi),
                                        CStmnt.decl("jmp_buf*"         , oldevj, evj),
@@ -978,7 +979,7 @@ public class Intrinsics extends ANY
                                                              CExpr.call(c._names.function(finallie),
                                                                         event_is_unit_type
                                                                         ? new List<>()
-                                                                        : new List<>(curev.adrOf()))
+                                                                        : new List<>(curev_as_target))
                                                              ),
                                                   CStmnt.seq(//CExpr.fprintfstderr("***def call***\n"),
                                                              event_is_unit_type ? CExpr.UNIT : CStmnt.decl(c._types.clazz(ecl), curev , ev ),
@@ -988,7 +989,7 @@ public class Intrinsics extends ANY
                                                              CExpr.call(c._names.function(finallie),
                                                                         event_is_unit_type
                                                                         ? new List<>()
-                                                                        : new List<>(curev.adrOf())),
+                                                                        : new List<>(curev_as_target)),
                                                              CExpr.call(c._names.function(call_def),
                                                                         event_is_unit_type
                                                                         ? new List<>(A2.adrOf())
