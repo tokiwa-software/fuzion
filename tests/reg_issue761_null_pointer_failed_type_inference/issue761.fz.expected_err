@@ -1,0 +1,7 @@
+
+--CURDIR--/issue761.fz:30:12: error 1: If condition must be assignable to type 'bool'
+        if place_queen // 1. should flag an error: If condition must be assignable to type 'bool'. Actual type is 'unit'.
+-----------^^^^^^^^^^^
+Actual type is 'unit'
+
+one error.

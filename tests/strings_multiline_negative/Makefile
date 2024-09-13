@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = strings_multiline_negative
-include ../negative.mk
+include ../simple_and_negative.mk

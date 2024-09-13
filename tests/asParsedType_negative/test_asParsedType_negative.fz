@@ -24,188 +24,190 @@
 # test_asParsedType_negative contains negative examples of expressions that cannot be
 # converted to types as actual arguments
 
-# constructors for types `a` and `a.b` to be used in the test cases below.
-#
-a is
-  b is
+test_asParsedType_negative is
 
-# feature with argument being a type paramter only to test expr.asParsedType
-#  when actual argument to `x` is first parsed as an expression.
-#
-x(T type) => say "GOT: x $T"
+  # constructors for types `a` and `a.b` to be used in the test cases below.
+  #
+  a is
+    b is
 
-# feature with arguments being a type paramter and a value of that type to check type
-# inference from an actual value
-#
-y(T type, v T) => say "GOT: y $T"
+  # feature with argument being a type parameter only to test expr.asParsedType
+  #  when actual argument to `x` is first parsed as an expression.
+  #
+  x(T type) => say "GOT: x $T"
 
-
-# ------  tests using actual type arguments  ------
-
-
-say "EXP: x Type of 'i32'"
-x i32
-say ""
-
-say "EXP: x Type of 'a'"
-x a
-say ""
-
-say "EXP: x Type of 'a.b'"
-x a.b
-say ""
-
-say "EXP: x Type of 'tuple a.b a i32'"
-x (a.b, a, i32)
-say ""
-
-say "EXP: x Type of 'choice a.b a i32'"
-x (a.b | a | i32)
-say ""
-
-say "EXP: x Type of 'Unary String i32'"
-x i32->String
-x (i32->String)
-say ""
-
-say "EXP: x Type of 'Unary String a'"
-x a->String
-x (a->String)
-say ""
-
-say "EXP: x Type of 'Unary a.b a'"
-x a->a.b
-x (a->a.b)
-say ""
-
-say "EXP: x Type of 'Unary a a.b'"
-x a.b->a
-x (a.b->a)
-say ""
-
-say "EXP: x Type of 'Function String i32 u64'"
-x (i32,u64)->String
-x (i32,u64)->
-  String
-say ""
-
-say "EXP: x Type of 'Function String (Sequence u64) a.b'"
-x ((Sequence u64, a.b) -> String)
-x ((Sequence u64, a.b) ->
-  String)
-say ""
-
-say "EXP: x Type of 'choice a.b i32 (Unary (choice i32 Any) String)'"
-x a.b|i32|String->i32|Any
-x a.b|i32|String->
-  i32|Any
-x a.b|i32|(String->i32|Any)
-x a.b|i32|(String->
-  i32|Any)
-say ""
-
-say "EXP: x Type of 'Unary (choice i32 Any) (choice a.b i32 String)'"
-x (a.b|i32|String)->i32|Any
-x (a.b|i32|String)->
-  i32|Any
-say ""
-
-say "EXP: x Type of 'choice (Unary i32 (choice a.b i32 String)) Any'"
-x ((a.b|i32|String)->i32)|Any
-x ((a.b|i32|String)->
-        i32)|Any
-say ""
-
-say "EXP: x Type of 'tuple'"
-x ()
-x (())
-x ((()))
-# x ( )   # NYI: currently does not work, no space allowed in empty tuple
-x (( ))
-x ((( )))
-x ( ( ) )
-x ( ( ( ) ) )
-say ""
+  # feature with arguments being a type parameter and a value of that type to check type
+  # inference from an actual value
+  #
+  y(T type, v T) => say "GOT: y $T"
 
 
-# ------ negative tests: expressions that are not types ------
+  # ------  tests using actual type arguments  ------
 
 
-x 3.14                        // 1. should flag an error: numeric literal is not a type
-x "hello"                     // 2. should flag an error: string literal is not a type
-x true                        // 3. should flag an error: true is not a type
-x true?1:2                    // 4. should flag an error: ? :  is not a type
-x (3=4 ? TRUE  => "a"         // 5. should flag an error: ?-match is not a type
-       | FALSE => "b")
-x (match 3=4                  // 6. should flag an error: match is not a type
-     TRUE  => "a"
-     FALSE => "b")
-x (if 3=4 then "a" else "b")  // 7. should flag an error: if is not a type
-x (io.out.env)                // 8. should flag an error: env is not a type
-x (io.out.type)               // 9. should flag an error: type instance is not a type
-t := (3,4,5)
-x t.values.0                  // 10. should flag an error: select is not a type
-x t.values.2                  // 11. should flag an error: select is not a type
+  say "EXP: x Type of 'i32'"
+  x i32
+  say ""
+
+  say "EXP: x Type of 'a'"
+  x a
+  say ""
+
+  say "EXP: x Type of 'a.b'"
+  x a.b
+  say ""
+
+  say "EXP: x Type of 'tuple a.b a i32'"
+  x (a.b, a, i32)
+  say ""
+
+  say "EXP: x Type of 'choice a.b a i32'"
+  x (a.b | a | i32)
+  say ""
+
+  say "EXP: x Type of 'Unary String i32'"
+  x i32->String
+  x (i32->String)
+  say ""
+
+  say "EXP: x Type of 'Unary String a'"
+  x a->String
+  x (a->String)
+  say ""
+
+  say "EXP: x Type of 'Unary a.b a'"
+  x a->a.b
+  x (a->a.b)
+  say ""
+
+  say "EXP: x Type of 'Unary a a.b'"
+  x a.b->a
+  x (a.b->a)
+  say ""
+
+  say "EXP: x Type of 'Function String i32 u64'"
+  x (i32,u64)->String
+  x (i32,u64)->
+    String
+  say ""
+
+  say "EXP: x Type of 'Function String (Sequence u64) a.b'"
+  x ((Sequence u64, a.b) -> String)
+  x ((Sequence u64, a.b) ->
+    String)
+  say ""
+
+  say "EXP: x Type of 'choice a.b i32 (Unary (choice i32 Any) String)'"
+  x a.b|i32|String->i32|Any
+  x a.b|i32|String->
+    i32|Any
+  x a.b|i32|(String->i32|Any)
+  x a.b|i32|(String->
+    i32|Any)
+  say ""
+
+  say "EXP: x Type of 'Unary (choice i32 Any) (choice a.b i32 String)'"
+  x (a.b|i32|String)->i32|Any
+  x (a.b|i32|String)->
+    i32|Any
+  say ""
+
+  say "EXP: x Type of 'choice (Unary i32 (choice a.b i32 String)) Any'"
+  x ((a.b|i32|String)->i32)|String
+  x ((a.b|i32|String)->
+          i32)|String
+  say ""
+
+  say "EXP: x Type of 'tuple'"
+  x ()
+  x (())
+  x ((()))
+  # x ( )   # NYI: currently does not work, no space allowed in empty tuple
+  x (( ))
+  x ((( )))
+  x ( ( ) )
+  x ( ( ( ) ) )
+  say ""
 
 
-# ------  tests using actual value arguments and type inference  ------
+  # ------ negative tests: expressions that are not types ------
 
 
-f Function String (Sequence u64) a.b => (p,q)->"hi"
+  x 3.14                        // 1. should flag an error: numeric literal is not a type
+  x "hello"                     // 2. should flag an error: string literal is not a type
+  x true                        // 3. should flag an error: true is not a type
+  x true?1:2                    // 4. should flag an error: ? :  is not a type
+  x (3=4 ? TRUE  => "a"         // 5. should flag an error: ?-match is not a type
+         | FALSE => "b")
+  x (match 3=4                  // 6. should flag an error: match is not a type
+       TRUE  => "a"
+       FALSE => "b")
+  x (if 3=4 then "a" else "b")  // 7. should flag an error: if is not a type
+  x (io.out.env)                // 8. should flag an error: env is not a type
+  x (io.out.type)               // 9. should flag an error: type instance is not a type
+  t := (3,4,5)
+  x t.values.0                  // 10. should flag an error: select is not a type
+  x t.values.2                  // 11. should flag an error: select is not a type
 
-say "EXP: y Type of 'Function String (Sequence u64) a.b'"
-y f
-say ""
 
-say "EXP: y Type of 'tuple (option unit) a.b'"
-y (option unit, a.b)
-say ""
+  # ------  tests using actual value arguments and type inference  ------
 
-say "EXP: y Type of 'f64'"
-y 3.14
-say ""
 
-say "EXP: y Type of 'String'"
-y "hello"
-say ""
+  f Function String (Sequence u64) a.b => (p,q)->"hi"
 
-say "EXP: y Type of 'bool'"
-y true
-say ""
+  say "EXP: y Type of 'Function String (Sequence u64) a.b'"
+  y f
+  say ""
 
-say "EXP: y Type of 'i32'"
-y true?1:2
-say ""
+  say "EXP: y Type of 'tuple (option unit) a.b'"
+  y (option unit, a.b)
+  say ""
 
-say "EXP: y Type of 'codepoint'"
-y (3=4 ? TRUE  => "a"
-       | FALSE => "b")
-say ""
+  say "EXP: y Type of 'f64'"
+  y 3.14
+  say ""
 
-say "EXP: y Type of 'codepoint'"
-y (match 3=4
-     TRUE  => "a"
-     FALSE => "b")
-say ""
+  say "EXP: y Type of 'String'"
+  y "hello"
+  say ""
 
-say "EXP: y Type of 'codepoint'"
-y (if 3=4 then "a" else "b")
-say ""
+  say "EXP: y Type of 'bool'"
+  y true
+  say ""
 
-say "EXP: y Type of 'io.out'"
-y (io.out.env)
-say ""
+  say "EXP: y Type of 'i32'"
+  y true?1:2
+  say ""
 
-say "EXP: y Type of 'Type'"
-y (io.out.type)
-say ""
+  say "EXP: y Type of 'codepoint'"
+  y (3=4 ? TRUE  => "a"
+         | FALSE => "b")
+  say ""
 
-t := (u8 3, f32 4, i64 5)
+  say "EXP: y Type of 'codepoint'"
+  y (match 3=4
+       TRUE  => "a"
+       FALSE => "b")
+  say ""
 
-say "EXP: y Type of 'u8'"
-y t.values.0
-say ""
+  say "EXP: y Type of 'codepoint'"
+  y (if 3=4 then "a" else "b")
+  say ""
 
-say "EXP: y Type of 'i64'"
-y t.values.2
-say ""
+  say "EXP: y Type of 'io.out'"
+  y (io.out.env)
+  say ""
+
+  say "EXP: y Type of 'Type'"
+  y (io.out.type)
+  say ""
+
+  t2 := (u8 3, f32 4, i64 5)
+
+  say "EXP: y Type of 'u8'"
+  y t2.values.0
+  say ""
+
+  say "EXP: y Type of 'i64'"
+  y t2.values.2
+  say ""

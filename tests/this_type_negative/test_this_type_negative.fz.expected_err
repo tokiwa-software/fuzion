@@ -1,0 +1,86 @@
+
+--CURDIR--/test_this_type_negative.fz:57:17: error 1: Incompatible types when passing argument in a call
+  _ := xa1.op0 (xb "xb")   # 3. should flag an error: incompatible type
+----------------^^
+Actual type for argument #1 'v' does not match expected type.
+In call to          : 'test_this_type_negative.xa.op0'
+expected formal type: 'test_this_type_negative.this.xa'
+actual type found   : 'test_this_type_negative.this.xb'
+assignable to       : 'test_this_type_negative.this.xb'
+for value assigned  : '(xb "xb")'
+To solve this you could:
+  • make  'test_this_type_negative.this.xa' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
+  • change the type of the target 'v' to 'test_this_type_negative.this.xb', or
+  • convert the type of the assigned value to 'test_this_type_negative.this.xa'.
+
+
+--CURDIR--/test_this_type_negative.fz:58:16: error 2: Incompatible types when passing argument in a call
+  _ := xa1.op0 xc          # 4. should flag an error: incompatible type
+---------------^^
+Actual type for argument #1 'v' does not match expected type.
+In call to          : 'test_this_type_negative.xa.op0'
+expected formal type: 'test_this_type_negative.this.xa'
+actual type found   : 'test_this_type_negative.this.xc'
+assignable to       : 'test_this_type_negative.this.xc'
+for value assigned  : 'xc'
+To solve this you could:
+  • make  'test_this_type_negative.this.xa' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
+  • change the type of the target 'v' to 'test_this_type_negative.this.xc', or
+  • convert the type of the assigned value to 'test_this_type_negative.this.xa'.
+
+
+--CURDIR--/test_this_type_negative.fz:72:16: error 3: Incompatible types when passing argument in a call
+  _ := xb1.op0 xa   # 5. should flag an error: incompatible type
+---------------^^
+Actual type for argument #1 'v' does not match expected type.
+In call to          : 'test_this_type_negative.xb.op0'
+expected formal type: 'test_this_type_negative.this.xb'
+actual type found   : 'test_this_type_negative.this.xa'
+assignable to       : 'test_this_type_negative.this.xa'
+for value assigned  : 'xa'
+To solve this, you could change the type of the target 'v' to 'test_this_type_negative.this.xa' or convert the type of the assigned value to 'test_this_type_negative.this.xb'.
+
+
+--CURDIR--/test_this_type_negative.fz:73:16: error 4: Incompatible types when passing argument in a call
+  _ := xb1.op0 xc   # 6. should flag an error: incompatible type
+---------------^^
+Actual type for argument #1 'v' does not match expected type.
+In call to          : 'test_this_type_negative.xb.op0'
+expected formal type: 'test_this_type_negative.this.xb'
+actual type found   : 'test_this_type_negative.this.xc'
+assignable to       : 'test_this_type_negative.this.xc'
+for value assigned  : 'xc'
+To solve this you could:
+  • make  'test_this_type_negative.this.xb' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
+  • change the type of the target 'v' to 'test_this_type_negative.this.xc', or
+  • convert the type of the assigned value to 'test_this_type_negative.this.xb'.
+
+
+--CURDIR--/test_this_type_negative.fz:34:5: error 5: Incompatible types in assignment
+    a1 a     := a.this  //  2. should flag an error: a.this not compatible to 'a'
+----^^
+assignment to field : 'test_this_type_negative.a.a1'
+expected formal type: 'test_this_type_negative.this.a'
+actual type found   : 'test_this_type_negative.this.a.this'
+assignable to       : 'test_this_type_negative.this.ref a'
+for value assigned  : 'a.this'
+To solve this you could:
+  • make  'test_this_type_negative.this.a' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
+  • change the type of the target 'test_this_type_negative.a.a1' to 'test_this_type_negative.this.a.this', or
+  • convert the type of the assigned value to 'test_this_type_negative.this.a'.
+
+
+--CURDIR--/test_this_type_negative.fz:31:7: error 6: Incompatible types in assignment
+      ax1 a     := a.this  //  1. should flag an error: a.this not compatible to 'a'
+------^^^
+assignment to field : 'test_this_type_negative.a.x.ax1'
+expected formal type: 'test_this_type_negative.this.a'
+actual type found   : 'test_this_type_negative.this.a.this'
+assignable to       : 'test_this_type_negative.this.ref a'
+for value assigned  : 'a.this'
+To solve this you could:
+  • make  'test_this_type_negative.this.a' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
+  • change the type of the target 'test_this_type_negative.a.x.ax1' to 'test_this_type_negative.this.a.this', or
+  • convert the type of the assigned value to 'test_this_type_negative.this.a'.
+
+6 errors.

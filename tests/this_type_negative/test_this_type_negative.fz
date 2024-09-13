@@ -29,21 +29,17 @@ test_this_type_negative is
     x is
       ax0       := a.this
       ax1 a     := a.this  //  1. should flag an error: a.this not compatible to 'a'
-      ax2 ref a := a.this
 
     a0       := a.this
     a1 a     := a.this  //  2. should flag an error: a.this not compatible to 'a'
-    a2 ref a := a.this
 
   b ref is
     x is
       bx0        := b.this
       bx1 b.this := b.this
-      bx2 ref b  := b.this
 
     b0        := b.this
     b1 b.this := b.this
-    b2 ref b  := b.this
 
 
   xa is
@@ -51,7 +47,7 @@ test_this_type_negative is
 
 
   xb(val String) : xa is
-    op0(v xb.this) xb.this => xb.this
+    redef op0(v xb.this) xb.this => xb.this
 
   xc : xb "cx" is
 
