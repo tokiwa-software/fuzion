@@ -71,9 +71,13 @@ public effect is
   type.replace0(e effect.this) unit => intrinsic
 
 
-  # Intrinsic version of abort.
+  # Intrinsic version of abort. For all surrounding instated effects,
+  # remove the effect and run `finally` until we have reached an
+  # effect of this type. Then return form that effect's `instate0` call
+  # with the rsult produced by calling `def` on the currently instated
+  # value.
   #
-  type.abort0(e effect.this) void => intrinsic
+  type.abort0 void => intrinsic
 
 
   # has an effect of this type been instated?
@@ -261,8 +265,8 @@ public effect is
     safety: effect.this.is_instated
     safety: effect.this.env.abortable
   =>
-    replace0 e  # NYI: UNDER DEVELOPMENT: Check if this is redundant with backend implementation of abort0!
-    abort0 e
+    replace0 e
+    abort0
 
 
   # Abort code execution for the instated effect.this.env and return to the point
@@ -273,7 +277,7 @@ public effect is
     safety: effect.this.is_instated
     safety: effect.this.env.abortable
   =>
-    effect.this.abort0 effect.this.env
+    effect.this.abort0
 
 
   # does this effect support abort?

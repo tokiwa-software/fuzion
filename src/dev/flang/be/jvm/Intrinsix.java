@@ -698,7 +698,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
         {
           var ecl = jvm._fuir.effectTypeFromInstrinsic(cc);
           var code = Expr.iconst(jvm._fuir.clazzId2num(ecl))
-            .andThen(args.get(0).drop())
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "effect_abort",
                                        "(I)V",

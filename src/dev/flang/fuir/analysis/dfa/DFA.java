@@ -2174,10 +2174,8 @@ public class DFA extends ANY
     put("effect.type.abort0"                , cl ->
         {
           var ecl = cl._dfa._fuir.effectTypeFromInstrinsic(cl._cc);
-          var new_e = cl._args.get(0).value();
-          cl.replaceEffect(ecl, new_e);
           // NYI: we might have to do cl.returns() for 'cl' being the
-          // corresponding call to 'effect.abortable' and make sure new_e is
+          // corresponding call to 'effect.instate0' and make sure new_e is
           // used to create the value produced by the effect.
           return null;
         });
