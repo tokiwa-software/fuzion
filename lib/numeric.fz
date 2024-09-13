@@ -141,7 +141,7 @@ module:public numeric : property.hashable, property.orderable is
   # Due to the low precedence of `|`, this works also on expressions like `|a-b|`, even
   # with spaces `| a-b |`, `|a - b|`, `| a-b|` or `|a-b |`.
   #
-  # Nesting, however, does not work, e.g, `| - |a| |`, this requires parenthese `|(- |a|)|`.
+  # Nesting, however, does not work, e.g, `| - |a| |`, this requires parentheses `|(- |a|)|`.
   #
   # NYI: CLEANUP: Due to #3081, we need `postfix |` as the first operation, should be
   # `prefix |` first

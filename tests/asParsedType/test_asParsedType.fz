@@ -32,12 +32,12 @@ a is
   b is
 A ref is
 
-# feature with argument being a type paramter only to test expr.asParsedType
+# feature with argument being a type parameter only to test expr.asParsedType
 #  when actual argument to `x` is first parsed as an expression.
 #
 x(T type) => say "GOT: x $T"
 
-# feature with arguments being a type paramter and a value of that type to check type
+# feature with arguments being a type parameter and a value of that type to check type
 # inference from an actual value
 #
 y(T type, v T) => say "GOT: y $T"
@@ -123,7 +123,7 @@ say "EXP: x Type of 'tuple'"
 x ()
 x (())
 x ((()))
-# x ( )   # NYI: currenlty does not work, no space allowed in empty tuple
+# x ( )   # NYI: currently does not work, no space allowed in empty tuple
 x (( ))
 x ((( )))
 x ( ( ) )

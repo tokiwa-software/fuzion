@@ -1,0 +1,75 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test lib_knuth_morris_pratt
+#
+# -----------------------------------------------------------------------
+
+lib_knuth_morris_pratt =>
+
+  functionality =>
+    say ("Helló World".as_codepoints.find "World".as_codepoints)
+    say ("Helló World".as_codepoints.find "Helló".as_codepoints)
+    say ("Helló World".as_codepoints.find "Internet".as_codepoints)
+
+    say ("Helló World".utf8.find "World".utf8)
+    say ("Helló World".utf8.find "Helló".utf8)
+    say ("Helló World".utf8.find "Internet".utf8)
+
+    say ("".utf8.find "".utf8)
+    say ("".utf8.find "word".utf8)
+    say ("Some text".utf8.find "".utf8)
+
+
+  performance =>
+    Sequence.find_brute_force(l Sequence T) option i32
+      pre
+        T : property.equatable
+    =>
+      if starts_with l
+        0
+      else
+        match as_list
+          nil    => nil
+          c Cons => (c.tail.find_brute_force l) >>= +1
+
+
+    test_brute_force(n i32) =>
+      ("a"*2*n).utf8.find_brute_force ("a"*n+"b").utf8
+
+    test_kmp(n i32) =>
+      ("a"*2*n).utf8.find ("a"*n+"b").utf8
+
+    say (test_kmp 1000)
+
+    len := 250
+
+    if (envir.args.index_of "-benchmark")??
+
+      # for len=250 and interpreter takes ~70s on my machine
+      brute_force := time.stopwatch (()-> _:= test_brute_force len)
+      # for len=250 and interpreter takes ~1s on my machine
+      kmp := time.stopwatch (()-> _:= test_kmp len)
+
+      # check that kmp is at least four times faster
+      check (kmp*4 < brute_force)
+
+
+  functionality
+  performance
