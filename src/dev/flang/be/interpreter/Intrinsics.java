@@ -1580,44 +1580,54 @@ public class Intrinsics extends ANY
   {
     return (args) ->
       {
-        var m = args.get(0);
-        String in = executor.fuir().clazzOriginalName(innerClazz);
-        int ecl = executor.fuir().effectTypeFromInstrinsic(innerClazz);
-        var ev = args.size() > 1 ? args.get(1) : null;
+        var fuir = executor.fuir();
+        var m   = args.get(0);
+        var in  = fuir.clazzOriginalName(innerClazz);
+        int ecl = fuir.effectTypeFromInstrinsic(innerClazz);
+        var ev  = args.size() > 1 ? args.get(1) : null;
         var effects = FuzionThread.current()._effects;
         switch (in)
           {
           case "effect.type.abort0"    : throw new Abort(ecl);
-          case "effect.type.default0"  : if (effects.get(ecl) == null) { check(executor.fuir().clazzIsUnitType(ecl) || ev != Value.EMPTY_VALUE); effects.put(ecl, ev); } break;
+          case "effect.type.default0"  : if (effects.get(ecl) == null) { check(fuir.clazzIsUnitType(ecl) || ev != Value.EMPTY_VALUE); effects.put(ecl, ev); } break;
           case "effect.type.instate0"  :
             {
+              // save old and instate new effect value ev:
               var prev = effects.get(ecl);
               effects.put(ecl, ev);
-              var oc   = executor.fuir().clazzActualGeneric(innerClazz, 0);
-              var cc = executor.fuir().lookupCall(oc);
+
+              // the callbacks to Fuzion for the code, fallback and finally:
+              var call     = fuir.lookupCall(fuir.clazzActualGeneric(innerClazz, 0));
+              var call_def = fuir.lookupCall(fuir.clazzActualGeneric(innerClazz, 1));
+              var finallie = fuir.lookup_static_finally(ecl);
+
+              Abort aborted = null;
               try
-                {
-                  var ignore = executor.callOnNewInstance(NO_SITE, cc, args.get(2), new List<>());
-                  return new boolValue(true);
+                { // run the code while effect is instated
+                  var ignore = executor.callOnNewInstance(NO_SITE, call, args.get(2), new List<>());
                 }
               catch (Abort a)
                 {
-                  if (a._effect == ecl)
-                    {
-                      return new boolValue(false);
-                    }
-                  else
-                    {
-                      throw a;
-                    }
+                  aborted = a;
                 }
-              finally
+
+              // in any case, restore old state and run finally on final effect value:
+              var final_ev = effects.get(ecl);
+              effects.put(ecl, prev);
+              var ignore = executor.callOnNewInstance(NO_SITE, finallie, final_ev, new List<>());
+
+              if (aborted != null)
                 {
-                  effects.put(ecl, prev);
+                  if (aborted._effect != ecl)
+                    { // the abort came from another, surrounding effect, so pass it on
+                      throw aborted;
+                    }
+                  // we got aborted, so we run `call_def` to produce default result of `instate`.
+                  ignore = executor.callOnNewInstance(NO_SITE, call_def, args.get(3), new List<>(final_ev));
                 }
             }
           case "effect.type.is_instated0": return new boolValue(effects.get(ecl) != null /* NOTE not containsKey since ecl may map to null! */ );
-          case "effect.type.replace0"    : check(effects.get(ecl) != null, executor.fuir().clazzIsUnitType(ecl) || ev != Value.EMPTY_VALUE); effects.put(ecl, ev);   break;
+          case "effect.type.replace0"    : check(effects.get(ecl) != null, fuir.clazzIsUnitType(ecl) || ev != Value.EMPTY_VALUE); effects.put(ecl, ev);   break;
           default: throw new Error("unexpected effect intrinsic '"+in+"'");
           }
         return Value.EMPTY_VALUE;
