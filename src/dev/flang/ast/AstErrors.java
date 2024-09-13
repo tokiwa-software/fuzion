@@ -954,7 +954,7 @@ public class AstErrors extends ANY
                    b.outer() != Types.f_ERROR    ))
       {
         // report in source code order to avoid symmetric error with exchanged roles of f and existing
-        var cmpRes = a.pos().show().compareTo(b.pos().show())>0;
+        var cmpRes = a.pos().compareTo(b.pos())<0;
         var aa = cmpRes ? a : b;
         var bb = cmpRes ? b : a;
 
