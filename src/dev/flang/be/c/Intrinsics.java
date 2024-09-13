@@ -934,19 +934,19 @@ public class Intrinsics extends ANY
         "effect.type.replace0"   , (c,cl,outer,in) ->
         {
           var ecl = c._fuir.effectTypeFromInstrinsic(cl);
-          var ev  = CNames.fzThreadEffectsEnvironment.deref().field(c._names.env(ecl));
-          var evi = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));
-          var evj = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envJmpBuf(ecl));
-          var o   = CNames.OUTER;
+          var eid = c._fuir.clazzId2num(ecl) + 1; // must be != 0 since setjmp uses 0 for the normal return case, so we add `1`:
+          var ev  = CNames.fzThreadEffectsEnvironment.deref().field(c._names.env(ecl));           // installed effect value
+          var evi = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));  // isInstalled flag
+          var evj = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envJmpBuf());        // current jump buffer
           var e   = A0;
           var effect_is_unit_type = c._fuir.clazzIsUnitType(ecl);
           return
             switch (in)
               {
               case "effect.type.abort0"        ->
-                CStmnt.seq(CStmnt.iff(evi, CExpr.call("longjmp",new List<>(evj.deref(), CExpr.int32const(1)))),
-                           CExpr.fprintfstderr("*** C backend support for %s missing\n",
-                                               CExpr.string(c._fuir.clazzOriginalName(cl))),
+                CStmnt.seq(CStmnt.iff(evi, CExpr.call("longjmp",new List<>(evj.deref(), CExpr.int32const(eid)))),
+                           CExpr.fprintfstderr("*** abort called for effect `%s` that is not instated!\n",
+                                               CExpr.string(c._fuir.clazzAsString(ecl))),
                            CExpr.exit(1));
               case "effect.type.default0"     -> CStmnt.iff(evi.not(), CStmnt.seq(effect_is_unit_type ? CExpr.UNIT : ev.assign(e),
                                                                                   evi.assign(CIdent.TRUE )));
@@ -963,39 +963,46 @@ public class Intrinsics extends ANY
                       var oldevj = new CIdent("old_evj");
                       var cureff  = new CIdent("cur_eff");
                       var cureff_as_target = c._fuir.clazzIsRef(ecl) ? cureff : cureff.adrOf();
-                      yield CStmnt.seq(effect_is_unit_type ? CExpr.UNIT : CStmnt.decl(c._types.clazz(ecl), oldev , ev ),
+                      var setjmp_result = new CIdent("setjmp_res");
+                      yield CStmnt.seq(// copy previously installed effect values:
+                                       effect_is_unit_type ? CExpr.UNIT : CStmnt.decl(c._types.clazz(ecl), oldev , ev ),
                                        CStmnt.decl("bool"             , oldevi, evi),
                                        CStmnt.decl("jmp_buf*"         , oldevj, evj),
+
+                                       // declare jumpbuf related local vars
                                        CStmnt.decl("jmp_buf", jmpbuf),
+                                       CStmnt.decl("int", setjmp_result),
+
+                                       // install effect
                                        effect_is_unit_type ? CExpr.UNIT : ev.assign(e),
                                        evi.assign(CIdent.TRUE ),
                                        evj.assign(jmpbuf.adrOf()),
-                                       CStmnt.iff(CExpr.call("setjmp",new List<>(jmpbuf)).eq(CExpr.int32const(0)),
-                                                  CStmnt.seq(CExpr.call(c._names.function(call), new List<>(A1.adrOf())),
-                                                             effect_is_unit_type ? CExpr.UNIT : CStmnt.decl(c._types.clazz(ecl), cureff , ev ),
-                                                             effect_is_unit_type ? CExpr.UNIT : ev .assign(oldev ),
-                                                             evi.assign(oldevi),
-                                                             evj.assign(oldevj),
-                                                             CExpr.call(c._names.function(finallie),
-                                                                        effect_is_unit_type
-                                                                        ? new List<>()
-                                                                        : new List<>(cureff_as_target))
+                                       setjmp_result.assign(CExpr.call("setjmp",new List<>(jmpbuf))),
+
+                                       // setjmp returns 0 originally, so we run the code in `call`:
+                                       CStmnt.iff(setjmp_result.eq(CExpr.int32const(0)),
+                                                  CStmnt.seq(CExpr.call(c._names.function(call), new List<>(A1.adrOf())))),
+
+                                       // remove the installed effect and call finally:
+                                       effect_is_unit_type ? CExpr.UNIT : CStmnt.decl(c._types.clazz(ecl), cureff , ev ),
+                                       effect_is_unit_type ? CExpr.UNIT : ev .assign(oldev ),
+                                       evi.assign(oldevi),
+                                       evj.assign(oldevj),
+                                       CExpr.call(c._names.function(finallie),
+                                                  effect_is_unit_type
+                                                  ? new List<>()
+                                                  : new List<>(cureff_as_target)),
+
+                                       // if setjmp returned with an abort for this effect (==eid), run `call_def`
+                                       CStmnt.iff(setjmp_result.eq(CExpr.int32const(eid)),
+                                                  CExpr.call(c._names.function(call_def),
+                                                             effect_is_unit_type
+                                                             ? new List<>(A2.adrOf())
+                                                             : new List<>(A2.adrOf(), cureff)
                                                              ),
-                                                  CStmnt.seq(//CExpr.fprintfstderr("***def call***\n"),
-                                                             effect_is_unit_type ? CExpr.UNIT : CStmnt.decl(c._types.clazz(ecl), cureff , ev ),
-                                                             effect_is_unit_type ? CExpr.UNIT : ev .assign(oldev ),
-                                                             evi.assign(oldevi),
-                                                             evj.assign(oldevj),
-                                                             CExpr.call(c._names.function(finallie),
-                                                                        effect_is_unit_type
-                                                                        ? new List<>()
-                                                                        : new List<>(cureff_as_target)),
-                                                             CExpr.call(c._names.function(call_def),
-                                                                        effect_is_unit_type
-                                                                        ? new List<>(A2.adrOf())
-                                                                        : new List<>(A2.adrOf(), cureff)
-                                                                        )
-                                                             )
+                                                  // else, if setjmp returned with an abort for a different effect, propagate it further
+                                                  CStmnt.iff(setjmp_result.ne(CExpr.int32const(0)),
+                                                             CExpr.call("longjmp",new List<>(evj.deref(), setjmp_result)))
                                                   )
                                        );
                     }

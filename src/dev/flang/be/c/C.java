@@ -1141,19 +1141,20 @@ public class C extends ANY
                .sorted()
                .distinct()
                .toArray();
+
+             var effectsData = new List<CStmnt>
+               (IntStream.of(_effectClazzes)
+                .mapToObj(cl -> Stream.of(CStmnt.decl(_types.clazz(cl), _names.env(cl)),
+                                          CStmnt.decl("bool", _names.envInstalled(cl))
+                                          )
+                          )
+                .flatMap(x -> x)
+                .iterator());
+             effectsData.add(CStmnt.decl("jmp_buf*", _names.envJmpBuf()));
+
              cf.print(
                CStmnt.seq(
-                 CStmnt.struct(CNames.fzThreadEffectsEnvironment.code(),
-                   new List<CStmnt>(
-                     IntStream.of(_effectClazzes)
-                       .mapToObj(cl -> Stream.of(
-                                         CStmnt.decl(_types.clazz(cl), _names.env(cl)),
-                                         CStmnt.decl("bool", _names.envInstalled(cl)),
-                                         CStmnt.decl("jmp_buf*", _names.envJmpBuf(cl))
-                                       )
-                       )
-                       .flatMap(x -> x)
-                       .iterator())),
+                 CStmnt.struct(CNames.fzThreadEffectsEnvironment.code(), effectsData),
                  CStmnt.decl("_Thread_local", "struct " + CNames.fzThreadEffectsEnvironment.code() + "*", CNames.fzThreadEffectsEnvironment)
                )
              );
