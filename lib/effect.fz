@@ -45,17 +45,25 @@ public effect is
   #
 
 
-  # execute code provided in f.call while this effect is instated in the
-  # current environment and remove the instated effect after f.call returned.
+  # execute code provided by `code` while this effect `e` is instated in the
+  # current environment and remove the instated effect after `code` returned.
   #
-  # In case of an abort, run `def.call` on the latest value instated or replaced
+  # In case of an abort, run `def` on the latest value instated or replaced
   # for `effect.this` after removing that instated effect value.
   #
-  type.instate0(C type : Function unit,
-                D type : Function unit effect.this,
-                e effect.this,
-                c C,
-                d D) unit => intrinsic
+  # Note the use of `_ : Function ...` instead of just `Function ...`: This
+  # introduces type parameters.  This has several important implications:
+  #
+  # - First, it permits `code` and `def` to be of value types, and
+  # - second, it simplifies the backends since calls to `code.call` or
+  #   `def.call` are statically defined by that value type, no need for
+  #   dynamic binding.
+  #
+  # As a neat side-effect this avoids heap allocation of the lambdas.
+  #
+  type.instate0(e effect.this,
+                code _ : Function unit,
+                def  _ : Function unit effect.this) unit => intrinsic
 
 
   # replace existing effect of type `E` in the new effect value `e`
@@ -124,16 +132,23 @@ public effect is
                       def effect.this -> R
                       ) R
   =>
-    c := Effect_Call code
-    d := Effect_Call2 def
-    instate0 (Effect_Call R) (Effect_Call2 R effect.this) e c d
-    c.r.or_else d.r.get
+    # we replace `code`/`def` by functions with unit type result
+    # to reduce complexity of the `instate0` intrinsic.  We
+    # collect the result in this field
+    res := option R nil
 
+    # wrapper to call `code` and store result in 'res`
+    call_code : Function unit is
+      redef call =>
+        set res := code()
 
-/* NYI: Causes fz to crash! **
-  type.Effect_Call(f () -> R) : Function R is
-    redef call => f()
-*/
+    # wrapper to call `def` on final effect value and store result in 'res`
+    call_def : Function unit effect.this is
+      redef call(cur_e effect.this) =>
+        set res := def cur_e
+
+    instate0 e call_code call_def
+    res.get
 
 
   # execute 'code' in a context where the effect instance `e` has been
@@ -307,17 +322,3 @@ public effect is
   # `ref`.
   #
   static_finally => finally
-
-
-  # --------------------  helper features  --------------------
-
-
-Effect_Call(f () -> R) : Function unit is
-  r := option R nil
-  redef call =>
-    set r := f()
-
-Effect_Call2(f E -> R) : Function unit E is
-  r := option R nil
-  redef call(e E) =>
-    set r := f e
