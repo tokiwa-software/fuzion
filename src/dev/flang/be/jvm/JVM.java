@@ -616,6 +616,7 @@ should be avoided as much as possible.
               "dev/flang/util/Errors$SRCF.class",
               "dev/flang/util/Errors$SRCF$1.class",
               "dev/flang/util/FatalError.class",
+              "dev/flang/util/FuzionOptions.class",
               "dev/flang/util/HasSourcePosition.class",
               "dev/flang/util/List.class",
               "dev/flang/util/QuietThreadTermination.class",

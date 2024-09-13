@@ -1,0 +1,137 @@
+
+--CURDIR--/looptest_negative.fz:93:13: error 1: Target of assignment must not be a loop index variable
+      set i := 2   //  4. should flag an error: must not assign value to loop index var
+------------^
+Target of assignment: 'looptest_negative.testWriteToIndexVar.loop.i'
+Within feature: 'looptest_negative.testWriteToIndexVar.loop'
+For assignment: 'set i := 2'
+Was defined as loop index variable at --CURDIR--/looptest_negative.fz:88:7:
+      i i32 := 0, i+1
+------^
+
+
+--CURDIR--/looptest_negative.fz:94:13: error 2: Target of assignment must not be a loop index variable
+      set j := i*i //  5. should flag an error: must not assign value to loop index var
+------------^
+Target of assignment: 'looptest_negative.testWriteToIndexVar.loop.j'
+Within feature: 'looptest_negative.testWriteToIndexVar.loop'
+For assignment: 'set j := loop.this.i.infix * i'
+Was defined as loop index variable at --CURDIR--/looptest_negative.fz:89:7:
+      j := 100, j-1
+------^
+
+
+--CURDIR--/looptest_negative.fz:95:13: error 3: Target of assignment must not be a loop index variable
+      set k := 3   //  6. should flag an error: must not assign value to loop index var
+------------^
+Target of assignment: 'looptest_negative.testWriteToIndexVar.loop.k'
+Within feature: 'looptest_negative.testWriteToIndexVar.loop'
+For assignment: 'set k := 3'
+Was defined as loop index variable at --CURDIR--/looptest_negative.fz:90:7:
+      k in 0..10
+------^
+
+
+--CURDIR--/looptest_negative.fz:96:13: error 4: Target of assignment must not be a loop index variable
+      set l := k-j //  7. should flag an error: must not assign value to loop index var
+------------^
+Target of assignment: 'looptest_negative.testWriteToIndexVar.loop.l'
+Within feature: 'looptest_negative.testWriteToIndexVar.loop'
+For assignment: 'set l := loop.this.k.infix - j'
+Was defined as loop index variable at --CURDIR--/looptest_negative.fz:91:7:
+      l in 0..20 : 2
+------^
+
+
+--CURDIR--/looptest_negative.fz:104:13: error 5: Target of assignment must not be a loop index variable
+      set i := i+2 //  7a. should flag an error: must not assign value to loop index var
+------------^
+Target of assignment: 'looptest_negative.testWriteToDeclaredVar.loop.i'
+Within feature: 'looptest_negative.testWriteToDeclaredVar.loop'
+For assignment: 'set i := loop.this.i.infix + 2'
+Was defined as loop index variable at --CURDIR--/looptest_negative.fz:101:7:
+      i i32 := 0
+------^
+
+
+--CURDIR--/looptest_negative.fz:105:13: error 6: Target of assignment must not be a loop index variable
+      set j := i*i //  7b. should flag an error: must not assign value to loop index var
+------------^
+Target of assignment: 'looptest_negative.testWriteToDeclaredVar.loop.j'
+Within feature: 'looptest_negative.testWriteToDeclaredVar.loop'
+For assignment: 'set j := loop.this.i.infix * i'
+Was defined as loop index variable at --CURDIR--/looptest_negative.fz:102:7:
+      j := 100
+------^
+
+
+--CURDIR--/looptest_negative.fz:42:14: error 7: Incompatible types in branches of if expression
+    while ix < data.length
+-------------^
+Incompatible result types in different branches:
+block returns value of type 'i32' at --CURDIR--/looptest_negative.fz:44:11:
+    until isWhatWeWant(data[ix])     //  1.a should flag an error: incompatible result types i32 vs. String
+----------^^^^^^^^^^^^
+block returns value of type 'String' at --CURDIR--/looptest_negative.fz:47:7:
+      "4444"            //  1.b should flag an error: incompatible result types i32 vs. String
+------^^^^^^
+
+
+--CURDIR--/looptest_negative.fz:53:14: error 8: Incompatible types in branches of if expression
+    while ix < data.length
+-------------^
+Incompatible result types in different branches:
+block returns value of type 'i32' at --CURDIR--/looptest_negative.fz:55:11:
+    until isWhatWeWant(data[ix])    //  2.a should flag an error: incompatible result types i32 vs. String
+----------^^^^^^^^^^^^
+block returns value of type 'String' at --CURDIR--/looptest_negative.fz:58:7:
+      "4444"            //  2.b should flag an error: incompatible result types i32 vs. String
+------^^^^^^
+
+
+--CURDIR--/looptest_negative.fz:68:3: error 9: Incompatible types in assignment
+  neg3i i32    := testLoop_neg3 a (i -> i > 10) //  3.a should flag an error: incompatible result types bool vs. i32
+--^^^^^
+assignment to field : 'looptest_negative.neg3i'
+expected formal type: 'i32'
+actual type found   : 'bool'
+assignable to       : 'bool'
+for value assigned  : 'testLoop_neg3 a (i -> i > 10)'
+To solve this, you could change the type of the target 'looptest_negative.neg3i' to 'bool' or convert the type of the assigned value to 'i32'.
+
+
+--CURDIR--/looptest_negative.fz:69:3: error 10: Incompatible types in assignment
+  neg3s String := testLoop_neg3 a (i -> i > 10) //  3.b should flag an error: incompatible result types bool vs. String
+--^^^^^
+assignment to field : 'looptest_negative.neg3s'
+expected formal type: 'String'
+actual type found   : 'bool'
+assignable to       : 'bool'
+for value assigned  : 'testLoop_neg3 a (i -> i > 10)'
+To solve this, you could change the type of the target 'looptest_negative.neg3s' to 'bool' or convert the type of the assigned value to 'String'.
+
+
+--CURDIR--/looptest_negative.fz:109:11: error 11: If condition must be assignable to type 'bool'
+    while "string"  // 8. should flag an error: must be of type bool
+----------^^^^^^^^
+Actual type is 'String'
+
+
+--CURDIR--/looptest_negative.fz:113:11: error 12: If condition must be assignable to type 'bool'
+    while 23  // 9. should flag an error: must be of type bool
+----------^^
+Actual type is 'i32'
+
+
+--CURDIR--/looptest_negative.fz:123:11: error 13: If condition must be assignable to type 'bool'
+    until "string"  // 10. should flag an error: must be of type bool
+----------^^^^^^^^
+Actual type is 'String'
+
+
+--CURDIR--/looptest_negative.fz:128:11: error 14: If condition must be assignable to type 'bool'
+    until 23  // 11. should flag an error: must be of type bool
+----------^^
+Actual type is 'i32'
+
+14 errors.

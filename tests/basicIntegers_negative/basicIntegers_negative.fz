@@ -87,7 +87,7 @@ basicIntegers_negative is
 
     i1 := i8 0
     i2 := i8 127
-    i3 := i8 128     // 27. should flag an error, constant out of range
+    i3 := i8 128       // 27. should flag an error, constant out of range
     i4 := i8 -1
     i5 := i8 -127
     i6 := i8 -128

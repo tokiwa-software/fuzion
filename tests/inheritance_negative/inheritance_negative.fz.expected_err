@@ -1,0 +1,52 @@
+
+--CURDIR--/inheritance_negative.fz:33:5: error 1: Recursive value type is not allowed
+    u : strm2 is // 1. should flag an error, inheritance of outer feature not permitted for value type
+----^
+Value type inheritance_negative.strm2.u equals type of outer feature.
+The chain of outer types that lead to this recursion is:
+1: inheritance_negative.strm2.u at --CURDIR--/inheritance_negative.fz:33:5:
+    u : strm2 is // 1. should flag an error, inheritance of outer feature not permitted for value type
+----^
+2: inheritance_negative.strm2.u at --CURDIR--/inheritance_negative.fz:33:5:
+    u : strm2 is // 1. should flag an error, inheritance of outer feature not permitted for value type
+----^
+
+To solve this, you could add a 'ref' after the arguments list at --CURDIR--/inheritance_negative.fz:33:5:
+    u : strm2 is // 1. should flag an error, inheritance of outer feature not permitted for value type
+----^
+
+
+--CURDIR--/inheritance_negative.fz:43:5: error 2: Recursive value type is not allowed
+    u : strm3 is // 2. should flag an error, inheritance of outer feature not permitted for value type
+----^
+Value type inheritance_negative.strm3.u equals type of outer feature.
+The chain of outer types that lead to this recursion is:
+1: inheritance_negative.strm3.u at --CURDIR--/inheritance_negative.fz:43:5:
+    u : strm3 is // 2. should flag an error, inheritance of outer feature not permitted for value type
+----^
+2: inheritance_negative.strm3.u at --CURDIR--/inheritance_negative.fz:43:5:
+    u : strm3 is // 2. should flag an error, inheritance of outer feature not permitted for value type
+----^
+
+To solve this, you could add a 'ref' after the arguments list at --CURDIR--/inheritance_negative.fz:43:5:
+    u : strm3 is // 2. should flag an error, inheritance of outer feature not permitted for value type
+----^
+
+
+--CURDIR--/inheritance_negative.fz:53:5: error 3: Recursive value type is not allowed
+    u : strm4Z is // 3. should flag an error, inheritance of outer feature not permitted for value type
+----^
+Value type inheritance_negative.strm4.u equals type of outer feature.
+The chain of outer types that lead to this recursion is:
+1: inheritance_negative.strm4.u at --CURDIR--/inheritance_negative.fz:53:5:
+    u : strm4Z is // 3. should flag an error, inheritance of outer feature not permitted for value type
+----^
+2: inheritance_negative.strm4.u at --CURDIR--/inheritance_negative.fz:53:5:
+    u : strm4Z is // 3. should flag an error, inheritance of outer feature not permitted for value type
+----^
+
+To solve this, you could add a 'ref' after the arguments list at --CURDIR--/inheritance_negative.fz:53:5:
+    u : strm4Z is // 3. should flag an error, inheritance of outer feature not permitted for value type
+----^
+
+3 errors.

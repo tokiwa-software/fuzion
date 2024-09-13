@@ -29,6 +29,7 @@ package dev.flang.fuir.analysis;
 import java.util.Stack;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.ir.IR.ExprKind;
 
 import static dev.flang.ir.IR.NO_SITE;
 
@@ -521,27 +522,20 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
         l.add(_processor.reportErrorInCode("Severe compiler bug! This code should be unreachable."));
       }
 
-    if (!containsVoid(stack) && stack.size() > 0)
-      { // NYI: #1875: Manual stack cleanup.  This should not be needed since the
-        // FUIR has the (so far undocumented) invariant that the stack must be
-        // empty at the end of a basic block. There were some cases
-        // (tests/reg_issue1294) where this is not the case that need to be
-        // fixed, the FUIR code should contain a POP instructions to avoid this
-        // special handling here!
-        //
-        var e = _fuir.codeAt(last_s);
-        switch (e)
+    // FUIR has the (so far undocumented) invariant that the stack must be
+    // empty at the end of a basic block.
+    if (CHECKS) check
+      (containsVoid(stack) || stack.isEmpty() || _fuir.alwaysResultsInVoid(last_s));
+
+    if (!containsVoid(stack) && !stack.isEmpty() && _fuir.alwaysResultsInVoid(last_s))
+      {
+        if (CHECKS) check
+          (_fuir.codeAt(last_s) == ExprKind.Call);
+        var cc0 = _fuir.accessedClazz(last_s);
+        var rt = _fuir.clazzResultClazz(cc0);
+        if (!clazzHasUnitValue(rt))
           {
-          case Call:
-            var cc0 = _fuir.accessedClazz(last_s);
-            var rt = _fuir.clazzResultClazz(cc0);
-            if (!clazzHasUnitValue(rt))
-              {
-                l.add(_processor.drop(stack.pop(), rt));
-              }
-            break;
-          default:
-            break; // NYI: ignore this case for now, this occurs infrequently, one example is tests/reg_issue1294.
+            l.add(_processor.drop(stack.pop(), rt));
           }
       }
 

@@ -191,7 +191,7 @@ typeinference_negative is
   mix6 is // the types here are ok, but this has an access to an uninitialized field
     x := 3
     f => x
-    g => y // 44. m6.z NYI: UNDER DEVELOPMENT: flag an error, y accessed before it is initialized
+    g => y // 44. m6.z should flag an error, y accessed before it is initialized
     z := g
     y := f
 
@@ -208,7 +208,7 @@ typeinference_negative is
     z := h
 
   typeInferencingFromIf1(b bool) =>
-    if       b     { 3 }         // 46. should flag an error: result type cannot be inferred
+    if       b     { 3 }         // 46. should flag an error: incompatible types in branches of if expression
     else if !b     { "String" }
     else if b && b { x i32 := 3 }
     else if b || b { }
@@ -216,7 +216,7 @@ typeinference_negative is
 
   typeInferencingFromIf2(b bool) is
     f =>
-      if       b     { 3 }         // 47. should flag an error: result type cannot be inferred
+      if       b     { 3 }         // 47. should flag an error: incompatible types in branches of if expression
       else if !b     { "String" }
       else if b && b { x i32 := 3 }
       else if b || b { }
@@ -224,14 +224,14 @@ typeinference_negative is
 
   typeInferencingFromIf3(b bool) is
     f choice i32 String bool :=
-    {
-      if       b { 3 }
-      else if !b { "String" }
-      else       { false }
-    }
+      {
+        if       b { 3 }
+        else if !b { "String" }
+        else       { false }
+      }
 
   typeInferencingFromIf4(b bool) is
-    f(x choice i32 String bool) is
+    f(x choice i32 String bool) =>
     f({
         if       b { 3 }
         else if !b { "String" }
@@ -247,7 +247,7 @@ typeinference_negative is
     abcde : choice A B C D E is
 
     test(x abcde) =>
-      match x          // 48. should flag an error: result type cannot be inferred
+      match x          // 48. should flag an error: incompatible types in cases of match expression
         a A => 3
         B,C => "String"
         d D => false
@@ -263,7 +263,7 @@ typeinference_negative is
 
     test(x abcde) is
       f =>
-        match x          // 49. should flag an error: result type cannot be inferred
+        match x          // 49. should flag an error: incompatible types in cases of match expression
           a A => 3
           B,C => "String"
           d D => false
@@ -279,13 +279,13 @@ typeinference_negative is
     x abcde := A
 
     f choice i32 String bool E :=
-    {
-      match x
-        a A => 3
-        B,C => "String"
-        d D => false
-        e E => e
-    }
+      {
+        match x
+          a A => 3
+          B,C => "String"
+          d D => false
+          e E => e
+      }
 
   typeInferencingFromMatch4 is
     A is
@@ -296,7 +296,7 @@ typeinference_negative is
     abcde : choice A B C D E is
     x abcde := A
 
-    f(y choice i32 String bool E)
+    f(y choice i32 String bool E) =>
     f({
         match x
           a A => 3

@@ -1,0 +1,37 @@
+
+--CURDIR--/choice_negative.fz:29:5: error 1: Cyclic field nesting is not permitted
+    A is
+----^
+Cyclic value field nesting would result in infinitely large objects.
+Cycle of nesting found during clazz layout:
+--CURDIR--/choice_negative.fz:30:7:
+      x A | i32 | String := "Hello"  // 4. should flag an error: cyclic choice
+------^
+
+To solve this, you could change one or several of the fields involved to a reference type by adding 'ref' before the type.
+
+
+--CURDIR--/choice_negative.fz:52:5: error 2: Cyclic field nesting is not permitted
+    A is
+----^
+Cyclic value field nesting would result in infinitely large objects.
+Cycle of nesting found during clazz layout:
+--CURDIR--/choice_negative.fz:53:7:
+      x i32 | A | String := "Hello"  // 5. should flag an error: cyclic choice
+------^
+
+To solve this, you could change one or several of the fields involved to a reference type by adding 'ref' before the type.
+
+
+--CURDIR--/choice_negative.fz:75:5: error 3: Cyclic field nesting is not permitted
+    A is
+----^
+Cyclic value field nesting would result in infinitely large objects.
+Cycle of nesting found during clazz layout:
+--CURDIR--/choice_negative.fz:76:7:
+      x i32 | String | A := "Hello"  // 6. should flag an error: cyclic choice
+------^
+
+To solve this, you could change one or several of the fields involved to a reference type by adding 'ref' before the type.
+
+3 errors.

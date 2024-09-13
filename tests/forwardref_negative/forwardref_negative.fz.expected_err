@@ -1,0 +1,17 @@
+
+--CURDIR--/forwardref_negative.fz:29:10: error 1: Could not find called feature
+    a := z // 1. should flag an error, forward reference to uninitialized field
+---------^
+Feature not found: 'z' (no arguments)
+Target feature: 'forwardref_negative.cyclic1'
+In call: 'z'
+
+
+--CURDIR--/forwardref_negative.fz:58:10: error 2: Could not find called feature
+    a := z // 2. should flag an error, forward reference to uninitialized field
+---------^
+Feature not found: 'z' (no arguments)
+Target feature: 'forwardref_negative.cyclic2'
+In call: 'z'
+
+2 errors.

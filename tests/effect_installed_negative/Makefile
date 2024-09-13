@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = test_effect_neg
-include ../negative.mk
+include ../simple_and_negative.mk

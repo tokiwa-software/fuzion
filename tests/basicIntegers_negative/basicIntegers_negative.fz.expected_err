@@ -1,0 +1,557 @@
+
+--CURDIR--/basicIntegers_negative.fz:150:6: error 1: Numeric literal used for integer type is not a whole number
+  sa 123.456       # 53. should flag an error, must be integer
+-----^^^^^^^
+Type propagation results in an integer type that cannot hold a value that is not integer.
+Numeric literal: '123.456'
+Assigned to type: 'i32'
+
+
+--CURDIR--/basicIntegers_negative.fz:151:6: error 2: Numeric literal used for integer type is not a whole number
+  sa 123456.789    # 54. should flag an error, must be integer
+-----^^^^^^^^^^
+Type propagation results in an integer type that cannot hold a value that is not integer.
+Numeric literal: '123456.789'
+Assigned to type: 'i32'
+
+
+--CURDIR--/basicIntegers_negative.fz:153:6: error 3: Numeric literal used for integer type is not a whole number
+  sa 123456.789E2  # 55. should flag an error, must be integer
+-----^^^^^^^^^^^^
+Type propagation results in an integer type that cannot hold a value that is not integer.
+Numeric literal: '123456.789E2'
+Assigned to type: 'i32'
+
+
+--CURDIR--/basicIntegers_negative.fz:157:6: error 4: Numeric literal used for integer type is not a whole number
+  sa 123456780E-2  # 56. should flag an error, must be integer
+-----^^^^^^^^^^^^
+Type propagation results in an integer type that cannot hold a value that is not integer.
+Numeric literal: '123456780E-2'
+Assigned to type: 'i32'
+
+
+--CURDIR--/basicIntegers_negative.fz:158:6: error 5: Numeric literal used for integer type is not a whole number
+  sa 123456780E-3  # 57. should flag an error, must be integer
+-----^^^^^^^^^^^^
+Type propagation results in an integer type that cannot hold a value that is not integer.
+Numeric literal: '123456780E-3'
+Assigned to type: 'i32'
+
+
+--CURDIR--/basicIntegers_negative.fz:30:14: error 6: Integer constant value outside of allowed range for target type
+    i3 i8 := 128     // 1. should flag an error, constant out of range
+-------------^^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '128'
+Assigned to type: 'i8'
+Acceptable range of values: '-128' .. '127'
+
+
+--CURDIR--/basicIntegers_negative.fz:34:14: error 7: Integer constant value outside of allowed range for target type
+    i7 i8 := -129    // 2. should flag an error, constant out of range
+-------------^^^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '-129'
+Assigned to type: 'i8'
+Acceptable range of values: '-128' .. '127'
+
+
+--CURDIR--/basicIntegers_negative.fz:35:5: error 8: Incompatible types in assignment
+    i8a i8 := - -1   // 3. should flag an error, constant out of range
+----^^^
+assignment to field : 'basicIntegers_negative.assignConstants.i8a'
+expected formal type: 'i8'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '-'
+To solve this, you could convert the value using + '.as_i8'.
+
+
+--CURDIR--/basicIntegers_negative.fz:36:5: error 9: Incompatible types in assignment
+    i8b i8 := - - 1  // 4. should flag an error, constant out of range
+----^^^
+assignment to field : 'basicIntegers_negative.assignConstants.i8b'
+expected formal type: 'i8'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '-'
+To solve this, you could convert the value using + '.as_i8'.
+
+
+--CURDIR--/basicIntegers_negative.fz:42:14: error 10: Integer constant value outside of allowed range for target type
+    u5 u8 := 256     // 5. should flag an error, constant out of range
+-------------^^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '256'
+Assigned to type: 'u8'
+Acceptable range of values: '0' .. '255'
+
+
+--CURDIR--/basicIntegers_negative.fz:44:14: error 11: Integer constant value outside of allowed range for target type
+    u7 u8 := -1      // 6. should flag an error, constant out of range
+-------------^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '-1'
+Assigned to type: 'u8'
+Acceptable range of values: '0' .. '255'
+
+
+--CURDIR--/basicIntegers_negative.fz:45:5: error 12: Incompatible types in assignment
+    u8a u8 := - -1   // 7. should flag an error, constant out of range
+----^^^
+assignment to field : 'basicIntegers_negative.assignConstants.u8a'
+expected formal type: 'u8'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '-'
+To solve this, you could convert the value using + '.as_u8'.
+
+
+--CURDIR--/basicIntegers_negative.fz:46:5: error 13: Incompatible types in assignment
+    u8b u8 := - - 1  // 8. should flag an error, constant out of range
+----^^^
+assignment to field : 'basicIntegers_negative.assignConstants.u8b'
+expected formal type: 'u8'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '-'
+To solve this, you could convert the value using + '.as_u8'.
+
+
+--CURDIR--/basicIntegers_negative.fz:52:15: error 14: Integer constant value outside of allowed range for target type
+    s5 i16 := 0x8000               // 9. should flag an error, constant out of range
+--------------^^^^^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '0x8000'
+Assigned to type: 'i16'
+Acceptable range of values: '-0x8000' .. '0x7fff'
+
+
+--CURDIR--/basicIntegers_negative.fz:54:15: error 15: Integer constant value outside of allowed range for target type
+    s7 i16 := 0b1111111111111111   // 10. should flag an error, constant out of range
+--------------^^^^^^^^^^^^^^^^^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '0b1111111111111111'
+Assigned to type: 'i16'
+Acceptable range of values: '-0b1000000000000000' .. '0b111111111111111'
+
+
+--CURDIR--/basicIntegers_negative.fz:57:5: error 16: Incompatible types in assignment
+    s9a i16 := -(32768)            // 11. should flag an error, constant out of range
+----^^^
+assignment to field : 'basicIntegers_negative.assignConstants.s9a'
+expected formal type: 'i16'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '-'
+To solve this, you could convert the value using + '.as_i16'.
+
+
+--CURDIR--/basicIntegers_negative.fz:58:5: error 17: Incompatible types in assignment
+    s9b i16 := -(-32768)           // 12. should flag an error, constant out of range
+----^^^
+assignment to field : 'basicIntegers_negative.assignConstants.s9b'
+expected formal type: 'i16'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '-'
+To solve this, you could convert the value using + '.as_i16'.
+
+
+--CURDIR--/basicIntegers_negative.fz:59:5: error 18: Incompatible types in assignment
+    s9c i16 := -(-(-32768))        // 13. should flag an error, constant out of range
+----^^^
+assignment to field : 'basicIntegers_negative.assignConstants.s9c'
+expected formal type: 'i16'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '-'
+To solve this, you could convert the value using + '.as_i16'.
+
+
+--CURDIR--/basicIntegers_negative.fz:60:16: error 19: Integer constant value outside of allowed range for target type
+    s10 i16 := -32769              // 14. should flag an error, constant out of range
+---------------^^^^^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '-32769'
+Assigned to type: 'i16'
+Acceptable range of values: '-32768' .. '32767'
+
+
+--CURDIR--/basicIntegers_negative.fz:61:5: error 20: Incompatible types in assignment
+    s10a i16 := -(-(-(32769)))     // 15. should flag an error, constant out of range
+----^^^^
+assignment to field : 'basicIntegers_negative.assignConstants.s10a'
+expected formal type: 'i16'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '-'
+To solve this, you could convert the value using + '.as_i16'.
+
+
+--CURDIR--/basicIntegers_negative.fz:62:5: error 21: Incompatible types in assignment
+    s10b i16 := +(-(+(32769)))     // 16. should flag an error, constant out of range
+----^^^^
+assignment to field : 'basicIntegers_negative.assignConstants.s10b'
+expected formal type: 'i16'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '+'
+To solve this, you could convert the value using + '.as_i16'.
+
+
+--CURDIR--/basicIntegers_negative.fz:66:15: error 22: Integer constant value outside of allowed range for target type
+    c3 u16 := 65536                // 17. should flag an error, constant out of range
+--------------^^^^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '65536'
+Assigned to type: 'u16'
+Acceptable range of values: '0' .. '65535'
+
+
+--CURDIR--/basicIntegers_negative.fz:68:15: error 23: Integer constant value outside of allowed range for target type
+    c5 u16 := 0x10000              // 18. should flag an error, constant out of range
+--------------^^^^^^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '0x10000'
+Assigned to type: 'u16'
+Acceptable range of values: '0x0' .. '0xffff'
+
+
+--CURDIR--/basicIntegers_negative.fz:70:15: error 24: Integer constant value outside of allowed range for target type
+    c7 u16 := 0b10000000000000000  // 19. should flag an error, constant out of range
+--------------^^^^^^^^^^^^^^^^^^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '0b10000000000000000'
+Assigned to type: 'u16'
+Acceptable range of values: '0b0' .. '0b1111111111111111'
+
+
+--CURDIR--/basicIntegers_negative.fz:72:15: error 25: Integer constant value outside of allowed range for target type
+    c9 u16 := -1                   // 20. should flag an error, constant out of range
+--------------^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '-1'
+Assigned to type: 'u16'
+Acceptable range of values: '0' .. '65535'
+
+
+--CURDIR--/basicIntegers_negative.fz:73:5: error 26: Incompatible types in assignment
+    c10 u16 := - - 1               // 21. should flag an error, constant out of range
+----^^^
+assignment to field : 'basicIntegers_negative.assignConstants.c10'
+expected formal type: 'u16'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '-'
+To solve this, you could convert the value using + '.as_u16'.
+
+
+--CURDIR--/basicIntegers_negative.fz:76:15: error 27: Integer constant value outside of allowed range for target type
+    l2 i64 := 9223372036854775808  // 22. should flag an error, constant out of range
+--------------^^^^^^^^^^^^^^^^^^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '9223372036854775808'
+Assigned to type: 'i64'
+Acceptable range of values: '-9223372036854775808' .. '9223372036854775807'
+
+
+--CURDIR--/basicIntegers_negative.fz:81:16: error 28: Integer constant value outside of allowed range for target type
+    ul4 u64 := 18446744073709551616 // 23. should flag an error, constant out of range
+---------------^^^^^^^^^^^^^^^^^^^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '18446744073709551616'
+Assigned to type: 'u64'
+Acceptable range of values: '0' .. '18446744073709551615'
+
+
+--CURDIR--/basicIntegers_negative.fz:82:5: error 29: Incompatible types in assignment
+    ul5 u64 := - 0                  // 24. should flag an error, constant out of range
+----^^^
+assignment to field : 'basicIntegers_negative.assignConstants.ul5'
+expected formal type: 'u64'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '-'
+To solve this, you could convert the value using + '.as_u64'.
+
+
+--CURDIR--/basicIntegers_negative.fz:83:16: error 30: Integer constant value outside of allowed range for target type
+    ul6 u64 := -1                   // 25. should flag an error, constant out of range
+---------------^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '-1'
+Assigned to type: 'u64'
+Acceptable range of values: '0' .. '18446744073709551615'
+
+
+--CURDIR--/basicIntegers_negative.fz:84:5: error 31: Incompatible types in assignment
+    ul7 u64 := - -1                 // 26. should flag an error, constant out of range
+----^^^
+assignment to field : 'basicIntegers_negative.assignConstants.ul7'
+expected formal type: 'u64'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '-'
+To solve this, you could convert the value using + '.as_u64'.
+
+
+--CURDIR--/basicIntegers_negative.fz:90:14: error 32: Integer constant value outside of allowed range for target type
+    i3 := i8 128       // 27. should flag an error, constant out of range
+-------------^^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '128'
+Assigned to type: 'i8'
+Acceptable range of values: '-128' .. '127'
+
+
+--CURDIR--/basicIntegers_negative.fz:94:14: error 33: Integer constant value outside of allowed range for target type
+    i7 := i8 -129      // 28. should flag an error, constant out of range
+-------------^^^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '-129'
+Assigned to type: 'i8'
+Acceptable range of values: '-128' .. '127'
+
+
+--CURDIR--/basicIntegers_negative.fz:95:5: error 34: Incompatible types in assignment
+    i8a := i8 (- -1)   // 29. should flag an error, constant out of range
+----^^^
+assignment to field : 'basicIntegers_negative.assignToConstructur.i8a'
+expected formal type: 'i8'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '(- -1)'
+To solve this, you could convert the value using + '.as_i8'.
+
+
+--CURDIR--/basicIntegers_negative.fz:96:5: error 35: Incompatible types in assignment
+    i8b := i8 (- - 1)  // 30. should flag an error, constant out of range
+----^^^
+assignment to field : 'basicIntegers_negative.assignToConstructur.i8b'
+expected formal type: 'i8'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '(- - 1)'
+To solve this, you could convert the value using + '.as_i8'.
+
+
+--CURDIR--/basicIntegers_negative.fz:102:14: error 36: Integer constant value outside of allowed range for target type
+    u5 := u8 256       // 31. should flag an error, constant out of range
+-------------^^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '256'
+Assigned to type: 'u8'
+Acceptable range of values: '0' .. '255'
+
+
+--CURDIR--/basicIntegers_negative.fz:104:14: error 37: Integer constant value outside of allowed range for target type
+    u7 := u8 -1        // 32. should flag an error, constant out of range
+-------------^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '-1'
+Assigned to type: 'u8'
+Acceptable range of values: '0' .. '255'
+
+
+--CURDIR--/basicIntegers_negative.fz:105:5: error 38: Incompatible types in assignment
+    u8a := u8 (- -1)   // 33. should flag an error, constant out of range
+----^^^
+assignment to field : 'basicIntegers_negative.assignToConstructur.u8a'
+expected formal type: 'u8'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '(- -1)'
+To solve this, you could convert the value using + '.as_u8'.
+
+
+--CURDIR--/basicIntegers_negative.fz:106:5: error 39: Incompatible types in assignment
+    u8b := u8 (- - 1)  // 34. should flag an error, constant out of range
+----^^^
+assignment to field : 'basicIntegers_negative.assignToConstructur.u8b'
+expected formal type: 'u8'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '(- - 1)'
+To solve this, you could convert the value using + '.as_u8'.
+
+
+--CURDIR--/basicIntegers_negative.fz:112:15: error 40: Integer constant value outside of allowed range for target type
+    s5 := i16 0x8000               // 35. should flag an error, constant out of range
+--------------^^^^^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '0x8000'
+Assigned to type: 'i16'
+Acceptable range of values: '-0x8000' .. '0x7fff'
+
+
+--CURDIR--/basicIntegers_negative.fz:114:15: error 41: Integer constant value outside of allowed range for target type
+    s7 := i16 0b1111111111111111   // 36. should flag an error, constant out of range
+--------------^^^^^^^^^^^^^^^^^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '0b1111111111111111'
+Assigned to type: 'i16'
+Acceptable range of values: '-0b1000000000000000' .. '0b111111111111111'
+
+
+--CURDIR--/basicIntegers_negative.fz:117:5: error 42: Incompatible types in assignment
+    s9a := i16 -(32768)            // 37. should flag an error, constant out of range
+----^^^
+assignment to field : 'basicIntegers_negative.assignToConstructur.s9a'
+expected formal type: 'i16'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '-'
+To solve this, you could convert the value using + '.as_i16'.
+
+
+--CURDIR--/basicIntegers_negative.fz:118:5: error 43: Incompatible types in assignment
+    s9b := i16 -(-32768)           // 38. should flag an error, constant out of range
+----^^^
+assignment to field : 'basicIntegers_negative.assignToConstructur.s9b'
+expected formal type: 'i16'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '-'
+To solve this, you could convert the value using + '.as_i16'.
+
+
+--CURDIR--/basicIntegers_negative.fz:119:5: error 44: Incompatible types in assignment
+    s9c := i16 -(-(-32768))        // 39. should flag an error, constant out of range
+----^^^
+assignment to field : 'basicIntegers_negative.assignToConstructur.s9c'
+expected formal type: 'i16'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '-'
+To solve this, you could convert the value using + '.as_i16'.
+
+
+--CURDIR--/basicIntegers_negative.fz:120:16: error 45: Integer constant value outside of allowed range for target type
+    s10 := i16 -32769              // 40. should flag an error, constant out of range
+---------------^^^^^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '-32769'
+Assigned to type: 'i16'
+Acceptable range of values: '-32768' .. '32767'
+
+
+--CURDIR--/basicIntegers_negative.fz:121:5: error 46: Incompatible types in assignment
+    s10a := i16 -(-(-(32769)))     // 41. should flag an error, constant out of range
+----^^^^
+assignment to field : 'basicIntegers_negative.assignToConstructur.s10a'
+expected formal type: 'i16'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '-'
+To solve this, you could convert the value using + '.as_i16'.
+
+
+--CURDIR--/basicIntegers_negative.fz:122:5: error 47: Incompatible types in assignment
+    s10b := i16 +(-(+(32769)))     // 42. should flag an error, constant out of range
+----^^^^
+assignment to field : 'basicIntegers_negative.assignToConstructur.s10b'
+expected formal type: 'i16'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '+'
+To solve this, you could convert the value using + '.as_i16'.
+
+
+--CURDIR--/basicIntegers_negative.fz:126:15: error 48: Integer constant value outside of allowed range for target type
+    c3 := u16 65536                // 43. should flag an error, constant out of range
+--------------^^^^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '65536'
+Assigned to type: 'u16'
+Acceptable range of values: '0' .. '65535'
+
+
+--CURDIR--/basicIntegers_negative.fz:128:15: error 49: Integer constant value outside of allowed range for target type
+    c5 := u16 0x10000              // 44. should flag an error, constant out of range
+--------------^^^^^^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '0x10000'
+Assigned to type: 'u16'
+Acceptable range of values: '0x0' .. '0xffff'
+
+
+--CURDIR--/basicIntegers_negative.fz:130:15: error 50: Integer constant value outside of allowed range for target type
+    c7 := u16 0b10000000000000000  // 45. should flag an error, constant out of range
+--------------^^^^^^^^^^^^^^^^^^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '0b10000000000000000'
+Assigned to type: 'u16'
+Acceptable range of values: '0b0' .. '0b1111111111111111'
+
+
+--CURDIR--/basicIntegers_negative.fz:132:15: error 51: Integer constant value outside of allowed range for target type
+    c9 := u16 -1                   // 46. should flag an error, constant out of range
+--------------^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '-1'
+Assigned to type: 'u16'
+Acceptable range of values: '0' .. '65535'
+
+
+--CURDIR--/basicIntegers_negative.fz:133:5: error 52: Incompatible types in assignment
+    c10 := u16 (- - 1)             // 47. should flag an error, constant out of range
+----^^^
+assignment to field : 'basicIntegers_negative.assignToConstructur.c10'
+expected formal type: 'u16'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '(- - 1)'
+To solve this, you could convert the value using + '.as_u16'.
+
+
+--CURDIR--/basicIntegers_negative.fz:136:15: error 53: Integer constant value outside of allowed range for target type
+    l2 := i64 9223372036854775808  // 48. should flag an error, constant out of range
+--------------^^^^^^^^^^^^^^^^^^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '9223372036854775808'
+Assigned to type: 'i64'
+Acceptable range of values: '-9223372036854775808' .. '9223372036854775807'
+
+
+--CURDIR--/basicIntegers_negative.fz:141:16: error 54: Integer constant value outside of allowed range for target type
+    ul4 := u64 18446744073709551616 // 49. should flag an error, constant out of range
+---------------^^^^^^^^^^^^^^^^^^^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '18446744073709551616'
+Assigned to type: 'u64'
+Acceptable range of values: '0' .. '18446744073709551615'
+
+
+--CURDIR--/basicIntegers_negative.fz:142:5: error 55: Incompatible types in assignment
+    ul5 := u64 (- 0)                // 50. should flag an error, constant out of range
+----^^^
+assignment to field : 'basicIntegers_negative.assignToConstructur.ul5'
+expected formal type: 'u64'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '(- 0)'
+To solve this, you could convert the value using + '.as_u64'.
+
+
+--CURDIR--/basicIntegers_negative.fz:143:16: error 56: Integer constant value outside of allowed range for target type
+    ul6 := u64 -1                   // 51. should flag an error, constant out of range
+---------------^^
+Type propagation results in a type that is too small for the value represented by the given constant.
+Numeric literal: '-1'
+Assigned to type: 'u64'
+Acceptable range of values: '0' .. '18446744073709551615'
+
+
+--CURDIR--/basicIntegers_negative.fz:144:5: error 57: Incompatible types in assignment
+    ul7 := u64 (- -1)               // 52. should flag an error, constant out of range
+----^^^
+assignment to field : 'basicIntegers_negative.assignToConstructur.ul7'
+expected formal type: 'u64'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '(- -1)'
+To solve this, you could convert the value using + '.as_u64'.
+
+57 errors.

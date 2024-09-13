@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = forwardref_negative
-include ../negative.mk
+include ../simple_and_negative.mk

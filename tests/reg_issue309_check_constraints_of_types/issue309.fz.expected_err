@@ -1,0 +1,22 @@
+
+--CURDIR--/issue309.fz:29:19: error 1: Incompatible type parameter
+  b container.Set a => abstract          // 1. should flag an error: Incompatible type parameter
+------------------^
+formal type parameter 'E' with constraint 'property.equatable'
+actual type parameter 'issue309.this.a'
+
+
+--CURDIR--/issue309.fz:31:27: error 2: Incompatible type parameter
+  b(T type) container.Set T => abstract  // 2. should flag an error: Incompatible type parameter
+--------------------------^
+formal type parameter 'E' with constraint 'property.equatable'
+actual type parameter 'issue309.b.T'
+
+
+--CURDIR--/issue309.fz:34:7: error 3: Incompatible type parameter
+  d c a => abstract                      // 3. should flag an error: Incompatible type parameter
+------^
+formal type parameter 'T' with constraint 'property.equatable'
+actual type parameter 'issue309.this.a'
+
+3 errors.

@@ -62,4 +62,4 @@ typecheck_negative is
     set x := v // 13. should flag an error, illegal assignment
     set x := w // 14. should flag an error, illegal assignment
     set y := x
-  assign
+  _ := assign

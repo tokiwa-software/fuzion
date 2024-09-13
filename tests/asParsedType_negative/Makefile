@@ -21,5 +21,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = test_asParsedType_negative.fz
-include ../negative.mk
+override NAME = test_asParsedType_negative
+include ../simple_and_negative.mk

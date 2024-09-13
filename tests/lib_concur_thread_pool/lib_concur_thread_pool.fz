@@ -68,3 +68,34 @@ lib_concur_thread_pool =>
 
     say sum
   test_3
+
+  # sum the squares of the numbers from 0 to 100
+  test_4 =>
+    thread_count := 4
+    sum := concur.thread_pool thread_count ()->
+      data := (u16 0)..100
+
+      # split data
+      parts := data.chunk (data.count.as_f64 / thread_count.as_f64).ceil.as_i32
+
+      # distribute and calculate squares
+      fut0 := concur.thread_pool.env.submit (Sequence u16) (() -> parts[0].map i->i*i)
+      fut1 := concur.thread_pool.env.submit (Sequence u16) (() -> parts[1].map i->i*i)
+      fut2 := concur.thread_pool.env.submit (Sequence u16) (() -> parts[2].map i->i*i)
+      fut3 := concur.thread_pool.env.submit (Sequence u16) (() -> parts[3].map i->i*i)
+
+      # convert to u64 and sum up list
+      new_fut0 := fut0.and_then s->(s.map x->x.as_u64)
+                      .and_then (s->s.fold u64.sum)
+      new_fut1 := fut1.and_then s->(s.map x->x.as_u64)
+                      .and_then (s->s.fold u64.sum)
+      new_fut2 := fut2.and_then s->(s.map x->x.as_u64)
+                      .and_then (s->s.fold u64.sum)
+      new_fut3 := fut3.and_then s->(s.map x->x.as_u64)
+                      .and_then (s->s.fold u64.sum)
+
+      # collect results
+      new_fut0.get + new_fut1.get + new_fut2.get + new_fut3.get # should be 338350
+
+    say "sum the squares of the numbers from 0 to 100: $sum"
+  test_4

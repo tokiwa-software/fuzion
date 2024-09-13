@@ -37,17 +37,17 @@ iftest_negative is
   testIfNonBoolean1 is
     if "string"       // 1. should flag an error: must be of type bool
     else if "string"  // 2. should flag an error: must be of type bool
-  testIfNonBoolean1
+  _ := testIfNonBoolean1
 
   testIfNonBoolean2 is
     if 42             // 3. should flag an error: must be of type bool
     else if 42        // 4. should flag an error: must be of type bool
-  testIfNonBoolean2
+  _ := testIfNonBoolean2
 
-  testIfBoolean1 { if false  { } else if false  { } }; testIfBoolean1 // ok
-  testIfBoolean2 { if true   { } else if true   { } }; testIfBoolean2 // ok
-  testIfBoolean5 { if !false { } else if !false { } }; testIfBoolean5 // ok
-  testIfBoolean6 { if !true  { } else if !true  { } }; testIfBoolean6 // ok
+  testIfBoolean1 is { if false  { } else if false  { } }; _ := testIfBoolean1 // ok
+  testIfBoolean2 is { if true   { } else if true   { } }; _ := testIfBoolean2 // ok
+  testIfBoolean5 is { if !false { } else if !false { } }; _ := testIfBoolean5 // ok
+  testIfBoolean6 is { if !true  { } else if !true  { } }; _ := testIfBoolean6 // ok
 
   routine_positive (b bool) choice unit String =>
     if b // ok
@@ -61,14 +61,6 @@ iftest_negative is
   # NYI improve error message
   function1 (b bool) String =>
     if b // 6. should flag an error: Incompatible types in branches of if expression
-      "Hello"
-
-  function2 (b bool) unit =>
-    if b // ok, we ignore a result in an `if` if assigned to `unit`
-      "Hello"
-
-  constructor (b bool) is
-    if b // ok, we ignore a result in an `if` if assigned to `unit`
       "Hello"
 
   exit

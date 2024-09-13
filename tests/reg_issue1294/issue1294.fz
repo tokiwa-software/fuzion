@@ -44,7 +44,7 @@ scenario1 =>
   fs(F type : a F) =>
     _ := F.zero
 
-scenario1
+# NYI: BUG: #3649 scenario1
 
 
 

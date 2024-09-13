@@ -52,7 +52,7 @@ forwardref_negative is
     x := w
     y := x
     z := 1
-  cyclic1
+  _ := cyclic1
 
   cyclic2 is
     a := z // 2. should flag an error, forward reference to uninitialized field
@@ -81,4 +81,4 @@ forwardref_negative is
     x := w
     y := x
     z := 1
-  cyclic2
+  _ := cyclic2

@@ -150,7 +150,7 @@ public class Env extends ANY implements Comparable<Env>
             _types              [i] = insert ? et : ot[j];
             _initialEffectValues[i] = insert ? ev : oi[j];
             j = j + (insert ? 0 : 1);
-            left = insert && left;
+            left = !insert && left;
           }
       }
     _outer = outer;

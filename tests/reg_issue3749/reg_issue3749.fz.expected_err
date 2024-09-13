@@ -1,0 +1,9 @@
+
+--CURDIR--/reg_issue3749.fz:25:3: error 1: Actual type parameters to choice type must be disjoint types
+  A : choice i32 i32 is
+--^
+The following types have overlapping values:
+'i32'
+'i32'
+
+one error.

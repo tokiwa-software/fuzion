@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = issue440
-include ../negative.mk
+include ../simple_and_negative.mk

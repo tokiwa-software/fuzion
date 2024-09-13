@@ -57,16 +57,16 @@ looptest_negative is
     else
       "4444"            //  2.b should flag an error: incompatible result types i32 vs. String
 
-  say "testLoop_neg3: loop return 3333 on success, index as default"
+  say "testLoop_neg3: loop with implicit bool result"
   testLoop_neg3(data array i32, isWhatWeWant i32 -> bool) =>
     for
       ix := 0, ix + 1
     while ix < data.length
       element := data[ix]
     until isWhatWeWant(data[ix])
-      "3333"
-  neg3i i32    := testLoop_neg3 a (i -> i > 10) //  3.a should flag an error: incompatible result types VOID vs. i32
-  neg3s String := testLoop_neg3 a (i -> i > 10) //  3.b should flag an error: incompatible result types VOID vs. String
+      unit
+  neg3i i32    := testLoop_neg3 a (i -> i > 10) //  3.a should flag an error: incompatible result types bool vs. i32
+  neg3s String := testLoop_neg3 a (i -> i > 10) //  3.b should flag an error: incompatible result types bool vs. String
 
   say "testLoop_neg4: loop return 4444 on else branch, no success possible"
   testLoop_neg4(data array i32, isWhatWeWant i32 -> bool) =>
@@ -94,7 +94,7 @@ looptest_negative is
       set j := i*i //  5. should flag an error: must not assign value to loop index var
       set k := 3   //  6. should flag an error: must not assign value to loop index var
       set l := k-j //  7. should flag an error: must not assign value to loop index var
-  testWriteToIndexVar
+  _ := testWriteToIndexVar
 
   testWriteToDeclaredVar is
     for
@@ -103,34 +103,34 @@ looptest_negative is
     do
       set i := i+2 //  7a. should flag an error: must not assign value to loop index var
       set j := i*i //  7b. should flag an error: must not assign value to loop index var
-  testWriteToDeclaredVar
+  _ := testWriteToDeclaredVar
 
   testNonBooleanWhile1 is
     while "string"  // 8. should flag an error: must be of type bool
-  testNonBooleanWhile1
+  _ := testNonBooleanWhile1
 
   testNonBooleanWhile2 is
     while 23  // 9. should flag an error: must be of type bool
-  testNonBooleanWhile2
+  _ := testNonBooleanWhile2
 
-  testBooleanWhile3 { while false  { } }; testBooleanWhile3  // ok
-  testBooleanWhile4 { while true   { } }; testBooleanWhile4  // ok
-  testBooleanWhile7 { while !false { } }; testBooleanWhile7  // ok
-  testBooleanWhile8 { while !true  { } }; testBooleanWhile8  // ok
+  testBooleanWhile3 is { while false  { } }; _ := testBooleanWhile3  // ok
+  testBooleanWhile4 is { while true   { } }; _ := testBooleanWhile4  // ok
+  testBooleanWhile7 is { while !false { } }; _ := testBooleanWhile7  // ok
+  testBooleanWhile8 is { while !true  { } }; _ := testBooleanWhile8  // ok
 
   testNonBooleanUntil1 is
     do
     until "string"  // 10. should flag an error: must be of type bool
-  testNonBooleanUntil1
+  _ := testNonBooleanUntil1
 
   testNonBooleanUntil2 is
     do
     until 23  // 11. should flag an error: must be of type bool
-  testNonBooleanUntil2
+  _ := testNonBooleanUntil2
 
-  testBooleanUntil3 { do { } until false  }; testBooleanUntil3  // ok
-  testBooleanUntil4 { do { } until true   }; testBooleanUntil4  // ok
-  testBooleanUntil7 { do { } until !false }; testBooleanUntil7  // ok
-  testBooleanUntil8 { do { } until !true  }; testBooleanUntil8  // ok
+  testBooleanUntil3 is { do { } until false  }; _ := testBooleanUntil3  // ok
+  testBooleanUntil4 is { do { } until true   }; _ := testBooleanUntil4  // ok
+  testBooleanUntil7 is { do { } until !false }; _ := testBooleanUntil7  // ok
+  testBooleanUntil8 is { do { } until !true  }; _ := testBooleanUntil8  // ok
 
   exit

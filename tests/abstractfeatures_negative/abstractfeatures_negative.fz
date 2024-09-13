@@ -30,12 +30,12 @@ abstractfeatures_negative is
 
   opengenerics12 =>
     F(A type...) ref is
-      f(a A) is abstract                         //  1. should flag an error: abstract feature not implemented
-      g(a A) is abstract                         // ok, not called.
+      f(a A) is abstract                           //  1. should flag an error: abstract feature not implemented
+      g(a A) is abstract                           // ok, not called.
 
     G ref : F i32 bool i32 is
 
-    x G := G                                     //  2. should flag an error: abstract feature f not implemented
+    x G := G                                       //  2. should flag an error: abstract feature f not implemented
     y F i32 bool i32 := x
     if maybe then y.f 3 true 5
 

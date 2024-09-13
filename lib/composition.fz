@@ -47,6 +47,9 @@
 # To Dissect a Mockingbird: A Graphical Notation for the Lambda Calculus with Animated Reduction
 # https://dkeenan.com/Lambda/
 #
+# Haskell package data.aviary.birds:
+# https://hackage.haskell.org/package/data-aviary-0.4.0/docs/Data-Aviary-Birds.html
+#
 # Bird names from Raymond M Smullyan. 2000. To Mock a Mockingbird: and other
 # logic puzzles including an amazing adventure in combinatory logic. Oxford
 # University Press, USA.
@@ -88,7 +91,7 @@ public composition is
   # Haskell: ?
   # public Mstar(f (T->T,T)->T) T->T => x-> f f x
 
-  # ?
+  # I*
   # reverse apply
   # Bird: thrush
   # BQN: ?
@@ -134,11 +137,18 @@ public composition is
   public compose(f U -> V, g T -> U) T -> V => f ∘ g
 
   # B1
-  # Elementare Compositor, 1° <- 2° composition
+  # Elementary Compositor, 1° <- 2° composition
   # Bird: Blackbird
   # BQN: ∘
   # Haskell: .: or ...
   public atop(f V -> W, g (T,U) -> V) (T,U) -> W => (x,y) -> f (g x y)
+
+  # B3
+  # triple compositor
+  # Bird: Becard
+  # BQN:
+  # Haskell:
+  public becard(f C -> D, g B -> C, h A -> B) A -> D =>  f ∘ g ∘ h
 
   # B
   # composition of one unary function f and one binary function g...
@@ -213,6 +223,12 @@ public composition is
   public const1(T, U    type, v T) U     -> T => x     -> v
   public const2(T, U, V type, v T) (U,V) -> T => (x,y) -> v
 
+  # O
+  #
+  # Bird: Owl
+  # BQN: ?
+  # Haskell: ?
+  public owl(f (A -> B) -> A, g A -> B) B => (g ∘ f).call g
 
   # The Y fixed-point combinator
   # \f.(\x.f(xx))(\x.f(xx))
