@@ -350,7 +350,7 @@ public class Fuzion extends Tool
               {
                 n = n.substring(0, n.length() - sfx.length());
               }
-            var data = fe.module().data(n);
+            var data = fe.sourceModule().data(n);
             if (data != null)
               {
                 try (var os = Files.newOutputStream(p))

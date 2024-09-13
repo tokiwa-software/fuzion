@@ -498,8 +498,6 @@ public abstract class Module extends ANY implements FeatureLookup
    */
   SortedMap<FeatureName, List<AbstractFeature>> declaredOrInheritedFeatures(AbstractFeature outer)
   {
-    if (CHECKS) check
-      (_dependsOn != null);
     return this.declaredOrInheritedFeatures(outer, _dependsOn);
   }
 

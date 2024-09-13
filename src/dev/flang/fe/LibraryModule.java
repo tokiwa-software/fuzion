@@ -35,6 +35,8 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -172,9 +174,9 @@ public class LibraryModule extends Module implements MirModule
   /**
    * Create LibraryModule for given options and sourceDirs.
    */
-  LibraryModule(int globalBase, FrontEnd fe, ByteBuffer data, AbstractFeature universe)
+  LibraryModule(int globalBase, FrontEnd fe, ByteBuffer data, Function<AbstractFeature, LibraryModule[]> loadDependsOn, AbstractFeature universe)
   {
-    super(null /* will be set later, need to load first */);
+    super(null /* set later, we need correct universe first */);
 
     _globalBase = globalBase;
     _mir = null;
@@ -189,9 +191,15 @@ public class LibraryModule extends Module implements MirModule
     _modules = new ModuleRef[mrc];
     var p = moduleRefsPos();
     int moduleOffset = _data.limit();
+
     this._universe = universe == null ? libraryUniverse() : universe;
     if (CHECKS) check
       (_universe.isUniverse());
+
+    _dependsOn = loadDependsOn.apply(universe());
+    if (CHECKS)
+      check(_dependsOn != null);
+
     for (int i = 0; i < mrc; i++)
       {
         var n = moduleRefName(p);
@@ -207,10 +215,6 @@ public class LibraryModule extends Module implements MirModule
         moduleOffset = moduleOffset + mr.size();
         p = moduleRefNextPos(p);
       }
-    _dependsOn = Arrays.stream(_modules)
-                       .map(mr -> mr._module)
-                       .collect(Collectors.toList())
-                       .toArray(new LibraryModule[_modules.length]);
 
     var dm = fe._options._dumpModules;
     if (DUMP ||

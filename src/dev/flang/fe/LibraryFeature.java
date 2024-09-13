@@ -52,6 +52,7 @@ import dev.flang.ast.FeatureName;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.Tag;
+import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 import dev.flang.ast.Visi;
 
@@ -432,7 +433,7 @@ public class LibraryFeature extends AbstractFeature
       }
     else if (isChoice())
       {
-        return _libModule.lookupFeature(_libModule.libraryUniverse(), FeatureName.get("void",  0), null).selfType();
+        return Types.resolved.t_void;
       }
     else
       {

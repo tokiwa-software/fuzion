@@ -38,6 +38,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.TreeMap;
+import java.util.function.Function;
 
 import dev.flang.mir.MIR;
 
@@ -157,11 +158,10 @@ public class FrontEnd extends ANY
         sourceDirs[i] = new SourceDir(sourcePaths[i]);
       }
 
-    loadModules(universe);
+    var dependsOn = loadModules(universe);
 
     if (options._loadSources)
       {
-        var dependsOn = _modules.values().toArray(LibraryModule[]::new);
         _sourceModule = new SourceModule(options, sourceDirs, dependsOn, universe);
         _sourceModule.createASTandResolve();
       }
@@ -172,16 +172,40 @@ public class FrontEnd extends ANY
   }
 
 
-  private void loadModules(Universe universe)
+  /**
+   * Load modules using universe.
+   *
+   * @param universe the universe to use to load the modules
+   *
+   * @return dependsOn, usually base module and modules explicitly specified in -modules=...
+   */
+  private LibraryModule[] loadModules(AbstractFeature universe)
   {
     if (_options._loadBaseLib)
       {
         module(FuzionConstants.BASE_MODULE_NAME, modulePath(FuzionConstants.BASE_MODULE_NAME), universe);
       }
     _options._modules.stream().forEach(mn -> loadModule(mn, universe));
+
+    // Visibility not propagated through modules: see #484
+    return _modules
+      .entrySet()
+      .stream()
+      .filter(kv -> {
+        var moduleName = kv.getKey();
+        return _options._loadBaseLib && moduleName.equals(FuzionConstants.BASE_MODULE_NAME)
+          || _options._modules.contains(moduleName);
+      })
+      .map(x -> x.getValue())
+      .toArray(LibraryModule[]::new);
   }
 
 
+  /**
+   * reset almost all data in the front end.
+   *
+   * NYI: CLEANUP: remove this code
+   */
   private void reset()
   {
     _totalModuleData = 0;
@@ -240,7 +264,7 @@ public class FrontEnd extends ANY
     try (var ch = (FileChannel) Files.newByteChannel(p, EnumSet.of(StandardOpenOption.READ)))
       {
         var data = ch.map(FileChannel.MapMode.READ_ONLY, 0, ch.size());
-        result = libModule(data, universe);
+        result = libModule(data, x -> new LibraryModule[0], universe);
         if (!m.equals(result.name()))
           {
             Errors.error("Module name mismatch for module file '" + p + "' expected name '" +
@@ -256,11 +280,10 @@ public class FrontEnd extends ANY
     return result;
   }
 
-
   /**
    * create a new LibraryModule from `data`
    */
-  private LibraryModule libModule(ByteBuffer data, AbstractFeature universe)
+  private LibraryModule libModule(ByteBuffer data, Function<AbstractFeature, LibraryModule[]> loadDependsOn, AbstractFeature universe)
   {
     LibraryModule result;
     var base = _totalModuleData;
@@ -268,6 +291,7 @@ public class FrontEnd extends ANY
     result = new LibraryModule(GLOBAL_INDEX_OFFSET + base,
                                this,
                                data,
+                               loadDependsOn,
                                universe);
     return result;
   }
@@ -304,6 +328,11 @@ public class FrontEnd extends ANY
   /*-----------------------------  methods  -----------------------------*/
 
 
+  /**
+   * create the module intermediate representation
+   *
+   * @return the MIR
+   */
   public MIR createMIR()
   {
     var main = _sourceModule._main;
@@ -312,8 +341,13 @@ public class FrontEnd extends ANY
   }
 
 
-  public SourceModule module()
+  /**
+   * @return The source module.
+   */
+  public SourceModule sourceModule()
   {
+    if (CHECKS) check
+      (_sourceModule != null);
     return _sourceModule;
   }
 
@@ -339,13 +373,16 @@ public class FrontEnd extends ANY
 
         var data = _sourceModule.data("main");
         reset();
-        _mainModule = libModule(data, null /* use universe of module */);
+        _mainModule = libModule(data, af -> loadModules(af), null /* use universe of module */);
         var ignore = new Types.Resolved((target,fn) -> _mainModule.lookupFeature(target, fn, null), _mainModule.libraryUniverse());
       }
     return _mainModule;
   }
 
 
+  /**
+   * @return The base module.
+   */
   public LibraryModule baseModule()
   {
     return _modules.get("base");
