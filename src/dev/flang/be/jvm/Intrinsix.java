@@ -712,7 +712,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var ecl = jvm._fuir.effectTypeFromInstrinsic(cc);
           var call     = jvm._fuir.lookupCall(jvm._fuir.clazzActualGeneric(cc, 0));
           var call_def = jvm._fuir.lookupCall(jvm._fuir.clazzActualGeneric(cc, 1));
-          var finallie =  jvm._fuir.lookup_static_finally(ecl);
+          var finallie = jvm._fuir.lookup_static_finally(ecl);
           var arg = args.get(0);
           var ejt = jvm._types.resultType(ecl);
           var cast_e = Expr.checkcast(jvm._types.resultType(ecl));
