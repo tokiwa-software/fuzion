@@ -19,10 +19,7 @@
 #
 #  Source code of Fuzion test Makefile
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
-#
 # -----------------------------------------------------------------------
 
-override NAME = doubledeclaration_negative
-override FUZION_OPTIONS = -sourceDirs=. # NYI: currently required for this test wo work as expected, see #3777
-include ../simple_and_negative.mk
+override NAME = reg_issue3521
+include ../simple.mk

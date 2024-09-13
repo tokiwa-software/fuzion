@@ -1,0 +1,36 @@
+
+./doubledeclaration2.fz:26:43: error 1: Qualified declaration not allowed for field
+public doubledeclaration_negative.cyclic1.a := 4   // 1. should flag an error, field not allowed in qualified declaration
+------------------------------------------^
+All fields have to be declared textually within the source of their outer features.
+Field declared: 'doubledeclaration_negative.cyclic1.a'
+To solve this, you could move the declaration into the implementation of feature 'doubledeclaration_negative.cyclic1'.  Alternatively, you can declare a routine instead.
+
+
+./doubledeclaration2.fz:26:43: error 2: Duplicate feature declaration
+public doubledeclaration_negative.cyclic1.a := 4   // 1. should flag an error, field not allowed in qualified declaration
+------------------------------------------^
+Feature that was declared repeatedly: 'doubledeclaration_negative.cyclic1.a'
+originally declared at --CURDIR--/doubledeclaration_negative.fz:29:12:
+    public a := 3
+-----------^
+To solve this, consider renaming one of these two features, e.g., as 'aʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
+
+
+./doubledeclaration2.fz:26:43: error 3: Initial value not allowed for feature not embedded in outer feature
+public doubledeclaration_negative.cyclic1.a := 4   // 1. should flag an error, field not allowed in qualified declaration
+------------------------------------------^
+Fuzion currently does not know when to execute this initializer, so it is forbidden.
+To solve this, move the declaration inside another feature or ask the Fuzion team for help.
+
+
+./doubledeclaration2.fz:27:49: error 4: Duplicate feature declaration
+public redef doubledeclaration_negative.cyclic1.b => 44  // 2. should flag an error, feature already declared in doubledeclaration_negative.fz
+------------------------------------------------^
+Feature that was declared repeatedly: 'doubledeclaration_negative.cyclic1.b'
+originally declared at --CURDIR--/doubledeclaration_negative.fz:30:12:
+    public b => 33
+-----------^
+To solve this, consider renaming one of these two features, e.g., as 'bʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
+
+4 errors.
