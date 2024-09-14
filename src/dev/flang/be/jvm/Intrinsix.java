@@ -715,30 +715,34 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var call_def = jvm._fuir.lookupCall(jvm._fuir.clazzActualGeneric(cc, 1));
           var finallie = jvm._fuir.lookup_static_finally(ecl);
           var ejt = jvm._types.resultType(ecl);
-          Expr arg, cast_e, dup_e;
-          if (ejt != ClassFileConstants.PrimitiveType.type_void)
-            {
-              arg = args.get(0);
-              cast_e = Expr.checkcast(ejt);
-              dup_e = Expr.DUP;
-            }
-          else
-            {
-              arg = args.get(0).drop()
-                .andThen(Expr.getstatic(Names.RUNTIME_CLASS,
-                                        "_UNIT_TYPE_EFFECT_",
-                                        Names.ANYI_TYPE));
-              cast_e = Expr.POP;  // cast AnyI to void by dumping the value
-              dup_e  = Expr.UNIT; // dup void is a nop (= Expr.UNIT)
-            }
+          var unit_effect = ejt == ClassFileConstants.PrimitiveType.type_void;
           var try_end   = new Label();
           var try_catch = new Label();
           var try_after = new Label();
           var try_start = Expr.tryCatch(try_end,
                                         try_catch,
                                         Names.ABORT_TYPE);
+
+          // code-snippet to call effect_pop and leave the effect instance on the Java stack
+          var pop_effect = Expr.iconst(eid)
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "effect_pop",
+                                       "(I)"+Names.ANYI_DESCR,
+                                       Names.ANYI_TYPE)
+                     )
+            .andThen(ejt == ClassFileConstants.PrimitiveType.type_void ? Expr.POP   // cast AnyI to void by dumping the value
+                                                                       : Expr.checkcast(ejt));
+
+          var call_finally      = jvm._types.invokeStatic(finallie, jvm._fuir.sitePos(si).line());
+          var pop_and_finally   = pop_effect.andThen(call_finally);     // pop effect and call finally
+          var pop_fin_and_throw = pop_and_finally.andThen(Expr.THROW);  // pop effect, call finally and throw abort exception from stack
+
           var result = Expr.iconst(eid)
-            .andThen(arg)
+            .andThen(unit_effect ? args.get(0).drop()
+                                    .andThen(Expr.getstatic(Names.RUNTIME_CLASS,
+                                                            "_UNIT_TYPE_EFFECT_",
+                                                            Names.ANYI_TYPE))
+                                 : args.get(0))
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "effect_push",
                                        "(" + ("I" +
@@ -750,43 +754,26 @@ public class Intrinsix extends ANY implements ClassFileConstants
             .andThen(args.get(1))
             .andThen(jvm._types.invokeStatic(call, jvm._fuir.sitePos(si).line()))
             .andThen(try_end)
-            .andThen(Expr.iconst(eid))
-            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                       "effect_pop",
-                                       "(I)"+Names.ANYI_DESCR,
-                                       Names.ANYI_TYPE)
-                     )
-            .andThen(cast_e)
-            .andThen(jvm._types.invokeStatic(finallie, jvm._fuir.sitePos(si).line()))
+            .andThen(pop_and_finally)
             .andThen(Expr.gotoLabel(try_after))
             .andThen(try_catch)
-            .andThen(Expr.DUP)
-            .andThen(Expr.getfield(Names.ABORT_CLASS, Names.ABORT_EFFECT, PrimitiveType.type_int))
-            .andThen(Expr.iconst(eid))
-            .andThen(Expr.branch(O_if_icmpne,
-                                 // not for us, so pop effect and re-throw
-                                 Expr.iconst(eid)
-                                 .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                                            "effect_pop",
-                                                            "(I)"+Names.ANYI_DESCR,
-                                                            Names.ANYI_TYPE)
-                                          )
-                                 .andThen(cast_e)
-                                 .andThen(jvm._types.invokeStatic(finallie, jvm._fuir.sitePos(si).line()))
-                                 .andThen(Expr.THROW),
-                                 // for us, so pop abort and call call_def on popped effect
-                                 Expr.POP
-                                 .andThen(args.get(2))
-                                 .andThen(Expr.iconst(eid))
-                                 .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                                            "effect_pop",
-                                                            "(I)"+Names.ANYI_DESCR,
-                                                            Names.ANYI_TYPE)
-                                          )
-                                 .andThen(cast_e)
-                                 .andThen(dup_e)
-                                 .andThen(jvm._types.invokeStatic(finallie, jvm._fuir.sitePos(si).line()))
-                                 .andThen(jvm._types.invokeStatic(call_def, jvm._fuir.sitePos(si).line()))))
+            .andThen(!jvm._fuir.clazzNeedsCode(call_def)
+                     ? pop_fin_and_throw // in case call_def was detected by DFA to not be called, we can pass on the abort directly
+                     : Expr.DUP  // duplicate abort exception
+                       .andThen(Expr.getfield(Names.ABORT_CLASS, Names.ABORT_EFFECT, PrimitiveType.type_int))
+                       .andThen(Expr.iconst(eid))
+                       .andThen(Expr.branch(O_if_icmpne,
+                                            // not for us, so pop effect and re-throw
+                                            pop_fin_and_throw,
+                                            // for us, so run `finally` and `call_def`
+                                            Expr.POP // drop abort exception
+                                            .andThen(args.get(2))
+                                            .andThen(pop_effect)
+                                            .andThen(unit_effect ? Expr.UNIT : Expr.DUP)
+                                            .andThen(call_finally)
+                                            .andThen(jvm._types.invokeStatic(call_def, jvm._fuir.sitePos(si).line())))
+                                )
+                     )
             .andThen(try_after);
           return new Pair<>(Expr.UNIT, result);
         });

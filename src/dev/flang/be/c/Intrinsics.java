@@ -964,6 +964,9 @@ public class Intrinsics extends ANY
                       var cureff  = new CIdent("cur_eff");
                       var cureff_as_target = c._fuir.clazzIsRef(ecl) ? cureff : cureff.adrOf();
                       var setjmp_result = new CIdent("setjmp_res");
+
+                      var pass_on = CStmnt.iff(setjmp_result.ne(CExpr.int32const(0)), CExpr.call("longjmp",new List<>(evj.deref(), setjmp_result)));
+
                       yield CStmnt.seq(// copy previously instated effect values:
                                        effect_is_unit_type ? CExpr.UNIT : CStmnt.decl(c._types.clazz(ecl), oldev , ev ),
                                        CStmnt.decl("bool"             , oldevi, evi),
@@ -993,17 +996,18 @@ public class Intrinsics extends ANY
                                                   ? new List<>()
                                                   : new List<>(cureff_as_target)),
 
-                                       // if setjmp returned with an abort for this effect (==eid), run `call_def`
-                                       CStmnt.iff(setjmp_result.eq(CExpr.int32const(eid)),
+                                       c._fuir.clazzNeedsCode(call_def)
+                                       ? // if setjmp returned with an abort for this effect (==eid), run `call_def`
+                                         CStmnt.iff(setjmp_result.eq(CExpr.int32const(eid)),
                                                   CExpr.call(c._names.function(call_def),
                                                              effect_is_unit_type
                                                              ? new List<>(A2.adrOf())
                                                              : new List<>(A2.adrOf(), cureff)
                                                              ),
                                                   // else, if setjmp returned with an abort for a different effect, propagate it further
-                                                  CStmnt.iff(setjmp_result.ne(CExpr.int32const(0)),
-                                                             CExpr.call("longjmp",new List<>(evj.deref(), setjmp_result)))
+                                                  pass_on
                                                   )
+                                       : pass_on  // in case call_def was detected not to be called by DFA we can pass on the abort directly
                                        );
                     }
                   else
