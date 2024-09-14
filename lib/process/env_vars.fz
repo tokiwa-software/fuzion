@@ -35,11 +35,11 @@ is
 # get env_vars that should be used when spawning
 # a new process.
 #
-# if env_vars effect is installed. the environment variables
-# are taken from the installed effect. otherwise an empty
+# if env_vars effect is instated. the environment variables
+# are taken from the instated effect. otherwise an empty
 # map is returned.
 #
 public env_vars container.Map String String =>
-  match env_vars.get_if_installed
+  match env_vars.get_if_instated
     e env_vars => e.get
     nil        => (container.hash_map String String).type.empty

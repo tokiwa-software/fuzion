@@ -374,7 +374,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public Clazz(AbstractType actualType, int select, Clazz outer, Clazzes clazzes)
   {
-    //    if (Clazzes.instance.closed) System.out.println("creating "+actualType+" outer "+outer);
     if (PRECONDITIONS) require
       (!clazzes.closed,
        Errors.any() || !actualType.dependsOnGenericsExceptTHIS_TYPE(),
@@ -2632,20 +2631,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
   Clazz[] actualFields(Collection<AbstractFeature> feats)
   {
     var fields = new List<Clazz>();
-    if (false) if (toString().equals("(Effect_Call2 unit e).call") ||
-        toString().endsWith(".call")) System.out.println(""+this+": actualsFields count "+feats.size());
     for (var field: feats)
       {
-        if (false) if (toString().equals("(Effect_Call2 unit e).call") ||
-            toString().equals("(Unary unit e).call")) System.out.println("actualsField  "+field.qualifiedName());
-        if (false) if (toString().equals("(Effect_Call2 unit e).call") ||
-            toString().equals("(Unary unit e).call")) System.out.println("test: "+
-                                                                                (!this.isVoidOrUndefined())+
-                                                                                field.isField()+
-                                                                                (field == findRedefinition(field))+
-                                                                                _clazzes.isUsed(field));
-        if (false) if (toString().equals("(Effect_Call2 unit e).call") ||
-            toString().equals("(Uniary unit e).call")) Thread.dumpStack();
         if (!this.isVoidOrUndefined() &&
             field.isField() &&
             field == findRedefinition(field) && // NYI: proper field redefinition handling missing, see tests/redef_args/*

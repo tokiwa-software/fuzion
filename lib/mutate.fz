@@ -88,20 +88,20 @@ public mutate : effect is
     my_id := id
 
 
-    # check that this effect is the same as the currently installed effect of type
+    # check that this effect is the same as the currently instated effect of type
     # `mutate.this`
     #
-    is_currently_installed =>
-      match mutate.this.type.get_if_installed
+    is_currently_instated =>
+      match mutate.this.type.get_if_instated
         x mutate.this => my_id = x.id
         nil           => false
 
 
-    # check that this effect is installed and replace it.
+    # check that this effect is instated and replace it.
     #
     module check_and_replace
     =>
-      if !is_currently_installed
+      if !is_currently_instated
         mpanic "*** invalid mutate for {mutate.this.type}"
       mutate.this.env.replace
 
@@ -133,7 +133,7 @@ public mutate : effect is
     # read the current value of this mutable value.
     #
     # If this is open, check that the mutate effect this was created with is still
-    # installed in the current environment.
+    # instated in the current environment.
     #
     public get ! mutate.this =>
       if open
@@ -153,7 +153,7 @@ public mutate : effect is
     # update mutable field with new value
     #
     # Check that the mutate effect this was created with is still
-    # installed in the current environment.
+    # instated in the current environment.
     #
     public put (
       # the new value to be stored with 'h'

@@ -81,7 +81,6 @@ public abstract class Expr extends ByteCode
 
       code(ba, O_goto, from, to);
     }
-    Throwable _t = new Throwable();
 
     @Override
     public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
@@ -108,8 +107,6 @@ public abstract class Expr extends ByteCode
 
       var positionNextByteCode = from._posFinal + 3;
 
-      if (!((isJumpBackwards() || smt.stacks.containsKey(positionNextByteCode))))
-        _t.printStackTrace();
       if (CHECKS) check
         (isJumpBackwards() || smt.stacks.containsKey(positionNextByteCode));
 
@@ -138,21 +135,39 @@ public abstract class Expr extends ByteCode
 
 
   /*
-   * A try-catch block
+   * A try-catch block.
+   *
+   * This inherits from Label that defines the start of this try-catch.
+   *
+   * The main thing that this does when it is part of the code is inform the
+   * `ByteCodeWriter` passed to `code()` about its existance by calling
+   * `by.addExceptionTable`.
    */
   static class TryCatch extends Label
   {
     final Label _end;
     final Label _handler;
-    final String _type;
+    final ClassType _type;
 
-    private TryCatch(Label try_end, Label try_handler, String type)
+    /**
+     * Create TryCatch block starting at the position this is added to the code.
+     *
+     * @param try_end label marking the bytecode following the try code.
+     *
+     * @param try_handler label marking the catch code
+     *
+     * @param
+     */
+    private TryCatch(Label try_end, Label try_handler, ClassType type)
     {
       this._end = try_end;
       this._handler = try_handler;
       this._type = type;
     }
 
+    /**
+     * String for debugging
+     */
     public String toString()
     {
       return "try " + super.toString()+ " .. " + _end + " catch " + _handler + " for " + _type;
@@ -168,33 +183,21 @@ public abstract class Expr extends ByteCode
     @Override
     public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
     {
-      // restore locals and stack to
-      // previously saved states.
-
-      // locals.clear();
-      // stack.clear();
-      smt.stackMapFrames.add(new StackMapFullFrame(smt, _handler._posFinal));
-      var s = new Stack<VerificationType>();
-      //      var s = clone(stack);
-      //      s.clear();
-      //s.push(PrimitiveType.type_char.vti());
-      //s.push(PrimitiveType.type_float.vti());
-      //stack.clear();
-      s.push(new VerificationType(_type, (cf)->cf.cpClass(_type).index()));
-      smt.stacks.put(_handler._posFinal, s);
-      /*
-      smt.stacks
-        .get(_handler._posFinal)
-        .forEach(vti -> s.add(vti));
-        */
-      var l = locals.clone();
-      smt.locals.add(new Pair<>(_handler._posFinal , l));
-      /*
-      smt
-        .unifiedLocals(_handler._posFinal)
-        .forEach(vti -> l.add(vti));
-      */
+      // build stackmap table for the start label of this try-catch
       super.buildStackMapTable(smt, stack, locals);
+
+      // the handler code needs a stackmap frame
+      smt.stackMapFrames.add(new StackMapFullFrame(smt, _handler._posFinal));
+
+      // that frame is just an empty stack with the exception pushed onto it
+      var s = new Stack<VerificationType>();
+      s.push(new VerificationType(_type.descriptor(), (cf)->cf.cpClass(_type).index()));
+      smt.stacks.put(_handler._posFinal, s);
+
+      // in principle, we need to unify all locals from all possibly throwing bytecodes in in the try-area,
+      // just using the inital locals for now since our bytecode currently would not change any locals
+      // here anyway:
+      smt.locals.add(new Pair<>(_handler._posFinal , locals.clone()));
     }
   }
 
@@ -1889,7 +1892,7 @@ public abstract class Expr extends ByteCode
   public static Expr checkcast(JavaType type)
   {
     if (PRECONDITIONS) require
-      (true || !type.isPrimitive());
+      (!type.isPrimitive());
 
     return new Expr()
       {
@@ -2034,7 +2037,7 @@ public abstract class Expr extends ByteCode
    *
    * @param to the place where to jump to.
    */
-  public static Expr tryCatch(Label try_end, Label try_handler, String exc_type)
+  public static Expr tryCatch(Label try_end, Label try_handler, ClassType exc_type)
   {
     return new TryCatch(try_end, try_handler, exc_type);
   }

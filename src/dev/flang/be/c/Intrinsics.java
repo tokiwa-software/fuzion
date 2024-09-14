@@ -964,7 +964,7 @@ public class Intrinsics extends ANY
                       var cureff  = new CIdent("cur_eff");
                       var cureff_as_target = c._fuir.clazzIsRef(ecl) ? cureff : cureff.adrOf();
                       var setjmp_result = new CIdent("setjmp_res");
-                      yield CStmnt.seq(// copy previously installed effect values:
+                      yield CStmnt.seq(// copy previously instated effect values:
                                        effect_is_unit_type ? CExpr.UNIT : CStmnt.decl(c._types.clazz(ecl), oldev , ev ),
                                        CStmnt.decl("bool"             , oldevi, evi),
                                        CStmnt.decl("jmp_buf*"         , oldevj, evj),
@@ -973,7 +973,7 @@ public class Intrinsics extends ANY
                                        CStmnt.decl("jmp_buf", jmpbuf),
                                        CStmnt.decl("int", setjmp_result),
 
-                                       // install effect
+                                       // instate effect
                                        effect_is_unit_type ? CExpr.UNIT : ev.assign(e),
                                        evi.assign(CIdent.TRUE ),
                                        evj.assign(jmpbuf.adrOf()),
@@ -983,7 +983,7 @@ public class Intrinsics extends ANY
                                        CStmnt.iff(setjmp_result.eq(CExpr.int32const(0)),
                                                   CStmnt.seq(CExpr.call(c._names.function(call), new List<>(A1.adrOf())))),
 
-                                       // remove the installed effect and call finally:
+                                       // remove the instated effect and call finally:
                                        effect_is_unit_type ? CExpr.UNIT : CStmnt.decl(c._types.clazz(ecl), cureff , ev ),
                                        effect_is_unit_type ? CExpr.UNIT : ev .assign(oldev ),
                                        evi.assign(oldevi),

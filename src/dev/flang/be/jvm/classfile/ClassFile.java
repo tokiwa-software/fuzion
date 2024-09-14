@@ -129,9 +129,17 @@ public class ClassFile extends ANY implements ClassFileConstants
      */
     abstract void setLabel(Label l);
 
+
+    /**
+     * Add exception table.  This is used to record the existence of a TryCatch in the code for
+     * ByteCodeWriters that need this data (to actually write it out).
+     *
+     * The default implementation is empty since this is not needed for size estimation etc.
+     */
     void addExceptionTable(Expr.TryCatch et)
     {
     }
+
 
     /**
      * Determine the offset for a branch instruction at from to label at to.
@@ -297,10 +305,13 @@ public class ClassFile extends ANY implements ClassFileConstants
      */
     private final int _initialSize;
 
+    /**
+     * The exception table found while writing this code, NO_EXC_TABLE if none.
+     */
+    List<Expr.TryCatch> _exceptionTable = NO_EXC_TABLE;
+
     static List<Expr.TryCatch> NO_EXC_TABLE = new List<Expr.TryCatch>();
     static { NO_EXC_TABLE.freeze(); }
-
-    List<Expr.TryCatch> _exceptionTable = NO_EXC_TABLE;
 
 
     /**
@@ -343,11 +354,16 @@ public class ClassFile extends ANY implements ClassFileConstants
         (l._posFinal == _kaku.size() - _initialSize);
     }
 
+
+    /**
+     * Add exception table that was found in the code.
+     */
     @Override
     void addExceptionTable(Expr.TryCatch et)
     {
       _exceptionTable = _exceptionTable.addAfterUnfreeze(et);
     }
+
 
     /**
      * Get the offset for a branch from from to label to using the final positions.
@@ -1392,13 +1408,11 @@ public class ClassFile extends ANY implements ClassFileConstants
     private final LineNumberTableAttribute _lnta;
     CodeAttribute(String where,
                   ByteCode code,
-                  List<ExceptionTableEntry> exception_table_IGNORED,
                   List<Attribute> attributes,
                   StackMapTable smt,
                   LineNumberTableAttribute lnta)
     {
       super("Code");
-      check(exception_table_IGNORED == null || exception_table_IGNORED.isEmpty());
       this._where = where;
       this._code = code;
       this._attributes = attributes;
@@ -1694,13 +1708,11 @@ public class ClassFile extends ANY implements ClassFileConstants
    */
   public CodeAttribute codeAttribute(String where,
                                      Expr code,
-                                     List<ExceptionTableEntry> exception_table,
                                      List<Attribute> attributes,
                                      StackMapTable smt)
   {
     return new CodeAttribute(where,
                              code,
-                             exception_table,
                              attributes,
                              smt,
                              new LineNumberTableAttribute(code));
@@ -1761,7 +1773,7 @@ public class ClassFile extends ANY implements ClassFileConstants
         bc_clinit = bc_clinit
           .andThen(Expr.RETURN);
         var code_clinit = codeAttribute("<clinit> in class for " + _name,
-                                        bc_clinit, new List<>(), new List<>(), StackMapTable.empty(this, new List<>(), bc_clinit));
+                                        bc_clinit, new List<>(), StackMapTable.empty(this, new List<>(), bc_clinit));
         method(ACC_PUBLIC | ACC_STATIC, "<clinit>", "()V", new List<>(code_clinit));
       }
 

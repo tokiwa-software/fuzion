@@ -535,9 +535,9 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method to implement intrinsic effect.replace.
+   * Helper method to implement intrinsic effect.replace0.
    *
-   * @param id an effect id.
+   * @param id an effect type id.
    *
    * @instance a new instance to replace the old one
    */
@@ -580,7 +580,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method to implement effect.abort.  Abort the currently instated
+   * Helper method to implement effect.abort0.  Abort the currently instated
    * effect with given id.  Helper to implement intrinsic effect.abort.
    *
    * @param id the id of the effect type that is aborted.
@@ -592,18 +592,16 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method to implement effect.type.instante0.  Instate an instance of effect
-   * type specified by id and run f.call while it is instated.  Helper to
-   * implement intrinsic effect.abort.
+   * Helper method to implement effect.type.instante0. Instate a new instance for
+   * effect type with given id.
    *
-   * @param id the id of the effect that is instated
+   * The existing value instated for the effect type identified by id will be
+   * evacuated to FuzionThread._effectStack to be restored by effect_pop.
+   *
+   * @param id the id of the effect type that is instated
    *
    * @param instance the effect instance that is instated, NOTE: This is `_UNIT_TYPE_EFFECT_`
    * for a unit type effect.
-   *
-   * @param code the Unary instance to be executed
-   *
-   * @param call the Java clazz of the Unary instance to be executed.
    */
   public static void effect_push(int id, AnyI instance)
   {
@@ -616,6 +614,20 @@ public class Runtime extends ANY
     t.effect_store(id, instance);
     t._effectStack.add(old);
   }
+
+
+  /**
+   * Helper method to implement effect.type.instante0. Un-instate an instance
+   * instated by effect_push.
+   *
+   * The original instance that was saved to FuzionThread._effectStack will be
+   * re-instated.
+   *
+   * @param id the id of the effect type that is popped.
+   *
+   * @return the instance that was previously instated or replaced for effect
+   * type id.
+   */
   public static AnyI effect_pop(int id)
   {
     var t = currentThread();

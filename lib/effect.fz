@@ -26,8 +26,31 @@
 # effect -- abstract parent feature for effects
 #
 # effect provides a means to perform effectful operations.  Instances
-# of effect are installed in the current environment while their code is
-# executed.  The code may access the effect via <type>.env.
+# of effect are instated in the current environment while their code is
+# executed.  The code may perform operations of the instated effect
+# via <type>.env.  These operations may either return normally (resume) or
+# abort the current computation, i.e., return directly to the call that
+# instated the effect.
+#
+# Effects are identified by their type, including any actual type parameters.
+# Effect instances must be assignable to the effect type.  This means that if
+# the effect type is a value type, the instance must be an instance of exactly
+# that type while if the effect type is a ref type, the instance might be of
+# a type that inherits from the effect type that is --possibly after boxing--
+# assignable to that type.
+#
+# Effect operations may replace an instated instance by a new value.
+# This gives operations a means to become stateful.
+#
+# In case an effect performs an abort, the code the effect was instated for
+# will be abandoned and the function passed via tha `def` argument to
+# `instate` will be used to produce a result from the last effect instance.
+#
+# Effects may redefine the `finally` feature that is executed directly after
+# an instated effect was removed, independent of the reason why it is removed.
+# This means, finally is executed after code running in the effect returns
+# normally, after a call to an operation that results in an abort or when
+# a surrounding effect is aborted.
 #
 public effect is
 
@@ -180,7 +203,7 @@ public effect is
   # from the effect type).
   #
   # Execute 'code' in a context where this effect instance has been
-  # installed for effect type `effect.this`.
+  # instated for effect type `effect.this`.
   #
   # In case `f` returns normally, this will return `f`'s result.
   #
@@ -201,8 +224,8 @@ public effect is
   public type.is_instated bool => is_instated0
 
 
-  # has an effect of the given type been installed?
-  public type.get_if_installed option effect.this
+  # has an effect of the given type been instated?
+  public type.get_if_instated option effect.this
   =>
     if effect.this.is_instated
       unsafe_get
@@ -212,7 +235,7 @@ public effect is
 
   # internal helper to perform `E.env` without producing an error
   # in case static analysis fails to verify that `effect.this` is
-  # actually installed.
+  # actually instated.
   #
   type.unsafe_get =>
     effect.this.env
@@ -228,11 +251,11 @@ public effect is
   # the call to `replace` is used ot model the change of the outside world and must be
   # included for analysis tools to appreciate this.
   #
-  # replace may only be called during the execution of an operation of a currently installed
+  # replace may only be called during the execution of an operation of a currently instated
   # effect of the same effect type.
   #
   # NYI: BUG: It is currently not enforced that replace is only called during the execution
-  # of an operation of a currenlty installed effect of the same effect type.
+  # of an operation of a currenlty instated effect of the same effect type.
   #
   public type.replace(e effect.this)
   =>
@@ -246,7 +269,7 @@ public effect is
   # values that may be children of the effect type that are of a different type, so
   # `effect_type.replace new_value` must be used.
   #
-  # replace may only be called during the execution of an operation of a currently installed
+  # replace may only be called during the execution of an operation of a currently instated
   # effect of the same effect type.
   #
   public replace
@@ -311,8 +334,16 @@ public effect is
   # --------------------  resource cleanup  --------------------
 
 
-  # feature that will be called on the instance of this effect when it
-  # will be de-instated.
+  # feature that will be called on the final instance of this effect
+  # after it has been de-instated.
+  #
+  # This happens either on a normal return form the code passed to
+  # `instate`, on an abort perfomed on this effect or on an abort
+  # performed on an effect instated prior to this effect's instation.
+  #
+  # This can be used to perform actions when leaving an effect such
+  # a cleanup up resources that were created or opened by operations
+  # of this effect.
   #
   public finally =>
 

@@ -697,7 +697,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, si, cc, tvalue, args) ->
         {
           var ecl = jvm._fuir.effectTypeFromInstrinsic(cc);
-          var code = Expr.iconst(jvm._fuir.clazzId2num(ecl))
+          var eid = jvm.effectId(ecl);
+          var code = Expr.iconst(eid)
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "effect_abort",
                                        "(I)V",
@@ -709,6 +710,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, si, cc, tvalue, args) ->
         {
           var ecl = jvm._fuir.effectTypeFromInstrinsic(cc);
+          var eid = jvm.effectId(ecl);
           var call     = jvm._fuir.lookupCall(jvm._fuir.clazzActualGeneric(cc, 0));
           var call_def = jvm._fuir.lookupCall(jvm._fuir.clazzActualGeneric(cc, 1));
           var finallie = jvm._fuir.lookup_static_finally(ecl);
@@ -729,8 +731,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var try_after = new Label();
           var try_start = Expr.tryCatch(try_end,
                                         try_catch,
-                                        "dev/flang/be/jvm/runtime/Runtime$Abort");
-          var result = Expr.iconst(jvm._fuir.clazzId2num(ecl))
+                                        Names.ABORT_TYPE);
+          var result = Expr.iconst(eid)
             .andThen(arg)
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "effect_push",
@@ -743,7 +745,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
             .andThen(args.get(1))
             .andThen(jvm._types.invokeStatic(call, jvm._fuir.sitePos(si).line()))
             .andThen(try_end)
-            .andThen(Expr.iconst(jvm._fuir.clazzId2num(ecl)))
+            .andThen(Expr.iconst(eid))
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "effect_pop",
                                        "(I)"+Names.ANYI_DESCR,
@@ -754,11 +756,11 @@ public class Intrinsix extends ANY implements ClassFileConstants
             .andThen(Expr.gotoLabel(try_after))
             .andThen(try_catch)
             .andThen(Expr.DUP)
-            .andThen(Expr.getfield("dev/flang/be/jvm/runtime/Runtime$Abort","_effect",PrimitiveType.type_int))
-            .andThen(Expr.iconst(jvm._fuir.clazzId2num(ecl)))
+            .andThen(Expr.getfield(Names.ABORT_CLASS, Names.ABORT_EFFECT, PrimitiveType.type_int))
+            .andThen(Expr.iconst(eid))
             .andThen(Expr.branch(O_if_icmpne,
                                  // not for us, so pop effect and re-throw
-                                 Expr.iconst(jvm._fuir.clazzId2num(ecl))
+                                 Expr.iconst(eid)
                                  .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                             "effect_pop",
                                                             "(I)"+Names.ANYI_DESCR,
@@ -770,7 +772,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                  // for us, so pop abort and call call_def on popped effect
                                  Expr.POP
                                  .andThen(args.get(2))
-                                 .andThen(Expr.iconst(jvm._fuir.clazzId2num(ecl)))
+                                 .andThen(Expr.iconst(eid))
                                  .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                             "effect_pop",
                                                             "(I)"+Names.ANYI_DESCR,
@@ -788,12 +790,13 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, si, cc, tvalue, args) ->
         {
           var ecl = jvm._fuir.effectTypeFromInstrinsic(cc);
+          var eid = jvm.effectId(ecl);
           var arg = args.get(0);
           if (jvm._types.resultType(ecl) == ClassFileConstants.PrimitiveType.type_void)
             {
               arg = arg.drop().andThen(Expr.ACONST_NULL);
             }
-          var result = Expr.iconst(jvm._fuir.clazzId2num(ecl))
+          var result = Expr.iconst(eid)
             .andThen(arg)
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "effect_default",
@@ -808,12 +811,13 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, si, cc, tvalue, args) ->
         {
           var ecl = jvm._fuir.effectTypeFromInstrinsic(cc);
+          var eid = jvm.effectId(ecl);
           var arg = args.get(0);
           if (jvm._types.resultType(ecl) == ClassFileConstants.PrimitiveType.type_void)
             {
               arg = arg.drop().andThen(Expr.ACONST_NULL);
             }
-          var result = Expr.iconst(jvm._fuir.clazzId2num(ecl))
+          var result = Expr.iconst(eid)
             .andThen(arg)
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "effect_replace",
@@ -828,7 +832,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, si, cc, tvalue, args) ->
         {
           var ecl = jvm._fuir.effectTypeFromInstrinsic(cc);
-          var val = Expr.iconst(jvm._fuir.clazzId2num(ecl))
+          var eid = jvm.effectId(ecl);
+          var val = Expr.iconst(eid)
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "effect_is_instated",
                                        "(I)Z",

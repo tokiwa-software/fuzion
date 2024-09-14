@@ -47,10 +47,23 @@ public class FuzionThread extends Thread
 
   /**
    * Currently installed effects for this thread.
+   *
+   * This is a map from effect JVM.effectId() to effect instance values.
    */
   List<AnyI> _installedEffects = new List<>();
 
 
+  /**
+   * Stack of previously installed effect instances. On Runtime.effect_push, the
+   * original existing instance will be pused onto this stack, while
+   * Runtime.effect_pop will remove the last element in this list and install it
+   * back as the effect instance.
+   *
+   * Unitle _installedEffects, this list does not regard effect types or
+   * effectIds, but mixes effects of different types. This is possible since
+   * effect_push/effect_pop is guaranteed to be perfectly nested even for
+   * different effect types.
+   */
   List<AnyI> _effectStack = new List<>();
 
 
