@@ -714,15 +714,20 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var call     = jvm._fuir.lookupCall(jvm._fuir.clazzActualGeneric(cc, 0));
           var call_def = jvm._fuir.lookupCall(jvm._fuir.clazzActualGeneric(cc, 1));
           var finallie = jvm._fuir.lookup_static_finally(ecl);
-          var arg = args.get(0);
           var ejt = jvm._types.resultType(ecl);
-          var cast_e = Expr.checkcast(jvm._types.resultType(ecl));
-          var dup_e = Expr.DUP;
-          if (ejt == ClassFileConstants.PrimitiveType.type_void)
+          Expr arg, cast_e, dup_e;
+          if (ejt != ClassFileConstants.PrimitiveType.type_void)
             {
-              arg = arg.drop().andThen(Expr.getstatic(Names.RUNTIME_CLASS,
-                                                      "_UNIT_TYPE_EFFECT_",
-                                                      Names.ANYI_TYPE));
+              arg = args.get(0);
+              cast_e = Expr.checkcast(ejt);
+              dup_e = Expr.DUP;
+            }
+          else
+            {
+              arg = args.get(0).drop()
+                .andThen(Expr.getstatic(Names.RUNTIME_CLASS,
+                                        "_UNIT_TYPE_EFFECT_",
+                                        Names.ANYI_TYPE));
               cast_e = Expr.POP;  // cast AnyI to void by dumping the value
               dup_e  = Expr.UNIT; // dup void is a nop (= Expr.UNIT)
             }
