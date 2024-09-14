@@ -2120,7 +2120,10 @@ public class DFA extends ANY
           if (newEnv.isAborted(ecl))
             { // default result, only if abort is effer called
               var res = cl._dfa.newCall(call_def, NO_SITE, a2, new List<>(ev), cl._env, cl).result();
-              result = result == null ? res : result.value().join(cl._dfa, res.value());
+              result =
+                result != null && res != null ? result.value().join(cl._dfa, res.value()) :
+                result != null                ? result
+                                              : res;
             }
 
           cl._dfa.newCall(finallie, NO_SITE, ev, new List<>(), cl._env, cl);
