@@ -96,7 +96,7 @@ public effect is
 
   # Intrinsic version of abort. For all surrounding instated effects,
   # remove the effect and run `finally` until we have reached an
-  # effect of this type. Then return form that effect's `instate0` call
+  # effect of this type. Then return from that effect's `instate0` call
   # with the rsult produced by calling `def` on the currently instated
   # value.
   #

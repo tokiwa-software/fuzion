@@ -26,10 +26,17 @@
 resource_cleanunp =>
 
   # effect that maintains a Sequence of opened resources and
-  # provides an operation to open a new resource and return
-  # the resouce count
+  # provides a operations to open a new resource and return
+  # a status including the resouce count
   #
-  e(opened Sequence String, state String) : effect is
+  e(# effect state: opened resources
+    opened Sequence String,
+
+    # effect state "running" or "stopped"
+    state String
+    )
+    : effect
+  is
 
     open(s String) =>
       say "open: $s"
