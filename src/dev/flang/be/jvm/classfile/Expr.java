@@ -149,14 +149,15 @@ public abstract class Expr extends ByteCode
     final Label _handler;
     final ClassType _type;
 
+
     /**
      * Create TryCatch block starting at the position this is added to the code.
      *
-     * @param try_end label marking the bytecode following the try code.
+     * @param try_end label marking the bytecode following the code in the try block.
      *
      * @param try_handler label marking the catch code
      *
-     * @param
+     * @param type the exception type that is to be caught, must not be null.
      */
     private TryCatch(Label try_end, Label try_handler, ClassType type)
     {
@@ -2035,9 +2036,15 @@ public abstract class Expr extends ByteCode
   /**
    * A try / catch block
    *
-   * @param to the place where to jump to.
+   * @param try_end label marking the bytecode following the code in the try block.
+   *
+   * @param try_handler label marking the catch code
+   *
+   * @param type the exception type that is to be caught, must not be null.
    */
-  public static Expr tryCatch(Label try_end, Label try_handler, ClassType exc_type)
+  public static Expr tryCatch(Label try_end,
+                              Label try_handler,
+                              ClassType exc_type)
   {
     return new TryCatch(try_end, try_handler, exc_type);
   }
