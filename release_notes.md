@@ -1,4 +1,261 @@
-## 2024-**-**: V0.090dev
+## 2024-09-16: V0.090dev
+
+Fuzion language
+
+  - Type constraints can now be made more restrictive in preconditions and conditional code, fix ([967](https://github.com/tokiwa-software/fuzion/issues/967), [3480](https://github.com//tokiwa-software/fuzion/pull/3480))
+
+    This provides a simple mechanism to add inner features that require additional type constraints such as `Sequence.find` that requires the element type to `T` to be constrained by `property.quatable`. As a precondition, this is written as
+
+        public find(pattern Sequence T) option i32
+          pre
+            T : property.equatable
+        =>
+          ...
+
+    using a new operator `infix :` that operates on types
+
+        Type.infix : (T type) bool
+
+    Such type constraints can also be done using conditions as follows:
+
+        f(x T) =>
+          if T : String
+            say x.byte_count
+
+    These type-tests are evaluated at compile-time, there is no code generated
+    for the type tests. Instead, the compiler validates that preconditions that
+    impose addition type constraints can statically be verified to be met for
+    every call of a corresponding feature.
+
+  - Effects in fuzion now clearly distinguish _effect types_ and _effect
+    instances_: For a given effect type, one may _instate_ any instance
+    that is assignable to the effect type.
+
+    This means that instances installed for effect types that a reference types
+    may be child features that inherit from the effect type, redefinition may be
+    used to implement effect operation and dynamic binding is used when these
+    operations are used.
+
+    Here is an example of an effect `Color` with an operation
+    `get` and two instances `green` and
+    `purple`:
+
+        Color ref : effect is
+          get String => abstract
+
+        green  : Color is
+          redef get => "green"
+
+        purple : Color is
+          redef get => "purple"
+
+    To `instate` one of them, we need to call `instate` on
+    the effect type `color`, providing an argument of the value type
+    `green` or `purple`:
+
+        Color.instate green  ()->{say "color is {Color.env.get}"}
+        Color.instate purple ()->{say "color is {Color.env.get}"}
+
+    This avoids the need to have separate effect handler features that implement
+    the operations and are called using dynamic binding from the effect's
+    operation.  The drawback is that to instate an effect, we now need the
+    effect value and the effect type since the value's type might be different.
+
+    related pull requests
+
+    - lib: support `ref` effect types, make all effects simple, remove `effect_mode` ([#3574](https://github.com//tokiwa-software/fuzion/pull/3574))
+
+    - bin/ebnf.fz: switch to `instate_self` syntax of effects ([#3584](https://github.com//tokiwa-software/fuzion/pull/3584))
+
+    - C: fix code for `effect.type.instate0` intrinsic for unit type effect ([#3606](https://github.com//tokiwa-software/fuzion/pull/3606))
+
+    - fix add_simple_test, replace `go` by `instate_self` ([#3594](https://github.com//tokiwa-software/fuzion/pull/3594))
+
+    - jvm: Fix code generated for intrinsic `effect.instate0` on a unit type effect ([#3610](https://github.com//tokiwa-software/fuzion/pull/3610))
+
+    - update example_1,  `go ()-&gt;` is now `instate_self ()-&gt;` ([#3639](https://github.com//tokiwa-software/fuzion/pull/3639))
+
+  - Improved handling of semicolon after lambda expression, in particular, code like
+
+        m := (1..10).map x->2*x; say m
+
+    is valid now while code with a parser ambiguity at semicolons like
+
+        my_feat => say "Hi"; say "ambiguous"
+
+        if true if true then say "OK"; say "ambiguous"
+
+    causes an error now. `{ }` can be used for disambiguation:
+
+        my_feat => { say "Hi" }; say "ambiguous"
+        my_feat => { say "Hi"; say "ambiguous" }
+
+        if true if true then { say "OK" }; say "ambiguous"
+        if true if true then { say "OK"; say "ambiguous" }
+
+    related pull requests
+
+    - parser: flag error for ambiguous use of semicolons ([#3510](https://github.com//tokiwa-software/fuzion/pull/3510))
+
+    - parser: add semicolon limit for parsing lambda expressions ([#3501](https://github.com//tokiwa-software/fuzion/pull/3501))
+
+- Base library
+
+  - New base library features
+
+    - lib,be/c: add mutexes and conditions ([#3428](https://github.com//tokiwa-software/fuzion/pull/3428))
+
+    - lib: Add `ignore(T type, x T) unit` to drop a value ([#3679](https://github.com//tokiwa-software/fuzion/pull/3679))
+
+    - lib: add `thread_pool` effect ([#3615](https://github.com//tokiwa-software/fuzion/pull/3615))
+
+    - lib: add simple, fixed-size thread pool ([#3579](https://github.com//tokiwa-software/fuzion/pull/3579))
+
+    - lib/net/server: add experimental feature handling connections in threads ([#3554](https://github.com//tokiwa-software/fuzion/pull/3554))
+
+    - lib: add internationalization effect ([#3571](https://github.com//tokiwa-software/fuzion/pull/3571))
+
+      related pull requests
+
+      - lib: Add currency to internationalization and fix small mistakes ([#3635](https://github.com//tokiwa-software/fuzion/pull/3635))
+
+      - lib: add default effect for internationalization ([#3620](https://github.com//tokiwa-software/fuzion/pull/3620))
+
+      - lib: add simple tests for internationalization effect ([#3627](https://github.com//tokiwa-software/fuzion/pull/3627))
+
+      - lib: use new effects syntax for internationalization ([#3587](https://github.com//tokiwa-software/fuzion/pull/3587))
+
+      - lib: replace int_eff with provide ([#3616](https://github.com//tokiwa-software/fuzion/pull/3616))
+
+    - io/buffered/reader: switch to circular buffer ([#3514](https://github.com//tokiwa-software/fuzion/pull/3514))
+
+  - Changes to the following standard library features
+
+    - effect: Made `effect.abort` a type feature and removed `effect.run`, fix [#3634](https://github.com/tokiwa-software/fuzion/issues/3634)) ([#3640](https://github.com//tokiwa-software/fuzion/pull/3640))
+
+    - lib: fix oneway monads ([#3590](https://github.com//tokiwa-software/fuzion/pull/3590))
+
+    - lib: move `/!` and `%!` from `wrap_around` to `integer` ([#3522](https://github.com//tokiwa-software/fuzion/pull/3522))
+
+    - lib: move `infix ∈` and `infix ∉` from `property.equatable` to `universe` ([#3622](https://github.com//tokiwa-software/fuzion/pull/3622))
+
+    - lib: move features from `float_sequence`, `numeric_sequence` to `Sequence` ([#3668](https://github.com//tokiwa-software/fuzion/pull/3668))
+
+    - lib/net: create the required mutate effect in the server/client effects ([#3540](https://github.com//tokiwa-software/fuzion/pull/3540))
+
+    - lib/net: rename `Request_Handler` to `Connection_Handler` ([#3509](https://github.com//tokiwa-software/fuzion/pull/3509))
+
+    - lib: `close` on a `mutate.mutable_element` should close only that element ([#3573](https://github.com//tokiwa-software/fuzion/pull/3573))
+
+    - lib/modules: fix typos in terminal API ([#3636](https://github.com//tokiwa-software/fuzion/pull/3636))
+
+- Parser
+
+  - parser: end expression at keyword `then` ([#3503](https://github.com//tokiwa-software/fuzion/pull/3503))
+
+  - Relax precondition in `InlineArray.checkTypes` and improve position output, fix [#3552](https://github.com/tokiwa-software/fuzion/issues/3552) fix [#3553](https://github.com/tokiwa-software/fuzion/issues/3553) ([#3558](https://github.com//tokiwa-software/fuzion/pull/3558))
+
+- Front end
+
+  - fix accessing field of other instance in field init ([#3418](https://github.com//tokiwa-software/fuzion/pull/3418))
+
+  - show error on choice constraint ([#3629](https://github.com//tokiwa-software/fuzion/pull/3629))
+
+  - `Const_String` which is used for string literals no longer inherits from `array u8` which caused conflicts due to equally named features in `String` and `array` ([#3538](https://github.com//tokiwa-software/fuzion/pull/3538))
+
+  - improved error handling
+
+    - ast: improve error message when inheritance is used without `ref` ([#3570](https://github.com//tokiwa-software/fuzion/pull/3570))
+
+    - ast: suppress subsequent error on ambiguous choice containing errors ([#3561](https://github.com//tokiwa-software/fuzion/pull/3561))
+
+    - ast/tests: Improve error message for [#3619](https://github.com/tokiwa-software/fuzion/issues/3619, add regression test ([#3626](https://github.com//tokiwa-software/fuzion/pull/3626))
+
+    - suppress consequential errors ([#3588](https://github.com//tokiwa-software/fuzion/pull/3588))
+
+- Middle End
+
+  - air: add preconditions that helped me debug [#3613](https://github.com/tokiwa-software/fuzion/issues/3619) / [#3619](https://github.com/tokiwa-software/fuzion/issues/3619) ([#3623](https://github.com//tokiwa-software/fuzion/pull/3623))
+
+  - air: Clazz.toString created equal strings for a feature and its cotype ([#3481](https://github.com//tokiwa-software/fuzion/pull/3481))
+
+  - air: FeatureAndActuals, add precondition checking type parameters mat… ([#3643](https://github.com//tokiwa-software/fuzion/pull/3643))
+
+  - air: For a missing implementation of an abstract feature, show call chain ([#3525](https://github.com//tokiwa-software/fuzion/pull/3525))
+
+  - air: make fields in Clazzes non static ([#3479](https://github.com//tokiwa-software/fuzion/pull/3479))
+
+  - air: treat all intrinsics as intrinsic constructors ([#3624](https://github.com//tokiwa-software/fuzion/pull/3624))
+
+  - ast: AbstractType.toString show `.this.type` not only `.this` ([#3665](https://github.com//tokiwa-software/fuzion/pull/3665))
+
+  - ast: change visibility of internal THIS#TYPE to private ([#3582](https://github.com//tokiwa-software/fuzion/pull/3582))
+
+  - ast: For ambiguous calls, show the position of the feature declarations ([#3572](https://github.com//tokiwa-software/fuzion/pull/3572))
+
+  - ast: Remove `Expr.typeForCallTarget` ([#3669](https://github.com//tokiwa-software/fuzion/pull/3669))
+
+- DFA
+
+  - dfa: do not mark intrinsics as escaping, which prohibited tail call optimization to  ([#3434](https://github.com//tokiwa-software/fuzion/pull/3434))
+
+- FUIR
+
+  - fuir: add method `isConstructor` to `FUIR` ([#3504](https://github.com//tokiwa-software/fuzion/pull/3504))
+
+  - fuir: change output of `codeAtAsString` for `Assign` ([#3653](https://github.com//tokiwa-software/fuzion/pull/3653))
+
+  - fuir: tagged values, use same tag numbers as front-end ([#3614](https://github.com//tokiwa-software/fuzion/pull/3614))
+
+- JVM back end
+
+  - be/jvm: implement intrinsics, mtx_*, cond_* ([#3534](https://github.com//tokiwa-software/fuzion/pull/3534))
+
+- C back end
+
+  - be/c: add fzE_memcpy, fzE_memset ([#3496](https://github.com//tokiwa-software/fuzion/pull/3496))
+
+  - be/c: add mutex implementation for windows ([#3512](https://github.com//tokiwa-software/fuzion/pull/3512))
+
+  - be/c: C.call, move call to args into `if` ([#3528](https://github.com//tokiwa-software/fuzion/pull/3528))
+
+- Interpreter back end
+
+  - ai: add method `reportErrorInCode` ([#3515](https://github.com//tokiwa-software/fuzion/pull/3515))
+
+  - be/int: implement intrinsics, mtx_*, cond_* ([#3535](https://github.com//tokiwa-software/fuzion/pull/3535))
+
+- FZ Tool
+
+  - Improved error source code location display using underlining via ANSI escapes and fixes of some corner cases:
+
+    - util: underline error position at line end when ANSI escapes are enabled ([#3530](https://github.com//tokiwa-software/fuzion/pull/3530),[#3559](https://github.com//tokiwa-software/fuzion/pull/3559))
+
+    - util: fix cut-off code in error message ([#3511](https://github.com//tokiwa-software/fuzion/pull/3511))
+
+    - util: fix caret missing at eol ([#3529](https://github.com//tokiwa-software/fuzion/pull/3529))
+
+  - util: env var / property to Enable stack trace printing on error reporting ([#3663](https://github.com//tokiwa-software/fuzion/pull/3663))
+
+  - replaced the System.getenv,System.getProperty functions with FuzionOptions.boolPropertyOrEnv ([#3569](https://github.com//tokiwa-software/fuzion/pull/3569))
+
+- Tests
+
+  - tests: calls_on_ref_and_val_target: remove NYI ([#3489](https://github.com//tokiwa-software/fuzion/pull/3489))
+
+  - tests: add regression tests [#1840](https://github.com/tokiwa-software/fuzion/issues/1840) ([#3612](https://github.com//tokiwa-software/fuzion/pull/3612)), [#2339](https://github.com/tokiwa-software/fuzion/issues/2339) ([#3605](https://github.com//tokiwa-software/fuzion/pull/3605)), [#1518](https://github.com/tokiwa-software/fuzion/issues/1518) ([#3519](https://github.com//tokiwa-software/fuzion/pull/3519)), [#3147](https://github.com/tokiwa-software/fuzion/issues/3147) ([#3656](https://github.com//tokiwa-software/fuzion/pull/3656)), [#3352](https://github.com/tokiwa-software/fuzion/issues/3352) ([#3633](https://github.com//tokiwa-software/fuzion/pull/3633)), [#2111](https://github.com/tokiwa-software/fuzion/issues/2111) ([#3492](https://github.com//tokiwa-software/fuzion/pull/3492))
+
+  - tests: Added regression tests for safety, debug, and debug_level (Issue [#3518](https://github.com/tokiwa-software/fuzion/issues/3518)) ([#3580](https://github.com//tokiwa-software/fuzion/pull/3580))
+
+  - tests: turn positive into simple tests ([#3526](https://github.com//tokiwa-software/fuzion/pull/3526))
+
+- Examples
+
+  - examples: use connection handler instead of request handler ([#3513](https://github.com//tokiwa-software/fuzion/pull/3513))
+
+- Other
+
+  - ported shell script ebnf.sh to Fuzion ebnf.fz ([#3436](https://github.com//tokiwa-software/fuzion/pull/3436))
 
 
 ## 2024-08-23: V0.089
@@ -143,7 +400,7 @@
 
       - `io.buffered`: variant of `read_line`/`read_lines` with custom delimiter ([#3067](https://github.com/tokiwa-software/fuzion/pull/3067))
 
-      - The absolute value of `x` can now be calculated using `|x|` instead of `x.abs`. This is done using prefix and postfix operators, but we might add a `prepost` operator ([#3082](https://github.com/tokiwa-software/fuzion/pull/3082"))
+      - The absolute value of `x` can now be calculated using `|x|` instead of `x.abs`. This is done using prefix and postfix operators, but we might add a `prepost` operator ([#3082](https://github.com/tokiwa-software/fuzion/pull/3082))
 
       - Support for mutable two-dimensional arrays was added ([#3090](https://github.com/tokiwa-software/fuzion/pull/3090))
 
