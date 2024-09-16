@@ -1677,35 +1677,6 @@ should be avoided as much as possible.
 
 
   /**
-   * Create bytecode for a putfield instruction. In case !fieldExists(field),
-   * pop the value and the target instance ref from the stack.
-   *
-   * @param field the clazz id of a field in _fuir.
-   */
-  Expr putfield(int field, JavaType jrt)
-  {
-    var cl = _fuir.clazzOuterClazz(field);
-    if (fieldExists(field))
-      {
-        return
-          Expr.comment("Setting field `" + _fuir.clazzAsString(field) + "` in `" + _fuir.clazzAsString(cl) + "`")
-          .andThen(Expr.putfield(_names.javaClass(cl),
-                                 _names.field(field),
-                                 jrt));
-      }
-    else
-      {
-        var popv = jrt.pop();
-        return
-          Expr.comment("Eliminated putfield since field does not exist: `" + _fuir.clazzAsString(field) + "` in `" + _fuir.clazzAsString(cl) + "`")
-          .andThen(popv)
-          .andThen(Expr.POP);
-
-      }
-  }
-
-
-  /**
    * Create code to read value of a field using static binding
    *
    * @param tvalue the target instance to read the field from
