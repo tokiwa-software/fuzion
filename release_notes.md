@@ -2,7 +2,7 @@
 
 Fuzion language
 
-  - Type constraints can now be made more restrictive in preconditions and conditional code, fix ([967](https://github.com/tokiwa-software/fuzion/issues/967), [3480](https://github.com//tokiwa-software/fuzion/pull/3480))
+  - Type constraints can now be made more restrictive in preconditions and conditional code, fix ([#967](https://github.com/tokiwa-software/fuzion/issues/967), [#3480](https://github.com//tokiwa-software/fuzion/pull/3480))
 
     This provides a simple mechanism to add inner features that require additional type constraints such as `Sequence.find` that requires the element type to `T` to be constrained by `property.quatable`. As a precondition, this is written as
 
@@ -169,7 +169,7 @@ Fuzion language
 
     - ast: suppress subsequent error on ambiguous choice containing errors ([#3561](https://github.com//tokiwa-software/fuzion/pull/3561))
 
-    - ast/tests: Improve error message for [#3619](https://github.com/tokiwa-software/fuzion/issues/3619, add regression test ([#3626](https://github.com//tokiwa-software/fuzion/pull/3626))
+    - ast/tests: Improve error message for [#3619](https://github.com/tokiwa-software/fuzion/issues/3619), add regression test ([#3626](https://github.com//tokiwa-software/fuzion/pull/3626))
 
     - suppress consequential errors ([#3588](https://github.com//tokiwa-software/fuzion/pull/3588))
 
