@@ -965,7 +965,7 @@ public class AstErrors extends ANY
 
         var a_declared_first =
           (a_in_src != b_in_src) && b_in_src ||
-          (a_in_src == b_in_src) && b.pos().show().compareTo(b.pos().show()) > 0;
+          (a_in_src == b_in_src) && b.pos().show().compareTo(a.pos().show()) > 0;
 
         var aa = a_declared_first ? a : b;
         var bb = a_declared_first ? b : a;
