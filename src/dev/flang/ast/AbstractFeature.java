@@ -926,9 +926,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
               }
 
             if (inh.isEmpty() && !Errors.any())
-              { // let `Any.type`, inherit from `Type`
+              { // let `Any.type` inherit from `Type`
                 if (CHECKS) check
-                  (this instanceof Feature tf && featureName().baseName().equals("Any"));
+                  (this instanceof Feature && featureName().baseName().equals("Any"));
                 inh.add(new Call(pos(), "Type"));
               }
             existingOrNewTypeFeature(res, name, typeArgs, inh);
