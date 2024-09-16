@@ -953,10 +953,22 @@ public class AstErrors extends ANY
                    b         != Types.f_ERROR &&
                    b.outer() != Types.f_ERROR    ))
       {
-        // report in source code order to avoid symmetric error with exchanged roles of f and existing
-        var cmpRes = a.pos().show().compareTo(b.pos().show())>0;
-        var aa = cmpRes ? a : b;
-        var bb = cmpRes ? b : a;
+        // fix reporting order to avoid symmetric error with exchanged roles of `a` and `b` as follows: If
+        // one of `a` or `b` is from a module file (so not part of the current source code compiled), the
+        // problem is the one coming from source code that will be reported first.
+        // Otherwise, if both come from source code, the later one is the culprit.
+        var a_in_src = a instanceof Feature;
+        var b_in_src = b instanceof Feature;
+
+        if (CHECKS)
+          check(a_in_src || b_in_src); // something went wrong if neither `a` nor `b` in currently compiled sources
+
+        var a_declared_first =
+          (a_in_src != b_in_src) && b_in_src ||
+          (a_in_src == b_in_src) && b.pos().show().compareTo(a.pos().show()) > 0;
+
+        var aa = a_declared_first ? a : b;
+        var bb = a_declared_first ? b : a;
 
         var of = aa.isTypeFeature() ? aa.typeFeatureOrigin() : aa;
         error(bb.pos(),
