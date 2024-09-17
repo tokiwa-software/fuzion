@@ -134,6 +134,75 @@ public abstract class Expr extends ByteCode
   }
 
 
+  /*
+   * A try-catch block.
+   *
+   * This inherits from Label that defines the start of this try-catch.
+   *
+   * The main thing that this does when it is part of the code is inform the
+   * `ByteCodeWriter` passed to `code()` about its existance by calling
+   * `by.addExceptionTable`.
+   */
+  static class TryCatch extends Label
+  {
+    final Label _end;
+    final Label _handler;
+    final ClassType _type;
+
+
+    /**
+     * Create TryCatch block starting at the position this is added to the code.
+     *
+     * @param try_end label marking the bytecode following the code in the try block.
+     *
+     * @param try_handler label marking the catch code
+     *
+     * @param type the exception type that is to be caught, must not be null.
+     */
+    private TryCatch(Label try_end, Label try_handler, ClassType type)
+    {
+      this._end = try_end;
+      this._handler = try_handler;
+      this._type = type;
+    }
+
+    /**
+     * String for debugging
+     */
+    public String toString()
+    {
+      return "try " + super.toString()+ " .. " + _end + " catch " + _handler + " for " + _type;
+    }
+
+    @Override
+    public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
+    {
+      super.code(ba, cf);
+      ba.addExceptionTable(this);
+    }
+
+    @Override
+    public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
+    {
+      // build stackmap table for the start label of this try-catch
+      super.buildStackMapTable(smt, stack, locals);
+
+      // the handler code needs a stackmap frame
+      smt.stackMapFrames.add(new StackMapFullFrame(smt, _handler._posFinal));
+
+      // that frame is just an empty stack with the exception pushed onto it
+      var s = new Stack<VerificationType>();
+      s.push(new VerificationType(_type.descriptor(), (cf)->cf.cpClass(_type).index()));
+      smt.stacks.put(_handler._posFinal, s);
+
+      // in principle, we need to unify all locals from all possibly throwing bytecodes in in the try-area,
+      // just using the inital locals for now since our bytecode currently would not change any locals
+      // here anyway:
+      smt.locals.add(new Pair<>(_handler._posFinal , locals.clone()));
+    }
+  }
+
+
   /**
    * Expression for the unit value.
    */
@@ -1823,6 +1892,9 @@ public abstract class Expr extends ByteCode
 
   public static Expr checkcast(JavaType type)
   {
+    if (PRECONDITIONS) require
+      (!type.isPrimitive());
+
     return new Expr()
       {
         // NYI checkcasts where isRedundant=true should
@@ -1958,6 +2030,23 @@ public abstract class Expr extends ByteCode
         return true;
       }
     });
+  }
+
+
+  /**
+   * A try / catch block
+   *
+   * @param try_end label marking the bytecode following the code in the try block.
+   *
+   * @param try_handler label marking the catch code
+   *
+   * @param type the exception type that is to be caught, must not be null.
+   */
+  public static Expr tryCatch(Label try_end,
+                              Label try_handler,
+                              ClassType exc_type)
+  {
+    return new TryCatch(try_end, try_handler, exc_type);
   }
 
 

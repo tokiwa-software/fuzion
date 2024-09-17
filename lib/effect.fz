@@ -26,8 +26,31 @@
 # effect -- abstract parent feature for effects
 #
 # effect provides a means to perform effectful operations.  Instances
-# of effect are installed in the current environment while their code is
-# executed.  The code may access the effect via <type>.env.
+# of effect are instated in the current environment while their code is
+# executed.  The code may perform operations of the instated effect
+# via <type>.env.  These operations may either return normally (resume) or
+# abort the current computation, i.e., return directly to the call that
+# instated the effect.
+#
+# Effects are identified by their type, including any actual type parameters.
+# Effect instances must be assignable to the effect type.  This means that if
+# the effect type is a value type, the instance must be an instance of exactly
+# that type while if the effect type is a ref type, the instance might be of
+# a type that inherits from the effect type that is --possibly after boxing--
+# assignable to that type.
+#
+# Effect operations may replace an instated instance by a new value.
+# This gives operations a means to become stateful.
+#
+# In case an effect performs an abort, the code the effect was instated for
+# will be abandoned and the function passed via tha `def` argument to
+# `instate` will be used to produce a result from the last effect instance.
+#
+# Effects may redefine the `finally` feature that is executed directly after
+# an instated effect was removed, independent of the reason why it is removed.
+# This means, finally is executed after code running in the effect returns
+# normally, after a call to an operation that results in an abort or when
+# a surrounding effect is aborted.
 #
 public effect is
 
@@ -41,13 +64,29 @@ public effect is
   type.default0(e effect.this) unit => intrinsic
 
 
-  # execute code provided in f.call while this effect is installed
-  # in the current environment. Return immediately in case abort is
-  # called.
-
-  # NYI: uses type parameter T only to simplify backends
+  # instate e for effect type effect.this in the current environment.
   #
-  type.instate0(T type : Function unit, e effect.this, f T) unit => intrinsic
+
+
+  # execute code provided by `code` while this effect `e` is instated in the
+  # current environment and remove the instated effect after `code` returned.
+  #
+  # In case of an abort, run `def` on the latest value instated or replaced
+  # for `effect.this` after removing that instated effect value.
+  #
+  # Note the use of `_ : Function ...` instead of just `Function ...`: This
+  # introduces type parameters.  This has several important implications:
+  #
+  # - First, it permits `code` and `def` to be of value types, and
+  # - second, it simplifies the backends since calls to `code.call` or
+  #   `def.call` are statically defined by that value type, no need for
+  #   dynamic binding.
+  #
+  # As a neat side-effect this avoids heap allocation of the lambdas.
+  #
+  type.instate0(e effect.this,
+                code _ : Function unit,
+                def  _ : Function unit effect.this) unit => intrinsic
 
 
   # replace existing effect of type `E` in the new effect value `e`
@@ -55,9 +94,13 @@ public effect is
   type.replace0(e effect.this) unit => intrinsic
 
 
-  # Intrinsic version of abort.
+  # Intrinsic version of abort. For all surrounding instated effects,
+  # remove the effect and run `finally` until we have reached an
+  # effect of this type. Then return from that effect's `instate0` call
+  # with the rsult produced by calling `def` on the currently instated
+  # value.
   #
-  type.abort0(e effect.this) void => intrinsic
+  type.abort0 void => intrinsic
 
 
   # has an effect of this type been instated?
@@ -113,14 +156,26 @@ public effect is
                       code () -> R,
 
                       # the lazy default result to use if effect aborts
-                      def Lazy R
+                      def effect.this -> R
                       ) R
   =>
-    cf := e.Effect_Call code
-    instate0 e cf
-    match cf.res
-      nil => def()
-      x R => x
+    # we replace `code`/`def` by functions with unit type result
+    # to reduce complexity of the `instate0` intrinsic.  We
+    # collect the result in this field
+    res := option R nil
+
+    # wrapper to call `code` and store result in 'res`
+    call_code : Function unit is
+      redef call =>
+        set res := code()
+
+    # wrapper to call `def` on final effect value and store result in 'res`
+    call_def : Function unit effect.this is
+      redef call(cur_e effect.this) =>
+        set res := def cur_e
+
+    instate0 e call_code call_def
+    res.get
 
 
   # execute 'code' in a context where the effect instance `e` has been
@@ -140,7 +195,7 @@ public effect is
                       code () -> R
                       ) R
   =>
-    instate R e code (panic "unexpected abort in {effect.this.type}")
+    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 
 
   # convenience version of `instate` for effect values whose type is
@@ -148,7 +203,7 @@ public effect is
   # from the effect type).
   #
   # Execute 'code' in a context where this effect instance has been
-  # installed for effect type `effect.this`.
+  # instated for effect type `effect.this`.
   #
   # In case `f` returns normally, this will return `f`'s result.
   #
@@ -169,8 +224,8 @@ public effect is
   public type.is_instated bool => is_instated0
 
 
-  # has an effect of the given type been installed?
-  public type.get_if_installed option effect.this
+  # has an effect of the given type been instated?
+  public type.get_if_instated option effect.this
   =>
     if effect.this.is_instated
       unsafe_get
@@ -180,34 +235,10 @@ public effect is
 
   # internal helper to perform `E.env` without producing an error
   # in case static analysis fails to verify that `effect.this` is
-  # actually installed.
+  # actually instated.
   #
   type.unsafe_get =>
     effect.this.env
-
-
-  # helper instance for effect.instate to wrap call to f() into a ()->unit
-  #
-  # NOTE: Since all control flow to enter an environment goes through this it is
-  # essential that static analysis works well.  `Effect_Call` must be an inner
-  # feature of `effect` since otherwise instances will not be separated well and
-  # values for `f` for different effects will be mixed up resulting in errors
-  # during static analysis for effects.
-  #
-  # NYI: CLEANUP: #2728 Needed since abortable supports only unit result
-  #
-  Effect_Call(
-    # result type of the call
-    R type,
-
-    # the function to be called
-    f () -> R
-    )
-    ref : Function unit
-  is
-    res option R := nil
-    redef call =>
-      set res := f()
 
 
   # --------------------  replacing effect instances  --------------------
@@ -220,11 +251,11 @@ public effect is
   # the call to `replace` is used ot model the change of the outside world and must be
   # included for analysis tools to appreciate this.
   #
-  # replace may only be called during the execution of an operation of a currently installed
+  # replace may only be called during the execution of an operation of a currently instated
   # effect of the same effect type.
   #
   # NYI: BUG: It is currently not enforced that replace is only called during the execution
-  # of an operation of a currenlty installed effect of the same effect type.
+  # of an operation of a currenlty instated effect of the same effect type.
   #
   public type.replace(e effect.this)
   =>
@@ -238,7 +269,7 @@ public effect is
   # values that may be children of the effect type that are of a different type, so
   # `effect_type.replace new_value` must be used.
   #
-  # replace may only be called during the execution of an operation of a currently installed
+  # replace may only be called during the execution of an operation of a currently instated
   # effect of the same effect type.
   #
   public replace
@@ -257,7 +288,8 @@ public effect is
     safety: effect.this.is_instated
     safety: effect.this.env.abortable
   =>
-    abort0 e
+    replace0 e
+    abort0
 
 
   # Abort code execution for the instated effect.this.env and return to the point
@@ -268,7 +300,7 @@ public effect is
     safety: effect.this.is_instated
     safety: effect.this.env.abortable
   =>
-    effect.this.abort0 effect.this.env
+    effect.this.abort0
 
 
   # does this effect support abort?
@@ -297,3 +329,31 @@ public effect is
     safety: effect.this.env.abortable
   =>
     abort
+
+
+  # --------------------  resource cleanup  --------------------
+
+
+  # feature that will be called on the final instance of this effect
+  # after it has been de-instated.
+  #
+  # This happens either on a normal return form the code passed to
+  # `instate`, on an abort perfomed on this effect or on an abort
+  # performed on an effect instated prior to this effect's instation.
+  #
+  # This can be used to perform actions when leaving an effect such
+  # a cleanup up resources that were created or opened by operations
+  # of this effect.
+  #
+  public finally =>
+
+
+  # internal feature that will be called on the instance of this effect
+  # when it will be de-instated.
+  #
+  # This is just a trampoline for compiler convenience such that when
+  # generating code for the instate0 intrinsic the compiler does
+  # not need to care about dynamic binding if the current effect is a
+  # `ref`.
+  #
+  static_finally => finally

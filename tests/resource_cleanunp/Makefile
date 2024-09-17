@@ -17,29 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature process.env_vars
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-
-# the environment variables in this map are used
-# when spawning a new process.
-#
-public env_vars(get container.Map String String) : effect
-pre
-  get.keys ∀ (x -> x.as_codepoints ∀ (y -> y.is_ascii))
-  get.values ∀ (x -> x.as_codepoints ∀ (y -> y.is_ascii))
-is
-
-
-# get env_vars that should be used when spawning
-# a new process.
-#
-# if env_vars effect is instated. the environment variables
-# are taken from the instated effect. otherwise an empty
-# map is returned.
-#
-public env_vars container.Map String String =>
-  match env_vars.get_if_instated
-    e env_vars => e.get
-    nil        => (container.hash_map String String).type.empty
+override NAME = resource_cleanunp
+include ../simple.mk

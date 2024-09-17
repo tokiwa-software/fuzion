@@ -84,7 +84,7 @@ catch_postcondition is
           say "postcondition failed: $msg"
           fuzion.runtime.post_fault.abort)
         (test i32)
-        (test u64))
+        (_ -> test u64))
 
   say ""
 
@@ -110,7 +110,7 @@ catch_postcondition is
             m <- msg
             fuzion.runtime.post_fault.abort)
           try
-          (() -> catch m.get.get))
+          (_ -> catch m.get.get))
 
 
   # -------------------------------

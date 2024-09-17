@@ -123,10 +123,10 @@ public class CNames extends ANY
 
 
   /**
-   * Prefix for thread local env variable that stores the setjmp/longjmp buffer
+   * Name of thread local env variable that stores the setjmp/longjmp buffer
    * to abort an installed effect
    */
-  private static final String ENV_JMPBUF_PREFIX = "fzEnvJmpBuf_";
+  private static final String ENV_JMPBUF = "fzEnvJmpBuf";
 
 
   /**
@@ -534,12 +534,10 @@ public class CNames extends ANY
   /**
    * The name of the thread local env variable that stores the setjmp/longjmp
    * buffer to abort an installed effect.
-   *
-   * @param cl clazz id for a effect type.
    */
-  CIdent envJmpBuf(int cl)
+  CIdent envJmpBuf()
   {
-    return new CIdent(ENV_JMPBUF_PREFIX + clazzId2num(cl));
+    return new CIdent(ENV_JMPBUF);
   }
 
 }

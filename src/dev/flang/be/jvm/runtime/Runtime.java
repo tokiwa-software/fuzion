@@ -69,10 +69,10 @@ public class Runtime extends ANY
   /**
    * Exception that is thrown by effect.abort
    */
-  static class Abort extends Error
+  public static class Abort extends Error
   {
 
-    int _effect;
+    public final int _effect;
 
     /**
      * @param effect the id of the effect that is aborted.
@@ -535,9 +535,9 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method to implement intrinsic effect.replace.
+   * Helper method to implement intrinsic effect.replace0.
    *
-   * @param id an effect id.
+   * @param id an effect type id.
    *
    * @instance a new instance to replace the old one
    */
@@ -580,7 +580,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method to implement effect.abort.  Abort the currently instated
+   * Helper method to implement effect.abort0.  Abort the currently instated
    * effect with given id.  Helper to implement intrinsic effect.abort.
    *
    * @param id the id of the effect type that is aborted.
@@ -592,20 +592,18 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method to implement effect.type.instante0.  Instate an instance of effect
-   * type specified by id and run f.call while it is instated.  Helper to
-   * implement intrinsic effect.abort.
+   * Helper method to implement effect.type.instante0. Instate a new instance for
+   * effect type with given id.
    *
-   * @param id the id of the effect that is instated
+   * The existing value instated for the effect type identified by id will be
+   * evacuated to FuzionThread._effectStack to be restored by effect_pop.
+   *
+   * @param id the id of the effect type that is instated
    *
    * @param instance the effect instance that is instated, NOTE: This is `_UNIT_TYPE_EFFECT_`
    * for a unit type effect.
-   *
-   * @param code the Unary instance to be executed
-   *
-   * @param call the Java clazz of the Unary instance to be executed.
    */
-  public static void effect_instate(int id, AnyI instance, Any code, Class call)
+  public static void effect_push(int id, AnyI instance)
   {
     if (PRECONDITIONS) require
       (instance != null);
@@ -614,48 +612,32 @@ public class Runtime extends ANY
 
     var old = t.effect_load(id);
     t.effect_store(id, instance);
-    Method r = null;
-    for (var m : call.getDeclaredMethods())
-      {
-        if (m.getName().equals(ROUTINE_NAME))
-          {
-            r = m;
-          }
-      }
-    if (r == null)
-      {
-        Errors.fatal("in effect.type.instate0, missing `" + ROUTINE_NAME + "` in class `" + call + "`");
-      }
-    else
-      {
-        try
-          {
-            r.invoke(null, code);
-          }
-        catch (IllegalAccessException e)
-          {
-            Errors.fatal("effect.type.instate0 call caused `" + e + "` when calling `" + call + "`");
-          }
-        catch (InvocationTargetException e)
-          {
-            if (e.getCause() instanceof Abort a)
-              {
-                if (a._effect != id)
-                  {
-                    throw a;
-                  }
-              }
-            else
-              {
-                handleInvocationTargetException(e);
-              }
-          }
-        finally
-          {
-            t.effect_store(id, old);
-          }
-      }
+    t._effectStack.add(old);
   }
+
+
+  /**
+   * Helper method to implement effect.type.instante0. Un-instate an instance
+   * instated by effect_push.
+   *
+   * The original instance that was saved to FuzionThread._effectStack will be
+   * re-instated.
+   *
+   * @param id the id of the effect type that is popped.
+   *
+   * @return the instance that was previously instated or replaced for effect
+   * type id.
+   */
+  public static AnyI effect_pop(int id)
+  {
+    var t = currentThread();
+
+    var res = t.effect_load(id);
+    var instance = t._effectStack.removeLast();
+    t.effect_store(id, instance);
+    return res;
+  }
+
 
   /**
    * Helper method to implement `effect.env` expressions.  Returns the instated

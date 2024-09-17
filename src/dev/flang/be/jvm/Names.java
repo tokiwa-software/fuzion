@@ -95,6 +95,14 @@ public class Names extends ANY implements ClassFileConstants
 
 
   /**
+   * Name of JVM backend's runtime's class Abort and field Abort._effect
+   */
+  static final String    ABORT_CLASS  = Runtime.Abort.class.getName().replace(".","/");
+  static final ClassType ABORT_TYPE   = new ClassType(ABORT_CLASS);
+  static final String    ABORT_EFFECT = "_effect";
+
+
+  /**
    * Name and signature of Runtime._args_ field and Runtime.args_get method
    */
   static final String RUNTIME_ARGS = "_args_";

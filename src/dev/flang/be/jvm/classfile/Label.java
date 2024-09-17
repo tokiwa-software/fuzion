@@ -108,7 +108,7 @@ public class Label extends Expr
   /**
    * String representation of this label:
    */
-  public String toString() { return "label:"; }
+  public String toString() { return "label:" + (_posFinal == -1 ? "" : "@"+_posFinal); }
 
 
   @Override

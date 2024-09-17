@@ -155,6 +155,10 @@ public class MiddleEnd extends ANY
     markUsed(Types.resolved.f_Const_String_utf8_data , SourcePosition.builtIn); // NYI: UNDER DEVELOPMENT: this should be unnecessary?
     markUsed(flu.lookupFeature(universe, FeatureName.get(FuzionConstants.UNIT_NAME, 0), null) , SourcePosition.builtIn);
     markUsed(flu.lookupFeature(universe, FeatureName.get("void"                   , 0), null) , SourcePosition.builtIn);
+
+    // these are required by effect.instate0
+    markUsed(Types.resolved.f_effect_static_finally, SourcePosition.builtIn);
+    markUsed(Types.resolved.f_Function_call, SourcePosition.builtIn);
   }
 
 

@@ -2102,27 +2102,41 @@ public class DFA extends ANY
         });
     put(EFFECT_INSTATE_NAME                 , cl ->
         {
-          var ecl = cl._dfa._fuir.effectTypeFromInstrinsic(cl._cc);
-          var oc  = cl._dfa._fuir.clazzActualGeneric(cl._cc, 0);
-          var call = cl._dfa._fuir.lookupCall(oc);
+          var fuir = cl._dfa._fuir;
+          var ecl      = fuir.effectTypeFromInstrinsic(cl._cc);
 
-          if (CHECKS) check
-            (cl._dfa._fuir.clazzNeedsCode(call));
+          var call     = fuir.lookupCall(fuir.clazzActualGeneric(cl._cc, 0));
+          var call_def = fuir.lookupCall(fuir.clazzActualGeneric(cl._cc, 1));
+          var finallie = fuir.lookup_static_finally(ecl);
 
-          var env = cl._env;
-          var newEnv = cl._dfa.newEnv(env, ecl, cl._args.get(0).value());
-          var ncl = cl._dfa.newCall(call, NO_SITE, cl._args.get(1).value(), new List<>(), newEnv, cl);
-          // NYI: result must be null if result of ncl is null (ncl does not return) and effect.abort is not called
-          return Value.UNIT;
+          var a0 = cl._args.get(0).value();  // new effect value e
+          var a1 = cl._args.get(1).value();  // code
+          var a2 = cl._args.get(2).value();  // def'ault code
+
+          var newEnv = cl._dfa.newEnv(cl._env, ecl, a0);
+          var result = cl._dfa.newCall(call, NO_SITE, a1, new List<>(), newEnv, cl).result();
+
+          var ev = newEnv.getActualEffectValues(ecl);
+          if (newEnv.isAborted(ecl))
+            { // default result, only if abort is effer called
+              var res = cl._dfa.newCall(call_def, NO_SITE, a2, new List<>(ev), cl._env, cl).result();
+              result =
+                result != null && res != null ? result.value().join(cl._dfa, res.value()) :
+                result != null                ? result
+                                              : res;
+            }
+
+          cl._dfa.newCall(finallie, NO_SITE, ev, new List<>(), cl._env, cl);
+          return result;
         });
     put("effect.type.abort0"                , cl ->
         {
           var ecl = cl._dfa._fuir.effectTypeFromInstrinsic(cl._cc);
-          var new_e = cl._args.get(0).value();
-          cl.replaceEffect(ecl, new_e);
-          // NYI: we might have to do cl.returns() for 'cl' being the
-          // corresponding call to 'effect.abortable' and make sure new_e is
-          // used to create the value produced by the effect.
+          var ev = cl.getEffectForce(cl._cc, ecl); // report an error if effect is missing
+          if (ev != null)
+            {
+              cl._env.aborted(ecl);
+            }
           return null;
         });
     put("effect.type.is_instated0"          , cl -> cl.getEffectCheck(cl._dfa._fuir.effectTypeFromInstrinsic(cl._cc)) != null

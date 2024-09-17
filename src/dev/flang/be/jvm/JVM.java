@@ -45,6 +45,7 @@ import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
+import dev.flang.util.Map2Int;
 import dev.flang.util.Pair;
 import dev.flang.util.QuietThreadTermination;
 
@@ -781,6 +782,12 @@ should be avoided as much as possible.
   Expr LOAD_UNIVERSE;
 
 
+  /**
+   * Mapping from effect clazz ids to effect ids 0, 1, 2, etc.
+   */
+  Map2Int<Integer> _effectIds = new Map2Int<>();
+
+
   /*---------------------------  constructors  ---------------------------*/
 
 
@@ -1276,7 +1283,7 @@ should be avoided as much as possible.
 
         var code_cl = cf.codeAttribute(_fuir.clazzAsString(cl),
                                        bc_cl,
-                                       new List<>(), new List<>(), ClassFile.StackMapTable.fromCode(cf, locals, bc_cl));
+                                       new List<>(), ClassFile.StackMapTable.fromCode(cf, locals, bc_cl));
 
         cf.method(ClassFileConstants.ACC_STATIC | ClassFileConstants.ACC_PUBLIC, name, _types.descriptor(cl), new List<>(code_cl));
 
@@ -2088,6 +2095,19 @@ should be avoided as much as possible.
       }
     return result;
   }
+
+
+  /**
+   * Get a small id (0, 1, 2, ) for an effect whose clazz id is given.
+   */
+  int effectId(int ecl)
+  {
+    if (PRECONDITIONS) require
+      (ecl != FUIR.NO_CLAZZ);
+
+    return _effectIds.add(ecl);
+  }
+
 
 }
 

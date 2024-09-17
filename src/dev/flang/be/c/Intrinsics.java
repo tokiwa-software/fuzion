@@ -934,44 +934,81 @@ public class Intrinsics extends ANY
         "effect.type.replace0"   , (c,cl,outer,in) ->
         {
           var ecl = c._fuir.effectTypeFromInstrinsic(cl);
-          var ev  = CNames.fzThreadEffectsEnvironment.deref().field(c._names.env(ecl));
-          var evi = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));
-          var evj = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envJmpBuf(ecl));
-          var o   = CNames.OUTER;
+          var eid = c._fuir.clazzId2num(ecl) + 1; // must be != 0 since setjmp uses 0 for the normal return case, so we add `1`:
+          var ev  = CNames.fzThreadEffectsEnvironment.deref().field(c._names.env(ecl));           // installed effect value
+          var evi = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));  // isInstalled flag
+          var evj = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envJmpBuf());        // current jump buffer
           var e   = A0;
-          var event_is_unit_type = c._fuir.clazzIsUnitType(ecl);
+          var effect_is_unit_type = c._fuir.clazzIsUnitType(ecl);
           return
             switch (in)
               {
               case "effect.type.abort0"        ->
-                CStmnt.seq(CStmnt.iff(evi, CExpr.call("longjmp",new List<>(evj.deref(), CExpr.int32const(1)))),
-                           CExpr.fprintfstderr("*** C backend support for %s missing\n",
-                                               CExpr.string(c._fuir.clazzOriginalName(cl))),
+                CStmnt.seq(CStmnt.iff(evi, CExpr.call("longjmp",new List<>(evj.deref(), CExpr.int32const(eid)))),
+                           CExpr.fprintfstderr("*** abort called for effect `%s` that is not instated!\n",
+                                               CExpr.string(c._fuir.clazzAsString(ecl))),
                            CExpr.exit(1));
-              case "effect.type.default0"     -> CStmnt.iff(evi.not(), CStmnt.seq(event_is_unit_type ? CExpr.UNIT : ev.assign(e),
+              case "effect.type.default0"     -> CStmnt.iff(evi.not(), CStmnt.seq(effect_is_unit_type ? CExpr.UNIT : ev.assign(e),
                                                                                   evi.assign(CIdent.TRUE )));
               case "effect.type.instate0"     ->
                 {
-                  var oc = c._fuir.clazzActualGeneric(cl, 0);
-                  var call = c._fuir.lookupCall(oc);
+                  var call     = c._fuir.lookupCall(c._fuir.clazzActualGeneric(cl, 0));
+                  var call_def = c._fuir.lookupCall(c._fuir.clazzActualGeneric(cl, 1));
+                  var finallie = c._fuir.lookup_static_finally(ecl);
                   if (c._fuir.clazzNeedsCode(call))
                     {
                       var jmpbuf = new CIdent("jmpbuf");
                       var oldev  = new CIdent("old_ev");
                       var oldevi = new CIdent("old_evi");
                       var oldevj = new CIdent("old_evj");
-                      yield CStmnt.seq(event_is_unit_type ? CExpr.UNIT : CStmnt.decl(c._types.clazz(ecl), oldev , ev ),
+                      var cureff  = new CIdent("cur_eff");
+                      var cureff_as_target = c._fuir.clazzIsRef(ecl) ? cureff : cureff.adrOf();
+                      var setjmp_result = new CIdent("setjmp_res");
+
+                      var pass_on = CStmnt.iff(setjmp_result.ne(CExpr.int32const(0)), CExpr.call("longjmp",new List<>(evj.deref(), setjmp_result)));
+
+                      yield CStmnt.seq(// copy previously instated effect values:
+                                       effect_is_unit_type ? CExpr.UNIT : CStmnt.decl(c._types.clazz(ecl), oldev , ev ),
                                        CStmnt.decl("bool"             , oldevi, evi),
                                        CStmnt.decl("jmp_buf*"         , oldevj, evj),
+
+                                       // declare jumpbuf related local vars
                                        CStmnt.decl("jmp_buf", jmpbuf),
-                                       event_is_unit_type ? CExpr.UNIT : ev.assign(e),
+                                       CStmnt.decl("int", setjmp_result),
+
+                                       // instate effect
+                                       effect_is_unit_type ? CExpr.UNIT : ev.assign(e),
                                        evi.assign(CIdent.TRUE ),
                                        evj.assign(jmpbuf.adrOf()),
-                                       CStmnt.iff(CExpr.call("setjmp",new List<>(jmpbuf)).eq(CExpr.int32const(0)),
-                                                  CExpr.call(c._names.function(call), new List<>(A1))),
-                                       event_is_unit_type ? CExpr.UNIT : ev .assign(oldev ),
+                                       setjmp_result.assign(CExpr.call("setjmp",new List<>(jmpbuf))),
+
+                                       // setjmp returns 0 originally, so we run the code in `call`:
+                                       CStmnt.iff(setjmp_result.eq(CExpr.int32const(0)),
+                                                  CStmnt.seq(CExpr.call(c._names.function(call), new List<>(A1.adrOf())))),
+
+                                       // remove the instated effect and call finally:
+                                       effect_is_unit_type ? CExpr.UNIT : CStmnt.decl(c._types.clazz(ecl), cureff , ev ),
+                                       effect_is_unit_type ? CExpr.UNIT : ev .assign(oldev ),
                                        evi.assign(oldevi),
-                                       evj.assign(oldevj));
+                                       evj.assign(oldevj),
+                                       CExpr.call(c._names.function(finallie),
+                                                  effect_is_unit_type
+                                                  ? new List<>()
+                                                  : new List<>(cureff_as_target)),
+
+                                       c._fuir.clazzNeedsCode(call_def)
+                                       ? // if setjmp returned with an abort for this effect (==eid), run `call_def`
+                                         CStmnt.iff(setjmp_result.eq(CExpr.int32const(eid)),
+                                                  CExpr.call(c._names.function(call_def),
+                                                             effect_is_unit_type
+                                                             ? new List<>(A2.adrOf())
+                                                             : new List<>(A2.adrOf(), cureff)
+                                                             ),
+                                                  // else, if setjmp returned with an abort for a different effect, propagate it further
+                                                  pass_on
+                                                  )
+                                       : pass_on  // in case call_def was detected not to be called by DFA we can pass on the abort directly
+                                       );
                     }
                   else
                     {

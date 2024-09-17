@@ -485,7 +485,7 @@ class CodeGen
           .andThen(p.v0() == null ? Expr.UNIT : p.v0())
           .andThen(retoern);
         var ca = cf.codeAttribute(dn + "in class for " + _fuir.clazzAsString(tt),
-                                  code, new List<>(), new List<>(), ClassFile.StackMapTable.empty(cf, initLocals, code));
+                                  code, new List<>(), ClassFile.StackMapTable.empty(cf, initLocals, code));
         cf.method(ACC_PUBLIC, dn, ds, new List<>(ca));
       }
   }
@@ -954,13 +954,14 @@ class CodeGen
   @Override
   public Pair<Expr, Expr> env(int s, int ecl)
   {
+    var rt = _types.resultType(ecl);
     var res =
-      Expr.iconst(_fuir.clazzId2num(ecl))
+      Expr.iconst(_jvm.effectId(ecl))
       .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                  Names.RUNTIME_EFFECT_GET,
                                  Names.RUNTIME_EFFECT_GET_SIG,
                                  Names.ANY_TYPE))
-      .andThen(Expr.checkcast(_types.resultType(ecl)));
+      .andThen(rt == PrimitiveType.type_void ? Expr.UNIT : Expr.checkcast(rt));
     return new Pair<>(res, Expr.UNIT);
   }
 

@@ -92,6 +92,12 @@ public class Env extends ANY implements Comparable<Env>
 
 
   /**
+   * Is this effect ever aborted?
+   */
+  boolean _isAborted;
+
+
+  /**
    * The initial value of the effect.  The initial values is part of the
    * identity of this effect, i.e., compareTo will take this value into account.
    */
@@ -315,6 +321,46 @@ public class Env extends ANY implements Comparable<Env>
     else
       {
         _dfa.replaceDefaultEffect(ecl, e);
+      }
+  }
+
+
+  /**
+   * Is the effect just installed here ever aborted?
+   *
+   * @param ecl redudant with _effectType.  This is used only to check that this
+   * is used only by intrinsic code for `effect.instate0` on the newly created
+   * environment for the instated effect type.
+   */
+  boolean isAborted(int ecl)
+  {
+    if (PRECONDITIONS) require
+      (_effectType == ecl);
+
+    return _isAborted;
+  }
+
+
+  /**
+   * Mark the environment that instates effect ecl as aborted.
+   */
+  void aborted(int ecl)
+  {
+    if (_effectType == ecl)
+      {
+        if (!_isAborted)
+          {
+            _isAborted = true;
+            _dfa.wasChanged(() -> "effect.abort0 called: "+_dfa._fuir.clazzAsString(ecl));
+          }
+      }
+    else if (_outer != null)
+      {
+        _outer.aborted(ecl);
+      }
+    else
+      {
+        throw new Error("DFA: Aborted effect not found in current environment");
       }
   }
 

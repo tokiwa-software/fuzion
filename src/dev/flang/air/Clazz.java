@@ -1810,10 +1810,16 @@ public class Clazz extends ANY implements Comparable<Clazz>
       case "effect.abortable":
         argumentFields()[0].resultClazz().lookup(Types.resolved.f_Function_call, at);
         break;
+      case "effect.type.instate0":
+        actualGenerics()[0].lookup(Types.resolved.f_Function_call, at);
+        actualGenerics()[1].lookup(Types.resolved.f_Function_call, at);
+        argumentFields()[0].resultClazz().lookup(Types.resolved.f_effect_static_finally, at);
+        break;
       case "fuzion.sys.thread.spawn0":
         argumentFields()[0].resultClazz().lookup(Types.resolved.f_Function_call, at);
         break;
-      default: break;
+      default:
+        break;
       }
   }
 

@@ -125,7 +125,7 @@ pre debug: code ≤ 127
 # return normally after a call to `exit.env.exit n`.
 #
 public exit(handler Exit_Handler, code ()->unit) =>
-  exit.instate unit (exit handler unit unit) code unit
+  exit.instate unit (exit handler unit unit) code _->unit
 
 
 # Exit_Handler -- abstract exit
