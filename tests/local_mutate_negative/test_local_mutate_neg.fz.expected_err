@@ -9,7 +9,7 @@ effect environment '--empty--' for call to 'test_local_mutate_neg.test_sum.sum#1
 ----------^^^^^
 effect environment '--empty--' for call to 'test_local_mutate_neg.test_sum.sum#1' at --CURDIR--/test_local_mutate_neg.fz:114:5:
     sum l0
-----^^^
+----^^^^^^
 effect environment '--empty--' for call to 'test_local_mutate_neg.test_sum' at --CURDIR--/test_local_mutate_neg.fz:116:3:
   test_sum
 --^^^^^^^^
