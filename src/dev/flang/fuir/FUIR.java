@@ -2085,7 +2085,7 @@ public class FUIR extends IR
     if (s != NO_SITE)
       {
         var e = getExpr(s);
-        result = (e instanceof Expr expr) ? expr.pos() :
+        result = (e instanceof Expr expr) ? expr.sourceRange() :
                  (e instanceof Clazz z)   ? z._type.declarationPos()  /* implicit assignment to argument field */
                                           : null;
       }
