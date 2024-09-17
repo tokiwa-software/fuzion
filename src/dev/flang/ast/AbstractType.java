@@ -1313,7 +1313,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (PRECONDITIONS) require
       (checkedForGeneric(),
        other != null,
-       other.checkedForGeneric());
+       other.checkedForGeneric(),
+       !(this instanceof UnresolvedType),
+       !(other instanceof UnresolvedType));
 
     int result = 0;
 
@@ -1561,10 +1563,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var g = new List<AbstractType>(this);
         g.addAll(generics());
 
+        var tf = res != null ? fot.typeFeature(res) : fot.typeFeature();
+        if (CHECKS) check
+          (tf != null);
         result = ResolvedNormalType.create(g,
                                            g,
                                            outer().typeType(res),
-                                           res != null ? fot.typeFeature(res) : fot.typeFeature());
+                                           tf);
       }
     return result;
   }
