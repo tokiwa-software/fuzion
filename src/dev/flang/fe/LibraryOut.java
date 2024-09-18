@@ -686,9 +686,16 @@ class LibraryOut extends ANY
   {
     if (e instanceof AbstractAssign a)
       {
-        lastPos = expressions(a._value, lastPos);
-        lastPos = expressions(a._target, lastPos);
-        lastPos = exprKindAndPos(MirExprKind.Assign, lastPos, e.sourceRange());
+        var v = a._value;
+        lastPos = expressions(v, lastPos);
+        if (v.type().isVoid())
+          {
+            // lastPos = exprKindAndPos(MirExprKind.Pop, lastPos, e.sourceRange());
+          }
+        else
+          {
+            lastPos = expressions(a._target, lastPos);
+            lastPos = exprKindAndPos(MirExprKind.Assign, lastPos, e.sourceRange());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Assign                                                                          |
@@ -698,7 +705,8 @@ class LibraryOut extends ANY
    *   | true   | 1      | int           | assigned field index                          |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
-        _data.writeOffset(a._assignedField);
+            _data.writeOffset(a._assignedField);
+          }
       }
     else if (e instanceof Box b)
       {
@@ -756,12 +764,22 @@ class LibraryOut extends ANY
       }
     else if (e instanceof AbstractCall c)
       {
-        lastPos = expressions(c.target(), lastPos);
+        var t = c.target();
+        if (CHECKS)
+          check(!t.type().isVoid());
+        lastPos = expressions(t, lastPos);
+        var foundVoid = t.type().isVoid();
         for (var a : c.actuals())
           {
-            lastPos = expressions(a, lastPos);
+            foundVoid = foundVoid || a.type().isVoid();
+            if (!foundVoid)
+              {
+                lastPos = expressions(a, lastPos);
+              }
           }
-        lastPos = exprKindAndPos(MirExprKind.Call, lastPos, e.sourceRange());
+        if (!foundVoid)
+          {
+            lastPos = exprKindAndPos(MirExprKind.Call, lastPos, e.sourceRange());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Call                                                                            |
@@ -789,38 +807,39 @@ class LibraryOut extends ANY
    *   | c()    |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
-        _data.writeOffset(c.calledFeature());
-        type(c.type());
-        int n;
-        var cf = c.calledFeature();
-        if (cf.hasOpenGenericsArgList())
-          {
-            _data.writeInt(c.actuals().size());
-          }
-        if (cf.generics().isOpen())
-          {
-            n = c.actualTypeParameters().size();
-            _data.writeInt(n);
-          }
-        else
-          {
-            n = cf.generics().list.size();
+            _data.writeOffset(c.calledFeature());
+            type(c.type());
+            int n;
+            var cf = c.calledFeature();
+            if (cf.hasOpenGenericsArgList())
+              {
+                _data.writeInt(c.actuals().size());
+              }
+            if (cf.generics().isOpen())
+              {
+                n = c.actualTypeParameters().size();
+                _data.writeInt(n);
+              }
+            else
+              {
+                n = cf.generics().list.size();
+                if (CHECKS) check
+                  (c.actualTypeParameters().size() == n);
+              }
+            for (int i = 0; i < n; i++)
+              {
+                type(c.actualTypeParameters().get(i));
+              }
             if (CHECKS) check
-              (c.actualTypeParameters().size() == n);
-          }
-        for (int i = 0; i < n; i++)
-          {
-            type(c.actualTypeParameters().get(i));
-          }
-        if (CHECKS) check
-          (cf.resultType().isOpenGeneric() == (c.select() >= 0));
-        if (cf.resultType().isOpenGeneric())
-          {
-            _data.writeInt(c.select());
-          }
-        if (dumpResult)
-          {
-            _data.writeByte(MirExprKind.Pop.ordinal());
+              (cf.resultType().isOpenGeneric() == (c.select() >= 0));
+            if (cf.resultType().isOpenGeneric())
+              {
+                _data.writeInt(c.select());
+              }
+            if (dumpResult)
+              {
+                _data.writeByte(MirExprKind.Pop.ordinal());
+              }
           }
       }
     else if (e instanceof AbstractMatch m)

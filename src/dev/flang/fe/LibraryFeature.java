@@ -421,6 +421,20 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
+   * type of this Expr. Since LibraryFature is no longer an expression, this
+   * will cause an error.
+   *
+   * NYI: CLEANUP: AbstractFeature should best not inherit from Expr. Instead,
+   * it should be sufficient if dev.flang.ast.Feature does.
+   */
+  @Override
+  public AbstractType type()
+  {
+    throw new Error("LibraryFeature.type() called");
+  }
+
+
+  /**
    * resultType returns the result type of this feature using.
    *
    * @return the result type. Never null.
@@ -560,7 +574,7 @@ public class LibraryFeature extends AbstractFeature
         var s = new Stack<Expr>();
         res = code(at, s, -1, -1);
         if (CHECKS) check
-          (s.size() == 0);
+          (s.size() == 0 || s.peek().type().isVoid());
         _libModule._code.put(at, res);
       }
     return res;
@@ -599,6 +613,11 @@ public class LibraryFeature extends AbstractFeature
               var field = _libModule.assignField(iat);
               var f = _libModule.libraryFeature(field);
               var target = f.outer().isUniverse() ? new Universe() : s.pop();
+
+              // LibraryOut ensures that we do not write an assignment of the value is void:
+              if (CHECKS) check
+                (!f.resultType().isVoid());
+
               var val = s.pop();
               c = new AbstractAssign(f, target, val)
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
