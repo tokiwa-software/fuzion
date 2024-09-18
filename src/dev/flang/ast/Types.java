@@ -348,6 +348,8 @@ public class Types extends ANY
       f_safety                     = lookup(lf, "safety", 0);
       f_array                      = lookup(lf, "array", 5);
       f_array_internal_array       = lookup(lf, f_array, "internal_array", 0);
+      f_effect                     = lookup(lf, "effect", 0);
+      f_effect_static_finally      = lookup(lf, f_effect, "static_finally", 0);
       f_error                      = lookup(lf, "error", 1);
       f_error_msg                  = lookup(lf, f_error, "msg", 0);
       f_fuzion                     = lookup(lf, "fuzion", 0);
