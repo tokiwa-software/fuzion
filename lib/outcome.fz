@@ -109,7 +109,7 @@ is
 
   # monadic operator
   #
-  # This enables a very idiomatic way of error handling: assume you are trying
+  # This enables a simple way of error handling: assume you are trying
   # to read 42 bytes from a file into a string. Let open be a feature that takes
   # a file name and returns an outcome of some abstract file descriptor, let read
   # be a feature that takes an abstract file descriptor and a number of bytes to
@@ -124,13 +124,14 @@ is
   #       fd i64 =>
   #         # read 42 bytes from example file
   #         match read fd 42
-  #           content array u8 => strings.from_bytes content
+  #           content array u8 => String.from_bytes content
   #           re error => re
   #       oe error => oe
   #
   # The monadic operator turns this into:
   #
-  #     (open "example.txt").bind (array u8) (fd->read fd 42)
+  #     (open "example.txt").bind (array u8) (fd      -> read fd 42)
+  #                         .bind String     (content -> String.from_bytes content)
   #
   public bind(B type, f T -> outcome B) outcome B =>
     outcome.this ? v T => f v
