@@ -696,6 +696,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (feature().isTypeFeature() && !t.isGenericArgument())
       {
+        t = _type.generics().get(0).actualType(t, Context.NONE);
         var g = t.generics();
         if (t.feature().isTypeFeature())
           {
