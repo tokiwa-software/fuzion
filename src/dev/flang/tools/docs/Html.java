@@ -201,6 +201,7 @@ public class Html extends ANY
       + annotateAbstract(af)
       + annotateContainsAbstract(af)
       + annotatePrivateConstructor(af)
+      + annotateModule(af)
       // fills remaining space
       + "<div class='flex-grow-1'></div>"
       + "</div>"
@@ -310,6 +311,18 @@ public class Html extends ANY
              ? "&nbsp;&nbsp;<div class='fd-parent' title='This feature contains inner or inherited features " +
                "which are abstract.'>[Contains abstract features]</div>"
              : "";
+  }
+
+
+  /**
+   * Returns a html formatted annotation for features from modules other than base
+   * @param af the feature to for which to create the annotation for
+   * @return html to annotate a feature from other modules than base
+   */
+  private String annotateModule(AbstractFeature af)
+  {
+    String module = (af instanceof LibraryFeature) ? ((LibraryFeature) af)._libModule.name() : "";
+    return module.equals("base") ? "" : "&nbsp;<div class='fd-parent'>[Module " + module + "]</div>";
   }
 
   private boolean isVisible(AbstractFeature af)
