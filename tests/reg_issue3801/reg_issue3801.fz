@@ -1,0 +1,104 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue3801
+#
+# -----------------------------------------------------------------------
+
+# test a tricky issue with missing this-type replacement in co-types during
+# monomorphization.
+#
+reg_issue3801 is
+
+  from_issue =>
+
+    # the original code form the issue:
+    #
+    # The problem was that during monomorphizaiton, for the co-type of the
+    # feature generated for the lambda expression `_->`, the inherits call
+    # includes a call to `Unary.type e.λ.this.type unit e.this` and the
+    # last type parameter `e.this` was not monomorphized, i.e., was not
+    # replaced by `e`.
+    #
+    e is
+     i(def e.this -> unit) =>
+        (option unit).get
+     i  _->
+    _ := e
+
+
+  simplified =>
+
+    # slightly simplified code created while tracking down this problem
+    #
+    e is
+     i(def Function e.this) =>
+        _ := (option unit nil).count
+     i ()->do
+    _ := e
+
+
+  aborteffect is
+
+    # the original code from fuzion-lang.dev/design pages that triggered this
+    # problem:
+    #
+
+    limit (ok ()->bool,
+           code ()->unit     # code is executed with this effect installed
+        ) : effect is
+      yield(o Any) =>
+        say o
+        if !ok()
+          say "*** aborting ***"
+          limit.type.abort
+
+      limit.this.instate unit limit.this code _->
+
+    # traverse a list and yield the elements
+    list.traverse unit =>
+      match list.this
+        c Cons => reg_issue3801.aborteffect.limit.env.yield c.head; c.tail.traverse
+        nil =>
+
+    # calc powers of two recursively and yield results
+    powers_of_two(i i32) =>
+      limit.env.yield i
+      if i32.type.max-i >= i then powers_of_two i+i
+
+    # yield 1 ten times
+    ones =>
+      for i in 1.. do
+        limit.env.yield 1
+
+    sources array ()->unit := [
+      (() -> [0,8,15].as_list.traverse),
+      (() -> powers_of_two 1),
+      (() -> ones),
+      ]
+
+    for q in sources do
+      n := mut 5
+      _ := limit ()->{n <- n.get-1; n.get>0} q
+
+    unit
+
+  from_issue
+  simplified
+  _ := aborteffect
