@@ -1592,6 +1592,11 @@ Expression
   {
     return expressionPositionPos(at) + (expressionHasPosition(at) ? 8 : 0);
   }
+
+  /**
+   * Expr expression at given position, return the position of the following
+   * expression or Integer.MAX_VALUE if the expression is MirExprKind.Stop.
+   */
   int expressionNextPos(int at)
   {
     var k = expressionKind(at);
@@ -1609,6 +1614,7 @@ Expression
       case Pop         -> eAt;
       case Unit        -> eAt;
       case InlineArray -> inlineArrayNextPos(eAt);
+      case Stop        -> Integer.MAX_VALUE;
       default          -> throw new Error("unexpected expression kind "+k+" at "+at+" in "+this);
       };
   }

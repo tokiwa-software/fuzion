@@ -613,11 +613,6 @@ public class LibraryFeature extends AbstractFeature
               var field = _libModule.assignField(iat);
               var f = _libModule.libraryFeature(field);
               var target = f.outer().isUniverse() ? new Universe() : s.pop();
-
-              // LibraryOut ensures that we do not write an assignment of the value is void:
-              if (CHECKS) check
-                (!f.resultType().isVoid());
-
               var val = s.pop();
               c = new AbstractAssign(f, target, val)
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
@@ -741,6 +736,10 @@ public class LibraryFeature extends AbstractFeature
                 }
 
               x = new InlineArray(LibraryFeature.this.pos(fpos, fposEnd), el, code);
+              break;
+            }
+          case Stop:
+            {
               break;
             }
           default: throw new Error("Unexpected expression kind: " + k);
