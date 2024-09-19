@@ -374,7 +374,7 @@ public class FrontEnd extends ANY
         var data = _sourceModule.data("main");
         reset();
         _mainModule = libModule(data, af -> loadModules(af), null /* use universe of module */);
-        var ignore = new Types.Resolved((target,fn) -> _mainModule.lookupFeature(target, fn, null), _mainModule.libraryUniverse());
+        var ignore = new Types.Resolved((target,fn) -> _mainModule.lookupFeature(target, fn, null), _mainModule.libraryUniverse(), false);
       }
     return _mainModule;
   }
