@@ -251,7 +251,7 @@ public class Types extends ANY
       f_bool_OR                 = forFrontEnd ? f_bool.get(mod, FuzionConstants.INFIX_OPERATOR_PREFIX + "||"   , 1) : null;
       f_bool_IMPLIES            = forFrontEnd ? f_bool.get(mod, FuzionConstants.INFIX_OPERATOR_PREFIX + ":"    , 1) : null;
       f_bool_TERNARY            = forFrontEnd ? f_bool.get(mod, FuzionConstants.TERNARY_OPERATOR_PREFIX + "? :", 3) : null;
-      f_Const_String_utf8_data  = lookup(mod.get(mod, universe, "Const_String", 0), "utf8_data", 0);
+      f_Const_String_utf8_data  = universe.get(mod, "Const_String", 0).get(mod, "utf8_data", 0);
       f_debug                   = universe.get(mod, "debug", 0);
       f_debug_level             = universe.get(mod, "debug_level", 0);
       f_Function                = universe.get(mod, FUNCTION_NAME, 2);
