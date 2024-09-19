@@ -252,7 +252,6 @@ public class Types extends ANY
       f_Lazy                    = universe.get(mod, LAZY_NAME, 1);
       f_Unary                   = universe.get(mod, UNARY_NAME, 2);
       f_auto_unwrap             = universe.get(mod, "auto_unwrap", 2);
-      resolved = this;
       numericTypes = new TreeSet<AbstractType>(new List<>(
         t_i8,
         t_i16,
@@ -264,7 +263,8 @@ public class Types extends ANY
         t_u64,
         t_f32,
         t_f64));
-      ((ArtificialBuiltInType) t_ADDRESS  ).resolveArtificialType(universe.get(mod, FuzionConstants.ANY_NAME, 0));
+      resolved = this;
+      ((ArtificialBuiltInType) t_ADDRESS  ).resolveArtificialType(universe.get(mod, FuzionConstants.ANY_NAME));
       ((ArtificialBuiltInType) t_UNDEFINED).resolveArtificialType(universe);
       ((ArtificialBuiltInType) t_ERROR    ).resolveArtificialType(f_ERROR);
     }

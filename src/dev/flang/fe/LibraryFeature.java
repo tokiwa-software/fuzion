@@ -233,7 +233,7 @@ public class LibraryFeature extends AbstractFeature
   @Override
   public boolean isUniverse()
   {
-    return featureName().baseName().equals("universe");
+    return this == _libModule.libraryUniverse();
   }
 
 
@@ -242,17 +242,12 @@ public class LibraryFeature extends AbstractFeature
    */
   public AbstractFeature outer()
   {
-    AbstractFeature result = null;
-    if (!isUniverse())
+    AbstractFeature result = _outer;
+    if (result == null && !isUniverse())
       {
-        result = _outer;
-        if (result == null)
-          {
-            result = _libModule.featureOuter(_index);
-            _outer = result;
-          }
-
-        }
+        result = _libModule.featureOuter(_index);
+        _outer = result;
+      }
     return result;
   }
 

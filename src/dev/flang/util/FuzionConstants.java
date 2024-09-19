@@ -383,6 +383,7 @@ public class FuzionConstants extends ANY
     Pop,
     Unit,
     InlineArray,
+    // unreachable: inserted after `Match` with all cases ending in void type
     Stop;
 
     /**
