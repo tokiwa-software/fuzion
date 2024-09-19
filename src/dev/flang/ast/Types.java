@@ -187,36 +187,6 @@ public class Types extends ANY
     public final AbstractFeature f_Unary;
     public final AbstractFeature f_auto_unwrap;
     public final Set<AbstractType> numericTypes;
-    Resolved(Resolution res, AbstractFeature universe)
-    {
-      this(res._module, universe, true);
-
-      var internalTypes = new AbstractType[] {
-        t_i8         ,
-        t_i16        ,
-        t_i32        ,
-        t_i64        ,
-        t_u8         ,
-        t_u16        ,
-        t_u32        ,
-        t_u64        ,
-        t_f32        ,
-        t_f64        ,
-        t_bool       ,
-        t_fuzion     ,
-        t_String     ,
-        t_Const_String,
-        t_Any        ,
-        t_unit       ,
-        t_void       ,
-        t_codepoint
-      };
-
-      for (var t : internalTypes)
-        {
-          res.resolveTypes(t.feature());
-        }
-    }
     public Resolved(AbstractModule mod, AbstractFeature universe, boolean forFrontEnd)
     {
       this.universe = universe;
@@ -297,6 +267,36 @@ public class Types extends ANY
       ((ArtificialBuiltInType) t_ADDRESS  ).resolveArtificialType(universe.get(mod, FuzionConstants.ANY_NAME, 0));
       ((ArtificialBuiltInType) t_UNDEFINED).resolveArtificialType(universe);
       ((ArtificialBuiltInType) t_ERROR    ).resolveArtificialType(f_ERROR);
+    }
+    Resolved(Resolution res, AbstractFeature universe)
+    {
+      this(res._module, universe, true);
+
+      var internalTypes = new AbstractType[] {
+        t_i8         ,
+        t_i16        ,
+        t_i32        ,
+        t_i64        ,
+        t_u8         ,
+        t_u16        ,
+        t_u32        ,
+        t_u64        ,
+        t_f32        ,
+        t_f64        ,
+        t_bool       ,
+        t_fuzion     ,
+        t_String     ,
+        t_Const_String,
+        t_Any        ,
+        t_unit       ,
+        t_void       ,
+        t_codepoint
+      };
+
+      for (var t : internalTypes)
+        {
+          res.resolveTypes(t.feature());
+        }
     }
   }
 
