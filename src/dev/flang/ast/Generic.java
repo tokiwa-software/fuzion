@@ -293,6 +293,16 @@ public class Generic extends ANY implements Comparable<Generic>
     return _typeParameter.qualifiedName();
   }
 
+  /**
+   * long string of this Generic relative to feature context, e.g. `map.B` if context is `Sequence`
+   *
+   * @return
+   */
+  public String toLongString(AbstractFeature context)
+  {
+    return _typeParameter.qualifiedName(context);
+  }
+
 
   /**
    * Compare this Generic to other

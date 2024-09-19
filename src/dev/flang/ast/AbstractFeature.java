@@ -433,19 +433,22 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * qualifiedName0 returns the qualified name of this feature without any special handling for type features.
+   * returns the qualified name of this feature, relative to feature context, without any special handling for type features.
+   * If context is null the full qualified name to universe is returned.
    *
+   * @param context the feature to which the name should be relative to, universe if null
    * @return the qualified name, e.g. "fuzion.std.out.println" or "abc.#type.def.#type.THIS#TYPE"
    */
-  private String qualifiedName0()
+  private String qualifiedName0(AbstractFeature context)
   {
     var n = featureName().baseNameHuman();
     return
       !state().atLeast(State.FINDING_DECLARATIONS) ||
-      isUniverse()                                         ||
-      outer() == null                                      ||
-      outer().isUniverse()                                    ? n
-                                                              : outer().qualifiedName() + "." + n;
+      isUniverse()                                 ||
+      outer() == null                              ||
+      outer().isUniverse()                         ||
+      (context != null && outer().equals(context))     ? n
+                                                       : outer().qualifiedName() + "." + n;
   }
 
 
@@ -456,17 +459,28 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public String qualifiedName()
   {
+    return qualifiedName(null);
+  }
+
+  /**
+   * qualifiedName returns the qualified name of this feature, relative to feature context (if context is not null)
+   *
+   * @param context the feature to which the name should be relative to, universe if null
+   * @return the qualified name, e.g. "fuzion.std.out.println" or "abc.def.this.type" or "abc.def.type".
+   */
+  public String qualifiedName(AbstractFeature context)
+  {
     var tfo = state().atLeast(State.FINDING_DECLARATIONS) && outer() != null && outer().isTypeFeature() ? outer().typeFeatureOrigin() : null;
     return
       /* special type parameter used for this.type in type features */
-      isTypeFeaturesThisType() ? (tfo != null ? tfo.qualifiedName() : "null") + ".this.type" :
+      isTypeFeaturesThisType() ? (tfo != null ? tfo.qualifiedName(context) : "null") + ".this.type" :
 
       /* type feature: use original name and add ".type": */
       isTypeFeature()             &&
-      typeFeatureOrigin() != null                 ? typeFeatureOrigin().qualifiedName() + ".type"
+      typeFeatureOrigin() != null                 ? typeFeatureOrigin().qualifiedName(context) + ".type"
 
       /* a normal feature name */
-                                                  : qualifiedName0();
+                                                  : qualifiedName0(context);
   }
 
 

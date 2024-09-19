@@ -107,7 +107,7 @@ public class Html extends ANY
         return "<a class='fd-feature fd-inherited' href='$1'>".replace("$1", featureAbsoluteURL(f))
           + htmlEncodedBasename(f)
           + (c.actualTypeParameters().size() > 0 ? "&nbsp;" : "")
-          + c.actualTypeParameters().stream().map(at -> htmlEncodeNbsp(at.asString())).collect(Collectors.joining(", ")) + "</a>";
+          + c.actualTypeParameters().stream().map(at -> htmlEncodeNbsp(at.asString(false, af))).collect(Collectors.joining(", ")) + "</a>";
       })
       .collect(Collectors.joining("<span class='mr-2 fd-keyword'>,</span>"));
   }
@@ -116,13 +116,14 @@ public class Html extends ANY
   /**
    * anchor tag for type
    * @param at
+   * @param context the feature to which the name should be relative to, full qualified name if null
    * @return
    */
-  private String anchor(AbstractType at)
+  private String anchor(AbstractType at, AbstractFeature context)
   {
     if (at.isGenericArgument())
       {
-        return htmlEncodeNbsp(at.toString());
+        return htmlEncodeNbsp(at.asString(false, context));
       }
     return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.asString()))
       .replace("$2", featureAbsoluteURL(at.feature()));
@@ -187,7 +188,7 @@ public class Html extends ANY
       + arguments(af, printArgs)
       + (af.isThisRef() ? "<div class='fd-keyword'>&nbsp;ref</div>" : "")
       + inherited(af)
-      + (Util.Kind.classify(af) == Util.Kind.Other ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchor(af.resultType()) : "")
+      + (Util.Kind.classify(af) == Util.Kind.Other ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchor(af.resultType(), null) : "")
       + (Util.Kind.classify(af) == Util.Kind.Other ? "" : "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>")
       + annotateInherited(af, outer)
       + annotateRedef(af, outer)
@@ -688,7 +689,7 @@ public class Html extends ANY
       .filter(a -> a.isTypeParameter() || (printArgs && f.visibility().eraseTypeVisibility() == Visi.PUB))
       .map(a ->
         htmlEncodedBasename(a) + "&nbsp;"
-        + (a.isTypeParameter() ? typeArgAsString(a): anchor(a.resultType())))
+        + (a.isTypeParameter() ? typeArgAsString(a): anchor(a.resultType(), f)))
       .collect(Collectors.joining(htmlEncodeNbsp(", "))) + ")";
   }
 

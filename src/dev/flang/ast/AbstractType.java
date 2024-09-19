@@ -1795,8 +1795,27 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * resolved.  Use toString() for creating strings early in the front end
    * phase.
    */
-  public String asString() { return asString(false); }
-  public String asString(boolean humanReadable)
+  public String asString() { return asString(false, null); }
+
+  /**
+   * Get a String representation of this Type.
+   *
+   * Note that this does not work for instances of Type before they were
+   * resolved.  Use toString() for creating strings early in the front end
+   * phase.
+   */
+  public String asString(boolean humanReadable) { return asString(humanReadable, null); }
+
+  /**
+   * Get a String representation of this Type.
+   *
+   * Note that this does not work for instances of Type before they were
+   * resolved.  Use toString() for creating strings early in the front end
+   * phase.
+   *
+   * @param context the feature to which the name should be relative to
+   */
+  public String asString(boolean humanReadable, AbstractFeature context)
   {
     if (PRECONDITIONS) require
       (checkedForGeneric());
@@ -1806,7 +1825,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (isGenericArgument())
       {
         var ga = genericArgument();
-        result = ga.toLongString() + (this.isRef() ? " (boxed)" : "");
+        result = ga.toLongString(context) + (this.isRef() ? " (boxed)" : "");
       }
     else
       {
