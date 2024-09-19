@@ -29,6 +29,7 @@ package dev.flang.tools.docs;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -51,14 +52,14 @@ import dev.flang.util.List;
 public class Html extends ANY
 {
   final DocsOptions config;
-  private final Map<AbstractFeature, Map<Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures;
+  private final Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures;
   private final String navigation;
   private final SourceModule sm;
 
   /**
    * the constructor taking the options
    */
-  public Html(DocsOptions config, Map<AbstractFeature, Map<Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe, SourceModule sm)
+  public Html(DocsOptions config, Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe, SourceModule sm)
   {
     this.config = config;
     this.mapOfDeclaredFeatures = mapOfDeclaredFeatures;
@@ -352,22 +353,45 @@ public class Html extends ANY
    * @param outer the outer feature of the features in the summary
    * @return
    */
-  private String mainSection(Map<Kind, TreeSet<AbstractFeature>> map, AbstractFeature outer)
+  private String mainSection(Map<AbstractFeature.Kind, TreeSet<AbstractFeature>> map, AbstractFeature outer)
   {
-    TreeSet<AbstractFeature> refTypes = map.get(Kind.Type) == null ? new TreeSet<AbstractFeature>() : new TreeSet<>(map.get(Kind.Type));
-    refTypes.removeIf(f->!f.isThisRef());
-    refTypes.addAll(map.get(Kind.RefConstructor) == null ? new TreeSet<AbstractFeature>() : map.get(Kind.RefConstructor));
+    // TreeSet<AbstractFeature> refTypes = map.get(Kind.Type) == null ? new TreeSet<AbstractFeature>() : new TreeSet<>(map.get(Kind.Type));
+    // refTypes.removeIf(f->!f.isThisRef());
+    // refTypes.addAll(map.get(Kind.RefConstructor) == null ? new TreeSet<AbstractFeature>() : map.get(Kind.RefConstructor));
 
-    TreeSet<AbstractFeature> valTypes = map.get(Kind.Type) == null ? new TreeSet<AbstractFeature>() : new TreeSet<>(map.get(Kind.Type));
-    valTypes.removeIf(f->f.isThisRef());
-    valTypes.addAll(map.get(Kind.ValConstructor) == null ? new TreeSet<AbstractFeature>() : map.get(Kind.ValConstructor));
+    // TreeSet<AbstractFeature> valTypes = map.get(Kind.Type) == null ? new TreeSet<AbstractFeature>() : new TreeSet<>(map.get(Kind.Type));
+    // valTypes.removeIf(f->f.isThisRef());
+    // valTypes.addAll(map.get(Kind.ValConstructor) == null ? new TreeSet<AbstractFeature>() : map.get(Kind.ValConstructor));
 
-    return (map.get(Kind.RefConstructor) == null ? "" :  "<h4>Reference Constructors</h4>" + mainSection0(map.get(Kind.RefConstructor), outer))
-    + (map.get(Kind.ValConstructor) == null ? "" :  "<h4>Value Constructors</h4>" + mainSection0(map.get(Kind.ValConstructor), outer))
-    + (map.get(Kind.Other) == null ? "" : "<h4>Functions</h4>" + mainSection0(map.get(Kind.Other), outer))
-    + (refTypes.isEmpty() ? "" : "<h4>Reference Types</h4>" + mainSection0(refTypes, false, outer))
-    + (valTypes.isEmpty() ? "" : "<h4>Value Types</h4>" + mainSection0(valTypes, false, outer))
-    + (map.get(Kind.TypeFeature) == null ? "" : "<h4>Type Features</h4>" + mainSection0(map.get(Kind.TypeFeature), outer));
+    // return (map.get(Kind.RefConstructor) == null ? "" :  "<h4>Reference Constructors</h4>" + mainSection0(map.get(Kind.RefConstructor), outer))
+    // + (map.get(Kind.ValConstructor) == null ? "" :  "<h4>Value Constructors</h4>" + mainSection0(map.get(Kind.ValConstructor), outer))
+    // + (map.get(Kind.Other) == null ? "" : "<h4>Functions</h4>" + mainSection0(map.get(Kind.Other), outer))
+    // + (refTypes.isEmpty() ? "" : "<h4>Reference Types</h4>" + mainSection0(refTypes, false, outer))
+    // + (valTypes.isEmpty() ? "" : "<h4>Value Types</h4>" + mainSection0(valTypes, false, outer))
+    // + (map.get(Kind.TypeFeature) == null ? "" : "<h4>Type Features</h4>" + mainSection0(map.get(Kind.TypeFeature), outer));
+
+    var all_routines = map.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>());
+
+    Stream<AbstractFeature> functions = all_routines.stream().filter(f->!f.isConstructor());
+    functions = Stream.concat(functions, map.getOrDefault(AbstractFeature.Kind.Abstract, new TreeSet<AbstractFeature>()).stream());
+    functions = Stream.concat(functions, map.getOrDefault(AbstractFeature.Kind.Intrinsic, new TreeSet<AbstractFeature>()).stream());
+    functions = Stream.concat(functions, map.getOrDefault(AbstractFeature.Kind.Native, new TreeSet<AbstractFeature>()).stream());
+
+    Stream<AbstractFeature> constructors = map.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>())
+                                              .stream()
+                                              .filter(f->f.isConstructor());
+
+    return
+      (map.get(AbstractFeature.Kind.TypeParameter)     == null ? "" : "<h4>TypeParameters</h4>" + mainSection0(map.get(AbstractFeature.Kind.TypeParameter), outer))
+    + (map.get(AbstractFeature.Kind.OpenTypeParameter) == null ? "" : "<h4>OpenTypeParameters</h4>" + mainSection0(map.get(AbstractFeature.Kind.OpenTypeParameter), outer))
+    + (map.get(AbstractFeature.Kind.Field)             == null ? "" : "<h4>Fields</h4>" + mainSection0(map.get(AbstractFeature.Kind.Field), outer))
+    + (/* NYI: FIXME: need to handle case of empty stream          */ "<h4>Functions</h4>" + mainSection0(functions, outer))
+    // + (!functions.findAny().isPresent() /*FIXME: remove */                        ? "" : "<h4>Routines: Constructors and Functions</h4>" + mainSection0(functions, outer))
+    + (/* NYI: FIXME: need to handle case of empty stream          */ "<h4>Constructors</h4>" + mainSection0(constructors, outer))
+    + (map.get(AbstractFeature.Kind.Choice)            == null ? "" : "<h4>Choices</h4>" + mainSection0(map.get(AbstractFeature.Kind.Choice), outer));
+    // + (map.get(AbstractFeature.Kind.Abstract)          == null ? "" : "<h4>Abstracts</h4>" + mainSection0(map.get(AbstractFeature.Kind.Abstract), outer))
+    // + (map.get(AbstractFeature.Kind.Intrinsic)         == null ? "" : "<h4>Intrinsics</h4>" + mainSection0(map.get(AbstractFeature.Kind.Intrinsic), outer))
+    // + (map.get(AbstractFeature.Kind.Native)            == null ? "" : "<h4>Natives</h4>" + mainSection0(map.get(AbstractFeature.Kind.Native), outer))
   }
 
 
@@ -377,6 +401,16 @@ public class Html extends ANY
    * @return
    */
   private String mainSection0(TreeSet<AbstractFeature> set, AbstractFeature outer)
+  {
+    return mainSection0(set.stream(), true, outer);
+  }
+
+  /**
+   * The summaries and the comments of the features
+   * @param set the features to be included in the summary
+   * @return
+   */
+  private String mainSection0(Stream<AbstractFeature> set, AbstractFeature outer)
   {
     return mainSection0(set, true, outer);
   }
@@ -390,8 +424,18 @@ public class Html extends ANY
    */
   private String mainSection0(TreeSet<AbstractFeature> set, boolean printArgs, AbstractFeature outer)
   {
+    return mainSection0(set.stream(), printArgs, outer);
+  }
+  /**
+   * The summaries and the comments of the features
+   * @param set the features to be included in the summary
+   * @param printArgs whether or not arguments of the feature should be included in output
+   * @param outer the outer feature of the features in the summary
+   * @return
+   */
+  private String mainSection0(Stream<AbstractFeature> set, boolean printArgs, AbstractFeature outer)
+  {
     return set
-      .stream()
       .sorted((af1, af2) -> af1.featureName().baseName().compareToIgnoreCase(af2.featureName().baseName()))
       .map(af -> {
         // NYI summary tag must not contain div // FIXME: is this still up to date??
@@ -690,7 +734,7 @@ public class Html extends ANY
       .filter(a -> a.isTypeParameter() || (printArgs && f.visibility().eraseTypeVisibility() == Visi.PUB))
       .map(a ->
         htmlEncodedBasename(a) + "&nbsp;"
-        + (a.isTypeParameter() ? typeArgAsString(a): anchor(a.resultType())))
+        + (a.isTypeParameter() ? typeArgAsString(a) : anchor(a.resultType())))
       .collect(Collectors.joining(htmlEncodeNbsp(", "))) + ")";
   }
 
@@ -745,7 +789,7 @@ public class Html extends ANY
 
   private String args(AbstractFeature start)
   {
-    if (start.valueArguments().size() == 0 || Kind.classify(start) == Kind.Type)
+    if (start.valueArguments().size() == 0 || (start.isChoice() || start.visibility().eraseTypeVisibility() != Visi.PUB))
       {
         return "";
       }

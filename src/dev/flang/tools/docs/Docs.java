@@ -50,7 +50,6 @@ import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.mir.MIR;
 import dev.flang.tools.FuzionHome;
-import dev.flang.tools.docs.Util.Kind;
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
@@ -283,7 +282,7 @@ public class Docs extends ANY
   private void run(DocsOptions config)
   {
     // declared features are sorted by feature name
-    var mapOfDeclaredFeatures = new HashMap<AbstractFeature, Map<Kind, TreeSet<AbstractFeature>>>();
+    var mapOfDeclaredFeatures = new HashMap<AbstractFeature, Map<AbstractFeature.Kind, TreeSet<AbstractFeature>>>();
 
     breadthFirstTraverse(feature -> {
       if (ignoreFeature(feature, config.ignoreVisibility()))
@@ -305,7 +304,7 @@ public class Docs extends ANY
         feature,
         Stream
           .concat(s, st)
-          .collect(Collectors.groupingBy(x -> Kind.classify(x), Collectors.toCollection(() -> new TreeSet<>(byFeatureName))))
+          .collect(Collectors.groupingBy(x -> x.kind(), Collectors.toCollection(() -> new TreeSet<>(byFeatureName))))
       );
 
     }, universe);
