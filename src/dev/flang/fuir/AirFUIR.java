@@ -2390,7 +2390,7 @@ public class AirFUIR extends FUIR
     if (PRECONDITIONS) require
       (clazzIsArray(constCl));
 
-    var result = _clazzes.clazz(clazz(constCl)._type.generics().get(0))._idInFUIR;
+    var result = id(_clazzes.clazz(clazz(constCl)._type.generics().get(0)));
 
     if (POSTCONDITIONS) ensure
       (result >= 0);
@@ -2572,7 +2572,7 @@ public class AirFUIR extends FUIR
   @Deprecated
   public int clazzAddress()
   {
-    return _clazzes.c_address()._idInFUIR;
+    return id(_clazzes.c_address());
   }
 
 
