@@ -2181,8 +2181,7 @@ public class AirFUIR extends FUIR
           s = codeIndex(s, -1);
           for (var i = 0; i < ac; i++)
             {
-              var acl = clazzArgClazz(cc, ac-1-i);
-              if (clazzResultClazz(acl) != clazzUniverse())
+              if (clazzArgClazz(cc, ac-1-i) != clazzUniverse())
                 {
                   s = skipBack(s);
                 }
