@@ -26,9 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.c;
 
-
-import java.util.TreeMap;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.SpecialClazzes;
@@ -1280,6 +1280,9 @@ public class Intrinsics extends ANY
   /*----------------------------  variables  ----------------------------*/
 
 
+  TreeSet<String> _usedIntrinsics = new TreeSet<>();
+
+
   /*-------------------------  static methods  --------------------------*/
 
 
@@ -1363,6 +1366,7 @@ public class Intrinsics extends ANY
     var result = CStmnt.EMPTY;
     if (cg != null)
       {
+        _usedIntrinsics.add(in);
         result = cg.get(c, cl, outer, in);
       }
     else
