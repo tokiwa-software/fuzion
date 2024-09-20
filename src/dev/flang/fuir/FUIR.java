@@ -866,21 +866,69 @@ public abstract class FUIR extends IR
   public abstract ExprKind codeAt(int s);
 
 
+  /**
+   * For an instruction of type ExprKind.Tag at site s, return the type of the
+   * original value that will be tagged.
+   *
+   * @param s a code site for an Env instruction.
+   *
+   * @return the original type, i.e., for `o option i32 := 42`, this is `i32`.
+   */
   public abstract int tagValueClazz(int s);
 
-  public abstract int tagNewClazz(int s);
-
-  public abstract int tagTagNum(int s);
 
   /**
-   * For outer clazz cl with an Env instruction at site s, return the type of
-   * the env value.
+   * For an instruction of type ExprKind.Tag at site s, return the type of the
+   * original value that will be tagged.
+   *
+   * @param s a code site for an Env instruction.
+   *
+   * @return the new choice type, i.e., for `o option i32 := 42`, this is
+   * `option i32`.
+   */
+  public abstract int tagNewClazz(int s);
+
+
+  /**
+   * For an instruction of type ExprKind.Tag at site s, return the number of the
+   * choice. This will be the same number as the tag number used in a match.
+   *
+   * @param s a code site for an Env instruction.
+   *
+   * @return the tag number, i.e., for `o choice a b i32 c d := 42`, this is
+   * `2`.
+   */
+  public abstract int tagTagNum(int s);
+
+
+  /**
+   * For an instruction of type ExprKind.Env at site s, return the type of the
+   * env value.
+   *
+   * @param s a code site for an Env instruction.
    */
   public abstract int envClazz(int s);
 
 
+  /**
+   * For an instruction of type ExprKind.Box at site s, return the original type
+   * of the value that is to be boxed.
+   *
+   * @param s a code site for a Box instruction.
+   *
+   * @return the original type of the value to be boxed.
+   */
   public abstract int boxValueClazz(int s);
 
+
+  /**
+   * For an instruction of type ExprKind.Box at site s, return the new reference
+   * type of the value that is to be boxed.
+   *
+   * @param s a code site for a Box instruction.
+   *
+   * @return the new reference type of the value to be boxed.
+   */
   public abstract int boxResultClazz(int s);
 
 
@@ -1097,8 +1145,6 @@ public abstract class FUIR extends IR
    * @return the source code position or null if not available.
    */
   public abstract SourcePosition sitePos(int s);
-
-
 
 
   /**
