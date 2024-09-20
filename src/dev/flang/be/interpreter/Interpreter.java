@@ -171,7 +171,7 @@ public class Interpreter extends FUIRContext
   private static int clazzForField(int thiz)
   {
     return fuir().clazzFieldIsAdrOfValue(thiz)
-      ? fuir().clazzAddress()
+      ? fuir().clazz(FUIR.SpecialClazzes.c_sys_ptr)
       : fuir().clazzResultClazz(thiz);
   }
 

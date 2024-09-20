@@ -134,7 +134,7 @@ class Layout extends FUIRContext
           {
             var f = fuir().clazzField(cl, i);
             // NYI: Ugly special handling, clean up:
-            int fc = fuir().clazzFieldIsAdrOfValue(f)  ? fuir().clazzAddress()
+            int fc = fuir().clazzFieldIsAdrOfValue(f)  ? fuir().clazz(FUIR.SpecialClazzes.c_sys_ptr)
                                                        : fuir().clazzResultClazz(f);
             int fsz;
             if        (fuir().clazzIsRef(fc)) {                         fsz = 1;

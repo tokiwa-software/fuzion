@@ -2541,13 +2541,6 @@ public class AirFUIR extends FUIR
     return clazz(cl0)._type.constraintAssignableFrom(Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR */, clazz(cl1)._type);
   }
 
-  /* NYI remove? only used in interpreter */
-  @Deprecated
-  public int clazzAddress()
-  {
-    return id(_clazzes.c_address());
-  }
-
 
   /**
    * Get the position where the clazz is declared
