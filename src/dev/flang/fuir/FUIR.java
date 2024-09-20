@@ -1445,18 +1445,6 @@ public abstract class FUIR extends IR
   /*----------------------  NYI: CLEANUP: TO BE REMOVED?  ----------------------*/
 
 
-  /**
-   * For a value clazz, obtain the corresponding reference clazz.
-   *
-   * @param cl a clazz id
-   *
-   * @return clazz id of corresponding reference clazz.
-   */
-  /* NYI remove? only used in interpreter */
-  @Deprecated
-  public abstract int clazzAsRef(int cl);
-
-
   /* NYI remove? only used in interpreter */
   @Deprecated
   public abstract boolean isAssignableFrom(int cl0, int cl1);

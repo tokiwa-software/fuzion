@@ -146,7 +146,7 @@ public class Instance extends ValueWithClazz
   {
     if (PRECONDITIONS) require
       (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_i8) ||
-       _clazz == fuir().clazzAsRef(fuir().clazz(FUIR.SpecialClazzes.c_i8))   );
+       fuir().clazzAsValue(_clazz) == fuir().clazz(FUIR.SpecialClazzes.c_i8));
 
     return nonrefs[0];
   }
@@ -161,7 +161,7 @@ public class Instance extends ValueWithClazz
   {
     if (PRECONDITIONS) require
       (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_i16) ||
-       _clazz == fuir().clazzAsRef(fuir().clazz(FUIR.SpecialClazzes.c_i16))   );
+       fuir().clazzAsValue(_clazz) == fuir().clazz(FUIR.SpecialClazzes.c_i16));
 
     return nonrefs[0];
   }
@@ -176,7 +176,7 @@ public class Instance extends ValueWithClazz
   {
     if (PRECONDITIONS) require
       (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_i32) ||
-       _clazz == fuir().clazzAsRef(fuir().clazz(FUIR.SpecialClazzes.c_i32))   );
+       fuir().clazzAsValue(_clazz) == fuir().clazz(FUIR.SpecialClazzes.c_i32));
 
     return nonrefs[0];
   }
@@ -191,7 +191,7 @@ public class Instance extends ValueWithClazz
   {
     if (PRECONDITIONS) require
       (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_i64) ||
-       _clazz == fuir().clazzAsRef(fuir().clazz(FUIR.SpecialClazzes.c_i64)));
+       fuir().clazzAsValue(_clazz) == fuir().clazz(FUIR.SpecialClazzes.c_i64));
 
     return
         nonrefs[0    ] & 0xFFFFffffL |
@@ -208,7 +208,7 @@ public class Instance extends ValueWithClazz
   {
     if (PRECONDITIONS) require
       (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_u8) ||
-       _clazz == fuir().clazzAsRef(fuir().clazz(FUIR.SpecialClazzes.c_u8)));
+       fuir().clazzAsValue(_clazz) == fuir().clazz(FUIR.SpecialClazzes.c_u8));
 
     return nonrefs[0];
   }
@@ -224,7 +224,7 @@ public class Instance extends ValueWithClazz
   {
     if (PRECONDITIONS) require
       (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_u16) ||
-       _clazz == fuir().clazzAsRef(fuir().clazz(FUIR.SpecialClazzes.c_u16)));
+       fuir().clazzAsValue(_clazz) == fuir().clazz(FUIR.SpecialClazzes.c_u16));
 
     return nonrefs[0];
   }
@@ -239,7 +239,7 @@ public class Instance extends ValueWithClazz
   {
     if (PRECONDITIONS) require
       (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_u32) ||
-       _clazz == fuir().clazzAsRef(fuir().clazz(FUIR.SpecialClazzes.c_u32)));
+       fuir().clazzAsValue(_clazz) == fuir().clazz(FUIR.SpecialClazzes.c_u32));
 
     return nonrefs[0];
   }
@@ -254,7 +254,7 @@ public class Instance extends ValueWithClazz
   {
     if (PRECONDITIONS) require
       (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_u64) ||
-       _clazz == fuir().clazzAsRef(fuir().clazz(FUIR.SpecialClazzes.c_u64)));
+       fuir().clazzAsValue(_clazz) == fuir().clazz(FUIR.SpecialClazzes.c_u64));
 
     return
         nonrefs[0    ] & 0xFFFFffffL |
@@ -271,7 +271,7 @@ public class Instance extends ValueWithClazz
   {
     if (PRECONDITIONS) require
       (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_f32) ||
-       _clazz == fuir().clazzAsRef(fuir().clazz(FUIR.SpecialClazzes.c_f32)));
+       fuir().clazzAsValue(_clazz) == fuir().clazz(FUIR.SpecialClazzes.c_f32));
 
     return Float.intBitsToFloat(nonrefs[0]);
   }
@@ -286,7 +286,7 @@ public class Instance extends ValueWithClazz
   {
     if (PRECONDITIONS) require
       (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_f64) ||
-       _clazz == fuir().clazzAsRef(fuir().clazz(FUIR.SpecialClazzes.c_f64)));
+       fuir().clazzAsValue(_clazz) == fuir().clazz(FUIR.SpecialClazzes.c_f64));
 
     var l =
         nonrefs[0    ] & 0xFFFFffffL |

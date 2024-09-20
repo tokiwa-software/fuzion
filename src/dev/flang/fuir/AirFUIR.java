@@ -2530,22 +2530,6 @@ public class AirFUIR extends FUIR
   }
 
 
-  /**
-   * For a value clazz, obtain the corresponding reference clazz.
-   *
-   * @param cl a clazz id
-   *
-   * @return clazz id of corresponding reference clazz.
-   */
-  /* NYI remove? only used in interpreter */
-  @Deprecated
-  public int clazzAsRef(int cl)
-  {
-    var cc = clazz(cl);
-    return id(cc.asRef());
-  }
-
-
   /* NYI remove? only used in interpreter */
   @Deprecated
   public boolean isAssignableFrom(int cl0, int cl1)
