@@ -904,14 +904,14 @@ public class C extends ANY
    */
   private boolean usesThreads()
   {
-    return
-      _fuir.isIntrinsicUsed("fuzion.sys.thread.spawn0") ||
-      _fuir.isIntrinsicUsed("fuzion.sys.thread.join0") ||
-      _fuir.isIntrinsicUsed("concur.atomic.compare_and_swap0") ||
-      _fuir.isIntrinsicUsed("concur.atomic.compare_and_set0") ||
-      _fuir.isIntrinsicUsed("concur.atomic.racy_accesses_supported") ||
-      _fuir.isIntrinsicUsed("concur.atomic.read0") ||
-      _fuir.isIntrinsicUsed("concur.atomic.write0");
+    return Stream.of("fuzion.sys.thread.spawn0",
+                     "fuzion.sys.thread.join0",
+                     "concur.atomic.compare_and_swap0",
+                     "concur.atomic.compare_and_set0",
+                     "concur.atomic.racy_accesses_supported",
+                     "concur.atomic.read0",
+                     "concur.atomic.write0")
+      .anyMatch(_intrinsics._usedIntrinsics::contains);
   }
 
 
@@ -920,59 +920,59 @@ public class C extends ANY
    */
   private boolean linkLibMath()
   {
-    return
-      _fuir.isIntrinsicUsed("f32.prefix -") ||
-      _fuir.isIntrinsicUsed("f32.infix +") ||
-      _fuir.isIntrinsicUsed("f32.infix -") ||
-      _fuir.isIntrinsicUsed("f32.infix *") ||
-      _fuir.isIntrinsicUsed("f32.infix /") ||
-      _fuir.isIntrinsicUsed("f32.infix %") ||
-      _fuir.isIntrinsicUsed("f32.infix **") ||
-      _fuir.isIntrinsicUsed("f32.infix =") ||
-      _fuir.isIntrinsicUsed("f32.infix <=") ||
-      _fuir.isIntrinsicUsed("f32.infix >=") ||
-      _fuir.isIntrinsicUsed("f32.infix <") ||
-      _fuir.isIntrinsicUsed("f32.infix >") ||
-      _fuir.isIntrinsicUsed("f32.as_f64") ||
-      _fuir.isIntrinsicUsed("f64.as_f32") ||
-      _fuir.isIntrinsicUsed("f64.as_i64_lax") ||
-      _fuir.isIntrinsicUsed("f32.cast_to_u32") ||
-      _fuir.isIntrinsicUsed("f64.cast_to_u64") ||
-      _fuir.isIntrinsicUsed("f32.type.min_exp") ||
-      _fuir.isIntrinsicUsed("f32.type.max_exp") ||
-      _fuir.isIntrinsicUsed("f32.type.min_positive") ||
-      _fuir.isIntrinsicUsed("f32.type.max") ||
-      _fuir.isIntrinsicUsed("f32.type.epsilon") ||
-      _fuir.isIntrinsicUsed("f64.type.min_exp") ||
-      _fuir.isIntrinsicUsed("f64.type.max_exp") ||
-      _fuir.isIntrinsicUsed("f64.type.min_positive") ||
-      _fuir.isIntrinsicUsed("f64.type.max") ||
-      _fuir.isIntrinsicUsed("f64.type.epsilon") ||
-      _fuir.isIntrinsicUsed("f32.type.is_NaN") ||
-      _fuir.isIntrinsicUsed("f32.type.square_root") ||
-      _fuir.isIntrinsicUsed("f64.type.square_root") ||
-      _fuir.isIntrinsicUsed("f32.type.exp") ||
-      _fuir.isIntrinsicUsed("f64.type.exp") ||
-      _fuir.isIntrinsicUsed("f32.type.log") ||
-      _fuir.isIntrinsicUsed("f64.type.log") ||
-      _fuir.isIntrinsicUsed("f32.type.sin") ||
-      _fuir.isIntrinsicUsed("f64.type.sin") ||
-      _fuir.isIntrinsicUsed("f32.type.cos") ||
-      _fuir.isIntrinsicUsed("f64.type.cos") ||
-      _fuir.isIntrinsicUsed("f32.type.tan") ||
-      _fuir.isIntrinsicUsed("f64.type.tan") ||
-      _fuir.isIntrinsicUsed("f32.type.asin") ||
-      _fuir.isIntrinsicUsed("f64.type.asin") ||
-      _fuir.isIntrinsicUsed("f32.type.acos") ||
-      _fuir.isIntrinsicUsed("f64.type.acos") ||
-      _fuir.isIntrinsicUsed("f32.type.atan") ||
-      _fuir.isIntrinsicUsed("f64.type.atan") ||
-      _fuir.isIntrinsicUsed("f32.type.sinh") ||
-      _fuir.isIntrinsicUsed("f64.type.sinh") ||
-      _fuir.isIntrinsicUsed("f32.type.cosh") ||
-      _fuir.isIntrinsicUsed("f64.type.cosh") ||
-      _fuir.isIntrinsicUsed("f32.type.tanh") ||
-      _fuir.isIntrinsicUsed("f64.type.tanh");
+    return Stream.of("f32.prefix -",
+                     "f32.infix +",
+                     "f32.infix -",
+                     "f32.infix *",
+                     "f32.infix /",
+                     "f32.infix %",
+                     "f32.infix **",
+                     "f32.infix =",
+                     "f32.infix <=",
+                     "f32.infix >=",
+                     "f32.infix <",
+                     "f32.infix >",
+                     "f32.as_f64",
+                     "f64.as_f32",
+                     "f64.as_i64_lax",
+                     "f32.cast_to_u32",
+                     "f64.cast_to_u64",
+                     "f32.type.min_exp",
+                     "f32.type.max_exp",
+                     "f32.type.min_positive",
+                     "f32.type.max",
+                     "f32.type.epsilon",
+                     "f64.type.min_exp",
+                     "f64.type.max_exp",
+                     "f64.type.min_positive",
+                     "f64.type.max",
+                     "f64.type.epsilon",
+                     "f32.type.is_NaN",
+                     "f32.type.square_root",
+                     "f64.type.square_root",
+                     "f32.type.exp",
+                     "f64.type.exp",
+                     "f32.type.log",
+                     "f64.type.log",
+                     "f32.type.sin",
+                     "f64.type.sin",
+                     "f32.type.cos",
+                     "f64.type.cos",
+                     "f32.type.tan",
+                     "f64.type.tan",
+                     "f32.type.asin",
+                     "f64.type.asin",
+                     "f32.type.acos",
+                     "f64.type.acos",
+                     "f32.type.atan",
+                     "f64.type.atan",
+                     "f32.type.sinh",
+                     "f64.type.sinh",
+                     "f32.type.cosh",
+                     "f64.type.cosh",
+                     "f32.type.tanh",
+                     "f64.type.tanh")
+      .anyMatch(_intrinsics._usedIntrinsics::contains);
   }
 
 
@@ -983,27 +983,27 @@ public class C extends ANY
   private boolean linkJVM()
   {
     return JAVA_HOME != null
-      && (
-        _fuir.isIntrinsicUsed("fuzion.java.Java_Object.is_null0") ||
-        _fuir.isIntrinsicUsed("fuzion.java.array_get") ||
-        _fuir.isIntrinsicUsed("fuzion.java.array_length") ||
-        _fuir.isIntrinsicUsed("fuzion.java.array_to_java_object0") ||
-        _fuir.isIntrinsicUsed("fuzion.java.get_field0") ||
-        _fuir.isIntrinsicUsed("fuzion.java.get_static_field0") ||
-        _fuir.isIntrinsicUsed("fuzion.java.call_c0") ||
-        _fuir.isIntrinsicUsed("fuzion.java.call_s0") ||
-        _fuir.isIntrinsicUsed("fuzion.java.call_v0") ||
-        _fuir.isIntrinsicUsed("fuzion.java.bool_to_java_object") ||
-        _fuir.isIntrinsicUsed("fuzion.java.f32_to_java_object") ||
-        _fuir.isIntrinsicUsed("fuzion.java.f64_to_java_object") ||
-        _fuir.isIntrinsicUsed("fuzion.java.i8_to_java_object") ||
-        _fuir.isIntrinsicUsed("fuzion.java.i16_to_java_object") ||
-        _fuir.isIntrinsicUsed("fuzion.java.i32_to_java_object") ||
-        _fuir.isIntrinsicUsed("fuzion.java.i64_to_java_object") ||
-        _fuir.isIntrinsicUsed("fuzion.java.u16_to_java_object") ||
-        _fuir.isIntrinsicUsed("fuzion.java.java_string_to_string") ||
-        _fuir.isIntrinsicUsed("fuzion.java.string_to_java_object0") ||
-        _fuir.isIntrinsicUsed("fuzion.java.fuzion.java.create_jvm"));
+      && Stream.of("fuzion.java.Java_Object.is_null0",
+                    "fuzion.java.array_get",
+                    "fuzion.java.array_length",
+                    "fuzion.java.array_to_java_object0",
+                    "fuzion.java.get_field0",
+                    "fuzion.java.get_static_field0",
+                    "fuzion.java.call_c0",
+                    "fuzion.java.call_s0",
+                    "fuzion.java.call_v0",
+                    "fuzion.java.bool_to_java_object",
+                    "fuzion.java.f32_to_java_object",
+                    "fuzion.java.f64_to_java_object",
+                    "fuzion.java.i8_to_java_object",
+                    "fuzion.java.i16_to_java_object",
+                    "fuzion.java.i32_to_java_object",
+                    "fuzion.java.i64_to_java_object",
+                    "fuzion.java.u16_to_java_object",
+                    "fuzion.java.java_string_to_string",
+                    "fuzion.java.string_to_java_object0",
+                    "fuzion.java.fuzion.java.create_jvm")
+      .anyMatch(_intrinsics._usedIntrinsics::contains);
   }
 
 
