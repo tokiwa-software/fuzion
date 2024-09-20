@@ -294,28 +294,6 @@ public class AirFUIR extends FUIR
   }
 
 
-  /**
-   * Convert a clazz id into a number 0, 1, 2, 3, ...
-   *
-   * The clazz id is intentionally large to detect accidental usage of a clazz
-   * id in a wrong context.
-   *
-   * @param cl a clazz id
-   */
-  public int clazzId2num(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= firstClazz() && cl <= lastClazz());
-
-    var result = cl - FUIR.CLAZZ_BASE;
-
-    if (POSTCONDITIONS) ensure
-      (result >= 0 && result <= lastClazz() - firstClazz());
-
-    return result;
-  }
-
-
   public int clazzNumFields(int cl)
   {
     return clazz(cl).fields().length;
@@ -479,10 +457,13 @@ public class AirFUIR extends FUIR
    *
    * @param cl a clazz id
    *
-   * @return clazz id of cl's result or -1 if the result is a stateless value
+   * @return clazz id of cl's result
    */
   public int clazzResultClazz(int cl)
   {
+    if (PRECONDITIONS) require
+      (clazzKind(cl) != FeatureKind.Choice);
+
     var cc = clazz(cl);
     return id(cc.resultClazz());
   }
@@ -933,12 +914,6 @@ public class AirFUIR extends FUIR
       {
         _siteClazzes.add(cl);
       }
-  }
-
-
-  public boolean doesResultEscape(int s)
-  {
-    return true;
   }
 
 
@@ -2580,13 +2555,6 @@ public class AirFUIR extends FUIR
     return id(cc.asRef());
   }
 
-
-  /* NYI remove? only used in interpreter */
-  @Deprecated
-  public boolean clazzIsRoutine(int cl)
-  {
-    return clazz(cl)._type.feature().isRoutine();
-  }
 
   /* NYI remove? only used in interpreter */
   @Deprecated

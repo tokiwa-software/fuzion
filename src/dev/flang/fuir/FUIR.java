@@ -113,10 +113,29 @@ public abstract class FUIR extends IR
   /*------------------------  accessing classes  ------------------------*/
 
 
+  /**
+   * The clazz ids form a contiguous range of integers. This method gives the
+   * smallest clazz id.  Together with `lastClazz`, this permits iteration.
+   *
+   * @return a valid clazz id such that for all clazz ids id: result <= id.
+   */
   public abstract int firstClazz();
 
+
+  /**
+   * The clazz ids form a contiguous range of integers. This method gives the
+   * largest clazz id.  Together with `firstClazz`, this permits iteration.
+   *
+   * @return a valid clazz id such that for all clazz ids id: result >= id.
+   */
   public abstract int lastClazz();
 
+
+  /**
+   * id of the main clazz.
+   *
+   * @return a valid clazz id
+   */
   public abstract int mainClazzId();
 
 
@@ -127,10 +146,108 @@ public abstract class FUIR extends IR
    * id in a wrong context.
    *
    * @param cl a clazz id
+   *
+   * @return a small positive integer corresponding to cl.
    */
-  public abstract int clazzId2num(int cl);
+  public int clazzId2num(int cl)
+  {
+    if (PRECONDITIONS) require
+      (cl >= firstClazz() && cl <= lastClazz());
+
+    var result = cl - firstClazz();
+
+    if (POSTCONDITIONS) ensure
+      (result >= 0 && result <= lastClazz() - firstClazz());
+
+    return result;
+  }
 
 
+  /**
+   * Return the kind of this clazz ( Routine, Field, Intrinsic, Abstract, ...)
+   */
+  public abstract FeatureKind clazzKind(int cl);
+
+
+  /**
+   * Return the base name of this clazz, i.e., the name excluding the outer
+   * clazz' name and excluding the actual type parameters
+   *
+   * @return String like `"Set"` if `cl` corresponds to `container.Set u32`.
+   */
+  public abstract String clazzBaseName(int cl);
+
+
+
+  /**
+   * Get the clazz of the result of calling a clazz
+   *
+   * @param cl a clazz id, must not be Choice
+   *
+   * @return clazz id of cl's result
+   */
+  public abstract int clazzResultClazz(int cl);
+
+
+  /**
+   * The original qualified name of the feature this clazz was
+   * created from, ignoring any inheritance into new clazzes.
+   *
+   * @param cl a clazz
+   *
+   * @return its original name, e.g. 'Array.getel' instead of
+   * 'Const_String.getel'
+   */
+  public abstract String clazzOriginalName(int cl);
+
+
+  /**
+   * String representation of clazz, for creation of unique type names.
+   *
+   * @param cl a clazz id.
+   */
+  public abstract String clazzAsString(int cl);
+
+
+  /**
+   * human readable String representation of clazz, for stack traces and debugging.
+   *
+   * @param cl a clazz id.
+   */
+  public abstract String clazzAsStringHuman(int cl);
+
+
+  /**
+   * Get a String representation of a given clazz including a list of arguments
+   * and the result type. For debugging only, names might be ambiguous.
+   *
+   * @param cl a clazz id.
+   */
+  public abstract String clazzAsStringWithArgsAndResult(int cl);
+
+
+  /**
+   * Get the outer clazz of the given clazz.
+   *
+   * @param cl a clazz id
+   *
+   * @return clazz id of cl's outer clazz, -1 if cl is universe or a value-less
+   * type.
+   */
+  public abstract int clazzOuterClazz(int cl);
+
+
+  /*------------------------  accessing fields  ------------------------*/
+
+
+  /**
+   * Number of value fields in clazz `cl`, including argument value fields,
+   * inherited fields, artificial fields like outer refs.
+   *
+   * @param cl a clazz id
+   *
+   * @return number of value fields in `cl`
+   */
   public abstract int clazzNumFields(int cl);
 
 
@@ -144,6 +261,45 @@ public abstract class FUIR extends IR
    * @return the clazz id of the field
    */
   public abstract int clazzField(int cl, int i);
+
+
+  /**
+   * Is the given field clazz a reference to an outer feature?
+   *
+   * @param cl a clazz id of kind Field
+   *
+   * @return true for automatically generated references to outer instance
+   */
+  public abstract boolean clazzIsOuterRef(int cl);
+
+
+  /**
+   * Check if field does not store the value directly, but a pointer to the value.
+   *
+   * @param fcl a clazz id of the field
+   *
+   * @return true iff the field is an outer ref field that holds an address of
+   * an outer value, false for normal fields our outer ref fields that store the
+   * outer ref or value directly.
+   */
+  public abstract boolean clazzFieldIsAdrOfValue(int fcl);
+
+
+  /**
+   * NYI: CLEANUP: Remove? This seems to be used only for naming fields, maybe we could use clazzId2num(field) instead?
+   */
+  public abstract int fieldIndex(int field);
+
+
+  /*------------------------  accessing choices  -----------------------*/
+
+
+  /**
+   * is the given clazz a choice clazz
+   *
+   * @param cl a clazz id
+   */
+  public abstract boolean clazzIsChoice(int cl);
 
 
   /**
@@ -171,17 +327,6 @@ public abstract class FUIR extends IR
 
 
   /**
-   * Get all heirs of given clazz that are instantiated.
-   *
-   * @param cl a clazz id
-   *
-   * @return an array of the clazz id's of all heirs for cl that are
-   * instantiated, including cl itself, provided that cl is instantiated.
-   */
-  public abstract int[] clazzInstantiatedHeirs(int cl);
-
-
-  /**
    * Is this a choice type with some elements of ref type?
    *
    * @param cl a clazz id
@@ -201,82 +346,22 @@ public abstract class FUIR extends IR
   public abstract boolean clazzIsChoiceOfOnlyRefs(int cl);
 
 
-  /**
-   * Check if field does not store the value directly, but a pointer to the value.
-   *
-   * @param fcl a clazz id of the field
-   *
-   * @return true iff the field is an outer ref field that holds an address of
-   * an outer value, false for normal fields our outer ref fields that store the
-   * outer ref or value directly.
-   */
-  public abstract boolean clazzFieldIsAdrOfValue(int fcl);
 
+  /*------------------------  inheritance  -----------------------*/
 
 
   /**
-   * Get the clazz of the result of calling a clazz
+   * Get all heirs of given clazz that are instantiated.
    *
    * @param cl a clazz id
    *
-   * @return clazz id of cl's result or -1 if the result is a stateless value
+   * @return an array of the clazz id's of all heirs for cl that are
+   * instantiated, including cl itself, provided that cl is instantiated.
    */
-  public abstract int clazzResultClazz(int cl);
+  public abstract int[] clazzInstantiatedHeirs(int cl);
 
 
-  /**
-   * For a clazz that represents a Fuzion type such as 'i32.type', return the
-   * corresponding name of the type such as 'i32'.
-   *
-   * @param cl a clazz id of a type clazz
-   *
-   * @return the name of the type represented by instances of cl, using UTF8 encoding.
-   */
-  public abstract byte[] clazzTypeName(int cl);
-
-
-  public abstract FeatureKind clazzKind(int cl);
-
-
-  public abstract String clazzBaseName(int cl);
-
-
-  /**
-   * The original qualified name of the feature this clazz was
-   * created from, ignoring any inheritance into new clazzes.
-   *
-   * @param cl a clazz
-   *
-   * @return its original name, e.g. 'Array.getel' instead of
-   * 'Const_String.getel'
-   */
-  public abstract String clazzOriginalName(int cl);
-
-
-  /**
-   * Is the given clazz a ref clazz?
-   *
-   * @return true for non-value-type clazzes
-   */
-  public abstract boolean clazzIsRef(int cl);
-
-
-  /**
-   * Is the given clazz a ref clazz that contains a boxed value type?
-   *
-   * @return true for boxed value-type clazz
-   */
-  public abstract boolean clazzIsBoxed(int cl);
-
-
-  /**
-   * For a reference clazz, obtain the corresponding value clazz.
-   *
-   * @param cl a clazz id
-   *
-   * @return clazz id of corresponding value clazz.
-   */
-  public abstract int clazzAsValue(int cl);
+  /*-------------------------  routines  -------------------------*/
 
 
   /**
@@ -317,22 +402,14 @@ public abstract class FUIR extends IR
 
 
   /**
-   * is the given clazz a choice clazz
-   *
-   * @param cl a clazz id
-   */
-  public abstract boolean clazzIsChoice(int cl);
-
-
-  /**
-   * Get the outer clazz of the given clazz.
+   * Get the id of the result field of a given clazz.
    *
    * @param cl a clazz id
    *
-   * @return clazz id of cl's outer clazz, -1 if cl is universe or a value-less
-   * type.
+   * @return id of cl's result field or -1 if f has no result field (NYI: or a
+   * result field that contains no data)
    */
-  public abstract int clazzOuterClazz(int cl);
+  public abstract int clazzResultField(int cl);
 
 
   /**
@@ -346,6 +423,85 @@ public abstract class FUIR extends IR
 
 
   /**
+   * Get access to the code of a clazz of kind Routine
+   *
+   * @param cl a clazz id
+   *
+   * @return a site id referring to cl's code
+   */
+  public abstract int clazzCode(int cl);
+
+
+  /**
+   * Does the backend need to generate code for this clazz since it might be
+   * called at runtime.  This is true for all features that are called directly
+   * or dynamically in a 'normal' call, i.e., not in an inheritance call.
+   *
+   * An inheritance call is inlined since it works on a different instance, the
+   * instance of the heir class.  Consequently, a clazz resulting from an
+   * inheritance call does not need code for itself.
+   */
+  public abstract boolean clazzNeedsCode(int cl);
+
+
+  /*-----------------------  constructors  -----------------------*/
+
+
+  /**
+   * Check if the given clazz is a constructor, i.e., a routine returning
+   * its instance as a result?
+   *
+   * @param clazz a clazz id
+   *
+   * @return true if the clazz is a constructor, false otherwise
+   */
+  public abstract boolean isConstructor(int clazz);
+
+
+  /**
+   * Is the given clazz a ref clazz?
+   *
+   * @parm cl a constructor clazz id
+   *
+   * @return true for non-value-type clazzes
+   */
+  public abstract boolean clazzIsRef(int cl);
+
+
+  /**
+   * Is the given clazz a ref clazz that contains a boxed value type?
+   *
+   * @return true for boxed value-type clazz
+   */
+  public abstract boolean clazzIsBoxed(int cl);
+
+
+  /**
+   * For a reference clazz, obtain the corresponding value clazz.
+   *
+   * @param cl a clazz id
+   *
+   * @return clazz id of corresponding value clazz.
+   */
+  public abstract int clazzAsValue(int cl);
+
+
+  /*--------------------------  cotypes  -------------------------*/
+
+
+  /**
+   * For a clazz that represents a Fuzion type such as 'i32.type', return the
+   * corresponding name of the type such as 'i32'.  This value is returned by
+   * intrinsic `Type.name`.
+   *
+   * @param cl a clazz id of a cotype
+   *
+   * @return the name of the type represented by instances of cl, using UTF8 encoding.
+   */
+  public abstract byte[] clazzTypeName(int cl);
+
+
+  /**
    * If cl is a type parameter, return the type parameter's actual type.
    *
    * @param cl a clazz id
@@ -356,21 +512,7 @@ public abstract class FUIR extends IR
   public abstract int clazzTypeParameterActualType(int cl);
 
 
-  /**
-   * Get the id of clazz Any.
-   *
-   * @return clazz id of clazz Any
-   */
-  public abstract int clazzAny();
-
-
-  /**
-   * Get the id of clazz universe.
-   *
-   * @return clazz id of clazz universe
-   */
-  public abstract int clazzUniverse();
-
+  /*----------------------  special clazzes  ---------------------*/
 
 
   /**
@@ -397,156 +539,27 @@ public abstract class FUIR extends IR
 
 
   /**
-   * String representation of clazz, for creation of unique type names.
+   * Get the id of the given special clazz.
    *
-   * @param cl a clazz id.
+   * @param c the id of clazz c or -1 if that clazz was not created.
    */
-  public abstract String clazzAsString(int cl);
+  public abstract int clazz(SpecialClazzes c);
 
 
   /**
-   * human readable String representation of clazz, for stack traces and debugging.
+   * Get the id of clazz Any.
    *
-   * @param cl a clazz id.
+   * @return clazz id of clazz Any
    */
-  public abstract String clazzAsStringHuman(int cl);
+  public abstract int clazzAny();
 
 
   /**
-   * Get a String representation of a given clazz including a list of arguments
-   * and the result type. For debugging only, names might be ambiguous.
+   * Get the id of clazz universe.
    *
-   * @param cl a clazz id.
+   * @return clazz id of clazz universe
    */
-  public abstract String clazzAsStringWithArgsAndResult(int cl);
-
-
-
-  /**
-   * Is there just one single value of this class, so this type is essentially a
-   * C/Java `void` type?
-   *
-   * NOTE: This is false for Fuzion's `void` type!
-   */
-  public abstract boolean clazzIsUnitType(int cl);
-
-
-  /**
-   * Is this a void type, i.e., values of this clazz do not exist.
-   */
-  public abstract boolean clazzIsVoidType(int cl);
-
-
-  /**
-   * Get the id of the result field of a given clazz.
-   *
-   * @param cl a clazz id
-   *
-   * @return id of cl's result field or -1 if f has no result field (NYI: or a
-   * result field that contains no data)
-   */
-  public abstract int clazzResultField(int cl);
-
-
-  /**
-   * Get the id of an actual generic parameter of a given clazz.
-   *
-   * @param cl a clazz id
-   *
-   * @param gix indec of the generic parameter
-   *
-   * @return id of cl's actual generic parameter #gix
-   */
-  public abstract int clazzActualGeneric(int cl, int gix);
-
-
-  public abstract boolean doesResultEscape(int s);
-
-
-  /**
-   * Get access to the code of a clazz of kind Routine
-   *
-   * @param cl a clazz id
-   *
-   * @return a code id referring to cl's code
-   */
-  public abstract int clazzCode(int cl);
-
-
-  /**
-   * Does the backend need to generate code for this clazz since it might be
-   * called at runtime.  This is true for all features that are called directly
-   * or dynamically in a 'normal' call, i.e., not in an inheritance call.
-   *
-   * An inheritance call is inlined since it works on a different instance, the
-   * instance of the heir class.  Consequently, a clazz resulting from an
-   * inheritance call does not need code for itself.
-   */
-  public abstract boolean clazzNeedsCode(int cl);
-
-
-  /**
-   * Enum of possible life times of instances created when a clazz is called.
-   *
-   * Ordinal numbers are sorted by lifetime length, i.e., smallest ordinal is
-   * shortest lifetime.
-   */
-  public enum LifeTime
-  {
-    /* the instance is no longer accessible after the call returns, so it can
-     * safely be allocated on a runtime stack and freed when the call returns
-     */
-    Call,
-
-    /* The instance has an unknown lifetime, so it should be heap allocated and
-     * freed by GC
-     */
-    Unknown,
-
-    /* The called clazz does not have an instance value, so there is no lifetime
-     * associated to it
-     */
-    Undefined;
-
-    /**
-     * May an instance with this LifeTime be accessible after the call to its
-     * routine?
-     */
-    public boolean maySurviveCall()
-    {
-      require
-        (this != Undefined);
-
-      return this.ordinal() > Call.ordinal();
-    }
-  }
-
-  static
-  {
-    check(LifeTime.Call.ordinal() < LifeTime.Unknown.ordinal());
-  }
-
-
-  /**
-   * Determine the lifetime of the instance of a call to clazz cl.
-   *
-   * @param cl a clazz id of any kind
-   *
-   * @return A conservative estimate of the lifespan of cl's instance.
-   * Undefined if a call to cl does not create an instance, Call if it is
-   * guaranteed that the instance is inaccessible after the call returned.
-   */
-  public abstract LifeTime lifeTime(int cl);
-
-
-  /**
-   * Is the given field clazz a reference to an outer feature?
-   *
-   * @param cl a clazz id of kind Field
-   *
-   * @return true for automatically generated references to outer instance
-   */
-  public abstract boolean clazzIsOuterRef(int cl);
+  public abstract int clazzUniverse();
 
 
   /**
@@ -631,11 +644,194 @@ public abstract class FUIR extends IR
 
 
   /**
-   * Get the id of the given special clazz.
+   * For a clazz that is an heir of 'Function', find the corresponding inner
+   * clazz for 'call'.  This is used for code generation of intrinsic
+   * 'abortable' that has to create code to call 'call'.
    *
-   * @param c the id of clazz c or -1 if that clazz was not created.
+   * @param cl index of a clazz that is an heir of 'Function'.
+   *
+   * @return the index of the requested `Function.call` feature's clazz.
    */
-  public abstract int clazz(SpecialClazzes c);
+  public abstract int lookupCall(int cl);
+
+
+  /**
+   * For a clazz that is an heir of 'effect', find the corresponding inner
+   * clazz for 'finally'.  This is used for code generation of intrinsic
+   * 'instate0' that has to create code to call 'effect.finally'.
+   *
+   * @param cl index of a clazz that is an heir of 'effect'.
+   *
+   * @return the index of the requested `effect.finally` feature's clazz.
+   */
+  public abstract int lookup_static_finally(int cl);
+
+
+  /**
+   * For a clazz of concur.atomic, lookup the inner clazz of the value field.
+   *
+   * @param cl index of a clazz representing cl's value field
+   *
+   * @return the index of the requested `concur.atomic.value` field's clazz.
+   */
+  public abstract int lookupAtomicValue(int cl);
+
+
+  /**
+   * For a clazz of array, lookup the inner clazz of the internal_array field.
+   *
+   * @param cl index of a clazz `array T` for some type parameter `T`
+   *
+   * @return the index of the requested `array.internal_array` field's clazz.
+   */
+  public abstract int lookup_array_internal_array(int cl);
+
+
+  /**
+   * For a clazz of fuzion.sys.internal_array, lookup the inner clazz of the
+   * data field.
+   *
+   * @param cl index of a clazz `fuzion.sys.internal_array T` for some type parameter `T`
+   *
+   * @return the index of the requested `fuzion.sys.internal_array.data` field's clazz.
+   */
+  public abstract int lookup_fuzion_sys_internal_array_data(int cl);
+
+
+  /**
+   * For a clazz of fuzion.sys.internal_array, lookup the inner clazz of the
+   * length field.
+   *
+   * @param cl index of a clazz `fuzion.sys.internal_array T` for some type parameter `T`
+   *
+   * @return the index of the requested `fuzion.sys.internal_array.length` field's clazz.
+   */
+  public abstract int lookup_fuzion_sys_internal_array_length(int cl);
+
+
+  /**
+   * For a clazz of error, lookup the inner clazz of the msg field.
+   *
+   * @param cl index of a clazz `error`
+   *
+   * @return the index of the requested `error.msg` field's clazz.
+   */
+  public abstract int lookup_error_msg(int cl);
+
+
+  /*---------------------------  types  --------------------------*/
+
+
+  /**
+   * Is there just one single value of this class, so this type is essentially a
+   * C/Java `void` type?
+   *
+   * NOTE: This is false for Fuzion's `void` type!
+   */
+  public abstract boolean clazzIsUnitType(int cl);
+
+
+  /**
+   * Is this a void type, i.e., values of this clazz do not exist.
+   */
+  public abstract boolean clazzIsVoidType(int cl);
+
+
+  /**
+   * Test is a given clazz is not -1 and stores data.
+   *
+   * @param cl the clazz defining a type, may be -1
+   *
+   * @return true if cl != -1 and not unit or void type.
+   */
+  public abstract boolean hasData(int cl);
+
+
+  /*----------------------  type parameters  ---------------------*/
+
+
+  /**
+   * Get the id of an actual generic parameter of a given clazz.
+   *
+   * @param cl a clazz id
+   *
+   * @param gix indec of the generic parameter
+   *
+   * @return id of cl's actual generic parameter #gix
+   */
+  public abstract int clazzActualGeneric(int cl, int gix);
+
+
+  /*---------------------  analysis results  ---------------------*/
+
+
+  /**
+   * For a call in cl in code block c at index i, does the result escape
+   * the current clazz stack frame (such that it cannot be stored in a
+   * local var in the stack frame of cl)
+   *
+   * @param s site of call
+   *
+   * @return true iff the result of the call must be cloned on the heap.
+   */
+  public boolean doesResultEscape(int s)
+  {
+    return true;
+  }
+
+
+  /**
+   * Enum of possible life times of instances created when a clazz is called.
+   *
+   * Ordinal numbers are sorted by lifetime length, i.e., smallest ordinal is
+   * shortest lifetime.
+   */
+  public enum LifeTime
+  {
+    /* the instance is no longer accessible after the call returns, so it can
+     * safely be allocated on a runtime stack and freed when the call returns
+     */
+    Call,
+
+    /* The instance has an unknown lifetime, so it should be heap allocated and
+     * freed by GC
+     */
+    Unknown,
+
+    /* The called clazz does not have an instance value, so there is no lifetime
+     * associated to it
+     */
+    Undefined;
+
+    /**
+     * May an instance with this LifeTime be accessible after the call to its
+     * routine?
+     */
+    public boolean maySurviveCall()
+    {
+      require
+        (this != Undefined);
+
+      return this.ordinal() > Call.ordinal();
+    }
+  }
+
+  static
+  {
+    check(LifeTime.Call.ordinal() < LifeTime.Unknown.ordinal());
+  }
+
+
+  /**
+   * Determine the lifetime of the instance of a call to clazz cl.
+   *
+   * @param cl a clazz id of any kind
+   *
+   * @return A conservative estimate of the lifespan of cl's instance.
+   * Undefined if a call to cl does not create an instance, Call if it is
+   * guaranteed that the instance is inaccessible after the call returned.
+   */
+  public abstract LifeTime lifeTime(int cl);
 
 
   /*--------------------------  accessing code  -------------------------*/
@@ -754,9 +950,6 @@ public abstract class FUIR extends IR
   public abstract int accessTargetClazz(int s);
 
 
-  public abstract int fieldIndex(int field);
-
-
   /**
    * For an intermediate command of type ExprKind.Const, return its clazz.
    *
@@ -845,93 +1038,9 @@ public abstract class FUIR extends IR
 
 
   /**
-   * For a clazz that is an heir of 'Function', find the corresponding inner
-   * clazz for 'call'.  This is used for code generation of intrinsic
-   * 'abortable' that has to create code to call 'call'.
-   *
-   * @param cl index of a clazz that is an heir of 'Function'.
-   *
-   * @return the index of the requested `Function.call` feature's clazz.
+   * @return If the expression has only been found to result in void.
    */
-  public abstract int lookupCall(int cl);
-
-
-  /**
-   * For a clazz that is an heir of 'effect', find the corresponding inner
-   * clazz for 'finally'.  This is used for code generation of intrinsic
-   * 'instate0' that has to create code to call 'effect.finally'.
-   *
-   * @param cl index of a clazz that is an heir of 'effect'.
-   *
-   * @return the index of the requested `effect.finally` feature's clazz.
-   */
-  public abstract int lookup_static_finally(int cl);
-
-
-  /**
-   * For a clazz of concur.atomic, lookup the inner clazz of the value field.
-   *
-   * @param cl index of a clazz representing cl's value field
-   *
-   * @return the index of the requested `concur.atomic.value` field's clazz.
-   */
-  public abstract int lookupAtomicValue(int cl);
-
-
-  /**
-   * For a clazz of array, lookup the inner clazz of the internal_array field.
-   *
-   * @param cl index of a clazz `array T` for some type parameter `T`
-   *
-   * @return the index of the requested `array.internal_array` field's clazz.
-   */
-  public abstract int lookup_array_internal_array(int cl);
-
-
-  /**
-   * For a clazz of fuzion.sys.internal_array, lookup the inner clazz of the
-   * data field.
-   *
-   * @param cl index of a clazz `fuzion.sys.internal_array T` for some type parameter `T`
-   *
-   * @return the index of the requested `fuzion.sys.internal_array.data` field's clazz.
-   */
-  public abstract int lookup_fuzion_sys_internal_array_data(int cl);
-
-
-  /**
-   * For a clazz of fuzion.sys.internal_array, lookup the inner clazz of the
-   * length field.
-   *
-   * @param cl index of a clazz `fuzion.sys.internal_array T` for some type parameter `T`
-   *
-   * @return the index of the requested `fuzion.sys.internal_array.length` field's clazz.
-   */
-  public abstract int lookup_fuzion_sys_internal_array_length(int cl);
-
-
-  /**
-   * For a clazz of error, lookup the inner clazz of the msg field.
-   *
-   * @param cl index of a clazz `error`
-   *
-   * @return the index of the requested `error.msg` field's clazz.
-   */
-  public abstract int lookup_error_msg(int cl);
-
-
-
-  /**
-   * Helper for dumpCode and sitePos to create a label for given code block.
-   *
-   * @param c a code block;
-   *
-   * @return a String that can be used as a unique label for code block `c`.
-   */
-  private String label(int c)
-  {
-    return "l" + (c-SITE_BASE);
-  }
+  public abstract boolean alwaysResultsInVoid(int s);
 
 
   /**
@@ -988,6 +1097,21 @@ public abstract class FUIR extends IR
    * @return the source code position or null if not available.
    */
   public abstract SourcePosition sitePos(int s);
+
+
+
+
+  /**
+   * Helper for dumpCode and sitePos to create a label for given code block.
+   *
+   * @param c a code block;
+   *
+   * @return a String that can be used as a unique label for code block `c`.
+   */
+  private String label(int c)
+  {
+    return "l" + (c-SITE_BASE);
+  }
 
 
   /**
@@ -1208,7 +1332,6 @@ public abstract class FUIR extends IR
   public abstract boolean isEffectIntrinsic(int cl);
 
 
-
   /**
    * For an intrinsic in effect that changes the effect in the
    * current environment, return the type of the environment.  This type is used
@@ -1221,14 +1344,7 @@ public abstract class FUIR extends IR
   public abstract int effectTypeFromInstrinsic(int cl);
 
 
-  /**
-   * Test is a given clazz is not -1 and stores data.
-   *
-   * @param cl the clazz defining a type, may be -1
-   *
-   * @return true if cl != -1 and not unit or void type.
-   */
-  public abstract boolean hasData(int cl);
+  /*------------------------------  arrays  -----------------------------*/
 
 
   /**
@@ -1242,19 +1358,12 @@ public abstract class FUIR extends IR
 
 
   /**
-   * Check if the given clazz is a constructor.
-   *
-   * @param clazz a clazz id
-   *
-   * @return true if the clazz is a constructor, false otherwise
-   */
-  public abstract boolean isConstructor(int clazz);
-
-
-  /**
    * Is `constCl` an array?
    */
   public abstract boolean clazzIsArray(int constCl);
+
+
+  /*----------------------------  constants  ----------------------------*/
 
 
   /**
@@ -1269,11 +1378,7 @@ public abstract class FUIR extends IR
   public abstract byte[] deseralizeConst(int cl, ByteBuffer bb);
 
 
-  /**
-   * Return if the intrinsic is know to be used?
-   * default: true
-   */
-  public abstract boolean isIntrinsicUsed(String name);
+  /*----------------------  accessing source code  ----------------------*/
 
 
   /**
@@ -1285,9 +1390,22 @@ public abstract class FUIR extends IR
 
 
   /**
-   * @return If the expression has only been found to result in void.
+   * Get the position where the clazz is declared
+   * in the source code.
    */
-  public abstract boolean alwaysResultsInVoid(int s);
+  public abstract SourcePosition declarationPos(int cl);
+
+
+  /*----------------------  NYI: CLEANUP: TO BE REMOVED?  ----------------------*/
+
+
+  /**
+   * Return if the intrinsic is know to be used?
+   * default: true
+   */
+  /* NYI remove? only used in C backend */
+  @Deprecated
+  public abstract boolean isIntrinsicUsed(String name);
 
 
   /**
@@ -1304,25 +1422,11 @@ public abstract class FUIR extends IR
 
   /* NYI remove? only used in interpreter */
   @Deprecated
-  public abstract boolean clazzIsRoutine(int cl);
-
-
-  /* NYI remove? only used in interpreter */
-  @Deprecated
   public abstract boolean isAssignableFrom(int cl0, int cl1);
-
-  public abstract boolean constraintAssignableFrom(int cl0, int cl1);
 
   /* NYI remove? only used in interpreter */
   @Deprecated
   public abstract int clazzAddress();
-
-
-  /**
-   * Get the position where the clazz is declared
-   * in the source code.
-   */
-  public abstract SourcePosition declarationPos(int cl);
 
 
 

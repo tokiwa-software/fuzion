@@ -128,7 +128,7 @@ class Layout extends FUIRContext
         size = size + maxSz;
         size -= Integer.MIN_VALUE;
       }
-    else if (fuir().clazzIsRoutine(_clazz))
+    else if (fuir().clazzKind(_clazz) == FUIR.FeatureKind.Routine)
       {
         for (int i = 0; i < fuir().clazzNumFields(cl); i++)
           {
@@ -177,7 +177,8 @@ class Layout extends FUIRContext
   int offset(int f)
   {
     if (PRECONDITIONS) require
-      (fuir().clazzIsRoutine(_clazz) || fuir().clazzIsChoice(_clazz),
+      (fuir().clazzKind(_clazz) == FUIR.FeatureKind.Routine ||
+       fuir().clazzIsChoice(_clazz),
        _offsets.containsKey(fuir().fieldIndex(f))
        );
 
