@@ -2511,16 +2511,6 @@ public class AirFUIR extends FUIR
 
 
   /**
-   * Return if the intrinsic is know to be used?
-   * default: true
-   */
-  public boolean isIntrinsicUsed(String name)
-  {
-    return true;
-  }
-
-
-  /**
    * Get the source file the clazz originates from.
    *
    * e.g. /fuzion/tests/hello/HelloWorld.fz, $FUZION/lib/panic.fz

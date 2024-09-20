@@ -1446,15 +1446,6 @@ public abstract class FUIR extends IR
 
 
   /**
-   * Return if the intrinsic is know to be used?
-   * default: true
-   */
-  /* NYI remove? only used in C backend */
-  @Deprecated
-  public abstract boolean isIntrinsicUsed(String name);
-
-
-  /**
    * For a value clazz, obtain the corresponding reference clazz.
    *
    * @param cl a clazz id

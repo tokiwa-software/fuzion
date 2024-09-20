@@ -1227,13 +1227,6 @@ public class DFA extends ANY
 
 
         @Override
-        public boolean isIntrinsicUsed(String name)
-        {
-          return super.isIntrinsicUsed(name) && _usedIntrinsics_.contains(name);
-        }
-
-
-        @Override
         public boolean alwaysResultsInVoid(int s)
         {
           if (s < 0)
