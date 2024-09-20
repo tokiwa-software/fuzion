@@ -125,7 +125,7 @@ public class Html extends ANY
       {
         return htmlEncodeNbsp(at.asString(false, context));
       }
-    return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.asString()))
+    return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.asString(false, context)))
       .replace("$2", featureAbsoluteURL(at.feature()));
   }
 

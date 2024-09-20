@@ -1872,7 +1872,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             if (!skip) // skip first generic 'THIS#TYPE' for types of type features.
               {
-                result = result + " " + g.asStringWrapped(humanReadable);
+                result = result + " " + g.asStringWrapped(humanReadable, context);
               }
             skip = false;
           }
@@ -1907,6 +1907,16 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public String asStringWrapped(boolean humanReadable)
   {
     return StringHelpers.wrapInParentheses(asString(humanReadable));
+  }
+
+
+  /**
+   * wrap the result of asString in parentheses if necessary
+   * @param context the feature to which the path should be relative to, universe if null
+   */
+  public String asStringWrapped(boolean humanReadable, AbstractFeature context)
+  {
+    return StringHelpers.wrapInParentheses(asString(humanReadable, context));
   }
 
 
