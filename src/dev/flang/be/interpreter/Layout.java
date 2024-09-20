@@ -133,10 +133,11 @@ class Layout extends FUIRContext
         for (int i = 0; i < fuir().clazzNumFields(cl); i++)
           {
             var f = fuir().clazzField(cl, i);
-            int fc = fuir().clazzResultClazz(f);
+            // NYI: Ugly special handling, clean up:
+            int fc = fuir().clazzFieldIsAdrOfValue(f)  ? fuir().clazzAddress()
+                                                       : fuir().clazzResultClazz(f);
             int fsz;
             if        (fuir().clazzIsRef(fc)) {                         fsz = 1;
-            } else if (fuir().clazzFieldIsAdrOfValue(fc))             { fsz = 1;
             } else if (fc == fuir().clazz(FUIR.SpecialClazzes.c_i8))  { fsz = 1;
             } else if (fc == fuir().clazz(FUIR.SpecialClazzes.c_i16)) { fsz = 1;
             } else if (fc == fuir().clazz(FUIR.SpecialClazzes.c_i32)) { fsz = 1;

@@ -1461,6 +1461,11 @@ public abstract class FUIR extends IR
   @Deprecated
   public abstract boolean isAssignableFrom(int cl0, int cl1);
 
+  /* NYI remove? only used in interpreter */
+  @Deprecated
+  public abstract int clazzAddress();
+
+
 
   /*---------------------------------------------------------------------
    *
