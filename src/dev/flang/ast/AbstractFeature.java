@@ -392,6 +392,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public boolean isField() { return kind() == Kind.Field; }
   public boolean isAbstract() { return kind() == Kind.Abstract; }
   public boolean isIntrinsic() { return kind() == Kind.Intrinsic; }
+  public boolean isNative() { return kind() == Kind.Native; }
   public boolean isChoice() { return kind() == Kind.Choice; }
   public boolean isTypeParameter() { return switch (kind()) { case TypeParameter, OpenTypeParameter -> true; default -> false; }; }
   public boolean isOpenTypeParameter() { return kind() == Kind.OpenTypeParameter; }
@@ -400,7 +401,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * Does this feature has an arrow "=>" in it's signature, i.e. is a function or an intrinsic
    * @return true if the signature contains an arrow "=>"
    */
-  public boolean signatureWithArrow() {return (isRoutine() && !isConstructor()) || isIntrinsic();}
+  public boolean signatureWithArrow()
+  {
+    return (isRoutine() && !isConstructor()) || isIntrinsic() || isAbstract() || isNative();
+  }
 
 
   /**
