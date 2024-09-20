@@ -28,6 +28,8 @@ package dev.flang.opt;
 
 import dev.flang.air.AIR;
 import dev.flang.air.IClazzes;
+
+import dev.flang.fuir.AirFUIR;
 import dev.flang.fuir.FUIR;
 
 import dev.flang.util.ANY;
@@ -74,7 +76,7 @@ public class Optimizer extends ANY
 
   public FUIR fuir()
   {
-    return new FUIR(_air.main(), _clazzes);
+    return new AirFUIR(_air.main(), _clazzes);
   }
 
 
