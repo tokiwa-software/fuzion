@@ -41,6 +41,29 @@ public interface HasSourcePosition
    */
   SourcePosition pos();
 
+
+  /**
+   * Source range of this Expr.  Note that this might be longer than the Expr
+   * itself, e.g., in a call
+   *
+   *    f (x.q y)
+   *
+   * The argument to f is the call `x.q y` whose position is
+   *
+   *    f (x.q y)
+   * --------^
+   *
+   * but the source range is
+   *
+   *    f (x.q y)
+   * -----^^^^^^^
+   *
+   */
+  default SourcePosition sourceRange()
+  {
+    return pos();
+  }
+
 }
 
 /* end of file */

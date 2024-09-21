@@ -90,7 +90,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .fd{
-  font-family: 'Fira Mono', monospace;
   display: flex;
   position: relative;
 }
@@ -113,8 +112,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .fd-comment{
-  color: rgba(0, 0, 0, 0.5);
-  background: #724d9515;
+  color: rgba(0, 0, 0);
   padding: 1em;
 }
 
@@ -198,4 +196,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 }
 .fd-parent a:hover{
   color: #795e26;
+}
+
+.fz-code, .fd-feature, .fd-keyword, .fd-type {
+  font-family: 'Fira Mono', monospace;
 }
