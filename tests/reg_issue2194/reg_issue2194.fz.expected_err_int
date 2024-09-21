@@ -24,7 +24,7 @@ pre a < 3
 ^^^^^^^^^
 loop: --CURDIR--/reg_issue2194.fz:32:3:
   y i
---^
+--^^^
 universe: --CURDIR--/reg_issue2194.fz:31:1:
 for i in 0..10 do
 ^

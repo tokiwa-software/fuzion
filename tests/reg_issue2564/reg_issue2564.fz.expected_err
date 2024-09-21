@@ -4,9 +4,9 @@ $MODULE/mutate/array.fz:112:5: error 1: Failed to verify that effect 'mutate' is
 ----^^^^^^
 Callchain that lead to this point:
 
-effect environment '--empty--' for call to '(mutate.type.array.type Any).new#1 mutate' at --CURDIR--/reg_issue2564.fz:26:32:
+effect environment '--empty--' for call to '(mutate.type.array.type Any).new#1 mutate' at --CURDIR--/reg_issue2564.fz:26:8:
   o := (mutate.array Any).type.new mutate
--------------------------------^^^
+-------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 effect environment '--empty--' for call to 'reg_issue2564'
 effect environment '--empty--' at program entry
 

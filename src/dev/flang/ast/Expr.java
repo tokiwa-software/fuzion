@@ -136,6 +136,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * -----^^^^^^^
    *
    */
+  @Override
   public SourcePosition sourceRange()
   {
     return _range == null ? pos() : _range;

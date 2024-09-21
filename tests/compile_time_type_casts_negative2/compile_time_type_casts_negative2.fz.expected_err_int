@@ -27,7 +27,7 @@ compile_time_type_casts_negative2.use_x#3 compile_time_type_casts_negative2.a: -
 ------^^^^^^^^^^
 compile_time_type_casts_negative2: --CURDIR--/compile_time_type_casts_negative2.fz:71:3:
   use_x a true true      # will fail since we will try to do `b_thing` on `a`
---^^^^^
+--^^^^^^^^^^^^^^^^^
 
 *** fatal errors encountered, stopping.
 one error.

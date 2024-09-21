@@ -7,50 +7,52 @@ Callchain that lead to this point:
 effect environment 'test_effect_neg.b, test_effect_neg.c' for call to 'test_effect_neg.use_a' at --CURDIR--/test_effect_neg.fz:87:9:
         use_a      # 7. should flag an error: effect not installed
 --------^^^^^
-effect environment 'test_effect_neg.b, test_effect_neg.c' for call to 'test_effect_neg.λ.call.λ.call' at $MODULE/effect.fz:196:39:
+effect environment 'test_effect_neg.b, test_effect_neg.c' for call to 'test_effect_neg.λ.call.λ.call' at $MODULE/effect.fz:219:39:
     effect.this.instate R effect.this code
 --------------------------------------^^^^
-effect environment 'test_effect_neg.b, test_effect_neg.c' for call to '(test_effect_neg.c.instate_self#2 unit).λ.call' at $MODULE/effect.fz:175:17:
+effect environment 'test_effect_neg.b, test_effect_neg.c' for call to '(test_effect_neg.c.instate_self#2 unit).λ.call' at $MODULE/effect.fz:198:17:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----------------^^^^
-effect environment 'test_effect_neg.b, test_effect_neg.c' for call to '(test_effect_neg.type.c.type.instate#3 unit).λ.call' at $MODULE/effect.fz:147:20:
+effect environment 'test_effect_neg.b, test_effect_neg.c' for call to '(test_effect_neg.type.c.type.instate#3 unit).λ.call' at $MODULE/effect.fz:170:20:
         set res := code()
 -------------------^^^^
 effect environment 'test_effect_neg.b, test_effect_neg.c' for call to '(test_effect_neg.type.c.type.instate#4 unit).call_code.call'
-install effect 'test_effect_neg.c', old environment was 'test_effect_neg.b' for call to 'test_effect_neg.type.c.type.instate0#5 (test_effect_neg.type.c.type.instate#4 unit).call_code (test_effect_neg.type.c.type.instate#4 unit).call_def' at $MODULE/effect.fz:154:5:
+install effect 'test_effect_neg.c', old environment was 'test_effect_neg.b' for call to 'test_effect_neg.type.c.type.instate0#5 (test_effect_neg.type.c.type.instate#4 unit).call_code (test_effect_neg.type.c.type.instate#4 unit).call_def' at $MODULE/effect.fz:177:5:
     instate0 e call_code call_def
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment 'test_effect_neg.b' for call to 'test_effect_neg.type.c.type.instate#4 unit' at $MODULE/effect.fz:175:5:
+effect environment 'test_effect_neg.b' for call to 'test_effect_neg.type.c.type.instate#4 unit' at $MODULE/effect.fz:198:5:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment 'test_effect_neg.b' for call to 'test_effect_neg.type.c.type.instate#3 unit' at $MODULE/effect.fz:196:5:
+effect environment 'test_effect_neg.b' for call to 'test_effect_neg.type.c.type.instate#3 unit' at $MODULE/effect.fz:219:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment 'test_effect_neg.b' for call to 'test_effect_neg.c.instate_self#2 unit' at --CURDIR--/test_effect_neg.fz:86:9:
+effect environment 'test_effect_neg.b' for call to 'test_effect_neg.c.instate_self#2 unit' at --CURDIR--/test_effect_neg.fz:86:7:
       c.instate_self ()->
---------^^^^^^^^^^^^
-effect environment 'test_effect_neg.b' for call to 'test_effect_neg.λ.call' at $MODULE/effect.fz:196:39:
+------^^^^^^^^^^^^^^^^^^^
+        use_a      # 7. should flag an error: effect not installed
+--------^^^^^
+effect environment 'test_effect_neg.b' for call to 'test_effect_neg.λ.call' at $MODULE/effect.fz:219:39:
     effect.this.instate R effect.this code
 --------------------------------------^^^^
-effect environment 'test_effect_neg.b' for call to '(test_effect_neg.b.instate_self#2 unit).λ.call' at $MODULE/effect.fz:175:17:
+effect environment 'test_effect_neg.b' for call to '(test_effect_neg.b.instate_self#2 unit).λ.call' at $MODULE/effect.fz:198:17:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----------------^^^^
-effect environment 'test_effect_neg.b' for call to '(test_effect_neg.type.b.type.instate#3 unit).λ.call' at $MODULE/effect.fz:147:20:
+effect environment 'test_effect_neg.b' for call to '(test_effect_neg.type.b.type.instate#3 unit).λ.call' at $MODULE/effect.fz:170:20:
         set res := code()
 -------------------^^^^
 effect environment 'test_effect_neg.b' for call to '(test_effect_neg.type.b.type.instate#4 unit).call_code.call'
-install effect 'test_effect_neg.b', old environment was '--empty--' for call to 'test_effect_neg.type.b.type.instate0#5 (test_effect_neg.type.b.type.instate#4 unit).call_code (test_effect_neg.type.b.type.instate#4 unit).call_def' at $MODULE/effect.fz:154:5:
+install effect 'test_effect_neg.b', old environment was '--empty--' for call to 'test_effect_neg.type.b.type.instate0#5 (test_effect_neg.type.b.type.instate#4 unit).call_code (test_effect_neg.type.b.type.instate#4 unit).call_def' at $MODULE/effect.fz:177:5:
     instate0 e call_code call_def
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg.type.b.type.instate#4 unit' at $MODULE/effect.fz:175:5:
+effect environment '--empty--' for call to 'test_effect_neg.type.b.type.instate#4 unit' at $MODULE/effect.fz:198:5:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg.type.b.type.instate#3 unit' at $MODULE/effect.fz:196:5:
+effect environment '--empty--' for call to 'test_effect_neg.type.b.type.instate#3 unit' at $MODULE/effect.fz:219:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg.b.instate_self#2 unit' at --CURDIR--/test_effect_neg.fz:51:5:
+effect environment '--empty--' for call to 'test_effect_neg.b.instate_self#2 unit' at --CURDIR--/test_effect_neg.fz:51:3:
   b.instate_self unit fb
-----^^^^^^^^^^^^
+--^^^^^^^^^^^^^^^^^^^^^^
 effect environment '--empty--' for call to 'test_effect_neg'
 effect environment '--empty--' at program entry
 
@@ -63,50 +65,52 @@ Callchain that lead to this point:
 effect environment 'test_effect_neg.a, test_effect_neg.c' for call to 'test_effect_neg.use_b' at --CURDIR--/test_effect_neg.fz:83:9:
         use_b      # 6. should flag an error: effect not installed
 --------^^^^^
-effect environment 'test_effect_neg.a, test_effect_neg.c' for call to 'test_effect_neg.λ.call.λ.call' at $MODULE/effect.fz:196:39:
+effect environment 'test_effect_neg.a, test_effect_neg.c' for call to 'test_effect_neg.λ.call.λ.call' at $MODULE/effect.fz:219:39:
     effect.this.instate R effect.this code
 --------------------------------------^^^^
-effect environment 'test_effect_neg.a, test_effect_neg.c' for call to '(test_effect_neg.c.instate_self#2 unit).λ.call' at $MODULE/effect.fz:175:17:
+effect environment 'test_effect_neg.a, test_effect_neg.c' for call to '(test_effect_neg.c.instate_self#2 unit).λ.call' at $MODULE/effect.fz:198:17:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----------------^^^^
-effect environment 'test_effect_neg.a, test_effect_neg.c' for call to '(test_effect_neg.type.c.type.instate#3 unit).λ.call' at $MODULE/effect.fz:147:20:
+effect environment 'test_effect_neg.a, test_effect_neg.c' for call to '(test_effect_neg.type.c.type.instate#3 unit).λ.call' at $MODULE/effect.fz:170:20:
         set res := code()
 -------------------^^^^
 effect environment 'test_effect_neg.a, test_effect_neg.c' for call to '(test_effect_neg.type.c.type.instate#4 unit).call_code.call'
-install effect 'test_effect_neg.c', old environment was 'test_effect_neg.a' for call to 'test_effect_neg.type.c.type.instate0#5 (test_effect_neg.type.c.type.instate#4 unit).call_code (test_effect_neg.type.c.type.instate#4 unit).call_def' at $MODULE/effect.fz:154:5:
+install effect 'test_effect_neg.c', old environment was 'test_effect_neg.a' for call to 'test_effect_neg.type.c.type.instate0#5 (test_effect_neg.type.c.type.instate#4 unit).call_code (test_effect_neg.type.c.type.instate#4 unit).call_def' at $MODULE/effect.fz:177:5:
     instate0 e call_code call_def
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment 'test_effect_neg.a' for call to 'test_effect_neg.type.c.type.instate#4 unit' at $MODULE/effect.fz:175:5:
+effect environment 'test_effect_neg.a' for call to 'test_effect_neg.type.c.type.instate#4 unit' at $MODULE/effect.fz:198:5:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment 'test_effect_neg.a' for call to 'test_effect_neg.type.c.type.instate#3 unit' at $MODULE/effect.fz:196:5:
+effect environment 'test_effect_neg.a' for call to 'test_effect_neg.type.c.type.instate#3 unit' at $MODULE/effect.fz:219:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment 'test_effect_neg.a' for call to 'test_effect_neg.c.instate_self#2 unit' at --CURDIR--/test_effect_neg.fz:82:9:
+effect environment 'test_effect_neg.a' for call to 'test_effect_neg.c.instate_self#2 unit' at --CURDIR--/test_effect_neg.fz:82:7:
       c.instate_self ()->
---------^^^^^^^^^^^^
-effect environment 'test_effect_neg.a' for call to 'test_effect_neg.λ.call' at $MODULE/effect.fz:196:39:
+------^^^^^^^^^^^^^^^^^^^
+        use_b      # 6. should flag an error: effect not installed
+--------^^^^^
+effect environment 'test_effect_neg.a' for call to 'test_effect_neg.λ.call' at $MODULE/effect.fz:219:39:
     effect.this.instate R effect.this code
 --------------------------------------^^^^
-effect environment 'test_effect_neg.a' for call to '(test_effect_neg.a.instate_self#2 unit).λ.call' at $MODULE/effect.fz:175:17:
+effect environment 'test_effect_neg.a' for call to '(test_effect_neg.a.instate_self#2 unit).λ.call' at $MODULE/effect.fz:198:17:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----------------^^^^
-effect environment 'test_effect_neg.a' for call to '(test_effect_neg.type.a.type.instate#3 unit).λ.call' at $MODULE/effect.fz:147:20:
+effect environment 'test_effect_neg.a' for call to '(test_effect_neg.type.a.type.instate#3 unit).λ.call' at $MODULE/effect.fz:170:20:
         set res := code()
 -------------------^^^^
 effect environment 'test_effect_neg.a' for call to '(test_effect_neg.type.a.type.instate#4 unit).call_code.call'
-install effect 'test_effect_neg.a', old environment was '--empty--' for call to 'test_effect_neg.type.a.type.instate0#5 (test_effect_neg.type.a.type.instate#4 unit).call_code (test_effect_neg.type.a.type.instate#4 unit).call_def' at $MODULE/effect.fz:154:5:
+install effect 'test_effect_neg.a', old environment was '--empty--' for call to 'test_effect_neg.type.a.type.instate0#5 (test_effect_neg.type.a.type.instate#4 unit).call_code (test_effect_neg.type.a.type.instate#4 unit).call_def' at $MODULE/effect.fz:177:5:
     instate0 e call_code call_def
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg.type.a.type.instate#4 unit' at $MODULE/effect.fz:175:5:
+effect environment '--empty--' for call to 'test_effect_neg.type.a.type.instate#4 unit' at $MODULE/effect.fz:198:5:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg.type.a.type.instate#3 unit' at $MODULE/effect.fz:196:5:
+effect environment '--empty--' for call to 'test_effect_neg.type.a.type.instate#3 unit' at $MODULE/effect.fz:219:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg.a.instate_self#2 unit' at --CURDIR--/test_effect_neg.fz:50:5:
+effect environment '--empty--' for call to 'test_effect_neg.a.instate_self#2 unit' at --CURDIR--/test_effect_neg.fz:50:3:
   a.instate_self unit fa
-----^^^^^^^^^^^^
+--^^^^^^^^^^^^^^^^^^^^^^
 effect environment '--empty--' for call to 'test_effect_neg'
 effect environment '--empty--' at program entry
 
@@ -119,50 +123,58 @@ Callchain that lead to this point:
 effect environment 'test_effect_neg.a, test_effect_neg.b' for call to 'test_effect_neg.use_c' at --CURDIR--/test_effect_neg.fz:79:9:
         use_c      # 5. should flag an error: effect not installed
 --------^^^^^
-effect environment 'test_effect_neg.a, test_effect_neg.b' for call to 'test_effect_neg.λ.call.λ.call' at $MODULE/effect.fz:196:39:
+effect environment 'test_effect_neg.a, test_effect_neg.b' for call to 'test_effect_neg.λ.call.λ.call' at $MODULE/effect.fz:219:39:
     effect.this.instate R effect.this code
 --------------------------------------^^^^
-effect environment 'test_effect_neg.a, test_effect_neg.b' for call to '(test_effect_neg.b.instate_self#2 unit).λ.call' at $MODULE/effect.fz:175:17:
+effect environment 'test_effect_neg.a, test_effect_neg.b' for call to '(test_effect_neg.b.instate_self#2 unit).λ.call' at $MODULE/effect.fz:198:17:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----------------^^^^
-effect environment 'test_effect_neg.a, test_effect_neg.b' for call to '(test_effect_neg.type.b.type.instate#3 unit).λ.call' at $MODULE/effect.fz:147:20:
+effect environment 'test_effect_neg.a, test_effect_neg.b' for call to '(test_effect_neg.type.b.type.instate#3 unit).λ.call' at $MODULE/effect.fz:170:20:
         set res := code()
 -------------------^^^^
 effect environment 'test_effect_neg.a, test_effect_neg.b' for call to '(test_effect_neg.type.b.type.instate#4 unit).call_code.call'
-install effect 'test_effect_neg.b', old environment was 'test_effect_neg.a' for call to 'test_effect_neg.type.b.type.instate0#5 (test_effect_neg.type.b.type.instate#4 unit).call_code (test_effect_neg.type.b.type.instate#4 unit).call_def' at $MODULE/effect.fz:154:5:
+install effect 'test_effect_neg.b', old environment was 'test_effect_neg.a' for call to 'test_effect_neg.type.b.type.instate0#5 (test_effect_neg.type.b.type.instate#4 unit).call_code (test_effect_neg.type.b.type.instate#4 unit).call_def' at $MODULE/effect.fz:177:5:
     instate0 e call_code call_def
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment 'test_effect_neg.a' for call to 'test_effect_neg.type.b.type.instate#4 unit' at $MODULE/effect.fz:175:5:
+effect environment 'test_effect_neg.a' for call to 'test_effect_neg.type.b.type.instate#4 unit' at $MODULE/effect.fz:198:5:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment 'test_effect_neg.a' for call to 'test_effect_neg.type.b.type.instate#3 unit' at $MODULE/effect.fz:196:5:
+effect environment 'test_effect_neg.a' for call to 'test_effect_neg.type.b.type.instate#3 unit' at $MODULE/effect.fz:219:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment 'test_effect_neg.a' for call to 'test_effect_neg.b.instate_self#2 unit' at --CURDIR--/test_effect_neg.fz:57:7:
+effect environment 'test_effect_neg.a' for call to 'test_effect_neg.b.instate_self#2 unit' at --CURDIR--/test_effect_neg.fz:57:5:
     b.instate_self ()->
-------^^^^^^^^^^^^
-effect environment 'test_effect_neg.a' for call to 'test_effect_neg.λ.call' at $MODULE/effect.fz:196:39:
+----^^^^^^^^^^^^^^^^^^^
+      c.instate_self ()->
+------^^^^^^^^^^^^^^^^^^^
+        use_a
+--------^^^^^
+        use_b
+--------^^^^^
+        use_c
+--------^^^^^
+effect environment 'test_effect_neg.a' for call to 'test_effect_neg.λ.call' at $MODULE/effect.fz:219:39:
     effect.this.instate R effect.this code
 --------------------------------------^^^^
-effect environment 'test_effect_neg.a' for call to '(test_effect_neg.a.instate_self#2 unit).λ.call' at $MODULE/effect.fz:175:17:
+effect environment 'test_effect_neg.a' for call to '(test_effect_neg.a.instate_self#2 unit).λ.call' at $MODULE/effect.fz:198:17:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----------------^^^^
-effect environment 'test_effect_neg.a' for call to '(test_effect_neg.type.a.type.instate#3 unit).λ.call' at $MODULE/effect.fz:147:20:
+effect environment 'test_effect_neg.a' for call to '(test_effect_neg.type.a.type.instate#3 unit).λ.call' at $MODULE/effect.fz:170:20:
         set res := code()
 -------------------^^^^
 effect environment 'test_effect_neg.a' for call to '(test_effect_neg.type.a.type.instate#4 unit).call_code.call'
-install effect 'test_effect_neg.a', old environment was '--empty--' for call to 'test_effect_neg.type.a.type.instate0#5 (test_effect_neg.type.a.type.instate#4 unit).call_code (test_effect_neg.type.a.type.instate#4 unit).call_def' at $MODULE/effect.fz:154:5:
+install effect 'test_effect_neg.a', old environment was '--empty--' for call to 'test_effect_neg.type.a.type.instate0#5 (test_effect_neg.type.a.type.instate#4 unit).call_code (test_effect_neg.type.a.type.instate#4 unit).call_def' at $MODULE/effect.fz:177:5:
     instate0 e call_code call_def
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg.type.a.type.instate#4 unit' at $MODULE/effect.fz:175:5:
+effect environment '--empty--' for call to 'test_effect_neg.type.a.type.instate#4 unit' at $MODULE/effect.fz:198:5:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg.type.a.type.instate#3 unit' at $MODULE/effect.fz:196:5:
+effect environment '--empty--' for call to 'test_effect_neg.type.a.type.instate#3 unit' at $MODULE/effect.fz:219:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg.a.instate_self#2 unit' at --CURDIR--/test_effect_neg.fz:50:5:
+effect environment '--empty--' for call to 'test_effect_neg.a.instate_self#2 unit' at --CURDIR--/test_effect_neg.fz:50:3:
   a.instate_self unit fa
-----^^^^^^^^^^^^
+--^^^^^^^^^^^^^^^^^^^^^^
 effect environment '--empty--' for call to 'test_effect_neg'
 effect environment '--empty--' at program entry
 
@@ -175,28 +187,28 @@ Callchain that lead to this point:
 effect environment 'test_effect_neg.c' for call to 'test_effect_neg.use_a_err1' at --CURDIR--/test_effect_neg.fz:64:22:
   c.instate_self ()->use_a_err1
 ---------------------^^^^^^^^^^
-effect environment 'test_effect_neg.c' for call to 'test_effect_neg.λ.call' at $MODULE/effect.fz:196:39:
+effect environment 'test_effect_neg.c' for call to 'test_effect_neg.λ.call' at $MODULE/effect.fz:219:39:
     effect.this.instate R effect.this code
 --------------------------------------^^^^
-effect environment 'test_effect_neg.c' for call to '(test_effect_neg.c.instate_self#2 unit).λ.call' at $MODULE/effect.fz:175:17:
+effect environment 'test_effect_neg.c' for call to '(test_effect_neg.c.instate_self#2 unit).λ.call' at $MODULE/effect.fz:198:17:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----------------^^^^
-effect environment 'test_effect_neg.c' for call to '(test_effect_neg.type.c.type.instate#3 unit).λ.call' at $MODULE/effect.fz:147:20:
+effect environment 'test_effect_neg.c' for call to '(test_effect_neg.type.c.type.instate#3 unit).λ.call' at $MODULE/effect.fz:170:20:
         set res := code()
 -------------------^^^^
 effect environment 'test_effect_neg.c' for call to '(test_effect_neg.type.c.type.instate#4 unit).call_code.call'
-install effect 'test_effect_neg.c', old environment was '--empty--' for call to 'test_effect_neg.type.c.type.instate0#5 (test_effect_neg.type.c.type.instate#4 unit).call_code (test_effect_neg.type.c.type.instate#4 unit).call_def' at $MODULE/effect.fz:154:5:
+install effect 'test_effect_neg.c', old environment was '--empty--' for call to 'test_effect_neg.type.c.type.instate0#5 (test_effect_neg.type.c.type.instate#4 unit).call_code (test_effect_neg.type.c.type.instate#4 unit).call_def' at $MODULE/effect.fz:177:5:
     instate0 e call_code call_def
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg.type.c.type.instate#4 unit' at $MODULE/effect.fz:175:5:
+effect environment '--empty--' for call to 'test_effect_neg.type.c.type.instate#4 unit' at $MODULE/effect.fz:198:5:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg.type.c.type.instate#3 unit' at $MODULE/effect.fz:196:5:
+effect environment '--empty--' for call to 'test_effect_neg.type.c.type.instate#3 unit' at $MODULE/effect.fz:219:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg.c.instate_self#2 unit' at --CURDIR--/test_effect_neg.fz:52:5:
+effect environment '--empty--' for call to 'test_effect_neg.c.instate_self#2 unit' at --CURDIR--/test_effect_neg.fz:52:3:
   c.instate_self unit fc
-----^^^^^^^^^^^^
+--^^^^^^^^^^^^^^^^^^^^^^
 effect environment '--empty--' for call to 'test_effect_neg'
 effect environment '--empty--' at program entry
 
@@ -209,28 +221,28 @@ Callchain that lead to this point:
 effect environment 'test_effect_neg.a' for call to 'test_effect_neg.use_b_err2' at --CURDIR--/test_effect_neg.fz:62:22:
   a.instate_self ()->use_b_err2
 ---------------------^^^^^^^^^^
-effect environment 'test_effect_neg.a' for call to 'test_effect_neg.λ.call' at $MODULE/effect.fz:196:39:
+effect environment 'test_effect_neg.a' for call to 'test_effect_neg.λ.call' at $MODULE/effect.fz:219:39:
     effect.this.instate R effect.this code
 --------------------------------------^^^^
-effect environment 'test_effect_neg.a' for call to '(test_effect_neg.a.instate_self#2 unit).λ.call' at $MODULE/effect.fz:175:17:
+effect environment 'test_effect_neg.a' for call to '(test_effect_neg.a.instate_self#2 unit).λ.call' at $MODULE/effect.fz:198:17:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----------------^^^^
-effect environment 'test_effect_neg.a' for call to '(test_effect_neg.type.a.type.instate#3 unit).λ.call' at $MODULE/effect.fz:147:20:
+effect environment 'test_effect_neg.a' for call to '(test_effect_neg.type.a.type.instate#3 unit).λ.call' at $MODULE/effect.fz:170:20:
         set res := code()
 -------------------^^^^
 effect environment 'test_effect_neg.a' for call to '(test_effect_neg.type.a.type.instate#4 unit).call_code.call'
-install effect 'test_effect_neg.a', old environment was '--empty--' for call to 'test_effect_neg.type.a.type.instate0#5 (test_effect_neg.type.a.type.instate#4 unit).call_code (test_effect_neg.type.a.type.instate#4 unit).call_def' at $MODULE/effect.fz:154:5:
+install effect 'test_effect_neg.a', old environment was '--empty--' for call to 'test_effect_neg.type.a.type.instate0#5 (test_effect_neg.type.a.type.instate#4 unit).call_code (test_effect_neg.type.a.type.instate#4 unit).call_def' at $MODULE/effect.fz:177:5:
     instate0 e call_code call_def
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg.type.a.type.instate#4 unit' at $MODULE/effect.fz:175:5:
+effect environment '--empty--' for call to 'test_effect_neg.type.a.type.instate#4 unit' at $MODULE/effect.fz:198:5:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg.type.a.type.instate#3 unit' at $MODULE/effect.fz:196:5:
+effect environment '--empty--' for call to 'test_effect_neg.type.a.type.instate#3 unit' at $MODULE/effect.fz:219:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg.a.instate_self#2 unit' at --CURDIR--/test_effect_neg.fz:50:5:
+effect environment '--empty--' for call to 'test_effect_neg.a.instate_self#2 unit' at --CURDIR--/test_effect_neg.fz:50:3:
   a.instate_self unit fa
-----^^^^^^^^^^^^
+--^^^^^^^^^^^^^^^^^^^^^^
 effect environment '--empty--' for call to 'test_effect_neg'
 effect environment '--empty--' at program entry
 
@@ -243,28 +255,28 @@ Callchain that lead to this point:
 effect environment 'test_effect_neg.b' for call to 'test_effect_neg.use_c_err3' at --CURDIR--/test_effect_neg.fz:63:22:
   b.instate_self ()->use_c_err3
 ---------------------^^^^^^^^^^
-effect environment 'test_effect_neg.b' for call to 'test_effect_neg.λ.call' at $MODULE/effect.fz:196:39:
+effect environment 'test_effect_neg.b' for call to 'test_effect_neg.λ.call' at $MODULE/effect.fz:219:39:
     effect.this.instate R effect.this code
 --------------------------------------^^^^
-effect environment 'test_effect_neg.b' for call to '(test_effect_neg.b.instate_self#2 unit).λ.call' at $MODULE/effect.fz:175:17:
+effect environment 'test_effect_neg.b' for call to '(test_effect_neg.b.instate_self#2 unit).λ.call' at $MODULE/effect.fz:198:17:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----------------^^^^
-effect environment 'test_effect_neg.b' for call to '(test_effect_neg.type.b.type.instate#3 unit).λ.call' at $MODULE/effect.fz:147:20:
+effect environment 'test_effect_neg.b' for call to '(test_effect_neg.type.b.type.instate#3 unit).λ.call' at $MODULE/effect.fz:170:20:
         set res := code()
 -------------------^^^^
 effect environment 'test_effect_neg.b' for call to '(test_effect_neg.type.b.type.instate#4 unit).call_code.call'
-install effect 'test_effect_neg.b', old environment was '--empty--' for call to 'test_effect_neg.type.b.type.instate0#5 (test_effect_neg.type.b.type.instate#4 unit).call_code (test_effect_neg.type.b.type.instate#4 unit).call_def' at $MODULE/effect.fz:154:5:
+install effect 'test_effect_neg.b', old environment was '--empty--' for call to 'test_effect_neg.type.b.type.instate0#5 (test_effect_neg.type.b.type.instate#4 unit).call_code (test_effect_neg.type.b.type.instate#4 unit).call_def' at $MODULE/effect.fz:177:5:
     instate0 e call_code call_def
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg.type.b.type.instate#4 unit' at $MODULE/effect.fz:175:5:
+effect environment '--empty--' for call to 'test_effect_neg.type.b.type.instate#4 unit' at $MODULE/effect.fz:198:5:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg.type.b.type.instate#3 unit' at $MODULE/effect.fz:196:5:
+effect environment '--empty--' for call to 'test_effect_neg.type.b.type.instate#3 unit' at $MODULE/effect.fz:219:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg.b.instate_self#2 unit' at --CURDIR--/test_effect_neg.fz:51:5:
+effect environment '--empty--' for call to 'test_effect_neg.b.instate_self#2 unit' at --CURDIR--/test_effect_neg.fz:51:3:
   b.instate_self unit fb
-----^^^^^^^^^^^^
+--^^^^^^^^^^^^^^^^^^^^^^
 effect environment '--empty--' for call to 'test_effect_neg'
 effect environment '--empty--' at program entry
 
@@ -277,72 +289,86 @@ Callchain that lead to this point:
 effect environment 'test_effect_neg.a, test_effect_neg.b, test_effect_neg.c' for call to 'test_effect_neg.use_d_err4' at --CURDIR--/test_effect_neg.fz:71:9:
         use_d_err4
 --------^^^^^^^^^^
-effect environment 'test_effect_neg.a, test_effect_neg.b, test_effect_neg.c' for call to 'test_effect_neg.λ.call.λ.call.λ.call' at $MODULE/effect.fz:196:39:
+effect environment 'test_effect_neg.a, test_effect_neg.b, test_effect_neg.c' for call to 'test_effect_neg.λ.call.λ.call.λ.call' at $MODULE/effect.fz:219:39:
     effect.this.instate R effect.this code
 --------------------------------------^^^^
-effect environment 'test_effect_neg.a, test_effect_neg.b, test_effect_neg.c' for call to '(test_effect_neg.c.instate_self#2 unit).λ.call' at $MODULE/effect.fz:175:17:
+effect environment 'test_effect_neg.a, test_effect_neg.b, test_effect_neg.c' for call to '(test_effect_neg.c.instate_self#2 unit).λ.call' at $MODULE/effect.fz:198:17:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----------------^^^^
-effect environment 'test_effect_neg.a, test_effect_neg.b, test_effect_neg.c' for call to '(test_effect_neg.type.c.type.instate#3 unit).λ.call' at $MODULE/effect.fz:147:20:
+effect environment 'test_effect_neg.a, test_effect_neg.b, test_effect_neg.c' for call to '(test_effect_neg.type.c.type.instate#3 unit).λ.call' at $MODULE/effect.fz:170:20:
         set res := code()
 -------------------^^^^
 effect environment 'test_effect_neg.a, test_effect_neg.b, test_effect_neg.c' for call to '(test_effect_neg.type.c.type.instate#4 unit).call_code.call'
-install effect 'test_effect_neg.c', old environment was 'test_effect_neg.a, test_effect_neg.b' for call to 'test_effect_neg.type.c.type.instate0#5 (test_effect_neg.type.c.type.instate#4 unit).call_code (test_effect_neg.type.c.type.instate#4 unit).call_def' at $MODULE/effect.fz:154:5:
+install effect 'test_effect_neg.c', old environment was 'test_effect_neg.a, test_effect_neg.b' for call to 'test_effect_neg.type.c.type.instate0#5 (test_effect_neg.type.c.type.instate#4 unit).call_code (test_effect_neg.type.c.type.instate#4 unit).call_def' at $MODULE/effect.fz:177:5:
     instate0 e call_code call_def
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment 'test_effect_neg.a, test_effect_neg.b' for call to 'test_effect_neg.type.c.type.instate#4 unit' at $MODULE/effect.fz:175:5:
+effect environment 'test_effect_neg.a, test_effect_neg.b' for call to 'test_effect_neg.type.c.type.instate#4 unit' at $MODULE/effect.fz:198:5:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment 'test_effect_neg.a, test_effect_neg.b' for call to 'test_effect_neg.type.c.type.instate#3 unit' at $MODULE/effect.fz:196:5:
+effect environment 'test_effect_neg.a, test_effect_neg.b' for call to 'test_effect_neg.type.c.type.instate#3 unit' at $MODULE/effect.fz:219:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment 'test_effect_neg.a, test_effect_neg.b' for call to 'test_effect_neg.c.instate_self#2 unit' at --CURDIR--/test_effect_neg.fz:58:9:
+effect environment 'test_effect_neg.a, test_effect_neg.b' for call to 'test_effect_neg.c.instate_self#2 unit' at --CURDIR--/test_effect_neg.fz:58:7:
       c.instate_self ()->
---------^^^^^^^^^^^^
-effect environment 'test_effect_neg.a, test_effect_neg.b' for call to 'test_effect_neg.λ.call.λ.call' at $MODULE/effect.fz:196:39:
+------^^^^^^^^^^^^^^^^^^^
+        use_a
+--------^^^^^
+        use_b
+--------^^^^^
+        use_c
+--------^^^^^
+effect environment 'test_effect_neg.a, test_effect_neg.b' for call to 'test_effect_neg.λ.call.λ.call' at $MODULE/effect.fz:219:39:
     effect.this.instate R effect.this code
 --------------------------------------^^^^
-effect environment 'test_effect_neg.a, test_effect_neg.b' for call to '(test_effect_neg.b.instate_self#2 unit).λ.call' at $MODULE/effect.fz:175:17:
+effect environment 'test_effect_neg.a, test_effect_neg.b' for call to '(test_effect_neg.b.instate_self#2 unit).λ.call' at $MODULE/effect.fz:198:17:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----------------^^^^
-effect environment 'test_effect_neg.a, test_effect_neg.b' for call to '(test_effect_neg.type.b.type.instate#3 unit).λ.call' at $MODULE/effect.fz:147:20:
+effect environment 'test_effect_neg.a, test_effect_neg.b' for call to '(test_effect_neg.type.b.type.instate#3 unit).λ.call' at $MODULE/effect.fz:170:20:
         set res := code()
 -------------------^^^^
 effect environment 'test_effect_neg.a, test_effect_neg.b' for call to '(test_effect_neg.type.b.type.instate#4 unit).call_code.call'
-install effect 'test_effect_neg.b', old environment was 'test_effect_neg.a' for call to 'test_effect_neg.type.b.type.instate0#5 (test_effect_neg.type.b.type.instate#4 unit).call_code (test_effect_neg.type.b.type.instate#4 unit).call_def' at $MODULE/effect.fz:154:5:
+install effect 'test_effect_neg.b', old environment was 'test_effect_neg.a' for call to 'test_effect_neg.type.b.type.instate0#5 (test_effect_neg.type.b.type.instate#4 unit).call_code (test_effect_neg.type.b.type.instate#4 unit).call_def' at $MODULE/effect.fz:177:5:
     instate0 e call_code call_def
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment 'test_effect_neg.a' for call to 'test_effect_neg.type.b.type.instate#4 unit' at $MODULE/effect.fz:175:5:
+effect environment 'test_effect_neg.a' for call to 'test_effect_neg.type.b.type.instate#4 unit' at $MODULE/effect.fz:198:5:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment 'test_effect_neg.a' for call to 'test_effect_neg.type.b.type.instate#3 unit' at $MODULE/effect.fz:196:5:
+effect environment 'test_effect_neg.a' for call to 'test_effect_neg.type.b.type.instate#3 unit' at $MODULE/effect.fz:219:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment 'test_effect_neg.a' for call to 'test_effect_neg.b.instate_self#2 unit' at --CURDIR--/test_effect_neg.fz:57:7:
+effect environment 'test_effect_neg.a' for call to 'test_effect_neg.b.instate_self#2 unit' at --CURDIR--/test_effect_neg.fz:57:5:
     b.instate_self ()->
-------^^^^^^^^^^^^
-effect environment 'test_effect_neg.a' for call to 'test_effect_neg.λ.call' at $MODULE/effect.fz:196:39:
+----^^^^^^^^^^^^^^^^^^^
+      c.instate_self ()->
+------^^^^^^^^^^^^^^^^^^^
+        use_a
+--------^^^^^
+        use_b
+--------^^^^^
+        use_c
+--------^^^^^
+effect environment 'test_effect_neg.a' for call to 'test_effect_neg.λ.call' at $MODULE/effect.fz:219:39:
     effect.this.instate R effect.this code
 --------------------------------------^^^^
-effect environment 'test_effect_neg.a' for call to '(test_effect_neg.a.instate_self#2 unit).λ.call' at $MODULE/effect.fz:175:17:
+effect environment 'test_effect_neg.a' for call to '(test_effect_neg.a.instate_self#2 unit).λ.call' at $MODULE/effect.fz:198:17:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----------------^^^^
-effect environment 'test_effect_neg.a' for call to '(test_effect_neg.type.a.type.instate#3 unit).λ.call' at $MODULE/effect.fz:147:20:
+effect environment 'test_effect_neg.a' for call to '(test_effect_neg.type.a.type.instate#3 unit).λ.call' at $MODULE/effect.fz:170:20:
         set res := code()
 -------------------^^^^
 effect environment 'test_effect_neg.a' for call to '(test_effect_neg.type.a.type.instate#4 unit).call_code.call'
-install effect 'test_effect_neg.a', old environment was '--empty--' for call to 'test_effect_neg.type.a.type.instate0#5 (test_effect_neg.type.a.type.instate#4 unit).call_code (test_effect_neg.type.a.type.instate#4 unit).call_def' at $MODULE/effect.fz:154:5:
+install effect 'test_effect_neg.a', old environment was '--empty--' for call to 'test_effect_neg.type.a.type.instate0#5 (test_effect_neg.type.a.type.instate#4 unit).call_code (test_effect_neg.type.a.type.instate#4 unit).call_def' at $MODULE/effect.fz:177:5:
     instate0 e call_code call_def
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg.type.a.type.instate#4 unit' at $MODULE/effect.fz:175:5:
+effect environment '--empty--' for call to 'test_effect_neg.type.a.type.instate#4 unit' at $MODULE/effect.fz:198:5:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg.type.a.type.instate#3 unit' at $MODULE/effect.fz:196:5:
+effect environment '--empty--' for call to 'test_effect_neg.type.a.type.instate#3 unit' at $MODULE/effect.fz:219:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg.a.instate_self#2 unit' at --CURDIR--/test_effect_neg.fz:50:5:
+effect environment '--empty--' for call to 'test_effect_neg.a.instate_self#2 unit' at --CURDIR--/test_effect_neg.fz:50:3:
   a.instate_self unit fa
-----^^^^^^^^^^^^
+--^^^^^^^^^^^^^^^^^^^^^^
 effect environment '--empty--' for call to 'test_effect_neg'
 effect environment '--empty--' at program entry
 

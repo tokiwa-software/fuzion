@@ -20,9 +20,9 @@ public panic(msg String) => panic.cause msg
 Java.java.util.ArrayList_static.new_I#1: $MODULE/Java/java/util/ArrayList_static.fz:30:18:
       e error => panic e.msg
 -----------------^^^^^^^^^^^
-javaHello: --CURDIR--/javaHello.fz:108:33:
+javaHello: --CURDIR--/javaHello.fz:108:7:
   say (Java.java.util.ArrayList.new_I -7)
---------------------------------^^^^^
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 *** fatal errors encountered, stopping.
 one error.
