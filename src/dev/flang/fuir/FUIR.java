@@ -1442,14 +1442,6 @@ public abstract class FUIR extends IR
   public abstract SourcePosition declarationPos(int cl);
 
 
-  /*----------------------  NYI: CLEANUP: TO BE REMOVED?  ----------------------*/
-
-
-  /* NYI remove? only used in interpreter */
-  @Deprecated
-  public abstract boolean isAssignableFrom(int cl0, int cl1);
-
-
   /*---------------------------------------------------------------------
    *
    * handling of abstract missing errors.

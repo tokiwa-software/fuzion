@@ -2529,19 +2529,6 @@ public class AirFUIR extends FUIR
   }
 
 
-  /* NYI remove? only used in interpreter */
-  @Deprecated
-  public boolean isAssignableFrom(int cl0, int cl1)
-  {
-    return clazz(cl0)._type.isAssignableFrom(clazz(cl1)._type, Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR */);
-  }
-
-  public boolean constraintAssignableFrom(int cl0, int cl1)
-  {
-    return clazz(cl0)._type.constraintAssignableFrom(Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR */, clazz(cl1)._type);
-  }
-
-
   /**
    * Get the position where the clazz is declared
    * in the source code.

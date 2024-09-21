@@ -145,19 +145,37 @@ public class ChoiceIdAsRef extends Value
       {
         result = ((ChoiceIdAsRef) idAsRef)._id;
       }
-    else
+    else if (idAsRef instanceof ValueWithClazz id)
       {
-        result = 0;
-        while (idAsRef instanceof ValueWithClazz && // NYI: BUG: idAsRef may be JavaRef
-           !fuir().isAssignableFrom(fuir().clazzChoice(clazz, result), ((ValueWithClazz)idAsRef)._clazz))
+        do
           {
             result++;
           }
+        while (!inheritsFrom(id._clazz, fuir().clazzChoice(clazz, result)));
+      }
+    else
+      {
+        if (CHECKS) check
+          (false);
       }
 
     if (POSTCONDITIONS) ensure
       (0 <= result && result < fuir().clazzNumChoices(clazz));
 
+    return result;
+  }
+
+
+  /**
+   * Does clazz child inherit from parent?
+   */
+  static boolean inheritsFrom(int child, int parent)
+  {
+    var result = false;
+    for (var h : fuir().clazzInstantiatedHeirs(parent))
+      {
+        result = result || (child == h);
+      }
     return result;
   }
 
