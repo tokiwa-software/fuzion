@@ -278,22 +278,26 @@ public class AirFUIR extends FUIR
       }
   }
 
+  @Override
   public int firstClazz()
   {
     return CLAZZ_BASE;
   }
 
+  @Override
   public int lastClazz()
   {
     return CLAZZ_BASE + _clazzIds.size() - 1;
   }
 
+  @Override
   public int mainClazzId()
   {
     return id(_main);
   }
 
 
+  @Override
   public int clazzNumFields(int cl)
   {
     return clazz(cl).fields().length;
@@ -309,6 +313,7 @@ public class AirFUIR extends FUIR
    *
    * @return the clazz id of the field
    */
+  @Override
   public int clazzField(int cl, int i)
   {
     if (PRECONDITIONS) require
@@ -328,6 +333,7 @@ public class AirFUIR extends FUIR
    * @return -1 if cl is not a choice clazz, the number of choice entries
    * otherwise.  May be 0 for the void choice.
    */
+  @Override
   public int clazzNumChoices(int cl)
   {
     var cc = clazz(cl);
@@ -345,6 +351,7 @@ public class AirFUIR extends FUIR
    * @return the clazz id of the choice type, or void clazz if the clazz is
    * never instantiated and hence does not need to be taken care for.
    */
+  @Override
   public int clazzChoice(int cl, int i)
   {
     if (PRECONDITIONS) require
@@ -367,6 +374,7 @@ public class AirFUIR extends FUIR
    * @return an array of the clazz id's of all heirs for cl that are
    * instantiated, including cl itself, provided that cl is instantiated.
    */
+  @Override
   public int[] clazzInstantiatedHeirs(int cl)
   {
     var cc = clazz(cl);
@@ -396,6 +404,7 @@ public class AirFUIR extends FUIR
    *
    * @return true iff cl is a choice with at least one ref element
    */
+  @Override
   public boolean clazzIsChoiceWithRefs(int cl)
   {
     var cc = clazz(cl);
@@ -410,6 +419,7 @@ public class AirFUIR extends FUIR
    *
    * @return true iff cl is a choice with only ref or unit/void elements
    */
+  @Override
   public boolean clazzIsChoiceOfOnlyRefs(int cl)
   {
     var cc = clazz(cl);
@@ -426,6 +436,7 @@ public class AirFUIR extends FUIR
    * an outer value, false for normal fields our outer ref fields that store the
    * outer ref or value directly.
    */
+  @Override
   public boolean clazzFieldIsAdrOfValue(int fcl)
   {
     var fc = clazz(fcl);
@@ -459,6 +470,7 @@ public class AirFUIR extends FUIR
    *
    * @return clazz id of cl's result
    */
+  @Override
   public int clazzResultClazz(int cl)
   {
     if (PRECONDITIONS) require
@@ -477,6 +489,7 @@ public class AirFUIR extends FUIR
    *
    * @return the name of the type represented by instances of cl, using UTF8 encoding.
    */
+  @Override
   public byte[] clazzTypeName(int cl)
   {
     var cc = clazz(cl);
@@ -484,6 +497,7 @@ public class AirFUIR extends FUIR
   }
 
 
+  @Override
   public FeatureKind clazzKind(int cl)
   {
     return clazzKind(clazz(cl));
@@ -506,6 +520,7 @@ public class AirFUIR extends FUIR
       };
   }
 
+  @Override
   public String clazzBaseName(int cl)
   {
     var cc = clazz(cl);
@@ -525,6 +540,7 @@ public class AirFUIR extends FUIR
    * @return its original name, e.g. 'Array.getel' instead of
    * 'Const_String.getel'
    */
+  @Override
   public String clazzOriginalName(int cl)
   {
     var cc = clazz(cl);
@@ -537,6 +553,7 @@ public class AirFUIR extends FUIR
    *
    * @return true for non-value-type clazzes
    */
+  @Override
   public boolean clazzIsRef(int cl)
   {
     return clazz(cl).isRef();
@@ -548,6 +565,7 @@ public class AirFUIR extends FUIR
    *
    * @return true for boxed value-type clazz
    */
+  @Override
   public boolean clazzIsBoxed(int cl)
   {
     var result = clazz(cl).isBoxed();
@@ -566,6 +584,7 @@ public class AirFUIR extends FUIR
    *
    * @return clazz id of corresponding value clazz.
    */
+  @Override
   public int clazzAsValue(int cl)
   {
     var cc = clazz(cl);
@@ -581,6 +600,7 @@ public class AirFUIR extends FUIR
    * @return number of arguments expected by cl, 0 if none or if clazz cl can
    * not be called (is a choice type)
    */
+  @Override
   public int clazzArgCount(int cl)
   {
     var cc = clazz(cl);
@@ -598,6 +618,7 @@ public class AirFUIR extends FUIR
    * @return clazz id of the argument or -1 if no such feature exists (the
    * argument is unused).
    */
+  @Override
   public int clazzArgClazz(int cl, int arg)
   {
     if (PRECONDITIONS) require
@@ -620,6 +641,7 @@ public class AirFUIR extends FUIR
    * @return clazz id of the argument or -1 if no such argument exists (the
    * argument is unused).
    */
+  @Override
   public int clazzArg(int cl, int arg)
   {
     var cc = clazz(cl);
@@ -633,6 +655,7 @@ public class AirFUIR extends FUIR
    *
    * @param cl a clazz id
    */
+  @Override
   public boolean clazzIsChoice(int cl)
   {
     return clazz(cl).isChoice();
@@ -647,6 +670,7 @@ public class AirFUIR extends FUIR
    * @return clazz id of cl's outer clazz, -1 if cl is universe or a value-less
    * type.
    */
+  @Override
   public int clazzOuterClazz(int cl)
   {
     var o = clazz(cl)._outer;
@@ -661,6 +685,7 @@ public class AirFUIR extends FUIR
    *
    * @return clazz id of cl's outer ref field or -1 if no such field exists.
    */
+  @Override
   public int clazzOuterRef(int cl)
   {
     var cc = clazz(cl);
@@ -681,6 +706,7 @@ public class AirFUIR extends FUIR
    * @return if cl is a type parameter, clazz id of cl's actual type or -1 if cl
    * is not a type parameter.
    */
+  @Override
   public int clazzTypeParameterActualType(int cl)
   {
     var cc = clazz(cl);
@@ -699,6 +725,7 @@ public class AirFUIR extends FUIR
    *
    * @return clazz id of clazz Any
    */
+  @Override
   public int clazzAny()
   {
     return id(_clazzes.Any());
@@ -710,6 +737,7 @@ public class AirFUIR extends FUIR
    *
    * @return clazz id of clazz universe
    */
+  @Override
   public int clazzUniverse()
   {
     return id(_clazzes.universe());
@@ -725,6 +753,7 @@ public class AirFUIR extends FUIR
    * @return the corresponding SpecialClazz or c_NOT_FOUND if cl is not a
    * special clazz.
    */
+  @Override
   public SpecialClazzes getSpecialClazz(int cl)
   {
     var cc = clazz(cl);
@@ -742,6 +771,7 @@ public class AirFUIR extends FUIR
    *
    * @return true iff cl is the specified special clazz c
    */
+  @Override
   public boolean clazzIs(int cl, SpecialClazzes c)
   {
     return cl == clazz(c);
@@ -753,6 +783,7 @@ public class AirFUIR extends FUIR
    *
    * @param cl a clazz id.
    */
+  @Override
   public String clazzAsString(int cl)
   {
     return cl == -1
@@ -765,6 +796,7 @@ public class AirFUIR extends FUIR
    *
    * @param cl a clazz id.
    */
+  @Override
   public String clazzAsStringHuman(int cl)
   {
     return cl == -1
@@ -779,6 +811,7 @@ public class AirFUIR extends FUIR
    *
    * @param cl a clazz id.
    */
+  @Override
   public String clazzAsStringWithArgsAndResult(int cl)
   {
     var sb = new StringBuilder();
@@ -811,6 +844,7 @@ public class AirFUIR extends FUIR
    *
    * NOTE: This is false for Fuzion's `void` type!
    */
+  @Override
   public boolean clazzIsUnitType(int cl)
   {
     var cc = clazz(cl);
@@ -821,6 +855,7 @@ public class AirFUIR extends FUIR
   /**
    * Is this a void type, i.e., values of this clazz do not exist.
    */
+  @Override
   public boolean clazzIsVoidType(int cl)
   {
     var cc = clazz(cl);
@@ -836,6 +871,7 @@ public class AirFUIR extends FUIR
    * @return id of cl's result field or -1 if f has no result field (NYI: or a
    * result field that contains no data)
    */
+  @Override
   public int clazzResultField(int cl)
   {
     var cc = clazz(cl);
@@ -853,6 +889,7 @@ public class AirFUIR extends FUIR
    *
    * @return id of cl's actual generic parameter #gix
    */
+  @Override
   public int clazzActualGeneric(int cl, int gix)
   {
     var cc = clazz(cl);
@@ -924,6 +961,7 @@ public class AirFUIR extends FUIR
    *
    * @return a code id referring to cl's code
    */
+  @Override
   public int clazzCode(int cl)
   {
     if (PRECONDITIONS) require
@@ -956,6 +994,7 @@ public class AirFUIR extends FUIR
    * instance of the heir class.  Consequently, a clazz resulting from an
    * inheritance call does not need code for itself.
    */
+  @Override
   public boolean clazzNeedsCode(int cl)
   {
     if (_needsCode.get(cl - CLAZZ_BASE))
@@ -994,6 +1033,7 @@ public class AirFUIR extends FUIR
    * Undefined if a call to cl does not create an instance, Call if it is
    * guaranteed that the instance is inaccessible after the call returned.
    */
+  @Override
   public LifeTime lifeTime(int cl)
   {
     return switch (clazzKind(cl))
@@ -1015,6 +1055,7 @@ public class AirFUIR extends FUIR
    *
    * @return true for automatically generated references to outer instance
    */
+  @Override
   public boolean clazzIsOuterRef(int cl)
   {
     return clazz(cl).feature().isOuterRef();
@@ -1026,6 +1067,7 @@ public class AirFUIR extends FUIR
    *
    * @return the id of Const_String or -1 if that clazz was not created.
    */
+  @Override
   public int clazz_Const_String()
   {
     var cc = _clazzes.Const_String();
@@ -1038,6 +1080,7 @@ public class AirFUIR extends FUIR
    *
    * @return the id of Const_String.utf8_data or -1 if that clazz was not created.
    */
+  @Override
   public int clazz_Const_String_utf8_data()
   {
     var cc = _clazzes.Const_String_utf8_data();
@@ -1050,6 +1093,7 @@ public class AirFUIR extends FUIR
    *
    * @return the id of Const_String.array or -1 if that clazz was not created.
    */
+  @Override
   public int clazz_array_u8()
   {
     return clazzResultClazz(clazz_Const_String_utf8_data());
@@ -1061,6 +1105,7 @@ public class AirFUIR extends FUIR
    *
    * @return the id of fuzion.sys.array<u8> or -1 if that clazz was not created.
    */
+  @Override
   public int clazz_fuzionSysArray_u8()
   {
     var cc = _clazzes.fuzionSysArray_u8();
@@ -1073,6 +1118,7 @@ public class AirFUIR extends FUIR
    *
    * @return the id of fuzion.sys.array<u8>.data or -1 if that clazz was not created.
    */
+  @Override
   public int clazz_fuzionSysArray_u8_data()
   {
     var cc = _clazzes.fuzionSysArray_u8_data();
@@ -1085,6 +1131,7 @@ public class AirFUIR extends FUIR
    *
    * @return the id of fuzion.sys.array<u8>.length or -1 if that clazz was not created.
    */
+  @Override
   public int clazz_fuzionSysArray_u8_length()
   {
     var cc = _clazzes.fuzionSysArray_u8_length();
@@ -1097,6 +1144,7 @@ public class AirFUIR extends FUIR
    *
    * @return the id of fuzion.java.Java_Object or -1 if that clazz was not created.
    */
+  @Override
   public int clazz_fuzionJavaObject()
   {
     var cc = _clazzes.fuzionJavaObject();
@@ -1109,6 +1157,7 @@ public class AirFUIR extends FUIR
    *
    * @return the id of fuzion.java.Java_Object.Java_Ref or -1 if that clazz was not created.
    */
+  @Override
   public int clazz_fuzionJavaObject_Ref()
   {
     var cc = _clazzes.fuzionJavaObject_Ref();
@@ -1121,6 +1170,7 @@ public class AirFUIR extends FUIR
    *
    * @return the id of error or -1 if that clazz was not created.
    */
+  @Override
   public int clazz_error()
   {
     var cc = _clazzes.c_error();
@@ -1134,6 +1184,7 @@ public class AirFUIR extends FUIR
    * @param cl Java_Object or inheriting from Java_Object
    *
    */
+  @Override
   public int lookupJavaRef(int cl)
   {
     return lookup(cl, Types.resolved.f_fuzion_Java_Object_Ref);
@@ -1145,6 +1196,7 @@ public class AirFUIR extends FUIR
    *
    * @param c the id of clazz c or -1 if that clazz was not created.
    */
+  @Override
   public int clazz(SpecialClazzes c)
   {
     return _specialClazzes[c.ordinal()];
@@ -1162,6 +1214,7 @@ public class AirFUIR extends FUIR
    *
    * @return the clazz id that code at site s belongs to.
    */
+  @Override
   public int clazzAt(int s)
   {
     if (PRECONDITIONS) require
@@ -1178,6 +1231,7 @@ public class AirFUIR extends FUIR
    *
    * @return a String describing site
    */
+  @Override
   public String siteAsString(int s)
   {
     String res;
@@ -1203,6 +1257,7 @@ public class AirFUIR extends FUIR
    *
    * @param s site
    */
+  @Override
   public ExprKind codeAt(int s)
   {
     if (PRECONDITIONS) require
@@ -1229,6 +1284,7 @@ public class AirFUIR extends FUIR
   }
 
 
+  @Override
   public int tagValueClazz(int s)
   {
     if (PRECONDITIONS) require
@@ -1243,6 +1299,7 @@ public class AirFUIR extends FUIR
     return vcl == null ? -1 : id(vcl);
   }
 
+  @Override
   public int tagNewClazz(int s)
   {
     if (PRECONDITIONS) require
@@ -1257,6 +1314,7 @@ public class AirFUIR extends FUIR
     return ncl == null ? -1 : id(ncl);
   }
 
+  @Override
   public int tagTagNum(int s)
   {
     if (PRECONDITIONS) require
@@ -1271,6 +1329,7 @@ public class AirFUIR extends FUIR
    * For outer clazz cl with an Env instruction at site s, return the type of
    * the env value.
    */
+  @Override
   public int envClazz(int s)
   {
     if (PRECONDITIONS) require
@@ -1285,6 +1344,7 @@ public class AirFUIR extends FUIR
     return vcl == null ? -1 : id(vcl);
   }
 
+  @Override
   public int boxValueClazz(int s)
   {
     if (PRECONDITIONS) require
@@ -1299,6 +1359,7 @@ public class AirFUIR extends FUIR
     return id(vc);
   }
 
+  @Override
   public int boxResultClazz(int s)
   {
     if (PRECONDITIONS) require
@@ -1319,6 +1380,7 @@ public class AirFUIR extends FUIR
    *
    * @param s site of the comment
    */
+  @Override
   public String comment(int s)
   {
     if (PRECONDITIONS) require
@@ -1339,6 +1401,7 @@ public class AirFUIR extends FUIR
    * @return the clazz that has to be accessed or -1 if the access is an
    * assignment to a field that is unused, so the assignment is not needed.
    */
+  @Override
   public int accessedClazz(int s)
   {
     if (PRECONDITIONS) require
@@ -1368,6 +1431,7 @@ public class AirFUIR extends FUIR
    *
    * @return the type of the assigned value.
    */
+  @Override
   public int assignedType(int s)
   {
     if (PRECONDITIONS) require
@@ -1483,6 +1547,7 @@ public class AirFUIR extends FUIR
    * clazzes at even indices followed by the corresponding inner clazz of the
    * feature to be accessed for this target.
    */
+  @Override
   public int[] accessedClazzes(int s)
   {
     if (PRECONDITIONS) require
@@ -1515,6 +1580,7 @@ public class AirFUIR extends FUIR
    * @return true iff the assignment or call requires dynamic binding depending
    * on the actual target type.
    */
+  @Override
   public boolean accessIsDynamic(int s)
   {
     if (PRECONDITIONS) require
@@ -1546,6 +1612,7 @@ public class AirFUIR extends FUIR
    *
    * @return index of the static outer clazz of the accessed feature.
    */
+  @Override
   public int accessTargetClazz(int s)
   {
     if (PRECONDITIONS) require
@@ -1567,6 +1634,7 @@ public class AirFUIR extends FUIR
   }
 
 
+  @Override
   public int fieldIndex(int field)
   {
     return clazz(field).fieldIndex();
@@ -1583,6 +1651,7 @@ public class AirFUIR extends FUIR
    *
    * @param s site of the constant
    */
+  @Override
   public int constClazz(int s)
   {
     if (PRECONDITIONS) require
@@ -1605,6 +1674,7 @@ public class AirFUIR extends FUIR
    * For an intermediate command of type ExprKind.Const, return the constant
    * data using little endian encoding, i.e, 0x12345678 -> { 0x78, 0x56, 0x34, 0x12 }.
    */
+  @Override
   public byte[] constData(int s)
   {
     if (PRECONDITIONS) require
@@ -1624,6 +1694,7 @@ public class AirFUIR extends FUIR
    *
    * @return clazz id of type of the subject
    */
+  @Override
   public int matchStaticSubject(int s)
   {
     if (PRECONDITIONS) require
@@ -1649,6 +1720,7 @@ public class AirFUIR extends FUIR
    * @return clazz id of field the value in this case is assigned to, -1 if this
    * case does not have a field or the field is unused.
    */
+  @Override
   public int matchCaseField(int s, int cix)
   {
     if (PRECONDITIONS) require
@@ -1681,6 +1753,7 @@ public class AirFUIR extends FUIR
    *
    * @return the index of the case for tag `tag`
    */
+  @Override
   public int matchCaseIndex(int s, int tag)
   {
     var result = -1;
@@ -1707,6 +1780,7 @@ public class AirFUIR extends FUIR
    *
    * @return array of tag numbers this case matches
    */
+  @Override
   public int[] matchCaseTags(int s, int cix)
   {
     if (PRECONDITIONS) require
@@ -1762,6 +1836,7 @@ public class AirFUIR extends FUIR
    *
    * @return code block for the case
    */
+  @Override
   public int matchCaseCode(int s, int cix)
   {
     if (PRECONDITIONS) require
@@ -1815,6 +1890,7 @@ public class AirFUIR extends FUIR
    *
    * @return the index of the requested `Function.call` feature's clazz.
    */
+  @Override
   public int lookupCall(int cl)
   {
     return lookup(cl, Types.resolved.f_Function_call);
@@ -1830,6 +1906,7 @@ public class AirFUIR extends FUIR
    *
    * @return the index of the requested `effect.finally` feature's clazz.
    */
+  @Override
   public int lookup_static_finally(int cl)
   {
     return lookup(cl, Types.resolved.f_effect_static_finally);
@@ -1843,6 +1920,7 @@ public class AirFUIR extends FUIR
    *
    * @return the index of the requested `concur.atomic.value` field's clazz.
    */
+  @Override
   public int lookupAtomicValue(int cl)
   {
     return lookup(cl, Types.resolved.f_concur_atomic_v);
@@ -1856,6 +1934,7 @@ public class AirFUIR extends FUIR
    *
    * @return the index of the requested `array.internal_array` field's clazz.
    */
+  @Override
   public int lookup_array_internal_array(int cl)
   {
     return lookup(cl, Types.resolved.f_array_internal_array);
@@ -1870,6 +1949,7 @@ public class AirFUIR extends FUIR
    *
    * @return the index of the requested `fuzion.sys.internal_array.data` field's clazz.
    */
+  @Override
   public int lookup_fuzion_sys_internal_array_data(int cl)
   {
     return lookup(cl, Types.resolved.f_fuzion_sys_array_data);
@@ -1884,6 +1964,7 @@ public class AirFUIR extends FUIR
    *
    * @return the index of the requested `fuzion.sys.internal_array.length` field's clazz.
    */
+  @Override
   public int lookup_fuzion_sys_internal_array_length(int cl)
   {
     return lookup(cl, Types.resolved.f_fuzion_sys_array_length);
@@ -1897,6 +1978,7 @@ public class AirFUIR extends FUIR
    *
    * @return the index of the requested `error.msg` field's clazz.
    */
+  @Override
   public int lookup_error_msg(int cl)
   {
     return lookup(cl, Types.resolved.f_error_msg);
@@ -1939,6 +2021,7 @@ public class AirFUIR extends FUIR
    *
    * @param s site of an expression
    */
+  @Override
   public String codeAtAsString(int s)
   {
     return switch (codeAt(s))
@@ -1987,6 +2070,7 @@ public class AirFUIR extends FUIR
    *
    * @return the source code position or null if not available.
    */
+  @Override
   public SourcePosition sitePos(int s)
   {
     if (PRECONDITIONS) require
@@ -2013,6 +2097,7 @@ public class AirFUIR extends FUIR
    *
    * @param c the code block
    */
+  @Override
   public void dumpCode(int cl, int c)
   {
     String label = label(c) +  ":";
@@ -2047,6 +2132,7 @@ public class AirFUIR extends FUIR
    *
    * @param cl index of the clazz.
    */
+  @Override
   public void dumpCode(int cl)
   {
     if (PRECONDITIONS) require
@@ -2060,6 +2146,7 @@ public class AirFUIR extends FUIR
   /**
    * Print the code of all routines
    */
+  @Override
   public void dumpCode()
   {
     _clazzIds.ints().forEach(cl ->
@@ -2081,6 +2168,7 @@ public class AirFUIR extends FUIR
    *
    * @param delta the number of instructions to go forward or back.
    */
+  @Override
   public int codeIndex(int s, int delta)
   {
     if (PRECONDITIONS) require
@@ -2158,6 +2246,7 @@ public class AirFUIR extends FUIR
    *
    * @param s site to start skipping backwards from
    */
+  @Override
   public int skipBack(int s)
   {
     return switch (codeAt(s))
@@ -2219,6 +2308,7 @@ public class AirFUIR extends FUIR
    *
    * @return true for effect.install and similar features.
    */
+  @Override
   public boolean isEffectIntrinsic(int cl)
   {
     if (PRECONDITIONS) require
@@ -2248,6 +2338,7 @@ public class AirFUIR extends FUIR
    *
    * @return the type of the outer feature of cl
    */
+  @Override
   public int effectTypeFromInstrinsic(int cl)
   {
     if (PRECONDITIONS) require
@@ -2264,6 +2355,7 @@ public class AirFUIR extends FUIR
    *
    * @return true if cl != -1 and not unit or void type.
    */
+  @Override
   public boolean hasData(int cl)
   {
     return cl != -1 &&
@@ -2384,6 +2476,7 @@ public class AirFUIR extends FUIR
    *
    * @return e.g. `tuple i32 codepoint`
    */
+  @Override
   public int inlineArrayElementClazz(int constCl)
   {
     if (PRECONDITIONS) require
@@ -2404,6 +2497,7 @@ public class AirFUIR extends FUIR
    *
    * @return true if the clazz is a constructor, false otherwise
    */
+  @Override
   public boolean isConstructor(int clazz)
   {
     // Intrinsic functions are not constructors even though they have no result field.
@@ -2414,6 +2508,7 @@ public class AirFUIR extends FUIR
   /**
    * Is `constCl` an array?
    */
+  @Override
   public boolean clazzIsArray(int constCl)
   {
     return clazz(constCl)._type.feature() == Types.resolved.f_array;
@@ -2475,6 +2570,7 @@ public class AirFUIR extends FUIR
    *           May be more than necessary for variable length constants
    *           like strings, arrays, etc.
    */
+  @Override
   public byte[] deseralizeConst(int cl, ByteBuffer bb)
   {
     var elBytes = deserializeClazz(cl, bb.duplicate()).order(ByteOrder.LITTLE_ENDIAN);
@@ -2514,6 +2610,7 @@ public class AirFUIR extends FUIR
    *
    * e.g. /fuzion/tests/hello/HelloWorld.fz, $FUZION/lib/panic.fz
    */
+  @Override
   public String clazzSrcFile(int cl)
   {
     return this.clazz(cl)._type.declarationPos()._sourceFile._fileName.toString();
@@ -2523,6 +2620,7 @@ public class AirFUIR extends FUIR
   /**
    * @return If the expression has only been found to result in void.
    */
+  @Override
   public boolean alwaysResultsInVoid(int s)
   {
     return false;
@@ -2533,6 +2631,7 @@ public class AirFUIR extends FUIR
    * Get the position where the clazz is declared
    * in the source code.
    */
+  @Override
   public SourcePosition declarationPos(int cl)
   {
     return clazz(cl)._type.declarationPos();
@@ -2581,6 +2680,7 @@ public class AirFUIR extends FUIR
    * @param instantiationPos if known, the site where `cl` was instantiated,
    * `NO_SITE` if unknown.
    */
+  @Override
   public void recordAbstractMissing(int cl, int f, int instantiationSite, String context)
   {
     var cc = clazz(cl);
@@ -2596,6 +2696,7 @@ public class AirFUIR extends FUIR
    * cumulative, i.e., if a clazz is missing several implementations of abstract
    * features, there will be only one error for that clazz.
    */
+  @Override
   public void reportAbstractMissing()
   {
     _abstractMissing.values()
