@@ -96,7 +96,7 @@ public class Html extends ANY
    */
   private String inherited(AbstractFeature af)
   {
-    if (af.inherits().isEmpty())
+    if (af.inherits().isEmpty() || af.signatureWithArrow()) // don't show inheritance for function features
       {
         return "";
       }
