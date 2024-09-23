@@ -398,10 +398,13 @@ public class Intrinsix extends ANY implements ClassFileConstants
         {
           var jref0 = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc, 0));
           var sref1 = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc, 1));
+          var jt = jvm._types.javaType(jvm._fuir.clazz_fuzionJavaObject());
           var res =
             args.get(0)
+            .andThen(Expr.checkcast(jt))
             .andThen(jvm.getfield(jref0)) // instance as Object
             .andThen(args.get(1))
+            .andThen(Expr.checkcast(jt))
             .andThen(jvm.getfield(sref1)) // instance as Object, field name as String
             .andThen(Expr.checkcast(JAVA_LANG_STRING))
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
