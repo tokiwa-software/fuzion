@@ -55,7 +55,6 @@ import dev.flang.ast.NumLiteral; // NYI: remove dependency
 import dev.flang.ast.Tag; // NYI: remove dependency
 import dev.flang.ast.Types; // NYI: remove dependency
 
-import dev.flang.ir.IR;
 
 import dev.flang.util.Errors;
 import dev.flang.util.IntArray;

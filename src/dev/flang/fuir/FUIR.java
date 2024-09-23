@@ -27,20 +27,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fuir;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 import dev.flang.ir.IR;
 
-import dev.flang.util.Errors;
-import dev.flang.util.IntArray;
-import dev.flang.util.List;
-import dev.flang.util.Map2Int;
-import dev.flang.util.MapComparable2Int;
 import dev.flang.util.SourcePosition;
 
 
