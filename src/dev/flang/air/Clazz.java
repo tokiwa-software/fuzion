@@ -152,7 +152,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
         {
           var ac = actualClazzes(sc, null);
           var innerClazz = ac[0];
-          var T = innerClazz.actualGenerics()[0];
           var cf = innerClazz.feature();
           if (CHECKS) check
             (cf == Types.resolved.f_Type_infix_colon_true ||
@@ -694,16 +693,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   AbstractType replaceThisTypeForTypeFeature(AbstractType t)
   {
-    if (feature().isTypeFeature() && !t.isGenericArgument())
+    if (feature().isTypeFeature())
       {
         t = _type.generics().get(0).actualType(t, Context.NONE);
-        var g = t.generics();
-        if (t.feature().isTypeFeature())
-          {
-            var this_type = g.get(0);
-            g = g.map(x -> x == this_type ? x   // leave first type parameter unchanged
-                                          : this_type.actualType(x, Context.NONE));
-          }
+        var g = t.cotypeActualGenerics();
         var o = t.outer();
         if (o != null)
           {

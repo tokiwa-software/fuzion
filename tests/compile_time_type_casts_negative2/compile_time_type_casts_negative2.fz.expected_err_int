@@ -16,18 +16,18 @@ fuzion.runtime.pre_fault.cause#1: $MODULE/eff/fallible.fz:35:6:
 fuzion.runtime.precondition_fault#1: $MODULE/fuzion/runtime/pre_fault.fz:58:42:
 public precondition_fault(msg String) => pre_fault.cause msg
 -----------------------------------------^^^^^^^^^^^^^^^^^^^
-(compile_time_type_casts_negative2.use_x#3 compile_time_type_casts_negative2.a).pre do_b_thing: --CURDIR--/compile_time_type_casts_negative2.fz:44:11:
+(compile_time_type_casts_negative2.use_x#4 compile_time_type_casts_negative2.a).pre do_b_thing: --CURDIR--/compile_time_type_casts_negative2.fz:44:11:
       pre V : b
 ----------^^^^^
-(compile_time_type_casts_negative2.use_x#3 compile_time_type_casts_negative2.a).precall do_b_thing: --CURDIR--/compile_time_type_casts_negative2.fz:44:7:
+(compile_time_type_casts_negative2.use_x#4 compile_time_type_casts_negative2.a).precall do_b_thing: --CURDIR--/compile_time_type_casts_negative2.fz:44:7:
       pre V : b
 ------^^^^^^^^^
-compile_time_type_casts_negative2.use_x#3 compile_time_type_casts_negative2.a: --CURDIR--/compile_time_type_casts_negative2.fz:54:7:
+compile_time_type_casts_negative2.use_x#4 compile_time_type_casts_negative2.a: --CURDIR--/compile_time_type_casts_negative2.fz:54:7:
       do_b_thing
 ------^^^^^^^^^^
 compile_time_type_casts_negative2: --CURDIR--/compile_time_type_casts_negative2.fz:71:3:
   use_x a true true      # will fail since we will try to do `b_thing` on `a`
---^^^^^
+--^^^^^^^^^^^^^^^^^
 
 *** fatal errors encountered, stopping.
 one error.

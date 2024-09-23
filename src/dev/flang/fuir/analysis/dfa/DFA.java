@@ -1192,8 +1192,6 @@ public class DFA extends ANY
          * the current clazz stack frame (such that it cannot be stored in a
          * local var in the stack frame of cl)
          *
-         * @param cl the outer clazz of the call
-         *
          * @param s site of call
          *
          * @return true iff the result of the call must be cloned on the heap.

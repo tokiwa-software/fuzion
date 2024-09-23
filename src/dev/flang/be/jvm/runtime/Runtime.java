@@ -667,7 +667,12 @@ public class Runtime extends ANY
    */
   public static String getException()
   {
-    return ((FuzionThread)Thread.currentThread())._thrownException.getMessage();
+    var result = ((FuzionThread)Thread.currentThread())._thrownException.getMessage();
+    if (result == null)
+      {
+        result = "";
+      }
+    return result;
   }
 
 

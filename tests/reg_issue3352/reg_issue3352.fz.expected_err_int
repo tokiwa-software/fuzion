@@ -25,9 +25,9 @@ m.mpanic#1: $MODULE/mutate.fz:79:32:
 (m.new i32).get: $MODULE/mutate.fz:140:9:
         check_and_replace
 --------^^^^^^^^^^^^^^^^^
-universe: --CURDIR--/reg_issue3352.fz:26:8:
+universe: --CURDIR--/reg_issue3352.fz:26:6:
 _ := s.get
--------^^^
+-----^^^^^
 
 *** fatal errors encountered, stopping.
 one error.

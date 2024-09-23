@@ -230,18 +230,24 @@ public class LibraryFeature extends AbstractFeature
   }
 
 
+  @Override
+  public boolean isUniverse()
+  {
+    return this == _libModule.libraryUniverse();
+  }
+
+
   /**
    * Find the outer feature of this feature.
    */
   public AbstractFeature outer()
   {
-    var result = _outer;
-    if (result == null)
+    AbstractFeature result = _outer;
+    if (result == null && !isUniverse())
       {
         result = _libModule.featureOuter(_index);
         _outer = result;
       }
-
     return result;
   }
 
@@ -410,6 +416,20 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
+   * type of this Expr. Since LibraryFature is no longer an expression, this
+   * will cause an error.
+   *
+   * NYI: CLEANUP: AbstractFeature should best not inherit from Expr. Instead,
+   * it should be sufficient if dev.flang.ast.Feature does.
+   */
+  @Override
+  public AbstractType type()
+  {
+    throw new Error("LibraryFeature.type() called");
+  }
+
+
+  /**
    * resultType returns the result type of this feature using.
    *
    * @return the result type. Never null.
@@ -549,7 +569,7 @@ public class LibraryFeature extends AbstractFeature
         var s = new Stack<Expr>();
         res = code(at, s, -1, -1);
         if (CHECKS) check
-          (s.size() == 0);
+          (s.size() == 0 || s.peek().type().isVoid());
         _libModule._code.put(at, res);
       }
     return res;
@@ -711,6 +731,10 @@ public class LibraryFeature extends AbstractFeature
                 }
 
               x = new InlineArray(LibraryFeature.this.pos(fpos, fposEnd), el, code);
+              break;
+            }
+          case Stop:
+            {
               break;
             }
           default: throw new Error("Unexpected expression kind: " + k);

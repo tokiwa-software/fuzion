@@ -96,7 +96,7 @@ public class Html extends ANY
    */
   private String inherited(AbstractFeature af)
   {
-    if (af.inherits().isEmpty())
+    if (af.inherits().isEmpty() || af.signatureWithArrow()) // don't show inheritance for function features
       {
         return "";
       }
@@ -107,7 +107,7 @@ public class Html extends ANY
         return "<a class='fd-feature fd-inherited' href='$1'>".replace("$1", featureAbsoluteURL(f))
           + htmlEncodedBasename(f)
           + (c.actualTypeParameters().size() > 0 ? "&nbsp;" : "")
-          + c.actualTypeParameters().stream().map(at -> htmlEncodeNbsp(at.asString())).collect(Collectors.joining(", ")) + "</a>";
+          + c.actualTypeParameters().stream().map(at -> htmlEncodeNbsp(at.asString(false, af))).collect(Collectors.joining(", ")) + "</a>";
       })
       .collect(Collectors.joining("<span class='mr-2 fd-keyword'>,</span>"));
   }
@@ -116,15 +116,16 @@ public class Html extends ANY
   /**
    * anchor tag for type
    * @param at
+   * @param context the feature to which the name should be relative to, full qualified name if null
    * @return
    */
-  private String anchor(AbstractType at)
+  private String anchor(AbstractType at, AbstractFeature context)
   {
     if (at.isGenericArgument())
       {
-        return htmlEncodeNbsp(at.toString());
+        return htmlEncodeNbsp(at.asString(false, context));
       }
-    return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.asString()))
+    return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.asString(false, context)))
       .replace("$2", featureAbsoluteURL(at.feature()));
   }
 
@@ -183,12 +184,14 @@ public class Html extends ANY
     return "<div class='d-grid' style='grid-template-columns: 1fr min-content;'>"
       + "<div class='d-flex flex-wrap word-break-break-word'>"
       + "<a class='fd-anchor-sign mr-2' href='#" + htmlID(af) + "'>§</a>"
+      + "<div class='d-flex flex-wrap word-break-break-word fz-code'>"
       + anchor(af)
       + arguments(af, printArgs)
       + (af.isThisRef() ? "<div class='fd-keyword'>&nbsp;ref</div>" : "")
       + inherited(af)
-      + (Util.Kind.classify(af) == Util.Kind.Other ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchor(af.resultType()) : "")
-      + (Util.Kind.classify(af) == Util.Kind.Other ? "" : "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>")
+      + (af.signatureWithArrow() ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchor(af.resultType(), null)
+                                 : "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>")
+      + "</div>"
       + annotateInherited(af, outer)
       + annotateRedef(af, outer)
       + annotateAbstract(af)
@@ -217,7 +220,7 @@ public class Html extends ANY
       {
         String anchorParent = "<a class='' href='" + featureAbsoluteURL(af.outer()) + "'>"
                               + htmlEncodedBasename(af.outer()) + "</a>";
-        return "&nbsp;<div class='fd-parent'>[Inherited from&nbsp; $0]</div>"
+        return "&nbsp;&nbsp;<div class='fd-parent'>[Inherited from&nbsp; <span class=fz-code>$0</span>]</div>"
           .replace("$0", anchorParent);
       }
   }
@@ -253,7 +256,7 @@ public class Html extends ANY
 
     return redefs.isEmpty()
             ? ""
-            : "&nbsp;<div class='fd-parent'>[Redefinition of&nbsp;$0]</div>"
+            : "&nbsp;&nbsp;<div class='fd-parent'>[Redefinition of&nbsp; <span class=fz-code>$0</span>]</div>"
               .replace("$0", (redefs.stream()
                                     .map(f->"<a class='' href='" + featureAbsoluteURL(f) + "'>" +
                                               htmlEncodedQualifiedName(f) + "</a>")
@@ -269,7 +272,7 @@ public class Html extends ANY
   private String annotateAbstract(AbstractFeature af)
   {
     return af.isAbstract()
-             ? "&nbsp;<div class='fd-parent' title='An abstract feature is a feature declared using ⇒ abstract. " +
+             ? "&nbsp;&nbsp;<div class='fd-parent' title='An abstract feature is a feature declared using ⇒ abstract. " +
                "To be able to call it, it needs to be implemented (redefined) in an heir.'>[Abstract feature]</div>"
              : "";
   }
@@ -300,8 +303,8 @@ public class Html extends ANY
     sm.forEachDeclaredOrInheritedFeature(af, f -> allInner.add(f));
 
     return allInner.stream().filter(f->isVisible(f)).anyMatch(f->f.isAbstract())
-             ? "&nbsp;<div class='fd-parent' title='This feature contains inner or inherited features " +
-               "which are abstract.'>[Contains abstract features]</div>"  // NYI: replace title attribute with proper tooltip
+             ? "&nbsp;&nbsp;<div class='fd-parent' title='This feature contains inner or inherited features " +
+               "which are abstract.'>[Contains abstract features]</div>"
              : "";
   }
 
@@ -703,7 +706,7 @@ public class Html extends ANY
       .filter(a -> a.isTypeParameter() || (printArgs && f.visibility().eraseTypeVisibility() == Visi.PUB))
       .map(a ->
         htmlEncodedBasename(a) + "&nbsp;"
-        + (a.isTypeParameter() ? typeArgAsString(a): anchor(a.resultType())))
+        + (a.isTypeParameter() ? typeArgAsString(a): anchor(a.resultType(), f)))
       .collect(Collectors.joining(htmlEncodeNbsp(", "))) + ")";
   }
 
