@@ -28,11 +28,7 @@ package dev.flang.mir;
 
 import java.nio.ByteBuffer;
 
-import java.util.SortedMap;
-
-import dev.flang.ast.AbstractFeature;  // NYI: Remove dependency!
-import dev.flang.ast.AbstractModule;
-import dev.flang.ast.FeatureName;  // NYI: Remove dependency!
+import dev.flang.ast.AbstractModule; // NYI: Remove dependency!
 
 
 /**
