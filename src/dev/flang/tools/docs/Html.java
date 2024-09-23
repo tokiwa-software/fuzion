@@ -41,7 +41,7 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
-import dev.flang.fe.SourceModule;
+import dev.flang.fe.LibraryModule;
 import dev.flang.tools.docs.Util.Kind;
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
@@ -53,17 +53,17 @@ public class Html extends ANY
   final DocsOptions config;
   private final Map<AbstractFeature, Map<Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures;
   private final String navigation;
-  private final SourceModule sm;
+  private final LibraryModule lm;
 
   /**
    * the constructor taking the options
    */
-  public Html(DocsOptions config, Map<AbstractFeature, Map<Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe, SourceModule sm)
+  public Html(DocsOptions config, Map<AbstractFeature, Map<Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe, LibraryModule lm)
   {
     this.config = config;
     this.mapOfDeclaredFeatures = mapOfDeclaredFeatures;
     this.navigation = navigation(universe, 0);
-    this.sm = sm;
+    this.lm = lm;
   }
 
 
@@ -285,7 +285,7 @@ public class Html extends ANY
   private String annotateContainsAbstract(AbstractFeature af)
   {
     var allInner = new List<AbstractFeature>();
-    sm.forEachDeclaredOrInheritedFeature(af, f -> allInner.add(f));
+    lm.forEachDeclaredOrInheritedFeature(af, f -> allInner.add(f));
 
     return allInner.stream().filter(f->isVisible(f)).anyMatch(f->f.isAbstract())
              ? "&nbsp;&nbsp;<div class='fd-parent' title='This feature contains inner or inherited features " +
