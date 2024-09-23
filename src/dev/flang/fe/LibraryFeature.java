@@ -733,10 +733,6 @@ public class LibraryFeature extends AbstractFeature
               x = new InlineArray(LibraryFeature.this.pos(fpos, fposEnd), el, code);
               break;
             }
-          case Stop:
-            {
-              break;
-            }
           default: throw new Error("Unexpected expression kind: " + k);
           }
         if (x != null)
@@ -756,7 +752,10 @@ public class LibraryFeature extends AbstractFeature
           {
             l.add(c);
           }
-        e = _libModule.expressionNextPos(e);
+        e = (c instanceof AbstractMatch m && m.type().isVoid())
+          // stop, see #2345
+          ? Integer.MAX_VALUE
+          : _libModule.expressionNextPos(e);
       }
     var fpos = pos;
     var fposEnd = posEnd;
