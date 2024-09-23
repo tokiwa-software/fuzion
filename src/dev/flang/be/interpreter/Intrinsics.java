@@ -917,7 +917,8 @@ public class Intrinsics extends ANY
         {
           var oc   = executor.fuir().clazzArgClazz(innerClazz, 0);
           var cc = executor.fuir().lookupCall(oc);
-          var t = new Thread(() -> executor.callOnNewInstance(NO_SITE, cc, args.get(1), new List<>()));
+          var t = new Thread(() -> Errors.runAndExit
+                             (() -> executor.callOnNewInstance(NO_SITE, cc, args.get(1), new List<>())));
           t.setDaemon(true);
           t.start();
           return new i64Value(_startedThreads_.add(t));
