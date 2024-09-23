@@ -790,6 +790,50 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * A cotype has the actual underlying type as its first type parameter
+   * `THIS_TYPE` in addition to the type parameters of the original type.
+   *
+   * In case this is a cotype, determine the actual types for generics
+   * by apply the actual type parameters passed to `THIS_TYPE`.
+   *
+   * @return the actual generics after `THIS_TYPE.actualType` was applied.
+   */
+  public List<AbstractType> cotypeActualGenerics()
+  {
+    return cotypeActualGenerics(generics());
+  }
+
+
+  /**
+   * A cotype has the actual underlying type as its first type parameter
+   * `THIS_TYPE` in addition to the type parameters of the original type.
+   *
+   * In case this is a cotype, determine the actual types for the types in `g`
+   * by apply the actual type parameters passed to `THIS_TYPE`.
+   *
+   * @param `g` list of generics, must be derived from `generics()`
+   *
+   * @return the actual generics after `THIS_TYPE.actualType` was applied.
+   */
+  private List<AbstractType> cotypeActualGenerics(List<AbstractType> g)
+  {
+    /* types of type features require special handling since the type
+     * feature has one additional first type parameter --the underlying
+     * type: this_type--, and all other type parameters need to be converted
+     * to the actual type relative to that.
+     */
+    if (isTypeType())
+      {
+        var this_type = g.get(0);
+        g = g.map(x -> x == this_type                     ||        // leave first type parameter unchanged
+                            this_type.isGenericArgument()    ? x    // no actuals to apply in a generic arg
+                                                             : this_type.actualType(x, Context.NONE));
+      }
+    return g;
+  }
+
+
+  /**
    * Check if this type depends on a formal generic parameter of f. If so,
    * replace t by the corresponding actual generic parameter from the list
    * provided.
@@ -837,18 +881,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var g2 = applyTypePars(f, result.generics(), actualGenerics);
         var o2 = (result.outer() == null) ? null : result.outer().applyTypePars(f, actualGenerics);
 
-        /* types of type features require special handling since the type
-         * feature has one additional first type parameter --the underlying
-         * type: this_type--, and all other type parameters need to be converted
-         * to the actual type relative to that.
-         */
-        if (isTypeType())
-          {
-            var this_type = g2.get(0);
-            g2 = g2.map(x -> x == this_type                ||     // leave first type parameter unchanged
-                             this_type.isGenericArgument() ? x    // no actuals to apply in a generic arg
-                                                           : this_type.actualType(x, Context.NONE));
-          }
+        g2 = cotypeActualGenerics(g2);
 
         if (g2 != result.generics() ||
             o2 != result.outer()       )
@@ -960,18 +993,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           : generics.map(t -> t.applyTypeParsLocally(f, actualGenerics, -1));
         var o2 = (result.outer() == null) ? null : result.outer().applyTypePars(f, actualGenerics);
 
-        /* types of type features require special handling since the type
-         * feature has one additional first type parameter --the underlying
-         * type: this_type--, and all other type parameters need to be converted
-         * to the actual type relative to that.
-         */
-        if (isTypeType())
-          {
-            var this_type = g2.get(0);
-            g2 = g2.map(x -> x == this_type                ||     // leave first type parameter unchanged
-                             this_type.isGenericArgument() ? x    // no actuals to apply in a generic arg
-                                                           : this_type.actualType(x, Context.NONE));
-          }
+        g2 = cotypeActualGenerics(g2);
 
         if (g2 != result.generics() ||
             o2 != result.outer()       )
@@ -1646,13 +1668,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var tf = tp.outer();
         if (tf.isTypeFeature() && tp == tf.arguments().get(0))
           { // generic used for `abc.this.type` in `abc.type` by `abc.this.type`.
-            var tfo = tf.typeFeatureOrigin();
-            if (tfo != null)  // NYI: tfo may be null for type feature loaded
-                              // from .fum file, need to support
-                              // typeFeatureOrigin for fe.LibraryFeature!
-              {
-                result = tfo.selfType().asThis();
-              }
+            result = tf.typeFeatureOrigin().selfType().asThis();
           }
       }
     else

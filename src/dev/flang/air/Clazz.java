@@ -694,16 +694,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   AbstractType replaceThisTypeForTypeFeature(AbstractType t)
   {
-    if (feature().isTypeFeature() && !t.isGenericArgument())
+    if (feature().isTypeFeature())
       {
         t = _type.generics().get(0).actualType(t, Context.NONE);
-        var g = t.generics();
-        if (t.feature().isTypeFeature())
-          {
-            var this_type = g.get(0);
-            g = g.map(x -> x == this_type ? x   // leave first type parameter unchanged
-                                          : this_type.actualType(x, Context.NONE));
-          }
+        var g = t.cotypeActualGenerics();
         var o = t.outer();
         if (o != null)
           {
