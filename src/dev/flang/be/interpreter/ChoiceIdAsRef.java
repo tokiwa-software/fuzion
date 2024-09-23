@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
+import dev.flang.fuir.FUIR;
+
 import java.util.ArrayList;
 
 
@@ -147,17 +149,36 @@ public class ChoiceIdAsRef extends Value
       }
     else
       {
-        result = 0;
-        while (idAsRef instanceof ValueWithClazz && // NYI: BUG: idAsRef may be JavaRef
-           !fuir().isAssignableFrom(fuir().clazzChoice(clazz, result), ((ValueWithClazz)idAsRef)._clazz))
+        if (CHECKS) check
+          (idAsRef instanceof ValueWithClazz ||
+           idAsRef instanceof JavaRef          );
+
+        var cl = (idAsRef instanceof ValueWithClazz id) ? id._clazz
+                                                        : fuir().clazz(FUIR.SpecialClazzes.c_sys_ptr);
+        do
           {
             result++;
           }
+        while (!inheritsFrom(cl, fuir().clazzChoice(clazz, result)));
       }
 
     if (POSTCONDITIONS) ensure
       (0 <= result && result < fuir().clazzNumChoices(clazz));
 
+    return result;
+  }
+
+
+  /**
+   * Does clazz child inherit from parent?
+   */
+  static boolean inheritsFrom(int child, int parent)
+  {
+    var result = false;
+    for (var h : fuir().clazzInstantiatedHeirs(parent))
+      {
+        result = result || (child == h);
+      }
     return result;
   }
 

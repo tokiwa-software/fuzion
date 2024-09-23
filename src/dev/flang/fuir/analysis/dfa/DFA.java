@@ -37,6 +37,7 @@ import java.util.TreeSet;
 
 import java.util.function.Supplier;
 
+import dev.flang.fuir.AirFUIR;
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
@@ -1135,7 +1136,7 @@ public class DFA extends ANY
         called.add(c._cc);
       }
     _options.timer("dfa");
-    return new FUIR(_fuir)
+    return new AirFUIR((AirFUIR) _fuir)
       {
         public boolean clazzNeedsCode(int cl)
         {
@@ -1220,13 +1221,6 @@ public class DFA extends ANY
                 }
             }
           return java.util.Arrays.copyOfRange(nr, 0, j);
-        }
-
-
-        @Override
-        public boolean isIntrinsicUsed(String name)
-        {
-          return super.isIntrinsicUsed(name) && _usedIntrinsics_.contains(name);
         }
 
 
