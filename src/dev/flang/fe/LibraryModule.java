@@ -1614,7 +1614,6 @@ Expression
       case Pop         -> eAt;
       case Unit        -> eAt;
       case InlineArray -> inlineArrayNextPos(eAt);
-      case Stop        -> Integer.MAX_VALUE;
       default          -> throw new Error("unexpected expression kind "+k+" at "+at+" in "+this);
       };
   }
