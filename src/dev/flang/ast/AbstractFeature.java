@@ -1667,7 +1667,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @return the found feature or null in case of an error.
    */
-  public AbstractFeature get(SrcModule mod, String name)
+  public AbstractFeature get(AbstractModule mod, String name)
   {
     return get(mod, name, -1);
   }
@@ -1682,7 +1682,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @return the found feature or Types.f_ERROR in case of an error.
    */
-  public AbstractFeature get(SrcModule mod, String name, int argcount)
+  public AbstractFeature get(AbstractModule mod, String name, int argcount)
   {
     AbstractFeature result = Types.f_ERROR;
     var d = mod.declaredFeatures(this);

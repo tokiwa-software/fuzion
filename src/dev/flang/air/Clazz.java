@@ -152,7 +152,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
         {
           var ac = actualClazzes(sc, null);
           var innerClazz = ac[0];
-          var T = innerClazz.actualGenerics()[0];
           var cf = innerClazz.feature();
           if (CHECKS) check
             (cf == Types.resolved.f_Type_infix_colon_true ||

@@ -382,7 +382,9 @@ public class FuzionConstants extends ANY
     Env,
     Pop,
     Unit,
-    InlineArray;
+    InlineArray,
+    // unreachable: inserted after `Match` with all cases ending in void type
+    Stop;
 
     /**
      * get the Kind that corresponds to the given ordinal number.

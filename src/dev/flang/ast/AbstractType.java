@@ -254,7 +254,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public List<AbstractType> choiceGenerics(Context context)
   {
     if (PRECONDITIONS) require
-      (!(this instanceof UnresolvedType),
+      (this instanceof ResolvedType,
        isChoice());
 
     var g = feature().choiceGenerics();
@@ -1309,8 +1309,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (checkedForGeneric(),
        other != null,
        other.checkedForGeneric(),
-       !(this instanceof UnresolvedType),
-       !(other instanceof UnresolvedType));
+       (this  instanceof ResolvedType),
+       (other instanceof ResolvedType));
 
     int result = compareToIgnoreOuter(other);
     if (result == 0 && !isGenericArgument())
@@ -1335,7 +1335,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (PRECONDITIONS) require
       (checkedForGeneric(),
        other != null,
-       other.checkedForGeneric());
+       other.checkedForGeneric(),
+       (this  instanceof ResolvedType),
+       (other instanceof ResolvedType));
 
     int result = 0;
 
@@ -1583,10 +1585,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var g = new List<AbstractType>(this);
         g.addAll(generics());
 
+        var tf = res != null ? fot.typeFeature(res) : fot.typeFeature();
+        if (CHECKS) check
+          (tf != null);
         result = ResolvedNormalType.create(g,
                                            g,
                                            outer().typeType(res),
-                                           res != null ? fot.typeFeature(res) : fot.typeFeature());
+                                           tf);
       }
     return result;
   }

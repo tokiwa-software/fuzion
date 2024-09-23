@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.Collection;
-import java.util.SortedMap;
 import java.util.function.Consumer;
 
 import dev.flang.util.List;
@@ -40,15 +39,8 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public interface SrcModule
+public interface SrcModule extends AbstractModule
 {
-
-
-  /**
-   * Get declared features for given outer Feature as seen by this module.
-   * Result is never null.
-   */
-  SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer);
 
 
   /**

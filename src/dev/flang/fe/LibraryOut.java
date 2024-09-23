@@ -686,7 +686,8 @@ class LibraryOut extends ANY
   {
     if (e instanceof AbstractAssign a)
       {
-        lastPos = expressions(a._value, lastPos);
+        var v = a._value;
+        lastPos = expressions(v, lastPos);
         lastPos = expressions(a._target, lastPos);
         lastPos = exprKindAndPos(MirExprKind.Assign, lastPos, e.sourceRange());
   /*
@@ -756,7 +757,10 @@ class LibraryOut extends ANY
       }
     else if (e instanceof AbstractCall c)
       {
-        lastPos = expressions(c.target(), lastPos);
+        var t = c.target();
+        if (CHECKS)
+          check(!t.type().isVoid());
+        lastPos = expressions(t, lastPos);
         for (var a : c.actuals())
           {
             lastPos = expressions(a, lastPos);
@@ -840,6 +844,7 @@ class LibraryOut extends ANY
    */
         var cs = m.cases();
         _data.writeInt(cs.size());
+        var allvoid = true;
         for (var c : cs)
           {
   /*
@@ -874,7 +879,13 @@ class LibraryOut extends ANY
                     type(t);
                   }
               }
-            code(c.code());
+            var cc = c.code();
+            code(cc);
+            allvoid = allvoid && cc.type().isVoid();
+          }
+        if (allvoid)
+          {
+            _data.writeByte(MirExprKind.Stop.ordinal());
           }
       }
     else if (e instanceof Tag t)

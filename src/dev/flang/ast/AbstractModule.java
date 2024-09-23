@@ -20,34 +20,29 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of interface MirModule
+ * Source of interface AbstractModule
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.mir;
-
-import java.nio.ByteBuffer;
+package dev.flang.ast;
 
 import java.util.SortedMap;
 
-import dev.flang.ast.AbstractFeature;  // NYI: Remove dependency!
-import dev.flang.ast.AbstractModule;
-import dev.flang.ast.FeatureName;  // NYI: Remove dependency!
-
 
 /**
- * MirModule provides callbacks from the MIR to data structures in the current
- * module, in particular to sets of features.
+ * AbstractModule provides feature lookup needed for Types.Resolved.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public interface MirModule extends AbstractModule
+public interface AbstractModule
 {
 
+
   /**
-   * The binary data from this module's .mir file.
+   * Get declared features for given outer Feature as seen by this module.
+   * Result is never null.
    */
-  ByteBuffer data(String name);
+  SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer);
 
 }
 
