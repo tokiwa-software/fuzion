@@ -28,10 +28,7 @@ package dev.flang.mir;
 
 import java.nio.ByteBuffer;
 
-import java.util.SortedMap;
-
-import dev.flang.ast.AbstractFeature;  // NYI: Remove dependency!
-import dev.flang.ast.FeatureName;  // NYI: Remove dependency!
+import dev.flang.ast.AbstractModule; // NYI: Remove dependency!
 
 
 /**
@@ -40,20 +37,13 @@ import dev.flang.ast.FeatureName;  // NYI: Remove dependency!
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public interface MirModule
+public interface MirModule extends AbstractModule
 {
 
   /**
    * The binary data from this module's .mir file.
    */
   ByteBuffer data(String name);
-
-
-  /**
-   * Get declared features for given outer Feature as seen by this module.
-   * Result is never null.
-   */
-  SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer);
 
 }
 

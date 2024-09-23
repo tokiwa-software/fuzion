@@ -114,7 +114,7 @@ public class Docs extends ANY
    */
   private Stream<AbstractFeature> declaredFeatures(AbstractFeature f)
   {
-    return fe.module()
+    return fe.mainModule()
       .declaredFeatures(f)
       .values()
       .stream();
@@ -129,7 +129,7 @@ public class Docs extends ANY
   private Stream<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f)
   {
     var result = new List<AbstractFeature>();
-    fe.module().forEachDeclaredOrInheritedFeature(f, af -> result.add(af));
+    fe.mainModule().forEachDeclaredOrInheritedFeature(f, af -> result.add(af));
     return result
       .stream();
   }
@@ -309,7 +309,7 @@ public class Docs extends ANY
 
     }, universe);
 
-    var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, fe.module());
+    var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, fe.mainModule());
 
     mapOfDeclaredFeatures
       .keySet()

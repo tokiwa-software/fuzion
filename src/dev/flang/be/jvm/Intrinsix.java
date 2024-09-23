@@ -277,7 +277,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                 .andThen(args.get(0))
                 .andThen(Expr.invokeStatic("java/lang/" + java_Type, "valueOf", "(" + java_type + ")Ljava/lang/" + java_Type + ";", Names.JAVA_LANG_OBJECT))
                 .andThen(jvm.putfield(jref))
-                .is(jvm._types.javaType(rc));
+                .is(jvm._types.resultType(rc));
               return new Pair<>(res, Expr.UNIT);
             });
       }
@@ -298,7 +298,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
             .andThen(Expr.checkcast(PrimitiveType.type_byte.array()))
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS, "fuzion_java_string_to_java_object0", "([B)Ljava/lang/String;", Names.JAVA_LANG_OBJECT))
             .andThen(jvm.putfield(jref))
-            .is(jvm._types.javaType(rc));
+            .is(jvm._types.resultType(rc));
           return new Pair<>(res, Expr.UNIT);
         });
 
@@ -326,7 +326,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
             .andThen(jvm.getfield(data))
             .andThen(Expr.checkcast(et.array()))
             .andThen(jvm.putfield(jref))
-            .is(jvm._types.javaType(rc));
+            .is(jvm._types.resultType(rc));
           return new Pair<>(res, Expr.UNIT);
         });
 
@@ -398,10 +398,13 @@ public class Intrinsix extends ANY implements ClassFileConstants
         {
           var jref0 = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc, 0));
           var sref1 = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc, 1));
+          var jt = jvm._types.javaType(jvm._fuir.clazz_fuzionJavaObject());
           var res =
             args.get(0)
+            .andThen(Expr.checkcast(jt))
             .andThen(jvm.getfield(jref0)) // instance as Object
             .andThen(args.get(1))
+            .andThen(Expr.checkcast(jt))
             .andThen(jvm.getfield(sref1)) // instance as Object, field name as String
             .andThen(Expr.checkcast(JAVA_LANG_STRING))
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,

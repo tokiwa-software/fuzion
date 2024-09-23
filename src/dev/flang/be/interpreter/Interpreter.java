@@ -29,6 +29,7 @@ package dev.flang.be.interpreter;
 
 import java.nio.charset.StandardCharsets;
 
+import dev.flang.fuir.AirFUIR;
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
@@ -49,7 +50,7 @@ public class Interpreter extends FUIRContext
   public Interpreter(FuzionOptions options, FUIR fuir)
   {
     this._options_ = options;
-    this._fuir = new FUIR(fuir)
+    this._fuir = new AirFUIR((AirFUIR) fuir)
       {
         // NYI: BUG: fuir should be thread safe #2760
         @Override
@@ -170,7 +171,7 @@ public class Interpreter extends FUIRContext
   private static int clazzForField(int thiz)
   {
     return fuir().clazzFieldIsAdrOfValue(thiz)
-      ? fuir().clazzAddress()
+      ? fuir().clazz(FUIR.SpecialClazzes.c_sys_ptr)
       : fuir().clazzResultClazz(thiz);
   }
 

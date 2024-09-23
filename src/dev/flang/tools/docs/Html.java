@@ -42,7 +42,7 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
-import dev.flang.fe.SourceModule;
+import dev.flang.fe.LibraryModule;
 import dev.flang.tools.docs.Util.Kind;
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
@@ -54,17 +54,17 @@ public class Html extends ANY
   final DocsOptions config;
   private final Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures;
   private final String navigation;
-  private final SourceModule sm;
+  private final LibraryModule lm;
 
   /**
    * the constructor taking the options
    */
-  public Html(DocsOptions config, Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe, SourceModule sm)
+  public Html(DocsOptions config, Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe, LibraryModule lm)
   {
     this.config = config;
     this.mapOfDeclaredFeatures = mapOfDeclaredFeatures;
     this.navigation = navigation(universe, 0);
-    this.sm = sm;
+    this.lm = lm;
   }
 
 
@@ -97,7 +97,7 @@ public class Html extends ANY
    */
   private String inherited(AbstractFeature af)
   {
-    if (af.inherits().isEmpty())
+    if (af.inherits().isEmpty() || af.signatureWithArrow()) // don't show inheritance for function features
       {
         return "";
       }
@@ -108,7 +108,7 @@ public class Html extends ANY
         return "<a class='fd-feature fd-inherited' href='$1'>".replace("$1", featureAbsoluteURL(f))
           + htmlEncodedBasename(f)
           + (c.actualTypeParameters().size() > 0 ? "&nbsp;" : "")
-          + c.actualTypeParameters().stream().map(at -> htmlEncodeNbsp(at.asString())).collect(Collectors.joining(", ")) + "</a>";
+          + c.actualTypeParameters().stream().map(at -> htmlEncodeNbsp(at.asString(false, af))).collect(Collectors.joining(", ")) + "</a>";
       })
       .collect(Collectors.joining("<span class='mr-2 fd-keyword'>,</span>"));
   }
@@ -117,13 +117,14 @@ public class Html extends ANY
   /**
    * anchor tag for type
    * @param at
+   * @param context the feature to which the name should be relative to, full qualified name if null
    * @return
    */
-  private String anchor(AbstractType at)
+  private String anchor(AbstractType at, AbstractFeature context)
   {
     if (at.isGenericArgument())
       {
-        return htmlEncodeNbsp(at.toString());
+        return htmlEncodeNbsp(at.asString(false, context));
       }
     return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.asString(false, context)))
       .replace("$2", featureAbsoluteURL(at.feature()));
@@ -197,6 +198,7 @@ public class Html extends ANY
       + annotateRedef(af, outer)
       + annotateAbstract(af)
       + annotateContainsAbstract(af)
+      + annotatePrivateConstructor(af)
       // fills remaining space
       + "<div class='flex-grow-1'></div>"
       + "</div>"
@@ -279,6 +281,20 @@ public class Html extends ANY
 
 
   /**
+   * Returns a html formatted annotation to mark private constructors where only type is visible
+   * @param af the feature to for which to create the annotation for
+   * @return html to annotate a private constructor
+   */
+  private String annotatePrivateConstructor(AbstractFeature af)
+  {
+    return af.visibility() == Visi.PRIVPUB
+             ? "&nbsp;<div class='fd-parent' title='This feature can not be called to construct a new instance of itself, " +
+               "only the type it defines is visible.'>[Private constructor]</div>" // NYI: replace title attribute with proper tooltip
+             : "";
+  }
+
+
+  /**
    * Returns a html formatted annotation to indicate if a feature contains inner or inherited features which are abstract
    * @param af the feature to for which to create the annotation for
    * @return html to annotate a feature containing abstract features
@@ -286,7 +302,7 @@ public class Html extends ANY
   private String annotateContainsAbstract(AbstractFeature af)
   {
     var allInner = new List<AbstractFeature>();
-    sm.forEachDeclaredOrInheritedFeature(af, f -> allInner.add(f));
+    lm.forEachDeclaredOrInheritedFeature(af, f -> allInner.add(f));
 
     return allInner.stream().filter(f->isVisible(f)).anyMatch(f->f.isAbstract())
              ? "&nbsp;&nbsp;<div class='fd-parent' title='This feature contains inner or inherited features " +
@@ -729,7 +745,7 @@ public class Html extends ANY
       .filter(a -> a.isTypeParameter() || (printArgs && f.visibility().eraseTypeVisibility() == Visi.PUB))
       .map(a ->
         htmlEncodedBasename(a) + "&nbsp;"
-        + (a.isTypeParameter() ? typeArgAsString(a) : anchor(a.resultType())))
+        + (a.isTypeParameter() ? typeArgAsString(a) : anchor(a.resultType(), f)))
       .collect(Collectors.joining(htmlEncodeNbsp(", "))) + ")";
   }
 

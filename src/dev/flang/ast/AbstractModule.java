@@ -20,65 +20,29 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Optimizer
+ * Source of interface AbstractModule
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.opt;
+package dev.flang.ast;
 
-import dev.flang.air.AIR;
-import dev.flang.air.IClazzes;
-
-import dev.flang.fuir.AirFUIR;
-import dev.flang.fuir.FUIR;
-
-import dev.flang.util.ANY;
-import dev.flang.util.FuzionOptions;
+import java.util.SortedMap;
 
 
 /**
- * The Optimizer creates the intermediate code FUIR from the application IR (air)
+ * AbstractModule provides feature lookup needed for Types.Resolved.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Optimizer extends ANY
+public interface AbstractModule
 {
 
 
-  /*----------------------------  variables  ----------------------------*/
-
-
   /**
-   * Configuration
+   * Get declared features for given outer Feature as seen by this module.
+   * Result is never null.
    */
-  public final FuzionOptions _options;
-
-
-  public final AIR _air;
-
-
-  private final IClazzes _clazzes;
-
-
-  /*--------------------------  constructors  ---------------------------*/
-
-
-  public Optimizer(FuzionOptions options, AIR air, IClazzes clazzes)
-  {
-    _options = options;
-    _air = air;
-    _clazzes = clazzes;
-  }
-
-
-  /*-----------------------------  methods  -----------------------------*/
-
-
-  public FUIR fuir()
-  {
-    return new AirFUIR(_air.main(), _clazzes);
-  }
-
+  SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer);
 
 }
 

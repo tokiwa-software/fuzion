@@ -1405,7 +1405,7 @@ should be avoided as much as possible.
       .andThen(putfield(length))                      //        cs, cs, arr, arr, fsa
       .andThen(putfield(internalArray))               //        cs, cs, arr
       .andThen(putfield(cs_utf8_data))                //        cs
-      .is(_types.javaType(cs));                       //        -
+      .is(_types.resultType(cs));                     //        -
     return new Pair<>(res, Expr.UNIT);
   }
 
@@ -1587,7 +1587,7 @@ should be avoided as much as possible.
       .andThen(Expr.iconst(len))                      //        cs, cs, fsa, fsa, len
       .andThen(putfield(length))                      //        cs, cs, fsa
       .andThen(putfield(internalArray))               //        cs
-      .is(_types.javaType(arrayCl));                  //        -
+      .is(_types.resultType(arrayCl));                //        -
     return new Pair<>(res, Expr.UNIT);
   }
 

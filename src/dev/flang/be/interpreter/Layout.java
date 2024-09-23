@@ -128,13 +128,13 @@ class Layout extends FUIRContext
         size = size + maxSz;
         size -= Integer.MIN_VALUE;
       }
-    else if (fuir().clazzIsRoutine(_clazz))
+    else if (fuir().clazzKind(_clazz) == FUIR.FeatureKind.Routine)
       {
         for (int i = 0; i < fuir().clazzNumFields(cl); i++)
           {
             var f = fuir().clazzField(cl, i);
             // NYI: Ugly special handling, clean up:
-            int fc = fuir().clazzFieldIsAdrOfValue(f)  ? fuir().clazzAddress()
+            int fc = fuir().clazzFieldIsAdrOfValue(f)  ? fuir().clazz(FUIR.SpecialClazzes.c_sys_ptr)
                                                        : fuir().clazzResultClazz(f);
             int fsz;
             if        (fuir().clazzIsRef(fc)) {                         fsz = 1;
@@ -177,7 +177,8 @@ class Layout extends FUIRContext
   int offset(int f)
   {
     if (PRECONDITIONS) require
-      (fuir().clazzIsRoutine(_clazz) || fuir().clazzIsChoice(_clazz),
+      (fuir().clazzKind(_clazz) == FUIR.FeatureKind.Routine ||
+       fuir().clazzIsChoice(_clazz),
        _offsets.containsKey(fuir().fieldIndex(f))
        );
 
