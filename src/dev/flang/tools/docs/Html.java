@@ -196,6 +196,7 @@ public class Html extends ANY
       + annotateRedef(af, outer)
       + annotateAbstract(af)
       + annotateContainsAbstract(af)
+      + annotatePrivateConstructor(af)
       // fills remaining space
       + "<div class='flex-grow-1'></div>"
       + "</div>"
@@ -273,6 +274,20 @@ public class Html extends ANY
     return af.isAbstract()
              ? "&nbsp;&nbsp;<div class='fd-parent' title='An abstract feature is a feature declared using ⇒ abstract. " +
                "To be able to call it, it needs to be implemented (redefined) in an heir.'>[Abstract feature]</div>"
+             : "";
+  }
+
+
+  /**
+   * Returns a html formatted annotation to mark private constructors where only type is visible
+   * @param af the feature to for which to create the annotation for
+   * @return html to annotate a private constructor
+   */
+  private String annotatePrivateConstructor(AbstractFeature af)
+  {
+    return af.visibility() == Visi.PRIVPUB
+             ? "&nbsp;<div class='fd-parent' title='This feature can not be called to construct a new instance of itself, " +
+               "only the type it defines is visible.'>[Private constructor]</div>" // NYI: replace title attribute with proper tooltip
              : "";
   }
 
