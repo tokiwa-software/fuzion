@@ -844,7 +844,6 @@ class LibraryOut extends ANY
    */
         var cs = m.cases();
         _data.writeInt(cs.size());
-        var allvoid = true;
         for (var c : cs)
           {
   /*
@@ -881,11 +880,6 @@ class LibraryOut extends ANY
               }
             var cc = c.code();
             code(cc);
-            allvoid = allvoid && cc.type().isVoid();
-          }
-        if (allvoid)
-          {
-            _data.writeByte(MirExprKind.Stop.ordinal());
           }
       }
     else if (e instanceof Tag t)

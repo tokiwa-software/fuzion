@@ -41,7 +41,7 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
-import dev.flang.fe.SourceModule;
+import dev.flang.fe.LibraryModule;
 import dev.flang.tools.docs.Util.Kind;
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
@@ -53,17 +53,17 @@ public class Html extends ANY
   final DocsOptions config;
   private final Map<AbstractFeature, Map<Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures;
   private final String navigation;
-  private final SourceModule sm;
+  private final LibraryModule lm;
 
   /**
    * the constructor taking the options
    */
-  public Html(DocsOptions config, Map<AbstractFeature, Map<Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe, SourceModule sm)
+  public Html(DocsOptions config, Map<AbstractFeature, Map<Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe, LibraryModule lm)
   {
     this.config = config;
     this.mapOfDeclaredFeatures = mapOfDeclaredFeatures;
     this.navigation = navigation(universe, 0);
-    this.sm = sm;
+    this.lm = lm;
   }
 
 
@@ -196,6 +196,7 @@ public class Html extends ANY
       + annotateRedef(af, outer)
       + annotateAbstract(af)
       + annotateContainsAbstract(af)
+      + annotatePrivateConstructor(af)
       // fills remaining space
       + "<div class='flex-grow-1'></div>"
       + "</div>"
@@ -278,6 +279,20 @@ public class Html extends ANY
 
 
   /**
+   * Returns a html formatted annotation to mark private constructors where only type is visible
+   * @param af the feature to for which to create the annotation for
+   * @return html to annotate a private constructor
+   */
+  private String annotatePrivateConstructor(AbstractFeature af)
+  {
+    return af.visibility() == Visi.PRIVPUB
+             ? "&nbsp;<div class='fd-parent' title='This feature can not be called to construct a new instance of itself, " +
+               "only the type it defines is visible.'>[Private constructor]</div>" // NYI: replace title attribute with proper tooltip
+             : "";
+  }
+
+
+  /**
    * Returns a html formatted annotation to indicate if a feature contains inner or inherited features which are abstract
    * @param af the feature to for which to create the annotation for
    * @return html to annotate a feature containing abstract features
@@ -285,7 +300,7 @@ public class Html extends ANY
   private String annotateContainsAbstract(AbstractFeature af)
   {
     var allInner = new List<AbstractFeature>();
-    sm.forEachDeclaredOrInheritedFeature(af, f -> allInner.add(f));
+    lm.forEachDeclaredOrInheritedFeature(af, f -> allInner.add(f));
 
     return allInner.stream().filter(f->isVisible(f)).anyMatch(f->f.isAbstract())
              ? "&nbsp;&nbsp;<div class='fd-parent' title='This feature contains inner or inherited features " +
