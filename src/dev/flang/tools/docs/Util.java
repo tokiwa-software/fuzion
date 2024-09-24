@@ -155,17 +155,13 @@ public class Util
 
     static Kind classify(AbstractFeature af) {
       return
-        af.outer() != null &&
-        // NYI: does not treat features that `Type` inherits but does not redefine as type features, see #3716
-        af.outer().isTypeFeature() || (af.outer().compareTo(Types.resolved.f_Type) == 0)
-        ? Kind.TypeFeature
-        : af.definesType()
-          ? !af.isChoice() && af.visibility().eraseTypeVisibility() == Visi.PUB
-              ? af.isThisRef()
-                ? Kind.RefConstructor
-                : Kind.ValConstructor
-              : Kind.Type
-          : Kind.Other;
+      // NYI: does not treat features that `Type` inherits but does not redefine as type features, see #3716
+        (af.outer() != null && af.outer().isTypeFeature() ||
+        (af.outer().compareTo(Types.resolved.f_Type) == 0)                    ? Kind.TypeFeature
+        : !af.definesType()                                                   ? Kind.Other
+        : af.isChoice() || af.visibility().eraseTypeVisibility() != Visi.PUB  ? Kind.Type
+        : af.isThisRef()                                                      ? Kind.RefConstructor
+                                                                              : Kind.ValConstructor);
     }
   }
 

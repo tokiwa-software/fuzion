@@ -29,6 +29,7 @@ package dev.flang.tools.docs;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -51,14 +52,14 @@ import dev.flang.util.List;
 public class Html extends ANY
 {
   final DocsOptions config;
-  private final Map<AbstractFeature, Map<Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures;
+  private final Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures;
   private final String navigation;
   private final LibraryModule lm;
 
   /**
    * the constructor taking the options
    */
-  public Html(DocsOptions config, Map<AbstractFeature, Map<Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe, LibraryModule lm)
+  public Html(DocsOptions config, Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe, LibraryModule lm)
   {
     this.config = config;
     this.mapOfDeclaredFeatures = mapOfDeclaredFeatures;
@@ -189,9 +190,10 @@ public class Html extends ANY
       + arguments(af, printArgs)
       + (af.isThisRef() ? "<div class='fd-keyword'>&nbsp;ref</div>" : "")
       + inherited(af)
-      + (af.signatureWithArrow() ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchor(af.resultType(), null)
-                                 : "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>")
-      + "</div>"
+      + (af.signatureWithArrow() ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchor(af.resultType(), af)
+        : af.isConstructor()     ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>"
+        : af.isField()           ? "&nbsp;" + anchor(af.resultType(), outer) //+ "_af:" + af.featureName().baseName() + "_out:" + (outer != null ? outer.featureName().baseName() : "_out=null")
+                                 : "")
       + annotateInherited(af, outer)
       + annotateRedef(af, outer)
       + annotateAbstract(af)
@@ -247,7 +249,7 @@ public class Html extends ANY
   private String annotateRedef(AbstractFeature af, AbstractFeature outer)
   {
     // don't mark inherited redefinitions as redefinitions when they are not redefined in the current feature
-    if (!isDeclared(af, outer))
+    if (!isDeclared(af, outer) )
       {
         return "";
       }
@@ -368,22 +370,39 @@ public class Html extends ANY
    * @param outer the outer feature of the features in the summary
    * @return
    */
-  private String mainSection(Map<Kind, TreeSet<AbstractFeature>> map, AbstractFeature outer)
+  private String mainSection(Map<AbstractFeature.Kind, TreeSet<AbstractFeature>> map, AbstractFeature outer)
   {
-    TreeSet<AbstractFeature> refTypes = map.get(Kind.Type) == null ? new TreeSet<AbstractFeature>() : new TreeSet<>(map.get(Kind.Type));
-    refTypes.removeIf(f->!f.isThisRef());
-    refTypes.addAll(map.get(Kind.RefConstructor) == null ? new TreeSet<AbstractFeature>() : map.get(Kind.RefConstructor));
+    // Type Parameters
+    var typeParameters = new TreeSet<AbstractFeature>();
+    typeParameters.addAll(map.getOrDefault(AbstractFeature.Kind.TypeParameter, new TreeSet<AbstractFeature>()));
+    typeParameters.addAll(map.getOrDefault(AbstractFeature.Kind.OpenTypeParameter, new TreeSet<AbstractFeature>()));
+    typeParameters.addAll(outer.typeArguments());
 
-    TreeSet<AbstractFeature> valTypes = map.get(Kind.Type) == null ? new TreeSet<AbstractFeature>() : new TreeSet<>(map.get(Kind.Type));
-    valTypes.removeIf(f->f.isThisRef());
-    valTypes.addAll(map.get(Kind.ValConstructor) == null ? new TreeSet<AbstractFeature>() : map.get(Kind.ValConstructor));
+    // Fields
+    TreeSet<AbstractFeature> fields =  new TreeSet<AbstractFeature>();
+    fields.addAll(map.getOrDefault(AbstractFeature.Kind.Field, new TreeSet<AbstractFeature>()));
+    var normalArguments = outer.arguments().clone();
+    normalArguments.removeIf(a->a.isTypeParameter());
+    fields.addAll(normalArguments);
 
-    return (map.get(Kind.RefConstructor) == null ? "" :  "<h4>Reference Constructors</h4>" + mainSection0(map.get(Kind.RefConstructor), outer))
-    + (map.get(Kind.ValConstructor) == null ? "" :  "<h4>Value Constructors</h4>" + mainSection0(map.get(Kind.ValConstructor), outer))
-    + (map.get(Kind.Other) == null ? "" : "<h4>Functions</h4>" + mainSection0(map.get(Kind.Other), outer))
-    + (refTypes.isEmpty() ? "" : "<h4>Reference Types</h4>" + mainSection0(refTypes, false, outer))
-    + (valTypes.isEmpty() ? "" : "<h4>Value Types</h4>" + mainSection0(valTypes, false, outer))
-    + (map.get(Kind.TypeFeature) == null ? "" : "<h4>Type Features</h4>" + mainSection0(map.get(Kind.TypeFeature), outer));
+    // Constructors
+    var constructors =  new TreeSet<AbstractFeature>();
+    constructors.addAll(map.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>()));
+    constructors.removeIf(f->!f.isConstructor());
+
+    // Functions
+    var functions = new TreeSet<AbstractFeature>();
+    functions.addAll(map.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>()));
+    functions.removeIf(f->f.isConstructor());
+    functions.addAll(map.getOrDefault(AbstractFeature.Kind.Abstract, new TreeSet<AbstractFeature>()));
+    functions.addAll(map.getOrDefault(AbstractFeature.Kind.Intrinsic, new TreeSet<AbstractFeature>()));
+    functions.addAll(map.getOrDefault(AbstractFeature.Kind.Native, new TreeSet<AbstractFeature>()));
+
+    return (typeParameters.isEmpty()                ? "" : "<h4>Type Parameters</h4>" + mainSection0(typeParameters, outer))
+    + (fields.isEmpty()                             ? "" : "<h4>Fields</h4>"          + mainSection0(fields, outer))
+    + (constructors.isEmpty()                       ? "" : "<h4>Constructors</h4>"    + mainSection0(constructors, outer))
+    + (functions.isEmpty()                          ? "" : "<h4>Functions</h4>"       + mainSection0(functions, outer))
+    + (map.get(AbstractFeature.Kind.Choice) == null ? "" : "<h4>Choice Types</h4>"    + mainSection0(map.get(AbstractFeature.Kind.Choice), outer));
   }
 
 
@@ -393,6 +412,16 @@ public class Html extends ANY
    * @return
    */
   private String mainSection0(TreeSet<AbstractFeature> set, AbstractFeature outer)
+  {
+    return mainSection0(set.stream(), true, outer);
+  }
+
+  /**
+   * The summaries and the comments of the features
+   * @param set the features to be included in the summary
+   * @return
+   */
+  private String mainSection0(Stream<AbstractFeature> set, AbstractFeature outer)
   {
     return mainSection0(set, true, outer);
   }
@@ -406,18 +435,29 @@ public class Html extends ANY
    */
   private String mainSection0(TreeSet<AbstractFeature> set, boolean printArgs, AbstractFeature outer)
   {
+    return mainSection0(set.stream(), printArgs, outer);
+  }
+
+  /**
+   * The summaries and the comments of the features
+   * @param set the features to be included in the summary
+   * @param printArgs whether or not arguments of the feature should be included in output
+   * @param outer the outer feature of the features in the summary
+   * @return
+   */
+  private String mainSection0(Stream<AbstractFeature> set, boolean printArgs, AbstractFeature outer)
+  {
     return set
-      .stream()
       .sorted((af1, af2) -> af1.featureName().baseName().compareToIgnoreCase(af2.featureName().baseName()))
       .map(af -> {
-        // NYI summary tag must not contain div // FIXME: is this still up to date??
+        // NYI summary tag must not contain div
         return "<details id='" + htmlID(af)
           + "'$0><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
             // NYI rename fd-private?
             .replace("$0", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
             .replace("$1",
               summary(af, printArgs, outer))
-            .replace("$2", Util.commentOf(af))
+            .replace("$2", (Util.commentOf(af).equals(Util.commentOf(outer)) ? "-- no comment --" : Util.commentOf(af))) // NYI: this is not a good solution, but arguments should not inherit the comment of their declaring feature in the first place
             .replace("$3", redefines(af));
       })
       .collect(Collectors.joining(System.lineSeparator()));
@@ -706,7 +746,7 @@ public class Html extends ANY
       .filter(a -> a.isTypeParameter() || (printArgs && f.visibility().eraseTypeVisibility() == Visi.PUB))
       .map(a ->
         htmlEncodedBasename(a) + "&nbsp;"
-        + (a.isTypeParameter() ? typeArgAsString(a): anchor(a.resultType(), f)))
+        + (a.isTypeParameter() ? typeArgAsString(a) : anchor(a.resultType(), f)))
       .collect(Collectors.joining(htmlEncodeNbsp(", "))) + ")";
   }
 
@@ -761,7 +801,7 @@ public class Html extends ANY
 
   private String args(AbstractFeature start)
   {
-    if (start.valueArguments().size() == 0 || Kind.classify(start) == Kind.Type)
+    if (start.valueArguments().size() == 0 || (start.isChoice() || start.visibility().eraseTypeVisibility() != Visi.PUB))
       {
         return "";
       }
