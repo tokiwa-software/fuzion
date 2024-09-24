@@ -56,6 +56,7 @@ import dev.flang.ast.Types;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.List;
 import dev.flang.util.SourceDir;
 
 
@@ -119,6 +120,7 @@ public class FrontEnd extends ANY
    * the corresponding LibraryModule instance.
    */
   private TreeMap<String, LibraryModule> _modules = new TreeMap<>();
+  List<LibraryModule> _moduleList = new List<>();
 
 
   /**
@@ -322,6 +324,23 @@ public class FrontEnd extends ANY
                          _options._moduleDirs.toString("'","', '", "'") + ".");
           }
       }
+    return result;
+  }
+
+
+  public LibraryModule module(int globalIndex)
+  {
+    if (PRECONDITIONS) require
+      (globalIndex != 0);
+
+    LibraryModule result = _moduleList.get(0);
+    for (var i = 1; i < _moduleList.size() && _moduleList.get(i)._globalBase <= globalIndex; i++)
+      {
+        result = _moduleList.get(i);
+        if (false) System.out.println("module: "+result._globalBase+" <= "+globalIndex+ " < " +
+                           (i+1 < _moduleList.size() ? _moduleList.get(i+1)._globalBase : "MAX"));
+      }
+    if (false) System.out.println("module: "+result._globalBase+" <= "+globalIndex+ " < " );
     return result;
   }
 

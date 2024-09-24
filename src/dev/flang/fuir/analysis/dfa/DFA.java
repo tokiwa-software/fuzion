@@ -40,6 +40,7 @@ import java.util.function.Supplier;
 import dev.flang.fuir.AirFUIR;
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.SpecialClazzes;
+import dev.flang.fuir.GeneratingFUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
 import static dev.flang.ir.IR.NO_SITE;
@@ -1136,7 +1137,119 @@ public class DFA extends ANY
         called.add(c._cc);
       }
     _options.timer("dfa");
+    if (_fuir instanceof AirFUIR)
     return new AirFUIR((AirFUIR) _fuir)
+      {
+        public boolean clazzNeedsCode(int cl)
+        {
+          return super.clazzNeedsCode(cl) &&
+            switch (_fuir.clazzKind(cl))
+            {
+            case Routine, Intrinsic,
+                 Native             -> called.contains(cl);
+            case Field              -> isBuiltInNumeric(_fuir.clazzOuterClazz(cl)) ||
+                                       _readFields.get(cl) ||
+                                       // main result field
+                                       _fuir.clazzResultField(_fuir.mainClazzId()) == cl;
+            case Abstract           -> true;
+            case Choice             -> true;
+            };
+        }
+
+
+        /**
+         * Determine the lifetime of the instance of a call to clazz cl.
+         *
+         * @param cl a clazz id of any kind
+         *
+         * @return A conservative estimate of the lifespan of cl's instance.
+         * Undefined if a call to cl does not create an instance, Call if it is
+         * guaranteed that the instance is inaccessible after the call returned.
+         */
+        public LifeTime lifeTime(int cl)
+        {
+          return
+            (clazzKind(cl) != FeatureKind.Routine)
+                ? super.lifeTime(cl)
+                : currentEscapes(cl) ? LifeTime.Unknown :
+                                       LifeTime.Call;
+        }
+
+
+        /**
+         * For a call to cl, does the instance of cl escape the call?
+         *
+         * @param cl a call's inner clazz
+         *
+         * @return true iff the instance of the call must be allocated on the
+         * heap.
+         */
+        private boolean currentEscapes(int cl)
+        {
+          return _escapes.contains(cl);
+        }
+
+
+        /**
+         * For a call in cl in code block c at index i, does the result escape
+         * the current clazz stack frame (such that it cannot be stored in a
+         * local var in the stack frame of cl)
+         *
+         * @param s site of call
+         *
+         * @return true iff the result of the call must be cloned on the heap.
+         */
+        public boolean doesResultEscape(int s)
+        {
+          return _escapesCode.contains(s);
+        }
+
+
+        @Override
+        public int[] accessedClazzes(int s)
+        {
+          var ccs = super.accessedClazzes(s);
+          var cs = site(s);
+          var nr = new int[ccs.length];
+          int j = 0;
+          for (var cci = 0; cci < ccs.length; cci += 2)
+            {
+              var tt = ccs[cci+0];
+              var cc = ccs[cci+1];
+              if (cs._accesses.contains(cc))
+                {
+                  nr[j++] = tt;
+                  nr[j++] = cc;
+                }
+            }
+          return java.util.Arrays.copyOfRange(nr, 0, j);
+        }
+
+
+        @Override
+        public boolean alwaysResultsInVoid(int s)
+        {
+          if (s < 0)
+            {
+              return false;
+            }
+          else
+            {
+              var code = _fuir.codeAt(s);
+              return (code == ExprKind.Call || code == ExprKind.Match) && site(s).alwaysResultsInVoid() || super.alwaysResultsInVoid(s);
+            }
+        }
+
+
+        @Override
+        public synchronized int[] matchCaseTags(int s, int cix)
+        {
+          var key = ((long)s<<32)|((long)cix);
+          return _takenMatchCases.contains(key) ? super.matchCaseTags(s, cix) : new int[0];
+        };
+
+    };
+    return new GeneratingFUIR((GeneratingFUIR) _fuir)
       {
         public boolean clazzNeedsCode(int cl)
         {
