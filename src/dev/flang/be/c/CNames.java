@@ -289,7 +289,7 @@ public class CNames extends ANY
       var o = _fuir.clazzOuterClazz(cl);
       String sep = "";
       if (o != -1 &&
-          _fuir.clazzOuterClazz(o) != -1)
+          _fuir.clazzOuterClazz(o) != FUIR.NO_CLAZZ)
         { // add o a prefix unless cl or o are universe
           clazzMangledName(o, sb);
           sep = "__";

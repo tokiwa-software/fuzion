@@ -666,14 +666,13 @@ public class AirFUIR extends FUIR
    *
    * @param cl a clazz id
    *
-   * @return clazz id of cl's outer clazz, -1 if cl is universe or a value-less
-   * type.
+   * @return clazz id of cl's outer clazz, NO_CLAZZ if cl is universe.
    */
   @Override
   public int clazzOuterClazz(int cl)
   {
     var o = clazz(cl)._outer;
-    return o == null ? -1 : id(o);
+    return o == null ? NO_CLAZZ : id(o);
   }
 
 
@@ -785,7 +784,7 @@ public class AirFUIR extends FUIR
   @Override
   public String clazzAsString(int cl)
   {
-    return cl == -1
+    return cl == -1 || cl == NO_CLAZZ
       ? "-- no clazz --"
       : clazz(cl)._type.asString();
   }

@@ -66,6 +66,7 @@ public abstract class FUIR extends IR
     c_f32         ("f32"                        , 1, c_universe  ),
     c_f64         ("f64"                        , 1, c_universe  ),
     c_unit        ("unit"                       , 0, c_universe  ),
+    c_void        ("void"                       , 0, c_universe  ),
     c_bool        ("bool"                       , 0, c_universe  ),
     c_TRUE        ("TRUE"                       , 0, c_universe  ),
     c_FALSE       ("FALSE"                      , 0, c_universe  ),
@@ -236,8 +237,7 @@ public abstract class FUIR extends IR
    *
    * @param cl a clazz id
    *
-   * @return clazz id of cl's outer clazz, -1 if cl is universe or a value-less
-   * type.
+   * @return clazz id of cl's outer clazz, NO_CLAZZ if cl is universe.
    */
   public abstract int clazzOuterClazz(int cl);
 
