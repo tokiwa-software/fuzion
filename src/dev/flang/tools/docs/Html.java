@@ -437,6 +437,7 @@ public class Html extends ANY
   {
     return mainSection0(set.stream(), printArgs, outer);
   }
+
   /**
    * The summaries and the comments of the features
    * @param set the features to be included in the summary
