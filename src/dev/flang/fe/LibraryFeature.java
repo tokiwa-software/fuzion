@@ -240,9 +240,10 @@ public class LibraryFeature extends AbstractFeature
   /**
    * Find the outer feature of this feature.
    */
+  @Override
   public AbstractFeature outer()
   {
-    AbstractFeature result = _outer;
+    var result = _outer;
     if (result == null && !isUniverse())
       {
         result = _libModule.featureOuter(_index);

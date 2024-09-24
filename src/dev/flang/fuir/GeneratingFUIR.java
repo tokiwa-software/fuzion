@@ -30,8 +30,10 @@ import java.nio.ByteBuffer;
 
 import java.nio.charset.StandardCharsets;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
+import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.FeatureName;
 
 import dev.flang.fe.FrontEnd;
@@ -40,6 +42,7 @@ import dev.flang.fe.LibraryModule;
 
 import dev.flang.mir.MIR;
 
+import dev.flang.util.IntArray;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -57,18 +60,44 @@ public class GeneratingFUIR extends FUIR
   /*-----------------------------  classes  -----------------------------*/
 
 
-  record Clazz(int _id, SpecialClazzes _s, int _gix)
+  class Clazz
   {
+    final int _outer;
+    final int _id;
+    final int _gix;
+    final LibraryFeature _feature;
+
+    SpecialClazzes _s = SpecialClazzes.c_NOT_FOUND;
+    boolean _needsCode;
+    int _code; // site of the code block of this clazz
+    int _outerRef = NO_CLAZZ;  // NYI: not initialized yet!
+    boolean _isBoxed = false;  // NYI: not initialized yet!
+
+    Clazz(int outer,
+          int id,
+          int gix)
+    {
+      _outer = outer;
+      _id = id;
+      _gix = gix;
+      _needsCode = false;
+      _code = NO_SITE;
+      var m = _fe.module(_gix);
+      var f = gix - m._globalBase;
+      _feature = (LibraryFeature) m.libraryFeature(f);
+    }
+
     @Override
     public boolean equals(Object other)
     {
-      return _gix == ((Clazz)other)._gix;  // NYI: outer and type parameters!
+      return _gix == ((Clazz) other)._gix;  // NYI: outer and type parameters!
     }
     @Override
     public int hashCode()
     {
       return _gix;  // NYI: outer and type parameters!
     }
+
   }
 
 
@@ -83,6 +112,12 @@ public class GeneratingFUIR extends FUIR
   private final HashMap<Clazz, Clazz> _clazzesHM;
 
 
+  /**
+   * For each site, this gives the clazz id of the clazz that contains the code at that site.
+   */
+  private final IntArray _siteClazzes;
+
+
   private final LibraryModule _mainModule;
 
 
@@ -94,6 +129,9 @@ public class GeneratingFUIR extends FUIR
 
 
   private final int[] _specialClazzes;
+
+  private int _nextSite = SITE_BASE;
+
 
 
 
@@ -107,15 +145,15 @@ public class GeneratingFUIR extends FUIR
   {
     _fe = fe;
     _clazzesHM = new HashMap<Clazz, Clazz>();
+    _siteClazzes = new IntArray();
     _mainModule = fe.mainModule();
     _clazzes = new List<>();
-    _mainClazz = newClazz(SpecialClazzes.c_NOT_FOUND, ((LibraryFeature)mir.main()    ).globalIndex());
-    _universe  = newClazz(SpecialClazzes.c_NOT_FOUND, ((LibraryFeature)mir.universe()).globalIndex());
+    _universe  = newClazz(NO_CLAZZ, ((LibraryFeature)mir.universe()).globalIndex());
+    doesNeedCode(_universe);
+    _mainClazz = newClazz((LibraryFeature) mir.main());
+    doesNeedCode(_mainClazz);
     _specialClazzes = new int[SpecialClazzes.values().length];
-    for (var v : SpecialClazzes.values())
-      {
-        _specialClazzes[v.ordinal()] = newClazz(v, 0);
-      }
+    Arrays.fill(_specialClazzes, NO_CLAZZ);
   }
 
 
@@ -131,6 +169,7 @@ public class GeneratingFUIR extends FUIR
     super(original);
     _fe = original._fe;
     _clazzesHM = original._clazzesHM;
+    _siteClazzes = original._siteClazzes;
     _mainModule = original._mainModule;
     _mainClazz = original._mainClazz;
     _universe = original._universe;
@@ -142,20 +181,61 @@ public class GeneratingFUIR extends FUIR
   /*-----------------------------  methods  -----------------------------*/
 
 
-  private int newClazz(SpecialClazzes s, int gix)
+  private int newClazz(AbstractFeature f)
   {
-    var cl = new Clazz(CLAZZ_BASE + _clazzes.size(), s, gix);
+    if (PRECONDITIONS) require
+      (f != null,
+       f.arguments().size() == 0);
+
+    var of = f.outer();
+    return of == null ? _universe
+                      : newClazz(newClazz(of), f.globalIndex());
+  }
+
+  private int newClazz(int outer, int gix)
+  {
+    int result;
+    var cl = new Clazz(outer, CLAZZ_BASE + _clazzes.size(), gix);
     var existing = _clazzesHM.get(cl);
     if (existing != null)
       {
-        cl = existing;
+        result = existing._id;
       }
     else
       {
+        result = cl._id;
         _clazzes.add(cl);
         _clazzesHM.put(cl, cl);
+
+        // NYI: OPTIMIZATION: Avoid creating all feature qualified names!
+        var s = switch (cl._feature.qualifiedName())
+          {
+          case "i8"                -> SpecialClazzes.c_i8          ;
+          case "i16"               -> SpecialClazzes.c_i16         ;
+          case "i32"               -> SpecialClazzes.c_i32         ;
+          case "i64"               -> SpecialClazzes.c_i64         ;
+          case "u8"                -> SpecialClazzes.c_u8          ;
+          case "u16"               -> SpecialClazzes.c_u16         ;
+          case "u32"               -> SpecialClazzes.c_u32         ;
+          case "u64"               -> SpecialClazzes.c_u64         ;
+          case "f32"               -> SpecialClazzes.c_f32         ;
+          case "f64"               -> SpecialClazzes.c_f64         ;
+          case "bool"              -> SpecialClazzes.c_bool        ;
+          case "TRUE"              -> SpecialClazzes.c_TRUE        ;
+          case "FALSE"             -> SpecialClazzes.c_FALSE       ;
+          case "Const_String"      -> SpecialClazzes.c_Const_String;
+          case "String"            -> SpecialClazzes.c_String      ;
+          case "fuzion.sys.Pointer"-> SpecialClazzes.c_sys_ptr     ; // NYI: does not work, must handle outer correctly
+          case "unit"              -> SpecialClazzes.c_unit        ;
+          default                  -> SpecialClazzes.c_NOT_FOUND   ;
+          };
+        if (s != SpecialClazzes.c_NOT_FOUND)
+          {
+            _specialClazzes[s.ordinal()] = result;
+          }
+        cl._s = s;
       }
-    return cl._id;
+    return result;
   }
 
 
@@ -206,8 +286,10 @@ public class GeneratingFUIR extends FUIR
   @Override
   public FeatureKind clazzKind(int cl)
   {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
     var c = _clazzes.get(cl - CLAZZ_BASE);
-    if (c._gix == 0) return FeatureKind.Routine;
     var m = _fe.module(c._gix);
     return switch (m.featureKindEnum(c._gix - m._globalBase))
       {
@@ -232,13 +314,10 @@ public class GeneratingFUIR extends FUIR
   @Override
   public String clazzBaseName(int cl)
   {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
     var c = _clazzes.get(cl - CLAZZ_BASE);
-    if (c._gix == 0)
-      {
-        return "NYI_" + c._s;
-    //        System.out.println("PRobme for "+c._s);
-    //        throw new Error();
-      }
     var m = _fe.module(c._gix);
     var ix = c._gix - m._globalBase;
     var bytes = m.featureName(ix);
@@ -268,6 +347,10 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazzResultClazz(int cl)
   {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
+    dev.flang.util.Debug.umprintln("NYI!");
     if (true) return cl;
     throw new Error("NYI");
   }
@@ -285,6 +368,9 @@ public class GeneratingFUIR extends FUIR
   @Override
   public String clazzOriginalName(int cl)
   {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
     throw new Error("NYI");
   }
 
@@ -297,7 +383,10 @@ public class GeneratingFUIR extends FUIR
   @Override
   public String clazzAsString(int cl)
   {
-    //System.out.println("NYI: clazzAsString "+cl);
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
+    dev.flang.util.Debug.umprintln("NYI!");
     var c = _clazzes.get(cl - CLAZZ_BASE);
     return "CL: "+(c._id - CLAZZ_BASE)+" "+c._s.toString();
   }
@@ -311,6 +400,10 @@ public class GeneratingFUIR extends FUIR
   @Override
   public String clazzAsStringHuman(int cl)
   {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
+    dev.flang.util.Debug.umprintln("NYI!");
     if (true) return clazzAsString(cl);
     throw new Error("NYI");
   }
@@ -325,6 +418,9 @@ public class GeneratingFUIR extends FUIR
   @Override
   public String clazzAsStringWithArgsAndResult(int cl)
   {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
     throw new Error("NYI");
   }
 
@@ -340,6 +436,10 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazzOuterClazz(int cl)
   {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
+    dev.flang.util.Debug.umprintln("NYI!");
     return -1;
     //     throw new Error("NYI");
   }
@@ -430,8 +530,15 @@ public class GeneratingFUIR extends FUIR
   @Override
   public boolean clazzIsChoice(int cl)
   {
-    if (true) return false;
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
+    var c = _clazzes.get(cl - CLAZZ_BASE);
+    return switch (c._feature.kind())
+      {
+      case Choice -> true;
+      default -> false;
+      };
   }
 
 
@@ -446,6 +553,11 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazzNumChoices(int cl)
   {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
+    dev.flang.util.Debug.umprintln("NYI");
+    if (true) return 0;
     throw new Error("NYI");
   }
 
@@ -463,6 +575,9 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazzChoice(int cl, int i)
   {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
     throw new Error("NYI");
   }
 
@@ -477,6 +592,9 @@ public class GeneratingFUIR extends FUIR
   @Override
   public boolean clazzIsChoiceWithRefs(int cl)
   {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
     throw new Error("NYI");
   }
 
@@ -491,6 +609,9 @@ public class GeneratingFUIR extends FUIR
   @Override
   public boolean clazzIsChoiceOfOnlyRefs(int cl)
   {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
     throw new Error("NYI");
   }
 
@@ -510,6 +631,9 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int[] clazzInstantiatedHeirs(int cl)
   {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
     throw new Error("NYI");
   }
 
@@ -528,8 +652,10 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazzArgCount(int cl)
   {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
     var c = _clazzes.get(cl - CLAZZ_BASE);
-    if (c._gix == 0) return 0;
     var m = _fe.module(c._gix);
     return m.featureArgCount(c._gix - m._globalBase);   // NYI: open generics?
   }
@@ -548,6 +674,9 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazzArgClazz(int cl, int arg)
   {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
     throw new Error("NYI");
   }
 
@@ -565,6 +694,9 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazzArg(int cl, int arg)
   {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
     throw new Error("NYI");
   }
 
@@ -580,6 +712,10 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazzResultField(int cl)
   {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
+    dev.flang.util.Debug.umprintln("NYI!");
     if (true) return -1;
     throw new Error("NYI");
   }
@@ -595,8 +731,11 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazzOuterRef(int cl)
   {
-    if (true) return -1;
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
+    var c = _clazzes.get(cl - CLAZZ_BASE);
+    return c._outerRef;
   }
 
 
@@ -610,8 +749,38 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazzCode(int cl)
   {
-    if (true) return cl;
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE,
+       clazzNeedsCode(cl));
+
+    var c = _clazzes.get(cl - CLAZZ_BASE);
+    var result = c._code;
+    if (result == NO_SITE)
+      {
+        if (c._gix == 0)
+          {
+            dev.flang.util.Debug.umprintln("Problem for "+c._s);
+            throw new Error("NYI");
+          }
+        var m = _fe.module(c._gix);
+        var f = c._gix - m._globalBase;
+        var code = m.featureCodePos(f);
+        result = addCode(cl, m, code);
+        c._code = result;
+      }
+    return result;
+  }
+
+
+  int addCode(int cl, LibraryModule m, int code)
+  {
+    var result = _nextSite;
+    _nextSite += m.codeSize(code) + 1;
+    for (var i = result; i < _nextSite; i++)
+      {
+        _siteClazzes.add(cl);
+      }
+    return result;
   }
 
 
@@ -627,10 +796,21 @@ public class GeneratingFUIR extends FUIR
   @Override
   public boolean clazzNeedsCode(int cl)
   {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
     var c = _clazzes.get(cl - CLAZZ_BASE);
-    if (c._gix == 0) return false;
-    if (true) return true;
-    throw new Error("NYI");
+    return c._needsCode;
+  }
+
+
+  void doesNeedCode(int cl)
+  {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
+    var c = _clazzes.get(cl - CLAZZ_BASE);
+    c._needsCode = true;
   }
 
 
@@ -648,8 +828,15 @@ public class GeneratingFUIR extends FUIR
   @Override
   public boolean isConstructor(int cl)
   {
-    //System.out.println("NYI: isConstructor " + clazzAsString(cl));
-    return false;
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
+    var c = _clazzes.get(cl - CLAZZ_BASE);
+    return switch (c._feature.kind())
+      {
+      case Routine -> c._feature.isConstructor();
+      default -> false;
+      };
   }
 
 
@@ -663,8 +850,11 @@ public class GeneratingFUIR extends FUIR
   @Override
   public boolean clazzIsRef(int cl)
   {
-    //    System.out.println("NYI: clazzIsRef " + clazzAsString(cl));
-    return false;
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
+    var c = _clazzes.get(cl - CLAZZ_BASE);
+    return c._isBoxed || c._feature.isThisRef();
   }
 
 
@@ -676,8 +866,11 @@ public class GeneratingFUIR extends FUIR
   @Override
   public boolean clazzIsBoxed(int cl)
   {
-    if (true) return false;
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
+    var c = _clazzes.get(cl - CLAZZ_BASE);
+    return c._isBoxed;
   }
 
 
@@ -691,6 +884,9 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazzAsValue(int cl)
   {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
     throw new Error("NYI");
   }
 
@@ -710,6 +906,9 @@ public class GeneratingFUIR extends FUIR
   @Override
   public byte[] clazzTypeName(int cl)
   {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
     throw new Error("NYI");
   }
 
@@ -725,6 +924,9 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazzTypeParameterActualType(int cl)
   {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
     throw new Error("NYI");
   }
 
@@ -743,14 +945,11 @@ public class GeneratingFUIR extends FUIR
   @Override
   public SpecialClazzes getSpecialClazz(int cl)
   {
-    for (var v : SpecialClazzes.values())
-      {
-        if (cl == _specialClazzes[v.ordinal()])
-          {
-            return v;
-          }
-      }
-    return SpecialClazzes.c_NOT_FOUND;
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
+    var c = _clazzes.get(cl - CLAZZ_BASE);
+    return c._s;
   }
 
 
@@ -766,6 +965,9 @@ public class GeneratingFUIR extends FUIR
   @Override
   public boolean clazzIs(int cl, SpecialClazzes c)
   {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
     return _clazzes.get(cl - CLAZZ_BASE)._s == c;
   }
 
@@ -773,13 +975,31 @@ public class GeneratingFUIR extends FUIR
   /**
    * Get the id of the given special clazz.
    *
-   * @param c the id of clazz c or -1 if that clazz was not created.
+   * @param s the special clazz we are looking for
    */
   @Override
-  public int clazz(SpecialClazzes c)
+  public int clazz(SpecialClazzes s)
   {
-    //System.out.println("Special clazz "+c);
-    return _specialClazzes[c.ordinal()];
+    if (PRECONDITIONS) require
+      (s != SpecialClazzes.c_NOT_FOUND);
+
+    var result = _specialClazzes[s.ordinal()];
+    if (result == NO_CLAZZ)
+      {
+        if (s == SpecialClazzes.c_universe)
+          {
+            result = _universe;
+          }
+        else
+          {
+            var o = clazz(s._outer);
+            var oc = _clazzes.get(o - CLAZZ_BASE);
+            var of = oc._feature;
+            var f = of.get(of._libModule, s._name, s._argCount);
+            result = newClazz(o, f.globalIndex());
+          }
+      }
+    return result;
   }
 
 
@@ -815,6 +1035,7 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazz_Const_String()
   {
+    dev.flang.util.Debug.umprintln("NYI!");
     if (true) return -1;
     throw new Error("NYI");
   }
@@ -828,6 +1049,7 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazz_Const_String_utf8_data()
   {
+    dev.flang.util.Debug.umprintln("NYI!");
     if (true) return -1;
     throw new Error("NYI");
   }
@@ -841,6 +1063,7 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazz_array_u8()
   {
+    dev.flang.util.Debug.umprintln("NYI!");
     if (true) return -1;
     throw new Error("NYI");
   }
@@ -854,6 +1077,7 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazz_fuzionSysArray_u8()
   {
+    dev.flang.util.Debug.umprintln("NYI!");
     if (true) return -1;
     throw new Error("NYI");
   }
@@ -867,6 +1091,7 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazz_fuzionSysArray_u8_data()
   {
+    dev.flang.util.Debug.umprintln("NYI!");
     if (true) return -1;
     throw new Error("NYI");
   }
@@ -880,6 +1105,7 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazz_fuzionSysArray_u8_length()
   {
+    dev.flang.util.Debug.umprintln("NYI!");
     if (true) return -1;
     throw new Error("NYI");
   }
@@ -893,6 +1119,7 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazz_fuzionJavaObject()
   {
+    dev.flang.util.Debug.umprintln("NYI!");
     if (true) return -1;
     throw new Error("NYI");
   }
@@ -906,6 +1133,7 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazz_fuzionJavaObject_Ref()
   {
+    dev.flang.util.Debug.umprintln("NYI!");
     if (true) return -1;
     throw new Error("NYI");
   }
@@ -919,6 +1147,7 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazz_error()
   {
+    dev.flang.util.Debug.umprintln("NYI!");
     if (true) return -1;
     throw new Error("NYI");
   }
@@ -1053,6 +1282,7 @@ public class GeneratingFUIR extends FUIR
   @Override
   public boolean clazzIsUnitType(int cl)
   {
+    dev.flang.util.Debug.umprintln("NYI!");
     if (true) return true;
     throw new Error("NYI");
   }
@@ -1141,8 +1371,11 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazzAt(int s)
   {
-    if (true) return s;
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (s >= SITE_BASE,
+       s < SITE_BASE + _nextSite);
+
+    return _siteClazzes.get(s - SITE_BASE);
   }
 
 
@@ -1575,8 +1808,11 @@ public class GeneratingFUIR extends FUIR
   @Override
   public String clazzSrcFile(int cl)
   {
-    if (true) return "test.fz";
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE);
+
+    var c = _clazzes.get(cl - CLAZZ_BASE);
+    return c._feature.pos()._sourceFile._fileName.toString();
   }
 
 

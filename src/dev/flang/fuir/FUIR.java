@@ -30,6 +30,7 @@ import java.nio.ByteBuffer;
 
 import dev.flang.ir.IR;
 
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourcePosition;
 
 
@@ -50,26 +51,41 @@ public abstract class FUIR extends IR
    */
   public enum SpecialClazzes
   {
-    c_i8          ,
-    c_i16         ,
-    c_i32         ,
-    c_i64         ,
-    c_u8          ,
-    c_u16         ,
-    c_u32         ,
-    c_u64         ,
-    c_f32         ,
-    c_f64         ,
-    c_bool        ,
-    c_TRUE        ,
-    c_FALSE       ,
-    c_Const_String,
-    c_String      ,
-    c_sys_ptr     ,
-    c_unit        ,
-
     // dummy entry to report failure of getSpecialId()
-    c_NOT_FOUND   ;
+    c_NOT_FOUND   (""                           , 0, null        ),
+
+    c_universe    (FuzionConstants.UNIVERSE_NAME, 0, c_NOT_FOUND ),
+    c_i8          ("i8"                         , 1, c_universe  ),
+    c_i16         ("i16"                        , 1, c_universe  ),
+    c_i32         ("i32"                        , 1, c_universe  ),
+    c_i64         ("i64"                        , 1, c_universe  ),
+    c_u8          ("u8"                         , 1, c_universe  ),
+    c_u16         ("u16"                        , 1, c_universe  ),
+    c_u32         ("u32"                        , 1, c_universe  ),
+    c_u64         ("u64"                        , 1, c_universe  ),
+    c_f32         ("f32"                        , 1, c_universe  ),
+    c_f64         ("f64"                        , 1, c_universe  ),
+    c_unit        ("unit"                       , 0, c_universe  ),
+    c_bool        ("bool"                       , 0, c_universe  ),
+    c_TRUE        ("TRUE"                       , 0, c_universe  ),
+    c_FALSE       ("FALSE"                      , 0, c_universe  ),
+    c_Const_String("Const_String"               , 0, c_universe  ),
+    c_String      ("String"                     , 0, c_universe  ),
+    c_fuzion      ("fuzion"                     , 0, c_universe  ),
+    c_fuzion_sys  ("sys"                        , 0, c_fuzion    ),
+    c_sys_ptr     ("Pointer"                    , 0, c_fuzion_sys),
+    ;
+
+    String _name;
+    int _argCount;
+    SpecialClazzes _outer;
+
+    SpecialClazzes(String name, int argc, SpecialClazzes outer)
+    {
+      _name = name;
+      _argCount = argc;
+      _outer = outer;
+    }
   }
 
 

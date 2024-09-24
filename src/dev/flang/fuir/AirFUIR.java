@@ -84,7 +84,7 @@ public class AirFUIR extends FUIR
   private TreeMap<Clazz, SpecialClazzes> SPECIAL_ID = new TreeMap<>();
 
 
-  private int[] _specialClazzes = new int[SpecialClazzes.c_NOT_FOUND.ordinal()+1];
+  private int[] _specialClazzes = new int[SpecialClazzes.values().length];
   { Arrays.fill(_specialClazzes, -1);  }
 
 

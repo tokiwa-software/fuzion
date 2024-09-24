@@ -1213,7 +1213,7 @@ Feature
 
     return data().getInt(featureRedefinesPos(at) + 4 * i);
   }
-  int featureCodePos(int at)
+  public int featureCodePos(int at)
   {
     return featureRedefinesPos(at) + 4 * featureRedefinesCount(at);
   }
@@ -1495,7 +1495,7 @@ Expressions
   {
     return at;
   }
-  int codeSize(int at)
+  public int codeSize(int at)
   {
     return data().getInt(codeSizePos(at));
   }

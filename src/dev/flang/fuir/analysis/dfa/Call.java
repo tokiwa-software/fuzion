@@ -301,6 +301,7 @@ public class Call extends ANY implements Comparable<Call>, Context
                   case c_unit                    -> Value.UNIT;
                   case c_sys_ptr                 -> new Value(_cc); // NYI: we might add a specific value for system pointers
                   case c_NOT_FOUND               -> null;
+                  default                        -> null;
                   };
               }
           }
