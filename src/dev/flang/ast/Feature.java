@@ -2152,7 +2152,7 @@ A ((Choice)) declaration must not contain a result type.
 
 
   /**
-   * resultTypeIfPresent2 returns the result type of this feature using the
+   * resultTypeIfPresentUrgent returns the result type of this feature using the
    * formal generic argument.
    *
    * @param urgent if true and the result type is inferred and inference would

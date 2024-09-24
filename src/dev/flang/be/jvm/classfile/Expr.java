@@ -457,6 +457,10 @@ public abstract class Expr extends ByteCode
         {
           locals.add(VerificationType.Top);
         }
+
+      if (CHECKS) check
+        (locals.get(local().v0()) == VerificationType.Top || locals.get(local().v0()).compareTo(local().v1()) == 0);
+
       locals.set(local().v0(), local().v1());
       if (local().v1().needsTwoSlots())
         {
