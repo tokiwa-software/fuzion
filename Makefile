@@ -426,6 +426,10 @@ all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD)
 .PHONY: min-java
 min-java: $(FUZION_BASE) $(MOD_JAVA_BASE) $(MOD_JAVA_XML) $(MOD_JAVA_DATATRANSFER) $(MOD_JAVA_DESKTOP) $(FUZION_FILES)
 
+# no-java + java.base
+.PHONY: base-java
+base-java: $(FUZION_BASE) $(MOD_JAVA_BASE) $(FUZION_FILES)
+
 # everything but the java modules
 .PHONY: no-java
 no-java: $(FUZION_BASE) $(FUZION_FILES)
