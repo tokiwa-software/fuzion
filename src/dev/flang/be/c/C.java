@@ -534,7 +534,7 @@ public class C extends ANY
     public Pair<CExpr, CStmnt> env(int s, int ecl)
     {
       CExpr res = null;
-      var o = CStmnt.seq(CExpr.fprintfstderr("*** effect %s not present in current environment\n",
+      var o = CStmnt.seq(CExpr.fprintfstderr("*** effect `%s` not present in current environment\n",
                                              CExpr.string(_fuir.clazzAsString(ecl))),
                          CExpr.exit(1));
       if (Arrays.binarySearch(_effectClazzes, ecl) >= 0)
@@ -1277,7 +1277,7 @@ public class C extends ANY
       {
         if (isCall && (_fuir.hasData(rt) || _fuir.clazzIsVoidType(rt)))
           {
-            ol.add(reportErrorInCode0("no targets for access of %s within %s",
+            ol.add(reportErrorInCode0("no targets for access of `%s` within %s",
                                       CExpr.string(_fuir.clazzAsString(cc0)),
                                       CExpr.string(_fuir.siteAsString(s))));
             res = null;
@@ -1360,7 +1360,7 @@ public class C extends ANY
           {
             var id = tvalue.deref().field(CNames.CLAZZ_ID);
             acc = CStmnt.suitch(id, cazes,
-                                reportErrorInCode0("unhandled dynamic target %d in access of %s within %s",
+                                reportErrorInCode0("unhandled dynamic target %d in access of `%s` within %s",
                                                    id,
                                                    CExpr.string(_fuir.clazzAsString(cc0)),
                                                    CExpr.string(_fuir.siteAsString(s))));
