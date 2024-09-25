@@ -866,15 +866,15 @@ public class AirFUIR extends FUIR
    *
    * @param cl a clazz id
    *
-   * @return id of cl's result field or -1 if f has no result field (NYI: or a
-   * result field that contains no data)
+   * @return id of cl's result field or NO_CLAZZ if cl has no result field (NYI:
+   * or a result field that contains no data)
    */
   @Override
   public int clazzResultField(int cl)
   {
     var cc = clazz(cl);
     var rf = cc.resultField();
-    return rf == null ? -1 : id(rf);
+    return rf == null ? NO_CLAZZ : id(rf);
   }
 
 
@@ -2499,7 +2499,7 @@ public class AirFUIR extends FUIR
   public boolean isConstructor(int clazz)
   {
     // Intrinsic functions are not constructors even though they have no result field.
-    return clazzResultField(clazz) == -1 && clazzKind(clazz) != FeatureKind.Intrinsic;
+    return clazzResultField(clazz) == NO_CLAZZ && clazzKind(clazz) != FeatureKind.Intrinsic;
   }
 
 

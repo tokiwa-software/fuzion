@@ -411,8 +411,8 @@ public abstract class FUIR extends IR
    *
    * @param cl a clazz id
    *
-   * @return id of cl's result field or -1 if f has no result field (NYI: or a
-   * result field that contains no data)
+   * @return id of cl's result field or NO_CLAZZ if cl has no result field (NYI:
+   * or a result field that contains no data)
    */
   public abstract int clazzResultField(int cl);
 
