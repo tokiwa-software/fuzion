@@ -326,6 +326,7 @@ public class DFA extends ANY
 
          !(tvalue instanceof ValueSet));
       var t_cl = tvalue == Value.UNIT ? _fuir.accessTargetClazz(s) : tvalue._clazz;
+      /*
       var found = false;
       var ccs = _fuir.accessedClazzes(s);
       for (var cci = 0; cci < ccs.length; cci += 2)
@@ -338,6 +339,12 @@ public class DFA extends ANY
               tvalue != Value.UNDEFINED && _fuir.clazzAsValue(tvalue._clazz) == tt)
             {
               found = true;
+              var cc2 = _fuir.lookup(s, t_cl);
+              if (cc != cc2)
+                {
+                  System.out.println("PROBLEM: for "+_fuir.clazzAsString(t_cl)+" old cc is "+_fuir.clazzAsString(cc));
+                  System.out.println("PROBLEM: for "+_fuir.clazzAsString(t_cl)+" new cc is "+_fuir.clazzAsString(cc2));
+                }
               var r = access0(s, tvalue, args, cc, original_tvalue);
               if (r != null)
                 {
@@ -345,7 +352,17 @@ public class DFA extends ANY
                 }
             }
         }
-      if (!found)
+      */
+      var cc = _fuir.lookup(s, t_cl);
+      if (cc != FUIR.NO_CLAZZ)
+        {
+          var r = access0(s, tvalue, args, cc, original_tvalue);
+          if (r != null)
+            {
+              res = res == null ? r : res.joinVal(DFA.this, r);
+            }
+        }
+      else
         {
           var instantiatedAt = _calls.keySet().stream()
             .filter(c -> c._cc == t_cl && c._site != NO_SITE)

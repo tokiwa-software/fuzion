@@ -1571,6 +1571,59 @@ public class AirFUIR extends FUIR
 
 
   /**
+   * Get the possible inner clazz for a call or assignment to a field with given
+   * target clazz.
+   *
+   * This is used to feed information back from static analysis tools like DFA
+   * to the GeneratingFUIR such that the given target will be added to the
+   * targets / inner clazzes tuples returned by accesedClazzes.
+   *
+   * @param s site of the access
+   *
+   * @param tclazz the target clazz of the acces.
+   *
+   * @return the accessed inner clazz or NO_CLAZZ in case that does not exist,
+   * i.e., an abstract feature is missing.
+   */
+  @Override
+  public int lookup(int s, int tclazz)
+  {
+    if (PRECONDITIONS) require
+      (s >= SITE_BASE,
+       withinCode(s),
+       codeAt(s) == ExprKind.Call   ||
+       codeAt(s) == ExprKind.Assign    ,
+       tclazz >= CLAZZ_BASE &&
+       tclazz < CLAZZ_BASE  + _clazzes.all().size());
+
+    int innerClazz;
+    if (accessIsDynamic(s))
+      {
+        innerClazz = NO_CLAZZ;
+        var ccs = accessedClazzes(s);
+        for (var i = 0; i < ccs.length; i += 2)
+          {
+            var tt = ccs[i+0];
+            var cc = ccs[i+1];
+            if (tt == tclazz)
+              {
+                innerClazz = cc;
+              }
+          }
+        if (CHECKS) check
+          (innerClazz != NO_CLAZZ);
+      }
+    else
+      {
+        innerClazz = accessedClazz(s);
+        if (CHECKS) check
+          (tclazz == clazzOuterClazz(innerClazz));
+      }
+    return innerClazz;
+  }
+
+
+  /**
    * Is an access to a feature (assignment, call) dynamic?
    *
    * @param s site of the access

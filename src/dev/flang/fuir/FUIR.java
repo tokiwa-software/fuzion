@@ -981,6 +981,24 @@ public abstract class FUIR extends IR
 
 
   /**
+   * Get the possible inner clazz for a call or assignment to a field with given
+   * target clazz.
+   *
+   * This is used to feed information back from static analysis tools like DFA
+   * to the GeneratingFUIR such that the given target will be added to the
+   * targets / inner clazzes tuples returned by accesedClazzes.
+   *
+   * @param s site of the access
+   *
+   * @param tclazz the target clazz of the acces.
+   *
+   * @return the accessed inner clazz or NO_CLAZZ in case that does not exist,
+   * i.e., an abstract feature is missing.
+   */
+  public abstract int lookup(int s, int tclazz);
+
+
+  /**
    * Is an access to a feature (assignment, call) dynamic?
    *
    * @param s site of the access
