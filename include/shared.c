@@ -33,6 +33,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdbool.h>
 #include <string.h>
 #include <assert.h>
+#include <stdatomic.h>
 
 
 /**
@@ -113,6 +114,7 @@ void fzE_memcpy(void *restrict dest, const void *restrict src, size_t sz){
 JavaVM *fzE_jvm                = NULL;
 // global instance of the jvm environment
 __thread JNIEnv *fzE_jni_env   = NULL;
+_Bool jvm_running              = false;
 
 // cached jclasses and jmethods which are frequently used
 
@@ -207,6 +209,11 @@ void utf8_to_mod_utf8(const char *utf8, char *mod_utf8) {
 // get jni-env for current thread
 JNIEnv * getJNIEnv()
 {
+  if (!jvm_running)
+    {
+      printf("JVM has not been started via: `fuzion.java.create_jvm0 ...`\n");
+      exit(EXIT_FAILURE);
+    }
   if (fzE_jni_env == NULL) {
     // NYI: DetachCurrentThread
     (*fzE_jvm)->AttachCurrentThread(fzE_jvm, (void **)&fzE_jni_env, NULL);
@@ -229,6 +236,9 @@ void fzE_create_jvm(char * option_string) {
     printf("Failed to start Java VM");
     exit(EXIT_FAILURE);
   }
+
+  jvm_running = true;
+
   fzE_class_float  = (*getJNIEnv())->FindClass(getJNIEnv(), "java/lang/Float");
   fzE_class_double = (*getJNIEnv())->FindClass(getJNIEnv(), "java/lang/Double");
   fzE_class_byte  = (*getJNIEnv())->FindClass(getJNIEnv(), "java/lang/Byte");
