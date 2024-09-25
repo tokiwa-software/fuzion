@@ -702,23 +702,23 @@ jvalue fzE_get_field0(jobject obj, jstring name, const char *sig)
   switch (sig[0])
     {
       case 'B':
-        return (jvalue){ .b = (*getJNIEnv())->GetByteField(getJNIEnv(), cl, fieldID) };
+        return (jvalue){ .b = (*getJNIEnv())->GetByteField(getJNIEnv(), obj, fieldID) };
       case 'C':
-        return (jvalue){ .c = (*getJNIEnv())->GetCharField(getJNIEnv(), cl, fieldID) };
+        return (jvalue){ .c = (*getJNIEnv())->GetCharField(getJNIEnv(), obj, fieldID) };
       case 'S':
-        return (jvalue){ .s = (*getJNIEnv())->GetShortField(getJNIEnv(), cl, fieldID) };
+        return (jvalue){ .s = (*getJNIEnv())->GetShortField(getJNIEnv(), obj, fieldID) };
       case 'I':
-        return (jvalue){ .i = (*getJNIEnv())->GetIntField(getJNIEnv(), cl, fieldID) };
+        return (jvalue){ .i = (*getJNIEnv())->GetIntField(getJNIEnv(), obj, fieldID) };
       case 'J':
-        return (jvalue){ .j = (*getJNIEnv())->GetLongField(getJNIEnv(), cl, fieldID) };
+        return (jvalue){ .j = (*getJNIEnv())->GetLongField(getJNIEnv(), obj, fieldID) };
       case 'F':
-        return (jvalue){ .f = (*getJNIEnv())->GetFloatField(getJNIEnv(), cl, fieldID) };
+        return (jvalue){ .f = (*getJNIEnv())->GetFloatField(getJNIEnv(), obj, fieldID) };
       case 'D':
-        return (jvalue){ .d = (*getJNIEnv())->GetDoubleField(getJNIEnv(), cl, fieldID) };
+        return (jvalue){ .d = (*getJNIEnv())->GetDoubleField(getJNIEnv(), obj, fieldID) };
       case 'Z':
-        return (jvalue){ .z = (*getJNIEnv())->GetBooleanField(getJNIEnv(), cl, fieldID) };
+        return (jvalue){ .z = (*getJNIEnv())->GetBooleanField(getJNIEnv(), obj, fieldID) };
       default:
-        return (jvalue){ .l = (*getJNIEnv())->GetObjectField(getJNIEnv(), cl, fieldID) };
+        return (jvalue){ .l = (*getJNIEnv())->GetObjectField(getJNIEnv(), obj, fieldID) };
     }
 }
 

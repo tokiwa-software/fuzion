@@ -104,6 +104,14 @@ javaHello : Java is
     Java.java.io.FileReader => say "success opening file reader"
     e error => say "error: not_a_valid_file (No such file or directory)"
 
+
+  # get field (non-null)
+  say (Java.java.io.StreamTokenizer.new Java.java.lang.System.__k__in).ttype
+  say (Java.java.io.StreamTokenizer.new Java.java.lang.System.__k__in).nval
+  # get field (null)
+  say (Java.java.io.StreamTokenizer.new Java.java.lang.System.__k__in).sval
+
+
   # NYI replace with code below
   say (Java.java.util.ArrayList.new_I -7)
 

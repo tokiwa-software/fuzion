@@ -309,8 +309,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return jvm.constString(args.get(0)
                                  .andThen(jvm.getfield(jref))
                                  .andThen(Expr.checkcast(JAVA_LANG_STRING))
-                                 .andThen(Expr.getstatic("java/nio/charset/StandardCharsets", "UTF_8", new ClassType("java/nio/charset/Charset")))
-                                 .andThen(Expr.invokeVirtual("java/lang/String", "getBytes", "(Ljava/nio/charset/Charset;)[B", ClassFileConstants.PrimitiveType.type_byte.array())));
+                                 .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS, "fuzion_java_string_to_bytes_array", "(Ljava/lang/String;)[B", PrimitiveType.type_byte.array())));
         });
 
     put("fuzion.java.array_to_java_object0",
@@ -396,23 +395,42 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("fuzion.java.get_field0",
         (jvm, si, cc, tvalue, args) ->
         {
-          var jref0 = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc, 0));
-          var sref1 = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc, 1));
-          var jt = jvm._types.javaType(jvm._fuir.clazz_fuzionJavaObject());
-          var res =
-            args.get(0)
-            .andThen(Expr.checkcast(jt))
-            .andThen(jvm.getfield(jref0)) // instance as Object
+          var rc = jvm._fuir.clazzResultClazz(cc);
+          var rt = jvm._types.javaType(rc);
+          var res = args
+            .get(0)
+            .andThen(Expr.stringconst(javaRefFieldName()))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "fuzion_java_get_field0",
+                                       "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;",
+                                       Names.JAVA_LANG_OBJECT))
             .andThen(args.get(1))
-            .andThen(Expr.checkcast(jt))
-            .andThen(jvm.getfield(sref1)) // instance as Object, field name as String
+            .andThen(Expr.stringconst(javaRefFieldName()))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "fuzion_java_get_field0",
+                                       "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;",
+                                       Names.JAVA_LANG_OBJECT))
             .andThen(Expr.checkcast(JAVA_LANG_STRING))
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "fuzion_java_get_field0",
                                        "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;",
                                        Names.JAVA_LANG_OBJECT));
-          return new Pair<>(res, Expr.UNIT);
+
+          res = (rt.isPrimitive() ? res : res.andThen(Expr.checkcast(rt)))
+            .is(rt);
+
+          return new Pair<>(res.andThen(returnNewJavaObject(jvm, rc)), Expr.UNIT);
         });
+  }
+
+
+  /**
+   * get name of Java_Ref field
+   */
+  private static String javaRefFieldName()
+  {
+    // NYI: CLEANUP: get name programmatically
+    return "fzF_0_Java_Ref";
   }
 
 
@@ -437,6 +455,65 @@ public class Intrinsix extends ANY implements ClassFileConstants
       .andThen(Expr.checkcast(jt)) /* ugly: String is passed as fuzion.Java_Object, not fuzion.Java_String or Java.java.lang._jString */
       .andThen(jvm.getfield(sref)) // class_name
       .andThen(Expr.checkcast(JAVA_LANG_STRING));
+  }
+
+
+  /*
+   * creates byte code to convert to
+   * object on top of the stack to a fuzion object.
+   */
+  static Expr returnNewJavaObject(JVM jvm, int rc)
+  {
+    return switch (jvm._fuir.getSpecialClazz(rc))
+      {
+      case c_unit -> Expr.ACONST_NULL;
+      case c_i8 -> {
+        yield Expr.checkcast(new ClassType("java/lang/Byte"))
+          .andThen(Expr.invokeVirtual("java/lang/Byte", "byteValue", "()B", PrimitiveType.type_byte));
+      }
+      case c_u16 -> {
+        yield Expr.checkcast(new ClassType("java/lang/Character"))
+          .andThen(Expr.invokeVirtual("java/lang/Character", "charValue", "()C", PrimitiveType.type_char));
+      }
+      case c_i16 -> {
+        yield Expr.checkcast(new ClassType("java/lang/Short"))
+          .andThen(Expr.invokeVirtual("java/lang/Short", "shortValue", "()S", PrimitiveType.type_short));
+      }
+      case c_i32 -> {
+        yield Expr.checkcast(new ClassType("java/lang/Integer"))
+          .andThen(Expr.invokeVirtual("java/lang/Integer", "intValue", "()I", PrimitiveType.type_int));
+      }
+      case c_i64 -> {
+        yield Expr.checkcast(new ClassType("java/lang/Long"))
+          .andThen(Expr.invokeVirtual("java/lang/Long", "longValue", "()L", PrimitiveType.type_long));
+      }
+      case c_f32 -> {
+        yield Expr.checkcast(new ClassType("java/lang/Float"))
+          .andThen(Expr.invokeVirtual("java/lang/Float", "floatValue", "()F", PrimitiveType.type_float));
+      }
+      case c_f64 -> {
+        yield Expr.checkcast(new ClassType("java/lang/Double"))
+          .andThen(Expr.invokeVirtual("java/lang/Double", "doubleValue", "()D", PrimitiveType.type_double));
+      }
+      case c_bool -> {
+        yield Expr.checkcast(new ClassType("java/lang/Boolean"))
+          .andThen(Expr.invokeVirtual("java/lang/Boolean", "booleanValue", "()Z", PrimitiveType.type_boolean));
+      }
+      case c_sys_ptr -> {
+        check(false);
+        yield Expr.UNIT;
+      }
+      default -> {
+        var rt = jvm._types.javaType(rc);
+        var jref = jvm._fuir.lookupJavaRef(rc);
+
+        yield jvm.new0(rc)                                            // result, rc0
+          .andThen(Expr.DUP_X1)                                       // rc0, result, rc0
+          .andThen(Expr.SWAP)                                         // rc0, rc0, result
+          .andThen(jvm.putfield(jref))                                // rc0
+          .is(rt);
+      }
+      };
   }
 
 
