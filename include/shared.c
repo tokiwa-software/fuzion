@@ -291,6 +291,10 @@ char* fzE_replace_char(const char* str, char find, char replace){
 // NYI OPTIMIZATION do conversion in C not via the JVM.
 const char * fzE_java_string_to_utf8_bytes(jstring jstr)
 {
+  if (jstr == NULL)
+    {
+      return "--null--";
+    }
   const jclass cls = (*getJNIEnv())->GetObjectClass(getJNIEnv(), jstr);
   const jmethodID getBytes = (*getJNIEnv())->GetMethodID(getJNIEnv(), cls, "getBytes", "(Ljava/lang/String;)[B");
   const jstring charsetName = (*getJNIEnv())->NewStringUTF(getJNIEnv(), "UTF-8");
@@ -312,6 +316,7 @@ const char * fzE_java_string_to_utf8_bytes(jstring jstr)
 // convert a jstring to modified utf-8 bytes
 const char * fzE_java_string_to_modified_utf8(jstring jstr)
 {
+  assert ( jstr != NULL );
   const char * str = (*getJNIEnv())->GetStringUTFChars(getJNIEnv(), jstr, JNI_FALSE);
   jsize sz = (*getJNIEnv())->GetStringUTFLength(getJNIEnv(), jstr);
   char * result = fzE_malloc_safe(sz);
@@ -420,6 +425,7 @@ jvalue *fzE_convert_args(const char *sig, jvalue *args) {
 // convert jstring to error result
 fzE_jvm_result fzE_jvm_not_found(jstring jstr)
 {
+  assert ( jstr != NULL );
   return (fzE_jvm_result){ .fzTag = 1, .fzChoice = { .v1 = jstr /* NYI: should be: "Not found" + jv */ } };
 }
 
