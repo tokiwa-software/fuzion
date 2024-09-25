@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue3347.fz:25:14: error 1: Failed to infer type of expression.
+  for res := [], res ++ new_res
+-------------^^
+Expression with unknown type: '[]'
+
+one error.
