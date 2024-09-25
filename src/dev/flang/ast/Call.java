@@ -1925,6 +1925,18 @@ public class Call extends AbstractCall
                         var actualType = typeFromActual(actual, context);
                         if (actualType != null)
                           {
+                            /**
+                             * infer via constraint of type parameter:
+                             *
+                             *     a(T type, S type : array T, s S) is
+                             *     _ := a [32]
+                             */
+                            if (t.isGenericArgument())
+                              {
+                                var tp = t.genericArgument().typeParameter();
+                                res.resolveTypes(tp);
+                                inferGeneric(res, context, tp.resultType(), actualType, actual.pos(), conflict, foundAt);
+                              }
                             inferGeneric(res, context, t, actualType, actual.pos(), conflict, foundAt);
                             checked[vai] = true;
                           }
