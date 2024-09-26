@@ -969,7 +969,7 @@ argType     : type
                                       }
                                     for (var s : n)
                                       {
-                                        result.add(new Feature(s._pos, v, m, t, s._name, Contract.EMPTY_CONTRACT,
+                                        result.add(new Feature(s._pos, forPreOrPostCondition ? Visi.PRIV : v, m, t, s._name, Contract.EMPTY_CONTRACT,
                                                                i == null ? new Impl(s._pos, null, Impl.Kind.FieldActual)
                                                                          : i));
                                       }
