@@ -340,7 +340,7 @@ class CodeGen
           }
         if (isCall && (_fuir.hasData(rt) || _fuir.clazzIsVoidType(rt)))  // we need a non-unit result and do not know what to do with this call, so flag an error
           {
-            s = s.andThen(_jvm.reportErrorInCode("no targets for access of " + _fuir.clazzAsString(cc0) + " within " + _fuir.siteAsString(si)));
+            s = s.andThen(_jvm.reportErrorInCode("no targets for access of " + clazzInQuotes(cc0) + " within `" + _fuir.siteAsString(si) + "`"));
             res = null;
           }
         else  // an assignment to an unused field or unit-type call, that is fine to remove, just add a comment
@@ -355,7 +355,7 @@ class CodeGen
            _fuir.accessIsDynamic(si));                  // or call is not dynamic
 
         var dynCall = args(true, tvalue, args, cc0, isCall ? _fuir.clazzArgCount(cc0) : 1)
-          .andThen(Expr.comment("Dynamic access of " + _fuir.clazzAsString(cc0)))
+          .andThen(Expr.comment("Dynamic access of " + clazzInQuotes(cc0)))
           .andThen(addDynamicFunctionAndStubs(si, cc0, ccs, isCall));
         if (AbstractInterpreter.clazzHasUnitValue(_fuir, rt))
           {
@@ -484,7 +484,7 @@ class CodeGen
         var code = p.v1()
           .andThen(p.v0() == null ? Expr.UNIT : p.v0())
           .andThen(retoern);
-        var ca = cf.codeAttribute(dn + "in class for " + _fuir.clazzAsString(tt),
+        var ca = cf.codeAttribute(dn + "in class for " + clazzInQuotes(tt),
                                   code, new List<>(), ClassFile.StackMapTable.empty(cf, initLocals, code));
         cf.method(ACC_PUBLIC, dn, ds, new List<>(ca));
       }
@@ -525,7 +525,7 @@ class CodeGen
                                 // this special handling could be removed.
         )
       { // in case we access the value in a boxed target, unbox it first:
-        tv = Expr.comment("UNBOXING , boxed type "+_fuir.clazzAsString(tt)+" desired type "+_fuir.clazzAsString(cco))
+        tv = Expr.comment("UNBOXING , boxed type " + clazzInQuotes(tt) + " desired type " + clazzInQuotes(cco))
           .andThen(tv.getFieldOrUnit(_names.javaClass(tt),    // note that tv.getfield works vor unit type (resulting in tv.drop()).
                                      Names.BOXED_VALUE_FIELD_NAME,
                                      _types.javaType(cco)));
@@ -562,7 +562,7 @@ class CodeGen
       {
       case Abstract :
         Errors.error("Call to abstract feature encountered.",
-                     "Found call to  " + _fuir.clazzAsString(cc));
+                     "Found call to " + clazzInQuotes(cc));
       case Intrinsic:
         {
           if (_fuir.clazzTypeParameterActualType(cc) != -1)  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
@@ -673,7 +673,7 @@ class CodeGen
     if (!_fuir.clazzIsRef(vc) && _fuir.clazzIsRef(rc))  // NYI: CLEANUP: would be good if the AbstractInterpreter would not call box() in this case
       {
         var n = _names.javaClass(rc);
-        res = Expr.comment("box from "+_fuir.clazzAsString(vc)+" to "+_fuir.clazzAsString(rc))
+        res = Expr.comment("box from " + clazzInQuotes(vc) + " to " + clazzInQuotes(rc))
           .andThen(val)
           .andThen(Expr.invokeStatic(n, Names.BOX_METHOD_NAME,
                                      _types.boxSignature(rc),
@@ -899,7 +899,7 @@ class CodeGen
           else
             {
               Errors.error("Unsupported constant in JVM backend.",
-                           "Backend cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
+                           "Backend cannot handle constant of clazz " + clazzInQuotes(constCl));
               yield null;
             }
         }
@@ -985,6 +985,17 @@ class CodeGen
       ( et == NULL_TYPE                                                                 ||
         _fuir.clazzIsRef(type) /* we do not check exact reference assignability here */ ||
         et.sameAs(ct)          /* but value or choice types must be the same!        */ );
+  }
+
+
+  /**
+   * For debugging output
+   *
+   * @return "`<clazz c>`".
+   */
+  private String clazzInQuotes(int c)
+  {
+    return "`" + _fuir.clazzAsString(c) + "`";
   }
 
 
