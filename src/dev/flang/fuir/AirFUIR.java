@@ -1087,7 +1087,7 @@ public class AirFUIR extends FUIR
 
 
   /**
-   * Get the id of clazz Const_String.array
+   * Get the id of clazz `array u8`
    *
    * @return the id of Const_String.array or -1 if that clazz was not created.
    */

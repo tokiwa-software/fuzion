@@ -2528,6 +2528,11 @@ public class DFA extends ANY
         if (_fuir.clazzIsRef(cl))
           {
             var vc = _fuir.clazzAsValue(cl);
+            if (_fuir.clazzIsRef(vc))
+              {
+                System.out.println("ref: "+_fuir.clazzAsString(cl)+" "+_fuir.clazzIsRef(cl)+" --> "+_fuir.clazzAsString(vc)+" "+_fuir.clazzIsRef(vc));
+              }
+            check(!_fuir.clazzIsRef(vc));
             r = newInstance(vc, site, context).box(this, vc, cl, context);
           }
         else

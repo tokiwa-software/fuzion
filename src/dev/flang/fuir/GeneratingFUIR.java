@@ -135,6 +135,8 @@ public class GeneratingFUIR extends FUIR
 
     boolean _closed = false;
 
+    Clazz _asValue;
+
     Clazz(int outer,
           int id,
           int gix)
@@ -185,6 +187,10 @@ public class GeneratingFUIR extends FUIR
         {
           _outerRef = id2clazz(lookup(new FeatureAndActuals(or, new List<>()), _feature));
         }
+
+      _asValue =  isRef() && _type != Types.t_ADDRESS
+        ? id2clazz(newClazz(_type.asValue(), outer()))
+        : this;
     }
 
 
@@ -213,12 +219,14 @@ public class GeneratingFUIR extends FUIR
     @Override
     public boolean equals(Object other)
     {
-      return _gix == ((Clazz) other)._gix;  // NYI: outer and type parameters!
+      return
+        isRef() == ((Clazz)other).isRef() &&
+        _type.equals(((Clazz)other)._type) && _gix == ((Clazz) other)._gix;  // NYI: outer and type parameters!
     }
     @Override
     public int hashCode()
     {
-      return _gix;  // NYI: outer and type parameters!
+      return (_type.isRef() ? 0x777377 : 0) ^ _gix;  // NYI: outer and type parameters!
     }
 
 
@@ -336,16 +344,15 @@ public class GeneratingFUIR extends FUIR
      * @param f the feature that is called
      *
      * @return the inner clazz of the target in the call.
-     *
+     */
     int lookup(AbstractFeature f)
     {
       if (PRECONDITIONS) require
         (f != null,
          !clazzIsVoidType(_id));
 
-      return lookup(f, _clazzes.isUsedAt(f));
+      return lookup(f, f.pos() /* NYI: _clazzes.isUsedAt(f) */);
     }
-     */
 
 
     /**
@@ -491,7 +498,7 @@ public class GeneratingFUIR extends FUIR
             }
           else
             {
-              var af = f; // NYI findRedefinition(f);
+              var af = findRedefinition(f);
               /*
               if (CHECKS) check
                 (Errors.any() || af != null || isEffectivelyAbstract(f));
@@ -635,14 +642,77 @@ public class GeneratingFUIR extends FUIR
       return innerClazz._id;
     }
 
+
+  /**
+   * find redefinition of a given feature in this clazz. NYI: This will have to
+   * take the whole inheritance chain into account including the parent view that is
+   * being filled with live:
+   */
+  private AbstractFeature findRedefinition(AbstractFeature f)
+  {
+    if (PRECONDITIONS) require
+      (// type parameters never get redefined, they are effectively fixed.
+       // However, type features get replaced by actual type parameters in the
+       // inheritance call. Instead of searching for the redefinition, the type
+       // should be replaced by the actual type.
+       !f.isTypeParameter());
+
+    var fn = f.featureName();
+    var tf = feature();
+    if (/* tf != Types.f_ERROR && */ f != Types.f_ERROR && tf != Types.resolved.f_void)
+      {
+        var chain = tf.findInheritanceChain(f.outer());
+        if (CHECKS) check
+          (chain != null || Errors.any());
+        if (chain != null)
+          {
+            for (var p: chain)
+              {
+                fn = f.outer().handDown(null, f, fn, p, feature());  // NYI: need to update f/f.outer() to support several levels of inheritance correctly!
+              }
+          }
+      }
+
+    // first look in the feature itself
+    AbstractFeature result = _mainModule.lookupFeature(feature(), fn, f);
+
+    if (!result.redefinesFull().contains(f) && result != f)
+      {
+        // feature with same name, but not a redefinition
+        result = null;
+      }
+
+    // the inherited feature might not be
+    // visible to the inheriting feature
+    var chain = tf.findInheritanceChain(f.outer());
+    if (result == null && chain != null)
+      {
+        for (var p: chain)
+          {
+            result = _mainModule.lookupFeature(p.calledFeature(), fn, f);
+            if (!result.redefinesFull().contains(f) && result != f)
+              {
+                // feature with same name, but not a redefinition
+                result = null;
+              }
+            if (result != null)
+              {
+                break;
+              }
+          }
+      }
+
+    if (POSTCONDITIONS) ensure
+      (result != null || Errors.any());
+
+    return result;
+  }
+
     Clazz asValue()
     {
-      if (_isBoxed) throw new Error("Clazz.asValue");
-      if (_feature.isThisRef()) throw new Error("Clazz.asValue2");
-      return this;
+      check(!_asValue.isRef());
+      return _asValue;
     }
-
-
 
 
   /**
@@ -1437,6 +1507,7 @@ public class GeneratingFUIR extends FUIR
         result = cl._id;
         _clazzes.add(cl);
         _clazzesHM.put(cl, cl);
+
         if (outer != NO_CLAZZ)
           {
             id2clazz(outer).addInner(result);
@@ -1489,6 +1560,7 @@ public class GeneratingFUIR extends FUIR
         result = cl._id;
         _clazzes.add(cl);
         _clazzesHM.put(cl, cl);
+        check(cl.isRef() == clazzIsRef(result));
         if (outer != NO_CLAZZ)
           {
             id2clazz(outer).addInner(result);
@@ -2108,7 +2180,11 @@ public class GeneratingFUIR extends FUIR
   @Override
   public boolean clazzIsOuterRef(int cl)
   {
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE,
+       cl < CLAZZ_BASE + _clazzes.size());
+
+    return id2clazz(cl).feature().isOuterRef();
   }
 
 
@@ -2578,7 +2654,7 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    return c._isBoxed || c._feature.isThisRef();
+    return c._isBoxed || c._type.isRef();
   }
 
 
@@ -2613,11 +2689,19 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    if (!clazzIsRef(cl))
+    var cc = id2clazz(cl);
+    var vcc = id2clazz(cl).asValue();
+    if (vcc.isRef())
       {
-        return cl;
+        throw new Error("vcc.isRef in clazzAsValue for "+clazzAsString(cl)+" is "+vcc);
       }
-    throw new Error("NYI");
+    var vc0 = id2clazz(cl).asValue()._id;
+    var vc = vcc._id;
+    if (clazzIsRef(vc))
+      {
+        throw new Error("clazzAsValue for "+clazzAsString(cl)+" is "+clazzAsString(vc)+" "+cl+" "+vc+"="+vc0+" "+System.identityHashCode(cc)+" "+System.identityHashCode(vcc));
+      }
+    return vc;
   }
 
 
@@ -2659,7 +2743,9 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    throw new Error("NYI");
+    var cc = id2clazz(cl);
+    return cc.feature().isTypeParameter() ? cc.typeParameterActualType()._id
+                                          : NO_CLAZZ;
   }
 
 
@@ -2745,7 +2831,7 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazzAny()
   {
-    throw new Error("NYI");
+    return clazz(SpecialClazzes.c_Const_String);
   }
 
 
@@ -2769,9 +2855,7 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazz_Const_String()
   {
-    dev.flang.util.Debug.umprintln("NYI!");
-    if (true) return -1;
-    throw new Error("NYI");
+    return clazz(SpecialClazzes.c_Const_String);
   }
 
 
@@ -2783,23 +2867,19 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazz_Const_String_utf8_data()
   {
-    dev.flang.util.Debug.umprintln("NYI!");
-    if (true) return -1;
-    throw new Error("NYI");
+    return clazz(SpecialClazzes.c_CS_utf8_data);
   }
 
 
   /**
-   * Get the id of clazz Const_String.array
+   * Get the id of clazz `array u8`
    *
    * @return the id of Const_String.array or -1 if that clazz was not created.
    */
   @Override
   public int clazz_array_u8()
   {
-    dev.flang.util.Debug.umprintln("NYI!");
-    if (true) return -1;
-    throw new Error("NYI");
+    return clazzResultClazz(clazz_Const_String_utf8_data());
   }
 
 
@@ -2956,7 +3036,12 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int lookup_array_internal_array(int cl)
   {
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE,
+       cl < CLAZZ_BASE + _clazzes.size(),
+       id2clazz(cl).feature() == Types.resolved.f_array);
+
+    return id2clazz(cl).lookup(Types.resolved.f_array_internal_array);
   }
 
 
@@ -3669,7 +3754,6 @@ public class GeneratingFUIR extends FUIR
     if (accessIsDynamic(s))
       {
         result = accessedClazzesDynamic(s);
-    dev.flang.util.Debug.umprintln("access dynamic "+result.length+" at "+sitePos(s).show());
       }
     else
       {
@@ -3677,7 +3761,6 @@ public class GeneratingFUIR extends FUIR
         var tt = clazzOuterClazz(innerClazz);
         result = clazzNeedsCode(innerClazz) ? new int[] { tt, innerClazz }
                                             : new int[0];
-        dev.flang.util.Debug.umprintln("access static "+(clazzNeedsCode(innerClazz)?"needs code":"no needs code")+" "+result.length+" at "+sitePos(s).show());
       }
     return result;
   }

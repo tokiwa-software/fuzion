@@ -55,6 +55,7 @@ public abstract class FUIR extends IR
     c_NOT_FOUND   (""                           , 0, null        ),
 
     c_universe    (FuzionConstants.UNIVERSE_NAME, 0, c_NOT_FOUND ),
+    c_Any         ("Any"                        , 0, c_universe  ),
     c_i8          ("i8"                         , 1, c_universe  ),
     c_i16         ("i16"                        , 1, c_universe  ),
     c_i32         ("i32"                        , 1, c_universe  ),
@@ -71,6 +72,7 @@ public abstract class FUIR extends IR
     c_TRUE        ("TRUE"                       , 0, c_universe  ),
     c_FALSE       ("FALSE"                      , 0, c_universe  ),
     c_Const_String("Const_String"               , 0, c_universe  ),
+    c_CS_utf8_data("utf8_data"                  , 0, c_Const_String),
     c_String      ("String"                     , 0, c_universe  ),
     c_fuzion      ("fuzion"                     , 0, c_universe  ),
     c_fuzion_sys  ("sys"                        , 0, c_fuzion    ),
@@ -584,7 +586,7 @@ public abstract class FUIR extends IR
 
 
   /**
-   * Get the id of clazz Const_String.array
+   * Get the id of clazz `array u8`
    *
    * @return the id of Const_String.array or -1 if that clazz was not created.
    */
