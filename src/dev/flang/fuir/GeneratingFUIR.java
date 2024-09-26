@@ -44,6 +44,7 @@ import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Box;
 import dev.flang.ast.Constant;
@@ -51,6 +52,7 @@ import dev.flang.ast.Context;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.InlineArray;
+import dev.flang.ast.NumLiteral;
 import dev.flang.ast.ResolvedNormalType;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
@@ -268,7 +270,7 @@ public class GeneratingFUIR extends FUIR
           !clazzIsVoidType(_id) &&
           !clazzIsChoice(_id))
         {
-          res = YesNo.no;
+          res = YesNo.yes;
           for(var ix = 0; ix < _inner.size(); ix++)
             {
               var i = _inner.get(ix);
@@ -1407,6 +1409,15 @@ public class GeneratingFUIR extends FUIR
     var of = f.outer();
     return of == null ? _universe
                       : newClazzX(newClazz(of), f.globalIndex());
+  }
+
+  private int newClazz(AbstractFeature f, Clazz outerClazz)
+  {
+    if (PRECONDITIONS) require
+      (f != null,
+       f.typeArguments().size() == 0);
+
+    return newClazzX(outerClazz._id, f.globalIndex());
   }
 
   private int newClazz(AbstractType t, Clazz outerR)
@@ -3373,7 +3384,11 @@ public class GeneratingFUIR extends FUIR
     if (innerClazz == null) {
       dev.flang.util.Debug.umprintln("NYI! "+e+" "+e.getClass()+" "+sitePos(s).show());
     }
-    return innerClazz == null ? -1 : innerClazz._id;
+    if (clazzKind(innerClazz._id) == FeatureKind.Abstract)
+      {
+        System.out.println("accessedClazz is "+innerClazz+" for "+e.getClass());
+      }
+    return innerClazz == null ? NO_CLAZZ : innerClazz._id;
   }
 
 
@@ -3700,6 +3715,7 @@ public class GeneratingFUIR extends FUIR
       {
         innerClazz = NO_CLAZZ;
         var ccs = accessedClazzes(s);
+        //System.out.println("tclazz "+clazzAsString(tclazz)+" count "+ccs.length);
         for (var i = 0; i < ccs.length; i += 2)
           {
             var tt = ccs[i+0];
@@ -3708,6 +3724,7 @@ public class GeneratingFUIR extends FUIR
               {
                 innerClazz = cc;
               }
+            //  System.out.println("tclazz "+clazzAsString(tclazz)+" vs tt "+clazzAsString(tt));
           }
         if (CHECKS) check
           (innerClazz != NO_CLAZZ);
@@ -3717,7 +3734,9 @@ public class GeneratingFUIR extends FUIR
         innerClazz = accessedClazz(s);
         if (CHECKS) check
           (tclazz == clazzOuterClazz(innerClazz));
+        //    System.out.println("static : tclazz "+clazzAsString(tclazz)+" vs inner "+clazzAsString(innerClazz)+" "+clazzKind(innerClazz)+" from "+id2clazz(innerClazz).feature().pos().show());
       }
+    var innerClazz0 = innerClazz;
     innerClazz = switch (clazzKind(innerClazz))
       {
       case Routine, Intrinsic, Native, Field -> innerClazz;
@@ -3727,6 +3746,10 @@ public class GeneratingFUIR extends FUIR
     if (innerClazz != NO_CLAZZ)
       {
         doesNeedCode(innerClazz);
+      }
+    if (innerClazz == NO_CLAZZ)
+      {
+        System.out.println("lookup failed for "+clazzAsString(tclazz)+" "+accessIsDynamic(s)+" at "+sitePos(s).show()+"\n from "+id2clazz(innerClazz0).feature().pos().show());
       }
     return innerClazz;
   }
@@ -3895,7 +3918,17 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int matchStaticSubject(int s)
   {
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (s >= SITE_BASE,
+       s < SITE_BASE + _allCode.size(),
+       withinCode(s),
+       codeAt(s) == ExprKind.Match);
+
+    var cl = clazzAt(s);
+    var cc = id2clazz(cl);
+    var outerClazz = cc;
+    var m = (AbstractMatch) getExpr(s);
+    return clazz(m.subject(), outerClazz, NO_INH)._id;
   }
 
 
@@ -3912,7 +3945,29 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int matchCaseField(int s, int cix)
   {
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (s >= SITE_BASE,
+       s < SITE_BASE + _allCode.size(),
+       withinCode(s),
+       codeAt(s) == ExprKind.Match);
+
+    var cl = clazzAt(s);
+    var cc = id2clazz(cl);
+    var outerClazz = cc;
+    var m = (AbstractMatch) getExpr(s);
+    var mc = m.cases().get(cix);
+    var f = mc.field();
+    var result = NO_CLAZZ;
+    if (f != null)
+      {
+        // NYI: Check if this works for a case that is part of an inherits clause, do
+        // we need to store in outerClazz.outer?
+        var t = mc.types();
+        result =  true //  NYI: isUsed(f)
+              ? newClazz(f, outerClazz)
+              : clazz(SpecialClazzes.c_void);
+      }
+    return result;
   }
 
 
@@ -3944,7 +3999,41 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int[] matchCaseTags(int s, int cix)
   {
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (s >= SITE_BASE,
+       s < SITE_BASE + _allCode.size(),
+       withinCode(s),
+       codeAt(s) == ExprKind.Match);
+
+    var m = (AbstractMatch) getExpr(s);
+    var mc = m.cases().get(cix);
+    var ts = mc.types();
+    var f = mc.field();
+    int nt = f != null ? 1 : ts.size();
+    var resultL = new List<Integer>();
+    int tag = 0;
+    for (var cg : m.subject().type().choiceGenerics(Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR */))
+      {
+        for (int tix = 0; tix < nt; tix++)
+          {
+            var t = f != null ? f.resultType() : ts.get(tix);
+            if (t.isDirectlyAssignableFrom(cg, Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR */))
+              {
+                resultL.add(tag);
+              }
+          }
+        tag++;
+      }
+    var result = new int[resultL.size()];
+    for (int i = 0; i < result.length; i++)
+      {
+        result[i] = resultL.get(i);
+      }
+
+    if(POSTCONDITIONS) ensure
+      (result.length > 0);
+
+    return result;
   }
 
 
@@ -3960,7 +4049,43 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int matchCaseCode(int s, int cix)
   {
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (s >= SITE_BASE,
+       s < SITE_BASE + _allCode.size(),
+       withinCode(s),
+       codeAt(s) == ExprKind.Match);
+
+    var me = getExpr(s);
+    var e = getExpr(s + 1 + cix);
+
+    if (me instanceof AbstractMatch m &&
+        m.subject() instanceof AbstractCall sc)
+      {
+        var c = m.cases().get(cix);
+        if (sc.calledFeature() == Types.resolved.f_Type_infix_colon_true  && !c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0) ||
+            sc.calledFeature() == Types.resolved.f_Type_infix_colon_false && !c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_FALSE.selfType())==0)    )
+          {
+            return NO_SITE;
+          }
+        else if (sc.calledFeature() == Types.resolved.f_Type_infix_colon)
+          {
+            dev.flang.util.Debug.umprintln("matchCaseCode for infix :");
+            return NO_SITE;
+            /*
+            var innerClazz = id2clazz(clazzAt(s)).actualClazzes(sc, null)[0];
+            var tclazz = innerClazz._outer;
+            var T = innerClazz.actualGenerics()[0];
+            var pos = T._type.constraintAssignableFrom(Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR //, tclazz._type.generics().get(0));
+            if (pos  && !c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0) ||
+                !pos && !c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_FALSE.selfType())==0)    )
+              {
+                return NO_SITE;
+              }
+            */
+          }
+      }
+
+    return ((NumLiteral) e).intValue().intValueExact();
   }
 
 
