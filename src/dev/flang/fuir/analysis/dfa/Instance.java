@@ -190,7 +190,6 @@ public class Instance extends Value
       {
         if (dfa._reportResults)
           {
-            Thread.dumpStack();
             DfaErrors.readingUninitializedField(site == -1 ? dev.flang.util.SourcePosition.notAvailable : // NYI: REMOVE
                                                 site == IR.NO_SITE ? null : dfa._fuir.sitePos(site),
                                                 dfa._fuir.clazzAsString(field),
