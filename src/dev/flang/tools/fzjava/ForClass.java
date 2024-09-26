@@ -38,6 +38,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.TreeMap;
 
 
@@ -149,15 +151,21 @@ class ForClass extends ANY
   {
     _class = c;
     _superClass = sc;
-    for (var me : c.getMethods())
+    var ms = c.getMethods();
+    Arrays.sort(ms, Comparator.comparing(x -> x.toString()));
+    for (var me : ms)
       {
         findMethod(me);
       }
-    for (var co : c.getConstructors())
+    var cos = c.getConstructors();
+    Arrays.sort(cos, Comparator.comparing(x -> x.toString()));
+    for (var co : cos)
       {
         findConstructor(co);
       }
-    for (var fi : _class.getFields())
+    var fs = c.getFields();
+    Arrays.sort(fs, Comparator.comparing(x -> x.toString()));
+    for (var fi : fs)
       {
         findField(fi);
       }
