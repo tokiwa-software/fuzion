@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.ListIterator;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.stream.IntStream;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -2166,29 +2167,59 @@ public class Call extends AbstractCall
                                            boolean[] conflict,
                                            List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
-    var result = false;
-    if ((formalType.isFunctionType() || formalType.isLazyType()) &&
-        formalType.generics().get(0).isGenericArgument()
-        )
+    var result = new boolean[] { false };
+    if (formalType.isFunctionType() || formalType.isLazyType())
       {
-        var rg = formalType.generics().get(0).genericArgument();
-        var ri = rg.index();
-        if (rg.feature() == _calledFeature && foundAt.get(ri) == null)
+        var at = actualArgType(res, formalType, frml, context);
+        if (!at.containsUndefined(true))
           {
-            var at = actualArgType(res, formalType, frml, context);
-            if (!at.containsUndefined(true))
+            if (formalType.generics().get(0).isGenericArgument())
               {
-                var rt = al.inferLambdaResultType(res, context, at);
-                if (rt != null)
+                var rg = formalType.generics().get(0).genericArgument();
+                var ri = rg.index();
+                if (rg.feature() == _calledFeature && foundAt.get(ri) == null)
                   {
-                    _generics = _generics.setOrClone(ri, rt);
+                      {
+                        var rt = al.inferLambdaResultType(res, context, at);
+                        if (rt != null)
+                          {
+                            _generics = _generics.setOrClone(ri, rt);
+                          }
+                        addPair(foundAt, ri, pos, rt);
+                        result[0] = true;
+                      }
                   }
-                addPair(foundAt, ri, pos, rt);
-                result = true;
+              }
+            else if (formalType.generics().get(0).dependsOnGenerics())
+              {
+                var gs = formalType
+                  .generics()
+                  .get(0)
+                  .generics();
+
+                IntStream
+                  .range(0, gs.size())
+                  .filter(idx -> gs.get(idx).isGenericArgument())
+                  .forEach(idx -> {
+                    var rg = gs.get(idx).genericArgument();
+                    var ri = rg.index();
+                    if (rg.feature() == _calledFeature && foundAt.get(ri) == null)
+                      {
+                          {
+                            var rt = al.inferLambdaResultType(res, context, at);
+                            if (rt != null && idx < rt.generics().size())
+                              {
+                                _generics = _generics.setOrClone(ri, rt.generics().get(idx));
+                              }
+                            addPair(foundAt, ri, pos, rt);
+                            result[0] = true;
+                          }
+                      }
+                  });
               }
           }
       }
-    return result;
+    return result[0];
   }
 
 
