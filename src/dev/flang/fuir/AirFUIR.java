@@ -1610,14 +1610,17 @@ public class AirFUIR extends FUIR
                 innerClazz = cc;
               }
           }
-        if (CHECKS) check
-          (innerClazz != NO_CLAZZ);
       }
     else
       {
         innerClazz = accessedClazz(s);
         if (CHECKS) check
           (tclazz == clazzOuterClazz(innerClazz));
+        innerClazz = switch (clazzKind(innerClazz))
+          {
+          case Routine, Intrinsic, Native, Field -> innerClazz;
+          case Abstract, Choice -> NO_CLAZZ;
+          };
       }
     return innerClazz;
   }

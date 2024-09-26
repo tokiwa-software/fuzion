@@ -34,7 +34,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
+import dev.flang.air.AirErrors;
 import dev.flang.air.FeatureAndActuals;
 
 import dev.flang.ast.AbstractAssign;
@@ -1843,11 +1845,12 @@ public class GeneratingFUIR extends FUIR
   public String clazzAsString(int cl)
   {
     if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
+      (cl == NO_CLAZZ || cl >= CLAZZ_BASE,
+       cl == NO_CLAZZ || cl < CLAZZ_BASE + _clazzes.size());
 
-    var c = id2clazz(cl);
-    return c.asString(false);
+    return cl == NO_CLAZZ
+      ? "-- no clazz --"
+      : id2clazz(cl).asString(false);
   }
 
 
@@ -3477,7 +3480,6 @@ public class GeneratingFUIR extends FUIR
             if (tt == tclazz)
               {
                 innerClazz = cc;
-                System.out.println("lookup "+clazzAsString(tclazz)+" -> "+clazzAsString(innerClazz)+" at "+sitePos(s).show());
               }
           }
         if (CHECKS) check
@@ -3488,8 +3490,13 @@ public class GeneratingFUIR extends FUIR
         innerClazz = accessedClazz(s);
         if (CHECKS) check
           (tclazz == clazzOuterClazz(innerClazz));
-                System.out.println("static lookup "+clazzAsString(tclazz)+" -> "+clazzAsString(innerClazz)+" at "+sitePos(s).show());
       }
+    innerClazz = switch (clazzKind(innerClazz))
+      {
+      case Routine, Intrinsic, Native -> innerClazz;
+      case Abstract, Field, Choice -> NO_CLAZZ;
+      };
+
     if (innerClazz != NO_CLAZZ)
       {
         doesNeedCode(innerClazz);
@@ -3884,6 +3891,24 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
+   * tuple of clazz, called abstract features and location where the clazz was
+   * instantiated.
+   */
+  record AbsMissing(Clazz clazz,
+                    TreeSet<AbstractFeature> called,
+                    SourcePosition instantiationPos,
+                    String context)
+  {
+  };
+
+
+  /**
+   * Set of missing implementations of abstract features
+   */
+  TreeMap<Clazz, AbsMissing> _abstractMissing = new TreeMap<>((a,b)->Integer.compare(a._id,b._id));
+
+
+  /**
    * If a called to an abstract feature was found, the DFA will use this to
    * record the missing implementation of an abstract features.
    *
@@ -3900,8 +3925,10 @@ public class GeneratingFUIR extends FUIR
   @Override
   public void recordAbstractMissing(int cl, int f, int instantiationSite, String context)
   {
-    dev.flang.util.Debug.umprintln("NYI! in "+clazzAsString(cl)+" feat "+clazzAsString(f)+" at "+sitePos(instantiationSite).show());
-    // throw new Error("NYI");
+    var cc = id2clazz(cl);
+    var cf = id2clazz(f);
+    var r = _abstractMissing.computeIfAbsent(cc, ccc -> new AbsMissing(ccc, new TreeSet<>(), sitePos(instantiationSite), context));
+    r.called.add(cf.feature());
   }
 
 
@@ -3914,7 +3941,13 @@ public class GeneratingFUIR extends FUIR
   @Override
   public void reportAbstractMissing()
   {
-    if (false) throw new Error("NYI");
+    _abstractMissing.values()
+      .stream()
+      .forEach(r -> AirErrors.abstractFeatureNotImplemented(r.clazz.feature(),
+                                                            r.called,
+                                                            r.instantiationPos,
+                                                            r.context,
+                                                            null /* NYI: _clazzes */));
   }
 
 
