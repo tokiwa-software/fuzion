@@ -3354,7 +3354,7 @@ implFldInit : ":=" exprInLine      // may start at min indent
         syntaxError(tokenPos(), "':='", "implFldInit");
       }
     return new Impl(pos,
-                    exprInLine(), // block()?
+                    operatorExpr(), // block()?
                     hasType ? Impl.Kind.FieldInit
                             : Impl.Kind.FieldDef);
   }
