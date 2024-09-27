@@ -97,8 +97,8 @@ public class GeneratingFUIR extends FUIR
     final LibraryFeature _feature;
     LibraryFeature feature() { return _feature; }
     static final Clazz[] NO_CLAZZES = new Clazz[0];
-    final Clazz[] _actualGenerics = NO_CLAZZES; // NYI!
-    Clazz[] actualGenerics() { return _actualGenerics; }
+    Clazz[] _actualTypeParameters = NO_CLAZZES;
+    Clazz[] actualTypeParameters() { return _actualTypeParameters; }
     final AbstractType _type;
     final int _select = -1;
 
@@ -137,18 +137,14 @@ public class GeneratingFUIR extends FUIR
 
     Clazz _asValue;
 
-    Clazz(int outer,
-          int id,
-          int gix)
-    {
-      this(clazz(outer),
-           _fe.module(gix).libraryFeature(gix - _fe.module(gix)._globalBase).thisType(),
-           id);
-    }
     Clazz(Clazz outer,
           AbstractType type,
           int id)
     {
+      if (PRECONDITIONS) require
+        (/* NYI */ true || !type.dependsOnGenerics(),
+         /* NYI */ true || !type.containsThisType());
+
       _outer = outer == null ? NO_CLAZZ : outer._id;
       _id = id;
       _feature = (LibraryFeature) type.feature();
@@ -177,6 +173,30 @@ public class GeneratingFUIR extends FUIR
               _argumentFields[i++] = newClazz(this, (LibraryFeature) va);
             }
         }
+
+      var gs = _type.generics();
+      if (!gs.isEmpty())
+        {
+          _actualTypeParameters = new Clazz[gs.size()];
+          for (int i = 0; i < gs.size(); i++)
+            {
+              var gi = gs.get(i);
+              if (gi.isThisType())
+                {
+                  // Only calls to type_as_value may have generic parameters gi with
+                  // gi.isThisType().  Calls to type_as_value will essentially become
+                  // NOPs anyway. Here we replace the this.types by their
+                  // underlying type to avoid problems creating clazzes form
+                  // this.types.
+                  if (CHECKS) check
+                    (Errors.any() || feature() == Types.resolved.f_type_as_value);
+
+                  gi = gi.feature().isThisRef() ? gi.asRef() : gi.asValue();
+                }
+              _actualTypeParameters[i] = type2clazz(gi);
+            }
+        }
+
       var or = _feature.outerRef();
       if (or != null)
         {
@@ -993,7 +1013,7 @@ public class GeneratingFUIR extends FUIR
     else if (f  == Types.resolved.f_type_as_value                     ||
              of == Types.resolved.f_type_as_value && f == of.resultField()   )
       {
-        var ag = (f == Types.resolved.f_type_as_value ? this : o).actualGenerics();
+        var ag = (f == Types.resolved.f_type_as_value ? this : o).actualTypeParameters();
         result = ag[0].typeClazz();
       }
     else
@@ -1005,6 +1025,7 @@ public class GeneratingFUIR extends FUIR
             var ac = handDown(result._type.generics().get(0), new List<>(), _feature);
             result = ac.typeClazz();
           }
+        //System.out.println("Result clazz of "+this+"    ===>    "+result);
       }
     return result;
   }
@@ -1060,7 +1081,7 @@ public class GeneratingFUIR extends FUIR
         o = error();
       }
     var ix = f.typeParameterIndex();
-    var oag = o.actualGenerics();
+    var oag = o.actualTypeParameters();
     return inh == null || ix < 0 || ix >= oag.length ? error()
                                                      : oag[ix];
   }
@@ -1205,17 +1226,17 @@ public class GeneratingFUIR extends FUIR
         {
           result = result + ".type";
         }
-      /* NYI: generics
+
       var skip = typeType;
-      for (var g : generics())
+      for (var g : actualTypeParameters())
         {
           if (!skip) // skip first generic 'THIS#TYPE' for types of type features.
             {
-              result = result + " " + g.asStringWrapped(humanReadable, context);
+              result = result + " " + g.asStringWrapped(humanReadable);
             }
           skip = false;
         }
-      */
+
       return result;
     }
 
@@ -1358,15 +1379,13 @@ public class GeneratingFUIR extends FUIR
       (Errors.any() || !thiz.dependsOnGenerics(),
        !thiz.isThisType());
 
-    var result = _clazzesForTypes_.get(thiz);
+    var result = _clazzesForTypes.get(thiz);
     if (result == null)
       {
-        Clazz outerClazz = thiz.outer() != null
-          ? outerClazz = type2clazz(thiz.outer())
-          : null;
-
-        result = create(thiz, outerClazz);
-        _clazzesForTypes_.put(thiz, result);
+        var ot = thiz.outer();
+        var oc = ot != null ? type2clazz(ot) : null;
+        result = newClazz(oc, thiz);
+        _clazzesForTypes.put(thiz, result);
       }
 
     if (POSTCONDITIONS) ensure
@@ -1415,7 +1434,7 @@ public class GeneratingFUIR extends FUIR
 
   private final Clazz[] _specialClazzes;
 
-  private final Map<AbstractType, Clazz> _clazzesForTypes_ = new TreeMap<>();
+  private final Map<AbstractType, Clazz> _clazzesForTypes = new TreeMap<>();
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -1431,7 +1450,7 @@ public class GeneratingFUIR extends FUIR
     _mainModule = fe.mainModule();
     _clazzes = new List<>();
     _specialClazzes = new Clazz[SpecialClazzes.values().length];
-    _universe  = newClazz(null, (LibraryFeature) mir.universe())._id;
+    _universe  = newClazz(null, mir.universe().selfType())._id;
     doesNeedCode(_universe);
     _mainClazz = newClazz((LibraryFeature) mir.main())._id;
     doesNeedCode(_mainClazz);
@@ -2817,8 +2836,7 @@ public class GeneratingFUIR extends FUIR
   public int clazz_array_u8()
   {
     var utf8_data = clazz_Const_String_utf8_data();
-
-    dev.flang.util.Debug.umprintln("result is "+clazzResultClazz(utf8_data));
+    dev.flang.util.Debug.umprintln("result is "+id2clazz(clazzResultClazz(utf8_data)));
     return clazzResultClazz(utf8_data);
   }
 
@@ -3474,7 +3492,7 @@ public class GeneratingFUIR extends FUIR
           {
             if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
               {
-                var T = innerClazz.actualGenerics()[0];
+                var T = innerClazz.actualTypeParameters()[0];
                 cf = T._type.constraintAssignableFrom(Context.NONE, tclazz._type.generics().get(0))
                   ? Types.resolved.f_Type_infix_colon_true
                   : Types.resolved.f_Type_infix_colon_false;
