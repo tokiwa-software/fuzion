@@ -2816,7 +2816,10 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazz_array_u8()
   {
-    return clazzResultClazz(clazz_Const_String_utf8_data());
+    var utf8_data = clazz_Const_String_utf8_data();
+
+    dev.flang.util.Debug.umprintln("result is "+clazzResultClazz(utf8_data));
+    return clazzResultClazz(utf8_data);
   }
 
 
