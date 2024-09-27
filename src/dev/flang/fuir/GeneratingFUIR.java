@@ -93,7 +93,7 @@ public class GeneratingFUIR extends FUIR
     final int _outer;
     Clazz outer() { return _outer == NO_CLAZZ ? null : id2clazz(_outer); }
 
-    final int _gix;
+    int gix() { return _feature.globalIndex(); }
     final LibraryFeature _feature;
     LibraryFeature feature() { return _feature; }
     static final Clazz[] NO_CLAZZES = new Clazz[0];
@@ -158,7 +158,6 @@ public class GeneratingFUIR extends FUIR
       _outer = outer == null ? NO_CLAZZ : outer._id;
       _id = id;
       _feature = (LibraryFeature) type.feature();
-      _gix = _feature.globalIndex();
       _needsCode = false;
       _code = NO_SITE;
     }
@@ -343,12 +342,12 @@ public class GeneratingFUIR extends FUIR
     {
       return
         isRef() == ((Clazz)other).isRef() &&
-        _type.compareTo(((Clazz)other)._type)==0 && _gix == ((Clazz) other)._gix;  // NYI: outer and type parameters!
+        _type.compareTo(((Clazz)other)._type)==0 && gix() == ((Clazz) other).gix();  // NYI: outer and type parameters!
     }
     @Override
     public int hashCode()
     {
-      return (_type.isRef() ? 0x777377 : 0) ^ _gix;  // NYI: outer and type parameters!
+      return (_type.isRef() ? 0x777377 : 0) ^ gix();  // NYI: outer and type parameters!
     }
 
 
@@ -2153,8 +2152,7 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    var m = _fe.module(c._gix);
-    return switch (m.featureKindEnum(c._gix - m._globalBase))
+    return switch (c._feature.kind())
       {
       case Routine           -> FeatureKind.Routine;
       case Field             -> FeatureKind.Field;
@@ -2182,8 +2180,8 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    var m = _fe.module(c._gix);
-    var ix = c._gix - m._globalBase;
+    var m = _fe.module(c.gix());
+    var ix = c.gix() - m._globalBase;
     var bytes = m.featureName(ix);
     var ac = m.featureArgCount(ix);
     var id = m.featureId(ix);
@@ -2572,8 +2570,16 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    var m = _fe.module(c._gix);
-    return m.featureArgCount(c._gix - m._globalBase);   // NYI: open generics?
+    return
+      switch (clazzKind(c._id))
+        {
+        case Routine,
+             Intrinsic,
+             Abstract,
+             Native -> c.argumentFields().length;
+        case Field,
+             Choice -> 0;
+        };
   }
 
 
@@ -2685,20 +2691,17 @@ public class GeneratingFUIR extends FUIR
     var result = c._code;
     if (result == NO_SITE)
       {
-        var m = _fe.module(c._gix);
-        var f = c._gix - m._globalBase;
-        var code = m.featureCodePos(f);
-        result = addCode(cl, c, m, code);
+        result = addCode(cl, c);
         c._code = result;
       }
     return result;
   }
 
 
-  int addCode(int cl, Clazz c, LibraryModule m, int codePos)
+  int addCode(int cl, Clazz c)
   {
     var code = new List<Object>();
-    addCode(cl, c, code, c.feature(), m, codePos);
+    addCode(cl, c, code, c.feature());
     var result = addCode(code);
     while (_siteClazzes.size() < _allCode.size())
       {
@@ -2717,7 +2720,7 @@ public class GeneratingFUIR extends FUIR
     return result;
   }
 
-  void addCode(int cl, Clazz c, List<Object> code, LibraryFeature ff, LibraryModule m, int codePos)
+  void addCode(int cl, Clazz c, List<Object> code, LibraryFeature ff)
   {
     if (!clazzIsVoidType(cl))
       {
@@ -2767,12 +2770,7 @@ public class GeneratingFUIR extends FUIR
                 code.add(argFields[i]);
               }
 
-            var pgix = pf.globalIndex();
-            var pm = _fe.module(pgix);
-            var f = pgix - pm._globalBase;
-            var pCodePos = pm.featureCodePos(pgix - m._globalBase);
-
-            addCode(cl, c, code, pf, pm, pCodePos);
+            addCode(cl, c, code, pf);
           }
         toStack(code, c._feature.code());
       }
