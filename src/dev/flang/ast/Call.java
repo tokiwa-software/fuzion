@@ -2173,53 +2173,56 @@ public class Call extends AbstractCall
         var at = actualArgType(res, formalType, frml, context);
         if (!at.containsUndefined(true))
           {
-            if (formalType.generics().get(0).isGenericArgument())
-              {
-                var rg = formalType.generics().get(0).genericArgument();
-                var ri = rg.index();
-                if (rg.feature() == _calledFeature && foundAt.get(ri) == null)
-                  {
-                      {
-                        var rt = al.inferLambdaResultType(res, context, at);
-                        if (rt != null)
-                          {
-                            _generics = _generics.setOrClone(ri, rt);
-                          }
-                        addPair(foundAt, ri, pos, rt);
-                        result[0] = true;
-                      }
-                  }
-              }
-            else if (formalType.generics().get(0).dependsOnGenerics())
-              {
-                var gs = formalType
-                  .generics()
-                  .get(0)
-                  .generics();
-
-                IntStream
-                  .range(0, gs.size())
-                  .filter(idx -> gs.get(idx).isGenericArgument())
-                  .forEach(idx -> {
-                    var rg = gs.get(idx).genericArgument();
-                    var ri = rg.index();
-                    if (rg.feature() == _calledFeature && foundAt.get(ri) == null)
-                      {
-                          {
-                            var rt = al.inferLambdaResultType(res, context, at);
-                            if (rt != null && idx < rt.generics().size())
-                              {
-                                _generics = _generics.setOrClone(ri, rt.generics().get(idx));
-                              }
-                            addPair(foundAt, ri, pos, rt);
-                            result[0] = true;
-                          }
-                      }
-                  });
-              }
+            var lambdaResultType = formalType.generics().get(0);
+            inferGenericLambdaResult(res, context, al, pos, conflict, foundAt, result, lambdaResultType, new List<>(lambdaResultType), at);
           }
       }
     return result[0];
+  }
+
+
+  /**
+   * Perform type inference for result type of lambda
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @param al the lambda-expression we try to get the result from
+   *
+   * @param pos source code position of the expression actualType was derived from
+   *
+   * @param conflict set of generics that caused conflicts
+   *
+   * @param foundAt the position of the expressions from which actual generics
+   * were taken.
+   */
+  private void inferGenericLambdaResult(Resolution res, Context context, AbstractLambda al, SourcePosition pos, boolean[] conflict,
+    List<List<Pair<SourcePosition, AbstractType>>> foundAt, boolean[] result, AbstractType lambdaResultType, List<AbstractType> generics,
+    AbstractType argumentType)
+  {
+    generics
+      .stream()
+      .forEach(g -> {
+        if (!g.isGenericArgument())
+          {
+            inferGenericLambdaResult(res, context, al, pos, conflict, foundAt, result, lambdaResultType, g.generics(), argumentType);
+          }
+        else
+          {
+            var rg = g.genericArgument();
+            var ri = rg.index();
+            if (rg.feature() == _calledFeature && foundAt.get(ri) == null)
+              {
+                var rt = al.inferLambdaResultType(res, context, argumentType);
+                if (rt != null)
+                  {
+                      inferGeneric(res, context, lambdaResultType, rt, pos, conflict, foundAt);
+                      result[0] = true;
+                  }
+              }
+          }
+      });
   }
 
 
