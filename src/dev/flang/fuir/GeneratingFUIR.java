@@ -49,6 +49,7 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.Box;
 import dev.flang.ast.Constant;
 import dev.flang.ast.Context;
+import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.ExpressionVisitor; // NYI: remove dependency!
 import dev.flang.ast.HasGlobalIndex; // NYI: remove dependency!
@@ -475,7 +476,10 @@ public class GeneratingFUIR extends FUIR
           !_feature.isThisRef() &&
           !_feature.isBuiltInPrimitive() &&
           !clazzIsVoidType(_id) &&
-          !clazzIsChoice(_id))
+          !clazzIsChoice(_id)
+
+          && _s == SpecialClazzes.c_unit
+          )
         {
           res = YesNo.yes;
           for(var ix = 0; ix < _inner.size(); ix++)
@@ -2295,12 +2299,13 @@ public class GeneratingFUIR extends FUIR
       {
         result = outerClazz.handDown(ia.type(), inh, e);
       }
+    */
 
     else if (e instanceof Env v)
       {
         result = outerClazz.handDown(v.type(), inh, e);
       }
-    */
+
     else
       {
         if (!Errors.any())
@@ -3585,7 +3590,8 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazzActualGeneric(int cl, int gix)
   {
-    throw new Error("NYI");
+    var cc = id2clazz(cl);
+    return cc.actualTypeParameters()[gix]._id;
   }
 
 
@@ -3758,7 +3764,19 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int envClazz(int s)
   {
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (s >= SITE_BASE,
+       withinCode(s),
+       codeAt(s) == ExprKind.Env);
+
+    var cl = clazzAt(s);
+    var outerClazz = clazz(cl);
+    var v = (Env) getExpr(s);
+    Clazz vcl = clazz(v, outerClazz, NO_INH);
+    if (false) System.out.println(dev.flang.util.Terminal.GREEN +
+                       "ENV clazz " + vcl + " unit: "+vcl.isUnitType() +
+                       dev.flang.util.Terminal.RESET);
+    return vcl == null ? -1 : vcl._id;
   }
 
 
@@ -3828,12 +3846,17 @@ public class GeneratingFUIR extends FUIR
     var b = (Box) getExpr(s);
     Clazz vc = clazz(b._value, outerClazz, NO_INH);
     Clazz rc = outerClazz.handDown(b.type(), -1, NO_INH, b);
-    dev.flang.util.Debug.umprintln("NYI! "+vc+" "+vc.asRef()+" "+b.type()+" "+
+    dev.flang.util.Debug.umprintln("NYI! "+vc+" rc: "+rc+" vc.asRef:"+vc.asRef()+" b.type(): "+b.type()+" "+b.type().isRef()+" "+
                                    outerClazz.handDown(b.type(), -1, NO_INH, b)+" "+(!rc.isRef() ? "--" : ""
                                                                                      +vc.asRef()));
-    if (rc.isRef())
+    if (rc.isRef() &&
+        outerClazz.feature() != Types.resolved.f_type_as_value) // NYI: ugly special case
       {
         rc = vc.asRef();
+      }
+    else
+      {
+        rc = vc;
       }
     /* NYI: should be in propagateExpectedClazz for `ec`:
     if (asRefAssignable(ec, vc))
@@ -3984,8 +4007,7 @@ public class GeneratingFUIR extends FUIR
       };
     if (innerClazz == null) {
       dev.flang.util.Debug.umprintln("NYI! "+e+" "+e.getClass()+" "+sitePos(s).show());
-    }
-    if (clazzKind(innerClazz._id) == FeatureKind.Abstract)
+    } else if (clazzKind(innerClazz._id) == FeatureKind.Abstract)
       {
         System.out.println("accessedClazz is "+innerClazz+" for "+e.getClass());
       }
@@ -4100,6 +4122,13 @@ public class GeneratingFUIR extends FUIR
     Clazz sClazz = clazz(a._target, outerClazz, inh);
     var vc = sClazz.asValue();
     var fc = id2clazz(vc.lookup(a._assignedField, a));
+    if (false) System.out.println(dev.flang.util.Terminal.PURPLE +
+                       "ASSIGN TO "+ fc + " "+fc.resultClazz()+" ref: "+fc.resultClazz().isRef()+" unit: "+fc.resultClazz().isUnitType()+
+                       dev.flang.util.Terminal.RESET);
+    if (fc.resultClazz().isUnitType())
+      {
+        fc = null;
+      }
     return fc;
   }
 
@@ -4315,6 +4344,8 @@ public class GeneratingFUIR extends FUIR
         innerClazz = NO_CLAZZ;
         var ccs = accessedClazzes(s);
         //System.out.println("tclazz "+clazzAsString(tclazz)+" count "+ccs.length);
+        if (CHECKS) check
+          (ccs.length % 2 == 0);
         for (var i = 0; i < ccs.length; i += 2)
           {
             var tt = ccs[i+0];
@@ -4738,7 +4769,20 @@ public class GeneratingFUIR extends FUIR
   @Override
   public boolean isEffectIntrinsic(int cl)
   {
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (cl != NO_CLAZZ);
+
+    return
+      (clazzKind(cl) == FeatureKind.Intrinsic) &&
+      switch(clazzOriginalName(cl))
+      {
+      case "effect.type.abort0"  ,
+           "effect.type.default0",
+           "effect.type.instate0",
+           "effect.type.is_instated0",
+           "effect.type.replace0" -> true;
+      default -> false;
+      };
   }
 
 
@@ -4754,7 +4798,10 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int effectTypeFromInstrinsic(int cl)
   {
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (isEffectIntrinsic(cl));
+
+    return clazzActualGeneric(clazzOuterClazz(cl), 0);
   }
 
 
