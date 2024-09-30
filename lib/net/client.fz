@@ -43,7 +43,7 @@ public client(T type, ch Connection_Handler T, f net.family.val, p net.protocol.
 =>
   s := net.socket_type.by_protocol p
   fuzion.sys.net.connect f.as_num s.as_num p.as_num host port
-    .bind T (desc)->
+    .bind T desc->
       # NYI install custom thread spawn effect
       # NYI: BUG: (try net.connection_handler).on ()->
 

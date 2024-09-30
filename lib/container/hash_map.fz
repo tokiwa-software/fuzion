@@ -113,12 +113,10 @@ is
 
   # get a list of all key/value pairs in this map
   #
-  public redef items Sequence (tuple HK V) =>
+  public redef items =>
     contents
-      .filter      (o -> o??)
-      .map (o -> match o
-                            nil     => panic "filter failed"
-                            t tuple => t)
+      .filter o->o??
+      .map (o -> o.get (panic "filter failed"))
 
 
   # this hash map as a human readable string
@@ -126,7 +124,7 @@ is
   #
   public redef as_string =>
     items
-      .map (t -> "({t.values.0},{t.values.1})")
+      .map t->"({t.values.0},{t.values.1})"
       .as_string
 
 

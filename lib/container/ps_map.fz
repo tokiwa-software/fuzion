@@ -159,7 +159,7 @@ O(n log n).
         if (size & sz) = 0
           ps_map ndata.get nsize dest+sz
         else
-          tmp := array (tuple PK V) sz (i -> ndata.get[dest+i])
+          tmp := array sz (i -> ndata.get[dest+i])
           _ :=
             for
               i1 := 0, if (use1) i1+1 else i1
@@ -225,7 +225,7 @@ O(n log n).
     join (ole i32, sz i32, rsz i32, skip i32) unit =>
       if sz ≤ size
         if (size & sz) != 0
-          tmp := array PK rsz (i -> r[i])
+          tmp := array rsz (i -> r[i])
           _ :=
             for
               i1 := 0, if (use1) i1+1 else i1
@@ -247,7 +247,7 @@ O(n log n).
   # get an array of all key/value pairs in this map
   #
   public redef items Sequence (tuple PK V) =>
-    as_key_array.map (tuple PK V) (k -> (k, ps_map.this[k].get))
+    as_key_array.map (k -> (k, ps_map.this[k].get))
 
 
   # get the lowest key in this map

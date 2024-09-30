@@ -73,7 +73,7 @@ is
   # create immutable array from this
   #
   public redef as_array =>
-    array T length.as_i32 (i -> data[i])
+    array length.as_i32 (i -> data[i])
 
 
   # create a list from this array
@@ -103,10 +103,10 @@ is
     for x in data.indices do
       data[x] := init
 
-    LM.env.array T length data unit
+    LM.env.array length data unit
 
 
   # initialize an empty mutable array of type T
   #
   public type.new (LM type : mutate) container.Mutable_Array T LM =>
-    LM.env.array T 0 (fuzion.sys.internal_array_init T 0) unit
+    LM.env.array 0 (fuzion.sys.internal_array_init T 0) unit

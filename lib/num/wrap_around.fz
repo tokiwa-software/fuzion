@@ -194,11 +194,11 @@ module:public wrap_around : integer is
 
 
   # this integer as an array of bytes (little endian)
-  public as_bytes array u8 =>
+  public as_bytes =>
     bs := wrap_around.this.byte_size
-    array u8 bs (idx ->
+    array bs idx->
       shift wrap_around.this := wrap_around.this.from_u32 (bs.as_u32-idx.as_u32-1)*8
-      (wrap_around.this>>shift).low8bits)
+      (wrap_around.this>>shift).low8bits
 
 
 
@@ -207,7 +207,7 @@ module:public wrap_around : integer is
 
 
   # how many bytes does this integer use?
-  public type.byte_size i32 =>
+  public type.byte_size =>
     # NYI #1179
     all_bits_set.ones_count / 8
 

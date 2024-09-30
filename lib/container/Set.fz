@@ -120,7 +120,7 @@ public Set(public E type : property.equatable) ref : Sequence E is
       "∅"
     else
       ("\{"
-       + (as_list.map String (x -> x.as_string)).fold(String.concat1 ";")
+       + (as_list.map x->x.as_string).fold(String.concat1 ";")
        + "}")
 
 

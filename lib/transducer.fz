@@ -53,7 +53,7 @@ public transducer(public TA, B, C type,
 
   # left-to-right composition of transducers
   public compose (A type, o transducer(TA,A,B)) =>
-    transducer(TA,A,C,((re) -> transducer.this.call (o.call re)))
+    transducer TA A C (re -> transducer.this.call (o.call re))
 
 
   # left-to-right composition of transducers
