@@ -625,25 +625,25 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
 
     if (!t.isVoid() && (frmlT.isAssignableFrom(t, context) || frmlT.isAssignableFrom(t.asRef(), context)))
       {
-        if (needsBoxing(frmlT, context))
+        var rt = needsBoxing(frmlT, context);
+        if (rt != null)
           {
-            result = new Box(result, frmlT);
-            t = result.type();
+            result = new Box(result, rt);
           }
-        if (frmlT.isChoice() && frmlT.isAssignableFrom(t, context))
+        if (frmlT.isChoice() && frmlT.isAssignableFrom(result.type(), context))
           {
             result = tag(frmlT, result, context);
             if (CHECKS) check
-              (!result.needsBoxing(frmlT, context));
+              (result.needsBoxing(frmlT, context) == null);
           }
       }
 
     if (POSTCONDITIONS) ensure
       (Errors.count() > 0
-        || t.isVoid()
+        || type().isVoid()
         || frmlT.isGenericArgument()
         || frmlT.isThisType()
-        || !result.needsBoxing(frmlT, context)
+        || result.needsBoxing(frmlT, context) == null
         || !(frmlT.isAssignableFrom(t, context) || frmlT.isAssignableFrom(t.asRef(), context)));
 
     return result;
@@ -722,43 +722,50 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
 
 
   /**
-   * Is boxing needed when we assign to frmlT since frmlT is generic (so it
-   * could be a ref) or frmlT is this type and the underlying feature is by
-   * default a ref?
+   * Is boxing needed when we assign to frmlT?
    *
    * @param frmlT the formal type we are assigning to.
+   *
+   * @return the type after boxing or null if boxing is not needed
    */
-  boolean needsBoxingForGenericOrThis(AbstractType frmlT)
-  {
-    return
-      frmlT.isGenericArgument() || frmlT.isThisType();
-  }
-
-
-  /**
-   * Is boxing needed when we assign to frmlT?
-   * @param frmlT the formal type we are assigning to.
-   */
-  private boolean needsBoxing(AbstractType frmlT, Context context)
+  private AbstractType needsBoxing(AbstractType frmlT, Context context)
   {
     var t = type();
-    if (needsBoxingForGenericOrThis(frmlT))
-      {
-        return true;
+    if (frmlT.isGenericArgument() || frmlT.isThisType())
+      { /* Boxing needed when we assign to frmlT since frmlT is generic (so it
+         * could be a ref) or frmlT is this type and the underlying feature is by
+         * default a ref?
+         */
+        return frmlT;
       }
     else if (t.isRef() && !isCallToOuterRef())
       {
-        return false;
+        return null;
       }
     else if (frmlT.isRef())
       {
-        return true;
+        return frmlT;
       }
     else
       {
-        return frmlT.isChoice() &&
-          !frmlT.isAssignableFrom(t, context) &&
-          frmlT.isAssignableFrom(t.asRef(), context);
+        var tr = t.asRef();
+        if (frmlT.isChoice() &&
+            !frmlT.isAssignableFrom(t , context) &&
+             frmlT.isAssignableFrom(tr, context))
+          { // we do both, box and then tag:
+            for (var cg : frmlT.choiceGenerics(context))
+              {
+                if (cg.isAssignableFrom(tr, context))
+                  {
+                    return cg;
+                  }
+              }
+            throw new Error("Expr.needsBoxing confused for choice type "+frmlT+" which is assignable from "+t.asRef()+" but not from "+t);
+          }
+        else
+          {
+            return null;
+          }
       }
   }
 
