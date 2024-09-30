@@ -1446,6 +1446,19 @@ public class Feature extends AbstractFeature
           }
 
         resolveArgumentTypes(res);
+
+        visit(new FeatureVisitor() {
+          @Override
+          public Expr action(Feature f, AbstractFeature outer)
+          {
+            if (f.implKind() == Impl.Kind.FieldInit && f.resultTypeIfPresent(res) != null)
+              {
+                f.impl().propagateExpectedType(res, context(), f.resultTypeIfPresent(res));
+              }
+            return f;
+          }
+        });
+
         visit(res.resolveTypesFully(this));
 
         if (hasThisType())

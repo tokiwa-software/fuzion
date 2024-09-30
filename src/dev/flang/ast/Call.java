@@ -216,6 +216,11 @@ public class Call extends AbstractCall
   public Call _targetOf_forErrorSolutions = null;
 
 
+  /**
+   * Stored propagated type for use during resolve types.
+   */
+  private AbstractType _propagatedType;
+
   /*-------------------------- constructors ---------------------------*/
 
 
@@ -2414,6 +2419,25 @@ public class Call extends AbstractCall
         propagateForPartial(res, context);
         if (needsToInferTypeParametersFromArgs())
           {
+            // propagate type to actuals before infering from args
+            // this makes this work, see also #321:
+            //     a tuple i8 i8 := tuple 3 4
+            if (_propagatedType != null && !_propagatedType.isGenericArgument())
+              {
+                for (int i = 0; i < _propagatedType.generics().size(); i++)
+                  {
+                    var idx0 = Math.min(i, _propagatedType.feature().generics().asActuals().size()-1);
+                    for (int j = 0; j < _actuals.size(); j++)
+                      {
+                        var idx1 = Math.min(j, _calledFeature.valueArguments().size()-1);
+                        if (_calledFeature.valueArguments().get(idx1).resultType().compareTo(_propagatedType.feature().generics().asActuals().get(idx0)) == 0)
+                          {
+                            _actuals.get(j).propagateExpectedType(res, context, _propagatedType.generics().get(i));
+                          }
+                      }
+                  }
+              }
+
             inferGenericsFromArgs(res, context);
             for (var r : _whenInferredTypeParameters)
               {
@@ -2607,6 +2631,9 @@ public class Call extends AbstractCall
               (r == r2);
           }
       }
+
+    _propagatedType = t;
+
     return r;
   }
 
