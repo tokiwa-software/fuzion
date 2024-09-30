@@ -4014,6 +4014,35 @@ public class GeneratingFUIR extends FUIR
     return innerClazz == null ? NO_CLAZZ : innerClazz._id;
   }
 
+  public int accessedClazz(int s, Clazz tclazz)
+  {
+    if (PRECONDITIONS) require
+      (s >= SITE_BASE,
+       s < SITE_BASE + _allCode.size(),
+       withinCode(s),
+       codeAt(s) == ExprKind.Call   ||
+       codeAt(s) == ExprKind.Assign    );
+
+    var cl = clazzAt(s);
+    var outerClazz = id2clazz(cl);
+    var e = getExpr(s);
+
+    Clazz innerClazz = switch (e)
+      {
+      case AbstractCall   call -> calledInner(call, outerClazz._feature, outerClazz, tclazz, NO_INH);
+      case AbstractAssign a    -> assignedField(outerClazz, tclazz, a, NO_INH);
+      case Clazz          fld  -> fld;
+      default -> (Clazz) (Object) new Object() { { if (true) throw new Error("accessedClazz found unexpected Expr " + (e == null ? e : e.getClass()) + "."); } }; /* Java is ugly... */
+      };
+    if (innerClazz == null) {
+      dev.flang.util.Debug.umprintln("NYI! "+e+" "+e.getClass()+" "+sitePos(s).show());
+    } else if (clazzKind(innerClazz._id) == FeatureKind.Abstract)
+      {
+        System.out.println("accessedClazz is "+innerClazz+" for "+e.getClass());
+      }
+    return innerClazz == null ? NO_CLAZZ : innerClazz._id;
+  }
+
 
   public Clazz calledTarget(AbstractCall c, Clazz outerClazz, List<AbstractCall> inh)
   {
@@ -4041,6 +4070,20 @@ public class GeneratingFUIR extends FUIR
 
     Clazz innerClazz = null;
     var tclazz  = calledTarget(c, outerClazz, inh);
+    return calledInner(c, outer, outerClazz, tclazz, inh);
+  }
+
+  public Clazz calledInner(AbstractCall c, AbstractFeature outer, Clazz outerClazz, Clazz tclazz, List<AbstractCall> inh)
+  {
+    if (PRECONDITIONS) require
+      (Errors.any() || c.calledFeature() != null && c.target() != null);
+
+    if (c.calledFeature() == null  || c.target() == null)
+      {
+        return error();  // previous errors, give up
+      }
+
+    Clazz innerClazz = null;
     var cf      = c.calledFeature();
     //var callToOuterRef = c.target().isCallToOuterRef();
     //boolean dynamic = c.isDynamic() && (tclazz.isRef() || callToOuterRef);
@@ -4120,7 +4163,11 @@ public class GeneratingFUIR extends FUIR
   private Clazz assignedField(Clazz outerClazz, AbstractAssign a, List<AbstractCall> inh)
   {
     Clazz sClazz = clazz(a._target, outerClazz, inh);
-    var vc = sClazz.asValue();
+    return assignedField(outerClazz, sClazz, a, inh);
+  }
+  private Clazz assignedField(Clazz outerClazz, Clazz tclazz, AbstractAssign a, List<AbstractCall> inh)
+  {
+    var vc = tclazz.asValue();
     var fc = id2clazz(vc.lookup(a._assignedField, a));
     if (false) System.out.println(dev.flang.util.Terminal.PURPLE +
                        "ASSIGN TO "+ fc + " "+fc.resultClazz()+" ref: "+fc.resultClazz().isRef()+" unit: "+fc.resultClazz().isUnitType()+
@@ -4341,6 +4388,9 @@ public class GeneratingFUIR extends FUIR
     int innerClazz;
     if (accessIsDynamic(s))
       {
+        innerClazz = accessedClazz(s, id2clazz(tclazz));
+
+        /*
         innerClazz = NO_CLAZZ;
         var ccs = accessedClazzes(s);
         //System.out.println("tclazz "+clazzAsString(tclazz)+" count "+ccs.length);
@@ -4358,6 +4408,7 @@ public class GeneratingFUIR extends FUIR
           }
         if (CHECKS) check
           (innerClazz != NO_CLAZZ);
+        */
       }
     else
       {
@@ -4381,6 +4432,8 @@ public class GeneratingFUIR extends FUIR
       {
         System.out.println("lookup failed for "+clazzAsString(tclazz)+" "+accessIsDynamic(s)+" at "+sitePos(s).show()+"\n from "+id2clazz(innerClazz0).feature().pos().show());
       }
+
+    // System.out.println("LOOKUP for "+clazzAsString(tclazz)+" is "+clazzAsString(innerClazz)+" at "+sitePos(s).show());
     return innerClazz;
   }
 
