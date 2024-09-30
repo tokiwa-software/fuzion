@@ -2293,7 +2293,16 @@ public class DFA extends ANY
     put("fuzion.java.bool_to_java_object"   , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
     put("fuzion.java.f32_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
     put("fuzion.java.f64_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
-    put("fuzion.java.get_field0"            , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
+    put("fuzion.java.get_field0"            , cl ->
+      {
+        var jref0 = cl._dfa._fuir.lookupJavaRef(((RefValue)cl._args.get(0))._clazz);
+        var jref1 = cl._dfa._fuir.lookupJavaRef(((RefValue)cl._args.get(1))._clazz);
+        // mark Java_Ref fields as read
+        cl._dfa._readFields.set(jref0);
+        cl._dfa._readFields.set(jref1);
+        // NYI: UNDER DEVELOPMENT: setField Java_Ref, see get_static_field0
+        return cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context);
+      });
     put("fuzion.java.i16_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
     put("fuzion.java.i32_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
     put("fuzion.java.i64_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
@@ -2430,9 +2439,13 @@ public class DFA extends ANY
     put("fuzion.java.get_static_field0"     , cl ->
       {
         var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
-        var jref = cl._dfa._fuir.lookupJavaRef(rc);
         var jobj = cl._dfa.newInstance(rc, NO_SITE, cl._context);
-        jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
+        // otherwise it is a primitive like int, boolean
+        if (cl._dfa._fuir.clazzIsRef(rc))
+          {
+            var jref = cl._dfa._fuir.lookupJavaRef(rc);
+            jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
+          }
         return jobj;
       });
     put("fuzion.java.u16_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );

@@ -74,25 +74,7 @@ public class Box extends Expr
        !(value instanceof Box));
 
     this._value = value;
-    var t = value.type();
-    this._type = needsBoxingForGenericOrThis(frmlT) ? t : t.asRef();
-  }
-
-
-  /**
-   * Constructor for Box loaded from .fum/MIR module file be front end.
-   *
-   * @param value the value to be boxed.
-   */
-  public Box(Expr value)
-  {
-    if (PRECONDITIONS) require
-      (value != null,
-       !value.type().isRef() || value.isCallToOuterRef());
-
-    this._value = value;
-    var t = value.type();
-    this._type = t.asRef();
+    this._type = frmlT;
   }
 
 

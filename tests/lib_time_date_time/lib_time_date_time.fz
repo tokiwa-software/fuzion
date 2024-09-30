@@ -1,0 +1,53 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test lib_time_date_time
+#
+# -----------------------------------------------------------------------
+
+lib_time_date_time =>
+
+  a := time.date_time 2024 30 10 30 12 1E8
+  b := time.date_time 2024 30 10 30 12 1E7
+  c := time.date_time 2023 30 10 30 12 1E8
+
+  say "a = $a"
+  say "b = $b"
+  say "c = $c"
+
+  say "a is_after a = {a.is_after a}"
+  say "a is_after b = {a.is_after b}"
+  say "a is_after c = {a.is_after c}"
+  say "b is_after a = {b.is_after a}"
+  say "b is_after b = {b.is_after b}"
+  say "b is_after c = {b.is_after c}"
+  say "c is_after a = {c.is_after a}"
+  say "c is_after b = {c.is_after b}"
+  say "c is_after c = {c.is_after c}"
+
+  say "a is_before a = {a.is_before a}"
+  say "a is_before b = {a.is_before b}"
+  say "a is_before c = {a.is_before c}"
+  say "b is_before a = {b.is_before a}"
+  say "b is_before b = {b.is_before b}"
+  say "b is_before c = {b.is_before c}"
+  say "c is_before a = {c.is_before a}"
+  say "c is_before b = {c.is_before b}"
+  say "c is_before c = {c.is_before c}"
+

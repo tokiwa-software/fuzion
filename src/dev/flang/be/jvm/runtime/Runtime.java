@@ -858,6 +858,25 @@ public class Runtime extends ANY
 
 
   /**
+   * Helper method to convert String to utf8-bytes.
+   *
+   * @param str the string
+   *
+   * @return the bytes, if str is null, str used is: "--null--"
+   */
+  public static byte[] fuzion_java_string_to_bytes_array(String str)
+  {
+    unsafeIntrinsic();
+
+    if (str == null)
+      {
+        str = "--null--";
+      }
+    return str.getBytes(StandardCharsets.UTF_8);
+  }
+
+
+  /**
    * Helper method called by the fuzion.java.get_static_field0 intrinsic.
    *
    * Retrieves the content of a given static field.
@@ -907,17 +926,20 @@ public class Runtime extends ANY
     unsafeIntrinsic();
 
     Object result;
-    String clazz = null;
+    Class clazz = null;
 
     try
       {
-        Class cl = thiz.getClass();
-        Field f = cl.getDeclaredField(field);
+        clazz = thiz.getClass();
+        Field f = clazz.getDeclaredField(field);
         result = f.get(thiz);
       }
     catch (IllegalAccessException | NoSuchFieldException e)
       {
-        Errors.fatal(e.toString()+" when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        Errors.fatal(e.toString()
+          + " when calling fuzion.java.get_field for field "
+          + (clazz !=null ? clazz.getName() : "")+"."+field
+        );
         result = null;
       }
 

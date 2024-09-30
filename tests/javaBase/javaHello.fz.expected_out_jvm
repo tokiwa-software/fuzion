@@ -14,4 +14,10 @@ Hello Java 🌍!
 [0.0, 1.0, 3.1415927, 3.4028235E38]
 [0.0, 1.0, 3.141592653589793, 1.7976931348623157E308]
 [instance[Java.java.io.PrintStream]]
+I was printed via java.
 error: not_a_valid_file (No such file or directory)
+-4
+0.0
+--null--
+65535
+<clinit>

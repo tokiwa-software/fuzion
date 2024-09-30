@@ -1603,7 +1603,7 @@ Expression
     return switch (k)
       {
       case Assign      -> assignNextPos(eAt);
-      case Box         -> eAt;
+      case Box         -> boxNextPos  (eAt);
       case Const       -> constNextPos(eAt);
       case Current     -> eAt;
       case Match       -> matchNextPos(eAt);
@@ -1663,6 +1663,54 @@ Assign
       expressionKindRaw(at-9) == (MirExprKind.Assign.ordinal() | 0x80)     );
 
     return assignFieldPos(at) + 4;
+  }
+
+
+  /*
+--asciidoc--
+
+Box
+^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+.3+| true  .2+| 1      | Type          | box result type
+|====
+
+--asciidoc--
+   *   +---------------------------------------------------------------------------------+
+   *   | Box                                                                             |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | Type          | box result type                               |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
+  int boxTypePos(int at)
+  {
+    if (PRECONDITIONS) require
+     (expressionKindRaw(at-1) ==  MirExprKind.Box.ordinal()         ||
+      expressionKindRaw(at-9) == (MirExprKind.Box.ordinal() | 0x80)     );
+
+    return at;
+  }
+  AbstractType boxType(int at)
+  {
+    if (PRECONDITIONS) require
+     (expressionKindRaw(at-1) ==  MirExprKind.Box.ordinal()         ||
+      expressionKindRaw(at-9) == (MirExprKind.Box.ordinal() | 0x80)     );
+
+    return type(boxTypePos(at));
+  }
+  int boxNextPos(int at)
+  {
+    if (PRECONDITIONS) require
+     (expressionKindRaw(at-1) ==  MirExprKind.Box.ordinal()         ||
+      expressionKindRaw(at-9) == (MirExprKind.Box.ordinal() | 0x80)     );
+
+    return typeNextPos(boxTypePos(at));
   }
 
 

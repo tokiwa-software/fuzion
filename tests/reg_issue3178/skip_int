@@ -1,1 +1,1 @@
-NYI: results in stack overflow since tail call optimization missing in interpreter
+skipping due to long run time.

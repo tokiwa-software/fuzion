@@ -17,10 +17,10 @@ panic.cause#1: $MODULE/eff/fallible.fz:35:6:
 panic#1: $MODULE/panic.fz:56:29:
 public panic(msg String) => panic.cause msg
 ----------------------------^^^^^^^^^^^^^^^
-Java.java.util.ArrayList_static.new_I#1: $MODULE/Java/java/util/ArrayList_static.fz:30:18:
+Java.java.util.ArrayList_static.new_I#1: $MODULE/Java/java/util/ArrayList_static.fz:23:18:
       e error => panic e.msg
 -----------------^^^^^^^^^^^
-javaHello: --CURDIR--/javaHello.fz:108:7:
+javaHello: --CURDIR--/javaHello.fz:126:7:
   say (Java.java.util.ArrayList.new_I -7)
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

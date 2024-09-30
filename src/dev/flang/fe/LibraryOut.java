@@ -703,8 +703,18 @@ class LibraryOut extends ANY
       }
     else if (e instanceof Box b)
       {
+  /*
+   *   +---------------------------------------------------------------------------------+
+   *   | Box                                                                             |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | Type          | box result type                               |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
         lastPos = expressions(b._value, lastPos);
         lastPos = exprKindAndPos(MirExprKind.Box, lastPos, e.sourceRange());
+        type(e.type());
       }
     else if (e instanceof AbstractBlock b)
       {

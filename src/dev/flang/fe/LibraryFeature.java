@@ -616,8 +616,11 @@ public class LibraryFeature extends AbstractFeature
             }
           case Box:
             {
-              x = new Box(s.pop())
-                { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
+              var t = _libModule.boxType(iat);
+              x = new Box(s.pop(), t)
+                {
+                  public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); }
+                };
               break;
             }
           case Const:

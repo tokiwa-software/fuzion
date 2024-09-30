@@ -96,13 +96,31 @@ javaHello : Java is
 
   # NYI: BUG: does not work yet in c-backend: mixture of say and java-println
   # gets output mixed up. We probably need to flush before executing this?
-  # (Java.as_java_object [java.lang.System.out])[0].println "I was printed via java."
+  (Java.as_java_object [java.lang.System.out])[0].println "I was printed via java."
 
 
   # checked exception: IOException
   match java.io.FileReader.new "not_a_valid_file"
     Java.java.io.FileReader => say "success opening file reader"
     e error => say "error: not_a_valid_file (No such file or directory)"
+
+
+  # get field (non-null)
+  say (Java.java.io.StreamTokenizer.new Java.java.lang.System.__k__in).ttype
+  say (Java.java.io.StreamTokenizer.new Java.java.lang.System.__k__in).nval
+  # get field (null)
+  say (Java.java.io.StreamTokenizer.new Java.java.lang.System.__k__in).sval
+
+
+  # get static field (non-null)
+  say Java.java.lang.Character_static.MAX__VALUE
+  # get static field (null)
+  say Java.java.lang.constant.ConstantDescs_static.CLASS__INIT__NAME
+
+
+  # NYI: BUG java.lang.IllegalAccessException: class dev.flang.be.jvm.runtime.Runtime cannot access class com.sun.security.ntlm.NTLMException
+  # say Java.com.sun.security.ntlm.NTLMException_static.AUTH__FAILED
+
 
   # NYI replace with code below
   say (Java.java.util.ArrayList.new_I -7)
@@ -116,6 +134,3 @@ javaHello : Java is
   _ := (panic p unit).instate_self ()->
     Java.java.util.ArrayList.new_I -7
   */
-
-  # NYI: BUG:
-  # say "static field test {Java.com.sun.security.ntlm.NTLMException_static.AUTH__FAILED}"
