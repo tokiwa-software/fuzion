@@ -113,9 +113,9 @@ javaHello : Java is
 
 
   # get static field (non-null)
-  say Java.java.io.File.pathSeparatorChar
+  say Java.java.lang.Character_static.MAX__VALUE
   # get static field (null)
-  say Java.java.io.File.pathSeparator
+  say Java.java.lang.constant.ConstantDescs_static.CLASS__INIT__NAME
 
 
   # NYI: BUG java.lang.IllegalAccessException: class dev.flang.be.jvm.runtime.Runtime cannot access class com.sun.security.ntlm.NTLMException
