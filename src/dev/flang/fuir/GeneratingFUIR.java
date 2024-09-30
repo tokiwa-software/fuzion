@@ -50,10 +50,13 @@ import dev.flang.ast.Box;
 import dev.flang.ast.Constant;
 import dev.flang.ast.Context;
 import dev.flang.ast.Expr;
+import dev.flang.ast.ExpressionVisitor; // NYI: remove dependency!
+import dev.flang.ast.HasGlobalIndex; // NYI: remove dependency!
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.NumLiteral;
 import dev.flang.ast.ResolvedNormalType;
+import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 
@@ -109,6 +112,79 @@ public class GeneratingFUIR extends FUIR
     boolean _isBoxed = false;  // NYI: not initialized yet!
     Clazz[] _fields = null;
     Clazz[] _argumentFields = null;
+
+
+  /**
+   * Data stored locally for this clazz by saveActualClazzes().
+   */
+  private TreeMap<Integer, Clazz[]> _actualClazzData = new TreeMap<Integer, Clazz[]>();
+
+
+
+
+  /**
+   * Expression visitor to find clazzes used by expressions.
+   */
+  class EV implements ExpressionVisitor
+  {
+    List<AbstractCall> _inh;
+    AbstractFeature _originalFeature;
+
+    /**
+     * Constructor to visit expressions in the current clazz that were inherited
+     * by teh given inh chain.
+     *
+     * @param inh for code that is added due to inlining of inherits calls, this
+     * gives the chain of inherits calls that brought the code here, from the
+     * parent down to the child feature.
+     */
+    EV(List<AbstractCall> inh, AbstractFeature f)
+      {
+        _inh = inh;
+        _originalFeature = f;
+      }
+
+    @Override
+    public void action (Expr e)
+    {
+      if      (e instanceof AbstractAssign   a) { /* findClazzes(a, _originalFeature, Clazz.this, _inh); */ }
+      else if (e instanceof AbstractCall     c) { /* findClazzes(c, _originalFeature, Clazz.this, _inh); */ }
+      else if (e instanceof Constant         c) { /* findClazzes(c, _originalFeature, Clazz.this, _inh); */ }
+      else if (e instanceof InlineArray      i) { /* findClazzes(i, _originalFeature, Clazz.this, _inh); */ }
+      //else if (e instanceof Env              b) { /* findClazzes(b, _originalFeature, Clazz.this, _inh); */ }
+      else if (e instanceof AbstractMatch    m) { /* findClazzes(m, _originalFeature, Clazz.this, _inh); */ }
+      else if (e instanceof Tag              t) { /* findClazzes(t, _originalFeature, Clazz.this, _inh); */ }
+    }
+
+    /*
+    @Override
+    public boolean action(AbstractMatch m, AbstractCase c)
+    {
+      var result = true;
+      if (m.subject() instanceof AbstractCall sc &&
+          sc.calledFeature() == Types.resolved.f_Type_infix_colon)
+        {
+          var ac = actualClazzes(sc, null);
+          var innerClazz = ac[0];
+          var cf = innerClazz.feature();
+          if (CHECKS) check
+            (cf == Types.resolved.f_Type_infix_colon_true ||
+             cf == Types.resolved.f_Type_infix_colon_false   );
+          var positive = cf == Types.resolved.f_Type_infix_colon_true ? Types.resolved.f_TRUE
+                                                                      : Types.resolved.f_FALSE;
+          result = c.types().stream().anyMatch(x->x.compareTo(positive.selfType())==0);
+        }
+      if (result)
+        {
+          _clazzes.findClazzes(c, _originalFeature, Clazz.this, _inh);
+        }
+      return result;
+      } */
+
+  }
+
+
+
 
   /**
    * isRef
@@ -214,6 +290,8 @@ public class GeneratingFUIR extends FUIR
       _asValue =  isRef() && _type != Types.t_ADDRESS
         ? newClazz(outer(), _type.asValue())
         : this;
+
+      inspectCode(new List<>(), _feature);
     }
 
 
@@ -835,6 +913,17 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
+   * In case this is a Clazz of value type, create the corresponding reference clazz.
+   */
+  public Clazz asRef()
+  {
+    return isRef()
+      ? this
+      : newClazz(outer(), _type.asRef());
+  }
+
+
+  /**
    * In given type t, replace occurrences of 'X.this.type' by the actual type
    * from this Clazz.
    *
@@ -1350,6 +1439,135 @@ public class GeneratingFUIR extends FUIR
 
 
 
+
+  /**
+   * call _clazzes.findClazzes for all the expressions in f, including all the
+   * expressions of the parents of f.
+   *
+   * @param inh an empty list when inspecting code of `f` for `f`, a list of
+   * inheritance calls when inspecting `f1` that inherits from `f`. The head of
+   * this list is the inheritance call from `f1` to `f`, the tail is the
+   * inheritance calls in case we are inspecting `f2` which inherits from `f1`,
+   * etc.
+   *
+   * @þaram f the feature whose code should be inspected to find clazzes
+   */
+  private void inspectCode(List<AbstractCall> inh, AbstractFeature f)
+  {
+    var fc = new EV(inh, f);
+    f.visitExpressions(fc);
+
+    for (var c: f.inherits())
+      {
+        AbstractFeature cf = c.calledFeature();
+        var n = c.actuals().size();
+        var argFields = new Clazz[n];
+        for (var i = 0; i < n; i++)
+          {
+            if (i >= cf.valueArguments().size())
+              {
+                if (CHECKS) check
+                  (Errors.any());
+              }
+            else
+              {
+                var cfa = cf.valueArguments().get(i);
+                // argFields[i] = lookup(cfa, _clazzes.isUsedAt(f));
+              }
+          }
+        //        _parentCallArgFields.put(c.globalIndex(), argFields);
+
+        if (CHECKS) check
+          (Errors.any() || cf != null);
+
+        if (cf != null)
+          {
+            var inh1 = new List<AbstractCall>();
+            inh1.add(c);
+            inh1.addAll(inh);
+            inspectCode(inh1, cf);
+          }
+      }
+  }
+
+
+  /**
+   * For the given element e that is defined in feature outer, store the given
+   * actual clazz data in this clazz.  This basically implements a map from
+   * clazz x feature x element to clazz[].
+   *
+   * @param e an Expression or case element
+   *
+   * @param outer the outer feature e is used in.
+   *
+   * @param data the actual clazz data to be stored for this clazz
+   */
+  void saveActualClazzes(HasGlobalIndex e, AbstractFeature outer, Clazz[] data)
+  {
+    if (PRECONDITIONS) require
+      (feature().inheritsFrom(outer));
+
+    // Since there is only one outer feature for each e, we currently ignore
+    // outer and just implement a map clazz x e.globalIndex -> clazz[].
+    //
+    // It might be more efficient to number each element within its outer
+    // feature (e.number 0,1,2,..) and to color features such that features with
+    // common heirs have different colors (f.color 0,1,2,..), then we could have
+    // an array of arrays and use this.actualClazzes[outer.color][e.number] to
+    // store data.
+    var idx = e.globalIndex();
+    if (CHECKS)
+      check
+        (!_actualClazzData.containsKey(idx));
+    _actualClazzData.put(idx, data);
+  }
+
+
+  /**
+   * For the given element e that is defined in feature outer, check if actual clazz data has already been stored
+   *
+   * @param e an Expression or case element
+   *
+   * @param outer the outer feature e is used in.
+   *
+   * @return true if clazz data exists for e/outer
+   */
+  public boolean hasActualClazzes(HasGlobalIndex e, AbstractFeature outer)
+  {
+    if (PRECONDITIONS) require
+      (outer == null || feature().inheritsFrom(outer));
+
+    var idx = e.globalIndex();
+    return _actualClazzData.containsKey(idx);
+  }
+
+
+  /**
+   * For the given element e that is defined in feature outer, retrieve the
+   * stored actual clazz data from this clazz.  This basically implements a map
+   * from clazz x feature x element to clazz[].
+   *
+   * @param e an Expression or case element
+   *
+   * @param outer the outer feature e is used in.  NYI: outer may currently be
+   * null and is ignored in this case. @see saveActualClazzes for how outer
+   * might be used.
+   *
+   * @return the actual clazz data that was stored for e/outer.
+   */
+  public Clazz[] actualClazzes(HasGlobalIndex e, AbstractFeature outer)
+  {
+    if (PRECONDITIONS) require
+      (outer == null || feature().inheritsFrom(outer),
+       hasActualClazzes(e, outer));
+
+    var idx = e.globalIndex();
+    return _actualClazzData.get(idx);
+  }
+
+
+
+
   /**
    * From a set of inner features of this clazz, extract used fields and create
    * the corresponding clazzes for these fields.
@@ -1418,9 +1636,9 @@ public class GeneratingFUIR extends FUIR
                  case Routine,
                       Intrinsic,
                       Abstract,
+                      Field,
                       Native -> true;
-                 case Field,
-                      Choice -> false;
+                 case Choice -> false;
                });
 
     return _argumentFields;
@@ -3609,8 +3827,14 @@ public class GeneratingFUIR extends FUIR
     var outerClazz = id2clazz(cl);
     var b = (Box) getExpr(s);
     Clazz vc = clazz(b._value, outerClazz, NO_INH);
-    Clazz rc = vc;
-    dev.flang.util.Debug.umprintln("NYI!");
+    Clazz rc = outerClazz.handDown(b.type(), -1, NO_INH, b);
+    dev.flang.util.Debug.umprintln("NYI! "+vc+" "+vc.asRef()+" "+b.type()+" "+
+                                   outerClazz.handDown(b.type(), -1, NO_INH, b)+" "+(!rc.isRef() ? "--" : ""
+                                                                                     +vc.asRef()));
+    if (rc.isRef())
+      {
+        rc = vc.asRef();
+      }
     /* NYI: should be in propagateExpectedClazz for `ec`:
     if (asRefAssignable(ec, vc))
       {
@@ -3641,6 +3865,90 @@ public class GeneratingFUIR extends FUIR
   public String comment(int s)
   {
     throw new Error("NYI");
+  }
+
+
+  /**
+   * propagate the expected clazz of an expression.  This is used to find the
+   * result type of Box() expressions that are a NOP if the expected type is a
+   * value type or the boxed type is already a ref type, while it performs
+   * boxing if a value type is used as a ref.
+   *
+   * @param e the expression we are propagating the expected clazz into
+   *
+   * @param ec the expected result clazz of e
+   *
+   * @param outerClazz the current clazz
+   *
+   * @param inh the inheritance chain that brought the code here (in case it is
+   * an inlined inherits call).
+   */
+  void propagateExpectedClazz(Expr e, Clazz ec, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
+  {
+    if (e instanceof Box b)
+      {
+        if (!outerClazz.hasActualClazzes(b, outer))
+          {
+            Clazz vc = clazz(b._value, outerClazz, inh);
+            Clazz rc = vc;
+            if (asRefAssignable(ec, vc))
+              {
+                rc = vc.asRef();
+                if (CHECKS) check
+                  (Errors.any() || ec._type.isAssignableFrom(rc._type, Context.NONE));
+              }
+            outerClazz.saveActualClazzes(b, outer, new Clazz[] {vc, rc});
+            if (vc != rc)
+              {
+                // rc.instantiated(b);
+              }
+            else
+              {
+                propagateExpectedClazz(b._value, ec, outer, outerClazz, inh);
+              }
+          }
+      }
+    else if (e instanceof AbstractBlock b)
+      {
+        var s = b._expressions;
+        if (!s.isEmpty())
+          {
+            propagateExpectedClazz(s.getLast(), ec, outer, outerClazz, inh);
+          }
+      }
+    else if (e instanceof Tag t)
+      {
+        propagateExpectedClazz(t._value, ec, outer, outerClazz, inh);
+      }
+  }
+
+
+  /*
+   * Is vc.asRef assignable to ec?
+   */
+  private boolean asRefAssignable(Clazz ec, Clazz vc)
+  {
+    return asRefDirectlyAssignable(ec, vc) || asRefAssignableToChoice(ec, vc);
+  }
+
+
+  /*
+   * Is vc.asRef directly assignable to ec, i.e. without the need for tagging?
+   */
+  private boolean asRefDirectlyAssignable(Clazz ec, Clazz vc)
+  {
+    return ec.isRef() && ec._type.isAssignableFrom(vc.asRef()._type, Context.NONE);
+  }
+
+
+  /*
+   * Is ec a choice and vc.asRef assignable to ec?
+   */
+  private boolean asRefAssignableToChoice(Clazz ec, Clazz vc)
+  {
+    return ec._type.isChoice() &&
+      !ec._type.isAssignableFrom(vc._type, Context.NONE) &&
+      ec._type.isAssignableFrom(vc._type.asRef(), Context.NONE);
   }
 
 
@@ -3750,7 +4058,7 @@ public class GeneratingFUIR extends FUIR
               }
             // outerClazz.saveActualClazzes(c, outer, new Clazz[] {innerClazz, tclazz});
           }
-        /*
+
         if (innerClazz._type != Types.t_UNDEFINED)
           {
             var afs = innerClazz.argumentFields();
@@ -3767,7 +4075,7 @@ public class GeneratingFUIR extends FUIR
                 i++;
               }
           }
-
+        /*
         var f = innerClazz.feature();
         if (f.kind() == AbstractFeature.Kind.TypeParameter)
           {
@@ -3823,7 +4131,7 @@ public class GeneratingFUIR extends FUIR
         Clazz sClazz = clazz(a._target, outerClazz, NO_INH);
         var vc = sClazz.asValue();
         var fc = id2clazz(vc.lookup(a._assignedField, a));
-        // propagateExpectedClazz(a._value, fc.resultClazz(), outerClazz._feature /* NYI: was: outer */, outerClazz, NO_INH);
+        propagateExpectedClazz(a._value, fc.resultClazz(), outerClazz._feature /* NYI: was: outer */, outerClazz, NO_INH);
         /*
         if (!outerClazz.hasActualClazzes(a, outer))
           {
