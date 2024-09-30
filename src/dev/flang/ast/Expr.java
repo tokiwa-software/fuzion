@@ -628,14 +628,9 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
         var rt = needsBoxing(frmlT, context);
         if (rt != null)
           {
-            if (rt.isGenericArgument() && rt.isRef())
-              {
-                System.out.println("PROBLEM for "+rt+" at "+pos().show());
-              }
             result = new Box(result, rt);
-            t = result.type();
           }
-        if (frmlT.isChoice() && frmlT.isAssignableFrom(t, context))
+        if (frmlT.isChoice() && frmlT.isAssignableFrom(result.type(), context))
           {
             result = tag(frmlT, result, context);
             if (CHECKS) check
@@ -645,7 +640,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
 
     if (POSTCONDITIONS) ensure
       (Errors.count() > 0
-        || t.isVoid()
+        || type().isVoid()
         || frmlT.isGenericArgument()
         || frmlT.isThisType()
         || result.needsBoxing(frmlT, context) == null
