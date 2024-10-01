@@ -57,8 +57,9 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
   # is this list empty?
   #
-  public redef is_empty => (list.this ? nil  => true
-                                      | Cons => false)
+  public redef is_empty =>
+    list.this ? nil  => true
+              | Cons => false
 
 
   # count the elements of this list
@@ -106,8 +107,9 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   force_tail
   pre
     debug: !is_empty
-  => (list.this ? nil    => fuzion.std.panic "list.force_tail called on empty list"
-                | c Cons => c.tail)
+  =>
+    list.this ? nil    => fuzion.std.panic "list.force_tail called on empty list"
+              | c Cons => c.tail
 
 
   # get the head of this list
@@ -153,15 +155,14 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # This may take time in O(count), in particular, it may not terminate
   # for an infinite list.
   #
-  public redef last A
-  =>
+  public redef last A =>
     force_tail ? nil    => first
                | c Cons => force_tail.last
 
 
   # collect the contents of this list into an array
   #
-  public redef as_array array A =>
+  public redef as_array =>
     lm : mutate is
       redef mpanic(msg String) => fuzion.std.panic msg
     lm.instate_self ()->
@@ -215,26 +216,27 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   # Used to fold a list tail-recursively
   #
-  public fold (s A, m Monoid A) A => (list.this ? nil    => s
-                                                | c Cons => c.tail.fold (m.op s c.head) m)
+  public fold (s A, m Monoid A) =>
+    list.this ? nil    => s
+              | c Cons => c.tail.fold (m.op s c.head) m
 
 
   # fold the elements of this non-empty list using the given function
   #
   # e.g., to find the minimum of a list of i32, use `l.fold1 (<=)`
   #
-  public redef fold1 (f (A,A)->A) A
-  => (list.this ? nil    => panic "list.fold1 called on empty list"
-                | c Cons => c.tail.foldf f c.head)
+  public redef fold1 (f (A,A)->A) =>
+    list.this ? nil    => panic "list.fold1 called on empty list"
+              | c Cons => c.tail.foldf f c.head
 
 
   # fold the elements of this list using the given function
   #
   # e.g., to find the product of a list of i32, use `s.foldf (*) 1`
   #
-  public redef foldf (B type, f (B,A)->B, e B) B
-  =>  (list.this ? nil    => e
-                 | c Cons => c.tail.foldf f (f e c.head))
+  public redef foldf (B type, f (B,A)->B, e B) =>
+    list.this ? nil    => e
+              | c Cons => c.tail.foldf f (f e c.head)
 
 
 
@@ -252,9 +254,10 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   # Used to scan a list tail-recursively
   #
-  public scan (s A, m Monoid A) list A => (list.this ? nil    => nil
-                                                     | c Cons => acc := m.op s c.head
-                                                                 list acc (c.tail.scan acc m))
+  public scan (s A, m Monoid A) list A =>
+    list.this ? nil    => nil
+              | c Cons => acc := m.op s c.head
+                          list acc (c.tail.scan acc m)
 
 
   # Lazily take the first n elements of a list, alternatively the whole list if it
@@ -442,8 +445,9 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   public redef tails list (list A) =>
     ref : Cons (list A) (list (list A))
       redef head => list.this
-      redef tail => (list.this ? nil    => nil
-                               | c Cons => c.tail.tails)
+      redef tail =>
+        list.this ? nil    => nil
+                  | c Cons => c.tail.tails
 
 
   # create a new list from the result of applying 'f' to the
@@ -455,7 +459,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
         b.as_list ? c2 Cons =>
                       zip_cons : Cons V (list V) is
                         redef head => f c1.head c2.head
-                        redef tail => c1.tail.zip U V c2.tail f
+                        redef tail => c1.tail.zip c2.tail f
                       zip_cons
                   | nil    => nil
       nil => nil

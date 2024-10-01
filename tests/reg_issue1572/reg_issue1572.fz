@@ -13,14 +13,20 @@
 # Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 
-# nom.branch -- choice combinators
+# -----------------------------------------------------------------------
 #
-module branch is
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue1572
+#
+# -----------------------------------------------------------------------
 
-  # return result of first succeeding parser
-  public alt(I, R, O type, parser Sequence (Parser I R O)) Parser I R O =>
-    parser I R O input->
-      parser
-        .map (p -> p.call input)
-        .filter (r -> r ? success => true | error => false)
-        .first (error "alt: no parser successful")
+a := ["a","b","c","d","e"]
+b := ["a","x","c","y","e"]
+
+exact_matches(T type: property.equatable, x,y Sequence T) =>
+  x.zip y v,w->v=w
+   .filter id  # type parameter `id` is inferred
+   .count
+
+say (exact_matches a b)

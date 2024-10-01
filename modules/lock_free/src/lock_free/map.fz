@@ -93,8 +93,7 @@ container_node(CTK type : property.hashable, CTV type, bmp u32, array array (bra
 is
 
   # update a child node and return a new container_node
-  update(pos u32, node branch CTK CTV, g u64)
-  =>
+  update(pos u32, node branch CTK CTV, g u64) =>
     container_node bmp (array.put pos.as_i32 node) g
 
   # add a child node and return a new container_node
@@ -172,9 +171,9 @@ Main_Node(CTK type : property.hashable, CTV type, data choice (container_node CT
     * => false
   =>
     match data
-      container_node container_node => container_node.as_list f
-      tomb_node tomb_node => tomb_node.as_list
-      list_node list_node => list_node.as_list
+      c container_node => c.as_list f
+      t tomb_node      => t.as_list
+      l list_node      => l.as_list
 
 
 # a failed node where the previous indirection node contains a main node
@@ -194,17 +193,16 @@ Indirection_Node(CTK type : property.hashable, CTV type, data concur.atomic (Mai
 
   id := unique_id
 
-  fixed redef type.equality(a, b Indirection_Node.this) bool =>
+  fixed redef type.equality(a, b Indirection_Node.this) =>
     a.id = b.id
 
   # compare and update
-  cas(old_n, new_n Main_Node CTK CTV) bool =>
+  cas(old_n, new_n Main_Node CTK CTV) =>
     data.compare_and_set old_n new_n
 
   redef as_string => "Indirection_Node[gen=$gen]({data.read})"
 
-  as_list(f Indirection_Node CTK CTV -> Main_Node CTK CTV) list (tuple CTK CTV)
-  =>
+  as_list(f Indirection_Node CTK CTV -> Main_Node CTK CTV) =>
     (f Indirection_Node.this).as_list f
 
 
@@ -227,8 +225,8 @@ is
   # find k in linked nodes
   find_key(k CTK) choice restart not_found CTV =>
     match from.drop_while(sn -> sn.k != k).head
-          nil => not_found
-          sn singleton_node => sn.v
+      nil => not_found
+      sn singleton_node => sn.v
 
 
 # unit type to indicate an operation did not succeed yet
@@ -261,7 +259,7 @@ is
 root_node(CTK type : property.hashable, CTV type) : choice (Indirection_Node CTK CTV) (Rdcss_Descriptor CTK CTV) is
 
   redef as_string =>
-    s := match root_node.this
+    s => match root_node.this
       i lock_free.Indirection_Node => i.as_string
       r lock_free.Rdcss_Descriptor => r.as_string
     "root_node($s)"
@@ -289,16 +287,15 @@ is
   # 1) taking a snapshot and the root node needs to be copied to a new generation
   # 2) copying a container node to a new generation
   #
-  copy_to_gen(i Indirection_Node CTK CTV, new_gen u64) Indirection_Node CTK CTV
+  copy_to_gen(i Indirection_Node CTK CTV, new_gen u64)
   post result.data.read.prev.read.is_nil
   =>
     indirection_node (gcas_read i) new_gen
 
 
   # copy this container_node to new generation
-  renew(cn container_node CTK CTV, new_gen u64) container_node CTK CTV
-  =>
-    copy := cn
+  renew(cn container_node CTK CTV, new_gen u64) =>
+    copy => cn
       .array
       .map (branch CTK CTV) x->
         match x
@@ -434,7 +431,7 @@ is
 
   # compress a container node
   compress(cn container_node CTK CTV, lev u32, g u64) =>
-    narr := cn.array.map_to_array (branch CTK CTV) n->
+    narr => cn.array.map_to_array (branch CTK CTV) n->
       match n
         i Indirection_Node =>
           match (gcas_read i).data
@@ -476,8 +473,7 @@ is
         cn container_node =>
           (flag, pos) := flagpos hash lev cn.bmp
           if (cn.bmp & flag) != 0
-            sub := cn[pos.as_i32]
-            match sub
+            match cn[pos.as_i32]
               inode Indirection_Node =>
                 if inode = i
                   match (gcas_read i).data
@@ -500,20 +496,24 @@ is
   # Main_Node -> list_node -> singleton_nodes
   # or recurse
   # Main_Node -> container_node -> Indirection_Node -> dual x y
-  dual(x, y singleton_node CTK CTV, lev u32, gen u64) Main_Node CTK CTV =>
-    d choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV) :=
+  dual(x, y singleton_node CTK CTV, lev u32, gen u64) =>
+    d choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV) =>
       # NYI why 35??
       if lev < 35
         xidx := ((hash0 (hash x.k)) >> lev) & 0x1f
         yidx := ((hash0 (hash y.k)) >> lev) & 0x1f
         bmp := (u32 1 << xidx) | (u32 1 << yidx)
         if xidx = yidx
-          sub_node := indirection_node (dual x y (lev + width) gen) gen
+          # NYI: BUG: type inference
+          sub_node := indirection_node CTK CTV (dual x y (lev + width) gen) gen
+          # NYI: BUG: type inference
           container_node CTK CTV bmp [sub_node] gen
         else
           if (xidx < yidx)
+            # NYI: BUG: type inference
             container_node CTK CTV bmp [x, y] gen
           else
+            # NYI: BUG: type inference
             container_node CTK CTV bmp [y, x] gen
       else
         list_node [(singleton_node x.k x.v), (singleton_node y.k y.v)]
@@ -524,8 +524,7 @@ is
   # lookup key k
   public redef index [] (k CTK) option CTV =>
     r := read_root
-    res := lookup r k 0 nil r.gen
-    match res
+    match lookup r k 0 nil r.gen
       restart =>
         map.this[k]
       not_found =>
@@ -554,7 +553,11 @@ is
                   ctrie_ok => lookup i k lev parent gen
                   restart => restart
             sn singleton_node => if sn.k = k then sn.v else not_found
-      tn tomb_node => if read_only then (if k = tn.sn.k then tn.sn.v else not_found) else clean parent (lev - width)
+      tn tomb_node =>
+        if read_only
+          (if k = tn.sn.k then tn.sn.v else not_found)
+        else
+          clean parent (lev - width)
       ln list_node => ln.find_key k
 
 
@@ -583,7 +586,7 @@ is
           match cn[pos.as_i32]
             ci Indirection_Node =>
               if ci.gen = gen
-                add ci k v (lev+width) i gen
+                add ci k v lev+width i gen
               else
                 match gcas i m (renew cn gen)
                   ctrie_ok => add i k v lev parent gen
@@ -653,20 +656,20 @@ is
 
 
   # the size of the ctrie
-  public redef size i32 =>
+  public redef size =>
     items.count
 
 
 
   # take a snapshot of the ctrie
-  public snapshot(read_only bool) map CTK CTV =>
+  public snapshot(read_only bool) =>
     r := read_root
     expmain := gcas_read r
     new_gen => unique_id
     descriptor := Rdcss_Descriptor r expmain (copy_to_gen r new_gen)
     if rdcss_root descriptor
       # new ctrie by changing generation of r
-      map CTK CTV (concur.atomic (root_node CTK CTV) (copy_to_gen r new_gen)) snapshot.this.read_only
+      map (concur.atomic (root_node CTK CTV) (copy_to_gen r new_gen)) snapshot.this.read_only
     else
       snapshot snapshot.this.read_only
 
@@ -687,10 +690,10 @@ is
   as_persistent_map container.Persistent_Map CTK CTV =>
     s := snapshot false
     ref : container.Persistent_Map CTK CTV
-      public redef size i32 => s.size
-      public redef index [] (k CTK) option CTV => s[k]
-      public redef items Sequence (tuple CTK CTV) => s.items
-      public redef put(k CTK, v CTV) container.Persistent_Map CTK CTV =>
+      public redef size => s.size
+      public redef index [] (k CTK) => s[k]
+      public redef items => s.items
+      public redef put(k CTK, v CTV) =>
         sp := s.snapshot false
         sp.add k v
         sp.as_persistent_map
@@ -699,12 +702,12 @@ is
   # initialize a new ctrie
   public fixed redef type.empty =>
 
-    initial_gen := unique_id
+    initial_gen => unique_id
 
     initial_root_node lock_free.root_node CTK CTV :=
       lock_free.indirection_node (lock_free.Main_Node (lock_free.container_node CTK CTV 0 [] initial_gen) nil) initial_gen
 
-    lock_free.map CTK CTV (concur.atomic initial_root_node) false
+    lock_free.map (concur.atomic initial_root_node) false
 
 
   # lock_free.map.from_entries -- routine to initialize a ctrie from a sequence of key value tuples
@@ -714,12 +717,8 @@ is
   # example: lock_free.map.from_entries [(key1, value1), (key2, value2)]
   #
   public type.from_entries(kvs Sequence (tuple CTK CTV)) lock_free.map CTK CTV =>
-
     m := (lock_free.map CTK CTV).empty
-    kvs.for_each (kv ->
-      (k,v) := kv
-      m.add k v)
-
+    kvs.for_each (kv -> m.add kv.0 kv.1)
     m
 
 
@@ -731,8 +730,8 @@ public container.set_of_hashable(K type : property.hashable, vs (lock_free.map K
 
   map lock_free.map K unit :=
     match vs
-      vss (Sequence K) => (lock_free.map K unit).from_entries (vss.map (k -> tuple k unit))
-      vsc (lock_free.map K unit) => vsc
+      vss Sequence => (lock_free.map K unit).from_entries (vss.map (k -> tuple k unit))
+      vsc lock_free.map => vsc
 
   ref : Set K
 

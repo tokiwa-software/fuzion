@@ -109,7 +109,7 @@ is
           heap2_empty := (h2 ≥ heap_size) || (i2 ≥ a.length)
 
           # check if next element comes from first heap
-          if heap2_empty || !heap1_empty && less_or_equal(a[i1], a[i2])
+          if heap2_empty || !heap1_empty && (less_or_equal a[i1] a[i2])
             # if so, increment index in first heap and return element from first heap
             h1 <- h1.get + 1
             a[i1]
@@ -204,4 +204,4 @@ public sorted_array_of
   ) sorted_array T
 
 =>
-  sorted_array T from (a,b -> a ≤ b)
+  sorted_array T from a,b->a≤b

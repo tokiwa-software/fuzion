@@ -43,8 +43,8 @@ is
 
   # type feature that to create an instance of `try` with the given error handler.
   #
-  public redef fixed type.new(h error->void)
-  => universe.try T h unit unit
+  public redef fixed type.new(h error->void) =>
+    try T h unit unit
 
 
   # install this effect and execute 'f'. Wrap the result of 'f' into an

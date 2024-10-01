@@ -305,8 +305,7 @@ public Sequence(public T type) ref is
       as_string_all
     else
       max0 := (Sequence T).AS_STRING_NON_FINITE_MAX_ELEMENTS
-      (zip i32 String /* NYI: BUG #2527: type inference not powerful enough to infer `i32` here */
-           0..max0 (v,n -> if n < max0 then $v else "…")).as_string_all
+      (zip 0..max0 (v,n -> if n < max0 then $v else "…")).as_string_all
 
 
   # create a string representation of this Sequence including all the string
@@ -591,8 +590,7 @@ public Sequence(public T type) ref is
   # in the sequence starting at start_idx
   #
   public indexed(I type : has_interval, start_idx I) list (tuple I T) =>
-    # NYI: This should work without the type hints again.
-    zip I (tuple I T) (start_idx..) (a,b -> (b, a))
+    zip (start_idx..) (a,b -> (b, a))
 
 
   # convenience feature to work around type inference issues

@@ -19,5 +19,5 @@ error: not_a_valid_file (No such file or directory)
 -4
 0.0
 --null--
-58
-:
+65535
+<clinit>

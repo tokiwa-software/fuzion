@@ -47,15 +47,13 @@ is
 
   # get element at given index i
   #
-  public redef index [ ] (i1, i2 i64) T
-  =>
+  public redef index [ ] (i1, i2 i64) =>
     data[i1.as_i32 * length1.as_i32 + i2.as_i32]
 
 
   # set element at given index i to given value o
   #
-  public redef set [ ] (i1, i2 i64, o T) unit
-  =>
+  public redef set [ ] (i1, i2 i64, o T) =>
     check_and_replace
     data[i1.as_i32 * length1.as_i32 + i2.as_i32] := o
 
@@ -63,7 +61,7 @@ is
   # create immutable array from this
   #
   public redef as_array =>
-    array T (length0.as_i32 * length1.as_i32) (i -> data[i])
+    array (length0.as_i32 * length1.as_i32) i->data[i]
 
 
   # create a list from this array

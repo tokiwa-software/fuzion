@@ -1,6 +1,6 @@
 
 $MODULE/mutate/array.fz:106:5: error 1: Failed to verify that effect 'reg_issue348.m' is installed in current environment.
-    LM.env.array T length data unit
+    LM.env.array length data unit
 ----^^^^^^
 Callchain that lead to this point:
 

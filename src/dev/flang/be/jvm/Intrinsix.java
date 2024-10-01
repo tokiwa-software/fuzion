@@ -406,9 +406,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "fuzion_java_get_field0",
                                        "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;",
-                                       Names.JAVA_LANG_OBJECT));
-
-          res = (rt.isPrimitive() ? res : res.andThen(Expr.checkcast(rt)))
+                                       Names.JAVA_LANG_OBJECT))
             .is(rt);
 
           return new Pair<>(res.andThen(returnNewJavaObject(jvm, rc)), Expr.UNIT);

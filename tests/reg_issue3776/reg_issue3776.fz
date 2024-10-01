@@ -13,14 +13,13 @@
 # Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 
-# nom.branch -- choice combinators
+# -----------------------------------------------------------------------
 #
-module branch is
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue3776
+#
+# -----------------------------------------------------------------------
 
-  # return result of first succeeding parser
-  public alt(I, R, O type, parser Sequence (Parser I R O)) Parser I R O =>
-    parser I R O input->
-      parser
-        .map (p -> p.call input)
-        .filter (r -> r ? success => true | error => false)
-        .first (error "alt: no parser successful")
+x := true ? TRUE => say true
+          | FALSE =>

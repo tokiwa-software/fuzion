@@ -43,7 +43,7 @@ public array2(T type,
     for i2 in 0..length1-1 do
       internal_array[i1 * length1 + i2] := init2 i1 i2
 
-  array2 T length0 length1 internal_array unit unit
+  array2 length0 length1 internal_array unit unit
 
 
 # array(length0, length1) -- two-dimensional immutable array
@@ -94,21 +94,18 @@ is
   # and ']'.  Arrays in inner dimensions are grouped using '[' and ']'.
   #
   public redef as_string : encodings =>
-    ("["
-      + ascii.lf_str
-      + indices0
-          .map(i -> "  " + (slice i*length1 (i+1)*length1))
-          .fold(String.concat1("," + ascii.lf_str))
-      + ascii.lf_str + "]")
+    c =>
+      indices0
+        .map (i -> "  " + (slice i*length1 (i+1)*length1))
+        .fold (String.concat1 ","+ascii.lf_str)
+    "[{ascii.lf_str}$c{ascii.lf_str}]"
+
 
 
   # get a list of tuples indices and elements in this array
   #
   public enumerate2 list (i32, i32, T) =>
-    if length = 0
-      nil
-    else
-      enumerate_cons 0 0
+    if length = 0 then nil else enumerate_cons 0 0
 
 
   # create a cons cell for a list of tuples of this array's indices and elements

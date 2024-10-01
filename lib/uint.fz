@@ -38,17 +38,17 @@ is
   # bitwise and
   public fixed redef infix & (other uint) uint =>
     (b1, b2) := equalize other
-    uint (b1.zip b2 (x,y)->x&y) unit
+    uint (b1.zip b2 x,y->x&y) unit
 
   # bitwise or
   public fixed redef infix | (other uint) uint =>
     (b1, b2) := equalize other
-    uint (b1.zip b2 (x,y)->x|y) unit
+    uint (b1.zip b2 x,y->x|y) unit
 
   # bitwise xor
   public fixed redef infix ^ (other uint) uint =>
     (b1, b2) := equalize other
-    uint (b1.zip b2 (x,y)->x^y) unit
+    uint (b1.zip b2 x,y->x^y) unit
 
 
   # shift operations
