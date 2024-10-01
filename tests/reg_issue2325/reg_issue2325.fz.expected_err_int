@@ -30,10 +30,10 @@ i32.type.sum.infix ∙#2: $MODULE/numeric.fz:239:49:
 i32.type.sum.op#2: $MODULE/Monoid.fz:60:24:
   public op(a, b T) => infix ∙  a b
 -----------------------^^^^^^^^^^^^
-(list i32).fold#2: $MODULE/list.fz:219:73:
-                                                | c Cons => c.tail.fold (m.op s c.head) m)
-------------------------------------------------------------------------^^^^^^^^^^^^^^^
-(interval i32).fold#1: $MODULE/Sequence.fz:394:31:
+(list i32).fold#2: $MODULE/list.fz:221:39:
+              | c Cons => c.tail.fold (m.op s c.head) m
+--------------------------------------^^^^^^^^^^^^^^^
+(interval i32).fold#1: $MODULE/Sequence.fz:393:31:
   public fold (m Monoid T) => as_list.fold m.e m
 ------------------------------^^^^^^^^^^^^^^^^^^
 reg_issue2325: --CURDIR--/reg_issue2325.fz:25:8:
