@@ -1,0 +1,45 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test inference_choice_generics
+#
+# -----------------------------------------------------------------------
+
+inference_choice_generics =>
+
+  tree(T type) : choice nil T (Branch T) is
+
+  Branch(T type, left, right tree T) ref is
+
+  tree := (Branch
+            (Branch
+              (Branch $"A" "B")
+              (Branch $"C" "D"))
+            (Branch
+              (Branch $"E" "F")
+              (Branch $"G" nil)))
+
+  print(t tree String) unit =>
+    match t
+      nil      => yak "."
+      s String => yak s
+      b Branch => print b.left; print b.right
+
+  print tree
+  say ""
