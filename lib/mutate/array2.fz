@@ -63,7 +63,7 @@ is
   # create immutable array from this
   #
   public redef as_array =>
-    array T (length0.as_i32 * length1.as_i32) (i -> data[i])
+    array (length0.as_i32 * length1.as_i32) i->data[i]
 
 
   # create a list from this array

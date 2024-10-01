@@ -72,7 +72,7 @@ is
   #
   # performance is O(log size).
   #
-  public redef index [] (k OK) option V =>
+  public redef index [] (k OK) =>
     sorted_entries
       .find_by_comparator (e -> ks[e.i] ⋄ k)
       .map_to_option i->sorted_entries[i].val
@@ -80,13 +80,13 @@ is
 
   # get an array of all key/value pairs in this map
   #
-  public redef items Sequence (tuple OK V) => sorted_entries.map (e -> (e.key, e.val))
+  public redef items Sequence (tuple OK V) => sorted_entries.map e->(e.key, e.val)
 
 
   # add mapping from k to v
   #
-  public add(k OK, v V) ordered_map OK V =>
-    match index[](k)
+  public add(k OK, v V) =>
+    match ordered_map.this[k]
       nil =>
         (ordered_map
           (ks++[k]).as_array
@@ -110,6 +110,7 @@ is
 
   # create an empty instance of ordered_map
   #
-  public fixed redef type.empty => (container.ordered_map
-                        (list OK).empty.as_array
-                        (list V).empty.as_array)
+  public fixed redef type.empty =>
+    container.ordered_map
+      (list OK).empty.as_array
+      (list V).empty.as_array

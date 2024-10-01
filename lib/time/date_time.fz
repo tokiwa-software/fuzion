@@ -112,7 +112,7 @@ is
   # returns before|after|equal
   #
   public before_after_equal(other date_time) => args_in_order
-    .zip other.args_in_order (a,b)->(a,b)
+    .zip other.args_in_order a,b->(a,b)
     .reduce before|after|equal equal r,t->
       (a,b) := t
       if a = b

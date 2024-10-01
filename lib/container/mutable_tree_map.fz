@@ -42,19 +42,19 @@ is
 
   # returns the size of the map, i.e. the number of elements it contains
   #
-  public redef size i32 =>
+  public redef size =>
     fold i32 0 ((i, _) -> i + 1)
 
 
   # get the value k is mapped to, or nil if none.
   #
-  public redef index [] (k KEY) option VAL =>
+  public redef index [] (k KEY) =>
     get k
 
 
   # get a sequence of all key/value pairs in this map
   #
-  public redef items Sequence (tuple KEY VAL) =>
+  public redef items =>
     match root.get
       e Entry => e.items
       nil => (list (tuple KEY VAL)).empty
@@ -62,7 +62,7 @@ is
 
   # returns a string representation of the map
   #
-  public redef as_string String =>
+  public redef as_string =>
     "\{" +
       (String.join (fold (list String).empty ((i, x) -> list "{x.key}={x.val}" i)) ", ") +
      "}"
@@ -97,7 +97,7 @@ is
   # returns the value that k previously mapped to, or nil if
   # k was not yet contained in this map
   #
-  public put(k KEY, v VAL) option VAL =>
+  public put(k KEY, v VAL) =>
     # helper feature to add a mapping to this map. this feature
     # additionally takes the node we are currently working at, and
     # also returns any new node, or the reference to the existing
@@ -224,11 +224,11 @@ is
   # this determines the balance factor of the given node and applies
   # the appropriate rotations
   #
-  rebalance(node option Entry) option Entry =>
+  rebalance(node option Entry) =>
     # returns the height of the subtree whose root is the given
     # node, or -1 if an empty subtree is given
     #
-    height(n option Entry) i32 =>
+    height(n option Entry) =>
       match n
         nil => -1
         e Entry => e.height.get
@@ -237,7 +237,7 @@ is
     # returns the (AVL) balance factor of the given node, or
     # 0 if a nil node is given
     #
-    balance_factor(n option Entry) i32 =>
+    balance_factor(n option Entry) =>
       match n
         nil => 0
         e Entry => (height e.right.get) - (height e.left.get)
@@ -258,11 +258,11 @@ is
 
     # rotate right at the given node
     #
-    rotate_right(n option Entry) option Entry =>
+    rotate_right(n option Entry) =>
       # because this feature is only called when the tree is out of balance,
       # i.e. the left subtree has more nodes than the right one, we can safely
       # assume here that node and node.left are not nil.
-      l :=n.get.left.get
+      l := n.get.left.get
 
       n.get.left <- l.get.right.get
       l.get.right <- n
@@ -275,7 +275,7 @@ is
 
     # rotate left at the given node
     #
-    rotate_left(n option Entry) option Entry =>
+    rotate_left(n option Entry) =>
       # because this feature is only called when the tree is out of balance,
       # i.e. the right subtree has more nodes than the left one, we can safely
       # assume here that node and node.right are not nil.
@@ -323,8 +323,8 @@ is
   # f. the latter takes the last result of the computation and the node
   # currently visited and combines this information in some way.
   #
-  fold(B type, init B, f (B, Entry) -> B) B =>
-    fold0(init B, node option Entry) B =>
+  fold(B type, init B, f (B, Entry) -> B) =>
+    fold0(init B, node option Entry) =>
       node ? nil => fold0.this.init
            | n Entry => fold0 (f (fold0 fold0.this.init n.left.get) n) n.right.get
 
@@ -333,13 +333,13 @@ is
 
   # returns an empty tree of elements of type A.
   #
-  public fixed redef type.empty container.mutable_tree_map LM KEY VAL =>
+  public fixed redef type.empty =>
     container.mutable_tree_map LM KEY VAL
 
 
   # returns a tree of elements of type A that contains just the element a.
   #
-  public type.singleton(k KEY, v VAL) container.mutable_tree_map LM KEY VAL =>
+  public type.from_key_value(k KEY, v VAL) =>
     new_map := empty
     _ := new_map.put k v
 
@@ -357,7 +357,7 @@ is
   # if the freeze argument is true, then the map is frozen
   # after being populated with the entries from the array.
   #
-  public type.from_array(kvs array (tuple KEY VAL), freeze bool) container.mutable_tree_map LM KEY VAL =>
+  public type.from_array(kvs array (tuple KEY VAL), freeze bool) =>
     new_map := empty
     kvs.for_each x->
       _ := new_map.put x.values.0 x.values.1

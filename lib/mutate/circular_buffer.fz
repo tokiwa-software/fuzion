@@ -161,7 +161,7 @@ is
   public redef flush (n i64) =>
     check_and_replace
 
-    x := array T n.as_i32 (i -> data[(modded_mod (start.get + i.as_i64) length).as_i32])
+    x := array n.as_i32 (i -> data[(modded_mod (start.get + i.as_i64) length).as_i32])
     start <- modded_mod (start.get + n) length
     x
 
@@ -169,7 +169,7 @@ is
   # create immutable array from this
   #
   public redef as_array =>
-    array T buffered.as_i32 (i -> data[(modded_mod (start.get + i.as_i64) length).as_i32])
+    array buffered.as_i32 (i -> data[(modded_mod (start.get + i.as_i64) length).as_i32])
 
 
   # create a list from this array

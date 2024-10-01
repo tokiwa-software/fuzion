@@ -1,6 +1,6 @@
 
 $MODULE/mutate/array.fz:112:5: error 1: Failed to verify that effect 'mutate' is installed in current environment.
-    LM.env.array T 0 (fuzion.sys.internal_array_init T 0) unit
+    LM.env.array 0 (fuzion.sys.internal_array_init T 0) unit
 ----^^^^^^
 Callchain that lead to this point:
 
