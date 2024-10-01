@@ -109,6 +109,13 @@ public class GeneratingFUIR extends FUIR
     final AbstractType _type;
     final int _select = -1;
 
+  /**
+   * Cached result of choiceGenerics(), only used if isChoice() and
+   * !isChoiceOfOnlyRefs().
+   */
+  public List<Clazz> _choiceGenerics;
+
+
     SpecialClazzes _s = SpecialClazzes.c_NOT_FOUND;
     boolean _needsCode;
     int _code; // site of the code block of this clazz
@@ -277,6 +284,7 @@ public class GeneratingFUIR extends FUIR
      */
     void init()
     {
+      _choiceGenerics = determineChoiceGenerics();
       var vas = feature().valueArguments();
       if (vas.size() == 0)
         {
@@ -1690,7 +1698,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @return the actual clazz data that was stored for e/outer.
    */
-  public Clazz[] actualClazzes(HasGlobalIndex e, AbstractFeature outer)
+  public Clazz[] actualClazzesXXXREMOVEXXX(HasGlobalIndex e, AbstractFeature outer)
   {
     if (PRECONDITIONS) require
       (outer == null || feature().inheritsFrom(outer),
@@ -1712,6 +1720,98 @@ public class GeneratingFUIR extends FUIR
     return feature().isChoice();
   }
 
+
+
+  /**
+   * Obtain the actual classes of a choice.
+   *
+   * @return the actual clazzes of this choice clazz, in the order they appear
+   * as actual generics.
+   */
+  private List<Clazz> determineChoiceGenerics()
+  {
+    List<Clazz> result;
+
+    if (isChoice())
+      {
+        result = new List<>();
+        for (var t : actualGenerics(feature().choiceGenerics()))
+          {
+            result.add(newClazz(t));
+          }
+      }
+    else
+      {
+        result = null;
+      }
+
+    return result;
+  }
+
+
+  /**
+   * Obtain the actual classes of a choice.
+   *
+   * @return the actual clazzes of this choice clazz, in the order they appear
+   * as actual generics.
+   */
+  public List<Clazz> choiceGenerics()
+  {
+    if (PRECONDITIONS) require
+      (isChoice());
+
+    return _choiceGenerics;
+  }
+
+
+
+  /**
+   * Mark clazz cl and all its outers as instantiated.
+   * In case it is a choice, mark all its
+   * choice generics as instantiated as well.
+   *
+   * @param cl the clazz we want to mark as instantiated
+   *
+   * @param at where the instantiation is taking place
+   */
+  private void markInstantiated(Clazz cl, HasSourcePosition at)
+  {
+    cl.instantiated(at);
+    if (cl.isChoice())
+      {
+        // e.g. `java.call_c0` may return `outcome x`
+        for (var cg : cl.choiceGenerics())
+          {
+            markInstantiated(cg, at);
+          }
+      }
+    else
+      {
+        var o = cl.outer();
+        while (o != null)
+          {
+            o.instantiated(at);
+            o = o.outer();
+          }
+      }
+  }
+
+
+  /**
+   * Mark this as instantiated at given source code position.
+   *
+   * @param at gives the position in the source code that causes this instantiation.
+   */
+  void instantiated(HasSourcePosition at)
+  {
+    if (PRECONDITIONS) require
+      (at != null);
+
+    if (!_isInstantiated && !isVoidType())
+      {
+        _isInstantiated = true;
+      }
+  }
 
 
   /**
@@ -3965,7 +4065,17 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int tagValueClazz(int s)
   {
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (s >= SITE_BASE,
+       s < SITE_BASE + _allCode.size(),
+       withinCode(s),
+       codeAt(s) == ExprKind.Tag);
+
+    var cl = clazzAt(s);
+    var outerClazz = clazz(cl);
+    var t = (Tag) getExpr(s);
+    Clazz vc = clazz(t._value, outerClazz, NO_INH);
+    return vc._id;
   }
 
 
@@ -3981,7 +4091,18 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int tagNewClazz(int s)
   {
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (s >= SITE_BASE,
+       s < SITE_BASE + _allCode.size(),
+       withinCode(s),
+       codeAt(s) == ExprKind.Tag);
+
+    var cl = clazzAt(s);
+    var outerClazz = clazz(cl);
+    var t = (Tag) getExpr(s);
+    var tc = outerClazz.handDown(t._taggedType, NO_INH, t);
+    tc.instantiated(t);
+    return tc._id;
   }
 
 
@@ -3997,7 +4118,14 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int tagTagNum(int s)
   {
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (s >= SITE_BASE,
+       s < SITE_BASE + _allCode.size(),
+       withinCode(s),
+       codeAt(s) == ExprKind.Tag);
+
+    var t = (Tag) getExpr(s);
+    return t.tagNum();
   }
 
 
