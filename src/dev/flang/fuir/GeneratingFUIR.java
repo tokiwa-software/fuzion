@@ -595,30 +595,28 @@ public class GeneratingFUIR extends FUIR
 
     boolean isUnitType()
     {
-      // _closed = true;
-
       if (_isUnitType != YesNo.dontKnow)
         {
           return _isUnitType == YesNo.yes;
         }
 
-      // Tricky: To avoid endless recursion, we set _isUnitType to No. In case we
-      // have a recursive type, isUnitType() will return false, so recursion will
-      // stop and the result for the recursive type will be false.
-      //
-      // Object layout will later report an error for this case. (NYI: check this with a test!)
       var res = YesNo.no;
-      _isUnitType = res;
-
-      if (!_isBoxed &&
-          !_feature.isThisRef() &&
-          !_feature.isBuiltInPrimitive() &&
-          !clazzIsVoidType(_id) &&
-          !clazzIsChoice(_id)
-
-          && _s == SpecialClazzes.c_unit
-          )
+      if (_s == SpecialClazzes.c_unit)
         {
+          res = YesNo.yes;
+        }
+      else if ( _lookupDone && (!_isBoxed                      &&
+                                !_feature.isThisRef()          &&
+                                !_feature.isBuiltInPrimitive() &&
+                                !clazzIsVoidType(_id)          &&
+                                !clazzIsChoice(_id)              ))
+        {
+          // Tricky: To avoid endless recursion, we set _isUnitType to No. In case we
+          // have a recursive type, isUnitType() will return false, so recursion will
+          // stop and the result for the recursive type will be false.
+          //
+          // Object layout will later report an error for this case. (NYI: check this with a test!)
+          _isUnitType = YesNo.no;
           res = YesNo.yes;
           for(var ix = 0; ix < _inner.size(); ix++)
             {
@@ -629,8 +627,12 @@ public class GeneratingFUIR extends FUIR
                   res = clazzIsUnitType(rc) ? res : YesNo.no;
                 }
             }
+          _isUnitType = YesNo.dontKnow;
         }
-      _isUnitType = res;
+      if (_lookupDone)
+        {
+          _isUnitType = res;
+        }
       return res == YesNo.yes;
     }
 
@@ -2073,6 +2075,8 @@ public class GeneratingFUIR extends FUIR
 
   private final Map<AbstractType, Clazz> _clazzesForTypes = new TreeMap<>();
 
+  private boolean _lookupDone;
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -2082,6 +2086,7 @@ public class GeneratingFUIR extends FUIR
   public GeneratingFUIR(FrontEnd fe, MIR mir)
   {
     _fe = fe;
+    _lookupDone = false;
     _clazzesHM = new HashMap<Clazz, Clazz>();
     _siteClazzes = new IntArray();
     _mainModule = fe.mainModule();
@@ -2105,6 +2110,8 @@ public class GeneratingFUIR extends FUIR
   {
     super(original);
     _fe = original._fe;
+    original._lookupDone = true;
+    _lookupDone = true;
     _clazzesHM = original._clazzesHM;
     _siteClazzes = original._siteClazzes;
     _mainModule = original._mainModule;
