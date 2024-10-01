@@ -801,7 +801,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public type.from_mutable_array(E type : effect, a container.Mutable_Array Any E) ref : String is  // NYI: Remove?
 
     redef utf8 Sequence u8 =>
-      a.as_list.flat_map u8 ai->ai.as_string.utf8
+      a.as_list.flat_map ai->ai.as_string.utf8
 
 
     redef infix + (other Any) String =>
@@ -822,7 +822,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
     ref : String
       redef utf8 Sequence u8 =>
         codepoints
-          .flat_map u8 x->x.utf8
+          .flat_map x->x.utf8
           .as_array_backed
 
 

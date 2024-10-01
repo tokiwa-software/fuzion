@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.ListIterator;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.stream.IntStream;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -2208,29 +2209,62 @@ public class Call extends AbstractCall
                                            boolean[] conflict,
                                            List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
-    var result = false;
-    if ((formalType.isFunctionType() || formalType.isLazyType()) &&
-        formalType.generics().get(0).isGenericArgument()
-        )
+    var result = new boolean[] { false };
+    if (formalType.isFunctionType() || formalType.isLazyType())
       {
-        var rg = formalType.generics().get(0).genericArgument();
-        var ri = rg.index();
-        if (rg.feature() == _calledFeature && foundAt.get(ri) == null)
+        var at = actualArgType(res, formalType, frml, context);
+        if (!at.containsUndefined(true))
           {
-            var at = actualArgType(res, formalType, frml, context);
-            if (!at.containsUndefined(true))
-              {
-                var rt = al.inferLambdaResultType(res, context, at);
-                if (rt != null)
-                  {
-                    _generics = _generics.setOrClone(ri, rt);
-                  }
-                addPair(foundAt, ri, pos, rt);
-                result = true;
-              }
+            var lambdaResultType = formalType.generics().get(0);
+            inferGenericLambdaResult(res, context, al, pos, conflict, foundAt, result, lambdaResultType, new List<>(lambdaResultType), at);
           }
       }
-    return result;
+    return result[0];
+  }
+
+
+  /**
+   * Perform type inference for result type of lambda
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @param al the lambda-expression we try to get the result from
+   *
+   * @param pos source code position of the expression actualType was derived from
+   *
+   * @param conflict set of generics that caused conflicts
+   *
+   * @param foundAt the position of the expressions from which actual generics
+   * were taken.
+   */
+  private void inferGenericLambdaResult(Resolution res, Context context, AbstractLambda al, SourcePosition pos, boolean[] conflict,
+    List<List<Pair<SourcePosition, AbstractType>>> foundAt, boolean[] result, AbstractType lambdaResultType, List<AbstractType> generics,
+    AbstractType argumentType)
+  {
+    generics
+      .stream()
+      .forEach(g -> {
+        if (!g.isGenericArgument())
+          {
+            inferGenericLambdaResult(res, context, al, pos, conflict, foundAt, result, lambdaResultType, g.generics(), argumentType);
+          }
+        else
+          {
+            var rg = g.genericArgument();
+            var ri = rg.index();
+            if (rg.feature() == _calledFeature && foundAt.get(ri) == null)
+              {
+                var rt = al.inferLambdaResultType(res, context, argumentType);
+                if (rt != null)
+                  {
+                      inferGeneric(res, context, lambdaResultType, rt, pos, conflict, foundAt);
+                      result[0] = true;
+                  }
+              }
+          }
+      });
   }
 
 

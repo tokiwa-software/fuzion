@@ -197,7 +197,7 @@ is
             (oi, ov) := ox
             tmp := v.as_u64 * ov.as_u64
             uint ([(tmp>>32).low32bits , tmp.low32bits] ++ zeros i+oi) unit
-      .flat_map uint x->x
+      .flat_map id
       .fold uint.sum
 
 
