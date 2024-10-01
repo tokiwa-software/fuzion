@@ -17,37 +17,27 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature error
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test lib_property_equatable
 #
 # -----------------------------------------------------------------------
 
-# error represents an error condition described by a message string
-#
-# NYI: Future versions of error might be equipped with a stack trace if
-# debugging is enabled
-#
-public error (
+lib_property_equatable =>
 
-  # the message describing the error. Should usually be a single line not
-  # followed by a linefeed.
-  #
-  public msg String
+  # NYI: UNDER DEVELOPMENT: ugly that we have to use as_seq here
+  say [0,1,2].as_seq=[0,1,2].as_seq
+  say [0,1,2].as_seq=[0,1,3].as_seq
+  say ["a","b","c"].as_seq=["a","b","c"].as_seq
+  say ["a","b","c"].as_seq=["a","b","d"].as_seq
 
-  ) : property.equatable
+  say (option 0)=0
+  say (option 0)=1
+  say (option 0)=nil
 
-is
+  say (outcome 0)=(error "hello")
 
-  # converts error to a string
-  #
-  # returns "error: $msg"
-  #
-  public redef as_string String =>
-    "error: $msg"
+  say (num_option 0)=0
+  say (num_option 0)=1
+  say (num_option 0)=nil
 
-
-  # equality
-  #
-  public fixed redef type.equality(x, y error) =>
-    x.msg = y.msg
+  # NYI: UNDER DEVELOPMENT: ugly that we have to use (id (container.Set i32) ...)
+  say (id (container.Set i32) ((container.ps_set i32).empty))=((container.ps_set i32).empty)

@@ -122,12 +122,12 @@ is
 
   # equality: are these two ints equal?
   #
-  fixed redef type.equality(a, b int) bool =>
+  public fixed redef type.equality(a, b int) bool =>
     (a.ns = b.ns) & (a.n = b.n)
 
   # total order
   #
-  fixed redef type.lteq(a, b int) bool =>
+  public fixed redef type.lteq(a, b int) bool =>
     match a.ns
       num.plus =>
         match b.ns

@@ -33,7 +33,7 @@
 #
 # Heirs of Sequence must implement 'as_list'.
 #
-public Sequence(public T type) ref is
+public Sequence(public T type) ref : property.equatable is
 
 
   # create a list from this Sequence.
@@ -728,10 +728,7 @@ public Sequence(public T type) ref is
     match to_be_replaced.find old
       nil   => already_replaced ++ to_be_replaced
       n i32 =>
-        # NYI: #637: perhaps make it possible to do
-        #     if limit = option 0
-        # here.
-        if (limit.map_to_option (v -> v = (u64 0))).or_else false
+        if limit = 0
           already_replaced ++ to_be_replaced
         else
           a := already_replaced ++ (to_be_replaced.take n) ++ new
@@ -900,6 +897,18 @@ public Sequence(public T type) ref is
   # Sequence.
   #
   public type.AS_STRING_NON_FINITE_MAX_ELEMENTS => 10
+
+
+  # equality
+  #
+  public fixed redef type.equality(a, b Sequence T) bool
+    pre else
+      T : property.equatable
+      debug : a.finite
+      debug : b.finite
+  =>
+    a.count = b.count
+      && ((a.zip b x,y->x=y) ∀ x->x)
 
 
 # helper features for knuth morris pratt algorithm

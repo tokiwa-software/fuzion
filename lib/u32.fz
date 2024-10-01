@@ -69,7 +69,7 @@ public u32(public val u32) : num.wrap_around, has_interval is
 
   # does this u32 fit into an u8?
   #
-  public redef fixed fits_in_u8  => val ≤ u8.max.as_u32
+  public fixed redef fits_in_u8  => val ≤ u8.max.as_u32
 
 
   # this u32 as an i8
@@ -221,12 +221,12 @@ public u32(public val u32) : num.wrap_around, has_interval is
 
   # equality
   #
-  fixed redef type.equality(a, b u32) bool => intrinsic
+  public fixed redef type.equality(a, b u32) bool => intrinsic
 
 
   # total order
   #
-  fixed redef type.lteq(a, b u32) bool => intrinsic
+  public fixed redef type.lteq(a, b u32) bool => intrinsic
 
 
   # returns the number in whose bit representation all bits are ones

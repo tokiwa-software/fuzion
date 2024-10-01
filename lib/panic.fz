@@ -38,7 +38,7 @@ is
 
   # type feature that to create an instance of `panic` with the given error handler.
   #
-  public redef fixed type.new(h String->void)
+  public fixed redef type.new(h String->void)
   => panic h unit
 
 

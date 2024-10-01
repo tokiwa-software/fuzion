@@ -69,7 +69,7 @@ public u64(public val u64) : num.wrap_around, has_interval is
 
   # does this u64 fit into an u8?
   #
-  public redef fixed fits_in_u8  => val ≤ u8.max.as_u64
+  public fixed redef fits_in_u8  => val ≤ u8.max.as_u64
 
   # this u64 as an i8
   public as_i8 i8
@@ -225,7 +225,7 @@ public u64(public val u64) : num.wrap_around, has_interval is
 
   # equality
   #
-  fixed redef type.equality(a, b u64) bool => intrinsic
+  public fixed redef type.equality(a, b u64) bool => intrinsic
 
 
   # total order

@@ -17,37 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature error
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# error represents an error condition described by a message string
-#
-# NYI: Future versions of error might be equipped with a stack trace if
-# debugging is enabled
-#
-public error (
-
-  # the message describing the error. Should usually be a single line not
-  # followed by a linefeed.
-  #
-  public msg String
-
-  ) : property.equatable
-
-is
-
-  # converts error to a string
-  #
-  # returns "error: $msg"
-  #
-  public redef as_string String =>
-    "error: $msg"
-
-
-  # equality
-  #
-  public fixed redef type.equality(x, y error) =>
-    x.msg = y.msg
+override NAME = lib_property_equatable
+include ../simple.mk

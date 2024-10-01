@@ -29,7 +29,8 @@
 #
 public option(public T type)
   : switch T nil,
-    monad T (option T)
+    monad T (option T),
+    property.equatable
 is
 
 
@@ -100,11 +101,21 @@ is
 
 
 
-
-
   # return function
   #
   public fixed redef type.return (a T) => option a
+
+
+  # equality
+  #
+  # NYI: UNDER DEVELOPMENT: (how) move this to switch?
+  #
+  public fixed redef type.equality(x, y option T)
+    pre else
+      T : property.equatable
+  =>
+    x ? v T => y.exists && v = y.val
+      | nil => y.is_nil
 
 
 
