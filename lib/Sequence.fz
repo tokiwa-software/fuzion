@@ -534,7 +534,7 @@ public Sequence(public T type) ref : property.equatable is
   # gt_ten := filter (Sequence i32) i32 (x -> x > 10)
   # xf := ages ∘ gt_ten
   # say ([human(4), human(12), human(30)].into xf) # [12,30]
-  public into(TA type, xf transducer (Sequence TA) TA T) list TA =>
+  public into(TA type, xf transducer (Sequence TA) TA T) Sequence TA =>
     red := xf.call ((res,val) -> res ++ [val])
     for
       res (list TA) := (list TA).empty , (red.call res el).as_list

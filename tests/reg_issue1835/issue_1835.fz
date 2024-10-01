@@ -27,4 +27,4 @@ issue_1835 is
   t := "ana"
   x := s.count t
   say "matches, no overlap: $x"
-  say "matches, overlap   : {(container.searchable_sequence s.utf8).count_matches_overlapping t.utf8}"
+  say "matches, overlap   : {s.utf8.count_matches_overlapping t.utf8}"
