@@ -2114,9 +2114,51 @@ public class Call extends AbstractCall
           }
         else if (formalType.isChoice())
           {
-            for (var ct : formalType.choiceGenerics(context))
+            /**
+             * example:
+             *
+             *   tree(T type) : choice nil T (Branch T) is
+             *
+             *   Branch(T type, left, right tree T) ref is
+             *
+             *   tree := (Branch
+             *             (Branch
+             *               (Branch $"A" "B")
+             *               (Branch $"C" "D"))
+             *             (Branch
+             *               (Branch $"E" "F")
+             *               (Branch $"G" nil)))
+             */
+
+            var directlyAssignable = formalType
+              .choiceGenerics(context)
+              .stream()
+              .filter(x -> !x.dependsOnGenerics())
+              .anyMatch(x -> x.isAssignableFrom(actualType, context));
+
+            if (!directlyAssignable)
               {
-                inferGeneric(res, context, ct, actualType, pos, conflict, foundAt);
+                // if actualType is `Branch String`
+                // we only consider `Branch T` and not `T`.
+                var matchingFeature = formalType
+                  .choiceGenerics(context)
+                  .stream()
+                  .filter(x -> x.dependsOnGenerics()
+                           && !x.isGenericArgument()
+                           && !actualType.isGenericArgument()
+                           && x.feature() == actualType.feature())
+                  .toList();
+                for (var ct : matchingFeature)
+                  {
+                    inferGeneric(res, context, ct, actualType, pos, conflict, foundAt);
+                  }
+                if (matchingFeature.size() == 0)
+                  {
+                    for (var ct : formalType.choiceGenerics(context))
+                      {
+                        inferGeneric(res, context, ct, actualType, pos, conflict, foundAt);
+                      }
+                  }
               }
           }
         else if (aft != null)
