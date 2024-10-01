@@ -457,7 +457,7 @@ public class Html extends ANY
             .replace("$0", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
             .replace("$1",
               summary(af, printArgs, outer))
-            .replace("$2", (Util.commentOf(af).equals(Util.commentOf(outer)) ? "-- no comment --" : Util.commentOf(af))) // NYI: this is not a good solution, but arguments should not inherit the comment of their declaring feature in the first place
+            .replace("$2", Util.commentOf(af))
             .replace("$3", redefines(af));
       })
       .collect(Collectors.joining(System.lineSeparator()));
