@@ -33,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -71,6 +72,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.IntArray;
+import dev.flang.util.IntMap;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.StringHelpers;
@@ -101,6 +103,7 @@ public class GeneratingFUIR extends FUIR
     final LibraryFeature _feature;
     LibraryFeature feature() { return _feature; }
     static final Clazz[] NO_CLAZZES = new Clazz[0];
+    static final int[] NO_CLAZZ_IDS = new int[0];
     Clazz[] _actualTypeParameters = NO_CLAZZES;
     Clazz[] actualTypeParameters() { return _actualTypeParameters; }
     final AbstractType _type;
@@ -114,6 +117,19 @@ public class GeneratingFUIR extends FUIR
     Clazz[] _fields = null;
     Clazz[] _argumentFields = null;
 
+
+
+
+  /**
+   * Will instances of this class be created?
+   */
+  private boolean _isInstantiated = false;
+
+  /**
+   * Is this a normalized outer clazz? If so, there might be calls on this as an
+   * outer clazz even if it is not instantiated.
+   */
+  public boolean _isNormalized = false;
 
   /**
    * Data stored locally for this clazz by saveActualClazzes().
@@ -195,7 +211,17 @@ public class GeneratingFUIR extends FUIR
     return _isBoxed || _type.isRef();
   }
 
+
+
+    /**
+     * Set of all heirs of this clazz.
+     */
+    TreeSet<Clazz> _heirs = null;
+
+
     IntArray _inner = EMPTY_INT_ARRAY;
+
+
 
   /**
    * Actual inner clazzes when calling a dynamically bound feature on this.
@@ -209,6 +235,13 @@ public class GeneratingFUIR extends FUIR
 
 
     YesNo _isUnitType = YesNo.dontKnow;
+
+
+  /**
+   * Cached result of parents(), null before first call to parents().
+   */
+  private Set<Clazz> _parents = null;
+
 
     boolean _closed = false;
 
@@ -398,11 +431,108 @@ public class GeneratingFUIR extends FUIR
     else
       {
         var normalized = newClazz(normalize2(f.outer().selfType()), t);
-        //        normalized._isNormalized = true;
+        normalized._isNormalized = true;
         return normalized;
       }
   }
 
+
+
+  /**
+   * Make sure this clazz is added to the set of heirs for all of its parents.
+   */
+  void registerAsHeir()
+  {
+    registerAsHeir(this);
+  }
+
+  /**
+   * private helper for registerAsHeir().  Make sure this clazz is added to the
+   * set of heirs of parent and all of parent's parents.
+   */
+  private void registerAsHeir(Clazz parent)
+  {
+    parent.heirs().add(this);
+    for (var p: parents())
+      {
+        if (!p.heirs().contains(this))
+          {
+            registerAsHeir(p);
+          }
+      }
+  }
+
+
+  /**
+   * Set of heirs of this clazz, including this itself.  This is defined for
+   * clazzes with isRef() only.
+   *
+   * This set is initially empty, it will be filled by `registerAsHeir()`
+   * which is called for every new Clazz created via _clazzes.create().
+   *
+   * @return the heirs including this.
+   */
+  public Set<Clazz> heirs()
+  {
+    if (_heirs == null)
+      {
+        _heirs = new TreeSet<>();
+      }
+    return _heirs;
+  }
+
+
+  /**
+   * Set of direct parent clazzes this inherits from.
+   */
+  private Set<Clazz> directParents()
+  {
+    var result = new TreeSet<Clazz>();
+    result.add(this);
+    for (var p: feature().inherits())
+      {
+        var pt = p.type();
+        var t1 = isRef() && !pt.isVoid() ? pt.asRef() : pt.asValue();
+        var t2 = _type.actualType(t1, Context.NONE);
+        var pc = newClazz(t2);
+        if (CHECKS) check
+          (Errors.any() || pc.isVoidType() || isRef() == pc.isRef());
+        result.add(pc);
+      }
+    return result;
+  }
+
+
+  /**
+   * Set of parents of this clazz, including this itself.
+   *
+   * @return the heirs including this.
+   */
+  public Set<Clazz> parents()
+  {
+    var result = _parents;
+    if (result == null)
+      {
+        result = new TreeSet<Clazz>();
+        result.add(this);
+        for (var p : directParents())
+          {
+            if (!result.contains(p))
+              {
+                for (var pp : p.parents())
+                  {
+                    if (isRef() && !pp.isVoidType())
+                      {
+                        pp = pp.asRef();
+                      }
+                    result.add(pp);
+                  }
+              }
+          }
+        _parents = result;
+      }
+    return result;
+  }
 
 
 
@@ -1416,7 +1546,8 @@ public class GeneratingFUIR extends FUIR
         }
 
       result = outer
-        + (_isBoxed ? "ref " : "" )
+        + ( isRef() && !feature().isThisRef() ? "ref "   : "" )
+        + (!isRef() &&  feature().isThisRef() ? "value " : "" )
         + fname;
       if (typeType)
         {
@@ -1572,6 +1703,79 @@ public class GeneratingFUIR extends FUIR
 
 
 
+
+  /**
+   * Is this a choice-type, i.e., does it directly inherit from choice?
+   */
+  public boolean isChoice()
+  {
+    return feature().isChoice();
+  }
+
+
+
+  /**
+   * Check of _outer is instantiated.
+   */
+  private boolean isOuterInstantiated()
+  {
+    var o = outer();
+    return o == null ||
+
+      // NYI: Once Clazz.normalize() is implemented better, a clazz C has
+      // to be considered instantiated if there is any clazz D that
+      // normalize() would replace by C if it occurs as an outer clazz.
+      o._s == SpecialClazzes.c_Any    ||
+
+      o._isNormalized ||
+
+      o.isInstantiated();
+  }
+
+
+  /**
+   * Flag to detect endless recursion between isInstantiated() and
+   * isRefWithInstantiatedHeirs(). This may happen in a clazz that inherits from
+   * its outer clazz.
+   */
+  private int _checkingInstantiatedHeirs = 0;
+
+
+  /**
+   * Helper for isInstantiated to check if outer clazz this is a ref and there
+   * are heir clazzes of this that are refs and that are instantiated.
+   *
+   * @return true iff this is a ref and there exists an heir of this that is
+   * instantiated.
+   */
+  public boolean hasInstantiatedHeirs()
+  {
+    var result = false;
+    for (var h : heirs())
+      {
+        h._checkingInstantiatedHeirs++;
+        result = result
+          || h != this && h.isInstantiated();
+        h._checkingInstantiatedHeirs--;
+      }
+    return result;
+  }
+
+
+  /**
+   * Is this clazz instantiated?  This tests this._isInstantiated and,
+   * recursively, _outer.isInstantiated().
+   */
+  public boolean isInstantiated()
+  {
+    return _isInstantiated
+      && (_checkingInstantiatedHeirs > 0
+          || (isOuterInstantiated()
+              || isChoice()
+              || outer().isRef() && outer().hasInstantiatedHeirs()));
+  }
+
+
   /**
    * From a set of inner features of this clazz, extract used fields and create
    * the corresponding clazzes for these fields.
@@ -1594,12 +1798,14 @@ public class GeneratingFUIR extends FUIR
         if (!isVoidOrUndefined() &&
             field.feature().isField() &&
             // NYI: needed?  field == findRedefinition(field) && // NYI: proper field redefinition handling missing, see tests/redef_args/*
-            clazzNeedsCode(field._id))
+            (true || clazzNeedsCode(field._id))
+            )
           {
             fields.add(field);
           }
       }
-    return fields.size() == 0 ? NO_CLAZZES : fields.toArray(new Clazz[fields.size()]);
+    var result = fields.size() == 0 ? NO_CLAZZES : fields.toArray(new Clazz[fields.size()]);
+    return result;
   }
 
 
@@ -1623,7 +1829,7 @@ public class GeneratingFUIR extends FUIR
           */
           actualFields();
       }
-    return isRef() ? NO_CLAZZES : _fields;
+    return isRef() ? NO_CLAZZES : _fields;   // NYI: CLEANUP: Remove the difference between _fields and fileds() wrt isRef()!
   }
 
 
@@ -1659,8 +1865,9 @@ public class GeneratingFUIR extends FUIR
     if (PRECONDITIONS) require
       (feature().isField());
 
+    var ignore = outer().fields();
     int i = 0;
-    for (var f : outer().fields())
+    for (var f : outer()._fields)
       {
         if (f == this)
           {
@@ -1668,7 +1875,12 @@ public class GeneratingFUIR extends FUIR
           }
         i++;
       }
-    throw new Error("Clazz.fieldIndex() did not find field " + this + " in " + _outer);
+    i = 0;
+    for (var f : outer()._fields)
+      {
+        i++;
+      }
+    throw new Error("Clazz.fieldIndex() did not find field " + this + " in " + outer());
   }
 
 
@@ -1981,35 +2193,39 @@ public class GeneratingFUIR extends FUIR
             outerR.addInner(result);
           }
 
-        // NYI: OPTIMIZATION: Avoid creating all feature qualified names!
-        var s = switch (cl._feature.qualifiedName())
+        var s = SpecialClazzes.c_NOT_FOUND;
+        if (cl.isRef() == cl._feature.isThisRef())  // not an boxed or explicit value clazz
           {
-          case "i8"                -> SpecialClazzes.c_i8          ;
-          case "i16"               -> SpecialClazzes.c_i16         ;
-          case "i32"               -> SpecialClazzes.c_i32         ;
-          case "i64"               -> SpecialClazzes.c_i64         ;
-          case "u8"                -> SpecialClazzes.c_u8          ;
-          case "u16"               -> SpecialClazzes.c_u16         ;
-          case "u32"               -> SpecialClazzes.c_u32         ;
-          case "u64"               -> SpecialClazzes.c_u64         ;
-          case "f32"               -> SpecialClazzes.c_f32         ;
-          case "f64"               -> SpecialClazzes.c_f64         ;
-          case "bool"              -> SpecialClazzes.c_bool        ;
-          case "TRUE"              -> SpecialClazzes.c_TRUE        ;
-          case "FALSE"             -> SpecialClazzes.c_FALSE       ;
-          case "Const_String"      -> SpecialClazzes.c_Const_String;
-          case "String"            -> SpecialClazzes.c_String      ;
-          case "fuzion.sys.Pointer"-> SpecialClazzes.c_sys_ptr     ; // NYI: does not work, must handle outer correctly
-          case "unit"              -> SpecialClazzes.c_unit        ;
-          default                  -> SpecialClazzes.c_NOT_FOUND   ;
-          };
-        if (s != SpecialClazzes.c_NOT_FOUND)
-          {
-            _specialClazzes[s.ordinal()] = result;
+            // NYI: OPTIMIZATION: Avoid creating all feature qualified names!
+            s = switch (cl._feature.qualifiedName())
+              {
+              case "i8"                -> SpecialClazzes.c_i8          ;
+              case "i16"               -> SpecialClazzes.c_i16         ;
+              case "i32"               -> SpecialClazzes.c_i32         ;
+              case "i64"               -> SpecialClazzes.c_i64         ;
+              case "u8"                -> SpecialClazzes.c_u8          ;
+              case "u16"               -> SpecialClazzes.c_u16         ;
+              case "u32"               -> SpecialClazzes.c_u32         ;
+              case "u64"               -> SpecialClazzes.c_u64         ;
+              case "f32"               -> SpecialClazzes.c_f32         ;
+              case "f64"               -> SpecialClazzes.c_f64         ;
+              case "bool"              -> SpecialClazzes.c_bool        ;
+              case "TRUE"              -> SpecialClazzes.c_TRUE        ;
+              case "FALSE"             -> SpecialClazzes.c_FALSE       ;
+              case "Const_String"      -> SpecialClazzes.c_Const_String;
+              case "String"            -> SpecialClazzes.c_String      ;
+              case "fuzion.sys.Pointer"-> SpecialClazzes.c_sys_ptr     ; // NYI: does not work, must handle outer correctly
+              case "unit"              -> SpecialClazzes.c_unit        ;
+              default                  -> SpecialClazzes.c_NOT_FOUND   ;
+              };
+            if (s != SpecialClazzes.c_NOT_FOUND && cl.isRef() == cl._feature.isThisRef())
+              {
+                _specialClazzes[s.ordinal()] = result;
+              }
           }
         cl._s = s;
+        System.out.println("NEW CLAZZ "+cl);
         cl.init();
-        System.out.println("NEW CLAZZ: "+cl.asString(true));
       }
     return result;
   }
@@ -2768,9 +2984,26 @@ public class GeneratingFUIR extends FUIR
   {
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
+       cl < CLAZZ_BASE + _clazzes.size(),
+       clazzIsRef(cl));
 
-    throw new Error("NYI");
+    var c = id2clazz(cl);
+    var result = new List<Clazz>();
+    for (var h : c.heirs())
+      {
+        if (h.isInstantiated())
+          {
+            result.add(h);
+          }
+      }
+    var res = new int[result.size()];
+    for (var i = 0; i < result.size(); i++)
+      {
+        res[i] = result.get(i)._id;
+        if (CHECKS) check
+          (res[i] != -1);
+      }
+    return res;
   }
 
 
@@ -2908,7 +3141,17 @@ public class GeneratingFUIR extends FUIR
   {
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
-       clazzNeedsCode(cl));
+       cl < CLAZZ_BASE + _clazzes.size(),
+       clazzNeedsCode(cl) ||
+       cl == clazz_Const_String() ||
+       cl == clazz_Const_String_utf8_data() ||
+       cl == clazz_array_u8() ||
+       cl == clazz_fuzionSysArray_u8() ||
+       cl == clazz_fuzionSysArray_u8_data() ||
+       cl == clazz_fuzionSysArray_u8_length() ||
+       cl == clazz_fuzionJavaObject() ||
+       cl == clazz_fuzionJavaObject_Ref()
+       );
 
     var c = id2clazz(cl);
     var result = c._code;
@@ -3091,7 +3334,7 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    return c._isBoxed;
+    return c.isRef() && !c.feature().isThisRef();
   }
 
 
@@ -3237,7 +3480,10 @@ public class GeneratingFUIR extends FUIR
             var of = oc._feature;
             var f = (LibraryFeature) of.get(of._libModule, s._name, s._argCount);
             result = newClazz(oc, f.selfType());
+            if (CHECKS) check
+              (f.isThisRef() == result.isRef());
           }
+        _specialClazzes[s.ordinal()] = result;
       }
     return result._id;
   }
@@ -3802,7 +4048,7 @@ public class GeneratingFUIR extends FUIR
     var b = (Box) getExpr(s);
     Clazz vc = clazz(b._value, outerClazz, NO_INH);
     Clazz rc = vc;
-    dev.flang.util.Debug.umprintln("NYI!");
+    //dev.flang.util.Debug.umprintln("NYI!");
     /* NYI: should be in propagateExpectedClazz for `ec`:
     if (asRefAssignable(ec, vc))
       {
@@ -3846,7 +4092,7 @@ public class GeneratingFUIR extends FUIR
     var b = (Box) getExpr(s);
     Clazz vc = clazz(b._value, outerClazz, NO_INH);
     Clazz rc = outerClazz.handDown(b.type(), -1, NO_INH, b);
-    dev.flang.util.Debug.umprintln("NYI! "+vc+" rc: "+rc+" vc.asRef:"+vc.asRef()+" b.type(): "+b.type()+" "+b.type().isRef()+" "+
+    if (false) dev.flang.util.Debug.umprintln("NYI! "+vc+" rc: "+rc+" vc.asRef:"+vc.asRef()+" b.type(): "+b.type()+" "+b.type().isRef()+" "+
                                    outerClazz.handDown(b.type(), -1, NO_INH, b)+" "+(!rc.isRef() ? "--" : ""
                                                                                      +vc.asRef()));
     if (rc.isRef() &&
@@ -4232,6 +4478,39 @@ public class GeneratingFUIR extends FUIR
   }
 
 
+  IntMap<int[]> _accessedClazzes = new IntMap<>();
+
+
+  private void addToAccessedClazzed(int s, int tclazz, int innerClazz)
+  {
+    var a = _accessedClazzes.get(s);
+    if (a == null)
+      {
+        _accessedClazzes.put(s, new int[] { tclazz, innerClazz});
+      }
+    else
+      {
+        var found = false;
+        for (var i=0; i < a.length && !found; i+=2)
+          {
+            if (a[i] == tclazz)
+              {
+                if (CHECKS) check
+                  (a[i+1] == innerClazz);
+                found = true;
+              }
+          }
+        if (!found)
+          {
+            var n = new int[a.length+2];
+            System.arraycopy(a, 0, n, 0, a.length);
+            a[n.length  ] = tclazz;
+            a[n.length+1] = innerClazz;
+            _accessedClazzes.put(s, a);
+          }
+      }
+  }
+
 
   /**
    * Get the possible inner clazzes for a dynamic call or assignment to a field
@@ -4252,8 +4531,12 @@ public class GeneratingFUIR extends FUIR
        codeAt(s) == ExprKind.Assign    ,
        accessIsDynamic(s));
 
-    dev.flang.util.Debug.umprintln("NYI! accessedClazzesdynamic "+sitePos(s).show());
-    return new int[] { accessedClazz(s) };
+    var result = _accessedClazzes.get(s);
+    if (result == null)
+      {
+        result = Clazz.NO_CLAZZ_IDS;
+      }
+    return result;
     /*
     var key = Integer.valueOf(s);
     var res = _accessedClazzesDynamicCache.get(key);
@@ -4389,6 +4672,7 @@ public class GeneratingFUIR extends FUIR
     if (accessIsDynamic(s))
       {
         innerClazz = accessedClazz(s, id2clazz(tclazz));
+        addToAccessedClazzed(s, tclazz, innerClazz);
 
         /*
         innerClazz = NO_CLAZZ;
