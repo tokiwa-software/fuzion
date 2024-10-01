@@ -1930,17 +1930,36 @@ public class Call extends AbstractCall
                         var actualType = typeFromActual(actual, context);
                         if (actualType != null)
                           {
-                            /**
-                             * infer via constraint of type parameter:
-                             *
-                             *     a(T type, S type : array T, s S) is
-                             *     _ := a [32]
-                             */
                             if (t.isGenericArgument())
                               {
-                                var tp = t.genericArgument().typeParameter();
-                                res.resolveTypes(tp);
-                                inferGeneric(res, context, tp.resultType(), actualType, actual.pos(), conflict, foundAt);
+                                var constraint = t.genericArgument().constraint(res, context);
+
+                                /**
+                                 * infer via propagated result type:
+                                 *
+                                 *     f1(b bool) option a.this => b ? a.this : nil
+                                 */
+                                if (_propagatedType != null &&
+                                    !_propagatedType.isGenericArgument() &&
+                                    _calledFeature.resultTypeIfPresent(res) != null &&
+                                    t.compareTo(_calledFeature.resultTypeIfPresent(res)) == 0 &&
+                                    constraint.isAssignableFrom(_propagatedType.asRef(), context))
+                                  {
+                                    actual = actual.box(_propagatedType, context);
+                                    actualType = typeFromActual(actual, context);
+
+                                    if (CHECKS) check
+                                      (actual != null);
+                                  }
+
+                                /**
+                                 * infer via constraint of type parameter:
+                                 *
+                                 *     a(T type, S type : array T, s S) is
+                                 *     _ := a [32]
+                                 */
+                                inferGeneric(res, context, constraint, actualType, actual.pos(), conflict, foundAt);
+
                               }
                             inferGeneric(res, context, t, actualType, actual.pos(), conflict, foundAt);
                             checked[vai] = true;

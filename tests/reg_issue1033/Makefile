@@ -17,32 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue321
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-reg_issue321 =>
-
-  tuple2(T type, A type..., b T, values A) is
-  tuple3(A type..., b i32, values A) is
-  tuple4(A type, b i32, values A) is
-
-  a tuple i8 i8 := tuple 3 4
-  b tuple2 i8 i8 i8 := tuple2 1 3 4
-  c tuple3 i8 i8 := tuple3 1 3 4
-  d tuple4 i8 := tuple4 1 3
-
-  say (type_of a.0)
-  say (type_of b.values.0)
-  say (type_of c.values.0)
-  say (type_of d.values)
-
-  e tuple i8 i8 => tuple 3 4
-  f tuple2 i8 i8 i8 => tuple2 1 3 4
-  g tuple3 i8 i8 => tuple3 1 3 4
-  h tuple4 i8 => tuple4 1 3
-
-  say (type_of e.0)
-  say (type_of f.values.0)
-  say (type_of g.values.0)
-  say (type_of h.values)
+override NAME = reg_issue1033
+include ../simple.mk

@@ -135,6 +135,15 @@ public abstract class ReturnType extends ANY
   }
 
 
+  /*
+   * Is this return type a function return type?
+   */
+  public boolean isFunctionReturnType()
+  {
+    return !isConstructorType() && this != NoType.INSTANCE;
+  }
+
+
 }
 
 /* end of file */
