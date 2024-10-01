@@ -3137,10 +3137,15 @@ public class GeneratingFUIR extends FUIR
   {
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
+       cl < CLAZZ_BASE + _clazzes.size(),
+       i >= 0 && i < clazzNumChoices(cl));
 
-    dev.flang.util.Debug.umprintln("NYI!");
-    return clazz(SpecialClazzes.c_void);
+    var cc = id2clazz(cl);
+    var cg = cc.choiceGenerics().get(i);
+    var res = cg.isRef()          ||
+              cg.isInstantiated()    ? cg
+                                     : id2clazz(clazz(SpecialClazzes.c_void));
+    return res._id;
   }
 
 
@@ -3812,9 +3817,7 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazz_fuzionJavaObject()
   {
-    dev.flang.util.Debug.umprintln("NYI!");
-    if (true) return -1;
-    throw new Error("NYI");
+    return newClazz(Types.resolved.f_fuzion_Java_Object.selfType())._id;
   }
 
 
@@ -3826,9 +3829,7 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazz_fuzionJavaObject_Ref()
   {
-    dev.flang.util.Debug.umprintln("NYI!");
-    if (true) return -1;
-    throw new Error("NYI");
+    return newClazz(Types.resolved.f_fuzion_Java_Object_Ref.selfType())._id;
   }
 
 
