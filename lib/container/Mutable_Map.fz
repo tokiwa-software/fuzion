@@ -47,14 +47,16 @@ public Mutable_Map(public K type : property.equatable, public V type) ref is
 
   # get a sequence of all keys in this map
   #
-  public keys Sequence K =>
-    items.map K (t -> (k,_) := t; k)
+  public keys =>
+    # NYI: BUG: t.0 does not work here, why?
+    items.map t->t.values.0
 
 
   # get a sequence of all values in this map
   #
-  public values Sequence V =>
-    items.map V (t -> (_,v) := t; v)
+  public values =>
+    # NYI: BUG: t.1 does not work here, why?
+    items.map t->t.values.1
 
 
   # add key-value pair to this map
@@ -68,7 +70,7 @@ public Mutable_Map(public K type : property.equatable, public V type) ref is
   #
   # if key already exists, NYI what should happen?
   #
-  public add_all(kvs Sequence (tuple K V)) unit =>
+  public add_all(kvs Sequence (tuple K V)) =>
     for kv in kvs do
       add kv.values.0 kv.values.1
 

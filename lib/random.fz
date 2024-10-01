@@ -161,8 +161,8 @@ simple_random_handler(seed1 u64, seed2 u64) : Random_Handler is
     s2 := (seed2 *° 9191919191 +° 37637373737) ^ seed1
     rot1 := s2 & 0x3f
     rot2 := s1 & 0x3f
-    (simple_random_handler ((s2 << rot2) | (s2 >> (u64 64 - rot2)))
-                           ((s1 << rot1) | (s1 >> (u64 64 - rot1))))
+    simple_random_handler (s2<<rot2 | s2>>(u64 64 - rot2))
+                          (s1<<rot1 | s1>>(u64 64 - rot1))
 
   # get current random number
   #

@@ -13,14 +13,33 @@
 # Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 
-# nom.branch -- choice combinators
+# -----------------------------------------------------------------------
 #
-module branch is
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test inference_choice_generics
+#
+# -----------------------------------------------------------------------
 
-  # return result of first succeeding parser
-  public alt(I, R, O type, parser Sequence (Parser I R O)) Parser I R O =>
-    parser I R O input->
-      parser
-        .map (p -> p.call input)
-        .filter (r -> r ? success => true | error => false)
-        .first (error "alt: no parser successful")
+inference_choice_generics =>
+
+  tree(T type) : choice nil T (Branch T) is
+
+  Branch(T type, left, right tree T) ref is
+
+  tree := (Branch
+            (Branch
+              (Branch $"A" "B")
+              (Branch $"C" "D"))
+            (Branch
+              (Branch $"E" "F")
+              (Branch $"G" nil)))
+
+  print(t tree String) unit =>
+    match t
+      nil      => yak "."
+      s String => yak s
+      b Branch => print b.left; print b.right
+
+  print tree
+  say ""

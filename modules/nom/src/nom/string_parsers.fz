@@ -18,22 +18,19 @@
 module string_parsers is
 
   # match str
-  public tag(str String) Parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint)
-  =>
-    parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (input ->
+  public tag(str String) =>
+    parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) input->
       if (String.type.from_codepoints input).starts_with str
         success (input.drop str.codepoint_length).as_seq str.as_codepoints
       else
         error "tag ($str) not found"
-    )
 
 
   # match zero or more whitespace
   public whitespace0 Parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) =>
-    parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (input ->
+    parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) input->
       ws := input.take_while (x -> x.is_blank)
       success (input.drop ws.count).as_seq ws.as_seq
-    )
 
 
   # match one or more digits
